@@ -5,20 +5,23 @@ from hdl_toolkit.interfaces.amba import AxiStream
 from hdl_toolkit.synthetisator.rtlLevel.codeOp import Switch
 from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
 from hdl_toolkit.synthetisator.shortcuts import toRtl
-from hdl_toolkit.synthetisator.param import Param
+from hdl_toolkit.synthetisator.param import Param, evalParam
 
 c = connect
 
-class AxiStreamMux(Unit):
+class AxiSMux(Unit):
     def _config(self):
+        self.OUTPUTS = Param(3)
         self.DATA_WIDTH = Param(64)
         
     def _declr(self):
-        outputs = 3
+        outputs = evalParam(self.OUTPUTS).val
+        
         with self._asExtern():
             self.sel = Ap_none(dtype=vecT(outputs.bit_length()))
             self.dataIn = AxiStream()
             self.dataOut = AxiStream(multipliedBy=hInt(outputs))
+            self._shareAllParams()
     
     def _impl(self):
         selBits = self.sel._dtype.bit_length()
@@ -38,26 +41,26 @@ class AxiStreamMux(Unit):
         )    
             
 
-class AxiStreamMuxContainer(Unit):
-    """
-    Test container
-    """
-    def _declr(self):
-        with self._asExtern():
-            self.dataIn = AxiStream()
-            self.dataOut0 = AxiStream()
-            self.dataOut1 = AxiStream()
-            self.dataOut2 = AxiStream()
-            self.sel = Ap_none(dtype=vecT(2))
-    
-        self.mux = AxiStreamMux()
-    
-    def _impl(self):
-        m = self.mux
-        c(self.dataIn, m.dataIn)
-        c(m.dataOut[0], self.dataOut0)
-        c(m.dataOut[1], self.dataOut1)
-        c(m.dataOut[2], self.dataOut2)
-        
+#class AxiSMuxContainer(Unit):
+#    """
+#    Test container
+#    """
+#    def _declr(self):
+#        with self._asExtern():
+#            self.dataIn = AxiStream()
+#            self.dataOut0 = AxiStream()
+#            self.dataOut1 = AxiStream()
+#            self.dataOut2 = AxiStream()
+#            self.sel = Ap_none(dtype=vecT(2))
+#    
+#        self.mux = AxiStreamMux()
+#    
+#    def _impl(self):
+#        m = self.mux
+#        c(self.dataIn, m.dataIn)
+#        c(m.dataOut[0], self.dataOut0)
+#        c(m.dataOut[1], self.dataOut1)
+#        c(m.dataOut[2], self.dataOut2)
+#        
 if __name__ == "__main__":
-    print(toRtl(AxiStreamMuxContainer))
+    print(toRtl(AxiSMux))

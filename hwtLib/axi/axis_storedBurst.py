@@ -2,15 +2,13 @@ import math
 
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.synthetisator.param import Param, evalParam
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
+from hdl_toolkit.synthetisator.rtlLevel.signal.utils import c
 from hdl_toolkit.interfaces.amba import AxiStream
 from hdl_toolkit.hdlObjects.typeShortcuts import vec, hBit, vecT
 from hdl_toolkit.bitmask import Bitmask
 from hdl_toolkit.synthetisator.rtlLevel.codeOp import If, Switch
 from hdl_toolkit.interfaces.std import Ap_clk, Ap_rst_n
 from hdl_toolkit.synthetisator.shortcuts import toRtl
-
-c = connect
 
 class AxiStreamStoredBurst(Unit):
     """
