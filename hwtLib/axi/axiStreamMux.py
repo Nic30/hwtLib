@@ -15,11 +15,10 @@ class AxiStreamMux(Unit):
         
     def _declr(self):
         outputs = 3
-        self.sel = Ap_none(dtype=vecT(outputs.bit_length()))
-        self.dataIn = AxiStream()
-        self.dataOut = AxiStream(multipliedBy=hInt(outputs))
-        
-        self._mkIntfExtern()
+        with self._asExtern():
+            self.sel = Ap_none(dtype=vecT(outputs.bit_length()))
+            self.dataIn = AxiStream()
+            self.dataOut = AxiStream(multipliedBy=hInt(outputs))
     
     def _impl(self):
         selBits = self.sel._dtype.bit_length()
@@ -44,14 +43,13 @@ class AxiStreamMuxContainer(Unit):
     Test container
     """
     def _declr(self):
-        self.dataIn = AxiStream()
-        self.dataOut0 = AxiStream()
-        self.dataOut1 = AxiStream()
-        self.dataOut2 = AxiStream()
-        self.sel = Ap_none(dtype=vecT(2))
+        with self._asExtern():
+            self.dataIn = AxiStream()
+            self.dataOut0 = AxiStream()
+            self.dataOut1 = AxiStream()
+            self.dataOut2 = AxiStream()
+            self.sel = Ap_none(dtype=vecT(2))
     
-        self._mkIntfExtern()
-        
         self.mux = AxiStreamMux()
     
     def _impl(self):

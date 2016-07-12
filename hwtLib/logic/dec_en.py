@@ -13,20 +13,19 @@ class DecEn(Unit):
     
     def _declr(self):
         
-        self.dIn= s(dtype=vecT(log2ceil(self.DATA_WIDTH)))
-        self.en = s()
-        self.dOut = s(dtype=vecT(self.DATA_WIDTH))
-        self._mkIntfExtern()
+        with self._asExtern():
+            self.dIn= s(dtype=vecT(log2ceil(self.DATA_WIDTH)))
+            self.en = s()
+            self.dOut = s(dtype=vecT(self.DATA_WIDTH))
 
     def _impl(self):
         en = self.en
         dIn = self.dIn
         
-        
         WIDTH = self.DATA_WIDTH
         #empty_gen
         if evalParam(WIDTH).val == 1:
-            c(en, self.dOut)
+            c(en, self.dOut[0])
         else:
             # full_gen
             for i in range(evalParam(WIDTH).val):

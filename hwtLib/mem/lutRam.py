@@ -14,19 +14,19 @@ def mkLutRamCls(DATA_WIDTH):
 			self.IS_WCLK_INVERTED = Param(hBit(0))
 	
 		def _declr(self):
-			self.o = Ap_none()
-	
-			self.a0 = Ap_none()
-			self.a1 = Ap_none()
-			self.a2 = Ap_none()
-			self.a3 = Ap_none()
-			self.a4 = Ap_none()
-			self.a5 = Ap_none()
-			self.d	 = Ap_none()
-			self.wclk = Ap_none()
-			self.we = Ap_none()
+			with self._asExtern():
+				self.o = Ap_none()
+		
+				self.a0 = Ap_none()
+				self.a1 = Ap_none()
+				self.a2 = Ap_none()
+				self.a3 = Ap_none()
+				self.a4 = Ap_none()
+				self.a5 = Ap_none()
+				self.d	 = Ap_none()
+				self.wclk = Ap_none()
+				self.we = Ap_none()
 			
-			self._mkIntfExtern()
 			
 		def _impl(self):
 			s = self._sig

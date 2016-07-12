@@ -30,20 +30,19 @@ class AxiLiteRegs(Unit):
     
     def _declr(self):
         assert len(self.ADRESS_MAP) > 0
-        
-        self.clk = Ap_clk()
-        self.rst_n = Ap_rst_n()
-        
-        self.axi = AxiLite()
-        
-        for _, name in self.ADRESS_MAP:
-            out = Ap_vld()
-            setattr(self, name + self.OUT_SUFFIX, out)
+        with self._asExtern():
+            self.clk = Ap_clk()
+            self.rst_n = Ap_rst_n()
             
-            _in = Ap_none(dtype=vecT(self.DATA_WIDTH))
-            setattr(self, name + self.IN_SUFFIX, _in)
+            self.axi = AxiLite()
+            
+            for _, name in self.ADRESS_MAP:
+                out = Ap_vld()
+                setattr(self, name + self.OUT_SUFFIX, out)
+                
+                _in = Ap_none(dtype=vecT(self.DATA_WIDTH))
+                setattr(self, name + self.IN_SUFFIX, _in)
 
-        self._mkIntfExtern()
         self._shareAllParams()
     
     def readPart(self):

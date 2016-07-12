@@ -6,14 +6,13 @@ c = connect
 
 class DReg(Unit):
     def _declr(self):
+        with self._asExtern():
+            self.clk = Ap_clk()
+            self.rst = Ap_rst()
+    
+            self.din = Ap_none(dtype=BIT)
+            self.dout = Ap_none(dtype=BIT)
         
-        self.clk = Ap_clk()
-        self.rst = Ap_rst()
-
-        self.din = Ap_none(dtype=BIT)
-        self.dout = Ap_none(dtype=BIT)
-        
-        self._mkIntfExtern()
         
     def _impl(self):
 

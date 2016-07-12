@@ -14,15 +14,15 @@ class ClkSynchronizer(Unit):
         self.DATA_TYP = BIT
         
     def _declr(self):
-        self.rst = Ap_rst()
+        with self._asExtern():
+            self.rst = Ap_rst()
+            
+            self.inData = Ap_none(dtype=self.DATA_TYP)
+            self.inClk = Ap_clk()
+            
+            self.outData = Ap_none(dtype=self.DATA_TYP)
+            self.outClk = Ap_clk()
         
-        self.inData = Ap_none(dtype=self.DATA_TYP)
-        self.inClk = Ap_clk()
-        
-        self.outData = Ap_none(dtype=self.DATA_TYP)
-        self.outClk = Ap_clk()
-        
-        self._mkIntfExtern()
         
     def _impl(self):
         def reg(name, clk):

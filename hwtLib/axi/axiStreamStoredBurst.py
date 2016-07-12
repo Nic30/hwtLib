@@ -37,11 +37,11 @@ class AxiStreamStoredBurst(Unit):
         return self.dataOut.ready
     
     def _declr(self):
-        self.clk = Ap_clk()
-        self.rst_n = Ap_rst_n()
-        self.dataOut = AxiStream()
-        self._shareAllParams()
-        self._mkIntfExtern()
+        with self._asExtern():
+            self.clk = Ap_clk()
+            self.rst_n = Ap_rst_n()
+            self.dataOut = AxiStream()
+            self._shareAllParams()
     
     def _impl(self):
         self.DATA_WIDTH = evalParam(self.DATA_WIDTH).val
