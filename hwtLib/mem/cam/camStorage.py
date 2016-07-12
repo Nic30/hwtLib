@@ -29,12 +29,13 @@ class CamStorage(Unit):
         CamStorageInIntf._config(self)
     
     def _declr(self):
-        self.clk = Ap_clk()
-        self.dIn = CamStorageInIntf()
-        self.match = Ap_rd()
+        with self._asExtern():
+            self.clk = Ap_clk()
+            self.dIn = CamStorageInIntf()
+            self._shareAllParams()
+            self.match = Ap_rd()
         
-        self.match._replaceParam("DATA_WIDTH", self.ROWS)
-        self._mkIntfExtern()
+            self.match._replaceParam("DATA_WIDTH", self.ROWS)
         
         self.rams = []
         for c in range(evalParam(self.COLUMNS).val):
@@ -54,7 +55,7 @@ class CamStorage(Unit):
             match_carry = self._sig("match_carry%d" % r, carry_t)
             #cam_storage_row_gen :
             for c in range(evalParam(self.COLUMNS).val):
-                match_base = self._sig("match_base%d" % c, rows_t)
+                match_base = self._sig("match_base%d_%d" % (r,c), rows_t)
                 ram = self.rams[c]
                 base = c*6
 

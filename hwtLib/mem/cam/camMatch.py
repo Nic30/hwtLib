@@ -8,6 +8,7 @@ from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 
 from hwtLib.mem.cam.interfaces import DataWithMatch
 from hwtLib.mem.cam.camWrite import mkCounter
+from hwtLib.logic.dec_en import DecEn
 
 c = connect
 
@@ -19,18 +20,20 @@ class CamMatch(Unit):
         self.CELL_HEIGHT = Param(1)
     
     def _declr(self):
-        addClkRstn(self)
-        
-        self.dIn = Ap_hs()
-        self.dIn.DATA_WIDTH.set(self.COLUMNS * self.CELL_WIDTH)
-        
-        self.outMatch = Ap_vld()
-        self.outMatch.DATA_WIDTH.set(self.ROWS * self.CELL_HEIGHT)
-        
-        self.storage = DataWithMatch()
-        
-        self._shareAllParams()
-        self._mkIntfExtern()
+        with self._asExtern():
+            addClkRstn(self)
+            self.storage = DataWithMatch()
+            self._shareAllParams()
+            
+            self.dIn = Ap_hs()
+            self.dIn.DATA_WIDTH.set(self.COLUMNS * self.CELL_WIDTH)
+            
+            self.outMatch = Ap_vld()
+            self.outMatch.DATA_WIDTH.set(self.ROWS * self.CELL_HEIGHT)
+            
+            
+            self.match_enable_decoder = DecEn()
+            self.match_enable_decoder.DATA_WIDTH.set(self.CELL_HEIGHT)
     
     def _impl(self):
         dIn = self.dIn
@@ -39,8 +42,10 @@ class CamMatch(Unit):
         CELL_WIDTH = self.CELL_WIDTH
                 
         inreg_we = self._sig("inreg_we")
-        
+        match_we = self._sig("match_we", vecT(CELL_HEIGHT))
         data_reg = self._reg("data_reg", self.dIn.data._dtype)
+        out_rdy_register = self._reg("out_rdy_register", defVal=0)
+        
         # input_regs
         If(inreg_we,
            c(dIn.data, data_reg)
@@ -59,6 +64,7 @@ class CamMatch(Unit):
             counter_last = me_reg
             counter_ce = me_reg
             input_rdy = True
+            counter = 0
         elif CH > 1:
             #real_counter_gen 
             counter_ce = self._sig("counter_ce")
@@ -69,12 +75,15 @@ class CamMatch(Unit):
             input_rdy = (~counter_busy | counter_last) & ~me_reg
         else:
             raise NotImplementedError()
+        c(input_rdy, dIn.rd)
+        c(dIn.vld & input_rdy, inreg_we)
+        
         
         # cam_match_gen :
         CH = evalParam(CELL_HEIGHT).val
         for i in range(evalParam(self.COLUMNS).val):
             dr = data_reg[CELL_WIDTH*(i+1):(CELL_WIDTH*i)]
-            c(dr, storage.data[(CELL_WIDTH*i*6):(i*6)]) 
+            c(dr, storage.data[(CELL_WIDTH+i*6):(i*6)]) 
             # bank_data_gen
             if CH > 1:
                 c(counter, storage.data[((i+1)*6):CELL_WIDTH+i*6]) 
@@ -87,6 +96,22 @@ class CamMatch(Unit):
                 #match_reg
                 If(self.clk._onRisingEdge(),
                     If(match_we[i],
-                      c(storage.match[j], self.outMatch.data[j*CELL_HEIGHT+i] )
+                      c(storage.match[j], self.outMatch.data[CELL_HEIGHT*j+i] )
                     )
                 )
+                
+        med = self.match_enable_decoder
+        c(counter, med.dIn)
+        c(counter_ce, med.en)
+        c(med.dOut, match_we)
+        
+        # out_rdy_register
+        orr = out_rdy_register
+        c(counter_last, orr)
+        c(orr, self.outMatch.vld)
+
+if __name__ == "__main__":
+    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    print(toRtl(CamMatch))
+        
+        

@@ -32,17 +32,17 @@ class CamWrite(Unit):
 
     def _declr(self):
         assert evalParam(self.CELL_WIDTH).val <=6
-        addClkRstn(self)
-        
-        self.dIn = AddrDataHs()
-        self.dIn.DATA_WIDTH.set(self.COLUMNS * self.CELL_WIDTH)
-        self.dIn.ADDR_WIDTH.set(log2ceil(self.ROWS*self.CELL_HEIGHT))
-        
-        self.dOut = CamWritterPort()
-        self.dOut._updateParamsFrom(self)
+        with self._asExtern():
+            addClkRstn(self)
+            
+            self.dIn = AddrDataHs()
+            self.dIn.DATA_WIDTH.set(self.COLUMNS * self.CELL_WIDTH)
+            self.dIn.ADDR_WIDTH.set(log2ceil(self.ROWS*self.CELL_HEIGHT))
+            
+            self.dOut = CamWritterPort()
+            self.dOut._updateParamsFrom(self)
         self.write_enable_decoder = DecEn()
         self.write_enable_decoder.DATA_WIDTH.set(self.ROWS)
-        self._mkIntfExtern()
         
     def _impl(self):
         dIn = self.dIn
