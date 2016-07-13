@@ -29,25 +29,29 @@ class Fifo(Unit):
         head = self._reg("head", index_t, 0)
         tail = self._reg("tail", index_t, 0)
         looped = self._reg("looped",  defVal=False)
-        dOutWait = self._reg("dOut_wait_reg",  defVal=True)
-        dInWait = self._reg("dIn_wait_reg",  defVal=True)
         
         DEPTH = self.DEPTH
         
         dOut = self.dOut
         dIn = self.dIn
 
-        
+        MAX_DEPTH = (DEPTH -1)._convert(index_t)
+        # [TODO] forgot head, tail clock enable 
+                
         rd_en = dOut.en & looped | (head != tail)
         If(self.clk._onRisingEdge() & rd_en,
            # Update data output
             c(mem[tail], dOut.data) 
         ) 
         # Update Tail pointer as needed
-        If(rd_en & tail._convert(INT)._eq(self.DEPTH - 1),
-            c(0, tail) 
+        If(rd_en,
+            If(tail._eq(MAX_DEPTH),
+               c(0, tail) 
+               ,
+               c(tail + 1, tail)
+            )
             ,
-            c(tail + 1, tail)
+            c(tail, tail)
         )
         
         wr_en = dIn.en & ~looped | (head != tail)
@@ -56,35 +60,38 @@ class Fifo(Unit):
             c(dIn.data, mem[head])
         )                 
         # Increment Head pointer as needed
-        If(wr_en & head._convert(INT)._eq(DEPTH - 1),
-            c(0, head)
-            ,
-            c(head + 1, head) 
+        If(wr_en,
+            If(head._eq(MAX_DEPTH),
+                c(0, head)
+                ,
+                c(head + 1, head) 
+            )
+           ,
+           c(head, head)
         )
-        If(rd_en & head._convert(INT)._eq(DEPTH - 1),
+        If(rd_en & head._eq(MAX_DEPTH),
            c(True, looped)
            ,
-           If(wr_en & head._convert(INT)._eq(DEPTH - 1),
+           If(wr_en & head._eq(MAX_DEPTH),
                c(False, looped)
                ,
                c(looped, looped)
            )
         )
-        c(looped)        
                 
         # Update Empty and Full flags
         If(head._eq(tail),
             If(looped,
-                c(1, dInWait)
+                c(1, dIn.wait) +
+                c(0, dOut.wait)
                 ,
-                c(1, dOutWait)
+                c(1, dOut.wait) +
+                c(0, dIn.wait)
             )
             ,
-            c(0, dInWait) +
-            c(0, dOutWait)
+            c(0, dIn.wait) +
+            c(0, dOut.wait)
         )
-        c(dInWait, dIn.wait)
-        c(dOutWait,  dOut.wait)
 
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl
