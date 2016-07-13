@@ -29,6 +29,9 @@ class Fifo(Unit):
         head = self._reg("head", index_t, 0)
         tail = self._reg("tail", index_t, 0)
         looped = self._reg("looped",  defVal=False)
+        dOutWait = self._reg("dOut_wait_reg",  defVal=True)
+        dInWait = self._reg("dIn_wait_reg",  defVal=True)
+        
         DEPTH = self.DEPTH
         
         dOut = self.dOut
@@ -61,7 +64,7 @@ class Fifo(Unit):
         If(rd_en & head._convert(INT)._eq(DEPTH - 1),
            c(True, looped)
            ,
-           If (wr_en & head._convert(INT)._eq(DEPTH - 1),
+           If(wr_en & head._convert(INT)._eq(DEPTH - 1),
                c(False, looped)
                ,
                c(looped, looped)
@@ -72,14 +75,16 @@ class Fifo(Unit):
         # Update Empty and Full flags
         If(head._eq(tail),
             If(looped,
-                c(1, dIn.wait)
+                c(1, dInWait)
                 ,
-                c(1, dOut.wait)
+                c(1, dOutWait)
             )
             ,
-            c(0, dIn.wait) +
-            c(0, dOut.wait)
+            c(0, dInWait) +
+            c(0, dOutWait)
         )
+        c(dInWait, dIn.wait)
+        c(dOutWait,  dOut.wait)
 
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl
