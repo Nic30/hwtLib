@@ -1,34 +1,28 @@
 import unittest
 from hdl_toolkit.synthetisator.rtlLevel.netlist import RtlNetlist
-from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.synthetisator.rtlLevel.signal.walkers import  walkAllOriginSignals
-from hdl_toolkit.hdlObjects.types.defs import INT, STR, BOOL
-from hdl_toolkit.hdlObjects.typeShortcuts import hInt, hBool, hBit
+from hdl_toolkit.hdlObjects.types.defs import INT, STR
+from hdl_toolkit.hdlObjects.typeShortcuts import hInt, hBool, hBit, vec
 
 class OperatorTC(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.n = RtlNetlist("test")
     
-    def testNoOp(self):
-        a = self.n.sig('a', typ=INT)
-
+    def testNoBool(self):
         for v in [True, False]:
-            a.defaultVal = hBool(v)
-            _a = a.staticEval() 
-            self.assertEqual(_a.val, v)
-            self.assertEqual(_a.vldMask, 1)
-            self.assertEqual(_a.updateTime, -1)
+            res =  ~hBool(v)
+            self.assertEqual(res.val, not v)
+            self.assertEqual(res.vldMask, 1)
+            self.assertEqual(res.updateTime, -1)
             
-    def testNotBOOL(self):
-        a = self.n.sig('a', typ=BOOL)
-        res = ~a
+    def testNotBit(self):
         for v in [False, True]:
-            a.defaultVal = hBool(v)
-            _res = res.staticEval()
+            res = ~hBit(v)
             
-            self.assertTrue(_res._eq(hBool(not v)).val)
-            self.assertEqual(_res.vldMask, 1)
+            self.assertEqual(res.val, int(not v))
+            self.assertEqual(res.vldMask, 1)
+            self.assertEqual(res.updateTime, -1)
                     
     def testDownto(self):
         a = self.n.sig('a', typ=INT)
@@ -61,36 +55,36 @@ class OperatorTC(unittest.TestCase):
         b = self.n.sig('b')
         self.assertRaises(NotImplementedError, lambda : a + b) 
         
-    def testAND_LOG_eval(self):
-        s0 = self.n.sig('s0')
-        s1 = self.n.sig('s1')
-        andOp = s0 & s1
+    def testAND_eval(self):
         for a_in, b_in, out in [(0, 0, 0),
                                 (0, 1, 0),
                                 (1, 0, 0),
                                 (1, 1, 1)]:
-            s0.defaultVal = hBit(a_in)
-            s1.defaultVal = hBit(b_in)
-            _andOp = andOp.staticEval()
-            self.assertEqual(_andOp.val, out, "a_in %d, b_in %d, out %d" % (a_in, b_in, out))
+            res = hBit(a_in) & hBit(b_in)
+            self.assertEqual(res.vldMask, 1)
+            self.assertEqual(res.val, out, "a_in %d, b_in %d, out %d" % (a_in, b_in, out))
     
     def testADD_eval(self):
-        a = self.n.sig('a', typ=INT)
-        b = self.n.sig('b', typ=INT)
-        andOp = a + b
         for a_in, b_in, out in [(0, 0, 0),
                                 (0, 1, 1),
                                 (1, 0, 1),
                                 (1, 1, 2)]:
-            a.defaultVal = hInt(a_in)
-            b.defaultVal = hInt(b_in)
-            v = andOp.staticEval()
-            out = hInt(out)
-            self.assertTrue(v._eq(out).val, "a_in %d, b_in %d, out %d" % (a_in, b_in, out.val))
-             
+            res =  hInt(a_in) + hInt(b_in)
+            
+            b_w = 2
+            
+            self.assertTrue(res.vldMask)
+            self.assertEqual(res.val, out, "a_in %d, b_in %d, out %d" % (a_in, b_in, out))
+            
+            resBit = vec(a_in, b_w) + vec(b_in, b_w)  
+            self.assertEqual(resBit.vldMask, 3)
+            self.assertEqual(resBit.val, out, "a_in %d, b_in %d, out %d" % (a_in, b_in, out))
+    
+
+      
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    suite.addTest(OperatorTC('testDownto'))
+    #suite.addTest(OperatorTC('testADD_eval'))
     suite.addTest(unittest.makeSuite(OperatorTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -18,6 +18,7 @@ from hwtLib.tests.synthetisator.interfaceLevel.subunitsSynthesisTC import Subuni
 from hwtLib.tests.synthetisator.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthetisator.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.statementTrees import StatementTreesTC
+from hwtLib.tests.statements import StatementsTC
 
 
 if __name__ == "__main__":
@@ -39,6 +40,7 @@ if __name__ == "__main__":
         TestCaseSynthesis,
         ValueTC,
         StatementTreesTC,
+        StatementsTC,
     )
     runner = TextTestRunner(verbosity=2)
     runner.run(suite)
