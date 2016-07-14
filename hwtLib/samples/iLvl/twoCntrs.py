@@ -1,0 +1,51 @@
+from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
+from hdl_toolkit.interfaces.utils import addClkRstn
+from hdl_toolkit.interfaces.std import Ap_none
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
+from hdl_toolkit.synthetisator.rtlLevel.codeOp import If
+
+class TwoCntrs(Unit):
+    def _declr(self):
+        with self._asExtern():
+            addClkRstn(self)
+            
+            self.a_en = Ap_none()
+            self.b_en = Ap_none()
+            
+            self.eq = Ap_none()
+            self.ne = Ap_none()
+            self.lt = Ap_none()
+            self.gt = Ap_none()
+        
+
+    def _impl(self):
+        index_t = vecT(8, False)
+        
+        a = self._reg("reg_a", index_t, defVal=0)
+        b = self._reg("reg_b", index_t, defVal=0)
+        
+        If(self.a_en,
+           connect(a+1, a)
+           ,
+           connect(a, a)
+        )
+        
+        If(self.b_en,
+           connect(b+1, b)
+           ,
+           connect(b, b)
+        )
+        
+        connect(a._eq(b), self.eq)
+        connect(a != b, self.ne)
+        connect(a < b, self.lt)
+        connect(a > b, self.gt)
+
+
+
+if __name__ == "__main__":
+    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    
+    u = TwoCntrs()
+    print(toRtl(u))
