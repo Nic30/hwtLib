@@ -119,7 +119,6 @@ class InterfaceSyntherisatorTC(BaseSynthetisatorTC):
     def test_signalInstances(self):
         from hwtLib.samples.iLvl.simple import SimpleUnit
         bram = SimpleUnit()
-        bram._loadDeclarations()
         bram = synthesised(bram)
     
         self.assertNotEqual(bram.a, bram.b, 'instances are properly instanciated')
@@ -146,7 +145,6 @@ class InterfaceSyntherisatorTC(BaseSynthetisatorTC):
                 setOut(self.b)
                 
         u = Eu()
-        u._loadDeclarations()
         u = synthesised(u)
 
         e = u._entity
@@ -165,10 +163,9 @@ class InterfaceSyntherisatorTC(BaseSynthetisatorTC):
                 setOut(self.b)
                 
         u = Dummy()
-        u._loadDeclarations()
-        self.assertTrue(u.a.ar.addr._isExtern)
         
         u = synthesised(u)
+        self.assertTrue(u.a.ar.addr._isExtern)
         e = u._entity
         
         
