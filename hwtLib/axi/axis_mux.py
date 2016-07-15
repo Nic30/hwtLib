@@ -1,6 +1,6 @@
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.hdlObjects.typeShortcuts import hInt, vecT, vec
-from hdl_toolkit.interfaces.std import Ap_none
+from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.interfaces.amba import AxiStream
 from hdl_toolkit.synthetisator.rtlLevel.codeOp import Switch
 from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
@@ -18,7 +18,7 @@ class AxiSMux(Unit):
         outputs = evalParam(self.OUTPUTS).val
         
         with self._asExtern():
-            self.sel = Ap_none(dtype=vecT(outputs.bit_length()))
+            self.sel = Signal(dtype=vecT(outputs.bit_length()))
             self.dataIn = AxiStream()
             self.dataOut = AxiStream(multipliedBy=hInt(outputs))
             self._shareAllParams()
@@ -51,7 +51,7 @@ class AxiSMux(Unit):
 #            self.dataOut0 = AxiStream()
 #            self.dataOut1 = AxiStream()
 #            self.dataOut2 = AxiStream()
-#            self.sel = Ap_none(dtype=vecT(2))
+#            self.sel = Signal(dtype=vecT(2))
 #    
 #        self.mux = AxiStreamMux()
 #    

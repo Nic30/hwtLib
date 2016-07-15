@@ -1,11 +1,11 @@
 from hdl_toolkit.intfLvl import connect, Unit
-from hdl_toolkit.interfaces.std import Ap_none
+from hdl_toolkit.interfaces.std import Signal
 
 class SimpleWithNonDirectIntConncetion(Unit):
     def _declr(self):
-        self.a = Ap_none(isExtern=True)
-        self.b = Ap_none()
-        self.c = Ap_none(isExtern=True)
+        self.a = Signal(isExtern=True)
+        self.b = Signal()
+        self.c = Signal(isExtern=True)
         
     def _impl(self):
         connect(self.a, self.b)

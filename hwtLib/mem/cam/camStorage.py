@@ -1,6 +1,6 @@
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.synthetisator.param import Param, evalParam
-from hdl_toolkit.interfaces.std import Ap_clk,Ap_rd, s
+from hdl_toolkit.interfaces.std import Clk, RdSynced, s
 from hdl_toolkit.synthetisator.interfaceLevel.interface import Interface
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, vec
 from hwtLib.mem.lutRam import RAM64X1S
@@ -30,10 +30,10 @@ class CamStorage(Unit):
     
     def _declr(self):
         with self._asExtern():
-            self.clk = Ap_clk()
+            self.clk = Clk()
             self.dIn = CamStorageInIntf()
             self._shareAllParams()
-            self.match = Ap_rd()
+            self.match = RdSynced()
         
             self.match._replaceParam("DATA_WIDTH", self.ROWS)
         

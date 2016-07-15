@@ -7,8 +7,8 @@ from hdl_toolkit.interfaces.amba import AxiStream
 from hdl_toolkit.hdlObjects.typeShortcuts import vec, hBit, vecT
 from hdl_toolkit.bitmask import Bitmask
 from hdl_toolkit.synthetisator.rtlLevel.codeOp import If, Switch
-from hdl_toolkit.interfaces.std import Ap_clk, Ap_rst_n
 from hdl_toolkit.synthetisator.shortcuts import toRtl
+from hdl_toolkit.interfaces.utils import addClkRstn
 
 class AxiStreamStoredBurst(Unit):
     """
@@ -36,8 +36,7 @@ class AxiStreamStoredBurst(Unit):
     
     def _declr(self):
         with self._asExtern():
-            self.clk = Ap_clk()
-            self.rst_n = Ap_rst_n()
+            addClkRstn(self)
             self.dataOut = AxiStream()
             self._shareAllParams()
     

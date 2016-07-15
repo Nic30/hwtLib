@@ -3,7 +3,7 @@ import math
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.synthetisator.param import Param, evalParam
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
-from hdl_toolkit.interfaces.std import Ap_hs, Ap_vld
+from hdl_toolkit.interfaces.std import Handshaked, VldSynced
 from hdl_toolkit.hdlObjects.typeShortcuts import hInt, vec
 
 from hwtLib.mem.cam.interfaces import AddrDataHs
@@ -50,7 +50,7 @@ class CamSequential(Unit):
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
-            self.match = Ap_hs()
+            self.match = Handshaked()
             self.write = AddrDataHs()
 
         self.camWrite = CamWrite()
@@ -78,7 +78,7 @@ class CamSequential(Unit):
         
         self._shareAllParams()
     
-        self.out = Ap_vld(isExtern=True)
+        self.out = VldSynced(isExtern=True)
         self.out._replaceParam("DATA_WIDTH", self.ITEMS)
     
     def _impl(self):

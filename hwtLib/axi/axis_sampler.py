@@ -1,6 +1,6 @@
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.synthetisator.param import Param, evalParam
-from hdl_toolkit.interfaces.std import Ap_none, Ap_vld
+from hdl_toolkit.interfaces.std import Signal, VldSynced
 from hdl_toolkit.interfaces.amba import AxiStream
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit, vec
@@ -36,14 +36,14 @@ class AxiSSampler(Unit):
         with self._asExtern():
             addClkRstn(self)
             
-            self.req = Ap_none()
-            self.busy = Ap_none()
-            self.done = Ap_none()
+            self.req = Signal()
+            self.busy = Signal()
+            self.done = Signal()
             
             self.out = AxiStream()
             self.out._replaceParam('DATA_WIDTH', self.DATA_WIDTH)
             
-            self.sample = Ap_vld()
+            self.sample = VldSynced()
             self.sample._replaceParam('DATA_WIDTH', self.SAMPLE_WIDTH)
         
     def _impl(self):
@@ -137,7 +137,7 @@ class AxiSSampler(Unit):
             )
         ) 
 if __name__ == "__main__":
-    print(toRtl(AxisSampler)) 
+    print(toRtl(AxiSSampler)) 
         
         
         

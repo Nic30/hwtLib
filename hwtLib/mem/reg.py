@@ -1,17 +1,17 @@
 from hdl_toolkit.intfLvl import connect, Unit
 from hdl_toolkit.hdlObjects.types.defs import BIT
-from hdl_toolkit.interfaces.std import Ap_rst, Ap_none, Ap_clk
+from hdl_toolkit.interfaces.std import Rst, Signal, Clk
 
 c = connect
 
 class DReg(Unit):
     def _declr(self):
         with self._asExtern():
-            self.clk = Ap_clk()
-            self.rst = Ap_rst()
+            self.clk = Clk()
+            self.rst = Rst()
     
-            self.din = Ap_none(dtype=BIT)
-            self.dout = Ap_none(dtype=BIT)
+            self.din = Signal(dtype=BIT)
+            self.dout = Signal(dtype=BIT)
         
         
     def _impl(self):

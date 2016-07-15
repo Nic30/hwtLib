@@ -1,4 +1,4 @@
-from hdl_toolkit.interfaces.std import Ap_vld
+from hdl_toolkit.interfaces.std import VldSynced
 from hdl_toolkit.hdlObjects.typeShortcuts import hInt
 from hdl_toolkit.intfLvl import connect, Unit, Param
 
@@ -7,8 +7,8 @@ class SimpleSubunit(Unit):
         self.DATA_WIDTH = Param(8)
         
     def _declr(self):
-        self.c = Ap_vld(isExtern=True)
-        self.d = Ap_vld(isExtern=True)
+        self.c = VldSynced(isExtern=True)
+        self.d = VldSynced(isExtern=True)
         self._shareAllParams()
         
     def _impl(self):
@@ -20,8 +20,8 @@ class InterfaceArraySample(Unit):
         
     def _declr(self):
         LEN = hInt(2)
-        self.a = Ap_vld(multipliedBy=LEN, isExtern=True)
-        self.b = Ap_vld(multipliedBy=LEN, isExtern=True)
+        self.a = VldSynced(multipliedBy=LEN, isExtern=True)
+        self.b = VldSynced(multipliedBy=LEN, isExtern=True)
     
         self.u0 = SimpleSubunit() 
         self.u1 = SimpleSubunit()

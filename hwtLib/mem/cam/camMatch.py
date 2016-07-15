@@ -1,7 +1,7 @@
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.synthetisator.param import Param, evalParam
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.interfaces.std import Ap_hs, Ap_vld
+from hdl_toolkit.interfaces.std import Handshaked, VldSynced
 from hdl_toolkit.synthetisator.rtlLevel.codeOp import If
 from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
@@ -25,10 +25,10 @@ class CamMatch(Unit):
             self.storage = DataWithMatch()
             self._shareAllParams()
             
-            self.dIn = Ap_hs()
+            self.dIn = Handshaked()
             self.dIn.DATA_WIDTH.set(self.COLUMNS * self.CELL_WIDTH)
             
-            self.outMatch = Ap_vld()
+            self.outMatch = VldSynced()
             self.outMatch.DATA_WIDTH.set(self.ROWS * self.CELL_HEIGHT)
             
             

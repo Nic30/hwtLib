@@ -1,5 +1,5 @@
 from hdl_toolkit.intfLvl import connect, Param, Unit
-from hdl_toolkit.interfaces.std import Ap_none
+from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 
 
@@ -10,8 +10,8 @@ class SimpleUnit3(Unit):
         
     def _declr(self):
         dt = vecT(self.DATA_WIDTH)
-        self.a = Ap_none(dtype=dt, isExtern=True)
-        self.b = Ap_none(dtype=dt, isExtern=True)
+        self.a = Signal(dtype=dt, isExtern=True)
+        self.b = Signal(dtype=dt, isExtern=True)
         
     def _impl(self):
         connect(self.a, self.b)

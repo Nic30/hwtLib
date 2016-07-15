@@ -1,5 +1,5 @@
 from hdl_toolkit.intfLvl import Param, Unit, connect
-from hdl_toolkit.interfaces.std import Ap_none
+from hdl_toolkit.interfaces.std import Signal
 from hwtLib.mem.ram import Ram_dp
 from hdl_toolkit.synthetisator.shortcuts import toRtl
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
@@ -12,13 +12,13 @@ class GroupOfBlockrams(Unit):
         self.DATA_WIDTH = Param(64)
     
     def _declr(self):
-        extData = lambda : Ap_none(dtype=vecT(self.DATA_WIDTH), isExtern=True)
+        extData = lambda : Signal(dtype=vecT(self.DATA_WIDTH), isExtern=True)
         self.bramR = Ram_dp()
         self.bramW = Ram_dp()
         
-        self.ap_clk = Ap_none(isExtern=True)
-        self.we = Ap_none(isExtern=True)
-        self.addr = Ap_none(dtype=vecT(self.ADDR_WIDTH), isExtern=True)
+        self.ap_clk = Signal(isExtern=True)
+        self.we = Signal(isExtern=True)
+        self.addr = Signal(dtype=vecT(self.ADDR_WIDTH), isExtern=True)
         self.in_w_a = extData()
         self.in_w_b = extData()
         self.in_r_a = extData()

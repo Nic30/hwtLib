@@ -1,9 +1,10 @@
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.synthetisator.param import Param
-from hdl_toolkit.interfaces.std import Signal, Ap_clk, Ap_rst_n
+from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
 from hdl_toolkit.synthetisator.rtlLevel.codeOp import If
+from hdl_toolkit.interfaces.utils import addClkRstn
 
 
 class Cntr(Unit):
@@ -12,8 +13,7 @@ class Cntr(Unit):
         
     def _declr(self):
         with self._asExtern():
-            self.clk = Ap_clk()
-            self.rst_n = Ap_rst_n()
+            addClkRstn(self)
             self.en = Signal()
             self.val = Signal(dtype=vecT(self.DATA_WIDTH))
         

@@ -1,12 +1,12 @@
 from hdl_toolkit.intfLvl import connect, Unit
-from hdl_toolkit.interfaces.std import Ap_none
+from hdl_toolkit.interfaces.std import Signal
 from hwtLib.samples.iLvl.simple import SimpleUnit
 
 class SimpleSubunit(Unit):
     def _declr(self):
         self.subunit0 = SimpleUnit() 
-        self.a = Ap_none(isExtern=True)
-        self.b = Ap_none(isExtern=True)
+        self.a = Signal(isExtern=True)
+        self.b = Signal(isExtern=True)
         
     def _impl(self):
         u = self.subunit0

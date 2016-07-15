@@ -1,6 +1,6 @@
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.interfaces.std import Ap_none
+from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
 from hdl_toolkit.synthetisator.rtlLevel.codeOp import If
@@ -10,13 +10,13 @@ class TwoCntrs(Unit):
         with self._asExtern():
             addClkRstn(self)
             
-            self.a_en = Ap_none()
-            self.b_en = Ap_none()
+            self.a_en = Signal()
+            self.b_en = Signal()
             
-            self.eq = Ap_none()
-            self.ne = Ap_none()
-            self.lt = Ap_none()
-            self.gt = Ap_none()
+            self.eq = Signal()
+            self.ne = Signal()
+            self.lt = Signal()
+            self.gt = Signal()
         
 
     def _impl(self):

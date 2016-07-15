@@ -1,6 +1,6 @@
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.interfaces.std import Ap_none
+from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
 from hdl_toolkit.synthetisator.rtlLevel.codeOp import If
@@ -15,7 +15,7 @@ class SelfRefCntr(Unit):
         with self._asExtern():
             addClkRstn(self)
             
-            self.dout = Ap_none(dtype=self.dt)
+            self.dout = Signal(dtype=self.dt)
             
     def _impl(self):
         cntr = self._reg("cntr", self.dt, defVal=0)

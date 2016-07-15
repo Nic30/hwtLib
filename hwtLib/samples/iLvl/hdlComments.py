@@ -1,5 +1,5 @@
 from hdl_toolkit.intfLvl import connect, Unit
-from hdl_toolkit.interfaces.std import Ap_none
+from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.synthetisator.shortcuts import toRtl
 
 
@@ -11,8 +11,8 @@ class SimpleComentedUnit(Unit):
     """
     
     def _declr(self):
-        self.a = Ap_none(isExtern=True)
-        self.b = Ap_none(isExtern=True)
+        self.a = Signal(isExtern=True)
+        self.b = Signal(isExtern=True)
     
     def _impl(self):
         connect(self.a, self.b)

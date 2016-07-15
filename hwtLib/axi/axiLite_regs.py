@@ -1,12 +1,13 @@
 from hdl_toolkit.intfLvl import Unit
 from hdl_toolkit.synthetisator.rtlLevel.signal.utils import c
 from hdl_toolkit.interfaces.amba import AxiLite, RESP_OKAY
-from hdl_toolkit.interfaces.std import Ap_clk, Ap_none, Ap_rst_n, Ap_vld
+from hdl_toolkit.interfaces.std import Signal, VldSynced
 from hdl_toolkit.synthetisator.rtlLevel.codeOp import If, Switch
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.synthetisator.shortcuts import toRtl
 from hdl_toolkit.hdlObjects.typeShortcuts import vec, vecT
 from hdl_toolkit.synthetisator.param import Param, evalParam
+from hdl_toolkit.interfaces.utils import addClkRstn
 
 class AxiLiteRegs(Unit):
     """
@@ -29,16 +30,15 @@ class AxiLiteRegs(Unit):
     def _declr(self):
         assert len(self.ADRESS_MAP) > 0
         with self._asExtern():
-            self.clk = Ap_clk()
-            self.rst_n = Ap_rst_n()
+            addClkRstn(self)
             
             self.axi = AxiLite()
             
             for _, name in self.ADRESS_MAP:
-                out = Ap_vld()
+                out = VldSynced()
                 setattr(self, name + self.OUT_SUFFIX, out)
                 
-                _in = Ap_none(dtype=vecT(self.DATA_WIDTH))
+                _in = Signal(dtype=vecT(self.DATA_WIDTH))
                 setattr(self, name + self.IN_SUFFIX, _in)
 
         self._shareAllParams()

@@ -2,7 +2,7 @@ from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.synthetisator.rtlLevel.signal.utils import c
 from hdl_toolkit.synthetisator.param import Param
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.interfaces.std import Ap_none
+from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.synthetisator.rtlLevel.codeOp import If
 
@@ -19,13 +19,13 @@ class FifoLogic(Unit):
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
-            self.dIn_wait = Ap_none()
-            self.dIn_en = Ap_none()
+            self.dIn_wait = Signal()
+            self.dIn_en = Signal()
             
-            self.dOut_wait = Ap_none()
-            self.dOut_en = Ap_none()
+            self.dOut_wait = Signal()
+            self.dOut_en = Signal()
             
-            self.looped = Ap_none()
+            self.looped = Signal()
     
     def _impl(self):
         index_t = vecT(log2ceil(self.DEPTH), False)

@@ -8,7 +8,7 @@ from hdl_toolkit.synthetisator.shortcuts import toRtl
 from hdl_toolkit.serializer.exceptions import SerializerException
 from hdl_toolkit.synthetisator.interfaceLevel.emptyUnit import EmptyUnit, setOut
 from hdl_toolkit.synthetisator.param import Param
-from hdl_toolkit.interfaces.std import Ap_none
+from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.interfaces.ambaOthers import FullDuplexAxiStream 
 from hdl_toolkit.interfaces.amba import AxiStream
 from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
@@ -63,8 +63,8 @@ class SubunitsSynthesisTC(BaseSynthetisatorTC):
         class InternUnit(Unit):
             def _declr(self):
                 dt = vecT(64)
-                self.a = Ap_none(dtype=dt, isExtern=True)
-                self.b = Ap_none(dtype=dt, isExtern=True)
+                self.a = Signal(dtype=dt, isExtern=True)
+                self.b = Signal(dtype=dt, isExtern=True)
             
             def _impl(self):
                 c(self.a, self.b)
@@ -73,8 +73,8 @@ class SubunitsSynthesisTC(BaseSynthetisatorTC):
         class OuterUnit(Unit):
             def _declr(self):
                 dt = vecT(32)
-                self.a = Ap_none(dtype=dt, isExtern=True)
-                self.b = Ap_none(dtype=dt, isExtern=True)
+                self.a = Signal(dtype=dt, isExtern=True)
+                self.b = Signal(dtype=dt, isExtern=True)
                 self.iu = InternUnit()
 
             def _impl(self):

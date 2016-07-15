@@ -1,6 +1,6 @@
 from hdl_toolkit.intfLvl import connect, Unit
 from hdl_toolkit.hdlObjects.types.defs import BIT
-from hdl_toolkit.interfaces.std import Ap_rst, Ap_none, Ap_clk
+from hdl_toolkit.interfaces.std import Rst, Signal, Clk
 
 c = connect
 
@@ -15,13 +15,13 @@ class ClkSynchronizer(Unit):
         
     def _declr(self):
         with self._asExtern():
-            self.rst = Ap_rst()
+            self.rst = Rst()
             
-            self.inData = Ap_none(dtype=self.DATA_TYP)
-            self.inClk = Ap_clk()
+            self.inData = Signal(dtype=self.DATA_TYP)
+            self.inClk = Clk()
             
-            self.outData = Ap_none(dtype=self.DATA_TYP)
-            self.outClk = Ap_clk()
+            self.outData = Signal(dtype=self.DATA_TYP)
+            self.outClk = Clk()
         
         
     def _impl(self):

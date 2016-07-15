@@ -9,8 +9,8 @@ from hdl_toolkit.synthetisator.interfaceLevel.unitUtils import synthesised
 from hdl_toolkit.synthetisator.interfaceLevel.unitFromHdl import UnitFromHdl
 from hdl_toolkit.synthetisator.param import Param
 from hdl_toolkit.interfaces.amba import AxiLite
-from hdl_toolkit.interfaces.std import Ap_clk, \
-    Ap_rst_n, BramPort, Ap_vld
+from hdl_toolkit.interfaces.std import Clk, \
+    Rst_n, BramPort, VldSynced
     
 from hwtLib.tests.synthetisator.interfaceLevel.baseSynthetisatorTC import BaseSynthetisatorTC
 
@@ -72,12 +72,12 @@ class VhdlCodesignTC(BaseSynthetisatorTC):
     def test_ClkAndRstExtraction(self):
         class ClkRstEnt(UnitFromHdl):
             _hdlSources = ILVL_VHDL + "clkRstEnt.vhd"
-            _intfClasses = [Ap_clk, Ap_rst_n]
+            _intfClasses = [Clk, Rst_n]
         u = ClkRstEnt()
         u._loadDeclarations()
         
-        self.assertIsInstance(u.ARESETN, Ap_rst_n)
-        self.assertIsInstance(u.ACLK, Ap_clk)
+        self.assertIsInstance(u.ARESETN, Rst_n)
+        self.assertIsInstance(u.ACLK, Clk)
 
     def test_positiveAndNatural(self):
         class PositiveAndNatural(UnitFromHdl):
@@ -93,7 +93,7 @@ class VhdlCodesignTC(BaseSynthetisatorTC):
     def test_axiLiteSlave2(self):
         class AxiLiteSlave2(UnitFromHdl):
             _hdlSources = ILVL_VHDL + "axiLite_basic_slave2.vhd"
-            _intfClasses = [AxiLite, Ap_clk, Ap_rst_n]
+            _intfClasses = [AxiLite, Clk, Rst_n]
         u = AxiLiteSlave2()
         u._loadDeclarations()
         
@@ -135,7 +135,7 @@ class VhdlCodesignTC(BaseSynthetisatorTC):
 
     def test_axiPortDirections(self):
         from hwtLib.samples.vhdlCodesign.axiLiteBasicSlave import AxiLiteBasicSlave
-        a = AxiLiteBasicSlave()  # (intfClasses=[AxiLite_xil, Ap_clk, Ap_rst_n])
+        a = AxiLiteBasicSlave()  # (intfClasses=[AxiLite_xil, Clk, Rst_n])
         a._loadDeclarations()
         
         self.assertIsS(a.S_AXI)
@@ -210,7 +210,7 @@ class VhdlCodesignTC(BaseSynthetisatorTC):
         u = Ap_vldWithParam()
         u._loadDeclarations()
         
-        self.assertIsInstance(u.data, Ap_vld)
+        self.assertIsInstance(u.data, VldSynced)
         # print("Ap_vldWithParam.data_width %d" % id(Ap_vldWithParam.data_width))
         # print("Ap_vldWithParam.data.DATA_WIDTH %d" % id(Ap_vldWithParam.data.DATA_WIDTH))
         # print("u.data_width %d" % id(u.data_width))
@@ -288,7 +288,7 @@ class VhdlCodesignTC(BaseSynthetisatorTC):
     def test_interfaceArrayExtraction(self):
         class InterfaceArraySample(UnitFromHdl):
             _hdlSources = ILVL_VHDL + "interfaceArraySample.vhd"  
-            _intfClasses=[Ap_vld]      
+            _intfClasses=[VldSynced]      
         u = InterfaceArraySample()
         u._loadDeclarations()
         

@@ -1,5 +1,5 @@
 from hdl_toolkit.intfLvl import connect, Unit, Param
-from hdl_toolkit.interfaces.std import Ap_vld
+from hdl_toolkit.interfaces.std import VldSynced
 from hdl_toolkit.hdlObjects.typeShortcuts import hInt
 
 
@@ -9,8 +9,8 @@ class InterfaceArraySample(Unit):
         self.LEN = hInt(3)
     
     def _declr(self):
-        self.a = Ap_vld(multipliedBy=self.LEN, isExtern=True)
-        self.b = Ap_vld(multipliedBy=self.LEN, isExtern=True)
+        self.a = VldSynced(multipliedBy=self.LEN, isExtern=True)
+        self.b = VldSynced(multipliedBy=self.LEN, isExtern=True)
         self._shareAllParams()
     
     def _impl(self):

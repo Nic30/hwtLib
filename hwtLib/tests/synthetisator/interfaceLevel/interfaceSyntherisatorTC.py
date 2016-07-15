@@ -1,7 +1,7 @@
 import unittest
 from python_toolkit.arrayQuery import where
 from hdl_toolkit.hdlObjects.specialValues import DIRECTION, INTF_DIRECTION
-from hdl_toolkit.interfaces.std import Ap_none
+from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.interfaces.amba import Axi4
 from hdl_toolkit.interfaces.ambaOthers import FullDuplexAxiStream 
 from hdl_toolkit.synthetisator.interfaceLevel.emptyUnit import EmptyUnit
@@ -140,8 +140,8 @@ class InterfaceSyntherisatorTC(BaseSynthetisatorTC):
     def test_EmptyUnit(self):
         class Eu(EmptyUnit):
             def _declr(self):
-                self.a = Ap_none(isExtern=True)
-                self.b = Ap_none(isExtern=True)
+                self.a = Signal(isExtern=True)
+                self.b = Signal(isExtern=True)
             def _impl(self):
                 setOut(self.b)
                 

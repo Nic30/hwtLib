@@ -1,7 +1,7 @@
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.synthetisator.param import Param
 from hdl_toolkit.hdlObjects.typeShortcuts import hBit, vec, vecT
-from hdl_toolkit.interfaces.std import Ap_none
+from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect, Concat
 from hdl_toolkit.synthetisator.rtlLevel.codeOp import If
 
@@ -15,17 +15,17 @@ def mkLutRamCls(DATA_WIDTH):
 	
 		def _declr(self):
 			with self._asExtern():
-				self.o = Ap_none()
+				self.o = Signal()
 		
-				self.a0 = Ap_none()
-				self.a1 = Ap_none()
-				self.a2 = Ap_none()
-				self.a3 = Ap_none()
-				self.a4 = Ap_none()
-				self.a5 = Ap_none()
-				self.d	 = Ap_none()
-				self.wclk = Ap_none()
-				self.we = Ap_none()
+				self.a0 = Signal()
+				self.a1 = Signal()
+				self.a2 = Signal()
+				self.a3 = Signal()
+				self.a4 = Signal()
+				self.a5 = Signal()
+				self.d	 = Signal()
+				self.wclk = Signal()
+				self.we = Signal()
 			
 			
 		def _impl(self):
