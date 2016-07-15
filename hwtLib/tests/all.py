@@ -21,6 +21,7 @@ from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.tests.statements import StatementsTC
 
 from hwtLib.samples.iLvl.twoCntrs_test import TwoCntrsTC
+from hwtLib.samples.iLvl.cntr_test import CntrTC
 
 if __name__ == "__main__":
     def testSuiteFromTCs(*tcs):
@@ -43,6 +44,7 @@ if __name__ == "__main__":
         StatementTreesTC,
         StatementsTC,
         TwoCntrsTC,
+        CntrTC,
     )
     runner = TextTestRunner(verbosity=2)
     runner.run(suite)
