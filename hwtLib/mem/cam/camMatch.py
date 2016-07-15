@@ -25,8 +25,8 @@ class CamMatch(Unit):
             self.storage = DataWithMatch()
             self._shareAllParams()
             
-            self.dIn = Handshaked()
-            self.dIn.DATA_WIDTH.set(self.COLUMNS * self.CELL_WIDTH)
+            self.din = Handshaked()
+            self.din.DATA_WIDTH.set(self.COLUMNS * self.CELL_WIDTH)
             
             self.outMatch = VldSynced()
             self.outMatch.DATA_WIDTH.set(self.ROWS * self.CELL_HEIGHT)
@@ -36,19 +36,19 @@ class CamMatch(Unit):
             self.match_enable_decoder.DATA_WIDTH.set(self.CELL_HEIGHT)
     
     def _impl(self):
-        dIn = self.dIn
+        din = self.din
         storage = self.storage
         CELL_HEIGHT = self.CELL_HEIGHT
         CELL_WIDTH = self.CELL_WIDTH
                 
         inreg_we = self._sig("inreg_we")
         match_we = self._sig("match_we", vecT(CELL_HEIGHT))
-        data_reg = self._reg("data_reg", self.dIn.data._dtype)
+        data_reg = self._reg("data_reg", self.din.data._dtype)
         out_rdy_register = self._reg("out_rdy_register", defVal=0)
         
         # input_regs
         If(inreg_we,
-           c(dIn.data, data_reg)
+           c(din.data, data_reg)
            ,
            c(data_reg, data_reg)
         )
@@ -75,8 +75,8 @@ class CamMatch(Unit):
             input_rdy = (~counter_busy | counter_last) & ~me_reg
         else:
             raise NotImplementedError()
-        c(input_rdy, dIn.rd)
-        c(dIn.vld & input_rdy, inreg_we)
+        c(input_rdy, din.rd)
+        c(din.vld & input_rdy, inreg_we)
         
         
         # cam_match_gen :
@@ -101,9 +101,9 @@ class CamMatch(Unit):
                 )
                 
         med = self.match_enable_decoder
-        c(counter, med.dIn)
+        c(counter, med.din)
         c(counter_ce, med.en)
-        c(med.dOut, match_we)
+        c(med.dout, match_we)
         
         # out_rdy_register
         orr = out_rdy_register

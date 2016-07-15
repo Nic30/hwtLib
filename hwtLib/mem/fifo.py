@@ -15,8 +15,8 @@ class Fifo(Unit):
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
-            self.dIn = FifoWriter()
-            self.dOut = FifoReader()
+            self.din = FifoWriter()
+            self.dout = FifoReader()
             self._shareAllParams()
     
     def _impl(self):
@@ -30,16 +30,16 @@ class Fifo(Unit):
         
         DEPTH = self.DEPTH
         
-        dOut = self.dOut
-        dIn = self.dIn
+        dout = self.dout
+        din = self.din
 
         MAX_DEPTH = DEPTH -1
         # [TODO] forgot head, tail clock enable 
                 
-        rd_en = dOut.en & (looped | (head != tail))
+        rd_en = dout.en & (looped | (head != tail))
         If(self.clk._onRisingEdge() & rd_en,
            # Update data output
-            c(mem[tail], dOut.data) 
+            c(mem[tail], dout.data) 
         ) 
         # Update Tail pointer as needed
         If(rd_en,
@@ -52,10 +52,10 @@ class Fifo(Unit):
             c(tail, tail)
         )
         
-        wr_en = dIn.en & (~looped | (head != tail))
+        wr_en = din.en & (~looped | (head != tail))
         If(self.clk._onRisingEdge() & wr_en,
             # Write Data to Memory
-            c(dIn.data, mem[head])
+            c(din.data, mem[head])
         )                 
         # Increment Head pointer as needed
         If(wr_en,
@@ -80,15 +80,15 @@ class Fifo(Unit):
         # Update Empty and Full flags
         If(head._eq(tail),
             If(looped,
-                c(1, dIn.wait) +
-                c(0, dOut.wait)
+                c(1, din.wait) +
+                c(0, dout.wait)
                 ,
-                c(1, dOut.wait) +
-                c(0, dIn.wait)
+                c(1, dout.wait) +
+                c(0, din.wait)
             )
             ,
-            c(0, dIn.wait) +
-            c(0, dOut.wait)
+            c(0, din.wait) +
+            c(0, dout.wait)
         )
 
 if __name__ == "__main__":

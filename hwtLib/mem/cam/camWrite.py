@@ -35,18 +35,18 @@ class CamWrite(Unit):
         with self._asExtern():
             addClkRstn(self)
             
-            self.dIn = AddrDataHs()
-            self.dIn.DATA_WIDTH.set(self.COLUMNS * self.CELL_WIDTH)
-            self.dIn.ADDR_WIDTH.set(log2ceil(self.ROWS*self.CELL_HEIGHT))
+            self.din = AddrDataHs()
+            self.din.DATA_WIDTH.set(self.COLUMNS * self.CELL_WIDTH)
+            self.din.ADDR_WIDTH.set(log2ceil(self.ROWS*self.CELL_HEIGHT))
             
-            self.dOut = CamWritterPort()
-            self.dOut._updateParamsFrom(self)
+            self.dout = CamWritterPort()
+            self.dout._updateParamsFrom(self)
         self.write_enable_decoder = DecEn()
         self.write_enable_decoder.DATA_WIDTH.set(self.ROWS)
         
     def _impl(self):
-        dIn = self.dIn
-        dOut = self.dOut
+        dIn = self.din
+        dout = self.dout
         CELL_WIDTH = self.CELL_WIDTH
         COLUMNS = self.COLUMNS
         r = self._reg
@@ -63,8 +63,8 @@ class CamWrite(Unit):
 
         c(wr_reg | counter_busy, counter_ce)
         input_rdy = (~counter_busy | counter_last) & ~wr_reg;
-        inreg_we = self.dIn.vld & input_rdy   
-        c(input_rdy, self.dIn.rd)
+        inreg_we = self.din.vld & input_rdy   
+        c(input_rdy, self.din.rd)
 
         # input_regs
         If(inreg_we, 
@@ -96,17 +96,17 @@ class CamWrite(Unit):
 
         # cam_wr_gen
         for i in range(evalParam(COLUMNS).val):
-            c(data_addr, dOut.data[(i+1)*6:i*6])
+            c(data_addr, dout.data[(i+1)*6:i*6])
             masked_counter =  counter & mask_reg[(CELL_WIDTH*(i+1)):(CELL_WIDTH*i)]
             dr = data_reg[CELL_WIDTH*(i+1):CELL_WIDTH*i]
-            c(masked_counter._eq(dr), dOut.di[i])
+            c(masked_counter._eq(dr), dout.di[i])
 
         wec = self.write_enable_decoder
-        c(row_addr, wec.dIn)
+        c(row_addr, wec.din)
         c(counter_ce, wec.en)
-        c(wec.dOut, dOut.we)
+        c(wec.dout, dout.we)
         
-        c(counter_ce, dOut.vld)
+        c(counter_ce, dout.vld)
         # OUT_WR <= counter_ce;
 
         

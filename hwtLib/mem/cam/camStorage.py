@@ -31,7 +31,7 @@ class CamStorage(Unit):
     def _declr(self):
         with self._asExtern():
             self.clk = Clk()
-            self.dIn = CamStorageInIntf()
+            self.din = CamStorageInIntf()
             self._shareAllParams()
             self.match = RdSynced()
         
@@ -49,7 +49,7 @@ class CamStorage(Unit):
     def _impl(self):
         rows_t = vecT(self.ROWS)
         carry_t = vecT(self.COLUMNS+1)
-        dIn = self.dIn
+        din = self.din
         #cam_storage_gen :
         for r in range(evalParam(self.ROWS).val):
             match_carry = self._sig("match_carry%d" % r, carry_t)
@@ -61,16 +61,16 @@ class CamStorage(Unit):
 
                 con(self.clk, ram.wclk)
                 
-                con(dIn.data[base+0], ram.a0)
-                con(dIn.data[base+1], ram.a1)
-                con(dIn.data[base+2], ram.a2)
-                con(dIn.data[base+3], ram.a3)
-                con(dIn.data[base+4], ram.a4)
-                con(dIn.data[base+5], ram.a5)
+                con(din.data[base+0], ram.a0)
+                con(din.data[base+1], ram.a1)
+                con(din.data[base+2], ram.a2)
+                con(din.data[base+3], ram.a3)
+                con(din.data[base+4], ram.a4)
+                con(din.data[base+5], ram.a5)
                 
                 con(ram.o,     match_base[r])
-                con(dIn.di[c],         ram.d)
-                con(dIn.we[r],        ram.we)
+                con(din.di[c],         ram.d)
+                con(din.we[r],        ram.we)
                 
                 # Carry MUX
                 nextCarry = match_carry[c+1]

@@ -1,1 +1,1 @@
-from hwtLib.mem.cam.camSequential import CamSequential 
+from hwtLib.mem.cam.camFromLUT import CamFromLUT 

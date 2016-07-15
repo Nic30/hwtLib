@@ -14,22 +14,22 @@ class DecEn(Unit):
     def _declr(self):
         
         with self._asExtern():
-            self.dIn= s(dtype=vecT(log2ceil(self.DATA_WIDTH)))
+            self.din= s(dtype=vecT(log2ceil(self.DATA_WIDTH)))
             self.en = s()
-            self.dOut = s(dtype=vecT(self.DATA_WIDTH))
+            self.dout = s(dtype=vecT(self.DATA_WIDTH))
 
     def _impl(self):
         en = self.en
-        dIn = self.dIn
+        dIn = self.din
         
         WIDTH = self.DATA_WIDTH
         #empty_gen
         if evalParam(WIDTH).val == 1:
-            c(en, self.dOut[0])
+            c(en, self.dout[0])
         else:
             # full_gen
             for i in range(evalParam(WIDTH).val):
-                c(dIn._eq(i) & en, self.dOut[i])
+                c(dIn._eq(i) & en, self.dout[i])
 
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl

@@ -29,7 +29,10 @@ def div_up(sig, divider):
     v = math.ceil(v / divider)
     return hInt(int(v)) 
 
-class CamSequential(Unit):
+class CamFromLUT(Unit):
+    """
+    CAM where data are store in LUT-RAM
+    """
     def _config(self):
         self.DATA_WIDTH = Param(36)
         self.ITEMS = Param(16)
@@ -117,9 +120,9 @@ class CamSequential(Unit):
         
         # match_i
         m = self.camMatch
-        c(mdata_padded, m.dIn.data)
-        c(match_req, m.dIn.vld)
-        c(m.dIn.rd, match_ready_base)
+        c(mdata_padded, m.din.data)
+        c(match_req, m.din.vld)
+        c(m.din.rd, match_ready_base)
         
         c(m.outMatch.data[self.ITEMS:0], self.out.data)
         c(m.outMatch.vld, self.out.vld)
@@ -129,30 +132,30 @@ class CamSequential(Unit):
         
         # write_i
         w = self.camWrite
-        c(wdata_padded, w.dIn.data)
-        c(mask_padded, w.dIn.mask)
-        c(addr_padded, w.dIn.addr)
-        c(write_req, w.dIn.vld)
-        c(w.dIn.rd, write_ready_base)
-        storage_wdata = w.dOut.data
-        storage_di = w.dOut.di
-        storage_we = w.dOut.we          
+        c(wdata_padded, w.din.data)
+        c(mask_padded, w.din.mask)
+        c(addr_padded, w.din.addr)
+        c(write_req, w.din.vld)
+        c(w.din.rd, write_ready_base)
+        storage_wdata = w.dout.data
+        storage_di = w.dout.di
+        storage_we = w.dout.we          
         
         # storage_i
         s = self.camStorage
         If(storage_me,
-           c(storage_mdata, s.dIn.data)
+           c(storage_mdata, s.din.data)
            ,
-           c(storage_wdata, s.dIn.data)
+           c(storage_wdata, s.din.data)
         )
-        c(storage_di, s.dIn.di)
-        c(storage_we, s.dIn.we)
+        c(storage_di, s.din.di)
+        c(storage_we, s.din.we)
         c(storage_me, s.match.rd)
         c(s.match.data, m.storage.match)
         
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl
-    with open("/home/nic30/Documents/vivado/scriptTest/scriptTest.srcs/sources_1/new/top.vhd", "w") as f:
-        s= toRtl(CamSequential)
-        f.write(s)
-        print(s)
+    #with open("/home/nic30/Documents/vivado/scriptTest/scriptTest.srcs/sources_1/new/top.vhd", "w") as f:
+    s= toRtl(CamFromLUT)
+    #f.write(s)
+    print(s)

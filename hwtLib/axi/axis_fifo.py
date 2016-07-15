@@ -26,20 +26,20 @@ class AxiSFifo(Unit):
         
     def _declr(self):
         addClkRstn(self)
-        self.dataIn = self.hsIntCls(isExtern=True)
-        self.dataOut = self.hsIntCls(isExtern=True)
+        self.din = self.hsIntCls(isExtern=True)
+        self.dout = self.hsIntCls(isExtern=True)
         
         self._shareAllParams()
 
         if evalParam(self.DEPTH).val > 0:
             self.fifo = Fifo()
-            DW = packedWidth(self.dataIn) - 2  # 2 for control (valid, ready)
+            DW = packedWidth(self.din) - 2  # 2 for control (valid, ready)
             self.fifo.DATA_WIDTH.set(DW)
             self.fifo.DEPTH.set(self.DEPTH)
         
     def _impl(self):
-        din = self.dataIn
-        dout = self.dataOut
+        din = self.din
+        dout = self.dout
         d = evalParam(self.DEPTH).val
         if d == 0:
             c(din, dout)
@@ -48,12 +48,12 @@ class AxiSFifo(Unit):
             fifo = self.fifo
             
             # to fifo
-            c(~fifo.data_in.wait, self.dataIn.ready)
-            c(packed(din, exclude=[din.valid, din.ready]), fifo.data_in.data)
+            c(~fifo.din.wait, din.ready)
+            c(packed(din, exclude=[din.valid, din.ready]), fifo.din.data)
             
             # from fifo
-            c(~fifo.data_out.wait, self.dataOut.valid)
-            connectUnpacked(fifo.data_out.data, self.dataOut, exclude=[dout.valid, dout.ready])
+            c(~fifo.dout.wait, dout.valid)
+            connectUnpacked(fifo.dout.data, dout, exclude=[dout.valid, dout.ready])
             
 if __name__ == "__main__":
     u = AxiSFifo(AxiStream_withoutSTRB)
