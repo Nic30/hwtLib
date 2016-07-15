@@ -1,5 +1,5 @@
 from hdl_toolkit.intfLvl import connect, Unit
-from hdl_toolkit.interfaces.std import Ap_none
+from hdl_toolkit.interfaces.std import Signal
 
 
 class SimpleUnit(Unit):
@@ -14,8 +14,8 @@ class SimpleUnit(Unit):
         with self._asExtern():
             # we use _asExtern() to mark interfaces "a" and "b" as external, this means they will be
             # interfaces of Entity and all other units can connect anything to these interfaces   
-            self.a = Sig()
-            self.b = Sig()
+            self.a = Signal()
+            self.b = Signal()
 
     def _impl(self):
         """
