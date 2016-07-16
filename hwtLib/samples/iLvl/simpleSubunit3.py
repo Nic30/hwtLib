@@ -1,5 +1,5 @@
 from hdl_toolkit.intfLvl import connect, Unit, Param
-from hwtLib.samples.iLvl.simple2 import SimpleUnit2
+from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream
 from hdl_toolkit.interfaces.amba import AxiStream
 
 class SimpleSubunit3(Unit):
@@ -7,10 +7,12 @@ class SimpleSubunit3(Unit):
         self.DATA_WIDTH = Param(128)
         
     def _declr(self):
-        self.subunit0 = SimpleUnit2() 
-        self.a0 = AxiStream(isExtern=True)
-        self.b0 = AxiStream(isExtern=True)
-        self._shareAllParams()
+        with self._paramsShared():
+            self.subunit0 = SimpleUnitAxiStream() 
+            
+            with self._asExtern():
+                self.a0 = AxiStream()
+                self.b0 = AxiStream()
         
     def _impl(self):
         u = self.subunit0

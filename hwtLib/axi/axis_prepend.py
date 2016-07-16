@@ -38,12 +38,10 @@ class AxisPrepend(Unit):
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
-            
-            self.base = self.axiIntfCls()
-            self.prep = self.axiIntfCls()
-            self.out = self.axiIntfCls()
-
-        self._shareAllParams()
+            with self._paramsShared():
+                self.base = self.axiIntfCls()
+                self.prep = self.axiIntfCls()
+                self.out = self.axiIntfCls()
         
     def _impl(self):
         stT = Enum('t_state', ["prep", "base"])

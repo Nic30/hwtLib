@@ -31,8 +31,8 @@ class CamStorage(Unit):
     def _declr(self):
         with self._asExtern():
             self.clk = Clk()
-            self.din = CamStorageInIntf()
-            self._shareAllParams()
+            with self._paramsShared():
+                self.din = CamStorageInIntf()
             self.match = RdSynced()
         
             self.match._replaceParam("DATA_WIDTH", self.ROWS)

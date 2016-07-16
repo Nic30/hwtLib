@@ -29,7 +29,7 @@ class AxiLiteRegs(Unit):
     
     def _declr(self):
         assert len(self.ADRESS_MAP) > 0
-        with self._asExtern():
+        with self._asExtern(), self._paramsShared():
             addClkRstn(self)
             
             self.axi = AxiLite()
@@ -41,7 +41,6 @@ class AxiLiteRegs(Unit):
                 _in = Signal(dtype=vecT(self.DATA_WIDTH))
                 setattr(self, name + self.IN_SUFFIX, _in)
 
-        self._shareAllParams()
     
     def readPart(self):
         sig = self._sig

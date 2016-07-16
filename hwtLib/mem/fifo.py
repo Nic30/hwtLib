@@ -15,9 +15,9 @@ class Fifo(Unit):
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
-            self.din = FifoWriter()
-            self.dout = FifoReader()
-            self._shareAllParams()
+            with self._paramsShared():
+                self.din = FifoWriter()
+                self.dout = FifoReader()
     
     def _impl(self):
         index_t = vecT(log2ceil(self.DEPTH), False)

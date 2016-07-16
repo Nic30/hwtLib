@@ -9,9 +9,9 @@ class AxiLiteSlaveContainer(Unit):
         self.DATA_WIDTH = Param(14)
         
     def _declr(self):
-        self.slv = AxiLiteBasicSlave()
-        self.axi = AxiLite(isExtern=True)
-        self._shareAllParams()
+        with self._paramsShared():
+            self.slv = AxiLiteBasicSlave()
+            self.axi = AxiLite(isExtern=True)
         self.slv.C_S_AXI_ADDR_WIDTH.set(self.ADDR_WIDTH)
         self.slv.C_S_AXI_DATA_WIDTH.set(self.DATA_WIDTH)
 

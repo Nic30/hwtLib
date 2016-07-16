@@ -6,18 +6,20 @@ from hdl_toolkit.synthetisator.interfaceLevel.emptyUnit import setOut
 
 class HeadFieldExtractor(EmptyUnit):
     def _declr(self):
-        self.din = AxiStream(isExtern=True)
-        self.dout = AxiStream(isExtern=True)
-        self.headers = AxiStream(isExtern=True)
+        with self._asExtern():
+            self.din = AxiStream()
+            self.dout = AxiStream()
+            self.headers = AxiStream()
     
     def _impl(self):
         setOut(self.dout, self.headers)
     
 class PatternMatch(EmptyUnit):
     def _declr(self):
-        self.din = AxiStream(isExtern=True)
-        self.match = AxiStream(isExtern=True)
-        self.cfg = AxiLite(isExtern=True)
+        with self._asExtern():
+            self.din = AxiStream()
+            self.match = AxiStream()
+            self.cfg = AxiLite()
     
     def _impl(self):
         setOut(self.match)
@@ -25,11 +27,12 @@ class PatternMatch(EmptyUnit):
     
 class Filter(EmptyUnit):
     def _declr(self):
-        self.headers = AxiStream(isExtern=True)
-        self.match = AxiStream(isExtern=True)
-        self.din = AxiStream(isExtern=True)
-        self.dout = AxiStream(isExtern=True)
-        self.cfg = AxiLite(isExtern=True)
+        with self._asExtern():
+            self.headers = AxiStream()
+            self.match = AxiStream()
+            self.din = AxiStream()
+            self.dout = AxiStream()
+            self.cfg = AxiLite()
     
     def _impl(self):
         setOut(self.match, self.dout)
@@ -37,17 +40,19 @@ class Filter(EmptyUnit):
 
 class AxiStreamFork(EmptyUnit):
     def _declr(self):
-        self.din = AxiStream(isExtern=True)
-        self.dout0 = AxiStream(isExtern=True)
-        self.dout1 = AxiStream(isExtern=True)
+        with self._asExtern():
+            self.din = AxiStream()
+            self.dout0 = AxiStream()
+            self.dout1 = AxiStream()
 
     def _impl(self):
         setOut(self.dout0, self.dout1)
 
 class Exporter(EmptyUnit):
     def _declr(self):
-        self.din = AxiStream(isExtern=True)
-        self.dout = AxiStream(isExtern=True)
+        with self._asExtern():
+            self.din = AxiStream()
+            self.dout = AxiStream()
     def _impl(self):
         setOut(self.dout)
 
@@ -60,17 +65,18 @@ class NetFilter(Unit):
         self.DATA_WIDTH = Param(64)
     
     def _declr(self):
-        self.din = AxiStream(isExtern=True)
-        self.export = AxiStream(isExtern=True)
-        #self.cfg = AxiLite(isExtern=True)
-
-        self.hfe = HeadFieldExtractor()
-        self.pm = PatternMatch()
-        self.filter = Filter()
-        self.exporter = Exporter()
-
-        self.forkHfe = AxiStreamFork()
-        self._shareAllParams()
+        with self._paramsShared():
+            with self._asExtern():
+                self.din = AxiStream()
+                self.export = AxiStream()
+                #self.cfg = AxiLite(isExtern=True)
+    
+            self.hfe = HeadFieldExtractor()
+            self.pm = PatternMatch()
+            self.filter = Filter()
+            self.exporter = Exporter()
+    
+            self.forkHfe = AxiStreamFork()
         
     def _impl(self):
         s = self

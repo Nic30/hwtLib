@@ -37,8 +37,8 @@ class AxiStreamStoredBurst(Unit):
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
-            self.dataOut = AxiStream()
-            self._shareAllParams()
+            with self._paramsShared():
+                self.dataOut = AxiStream()
     
     def _impl(self):
         self.DATA_WIDTH = evalParam(self.DATA_WIDTH).val

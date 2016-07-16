@@ -7,12 +7,13 @@ class UnitToUnitConnection(Unit):
         self.DATA_WIDTH = Param(8)
         
     def _declr(self):
-        self.a = AxiStream(isExtern=True)
-        self.b = AxiStream(isExtern=True)
+        with self._paramsShared():
+            with self._asExtern():
+                self.a = AxiStream()
+                self.b = AxiStream()
     
-        self.u0 = Simple2withNonDirectIntConnection()
-        self.u1 = Simple2withNonDirectIntConnection()
-        self._shareAllParams()
+            self.u0 = Simple2withNonDirectIntConnection()
+            self.u1 = Simple2withNonDirectIntConnection()
         
     def _impl(self):
         connect(self.a, self.u0.a)

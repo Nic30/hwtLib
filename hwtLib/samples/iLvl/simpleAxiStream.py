@@ -7,11 +7,10 @@ class SimpleUnitAxiStream(Unit):
         self.DATA_WIDTH = Param(8)
 
     def _declr(self):
-        with self._asExtern():
+        with self._asExtern(), self._paramsShared():
             self.a = AxiStream()
             self.b = AxiStream()
-        self._shareAllParams()
-        
+
     def _impl(self):
         connect(self.a, self.b)
 

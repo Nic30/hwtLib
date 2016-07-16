@@ -24,10 +24,9 @@ class AxiSReg(Unit):
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
-            self.dataIn = self.hsIntCls()
-            self.dataOut = self.hsIntCls()
-        
-        self._shareAllParams()
+            with self._paramsShared():
+                self.dataIn = self.hsIntCls()
+                self.dataOut = self.hsIntCls()
         
     def _impl(self):
         

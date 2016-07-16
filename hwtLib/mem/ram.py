@@ -18,8 +18,8 @@ class Ram_sp(Unit):
         self.ADDR_WIDTH = Param(4)
     
     def _declr(self):
-        self.a = BramPort(isExtern=True)
-        self._shareAllParams()
+        with self._paramsShared():
+            self.a = BramPort(isExtern=True)
     
     def connectPort(self, port, mem):
         If(port.clk._onRisingEdge() & port.en,
@@ -38,8 +38,8 @@ class Ram_sp(Unit):
 class Ram_dp(Ram_sp):
     def _declr(self):
         super()._declr()
-        self.b = BramPort(isExtern=True)
-        self._shareAllParams()
+        with self._paramsShared():
+            self.b = BramPort(isExtern=True)
 
     def _impl(self):
         super()._impl()
