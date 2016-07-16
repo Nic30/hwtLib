@@ -2,11 +2,11 @@ from hdl_toolkit.intfLvl import connect, Unit
 from hdl_toolkit.hdlObjects.typeShortcuts import hInt
 from hdl_toolkit.interfaces.amba import AxiStream
 
-from hwtLib.samples.iLvl.simple2 import SimpleUnit2
+from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream
 
 class SimpleSubunit2(Unit):
     def _declr(self):
-        self.subunit0 = SimpleUnit2() 
+        self.subunit0 = SimpleUnitAxiStream() 
         self.a0 = AxiStream(isExtern=True)
         self.b0 = AxiStream(isExtern=True)
         
