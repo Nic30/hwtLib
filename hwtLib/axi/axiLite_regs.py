@@ -74,7 +74,7 @@ class AxiLiteRegs(Unit):
         If(arRd & ar.valid,
             c(ar.addr, arAddr)
             ,
-            c(arAddr, arAddr)
+            arAddr._same()
         )
 
 
@@ -151,7 +151,7 @@ class AxiLiteRegs(Unit):
                 If(aw.valid,
                     c(wSt_t.wrData, wSt)
                     ,
-                    c(wSt, wSt)
+                    wSt._same()
                 )
             )
             ,
@@ -159,7 +159,7 @@ class AxiLiteRegs(Unit):
                 If(w.valid,
                     c(wSt_t.wrResp, wSt)
                     ,
-                    c(wSt, wSt)
+                    wSt._same()
                 )
             )
             ,
@@ -167,7 +167,7 @@ class AxiLiteRegs(Unit):
                 If(self.axi.b.ready,
                     c(wSt_t.wrIdle, wSt)
                     ,
-                    c(wSt, wSt)
+                    wSt._same()
                 )
             )
         )

@@ -50,7 +50,7 @@ class CamMatch(Unit):
         If(inreg_we,
            c(din.data, data_reg)
            ,
-           c(data_reg, data_reg)
+           data_reg._same()
         )
 
         me_reg = self._sig("me_reg", defVal=0)

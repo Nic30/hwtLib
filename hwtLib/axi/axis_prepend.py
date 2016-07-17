@@ -10,7 +10,7 @@ from hdl_toolkit.bitmask import Bitmask
 from hdl_toolkit.hdlObjects.specialValues import DIRECTION
 from hdl_toolkit.interfaces.utils import addClkRstn
 
-class AxisPrepend(Unit):
+class AxiSPrepend(Unit):
     """
     AXI-Stream Prepend
     
@@ -56,14 +56,14 @@ class AxisPrepend(Unit):
                     If(prep.valid & prep.last & out.ready,
                        c(stT.base, st)
                        ,
-                       c(st, st)
+                       st._same()
                     )
                 ),
                 (stT.base,
                     If(base.valid & base.last & out.ready,
                         c(stT.prep, st)
                         ,
-                        c(st, st)
+                        st._same()
                     )
                 )
         )
@@ -90,5 +90,5 @@ class AxisPrepend(Unit):
                 )
 
 if __name__ == "__main__":
-    u = AxisPrepend(AxiStream_withoutSTRB)
+    u = AxiSPrepend(AxiStream_withoutSTRB)
     print(toRtl(u))

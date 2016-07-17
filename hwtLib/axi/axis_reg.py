@@ -45,7 +45,7 @@ class AxiSReg(Unit):
                 If(regs_we,
                    c(iin, r)
                    ,
-                   c(r, r)
+                   r._same()
                 )
                 c(r, iout)
 
@@ -59,7 +59,7 @@ class AxiSReg(Unit):
            If(s.valid,
               c(hBit(1), isOccupied)
               ,
-              c(isOccupied, isOccupied)
+              isOccupied._same()
            )
         )
         

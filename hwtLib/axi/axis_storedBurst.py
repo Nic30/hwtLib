@@ -59,7 +59,7 @@ class AxiStreamStoredBurst(Unit):
         If(self.dataRd() & (wordIndex < len(self.DATA)),
             c(wordIndex +1, wordIndex)
             ,
-            c(wordIndex, wordIndex)
+            wordIndex._same()
         )
         
         
