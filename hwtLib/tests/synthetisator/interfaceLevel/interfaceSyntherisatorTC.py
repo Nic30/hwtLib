@@ -121,7 +121,7 @@ class InterfaceSyntherisatorTC(BaseSynthetisatorTC):
         bram = SimpleUnit()
         bram = synthesised(bram)
     
-        self.assertNotEqual(bram.a, bram.b, 'instances are properly instanciated')
+        self.assertIsNot(bram.a, bram.b, 'instances are properly instanciated')
         
         port_a = list(where(bram._entity.ports, lambda x: x.name == "a"))
         port_b = list(where(bram._entity.ports, lambda x: x.name == "b"))

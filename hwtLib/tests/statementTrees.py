@@ -1,3 +1,4 @@
+import re
 import unittest
 from hdl_toolkit.synthetisator.rtlLevel.netlist import RtlNetlist
 from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
@@ -6,8 +7,7 @@ from hdl_toolkit.synthetisator.assigRenderer import renderIfTree
 from hdl_toolkit.hdlObjects.statements import IfContainer, SwitchContainer
 from hdl_toolkit.hdlObjects.types.defs import INT
 from hdl_toolkit.hdlObjects.types.enum import Enum
-import re
-from hdl_toolkit.formater import formatVhdl
+from hdl_toolkit.serializer.formater import formatVhdl
 
 
 w = connect

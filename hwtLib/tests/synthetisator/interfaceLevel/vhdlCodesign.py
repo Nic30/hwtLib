@@ -21,7 +21,7 @@ class VhdlCodesignTC(BaseSynthetisatorTC):
 
     def testTypeInstances(self):
         from hdl_toolkit.hdlObjects.types import defs
-        from hdl_toolkit.hdlContext import BaseVhdlContext
+        from hdl_toolkit.parser.hdlContext import BaseVhdlContext
         self.assertIs(INT, defs.INT)
         ctx = BaseVhdlContext.getBaseCtx()
         self.assertIs(ctx['integer'], INT)

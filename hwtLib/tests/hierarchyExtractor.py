@@ -1,5 +1,5 @@
 import unittest
-from hdl_toolkit.hierarchyExtractor import DesignFile, resolveComplileOrder
+from hdl_toolkit.parser.hierarchyExtractor import DesignFile, resolveComplileOrder
 from hdl_toolkit.parser.loader import ParserFileInfo
 
 SAMPLES_DIR = '../samples/vhdlCodesign/vhdl/'

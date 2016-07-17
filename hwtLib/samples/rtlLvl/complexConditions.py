@@ -1,5 +1,5 @@
 
-from hdl_toolkit.formater import formatVhdl
+from hdl_toolkit.serializer.formater import formatVhdl
 from hdl_toolkit.synthetisator.rtlLevel.netlist import RtlNetlist
 from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
 from hdl_toolkit.synthetisator.rtlLevel.codeOp import If, Switch
