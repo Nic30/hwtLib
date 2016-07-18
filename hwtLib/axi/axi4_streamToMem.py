@@ -42,8 +42,8 @@ class Axi4streamToMem(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(32)
         self.ADDR_WIDTH = Param(32)
-        self.DATA_LEN = Param(1500)  # size of data which should be transfered in worlds
-        self.MAX_BUTST_LEN = Param(256) 
+        self.DATA_LEN = Param(33)  # size of data which should be transfered in worlds
+        self.MAX_BUTST_LEN = Param(16) 
         self.REGISTER_MAP = [(0x0, "control"),
                              (0x4, "baseAddr")]
     def _declr(self):
@@ -52,7 +52,7 @@ class Axi4streamToMem(Unit):
                 addClkRstn(self)
                 self.cntrl = AxiLite()
                 self.axi = Axi4()
-                self.din = Handshaked()
+                self.dataIn = Handshaked()
             self.regsConventor = AxiLiteRegs(self.REGISTER_MAP)
     
     def axiWAddrHandler(self, st, baseAddr, actualAddr, lenRem):
@@ -176,14 +176,14 @@ class Axi4streamToMem(Unit):
         """
         st_t = st._dtype
         w_en = st._eq(st_t.writeData) | st._eq(st_t.writeDataLast)
-        return w_en & self.din.vld & self.axi.w.ready 
+        return w_en & self.dataIn.vld & self.axi.w.ready 
     
     def dataWFeed(self, st, lenRem, actualLenRem):
         """
         Connection between din and axi.w channel
         """
         w = self.axi.w
-        din = self.din
+        din = self.dataIn
         st_t = st._dtype
         
         last = st._eq(st_t.writeDataLast)
