@@ -16,8 +16,8 @@ class Fifo(Unit):
         with self._asExtern():
             addClkRstn(self)
             with self._paramsShared():
-                self.din = FifoWriter()
-                self.dout = FifoReader()
+                self.dataIn = FifoWriter()
+                self.dataOut = FifoReader()
     
     def _impl(self):
         index_t = vecT(log2ceil(self.DEPTH), False)
@@ -30,8 +30,8 @@ class Fifo(Unit):
         
         DEPTH = self.DEPTH
         
-        dout = self.dout
-        din = self.din
+        dout = self.dataOut
+        din = self.dataIn
 
         MAX_DEPTH = DEPTH -1
         # [TODO] forgot head, tail clock enable 

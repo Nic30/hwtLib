@@ -1,45 +1,8 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.hdlObjects.typeShortcuts import hInt, vecT, vec
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.interfaces.amba import AxiStream
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import Switch
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
-from hdl_toolkit.synthetisator.shortcuts import toRtl
-from hdl_toolkit.synthetisator.param import Param, evalParam
+from hwtLib.axi.axis_compBase import AxiSCompBase 
+from hwtLib.handshaked.mux import HandshakedMux
 
-c = connect
-
-class AxiSMux(Unit):
-    def _config(self):
-        self.OUTPUTS = Param(3)
-        self.DATA_WIDTH = Param(64)
-        
-    def _declr(self):
-        outputs = evalParam(self.OUTPUTS).val
-        
-        with self._asExtern():
-            self.sel = Signal(dtype=vecT(outputs.bit_length()))
-            
-            with self._paramsShared():
-                self.dataIn = AxiStream()
-                self.dataOut = AxiStream(multipliedBy=hInt(outputs))
-    
-    def _impl(self):
-        selBits = self.sel._dtype.bit_length()
-        In = self.dataIn
-        for index, outIntf in enumerate(self.dataOut):
-            for ini, outi in zip(In._interfaces, outIntf._interfaces):
-                if ini == In.valid or ini == In.last:
-                    c(ini & self.sel._eq(vec(index, selBits)), outi)
-                elif ini == In.ready:
-                    pass
-                    # c(outi, ini)
-                else:  # data
-                    c(ini, outi)
-        Switch(self.sel,
-            *[(vec(index, selBits), c(out.ready, In.ready))
-               for index, out in enumerate(self.dataOut) ]
-        )    
+class AxiSMux(AxiSCompBase, HandshakedMux):
+    pass
             
 
 #class AxiSMuxContainer(Unit):
@@ -64,4 +27,7 @@ class AxiSMux(Unit):
 #        c(m.dataOut[2], self.dataOut2)
 #        
 if __name__ == "__main__":
-    print(toRtl(AxiSMux))
+    from hdl_toolkit.interfaces.amba import AxiStream
+    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    u = AxiSMux(AxiStream)
+    print(toRtl(u))

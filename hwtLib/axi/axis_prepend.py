@@ -9,8 +9,10 @@ from hdl_toolkit.hdlObjects.typeShortcuts import hBit, vec
 from hdl_toolkit.bitmask import Bitmask
 from hdl_toolkit.hdlObjects.specialValues import DIRECTION
 from hdl_toolkit.interfaces.utils import addClkRstn
+from hwtLib.axi.axis_compBase import AxiSCompBase
 
-class AxiSPrepend(Unit):
+
+class AxiSPrepend(AxiSCompBase):
     """
     AXI-Stream Prepend
     
@@ -19,29 +21,22 @@ class AxiSPrepend(Unit):
     
     Both streams are merged into a single frame (masking
     TLAST bit of PREP stream). However, this feature
-    may be turned off by setting C_MASK_LAST to false.
+    may be turned off by setting MASK_LAST to false.
     
     Data are bypassed as they come if possible.
     """
-    def __init__(self, axiIntfCls):
-        """
-        @param axiIntfCls: class of interface which should be used as interface of this unit
-        """
-        assert(issubclass(axiIntfCls, AxiStream_withoutSTRB))
-        self.axiIntfCls = axiIntfCls
-        super().__init__()
         
     def _config(self):
-        self.axiIntfCls._config(self) # use same params as interface has
+        super()._config()
         self.MASK_LAST = Param(True)
         
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
             with self._paramsShared():
-                self.base = self.axiIntfCls()
-                self.prep = self.axiIntfCls()
-                self.out = self.axiIntfCls()
+                self.base = self.intCls()
+                self.prep = self.intCls()
+                self.out =  self.intCls()
         
     def _impl(self):
         stT = Enum('t_state', ["prep", "base"])
@@ -50,31 +45,34 @@ class AxiSPrepend(Unit):
         prep = self.prep
         base = self.base
         out = self.out
+        MASK_LAST = self.MASK_LAST
+        vld = self.getVld 
+        rd = self.getRd
         
         Switch(st,
-                (stT.prep,
-                    If(prep.valid & prep.last & out.ready,
-                       c(stT.base, st)
-                       ,
-                       st._same()
-                    )
-                ),
-                (stT.base,
-                    If(base.valid & base.last & out.ready,
-                        c(stT.prep, st)
-                        ,
-                        st._same()
-                    )
+            (stT.prep,
+                If(vld(prep) & prep.last & rd(out),
+                   c(stT.base, st)
+                   ,
+                   st._same()
                 )
+            ),
+            (stT.base,
+                If(vld(base) & base.last & rd(out),
+                    c(stT.prep, st)
+                    ,
+                    st._same()
+                )
+            )
         )
         
-        prepLast = self.MASK_LAST._ternary(hBit(0), prep.last)
+        prepLast = MASK_LAST._ternary(hBit(0), prep.last)
         if useStrb:
             strbW = self.prep.strb._dtype.bit_length()
-            prepStrb = self.MASK_LAST._ternary(vec(Bitmask.mask(strbW), strbW), prep.strb)
+            prepStrb = MASK_LAST._ternary(vec(Bitmask.mask(strbW), strbW), prep.strb)
         
         for bi, pi, oi in zip(self.base._interfaces, self.prep._interfaces, self.out._interfaces):
-            if useStrb and oi == self.out.strb:
+            if useStrb and oi is self.out.strb:
                 pi = prepStrb
             elif oi == self.out.last:
                 pi = prepLast
