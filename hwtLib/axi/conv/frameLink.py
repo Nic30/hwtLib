@@ -28,12 +28,11 @@ class AxiSToFrameLink(Unit):
         self.USER_WIDTH = Param(2)
         
     def _declr(self):
-        with self._asExtern():
+        with self._asExtern(), self._paramsShared():
             addClkRstn(self)
             self.dataIn = AxiStream_withUserAndStrb()
             self.dataOut = FrameLink()
         
-        self._shareAllParams()
         self.sofDetect = AxiSsof()
         
     def _impl(self):
@@ -105,12 +104,10 @@ class FrameLinkToAxiS(Unit):
         AxiSToFrameLink._config(self)
     
     def _declr(self):
-        with self._asExtern():
+        with self._asExtern(), self._paramsShared():
             addClkRstn(self)
             self.dataIn = FrameLink()
             self.dataOut = AxiStream_withUserAndStrb()
-        
-        self._shareAllParams()
     
     def _impl(self):
         In = self.dataIn

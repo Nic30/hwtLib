@@ -13,23 +13,25 @@ class AxiLiteRegs(Unit):
     """
     Axi lite register generator
     """
+    def __init__(self, adress_map):
+        """
+        @param address_map: array of tupes (address, name)
+                    for every such a tuple there will be input interface name + IN_SUFFIX
+                    and output interface name + OUT_SUFFIX
+        """
+        self.ADRESS_MAP = adress_map 
+        super().__init__()
+    
     def _config(self):
         self.ADDR_WIDTH = Param(8)
         self.DATA_WIDTH = Param(32)
         self.IN_SUFFIX = "_in"
         self.OUT_SUFFIX = "_out"
         
-        self.ADRESS_MAP = [ 
-                           *[(i * 4 , "data%d" % i) for i in range(4)]
-                           # (0x0, "data"),
-                           # (0x4, "data2"),
-                           # (0x8, "data3"),
-                           # (0x12, "data4"),
-                           ]
     
     def _declr(self):
         assert len(self.ADRESS_MAP) > 0
-        with self._asExtern():
+        with self._asExtern(), self._paramsShared():
             addClkRstn(self)
             
             self.axi = AxiLite()
@@ -41,7 +43,6 @@ class AxiLiteRegs(Unit):
                 _in = Signal(dtype=vecT(self.DATA_WIDTH))
                 setattr(self, name + self.IN_SUFFIX, _in)
 
-        self._shareAllParams()
     
     def readPart(self):
         sig = self._sig
@@ -73,7 +74,7 @@ class AxiLiteRegs(Unit):
         If(arRd & ar.valid,
             c(ar.addr, arAddr)
             ,
-            c(arAddr, arAddr)
+            arAddr._same()
         )
 
 
@@ -150,7 +151,7 @@ class AxiLiteRegs(Unit):
                 If(aw.valid,
                     c(wSt_t.wrData, wSt)
                     ,
-                    c(wSt, wSt)
+                    wSt._same()
                 )
             )
             ,
@@ -158,7 +159,7 @@ class AxiLiteRegs(Unit):
                 If(w.valid,
                     c(wSt_t.wrResp, wSt)
                     ,
-                    c(wSt, wSt)
+                    wSt._same()
                 )
             )
             ,
@@ -166,7 +167,7 @@ class AxiLiteRegs(Unit):
                 If(self.axi.b.ready,
                     c(wSt_t.wrIdle, wSt)
                     ,
-                    c(wSt, wSt)
+                    wSt._same()
                 )
             )
         )
@@ -184,5 +185,5 @@ class AxiLiteRegs(Unit):
         
 
 if __name__ == "__main__":
-    print(toRtl(AxiLiteRegs))
+    print(toRtl(AxiLiteRegs([(i * 4 , "data%d" % i) for i in range(4)])))
     

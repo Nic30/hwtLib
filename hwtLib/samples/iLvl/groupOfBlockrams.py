@@ -12,23 +12,23 @@ class GroupOfBlockrams(Unit):
         self.DATA_WIDTH = Param(64)
     
     def _declr(self):
-        extData = lambda : Signal(dtype=vecT(self.DATA_WIDTH), isExtern=True)
-        self.bramR = Ram_dp()
-        self.bramW = Ram_dp()
-        
-        self.ap_clk = Signal(isExtern=True)
-        self.we = Signal(isExtern=True)
-        self.addr = Signal(dtype=vecT(self.ADDR_WIDTH), isExtern=True)
-        self.in_w_a = extData()
-        self.in_w_b = extData()
-        self.in_r_a = extData()
-        self.in_r_b = extData()
-        
-        self.out_w_a =extData()
-        self.out_w_b =extData()
-        self.out_r_a =extData()
-        self.out_r_b =extData()
-        self._shareAllParams()
+        with self._paramsShared():
+            extData = lambda : Signal(dtype=vecT(self.DATA_WIDTH), isExtern=True)
+            self.bramR = Ram_dp()
+            self.bramW = Ram_dp()
+            
+            self.ap_clk = Signal(isExtern=True)
+            self.we = Signal(isExtern=True)
+            self.addr = Signal(dtype=vecT(self.ADDR_WIDTH), isExtern=True)
+            self.in_w_a = extData()
+            self.in_w_b = extData()
+            self.in_r_a = extData()
+            self.in_r_b = extData()
+            
+            self.out_w_a =extData()
+            self.out_w_b =extData()
+            self.out_r_a =extData()
+            self.out_r_b =extData()
     
     def _impl(self):
         s = self

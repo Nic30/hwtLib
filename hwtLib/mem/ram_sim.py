@@ -1,10 +1,14 @@
 from hwtLib.mem.ram import Ram_sp
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, oscilate
 from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
+from hdl_toolkit.synthetisator.shortcuts import toRtl
 
 if __name__ == "__main__":
     u = Ram_sp()
+    u.DATA_WIDTH.set(8)
     u.ADDR_WIDTH.set(8)
+    
+    toRtl(u)
     
     def dataStimul(s):
         s.write(0, u.a.addr)
@@ -26,5 +30,6 @@ if __name__ == "__main__":
         s.write(u.a.din._dtype.fromPy(None), u.a.din)
         
     
-    simUnitVcd(u, [oscilate(lambda: u.a.clk), dataStimul], "tmp/ram_sp.vcd", time=60 * HdlSimulator.ns)
+    simUnitVcd(u, [oscilate(u.a.clk), dataStimul], 
+               "tmp/ram_sp.vcd", time=60 * HdlSimulator.ns)
     print("done")

@@ -19,9 +19,10 @@ class AxiSMux(Unit):
         
         with self._asExtern():
             self.sel = Signal(dtype=vecT(outputs.bit_length()))
-            self.dataIn = AxiStream()
-            self.dataOut = AxiStream(multipliedBy=hInt(outputs))
-            self._shareAllParams()
+            
+            with self._paramsShared():
+                self.dataIn = AxiStream()
+                self.dataOut = AxiStream(multipliedBy=hInt(outputs))
     
     def _impl(self):
         selBits = self.sel._dtype.bit_length()

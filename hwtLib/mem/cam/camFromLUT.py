@@ -53,33 +53,33 @@ class CamFromLUT(Unit):
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
-            self.match = Handshaked()
-            self.write = AddrDataHs()
-
-        self.camWrite = CamWrite()
-        self.camStorage = CamStorage()
-        self.camMatch = CamMatch()
-
-
-        SEQUENCING_FACTOR = self.SEQUENCING_FACTOR
-        DATA_WIDTH = self.DATA_WIDTH
-        ITEMS = self.ITEMS
-
+            with self._paramsShared():
+                self.match = Handshaked()
+                self.write = AddrDataHs()
         
-        self.CELL_WIDTH = hInt(6) - SEQUENCING_FACTOR;
-        self.CELL_HEIGHT = hInt(2) ** SEQUENCING_FACTOR;
-        self.COLUMNS = div_up(DATA_WIDTH, self.CELL_WIDTH);
-        self.ROWS = div_up(ITEMS, self.CELL_HEIGHT);
-        
-        for u in (self.camWrite, self.camStorage, self.camMatch):
-            u.COLUMNS.set(self.COLUMNS)
-            u.ROWS.set(self.ROWS)
+        with self._paramsShared():
+            self.camWrite = CamWrite()
+            self.camStorage = CamStorage()
+            self.camMatch = CamMatch()
+    
+    
+            SEQUENCING_FACTOR = self.SEQUENCING_FACTOR
+            DATA_WIDTH = self.DATA_WIDTH
+            ITEMS = self.ITEMS
+    
             
-        for u in (self.camWrite,self.camMatch):
-            u.CELL_WIDTH.set(self.CELL_WIDTH)
-            u.CELL_HEIGHT.set(self.CELL_HEIGHT)
-        
-        self._shareAllParams()
+            self.CELL_WIDTH = hInt(6) - SEQUENCING_FACTOR;
+            self.CELL_HEIGHT = hInt(2) ** SEQUENCING_FACTOR;
+            self.COLUMNS = div_up(DATA_WIDTH, self.CELL_WIDTH);
+            self.ROWS = div_up(ITEMS, self.CELL_HEIGHT);
+            
+            for u in (self.camWrite, self.camStorage, self.camMatch):
+                u.COLUMNS.set(self.COLUMNS)
+                u.ROWS.set(self.ROWS)
+                
+            for u in (self.camWrite,self.camMatch):
+                u.CELL_WIDTH.set(self.CELL_WIDTH)
+                u.CELL_HEIGHT.set(self.CELL_HEIGHT)
     
         self.out = VldSynced(isExtern=True)
         self.out._replaceParam("DATA_WIDTH", self.ITEMS)

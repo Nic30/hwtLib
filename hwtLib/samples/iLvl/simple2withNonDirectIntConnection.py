@@ -7,10 +7,11 @@ class Simple2withNonDirectIntConnection(Unit):
         self.DATA_WIDTH = Param(8)
         
     def _declr(self):
-        self.a = AxiStream(isExtern=True)
-        self.c = AxiStream(isExtern=True)
-        self.b = AxiStream()
-        self._shareAllParams()
+        with self._paramsShared():
+            with self._asExtern():
+                self.a = AxiStream()
+                self.c = AxiStream()
+            self.b = AxiStream()
         
     def _impl(self):
         b = self.b

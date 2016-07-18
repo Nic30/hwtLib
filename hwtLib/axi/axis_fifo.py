@@ -26,10 +26,9 @@ class AxiSFifo(Unit):
         
     def _declr(self):
         addClkRstn(self)
-        self.din = self.hsIntCls(isExtern=True)
-        self.dout = self.hsIntCls(isExtern=True)
-        
-        self._shareAllParams()
+        with self._paramsShared():
+            self.din = self.hsIntCls(isExtern=True)
+            self.dout = self.hsIntCls(isExtern=True)
 
         if evalParam(self.DEPTH).val > 0:
             self.fifo = Fifo()

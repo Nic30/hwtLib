@@ -13,10 +13,11 @@ if __name__ == "__main__":
     toRtl(u)
 
     procs = autoAddAgents(u)
-    u.dIn._ag.data = [1, 2, 3]
+    u.din._ag.data = [1, 2, 3, 4]
+    #u.dout._ag.enable = False
 
 
     simUnitVcd(u, procs,
-                "tmp/fifo.vcd", 
+                "tmp/fifo.vcd",
                 time=80 * HdlSimulator.ns)
     print("done")

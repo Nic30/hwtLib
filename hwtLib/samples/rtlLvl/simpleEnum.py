@@ -1,4 +1,4 @@
-from hdl_toolkit.formater import formatVhdl
+from hdl_toolkit.serializer.formater import formatVhdl
 from hdl_toolkit.synthetisator.rtlLevel.netlist import RtlNetlist
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.enum import Enum

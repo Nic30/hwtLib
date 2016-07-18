@@ -9,9 +9,9 @@ class InterfaceArraySample(Unit):
         self.LEN = hInt(3)
     
     def _declr(self):
-        self.a = VldSynced(multipliedBy=self.LEN, isExtern=True)
-        self.b = VldSynced(multipliedBy=self.LEN, isExtern=True)
-        self._shareAllParams()
+        with self._asExtern(), self._paramsShared():
+            self.a = VldSynced(multipliedBy=self.LEN)
+            self.b = VldSynced(multipliedBy=self.LEN)
     
     def _impl(self):
         connect(self.a, self.b)

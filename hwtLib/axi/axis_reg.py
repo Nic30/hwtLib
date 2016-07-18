@@ -24,10 +24,9 @@ class AxiSReg(Unit):
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
-            self.dataIn = self.hsIntCls()
-            self.dataOut = self.hsIntCls()
-        
-        self._shareAllParams()
+            with self._paramsShared():
+                self.dataIn = self.hsIntCls()
+                self.dataOut = self.hsIntCls()
         
     def _impl(self):
         
@@ -46,7 +45,7 @@ class AxiSReg(Unit):
                 If(regs_we,
                    c(iin, r)
                    ,
-                   c(r, r)
+                   r._same()
                 )
                 c(r, iout)
 
@@ -60,7 +59,7 @@ class AxiSReg(Unit):
            If(s.valid,
               c(hBit(1), isOccupied)
               ,
-              c(isOccupied, isOccupied)
+              isOccupied._same()
            )
         )
         

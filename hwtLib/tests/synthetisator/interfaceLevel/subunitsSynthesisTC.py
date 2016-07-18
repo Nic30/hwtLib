@@ -24,9 +24,9 @@ class UnitWithArrIntf(EmptyUnit):
     def _config(self):
         self.DATA_WIDTH = Param(64)
     def _declr(self):
-        self.a = AxiStream(isExtern=True)
-        self.b = AxiStream(isExtern=True, multipliedBy=hInt(2))
-        self._shareAllParams()
+        with self._asExtern(), self._paramsShared():
+            self.a = AxiStream()
+            self.b = AxiStream(multipliedBy=hInt(2))
         
     def _impl(self):
         setOut(self.b)
@@ -36,12 +36,13 @@ class UnitWithArrIntfParent(Unit):
         self.DATA_WIDTH = Param(64)
     
     def _declr(self):
-        self.a = AxiStream(isExtern=True)
-        self.b0 = AxiStream(isExtern=True)
-        self.b1 = AxiStream(isExtern=True)
+        with self._paramsShared():
+            with self._asExtern():
+                self.a =  AxiStream()
+                self.b0 = AxiStream()
+                self.b1 = AxiStream()
         
-        self.u0 = UnitWithArrIntf()
-        self._shareAllParams()
+            self.u0 = UnitWithArrIntf()
     
     def _impl(self):
         c(self.a, self.u0.a)
@@ -63,8 +64,9 @@ class SubunitsSynthesisTC(BaseSynthetisatorTC):
         class InternUnit(Unit):
             def _declr(self):
                 dt = vecT(64)
-                self.a = Signal(dtype=dt, isExtern=True)
-                self.b = Signal(dtype=dt, isExtern=True)
+                with self._asExtern():
+                    self.a = Signal(dtype=dt)
+                    self.b = Signal(dtype=dt)
             
             def _impl(self):
                 c(self.a, self.b)
@@ -73,8 +75,9 @@ class SubunitsSynthesisTC(BaseSynthetisatorTC):
         class OuterUnit(Unit):
             def _declr(self):
                 dt = vecT(32)
-                self.a = Signal(dtype=dt, isExtern=True)
-                self.b = Signal(dtype=dt, isExtern=True)
+                with self._asExtern():
+                    self.a = Signal(dtype=dt)
+                    self.b = Signal(dtype=dt)
                 self.iu = InternUnit()
 
             def _impl(self):
@@ -95,14 +98,14 @@ class SubunitsSynthesisTC(BaseSynthetisatorTC):
             def _config(self):
                 self.DATA_WIDTH = Param(64)
             def _declr(self):
-                self.a = AxiStream(isExtern=True)
-                self.b = AxiStream(isExtern=True)
-            
-                self.u0 = Simple2withNonDirectIntConnection()
-                self.u1 = Simple2withNonDirectIntConnection()
-                self.u2 = Simple2withNonDirectIntConnection()
-
-                self._shareAllParams()
+                with self._paramsShared():
+                    with self._asExtern():
+                        self.a = AxiStream()
+                        self.b = AxiStream()
+                
+                    self.u0 = Simple2withNonDirectIntConnection()
+                    self.u1 = Simple2withNonDirectIntConnection()
+                    self.u2 = Simple2withNonDirectIntConnection()
                 
             def _impl(self):
                 c(self.a, self.u0.a)
@@ -127,16 +130,16 @@ class SubunitsSynthesisTC(BaseSynthetisatorTC):
             def _config(self):
                 self.DATA_WIDTH = Param(64)
             def _declr(self):
-                self.a = AxiStream(isExtern=True)
-                self.b0 = AxiStream(isExtern=True)
-                self.b1 = AxiStream(isExtern=True)
-            
-                self.u0 = Simple2withNonDirectIntConnection()
-                self.u1 = UnitWithArrIntf()
-                self.u2_0 = Simple2withNonDirectIntConnection()
-                self.u2_1 = Simple2withNonDirectIntConnection()
-
-                self._shareAllParams()
+                with self._paramsShared():
+                    with self._asExtern():
+                        self.a =  AxiStream()
+                        self.b0 = AxiStream()
+                        self.b1 = AxiStream()
+                    
+                    self.u0 = Simple2withNonDirectIntConnection()
+                    self.u1 = UnitWithArrIntf()
+                    self.u2_0 = Simple2withNonDirectIntConnection()
+                    self.u2_1 = Simple2withNonDirectIntConnection()
                 
             def _impl(self):
                 c(self.a, self.u0.a)
@@ -156,8 +159,9 @@ class SubunitsSynthesisTC(BaseSynthetisatorTC):
     def test_unitWithIntfPartsConnectedSeparately(self):
         class FDStreamConnection(Unit):
             def _declr(self):
-                self.dataIn = FullDuplexAxiStream(isExtern=True)
-                self.dataOut = FullDuplexAxiStream(isExtern=True)
+                with self._asExtern():
+                    self.dataIn = FullDuplexAxiStream()
+                    self.dataOut = FullDuplexAxiStream()
             def _impl(self):
                 c(self.dataIn.tx, self.dataOut.tx)
                 c(self.dataOut.rx, self.dataIn.rx)

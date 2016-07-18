@@ -15,9 +15,9 @@ class Fifo(Unit):
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
-            self.din = FifoWriter()
-            self.dout = FifoReader()
-            self._shareAllParams()
+            with self._paramsShared():
+                self.din = FifoWriter()
+                self.dout = FifoReader()
     
     def _impl(self):
         index_t = vecT(log2ceil(self.DEPTH), False)
@@ -49,7 +49,7 @@ class Fifo(Unit):
                c(tail + 1, tail)
             )
             ,
-            c(tail, tail)
+            tail._same()
         )
         
         wr_en = din.en & (~looped | (head != tail))
@@ -65,16 +65,17 @@ class Fifo(Unit):
                 c(head + 1, head) 
             )
            ,
-           c(head, head)
+           head._same()
         )
-        If(rd_en & head._eq(MAX_DEPTH),
-           c(True, looped)
-           ,
-           If(wr_en & head._eq(MAX_DEPTH),
-               c(False, looped)
-               ,
-               c(looped, looped)
-           )
+        # looped logic
+        If(din.en & head._eq(MAX_DEPTH),
+            c(True, looped)
+            ,
+            If(dout.en & tail._eq(MAX_DEPTH),
+                c(False, looped)
+                ,
+                looped._same()
+            )
         )
                 
         # Update Empty and Full flags

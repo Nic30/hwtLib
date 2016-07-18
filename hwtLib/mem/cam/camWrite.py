@@ -73,9 +73,9 @@ class CamWrite(Unit):
            c(dIn.addr, addr_reg)
            , 
            # this branch is not necessary 
-           c(data_reg, data_reg) +
-           c(mask_reg, mask_reg) +
-           c(addr_reg, addr_reg)
+           data_reg._same() +
+           mask_reg._same() +
+           addr_reg._same()
         )
         # input_wr_reg
         c(wr_reg, wr_reg)

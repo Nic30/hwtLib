@@ -7,9 +7,9 @@ class SimpleSubunit(Unit):
         self.DATA_WIDTH = Param(8)
         
     def _declr(self):
-        self.c = AxiStream(isExtern=True)
-        self.d = AxiStream(isExtern=True)
-        self._shareAllParams()
+        with self._asExtern(), self._paramsShared():
+            self.c = AxiStream(isExtern=True)
+            self.d = AxiStream(isExtern=True)
         
     def _impl(self):
         connect(self.c, self.d)
@@ -20,13 +20,14 @@ class InterfaceArraySample(Unit):
         
     def _declr(self):
         LEN = hInt(2)
-        self.a = AxiStream(multipliedBy=LEN, isExtern=True)
-        self.b = AxiStream(multipliedBy=LEN, isExtern=True)
+        with self._paramsShared():
+            with self._asExtern():
+                self.a = AxiStream(multipliedBy=LEN)
+                self.b = AxiStream(multipliedBy=LEN)
     
-        self.u0 = SimpleSubunit() 
-        self.u1 = SimpleSubunit()
-        # self.u2 = SimpleSubunit()
-        self._shareAllParams()
+            self.u0 = SimpleSubunit() 
+            self.u1 = SimpleSubunit()
+            # self.u2 = SimpleSubunit()
         
     def _impl(self):
         

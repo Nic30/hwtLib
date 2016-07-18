@@ -22,8 +22,8 @@ class CamMatch(Unit):
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
-            self.storage = DataWithMatch()
-            self._shareAllParams()
+            with self._paramsShared():
+                self.storage = DataWithMatch()
             
             self.din = Handshaked()
             self.din.DATA_WIDTH.set(self.COLUMNS * self.CELL_WIDTH)
@@ -50,7 +50,7 @@ class CamMatch(Unit):
         If(inreg_we,
            c(din.data, data_reg)
            ,
-           c(data_reg, data_reg)
+           data_reg._same()
         )
 
         me_reg = self._sig("me_reg", defVal=0)

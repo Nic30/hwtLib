@@ -2,18 +2,18 @@ from hdl_toolkit.intfLvl import connect, Param, Unit
 from hdl_toolkit.interfaces.amba import AxiStream
 
 
-class SimpleUnit2(Unit):
+class SimpleUnitAxiStream(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(8)
 
     def _declr(self):
-        self.a = AxiStream(isExtern=True)
-        self.b = AxiStream(isExtern=True)
-        self._shareAllParams()
-        
+        with self._asExtern(), self._paramsShared():
+            self.a = AxiStream()
+            self.b = AxiStream()
+
     def _impl(self):
         connect(self.a, self.b)
 
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl
-    print(toRtl(SimpleUnit2))
+    print(toRtl(SimpleUnitAxiStream))
