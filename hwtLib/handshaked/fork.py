@@ -16,8 +16,8 @@ class HandshakedFork(HandshakedCompBase):
     def _declr(self):
         with self._asExtern(), self._paramsShared():
             addClkRstn(self)
-            self.dataIn = self.intCls()
-            self.dataOut = self.intCls(multipliedBy=self.OUTPUTS)
+            self.dataIn = self.intfCls()
+            self.dataOut = self.intfCls(multipliedBy=self.OUTPUTS)
 
     def _impl(self):
         rd = self.getRd

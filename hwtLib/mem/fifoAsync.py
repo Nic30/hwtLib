@@ -8,6 +8,9 @@ from hdl_toolkit.synthetisator.rtlLevel.signal.utils import c
 from hdl_toolkit.interfaces.utils import log2ceil
 
 class AsyncFifo(Fifo):
+    """
+    http://www.asic-world.com/examples/vhdl/asyn_fifo.html
+    """
     def _declr(self):
         with self._asExtern():
             self.dataIn_clk = Clk() 

@@ -17,8 +17,8 @@ class HandshakedMux(HandshakedCompBase):
             self.sel = Signal(dtype=vecT(outputs.bit_length()))
             
             with self._paramsShared():
-                self.dataIn = self.intCls()
-                self.dataOut = self.intCls(multipliedBy=hInt(outputs))
+                self.dataIn = self.intfCls()
+                self.dataOut = self.intfCls(multipliedBy=hInt(outputs))
     
     def _impl(self):
         selBits = self.sel._dtype.bit_length()

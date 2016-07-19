@@ -12,8 +12,8 @@ class HandshakedReg(HandshakedCompBase):
         with self._asExtern():
             addClkRstn(self)
             with self._paramsShared():
-                self.dataIn = self.intCls()
-                self.dataOut = self.intCls()
+                self.dataIn = self.intfCls()
+                self.dataOut = self.intfCls()
     
     def _impl(self):
         

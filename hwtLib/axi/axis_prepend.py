@@ -1,4 +1,3 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.synthetisator.param import Param
 from hdl_toolkit.interfaces.amba import AxiStream_withoutSTRB
 from hdl_toolkit.hdlObjects.types.enum import Enum
@@ -34,9 +33,9 @@ class AxiSPrepend(AxiSCompBase):
         with self._asExtern():
             addClkRstn(self)
             with self._paramsShared():
-                self.base = self.intCls()
-                self.prep = self.intCls()
-                self.out =  self.intCls()
+                self.base = self.intfCls()
+                self.prep = self.intfCls()
+                self.out =  self.intfCls()
         
     def _impl(self):
         stT = Enum('t_state', ["prep", "base"])

@@ -16,8 +16,8 @@ class HandshakedFifo(HandshakedCompBase):
     def _declr(self):
         addClkRstn(self)
         with self._asExtern(), self._paramsShared():
-            self.dataIn = self.intCls()
-            self.dataOut = self.intCls()
+            self.dataIn = self.intfCls()
+            self.dataOut = self.intfCls()
 
         if evalParam(self.DEPTH).val > 0:
             self.fifo = Fifo()
