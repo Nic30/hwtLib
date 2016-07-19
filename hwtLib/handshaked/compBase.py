@@ -1,5 +1,5 @@
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.interfaces.std import Handshaked
+from hdl_toolkit.interfaces.std import Handshaked, HandshakeSync
 from python_toolkit.arrayQuery import where
 
 
@@ -9,7 +9,7 @@ class HandshakedCompBase(Unit):
         """
         @param hsIntfCls: class of interface which should be used as interface of this unit
         """
-        assert(issubclass(hsIntfCls, Handshaked))
+        assert(issubclass(hsIntfCls, (Handshaked, HandshakeSync)))
         self.intCls = hsIntfCls
         Unit.__init__(self)
     
