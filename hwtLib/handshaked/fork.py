@@ -10,14 +10,14 @@ class HandshakedFork(HandshakedCompBase):
     transaction is made in all interfaces or none of them
     """
     def _config(self):
-        self.OUT_CH = Param(2)
+        self.OUTPUTS = Param(2)
         super()._config()
         
     def _declr(self):
         with self._asExtern(), self._paramsShared():
             addClkRstn(self)
             self.dataIn = self.intCls()
-            self.dataOut = self.intCls(multipliedBy=self.OUT_CH)
+            self.dataOut = self.intCls(multipliedBy=self.OUTPUTS)
 
     def _impl(self):
         rd = self.getRd
