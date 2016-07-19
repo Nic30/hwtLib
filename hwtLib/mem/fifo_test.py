@@ -13,7 +13,7 @@ if __name__ == "__main__":
     toRtl(u)
 
     procs = autoAddAgents(u)
-    u.din._ag.data = [1, 2, 3, 4]
+    u.dataIn._ag.data = [1, 2, 3, 4]
     #u.dout._ag.enable = False
 
 

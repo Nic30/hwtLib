@@ -22,6 +22,7 @@ from hwtLib.tests.statements import StatementsTC
 
 from hwtLib.samples.iLvl.twoCntrs_test import TwoCntrsTC
 from hwtLib.samples.iLvl.cntr_test import CntrTC
+from hwtLib.samples.iLvl.dReg_test import DRegTC
 
 if __name__ == "__main__":
     def testSuiteFromTCs(*tcs):
@@ -43,8 +44,10 @@ if __name__ == "__main__":
         ValueTC,
         StatementTreesTC,
         StatementsTC,
-        TwoCntrsTC,
+        DRegTC,
         CntrTC,
+        TwoCntrsTC,
+        
     )
     runner = TextTestRunner(verbosity=2)
     runner.run(suite)
