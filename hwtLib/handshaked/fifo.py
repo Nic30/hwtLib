@@ -40,11 +40,13 @@ class HandshakedFifo(HandshakedCompBase):
             
             # to fifo
             c(~fifo.dataIn.wait, rd(din))
-            c(packed(din, exclude=[vld(din), rd(din)]), fifo.dataIn.data)
+            c(packed(din, fifo.dataIn.data, 
+                     exclude=[vld(din), rd(din)]))
             
             # from fifo
             c(~fifo.dataOut.wait, vld(dout))
-            connectUnpacked(fifo.dataOut.data, dout, exclude=[vld(dout), rd(dout)])
+            connectUnpacked(fifo.dataOut.data, dout, 
+                            exclude=[vld(dout),rd(dout)])
         
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl
