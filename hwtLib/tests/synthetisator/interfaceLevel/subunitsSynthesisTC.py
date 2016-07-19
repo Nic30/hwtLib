@@ -11,13 +11,12 @@ from hdl_toolkit.synthetisator.param import Param
 from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.interfaces.ambaOthers import FullDuplexAxiStream 
 from hdl_toolkit.interfaces.amba import AxiStream
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
+from hdl_toolkit.synthetisator.codeOps import c
 
 from hwtLib.samples.iLvl.unitToUnitConnection import UnitToUnitConnection
 from hwtLib.samples.iLvl.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnection
 from hwtLib.tests.synthetisator.interfaceLevel.baseSynthetisatorTC import BaseSynthetisatorTC
 D = DIRECTION
-c = connect
 
 
 class UnitWithArrIntf(EmptyUnit):

@@ -7,10 +7,10 @@ from hdl_toolkit.interfaces.ambaOthers import FullDuplexAxiStream
 from hdl_toolkit.synthetisator.interfaceLevel.emptyUnit import EmptyUnit
 from hdl_toolkit.synthetisator.interfaceLevel.unitUtils import synthesised
 from hdl_toolkit.synthetisator.interfaceLevel.emptyUnit import setOut
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
 from hdl_toolkit.synthetisator.rtlLevel.netlist import RtlNetlist
 
 from hwtLib.tests.synthetisator.interfaceLevel.baseSynthetisatorTC import BaseSynthetisatorTC
+from hdl_toolkit.synthetisator.codeOps import connect
 
 D = DIRECTION
 

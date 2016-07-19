@@ -2,7 +2,7 @@ import unittest
 
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
 from hdl_toolkit.hdlObjects.statements import IfContainer
-from hdl_toolkit.synthetisator.rtlLevel.signal import RtlSignal
+from hdl_toolkit.synthetisator.rtlLevel.rtlSignal import RtlSignal
 from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.hdlObjects.types.defs import BIT
 

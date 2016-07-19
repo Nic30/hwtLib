@@ -1,8 +1,7 @@
 from hdl_toolkit.intfLvl import Unit
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import c
 from hdl_toolkit.interfaces.amba import AxiLite, RESP_OKAY
 from hdl_toolkit.interfaces.std import Signal, VldSynced
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import If, Switch
+from hdl_toolkit.synthetisator.codeOps import If, Switch, c
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.synthetisator.shortcuts import toRtl
 from hdl_toolkit.hdlObjects.typeShortcuts import vec, vecT

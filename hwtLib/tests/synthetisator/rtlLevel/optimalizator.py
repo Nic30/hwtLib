@@ -1,5 +1,5 @@
 import unittest
-from hdl_toolkit.synthetisator.rtlLevel.signal import RtlSignal
+from hdl_toolkit.synthetisator.rtlLevel.rtlSignal import RtlSignal
 from hdl_toolkit.hdlObjects.types.defs import BIT, BOOL
 from hdl_toolkit.hdlObjects.operatorDefs import AllOps
 

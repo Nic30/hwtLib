@@ -4,8 +4,7 @@ from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.interfaces.std import BramPort_withoutClk, Handshaked, \
     HandshakeSync
 from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import c
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import Switch, If
+from hdl_toolkit.synthetisator.codeOps import c, Switch, If
 
 class HsBramPortHeader(Unit):
     def _config(self):

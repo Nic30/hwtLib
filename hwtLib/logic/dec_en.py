@@ -3,7 +3,7 @@ from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.interfaces.std import s
 from hdl_toolkit.interfaces.utils import log2ceil
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
+from hdl_toolkit.synthetisator.codeOps import connect
 
 c = connect
 

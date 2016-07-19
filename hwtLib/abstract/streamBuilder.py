@@ -1,4 +1,4 @@
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
+from hdl_toolkit.synthetisator.rtlLevel.signalUtils.utils import connect
 
 
 class AbstractStreamBuilder():

@@ -3,8 +3,7 @@ from hdl_toolkit.interfaces.std import Clk, Rst_n, FifoWriter, FifoReader
 from hwtLib.logic.cntrGray import GrayCntr
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.array import Array
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import If
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import c
+from hdl_toolkit.synthetisator.codeOps import If, c
 from hdl_toolkit.interfaces.utils import log2ceil
 
 class AsyncFifo(Fifo):
@@ -41,15 +40,15 @@ class AsyncFifo(Fifo):
         Out = self.dataOut
         OutClk = self.dataOut_clk._onRisingEdge()
 
-        c(In.en & ~full,   self.pWr.en)
+        c(In.en & ~full, self.pWr.en)
         c(self.dataIn_clk, self.pWr.clk)
-        c(self.rst_n,      self.pWr.rst_n)
+        c(self.rst_n, self.pWr.rst_n)
         pNextWordToWrite = self.pWr.dataOut
         
 
-        c(Out.en & ~empty,  self.pRd.en)
+        c(Out.en & ~empty, self.pRd.en)
         c(self.dataOut_clk, self.pRd.clk)
-        c(self.rst_n,       self.pRd.rst_n)
+        c(self.rst_n, self.pRd.rst_n)
         pNextWordToRead = self.pRd.dataOut
         
 

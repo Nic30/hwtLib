@@ -4,8 +4,7 @@ from hdl_toolkit.interfaces.std import Signal, VldSynced
 from hdl_toolkit.interfaces.amba import AxiStream
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit, vec
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import If, Switch
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import c, fitTo
+from hdl_toolkit.synthetisator.codeOps import c, fitTo, If, Switch
 from hdl_toolkit.synthetisator.shortcuts import toRtl
 from hdl_toolkit.bitmask import Bitmask
 from hdl_toolkit.interfaces.utils import addClkRstn

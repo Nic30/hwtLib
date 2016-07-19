@@ -5,10 +5,9 @@ from hdl_toolkit.interfaces.amba import AxiStream_withUserAndStrb
 from hdl_toolkit.interfaces.frameLink import FrameLink
 from hdl_toolkit.synthetisator.shortcuts import toRtl
 
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import c, Concat
+from hdl_toolkit.synthetisator.codeOps import c, Concat, Switch, If
 from hdl_toolkit.hdlObjects.typeShortcuts import hBit, vec
 from hdl_toolkit.bitmask import Bitmask
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import Switch, If
 
 from hwtLib.axi.axis_sof import AxiSsof 
 

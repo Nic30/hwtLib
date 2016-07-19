@@ -3,11 +3,8 @@ from hdl_toolkit.synthetisator.param import Param
 from hdl_toolkit.interfaces.std import BramPort
 from hdl_toolkit.hdlObjects.types.array import Array
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hInt
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import If
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
+from hdl_toolkit.synthetisator.codeOps import If, c
 
-
-c = connect
 
 class Ram_sp(Unit):
     """

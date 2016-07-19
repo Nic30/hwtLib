@@ -1,8 +1,8 @@
 import unittest
 from hdl_toolkit.synthetisator.rtlLevel.netlist import RtlNetlist
-from hdl_toolkit.synthetisator.rtlLevel.signal.walkers import  walkAllOriginSignals
 from hdl_toolkit.hdlObjects.types.defs import INT, STR
 from hdl_toolkit.hdlObjects.typeShortcuts import hInt, hBool, hBit, vec
+from hdl_toolkit.synthetisator.rtlLevel.signalUtils.walkers import walkAllOriginSignals
 
 class OperatorTC(unittest.TestCase):
     def setUp(self):

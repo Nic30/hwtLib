@@ -2,8 +2,7 @@ from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.synthetisator.param import Param
 from hdl_toolkit.interfaces.std import Clk, Rst_n, Signal
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import If
+from hdl_toolkit.synthetisator.codeOps import connect, If
 from hdl_toolkit.interfaces.utils import binToGray
 
 

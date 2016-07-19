@@ -1,7 +1,7 @@
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import If
-from hdl_toolkit.intfLvl import c
 from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.interfaces.std import Handshaked
+from hdl_toolkit.synthetisator.codeOps import If, c
+
 from hwtLib.handshaked.compBase import HandshakedCompBase 
 
 class HandshakedReg(HandshakedCompBase):

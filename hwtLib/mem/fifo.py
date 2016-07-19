@@ -1,11 +1,10 @@
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import c
+from hdl_toolkit.synthetisator.codeOps import c, If
 from hdl_toolkit.synthetisator.param import Param
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
 from hdl_toolkit.interfaces.std import FifoWriter, FifoReader
 from hdl_toolkit.hdlObjects.types.array import Array
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import If
 
 class Fifo(Unit):
     def _config(self):

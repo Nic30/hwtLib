@@ -10,8 +10,7 @@ from hwtLib.mem.cam.interfaces import AddrDataHs
 from hwtLib.mem.cam.camWrite import CamWrite
 from hwtLib.mem.cam.camStorage import CamStorage
 from hwtLib.mem.cam.camMatch import CamMatch
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import c
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import If
+from hdl_toolkit.synthetisator.codeOps import If, c
 
 def extend(sig, targetWidth):
     tw = evalParam(targetWidth).val

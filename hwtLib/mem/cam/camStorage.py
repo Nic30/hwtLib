@@ -4,8 +4,7 @@ from hdl_toolkit.interfaces.std import Clk, RdSynced, s
 from hdl_toolkit.synthetisator.interfaceLevel.interface import Interface
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, vec
 from hwtLib.mem.lutRam import RAM64X1S
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import If
+from hdl_toolkit.synthetisator.codeOps import If, connect
 
 class CamStorageInIntf(Interface):
     def _config(self):

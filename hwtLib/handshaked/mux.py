@@ -1,8 +1,7 @@
 from hdl_toolkit.synthetisator.param import Param, evalParam
 from hdl_toolkit.interfaces.std import Signal, Handshaked
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hInt, vec
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import Switch
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import c 
+from hdl_toolkit.synthetisator.codeOps import Switch, c
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 class HandshakedMux(HandshakedCompBase):

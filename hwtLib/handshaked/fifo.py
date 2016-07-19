@@ -2,7 +2,7 @@ from hdl_toolkit.intfLvl import Param, c
 from hdl_toolkit.synthetisator.param import evalParam
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import packedWidth, packed,\
+from hdl_toolkit.synthetisator.codeOps import packedWidth, packed,\
     connectUnpacked
 
 from hwtLib.mem.fifo import Fifo
