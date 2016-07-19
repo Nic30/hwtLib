@@ -5,7 +5,7 @@ from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.fork import HandshakedFork
 from hwtLib.handshaked.mux import HandshakedMux
 
-class HandshakedBuilder(AbstractStreamBuilder):
+class HsBuilder(AbstractStreamBuilder):
     """
     Helper class which simplifies building of large stream paths 
     """
