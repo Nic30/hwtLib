@@ -28,7 +28,7 @@ def div_up(sig, divider):
     v = math.ceil(v / divider)
     return hInt(int(v)) 
 
-class CamFromLUT(Unit):
+class CamInLUT(Unit):
     """
     CAM where data are store in LUT-RAM
     """
@@ -155,6 +155,6 @@ class CamFromLUT(Unit):
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl
     #with open("/home/nic30/Documents/vivado/scriptTest/scriptTest.srcs/sources_1/new/top.vhd", "w") as f:
-    s= toRtl(CamFromLUT)
+    s= toRtl(CamInLUT)
     #f.write(s)
     print(s)
