@@ -1,4 +1,4 @@
-from hdl_toolkit.synthetisator.rtlLevel.signalUtils.utils import connect
+from hdl_toolkit.synthetisator.codeOps import connect
 
 
 class AbstractStreamBuilder():
@@ -73,6 +73,20 @@ class AbstractStreamBuilder():
             u.OUTPUTS.set(noOfOutputs)
         
         return self._genericInstance(self.ForkCls, 'fork', setChCnt)
+    
+    def forkTo(self, *outPorts):
+        """
+        Same like fork, but outputs ports are automaticaly conected 
+        @param outPorts: ports on which sodould be outputs of fork connected
+        """
+        noOfOutputs = len(outPorts) 
+        s = self.fork(noOfOutputs)
+        
+        for In, Out in zip(outPorts, self.end):
+            connect(Out, In)
+            
+        self.end = None # invalidate None because port was fully connected
+        return s
     
     def reg(self):
         """
