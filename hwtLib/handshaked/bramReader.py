@@ -6,7 +6,7 @@ from hdl_toolkit.interfaces.std import BramPort_withoutClk, Handshaked, \
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.synthetisator.codeOps import c, Switch, If
 
-class HsBramPortHeader(Unit):
+class HsBramPortReader(Unit):
     def _config(self):
         self.ADDR_WIDTH = Param(8)
         self.DATA_WIDTH = Param(32)
@@ -28,11 +28,11 @@ class HsBramPortHeader(Unit):
         Out = self.dataOut
         
         st_t = Enum("st_t", ["iddle", "sendingData"])
-        st = self._reg("st_reg", st_t, st_t.iddle)
-        addr = self._reg("addr_reg", In.addr._dtype)
-        data_reg = self._reg("data_reg", In.dout._dtype)
-        data_flag = self._reg("data_flag_reg", defVal=0)
-        data_inReg = self._reg("data_inReg_flag_reg", defVal=0)
+        self.st = st = self._reg("st_reg", st_t, st_t.iddle)
+        self.addr = addr = self._reg("addr_reg", In.addr._dtype)
+        self.data_reg = data_reg = self._reg("data_reg", In.dout._dtype)
+        self.data_flag = data_flag = self._reg("data_flag_reg", defVal=0)
+        self.data_inReg = data_inReg = self._reg("data_inReg_flag_reg", defVal=0)
         
         
         c(st._eq(st_t.iddle), self.en.rd)
@@ -92,4 +92,4 @@ class HsBramPortHeader(Unit):
         
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl
-    print(toRtl(HsBramPortHeader()))        
+    print(toRtl(HsBramPortReader()))        
