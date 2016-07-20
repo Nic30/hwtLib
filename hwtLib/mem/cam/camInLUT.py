@@ -50,51 +50,50 @@ class CamInLUT(Unit):
         self.WRITE_BEFORE_MATCH = Param(False)
         
     def _declr(self):
+        SEQUENCING_FACTOR = self.SEQUENCING_FACTOR
+        DATA_WIDTH = self.DATA_WIDTH
+        ITEMS = self.ITEMS
+
+        self.CELL_WIDTH = hInt(6) - SEQUENCING_FACTOR;
+        self.CELL_HEIGHT = hInt(2) ** SEQUENCING_FACTOR;
+        self.COLUMNS = div_up(DATA_WIDTH, self.CELL_WIDTH);
+        self.ROWS = div_up(ITEMS, self.CELL_HEIGHT);
+        
         with self._asExtern():
             addClkRstn(self)
             with self._paramsShared():
                 self.match = Handshaked()
                 self.write = AddrDataHs()
+            self.out = VldSynced()
+            self.out._replaceParam("DATA_WIDTH", self.ITEMS)
         
         with self._paramsShared():
             self.camWrite = CamWrite()
             self.camStorage = CamStorage()
             self.camMatch = CamMatch()
-    
-    
-            SEQUENCING_FACTOR = self.SEQUENCING_FACTOR
-            DATA_WIDTH = self.DATA_WIDTH
-            ITEMS = self.ITEMS
-    
-            
-            self.CELL_WIDTH = hInt(6) - SEQUENCING_FACTOR;
-            self.CELL_HEIGHT = hInt(2) ** SEQUENCING_FACTOR;
-            self.COLUMNS = div_up(DATA_WIDTH, self.CELL_WIDTH);
-            self.ROWS = div_up(ITEMS, self.CELL_HEIGHT);
             
             for u in (self.camWrite, self.camStorage, self.camMatch):
                 u.COLUMNS.set(self.COLUMNS)
                 u.ROWS.set(self.ROWS)
                 
-            for u in (self.camWrite,self.camMatch):
+            for u in (self.camWrite, self.camMatch):
                 u.CELL_WIDTH.set(self.CELL_WIDTH)
                 u.CELL_HEIGHT.set(self.CELL_HEIGHT)
-    
-        self.out = VldSynced(isExtern=True)
-        self.out._replaceParam("DATA_WIDTH", self.ITEMS)
+
     
     def _impl(self):
         COLUMNS = self.COLUMNS
         CELL_WIDTH = self.CELL_WIDTH
         ROWS = self.ROWS
         CELL_HEIGHT = self.CELL_HEIGHT
+        DW = COLUMNS * CELL_WIDTH
         
         match = self.match
         write = self.write
         
-        mdata_padded = extend(match.data, COLUMNS * CELL_WIDTH)
-        wdata_padded = extend(write.data, COLUMNS * CELL_WIDTH)
-        mask_padded = extend(write.mask, COLUMNS * CELL_WIDTH)
+        mdata_padded = extend(match.data, DW)
+        wdata_padded = extend(write.data, DW)
+        mask_padded = extend(write.mask,  DW)
         addr_padded = extend(write.addr, log2ceil(ROWS * CELL_HEIGHT))
         write_ready_base = self._sig("write_ready_base")
         match_ready_base = self._sig("match_ready_base")
@@ -154,7 +153,7 @@ class CamInLUT(Unit):
         
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl
-    #with open("/home/nic30/Documents/vivado/scriptTest/scriptTest.srcs/sources_1/new/top.vhd", "w") as f:
-    s= toRtl(CamInLUT)
-    #f.write(s)
+    # with open("/home/nic30/Documents/vivado/scriptTest/scriptTest.srcs/sources_1/new/top.vhd", "w") as f:
+    s = toRtl(CamInLUT)
+    # f.write(s)
     print(s)
