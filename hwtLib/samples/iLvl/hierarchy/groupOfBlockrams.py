@@ -1,10 +1,8 @@
-from hdl_toolkit.intfLvl import Param, Unit, connect
+from hdl_toolkit.intfLvl import Param, Unit, c
 from hdl_toolkit.interfaces.std import Signal
 from hwtLib.mem.ram import Ram_dp
 from hdl_toolkit.synthetisator.shortcuts import toRtl
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-
-c = connect
 
 class GroupOfBlockrams(Unit):
     def _config(self):

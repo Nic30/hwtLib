@@ -4,7 +4,7 @@ from hdl_toolkit.interfaces.utils import addClkRstn
 
 from hwtLib.handshaked.builder import HsBuilder
 
-class SimpleSubunit(Unit):
+class HandshakedSimple(Unit):
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
@@ -24,4 +24,4 @@ class SimpleSubunit(Unit):
 
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl
-    print(toRtl(SimpleSubunit))
+    print(toRtl(HandshakedSimple))

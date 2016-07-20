@@ -107,7 +107,7 @@ class InterfaceSyntherisatorTC(BaseSynthetisatorTC):
         
     
     def test_SimpleSubUnit2(self):
-        from hwtLib.samples.iLvl.simpleSubunit2 import SimpleSubunit2
+        from hwtLib.samples.iLvl.hierarchy.simpleSubunit2 import SimpleSubunit2
         u = SimpleSubunit2()
         u = synthesised(u)
     

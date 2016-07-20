@@ -14,6 +14,7 @@ from hdl_toolkit.interfaces.std import Clk, \
     
 from hwtLib.tests.synthetisator.interfaceLevel.baseSynthetisatorTC import BaseSynthetisatorTC
 
+
 ILVL_VHDL = '../../../samples/vhdlCodesign/vhdl/'
 
 
@@ -150,7 +151,7 @@ class VhdlCodesignTC(BaseSynthetisatorTC):
         self.assertIsS(a.S_AXI.b.ready)
 
     def test_axiParamsIn_Entity(self):
-        from hwtLib.samples.iLvl.axiLiteSlaveContainer import AxiLiteSlaveContainer
+        from hwtLib.samples.iLvl.hierarchy.axiLiteSlaveContainer import AxiLiteSlaveContainer
         u = AxiLiteSlaveContainer()
         u._loadDeclarations()
         u = synthesised(u)
@@ -171,7 +172,7 @@ class VhdlCodesignTC(BaseSynthetisatorTC):
         self.assertTrue(dw is not None)
 
     def test_axiParams(self):
-        from hwtLib.samples.iLvl.axiLiteSlaveContainer import AxiLiteSlaveContainer
+        from hwtLib.samples.iLvl.hierarchy.axiLiteSlaveContainer import AxiLiteSlaveContainer
         u = AxiLiteSlaveContainer()
         u._loadDeclarations()
         AW_p = u.axi.ADDR_WIDTH

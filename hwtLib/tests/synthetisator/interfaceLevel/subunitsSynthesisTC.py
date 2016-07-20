@@ -53,7 +53,7 @@ class SubunitsSynthesisTC(BaseSynthetisatorTC):
         """
         Check interface directions pre and after synthesis
         """
-        from hwtLib.samples.iLvl.groupOfBlockrams import GroupOfBlockrams
+        from hwtLib.samples.iLvl.hierarchy.groupOfBlockrams import GroupOfBlockrams
         u = GroupOfBlockrams()
         u._loadDeclarations()
         u = synthesised(u)
