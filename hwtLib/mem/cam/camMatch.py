@@ -2,15 +2,12 @@ from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.synthetisator.param import Param, evalParam
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
 from hdl_toolkit.interfaces.std import Handshaked, VldSynced
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import If
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
+from hdl_toolkit.synthetisator.codeOps import If, c
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 
 from hwtLib.mem.cam.interfaces import DataWithMatch
 from hwtLib.mem.cam.camWrite import mkCounter
 from hwtLib.logic.dec_en import DecEn
-
-c = connect
 
 class CamMatch(Unit):
     def _config(self):

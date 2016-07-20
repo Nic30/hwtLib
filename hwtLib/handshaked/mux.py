@@ -1,8 +1,7 @@
 from hdl_toolkit.synthetisator.param import Param, evalParam
 from hdl_toolkit.interfaces.std import Signal, Handshaked
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hInt, vec
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import Switch
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import c 
+from hdl_toolkit.synthetisator.codeOps import Switch, c
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 class HandshakedMux(HandshakedCompBase):
@@ -17,8 +16,8 @@ class HandshakedMux(HandshakedCompBase):
             self.sel = Signal(dtype=vecT(outputs.bit_length()))
             
             with self._paramsShared():
-                self.dataIn = self.intCls()
-                self.dataOut = self.intCls(multipliedBy=hInt(outputs))
+                self.dataIn = self.intfCls()
+                self.dataOut = self.intfCls(multipliedBy=hInt(outputs))
     
     def _impl(self):
         selBits = self.sel._dtype.bit_length()

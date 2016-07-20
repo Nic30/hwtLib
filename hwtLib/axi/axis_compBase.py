@@ -8,7 +8,7 @@ class AxiSCompBase(HandshakedCompBase):
         @param hsIntfCls: class of interface which should be used as interface of this unit
         """
         assert(issubclass(hsIntfCls, AxiStream_withoutSTRB))
-        self.intCls = hsIntfCls
+        self.intfCls = hsIntfCls
         Unit.__init__(self)
         
     def getVld(self, intf):

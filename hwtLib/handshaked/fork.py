@@ -1,5 +1,5 @@
-from hdl_toolkit.intfLvl import Param, c
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import And
+from hdl_toolkit.intfLvl import Param
+from hdl_toolkit.synthetisator.codeOps import And, c
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.interfaces.utils import addClkRstn
 from hwtLib.handshaked.compBase import HandshakedCompBase
@@ -16,8 +16,8 @@ class HandshakedFork(HandshakedCompBase):
     def _declr(self):
         with self._asExtern(), self._paramsShared():
             addClkRstn(self)
-            self.dataIn = self.intCls()
-            self.dataOut = self.intCls(multipliedBy=self.OUTPUTS)
+            self.dataIn = self.intfCls()
+            self.dataOut = self.intfCls(multipliedBy=self.OUTPUTS)
 
     def _impl(self):
         rd = self.getRd

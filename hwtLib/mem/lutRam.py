@@ -2,8 +2,7 @@ from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.synthetisator.param import Param
 from hdl_toolkit.hdlObjects.typeShortcuts import hBit, vec, vecT
 from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect, Concat
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import If
+from hdl_toolkit.synthetisator.codeOps import connect, Concat, If
 
 c = connect
 

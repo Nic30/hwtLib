@@ -1,9 +1,8 @@
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.interfaces.std import s
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import c
 from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import Switch, If
+from hdl_toolkit.synthetisator.codeOps import Switch, If, c
 
 
 class AxiSsof(Unit):

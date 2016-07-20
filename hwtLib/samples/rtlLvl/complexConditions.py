@@ -1,9 +1,8 @@
 
 from hdl_toolkit.serializer.formater import formatVhdl
 from hdl_toolkit.synthetisator.rtlLevel.netlist import RtlNetlist
-from hdl_toolkit.synthetisator.rtlLevel.signal.utils import connect
-from hdl_toolkit.synthetisator.rtlLevel.codeOp import If, Switch
 from hdl_toolkit.hdlObjects.types.enum import Enum
+from hdl_toolkit.synthetisator.codeOps import connect, If, Switch
 
 w = connect
 

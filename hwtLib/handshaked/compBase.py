@@ -10,11 +10,11 @@ class HandshakedCompBase(Unit):
         @param hsIntfCls: class of interface which should be used as interface of this unit
         """
         assert(issubclass(hsIntfCls, (Handshaked, HandshakeSync)))
-        self.intCls = hsIntfCls
+        self.intfCls = hsIntfCls
         Unit.__init__(self)
     
     def _config(self):
-        self.intCls._config(self)
+        self.intfCls._config(self)
     
     def getVld(self, intf):
         return intf.vld
