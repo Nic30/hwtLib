@@ -10,26 +10,6 @@ from hwtLib.logic.delayMs import DelayMs
 from hdl_toolkit.synthetisator.codeOps import c, Switch, If, In, FsmBuilder
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, vec
 
-initSequence = [0xAE, # Set Display OFF
-                0xD5, # SetClockDiv1
-                0x80, # SetClockDiv2
-                0xA8, # MultiPlex1
-                0x1F, # MultiPlex2
-                0x8D, # Access Charge Pump Setting
-                0x14, # Enable Charge Pump
-                0xD9, # Access Pre-charge Period Setting
-                0xF1, # Set the Pre-charge Period 
-                0xF1, # Set the Pre-charge Period (VCOMH1)
-                0xF1, # Set the Pre-charge Period (VCOMH2)
-                0x81, # Set Contrast Control for BANK0
-                0x0F, # DispContrast2
-                0xA1, # InvertDisp1
-                0xC0, # InvertDisp2
-                0xDA, # ComConfig1
-                0x02, # ComConfig2
-               ]
-
-
 class OledIntf(Interface):
     def _config(self):
         DelayMs._config(self)
