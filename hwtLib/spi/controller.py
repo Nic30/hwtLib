@@ -2,7 +2,7 @@ from math import log2
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.synthetisator.param import Param, evalParam
 from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.interfaces.std import VldSynced
+from hdl_toolkit.interfaces.std import VldSynced, Signal
 from hdl_toolkit.interfaces.spi import SPI
 from hdl_toolkit.interfaces.utils import isPow2
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
@@ -21,6 +21,8 @@ class SPICntrlW(Unit):
             self.dataIn = VldSynced()
             self.dataIn.DATA_WIDTH.set(8)
             self.dataOut = SPI() 
+            self.dataInDone = Signal()
+            
     
     def mainFsm(self, shift_counter, falling):
         stT = Enum("st_t", ["idle",
@@ -79,7 +81,9 @@ class SPICntrlW(Unit):
         c(clk_divided, Out.clk)
         
         c(mosiReg, Out.mosi)
-
+        c(st._eq(stT.idle) & In.vld, Out.cs)
+        c(st._eq(stT.done),          self.dataInDone)
+        
         # CLK_DIV
         If(st._eq(stT.send),  # start clock counter when in send state
            c(delayCntr + 1, delayCntr)
