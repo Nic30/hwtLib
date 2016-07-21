@@ -44,10 +44,10 @@ class Fifo(Unit):
         If(rd_en,
             If(tail._eq(MAX_DEPTH),
                c(0, tail) 
-               ,
+            ).Else(
                c(tail + 1, tail)
             )
-            ,
+        ).Else(
             tail._same()
         )
         
@@ -60,34 +60,32 @@ class Fifo(Unit):
         If(wr_en,
             If(head._eq(MAX_DEPTH),
                 c(0, head)
-                ,
+            ).Else(
                 c(head + 1, head) 
             )
-           ,
+        ).Else(
            head._same()
         )
         # looped logic
         If(din.en & head._eq(MAX_DEPTH),
             c(True, looped)
-            ,
-            If(dout.en & tail._eq(MAX_DEPTH),
-                c(False, looped)
-                ,
-                looped._same()
-            )
+        ).Elif(dout.en & tail._eq(MAX_DEPTH),
+            c(False, looped)
+        ).Else(
+            looped._same()
         )
                 
         # Update Empty and Full flags
         If(head._eq(tail),
             If(looped,
-                c(1, din.wait) +
+                c(1, din.wait), 
                 c(0, dout.wait)
-                ,
-                c(1, dout.wait) +
+            ).Else(
+                c(1, dout.wait),
                 c(0, din.wait)
             )
-            ,
-            c(0, din.wait) +
+        ).Else(
+            c(0, din.wait), 
             c(0, dout.wait)
         )
 

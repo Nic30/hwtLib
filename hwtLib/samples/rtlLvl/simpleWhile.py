@@ -21,13 +21,11 @@ if __name__ == "__main__":
     
     counter = n.sig("counter", t, clk, syncRst, 0)
     If(start,
-       w(boundry, counter)
-       ,
-       If(en,
-           w(counter - 1, counter)
-           ,
-           w(counter, counter)
-        )
+        w(boundry, counter)
+    ).Elif(en,
+        w(counter - 1, counter)
+    ).Else(
+        w(counter, counter)
     )
     w(counter, s_out)
     

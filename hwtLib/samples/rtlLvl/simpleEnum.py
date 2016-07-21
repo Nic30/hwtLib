@@ -20,12 +20,12 @@ if __name__ == "__main__":
     
     fsmSt = n.sig("fsmSt", fsmT, clk, syncRst, fsmT.send0)
     If(fsmSt._eq(fsmT.send0),
-         w(s_in0, s_out) + 
-         w(fsmT.send1, fsmSt)
-       ,
-         w(s_in1, s_out) + 
-         w(fsmT.send0, fsmSt)
-       )
+        w(s_in0, s_out), 
+        w(fsmT.send1, fsmSt)
+    ).Else(
+        w(s_in1, s_out), 
+        w(fsmT.send0, fsmSt)
+    )
     
     interf = [clk, syncRst, s_in0, s_in1, s_out]
     

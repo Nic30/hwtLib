@@ -22,7 +22,7 @@ class Ram_sp(Unit):
         If(port.clk._onRisingEdge() & port.en,
            If(port.we,
               c(port.din, mem[port.addr])
-           ) +
+           ),
            c(mem[port.addr], port.dout)
         )
         

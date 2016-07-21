@@ -49,15 +49,13 @@ class AxiStreamStoredBurst(Unit):
         wordIndex = self._reg("wordIndex", vecT(wordIndex_w), defVal=0)
   
         # [TODO] refactor
-        Switch(wordIndex,
-            *[(vec(i, wordIndex_w), 
-               self.writeData(d, vldAll, i == DATA_LEN -1)
-              ) for i, d in enumerate(self.DATA)],
-            (None, self.writeStop())
-        )
+        Switch(wordIndex)\
+        .addCases([(vec(i, wordIndex_w), self.writeData(d, vldAll, i == DATA_LEN -1)
+              ) for i, d in enumerate(self.DATA)])\
+        .Default(self.writeStop())
         If(self.dataRd() & (wordIndex < len(self.DATA)),
             c(wordIndex +1, wordIndex)
-            ,
+        ).Else(
             wordIndex._same()
         )
         

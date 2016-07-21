@@ -21,9 +21,14 @@ class Cntr(Unit):
         
         If(self.en,
            connect(reg + 1, reg)
-           ,
+        ).Else(
            connect(reg, reg)
         )
         
         connect(reg, self.val)
 
+
+if __name__ == "__main__": # alias python main function
+    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    # there is more of synthesis methods. toRtl() returns formated vhdl string
+    print(toRtl(Cntr))

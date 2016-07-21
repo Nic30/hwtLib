@@ -21,21 +21,17 @@ def complexConds():
     cntrlFifoLast = n.sig('ctrlFifoLast')
 
     def tsWaitLogic(ifNoTsRd):
-        return If(sd0 & sd1,
-                   w(stT.lenExtr, st)
-                   ,
-                   If(sd0,
-                      w(stT.ts1Wait, st)
-                      ,
-                      If(sd1,
-                        w(stT.ts0Wait, st)
-                        ,
-                        ifNoTsRd
-                      )
-                   )
+        return  If(sd0 & sd1,
+                    w(stT.lenExtr, st)
+                ).Elif(sd0,
+                    w(stT.ts1Wait, st)
+                ).Elif(sd1,
+                    w(stT.ts0Wait, st)
+                ).Else(
+                    ifNoTsRd
                 )
-    Switch(st,
-        (stT.idle,
+    Switch(st)\
+    .Case(stT.idle,
             tsWaitLogic(
                 If(cntrlFifoVld,
                    w(stT.tsWait, st)
@@ -43,30 +39,25 @@ def complexConds():
                    w(st, st)
                 )
             )
-        ),
-        (stT.tsWait,
+    ).Case(stT.tsWait,
             tsWaitLogic(w(st, st))
-        ),
-        (stT.ts0Wait,
-            If(sd0,
-               w(stT.lenExtr, st)
-               ,
-               w(st, st)
-            )
-        ),
-        (stT.ts1Wait,
-            If(sd1,
-               w(stT.lenExtr, st)
-               ,
-               w(st, st)
-            )
-        ),
-        (stT.lenExtr,
-            If(cntrlFifoVld & cntrlFifoLast,
-               w(stT.idle, st)
-               ,
-               w(st, st)
-            )
+    ).Case(stT.ts0Wait,
+        If(sd0,
+           w(stT.lenExtr, st)
+        ).Else(
+           w(st, st)
+        )
+    ).Case(stT.ts1Wait,
+        If(sd1,
+           w(stT.lenExtr, st)
+        ).Else(
+           w(st, st)
+        )
+    ).Case(stT.lenExtr,
+        If(cntrlFifoVld & cntrlFifoLast,
+           w(stT.idle, st)
+        ).Else(
+           w(st, st)
         )
     )
     w(st._eq(stT.idle), s_idle)

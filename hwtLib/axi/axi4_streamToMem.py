@@ -68,7 +68,7 @@ class Axi4streamToMem(Unit):
         c(CACHE_DEFAULT, axi.aw.cache)
         If(lenRem > self.MAX_BUTST_LEN,
             c(self.MAX_BUTST_LEN, axi.aw.len)
-            ,
+        ).Else(
             c((lenRem - 1)[axi.aw.len._dtype.bit_length():], axi.aw.len)
         )
         c(LOCK_DEFAULT, axi.aw.lock)
@@ -77,29 +77,26 @@ class Axi4streamToMem(Unit):
         c(QOS_DEFAULT, axi.aw.qos) 
         
         # lenRem, actualAddr logic
-        Switch(st,
-            (st_t.fullIddle,
-                c(self.DATA_LEN, lenRem) + 
-                c(baseAddr, actualAddr)
-            ),
-            (st_t.writeAddr,
-                If(axi.aw.ready,
-                    If(lenRem > self.MAX_BUTST_LEN,
-                       c(actualAddr+self.MAX_BUTST_LEN, actualAddr) +
-                       c(lenRem - self.MAX_BUTST_LEN, lenRem)
-                       ,
-                       c(actualAddr+lenRem, actualAddr) +
-                       c(0, lenRem)
-                    )
-                   ,
-                   actualAddr._same() +
-                   lenRem._same()
+        Switch(st)\
+        .Case(st_t.fullIddle,
+            c(self.DATA_LEN, lenRem), 
+            c(baseAddr, actualAddr)
+        ).Case(st_t.writeAddr,
+            If(axi.aw.ready,
+                If(lenRem > self.MAX_BUTST_LEN,
+                   c(actualAddr+self.MAX_BUTST_LEN, actualAddr),
+                   c(lenRem - self.MAX_BUTST_LEN, lenRem)
+                ).Else(
+                   c(actualAddr+lenRem, actualAddr),
+                   c(0, lenRem)
                 )
-            ),
-            (None, 
-                 actualAddr._same() +
-                 lenRem._same()
+            ).Else(
+               actualAddr._same(),
+               lenRem._same()
             )
+        ).Default(
+            actualAddr._same(),
+            lenRem._same()
         )
         
     def connectRegisters(self, st, onoff, baseAddr):
@@ -113,14 +110,14 @@ class Axi4streamToMem(Unit):
         
         If(regs.control_out.vld,
            c(regs.control_out.data[0], onoff)
-           ,
+        ).Else(
            onoff._same()
         )
         
         c(baseAddr, regs.baseAddr_in)
         If(regs.baseAddr_out.vld,
            c(regs.baseAddr_out.data, baseAddr)
-           ,
+        ).Else(
            baseAddr._same()
         )  
     
@@ -130,42 +127,38 @@ class Axi4streamToMem(Unit):
         
         w_ackAll = self.w_allAck(st)
         
-        Switch(st,
-            (st_t.fullIddle,
-                If(onoff,
-                    c(st_t.writeAddr)
-                    ,
-                    st._same()
-                )
-            ),
-            (st_t.writeAddr,
-                If(axi.aw.ready,
-                    If(lenRem._eq(1),
-                       c(st_t.writeDataLast, st)
-                       ,
-                       c(st_t.writeData, st)
-                    )
-                    ,
-                    st._same()
-                )
-            ),
-            (st_t.writeData,
-                If(w_ackAll & (actualLenRem._eq(2)),
+        Switch(st)\
+        .Case(st_t.fullIddle,
+            If(onoff,
+                c(st_t.writeAddr)
+            ).Else(
+                st._same()
+            )
+        ).Case(st_t.writeAddr,
+            If(axi.aw.ready,
+                If(lenRem._eq(1),
                    c(st_t.writeDataLast, st)
-                   ,
-                   st._same()
+                ).Else(
+                   c(st_t.writeData, st)
                 )
-            ),
-            (st_t.writeDataLast,
-                If(w_ackAll,
-                    If(lenRem != 0,
-                       c(st_t.writeAddr, st)
-                       ,
-                       c(st_t.fullIddle, st)
-                    )
-                    ,
-                    st._same()
+            ).Else(
+                st._same()
+            )
+        ).Case(st_t.writeData,
+            If(w_ackAll & (actualLenRem._eq(2)),
+               c(st_t.writeDataLast, st)
+            ).Else(
+               st._same()
+            )
+        ).Case(st_t.writeDataLast,
+            If(w_ackAll,
+                If(lenRem != 0,
+                   c(st_t.writeAddr, st)
+                ).Else(
+                   c(st_t.fullIddle, st)
                 )
+            ).Else(
+                st._same()
             )
         )
     
@@ -199,27 +192,24 @@ class Axi4streamToMem(Unit):
         w_allAck = self.w_allAck(st)
         
         # actualLenRem driver
-        Switch(st,
-            (st_t.writeData,
+        Switch(st)\
+        .Case(st_t.writeData,
                 If(w_allAck,
                     c(actualLenRem - 1, actualLenRem)
-                    ,
+                ).Else(
                     actualLenRem._same()
                 )
-            ),
-            (st_t.writeDataLast,
+        ).Case(st_t.writeDataLast,
                 If(w_allAck,
                    c(0, actualLenRem)
-                   ,
+                ).Else(
                    actualLenRem._same()
                 )
-            ),
-            (None,
-                If(lenRem > self.MAX_BUTST_LEN,
-                   c(self.MAX_BUTST_LEN, actualLenRem)
-                   ,
-                   c(lenRem[actualLenRem._dtype.bit_length():], actualLenRem)
-                )
+        ).Default(
+            If(lenRem > self.MAX_BUTST_LEN,
+               c(self.MAX_BUTST_LEN, actualLenRem)
+            ).Else(
+               c(lenRem[actualLenRem._dtype.bit_length():], actualLenRem)
             )
         )
         

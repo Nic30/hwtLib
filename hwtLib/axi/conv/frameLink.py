@@ -59,7 +59,7 @@ class AxiSToFrameLink(Unit):
         sop = In.user[0]
         If(sof,
            c(hBit(0), Out.sop_n)
-           ,
+        ).Else(
            c(~sop, Out.sop_n)
         )
         
@@ -70,7 +70,7 @@ class AxiSToFrameLink(Unit):
         eop = In.user[1]
         If(In.last,
            c(hBit(0), Out.eop_n)
-           ,
+        ).Else(
            c(~eop, Out.eop_n)
         )
 
@@ -85,10 +85,9 @@ class AxiSToFrameLink(Unit):
         
         
         If(end_of_part_or_transaction,
-            Switch(In.strb,
-                *remMap
-            )
-            ,
+            Switch(In.strb)\
+            .addCases(remMap)
+        ).Else(
             c(vec(-1, remBits), Out.rem)
         )
         
@@ -131,11 +130,8 @@ class FrameLinkToAxiS(Unit):
         strbBits = Out.strb._dtype.bit_length()
         for strb, rem in strbToRem(strbBits, remBits):
             strbMap.append((rem, c(strb, Out.strb)))
-        Switch(In.rem,
-                *strbMap
-        )
+        Switch(In.rem).addCases(strbMap)
 
 if __name__ == "__main__":
     u = AxiSToFrameLink()
-    
     print(toRtl(u))

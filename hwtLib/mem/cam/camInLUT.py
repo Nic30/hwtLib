@@ -143,7 +143,7 @@ class CamInLUT(Unit):
         s = self.camStorage
         If(storage_me,
            c(storage_mdata, s.din.data)
-           ,
+        ).Else(
            c(storage_wdata, s.din.data)
         )
         c(storage_di, s.din.di)

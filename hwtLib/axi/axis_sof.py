@@ -29,23 +29,21 @@ class AxiSsof(Unit):
         st = self._reg("st", stT, stT.stSof)
         
         # next state logic
-        Switch(st,
-            (stT.stSof,
+        Switch(st)\
+        .Case(stT.stSof,
                 If(self.valid & self.ready & ~self.last,
                    c(stT.stIdle, st)
-                   ,
+                ).Else(
                    c(st, st)
                 )
-            ),
-            (stT.stIdle,
+        ).Case(stT.stIdle,
                 If(self.valid & self.ready & self.last,
                    c(stT.stSof, st)
-                   ,
+                ).Else(
                    c(st, st)
                 )
-            )
-        ) 
-        
+        )
+                
         c(st._eq(stT.stSof), self.sof)
 
 if __name__ == "__main__":

@@ -43,7 +43,7 @@ class StatementTreesTC(unittest.TestCase):
         
         assigs = If(a,
            w(1, b)
-           ,
+        ).Else(
            w(0, b)
         )
         
@@ -58,9 +58,7 @@ class StatementTreesTC(unittest.TestCase):
         a = self.n.sig('a', typ=INT)
         b = self.n.sig('b', typ=INT)
         
-        assigs = Switch(a,
-               *[(i, w(i, b)) for i in range(4)]
-               )
+        assigs = Switch(a).addCases([(i, w(i, b)) for i in range(4)])
         cont = list(renderIfTree(assigs))
         self.assertEqual(len(cont), 1)
         cont = cont[0]
@@ -83,38 +81,33 @@ class StatementTreesTC(unittest.TestCase):
         def tsWaitLogic():
             return If(sd0 & sd1,
                        w(stT.lenExtr, st)
-                       ,
+                    ).Else(
                        w(stT.ts1Wait, st)
                     )
-        assigs = Switch(st,
-            (stT.idle,
-                tsWaitLogic()
-            ),
-            (stT.tsWait,
-                tsWaitLogic()
-            ),
-            (stT.ts0Wait,
-                If(sd0,
-                   w(stT.lenExtr, st)
-                   ,
-                   w(st, st)
+        assigs = Switch(st)\
+                .Case(stT.idle,
+                    tsWaitLogic()
+                ).Case(stT.tsWait,
+                    tsWaitLogic()
+                ).Case(stT.ts0Wait,
+                    If(sd0,
+                       w(stT.lenExtr, st)
+                    ).Else(
+                       w(st, st)
+                    )
+                ).Case(stT.ts1Wait,
+                    If(sd1,
+                       w(stT.lenExtr, st)
+                    ).Else(
+                       w(st, st)
+                    )
+                ).Case(stT.lenExtr,
+                    If(cntrlFifoVld & cntrlFifoLast,
+                       w(stT.idle, st)
+                    ).Else(
+                       w(st, st)
+                    )
                 )
-            ),
-            (stT.ts1Wait,
-                If(sd1,
-                   w(stT.lenExtr, st)
-                   ,
-                   w(st, st)
-                )
-            ),
-            (stT.lenExtr,
-                If(cntrlFifoVld & cntrlFifoLast,
-                   w(stT.idle, st)
-                   ,
-                   w(st, st)
-                )
-            )
-        )
     
         cont = list(renderIfTree(assigs))
         self.assertEqual(len(cont), 1)
@@ -145,12 +138,13 @@ class StatementTreesTC(unittest.TestCase):
                 ELSE 
                     st_next <= st;
                 END IF;
-            WHEN OTHERS =>
+            WHEN lenExtr =>
                 IF (ctrlFifoVld AND ctrlFifoLast)='1' THEN 
                     st_next <= idle;
                 ELSE 
                     st_next <= st;
                 END IF;
+            WHEN OTHERS =>
         END CASE
         
         """
@@ -171,44 +165,39 @@ class StatementTreesTC(unittest.TestCase):
         def tsWaitLogic(ifNoTsRd):
             return If(sd0 & sd1,
                        w(stT.lenExtr, st)
-                       ,
+                    ).Else(
                        ifNoTsRd
                     )
-        assigs = Switch(st,
-            (stT.idle,
-                tsWaitLogic(
-                    If(cntrlFifoVld,
-                       w(stT.tsWait, st)
-                       ,
+        assigs = Switch(st)\
+                .Case(stT.idle,
+                    tsWaitLogic(
+                        If(cntrlFifoVld,
+                           w(stT.tsWait, st)
+                        ).Else(
+                           w(st, st)
+                        )
+                    )
+                ).Case(stT.tsWait,
+                    tsWaitLogic(w(st, st))
+                ).Case(stT.ts0Wait,
+                    If(sd0,
+                       w(stT.lenExtr, st)
+                    ).Else(
+                       w(st, st)
+                    )
+                ).Case(stT.ts1Wait,
+                    If(sd1,
+                       w(stT.lenExtr, st)
+                    ).Else(
+                       w(st, st)
+                    )
+                ).Case(stT.lenExtr,
+                    If(cntrlFifoVld & cntrlFifoLast,
+                       w(stT.idle, st)
+                    ).Else(
                        w(st, st)
                     )
                 )
-            ),
-            (stT.tsWait,
-                tsWaitLogic(w(st, st))
-            ),
-            (stT.ts0Wait,
-                If(sd0,
-                   w(stT.lenExtr, st)
-                   ,
-                   w(st, st)
-                )
-            ),
-            (stT.ts1Wait,
-                If(sd1,
-                   w(stT.lenExtr, st)
-                   ,
-                   w(st, st)
-                )
-            ),
-            (stT.lenExtr,
-                If(cntrlFifoVld & cntrlFifoLast,
-                   w(stT.idle, st)
-                   ,
-                   w(st, st)
-                )
-            )
-        )
     
         cont = list(renderIfTree(assigs))
         self.assertEqual(len(cont), 1)
@@ -265,50 +254,43 @@ class StatementTreesTC(unittest.TestCase):
         cntrlFifoLast = n.sig('ctrlFifoLast')
     
         def tsWaitLogic(ifNoTsRd):
-            return If(sd0 & sd1,
-                       w(stT.lenExtr, st)
-                       ,
-                       If(sd0,
-                          w(stT.ts1Wait, st)
-                          ,
-                          ifNoTsRd
-                       )
+            return  If(sd0 & sd1,
+                        w(stT.lenExtr, st)
+                    ).Elif(sd0,
+                        w(stT.ts1Wait, st)
+                    ).Else(
+                        ifNoTsRd
                     )
-        assigs = Switch(st,
-            (stT.idle,
+        assigs = Switch(st)\
+            .Case(stT.idle,
                 tsWaitLogic(
                     If(cntrlFifoVld,
                        w(stT.tsWait, st)
-                       ,
+                    ).Else(
                        w(st, st)
                     )
                 )
-            ),
-            (stT.tsWait,
+            ).Case(stT.tsWait,
                 tsWaitLogic(w(st, st))
-            ),
-            (stT.ts0Wait,
+            ).Case(stT.ts0Wait,
                 If(sd0,
                    w(stT.lenExtr, st)
-                   ,
+                ).Else(
                    w(st, st)
                 )
-            ),
-            (stT.ts1Wait,
+            ).Case(stT.ts1Wait,
                 If(sd1,
                    w(stT.lenExtr, st)
-                   ,
+                ).Else(
                    w(st, st)
                 )
-            ),
-            (stT.lenExtr,
+            ).Case(stT.lenExtr,
                 If(cntrlFifoVld & cntrlFifoLast,
                    w(stT.idle, st)
-                   ,
+                ).Else(
                    w(st, st)
                 )
             )
-        )
     
         cont = list(renderIfTree(assigs))
         self.assertEqual(len(cont), 1)

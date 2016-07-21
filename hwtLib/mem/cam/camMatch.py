@@ -46,7 +46,7 @@ class CamMatch(Unit):
         # input_regs
         If(inreg_we,
            c(din.data, data_reg)
-           ,
+        ).Else(
            data_reg._same()
         )
 

@@ -26,13 +26,13 @@ class TwoCntrs(Unit):
         
         If(self.a_en,
            connect(a+1, a)
-           ,
+        ).Else(
            connect(a, a)
         )
         
         If(self.b_en,
            connect(b+1, b)
-           ,
+        ).Else(
            connect(b, b)
         )
         

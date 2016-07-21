@@ -72,7 +72,7 @@ class AxiLiteRegs(Unit):
         # save ar addr
         If(arRd & ar.valid,
             c(ar.addr, arAddr)
-            ,
+        ).Else(
             arAddr._same()
         )
 
@@ -82,14 +82,14 @@ class AxiLiteRegs(Unit):
            # rdIdle
             If(ar.valid,
                c(rSt_t.rdData, rSt) 
-               ,
+            ).Else(
                c(rSt_t.rdIdle, rSt)
             )
-            ,
+        ).Else(
             # rdData
             If(r.ready & rVld,
                c(rSt_t.rdIdle, rSt)
-               ,
+            ).Else(
                c(rSt_t.rdData, rSt) 
             )
         )
@@ -97,15 +97,17 @@ class AxiLiteRegs(Unit):
         # build read data output mux
         def inputByName(name):
             return getattr(self, name + self.IN_SUFFIX)
-            
-        rAssigTop = Switch(ar.addr,
-               *[(vec(addr, addrWidth), c(inputByName(name), r.data)) \
-                      for addr, name in self.ADRESS_MAP],
-               (None, c(vec(0, dataWidth), r.data)))
+        
+        rAssigTopCases = [(vec(addr, addrWidth), c(inputByName(name), r.data)) \
+                                            for addr, name in self.ADRESS_MAP]
+        
+        rAssigTop = Switch(ar.addr)\
+        .addCases(rAssigTopCases)\
+        .Default(c(vec(0, dataWidth), r.data))
                 
         If(ar_hs,
            rAssigTop
-           ,
+        ).Else(
            c(vec(0, dataWidth), r.data)
         )
 
@@ -140,34 +142,29 @@ class AxiLiteRegs(Unit):
         # save aw addr
         If(awRd & aw.valid,
             c(aw.addr, awAddr)
-            ,
+        ).Else(
             c(awAddr, awAddr)
         )
         
         # write fsm
-        Switch(wSt,
-            (wSt_t.wrIdle,
-                If(aw.valid,
-                    c(wSt_t.wrData, wSt)
-                    ,
-                    wSt._same()
-                )
+        Switch(wSt)\
+        .Case(wSt_t.wrIdle,
+            If(aw.valid,
+                c(wSt_t.wrData, wSt)
+            ).Else(
+                wSt._same()
             )
-            ,
-            (wSt_t.wrData,
-                If(w.valid,
-                    c(wSt_t.wrResp, wSt)
-                    ,
-                    wSt._same()
-                )
+        ).Case(wSt_t.wrData,
+            If(w.valid,
+                c(wSt_t.wrResp, wSt)
+             ).Else(
+                wSt._same()
             )
-            ,
-            (wSt_t.wrResp,
-                If(self.axi.b.ready,
-                    c(wSt_t.wrIdle, wSt)
-                    ,
-                    wSt._same()
-                )
+        ).Case(wSt_t.wrResp,
+            If(self.axi.b.ready,
+                c(wSt_t.wrIdle, wSt)
+            ).Else(
+                wSt._same()
             )
         )
         

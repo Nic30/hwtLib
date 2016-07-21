@@ -23,13 +23,13 @@ class GrayCntr(Unit):
         
         If(self.rst_n._isOn(),
            connect(0, self.dataOut)
-           ,
+        ).Else(
            connect(binToGray(binCntr), self.dataOut)
         )
         
         If(self.en, 
            connect(binCntr +1, binCntr)
-           ,
+        ).Else(
            binCntr._same()
         )
 

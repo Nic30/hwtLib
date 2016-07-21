@@ -21,7 +21,7 @@ class SelfRefCntr(Unit):
         
         If(cntr._eq(4),
            connect(0, cntr)
-           ,
+        ).Else(
            connect(cntr+1, cntr)
         )
         

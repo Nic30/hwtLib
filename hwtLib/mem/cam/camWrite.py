@@ -16,7 +16,7 @@ def mkCounter(unit, name, counter_ce, dType):
     # counter_i
     If(counter_ce,
       c(counter + 1, counter)
-      ,
+    ).Else(
       c(counter, counter)
     )
     return counter, busy, last
@@ -66,13 +66,13 @@ class CamWrite(Unit):
 
         # input_regs
         If(inreg_we, 
-           c(dIn.data, data_reg) +
-           c(dIn.mask, mask_reg) +
+           c(dIn.data, data_reg),
+           c(dIn.mask, mask_reg),
            c(dIn.addr, addr_reg)
-           , 
+        ).Else( 
            # this branch is not necessary 
-           data_reg._same() +
-           mask_reg._same() +
+           data_reg._same(),
+           mask_reg._same(),
            addr_reg._same()
         )
         # input_wr_reg

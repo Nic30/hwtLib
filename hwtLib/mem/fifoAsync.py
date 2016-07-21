@@ -77,10 +77,8 @@ class AsyncFifo(Fifo):
         # status ltching
         If(rstStatus | self.rst_n._isOn(),
             c(0, status)  # Going 'Empty'.
-            ,
-            If(setStatus,
-               c(1, status)  # Going 'Full'.
-            )
+        ).Elif(setStatus,
+            c(1, status)  # Going 'Full'.
         )
 
         # data in logic
@@ -89,7 +87,7 @@ class AsyncFifo(Fifo):
         # D Flip-Flop w/ Asynchronous Preset.
         If(presetFull,
             c(1, full)
-            ,
+        ).Else(
             If(InClk,
                c(0, full)
             )
@@ -102,7 +100,7 @@ class AsyncFifo(Fifo):
         # D Flip-Flop w/ Asynchronous Preset.
         If(presetEmpty,
             c(1, empty)
-            ,
+        ).Else(
             If(OutClk,
                c(0, empty)
             )

@@ -36,34 +36,29 @@ class HsBramPortReader(Unit):
             lastAddr = addr._eq(ADDR_HIGH)
             return  If(lastAddr,
                         c(st_t.iddle, st)
-                        ,
+                    ).Else(
                         st._same()
                     )
         
-        Switch(st,
-            (st_t.iddle,
+        Switch(st)\
+        .Case(st_t.iddle,
                 If(self.en.vld,
                     c(st_t.sendingData, st)
-                    ,
-                    If(self.clean.vld,
-                       c(st_t.inCleaning, st)
-                       ,
-                       st._same()
-                    )
+                ).Elif(self.clean.vld,
+                    c(st_t.inCleaning, st)
+                ).Else(
+                    st._same()
                 )
-            ),
-            (st_t.sendingData,
+        ).Case(st_t.sendingData,
                 If(data_inReg | (data_flag & ~Out.rd),
                     # if some data is loaded and it can not be send out
                     st._same()
-                    ,
+                ).Else(
                     # if is possible to send data in this clk
                     onLastGoIddle()
                 )
-            ),
-            (st_t.inCleaning,
+        ).Case(st_t.inCleaning,
                 onLastGoIddle()
-            )
         )
                 
     def _impl(self):
@@ -93,50 +88,47 @@ class HsBramPortReader(Unit):
         
         If(data_flag,
            c(In.dout, data_reg)
-           ,
+        ).Else(
            data_reg._same()
         )
         If(data_inReg,
            c(data_reg, Out.data)
-           ,
+        ).Else(
            c(In.dout, Out.data)
         )
         
         # addr incrementig logic
-        Switch(st,
-            (st_t.iddle,
+        Switch(st)\
+        .Case(st_t.iddle,
                 c(self.ADDR_LOW, addr)
-            ),
-            (st_t.sendingData,
-                If(data_inReg | (data_flag & ~Out.rd),
-                    # if some data is loaded and it can not be send out
-                    addr._same()
-                    ,
-                    # if is possible to send data in this clk
-                    c(addr + 1, addr)
-                )
-            ),
-            (st_t.inCleaning,
+        ).Case(st_t.sendingData,
+            If(data_inReg | (data_flag & ~Out.rd),
+                # if some data is loaded and it can not be send out
+                addr._same()
+            ).Else(
+                # if is possible to send data in this clk
                 c(addr + 1, addr)
             )
+        ).Case(st_t.inCleaning,
+             c(addr + 1, addr)
         )
         
         # dataRegs logic
         If(st._eq(st_t.sendingData),
-            c(1, data_flag) + 
+            c(1, data_flag), 
             If(data_inReg | (data_flag & ~Out.rd),
                 # if some data is loaded and it can not be send out
                 If(data_inReg,
                    c(~Out.rd, data_inReg)
-                   ,
+                ).Else(
                    data_inReg._same()
                 )
-                ,
+            ).Else(
                 # if is possible to send data in this clk
                 c(~self.dataOut.rd, data_inReg)
             )
-            ,
-            c(0, data_flag) + 
+        ).Else(
+            c(0, data_flag), 
             c(0, data_inReg) 
         )
         

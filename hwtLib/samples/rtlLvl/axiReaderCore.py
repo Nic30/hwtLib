@@ -22,14 +22,14 @@ def axiReaderCore():
        # rdIdle
         If(arVld,
            w(rSt_t.rdData, rSt) 
-           ,
+        ).Else(
            w(rSt_t.rdIdle, rSt)
         )
-        ,
+    ).Else(
         # rdData
         If(rRd & rVld,
            w(rSt_t.rdIdle, rSt)
-           ,
+        ).Else(
            w(rSt_t.rdData, rSt) 
         )
     )

@@ -36,20 +36,18 @@ class AxiSAppend(AxiSCompBase):
         vld = self.getVld 
         rd = self.getRd
         
-        Switch(st,
-            (stT.sendDataIn0,
-                If(vld(In0) & In0.last & rd(out),
-                   c(stT.sendDataIn1, st)
-                   ,
-                   st._same()
-                )
-            ),
-            (stT.sendDataIn1,
-                If(vld(In1) & In1.last & rd(out),
-                    c(stT.sendDataIn0, st)
-                    ,
-                    st._same()
-                )
+        Switch(st)\
+        .Case(stT.sendDataIn0,
+            If(vld(In0) & In0.last & rd(out),
+               c(stT.sendDataIn1, st)
+            ).Else(
+               st._same()
+            )
+        ).Case(stT.sendDataIn1,
+            If(vld(In1) & In1.last & rd(out),
+                c(stT.sendDataIn0, st)
+            ).Else(
+                st._same()
             )
         )
         doJoin = evalParam(self.JOIN).val
@@ -66,6 +64,7 @@ class AxiSAppend(AxiSCompBase):
                     i0 = 0
                 If(st._eq(stT.sendDataIn0),
                     c(i0, oi),
+                ).Else(
                     c(i1, oi)
                 )
 

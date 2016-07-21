@@ -23,7 +23,7 @@ def LeadingZero():
         else:
             leadingZeroTop = If(s_in[i]._eq(0),
                connections
-               ,
+            ).Else(
                leadingZeroTop
             )    
     

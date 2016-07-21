@@ -19,7 +19,7 @@ def Counter():
     
     If(en, 
        w(cnt+1, cnt)
-       ,
+    ).Else(
        w(cnt, cnt)
     )
     

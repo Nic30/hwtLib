@@ -75,7 +75,7 @@ class CamStorage(Unit):
                 nextCarry = match_carry[c+1]
                 If(match_base[r],
                    con(match_carry[c], nextCarry)
-                   ,
+                ).Else(
                    con(0, nextCarry)
                 )
                 
