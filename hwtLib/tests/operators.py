@@ -23,6 +23,10 @@ class OperatorTC(unittest.TestCase):
             self.assertEqual(res.val, int(not v))
             self.assertEqual(res.vldMask, 1)
             self.assertEqual(res.updateTime, -1)
+    
+    def testNotNotisOrigSig(self):
+        a= self.n.sig("a")
+        self.assertIs(a, ~~a)
                     
     def testDownto(self):
         a = self.n.sig('a', typ=INT)
@@ -84,7 +88,7 @@ class OperatorTC(unittest.TestCase):
       
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    #suite.addTest(OperatorTC('testADD_eval'))
-    suite.addTest(unittest.makeSuite(OperatorTC))
+    suite.addTest(OperatorTC('testNotNotisOrigSig'))
+    #suite.addTest(unittest.makeSuite(OperatorTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
