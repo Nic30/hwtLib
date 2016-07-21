@@ -31,17 +31,17 @@ class HsBramPortReader(Unit):
         st_t = st._dtype
         Out = self.dataOut
         
-        def onLastGoIddle():
+        def onLastGoIdle():
             ADDR_HIGH = self.ADDR_LOW + self.SIZE - 1
             lastAddr = addr._eq(ADDR_HIGH)
             return  If(lastAddr,
-                        c(st_t.iddle, st)
+                        c(st_t.idle, st)
                     ).Else(
                         st._same()
                     )
         
         Switch(st)\
-        .Case(st_t.iddle,
+        .Case(st_t.idle,
                 If(self.en.vld,
                     c(st_t.sendingData, st)
                 ).Elif(self.clean.vld,
@@ -55,18 +55,18 @@ class HsBramPortReader(Unit):
                     st._same()
                 ).Else(
                     # if is possible to send data in this clk
-                    onLastGoIddle()
+                    onLastGoIdle()
                 )
         ).Case(st_t.inCleaning,
-                onLastGoIddle()
+                onLastGoIdle()
         )
                 
     def _impl(self):
         In = self.dataIn
         Out = self.dataOut
         
-        st_t = Enum("st_t", ["iddle", "sendingData", "inCleaning"])
-        self.st = st = self._reg("st_reg", st_t, st_t.iddle)
+        st_t = Enum("st_t", ["idle", "sendingData", "inCleaning"])
+        self.st = st = self._reg("st_reg", st_t, st_t.idle)
         addr = self.addr = self._reg("addr_reg", In.addr._dtype)
         data_reg = self.data_reg = self._reg("data_reg", In.dout._dtype)
         data_flag = self.data_flag = self._reg("data_flag_reg", defVal=0)
@@ -75,8 +75,8 @@ class HsBramPortReader(Unit):
         
         self.fsm(st, data_flag, data_inReg, addr)
 
-        c(st._eq(st_t.iddle), self.en.rd)
-        c(st._eq(st_t.iddle), self.clean.rd)
+        c(st._eq(st_t.idle), self.en.rd)
+        c(st._eq(st_t.idle), self.clean.rd)
         
         c(data_inReg | data_flag, Out.vld)
         
@@ -99,7 +99,7 @@ class HsBramPortReader(Unit):
         
         # addr incrementig logic
         Switch(st)\
-        .Case(st_t.iddle,
+        .Case(st_t.idle,
                 c(self.ADDR_LOW, addr)
         ).Case(st_t.sendingData,
             If(data_inReg | (data_flag & ~Out.rd),

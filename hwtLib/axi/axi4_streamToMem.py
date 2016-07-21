@@ -21,18 +21,18 @@ class Axi4streamToMem(Unit):
     
     0x0 control reg.
        rw bit 0 - on/off (1 means on)
-       r  bit 1 - iddle
+       r  bit 1 - idle
     0x4 baseAddr
     
     Length of written data is specified by DATA_LEN.
     Input data is splited on smaller frames to fit MAX_BUTST_LEN.
     
-    If there is transaction pending iddle flag is 0, if on/off is set to 0 in this state 
+    If there is transaction pending idle flag is 0, if on/off is set to 0 in this state 
     unit continues until all data are send and then stayes off.
     This could be use as synchronization with the software.
     
-    1) driver enables this unit, then tests while not iddle.
-    2) then waits while iddle. 
+    1) driver enables this unit, then tests while not idle.
+    2) then waits while idle. 
     3) then reads the data and back to 1
     
     or unit is enabled and driver disables it only for the time of reading.
@@ -103,9 +103,9 @@ class Axi4streamToMem(Unit):
         """
         connection of axilite registers
         """
-        iddle = st._eq(st._dtype.fullIddle)
+        idle = st._eq(st._dtype.fullIdle)
         regs = self.regsConventor
-        c(Concat(onoff, iddle._convert(BIT), vec(0, self.DATA_WIDTH - 2)),
+        c(Concat(onoff, idle._convert(BIT), vec(0, self.DATA_WIDTH - 2)),
              regs.control_in)
         
         If(regs.control_out.vld,
@@ -128,7 +128,7 @@ class Axi4streamToMem(Unit):
         w_ackAll = self.w_allAck(st)
         
         Switch(st)\
-        .Case(st_t.fullIddle,
+        .Case(st_t.fullIdle,
             If(onoff,
                 c(st_t.writeAddr)
             ).Else(
@@ -155,7 +155,7 @@ class Axi4streamToMem(Unit):
                 If(lenRem != 0,
                    c(st_t.writeAddr, st)
                 ).Else(
-                   c(st_t.fullIddle, st)
+                   c(st_t.fullIdle, st)
                 )
             ).Else(
                 st._same()
@@ -225,11 +225,11 @@ class Axi4streamToMem(Unit):
         
         c(1, axi.b.ready)  # we do ignore write confirmations
         
-        st_t = Enum("state_type", ["fullIddle", "writeAddr", "writeData", "writeDataLast"])
+        st_t = Enum("state_type", ["fullIdle", "writeAddr", "writeData", "writeDataLast"])
 
         onoff = self._reg("on_off_reg", defVal=0)
         baseAddr = self._reg("baseAddr_reg", vecT(self.ADDR_WIDTH), 0)
-        st = self._reg("state_reg", st_t, st_t.fullIddle)
+        st = self._reg("state_reg", st_t, st_t.fullIdle)
         actualAddr = self._reg("actualAddr_reg", vecT(self.ADDR_WIDTH))
         lenRem = self._reg("lenRem_reg", vecT(evalParam(self.DATA_LEN).val.bit_length() + 1),
                             self.DATA_LEN)
