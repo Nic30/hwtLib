@@ -78,7 +78,7 @@ class Axi4streamToMem(Unit):
         
         # lenRem, actualAddr logic
         Switch(st)\
-        .Case(st_t.fullIddle,
+        .Case(st_t.fullIdle,
             c(self.DATA_LEN, lenRem), 
             c(baseAddr, actualAddr)
         ).Case(st_t.writeAddr,

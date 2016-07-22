@@ -34,8 +34,8 @@ class HandshakedMux(HandshakedCompBase):
                     # c(outi, ini)
                 else:  # data
                     c(ini, outi)
-        Switch(self.sel,
-            *[(vec(index, selBits), c(rd(out), rd(In)))
+        Switch(self.sel).addCases(
+            [(vec(index, selBits), c(rd(out), rd(In)))
                for index, out in enumerate(self.dataOut) ]
         ) 
         
