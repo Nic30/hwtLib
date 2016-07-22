@@ -15,7 +15,7 @@ class DelayMs(Unit):
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
-            self.time = Signal(dtype=vecT(log2ceil(self.MAX_DELAY)))
+            self.delayTime = Signal(dtype=vecT(log2ceil(self.MAX_DELAY)))
             self.acivate = ReqDoneSync()
             
     def _impl(self):
@@ -24,7 +24,7 @@ class DelayMs(Unit):
         clksPerMs = evalParam(self.FREQ) // 1000
         
         cntrClk = self._reg("cntrClk", vecT( log2ceil(clksPerMs)))
-        cntrMs = self._reg("cntrMs", self.time._dtype) 
+        cntrMs = self._reg("cntrMs", self.delayTime._dtype) 
         
         stFsm = FsmBuilder(self, stT)
         st = stFsm.stateReg
@@ -37,8 +37,8 @@ class DelayMs(Unit):
         .Trans(stT.idle, 
             (act.req,                  stT.hold)
         ).Trans(stT.hold,
-            (cntrMs._eq(self.time), stT.done)
-        ).Trans(stT.done,
+            (cntrMs._eq(self.delayTime), stT.done)
+        ).Default(#stT.done,
             (~act.req,                 stT.idle)
         )
         
