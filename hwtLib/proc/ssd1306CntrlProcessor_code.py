@@ -1,97 +1,141 @@
+from hwtLib.proc.ssd1306Cntrl_instr import *
+import pprint
+
 def sendControlls(controllData):
     code = []
     for c in controllData:
-        code.extend([LOAD, c, SEND_CONTROLL])
+        code.extend([LOAD_DATA, c, *send_controll()])
     return code
 
-JMP_REL = 0
-    # accumulator = mem[IP+1]
-    # IP = IP + accumulator 
+def instrSet(instr, pin, val):
+    """
+    bit  7   val
+    bits 6-4 pin
+    bits 3-0 instr
+    """
     
-OLED_ON = 1
-    # temp_dc <= 0
-    # temp_vdd <= 1'b0;
-
-OLED_ON_FINALIZE = 2
-    # temp_vbat = 0
-    # load 100
-    # temp_res = 0
-    # load 100
-    # temp_res = 1
-
-LOAD = 2  # arg on next addr, (IP +=2)
-    # accumulator = mem[IP+1], IP +=2,
-     
-LOAD_PAGECNTR = 3
-# load row of the bitmap (for char in char_tmp)
-
-LOAD_BM_ROW = 4 # arg = index of row
-    # set temp_addr
-    # wait on data to load
-    # collec data to acumulator
-LOAD_EXTERN = 5
-    # dataIn.rd = 1, wait for dataIn.vld
+    if val:
+        v = 1
+    else:
+        v = 0
     
-DELAY = 6 #  time in accumulator [ms]
-    # temp_delay_en = 1
-    # wait for temp_delay_fin
-    # temp_delay_en = 1
+    v << 4
+    assert pin < ((1 << 4) - 1)
+    v |= pin 
+    v << 3
+    v |= instr
+    return instr
+
+def oledOn():
+    return [
+        instrSet(PIN_SET, PIN_DC, 0),
+        instrSet(PIN_SET, PIN_VDD, 0) 
+    ]
+
+def oledInitFinalize():
+    return  [
+        instrSet(PIN_SET, PIN_VBAT, 0),
+        LOAD_DATA, 100,
+        DO_WAIT,
+        instrSet(PIN_SET, PIN_RES, 0),
+        LOAD_DATA, 100,
+        DO_WAIT,
+        instrSet(PIN_SET, PIN_RES, 1),
+    ]
+
+def selectRow():
+    # Update Page states
+    # 1. Sends the SetPage Command
+    # 2. Sends the Page to be set to
+    # 3. Sets the start pixel to the left column
+    return [
+        LOAD_DATA, 0x22, *send_controll(), # SetPage
+        LOAD_ROW,        *send_controll(), # PageNum
+        LOAD_DATA, 0,    *send_controll(), # LeftColumn1
+        LOAD_DATA, 0x10, *send_controll(), # LeftColumn2
+    ]
+
+
+# data is expected to be in accumulator
+def send_char():
+    code = [STORE_CHAR]
+    for _ in range(8):
+        code.append(LOAD_BM_ROW)
+        code.extend(send_data())
+    code.append(COLUMN_INCR)
     
-SEND_DATA = 7 # arg in acumulator
-SEND_CONTROLL = 8
-    # temp_dc = 0
-    # temp_spi_data = accumulator, 
-    # temp_spi_en = 1
-    # wait for temp_spi_fin
-    # temp_spi_en = 0
+    return code
+    
+    
+# LOAD_BM_ROW has to be executed first
+# arg in acumulator (char_index is column, page_tmp is row)
+def send_data():
+    return [
+        instrSet(PIN_SET, PIN_DC, 1),
+        SEND    
+    ]
+
+# data is expected to be in accumulator
+def send_controll():    
+    return [
+        instrSet(PIN_SET, PIN_DC, 0),
+        SEND    
+    ]
     
 
 
-# Update Page states
-# 1. Sends the SetPage Command
-# 2. Sends the Page to be set to
-# 3. Sets the start pixel to the left column
-setPage = [
-    LOAD, 
-    0b00100010, 
-    SEND_CONTROLL, # SetPage
-    LOAD_PAGECNTR,
-    SEND_CONTROLL, # PageNum
-    LOAD,
-    0,
-    SEND_CONTROLL, # LeftColumn1
-    LOAD,
-    0b00010000,
-    SEND_CONTROLL, # LeftColumn2
+initSequenceA = [
+    0xAE, # Set Display OFF
+    0xD5, # SetClockDiv1
+    0x80, # SetClockDiv2
+    0xA8, # MultiPlex1
+    0x1F, # MultiPlex2
+    0x8D, # Access Charge Pump Setting
+    0x14, # Enable Charge Pump
+    0xD9, # Access Pre-charge Period Setting
+    0xF1, # Set the Pre-charge Period 
+    0xF1, # Set the Pre-charge Period (VCOMH1)
+    0xF1, # Set the Pre-charge Period (VCOMH2)
+    0x81, # Set Contrast Control for BANK0
+    ]
+                
+initSequenceB = [
+    0xA1, # InvertDisp1
+    0xC0, # InvertDisp2
+    0xDA, # ComConfig1
+    0x02, # ComConfig2
 ]
 
-initSequenceA = [0xAE, # Set Display OFF
-                0xD5, # SetClockDiv1
-                0x80, # SetClockDiv2
-                0xA8, # MultiPlex1
-                0x1F, # MultiPlex2
-                0x8D, # Access Charge Pump Setting
-                0x14, # Enable Charge Pump
-                0xD9, # Access Pre-charge Period Setting
-                0xF1, # Set the Pre-charge Period 
-                0xF1, # Set the Pre-charge Period (VCOMH1)
-                0xF1, # Set the Pre-charge Period (VCOMH2)
-                0x81, # Set Contrast Control for BANK0
-               ]
-                
-initSequenceB = [0xA1, # InvertDisp1
-                 0xC0, # InvertDisp2
-                 0xDA, # ComConfig1
-                 0x02, # ComConfig2
-                ]
-
-
 initOled = [
-    OLED_ON,
-    LOAD,
-    10, 
-    DELAY,
+    *oledOn(),
+    LOAD_DATA, 100, DO_WAIT,
     * sendControlls(initSequenceA),
-    LOAD, 0x0F, SEND_CONTROLL,# DispContrast2
-    * sendControlls(initSequenceB)
-    ]
+    LOAD_DATA, 0x0F, *send_controll(), # DispContrast2
+    * sendControlls(initSequenceB),
+    * oledInitFinalize(),
+    LOAD_DATA, 0xAF, *send_controll(), # Dispaly ON
+]
+
+
+def sendText(text):
+    code = []
+    code.append(ROW_CLR)
+    code.append(COLUMN_CLR)
+    code.extend(selectRow())
+    
+    for ch in text:
+        code.extend((LOAD_DATA, ord(ch)))
+        code.extend(send_char())
+        if ch == '\n':
+            code.extend((COLUMN_CLR, ROW_INCR))
+    return code
+ 
+        
+    
+simpleCodeExample = initOled + sendText("ABC")
+
+
+if __name__ == "__main__":
+    from  pprint import pprint
+    pprint(simpleCodeExample)
+
