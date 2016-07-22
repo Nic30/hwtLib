@@ -1,5 +1,4 @@
-from hwtLib.proc.ssd1306Cntrl_instr import *
-import pprint
+from hwtLib.proc.ssd1306cntrl.instructions import *
 
 def sendControlls(controllData):
     code = []
