@@ -52,7 +52,7 @@ class SPICntrlW(Unit):
             stT.hold4
         ).Trans(stT.hold4,  # Hold CS low for a bit
             stT.done
-        ).Trans(stT.done,  # Finish SPI transimission wait for SPI_EN to go low
+        ).Default( #stT.done,   Finish SPI transimission wait for SPI_EN to go low
             (~In,
                 stT.idle
             )
