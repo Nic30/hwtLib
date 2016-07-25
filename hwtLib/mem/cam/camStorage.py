@@ -13,9 +13,9 @@ class CamStorageInIntf(Interface):
         
     def _declr(self):
         COLUMNS = self.COLUMNS
-        self.data = s(dtype=vecT(COLUMNS*6))
-        self.di   = s(dtype=vecT(COLUMNS))
-        self.we   = s(dtype=vecT(self.ROWS))
+        self.data = s(dtype=vecT(COLUMNS * 6))
+        self.di = s(dtype=vecT(COLUMNS))
+        self.we = s(dtype=vecT(self.ROWS))
        
 
 con = connect
@@ -37,51 +37,59 @@ class CamStorage(Unit):
             self.match._replaceParam("DATA_WIDTH", self.ROWS)
         
         self.rams = []
-        for c in range(evalParam(self.COLUMNS).val):
-            # 7Series LUTM
-            ram = RAM64X1S()
-            ram.INIT.set(vec(0,64))
-            self.rams.append(ram)
-            setattr(self, "RAM64X1S_inst%d" % c, ram)
+        for r in range(evalParam(self.ROWS).val):
+            for c in range(evalParam(self.COLUMNS).val):
+                # 7Series LUTM
+                ram = RAM64X1S()
+                ram.INIT.set(vec(0, 64))
+                self.rams.append(ram)
+                setattr(self, "RAM64X1S_inst%dx%d" % (c, r), ram)
             
 
     def _impl(self):
         rows_t = vecT(self.ROWS)
-        carry_t = vecT(self.COLUMNS+1)
+        carry_t = vecT(self.COLUMNS + 1)
+        ROWS = evalParam(self.ROWS).val
+        COLUMNS = evalParam(self.COLUMNS).val
         din = self.din
-        #cam_storage_gen :
-        for r in range(evalParam(self.ROWS).val):
+
+        # cam_storage_gen :
+        for r in range(ROWS):
             match_carry = self._sig("match_carry%d" % r, carry_t)
-            #cam_storage_row_gen :
-            for c in range(evalParam(self.COLUMNS).val):
-                match_base = self._sig("match_base%d_%d" % (r,c), rows_t)
-                ram = self.rams[c]
-                base = c*6
+            # cam_storage_row_gen :
+            for c in range(COLUMNS):
+                match_base = self._sig("match_base%d_%d" % (r, c), rows_t)
+                ram = self.rams[r * COLUMNS + c]
+                base = c * 6
 
                 con(self.clk, ram.wclk)
                 
-                con(din.data[base+0], ram.a0)
-                con(din.data[base+1], ram.a1)
-                con(din.data[base+2], ram.a2)
-                con(din.data[base+3], ram.a3)
-                con(din.data[base+4], ram.a4)
-                con(din.data[base+5], ram.a5)
+                con(din.data[base + 0], ram.a0)
+                con(din.data[base + 1], ram.a1)
+                con(din.data[base + 2], ram.a2)
+                con(din.data[base + 3], ram.a3)
+                con(din.data[base + 4], ram.a4)
+                con(din.data[base + 5], ram.a5)
                 
-                con(ram.o,     match_base[r])
-                con(din.di[c],         ram.d)
-                con(din.we[r],        ram.we)
+                con(ram.o, match_base[r])
+                con(din.di[c], ram.d)
+                con(din.we[r], ram.we)
                 
                 # Carry MUX
-                nextCarry = match_carry[c+1]
+                nextCarry = match_carry[c + 1]
                 If(match_base[r],
                    con(match_carry[c], nextCarry)
                 ).Else(
                    con(0, nextCarry)
                 )
                 
-            con(self.match.rd,       match_carry[0])
+            con(self.match.rd, match_carry[0])
             con(match_carry[self.COLUMNS], self.match.data[r])
 
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl
-    print(toRtl(CamStorage))
+    u = CamStorage()
+    u.COLUMNS.set(2)
+    u.ROWS.set(3)
+    
+    print(toRtl(u))
