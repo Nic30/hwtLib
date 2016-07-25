@@ -1,18 +1,18 @@
 import unittest
-from python_toolkit.arrayQuery import single, NoValueExc
-from hdl_toolkit.hdlObjects.types.defs import INT, UINT, PINT, SLICE
-from hdl_toolkit.hdlObjects.typeShortcuts import hInt
+
+from hdl_toolkit.hdlObjects.expr import ExprComparator
 from hdl_toolkit.hdlObjects.operator import Operator
 from hdl_toolkit.hdlObjects.operatorDefs import AllOps
-from hdl_toolkit.hdlObjects.expr import ExprComparator
-from hdl_toolkit.synthetisator.interfaceLevel.unitUtils import synthesised
-from hdl_toolkit.synthetisator.interfaceLevel.unitFromHdl import UnitFromHdl
-from hdl_toolkit.synthetisator.param import Param
+from hdl_toolkit.hdlObjects.typeShortcuts import hInt
+from hdl_toolkit.hdlObjects.types.defs import INT, UINT, PINT, SLICE
 from hdl_toolkit.interfaces.amba import AxiLite
 from hdl_toolkit.interfaces.std import Clk, \
     Rst_n, BramPort, VldSynced
-    
+from hdl_toolkit.synthetisator.interfaceLevel.unitFromHdl import UnitFromHdl
+from hdl_toolkit.synthetisator.param import Param
+from hdl_toolkit.synthetisator.shortcuts import synthesised
 from hwtLib.tests.synthetisator.interfaceLevel.baseSynthetisatorTC import BaseSynthetisatorTC
+from python_toolkit.arrayQuery import single, NoValueExc
 
 
 ILVL_VHDL = '../../../samples/vhdlCodesign/vhdl/'

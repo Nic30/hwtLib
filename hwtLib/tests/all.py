@@ -23,6 +23,7 @@ from hwtLib.tests.statements import StatementsTC
 from hwtLib.samples.iLvl.twoCntrs_test import TwoCntrsTC
 from hwtLib.samples.iLvl.cntr_test import CntrTC
 from hwtLib.samples.iLvl.dReg_test import DRegTC
+from hwtLib.mem.clkSynchronizer_test import ClkSynchronizerTC
 
 if __name__ == "__main__":
     def testSuiteFromTCs(*tcs):
@@ -47,6 +48,7 @@ if __name__ == "__main__":
         DRegTC,
         CntrTC,
         TwoCntrsTC,
+        ClkSynchronizerTC,
         
     )
     runner = TextTestRunner(verbosity=2)

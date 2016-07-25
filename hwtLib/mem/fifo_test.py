@@ -1,23 +1,81 @@
-from hdl_toolkit.simulator.shortcuts import simUnitVcd
+from copy import copy
+import unittest
+
+from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
+from hdl_toolkit.simulator.agentConnector import valuesToInts
 from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
-from hdl_toolkit.synthetisator.shortcuts import toRtl
-from hdl_toolkit.simulator.agentConnector import autoAddAgents
+from hdl_toolkit.simulator.shortcuts import simUnitVcd
+from hdl_toolkit.synthetisator.shortcuts import synthesised
 from hwtLib.mem.fifo import Fifo
 
-if __name__ == "__main__":
+
+class FifoTC(unittest.TestCase):
+    def setUp(self):
+        self.u = u = Fifo()
+        u.DATA_WIDTH.set(8)
+        u.DEPTH.set(4)
+        synthesised(u)
+        self.procs = autoAddAgents(u)
+
     
-    u = Fifo()
-    u.DATA_WIDTH.set(8)
-    u.DEPTH.set(4)
-    ns = HdlSimulator.ns
-    toRtl(u)
+    def doSim(self, name, time=80 * HdlSimulator.ns):
+        simUnitVcd(self.u, self.procs,
+                    "tmp/fifo_" + name + ".vcd",
+                    time=time)
+    
+    
+    
+    def test_fifoWritterDisable(self):
+        u = self.u
+        
+        data = [1, 2, 3, 4]
+        u.dataIn._ag.data = copy(data)
+        u.dataIn._ag.enable = False
 
-    procs = autoAddAgents(u)
-    u.dataIn._ag.data = [1, 2, 3, 4]
-    #u.dout._ag.enable = False
+        self.doSim("fifoWritterDisable")
+        
+        self.assertSequenceEqual(u.dataOut._ag.data, [])
+        self.assertSequenceEqual(u.dataIn._ag.data, data)
+        
+        
+    
+    def test_normalOp(self):
+        u = self.u
+        
+        expected = [1, 2, 3, 4]
+        u.dataIn._ag.data = copy(expected)
+
+        self.doSim("normalOp")
+        
+        collected = u.dataOut._ag.data
+        self.assertSequenceEqual(expected, valuesToInts(collected))
+
+    def test_tryMore(self):
+        u = self.u
+        
+        u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
+        u.dataOut._ag.enable = False
+        
+        self.doSim("tryMore", 120 * HdlSimulator.ns)
+
+        collected = agInts(u.dataOut)
+        self.assertSequenceEqual(collected, [])
+        self.assertSequenceEqual(u.dataIn._ag.data, [5, 6])
+
+    def test_doloop(self):
+        u = self.u
+        u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
+
+        self.doSim("doloop", 120 * HdlSimulator.ns)
+
+        collected = agInts(u.dataOut)
+        self.assertSequenceEqual(collected, [1, 2, 3, 4, 5, 6])
+        self.assertSequenceEqual(u.dataIn._ag.data, [])
 
 
-    simUnitVcd(u, procs,
-                "tmp/fifo.vcd",
-                time=80 * HdlSimulator.ns)
-    print("done")
+if __name__ == "__main__":
+    suite = unittest.TestSuite()
+    # suite.addTest(TwoCntrsTC('test_withStops'))
+    suite.addTest(unittest.makeSuite(FifoTC))
+    runner = unittest.TextTestRunner(verbosity=3)
+    runner.run(suite)
