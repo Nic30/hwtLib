@@ -18,13 +18,15 @@ class RamTc(unittest.TestCase):
         synthesised(u)
         procs = autoAddAgents(u)
 
-        u.a._ag.requests = [(WRITE, 0, 5), (WRITE, 1, 7), (READ, 0), (READ, 1), (READ, 0), (READ, 1), (READ, 2)] 
+        u.a._ag.requests = [(WRITE, 0, 5), (WRITE, 1, 7), 
+                            (READ, 0), (READ, 1), 
+                            (READ, 0), (READ, 1), (READ, 2)] 
         
         
         simUnitVcd(u, procs,
                    "tmp/ram_writeAndRead.vcd", time=60 * HdlSimulator.ns)
     
-        self.assertSequenceEqual(valuesToInts(u.a._ag.readed), [5, 7, None])
+        self.assertSequenceEqual(valuesToInts(u.a._ag.readed), [5, 7, None, None])
 
         
 if __name__ == "__main__":

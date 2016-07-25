@@ -1,11 +1,11 @@
-from hdl_toolkit.synthetisator.shortcuts import toRtl
-
-from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
-from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
-
-from hwtLib.samples.iLvl.twoCntrs import TwoCntrs
 import unittest
+
+from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
+from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
+from hdl_toolkit.simulator.shortcuts import simUnitVcd
+from hdl_toolkit.synthetisator.shortcuts import toRtl
+from hwtLib.samples.iLvl.twoCntrs import TwoCntrs
+
 
 ns = HdlSimulator.ns
 
@@ -15,14 +15,14 @@ eightZeros = [0 for _ in range(8)]
 class TwoCntrsTC(unittest.TestCase):
     def setUp(self):
         self.u = TwoCntrs()
-        #print(
+        # print(
         toRtl(self.u)
-        #)
+        # )
         self.procs = autoAddAgents(self.u)
         
     def runSim(self, name, time=90 * HdlSimulator.ns):
         simUnitVcd(self.u, self.procs,
-                "tmp/twoCntrs_%s.vcd" % name, 
+                "tmp/twoCntrs_%s.vcd" % name,
                 time=90 * HdlSimulator.ns)
             
     def test_nothingEnable(self):
@@ -80,12 +80,12 @@ class TwoCntrsTC(unittest.TestCase):
         self.runSim("test_withStops")
         self.assertSequenceEqual([1, 1, 0, 0, 1, 1, 1, 1], agInts(u.eq))
         self.assertSequenceEqual(eightZeros, agInts(u.gt))
-        self.assertSequenceEqual([0, 0, 1, 1, 0, 0, 0, 0] ,agInts(u.lt))
-        self.assertSequenceEqual([0, 0, 1, 1, 0, 0, 0, 0] ,agInts(u.ne))
+        self.assertSequenceEqual([0, 0, 1, 1, 0, 0, 0, 0] , agInts(u.lt))
+        self.assertSequenceEqual([0, 0, 1, 1, 0, 0, 0, 0] , agInts(u.ne))
         
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(TwoCntrsTC('test_withStops'))
+    # suite.addTest(TwoCntrsTC('test_nothingEnable'))
     suite.addTest(unittest.makeSuite(TwoCntrsTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

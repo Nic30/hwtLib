@@ -45,9 +45,10 @@ class FifoTC(unittest.TestCase):
         expected = [1, 2, 3, 4]
         u.dataIn._ag.data = copy(expected)
 
-        self.doSim("normalOp")
+        self.doSim("normalOp", 90 * HdlSimulator.ns)
         
         collected = u.dataOut._ag.data
+
         self.assertSequenceEqual(expected, valuesToInts(collected))
 
     def test_tryMore(self):
@@ -59,6 +60,7 @@ class FifoTC(unittest.TestCase):
         self.doSim("tryMore", 120 * HdlSimulator.ns)
 
         collected = agInts(u.dataOut)
+        self.assertSequenceEqual(valuesToInts(u.mem._val), [1, 2, 3, 4])
         self.assertSequenceEqual(collected, [])
         self.assertSequenceEqual(u.dataIn._ag.data, [5, 6])
 
@@ -75,7 +77,7 @@ class FifoTC(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_withStops'))
+    # suite.addTest(FifoTC('test_normalOp'))
     suite.addTest(unittest.makeSuite(FifoTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

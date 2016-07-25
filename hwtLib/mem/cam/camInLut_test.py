@@ -66,7 +66,7 @@ class CamInLutTC(unittest.TestCase):
         
         s = HdlSimulator
         simUnitVcd(u, proc,
-                   "tmp/CamInLut_simple.vcd", time=1600 * s.ns)
+                   "tmp/CamInLut_simple.vcd", time=90 * s.ns)
     
         # # check simulation results
         # self.assertEqual(len(expected), len(recieved), recieved)
