@@ -18,7 +18,7 @@ def extend(sig, targetWidth):
     if tw == aw:
         return sig
     elif aw < tw:
-        raise sig._concat(vec(0, tw - aw))
+        return sig._concat(vec(0, tw - aw))
     else:
         raise NotImplementedError()
     
