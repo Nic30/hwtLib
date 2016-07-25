@@ -1,16 +1,16 @@
 import math
 
+from hdl_toolkit.hdlObjects.typeShortcuts import hInt, vec
+from hdl_toolkit.interfaces.std import Handshaked, VldSynced
+from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
+from hdl_toolkit.synthetisator.codeOps import If, c
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.synthetisator.param import Param, evalParam
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
-from hdl_toolkit.interfaces.std import Handshaked, VldSynced
-from hdl_toolkit.hdlObjects.typeShortcuts import hInt, vec
-
-from hwtLib.mem.cam.interfaces import AddrDataHs
-from hwtLib.mem.cam.camWrite import CamWrite
-from hwtLib.mem.cam.camStorage import CamStorage
 from hwtLib.mem.cam.camMatch import CamMatch
-from hdl_toolkit.synthetisator.codeOps import If, c
+from hwtLib.mem.cam.camStorage import CamStorage
+from hwtLib.mem.cam.camWrite import CamWrite
+from hwtLib.mem.cam.interfaces import AddrDataHs
+
 
 def extend(sig, targetWidth):
     tw = evalParam(targetWidth).val
@@ -27,6 +27,7 @@ def div_up(sig, divider):
     divider = divider.staticEval().val
     v = math.ceil(v / divider)
     return hInt(int(v)) 
+
 
 class CamInLUT(Unit):
     """
