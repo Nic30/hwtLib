@@ -3,11 +3,11 @@ from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.synthetisator.codeOps import Switch
 
-class SimpleUnit(Unit):
+class SwitchStmUnit(Unit):
     def _declr(self):
         with self._asExtern():
-            self.a = Signal()
             self.sel = Signal(dtype=vecT(2))
+            self.a = Signal()
             self.b = Signal()
             self.c = Signal()
             self.d = Signal()
@@ -28,4 +28,4 @@ class SimpleUnit(Unit):
 if __name__ == "__main__": # alias python main function
     from hdl_toolkit.synthetisator.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
-    print(toRtl(SimpleUnit))
+    print(toRtl(SwitchStmUnit))

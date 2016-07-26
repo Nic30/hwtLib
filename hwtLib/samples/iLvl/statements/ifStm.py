@@ -7,20 +7,17 @@ class SimpleIfStatement(Unit):
     def _declr(self):
         with self._asExtern():
             self.a = Signal()
-            self.a2 = Signal()
             self.b = Signal()
             self.c = Signal()
             self.d = Signal()
             
     def _impl(self):
-        If(self.c,
-           connect(self.c, self.a),
-           connect(self.c, self.a2)
-        ).Elif(self.d,
-           connect(self.c, self.a),
-           connect(self.c, self.a2)  
+        If(self.a,
+           connect(self.b, self.d),
+        ).Elif(self.b,
+           connect(self.c, self.d)  
         ).Else(
-           connect(self.b, self.a)
+           connect(0, self.d) 
         )
 
 if __name__ == "__main__": # alias python main function
