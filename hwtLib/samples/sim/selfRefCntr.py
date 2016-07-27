@@ -4,7 +4,7 @@ from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, oscilate, pullUpAfter
 from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
-from hdl_toolkit.synthetisator.shortcuts import toRtl
+from hdl_toolkit.synthetisator.shortcuts import synthesised
 from hdl_toolkit.synthetisator.codeOps import If, connect
 
 class SelfRefCntr(Unit):
@@ -29,12 +29,13 @@ class SelfRefCntr(Unit):
         
         
 if __name__ == "__main__":
-    print(toRtl(SelfRefCntr()))
+    #print(toRtl(SelfRefCntr()))
     
     u = SelfRefCntr()
+    synthesised(u)
     
-    simUnitVcd(u, [oscilate(lambda: u.clk),
-                   pullUpAfter(lambda: u.rst_n, time =99)],
+    simUnitVcd(u, [oscilate(u.clk),
+                   pullUpAfter(u.rst_n, intDelay=100)],
                 "tmp/selfRefCntr.vcd", 
                 time=60 * HdlSimulator.ns)
     print("done")

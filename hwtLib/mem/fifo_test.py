@@ -34,8 +34,8 @@ class FifoTC(unittest.TestCase):
 
         self.doSim("fifoWritterDisable")
         
-        self.assertSequenceEqual(u.dataOut._ag.data, [])
-        self.assertSequenceEqual(u.dataIn._ag.data, data)
+        self.assertSequenceEqual([], u.dataOut._ag.data)
+        self.assertSequenceEqual(data, u.dataIn._ag.data)
         
         
     
@@ -60,7 +60,7 @@ class FifoTC(unittest.TestCase):
         self.doSim("tryMore", 120 * HdlSimulator.ns)
 
         collected = agInts(u.dataOut)
-        self.assertSequenceEqual(valuesToInts(u.mem._val), [1, 2, 3, 4])
+        self.assertSequenceEqual([1, 2, 3, 4], valuesToInts(u.mem._val))
         self.assertSequenceEqual(collected, [])
         self.assertSequenceEqual(u.dataIn._ag.data, [5, 6])
 
@@ -71,8 +71,8 @@ class FifoTC(unittest.TestCase):
         self.doSim("doloop", 120 * HdlSimulator.ns)
 
         collected = agInts(u.dataOut)
-        self.assertSequenceEqual(collected, [1, 2, 3, 4, 5, 6])
-        self.assertSequenceEqual(u.dataIn._ag.data, [])
+        self.assertSequenceEqual([1, 2, 3, 4, 5, 6], collected)
+        self.assertSequenceEqual([], u.dataIn._ag.data)
 
 
 if __name__ == "__main__":

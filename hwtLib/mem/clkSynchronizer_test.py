@@ -23,6 +23,7 @@ class ClkSynchronizerTC(unittest.TestCase):
         u = self.u
                 
         def dataCollector(s):
+            yield s.wait(CLK_PERIOD + 0.001) # random small value to collect data after it is set
             while True:
                 d = s.read(u.outData)
                 collected.append(d)

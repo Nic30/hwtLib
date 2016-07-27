@@ -28,9 +28,9 @@ class Ram_sp(Unit):
         
     def _impl(self):
         dt = Array(vecT(self.DATA_WIDTH), hInt(2) ** self.ADDR_WIDTH)
-        self.mem = self._sig("ram_memory", dt)
+        self._mem = self._sig("ram_memory", dt)
         
-        self.connectPort(self.a, self.mem)
+        self.connectPort(self.a, self._mem)
 
 class Ram_dp(Ram_sp):
     def _declr(self):
@@ -40,7 +40,7 @@ class Ram_dp(Ram_sp):
 
     def _impl(self):
         super()._impl()
-        self.connectPort(self.b, self.mem)
+        self.connectPort(self.b, self._mem)
 
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl
