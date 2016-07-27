@@ -35,9 +35,9 @@ class SPICntrlW(Unit):
         
         In = self.dataIn.vld
         
-        stb = FsmBuilder(self, stT)
         
-        stb.Trans(stT.idle,
+        stb = FsmBuilder(self, stT)\
+        .Trans(stT.idle,
                    # Wait for SPI_EN to go high 
                    (In, stT.send)
         ).Trans(stT.send,
@@ -52,7 +52,7 @@ class SPICntrlW(Unit):
             stT.hold4
         ).Trans(stT.hold4,  # Hold CS low for a bit
             stT.done
-        ).Default( #stT.done,   Finish SPI transimission wait for SPI_EN to go low
+        ).Default( #stT.done,   Finish SPI transmission wait for SPI_EN to go low
             (~In,
                 stT.idle
             )
@@ -94,12 +94,10 @@ class SPICntrlW(Unit):
         If(st._eq(stT.send),
             If(clk_divided,
                 c(0, falling)
+            ).Elif(~falling,
+                c(1, falling),  # Indicate that it is passed the falling edge
             ).Else(
-                If(~falling,
-                   c(1, falling),  # Indicate that it is passed the falling edge
-                ).Else(
-                    falling._same()
-                )
+                falling._same()
             )
         ).Else(
             falling._same()
