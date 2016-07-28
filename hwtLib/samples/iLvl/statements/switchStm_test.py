@@ -15,7 +15,7 @@ class SwitchStmTC(unittest.TestCase):
         synthesised(self.u)
         self.procs = autoAddAgents(self.u)
         
-    def runSim(self, name, time=120 * HdlSimulator.ns):
+    def runSim(self, name, time=110 * HdlSimulator.ns):
         simUnitVcd(self.u, self.procs,
                 "tmp/switchStm_%s.vcd" % name,
                 time=time)

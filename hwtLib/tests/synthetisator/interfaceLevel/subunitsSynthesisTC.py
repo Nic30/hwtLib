@@ -3,8 +3,7 @@ import unittest
 from hdl_toolkit.hdlObjects.specialValues import DIRECTION
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hInt
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.interfaceLevel.unitUtils import  synthesised
-from hdl_toolkit.synthetisator.shortcuts import toRtl
+from hdl_toolkit.synthetisator.shortcuts import toRtl, synthesised
 from hdl_toolkit.serializer.exceptions import SerializerException
 from hdl_toolkit.synthetisator.interfaceLevel.emptyUnit import EmptyUnit, setOut
 from hdl_toolkit.synthetisator.param import Param
@@ -13,9 +12,9 @@ from hdl_toolkit.interfaces.ambaOthers import FullDuplexAxiStream
 from hdl_toolkit.interfaces.amba import AxiStream
 from hdl_toolkit.synthetisator.codeOps import c
 
-from hwtLib.samples.iLvl.unitToUnitConnection import UnitToUnitConnection
 from hwtLib.samples.iLvl.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnection
 from hwtLib.tests.synthetisator.interfaceLevel.baseSynthetisatorTC import BaseSynthetisatorTC
+from hwtLib.samples.iLvl.hierarchy.unitToUnitConnection import UnitToUnitConnection
 D = DIRECTION
 
 

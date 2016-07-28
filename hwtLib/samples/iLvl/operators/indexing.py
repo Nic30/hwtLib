@@ -26,10 +26,19 @@ class SimpleIndexingJoin(Unit):
         connect(self.b, self.a[0])
         connect(self.c, self.a[1])
 
-
+class SimpleIndexingRangeJoin(Unit):
+    def _declr(self):
+        with self._asExtern():
+            self.a = Signal(dtype=vecT(4))
+            self.b = Signal(dtype=vecT(2))
+            self.c = Signal(dtype=vecT(2))
+        
+    def _impl(self):
+        connect(self.b, self.a[2:0])
+        connect(self.c, self.a[4:2])
 
 
 if __name__ == "__main__":  # alias python main function
     from hdl_toolkit.synthetisator.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
-    print(toRtl(SimpleIndexingJoin))
+    print(toRtl(SimpleIndexingRangeJoin))

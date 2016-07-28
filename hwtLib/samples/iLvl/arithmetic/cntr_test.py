@@ -1,10 +1,10 @@
-from hwtLib.samples.iLvl.cntr import Cntr
-
 import unittest
-from hdl_toolkit.synthetisator.shortcuts import toRtl
+
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
 from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
+from hdl_toolkit.synthetisator.shortcuts import toRtl
+from hwtLib.samples.iLvl.arithmetic.cntr import Cntr
 
 
 class CntrTC(unittest.TestCase):
@@ -25,7 +25,7 @@ class CntrTC(unittest.TestCase):
         
         u.en._ag.data = [1]
         self.runSim("overflow")
-        self.assertSequenceEqual([0, 1, 2, 3, 0, 1, 2, 3], agInts(u.val))
+        self.assertSequenceEqual([0, 0, 1, 2, 3, 0, 1, 2, 3], agInts(u.val))
 
 
     def test_contingWithStops(self):
@@ -33,7 +33,7 @@ class CntrTC(unittest.TestCase):
         
         u.en._ag.data = [1, 0, 1, 1, 0, 0, 0]
         self.runSim("contingWithStops")
-        self.assertSequenceEqual([0, 0, 1, 2, 2, 2, 2, 2], agInts(u.val))
+        self.assertSequenceEqual([0, 0, 0, 1, 2, 2, 2, 2, 2], agInts(u.val))
 
     
     

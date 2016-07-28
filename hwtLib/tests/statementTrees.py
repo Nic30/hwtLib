@@ -1,12 +1,13 @@
 import re
 import unittest
-from hdl_toolkit.synthetisator.rtlLevel.netlist import RtlNetlist
-from hdl_toolkit.synthetisator.assigRenderer import renderIfTree
+
 from hdl_toolkit.hdlObjects.statements import IfContainer, SwitchContainer
 from hdl_toolkit.hdlObjects.types.defs import INT
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.serializer.formater import formatVhdl
+from hdl_toolkit.synthetisator.assigRenderer import renderIfTree
 from hdl_toolkit.synthetisator.codeOps import connect, If, Switch
+from hdl_toolkit.synthetisator.rtlLevel.netlist import RtlNetlist
 
 
 w = connect
@@ -35,7 +36,7 @@ class StatementTreesTC(unittest.TestCase):
         _tmpl = rmWhitespaces.sub(" ", tmpl).strip()
         _cont = rmWhitespaces.sub(" ", cont).strip()
     
-        self.assertEquals(_tmpl, _cont, "%s\n\nshould be\n\n%s"% (cont, tmpl ))
+        self.assertEquals(_tmpl, _cont, "%s\n\nshould be\n\n%s" % (cont, tmpl))
     
     def test_baicIf(self):
         a = self.n.sig('a')
@@ -112,7 +113,7 @@ class StatementTreesTC(unittest.TestCase):
         cont = list(renderIfTree(assigs))
         self.assertEqual(len(cont), 1)
         cont = cont[0]
-        tmpl ="""
+        tmpl = """
         CASE st IS
             WHEN idle =>
                 IF (sd0 AND sd1)='1' THEN 
@@ -202,7 +203,7 @@ class StatementTreesTC(unittest.TestCase):
         cont = list(renderIfTree(assigs))
         self.assertEqual(len(cont), 1)
         cont = cont[0]
-        tmpl ="""
+        tmpl = """
         CASE st IS
             WHEN idle =>
                 IF (sd0 AND sd1)='1' THEN 
@@ -295,7 +296,7 @@ class StatementTreesTC(unittest.TestCase):
         cont = list(renderIfTree(assigs))
         self.assertEqual(len(cont), 1)
         cont = cont[0]
-        tmpl ="""
+        tmpl = """
         CASE st IS
             WHEN idle =>
                 IF (sd0 AND sd1)='1' THEN 
@@ -339,7 +340,7 @@ class StatementTreesTC(unittest.TestCase):
         self.strStructureCmp(tmpl, cont)
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    #suite.addTest(StatementTreesTC('test_basicSwitch'))
+    # suite.addTest(StatementTreesTC('test_basicSwitch'))
     suite.addTest(unittest.makeSuite(StatementTreesTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -88,7 +88,7 @@ class OperatorTC(unittest.TestCase):
       
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    suite.addTest(OperatorTC('testNotNotisOrigSig'))
-    #suite.addTest(unittest.makeSuite(OperatorTC))
+    #suite.addTest(OperatorTC('testNotNotisOrigSig'))
+    suite.addTest(unittest.makeSuite(OperatorTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

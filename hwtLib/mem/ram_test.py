@@ -8,7 +8,7 @@ from hwtLib.mem.ram import Ram_sp
 from hdl_toolkit.hdlObjects.specialValues import WRITE, READ
 
 
-class RamTc(unittest.TestCase):
+class RamTC(unittest.TestCase):
 
     def test_writeAndRead(self):
         u = Ram_sp()
@@ -32,6 +32,6 @@ class RamTc(unittest.TestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(TwoCntrsTC('test_withStops'))
-    suite.addTest(unittest.makeSuite(RamTc))
+    suite.addTest(unittest.makeSuite(RamTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
