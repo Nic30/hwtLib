@@ -53,13 +53,13 @@ class IndexingTC(unittest.TestCase):
         
         self.runSim("rangeJoin")
         
-        self.assertSequenceEqual([0, 1, 2, 3, None, 3, 2, 1], agInts(u.a))
+        self.assertSequenceEqual([0, 3, 12, 15, None, 15, 12, 3], agInts(u.a))
         
         
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(IndexingTC('test_rangeJoin'))
-    # suite.addTest(unittest.makeSuite(IndexingTC))
+    #suite.addTest(IndexingTC('test_rangeJoin'))
+    suite.addTest(unittest.makeSuite(IndexingTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
    
