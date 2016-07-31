@@ -24,12 +24,14 @@ addons:
          - g++-5
          #- clang-3.9
 #env: CC=clang-3.9 CXX=clang-3.9
-env: CC=g++-5 CXX=g++-5 
+# we have to add -fpermissive otherwise pillow will not compile
+env: CC=g++-5 CXX=g++-5 CFLAGS=-fpermissive
 
 
 # command to install dependencies
 install: 
   - cd ..
+  - pip3 install coveralls
   - git clone https://github.com/Nic30/HWToolkit.git
   - cd HWToolkit
   - python3 setup.py install
@@ -38,4 +40,7 @@ install:
 
 # command to run tests
 script: 
-  - python3 hwtLib/tests/all.py
+  - python3 -m pytest hwtLib/tests/all.py --doctest-modules -v
+
+after_success:
+  - coveralls

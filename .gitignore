@@ -40,3 +40,5 @@ target/
 
 # tmp files
 *~
+# coveralls cache
+.cache/
