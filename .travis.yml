@@ -6,8 +6,8 @@ addons:
 
     packages:
     # install toolchains
-    - gcc-5
-    - g++-5
+    - gcc-5.4
+    - g++-5.4
 
 compiler:
   - gcc-5.4
@@ -24,6 +24,8 @@ python:
 
 # command to install dependencies
 install: 
+  - gcc --version
+  - echo $CC 
   - cd ..
   - git clone https://github.com/Nic30/HWToolkit.git
   - cd HWToolkit
