@@ -21,11 +21,12 @@ addons:
          - ubuntu-toolchain-r-test
          #- llvm-toolchain-precise-3.9
       packages:
-         - g++-5
+         #- g++-5
+         - gcc-5
          #- clang-3.9
 #env: CC=clang-3.9 CXX=clang-3.9
 # we have to add -fpermissive otherwise pillow will not compile
-env: CC=g++-5 CXX=g++-5 CFLAGS=-fpermissive
+env: CC=gcc-5 CXX=g++-5 CFLAGS=-fpermissive
 
 
 # command to install dependencies
