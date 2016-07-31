@@ -16,8 +16,7 @@ git:
   depth: 1
 
 env:
-  - CC=gcc-5
-  - CCX=g++-5
+  - CC=gcc-5 CCX=g++-5
 
 language: python
 python:
