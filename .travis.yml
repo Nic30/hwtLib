@@ -1,20 +1,31 @@
+
+# if trusty is not used compilation is killed (out or mem)
+sudo: required
+dist: trusty
+
 language: python
+
 git:
   depth: 1
 
+cache:
+  apt: true
+
 # clang is required because there is not enought ram for gcc
-compiler: clang
+compiler: gcc
 python:
   - "3.5"
 addons:
    apt:
       sources:
          - ubuntu-toolchain-r-test
-         - llvm-toolchain-precise-3.8
+         #- llvm-toolchain-precise-3.9
       packages:
-         - g++-6
-         - clang-3.8
-env: CC=clang-3.8 CXX=clang-3.8
+         - g++-5
+         #- clang-3.9
+#env: CC=clang-3.9 CXX=clang-3.9
+env: CC=g++-5 CXX=g++-5 
+
 
 # command to install dependencies
 install: 
