@@ -1,7 +1,7 @@
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.synthetisator.param import Param
 from hdl_toolkit.hdlObjects.typeShortcuts import hBit, vec, vecT
-from hdl_toolkit.interfaces.std import Signal
+from hdl_toolkit.interfaces.std import Signal, Clk
 from hdl_toolkit.synthetisator.codeOps import connect, Concat, If
 
 c = connect
@@ -14,7 +14,6 @@ def mkLutRamCls(DATA_WIDTH):
 	
 		def _declr(self):
 			with self._asExtern():
-				self.o = Signal()
 		
 				self.a0 = Signal()
 				self.a1 = Signal()
@@ -22,15 +21,17 @@ def mkLutRamCls(DATA_WIDTH):
 				self.a3 = Signal()
 				self.a4 = Signal()
 				self.a5 = Signal()
-				self.d	 = Signal()
-				self.wclk = Signal()
+				self.d	 = Signal() # in
+
+				self.wclk = Clk()
+				self.o = Signal()   # out
 				self.we = Signal()
 			
 			
 		def _impl(self):
 			s = self._sig
 			wclk_in = s("wclk_in")
-			mem = self._cntx.sig("mem", vecT(DATA_WIDTH+1),clk=wclk_in, defVal=hBit(None)._concat(self.INIT))
+			mem = self._cntx.sig("mem", vecT(DATA_WIDTH+1), defVal=hBit(None)._concat(self.INIT))
 			a_in = s("a_in", vecT(6))
 			d_in = s("d_in")
 			we_in = s("we_in")
@@ -43,9 +44,9 @@ def mkLutRamCls(DATA_WIDTH):
 			# ReadBehavior
 			c(mem[a_in], self.o)
 				
-			# WriteBehavior 
-			If(we_in,
-			  c(d_in, mem[a_in])
+			# WriteBehavior
+			If(wclk_in._onRisingEdge() & we_in,
+			   c(d_in, mem[a_in])
 			) 
 
 	RAMnX1S.__name__  = "RAM%dX1S_gen" % DATA_WIDTH
