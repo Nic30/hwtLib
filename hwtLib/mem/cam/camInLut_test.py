@@ -10,26 +10,26 @@ from hwtLib.mem.cam.camInLUT import CamInLUT
 from hwtLib.mem.cam.interfaces import AddrDataHs
 
 
-class CamInLut_Model():
-    def __init__(self, size):
-        self.data = [None for _ in range(size)]
-        self.size = size
-        
-    def write(self, addr, data):
-        self.data[addr] = data
-    
-    def match(self, data):
-        match = 0
-        for d in reversed(self.data):
-            
-            if d is None:
-                m = 0
-            else:
-                m = d == data
-            match <<= 1
-            match |= m
-        
-        return match 
+# class CamInLut_Model():
+#     def __init__(self, size):
+#         self.data = [None for _ in range(size)]
+#         self.size = size
+#         
+#     def write(self, addr, data):
+#         self.data[addr] = data
+#     
+#     def match(self, data):
+#         match = 0
+#         for d in reversed(self.data):
+#             
+#             if d is None:
+#                 m = 0
+#             else:
+#                 m = d == data
+#             match <<= 1
+#             match |= m
+#         
+#         return match 
 
 class AddrDataHs_agent(HandshakedAgent):
 
@@ -66,7 +66,8 @@ class CamInLutTC(unittest.TestCase):
         
         s = HdlSimulator
         simUnitVcd(u, proc,
-                   "tmp/CamInLut_simple.vcd", time=90 * s.ns)
+                   "tmp/camInLut_simple.vcd",
+                   time=90 * s.ns)
     
         # # check simulation results
         # self.assertEqual(len(expected), len(recieved), recieved)

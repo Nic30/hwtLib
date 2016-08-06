@@ -76,7 +76,7 @@ class CamWrite(Unit):
            addr_reg._same()
         )
         # input_wr_reg
-        c(wr_reg, wr_reg)
+        c(inreg_we, wr_reg)
         
         # real_row_addr_gen
         if evalParam(self.ROWS).val > 1:

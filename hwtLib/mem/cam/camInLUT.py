@@ -10,6 +10,7 @@ from hwtLib.mem.cam.camMatch import CamMatch
 from hwtLib.mem.cam.camStorage import CamStorage
 from hwtLib.mem.cam.camWrite import CamWrite
 from hwtLib.mem.cam.interfaces import AddrDataHs
+from hdl_toolkit.synthetisator.shortcuts import synthetizeAndSave
 
 
 def extend(sig, targetWidth):
@@ -32,6 +33,7 @@ def div_up(sig, divider):
 class CamInLUT(Unit):
     """
     CAM where data are store in LUT-RAM
+    [TODO]: currently not working
     """
     def _config(self):
         self.DATA_WIDTH = Param(36)
@@ -126,7 +128,6 @@ class CamInLUT(Unit):
         c(m.outMatch.data[self.ITEMS:0], self.out.data)
         c(m.outMatch.vld, self.out.vld)
         
-        storage_mdata = m.storage.data
         storage_me = m.storage.vld
         
         # write_i
@@ -136,25 +137,23 @@ class CamInLUT(Unit):
         c(addr_padded, w.din.addr)
         c(write_req, w.din.vld)
         c(w.din.rd, write_ready_base)
-        storage_wdata = w.dout.data
-        storage_di = w.dout.di
-        storage_we = w.dout.we          
         
         # storage_i
         s = self.camStorage
         If(storage_me,
-           c(storage_mdata, s.din.data)
+           c(m.storage.data, s.din.addr)
         ).Else(
-           c(storage_wdata, s.din.data)
+           c(w.dout.data, s.din.addr)
         )
-        c(storage_di, s.din.di)
-        c(storage_we, s.din.we)
+        c(w.dout.di, s.din.dataIn)
+        c(w.dout.we , s.din.we)
         c(storage_me, s.match.rd)
         c(s.match.data, m.storage.match)
         
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl
     # with open("/home/nic30/Documents/vivado/scriptTest/scriptTest.srcs/sources_1/new/top.vhd", "w") as f:
-    s = toRtl(CamInLUT)
+    u = CamInLUT()
+    # print(toRtl(u))
+    synthetizeAndSave(u, folderName="/home/nic30/Documents/test_ip_repo/cam/")
     # f.write(s)
-    print(s)

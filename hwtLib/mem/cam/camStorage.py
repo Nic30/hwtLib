@@ -4,7 +4,7 @@ from hdl_toolkit.interfaces.std import Clk, RdSynced, s
 from hdl_toolkit.synthetisator.interfaceLevel.interface import Interface
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, vec
 from hwtLib.mem.lutRam import RAM64X1S
-from hdl_toolkit.synthetisator.codeOps import If, connect
+from hdl_toolkit.synthetisator.codeOps import If, c
 
 class CamStorageInIntf(Interface):
     def _config(self):
@@ -13,16 +13,18 @@ class CamStorageInIntf(Interface):
         
     def _declr(self):
         COLUMNS = self.COLUMNS
-        self.data = s(dtype=vecT(COLUMNS * 6))
-        self.di = s(dtype=vecT(COLUMNS))
+        self.addr = s(dtype=vecT(COLUMNS * 6)) # [TODO] this is address actually
+        self.dataIn = s(dtype=vecT(COLUMNS))       # [TODO] rename to dataIn
         self.we = s(dtype=vecT(self.ROWS))
        
 
-con = connect
         
 class CamStorage(Unit):
     """
     Cam storage mapped in lutRAMs
+    This is matrix like structure of lutRams.
+    din port selects address 
+    
     """
     def _config(self):
         CamStorageInIntf._config(self)
@@ -30,61 +32,54 @@ class CamStorage(Unit):
     def _declr(self):
         with self._asExtern():
             self.clk = Clk()
+            
             with self._paramsShared():
                 self.din = CamStorageInIntf()
+
             self.match = RdSynced()
-        
             self.match._replaceParam("DATA_WIDTH", self.ROWS)
         
+        
         self.rams = []
-        for r in range(evalParam(self.ROWS).val):
-            for c in range(evalParam(self.COLUMNS).val):
-                # 7Series LUTM
-                ram = RAM64X1S()
-                ram.INIT.set(vec(0, 64))
-                self.rams.append(ram)
-                setattr(self, "RAM64X1S_inst%dx%d" % (c, r), ram)
+        for _ in range(evalParam(self.ROWS).val * evalParam(self.COLUMNS).val):
+            # 7Series LUTM
+            ram = RAM64X1S()
+            ram.INIT.set(vec(0, 64))
+            self.rams.append(ram)
+        self._registerArray("RAM64X1S_inst", self.rams)
             
 
     def _impl(self):
-        rows_t = vecT(self.ROWS)
         carry_t = vecT(self.COLUMNS + 1)
         ROWS = evalParam(self.ROWS).val
         COLUMNS = evalParam(self.COLUMNS).val
         din = self.din
 
         # cam_storage_gen :
-        for r in range(ROWS):
-            match_carry = self._sig("match_carry%d" % r, carry_t)
+        for y in range(ROWS):
+            match_carry = self._sig("match_carry%d" % y, carry_t)
             # cam_storage_row_gen :
-            for c in range(COLUMNS):
-                match_base = self._sig("match_base%d_%d" % (r, c), rows_t)
-                ram = self.rams[r * COLUMNS + c]
-                base = c * 6
+            for x in range(COLUMNS):
+                ram = self.rams[y * COLUMNS + x]
+                base = x * 6
 
-                con(self.clk, ram.wclk)
+                c(self.clk, ram.wclk)
+                for i in range(6):
+                    c(din.addr[base + i], getattr(ram, "a%d" % i))
                 
-                con(din.data[base + 0], ram.a0)
-                con(din.data[base + 1], ram.a1)
-                con(din.data[base + 2], ram.a2)
-                con(din.data[base + 3], ram.a3)
-                con(din.data[base + 4], ram.a4)
-                con(din.data[base + 5], ram.a5)
-                
-                con(ram.o, match_base[r])
-                con(din.di[c], ram.d)
-                con(din.we[r], ram.we)
+                c(din.dataIn[x], ram.d)
+                c(din.we[y], ram.we)
                 
                 # Carry MUX
-                nextCarry = match_carry[c + 1]
-                If(match_base[r],
-                   con(match_carry[c], nextCarry)
+                nextCarry = match_carry[x + 1]
+                If(ram.o,
+                   c(match_carry[x], nextCarry)
                 ).Else(
-                   con(0, nextCarry)
+                   c(0, nextCarry)
                 )
                 
-            con(self.match.rd, match_carry[0])
-            con(match_carry[self.COLUMNS], self.match.data[r])
+            c(self.match.rd, match_carry[0])
+            c(match_carry[self.COLUMNS], self.match.data[y])
 
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl

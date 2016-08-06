@@ -29,8 +29,7 @@ class CamMatch(Unit):
             self.outMatch.DATA_WIDTH.set(self.ROWS * self.CELL_HEIGHT)
             
             
-            self.match_enable_decoder = DecEn()
-            self.match_enable_decoder.DATA_WIDTH.set(self.CELL_HEIGHT)
+
     
     def _impl(self):
         din = self.din
@@ -50,7 +49,7 @@ class CamMatch(Unit):
            data_reg._same()
         )
 
-        me_reg = self._sig("me_reg", defVal=0)
+        me_reg = self._reg("me_reg", defVal=0)
         # input_me_reg
         c(inreg_we, me_reg)
         
@@ -96,11 +95,15 @@ class CamMatch(Unit):
                       c(storage.match[j], self.outMatch.data[CELL_HEIGHT*j+i] )
                     )
                 )
-                
-        med = self.match_enable_decoder
-        c(counter, med.din)
-        c(counter_ce, med.en)
-        c(med.dout, match_we)
+        if evalParam(self.CELL_HEIGHT).val > 1:
+            self.match_enable_decoder = DecEn()
+            self.match_enable_decoder.DATA_WIDTH.set(self.CELL_HEIGHT)        
+            med = self.match_enable_decoder
+            c(counter, med.din)
+            c(counter_ce, med.en)
+            c(med.dout, match_we)
+        else:
+            c(counter_ce, match_we[0])
         
         # out_rdy_register
         orr = out_rdy_register
