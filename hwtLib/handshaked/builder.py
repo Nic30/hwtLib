@@ -3,6 +3,8 @@ from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.reg import HandshakedReg
 
 from hwtLib.handshaked.fork import HandshakedFork
+#from hwtLib.handshaked.forkRegistered import HandshakedRegisteredFork
+
 from hwtLib.handshaked.mux import HandshakedMux
 
 class HsBuilder(AbstractStreamBuilder):
@@ -11,5 +13,6 @@ class HsBuilder(AbstractStreamBuilder):
     """
     FifoCls = HandshakedFifo
     ForkCls = HandshakedFork
+    #ForkRegisteredCls = HandshakedRegisteredFork
     RegCls  = HandshakedReg
     MuxCls  = HandshakedMux 

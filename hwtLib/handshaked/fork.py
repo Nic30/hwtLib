@@ -1,13 +1,15 @@
 from hdl_toolkit.intfLvl import Param
 from hdl_toolkit.synthetisator.codeOps import And, c
 from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.interfaces.utils import addClkRstn
 from hwtLib.handshaked.compBase import HandshakedCompBase
+from hdl_toolkit.interfaces.utils import addClkRstn
 
 class HandshakedFork(HandshakedCompBase):
     """
     Clone input stream to n identical output streams
     transaction is made in all interfaces or none of them
+    
+    combinational
     """
     def _config(self):
         self.OUTPUTS = Param(2)
@@ -15,7 +17,7 @@ class HandshakedFork(HandshakedCompBase):
         
     def _declr(self):
         with self._asExtern(), self._paramsShared():
-            addClkRstn(self)
+            addClkRstn(self) # this is just for reference, not actualy used inside
             self.dataIn = self.intfCls()
             self.dataOut = self.intfCls(multipliedBy=self.OUTPUTS)
 
