@@ -14,6 +14,7 @@ from hwtLib.samples.iLvl.mem.reg_test import DRegTC
 from hwtLib.samples.iLvl.mem.rom_test import RomTC
 from hwtLib.samples.iLvl.operators.indexing_test import IndexingTC
 from hwtLib.samples.iLvl.simple_test import SimpleTC
+from hwtLib.samples.iLvl.statements.constDriver_test import ConstDriverTC
 from hwtLib.samples.iLvl.statements.ifStm_test import IfStmTC
 from hwtLib.samples.iLvl.statements.switchStm_test import SwitchStmTC
 
@@ -52,6 +53,7 @@ if __name__ == "__main__":
         StatementTreesTC,
         StatementsTC,
         
+        ConstDriverTC,
         SimpleTC,
         IfStmTC,
         SwitchStmTC,
