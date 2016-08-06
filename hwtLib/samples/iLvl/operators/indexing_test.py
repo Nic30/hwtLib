@@ -4,7 +4,11 @@ from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
 from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
 from hdl_toolkit.synthetisator.shortcuts import synthesised
-from hwtLib.samples.iLvl.operators.indexing import SimpleIndexingSplit, SimpleIndexingJoin, SimpleIndexingRangeJoin
+from hwtLib.samples.iLvl.operators.indexing import (SimpleIndexingSplit,
+                                                    SimpleIndexingJoin,
+                                                    SimpleIndexingRangeJoin,
+                                                    IndexingInernSplit,
+                                                    IndexingInernJoin)
 
 
 ns = HdlSimulator.ns
@@ -21,8 +25,8 @@ class IndexingTC(unittest.TestCase):
                 time=time)
             
     def test_split(self):
-        self.setUpUnit(SimpleIndexingSplit())
-        u = self.u
+        u = SimpleIndexingSplit()
+        self.setUpUnit(u)
         
         u.a._ag.data = [0, 1, 2, 3, None, 3, 2, 1]
         
@@ -32,8 +36,8 @@ class IndexingTC(unittest.TestCase):
         self.assertSequenceEqual([0, 0, 1, 1, None, 1, 1, 0], agInts(u.c))
 
     def test_join(self):
-        self.setUpUnit(SimpleIndexingJoin())
-        u = self.u
+        u = SimpleIndexingJoin()
+        self.setUpUnit(u)
         
         u.b._ag.data = [0, 1, 0, 1, None, 1, 0, 1]
         u.c._ag.data = [0, 0, 1, 1, None, 1, 1, 0]
@@ -46,8 +50,6 @@ class IndexingTC(unittest.TestCase):
         u = SimpleIndexingRangeJoin()
         self.setUpUnit(u)
         
-        u = self.u
-        
         u.b._ag.data = [0, 3, 0, 3, None, 3, 0, 3]
         u.c._ag.data = [0, 0, 3, 3, None, 3, 3, 0]
         
@@ -55,10 +57,34 @@ class IndexingTC(unittest.TestCase):
         
         self.assertSequenceEqual([0, 3, 12, 15, None, 15, 12, 3], agInts(u.a))
         
+    def test_internSplit(self):
+        u = IndexingInernSplit()
+        self.setUpUnit(u)
+        
+        u.a._ag.data = [0, 1, 2, 3, None, 3, 0, 3]
+        
+        self.runSim("internSplit")
+        
+        self.assertSequenceEqual([0, 1, 2, 3, None, 3, 0, 3], agInts(u.b))
+    
+    def test_internJoin(self):
+        u = IndexingInernJoin()
+        self.setUpUnit(u)
+        
+        u.a._ag.data = [0, 1, 0, 1, None, 0, 1, 0]
+        u.b._ag.data = [0, 0, 1, 1, None, 0, 1, 0]
+        
+        
+        self.runSim("internJoin")
+        
+        self.assertSequenceEqual([0, 1, 0, 1, None, 0, 1, 0], agInts(u.c))
+        self.assertSequenceEqual([0, 0, 1, 1, None, 0, 1, 0], agInts(u.d))
+        
+        
         
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(IndexingTC('test_rangeJoin'))
+    # suite.addTest(IndexingTC('test_split'))
     suite.addTest(unittest.makeSuite(IndexingTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
