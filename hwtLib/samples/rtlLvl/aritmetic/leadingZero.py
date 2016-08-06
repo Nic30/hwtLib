@@ -17,7 +17,7 @@ def LeadingZero():
     
     leadingZeroTop = None  # index is index of first empty record or last one
     for i in reversed(range(8)):
-        connections = w(resT.fromPy(i), index)
+        connections = w(i, index)
         if leadingZeroTop is None:
             leadingZeroTop = connections 
         else:
