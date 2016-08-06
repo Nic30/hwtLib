@@ -1,5 +1,8 @@
 # hwtLib
 
+[![Travis-ci Build Status](https://travis-ci.org/Nic30/hwtLib.png?branch=master)](https://travis-ci.org/Nic30/hwtLib)
+
+[![Coverage Status](https://coveralls.io/repos/github/Nic30/hwtLib/badge.svg?branch=master)](https://coveralls.io/github/Nic30/hwtLib?branch=master)
 
 Hw_toolkit is library for generating, manipulatin and analysis of HDL (verilog/vhdl...) code.
 This library contains:

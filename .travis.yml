@@ -1,0 +1,47 @@
+
+# if trusty is not used compilation is killed (out or mem)
+sudo: required
+dist: trusty
+
+language: python
+
+git:
+  depth: 1
+
+cache:
+  apt: true
+
+# clang is required because there is not enought ram for gcc
+compiler: gcc
+python:
+  - "3.5"
+addons:
+   apt:
+      sources:
+         - ubuntu-toolchain-r-test
+         #- llvm-toolchain-precise-3.9
+      packages:
+         #- g++-5
+         - gcc-5
+         #- clang-3.9
+#env: CC=clang-3.9 CXX=clang-3.9
+# we have to add -fpermissive otherwise pillow will not compile
+env: CC=gcc-5 CXX=g++-5 CFLAGS=-fpermissive
+
+
+# command to install dependencies
+install: 
+  - cd ..
+  - pip3 install coveralls
+  - git clone https://github.com/Nic30/HWToolkit.git
+  - cd HWToolkit
+  - python3 setup.py install
+  - cd ../hwtLib
+  - python3 setup.py install
+
+# command to run tests
+script: 
+  - python3 -m pytest hwtLib/tests/all.py --doctest-modules -v
+
+after_success:
+  - coveralls
