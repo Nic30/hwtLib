@@ -6,6 +6,7 @@ class AbstractStreamBuilder():
     @attention: this is just abstract class unit classes has to be specified
     
     @cvar ForkCls: fork unit class
+    @cvar ForkRegisteredCls: registered fork unit class
     @cvar FifoCls: fifo unit class
     @cvar RegCls : register unit class
     @cvar MuxCls : multiplexer unit class
@@ -73,6 +74,18 @@ class AbstractStreamBuilder():
             u.OUTPUTS.set(noOfOutputs)
         
         return self._genericInstance(self.ForkCls, 'fork', setChCnt)
+    
+    def forkRegistred(self, noOfOutputs):
+        """
+        creates registered fork - split one interface to many
+        @param noOfOutputs: number of output interfaces of the fork
+        """
+        def setChCnt(u):
+            u.OUTPUTS.set(noOfOutputs)
+        
+        return self._genericInstance(self.ForkRegistredCls, 'forkRegistred', setChCnt)
+        
+        
     
     def forkTo(self, *outPorts):
         """
