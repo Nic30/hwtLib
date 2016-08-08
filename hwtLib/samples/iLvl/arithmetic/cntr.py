@@ -17,7 +17,7 @@ class Cntr(Unit):
             self.val = Signal(dtype=vecT(self.DATA_WIDTH))
         
     def _impl(self):
-        reg = self._reg("conter", vecT(self.DATA_WIDTH), 0)
+        reg = self._reg("counter", vecT(self.DATA_WIDTH), 0)
         
         If(self.en,
            connect(reg + 1, reg)

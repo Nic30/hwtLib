@@ -3,7 +3,7 @@ import unittest
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
 from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthetisator.shortcuts import toRtl
+from hdl_toolkit.synthetisator.shortcuts import synthesised
 from hwtLib.samples.iLvl.arithmetic.cntr import Cntr
 
 
@@ -11,7 +11,7 @@ class CntrTC(unittest.TestCase):
     def setUp(self):
         self.u = Cntr()
         # print(
-        toRtl(self.u)
+        synthesised(self.u)
         # )
         self.procs = autoAddAgents(self.u)
         
@@ -39,7 +39,7 @@ class CntrTC(unittest.TestCase):
     
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(CntrTC('test_overflow'))
-    suite.addTest(unittest.makeSuite(CntrTC))
+    suite.addTest(CntrTC('test_contingWithStops'))
+    #suite.addTest(unittest.makeSuite(CntrTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
