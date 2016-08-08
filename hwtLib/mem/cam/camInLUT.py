@@ -10,7 +10,7 @@ from hwtLib.mem.cam.camMatch import CamMatch
 from hwtLib.mem.cam.camStorage import CamStorage
 from hwtLib.mem.cam.camWrite import CamWrite
 from hwtLib.mem.cam.interfaces import AddrDataHs
-from hdl_toolkit.synthetisator.shortcuts import synthetizeAndSave
+from hdl_toolkit.synthetisator.shortcuts import synthesizeAndSave
 
 
 def extend(sig, targetWidth):
@@ -155,5 +155,5 @@ if __name__ == "__main__":
     # with open("/home/nic30/Documents/vivado/scriptTest/scriptTest.srcs/sources_1/new/top.vhd", "w") as f:
     u = CamInLUT()
     # print(toRtl(u))
-    synthetizeAndSave(u, folderName="/home/nic30/Documents/test_ip_repo/cam/")
+    synthesizeAndSave(u, folderName="/home/nic30/Documents/test_ip_repo/cam/")
     # f.write(s)

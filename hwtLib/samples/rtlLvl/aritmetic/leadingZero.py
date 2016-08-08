@@ -34,6 +34,6 @@ def LeadingZero():
 if __name__ == "__main__":
     n, interf = LeadingZero()
     
-    for o in n.synthetize(interf):
+    for o in n.synthesize(interf):
             print(formatVhdl(str(o)))
 

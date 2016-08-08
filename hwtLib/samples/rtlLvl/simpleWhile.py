@@ -31,7 +31,7 @@ if __name__ == "__main__":
     
     interf = [clk, syncRst, start, en, s_out]
     
-    for o in n.synthetize(interf):
+    for o in n.synthesize(interf):
         print(formatVhdl(str(o)))
 
     

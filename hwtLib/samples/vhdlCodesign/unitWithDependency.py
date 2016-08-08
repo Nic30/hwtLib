@@ -14,4 +14,4 @@ if __name__ == "__main__":
     u._loadDeclarations()
     print(u)
     print(u.sig._dtype.bit_length())
-    # print(synthetizeCls(EntWithFnRequired))
+    # print(toRtl(EntWithFnRequired))

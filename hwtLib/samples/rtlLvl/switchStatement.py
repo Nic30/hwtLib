@@ -19,5 +19,5 @@ if __name__ == "__main__":
     
     interf = [In, Out]
     
-    for o in n.synthetize(interf):
+    for o in n.synthesize(interf):
             print(formatVhdl(str(o)))
