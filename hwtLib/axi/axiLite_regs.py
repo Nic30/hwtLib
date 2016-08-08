@@ -1,22 +1,36 @@
 from hdl_toolkit.intfLvl import Unit
 from hdl_toolkit.interfaces.amba import AxiLite, RESP_OKAY
-from hdl_toolkit.interfaces.std import Signal, VldSynced
-from hdl_toolkit.synthetisator.codeOps import If, Switch, c
+from hdl_toolkit.interfaces.std import Signal, VldSynced, BramPort_withoutClk
+from hdl_toolkit.synthetisator.codeOps import If, c, FsmBuilder, Or, fitTo
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.synthetisator.shortcuts import toRtl
 from hdl_toolkit.hdlObjects.typeShortcuts import vec, vecT
 from hdl_toolkit.synthetisator.param import Param, evalParam
-from hdl_toolkit.interfaces.utils import addClkRstn
+from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
+from hdl_toolkit.hdlObjects.types.typeCast import toHVal
 
+def unpackAddrMap(am):
+    try:
+        size = am[2]
+    except IndexError:
+        size = None
+    
+    # address, name, size
+    return am[0], am[1], size
+    
 class AxiLiteRegs(Unit):
     """
     Axi lite register generator
     """
     def __init__(self, adress_map):
         """
-        @param address_map: array of tupes (address, name)
-                    for every such a tuple there will be input interface name + IN_SUFFIX
+        @param address_map: array of tupes (address, name) or (address, name, size) 
+                            where size is in data words
+                    
+                    for every tuple without size there will be input interface name + IN_SUFFIX
                     and output interface name + OUT_SUFFIX
+                    
+                    for every tuble with size there will be blockram port without clk
         """
         self.ADRESS_MAP = adress_map 
         super().__init__()
@@ -30,87 +44,126 @@ class AxiLiteRegs(Unit):
     
     def _declr(self):
         assert len(self.ADRESS_MAP) > 0
+        
+        directlyMapped = []
+        bramPortMapped = []
+        self._directlyMapped = []
+        self._bramPortMapped = []
+        
+        for am in self.ADRESS_MAP:
+            addr, name, size = unpackAddrMap(am)
+            if size is None:
+                directlyMapped.append((addr, name))
+            else:
+                bramPortMapped.append((addr, name, size))
+        
         with self._asExtern(), self._paramsShared():
             addClkRstn(self)
             
             self.axi = AxiLite()
             
-            for _, name in self.ADRESS_MAP:
+            for  addr, name in directlyMapped:
                 out = VldSynced()
-                setattr(self, name + self.OUT_SUFFIX, out)
-                
                 _in = Signal(dtype=vecT(self.DATA_WIDTH))
+                setattr(self, name + self.OUT_SUFFIX, out)
                 setattr(self, name + self.IN_SUFFIX, _in)
+                
+                self._directlyMapped.append((addr, (_in, out)))
+                
+            
+            for addr, name, size in bramPortMapped:
+                p = BramPort_withoutClk()
+                p._replaceParam("DATA_WIDTH", self.DATA_WIDTH)
+                p.ADDR_WIDTH.set(log2ceil(toHVal(size - 1)))
+                setattr(self, name, p)
+                self._bramPortMapped.append((addr, p, size))
 
     
-    def readPart(self):
-        sig = self._sig
-        reg = self._reg
+    def readPart(self, awAddr, w_hs):
+        # build read data output mux
+        def isMyAddr(addrSig, addr, size):
+            return (addrSig >= addr) & (addrSig < (toHVal(addr) + size))
         
-        addrWidth = evalParam(self.ADDR_WIDTH).val
-        dataWidth = evalParam(self.DATA_WIDTH).val
-        
-        rSt_t = Enum('rSt_t', ['rdIdle', 'rdData'])
-        
+        rSt_t = Enum('rSt_t', ['rdIdle', 'bramRd', 'rdData'])
         ar = self.axi.ar
         r = self.axi.r
-
-        ar_hs = sig('ar_hs')
-        arAddr = reg('arAddr', ar.addr._dtype) 
-        rSt = reg('rSt', rSt_t, rSt_t.rdIdle)
-        arRd = sig('arRd')
-        rVld = sig('rVld')
+        isBramAddr = self._sig("isBramAddr")
+        rdataReg = self._reg("rdataReg", r.data._dtype)
         
-        c(rSt._eq(rSt_t.rdIdle), arRd)
+        rSt = FsmBuilder(self, rSt_t, stateRegName='rSt')\
+        .Trans(rSt_t.rdIdle,
+            (ar.valid & ~isBramAddr, rSt_t.rdData),
+            (ar.valid & isBramAddr, rSt_t.bramRd)
+        ).Trans(rSt_t.bramRd,
+            (~w_hs, rSt_t.rdData)
+        ).Default(# Trans(rSt_t.rdData,
+            (r.ready, rSt_t.rdIdle)
+        ).stateReg
+        
+        arRd = rSt._eq(rSt_t.rdIdle)
         c(arRd, ar.ready)
-        c(ar.valid & arRd, ar_hs)
+        ar_hs = ar.valid & arRd
         
-        c(rSt._eq(rSt_t.rdData), rVld)
-        c(rVld, r.valid)
-        c(vec(RESP_OKAY, 2), r.resp)
+        c(rSt._eq(rSt_t.rdData), r.valid)
+        c(RESP_OKAY, r.resp)
         
         # save ar addr
-        If(arRd & ar.valid,
+        arAddr = self._reg('arAddr', ar.addr._dtype) 
+        If(ar_hs,
             c(ar.addr, arAddr)
         ).Else(
             arAddr._same()
         )
-
-
-        # ar fsm next
-        If(arRd,
-           # rdIdle
-            If(ar.valid,
-               c(rSt_t.rdData, rSt) 
+       
+        
+        _isInBramFlags = []
+        rAssigTop = c(rdataReg, r.data)
+        rregAssigTop = rdataReg._same()
+        # rAssigTopCases =[]
+        for addr, (In, _) in reversed(self._directlyMapped):
+            # we are directly sending data from register
+            rAssigTop = If(ar.addr._eq(addr),
+               c(In, r.data)
             ).Else(
-               c(rSt_t.rdIdle, rSt)
+               rAssigTop
             )
-        ).Else(
-            # rdData
-            If(r.ready & rVld,
-               c(rSt_t.rdIdle, rSt)
+
+        bitForAligig = log2ceil(evalParam(self.DATA_WIDTH) // 8 - 1)
+        for addr, port, size in reversed(self._bramPortMapped):
+            # map addr for bram ports
+            _isMyAddr = isMyAddr(ar.addr, addr, size)
+            _isInBramFlags.append(_isMyAddr)
+            
+            
+            prioritizeWrite = isMyAddr(awAddr, addr, size) & w_hs
+            
+            a = self._sig("addr_forBram_" + port._name, awAddr._dtype)
+            If(prioritizeWrite,
+                c(awAddr - addr, a)
             ).Else(
-               c(rSt_t.rdData, rSt) 
+                c(arAddr - addr, a)
             )
-        )
-        
-        # build read data output mux
-        def inputByName(name):
-            return getattr(self, name + self.IN_SUFFIX)
-        
-        rAssigTopCases = [(vec(addr, addrWidth), c(inputByName(name), r.data)) \
-                                            for addr, name in self.ADRESS_MAP]
-        
-        rAssigTop = Switch(ar.addr)\
-        .addCases(rAssigTopCases)\
-        .Default(c(vec(0, dataWidth), r.data))
+            
+            addrHBit = port.addr._dtype.bit_length() 
+            
+            c(fitTo(a[addrHBit:bitForAligig], port.addr), port.addr)
+            c(1, port.en)
+            c(prioritizeWrite, port.we)
+            
+            rregAssigTop = If(_isMyAddr,
+                c(port.dout, rdataReg)
+            ).Else(
+                rregAssigTop
+            )
+            
                 
-        If(ar_hs,
-           rAssigTop
-        ).Else(
-           c(vec(0, dataWidth), r.data)
-        )
-
+                
+        if _isInBramFlags:
+            c(Or(*_isInBramFlags), isBramAddr)
+        else:
+            c(0, isBramAddr)
+        
+        
     
     def writePart(self):
         sig = self._sig
@@ -122,15 +175,23 @@ class AxiLiteRegs(Unit):
         w = self.axi.w
         b = self.axi.b
         
-        wSt = reg('wSt', wSt_t, wSt_t.wrIdle)
-        awRd = sig('awRd')
+        # write fsm
+        wSt = FsmBuilder(self, wSt_t, "wSt")\
+        .Trans(wSt_t.wrIdle,
+            (aw.valid, wSt_t.wrData)
+        ).Trans(wSt_t.wrData,
+            (w.valid, wSt_t.wrResp)
+        ).Default(# Trans(wSt_t.wrResp,
+            (b.ready, wSt_t.wrIdle)
+        ).stateReg
+        
         aw_hs = sig('aw_hs')
         awAddr = reg('awAddr', aw.addr._dtype) 
         wRd = sig('wRd')
         w_hs = sig('w_hs')
         c(wSt._eq(wSt_t.wrResp), b.valid)
   
-        c(wSt._eq(wSt_t.wrIdle), awRd)
+        awRd = wSt._eq(wSt_t.wrIdle)
         c(awRd, aw.ready)
         c(wSt._eq(wSt_t.wrData), wRd)
         c(wRd, w.ready)
@@ -146,40 +207,24 @@ class AxiLiteRegs(Unit):
             c(awAddr, awAddr)
         )
         
-        # write fsm
-        Switch(wSt)\
-        .Case(wSt_t.wrIdle,
-            If(aw.valid,
-                c(wSt_t.wrData, wSt)
-            ).Else(
-                wSt._same()
-            )
-        ).Case(wSt_t.wrData,
-            If(w.valid,
-                c(wSt_t.wrResp, wSt)
-             ).Else(
-                wSt._same()
-            )
-        ).Case(wSt_t.wrResp,
-            If(self.axi.b.ready,
-                c(wSt_t.wrIdle, wSt)
-            ).Else(
-                wSt._same()
-            )
-        )
-        
         # output vld
-        for addr, name in self.ADRESS_MAP:
-            out = getattr(self, name + self.OUT_SUFFIX)
+        for addr, (_, out) in self._directlyMapped:
             c(w.data, out.data)
             c(w_hs & (awAddr._eq(vec(addr, addrWidth))), out.vld)
+        
+        for _, p, _ in self._bramPortMapped:
+            c(w.data, p.din)
+            
+        return awAddr, w_hs    
     
     def _impl(self):
-        self.readPart()
-        self.writePart()
+        awAddr, w_hs = self.writePart()
+        self.readPart(awAddr, w_hs)
         
         
 
 if __name__ == "__main__":
-    print(toRtl(AxiLiteRegs([(i * 4 , "data%d" % i) for i in range(4)])))
+    u = AxiLiteRegs([(i * 4 , "data%d" % i) for i in range(2)] + 
+                    [(3 * 4, "bramMapped", 64)])
+    print(toRtl(u))
     
