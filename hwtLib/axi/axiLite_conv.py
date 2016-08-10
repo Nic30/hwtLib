@@ -1,7 +1,6 @@
 from hdl_toolkit.intfLvl import Unit
 from hdl_toolkit.interfaces.amba import AxiLite, RESP_OKAY
-from hdl_toolkit.interfaces.std import Signal, VldSynced, BramPort_withoutClk,\
-    RegCntrl
+from hdl_toolkit.interfaces.std import BramPort_withoutClk, RegCntrl
 from hdl_toolkit.synthetisator.codeOps import If, c, FsmBuilder, Or, fitTo
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.hdlObjects.typeShortcuts import vec
@@ -76,7 +75,7 @@ class AxiLiteConvertor(Unit):
         DW_B = evalParam(self.DATA_WIDTH).val // 8 
         # build read data output mux
         def isMyAddr(addrSig, addr, size):
-            return (addrSig >= addr) & (addrSig < (toHVal(addr) + (size*DW_B)))
+            return (addrSig >= addr) & (addrSig < (toHVal(addr) + (size * DW_B)))
         
         rSt_t = Enum('rSt_t', ['rdIdle', 'bramRd', 'rdData'])
         ar = self.axi.ar
@@ -87,7 +86,7 @@ class AxiLiteConvertor(Unit):
         rSt = FsmBuilder(self, rSt_t, stateRegName='rSt')\
         .Trans(rSt_t.rdIdle,
             (ar.valid & ~isBramAddr & ~w_hs, rSt_t.rdData),
-            (ar.valid & isBramAddr & ~w_hs,  rSt_t.bramRd)
+            (ar.valid & isBramAddr & ~w_hs, rSt_t.bramRd)
         ).Trans(rSt_t.bramRd,
             (~w_hs, rSt_t.rdData)
         ).Default(# Trans(rSt_t.rdData,
@@ -219,7 +218,7 @@ class AxiLiteConvertor(Unit):
 
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl
-    u = AxiLiteRegs([(i * 4 , "data%d" % i) for i in range(2)] + 
-                    [(3 * 4, "bramMapped", 32)])
+    u = AxiLiteConvertor([(i * 4 , "data%d" % i) for i in range(2)] + 
+                         [(3 * 4, "bramMapped", 32)])
     print(toRtl(u))
     
