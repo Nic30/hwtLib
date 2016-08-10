@@ -1,7 +1,6 @@
-from hdl_toolkit.intfLvl import connect, Param, Unit
-from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hInt
-
+from hdl_toolkit.interfaces.std import Signal
+from hdl_toolkit.intfLvl import connect, Param, Unit
 
 
 class SimpleUnit4(Unit):
@@ -18,5 +17,5 @@ class SimpleUnit4(Unit):
 
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(toRtl(SimpleUnit4))

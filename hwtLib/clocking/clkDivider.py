@@ -1,7 +1,7 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.interfaces.std import Clk, Rst_n
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.synthetisator.codeOps import If, c
+from hdl_toolkit.interfaces.std import Clk, Rst_n
+from hdl_toolkit.synthesizer.codeOps import If, c
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 
 
 class ClkDiv3(Unit):
@@ -51,5 +51,5 @@ class ClkDiv3(Unit):
         c(fall._eq(rise), self.clkOut)
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(toRtl(ClkDiv3))

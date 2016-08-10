@@ -1,11 +1,12 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.simulator.shortcuts import simUnitVcd, oscilate, pullUpAfter
+from hdl_toolkit.interfaces.std import Signal
+from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
-from hdl_toolkit.synthetisator.shortcuts import synthesised
-from hdl_toolkit.synthetisator.codeOps import If, connect
+from hdl_toolkit.simulator.shortcuts import simUnitVcd, oscilate, pullUpAfter
+from hdl_toolkit.synthesizer.codeOps import If, connect
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.shortcuts import synthesised
+
 
 class SelfRefCntr(Unit):
     def _declr(self):

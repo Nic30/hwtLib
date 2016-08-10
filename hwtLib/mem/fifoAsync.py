@@ -1,10 +1,11 @@
-from hwtLib.mem.fifo import Fifo
-from hdl_toolkit.interfaces.std import Clk, Rst_n, FifoWriter, FifoReader
-from hwtLib.logic.cntrGray import GrayCntr
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.array import Array
-from hdl_toolkit.synthetisator.codeOps import If, c
+from hdl_toolkit.interfaces.std import Clk, Rst_n, FifoWriter, FifoReader
 from hdl_toolkit.interfaces.utils import log2ceil
+from hdl_toolkit.synthesizer.codeOps import If, c
+from hwtLib.logic.cntrGray import GrayCntr
+from hwtLib.mem.fifo import Fifo
+
 
 class AsyncFifo(Fifo):
     """
@@ -108,5 +109,5 @@ class AsyncFifo(Fifo):
         c(empty, Out.wait)
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(toRtl(AsyncFifo))

@@ -1,4 +1,4 @@
-from hdl_toolkit.synthetisator.codeOps import connect
+from hdl_toolkit.synthesizer.codeOps import connect
 
 
 class AbstractStreamBuilder():

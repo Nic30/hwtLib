@@ -4,12 +4,12 @@ from hdl_toolkit.hdlObjects.specialValues import DIRECTION, INTF_DIRECTION
 from hdl_toolkit.interfaces.amba import Axi4
 from hdl_toolkit.interfaces.ambaOthers import FullDuplexAxiStream 
 from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.synthetisator.codeOps import connect
-from hdl_toolkit.synthetisator.interfaceLevel.emptyUnit import EmptyUnit
-from hdl_toolkit.synthetisator.interfaceLevel.emptyUnit import setOut
-from hdl_toolkit.synthetisator.rtlLevel.netlist import RtlNetlist
-from hdl_toolkit.synthetisator.shortcuts import synthesised
-from hwtLib.tests.synthetisator.interfaceLevel.baseSynthetisatorTC import BaseSynthetisatorTC
+from hdl_toolkit.synthesizer.codeOps import connect
+from hdl_toolkit.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
+from hdl_toolkit.synthesizer.interfaceLevel.emptyUnit import setOut
+from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
+from hdl_toolkit.synthesizer.shortcuts import synthesised
+from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import BaseSynthesizerTC
 from python_toolkit.arrayQuery import where
 
 
@@ -29,7 +29,7 @@ def createTwoAxiDuplexStreams():
             _i._signalsForInterface(n)
         return i, i2
 
-class InterfaceSyntherisatorTC(BaseSynthetisatorTC):
+class InterfaceSyntherisatorTC(BaseSynthesizerTC):
     def test_SimpleUnit2_iLvl(self):
         """
         Check interface directions pre and after synthesis
@@ -40,25 +40,25 @@ class InterfaceSyntherisatorTC(BaseSynthetisatorTC):
         m = self.assertIsM
         s = self.assertIsS
         
-        #u.a._resolveDirections()
-        #u.b._resolveDirections()
+        # u.a._resolveDirections()
+        # u.b._resolveDirections()
         #
         #
-        ## inside
-        #m(u.a)
-        #m(u.a.data)
-        #m(u.a.last)
-        #s(u.a.ready)
-        #m(u.a.valid)
-        #m(u.a.strb)
+        # # inside
+        # m(u.a)
+        # m(u.a.data)
+        # m(u.a.last)
+        # s(u.a.ready)
+        # m(u.a.valid)
+        # m(u.a.strb)
         #
-        ## inside
-        #m(u.b)
-        #m(u.b.data)
-        #m(u.b.last)
-        #s(u.b.ready)
-        #m(u.b.valid)
-        #m(u.b.strb)
+        # # inside
+        # m(u.b)
+        # m(u.b.data)
+        # m(u.b.last)
+        # s(u.b.ready)
+        # m(u.b.valid)
+        # m(u.b.strb)
         
         
           

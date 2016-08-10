@@ -1,7 +1,7 @@
 import unittest
 
-from hdl_toolkit.synthetisator.assigRenderer import getBaseCond
-from hdl_toolkit.synthetisator.rtlLevel.netlist import RtlNetlist
+from hdl_toolkit.synthesizer.assigRenderer import getBaseCond
+from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 
 
 class StatementTreesTC(unittest.TestCase):

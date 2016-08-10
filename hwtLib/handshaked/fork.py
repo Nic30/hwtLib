@@ -1,5 +1,5 @@
 from hdl_toolkit.intfLvl import Param
-from hdl_toolkit.synthetisator.codeOps import And, c
+from hdl_toolkit.synthesizer.codeOps import And, c
 from hdl_toolkit.interfaces.std import Handshaked
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hdl_toolkit.interfaces.utils import addClkRstn
@@ -46,6 +46,6 @@ class HandshakedFork(HandshakedCompBase):
         
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = HandshakedFork(Handshaked)
     print(toRtl(u))

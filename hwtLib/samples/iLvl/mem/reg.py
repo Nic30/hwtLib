@@ -1,7 +1,8 @@
-from hdl_toolkit.intfLvl import c, Unit
 from hdl_toolkit.hdlObjects.types.defs import BIT
 from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.interfaces.utils import addClkRst, propagateClkRst
+from hdl_toolkit.intfLvl import c, Unit
+
 
 class DReg(Unit):
     def _declr(self):
@@ -34,6 +35,6 @@ class DoubleDReg(Unit):
     
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = DoubleDReg()
     print(toRtl(u))

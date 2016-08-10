@@ -1,11 +1,11 @@
 import unittest
 
 from hdl_toolkit.hdlObjects.assignment import Assignment
-from hdl_toolkit.synthetisator.rtlLevel.netlist import RtlNetlist
 from hdl_toolkit.hdlObjects.operatorDefs import AllOps
 from hdl_toolkit.serializer.vhdlSerializer import VhdlSerializer
-
+from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.indexOps import IndexOps
+
 
 class TestCaseSynthesis(unittest.TestCase):
 
@@ -44,18 +44,18 @@ class TestCaseSynthesis(unittest.TestCase):
         self.assertIsInstance(a_reset, Assignment)
         self.assertIsInstance(a_next, Assignment)
         
-        #[TODO] not eq operator is diffrent object 
-        #self.assertEqual(a_reset.cond, {clk.opOnRisigEdge(), rst})
-        #self.assertEqual(a_reset.src, 0)
-        #self.assertEqual(a_next.cond, {clk.opOnRisigEdge(), rst.opNot()})
-        #self.assertEqual(a_next.src, a.next)
+        # [TODO] not eq operator is diffrent object 
+        # self.assertEqual(a_reset.cond, {clk.opOnRisigEdge(), rst})
+        # self.assertEqual(a_reset.src, 0)
+        # self.assertEqual(a_next.cond, {clk.opOnRisigEdge(), rst.opNot()})
+        # self.assertEqual(a_next.src, a.next)
         
 
     def test_indexOps(self):
         c, interf = IndexOps()
         s = ""
         for o in c.synthesize(interf):
-            s+=VhdlSerializer.asHdl(o)
+            s += VhdlSerializer.asHdl(o)
         self.assertNotIn("sig_", s)
         
 

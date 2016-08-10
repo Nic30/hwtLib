@@ -1,8 +1,9 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.synthetisator.codeOps import If, connect
+from hdl_toolkit.interfaces.std import Signal
+from hdl_toolkit.interfaces.utils import addClkRstn
+from hdl_toolkit.synthesizer.codeOps import If, connect
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+
 
 class TwoCntrs(Unit):
     def _declr(self):
@@ -44,7 +45,7 @@ class TwoCntrs(Unit):
 
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     
     u = TwoCntrs()
     print(toRtl(u))

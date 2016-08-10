@@ -1,10 +1,11 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.param import Param, evalParam
-from hdl_toolkit.interfaces.std import Clk, RdSynced, s
-from hdl_toolkit.synthetisator.interfaceLevel.interface import Interface
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, vec
+from hdl_toolkit.interfaces.std import Clk, RdSynced, s
+from hdl_toolkit.synthesizer.codeOps import If, c
+from hdl_toolkit.synthesizer.interfaceLevel.interface import Interface
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param, evalParam
 from hwtLib.mem.lutRam import RAM64X1S
-from hdl_toolkit.synthetisator.codeOps import If, c
+
 
 class CamStorageInIntf(Interface):
     def _config(self):
@@ -13,8 +14,8 @@ class CamStorageInIntf(Interface):
         
     def _declr(self):
         COLUMNS = self.COLUMNS
-        self.addr = s(dtype=vecT(COLUMNS * 6)) # [TODO] this is address actually
-        self.dataIn = s(dtype=vecT(COLUMNS))       # [TODO] rename to dataIn
+        self.addr = s(dtype=vecT(COLUMNS * 6))  # [TODO] this is address actually
+        self.dataIn = s(dtype=vecT(COLUMNS))  # [TODO] rename to dataIn
         self.we = s(dtype=vecT(self.ROWS))
        
 
@@ -82,7 +83,7 @@ class CamStorage(Unit):
             c(match_carry[self.COLUMNS], self.match.data[y])
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = CamStorage()
     u.COLUMNS.set(2)
     u.ROWS.set(3)

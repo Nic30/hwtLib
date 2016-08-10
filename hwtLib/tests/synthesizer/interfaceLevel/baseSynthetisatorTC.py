@@ -3,7 +3,7 @@ from hdl_toolkit.hdlObjects.specialValues import INTF_DIRECTION, DIRECTION
 from python_toolkit.arrayQuery import single, NoValueExc
 
 
-class BaseSynthetisatorTC(unittest.TestCase):
+class BaseSynthesizerTC(unittest.TestCase):
     def assertIsM(self, intf):
         self.assertEqual(intf._direction, INTF_DIRECTION.MASTER)
     

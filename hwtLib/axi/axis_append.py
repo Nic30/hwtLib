@@ -1,10 +1,10 @@
 
-from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.hdlObjects.specialValues import DIRECTION
+from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthetisator.param import Param, evalParam
+from hdl_toolkit.synthesizer.codeOps import Switch, If, c
+from hdl_toolkit.synthesizer.param import Param, evalParam
 from hwtLib.axi.axis_compBase import AxiSCompBase
-from hdl_toolkit.synthetisator.codeOps import Switch, If, c
 
 
 class AxiSAppend(AxiSCompBase):
@@ -70,6 +70,6 @@ class AxiSAppend(AxiSCompBase):
 
 if __name__ == "__main__":
     from hdl_toolkit.interfaces.amba import AxiStream_withoutSTRB
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = AxiSAppend(AxiStream_withoutSTRB)
     print(toRtl(u))

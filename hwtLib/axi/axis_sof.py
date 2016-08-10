@@ -1,8 +1,8 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.interfaces.std import s
 from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.synthetisator.codeOps import Switch, If, c
+from hdl_toolkit.interfaces.std import s
+from hdl_toolkit.interfaces.utils import addClkRstn
+from hdl_toolkit.synthesizer.codeOps import Switch, If, c
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 
 
 class AxiSsof(Unit):
@@ -47,7 +47,6 @@ class AxiSsof(Unit):
         c(st._eq(stT.stSof), self.sof)
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = AxiSsof()
-    
     print(toRtl(u))

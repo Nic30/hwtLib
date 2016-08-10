@@ -1,4 +1,4 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.interfaces.std import Handshaked, HandshakeSync
 from python_toolkit.arrayQuery import where
 

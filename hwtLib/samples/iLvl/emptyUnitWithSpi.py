@@ -1,7 +1,6 @@
-from hdl_toolkit.intfLvl import EmptyUnit 
 from hdl_toolkit.interfaces.spi import SPI
-from hdl_toolkit.synthetisator.shortcuts import toRtl
-
+from hdl_toolkit.intfLvl import EmptyUnit 
+from hdl_toolkit.synthesizer.shortcuts import toRtl
 
 
 class EmptyUnitWithSpi(EmptyUnit):

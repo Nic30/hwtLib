@@ -1,6 +1,6 @@
-from hdl_toolkit.serializer.formater import formatVhdl
-from hdl_toolkit.synthetisator.rtlLevel.netlist import RtlNetlist
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hdl_toolkit.serializer.formater import formatVhdl
+from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 
 
 if __name__ == "__main__":

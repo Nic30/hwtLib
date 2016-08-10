@@ -23,13 +23,13 @@ from hwtLib.tests.operators import OperatorTC
 from hwtLib.tests.parser import ParserTC
 from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.tests.statements import StatementsTC
-from hwtLib.tests.synthetisator.interfaceLevel.interfaceSyntherisatorTC import InterfaceSyntherisatorTC 
-from hwtLib.tests.synthetisator.interfaceLevel.subunitsSynthesisTC import SubunitsSynthesisTC
-from hwtLib.tests.synthetisator.interfaceLevel.verilogCodesign import VerilogCodesignTC
-from hwtLib.tests.synthetisator.interfaceLevel.vhdlCodesign import VhdlCodesignTC
-from hwtLib.tests.synthetisator.rtlLevel.optimalizator import Expr2CondTC
-from hwtLib.tests.synthetisator.rtlLevel.synthesis import TestCaseSynthesis
-from hwtLib.tests.synthetisator.value import ValueTC
+from hwtLib.tests.synthesizer.interfaceLevel.interfaceSyntherisatorTC import InterfaceSynthesizerTC 
+from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import SubunitsSynthesisTC
+from hwtLib.tests.synthesizer.interfaceLevel.verilogCodesign import VerilogCodesignTC
+from hwtLib.tests.synthesizer.interfaceLevel.vhdlCodesign import VhdlCodesignTC
+from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
+from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
+from hwtLib.tests.synthesizer.value import ValueTC
 
 
 if __name__ == "__main__":
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     suite = testSuiteFromTCs(
         HierarchyExtractorTC,
         ParserTC,
-        InterfaceSyntherisatorTC,
+        InterfaceSynthesizerTC,
         VhdlCodesignTC,
         VerilogCodesignTC,
         SubunitsSynthesisTC,

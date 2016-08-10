@@ -1,6 +1,7 @@
 from hwtLib.axi.axis_compBase import AxiSCompBase 
 from hwtLib.handshaked.mux import HandshakedMux
 
+
 class AxiSMux(AxiSCompBase, HandshakedMux):
     pass
             
@@ -28,6 +29,6 @@ class AxiSMux(AxiSCompBase, HandshakedMux):
 #        
 if __name__ == "__main__":
     from hdl_toolkit.interfaces.amba import AxiStream
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = AxiSMux(AxiStream)
     print(toRtl(u))

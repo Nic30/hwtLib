@@ -2,19 +2,20 @@ import unittest
 
 from hdl_toolkit.hdlObjects.specialValues import DIRECTION
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hInt
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.shortcuts import toRtl, synthesised
-from hdl_toolkit.serializer.exceptions import SerializerException
-from hdl_toolkit.synthetisator.interfaceLevel.emptyUnit import EmptyUnit, setOut
-from hdl_toolkit.synthetisator.param import Param
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.interfaces.ambaOthers import FullDuplexAxiStream 
 from hdl_toolkit.interfaces.amba import AxiStream
-from hdl_toolkit.synthetisator.codeOps import c
-
-from hwtLib.samples.iLvl.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnection
-from hwtLib.tests.synthetisator.interfaceLevel.baseSynthetisatorTC import BaseSynthetisatorTC
+from hdl_toolkit.interfaces.ambaOthers import FullDuplexAxiStream 
+from hdl_toolkit.interfaces.std import Signal
+from hdl_toolkit.serializer.exceptions import SerializerException
+from hdl_toolkit.synthesizer.codeOps import c
+from hdl_toolkit.synthesizer.interfaceLevel.emptyUnit import EmptyUnit, setOut
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param
+from hdl_toolkit.synthesizer.shortcuts import toRtl, synthesised
 from hwtLib.samples.iLvl.hierarchy.unitToUnitConnection import UnitToUnitConnection
+from hwtLib.samples.iLvl.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnection
+from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import BaseSynthesizerTC
+
+
 D = DIRECTION
 
 
@@ -47,7 +48,7 @@ class UnitWithArrIntfParent(Unit):
         c(self.u0.b[0], self.b0)
         c(self.u0.b[1], self.b1)
 
-class SubunitsSynthesisTC(BaseSynthetisatorTC):
+class SubunitsSynthesisTC(BaseSynthesizerTC):
     def test_GroupOfBlockrams(self):
         """
         Check interface directions pre and after synthesis

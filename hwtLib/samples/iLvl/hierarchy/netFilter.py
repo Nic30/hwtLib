@@ -1,8 +1,7 @@
 from hdl_toolkit.intfLvl import Param, connect, Unit, EmptyUnit
 from hdl_toolkit.interfaces.amba import AxiStream, AxiLite
-from hdl_toolkit.synthetisator.shortcuts import toRtl
 from cli_toolkit.ip_packager.packager import Packager
-from hdl_toolkit.synthetisator.interfaceLevel.emptyUnit import setOut
+from hdl_toolkit.synthesizer.interfaceLevel.emptyUnit import setOut
 
 class HeadFieldExtractor(EmptyUnit):
     def _declr(self):
@@ -91,6 +90,7 @@ class NetFilter(Unit):
 
 
 if __name__ == "__main__":
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(toRtl(NetFilter))
     
     # s = NetFilter()

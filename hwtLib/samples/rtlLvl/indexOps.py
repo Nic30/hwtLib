@@ -1,7 +1,8 @@
-from hdl_toolkit.serializer.formater import formatVhdl
-from hdl_toolkit.synthetisator.rtlLevel.netlist import RtlNetlist
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, vec
-from hdl_toolkit.synthetisator.codeOps import connect
+from hdl_toolkit.serializer.formater import formatVhdl
+from hdl_toolkit.synthesizer.codeOps import connect
+from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
+
 
 w = connect
 

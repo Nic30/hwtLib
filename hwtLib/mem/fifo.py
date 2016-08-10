@@ -1,10 +1,11 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.codeOps import c, If
-from hdl_toolkit.synthetisator.param import Param
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.interfaces.std import FifoWriter, FifoReader
-from hdl_toolkit.hdlObjects.types.array import Array
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hdl_toolkit.hdlObjects.types.array import Array
+from hdl_toolkit.interfaces.std import FifoWriter, FifoReader
+from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
+from hdl_toolkit.synthesizer.codeOps import c, If
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param
+
 
 class Fifo(Unit):
     def _config(self):
@@ -25,14 +26,14 @@ class Fifo(Unit):
         mem = self.mem
         head = self._reg("head", index_t, 0)
         tail = self._reg("tail", index_t, 0)
-        looped = self._reg("looped",  defVal=False)
+        looped = self._reg("looped", defVal=False)
         
         DEPTH = self.DEPTH
         
         dout = self.dataOut
         din = self.dataIn
 
-        MAX_DEPTH = DEPTH -1
+        MAX_DEPTH = DEPTH - 1
         # [TODO] forgot head, tail clock enable 
                 
         rd_en = dout.en & (looped | (head != tail))
@@ -78,18 +79,18 @@ class Fifo(Unit):
         # Update Empty and Full flags
         If(head._eq(tail),
             If(looped,
-                c(1, din.wait), 
+                c(1, din.wait),
                 c(0, dout.wait)
             ).Else(
                 c(1, dout.wait),
                 c(0, din.wait)
             )
         ).Else(
-            c(0, din.wait), 
+            c(0, din.wait),
             c(0, dout.wait)
         )
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(toRtl(Fifo))
 

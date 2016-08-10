@@ -1,8 +1,8 @@
-from hdl_toolkit.intfLvl import connect, Unit
 from hdl_toolkit.hdlObjects.typeShortcuts import hInt
 from hdl_toolkit.interfaces.amba import AxiStream
-
+from hdl_toolkit.intfLvl import connect, Unit
 from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream
+
 
 class SimpleSubunit2(Unit):
     def _declr(self):
@@ -19,5 +19,5 @@ class SimpleSubunit2(Unit):
         connect(u.b, self.b0)
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(toRtl(SimpleSubunit2))

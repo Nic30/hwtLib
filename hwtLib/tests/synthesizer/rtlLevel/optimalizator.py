@@ -1,7 +1,9 @@
 import unittest
-from hdl_toolkit.synthetisator.rtlLevel.rtlSignal import RtlSignal
-from hdl_toolkit.hdlObjects.types.defs import BIT, BOOL
+
 from hdl_toolkit.hdlObjects.operatorDefs import AllOps
+from hdl_toolkit.hdlObjects.types.defs import BIT, BOOL
+from hdl_toolkit.synthesizer.rtlLevel.rtlSignal import RtlSignal
+
 
 class Expr2CondTC(unittest.TestCase):    
     def setUp(self):

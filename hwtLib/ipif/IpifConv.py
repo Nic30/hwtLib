@@ -1,6 +1,6 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.interfaces.ipif import IPIFWithCE
+from hdl_toolkit.interfaces.utils import addClkRstn
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 
 
 class IpifConv(Unit):

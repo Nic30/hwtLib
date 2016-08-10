@@ -1,5 +1,5 @@
-from hdl_toolkit.intfLvl import Param, Unit, connect
 from hdl_toolkit.interfaces.amba import  AxiLite
+from hdl_toolkit.intfLvl import Param, Unit, connect
 from hwtLib.samples.vhdlCodesign.axiLiteBasicSlave import AxiLiteBasicSlave
 
 
@@ -19,7 +19,7 @@ class AxiLiteSlaveContainer(Unit):
         connect(self.axi, self.slv.S_AXI)
     
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = AxiLiteSlaveContainer()
     toRtl(u)
     

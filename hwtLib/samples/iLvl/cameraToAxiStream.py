@@ -1,8 +1,9 @@
-from hdl_toolkit.synthetisator.interfaceLevel.interface import Interface
-from hdl_toolkit.interfaces.std import Signal, Clk
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.specialValues import DIRECTION
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hdl_toolkit.interfaces.std import Signal, Clk
+from hdl_toolkit.synthesizer.interfaceLevel.interface import Interface
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+
 
 # [TODO] this is only torso
 class CameraIntf(Interface):

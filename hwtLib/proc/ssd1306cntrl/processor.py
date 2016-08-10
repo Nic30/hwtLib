@@ -1,18 +1,16 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
-from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.synthetisator.codeOps import c, FsmBuilder
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.synthetisator.param import Param
-
-from hwtLib.spi.controller import SPICntrlW
+from hdl_toolkit.hdlObjects.types.enum import Enum
+from hdl_toolkit.interfaces.std import Handshaked
+from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
+from hdl_toolkit.synthesizer.codeOps import c, FsmBuilder
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param
 from hwtLib.logic.delayMs import DelayMs
-
-import hwtLib.proc.ssd1306cntrl.instructions as instrSet
-from hwtLib.types.ctypes import char
-from hwtLib.proc.ssd1306cntrl.interfaces import Ssd1306Intf
 from hwtLib.proc.ssd1306cntrl.handlers import SSD1306CntrlProc_handlers
+import hwtLib.proc.ssd1306cntrl.instructions as instrSet
+from hwtLib.proc.ssd1306cntrl.interfaces import Ssd1306Intf
+from hwtLib.spi.controller import SPICntrlW
+from hwtLib.types.ctypes import char
 
 
 class SSD1306CntrlProc(Unit, SSD1306CntrlProc_handlers):
@@ -191,7 +189,7 @@ class SSD1306CntrlProc(Unit, SSD1306CntrlProc_handlers):
         c(st._eq(st._dtype.LOAD_EXTERN), self.dataIn.rd)
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     from hwtLib.proc.ssd1306cntrl.code import simpleCodeExample
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     u = SSD1306CntrlProc()

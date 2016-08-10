@@ -3,14 +3,14 @@ import math
 from hdl_toolkit.hdlObjects.typeShortcuts import hInt, vec
 from hdl_toolkit.interfaces.std import Handshaked, VldSynced
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
-from hdl_toolkit.synthetisator.codeOps import If, c
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.param import Param, evalParam
+from hdl_toolkit.synthesizer.codeOps import If, c
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param, evalParam
+from hdl_toolkit.synthesizer.shortcuts import synthesizeAndSave
 from hwtLib.mem.cam.camMatch import CamMatch
 from hwtLib.mem.cam.camStorage import CamStorage
 from hwtLib.mem.cam.camWrite import CamWrite
 from hwtLib.mem.cam.interfaces import AddrDataHs
-from hdl_toolkit.synthetisator.shortcuts import synthesizeAndSave
 
 
 def extend(sig, targetWidth):
@@ -96,7 +96,7 @@ class CamInLUT(Unit):
         
         mdata_padded = extend(match.data, DW)
         wdata_padded = extend(write.data, DW)
-        mask_padded = extend(write.mask,  DW)
+        mask_padded = extend(write.mask, DW)
         addr_padded = extend(write.addr, log2ceil(ROWS * CELL_HEIGHT))
         write_ready_base = self._sig("write_ready_base")
         match_ready_base = self._sig("match_ready_base")
@@ -151,7 +151,7 @@ class CamInLUT(Unit):
         c(s.match.data, m.storage.match)
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     # with open("/home/nic30/Documents/vivado/scriptTest/scriptTest.srcs/sources_1/new/top.vhd", "w") as f:
     u = CamInLUT()
     # print(toRtl(u))

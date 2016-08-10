@@ -6,9 +6,9 @@ from hdl_toolkit.interfaces.amba import AxiLite, Axi4, BURST_INCR, CACHE_DEFAULT
     LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthetisator.codeOps import c, Concat, If, Switch
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.param import Param, evalParam
+from hdl_toolkit.synthesizer.codeOps import c, Concat, If, Switch
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param, evalParam
 from hwtLib.axi.axiLite_conv import AxiLiteConvertor
 from python_toolkit.arrayQuery import where
 
@@ -249,7 +249,7 @@ class Axi4streamToMem(Unit):
         
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = Axi4streamToMem()
     # u = AxiLiteRegs(Axi4streamToMem().REGISTER_MAP)
     print(toRtl(u))

@@ -1,13 +1,13 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.param import Param, evalParam
-from hdl_toolkit.interfaces.std import Signal, VldSynced
-from hdl_toolkit.interfaces.amba import AxiStream
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit, vec
-from hdl_toolkit.synthetisator.codeOps import c, fitTo, If, Switch
-from hdl_toolkit.synthetisator.shortcuts import toRtl
 from hdl_toolkit.bitmask import Bitmask
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit, vec
+from hdl_toolkit.hdlObjects.types.enum import Enum
+from hdl_toolkit.interfaces.amba import AxiStream
+from hdl_toolkit.interfaces.std import Signal, VldSynced
 from hdl_toolkit.interfaces.utils import addClkRstn
+from hdl_toolkit.synthesizer.codeOps import c, If, Switch
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param, evalParam
+
 
 class AxiSSampler(Unit):
     """    
@@ -56,7 +56,7 @@ class AxiSSampler(Unit):
         
         # reg_samplep
         If(sample_ce,
-           c(fitTo(self.sample.data, sample), sample)
+           c(self.sample.data, sample, fit=True)
         ).Else(
            c(sample, sample)
         )
@@ -104,9 +104,9 @@ class AxiSSampler(Unit):
             sample_ce)
         
         If(st._eq(stT.stBusyHold),
-           c(fitTo(sample, out.data), out.data)
+           c(sample, out.data, fit=True)
         ).Else(
-           c(fitTo(sampleIn.data, out.data), out.data)
+           c(sampleIn.data, out.data, fit=True)
         )
         c(st != stT.stIdle, self.busy)
         
@@ -128,7 +128,9 @@ class AxiSSampler(Unit):
            c(hBit(1), out.valid), 
            c(out.ready, self.done) 
         )
+        
 if __name__ == "__main__":
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(toRtl(AxiSSampler)) 
         
         

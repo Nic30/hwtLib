@@ -4,8 +4,7 @@ from hdl_toolkit.simulator.agentConnector import autoAddAgents, autoAgents
 from hdl_toolkit.simulator.agents.handshaked import HandshakedAgent
 from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthetisator.shortcuts import synthesised
-
+from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.mem.cam.camInLUT import CamInLUT
 from hwtLib.mem.cam.interfaces import AddrDataHs
 
@@ -30,7 +29,6 @@ from hwtLib.mem.cam.interfaces import AddrDataHs
 #             match |= m
 #         
 #         return match 
-
 class AddrDataHs_agent(HandshakedAgent):
 
     def doRead(self, s):

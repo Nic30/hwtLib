@@ -1,9 +1,9 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.param import Param
-from hdl_toolkit.interfaces.std import Clk, Rst_n, Signal
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.synthetisator.codeOps import connect, If
+from hdl_toolkit.interfaces.std import Clk, Rst_n, Signal
 from hdl_toolkit.interfaces.utils import binToGray
+from hdl_toolkit.synthesizer.codeOps import connect, If
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param
 
 
 class GrayCntr(Unit):
@@ -34,5 +34,5 @@ class GrayCntr(Unit):
         )
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(toRtl(GrayCntr))

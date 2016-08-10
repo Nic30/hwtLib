@@ -1,5 +1,5 @@
 import hwtLib.proc.ssd1306cntrl.instructions as instrSet
-from hdl_toolkit.synthetisator.codeOps import If, c, Switch, In
+from hdl_toolkit.synthesizer.codeOps import If, c, Switch, In
 from hdl_toolkit.hdlObjects.types.array import Array
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hwtLib.img.charToBitmap import addCharToBitmap

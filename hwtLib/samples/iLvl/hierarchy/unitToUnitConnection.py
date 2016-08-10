@@ -1,6 +1,7 @@
-from hdl_toolkit.intfLvl import connect, Param, Unit
 from hdl_toolkit.interfaces.amba import AxiStream
+from hdl_toolkit.intfLvl import connect, Param, Unit
 from hwtLib.samples.iLvl.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnection
+
 
 class UnitToUnitConnection(Unit):
     def _config(self):
@@ -21,5 +22,5 @@ class UnitToUnitConnection(Unit):
         connect(self.u1.c, self.b)
     
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(toRtl(UnitToUnitConnection) )

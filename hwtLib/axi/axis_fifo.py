@@ -1,5 +1,5 @@
-from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.axi.axis_compBase import AxiSCompBase
+from hwtLib.handshaked.fifo import HandshakedFifo
 
 
 class AxiSFifo(AxiSCompBase, HandshakedFifo):
@@ -10,7 +10,7 @@ class AxiSFifo(AxiSCompBase, HandshakedFifo):
             
 if __name__ == "__main__":
     from hdl_toolkit.interfaces.amba import AxiStream_withoutSTRB
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     
     u = AxiSFifo(AxiStream_withoutSTRB)
     u.DEPTH.set(4)

@@ -1,6 +1,7 @@
-from hdl_toolkit.intfLvl import connect, Unit
 from hdl_toolkit.interfaces.std import Signal
+from hdl_toolkit.intfLvl import connect, Unit
 from hwtLib.samples.iLvl.simple import SimpleUnit
+
 
 class SimpleSubunit(Unit):
     def _declr(self):
@@ -15,5 +16,5 @@ class SimpleSubunit(Unit):
         
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(toRtl(SimpleSubunit))

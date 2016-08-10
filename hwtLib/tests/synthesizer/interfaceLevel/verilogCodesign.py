@@ -1,11 +1,13 @@
 import unittest
-from hdl_toolkit.synthetisator.interfaceLevel.unitFromHdl import UnitFromHdl
-from hdl_toolkit.hdlObjects.typeShortcuts import hInt
 
-from hwtLib.tests.synthetisator.interfaceLevel.baseSynthetisatorTC import BaseSynthetisatorTC
+from hdl_toolkit.hdlObjects.typeShortcuts import hInt
+from hdl_toolkit.synthesizer.interfaceLevel.unitFromHdl import UnitFromHdl
+from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import BaseSynthesizerTC
+
+
 ILVL_V = '../../../samples/verilogCodesign/verilog/'
 
-class VerilogCodesignTC(BaseSynthetisatorTC):
+class VerilogCodesignTC(BaseSynthesizerTC):
     def test_TernOpInModul(self):
         class TernOpInModulSample(UnitFromHdl):
             _hdlSources = ILVL_V + "ternOpInModul.v"

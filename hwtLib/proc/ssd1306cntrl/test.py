@@ -1,13 +1,13 @@
 import unittest
 
-from hdl_toolkit.synthetisator.shortcuts import toRtl
+from hdl_toolkit.simulator.agentConnector import autoAddAgents, autoAgents
+from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
+from hdl_toolkit.simulator.shortcuts import simUnitVcd
+from hdl_toolkit.synthesizer.shortcuts import toRtl
 from hwtLib.proc.ssd1306cntrl.code import simpleCodeExample
 from hwtLib.proc.ssd1306cntrl.instructions import NOP
 from hwtLib.proc.ssd1306cntrl.processor import SSD1306CntrlProc
-from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
-from hdl_toolkit.simulator.agentConnector import autoAddAgents, autoAgents
-from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hwtLib.proc.ssd1306cntrlProcessor import OledIntf
+ 
 
 class SSD1306CntrlProcTC(unittest.TestCase):
     def sim(self, program, name):

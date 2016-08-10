@@ -1,12 +1,13 @@
-from hdl_toolkit.intfLvl import Unit
+from hdl_toolkit.hdlObjects.typeShortcuts import vec
+from hdl_toolkit.hdlObjects.types.enum import Enum
+from hdl_toolkit.hdlObjects.types.typeCast import toHVal
 from hdl_toolkit.interfaces.amba import AxiLite, RESP_OKAY
 from hdl_toolkit.interfaces.std import BramPort_withoutClk, RegCntrl
-from hdl_toolkit.synthetisator.codeOps import If, c, FsmBuilder, Or, fitTo
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.hdlObjects.typeShortcuts import vec
-from hdl_toolkit.synthetisator.param import Param, evalParam
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.hdlObjects.types.typeCast import toHVal
+from hdl_toolkit.intfLvl import Unit
+from hdl_toolkit.synthesizer.codeOps import If, c, FsmBuilder, Or
+from hdl_toolkit.synthesizer.param import Param, evalParam
+
 
 def unpackAddrMap(am):
     try:
@@ -37,9 +38,6 @@ class AxiLiteConvertor(Unit):
     def _config(self):
         self.ADDR_WIDTH = Param(8)
         self.DATA_WIDTH = Param(32)
-        self.IN_SUFFIX = "_in"
-        self.OUT_SUFFIX = "_out"
-        
     
     def _declr(self):
         assert len(self.ADRESS_MAP) > 0
@@ -141,7 +139,7 @@ class AxiLiteConvertor(Unit):
             addrHBit = port.addr._dtype.bit_length() 
             assert addrHBit + bitForAligig <= evalParam(self.ADDR_WIDTH).val
             
-            c(fitTo(a[(addrHBit + bitForAligig):bitForAligig], port.addr), port.addr)
+            c(a[(addrHBit + bitForAligig):bitForAligig], port.addr, fit=True)
             c(1, port.en)
             c(prioritizeWrite, port.we)
             
@@ -217,7 +215,7 @@ class AxiLiteConvertor(Unit):
         
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = AxiLiteConvertor([(i * 4 , "data%d" % i) for i in range(2)] + 
                          [(3 * 4, "bramMapped", 32)])
     print(toRtl(u))

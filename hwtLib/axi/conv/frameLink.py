@@ -1,11 +1,11 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.param import Param, evalParam
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param, evalParam
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
 from hdl_toolkit.interfaces.amba import AxiStream_withUserAndStrb
 from hdl_toolkit.interfaces.frameLink import FrameLink
-from hdl_toolkit.synthetisator.shortcuts import toRtl
+from hdl_toolkit.synthesizer.shortcuts import toRtl
 
-from hdl_toolkit.synthetisator.codeOps import c, Concat, Switch, If
+from hdl_toolkit.synthesizer.codeOps import c, Concat, Switch, If
 from hdl_toolkit.hdlObjects.typeShortcuts import hBit, vec
 from hdl_toolkit.bitmask import Bitmask
 

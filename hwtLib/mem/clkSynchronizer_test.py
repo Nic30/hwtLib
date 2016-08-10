@@ -4,7 +4,7 @@ from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.simulator.agentConnector import valuesToInts
 from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, oscilate, pullDownAfter
-from hdl_toolkit.synthetisator.shortcuts import synthesised
+from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.mem.clkSynchronizer import ClkSynchronizer
 
 
@@ -23,7 +23,7 @@ class ClkSynchronizerTC(unittest.TestCase):
         u = self.u
                 
         def dataCollector(s):
-            yield s.wait(CLK_PERIOD + 0.001) # random small value to collect data after it is set
+            yield s.wait(CLK_PERIOD + 0.001)  # random small value to collect data after it is set
             while True:
                 d = s.read(u.outData)
                 collected.append(d)

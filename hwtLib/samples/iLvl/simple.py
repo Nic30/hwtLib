@@ -1,5 +1,5 @@
-from hdl_toolkit.intfLvl import connect, Unit
 from hdl_toolkit.interfaces.std import Signal
+from hdl_toolkit.intfLvl import connect, Unit
 
 
 class SimpleUnit(Unit):
@@ -28,6 +28,6 @@ class SimpleUnit(Unit):
         # directions of a and b interfaces are derived automatically, if signal has driver it is output
 
 if __name__ == "__main__": # alias python main function
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     print(toRtl(SimpleUnit))

@@ -1,11 +1,10 @@
-from hdl_toolkit.synthetisator.param import Param, evalParam
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.interfaces.std import s
 from hdl_toolkit.interfaces.utils import log2ceil
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.synthetisator.codeOps import connect
+from hdl_toolkit.synthesizer.codeOps import c
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param, evalParam
 
-c = connect
 
 class DecEn(Unit):
     def _config(self):
@@ -32,5 +31,5 @@ class DecEn(Unit):
                 c(dIn._eq(i) & en, self.dout[i])
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(toRtl(DecEn))

@@ -1,8 +1,9 @@
-from hdl_toolkit.synthetisator.param import Param, evalParam
-from hdl_toolkit.interfaces.std import Signal, Handshaked
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hInt, vec
-from hdl_toolkit.synthetisator.codeOps import Switch, c
+from hdl_toolkit.interfaces.std import Signal, Handshaked
+from hdl_toolkit.synthesizer.codeOps import Switch, c
+from hdl_toolkit.synthesizer.param import Param, evalParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
+
 
 class HandshakedMux(HandshakedCompBase):
     def _config(self):
@@ -41,6 +42,6 @@ class HandshakedMux(HandshakedCompBase):
         
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = HandshakedMux(Handshaked)
     print(toRtl(u))   

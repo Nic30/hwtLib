@@ -1,13 +1,14 @@
 from math import log2
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.param import Param, evalParam
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.interfaces.std import VldSynced, Signal
-from hdl_toolkit.interfaces.spi import SPI
-from hdl_toolkit.interfaces.utils import isPow2
+
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
-from hdl_toolkit.synthetisator.codeOps import c, Switch, If, FsmBuilder
 from hdl_toolkit.hdlObjects.types.enum import Enum
+from hdl_toolkit.interfaces.spi import SPI
+from hdl_toolkit.interfaces.std import VldSynced, Signal
+from hdl_toolkit.interfaces.utils import addClkRstn
+from hdl_toolkit.interfaces.utils import isPow2
+from hdl_toolkit.synthesizer.codeOps import c, Switch, If, FsmBuilder
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param, evalParam
 
 
 class SPICntrlW(Unit):
@@ -52,7 +53,7 @@ class SPICntrlW(Unit):
             stT.hold4
         ).Trans(stT.hold4,  # Hold CS low for a bit
             stT.done
-        ).Default( #stT.done,   Finish SPI transmission wait for SPI_EN to go low
+        ).Default(# stT.done,   Finish SPI transmission wait for SPI_EN to go low
             (~In,
                 stT.idle
             )
@@ -82,7 +83,7 @@ class SPICntrlW(Unit):
         
         c(mosiReg, Out.mosi)
         c(st._eq(stT.idle) & In.vld, Out.cs)
-        c(st._eq(stT.done),          self.dataInDone)
+        c(st._eq(stT.done), self.dataInDone)
         
         # CLK_DIV
         If(st._eq(stT.send),  # start clock counter when in send state
@@ -130,7 +131,7 @@ class SPICntrlW(Unit):
         )
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     u = SPICntrlW()
     print(toRtl(u))

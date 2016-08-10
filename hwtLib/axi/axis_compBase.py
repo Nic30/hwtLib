@@ -1,6 +1,7 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.interfaces.amba import AxiStream_withoutSTRB
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.handshaked.compBase import HandshakedCompBase
+
 
 class AxiSCompBase(HandshakedCompBase):
     def __init__(self, hsIntfCls):

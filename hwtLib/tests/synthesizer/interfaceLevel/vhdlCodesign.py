@@ -8,17 +8,17 @@ from hdl_toolkit.hdlObjects.types.defs import INT, UINT, PINT, SLICE
 from hdl_toolkit.interfaces.amba import AxiLite
 from hdl_toolkit.interfaces.std import Clk, \
     Rst_n, BramPort, VldSynced
-from hdl_toolkit.synthetisator.interfaceLevel.unitFromHdl import UnitFromHdl
-from hdl_toolkit.synthetisator.param import Param
-from hdl_toolkit.synthetisator.shortcuts import synthesised
-from hwtLib.tests.synthetisator.interfaceLevel.baseSynthetisatorTC import BaseSynthetisatorTC
+from hdl_toolkit.synthesizer.interfaceLevel.unitFromHdl import UnitFromHdl
+from hdl_toolkit.synthesizer.param import Param
+from hdl_toolkit.synthesizer.shortcuts import synthesised
+from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import BaseSynthesizerTC
 from python_toolkit.arrayQuery import single, NoValueExc
 
 
 ILVL_VHDL = '../../../samples/vhdlCodesign/vhdl/'
 
 
-class VhdlCodesignTC(BaseSynthetisatorTC):
+class VhdlCodesignTC(BaseSynthesizerTC):
 
     def testTypeInstances(self):
         from hdl_toolkit.hdlObjects.types import defs

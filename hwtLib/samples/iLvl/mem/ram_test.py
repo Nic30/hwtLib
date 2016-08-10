@@ -4,7 +4,7 @@ from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts, \
     valuesToInts
 from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthetisator.shortcuts import synthesised
+from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.samples.iLvl.mem.ram import SimpleAsyncRam, SimpleSyncRam
 
 

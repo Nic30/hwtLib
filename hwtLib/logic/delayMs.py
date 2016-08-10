@@ -1,10 +1,10 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.param import Param, evalParam
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.interfaces.std import ReqDoneSync, Signal
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.synthetisator.codeOps import FsmBuilder, c, If
+from hdl_toolkit.interfaces.std import ReqDoneSync, Signal
+from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
+from hdl_toolkit.synthesizer.codeOps import FsmBuilder, c, If
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param, evalParam
 
 
 class DelayMs(Unit):
@@ -58,7 +58,7 @@ class DelayMs(Unit):
         )
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     u = DelayMs()
     print(toRtl(u))

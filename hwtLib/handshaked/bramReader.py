@@ -1,10 +1,11 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.param import Param
-from hdl_toolkit.interfaces.utils import addClkRstn
+from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.interfaces.std import BramPort_withoutClk, Handshaked, \
     HandshakeSync
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.synthetisator.codeOps import c, Switch, If
+from hdl_toolkit.interfaces.utils import addClkRstn
+from hdl_toolkit.synthesizer.codeOps import c, Switch, If
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param
+
 
 class HsBramPortReader(Unit):
     def _config(self):
@@ -115,7 +116,7 @@ class HsBramPortReader(Unit):
         
         # dataRegs logic
         If(st._eq(st_t.sendingData),
-            c(1, data_flag), 
+            c(1, data_flag),
             If(data_inReg | (data_flag & ~Out.rd),
                 # if some data is loaded and it can not be send out
                 If(data_inReg,
@@ -128,10 +129,11 @@ class HsBramPortReader(Unit):
                 c(~self.dataOut.rd, data_inReg)
             )
         ).Else(
-            c(0, data_flag), 
+            c(0, data_flag),
             c(0, data_inReg) 
         )
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
-    print(toRtl(HsBramPortReader()))        
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    u = HsBramPortReader()
+    print(toRtl(u))        

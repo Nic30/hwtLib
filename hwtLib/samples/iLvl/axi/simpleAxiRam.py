@@ -1,9 +1,9 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.interfaces.amba import AxiLite
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthetisator.codeOps import If, c
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.param import Param
+from hdl_toolkit.synthesizer.codeOps import If, c
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param
 from hwtLib.axi.axiLite_conv import AxiLiteConvertor
 from hwtLib.mem.ram import RamSingleClock
 
@@ -45,7 +45,7 @@ class SimpleAxiRam(Unit):
         c(conv.ram0, self.ram.a)
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = SimpleAxiRam()
     print(toRtl(u))
     

@@ -1,8 +1,8 @@
-from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.synthetisator.codeOps import If, c
-
+from hdl_toolkit.interfaces.utils import addClkRstn
+from hdl_toolkit.synthesizer.codeOps import If, c
 from hwtLib.handshaked.compBase import HandshakedCompBase 
+
 
 class HandshakedReg(HandshakedCompBase):
     """
@@ -39,7 +39,7 @@ class HandshakedReg(HandshakedCompBase):
             c(r, iout)
 
         If(isOccupied,
-            If(rd(m) &~vld(s),
+            If(rd(m) & ~vld(s),
                 c(0, isOccupied)
             ).Else(
                 isOccupied._same()
@@ -53,17 +53,17 @@ class HandshakedReg(HandshakedCompBase):
         )
         
         If(isOccupied,
-           c(rd(m), rd(s)) , 
-           c(1, vld(m)), 
+           c(rd(m), rd(s)) ,
+           c(1, vld(m)),
            c(vld(s) & rd(m), regs_we)
         ).Else(
-           c(1, rd(s)), 
-           c(0, vld(m)), 
+           c(1, rd(s)),
+           c(0, vld(m)),
            c(vld(s), regs_we)
         )
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = HandshakedReg(Handshaked)
     
     print(toRtl(u))

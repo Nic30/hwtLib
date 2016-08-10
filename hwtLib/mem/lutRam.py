@@ -1,8 +1,9 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.param import Param
 from hdl_toolkit.hdlObjects.typeShortcuts import hBit, vec, vecT
 from hdl_toolkit.interfaces.std import Signal, Clk
-from hdl_toolkit.synthetisator.codeOps import connect, Concat, If
+from hdl_toolkit.synthesizer.codeOps import connect, Concat, If
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param
+
 
 c = connect
 
@@ -56,5 +57,5 @@ RAM64X1S = mkLutRamCls(64)
 
 
 if __name__ == "__main__":
-	from hdl_toolkit.synthetisator.shortcuts import toRtl
+	from hdl_toolkit.synthesizer.shortcuts import toRtl
 	print(toRtl(RAM64X1S))

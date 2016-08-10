@@ -1,11 +1,12 @@
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.param import Param, evalParam
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.interfaces.std import Handshaked, VldSynced
-from hwtLib.mem.cam.interfaces import AddrDataHs
-from hdl_toolkit.hdlObjects.types.array import Array
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
-from hdl_toolkit.synthetisator.codeOps import If, c
+from hdl_toolkit.hdlObjects.types.array import Array
+from hdl_toolkit.interfaces.std import Handshaked, VldSynced
+from hdl_toolkit.interfaces.utils import addClkRstn
+from hdl_toolkit.synthesizer.codeOps import If, c
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwtLib.mem.cam.interfaces import AddrDataHs
+
 
 class Cam(Unit):
     """
@@ -61,6 +62,6 @@ class Cam(Unit):
         self.matchHandler(self._mem)
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = Cam()
     print(toRtl(u))  

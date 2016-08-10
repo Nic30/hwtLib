@@ -27,7 +27,7 @@ class ClkSynchronizer(Unit):
     def _impl(self):
         def reg(name, clk):
             return self._cntx.sig(name, self.DATA_TYP, clk=clk, syncRst=self.rst, defVal=0)
-        inReg =   reg("inReg",   self.inClk )
+        inReg = reg("inReg", self.inClk)
         outReg0 = reg("outReg0", self.outClk)
         outReg1 = reg("outReg1", self.outClk)
         
@@ -40,5 +40,5 @@ class ClkSynchronizer(Unit):
         c(outReg1, self.outData)
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(toRtl(ClkSynchronizer))

@@ -1,8 +1,7 @@
-from hdl_toolkit.interfaces.std import Handshaked, s, VldSynced
-from hdl_toolkit.synthetisator.param import Param
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.specialValues import DIRECTION
-
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hdl_toolkit.interfaces.std import Handshaked, s, VldSynced
+from hdl_toolkit.synthesizer.param import Param
 
 
 class AddrDataHs(Handshaked):

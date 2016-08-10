@@ -1,12 +1,12 @@
-from hdl_toolkit.intfLvl import Param, c
-from hdl_toolkit.synthetisator.param import evalParam
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthetisator.codeOps import packedWidth, packed,\
+from hdl_toolkit.intfLvl import Param, c
+from hdl_toolkit.synthesizer.codeOps import packedWidth, packed, \
     connectUnpacked
-
-from hwtLib.mem.fifo import Fifo
+from hdl_toolkit.synthesizer.param import evalParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
+from hwtLib.mem.fifo import Fifo
+
 
 class HandshakedFifo(HandshakedCompBase):
     def _config(self):
@@ -49,5 +49,5 @@ class HandshakedFifo(HandshakedCompBase):
                             exclude=[vld(dout),rd(dout)])
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(toRtl(HandshakedFifo(Handshaked)))

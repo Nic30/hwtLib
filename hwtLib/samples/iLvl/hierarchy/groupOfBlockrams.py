@@ -1,8 +1,8 @@
-from hdl_toolkit.intfLvl import Param, Unit, c
-from hdl_toolkit.interfaces.std import Signal
-from hwtLib.mem.ram import Ram_dp
-from hdl_toolkit.synthetisator.shortcuts import toRtl
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hdl_toolkit.interfaces.std import Signal
+from hdl_toolkit.intfLvl import Param, Unit, c
+from hwtLib.mem.ram import Ram_dp
+
 
 class GroupOfBlockrams(Unit):
     def _config(self):
@@ -54,4 +54,5 @@ class GroupOfBlockrams(Unit):
         
 
 if __name__ == "__main__":
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(toRtl(GroupOfBlockrams))

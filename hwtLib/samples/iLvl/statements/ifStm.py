@@ -1,6 +1,6 @@
-from hdl_toolkit.intfLvl import connect, Unit
 from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.synthetisator.codeOps import If
+from hdl_toolkit.intfLvl import connect, Unit
+from hdl_toolkit.synthesizer.codeOps import If
 
 
 class SimpleIfStatement(Unit):
@@ -21,6 +21,6 @@ class SimpleIfStatement(Unit):
         )
 
 if __name__ == "__main__": # alias python main function
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     print(toRtl(SimpleIfStatement))

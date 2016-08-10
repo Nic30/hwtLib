@@ -1,6 +1,7 @@
+from hdl_toolkit.interfaces.amba import AxiStream
 from hdl_toolkit.intfLvl import connect, Unit, Param
 from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream
-from hdl_toolkit.interfaces.amba import AxiStream
+
 
 class SimpleSubunit3(Unit):
     def _config(self):
@@ -20,5 +21,5 @@ class SimpleSubunit3(Unit):
         connect(u.b, self.b0)
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthetisator.shortcuts import toRtl
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(toRtl(SimpleSubunit3))

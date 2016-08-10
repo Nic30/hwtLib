@@ -1,13 +1,13 @@
 import unittest
 
-from hdl_toolkit.simulator.agentConnector import autoAddAgents, autoAgents,\
+from hdl_toolkit.simulator.agentConnector import autoAddAgents, autoAgents, \
     agInts
+from hdl_toolkit.simulator.agents.signal import SignalAgent
 from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthetisator.shortcuts import synthesised
-
+from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.mem.cam.camStorage import CamStorage, CamStorageInIntf
-from hdl_toolkit.simulator.agents.signal import SignalAgent
+
 
 class CamStorageInAgent(SignalAgent):
     def doRead(self, s):
