@@ -3,7 +3,6 @@ from hdl_toolkit.interfaces.amba import AxiLite, RESP_OKAY
 from hdl_toolkit.interfaces.std import Signal, VldSynced, BramPort_withoutClk
 from hdl_toolkit.synthetisator.codeOps import If, c, FsmBuilder, Or, fitTo
 from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.synthetisator.shortcuts import toRtl
 from hdl_toolkit.hdlObjects.typeShortcuts import vec, vecT
 from hdl_toolkit.synthetisator.param import Param, evalParam
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
@@ -44,6 +43,7 @@ class AxiLiteRegs(Unit):
     
     def _declr(self):
         assert len(self.ADRESS_MAP) > 0
+        assert self.ADRESS_MAP[-1][0] < (2 ** evalParam(self.ADDR_WIDTH).val) 
         
         directlyMapped = []
         bramPortMapped = []
@@ -57,18 +57,19 @@ class AxiLiteRegs(Unit):
             else:
                 bramPortMapped.append((addr, name, size))
         
-        with self._asExtern(), self._paramsShared():
+        with self._asExtern():
             addClkRstn(self)
             
-            self.axi = AxiLite()
-            
-            for  addr, name in directlyMapped:
-                out = VldSynced()
-                _in = Signal(dtype=vecT(self.DATA_WIDTH))
-                setattr(self, name + self.OUT_SUFFIX, out)
-                setattr(self, name + self.IN_SUFFIX, _in)
+            with self._paramsShared():
+                self.axi = AxiLite()
                 
-                self._directlyMapped.append((addr, (_in, out)))
+                for  addr, name in directlyMapped:
+                    out = VldSynced()
+                    _in = Signal(dtype=vecT(self.DATA_WIDTH))
+                    setattr(self, name + self.OUT_SUFFIX, out)
+                    setattr(self, name + self.IN_SUFFIX, _in)
+                    
+                    self._directlyMapped.append((addr, (_in, out)))
                 
             
             for addr, name, size in bramPortMapped:
@@ -80,9 +81,10 @@ class AxiLiteRegs(Unit):
 
     
     def readPart(self, awAddr, w_hs):
+        DW_B = evalParam(self.DATA_WIDTH).val // 8 
         # build read data output mux
         def isMyAddr(addrSig, addr, size):
-            return (addrSig >= addr) & (addrSig < (toHVal(addr) + size))
+            return (addrSig >= addr) & (addrSig < (toHVal(addr) + (size*DW_B)))
         
         rSt_t = Enum('rSt_t', ['rdIdle', 'bramRd', 'rdData'])
         ar = self.axi.ar
@@ -92,8 +94,8 @@ class AxiLiteRegs(Unit):
         
         rSt = FsmBuilder(self, rSt_t, stateRegName='rSt')\
         .Trans(rSt_t.rdIdle,
-            (ar.valid & ~isBramAddr, rSt_t.rdData),
-            (ar.valid & isBramAddr, rSt_t.bramRd)
+            (ar.valid & ~isBramAddr & ~w_hs, rSt_t.rdData),
+            (ar.valid & isBramAddr & ~w_hs, rSt_t.bramRd)
         ).Trans(rSt_t.bramRd,
             (~w_hs, rSt_t.rdData)
         ).Default(# Trans(rSt_t.rdData,
@@ -101,15 +103,14 @@ class AxiLiteRegs(Unit):
         ).stateReg
         
         arRd = rSt._eq(rSt_t.rdIdle)
-        c(arRd, ar.ready)
-        ar_hs = ar.valid & arRd
+        c(arRd & ~w_hs, ar.ready)
         
         c(rSt._eq(rSt_t.rdData), r.valid)
         c(RESP_OKAY, r.resp)
         
         # save ar addr
         arAddr = self._reg('arAddr', ar.addr._dtype) 
-        If(ar_hs,
+        If(ar.valid & arRd,
             c(ar.addr, arAddr)
         ).Else(
             arAddr._same()
@@ -122,13 +123,13 @@ class AxiLiteRegs(Unit):
         # rAssigTopCases =[]
         for addr, (In, _) in reversed(self._directlyMapped):
             # we are directly sending data from register
-            rAssigTop = If(ar.addr._eq(addr),
+            rAssigTop = If(arAddr._eq(addr),
                c(In, r.data)
             ).Else(
                rAssigTop
             )
 
-        bitForAligig = log2ceil(evalParam(self.DATA_WIDTH) // 8 - 1)
+        bitForAligig = log2ceil(evalParam(self.DATA_WIDTH) // 8 - 1).val
         for addr, port, size in reversed(self._bramPortMapped):
             # map addr for bram ports
             _isMyAddr = isMyAddr(ar.addr, addr, size)
@@ -140,13 +141,16 @@ class AxiLiteRegs(Unit):
             a = self._sig("addr_forBram_" + port._name, awAddr._dtype)
             If(prioritizeWrite,
                 c(awAddr - addr, a)
+            ).Elif(rSt._eq(rSt_t.rdIdle),
+                c(ar.addr - addr, a)
             ).Else(
                 c(arAddr - addr, a)
             )
             
             addrHBit = port.addr._dtype.bit_length() 
+            assert addrHBit + bitForAligig <= evalParam(self.ADDR_WIDTH).val
             
-            c(fitTo(a[addrHBit:bitForAligig], port.addr), port.addr)
+            c(fitTo(a[(addrHBit + bitForAligig):bitForAligig], port.addr), port.addr)
             c(1, port.en)
             c(prioritizeWrite, port.we)
             
@@ -155,9 +159,7 @@ class AxiLiteRegs(Unit):
             ).Else(
                 rregAssigTop
             )
-            
-                
-                
+
         if _isInBramFlags:
             c(Or(*_isInBramFlags), isBramAddr)
         else:
@@ -187,13 +189,12 @@ class AxiLiteRegs(Unit):
         
         aw_hs = sig('aw_hs')
         awAddr = reg('awAddr', aw.addr._dtype) 
-        wRd = sig('wRd')
         w_hs = sig('w_hs')
         c(wSt._eq(wSt_t.wrResp), b.valid)
   
         awRd = wSt._eq(wSt_t.wrIdle)
         c(awRd, aw.ready)
-        c(wSt._eq(wSt_t.wrData), wRd)
+        wRd = wSt._eq(wSt_t.wrData)
         c(wRd, w.ready)
         
         c(vec(RESP_OKAY, 2), self.axi.b.resp)
@@ -224,6 +225,7 @@ class AxiLiteRegs(Unit):
         
 
 if __name__ == "__main__":
+    from hdl_toolkit.synthetisator.shortcuts import toRtl
     u = AxiLiteRegs([(i * 4 , "data%d" % i) for i in range(2)] + 
                     [(3 * 4, "bramMapped", 64)])
     print(toRtl(u))
