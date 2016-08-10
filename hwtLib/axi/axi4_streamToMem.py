@@ -1,18 +1,16 @@
-from python_toolkit.arrayQuery import where
-
-from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
-from hdl_toolkit.synthetisator.param import Param, evalParam
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
+from hdl_toolkit.bitmask import Bitmask
+from hdl_toolkit.hdlObjects.typeShortcuts import vec, vecT
+from hdl_toolkit.hdlObjects.types.defs import BIT
+from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.interfaces.amba import AxiLite, Axi4, BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
-from hdl_toolkit.synthetisator.codeOps import c, Concat, If, Switch
 from hdl_toolkit.interfaces.std import Handshaked
+from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
+from hdl_toolkit.synthetisator.codeOps import c, Concat, If, Switch
+from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
+from hdl_toolkit.synthetisator.param import Param, evalParam
 from hwtLib.axi.axiLite_regs import AxiLiteRegs
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.hdlObjects.types.defs import BIT
-from hdl_toolkit.hdlObjects.typeShortcuts import vec, vecT
-from hdl_toolkit.bitmask import Bitmask
-
+from python_toolkit.arrayQuery import where
 
 
 class Axi4streamToMem(Unit):
@@ -39,20 +37,29 @@ class Axi4streamToMem(Unit):
     
     """
     def _config(self):
-        self.DATA_WIDTH = Param(32)
         self.ADDR_WIDTH = Param(32)
+        self.DATA_WIDTH = Param(32)
+        self.CNTRL_AW = Param(3)
+        
         self.DATA_LEN = Param(33)  # size of data which should be transfered in worlds
         self.MAX_BUTST_LEN = Param(16) 
         self.REGISTER_MAP = [(0x0, "control"),
                              (0x4, "baseAddr")]
     def _declr(self):
-        with self._paramsShared():
-            with self._asExtern():
+        with self._asExtern():
+            with self._paramsShared():
                 addClkRstn(self)
-                self.cntrl = AxiLite()
                 self.axi = Axi4()
                 self.dataIn = Handshaked()
-            self.regsConventor = AxiLiteRegs(self.REGISTER_MAP)
+            cntrl = self.cntrl = AxiLite()
+        regs = self.regsConventor = AxiLiteRegs(self.REGISTER_MAP)
+        
+        cntrl._replaceParam("ADDR_WIDTH", self.CNTRL_AW)
+        cntrl._replaceParam("DATA_WIDTH", self.DATA_WIDTH)
+        
+        regs.ADDR_WIDTH.set(self.CNTRL_AW)
+        regs.DATA_WIDTH.set(self.DATA_WIDTH)
+        
     
     def axiWAddrHandler(self, st, baseAddr, actualAddr, lenRem):
         """
@@ -79,15 +86,15 @@ class Axi4streamToMem(Unit):
         # lenRem, actualAddr logic
         Switch(st)\
         .Case(st_t.fullIdle,
-            c(self.DATA_LEN, lenRem), 
+            c(self.DATA_LEN, lenRem),
             c(baseAddr, actualAddr)
         ).Case(st_t.writeAddr,
             If(axi.aw.ready,
                 If(lenRem > self.MAX_BUTST_LEN,
-                   c(actualAddr+self.MAX_BUTST_LEN, actualAddr),
+                   c(actualAddr + self.MAX_BUTST_LEN, actualAddr),
                    c(lenRem - self.MAX_BUTST_LEN, lenRem)
                 ).Else(
-                   c(actualAddr+lenRem, actualAddr),
+                   c(actualAddr + lenRem, actualAddr),
                    c(0, lenRem)
                 )
             ).Else(
@@ -244,6 +251,6 @@ class Axi4streamToMem(Unit):
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl
     u = Axi4streamToMem()
-    #u = AxiLiteRegs(Axi4streamToMem().REGISTER_MAP)
+    # u = AxiLiteRegs(Axi4streamToMem().REGISTER_MAP)
     print(toRtl(u))
     
