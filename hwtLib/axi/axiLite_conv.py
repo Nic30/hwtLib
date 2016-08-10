@@ -1,9 +1,10 @@
 from hdl_toolkit.intfLvl import Unit
 from hdl_toolkit.interfaces.amba import AxiLite, RESP_OKAY
-from hdl_toolkit.interfaces.std import Signal, VldSynced, BramPort_withoutClk
+from hdl_toolkit.interfaces.std import Signal, VldSynced, BramPort_withoutClk,\
+    RegCntrl
 from hdl_toolkit.synthetisator.codeOps import If, c, FsmBuilder, Or, fitTo
 from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.hdlObjects.typeShortcuts import vec, vecT
+from hdl_toolkit.hdlObjects.typeShortcuts import vec
 from hdl_toolkit.synthetisator.param import Param, evalParam
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
 from hdl_toolkit.hdlObjects.types.typeCast import toHVal
@@ -17,7 +18,7 @@ def unpackAddrMap(am):
     # address, name, size
     return am[0], am[1], size
     
-class AxiLiteRegs(Unit):
+class AxiLiteConvertor(Unit):
     """
     Axi lite register generator
     """
@@ -45,17 +46,9 @@ class AxiLiteRegs(Unit):
         assert len(self.ADRESS_MAP) > 0
         assert self.ADRESS_MAP[-1][0] < (2 ** evalParam(self.ADDR_WIDTH).val) 
         
-        directlyMapped = []
-        bramPortMapped = []
         self._directlyMapped = []
         self._bramPortMapped = []
         
-        for am in self.ADRESS_MAP:
-            addr, name, size = unpackAddrMap(am)
-            if size is None:
-                directlyMapped.append((addr, name))
-            else:
-                bramPortMapped.append((addr, name, size))
         
         with self._asExtern():
             addClkRstn(self)
@@ -63,21 +56,20 @@ class AxiLiteRegs(Unit):
             with self._paramsShared():
                 self.axi = AxiLite()
                 
-                for  addr, name in directlyMapped:
-                    out = VldSynced()
-                    _in = Signal(dtype=vecT(self.DATA_WIDTH))
-                    setattr(self, name + self.OUT_SUFFIX, out)
-                    setattr(self, name + self.IN_SUFFIX, _in)
-                    
-                    self._directlyMapped.append((addr, (_in, out)))
-                
-            
-            for addr, name, size in bramPortMapped:
-                p = BramPort_withoutClk()
-                p._replaceParam("DATA_WIDTH", self.DATA_WIDTH)
-                p.ADDR_WIDTH.set(log2ceil(size - 1))
+            for am in self.ADRESS_MAP:
+                addr, name, size = unpackAddrMap(am)
+                if size is None:
+                        p = RegCntrl()
+                        p._replaceParam("DATA_WIDTH", self.DATA_WIDTH)
+                        self._directlyMapped.append((addr, p))
+                else:
+                    p = BramPort_withoutClk()
+                    p._replaceParam("DATA_WIDTH", self.DATA_WIDTH)
+                    p.ADDR_WIDTH.set(log2ceil(size - 1))
+                    self._bramPortMapped.append((addr, p, size))
+
                 setattr(self, name, p)
-                self._bramPortMapped.append((addr, p, size))
+
 
     
     def readPart(self, awAddr, w_hs):
@@ -121,10 +113,10 @@ class AxiLiteRegs(Unit):
         rAssigTop = c(rdataReg, r.data)
         rregAssigTop = rdataReg._same()
         # rAssigTopCases =[]
-        for addr, (In, _) in reversed(self._directlyMapped):
+        for addr, d in reversed(self._directlyMapped):
             # we are directly sending data from register
             rAssigTop = If(arAddr._eq(addr),
-                           c(In, r.data)
+                           c(d.din, r.data)
                         ).Else(
                            rAssigTop
                         )
@@ -209,7 +201,8 @@ class AxiLiteRegs(Unit):
         )
         
         # output vld
-        for addr, (_, out) in self._directlyMapped:
+        for addr, d in self._directlyMapped:
+            out = d.dout
             c(w.data, out.data)
             c(w_hs & (awAddr._eq(vec(addr, addrWidth))), out.vld)
         

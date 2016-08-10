@@ -9,7 +9,7 @@ from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
 from hdl_toolkit.synthetisator.codeOps import c, Concat, If, Switch
 from hdl_toolkit.synthetisator.interfaceLevel.unit import Unit
 from hdl_toolkit.synthetisator.param import Param, evalParam
-from hwtLib.axi.axiLite_regs import AxiLiteRegs
+from hwtLib.axi.axiLite_conv import AxiLiteConvertor
 from python_toolkit.arrayQuery import where
 
 
@@ -52,7 +52,7 @@ class Axi4streamToMem(Unit):
                 self.axi = Axi4()
                 self.dataIn = Handshaked()
             cntrl = self.cntrl = AxiLite()
-        regs = self.regsConventor = AxiLiteRegs(self.REGISTER_MAP)
+        regs = self.regsConventor = AxiLiteConvertor(self.REGISTER_MAP)
         
         cntrl._replaceParam("ADDR_WIDTH", self.CNTRL_AW)
         cntrl._replaceParam("DATA_WIDTH", self.DATA_WIDTH)
@@ -113,17 +113,17 @@ class Axi4streamToMem(Unit):
         idle = st._eq(st._dtype.fullIdle)
         regs = self.regsConventor
         c(Concat(onoff, idle._convert(BIT), vec(0, self.DATA_WIDTH - 2)),
-             regs.control_in)
+             regs.control.din)
         
-        If(regs.control_out.vld,
-           c(regs.control_out.data[0], onoff)
+        If(regs.control.dout.vld,
+           c(regs.control.dout.data[0], onoff)
         ).Else(
            onoff._same()
         )
         
-        c(baseAddr, regs.baseAddr_in)
-        If(regs.baseAddr_out.vld,
-           c(regs.baseAddr_out.data, baseAddr)
+        c(baseAddr, regs.baseAddr.din)
+        If(regs.baseAddr.dout.vld,
+           c(regs.baseAddr.dout.data, baseAddr)
         ).Else(
            baseAddr._same()
         )  
