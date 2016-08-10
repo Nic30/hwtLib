@@ -75,7 +75,7 @@ class AxiLiteRegs(Unit):
             for addr, name, size in bramPortMapped:
                 p = BramPort_withoutClk()
                 p._replaceParam("DATA_WIDTH", self.DATA_WIDTH)
-                p.ADDR_WIDTH.set(log2ceil(toHVal(size - 1)))
+                p.ADDR_WIDTH.set(log2ceil(size - 1))
                 setattr(self, name, p)
                 self._bramPortMapped.append((addr, p, size))
 
@@ -95,7 +95,7 @@ class AxiLiteRegs(Unit):
         rSt = FsmBuilder(self, rSt_t, stateRegName='rSt')\
         .Trans(rSt_t.rdIdle,
             (ar.valid & ~isBramAddr & ~w_hs, rSt_t.rdData),
-            (ar.valid & isBramAddr & ~w_hs, rSt_t.bramRd)
+            (ar.valid & isBramAddr & ~w_hs,  rSt_t.bramRd)
         ).Trans(rSt_t.bramRd,
             (~w_hs, rSt_t.rdData)
         ).Default(# Trans(rSt_t.rdData,
@@ -124,12 +124,12 @@ class AxiLiteRegs(Unit):
         for addr, (In, _) in reversed(self._directlyMapped):
             # we are directly sending data from register
             rAssigTop = If(arAddr._eq(addr),
-               c(In, r.data)
-            ).Else(
-               rAssigTop
-            )
+                           c(In, r.data)
+                        ).Else(
+                           rAssigTop
+                        )
 
-        bitForAligig = log2ceil(evalParam(self.DATA_WIDTH) // 8 - 1).val
+        bitForAligig = log2ceil(self.DATA_WIDTH // 8 - 1).val
         for addr, port, size in reversed(self._bramPortMapped):
             # map addr for bram ports
             _isMyAddr = isMyAddr(ar.addr, addr, size)
@@ -227,6 +227,6 @@ class AxiLiteRegs(Unit):
 if __name__ == "__main__":
     from hdl_toolkit.synthetisator.shortcuts import toRtl
     u = AxiLiteRegs([(i * 4 , "data%d" % i) for i in range(2)] + 
-                    [(3 * 4, "bramMapped", 64)])
+                    [(3 * 4, "bramMapped", 32)])
     print(toRtl(u))
     
