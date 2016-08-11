@@ -3,7 +3,7 @@ from hdl_toolkit.interfaces.amba import AxiLite
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
 from hdl_toolkit.synthesizer.codeOps import If, c
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hwtLib.axi.axiLite_conv import AxiLiteConvertor
+from hwtLib.axi.axiLite_conv import AxiLiteConverter
 
 
 class SimpleAxiRegs(Unit):
@@ -13,13 +13,13 @@ class SimpleAxiRegs(Unit):
             self.axi = AxiLite()
             self.axi.ADDR_WIDTH.set(8)
             self.axi.DATA_WIDTH.set(32)
-        self.conv = AxiLiteConvertor([(0, "reg0"),
+        self.conv = AxiLiteConverter([(0, "reg0"),
                                  (4, "reg1")])
         
         
     def _impl(self):
         propagateClkRstn(self)
-        c(self.axi, self.conv.axi)
+        c(self.axi, self.conv.bus)
         
         reg0 = self._reg("reg0", vecT(32), defVal=0)
         reg1 = self._reg("reg1", vecT(32), defVal=1)

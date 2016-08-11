@@ -19,7 +19,7 @@ class AxiLiteConverter(BusConverter):
             addClkRstn(self)
             
             with self._paramsShared():
-                self.axi = AxiLite()
+                self.bus = AxiLite()
             
             assert self.ADRESS_MAP[-1][0] < (2 ** evalParam(self.ADDR_WIDTH).val)
             self.decorateWithConvertedInterfaces()
@@ -31,8 +31,8 @@ class AxiLiteConverter(BusConverter):
             return (addrSig >= addr) & (addrSig < (toHVal(addr) + (size * DW_B)))
         
         rSt_t = Enum('rSt_t', ['rdIdle', 'bramRd', 'rdData'])
-        ar = self.axi.ar
-        r = self.axi.r
+        ar = self.bus.ar
+        r = self.bus.r
         isBramAddr = self._sig("isBramAddr")
         rdataReg = self._reg("rdataReg", r.data._dtype)
         
@@ -115,9 +115,9 @@ class AxiLiteConverter(BusConverter):
         addrWidth = evalParam(self.ADDR_WIDTH).val
         
         wSt_t = Enum('wSt_t', ['wrIdle', 'wrData', 'wrResp'])
-        aw = self.axi.aw
-        w = self.axi.w
-        b = self.axi.b
+        aw = self.bus.aw
+        w = self.bus.w
+        b = self.bus.b
         
         # write fsm
         wSt = FsmBuilder(self, wSt_t, "wSt")\
@@ -139,7 +139,7 @@ class AxiLiteConverter(BusConverter):
         wRd = wSt._eq(wSt_t.wrData)
         c(wRd, w.ready)
         
-        c(vec(RESP_OKAY, 2), self.axi.b.resp)
+        c(vec(RESP_OKAY, 2), self.bus.b.resp)
         c(aw.valid & awRd, aw_hs) 
         c(w.valid & wRd, w_hs)
         

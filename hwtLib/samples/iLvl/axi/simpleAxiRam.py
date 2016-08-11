@@ -4,7 +4,7 @@ from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
 from hdl_toolkit.synthesizer.codeOps import If, c
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
-from hwtLib.axi.axiLite_conv import AxiLiteConvertor
+from hwtLib.axi.axiLite_conv import AxiLiteConverter
 from hwtLib.mem.ram import RamSingleClock
 
 
@@ -20,7 +20,7 @@ class SimpleAxiRam(Unit):
                 self.axi = AxiLite()
             
         with self._paramsShared():
-            self.conv = AxiLiteConvertor([(0, "reg0"),
+            self.conv = AxiLiteConverter([(0, "reg0"),
                                      (4, "ram0", 512)])
         
         
@@ -30,7 +30,7 @@ class SimpleAxiRam(Unit):
         
     def _impl(self):
         propagateClkRstn(self)
-        c(self.axi, self.conv.axi)
+        c(self.axi, self.conv.bus)
         
         reg0 = self._reg("reg0", vecT(32), defVal=0)
         

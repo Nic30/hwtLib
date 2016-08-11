@@ -2,7 +2,7 @@ from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.hdlObjects.types.typeCast import toHVal
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
 from hdl_toolkit.synthesizer.codeOps import If, c, FsmBuilder, Switch
-from hdl_toolkit.synthesizer.param import evalParam, Param
+from hdl_toolkit.synthesizer.param import evalParam
 from hwtLib.abstract.busConverter import BusConverter
 from hdl_toolkit.interfaces.ipif import IPIF
 
@@ -13,15 +13,13 @@ class IpifConverter(BusConverter):
     """
     def _config(self):
         IPIF._config(self)
-        self.ADDR_WIDTH = Param(32)
-        self.DATA_WIDTH = Param(32)
 
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
             
             with self._paramsShared():
-                self.cntrl = IPIF()
+                self.bus = IPIF()
                 
             self.decorateWithConvertedInterfaces()
 
@@ -33,7 +31,7 @@ class IpifConverter(BusConverter):
             return (addrSig >= addr) & (addrSig < (toHVal(addr) + (size * DW_B)))
         
         st_t = Enum('st_t', ['idle', 'readDelay', 'rdData'])
-        ipif = self.cntrl
+        ipif = self.bus
         addr = ipif.bus2ip_addr
         c(0, ipif.ip2bus_error)
         addrVld = ipif.bus2ip_cs

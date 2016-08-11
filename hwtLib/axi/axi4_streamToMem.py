@@ -9,7 +9,7 @@ from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
 from hdl_toolkit.synthesizer.codeOps import c, Concat, If, Switch
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
-from hwtLib.axi.axiLite_conv import AxiLiteConvertor
+from hwtLib.axi.axiLite_conv import AxiLiteConverter
 from python_toolkit.arrayQuery import where
 
 
@@ -52,7 +52,7 @@ class Axi4streamToMem(Unit):
                 self.axi = Axi4()
                 self.dataIn = Handshaked()
             cntrl = self.cntrl = AxiLite()
-        regs = self.regsConventor = AxiLiteConvertor(self.REGISTER_MAP)
+        regs = self.regsConventor = AxiLiteConverter(self.REGISTER_MAP)
         
         cntrl._replaceParam("ADDR_WIDTH", self.CNTRL_AW)
         cntrl._replaceParam("DATA_WIDTH", self.DATA_WIDTH)
@@ -223,7 +223,7 @@ class Axi4streamToMem(Unit):
         
     def _impl(self):
         propagateClkRstn(self)
-        c(self.cntrl, self.regsConventor.axi)
+        c(self.cntrl, self.regsConventor.bus)
         axi = self.axi
         
         # disable read channel
