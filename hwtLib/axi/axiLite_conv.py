@@ -2,73 +2,28 @@ from hdl_toolkit.hdlObjects.typeShortcuts import vec
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.hdlObjects.types.typeCast import toHVal
 from hdl_toolkit.interfaces.amba import AxiLite, RESP_OKAY
-from hdl_toolkit.interfaces.std import BramPort_withoutClk, RegCntrl
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.intfLvl import Unit
 from hdl_toolkit.synthesizer.codeOps import If, c, FsmBuilder, Or
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hdl_toolkit.synthesizer.param import evalParam
+from hwtLib.abstract.busConverter import BusConverter
 
-
-def unpackAddrMap(am):
-    try:
-        size = am[2]
-    except IndexError:
-        size = None
-    
-    # address, name, size
-    return am[0], am[1], size
-    
-class AxiLiteConvertor(Unit):
+class AxiLiteConverter(BusConverter):
     """
-    Axi lite register generator
+    Axi lite converter generator
     """
-    def __init__(self, adress_map):
-        """
-        @param address_map: array of tupes (address, name) or (address, name, size) 
-                            where size is in data words
-                    
-                    for every tuple without size there will be input interface name + IN_SUFFIX
-                    and output interface name + OUT_SUFFIX
-                    
-                    for every tuble with size there will be blockram port without clk
-        """
-        self.ADRESS_MAP = adress_map 
-        super().__init__()
-    
     def _config(self):
-        self.ADDR_WIDTH = Param(8)
-        self.DATA_WIDTH = Param(32)
-    
+        AxiLite._config(self)
+
     def _declr(self):
-        assert len(self.ADRESS_MAP) > 0
-        assert self.ADRESS_MAP[-1][0] < (2 ** evalParam(self.ADDR_WIDTH).val) 
-        
-        self._directlyMapped = []
-        self._bramPortMapped = []
-        
-        
         with self._asExtern():
             addClkRstn(self)
             
             with self._paramsShared():
                 self.axi = AxiLite()
-                
-            for am in self.ADRESS_MAP:
-                addr, name, size = unpackAddrMap(am)
-                if size is None:
-                        p = RegCntrl()
-                        p._replaceParam("DATA_WIDTH", self.DATA_WIDTH)
-                        self._directlyMapped.append((addr, p))
-                else:
-                    p = BramPort_withoutClk()
-                    p._replaceParam("DATA_WIDTH", self.DATA_WIDTH)
-                    p.ADDR_WIDTH.set(log2ceil(size - 1))
-                    self._bramPortMapped.append((addr, p, size))
+            
+            assert self.ADRESS_MAP[-1][0] < (2 ** evalParam(self.ADDR_WIDTH).val)
+            self.decorateWithConvertedInterfaces()
 
-                setattr(self, name, p)
-
-
-    
     def readPart(self, awAddr, w_hs):
         DW_B = evalParam(self.DATA_WIDTH).val // 8 
         # build read data output mux
@@ -154,8 +109,6 @@ class AxiLiteConvertor(Unit):
         else:
             c(0, isBramAddr)
         
-        
-    
     def writePart(self):
         sig = self._sig
         reg = self._reg
@@ -216,7 +169,10 @@ class AxiLiteConvertor(Unit):
 
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
-    u = AxiLiteConvertor([(i * 4 , "data%d" % i) for i in range(2)] + 
+    u = AxiLiteConverter([(i * 4 , "data%d" % i) for i in range(2)] + 
                          [(3 * 4, "bramMapped", 32)])
+    u.ADDR_WIDTH.set(8)
+    u.DATA_WIDTH.set(32)
+    
     print(toRtl(u))
     
