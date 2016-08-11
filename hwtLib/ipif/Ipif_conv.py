@@ -4,7 +4,7 @@ from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
 from hdl_toolkit.synthesizer.codeOps import If, c, FsmBuilder, Switch
 from hdl_toolkit.synthesizer.param import evalParam, Param
 from hwtLib.abstract.busConverter import BusConverter
-from hdl_toolkit.interfaces.ipif import IPIFWithCE
+from hdl_toolkit.interfaces.ipif import IPIF
 
 class IpifConverter(BusConverter):
     """
@@ -12,7 +12,7 @@ class IpifConverter(BusConverter):
     byte enable and register clock enable signals are ignored
     """
     def _config(self):
-        IPIFWithCE._config(self)
+        IPIF._config(self)
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(32)
 
@@ -21,7 +21,7 @@ class IpifConverter(BusConverter):
             addClkRstn(self)
             
             with self._paramsShared():
-                self.cntrl = IPIFWithCE()
+                self.cntrl = IPIF()
                 
             self.decorateWithConvertedInterfaces()
 
