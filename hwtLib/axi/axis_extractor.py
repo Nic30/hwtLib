@@ -1,6 +1,6 @@
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.interfaces.std import VldSynced, Signal
-from hdl_toolkit.interfaces.amba import AxiStream
+from hdl_toolkit.interfaces.amba import AxiStream_withoutSTRB
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.synthesizer.codeOps import If, c
@@ -40,13 +40,13 @@ class AxiSExtractor(Unit):
             setattr(self, name, p)
     
     def _config(self):
-        AxiStream._config(self)
+        AxiStream_withoutSTRB._config(self)
             
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
             with self._paramsShared():
-                self.dataIn = AxiStream()
+                self.dataIn = AxiStream_withoutSTRB()
             self.dataOutRd = Signal()
             self.decorateWithExtractedInterfaces()
             
