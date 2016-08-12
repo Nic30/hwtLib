@@ -1,13 +1,11 @@
 import unittest
 
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
-from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
 from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.samples.iLvl.statements.constDriver import ConstDriverUnit
+from hdl_toolkit.hdlObjects.specialValues import Time
 
-
-ns = HdlSimulator.ns
 
 class ConstDriverTC(unittest.TestCase):
     def setUp(self):
@@ -15,7 +13,7 @@ class ConstDriverTC(unittest.TestCase):
         synthesised(self.u)
         self.procs = autoAddAgents(self.u)
         
-    def runSim(self, name, time=80 * HdlSimulator.ns):
+    def runSim(self, name, time=80 * Time.ns):
         simUnitVcd(self.u, self.procs,
                 "tmp/constDriver_%s.vcd" % name,
                 time=time)

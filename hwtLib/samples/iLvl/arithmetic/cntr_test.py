@@ -1,10 +1,10 @@
 import unittest
 
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
-from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
 from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.samples.iLvl.arithmetic.cntr import Cntr
+from hdl_toolkit.hdlObjects.specialValues import Time
 
 
 class CntrTC(unittest.TestCase):
@@ -15,10 +15,10 @@ class CntrTC(unittest.TestCase):
         # )
         self.procs = autoAddAgents(self.u)
         
-    def runSim(self, name, time=90 * HdlSimulator.ns):
+    def runSim(self, name, time=90 * Time.ns):
         simUnitVcd(self.u, self.procs,
                 "tmp/cntr_%s.vcd" % name,
-                time=90 * HdlSimulator.ns)
+                time=90 * Time.ns)
     
     def test_overflow(self):
         u = self.u

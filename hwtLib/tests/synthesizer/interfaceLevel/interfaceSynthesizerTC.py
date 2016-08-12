@@ -29,7 +29,7 @@ def createTwoAxiDuplexStreams():
             _i._signalsForInterface(n)
         return i, i2
 
-class InterfaceSyntherisatorTC(BaseSynthesizerTC):
+class InterfaceSynthesizerTC(BaseSynthesizerTC):
     def test_SimpleUnit2_iLvl(self):
         """
         Check interface directions pre and after synthesis
@@ -309,7 +309,7 @@ class InterfaceSyntherisatorTC(BaseSynthesizerTC):
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     # suite.addTest(InterfaceSyntherisatorTC('test_IntfDirections_multistream_setSrc'))
-    suite.addTest(unittest.makeSuite(InterfaceSyntherisatorTC))
+    suite.addTest(unittest.makeSuite(InterfaceSynthesizerTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

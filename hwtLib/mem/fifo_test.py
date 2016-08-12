@@ -1,9 +1,9 @@
 from copy import copy
 import unittest
 
+from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
 from hdl_toolkit.simulator.agentConnector import valuesToInts
-from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
 from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.mem.fifo import Fifo
@@ -18,7 +18,7 @@ class FifoTC(unittest.TestCase):
         self.procs = autoAddAgents(u)
 
     
-    def doSim(self, name, time=80 * HdlSimulator.ns):
+    def doSim(self, name, time=80 * Time.ns):
         simUnitVcd(self.u, self.procs,
                     "tmp/fifo_" + name + ".vcd",
                     time=time)
@@ -45,7 +45,7 @@ class FifoTC(unittest.TestCase):
         expected = [1, 2, 3, 4]
         u.dataIn._ag.data = copy(expected)
 
-        self.doSim("normalOp", 90 * HdlSimulator.ns)
+        self.doSim("normalOp", 90 * Time.ns)
         
         collected = u.dataOut._ag.data
 
@@ -57,7 +57,7 @@ class FifoTC(unittest.TestCase):
         u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
         u.dataOut._ag.enable = False
         
-        self.doSim("tryMore", 120 * HdlSimulator.ns)
+        self.doSim("tryMore", 120 * Time.ns)
 
         collected = agInts(u.dataOut)
         self.assertSequenceEqual([1, 2, 3, 4], valuesToInts(u.mem._val))
@@ -68,7 +68,7 @@ class FifoTC(unittest.TestCase):
         u = self.u
         u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
 
-        self.doSim("doloop", 120 * HdlSimulator.ns)
+        self.doSim("doloop", 120 * Time.ns)
 
         collected = agInts(u.dataOut)
         self.assertSequenceEqual([1, 2, 3, 4, 5, 6], collected)

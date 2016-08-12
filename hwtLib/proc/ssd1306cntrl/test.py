@@ -1,21 +1,19 @@
 import unittest
 
+from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, autoAgents
-from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthesizer.shortcuts import toRtl
+from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.proc.ssd1306cntrl.code import simpleCodeExample
 from hwtLib.proc.ssd1306cntrl.instructions import NOP
 from hwtLib.proc.ssd1306cntrl.processor import SSD1306CntrlProc
- 
+
 
 class SSD1306CntrlProcTC(unittest.TestCase):
     def sim(self, program, name):
         u = self.u = SSD1306CntrlProc()
         u.PROGRAM = program
-        toRtl(u)
-        
-        ns = HdlSimulator.ns
+        synthesised(u)
         
         agents = {}
         agents.update(autoAgents)
@@ -28,7 +26,7 @@ class SSD1306CntrlProcTC(unittest.TestCase):
         
         simUnitVcd(u, procs,
                     "tmp/SSD1306CntrlProc_test_" + name + ".vcd",
-                    time=200 * HdlSimulator.ns)
+                    time=200 * Time.ns)
         
         return u
         

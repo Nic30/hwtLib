@@ -1,8 +1,8 @@
 from copy import copy
 import unittest
 
+from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
-from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd 
 from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.samples.iLvl.hierarchy.simpleSubunit import SimpleSubunit
@@ -37,7 +37,7 @@ class SimpleTC(unittest.TestCase):
         # now we run simulation, we use our unit "u", our monitors and drivers of interfaces stored in "procs",
         # we save dum of value changes into file "tmp/simple.vcd"
         # and we let simulation run for 100 ns
-        simUnitVcd(u, procs, "tmp/simple.vcd", time=100 * HdlSimulator.ns)
+        simUnitVcd(u, procs, "tmp/simple.vcd", time=100 * Time.ns)
         
         # now we use part of unittest framework to check results
         self.assertSequenceEqual(expected, agInts(u.b))

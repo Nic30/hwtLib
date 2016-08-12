@@ -1,13 +1,11 @@
 import unittest
 
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
-from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
 from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.samples.iLvl.statements.switchStm import SwitchStmUnit
+from hdl_toolkit.hdlObjects.specialValues import Time
 
-
-ns = HdlSimulator.ns
 
 class SwitchStmTC(unittest.TestCase):
     def setUp(self):
@@ -15,7 +13,7 @@ class SwitchStmTC(unittest.TestCase):
         synthesised(self.u)
         self.procs = autoAddAgents(self.u)
         
-    def runSim(self, name, time=110 * HdlSimulator.ns):
+    def runSim(self, name, time=110 * Time.ns):
         simUnitVcd(self.u, self.procs,
                 "tmp/switchStm_%s.vcd" % name,
                 time=time)

@@ -2,10 +2,10 @@ import unittest
 
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
-from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
 from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.handshaked.fork import HandshakedFork
+from hdl_toolkit.hdlObjects.specialValues import Time
 
 
 class ForkTC(unittest.TestCase):
@@ -16,7 +16,7 @@ class ForkTC(unittest.TestCase):
         self.procs = autoAddAgents(u)
 
     
-    def doSim(self, name, time=80 * HdlSimulator.ns):
+    def doSim(self, name, time=80 * Time.ns):
         simUnitVcd(self.u, self.procs,
                     "tmp/hsFork_" + name + ".vcd",
                     time=time)
@@ -25,7 +25,7 @@ class ForkTC(unittest.TestCase):
         u = self.u
         u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
 
-        self.doSim("passdata", 120 * HdlSimulator.ns)
+        self.doSim("passdata", 120 * Time.ns)
 
         collected = agInts(u.dataOut)
         self.assertSequenceEqual([17, 17, 17, 17, 17, 17, 17, 17, 17, 17], collected)  # 1 was in reset

@@ -2,10 +2,10 @@ import unittest
 
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
-from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
 from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.handshaked.reg import HandshakedReg
+from hdl_toolkit.hdlObjects.specialValues import Time
 
 
 class HsRegTC(unittest.TestCase):
@@ -15,7 +15,7 @@ class HsRegTC(unittest.TestCase):
         self.procs = autoAddAgents(u)
 
     
-    def doSim(self, name, time=80 * HdlSimulator.ns):
+    def doSim(self, name, time=80 * Time.ns):
         simUnitVcd(self.u, self.procs,
                     "tmp/hsReg_" + name + ".vcd",
                     time=time)
@@ -24,7 +24,7 @@ class HsRegTC(unittest.TestCase):
         u = self.u
         u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
 
-        self.doSim("passdata", 120 * HdlSimulator.ns)
+        self.doSim("passdata", 120 * Time.ns)
 
         collected = agInts(u.dataOut)
         self.assertSequenceEqual([ 2, 3, 4, 5, 6], collected) # 1 was in reset

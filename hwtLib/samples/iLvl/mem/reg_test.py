@@ -1,13 +1,12 @@
 import unittest
 
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
-from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
 from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.samples.iLvl.mem.reg import DReg, DoubleDReg
+from hdl_toolkit.hdlObjects.specialValues import Time
 
 
-s = HdlSimulator
 
 class DRegTC(unittest.TestCase):
     def setUpUnit(self, u):
@@ -15,7 +14,7 @@ class DRegTC(unittest.TestCase):
         self.procs = autoAddAgents(u)
         self.u = u
     
-    def runSim(self, name, time=100 * s.ns):
+    def runSim(self, name, time=100 * Time.ns):
         simUnitVcd(self.u, self.procs,
                    "tmp/reg_" + name + ".vcd", time=time)
     
@@ -33,7 +32,7 @@ class DRegTC(unittest.TestCase):
     def testDouble(self):
         self.setUpUnit(DoubleDReg())
     
-        self.u.din._ag.data = [i % 2 for i in range(6)]  + [None, None, 0, 1] 
+        self.u.din._ag.data = [i % 2 for i in range(6)] + [None, None, 0, 1] 
         expected = [0, 0, 0, 1, 0, 1, 0, 1, None, None]
         
         self.runSim("double")

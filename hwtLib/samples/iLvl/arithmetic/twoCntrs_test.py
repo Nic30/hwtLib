@@ -5,9 +5,8 @@ from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
 from hdl_toolkit.synthesizer.shortcuts import toRtl
 from hwtLib.samples.iLvl.arithmetic.twoCntrs import TwoCntrs
+from hdl_toolkit.hdlObjects.specialValues import Time
 
-
-ns = HdlSimulator.ns
 
 nineOnes = [1 for _ in range(9)]
 nineZeros = [0 for _ in range(9)]
@@ -20,10 +19,10 @@ class TwoCntrsTC(unittest.TestCase):
         # )
         self.procs = autoAddAgents(self.u)
         
-    def runSim(self, name, time=90 * HdlSimulator.ns):
+    def runSim(self, name, time=90 * Time.ns):
         simUnitVcd(self.u, self.procs,
                 "tmp/twoCntrs_%s.vcd" % name,
-                time=90 * HdlSimulator.ns)
+                time=90 * Time.ns)
             
     def test_nothingEnable(self):
         u = self.u

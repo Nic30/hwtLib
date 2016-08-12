@@ -2,14 +2,13 @@ import unittest
 
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.simulator.agentConnector import valuesToInts
-from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, oscilate, pullDownAfter
 from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.mem.clkSynchronizer import ClkSynchronizer
+from hdl_toolkit.hdlObjects.specialValues import Time
 
 
-s = HdlSimulator
-CLK_PERIOD = 10 * s.ns
+CLK_PERIOD = 10 * Time.ns
         
 class ClkSynchronizerTC(unittest.TestCase):
     def setUp(self):
@@ -17,7 +16,7 @@ class ClkSynchronizerTC(unittest.TestCase):
         u.DATA_TYP = vecT(32)
         synthesised(u)
     
-    def doSim(self, dataInStimul, name, time=100 * s.ns): 
+    def doSim(self, dataInStimul, name, time=100 * Time.ns): 
         collected = []
 
         u = self.u
@@ -34,7 +33,7 @@ class ClkSynchronizerTC(unittest.TestCase):
                        oscilate(u.outClk, CLK_PERIOD, initWait=CLK_PERIOD / 4),
                        pullDownAfter(u.rst, CLK_PERIOD * 2),
                        dataCollector,
-                       dataInStimul], "tmp/clkSynchronizer_" + name + ".vcd", time=100 * s.ns)   
+                       dataInStimul], "tmp/clkSynchronizer_" + name + ".vcd", time=100 * Time.ns)   
         return collected
     
     def test_normalOp(self):
@@ -54,7 +53,7 @@ class ClkSynchronizerTC(unittest.TestCase):
     def test_invalidData(self):
         u = self.u
     
-        CLK_PERIOD = 10 * s.ns
+        CLK_PERIOD = 10 * Time.ns
         expected = [0, 0, 0, None, None, None, None, None, None]
         
         def dataInStimul(s):

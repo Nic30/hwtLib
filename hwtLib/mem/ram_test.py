@@ -5,7 +5,7 @@ from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
 from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.mem.ram import Ram_sp
-from hdl_toolkit.hdlObjects.specialValues import WRITE, READ
+from hdl_toolkit.hdlObjects.specialValues import WRITE, READ, Time
 
 
 class RamTC(unittest.TestCase):
@@ -24,7 +24,7 @@ class RamTC(unittest.TestCase):
         
         
         simUnitVcd(u, procs,
-                   "tmp/ram_writeAndRead.vcd", time=80 * HdlSimulator.ns)
+                   "tmp/ram_writeAndRead.vcd", time=80 * Time.ns)
         self.assertSequenceEqual(valuesToInts(u._mem._val.val), [5, 7, None, None])
         self.assertSequenceEqual(valuesToInts(u.a._ag.readed), [5, 7, None, None])
 

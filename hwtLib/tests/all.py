@@ -5,7 +5,6 @@ from unittest import TestLoader, TextTestRunner, TestSuite
 from hwtLib.mem.clkSynchronizer_test import ClkSynchronizerTC
 from hwtLib.mem.fifo_test import FifoTC
 from hwtLib.mem.ram_test import RamTC
-
 from hwtLib.samples.iLvl.arithmetic.cntr_test import CntrTC
 from hwtLib.samples.iLvl.arithmetic.twoCntrs_test import TwoCntrsTC
 from hwtLib.samples.iLvl.hierarchy.simpleSubunit_test import SimpleSubunitTC
@@ -17,13 +16,12 @@ from hwtLib.samples.iLvl.simple_test import SimpleTC
 from hwtLib.samples.iLvl.statements.constDriver_test import ConstDriverTC
 from hwtLib.samples.iLvl.statements.ifStm_test import IfStmTC
 from hwtLib.samples.iLvl.statements.switchStm_test import SwitchStmTC
-
 from hwtLib.tests.hierarchyExtractor import HierarchyExtractorTC
 from hwtLib.tests.operators import OperatorTC
 from hwtLib.tests.parser import ParserTC
 from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.tests.statements import StatementsTC
-from hwtLib.tests.synthesizer.interfaceLevel.interfaceSyntherisatorTC import InterfaceSynthesizerTC 
+from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import InterfaceSynthesizerTC 
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import SubunitsSynthesisTC
 from hwtLib.tests.synthesizer.interfaceLevel.verilogCodesign import VerilogCodesignTC
 from hwtLib.tests.synthesizer.interfaceLevel.vhdlCodesign import VhdlCodesignTC
