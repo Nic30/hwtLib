@@ -53,9 +53,10 @@ class TestCaseSynthesis(unittest.TestCase):
 
     def test_indexOps(self):
         c, interf = IndexOps()
-        s = ""
-        for o in c.synthesize(interf):
-            s += VhdlSerializer.asHdl(o)
+        _, _, arch = list(c.synthesize(interf))
+
+        s = VhdlSerializer.Architecture(arch, VhdlSerializer.getBaseNameScope())
+        
         self.assertNotIn("sig_", s)
         
 
