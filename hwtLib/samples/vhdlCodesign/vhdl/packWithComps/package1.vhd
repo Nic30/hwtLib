@@ -50,3 +50,5 @@ package package1 is
 
 end package1;
 
+package body package1 is
+end package1;
