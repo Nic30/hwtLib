@@ -200,8 +200,8 @@ class VhdlCodesignTC(BaseSynthesizerTC):
         # [TODO] width of parametrized interfaces from VHDL should be Param with expr
 
         self.assertEqual(u.axi.w.strb._dtype.bit_length(), DW.val // 8)
-        self.assertEqual(u.slv.C_S_AXI_ADDR_WIDTH.get().get(), AW)
-        self.assertEqual(u.slv.C_S_AXI_DATA_WIDTH.get().get(), DW)
+        self.assertEqual(u.slv.C_S_AXI_ADDR_WIDTH.get(), AW)
+        self.assertEqual(u.slv.C_S_AXI_DATA_WIDTH.get(), DW)
 
         self.assertEqual(u.slv.S_AXI.ar.addr._dtype.bit_length(), AW.val)
 
@@ -323,7 +323,7 @@ class VhdlCodesignTC(BaseSynthesizerTC):
     
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    suite.addTest(VhdlCodesignTC('test_interfaceArrayExtraction'))
-    #suite.addTest(unittest.makeSuite(VhdlCodesignTC))
+    # suite.addTest(VhdlCodesignTC('test_axiParams'))
+    suite.addTest(unittest.makeSuite(VhdlCodesignTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
