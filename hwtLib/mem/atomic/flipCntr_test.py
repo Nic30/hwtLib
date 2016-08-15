@@ -1,10 +1,10 @@
 import unittest
 
+from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
-from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
 from hdl_toolkit.synthesizer.shortcuts import synthesised
-from sp10g.stat.flipCntr import FlipCntr
+from hwtLib.mem.atomic.flipCntr import FlipCntr
 
 
 class FlipCntrTC(unittest.TestCase):
@@ -15,10 +15,10 @@ class FlipCntrTC(unittest.TestCase):
         # )
         self.procs = autoAddAgents(self.u)
         
-    def runSim(self, name, time=90 * HdlSimulator.ns):
+    def runSim(self, name, time=90 * Time.ns):
         simUnitVcd(self.u, self.procs,
                 "tmp/flipCntr_%s.vcd" % name,
-                time=90 * HdlSimulator.ns)
+                time=90 * Time.ns)
     
     def test_nop(self):
         u = self.u
