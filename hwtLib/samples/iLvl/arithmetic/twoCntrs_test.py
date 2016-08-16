@@ -1,9 +1,8 @@
 import unittest
 
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
-from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthesizer.shortcuts import toRtl
+from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.samples.iLvl.arithmetic.twoCntrs import TwoCntrs
 from hdl_toolkit.hdlObjects.specialValues import Time
 
@@ -14,9 +13,7 @@ nineZeros = [0 for _ in range(9)]
 class TwoCntrsTC(unittest.TestCase):
     def setUp(self):
         self.u = TwoCntrs()
-        # print(
-        toRtl(self.u)
-        # )
+        synthesised(self.u)
         self.procs = autoAddAgents(self.u)
         
     def runSim(self, name, time=90 * Time.ns):
@@ -84,7 +81,7 @@ class TwoCntrsTC(unittest.TestCase):
         
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_nothingEnable'))
+    # suite.addTest(TwoCntrsTC('test_aEnable'))
     suite.addTest(unittest.makeSuite(TwoCntrsTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
