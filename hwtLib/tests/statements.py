@@ -43,8 +43,12 @@ class StatementsTC(unittest.TestCase):
             self.assertEqual(len(results), 1)
             r = results[0]
             self.assertIs(r[0], res)
-            self.assertEqual(r[1].val, expected)
-            self.assertEqual(r[1].vldMask, 3)
+            updater = r[1]
+            sig = r[0]
+            _ , newVal = updater(sig._val)
+            
+            self.assertEqual(newVal.val, expected)
+            self.assertEqual(newVal.vldMask, 3)
 
       
 if __name__ == '__main__':
