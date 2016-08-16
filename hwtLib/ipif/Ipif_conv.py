@@ -23,6 +23,18 @@ class IpifConverter(BusConverter):
                 
             self.decorateWithConvertedInterfaces()
 
+    def getMinAddr(self):
+        return self.ADRESS_MAP[0][0]
+    
+    def getMaxAddr(self):
+        m = self.ADRESS_MAP[-1]
+        if len(m) == 2:
+            return m[0]
+        elif len(m) == 3:
+            # base + size -1
+            return toHVal(m[0]) + (m[2] - 1)
+    
+    
     def _impl(self):
         DW_B = evalParam(self.DATA_WIDTH).val // 8 
         bitForAligig = log2ceil(self.DATA_WIDTH // 8 - 1).val
@@ -36,9 +48,11 @@ class IpifConverter(BusConverter):
         c(0, ipif.ip2bus_error)
         addrVld = ipif.bus2ip_cs
         
+        isInMyAddrSpace = (addr >= self.getMinAddr()) & (addr <= self.getMaxAddr())
+        
         st = FsmBuilder(self, st_t)\
         .Trans(st_t.idle,
-            (addrVld & ipif.bus2ip_rnw, st_t.readDelay),
+            (addrVld & ipif.bus2ip_rnw & isInMyAddrSpace, st_t.readDelay),
         ).Trans(st_t.readDelay,
             st_t.rdData
         ).Default(# Trans(rSt_t.rdData,
@@ -46,9 +60,9 @@ class IpifConverter(BusConverter):
         ).stateReg
         
         c(st._eq(st_t.rdData), ipif.ip2bus_rdack)
-        c(1, ipif.ip2bus_wrack)
+        c(isInMyAddrSpace & ~ipif.bus2ip_rnw, ipif.ip2bus_wrack)
         
-        bramAssigTop = c(None, ipif.ip2bus_data)    
+        dataToBus = c(None, ipif.ip2bus_data)    
         for _addr, port, size in reversed(self._bramPortMapped):
             # map addr for bram ports
             _isMyAddr = isMyAddr(addr, _addr, size)
@@ -63,10 +77,10 @@ class IpifConverter(BusConverter):
             c(_isMyAddr, port.en)
             c(_isMyAddr & ~ipif.bus2ip_rnw, port.we)
             
-            bramAssigTop = If(_isMyAddr,
+            dataToBus = If(_isMyAddr,
                 c(port.dout, ipif.ip2bus_data)
             ).Else(
-                bramAssigTop
+                dataToBus
             )
             
             c(ipif.bus2ip_data, port.din)
@@ -83,10 +97,10 @@ class IpifConverter(BusConverter):
                 [(_addr, c(d.din, ipif.ip2bus_data)) 
                  for _addr, d in   self._directlyMapped]
         ).Default(
-            bramAssigTop
+            dataToBus
         )
         
-        
+
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = IpifConverter([(i * 4 , "data%d" % i) for i in range(2)] + 
