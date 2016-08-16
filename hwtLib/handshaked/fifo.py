@@ -14,8 +14,8 @@ class HandshakedFifo(HandshakedCompBase):
         super()._config()
         
     def _declr(self):
-        addClkRstn(self)
         with self._asExtern(), self._paramsShared():
+            addClkRstn(self)
             self.dataIn = self.intfCls()
             self.dataOut = self.intfCls()
 
@@ -40,14 +40,19 @@ class HandshakedFifo(HandshakedCompBase):
             
             # to fifo
             c(~fifo.dataIn.wait, rd(din))
-            c(packed(din, fifo.dataIn.data, 
-                     exclude=[vld(din), rd(din)]))
+            c(packed(din, exclude=[vld(din), rd(din)]),
+               fifo.dataIn.data)
+            c(vld(din) & ~fifo.dataIn.wait, fifo.dataIn.en)
+            
             
             # from fifo
             c(~fifo.dataOut.wait, vld(dout))
             connectUnpacked(fifo.dataOut.data, dout, 
                             exclude=[vld(dout),rd(dout)])
+            c(rd(dout) & ~fifo.dataOut.wait, fifo.dataOut.en)
         
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
-    print(toRtl(HandshakedFifo(Handshaked)))
+    u = HandshakedFifo(Handshaked)
+    u.DEPTH.set(2)
+    print(toRtl(u))
