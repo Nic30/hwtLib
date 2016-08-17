@@ -64,7 +64,9 @@ class MulDiv(Unit):
         den_ge_256 = b_shift_reg[:DW] != 0
         # ...otherwise we need to compare the low bytes.
         num_ge_den = rem_reg >= denominator
-        sub_num = ~den_ge_256 & num_ge_den
+         
+        sub_num =self._sig("sub_num")
+        c(~den_ge_256 & num_ge_den, sub_num)
         
         If(self.start,
            c(0, bit_cntr)
