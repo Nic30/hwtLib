@@ -22,6 +22,7 @@ class IpifConverter(BusConverter):
                 self.bus = IPIF()
                 
             self.decorateWithConvertedInterfaces()
+        
 
     def getMinAddr(self):
         return self.ADRESS_MAP[0][0]
@@ -42,7 +43,7 @@ class IpifConverter(BusConverter):
         def isMyAddr(addrSig, addr, size):
             return (addrSig >= addr) & (addrSig < (toHVal(addr) + (size * DW_B)))
         
-        st_t = Enum('st_t', ['idle', 'readDelay', 'rdData'])
+        st_t = Enum('st_t', ['idle', "writeAck", 'readDelay', 'rdData'])
         ipif = self.bus
         addr = ipif.bus2ip_addr
         c(0, ipif.ip2bus_error)
@@ -52,15 +53,19 @@ class IpifConverter(BusConverter):
         
         st = FsmBuilder(self, st_t)\
         .Trans(st_t.idle,
-            (addrVld & ipif.bus2ip_rnw & isInMyAddrSpace, st_t.readDelay),
+            (addrVld & isInMyAddrSpace & ipif.bus2ip_rnw, st_t.readDelay),
+            (addrVld & isInMyAddrSpace & ~ipif.bus2ip_rnw, st_t.writeAck)
+        ).Trans(st_t.writeAck,
+            st_t.idle    
         ).Trans(st_t.readDelay,
             st_t.rdData
         ).Default(# Trans(rSt_t.rdData,
             st_t.idle
         ).stateReg
         
+        wAck = st._eq(st_t.writeAck)
         c(st._eq(st_t.rdData), ipif.ip2bus_rdack)
-        c(isInMyAddrSpace & ~ipif.bus2ip_rnw, ipif.ip2bus_wrack)
+        c(wAck, ipif.ip2bus_wrack)
         
         dataToBus = c(None, ipif.ip2bus_data)    
         for _addr, port, size in reversed(self._bramPortMapped):
@@ -75,7 +80,7 @@ class IpifConverter(BusConverter):
             
             c(a[(addrHBit + bitForAligig):bitForAligig], port.addr, fit=True)
             c(_isMyAddr, port.en)
-            c(_isMyAddr & ~ipif.bus2ip_rnw, port.we)
+            c(_isMyAddr & wAck, port.we)
             
             dataToBus = If(_isMyAddr,
                 c(port.dout, ipif.ip2bus_data)
@@ -88,7 +93,7 @@ class IpifConverter(BusConverter):
 
         
         for _addr, d in   self._directlyMapped:
-            c(addr._eq(_addr) & ~ipif.bus2ip_rnw, d.dout.vld)
+            c(addr._eq(_addr) & ~ipif.bus2ip_rnw & wAck, d.dout.vld)
             c(ipif.bus2ip_data, d.dout.data)
         
         _isInBramFlags = []
