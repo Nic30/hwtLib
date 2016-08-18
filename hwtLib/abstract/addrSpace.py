@@ -2,7 +2,7 @@ from hdl_toolkit.bitmask import Bitmask
 
 
 class AddrSpaceItem(object):
-    def __init__(self, name, addr, size=1):
+    def __init__(self, addr, name, size=1):
         self.name = name
         self.addr = addr
         self.size = size
