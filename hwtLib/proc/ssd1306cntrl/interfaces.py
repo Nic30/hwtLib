@@ -1,6 +1,6 @@
 from hdl_toolkit.synthesizer.interfaceLevel.interface import Interface
 from hwtLib.logic.delayMs import DelayMs
-from hdl_toolkit.interfaces.spi import SPI
+from hdl_toolkit.interfaces.peripheral import Spi
 from hdl_toolkit.interfaces.std import Signal
 
 class Ssd1306Intf(Interface):
@@ -8,7 +8,7 @@ class Ssd1306Intf(Interface):
         DelayMs._config(self)
     
     def _declr(self):
-        self.spi = SPI()
+        self.spi = Spi()
         self.dc = Signal()  # Data/Command Pin
         self.res = Signal()  # PmodOLED RES
         self.vbat = Signal()  # VBAT enable

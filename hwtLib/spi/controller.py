@@ -2,7 +2,7 @@ from math import log2
 
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
 from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.interfaces.spi import SPI
+from hdl_toolkit.interfaces.peripheral import Spi
 from hdl_toolkit.interfaces.std import VldSynced, Signal
 from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.interfaces.utils import isPow2
@@ -21,7 +21,7 @@ class SPICntrlW(Unit):
             addClkRstn(self)
             self.dataIn = VldSynced()
             self.dataIn.DATA_WIDTH.set(8)
-            self.dataOut = SPI() 
+            self.dataOut = Spi() 
             self.dataInDone = Signal()
             
     
