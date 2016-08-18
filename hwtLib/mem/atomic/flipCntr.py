@@ -1,5 +1,5 @@
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Signal, VldSynced, HandshakeSync
+from hdl_toolkit.interfaces.std import Signal, HandshakeSync, \
+    RegCntrl
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
 from hdl_toolkit.synthesizer.codeOps import If, c
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
@@ -23,8 +23,7 @@ class FlipCntr(Unit):
                 addClkRstn(self)
                 self.doIncr = Signal()
                 self.doFlip = HandshakeSync()
-                self.dataIn = VldSynced()
-                self.dataOut = Signal(dtype=vecT(self.DATA_WIDTH))
+                self.data = RegCntrl()
             self.cntr = FlipRegister()
     
     def flipHandler(self):
@@ -41,11 +40,10 @@ class FlipCntr(Unit):
     
     def dataHanldler(self):
         cntr = self.cntr
-        c(cntr.firstOut + 1 , cntr.firstIn.data)
-        c(self.doIncr, cntr.firstIn.vld)
+        c(cntr.first.din + 1 , cntr.first.dout.data)
+        c(self.doIncr, cntr.first.dout.vld)
         
-        c(self.dataIn, cntr.secondIn)
-        c(cntr.secondOut, self.dataOut)
+        c(self.data, cntr.second)
         
     
     def _impl(self):

@@ -1,5 +1,5 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Signal, VldSynced
+from hdl_toolkit.interfaces.std import Signal, RegCntrl
 from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.synthesizer.codeOps import If, c
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
@@ -24,35 +24,31 @@ class FlipRegister(Unit):
         self.DEFAULT_VAL = Param(0)
         
     def _declr(self):
-        d_t = vecT(self.DATA_WIDTH)
         with self._asExtern(), self._paramsShared():
             addClkRstn(self)
-            self.firstIn = VldSynced()
-            self.firstOut = Signal(dtype=d_t)
-            
-            self.secondIn = VldSynced()
-            self.secondOut = Signal(dtype=d_t)
+            self.first = RegCntrl()
+            self.second = RegCntrl()
             
             self.select_sig = Signal()
     
     def connectWriteIntf(self, regA, regB):
         return (
-            If(self.firstIn.vld,
-                c(self.firstIn.data, regA)
+            If(self.first.dout.vld,
+                c(self.first.dout.data, regA)
             ).Else(
-                c(regA, regA)
+                regA._same()
             )+
-            If(self.secondIn.vld,
-               c(self.secondIn.data, regB)
+            If(self.second.dout.vld,
+               c(self.second.dout.data, regB)
             ).Else(
-               c(regB, regB)
+               regB._same()
             )
         )
             
     def connectReadIntf(self, regA, regB):
-        return (c(regA, self.firstOut) +
-                c(regB, self.secondOut)
-                )
+        return (c(regA, self.first.din) +
+                c(regB, self.second.din)
+               )
      
     def _impl(self):
         first = self._reg("first_reg", vecT(self.DATA_WIDTH), defVal=self.DEFAULT_VAL)
