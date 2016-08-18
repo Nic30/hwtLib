@@ -1,6 +1,7 @@
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.interfaces.std import BramPort_withoutClk, RegCntrl
 from hdl_toolkit.interfaces.utils import log2ceil
+from hdl_toolkit.hdlObjects.types.typeCast import toHVal
 
 def unpackAddrMap(am):
     try:
@@ -23,6 +24,17 @@ class BusConverter(Unit):
         """
         self.ADRESS_MAP = adress_map 
         super().__init__()
+    
+    def getMinAddr(self):
+        return self.ADRESS_MAP[0][0]
+    
+    def getMaxAddr(self):
+        m = self.ADRESS_MAP[-1]
+        if len(m) == 2:
+            return m[0]
+        elif len(m) == 3:
+            # base + size -1
+            return toHVal(m[0]) + (m[2] - 1)
         
     def decorateWithConvertedInterfaces(self):
         assert len(self.ADRESS_MAP) > 0
