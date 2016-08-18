@@ -23,19 +23,6 @@ class IpifConverter(BusConverter):
                 
             self.decorateWithConvertedInterfaces()
         
-
-    def getMinAddr(self):
-        return self.ADRESS_MAP[0][0]
-    
-    def getMaxAddr(self):
-        m = self.ADRESS_MAP[-1]
-        if len(m) == 2:
-            return m[0]
-        elif len(m) == 3:
-            # base + size -1
-            return toHVal(m[0]) + (m[2] - 1)
-    
-    
     def _impl(self):
         DW_B = evalParam(self.DATA_WIDTH).val // 8 
         bitForAligig = log2ceil(self.DATA_WIDTH // 8 - 1).val
