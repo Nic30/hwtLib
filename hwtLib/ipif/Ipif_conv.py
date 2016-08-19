@@ -1,10 +1,11 @@
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.hdlObjects.types.typeCast import toHVal
+from hdl_toolkit.interfaces.ipif import IPIF
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
 from hdl_toolkit.synthesizer.codeOps import If, c, FsmBuilder, Switch
 from hdl_toolkit.synthesizer.param import evalParam
 from hwtLib.abstract.busConverter import BusConverter
-from hdl_toolkit.interfaces.ipif import IPIF
+
 
 class IpifConverter(BusConverter):
     """
