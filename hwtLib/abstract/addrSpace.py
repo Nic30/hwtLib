@@ -1,4 +1,5 @@
 from hdl_toolkit.bitmask import Bitmask
+import pprint
 
 
 class AddrSpaceItem(object):
@@ -6,6 +7,7 @@ class AddrSpaceItem(object):
         self.name = name
         self.addr = addr
         self.size = size
+        self.children = {}
     
 
     def assertNoOverlap(self, nextItem):
@@ -44,4 +46,9 @@ class AddrSpaceItem(object):
 
             
     def __repr__(self):
-        return "<AddrSpaceItem %s, %d, size=%d>" % (self.name, self.addr, self.size)
+        if self.children:
+            children = ",\n" + pprint.pformat(self.children, 2) + "\n "
+        else:
+            children = ""
+        
+        return "<AddrSpaceItem %s, %d, size=%d%s>" % (self.name, self.addr, self.size, children)
