@@ -1,12 +1,11 @@
 import unittest
 
 from hdl_toolkit.bitmask import Bitmask
+from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
 from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.samples.iLvl.operators.concat import SimpleConcat
-from hdl_toolkit.hdlObjects.specialValues import Time
-
 
 
 def addValues(unit, data):
@@ -41,7 +40,7 @@ class ConcatTC(unittest.TestCase):
         
         self.runSim("join")
         
-        self.assertSequenceEqual([2, 4, 15, 0, 3, 2, 1, 1], agInts(u.a_out))
+        self.assertSequenceEqual([2, 4, 15, None, 3, 2, 1, 1], agInts(u.a_out))
         
         
 if __name__ == "__main__":
