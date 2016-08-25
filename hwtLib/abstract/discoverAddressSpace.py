@@ -14,10 +14,6 @@ def getEpSignal(sig, op):
     
     @return: signal modified by this operator or none if this operator is creating new datapath
     """
-    if op.operator == AllOps.INDEX:
-        if op.ops[0] is not sig:
-            return
-        
     if sig in op.ops:
         return op.result
     
