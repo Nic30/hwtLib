@@ -89,4 +89,4 @@ def getRamCls(noOfPorts):
 
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
-    print(toRtl(Ram_dp))
+    print(toRtl(Ram_dp()))
