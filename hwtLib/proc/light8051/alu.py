@@ -19,10 +19,10 @@ class Alu(Unit):
         self.IMPLEMENT_BCD_INSTRUCTIONS = Param(False)
         # When true, instructions DA and XCHD will work as in the original MCS51.
         # When false, those instructions will work as NOP, saving some logic.
-        self.DATA_WIDHT = Param(8)
+        self.DATA_WIDTH = Param(8)
         
     def _declr(self):
-        word_t = self.w_t = vecT(self.DATA_WIDHT)
+        word_t = self.w_t = vecT(self.DATA_WIDTH)
         with self._asExtern():
             addClkRstn(self)
             self.result = Signal(dtype=word_t)
