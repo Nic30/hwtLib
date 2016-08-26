@@ -4,7 +4,7 @@ from hwtLib.abstract.busConverter import BusConverter
 from hdl_toolkit.hdlObjects.assignment import Assignment
 from hdl_toolkit.hdlObjects.portItem import PortItem
 from hdl_toolkit.hdlObjects.operatorDefs import AllOps
-from copy import deepcopy
+from copy import deepcopy, copy
 
 
 def getEpSignal(sig, op):
@@ -18,6 +18,8 @@ def getEpSignal(sig, op):
     if op.operator == AllOps.INDEX:
         if op.ops[0] is not sig:
             return
+    if op.operator not in  [AllOps.INDEX, AllOps.ADD, AllOps.SUB, AllOps.MUL, AllOps.DIV, AllOps.CONCAT]:
+        return
     
     if sig in op.ops:
         return op.result
@@ -50,13 +52,28 @@ class AddressSpaceProbe(object):
     def discover(self):
         return self._discoverAddressSpace(self.topIntf, self.offset)
     
+    @staticmethod
+    def pprint(addrSpaceDict, indent=0):
+        "pretty print"
+        
+        for addr in sorted(addrSpaceDict.keys()):
+            item = addrSpaceDict[addr]
+            if item.size > 1:
+                size = "(size=%d)" % item.size
+            else:
+                size = ""
+            _indent = "".join(["    " for _ in range(indent) ])
+            print("%s0x%x:%s%s" % (_indent, addr, item.name, size))
+            AddressSpaceProbe.pprint(item.children, indent + 1)
+        
+    
     def _extractAddressMap(self, converter, offset=0):
         """
         coppy address space map from converter
         """
         m = {}
         for item in converter._addrSpace:
-            item = deepcopy(item)
+            item = copy(item)
             
             if item.size > 1:
                 port = getattr(converter, item.name)
