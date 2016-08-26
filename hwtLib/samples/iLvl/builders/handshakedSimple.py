@@ -12,7 +12,7 @@ class HandshakedSimple(Unit):
             self.b = Handshaked()
         
     def _impl(self):
-        b = HsBuilder(self, "b", self.a)
+        b = HsBuilder(self, self.a)
 
         b.reg()
         b.fifo(16)

@@ -18,7 +18,7 @@ class AbstractStreamBuilder():
     @attention: input port is taken from self.end
     """
     
-    def __init__(self, parent, name, srcInterface):
+    def __init__(self, parent, srcInterface, name=None):
         """
         @param parent: unit in which will be all units created by this builder instanciated
         @param name: prefix for all instantiated units
@@ -27,6 +27,9 @@ class AbstractStreamBuilder():
         self.parent = parent
         self.lastComp = None
         self.end = srcInterface
+        if name is None:
+            name = "gen_" + srcInterface._name 
+            
         self.name = name
         self.compId = 0
     
@@ -39,7 +42,7 @@ class AbstractStreamBuilder():
     def getInfCls(self):
         return self.end.__class__
     
-    def _genericInstance(self, unitCls, unitName, setParams= lambda u: u ):
+    def _genericInstance(self, unitCls, unitName, setParams=lambda u: u):
         """
         @param unitCls: class of unit which is being created
         @param unitName: name for unitCls
@@ -98,7 +101,7 @@ class AbstractStreamBuilder():
         for In, Out in zip(outPorts, self.end):
             connect(Out, In)
             
-        self.end = None # invalidate None because port was fully connected
+        self.end = None  # invalidate None because port was fully connected
         return s
     
     def reg(self):
