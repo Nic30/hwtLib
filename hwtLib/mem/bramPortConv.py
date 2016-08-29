@@ -43,30 +43,30 @@ class BramPortConvertor(BusConverter):
         doutMuxTop = c(None, bus.dout)
 
         # reversed to more pretty code        
-        for addr, p, size in reversed(self._bramPortMapped):
+        for ai in reversed(self._bramPortMapped):
             
             # if we can use prefix instead of addr comparing do it
-            tmp = p._addrSpaceItem.getMyAddrPrefix()
+            tmp = ai.port._addrSpaceItem.getMyAddrPrefix()
             if tmp is None:
-                _addrVld = inRange(bus.addr, addr, size)
+                _addrVld = inRange(bus.addr, ai.addr, ai.size)
             else:
                 prefix, subaddrBits = tmp
                 _addrVld = bus.addr[:subaddrBits]._eq(prefix)
                  
             
-            connectBramPortAlways(p, addr, size, _addrVld)
+            connectBramPortAlways(ai.port, ai.addr, ai.size, _addrVld)
             doutMuxTop = If(_addrVld,
-                            c(p.dout, bus.dout) 
+                            c(ai.port.dout, bus.dout) 
                          ).Else(
                             doutMuxTop
                          )
       
         # reversed to more pretty code
-        for addr, reg in reversed(self._directlyMapped):
-            connectRegIntfAlways(reg, addr)
+        for ai in reversed(self._directlyMapped):
+            connectRegIntfAlways(ai.port, ai.addr)
             
-            doutMuxTop = If(bus.addr._eq(addr),
-                            c(reg.din, bus.dout) 
+            doutMuxTop = If(bus.addr._eq(ai.addr),
+                            c(ai.port.din, bus.dout) 
                          ).Else(
                             doutMuxTop
                          )

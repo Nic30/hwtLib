@@ -65,16 +65,20 @@ class AxiLiteConverter(BusConverter):
         rAssigTop = c(rdataReg, r.data)
         rregAssigTop = rdataReg._same()
         # rAssigTopCases =[]
-        for addr, d in reversed(self._directlyMapped):
+        for ai in reversed(self._directlyMapped):
             # we are directly sending data from register
-            rAssigTop = If(arAddr._eq(addr),
-                           c(d.din, r.data)
+            rAssigTop = If(arAddr._eq(ai.addr),
+                           c(ai.port.din, r.data)
                         ).Else(
                            rAssigTop
                         )
 
         bitForAligig = log2ceil(self.DATA_WIDTH // 8 - 1).val
-        for addr, port, size in reversed(self._bramPortMapped):
+        for ai in reversed(self._bramPortMapped):
+            size = ai.size
+            addr = ai.addr
+            port = ai.port
+            
             # map addr for bram ports
             _isMyAddr = isMyAddr(ar.addr, addr, size)
             _isInBramFlags.append(_isMyAddr)
@@ -151,13 +155,13 @@ class AxiLiteConverter(BusConverter):
         )
         
         # output vld
-        for addr, d in self._directlyMapped:
-            out = d.dout
+        for ai in self._directlyMapped:
+            out = ai.port.dout
             c(w.data, out.data)
-            c(w_hs & (awAddr._eq(vec(addr, addrWidth))), out.vld)
+            c(w_hs & (awAddr._eq(vec(ai.addr, addrWidth))), out.vld)
         
-        for _, p, _ in self._bramPortMapped:
-            c(w.data, p.din)
+        for ai in self._bramPortMapped:
+            c(w.data, ai.port.din)
             
         return awAddr, w_hs    
     
