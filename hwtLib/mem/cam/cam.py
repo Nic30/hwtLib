@@ -1,7 +1,7 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
 from hdl_toolkit.hdlObjects.types.array import Array
 from hdl_toolkit.interfaces.std import Handshaked, VldSynced
-from hdl_toolkit.interfaces.utils import addClkRstn
+from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
 from hdl_toolkit.synthesizer.codeOps import If, c
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
@@ -26,6 +26,7 @@ class Cam(Unit):
             with self._paramsShared():
                 self.match = Handshaked()
                 self.write = AddrDataHs()
+                self.write.ADDR_WIDTH.set(log2ceil(self.ITEMS - 1))
             self.out = VldSynced()
             self.out._replaceParam("DATA_WIDTH", self.ITEMS)
     
@@ -45,7 +46,7 @@ class Cam(Unit):
         outNext = out.next
         outVld = self._reg("out_vld_reg", defVal=0)
         
-        c(1,       key.rd)
+        c(1, key.rd)
         c(key.vld, outVld)
         
         for i in range(evalParam(self.ITEMS).val):
@@ -57,7 +58,8 @@ class Cam(Unit):
     
     def _impl(self):
         # +1 bit to validity check
-        self._mem = self._sig("cam_mem", Array(vecT(self.DATA_WIDTH + 1), self.ITEMS)) 
+        self._mem = self._sig("cam_mem", Array(vecT(self.DATA_WIDTH + 1), self.ITEMS),
+                                         [0 for _ in range(evalParam(self.ITEMS).val)]) 
         self.writeHandler(self._mem)
         self.matchHandler(self._mem)
         
