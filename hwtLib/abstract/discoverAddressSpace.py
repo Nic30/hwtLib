@@ -51,7 +51,7 @@ class AddressSpaceProbe(object):
         self.offset = offset
     
     def discover(self):
-        return self._discoverAddressSpace(self.topIntf, lambda x: x + self.offset)
+        return self._discoverAddressSpace(self.topIntf, self.offset)
     
     @staticmethod
     def pprint(addrSpaceDict, indent=0):
@@ -68,7 +68,7 @@ class AddressSpaceProbe(object):
             AddressSpaceProbe.pprint(item.children, indent + 1)
         
     
-    def _extractAddressMap(self, converter, addrModifier, sizeModifier):
+    def _extractAddressMap(self, converter, offset, addrModifier, sizeModifier):
         """
         coppy address space map from converter
         """
@@ -76,19 +76,22 @@ class AddressSpaceProbe(object):
         for item in converter._addrSpace:
             item = copy(item)
             
-            item.addr = addrModifier(evalParam(item.addr).val)
+            item.addr = offset + addrModifier(evalParam(item.addr).val)
+
             m[item.addr] = item
-            item.size = sizeModifier(item.size)
+            _size = item.size
+
             if item.size > 1:
                 port = getattr(converter, item.name)
                 if item.alignOffsetBits is not None:
-                    _addrModifier = lambda x: item.addr + (addrModifier(x << item.alignOffsetBits))
+                    _addrModifier = lambda childAddr: childAddr << item.alignOffsetBits
                     _sizeModifier = lambda x: sizeModifier(x)  << item.alignOffsetBits
                 else:
-                    _addrModifier = lambda x: item.addr + addrModifier(x)
+                    _addrModifier = addrModifier
                     _sizeModifier = sizeModifier
                      
-                item.children = self._discoverAddressSpace(port, _addrModifier, sizeModifier)
+                item.children = self._discoverAddressSpace(port, item.addr, _addrModifier, _sizeModifier)
+            item.size = sizeModifier(item.size)
         return m
 
     def walkToConverter(self, mainSig, ignoreMyParent=False):
@@ -113,7 +116,7 @@ class AddressSpaceProbe(object):
             else:
                 raise NotImplementedError(e.__class__)
         
-    def _discoverAddressSpace(self, topIntf, addrModifier=lambda x: x, sizeModifier=lambda x: x):
+    def _discoverAddressSpace(self, topIntf, offset, addrModifier=lambda x: x, sizeModifier=lambda x: x):
         _mainSig = self.getMainSigFn(topIntf) 
         try:
             mainSig = _mainSig._sig
@@ -122,7 +125,7 @@ class AddressSpaceProbe(object):
         
         addrMap = {}
         for converter in self.walkToConverter(mainSig, ignoreMyParent=True):
-            addrMap = self._extractAddressMap(converter, addrModifier, sizeModifier)        
+            addrMap = self._extractAddressMap(converter, offset, addrModifier, sizeModifier)        
             
         return addrMap
     
