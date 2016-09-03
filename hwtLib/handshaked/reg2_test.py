@@ -3,7 +3,7 @@ import unittest
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthesizer.shortcuts import synthesised, synthesizeAsIpcore
+from hdl_toolkit.synthesizer.shortcuts import synthesised, serializeAsIpcore
 from hwtLib.handshaked.reg2 import HandshakedReg2
 from hdl_toolkit.hdlObjects.specialValues import Time
 
@@ -39,7 +39,7 @@ def mkTestbench():
     from hdl_toolkit.serializer.templates import VHDLTemplates
     repo = "tmp/"
     u = HandshakedReg2(Handshaked)
-    synthesizeAsIpcore(u, repo)
+    serializeAsIpcore(u, repo)
     
     
     def procGen(ctx):

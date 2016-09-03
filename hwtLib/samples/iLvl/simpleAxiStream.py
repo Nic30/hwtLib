@@ -1,8 +1,11 @@
 from hdl_toolkit.interfaces.amba import AxiStream
-from hdl_toolkit.intfLvl import connect, Param, Unit
+from hdl_toolkit.intfLvl import Param, Unit
 
 
 class SimpleUnitAxiStream(Unit):
+    """
+    Example of unit with axi stream interface
+    """
     def _config(self):
         self.DATA_WIDTH = Param(8)
 
@@ -12,8 +15,8 @@ class SimpleUnitAxiStream(Unit):
             self.b = AxiStream()
 
     def _impl(self):
-        connect(self.a, self.b)
-
+        self.b ** self.a 
+        
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(toRtl(SimpleUnitAxiStream))

@@ -71,52 +71,52 @@ class Alu(Unit):
         parity_2 = parity_4[4:2] ^ parity_4[2:0]
         P_flag_reg = self._reg("P_flag_reg", defVal=0)
         If(load_acc,
-           c(parity_2[1] ^ parity_2[0], P_flag_reg)
+            P_flag_reg ** (parity_2[1] ^ parity_2[0])
         ).Else(
             P_flag_reg._same()
         )
-        c(P_flag_reg, self.p_out)
+        self.p_out ** P_flag_reg
     
-    def opResolve(self,  A_reg, V_reg, T_reg):
+    def opResolve(self, A_reg, V_reg, T_reg):
         alu_op_sel = self._sig("alu_op_sel", dtype=t_alu_op_sel)
         # ALU input operand mux control. All instructions that use the ALU shall
         # have a say in this logic through the state machine register.
         ps = self.ps
         t = t_cpu_state
         If(In(ps, [t.cjne_a_imm_1, t.cjne_a_dir_2, t.alu_xchd_4, t.alu_xchd_5]),
-           c(AI.A_T, alu_op_sel)
+           alu_op_sel ** AI.A_T 
            
         ).Elif(In(ps, [t.cjne_ri_imm_4, t.cjne_rn_imm_2]),
-            c(AI.V_T, alu_op_sel)
+            alu_op_sel ** AI.V_T 
             
         ).Elif(In(ps, [t.djnz_dir_2, t.djnz_dir_3, t.push_2,
                        t.mov_dptr_1, t.mov_dptr_2, t.xch_3]),
-            c(AI.T_0, alu_op_sel)
+            alu_op_sel ** AI.T_0 
             
         ).Elif(ps._eq(t.xch_2),
-            c(AI.A_0, alu_op_sel)
+            alu_op_sel ** AI.A_0 
             
         ).Else(
-            c(self.op_sel, alu_op_sel)
+            alu_op_sel ** self.op_sel
         )
         
         alu_op_0 = self._sig("alu_op_0", self.w_t)
         # ALU input operand multiplexor: OP0 can be A, V or T.
         Switch(alu_op_sel[4:2])\
         .Case(0b01,
-            c(A_reg, alu_op_0)
+            alu_op_0 ** A_reg 
         ).Case(0b10,
-            c(V_reg, alu_op_0)
+            alu_op_0 ** V_reg 
         ).Default(
-            c(T_reg, alu_op_0)
+            alu_op_0 ** T_reg
         )
         
         alu_op_1 = self._sig("alu_op_1", self.w_t)
         Switch(alu_op_sel[2:])\
         .Case(0b01,
-            c(T_reg, alu_op_1)
+            alu_op_1 ** T_reg 
         ).Default(
-            c(0, alu_op_1)
+            alu_op_1 ** 0 
         )
     
     def logicOps(self, op0, op1, ctrl):
@@ -124,13 +124,13 @@ class Alu(Unit):
         res = self._sig("alu_logic_result", self.w_t)
         Switch(ctrl)\
         .Case(0,
-            c(op0 & op1, res)
+            res ** (op0 & op1)
         ).Case(1,
-            c(op0 | op1, res)
+            res ** (op0 | op1)
         ).Case(2,
-            c(op0 ^ op1, res)
+            res ** (op0 ^ op1)
         ).Default(
-            c(~op0, res)   
+            res ** ~op0   
         )
         
         return res
@@ -149,9 +149,9 @@ class Alu(Unit):
         # ALU: shift operations
         res = self._sig("alu_shift_result", self.w_t)
         Switch(ctrl)\
-        .Case(0, # RR
+        .Case(0,  # RR
             c(op0[0]._concat(op0[8:1]), res)
-        ).Case(1, #RRC
+        ).Case(1,  # RRC
             c(cy_in._concat(op0[8:1]), res)
         ).Case(2,  # RL
             c(op0[7:0]._concat(op0[7]), res)   
@@ -163,7 +163,7 @@ class Alu(Unit):
     
     def dataPath(self, A_reg, V_reg, T_reg):
         # Datapath: ALU and ALU operand multiplexors --------------------------------
-        
+        raise NotImplementedError()
         
         
 

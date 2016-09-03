@@ -1,6 +1,6 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.intfLvl import connect, Param, Unit
+from hdl_toolkit.intfLvl import Param, Unit
 
 
 class SimpleUnitWithParam(Unit):
@@ -22,7 +22,7 @@ class SimpleUnitWithParam(Unit):
             self.b = Signal(dtype=dt)
         
     def _impl(self):
-        connect(self.a, self.b)
+        self.b ** self.a
         
         
 if __name__ == "__main__":

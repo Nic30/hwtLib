@@ -1,5 +1,5 @@
 from hdl_toolkit.interfaces.amba import AxiStream
-from hdl_toolkit.intfLvl import connect, Unit, Param
+from hdl_toolkit.intfLvl import Unit, Param
 from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream
 
 
@@ -17,8 +17,8 @@ class SimpleSubunit3(Unit):
         
     def _impl(self):
         u = self.subunit0
-        connect(self.a0, u.a)
-        connect(u.b, self.b0)
+        u.a ** self.a0
+        self.b0 ** u.b
 
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl

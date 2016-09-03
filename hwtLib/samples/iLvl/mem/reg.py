@@ -1,10 +1,15 @@
 from hdl_toolkit.hdlObjects.types.defs import BIT
 from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.interfaces.utils import addClkRst, propagateClkRst
-from hdl_toolkit.intfLvl import c, Unit
+from hdl_toolkit.intfLvl import Unit
 
 
 class DReg(Unit):
+    """
+    Basic d flip flop
+    @attention: using this unit is pointless because HWToolkit can automaticaly 
+                generate such a register for any interface and datatype
+    """
     def _declr(self):
         with self._asExtern():
             addClkRst(self)
@@ -16,8 +21,8 @@ class DReg(Unit):
     def _impl(self):
         internReg = self._reg("internReg", BIT, defVal=False)        
         
-        c(self.din, internReg)
-        c(internReg, self.dout)
+        internReg ** self.din
+        self.dout ** internReg 
 
 class DoubleDReg(Unit):
     def _declr(self):
@@ -29,9 +34,9 @@ class DoubleDReg(Unit):
     def _impl(self):
         propagateClkRst(self)
         
-        c(self.din, self.reg0.din)
-        c(self.reg0.dout, self.reg1.din)
-        c(self.reg1.dout, self.dout)
+        self.reg0.din ** self.din
+        self.reg1.din ** self.reg0.dout 
+        self.dout ** self.reg1.dout 
     
         
 if __name__ == "__main__":

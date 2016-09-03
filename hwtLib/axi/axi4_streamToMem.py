@@ -6,7 +6,7 @@ from hdl_toolkit.interfaces.amba import AxiLite, Axi4, BURST_INCR, CACHE_DEFAULT
     LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import c, Concat, If, Switch
+from hdl_toolkit.synthesizer.codeOps import c, Concat, If, Switch, FsmBuilder
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
 from hwtLib.axi.axiLite_conv import AxiLiteConverter
@@ -45,6 +45,7 @@ class Axi4streamToMem(Unit):
         self.MAX_BUTST_LEN = Param(16) 
         self.REGISTER_MAP = [(0x0, "control"),
                              (0x4, "baseAddr")]
+        
     def _declr(self):
         with self._asExtern():
             with self._paramsShared():
@@ -68,34 +69,34 @@ class Axi4streamToMem(Unit):
         axi = self.axi
         st_t = st._dtype
         
-        c(st._eq(st_t.writeAddr), axi.aw.valid)
-        c(actualAddr, axi.aw.addr)
-        c(0, axi.aw.id)
-        c(BURST_INCR, axi.aw.burst) 
-        c(CACHE_DEFAULT, axi.aw.cache)
+        axi.aw.valid ** st._eq(st_t.writeAddr) 
+        axi.aw.addr ** actualAddr
+        axi.aw.id ** 0
+        axi.aw.burst ** BURST_INCR 
+        axi.aw.cache ** CACHE_DEFAULT
         If(lenRem > self.MAX_BUTST_LEN,
-            c(self.MAX_BUTST_LEN, axi.aw.len)
+            axi.aw.len ** self.MAX_BUTST_LEN
         ).Else(
-            c((lenRem - 1)[axi.aw.len._dtype.bit_length():], axi.aw.len)
+            axi.aw.len ** ((lenRem - 1)[axi.aw.len._dtype.bit_length():])
         )
-        c(LOCK_DEFAULT, axi.aw.lock)
-        c(PROT_DEFAULT, axi.aw.prot)
-        c(BYTES_IN_TRANS(evalParam(self.DATA_WIDTH).val // 8), axi.aw.size)
-        c(QOS_DEFAULT, axi.aw.qos) 
+        axi.aw.lock ** LOCK_DEFAULT
+        axi.aw.prot ** PROT_DEFAULT 
+        axi.aw.size ** BYTES_IN_TRANS(evalParam(self.DATA_WIDTH).val // 8)
+        axi.aw.qos ** QOS_DEFAULT 
         
         # lenRem, actualAddr logic
         Switch(st)\
         .Case(st_t.fullIdle,
-            c(self.DATA_LEN, lenRem),
-            c(baseAddr, actualAddr)
+            lenRem ** self.DATA_LEN,
+            actualAddr ** baseAddr 
         ).Case(st_t.writeAddr,
             If(axi.aw.ready,
                 If(lenRem > self.MAX_BUTST_LEN,
-                   c(actualAddr + self.MAX_BUTST_LEN, actualAddr),
-                   c(lenRem - self.MAX_BUTST_LEN, lenRem)
+                   actualAddr ** (actualAddr + self.MAX_BUTST_LEN),
+                   lenRem ** (lenRem - self.MAX_BUTST_LEN)
                 ).Else(
-                   c(actualAddr + lenRem, actualAddr),
-                   c(0, lenRem)
+                   actualAddr ** (actualAddr + lenRem),
+                   lenRem ** 0
                 )
             ).Else(
                actualAddr._same(),
@@ -112,18 +113,18 @@ class Axi4streamToMem(Unit):
         """
         idle = st._eq(st._dtype.fullIdle)
         regs = self.regsConventor
-        c(Concat(onoff, idle._convert(BIT), vec(0, self.DATA_WIDTH - 2)),
-             regs.control.din)
+        regs.control.din ** Concat(onoff, idle._convert(BIT),
+                                   vec(0, self.DATA_WIDTH - 2))
         
         If(regs.control.dout.vld,
-           c(regs.control.dout.data[0], onoff)
+           onoff ** regs.control.dout.data[0]
         ).Else(
            onoff._same()
         )
         
         c(baseAddr, regs.baseAddr.din)
         If(regs.baseAddr.dout.vld,
-           c(regs.baseAddr.dout.data, baseAddr)
+           baseAddr ** regs.baseAddr.dout.data
         ).Else(
            baseAddr._same()
         )  
@@ -137,32 +138,32 @@ class Axi4streamToMem(Unit):
         Switch(st)\
         .Case(st_t.fullIdle,
             If(onoff,
-                c(st_t.writeAddr)
+                st ** st_t.writeAddr
             ).Else(
                 st._same()
             )
         ).Case(st_t.writeAddr,
             If(axi.aw.ready,
                 If(lenRem._eq(1),
-                   c(st_t.writeDataLast, st)
+                   st ** st_t.writeDataLast
                 ).Else(
-                   c(st_t.writeData, st)
+                   st ** st_t.writeData
                 )
             ).Else(
                 st._same()
             )
         ).Case(st_t.writeData,
             If(w_ackAll & (actualLenRem._eq(2)),
-               c(st_t.writeDataLast, st)
+               st ** st_t.writeDataLast
             ).Else(
                st._same()
             )
         ).Case(st_t.writeDataLast,
             If(w_ackAll,
                 If(lenRem != 0,
-                   c(st_t.writeAddr, st)
+                   st ** st_t.writeAddr
                 ).Else(
-                   c(st_t.fullIdle, st)
+                   st ** st_t.fullIdle
                 )
             ).Else(
                 st._same()
@@ -188,13 +189,13 @@ class Axi4streamToMem(Unit):
         last = st._eq(st_t.writeDataLast)
         w_en = st._eq(st_t.writeData) | last
         
-        c(din.vld & w_en, w.valid)
-        c(din.data, w.data)
-        c(0, w.id)
-        c(Bitmask.mask(w.strb._dtype.bit_length()), w.strb)
-        c(last, w.last)
+        w.valid ** din.vld & w_en 
+        w.data ** din.data
+        w.id ** 0
+        w.strb ** Bitmask.mask(w.strb._dtype.bit_length())
+        w.last ** last
         
-        c(w_en & w.ready, din.rd)
+        din.rd ** (w_en & w.ready)
         
         w_allAck = self.w_allAck(st)
         
@@ -202,35 +203,35 @@ class Axi4streamToMem(Unit):
         Switch(st)\
         .Case(st_t.writeData,
                 If(w_allAck,
-                    c(actualLenRem - 1, actualLenRem)
+                    actualLenRem ** (actualLenRem - 1)
                 ).Else(
                     actualLenRem._same()
                 )
         ).Case(st_t.writeDataLast,
                 If(w_allAck,
-                   c(0, actualLenRem)
+                   actualLenRem ** 0
                 ).Else(
                    actualLenRem._same()
                 )
         ).Default(
             If(lenRem > self.MAX_BUTST_LEN,
-               c(self.MAX_BUTST_LEN, actualLenRem)
+               actualLenRem ** self.MAX_BUTST_LEN
             ).Else(
-               c(lenRem[actualLenRem._dtype.bit_length():], actualLenRem)
+               actualLenRem ** lenRem[actualLenRem._dtype.bit_length():]
             )
         )
         
         
     def _impl(self):
         propagateClkRstn(self)
-        c(self.cntrl, self.regsConventor.bus)
+        self.regsConventor.bus ** self.cntrl
         axi = self.axi
         
         # disable read channel
         c(0, *where(axi.ar._interfaces, lambda x: x is not axi.ar.ready))    
-        c(0, axi.r.ready)
+        axi.r.ready ** 0
         
-        c(1, axi.b.ready)  # we do ignore write confirmations
+        axi.b.ready ** 1  # we do ignore write confirmations
         
         st_t = Enum("state_type", ["fullIdle", "writeAddr", "writeData", "writeDataLast"])
 

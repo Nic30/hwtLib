@@ -1,7 +1,7 @@
 from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.interfaces.std import s
+from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import Switch, If, c
+from hdl_toolkit.synthesizer.codeOps import Switch, If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 
 
@@ -13,15 +13,15 @@ class AxiSsof(Unit):
         with self._asExtern():
             addClkRstn(self)
             
-            self.ready = s()
-            self.valid = s()
-            self.last = s()
-            self.sof = s()
+            self.ready = Signal()
+            self.valid = Signal()
+            self.last = Signal()
+            self.sof = Signal()
         
     def listenOn(self, axi, dstReady):
-        c(dstReady, self.ready)
-        c(axi.valid, self.valid)
-        c(axi.last, self.last)
+        self.ready ** dstReady
+        self.valid ** axi.valid
+        self.last ** axi.last 
         
 
     def _impl(self):
@@ -32,19 +32,19 @@ class AxiSsof(Unit):
         Switch(st)\
         .Case(stT.stSof,
                 If(self.valid & self.ready & ~self.last,
-                   c(stT.stIdle, st)
+                   st ** stT.stIdle
                 ).Else(
-                   c(st, st)
+                   st._same()
                 )
         ).Case(stT.stIdle,
                 If(self.valid & self.ready & self.last,
-                   c(stT.stSof, st)
+                   st ** stT.stSof
                 ).Else(
-                   c(st, st)
+                   st._same()
                 )
         )
                 
-        c(st._eq(stT.stSof), self.sof)
+        self.sof ** st._eq(stT.stSof)
 
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl

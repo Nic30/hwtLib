@@ -3,7 +3,7 @@ from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
 from hdl_toolkit.synthesizer.codeOps import If, c
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
-from hwtLib.logic.dec_en import DecEn
+from hwtLib.logic.binToOneHot import BinToOneHot
 from hwtLib.mem.cam.interfaces import AddrDataHs, CamWritterPort
 
 
@@ -20,6 +20,10 @@ def mkCounter(unit, name, counter_ce, dType):
     return counter, busy, last
 
 class CamWrite(Unit):
+    """
+    Part of
+    """
+    
     def _config(self):
         self.COLUMNS = Param(8)
         self.ROWS = Param(16)
@@ -27,17 +31,17 @@ class CamWrite(Unit):
         self.CELL_HEIGHT = Param(1)
 
     def _declr(self):
-        assert evalParam(self.CELL_WIDTH).val <=6
+        assert evalParam(self.CELL_WIDTH).val <= 6
         with self._asExtern():
             addClkRstn(self)
             
             self.din = AddrDataHs()
             self.din.DATA_WIDTH.set(self.COLUMNS * self.CELL_WIDTH)
-            self.din.ADDR_WIDTH.set(log2ceil(self.ROWS*self.CELL_HEIGHT))
+            self.din.ADDR_WIDTH.set(log2ceil(self.ROWS * self.CELL_HEIGHT))
             
             self.dout = CamWritterPort()
             self.dout._updateParamsFrom(self)
-        self.write_enable_decoder = DecEn()
+        self.write_enable_decoder = BinToOneHot()
         self.write_enable_decoder.DATA_WIDTH.set(self.ROWS)
         
     def _impl(self):
@@ -48,7 +52,7 @@ class CamWrite(Unit):
         r = self._reg
         
         counter_ce = self._sig("counter_ce")
-        counter, counter_busy, counter_last = mkCounter(self,"counter", counter_ce, vecT(CELL_WIDTH))
+        counter, counter_busy, counter_last = mkCounter(self, "counter", counter_ce, vecT(CELL_WIDTH))
         
         wr_reg = r("wr_reg", defVal=0)
         data_reg = r("data_reg", dIn.data._dtype, defVal=0)
@@ -63,11 +67,11 @@ class CamWrite(Unit):
         c(input_rdy, self.din.rd)
 
         # input_regs
-        If(inreg_we, 
+        If(inreg_we,
            c(dIn.data, data_reg),
            c(dIn.mask, mask_reg),
            c(dIn.addr, addr_reg)
-        ).Else( 
+        ).Else(
            # this branch is not necessary 
            data_reg._same(),
            mask_reg._same(),
@@ -78,23 +82,23 @@ class CamWrite(Unit):
         
         # real_row_addr_gen
         if evalParam(self.ROWS).val > 1:
-            row_addr = addr_reg[:(hInt(6)-CELL_WIDTH)]
+            row_addr = addr_reg[:(hInt(6) - CELL_WIDTH)]
         else:
             raise NotImplementedError()
         
         
         # real_bank_addr_gen
         if evalParam(CELL_WIDTH).val < 6:
-            bank_addr = addr_reg[6-CELL_WIDTH:0]
+            bank_addr = addr_reg[6 - CELL_WIDTH:0]
             c(bank_addr, data_addr[6:CELL_WIDTH]);
         
         c(counter, data_addr[CELL_WIDTH:0])
 
         # cam_wr_gen
         for i in range(evalParam(COLUMNS).val):
-            c(data_addr, dout.data[(i+1)*6:i*6])
-            masked_counter =  counter & mask_reg[(CELL_WIDTH*(i+1)):(CELL_WIDTH*i)]
-            dr = data_reg[CELL_WIDTH*(i+1):CELL_WIDTH*i]
+            c(data_addr, dout.data[(i + 1) * 6:i * 6])
+            masked_counter = counter & mask_reg[(CELL_WIDTH * (i + 1)):(CELL_WIDTH * i)]
+            dr = data_reg[CELL_WIDTH * (i + 1):CELL_WIDTH * i]
             c(masked_counter._eq(dr), dout.di[i])
 
         wec = self.write_enable_decoder

@@ -65,42 +65,42 @@ class MulDiv(Unit):
         # ...otherwise we need to compare the low bytes.
         num_ge_den = rem_reg >= denominator
          
-        sub_num =self._sig("sub_num")
-        c(~den_ge_256 & num_ge_den, sub_num)
+        sub_num = self._sig("sub_num")
+        sub_num ** (~den_ge_256 & num_ge_den)
         
         If(self.start,
-           c(0, bit_cntr)
+           bit_cntr ** 0 
         ).Elif(bit_cntr != DW,
-            c(bit_cntr + 1, bit_cntr)
+            bit_cntr ** (bit_cntr + 1)
         ).Else(
             bit_cntr._same()
         )
         # denominator shift register
         If(self.start,
-           c(Concat(hBit(0), self.data_b, vec(0, DW - 1)), b_shift_reg),
-           c(self.data_b != 0, div_ov_out)
+           b_shift_reg ** Concat(hBit(0), self.data_b, vec(0, DW - 1)),
+           div_ov_out ** (self.data_b != 0)
         ).Else(
-           c(slr(b_shift_reg, 1), b_shift_reg) 
+           b_shift_reg ** slr(b_shift_reg, 1) 
         )
         # numerator register
         If(self.start,
-            c(self.data_a, rem_reg)
+            rem_reg ** self.data_a
         ).Elif((bit_cntr != DW) & sub_num,
-            c(rem_reg - denominator, rem_reg)
+            rem_reg ** (rem_reg - denominator)
         ).Else(
             rem_reg._same()
         )
         #  quotient register
         If(self.start,
-            c(0, quot_reg)
+            quot_reg ** 0 
         ).Elif(bit_cntr != DW,
-            c(quot_reg[DW - 1:]._concat(sub_num), quot_reg) 
+            quot_reg ** quot_reg[DW - 1:]._concat(sub_num) 
         ).Else(
             quot_reg._same()
         )
-        c(bit_cntr == 8, self.div_ready)
-        c(quot_reg, self.quot_out)
-        c(rem_reg, self.rem_out)
+        self.div_ready ** bit_cntr._eq(8)
+        self.quot_out ** quot_reg
+        self.rem_out ** rem_reg
     
     def mulPart(self):
         DW = self.DATA_WIDTH
@@ -108,11 +108,11 @@ class MulDiv(Unit):
         # so by the time MUL is executed it's already done.
 
         c(1, self.mul_ready)
-        prod_reg = self._reg("prod_reg", vecT(DW*2))
-        c(self.data_a * self.data_b, prod_reg)
+        prod_reg = self._reg("prod_reg", vecT(DW * 2))
+        prod_reg ** (self.data_a * self.data_b)
         
-        c(prod_reg, self.prod_out)
-        c(prod_reg[:DW]!=0, self.mul_ov_out)
+        self.prod_out ** prod_reg
+        self.mul_ov_out ** (prod_reg[:DW] != 0)
         
         
     def _impl(self):

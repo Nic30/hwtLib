@@ -1,5 +1,5 @@
 from hdl_toolkit.intfLvl import Param
-from hdl_toolkit.synthesizer.codeOps import And, c
+from hdl_toolkit.synthesizer.codeOps import And
 from hdl_toolkit.interfaces.std import Handshaked
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hdl_toolkit.interfaces.utils import addClkRstn
@@ -17,7 +17,7 @@ class HandshakedFork(HandshakedCompBase):
         
     def _declr(self):
         with self._asExtern(), self._paramsShared():
-            addClkRstn(self) # this is just for reference, not actualy used inside
+            addClkRstn(self)  # this is just for reference, not actualy used inside
             self.dataIn = self.intfCls()
             self.dataOut = self.intfCls(multipliedBy=self.OUTPUTS)
 
@@ -28,10 +28,10 @@ class HandshakedFork(HandshakedCompBase):
         
         for io in self.dataOut:
             for i, o in zip(data(self.dataIn), data(io)):
-                c(i, o)
+                o ** i 
         
         outRd = And(*[rd(i) for i in self.dataOut])
-        c(outRd, rd(self.dataIn)) 
+        rd(self.dataIn) ** outRd 
 
         for o in self.dataOut:
             # everyone else is ready and input is valid
@@ -42,7 +42,7 @@ class HandshakedFork(HandshakedCompBase):
                 deps.append(rd(otherO))
             _vld = And(*deps)
             
-            c(_vld, vld(o))  
+            vld(o) ** _vld  
         
         
 if __name__ == "__main__":

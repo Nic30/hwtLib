@@ -1,7 +1,7 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import If, connect
+from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 
 
@@ -26,22 +26,21 @@ class TwoCntrs(Unit):
         b = self._reg("reg_b", index_t, defVal=0)
         
         If(self.a_en,
-           connect(a+1, a)
+           a ** (a + 1)
         ).Else(
-           connect(a, a)
+           a._same()
         )
         
         If(self.b_en,
-           connect(b+1, b)
+           b ** (b + 1)
         ).Else(
-           connect(b, b)
+           b._same()
         )
         
-        connect(a._eq(b), self.eq)
-        connect(a != b, self.ne)
-        connect(a < b, self.lt)
-        connect(a > b, self.gt)
-
+        self.eq ** a._eq(b)
+        self.ne ** (a != b)
+        self.lt ** (a < b) 
+        self.gt ** (a > b) 
 
 
 if __name__ == "__main__":

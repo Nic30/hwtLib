@@ -1,6 +1,6 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.synthesizer.codeOps import connect, Concat
+from hdl_toolkit.synthesizer.codeOps import Concat
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 
 
@@ -12,10 +12,10 @@ class SimpleConcat(Unit):
             self.a2 = Signal()
             self.a3 = Signal()
     
-            self.a_out  = Signal(dtype=vecT(4))
+            self.a_out = Signal(dtype=vecT(4))
     
     def _impl(self):
-        connect(Concat(self.a3, self.a2, self.a1, self.a0), self.a_out)
+        self.a_out ** Concat(self.a3, self.a2, self.a1, self.a0)
         
 
 if __name__ == "__main__":

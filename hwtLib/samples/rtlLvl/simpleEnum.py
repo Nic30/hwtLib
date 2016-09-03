@@ -1,11 +1,9 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.serializer.formater import formatVhdl
-from hdl_toolkit.synthesizer.codeOps import connect, If
+from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 
-
-w = connect
 
 if __name__ == "__main__":
     t = vecT(8)
@@ -22,11 +20,11 @@ if __name__ == "__main__":
     
     fsmSt = n.sig("fsmSt", fsmT, clk, syncRst, fsmT.send0)
     If(fsmSt._eq(fsmT.send0),
-        w(s_in0, s_out), 
-        w(fsmT.send1, fsmSt)
+        s_out ** s_in0,
+        fsmSt ** fsmT.send1,
     ).Else(
-        w(s_in1, s_out), 
-        w(fsmT.send0, fsmSt)
+        s_out ** s_in1 ,
+        fsmSt ** fsmT.send0
     )
     
     interf = [clk, syncRst, s_in0, s_in1, s_out]

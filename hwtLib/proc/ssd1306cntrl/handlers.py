@@ -1,5 +1,5 @@
 import hwtLib.proc.ssd1306cntrl.instructions as instrSet
-from hdl_toolkit.synthesizer.codeOps import If, c, Switch, In
+from hdl_toolkit.synthesizer.codeOps import If, Switch, In
 from hdl_toolkit.hdlObjects.types.array import Array
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hwtLib.img.charToBitmap import addCharToBitmap
@@ -16,42 +16,42 @@ class SSD1306CntrlProc_handlers():
         val = ir[7]
         for pin, _pinCode in zip(allPins, allPinCodes):
             If(st._eq(st._dtype.PIN_SET) & selPin._eq(_pinCode),
-                c(val, pin)
+                pin ** val
             ).Else(
                 pin._same()
             )
         
     
-        c(vdd, self.oled.vdd)
-        c(vbat, self.oled.vbat)
-        c(res, self.oled.res)
-        c(dc, self.oled.dc)
+        self.oled.vdd ** vdd
+        self.oled.vbat ** vbat 
+        self.oled.res ** res 
+        self.oled.dc ** dc 
     
     def dellayHandler(self, st, acc):
         stT = st._dtype
     
-        c(acc[7:], self.delay.delayTime)
-        c(st._eq(stT.DO_WAIT) | st._eq(stT.DO_WAIT_wait), self.delay.acivate.req)
+        self.delay.delayTime ** acc[7:]
+        self.delay.acivate.req ** (st._eq(stT.DO_WAIT) | st._eq(stT.DO_WAIT_wait))
         
     def sendHandler(self, st, acc):
         stT = st._dtype
     
-        c(acc, self.spiCntrl.dataIn.data)
-        c(st._eq(stT.SEND) | st._eq(stT.SEND_wait), self.spiCntrl.dataIn.vld)
+        self.spiCntrl.dataIn.data ** acc
+        self.spiCntrl.dataIn.vld ** (st._eq(stT.SEND) | st._eq(stT.SEND_wait))
         
-        c(self.spiCntrl.dataOut, self.oled.spi)
+        self.oled.spi ** self.spiCntrl.dataOut
     
     def columnHandler(self, st, column):
         stT = st._dtype
         Switch(st)\
         .Case(stT.COLUMN_INCR,
             If(column._eq(self.COLUMNS - 1),
-                c(0, column)
+                column ** 0 
             ).Else(
-                c(column + 1, column)
+                column ** (column + 1)
             )
         ).Case(stT.COLUMN_CLR,
-            c(0, column)
+            column ** 0
         ).Default(
             column._same()
         )
@@ -61,19 +61,19 @@ class SSD1306CntrlProc_handlers():
         Switch(st)\
         .Case(stT.ROW_INCR,
             If(row._eq(self.ROWS - 1),
-                c(0, row)
+                row ** 0
             ).Else(
-                c(row + 1, row)
+                row ** (row + 1)
             )
         ).Case(stT.ROW_CLR,
-            c(0, row)
+            row ** 0
         ).Default(
             row._same()
         )
         
     def charRegHandler(self, st, acc, charReg):
         If(st._eq(st._dtype.STORE_CHAR),
-            c(acc, charReg)
+            charReg ** acc
         ).Else(
             charReg._same()
         )
@@ -83,18 +83,18 @@ class SSD1306CntrlProc_handlers():
     
         Switch(st)\
         .Case(stT.LOAD_DATA_collectAndIncr,
-            c(memData, acc)
+            acc ** memData
         ).Case(stT.LOAD_BM_ROW_collect,
-            c(charBmRow, acc)
+            acc ** charBmRow 
         ).Case(stT.LOAD_EXTERN,
-            c(self.dataIn.data, acc)
+            acc ** self.dataIn.data
         ).Default(
             acc._same()
         )
     
     def irHandler(self, st, memData, ir):
         If(st._eq(st._dtype.load),
-           c(memData, ir)
+           ir ** memData
         ).Else(
            ir._same()
         )
@@ -102,7 +102,7 @@ class SSD1306CntrlProc_handlers():
     def ipHandler(self, st, ip):
         stT = st._dtype
         If(In(st, [stT.incr_IP, stT.LOAD_DATA_collectAndIncr]),
-           c(ip + 1, ip)
+           ip ** (ip + 1)
         ).Else(
            ip._same()
         )
@@ -114,9 +114,9 @@ class SSD1306CntrlProc_handlers():
         
         If(self.clk._onRisingEdge(),
             If(In(st, [stT.LOAD_DATA, stT.LOAD_DATA_collectAndIncr]),
-                c(mem[ip + 1], memData)
+                memData ** mem[ip + 1]
             ).Else(
-                c(mem[ip], memData)
+                memData ** mem[ip]
             )
         )
         return memData
@@ -127,10 +127,10 @@ class SSD1306CntrlProc_handlers():
         charBmRowAddr = self._reg("charBmRowAddr", vecT(8), defVal=0)
         
         If(self.clk._onRisingEdge(),
-           c(charToBitmap[charBmRowAddr], charBmRow)
+           charBmRow ** charToBitmap[charBmRowAddr]
         )
         If(st._eq(st._dtype.LOAD_BM_ROW_collect),
-            c(charBmRowAddr + 1, charBmRowAddr)
+            charBmRowAddr ** (charBmRowAddr + 1) 
         ).Else(
             charBmRowAddr._same()
         )

@@ -1,6 +1,6 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.interfaces.std import Clk, Rst_n
-from hdl_toolkit.synthesizer.codeOps import If, c
+from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 
 
@@ -14,7 +14,7 @@ class ClkDiv3(Unit):
         with self._asExtern():
             self.clk = Clk()
             self.rst_n = Rst_n()
-    
+
             self.clkOut = Clk()
     
     def _impl(self):
@@ -25,30 +25,30 @@ class ClkDiv3(Unit):
         
         rst = self.rst_n._isOn()
         If(rst,
-           c(0, r_cnt),
-           c(1, rise),
-           c(2, f_cnt),
-           c(1, fall)
+           r_cnt ** 0,
+           rise ** 1,
+           f_cnt ** 2,
+           fall ** 1
         ).Else(
             If(self.clk._onRisingEdge(),
                 If(r_cnt._eq(2),
-                    c(0, r_cnt),
-                    c(~rise, rise)
+                    r_cnt ** 0,
+                    rise ** ~rise
                 ).Else(
-                    c(r_cnt+1, r_cnt),
+                    r_cnt ** (r_cnt + 1),
                 )
             ),
             If(self.clk._onFallingEdge(),
                 If(f_cnt._eq(2),
-                    c(0, f_cnt),
-                    c(~fall, fall)
+                    f_cnt ** 0,
+                    fall ** ~fall
                 ).Else(
-                    c(f_cnt +1, f_cnt),
+                    f_cnt ** (f_cnt + 1),
                 )
             )
         )
         
-        c(fall._eq(rise), self.clkOut)
+        self.clkOut ** fall._eq(rise)
 
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl

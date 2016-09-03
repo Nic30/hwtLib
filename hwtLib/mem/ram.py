@@ -1,7 +1,7 @@
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hInt
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.array import Array
 from hdl_toolkit.interfaces.std import BramPort, Clk, BramPort_withoutClk
-from hdl_toolkit.synthesizer.codeOps import If, c
+from hdl_toolkit.synthesizer.codeOps import If, power
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
 
@@ -29,14 +29,14 @@ class RamSingleClock(Unit):
     def connectPort(self, port, mem):
         If(self.clk._onRisingEdge() & port.en,
            If(port.we,
-              c(port.din, mem[port.addr])
+              mem[port.addr] ** port.din
            ),
-           c(mem[port.addr], port.dout)
+           port.dout ** mem[port.addr]
         )
         
     def _impl(self):
         PORTS = evalParam(self.PORT_CNT).val
-        dt = Array(vecT(self.DATA_WIDTH), hInt(2) ** self.ADDR_WIDTH)
+        dt = Array(vecT(self.DATA_WIDTH), power(2, self.ADDR_WIDTH))
         self._mem = self._sig("ram_memory", dt)
         
         for i in range(PORTS):
@@ -58,13 +58,13 @@ class Ram_sp(Unit):
     def connectPort(self, port, mem):
         If(port.clk._onRisingEdge() & port.en,
            If(port.we,
-              c(port.din, mem[port.addr])
+              mem[port.addr] ** port.din
            ),
-           c(mem[port.addr], port.dout)
+           port.dout ** mem[port.addr]
         )
         
     def _impl(self):
-        dt = Array(vecT(self.DATA_WIDTH), hInt(2) ** self.ADDR_WIDTH)
+        dt = Array(vecT(self.DATA_WIDTH), power(2, self.ADDR_WIDTH))
         self._mem = self._sig("ram_memory", dt)
         
         self.connectPort(self.a, self._mem)

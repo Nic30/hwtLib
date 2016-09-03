@@ -1,6 +1,6 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.intfLvl import connect, Unit
+from hdl_toolkit.intfLvl import Unit
 from hdl_toolkit.synthesizer.codeOps import Switch
 
 
@@ -16,17 +16,17 @@ class SwitchStmUnit(Unit):
     def _impl(self):
         Switch(self.sel)\
         .Case(0,
-            connect(self.b, self.a)
+            self.a ** self.b
         ).Case(1,
-            connect(self.c, self.a)
+            self.a ** self.c
         ).Case(2,
-            connect(self.d, self.a)
+            self.a ** self.d
         ).Default(
-            connect(0, self.a)
+            self.a ** 0
         )
         
 
-if __name__ == "__main__": # alias python main function
+if __name__ == "__main__":  # alias python main function
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     print(toRtl(SwitchStmUnit))

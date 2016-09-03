@@ -2,7 +2,7 @@ from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.array import Array
 from hdl_toolkit.interfaces.std import Clk, Rst_n, FifoWriter, FifoReader
 from hdl_toolkit.interfaces.utils import log2ceil
-from hdl_toolkit.synthesizer.codeOps import If, c
+from hdl_toolkit.synthesizer.codeOps import If
 from hwtLib.logic.cntrGray import GrayCntr
 from hwtLib.mem.fifo import Fifo
 
@@ -41,29 +41,29 @@ class AsyncFifo(Fifo):
         Out = self.dataOut
         OutClk = self.dataOut_clk._onRisingEdge()
 
-        c(In.en & ~full, self.pWr.en)
-        c(self.dataIn_clk, self.pWr.clk)
-        c(self.rst_n, self.pWr.rst_n)
+        self.pWr.en ** (In.en & ~full)
+        self.pWr.clk ** self.dataIn_clk
+        self.pWr.rst_n ** self.rst_n 
         pNextWordToWrite = self.pWr.dataOut
         
 
-        c(Out.en & ~empty, self.pRd.en)
-        c(self.dataOut_clk, self.pRd.clk)
-        c(self.rst_n, self.pRd.rst_n)
+        self.pRd.en ** (Out.en & ~empty)
+        self.pRd.clk ** self.dataOut_clk 
+        self.pRd.rst_n ** self.rst_n 
         pNextWordToRead = self.pRd.dataOut
         
 
         # data out logic
         If(OutClk,
             If(Out.en & ~empty,
-               c(mem[pNextWordToRead], Out.data) 
+               Out.data ** mem[pNextWordToRead] 
             )
         )
 
         # data in logic
         If(InClk,
             If(In.en & ~full,
-               c(In.data, mem[pNextWordToWrite]) 
+               mem[pNextWordToWrite] ** In.data 
             )
         )
 
@@ -77,9 +77,9 @@ class AsyncFifo(Fifo):
 
         # status ltching
         If(rstStatus | self.rst_n._isOn(),
-            c(0, status)  # Going 'Empty'.
+            status ** 0  # Going 'Empty'.
         ).Elif(setStatus,
-            c(1, status)  # Going 'Full'.
+            status ** 1  # Going 'Full'.
         )
 
         # data in logic
@@ -87,26 +87,26 @@ class AsyncFifo(Fifo):
 
         # D Flip-Flop w/ Asynchronous Preset.
         If(presetFull,
-            c(1, full)
+            full ** 1
         ).Else(
             If(InClk,
-               c(0, full)
+               full ** 0 
             )
         )
-        c(full, In.wait)
+        In.wait ** full 
 
         # data out logic
         presetEmpty = ~status & equalAddresses
         
         # D Flip-Flop w/ Asynchronous Preset.
         If(presetEmpty,
-            c(1, empty)
+            empty ** 1
         ).Else(
             If(OutClk,
-               c(0, empty)
+               empty ** 0 
             )
         )
-        c(empty, Out.wait)
+        Out.wait ** empty
         
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl

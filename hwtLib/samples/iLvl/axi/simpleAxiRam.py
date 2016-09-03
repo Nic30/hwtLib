@@ -36,13 +36,13 @@ class SimpleAxiRam(Unit):
         
         conv = self.conv
         If(conv.reg0.dout.vld,
-            c(conv.reg0.dout.data, reg0)
+            reg0 ** conv.reg0.dout.data
         ).Else(
             reg0._same()
         )
-        c(reg0, conv.reg0.din)
+        conv.reg0.din ** reg0 
         
-        c(conv.ram0, self.ram.a)
+        self.ram.a ** conv.ram0 
 
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl

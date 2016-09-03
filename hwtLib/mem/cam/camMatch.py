@@ -4,7 +4,7 @@ from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
 from hdl_toolkit.synthesizer.codeOps import If, c
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
-from hwtLib.logic.dec_en import DecEn
+from hwtLib.logic.binToOneHot import BinToOneHot
 from hwtLib.mem.cam.camWrite import mkCounter
 from hwtLib.mem.cam.interfaces import DataWithMatch
 
@@ -96,7 +96,7 @@ class CamMatch(Unit):
                     )
                 )
         if evalParam(self.CELL_HEIGHT).val > 1:
-            self.match_enable_decoder = DecEn()
+            self.match_enable_decoder = BinToOneHot()
             self.match_enable_decoder.DATA_WIDTH.set(self.CELL_HEIGHT)        
             med = self.match_enable_decoder
             c(counter, med.din)

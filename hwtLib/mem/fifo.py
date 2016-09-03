@@ -2,7 +2,7 @@ from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.array import Array
 from hdl_toolkit.interfaces.std import FifoWriter, FifoReader
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.synthesizer.codeOps import c, If
+from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
 
@@ -39,14 +39,14 @@ class Fifo(Unit):
         rd_en = dout.en & (looped | (head != tail))
         If(self.clk._onRisingEdge() & rd_en,
            # Update data output
-            c(mem[tail], dout.data) 
+            dout.data ** mem[tail] 
         ) 
         # Update Tail pointer as needed
         If(rd_en,
             If(tail._eq(MAX_DEPTH),
-               c(0, tail) 
+               tail ** 0 
             ).Else(
-               c(tail + 1, tail)
+               tail ** (tail + 1)
             )
         ).Else(
             tail._same()
@@ -55,23 +55,23 @@ class Fifo(Unit):
         wr_en = din.en & (~looped | (head != tail))
         If(self.clk._onRisingEdge() & wr_en,
             # Write Data to Memory
-            c(din.data, mem[head])
+            mem[head] ** din.data
         )                 
         # Increment Head pointer as needed
         If(wr_en,
             If(head._eq(MAX_DEPTH),
-                c(0, head)
+                head ** 0
             ).Else(
-                c(head + 1, head) 
+                head ** (head + 1) 
             )
         ).Else(
            head._same()
         )
         # looped logic
         If(din.en & head._eq(MAX_DEPTH),
-            c(True, looped)
+            looped ** True
         ).Elif(dout.en & tail._eq(MAX_DEPTH),
-            c(False, looped)
+            looped ** False
         ).Else(
             looped._same()
         )
@@ -79,15 +79,15 @@ class Fifo(Unit):
         # Update Empty and Full flags
         If(head._eq(tail),
             If(looped,
-                c(1, din.wait),
-                c(0, dout.wait)
+                din.wait ** 1,
+                dout.wait ** 0 
             ).Else(
-                c(1, dout.wait),
-                c(0, din.wait)
+                dout.wait ** 1,
+                din.wait ** 0
             )
         ).Else(
-            c(0, din.wait),
-            c(0, dout.wait)
+            din.wait ** 0,
+            dout.wait ** 0 
         )
 
 if __name__ == "__main__":

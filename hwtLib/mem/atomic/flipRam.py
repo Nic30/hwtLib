@@ -1,6 +1,6 @@
 from hdl_toolkit.interfaces.std import Signal, BramPort_withoutClk, Clk
 from hdl_toolkit.interfaces.utils import propagateClk
-from hdl_toolkit.synthesizer.codeOps import If, connect
+from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import evalParam
 from hwtLib.mem.ram import RamSingleClock
@@ -33,7 +33,7 @@ class FlipRam(Unit):
                 if PORT_CNT == 2:
                     self.firstB = BramPort_withoutClk()
                     self.secondB = BramPort_withoutClk()
-                elif PORT_CNT >2:
+                elif PORT_CNT > 2:
                     raise NotImplementedError()
                 
                 self.select_sig = Signal()  
@@ -50,21 +50,21 @@ class FlipRam(Unit):
         sa = self.secondA
         
         If(self.select_sig,
-           connect(fa, self.ram0.a), 
-           connect(sa, self.ram1.a)
+           self.ram0.a ** fa,
+           self.ram1.a ** sa
         ).Else(
-           connect(sa, self.ram0.a), 
-           connect(fa, self.ram1.a)
+           self.ram0.a ** sa,
+           self.ram1.a ** fa 
         )
         if PORT_CNT == 2:
             fb = self.firstB
             sb = self.secondB
             If(self.select_sig,
-               connect(fb, self.ram0.b), 
-               connect(sb, self.ram1.b)
+               self.ram0.b ** fb,
+               self.ram1.b ** sb,
             ).Else(
-               connect(sb, self.ram0.b),
-               connect(fb, self.ram1.b)
+               self.ram0.b ** sb,
+               self.ram1.b ** fb
             )
           
         

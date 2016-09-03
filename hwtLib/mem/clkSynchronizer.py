@@ -1,8 +1,7 @@
-from hdl_toolkit.intfLvl import connect, Unit
+from hdl_toolkit.intfLvl import Unit
 from hdl_toolkit.hdlObjects.types.defs import BIT
 from hdl_toolkit.interfaces.std import Rst, Signal, Clk
 
-c = connect
 
 class ClkSynchronizer(Unit):
     """
@@ -32,12 +31,11 @@ class ClkSynchronizer(Unit):
         outReg1 = reg("outReg1", self.outClk)
         
         
-        c(self.inData, inReg)
+        inReg ** self.inData
         
-        c(inReg, outReg0)
-        c(outReg0, outReg1)
-        
-        c(outReg1, self.outData)
+        outReg0 ** inReg
+        outReg1 ** outReg0
+        self.outData ** outReg1
         
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl

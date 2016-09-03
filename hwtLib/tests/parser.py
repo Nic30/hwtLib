@@ -172,6 +172,6 @@ class ParserTC(unittest.TestCase):
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     #suite.addTest(ParserTC('testVhdlFnLog2'))
-     suite.addTest(unittest.makeSuite(ParserTC))
+    suite.addTest(unittest.makeSuite(ParserTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

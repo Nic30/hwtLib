@@ -6,7 +6,7 @@ from hdl_toolkit.interfaces.peripheral import Spi
 from hdl_toolkit.interfaces.std import VldSynced, Signal
 from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.interfaces.utils import isPow2
-from hdl_toolkit.synthesizer.codeOps import c, Switch, If, FsmBuilder
+from hdl_toolkit.synthesizer.codeOps import Switch, If, FsmBuilder
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
 
@@ -79,24 +79,24 @@ class SPICntrlW(Unit):
         # shift_register = self._reg
         
         clk_divided = ~delayCntr[delayShiftCntrBits - 1]
-        c(clk_divided, Out.clk)
+        Out.clk ** clk_divided
         
-        c(mosiReg, Out.mosi)
-        c(st._eq(stT.idle) & In.vld, Out.cs)
-        c(st._eq(stT.done), self.dataInDone)
+        Out.mosi ** mosiReg
+        Out.cs ** (st._eq(stT.idle) & In.vld)
+        self.dataInDone ** st._eq(stT.done)
         
         # CLK_DIV
         If(st._eq(stT.send),  # start clock counter when in send state
-           c(delayCntr + 1, delayCntr)
+           delayCntr ** (delayCntr + 1)
         ).Else(# reset clock counter when not in send state
-           c(0, delayCntr)
+           delayCntr ** 0
         )
         
         If(st._eq(stT.send),
             If(clk_divided,
-                c(0, falling)
+                falling ** 0 
             ).Elif(~falling,
-                c(1, falling),  # Indicate that it is passed the falling edge
+                falling ** 1,  # Indicate that it is passed the falling edge
             ).Else(
                 falling._same()
             )
@@ -113,16 +113,16 @@ class SPICntrlW(Unit):
         # sends SPI data formatted SCLK active low with SDO changing on the falling edge
         Switch(st)\
         .Case(stT.idle,
-            c(0, shift_counter),
+            shift_counter ** 0 ,
             # keeps placing SPI_DATA into shift_register so that when state goes 
             # to send it has the latest SPI_DATA
-            c(In.data, shift_register),
-            c(1, mosiReg)
+            shift_register ** In.data ,
+            mosiReg ** 1
         ).Case(stT.send,
             If(~clk_divided & ~falling,  # if on the falling edge of Clk_divided
-                c(shift_register[7], mosiReg),  # send out the MSB
-                c(shift_register[7:0]._concat(hBit(0)), shift_register),
-                c(shift_counter + 1, shift_counter)  
+                mosiReg ** shift_register[7],  # send out the MSB
+                shift_register ** shift_register[7:0]._concat(hBit(0)),
+                shift_counter ** (shift_counter + 1)  
             ).Else(
                 dataShiftNop()
             )

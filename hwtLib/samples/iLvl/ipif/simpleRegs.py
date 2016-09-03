@@ -1,10 +1,10 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import If, c
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hwtLib.ipif.Ipif_conv import IpifConverter
 from hdl_toolkit.interfaces.ipif import IPIF
+from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
+from hdl_toolkit.synthesizer.codeOps import If
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
+from hwtLib.ipif.Ipif_conv import IpifConverter
 
 
 class SimpleIpifRegs(Unit):
@@ -24,7 +24,7 @@ class SimpleIpifRegs(Unit):
         
     def _impl(self):
         propagateClkRstn(self)
-        c(self.ipif, self.conv.bus)
+        self.conv.bus ** self.ipif
         
         reg0 = self._reg("reg0", vecT(32), defVal=0)
         reg1 = self._reg("reg1", vecT(32), defVal=1)
@@ -32,17 +32,17 @@ class SimpleIpifRegs(Unit):
         conv = self.conv
         def connectRegToConveror(convPort, reg):
             If(convPort.dout.vld,
-                c(convPort.dout.data, reg)
+                reg ** convPort.dout.data
             ).Else(
                 reg._same()
             )
-            c(reg, convPort.din)
+            convPort.din ** reg
         
         connectRegToConveror(conv.reg0, reg0)
         connectRegToConveror(conv.reg1, reg1)
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl, synthesizeAndSave
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = SimpleIpifRegs()
     
     

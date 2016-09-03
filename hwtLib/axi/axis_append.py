@@ -2,7 +2,7 @@
 from hdl_toolkit.hdlObjects.specialValues import DIRECTION
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import Switch, If, c
+from hdl_toolkit.synthesizer.codeOps import If, FsmBuilder
 from hdl_toolkit.synthesizer.param import Param, evalParam
 from hwtLib.axi.axis_compBase import AxiSCompBase
 
@@ -29,43 +29,35 @@ class AxiSAppend(AxiSCompBase):
         
     def _impl(self):
         stT = Enum('t_state', ["sendDataIn0", "sendDataIn1"])
-        st = self._reg('st', stT, stT.sendDataIn0)
         In0 = self.dataIn0
         In1 = self.dataIn1
         out = self.dataOut
         vld = self.getVld 
         rd = self.getRd
         
-        Switch(st)\
-        .Case(stT.sendDataIn0,
-            If(vld(In0) & In0.last & rd(out),
-               c(stT.sendDataIn1, st)
-            ).Else(
-               st._same()
-            )
-        ).Case(stT.sendDataIn1,
-            If(vld(In1) & In1.last & rd(out),
-                c(stT.sendDataIn0, st)
-            ).Else(
-                st._same()
-            )
-        )
+        st = FsmBuilder(self, stT)\
+        .Trans(stT.sendDataIn0,
+            (vld(In0) & In0.last & rd(out), stT.sendDataIn1)               
+        ).Trans(stT.sendDataIn1,
+            (vld(In1) & In1.last & rd(out), stT.sendDataIn0)
+        ).stateReg
+
         doJoin = evalParam(self.JOIN).val
         i = lambda intf: intf._interfaces
-        for i0, i1, oi in zip(i(self.dataIn0), 
+        for i0, i1, oi in zip(i(self.dataIn0),
                               i(self.dataIn1),
                               i(self.dataOut)):
             if oi._masterDir == DIRECTION.IN:
                 # swap because direction is oposite
-                c(oi & st._eq(stT.sendDataIn0), i0)
-                c(oi & st._eq(stT.sendDataIn1), i1)
+                i0 ** (oi & st._eq(stT.sendDataIn0))
+                i1 ** (oi & st._eq(stT.sendDataIn1))
             else:
                 if oi._name == "last" and doJoin:
                     i0 = 0
                 If(st._eq(stT.sendDataIn0),
-                    c(i0, oi),
+                    oi ** i0,
                 ).Else(
-                    c(i1, oi)
+                    oi ** i1 
                 )
 
 if __name__ == "__main__":

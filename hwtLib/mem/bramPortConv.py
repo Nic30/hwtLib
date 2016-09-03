@@ -40,7 +40,7 @@ class BramPortConvertor(BusConverter):
                 c(bus.en & _addrVld, bramPort.en) + 
                 c(bus.din, bramPort.din))
         
-        doutMuxTop = c(None, bus.dout)
+        doutMuxTop = bus.dout ** None
 
         # reversed to more pretty code        
         for ai in reversed(self._bramPortMapped):
@@ -56,7 +56,7 @@ class BramPortConvertor(BusConverter):
             
             connectBramPortAlways(ai.port, ai.addr, ai.size, _addrVld)
             doutMuxTop = If(_addrVld,
-                            c(ai.port.dout, bus.dout) 
+                            bus.dout ** ai.port.dout  
                          ).Else(
                             doutMuxTop
                          )
@@ -66,7 +66,7 @@ class BramPortConvertor(BusConverter):
             connectRegIntfAlways(ai.port, ai.addr)
             
             doutMuxTop = If(bus.addr._eq(ai.addr),
-                            c(ai.port.din, bus.dout) 
+                            bus.dout ** ai.port.din 
                          ).Else(
                             doutMuxTop
                          )
@@ -80,6 +80,6 @@ if __name__ == "__main__":
                           (1, "reg1"),
                           (1024, "segment0", 1024),
                           (2 * 1024, "segment1", 1024),
-                          (3 * 1024 +4, "nonAligned0", 1024)
+                          (3 * 1024 + 4, "nonAligned0", 1024)
                           ])
     print(toRtl(u))

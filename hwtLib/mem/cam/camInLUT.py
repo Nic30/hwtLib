@@ -3,10 +3,9 @@ import math
 from hdl_toolkit.hdlObjects.typeShortcuts import hInt, vec
 from hdl_toolkit.interfaces.std import Handshaked, VldSynced
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
-from hdl_toolkit.synthesizer.codeOps import If, c
+from hdl_toolkit.synthesizer.codeOps import If, Concat, power
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
-from hdl_toolkit.synthesizer.shortcuts import synthesizeAndSave
 from hwtLib.mem.cam.camMatch import CamMatch
 from hwtLib.mem.cam.camStorage import CamStorage
 from hwtLib.mem.cam.camWrite import CamWrite
@@ -19,7 +18,7 @@ def extend(sig, targetWidth):
     if tw == aw:
         return sig
     elif aw < tw:
-        return sig._concat(vec(0, tw - aw))
+        return Concat(sig, vec(0, tw - aw))
     else:
         raise NotImplementedError()
     
@@ -57,10 +56,10 @@ class CamInLUT(Unit):
         DATA_WIDTH = self.DATA_WIDTH
         ITEMS = self.ITEMS
 
-        self.CELL_WIDTH = hInt(6) - SEQUENCING_FACTOR;
-        self.CELL_HEIGHT = hInt(2) ** SEQUENCING_FACTOR;
-        self.COLUMNS = div_up(DATA_WIDTH, self.CELL_WIDTH);
-        self.ROWS = div_up(ITEMS, self.CELL_HEIGHT);
+        self.CELL_WIDTH = hInt(6) - SEQUENCING_FACTOR
+        self.CELL_HEIGHT = power(2, SEQUENCING_FACTOR)
+        self.COLUMNS = div_up(DATA_WIDTH, self.CELL_WIDTH)
+        self.ROWS = div_up(ITEMS, self.CELL_HEIGHT)
         
         with self._asExtern():
             addClkRstn(self)
@@ -116,44 +115,43 @@ class CamInLUT(Unit):
             mr = match_ready_base & write_ready_base
             wr = write_ready_base & match_ready_base & ~match.vld
         
-        c(mr, match.rd)
-        c(wr, write.rd)
+        match.rd ** mr 
+        write.rd ** wr 
         
         # match_i
         m = self.camMatch
-        c(mdata_padded, m.din.data)
-        c(match_req, m.din.vld)
-        c(m.din.rd, match_ready_base)
+        m.din.data ** mdata_padded
+        m.din.vld ** match_req
+        match_ready_base ** m.din.rd
         
-        c(m.outMatch.data[self.ITEMS:0], self.out.data)
-        c(m.outMatch.vld, self.out.vld)
+        self.out.data ** m.outMatch.data[self.ITEMS:0] 
+        self.out.vld ** m.outMatch.vld 
         
         storage_me = m.storage.vld
         
         # write_i
         w = self.camWrite
-        c(wdata_padded, w.din.data)
-        c(mask_padded, w.din.mask)
-        c(addr_padded, w.din.addr)
-        c(write_req, w.din.vld)
-        c(w.din.rd, write_ready_base)
+        w.din.data ** wdata_padded 
+        w.din.mask ** mask_padded 
+        w.din.addr ** addr_padded 
+        w.din.vld ** write_req 
+        write_ready_base ** w.din.rd 
         
         # storage_i
         s = self.camStorage
         If(storage_me,
-           c(m.storage.data, s.din.addr)
+           s.din.addr ** m.storage.data 
         ).Else(
-           c(w.dout.data, s.din.addr)
+           s.din.addr ** w.dout.data 
         )
-        c(w.dout.di, s.din.dataIn)
-        c(w.dout.we , s.din.we)
-        c(storage_me, s.match.rd)
-        c(s.match.data, m.storage.match)
+        s.din.dataIn ** w.dout.di 
+        s.din.we ** w.dout.we 
+        s.match.rd ** storage_me 
+        m.storage.match ** s.match.data 
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
-    # with open("/home/nic30/Documents/vivado/scriptTest/scriptTest.srcs/sources_1/new/top.vhd", "w") as f:
+    from hdl_toolkit.synthesizer.shortcuts import toRtl, toRtlAndSave
     u = CamInLUT()
-    # print(toRtl(u))
-    synthesizeAndSave(u, folderName="/home/nic30/Documents/test_ip_repo/cam/")
+    print(toRtl(u))
+    #toRtlAndSave(u, folderName="/home/nic30/Documents/test_ip_repo/cam/")
     # f.write(s)

@@ -1,6 +1,6 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import hInt
 from hdl_toolkit.interfaces.amba import AxiStream
-from hdl_toolkit.intfLvl import connect, Unit, Param
+from hdl_toolkit.intfLvl import Unit, Param
 
 
 class SimpleSubunit(Unit):
@@ -13,9 +13,15 @@ class SimpleSubunit(Unit):
             self.d = AxiStream(isExtern=True)
         
     def _impl(self):
-        connect(self.c, self.d)
+        self.d ** self.c
 
-class InterfaceArraySample(Unit):
+class InterfaceArraySample2(Unit):
+    """
+    Example unit which contains two subuints (u0 and u1) 
+    and two array interfaces (a and b)
+    first items of this interfaces are connected to u0
+    second to u1
+    """
     def _config(self):
         self.DATA_WIDTH = Param(8)
         
@@ -32,16 +38,16 @@ class InterfaceArraySample(Unit):
         
     def _impl(self):
         
-        connect(self.a[0], self.u0.c)
-        connect(self.a[1], self.u1.c)
+        self.u0.c ** self.a[0]
+        self.u1.c ** self.a[1]
         # u2in = connect(a[2], u2.c)
     
-        connect(self.u0.d, self.b[0])
-        connect(self.u1.d, self.b[1])
+        self.b[0] ** self.u0.d 
+        self.b[1] ** self.u1.d
         # u2out = connect(u2.d, b[2])
         
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     print(
-        toRtl(InterfaceArraySample())
+        toRtl(InterfaceArraySample2())
     )

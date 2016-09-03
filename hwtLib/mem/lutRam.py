@@ -22,35 +22,36 @@ def mkLutRamCls(DATA_WIDTH):
 				self.a3 = Signal()
 				self.a4 = Signal()
 				self.a5 = Signal()
-				self.d	 = Signal() # in
+				self.d	 = Signal()  # in
 
 				self.wclk = Clk()
-				self.o = Signal()   # out
+				self.o = Signal()  # out
 				self.we = Signal()
 			
 			
 		def _impl(self):
 			s = self._sig
 			wclk_in = s("wclk_in")
-			mem = self._cntx.sig("mem", vecT(DATA_WIDTH+1), defVal=hBit(None)._concat(self.INIT))
+			mem = self._cntx.sig("mem", vecT(DATA_WIDTH + 1), 
+								    defVal=hBit(None)._concat(self.INIT))
 			a_in = s("a_in", vecT(6))
 			d_in = s("d_in")
 			we_in = s("we_in")
 			
-			c(self.wclk ^ self.IS_WCLK_INVERTED, wclk_in)
-			c(self.we, 	we_in)
-			c(Concat(self.a5, self.a4, self.a3, self.a2, self.a1, self.a0), a_in)
-			c(self.d, d_in) 
+			wclk_in ** (self.wclk ^ self.IS_WCLK_INVERTED)
+			we_in ** self.we
+			a_in ** Concat(self.a5, self.a4, self.a3, self.a2, self.a1, self.a0)
+			self.d ** d_in 
 			
 			# ReadBehavior
-			c(mem[a_in], self.o)
+			self.o ** mem[a_in]
 				
 			# WriteBehavior
 			If(wclk_in._onRisingEdge() & we_in,
-			   c(d_in, mem[a_in])
+			   mem[a_in] ** d_in
 			) 
 
-	RAMnX1S.__name__  = "RAM%dX1S_gen" % DATA_WIDTH
+	RAMnX1S.__name__ = "RAM%dX1S_gen" % DATA_WIDTH
 	return RAMnX1S
 
 RAM64X1S = mkLutRamCls(64)

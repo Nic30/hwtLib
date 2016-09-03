@@ -1,5 +1,5 @@
 from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.intfLvl import connect, Unit
+from hdl_toolkit.intfLvl import Unit
 
 
 class SimpleUnit(Unit):
@@ -22,12 +22,12 @@ class SimpleUnit(Unit):
         _impl() is like body of unit. 
         Logic and connections are specified in this unit.
         """
-        # connect() creates assignment. First parameter is source rest are destinations.
+        # ** operator creates assignment. First parameter is source rest are destinations.
 
-        connect(self.a, self.b) # a drives b
+        self.b ** self.a  # a drives b
         # directions of a and b interfaces are derived automatically, if signal has driver it is output
 
-if __name__ == "__main__": # alias python main function
+if __name__ == "__main__":  # alias python main function
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     print(toRtl(SimpleUnit))

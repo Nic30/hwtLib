@@ -1,7 +1,7 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import connect, If
+from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
 
@@ -20,15 +20,15 @@ class Cntr(Unit):
         reg = self._reg("counter", vecT(self.DATA_WIDTH), 0)
         
         If(self.en,
-           connect(reg + 1, reg)
+           reg ** (reg + 1)
         ).Else(
-           connect(reg, reg)
+           reg ** reg 
         )
         
-        connect(reg, self.val)
+        self.val ** reg
 
 
-if __name__ == "__main__": # alias python main function
+if __name__ == "__main__":  # alias python main function
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     print(toRtl(Cntr))

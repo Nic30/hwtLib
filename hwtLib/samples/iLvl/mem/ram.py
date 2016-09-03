@@ -6,6 +6,9 @@ from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 
 
 class SimpleAsyncRam(Unit):
+    """
+    Note that there is no such a thing in hw yet...
+    """
     def _declr(self):
         with self._asExtern():
             self.addr_in = Signal(dtype=vecT(2))
@@ -29,12 +32,12 @@ class SimpleSyncRam(SimpleAsyncRam):
         self._ram = ram = self._sig("ram_data", Array(vecT(8), 4))
         
         If(self.clk._onRisingEdge(),
-           connect(ram[self.addr_out], self.dout),
-           connect(self.din, ram[self.addr_in])  
+           self.dout ** ram[self.addr_out],
+           ram[self.addr_in] ** self.din  
         )
 
 
-if __name__ == "__main__": # alias python main function
+if __name__ == "__main__":  # alias python main function
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     print(toRtl(SimpleSyncRam))

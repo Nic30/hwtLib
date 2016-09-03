@@ -1,5 +1,5 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Signal
+from hdl_toolkit.interfaces.std import Signal, Clk
 from hdl_toolkit.intfLvl import Param, Unit, c
 from hwtLib.mem.ram import Ram_dp
 
@@ -11,29 +11,32 @@ class GroupOfBlockrams(Unit):
     
     def _declr(self):
         with self._paramsShared():
-            extData = lambda : Signal(dtype=vecT(self.DATA_WIDTH), isExtern=True)
-            self.bramR = Ram_dp()
-            self.bramW = Ram_dp()
+            extData = lambda : Signal(dtype=vecT(self.DATA_WIDTH))
+            with self._asExtern():
+                self.clk = Clk()
+                self.we = Signal()
+                self.addr = Signal(dtype=vecT(self.ADDR_WIDTH))
+                self.in_w_a = extData()
+                self.in_w_b = extData()
+                self.in_r_a = extData()
+                self.in_r_b = extData()
+                
+                self.out_w_a = extData()
+                self.out_w_b = extData()
+                self.out_r_a = extData()
+                self.out_r_b = extData()
+
+            with self._paramsShared():
+                self.bramR = Ram_dp()
+                self.bramW = Ram_dp()
             
-            self.ap_clk = Signal(isExtern=True)
-            self.we = Signal(isExtern=True)
-            self.addr = Signal(dtype=vecT(self.ADDR_WIDTH), isExtern=True)
-            self.in_w_a = extData()
-            self.in_w_b = extData()
-            self.in_r_a = extData()
-            self.in_r_b = extData()
-            
-            self.out_w_a =extData()
-            self.out_w_b =extData()
-            self.out_r_a =extData()
-            self.out_r_b =extData()
     
     def _impl(self):
         s = self
         bramR = s.bramR
         bramW = s.bramW
         
-        c(s.ap_clk,
+        c(s.clk,
             bramR.a.clk, bramR.b.clk,
             bramW.a.clk, bramW.b.clk)
         c(s.we,
@@ -43,14 +46,14 @@ class GroupOfBlockrams(Unit):
             bramR.a.addr, bramR.b.addr,
             bramW.a.addr, bramW.b.addr)
         
-        c(s.in_w_a, bramW.a.din)
-        c(s.in_w_b, bramW.b.din)
-        c(s.in_r_a, bramR.a.din)
-        c(s.in_r_b, bramR.b.din)
-        c(bramW.a.dout, s.out_w_a)
-        c(bramW.b.dout, s.out_w_b)
-        c(bramR.a.dout, s.out_r_a)
-        c(bramR.b.dout, s.out_r_b)
+        bramW.a.din ** s.in_w_a
+        bramW.b.din ** s.in_w_b
+        bramR.a.din ** s.in_r_a
+        bramR.b.din ** s.in_r_b
+        s.out_w_a ** bramW.a.dout
+        s.out_w_b ** bramW.b.dout
+        s.out_r_a ** bramR.a.dout
+        s.out_r_b ** bramR.b.dout
         
 
 if __name__ == "__main__":

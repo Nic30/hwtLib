@@ -1,12 +1,13 @@
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import If, c
+from hdl_toolkit.synthesizer.codeOps import If
 from hwtLib.handshaked.compBase import HandshakedCompBase 
 from hwtLib.handshaked.reg import HandshakedReg
 
-
+# [TODO] there should be class of handshaked reg with 
+#        parametrizable delay and latency
 class HandshakedReg2(HandshakedCompBase):
-    regCls=HandshakedReg
+    regCls = HandshakedReg
     """
     Register for Handshaked interface with latency of 2
     
@@ -38,41 +39,41 @@ class HandshakedReg2(HandshakedCompBase):
         vld = self.getVld
         rd = self.getRd
         out = self.dataOut
-        r0  = self.r0
+        r0 = self.r0
         
         propagateClkRstn(self)
-        c(self.dataIn, r0.dataIn)
+        r0.dataIn ** self.dataIn
         
         wordLoaded = self._reg("wordLoaded", defVal=0)
         If(wordLoaded,
-           c(~rd(out), wordLoaded)
+           wordLoaded ** ~rd(out)
         ).Else(
-           c(vld(r0.dataOut), wordLoaded)
+           wordLoaded ** vld(r0.dataOut)
         )
         
-        #r0rd, r0vld =rd(r0.dataOut), vld(r0.dataOut)
-        #c(r0.dataOut, self.dataOut, exclude=[r0rd, r0vld])
+        # r0rd, r0vld =rd(r0.dataOut), vld(r0.dataOut)
+        # c(r0.dataOut, self.dataOut, exclude=[r0rd, r0vld])
         for iin, iout in zip(self.getData(r0.dataOut), self.getData(self.dataOut)):
             assert(not iin._interfaces)  # has not subintefraces (Not implemented)
             
             r = self._reg('reg_' + iin._name, iin._dtype)
             
             If(~wordLoaded,
-               c(iin, r)
+               r ** iin
             ).Else(
                r._same()
             )
-            c(r, iout)
+            iout ** r
         
         
-        c(~wordLoaded, rd(r0.dataOut))
-        c(wordLoaded, vld(out))
-        #c(~rReady & vld(r0.dataOut), vld(r1.dataIn))
-        #c(rd(r1.dataIn), rReady)
+        rd(r0.dataOut) ** ~wordLoaded
+        vld(out) ** wordLoaded
+        # c(~rReady & vld(r0.dataOut), vld(r1.dataIn))
+        # c(rd(r1.dataIn), rReady)
         
         
         
-        #c(r1.dataOut, self.dataOut)
+        # c(r1.dataOut, self.dataOut)
        
         
         

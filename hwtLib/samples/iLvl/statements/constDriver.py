@@ -1,5 +1,4 @@
 from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.synthesizer.codeOps import connect
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 
 
@@ -10,8 +9,8 @@ class ConstDriverUnit(Unit):
             self.out1 = Signal()
     
     def _impl(self):
-        connect(0, self.out0)
-        connect(1, self.out1)
+        self.out0 ** 0
+        self.out1 ** 1 
 
 
 if __name__ == "__main__":

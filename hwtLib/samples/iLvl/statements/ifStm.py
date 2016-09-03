@@ -1,7 +1,6 @@
 from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.intfLvl import connect, Unit
+from hdl_toolkit.intfLvl import Unit
 from hdl_toolkit.synthesizer.codeOps import If
-
 
 class SimpleIfStatement(Unit):
     def _declr(self):
@@ -13,14 +12,14 @@ class SimpleIfStatement(Unit):
             
     def _impl(self):
         If(self.a,
-           connect(self.b, self.d),
+           self.d ** self.b,
         ).Elif(self.b,
-           connect(self.c, self.d)  
+           self.d ** self.c  
         ).Else(
-           connect(0, self.d) 
+           self.d ** 0 
         )
 
-if __name__ == "__main__": # alias python main function
+if __name__ == "__main__":  # alias python main function
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     print(toRtl(SimpleIfStatement))

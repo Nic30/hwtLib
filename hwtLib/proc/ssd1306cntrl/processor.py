@@ -186,7 +186,7 @@ class SSD1306CntrlProc(Unit, SSD1306CntrlProc_handlers):
         self.irHandler(st, memData, ir)
         self.ipHandler(st, ip)
         
-        c(st._eq(st._dtype.LOAD_EXTERN), self.dataIn.rd)
+        self.dataIn.rd ** st._eq(st._dtype.LOAD_EXTERN) 
         
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl

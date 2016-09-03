@@ -1,7 +1,7 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.array import Array
 from hdl_toolkit.interfaces.std import Signal, Clk
-from hdl_toolkit.synthesizer.codeOps import connect, If
+from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 
 
@@ -13,7 +13,7 @@ class SimpleRom(Unit):
         
     def _impl(self):
         rom = self._sig("rom_data", Array(vecT(8), 4), defVal=[1, 2, 3, 4])
-        connect(rom[self.addr], self.dout)
+        self.dout ** rom[self.addr]
 
 class SimpleSyncRom(SimpleRom):
     def _declr(self):
@@ -25,11 +25,11 @@ class SimpleSyncRom(SimpleRom):
         rom = self._sig("rom_data", Array(vecT(8), 4), defVal=[1, 2, 3, 4])
         
         If(self.clk._onRisingEdge(),
-           connect(rom[self.addr], self.dout)  
+           self.dout ** rom[self.addr]  
         )
 
 
-if __name__ == "__main__": # alias python main function
+if __name__ == "__main__":  # alias python main function
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     print(toRtl(SimpleSyncRom))

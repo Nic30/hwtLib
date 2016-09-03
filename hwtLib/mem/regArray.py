@@ -3,7 +3,7 @@ from hdl_toolkit.synthesizer.param import Param, evalParam
 from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.interfaces.std import RegCntrl
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.synthesizer.codeOps import If, c
+from hdl_toolkit.synthesizer.codeOps import If
 
 
 class RegArray(Unit):
@@ -17,17 +17,17 @@ class RegArray(Unit):
             self.data = RegCntrl(multipliedBy=self.ITEMS)
     
     def _impl(self):
-        regs = self.regs = [self._reg("reg%d" % (i), vecT(self.DATA_WIDTH)  ) 
+        regs = self.regs = [self._reg("reg%d" % (i), vecT(self.DATA_WIDTH)) 
                             for i in range(evalParam(self.ITEMS).val)]
         
         for reg, intf in zip(regs, self.data):
             If(intf.dout.vld,
-                c(intf.dout.data, reg)
+                reg ** intf.dout.data
             ).Else(
                 reg._same()
             )
             
-            c(reg, intf.din)
+            intf.din ** reg 
         
         
 

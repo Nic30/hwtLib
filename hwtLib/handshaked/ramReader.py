@@ -2,12 +2,15 @@ from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.interfaces.std import BramPort_withoutClk, Handshaked, \
     HandshakeSync
 from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import c, Switch, If
+from hdl_toolkit.synthesizer.codeOps import Switch, If, FsmBuilder
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
 
 
-class HsBramPortReader(Unit):
+class HsRamPortReader(Unit):
+    """
+    Read data from BramPort and send them over handsaked interface
+    """
     def _config(self):
         self.ADDR_WIDTH = Param(8)
         self.DATA_WIDTH = Param(32)
@@ -28,112 +31,97 @@ class HsBramPortReader(Unit):
                 self.dataIn = BramPort_withoutClk()
                 self.dataOut = Handshaked() 
     
-    def fsm(self, st, data_flag, data_inReg, addr):
-        st_t = st._dtype
+    def fsm(self, data_flag, data_inReg, addr):
+        st_t = Enum("st_t", ["idle", "sendingData", "inCleaning"])
         Out = self.dataOut
         
-        def onLastGoIdle():
-            ADDR_HIGH = self.ADDR_LOW + self.SIZE - 1
-            lastAddr = addr._eq(ADDR_HIGH)
-            return  If(lastAddr,
-                        c(st_t.idle, st)
-                    ).Else(
-                        st._same()
-                    )
-        
-        Switch(st)\
-        .Case(st_t.idle,
-                If(self.en.vld,
-                    c(st_t.sendingData, st)
-                ).Elif(self.clean.vld,
-                    c(st_t.inCleaning, st)
-                ).Else(
-                    st._same()
-                )
-        ).Case(st_t.sendingData,
-                If(data_inReg | (data_flag & ~Out.rd),
-                    # if some data is loaded and it can not be send out
-                    st._same()
-                ).Else(
-                    # if is possible to send data in this clk
-                    onLastGoIdle()
-                )
-        ).Case(st_t.inCleaning,
-                onLastGoIdle()
-        )
+        ADDR_HIGH = self.ADDR_LOW + self.SIZE - 1
+        lastAddr = addr._eq(ADDR_HIGH)
+
+        return FsmBuilder(self, st_t)\
+        .Trans(st_t.idle,
+            (self.en.vld, st_t.sendingData),
+            (self.clean.vld, st_t.inCleaning)
+        ).Trans(st_t.sendingData,
+            # if some data is loaded and it can not be send out
+            # stage is same
+            # if is possible to send data in this clk
+            (~(data_inReg | (data_flag & ~Out.rd)) & lastAddr, st_t.idle)
+        ).Trans(st_t.inCleaning,
+            (lastAddr, st_t.idle)
+        ).stateReg
                 
     def _impl(self):
         In = self.dataIn
         Out = self.dataOut
-        
-        st_t = Enum("st_t", ["idle", "sendingData", "inCleaning"])
-        self.st = st = self._reg("st_reg", st_t, st_t.idle)
+
         addr = self.addr = self._reg("addr_reg", In.addr._dtype)
         data_reg = self.data_reg = self._reg("data_reg", In.dout._dtype)
         data_flag = self.data_flag = self._reg("data_flag_reg", defVal=0)
         data_inReg = self.data_inReg = self._reg("data_inReg_flag_reg", defVal=0)
         
         
-        self.fsm(st, data_flag, data_inReg, addr)
-
-        c(st._eq(st_t.idle), self.en.rd)
-        c(st._eq(st_t.idle), self.clean.rd)
+        self.st = st = self.fsm(data_flag, data_inReg, addr)
+        st_t = st._dtype
         
-        c(data_inReg | data_flag, Out.vld)
+        self.en.rd ** st._eq(st_t.idle)
+        self.clean.rd ** st._eq(st_t.idle) 
         
-        c(0, In.din)
-        c(1, In.en)
-        c(st._eq(st_t.inCleaning), In.we)
-        c(addr, In.addr)
+        Out.vld ** (data_inReg | data_flag)
+        
+        In.din ** 0
+        In.en ** 1
+        In.we ** st._eq(st_t.inCleaning)
+        In.addr ** addr
 
         
         If(data_flag,
-           c(In.dout, data_reg)
+           data_reg ** In.dout
         ).Else(
            data_reg._same()
         )
         If(data_inReg,
-           c(data_reg, Out.data)
+           Out.data ** data_reg
         ).Else(
-           c(In.dout, Out.data)
+           Out.data ** In.dout
         )
         
         # addr incrementig logic
         Switch(st)\
         .Case(st_t.idle,
-                c(self.ADDR_LOW, addr)
+            addr ** self.ADDR_LOW
         ).Case(st_t.sendingData,
             If(data_inReg | (data_flag & ~Out.rd),
                 # if some data is loaded and it can not be send out
                 addr._same()
             ).Else(
                 # if is possible to send data in this clk
-                c(addr + 1, addr)
+                addr ** (addr + 1)
             )
         ).Case(st_t.inCleaning,
-             c(addr + 1, addr)
+            addr ** (addr + 1)
         )
         
         # dataRegs logic
         If(st._eq(st_t.sendingData),
-            c(1, data_flag),
+            data_flag ** 1,
             If(data_inReg | (data_flag & ~Out.rd),
                 # if some data is loaded and it can not be send out
                 If(data_inReg,
-                   c(~Out.rd, data_inReg)
+                   data_inReg ** ~Out.rd
                 ).Else(
                    data_inReg._same()
                 )
             ).Else(
                 # if is possible to send data in this clk
-                c(~self.dataOut.rd, data_inReg)
+                data_inReg ** ~self.dataOut.rd
             )
         ).Else(
-            c(0, data_flag),
-            c(0, data_inReg) 
+            data_flag ** 0,
+            data_inReg ** 0 
         )
         
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
-    u = HsBramPortReader()
+    u = HsRamPortReader()
     print(toRtl(u))        

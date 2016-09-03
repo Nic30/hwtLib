@@ -18,7 +18,7 @@ class StatementsTC(unittest.TestCase):
             a = RtlSignal("a", BIT)
             b = RtlSignal("b", BIT)
             
-            w = lambda val: res._assignFrom(resT.fromPy(val))
+            w = lambda val: res.__lshift__(resT.fromPy(val))
             a._val = hBit(a_in)
             b._val = hBit(b_in)
             

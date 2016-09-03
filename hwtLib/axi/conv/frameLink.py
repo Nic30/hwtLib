@@ -5,8 +5,8 @@ from hdl_toolkit.interfaces.amba import AxiStream_withUserAndStrb
 from hdl_toolkit.interfaces.frameLink import FrameLink
 from hdl_toolkit.synthesizer.shortcuts import toRtl
 
-from hdl_toolkit.synthesizer.codeOps import c, Concat, Switch, If
-from hdl_toolkit.hdlObjects.typeShortcuts import hBit, vec
+from hdl_toolkit.synthesizer.codeOps import Concat, Switch, If
+from hdl_toolkit.hdlObjects.typeShortcuts import vec
 from hdl_toolkit.bitmask import Bitmask
 
 from hwtLib.axi.axis_sof import AxiSsof 
@@ -42,14 +42,14 @@ class AxiSToFrameLink(Unit):
         propagateClkRstn(self)
         sof = self.sofDetect.sof
         
-        c(In.data, Out.data)
-        c(~In.valid, Out.src_rdy_n)
+        Out.data ** In.data
+        Out.src_rdy_n ** ~In.valid
         
         outRd = ~Out.dst_rdy_n
         self.sofDetect.listenOn(In, outRd)
-        c(outRd, In.ready)
+        In.ready ** outRd
         
-        c(~In.last, Out.eof_n)
+        Out.eof_n ** ~In.last
         
         
         # AXI_USER(0) -> FL_SOP_N
@@ -58,9 +58,9 @@ class AxiSToFrameLink(Unit):
         # protocol would be broken.
         sop = In.user[0]
         If(sof,
-           c(hBit(0), Out.sop_n)
+           Out.sop_n ** 0
         ).Else(
-           c(~sop, Out.sop_n)
+           Out.sop_n ** ~sop
         )
         
         # AXI_USER(1) -> FL_EOP_N
@@ -69,9 +69,9 @@ class AxiSToFrameLink(Unit):
         # protocol would be broken.
         eop = In.user[1]
         If(In.last,
-           c(hBit(0), Out.eop_n)
+           Out.eop_n ** 0
         ).Else(
-           c(~eop, Out.eop_n)
+           Out.eop_n ** ~eop
         )
 
         remMap = []
@@ -79,7 +79,7 @@ class AxiSToFrameLink(Unit):
         strbBits = In.strb._dtype.bit_length()
         
         for strb, rem in strbToRem(strbBits, remBits):
-            remMap.append((strb, c(rem, Out.rem)))
+            remMap.append((strb, Out.rem ** rem))
         
         end_of_part_or_transaction = In.last | eop
         
@@ -88,10 +88,10 @@ class AxiSToFrameLink(Unit):
             Switch(In.strb)\
             .addCases(remMap)
         ).Else(
-            c(vec(-1, remBits), Out.rem)
+            Out.rem ** vec(-1, remBits)
         )
         
-        c(~sof, Out.sof_n)
+        Out.sof_n ** ~sof
         
 
 class FrameLinkToAxiS(Unit):
@@ -115,23 +115,23 @@ class FrameLinkToAxiS(Unit):
         eop = self._sig("eop")
         
         
-        c(In.data, Out.data)
-        c(~In.src_rdy_n, Out.valid)
-        c(~Out.ready, In.dst_rdy_n)
+        Out.data ** In.data 
+        Out.valid ** ~In.src_rdy_n
+        In.dst_rdy_n ** ~Out.ready 
         
-        c(~In.eof_n, Out.last)
-        c(~In.eop_n, eop)
-        c(~In.sop_n, sop)
+        Out.last ** ~In.eof_n
+        eop ** ~In.eop_n 
+        sop ** ~In.sop_n
         
-        c(Concat(eop, sop), Out.user)
+        Out.user ** Concat(eop, sop)
 
         strbMap = []
         remBits = In.rem._dtype.bit_length()
         strbBits = Out.strb._dtype.bit_length()
         for strb, rem in strbToRem(strbBits, remBits):
-            strbMap.append((rem, c(strb, Out.strb)))
+            strbMap.append((rem, Out.strb ** strb))
         Switch(In.rem).addCases(strbMap)
 
 if __name__ == "__main__":
-    u = AxiSToFrameLink()
+    u = FrameLinkToAxiS()
     print(toRtl(u))
