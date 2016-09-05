@@ -1,6 +1,6 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import hInt
-from hdl_toolkit.interfaces.amba import AxiStream
 from hdl_toolkit.intfLvl import Unit, Param
+from hwtLib.interfaces.amba import AxiStream
 
 
 class SimpleSubunit(Unit):

@@ -1,5 +1,5 @@
-from hdl_toolkit.interfaces.amba import AxiStream
 from hdl_toolkit.intfLvl import Param, connect, Unit
+from hwtLib.interfaces.amba import AxiStream
 
 
 class Simple2withNonDirectIntConnection(Unit):

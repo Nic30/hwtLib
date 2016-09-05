@@ -1,5 +1,5 @@
-from hdl_toolkit.interfaces.amba import AxiStream
 from hdl_toolkit.intfLvl import Unit
+from hwtLib.interfaces.amba import AxiStream
 from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream
 
 

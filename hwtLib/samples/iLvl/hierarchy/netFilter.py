@@ -1,6 +1,7 @@
-from hdl_toolkit.intfLvl import Param, connect, Unit, EmptyUnit
-from hdl_toolkit.interfaces.amba import AxiStream, AxiLite
+from hdl_toolkit.intfLvl import Param, Unit, EmptyUnit
 from hdl_toolkit.synthesizer.interfaceLevel.emptyUnit import setOut
+from hwtLib.interfaces.amba import AxiStream, AxiLite
+
 
 class HeadFieldExtractor(EmptyUnit):
     def _declr(self):

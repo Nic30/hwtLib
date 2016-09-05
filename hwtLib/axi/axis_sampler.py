@@ -1,12 +1,12 @@
 from hdl_toolkit.bitmask import Bitmask
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit, vec
 from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.interfaces.amba import AxiStream
 from hdl_toolkit.interfaces.std import Signal, VldSynced
 from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.synthesizer.codeOps import c, If, Switch, FsmBuilder
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwtLib.interfaces.amba import AxiStream
 
 
 class AxiSSampler(Unit):

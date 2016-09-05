@@ -1,7 +1,7 @@
+from hdl_toolkit.hdlObjects.specialValues import DIRECTION
 from hdl_toolkit.synthesizer.interfaceLevel.interface import Interface
 from hdl_toolkit.synthesizer.param import Param
-from hdl_toolkit.interfaces.amba import AxiStream
-from hdl_toolkit.hdlObjects.specialValues import DIRECTION
+from hwtLib.interfaces.amba import AxiStream
 
 
 class FullDuplexAxiStream(Interface):

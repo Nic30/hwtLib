@@ -1,14 +1,14 @@
 import unittest
 
 from hdl_toolkit.hdlObjects.specialValues import DIRECTION, INTF_DIRECTION
-from hdl_toolkit.interfaces.amba import Axi4
-from hdl_toolkit.interfaces.ambaOthers import FullDuplexAxiStream 
 from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.synthesizer.codeOps import connect
 from hdl_toolkit.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hdl_toolkit.synthesizer.interfaceLevel.emptyUnit import setOut
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 from hdl_toolkit.synthesizer.shortcuts import synthesised
+from hwtLib.interfaces.amba import Axi4
+from hwtLib.interfaces.ambaOthers import FullDuplexAxiStream 
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import BaseSynthesizerTC
 from python_toolkit.arrayQuery import where
 

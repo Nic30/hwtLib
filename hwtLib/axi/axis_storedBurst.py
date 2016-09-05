@@ -2,11 +2,11 @@ import math
 
 from hdl_toolkit.bitmask import Bitmask
 from hdl_toolkit.hdlObjects.typeShortcuts import vec, vecT
-from hdl_toolkit.interfaces.amba import AxiStream
 from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.synthesizer.codeOps import c, If, Switch
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwtLib.interfaces.amba import AxiStream
 
 
 class AxiStreamStoredBurst(Unit):

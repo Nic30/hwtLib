@@ -1,10 +1,12 @@
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.interfaces.std import VldSynced, Signal
-from hdl_toolkit.interfaces.amba import AxiStream_withoutSTRB
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.synthesizer.codeOps import If
 import pprint
+
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hdl_toolkit.interfaces.std import VldSynced, Signal
+from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
+from hdl_toolkit.synthesizer.codeOps import If
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hwtLib.interfaces.amba import AxiStream_withoutSTRB
+
 
 def unpackDataPositions(record, wordWidth):
     if len(record) == 4:

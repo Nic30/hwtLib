@@ -1,11 +1,12 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vec
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.hdlObjects.types.typeCast import toHVal
-from hdl_toolkit.interfaces.amba import AxiLite, RESP_OKAY
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
 from hdl_toolkit.synthesizer.codeOps import If, c, FsmBuilder, Or
 from hdl_toolkit.synthesizer.param import evalParam
 from hwtLib.abstract.busConverter import BusConverter
+from hwtLib.interfaces.amba import AxiLite, RESP_OKAY
+
 
 class AxiLiteConverter(BusConverter):
     """

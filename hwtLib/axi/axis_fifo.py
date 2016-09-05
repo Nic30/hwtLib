@@ -9,7 +9,7 @@ class AxiSFifo(AxiSCompBase, HandshakedFifo):
     pass
             
 if __name__ == "__main__":
-    from hdl_toolkit.interfaces.amba import AxiStream_withoutSTRB
+    from hwtLib.interfaces.amba import AxiStream_withoutSTRB
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     
     u = AxiSFifo(AxiStream_withoutSTRB)

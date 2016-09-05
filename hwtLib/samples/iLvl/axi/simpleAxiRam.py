@@ -1,10 +1,10 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.amba import AxiLite
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
 from hdl_toolkit.synthesizer.codeOps import If, c
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
 from hwtLib.axi.axiLite_conv import AxiLiteConverter
+from hwtLib.interfaces.amba import AxiLite
 from hwtLib.mem.ram import RamSingleClock
 
 

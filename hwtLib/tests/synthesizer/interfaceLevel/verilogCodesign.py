@@ -3,6 +3,8 @@ import unittest
 from hdl_toolkit.hdlObjects.typeShortcuts import hInt
 from hdl_toolkit.synthesizer.interfaceLevel.unitFromHdl import UnitFromHdl
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import BaseSynthesizerTC
+from hdl_toolkit.interfaces.all import allInterfaces
+from hwtLib.interfaces.amba import Axi4_xil
 
 
 ILVL_V = '../../../samples/verilogCodesign/verilog/'
@@ -11,7 +13,7 @@ class VerilogCodesignTC(BaseSynthesizerTC):
     def test_TernOpInModul(self):
         class TernOpInModulSample(UnitFromHdl):
             _hdlSources = ILVL_V + "ternOpInModul.v"
-            _debugParser=True
+            _debugParser = True
                     
         u = TernOpInModulSample()
         u._loadDeclarations()
@@ -51,7 +53,8 @@ class VerilogCodesignTC(BaseSynthesizerTC):
     
     def test_InterfaceArray2(self):
         class InterfaceArraySample(UnitFromHdl):
-            _hdlSources = ILVL_V + "interfaceArrayAxi4.v"        
+            _hdlSources = ILVL_V + "interfaceArrayAxi4.v"
+            _intfClasses = [Axi4_xil] + allInterfaces        
         u = InterfaceArraySample()
         u._loadDeclarations()
         
@@ -68,13 +71,14 @@ class VerilogCodesignTC(BaseSynthesizerTC):
         self.assertEqual(u.B.get(), hInt(2))
         
         
-        self.assertEqual(u.aMultBMult64._dtype.bit_length(), 1*2*64)
-        self.assertEqual(u.aMult32._dtype.bit_length(), 1*32)
+        self.assertEqual(u.aMultBMult64._dtype.bit_length(), 1 * 2 * 64)
+        self.assertEqual(u.aMult32._dtype.bit_length(), 1 * 32)
         
     
     def test_axiCrossbar(self):
         class U(UnitFromHdl):
             _hdlSources = ILVL_V + "axiCrossbar.v"
+            _intfClasses = [Axi4_xil] + allInterfaces 
         u = U()
         u._loadDeclarations()
         
@@ -84,7 +88,7 @@ class VerilogCodesignTC(BaseSynthesizerTC):
     
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    #suite.addTest(VerilogCodesignTC('test_InterfaceArray2'))
+    # suite.addTest(VerilogCodesignTC('test_InterfaceArray2'))
     suite.addTest(unittest.makeSuite(VerilogCodesignTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

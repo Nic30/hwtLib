@@ -1,6 +1,6 @@
-from hdl_toolkit.interfaces.amba import AxiStream_withoutSTRB
 from hwtLib.axi.axis_compBase import AxiSCompBase
 from hwtLib.handshaked.reg import HandshakedReg
+from hwtLib.interfaces.amba import AxiStream_withoutSTRB
 
 
 class AxiSReg(AxiSCompBase, HandshakedReg):

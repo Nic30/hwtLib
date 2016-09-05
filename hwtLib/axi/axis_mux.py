@@ -28,7 +28,7 @@ class AxiSMux(AxiSCompBase, HandshakedMux):
 #        c(m.dataOut[2], self.dataOut2)
 #        
 if __name__ == "__main__":
-    from hdl_toolkit.interfaces.amba import AxiStream
+    from hwtLib.interfaces.amba import AxiStream
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = AxiSMux(AxiStream)
     print(toRtl(u))

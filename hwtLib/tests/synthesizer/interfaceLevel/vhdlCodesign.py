@@ -5,12 +5,13 @@ from hdl_toolkit.hdlObjects.operator import Operator
 from hdl_toolkit.hdlObjects.operatorDefs import AllOps
 from hdl_toolkit.hdlObjects.typeShortcuts import hInt
 from hdl_toolkit.hdlObjects.types.defs import INT, UINT, PINT, SLICE
-from hdl_toolkit.interfaces.amba import AxiLite
 from hdl_toolkit.interfaces.std import Clk, \
     Rst_n, BramPort, VldSynced
 from hdl_toolkit.synthesizer.interfaceLevel.unitFromHdl import UnitFromHdl
 from hdl_toolkit.synthesizer.param import Param
 from hdl_toolkit.synthesizer.shortcuts import synthesised
+from hwtLib.interfaces.amba import AxiLite, AxiStream_withUserAndStrb, AxiStream, \
+    AxiStream_withUserAndNoStrb, AxiStream_withoutSTRB
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import BaseSynthesizerTC
 from python_toolkit.arrayQuery import single, NoValueExc
 
@@ -46,8 +47,12 @@ class VhdlCodesignTC(BaseSynthesizerTC):
     def test_axiStreamExtraction(self):
         class AxiStreamSampleEnt(UnitFromHdl):
             _hdlSources = ILVL_VHDL + "axiStreamSampleEnt.vhd"
-        # (intfClasses=[AxiStream_withUserAndStrb, AxiStream, AxiStream_withUserAndNoStrb,
-        #  AxiStream_withoutSTRB])
+            
+            _intfClasses = [AxiStream_withUserAndStrb,
+                          AxiStream,
+                          AxiStream_withUserAndNoStrb,
+                          AxiStream_withoutSTRB]
+            
         u = AxiStreamSampleEnt()
         u._loadDeclarations()
         # [TODO] sometimes resolves as 'RX0_ETH_T' it is not deterministic, need better example
@@ -289,7 +294,7 @@ class VhdlCodesignTC(BaseSynthesizerTC):
     def test_interfaceArrayExtraction(self):
         class InterfaceArraySample(UnitFromHdl):
             _hdlSources = ILVL_VHDL + "interfaceArraySample.vhd"  
-            _intfClasses=[VldSynced]      
+            _intfClasses = [VldSynced]      
         u = InterfaceArraySample()
         u._loadDeclarations()
         

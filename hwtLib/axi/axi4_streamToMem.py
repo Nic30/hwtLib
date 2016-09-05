@@ -2,14 +2,14 @@ from hdl_toolkit.bitmask import Bitmask
 from hdl_toolkit.hdlObjects.typeShortcuts import vec, vecT
 from hdl_toolkit.hdlObjects.types.defs import BIT
 from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.interfaces.amba import AxiLite, Axi4, BURST_INCR, CACHE_DEFAULT, \
-    LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import c, Concat, If, Switch, FsmBuilder
+from hdl_toolkit.synthesizer.codeOps import c, Concat, If, Switch
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
 from hwtLib.axi.axiLite_conv import AxiLiteConverter
+from hwtLib.interfaces.amba import AxiLite, Axi4, BURST_INCR, CACHE_DEFAULT, \
+    LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
 from python_toolkit.arrayQuery import where
 
 
