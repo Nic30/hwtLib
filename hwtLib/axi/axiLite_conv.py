@@ -21,8 +21,8 @@ class AxiLiteConverter(BusConverter):
             with self._paramsShared():
                 self.bus = AxiLite()
             
-            assert self.ADRESS_MAP[-1][0] < (2 ** evalParam(self.ADDR_WIDTH).val)
             self.decorateWithConvertedInterfaces()
+            assert self.getMaxAddr() < (2 ** evalParam(self.ADDR_WIDTH).val)
 
     def readPart(self, awAddr, w_hs):
         DW_B = evalParam(self.DATA_WIDTH).val // 8 

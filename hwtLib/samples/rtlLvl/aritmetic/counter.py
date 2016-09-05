@@ -1,12 +1,8 @@
 
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.serializer.formater import formatVhdl
-from hdl_toolkit.synthesizer.codeOps import connect, If
+from hdl_toolkit.synthesizer.codeOps import  If
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
-
-
-w = connect
-
 
 def Counter():
     t = vecT(8)
@@ -18,13 +14,13 @@ def Counter():
     s_out = n.sig("s_out", t)
     cnt = n.sig("cnt", t, clk=clk, syncRst=rst, defVal=0)
     
-    If(en, 
-       w(cnt+1, cnt)
+    If(en,
+       cnt ** (cnt + 1)
     ).Else(
-       w(cnt, cnt)
+       cnt._same()
     )
     
-    w(cnt, s_out)
+    s_out ** cnt
     
     interf = [rst, clk, s_out, en]
     

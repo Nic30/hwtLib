@@ -1,4 +1,4 @@
-from hdl_toolkit.intfLvl import connect, Unit
+from hdl_toolkit.intfLvl import Unit
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.interfaces.utils import addClkRstn
 
@@ -18,7 +18,7 @@ class HandshakedSimple(Unit):
         b.fifo(16)
         b.reg()
         
-        connect(b.end, self.b) 
+        self.b ** b.end 
         
         
 

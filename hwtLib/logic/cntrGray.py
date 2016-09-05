@@ -1,7 +1,7 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Clk, Rst_n, Signal
-from hdl_toolkit.interfaces.utils import binToGray
-from hdl_toolkit.synthesizer.codeOps import connect, If
+from hdl_toolkit.interfaces.std import Signal
+from hdl_toolkit.interfaces.utils import binToGray, addClkRstn
+from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
 
@@ -12,8 +12,7 @@ class GrayCntr(Unit):
         
     def _declr(self):
         with self._asExtern():
-            self.clk = Clk() 
-            self.rst_n = Rst_n()
+            addClkRstn(self)
             self.en = Signal()
 
             self.dataOut = Signal(dtype=vecT(self.DATA_WIDTH))
@@ -22,13 +21,13 @@ class GrayCntr(Unit):
         binCntr = self._reg("cntr_bin_reg", self.dataOut._dtype, 1) 
         
         If(self.rst_n._isOn(),
-           connect(0, self.dataOut)
+           self.dataOut ** 0
         ).Else(
-           connect(binToGray(binCntr), self.dataOut)
+           self.dataOut ** binToGray(binCntr)
         )
         
-        If(self.en, 
-           connect(binCntr +1, binCntr)
+        If(self.en,
+           binCntr ** (binCntr + 1)
         ).Else(
            binCntr._same()
         )

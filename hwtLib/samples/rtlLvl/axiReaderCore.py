@@ -1,11 +1,7 @@
-
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.serializer.formater import formatVhdl
-from hdl_toolkit.synthesizer.codeOps import connect, If
+from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
-
-
-w = connect
 
 
 def axiReaderCore():
@@ -22,16 +18,16 @@ def axiReaderCore():
     If(arRd,
        # rdIdle
         If(arVld,
-           w(rSt_t.rdData, rSt) 
+           rSt ** rSt_t.rdData 
         ).Else(
-           w(rSt_t.rdIdle, rSt)
+           rSt ** rSt_t.rdIdle
         )
     ).Else(
         # rdData
         If(rRd & rVld,
-           w(rSt_t.rdIdle, rSt)
+           rSt ** rSt_t.rdIdle
         ).Else(
-           w(rSt_t.rdData, rSt) 
+           rSt ** rSt_t.rdData 
         )
     )
     

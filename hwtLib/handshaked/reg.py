@@ -32,21 +32,21 @@ class HandshakedReg(HandshakedCompBase):
             r = self._reg('reg_' + iin._name, iin._dtype)
             
             If(regs_we,
-               c(iin, r)
+                r ** iin
             ).Else(
                r._same()
             )
-            c(r, iout)
+            iout ** r
 
         If(isOccupied,
             If(rd(m) & ~vld(s),
-                c(0, isOccupied)
+                isOccupied ** 0
             ).Else(
                 isOccupied._same()
             )
         ).Else(
             If(vld(s),
-               c(1, isOccupied)
+               isOccupied ** 1
             ).Else(
                isOccupied._same()
             )
@@ -54,12 +54,12 @@ class HandshakedReg(HandshakedCompBase):
         
         If(isOccupied,
            c(rd(m), rd(s)) ,
-           c(1, vld(m)),
-           c(vld(s) & rd(m), regs_we)
+           vld(m) ** 1,
+           regs_we ** (vld(s) & rd(m))
         ).Else(
-           c(1, rd(s)),
-           c(0, vld(m)),
-           c(vld(s), regs_we)
+           rd(s) ** 1,
+           vld(m) ** 0,
+           regs_we ** vld(s)
         )
 
 if __name__ == "__main__":

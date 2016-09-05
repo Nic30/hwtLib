@@ -1,11 +1,8 @@
 
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.serializer.formater import formatVhdl
-from hdl_toolkit.synthesizer.codeOps import connect, If, Switch
+from hdl_toolkit.synthesizer.codeOps import If, Switch
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
-
-
-w = connect
 
 
 def complexConds():
@@ -23,11 +20,11 @@ def complexConds():
 
     def tsWaitLogic(ifNoTsRd):
         return  If(sd0 & sd1,
-                    w(stT.lenExtr, st)
+                    st ** stT.lenExtr
                 ).Elif(sd0,
-                    w(stT.ts1Wait, st)
+                    st ** stT.ts1Wait 
                 ).Elif(sd1,
-                    w(stT.ts0Wait, st)
+                    st ** stT.ts0Wait
                 ).Else(
                     ifNoTsRd
                 )
@@ -35,33 +32,33 @@ def complexConds():
     .Case(stT.idle,
             tsWaitLogic(
                 If(cntrlFifoVld,
-                   w(stT.tsWait, st)
-                   ,
-                   w(st, st)
+                   st ** stT.tsWait 
+                ).Else(
+                   st._same() 
                 )
             )
     ).Case(stT.tsWait,
-            tsWaitLogic(w(st, st))
+            tsWaitLogic(st._same())
     ).Case(stT.ts0Wait,
         If(sd0,
-           w(stT.lenExtr, st)
+           st ** stT.lenExtr
         ).Else(
-           w(st, st)
+           st._same()
         )
     ).Case(stT.ts1Wait,
         If(sd1,
-           w(stT.lenExtr, st)
+           st ** stT.lenExtr
         ).Else(
-           w(st, st)
+           st._same() 
         )
     ).Case(stT.lenExtr,
         If(cntrlFifoVld & cntrlFifoLast,
-           w(stT.idle, st)
+           st ** stT.idle
         ).Else(
-           w(st, st)
+           st._same()
         )
     )
-    w(st._eq(stT.idle), s_idle)
+    s_idle ** st._eq(stT.idle)
     
     return n, [sd0, sd1, cntrlFifoVld, cntrlFifoLast, s_idle]
     

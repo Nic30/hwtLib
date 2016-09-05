@@ -1,11 +1,21 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
 from hdl_toolkit.hdlObjects.types.array import Array
-from hdl_toolkit.interfaces.std import Handshaked, VldSynced
+from hdl_toolkit.interfaces.std import Handshaked, VldSynced, Signal
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.synthesizer.codeOps import If, c
+from hdl_toolkit.synthesizer.codeOps import If, Concat
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
-from hwtLib.mem.cam.interfaces import AddrDataHs
+
+class AddrDataHs(Handshaked):
+    def _config(self):
+        Handshaked._config(self)
+        self.ADDR_WIDTH = Param(4)
+        
+    def _declr(self):
+        Handshaked._declr(self)
+        self.addr = Signal(dtype=vecT(self.ADDR_WIDTH))
+        self.mask = Signal(dtype=vecT(self.DATA_WIDTH))
+
 
 
 class Cam(Unit):
@@ -33,10 +43,10 @@ class Cam(Unit):
     
     def writeHandler(self, mem):
         w = self.write
-        c(1, w.rd)
+        w.rd ** 1
         
         If(self.clk._onRisingEdge() & w.vld,
-           c(w.data._concat(w.mask[0]), mem[w.addr])
+           mem[w.addr] ** Concat(w.data, w.mask[0])
         )
         
     def matchHandler(self, mem):
@@ -46,14 +56,14 @@ class Cam(Unit):
         outNext = out.next
         outVld = self._reg("out_vld_reg", defVal=0)
         
-        c(1, key.rd)
-        c(key.vld, outVld)
+        key.rd ** 1
+        outVld ** key.vld
         
         for i in range(evalParam(self.ITEMS).val):
-            c(mem[i]._eq(key.data._concat(hBit(1))), outNext[i])
+            outNext[i] ** mem[i]._eq(Concat(key.data , hBit(1)))
         
-        c(out, self.out.data)
-        c(outVld, self.out.vld)
+        self.out.data ** out
+        self.out.vld ** outVld 
         
     
     def _impl(self):

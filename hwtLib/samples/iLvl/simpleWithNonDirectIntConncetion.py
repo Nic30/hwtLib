@@ -1,17 +1,23 @@
 from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.intfLvl import connect, Unit
+from hdl_toolkit.intfLvl import Unit
 
 
 class SimpleWithNonDirectIntConncetion(Unit):
+    """
+    Example of fact that interfaces does not have to be only extern
+    the can be used even for connection inside unit
+    """
+    
     def _declr(self):
-        self.a = Signal(isExtern=True)
+        with self._asExtern():
+            self.a = Signal()
+            self.c = Signal()
         self.b = Signal()
-        self.c = Signal(isExtern=True)
         
     def _impl(self):
-        connect(self.a, self.b)
-        connect(self.b, self.c)
+        self.b ** self.a
+        self.c ** self.b
 
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
-    print(toRtl(SimpleWithNonDirectIntConncetion))
+    print(toRtl(SimpleWithNonDirectIntConncetion()))

@@ -4,7 +4,7 @@ from hwtLib.abstract.busConverter import BusConverter
 from hdl_toolkit.hdlObjects.assignment import Assignment
 from hdl_toolkit.hdlObjects.portItem import PortItem
 from hdl_toolkit.hdlObjects.operatorDefs import AllOps
-from copy import deepcopy, copy
+from copy import copy
 from hdl_toolkit.synthesizer.param import evalParam
 
 

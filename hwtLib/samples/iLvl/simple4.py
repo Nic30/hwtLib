@@ -1,6 +1,6 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hInt
 from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.intfLvl import connect, Param, Unit
+from hdl_toolkit.intfLvl import Param, Unit
 
 
 class SimpleUnit4(Unit):
@@ -8,12 +8,19 @@ class SimpleUnit4(Unit):
         self.DATA_WIDTH = Param(16)
         
     def _declr(self):
+        # create vector type of width DATA_WIDTH / 8
+        # by default vector does not have any sign, if it is used in arithmetic
+        # operations it is automaticaly to unsigned 
         dtype = vecT(self.DATA_WIDTH // hInt(8))
-        self.a = Signal(dtype=dtype, isExtern=True)
-        self.b = Signal(dtype=dtype, isExtern=True)
+        with self._asExtern():
+            # create interfaces with datatype 
+            # note that width of type is expression even in hdl
+            # this simplifies orientation in generated code
+            self.a = Signal(dtype=dtype)
+            self.b = Signal(dtype=dtype)
         
     def _impl(self):
-        connect(self.a, self.b)
+        self.a ** self.b
 
 
 if __name__ == "__main__":

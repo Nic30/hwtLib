@@ -1,7 +1,7 @@
 import math
 
 from hdl_toolkit.bitmask import Bitmask
-from hdl_toolkit.hdlObjects.typeShortcuts import vec, hBit, vecT
+from hdl_toolkit.hdlObjects.typeShortcuts import vec, vecT
 from hdl_toolkit.interfaces.amba import AxiStream
 from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.synthesizer.codeOps import c, If, Switch
@@ -19,16 +19,16 @@ class AxiStreamStoredBurst(Unit):
         self.DATA = [ ord(c) for c in "Hello world" ]
         
     def writeData(self, d, vldMask, last):
-        return c(vec(d, self.DATA_WIDTH), self.dataOut.data) + \
-               c(vec(vldMask, self.DATA_WIDTH // 8), self.dataOut.strb) + \
-               c(hBit(last), self.dataOut.last) + \
-               c(hBit(True), self.dataOut.valid)
+        return c(d, self.dataOut.data) + \
+               c(vldMask, self.dataOut.strb) + \
+               c(last, self.dataOut.last) + \
+               c(True, self.dataOut.valid)
     
     def writeStop(self):
-        return c(vec(0, self.DATA_WIDTH), self.dataOut.data) + \
-               c(vec(0, self.DATA_WIDTH // 8), self.dataOut.strb) + \
-               c(hBit(False), self.dataOut.last) + \
-               c(hBit(False), self.dataOut.valid)
+        return c(0, self.dataOut.data) + \
+               c(0, self.dataOut.strb) + \
+               c(False, self.dataOut.last) + \
+               c(False, self.dataOut.valid)
     
     def dataRd(self):
         return self.dataOut.ready
@@ -41,7 +41,7 @@ class AxiStreamStoredBurst(Unit):
     
     def _impl(self):
         self.DATA_WIDTH = evalParam(self.DATA_WIDTH).val
-        vldAll = Bitmask.mask(self.DATA_WIDTH//8)
+        vldAll = Bitmask.mask(self.DATA_WIDTH // 8)
         
         DATA_LEN = len(self.DATA)
         
@@ -50,11 +50,11 @@ class AxiStreamStoredBurst(Unit):
   
         # [TODO] refactor
         Switch(wordIndex)\
-        .addCases([(vec(i, wordIndex_w), self.writeData(d, vldAll, i == DATA_LEN -1)
+        .addCases([(vec(i, wordIndex_w), self.writeData(d, vldAll, i == DATA_LEN - 1)
               ) for i, d in enumerate(self.DATA)])\
         .Default(self.writeStop())
         If(self.dataRd() & (wordIndex < len(self.DATA)),
-            c(wordIndex +1, wordIndex)
+            wordIndex ** (wordIndex + 1)
         ).Else(
             wordIndex._same()
         )

@@ -18,16 +18,16 @@ class StatementsTC(unittest.TestCase):
             a = RtlSignal("a", BIT)
             b = RtlSignal("b", BIT)
             
-            w = lambda val: res._assignFrom(resT.fromPy(val))
+            w = lambda val: res ** val
             a._val = hBit(a_in)
             b._val = hBit(b_in)
             
             
-            stm = IfContainer(set([a & b,]),
-                       ifTrue=[w(0),],
-                       elIfs=[([a,], [w(1),]),
-                              ], 
-                       ifFalse=[w(2),]
+            stm = IfContainer(set([a & b, ]),
+                       ifTrue=w(0),
+                       elIfs=[([a, ], w(1)),
+                              ],
+                       ifFalse=w(2)
                   )
             if a_in and b_in:
                 expected = 0

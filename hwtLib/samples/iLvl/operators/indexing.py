@@ -12,8 +12,8 @@ class SimpleIndexingSplit(Unit):
             self.c = Signal()
         
     def _impl(self):
-        connect(self.a[0], self.b)
-        connect(self.a[1], self.c)
+        self.b ** self.a[0]
+        self.c ** self.a[1]
 
 class SimpleIndexingJoin(Unit):
     def _declr(self):
@@ -23,8 +23,8 @@ class SimpleIndexingJoin(Unit):
             self.c = Signal()
         
     def _impl(self):
-        connect(self.b, self.a[0])
-        connect(self.c, self.a[1])
+        self.a[0] ** self.b
+        self.a[1] ** self.c
 
 class SimpleIndexingRangeJoin(Unit):
     def _declr(self):
@@ -34,8 +34,8 @@ class SimpleIndexingRangeJoin(Unit):
             self.c = Signal(dtype=vecT(2))
         
     def _impl(self):
-        connect(self.b, self.a[2:0])
-        connect(self.c, self.a[4:2])
+        self.a[2:0] ** self.b
+        self.a[4:2] ** self.c 
 
 class IndexingInernRangeSplit(Unit):
     def _declr(self):
@@ -47,12 +47,12 @@ class IndexingInernRangeSplit(Unit):
         internA = self._sig("internA", vecT(2))
         internB = self._sig("internB", vecT(2))
         
-        connect(self.a[2:], internA)
-        connect(self.a[:2], internB)
+        internA ** self.a[2:]
+        internB ** self.a[:2] 
         
         
-        connect(internA, self.b[2:])
-        connect(internB, self.b[:2])
+        self.b[2:] ** internA
+        self.b[:2] ** internB
         
 
 class IndexingInernSplit(Unit):
@@ -65,12 +65,12 @@ class IndexingInernSplit(Unit):
         internA = self._sig("internA")
         internB = self._sig("internB")
         
-        connect(self.a[0], internA)
-        connect(self.a[1], internB)
+        internA ** self.a[0]
+        internB ** self.a[1]
         
         
-        connect(internA, self.b[0])
-        connect(internB, self.b[1])
+        self.b[0] ** internA 
+        self.b[1] ** internB
         
 class IndexingInernJoin(Unit):
     def _declr(self):
@@ -83,8 +83,8 @@ class IndexingInernJoin(Unit):
     def _impl(self):
         intern = self._sig("internSig", vecT(2))
         
-        connect(self.a, intern[0])
-        connect(self.b, intern[1])
+        intern[0] ** self.a 
+        intern[1] ** self.b
         
         
         connect(intern[0], self.c)

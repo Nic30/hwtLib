@@ -1,7 +1,7 @@
 from hdl_toolkit.interfaces.std import Signal, HandshakeSync, \
     RegCntrl
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import If, c
+from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
 from hwtLib.mem.atomic.flipReg import FlipRegister
@@ -27,23 +27,23 @@ class FlipCntr(Unit):
             self.cntr = FlipRegister()
     
     def flipHandler(self):
-        c(1, self.doFlip.rd)
+        self.doFlip.rd ** 1
         
         flipSt = self._reg("flipState", defVal=0)
         If(self.doFlip.vld,
-            c(~flipSt, flipSt)
+            flipSt ** ~flipSt
         ).Else(
             flipSt._same()
         )
-        c(flipSt, self.cntr.select_sig)
+        self.cntr.select_sig ** flipSt
         
     
     def dataHanldler(self):
         cntr = self.cntr
-        c(cntr.first.din + 1 , cntr.first.dout.data)
-        c(self.doIncr, cntr.first.dout.vld)
+        cntr.first.dout.data ** (cntr.first.din + 1)
+        cntr.first.dout.vld ** self.doIncr
         
-        c(self.data, cntr.second)
+        cntr.second ** self.data
         
     
     def _impl(self):

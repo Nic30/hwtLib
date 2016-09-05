@@ -1,6 +1,6 @@
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hInt, vec
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.interfaces.std import Signal, Handshaked
-from hdl_toolkit.synthesizer.codeOps import Switch, c
+from hdl_toolkit.synthesizer.codeOps import Switch
 from hdl_toolkit.synthesizer.param import Param, evalParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
@@ -18,25 +18,23 @@ class HandshakedMux(HandshakedCompBase):
             
             with self._paramsShared():
                 self.dataIn = self.intfCls()
-                self.dataOut = self.intfCls(multipliedBy=hInt(outputs))
+                self.dataOut = self.intfCls(multipliedBy=self.OUTPUTS)
     
     def _impl(self):
-        selBits = self.sel._dtype.bit_length()
         In = self.dataIn
         rd = self.getRd
-        
         
         for index, outIntf in enumerate(self.dataOut):
             for ini, outi in zip(In._interfaces, outIntf._interfaces):
                 if ini == self.getVld(In):
-                    c(ini & self.sel._eq(vec(index, selBits)), outi)
+                    outi ** (ini & self.sel._eq(index)) 
                 elif ini == rd(In):
                     pass
-                    # c(outi, ini)
                 else:  # data
-                    c(ini, outi)
+                    outi ** ini
+                    
         Switch(self.sel).addCases(
-            [(vec(index, selBits), c(rd(out), rd(In)))
+            [(index, rd(In) ** rd(out))
                for index, out in enumerate(self.dataOut) ]
         ) 
         

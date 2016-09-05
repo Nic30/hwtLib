@@ -34,19 +34,19 @@ class FlipRegister(Unit):
     def connectWriteIntf(self, regA, regB):
         return (
             If(self.first.dout.vld,
-                c(self.first.dout.data, regA)
+                regA ** self.first.dout.data
             ).Else(
                 regA._same()
-            )+
+            ) + 
             If(self.second.dout.vld,
-               c(self.second.dout.data, regB)
+               regB ** self.second.dout.data
             ).Else(
                regB._same()
             )
         )
             
     def connectReadIntf(self, regA, regB):
-        return (c(regA, self.first.din) +
+        return (c(regA, self.first.din) + 
                 c(regB, self.second.din)
                )
      
@@ -55,14 +55,14 @@ class FlipRegister(Unit):
         second = self._reg("second_reg", vecT(self.DATA_WIDTH), defVal=self.DEFAULT_VAL)
         
         If(self.select_sig,
-           self.connectWriteIntf(second, first) +
+           self.connectWriteIntf(second, first) + 
            self.connectReadIntf(second, first)
         ).Else(
-           self.connectReadIntf(first, second) +
+           self.connectReadIntf(first, second) + 
            self.connectWriteIntf(first, second)
         )
         
-if __name__ == "__main__": # alias python main function
+if __name__ == "__main__":  # alias python main function
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     print(toRtl(FlipRegister))

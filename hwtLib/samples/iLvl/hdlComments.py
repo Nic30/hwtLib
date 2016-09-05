@@ -11,11 +11,12 @@ class SimpleComentedUnit(Unit):
     """
     
     def _declr(self):
-        self.a = Signal(isExtern=True)
-        self.b = Signal(isExtern=True)
+        with self._asExtern():
+            self.a = Signal()
+            self.b = Signal()
     
     def _impl(self):
-        connect(self.a, self.b)
+        self.b ** self.a
 
 
 class SimpleComentedUnit2(SimpleComentedUnit):

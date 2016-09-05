@@ -1,6 +1,5 @@
 from hdl_toolkit.intfLvl import Param, connect, Unit, EmptyUnit
 from hdl_toolkit.interfaces.amba import AxiStream, AxiLite
-from cli_toolkit.ip_packager.packager import Packager
 from hdl_toolkit.synthesizer.interfaceLevel.emptyUnit import setOut
 
 class HeadFieldExtractor(EmptyUnit):
@@ -68,7 +67,7 @@ class NetFilter(Unit):
             with self._asExtern():
                 self.din = AxiStream()
                 self.export = AxiStream()
-                #self.cfg = AxiLite(isExtern=True)
+                # self.cfg = AxiLite(isExtern=True)
     
             self.hfe = HeadFieldExtractor()
             self.pm = PatternMatch()
@@ -79,18 +78,19 @@ class NetFilter(Unit):
         
     def _impl(self):
         s = self
-        connect(s.din, s.hfe.din)
-        connect(s.hfe.dout, s.forkHfe.din)
-        connect(s.forkHfe.dout0, s.pm.din)
-        connect(s.forkHfe.dout1, s.filter.din)
-        connect(s.hfe.headers, s.filter.headers)
-        connect(s.pm.match, s.filter.match)
-        connect(s.filter.dout, s.exporter.din)
-        connect(s.exporter.dout, s.export)
+        s.hfe.din ** s.din 
+        s.forkHfe.din ** s.hfe.dout
+        s.pm.din ** s.forkHfe.dout0 
+        s.filter.din ** s.forkHfe.dout1
+        s.filter.headers ** s.hfe.headers 
+        s.filter.match ** s.pm.match 
+        s.exporter.din ** s.filter.dout 
+        s.export ** s.exporter.dout 
 
 
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from cli_toolkit.ip_packager.packager import Packager
     print(toRtl(NetFilter))
     
     # s = NetFilter()

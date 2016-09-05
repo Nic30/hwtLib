@@ -13,7 +13,7 @@ class ConstDriverTC(unittest.TestCase):
         synthesised(self.u)
         self.procs = autoAddAgents(self.u)
         
-    def runSim(self, name, time=80 * Time.ns):
+    def runSim(self, name, time=10 * Time.ns):
         simUnitVcd(self.u, self.procs,
                 "tmp/constDriver_%s.vcd" % name,
                 time=time)
@@ -22,8 +22,8 @@ class ConstDriverTC(unittest.TestCase):
         u = self.u
         self.runSim("simple")
         
-        self.assertSequenceEqual([0 for _ in range(8)], agInts(u.out0))
-        self.assertSequenceEqual([1 for _ in range(8)], agInts(u.out1))
+        self.assertSequenceEqual([0], agInts(u.out0))
+        self.assertSequenceEqual([1], agInts(u.out1))
 
         
 if __name__ == "__main__":

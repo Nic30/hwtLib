@@ -1,6 +1,3 @@
-from hdl_toolkit.synthesizer.codeOps import connect
-
-
 class AbstractStreamBuilder():
     """
     @attention: this is just abstract class unit classes has to be specified
@@ -59,9 +56,9 @@ class AbstractStreamBuilder():
         
         self.compId += 1
         
-        connect(self.getClk(), u.clk)
-        connect(self.getRstn(), u.rst_n)
-        connect(self.end, u.dataIn)
+        u.clk ** self.getClk() 
+        u.rst_n ** self.getRstn()
+        u.dataIn ** self.end 
         
         self.lastComp = u
         self.end = u.dataOut  
@@ -78,18 +75,6 @@ class AbstractStreamBuilder():
         
         return self._genericInstance(self.ForkCls, 'fork', setChCnt)
     
-    def forkRegistred(self, noOfOutputs):
-        """
-        creates registered fork - split one interface to many
-        @param noOfOutputs: number of output interfaces of the fork
-        """
-        def setChCnt(u):
-            u.OUTPUTS.set(noOfOutputs)
-        
-        return self._genericInstance(self.ForkRegistredCls, 'forkRegistred', setChCnt)
-        
-        
-    
     def forkTo(self, *outPorts):
         """
         Same like fork, but outputs ports are automaticaly conected 
@@ -99,7 +84,7 @@ class AbstractStreamBuilder():
         s = self.fork(noOfOutputs)
         
         for In, Out in zip(outPorts, self.end):
-            connect(Out, In)
+            Out ** In
             
         self.end = None  # invalidate None because port was fully connected
         return s

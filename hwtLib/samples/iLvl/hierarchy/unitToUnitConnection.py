@@ -1,5 +1,5 @@
 from hdl_toolkit.interfaces.amba import AxiStream
-from hdl_toolkit.intfLvl import connect, Param, Unit
+from hdl_toolkit.intfLvl import Param, Unit
 from hwtLib.samples.iLvl.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnection
 
 
@@ -17,10 +17,10 @@ class UnitToUnitConnection(Unit):
             self.u1 = Simple2withNonDirectIntConnection()
         
     def _impl(self):
-        connect(self.a, self.u0.a)
-        connect(self.u0.c, self.u1.a)
-        connect(self.u1.c, self.b)
+        self.u0.a ** self.a
+        self.u1.a ** self.u0.c
+        self.b ** self.u1.c 
     
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
-    print(toRtl(UnitToUnitConnection) )
+    print(toRtl(UnitToUnitConnection))

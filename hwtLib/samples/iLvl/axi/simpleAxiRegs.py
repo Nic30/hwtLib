@@ -1,25 +1,36 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.interfaces.amba import AxiLite
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import If, c
+from hdl_toolkit.synthesizer.codeOps import If, connect
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.axi.axiLite_conv import AxiLiteConverter
+from hdl_toolkit.synthesizer.param import Param
 
 
 class SimpleAxiRegs(Unit):
+    """
+    Axi litle mapped registers example,
+    0x0 - reg0
+    0x4 - reg1
+    """
+    def _config(self):
+        self.ADDR_WIDTH = Param(8)
+        self.DATA_WIDTH = Param(32)
+        
     def _declr(self):
         with self._asExtern():
             addClkRstn(self)
-            self.axi = AxiLite()
-            self.axi.ADDR_WIDTH.set(8)
-            self.axi.DATA_WIDTH.set(32)
-        self.conv = AxiLiteConverter([(0, "reg0"),
-                                 (4, "reg1")])
+            with self._paramsShared():
+                self.axi = AxiLite()
+        
+        with self._paramsShared():
+            self.conv = AxiLiteConverter([(0, "reg0"),
+                                          (4, "reg1")])
         
         
     def _impl(self):
         propagateClkRstn(self)
-        c(self.axi, self.conv.bus)
+        connect(self.axi, self.conv.bus, fit=True)
         
         reg0 = self._reg("reg0", vecT(32), defVal=0)
         reg1 = self._reg("reg1", vecT(32), defVal=1)
@@ -27,11 +38,11 @@ class SimpleAxiRegs(Unit):
         conv = self.conv
         def connectRegToConveror(convPort, reg):
             If(convPort.dout.vld,
-                c(convPort.dout.data, reg)
+                reg ** convPort.dout.data
             ).Else(
                 reg._same()
             )
-            c(reg, convPort.din)
+            convPort.din ** reg 
         
         connectRegToConveror(conv.reg0, reg0)
         connectRegToConveror(conv.reg1, reg1)

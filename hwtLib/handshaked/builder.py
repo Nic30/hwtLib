@@ -13,6 +13,5 @@ class HsBuilder(AbstractStreamBuilder):
     """
     FifoCls = HandshakedFifo
     ForkCls = HandshakedFork
-    #ForkRegisteredCls = HandshakedRegisteredFork
     RegCls  = HandshakedReg
     MuxCls  = HandshakedMux 

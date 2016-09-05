@@ -23,10 +23,11 @@ class RamTC(unittest.TestCase):
         
         
         simUnitVcd(u, procs,
-                   "tmp/ram_writeAndRead.vcd", time=80 * Time.ns)
-        self.assertSequenceEqual(valuesToInts(u._mem._val.val),
-                                 [5, 7, None, None, None, None, None, None])
-        self.assertSequenceEqual(valuesToInts(u.a._ag.readed), [5, 7, None, None])
+                   "tmp/ram_writeAndRead.vcd", time=110 * Time.ns)
+        self.assertSequenceEqual([5, 7, None, None, None, None, None, None],
+                                  valuesToInts(u._mem._val.val))
+        self.assertSequenceEqual([5, 7, 5, 7, None],
+                                 valuesToInts(u.a._ag.readed))
 
         
 if __name__ == "__main__":

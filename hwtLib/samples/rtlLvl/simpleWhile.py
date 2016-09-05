@@ -1,10 +1,8 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.serializer.formater import formatVhdl
-from hdl_toolkit.synthesizer.codeOps import connect, If
+from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 
-
-w = connect
 
 if __name__ == "__main__":
     t = vecT(8)
@@ -22,13 +20,13 @@ if __name__ == "__main__":
     
     counter = n.sig("counter", t, clk, syncRst, 0)
     If(start,
-        w(boundry, counter)
+        counter ** boundry
     ).Elif(en,
-        w(counter - 1, counter)
+        counter ** (counter - 1)
     ).Else(
-        w(counter, counter)
+        counter._same() 
     )
-    w(counter, s_out)
+    s_out ** counter
     
     interf = [clk, syncRst, start, en, s_out]
     

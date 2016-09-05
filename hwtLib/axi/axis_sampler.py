@@ -4,7 +4,7 @@ from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.interfaces.amba import AxiStream
 from hdl_toolkit.interfaces.std import Signal, VldSynced
 from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import c, If, Switch
+from hdl_toolkit.synthesizer.codeOps import c, If, Switch, FsmBuilder
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
 
@@ -50,7 +50,6 @@ class AxiSSampler(Unit):
         
         stT = Enum("st_t", ["stIdle", "stBusy", "stBusyHold"])
 
-        st = self._reg("st", stT, stT.stIdle)
         sample = self._reg('sample', vecT(self.SAMPLE_WIDTH))
         sample_ce = self._sig("sample_ce")
         
@@ -58,7 +57,7 @@ class AxiSSampler(Unit):
         If(sample_ce,
            c(self.sample.data, sample, fit=True)
         ).Else(
-           c(sample, sample)
+           sample._same()
         )
         
         # shortcuts
@@ -67,48 +66,29 @@ class AxiSSampler(Unit):
         req = self.req
         
         # fsm_next
-        Switch(st)\
-        .Case(stT.stIdle,
-            If(req,
-                If(sampleIn.vld._eq(hBit(0)),
-                    c(stT.stBusy, st)
-                ).Elif(out.ready,
-                    c(stT.stBusyHold, st)
-                ).Else(
-                    c(st, st)
-                )
-            ).Else(
-                c(st, st)
-            )
-        ).Case(stT.stBusy,
-            If(sampleIn.vld,
-                If(out.ready,
-                    c(stT.stIdle)
-                ).Else(
-                    c(stT.stBusyHold)
-                )
-            ).Else(
-               c(st, st)
-            )
-        ).Case(stT.stBusyHold,
-            If(out.ready,
-               c(stT.stIdle, st)
-            ).Else(
-               c(st, st)
-            )
-        )
+        st = FsmBuilder(self, stT)\
+        .Trans(stT.stIdle,
+            (req & ~sampleIn.vld, stT.stBusy), 
+            (req & out.ready, stT.stBusyHold)
+        ).Trans(stT.stBusy,
+            (sampleIn.vld & out.ready, stT.stIdle),
+            (sampleIn.vld, stT.stBusyHold)
+        ).Trans(stT.stBusyHold,
+            (out.ready, stT.stIdle)
+        ).stateReg
         
         
         # fsm_output
-        c((sampleIn.vld & ~out.ready) & ((st._eq(stT.stIdle) & req) | (st._eq(stT.stBusy))),
-            sample_ce)
+        sample_ce ** ((sampleIn.vld & ~out.ready) 
+                       & ((st._eq(stT.stIdle) & req) 
+                            | st._eq(stT.stBusy)))
         
         If(st._eq(stT.stBusyHold),
            c(sample, out.data, fit=True)
         ).Else(
            c(sampleIn.data, out.data, fit=True)
         )
-        c(st != stT.stIdle, self.busy)
+        self.busy ** (st != stT.stIdle)
         
         strbw = out.strb._dtype.bit_length()
         c(vec(Bitmask.mask(strbw), strbw), out.strb)
@@ -116,17 +96,17 @@ class AxiSSampler(Unit):
         Switch(st)\
         .Case(stT.stIdle,
             If(req & sampleIn.vld,
-               c(hBit(1), out.valid)
+               out.valid ** 1
             ).Else(
-               c(hBit(0), out.valid)
+               out.valid ** 0
             ),
-            c(req & sampleIn.vld & out.ready, self.done)
+            self.done ** (req & sampleIn.vld & out.ready)
         ).Case(stT.stBusy,
-            c(sampleIn.vld, out.valid), 
+            out.valid ** sampleIn.vld,
             c(sampleIn.vld & out.ready, self.done)
         ).Case(stT.stBusyHold,
-           c(hBit(1), out.valid), 
-           c(out.ready, self.done) 
+           out.valid ** 1,
+           self.done ** out.ready 
         )
         
 if __name__ == "__main__":

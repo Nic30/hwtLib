@@ -1,18 +1,20 @@
 from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.intfLvl import connect, Unit
+from hdl_toolkit.intfLvl import Unit
 from hwtLib.samples.iLvl.simple import SimpleUnit
 
 
 class SimpleSubunit(Unit):
     def _declr(self):
-        self.subunit0 = SimpleUnit() 
-        self.a = Signal(isExtern=True)
-        self.b = Signal(isExtern=True)
+        with self._asExtern(): 
+            self.a = Signal()
+            self.b = Signal()
         
+        self.subunit0 = SimpleUnit()
+
     def _impl(self):
         u = self.subunit0
-        connect(self.a, u.a)
-        connect(u.b, self.b)
+        u.a ** self.a
+        self.b ** u.b
         
 
 if __name__ == "__main__":

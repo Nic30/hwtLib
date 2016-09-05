@@ -34,7 +34,7 @@ class IpifConverter(BusConverter):
         st_t = Enum('st_t', ['idle', "writeAck", 'readDelay', 'rdData'])
         ipif = self.bus
         addr = ipif.bus2ip_addr
-        c(0, ipif.ip2bus_error)
+        ipif.ip2bus_error ** 0
         addrVld = ipif.bus2ip_cs
         
         isInMyAddrSpace = (addr >= self.getMinAddr()) & (addr <= self.getMaxAddr())
@@ -47,21 +47,21 @@ class IpifConverter(BusConverter):
             st_t.idle    
         ).Trans(st_t.readDelay,
             st_t.rdData
-        ).Default(# Trans(rSt_t.rdData,
+        ).Trans(st_t.rdData,
             st_t.idle
         ).stateReg
         
         wAck = st._eq(st_t.writeAck)
-        c(st._eq(st_t.rdData), ipif.ip2bus_rdack)
-        c(wAck, ipif.ip2bus_wrack)
+        ipif.ip2bus_rdack ** st._eq(st_t.rdData)
+        ipif.ip2bus_wrack ** wAck
         
-        dataToBus = c(None, ipif.ip2bus_data)    
+        dataToBus = ipif.ip2bus_data ** None     
         for ai in reversed(self._bramPortMapped):
             # map addr for bram ports
             _isMyAddr = isMyAddr(addr, ai.addr, ai.size)
             
             a = self._sig("addr_forBram_" + ai.port._name, ipif.bus2ip_addr._dtype)
-            c(addr - ai.addr, a)
+            a ** (addr - ai.addr)
             
             addrHBit = ai.port.addr._dtype.bit_length()
             if ai.alignOffsetBits:
@@ -71,27 +71,27 @@ class IpifConverter(BusConverter):
             else:
                 c(a[addrHBit:], ai.port.addr, fit=True)
                 
-            c(_isMyAddr, ai.port.en)
-            c(_isMyAddr & wAck, ai.port.we)
+            ai.port.en ** _isMyAddr
+            ai.port.we ** (_isMyAddr & wAck)
             
             dataToBus = If(_isMyAddr,
-                c(ai.port.dout, ipif.ip2bus_data)
+                ipif.ip2bus_data ** ai.port.dout
             ).Else(
                 dataToBus
             )
             
-            c(ipif.bus2ip_data, ai.port.din)
+            ai.port.din ** ipif.bus2ip_data
 
 
         
         for ai in   self._directlyMapped:
-            c(addr._eq(ai.addr) & ~ipif.bus2ip_rnw & wAck, ai.port.dout.vld)
-            c(ipif.bus2ip_data, ai.port.dout.data)
+            ai.port.dout.vld ** (addr._eq(ai.addr) & ~ipif.bus2ip_rnw & wAck)
+            ai.port.dout.data ** ipif.bus2ip_data
         
         _isInBramFlags = []
         Switch(ipif.bus2ip_addr)\
         .addCases(
-                [(ai.addr, c(ai.port.din, ipif.ip2bus_data)) 
+                [(ai.addr, ipif.ip2bus_data ** ai.port.din) 
                  for ai in   self._directlyMapped]
         ).Default(
             dataToBus
@@ -100,7 +100,7 @@ class IpifConverter(BusConverter):
 
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
-    #u = IpifConverter([(i * 4 , "data%d" % i) for i in range(2)] + 
+    # u = IpifConverter([(i * 4 , "data%d" % i) for i in range(2)] + 
     #                  [(3 * 4, "bramMapped", 32)])
     #
     u = IpifConverter([(i * 4 , "data%d" % i) for i in range(2)] + 
