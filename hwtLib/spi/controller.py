@@ -2,13 +2,13 @@ from math import log2
 
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
 from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.interfaces.peripheral import Spi
 from hdl_toolkit.interfaces.std import VldSynced, Signal
 from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.interfaces.utils import isPow2
 from hdl_toolkit.synthesizer.codeOps import Switch, If, FsmBuilder
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwtLib.interfaces.peripheral import Spi
 
 
 class SPICntrlW(Unit):

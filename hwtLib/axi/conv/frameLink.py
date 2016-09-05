@@ -1,15 +1,14 @@
+from hdl_toolkit.bitmask import Bitmask
+from hdl_toolkit.hdlObjects.typeShortcuts import vec
+from hdl_toolkit.interfaces.amba import AxiStream_withUserAndStrb
+from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
+from hdl_toolkit.synthesizer.codeOps import Concat, Switch, If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.interfaces.amba import AxiStream_withUserAndStrb
-from hdl_toolkit.interfaces.frameLink import FrameLink
 from hdl_toolkit.synthesizer.shortcuts import toRtl
-
-from hdl_toolkit.synthesizer.codeOps import Concat, Switch, If
-from hdl_toolkit.hdlObjects.typeShortcuts import vec
-from hdl_toolkit.bitmask import Bitmask
-
 from hwtLib.axi.axis_sof import AxiSsof 
+from hwtLib.interfaces.frameLink import FrameLink
+
 
 def strbToRem(strbBits, remBits):
     for i in range(strbBits):

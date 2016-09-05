@@ -1,9 +1,9 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.ipif import IPIF
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
 from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
+from hwtLib.interfaces.ipif import IPIF
 from hwtLib.ipif.Ipif_conv import IpifConverter
 
 

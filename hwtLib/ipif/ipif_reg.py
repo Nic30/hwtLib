@@ -1,8 +1,8 @@
 from hdl_toolkit.hdlObjects.specialValues import DIRECTION
-from hdl_toolkit.interfaces.ipif import IPIF
 from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hwtLib.interfaces.ipif import IPIF
 
 
 class IpifReg(Unit):

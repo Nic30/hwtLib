@@ -1,7 +1,8 @@
-from hdl_toolkit.synthesizer.interfaceLevel.interface import Interface
-from hwtLib.logic.delayMs import DelayMs
-from hdl_toolkit.interfaces.peripheral import Spi
 from hdl_toolkit.interfaces.std import Signal
+from hdl_toolkit.synthesizer.interfaceLevel.interface import Interface
+from hwtLib.interfaces.peripheral import Spi
+from hwtLib.logic.delayMs import DelayMs
+
 
 class Ssd1306Intf(Interface):
     def _config(self):

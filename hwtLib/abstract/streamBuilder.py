@@ -83,8 +83,8 @@ class AbstractStreamBuilder():
         noOfOutputs = len(outPorts) 
         s = self.fork(noOfOutputs)
         
-        for In, Out in zip(outPorts, self.end):
-            Out ** In
+        for toComponent, fromFork in zip(outPorts, self.end):
+            toComponent ** fromFork
             
         self.end = None  # invalidate None because port was fully connected
         return s

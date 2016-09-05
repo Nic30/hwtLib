@@ -1,6 +1,6 @@
-from hdl_toolkit.interfaces.peripheral import Spi
 from hdl_toolkit.intfLvl import EmptyUnit 
 from hdl_toolkit.synthesizer.shortcuts import toRtl
+from hwtLib.interfaces.peripheral import Spi
 
 
 class EmptyUnitWithSpi(EmptyUnit):
