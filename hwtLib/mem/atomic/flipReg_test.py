@@ -23,14 +23,15 @@ class FlipRegTC(unittest.TestCase):
     def test_simpleWriteAndSwitch(self):
         u = self.u
         
+        #u.select_sig._ag.initDelay = 6 * Time.ns
         u.select_sig._ag.data = [0, 0, 0, 0, 1, 0]
-        u.first._ag.dataIn = [1]
-        u.second._ag.dataIn = [2]
+        u.first._ag.tx = [1]
+        u.second._ag.tx = [2]
         
         self.runSim("simpleWriteAndSwitch")
 
-        self.assertSequenceEqual([None, 0, 0, 1, 2, 1, 1, 1, 1], valuesToInts(u.first._ag.dataOut))
-        self.assertSequenceEqual([None, 0, 0, 2, 1, 2, 2, 2, 2], valuesToInts(u.second._ag.dataOut))
+        self.assertSequenceEqual([None, 0, 0, 1, 2, 1, 1, 1, 1], valuesToInts(u.first._ag.rx))
+        self.assertSequenceEqual([None, 0, 0, 2, 1, 2, 2, 2, 2], valuesToInts(u.second._ag.rx))
 
     
     

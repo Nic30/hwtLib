@@ -1,10 +1,10 @@
 import unittest
 
+from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
 from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.samples.iLvl.arithmetic.twoCntrs import TwoCntrs
-from hdl_toolkit.hdlObjects.specialValues import Time
 
 
 nineOnes = [1 for _ in range(9)]
