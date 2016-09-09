@@ -20,10 +20,10 @@ class SwitchStmTC(unittest.TestCase):
             
     def test_allCases(self):
         u = self.u
-        u.sel._ag.data = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0]
-        u.b._ag.data = [0, 1, 0, 0, 0, 0, 0, 0, 1, None] 
-        u.c._ag.data = [0, 0, 0, 1, 0, 0, 0, 0, 1, None]
-        u.d._ag.data = [0, 0, 0, 0, 0, 1, 0, 0, 1, None]
+        u.sel._ag.data = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 1]
+        u.b._ag.data = [0, 1, 0, 0, 0, 0, 0, 0, 1, None, 0] 
+        u.c._ag.data = [0, 0, 0, 1, 0, 0, 0, 0, 1, None, 0]
+        u.d._ag.data = [0, 0, 0, 0, 0, 1, 0, 0, 1, None, 0]
         
         
         self.runSim("allCases")

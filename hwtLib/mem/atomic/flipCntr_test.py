@@ -10,9 +10,7 @@ from hwtLib.mem.atomic.flipCntr import FlipCntr
 class FlipCntrTC(unittest.TestCase):
     def setUp(self):
         self.u = FlipCntr()
-        # print(
         synthesised(self.u)
-        # )
         self.procs = autoAddAgents(self.u)
         
     def runSim(self, name, time=90 * Time.ns):

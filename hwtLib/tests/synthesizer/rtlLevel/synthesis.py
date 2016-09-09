@@ -11,7 +11,7 @@ class TestCaseSynthesis(unittest.TestCase):
 
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.n = RtlNetlist("test")
+        self.n = RtlNetlist()
 
     def testOpRisingEdgeMultipletimesSameObj(self):
         clk = self.n.sig("ap_clk")
@@ -53,7 +53,7 @@ class TestCaseSynthesis(unittest.TestCase):
 
     def test_indexOps(self):
         c, interf = IndexOps()
-        _, _, arch = list(c.synthesize(interf))
+        _, _, arch = list(c.synthesize("indexOps", interf))
 
         s = VhdlSerializer.Architecture(arch, VhdlSerializer.getBaseNameScope())
         

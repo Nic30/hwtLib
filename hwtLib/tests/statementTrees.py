@@ -9,12 +9,12 @@ from hdl_toolkit.synthesizer.assigRenderer import renderIfTree
 from hdl_toolkit.synthesizer.codeOps import c, If, Switch
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 
-rmWhitespaces = re.compile(r'\s+', re.MULTILINE)
+rmWhitespaces = re.compile(r'\s+', re.MULTILINE)    
 
 class StatementTreesTC(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.n = RtlNetlist("test")
+        self.n = RtlNetlist()
     
     def compareStructure(self, template, cont):
         self.assertIsInstance(cont, template.__class__)

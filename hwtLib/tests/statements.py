@@ -4,7 +4,7 @@ from hdl_toolkit.hdlObjects.statements import IfContainer
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
 from hdl_toolkit.hdlObjects.types.defs import BIT
 from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
-from hdl_toolkit.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 
 
 class StatementsTC(unittest.TestCase):
@@ -14,9 +14,11 @@ class StatementsTC(unittest.TestCase):
                            (1, 0),
                            (1, 1)]:
             resT = vecT(2)
-            res = RtlSignal("res", dtype=resT)
-            a = RtlSignal("a", BIT)
-            b = RtlSignal("b", BIT)
+            nl = RtlNetlist()
+            
+            res = nl.sig("res", resT)
+            a = nl.sig("a", BIT)
+            b = nl.sig("b", BIT)
             
             w = lambda val: res ** val
             a._val = hBit(a_in)

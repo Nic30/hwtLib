@@ -9,7 +9,7 @@ from hdl_toolkit.synthesizer.rtlLevel.signalUtils.walkers import walkAllOriginSi
 class OperatorTC(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.n = RtlNetlist("test")
+        self.n = RtlNetlist()
     
     def testNoBool(self):
         for v in [True, False]:
