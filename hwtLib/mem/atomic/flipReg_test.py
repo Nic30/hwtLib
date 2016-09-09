@@ -3,16 +3,14 @@ import unittest
 from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, valuesToInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthesizer.shortcuts import toRtl
+from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.mem.atomic.flipReg import FlipRegister
 
 
 class FlipRegTC(unittest.TestCase):
     def setUp(self):
         self.u = FlipRegister()
-        # print(
-        toRtl(self.u)
-        # )
+        synthesised(self.u)
         self.procs = autoAddAgents(self.u)
         
     def runSim(self, name, time=90 * Time.ns):
@@ -25,13 +23,13 @@ class FlipRegTC(unittest.TestCase):
         
         #u.select_sig._ag.initDelay = 6 * Time.ns
         u.select_sig._ag.data = [0, 0, 0, 0, 1, 0]
-        u.first._ag.tx = [1]
-        u.second._ag.tx = [2]
+        u.first._ag.dout = [1]
+        u.second._ag.dout = [2]
         
         self.runSim("simpleWriteAndSwitch")
 
-        self.assertSequenceEqual([None, 0, 0, 1, 2, 1, 1, 1, 1], valuesToInts(u.first._ag.rx))
-        self.assertSequenceEqual([None, 0, 0, 2, 1, 2, 2, 2, 2], valuesToInts(u.second._ag.rx))
+        self.assertSequenceEqual([None, 0, 1, 1, 2, 1, 1, 1, 1], valuesToInts(u.first._ag.din))
+        self.assertSequenceEqual([None, 0, 2, 2, 1, 2, 2, 2, 2], valuesToInts(u.second._ag.din))
 
     
     

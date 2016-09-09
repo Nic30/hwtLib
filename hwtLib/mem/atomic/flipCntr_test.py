@@ -1,7 +1,7 @@
 import unittest
 
 from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
+from hdl_toolkit.simulator.agentConnector import autoAddAgents, valuesToInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
 from hdl_toolkit.synthesizer.shortcuts import synthesised
 from hwtLib.mem.atomic.flipCntr import FlipCntr
@@ -26,16 +26,17 @@ class FlipCntrTC(unittest.TestCase):
         u.doIncr._ag.data = [0, 0, 0, 0, 0, 0]
         self.runSim("nop")
     
-        self.assertSequenceEqual([None] + [0 for _ in range(8)], agInts(u.dataOut))
+        self.assertSequenceEqual([None] + [0 for _ in range(8)], valuesToInts(u.data._ag.din))
     
     def test_incr(self):
         u = self.u
         
         u.doIncr._ag.data = [0, 0, 1, 0, 0, 0]
+        u.doFlip._ag.data = [0, 0, 0, 1, 0, 0]
         
         self.runSim("incr")
     
-        self.assertSequenceEqual([None, 0, 0] + [1 for _ in range(6)], agInts(u.dataOut))
+        self.assertSequenceEqual([None, 0, 0] + [1 for _ in range(6)], valuesToInts(u.data._ag.din))
     
         
     

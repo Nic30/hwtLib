@@ -27,7 +27,7 @@ class HsRegTC(unittest.TestCase):
         self.doSim("passdata", 120 * Time.ns)
 
         collected = agInts(u.dataOut)
-        self.assertSequenceEqual([ 2, 3, 4, 5, 6], collected) # 1 was in reset
+        self.assertSequenceEqual([1, 2, 3, 4, 5, 6], collected)  # 1 was in reset
         self.assertSequenceEqual([], u.dataIn._ag.data)
 
 
