@@ -2,8 +2,14 @@
 # -*- coding: utf-8 -*-
 from unittest import TestLoader, TextTestRunner, TestSuite
 
+from hwtLib.handshaked.fork_test import ForkTC
+from hwtLib.handshaked.reg2_test import HsReg2TC
+from hwtLib.handshaked.reg_test import HsRegTC
+from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
+from hwtLib.mem.atomic.flipReg_test import FlipRegTC
 from hwtLib.mem.clkSynchronizer_test import ClkSynchronizerTC
 from hwtLib.mem.fifo_test import FifoTC
+from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ram_test import RamTC
 from hwtLib.samples.iLvl.arithmetic.cntr_test import CntrTC
 from hwtLib.samples.iLvl.arithmetic.twoCntrs_test import TwoCntrsTC
@@ -28,8 +34,6 @@ from hwtLib.tests.synthesizer.interfaceLevel.vhdlCodesign import VhdlCodesignTC
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
-from hwtLib.mem.atomic.flipReg_test import FlipRegTC
-from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
 
 
 if __name__ == "__main__":
@@ -58,6 +62,7 @@ if __name__ == "__main__":
         SimpleTC,
         IfStmTC,
         SwitchStmTC,
+        LutRamTC,
         CntrTC,
         TwoCntrsTC,
         SimpleSubunitTC,
@@ -70,6 +75,9 @@ if __name__ == "__main__":
         FifoTC,
         FlipRegTC,
         FlipCntrTC,
+        ForkTC,
+        HsRegTC,
+        HsReg2TC,
     )
     runner = TextTestRunner(verbosity=2)
     runner.run(suite)

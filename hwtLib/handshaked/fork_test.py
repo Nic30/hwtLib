@@ -29,7 +29,7 @@ class ForkTC(unittest.TestCase):
 
         collected = agInts(u.dataOut)
         self.assertSequenceEqual([17, 17, 17, 17, 17, 17, 17, 17, 17, 17], collected)  # 1 was in reset
-        self.assertSequenceEqual([3, 4, 5, 6], u.dataIn._ag.data)
+        self.assertSequenceEqual([2, 3, 4, 5, 6], u.dataIn._ag.data)
 
 
 if __name__ == "__main__":

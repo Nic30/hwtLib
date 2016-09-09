@@ -5,7 +5,7 @@ from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 
 def IndexOps():
     t = vecT(8)
-    n = RtlNetlist("IndexOps")
+    n = RtlNetlist()
     
     s_in = n.sig("s_in", t)
     s_out = n.sig("s_out", t)
@@ -40,7 +40,7 @@ def IndexOps():
 if __name__ == "__main__":
     n, interf = IndexOps()
     
-    for o in n.synthesize(interf):
+    for o in n.synthesize("IndexOps", interf):
             print(formatVhdl(str(o)))
 
     

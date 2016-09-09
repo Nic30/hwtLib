@@ -3,14 +3,16 @@ import unittest
 from hdl_toolkit.hdlObjects.operatorDefs import AllOps
 from hdl_toolkit.hdlObjects.types.defs import BIT, BOOL
 from hdl_toolkit.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 
 
 class Expr2CondTC(unittest.TestCase):    
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.a = RtlSignal("a", BIT)
-        self.b = RtlSignal("b", BIT)
-        self.c = RtlSignal("c", BIT)
+        nl = RtlNetlist()
+        self.a = nl.sig("a")
+        self.b = nl.sig("b")
+        self.c = nl.sig("c")
     
     def testSignalTypes(self):
         self.assertEqual(self.a.defaultVal.vldMask, 0)

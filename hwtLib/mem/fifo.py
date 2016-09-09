@@ -37,9 +37,11 @@ class Fifo(Unit):
         # [TODO] forgot head, tail clock enable 
                 
         rd_en = dout.en & (looped | (head != tail))
-        If(self.clk._onRisingEdge() & rd_en,
-           # Update data output
+        If(rd_en,
+            # Update data output
             dout.data ** mem[tail] 
+        ).Else(
+            dout.data ** None
         ) 
         # Update Tail pointer as needed
         If(rd_en,

@@ -24,7 +24,7 @@ def createTwoAxiDuplexStreams():
         i2._name = 'i2'
         i2._loadDeclarations()
         
-        n = RtlNetlist("test")
+        n = RtlNetlist()
         for _i in [i, i2]:
             _i._signalsForInterface(n)
         return i, i2
@@ -210,7 +210,7 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
         s = lambda i: self.assertEqual(i._direction, INTF_DIRECTION.SLAVE)
         
         i, i2 = createTwoAxiDuplexStreams()
-        n = RtlNetlist("test")
+        n = RtlNetlist()
         
         i._signalsForInterface(n)
         i2._signalsForInterface(n)

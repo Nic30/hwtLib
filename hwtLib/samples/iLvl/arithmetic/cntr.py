@@ -28,7 +28,7 @@ class Cntr(Unit):
         self.val ** reg
 
 
-if __name__ == "__main__":  # alias python main function
+if __name__ == "__main__":  # "python main function"
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
-    print(toRtl(Cntr))
+    print(toRtl(Cntr()))

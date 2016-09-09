@@ -41,7 +41,7 @@ def mkLutRamCls(DATA_WIDTH):
 			wclk_in ** (self.wclk ^ self.IS_WCLK_INVERTED)
 			we_in ** self.we
 			a_in ** Concat(self.a5, self.a4, self.a3, self.a2, self.a1, self.a0)
-			self.d ** d_in 
+			d_in ** self.d   
 			
 			# ReadBehavior
 			self.o ** mem[a_in]
