@@ -37,8 +37,6 @@ class SimpleAxiRam(Unit):
         conv = self.conv
         If(conv.reg0.dout.vld,
             reg0 ** conv.reg0.dout.data
-        ).Else(
-            reg0._same()
         )
         conv.reg0.din ** reg0 
         

@@ -72,8 +72,6 @@ class Alu(Unit):
         P_flag_reg = self._reg("P_flag_reg", defVal=0)
         If(load_acc,
             P_flag_reg ** (parity_2[1] ^ parity_2[0])
-        ).Else(
-            P_flag_reg._same()
         )
         self.p_out ** P_flag_reg
     

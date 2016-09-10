@@ -77,9 +77,8 @@ class HsRamPortReader(Unit):
         
         If(data_flag,
            data_reg ** In.dout
-        ).Else(
-           data_reg._same()
         )
+        
         If(data_inReg,
            Out.data ** data_reg
         ).Else(
@@ -91,10 +90,7 @@ class HsRamPortReader(Unit):
         .Case(st_t.idle,
             addr ** self.ADDR_LOW
         ).Case(st_t.sendingData,
-            If(data_inReg | (data_flag & ~Out.rd),
-                # if some data is loaded and it can not be send out
-                addr._same()
-            ).Else(
+            If(~(data_inReg | (data_flag & ~Out.rd)),
                 # if is possible to send data in this clk
                 addr ** (addr + 1)
             )

@@ -35,13 +35,9 @@ class FlipRegister(Unit):
         return (
             If(self.first.dout.vld,
                 regA ** self.first.dout.data
-            ).Else(
-                regA._same()
             ) + 
             If(self.second.dout.vld,
                regB ** self.second.dout.data
-            ).Else(
-               regB._same()
             )
         )
             

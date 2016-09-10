@@ -98,13 +98,7 @@ class Axi4streamToMem(Unit):
                    actualAddr ** (actualAddr + lenRem),
                    lenRem ** 0
                 )
-            ).Else(
-               actualAddr._same(),
-               lenRem._same()
             )
-        ).Default(
-            actualAddr._same(),
-            lenRem._same()
         )
         
     def connectRegisters(self, st, onoff, baseAddr):
@@ -118,15 +112,11 @@ class Axi4streamToMem(Unit):
         
         If(regs.control.dout.vld,
            onoff ** regs.control.dout.data[0]
-        ).Else(
-           onoff._same()
         )
         
         c(baseAddr, regs.baseAddr.din)
         If(regs.baseAddr.dout.vld,
            baseAddr ** regs.baseAddr.dout.data
-        ).Else(
-           baseAddr._same()
         )  
     
     def mainFsm(self, st, onoff, lenRem, actualLenRem):
@@ -139,8 +129,6 @@ class Axi4streamToMem(Unit):
         .Case(st_t.fullIdle,
             If(onoff,
                 st ** st_t.writeAddr
-            ).Else(
-                st._same()
             )
         ).Case(st_t.writeAddr,
             If(axi.aw.ready,
@@ -149,14 +137,10 @@ class Axi4streamToMem(Unit):
                 ).Else(
                    st ** st_t.writeData
                 )
-            ).Else(
-                st._same()
             )
         ).Case(st_t.writeData,
             If(w_ackAll & (actualLenRem._eq(2)),
                st ** st_t.writeDataLast
-            ).Else(
-               st._same()
             )
         ).Case(st_t.writeDataLast,
             If(w_ackAll,
@@ -165,8 +149,6 @@ class Axi4streamToMem(Unit):
                 ).Else(
                    st ** st_t.fullIdle
                 )
-            ).Else(
-                st._same()
             )
         )
     
@@ -189,7 +171,7 @@ class Axi4streamToMem(Unit):
         last = st._eq(st_t.writeDataLast)
         w_en = st._eq(st_t.writeData) | last
         
-        w.valid ** din.vld & w_en 
+        w.valid ** (din.vld & w_en) 
         w.data ** din.data
         w.id ** 0
         w.strb ** Bitmask.mask(w.strb._dtype.bit_length())
@@ -202,17 +184,13 @@ class Axi4streamToMem(Unit):
         # actualLenRem driver
         Switch(st)\
         .Case(st_t.writeData,
-                If(w_allAck,
-                    actualLenRem ** (actualLenRem - 1)
-                ).Else(
-                    actualLenRem._same()
-                )
+            If(w_allAck,
+                actualLenRem ** (actualLenRem - 1)
+            )
         ).Case(st_t.writeDataLast,
-                If(w_allAck,
-                   actualLenRem ** 0
-                ).Else(
-                   actualLenRem._same()
-                )
+            If(w_allAck,
+               actualLenRem ** 0
+            )
         ).Default(
             If(lenRem > self.MAX_BUTST_LEN,
                actualLenRem ** self.MAX_BUTST_LEN

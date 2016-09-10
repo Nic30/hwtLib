@@ -32,8 +32,6 @@ class FlipCntr(Unit):
         flipSt = self._reg("flipState", defVal=0)
         If(self.doFlip.vld,
             flipSt ** ~flipSt
-        ).Else(
-            flipSt._same()
         )
         self.cntr.select_sig ** flipSt
         

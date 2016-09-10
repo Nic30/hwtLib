@@ -60,9 +60,8 @@ class HandshakedReg2(HandshakedCompBase):
             
             If(~wordLoaded,
                r ** iin
-            ).Else(
-               r._same()
             )
+            
             iout ** r
         
         

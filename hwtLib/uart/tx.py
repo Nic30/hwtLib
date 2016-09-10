@@ -77,8 +77,6 @@ class UartTx(Unit):
             TxD_shift ** self.dataIn.data
         ).Elif(st[3] & tick,
             TxD_shift ** slr(TxD_shift, 1)
-        ).Else(
-            TxD_shift._same()
         )
         
         self.txd ** ((st < 4) | (st[3] & TxD_shift[0]))

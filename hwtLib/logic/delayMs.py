@@ -51,7 +51,6 @@ class DelayMs(Unit):
                 cntrMs ** (cntrMs + 1)
             ).Else(
                 cntrClk ** (cntrClk + 1),
-                cntrMs._same()
             )
         ).Else(
             cntrClk ** 0,

@@ -17,10 +17,7 @@ class SSD1306CntrlProc_handlers():
         for pin, _pinCode in zip(allPins, allPinCodes):
             If(st._eq(st._dtype.PIN_SET) & selPin._eq(_pinCode),
                 pin ** val
-            ).Else(
-                pin._same()
-            )
-        
+            )        
     
         self.oled.vdd ** vdd
         self.oled.vbat ** vbat 
@@ -52,8 +49,6 @@ class SSD1306CntrlProc_handlers():
             )
         ).Case(stT.COLUMN_CLR,
             column ** 0
-        ).Default(
-            column._same()
         )
         
     def rowHandler(self, st, row):
@@ -67,15 +62,11 @@ class SSD1306CntrlProc_handlers():
             )
         ).Case(stT.ROW_CLR,
             row ** 0
-        ).Default(
-            row._same()
         )
         
     def charRegHandler(self, st, acc, charReg):
         If(st._eq(st._dtype.STORE_CHAR),
             charReg ** acc
-        ).Else(
-            charReg._same()
         )
         
     def accHandler(self, st, charBmRow, memData, acc):
@@ -88,23 +79,17 @@ class SSD1306CntrlProc_handlers():
             acc ** charBmRow 
         ).Case(stT.LOAD_EXTERN,
             acc ** self.dataIn.data
-        ).Default(
-            acc._same()
         )
     
     def irHandler(self, st, memData, ir):
         If(st._eq(st._dtype.load),
            ir ** memData
-        ).Else(
-           ir._same()
         )
     
     def ipHandler(self, st, ip):
         stT = st._dtype
         If(In(st, [stT.incr_IP, stT.LOAD_DATA_collectAndIncr]),
            ip ** (ip + 1)
-        ).Else(
-           ip._same()
         )
     
     def memHandler(self, st, ip):
@@ -131,7 +116,6 @@ class SSD1306CntrlProc_handlers():
         )
         If(st._eq(st._dtype.LOAD_BM_ROW_collect),
             charBmRowAddr ** (charBmRowAddr + 1) 
-        ).Else(
-            charBmRowAddr._same()
         )
+        
         return charBmRow

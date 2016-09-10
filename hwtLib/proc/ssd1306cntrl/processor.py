@@ -2,7 +2,7 @@ from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
-from hdl_toolkit.synthesizer.codeOps import c, FsmBuilder
+from hdl_toolkit.synthesizer.codeOps import FsmBuilder
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
 from hwtLib.logic.delayMs import DelayMs

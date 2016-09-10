@@ -23,8 +23,6 @@ class RegArray(Unit):
         for reg, intf in zip(regs, self.data):
             If(intf.dout.vld,
                 reg ** intf.dout.data
-            ).Else(
-                reg._same()
             )
             
             intf.din ** reg 

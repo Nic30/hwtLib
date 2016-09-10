@@ -6,7 +6,7 @@ from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 
 if __name__ == "__main__":
     t = vecT(8)
-    n = RtlNetlist("simpleWhile")
+    n = RtlNetlist()
     
     boundry = n.sig("boundry", t, defVal=8)
     s_out = n.sig("s_out", t)
@@ -23,14 +23,13 @@ if __name__ == "__main__":
         counter ** boundry
     ).Elif(en,
         counter ** (counter - 1)
-    ).Else(
-        counter._same() 
     )
+    
     s_out ** counter
     
     interf = [clk, syncRst, start, en, s_out]
     
-    for o in n.synthesize(interf):
+    for o in n.synthesize("simpleWhile", interf):
         print(formatVhdl(str(o)))
 
     

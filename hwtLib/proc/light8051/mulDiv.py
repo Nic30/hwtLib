@@ -72,8 +72,6 @@ class MulDiv(Unit):
            bit_cntr ** 0 
         ).Elif(bit_cntr != DW,
             bit_cntr ** (bit_cntr + 1)
-        ).Else(
-            bit_cntr._same()
         )
         # denominator shift register
         If(self.start,
@@ -87,16 +85,12 @@ class MulDiv(Unit):
             rem_reg ** self.data_a
         ).Elif((bit_cntr != DW) & sub_num,
             rem_reg ** (rem_reg - denominator)
-        ).Else(
-            rem_reg._same()
         )
         #  quotient register
         If(self.start,
             quot_reg ** 0 
         ).Elif(bit_cntr != DW,
             quot_reg ** quot_reg[DW - 1:]._concat(sub_num) 
-        ).Else(
-            quot_reg._same()
         )
         self.div_ready ** bit_cntr._eq(8)
         self.quot_out ** quot_reg

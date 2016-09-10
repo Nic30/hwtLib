@@ -33,22 +33,17 @@ class HandshakedReg(HandshakedCompBase):
             
             If(regs_we,
                 r ** iin
-            ).Else(
-               r._same()
             )
+            
             iout ** r
 
         If(isOccupied,
             If(rd(m) & ~vld(s),
                 isOccupied ** 0
-            ).Else(
-                isOccupied._same()
             )
         ).Else(
             If(vld(s),
                isOccupied ** 1
-            ).Else(
-               isOccupied._same()
             )
         )
         

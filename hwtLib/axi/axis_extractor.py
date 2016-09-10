@@ -69,15 +69,9 @@ class AxiSExtractor(Unit):
         If(In.valid & self.dataOutRd,
             If(In.last,
                cntr ** 0
-            ).Else(
-                If(allExtracted,
-                   cntr._same()
-                ).Else(
-                   cntr ** (cntr + 1)
-                )
+            ).Elif(~allExtracted,
+                cntr ** (cntr + 1)
             )
-        ).Else(
-            cntr._same()
         )
         In.ready ** self.dataOutRd 
         

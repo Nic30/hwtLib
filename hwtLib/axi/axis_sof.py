@@ -31,17 +31,13 @@ class AxiSsof(Unit):
         # next state logic
         Switch(st)\
         .Case(stT.stSof,
-                If(self.valid & self.ready & ~self.last,
-                   st ** stT.stIdle
-                ).Else(
-                   st._same()
-                )
+            If(self.valid & self.ready & ~self.last,
+               st ** stT.stIdle
+            )
         ).Case(stT.stIdle,
-                If(self.valid & self.ready & self.last,
-                   st ** stT.stSof
-                ).Else(
-                   st._same()
-                )
+            If(self.valid & self.ready & self.last,
+               st ** stT.stSof
+            )
         )
                 
         self.sof ** st._eq(stT.stSof)

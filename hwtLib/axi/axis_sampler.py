@@ -56,8 +56,6 @@ class AxiSSampler(Unit):
         # reg_samplep
         If(sample_ce,
            c(self.sample.data, sample, fit=True)
-        ).Else(
-           sample._same()
         )
         
         # shortcuts
@@ -68,7 +66,7 @@ class AxiSSampler(Unit):
         # fsm_next
         st = FsmBuilder(self, stT)\
         .Trans(stT.stIdle,
-            (req & ~sampleIn.vld, stT.stBusy), 
+            (req & ~sampleIn.vld, stT.stBusy),
             (req & out.ready, stT.stBusyHold)
         ).Trans(stT.stBusy,
             (sampleIn.vld & out.ready, stT.stIdle),

@@ -8,7 +8,7 @@ from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 
 
 
-IDLE = 0
+IDLE = 0b0000
 SYNC = 0b0001
 BIT0 = 0b1000 
 BIT1 = 0b1001 
@@ -60,8 +60,6 @@ class UartRx(Unit):
         RxD_sync = self._reg("RxD_sync", vecT(2), 0b11)
         If(osTick,
           RxD_sync ** Concat(RxD_sync[0], self.rxd)
-        ).Else(
-          RxD_sync._same()
         )
         
         # and filter it
@@ -73,19 +71,12 @@ class UartRx(Unit):
               Filter_cnt ** (Filter_cnt + 1)
             ).Elif(~RxD_sync[1] & (Filter_cnt != 0),
               Filter_cnt ** (Filter_cnt - 1)
-            ).Else(
-              Filter_cnt._same()
             ),
             If(Filter_cnt._eq(0b11),
               RxD_bit ** 1
             ).Elif(Filter_cnt._eq(0),
               RxD_bit ** 0
-            ).Else(
-              RxD_bit._same()
             )
-        ).Else(
-            Filter_cnt._same(),
-            RxD_bit._same() 
         )
         
         RxD_state = FsmBuilder(self, vecT(4))\
@@ -111,7 +102,9 @@ class UartRx(Unit):
             (sampleNow, STOP)
         ).Trans(STOP,
             (sampleNow, IDLE)
-        ).Default(IDLE).stateReg
+        ).Default(
+            IDLE
+        ).stateReg
 
         
         # and decide when is the good time to sample the RxD line
@@ -123,8 +116,6 @@ class UartRx(Unit):
             ).Else(
               OversamplingCnt ** (OversamplingCnt + 1)    
             )
-        ).Else(
-            OversamplingCnt._same()
         )
         sampleNow ** (osTick & OversamplingCnt._eq(self.OVERSAMPLING // 2 - 1))
         
@@ -132,8 +123,6 @@ class UartRx(Unit):
         RxD_data = self._reg("RxD_data", vecT(8), 0)
         If(sampleNow & RxD_state[3],
            RxD_data ** Concat(RxD_bit, RxD_data[:1]) 
-        ).Else(
-           RxD_data._same()
         )
         self.dataOut.data ** RxD_data
         
