@@ -28,8 +28,6 @@ class GrayCntr(Unit):
         
         If(self.en,
            binCntr ** (binCntr + 1)
-        ).Else(
-           binCntr._same()
         )
 
 if __name__ == "__main__":

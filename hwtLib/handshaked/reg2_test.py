@@ -70,7 +70,6 @@ class HsReg2TC(unittest.TestCase):
 #        
 #    e, a = makeTestbenchTemplate(u, procGen=procGen)
 #    with open(repo + "/hsreg2_tb.vhd", "w") as f:
-#        f.write(str(VHDLTemplates.basic_include))
 #        f.write(str(e))
 #        f.write(str(a))
 #

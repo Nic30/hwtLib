@@ -57,6 +57,7 @@ if __name__ == "__main__":
         StatementTreesTC,
         StatementsTC,
         
+        # component verifications
         ConstDriverTC,
         SimpleTC,
         IfStmTC,

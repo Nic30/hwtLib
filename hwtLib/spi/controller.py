@@ -97,17 +97,8 @@ class SPICntrlW(Unit):
                 falling ** 0 
             ).Elif(~falling,
                 falling ** 1,  # Indicate that it is passed the falling edge
-            ).Else(
-                falling._same()
             )
-        ).Else(
-            falling._same()
         )
-        def dataShiftNop():
-            return (shift_register._same() + 
-                    shift_counter._same() + 
-                    mosiReg._same()
-                   )
 
         # SPI_SEND_BYTE
         # sends SPI data formatted SCLK active low with SDO changing on the falling edge
@@ -123,11 +114,7 @@ class SPICntrlW(Unit):
                 mosiReg ** shift_register[7],  # send out the MSB
                 shift_register ** shift_register[7:0]._concat(hBit(0)),
                 shift_counter ** (shift_counter + 1)  
-            ).Else(
-                dataShiftNop()
             )
-        ).Default(
-            dataShiftNop()
         )
         
 if __name__ == "__main__":

@@ -33,8 +33,6 @@ class SimpleIpifRegs(Unit):
         def connectRegToConveror(convPort, reg):
             If(convPort.dout.vld,
                 reg ** convPort.dout.data
-            ).Else(
-                reg._same()
             )
             convPort.din ** reg
         

@@ -27,14 +27,10 @@ class TwoCntrs(Unit):
         
         If(self.a_en,
            a ** (a + 1)
-        ).Else(
-           a._same()
         )
         
         If(self.b_en,
            b ** (b + 1)
-        ).Else(
-           b._same()
         )
         
         self.eq ** a._eq(b)

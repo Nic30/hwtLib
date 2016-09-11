@@ -16,8 +16,6 @@ def Counter():
     
     If(en,
        cnt ** (cnt + 1)
-    ).Else(
-       cnt._same()
     )
     
     s_out ** cnt

@@ -57,8 +57,6 @@ class AxiLiteConverter(BusConverter):
         arAddr = self._reg('arAddr', ar.addr._dtype) 
         If(ar.valid & arRd,
             c(ar.addr, arAddr)
-        ).Else(
-            arAddr._same()
         )
        
         

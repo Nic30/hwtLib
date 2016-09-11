@@ -55,8 +55,6 @@ class AxiStreamStoredBurst(Unit):
         .Default(self.writeStop())
         If(self.dataRd() & (wordIndex < len(self.DATA)),
             wordIndex ** (wordIndex + 1)
-        ).Else(
-            wordIndex._same()
         )
         
         

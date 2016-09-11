@@ -50,8 +50,6 @@ class Fifo(Unit):
             ).Else(
                tail ** (tail + 1)
             )
-        ).Else(
-            tail._same()
         )
         
         wr_en = din.en & (~looped | (head != tail))
@@ -66,16 +64,12 @@ class Fifo(Unit):
             ).Else(
                 head ** (head + 1) 
             )
-        ).Else(
-           head._same()
         )
         # looped logic
         If(din.en & head._eq(MAX_DEPTH),
             looped ** True
         ).Elif(dout.en & tail._eq(MAX_DEPTH),
             looped ** False
-        ).Else(
-            looped._same()
         )
                 
         # Update Empty and Full flags
