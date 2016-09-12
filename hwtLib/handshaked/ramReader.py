@@ -105,8 +105,6 @@ class HsRamPortReader(Unit):
                 # if some data is loaded and it can not be send out
                 If(data_inReg,
                    data_inReg ** ~Out.rd
-                ).Else(
-                   data_inReg._same()
                 )
             ).Else(
                 # if is possible to send data in this clk

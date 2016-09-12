@@ -62,7 +62,7 @@ class AxiLiteConverter(BusConverter):
         
         _isInBramFlags = []
         rAssigTop = c(rdataReg, r.data)
-        rregAssigTop = rdataReg._same()
+        rregAssigTop = rdataReg ** rdataReg
         # rAssigTopCases =[]
         for ai in reversed(self._directlyMapped):
             # we are directly sending data from register

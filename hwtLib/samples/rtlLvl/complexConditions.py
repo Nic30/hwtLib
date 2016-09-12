@@ -36,7 +36,7 @@ def complexConds():
             )
         )
     ).Case(stT.tsWait,
-        tsWaitLogic(st._same())
+        tsWaitLogic(st ** st)
     ).Case(stT.ts0Wait,
         If(sd0,
            st ** stT.lenExtr
