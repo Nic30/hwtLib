@@ -2,9 +2,8 @@ import unittest
 
 from hdl_toolkit.bitmask import Bitmask
 from hdl_toolkit.hdlObjects.specialValues import WRITE, READ, Time
-from hdl_toolkit.simulator.agentConnector import autoAddAgents, valuesToInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthesizer.shortcuts import synthesised
+from hdl_toolkit.simulator.agentConnector import valuesToInts
+from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.mem.lutRam import RAM64X1S
 
 
@@ -39,8 +38,7 @@ class LutRamTC(unittest.TestCase):
     def test_writeAndRead(self):
         u = RAM64X1S()
 
-        synthesised(u)
-        procs = autoAddAgents(u)
+        u, model, procs = simPrepare(u)
 
         requests = [(WRITE, 0, 0), (WRITE, 1, 1),
                     (READ, 0), (READ, 1),
@@ -48,7 +46,7 @@ class LutRamTC(unittest.TestCase):
         applyRequests(u, requests)
         
         
-        simUnitVcd(u, procs,
+        simUnitVcd(model, procs,
                    "tmp/lutRam_writeAndRead.vcd", time=80 * Time.ns)
         self.assertSequenceEqual(valuesToInts(u.o._ag.data), [0, 0, 0, 1, 0, 0, 0, 0])
 

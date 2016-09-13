@@ -2,7 +2,7 @@ from copy import copy
 import unittest
 
 from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
+from hdl_toolkit.simulator.agentConnector import agInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.samples.iLvl.hierarchy.simpleSubunit import SimpleSubunit
 
@@ -14,14 +14,14 @@ class SimpleSubunitTC(unittest.TestCase):
     def testSimple(self):
         # create a unit instance
         u = SimpleSubunit()
-        # convert it to rtl level
-        u, model = simPrepare(u)
         
+        # convert it to rtl level
         # decorate interface with agents (._ag property) which will drive or monitor values on the interface
         # there drivers and monitors are returned and stored in procs, we will need them for simulation
-        procs = autoAddAgents(u)
+        u, model, procs = simPrepare(u)
         
-        # there we have our test data, because SimpleSubunit has only connection inside 
+        
+        # there we have our test data, because SimpleUnit has only connection inside 
         # None represents invalid value (like universal "x" in vhdl)
         inputData = [0, 1, 0, 1, None, 0, None, 1, None, 0]
         
@@ -39,6 +39,7 @@ class SimpleSubunitTC(unittest.TestCase):
         simUnitVcd(model, procs, "tmp/simple.vcd", time=100 * Time.ns)
         
         # now we use part of unittest framework to check results
+        # we use agInts to convert value objects to integer representation
         self.assertSequenceEqual(expected, agInts(u.b))
     
 if __name__ == "__main__":

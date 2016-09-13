@@ -1,23 +1,19 @@
 import unittest
 
 from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthesizer.shortcuts import synthesised
+from hdl_toolkit.simulator.agentConnector import agInts
+from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.samples.iLvl.arithmetic.twoCntrs import TwoCntrs
-
 
 nineOnes = [1 for _ in range(9)]
 nineZeros = [0 for _ in range(9)]
   
 class TwoCntrsTC(unittest.TestCase):
     def setUp(self):
-        self.u = TwoCntrs()
-        synthesised(self.u)
-        self.procs = autoAddAgents(self.u)
+        self.u, self.model, self.procs = simPrepare(TwoCntrs())
         
     def runSim(self, name, time=90 * Time.ns):
-        simUnitVcd(self.u, self.procs,
+        simUnitVcd(self.model, self.procs,
                 "tmp/twoCntrs_%s.vcd" % name,
                 time=90 * Time.ns)
             

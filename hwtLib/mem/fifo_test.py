@@ -2,24 +2,21 @@ from copy import copy
 import unittest
 
 from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
+from hdl_toolkit.simulator.agentConnector import agInts
 from hdl_toolkit.simulator.agentConnector import valuesToInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthesizer.shortcuts import synthesised
+from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.mem.fifo import Fifo
 
 
 class FifoTC(unittest.TestCase):
     def setUp(self):
-        self.u = u = Fifo()
+        u = Fifo()
         u.DATA_WIDTH.set(8)
         u.DEPTH.set(4)
-        synthesised(u)
-        self.procs = autoAddAgents(u)
-
+        self.u, self.model, self.procs = simPrepare(u)
     
     def doSim(self, name, time=80 * Time.ns):
-        simUnitVcd(self.u, self.procs,
+        simUnitVcd(self.model, self.procs,
                     "tmp/fifo_" + name + ".vcd",
                     time=time)
     
@@ -60,7 +57,7 @@ class FifoTC(unittest.TestCase):
         self.doSim("tryMore", 120 * Time.ns)
 
         collected = agInts(u.dataOut)
-        self.assertSequenceEqual([1, 2, 3, 4], valuesToInts(u.mem._val))
+        self.assertSequenceEqual([1, 2, 3, 4], valuesToInts(self.model.memory._val))
         self.assertSequenceEqual(collected, [])
         self.assertSequenceEqual(u.dataIn._ag.data, [5, 6])
 

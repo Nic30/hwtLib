@@ -1,20 +1,18 @@
 import unittest
 
-from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthesizer.shortcuts import synthesised
+from hdl_toolkit.simulator.agentConnector import agInts
+from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.samples.iLvl.statements.switchStm import SwitchStmUnit
 from hdl_toolkit.hdlObjects.specialValues import Time
 
 
 class SwitchStmTC(unittest.TestCase):
     def setUp(self):
-        self.u = SwitchStmUnit()
-        synthesised(self.u)
-        self.procs = autoAddAgents(self.u)
-        
+        u = SwitchStmUnit()
+        self.u, self.model, self.procs = simPrepare(u)
+
     def runSim(self, name, time=200 * Time.ns):
-        simUnitVcd(self.u, self.procs,
+        simUnitVcd(self.model, self.procs,
                 "tmp/switchStm_%s.vcd" % name,
                 time=time)
             
@@ -25,10 +23,9 @@ class SwitchStmTC(unittest.TestCase):
         u.c._ag.data = [0, 0, 0, 1, 0, 0, 0, 0, 1, None, 0]
         u.d._ag.data = [0, 0, 0, 0, 0, 1, 0, 0, 1, None, 0]
         
-        
         self.runSim("allCases")
         
-        self.assertSequenceEqual([0, 1, 0, 1, 0, 1, 0, 0, 0, 0, None], agInts(u.a))
+        self.assertSequenceEqual([0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0], agInts(u.a))
 
         
 if __name__ == "__main__":

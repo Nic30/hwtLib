@@ -1,27 +1,24 @@
 import unittest
 
 from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.agentConnector import autoAddAgents, valuesToInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthesizer.shortcuts import synthesised
+from hdl_toolkit.simulator.agentConnector import valuesToInts
+from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.mem.atomic.flipReg import FlipRegister
 
 
 class FlipRegTC(unittest.TestCase):
     def setUp(self):
-        self.u = FlipRegister()
-        synthesised(self.u)
-        self.procs = autoAddAgents(self.u)
+        self.u, self.model, self.procs = simPrepare(FlipRegister())
         
     def runSim(self, name, time=90 * Time.ns):
-        simUnitVcd(self.u, self.procs,
+        simUnitVcd(self.model, self.procs,
                 "tmp/flipReg_%s.vcd" % name,
                 time=90 * Time.ns)
     
     def test_simpleWriteAndSwitch(self):
         u = self.u
         
-        #u.select_sig._ag.initDelay = 6 * Time.ns
+        # u.select_sig._ag.initDelay = 6 * Time.ns
         u.select_sig._ag.data = [0, 0, 0, 0, 1, 0]
         u.first._ag.dout = [1]
         u.second._ag.dout = [2]

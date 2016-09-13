@@ -2,21 +2,19 @@ import unittest
 
 from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthesizer.shortcuts import synthesised
+from hdl_toolkit.simulator.agentConnector import agInts
+from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.handshaked.reg2 import HandshakedReg2
 
 
 class HsReg2TC(unittest.TestCase):
     def setUp(self):
-        self.u = u = HandshakedReg2(Handshaked)
-        synthesised(u)
-        self.procs = autoAddAgents(u)
+        u = HandshakedReg2(Handshaked)
+        self.u, self.model, self.procs = simPrepare(u)
 
     
-    def doSim(self, name, time=130 * Time.ns):
-        simUnitVcd(self.u, self.procs,
+    def doSim(self, name, time=140 * Time.ns):
+        simUnitVcd(self.model, self.procs,
                     "tmp/hsReg2_" + name + ".vcd",
                     time=time)
     

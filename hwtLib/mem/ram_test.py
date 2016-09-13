@@ -1,9 +1,8 @@
 import unittest
 
 from hdl_toolkit.hdlObjects.specialValues import WRITE, READ, Time
-from hdl_toolkit.simulator.agentConnector import autoAddAgents, valuesToInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthesizer.shortcuts import synthesised
+from hdl_toolkit.simulator.agentConnector import valuesToInts
+from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.mem.ram import Ram_sp
 
 
@@ -13,19 +12,17 @@ class RamTC(unittest.TestCase):
         u = Ram_sp()
         u.DATA_WIDTH.set(8)
         u.ADDR_WIDTH.set(3)
-        
-        synthesised(u)
-        procs = autoAddAgents(u)
+        u, model, procs = simPrepare(u)
 
         u.a._ag.requests = [(WRITE, 0, 5), (WRITE, 1, 7),
                             (READ, 0), (READ, 1),
                             (READ, 0), (READ, 1), (READ, 2)] 
         
         
-        simUnitVcd(u, procs,
+        simUnitVcd(model, procs,
                    "tmp/ram_writeAndRead.vcd", time=110 * Time.ns)
         self.assertSequenceEqual([5, 7, None, None, None, None, None, None],
-                                  valuesToInts(u._mem._val.val))
+                                  valuesToInts(model.ram_memory._val.val))
         self.assertSequenceEqual([5, 7, 5, 7, None],
                                  valuesToInts(u.a._ag.readed))
 

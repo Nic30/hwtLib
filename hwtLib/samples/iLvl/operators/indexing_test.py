@@ -1,8 +1,7 @@
 import unittest
 
-from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthesizer.shortcuts import synthesised
+from hdl_toolkit.simulator.agentConnector import agInts
+from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.samples.iLvl.operators.indexing import (SimpleIndexingSplit,
                                                     SimpleIndexingJoin,
                                                     SimpleIndexingRangeJoin,
@@ -13,12 +12,10 @@ from hdl_toolkit.hdlObjects.specialValues import Time
 
 class IndexingTC(unittest.TestCase):
     def setUpUnit(self, unit):
-        self.u = unit
-        synthesised(self.u)
-        self.procs = autoAddAgents(self.u)
+        self.u, self.model, self.procs = simPrepare(unit)
     
     def runSim(self, name, time=80 * Time.ns):
-        simUnitVcd(self.u, self.procs,
+        simUnitVcd(self.model, self.procs,
                 "tmp/indexing_%s.vcd" % name,
                 time=time)
             

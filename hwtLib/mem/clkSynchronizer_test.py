@@ -2,8 +2,8 @@ import unittest
 
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.simulator.agentConnector import valuesToInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd, oscilate, pullDownAfter
-from hdl_toolkit.synthesizer.shortcuts import synthesised
+from hdl_toolkit.simulator.shortcuts import simUnitVcd, oscilate, pullDownAfter, \
+    toSimModel, reconectUnitSignalsToModel
 from hwtLib.mem.clkSynchronizer import ClkSynchronizer
 from hdl_toolkit.hdlObjects.specialValues import Time
 
@@ -12,13 +12,16 @@ CLK_PERIOD = 10 * Time.ns
         
 class ClkSynchronizerTC(unittest.TestCase):
     def setUp(self):
-        self.u = u = ClkSynchronizer()
+        u = ClkSynchronizer()
         u.DATA_TYP = vecT(32)
-        synthesised(u)
+        model = toSimModel(u)
+        reconectUnitSignalsToModel(u, model)
+        
+        self.u = u
+        self.model = model
     
     def doSim(self, dataInStimul, name, time=100 * Time.ns): 
         collected = []
-
         u = self.u
                 
         def dataCollector(s):
@@ -29,7 +32,7 @@ class ClkSynchronizerTC(unittest.TestCase):
                 # print(s.env.now)
                 yield s.wait(CLK_PERIOD)
         
-        simUnitVcd(u, [oscilate(u.inClk, CLK_PERIOD),
+        simUnitVcd(self.model, [oscilate(u.inClk, CLK_PERIOD),
                        oscilate(u.outClk, CLK_PERIOD, initWait=CLK_PERIOD / 4),
                        pullDownAfter(u.rst, CLK_PERIOD * 2),
                        dataCollector,

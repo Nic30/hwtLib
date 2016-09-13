@@ -1,8 +1,7 @@
 import unittest
 
-from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthesizer.shortcuts import synthesised
+from hdl_toolkit.simulator.agentConnector import agInts
+from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.samples.iLvl.mem.reg import DReg, DoubleDReg
 from hdl_toolkit.hdlObjects.specialValues import Time
 
@@ -10,12 +9,10 @@ from hdl_toolkit.hdlObjects.specialValues import Time
 
 class DRegTC(unittest.TestCase):
     def setUpUnit(self, u):
-        synthesised(u)
-        self.procs = autoAddAgents(u)
-        self.u = u
+        self.u, self.model, self.procs = simPrepare(u)
     
     def runSim(self, name, time=100 * Time.ns):
-        simUnitVcd(self.u, self.procs,
+        simUnitVcd(self.model, self.procs,
                    "tmp/reg_" + name + ".vcd", time=time)
     
     def testSimple(self):
