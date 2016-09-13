@@ -41,6 +41,11 @@ class SimpleSubunitTC(unittest.TestCase):
         # now we use part of unittest framework to check results
         # we use agInts to convert value objects to integer representation
         self.assertSequenceEqual(expected, agInts(u.b))
+        
+        # you can also access signals inside model by it's signal names
+        # this names can differ in order to avoid name collision (suffix is usually used, or invalid character is replaced)
+        self.assertEqual(model.subunit0_inst.a._val.val, 0)
+    
     
 if __name__ == "__main__":
     # this is how you can run testcase, 
