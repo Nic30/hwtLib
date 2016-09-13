@@ -60,12 +60,12 @@ if __name__ == "__main__":
         # component verifications
         ConstDriverTC,
         SimpleTC,
+        SimpleSubunitTC,
         IfStmTC,
         SwitchStmTC,
         LutRamTC,
         CntrTC,
         TwoCntrsTC,
-        SimpleSubunitTC,
         SampleRamTC,
         DRegTC,
         RomTC,
