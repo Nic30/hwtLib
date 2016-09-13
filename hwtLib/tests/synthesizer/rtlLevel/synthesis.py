@@ -53,7 +53,7 @@ class TestCaseSynthesis(unittest.TestCase):
 
     def test_indexOps(self):
         c, interf = IndexOps()
-        _, _, arch = list(c.synthesize("indexOps", interf))
+        _, arch = list(c.synthesize("indexOps", interf))
 
         s = VhdlSerializer.Architecture(arch, VhdlSerializer.getBaseNameScope())
         
