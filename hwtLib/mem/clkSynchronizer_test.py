@@ -14,8 +14,9 @@ class ClkSynchronizerTC(unittest.TestCase):
     def setUp(self):
         u = ClkSynchronizer()
         u.DATA_TYP = vecT(32)
-        model = toSimModel(u)
-        reconectUnitSignalsToModel(u, model)
+        modelCls = toSimModel(u)
+        reconectUnitSignalsToModel(u, modelCls)
+        model = modelCls()
         
         self.u = u
         self.model = model
