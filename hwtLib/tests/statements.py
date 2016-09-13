@@ -3,7 +3,6 @@ import unittest
 from hdl_toolkit.hdlObjects.statements import IfContainer
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
 from hdl_toolkit.hdlObjects.types.defs import BIT
-from hdl_toolkit.simulator.hdlSimulator import HdlSimulator
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 
 
@@ -31,6 +30,7 @@ class StatementsTC(unittest.TestCase):
                               ],
                        ifFalse=w(2)
                   )
+            
             if a_in and b_in:
                 expected = 0
             elif a_in:
@@ -39,15 +39,9 @@ class StatementsTC(unittest.TestCase):
                 expected = 2
             
 
-            simulator = HdlSimulator()
-            results = list(stm.simEval(simulator))
+            stm.seqEval()
             
-            self.assertEqual(len(results), 1)
-            r = results[0]
-            self.assertIs(r[0], res)
-            updater = r[1]
-            sig = r[0]
-            _ , newVal = updater(sig._val)
+            newVal = res._val
             
             self.assertEqual(newVal.val, expected)
             self.assertEqual(newVal.vldMask, 3)
