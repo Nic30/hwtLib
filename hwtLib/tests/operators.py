@@ -5,6 +5,21 @@ from hdl_toolkit.hdlObjects.types.defs import INT, STR
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 from hdl_toolkit.synthesizer.rtlLevel.signalUtils.walkers import walkAllOriginSignals
 
+andTable = [ (None, None, None),
+             (None, 0, 0),
+             (None, 1, None),
+             (0, None, 0),
+             (0, 0, 0),
+             (0, 1, 0),
+             (1, 1, 1)]
+orTable = [ (None, None, None),
+            (None, 0, None),
+            (None, 1, 1),
+            (0, None, None),
+            (0, 0, 0),
+            (0, 1, 1),
+            (1, 1, 1)]
+
 
 class OperatorTC(unittest.TestCase):
     def setUp(self):
@@ -33,13 +48,7 @@ class OperatorTC(unittest.TestCase):
             None: hBit(None)
         }
         
-        for a, b, expected in [ (None, None, None),
-                                (None, 0, 0),
-                                (None, 1, None),
-                                (0, None, 0),
-                                (0, 0, 0),
-                                (0, 1, 0),
-                                (1, 1, 1)]:
+        for a, b, expected in andTable:
             res = vals[a] & vals[b]
             expectedRes = vals[expected]
             
@@ -54,13 +63,38 @@ class OperatorTC(unittest.TestCase):
             None: hBit(None)
         }
         
-        for a, b, expected in [ (None, None, None),
-                                (None, 0, None),
-                                (None, 1, 1),
-                                (0, None, None),
-                                (0, 0, 0),
-                                (0, 1, 1),
-                                (1, 1, 1)]:
+        for a, b, expected in orTable:
+            res = vals[a] | vals[b]
+            expectedRes = vals[expected]
+            
+            self.assertEqual(expectedRes.val, res.val,
+                             "%s & %s  val=%s (should be %s)" % (repr(a), repr(b), repr(res.val), repr(expectedRes.val)))
+            self.assertEqual(expectedRes.vldMask, res.vldMask,
+                             "%s & %s  vldMask=%s (should be %s)" % (repr(a), repr(b), repr(res.vldMask), repr(expectedRes.vldMask)))
+        
+    def testBoolAnd(self):
+        vals = {
+            1: hBool(1),
+            0: hBool(0),
+            None: hBool(None)
+        }
+        
+        for a, b, expected in andTable:
+            res = vals[a] & vals[b]
+            expectedRes = vals[expected]
+            
+            self.assertEqual(expectedRes.val, res.val,
+                             "%s & %s  val=%s (should be %s)" % (repr(a), repr(b), repr(res.val), repr(expectedRes.val)))
+            self.assertEqual(expectedRes.vldMask, res.vldMask,
+                             "%s & %s  vldMask=%s (should be %s)" % (repr(a), repr(b), repr(res.vldMask), repr(expectedRes.vldMask)))
+    def testBoolOr(self):
+        vals = {
+            1: hBool(1),
+            0: hBool(0),
+            None: hBool(None)
+        }
+        
+        for a, b, expected in orTable:
             res = vals[a] | vals[b]
             expectedRes = vals[expected]
             
