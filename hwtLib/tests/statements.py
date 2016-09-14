@@ -20,8 +20,8 @@ class StatementsTC(unittest.TestCase):
             b = nl.sig("b", BIT)
             
             w = lambda val: res ** val
-            a._val = hBit(a_in)
-            b._val = hBit(b_in)
+            a.defaultVal = hBit(a_in) 
+            b.defaultVal = hBit(b_in)
             
             
             stm = IfContainer(set([a & b, ]),
