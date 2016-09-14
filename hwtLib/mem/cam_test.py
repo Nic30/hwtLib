@@ -9,7 +9,7 @@ from hwtLib.mem.cam import Cam
 
 class CamTC(unittest.TestCase):
 
-    def test_writeAndRead(self):
+    def test_writeAndMatchTest(self):
         u, model, procs = simPrepare(Cam())
 
         u.write._ag.data = [(0, 1, -1),
