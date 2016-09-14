@@ -54,7 +54,7 @@ class HandshakedReg2(HandshakedCompBase):
         # r0rd, r0vld =rd(r0.dataOut), vld(r0.dataOut)
         # c(r0.dataOut, self.dataOut, exclude=[r0rd, r0vld])
         for iin, iout in zip(self.getData(r0.dataOut), self.getData(self.dataOut)):
-            assert(not iin._interfaces)  # has not subintefraces (Not implemented)
+            assert not iin._interfaces  # has not subintefraces (Not implemented)
             
             r = self._reg('reg_' + iin._name, iin._dtype)
             
@@ -67,12 +67,6 @@ class HandshakedReg2(HandshakedCompBase):
         
         rd(r0.dataOut) ** ~wordLoaded
         vld(out) ** wordLoaded
-        # c(~rReady & vld(r0.dataOut), vld(r1.dataIn))
-        # c(rd(r1.dataIn), rReady)
-        
-        
-        
-        # c(r1.dataOut, self.dataOut)
        
         
         
