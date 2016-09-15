@@ -5,12 +5,15 @@ from hdl_toolkit.interfaces.utils import log2ceil
 from hdl_toolkit.synthesizer.codeOps import If
 from hwtLib.logic.cntrGray import GrayCntr
 from hwtLib.mem.fifo import Fifo
+from hdl_toolkit.serializer.constants import SERI_MODE
 
 
 class AsyncFifo(Fifo):
     """
     http://www.asic-world.com/examples/vhdl/asyn_fifo.html
     """
+    _serializerMode = SERI_MODE.PARAMS_UNIQ
+    
     def _declr(self):
         with self._asExtern():
             self.dataIn_clk = Clk() 

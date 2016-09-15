@@ -3,12 +3,20 @@ from hdl_toolkit.interfaces.std import Signal, Clk
 from hdl_toolkit.synthesizer.codeOps import connect, Concat, If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
+from hdl_toolkit.serializer.constants import SERI_MODE
 
 
 c = connect
 
 def mkLutRamCls(DATA_WIDTH):
+	"""
+	Lut ram generator
+	hdl code will be excluded from serialization because we expect vendor library to contains it
+	"""
+	
 	class RAMnX1S(Unit):
+		_serializerMode = SERI_MODE.EXCLUDE
+		
 		def _config(self):
 			self.INIT = Param(vec(0, DATA_WIDTH))
 			self.IS_WCLK_INVERTED = Param(hBit(0))
@@ -32,7 +40,7 @@ def mkLutRamCls(DATA_WIDTH):
 		def _impl(self):
 			s = self._sig
 			wclk_in = s("wclk_in")
-			mem = self._cntx.sig("mem", vecT(DATA_WIDTH + 1), 
+			mem = self._cntx.sig("mem", vecT(DATA_WIDTH + 1),
 								    defVal=hBit(None)._concat(self.INIT))
 			a_in = s("a_in", vecT(6))
 			d_in = s("d_in")
@@ -51,7 +59,7 @@ def mkLutRamCls(DATA_WIDTH):
 			   mem[a_in] ** d_in
 			) 
 
-	RAMnX1S.__name__ = "RAM%dX1S_gen" % DATA_WIDTH
+	RAMnX1S.__name__ = "RAM%dX1S" % DATA_WIDTH
 	return RAMnX1S
 
 RAM64X1S = mkLutRamCls(64)

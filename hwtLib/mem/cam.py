@@ -6,6 +6,7 @@ from hdl_toolkit.synthesizer.codeOps import If, Concat
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
 from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
+from hdl_toolkit.serializer.constants import SERI_MODE
 
 class AddrDataHsAgent(HandshakedAgent):
     def doWrite(self, s, data):
@@ -47,6 +48,8 @@ class Cam(Unit):
 
     MATCH_LATENCY = 1
     """
+    _serializerMode = SERI_MODE.PARAMS_UNIQ
+    
     def _config(self):
         self.DATA_WIDTH = Param(36)
         self.ITEMS = Param(16)

@@ -4,9 +4,12 @@ from hdl_toolkit.interfaces.std import BramPort, Clk, BramPort_withoutClk
 from hdl_toolkit.synthesizer.codeOps import If, power
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
+from hdl_toolkit.serializer.constants import SERI_MODE
 
 
 class RamSingleClock(Unit):
+    _serializerMode = SERI_MODE.PARAMS_UNIQ
+    
     def _config(self):
         self.DATA_WIDTH = Param(64)
         self.ADDR_WIDTH = Param(4)
@@ -47,6 +50,8 @@ class Ram_sp(Unit):
     """
     Write first variant
     """
+    _serializerMode = SERI_MODE.PARAMS_UNIQ
+    
     def _config(self):
         self.DATA_WIDTH = Param(64)
         self.ADDR_WIDTH = Param(4)

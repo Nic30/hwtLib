@@ -5,9 +5,12 @@ from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
 from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
+from hdl_toolkit.serializer.constants import SERI_MODE
 
 
 class Fifo(Unit):
+    _serializerMode = SERI_MODE.PARAMS_UNIQ
+    
     def _config(self):
         self.DATA_WIDTH = Param(64)
         self.DEPTH = Param(200)

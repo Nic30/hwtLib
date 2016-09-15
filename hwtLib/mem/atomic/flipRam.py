@@ -4,6 +4,7 @@ from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import evalParam
 from hwtLib.mem.ram import RamSingleClock
+from hdl_toolkit.serializer.constants import SERI_MODE
 
 
 class FlipRam(Unit):
@@ -18,6 +19,8 @@ class FlipRam(Unit):
     
     Then select is set and access is flipped. Reader now has access to RAM 0 and writer to RAM 1.
     """
+    _serializerMode = SERI_MODE.PARAMS_UNIQ
+    
     def _config(self):
         RamSingleClock._config(self)
 
