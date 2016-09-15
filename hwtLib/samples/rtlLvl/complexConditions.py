@@ -1,6 +1,6 @@
 
 from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.serializer.formater import formatVhdl
+from hdl_toolkit.serializer.vhdlFormater import formatVhdl
 from hdl_toolkit.synthesizer.codeOps import If, Switch
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 
