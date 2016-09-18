@@ -10,7 +10,7 @@ setup(name='hwtLib',
       author='Michal Orsak',
       author_email='michal.o.socials@gmail.com',
       install_requires=[
-        'hwtLib',
+        'hwtoolkit',
         'Pillow', # there is code which isreading images
       ],
       license='MIT',
