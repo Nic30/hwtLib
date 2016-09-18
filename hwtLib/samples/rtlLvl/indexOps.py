@@ -1,5 +1,5 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, vec
-from hdl_toolkit.serializer.formater import formatVhdl
+from hdl_toolkit.serializer.vhdlFormater import formatVhdl
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 
 

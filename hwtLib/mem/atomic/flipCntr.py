@@ -1,6 +1,7 @@
 from hdl_toolkit.interfaces.std import Signal, HandshakeSync, \
     RegCntrl
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
+from hdl_toolkit.serializer.constants import SERI_MODE
 from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
@@ -14,6 +15,8 @@ class FlipCntr(Unit):
     interface doFilip drives switching of memories in flip register
     dataIn has higher priority than doIncr
     """
+    _serializerMode = SERI_MODE.ONCE
+    
     def _config(self):
         self.DATA_WIDTH = Param(18)
 

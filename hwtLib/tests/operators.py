@@ -1,9 +1,10 @@
 import unittest
 
-from hdl_toolkit.hdlObjects.typeShortcuts import hInt, hBool, hBit, vec
+from hdl_toolkit.hdlObjects.typeShortcuts import hInt, hBool, hBit, vec, vecT
 from hdl_toolkit.hdlObjects.types.defs import INT, STR
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 from hdl_toolkit.synthesizer.rtlLevel.signalUtils.walkers import walkAllOriginSignals
+from hdl_toolkit.bitmask import Bitmask
 
 andTable = [ (None, None, None),
              (None, 0, 0),
@@ -140,7 +141,32 @@ class OperatorTC(unittest.TestCase):
         a = self.n.sig('a', typ=STR)
         b = self.n.sig('b')
         self.assertRaises(NotImplementedError, lambda : a + b) 
+    
+    def testADD_IntBits(self):
+        a = vec(7, 8)
+        b = hInt(1)
+        c = a + b
+        self.assertEqual(c.val, 8)
+        self.assertEqual(c.vldMask, Bitmask.mask(8))
         
+        a = vec(255, 8)
+        b = hInt(1)
+        c = a + b
+        self.assertEqual(c.val, 0)
+        self.assertEqual(c.vldMask, Bitmask.mask(8))
+        
+        a = vec(7, 8, False)
+        b = hInt(1)
+        c = a + b
+        self.assertEqual(c.val, 8)
+        self.assertEqual(c.vldMask, Bitmask.mask(8))
+        
+        a = vec(255, 8, False)
+        b = hInt(1)
+        c = a + b
+        self.assertEqual(c.val, 0)
+        self.assertEqual(c.vldMask, Bitmask.mask(8)) 
+              
     def testAND_eval(self):
         for a_in, b_in, out in [(0, 0, 0),
                                 (0, 1, 0),

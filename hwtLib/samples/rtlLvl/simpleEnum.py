@@ -1,6 +1,6 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.serializer.formater import formatVhdl
+from hdl_toolkit.serializer.vhdlFormater import formatVhdl
 from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 

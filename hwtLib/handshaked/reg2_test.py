@@ -32,7 +32,6 @@ class HsReg2TC(unittest.TestCase):
 # def mkTestbench():
 #    from hdl_toolkit.serializer.utils import SimBuilder
 #    from hdl_toolkit.serializer.utils import hsWrite, makeTestbenchTemplate
-#    from hdl_toolkit.serializer.templates import VHDLTemplates
 #    repo = "tmp/"
 #    u = HandshakedReg2(Handshaked)
 #    serializeAsIpcore(u, repo)

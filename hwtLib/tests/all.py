@@ -34,6 +34,7 @@ from hwtLib.tests.synthesizer.interfaceLevel.vhdlCodesign import VhdlCodesignTC
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
+from hwtLib.mem.cam_test import CamTC
 
 
 if __name__ == "__main__":
@@ -78,6 +79,7 @@ if __name__ == "__main__":
         ForkTC,
         HsRegTC,
         HsReg2TC,
+        CamTC,
     )
     runner = TextTestRunner(verbosity=2)
     runner.run(suite)

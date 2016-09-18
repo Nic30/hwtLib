@@ -4,6 +4,7 @@ from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.synthesizer.codeOps import If, c
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
+from hdl_toolkit.serializer.constants import SERI_MODE
 
 
 class FlipRegister(Unit):
@@ -18,6 +19,7 @@ class FlipRegister(Unit):
     
     Then select is set and access is flipped. Reader now has access to reg 0 and writer to reg 1.
     """
+    _serializerMode = SERI_MODE.ONCE
     
     def _config(self):
         self.DATA_WIDTH = Param(32)

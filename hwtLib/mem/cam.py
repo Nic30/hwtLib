@@ -5,7 +5,27 @@ from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
 from hdl_toolkit.synthesizer.codeOps import If, Concat
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
+from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
+from hdl_toolkit.serializer.constants import SERI_MODE
 
+class AddrDataHsAgent(HandshakedAgent):
+    def doWrite(self, s, data):
+        i = self.intf
+        w = s.write 
+        if data is None:
+            addr, d, mask = None, None, None
+        else: 
+            addr, d, mask = data
+        
+        w(addr, i.addr)
+        w(d, i.data)
+        w(mask, i.mask)
+        
+    def doRead(self, s):
+        i = self.intf
+        r = s.read
+        return r(i.addr), r(i.data), r(i.mask)
+        
 class AddrDataHs(Handshaked):
     def _config(self):
         Handshaked._config(self)
@@ -16,6 +36,8 @@ class AddrDataHs(Handshaked):
         self.addr = Signal(dtype=vecT(self.ADDR_WIDTH))
         self.mask = Signal(dtype=vecT(self.DATA_WIDTH))
 
+    def _getSimAgent(self):
+        return AddrDataHsAgent
 
 
 class Cam(Unit):
@@ -26,6 +48,8 @@ class Cam(Unit):
 
     MATCH_LATENCY = 1
     """
+    _serializerMode = SERI_MODE.PARAMS_UNIQ
+    
     def _config(self):
         self.DATA_WIDTH = Param(36)
         self.ITEMS = Param(16)

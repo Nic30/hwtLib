@@ -1,6 +1,6 @@
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time
+from hdl_toolkit.hdlObjects.specialValues import Time, NOP
 from hdl_toolkit.simulator.agentConnector import valuesToInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.mem.atomic.flipCntr import FlipCntr
@@ -18,7 +18,7 @@ class FlipCntrTC(unittest.TestCase):
     def test_nop(self):
         u = self.u
         
-        u.doIncr._ag.data = [0, 0, 0, 0, 0, 0]
+        u.doIncr._ag.data = [0, 0]
         self.runSim("nop")
     
         self.assertSequenceEqual([None] + [0 for _ in range(8)], valuesToInts(u.data._ag.din))
@@ -27,11 +27,11 @@ class FlipCntrTC(unittest.TestCase):
         u = self.u
         
         u.doIncr._ag.data = [0, 0, 1, 0, 0, 0]
-        u.doFlip._ag.data = [0, 0, 0, 1, 0, 0]
+        u.doFlip._ag.data = [NOP, NOP, NOP, 1, NOP, NOP]
         
         self.runSim("incr")
     
-        self.assertSequenceEqual([None, 0, 0] + [1 for _ in range(6)], valuesToInts(u.data._ag.din))
+        self.assertSequenceEqual([None, 0, 0, 0] + [1 for _ in range(5)], valuesToInts(u.data._ag.din))
     
         
     
