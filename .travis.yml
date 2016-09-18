@@ -21,9 +21,9 @@ install:
   - cd ..
   - pip3 install coveralls
   - git clone https://github.com/Nic30/HWToolkit.git
+  - git clone https://github.com/Nic30/hwtLib.git
   - cd HWToolkit
   - python3 setup.py install
-  - git clone https://github.com/Nic30/hwtLib.git
   - cd ../hwtLib
   - python3 setup.py install
 
