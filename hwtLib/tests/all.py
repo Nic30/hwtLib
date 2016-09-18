@@ -7,6 +7,7 @@ from hwtLib.handshaked.reg2_test import HsReg2TC
 from hwtLib.handshaked.reg_test import HsRegTC
 from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
 from hwtLib.mem.atomic.flipReg_test import FlipRegTC
+from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.clkSynchronizer_test import ClkSynchronizerTC
 from hwtLib.mem.fifo_test import FifoTC
 from hwtLib.mem.lutRam_test import LutRamTC
@@ -22,19 +23,14 @@ from hwtLib.samples.iLvl.simple_test import SimpleTC
 from hwtLib.samples.iLvl.statements.constDriver_test import ConstDriverTC
 from hwtLib.samples.iLvl.statements.ifStm_test import IfStmTC
 from hwtLib.samples.iLvl.statements.switchStm_test import SwitchStmTC
-from hwtLib.tests.hierarchyExtractor import HierarchyExtractorTC
 from hwtLib.tests.operators import OperatorTC
-from hwtLib.tests.parser import ParserTC
 from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.tests.statements import StatementsTC
 from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import InterfaceSynthesizerTC 
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import SubunitsSynthesisTC
-from hwtLib.tests.synthesizer.interfaceLevel.verilogCodesign import VerilogCodesignTC
-from hwtLib.tests.synthesizer.interfaceLevel.vhdlCodesign import VhdlCodesignTC
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
-from hwtLib.mem.cam_test import CamTC
 
 
 if __name__ == "__main__":
@@ -45,11 +41,7 @@ if __name__ == "__main__":
         return suite
 
     suite = testSuiteFromTCs(
-        HierarchyExtractorTC,
-        ParserTC,
         InterfaceSynthesizerTC,
-        VhdlCodesignTC,
-        VerilogCodesignTC,
         SubunitsSynthesisTC,
         Expr2CondTC,
         OperatorTC,

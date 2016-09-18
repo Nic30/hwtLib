@@ -1,1 +1,1 @@
-recursive-include hwtLib *.vhd *.v *.png
+recursive-include hwtLib *.png
