@@ -30,7 +30,6 @@ class ClkSynchronizerTC(unittest.TestCase):
             while True:
                 d = s.read(u.outData)
                 collected.append(d)
-                # print(s.env.now)
                 yield s.wait(CLK_PERIOD)
         
         simUnitVcd(self.model, [oscilate(u.inClk, CLK_PERIOD),
