@@ -13,7 +13,7 @@ class HsReg2TC(unittest.TestCase):
         self.u, self.model, self.procs = simPrepare(u)
 
     
-    def doSim(self, name, time=140 * Time.ns):
+    def doSim(self, name, time=200 * Time.ns):
         simUnitVcd(self.model, self.procs,
                     "tmp/hsReg2_" + name + ".vcd",
                     time=time)
@@ -22,7 +22,7 @@ class HsReg2TC(unittest.TestCase):
         u = self.u
         u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
 
-        self.doSim("passdata", 120 * Time.ns)
+        self.doSim("passdata")
 
         collected = agInts(u.dataOut)
         self.assertSequenceEqual([1, 2, 3, 4, 5, 6], collected)

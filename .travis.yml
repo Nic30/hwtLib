@@ -11,22 +11,9 @@ git:
 cache:
   apt: true
 
-# clang is required because there is not enought ram for gcc
-compiler: gcc
 python:
   - "3.5"
-addons:
-   apt:
-      sources:
-         - ubuntu-toolchain-r-test
-         #- llvm-toolchain-precise-3.9
-      packages:
-         #- g++-5
-         - gcc-5
-         #- clang-3.9
-#env: CC=clang-3.9 CXX=clang-3.9
-# we have to add -fpermissive otherwise pillow will not compile
-env: CC=gcc-5 CXX=g++-5 CFLAGS=-fpermissive
+
 
 
 # command to install dependencies

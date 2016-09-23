@@ -167,17 +167,17 @@ class Alu(Unit):
 
         
     def _impl(self):
+        raise NotImplementedError()
         # Extract the ALU control bits from the decoded ALU operation code.
         # First the function selector code...
-        alu_ctrl_fn_arith = alu_fn_reg[6:3]
-        alu_ctrl_fn_logic = alu_fn_reg[5:3]
-        alu_ctrl_fn_shift = alu_fn_reg[5:3]
-        # ...then the multiplexor control bits.
-        alu_ctrl_mux_2 = alu_fn_reg[2]
-        alu_ctrl_mux_1 = alu_fn_reg[1]
-        alu_ctrl_mux_0 = alu_fn_reg[0]
-        
-        
-        acc_is_zero = A_reg._eq(0)
-        c(A_reg, self.ACC, self.xdata_wr)
-        
+        #alu_ctrl_fn_arith = alu_fn_reg[6:3]
+        #alu_ctrl_fn_logic = alu_fn_reg[5:3]
+        #alu_ctrl_fn_shift = alu_fn_reg[5:3]
+        ## ...then the multiplexor control bits.
+        #alu_ctrl_mux_2 = alu_fn_reg[2]
+        #alu_ctrl_mux_1 = alu_fn_reg[1]
+        #alu_ctrl_mux_0 = alu_fn_reg[0]
+        #
+        #
+        #acc_is_zero = A_reg._eq(0)
+        #c(A_reg, self.ACC, self.xdata_wr)

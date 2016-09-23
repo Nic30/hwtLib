@@ -1,6 +1,6 @@
 from hdl_toolkit.intfLvl import Param, Unit
+from hwtHdlParsers.tests.vhdlCodesign.axiLiteBasicSlave import AxiLiteBasicSlave
 from hwtLib.interfaces.amba import  AxiLite
-from hwtLib.samples.vhdlCodesign.axiLiteBasicSlave import AxiLiteBasicSlave
 
 
 class AxiLiteSlaveContainer(Unit):
