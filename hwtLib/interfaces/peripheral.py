@@ -13,8 +13,8 @@ class Spi(Interface):
 
 class I2c(Interface):
     def _declr(self):
-        self.slc = TristateClk()  # clk
-        self.sda = TristateSig()  # data
+        self.scl = TristateClk()  # serial clk
+        self.sda = TristateSig()  # serial data
     
     def _getIpCoreIntfClass(self):
         return IP_IIC
@@ -37,9 +37,9 @@ class IP_IIC(IntfConfig):
         self.version = "1.0"
         self.vendor = "xilinx.com" 
         self.library = "interface"
-        self.map = {'slc':{"t":"SLC_T",
-                           "i": "SLC_I",
-                           "o": "SLC_O"},
+        self.map = {'scl':{"t":"SCL_T",
+                           "i": "SCL_I",
+                           "o": "SCL_O"},
                     'sda':{"t": "SDA_T",
                            "i": "SDA_I",
                            "o": "SDA_O"}
