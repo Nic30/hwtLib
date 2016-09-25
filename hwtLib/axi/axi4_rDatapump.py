@@ -73,7 +73,7 @@ class Axi4_RDataPump(Unit):
         self.ID_WIDTH = Param(4)
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)
-        self.USER_WIDTH = Param(0) # if 0 is used user signal completly disapears
+        self.USER_WIDTH = Param(0)  # if 0 is used user signal completly disapears
     
     def _declr(self):
         with self._asExtern():
@@ -104,13 +104,15 @@ class Axi4_RDataPump(Unit):
     def useUserSig(self):
         return evalParam(self.req.USER_WIDTH).val > 0
     
+    def getBurstAddrOffset(self):
+        LEN_MAX = Bitmask.mask(self.ar.len._dtype.bit_length())
+        return (LEN_MAX + 1) << self.getSizeAlignBits()
+    
     def addrHandler(self, addRmSize):
         ar = self.ar
         req = self.req
 
-        LEN_MAX = Bitmask.mask(ar.len._dtype.bit_length())
-        ALIGN_BITS = self.getSizeAlignBits()
-        
+
         canStartNew = addRmSize.rd
         
         ar.id ** self.DEFAULT_ID
@@ -122,7 +124,10 @@ class Axi4_RDataPump(Unit):
         ar.size ** BYTES_IN_TRANS(evalParam(self.DATA_WIDTH).val)
 
         # if axi len is smaller we have to use transaction splitting
-        if self.useTransSplitting():        
+        if self.useTransSplitting(): 
+            LEN_MAX = Bitmask.mask(ar.len._dtype.bit_length())
+            
+               
             lastReqDispatched = self._reg("lastReqDispatched", defVal=1) 
             lenDebth = self._reg("lenDebth", req.len._dtype)
             remBackup = self._reg("remBackup", req.rem._dtype)
@@ -177,7 +182,7 @@ class Axi4_RDataPump(Unit):
                reqRem ** remBackup,
                ack ** (canStartNew & ar.ready),
                If(canStartNew & ar.ready,
-                  rAddr ** (rAddr + (LEN_MAX << ALIGN_BITS)) 
+                  rAddr ** (rAddr + self.getBurstAddrOffset()) 
                ),
                addRmSize.vld ** ar.ready
             )
