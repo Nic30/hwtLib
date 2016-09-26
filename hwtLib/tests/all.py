@@ -32,6 +32,7 @@ from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.axi.axi4_rDatapump_test import Axi4_rDatapumpTC
+from hwtLib.samples.iLvl.arithmetic.selfRefCntr_test import SelfRefCntrTC
 
 
 if __name__ == "__main__":
@@ -61,6 +62,7 @@ if __name__ == "__main__":
         CntrTC,
         TwoCntrsTC,
         SampleRamTC,
+        SelfRefCntrTC,
         DRegTC,
         RomTC,
         IndexingTC,
