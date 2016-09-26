@@ -61,4 +61,9 @@ class AddrSpaceItem(object):
         else:
             children = ""
         
-        return "<AddrSpaceItem %s, %d, size=%d%s>" % (self.name, self.addr, self.size, children)
+        if self.size is None:
+            size = 1
+        else:
+            size = self.size
+        
+        return "<AddrSpaceItem %s, %d, size=%d%s>" % (self.name, self.addr, size, children)
