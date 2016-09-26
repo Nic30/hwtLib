@@ -2,12 +2,13 @@ from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.interfaces.std import s, D
 from hdl_toolkit.synthesizer.interfaceLevel.interface import  Interface
 from hdl_toolkit.synthesizer.param import Param
+from hwtLib.interfaces.amba_agents import Axi4_addrAgent, Axi4_rAgent, \
+    AxiStreamAgent, AxiStream_withUserAndStrbAgent, AxiLiteAgent, \
+    AxiLite_addrAgent, AxiLite_rAgent, AxiLite_wAgent, AxiLite_bAgent
 from hwtLib.interfaces.amba_ip import IP_AXIStream, IP_AXILite, IP_Axi4
-from hwtLib.interfaces.amba_agents import Axi4_addrAgent, Axi4_rAgent,\
-    AxiStreamAgent, AxiStream_withUserAndStrbAgent
+
 
 # http://www.xilinx.com/support/documentation/ip_documentation/ug761_axi_reference_guide.pdf
-    
 class AxiStream_withoutSTRB(Interface):
     def _config(self):
         self.DATA_WIDTH = Param(64)
@@ -25,7 +26,7 @@ class AxiStream(AxiStream_withoutSTRB):
     def _declr(self):
         super(AxiStream, self)._declr()
         self.strb = s(dtype=vecT(self.DATA_WIDTH // 8),
-                      alternativeNames=['tstrb']) # 'keep', 'tkeep'
+                      alternativeNames=['tstrb'])  # 'keep', 'tkeep'
     
     def _getSimAgent(self):
         return AxiStreamAgent
@@ -71,16 +72,22 @@ class AxiLite_addr(Interface):
         self.ready = s(masterDir=D.IN)
         self.valid = s()
 
+    def _getSimAgent(self):
+        return AxiLite_addrAgent
+
 class AxiLite_r(Interface):
     def _config(self):
         self.DATA_WIDTH = Param(64)
         
     def _declr(self):
         self.data = s(dtype=vecT(self.DATA_WIDTH), alternativeNames=['data_v'])
-        self.resp = s( dtype=vecT(2), alternativeNames=['resp_v'])
+        self.resp = s(dtype=vecT(2), alternativeNames=['resp_v'])
         self.ready = s(masterDir=D.IN)
         self.valid = s()
 
+    def _getSimAgent(self):
+        return AxiLite_rAgent
+    
 class AxiLite_w(Interface):
     def _config(self):
         self.DATA_WIDTH = Param(64)
@@ -90,6 +97,8 @@ class AxiLite_w(Interface):
         self.strb = s(dtype=vecT(self.DATA_WIDTH // 8), alternativeNames=['strb_v'])
         self.ready = s(masterDir=D.IN)
         self.valid = s()
+    def _getSimAgent(self):
+        return AxiLite_wAgent
         
     
 class AxiLite_b(Interface):
@@ -97,6 +106,8 @@ class AxiLite_b(Interface):
         self.resp = s(dtype=vecT(2), alternativeNames=['resp_v'])
         self.ready = s(masterDir=D.IN)
         self.valid = s()
+    def _getSimAgent(self):
+        return AxiLite_bAgent
 
 class AxiLite(Interface):
     def _config(self):
@@ -113,7 +124,9 @@ class AxiLite(Interface):
             
     def _getIpCoreIntfClass(self):
         return IP_AXILite
-        
+    
+    def _getSimAgent(self):
+        return AxiLiteAgent
 
         
 class Axi4_addr(AxiLite_addr):

@@ -1,6 +1,7 @@
 from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
 from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, \
     PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
+from hdl_toolkit.simulator.agentBase import AgentBase
 
 class BaseAxiAgent(HandshakedAgent):
         
@@ -135,3 +136,101 @@ class AxiStream_withUserAndStrbAgent(BaseAxiAgent):
         w(strb, intf.resp)
         w(user, intf.user)
         w(last, intf.last)              
+
+class AxiLite_addrAgent(BaseAxiAgent):
+    def doRead(self, s):
+        return s.read(self.intf.addr)
+    
+    def doWrite(self, s, data):
+        s.write(data, self.intf.addr)
+
+class AxiLite_rAgent(BaseAxiAgent):
+    def doRead(self, s):
+        r = s.read
+        intf = self.intf
+        
+        return (r(intf.data), r(intf.resp))
+
+
+    def doWrite(self, s, data):
+        intf = self.intf
+        w = s.w
+        if data is None:
+            data = [None for _ in range(2)]
+        
+        data, resp = data
+        
+        w(data, intf.data)
+        w(resp, intf.resp)
+
+class AxiLite_wAgent(BaseAxiAgent):
+    def doRead(self, s):
+        intf = self.intf
+        r = s.r
+        return (r(intf.data), r(intf.strb))
+    
+    def doWrite(self, s, data):
+        intf = self.intf
+        w = s.w
+        if data is None:
+            data = [None for _ in range(2)]
+        
+        data, strb = data
+        
+        w(data, intf.data)
+        w(strb, intf.strb)
+        
+class AxiLite_bAgent(BaseAxiAgent):
+    def doRead(self, s):
+        return s.r(self.intf.resp)
+    
+    def doWrite(self, s, data):
+        s.w(data, self.intf.resp)
+
+
+
+class AxiLiteAgent(AgentBase):
+    """
+    Composite agent with agent for every axi channel
+    enable is shared
+    """
+    def __getEnable(self):
+        return self.__enable
+    
+    def __setEnable(self, v):
+        self.__enalbe = v
+        
+        for o in [self.ar, self.aw, self.r, self.w, self.b]:
+            o._ag.enable = v
+        
+    enable = property(__getEnable, __setEnable)
+
+    def __init__(self, intf):
+        self.intf = intf
+        
+        ag = lambda i: i._getSimAgent()(i) 
+        
+        self.ar = ag(intf.ar)
+        self.aw = ag(intf.aw)
+        self.r = ag(intf.r)
+        self.w = ag(intf.w)
+        self.b = ag(intf.b)
+                
+        
+        
+    def getDrivers(self):
+        return (self.aw.getDrivers() + 
+                self.ar.getDrivers() + 
+                self.w.getDrivers() + 
+                self.r.getMonitors() + 
+                self.b.getMonitors()
+                )
+    
+    
+    def getMonitors(self):
+        return (self.aw.getMonitors() + 
+                self.ar.getMonitors() + 
+                self.w.getMonitors() + 
+                self.r.getDrivers() + 
+                self.b.getDrivers()
+                )
