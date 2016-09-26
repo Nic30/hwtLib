@@ -5,7 +5,8 @@ from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
 from hdl_toolkit.synthesizer.codeOps import If, c, FsmBuilder, Or
 from hdl_toolkit.synthesizer.param import evalParam
 from hwtLib.abstract.busConverter import BusConverter
-from hwtLib.interfaces.amba import AxiLite, RESP_OKAY
+from hwtLib.interfaces.amba import AxiLite
+from hwtLib.interfaces.amba_constants import RESP_OKAY
 
 
 class AxiLiteConverter(BusConverter):
