@@ -41,7 +41,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(Axi4_rDatapumpTC('test_notSplited'))
+    suite.addTest(Axi4_rDatapumpTC('test_notSplitedReq'))
     #suite.addTest(unittest.makeSuite(Axi4_rDatapumpTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
