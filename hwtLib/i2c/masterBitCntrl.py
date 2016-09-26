@@ -1,10 +1,10 @@
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.enum import Enum
+from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.param import Param
 from hdl_toolkit.synthesizer.codeOps import If, Concat, FsmBuilder, In
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param
 from hwtLib.interfaces.peripheral import I2c
 
 

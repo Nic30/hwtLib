@@ -1,0 +1,17 @@
+BURST_FIXED = 0b00
+BURST_INCR = 0b01
+BURST_WRAP = 0b10
+
+def BYTES_IN_TRANS(n):
+    assert isinstance(n, int)
+    return n.bit_length() - 1
+
+
+CACHE_DEFAULT = 3
+PROT_DEFAULT = 0
+QOS_DEFAULT = 0
+LOCK_DEFAULT = 0
+RESP_OKAY = 0
+RESP_EXOKAY = 1
+RESP_SLVERR = 2
+RESP_DECERR = 3

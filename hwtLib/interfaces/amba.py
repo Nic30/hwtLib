@@ -3,25 +3,8 @@ from hdl_toolkit.interfaces.std import s, D
 from hdl_toolkit.synthesizer.interfaceLevel.interface import  Interface
 from hdl_toolkit.synthesizer.param import Param
 from hwtLib.interfaces.amba_ip import IP_AXIStream, IP_AXILite, IP_Axi4
-
-
-BURST_FIXED = 0b00
-BURST_INCR = 0b01
-BURST_WRAP = 0b10
-
-def BYTES_IN_TRANS(n):
-    assert isinstance(n, int)
-    return n.bit_length() - 1
-
-
-CACHE_DEFAULT = 3
-PROT_DEFAULT = 0
-QOS_DEFAULT = 0
-LOCK_DEFAULT = 0
-RESP_OKAY = 0
-RESP_EXOKAY = 1
-RESP_SLVERR = 2
-RESP_DECERR = 3
+from hwtLib.interfaces.amba_agents import Axi4_addrAgent, Axi4_rAgent,\
+    AxiStreamAgent, AxiStream_withUserAndStrbAgent
 
 # http://www.xilinx.com/support/documentation/ip_documentation/ug761_axi_reference_guide.pdf
     
@@ -30,10 +13,10 @@ class AxiStream_withoutSTRB(Interface):
         self.DATA_WIDTH = Param(64)
 
     def _declr(self):
-        self.last = s(masterDir=D.OUT, alternativeNames=['tlast' ])
-        self.data = s(masterDir=D.OUT, dtype=vecT(self.DATA_WIDTH), alternativeNames=['tdata' ])
+        self.data = s(dtype=vecT(self.DATA_WIDTH), alternativeNames=['tdata' ])
+        self.last = s(alternativeNames=['tlast' ])
         self.ready = s(masterDir=D.IN, alternativeNames=['tready' ])
-        self.valid = s(masterDir=D.OUT, alternativeNames=['tvalid' ])
+        self.valid = s(alternativeNames=['tvalid' ])
     
     def _getIpCoreIntfClass(self):
         return IP_AXIStream
@@ -41,18 +24,20 @@ class AxiStream_withoutSTRB(Interface):
 class AxiStream(AxiStream_withoutSTRB):
     def _declr(self):
         super(AxiStream, self)._declr()
-        self.strb = s(masterDir=D.OUT,
-                 dtype=vecT(self.DATA_WIDTH // 8),
-                 alternativeNames=['tstrb', 'keep', 'tkeep' ])
-        
+        self.strb = s(dtype=vecT(self.DATA_WIDTH // 8),
+                      alternativeNames=['tstrb']) # 'keep', 'tkeep'
+    
+    def _getSimAgent(self):
+        return AxiStreamAgent
+    
+    
 class Axi_user(Interface):
     def _config(self):
-        self.USER_WIDTH = Param(0)
+        self.USER_WIDTH = Param(1)
         
     def _declr(self):
-        self.user = s(masterDir=D.OUT,
-                 dtype=vecT(self.USER_WIDTH),
-                 alternativeNames=['tuser'])
+        self.user = s(dtype=vecT(self.USER_WIDTH),
+                      alternativeNames=['tuser'])
 
 class AxiStream_withUserAndNoStrb(AxiStream_withoutSTRB, Axi_user):
     def _config(self):
@@ -72,6 +57,9 @@ class AxiStream_withUserAndStrb(AxiStream, Axi_user):
     def _declr(self):
         AxiStream._declr(self)
         Axi_user._declr(self)
+    
+    def _getSimAgent(self):
+        return AxiStream_withUserAndStrbAgent 
         
             
 class AxiLite_addr(Interface):
@@ -79,37 +67,36 @@ class AxiLite_addr(Interface):
         self.ADDR_WIDTH = Param(32)
         
     def _declr(self):
-        self.addr = s(masterDir=D.OUT, dtype=vecT(self.ADDR_WIDTH), alternativeNames=['addr_v'])
+        self.addr = s(dtype=vecT(self.ADDR_WIDTH), alternativeNames=['addr_v'])
         self.ready = s(masterDir=D.IN)
-        self.valid = s(masterDir=D.OUT)
+        self.valid = s()
 
 class AxiLite_r(Interface):
     def _config(self):
         self.DATA_WIDTH = Param(64)
         
     def _declr(self):
-        self.data = s(masterDir=D.IN, dtype=vecT(self.DATA_WIDTH), alternativeNames=['data_v'])
-        self.resp = s(masterDir=D.IN, dtype=vecT(2), alternativeNames=['resp_v'])
-        self.ready = s(masterDir=D.OUT)
-        self.valid = s(masterDir=D.IN)
+        self.data = s(dtype=vecT(self.DATA_WIDTH), alternativeNames=['data_v'])
+        self.resp = s( dtype=vecT(2), alternativeNames=['resp_v'])
+        self.ready = s(masterDir=D.IN)
+        self.valid = s()
 
 class AxiLite_w(Interface):
     def _config(self):
         self.DATA_WIDTH = Param(64)
         
     def _declr(self):
-        self.data = s(masterDir=D.OUT, dtype=vecT(self.DATA_WIDTH), alternativeNames=['data_v'])
-        self.strb = s(masterDir=D.OUT,
-                      dtype=vecT(self.DATA_WIDTH // 8), alternativeNames=['strb_v'])
+        self.data = s(dtype=vecT(self.DATA_WIDTH), alternativeNames=['data_v'])
+        self.strb = s(dtype=vecT(self.DATA_WIDTH // 8), alternativeNames=['strb_v'])
         self.ready = s(masterDir=D.IN)
-        self.valid = s(masterDir=D.OUT)
+        self.valid = s()
         
     
 class AxiLite_b(Interface):
     def _declr(self):
-        self.resp = s(masterDir=D.IN, dtype=vecT(2), alternativeNames=['resp_v'])
-        self.ready = s(masterDir=D.OUT)
-        self.valid = s(masterDir=D.IN)
+        self.resp = s(dtype=vecT(2), alternativeNames=['resp_v'])
+        self.ready = s(masterDir=D.IN)
+        self.valid = s()
 
 class AxiLite(Interface):
     def _config(self):
@@ -121,12 +108,83 @@ class AxiLite(Interface):
             self.aw = AxiLite_addr()
             self.ar = AxiLite_addr()
             self.w = AxiLite_w()
-            self.r = AxiLite_r()
-            self.b = AxiLite_b()
+            self.r = AxiLite_r(masterDir=D.IN)
+            self.b = AxiLite_b(masterDir=D.IN)
             
     def _getIpCoreIntfClass(self):
         return IP_AXILite
         
+
+        
+class Axi4_addr(AxiLite_addr):
+    def _config(self):
+        super(Axi4_addr, self)._config()
+        self.ID_WIDTH = Param(3)
+    
+    def _declr(self):
+        super(Axi4_addr, self)._declr()
+        self.id = s(dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
+        self.burst = s(dtype=vecT(2), alternativeNames=['burst_v'])
+        self.cache = s(dtype=vecT(4), alternativeNames=['cache_v'])
+        self.len = s(dtype=vecT(8), alternativeNames=['len_v'])
+        self.lock = s(dtype=vecT(1), alternativeNames=['lock_v'])
+        self.prot = s(dtype=vecT(3), alternativeNames=['prot_v'])
+        self.size = s(dtype=vecT(3), alternativeNames=['size_v'])
+        self.qos = s(dtype=vecT(4), alternativeNames=['qos_v'])
+
+    def _getSimAgent(self):
+        return Axi4_addrAgent
+
+class Axi4_r(AxiLite_r):
+    def _config(self):
+        super(Axi4_r, self)._config()
+        self.ID_WIDTH = Param(3)
+    
+    def _declr(self):
+        super(Axi4_r, self)._declr()
+        self.id = s(dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
+        self.last = s()
+    
+    def _getSimAgent(self):
+        return Axi4_rAgent
+    
+class Axi4_w(AxiLite_w):
+    def _config(self):
+        super(Axi4_w, self)._config()
+        self.ID_WIDTH = Param(3)
+    
+    def _declr(self):
+        super(Axi4_w, self)._declr()
+        self.id = s(dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
+        self.last = s()
+    
+    
+class Axi4_b(AxiLite_b):
+    def _config(self):
+        super(Axi4_b, self)._config()
+        self.ID_WIDTH = Param(3)
+    
+    def _declr(self):
+        super(Axi4_b, self)._declr()
+        self.id = s(dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
+
+class Axi4(AxiLite):
+    def _config(self):
+        super(Axi4, self)._config()
+        self.ID_WIDTH = Param(3)
+        
+    def _declr(self):
+        with self._paramsShared():
+            self.aw = Axi4_addr()
+            self.ar = Axi4_addr()
+            self.w = Axi4_w()
+            self.r = Axi4_r(masterDir=D.IN)
+            self.b = Axi4_b(masterDir=D.IN)
+    
+    def _getIpCoreIntfClass(self):
+        return IP_Axi4
+
+
 class AxiLite_addr_xil(AxiLite_addr):
     _NAME_SEPARATOR = ''
 class AxiLite_r_xil(AxiLite_r):
@@ -142,71 +200,9 @@ class AxiLite_xil(AxiLite):
             self.aw = AxiLite_addr_xil()
             self.ar = AxiLite_addr_xil()
             self.w = AxiLite_w_xil()
-            self.r = AxiLite_r_xil()
-            self.b = AxiLite_b_xil()
+            self.r = AxiLite_r_xil(masterDir=D.IN)
+            self.b = AxiLite_b_xil(masterDir=D.IN)
 
-        
-class Axi4_addr(AxiLite_addr):
-    def _config(self):
-        super(Axi4_addr, self)._config()
-        self.ID_WIDTH = Param(3)
-    
-    def _declr(self):
-        super(Axi4_addr, self)._declr()
-        self.id = s(masterDir=D.OUT, dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
-        self.burst = s(masterDir=D.OUT, dtype=vecT(2), alternativeNames=['burst_v'])
-        self.cache = s(masterDir=D.OUT, dtype=vecT(4), alternativeNames=['cache_v'])
-        self.len = s(masterDir=D.OUT, dtype=vecT(8), alternativeNames=['len_v'])
-        self.lock = s(masterDir=D.OUT, dtype=vecT(1), alternativeNames=['lock_v'])
-        self.prot = s(masterDir=D.OUT, dtype=vecT(3), alternativeNames=['prot_v'])
-        self.size = s(masterDir=D.OUT, dtype=vecT(3), alternativeNames=['size_v'])
-        self.qos = s(masterDir=D.OUT, dtype=vecT(4), alternativeNames=['qos_v'])
-
-
-class Axi4_r(AxiLite_r):
-    def _config(self):
-        super(Axi4_r, self)._config()
-        self.ID_WIDTH = Param(3)
-    
-    def _declr(self):
-        super(Axi4_r, self)._declr()
-        self.id = s(masterDir=D.IN, dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
-        self.last = s(masterDir=D.IN)
-
-class Axi4_w(AxiLite_w):
-    def _config(self):
-        super(Axi4_w, self)._config()
-        self.ID_WIDTH = Param(3)
-    
-    def _declr(self):
-        super(Axi4_w, self)._declr()
-        self.id = s(masterDir=D.OUT, dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
-        self.last = s(masterDir=D.OUT)
-    
-class Axi4_b(AxiLite_b):
-    def _config(self):
-        super(Axi4_b, self)._config()
-        self.ID_WIDTH = Param(3)
-    
-    def _declr(self):
-        super(Axi4_b, self)._declr()
-        self.id = s(masterDir=D.IN, dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
-
-class Axi4(AxiLite):
-    def _config(self):
-        super(Axi4, self)._config()
-        self.ID_WIDTH = Param(3)
-        
-    def _declr(self):
-        with self._paramsShared():
-            self.aw = Axi4_addr()
-            self.ar = Axi4_addr()
-            self.w = Axi4_w()
-            self.r = Axi4_r()
-            self.b = Axi4_b()
-    
-    def _getIpCoreIntfClass(self):
-        return IP_Axi4
 
 class Axi4_addr_xil(Axi4_addr):
     _NAME_SEPARATOR = ''
@@ -223,6 +219,6 @@ class Axi4_xil(Axi4):
         with self._paramsShared():
             self.ar = Axi4_addr_xil()
             self.aw = Axi4_addr_xil()
-            self.r = Axi4_r_xil()
             self.w = Axi4_w_xil()
-            self.b = Axi4_b_xil()  
+            self.r = Axi4_r_xil(masterDir=D.IN)
+            self.b = Axi4_b_xil(masterDir=D.IN)  

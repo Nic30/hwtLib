@@ -8,7 +8,8 @@ from hdl_toolkit.synthesizer.codeOps import c, Concat, If, Switch
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
 from hwtLib.axi.axiLite_conv import AxiLiteConverter
-from hwtLib.interfaces.amba import AxiLite, Axi4, BURST_INCR, CACHE_DEFAULT, \
+from hwtLib.interfaces.amba import AxiLite, Axi4
+from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
 from python_toolkit.arrayQuery import where
 
