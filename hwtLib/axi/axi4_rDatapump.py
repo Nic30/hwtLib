@@ -7,17 +7,51 @@ from hdl_toolkit.synthesizer.codeOps import If, Switch, connect
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.interfaces.amba import Axi4_r, Axi4_addr, AxiStream, BURST_INCR, \
-    CACHE_DEFAULT, LOCK_DEFAULT, PROT_DEFAULT, QOS_DEFAULT, BYTES_IN_TRANS, \
-    RESP_OKAY, AxiStream_withUserAndStrb
+from hwtLib.interfaces.amba import (Axi4_r, Axi4_addr, AxiStream,
+                                    AxiStream_withUserAndStrb)
+from hwtLib.interfaces.amba_constants import (BURST_INCR, CACHE_DEFAULT,
+                                              LOCK_DEFAULT, PROT_DEFAULT,
+                                              QOS_DEFAULT, BYTES_IN_TRANS,
+                                              RESP_OKAY)
+from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
 
+class AddrSizeHsAgent(HandshakedAgent):
+    def doRead(self, s):
+        intf = self.intf
+        r = s.read
+        
+        addr = r(intf.addr)
+        _len = r(intf.len)
+        rem = r(intf.rem)
+        user = r(intf.user)
+        
+        return (addr, _len, rem, user)
 
+    def mkReq(self, addr, _len, rem=0, user=0):
+        return (addr, _len, rem, user)
+
+    def doWrite(self, s, data):
+        intf = self.intf
+        w = s.w
+        
+        if data is None:
+            data = [None for _ in range(4)]
+
+        addr, _len, rem, user = data
+        
+        w(addr, intf.addr)
+        w(_len, intf.len)
+        w(rem, intf.rem)
+        w(user, intf.user)
+        
+    
+    
 class AddrSizeHs(Handshaked):
     def _config(self):
         self.ADDR_WIDTH = Param(32)
         self.MAX_LEN = Param(4096 // 8 - 1)
         self.DATA_WIDTH = Param(64)
-        self.USER_WIDTH = Param(0)  
+        self.USER_WIDTH = Param(2)  
     
     def _declr(self):
         self.addr = Signal(dtype=vecT(self.ADDR_WIDTH))
@@ -33,6 +67,9 @@ class AddrSizeHs(Handshaked):
         
         self.vld = Signal()
         self.rd = Signal(masterDir=DIRECTION.IN)
+    
+    def _getSimAgent(self):
+        return AddrSizeHsAgent
 
 class TransEndInfo(HandshakeSync):
     def _config(self):
@@ -73,7 +110,7 @@ class Axi4_RDataPump(Unit):
         self.ID_WIDTH = Param(4)
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)
-        self.USER_WIDTH = Param(0)  # if 0 is used user signal completly disapears
+        self.USER_WIDTH = Param(2)  # if 0 is used user signal completly disapears
     
     def _declr(self):
         with self._asExtern():

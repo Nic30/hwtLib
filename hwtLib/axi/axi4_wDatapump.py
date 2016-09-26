@@ -1,12 +1,11 @@
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
-from hwtLib.interfaces.amba import Axi4_w, Axi4_addr, AxiStream, Axi4_b, \
-    BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, PROT_DEFAULT, QOS_DEFAULT, \
+from hwtLib.interfaces.amba import Axi4_w, Axi4_addr, AxiStream, Axi4_b
+from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, PROT_DEFAULT, QOS_DEFAULT, \
     BYTES_IN_TRANS, RESP_OKAY
 from hwtLib.axi.axi4_rDatapump import AddrSizeHs
-from hdl_toolkit.interfaces.std import Signal, Handshaked
-from hwtLib.handshaked.fifo import HandshakedFifo
+from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.synthesizer.codeOps import connect, If
 from hdl_toolkit.bitmask import Bitmask
 
