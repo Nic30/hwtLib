@@ -31,6 +31,7 @@ from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import Subunits
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
+from hwtLib.axi.axi4_rDatapump_test import Axi4_rDatapumpTC
 
 
 if __name__ == "__main__":
@@ -72,6 +73,7 @@ if __name__ == "__main__":
         HsRegTC,
         HsReg2TC,
         CamTC,
+        Axi4_rDatapumpTC,
     )
     runner = TextTestRunner(verbosity=2)
     runner.run(suite)
