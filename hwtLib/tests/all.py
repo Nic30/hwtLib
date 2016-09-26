@@ -33,6 +33,7 @@ from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.axi.axi4_rDatapump_test import Axi4_rDatapumpTC
 from hwtLib.samples.iLvl.arithmetic.selfRefCntr_test import SelfRefCntrTC
+from hwtLib.samples.iLvl.axi.simpleAxiRegs_test import SimpleAxiRegsTC
 
 
 if __name__ == "__main__":
@@ -75,6 +76,7 @@ if __name__ == "__main__":
         HsRegTC,
         HsReg2TC,
         CamTC,
+        SimpleAxiRegsTC,
         Axi4_rDatapumpTC,
     )
     runner = TextTestRunner(verbosity=2)
