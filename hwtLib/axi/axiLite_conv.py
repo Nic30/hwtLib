@@ -49,15 +49,15 @@ class AxiLiteConverter(BusConverter):
         ).stateReg
         
         arRd = rSt._eq(rSt_t.rdIdle)
-        c(arRd & ~w_hs, ar.ready)
+        ar.ready ** (arRd & ~w_hs)
         
-        c(rSt._eq(rSt_t.rdData), r.valid)
-        c(RESP_OKAY, r.resp)
+        r.valid ** rSt._eq(rSt_t.rdData)
+        r.resp ** RESP_OKAY
         
         # save ar addr
         arAddr = self._reg('arAddr', ar.addr._dtype) 
         If(ar.valid & arRd,
-            c(ar.addr, arAddr)
+            arAddr ** ar.addr 
         )
        
         
@@ -68,7 +68,7 @@ class AxiLiteConverter(BusConverter):
         for ai in reversed(self._directlyMapped):
             # we are directly sending data from register
             rAssigTop = If(arAddr._eq(ai.addr),
-                           c(ai.port.din, r.data)
+                           r.data ** ai.port.din 
                         ).Else(
                            rAssigTop
                         )
@@ -88,22 +88,22 @@ class AxiLiteConverter(BusConverter):
             
             a = self._sig("addr_forBram_" + port._name, awAddr._dtype)
             If(prioritizeWrite,
-                c(awAddr - addr, a)
+                a ** (awAddr - addr)
             ).Elif(rSt._eq(rSt_t.rdIdle),
-                c(ar.addr - addr, a)
+                a ** (ar.addr - addr)
             ).Else(
-                c(arAddr - addr, a)
+                a ** (arAddr - addr)
             )
             
             addrHBit = port.addr._dtype.bit_length() 
             assert addrHBit + bitForAligig <= evalParam(self.ADDR_WIDTH).val
             
             c(a[(addrHBit + bitForAligig):bitForAligig], port.addr, fit=True)
-            c(1, port.en)
-            c(prioritizeWrite, port.we)
+            port.en ** 1
+            port.we ** prioritizeWrite
             
             rregAssigTop = If(_isMyAddr,
-                c(port.dout, rdataReg)
+                rdataReg ** port.dout 
             ).Else(
                 rregAssigTop
             )
@@ -133,35 +133,34 @@ class AxiLiteConverter(BusConverter):
             (b.ready, wSt_t.wrIdle)
         ).stateReg
         
-        aw_hs = sig('aw_hs')
         awAddr = reg('awAddr', aw.addr._dtype) 
         w_hs = sig('w_hs')
-        c(wSt._eq(wSt_t.wrResp), b.valid)
+        
+        b.valid ** wSt._eq(wSt_t.wrResp)
   
         awRd = wSt._eq(wSt_t.wrIdle)
-        c(awRd, aw.ready)
+        aw.ready ** awRd 
         wRd = wSt._eq(wSt_t.wrData)
-        c(wRd, w.ready)
+        w.ready ** wRd 
         
-        c(vec(RESP_OKAY, 2), self.bus.b.resp)
-        c(aw.valid & awRd, aw_hs) 
-        c(w.valid & wRd, w_hs)
+        self.bus.b.resp ** RESP_OKAY 
+        w_hs ** (w.valid & wRd) 
         
         # save aw addr
         If(awRd & aw.valid,
-            c(aw.addr, awAddr)
+            awAddr ** aw.addr
         ).Else(
-            c(awAddr, awAddr)
+            awAddr ** awAddr 
         )
         
         # output vld
         for ai in self._directlyMapped:
             out = ai.port.dout
-            c(w.data, out.data)
-            c(w_hs & (awAddr._eq(vec(ai.addr, addrWidth))), out.vld)
+            out.data ** w.data 
+            out.vld ** (w_hs & (awAddr._eq(vec(ai.addr, addrWidth))))
         
         for ai in self._bramPortMapped:
-            c(w.data, ai.port.din)
+            ai.port.din ** w.data 
             
         return awAddr, w_hs    
     
