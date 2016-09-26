@@ -97,6 +97,7 @@ class AxiLite_w(Interface):
         self.strb = s(dtype=vecT(self.DATA_WIDTH // 8), alternativeNames=['strb_v'])
         self.ready = s(masterDir=D.IN)
         self.valid = s()
+        
     def _getSimAgent(self):
         return AxiLite_wAgent
         
