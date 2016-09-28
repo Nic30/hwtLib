@@ -25,8 +25,8 @@ class FlipRegTC(unittest.TestCase):
         
         self.runSim("simpleWriteAndSwitch")
 
-        self.assertSequenceEqual([None, 0, 1, 1, 2, 1, 1, 1, 1], valuesToInts(u.first._ag.din))
-        self.assertSequenceEqual([None, 0, 2, 2, 1, 2, 2, 2, 2], valuesToInts(u.second._ag.din))
+        self.assertSequenceEqual([0, 0, 1, 1, 2, 1, 1, 1, 1], valuesToInts(u.first._ag.din))
+        self.assertSequenceEqual([0, 0, 2, 2, 1, 2, 2, 2, 2], valuesToInts(u.second._ag.din))
 
     
     

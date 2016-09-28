@@ -21,7 +21,7 @@ class FlipCntrTC(unittest.TestCase):
         u.doIncr._ag.data = [0, 0]
         self.runSim("nop")
     
-        self.assertSequenceEqual([None] + [0 for _ in range(8)], valuesToInts(u.data._ag.din))
+        self.assertSequenceEqual([0 for _ in range(9)], valuesToInts(u.data._ag.din))
     
     def test_incr(self):
         u = self.u
@@ -31,7 +31,7 @@ class FlipCntrTC(unittest.TestCase):
         
         self.runSim("incr")
     
-        self.assertSequenceEqual([None, 0, 0, 0] + [1 for _ in range(5)], valuesToInts(u.data._ag.din))
+        self.assertSequenceEqual([0, 0, 0, 0] + [1 for _ in range(5)], valuesToInts(u.data._ag.din))
     
         
     
