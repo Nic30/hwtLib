@@ -18,7 +18,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
     
     def test_nop(self):
         u = self.u
-        self.doSim("nop", 500 * Time.ns)
+        self.doSim("nop", 200 * Time.ns)
         
         self.assertEqual(len(u.ar._ag.data), 0)
         self.assertEqual(len(u.rOut._ag.data), 0)
@@ -31,7 +31,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
         
         # download one word from addr 0xff
         req.data.append(req.mkReq(0xff, 0))
-        self.doSim("notSplited", 500 * Time.ns)
+        self.doSim("notSplited", 200 * Time.ns)
         
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(u.ar._ag.data), 1)
@@ -41,7 +41,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(Axi4_rDatapumpTC('test_notSplitedReq'))
+    suite.addTest(Axi4_rDatapumpTC('test_nop'))
     #suite.addTest(unittest.makeSuite(Axi4_rDatapumpTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
