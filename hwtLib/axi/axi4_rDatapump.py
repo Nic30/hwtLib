@@ -14,6 +14,7 @@ from hwtLib.interfaces.amba_constants import (BURST_INCR, CACHE_DEFAULT,
                                               QOS_DEFAULT, BYTES_IN_TRANS,
                                               RESP_OKAY)
 from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
+from hdl_toolkit.serializer.simModelSerializer import SimModelSerializer
 
 class AddrSizeHsAgent(HandshakedAgent):
     def doRead(self, s):
@@ -187,17 +188,21 @@ class Axi4_RDataPump(Unit):
             If(reqLen > LEN_MAX,
                ar.len ** LEN_MAX,
                addRmSize.rem ** 0,
-               addRmSize.propagateLast ** 0,
-               If(ack,
-                  lenDebth ** (reqLen - LEN_MAX),
-                  lastReqDispatched ** 0)
+               addRmSize.propagateLast ** 0
             ).Else(
                connect(reqLen, ar.len, fit=True),  # connect only lower bits of len
                addRmSize.rem ** reqRem,
-               addRmSize.propagateLast ** 1,
-               If(ack,
-                  lastReqDispatched ** 1)
-            ) 
+               addRmSize.propagateLast ** 1
+            )
+             
+            If(ack,
+                If(reqLen > LEN_MAX,
+                    lenDebth ** (reqLen - LEN_MAX),
+                    lastReqDispatched ** 0
+                ).Else(
+                    lastReqDispatched ** 1
+                )
+            )
             
             If(lastReqDispatched,
                ar.valid ** (req.vld & canStartNew),
@@ -279,5 +284,5 @@ class Axi4_RDataPump(Unit):
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = Axi4_RDataPump()
-    print(toRtl(u))
+    print(toRtl(u, serializer=SimModelSerializer))
     
