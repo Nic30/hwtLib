@@ -34,8 +34,7 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.axi.axi4_rDatapump_test import Axi4_rDatapumpTC
 from hwtLib.samples.iLvl.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.samples.iLvl.axi.simpleAxiRegs_test import SimpleAxiRegsTC
-from hwtLib.samples.iLvl.statements.fsm_test import FsmExampleTC,\
-    HadrcodedFsmExampleTC
+from hwtLib.samples.iLvl.statements.fsm_test import FsmExampleTC, HadrcodedFsmExampleTC
 
 
 if __name__ == "__main__":

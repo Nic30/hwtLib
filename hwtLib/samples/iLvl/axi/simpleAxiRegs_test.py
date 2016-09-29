@@ -35,7 +35,7 @@ class SimpleAxiRegsTC(unittest.TestCase):
 
         self.runSim("falseWrite")
 
-        self.assertEqual(len(axi.w.data), 2)
+        self.assertEqual(len(axi.w.data), 2 - 1)
         self.assertEqual(len(u.axi._ag.r.data), 0)
         self.assertEqual(len(u.axi._ag.b.data), 0)
         
@@ -52,7 +52,7 @@ class SimpleAxiRegsTC(unittest.TestCase):
         self.assertEqual(len(axi.aw.data), 0)
         self.assertEqual(len(axi.w.data), 0)
         self.assertEqual(len(u.axi._ag.r.data), 0)
-        self.assertEqual(len(u.axi._ag.b.data), 0)
+        self.assertEqual(len(u.axi._ag.b.data), 2)
         
         model = self.model
         
@@ -62,6 +62,6 @@ class SimpleAxiRegsTC(unittest.TestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(SimpleAxiRegsTC('test_write'))
-    # suite.addTest(unittest.makeSuite(SimpleAxiRegsTC))
+    #suite.addTest(unittest.makeSuite(SimpleAxiRegsTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
