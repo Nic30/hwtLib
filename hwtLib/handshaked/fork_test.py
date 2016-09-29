@@ -25,7 +25,7 @@ class ForkTC(unittest.TestCase):
         self.doSim("passdata", 120 * Time.ns)
 
         collected = agInts(u.dataOut)
-        self.assertSequenceEqual([17, 17, 17, 17, 17, 17, 17, 17, 17, 17], collected)  # 1 was in reset
+        self.assertSequenceEqual([17], collected)  # 1 was in reset
         self.assertSequenceEqual([2, 3, 4, 5, 6], u.dataIn._ag.data)
 
 
