@@ -23,7 +23,7 @@ class VldMaskConflictsResolvingTC(unittest.TestCase):
         
         self.runSim("allCases")
         
-        self.assertSequenceEqual([0, 0, 0, 1, None, 0, 0, 0, 0, 0, 0], agInts(u.c))
+        self.assertSequenceEqual([0, 0, 0, 1, None, 0, 1, None, 0], agInts(u.c))
 
         
 if __name__ == "__main__":
