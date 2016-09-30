@@ -284,5 +284,5 @@ class Axi4_RDataPump(Unit):
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = Axi4_RDataPump()
-    print(toRtl(u, serializer=SimModelSerializer))
+    print(toRtl(u))
     
