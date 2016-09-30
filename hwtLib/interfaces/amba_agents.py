@@ -1,6 +1,6 @@
 from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
 from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, \
-    PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
+    PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT, RESP_OKAY
 from hdl_toolkit.simulator.agentBase import AgentBase
 
 class BaseAxiAgent(HandshakedAgent):
@@ -70,6 +70,9 @@ class Axi4_rAgent(BaseAxiAgent):
         last = r(intf.last)
         
         return (_id, data, resp, last)
+    
+    def addData(self, data, _id=0, resp=RESP_OKAY, last=True):
+        self.data.append((_id, data, resp, last))
     
     def doWrite(self, s, data):
         intf = self.intf
