@@ -48,7 +48,7 @@ class AxiSAppend(AxiSCompBase):
                               i(self.dataIn1),
                               i(self.dataOut)):
             if oi._masterDir == DIRECTION.IN:
-                # swap because direction is oposite
+                # swap because direction is opposite
                 i0 ** (oi & st._eq(stT.sendDataIn0))
                 i1 ** (oi & st._eq(stT.sendDataIn1))
             else:
