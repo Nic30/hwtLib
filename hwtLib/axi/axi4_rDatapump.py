@@ -14,7 +14,6 @@ from hwtLib.interfaces.amba_constants import (BURST_INCR, CACHE_DEFAULT,
                                               QOS_DEFAULT, BYTES_IN_TRANS,
                                               RESP_OKAY)
 from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
-from hdl_toolkit.serializer.simModelSerializer import SimModelSerializer
 
 class AddrSizeHsAgent(HandshakedAgent):
     def doRead(self, s):
