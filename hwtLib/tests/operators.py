@@ -5,6 +5,7 @@ from hdl_toolkit.hdlObjects.types.defs import INT, STR
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 from hdl_toolkit.synthesizer.rtlLevel.signalUtils.walkers import walkAllOriginSignals
 from hdl_toolkit.bitmask import Bitmask
+from hdl_toolkit.hdlObjects.types.sliceVal import SliceVal
 
 andTable = [ (None, None, None),
              (None, 0, 0),
@@ -191,7 +192,11 @@ class OperatorTC(unittest.TestCase):
             resBit = vec(a_in, b_w) + vec(b_in, b_w)  
             self.assertEqual(resBit.vldMask, 3)
             self.assertEqual(resBit.val, out, "a_in %d, b_in %d, out %d" % (a_in, b_in, out))
-    
+    #[TODO]
+    #def testSlice(self):
+    #    a = vec(11, 8)
+    #    b = SliceVal(())
+        
 
       
 if __name__ == '__main__':
