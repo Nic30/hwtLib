@@ -14,7 +14,6 @@ from hwtLib.interfaces.amba_constants import (BURST_INCR, CACHE_DEFAULT,
                                               QOS_DEFAULT, BYTES_IN_TRANS,
                                               RESP_OKAY)
 from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
-from hdl_toolkit.serializer.simModelSerializer import SimModelSerializer
 
 class AddrSizeHsAgent(HandshakedAgent):
     def doRead(self, s):
@@ -284,5 +283,5 @@ class Axi4_RDataPump(Unit):
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = Axi4_RDataPump()
-    print(toRtl(u, serializer=SimModelSerializer))
+    print(toRtl(u))
     
