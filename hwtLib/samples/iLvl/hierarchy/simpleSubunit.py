@@ -1,7 +1,6 @@
 from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.intfLvl import Unit
 from hwtLib.samples.iLvl.simple import SimpleUnit
-from hdl_toolkit.serializer.simModelSerializer import SimModelSerializer
 
 
 class SimpleSubunit(Unit):
@@ -20,4 +19,4 @@ class SimpleSubunit(Unit):
 
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
-    print(toRtl(SimpleSubunit(), serializer=SimModelSerializer))
+    print(toRtl(SimpleSubunit()))
