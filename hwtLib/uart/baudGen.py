@@ -4,8 +4,7 @@ from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.interfaces.utils import log2ceil, addClkRstn
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
 from hdl_toolkit.synthesizer.codeOps import If
-from hdl_toolkit.bitmask import Bitmask
-
+from hdl_toolkit.bitmask import mask
 
 class UartBaudGen(Unit):
     def _config(self):
@@ -32,7 +31,7 @@ class UartBaudGen(Unit):
         shiftLimiter = log2ceil(baud * oversampling >> (31 - accWidth)).val  
         inc = (((baud * oversampling << (accWidth - shiftLimiter))
                + (freq >> (shiftLimiter + 1))) // (freq >> shiftLimiter)
-               ) & Bitmask.mask(accWidth + 1) 
+               ) & mask(accWidth + 1) 
         
         acc = self._reg("acc", vecT(accWidth + 1, signed=False), defVal=0)
 

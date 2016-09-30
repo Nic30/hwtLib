@@ -1,13 +1,14 @@
+from hdl_toolkit.bitmask import mask
+from hdl_toolkit.interfaces.std import Signal
+from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
+from hdl_toolkit.synthesizer.codeOps import connect, If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
+from hwtLib.axi.axi4_rDatapump import AddrSizeHs
 from hwtLib.interfaces.amba import Axi4_w, Axi4_addr, AxiStream, Axi4_b
 from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, PROT_DEFAULT, QOS_DEFAULT, \
     BYTES_IN_TRANS, RESP_OKAY
-from hwtLib.axi.axi4_rDatapump import AddrSizeHs
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.synthesizer.codeOps import connect, If
-from hdl_toolkit.bitmask import Bitmask
+
 
 def axiHsAck(m, s):
     return m.valid & s.ready
@@ -47,7 +48,7 @@ class Axi4_wDatapump(Unit):
         return log2ceil(self.DATA_WIDTH // 8).val
     
     def getAxiLenMax(self):
-        return Bitmask.mask(self.ar.len._dtype.bit_length())
+        return mask(self.ar.len._dtype.bit_length())
     
     def getBurstAddrOffset(self):
         return (self.getAxiLenMax() + 1) << self.getSizeAlignBits()
@@ -66,7 +67,7 @@ class Axi4_wDatapump(Unit):
         aw.size ** BYTES_IN_TRANS(evalParam(self.DATA_WIDTH).val)
 
         if self.useTransSplitting():
-            LEN_MAX = Bitmask.mask(aw.len._dtype.bit_length())
+            LEN_MAX = mask(aw.len._dtype.bit_length())
             
             lastReqDispatched = self._reg("lastReqDispatched", defVal=1)
             

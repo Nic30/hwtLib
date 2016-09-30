@@ -1,10 +1,10 @@
 import unittest
 
-from hdl_toolkit.bitmask import Bitmask
 from hdl_toolkit.hdlObjects.specialValues import WRITE, READ, Time
 from hdl_toolkit.simulator.agentConnector import valuesToInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.mem.lutRam import RAM64X1S
+from hdl_toolkit.bitmask import selectBit
 
 
 def applyRequests(ram, requests):
@@ -28,7 +28,7 @@ def applyRequests(ram, requests):
         # ram addr has 6 bits
         for i in range(6):
             addrbit = getattr(ram, "a%d" % i)
-            addrBitval = Bitmask.select(addr, i)
+            addrBitval = selectBit(addr, i)
             addrbit._ag.data.append(addrBitval)
     
     

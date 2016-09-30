@@ -1,6 +1,6 @@
 import unittest
 
-from hdl_toolkit.bitmask import Bitmask
+from hdl_toolkit.bitmask import selectBit
 from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd
@@ -16,7 +16,7 @@ def addValues(unit, data):
             if d is None:
                 dataBitval = None
             else:
-                dataBitval = Bitmask.select(d, i)
+                dataBitval = selectBit(d, i)
             
             databit._ag.data.append(dataBitval)
 

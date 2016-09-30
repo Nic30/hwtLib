@@ -1,4 +1,4 @@
-from hdl_toolkit.bitmask import Bitmask
+from hdl_toolkit.bitmask import mask
 from hdl_toolkit.hdlObjects.typeShortcuts import vec
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
 from hdl_toolkit.synthesizer.codeOps import Concat, Switch, If
@@ -12,7 +12,7 @@ from hwtLib.interfaces.frameLink import FrameLink
 
 def strbToRem(strbBits, remBits):
     for i in range(strbBits):
-        strb = vec(Bitmask.mask(i + 1), strbBits)
+        strb = vec(mask(i + 1), strbBits)
         rem = vec(i, remBits)
         yield strb, rem
 

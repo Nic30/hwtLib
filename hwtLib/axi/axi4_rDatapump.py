@@ -1,6 +1,7 @@
-from hdl_toolkit.bitmask import Bitmask
+from hdl_toolkit.bitmask import mask
 from hdl_toolkit.hdlObjects.specialValues import DIRECTION
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
 from hdl_toolkit.interfaces.std import Handshaked, Signal, HandshakeSync
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil, propagateClkRstn
 from hdl_toolkit.synthesizer.codeOps import If, Switch, connect
@@ -13,7 +14,7 @@ from hwtLib.interfaces.amba_constants import (BURST_INCR, CACHE_DEFAULT,
                                               LOCK_DEFAULT, PROT_DEFAULT,
                                               QOS_DEFAULT, BYTES_IN_TRANS,
                                               RESP_OKAY)
-from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
+
 
 class AddrSizeHsAgent(HandshakedAgent):
     def doRead(self, s):
@@ -143,7 +144,7 @@ class Axi4_RDataPump(Unit):
         return evalParam(self.req.USER_WIDTH).val > 0
     
     def getBurstAddrOffset(self):
-        LEN_MAX = Bitmask.mask(self.ar.len._dtype.bit_length())
+        LEN_MAX = mask(self.ar.len._dtype.bit_length())
         return (LEN_MAX + 1) << self.getSizeAlignBits()
     
     def addrHandler(self, addRmSize):
@@ -163,7 +164,7 @@ class Axi4_RDataPump(Unit):
 
         # if axi len is smaller we have to use transaction splitting
         if self.useTransSplitting(): 
-            LEN_MAX = Bitmask.mask(ar.len._dtype.bit_length())
+            LEN_MAX = mask(ar.len._dtype.bit_length())
             
                
             lastReqDispatched = self._reg("lastReqDispatched", defVal=1) 
@@ -246,9 +247,9 @@ class Axi4_RDataPump(Unit):
         
         Switch(remSize)\
         .Case(0,
-              strb ** Bitmask.mask(strbBytes)
+              strb ** mask(strbBytes)
         ).addCases(
-         [ (i + 1, strb ** Bitmask.mask(i + 1)) 
+         [ (i + 1, strb ** mask(i + 1)) 
            for i in range(strbBytes - 1)]
         )
     

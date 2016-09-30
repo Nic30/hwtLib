@@ -1,4 +1,4 @@
-from hdl_toolkit.bitmask import Bitmask
+from hdl_toolkit.bitmask import mask
 from hdl_toolkit.hdlObjects.typeShortcuts import vec, vecT
 from hdl_toolkit.hdlObjects.types.defs import BIT
 from hdl_toolkit.hdlObjects.types.enum import Enum
@@ -175,7 +175,7 @@ class Axi4streamToMem(Unit):
         w.valid ** (din.vld & w_en) 
         w.data ** din.data
         w.id ** 0
-        w.strb ** Bitmask.mask(w.strb._dtype.bit_length())
+        w.strb ** mask(w.strb._dtype.bit_length())
         w.last ** last
         
         din.rd ** (w_en & w.ready)

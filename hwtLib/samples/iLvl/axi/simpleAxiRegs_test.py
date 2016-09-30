@@ -1,13 +1,13 @@
 import unittest
 
+from hdl_toolkit.bitmask import mask
 from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.agentConnector import agInts, valuesToInts
+from hdl_toolkit.simulator.agentConnector import valuesToInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.samples.iLvl.axi.simpleAxiRegs import SimpleAxiRegs
-from hdl_toolkit.bitmask import Bitmask
 
 
-allMask = Bitmask.mask(64)
+allMask = mask(64)
         
 class SimpleAxiRegsTC(unittest.TestCase):
     def setUp(self):

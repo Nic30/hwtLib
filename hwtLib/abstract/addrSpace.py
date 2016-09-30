@@ -1,5 +1,6 @@
-from hdl_toolkit.bitmask import Bitmask
 import pprint
+
+from hdl_toolkit.bitmask import mask
 
 
 class AddrSpaceItem(object):
@@ -49,7 +50,7 @@ class AddrSpaceItem(object):
         else:
             subAddrBits = (self.size - 1).bit_length()
         
-        if self.addr & Bitmask.mask(subAddrBits):
+        if self.addr & mask(subAddrBits):
             # is addr is not aligned to size
             return None
         return self.addr >> subAddrBits, subAddrBits

@@ -1,6 +1,5 @@
 import unittest
 
-from hdl_toolkit.bitmask import Bitmask
 from hdl_toolkit.hdlObjects.specialValues import Time, NOP
 from hdl_toolkit.simulator.agentConnector import valuesToInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare

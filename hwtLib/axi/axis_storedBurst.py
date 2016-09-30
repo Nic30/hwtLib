@@ -1,6 +1,6 @@
 import math
 
-from hdl_toolkit.bitmask import Bitmask
+from hdl_toolkit.bitmask import mask
 from hdl_toolkit.hdlObjects.typeShortcuts import vec, vecT
 from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.synthesizer.codeOps import c, If, Switch
@@ -41,7 +41,7 @@ class AxiStreamStoredBurst(Unit):
     
     def _impl(self):
         self.DATA_WIDTH = evalParam(self.DATA_WIDTH).val
-        vldAll = Bitmask.mask(self.DATA_WIDTH // 8)
+        vldAll = mask(self.DATA_WIDTH // 8)
         
         DATA_LEN = len(self.DATA)
         

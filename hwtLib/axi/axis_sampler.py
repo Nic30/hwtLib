@@ -1,5 +1,5 @@
-from hdl_toolkit.bitmask import Bitmask
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit, vec
+from hdl_toolkit.bitmask import mask
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.interfaces.std import Signal, VldSynced
 from hdl_toolkit.interfaces.utils import addClkRstn
@@ -89,8 +89,8 @@ class AxiSSampler(Unit):
         self.busy ** (st != stT.stIdle)
         
         strbw = out.strb._dtype.bit_length()
-        c(vec(Bitmask.mask(strbw), strbw), out.strb)
-        c(hBit(1), out.last)
+        out.strb ** mask(strbw)
+        out.last ** 1 
         Switch(st)\
         .Case(stT.stIdle,
             If(req & sampleIn.vld,
@@ -101,7 +101,7 @@ class AxiSSampler(Unit):
             self.done ** (req & sampleIn.vld & out.ready)
         ).Case(stT.stBusy,
             out.valid ** sampleIn.vld,
-            c(sampleIn.vld & out.ready, self.done)
+             self.done ** (sampleIn.vld & out.ready)
         ).Case(stT.stBusyHold,
            out.valid ** 1,
            self.done ** out.ready 
