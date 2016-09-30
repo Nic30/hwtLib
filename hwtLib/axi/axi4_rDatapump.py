@@ -93,13 +93,14 @@ class Axi4_RDataPump(Unit):
     Foward req to axi ar channel 
     and collect data to data channel form axi r channel 
     
-    This unit simplifies axi interface 
-    and blocks data channel when there is no request pending
+    This unit simplifies axi interface,
+    blocks data channel when there is no request pending
+    and contains frame merging logic if is required
     
     if req len is wider transaction is internally splited to multiple
     transactions, but readed data are single packet as requested 
     
-    rErrFlag stays hihh when there was error on axi r channel
+    rErrFlag stays high when there was error on axi r channel
     it will not affect unit functionality
     """
     
