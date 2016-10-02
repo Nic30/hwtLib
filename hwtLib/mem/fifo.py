@@ -28,8 +28,7 @@ class Fifo(Unit):
     def _impl(self):
         index_t = vecT(log2ceil(self.DEPTH), False)
         
-        self.mem = self._sig("memory", Array(vecT(self.DATA_WIDTH), self.DEPTH))
-        mem = self.mem
+        mem = self.mem = self._sig("memory", Array(vecT(self.DATA_WIDTH), self.DEPTH))
         head = self._reg("head", index_t, 0)
         tail = self._reg("tail", index_t, 0)
         looped = self._reg("looped", defVal=False)
@@ -40,7 +39,6 @@ class Fifo(Unit):
         din = self.dataIn
 
         MAX_DEPTH = DEPTH - 1
-        # [TODO] forgot head, tail clock enable 
                 
         rd_en = dout.en & (looped | (head != tail))
         If(rd_en,
