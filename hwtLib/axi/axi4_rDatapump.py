@@ -137,7 +137,6 @@ class Axi4_RDataPump(Unit):
         ar = self.ar
         req = self.req
         canStartNew = addRmSize.rd
-        
          
         ar.burst ** BURST_INCR
         ar.cache ** CACHE_DEFAULT
@@ -149,6 +148,7 @@ class Axi4_RDataPump(Unit):
         # if axi len is smaller we have to use transaction splitting
         if self.useTransSplitting(): 
             LEN_MAX = mask(ar.len._dtype.bit_length())
+            ADDR_STEP = self.getBurstAddrOffset()
             
                
             lastReqDispatched = self._reg("lastReqDispatched", defVal=1) 
@@ -156,12 +156,12 @@ class Axi4_RDataPump(Unit):
             remBackup = self._reg("remBackup", req.rem._dtype)
             rAddr = self._reg("r_addr", req.addr._dtype)
             
-            req_id = self._reg("req_id", self.req.id._dtype)
+            req_idBackup = self._reg("req_idBackup", self.req.id._dtype)
             If(lastReqDispatched,
-                req_id ** req.id,
+                req_idBackup ** req.id,
                 ar.id ** req.id 
             ).Else(
-                ar.id ** req_id
+                ar.id ** req_idBackup
             )
                 
             reqLen = self._sig("reqLen", req.len._dtype)
@@ -181,7 +181,7 @@ class Axi4_RDataPump(Unit):
              
             If(ack,
                 If(reqLen > LEN_MAX,
-                    lenDebth ** (reqLen - LEN_MAX),
+                    lenDebth ** (reqLen - (LEN_MAX + 1)),
                     lastReqDispatched ** 0
                 ).Else(
                     lastReqDispatched ** 1
@@ -191,7 +191,7 @@ class Axi4_RDataPump(Unit):
             If(lastReqDispatched,
                ar.valid ** (req.vld & canStartNew),
                ar.addr ** req.addr,
-               rAddr ** req.addr,
+               rAddr ** (req.addr + ADDR_STEP),
                
                req.rd ** (canStartNew & ar.ready),
                reqLen ** req.len,
@@ -208,7 +208,7 @@ class Axi4_RDataPump(Unit):
                reqRem ** remBackup,
                ack ** (canStartNew & ar.ready),
                If(canStartNew & ar.ready,
-                  rAddr ** (rAddr + self.getBurstAddrOffset()) 
+                  rAddr ** (rAddr + ADDR_STEP) 
                ),
                addRmSize.vld ** ar.ready
             )
