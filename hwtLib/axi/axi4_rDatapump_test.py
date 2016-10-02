@@ -74,7 +74,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
         self.assertEqual(len(u.ar._ag.data), 1)
         self.assertEqual(len(u.rOut._ag.data), 256)
         # self.assertEqual(valuesToInts(u.rOut._ag.data[0]), [77, mask(64 // 8), 0, 1])
-        self.assertEqual(len(r.data), 2-1) # 2. is now sended
+        self.assertEqual(len(r.data), 0) # 2. is now sended
        
         
 
