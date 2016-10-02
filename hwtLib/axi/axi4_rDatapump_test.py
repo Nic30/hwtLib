@@ -92,10 +92,8 @@ class Axi4_rDatapumpTC(unittest.TestCase):
         ar = u.ar._ag.data
         rout = u.rOut._ag.data
         
-        # download one word from addr 0xff
+        # download 512 words from addr 0xff
         req.data.append(req.mkReq(0xff, 511))
-        #for i in range(256):
-        #    r.addData(i + 77, last=(i == 255))
         
         self.doSim("maxReq", 2600 * Time.ns)
         
@@ -109,7 +107,33 @@ class Axi4_rDatapumpTC(unittest.TestCase):
                                      CACHE_DEFAULT, 255, LOCK_DEFAULT, PROT_DEFAULT,
                                      BYTES_IN_TRANS(64), QOS_DEFAULT])
         
-       
+    def test_maxOverlap(self):
+        u = self.u
+        
+        req = u.req._ag
+        r = u.r._ag
+        ar = u.ar._ag.data
+        rout = u.rOut._ag.data
+        
+        for i in range(32):
+            req.data.append(req.mkReq(i, 0))
+        #    r.addData(i + 77, last=(i == 255))
+        
+        self.doSim("maxOverlap", 1000 * Time.ns)
+        
+        self.assertEqual(len(req.data), 15)
+        self.assertEqual(len(ar), 16)
+        self.assertEqual(len(rout), 0)
+        
+        for i, req in enumerate(ar):
+            # _id, addr, burst, cache, _len, lock, prot, size, qos
+            self.assertSequenceEqual(valuesToInts(req), [0, i, BURST_INCR, 
+                                     CACHE_DEFAULT, 0, LOCK_DEFAULT, PROT_DEFAULT,
+                                     BYTES_IN_TRANS(64), QOS_DEFAULT])
+        
+        
+    
+    
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(Axi4_rDatapumpTC('test_maxReq'))
