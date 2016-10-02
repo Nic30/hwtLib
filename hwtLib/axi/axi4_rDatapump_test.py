@@ -56,8 +56,8 @@ class Axi4_rDatapumpTC(unittest.TestCase):
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(u.ar._ag.data), 1)
         self.assertEqual(len(u.rOut._ag.data), 1)
-        self.assertEqual(valuesToInts(u.rOut._ag.data[0]), [77, mask(64 // 8), 0, 1])
-        self.assertEqual(len(r.data), 2-1) # 2. is now sended
+        self.assertEqual(valuesToInts(u.rOut._ag.data[0]), [0, 77, mask(64 // 8), 1])
+        self.assertEqual(len(r.data), 2 - 1)  # 2. is now sended
          
     
     def test_maxNotSplitedReqWithData(self):
@@ -65,32 +65,35 @@ class Axi4_rDatapumpTC(unittest.TestCase):
         
         req = u.req._ag
         r = u.r._ag
+        rout = u.rOut._ag.data
         
         # download one word from addr 0xff
         req.data.append(req.mkReq(0xff, 255))
         for i in range(256):
-            r.addData(i + 77, last=(i==255))
+            r.addData(i + 77, last=(i == 255))
         
         self.doSim("maxNotSplitedReqWithData", 2600 * Time.ns)
         
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(u.ar._ag.data), 1)
-        self.assertEqual(len(u.rOut._ag.data), 256)
-        # self.assertEqual(valuesToInts(u.rOut._ag.data[0]), [77, mask(64 // 8), 0, 1])
-        self.assertEqual(len(r.data), 0) # 2. is now sended
+        self.assertEqual(len(rout), 256)
+        for i, d in enumerate(rout):
+            d = valuesToInts(d)
+            self.assertEqual(d, [0, 77 + i, mask(64 // 8), int(i == 255)])
+        self.assertEqual(len(r.data), 0)  # 2. is now sended
        
         
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(Axi4_rDatapumpTC('test_maxNotSplitedReqWithData'))
-    #suite.addTest(unittest.makeSuite(Axi4_rDatapumpTC))
+    # suite.addTest(unittest.makeSuite(Axi4_rDatapumpTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
     
-    #import cProfile, pstats
-    #cProfile.run("runner.run(suite)", "{}.profile".format(__file__))
-    #s = pstats.Stats("{}.profile".format(__file__))
-    #s.strip_dirs()
-    #s.sort_stats("cumtime").print_stats(50)
+    # import cProfile, pstats
+    # cProfile.run("runner.run(suite)", "{}.profile".format(__file__))
+    # s = pstats.Stats("{}.profile".format(__file__))
+    # s.strip_dirs()
+    # s.sort_stats("cumtime").print_stats(50)
     

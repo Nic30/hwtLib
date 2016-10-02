@@ -112,7 +112,32 @@ class AxiStreamAgent(BaseAxiAgent):
         w(data, intf.data)
         w(strb, intf.resp)
         w(last, intf.last)
+
+class AxiStream_withIdAgent(BaseAxiAgent):        
+    def doRead(self, s):
+        intf = self.intf
+        r = s.read
+
+        _id = r(intf.id)
+        data = r(intf.data)
+        strb = r(intf.strb)
+        last = r(intf.last)
         
+        return (_id, data, strb, last)
+    
+    def doWrite(self, s, data):
+        intf = self.intf
+        w = s.w
+        
+        if data is None:
+            data = [None for _ in range(4)]
+        
+        _id, data, strb, last = data
+        
+        w(_id, intf.id)
+        w(data, intf.data)
+        w(strb, intf.resp)
+        w(last, intf.last)              
 
 class AxiStream_withUserAndStrbAgent(BaseAxiAgent):
     def doRead(self, s):
