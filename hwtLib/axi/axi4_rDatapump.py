@@ -2,17 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from hdl_toolkit.bitmask import mask
-from hdl_toolkit.hdlObjects.specialValues import DIRECTION
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
-from hdl_toolkit.interfaces.std import Handshaked, Signal, HandshakeSync
+from hdl_toolkit.interfaces.std import Handshaked, Signal, HandshakeSync, \
+    VectSignal
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil, propagateClkRstn
 from hdl_toolkit.synthesizer.codeOps import If, Switch, connect
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.interfaces.amba import (Axi4_r, Axi4_addr, AxiStream,
-                                    AxiStream_withUserAndStrb)
+from hwtLib.interfaces.amba import (Axi4_r, Axi4_addr, AxiStream_withId)
 from hwtLib.interfaces.amba_constants import (BURST_INCR, CACHE_DEFAULT,
                                               LOCK_DEFAULT, PROT_DEFAULT,
                                               QOS_DEFAULT, BYTES_IN_TRANS,
@@ -24,15 +22,15 @@ class AddrSizeHsAgent(HandshakedAgent):
         intf = self.intf
         r = s.read
         
+        _id = r(intf.id)
         addr = r(intf.addr)
         _len = r(intf.len)
         rem = r(intf.rem)
-        user = r(intf.user)
         
-        return (addr, _len, rem, user)
+        return (_id, addr, _len, rem)
 
-    def mkReq(self, addr, _len, rem=0, user=0):
-        return (addr, _len, rem, user)
+    def mkReq(self, addr, _len, rem=0, _id=0):
+        return (_id, addr, _len, rem)
 
     def doWrite(self, s, data):
         intf = self.intf
@@ -41,36 +39,32 @@ class AddrSizeHsAgent(HandshakedAgent):
         if data is None:
             data = [None for _ in range(4)]
 
-        addr, _len, rem, user = data
+        _id, addr, _len, rem = data
         
+        w(_id, intf.id)
         w(addr, intf.addr)
         w(_len, intf.len)
         w(rem, intf.rem)
-        w(user, intf.user)
-        
-    
     
 class AddrSizeHs(Handshaked):
     def _config(self):
+        self.ID_WIDTH = Param(4)
         self.ADDR_WIDTH = Param(32)
         self.MAX_LEN = Param(4096 // 8 - 1)
         self.DATA_WIDTH = Param(64)
         self.USER_WIDTH = Param(2)  
     
     def _declr(self):
-        self.addr = Signal(dtype=vecT(self.ADDR_WIDTH))
+        self.id = VectSignal(self.ID_WIDTH)
+        
+        self.addr = VectSignal(self.ADDR_WIDTH)
         #  len is number of words -1
-        self.len = Signal(dtype=vecT(log2ceil(self.MAX_LEN)))
+        self.len = VectSignal(log2ceil(self.MAX_LEN))
         
         # rem is number of bits in last word which is valid - 1
-        self.rem = Signal(dtype=vecT(log2ceil(self.DATA_WIDTH // 8)))
+        self.rem = VectSignal(log2ceil(self.DATA_WIDTH // 8))
 
-        # signal of generic purpose
-        if evalParam(self.USER_WIDTH).val > 0:
-            self.user = Signal(dtype=vecT(self.USER_WIDTH)) 
-        
-        self.vld = Signal()
-        self.rd = Signal(masterDir=DIRECTION.IN)
+        HandshakeSync._declr(self)
     
     def _getSimAgent(self):
         return AddrSizeHsAgent
@@ -78,16 +72,11 @@ class AddrSizeHs(Handshaked):
 class TransEndInfo(HandshakeSync):
     def _config(self):
         self.DATA_WIDTH = Param(64)
-        self.USER_WIDTH = Param(0)  
     
     def _declr(self):
         # rem is number of bits in last word which is valid - 1
-        self.rem = Signal(dtype=vecT(log2ceil(self.DATA_WIDTH // 8)))
+        self.rem = VectSignal(log2ceil(self.DATA_WIDTH // 8))
 
-        # signal of generic purpose
-        if evalParam(self.USER_WIDTH).val > 0:
-            self.user = Signal(dtype=vecT(self.USER_WIDTH))  
-        
         self.propagateLast = Signal()
         HandshakeSync._declr(self)
 
@@ -126,10 +115,7 @@ class Axi4_RDataPump(Unit):
                 
                 # user flag from req will be set in every word on output rOut 
                 self.req = AddrSizeHs()
-                if self.useUserSig():
-                    self.rOut = AxiStream_withUserAndStrb()
-                else:
-                    self.rOut = AxiStream()
+                self.rOut = AxiStream_withId()
                 
                 self.rErrFlag = Signal()
         
@@ -143,9 +129,6 @@ class Axi4_RDataPump(Unit):
     def useTransSplitting(self):
         return self.req.len._dtype.bit_length() > self.ar.len._dtype.bit_length()
     
-    def useUserSig(self):
-        return evalParam(self.req.USER_WIDTH).val > 0
-    
     def getBurstAddrOffset(self):
         LEN_MAX = mask(self.ar.len._dtype.bit_length())
         return (LEN_MAX + 1) << self.getSizeAlignBits()
@@ -153,11 +136,8 @@ class Axi4_RDataPump(Unit):
     def addrHandler(self, addRmSize):
         ar = self.ar
         req = self.req
-
-
         canStartNew = addRmSize.rd
-        
-        ar.id ** self.DEFAULT_ID
+         
         ar.burst ** BURST_INCR
         ar.cache ** CACHE_DEFAULT
         ar.lock ** LOCK_DEFAULT
@@ -168,6 +148,7 @@ class Axi4_RDataPump(Unit):
         # if axi len is smaller we have to use transaction splitting
         if self.useTransSplitting(): 
             LEN_MAX = mask(ar.len._dtype.bit_length())
+            ADDR_STEP = self.getBurstAddrOffset()
             
                
             lastReqDispatched = self._reg("lastReqDispatched", defVal=1) 
@@ -175,14 +156,13 @@ class Axi4_RDataPump(Unit):
             remBackup = self._reg("remBackup", req.rem._dtype)
             rAddr = self._reg("r_addr", req.addr._dtype)
             
-            if self.useUserSig():
-                user = self._reg("user", self.req.user._dtype)
-                If(lastReqDispatched,
-                    user ** req.user,
-                    addRmSize.user ** req.user 
-                ).Else(
-                    addRmSize.user ** user
-                )
+            req_idBackup = self._reg("req_idBackup", self.req.id._dtype)
+            If(lastReqDispatched,
+                req_idBackup ** req.id,
+                ar.id ** req.id 
+            ).Else(
+                ar.id ** req_idBackup
+            )
                 
             reqLen = self._sig("reqLen", req.len._dtype)
             reqRem = self._sig("reqRem", req.rem._dtype)
@@ -201,7 +181,7 @@ class Axi4_RDataPump(Unit):
              
             If(ack,
                 If(reqLen > LEN_MAX,
-                    lenDebth ** (reqLen - LEN_MAX),
+                    lenDebth ** (reqLen - (LEN_MAX + 1)),
                     lastReqDispatched ** 0
                 ).Else(
                     lastReqDispatched ** 1
@@ -211,7 +191,7 @@ class Axi4_RDataPump(Unit):
             If(lastReqDispatched,
                ar.valid ** (req.vld & canStartNew),
                ar.addr ** req.addr,
-               rAddr ** req.addr,
+               rAddr ** (req.addr + ADDR_STEP),
                
                req.rd ** (canStartNew & ar.ready),
                reqLen ** req.len,
@@ -228,33 +208,33 @@ class Axi4_RDataPump(Unit):
                reqRem ** remBackup,
                ack ** (canStartNew & ar.ready),
                If(canStartNew & ar.ready,
-                  rAddr ** (rAddr + self.getBurstAddrOffset()) 
+                  rAddr ** (rAddr + ADDR_STEP) 
                ),
                addRmSize.vld ** ar.ready
             )
         else:
             # if axi len is wider we can directly translate requests to axi
+            ar.id ** req.id
             ar.valid ** (req.vld & canStartNew)
             ar.addr ** req.addr
+
             connect(req.len, ar.len, fit=True)
 
             addRmSize.rem ** req.rem
             addRmSize.propagateLast ** 1
-            if self.useUserSig():
-                addRmSize.user ** req.user
             addRmSize.vld ** (req.vld & ar.ready)
         
     
     def remSizeToStrb(self, remSize, strb):
         strbBytes = 2 ** self.getSizeAlignBits()
         
-        Switch(remSize)\
-        .Case(0,
-              strb ** mask(strbBytes)
-        ).addCases(
-         [ (i + 1, strb ** mask(i + 1)) 
-           for i in range(strbBytes - 1)]
-        )
+        return Switch(remSize)\
+                .Case(0,
+                      strb ** mask(strbBytes)
+                ).addCases(
+                 [ (i + 1, strb ** mask(i + 1)) 
+                   for i in range(strbBytes - 1)]
+                )
     
     def dataHandler(self, rmSizeOut): 
         r = self.r
@@ -270,11 +250,12 @@ class Axi4_RDataPump(Unit):
         rOut.data ** r.data
         rOut.last ** (r.last & rmSizeOut.propagateLast)
         
-        if self.useUserSig():
-            rOut.user ** rmSizeOut.user
-        
-        self.remSizeToStrb(rmSizeOut.rem, rOut.strb)
-        
+        rOut.id ** r.id
+        If(r.valid & r.last,
+           self.remSizeToStrb(rmSizeOut.rem, rOut.strb)
+        ).Else(
+               rOut.strb ** mask(2 ** self.getSizeAlignBits())
+        )
         rOut.valid ** (r.valid & rmSizeOut.vld)
         r.ready ** (rOut.ready & rmSizeOut.vld)
         rmSizeOut.rd ** (r.valid & r.last & rOut.ready)

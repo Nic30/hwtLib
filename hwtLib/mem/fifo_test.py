@@ -25,6 +25,18 @@ class FifoTC(unittest.TestCase):
     
     
     
+    def test_fifoSingleWord(self):
+        u = self.u
+        
+        expected = [1]
+        u.dataIn._ag.data = copy(expected)
+
+        self.doSim("normalOp", 90 * Time.ns)
+        
+        collected = u.dataOut._ag.data
+
+        self.assertSequenceEqual(expected, valuesToInts(collected))
+    
     def test_fifoWritterDisable(self):
         u = self.u
         
