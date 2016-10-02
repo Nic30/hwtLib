@@ -1,9 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit, vec
+from hdl_toolkit.interfaces.std import Signal
+from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
+from hdl_toolkit.synthesizer.codeOps import If, c, Concat, slr
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit, vec
-from hdl_toolkit.synthesizer.codeOps import If, c, Concat, slr
 
 
 class MulDiv(Unit):

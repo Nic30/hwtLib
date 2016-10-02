@@ -1,10 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.interfaces.std import Signal, BramPort_withoutClk, Clk
 from hdl_toolkit.interfaces.utils import propagateClk
+from hdl_toolkit.serializer.constants import SERI_MODE
 from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import evalParam
 from hwtLib.mem.ram import RamSingleClock
-from hdl_toolkit.serializer.constants import SERI_MODE
 
 
 class FlipRam(Unit):

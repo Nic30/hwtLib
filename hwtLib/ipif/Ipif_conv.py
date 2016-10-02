@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.hdlObjects.types.typeCast import toHVal
 from hdl_toolkit.interfaces.utils import addClkRstn

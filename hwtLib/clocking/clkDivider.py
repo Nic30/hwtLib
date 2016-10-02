@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.interfaces.std import Clk, Rst_n
 from hdl_toolkit.synthesizer.codeOps import If

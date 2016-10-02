@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from math import log2
 
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit

@@ -1,11 +1,11 @@
-from hdl_toolkit.hdlObjects.specialValues import Time
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.simulator.shortcuts import simUnitVcd, oscilate, pullUpAfter
 from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.shortcuts import synthesised
 
 
 class SelfRefCntr(Unit):
@@ -30,13 +30,6 @@ class SelfRefCntr(Unit):
         
         
 if __name__ == "__main__":
-    # print(toRtl(SelfRefCntr()))
-    
-    u = SelfRefCntr()
-    synthesised(u)
-    
-    simUnitVcd(u, [oscilate(u.clk),
-                   pullUpAfter(u.rst_n, intDelay=100)],
-                "tmp/selfRefCntr.vcd",
-                time=60 * Time.ns)
-    print("done")
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    print(toRtl(SelfRefCntr()))
+

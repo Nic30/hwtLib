@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.serializer.vhdlFormater import formatVhdl
@@ -9,7 +12,7 @@ if __name__ == "__main__":
     t = vecT(8)
     fsmT = Enum('fsmT', ['send0', 'send1'])
     
-    n = RtlNetlist("simpleRegister")
+    n = RtlNetlist()
     
     s_out = n.sig("s_out", t)
     s_in0 = n.sig("s_in0", t)
@@ -29,7 +32,7 @@ if __name__ == "__main__":
     
     interf = [clk, syncRst, s_in0, s_in1, s_out]
     
-    for o in n.synthesize(interf):
+    for o in n.synthesize("SimpleEnum", interf):
             print(formatVhdl(str(o)))
 
     

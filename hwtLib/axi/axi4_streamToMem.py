@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.bitmask import mask
 from hdl_toolkit.hdlObjects.typeShortcuts import vec, vecT
 from hdl_toolkit.hdlObjects.types.defs import BIT

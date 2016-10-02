@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
@@ -8,7 +11,11 @@ from hdl_toolkit.synthesizer.codeOps import FsmBuilder, If, In, Switch
 from hdl_toolkit.hdlObjects.types.enum import Enum
 
 
+
 class AxiLiteIpifConv(Unit):
+    """
+    [TODO] not finished
+    """
     def _config(self):
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(32)
@@ -34,7 +41,7 @@ class AxiLiteIpifConv(Unit):
         stT= Enum("stT", ["idle", 
                           "read",
                           "readAxiResp",
-                          "readAxiErrResp"
+                          "readAxiErrResp",
                           "writeAxiData",
                           "write",
                           "writeAxiResp",
@@ -99,4 +106,6 @@ class AxiLiteIpifConv(Unit):
         
 
 if __name__ == "__main__":
-    
+    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    u = AxiLiteIpifConv()
+    print(toRtl(u))

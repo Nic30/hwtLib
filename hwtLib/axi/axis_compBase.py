@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.interfaces.amba import AxiStream_withoutSTRB

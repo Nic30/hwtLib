@@ -1,5 +1,10 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import unittest
+
 from hdl_toolkit.hdlObjects.typeShortcuts import hBool, hInt, vec, hStr
+
 
 class ValueTC(unittest.TestCase):
     def assertValEq(self, first, second, msg=None):

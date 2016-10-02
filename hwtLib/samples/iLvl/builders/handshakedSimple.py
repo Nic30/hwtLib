@@ -1,8 +1,11 @@
-from hdl_toolkit.intfLvl import Unit
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.interfaces.utils import addClkRstn
-
+from hdl_toolkit.intfLvl import Unit
 from hwtLib.handshaked.builder import HsBuilder
+
 
 class HandshakedSimple(Unit):
     def _declr(self):
@@ -19,7 +22,6 @@ class HandshakedSimple(Unit):
         b.reg()
         
         self.b ** b.end 
-        
         
 
 if __name__ == "__main__":

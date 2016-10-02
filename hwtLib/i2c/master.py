@@ -1,16 +1,21 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Signal, Handshaked
+from hdl_toolkit.hdlObjects.types.enum import Enum
+from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
 from hdl_toolkit.synthesizer.codeOps import If, Concat
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
 from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl
 from hwtLib.interfaces.peripheral import I2c
-from hdl_toolkit.hdlObjects.types.enum import Enum
-
 
 
 class I2cMaster(Unit):
+    """
+    [TODO] not finished
+    """
     def _config(self):
         self.CLK_FREQ = Param(int(100e6))
         self.I2C_FREQ = Param(int(400e3))

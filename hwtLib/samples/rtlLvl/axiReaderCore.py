@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.types.enum import Enum
 from hdl_toolkit.serializer.vhdlFormater import formatVhdl
 from hdl_toolkit.synthesizer.codeOps import If
@@ -5,7 +8,7 @@ from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 
 
 def axiReaderCore():
-    n = RtlNetlist("AxiReaderCore")
+    n = RtlNetlist()
     rSt_t = Enum('rSt_t', ['rdIdle', 'rdData'])
     
     rSt = n.sig('rSt', rSt_t)
@@ -36,5 +39,5 @@ def axiReaderCore():
 if __name__ == "__main__":
     n, interf = axiReaderCore()
     
-    for o in n.synthesize(interf):
+    for o in n.synthesize("AxiReaderCore", interf):
             print(formatVhdl(str(o)))

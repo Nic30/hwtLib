@@ -1,6 +1,9 @@
-from hdl_toolkit.intfLvl import Unit
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.types.defs import BIT
 from hdl_toolkit.interfaces.std import Rst, Signal, Clk
+from hdl_toolkit.intfLvl import Unit
 
 
 class ClkSynchronizer(Unit):

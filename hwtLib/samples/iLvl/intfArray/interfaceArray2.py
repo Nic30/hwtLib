@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.typeShortcuts import hInt
 from hdl_toolkit.intfLvl import Unit, Param
 from hwtLib.interfaces.amba import AxiStream
@@ -9,8 +12,8 @@ class SimpleSubunit(Unit):
         
     def _declr(self):
         with self._asExtern(), self._paramsShared():
-            self.c = AxiStream(isExtern=True)
-            self.d = AxiStream(isExtern=True)
+            self.c = AxiStream()
+            self.d = AxiStream()
         
     def _impl(self):
         self.d ** self.c

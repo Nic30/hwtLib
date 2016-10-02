@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwtLib.abstract.streamBuilder import AbstractStreamBuilder
 from hwtLib.axi.axis_fifo import AxiSFifo
 from hwtLib.axi.axis_reg import AxiSReg

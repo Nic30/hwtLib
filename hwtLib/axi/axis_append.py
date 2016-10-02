@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 from hdl_toolkit.hdlObjects.specialValues import DIRECTION
 from hdl_toolkit.hdlObjects.types.enum import Enum

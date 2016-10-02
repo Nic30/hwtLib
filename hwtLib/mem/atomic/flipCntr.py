@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.interfaces.std import Signal, HandshakeSync, \
     RegCntrl
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn

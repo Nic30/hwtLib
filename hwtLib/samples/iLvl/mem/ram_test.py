@@ -1,9 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import unittest
 
+from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.simulator.agentConnector import agInts, valuesToInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.samples.iLvl.mem.ram import SimpleAsyncRam, SimpleSyncRam
-from hdl_toolkit.hdlObjects.specialValues import Time
 
 
 class RamTC(unittest.TestCase):

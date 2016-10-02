@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.intfLvl import Param, Unit, EmptyUnit
 from hdl_toolkit.synthesizer.interfaceLevel.emptyUnit import setOut
 from hwtLib.interfaces.amba import AxiStream, AxiLite

@@ -1,9 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hdl_toolkit.interfaces.std import RegCntrl
+from hdl_toolkit.interfaces.utils import addClkRstn
+from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.interfaces.std import RegCntrl
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.synthesizer.codeOps import If
 
 
 class RegArray(Unit):

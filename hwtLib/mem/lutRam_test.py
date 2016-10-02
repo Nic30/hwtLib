@@ -1,10 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import unittest
 
+from hdl_toolkit.bitmask import selectBit
 from hdl_toolkit.hdlObjects.specialValues import WRITE, READ, Time
 from hdl_toolkit.simulator.agentConnector import valuesToInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.mem.lutRam import RAM64X1S
-from hdl_toolkit.bitmask import selectBit
 
 
 def applyRequests(ram, requests):

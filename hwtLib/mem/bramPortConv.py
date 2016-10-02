@@ -1,8 +1,11 @@
-from hdl_toolkit.interfaces.std import BramPort_withoutClk
-from hwtLib.abstract.busConverter import BusConverter
-from hdl_toolkit.synthesizer.param import evalParam
-from hdl_toolkit.synthesizer.codeOps import c, If
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hdl_toolkit.interfaces.std import BramPort_withoutClk
+from hdl_toolkit.synthesizer.codeOps import c, If
+from hdl_toolkit.synthesizer.param import evalParam
+from hwtLib.abstract.busConverter import BusConverter
 
 
 def inRange(n, lower, size):

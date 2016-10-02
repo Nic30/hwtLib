@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.specialValues import DIRECTION
 from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.synthesizer.codeOps import If

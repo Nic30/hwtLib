@@ -1,9 +1,12 @@
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
-from hdl_toolkit.interfaces.std import Handshaked, Signal
-from hdl_toolkit.synthesizer.codeOps import FsmBuilder, If, slr
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hdl_toolkit.interfaces.std import Handshaked, Signal
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
+from hdl_toolkit.synthesizer.codeOps import FsmBuilder, If, slr
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param
 from hwtLib.uart.baudGen import UartBaudGen
 
 

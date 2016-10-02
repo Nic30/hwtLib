@@ -1,12 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.typeShortcuts import hBit, vec, vecT
 from hdl_toolkit.interfaces.std import Signal, Clk
-from hdl_toolkit.synthesizer.codeOps import connect, Concat, If
+from hdl_toolkit.serializer.constants import SERI_MODE
+from hdl_toolkit.synthesizer.codeOps import Concat, If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
-from hdl_toolkit.serializer.constants import SERI_MODE
 
-
-c = connect
 
 def mkLutRamCls(DATA_WIDTH):
 	"""

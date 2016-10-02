@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.intfLvl import Unit, Param
 from hwtLib.interfaces.amba import AxiStream
 from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream

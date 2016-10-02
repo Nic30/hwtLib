@@ -1,11 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import unittest
 
+from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.simulator.agentConnector import valuesToInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, oscilate, pullDownAfter, \
     toSimModel, reconectUnitSignalsToModel
 from hwtLib.mem.clkSynchronizer import ClkSynchronizer
-from hdl_toolkit.hdlObjects.specialValues import Time
 
 
 CLK_PERIOD = 10 * Time.ns

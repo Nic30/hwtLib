@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
 from hdl_toolkit.intfLvl import Param

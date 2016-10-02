@@ -1,9 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import unittest
 
 from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.simulator.agentConnector import agInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.samples.iLvl.arithmetic.twoCntrs import TwoCntrs
+
 
 nineOnes = [1 for _ in range(9)]
 nineZeros = [0 for _ in range(9)]

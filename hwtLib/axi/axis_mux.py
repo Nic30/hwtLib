@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwtLib.axi.axis_compBase import AxiSCompBase 
 from hwtLib.handshaked.mux import HandshakedMux
 

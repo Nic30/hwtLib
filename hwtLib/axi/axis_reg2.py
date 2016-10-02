@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwtLib.axi.axis_compBase import AxiSCompBase
 from hwtLib.axi.axis_reg import AxiSReg
 from hwtLib.handshaked.reg2 import HandshakedReg2

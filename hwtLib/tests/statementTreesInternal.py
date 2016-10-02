@@ -1,7 +1,10 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import unittest
 
-from hdl_toolkit.synthesizer.assigRenderer import getBaseCond
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
+from hdl_toolkit.synthesizer.termUsageResolver import getBaseCond
 
 
 class StatementTreesTC(unittest.TestCase):

@@ -1,11 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hdl_toolkit.interfaces.std import Signal, VldSynced
+from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
+from hdl_toolkit.synthesizer.codeOps import FsmBuilder, If, Concat
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
-from hdl_toolkit.interfaces.std import Signal, VldSynced
 from hwtLib.uart.baudGen import UartBaudGen
-from hdl_toolkit.synthesizer.codeOps import FsmBuilder, If, Concat
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-
 
 
 IDLE = 0b0000

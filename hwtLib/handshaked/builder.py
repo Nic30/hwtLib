@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwtLib.abstract.streamBuilder import AbstractStreamBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.reg import HandshakedReg

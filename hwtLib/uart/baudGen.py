@@ -1,10 +1,14 @@
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from hdl_toolkit.bitmask import mask
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
 from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.interfaces.utils import log2ceil, addClkRstn
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
 from hdl_toolkit.synthesizer.codeOps import If
-from hdl_toolkit.bitmask import mask
+from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hdl_toolkit.synthesizer.param import Param, evalParam
+
 
 class UartBaudGen(Unit):
     def _config(self):

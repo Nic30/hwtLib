@@ -1,11 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.array import Array
 from hdl_toolkit.interfaces.std import FifoWriter, FifoReader
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
+from hdl_toolkit.serializer.constants import SERI_MODE
 from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
-from hdl_toolkit.serializer.constants import SERI_MODE
 
 
 class Fifo(Unit):

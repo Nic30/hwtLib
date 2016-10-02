@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.serializer.vhdlFormater import formatVhdl
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist

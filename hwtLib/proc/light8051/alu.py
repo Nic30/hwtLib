@@ -1,11 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hdl_toolkit.interfaces.std import Signal
+from hdl_toolkit.interfaces.utils import addClkRstn
+from hdl_toolkit.synthesizer.codeOps import In, Concat, c, If, Switch
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.interfaces.std import Signal
-from hwtLib.proc.light8051.types import t_cpu_state
-from hdl_toolkit.synthesizer.codeOps import In, Concat, c, If, Switch
 from hwtLib.proc.light8051.aluTypes import AI, t_alu_op_sel, t_alu_fns 
+from hwtLib.proc.light8051.types import t_cpu_state
 
 
 def carry_stage(sub, a_in, b_in, outp):
@@ -15,6 +18,9 @@ def carry_stage(sub, a_in, b_in, outp):
                          0b1111])
 
 class Alu(Unit):
+    """
+    [TODO] not finished
+    """
     def _config(self):
         self.IMPLEMENT_BCD_INSTRUCTIONS = Param(False)
         # When true, instructions DA and XCHD will work as in the original MCS51.

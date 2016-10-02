@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import pprint
 
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT

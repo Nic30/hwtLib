@@ -1,10 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import unittest
 
+from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.simulator.agentConnector import agInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.handshaked.reg import HandshakedReg
-from hdl_toolkit.hdlObjects.specialValues import Time
 
 
 class HsRegTC(unittest.TestCase):

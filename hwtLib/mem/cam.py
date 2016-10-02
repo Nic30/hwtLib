@@ -1,12 +1,16 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
 from hdl_toolkit.hdlObjects.types.array import Array
+from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
 from hdl_toolkit.interfaces.std import Handshaked, VldSynced, Signal
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
+from hdl_toolkit.serializer.constants import SERI_MODE
 from hdl_toolkit.synthesizer.codeOps import If, Concat
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
-from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
-from hdl_toolkit.serializer.constants import SERI_MODE
+
 
 class AddrDataHsAgent(HandshakedAgent):
     def doWrite(self, s, data):

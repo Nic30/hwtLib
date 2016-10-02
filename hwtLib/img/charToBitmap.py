@@ -1,7 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from PIL import Image
-from hdl_toolkit.hdlObjects.types.array import Array
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 import os
+
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hdl_toolkit.hdlObjects.types.array import Array
+
 
 im = Image.open(os.path.dirname(__file__) + "/charToBitmap_font.png")  # Can be many different formats.
 pixels = im.load()

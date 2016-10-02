@@ -1,10 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.array import Array
 from hdl_toolkit.interfaces.std import BramPort, Clk, BramPort_withoutClk
+from hdl_toolkit.serializer.constants import SERI_MODE
 from hdl_toolkit.synthesizer.codeOps import If, power
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
-from hdl_toolkit.serializer.constants import SERI_MODE
 
 
 class RamSingleClock(Unit):

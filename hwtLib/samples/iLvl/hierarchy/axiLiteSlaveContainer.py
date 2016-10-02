@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.intfLvl import Param, Unit
 from hwtHdlParsers.tests.vhdlCodesign.axiLiteBasicSlave import AxiLiteBasicSlave
 from hwtLib.interfaces.amba import  AxiLite

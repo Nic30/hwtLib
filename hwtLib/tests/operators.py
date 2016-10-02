@@ -1,10 +1,14 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import unittest
 
+from hdl_toolkit.bitmask import mask
 from hdl_toolkit.hdlObjects.typeShortcuts import hInt, hBool, hBit, vec
 from hdl_toolkit.hdlObjects.types.defs import INT, STR
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 from hdl_toolkit.synthesizer.rtlLevel.signalUtils.walkers import walkAllOriginSignals
-from hdl_toolkit.bitmask import mask
+
 
 andTable = [ (None, None, None),
              (None, 0, 0),

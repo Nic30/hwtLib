@@ -1,6 +1,10 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.intfLvl import Unit
 from hdl_toolkit.synthesizer.codeOps import If
+
 
 class SimpleIfStatement(Unit):
     def _declr(self):

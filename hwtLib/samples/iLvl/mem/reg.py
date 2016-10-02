@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hdl_toolkit.hdlObjects.types.defs import BIT
 from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.interfaces.utils import addClkRst, propagateClkRst
