@@ -5,7 +5,6 @@ from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.synthesizer.codeOps import FsmBuilder, Switch, If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.shortcuts import toRtl
-from hdl_toolkit.serializer.simModelSerializer import SimModelSerializer
 
 
 class FsmExample(Unit):
@@ -98,4 +97,4 @@ class HadrcodedFsmExample(FsmExample):
             
 if __name__ == "__main__":
     u = FsmExample()
-    print(toRtl(u, serializer=SimModelSerializer))
+    print(toRtl(u))
