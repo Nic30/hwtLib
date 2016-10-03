@@ -51,8 +51,15 @@ class AbstractStreamBuilder():
         u._updateParamsFrom(self.end)
         setParams(u)
         
-        setattr(self.parent, "%s_%s_%d" % (self.name, unitName, self.compId), u)
-        
+        # find suitable name for component
+        while True:
+            name = "%s_%s_%d" % (self.name, unitName, self.compId)
+            try:
+                getattr(self.parent, name)
+            except AttributeError:
+                setattr(self.parent, name, u)
+                break
+            self.compId += 1
         
         self.compId += 1
         
