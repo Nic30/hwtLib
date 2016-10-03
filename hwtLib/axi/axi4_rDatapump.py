@@ -133,6 +133,15 @@ class Axi4_RDataPump(Unit):
         LEN_MAX = mask(self.ar.len._dtype.bit_length())
         return (LEN_MAX + 1) << self.getSizeAlignBits()
     
+    def arIdHandler(self, lastReqDispatched):
+        req_idBackup = self._reg("req_idBackup", self.req.id._dtype)
+        If(lastReqDispatched,
+            req_idBackup ** self.req.id,
+            self.ar.id ** self.req.id 
+        ).Else(
+            self.ar.id ** req_idBackup
+        )
+        
     def addrHandler(self, addRmSize):
         ar = self.ar
         req = self.req
@@ -155,20 +164,12 @@ class Axi4_RDataPump(Unit):
             lenDebth = self._reg("lenDebth", req.len._dtype)
             remBackup = self._reg("remBackup", req.rem._dtype)
             rAddr = self._reg("r_addr", req.addr._dtype)
-            
-            req_idBackup = self._reg("req_idBackup", self.req.id._dtype)
-            If(lastReqDispatched,
-                req_idBackup ** req.id,
-                ar.id ** req.id 
-            ).Else(
-                ar.id ** req_idBackup
-            )
-                
+                           
             reqLen = self._sig("reqLen", req.len._dtype)
             reqRem = self._sig("reqRem", req.rem._dtype)
             ack = self._sig("ar_ack")
             
-            
+            self.arIdHandler(lastReqDispatched)
             If(reqLen > LEN_MAX,
                ar.len ** LEN_MAX,
                addRmSize.rem ** 0,
@@ -247,15 +248,15 @@ class Axi4_RDataPump(Unit):
         self.rErrFlag ** rErrFlag
         
         
-        rOut.data ** r.data
-        rOut.last ** (r.last & rmSizeOut.propagateLast)
-        
         rOut.id ** r.id
+        rOut.data ** r.data
+        
         If(r.valid & r.last,
-           self.remSizeToStrb(rmSizeOut.rem, rOut.strb)
+            self.remSizeToStrb(rmSizeOut.rem, rOut.strb)
         ).Else(
-               rOut.strb ** mask(2 ** self.getSizeAlignBits())
+            rOut.strb ** mask(2 ** self.getSizeAlignBits())
         )
+        rOut.last ** (r.last & rmSizeOut.propagateLast)
         rOut.valid ** (r.valid & rmSizeOut.vld)
         r.ready ** (rOut.ready & rmSizeOut.vld)
         rmSizeOut.rd ** (r.valid & r.last & rOut.ready)
