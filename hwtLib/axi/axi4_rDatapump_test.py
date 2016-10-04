@@ -17,14 +17,18 @@ class Axi4_rDatapumpTC(unittest.TestCase):
         u = Axi4_RDataPump()
         self.u, self.model, self.procs = simPrepare(u)
     
-    def doSim(self, name, time):
+    def getTestName(self):
+        className, testName = self.id().split(".")[-2:]
+        return "%s_%s" % (className, testName)
+    
+    def doSim(self, time):
         simUnitVcd(self.model, self.procs,
-                    "tmp/axi4_rDatapump_" + name + ".vcd",
+                    "tmp/" + self.getTestName() + ".vcd",
                     time=time)
     
     def test_nop(self):
         u = self.u
-        self.doSim("nop", 200 * Time.ns)
+        self.doSim(200 * Time.ns)
         
         self.assertEqual(len(u.ar._ag.data), 0)
         self.assertEqual(len(u.rOut._ag.data), 0)
@@ -36,7 +40,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
         
         # download one word from addr 0xff
         req.data.append(req.mkReq(0xff, 0))
-        self.doSim("notSplited", 200 * Time.ns)
+        self.doSim(200 * Time.ns)
         
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(u.ar._ag.data), 1)
@@ -53,7 +57,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
         for i in range(3):
             r.addData(i + 77)
         
-        self.doSim("notSplitedReqWithData", 200 * Time.ns)
+        self.doSim(200 * Time.ns)
         
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(u.ar._ag.data), 1)
@@ -78,7 +82,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
         r.addData(11)
         r.addData(12)
 
-        self.doSim("maxNotSplitedReqWithData", 2600 * Time.ns)
+        self.doSim(2600 * Time.ns)
         
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(u.ar._ag.data), 1)
@@ -103,7 +107,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
         # download 512 words from addr 0xff
         req.data.append(req.mkReq(0xff, 511))
         
-        self.doSim("maxReq", 2600 * Time.ns)
+        self.doSim(2600 * Time.ns)
         
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(ar), 2)
@@ -127,7 +131,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
             req.data.append(req.mkReq(i, 0))
         #    r.addData(i + 77, last=(i == 255))
         
-        self.doSim("maxOverlap", 1000 * Time.ns)
+        self.doSim(1000 * Time.ns)
         
         self.assertEqual(len(req.data), 15)
         self.assertEqual(len(ar), 16)
