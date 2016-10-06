@@ -4,8 +4,8 @@ from hdl_toolkit.synthesizer.interfaceLevel.interface import  Interface
 from hdl_toolkit.synthesizer.param import Param
 from hwtLib.interfaces.amba_agents import Axi4_addrAgent, Axi4_rAgent, \
     AxiStreamAgent, AxiStream_withUserAndStrbAgent, AxiLiteAgent, \
-    AxiLite_addrAgent, AxiLite_rAgent, AxiLite_wAgent, AxiLite_bAgent,\
-    AxiStream_withIdAgent
+    AxiLite_addrAgent, AxiLite_rAgent, AxiLite_wAgent, AxiLite_bAgent, \
+    AxiStream_withIdAgent, Axi4_bAgent
 from hwtLib.interfaces.amba_ip import IP_AXIStream, IP_AXILite, IP_Axi4
 
 
@@ -120,6 +120,7 @@ class AxiLite_b(Interface):
         self.resp = s(dtype=vecT(2), alternativeNames=['resp_v'])
         self.ready = s(masterDir=D.IN)
         self.valid = s()
+        
     def _getSimAgent(self):
         return AxiLite_bAgent
 
@@ -194,6 +195,9 @@ class Axi4_b(AxiLite_b):
     def _declr(self):
         super(Axi4_b, self)._declr()
         self.id = s(dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
+
+    def _getSimAgent(self):
+        return Axi4_bAgent
 
 class Axi4(AxiLite):
     def _config(self):

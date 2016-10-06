@@ -107,9 +107,9 @@ class AxiStreamAgent(BaseAxiAgent):
         if data is None:
             data = [None for _ in range(3)]
         
-        data, strb, last = data
+        _data, strb, last = data
         
-        w(data, intf.data)
+        w(_data, intf.data)
         w(strb, intf.strb)
         w(last, intf.last)
 
@@ -216,6 +216,25 @@ class AxiLite_bAgent(BaseAxiAgent):
         s.w(data, self.intf.resp)
 
 
+class Axi4_bAgent(BaseAxiAgent):
+    def doRead(self, s):
+        r = s.r
+        intf = self.intf
+        
+        return r(intf.id), r(intf.resp)
+    
+    def doWrite(self, s, data):
+        w = s.write
+        intf = self.intf
+        
+        if data is None:
+            data = [None for _ in range(2)]
+        
+        _id, resp = data
+        
+        w(_id, intf.id)
+        w(resp, intf.resp)
+        
 
 class AxiLiteAgent(AgentBase):
     """
