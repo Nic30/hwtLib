@@ -7,14 +7,14 @@ from hdl_toolkit.bitmask import mask
 from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.simulator.agentConnector import valuesToInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
-from hwtLib.axi.axi4_rDatapump import Axi4_RDataPump
+from hwtLib.axi.axi4_rDatapump import Axi4_rDataPump
 from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
 
 
 class Axi4_rDatapumpTC(unittest.TestCase):
     def setUp(self):
-        u = Axi4_RDataPump()
+        u = Axi4_rDataPump()
         self.u, self.model, self.procs = simPrepare(u)
     
     def getTestName(self):

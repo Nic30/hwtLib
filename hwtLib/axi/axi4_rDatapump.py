@@ -52,7 +52,6 @@ class AddrSizeHs(Handshaked):
         self.ADDR_WIDTH = Param(32)
         self.MAX_LEN = Param(4096 // 8 - 1)
         self.DATA_WIDTH = Param(64)
-        self.USER_WIDTH = Param(2)  
     
     def _declr(self):
         self.id = VectSignal(self.ID_WIDTH)
@@ -80,7 +79,7 @@ class TransEndInfo(HandshakeSync):
         self.propagateLast = Signal()
         HandshakeSync._declr(self)
 
-class Axi4_RDataPump(Unit):
+class Axi4_rDataPump(Unit):
     """
     Foward req to axi ar channel 
     and collect data to data channel form axi r channel 
@@ -269,6 +268,6 @@ class Axi4_RDataPump(Unit):
 
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
-    u = Axi4_RDataPump()
+    u = Axi4_rDataPump()
     print(toRtl(u))
     
