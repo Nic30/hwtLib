@@ -11,7 +11,7 @@ class AxiSCompBase(HandshakedCompBase):
         """
         @param hsIntfCls: class of interface which should be used as interface of this unit
         """
-        assert(issubclass(hsIntfCls, AxiStream_withoutSTRB))
+        assert(issubclass(hsIntfCls, AxiStream_withoutSTRB)), hsIntfCls
         self.intfCls = hsIntfCls
         Unit.__init__(self)
         
