@@ -14,7 +14,8 @@ from hwtLib.mem.fifo import Fifo
 
 class HandshakedFifo(HandshakedCompBase):
     def _config(self):
-        self.DEPTH = Param(0) 
+        self.DEPTH = Param(0)
+        self.LATENCY = Param(1)
         super()._config()
         
     def _declr(self):
@@ -24,11 +25,12 @@ class HandshakedFifo(HandshakedCompBase):
             self.dataOut = self.intfCls()
 
         if evalParam(self.DEPTH).val > 0:
-            self.fifo = Fifo()
+            f = self.fifo = Fifo()
             DW = packedWidth(self.dataIn) - 2  # 2 for control (valid, ready)
-            self.fifo.DATA_WIDTH.set(DW)
-            self.fifo.DEPTH.set(self.DEPTH)
-        
+            f.DATA_WIDTH.set(DW)
+            f.DEPTH.set(self.DEPTH)
+            f.LATENCY.set(self.LATENCY)
+
     def _impl(self):
         din = self.dataIn
         dout = self.dataOut
