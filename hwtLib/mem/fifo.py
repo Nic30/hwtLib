@@ -122,14 +122,19 @@ class Fifo(Unit):
             
             isEmpty = self._reg("isEmpty", defVal=1)
             If(isEmpty & ~empty_flag,
-                fifo_read ** 1,
                 isEmpty ** 0
-            ).Elif(~isEmpty & empty_flag & din.en,
-                fifo_read ** 1,
+            ).Elif(~isEmpty & empty_flag & dout.en,
                 isEmpty ** 1
+            )
+            
+            If(isEmpty & ~empty_flag,
+                fifo_read ** 1,
+            ).Elif(~isEmpty & ~empty_flag & dout.en,
+                fifo_read ** 1,
             ).Else(
                 fifo_read ** 0
             )
+            
             dout.wait ** isEmpty
             
             full_flag ** tail._eq(head + 1)

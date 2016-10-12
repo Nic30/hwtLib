@@ -18,9 +18,13 @@ class FifoTC(unittest.TestCase):
         u.DEPTH.set(4)
         self.u, self.model, self.procs = simPrepare(u)
     
-    def doSim(self, name, time=80 * Time.ns):
+    def getTestName(self):
+        className, testName = self.id().split(".")[-2:]
+        return "%s_%s" % (className, testName)
+    
+    def doSim(self, time):
         simUnitVcd(self.model, self.procs,
-                    "tmp/fifo_" + name + ".vcd",
+                    "tmp/" + self.getTestName() + ".vcd",
                     time=time)
     
     
@@ -31,7 +35,7 @@ class FifoTC(unittest.TestCase):
         expected = [1]
         u.dataIn._ag.data = copy(expected)
 
-        self.doSim("normalOp", 90 * Time.ns)
+        self.doSim(90 * Time.ns)
         
         collected = u.dataOut._ag.data
 
@@ -44,7 +48,7 @@ class FifoTC(unittest.TestCase):
         u.dataIn._ag.data = copy(data)
         u.dataIn._ag.enable = False
 
-        self.doSim("fifoWritterDisable")
+        self.doSim(80*Time.ns)
         
         self.assertSequenceEqual([], u.dataOut._ag.data)
         self.assertSequenceEqual(data, u.dataIn._ag.data)
@@ -57,7 +61,7 @@ class FifoTC(unittest.TestCase):
         expected = [1, 2, 3, 4]
         u.dataIn._ag.data = copy(expected)
 
-        self.doSim("normalOp", 90 * Time.ns)
+        self.doSim(90 * Time.ns)
         
         collected = u.dataOut._ag.data
 
@@ -69,7 +73,7 @@ class FifoTC(unittest.TestCase):
         u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
         u.dataOut._ag.enable = False
         
-        self.doSim("tryMore", 120 * Time.ns)
+        self.doSim(120 * Time.ns)
 
         collected = agInts(u.dataOut)
         self.assertSequenceEqual([1, 2, 3, 4], valuesToInts(self.model.memory._val))
@@ -80,16 +84,24 @@ class FifoTC(unittest.TestCase):
         u = self.u
         u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
 
-        self.doSim("doloop", 120 * Time.ns)
+        self.doSim(120 * Time.ns)
 
         collected = agInts(u.dataOut)
         self.assertSequenceEqual([1, 2, 3, 4, 5, 6], collected)
         self.assertSequenceEqual([], u.dataIn._ag.data)
 
-
+class FifoBramTC(FifoTC):
+    def setUp(self):
+        u = Fifo()
+        u.LATENCY.set(2)
+        u.DATA_WIDTH.set(8)
+        u.DEPTH.set(4)
+        self.u, self.model, self.procs = simPrepare(u)
+        
+        
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(FifoTC('test_normalOp'))
-    suite.addTest(unittest.makeSuite(FifoTC))
+    suite.addTest(unittest.makeSuite(FifoBramTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -12,7 +12,7 @@ from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
 from hwtLib.mem.atomic.flipReg_test import FlipRegTC
 from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.clkSynchronizer_test import ClkSynchronizerTC
-from hwtLib.mem.fifo_test import FifoTC
+from hwtLib.mem.fifo_test import FifoTC, FifoBramTC
 from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ram_test import RamTC
 from hwtLib.samples.iLvl.arithmetic.cntr_test import CntrTC
@@ -75,6 +75,7 @@ if __name__ == "__main__":
         ClkSynchronizerTC,
         RamTC,
         FifoTC,
+        FifoBramTC,
         FlipRegTC,
         FlipCntrTC,
         ForkTC,
