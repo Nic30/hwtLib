@@ -14,7 +14,7 @@ from hwtLib.samples.iLvl.simple import SimpleUnit
 class SimpleTC(unittest.TestCase):
    
     # if method name starts with "test" unittest framework know that this method is test 
-    def testSimple(self):
+    def test_simple(self):
         # create a unit instance
         u = SimpleUnit()
         # convert it to rtl level
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     suite = unittest.TestSuite()
     
     # this is how you can select specific test
-    # suite.addTest(TwoCntrsTC('test_withStops'))
+    # suite.addTest(SimpleTC('test_simple'))
     
     # this is how you add all test from testcase
     suite.addTest(unittest.makeSuite(SimpleTC))

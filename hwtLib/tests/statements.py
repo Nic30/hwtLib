@@ -10,7 +10,7 @@ from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 
 
 class StatementsTC(unittest.TestCase):
-    def testIfContSeqEval(self):
+    def test_ifContSeqEval(self):
         for a_in, b_in in [(0, 0),
                            (0, 1),
                            (1, 0),

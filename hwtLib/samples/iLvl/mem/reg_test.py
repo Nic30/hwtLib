@@ -17,7 +17,7 @@ class DRegTC(unittest.TestCase):
         simUnitVcd(self.model, self.procs,
                    "tmp/reg_" + name + ".vcd", time=time)
     
-    def testSimple(self):
+    def test_simple(self):
         self.setUpUnit(DReg())
         
         self.u.din._ag.data = [i % 2 for i in range(6)] + [None, None, 0, 1] 
@@ -28,7 +28,7 @@ class DRegTC(unittest.TestCase):
         # check simulation results
         self.assertSequenceEqual(expected, recieved)
     
-    def testDouble(self):
+    def test_double(self):
         self.setUpUnit(DoubleDReg())
     
         self.u.din._ag.data = [i % 2 for i in range(6)] + [None, None, 0, 1] 

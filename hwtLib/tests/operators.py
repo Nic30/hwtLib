@@ -31,14 +31,14 @@ class OperatorTC(unittest.TestCase):
         unittest.TestCase.setUp(self)
         self.n = RtlNetlist()
     
-    def testNoBool(self):
+    def test_BoolNot(self):
         for v in [True, False]:
             res = ~hBool(v)
             self.assertEqual(res.val, not v)
             self.assertEqual(res.vldMask, 1)
             self.assertEqual(res.updateTime, -1)
             
-    def testNotBit(self):
+    def test_BitNot(self):
         for v in [False, True]:
             res = ~hBit(v)
             
@@ -46,7 +46,7 @@ class OperatorTC(unittest.TestCase):
             self.assertEqual(res.vldMask, 1)
             self.assertEqual(res.updateTime, -1)
     
-    def testBitAnd(self):
+    def test_BitAnd(self):
         vals = {
             1: hBit(1),
             0: hBit(0),
@@ -61,7 +61,7 @@ class OperatorTC(unittest.TestCase):
                              "%s & %s  val=%s (should be %s)" % (repr(a), repr(b), repr(res.val), repr(expectedRes.val)))
             self.assertEqual(expectedRes.vldMask, res.vldMask,
                              "%s & %s  vldMask=%s (should be %s)" % (repr(a), repr(b), repr(res.vldMask), repr(expectedRes.vldMask)))
-    def testBitOr(self):
+    def test_BitOr(self):
         vals = {
             1: hBit(1),
             0: hBit(0),
@@ -77,7 +77,7 @@ class OperatorTC(unittest.TestCase):
             self.assertEqual(expectedRes.vldMask, res.vldMask,
                              "%s & %s  vldMask=%s (should be %s)" % (repr(a), repr(b), repr(res.vldMask), repr(expectedRes.vldMask)))
         
-    def testBoolAnd(self):
+    def test_BoolAnd(self):
         vals = {
             1: hBool(1),
             0: hBool(0),
@@ -92,7 +92,7 @@ class OperatorTC(unittest.TestCase):
                              "%s & %s  val=%s (should be %s)" % (repr(a), repr(b), repr(res.val), repr(expectedRes.val)))
             self.assertEqual(expectedRes.vldMask, res.vldMask,
                              "%s & %s  vldMask=%s (should be %s)" % (repr(a), repr(b), repr(res.vldMask), repr(expectedRes.vldMask)))
-    def testBoolOr(self):
+    def test_BoolOr(self):
         vals = {
             1: hBool(1),
             0: hBool(0),
@@ -111,11 +111,11 @@ class OperatorTC(unittest.TestCase):
           
         
     
-    def testNotNotisOrigSig(self):
+    def test_notNotIsOrigSig(self):
         a = self.n.sig("a")
         self.assertIs(a, ~ ~a)
                     
-    def testDownto(self):
+    def test_downto(self):
         a = self.n.sig('a', typ=INT)
         a.defaultVal = hInt(10)
         b = hInt(0)
@@ -124,7 +124,7 @@ class OperatorTC(unittest.TestCase):
         self.assertEqual(res.val[0].val, 10)
         self.assertEqual(res.val[1].val, 0)
     
-    def testwalkAllOriginSignalsDownto(self):
+    def test_walkAllOriginSignalsDownto(self):
         a = self.n.sig('a', typ=INT)
         a.defaultVal = hInt(10)
         b = hInt(0)
@@ -132,7 +132,7 @@ class OperatorTC(unittest.TestCase):
         origins = set(walkAllOriginSignals(r))
         self.assertSetEqual(origins, set([a]))
     
-    def testwalkAllOriginSignalsDowntoAndPlus(self):
+    def test_walkAllOriginSignalsDowntoAndPlus(self):
         a = self.n.sig('a', typ=INT)
         a.defaultVal = hInt(10)
         b = hInt(0)
@@ -141,12 +141,12 @@ class OperatorTC(unittest.TestCase):
         origins = set(walkAllOriginSignals(r))
         self.assertSetEqual(origins, set([a]))
     
-    def testADD_InvalidOperands(self):
+    def test_ADD_InvalidOperands(self):
         a = self.n.sig('a', typ=STR)
         b = self.n.sig('b')
         self.assertRaises(NotImplementedError, lambda : a + b) 
     
-    def testADD_IntBits(self):
+    def test_ADD_IntBits(self):
         a = vec(7, 8)
         b = hInt(1)
         c = a + b
@@ -171,7 +171,7 @@ class OperatorTC(unittest.TestCase):
         self.assertEqual(c.val, 0)
         self.assertEqual(c.vldMask, mask(8)) 
               
-    def testAND_eval(self):
+    def test_AND_eval(self):
         for a_in, b_in, out in [(0, 0, 0),
                                 (0, 1, 0),
                                 (1, 0, 0),
@@ -180,7 +180,7 @@ class OperatorTC(unittest.TestCase):
             self.assertEqual(res.vldMask, 1)
             self.assertEqual(res.val, out, "a_in %d, b_in %d, out %d" % (a_in, b_in, out))
     
-    def testADD_eval(self):
+    def test_ADD_eval(self):
         for a_in, b_in, out in [(0, 0, 0),
                                 (0, 1, 1),
                                 (1, 0, 1),

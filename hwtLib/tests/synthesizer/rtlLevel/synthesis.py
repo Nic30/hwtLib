@@ -16,12 +16,12 @@ class TestCaseSynthesis(unittest.TestCase):
         unittest.TestCase.setUp(self)
         self.n = RtlNetlist()
 
-    def testOpRisingEdgeMultipletimesSameObj(self):
+    def test_opRisingEdgeMultipletimesSameObj(self):
         clk = self.n.sig("ap_clk")
         self.assertEqual(clk._onRisingEdge(), clk._onRisingEdge())
     
     
-    def testSyncSig(self):
+    def test_syncSig(self):
         n = self.n
         clk = n.sig("ap_clk")
         a = n.sig("a", clk=clk)
@@ -35,7 +35,7 @@ class TestCaseSynthesis(unittest.TestCase):
         self.assertEqual(onRisE.origin.operator, AllOps.RISING_EDGE)
         self.assertEqual(onRisE.origin.ops[0], clk)
     
-    def testSyncSigWithReset(self):
+    def test_syncSigWithReset(self):
         c = self.n
         clk = c.sig("ap_clk")
         rst = c.sig("ap_rst")

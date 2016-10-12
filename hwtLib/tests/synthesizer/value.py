@@ -12,7 +12,7 @@ class ValueTC(unittest.TestCase):
     def assertValNEq(self, first, second, msg=None):
         return self.assertNotEqual(first.val, second, msg=msg)
               
-    def testValue(self):
+    def test_value(self):
         self.assertTrue(vec(1, 1)._eq(vec(1, 1)))
         self.assertTrue(vec(0, 1)._eq(vec(0, 1)))
         self.assertTrue(vec(0, 2)._eq(vec(0, 2)))
@@ -23,12 +23,12 @@ class ValueTC(unittest.TestCase):
         v1.updateTime = 2
         self.assertTrue(v0._eq(v1))
     
-    def testBOOLNeg(self):
+    def test_BOOLNeg(self):
         v0 = hBool(True)
         self.assertValEq(~v0, False)
         self.assertValEq(~ ~v0, True)
     
-    def testStringEq(self):
+    def test_StringEq(self):
         v0 = hStr("abcd")
         v1 = hStr("abcd")
         v2 = hStr("sdff")
@@ -39,20 +39,20 @@ class ValueTC(unittest.TestCase):
         self.assertValEq(v0._eq(v3), False)
         
     
-    def testBoolEqualNotEqual(self):
+    def test_BoolEqualNotEqual(self):
         v0 = hBool(True)
         v1 = hBool(True)
         self.assertValEq(v0._eq(v1), True)
         self.assertNotEqual(v0, hBool(False))
         
-    def testBoolAnd(self):
+    def test_BoolAnd(self):
         for a_in, b_in, out in [(0, 0, 0), (0, 1, 0), (1, 0, 0), (1, 1, 1)]:
             v0 = hBool(a_in)
             v1 = hBool(b_in)
             o = v0 & v1
             self.assertValEq(o, out, "%d == %d" % (o.val, out))    
     
-    def testAddInt(self):
+    def test_AddInt(self):
         v0 = hInt(0)
         v1 = hInt(1)
         v5 = hInt(5)
@@ -63,7 +63,7 @@ class ValueTC(unittest.TestCase):
         
         self.assertValEq(v1 + hInt(1), 2)
     
-    def testDivInt(self):
+    def test_DivInt(self):
         v8 = hInt(8)
         v4 = hInt(4)
         v2 = hInt(2)
