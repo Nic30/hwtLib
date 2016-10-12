@@ -5,7 +5,7 @@ from hdl_toolkit.bitmask import mask
 from hdl_toolkit.interfaces.std import Signal, Handshaked, VectSignal, \
     HandshakeSync
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
-from hdl_toolkit.synthesizer.codeOps import connect, If, Concat
+from hdl_toolkit.synthesizer.codeOps import connect, If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
 from hwtLib.axi.axi4_rDatapump import AddrSizeHs
@@ -62,7 +62,7 @@ class Axi4_wDatapump(Unit):
 
                 self.wIn = AxiStream()
                 
-                self.wErrFlag = Signal()
+                self.errorWrite = Signal()
             self.reqAck = Handshaked()
             self.reqAck.DATA_WIDTH.set(self.ID_WIDTH)
         with self._paramsShared():
@@ -205,7 +205,7 @@ class Axi4_wDatapump(Unit):
            wErrFlag ** 1
         )
 
-        self.wErrFlag ** wErrFlag 
+        self.errorWrite ** wErrFlag 
         b.ready ** (lastFlags.vld & reqAck.rd)
         lastFlags.rd ** (reqAck.rd & b.valid) 
         

@@ -91,7 +91,7 @@ class Axi4_rDataPump(Unit):
     if req len is wider transaction is internally splited to multiple
     transactions, but readed data are single packet as requested 
     
-    rErrFlag stays high when there was error on axi r channel
+    errorRead stays high when there was error on axi r channel
     it will not affect unit functionality
     """
     
@@ -116,7 +116,7 @@ class Axi4_rDataPump(Unit):
                 self.req = AddrSizeHs()
                 self.rOut = AxiStream_withId()
                 
-                self.rErrFlag = Signal()
+                self.errorRead = Signal()
         
         with self._paramsShared():
             f = self.sizeRmFifo = HandshakedFifo(TransEndInfo)
@@ -244,7 +244,7 @@ class Axi4_rDataPump(Unit):
         If(r.valid & rOut.ready & (r.resp != RESP_OKAY),
            rErrFlag ** 1
         )
-        self.rErrFlag ** rErrFlag
+        self.errorRead ** rErrFlag
         
         
         rOut.id ** r.id
