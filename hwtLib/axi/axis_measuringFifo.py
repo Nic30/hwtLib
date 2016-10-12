@@ -98,7 +98,7 @@ class AxiS_measuringFifo(Unit):
         sb.dataIn.data ** Concat(length, rem)
         
         
-        sb.dataIn.vld ** (dIn.valid & db.dataIn.ready)
+        sb.dataIn.vld ** (dIn.valid & dIn.last & db.dataIn.ready)
         db.dataIn.valid ** (dIn.valid & sb.dataIn.rd)
         
         connect(dIn, db.dataIn, exclude=[dIn.valid, dIn.ready])
