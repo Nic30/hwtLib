@@ -2,71 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from hdl_toolkit.bitmask import mask
-from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
-from hdl_toolkit.interfaces.std import Handshaked, Signal, HandshakeSync, \
-    VectSignal
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil, propagateClkRstn
+from hdl_toolkit.interfaces.std import Signal, HandshakeSync, VectSignal
+from hdl_toolkit.interfaces.utils import log2ceil, propagateClkRstn
 from hdl_toolkit.synthesizer.codeOps import If, Switch, connect
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hdl_toolkit.synthesizer.param import Param
+from hwtLib.axi.axi_datapump_base import Axi_datapumpBase
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.interfaces.amba import (Axi4_r, Axi4_addr, AxiStream_withId)
-from hwtLib.interfaces.amba_constants import (BURST_INCR, CACHE_DEFAULT,
-                                              LOCK_DEFAULT, PROT_DEFAULT,
-                                              QOS_DEFAULT, BYTES_IN_TRANS,
-                                              RESP_OKAY)
+from hwtLib.interfaces.amba import (Axi4_r, AxiStream_withId)
+from hwtLib.interfaces.amba_constants import RESP_OKAY
 
-
-class AddrSizeHsAgent(HandshakedAgent):
-    def doRead(self, s):
-        intf = self.intf
-        r = s.read
-        
-        _id = r(intf.id)
-        addr = r(intf.addr)
-        _len = r(intf.len)
-        rem = r(intf.rem)
-        
-        return (_id, addr, _len, rem)
-
-    def mkReq(self, addr, _len, rem=0, _id=0):
-        return (_id, addr, _len, rem)
-
-    def doWrite(self, s, data):
-        intf = self.intf
-        w = s.w
-        
-        if data is None:
-            data = [None for _ in range(4)]
-
-        _id, addr, _len, rem = data
-        
-        w(_id, intf.id)
-        w(addr, intf.addr)
-        w(_len, intf.len)
-        w(rem, intf.rem)
-    
-class AddrSizeHs(Handshaked):
-    def _config(self):
-        self.ID_WIDTH = Param(4)
-        self.ADDR_WIDTH = Param(32)
-        self.MAX_LEN = Param(4096 // 8 - 1)
-        self.DATA_WIDTH = Param(64)
-    
-    def _declr(self):
-        self.id = VectSignal(self.ID_WIDTH)
-        
-        self.addr = VectSignal(self.ADDR_WIDTH)
-        #  len is number of words -1
-        self.len = VectSignal(log2ceil(self.MAX_LEN))
-        
-        # rem is number of bits in last word which is valid - 1
-        self.rem = VectSignal(log2ceil(self.DATA_WIDTH // 8))
-
-        HandshakeSync._declr(self)
-    
-    def _getSimAgent(self):
-        return AddrSizeHsAgent
 
 class TransEndInfo(HandshakeSync):
     def _config(self):
@@ -79,7 +23,7 @@ class TransEndInfo(HandshakeSync):
         self.propagateLast = Signal()
         HandshakeSync._declr(self)
 
-class Axi4_rDataPump(Unit):
+class Axi_rDatapump(Axi_datapumpBase):
     """
     Foward req to axi ar channel 
     and collect data to data channel form axi r channel 
@@ -89,31 +33,23 @@ class Axi4_rDataPump(Unit):
     and contains frame merging logic if is required
     
     if req len is wider transaction is internally splited to multiple
-    transactions, but readed data are single packet as requested 
+    transactions, but read data are single packet as requested 
     
     errorRead stays high when there was error on axi r channel
     it will not affect unit functionality
     """
-    
+
     def _config(self):
-        self.DEFAULT_ID = Param(0)
-        self.MAX_TRANS_OVERLAP = Param(16)
-        self.MAX_LEN = Param(4096 // 8 - 1)
+        super()._config()
         
-        self.ID_WIDTH = Param(4)
-        self.ADDR_WIDTH = Param(32)
-        self.DATA_WIDTH = Param(64)
+        self.DEFAULT_ID = Param(0)
         self.USER_WIDTH = Param(2)  # if 0 is used user signal completly disapears
-    
+        
     def _declr(self):
+        super()._declr() # add clk, rst, axi addr channel and req channel
         with self._asExtern():
-            addClkRstn(self)
             with self._paramsShared():
-                self.ar = Axi4_addr()
                 self.r = Axi4_r()
-                
-                # user flag from req will be set in every word on output rOut 
-                self.req = AddrSizeHs()
                 self.rOut = AxiStream_withId()
                 
                 self.errorRead = Signal()
@@ -122,36 +58,23 @@ class Axi4_rDataPump(Unit):
             f = self.sizeRmFifo = HandshakedFifo(TransEndInfo)
             f.DEPTH.set(self.MAX_TRANS_OVERLAP)
     
-    def getSizeAlignBits(self):
-        return log2ceil(self.DATA_WIDTH // 8).val
-    
-    def useTransSplitting(self):
-        return self.req.len._dtype.bit_length() > self.ar.len._dtype.bit_length()
-    
-    def getBurstAddrOffset(self):
-        LEN_MAX = mask(self.ar.len._dtype.bit_length())
-        return (LEN_MAX + 1) << self.getSizeAlignBits()
     
     def arIdHandler(self, lastReqDispatched):
+        a = self.a
         req_idBackup = self._reg("req_idBackup", self.req.id._dtype)
         If(lastReqDispatched,
             req_idBackup ** self.req.id,
-            self.ar.id ** self.req.id 
+            a.id ** self.req.id 
         ).Else(
-            self.ar.id ** req_idBackup
+            a.id ** req_idBackup
         )
-        
+    
     def addrHandler(self, addRmSize):
-        ar = self.ar
+        ar = self.a
         req = self.req
         canStartNew = addRmSize.rd
-         
-        ar.burst ** BURST_INCR
-        ar.cache ** CACHE_DEFAULT
-        ar.lock ** LOCK_DEFAULT
-        ar.prot ** PROT_DEFAULT
-        ar.qos ** QOS_DEFAULT
-        ar.size ** BYTES_IN_TRANS(evalParam(self.DATA_WIDTH).val)
+        
+        self.axiAddrDefaults() 
 
         # if axi len is smaller we have to use transaction splitting
         if self.useTransSplitting(): 
@@ -268,6 +191,6 @@ class Axi4_rDataPump(Unit):
 
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
-    u = Axi4_rDataPump()
+    u = Axi_rDatapump()
     print(toRtl(u))
     

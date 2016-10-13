@@ -5,7 +5,7 @@ from hdl_toolkit.synthesizer.param import Param
 from hwtLib.interfaces.amba_agents import Axi4_addrAgent, Axi4_rAgent, \
     AxiStreamAgent, AxiStream_withUserAndStrbAgent, AxiLiteAgent, \
     AxiLite_addrAgent, AxiLite_rAgent, AxiLite_wAgent, AxiLite_bAgent, \
-    AxiStream_withIdAgent, Axi4_bAgent
+    AxiStream_withIdAgent, Axi4_bAgent, Axi3_addrAgent
 from hwtLib.interfaces.amba_ip import IP_AXIStream, IP_AXILite, IP_Axi4
 
 
@@ -253,3 +253,24 @@ class Axi4_xil(Axi4):
             self.w = Axi4_w_xil()
             self.r = Axi4_r_xil(masterDir=D.IN)
             self.b = Axi4_b_xil(masterDir=D.IN)  
+
+class Axi3_addr(AxiLite_addr):
+    def _config(self):
+        super()._config()
+        self.ID_WIDTH = Param(3)
+        self.USER_WIDTH = Param(5)
+    
+    def _declr(self):
+        super()._declr()
+        self.id = s(dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
+        self.burst = s(dtype=vecT(2), alternativeNames=['burst_v'])
+        self.cache = s(dtype=vecT(4), alternativeNames=['cache_v'])
+        self.len = s(dtype=vecT(4), alternativeNames=['len_v'])
+        self.lock = s(dtype=vecT(1), alternativeNames=['lock_v'])
+        self.prot = s(dtype=vecT(3), alternativeNames=['prot_v'])
+        self.size = s(dtype=vecT(3), alternativeNames=['size_v'])
+        self.qos = s(dtype=vecT(4), alternativeNames=['qos_v'])
+        self.user = s(dtype=vecT(self.USER_WIDTH))
+
+    def _getSimAgent(self):
+        return Axi3_addrAgent

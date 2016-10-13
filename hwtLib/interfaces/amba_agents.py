@@ -59,6 +59,55 @@ class Axi4_addrAgent(BaseAxiAgent):
         w(size, intf.size)
         w(qos, intf.qos)
 
+class Axi3_addrAgent(BaseAxiAgent):
+    def doRead(self, s):
+        intf = self.intf
+        r = s.read
+
+        addr = r(intf.addr)
+        _id = r(intf.id)
+        burst = r(intf.burst)
+        cache = r(intf.cache)
+        _len = r(intf.len)
+        lock = r(intf.lock)
+        prot = r(intf.prot)
+        size = r(intf.size)
+        qos = r(intf.qos)
+        user = r(intf.user)
+        return (_id, addr, burst, cache, _len, lock, prot, size, qos, user)
+    
+    def mkReq(self, addr, _len, _id=0, burst=BURST_INCR,
+                                       cache=CACHE_DEFAULT,
+                                       lock=LOCK_DEFAULT,
+                                       prot=PROT_DEFAULT,
+                                       size=BYTES_IN_TRANS(64),
+                                       qos=QOS_DEFAULT,
+                                       user=0):
+        
+        return (_id, addr, burst, cache, _len, lock, prot, size, qos, user)
+        
+        
+    def doWrite(self, s, data):
+        intf = self.intf
+        w = s.w
+        
+        if data is None:
+            data = [None for _ in range(10)]
+
+        _id, addr, burst, cache, _len, lock, prot, size, qos, user = data
+
+        w(_id, intf.id)
+        w(addr, intf.intf)
+        w(burst, intf.burst)
+        w(cache, intf.cache)
+        w(_len, intf.len)
+        w(lock, intf.lock)
+        w(prot, intf.prot)
+        w(size, intf.size)
+        w(qos, intf.qos)
+        w(user, intf.user)
+
+
 class Axi4_rAgent(BaseAxiAgent):
     def doRead(self, s):
         intf = self.intf

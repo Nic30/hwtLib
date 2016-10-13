@@ -4,16 +4,14 @@
 from hdl_toolkit.bitmask import mask
 from hdl_toolkit.interfaces.std import Signal, Handshaked, VectSignal, \
     HandshakeSync
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
+from hdl_toolkit.interfaces.utils import propagateClkRstn
 from hdl_toolkit.synthesizer.codeOps import connect, If
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
-from hwtLib.axi.axi4_rDatapump import AddrSizeHs
-from hwtLib.interfaces.amba import Axi4_w, Axi4_addr, AxiStream, Axi4_b
-from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, PROT_DEFAULT, QOS_DEFAULT, \
-    BYTES_IN_TRANS, RESP_OKAY
-from hwtLib.handshaked.fifo import HandshakedFifo
+from hdl_toolkit.synthesizer.param import Param
+from hwtLib.axi.axi_datapump_base import Axi_datapumpBase
 from hwtLib.handshaked.builder import HsBuilder
+from hwtLib.handshaked.fifo import HandshakedFifo
+from hwtLib.interfaces.amba import Axi4_w, AxiStream, Axi4_b
+from hwtLib.interfaces.amba_constants import RESP_OKAY
 
 
 def axiHsAck(m, s):
@@ -36,35 +34,21 @@ class BFifoIntf(Handshaked):
         HandshakeSync._declr(self)
 
         
-class Axi4_wDatapump(Unit):
-    """
-    @ivar param MAX_TRANS_OVERLAP: max number of concurrent transactions
- 
-    """
-    def _config(self):
-        self.MAX_TRANS_OVERLAP = Param(16)
-        self.MAX_LEN = Param(4096 // 8 - 1)
-        
-        self.ID_WIDTH = Param(4)
-        self.ADDR_WIDTH = Param(32)
-        self.DATA_WIDTH = Param(64)
-    
-        
+class Axi4_wDatapump(Axi_datapumpBase):
+
     def _declr(self):
+        super()._declr() # add clk, rst, axi addr channel and req channel
         with self._asExtern():
-            addClkRstn(self)
             with self._paramsShared():
-                self.aw = Axi4_addr()
                 self.w = Axi4_w()
                 self.b = Axi4_b()
-                
-                self.req = AddrSizeHs()
 
                 self.wIn = AxiStream()
                 
                 self.errorWrite = Signal()
             self.reqAck = Handshaked()
             self.reqAck.DATA_WIDTH.set(self.ID_WIDTH)
+            
         with self._paramsShared():
             # fifo for id propagation and frame splitting on axi.w channel 
             wf = self.writeInfoFifo = HandshakedFifo(WFifoIntf)
@@ -75,29 +59,12 @@ class Axi4_wDatapump(Unit):
             bf = self.bInfoFifo = HandshakedFifo(BFifoIntf)
             bf.DEPTH.set(self.MAX_TRANS_OVERLAP)
             
-    
-    def useTransSplitting(self):
-        return evalParam(self.MAX_LEN).val > self.aw.len._dtype.bit_length()
-    
-    def getSizeAlignBits(self):
-        return log2ceil(self.DATA_WIDTH // 8).val
-    
-    def getAxiLenMax(self):
-        return mask(self.aw.len._dtype.bit_length())
-    
-    def getBurstAddrOffset(self):
-        return (self.getAxiLenMax() + 1) << self.getSizeAlignBits()
-    
+
     def axiAwHandler(self):
         req = self.req
-        aw = self.aw
+        aw = self.a
 
-        aw.burst ** BURST_INCR
-        aw.cache ** CACHE_DEFAULT
-        aw.lock ** LOCK_DEFAULT
-        aw.prot ** PROT_DEFAULT
-        aw.qos ** QOS_DEFAULT
-        aw.size ** BYTES_IN_TRANS(evalParam(self.DATA_WIDTH).val)
+        self.axiAddrDefaults()
 
         if self.useTransSplitting():
             LEN_MAX = mask(aw.len._dtype.bit_length())
@@ -110,8 +77,6 @@ class Axi4_wDatapump(Unit):
             _id = self._sig("id", aw.id._dtype)
                     
             en = wInfo.rd
-            
-
             
             If(lastReqDispatched,
                 _id ** req.id,
@@ -171,7 +136,7 @@ class Axi4_wDatapump(Unit):
         w.strb ** wIn.strb
         
         if self.useTransSplitting():
-            wordCntr = self._reg("wWordCntr", self.aw.len._dtype, 0)
+            wordCntr = self._reg("wWordCntr", self.a.len._dtype, 0)
             doSplit = wordCntr._eq(self.getAxiLenMax())
             
             If(enable & axiHsAck(wIn, w),
