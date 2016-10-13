@@ -1,4 +1,5 @@
 from cli_toolkit.ip_packager.interfaces.intfConfig import IntfConfig 
+from python_toolkit.arrayQuery import single
 
 
 def AxiMap(prefix, listOfNames, d=None):
@@ -52,9 +53,9 @@ class IP_AXILite(IntfConfig):
 class IP_Axi4(IP_AXILite):
     def __init__(self,):
         super().__init__()
-        a_sigs = ['id', 'burst', 'cache', 'len', 'lock', 'prot', 'size', 'qos']
-        AxiMap('ar', a_sigs, self.map['ar'])
-        AxiMap('aw', a_sigs, self.map['aw'])
+        A_SIGS = ['id', 'burst', 'cache', 'len', 'lock', 'prot', 'size', 'qos']
+        AxiMap('ar', A_SIGS, self.map['ar'])
+        AxiMap('aw', A_SIGS, self.map['aw'])
         AxiMap('b', ['id'], self.map['b'])
         AxiMap('r', ['id', 'last'], self.map['r'])
         AxiMap('w', ['id', 'last'], self.map['w'])
@@ -69,3 +70,16 @@ class IP_Axi4(IP_AXILite):
         param("PROTOCOL", "AXI4")
         param("READ_WRITE_MODE", "READ_WRITE")
         param("SUPPORTS_NARROW_BURST", 0)
+
+class IP_Axi3(IP_Axi4):
+    def postProcess(self, component, entity, allInterfaces, thisIf):
+        super().postProcess()
+        prot = single(self.parameters, lambda x: x.name == "PROTOCOL" )
+        prot.value.text = "AXI3"
+
+class IP_Axi3_withAddrUser(IP_Axi3):
+    def __init__(self):
+        super().__init__() 
+        AxiMap('ar', ['user'], self.map['ar'])
+        AxiMap('aw', ['user'], self.map['aw'])
+    

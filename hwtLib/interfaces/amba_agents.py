@@ -59,7 +59,7 @@ class Axi4_addrAgent(BaseAxiAgent):
         w(size, intf.size)
         w(qos, intf.qos)
 
-class Axi3_addrAgent(BaseAxiAgent):
+class Axi4_addr_withUserAgent(BaseAxiAgent):
     def doRead(self, s):
         intf = self.intf
         r = s.read

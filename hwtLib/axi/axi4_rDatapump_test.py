@@ -8,7 +8,7 @@ from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.simulator.agentConnector import valuesToInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.axi.axi4_rDatapump import Axi_rDatapump
-from hwtLib.interfaces.amba import Axi3_addr
+from hwtLib.interfaces.amba import Axi3_addr_withUser
 from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
 
@@ -158,7 +158,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
 class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
     LEN_MAX = 15
     def setUp(self):
-        u = Axi_rDatapump(axiAddrCls=Axi3_addr)
+        u = Axi_rDatapump(axiAddrCls=Axi3_addr_withUser)
         self.u, self.model, self.procs = simPrepare(u)
     
     def mkDefaultAddrReq(self, _id, addr, _len):

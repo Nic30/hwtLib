@@ -5,8 +5,8 @@ from hdl_toolkit.synthesizer.param import Param
 from hwtLib.interfaces.amba_agents import Axi4_addrAgent, Axi4_rAgent, \
     AxiStreamAgent, AxiStream_withUserAndStrbAgent, AxiLiteAgent, \
     AxiLite_addrAgent, AxiLite_rAgent, AxiLite_wAgent, AxiLite_bAgent, \
-    AxiStream_withIdAgent, Axi4_bAgent, Axi3_addrAgent
-from hwtLib.interfaces.amba_ip import IP_AXIStream, IP_AXILite, IP_Axi4
+    AxiStream_withIdAgent, Axi4_bAgent, Axi4_addr_withUserAgent
+from hwtLib.interfaces.amba_ip import IP_AXIStream, IP_AXILite, IP_Axi4, IP_Axi3
 
 
 # http://www.xilinx.com/support/documentation/ip_documentation/ug761_axi_reference_guide.pdf
@@ -148,13 +148,14 @@ class Axi4_addr(AxiLite_addr):
     def _config(self):
         super(Axi4_addr, self)._config()
         self.ID_WIDTH = Param(3)
+        self.LEN_WIDTH = 8
     
     def _declr(self):
         super(Axi4_addr, self)._declr()
         self.id = s(dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
         self.burst = s(dtype=vecT(2), alternativeNames=['burst_v'])
         self.cache = s(dtype=vecT(4), alternativeNames=['cache_v'])
-        self.len = s(dtype=vecT(8), alternativeNames=['len_v'])
+        self.len = s(dtype=vecT(self.LEN_WIDTH), alternativeNames=['len_v'])
         self.lock = s(dtype=vecT(1), alternativeNames=['lock_v'])
         self.prot = s(dtype=vecT(3), alternativeNames=['prot_v'])
         self.size = s(dtype=vecT(3), alternativeNames=['size_v'])
@@ -203,6 +204,7 @@ class Axi4(AxiLite):
     def _config(self):
         super(Axi4, self)._config()
         self.ID_WIDTH = Param(3)
+        
         
     def _declr(self):
         with self._paramsShared():
@@ -254,23 +256,26 @@ class Axi4_xil(Axi4):
             self.r = Axi4_r_xil(masterDir=D.IN)
             self.b = Axi4_b_xil(masterDir=D.IN)  
 
-class Axi3_addr(AxiLite_addr):
+class Axi3_addr(Axi4_addr):
     def _config(self):
         super()._config()
-        self.ID_WIDTH = Param(3)
-        self.USER_WIDTH = Param(5)
+        self.LEN_WIDTH = 4
     
+    def _getIpCoreIntfClass(self):
+        return IP_Axi3
+
+class Axi3_addr_withUser(Axi3_addr):
+    def _config(self):
+        super()._config()
+        self.USER_WIDTH = Param(5)
+        
     def _declr(self):
         super()._declr()
-        self.id = s(dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
-        self.burst = s(dtype=vecT(2), alternativeNames=['burst_v'])
-        self.cache = s(dtype=vecT(4), alternativeNames=['cache_v'])
-        self.len = s(dtype=vecT(4), alternativeNames=['len_v'])
-        self.lock = s(dtype=vecT(1), alternativeNames=['lock_v'])
-        self.prot = s(dtype=vecT(3), alternativeNames=['prot_v'])
-        self.size = s(dtype=vecT(3), alternativeNames=['size_v'])
-        self.qos = s(dtype=vecT(4), alternativeNames=['qos_v'])
         self.user = s(dtype=vecT(self.USER_WIDTH))
-
+    
+    def _getIpCoreIntfClass(self):
+        return IP_Axi3
+    
     def _getSimAgent(self):
-        return Axi3_addrAgent
+        return Axi4_addr_withUserAgent
+    
