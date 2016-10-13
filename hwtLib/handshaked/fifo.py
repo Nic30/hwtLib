@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 
-from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
+from hdl_toolkit.interfaces.std import Handshaked, VectSignal
+from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
 from hdl_toolkit.intfLvl import Param
 from hdl_toolkit.synthesizer.codeOps import packedWidth, packed, \
     connectUnpacked
@@ -16,6 +16,7 @@ class HandshakedFifo(HandshakedCompBase):
     def _config(self):
         self.DEPTH = Param(0)
         self.LATENCY = Param(1)
+        self.EXPORT_SIZE = Param(False)
         super()._config()
         
     def _declr(self):
@@ -30,7 +31,12 @@ class HandshakedFifo(HandshakedCompBase):
             f.DATA_WIDTH.set(DW)
             f.DEPTH.set(self.DEPTH)
             f.LATENCY.set(self.LATENCY)
-
+            f.EXPORT_SIZE.set(self.EXPORT_SIZE)
+            
+            if evalParam(self.EXPORT_SIZE).val:
+                with self._asExtern():
+                    self.size = VectSignal(log2ceil(self.DEPTH), signed=False) 
+                
     def _impl(self):
         din = self.dataIn
         dout = self.dataOut
@@ -55,6 +61,9 @@ class HandshakedFifo(HandshakedCompBase):
             connectUnpacked(fifo.dataOut.data, dout,
                             exclude=[vld(dout), rd(dout)])
             fifo.dataOut.en ** (rd(dout) & ~fifo.dataOut.wait)
+            
+            if evalParam(self.EXPORT_SIZE).val:
+                self.size ** fifo.size
         
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl

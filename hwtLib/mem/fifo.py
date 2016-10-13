@@ -3,7 +3,7 @@
 
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.array import Array
-from hdl_toolkit.interfaces.std import FifoWriter, FifoReader
+from hdl_toolkit.interfaces.std import FifoWriter, FifoReader, VectSignal
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil, isPow2
 from hdl_toolkit.serializer.constants import SERI_MODE
 from hdl_toolkit.synthesizer.codeOps import If
@@ -24,6 +24,7 @@ class Fifo(Unit):
         self.DATA_WIDTH = Param(64)
         self.LATENCY = Param(1)
         self.DEPTH = Param(200)
+        self.EXPORT_SIZE = Param(False)
     
     def _declr(self):
         with self._asExtern():
@@ -31,6 +32,9 @@ class Fifo(Unit):
             with self._paramsShared():
                 self.dataIn = FifoWriter()
                 self.dataOut = FifoReader()
+            
+            if evalParam(self.EXPORT_SIZE).val:
+                self.size = VectSignal(log2ceil(self.DEPTH), signed=False) 
     
     def _impl(self):
         index_t = vecT(log2ceil(self.DEPTH), False)
@@ -40,6 +44,7 @@ class Fifo(Unit):
         tail = self._reg("tail", index_t, 0)
         LATENCY = evalParam(self.LATENCY).val
         DEPTH = self.DEPTH
+        EXPORT_SIZE = evalParam(self.EXPORT_SIZE).val
         MAX_DEPTH = DEPTH - 1
         
         dout = self.dataOut
@@ -105,9 +110,18 @@ class Fifo(Unit):
                 din.wait ** 0,
                 dout.wait ** 0 
             )
+            if EXPORT_SIZE:
+                If(looped,
+                    self.size ** DEPTH
+                ).Elif(head < tail,
+                    self.size ** (DEPTH - tail + head)
+                ).Else(
+                    self.size ** (head - tail)     
+                )
+            
         elif LATENCY == 2:
             assert isPow2(evalParam(DEPTH).val), DEPTH
-            
+            if EXPORT_SIZE: raise NotImplementedError() 
             empty_flag = self._sig("empty_flag")
             full_flag = self._sig("full_flag")
 
@@ -149,7 +163,7 @@ class Fifo(Unit):
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = Fifo()
+    u.EXPORT_SIZE.set(True)
     u.DEPTH.set(128)
-    u.LATENCY.set(2)
     print(toRtl(u))
 
