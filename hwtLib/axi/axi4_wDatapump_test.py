@@ -9,7 +9,7 @@ from hdl_toolkit.simulator.agentConnector import valuesToInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT, RESP_OKAY
-from hwtLib.axi.axi4_wDatapump import Axi4_wDatapump
+from hwtLib.axi.axi4_wDatapump import Axi_wDatapump
 from hwtLib.axi.axi4_rDatapump_test import Axi4_rDatapumpTC
 from hwtLib.interfaces.amba import Axi4_addr
 
@@ -17,7 +17,7 @@ from hwtLib.interfaces.amba import Axi4_addr
 class Axi4_wDatapumpTC(unittest.TestCase):
     LEN_MAX = Axi4_rDatapumpTC.LEN_MAX
     def setUp(self):
-        u = Axi4_wDatapump(axiAddrCls=Axi4_addr)
+        u = Axi_wDatapump(axiAddrCls=Axi4_addr)
         self.u, self.model, self.procs = simPrepare(u)
     
     def getTestName(self):

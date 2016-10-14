@@ -38,7 +38,8 @@ class Axi_rDatapump(Axi_datapumpBase):
     
     errorRead stays high when there was error on axi r channel
     it will not affect unit functionality
-    """
+    \n""" + Axi_datapumpBase.__doc__
+
 
     def _config(self):
         super()._config()

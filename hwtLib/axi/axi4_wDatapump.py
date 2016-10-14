@@ -31,7 +31,12 @@ class BFifoIntf(Handshaked):
         HandshakeSync._declr(self)
 
         
-class Axi4_wDatapump(Axi_datapumpBase):
+class Axi_wDatapump(Axi_datapumpBase):
+    """
+    Axi3/4 to axi write datapump,
+    * splits request to correct request size
+    * simplifies axi communication without lose of performance 
+    \n""" + Axi_datapumpBase.__doc__
 
     def _declr(self):
         super()._declr() # add clk, rst, axi addr channel and req channel
@@ -176,5 +181,5 @@ class Axi4_wDatapump(Axi_datapumpBase):
         
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
-    u = Axi4_wDatapump()
+    u = Axi_wDatapump()
     print(toRtl(u))
