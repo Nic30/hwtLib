@@ -185,7 +185,7 @@ class AxiStream_withIdAgent(BaseAxiAgent):
         
         w(_id, intf.id)
         w(data, intf.data)
-        w(strb, intf.resp)
+        w(strb, intf.strb)
         w(last, intf.last)              
 
 class AxiStream_withUserAndStrbAgent(BaseAxiAgent):
@@ -210,7 +210,7 @@ class AxiStream_withUserAndStrbAgent(BaseAxiAgent):
         data, strb, user, last = data
         
         w(data, intf.data)
-        w(strb, intf.resp)
+        w(strb, intf.strb)
         w(user, intf.user)
         w(last, intf.last)              
 
