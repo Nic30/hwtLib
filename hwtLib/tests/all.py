@@ -37,6 +37,7 @@ from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import Subunits
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
+from hwtLib.axi.axis_measuringFifo_test import AxiS_measuringFifoTC
 
 
 if __name__ == "__main__":
@@ -86,6 +87,7 @@ if __name__ == "__main__":
         Axi4_rDatapumpTC,
         Axi3_rDatapumpTC,
         Axi4_wDatapumpTC,
+        AxiS_measuringFifoTC,
     )
     runner = TextTestRunner(verbosity=2)
     runner.run(suite)
