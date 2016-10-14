@@ -12,10 +12,7 @@ from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.interfaces.amba import Axi4_w, AxiStream, Axi4_b
 from hwtLib.interfaces.amba_constants import RESP_OKAY
-
-
-def axiHsAck(m, s):
-    return m.valid & s.ready
+from hwtLib.handshaked.streamNode import streamSync, streamAck
 
 class WFifoIntf(Handshaked):
     def _config(self):
@@ -76,34 +73,29 @@ class Axi4_wDatapump(Axi_datapumpBase):
             req_idBackup = self._reg("req_idBackup", self.req.id._dtype)
             _id = self._sig("id", aw.id._dtype)
                     
-            en = wInfo.rd
             
             If(lastReqDispatched,
                 _id ** req.id,
                 aw.addr ** req.addr,
                 connect(req.len, aw.len, fit=True),
-                aw.valid ** (en & req.vld),
-
-                wInfo.vld ** (req.vld & aw.ready),
-                
-                req.rd ** (wInfo.rd & aw.ready),
                 
                 req_idBackup ** req.id,
                 addrBackup ** (req.addr + self.getBurstAddrOffset()),
                 lenDebth ** (req.len - (LEN_MAX + 1)),
-                If(en & (req.len > LEN_MAX) & aw.ready & req.vld,
+                If(wInfo.rd & (req.len > LEN_MAX) & aw.ready & req.vld,
                    lastReqDispatched ** 1 
-                )
+                ),
+                streamSync(masters=[req], slaves=[aw, wInfo]),
             ).Else(
                 _id ** req_idBackup,
                 aw.addr ** addrBackup,
                 connect(lenDebth, aw.len, fit=True),
-                aw.valid ** en,
                 
-                wInfo.vld ** aw.ready,
+                streamSync(slaves=[aw, wInfo]),
+                
                 req.rd ** 0,
                 
-                If(en & aw.ready,
+                If(wInfo.rd & aw.ready,
                    addrBackup ** (addrBackup + self.getBurstAddrOffset()),
                    lenDebth ** (lenDebth - LEN_MAX),
                    If(lenDebth <= LEN_MAX,
@@ -118,11 +110,8 @@ class Axi4_wDatapump(Axi_datapumpBase):
             aw.id ** req.id
             aw.addr ** req.addr
             connect(req.len, aw.len, fit=True)
-            aw.valid ** req.vld 
-            req.rd ** aw.ready
-            
-
-    
+            streamSync(masters=[req], slaves=[aw])
+           
     def axiWHandler(self):
         w = self.w
         wIn = self.wIn
@@ -137,23 +126,23 @@ class Axi4_wDatapump(Axi_datapumpBase):
         
         if self.useTransSplitting():
             wordCntr = self._reg("wWordCntr", self.a.len._dtype, 0)
-            doSplit = wordCntr._eq(self.getAxiLenMax())
+            doSplit = wordCntr._eq(self.getAxiLenMax()) | wIn.last
             
-            If(enable & axiHsAck(wIn, w),
+            If(streamAck([wInfo, wIn], [bInfo, w]),
                If(wIn.last,
                    wordCntr ** 0
                ).Else(
                    wordCntr ** (wordCntr + 1)
                )
             )
-            wInfo.rd ** (axiHsAck(wIn, w) & (doSplit | wIn.last) & bInfo.rd)
+            streamSync(masters=[wIn, wInfo],
+                           slaves=[bInfo, w],
+                           extraConds={wInfo:[doSplit],
+                                       bInfo:[doSplit]})
             bInfo.isLast ** wIn.last
-            bInfo.vld ** (axiHsAck(wIn, w) & (doSplit | wIn.last) & wInfo.vld)
             
             w.last ** (doSplit | wIn.last)
-            w.valid ** (enable & wIn.valid)
-            wIn.ready ** (enable & w.ready)
-
+            
         else:
             w.last ** wIn.last
             w.valid ** (enable & wIn.valid)
@@ -171,11 +160,10 @@ class Axi4_wDatapump(Axi_datapumpBase):
         )
 
         self.errorWrite ** wErrFlag 
-        b.ready ** (lastFlags.vld & reqAck.rd)
-        lastFlags.rd ** (reqAck.rd & b.valid) 
-        
-        reqAck.vld ** (lastFlags.vld & lastFlags.isLast & b.valid)
         reqAck.data ** b.id
+        streamSync(masters=[b,lastFlags], 
+                       slaves=[reqAck], 
+                       extraConds={reqAck : [lastFlags.isLast]})
         
     
     def _impl(self):

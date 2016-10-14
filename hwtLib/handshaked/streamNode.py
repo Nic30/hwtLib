@@ -15,13 +15,24 @@ def _getVld(intf):
         pass
     return intf.valid
     
-
-def streamNodeSync(masters=[], slaves=[], extraConds={}):
+def streamAck(masters=[], slaves=[]):
     """
+    @param masters: interfaces which are inputs into this node
+    @param slaves: interfaces which are outputs of this node 
+    
+    returns expression which's value is high when transaction is made over interfaces
+    """
+    return And(*map(_getVld, masters), * map(_getRd, slaves))
+    
+def streamSync(masters=[], slaves=[], extraConds={}):
+    """
+    Synchronization of stream node
+    
     @param masters: interfaces which are inputs into this node
     @param slaves: interfaces which are outputs of this node 
     @param extraConds: dict interface : [extraConditions]
               where extra conditions will be added to expression for channell enable
+    
     generate valid/ready synchronization for interfaces
     """
     # also note that only slaves or only masters mean you are alwasy generating/receiving 

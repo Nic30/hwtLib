@@ -10,7 +10,7 @@ from hwtLib.axi.axi_datapump_base import Axi_datapumpBase
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.interfaces.amba import (Axi4_r, AxiStream_withId)
 from hwtLib.interfaces.amba_constants import RESP_OKAY
-from hwtLib.handshaked.streamNode import streamNodeSync
+from hwtLib.handshaked.streamNode import streamSync
 
 
 class TransEndInfo(HandshakeSync):
@@ -120,7 +120,7 @@ class Axi_rDatapump(Axi_datapumpBase):
                reqRem ** req.rem,
                remBackup ** req.rem,
                ack ** (req.vld & addRmSize.rd & ar.ready),
-               streamNodeSync(masters=[req],
+               streamSync(masters=[req],
                               slaves=[addRmSize, ar]),
             ).Else(
                req.rd ** 0,
@@ -132,7 +132,7 @@ class Axi_rDatapump(Axi_datapumpBase):
                reqLen ** lenDebth,
                reqRem ** remBackup,
                ack ** (addRmSize.rd & ar.ready),
-               streamNodeSync(slaves=[addRmSize, ar]),
+               streamSync(slaves=[addRmSize, ar]),
             )
         else:
             # if axi len is wider we can directly translate requests to axi
@@ -144,8 +144,8 @@ class Axi_rDatapump(Axi_datapumpBase):
             addRmSize.rem ** req.rem
             addRmSize.propagateLast ** 1
             
-            streamNodeSync(masters=[req],
-                           slaves=[ar, addRmSize])
+            streamSync(masters=[req],
+                       slaves=[ar, addRmSize])
             
         
     
@@ -181,9 +181,9 @@ class Axi_rDatapump(Axi_datapumpBase):
         )
         rOut.last ** (r.last & rmSizeOut.propagateLast)
         
-        streamNodeSync(masters=[r, rmSizeOut],
-                       slaves=[rOut],
-                       extraConds={rmSizeOut: [r.last]})
+        streamSync(masters=[r, rmSizeOut],
+                   slaves=[rOut],
+                   extraConds={rmSizeOut: [r.last]})
 
         
     def _impl(self):
