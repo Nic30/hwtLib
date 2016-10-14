@@ -47,7 +47,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
         
         # download one word from addr 0xff
         req.data.append(req.mkReq(0xff, 0))
-        self.doSim(200 * Time.ns)
+        self.doSim((self.LEN_MAX + 3) * Time.ns)
         
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(u.a._ag.data), 1)
@@ -64,7 +64,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
         for i in range(3):
             r.addData(i + 77)
         
-        self.doSim(200 * Time.ns)
+        self.doSim((self.LEN_MAX + 3) * 10 * Time.ns)
         
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(u.a._ag.data), 1)
@@ -90,7 +90,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
         r.addData(11)
         r.addData(12)
 
-        self.doSim(2600 * Time.ns)
+        self.doSim(((LEN_MAX + 4) * 10) * Time.ns)
         
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(u.a._ag.data), 1)
@@ -116,7 +116,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
         # download 512 words from addr 0xff
         req.data.append(req.mkReq(0xff, 2 * LEN_MAX + 1))
         
-        self.doSim(2600 * Time.ns)
+        self.doSim(((LEN_MAX + 1) * 10) * Time.ns)
         
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(ar), 2)
@@ -141,7 +141,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
             req.data.append(req.mkReq(i, 0))
         #    r.addData(i + 77, last=(i == 255))
         
-        self.doSim(1000 * Time.ns)
+        self.doSim(((16 + 4) * 10) * Time.ns)
         
         self.assertEqual(len(req.data), 15)
         self.assertEqual(len(ar), 16)

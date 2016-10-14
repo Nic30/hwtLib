@@ -10,6 +10,7 @@ from hwtLib.axi.axi_datapump_base import Axi_datapumpBase
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.interfaces.amba import (Axi4_r, AxiStream_withId)
 from hwtLib.interfaces.amba_constants import RESP_OKAY
+from hwtLib.handshaked.streamNode import streamNodeSync
 
 
 class TransEndInfo(HandshakeSync):
@@ -46,7 +47,7 @@ class Axi_rDatapump(Axi_datapumpBase):
         self.USER_WIDTH = Param(2)  # if 0 is used user signal completly disapears
         
     def _declr(self):
-        super()._declr() # add clk, rst, axi addr channel and req channel
+        super()._declr()  # add clk, rst, axi addr channel and req channel
         with self._asExtern():
             with self._paramsShared():
                 self.r = Axi4_r()
@@ -72,7 +73,6 @@ class Axi_rDatapump(Axi_datapumpBase):
     def addrHandler(self, addRmSize):
         ar = self.a
         req = self.req
-        canStartNew = addRmSize.rd
         
         self.axiAddrDefaults() 
 
@@ -89,6 +89,7 @@ class Axi_rDatapump(Axi_datapumpBase):
                            
             reqLen = self._sig("reqLen", req.len._dtype)
             reqRem = self._sig("reqRem", req.rem._dtype)
+            
             ack = self._sig("ar_ack")
             
             self.arIdHandler(lastReqDispatched)
@@ -112,40 +113,40 @@ class Axi_rDatapump(Axi_datapumpBase):
             )
             
             If(lastReqDispatched,
-               ar.valid ** (req.vld & canStartNew),
                ar.addr ** req.addr,
                rAddr ** (req.addr + ADDR_STEP),
                
-               req.rd ** (canStartNew & ar.ready),
                reqLen ** req.len,
                reqRem ** req.rem,
-               ack ** (req.vld & canStartNew & ar.ready),
-               addRmSize.vld ** (req.vld & ar.ready),
                remBackup ** req.rem,
+               ack ** (req.vld & addRmSize.rd & ar.ready),
+               streamNodeSync(masters=[req],
+                              slaves=[addRmSize, ar]),
             ).Else(
-               ar.addr ** rAddr,
-               ar.valid ** canStartNew,
                req.rd ** 0,
+               ar.addr ** rAddr,
+               If(addRmSize.rd & ar.ready,
+                  rAddr ** (rAddr + ADDR_STEP) 
+               ),
                
                reqLen ** lenDebth,
                reqRem ** remBackup,
-               ack ** (canStartNew & ar.ready),
-               If(canStartNew & ar.ready,
-                  rAddr ** (rAddr + ADDR_STEP) 
-               ),
-               addRmSize.vld ** ar.ready
+               ack ** (addRmSize.rd & ar.ready),
+               streamNodeSync(slaves=[addRmSize, ar]),
             )
         else:
             # if axi len is wider we can directly translate requests to axi
             ar.id ** req.id
-            ar.valid ** (req.vld & canStartNew)
             ar.addr ** req.addr
 
             connect(req.len, ar.len, fit=True)
-
+            
             addRmSize.rem ** req.rem
             addRmSize.propagateLast ** 1
-            addRmSize.vld ** (req.vld & ar.ready)
+            
+            streamNodeSync(masters=[req],
+                           slaves=[ar, addRmSize])
+            
         
     
     def remSizeToStrb(self, remSize, strb):
@@ -179,9 +180,11 @@ class Axi_rDatapump(Axi_datapumpBase):
             rOut.strb ** mask(2 ** self.getSizeAlignBits())
         )
         rOut.last ** (r.last & rmSizeOut.propagateLast)
-        rOut.valid ** (r.valid & rmSizeOut.vld)
-        r.ready ** (rOut.ready & rmSizeOut.vld)
-        rmSizeOut.rd ** (r.valid & r.last & rOut.ready)
+        
+        streamNodeSync(masters=[r, rmSizeOut],
+                       slaves=[rOut],
+                       extraConds={rmSizeOut: [r.last]})
+
         
     def _impl(self):
         propagateClkRstn(self)
