@@ -41,8 +41,8 @@ class AddrSizeHs(Handshaked):
     def _config(self):
         self.ID_WIDTH = Param(4)
         self.ADDR_WIDTH = Param(32)
-        self.MAX_LEN = Param(4096 // 8 - 1)
         self.DATA_WIDTH = Param(64)
+        self.MAX_LEN = Param(4096 // 8 - 1)
     
     def _declr(self):
         self.id = VectSignal(self.ID_WIDTH)
