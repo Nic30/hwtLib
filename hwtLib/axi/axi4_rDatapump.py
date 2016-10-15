@@ -40,13 +40,6 @@ class Axi_rDatapump(Axi_datapumpBase):
     it will not affect unit functionality
     \n""" + Axi_datapumpBase.__doc__
 
-
-    def _config(self):
-        super()._config()
-        
-        self.DEFAULT_ID = Param(0)
-        self.USER_WIDTH = Param(2)  # if 0 is used user signal completly disapears
-        
     def _declr(self):
         super()._declr()  # add clk, rst, axi addr channel and req channel
         with self._asExtern():
