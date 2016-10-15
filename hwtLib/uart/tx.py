@@ -4,7 +4,7 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.interfaces.std import Handshaked, Signal
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import FsmBuilder, If, slr
+from hdl_toolkit.synthesizer.codeOps import FsmBuilder, If, sll
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
 from hwtLib.uart.baudGen import UartBaudGen
@@ -79,7 +79,7 @@ class UartTx(Unit):
         If(~bussy & self.dataIn.vld,
             TxD_shift ** self.dataIn.data
         ).Elif(st[3] & tick,
-            TxD_shift ** slr(TxD_shift, 1)
+            TxD_shift ** sll(TxD_shift, 1)
         )
         
         self.txd ** ((st < 4) | (st[3] & TxD_shift[0]))

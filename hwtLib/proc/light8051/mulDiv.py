@@ -4,7 +4,7 @@
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit, vec
 from hdl_toolkit.interfaces.std import Signal
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.synthesizer.codeOps import If, c, Concat, slr
+from hdl_toolkit.synthesizer.codeOps import If, c, Concat, sll
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param
 
@@ -81,7 +81,7 @@ class MulDiv(Unit):
            b_shift_reg ** Concat(hBit(0), self.data_b, vec(0, DW - 1)),
            div_ov_out ** (self.data_b != 0)
         ).Else(
-           b_shift_reg ** slr(b_shift_reg, 1) 
+           b_shift_reg ** sll(b_shift_reg, 1) 
         )
         # numerator register
         If(self.start,
