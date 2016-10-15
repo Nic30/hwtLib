@@ -6,7 +6,8 @@ from hwtLib.interfaces.amba_agents import Axi4_addrAgent, Axi4_rAgent, \
     AxiStreamAgent, AxiStream_withUserAndStrbAgent, AxiLiteAgent, \
     AxiLite_addrAgent, AxiLite_rAgent, AxiLite_wAgent, AxiLite_bAgent, \
     AxiStream_withIdAgent, Axi4_bAgent, Axi4_addr_withUserAgent
-from hwtLib.interfaces.amba_ip import IP_AXIStream, IP_AXILite, IP_Axi4, IP_Axi3
+from hwtLib.interfaces.amba_ip import IP_AXIStream, IP_AXILite, IP_Axi4, IP_Axi3,\
+    IP_Axi3_withAddrUser
 
 
 # http://www.xilinx.com/support/documentation/ip_documentation/ug761_axi_reference_guide.pdf
@@ -25,7 +26,7 @@ class AxiStream_withoutSTRB(Interface):
 
 class AxiStream(AxiStream_withoutSTRB):
     def _declr(self):
-        super(AxiStream, self)._declr()
+        AxiStream_withoutSTRB._declr(self)
         self.strb = s(dtype=vecT(self.DATA_WIDTH // 8),
                       alternativeNames=['tstrb'])  # 'keep', 'tkeep'
     
@@ -146,12 +147,12 @@ class AxiLite(Interface):
         
 class Axi4_addr(AxiLite_addr):
     def _config(self):
-        super(Axi4_addr, self)._config()
+        AxiLite_addr._config(self)
         self.ID_WIDTH = Param(3)
         self.LEN_WIDTH = 8
     
     def _declr(self):
-        super(Axi4_addr, self)._declr()
+        AxiLite_addr._declr(self)
         self.id = s(dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
         self.burst = s(dtype=vecT(2), alternativeNames=['burst_v'])
         self.cache = s(dtype=vecT(4), alternativeNames=['cache_v'])
@@ -166,11 +167,11 @@ class Axi4_addr(AxiLite_addr):
 
 class Axi4_r(AxiLite_r):
     def _config(self):
-        super(Axi4_r, self)._config()
+        AxiLite_r._config(self)
         self.ID_WIDTH = Param(3)
     
     def _declr(self):
-        super(Axi4_r, self)._declr()
+        AxiLite_r._declr(self)
         self.id = s(dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
         self.last = s()
     
@@ -179,22 +180,22 @@ class Axi4_r(AxiLite_r):
     
 class Axi4_w(AxiLite_w):
     def _config(self):
-        super(Axi4_w, self)._config()
+        AxiLite_w._config(self)
         self.ID_WIDTH = Param(3)
     
     def _declr(self):
-        super(Axi4_w, self)._declr()
+        AxiLite_w._declr(self)
         self.id = s(dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
         self.last = s()
     
     
 class Axi4_b(AxiLite_b):
     def _config(self):
-        super(Axi4_b, self)._config()
+        AxiLite_b._config(self)
         self.ID_WIDTH = Param(3)
     
     def _declr(self):
-        super(Axi4_b, self)._declr()
+        AxiLite_b._declr(self)
         self.id = s(dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
 
     def _getSimAgent(self):
@@ -202,7 +203,7 @@ class Axi4_b(AxiLite_b):
 
 class Axi4(AxiLite):
     def _config(self):
-        super(Axi4, self)._config()
+        AxiLite._config(self)
         self.ID_WIDTH = Param(3)
         
         
@@ -258,7 +259,7 @@ class Axi4_xil(Axi4):
 
 class Axi3_addr(Axi4_addr):
     def _config(self):
-        super()._config()
+        Axi4_addr._config(self)
         self.LEN_WIDTH = 4
     
     def _getIpCoreIntfClass(self):
@@ -266,16 +267,31 @@ class Axi3_addr(Axi4_addr):
 
 class Axi3_addr_withUser(Axi3_addr):
     def _config(self):
-        super()._config()
+        Axi3_addr._config(self)
         self.USER_WIDTH = Param(5)
         
     def _declr(self):
-        super()._declr()
+        Axi3_addr._declr(self)
         self.user = s(dtype=vecT(self.USER_WIDTH))
-    
-    def _getIpCoreIntfClass(self):
-        return IP_Axi3
     
     def _getSimAgent(self):
         return Axi4_addr_withUserAgent
+
+
+class Axi3_withAddrUser(Axi4):
+    def _config(self):
+        Axi4._config(self)
+        self.USER_WIDTH = Param(3)
+        
+        
+    def _declr(self):
+        with self._paramsShared():
+            self.aw = Axi3_addr()
+            self.ar = Axi3_addr()
+            self.w = Axi4_w()
+            self.r = Axi4_r(masterDir=D.IN)
+            self.b = Axi4_b(masterDir=D.IN)
+    
+    def _getIpCoreIntfClass(self):
+        return IP_Axi3_withAddrUser
     
