@@ -13,7 +13,9 @@ from hwtLib.mem.fifo import Fifo
 
 class AsyncFifo(Fifo):
     """
+    Asynchronous fifo using BRAM memory
     http://www.asic-world.com/examples/vhdl/asyn_fifo.html
+    
     """
     _serializerMode = SERI_MODE.PARAMS_UNIQ
     
