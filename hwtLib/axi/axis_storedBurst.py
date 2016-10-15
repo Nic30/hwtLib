@@ -21,18 +21,6 @@ class AxiStreamStoredBurst(Unit):
         self.DATA_WIDTH = Param(64)
         self.DATA = [ ord(c) for c in "Hello world" ]
         
-    def writeData(self, d, vldMask, last):
-        return c(d, self.dataOut.data) + \
-               c(vldMask, self.dataOut.strb) + \
-               c(last, self.dataOut.last) + \
-               c(True, self.dataOut.valid)
-    
-    def writeStop(self):
-        return c(0, self.dataOut.data) + \
-               c(0, self.dataOut.strb) + \
-               c(False, self.dataOut.last) + \
-               c(False, self.dataOut.valid)
-    
     def dataRd(self):
         return self.dataOut.ready
     
@@ -45,18 +33,29 @@ class AxiStreamStoredBurst(Unit):
     def _impl(self):
         self.DATA_WIDTH = evalParam(self.DATA_WIDTH).val
         vldAll = mask(self.DATA_WIDTH // 8)
+        dout = self.dataOut
         
         DATA_LEN = len(self.DATA)
         
         wordIndex_w = int(math.log2(DATA_LEN) + 1)
         wordIndex = self._reg("wordIndex", vecT(wordIndex_w), defVal=0)
-  
-        # [TODO] refactor
+
         Switch(wordIndex)\
-        .addCases([(vec(i, wordIndex_w), self.writeData(d, vldAll, i == DATA_LEN - 1)
-              ) for i, d in enumerate(self.DATA)])\
-        .Default(self.writeStop())
-        If(self.dataRd() & (wordIndex < len(self.DATA)),
+        .addCases([(i, dout.data ** d)
+                    for i, d in enumerate(self.DATA)])\
+        .Default(dout.data ** None)
+        
+        dout.last ** wordIndex._eq(DATA_LEN - 1)
+        If(wordIndex < DATA_LEN,
+            dout.strb ** vldAll,
+            dout.valid ** 1
+        ).Else(
+            dout.strb ** None,
+            dout.valid ** 0
+        )
+        
+        
+        If(self.dataRd() & (wordIndex < DATA_LEN),
             wordIndex ** (wordIndex + 1)
         )
         
