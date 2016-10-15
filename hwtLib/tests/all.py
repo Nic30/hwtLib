@@ -5,6 +5,7 @@ from unittest import TestLoader, TextTestRunner, TestSuite
 
 from hwtLib.axi.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
 from hwtLib.axi.axi4_wDatapump_test import Axi4_wDatapumpTC
+from hwtLib.axi.axis_measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.handshaked.fork_test import ForkTC
 from hwtLib.handshaked.reg2_test import HsReg2TC
 from hwtLib.handshaked.reg_test import HsRegTC
@@ -37,7 +38,6 @@ from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import Subunits
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
-from hwtLib.axi.axis_measuringFifo_test import AxiS_measuringFifoTC
 
 
 if __name__ == "__main__":
