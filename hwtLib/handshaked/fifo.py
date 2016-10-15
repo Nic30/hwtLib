@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-from hdl_toolkit.interfaces.std import Handshaked, VectSignal
+from hdl_toolkit.interfaces.std import VectSignal
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
 from hdl_toolkit.intfLvl import Param
 from hdl_toolkit.synthesizer.codeOps import packedWidth, packed, \
@@ -66,6 +66,7 @@ class HandshakedFifo(HandshakedCompBase):
                 self.size ** fifo.size
         
 if __name__ == "__main__":
+    from hdl_toolkit.interfaces.std import Handshaked
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = HandshakedFifo(Handshaked)
     u.DEPTH.set(2)

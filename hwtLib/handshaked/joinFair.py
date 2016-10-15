@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.intfLvl import Param
 from hdl_toolkit.synthesizer.codeOps import And, If, Or, iterBits, ror
-from hwtLib.handshaked.compBase import HandshakedCompBase
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hwtLib.handshaked.join import HandshakedJoin
 
 
-class HsJoinFairShare(HandshakedCompBase):
+class HsJoinFairShare(HandshakedJoin):
     """
     Join input stream to single output stream
     inputs with lower number has higher priority
@@ -20,16 +17,6 @@ class HsJoinFairShare(HandshakedCompBase):
     
     combinational
     """
-    def _config(self):
-        self.INPUTS = Param(2)
-        super()._config()
-        
-    def _declr(self):
-        with self._asExtern(), self._paramsShared():
-            addClkRstn(self)  # this is just for reference, not actualy used inside
-            self.dataIn = self.intfCls(multipliedBy=self.INPUTS)
-            self.dataOut = self.intfCls()
-
     def priorityOverriden(self, priority, vldSignals, index):
         owr = []
         for i, (p, vld) in  enumerate(zip(iterBits(priority), vldSignals)):
@@ -74,6 +61,7 @@ class HsJoinFairShare(HandshakedCompBase):
                 
         
 if __name__ == "__main__":
+    from hdl_toolkit.interfaces.std import Handshaked
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = HsJoinFairShare(Handshaked)
     print(toRtl(u))
