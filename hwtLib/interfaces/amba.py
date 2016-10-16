@@ -6,7 +6,7 @@ from hwtLib.interfaces.amba_agents import Axi4_addrAgent, Axi4_rAgent, \
     AxiStreamAgent, AxiStream_withUserAndStrbAgent, AxiLiteAgent, \
     AxiLite_addrAgent, AxiLite_rAgent, AxiLite_wAgent, AxiLite_bAgent, \
     AxiStream_withIdAgent, Axi4_bAgent, Axi4_addr_withUserAgent
-from hwtLib.interfaces.amba_ip import IP_AXIStream, IP_AXILite, IP_Axi4, IP_Axi3,\
+from hwtLib.interfaces.amba_ip import IP_AXIStream, IP_AXILite, IP_Axi4, IP_Axi3, \
     IP_Axi3_withAddrUser
 
 
@@ -204,7 +204,7 @@ class Axi4_b(AxiLite_b):
 class Axi4(AxiLite):
     def _config(self):
         AxiLite._config(self)
-        self.ID_WIDTH = Param(3)
+        self.ID_WIDTH = Param(6)
         
         
     def _declr(self):
@@ -277,6 +277,17 @@ class Axi3_addr_withUser(Axi3_addr):
     def _getSimAgent(self):
         return Axi4_addr_withUserAgent
 
+class Axi3(Axi4):
+    def _declr(self):
+        with self._paramsShared():
+            self.aw = Axi3_addr()
+            self.ar = Axi3_addr()
+            self.w = Axi4_w()
+            self.r = Axi4_r(masterDir=D.IN)
+            self.b = Axi4_b(masterDir=D.IN)
+    
+    def _getIpCoreIntfClass(self):
+        return IP_Axi3
 
 class Axi3_withAddrUser(Axi4):
     def _config(self):
@@ -286,8 +297,8 @@ class Axi3_withAddrUser(Axi4):
         
     def _declr(self):
         with self._paramsShared():
-            self.aw = Axi3_addr()
-            self.ar = Axi3_addr()
+            self.aw = Axi3_addr_withUser()
+            self.ar = Axi3_addr_withUser()
             self.w = Axi4_w()
             self.r = Axi4_r(masterDir=D.IN)
             self.b = Axi4_b(masterDir=D.IN)

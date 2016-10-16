@@ -73,7 +73,7 @@ class IP_Axi4(IP_AXILite):
 
 class IP_Axi3(IP_Axi4):
     def postProcess(self, component, entity, allInterfaces, thisIf):
-        super().postProcess()
+        super().postProcess(component, entity, allInterfaces, thisIf)
         prot = single(self.parameters, lambda x: x.name == "PROTOCOL" )
         prot.value.text = "AXI3"
 
@@ -83,3 +83,7 @@ class IP_Axi3_withAddrUser(IP_Axi3):
         AxiMap('ar', ['user'], self.map['ar'])
         AxiMap('aw', ['user'], self.map['aw'])
     
+    def postProcess(self, component, entity, allInterfaces, thisIf):
+        super().postProcess(component, entity, allInterfaces, thisIf)
+        self.addWidthParam(thisIf, "AWUSER_WIDTH", thisIf.USER_WIDTH)
+        self.addWidthParam(thisIf, "ARUSER_WIDTH", thisIf.USER_WIDTH)
