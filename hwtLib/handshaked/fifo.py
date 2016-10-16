@@ -35,7 +35,7 @@ class HandshakedFifo(HandshakedCompBase):
             
             if evalParam(self.EXPORT_SIZE).val:
                 with self._asExtern():
-                    self.size = VectSignal(log2ceil(self.DEPTH), signed=False) 
+                    self.size = VectSignal(log2ceil(self.DEPTH + 1), signed=False) 
                 
     def _impl(self):
         din = self.dataIn

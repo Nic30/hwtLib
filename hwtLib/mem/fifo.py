@@ -6,7 +6,7 @@ from hdl_toolkit.hdlObjects.types.array import Array
 from hdl_toolkit.interfaces.std import FifoWriter, FifoReader, VectSignal
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil, isPow2
 from hdl_toolkit.serializer.constants import SERI_MODE
-from hdl_toolkit.synthesizer.codeOps import If
+from hdl_toolkit.synthesizer.codeOps import If, connect
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
 
@@ -34,7 +34,7 @@ class Fifo(Unit):
                 self.dataOut = FifoReader()
             
             if evalParam(self.EXPORT_SIZE).val:
-                self.size = VectSignal(log2ceil(self.DEPTH), signed=False) 
+                self.size = VectSignal(log2ceil(self.DEPTH + 1), signed=False) 
     
     def _impl(self):
         index_t = vecT(log2ceil(self.DEPTH), False)
@@ -76,7 +76,9 @@ class Fifo(Unit):
             mem[head] ** din.data
         )     
         
-        if LATENCY == 1:
+        if LATENCY == 1: 
+            #assert isPow2(evalParam(DEPTH).val), DEPTH
+            
             looped = self._reg("looped", defVal=False)
             
             fifo_read ** (dout.en & (looped | (head != tail)))
@@ -111,13 +113,17 @@ class Fifo(Unit):
                 dout.wait ** 0 
             )
             if EXPORT_SIZE:
+                sizeTmp = self._sig("sizeTmp", tail._dtype)
                 If(looped,
                     self.size ** DEPTH
                 ).Elif(head < tail,
-                    self.size ** (DEPTH - tail + head)
+                    sizeTmp ** (DEPTH - tail + head),
+                    connect(sizeTmp, self.size, fit=True)
                 ).Else(
-                    self.size ** (head - tail)     
+                    sizeTmp ** (head - tail),     
+                    connect(sizeTmp, self.size, fit=True)
                 )
+                
             
         elif LATENCY == 2:
             assert isPow2(evalParam(DEPTH).val), DEPTH
