@@ -39,7 +39,7 @@ class Axi_wDatapump(Axi_datapumpBase):
     \n""" + Axi_datapumpBase.__doc__
 
     def _declr(self):
-        super()._declr() # add clk, rst, axi addr channel and req channel
+        super()._declr()  # add clk, rst, axi addr channel and req channel
         with self._asExtern():
             with self._paramsShared():
                 self.w = Axi4_w()
@@ -50,7 +50,8 @@ class Axi_wDatapump(Axi_datapumpBase):
                 self.errorWrite = Signal()
             self.reqAck = Handshaked()
             self.reqAck.DATA_WIDTH.set(self.ID_WIDTH)
-            
+       
+        If     
         with self._paramsShared():
             # fifo for id propagation and frame splitting on axi.w channel 
             wf = self.writeInfoFifo = HandshakedFifo(WFifoIntf)
@@ -68,9 +69,9 @@ class Axi_wDatapump(Axi_datapumpBase):
 
         self.axiAddrDefaults()
 
+        wInfo = self.writeInfoFifo.dataIn
         if self.useTransSplitting():
             LEN_MAX = mask(aw.len._dtype.bit_length())
-            wInfo = self.writeInfoFifo.dataIn
             
             lastReqDispatched = self._reg("lastReqDispatched", defVal=1)
             lenDebth = self._reg("lenDebth", req.len._dtype)
@@ -113,17 +114,18 @@ class Axi_wDatapump(Axi_datapumpBase):
             
         else:
             aw.id ** req.id
+            wInfo.id ** req.id
             aw.addr ** req.addr
             connect(req.len, aw.len, fit=True)
-            streamSync(masters=[req], slaves=[aw])
+            streamSync(masters=[req], slaves=[aw, wInfo])
            
     def axiWHandler(self):
         w = self.w
         wIn = self.wIn
+        
         wInfo = HsBuilder(self, self.writeInfoFifo.dataOut).reg().end
         bInfo = self.bInfoFifo.dataIn
-        
-        enable = wInfo.vld & bInfo.rd
+
         
         w.id ** wInfo.id
         w.data ** wIn.data
@@ -140,18 +142,20 @@ class Axi_wDatapump(Axi_datapumpBase):
                    wordCntr ** (wordCntr + 1)
                )
             )
-            streamSync(masters=[wIn, wInfo],
-                           slaves=[bInfo, w],
-                           extraConds={wInfo:[doSplit],
-                                       bInfo:[doSplit]})
-            bInfo.isLast ** wIn.last
-            
+            extraConds = {wInfo:[doSplit],
+                          bInfo:[doSplit]}
             w.last ** (doSplit | wIn.last)
             
         else:
             w.last ** wIn.last
-            w.valid ** (enable & wIn.valid)
-            wIn.ready ** w.ready
+            extraConds = {}
+        
+        bInfo.isLast ** wIn.last
+        streamSync(masters=[wIn, wInfo],
+                       slaves=[bInfo, w],
+                       extraConds=extraConds
+                       )
+            
             
     def axiBHandler(self):
         wErrFlag = self._reg("wErrFlag", defVal=0)
@@ -166,8 +170,8 @@ class Axi_wDatapump(Axi_datapumpBase):
 
         self.errorWrite ** wErrFlag 
         reqAck.data ** b.id
-        streamSync(masters=[b,lastFlags], 
-                       slaves=[reqAck], 
+        streamSync(masters=[b, lastFlags],
+                       slaves=[reqAck],
                        extraConds={reqAck : [lastFlags.isLast]})
         
     
