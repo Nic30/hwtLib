@@ -12,7 +12,7 @@ from hdl_toolkit.synthesizer.param import Param, evalParam
 from hwtLib.interfaces.amba import AxiStream
 
 
-class AxiStreamStoredBurst(Unit):
+class AxiSStoredBurst(Unit):
     """
     This units send data stored in property DATA over axi-stream interface
     """
@@ -20,6 +20,7 @@ class AxiStreamStoredBurst(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(64)
         self.DATA = [ ord(c) for c in "Hello world" ]
+        self.REPEAT = Param(False)
         
     def dataRd(self):
         return self.dataOut.ready
@@ -29,6 +30,18 @@ class AxiStreamStoredBurst(Unit):
             addClkRstn(self)
             with self._paramsShared():
                 self.dataOut = AxiStream()
+    
+    def nextWordIndexLogic(self, wordIndex):
+        if evalParam(self.REPEAT).val:
+            return  If((wordIndex < len(self.DATA)),
+                        wordIndex ** (wordIndex + 1)
+                    ).Else(
+                        wordIndex ** 0
+                    )
+        else:
+            return  If((wordIndex < len(self.DATA)),
+                        wordIndex ** (wordIndex + 1)
+                    )
     
     def _impl(self):
         self.DATA_WIDTH = evalParam(self.DATA_WIDTH).val
@@ -55,11 +68,11 @@ class AxiStreamStoredBurst(Unit):
         )
         
         
-        If(self.dataRd() & (wordIndex < DATA_LEN),
-            wordIndex ** (wordIndex + 1)
+        If(self.dataRd(),
+            self.nextWordIndexLogic(wordIndex)
         )
         
         
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
-    print(toRtl(AxiStreamStoredBurst))
+    print(toRtl(AxiSStoredBurst))
