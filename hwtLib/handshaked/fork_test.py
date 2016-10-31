@@ -7,6 +7,7 @@ from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.simulator.agentConnector import agInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
+from hdl_toolkit.simulator.utils import agent_randomize
 from hwtLib.handshaked.fork import HandshakedFork
 
 
@@ -35,10 +36,15 @@ class ForkTC(unittest.TestCase):
         
         self.assertSequenceEqual([], u.dataIn._ag.data)
 
-
+class Fork_randomized_TC(ForkTC):
+    def setUp(self):
+        super(Fork_randomized_TC, self).setUp()
+        self.procs.append(agent_randomize(self.u.dataIn._ag))
+        
+        
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(FifoTC('test_normalOp'))
-    suite.addTest(unittest.makeSuite(ForkTC))
+    suite.addTest(unittest.makeSuite(Fork_randomized_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
