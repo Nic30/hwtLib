@@ -77,7 +77,7 @@ class Fifo(Unit):
         )     
         
         if LATENCY == 1: 
-            #assert isPow2(evalParam(DEPTH).val), DEPTH
+            # assert isPow2(evalParam(DEPTH).val), DEPTH
             
             looped = self._reg("looped", defVal=False)
             
@@ -114,13 +114,13 @@ class Fifo(Unit):
             )
             if EXPORT_SIZE:
                 sizeTmp = self._sig("sizeTmp", tail._dtype)
+                sizeTmp ** (head - tail),
+
                 If(looped,
                     self.size ** DEPTH
                 ).Elif(head < tail,
-                    sizeTmp ** (DEPTH - tail + head),
-                    connect(sizeTmp, self.size, fit=True)
+                    self.size ** (DEPTH - tail + head)
                 ).Else(
-                    sizeTmp ** (head - tail),     
                     connect(sizeTmp, self.size, fit=True)
                 )
                 
