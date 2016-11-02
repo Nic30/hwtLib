@@ -188,6 +188,8 @@ class Axi4_w(AxiLite_w):
         self.id = s(dtype=vecT(self.ID_WIDTH), alternativeNames=['id_v'])
         self.last = s()
     
+    def _getSimAgent(self):
+        return AxiStream_withIdAgent
     
 class Axi4_b(AxiLite_b):
     def _config(self):
