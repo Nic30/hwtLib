@@ -4,7 +4,8 @@
 from unittest import TestLoader, TextTestRunner, TestSuite
 
 from hwtLib.axi.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
-from hwtLib.axi.axi4_wDatapump_test import Axi4_wDatapumpTC
+from hwtLib.axi.axi4_wDatapump_test import Axi4_wDatapumpTC, \
+    Axi3_wDatapump_direct_TC
 from hwtLib.axi.axis_measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.handshaked.fork_test import ForkTC
 from hwtLib.handshaked.reg2_test import HsReg2TC
@@ -87,6 +88,7 @@ if __name__ == "__main__":
         Axi4_rDatapumpTC,
         Axi3_rDatapumpTC,
         Axi4_wDatapumpTC,
+        Axi3_wDatapump_direct_TC,
         AxiS_measuringFifoTC,
     )
     runner = TextTestRunner(verbosity=2)

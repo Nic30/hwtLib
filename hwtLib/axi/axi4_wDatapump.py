@@ -148,7 +148,8 @@ class Axi_wDatapump(Axi_datapumpBase):
             
         else:
             w.last ** wIn.last
-            extraConds = {}
+            extraConds = {wInfo:[wIn.last],
+                          bInfo:[wIn.last]}
         
         bInfo.isLast ** wIn.last
         streamSync(masters=[wIn, wInfo],

@@ -11,7 +11,7 @@ from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT, RESP_OKAY
 from hwtLib.axi.axi4_wDatapump import Axi_wDatapump
 from hwtLib.axi.axi4_rDatapump_test import Axi4_rDatapumpTC
-from hwtLib.interfaces.amba import Axi4_addr
+from hwtLib.interfaces.amba import Axi4_addr, Axi3_addr
 
 
 class Axi4_wDatapumpTC(unittest.TestCase):
@@ -75,6 +75,29 @@ class Axi4_wDatapumpTC(unittest.TestCase):
         self.assertEqual(len(w), 1)
         self.assertEqual(len(b), 0)
         
+    def test_singleLong(self):
+        u = self.u
+        
+        req = u.req._ag
+        aw = u.a._ag.data
+        wIn = u.wIn._ag
+        w = u.w._ag.data
+        b = u.b._ag.data
+        
+        # download one word from addr 0xff
+        req.data.append(req.mkReq(0xff, self.LEN_MAX))
+        for i in range(self.LEN_MAX + 1 + 10):
+            wIn.data.append((100 + 1, mask(8), i == self.LEN_MAX))
+        b.append((0, RESP_OKAY))
+        
+        self.doSim((10 + self.LEN_MAX) * 10 * Time.ns)
+        
+        self.assertEqual(len(aw), 1)
+        self.assertSequenceEqual(valuesToInts(aw[0]),
+                                 [0, 0xff, 1, 3, self.LEN_MAX, 0, 0, 6, 0])
+        
+        self.assertEqual(len(w), self.LEN_MAX + 1)
+        self.assertEqual(len(b), 0)
     
     def test_multiple(self):
         u = self.u
@@ -99,14 +122,20 @@ class Axi4_wDatapumpTC(unittest.TestCase):
         self.assertEqual(len(w), 50)
         self.assertEqual(len(b), 0)
      
-        
+class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
+    LEN_MAX = 16
+    def setUp(self):
+        u = Axi_wDatapump(axiAddrCls=Axi3_addr)
+        u.MAX_LEN.set(16)
+        self.u, self.model, self.procs = simPrepare(u)
+            
 
 
        
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(Axi4_rDatapumpTC('test_maxReq'))
-    suite.addTest(unittest.makeSuite(Axi4_wDatapumpTC))
+    suite.addTest(unittest.makeSuite(Axi3_wDatapump_direct_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
     
