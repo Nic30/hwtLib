@@ -98,6 +98,8 @@ class Axi4_wDatapumpTC(unittest.TestCase):
         
         self.assertEqual(len(w), self.LEN_MAX + 1)
         self.assertEqual(len(b), 0)
+        self.assertEqual(len(u.reqAck._ag.data), 1)
+        
     
     def test_multiple(self):
         u = self.u
@@ -106,21 +108,24 @@ class Axi4_wDatapumpTC(unittest.TestCase):
         wIn = u.wIn._ag
         w = u.w._ag.data
         b = u.b._ag.data
+        N = 50
         
         # download one word from addr 0xff
-        for i in range(50):
+        for i in range(N):
             req.data.append(req.mkReq((i * 8) + 0xff, 0))
             wIn.data.append((77, mask(64 // 8 - 1), 1))
             b.append((0, RESP_OKAY))
         
         self.doSim(1000 * Time.ns)
         
-        self.assertEqual(len(aw), 50)
+        self.assertEqual(len(aw), N)
         for i, rec in enumerate(aw):
-            self.assertSequenceEqual(valuesToInts(rec), [0, 0xff + (8 * i), 1, 3, 0, 0, 0, 6, 0])
+            self.assertSequenceEqual(valuesToInts(rec),
+                                      [0, 0xff + (8 * i), 1, 3, 0, 0, 0, 6, 0])
         
-        self.assertEqual(len(w), 50)
+        self.assertEqual(len(w), N)
         self.assertEqual(len(b), 0)
+        self.assertEqual(len(u.reqAck._ag.data), N)
      
 class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
     LEN_MAX = 16
