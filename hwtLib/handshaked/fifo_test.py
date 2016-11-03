@@ -48,9 +48,9 @@ class HsFifoTC(unittest.TestCase):
         
         self.assertSequenceEqual([], u.dataIn._ag.data)
 
-class Fifo_randomized_TC(HsFifoTC):
+class HsFifo_randomized_TC(HsFifoTC):
     def setUp(self):
-        super(Fifo_randomized_TC, self).setUp()
+        super(HsFifo_randomized_TC, self).setUp()
         self.procs.append(agent_randomize(self.u.dataIn._ag))
         self.procs.append(agent_randomize(self.u.dataOut._ag))
         
@@ -58,6 +58,6 @@ class Fifo_randomized_TC(HsFifoTC):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(FifoTC('test_normalOp'))
-    suite.addTest(unittest.makeSuite(Fifo_randomized_TC))
+    suite.addTest(unittest.makeSuite(HsFifoTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

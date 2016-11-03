@@ -37,13 +37,15 @@ class Fifo(Unit):
                 self.size = VectSignal(log2ceil(self.DEPTH + 1), signed=False) 
     
     def _impl(self):
-        index_t = vecT(log2ceil(self.DEPTH), False)
+        DEPTH = self.DEPTH
+        assert evalParam(DEPTH).val > 0
+        
+        index_t = vecT(log2ceil(DEPTH), False)
         
         mem = self.mem = self._sig("memory", Array(vecT(self.DATA_WIDTH), self.DEPTH))
         head = self._reg("head", index_t, 0)
         tail = self._reg("tail", index_t, 0)
         LATENCY = evalParam(self.LATENCY).val
-        DEPTH = self.DEPTH
         EXPORT_SIZE = evalParam(self.EXPORT_SIZE).val
         MAX_DEPTH = DEPTH - 1
         
@@ -127,7 +129,9 @@ class Fifo(Unit):
             
         elif LATENCY == 2:
             assert isPow2(evalParam(DEPTH).val), DEPTH
-            if EXPORT_SIZE: raise NotImplementedError() 
+            if EXPORT_SIZE: 
+                raise NotImplementedError() 
+            
             empty_flag = self._sig("empty_flag")
             full_flag = self._sig("full_flag")
 
