@@ -31,7 +31,7 @@ def streamSync(masters=[], slaves=[], extraConds={}):
     @param masters: interfaces which are inputs into this node
     @param slaves: interfaces which are outputs of this node 
     @param extraConds: dict interface : [extraConditions]
-              where extra conditions will be added to expression for channell enable
+              where extra conditions will be added to expression for channel enable
     
     generate valid/ready synchronization for interfaces
     """
