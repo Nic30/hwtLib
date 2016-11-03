@@ -6,7 +6,7 @@ from hdl_toolkit.interfaces.std import VectSignal
 from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
 from hdl_toolkit.intfLvl import Param
 from hdl_toolkit.synthesizer.codeOps import packedWidth, packed, \
-    connectUnpacked
+    connectUnpacked, If, connect
 from hdl_toolkit.synthesizer.param import evalParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
@@ -40,7 +40,7 @@ class HandshakedFifo(HandshakedCompBase):
         
         if evalParam(self.EXPORT_SIZE).val:
             with self._asExtern():
-                self.size = VectSignal(log2ceil(self.DEPTH + 1), signed=False) 
+                self.size = VectSignal(log2ceil(self.DEPTH + 1 + 1), signed=False) 
     
         with self._paramsShared(): 
             self.outReg = self._regCls(self.intfCls)
@@ -69,7 +69,14 @@ class HandshakedFifo(HandshakedCompBase):
         fifo.dataOut.en ** (rd(r.dataIn) & ~fifo.dataOut.wait)
         
         if evalParam(self.EXPORT_SIZE).val:
-            self.size ** fifo.size
+            sizeTmp = self._sig("sizeTmp", self.size._dtype)
+            connect(fifo.size, sizeTmp, fit=True)
+            
+            If(vld(r.dataOut),
+               self.size ** (sizeTmp + 1)
+            ).Else(
+               connect(fifo.size, self.size, fit=True)
+            )
     
         
         
