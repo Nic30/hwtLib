@@ -148,7 +148,8 @@ class Axi_wDatapump(Axi_datapumpBase):
             
         else:
             w.last ** wIn.last
-            extraConds = {}
+            extraConds = {wInfo:[wIn.last],
+                          bInfo:[wIn.last]}
         
         bInfo.isLast ** wIn.last
         streamSync(masters=[wIn, wInfo],
@@ -171,8 +172,10 @@ class Axi_wDatapump(Axi_datapumpBase):
         self.errorWrite ** wErrFlag 
         reqAck.data ** b.id
         streamSync(masters=[b, lastFlags],
-                       slaves=[reqAck],
-                       extraConds={reqAck : [lastFlags.isLast]})
+                   slaves=[reqAck],
+                   extraConds={
+                               reqAck : [lastFlags.isLast]
+                               })
         
     
     def _impl(self):
