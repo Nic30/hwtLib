@@ -5,7 +5,7 @@ import unittest
 
 from hdl_toolkit.bitmask import mask
 from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.agentConnector import valuesToInts
+from hdl_toolkit.simulator.agentConnector import valuesToInts, valToInt
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.axi.axis_measuringFifo import AxiS_measuringFifo
 
@@ -42,6 +42,19 @@ class AxiS_measuringFifoTC(unittest.TestCase):
         self.doSim(200 * Time.ns)
         self.assertEqual(len(u.sizes._ag.data), 1)
         self.assertEqual(len(u.dataOut._ag.data), 1)
+
+    def test_singleWordPacketWithDelay(self):
+        u = self.u
+        
+        u.dataIn._ag.data.extend([(2, 255, 1),
+                                  ])
+        u.dataOut._ag.enable = False
+
+        self.doSim(200 * Time.ns)
+        self.assertEqual(len(u.sizes._ag.data), 1)
+        self.assertEqual(len(u.dataOut._ag.data), 0)
+        self.assertEqual(valToInt(self.model.dataOut_last._val), 1)
+
 
 
     def test_multiplePackets(self):
