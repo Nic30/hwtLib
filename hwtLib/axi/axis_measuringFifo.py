@@ -50,7 +50,7 @@ class AxiS_measuringFifo(Unit):
         # to place fifo in bram
         db.LATENCY.set(2)
         db.DATA_WIDTH.set(self.DATA_WIDTH)
-        db.DEPTH.set((self.MAX_LEN + 1) * 2)
+        db.DEPTH.set((self.MAX_LEN + 1) * 2 + 1)
         
         sb = self.sizesBuff = HandshakedFifo(Handshaked)
         sb.DEPTH.set(self.SIZES_BUFF_DEPTH)

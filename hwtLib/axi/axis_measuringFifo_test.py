@@ -3,12 +3,10 @@
 
 import unittest
 
-from hdl_toolkit.bitmask import mask
 from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.simulator.agentConnector import valuesToInts, valToInt
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.axi.axis_measuringFifo import AxiS_measuringFifo
-
 
 
 class AxiS_measuringFifoTC(unittest.TestCase):
