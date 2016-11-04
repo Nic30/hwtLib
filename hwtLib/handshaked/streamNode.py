@@ -38,6 +38,8 @@ def streamSync(masters=[], slaves=[], extraConds={}):
     # also note that only slaves or only masters mean you are alwasy generating/receiving 
     # data from/to node 
     assert masters or slaves
+    for i in extraConds.keys():
+        assert i in masters or i in slaves, i
     
     # this expression container is there to allow usage of this function
     # in usual hdl containers like If, Switch etc...
