@@ -5,28 +5,20 @@ import unittest
 
 from hdl_toolkit.bitmask import mask
 from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.agentConnector import valuesToInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
+from hdl_toolkit.simulator.shortcuts import simPrepare
+from hdl_toolkit.simulator.simTestCase import SimTestCase
 from hwtLib.axi.axi4_rDatapump import Axi_rDatapump
 from hwtLib.interfaces.amba import Axi3_addr_withUser
 from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT, RESP_OKAY
 
 
-class Axi4_rDatapumpTC(unittest.TestCase):
+class Axi4_rDatapumpTC(SimTestCase):
     LEN_MAX = 255
+    
     def setUp(self):
         u = Axi_rDatapump()
         self.u, self.model, self.procs = simPrepare(u)
-    
-    def getTestName(self):
-        className, testName = self.id().split(".")[-2:]
-        return "%s_%s" % (className, testName)
-    
-    def doSim(self, time):
-        simUnitVcd(self.model, self.procs,
-                    "tmp/" + self.getTestName() + ".vcd",
-                    time=time)
     
     def mkDefaultAddrReq(self, _id, addr, _len):
         return [_id, addr, BURST_INCR, CACHE_DEFAULT, _len,
@@ -69,7 +61,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(u.a._ag.data), 1)
         self.assertEqual(len(u.rOut._ag.data), 1)
-        self.assertEqual(valuesToInts(u.rOut._ag.data[0]), [0, 77, mask(64 // 8), 1])
+        self.assertValSequenceEqual(u.rOut._ag.data[0], [0, 77, mask(64 // 8), 1])
         self.assertEqual(len(r.data), 2 - 1)  # 2. is now sended
          
     
@@ -100,8 +92,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
 
         self.assertEqual(len(rout), LEN_MAX + 1)
         for i, d in enumerate(rout):
-            d = valuesToInts(d)
-            self.assertEqual(d, [0, 77 + i, mask(64 // 8), int(i == LEN_MAX)])
+            self.assertValSequenceEqual(d, [0, 77 + i, mask(64 // 8), int(i == LEN_MAX)])
         self.assertEqual(len(r.data), 2 - 1)  # 2. is now sended
       
     def test_maxReq(self):
@@ -126,7 +117,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
             _id = 0
             addr = 0xff + (i * (LEN_MAX + 1) * 8)
             _len = LEN_MAX
-            self.assertSequenceEqual(valuesToInts(req),
+            self.assertValSequenceEqual(req,
                                      self.mkDefaultAddrReq(_id, addr, _len))
         
     def test_maxOverlap(self):
@@ -151,7 +142,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
             _id = 0
             addr = i
             _len = 0
-            self.assertSequenceEqual(valuesToInts(arreq),
+            self.assertValSequenceEqual(arreq,
                                      self.mkDefaultAddrReq(_id, addr, _len))
     
     def test_multipleShortest(self):
@@ -177,7 +168,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
         for i, arreq in enumerate(ar):
             addr = i
             _len = 0
-            self.assertSequenceEqual(valuesToInts(arreq),
+            self.assertValSequenceEqual(arreq,
                                      self.mkDefaultAddrReq(_id, addr, _len))
     
     def test_multipleSplited(self):
@@ -213,7 +204,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
                 addr = (i // 2) + 8 * (self.LEN_MAX + 1)
                 _len = 0
                 
-            self.assertSequenceEqual(valuesToInts(arreq),
+            self.assertValSequenceEqual(arreq,
                                      self.mkDefaultAddrReq(_id, addr, _len))
             
         _rout = iter(rout)
@@ -223,7 +214,7 @@ class Axi4_rDatapumpTC(unittest.TestCase):
                 isLast = (i2 == l)
                 rdata = (_id, i2, mask(8), isLast)
                 d = next(_rout)
-                self.assertSequenceEqual(valuesToInts(d), rdata)
+                self.assertValSequenceEqual(d, rdata)
 
         
 class Axi3_rDatapumpTC(Axi4_rDatapumpTC):

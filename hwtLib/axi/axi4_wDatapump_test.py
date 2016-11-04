@@ -5,29 +5,20 @@ import unittest
 
 from hdl_toolkit.bitmask import mask
 from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.agentConnector import valuesToInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
-from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, \
-    LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT, RESP_OKAY
-from hwtLib.axi.axi4_wDatapump import Axi_wDatapump
+from hdl_toolkit.simulator.shortcuts import simPrepare
+from hdl_toolkit.simulator.simTestCase import SimTestCase
 from hwtLib.axi.axi4_rDatapump_test import Axi4_rDatapumpTC
+from hwtLib.axi.axi4_wDatapump import Axi_wDatapump
 from hwtLib.interfaces.amba import Axi4_addr, Axi3_addr
+from hwtLib.interfaces.amba_constants import   RESP_OKAY
 
 
-class Axi4_wDatapumpTC(unittest.TestCase):
+class Axi4_wDatapumpTC(SimTestCase):
     LEN_MAX = Axi4_rDatapumpTC.LEN_MAX
+
     def setUp(self):
         u = Axi_wDatapump(axiAddrCls=Axi4_addr)
         self.u, self.model, self.procs = simPrepare(u)
-    
-    def getTestName(self):
-        className, testName = self.id().split(".")[-2:]
-        return "%s_%s" % (className, testName)
-    
-    def doSim(self, time):
-        simUnitVcd(self.model, self.procs,
-                    "tmp/" + self.getTestName() + ".vcd",
-                    time=time)
     
     def test_nop(self):
         u = self.u
@@ -49,7 +40,7 @@ class Axi4_wDatapumpTC(unittest.TestCase):
         self.doSim(200 * Time.ns)
         
         self.assertEqual(len(aw), 1)
-        self.assertSequenceEqual(valuesToInts(aw[0]), [0, 255, 1, 3, 0, 0, 0, 6, 0])
+        self.assertValSequenceEqual(aw[0], [0, 255, 1, 3, 0, 0, 0, 6, 0])
         
         self.assertEqual(len(u.w._ag.data), 0)
     
@@ -70,7 +61,7 @@ class Axi4_wDatapumpTC(unittest.TestCase):
         self.doSim(200 * Time.ns)
         
         self.assertEqual(len(aw), 1)
-        self.assertSequenceEqual(valuesToInts(aw[0]), [0, 255, 1, 3, 0, 0, 0, 6, 0])
+        self.assertValSequenceEqual(aw[0], [0, 255, 1, 3, 0, 0, 0, 6, 0])
         
         self.assertEqual(len(w), 1)
         self.assertEqual(len(b), 0)
@@ -93,7 +84,7 @@ class Axi4_wDatapumpTC(unittest.TestCase):
         self.doSim((10 + self.LEN_MAX) * 10 * Time.ns)
         
         self.assertEqual(len(aw), 1)
-        self.assertSequenceEqual(valuesToInts(aw[0]),
+        self.assertValSequenceEqual(aw[0],
                                  [0, 0xff, 1, 3, self.LEN_MAX, 0, 0, 6, 0])
         
         self.assertEqual(len(w), self.LEN_MAX + 1)
@@ -120,7 +111,7 @@ class Axi4_wDatapumpTC(unittest.TestCase):
         
         self.assertEqual(len(aw), N)
         for i, rec in enumerate(aw):
-            self.assertSequenceEqual(valuesToInts(rec),
+            self.assertValSequenceEqual(rec,
                                       [0, 0xff + (8 * i), 1, 3, 0, 0, 0, 6, 0])
         
         self.assertEqual(len(w), N)
