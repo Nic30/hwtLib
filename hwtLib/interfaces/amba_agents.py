@@ -107,7 +107,6 @@ class Axi4_addr_withUserAgent(BaseAxiAgent):
         w(qos, intf.qos)
         w(user, intf.user)
 
-
 class Axi4_rAgent(BaseAxiAgent):
     def doRead(self, s):
         intf = self.intf
@@ -264,7 +263,6 @@ class AxiLite_bAgent(BaseAxiAgent):
     def doWrite(self, s, data):
         s.w(data, self.intf.resp)
 
-
 class Axi4_bAgent(BaseAxiAgent):
     def doRead(self, s):
         r = s.r
@@ -290,18 +288,19 @@ class AxiLiteAgent(AgentBase):
     Composite agent with agent for every axi channel
     enable is shared
     """
-    def __getEnable(self):
+    @property
+    def enable(self):
         return self.__enable
     
-    def __setEnable(self, v):
-        self.__enalbe = v
+    @enable.setter
+    def enable(self, v):
+        self.__enable = v
         
         for o in [self.ar, self.aw, self.r, self.w, self.b]:
-            o._ag.enable = v
-        
-    enable = property(__getEnable, __setEnable)
+            o.enable = v
 
     def __init__(self, intf):
+        self.__enable = True
         self.intf = intf
         
         ag = lambda i: i._getSimAgent()(i) 
