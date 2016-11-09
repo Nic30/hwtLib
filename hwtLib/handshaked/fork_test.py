@@ -9,11 +9,18 @@ from hdl_toolkit.simulator.agentConnector import agInts
 from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
 from hdl_toolkit.simulator.utils import agent_randomize
 from hwtLib.handshaked.fork import HandshakedFork
+from hdl_toolkit.interfaces.utils import addClkRstn
 
 
-class ForkTC(unittest.TestCase):
+class HsForkWithReference(HandshakedFork):
+    def _declr(self):
+        HandshakedFork._declr(self)
+        with self._asExtern():
+            addClkRstn(self)
+
+class HsForkTC(unittest.TestCase):
     def setUp(self):
-        self.u = HandshakedFork(Handshaked)
+        self.u = HsForkWithReference(Handshaked)
         self.u.DATA_WIDTH.set(4)
         _, self.model, self.procs = simPrepare(self.u)
     
@@ -36,15 +43,15 @@ class ForkTC(unittest.TestCase):
         
         self.assertSequenceEqual([], u.dataIn._ag.data)
 
-class Fork_randomized_TC(ForkTC):
+class HsFork_randomized_TC(HsForkTC):
     def setUp(self):
-        super(Fork_randomized_TC, self).setUp()
+        super(HsFork_randomized_TC, self).setUp()
         self.procs.append(agent_randomize(self.u.dataIn._ag))
         
         
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(FifoTC('test_normalOp'))
-    suite.addTest(unittest.makeSuite(Fork_randomized_TC))
+    suite.addTest(unittest.makeSuite(HsFork_randomized_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -7,7 +7,7 @@ from hwtLib.axi.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
 from hwtLib.axi.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC
 from hwtLib.axi.axis_measuringFifo_test import AxiS_measuringFifoTC
-from hwtLib.handshaked.fork_test import ForkTC
+from hwtLib.handshaked.fork_test import HsForkTC, HsFork_randomized_TC
 from hwtLib.handshaked.reg2_test import HsReg2TC
 from hwtLib.handshaked.reg_test import HsRegTC
 from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
@@ -81,7 +81,8 @@ if __name__ == "__main__":
         FifoBramTC,
         FlipRegTC,
         FlipCntrTC,
-        ForkTC,
+        HsForkTC,
+        HsFork_randomized_TC,
         HsFifoTC,
         HsFifoBramTC,
         HsRegTC,

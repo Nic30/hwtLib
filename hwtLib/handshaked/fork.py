@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.interfaces.utils import addClkRstn
 from hdl_toolkit.intfLvl import Param
 from hdl_toolkit.synthesizer.codeOps import And
 from hwtLib.handshaked.compBase import HandshakedCompBase
@@ -21,7 +20,6 @@ class HandshakedFork(HandshakedCompBase):
         
     def _declr(self):
         with self._asExtern(), self._paramsShared():
-            addClkRstn(self)  # this is just for reference, not actualy used inside
             self.dataIn = self.intfCls()
             self.dataOut = self.intfCls(multipliedBy=self.OUTPUTS)
 
