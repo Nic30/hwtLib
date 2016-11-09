@@ -4,9 +4,9 @@
 import math
 
 from hdl_toolkit.bitmask import mask
-from hdl_toolkit.hdlObjects.typeShortcuts import vec, vecT
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import c, If, Switch
+from hdl_toolkit.synthesizer.codeOps import If, Switch
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
 from hwtLib.interfaces.amba import AxiStream
