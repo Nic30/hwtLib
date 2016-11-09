@@ -63,8 +63,12 @@ class AbstractStreamBuilder():
         
         self.compId += 1
         
-        u.clk ** self.getClk() 
-        u.rst_n ** self.getRstn()
+        if hasattr(u, "clk"):
+            u.clk ** self.getClk() 
+        
+        if hasattr(u, 'rst_n'):
+            u.rst_n ** self.getRstn()
+        
         u.dataIn ** self.end 
         
         self.lastComp = u
