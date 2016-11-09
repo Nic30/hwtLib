@@ -7,6 +7,7 @@ from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.simulator.shortcuts import simPrepare
 from hdl_toolkit.simulator.simTestCase import SimTestCase
 from hwtLib.axi.axis_measuringFifo import AxiS_measuringFifo
+from hdl_toolkit.simulator.utils import agent_randomize
 
 
 class AxiS_measuringFifoTC(SimTestCase):
@@ -126,6 +127,33 @@ class AxiS_measuringFifoTC(SimTestCase):
         self.assertEqual(len(data), 1)
         self.assertValSequenceEqual(sizes, (1,))
     
+    
+    def test_randomized(self):
+        u = self.u
+        sizes = u.sizes._ag.data
+        data = u.dataOut._ag.data
+        N = 20
+        randomize = lambda intf : self.procs.append(agent_randomize(intf._ag))
+
+        for i in range(N):
+            u.dataIn._ag.data.extend([(1, 255, 0),
+                                      (2, 255, 0),
+                                      (3, 255, 0),
+                                      (4, 255, 0),
+                                      (5, 255, 0),
+                                      (6, 255, 1)
+                                     ])
+        randomize(u.dataIn)
+        randomize(u.dataOut)
+        randomize(u.sizes)
+        
+
+        self.doSim(N * 6 * 10 * 3 * Time.ns)
+        
+        self.assertEqual(len(sizes), 20)
+        self.assertEqual(len(data), N * 6)
+        for s in sizes:
+            self.assertValEqual(s, 6 * 8)
         
 if __name__ == "__main__":
     suite = unittest.TestSuite()
