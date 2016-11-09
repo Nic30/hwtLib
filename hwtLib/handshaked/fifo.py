@@ -42,8 +42,9 @@ class HandshakedFifo(HandshakedCompBase):
             with self._asExtern():
                 self.size = VectSignal(log2ceil(self.DEPTH + 1 + 1), signed=False) 
     
-        with self._paramsShared(): 
-            self.outReg = self._regCls(self.intfCls)
+        if evalParam(self.LATENCY).val == 1:
+            with self._paramsShared(): 
+                self.outReg = self._regCls(self.intfCls)
           
                 
     def _impl(self):
@@ -53,7 +54,12 @@ class HandshakedFifo(HandshakedCompBase):
 
         propagateClkRstn(self)
         fifo = self.fifo
-        r = self.outReg
+        
+        if evalParam(self.LATENCY).val == 1:
+            out = self.outReg.dataIn
+            self.dataOut ** self.outReg.dataOut
+        else:
+            out = self.dataOut
         
         # to fifo
         rd(din) ** ~fifo.dataIn.wait 
@@ -62,17 +68,16 @@ class HandshakedFifo(HandshakedCompBase):
         
         
         # from fifo
-        vld(r.dataIn) ** ~fifo.dataOut.wait
-        connectUnpacked(fifo.dataOut.data, r.dataIn,
-                        exclude=[vld(r.dataIn), rd(r.dataIn)])
-        self.dataOut ** r.dataOut
-        fifo.dataOut.en ** (rd(r.dataIn) & ~fifo.dataOut.wait)
+        vld(out) ** ~fifo.dataOut.wait
+        connectUnpacked(fifo.dataOut.data, out,
+                        exclude=[vld(out), rd(out)])
+        fifo.dataOut.en ** (rd(out) & ~fifo.dataOut.wait)
         
         if evalParam(self.EXPORT_SIZE).val:
             sizeTmp = self._sig("sizeTmp", self.size._dtype)
             connect(fifo.size, sizeTmp, fit=True)
             
-            If(vld(r.dataOut),
+            If(vld(self.outReg.dataOut),
                self.size ** (sizeTmp + 1)
             ).Else(
                connect(fifo.size, self.size, fit=True)

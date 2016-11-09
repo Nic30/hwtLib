@@ -10,6 +10,7 @@ from hwtLib.axi.axis_builder import AxiSBuilder
 from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.synthesizer.codeOps import If, connect, Concat, Switch
 from hdl_toolkit.bitmask import mask
+from hwtLib.handshaked.streamNode import streamSync
 
 def strbToRem(strbBits):
     """
@@ -70,7 +71,7 @@ class AxiS_measuringFifo(Unit):
         wordCntr = self._reg("wordCntr",
                              vecT(log2ceil(self.MAX_LEN)),
                              defVal=0)
-        dIn.ready ** (sb.dataIn.rd & db.dataIn.ready)
+        
         If(dIn.valid & sb.dataIn.rd & db.dataIn.ready,
             If(dIn.last,
                 wordCntr ** 0
@@ -87,8 +88,6 @@ class AxiS_measuringFifo(Unit):
         
         
         length = self._sig("length", wordCntr._dtype)
-        
-        
         If(dIn.strb != mask(dIn.strb._dtype.bit_length()),
             length ** wordCntr
         ).Else(
@@ -97,11 +96,12 @@ class AxiS_measuringFifo(Unit):
         
         sb.dataIn.data ** Concat(length, rem)
         
-        
-        sb.dataIn.vld ** (dIn.valid & dIn.last & db.dataIn.ready)
-        db.dataIn.valid ** (dIn.valid & sb.dataIn.rd)
-        
         connect(dIn, db.dataIn, exclude=[dIn.valid, dIn.ready])
+
+        streamSync(masters=[dIn],
+                   slaves=[sb.dataIn, db.dataIn],
+                   extraConds={sb.dataIn : [dIn.last]})
+        
         
 
 if __name__ == "__main__":

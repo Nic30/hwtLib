@@ -39,7 +39,7 @@ from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import Subunits
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
-from hwtLib.handshaked.fifo_test import HsFifoTC, HsFifo_randomized_TC
+from hwtLib.handshaked.fifo_test import HsFifoTC, HsFifoBramTC
 
 
 if __name__ == "__main__":
@@ -83,7 +83,7 @@ if __name__ == "__main__":
         FlipCntrTC,
         ForkTC,
         HsFifoTC,
-        HsFifo_randomized_TC,
+        HsFifoBramTC,
         HsRegTC,
         HsReg2TC,
         CamTC,
