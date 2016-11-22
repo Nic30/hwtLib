@@ -50,8 +50,7 @@ class Axi_wDatapump(Axi_datapumpBase):
                 self.errorWrite = Signal()
             self.reqAck = Handshaked()
             self.reqAck.DATA_WIDTH.set(self.ID_WIDTH)
-       
-        If     
+           
         with self._paramsShared():
             # fifo for id propagation and frame splitting on axi.w channel 
             wf = self.writeInfoFifo = HandshakedFifo(WFifoIntf)
