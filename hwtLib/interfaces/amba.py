@@ -150,6 +150,7 @@ class Axi4_addr(AxiLite_addr):
         AxiLite_addr._config(self)
         self.ID_WIDTH = Param(3)
         self.LEN_WIDTH = 8
+        self.LOCK_WIDTH = 1
     
     def _declr(self):
         AxiLite_addr._declr(self)
@@ -157,7 +158,7 @@ class Axi4_addr(AxiLite_addr):
         self.burst = s(dtype=vecT(2), alternativeNames=['burst_v'])
         self.cache = s(dtype=vecT(4), alternativeNames=['cache_v'])
         self.len = s(dtype=vecT(self.LEN_WIDTH), alternativeNames=['len_v'])
-        self.lock = s(dtype=vecT(1), alternativeNames=['lock_v'])
+        self.lock = s(dtype=vecT(self.LOCK_WIDTH), alternativeNames=['lock_v'])
         self.prot = s(dtype=vecT(3), alternativeNames=['prot_v'])
         self.size = s(dtype=vecT(3), alternativeNames=['size_v'])
         self.qos = s(dtype=vecT(4), alternativeNames=['qos_v'])
@@ -207,12 +208,15 @@ class Axi4(AxiLite):
     def _config(self):
         AxiLite._config(self)
         self.ID_WIDTH = Param(6)
-        
+        self.LOCK_WIDTH = 1
         
     def _declr(self):
         with self._paramsShared():
             self.aw = Axi4_addr()
             self.ar = Axi4_addr()
+            for o in [self.aw, self.ar]:
+                o.LOCK_WIDTH = self.LOCK_WIDTH
+            
             self.w = Axi4_w()
             self.r = Axi4_r(masterDir=D.IN)
             self.b = Axi4_b(masterDir=D.IN)
@@ -255,6 +259,8 @@ class Axi4_xil(Axi4):
         with self._paramsShared():
             self.ar = Axi4_addr_xil()
             self.aw = Axi4_addr_xil()
+            for o in [self.aw, self.ar]:
+                o.LOCK_WIDTH = self.LOCK_WIDTH
             self.w = Axi4_w_xil()
             self.r = Axi4_r_xil(masterDir=D.IN)
             self.b = Axi4_b_xil(masterDir=D.IN)  
@@ -284,6 +290,8 @@ class Axi3(Axi4):
         with self._paramsShared():
             self.aw = Axi3_addr()
             self.ar = Axi3_addr()
+            for o in [self.aw, self.ar]:
+                o.LOCK_WIDTH = self.LOCK_WIDTH
             self.w = Axi4_w()
             self.r = Axi4_r(masterDir=D.IN)
             self.b = Axi4_b(masterDir=D.IN)
@@ -301,6 +309,8 @@ class Axi3_withAddrUser(Axi4):
         with self._paramsShared():
             self.aw = Axi3_addr_withUser()
             self.ar = Axi3_addr_withUser()
+            for o in [self.aw, self.ar]:
+                o.LOCK_WIDTH = self.LOCK_WIDTH
             self.w = Axi4_w()
             self.r = Axi4_r(masterDir=D.IN)
             self.b = Axi4_b(masterDir=D.IN)

@@ -40,6 +40,7 @@ from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.handshaked.fifo_test import HsFifoTC, HsFifoBramTC
+from hwtLib.axi.axi_test import AxiTC
 
 
 if __name__ == "__main__":
@@ -89,6 +90,7 @@ if __name__ == "__main__":
         HsReg2TC,
         CamTC,
         SimpleAxiRegsTC,
+        AxiTC,
         Axi4_rDatapumpTC,
         Axi3_rDatapumpTC,
         Axi4_wDatapumpTC,
