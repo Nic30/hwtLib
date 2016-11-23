@@ -87,7 +87,7 @@ class Fifo(Unit):
             
             fifo_read ** (dout.en & (looped | (wr_ptr != rd_ptr)))
             If(fifo_read,
-                Update data output
+                # Update data output
                 dout.data ** mem[rd_ptr] 
             ).Else(
                 dout.data ** None
