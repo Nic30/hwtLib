@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
 from hdl_toolkit.hdlObjects.types.array import Array
 from hdl_toolkit.interfaces.std import FifoWriter, FifoReader, VectSignal
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil, isPow2
 from hdl_toolkit.serializer.constants import SERI_MODE
-from hdl_toolkit.synthesizer.codeOps import If, connect
+from hdl_toolkit.synthesizer.codeOps import If
 from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 from hdl_toolkit.synthesizer.param import Param, evalParam
-
+# https://eewiki.net/pages/viewpage.action?pageId=20939499
 
 class Fifo(Unit):
     """
@@ -115,16 +115,17 @@ class Fifo(Unit):
                 dout.wait ** 0 
             )
             if EXPORT_SIZE:
-                sizeTmp = self._sig("sizeTmp", tail._dtype)
-                sizeTmp ** (head - tail),
-
-                If(looped,
-                    self.size ** DEPTH
-                ).Elif(head < tail,
-                    self.size ** (DEPTH - tail + head)
+                size = self._reg("size_reg", self.size._dtype, 0)
+                If(fifo_read,
+                    If(~fifo_write,
+                       size ** (size - 1)
+                    )
                 ).Else(
-                    connect(sizeTmp, self.size, fit=True)
+                    If(fifo_write,
+                       size ** (size + 1)
+                    )
                 )
+                self.size ** size
                 
             
         elif LATENCY == 2:
@@ -139,9 +140,9 @@ class Fifo(Unit):
                 If(fifo_read,
                     # Update data output
                     dout.data ** mem[tail] 
-                )#.Else(
+                )  # .Else(
                 #    dout.data ** None
-                #)
+                # )
             )
             
             isEmpty = self._reg("isEmpty", defVal=1)
@@ -174,7 +175,7 @@ if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = Fifo()
     u.LATENCY.set(2)
-    #u.EXPORT_SIZE.set(True)
+    # u.EXPORT_SIZE.set(True)
     u.DEPTH.set(128)
     print(toRtl(u))
 
