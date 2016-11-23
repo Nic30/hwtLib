@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+
 from hdl_toolkit.bitmask import mask
 from hdl_toolkit.hdlObjects.specialValues import Time, NOP
-from hdl_toolkit.simulator.agentConnector import valuesToInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
-from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream
 from hdl_toolkit.interfaces.utils import addClkRstn
+from hdl_toolkit.simulator.shortcuts import simPrepare
+from hdl_toolkit.simulator.simTestCase import SimTestCase
+from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream
 
 
 class SynchronizedSimpleUnitAxiStream(SimpleUnitAxiStream):
@@ -19,21 +20,11 @@ class SynchronizedSimpleUnitAxiStream(SimpleUnitAxiStream):
         with self._asExtern():
             addClkRstn(self)
 
-class SimpleUnitAxiStream_TC(unittest.TestCase):
+class SimpleUnitAxiStream_TC(SimTestCase):
     def setUp(self):
         self.u = SynchronizedSimpleUnitAxiStream()
         _, self.model, self.procs = simPrepare(self.u)
     
-    def getTestName(self):
-        className, testName = self.id().split(".")[-2:]
-        return "%s_%s" % (className, testName)
-    
-    def doSim(self, time):
-        simUnitVcd(self.model, self.procs,
-                    "tmp/" + self.getTestName() + ".vcd",
-                    time=time)
-    
-        
     def test_nop(self):
         u = self.u
         self.doSim(200 * Time.ns)
@@ -52,8 +43,6 @@ class SimpleUnitAxiStream_TC(unittest.TestCase):
         
         self.assertEqual(len(u.b._ag.data), 2)
         
-            
-
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
