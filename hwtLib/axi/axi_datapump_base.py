@@ -5,7 +5,7 @@ from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
 from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
 from hdl_toolkit.interfaces.std import Handshaked, VectSignal, HandshakeSync
 from hdl_toolkit.bitmask import mask
-from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT,\
+from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, PROT_DEFAULT, QOS_DEFAULT, BYTES_IN_TRANS
 
 class AddrSizeHsAgent(HandshakedAgent):
@@ -86,7 +86,7 @@ class Axi_datapumpBase(Unit):
             with self._paramsShared():
                 # address channel to axi
                 self.a = self._axiAddrCls()
-                self.a.LOCK_WIDTH = 2 # because all masters have it
+                self.a.LOCK_WIDTH = 2  # because all masters have it
                 # user requests
                 self.req = AddrSizeHs()
                 
@@ -109,6 +109,6 @@ class Axi_datapumpBase(Unit):
         a.lock ** LOCK_DEFAULT
         a.prot ** PROT_DEFAULT
         a.qos ** QOS_DEFAULT
-        a.size ** BYTES_IN_TRANS(evalParam(self.DATA_WIDTH).val)
+        a.size ** BYTES_IN_TRANS(evalParam(self.DATA_WIDTH).val // 8)
         if self._addrHasUser:
             a.user ** self.ADDR_USER_VAL
