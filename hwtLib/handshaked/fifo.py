@@ -89,5 +89,6 @@ if __name__ == "__main__":
     from hdl_toolkit.interfaces.std import Handshaked
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = HandshakedFifo(Handshaked)
-    u.DEPTH.set(2)
+    u.DEPTH.set(256)
+    u.EXPORT_SIZE.set(True)
     print(toRtl(u))
