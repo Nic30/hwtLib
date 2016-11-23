@@ -75,8 +75,8 @@ class FifoTC(SimTestCase):
         
         collected = u.dataOut._ag.data
         if hasSize:
-            self.assertValSequenceEqual(u.size._ag.data, 
-                [0, 0, 1, 2, 3, 4, 4, 4, 4, 4, 
+            self.assertValSequenceEqual(u.size._ag.data,
+                [0, 0, 1, 2, 3, 4, 4, 4, 4, 4,
                  3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 1, 0])
 
         
@@ -96,6 +96,24 @@ class FifoTC(SimTestCase):
         self.assertSequenceEqual([1, 2, 3, 4], valuesToInts(self.model.memory._val))
         self.assertSequenceEqual(collected, [])
         self.assertSequenceEqual(u.dataIn._ag.data, [5, 6])
+        
+    def test_tryMore2(self):
+        u = self.u
+        
+        u.dataIn._ag.data = [1, 2, 3, 4, 5, 6, 7, 8]
+        def closeOutput(s):
+            yield s.wait(4 * 10 * Time.ns)
+            u.dataOut._ag.enable = False
+            
+        self.procs.append(closeOutput)
+        self.doSim(120 * Time.ns)
+
+        collected = agInts(u.dataOut)
+        
+        self.assertValSequenceEqual(self.model.memory._val.val, [5, 6, 3, 4])
+        self.assertSequenceEqual(collected, [1, 2])
+        self.assertSequenceEqual(u.dataIn._ag.data, [7, 8])
+             
 
     def test_doloop(self):
         u = self.u
