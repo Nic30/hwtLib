@@ -86,6 +86,7 @@ class Axi_datapumpBase(Unit):
             with self._paramsShared():
                 # address channel to axi
                 self.a = self._axiAddrCls()
+                self.a.LOCK_WIDTH = 2 # because all masters have it
                 # user requests
                 self.req = AddrSizeHs()
                 
