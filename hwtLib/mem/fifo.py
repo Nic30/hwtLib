@@ -43,8 +43,8 @@ class Fifo(Unit):
         index_t = vecT(log2ceil(DEPTH), False)
         
         mem = self.mem = self._sig("memory", Array(vecT(self.DATA_WIDTH), self.DEPTH))
-        head = self._reg("head", index_t, 0)
-        tail = self._reg("tail", index_t, 0)
+        wr_ptr = self._reg("wr_ptr", index_t, 0)
+        rd_ptr = self._reg("rd_ptr", index_t, 0)
         LATENCY = evalParam(self.LATENCY).val
         EXPORT_SIZE = evalParam(self.EXPORT_SIZE).val
         MAX_DEPTH = DEPTH - 1
@@ -57,52 +57,54 @@ class Fifo(Unit):
 
         # Update Tail pointer as needed
         If(fifo_read,
-            If(tail._eq(MAX_DEPTH),
-               tail ** 0 
+            If(rd_ptr._eq(MAX_DEPTH),
+               rd_ptr ** 0 
             ).Else(
-               tail ** (tail + 1)
+               rd_ptr ** (rd_ptr + 1)
             )
         )
         
         # Increment Head pointer as needed
         If(fifo_write,
-            If(head._eq(MAX_DEPTH),
-                head ** 0
+            If(wr_ptr._eq(MAX_DEPTH),
+                wr_ptr ** 0
             ).Else(
-                head ** (head + 1) 
+                wr_ptr ** (wr_ptr + 1) 
             )
         )
         
-        If(self.clk._onRisingEdge() & fifo_write,
-            # Write Data to Memory
-            mem[head] ** din.data
-        )     
+        If(self.clk._onRisingEdge(),
+            If(fifo_write,
+                # Write Data to Memory
+                mem[wr_ptr] ** din.data
+            )     
+        )
         
         if LATENCY == 1: 
             # assert isPow2(evalParam(DEPTH).val), DEPTH
             
             looped = self._reg("looped", defVal=False)
             
-            fifo_read ** (dout.en & (looped | (head != tail)))
+            fifo_read ** (dout.en & (looped | (wr_ptr != rd_ptr)))
             If(fifo_read,
-                # Update data output
-                dout.data ** mem[tail] 
+                Update data output
+                dout.data ** mem[rd_ptr] 
             ).Else(
                 dout.data ** None
             ) 
             
-            fifo_write ** (din.en & (~looped | (head != tail)))
+            fifo_write ** (din.en & (~looped | (wr_ptr != rd_ptr)))
             
 
             # looped logic
-            If(din.en & head._eq(MAX_DEPTH),
+            If(din.en & wr_ptr._eq(MAX_DEPTH),
                 looped ** True
-            ).Elif(dout.en & tail._eq(MAX_DEPTH),
+            ).Elif(dout.en & rd_ptr._eq(MAX_DEPTH),
                 looped ** False
             )
                     
             # Update Empty and Full flags
-            If(head._eq(tail),
+            If(wr_ptr._eq(rd_ptr),
                 If(looped,
                     din.wait ** 1,
                     dout.wait ** 0 
@@ -139,7 +141,7 @@ class Fifo(Unit):
             If(self.clk._onRisingEdge(),
                 If(fifo_read,
                     # Update data output
-                    dout.data ** mem[tail] 
+                    dout.data ** mem[rd_ptr] 
                 )  # .Else(
                 #    dout.data ** None
                 # )
@@ -162,8 +164,8 @@ class Fifo(Unit):
             
             dout.wait ** isEmpty
             
-            full_flag ** tail._eq(head + 1)
-            empty_flag ** head._eq(tail)
+            full_flag ** rd_ptr._eq(wr_ptr + 1)
+            empty_flag ** wr_ptr._eq(rd_ptr)
             fifo_write ** (din.en & (~full_flag | (full_flag & dout.en)))
             din.wait ** full_flag
             
