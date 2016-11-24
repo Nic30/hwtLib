@@ -10,7 +10,7 @@ from hdl_toolkit.simulator.simTestCase import SimTestCase
 from hwtLib.axi.axi4_rDatapump_test import Axi4_rDatapumpTC
 from hwtLib.axi.axi4_wDatapump import Axi_wDatapump
 from hwtLib.interfaces.amba import Axi4_addr, Axi3_addr
-from hwtLib.interfaces.amba_constants import   RESP_OKAY
+from hwtLib.interfaces.amba_constants import   RESP_OKAY, BYTES_IN_TRANS
 
 
 class Axi4_wDatapumpTC(SimTestCase):
@@ -40,7 +40,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         self.doSim(200 * Time.ns)
         
         self.assertEqual(len(aw), 1)
-        self.assertValSequenceEqual(aw[0], [0, 255, 1, 3, 0, 0, 0, 6, 0])
+        self.assertValSequenceEqual(aw[0], [0, 255, 1, 3, 0, 0, 0, BYTES_IN_TRANS(8), 0])
         
         self.assertEqual(len(u.w._ag.data), 0)
     
@@ -61,7 +61,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         self.doSim(200 * Time.ns)
         
         self.assertEqual(len(aw), 1)
-        self.assertValSequenceEqual(aw[0], [0, 255, 1, 3, 0, 0, 0, 6, 0])
+        self.assertValSequenceEqual(aw[0], [0, 255, 1, 3, 0, 0, 0, BYTES_IN_TRANS(8), 0])
         
         self.assertEqual(len(w), 1)
         self.assertEqual(len(b), 0)
@@ -85,7 +85,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         
         self.assertEqual(len(aw), 1)
         self.assertValSequenceEqual(aw[0],
-                                 [0, 0xff, 1, 3, self.LEN_MAX, 0, 0, 6, 0])
+                                 [0, 0xff, 1, 3, self.LEN_MAX, 0, 0, BYTES_IN_TRANS(8), 0])
         
         self.assertEqual(len(w), self.LEN_MAX + 1)
         self.assertEqual(len(b), 0)
@@ -112,7 +112,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         self.assertEqual(len(aw), N)
         for i, rec in enumerate(aw):
             self.assertValSequenceEqual(rec,
-                                      [0, 0xff + (8 * i), 1, 3, 0, 0, 0, 6, 0])
+                                      [0, 0xff + (8 * i), 1, 3, 0, 0, 0, BYTES_IN_TRANS(8), 0])
         
         self.assertEqual(len(w), N)
         self.assertEqual(len(b), 0)
