@@ -34,7 +34,7 @@ class Axi4_addrAgent(BaseAxiAgent):
                                        cache=CACHE_DEFAULT,
                                        lock=LOCK_DEFAULT,
                                        prot=PROT_DEFAULT,
-                                       size=BYTES_IN_TRANS(64),
+                                       size=BYTES_IN_TRANS(8),
                                        qos=QOS_DEFAULT):
         
         return (_id, addr, burst, cache, _len, lock, prot, size, qos)
@@ -80,7 +80,7 @@ class Axi4_addr_withUserAgent(BaseAxiAgent):
                                        cache=CACHE_DEFAULT,
                                        lock=LOCK_DEFAULT,
                                        prot=PROT_DEFAULT,
-                                       size=BYTES_IN_TRANS(64),
+                                       size=BYTES_IN_TRANS(8),
                                        qos=QOS_DEFAULT,
                                        user=0):
         
