@@ -142,9 +142,9 @@ class Fifo(Unit):
                 If(fifo_read,
                     # Update data output
                     dout.data ** mem[rd_ptr] 
-                )  # .Else(
-                #    dout.data ** None
-                # )
+                ).Else(
+                    dout.data ** None
+                )
             )
             
             isEmpty = self._reg("isEmpty", defVal=1)
