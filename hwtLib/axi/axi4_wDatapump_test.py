@@ -209,8 +209,8 @@ class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
        
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(Axi4_wDatapumpTC('test_multiple_randomized2'))
-    # suite.addTest(unittest.makeSuite(Axi3_wDatapump_direct_TC))
+    #suite.addTest(Axi4_wDatapumpTC('test_multiple_randomized2'))
+    suite.addTest(unittest.makeSuite(Axi3_wDatapump_direct_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
     

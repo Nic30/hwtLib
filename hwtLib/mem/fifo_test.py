@@ -9,9 +9,8 @@ from hdl_toolkit.simulator.agentConnector import agInts
 from hdl_toolkit.simulator.agentConnector import valuesToInts
 from hdl_toolkit.simulator.shortcuts import simPrepare
 from hdl_toolkit.simulator.simTestCase import SimTestCase
-from hwtLib.mem.fifo import Fifo
 from hdl_toolkit.synthesizer.param import evalParam
-from hwtLib.interfaces.amba_constants import BYTES_IN_TRANS
+from hwtLib.mem.fifo import Fifo
 
 
 class FifoTC(SimTestCase):

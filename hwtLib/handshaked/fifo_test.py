@@ -4,7 +4,7 @@
 from copy import copy
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time
+from hdl_toolkit.hdlObjects.specialValues import Time, NOP
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.simulator.shortcuts import simPrepare
 # from hdl_toolkit.simulator.utils import agent_randomize
@@ -17,6 +17,7 @@ class HsFifoTC(SimTestCase):
         self.u = HandshakedFifo(Handshaked)
         self.u.DEPTH.set(8)
         self.u.DATA_WIDTH.set(4)
+        self.u.EXPORT_SIZE.set(True)
         _, self.model, self.procs = simPrepare(self.u)
     
     def test_stuckedData(self):
@@ -99,6 +100,6 @@ class HsFifoBramTC(HsFifoTC):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(FifoTC('test_normalOp'))
-    suite.addTest(unittest.makeSuite(HsFifoBramTC))
+    suite.addTest(unittest.makeSuite(HsFifoTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
