@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
+from hdl_toolkit.hdlObjects.typeShortcuts import vecT
 from hdl_toolkit.hdlObjects.types.array import Array
 from hdl_toolkit.interfaces.std import FifoWriter, FifoReader, VectSignal
 from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil, isPow2
@@ -86,12 +86,14 @@ class Fifo(Unit):
             looped = self._reg("looped", defVal=False)
             
             fifo_read ** (dout.en & (looped | (wr_ptr != rd_ptr)))
-            If(fifo_read,
-                # Update data output
-                dout.data ** mem[rd_ptr] 
-            ).Else(
-                dout.data ** None
-            ) 
+            If(self.clk._onRisingEdge(),
+                If(fifo_read,
+                    # Update data output
+                    dout.data ** mem[rd_ptr] 
+                )#.Else(
+                #    dout.data ** None
+                #) 
+            )
             
             fifo_write ** (din.en & (~looped | (wr_ptr != rd_ptr)))
             
@@ -176,8 +178,9 @@ class Fifo(Unit):
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = Fifo()
-    u.LATENCY.set(2)
+    u.DATA_WIDTH.set(8)
+    #u.LATENCY.set(2)
     # u.EXPORT_SIZE.set(True)
-    u.DEPTH.set(128)
+    u.DEPTH.set(16)
     print(toRtl(u))
 
