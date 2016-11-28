@@ -82,7 +82,7 @@ class Axi4_rDatapumpTC(SimTestCase):
         r.addData(11)
         r.addData(12)
 
-        self.doSim(((LEN_MAX + 4) * 10) * Time.ns)
+        self.doSim(((LEN_MAX + 6) * 10) * Time.ns)
         
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(u.a._ag.data), 1)
@@ -132,7 +132,7 @@ class Axi4_rDatapumpTC(SimTestCase):
             req.data.append(req.mkReq(i, 0))
         #    r.addData(i + 77, last=(i == 255))
         
-        self.doSim(((16 + 4) * 10) * Time.ns)
+        self.doSim(((self.LEN_MAX + 6) * 10) * Time.ns)
         
         self.assertEqual(len(req.data), 15)
         self.assertEqual(len(ar), 16)
