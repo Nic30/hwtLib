@@ -62,16 +62,21 @@ class HandshakedFifo(HandshakedCompBase):
             out = self.dataOut
         
         # to fifo
-        rd(din) ** ~fifo.dataIn.wait 
+        wr_en = ~fifo.dataIn.wait
+        rd(din) **  wr_en
         fifo.dataIn.data ** packed(din, exclude=[vld(din), rd(din)])
-        fifo.dataIn.en ** (vld(din) & ~fifo.dataIn.wait)
+        fifo.dataIn.en ** (vld(din) & wr_en)
         
         
         # from fifo
-        vld(out) ** ~fifo.dataOut.wait
+        out_vld = self._reg("out_vld", defVal=0)
+        vld(out) ** out_vld
         connectUnpacked(fifo.dataOut.data, out,
                         exclude=[vld(out), rd(out)])
-        fifo.dataOut.en ** (rd(out) & ~fifo.dataOut.wait)
+        fifo.dataOut.en ** ((rd(out) | ~out_vld) & ~fifo.dataOut.wait)
+        If(rd(out) | ~out_vld,
+           out_vld ** (~fifo.dataOut.wait) 
+        )
         
         if evalParam(self.EXPORT_SIZE).val:
             sizeTmp = self._sig("sizeTmp", self.size._dtype)
@@ -89,6 +94,7 @@ if __name__ == "__main__":
     from hdl_toolkit.interfaces.std import Handshaked
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = HandshakedFifo(Handshaked)
-    u.DEPTH.set(256)
+    u.DEPTH.set(8)
+    u.DATA_WIDTH.set(4)
     u.EXPORT_SIZE.set(True)
     print(toRtl(u))
