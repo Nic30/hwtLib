@@ -117,6 +117,85 @@ class Axi4_wDatapumpTC(SimTestCase):
         self.assertEqual(len(w), N)
         self.assertEqual(len(b), 0)
         self.assertEqual(len(u.reqAck._ag.data), N)
+        
+    def test_multiple_randomized(self):
+        u = self.u
+        req = u.req._ag
+        aw = u.a._ag.data
+        wIn = u.wIn._ag
+        w = u.w._ag.data
+        b = u.b._ag.data
+        N = 50
+        
+        # download one word from addr 0xff
+        for i in range(N):
+            req.data.append(req.mkReq((i * 8) + 0xff, 0))
+            wIn.data.append((77, mask(64 // 8 - 1), 1))
+            b.append((0, RESP_OKAY))
+        
+        ra = self.randomize
+        ra(u.a)
+        ra(u.b)
+        ra(u.req)
+        ra(u.reqAck)
+        ra(u.w)
+        ra(u.wIn)
+        
+        self.doSim(1200 * Time.ns)
+        
+        self.assertEqual(len(aw), N)
+        for i, rec in enumerate(aw):
+            self.assertValSequenceEqual(rec,
+                                      [0, 0xff + (8 * i), 1, 3, 0, 0, 0, BYTES_IN_TRANS(8), 0])
+        
+        self.assertEqual(len(w), N)
+        self.assertEqual(len(b), 0)
+        self.assertEqual(len(u.reqAck._ag.data), N)
+        
+    def test_multiple_randomized2(self):
+        u = self.u
+        req = u.req._ag
+        aw = u.a._ag.data
+        wIn = u.wIn._ag
+        w = u.w._ag.data
+        b = u.b._ag.data
+        N = 50
+        L = 3
+        expectedWData = []
+        
+        
+        # download one word from addr 0xff
+        for i in range(N):
+            req.data.append(req.mkReq((i * 8) + 0xff, L - 1))
+            for i in range(L):
+                d = 77 + i
+                m = mask(64 // 8 - 1)
+                l = i == (L - 1)
+                wIn.data.append((d, m, l))
+                expectedWData.append((0, d, m, int(l)))
+            b.append((0, RESP_OKAY))
+        
+        ra = self.randomize
+        ra(u.a)
+        ra(u.b)
+        ra(u.req)
+        ra(u.reqAck)
+        ra(u.w)
+        ra(u.wIn)
+        
+        self.doSim(N * L * 25 * Time.ns)
+        
+        self.assertEqual(len(aw), N)
+        for i, rec in enumerate(aw):
+            self.assertValSequenceEqual(rec,
+                                      [0, 0xff + (8 * i), 1, 3, L - 1, 0, 0, BYTES_IN_TRANS(8), 0])
+        
+        self.assertEqual(len(w), N * 3)
+        for expWD, wd in zip(expectedWData, w):
+            self.assertValSequenceEqual(wd, expWD)
+            
+        self.assertEqual(len(b), 0)
+        self.assertEqual(len(u.reqAck._ag.data), N)
      
 class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
     LEN_MAX = 16
@@ -130,7 +209,7 @@ class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
        
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(Axi4_rDatapumpTC('test_maxReq'))
+    #suite.addTest(Axi4_wDatapumpTC('test_multiple_randomized2'))
     suite.addTest(unittest.makeSuite(Axi3_wDatapump_direct_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

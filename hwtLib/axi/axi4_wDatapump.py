@@ -87,8 +87,12 @@ class Axi_wDatapump(Axi_datapumpBase):
                 req_idBackup ** req.id,
                 addrBackup ** (req.addr + self.getBurstAddrOffset()),
                 lenDebth ** (req.len - (LEN_MAX + 1)),
-                If(wInfo.rd & (req.len > LEN_MAX) & aw.ready & req.vld,
-                   lastReqDispatched ** 1 
+                If(wInfo.rd & aw.ready & req.vld,
+                    If(req.len > LEN_MAX,
+                       lastReqDispatched ** 0 
+                    ).Else(
+                       lastReqDispatched ** 1 
+                    )
                 ),
                 streamSync(masters=[req], slaves=[aw, wInfo]),
             ).Else(
@@ -152,9 +156,9 @@ class Axi_wDatapump(Axi_datapumpBase):
         
         bInfo.isLast ** wIn.last
         streamSync(masters=[wIn, wInfo],
-                       slaves=[bInfo, w],
-                       extraConds=extraConds
-                       )
+                   slaves=[bInfo, w],
+                   extraConds=extraConds
+                   )
             
             
     def axiBHandler(self):
