@@ -8,6 +8,7 @@ from hdl_toolkit.simulator.shortcuts import simPrepare
 from hdl_toolkit.simulator.simTestCase import SimTestCase
 from hwtLib.axi.axis_measuringFifo import AxiS_measuringFifo
 from hdl_toolkit.simulator.utils import agent_randomize
+from random import Random
 
 
 class AxiS_measuringFifoTC(SimTestCase):
@@ -132,7 +133,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         u = self.u
         sizes = u.sizes._ag.data
         data = u.dataOut._ag.data
-        N = 20
+        N = 30
         randomize = lambda intf : self.procs.append(agent_randomize(intf._ag))
 
         for i in range(N):
@@ -150,15 +151,87 @@ class AxiS_measuringFifoTC(SimTestCase):
 
         self.doSim(N * 6 * 10 * 3 * Time.ns)
         
-        self.assertEqual(len(sizes), 20)
+        self.assertEqual(len(sizes), N)
         self.assertEqual(len(data), N * 6)
         for s in sizes:
             self.assertValEqual(s, 6 * 8)
+
+
+    
+    def test_randomized10(self):
+        u = self.u
+        sizes = u.sizes._ag.data
+        data = u.dataOut._ag.data
+        N = 10
+        randomize = lambda intf : self.procs.append(agent_randomize(intf._ag))
+        expectedData = []
+        expectedLen = []
         
+
+        random = Random(411)
+        for i in range(N):
+            l = random.randint(0, 511)
+            d = [(i + 1, 255, int(i == (l - 1))) for i in range(l)]
+            u.dataIn._ag.data.extend(d)
+            
+            expectedData.extend(d)
+            expectedLen.append(l * 8)
+            
+        randomize(u.dataIn)
+        randomize(u.dataOut)
+        randomize(u.sizes)
+        
+
+        self.doSim(len(expectedData) * 10 * 2.5 * Time.ns)
+        
+        self.assertEqual(len(sizes), N)
+        self.assertEqual(len(data), len(expectedData))
+        
+        for exp, d in zip(expectedData, data):
+            self.assertValSequenceEqual(d, exp)
+        
+        for el, l in zip(expectedLen, sizes):
+            self.assertValEqual(l, el)
+        
+        
+    def test_withSizeBrake(self):
+        u = self.u
+        sizes = u.sizes._ag.data
+        data = u.dataOut._ag.data
+        N = 30
+        SIZE_BUFF_SIZE = 16
+        L = 6
+        expectedLen = []
+        
+        randomize = lambda intf : self.procs.append(agent_randomize(intf._ag))
+    
+        for i in range(N):
+            d = [(i + 1, 255, int(i == (L - 1))) for i in range(L)]
+            u.dataIn._ag.data.extend(d)
+            expectedLen.append(L*8)
+            
+        randomize(u.dataIn)
+        randomize(u.dataOut)
+        u.sizes._ag.enable = False
+        
+        def sizesEn(s):
+            yield s.wait((SIZE_BUFF_SIZE + 5) * 10 * Time.ns)
+            yield from agent_randomize(u.sizes._ag)(s)
+            
+        self.procs.append(sizesEn)
+    
+        self.doSim(N * 6 * 10 * 3 * Time.ns)
+        
+        self.assertEqual(len(sizes), N)
+        self.assertEqual(len(data), N * 6)
+        for el, l in zip(expectedLen, sizes):
+            self.assertValEqual(l, el)
+
+    
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(AxiS_measuringFifoTC('test_nop'))
-    suite.addTest(unittest.makeSuite(AxiS_measuringFifoTC))
+    suite.addTest(AxiS_measuringFifoTC('test_withSizeBrake'))
+    # suite.addTest(unittest.makeSuite(AxiS_measuringFifoTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

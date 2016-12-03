@@ -65,8 +65,6 @@ class AxiS_measuringFifo(Unit):
         sb = self.sizesBuff
         db = self.dataBuff
         
-        self.sizes ** sb.dataOut
-        self.dataOut ** db.dataOut
         
         wordCntr = self._reg("wordCntr",
                              vecT(log2ceil(self.MAX_LEN)),
@@ -102,6 +100,8 @@ class AxiS_measuringFifo(Unit):
                    slaves=[sb.dataIn, db.dataIn],
                    extraConds={sb.dataIn : [dIn.last]})
         
+        self.sizes ** sb.dataOut
+        self.dataOut ** db.dataOut
         
 
 if __name__ == "__main__":
