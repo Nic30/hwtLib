@@ -45,7 +45,7 @@ class Fifo(Unit):
         mem = self.mem = self._sig("memory", Array(vecT(self.DATA_WIDTH), self.DEPTH))
         wr_ptr = self._reg("wr_ptr", index_t, 0)
         rd_ptr = self._reg("rd_ptr", index_t, 0)
-        LATENCY = evalParam(self.LATENCY).val
+        #LATENCY = evalParam(self.LATENCY).val
         EXPORT_SIZE = evalParam(self.EXPORT_SIZE).val
         MAX_DEPTH = DEPTH - 1
         
@@ -80,100 +80,100 @@ class Fifo(Unit):
             )     
         )
         
-        if LATENCY == 1: 
-            # assert isPow2(evalParam(DEPTH).val), DEPTH
-            
-            looped = self._reg("looped", defVal=False)
-            
-            fifo_read ** (dout.en & (looped | (wr_ptr != rd_ptr)))
-            If(self.clk._onRisingEdge(),
-                If(fifo_read,
-                    # Update data output
-                    dout.data ** mem[rd_ptr] 
-                )#.Else(
-                #    dout.data ** None
-                #) 
-            )
-            
-            fifo_write ** (din.en & (~looped | (wr_ptr != rd_ptr)))
-            
+        #if LATENCY == 1: 
+        # assert isPow2(evalParam(DEPTH).val), DEPTH
+        
+        looped = self._reg("looped", defVal=False)
+        
+        fifo_read ** (dout.en & (looped | (wr_ptr != rd_ptr)))
+        If(self.clk._onRisingEdge(),
+            If(fifo_read,
+                # Update data output
+                dout.data ** mem[rd_ptr] 
+            )#.Else(
+            #    dout.data ** None
+            #) 
+        )
+        
+        fifo_write ** (din.en & (~looped | (wr_ptr != rd_ptr)))
+        
 
-            # looped logic
-            If(din.en & wr_ptr._eq(MAX_DEPTH),
-                looped ** True
-            ).Elif(dout.en & rd_ptr._eq(MAX_DEPTH),
-                looped ** False
+        # looped logic
+        If(din.en & wr_ptr._eq(MAX_DEPTH),
+            looped ** True
+        ).Elif(dout.en & rd_ptr._eq(MAX_DEPTH),
+            looped ** False
+        )
+                
+        # Update Empty and Full flags
+        If(wr_ptr._eq(rd_ptr),
+            If(looped,
+                din.wait ** 1,
+                dout.wait ** 0 
+            ).Else(
+                dout.wait ** 1,
+                din.wait ** 0
             )
-                    
-            # Update Empty and Full flags
-            If(wr_ptr._eq(rd_ptr),
-                If(looped,
-                    din.wait ** 1,
-                    dout.wait ** 0 
-                ).Else(
-                    dout.wait ** 1,
-                    din.wait ** 0
+        ).Else(
+            din.wait ** 0,
+            dout.wait ** 0 
+        )
+        if EXPORT_SIZE:
+            size = self._reg("size_reg", self.size._dtype, 0)
+            If(fifo_read,
+                If(~fifo_write,
+                   size ** (size - 1)
                 )
             ).Else(
-                din.wait ** 0,
-                dout.wait ** 0 
-            )
-            if EXPORT_SIZE:
-                size = self._reg("size_reg", self.size._dtype, 0)
-                If(fifo_read,
-                    If(~fifo_write,
-                       size ** (size - 1)
-                    )
-                ).Else(
-                    If(fifo_write,
-                       size ** (size + 1)
-                    )
+                If(fifo_write,
+                   size ** (size + 1)
                 )
-                self.size ** size
+            )
+            self.size ** size
                 
             
-        elif LATENCY == 2:
-            assert isPow2(evalParam(DEPTH).val), DEPTH
-            if EXPORT_SIZE: 
-                raise NotImplementedError() 
-            
-            empty_flag = self._sig("empty_flag")
-            full_flag = self._sig("full_flag")
-
-            If(self.clk._onRisingEdge(),
-                If(fifo_read,
-                    # Update data output
-                    dout.data ** mem[rd_ptr] 
-                ).Else(
-                    dout.data ** None
-                )
-            )
-            
-            isEmpty = self._reg("isEmpty", defVal=1)
-            If(isEmpty & ~empty_flag,
-                isEmpty ** 0
-            ).Elif(~isEmpty & empty_flag & dout.en,
-                isEmpty ** 1
-            )
-            
-            If(isEmpty & ~empty_flag,
-                fifo_read ** 1,
-            ).Elif(~isEmpty & ~empty_flag & dout.en,
-                fifo_read ** 1,
-            ).Else(
-                fifo_read ** 0
-            )
-            
-            dout.wait ** isEmpty
-            
-            full_flag ** rd_ptr._eq(wr_ptr + 1)
-            empty_flag ** wr_ptr._eq(rd_ptr)
-            fifo_write ** (din.en & (~full_flag | (full_flag & dout.en)))
-            din.wait ** full_flag
-            
-            
-        else:
-            raise NotImplementedError("%r not implemented for latency %d" % (self, LATENCY))
+        #elif LATENCY == 2:
+        #    assert isPow2(evalParam(DEPTH).val), DEPTH
+        #    if EXPORT_SIZE: 
+        #        raise NotImplementedError() 
+        #    
+        #    empty_flag = self._sig("empty_flag")
+        #    full_flag = self._sig("full_flag")
+        #
+        #    If(self.clk._onRisingEdge(),
+        #        If(fifo_read,
+        #            # Update data output
+        #            dout.data ** mem[rd_ptr] 
+        #        )#.Else(
+        #        #    dout.data ** None
+        #        #)
+        #    )
+        #    
+        #    isEmpty = self._reg("isEmpty", defVal=1)
+        #    If(isEmpty & ~empty_flag,
+        #        isEmpty ** 0
+        #    ).Elif(~isEmpty & empty_flag & dout.en,
+        #        isEmpty ** 1
+        #    )
+        #    
+        #    If(isEmpty & ~empty_flag,
+        #        fifo_read ** 1,
+        #    ).Elif(~isEmpty & ~empty_flag & dout.en,
+        #        fifo_read ** 1,
+        #    ).Else(
+        #        fifo_read ** 0
+        #    )
+        #    
+        #    dout.wait ** isEmpty
+        #    
+        #    full_flag ** rd_ptr._eq(wr_ptr + 1)
+        #    empty_flag ** wr_ptr._eq(rd_ptr)
+        #    fifo_write ** (din.en & (~full_flag | (full_flag & dout.en)))
+        #    din.wait ** full_flag
+        #    
+        #    
+        #else:
+        #    raise NotImplementedError("%r not implemented for latency %d" % (self, LATENCY))
 
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
