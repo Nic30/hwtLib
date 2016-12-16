@@ -230,8 +230,8 @@ class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
     
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(Axi4_rDatapumpTC('test_maxReq'))
-    suite.addTest(unittest.makeSuite(Axi3_rDatapumpTC))
+    suite.addTest(Axi4_rDatapumpTC('test_maxOverlap'))
+    #suite.addTest(unittest.makeSuite(Axi4_rDatapumpTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
