@@ -149,9 +149,9 @@ class FifoBramTC(FifoTC):
 
         collected = agInts(u.dataOut)
         
-        self.assertValSequenceEqual(self.model.memory._val.val, [5, 2, 3, 4])
-        self.assertSequenceEqual(collected, [1])
-        self.assertSequenceEqual(u.dataIn._ag.data, [6, 7, 8])
+        self.assertSequenceEqual(collected, [1, 2])
+        self.assertSequenceEqual(u.dataIn._ag.data, [7, 8])
+        self.assertValSequenceEqual(self.model.memory._val.val, [5, 6, 3, 4])
         
 if __name__ == "__main__":
     suite = unittest.TestSuite()
