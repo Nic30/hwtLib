@@ -71,7 +71,7 @@ class NetFilter(Unit):
             with self._asExtern():
                 self.din = AxiStream()
                 self.export = AxiStream()
-                # self.cfg = AxiLite(isExtern=True)
+                # self.cfg = AxiLite()
     
             self.hfe = HeadFieldExtractor()
             self.pm = PatternMatch()

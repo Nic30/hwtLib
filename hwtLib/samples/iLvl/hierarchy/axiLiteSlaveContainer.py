@@ -14,7 +14,7 @@ class AxiLiteSlaveContainer(Unit):
     def _declr(self):
         with self._paramsShared():
             self.slv = AxiLiteBasicSlave()
-            self.axi = AxiLite(isExtern=True)
+            self.axi = AxiLite()
         self.slv.C_S_AXI_ADDR_WIDTH.set(self.ADDR_WIDTH)
         self.slv.C_S_AXI_DATA_WIDTH.set(self.DATA_WIDTH)
 

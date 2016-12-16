@@ -81,7 +81,7 @@ class Ram_dp(Ram_sp):
     def _declr(self):
         super()._declr()
         with self._paramsShared():
-            self.b = BramPort(isExtern=True)
+            self.b = BramPort()
 
     def _impl(self):
         super()._impl()
