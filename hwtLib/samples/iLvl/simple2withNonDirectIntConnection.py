@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.intfLvl import Param, connect, Unit
+from hdl_toolkit.intfLvl import Param, Unit
 from hwtLib.interfaces.amba import AxiStream
 
 
@@ -15,12 +15,13 @@ class Simple2withNonDirectIntConnection(Unit):
             self.c = AxiStream()
         
     def _impl(self):
-        # we have to register ineterface on this unit first before use
-        self.b = AxiStream()
+        # we have to register interface on this unit first before use
+        with self._paramsShared():
+            self.b = AxiStream()
         b = self.b 
 
-        connect(self.a, b)
-        connect(b, self.c)
+        b ** self.a
+        self.c ** b
         
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
