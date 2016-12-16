@@ -21,7 +21,6 @@ class HandshakedFifo(HandshakedCompBase):
     
     def _config(self):
         self.DEPTH = Param(0)
-        self.LATENCY = Param(1)
         self.EXPORT_SIZE = Param(False)
         super()._config()
         
@@ -35,17 +34,11 @@ class HandshakedFifo(HandshakedCompBase):
         DW = packedWidth(self.dataIn) - 2  # 2 for control (valid, ready)
         f.DATA_WIDTH.set(DW)
         f.DEPTH.set(self.DEPTH - 1)  # because there is an extra register
-        f.LATENCY.set(self.LATENCY)
         f.EXPORT_SIZE.set(self.EXPORT_SIZE)
         
         if evalParam(self.EXPORT_SIZE).val:
             self.size = VectSignal(log2ceil(self.DEPTH + 1 + 1), signed=False) 
     
-        #if evalParam(self.LATENCY).val == 1:
-        #    with self._paramsShared(): 
-        #        self.outReg = self._regCls(self.intfCls)
-          
-                
     def _impl(self):
         din = self.dataIn
         rd = self.getRd
@@ -54,10 +47,6 @@ class HandshakedFifo(HandshakedCompBase):
         propagateClkRstn(self)
         fifo = self.fifo
         
-        #if evalParam(self.LATENCY).val == 1:
-        #    out = self.outReg.dataIn
-        #    self.dataOut ** self.outReg.dataOut
-        #else:
         out = self.dataOut
         
         # to fifo

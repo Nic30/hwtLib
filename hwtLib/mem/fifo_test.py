@@ -126,33 +126,6 @@ class FifoTC(SimTestCase):
         self.assertSequenceEqual([], u.dataIn._ag.data)
     
         
-
-class FifoBramTC(FifoTC):
-    def setUp(self):
-        u = Fifo()
-        u.LATENCY.set(2)
-        u.DATA_WIDTH.set(8)
-        u.DEPTH.set(4)
-        self.u, self.model, self.procs = simPrepare(u)
-        
-    
-    def test_tryMore2(self):
-        u = self.u
-        
-        u.dataIn._ag.data = [1, 2, 3, 4, 5, 6, 7, 8]
-        def closeOutput(s):
-            yield s.wait(4 * 10 * Time.ns)
-            u.dataOut._ag.enable = False
-            
-        self.procs.append(closeOutput)
-        self.doSim(150 * Time.ns)
-
-        collected = agInts(u.dataOut)
-        
-        self.assertSequenceEqual(collected, [1, 2])
-        self.assertSequenceEqual(u.dataIn._ag.data, [7, 8])
-        self.assertValSequenceEqual(self.model.memory._val.val, [5, 6, 3, 4])
-        
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(FifoTC('test_normalOp'))

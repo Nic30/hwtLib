@@ -48,7 +48,6 @@ class AxiS_measuringFifo(Unit):
         
         db = self.dataBuff = AxiSFifo(AxiStream)
         # to place fifo in bram
-        db.LATENCY.set(2)
         db.DATA_WIDTH.set(self.DATA_WIDTH)
         db.DEPTH.set((self.MAX_LEN + 1) * 2 + 1)
         

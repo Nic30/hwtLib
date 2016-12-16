@@ -82,21 +82,6 @@ class HsFifoTC(SimTestCase):
         self.assertValSequenceEqual(u.dataOut._ag.data, golden)
         self.assertValSequenceEqual(u.dataIn._ag.data, [])
 
-class HsFifoBramTC(HsFifoTC):
-    def setUp(self):
-        self.u = HandshakedFifo(Handshaked)
-        self.u.LATENCY.set(2)
-        self.u.DEPTH.set(8 + 1)
-        self.u.DATA_WIDTH.set(4)
-        _, self.model, self.procs = simPrepare(self.u)
-        
-# class HsFifo_randomized_TC(HsFifoTC):
-#    def setUp(self):
-#        super(HsFifo_randomized_TC, self).setUp()
-#        self.procs.append(agent_randomize(self.u.dataIn._ag))
-#        self.procs.append(agent_randomize(self.u.dataOut._ag))
-        
-        
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(FifoTC('test_normalOp'))

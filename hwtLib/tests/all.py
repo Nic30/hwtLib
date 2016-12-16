@@ -8,7 +8,7 @@ from hwtLib.axi.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC
 from hwtLib.axi.axi_test import AxiTC
 from hwtLib.axi.axis_measuringFifo_test import AxiS_measuringFifoTC
-from hwtLib.handshaked.fifo_test import HsFifoTC, HsFifoBramTC
+from hwtLib.handshaked.fifo_test import HsFifoTC
 from hwtLib.handshaked.fork_test import HsForkTC, HsFork_randomized_TC
 from hwtLib.handshaked.reg2_test import HsReg2TC
 from hwtLib.handshaked.reg_test import HsRegTC
@@ -16,7 +16,7 @@ from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
 from hwtLib.mem.atomic.flipReg_test import FlipRegTC
 from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.clkSynchronizer_test import ClkSynchronizerTC
-from hwtLib.mem.fifo_test import FifoTC, FifoBramTC
+from hwtLib.mem.fifo_test import FifoTC
 from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ram_test import RamTC
 from hwtLib.samples.iLvl.arithmetic.cntr_test import CntrTC
@@ -79,13 +79,11 @@ if __name__ == "__main__":
         ClkSynchronizerTC,
         RamTC,
         FifoTC,
-        FifoBramTC,
         FlipRegTC,
         FlipCntrTC,
         HsForkTC,
         HsFork_randomized_TC,
         HsFifoTC,
-        HsFifoBramTC,
         HsRegTC,
         HsReg2TC,
         CamTC,
