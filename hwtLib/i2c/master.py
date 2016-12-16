@@ -21,22 +21,21 @@ class I2cMaster(Unit):
         self.I2C_FREQ = Param(int(400e3))
         
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            
-            self.start = Signal() # send start on i2c bus, can be used with read or write
-            self.stop = Signal() # send stop to i2c bus
-            self.read = Signal() 
-            self.write = Signal()
-            
-            self.ack_in = Signal()  # i2c ack bit
-            self.din = Signal(dtype=vecT(8))
-            
-            self.ack_out = Signal()  # i2c ack bit
-            self.dout = Signal(dtype=vecT(8))
-            
-            
-            self.i2c = I2c()
+        addClkRstn(self)
+        
+        self.start = Signal() # send start on i2c bus, can be used with read or write
+        self.stop = Signal() # send stop to i2c bus
+        self.read = Signal() 
+        self.write = Signal()
+        
+        self.ack_in = Signal()  # i2c ack bit
+        self.din = Signal(dtype=vecT(8))
+        
+        self.ack_out = Signal()  # i2c ack bit
+        self.dout = Signal(dtype=vecT(8))
+        
+        
+        self.i2c = I2c()
         
         self.bitCntrl = I2cMasterBitCtrl()
         

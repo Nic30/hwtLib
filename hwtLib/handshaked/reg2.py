@@ -29,13 +29,12 @@ class HandshakedReg2(HandshakedCompBase):
     
     
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            with self._paramsShared():
-                self.dataIn = self.intfCls()
-                self.dataOut = self.intfCls()
-                
-                self.r0 = self.regCls(self.intfCls)
+        addClkRstn(self)
+        with self._paramsShared():
+            self.dataIn = self.intfCls()
+            self.dataOut = self.intfCls()
+            
+            self.r0 = self.regCls(self.intfCls)
             
     def _impl(self):
         vld = self.getVld

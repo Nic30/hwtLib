@@ -22,17 +22,16 @@ class HsRamPortReader(Unit):
         self.SIZE = Param(255)
     
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            # start reading data over dataOut
-            self.en = HandshakeSync()
-            
-            # delete active memoryset
-            self.clean = HandshakeSync()
-            
-            with self._paramsShared():
-                self.dataIn = BramPort_withoutClk()
-                self.dataOut = Handshaked() 
+        addClkRstn(self)
+        # start reading data over dataOut
+        self.en = HandshakeSync()
+        
+        # delete active memoryset
+        self.clean = HandshakeSync()
+        
+        with self._paramsShared():
+            self.dataIn = BramPort_withoutClk()
+            self.dataOut = Handshaked() 
     
     def fsm(self, data_flag, data_inReg, addr):
         st_t = Enum("st_t", ["idle", "sendingData", "inCleaning"])

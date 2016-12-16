@@ -31,18 +31,17 @@ class FlipRam(Unit):
         PORT_CNT = evalParam(self.PORT_CNT).val
         
         with self._paramsShared():
-            with self._asExtern():
-                self.clk = Clk()
-                self.firstA = BramPort_withoutClk()
-                self.secondA = BramPort_withoutClk()
-                
-                if PORT_CNT == 2:
-                    self.firstB = BramPort_withoutClk()
-                    self.secondB = BramPort_withoutClk()
-                elif PORT_CNT > 2:
-                    raise NotImplementedError()
-                
-                self.select_sig = Signal()  
+            self.clk = Clk()
+            self.firstA = BramPort_withoutClk()
+            self.secondA = BramPort_withoutClk()
+            
+            if PORT_CNT == 2:
+                self.firstB = BramPort_withoutClk()
+                self.secondB = BramPort_withoutClk()
+            elif PORT_CNT > 2:
+                raise NotImplementedError()
+            
+            self.select_sig = Signal()  
             
                 
             self.ram0 = RamSingleClock()

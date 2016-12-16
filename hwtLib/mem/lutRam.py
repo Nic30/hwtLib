@@ -23,19 +23,17 @@ def mkLutRamCls(DATA_WIDTH):
 			self.IS_WCLK_INVERTED = Param(hBit(0))
 	
 		def _declr(self):
-			with self._asExtern():
-		
-				self.a0 = Signal()
-				self.a1 = Signal()
-				self.a2 = Signal()
-				self.a3 = Signal()
-				self.a4 = Signal()
-				self.a5 = Signal()
-				self.d	 = Signal()  # in
+			self.a0 = Signal()
+			self.a1 = Signal()
+			self.a2 = Signal()
+			self.a3 = Signal()
+			self.a4 = Signal()
+			self.a5 = Signal()
+			self.d	 = Signal()  # in
 
-				self.wclk = Clk()
-				self.o = Signal()  # out
-				self.we = Signal()
+			self.wclk = Clk()
+			self.o = Signal()  # out
+			self.we = Signal()
 			
 			
 		def _impl(self):

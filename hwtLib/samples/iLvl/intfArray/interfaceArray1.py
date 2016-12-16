@@ -11,7 +11,7 @@ class SimpleSubunit(Unit):
         self.DATA_WIDTH = Param(8)
         
     def _declr(self):
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             self.c = VldSynced()
             self.d = VldSynced()
         
@@ -32,9 +32,8 @@ class InterfaceArraySample1(Unit):
     def _declr(self):
         LEN = hInt(2)
         with self._paramsShared():
-            with self._asExtern():
-                self.a = VldSynced(multipliedBy=LEN)
-                self.b = VldSynced(multipliedBy=LEN)
+            self.a = VldSynced(multipliedBy=LEN)
+            self.b = VldSynced(multipliedBy=LEN)
     
             self.u0 = SimpleSubunit() 
             self.u1 = SimpleSubunit()

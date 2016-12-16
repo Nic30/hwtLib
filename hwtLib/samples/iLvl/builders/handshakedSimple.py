@@ -9,10 +9,9 @@ from hwtLib.handshaked.builder import HsBuilder
 
 class HandshakedSimple(Unit):
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            self.a = Handshaked()
-            self.b = Handshaked()
+        addClkRstn(self)
+        self.a = Handshaked()
+        self.b = Handshaked()
         
     def _impl(self):
         b = HsBuilder(self, self.a)

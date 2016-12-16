@@ -8,8 +8,7 @@ from hwtLib.interfaces.peripheral import Spi
 
 class EmptyUnitWithSpi(EmptyUnit):
     def _declr(self):
-        with self._asExtern():
-            self.spi = Spi()
+        self.spi = Spi()
     
     
 if __name__ == "__main__":

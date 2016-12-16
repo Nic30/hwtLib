@@ -11,10 +11,9 @@ from hdl_toolkit.synthesizer.shortcuts import toRtl
 
 class NopValSample(Unit):
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            self.en = Signal()
-            self.dout = Signal()
+        addClkRstn(self)
+        self.en = Signal()
+        self.dout = Signal()
     
     def _impl(self):
         cntr = self._reg("cntr", vecT(8), 0)

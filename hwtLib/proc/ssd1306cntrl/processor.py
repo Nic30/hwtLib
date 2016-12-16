@@ -31,12 +31,11 @@ class SSD1306CntrlProc(Unit, SSD1306CntrlProc_handlers):
         self.PROGRAM = []
         
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            self.oled = Ssd1306Intf()
-            
-            self.dataIn = Handshaked()
-            self.dataIn.DATA_WIDTH.set(8)
+        addClkRstn(self)
+        self.oled = Ssd1306Intf()
+        
+        self.dataIn = Handshaked()
+        self.dataIn.DATA_WIDTH.set(8)
         
         with self._paramsShared():
             self.delay = DelayMs()

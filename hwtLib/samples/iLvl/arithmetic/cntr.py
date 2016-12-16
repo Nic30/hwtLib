@@ -14,10 +14,9 @@ class Cntr(Unit):
         self.DATA_WIDTH = Param(2)
         
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            self.en = Signal()
-            self.val = Signal(dtype=vecT(self.DATA_WIDTH))
+        addClkRstn(self)
+        self.en = Signal()
+        self.val = Signal(dtype=vecT(self.DATA_WIDTH))
         
     def _impl(self):
         reg = self._reg("counter", vecT(self.DATA_WIDTH), 0)

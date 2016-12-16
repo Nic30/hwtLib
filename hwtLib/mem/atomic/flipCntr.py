@@ -25,11 +25,10 @@ class FlipCntr(Unit):
 
     def _declr(self):
         with self._paramsShared():
-            with self._asExtern():
-                addClkRstn(self)
-                self.doIncr = Signal()
-                self.doFlip = HandshakeSync()
-                self.data = RegCntrl()
+            addClkRstn(self)
+            self.doIncr = Signal()
+            self.doFlip = HandshakeSync()
+            self.data = RegCntrl()
             self.cntr = FlipRegister()
     
     def flipHandler(self):

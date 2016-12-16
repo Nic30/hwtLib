@@ -26,7 +26,7 @@ class HandshakedFifo(HandshakedCompBase):
         super()._config()
         
     def _declr(self):
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             addClkRstn(self)
             self.dataIn = self.intfCls()
             self.dataOut = self.intfCls()
@@ -39,8 +39,7 @@ class HandshakedFifo(HandshakedCompBase):
         f.EXPORT_SIZE.set(self.EXPORT_SIZE)
         
         if evalParam(self.EXPORT_SIZE).val:
-            with self._asExtern():
-                self.size = VectSignal(log2ceil(self.DEPTH + 1 + 1), signed=False) 
+            self.size = VectSignal(log2ceil(self.DEPTH + 1 + 1), signed=False) 
     
         #if evalParam(self.LATENCY).val == 1:
         #    with self._paramsShared(): 

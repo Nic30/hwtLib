@@ -9,10 +9,9 @@ from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 
 class SimpleIndexingSplit(Unit):
     def _declr(self):
-        with self._asExtern():
-            self.a = Signal(dtype=vecT(2))
-            self.b = Signal()
-            self.c = Signal()
+        self.a = Signal(dtype=vecT(2))
+        self.b = Signal()
+        self.c = Signal()
         
     def _impl(self):
         self.b ** self.a[0]
@@ -20,10 +19,9 @@ class SimpleIndexingSplit(Unit):
 
 class SimpleIndexingJoin(Unit):
     def _declr(self):
-        with self._asExtern():
-            self.a = Signal(dtype=vecT(2))
-            self.b = Signal()
-            self.c = Signal()
+        self.a = Signal(dtype=vecT(2))
+        self.b = Signal()
+        self.c = Signal()
         
     def _impl(self):
         self.a[0] ** self.b
@@ -31,10 +29,9 @@ class SimpleIndexingJoin(Unit):
 
 class SimpleIndexingRangeJoin(Unit):
     def _declr(self):
-        with self._asExtern():
-            self.a = Signal(dtype=vecT(4))
-            self.b = Signal(dtype=vecT(2))
-            self.c = Signal(dtype=vecT(2))
+        self.a = Signal(dtype=vecT(4))
+        self.b = Signal(dtype=vecT(2))
+        self.c = Signal(dtype=vecT(2))
         
     def _impl(self):
         self.a[2:0] ** self.b
@@ -42,10 +39,9 @@ class SimpleIndexingRangeJoin(Unit):
 
 class IndexingInernRangeSplit(Unit):
     def _declr(self):
-        with self._asExtern():
-            self.a = Signal(dtype=vecT(4))
-            self.b = Signal(dtype=vecT(4))
-    
+        self.a = Signal(dtype=vecT(4))
+        self.b = Signal(dtype=vecT(4))
+
     def _impl(self):
         internA = self._sig("internA", vecT(2))
         internB = self._sig("internB", vecT(2))
@@ -60,9 +56,8 @@ class IndexingInernRangeSplit(Unit):
 
 class IndexingInernSplit(Unit):
     def _declr(self):
-        with self._asExtern():
-            self.a = Signal(dtype=vecT(2))
-            self.b = Signal(dtype=vecT(2))
+        self.a = Signal(dtype=vecT(2))
+        self.b = Signal(dtype=vecT(2))
     
     def _impl(self):
         internA = self._sig("internA")
@@ -77,11 +72,10 @@ class IndexingInernSplit(Unit):
         
 class IndexingInernJoin(Unit):
     def _declr(self):
-        with self._asExtern():
-            self.a = Signal()
-            self.b = Signal()
-            self.c = Signal()
-            self.d = Signal()
+        self.a = Signal()
+        self.b = Signal()
+        self.c = Signal()
+        self.d = Signal()
 
     def _impl(self):
         intern = self._sig("internSig", vecT(2))

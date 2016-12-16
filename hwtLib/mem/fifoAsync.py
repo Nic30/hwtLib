@@ -20,14 +20,13 @@ class AsyncFifo(Fifo):
     _serializerMode = SERI_MODE.PARAMS_UNIQ
     
     def _declr(self):
-        with self._asExtern():
-            self.dataIn_clk = Clk() 
-            self.dataOut_clk = Clk()
-            self.rst_n = Rst_n()
-            
-            with self._paramsShared():
-                self.dataIn = FifoWriter()
-                self.dataOut = FifoReader()
+        self.dataIn_clk = Clk() 
+        self.dataOut_clk = Clk()
+        self.rst_n = Rst_n()
+        
+        with self._paramsShared():
+            self.dataIn = FifoWriter()
+            self.dataOut = FifoReader()
         
         
         self.pWr = GrayCntr()

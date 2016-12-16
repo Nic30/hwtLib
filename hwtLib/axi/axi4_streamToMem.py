@@ -51,12 +51,11 @@ class Axi4streamToMem(Unit):
                              (0x4, "baseAddr")]
         
     def _declr(self):
-        with self._asExtern():
-            with self._paramsShared():
-                addClkRstn(self)
-                self.axi = Axi4()
-                self.dataIn = Handshaked()
-            cntrl = self.cntrl = AxiLite()
+        with self._paramsShared():
+            addClkRstn(self)
+            self.axi = Axi4()
+            self.dataIn = Handshaked()
+        cntrl = self.cntrl = AxiLite()
         regs = self.regsConventor = AxiLiteConverter(self.REGISTER_MAP)
         
         cntrl._replaceParam("ADDR_WIDTH", self.CNTRL_AW)

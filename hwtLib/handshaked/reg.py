@@ -11,11 +11,10 @@ class HandshakedReg(HandshakedCompBase):
     Register for Handshaked interface
     """
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            with self._paramsShared():
-                self.dataIn = self.intfCls()
-                self.dataOut = self.intfCls()
+        addClkRstn(self)
+        with self._paramsShared():
+            self.dataIn = self.intfCls()
+            self.dataOut = self.intfCls()
     
     def _impl(self):
         

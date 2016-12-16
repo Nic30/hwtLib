@@ -9,12 +9,11 @@ from hdl_toolkit.synthesizer.codeOps import Switch
 
 class SwitchStmUnit(Unit):
     def _declr(self):
-        with self._asExtern():
-            self.sel = Signal(dtype=vecT(2))
-            self.a = Signal()
-            self.b = Signal()
-            self.c = Signal()
-            self.d = Signal()
+        self.sel = Signal(dtype=vecT(2))
+        self.a = Signal()
+        self.b = Signal()
+        self.c = Signal()
+        self.d = Signal()
             
     def _impl(self):
         Switch(self.sel)\

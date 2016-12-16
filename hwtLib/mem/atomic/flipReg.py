@@ -29,7 +29,7 @@ class FlipRegister(Unit):
         self.DEFAULT_VAL = Param(0)
         
     def _declr(self):
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             addClkRstn(self)
             self.first = RegCntrl()
             self.second = RegCntrl()

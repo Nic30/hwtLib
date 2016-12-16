@@ -26,10 +26,9 @@ class AxiSStoredBurst(Unit):
         return self.dataOut.ready
     
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            with self._paramsShared():
-                self.dataOut = AxiStream()
+        addClkRstn(self)
+        with self._paramsShared():
+            self.dataOut = AxiStream()
     
     def nextWordIndexLogic(self, wordIndex):
         if evalParam(self.REPEAT).val:

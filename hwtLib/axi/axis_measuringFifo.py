@@ -38,14 +38,13 @@ class AxiS_measuringFifo(Unit):
         return log2ceil(self.DATA_WIDTH // 8).val
         
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            with self._paramsShared():
-                self.dataIn = AxiStream()
-                self.dataOut = AxiStream()
-            
-            self.sizes = Handshaked()
-            self.sizes.DATA_WIDTH.set(log2ceil(self.MAX_LEN) + self.getAliginBitsCnt())
+        addClkRstn(self)
+        with self._paramsShared():
+            self.dataIn = AxiStream()
+            self.dataOut = AxiStream()
+        
+        self.sizes = Handshaked()
+        self.sizes.DATA_WIDTH.set(log2ceil(self.MAX_LEN) + self.getAliginBitsCnt())
         
         db = self.dataBuff = AxiSFifo(AxiStream)
         # to place fifo in bram

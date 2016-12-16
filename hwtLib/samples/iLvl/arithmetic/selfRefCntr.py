@@ -12,10 +12,9 @@ class SelfRefCntr(Unit):
     def _declr(self):
         self.dt = vecT(8, False)
         
-        with self._asExtern():
-            addClkRstn(self)
-            
-            self.dout = Signal(dtype=self.dt)
+        addClkRstn(self)
+        
+        self.dout = Signal(dtype=self.dt)
             
     def _impl(self):
         cntr = self._reg("cntr", self.dt, defVal=0)

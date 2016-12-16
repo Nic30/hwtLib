@@ -23,13 +23,12 @@ class HandshakedResizer(HandshakedCompBase):
         self.OUT_MULTIPLIER = Param(2)
             
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            with self._paramsShared():
-                self.dataIn = self.intfCls()
-            
-            self.dataOut = self.intfCls()
-            self._shareParamsWithMultiplier(self.dataOut, self.OUT_MULTIPLIER)
+        addClkRstn(self)
+        with self._paramsShared():
+            self.dataIn = self.intfCls()
+        
+        self.dataOut = self.intfCls()
+        self._shareParamsWithMultiplier(self.dataOut, self.OUT_MULTIPLIER)
     
     def dataPassLogic(self, inputRegs_cntr):
         MULTIPLIER = evalParam(self.OUT_MULTIPLIER).val

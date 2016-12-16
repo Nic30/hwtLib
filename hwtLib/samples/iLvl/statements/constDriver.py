@@ -7,9 +7,8 @@ from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 
 class ConstDriverUnit(Unit):
     def _declr(self):
-        with self._asExtern():
-            self.out0 = Signal()
-            self.out1 = Signal()
+        self.out0 = Signal()
+        self.out1 = Signal()
     
     def _impl(self):
         self.out0 ** 0

@@ -10,16 +10,15 @@ from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
 
 class TwoCntrs(Unit):
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            
-            self.a_en = Signal()
-            self.b_en = Signal()
-            
-            self.eq = Signal()
-            self.ne = Signal()
-            self.lt = Signal()
-            self.gt = Signal()
+        addClkRstn(self)
+        
+        self.a_en = Signal()
+        self.b_en = Signal()
+        
+        self.eq = Signal()
+        self.ne = Signal()
+        self.lt = Signal()
+        self.gt = Signal()
         
 
     def _impl(self):

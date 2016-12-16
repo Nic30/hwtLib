@@ -16,10 +16,9 @@ class BinToOneHot(Unit):
         self.DATA_WIDTH = Param(32)
     
     def _declr(self):
-        with self._asExtern():
-            self.din = s(dtype=vecT(log2ceil(self.DATA_WIDTH)))
-            self.en = s()
-            self.dout = s(dtype=vecT(self.DATA_WIDTH))
+        self.din = s(dtype=vecT(log2ceil(self.DATA_WIDTH)))
+        self.en = s()
+        self.dout = s(dtype=vecT(self.DATA_WIDTH))
 
     def _impl(self):
         en = self.en

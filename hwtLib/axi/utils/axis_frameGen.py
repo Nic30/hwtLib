@@ -19,14 +19,13 @@ class AxisFrameGen(Unit):
         self.DATA_WIDTH = Param(64)
         
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            self.axis_out = AxiStream()
-            self.axis_out.DATA_WIDTH.replace(self.DATA_WIDTH)
-            
-            self.cntrl = AxiLite()
-            self.cntrl.ADDR_WIDTH.set(evalParam(self.CNTRL_AW))
-            self.cntrl.DATA_WIDTH.set(evalParam(self.CNTRL_DW))
+        addClkRstn(self)
+        self.axis_out = AxiStream()
+        self.axis_out.DATA_WIDTH.replace(self.DATA_WIDTH)
+        
+        self.cntrl = AxiLite()
+        self.cntrl.ADDR_WIDTH.set(evalParam(self.CNTRL_AW))
+        self.cntrl.DATA_WIDTH.set(evalParam(self.CNTRL_DW))
             
         self.conv = AxiLiteConverter([(0x0, "enable"),
                                       (0x4, "len")

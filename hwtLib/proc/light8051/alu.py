@@ -29,44 +29,43 @@ class Alu(Unit):
         
     def _declr(self):
         word_t = self.w_t = vecT(self.DATA_WIDTH)
-        with self._asExtern():
-            addClkRstn(self)
-            self.result = Signal(dtype=word_t)
-            self.nobit_result = Signal(dtype=word_t)
-            
-            self.xdata_wr = Signal(dtype=word_t)
-            self.xdata_rd = Signal(dtype=word_t)
-            
-            self.iram_sfr_rd = Signal(dtype=word_t)
-            self.code_rd = Signal(dtype=word_t)
-            self.ACC = Signal(dtype=word_t)
-            self.B = Signal(dtype=word_t)
-            
-            self.cy_in = Signal()
-            self.ac_in = Signal()
-            
-            self.result_is_zero = Signal()
-            self.acc_is_zero = Signal()
-            self.cy_out = Signal()
-            self.ov_out = Signal()
-            self.p_out = Signal()
-            self.op_sel = Signal(dtype=t_alu_op_sel)
-            
-            
-            self.alu_fn_reg = Signal(dtype=t_alu_fns)
-            self.bit_index_reg = Signal(dtype=vecT(3, False))
-            self.load_acc_sfr = Signal()
-            self.load_acc_out = Signal()
-            self.bit_input_out = Signal()
-            self.ac_out = Signal()
+        addClkRstn(self)
+        self.result = Signal(dtype=word_t)
+        self.nobit_result = Signal(dtype=word_t)
+        
+        self.xdata_wr = Signal(dtype=word_t)
+        self.xdata_rd = Signal(dtype=word_t)
+        
+        self.iram_sfr_rd = Signal(dtype=word_t)
+        self.code_rd = Signal(dtype=word_t)
+        self.ACC = Signal(dtype=word_t)
+        self.B = Signal(dtype=word_t)
+        
+        self.cy_in = Signal()
+        self.ac_in = Signal()
+        
+        self.result_is_zero = Signal()
+        self.acc_is_zero = Signal()
+        self.cy_out = Signal()
+        self.ov_out = Signal()
+        self.p_out = Signal()
+        self.op_sel = Signal(dtype=t_alu_op_sel)
+        
+        
+        self.alu_fn_reg = Signal(dtype=t_alu_fns)
+        self.bit_index_reg = Signal(dtype=vecT(3, False))
+        self.load_acc_sfr = Signal()
+        self.load_acc_out = Signal()
+        self.bit_input_out = Signal()
+        self.ac_out = Signal()
 
-            self.load_b_sfr = Signal()
-            self.mul_ready = Signal()
-            self.div_ready = Signal()
+        self.load_b_sfr = Signal()
+        self.mul_ready = Signal()
+        self.div_ready = Signal()
 
-            self.use_bitfield = Signal()
-            
-            self.ps = Signal(dtype=t_cpu_state)
+        self.use_bitfield = Signal()
+        
+        self.ps = Signal(dtype=t_cpu_state)
     
     def parity(self, load_acc, acc_input):
         # Parity logic.

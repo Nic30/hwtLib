@@ -29,11 +29,10 @@ class UartTx(Unit):
         self.BAUD = Param(115200)
     
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            self.dataIn = Handshaked()
-            self.dataIn.DATA_WIDTH.set(8)
-            self.txd = Signal()
+        addClkRstn(self)
+        self.dataIn = Handshaked()
+        self.dataIn.DATA_WIDTH.set(8)
+        self.txd = Signal()
         
         with self._paramsShared():
             self.baudGen = UartBaudGen()

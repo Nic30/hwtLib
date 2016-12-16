@@ -14,11 +14,10 @@ class ClkDiv3(Unit):
                 (http://www.xilinx.com/support/documentation/ip_documentation/clk_wiz/v5_1/pg065-clk-wiz.pdf)
     """
     def _declr(self):
-        with self._asExtern():
-            self.clk = Clk()
-            self.rst_n = Rst_n()
+        self.clk = Clk()
+        self.rst_n = Rst_n()
 
-            self.clkOut = Clk()
+        self.clkOut = Clk()
     
     def _impl(self):
         r_cnt = self._cntx.sig("r_cnt", typ=vecT(2))    

@@ -16,7 +16,7 @@ class InterfaceArraySample0(Unit):
         self.LEN = hInt(3)
     
     def _declr(self):
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             self.a = VldSynced(multipliedBy=self.LEN)
             self.b = VldSynced(multipliedBy=self.LEN)
     

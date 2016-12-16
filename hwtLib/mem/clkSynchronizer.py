@@ -16,14 +16,13 @@ class ClkSynchronizer(Unit):
         self.DATA_TYP = BIT
         
     def _declr(self):
-        with self._asExtern():
-            self.rst = Rst()
-            
-            self.inData = Signal(dtype=self.DATA_TYP)
-            self.inClk = Clk()
-            
-            self.outData = Signal(dtype=self.DATA_TYP)
-            self.outClk = Clk()
+        self.rst = Rst()
+        
+        self.inData = Signal(dtype=self.DATA_TYP)
+        self.inClk = Clk()
+        
+        self.outData = Signal(dtype=self.DATA_TYP)
+        self.outClk = Clk()
         
         
     def _impl(self):

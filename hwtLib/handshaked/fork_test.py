@@ -15,8 +15,7 @@ from hdl_toolkit.interfaces.utils import addClkRstn
 class HsForkWithReference(HandshakedFork):
     def _declr(self):
         HandshakedFork._declr(self)
-        with self._asExtern():
-            addClkRstn(self)
+        addClkRstn(self)
 
 class HsForkTC(unittest.TestCase):
     def setUp(self):

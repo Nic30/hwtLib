@@ -11,13 +11,14 @@ class Simple2withNonDirectIntConnection(Unit):
         
     def _declr(self):
         with self._paramsShared():
-            with self._asExtern():
-                self.a = AxiStream()
-                self.c = AxiStream()
-            self.b = AxiStream()
+            self.a = AxiStream()
+            self.c = AxiStream()
         
     def _impl(self):
-        b = self.b
+        # we have to register ineterface on this unit first before use
+        self.b = AxiStream()
+        b = self.b 
+
         connect(self.a, b)
         connect(b, self.c)
         

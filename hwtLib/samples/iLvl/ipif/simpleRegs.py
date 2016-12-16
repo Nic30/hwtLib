@@ -16,10 +16,9 @@ class SimpleIpifRegs(Unit):
         self.DATA_WIDTH = Param(32)
         
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            with self._paramsShared():    
-                self.ipif = IPIF()
+        addClkRstn(self)
+        with self._paramsShared():    
+            self.ipif = IPIF()
         with self._paramsShared():    
             self.conv = IpifConverter([(0, "reg0"),
                                        (4, "reg1")])

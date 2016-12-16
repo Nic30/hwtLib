@@ -36,13 +36,12 @@ class UartRx(Unit):
         baud = evalParam(self.BAUD).val
         freq = evalParam(self.FREQ).val
         
-        with self._asExtern():
-            addClkRstn(self)
-            self.dataOut = VldSynced()
-            self.dataOut.DATA_WIDTH.set(8)
-            self.idle = Signal()
+        addClkRstn(self)
+        self.dataOut = VldSynced()
+        self.dataOut.DATA_WIDTH.set(8)
+        self.idle = Signal()
 
-            self.rxd = Signal()
+        self.rxd = Signal()
             
             
         with self._paramsShared():

@@ -12,12 +12,12 @@ class SimpleWithNonDirectIntConncetion(Unit):
     """
     
     def _declr(self):
-        with self._asExtern():
-            self.a = Signal()
-            self.c = Signal()
-        self.b = Signal()
+        self.a = Signal()
+        self.c = Signal()
         
     def _impl(self):
+        self.b = Signal()
+
         self.b ** self.a
         self.c ** self.b
 

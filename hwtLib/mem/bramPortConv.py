@@ -16,12 +16,11 @@ class BramPortConvertor(BusConverter):
         BramPort_withoutClk._config(self)
         
     def _declr(self):
-        with self._asExtern():
-            with self._paramsShared():
-                self.bus = BramPort_withoutClk()
-            
-            assert self.getMaxAddr() < (2 ** evalParam(self.ADDR_WIDTH).val)
-            self.decorateWithConvertedInterfaces()
+        with self._paramsShared():
+            self.bus = BramPort_withoutClk()
+        
+        assert self.getMaxAddr() < (2 ** evalParam(self.ADDR_WIDTH).val)
+        self.decorateWithConvertedInterfaces()
     
     def _impl(self):
         bus = self.bus

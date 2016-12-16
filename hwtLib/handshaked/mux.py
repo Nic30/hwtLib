@@ -16,12 +16,11 @@ class HandshakedMux(HandshakedCompBase):
     def _declr(self):
         outputs = evalParam(self.OUTPUTS).val
         
-        with self._asExtern():
-            self.sel = Signal(dtype=vecT(outputs.bit_length()))
-            
-            with self._paramsShared():
-                self.dataIn = self.intfCls()
-                self.dataOut = self.intfCls(multipliedBy=self.OUTPUTS)
+        self.sel = Signal(dtype=vecT(outputs.bit_length()))
+        
+        with self._paramsShared():
+            self.dataIn = self.intfCls()
+            self.dataOut = self.intfCls(multipliedBy=self.OUTPUTS)
     
     def _impl(self):
         In = self.dataIn

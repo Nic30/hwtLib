@@ -11,10 +11,9 @@ class VldMaskConflictsResolving(Unit):
     Example how invalid value of condition does not matter when it has no effect on result
     """
     def _declr(self):
-        with self._asExtern():
-            self.a = Signal()
-            self.b = Signal()
-            self.c = Signal()
+        self.a = Signal()
+        self.b = Signal()
+        self.c = Signal()
     
     def _impl(self):
         a = self.a

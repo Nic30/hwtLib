@@ -20,10 +20,9 @@ class OneHotToBin(Unit):
         self.ONE_HOT_WIDTH = Param(8)
         
     def _declr(self):
-        with self._asExtern():
-            self.oneHot = Signal(dtype=vecT(self.ONE_HOT_WIDTH)) 
-            self.bin = VldSynced()
-            self.bin.DATA_WIDTH.set(log2ceil(self.ONE_HOT_WIDTH))
+        self.oneHot = Signal(dtype=vecT(self.ONE_HOT_WIDTH)) 
+        self.bin = VldSynced()
+        self.bin.DATA_WIDTH.set(log2ceil(self.ONE_HOT_WIDTH))
             
     def _impl(self):
         W = evalParam(self.ONE_HOT_WIDTH).val

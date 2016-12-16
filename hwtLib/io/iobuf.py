@@ -15,11 +15,10 @@ class IOBUF(EmptyUnit):
     _serializerMode = SERI_MODE.EXCLUDE
     
     def _declr(self):
-        with self._asExtern():
-            self.O = Signal()  # Output (from buffer)
-            self.IO = Signal(masterDir=DIRECTION.INOUT)  # Port pin
-            self.I = Signal()  # Inuput (to buffer)
-            self.T = Signal()  # Tristate control
+        self.O = Signal()  # Output (from buffer)
+        self.IO = Signal(masterDir=DIRECTION.INOUT)  # Port pin
+        self.I = Signal()  # Inuput (to buffer)
+        self.T = Signal()  # Tristate control
     
 
 if __name__ == "__main__":

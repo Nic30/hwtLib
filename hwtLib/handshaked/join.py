@@ -19,7 +19,7 @@ class HandshakedJoin(HandshakedCompBase):
         super()._config()
         
     def _declr(self):
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             addClkRstn(self)  # this is just for reference, not actualy used inside
             self.dataIn = self.intfCls(multipliedBy=self.INPUTS)
             self.dataOut = self.intfCls()

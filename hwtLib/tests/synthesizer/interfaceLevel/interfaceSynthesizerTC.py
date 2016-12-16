@@ -143,8 +143,8 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
     def test_EmptyUnit(self):
         class Eu(EmptyUnit):
             def _declr(self):
-                self.a = Signal(isExtern=True)
-                self.b = Signal(isExtern=True)
+                self.a = Signal()
+                self.b = Signal()
             def _impl(self):
                 setOut(self.b)
                 
@@ -160,8 +160,8 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
     def test_EmptyUnitWithCompositePort(self):
         class Dummy(EmptyUnit):
             def _declr(self):
-                self.a = Axi4(isExtern=True)
-                self.b = Axi4(isExtern=True)
+                self.a = Axi4()
+                self.b = Axi4()
             
             def _impl(self):
                 setOut(self.b)

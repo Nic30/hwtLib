@@ -22,12 +22,11 @@ class AxiSAppend(AxiSCompBase):
         self.JOIN = Param(True)
         
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            with self._paramsShared():
-                self.dataIn0 = self.intfCls()
-                self.dataIn1 = self.intfCls()
-                self.dataOut = self.intfCls()
+        addClkRstn(self)
+        with self._paramsShared():
+            self.dataIn0 = self.intfCls()
+            self.dataIn1 = self.intfCls()
+            self.dataOut = self.intfCls()
         
     def _impl(self):
         stT = Enum('t_state', ["sendDataIn0", "sendDataIn1"])

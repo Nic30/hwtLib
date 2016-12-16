@@ -14,11 +14,10 @@ class GrayCntr(Unit):
         self.DATA_WIDTH = Param(4)
         
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            self.en = Signal()
+        addClkRstn(self)
+        self.en = Signal()
 
-            self.dataOut = Signal(dtype=vecT(self.DATA_WIDTH))
+        self.dataOut = Signal(dtype=vecT(self.DATA_WIDTH))
             
     def _impl(self):
         binCntr = self._reg("cntr_bin_reg", self.dataOut._dtype, 1) 

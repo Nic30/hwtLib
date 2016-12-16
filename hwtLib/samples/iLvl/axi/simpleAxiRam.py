@@ -23,11 +23,10 @@ class SimpleAxiRam(Unit):
         self.DATA_WIDTH = Param(32)
         
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            with self._paramsShared():
-                self.axi = AxiLite()
-            
+        addClkRstn(self)
+        with self._paramsShared():
+            self.axi = AxiLite()
+        
         with self._paramsShared():
             self.conv = AxiLiteConverter([(0x0, "reg0"),
                                           (0x4, "ram0", 512)])

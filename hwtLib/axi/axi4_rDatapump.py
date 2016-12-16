@@ -42,14 +42,12 @@ class Axi_rDatapump(Axi_datapumpBase):
 
     def _declr(self):
         super()._declr()  # add clk, rst, axi addr channel and req channel
-        with self._asExtern():
-            with self._paramsShared():
-                self.r = Axi4_r()
-                self.rOut = AxiStream_withId()
-                
-                self.errorRead = Signal()
-        
         with self._paramsShared():
+            self.r = Axi4_r()
+            self.rOut = AxiStream_withId()
+            
+            self.errorRead = Signal()
+        
             f = self.sizeRmFifo = HandshakedFifo(TransEndInfo)
             f.DEPTH.set(self.MAX_TRANS_OVERLAP)
     

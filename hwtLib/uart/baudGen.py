@@ -20,10 +20,9 @@ class UartBaudGen(Unit):
         self.OVERSAMPLING = Param(8)
         
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            self.enable = Signal()
-            self.tick = Signal()
+        addClkRstn(self)
+        self.enable = Signal()
+        self.tick = Signal()
             
     def _impl(self):
         baud = evalParam(self.BAUD).val

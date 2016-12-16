@@ -35,18 +35,17 @@ class AxiSSampler(Unit):
         self.SAMPLE_WIDTH = Param(32)
 
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            
-            self.req = Signal()
-            self.busy = Signal()
-            self.done = Signal()
-            
-            self.out = AxiStream()
-            self.out._replaceParam('DATA_WIDTH', self.DATA_WIDTH)
-            
-            self.sample = VldSynced()
-            self.sample._replaceParam('DATA_WIDTH', self.SAMPLE_WIDTH)
+        addClkRstn(self)
+        
+        self.req = Signal()
+        self.busy = Signal()
+        self.done = Signal()
+        
+        self.out = AxiStream()
+        self.out._replaceParam('DATA_WIDTH', self.DATA_WIDTH)
+        
+        self.sample = VldSynced()
+        self.sample._replaceParam('DATA_WIDTH', self.SAMPLE_WIDTH)
         
     def _impl(self):
         assert(evalParam(self.DATA_WIDTH).val >= evalParam(self.SAMPLE_WIDTH).val) 

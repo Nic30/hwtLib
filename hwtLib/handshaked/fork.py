@@ -19,7 +19,7 @@ class HandshakedFork(HandshakedCompBase):
         super()._config()
         
     def _declr(self):
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             self.dataIn = self.intfCls()
             self.dataOut = self.intfCls(multipliedBy=self.OUTPUTS)
 

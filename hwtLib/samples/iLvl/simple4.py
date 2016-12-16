@@ -15,12 +15,11 @@ class SimpleUnit4(Unit):
         # by default vector does not have any sign, if it is used in arithmetic
         # operations it is automaticaly to unsigned 
         dtype = vecT(self.DATA_WIDTH // hInt(8))
-        with self._asExtern():
-            # create interfaces with datatype 
-            # note that width of type is expression even in hdl
-            # this simplifies orientation in generated code
-            self.a = Signal(dtype=dtype)
-            self.b = Signal(dtype=dtype)
+        # create interfaces with datatype 
+        # note that width of type is expression even in hdl
+        # this simplifies orientation in generated code
+        self.a = Signal(dtype=dtype)
+        self.b = Signal(dtype=dtype)
         
     def _impl(self):
         self.a ** self.b

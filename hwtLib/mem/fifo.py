@@ -27,14 +27,13 @@ class Fifo(Unit):
         self.EXPORT_SIZE = Param(False)
     
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            with self._paramsShared():
-                self.dataIn = FifoWriter()
-                self.dataOut = FifoReader()
-            
-            if evalParam(self.EXPORT_SIZE).val:
-                self.size = VectSignal(log2ceil(self.DEPTH + 1), signed=False) 
+        addClkRstn(self)
+        with self._paramsShared():
+            self.dataIn = FifoWriter()
+            self.dataOut = FifoReader()
+        
+        if evalParam(self.EXPORT_SIZE).val:
+            self.size = VectSignal(log2ceil(self.DEPTH + 1), signed=False) 
     
     def _impl(self):
         DEPTH = self.DEPTH

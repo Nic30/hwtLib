@@ -9,9 +9,8 @@ from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream
 class SimpleSubunit2(Unit):
     def _declr(self):
         self.subunit0 = SimpleUnitAxiStream()
-        with self._asExtern():
-            self.a0 = AxiStream()
-            self.b0 = AxiStream()
+        self.a0 = AxiStream()
+        self.b0 = AxiStream()
             
         self.a0.DATA_WIDTH.set(8)
         self.b0.DATA_WIDTH.set(8)

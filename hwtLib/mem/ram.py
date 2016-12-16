@@ -21,7 +21,7 @@ class RamSingleClock(Unit):
     def _declr(self):
         PORTS = evalParam(self.PORT_CNT).val
         
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             self.clk = Clk()
             self.a = BramPort_withoutClk()
             for i in range(PORTS - 1):
@@ -60,7 +60,7 @@ class Ram_sp(Unit):
         self.ADDR_WIDTH = Param(4)
     
     def _declr(self):
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             self.a = BramPort()
     
     def connectPort(self, port, mem):

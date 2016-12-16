@@ -22,7 +22,7 @@ class AxiLiteIpifConv(Unit):
         self.TIMEOUT = Param(511)
 
     def _declr(self):
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             addClkRstn(self)
             self.axi = AxiLite()
             self.ipif = IPIF()

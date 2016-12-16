@@ -8,9 +8,8 @@ from hwtLib.samples.iLvl.simple import SimpleUnit
 
 class SimpleSubunit(Unit):
     def _declr(self):
-        with self._asExtern(): 
-            self.a = Signal()
-            self.b = Signal()
+        self.a = Signal()
+        self.b = Signal()
         
         self.subunit0 = SimpleUnit()
 

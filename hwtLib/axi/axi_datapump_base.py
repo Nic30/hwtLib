@@ -81,14 +81,13 @@ class Axi_datapumpBase(Unit):
             self.ADDR_USER_VAL = Param(0)
     
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            with self._paramsShared():
-                # address channel to axi
-                self.a = self._axiAddrCls()
-                self.a.LOCK_WIDTH = 2  # because all masters have it
-                # user requests
-                self.req = AddrSizeHs()
+        addClkRstn(self)
+        with self._paramsShared():
+            # address channel to axi
+            self.a = self._axiAddrCls()
+            self.a.LOCK_WIDTH = 2  # because all masters have it
+            # user requests
+            self.req = AddrSizeHs()
                 
     def getSizeAlignBits(self):
         return log2ceil(self.DATA_WIDTH // 8).val

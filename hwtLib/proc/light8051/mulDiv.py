@@ -14,36 +14,35 @@ class MulDiv(Unit):
         self.DATA_WIDTH = Param(8)
     def _declr(self):
         word_t = vecT(self.DATA_WIDTH)
-        with self._asExtern():
-            addClkRstn(self)
-            # Numerator input, should be connected to the ACC register.
-            self.data_a = Signal(dtype=word_t)
-            
-            # Denominator input, should be connected to the B register.
-            self.data_b = Signal(dtype=word_t)
-            
-            self.start = Signal()
-            
-            # Product output, valid only when mul_ready='1'.
-            self.prod_out = Signal(dtype=vecT(self.DATA_WIDTH * 2))
-            
-            # Quotient output, valid only when div_ready='1'.
-            self.quot_out = Signal(dtype=word_t)
-            
-            # Remainder output, valid only when div_ready='1'.
-            self.rem_out = Signal(dtype=word_t)
-            
-            # Division overflow flag, valid only when div_ready='1'.
-            self.div_ov_out = Signal()
-            
-            # Product overflow flag, valid only when mul_ready='1'.
-            self.mul_ov_out = Signal()
-            
-            
-            self.mul_ready = Signal()
-            
-            # Asserted when the division has completed.
-            self.div_ready = Signal()
+        addClkRstn(self)
+        # Numerator input, should be connected to the ACC register.
+        self.data_a = Signal(dtype=word_t)
+        
+        # Denominator input, should be connected to the B register.
+        self.data_b = Signal(dtype=word_t)
+        
+        self.start = Signal()
+        
+        # Product output, valid only when mul_ready='1'.
+        self.prod_out = Signal(dtype=vecT(self.DATA_WIDTH * 2))
+        
+        # Quotient output, valid only when div_ready='1'.
+        self.quot_out = Signal(dtype=word_t)
+        
+        # Remainder output, valid only when div_ready='1'.
+        self.rem_out = Signal(dtype=word_t)
+        
+        # Division overflow flag, valid only when div_ready='1'.
+        self.div_ov_out = Signal()
+        
+        # Product overflow flag, valid only when mul_ready='1'.
+        self.mul_ov_out = Signal()
+        
+        
+        self.mul_ready = Signal()
+        
+        # Asserted when the division has completed.
+        self.div_ready = Signal()
     
     def divPart(self):
         """

@@ -19,10 +19,9 @@ class SimpleUnitWithParam(Unit):
         dt = vecT(self.DATA_WIDTH)
         # dt is now vector with width specified by parameter DATA_WIDTH
         # it means it is 8bit width 
-        with self._asExtern():
-            # we specify datatype for every signal
-            self.a = Signal(dtype=dt)
-            self.b = Signal(dtype=dt)
+        # we specify datatype for every signal
+        self.a = Signal(dtype=dt)
+        self.b = Signal(dtype=dt)
         
     def _impl(self):
         self.b ** self.a

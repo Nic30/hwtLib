@@ -12,9 +12,8 @@ class UnitToUnitConnection(Unit):
         
     def _declr(self):
         with self._paramsShared():
-            with self._asExtern():
-                self.a = AxiStream()
-                self.b = AxiStream()
+            self.a = AxiStream()
+            self.b = AxiStream()
     
             self.u0 = Simple2withNonDirectIntConnection()
             self.u1 = Simple2withNonDirectIntConnection()

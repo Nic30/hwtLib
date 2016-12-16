@@ -14,11 +14,10 @@ class SimpleUnit(Unit):
         _declr() is like header of Unit.
         There you have to declare things which should be visible from outside.    
         """ 
-        with self._asExtern():
-            # we use _asExtern() to mark interfaces "a" and "b" as external, this means they will be
-            # interfaces of Entity and all other units can connect anything to these interfaces   
-            self.a = Signal()
-            self.b = Signal()
+        # interfaces "a" and "b" are accessible from outside when declared in _declr method, 
+        # this means they will be interfaces of Entity and all other units can connect anything to these interfaces   
+        self.a = Signal()
+        self.b = Signal()
 
     def _impl(self):
         """

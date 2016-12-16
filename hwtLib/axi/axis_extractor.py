@@ -54,12 +54,11 @@ class AxiSExtractor(Unit):
         AxiStream_withoutSTRB._config(self)
             
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            with self._paramsShared():
-                self.dataIn = AxiStream_withoutSTRB()
-            self.dataOutRd = Signal()
-            self.decorateWithExtractedInterfaces()
+        addClkRstn(self)
+        with self._paramsShared():
+            self.dataIn = AxiStream_withoutSTRB()
+        self.dataOutRd = Signal()
+        self.decorateWithExtractedInterfaces()
         
         self.__doc__ = self.__doc__ + '\n' + str(pprint.pformat(self.DATA_MAP))
             

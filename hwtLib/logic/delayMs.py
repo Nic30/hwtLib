@@ -17,10 +17,9 @@ class DelayMs(Unit):
         self.MAX_DELAY = Param(100)  # [ms]
     
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            self.delayTime = Signal(dtype=vecT(log2ceil(self.MAX_DELAY)))
-            self.acivate = ReqDoneSync()
+        addClkRstn(self)
+        self.delayTime = Signal(dtype=vecT(log2ceil(self.MAX_DELAY)))
+        self.acivate = ReqDoneSync()
             
     def _impl(self):
         

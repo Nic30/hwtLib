@@ -14,12 +14,11 @@ class DReg(Unit):
                 generate such a register for any interface and datatype
     """
     def _declr(self):
-        with self._asExtern():
-            addClkRst(self)
+        addClkRst(self)
+
+        self.din = Signal(dtype=BIT)
+        self.dout = Signal(dtype=BIT)
     
-            self.din = Signal(dtype=BIT)
-            self.dout = Signal(dtype=BIT)
-        
         
     def _impl(self):
         internReg = self._reg("internReg", BIT, defVal=False)        

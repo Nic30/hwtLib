@@ -17,8 +17,7 @@ class SynchronizedSimpleUnitAxiStream(SimpleUnitAxiStream):
     """
     def _declr(self):
         SimpleUnitAxiStream._declr(self)
-        with self._asExtern():
-            addClkRstn(self)
+        addClkRstn(self)
 
 class SimpleUnitAxiStream_TC(SimTestCase):
     def setUp(self):

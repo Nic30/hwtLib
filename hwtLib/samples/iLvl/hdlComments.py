@@ -14,9 +14,8 @@ class SimpleComentedUnit(Unit):
     """
     
     def _declr(self):
-        with self._asExtern():
-            self.a = Signal()
-            self.b = Signal()
+        self.a = Signal()
+        self.b = Signal()
     
     def _impl(self):
         self.b ** self.a

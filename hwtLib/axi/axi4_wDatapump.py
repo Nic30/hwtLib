@@ -40,16 +40,15 @@ class Axi_wDatapump(Axi_datapumpBase):
 
     def _declr(self):
         super()._declr()  # add clk, rst, axi addr channel and req channel
-        with self._asExtern():
-            with self._paramsShared():
-                self.w = Axi4_w()
-                self.b = Axi4_b()
+        with self._paramsShared():
+            self.w = Axi4_w()
+            self.b = Axi4_b()
 
-                self.wIn = AxiStream()
-                
-                self.errorWrite = Signal()
-            self.reqAck = Handshaked()
-            self.reqAck.DATA_WIDTH.set(self.ID_WIDTH)
+            self.wIn = AxiStream()
+            
+            self.errorWrite = Signal()
+        self.reqAck = Handshaked()
+        self.reqAck.DATA_WIDTH.set(self.ID_WIDTH)
            
         with self._paramsShared():
             # fifo for id propagation and frame splitting on axi.w channel 

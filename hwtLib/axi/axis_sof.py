@@ -13,13 +13,12 @@ class AxiSsof(Unit):
     Start of frame detector for axi stream
     """
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            
-            self.ready = Signal()
-            self.valid = Signal()
-            self.last = Signal()
-            self.sof = Signal()
+        addClkRstn(self)
+        
+        self.ready = Signal()
+        self.valid = Signal()
+        self.last = Signal()
+        self.sof = Signal()
         
     def listenOn(self, axi, dstReady):
         self.ready ** dstReady

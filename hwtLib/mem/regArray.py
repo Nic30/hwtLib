@@ -15,7 +15,7 @@ class RegArray(Unit):
         self.DATA_WIDTH = Param(8)
         
     def _declr(self):
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             addClkRstn(self)
             self.data = RegCntrl(multipliedBy=self.ITEMS)
     

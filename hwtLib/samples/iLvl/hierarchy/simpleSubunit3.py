@@ -14,9 +14,8 @@ class SimpleSubunit3(Unit):
         with self._paramsShared():
             self.subunit0 = SimpleUnitAxiStream() 
             
-            with self._asExtern():
-                self.a0 = AxiStream()
-                self.b0 = AxiStream()
+            self.a0 = AxiStream()
+            self.b0 = AxiStream()
         
     def _impl(self):
         u = self.subunit0

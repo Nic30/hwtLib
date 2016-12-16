@@ -20,12 +20,11 @@ class SPICntrlW(Unit):
         self.SPI_FREQ_PESCALER = Param(32)
         
     def _declr(self):
-        with self._asExtern(): 
-            addClkRstn(self)
-            self.dataIn = VldSynced()
-            self.dataIn.DATA_WIDTH.set(8)
-            self.dataOut = Spi() 
-            self.dataInDone = Signal()
+        addClkRstn(self)
+        self.dataIn = VldSynced()
+        self.dataIn.DATA_WIDTH.set(8)
+        self.dataOut = Spi() 
+        self.dataInDone = Signal()
             
     
     def mainFsm(self, shift_counter, falling):

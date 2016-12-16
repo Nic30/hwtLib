@@ -15,19 +15,18 @@ class GroupOfBlockrams(Unit):
     def _declr(self):
         with self._paramsShared():
             extData = lambda : Signal(dtype=vecT(self.DATA_WIDTH))
-            with self._asExtern():
-                self.clk = Clk()
-                self.we = Signal()
-                self.addr = Signal(dtype=vecT(self.ADDR_WIDTH))
-                self.in_w_a = extData()
-                self.in_w_b = extData()
-                self.in_r_a = extData()
-                self.in_r_b = extData()
-                
-                self.out_w_a = extData()
-                self.out_w_b = extData()
-                self.out_r_a = extData()
-                self.out_r_b = extData()
+            self.clk = Clk()
+            self.we = Signal()
+            self.addr = Signal(dtype=vecT(self.ADDR_WIDTH))
+            self.in_w_a = extData()
+            self.in_w_b = extData()
+            self.in_r_a = extData()
+            self.in_r_b = extData()
+            
+            self.out_w_a = extData()
+            self.out_w_b = extData()
+            self.out_r_a = extData()
+            self.out_r_b = extData()
 
             with self._paramsShared():
                 self.bramR = Ram_dp()

@@ -8,11 +8,10 @@ from hdl_toolkit.synthesizer.codeOps import If
 
 class SimpleIfStatement(Unit):
     def _declr(self):
-        with self._asExtern():
-            self.a = Signal()
-            self.b = Signal()
-            self.c = Signal()
-            self.d = Signal()
+        self.a = Signal()
+        self.b = Signal()
+        self.c = Signal()
+        self.d = Signal()
             
     def _impl(self):
         If(self.a,

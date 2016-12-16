@@ -20,13 +20,12 @@ class IpifConverter(BusConverter):
         IPIF._config(self)
 
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
+        addClkRstn(self)
+        
+        with self._paramsShared():
+            self.bus = IPIF()
             
-            with self._paramsShared():
-                self.bus = IPIF()
-                
-            self.decorateWithConvertedInterfaces()
+        self.decorateWithConvertedInterfaces()
         
     def _impl(self):
         DW_B = evalParam(self.DATA_WIDTH).val // 8 

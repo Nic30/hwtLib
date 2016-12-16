@@ -12,7 +12,7 @@ class HsFlipRamReader(HsRamPortReader):
     """
     def _declr(self):
         super()._declr()
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             self.dataWriteBack = BramPort_withoutClk()
                 
     

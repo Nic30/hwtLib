@@ -12,11 +12,10 @@ from hdl_toolkit.synthesizer.shortcuts import toRtl
 
 class FsmExample(Unit):
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            self.a = Signal()
-            self.b = Signal()
-            self.dout = Signal(dtype=vecT(3))
+        addClkRstn(self)
+        self.a = Signal()
+        self.b = Signal()
+        self.dout = Signal(dtype=vecT(3))
             
             
     def _impl(self):

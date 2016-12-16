@@ -59,14 +59,13 @@ class Cam(Unit):
         self.ITEMS = Param(16)
         
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            with self._paramsShared():
-                self.match = Handshaked()
-                self.write = AddrDataHs()
-                self.write.ADDR_WIDTH.set(log2ceil(self.ITEMS - 1))
-            self.out = VldSynced()
-            self.out._replaceParam("DATA_WIDTH", self.ITEMS)
+        addClkRstn(self)
+        with self._paramsShared():
+            self.match = Handshaked()
+            self.write = AddrDataHs()
+            self.write.ADDR_WIDTH.set(log2ceil(self.ITEMS - 1))
+        self.out = VldSynced()
+        self.out._replaceParam("DATA_WIDTH", self.ITEMS)
     
     
     def writeHandler(self, mem):

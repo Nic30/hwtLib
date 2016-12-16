@@ -13,7 +13,7 @@ class IpifReg(Unit):
         IPIF._config(self)
     
     def _declr(self):
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             addClkRstn(self)
             self.dataIn = IPIF()
             self.dataOut = IPIF()
