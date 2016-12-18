@@ -7,7 +7,7 @@ import unittest
 from hdl_toolkit.hdlObjects.statements import IfContainer, SwitchContainer
 from hdl_toolkit.hdlObjects.types.defs import INT
 from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.serializer.vhdlFormater import formatVhdl
+from hdl_toolkit.serializer.vhdl.formater import formatVhdl
 from hdl_toolkit.synthesizer.assigRenderer import renderIfTree
 from hdl_toolkit.synthesizer.codeOps import c, If, Switch
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
