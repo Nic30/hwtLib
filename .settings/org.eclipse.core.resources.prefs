@@ -73,6 +73,7 @@ encoding//hwtLib/samples/iLvl/arithmetic/selfRefCntr.py=utf-8
 encoding//hwtLib/samples/iLvl/arithmetic/selfRefCntr_test.py=utf-8
 encoding//hwtLib/samples/iLvl/arithmetic/twoCntrs.py=utf-8
 encoding//hwtLib/samples/iLvl/arithmetic/twoCntrs_test.py=utf-8
+encoding//hwtLib/samples/iLvl/arithmetic/widthCasting.py=utf-8
 encoding//hwtLib/samples/iLvl/axi/simpleAxiRam.py=utf-8
 encoding//hwtLib/samples/iLvl/axi/simpleAxiRegs.py=utf-8
 encoding//hwtLib/samples/iLvl/axi/simpleAxiRegs_test.py=utf-8

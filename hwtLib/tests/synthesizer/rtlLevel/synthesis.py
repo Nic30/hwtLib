@@ -5,7 +5,7 @@ import unittest
 
 from hdl_toolkit.hdlObjects.assignment import Assignment
 from hdl_toolkit.hdlObjects.operatorDefs import AllOps
-from hdl_toolkit.serializer.vhdlSerializer import VhdlSerializer
+from hdl_toolkit.serializer.vhdl.serializer import VhdlSerializer
 from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.indexOps import IndexOps
 
