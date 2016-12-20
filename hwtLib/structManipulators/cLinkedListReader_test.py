@@ -139,104 +139,110 @@ class CLinkedListReaderTC(SimTestCase):
         u = self.u
         t = 25
         N = self.MAX_LEN + 1
-        _id = self.DEFAULT_ID
-        
+        ADDR_BASE = 0x1020
         u.baseAddr._ag.dout.append(0x1020)
         u.wrPtr._ag.dout.extend([NOP, N])
         
-        # let spacing for request
-        for i in range(N):
-            u.r._ag.data.append((_id, 100 + i, mask(64 // 8), i == self.MAX_LEN))
-        
+        expectedReq, reqData = self.generateRequests(ADDR_BASE, [N])
+        u.r._ag.data.extend(reqData)
         self.doSim(t * 10 * Time.ns)
+        self.checkOutputs(expectedReq, N)
         
-        req = u.req._ag.data
-        self.assertEqual(len(req), 1)
-        self.assertValSequenceEqual(req[0],
-                                [self.DEFAULT_ID, 0x1020, self.MAX_LEN, 0])
-    
-        descr = u.dataOut._ag.data
-        self.assertEqual(len(descr), N)
-        for i, d in enumerate(descr):
-            self.assertValSequenceEqual([d, ],
-                                (100 + i,))
-            
-        
-    
     def test_downloadFullBlock(self):
         u = self.u
         N = self.ITEMS_IN_BLOCK
         ADDR_BASE = 0x1020
-        EXPECTED_REQ_CNT = (N + 1) // (self.MAX_LEN + 1)
         
         u.baseAddr._ag.dout.append(ADDR_BASE)
         u.wrPtr._ag.dout.extend([NOP, N])
+        expectedReq, reqData = self.generateRequests(ADDR_BASE, [N])
+        u.r._ag.data.extend(reqData)
         
-        for req_i in range(EXPECTED_REQ_CNT):
-            if req_i == EXPECTED_REQ_CNT - 1:
-                reqId = self.LAST_ID
-            else:
-                reqId = self.DEFAULT_ID
-        
-            for i in range(self.MAX_LEN + 1):
-                _r = (reqId, 1000 * req_i + i, mask(8), i == self.MAX_LEN)
-                u.r._ag.data.append(_r)
-        
-        
-        self.doSim(((self.MAX_LEN + 1) * EXPECTED_REQ_CNT + (EXPECTED_REQ_CNT + 10)) * 10 * Time.ns)
-        
-        req = u.req._ag.data
-        reqAddrStep = (self.MAX_LEN + 1) * 8
-
-        for i, r in enumerate(req):
-            if i == EXPECTED_REQ_CNT - 1:
-                reqId = self.LAST_ID
-            else:
-                reqId = self.DEFAULT_ID
-            expected = [reqId, ADDR_BASE + i * reqAddrStep, self.MAX_LEN, 0]
-            self.assertValSequenceEqual(r, expected, "(index=%d)" % i)
-        self.assertEqual(len(req), EXPECTED_REQ_CNT)
-        
-        self.assertValSequenceEqual([u.baseAddr._ag.din[-1], ],
-                                    [(1000 * (EXPECTED_REQ_CNT - 1) + self.MAX_LEN) & ~mask(3)])
-    
+        self.doSim((len(reqData) + len(expectedReq) + 50) * 10 * Time.ns)
+        self.checkOutputs(expectedReq, N)
+         
+              
     def test_downloadFullBlockNextAddrInSeparateReq(self):
         u = self.u
-        N = self.ITEMS_IN_BLOCK
+        N = self.ITEMS_IN_BLOCK + 1
         ADDR_BASE = 0x1020
-        EXPECTED_REQ_CNT = (N + 1) // (self.MAX_LEN + 1)
         
         u.baseAddr._ag.dout.append(ADDR_BASE)
-        u.wrPtr._ag.dout.extend([NOP, self.MAX_LEN, NOP, NOP, NOP, N - self.MAX_LEN])
+        u.wrPtr._ag.dout.extend([NOP, self.MAX_LEN] + [ NOP for _ in range(self.MAX_LEN + 4)] + [ N ])
         
-        for req_i in range(EXPECTED_REQ_CNT):
-            if req_i == EXPECTED_REQ_CNT - 1:
-                reqId = self.LAST_ID
-            else:
-                reqId = self.DEFAULT_ID
+        expectedReq, reqData = self.generateRequests(ADDR_BASE, [self.MAX_LEN, N - self.MAX_LEN - 1])
+        self.u.r._ag.data.extend(reqData)
         
-            for i in range(self.MAX_LEN + 1):
-                _r = (reqId, 1000 * req_i + i, mask(8), i == self.MAX_LEN)
-                u.r._ag.data.append(_r)
-        
-        
-        self.doSim(((self.MAX_LEN + 1) * EXPECTED_REQ_CNT + (EXPECTED_REQ_CNT + 10)) * 10 * Time.ns)
-        
-        req = u.req._ag.data
-        reqAddrStep = (self.MAX_LEN + 1) * 8
+        self.doSim((len(reqData) + len(expectedReq) + 50) * 10 * Time.ns)
+        self.checkOutputs(expectedReq, N - 1)
+    
+    def checkOutputs(self, expectedReq, itemsCnt):
+        req = self.u.req._ag.data
+        dout = self.u.dataOut._ag.data
 
-        for i, r in enumerate(req):
-            if i == EXPECTED_REQ_CNT - 1:
-                reqId = self.LAST_ID
-            else:
-                reqId = self.DEFAULT_ID
-            expected = [reqId, ADDR_BASE + i * reqAddrStep, self.MAX_LEN, 0]
-            self.assertValSequenceEqual(r, expected, "(index=%d)" % i)
-        self.assertEqual(len(req), EXPECTED_REQ_CNT)
+        for i, expected in enumerate(expectedReq):
+            _req = req[i] 
+            self.assertValSequenceEqual(_req, expected, "(index=%d)" % i)
+    
+        self.assertEqual(len(dout), itemsCnt)
+        for i, d in enumerate(dout):
+            self.assertValSequenceEqual([d, ], (i,))
+    
+    def generateRequests(self, baseAddress, spaceValues):
+        """
+        generate reference requests and data
+        data words are containing it's indexes, baseAddresses are multiplies baseAddress
+        @param spaceValues: is iterable of space values
+        """
+        BASE_ADDR_INDEX = self.ITEMS_IN_BLOCK
+        requests = []
+        responses = []
+        wordCntr = 0
+        inBlockIndex = 0
+        _baseAddress = baseAddress
         
-        self.assertValSequenceEqual([u.baseAddr._ag.din[-1], ],
-                                    [(1000 * (EXPECTED_REQ_CNT - 1) + self.MAX_LEN) & ~mask(3)])    
+        for space in spaceValues:
+            while space != 0:
+                spaceInBlock = BASE_ADDR_INDEX - inBlockIndex
+                constraingSpace = min(spaceInBlock, space)
+                if constraingSpace > self.MAX_LEN + 1:
+                    reqLen = self.MAX_LEN
+                elif constraingSpace == 0:
+                    reqLen = 0
+                else:
+                    reqLen = constraingSpace - 1
+                    if reqLen < self.MAX_LEN and inBlockIndex + reqLen + 1 == BASE_ADDR_INDEX: 
+                        # we will download next* as well
+                        reqLen += 1
+                
+                if constraingSpace >= spaceInBlock and inBlockIndex + reqLen == BASE_ADDR_INDEX:
+                    reqId = self.LAST_ID
+                else:
+                    reqId = self.DEFAULT_ID
+                    
+                req = [reqId, _baseAddress + inBlockIndex * 8 , reqLen, 0]
+                requests.append(req)
+
+                for i in range(reqLen + 1):
+                    if i == reqLen and reqId == self.LAST_ID:
+                        r = (reqId, baseAddress, mask(8), True)
+                        _baseAddress += baseAddress
+                    else:
+                        r = (reqId, wordCntr + i, mask(8), i == reqLen)
+                
+                    responses.append(r)
+                
+                if reqId == self.LAST_ID:
+                    inBlockIndex = 0
+                    wordCntr += reqLen
+                    space -= reqLen
+                else:
+                    inBlockIndex += reqLen + 1
+                    wordCntr += reqLen + 1
+                    space -= reqLen + 1
         
+        return requests, responses        
+          
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(CLinkedListReaderTC('test_singleDescrReqOnEdge2'))

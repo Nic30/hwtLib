@@ -81,7 +81,8 @@ class CLinkedListReader(Unit):
         BUFFER_CAPACITY = self.BUFFER_CAPACITY
         BURST_LEN = BUFFER_CAPACITY // 2
         LAST_ID = self.LAST_ID
-        bufferHasSpace = (f.size < (BURST_LEN + 1))
+        bufferHasSpace = s("bufferHasSpace")
+        bufferHasSpace ** (f.size < (BURST_LEN + 1))
         # we are counting base next addr as item as well
         inBlock_t = vecT(log2ceil(self.ITEMS_IN_BLOCK + 1))
         ringSpace_t = vecT(self.RING_SPACE_WIDTH)
@@ -104,8 +105,8 @@ class CLinkedListReader(Unit):
         
         # this means items are present in memory
         hasSpace = (wrPtr != rdPtr) 
-        
-        doReq = (bufferHasSpace & hasSpace & ~downloadPending & req.rd)
+        doReq = s("doReq")
+        doReq ** (bufferHasSpace & hasSpace & ~downloadPending & req.rd)
         req.rem ** 0  
         self.dataOut ** f.dataOut 
              
@@ -126,27 +127,34 @@ class CLinkedListReader(Unit):
         )
         
         # logic of inBolockRemain, req.id, req.len
-        nextButrstWillLikelyContainBaseAddr = r("nextButrstWillLikelyContainBaseAddr", defVal=False)
+        nextButrstCanContainBaseAddr = r("nextButrstCanContainBaseAddr", defVal=False)
         sizeByPtrs = s("sizeByPtrs", ringSpace_t)
         sizeByPtrs ** (wrPtr - rdPtr)
         
         inBlockRemain_asPtrSize = fitTo(inBlockRemain, sizeByPtrs)
-        isConstraindedByPtrs = sizeByPtrs < inBlockRemain_asPtrSize
-        If(nextButrstWillLikelyContainBaseAddr,
-            If(isConstraindedByPtrs,
+        isConstraindedByPtrs = s("isConstraindedByPtrs")
+        isConstraindedByPtrs ** (sizeByPtrs < inBlockRemain_asPtrSize)
+        
+        canDownloadNextBaseAddrInThisReq = s("canDownloadNextBaseAddrInThisReq")
+        canDownloadNextBaseAddrInThisReq ** (sizeByPtrs + inBlockRemain_asPtrSize)._eq(self.ITEMS_IN_BLOCK - 1)
+        
+        If(nextButrstCanContainBaseAddr,
+            If(isConstraindedByPtrs & canDownloadNextBaseAddrInThisReq,
                 req.id ** DEFAULT_ID,
                 connect(sizeByPtrs - 1, req.len, fit=True),
+                
                 If(doReq,
                     connect(inBlockRemain_asPtrSize - sizeByPtrs, inBlockRemain, fit=True),
-                    nextButrstWillLikelyContainBaseAddr ** True
+                    nextButrstCanContainBaseAddr ** True
                 )
             ).Else(
                 req.id ** LAST_ID,
-                # means burst of size inBlockRemain +1
+                # means burst of size inBlockRemain + 1, last item will be next base addr 
                 connect(inBlockRemain, req.len, fit=True),
+                
                 If(doReq,
                    inBlockRemain ** self.ITEMS_IN_BLOCK,
-                   nextButrstWillLikelyContainBaseAddr ** False
+                   nextButrstCanContainBaseAddr ** False
                 )
             )
         
@@ -157,13 +165,14 @@ class CLinkedListReader(Unit):
             ).Else(
                 req.len ** (BURST_LEN - 1),
             ),
+            
             If(doReq,
                 If(isConstraindedByPtrs,
                    connect(inBlockRemain_asPtrSize - sizeByPtrs, inBlockRemain, fit=True),
-                   nextButrstWillLikelyContainBaseAddr ** ((inBlockRemain_asPtrSize - sizeByPtrs) < BURST_LEN)
+                   nextButrstCanContainBaseAddr ** ((inBlockRemain_asPtrSize - sizeByPtrs) < BURST_LEN)
                 ).Else(
                    inBlockRemain ** (inBlockRemain - BURST_LEN),
-                   nextButrstWillLikelyContainBaseAddr ** (inBlockRemain < (BURST_LEN*2))
+                   nextButrstCanContainBaseAddr ** (inBlockRemain < (BURST_LEN * 2))
                 )
             )
         )
@@ -185,24 +194,18 @@ class CLinkedListReader(Unit):
         dBuffIn = f.dataIn
         dBuffIn.data ** dIn.data
         
-        recivingData = dIn.valid & (dIn.id._eq(DEFAULT_ID) | (~dIn.last & dIn.id._eq(LAST_ID)))
+        receivingData = s("receivingData")
+        receivingData ** (dIn.valid & (dIn.id._eq(DEFAULT_ID) | (~dIn.last & dIn.id._eq(LAST_ID))))
         If(self.rdPtr.dout.vld,
             rdPtr ** self.rdPtr.dout.data
         ).Else(
-            If(recivingData & downloadPending & dBuffIn.rd,
+            If(receivingData & downloadPending & dBuffIn.rd,
                rdPtr ** (rdPtr + 1)
             )
         )
-        If(recivingData,
-            # push data into buffer and increment rdPtr
-            streamSync([dIn], [dBuffIn], extraConds={dIn    :[downloadPending],
-                                                     dBuffIn:[downloadPending]})
-        ).Else(
-            # ship next block addr
-            dBuffIn.vld ** 0,
-            dIn.ready ** 1   
-        )
-        
+        streamSync([dIn], [dBuffIn], extraConds={dIn    :[receivingData, downloadPending],
+                                                 dBuffIn:[receivingData, downloadPending]})
+    
        
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl

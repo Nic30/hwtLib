@@ -33,6 +33,7 @@ from hwtLib.samples.iLvl.statements.constDriver_test import ConstDriverTC
 from hwtLib.samples.iLvl.statements.fsm_test import FsmExampleTC, HadrcodedFsmExampleTC
 from hwtLib.samples.iLvl.statements.ifStm_test import IfStmTC
 from hwtLib.samples.iLvl.statements.switchStm_test import SwitchStmTC
+from hwtLib.structManipulators.cLinkedListReader_test import CLinkedListReaderTC
 from hwtLib.tests.operators import OperatorTC
 from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.tests.statements import StatementsTC
@@ -94,6 +95,8 @@ if __name__ == "__main__":
         Axi4_wDatapumpTC,
         Axi3_wDatapump_direct_TC,
         AxiS_measuringFifoTC,
+        
+        CLinkedListReaderTC,
     )
     runner = TextTestRunner(verbosity=2)
     runner.run(suite)
