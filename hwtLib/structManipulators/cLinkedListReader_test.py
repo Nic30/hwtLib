@@ -9,6 +9,7 @@ from hdl_toolkit.simulator.shortcuts import simPrepare
 from hdl_toolkit.simulator.simTestCase import SimTestCase
 from hdl_toolkit.synthesizer.param import evalParam
 from hwtLib.structManipulators.cLinkedListReader import CLinkedListReader
+from hdl_toolkit.simulator.utils import agent_randomize
 
 
 class CLinkedListReaderTC(SimTestCase):
@@ -160,7 +161,43 @@ class CLinkedListReaderTC(SimTestCase):
         
         self.doSim((len(reqData) + len(expectedReq) + 50) * 10 * Time.ns)
         self.checkOutputs(expectedReq, N)
-         
+
+    #def test_downloadFullBlockRandomized(self):
+    #    randomize = lambda intf: self.procs.append(agent_randomize(intf._ag))
+    #    u = self.u
+    #    N = self.ITEMS_IN_BLOCK
+    #    ADDR_BASE = 0x1020
+    #    randomize(u.r)
+    #    randomize(u.req)
+    #    randomize(u.dataOut)
+    #    
+    #    
+    #    u.baseAddr._ag.dout.append(ADDR_BASE)
+    #    u.wrPtr._ag.dout.extend([NOP, N])
+    #    expectedReq, reqData = self.generateRequests(ADDR_BASE, [N])
+    #    u.r._ag.data.extend(reqData)
+    #    
+    #    self.doSim((len(reqData) + len(expectedReq) + 50) * 2 * 10 * Time.ns)
+    #    self.checkOutputs(expectedReq, N)
+    #    
+    #
+    #def test_downloadFullBlockRandomized5x(self):
+    #    randomize = lambda intf: self.procs.append(agent_randomize(intf._ag))
+    #    u = self.u
+    #    N = self.ITEMS_IN_BLOCK*5
+    #    ADDR_BASE = 0x1020
+    #    randomize(u.r)
+    #    randomize(u.req)
+    #    randomize(u.dataOut)
+    #    
+    #    
+    #    u.baseAddr._ag.dout.append(ADDR_BASE)
+    #    u.wrPtr._ag.dout.extend([NOP, N])
+    #    expectedReq, reqData = self.generateRequests(ADDR_BASE, [N])
+    #    u.r._ag.data.extend(reqData)
+    #    
+    #    self.doSim((len(reqData) + len(expectedReq) + 50) * 2 * 10 * Time.ns)
+    #    self.checkOutputs(expectedReq, N)                  
               
     def test_downloadFullBlockNextAddrInSeparateReq(self):
         u = self.u
@@ -194,32 +231,30 @@ class CLinkedListReaderTC(SimTestCase):
         data words are containing it's indexes, baseAddresses are multiplies baseAddress
         @param spaceValues: is iterable of space values
         """
-        BASE_ADDR_INDEX = self.ITEMS_IN_BLOCK
         requests = []
         responses = []
         wordCntr = 0
-        inBlockIndex = 0
+        inBlockRem = self.ITEMS_IN_BLOCK
         _baseAddress = baseAddress
         
         for space in spaceValues:
             while space != 0:
-                spaceInBlock = BASE_ADDR_INDEX - inBlockIndex
-                constraingSpace = min(spaceInBlock, space)
+                constraingSpace = min(inBlockRem, space)
+                reqId = self.DEFAULT_ID
                 if constraingSpace > self.MAX_LEN + 1:
                     reqLen = self.MAX_LEN
                 elif constraingSpace == 0:
                     reqLen = 0
                 else:
-                    reqLen = constraingSpace - 1
-                    if reqLen < self.MAX_LEN and inBlockIndex + reqLen + 1 == BASE_ADDR_INDEX: 
+                    if constraingSpace <= self.MAX_LEN + 1 and inBlockRem < self.MAX_LEN + 1: 
                         # we will download next* as well
-                        reqLen += 1
-                
-                if constraingSpace >= spaceInBlock and inBlockIndex + reqLen == BASE_ADDR_INDEX:
-                    reqId = self.LAST_ID
-                else:
-                    reqId = self.DEFAULT_ID
+                        reqLen = constraingSpace
+                        reqId = self.LAST_ID
+                    else:
+                        reqLen = constraingSpace - 1
                     
+                    
+                inBlockIndex = self.ITEMS_IN_BLOCK - inBlockRem
                 req = [reqId, _baseAddress + inBlockIndex * 8 , reqLen, 0]
                 requests.append(req)
 
@@ -233,11 +268,11 @@ class CLinkedListReaderTC(SimTestCase):
                     responses.append(r)
                 
                 if reqId == self.LAST_ID:
-                    inBlockIndex = 0
+                    inBlockRem = self.ITEMS_IN_BLOCK
                     wordCntr += reqLen
                     space -= reqLen
                 else:
-                    inBlockIndex += reqLen + 1
+                    inBlockRem -= reqLen + 1
                     wordCntr += reqLen + 1
                     space -= reqLen + 1
         
@@ -245,7 +280,7 @@ class CLinkedListReaderTC(SimTestCase):
           
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(CLinkedListReaderTC('test_singleDescrReqOnEdge2'))
+    #suite.addTest(CLinkedListReaderTC('test_downloadFullBlockRandomized'))
     suite.addTest(unittest.makeSuite(CLinkedListReaderTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

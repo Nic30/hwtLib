@@ -55,11 +55,11 @@ class CLinkedListReader(Unit):
         
         # interface to control internal register
         self.baseAddr = RegCntrl()
-        self.baseAddr.DATA_WIDTH.set(self.ADDR_WIDTH)
+        self.baseAddr._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
         self.rdPtr = RegCntrl()
         self.wrPtr = RegCntrl()
         for ptr in [self.rdPtr, self.wrPtr]:
-            ptr.DATA_WIDTH.set(self.RING_SPACE_WIDTH)
+            ptr._replaceParam("DATA_WIDTH", self.RING_SPACE_WIDTH)
                 
 
         f = self.dataFifo = HandshakedFifo(Handshaked)
@@ -76,6 +76,8 @@ class CLinkedListReader(Unit):
         req = self.req
         f = self.dataFifo
         dIn = self.r
+        dBuffIn = f.dataIn
+                
         ALIGN_BITS = self.addrAlignBits()
         DEFAULT_ID = self.DEFAULT_ID
         BUFFER_CAPACITY = self.BUFFER_CAPACITY
@@ -91,7 +93,7 @@ class CLinkedListReader(Unit):
         
         # [TODO] maybe can be only index of page
         baseIndex = r("baseIndex", vecT(self.ADDR_WIDTH - ALIGN_BITS))
-        inBlockRemain = r("inBolockRemain_reg", inBlock_t, defVal=self.ITEMS_IN_BLOCK)
+        inBlockRemain = r("inBlockRemain_reg", inBlock_t, defVal=self.ITEMS_IN_BLOCK)
         self.inBlockRemain ** inBlockRemain
 
         # Logic of tail/head, 
@@ -114,11 +116,11 @@ class CLinkedListReader(Unit):
         baseAddr = Concat(baseIndex, vec(0, ALIGN_BITS))
         req.addr ** baseAddr
         self.baseAddr.din ** baseAddr
-        isMyData = dIn.valid & In(dIn.id, [DEFAULT_ID, LAST_ID])
+        dataAck = dIn.valid & In(dIn.id, [DEFAULT_ID, LAST_ID]) & dBuffIn.rd
         
         If(self.baseAddr.dout.vld,
             baseIndex ** self.baseAddr.dout.data[:ALIGN_BITS]
-        ).Elif(isMyData & downloadPending,
+        ).Elif(dataAck & downloadPending,
             If(dIn.last & dIn.id._eq(LAST_ID),
                baseIndex ** dIn.data[self.ADDR_WIDTH:ALIGN_BITS]
             ).Else(
@@ -126,61 +128,45 @@ class CLinkedListReader(Unit):
             )
         )
         
-        # logic of inBolockRemain, req.id, req.len
-        nextButrstCanContainBaseAddr = r("nextButrstCanContainBaseAddr", defVal=False)
         sizeByPtrs = s("sizeByPtrs", ringSpace_t)
         sizeByPtrs ** (wrPtr - rdPtr)
         
         inBlockRemain_asPtrSize = fitTo(inBlockRemain, sizeByPtrs)
-        isConstraindedByPtrs = s("isConstraindedByPtrs")
-        isConstraindedByPtrs ** (sizeByPtrs < inBlockRemain_asPtrSize)
-        
-        canDownloadNextBaseAddrInThisReq = s("canDownloadNextBaseAddrInThisReq")
-        canDownloadNextBaseAddrInThisReq ** (sizeByPtrs + inBlockRemain_asPtrSize)._eq(self.ITEMS_IN_BLOCK - 1)
-        
-        If(nextButrstCanContainBaseAddr,
-            If(isConstraindedByPtrs & canDownloadNextBaseAddrInThisReq,
-                req.id ** DEFAULT_ID,
-                connect(sizeByPtrs - 1, req.len, fit=True),
-                
-                If(doReq,
-                    connect(inBlockRemain_asPtrSize - sizeByPtrs, inBlockRemain, fit=True),
-                    nextButrstCanContainBaseAddr ** True
-                )
-            ).Else(
-                req.id ** LAST_ID,
-                # means burst of size inBlockRemain + 1, last item will be next base addr 
-                connect(inBlockRemain, req.len, fit=True),
-                
-                If(doReq,
-                   inBlockRemain ** self.ITEMS_IN_BLOCK,
-                   nextButrstCanContainBaseAddr ** False
-                )
-            )
-        
+        constraingSpace = s("constraingSpace", ringSpace_t)
+        If(inBlockRemain_asPtrSize < sizeByPtrs,
+           constraingSpace ** inBlockRemain_asPtrSize
         ).Else(
-            req.id ** DEFAULT_ID,
-            If(isConstraindedByPtrs,
-                connect(sizeByPtrs - 1, req.len, fit=True)
-            ).Else(
-                req.len ** (BURST_LEN - 1),
-            ),
-            
-            If(doReq,
-                If(isConstraindedByPtrs,
-                   connect(inBlockRemain_asPtrSize - sizeByPtrs, inBlockRemain, fit=True),
-                   nextButrstCanContainBaseAddr ** ((inBlockRemain_asPtrSize - sizeByPtrs) < BURST_LEN)
-                ).Else(
-                   inBlockRemain ** (inBlockRemain - BURST_LEN),
-                   nextButrstCanContainBaseAddr ** (inBlockRemain < (BURST_LEN * 2))
-                )
-            )
+           constraingSpace ** sizeByPtrs
         )
         
+        If(constraingSpace > BURST_LEN,
+            # download full burst
+            req.id ** DEFAULT_ID,
+            req.len ** (BURST_LEN - 1),
+            If(doReq,
+               inBlockRemain ** (inBlockRemain - BURST_LEN)
+            )
+        ).Elif((fitTo(sizeByPtrs, inBlockRemain) >= inBlockRemain) & (inBlockRemain < BURST_LEN),
+            # we know that sizeByPtrs <= inBlockRemain thats why we cane resize it
+            # we will download next* as well
+            req.id ** LAST_ID,
+            connect(constraingSpace, req.len, fit=True),
+            If(doReq,
+               inBlockRemain ** (inBlockRemain - (fitTo(constraingSpace, inBlockRemain) + 1))
+            )
+        ).Else(
+            # download leftover
+            req.id ** DEFAULT_ID,
+            connect(constraingSpace - 1, req.len, fit=True),
+            If(doReq,
+               inBlockRemain ** (inBlockRemain - fitTo(constraingSpace, inBlockRemain))
+            )
+        )
+
         # logic of req dispatching
         If(downloadPending,
             req.vld ** 0,
-            If(isMyData & dIn.last,
+            If(dataAck & dIn.last,
                 downloadPending ** 0
             )
         ).Else(
@@ -191,35 +177,40 @@ class CLinkedListReader(Unit):
         )
         
         # into buffer pushing logic
-        dBuffIn = f.dataIn
+
         dBuffIn.data ** dIn.data
         
-        receivingData = s("receivingData")
-        receivingData ** (dIn.id._eq(DEFAULT_ID) | (~dIn.last & dIn.id._eq(LAST_ID)))
+        isMyData = s("isMyData")
+        isMyData ** (dIn.id._eq(DEFAULT_ID) | (~dIn.last & dIn.id._eq(LAST_ID)))
         If(self.rdPtr.dout.vld,
             rdPtr ** self.rdPtr.dout.data
         ).Else(
-            If(dIn.valid & receivingData & downloadPending & dBuffIn.rd,
+            If(dIn.valid & downloadPending & dBuffIn.rd & isMyData,
                rdPtr ** (rdPtr + 1)
             )
         )
-        # pass data if not my data
+        # ignore data if not my data
         # notMyData = ~In(dIn.id, [DEFAULT_ID, LAST_ID])
-        # streamSync([dIn], [dBuffIn], extraConds={dIn    :[receivingData | notMyData, downloadPending | notMyData],
-        #                                         dBuffIn:[receivingData, downloadPending]})
-    
-        If(receivingData,
-            # push data into buffer and increment rdPtr
-            streamSync([dIn], [dBuffIn], extraConds={dIn    :[downloadPending],
-                                                     dBuffIn:[downloadPending]})
+        # streamSync([dIn], [dBuffIn], extraConds={dIn   :[downloadPending | notMyData],
+        #                                        dBuffIn:[receivingData, downloadPending]})
+        #
+        If(dIn.valid & In(dIn.id, [DEFAULT_ID, LAST_ID]),
+           # push data into buffer and increment rdPtr
+           streamSync(masters=[dIn],
+                      slaves=[dBuffIn],
+                      extraConds={dIn    :[downloadPending],
+                                  dBuffIn:[~((dIn.id._eq(LAST_ID)) & dIn.last), downloadPending]})
         ).Else(
-            # ship next block addr
-            dBuffIn.vld ** 0,
-            dIn.ready ** 1   
+           # ship next block addr
+           dBuffIn.vld ** 0,
+           dIn.ready ** 1   
         )
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = CLinkedListReader()
+    u.BUFFER_CAPACITY.set(8)
+    u.ITEMS_IN_BLOCK.set(31)
+    u.RING_SPACE_WIDTH.set(8)
     print(toRtl(u))
             
         
