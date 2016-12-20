@@ -183,6 +183,7 @@ class Axi_wDatapump(Axi_datapumpBase):
                                reqAck : [lastFlags.isLast]
                                })
         
+        return wErrFlag
     
     def _impl(self):
         propagateClkRstn(self)
