@@ -195,18 +195,28 @@ class CLinkedListReader(Unit):
         dBuffIn.data ** dIn.data
         
         receivingData = s("receivingData")
-        receivingData ** (dIn.valid & (dIn.id._eq(DEFAULT_ID) | (~dIn.last & dIn.id._eq(LAST_ID))))
+        receivingData ** (dIn.id._eq(DEFAULT_ID) | (~dIn.last & dIn.id._eq(LAST_ID)))
         If(self.rdPtr.dout.vld,
             rdPtr ** self.rdPtr.dout.data
         ).Else(
-            If(receivingData & downloadPending & dBuffIn.rd,
+            If(dIn.valid & receivingData & downloadPending & dBuffIn.rd,
                rdPtr ** (rdPtr + 1)
             )
         )
-        streamSync([dIn], [dBuffIn], extraConds={dIn    :[receivingData, downloadPending],
-                                                 dBuffIn:[receivingData, downloadPending]})
+        # pass data if not my data
+        # notMyData = ~In(dIn.id, [DEFAULT_ID, LAST_ID])
+        # streamSync([dIn], [dBuffIn], extraConds={dIn    :[receivingData | notMyData, downloadPending | notMyData],
+        #                                         dBuffIn:[receivingData, downloadPending]})
     
-       
+        If(receivingData,
+            # push data into buffer and increment rdPtr
+            streamSync([dIn], [dBuffIn], extraConds={dIn    :[downloadPending],
+                                                     dBuffIn:[downloadPending]})
+        ).Else(
+            # ship next block addr
+            dBuffIn.vld ** 0,
+            dIn.ready ** 1   
+        )
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
     u = CLinkedListReader()
