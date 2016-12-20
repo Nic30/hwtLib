@@ -61,7 +61,7 @@ class Axi_wDatapump(Axi_datapumpBase):
             bf.DEPTH.set(self.MAX_TRANS_OVERLAP)
             
 
-    def axiAwHandler(self):
+    def axiAwHandler(self, wErrFlag):
         req = self.req
         aw = self.a
 
@@ -93,13 +93,15 @@ class Axi_wDatapump(Axi_datapumpBase):
                        lastReqDispatched ** 1 
                     )
                 ),
-                streamSync(masters=[req], slaves=[aw, wInfo]),
+                streamSync(masters=[req], 
+                           slaves=[aw, wInfo], 
+                           extraConds={aw:[~wErrFlag]}),
             ).Else(
                 _id ** req_idBackup,
                 aw.addr ** addrBackup,
                 connect(lenDebth, aw.len, fit=True),
                 
-                streamSync(slaves=[aw, wInfo]),
+                streamSync(slaves=[aw, wInfo], extraConds={aw:[~wErrFlag]}),
                 
                 req.rd ** 0,
                 
@@ -121,7 +123,7 @@ class Axi_wDatapump(Axi_datapumpBase):
             connect(req.len, aw.len, fit=True)
             streamSync(masters=[req], slaves=[aw, wInfo])
            
-    def axiWHandler(self):
+    def axiWHandler(self, wErrFlag):
         w = self.w
         wIn = self.wIn
         
@@ -145,13 +147,15 @@ class Axi_wDatapump(Axi_datapumpBase):
                )
             )
             extraConds = {wInfo:[doSplit],
-                          bInfo:[doSplit]}
+                          bInfo:[doSplit],
+                          w:[~wErrFlag]}
             w.last ** (doSplit | wIn.last)
             
         else:
             w.last ** wIn.last
             extraConds = {wInfo:[wIn.last],
-                          bInfo:[wIn.last]}
+                          bInfo:[wIn.last],
+                          w:[~wErrFlag]}
         
         bInfo.isLast ** wIn.last
         streamSync(masters=[wIn, wInfo],
@@ -183,9 +187,9 @@ class Axi_wDatapump(Axi_datapumpBase):
     def _impl(self):
         propagateClkRstn(self)
         
-        self.axiAwHandler()
-        self.axiWHandler()
-        self.axiBHandler()
+        wErrFlag = self.axiBHandler()
+        self.axiAwHandler(wErrFlag)
+        self.axiWHandler(wErrFlag)
         
         
 if __name__ == "__main__":

@@ -62,7 +62,7 @@ class Axi_rDatapump(Axi_datapumpBase):
             a.id ** req_idBackup
         )
     
-    def addrHandler(self, addRmSize):
+    def addrHandler(self, addRmSize, rErrFlag):
         ar = self.a
         req = self.req
         
@@ -113,18 +113,20 @@ class Axi_rDatapump(Axi_datapumpBase):
                remBackup ** req.rem,
                ack ** (req.vld & addRmSize.rd & ar.ready),
                streamSync(masters=[req],
-                              slaves=[addRmSize, ar]),
+                          slaves=[addRmSize, ar],
+                          extraConds={ar:[~rErrFlag]}),
             ).Else(
                req.rd ** 0,
                ar.addr ** rAddr,
-               If(addRmSize.rd & ar.ready,
+               ack ** (addRmSize.rd & ar.ready),
+               If(ack,
                   rAddr ** (rAddr + ADDR_STEP) 
                ),
                
                reqLen ** lenDebth,
                reqRem ** remBackup,
-               ack ** (addRmSize.rd & ar.ready),
-               streamSync(slaves=[addRmSize, ar]),
+               streamSync(slaves=[addRmSize, ar],
+                          extraConds={ar:[~rErrFlag]}),
             )
         else:
             # if axi len is wider we can directly translate requests to axi
@@ -137,7 +139,8 @@ class Axi_rDatapump(Axi_datapumpBase):
             addRmSize.propagateLast ** 1
             
             streamSync(masters=[req],
-                       slaves=[ar, addRmSize])
+                       slaves=[ar, addRmSize],
+                       extraConds={ar:[~rErrFlag]})
             
         
     
@@ -175,14 +178,16 @@ class Axi_rDatapump(Axi_datapumpBase):
         
         streamSync(masters=[r, rmSizeOut],
                    slaves=[rOut],
-                   extraConds={rmSizeOut: [r.last]})
-
+                   extraConds={rmSizeOut: [r.last],
+                               rOut: [~rErrFlag]})
+        
+        return rErrFlag
         
     def _impl(self):
         propagateClkRstn(self)
         
-        self.addrHandler(self.sizeRmFifo.dataIn)
-        self.dataHandler(self.sizeRmFifo.dataOut)
+        rErrFlag = self.dataHandler(self.sizeRmFifo.dataOut)
+        self.addrHandler(self.sizeRmFifo.dataIn, rErrFlag)
 
 if __name__ == "__main__":
     from hdl_toolkit.synthesizer.shortcuts import toRtl
