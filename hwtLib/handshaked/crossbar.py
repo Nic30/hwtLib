@@ -7,7 +7,7 @@ from hdl_toolkit.synthesizer.codeOps import And, connect, If
 
 class HsCrossbar(Unit):
     """
-    Universal crossbar for handshaked interfaces
+    Universal crossbar (N:N) for handshaked interfaces
     """
     def __init__(self, intfCls, inputsCnt=1, outputsCnt=1, **kwargs):
         self._intfCls = intfCls
