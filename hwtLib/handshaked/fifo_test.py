@@ -4,10 +4,9 @@
 from copy import copy
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time, NOP
+from hdl_toolkit.hdlObjects.specialValues import Time
 from hdl_toolkit.interfaces.std import Handshaked
 from hdl_toolkit.simulator.shortcuts import simPrepare
-# from hdl_toolkit.simulator.utils import agent_randomize
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hdl_toolkit.simulator.simTestCase import SimTestCase
 
