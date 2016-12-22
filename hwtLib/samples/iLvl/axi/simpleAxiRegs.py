@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import If, connect
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.synthesizer.codeOps import If, connect
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 from hwtLib.axi.axiLite_conv import AxiLiteConverter
 from hwtLib.interfaces.amba import AxiLite
 
@@ -48,7 +48,7 @@ class SimpleAxiRegs(Unit):
         connectRegToConveror(conv.reg1, reg1)
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = SimpleAxiRegs()
     print(toRtl(u))
     

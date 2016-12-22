@@ -3,13 +3,13 @@
 
 import unittest
 
-from hdl_toolkit.bitmask import mask
-from hdl_toolkit.hdlObjects.specialValues import Time, NOP
-from hdl_toolkit.simulator.shortcuts import simPrepare
-from hdl_toolkit.simulator.simTestCase import SimTestCase
-from hdl_toolkit.synthesizer.param import evalParam
+from hwt.bitmask import mask
+from hwt.hdlObjects.specialValues import Time, NOP
+from hwt.simulator.shortcuts import simPrepare
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.param import evalParam
 from hwtLib.structManipulators.cLinkedListReader import CLinkedListReader
-from hdl_toolkit.simulator.utils import agent_randomize
+from hwt.simulator.utils import agent_randomize
 
 
 class CLinkedListReaderTC(SimTestCase):

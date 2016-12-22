@@ -1,9 +1,9 @@
-from hdl_toolkit.bitmask import mask
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil, propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import If, connect
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.bitmask import mask
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.utils import addClkRstn, log2ceil, propagateClkRstn
+from hwt.synthesizer.codeOps import If, connect
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param, evalParam
 from hwtLib.axi.axiLite_conv import AxiLiteConverter
 from hwtLib.interfaces.amba import AxiStream, AxiLite
 
@@ -74,11 +74,11 @@ class AxisFrameGen(Unit):
 
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = AxisFrameGen()
     print(toRtl(u))
     
     #import os
-    #from cli_toolkit.ip_packager.packager import Packager
+    #hwt.serializer.packager import Packager
     #p = Packager(u)
     #p.createPackage(os.path.expanduser("~/Documents/test_ip_repo/")) 

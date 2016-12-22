@@ -1,10 +1,10 @@
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Signal, VectSignal
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
-from hdl_toolkit.synthesizer.codeOps import If
-from hdl_toolkit.synthesizer.shortcuts import toRtl
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import Signal, VectSignal
+from hwt.interfaces.utils import addClkRstn, log2ceil
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.codeOps import If
+from hwt.synthesizer.shortcuts import toRtl
 
 
 class StaticForLoopCntrl(Unit):

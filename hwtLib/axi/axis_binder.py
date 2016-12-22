@@ -1,6 +1,6 @@
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.intfLvl import Unit, Param
-from hdl_toolkit.synthesizer.codeOps import If, c
+from hwt.interfaces.utils import addClkRstn
+from hwt.intfLvl import Unit, Param
+from hwt.synthesizer.codeOps import If, c
 from hwtLib.interfaces.amba import AxiStream, AxiStream_withoutSTRB
 
 
@@ -67,7 +67,7 @@ class AxiSBinder(Unit):
         
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = AxiSBinder()
     print(toRtl(u))
     

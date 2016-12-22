@@ -3,10 +3,10 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.statements import IfContainer
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
-from hdl_toolkit.hdlObjects.types.defs import BIT
-from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
+from hwt.hdlObjects.statements import IfContainer
+from hwt.hdlObjects.typeShortcuts import vecT, hBit
+from hwt.hdlObjects.types.defs import BIT
+from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 
 
 class StatementsTC(unittest.TestCase):

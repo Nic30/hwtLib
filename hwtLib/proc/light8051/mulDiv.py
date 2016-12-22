@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit, vec
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.synthesizer.codeOps import If, c, Concat, sll
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param
+from hwt.hdlObjects.typeShortcuts import vecT, hBit, vec
+from hwt.interfaces.std import Signal
+from hwt.interfaces.utils import addClkRstn, log2ceil
+from hwt.synthesizer.codeOps import If, c, Concat, sll
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 
 
 class MulDiv(Unit):
@@ -117,6 +117,6 @@ class MulDiv(Unit):
         
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(MulDiv()))
     

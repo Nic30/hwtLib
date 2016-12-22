@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import hInt
-from hdl_toolkit.intfLvl import Unit, Param
+from hwt.hdlObjects.typeShortcuts import hInt
+from hwt.intfLvl import Unit, Param
 from hwtLib.interfaces.amba import AxiStream
 
 
@@ -49,7 +49,7 @@ class InterfaceArraySample2(Unit):
         # u2out = connect(u2.d, b[2])
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(
         toRtl(InterfaceArraySample2())
     )

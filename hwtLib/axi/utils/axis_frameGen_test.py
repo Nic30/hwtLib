@@ -3,11 +3,11 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.shortcuts import simPrepare
-from hdl_toolkit.simulator.simTestCase import SimTestCase
+from hwt.hdlObjects.specialValues import Time
+from hwt.simulator.shortcuts import simPrepare
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.axi.utils.axis_frameGen import AxisFrameGen
-from hdl_toolkit.bitmask import mask
+from hwt.bitmask import mask
 
 
 class AxisFrameGenTC(SimTestCase):

@@ -3,14 +3,14 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import DIRECTION
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hInt
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.synthesizer.exceptions import TypeConversionErr
-from hdl_toolkit.synthesizer.interfaceLevel.emptyUnit import EmptyUnit, setOut
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param
-from hdl_toolkit.synthesizer.shortcuts import toRtl, synthesised
+from hwt.hdlObjects.specialValues import DIRECTION
+from hwt.hdlObjects.typeShortcuts import vecT, hInt
+from hwt.interfaces.std import Signal
+from hwt.synthesizer.exceptions import TypeConversionErr
+from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit, setOut
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.shortcuts import toRtl, synthesised
 from hwtLib.interfaces.amba import AxiStream
 from hwtLib.interfaces.ambaOthers import FullDuplexAxiStream 
 from hwtLib.samples.iLvl.hierarchy.unitToUnitConnection import UnitToUnitConnection

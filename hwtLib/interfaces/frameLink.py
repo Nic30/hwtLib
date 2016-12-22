@@ -1,9 +1,9 @@
-from hdl_toolkit.hdlObjects.specialValues import DIRECTION
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import s
-from hdl_toolkit.interfaces.utils import log2ceil
-from hdl_toolkit.synthesizer.interfaceLevel.interface import Interface
-from hdl_toolkit.synthesizer.param import Param
+from hwt.hdlObjects.specialValues import DIRECTION
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import s
+from hwt.interfaces.utils import log2ceil
+from hwt.synthesizer.interfaceLevel.interface import Interface
+from hwt.synthesizer.param import Param
 
 
 class FrameLink(Interface):

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hInt
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.intfLvl import Param, Unit
+from hwt.hdlObjects.typeShortcuts import vecT, hInt
+from hwt.interfaces.std import Signal
+from hwt.intfLvl import Param, Unit
 
 
 class SimpleUnit4(Unit):
@@ -26,5 +26,5 @@ class SimpleUnit4(Unit):
 
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(SimpleUnit4()))

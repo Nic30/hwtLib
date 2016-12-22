@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.bitmask import mask
-from hdl_toolkit.hdlObjects.typeShortcuts import vec, vecT
-from hdl_toolkit.hdlObjects.types.defs import BIT
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import c, Concat, If, Switch
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.bitmask import mask
+from hwt.hdlObjects.typeShortcuts import vec, vecT
+from hwt.hdlObjects.types.defs import BIT
+from hwt.hdlObjects.types.enum import Enum
+from hwt.interfaces.std import Handshaked
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.synthesizer.codeOps import c, Concat, If, Switch
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param, evalParam
 from hwtLib.axi.axiLite_conv import AxiLiteConverter
 from hwtLib.interfaces.amba import AxiLite, Axi4
 from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
-from python_toolkit.arrayQuery import where
+from hwt.pyUtils.arrayQuery import where
 
 
 class Axi4streamToMem(Unit):
@@ -231,7 +231,7 @@ class Axi4streamToMem(Unit):
         
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = Axi4streamToMem()
     # u = AxiLiteRegs(Axi4streamToMem().REGISTER_MAP)
     print(toRtl(u))

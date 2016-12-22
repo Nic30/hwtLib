@@ -3,8 +3,8 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.shortcuts import simPrepare, simUnitVcd
+from hwt.hdlObjects.specialValues import Time
+from hwt.simulator.shortcuts import simPrepare, simUnitVcd
 from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl
 
 

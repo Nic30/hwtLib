@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Signal, RegCntrl
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.serializer.constants import SERI_MODE
-from hdl_toolkit.synthesizer.codeOps import If, c
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import Signal, RegCntrl
+from hwt.interfaces.utils import addClkRstn
+from hwt.serializer.constants import SERI_MODE
+from hwt.synthesizer.codeOps import If, c
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 
 
 class FlipRegister(Unit):
@@ -64,6 +64,6 @@ class FlipRegister(Unit):
         )
         
 if __name__ == "__main__":  # alias python main function
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     print(toRtl(FlipRegister))

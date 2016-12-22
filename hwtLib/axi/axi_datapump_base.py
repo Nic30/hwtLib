@@ -1,10 +1,10 @@
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.interfaces.amba import Axi4_addr
-from hdl_toolkit.synthesizer.param import Param, evalParam
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
-from hdl_toolkit.interfaces.std import Handshaked, VectSignal, HandshakeSync
-from hdl_toolkit.bitmask import mask
+from hwt.synthesizer.param import Param, evalParam
+from hwt.interfaces.utils import addClkRstn, log2ceil
+from hwt.interfaces.agents.handshaked import HandshakedAgent
+from hwt.interfaces.std import Handshaked, VectSignal, HandshakeSync
+from hwt.bitmask import mask
 from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, PROT_DEFAULT, QOS_DEFAULT, BYTES_IN_TRANS
 

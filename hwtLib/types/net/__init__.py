@@ -1,4 +1,4 @@
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.typeShortcuts import vecT
 
 l4port_t = vecT(16)
 vlan_t   = vecT(12)  

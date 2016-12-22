@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.interfaces.std import BramPort_withoutClk
+from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.handshaked.ramReader import HsRamPortReader
 
 
@@ -30,6 +30,6 @@ class HsFlipRamReader(HsRamPortReader):
         self.cleanAfterRead()
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = HsFlipRamReader()
     print(toRtl(u))        

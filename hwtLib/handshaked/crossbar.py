@@ -1,8 +1,8 @@
-from hdl_toolkit.hdlObjects.typeShortcuts import hInt
-from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from python_toolkit.arrayQuery import where
-from hdl_toolkit.synthesizer.codeOps import And, connect, If
+from hwt.hdlObjects.typeShortcuts import hInt
+from hwt.interfaces.std import Handshaked
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.pyUtils.arrayQuery import where
+from hwt.synthesizer.codeOps import And, connect, If
 
 
 class HsCrossbar(Unit):
@@ -103,7 +103,7 @@ class HsCrossbar(Unit):
         
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = HsCrossbar(Handshaked, inputsCnt=3)
     print(toRtl(u))
     

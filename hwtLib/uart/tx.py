@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Handshaked, Signal
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import FsmBuilder, If, sll
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import Handshaked, Signal
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.synthesizer.codeOps import FsmBuilder, If, sll
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 from hwtLib.uart.baudGen import UartBaudGen
 
 
@@ -84,7 +84,7 @@ class UartTx(Unit):
         self.txd ** ((st < 4) | (st[3] & TxD_shift[0]))
  
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = UartTx()
     print(toRtl(u)) 
         

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.intfLvl import Unit
+from hwt.interfaces.std import Signal
+from hwt.intfLvl import Unit
 from hwtLib.samples.iLvl.simple import SimpleUnit
 
 
@@ -20,5 +20,5 @@ class SimpleSubunit(Unit):
         
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(SimpleSubunit()))

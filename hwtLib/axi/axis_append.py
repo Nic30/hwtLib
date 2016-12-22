@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.specialValues import DIRECTION
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import If, FsmBuilder
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.hdlObjects.specialValues import DIRECTION
+from hwt.hdlObjects.types.enum import Enum
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.codeOps import If, FsmBuilder
+from hwt.synthesizer.param import Param, evalParam
 from hwtLib.axi.axis_compBase import AxiSCompBase
 
 
@@ -63,6 +63,6 @@ class AxiSAppend(AxiSCompBase):
 
 if __name__ == "__main__":
     from hwtLib.interfaces.amba import AxiStream_withoutSTRB
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = AxiSAppend(AxiStream_withoutSTRB)
     print(toRtl(u))

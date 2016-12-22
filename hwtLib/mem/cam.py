@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
-from hdl_toolkit.hdlObjects.types.array import Array
-from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
-from hdl_toolkit.interfaces.std import Handshaked, VldSynced, Signal
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.serializer.constants import SERI_MODE
-from hdl_toolkit.synthesizer.codeOps import If, Concat
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.hdlObjects.typeShortcuts import vecT, hBit
+from hwt.hdlObjects.types.array import Array
+from hwt.interfaces.agents.handshaked import HandshakedAgent
+from hwt.interfaces.std import Handshaked, VldSynced, Signal
+from hwt.interfaces.utils import addClkRstn, log2ceil
+from hwt.serializer.constants import SERI_MODE
+from hwt.synthesizer.codeOps import If, Concat
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param, evalParam
 
 
 class AddrDataHsAgent(HandshakedAgent):
@@ -101,6 +101,6 @@ class Cam(Unit):
         self.matchHandler(self._mem)
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = Cam()
     print(toRtl(u))  

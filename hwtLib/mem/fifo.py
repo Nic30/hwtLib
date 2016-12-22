@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.hdlObjects.types.array import Array
-from hdl_toolkit.interfaces.std import FifoWriter, FifoReader, VectSignal
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.serializer.constants import SERI_MODE
-from hdl_toolkit.synthesizer.codeOps import If
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.array import Array
+from hwt.interfaces.std import FifoWriter, FifoReader, VectSignal
+from hwt.interfaces.utils import addClkRstn, log2ceil
+from hwt.serializer.constants import SERI_MODE
+from hwt.synthesizer.codeOps import If
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param, evalParam
 # https://eewiki.net/pages/viewpage.action?pageId=20939499
 
 class Fifo(Unit):
@@ -137,7 +137,7 @@ class Fifo(Unit):
             self.space ** space
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = Fifo()
     u.DATA_WIDTH.set(8)
     # u.EXPORT_SIZE.set(True)

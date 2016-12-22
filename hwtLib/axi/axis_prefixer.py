@@ -1,8 +1,8 @@
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import If, connect
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param
-from hdl_toolkit.synthesizer.shortcuts import toRtl
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.codeOps import If, connect
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.shortcuts import toRtl
 from hwtLib.interfaces.amba import AxiStream
 
 class AxiSPrefixer(Unit):

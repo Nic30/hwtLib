@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.intfLvl import Unit
+from hwt.intfLvl import Unit
 from hwtLib.interfaces.amba import AxiStream
 from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream
 
@@ -21,5 +21,5 @@ class SimpleSubunit2(Unit):
         self.b0 ** u.b
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(SimpleSubunit2))

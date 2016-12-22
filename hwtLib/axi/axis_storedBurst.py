@@ -3,12 +3,12 @@
 
 import math
 
-from hdl_toolkit.bitmask import mask
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import If, Switch
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.bitmask import mask
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.codeOps import If, Switch
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param, evalParam
 from hwtLib.interfaces.amba import AxiStream
 
 
@@ -73,5 +73,5 @@ class AxiSStoredBurst(Unit):
         
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(AxiSStoredBurst))

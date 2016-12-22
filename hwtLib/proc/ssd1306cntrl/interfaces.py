@@ -1,5 +1,5 @@
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.synthesizer.interfaceLevel.interface import Interface
+from hwt.interfaces.std import Signal
+from hwt.synthesizer.interfaceLevel.interface import Interface
 from hwtLib.interfaces.peripheral import Spi
 from hwtLib.logic.delayMs import DelayMs
 

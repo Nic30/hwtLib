@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.interfaces.std import VectSignal
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.vectorUtils import fitTo
-from hdl_toolkit.synthesizer.codeOps import connect
+from hwt.interfaces.std import VectSignal
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.vectorUtils import fitTo
+from hwt.synthesizer.codeOps import connect
 
 
 class WidthCastingExample(Unit):
@@ -31,7 +31,7 @@ class WidthCastingExample(Unit):
 
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     
     u = WidthCastingExample()
     print(toRtl(u))

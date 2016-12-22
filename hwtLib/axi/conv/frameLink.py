@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.bitmask import mask
-from hdl_toolkit.hdlObjects.typeShortcuts import vec
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import Concat, Switch, If
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.bitmask import mask
+from hwt.hdlObjects.typeShortcuts import vec
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.synthesizer.codeOps import Concat, Switch, If
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param, evalParam
 from hwtLib.axi.axis_sof import AxiSsof 
 from hwtLib.interfaces.amba import AxiStream_withUserAndStrb
 from hwtLib.interfaces.frameLink import FrameLink
@@ -134,6 +134,6 @@ class FrameLinkToAxiS(Unit):
         Switch(In.rem).addCases(strbMap)
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = FrameLinkToAxiS()
     print(toRtl(u))

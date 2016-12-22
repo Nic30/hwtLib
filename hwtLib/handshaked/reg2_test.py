@@ -3,10 +3,10 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.simulator.shortcuts import simPrepare
-from hdl_toolkit.simulator.simTestCase import SimTestCase
+from hwt.hdlObjects.specialValues import Time
+from hwt.interfaces.std import Handshaked
+from hwt.simulator.shortcuts import simPrepare
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.reg2 import HandshakedReg2
 
 

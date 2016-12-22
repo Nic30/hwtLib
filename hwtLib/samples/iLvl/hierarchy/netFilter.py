@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.intfLvl import Param, Unit, EmptyUnit
-from hdl_toolkit.synthesizer.interfaceLevel.emptyUnit import setOut
+from hwt.intfLvl import Param, Unit, EmptyUnit
+from hwt.synthesizer.interfaceLevel.emptyUnit import setOut
 from hwtLib.interfaces.amba import AxiStream, AxiLite
 
 
@@ -87,8 +87,8 @@ class NetFilter(Unit):
 
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
-    from cli_toolkit.ip_packager.packager import Packager
+    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.serializer.ip_packager.packager import Packager
     print(toRtl(NetFilter))
     
     # s = NetFilter()

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.hdlObjects.types.array import Array
-from hdl_toolkit.interfaces.std import BramPort, Clk, BramPort_withoutClk
-from hdl_toolkit.serializer.constants import SERI_MODE
-from hdl_toolkit.synthesizer.codeOps import If, power
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.array import Array
+from hwt.interfaces.std import BramPort, Clk, BramPort_withoutClk
+from hwt.serializer.constants import SERI_MODE
+from hwt.synthesizer.codeOps import If, power
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param, evalParam
 
 
 class RamSingleClock(Unit):
@@ -96,5 +96,5 @@ def getRamCls(noOfPorts):
         raise NotImplementedError() 
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(Ram_dp()))

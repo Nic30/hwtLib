@@ -1,9 +1,9 @@
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.interfaces.std import BramPort_withoutClk, RegCntrl
-from hdl_toolkit.interfaces.utils import log2ceil
-from hdl_toolkit.hdlObjects.types.typeCast import toHVal
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.interfaces.std import BramPort_withoutClk, RegCntrl
+from hwt.interfaces.utils import log2ceil
+from hwt.hdlObjects.types.typeCast import toHVal
 from hwtLib.abstract.addrSpace import AddrSpaceItem
-from hdl_toolkit.synthesizer.param import evalParam
+from hwt.synthesizer.param import evalParam
 
 def unpackAddrMap(am):
     if isinstance(am, AddrSpaceItem):

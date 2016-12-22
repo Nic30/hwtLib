@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.hdlObjects.types.typeCast import toHVal
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import If, c, FsmBuilder, Switch
-from hdl_toolkit.synthesizer.param import evalParam
+from hwt.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.typeCast import toHVal
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.codeOps import If, c, FsmBuilder, Switch
+from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.addrSpace import AddrSpaceItem
 from hwtLib.abstract.busConverter import BusConverter
 from hwtLib.interfaces.ipif import IPIF
@@ -101,7 +101,7 @@ class IpifConverter(BusConverter):
         
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     # u = IpifConverter([(i * 4 , "data%d" % i) for i in range(2)] + 
     #                  [(3 * 4, "bramMapped", 32)])
     #

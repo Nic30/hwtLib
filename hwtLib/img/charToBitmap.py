@@ -4,8 +4,8 @@
 from PIL import Image
 import os
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.hdlObjects.types.array import Array
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.array import Array
 
 
 im = Image.open(os.path.dirname(__file__) + "/charToBitmap_font.png")  # Can be many different formats.

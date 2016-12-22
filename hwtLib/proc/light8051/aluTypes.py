@@ -1,4 +1,4 @@
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.typeShortcuts import vecT
 t_alu_op_sel = vecT(4, False)
 t_alu_fns = vecT(6, False)
 

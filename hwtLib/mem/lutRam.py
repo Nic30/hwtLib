@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import hBit, vec, vecT
-from hdl_toolkit.interfaces.std import Signal, Clk
-from hdl_toolkit.serializer.constants import SERI_MODE
-from hdl_toolkit.synthesizer.codeOps import Concat, If
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param
+from hwt.hdlObjects.typeShortcuts import hBit, vec, vecT
+from hwt.interfaces.std import Signal, Clk
+from hwt.serializer.constants import SERI_MODE
+from hwt.synthesizer.codeOps import Concat, If
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 
 
 def mkLutRamCls(DATA_WIDTH):
@@ -65,5 +65,5 @@ RAM64X1S = mkLutRamCls(64)
 
 
 if __name__ == "__main__":
-	from hdl_toolkit.synthesizer.shortcuts import toRtl
+	from hwt.synthesizer.shortcuts import toRtl
 	print(toRtl(RAM64X1S))

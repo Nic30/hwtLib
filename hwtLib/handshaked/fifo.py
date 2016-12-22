@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 
-from hdl_toolkit.interfaces.std import VectSignal
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
-from hdl_toolkit.intfLvl import Param
-from hdl_toolkit.synthesizer.codeOps import packedWidth, packed, \
+from hwt.interfaces.std import VectSignal
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
+from hwt.intfLvl import Param
+from hwt.synthesizer.codeOps import packedWidth, packed, \
     connectUnpacked, If, connect
-from hdl_toolkit.synthesizer.param import evalParam
+from hwt.synthesizer.param import evalParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.mem.fifo import Fifo
@@ -79,8 +79,8 @@ class HandshakedFifo(HandshakedCompBase):
         
         
 if __name__ == "__main__":
-    from hdl_toolkit.interfaces.std import Handshaked
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.interfaces.std import Handshaked
+    from hwt.synthesizer.shortcuts import toRtl
     u = HandshakedFifo(Handshaked)
     u.DEPTH.set(8)
     u.DATA_WIDTH.set(4)

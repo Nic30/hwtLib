@@ -1,15 +1,15 @@
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.mem.fifo import Fifo
-from hdl_toolkit.synthesizer.param import Param
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil, propagateClkRstn
+from hwt.synthesizer.param import Param
+from hwt.interfaces.utils import addClkRstn, log2ceil, propagateClkRstn
 from hwtLib.interfaces.amba import AxiStream
-from hdl_toolkit.interfaces.std import Handshaked
+from hwt.interfaces.std import Handshaked
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.axi.axis_fifo import AxiSFifo
 from hwtLib.axi.axis_builder import AxiSBuilder
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.synthesizer.codeOps import If, connect, Concat, Switch
-from hdl_toolkit.bitmask import mask
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.synthesizer.codeOps import If, connect, Concat, Switch
+from hwt.bitmask import mask
 from hwtLib.handshaked.streamNode import streamSync
 
 def strbToRem(strbBits):
@@ -103,7 +103,7 @@ class AxiS_measuringFifo(Unit):
         
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = AxiS_measuringFifo()
     print(toRtl(u))
     

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import s
-from hdl_toolkit.interfaces.utils import log2ceil
-from hdl_toolkit.serializer.constants import SERI_MODE
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import s
+from hwt.interfaces.utils import log2ceil
+from hwt.serializer.constants import SERI_MODE
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param, evalParam
 
 
 class BinToOneHot(Unit):
@@ -34,5 +34,5 @@ class BinToOneHot(Unit):
                 self.dout[i] ** (dIn._eq(i) & en)
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(BinToOneHot))

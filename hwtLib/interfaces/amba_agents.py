@@ -1,7 +1,7 @@
-from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
+from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, \
     PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT, RESP_OKAY
-from hdl_toolkit.simulator.agentBase import AgentBase
+from hwt.simulator.agentBase import AgentBase
 
 class BaseAxiAgent(HandshakedAgent):
         

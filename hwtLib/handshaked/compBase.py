@@ -1,6 +1,6 @@
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.interfaces.std import Handshaked, HandshakeSync
-from python_toolkit.arrayQuery import where
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.interfaces.std import Handshaked, HandshakeSync
+from hwt.pyUtils.arrayQuery import where
 
 
 class HandshakedCompBase(Unit):

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.bitmask import mask
-from hdl_toolkit.interfaces.std import Signal, Handshaked, VectSignal, \
+from hwt.bitmask import mask
+from hwt.interfaces.std import Signal, Handshaked, VectSignal, \
     HandshakeSync
-from hdl_toolkit.interfaces.utils import propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import connect, If
-from hdl_toolkit.synthesizer.param import Param
+from hwt.interfaces.utils import propagateClkRstn
+from hwt.synthesizer.codeOps import connect, If
+from hwt.synthesizer.param import Param
 from hwtLib.axi.axi_datapump_base import Axi_datapumpBase
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
@@ -194,6 +194,6 @@ class Axi_wDatapump(Axi_datapumpBase):
         
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = Axi_wDatapump()
     print(toRtl(u))

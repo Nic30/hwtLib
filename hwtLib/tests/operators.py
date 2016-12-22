@@ -3,11 +3,11 @@
 
 import unittest
 
-from hdl_toolkit.bitmask import mask
-from hdl_toolkit.hdlObjects.typeShortcuts import hInt, hBool, hBit, vec
-from hdl_toolkit.hdlObjects.types.defs import INT, STR
-from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
-from hdl_toolkit.synthesizer.rtlLevel.signalUtils.walkers import walkAllOriginSignals
+from hwt.bitmask import mask
+from hwt.hdlObjects.typeShortcuts import hInt, hBool, hBit, vec
+from hwt.hdlObjects.types.defs import INT, STR
+from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
+from hwt.synthesizer.rtlLevel.signalUtils.walkers import walkAllOriginSignals
 
 
 andTable = [ (None, None, None),

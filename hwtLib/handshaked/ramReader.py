@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.interfaces.std import BramPort_withoutClk, Handshaked, \
+from hwt.hdlObjects.types.enum import Enum
+from hwt.interfaces.std import BramPort_withoutClk, Handshaked, \
     HandshakeSync
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import Switch, If, FsmBuilder
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.codeOps import Switch, If, FsmBuilder
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 
 
 class HsRamPortReader(Unit):
@@ -118,6 +118,6 @@ class HsRamPortReader(Unit):
         )
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = HsRamPortReader()
     print(toRtl(u))        

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Signal, Clk
-from hdl_toolkit.intfLvl import Param, Unit, c
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import Signal, Clk
+from hwt.intfLvl import Param, Unit, c
 from hwtLib.mem.ram import Ram_dp
 
 
@@ -59,5 +59,5 @@ class GroupOfBlockrams(Unit):
         
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(GroupOfBlockrams))

@@ -1,11 +1,11 @@
-from hdl_toolkit.hdlObjects.operator import Operator
-from hdl_toolkit.synthesizer.interfaceLevel.mainBases import UnitBase
+from hwt.hdlObjects.operator import Operator
+from hwt.synthesizer.interfaceLevel.mainBases import UnitBase
 from hwtLib.abstract.busConverter import BusConverter
-from hdl_toolkit.hdlObjects.assignment import Assignment
-from hdl_toolkit.hdlObjects.portItem import PortItem
-from hdl_toolkit.hdlObjects.operatorDefs import AllOps
+from hwt.hdlObjects.assignment import Assignment
+from hwt.hdlObjects.portItem import PortItem
+from hwt.hdlObjects.operatorDefs import AllOps
 from copy import copy
-from hdl_toolkit.synthesizer.param import evalParam
+from hwt.synthesizer.param import evalParam
 
 
 def getEpSignal(sig, op):

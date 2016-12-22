@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.bitmask import mask
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.interfaces.utils import log2ceil, addClkRstn
-from hdl_toolkit.synthesizer.codeOps import If
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.bitmask import mask
+from hwt.hdlObjects.typeShortcuts import vecT, hBit
+from hwt.interfaces.std import Signal
+from hwt.interfaces.utils import log2ceil, addClkRstn
+from hwt.synthesizer.codeOps import If
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param, evalParam
 
 
 class UartBaudGen(Unit):
@@ -47,5 +47,5 @@ class UartBaudGen(Unit):
         self.tick ** acc[accWidth]
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(UartBaudGen()))

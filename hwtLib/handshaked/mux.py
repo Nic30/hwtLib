@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.synthesizer.codeOps import Switch
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import Signal
+from hwt.synthesizer.codeOps import Switch
+from hwt.synthesizer.param import Param, evalParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
@@ -42,7 +42,7 @@ class HandshakedMux(HandshakedCompBase):
         
         
 if __name__ == "__main__":
-    from hdl_toolkit.interfaces.std import Handshaked
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.interfaces.std import Handshaked
+    from hwt.synthesizer.shortcuts import toRtl
     u = HandshakedMux(Handshaked)
     print(toRtl(u))   

@@ -4,11 +4,11 @@
 from copy import copy
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.simulator.shortcuts import simPrepare
+from hwt.hdlObjects.specialValues import Time
+from hwt.interfaces.std import Handshaked
+from hwt.simulator.shortcuts import simPrepare
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hdl_toolkit.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 
 
 class HsFifoTC(SimTestCase):

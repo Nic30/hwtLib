@@ -1,8 +1,8 @@
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.serializer.constants import SERI_MODE
-from hdl_toolkit.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
-from hdl_toolkit.synthesizer.shortcuts import toRtl
-from hdl_toolkit.hdlObjects.specialValues import DIRECTION
+from hwt.interfaces.std import Signal
+from hwt.serializer.constants import SERI_MODE
+from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
+from hwt.synthesizer.shortcuts import toRtl
+from hwt.hdlObjects.specialValues import DIRECTION
 
 class IOBUF(EmptyUnit):
     """

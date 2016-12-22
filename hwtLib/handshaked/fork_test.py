@@ -3,14 +3,14 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.simulator.agentConnector import agInts
-from hdl_toolkit.simulator.shortcuts import simPrepare
-from hdl_toolkit.simulator.utils import agent_randomize
+from hwt.hdlObjects.specialValues import Time
+from hwt.interfaces.std import Handshaked
+from hwt.simulator.agentConnector import agInts
+from hwt.simulator.shortcuts import simPrepare
+from hwt.simulator.utils import agent_randomize
 from hwtLib.handshaked.fork import HandshakedFork
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.simulator.simTestCase import SimTestCase
+from hwt.interfaces.utils import addClkRstn
+from hwt.simulator.simTestCase import SimTestCase
 
 
 class HsForkWithReference(HandshakedFork):

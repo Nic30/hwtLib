@@ -3,9 +3,9 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time, NOP
-from hdl_toolkit.simulator.agentConnector import valuesToInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
+from hwt.hdlObjects.specialValues import Time, NOP
+from hwt.simulator.agentConnector import valuesToInts
+from hwt.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.mem.cam import Cam
 
 

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param
+from hwt.interfaces.utils import addClkRstn, log2ceil
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 from hwtLib.interfaces.amba import AxiLite
 from hwtLib.interfaces.ipif import IPIF
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.synthesizer.codeOps import FsmBuilder, If, In, Switch
-from hdl_toolkit.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.synthesizer.codeOps import FsmBuilder, If, In, Switch
+from hwt.hdlObjects.types.enum import Enum
 
 
 
@@ -106,6 +106,6 @@ class AxiLiteIpifConv(Unit):
         
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = AxiLiteIpifConv()
     print(toRtl(u))

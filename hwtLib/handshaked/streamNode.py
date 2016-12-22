@@ -1,5 +1,5 @@
-from hdl_toolkit.synthesizer.codeOps import And
-from python_toolkit.arrayQuery import where
+from hwt.synthesizer.codeOps import And
+from hwt.pyUtils.arrayQuery import where
 
 def _getRd(intf):
     try:

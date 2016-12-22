@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.intfLvl import Param
-from hdl_toolkit.synthesizer.codeOps import And
+from hwt.interfaces.std import Handshaked
+from hwt.intfLvl import Param
+from hwt.synthesizer.codeOps import And
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
@@ -48,6 +48,6 @@ class HandshakedFork(HandshakedCompBase):
         
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = HandshakedFork(Handshaked)
     print(toRtl(u))

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import If
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.synthesizer.codeOps import If
 from hwtLib.handshaked.compBase import HandshakedCompBase 
 from hwtLib.handshaked.reg import HandshakedReg
 
@@ -72,8 +72,8 @@ class HandshakedReg2(HandshakedCompBase):
         
         
 if __name__ == "__main__":
-    from hdl_toolkit.interfaces.std import Handshaked
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.interfaces.std import Handshaked
+    from hwt.synthesizer.shortcuts import toRtl
     u = HandshakedReg2(Handshaked)
     
     print(toRtl(u))

@@ -3,11 +3,11 @@
 
 import unittest
 
-from hdl_toolkit.bitmask import selectBit
-from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.agentConnector import autoAddAgents, agInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd
-from hdl_toolkit.synthesizer.shortcuts import synthesised
+from hwt.bitmask import selectBit
+from hwt.hdlObjects.specialValues import Time
+from hwt.simulator.agentConnector import autoAddAgents, agInts
+from hwt.simulator.shortcuts import simUnitVcd
+from hwt.synthesizer.shortcuts import synthesised
 from hwtLib.samples.iLvl.operators.concat import SimpleConcat
 
 

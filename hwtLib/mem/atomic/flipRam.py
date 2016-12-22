@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.interfaces.std import Signal, BramPort_withoutClk, Clk
-from hdl_toolkit.interfaces.utils import propagateClk
-from hdl_toolkit.serializer.constants import SERI_MODE
-from hdl_toolkit.synthesizer.codeOps import If
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import evalParam
+from hwt.interfaces.std import Signal, BramPort_withoutClk, Clk
+from hwt.interfaces.utils import propagateClk
+from hwt.serializer.constants import SERI_MODE
+from hwt.synthesizer.codeOps import If
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import evalParam
 from hwtLib.mem.ram import RamSingleClock
 
 
@@ -74,5 +74,5 @@ class FlipRam(Unit):
           
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(FlipRam))

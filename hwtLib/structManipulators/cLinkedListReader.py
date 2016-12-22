@@ -1,14 +1,14 @@
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT, vec
-from hdl_toolkit.interfaces.std import Handshaked, RegCntrl, VectSignal
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
-from hdl_toolkit.synthesizer.codeOps import If, In, Concat, connect
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param
+from hwt.hdlObjects.typeShortcuts import vecT, vec
+from hwt.interfaces.std import Handshaked, RegCntrl, VectSignal
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
+from hwt.synthesizer.codeOps import If, In, Concat, connect
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 from hwtLib.axi.axi_datapump_base import AddrSizeHs
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
 from hwtLib.interfaces.amba import AxiStream_withId
-from hdl_toolkit.synthesizer.vectorUtils import fitTo
+from hwt.synthesizer.vectorUtils import fitTo
 
 
 class CLinkedListReader(Unit):
@@ -206,7 +206,7 @@ class CLinkedListReader(Unit):
            dIn.ready ** 1   
         )
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = CLinkedListReader()
     u.BUFFER_CAPACITY.set(8)
     u.ITEMS_IN_BLOCK.set(31)

@@ -13,7 +13,7 @@ class AxiSReg(AxiSCompBase, HandshakedReg):
     pass
     
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = AxiSReg(AxiStream_withoutSTRB)
     
     print(toRtl(u))

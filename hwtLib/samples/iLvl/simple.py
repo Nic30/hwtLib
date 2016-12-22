@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.intfLvl import Unit
+from hwt.interfaces.std import Signal
+from hwt.intfLvl import Unit
 
 
 class SimpleUnit(Unit):
@@ -31,6 +31,6 @@ class SimpleUnit(Unit):
 
 if __name__ == "__main__":  # alias python main function
     # toRtl can be imported anywhere but we prefer to import it only when this script is running as main
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     print(toRtl(SimpleUnit))

@@ -1,6 +1,6 @@
 import unittest
-from hdl_toolkit.hdlObjects.specialValues import INTF_DIRECTION, DIRECTION
-from python_toolkit.arrayQuery import single, NoValueExc
+from hwt.hdlObjects.specialValues import INTF_DIRECTION, DIRECTION
+from hwt.pyUtils.arrayQuery import single, NoValueExc
 
 
 class BaseSynthesizerTC(unittest.TestCase):
