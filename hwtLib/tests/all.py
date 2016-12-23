@@ -23,6 +23,7 @@ from hwtLib.samples.iLvl.arithmetic.cntr_test import CntrTC
 from hwtLib.samples.iLvl.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.samples.iLvl.arithmetic.twoCntrs_test import TwoCntrsTC
 from hwtLib.samples.iLvl.axi.simpleAxiRegs_test import SimpleAxiRegsTC
+from hwtLib.samples.iLvl.errors.errorsTestCase import ErrorsTC
 from hwtLib.samples.iLvl.hierarchy.simpleSubunit_test import SimpleSubunitTC
 from hwtLib.samples.iLvl.mem.ram_test import RamTC as SampleRamTC
 from hwtLib.samples.iLvl.mem.reg_test import DRegTC
@@ -60,6 +61,7 @@ if __name__ == "__main__":
         ValueTC,
         StatementTreesTC,
         StatementsTC,
+        ErrorsTC,
         
         # component verifications
         ConstDriverTC,
