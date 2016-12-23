@@ -1,10 +1,10 @@
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.interfaces.amba import Axi4_addr
-from hdl_toolkit.synthesizer.param import Param, evalParam
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.interfaces.agents.handshaked import HandshakedAgent
-from hdl_toolkit.interfaces.std import Handshaked, VectSignal, HandshakeSync
-from hdl_toolkit.bitmask import mask
+from hwt.synthesizer.param import Param, evalParam
+from hwt.interfaces.utils import addClkRstn, log2ceil
+from hwt.interfaces.agents.handshaked import HandshakedAgent
+from hwt.interfaces.std import Handshaked, VectSignal, HandshakeSync
+from hwt.bitmask import mask
 from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, PROT_DEFAULT, QOS_DEFAULT, BYTES_IN_TRANS
 
@@ -77,18 +77,21 @@ class Axi_datapumpBase(Unit):
         self.ID_WIDTH = Param(4)
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)
+        self.CACHE_VAL = Param(CACHE_DEFAULT)
+        self.PROT_VAL = Param(PROT_DEFAULT)
+        self.QOS_VAL = Param(QOS_DEFAULT)
+        
         if self._addrHasUser:
             self.ADDR_USER_VAL = Param(0)
     
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            with self._paramsShared():
-                # address channel to axi
-                self.a = self._axiAddrCls()
-                self.a.LOCK_WIDTH = 2  # because all masters have it
-                # user requests
-                self.req = AddrSizeHs()
+        addClkRstn(self)
+        with self._paramsShared():
+            # address channel to axi
+            self.a = self._axiAddrCls()
+            self.a.LOCK_WIDTH = 2  # because all masters have it
+            # user requests
+            self.req = AddrSizeHs()
                 
     def getSizeAlignBits(self):
         return log2ceil(self.DATA_WIDTH // 8).val
@@ -105,10 +108,10 @@ class Axi_datapumpBase(Unit):
     def axiAddrDefaults(self):
         a = self.a
         a.burst ** BURST_INCR
-        a.cache ** CACHE_DEFAULT
+        a.cache ** self.CACHE_VAL
         a.lock ** LOCK_DEFAULT
-        a.prot ** PROT_DEFAULT
-        a.qos ** QOS_DEFAULT
+        a.prot ** self.PROT_VAL
+        a.qos ** self.QOS_VAL
         a.size ** BYTES_IN_TRANS(evalParam(self.DATA_WIDTH).val // 8)
         if self._addrHasUser:
             a.user ** self.ADDR_USER_VAL

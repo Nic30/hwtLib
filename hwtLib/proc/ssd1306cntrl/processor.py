@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
-from hdl_toolkit.synthesizer.codeOps import FsmBuilder
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.enum import Enum
+from hwt.interfaces.std import Handshaked
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
+from hwt.synthesizer.codeOps import FsmBuilder
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 from hwtLib.logic.delayMs import DelayMs
 from hwtLib.proc.ssd1306cntrl.handlers import SSD1306CntrlProc_handlers
 import hwtLib.proc.ssd1306cntrl.instructions as instrSet
@@ -31,12 +31,11 @@ class SSD1306CntrlProc(Unit, SSD1306CntrlProc_handlers):
         self.PROGRAM = []
         
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            self.oled = Ssd1306Intf()
-            
-            self.dataIn = Handshaked()
-            self.dataIn.DATA_WIDTH.set(8)
+        addClkRstn(self)
+        self.oled = Ssd1306Intf()
+        
+        self.dataIn = Handshaked()
+        self.dataIn.DATA_WIDTH.set(8)
         
         with self._paramsShared():
             self.delay = DelayMs()
@@ -192,7 +191,7 @@ class SSD1306CntrlProc(Unit, SSD1306CntrlProc_handlers):
         self.dataIn.rd ** st._eq(st._dtype.LOAD_EXTERN) 
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     from hwtLib.proc.ssd1306cntrl.code import simpleCodeExample
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     u = SSD1306CntrlProc()

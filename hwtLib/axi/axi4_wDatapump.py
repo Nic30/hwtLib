@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.bitmask import mask
-from hdl_toolkit.interfaces.std import Signal, Handshaked, VectSignal, \
+from hwt.bitmask import mask
+from hwt.interfaces.std import Signal, Handshaked, VectSignal, \
     HandshakeSync
-from hdl_toolkit.interfaces.utils import propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import connect, If
-from hdl_toolkit.synthesizer.param import Param
+from hwt.interfaces.utils import propagateClkRstn
+from hwt.synthesizer.codeOps import connect, If
+from hwt.synthesizer.param import Param
 from hwtLib.axi.axi_datapump_base import Axi_datapumpBase
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
@@ -40,16 +40,15 @@ class Axi_wDatapump(Axi_datapumpBase):
 
     def _declr(self):
         super()._declr()  # add clk, rst, axi addr channel and req channel
-        with self._asExtern():
-            with self._paramsShared():
-                self.w = Axi4_w()
-                self.b = Axi4_b()
+        with self._paramsShared():
+            self.w = Axi4_w()
+            self.b = Axi4_b()
 
-                self.wIn = AxiStream()
-                
-                self.errorWrite = Signal()
-            self.reqAck = Handshaked()
-            self.reqAck.DATA_WIDTH.set(self.ID_WIDTH)
+            self.wIn = AxiStream()
+            
+            self.errorWrite = Signal()
+        self.reqAck = Handshaked()
+        self.reqAck.DATA_WIDTH.set(self.ID_WIDTH)
            
         with self._paramsShared():
             # fifo for id propagation and frame splitting on axi.w channel 
@@ -62,7 +61,7 @@ class Axi_wDatapump(Axi_datapumpBase):
             bf.DEPTH.set(self.MAX_TRANS_OVERLAP)
             
 
-    def axiAwHandler(self):
+    def axiAwHandler(self, wErrFlag):
         req = self.req
         aw = self.a
 
@@ -94,13 +93,15 @@ class Axi_wDatapump(Axi_datapumpBase):
                        lastReqDispatched ** 1 
                     )
                 ),
-                streamSync(masters=[req], slaves=[aw, wInfo]),
+                streamSync(masters=[req], 
+                           slaves=[aw, wInfo], 
+                           extraConds={aw:[~wErrFlag]}),
             ).Else(
                 _id ** req_idBackup,
                 aw.addr ** addrBackup,
                 connect(lenDebth, aw.len, fit=True),
                 
-                streamSync(slaves=[aw, wInfo]),
+                streamSync(slaves=[aw, wInfo], extraConds={aw:[~wErrFlag]}),
                 
                 req.rd ** 0,
                 
@@ -122,7 +123,7 @@ class Axi_wDatapump(Axi_datapumpBase):
             connect(req.len, aw.len, fit=True)
             streamSync(masters=[req], slaves=[aw, wInfo])
            
-    def axiWHandler(self):
+    def axiWHandler(self, wErrFlag):
         w = self.w
         wIn = self.wIn
         
@@ -146,13 +147,15 @@ class Axi_wDatapump(Axi_datapumpBase):
                )
             )
             extraConds = {wInfo:[doSplit],
-                          bInfo:[doSplit]}
+                          bInfo:[doSplit],
+                          w:[~wErrFlag]}
             w.last ** (doSplit | wIn.last)
             
         else:
             w.last ** wIn.last
             extraConds = {wInfo:[wIn.last],
-                          bInfo:[wIn.last]}
+                          bInfo:[wIn.last],
+                          w:[~wErrFlag]}
         
         bInfo.isLast ** wIn.last
         streamSync(masters=[wIn, wInfo],
@@ -180,16 +183,17 @@ class Axi_wDatapump(Axi_datapumpBase):
                                reqAck : [lastFlags.isLast]
                                })
         
+        return wErrFlag
     
     def _impl(self):
         propagateClkRstn(self)
         
-        self.axiAwHandler()
-        self.axiWHandler()
-        self.axiBHandler()
+        wErrFlag = self.axiBHandler()
+        self.axiAwHandler(wErrFlag)
+        self.axiWHandler(wErrFlag)
         
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = Axi_wDatapump()
     print(toRtl(u))

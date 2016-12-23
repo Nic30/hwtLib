@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.intfLvl import Unit
-from hdl_toolkit.synthesizer.codeOps import Switch
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import Signal
+from hwt.intfLvl import Unit
+from hwt.synthesizer.codeOps import Switch
 
 
 class SwitchStmUnit(Unit):
     def _declr(self):
-        with self._asExtern():
-            self.sel = Signal(dtype=vecT(2))
-            self.a = Signal()
-            self.b = Signal()
-            self.c = Signal()
-            self.d = Signal()
+        self.sel = Signal(dtype=vecT(2))
+        self.a = Signal()
+        self.b = Signal()
+        self.c = Signal()
+        self.d = Signal()
             
     def _impl(self):
         Switch(self.sel)\
@@ -30,6 +29,6 @@ class SwitchStmUnit(Unit):
         
 
 if __name__ == "__main__":  # alias python main function
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     print(toRtl(SwitchStmUnit))

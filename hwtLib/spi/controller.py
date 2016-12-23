@@ -3,14 +3,14 @@
 
 from math import log2
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.interfaces.std import VldSynced, Signal
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.interfaces.utils import isPow2
-from hdl_toolkit.synthesizer.codeOps import Switch, If, FsmBuilder
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.hdlObjects.typeShortcuts import vecT, hBit
+from hwt.hdlObjects.types.enum import Enum
+from hwt.interfaces.std import VldSynced, Signal
+from hwt.interfaces.utils import addClkRstn
+from hwt.interfaces.utils import isPow2
+from hwt.synthesizer.codeOps import Switch, If, FsmBuilder
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param, evalParam
 from hwtLib.interfaces.peripheral import Spi
 
 
@@ -20,12 +20,11 @@ class SPICntrlW(Unit):
         self.SPI_FREQ_PESCALER = Param(32)
         
     def _declr(self):
-        with self._asExtern(): 
-            addClkRstn(self)
-            self.dataIn = VldSynced()
-            self.dataIn.DATA_WIDTH.set(8)
-            self.dataOut = Spi() 
-            self.dataInDone = Signal()
+        addClkRstn(self)
+        self.dataIn = VldSynced()
+        self.dataIn.DATA_WIDTH.set(8)
+        self.dataOut = Spi() 
+        self.dataInDone = Signal()
             
     
     def mainFsm(self, shift_counter, falling):
@@ -121,7 +120,7 @@ class SPICntrlW(Unit):
         )
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     u = SPICntrlW()
     print(toRtl(u))

@@ -4,13 +4,13 @@
 import re
 import unittest
 
-from hdl_toolkit.hdlObjects.statements import IfContainer, SwitchContainer
-from hdl_toolkit.hdlObjects.types.defs import INT
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.serializer.vhdlFormater import formatVhdl
-from hdl_toolkit.synthesizer.assigRenderer import renderIfTree
-from hdl_toolkit.synthesizer.codeOps import c, If, Switch
-from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
+from hwt.hdlObjects.statements import IfContainer, SwitchContainer
+from hwt.hdlObjects.types.defs import INT
+from hwt.hdlObjects.types.enum import Enum
+from hwt.serializer.vhdl.formater import formatVhdl
+from hwt.synthesizer.assigRenderer import renderIfTree
+from hwt.synthesizer.codeOps import c, If, Switch
+from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 
 
 rmWhitespaces = re.compile(r'\s+', re.MULTILINE)    

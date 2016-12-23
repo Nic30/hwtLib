@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import If, Concat
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.enum import Enum
+from hwt.interfaces.std import Signal
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.synthesizer.codeOps import If, Concat
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl
 from hwtLib.interfaces.peripheral import I2c
 
@@ -21,22 +21,21 @@ class I2cMaster(Unit):
         self.I2C_FREQ = Param(int(400e3))
         
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            
-            self.start = Signal() # send start on i2c bus, can be used with read or write
-            self.stop = Signal() # send stop to i2c bus
-            self.read = Signal() 
-            self.write = Signal()
-            
-            self.ack_in = Signal()  # i2c ack bit
-            self.din = Signal(dtype=vecT(8))
-            
-            self.ack_out = Signal()  # i2c ack bit
-            self.dout = Signal(dtype=vecT(8))
-            
-            
-            self.i2c = I2c()
+        addClkRstn(self)
+        
+        self.start = Signal() # send start on i2c bus, can be used with read or write
+        self.stop = Signal() # send stop to i2c bus
+        self.read = Signal() 
+        self.write = Signal()
+        
+        self.ack_in = Signal()  # i2c ack bit
+        self.din = Signal(dtype=vecT(8))
+        
+        self.ack_out = Signal()  # i2c ack bit
+        self.dout = Signal(dtype=vecT(8))
+        
+        
+        self.i2c = I2c()
         
         self.bitCntrl = I2cMasterBitCtrl()
         

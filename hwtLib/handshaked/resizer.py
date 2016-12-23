@@ -1,8 +1,8 @@
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
+from hwt.interfaces.utils import addClkRstn, log2ceil
 from hwtLib.handshaked.compBase import HandshakedCompBase
-from hdl_toolkit.synthesizer.param import Param, evalParam
-from hdl_toolkit.synthesizer.codeOps import If, Concat
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.codeOps import If, Concat
+from hwt.hdlObjects.typeShortcuts import vecT
 
 
 
@@ -23,13 +23,12 @@ class HandshakedResizer(HandshakedCompBase):
         self.OUT_MULTIPLIER = Param(2)
             
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            with self._paramsShared():
-                self.dataIn = self.intfCls()
-            
-            self.dataOut = self.intfCls()
-            self._shareParamsWithMultiplier(self.dataOut, self.OUT_MULTIPLIER)
+        addClkRstn(self)
+        with self._paramsShared():
+            self.dataIn = self.intfCls()
+        
+        self.dataOut = self.intfCls()
+        self._shareParamsWithMultiplier(self.dataOut, self.OUT_MULTIPLIER)
     
     def dataPassLogic(self, inputRegs_cntr):
         MULTIPLIER = evalParam(self.OUT_MULTIPLIER).val
@@ -71,7 +70,7 @@ class HandshakedResizer(HandshakedCompBase):
         self.dataPassLogic(inputRegs_cntr)    
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
-    from hdl_toolkit.interfaces.std import Handshaked
+    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.interfaces.std import Handshaked
     u = HandshakedResizer(Handshaked)
     print(toRtl(u))

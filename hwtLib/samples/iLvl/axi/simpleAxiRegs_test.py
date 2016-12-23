@@ -3,10 +3,10 @@
 
 import unittest
 
-from hdl_toolkit.bitmask import mask
-from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.agentConnector import valuesToInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
+from hwt.bitmask import mask
+from hwt.hdlObjects.specialValues import Time
+from hwt.simulator.agentConnector import valuesToInts
+from hwt.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.samples.iLvl.axi.simpleAxiRegs import SimpleAxiRegs
 
 

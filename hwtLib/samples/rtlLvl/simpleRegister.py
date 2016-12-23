@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.serializer.vhdlFormater import formatVhdl
-from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.serializer.vhdlFormater import formatVhdl
+from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 
 
 if __name__ == "__main__":

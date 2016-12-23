@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.types.defs import BIT
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.interfaces.utils import addClkRst, propagateClkRst
-from hdl_toolkit.intfLvl import Unit
+from hwt.hdlObjects.types.defs import BIT
+from hwt.interfaces.std import Signal
+from hwt.interfaces.utils import addClkRst, propagateClkRst
+from hwt.intfLvl import Unit
 
 
 class DReg(Unit):
@@ -14,12 +14,11 @@ class DReg(Unit):
                 generate such a register for any interface and datatype
     """
     def _declr(self):
-        with self._asExtern():
-            addClkRst(self)
+        addClkRst(self)
+
+        self.din = Signal(dtype=BIT)
+        self.dout = Signal(dtype=BIT)
     
-            self.din = Signal(dtype=BIT)
-            self.dout = Signal(dtype=BIT)
-        
         
     def _impl(self):
         internReg = self._reg("internReg", BIT, defVal=False)        
@@ -43,6 +42,6 @@ class DoubleDReg(Unit):
     
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = DoubleDReg()
     print(toRtl(u))

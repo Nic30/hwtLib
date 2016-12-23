@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.intfLvl import Unit
-from hdl_toolkit.synthesizer.shortcuts import toRtl
+from hwt.interfaces.std import Signal
+from hwt.intfLvl import Unit
+from hwt.synthesizer.shortcuts import toRtl
 
 
 class SimpleComentedUnit(Unit):
@@ -14,9 +14,8 @@ class SimpleComentedUnit(Unit):
     """
     
     def _declr(self):
-        with self._asExtern():
-            self.a = Signal()
-            self.b = Signal()
+        self.a = Signal()
+        self.b = Signal()
     
     def _impl(self):
         self.b ** self.a

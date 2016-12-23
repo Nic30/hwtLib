@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.synthesizer.codeOps import And, If, Or, iterBits, ror
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hwt.synthesizer.codeOps import And, If, Or, iterBits, ror
+from hwt.hdlObjects.typeShortcuts import vecT
 from hwtLib.handshaked.join import HandshakedJoin
 
 
@@ -61,7 +61,7 @@ class HsJoinFairShare(HandshakedJoin):
                 
         
 if __name__ == "__main__":
-    from hdl_toolkit.interfaces.std import Handshaked
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.interfaces.std import Handshaked
+    from hwt.synthesizer.shortcuts import toRtl
     u = HsJoinFairShare(Handshaked)
     print(toRtl(u))

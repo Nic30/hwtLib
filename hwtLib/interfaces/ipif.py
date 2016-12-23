@@ -1,7 +1,7 @@
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.synthesizer.interfaceLevel.interface import Interface
-from hdl_toolkit.synthesizer.param import Param
-from hdl_toolkit.interfaces.std import s, D
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.synthesizer.interfaceLevel.interface import Interface
+from hwt.synthesizer.param import Param
+from hwt.interfaces.std import s, D
 
 class IPIF(Interface):
     def _config(self):

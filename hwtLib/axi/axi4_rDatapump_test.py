@@ -3,10 +3,10 @@
 
 import unittest
 
-from hdl_toolkit.bitmask import mask
-from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.shortcuts import simPrepare
-from hdl_toolkit.simulator.simTestCase import SimTestCase
+from hwt.bitmask import mask
+from hwt.hdlObjects.specialValues import Time
+from hwt.simulator.shortcuts import simPrepare
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.axi.axi4_rDatapump import Axi_rDatapump
 from hwtLib.interfaces.amba import Axi3_addr_withUser
 from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, \
@@ -230,8 +230,8 @@ class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
     
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(Axi4_rDatapumpTC('test_maxReq'))
-    suite.addTest(unittest.makeSuite(Axi3_rDatapumpTC))
+    suite.addTest(Axi4_rDatapumpTC('test_maxOverlap'))
+    #suite.addTest(unittest.makeSuite(Axi4_rDatapumpTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.interfaces.std import Signal, HandshakeSync, \
+from hwt.interfaces.std import Signal, HandshakeSync, \
     RegCntrl
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn
-from hdl_toolkit.serializer.constants import SERI_MODE
-from hdl_toolkit.synthesizer.codeOps import If
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.serializer.constants import SERI_MODE
+from hwt.synthesizer.codeOps import If
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 from hwtLib.mem.atomic.flipReg import FlipRegister
 
 
@@ -25,11 +25,10 @@ class FlipCntr(Unit):
 
     def _declr(self):
         with self._paramsShared():
-            with self._asExtern():
-                addClkRstn(self)
-                self.doIncr = Signal()
-                self.doFlip = HandshakeSync()
-                self.data = RegCntrl()
+            addClkRstn(self)
+            self.doIncr = Signal()
+            self.doFlip = HandshakeSync()
+            self.data = RegCntrl()
             self.cntr = FlipRegister()
     
     def flipHandler(self):
@@ -56,5 +55,5 @@ class FlipCntr(Unit):
         self.dataHanldler()
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(FlipCntr()))

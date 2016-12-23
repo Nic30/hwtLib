@@ -1,4 +1,4 @@
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.typeShortcuts import vecT
 
 
 char = vecT(8, False)

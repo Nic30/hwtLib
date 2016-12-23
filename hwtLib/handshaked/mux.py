@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.synthesizer.codeOps import Switch
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import Signal
+from hwt.synthesizer.codeOps import Switch
+from hwt.synthesizer.param import Param, evalParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
@@ -16,12 +16,11 @@ class HandshakedMux(HandshakedCompBase):
     def _declr(self):
         outputs = evalParam(self.OUTPUTS).val
         
-        with self._asExtern():
-            self.sel = Signal(dtype=vecT(outputs.bit_length()))
-            
-            with self._paramsShared():
-                self.dataIn = self.intfCls()
-                self.dataOut = self.intfCls(multipliedBy=self.OUTPUTS)
+        self.sel = Signal(dtype=vecT(outputs.bit_length()))
+        
+        with self._paramsShared():
+            self.dataIn = self.intfCls()
+            self.dataOut = self.intfCls(multipliedBy=self.OUTPUTS)
     
     def _impl(self):
         In = self.dataIn
@@ -43,7 +42,7 @@ class HandshakedMux(HandshakedCompBase):
         
         
 if __name__ == "__main__":
-    from hdl_toolkit.interfaces.std import Handshaked
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.interfaces.std import Handshaked
+    from hwt.synthesizer.shortcuts import toRtl
     u = HandshakedMux(Handshaked)
     print(toRtl(u))   

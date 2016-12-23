@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Signal, VldSynced
-from hdl_toolkit.interfaces.utils import log2ceil
-from hdl_toolkit.serializer.constants import SERI_MODE
-from hdl_toolkit.synthesizer.codeOps import If, Or, iterBits
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import Signal, VldSynced
+from hwt.interfaces.utils import log2ceil
+from hwt.serializer.constants import SERI_MODE
+from hwt.synthesizer.codeOps import If, Or, iterBits
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param, evalParam
 
 
 class OneHotToBin(Unit):
@@ -20,10 +20,9 @@ class OneHotToBin(Unit):
         self.ONE_HOT_WIDTH = Param(8)
         
     def _declr(self):
-        with self._asExtern():
-            self.oneHot = Signal(dtype=vecT(self.ONE_HOT_WIDTH)) 
-            self.bin = VldSynced()
-            self.bin.DATA_WIDTH.set(log2ceil(self.ONE_HOT_WIDTH))
+        self.oneHot = Signal(dtype=vecT(self.ONE_HOT_WIDTH)) 
+        self.bin = VldSynced()
+        self.bin.DATA_WIDTH.set(log2ceil(self.ONE_HOT_WIDTH))
             
     def _impl(self):
         W = evalParam(self.ONE_HOT_WIDTH).val
@@ -42,7 +41,7 @@ class OneHotToBin(Unit):
         self.bin.vld ** Or(*[bit for bit in iterBits(self.oneHot)])
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = OneHotToBin()
     print(toRtl(u))  
 

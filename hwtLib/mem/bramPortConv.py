@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import BramPort_withoutClk
-from hdl_toolkit.synthesizer.codeOps import c, If
-from hdl_toolkit.synthesizer.param import evalParam
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import BramPort_withoutClk
+from hwt.synthesizer.codeOps import c, If
+from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.busConverter import BusConverter
 
 
@@ -16,12 +16,11 @@ class BramPortConvertor(BusConverter):
         BramPort_withoutClk._config(self)
         
     def _declr(self):
-        with self._asExtern():
-            with self._paramsShared():
-                self.bus = BramPort_withoutClk()
-            
-            assert self.getMaxAddr() < (2 ** evalParam(self.ADDR_WIDTH).val)
-            self.decorateWithConvertedInterfaces()
+        with self._paramsShared():
+            self.bus = BramPort_withoutClk()
+        
+        assert self.getMaxAddr() < (2 ** evalParam(self.ADDR_WIDTH).val)
+        self.decorateWithConvertedInterfaces()
     
     def _impl(self):
         bus = self.bus
@@ -76,7 +75,7 @@ class BramPortConvertor(BusConverter):
                          
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     
     u = BramPortConvertor([
                           (0, "reg0"),

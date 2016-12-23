@@ -1,7 +1,7 @@
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import s, D
-from hdl_toolkit.synthesizer.interfaceLevel.interface import  Interface
-from hdl_toolkit.synthesizer.param import Param
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import s, D
+from hwt.synthesizer.interfaceLevel.interface import  Interface
+from hwt.synthesizer.param import Param
 from hwtLib.interfaces.amba_agents import Axi4_addrAgent, Axi4_rAgent, \
     AxiStreamAgent, AxiStream_withUserAndStrbAgent, AxiLiteAgent, \
     AxiLite_addrAgent, AxiLite_rAgent, AxiLite_wAgent, AxiLite_bAgent, \

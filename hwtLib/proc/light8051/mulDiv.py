@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT, hBit, vec
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.synthesizer.codeOps import If, c, Concat, sll
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param
+from hwt.hdlObjects.typeShortcuts import vecT, hBit, vec
+from hwt.interfaces.std import Signal
+from hwt.interfaces.utils import addClkRstn, log2ceil
+from hwt.synthesizer.codeOps import If, c, Concat, sll
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 
 
 class MulDiv(Unit):
@@ -14,36 +14,35 @@ class MulDiv(Unit):
         self.DATA_WIDTH = Param(8)
     def _declr(self):
         word_t = vecT(self.DATA_WIDTH)
-        with self._asExtern():
-            addClkRstn(self)
-            # Numerator input, should be connected to the ACC register.
-            self.data_a = Signal(dtype=word_t)
-            
-            # Denominator input, should be connected to the B register.
-            self.data_b = Signal(dtype=word_t)
-            
-            self.start = Signal()
-            
-            # Product output, valid only when mul_ready='1'.
-            self.prod_out = Signal(dtype=vecT(self.DATA_WIDTH * 2))
-            
-            # Quotient output, valid only when div_ready='1'.
-            self.quot_out = Signal(dtype=word_t)
-            
-            # Remainder output, valid only when div_ready='1'.
-            self.rem_out = Signal(dtype=word_t)
-            
-            # Division overflow flag, valid only when div_ready='1'.
-            self.div_ov_out = Signal()
-            
-            # Product overflow flag, valid only when mul_ready='1'.
-            self.mul_ov_out = Signal()
-            
-            
-            self.mul_ready = Signal()
-            
-            # Asserted when the division has completed.
-            self.div_ready = Signal()
+        addClkRstn(self)
+        # Numerator input, should be connected to the ACC register.
+        self.data_a = Signal(dtype=word_t)
+        
+        # Denominator input, should be connected to the B register.
+        self.data_b = Signal(dtype=word_t)
+        
+        self.start = Signal()
+        
+        # Product output, valid only when mul_ready='1'.
+        self.prod_out = Signal(dtype=vecT(self.DATA_WIDTH * 2))
+        
+        # Quotient output, valid only when div_ready='1'.
+        self.quot_out = Signal(dtype=word_t)
+        
+        # Remainder output, valid only when div_ready='1'.
+        self.rem_out = Signal(dtype=word_t)
+        
+        # Division overflow flag, valid only when div_ready='1'.
+        self.div_ov_out = Signal()
+        
+        # Product overflow flag, valid only when mul_ready='1'.
+        self.mul_ov_out = Signal()
+        
+        
+        self.mul_ready = Signal()
+        
+        # Asserted when the division has completed.
+        self.div_ready = Signal()
     
     def divPart(self):
         """
@@ -118,6 +117,6 @@ class MulDiv(Unit):
         
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(MulDiv()))
     

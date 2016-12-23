@@ -3,10 +3,10 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.simulator.agentConnector import valuesToInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd, oscilate, pullDownAfter, \
+from hwt.hdlObjects.specialValues import Time
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.simulator.agentConnector import valuesToInts
+from hwt.simulator.shortcuts import simUnitVcd, oscilate, pullDownAfter, \
     toSimModel, reconectUnitSignalsToModel
 from hwtLib.mem.clkSynchronizer import ClkSynchronizer
 

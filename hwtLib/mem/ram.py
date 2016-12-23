@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.hdlObjects.types.array import Array
-from hdl_toolkit.interfaces.std import BramPort, Clk, BramPort_withoutClk
-from hdl_toolkit.serializer.constants import SERI_MODE
-from hdl_toolkit.synthesizer.codeOps import If, power
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.array import Array
+from hwt.interfaces.std import BramPort, Clk, BramPort_withoutClk
+from hwt.serializer.constants import SERI_MODE
+from hwt.synthesizer.codeOps import If, power
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param, evalParam
 
 
 class RamSingleClock(Unit):
@@ -21,7 +21,7 @@ class RamSingleClock(Unit):
     def _declr(self):
         PORTS = evalParam(self.PORT_CNT).val
         
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             self.clk = Clk()
             self.a = BramPort_withoutClk()
             for i in range(PORTS - 1):
@@ -60,7 +60,7 @@ class Ram_sp(Unit):
         self.ADDR_WIDTH = Param(4)
     
     def _declr(self):
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             self.a = BramPort()
     
     def connectPort(self, port, mem):
@@ -81,7 +81,7 @@ class Ram_dp(Ram_sp):
     def _declr(self):
         super()._declr()
         with self._paramsShared():
-            self.b = BramPort(isExtern=True)
+            self.b = BramPort()
 
     def _impl(self):
         super()._impl()
@@ -96,5 +96,5 @@ def getRamCls(noOfPorts):
         raise NotImplementedError() 
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(Ram_dp()))

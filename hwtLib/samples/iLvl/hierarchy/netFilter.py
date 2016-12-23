@@ -1,27 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.intfLvl import Param, Unit, EmptyUnit
-from hdl_toolkit.synthesizer.interfaceLevel.emptyUnit import setOut
+from hwt.intfLvl import Param, Unit, EmptyUnit
+from hwt.synthesizer.interfaceLevel.emptyUnit import setOut
 from hwtLib.interfaces.amba import AxiStream, AxiLite
 
 
 class HeadFieldExtractor(EmptyUnit):
     def _declr(self):
-        with self._asExtern():
-            self.din = AxiStream()
-            self.dout = AxiStream()
-            self.headers = AxiStream()
+        self.din = AxiStream()
+        self.dout = AxiStream()
+        self.headers = AxiStream()
     
     def _impl(self):
         setOut(self.dout, self.headers)
     
 class PatternMatch(EmptyUnit):
     def _declr(self):
-        with self._asExtern():
-            self.din = AxiStream()
-            self.match = AxiStream()
-            self.cfg = AxiLite()
+        self.din = AxiStream()
+        self.match = AxiStream()
+        self.cfg = AxiLite()
     
     def _impl(self):
         setOut(self.match)
@@ -29,32 +27,29 @@ class PatternMatch(EmptyUnit):
     
 class Filter(EmptyUnit):
     def _declr(self):
-        with self._asExtern():
-            self.headers = AxiStream()
-            self.match = AxiStream()
-            self.din = AxiStream()
-            self.dout = AxiStream()
-            self.cfg = AxiLite()
-    
+        self.headers = AxiStream()
+        self.match = AxiStream()
+        self.din = AxiStream()
+        self.dout = AxiStream()
+        self.cfg = AxiLite()
+
     def _impl(self):
         setOut(self.match, self.dout)
 
 
 class AxiStreamFork(EmptyUnit):
     def _declr(self):
-        with self._asExtern():
-            self.din = AxiStream()
-            self.dout0 = AxiStream()
-            self.dout1 = AxiStream()
+        self.din = AxiStream()
+        self.dout0 = AxiStream()
+        self.dout1 = AxiStream()
 
     def _impl(self):
         setOut(self.dout0, self.dout1)
 
 class Exporter(EmptyUnit):
     def _declr(self):
-        with self._asExtern():
-            self.din = AxiStream()
-            self.dout = AxiStream()
+        self.din = AxiStream()
+        self.dout = AxiStream()
     def _impl(self):
         setOut(self.dout)
 
@@ -68,10 +63,9 @@ class NetFilter(Unit):
     
     def _declr(self):
         with self._paramsShared():
-            with self._asExtern():
-                self.din = AxiStream()
-                self.export = AxiStream()
-                # self.cfg = AxiLite(isExtern=True)
+            self.din = AxiStream()
+            self.export = AxiStream()
+            # self.cfg = AxiLite()
     
             self.hfe = HeadFieldExtractor()
             self.pm = PatternMatch()
@@ -93,8 +87,8 @@ class NetFilter(Unit):
 
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
-    from cli_toolkit.ip_packager.packager import Packager
+    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.serializer.ip_packager.packager import Packager
     print(toRtl(NetFilter))
     
     # s = NetFilter()

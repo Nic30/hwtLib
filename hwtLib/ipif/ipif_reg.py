@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.specialValues import DIRECTION
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import If
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hwt.hdlObjects.specialValues import DIRECTION
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.codeOps import If
+from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.interfaces.ipif import IPIF
 
 
@@ -13,7 +13,7 @@ class IpifReg(Unit):
         IPIF._config(self)
     
     def _declr(self):
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             addClkRstn(self)
             self.dataIn = IPIF()
             self.dataOut = IPIF()
@@ -53,7 +53,7 @@ class IpifReg(Unit):
         
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = IpifReg()
 
     print(toRtl(u))

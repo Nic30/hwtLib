@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.intfLvl import Unit
+from hwt.interfaces.std import Handshaked
+from hwt.interfaces.utils import addClkRstn
+from hwt.intfLvl import Unit
 from hwtLib.handshaked.builder import HsBuilder
 
 
 class HandshakedSimple(Unit):
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            self.a = Handshaked()
-            self.b = Handshaked()
+        addClkRstn(self)
+        self.a = Handshaked()
+        self.b = Handshaked()
         
     def _impl(self):
         b = HsBuilder(self, self.a)
@@ -25,5 +24,5 @@ class HandshakedSimple(Unit):
         
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(HandshakedSimple))

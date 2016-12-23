@@ -7,7 +7,9 @@ def BYTES_IN_TRANS(n):
     return n.bit_length() - 1
 
 
-CACHE_DEFAULT = 3
+# http://www.gstitt.ece.ufl.edu/courses/fall15/eel4720_5721/labs/refs/AXI4_specification.pdf  p.65
+CACHE_DEFAULT = 3 # Normal Non-cacheable Bufferable
+
 PROT_DEFAULT = 0
 QOS_DEFAULT = 0
 LOCK_DEFAULT = 0

@@ -4,12 +4,12 @@
 from copy import copy
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.agentConnector import agInts
-from hdl_toolkit.simulator.agentConnector import valuesToInts
-from hdl_toolkit.simulator.shortcuts import simPrepare
-from hdl_toolkit.simulator.simTestCase import SimTestCase
-from hdl_toolkit.synthesizer.param import evalParam
+from hwt.hdlObjects.specialValues import Time
+from hwt.simulator.agentConnector import agInts
+from hwt.simulator.agentConnector import valuesToInts
+from hwt.simulator.shortcuts import simPrepare
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.param import evalParam
 from hwtLib.mem.fifo import Fifo
 
 
@@ -125,33 +125,6 @@ class FifoTC(SimTestCase):
         self.assertSequenceEqual([1, 2, 3, 4, 5, 6], collected)
         self.assertSequenceEqual([], u.dataIn._ag.data)
     
-        
-
-class FifoBramTC(FifoTC):
-    def setUp(self):
-        u = Fifo()
-        u.LATENCY.set(2)
-        u.DATA_WIDTH.set(8)
-        u.DEPTH.set(4)
-        self.u, self.model, self.procs = simPrepare(u)
-        
-    
-    def test_tryMore2(self):
-        u = self.u
-        
-        u.dataIn._ag.data = [1, 2, 3, 4, 5, 6, 7, 8]
-        def closeOutput(s):
-            yield s.wait(4 * 10 * Time.ns)
-            u.dataOut._ag.enable = False
-            
-        self.procs.append(closeOutput)
-        self.doSim(150 * Time.ns)
-
-        collected = agInts(u.dataOut)
-        
-        self.assertValSequenceEqual(self.model.memory._val.val, [5, 2, 3, 4])
-        self.assertSequenceEqual(collected, [1])
-        self.assertSequenceEqual(u.dataIn._ag.data, [6, 7, 8])
         
 if __name__ == "__main__":
     suite = unittest.TestSuite()

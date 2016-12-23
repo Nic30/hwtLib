@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.intfLvl import Param, Unit
+from hwt.intfLvl import Param, Unit
 from hwtHdlParsers.tests.vhdlCodesign.axiLiteBasicSlave import AxiLiteBasicSlave
 from hwtLib.interfaces.amba import  AxiLite
 
@@ -14,7 +14,7 @@ class AxiLiteSlaveContainer(Unit):
     def _declr(self):
         with self._paramsShared():
             self.slv = AxiLiteBasicSlave()
-            self.axi = AxiLite(isExtern=True)
+            self.axi = AxiLite()
         self.slv.C_S_AXI_ADDR_WIDTH.set(self.ADDR_WIDTH)
         self.slv.C_S_AXI_DATA_WIDTH.set(self.DATA_WIDTH)
 
@@ -22,7 +22,7 @@ class AxiLiteSlaveContainer(Unit):
         self.slv.S_AXI ** self.axi
     
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = AxiLiteSlaveContainer()
     toRtl(u)
     

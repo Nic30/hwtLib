@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import hInt
-from hdl_toolkit.interfaces.std import VldSynced
-from hdl_toolkit.intfLvl import Unit, Param
+from hwt.hdlObjects.typeShortcuts import hInt
+from hwt.interfaces.std import VldSynced
+from hwt.intfLvl import Unit, Param
 
 
 class SimpleSubunit(Unit):
@@ -11,7 +11,7 @@ class SimpleSubunit(Unit):
         self.DATA_WIDTH = Param(8)
         
     def _declr(self):
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             self.c = VldSynced()
             self.d = VldSynced()
         
@@ -32,9 +32,8 @@ class InterfaceArraySample1(Unit):
     def _declr(self):
         LEN = hInt(2)
         with self._paramsShared():
-            with self._asExtern():
-                self.a = VldSynced(multipliedBy=LEN)
-                self.b = VldSynced(multipliedBy=LEN)
+            self.a = VldSynced(multipliedBy=LEN)
+            self.b = VldSynced(multipliedBy=LEN)
     
             self.u0 = SimpleSubunit() 
             self.u1 = SimpleSubunit()
@@ -50,7 +49,7 @@ class InterfaceArraySample1(Unit):
         # u2out = connect(u2.d, b[2])
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(
     toRtl(InterfaceArraySample1)
     )

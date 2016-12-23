@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import FsmBuilder, Switch, If
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.shortcuts import toRtl
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.enum import Enum
+from hwt.interfaces.std import Signal
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.codeOps import FsmBuilder, Switch, If
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.shortcuts import toRtl
 
 
 class FsmExample(Unit):
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            self.a = Signal()
-            self.b = Signal()
-            self.dout = Signal(dtype=vecT(3))
+        addClkRstn(self)
+        self.a = Signal()
+        self.b = Signal()
+        self.dout = Signal(dtype=vecT(3))
             
             
     def _impl(self):

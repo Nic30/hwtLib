@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.serializer.vhdlFormater import formatVhdl
-from hdl_toolkit.synthesizer.codeOps import If, Switch
-from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
+from hwt.hdlObjects.types.enum import Enum
+from hwt.serializer.vhdlFormater import formatVhdl
+from hwt.synthesizer.codeOps import If, Switch
+from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 
 
 def complexConds():

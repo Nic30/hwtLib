@@ -3,12 +3,13 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.shortcuts import simPrepare, simUnitVcd
+from hwt.hdlObjects.specialValues import Time
+from hwt.simulator.shortcuts import simPrepare
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl
 
 
-class I2CMasterBitCntrlTC(unittest.TestCase):
+class I2CMasterBitCntrlTC(SimTestCase):
     def setUp(self):
         u = I2cMasterBitCtrl()
         self.u, self.model, self.procs = simPrepare(u)
@@ -17,11 +18,8 @@ class I2CMasterBitCntrlTC(unittest.TestCase):
     def testNop(self):
         u = self.u
         u.clk_cnt_initVal._ag.data = [4]
+        self.doSim(10 * 10 * Time.ns)
     
-    
-    def runSim(self, name, time=1 * Time.ms):
-        simUnitVcd(self.model, self.procs,
-                   "tmp/i2cm_bitcntrl_" + name + ".vcd", time=time)
     
 if __name__ == "__main__":
     suite = unittest.TestSuite()

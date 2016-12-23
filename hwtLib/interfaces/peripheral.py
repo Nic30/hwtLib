@@ -1,7 +1,7 @@
-from cli_toolkit.ip_packager.interfaces.intfConfig import IntfConfig 
-from hdl_toolkit.interfaces.std import Clk, s, D, Signal
-from hdl_toolkit.interfaces.tristate import TristateClk, TristateSig
-from hdl_toolkit.synthesizer.interfaceLevel.interface import Interface
+from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig 
+from hwt.interfaces.std import Clk, s, D, Signal
+from hwt.interfaces.tristate import TristateClk, TristateSig
+from hwt.synthesizer.interfaceLevel.interface import Interface
 
 
 class Spi(Interface):

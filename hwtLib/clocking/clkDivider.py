@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Clk, Rst_n
-from hdl_toolkit.synthesizer.codeOps import If
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import Clk, Rst_n
+from hwt.synthesizer.codeOps import If
+from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
 class ClkDiv3(Unit):
@@ -14,11 +14,10 @@ class ClkDiv3(Unit):
                 (http://www.xilinx.com/support/documentation/ip_documentation/clk_wiz/v5_1/pg065-clk-wiz.pdf)
     """
     def _declr(self):
-        with self._asExtern():
-            self.clk = Clk()
-            self.rst_n = Rst_n()
+        self.clk = Clk()
+        self.rst_n = Rst_n()
 
-            self.clkOut = Clk()
+        self.clkOut = Clk()
     
     def _impl(self):
         r_cnt = self._cntx.sig("r_cnt", typ=vecT(2))    
@@ -54,5 +53,5 @@ class ClkDiv3(Unit):
         self.clkOut ** fall._eq(rise)
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(ClkDiv3))

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.specialValues import DIRECTION
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Signal, Clk
-from hdl_toolkit.synthesizer.interfaceLevel.interface import Interface
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hwt.hdlObjects.specialValues import DIRECTION
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import Signal, Clk
+from hwt.synthesizer.interfaceLevel.interface import Interface
+from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
 # [TODO] this is only torso

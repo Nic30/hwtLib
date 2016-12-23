@@ -3,7 +3,7 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.typeShortcuts import hBool, hInt, vec, hStr
+from hwt.hdlObjects.typeShortcuts import hBool, hInt, vec, hStr
 
 
 class ValueTC(unittest.TestCase):

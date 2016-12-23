@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import If, Concat, FsmBuilder, In
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.enum import Enum
+from hwt.interfaces.std import Signal
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.codeOps import If, Concat, FsmBuilder, In
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 from hwtLib.interfaces.peripheral import I2c
 
 
@@ -62,18 +62,17 @@ class I2cMasterBitCtrl(Unit):
         self.CLK_CNTR_WIDTH = Param(16)
         
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            self.clk_cnt_initVal = Signal(dtype=vecT(16))
-            self.i2c = I2c()
-            
-            self.cmd = Signal(dtype=vecT(4))
-            self.cmd_ack = Signal()  # command completed
-            self.busy = Signal()  # i2c bus busy
-            self.arbitrationLost = Signal()  # arbitration lost
-            
-            self.din = Signal()
-            self.dout = Signal()
+        addClkRstn(self)
+        self.clk_cnt_initVal = Signal(dtype=vecT(16))
+        self.i2c = I2c()
+        
+        self.cmd = Signal(dtype=vecT(4))
+        self.cmd_ack = Signal()  # command completed
+        self.busy = Signal()  # i2c bus busy
+        self.arbitrationLost = Signal()  # arbitration lost
+        
+        self.din = Signal()
+        self.dout = Signal()
     
     def stateClkGen(self, scl_sync, scl_t, scl):
         # whenever the slave is not ready it can delay the cycle by pulling SCL low
@@ -275,7 +274,7 @@ class I2cMasterBitCtrl(Unit):
         self.i2c.sda.t ** sda_t
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = I2cMasterBitCtrl()
     print(toRtl(u))
     

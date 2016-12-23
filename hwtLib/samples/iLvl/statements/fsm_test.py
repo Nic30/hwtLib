@@ -3,9 +3,9 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.agentConnector import agInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
+from hwt.hdlObjects.specialValues import Time
+from hwt.simulator.agentConnector import agInts
+from hwt.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.samples.iLvl.statements.fsm import FsmExample, HadrcodedFsmExample
 
 

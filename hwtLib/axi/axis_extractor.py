@@ -3,11 +3,11 @@
 
 import pprint
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import VldSynced, Signal
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.synthesizer.codeOps import If
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import VldSynced, Signal
+from hwt.interfaces.utils import addClkRstn, log2ceil
+from hwt.synthesizer.codeOps import If
+from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.interfaces.amba import AxiStream_withoutSTRB
 
 
@@ -54,12 +54,11 @@ class AxiSExtractor(Unit):
         AxiStream_withoutSTRB._config(self)
             
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            with self._paramsShared():
-                self.dataIn = AxiStream_withoutSTRB()
-            self.dataOutRd = Signal()
-            self.decorateWithExtractedInterfaces()
+        addClkRstn(self)
+        with self._paramsShared():
+            self.dataIn = AxiStream_withoutSTRB()
+        self.dataOutRd = Signal()
+        self.decorateWithExtractedInterfaces()
         
         self.__doc__ = self.__doc__ + '\n' + str(pprint.pformat(self.DATA_MAP))
             
@@ -84,7 +83,7 @@ class AxiSExtractor(Unit):
 
       
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = AxiSExtractor([(i, "data%d" % i) for i in range(2)] + 
                       [(2, "data3a", 0, 16), (2, "data3b", 16, 16),
                        (2, "data3c", 32, 16), (2, "data3d", 48, 16)])

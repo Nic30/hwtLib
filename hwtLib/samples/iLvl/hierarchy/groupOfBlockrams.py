@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Signal, Clk
-from hdl_toolkit.intfLvl import Param, Unit, c
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import Signal, Clk
+from hwt.intfLvl import Param, Unit, c
 from hwtLib.mem.ram import Ram_dp
 
 
@@ -15,19 +15,18 @@ class GroupOfBlockrams(Unit):
     def _declr(self):
         with self._paramsShared():
             extData = lambda : Signal(dtype=vecT(self.DATA_WIDTH))
-            with self._asExtern():
-                self.clk = Clk()
-                self.we = Signal()
-                self.addr = Signal(dtype=vecT(self.ADDR_WIDTH))
-                self.in_w_a = extData()
-                self.in_w_b = extData()
-                self.in_r_a = extData()
-                self.in_r_b = extData()
-                
-                self.out_w_a = extData()
-                self.out_w_b = extData()
-                self.out_r_a = extData()
-                self.out_r_b = extData()
+            self.clk = Clk()
+            self.we = Signal()
+            self.addr = Signal(dtype=vecT(self.ADDR_WIDTH))
+            self.in_w_a = extData()
+            self.in_w_b = extData()
+            self.in_r_a = extData()
+            self.in_r_b = extData()
+            
+            self.out_w_a = extData()
+            self.out_w_b = extData()
+            self.out_r_a = extData()
+            self.out_r_b = extData()
 
             with self._paramsShared():
                 self.bramR = Ram_dp()
@@ -60,5 +59,5 @@ class GroupOfBlockrams(Unit):
         
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(GroupOfBlockrams))

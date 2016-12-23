@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.interfaces.utils import binToGray, addClkRstn
-from hdl_toolkit.synthesizer.codeOps import If
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import Signal
+from hwt.interfaces.utils import binToGray, addClkRstn
+from hwt.synthesizer.codeOps import If
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 
 
 class GrayCntr(Unit):
@@ -14,11 +14,10 @@ class GrayCntr(Unit):
         self.DATA_WIDTH = Param(4)
         
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            self.en = Signal()
+        addClkRstn(self)
+        self.en = Signal()
 
-            self.dataOut = Signal(dtype=vecT(self.DATA_WIDTH))
+        self.dataOut = Signal(dtype=vecT(self.DATA_WIDTH))
             
     def _impl(self):
         binCntr = self._reg("cntr_bin_reg", self.dataOut._dtype, 1) 
@@ -34,5 +33,5 @@ class GrayCntr(Unit):
         )
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(GrayCntr))

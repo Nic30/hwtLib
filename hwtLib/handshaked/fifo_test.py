@@ -4,12 +4,11 @@
 from copy import copy
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time, NOP
-from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.simulator.shortcuts import simPrepare
-# from hdl_toolkit.simulator.utils import agent_randomize
+from hwt.hdlObjects.specialValues import Time
+from hwt.interfaces.std import Handshaked
+from hwt.simulator.shortcuts import simPrepare
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hdl_toolkit.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 
 
 class HsFifoTC(SimTestCase):
@@ -82,21 +81,6 @@ class HsFifoTC(SimTestCase):
         self.assertValSequenceEqual(u.dataOut._ag.data, golden)
         self.assertValSequenceEqual(u.dataIn._ag.data, [])
 
-class HsFifoBramTC(HsFifoTC):
-    def setUp(self):
-        self.u = HandshakedFifo(Handshaked)
-        self.u.LATENCY.set(2)
-        self.u.DEPTH.set(8 + 1)
-        self.u.DATA_WIDTH.set(4)
-        _, self.model, self.procs = simPrepare(self.u)
-        
-# class HsFifo_randomized_TC(HsFifoTC):
-#    def setUp(self):
-#        super(HsFifo_randomized_TC, self).setUp()
-#        self.procs.append(agent_randomize(self.u.dataIn._ag))
-#        self.procs.append(agent_randomize(self.u.dataOut._ag))
-        
-        
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(FifoTC('test_normalOp'))

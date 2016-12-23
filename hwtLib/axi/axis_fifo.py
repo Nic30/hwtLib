@@ -15,7 +15,7 @@ class AxiSFifo(AxiSCompBase, HandshakedFifo):
             
 if __name__ == "__main__":
     from hwtLib.interfaces.amba import AxiStream_withoutSTRB
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     
     u = AxiSFifo(AxiStream_withoutSTRB)
     u.DEPTH.set(4)

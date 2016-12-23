@@ -3,9 +3,9 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
-from hdl_toolkit.synthesizer.shortcuts import synthesised
+from hwt.hdlObjects.specialValues import Time
+from hwt.simulator.shortcuts import simUnitVcd, simPrepare
+from hwt.synthesizer.shortcuts import synthesised
 from hwtLib.proc.ssd1306cntrl.code import simpleCodeExample
 from hwtLib.proc.ssd1306cntrl.instructions import NOP
 from hwtLib.proc.ssd1306cntrl.processor import SSD1306CntrlProc

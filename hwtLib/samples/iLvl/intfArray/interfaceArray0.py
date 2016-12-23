@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import hInt
-from hdl_toolkit.interfaces.std import VldSynced
-from hdl_toolkit.intfLvl import Unit, Param
+from hwt.hdlObjects.typeShortcuts import hInt
+from hwt.interfaces.std import VldSynced
+from hwt.intfLvl import Unit, Param
 
 
 class InterfaceArraySample0(Unit):
@@ -16,7 +16,7 @@ class InterfaceArraySample0(Unit):
         self.LEN = hInt(3)
     
     def _declr(self):
-        with self._asExtern(), self._paramsShared():
+        with self._paramsShared():
             self.a = VldSynced(multipliedBy=self.LEN)
             self.b = VldSynced(multipliedBy=self.LEN)
     
@@ -27,6 +27,6 @@ class InterfaceArraySample0(Unit):
 
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(InterfaceArraySample0))
 

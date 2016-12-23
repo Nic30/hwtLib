@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.hdlObjects.types.array import Array
-from hdl_toolkit.interfaces.std import Clk, Rst_n, FifoWriter, FifoReader
-from hdl_toolkit.interfaces.utils import log2ceil
-from hdl_toolkit.serializer.constants import SERI_MODE
-from hdl_toolkit.synthesizer.codeOps import If
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.array import Array
+from hwt.interfaces.std import Clk, Rst_n, FifoWriter, FifoReader
+from hwt.interfaces.utils import log2ceil
+from hwt.serializer.constants import SERI_MODE
+from hwt.synthesizer.codeOps import If
 from hwtLib.logic.cntrGray import GrayCntr
 from hwtLib.mem.fifo import Fifo
 
@@ -20,14 +20,13 @@ class AsyncFifo(Fifo):
     _serializerMode = SERI_MODE.PARAMS_UNIQ
     
     def _declr(self):
-        with self._asExtern():
-            self.dataIn_clk = Clk() 
-            self.dataOut_clk = Clk()
-            self.rst_n = Rst_n()
-            
-            with self._paramsShared():
-                self.dataIn = FifoWriter()
-                self.dataOut = FifoReader()
+        self.dataIn_clk = Clk() 
+        self.dataOut_clk = Clk()
+        self.rst_n = Rst_n()
+        
+        with self._paramsShared():
+            self.dataIn = FifoWriter()
+            self.dataOut = FifoReader()
         
         
         self.pWr = GrayCntr()
@@ -117,5 +116,5 @@ class AsyncFifo(Fifo):
         Out.wait ** empty
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(AsyncFifo))

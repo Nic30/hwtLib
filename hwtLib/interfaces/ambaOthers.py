@@ -1,6 +1,6 @@
-from hdl_toolkit.hdlObjects.specialValues import DIRECTION
-from hdl_toolkit.synthesizer.interfaceLevel.interface import Interface
-from hdl_toolkit.synthesizer.param import Param
+from hwt.hdlObjects.specialValues import DIRECTION
+from hwt.synthesizer.interfaceLevel.interface import Interface
+from hwt.synthesizer.param import Param
 from hwtLib.interfaces.amba import AxiStream
 
 

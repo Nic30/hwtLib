@@ -3,8 +3,8 @@
 
 import unittest
 
-from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
-from hdl_toolkit.synthesizer.termUsageResolver import getBaseCond
+from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
+from hwt.synthesizer.termUsageResolver import getBaseCond
 
 
 class StatementTreesTC(unittest.TestCase):

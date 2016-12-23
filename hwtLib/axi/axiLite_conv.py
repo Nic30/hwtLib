@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vec
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.hdlObjects.types.typeCast import toHVal
-from hdl_toolkit.interfaces.utils import addClkRstn, log2ceil
-from hdl_toolkit.synthesizer.codeOps import If, c, FsmBuilder, Or
-from hdl_toolkit.synthesizer.param import evalParam
+from hwt.hdlObjects.typeShortcuts import vec
+from hwt.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.typeCast import toHVal
+from hwt.interfaces.utils import addClkRstn, log2ceil
+from hwt.synthesizer.codeOps import If, c, FsmBuilder, Or
+from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.busConverter import BusConverter
 from hwtLib.interfaces.amba import AxiLite
 from hwtLib.interfaces.amba_constants import RESP_OKAY
@@ -20,14 +20,13 @@ class AxiLiteConverter(BusConverter):
         AxiLite._config(self)
 
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            
-            with self._paramsShared():
-                self.bus = AxiLite()
-            
-            self.decorateWithConvertedInterfaces()
-            assert self.getMaxAddr() < (2 ** evalParam(self.ADDR_WIDTH).val)
+        addClkRstn(self)
+        
+        with self._paramsShared():
+            self.bus = AxiLite()
+        
+        self.decorateWithConvertedInterfaces()
+        assert self.getMaxAddr() < (2 ** evalParam(self.ADDR_WIDTH).val)
 
     def readPart(self, awAddr, w_hs):
         DW_B = evalParam(self.DATA_WIDTH).val // 8 
@@ -174,7 +173,7 @@ class AxiLiteConverter(BusConverter):
         
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = AxiLiteConverter([(i * 4 , "data%d" % i) for i in range(2)] + 
                          [(3 * 4, "bramMapped", 32)])
     u.ADDR_WIDTH.set(8)

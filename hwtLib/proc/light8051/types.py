@@ -1,6 +1,6 @@
 # Internal state machine states. They are defined here so that they are visible
 # to the logging functions in the tb package.
-from hdl_toolkit.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.enum import Enum
 t_cpu_state = Enum("t_cpu_state", [
     "reset_0",                    
 

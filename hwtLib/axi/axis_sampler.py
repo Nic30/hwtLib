@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.bitmask import mask
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.hdlObjects.types.enum import Enum
-from hdl_toolkit.interfaces.std import Signal, VldSynced
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import c, If, Switch, FsmBuilder
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.bitmask import mask
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.enum import Enum
+from hwt.interfaces.std import Signal, VldSynced
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.codeOps import c, If, Switch, FsmBuilder
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param, evalParam
 from hwtLib.interfaces.amba import AxiStream
 
 
@@ -35,18 +35,17 @@ class AxiSSampler(Unit):
         self.SAMPLE_WIDTH = Param(32)
 
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            
-            self.req = Signal()
-            self.busy = Signal()
-            self.done = Signal()
-            
-            self.out = AxiStream()
-            self.out._replaceParam('DATA_WIDTH', self.DATA_WIDTH)
-            
-            self.sample = VldSynced()
-            self.sample._replaceParam('DATA_WIDTH', self.SAMPLE_WIDTH)
+        addClkRstn(self)
+        
+        self.req = Signal()
+        self.busy = Signal()
+        self.done = Signal()
+        
+        self.out = AxiStream()
+        self.out._replaceParam('DATA_WIDTH', self.DATA_WIDTH)
+        
+        self.sample = VldSynced()
+        self.sample._replaceParam('DATA_WIDTH', self.SAMPLE_WIDTH)
         
     def _impl(self):
         assert(evalParam(self.DATA_WIDTH).val >= evalParam(self.SAMPLE_WIDTH).val) 
@@ -111,7 +110,7 @@ class AxiSSampler(Unit):
         )
         
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(AxiSSampler)) 
         
         

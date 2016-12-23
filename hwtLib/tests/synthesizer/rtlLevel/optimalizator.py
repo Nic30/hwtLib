@@ -3,9 +3,9 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.operatorDefs import AllOps
-from hdl_toolkit.hdlObjects.types.defs import BOOL
-from hdl_toolkit.synthesizer.rtlLevel.netlist import RtlNetlist
+from hwt.hdlObjects.operatorDefs import AllOps
+from hwt.hdlObjects.types.defs import BOOL
+from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 
 
 class Expr2CondTC(unittest.TestCase):    

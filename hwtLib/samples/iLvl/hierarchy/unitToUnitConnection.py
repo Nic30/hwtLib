@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.intfLvl import Param, Unit
+from hwt.intfLvl import Param, Unit
 from hwtLib.interfaces.amba import AxiStream
 from hwtLib.samples.iLvl.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnection
 
@@ -12,9 +12,8 @@ class UnitToUnitConnection(Unit):
         
     def _declr(self):
         with self._paramsShared():
-            with self._asExtern():
-                self.a = AxiStream()
-                self.b = AxiStream()
+            self.a = AxiStream()
+            self.b = AxiStream()
     
             self.u0 = Simple2withNonDirectIntConnection()
             self.u1 = Simple2withNonDirectIntConnection()
@@ -25,5 +24,5 @@ class UnitToUnitConnection(Unit):
         self.b ** self.u1.c 
     
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(UnitToUnitConnection))

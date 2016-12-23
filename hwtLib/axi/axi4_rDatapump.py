@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.bitmask import mask
-from hdl_toolkit.interfaces.std import Signal, HandshakeSync, VectSignal
-from hdl_toolkit.interfaces.utils import log2ceil, propagateClkRstn
-from hdl_toolkit.synthesizer.codeOps import If, Switch, connect
-from hdl_toolkit.synthesizer.param import Param
+from hwt.bitmask import mask
+from hwt.interfaces.std import Signal, HandshakeSync, VectSignal
+from hwt.interfaces.utils import log2ceil, propagateClkRstn
+from hwt.synthesizer.codeOps import If, Switch, connect
+from hwt.synthesizer.param import Param
 from hwtLib.axi.axi_datapump_base import Axi_datapumpBase
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.interfaces.amba import (Axi4_r, AxiStream_withId)
@@ -42,14 +42,12 @@ class Axi_rDatapump(Axi_datapumpBase):
 
     def _declr(self):
         super()._declr()  # add clk, rst, axi addr channel and req channel
-        with self._asExtern():
-            with self._paramsShared():
-                self.r = Axi4_r()
-                self.rOut = AxiStream_withId()
-                
-                self.errorRead = Signal()
-        
         with self._paramsShared():
+            self.r = Axi4_r()
+            self.rOut = AxiStream_withId()
+            
+            self.errorRead = Signal()
+        
             f = self.sizeRmFifo = HandshakedFifo(TransEndInfo)
             f.DEPTH.set(self.MAX_TRANS_OVERLAP)
     
@@ -64,7 +62,7 @@ class Axi_rDatapump(Axi_datapumpBase):
             a.id ** req_idBackup
         )
     
-    def addrHandler(self, addRmSize):
+    def addrHandler(self, addRmSize, rErrFlag):
         ar = self.a
         req = self.req
         
@@ -115,18 +113,20 @@ class Axi_rDatapump(Axi_datapumpBase):
                remBackup ** req.rem,
                ack ** (req.vld & addRmSize.rd & ar.ready),
                streamSync(masters=[req],
-                              slaves=[addRmSize, ar]),
+                          slaves=[addRmSize, ar],
+                          extraConds={ar:[~rErrFlag]}),
             ).Else(
                req.rd ** 0,
                ar.addr ** rAddr,
-               If(addRmSize.rd & ar.ready,
+               ack ** (addRmSize.rd & ar.ready),
+               If(ack,
                   rAddr ** (rAddr + ADDR_STEP) 
                ),
                
                reqLen ** lenDebth,
                reqRem ** remBackup,
-               ack ** (addRmSize.rd & ar.ready),
-               streamSync(slaves=[addRmSize, ar]),
+               streamSync(slaves=[addRmSize, ar],
+                          extraConds={ar:[~rErrFlag]}),
             )
         else:
             # if axi len is wider we can directly translate requests to axi
@@ -139,7 +139,8 @@ class Axi_rDatapump(Axi_datapumpBase):
             addRmSize.propagateLast ** 1
             
             streamSync(masters=[req],
-                       slaves=[ar, addRmSize])
+                       slaves=[ar, addRmSize],
+                       extraConds={ar:[~rErrFlag]})
             
         
     
@@ -177,17 +178,19 @@ class Axi_rDatapump(Axi_datapumpBase):
         
         streamSync(masters=[r, rmSizeOut],
                    slaves=[rOut],
-                   extraConds={rmSizeOut: [r.last]})
-
+                   extraConds={rmSizeOut: [r.last],
+                               rOut: [~rErrFlag]})
+        
+        return rErrFlag
         
     def _impl(self):
         propagateClkRstn(self)
         
-        self.addrHandler(self.sizeRmFifo.dataIn)
-        self.dataHandler(self.sizeRmFifo.dataOut)
+        rErrFlag = self.dataHandler(self.sizeRmFifo.dataOut)
+        self.addrHandler(self.sizeRmFifo.dataIn, rErrFlag)
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     u = Axi_rDatapump()
     print(toRtl(u))
     

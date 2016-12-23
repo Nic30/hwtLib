@@ -1,4 +1,4 @@
-from hdl_toolkit.interfaces.std import Handshaked
+from hwt.interfaces.std import Handshaked
 
 
 class TrimmedHs(Handshaked):

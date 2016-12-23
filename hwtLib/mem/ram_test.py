@@ -3,9 +3,9 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import WRITE, READ, Time
-from hdl_toolkit.simulator.agentConnector import valuesToInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
+from hwt.hdlObjects.specialValues import WRITE, READ, Time
+from hwt.simulator.agentConnector import valuesToInts
+from hwt.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.mem.ram import Ram_sp
 
 

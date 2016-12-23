@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hwt.interfaces.std import Signal
+from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
 class ConstDriverUnit(Unit):
     def _declr(self):
-        with self._asExtern():
-            self.out0 = Signal()
-            self.out1 = Signal()
+        self.out0 = Signal()
+        self.out1 = Signal()
     
     def _impl(self):
         self.out0 ** 0
@@ -17,5 +16,5 @@ class ConstDriverUnit(Unit):
 
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(ConstDriverUnit()))

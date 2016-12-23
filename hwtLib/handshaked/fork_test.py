@@ -3,37 +3,32 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.simulator.agentConnector import agInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
-from hdl_toolkit.simulator.utils import agent_randomize
+from hwt.hdlObjects.specialValues import Time
+from hwt.interfaces.std import Handshaked
+from hwt.simulator.agentConnector import agInts
+from hwt.simulator.shortcuts import simPrepare
+from hwt.simulator.utils import agent_randomize
 from hwtLib.handshaked.fork import HandshakedFork
-from hdl_toolkit.interfaces.utils import addClkRstn
+from hwt.interfaces.utils import addClkRstn
+from hwt.simulator.simTestCase import SimTestCase
 
 
 class HsForkWithReference(HandshakedFork):
     def _declr(self):
         HandshakedFork._declr(self)
-        with self._asExtern():
-            addClkRstn(self)
+        addClkRstn(self)
 
-class HsForkTC(unittest.TestCase):
+class HsForkTC(SimTestCase):
     def setUp(self):
         self.u = HsForkWithReference(Handshaked)
         self.u.DATA_WIDTH.set(4)
         _, self.model, self.procs = simPrepare(self.u)
     
-    def doSim(self, name, time=80 * Time.ns):
-        simUnitVcd(self.model, self.procs,
-                    "tmp/hsFork_" + name + ".vcd",
-                    time=time)
-    
     def test_passdata(self):
         u = self.u
         u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
 
-        self.doSim("passdata", 120 * Time.ns)
+        self.doSim(120 * Time.ns)
 
         collected0 = agInts(u.dataOut[0])
         collected1 = agInts(u.dataOut[1])

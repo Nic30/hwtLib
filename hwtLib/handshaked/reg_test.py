@@ -3,32 +3,26 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.simulator.agentConnector import agInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
+from hwt.hdlObjects.specialValues import Time
+from hwt.interfaces.std import Handshaked
+from hwt.simulator.shortcuts import simPrepare
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.reg import HandshakedReg
 
 
-class HsRegTC(unittest.TestCase):
+class HsRegTC(SimTestCase):
     def setUp(self):
         u = HandshakedReg(Handshaked)
         self.u, self.model, self.procs = simPrepare(u)
-    
-    def doSim(self, name, time=80 * Time.ns):
-        simUnitVcd(self.model, self.procs,
-                    "tmp/hsReg_" + name + ".vcd",
-                    time=time)
     
     def test_passdata(self):
         u = self.u
         u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
 
-        self.doSim("passdata", 120 * Time.ns)
+        self.doSim(120 * Time.ns)
 
-        collected = agInts(u.dataOut)
-        self.assertSequenceEqual([1, 2, 3, 4, 5, 6], collected)  # 1 was in reset
-        self.assertSequenceEqual([], u.dataIn._ag.data)
+        self.assertValSequenceEqual(u.dataOut._ag.data, [1, 2, 3, 4, 5, 6])  # 1 was in reset
+        self.assertValSequenceEqual([], u.dataIn._ag.data)
 
 
 if __name__ == "__main__":

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Signal, VldSynced
-from hdl_toolkit.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
-from hdl_toolkit.synthesizer.codeOps import FsmBuilder, If, Concat
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
-from hdl_toolkit.synthesizer.param import Param, evalParam
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import Signal, VldSynced
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
+from hwt.synthesizer.codeOps import FsmBuilder, If, Concat
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param, evalParam
 from hwtLib.uart.baudGen import UartBaudGen
 
 
@@ -36,13 +36,12 @@ class UartRx(Unit):
         baud = evalParam(self.BAUD).val
         freq = evalParam(self.FREQ).val
         
-        with self._asExtern():
-            addClkRstn(self)
-            self.dataOut = VldSynced()
-            self.dataOut.DATA_WIDTH.set(8)
-            self.idle = Signal()
+        addClkRstn(self)
+        self.dataOut = VldSynced()
+        self.dataOut.DATA_WIDTH.set(8)
+        self.idle = Signal()
 
-            self.rxd = Signal()
+        self.rxd = Signal()
             
             
         with self._paramsShared():
@@ -144,7 +143,7 @@ class UartRx(Unit):
         self.idle ** GapCnt[l2o + 1]
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(UartRx()))
     
          

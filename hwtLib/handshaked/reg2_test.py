@@ -3,79 +3,30 @@
 
 import unittest
 
-from hdl_toolkit.hdlObjects.specialValues import Time
-from hdl_toolkit.interfaces.std import Handshaked
-from hdl_toolkit.simulator.agentConnector import agInts
-from hdl_toolkit.simulator.shortcuts import simUnitVcd, simPrepare
+from hwt.hdlObjects.specialValues import Time
+from hwt.interfaces.std import Handshaked
+from hwt.simulator.shortcuts import simPrepare
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.reg2 import HandshakedReg2
 
 
-class HsReg2TC(unittest.TestCase):
+class HsReg2TC(SimTestCase):
     def setUp(self):
         u = HandshakedReg2(Handshaked)
         self.u, self.model, self.procs = simPrepare(u)
-
-    
-    def doSim(self, name, time=200 * Time.ns):
-        simUnitVcd(self.model, self.procs,
-                    "tmp/hsReg2_" + name + ".vcd",
-                    time=time)
     
     def test_passdata(self):
         u = self.u
         u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
 
-        self.doSim("passdata")
+        self.doSim(200 * Time.ns)
 
-        collected = agInts(u.dataOut)
-        self.assertSequenceEqual([1, 2, 3, 4, 5, 6], collected)
-        self.assertSequenceEqual([], u.dataIn._ag.data)
+        self.assertValSequenceEqual(u.dataOut._ag.data, [1, 2, 3, 4, 5, 6])  # 1 was in reset
+        self.assertValSequenceEqual([], u.dataIn._ag.data)
 
 
-# def mkTestbench():
-#    from hdl_toolkit.serializer.utils import SimBuilder
-#    from hdl_toolkit.serializer.utils import hsWrite, makeTestbenchTemplate
-#    repo = "tmp/"
-#    u = HandshakedReg2(Handshaked)
-#    serializeAsIpcore(u, repo)
-#    
-#    
-#    def procGen(ctx):
-#        s = SimBuilder(ctx)
-#        s.wait(50)
-#        for i in range(10):
-#            s.write(i + 1, u.dataIn.data) 
-#            hsWrite(s, u.dataIn)
-#        
-#        s.wait(None)
-#        
-#        yield s.mainProc
-#        
-#        s = SimBuilder(ctx)
-#        s.wait(60)
-#        for i in range(5):
-#            s.write(1, u.dataOut.rd)
-#            s.wait(10) 
-#        
-#        s.write(0, u.dataOut.rd) 
-#        s.wait(60)
-#
-#        for i in range(5):
-#            s.write(1, u.dataOut.rd) 
-#            s.wait(10)
-#        s.write(0, u.dataOut.rd) 
-#        
-#        
-#        yield s.mainProc
-#        
-#    e, a = makeTestbenchTemplate(u, procGen=procGen)
-#    with open(repo + "/hsreg2_tb.vhd", "w") as f:
-#        f.write(str(e))
-#        f.write(str(a))
-#
+
 if __name__ == "__main__":
-    # mkTestbench()
-    
     suite = unittest.TestSuite()
     # suite.addTest(HsRegTC('test_passdata'))
     suite.addTest(unittest.makeSuite(HsReg2TC))

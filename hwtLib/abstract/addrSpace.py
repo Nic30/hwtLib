@@ -1,6 +1,6 @@
 import pprint
 
-from hdl_toolkit.bitmask import mask
+from hwt.bitmask import mask
 
 
 class AddrSpaceItem(object):

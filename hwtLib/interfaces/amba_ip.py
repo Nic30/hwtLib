@@ -1,5 +1,5 @@
-from cli_toolkit.ip_packager.interfaces.intfConfig import IntfConfig 
-from python_toolkit.arrayQuery import single
+from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig 
+from hwt.pyUtils.arrayQuery import single
 
 
 def AxiMap(prefix, listOfNames, d=None):

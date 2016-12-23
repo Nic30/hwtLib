@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdl_toolkit.hdlObjects.typeShortcuts import vecT
-from hdl_toolkit.interfaces.std import Signal
-from hdl_toolkit.interfaces.utils import addClkRstn
-from hdl_toolkit.synthesizer.codeOps import If
-from hdl_toolkit.synthesizer.interfaceLevel.unit import Unit
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import Signal
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.codeOps import If
+from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
 class TwoCntrs(Unit):
     def _declr(self):
-        with self._asExtern():
-            addClkRstn(self)
-            
-            self.a_en = Signal()
-            self.b_en = Signal()
-            
-            self.eq = Signal()
-            self.ne = Signal()
-            self.lt = Signal()
-            self.gt = Signal()
+        addClkRstn(self)
+        
+        self.a_en = Signal()
+        self.b_en = Signal()
+        
+        self.eq = Signal()
+        self.ne = Signal()
+        self.lt = Signal()
+        self.gt = Signal()
         
 
     def _impl(self):
@@ -43,7 +42,7 @@ class TwoCntrs(Unit):
 
 
 if __name__ == "__main__":
-    from hdl_toolkit.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.shortcuts import toRtl
     
     u = TwoCntrs()
     print(toRtl(u))
