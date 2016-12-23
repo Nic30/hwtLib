@@ -1,12 +1,16 @@
 import unittest
-from hwt.synthesizer.shortcuts import toRtl
-from hwt.synthesizer.exceptions import TypeConversionErr, IntfLvlConfErr
-from hwtLib.samples.iLvl.errors.invalidTypeConnetion import InvalidTypeConnetion
-from hwtLib.samples.iLvl.errors.unconsistentIntfDirection import UncosistentIntfDirection
-from hwtLib.samples.iLvl.errors.multipleDriversOfChildNet import MultipleDriversOfChildNet,\
-    MultipleDriversOfChildNet2
+
 from hwt.serializer.exceptions import SerializerException
+from hwt.synthesizer.exceptions import TypeConversionErr, IntfLvlConfErr
 from hwt.synthesizer.rtlLevel.signalUtils.exceptions import MultipleDriversExc
+from hwt.synthesizer.shortcuts import toRtl
+from hwtLib.samples.iLvl.errors.invalidTypeConnetion import InvalidTypeConnetion
+from hwtLib.samples.iLvl.errors.multipleDriversOfChildNet import MultipleDriversOfChildNet, \
+    MultipleDriversOfChildNet2
+from hwtLib.samples.iLvl.errors.unconsistentIntfDirection import UncosistentIntfDirection
+from hwtLib.samples.iLvl.errors.unusedSubunit import UnusedSubunit, \
+    UnusedSubunit2
+
 
 class ErrorsTC(unittest.TestCase):
     def test_invalidTypeConnetion(self):
@@ -28,7 +32,17 @@ class ErrorsTC(unittest.TestCase):
         u = MultipleDriversOfChildNet2()
         with self.assertRaises(MultipleDriversExc):
             toRtl(u) 
-            
+    
+    def test_unusedSubunit(self):
+        u = UnusedSubunit()
+        with self.assertRaises(SerializerException):
+            toRtl(u)
+    
+    def test_unusedSubunit2(self):
+        u = UnusedSubunit2()
+        with self.assertRaises(SerializerException):
+            toRtl(u)
+                        
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     # suite.addTest(ErrorsTC('testBitAnd'))
