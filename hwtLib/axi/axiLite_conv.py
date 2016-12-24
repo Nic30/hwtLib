@@ -4,8 +4,8 @@
 from hwt.hdlObjects.typeShortcuts import vec
 from hwt.hdlObjects.types.enum import Enum
 from hwt.hdlObjects.types.typeCast import toHVal
-from hwt.interfaces.utils import addClkRstn, log2ceil
-from hwt.synthesizer.codeOps import If, c, FsmBuilder, Or
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.codeOps import If, c, FsmBuilder, Or, log2ceil
 from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.busConverter import BusConverter
 from hwtLib.interfaces.amba import AxiLite

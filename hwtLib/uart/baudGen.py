@@ -4,8 +4,8 @@
 from hwt.bitmask import mask
 from hwt.hdlObjects.typeShortcuts import vecT, hBit
 from hwt.interfaces.std import Signal
-from hwt.interfaces.utils import log2ceil, addClkRstn
-from hwt.synthesizer.codeOps import If
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.codeOps import If, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 

@@ -7,8 +7,7 @@ from hwt.hdlObjects.typeShortcuts import vecT, hBit
 from hwt.hdlObjects.types.enum import Enum
 from hwt.interfaces.std import VldSynced, Signal
 from hwt.interfaces.utils import addClkRstn
-from hwt.interfaces.utils import isPow2
-from hwt.synthesizer.codeOps import Switch, If, FsmBuilder
+from hwt.synthesizer.codeOps import Switch, If, FsmBuilder, isPow2
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.interfaces.peripheral import Spi

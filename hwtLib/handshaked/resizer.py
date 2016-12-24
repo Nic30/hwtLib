@@ -1,9 +1,8 @@
-from hwt.interfaces.utils import addClkRstn, log2ceil
-from hwtLib.handshaked.compBase import HandshakedCompBase
-from hwt.synthesizer.param import Param, evalParam
-from hwt.synthesizer.codeOps import If, Concat
 from hwt.hdlObjects.typeShortcuts import vecT
-
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.codeOps import If, Concat, log2ceil
+from hwt.synthesizer.param import Param, evalParam
+from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
 class HandshakedResizer(HandshakedCompBase):
