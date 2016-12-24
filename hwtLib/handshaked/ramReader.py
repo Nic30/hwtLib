@@ -5,7 +5,7 @@ from hwt.hdlObjects.types.enum import Enum
 from hwt.interfaces.std import BramPort_withoutClk, Handshaked, \
     HandshakeSync
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.codeOps import Switch, If, FsmBuilder
+from hwt.code import Switch, If, FsmBuilder
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 

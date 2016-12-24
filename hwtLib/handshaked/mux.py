@@ -3,7 +3,7 @@
 
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal
-from hwt.synthesizer.codeOps import Switch
+from hwt.code import Switch
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
 

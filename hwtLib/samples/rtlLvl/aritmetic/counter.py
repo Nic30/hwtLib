@@ -3,7 +3,7 @@
 
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.serializer.vhdlFormater import formatVhdl
-from hwt.synthesizer.codeOps import  If
+from hwt.code import  If
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 
 

@@ -6,7 +6,7 @@ import pprint
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import VldSynced, Signal
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.codeOps import If, log2ceil
+from hwt.code import If, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.interfaces.amba import AxiStream_withoutSTRB
 

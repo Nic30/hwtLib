@@ -5,7 +5,7 @@ from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import BramPort, Clk, BramPort_withoutClk
 from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.codeOps import If, power
+from hwt.code import If, power
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 

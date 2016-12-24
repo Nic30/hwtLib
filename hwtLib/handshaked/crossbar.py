@@ -2,7 +2,7 @@ from hwt.hdlObjects.typeShortcuts import hInt
 from hwt.interfaces.std import Handshaked
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.pyUtils.arrayQuery import where
-from hwt.synthesizer.codeOps import And, connect, If
+from hwt.code import And, connect, If
 
 
 class HsCrossbar(Unit):

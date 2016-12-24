@@ -3,7 +3,7 @@ from hwt.interfaces.std import BramPort_withoutClk, RegCntrl
 from hwt.hdlObjects.types.typeCast import toHVal
 from hwtLib.abstract.addrSpace import AddrSpaceItem
 from hwt.synthesizer.param import evalParam
-from hwt.synthesizer.codeOps import log2ceil
+from hwt.code import log2ceil
 
 def unpackAddrMap(am):
     if isinstance(am, AddrSpaceItem):

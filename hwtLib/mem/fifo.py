@@ -6,7 +6,7 @@ from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import FifoWriter, FifoReader, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.codeOps import If, log2ceil
+from hwt.code import If, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 

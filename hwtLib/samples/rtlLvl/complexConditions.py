@@ -3,7 +3,7 @@
 
 from hwt.hdlObjects.types.enum import Enum
 from hwt.serializer.vhdlFormater import formatVhdl
-from hwt.synthesizer.codeOps import If, Switch
+from hwt.code import If, Switch
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 
 

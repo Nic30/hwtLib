@@ -4,7 +4,7 @@
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import Signal, Clk
-from hwt.synthesizer.codeOps import If
+from hwt.code import If
 from hwt.synthesizer.interfaceLevel.unit import Unit
 
 

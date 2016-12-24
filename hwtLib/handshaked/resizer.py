@@ -1,6 +1,6 @@
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.codeOps import If, Concat, log2ceil
+from hwt.code import If, Concat, log2ceil
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
 

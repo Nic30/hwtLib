@@ -1,7 +1,7 @@
 from hwt.hdlObjects.specialValues import DIRECTION
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import s
-from hwt.synthesizer.codeOps import log2ceil
+from hwt.code import log2ceil
 from hwt.synthesizer.interfaceLevel.interface import Interface
 from hwt.synthesizer.param import Param
 

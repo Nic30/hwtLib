@@ -3,7 +3,7 @@
 
 from hwt.interfaces.std import Handshaked
 from hwt.intfLvl import Param
-from hwt.synthesizer.codeOps import And
+from hwt.code import And
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 

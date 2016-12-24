@@ -4,7 +4,7 @@
 from hwt.bitmask import mask
 from hwt.interfaces.std import Signal, HandshakeSync, VectSignal
 from hwt.interfaces.utils import propagateClkRstn
-from hwt.synthesizer.codeOps import If, Switch, connect, log2ceil
+from hwt.code import If, Switch, connect, log2ceil
 from hwt.synthesizer.param import Param
 from hwtLib.axi.axi_datapump_base import Axi_datapumpBase
 from hwtLib.handshaked.fifo import HandshakedFifo

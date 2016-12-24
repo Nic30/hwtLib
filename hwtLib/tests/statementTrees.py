@@ -9,7 +9,7 @@ from hwt.hdlObjects.types.defs import INT
 from hwt.hdlObjects.types.enum import Enum
 from hwt.serializer.vhdl.formater import formatVhdl
 from hwt.synthesizer.assigRenderer import renderIfTree
-from hwt.synthesizer.codeOps import c, If, Switch
+from hwt.code import c, If, Switch
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 
 

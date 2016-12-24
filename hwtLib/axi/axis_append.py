@@ -4,7 +4,7 @@
 from hwt.hdlObjects.specialValues import DIRECTION
 from hwt.hdlObjects.types.enum import Enum
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.codeOps import If, FsmBuilder
+from hwt.code import If, FsmBuilder
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.axi.axis_compBase import AxiSCompBase
 

@@ -6,7 +6,7 @@ from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.enum import Enum
 from hwt.interfaces.std import Signal, VldSynced
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.codeOps import c, If, Switch, FsmBuilder
+from hwt.code import c, If, Switch, FsmBuilder
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.interfaces.amba import AxiStream

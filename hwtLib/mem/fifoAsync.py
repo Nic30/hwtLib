@@ -5,7 +5,7 @@ from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import Clk, Rst_n, FifoWriter, FifoReader
 from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.codeOps import If, log2ceil
+from hwt.code import If, log2ceil
 from hwtLib.logic.cntrGray import GrayCntr
 from hwtLib.mem.fifo import Fifo
 

@@ -5,7 +5,7 @@ from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal, RegCntrl
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.codeOps import If, c
+from hwt.code import If, c
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 

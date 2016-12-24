@@ -3,7 +3,7 @@
 
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal
-from hwt.synthesizer.codeOps import connect
+from hwt.code import connect
 from hwt.synthesizer.interfaceLevel.unit import Unit
 
 

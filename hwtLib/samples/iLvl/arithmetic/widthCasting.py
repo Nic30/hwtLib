@@ -5,7 +5,7 @@ from hwt.interfaces.std import VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.vectorUtils import fitTo
-from hwt.synthesizer.codeOps import connect
+from hwt.code import connect
 
 
 class WidthCastingExample(Unit):

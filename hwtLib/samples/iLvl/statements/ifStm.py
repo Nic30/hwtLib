@@ -3,7 +3,7 @@
 
 from hwt.interfaces.std import Signal
 from hwt.intfLvl import Unit
-from hwt.synthesizer.codeOps import If
+from hwt.code import If
 
 
 class SimpleIfStatement(Unit):

@@ -3,7 +3,7 @@
 
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import BramPort_withoutClk
-from hwt.synthesizer.codeOps import c, If
+from hwt.code import c, If
 from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.busConverter import BusConverter
 

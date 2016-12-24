@@ -3,7 +3,7 @@
 
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.serializer.vhdlFormater import formatVhdl
-from hwt.synthesizer.codeOps import Switch
+from hwt.code import Switch
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 
 

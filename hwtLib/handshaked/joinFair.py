@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.synthesizer.codeOps import And, If, Or, iterBits, ror
+from hwt.code import And, If, Or, iterBits, ror
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwtLib.handshaked.join import HandshakedJoin
 

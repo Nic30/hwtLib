@@ -7,7 +7,7 @@ from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VldSynced, Signal
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.codeOps import If, Concat, log2ceil
+from hwt.code import If, Concat, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 

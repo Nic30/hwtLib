@@ -4,7 +4,7 @@
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import s
 from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.codeOps import log2ceil
+from hwt.code import log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 

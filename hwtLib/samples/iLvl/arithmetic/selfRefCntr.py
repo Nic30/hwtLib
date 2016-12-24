@@ -4,7 +4,7 @@
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.codeOps import If
+from hwt.code import If
 from hwt.synthesizer.interfaceLevel.unit import Unit
 
 

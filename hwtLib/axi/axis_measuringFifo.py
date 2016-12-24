@@ -2,7 +2,7 @@ from hwt.bitmask import mask
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.codeOps import If, connect, Concat, Switch, log2ceil
+from hwt.code import If, connect, Concat, Switch, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.axi.axis_builder import AxiSBuilder

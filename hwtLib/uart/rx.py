@@ -4,7 +4,7 @@
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal, VldSynced
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.codeOps import FsmBuilder, If, Concat, log2ceil
+from hwt.code import FsmBuilder, If, Concat, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.uart.baudGen import UartBaudGen

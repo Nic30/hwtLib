@@ -4,7 +4,7 @@
 from hwt.interfaces.std import Signal, BramPort_withoutClk, Clk
 from hwt.interfaces.utils import propagateClk
 from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.codeOps import If
+from hwt.code import If
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam
 from hwtLib.mem.ram import RamSingleClock
