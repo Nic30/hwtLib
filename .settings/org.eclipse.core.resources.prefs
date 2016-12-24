@@ -93,6 +93,7 @@ encoding//hwtLib/samples/iLvl/hierarchy/unitToUnitConnection.py=utf-8
 encoding//hwtLib/samples/iLvl/intfArray/interfaceArray0.py=utf-8
 encoding//hwtLib/samples/iLvl/intfArray/interfaceArray1.py=utf-8
 encoding//hwtLib/samples/iLvl/intfArray/interfaceArray2.py=utf-8
+encoding//hwtLib/samples/iLvl/ipCoreCompatibleWrap_test.py=utf-8
 encoding//hwtLib/samples/iLvl/ipif/simpleRegs.py=utf-8
 encoding//hwtLib/samples/iLvl/mem/ram.py=utf-8
 encoding//hwtLib/samples/iLvl/mem/ram_test.py=utf-8
