@@ -22,10 +22,10 @@ class SimpleUnit(Unit):
     def _impl(self):
         """
         _impl() is like body of unit. 
-        Logic and connections are specified in this unit.
+        Logic and connections are specified in this function.
         """
-        # ** operator creates assignment. First parameter is source rest are destinations.
 
+        # ** operator creates assignment. First parameter is source rest are destinations.
         self.b ** self.a  # a drives b
         # directions of a and b interfaces are derived automatically, if signal has driver it is output
 
@@ -33,4 +33,5 @@ if __name__ == "__main__":  # alias python main function
     # toRtl can be imported anywhere but we prefer to import it only when this script is running as main
     from hwt.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
-    print(toRtl(SimpleUnit))
+    u = SimpleUnit()
+    print(toRtl(u))
