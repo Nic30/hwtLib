@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.specialValues import Time
+from hwt.hdlObjects.constants import Time
 from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.axi.axis_measuringFifo import AxiS_measuringFifo

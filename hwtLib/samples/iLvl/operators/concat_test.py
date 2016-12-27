@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.bitmask import selectBit
-from hwt.hdlObjects.specialValues import Time
+from hwt.hdlObjects.constants import Time
 from hwt.simulator.agentConnector import autoAddAgents, agInts
 from hwt.simulator.shortcuts import simUnitVcd
 from hwt.synthesizer.shortcuts import synthesised

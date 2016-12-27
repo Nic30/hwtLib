@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.specialValues import DIRECTION
+from hwt.hdlObjects.constants import DIRECTION
 from hwt.interfaces.utils import addClkRstn
 from hwt.code import If
 from hwt.synthesizer.interfaceLevel.unit import Unit

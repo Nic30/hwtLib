@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.specialValues import Time
+from hwt.hdlObjects.constants import Time
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.mem.atomic.flipReg import FlipRegister

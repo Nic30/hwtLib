@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.specialValues import DIRECTION
+from hwt.hdlObjects.constants import DIRECTION
 from hwt.hdlObjects.typeShortcuts import vecT, hInt
 from hwt.interfaces.std import Signal
 from hwt.synthesizer.exceptions import TypeConversionErr

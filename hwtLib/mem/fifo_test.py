@@ -4,7 +4,7 @@
 from copy import copy
 import unittest
 
-from hwt.hdlObjects.specialValues import Time
+from hwt.hdlObjects.constants import Time
 from hwt.simulator.agentConnector import agInts
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.shortcuts import simPrepare

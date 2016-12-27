@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.specialValues import DIRECTION
+from hwt.hdlObjects.constants import DIRECTION
 from hwt.hdlObjects.types.enum import Enum
 from hwt.interfaces.utils import addClkRstn
 from hwt.code import If, FsmBuilder

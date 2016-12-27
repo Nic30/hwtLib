@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.specialValues import DIRECTION, INTF_DIRECTION
+from hwt.hdlObjects.constants import DIRECTION, INTF_DIRECTION
 from hwt.interfaces.std import Signal
 from hwt.code import connect
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit

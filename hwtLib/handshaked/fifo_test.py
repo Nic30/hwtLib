@@ -4,7 +4,7 @@
 from copy import copy
 import unittest
 
-from hwt.hdlObjects.specialValues import Time
+from hwt.hdlObjects.constants import Time
 from hwt.interfaces.std import Handshaked
 from hwt.simulator.shortcuts import simPrepare
 from hwtLib.handshaked.fifo import HandshakedFifo
