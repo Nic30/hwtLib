@@ -22,4 +22,5 @@ class SimpleUnitAxiStream(Unit):
         
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    print(toRtl(SimpleUnitAxiStream))
+    u = SimpleUnitAxiStream()
+    print(toRtl(u))
