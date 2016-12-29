@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.bitmask import selectBit
-from hwt.hdlObjects.specialValues import WRITE, READ, Time
+from hwt.hdlObjects.constants import WRITE, READ, Time
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.mem.lutRam import RAM64X1S

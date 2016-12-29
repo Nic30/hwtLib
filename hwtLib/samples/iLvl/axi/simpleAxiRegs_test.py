@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.bitmask import mask
-from hwt.hdlObjects.specialValues import Time
+from hwt.hdlObjects.constants import Time
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.shortcuts import simUnitVcd, simPrepare
 from hwtLib.samples.iLvl.axi.simpleAxiRegs import SimpleAxiRegs

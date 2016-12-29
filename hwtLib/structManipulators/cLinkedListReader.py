@@ -1,14 +1,14 @@
 from hwt.hdlObjects.typeShortcuts import vecT, vec
 from hwt.interfaces.std import Handshaked, RegCntrl, VectSignal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
-from hwt.synthesizer.codeOps import If, In, Concat, connect
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.code import If, In, Concat, connect, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.axi.axi_datapump_base import AddrSizeHs
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
 from hwtLib.interfaces.amba import AxiStream_withId
-from hwt.synthesizer.vectorUtils import fitTo
 
 
 class CLinkedListReader(Unit):

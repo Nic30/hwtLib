@@ -3,10 +3,10 @@
 
 
 from hwt.interfaces.std import VectSignal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.intfLvl import Param
-from hwt.synthesizer.codeOps import packedWidth, packed, \
-    connectUnpacked, If, connect
+from hwt.code import packedWidth, packed, \
+    connectUnpacked, If, connect, log2ceil
 from hwt.synthesizer.param import evalParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg

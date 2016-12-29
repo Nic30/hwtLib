@@ -1,5 +1,5 @@
 import unittest
-from hwt.hdlObjects.specialValues import INTF_DIRECTION, DIRECTION
+from hwt.hdlObjects.constants import INTF_DIRECTION, DIRECTION
 from hwt.pyUtils.arrayQuery import single, NoValueExc
 
 

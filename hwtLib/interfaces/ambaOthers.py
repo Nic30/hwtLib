@@ -1,4 +1,4 @@
-from hwt.hdlObjects.specialValues import DIRECTION
+from hwt.hdlObjects.constants import DIRECTION
 from hwt.synthesizer.interfaceLevel.interface import Interface
 from hwt.synthesizer.param import Param
 from hwtLib.interfaces.amba import AxiStream

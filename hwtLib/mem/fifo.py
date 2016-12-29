@@ -4,13 +4,14 @@
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import FifoWriter, FifoReader, VectSignal
-from hwt.interfaces.utils import addClkRstn, log2ceil
+from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.codeOps import If
+from hwt.code import If, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
-# https://eewiki.net/pages/viewpage.action?pageId=20939499
 
+
+# https://eewiki.net/pages/viewpage.action?pageId=20939499
 class Fifo(Unit):
     _serializerMode = SERI_MODE.PARAMS_UNIQ
     

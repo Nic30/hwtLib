@@ -1,16 +1,17 @@
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwtLib.mem.fifo import Fifo
-from hwt.synthesizer.param import Param
-from hwt.interfaces.utils import addClkRstn, log2ceil, propagateClkRstn
-from hwtLib.interfaces.amba import AxiStream
-from hwt.interfaces.std import Handshaked
-from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.axi.axis_fifo import AxiSFifo
-from hwtLib.axi.axis_builder import AxiSBuilder
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.synthesizer.codeOps import If, connect, Concat, Switch
 from hwt.bitmask import mask
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import Handshaked
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.code import If, connect, Concat, Switch, log2ceil
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
+from hwtLib.axi.axis_builder import AxiSBuilder
+from hwtLib.axi.axis_fifo import AxiSFifo
+from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
+from hwtLib.interfaces.amba import AxiStream
+from hwtLib.mem.fifo import Fifo
+
 
 def strbToRem(strbBits):
     """

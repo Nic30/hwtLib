@@ -1,9 +1,9 @@
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal, VectSignal
-from hwt.interfaces.utils import addClkRstn, log2ceil
+from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
-from hwt.synthesizer.codeOps import If
+from hwt.code import If, log2ceil
 from hwt.synthesizer.shortcuts import toRtl
 
 

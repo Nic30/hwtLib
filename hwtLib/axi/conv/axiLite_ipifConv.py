@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.utils import addClkRstn, log2ceil
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.enum import Enum
+from hwt.interfaces.utils import addClkRstn
+from hwt.code import FsmBuilder, If, In, Switch, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.interfaces.amba import AxiLite
 from hwtLib.interfaces.ipif import IPIF
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.synthesizer.codeOps import FsmBuilder, If, In, Switch
-from hwt.hdlObjects.types.enum import Enum
-
 
 
 class AxiLiteIpifConv(Unit):

@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.specialValues import Time
+from hwt.hdlObjects.constants import Time
 from hwt.simulator.shortcuts import simUnitVcd, simPrepare
 from hwt.synthesizer.shortcuts import synthesised
 from hwtLib.proc.ssd1306cntrl.code import simpleCodeExample

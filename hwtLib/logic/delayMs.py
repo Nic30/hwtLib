@@ -4,8 +4,8 @@
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.enum import Enum
 from hwt.interfaces.std import ReqDoneSync, Signal
-from hwt.interfaces.utils import addClkRstn, log2ceil
-from hwt.synthesizer.codeOps import FsmBuilder, If
+from hwt.interfaces.utils import addClkRstn
+from hwt.code import FsmBuilder, If, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 

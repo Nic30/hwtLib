@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.interfaces.std import Signal
-from hwt.synthesizer.codeOps import If
+from hwt.code import If
 from hwt.synthesizer.interfaceLevel.unit import Unit
 
 

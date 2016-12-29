@@ -4,7 +4,7 @@
 from hwt.bitmask import mask
 from hwt.hdlObjects.typeShortcuts import vec
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.codeOps import Concat, Switch, If
+from hwt.code import Concat, Switch, If
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.axi.axis_sof import AxiSsof 

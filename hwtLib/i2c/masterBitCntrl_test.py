@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.specialValues import Time
+from hwt.hdlObjects.constants import Time
 from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl

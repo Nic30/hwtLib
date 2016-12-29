@@ -4,8 +4,8 @@
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.enum import Enum
 from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn, log2ceil
-from hwt.synthesizer.codeOps import FsmBuilder
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.code import FsmBuilder, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.logic.delayMs import DelayMs

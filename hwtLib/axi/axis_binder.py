@@ -1,6 +1,6 @@
 from hwt.interfaces.utils import addClkRstn
 from hwt.intfLvl import Unit, Param
-from hwt.synthesizer.codeOps import If, c
+from hwt.code import If, c
 from hwtLib.interfaces.amba import AxiStream, AxiStream_withoutSTRB
 
 

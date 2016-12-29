@@ -5,7 +5,7 @@ from hwt.interfaces.std import Signal, HandshakeSync, \
     RegCntrl
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.codeOps import If
+from hwt.code import If
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.mem.atomic.flipReg import FlipRegister

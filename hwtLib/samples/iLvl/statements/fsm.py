@@ -5,7 +5,7 @@ from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.enum import Enum
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.codeOps import FsmBuilder, Switch, If
+from hwt.code import FsmBuilder, Switch, If
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.shortcuts import toRtl
 

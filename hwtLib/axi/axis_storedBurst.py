@@ -6,7 +6,7 @@ import math
 from hwt.bitmask import mask
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.codeOps import If, Switch
+from hwt.code import If, Switch
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.interfaces.amba import AxiStream

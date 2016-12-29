@@ -43,6 +43,7 @@ from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import Subunits
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
+from hwtLib.samples.iLvl.ipCoreCompatibleWrap_test import IpCoreWrapperTC
 
 
 if __name__ == "__main__":
@@ -99,6 +100,8 @@ if __name__ == "__main__":
         AxiS_measuringFifoTC,
         
         CLinkedListReaderTC,
+        
+        IpCoreWrapperTC,
     )
     runner = TextTestRunner(verbosity=2)
     runner.run(suite)

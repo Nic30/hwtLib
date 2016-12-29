@@ -3,9 +3,9 @@
 
 import unittest
 
-from hwt.hdlObjects.specialValues import DIRECTION, INTF_DIRECTION
+from hwt.hdlObjects.constants import DIRECTION, INTF_DIRECTION
 from hwt.interfaces.std import Signal
-from hwt.synthesizer.codeOps import connect
+from hwt.code import connect
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwt.synthesizer.interfaceLevel.emptyUnit import setOut
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist

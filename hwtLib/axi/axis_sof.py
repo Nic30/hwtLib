@@ -4,7 +4,7 @@
 from hwt.hdlObjects.types.enum import Enum
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.codeOps import Switch, If
+from hwt.code import Switch, If
 from hwt.synthesizer.interfaceLevel.unit import Unit
 
 

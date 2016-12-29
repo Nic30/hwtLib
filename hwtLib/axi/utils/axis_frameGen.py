@@ -1,7 +1,7 @@
 from hwt.bitmask import mask
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.interfaces.utils import addClkRstn, log2ceil, propagateClkRstn
-from hwt.synthesizer.codeOps import If, connect
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.code import If, connect, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.axi.axiLite_conv import AxiLiteConverter

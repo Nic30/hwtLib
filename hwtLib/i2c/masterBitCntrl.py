@@ -5,7 +5,7 @@ from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.enum import Enum
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.codeOps import If, Concat, FsmBuilder, In
+from hwt.code import If, Concat, FsmBuilder, In
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.interfaces.peripheral import I2c

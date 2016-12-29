@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.codeOps import If, c
+from hwt.code import If, c
 from hwtLib.handshaked.compBase import HandshakedCompBase 
 
 

@@ -1,4 +1,4 @@
-from hwt.synthesizer.codeOps import And
+from hwt.code import And
 from hwt.pyUtils.arrayQuery import where
 
 def _getRd(intf):

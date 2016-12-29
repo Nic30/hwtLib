@@ -3,7 +3,7 @@
 
 from hwt.interfaces.utils import addClkRstn
 from hwt.intfLvl import Param
-from hwt.synthesizer.codeOps import And, If, Or
+from hwt.code import And, If, Or
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 

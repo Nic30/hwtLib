@@ -4,7 +4,7 @@
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal
 from hwt.intfLvl import Unit
-from hwt.synthesizer.codeOps import Switch
+from hwt.code import Switch
 
 
 class SwitchStmUnit(Unit):

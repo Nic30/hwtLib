@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.specialValues import Time
+from hwt.hdlObjects.constants import Time
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.shortcuts import simUnitVcd, oscilate, pullDownAfter, \

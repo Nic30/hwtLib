@@ -3,14 +3,14 @@
 
 from hwt.bitmask import mask
 from hwt.interfaces.std import Signal, HandshakeSync, VectSignal
-from hwt.interfaces.utils import log2ceil, propagateClkRstn
-from hwt.synthesizer.codeOps import If, Switch, connect
+from hwt.interfaces.utils import propagateClkRstn
+from hwt.code import If, Switch, connect, log2ceil
 from hwt.synthesizer.param import Param
 from hwtLib.axi.axi_datapump_base import Axi_datapumpBase
 from hwtLib.handshaked.fifo import HandshakedFifo
+from hwtLib.handshaked.streamNode import streamSync
 from hwtLib.interfaces.amba import (Axi4_r, AxiStream_withId)
 from hwtLib.interfaces.amba_constants import RESP_OKAY
-from hwtLib.handshaked.streamNode import streamSync
 
 
 class TransEndInfo(HandshakeSync):

@@ -2,7 +2,7 @@ from hwt.interfaces.std import Signal
 from hwt.serializer.constants import SERI_MODE
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwt.synthesizer.shortcuts import toRtl
-from hwt.hdlObjects.specialValues import DIRECTION
+from hwt.hdlObjects.constants import DIRECTION
 
 class IOBUF(EmptyUnit):
     """
