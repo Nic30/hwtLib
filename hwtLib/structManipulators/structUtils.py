@@ -126,10 +126,14 @@ class StructBusBurstInfo():
 def selectFieldsFromTmpl(structTemplate, fieldsToUse):
     template = []
     fieldsToUse = set(fieldsToUse)
+    foundNames = set()
     
     for typ, name in  structTemplate:
         if name not in fieldsToUse:
             name = None
         template.append((typ, name))
+        foundNames.add(name)
+        
+    assert fieldsToUse.issubset(foundNames)
     
     return template   
