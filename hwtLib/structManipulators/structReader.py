@@ -1,6 +1,6 @@
 from hwt.code import Concat, If, log2ceil, ForEach
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.interfaces.std import VldSynced, Handshaked
+from hwt.interfaces.std import VldSynced, Handshaked, Signal
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam, Param
 from hwtLib.axi.axi_datapump_base import AddrSizeHs
@@ -79,6 +79,8 @@ class StructReader(Unit):
             self.req = AddrSizeHs()
             self.req.MAX_LEN.set(StructBusBurstInfo.sumOfWords(self._busBurstInfo))
             self.r = AxiStream_withId()
+        
+        self.ack = Signal()  # ready signal form consumer of data from this unit
     
     def _impl(self):
         maxWordIndex = StructBusBurstInfo.sumOfWords(self._busBurstInfo)
@@ -101,7 +103,7 @@ class StructReader(Unit):
         
         busVld = self._sig("busVld")    
         busVld ** (r.valid & r.id._eq(self.ID))
-        r.ready ** 1
+        r.ready ** self.ack
         
         for burstInfo in self._busBurstInfo:
             for fieldInfo in burstInfo.fieldInfos:
