@@ -16,6 +16,7 @@ class ArrayItemGetter(Unit):
         self.ITEMS = Param(32)
         self.ITEM_SIZE_IN_WORDS = Param(1)
         self.DEFAULT_ID = Param(0)
+        self.ID_WIDTH = Param(4)
         self.DATA_WIDTH = Param(64)
         self.ADDR_WIDTH = Param(32)
          
