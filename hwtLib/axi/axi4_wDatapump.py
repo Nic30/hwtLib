@@ -2,17 +2,18 @@
 # -*- coding: utf-8 -*-
 
 from hwt.bitmask import mask
+from hwt.code import connect, If
 from hwt.interfaces.std import Signal, Handshaked, VectSignal, \
     HandshakeSync
 from hwt.interfaces.utils import propagateClkRstn
-from hwt.code import connect, If
 from hwt.synthesizer.param import Param
 from hwtLib.axi.axi_datapump_base import Axi_datapumpBase
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
+from hwtLib.handshaked.streamNode import streamSync, streamAck
 from hwtLib.interfaces.amba import Axi4_w, AxiStream, Axi4_b
 from hwtLib.interfaces.amba_constants import RESP_OKAY
-from hwtLib.handshaked.streamNode import streamSync, streamAck
+
 
 class WFifoIntf(Handshaked):
     def _config(self):
@@ -48,7 +49,7 @@ class Axi_wDatapump(Axi_datapumpBase):
             
             self.errorWrite = Signal()
         self.reqAck = Handshaked()
-        self.reqAck.DATA_WIDTH.set(self.ID_WIDTH)
+        self.reqAck._replaceParam("DATA_WIDTH", self.ID_WIDTH)
            
         with self._paramsShared():
             # fifo for id propagation and frame splitting on axi.w channel 
