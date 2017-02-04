@@ -36,7 +36,7 @@ class CLinkedListReader(Unit):
 
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)
-        self.RING_SPACE_WIDTH = Param(16)
+        self.PTR_WIDTH = Param(16)
 
     def _declr(self):
         addClkRstn(self)
@@ -59,7 +59,7 @@ class CLinkedListReader(Unit):
         self.rdPtr = RegCntrl()
         self.wrPtr = RegCntrl()
         for ptr in [self.rdPtr, self.wrPtr]:
-            ptr._replaceParam("DATA_WIDTH", self.RING_SPACE_WIDTH)
+            ptr._replaceParam("DATA_WIDTH", self.PTR_WIDTH)
                 
 
         f = self.dataFifo = HandshakedFifo(Handshaked)
@@ -87,7 +87,7 @@ class CLinkedListReader(Unit):
         bufferHasSpace ** (f.size < (BURST_LEN + 1))
         # we are counting base next addr as item as well
         inBlock_t = vecT(log2ceil(self.ITEMS_IN_BLOCK + 1))
-        ringSpace_t = vecT(self.RING_SPACE_WIDTH)
+        ringSpace_t = vecT(self.PTR_WIDTH)
         
         downloadPending = r("downloadPending", defVal=0)
         
@@ -210,7 +210,7 @@ if __name__ == "__main__":
     u = CLinkedListReader()
     u.BUFFER_CAPACITY.set(8)
     u.ITEMS_IN_BLOCK.set(31)
-    u.RING_SPACE_WIDTH.set(8)
+    u.PTR_WIDTH.set(8)
     print(toRtl(u))
             
         

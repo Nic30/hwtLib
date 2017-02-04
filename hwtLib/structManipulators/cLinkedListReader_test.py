@@ -16,14 +16,14 @@ class CLinkedListReaderTC(SimTestCase):
     def setUp(self):
         self.u = CLinkedListReader()
         self.ITEMS_IN_BLOCK = 31
-        self.RING_SPACE_WIDTH = 8
+        self.PTR_WIDTH = 8
         self.BUFFER_CAPACITY = 8
         self.DEFAULT_ID = evalParam(self.u.DEFAULT_ID).val
         self.LAST_ID = evalParam(self.u.LAST_ID).val
         self.MAX_LEN = self.BUFFER_CAPACITY // 2 - 1
         
         self.u.ITEMS_IN_BLOCK.set(self.ITEMS_IN_BLOCK)
-        self.u.RING_SPACE_WIDTH.set(self.RING_SPACE_WIDTH)
+        self.u.PTR_WIDTH.set(self.PTR_WIDTH)
         self.u.BUFFER_CAPACITY.set(self.BUFFER_CAPACITY)
         
         _, self.model, self.procs = simPrepare(self.u)
@@ -87,7 +87,7 @@ class CLinkedListReaderTC(SimTestCase):
         t = 20
         
         u.baseAddr._ag.dout.append(0x1020)
-        u.rdPtr._ag.dout.append(mask(self.RING_SPACE_WIDTH))
+        u.rdPtr._ag.dout.append(mask(self.PTR_WIDTH))
         u.wrPtr._ag.dout.append(self.MAX_LEN)  # space is self.MAX_LEN + 1 
         
         
@@ -105,7 +105,7 @@ class CLinkedListReaderTC(SimTestCase):
         t = 20
         
         u.baseAddr._ag.dout.append(0x1020)
-        u.rdPtr._ag.dout.append(mask(self.RING_SPACE_WIDTH))
+        u.rdPtr._ag.dout.append(mask(self.PTR_WIDTH))
         u.wrPtr._ag.dout.append(self.MAX_LEN - 1)  # space is self.MAX_LEN
         
         
