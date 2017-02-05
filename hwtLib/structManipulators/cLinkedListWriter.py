@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from hwt.bitmask import mask
 from hwt.code import If, Concat, connect, log2ceil, FsmBuilder, power
 from hwt.hdlObjects.typeShortcuts import vecT, vec
 from hwt.hdlObjects.types.enum import Enum
@@ -10,7 +14,6 @@ from hwtLib.axi.axi_datapump_base import AddrSizeHs
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync, streamAck
 from hwtLib.interfaces.amba import AxiStream_withId, AxiStream
-from hwt.bitmask import mask
 
 
 class CLinkedListWriter(Unit):

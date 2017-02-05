@@ -157,7 +157,7 @@ if __name__ == "__main__":
         # (uint64_t, "item5"),  # this word is split on two bus words 
         
         (uint64_t, None),
-        (uint64_t, "item5"),
+        #(uint64_t, "item5"),
         (uint64_t, None),
         (uint64_t, None),
         (uint64_t, None),
@@ -165,6 +165,5 @@ if __name__ == "__main__":
         (uint64_t, "item7"),
         
         ]
-    
     u = StructReader(s)
     print(toRtl(u))

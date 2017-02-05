@@ -1,6 +1,7 @@
 from hwt.code import And
 from hwt.pyUtils.arrayQuery import where
 
+
 def _getRd(intf):
     try:
         return intf.rd
