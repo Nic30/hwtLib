@@ -69,8 +69,9 @@ class CLinkedListWriter(Unit):
             assert evalParam(self.BUFFER_CAPACITY).val <= evalParam(self.ITEMS_IN_BLOCK).val
             self.wReq.MAX_LEN.set(self.BUFFER_CAPACITY // 2)
             self.w = AxiStream()
-            self.wReqAck = Handshaked()
         
+        self.wReqAck = Handshaked()
+        self.wReqAck._replaceParam("DATA_WIDTH", self.ID_WIDTH)
             
         # interface to control internal register
         self.baseAddr = RegCntrl()
@@ -123,7 +124,7 @@ class CLinkedListWriter(Unit):
                                                    "pending",
                                                    "prepared"])
         isNextBaseAddr = self.r.valid & self.r.id._eq(self.ID)
-        nextBaseFsm = FsmBuilder(self, t)\
+        nextBaseFsm = FsmBuilder(self, t, "baseAddrLogic_fsm")\
         .Trans(t.uninitialized,
             (self.baseAddr.dout.vld, t.required)
         ).Trans(t.required,
@@ -159,7 +160,7 @@ class CLinkedListWriter(Unit):
         ).Elif(incr,
            timeoutCntr ** (timeoutCntr + 1)
         )
-        return timeoutCntr != 0
+        return timeoutCntr == 0
          
     def queuePtrLogic(self, wrPtrIncrVal, wrPtrIncrEn):
         r, s = self._reg, self._sig
@@ -224,7 +225,7 @@ class CLinkedListWriter(Unit):
         
         nextBlockTransition_out ** (inBlockRemain <= fitTo(reqLen, inBlockRemain) + 1)
         If(prepareEn,
-            dataCntr_out ** (fitTo(reqLen, dataCntr_out) + 1),
+            dataCntr_out ** fitTo(reqLen, dataCntr_out),
             If(nextBlockTransition_out,
                 inBlockRemain ** self.ITEMS_IN_BLOCK
             ).Else(
@@ -259,7 +260,7 @@ class CLinkedListWriter(Unit):
         
         dataCntr_t = vecT(log2ceil(BURST_LEN + 1), signed=False)
         dataCntr = r("dataCntr", dataCntr_t, defVal=0)  # counter of uploading data
-        reqLen_backup = r("reqLen_backup", self.wReq.len._dtype)
+        reqLen_backup = r("reqLen_backup", self.wReq.len._dtype, defVal=0)
         
         
         gotWriteAck = self.wReqAck.vld & self.wReqAck.data._eq(self.ID)
@@ -271,7 +272,7 @@ class CLinkedListWriter(Unit):
                                             "dataPending_prepare",
                                             "dataPending_send",
                                             "waitForAck"])
-        fsm = FsmBuilder(self, fsm_t)\
+        fsm = FsmBuilder(self, fsm_t, "itemUploadLogic_fsm")\
         .Trans(fsm_t.idle,
             (timeout | (bufferHasData & queueHasSpace), fsm_t.reqPending)
             
@@ -279,8 +280,7 @@ class CLinkedListWriter(Unit):
             (self.wReq.rd, fsm_t.dataPending_prepare)
             
         ).Trans(fsm_t.dataPending_prepare,
-            (nextBaseReady, fsm_t.dataPending_send)
-            
+            fsm_t.dataPending_send
         ).Trans(fsm_t.dataPending_send,
             ((~nextBlockTransition_out | nextBaseReady) & dataCntr._eq(0), fsm_t.idle)
         ).Trans(fsm_t.waitForAck,

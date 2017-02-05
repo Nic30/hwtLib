@@ -44,6 +44,7 @@ from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.samples.iLvl.ipCoreCompatibleWrap_test import IpCoreWrapperTC
+from hwtLib.structManipulators.cLinkedListWriter_test import CLinkedListWriterTC
 
 
 if __name__ == "__main__":
@@ -100,6 +101,7 @@ if __name__ == "__main__":
         AxiS_measuringFifoTC,
         
         CLinkedListReaderTC,
+        CLinkedListWriterTC,
         
         IpCoreWrapperTC,
     )
