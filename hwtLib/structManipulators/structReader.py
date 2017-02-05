@@ -84,7 +84,7 @@ class StructReader(Unit):
     
     def _impl(self):
         maxWordIndex = StructBusBurstInfo.sumOfWords(self._busBurstInfo)
-        wordIndex = self._reg("wordIndex", vecT(log2ceil(maxWordIndex)), 0)
+        wordIndex = self._reg("wordIndex", vecT(log2ceil(maxWordIndex + 1)), 0)
         
         r = self.r
         req = self.req
@@ -144,20 +144,19 @@ if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     
     s = [
-        # (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
-        # (uint64_t, None),  # name = None means this field will be ignored  
-        # (uint64_t, "item1"),
-        # (uint64_t, None),
-        # (uint16_t, "item2"),
-        # (uint16_t, "item3"),
-        # (uint32_t, "item4"),
-        
-        
-        # (uint32_t, None),
-        # (uint64_t, "item5"),  # this word is split on two bus words 
-        
+        (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
+        (uint64_t, None),  # name = None means this field will be ignored  
+        (uint64_t, "item1"),
         (uint64_t, None),
-        #(uint64_t, "item5"),
+        (uint16_t, "item2"),
+        (uint16_t, "item3"),
+        (uint32_t, "item4"),
+        
+        
+        (uint32_t, None),
+        (uint64_t, "item5"),  # this word is split on two bus words 
+        (uint32_t, None),
+        
         (uint64_t, None),
         (uint64_t, None),
         (uint64_t, None),
