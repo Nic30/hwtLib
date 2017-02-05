@@ -15,7 +15,7 @@ class ArrayItemGetter(Unit):
     def _config(self):
         self.ITEMS = Param(32)
         self.ITEM_SIZE_IN_WORDS = Param(1)
-        self.DEFAULT_ID = Param(0)
+        self.ID = Param(0)
         self.ID_WIDTH = Param(4)
         self.DATA_WIDTH = Param(64)
         self.ADDR_WIDTH = Param(32)
@@ -46,7 +46,7 @@ class ArrayItemGetter(Unit):
         req = self.req
         
         req.addr ** (self.base + fitTo(self.index.data, req.addr) * ITEM_SIZE_IN_WORDS)
-        req.id ** self.DEFAULT_ID
+        req.id ** self.ID
         req.len ** (self.ITEM_SIZE_IN_WORDS - 1)
         req.rem ** 0
         

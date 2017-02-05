@@ -13,7 +13,7 @@ from hwtLib.interfaces.amba import AxiStream_withId
 
 class CLinkedListReader(Unit):
     """
-    This unit reads items from circular linked list like structure 
+    This unit reads items from (circular) linked list like structure 
     
     struct node {
         item_t items[ITEMS_IN_BLOCK],
@@ -27,9 +27,9 @@ class CLinkedListReader(Unit):
     """
     def _config(self):
         self.ID_WIDTH = Param(4)
-        self.DEFAULT_ID = Param(3)
+        self.ID = Param(3)
         # id of packet where last item is next addr
-        self.LAST_ID = Param(4)
+        self.ID_LAST = Param(4)
 
         self.BUFFER_CAPACITY = Param(32)
         self.ITEMS_IN_BLOCK = Param(4096 // 8 - 1)
@@ -79,10 +79,10 @@ class CLinkedListReader(Unit):
         dBuffIn = f.dataIn
                 
         ALIGN_BITS = self.addrAlignBits()
-        DEFAULT_ID = self.DEFAULT_ID
+        ID = self.ID
         BUFFER_CAPACITY = self.BUFFER_CAPACITY
         BURST_LEN = BUFFER_CAPACITY // 2
-        LAST_ID = self.LAST_ID
+        ID_LAST = self.ID_LAST
         bufferHasSpace = s("bufferHasSpace")
         bufferHasSpace ** (f.size < (BURST_LEN + 1))
         # we are counting base next addr as item as well
@@ -116,12 +116,12 @@ class CLinkedListReader(Unit):
         baseAddr = Concat(baseIndex, vec(0, ALIGN_BITS))
         req.addr ** baseAddr
         self.baseAddr.din ** baseAddr
-        dataAck = dIn.valid & In(dIn.id, [DEFAULT_ID, LAST_ID]) & dBuffIn.rd
+        dataAck = dIn.valid & In(dIn.id, [ID, ID_LAST]) & dBuffIn.rd
         
         If(self.baseAddr.dout.vld,
             baseIndex ** self.baseAddr.dout.data[:ALIGN_BITS]
         ).Elif(dataAck & downloadPending,
-            If(dIn.last & dIn.id._eq(LAST_ID),
+            If(dIn.last & dIn.id._eq(ID_LAST),
                baseIndex ** dIn.data[self.ADDR_WIDTH:ALIGN_BITS]
             ).Else(
                baseIndex ** (baseIndex + 1) 
@@ -141,7 +141,7 @@ class CLinkedListReader(Unit):
         
         If(constraingSpace > BURST_LEN,
             # download full burst
-            req.id ** DEFAULT_ID,
+            req.id ** ID,
             req.len ** (BURST_LEN - 1),
             If(doReq,
                inBlockRemain ** (inBlockRemain - BURST_LEN)
@@ -149,14 +149,14 @@ class CLinkedListReader(Unit):
         ).Elif((fitTo(sizeByPtrs, inBlockRemain) >= inBlockRemain) & (inBlockRemain < BURST_LEN),
             # we know that sizeByPtrs <= inBlockRemain thats why we cane resize it
             # we will download next* as well
-            req.id ** LAST_ID,
+            req.id ** ID_LAST,
             connect(constraingSpace, req.len, fit=True),
             If(doReq,
                inBlockRemain ** (inBlockRemain - (fitTo(constraingSpace, inBlockRemain) + 1))
             )
         ).Else(
             # download leftover
-            req.id ** DEFAULT_ID,
+            req.id ** ID,
             connect(constraingSpace - 1, req.len, fit=True),
             If(doReq,
                inBlockRemain ** (inBlockRemain - fitTo(constraingSpace, inBlockRemain))
@@ -181,7 +181,7 @@ class CLinkedListReader(Unit):
         dBuffIn.data ** dIn.data
         
         isMyData = s("isMyData")
-        isMyData ** (dIn.id._eq(DEFAULT_ID) | (~dIn.last & dIn.id._eq(LAST_ID)))
+        isMyData ** (dIn.id._eq(ID) | (~dIn.last & dIn.id._eq(ID_LAST)))
         If(self.rdPtr.dout.vld,
             rdPtr ** self.rdPtr.dout.data
         ).Else(
@@ -190,16 +190,16 @@ class CLinkedListReader(Unit):
             )
         )
         # ignore data if not my data
-        # notMyData = ~In(dIn.id, [DEFAULT_ID, LAST_ID])
+        # notMyData = ~In(dIn.id, [ID, ID_LAST])
         # streamSync([dIn], [dBuffIn], extraConds={dIn   :[downloadPending | notMyData],
         #                                        dBuffIn:[receivingData, downloadPending]})
         #
-        If(dIn.valid & In(dIn.id, [DEFAULT_ID, LAST_ID]),
+        If(dIn.valid & In(dIn.id, [ID, ID_LAST]),
            # push data into buffer and increment rdPtr
            streamSync(masters=[dIn],
                       slaves=[dBuffIn],
                       extraConds={dIn    :[downloadPending],
-                                  dBuffIn:[~((dIn.id._eq(LAST_ID)) & dIn.last), downloadPending]})
+                                  dBuffIn:[~((dIn.id._eq(ID_LAST)) & dIn.last), downloadPending]})
         ).Else(
            # ship next block addr
            dBuffIn.vld ** 0,

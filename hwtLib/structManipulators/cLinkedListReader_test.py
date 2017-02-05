@@ -18,8 +18,8 @@ class CLinkedListReaderTC(SimTestCase):
         self.ITEMS_IN_BLOCK = 31
         self.PTR_WIDTH = 8
         self.BUFFER_CAPACITY = 8
-        self.DEFAULT_ID = evalParam(self.u.DEFAULT_ID).val
-        self.LAST_ID = evalParam(self.u.LAST_ID).val
+        self.ID = evalParam(self.u.ID).val
+        self.ID_LAST = evalParam(self.u.ID_LAST).val
         self.MAX_LEN = self.BUFFER_CAPACITY // 2 - 1
         
         self.u.ITEMS_IN_BLOCK.set(self.ITEMS_IN_BLOCK)
@@ -80,7 +80,7 @@ class CLinkedListReaderTC(SimTestCase):
         self.assertEqual(len(u.dataOut._ag.data), 0)
     
         self.assertValSequenceEqual(req[0],
-                                [self.DEFAULT_ID, 0x1020, self.MAX_LEN, 0])
+                                [self.ID, 0x1020, self.MAX_LEN, 0])
     
     def test_singleDescrReqOnEdge(self):
         u = self.u
@@ -98,7 +98,7 @@ class CLinkedListReaderTC(SimTestCase):
         self.assertEqual(len(u.dataOut._ag.data), 0)
     
         self.assertValSequenceEqual(req[0],
-                                [self.DEFAULT_ID, 0x1020, self.MAX_LEN, 0])
+                                [self.ID, 0x1020, self.MAX_LEN, 0])
     
     def test_singleDescrReqOnEdge2(self):
         u = self.u
@@ -116,7 +116,7 @@ class CLinkedListReaderTC(SimTestCase):
         self.assertEqual(len(u.dataOut._ag.data), 0)
     
         self.assertValSequenceEqual(req[0],
-                                [self.DEFAULT_ID, 0x1020, self.MAX_LEN - 1, 0])
+                                [self.ID, 0x1020, self.MAX_LEN - 1, 0])
     
     def test_singleDescrReqMax(self):
         u = self.u
@@ -134,7 +134,7 @@ class CLinkedListReaderTC(SimTestCase):
         self.assertEqual(len(u.dataOut._ag.data), 0)
     
         self.assertValSequenceEqual(req[0],
-                                [self.DEFAULT_ID, 0x1020, self.MAX_LEN, 0])
+                                [self.ID, 0x1020, self.MAX_LEN, 0])
     
     def test_singleDescrWithData(self):
         u = self.u
@@ -240,7 +240,7 @@ class CLinkedListReaderTC(SimTestCase):
         for space in spaceValues:
             while space != 0:
                 constraingSpace = min(inBlockRem, space)
-                reqId = self.DEFAULT_ID
+                reqId = self.ID
                 if constraingSpace > self.MAX_LEN + 1:
                     reqLen = self.MAX_LEN
                 elif constraingSpace == 0:
@@ -249,7 +249,7 @@ class CLinkedListReaderTC(SimTestCase):
                     if constraingSpace <= self.MAX_LEN + 1 and inBlockRem < self.MAX_LEN + 1: 
                         # we will download next* as well
                         reqLen = constraingSpace
-                        reqId = self.LAST_ID
+                        reqId = self.ID_LAST
                     else:
                         reqLen = constraingSpace - 1
                     
@@ -259,7 +259,7 @@ class CLinkedListReaderTC(SimTestCase):
                 requests.append(req)
 
                 for i in range(reqLen + 1):
-                    if i == reqLen and reqId == self.LAST_ID:
+                    if i == reqLen and reqId == self.ID_LAST:
                         r = (reqId, baseAddress, mask(8), True)
                         _baseAddress += baseAddress
                     else:
@@ -267,7 +267,7 @@ class CLinkedListReaderTC(SimTestCase):
                 
                     responses.append(r)
                 
-                if reqId == self.LAST_ID:
+                if reqId == self.ID_LAST:
                     inBlockRem = self.ITEMS_IN_BLOCK
                     wordCntr += reqLen
                     space -= reqLen
