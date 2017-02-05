@@ -15,6 +15,6 @@ setup(name='hwtLib',
       ],
       license='MIT',
       packages = find_packages(),
-      package_data={'hwtLib': ['*.vhd', '*.v', '.png']},
+      package_data={'hwtLib': ['*.vhd', '*.v', '*.png']},
       include_package_data=True,
       zip_safe=False)
