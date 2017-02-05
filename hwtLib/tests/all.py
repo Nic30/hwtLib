@@ -25,6 +25,7 @@ from hwtLib.samples.iLvl.arithmetic.twoCntrs_test import TwoCntrsTC
 from hwtLib.samples.iLvl.axi.simpleAxiRegs_test import SimpleAxiRegsTC
 from hwtLib.samples.iLvl.errors.errorsTestCase import ErrorsTC
 from hwtLib.samples.iLvl.hierarchy.simpleSubunit_test import SimpleSubunitTC
+from hwtLib.samples.iLvl.ipCoreCompatibleWrap_test import IpCoreWrapperTC
 from hwtLib.samples.iLvl.mem.ram_test import RamTC as SampleRamTC
 from hwtLib.samples.iLvl.mem.reg_test import DRegTC
 from hwtLib.samples.iLvl.mem.rom_test import RomTC
@@ -35,6 +36,7 @@ from hwtLib.samples.iLvl.statements.fsm_test import FsmExampleTC, HadrcodedFsmEx
 from hwtLib.samples.iLvl.statements.ifStm_test import IfStmTC
 from hwtLib.samples.iLvl.statements.switchStm_test import SwitchStmTC
 from hwtLib.structManipulators.cLinkedListReader_test import CLinkedListReaderTC
+from hwtLib.structManipulators.cLinkedListWriter_test import CLinkedListWriterTC
 from hwtLib.tests.operators import OperatorTC
 from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.tests.statements import StatementsTC
@@ -43,8 +45,6 @@ from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import Subunits
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
-from hwtLib.samples.iLvl.ipCoreCompatibleWrap_test import IpCoreWrapperTC
-from hwtLib.structManipulators.cLinkedListWriter_test import CLinkedListWriterTC
 
 
 if __name__ == "__main__":
