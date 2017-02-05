@@ -123,9 +123,9 @@ class CLinkedListWriter(Unit):
         baseIndex = r("baseIndex_backup", addr_index_t)
         nextBaseIndex = r("nextBaseIndex", addr_index_t)
         t = Enum("nextBaseFsm_t", ["uninitialized",
-                                                   "required",
-                                                   "pending",
-                                                   "prepared"])
+                                   "required",
+                                   "pending",
+                                   "prepared"])
         isNextBaseAddr = self.r.valid & self.r.id._eq(self.ID)
         nextBaseFsm = FsmBuilder(self, t, "baseAddrLogic_fsm")\
         .Trans(t.uninitialized,
