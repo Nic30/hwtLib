@@ -70,6 +70,25 @@ class CLinkedListWriterTC(SimTestCase):
                                 [self.ID, 0x1020, self.MAX_LEN, 0])
 
         self.assertEqual(len(u.w._ag.data), self.MAX_LEN + 1)
+
+    def test_waitForAck(self):
+        u = self.u
+        t = 20
+        
+        u.baseAddr._ag.dout.append(0x1020)
+        u.rdPtr._ag.dout.append(self.MAX_LEN + 1)
+        
+        for i in range(2 * (self.MAX_LEN + 1)):
+            self.u.dataIn._ag.data.append(i)
+        
+        self.doSim(t * 10 * Time.ns)
+        
+        req = u.wReq._ag.data
+        self.assertEqual(len(req), 1)
+        self.assertValSequenceEqual(req[0],
+                                [self.ID, 0x1020, self.MAX_LEN, 0])
+
+        self.assertEqual(len(u.w._ag.data), self.MAX_LEN + 1)
     
     
     def test_constrainedByPtrs(self):

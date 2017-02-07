@@ -285,7 +285,7 @@ class CLinkedListWriter(Unit):
         ).Trans(fsm_t.dataPending_prepare,
             fsm_t.dataPending_send
         ).Trans(fsm_t.dataPending_send,
-            ((~nextBlockTransition_out | nextBaseReady) & dataCntr._eq(0), fsm_t.idle)
+            ((~nextBlockTransition_out | nextBaseReady) & dataCntr._eq(0), fsm_t.waitForAck)
         ).Trans(fsm_t.waitForAck,
             (gotWriteAck, fsm_t.idle)    
         ).stateReg
