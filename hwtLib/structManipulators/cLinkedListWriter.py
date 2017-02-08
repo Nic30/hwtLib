@@ -114,7 +114,7 @@ class CLinkedListWriter(Unit):
         Logic for downloading address of next block
         @param nextBlockTransition_in: signal which means that baseIndex should be changed to nextBaseIndex
                  if nextBaseAddrReady is not high this signal has no effect (= regular handshake)  
-        @return: baseIndex  = baseAddr[:ALIGIN_BITS],
+        @return: baseIndex  = baseAddr[:ALIGN_BITS],
                  nextBaseAddrReady = nextBaseIndex is ready and nextBlockTransition_in can be used
         """
         r = self._reg
@@ -157,13 +157,13 @@ class CLinkedListWriter(Unit):
         return baseIndex, nextBaseIndex, nextBaseReady 
 
     def timeoutHandler(self, rst, incr):
-        timeoutCntr = self._reg("timeoutCntr", vecT(log2ceil(self.TIMEOUT), signed=False), defVal=0)
+        timeoutCntr = self._reg("timeoutCntr", vecT(log2ceil(self.TIMEOUT), signed=False), defVal=self.TIMEOUT)
         If(rst,
            timeoutCntr ** self.TIMEOUT
-        ).Elif(incr,
-           timeoutCntr ** (timeoutCntr + 1)
+        ).Elif((timeoutCntr != 0) & incr,
+           timeoutCntr ** (timeoutCntr - 1)
         )
-        return timeoutCntr == 0
+        return timeoutCntr._eq(0) 
          
     def queuePtrLogic(self, wrPtrIncrVal, wrPtrIncrEn):
         r, s = self._reg, self._sig
@@ -225,10 +225,11 @@ class CLinkedListWriter(Unit):
     def mvDataToW(self, prepareEn, dataMoveEn, reqLen, inBlockRemain, nextBlockTransition_out, dataCntr_out):
         f = self.dataFifo.dataOut
         w = self.w
-        
-        nextBlockTransition_out ** (inBlockRemain <= fitTo(reqLen, inBlockRemain) + 1)
+        nextBlockTransition = self._sig("mvDataToW_nextBlockTransition")
+        nextBlockTransition ** (inBlockRemain <= fitTo(reqLen, inBlockRemain) + 1)
         If(prepareEn,
             dataCntr_out ** fitTo(reqLen, dataCntr_out),
+            
             If(nextBlockTransition_out,
                 inBlockRemain ** self.ITEMS_IN_BLOCK
             ).Else(
@@ -248,6 +249,7 @@ class CLinkedListWriter(Unit):
         w.last ** dataCntr_out._eq(0)
         w.strb ** mask(w.strb._dtype.bit_length())
         self.dataFifo.dataIn ** self.dataIn
+        nextBlockTransition_out ** (nextBlockTransition & prepareEn)
     
     def itemUploadLogic(self, baseIndex, nextBaseIndex, nextBaseReady, nextBlockTransition_out):
         r, s = self._reg, self._sig
@@ -311,11 +313,13 @@ class CLinkedListWriter(Unit):
         
         If(self.baseAddr.dout.vld,
            baseIndex ** self.addrToIndex(self.baseAddr.dout.data),
+        ).Elif(prepareEn,
+           baseIndex ** (baseIndex + reqLen_backup + 1)    
         ).Elif(nextBlockTransition_out,
            baseIndex ** nextBaseIndex   
         )
         
-        self.wReqAck.rd ** 1
+        self.wReqAck.rd ** fsm._eq(fsm_t.waitForAck)
         
     def _impl(self):
         propagateClkRstn(self)

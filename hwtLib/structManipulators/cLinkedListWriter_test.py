@@ -8,6 +8,7 @@ from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import evalParam
 from hwtLib.structManipulators.cLinkedListWriter import CLinkedListWriter
+from hwtLib.abstract.denseMemory import DenseMemory
 
 
 class CLinkedListWriterTC(SimTestCase):
@@ -19,6 +20,7 @@ class CLinkedListWriterTC(SimTestCase):
         self.TIMEOUT = 40 
         self.ID = evalParam(self.u.ID).val
         self.MAX_LEN = self.BUFFER_CAPACITY // 2 - 1
+        self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
         
         self.u.TIMEOUT.set(self.TIMEOUT)
         self.u.ITEMS_IN_BLOCK.set(self.ITEMS_IN_BLOCK)
@@ -110,12 +112,95 @@ class CLinkedListWriterTC(SimTestCase):
 
         self.assertEqual(len(u.w._ag.data), self.MAX_LEN)
     
+    def spotNextBaseAddr(self, mem, currentBase, nextBaseAddr):
+        baseIndex = currentBase // (self.DATA_WIDTH // 8)
+        mem.data[baseIndex + self.ITEMS_IN_BLOCK ] = nextBaseAddr
+        
+    def test_regularUpload(self):
+        u = self.u
+        t = 100
+        BASE = 0x1020
+        ITEMS = 2 * (self.MAX_LEN + 1)
+        MAGIC = 50
+        
+        u.baseAddr._ag.dout.append(BASE)
+        u.rdPtr._ag.dout.append(ITEMS)
+        
+        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rReq._ag, u.r._ag,
+                        u.wReq._ag, u.w._ag, u.wReqAck._ag)
+        
+        self.spotNextBaseAddr(m, BASE, 0x2020)
+        
+        for i in range(ITEMS):
+            self.u.dataIn._ag.data.append(i + MAGIC)
+        
+        self.doSim(t * 10 * Time.ns)
+
+        baseIndex = BASE // (self.DATA_WIDTH // 8)
+        #print()
+        #self.debugNode(m, BASE)
+        for i in range(ITEMS):
+            try:
+                d = m.data[baseIndex + i]
+            except KeyError:
+                raise AssertionError("Invalid data on index %d" % i)
+            self.assertValEqual(d, i + MAGIC, "Invalid data on index %d" % i)
     
-    
-          
+    def debugNode(self, mem, baseAddr):
+        baseIndex = baseAddr // (self.DATA_WIDTH // 8)
+        
+        items=[]
+        for i in range(self.ITEMS_IN_BLOCK):
+            try:
+                d = mem.data[baseIndex + i]
+            except KeyError:
+                d = None
+            items.append(d)
+        try:
+            nextAddr = mem.data[baseIndex + self.ITEMS_IN_BLOCK]
+        except KeyError:
+            nextAddr = None
+           
+        print("<Node 0x%x, items:%r\n    next:0x%x>" % (baseAddr, items, nextAddr)) 
+            
+    def test_regularUpload2(self):
+        u = self.u
+        t = 200
+        BASE = 0x1020
+        BASE2 = 0x2020
+        ITEMS = self.ITEMS_IN_BLOCK * 2
+        MAGIC = 50
+        
+        u.baseAddr._ag.dout.append(BASE)
+        u.rdPtr._ag.dout.append(ITEMS)
+        
+        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rReq._ag, u.r._ag,
+                        u.wReq._ag, u.w._ag, u.wReqAck._ag)
+        
+        self.spotNextBaseAddr(m, BASE, BASE2)
+        self.spotNextBaseAddr(m, BASE2, BASE + BASE2)
+        self.spotNextBaseAddr(m, BASE + BASE2, BASE + BASE2 + BASE)
+        
+        
+        for i in range(ITEMS):
+            self.u.dataIn._ag.data.append(i + MAGIC)
+        
+        self.doSim(t * 10 * Time.ns)
+
+        baseIndex = BASE // (self.DATA_WIDTH // 8)
+
+        for i in range(ITEMS):
+            try:
+                d = m.data[baseIndex + i]
+            except KeyError:
+                raise AssertionError("Invalid data on index %d" % i)
+            self.assertValEqual(d, i + MAGIC, "Invalid data on index %d" % i)
+            
+            
+  
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(CLinkedListWriterTC('test_constrainedByPtrs'))
+    #suite.addTest(CLinkedListWriterTC('test_regularUpload'))
     suite.addTest(unittest.makeSuite(CLinkedListWriterTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
