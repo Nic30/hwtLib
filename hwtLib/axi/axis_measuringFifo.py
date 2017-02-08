@@ -45,7 +45,7 @@ class AxiS_measuringFifo(Unit):
             self.dataOut = AxiStream()
         
         self.sizes = Handshaked()
-        self.sizes.DATA_WIDTH.set(log2ceil(self.MAX_LEN) + self.getAliginBtsCnt())
+        self.sizes.DATA_WIDTH.set(log2ceil(self.MAX_LEN) + self.getAlignBitsCnt())
         
         db = self.dataBuff = AxiSFifo(AxiStream)
         # to place fifo in bram
