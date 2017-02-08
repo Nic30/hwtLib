@@ -35,7 +35,7 @@ class AxiS_measuringFifo(Unit):
         self.SIZES_BUFF_DEPTH = Param(16) 
         self.MAX_LEN = Param(4096 // 8 - 1)
     
-    def getAliginBitsCnt(self):
+    def getAlignBitsCnt(self):
         return log2ceil(self.DATA_WIDTH // 8).val
         
     def _declr(self):
@@ -45,7 +45,7 @@ class AxiS_measuringFifo(Unit):
             self.dataOut = AxiStream()
         
         self.sizes = Handshaked()
-        self.sizes.DATA_WIDTH.set(log2ceil(self.MAX_LEN) + self.getAliginBitsCnt())
+        self.sizes.DATA_WIDTH.set(log2ceil(self.MAX_LEN) + self.getAliginBtsCnt())
         
         db = self.dataBuff = AxiSFifo(AxiStream)
         # to place fifo in bram
