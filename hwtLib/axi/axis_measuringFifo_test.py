@@ -230,8 +230,8 @@ class AxiS_measuringFifoTC(SimTestCase):
     
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(AxiS_measuringFifoTC('test_withSizeBrake'))
-    # suite.addTest(unittest.makeSuite(AxiS_measuringFifoTC))
+    #suite.addTest(AxiS_measuringFifoTC('test_withSizeBrake'))
+    suite.addTest(unittest.makeSuite(AxiS_measuringFifoTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
