@@ -7,8 +7,8 @@ from hwt.hdlObjects.constants import Time
 from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import evalParam
-from hwtLib.structManipulators.cLinkedListWriter import CLinkedListWriter
 from hwtLib.abstract.denseMemory import DenseMemory
+from hwtLib.structManipulators.cLinkedListWriter import CLinkedListWriter
 
 
 class CLinkedListWriterTC(SimTestCase):
@@ -37,9 +37,9 @@ class CLinkedListWriterTC(SimTestCase):
             
         self.doSim((self.TIMEOUT + 10) * 10 * Time.ns)
         
-        self.assertEqual(len(u.rReq._ag.data), 0)
-        self.assertEqual(len(u.wReq._ag.data), 0)
-        self.assertEqual(len(u.w._ag.data), 0)
+        self.assertEqual(len(u.rDatapump.req._ag.data), 0)
+        self.assertEqual(len(u.wDatapump.req._ag.data), 0)
+        self.assertEqual(len(u.wDatapump.w._ag.data), 0)
     
     def test_singleBurstReqNoData(self):
         u = self.u
@@ -50,9 +50,9 @@ class CLinkedListWriterTC(SimTestCase):
         
         self.doSim(t * 10 * Time.ns)
         
-        req = u.wReq._ag.data
+        req = u.wDatapump.req._ag.data
         self.assertEqual(len(req), 0)
-        self.assertEqual(len(u.w._ag.data), 0)
+        self.assertEqual(len(u.wDatapump.w._ag.data), 0)
     
     def test_singleBurst(self):
         u = self.u
@@ -66,12 +66,12 @@ class CLinkedListWriterTC(SimTestCase):
         
         self.doSim(t * 10 * Time.ns)
         
-        req = u.wReq._ag.data
+        req = u.wDatapump.req._ag.data
         self.assertEqual(len(req), 1)
         self.assertValSequenceEqual(req[0],
                                 [self.ID, 0x1020, self.MAX_LEN, 0])
 
-        self.assertEqual(len(u.w._ag.data), self.MAX_LEN + 1)
+        self.assertEqual(len(u.wDatapump.w._ag.data), self.MAX_LEN + 1)
 
     def test_waitForAck(self):
         u = self.u
@@ -85,12 +85,12 @@ class CLinkedListWriterTC(SimTestCase):
         
         self.doSim(t * 10 * Time.ns)
         
-        req = u.wReq._ag.data
+        req = u.wDatapump.req._ag.data
         self.assertEqual(len(req), 1)
         self.assertValSequenceEqual(req[0],
                                 [self.ID, 0x1020, self.MAX_LEN, 0])
 
-        self.assertEqual(len(u.w._ag.data), self.MAX_LEN + 1)
+        self.assertEqual(len(u.wDatapump.w._ag.data), self.MAX_LEN + 1)
     
     
     def test_constrainedByPtrs(self):
@@ -105,12 +105,12 @@ class CLinkedListWriterTC(SimTestCase):
         
         self.doSim(t * 10 * Time.ns)
         
-        req = u.wReq._ag.data
+        req = u.wDatapump.req._ag.data
         self.assertEqual(len(req), 1)
         self.assertValSequenceEqual(req[0],
                                 [self.ID, 0x1020, self.MAX_LEN - 1, 0])
 
-        self.assertEqual(len(u.w._ag.data), self.MAX_LEN)
+        self.assertEqual(len(u.wDatapump.w._ag.data), self.MAX_LEN)
     
     def spotNextBaseAddr(self, mem, currentBase, nextBaseAddr):
         baseIndex = currentBase // (self.DATA_WIDTH // 8)
@@ -126,8 +126,7 @@ class CLinkedListWriterTC(SimTestCase):
         u.baseAddr._ag.dout.append(BASE)
         u.rdPtr._ag.dout.append(ITEMS)
         
-        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rReq._ag, u.r._ag,
-                        u.wReq._ag, u.w._ag, u.wReqAck._ag)
+        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rDatapump, u.wDatapump)
         
         self.spotNextBaseAddr(m, BASE, 0x2020)
         
@@ -137,8 +136,8 @@ class CLinkedListWriterTC(SimTestCase):
         self.doSim(t * 10 * Time.ns)
 
         baseIndex = BASE // (self.DATA_WIDTH // 8)
-        #print()
-        #self.debugNode(m, BASE)
+        # print()
+        # self.debugNode(m, BASE)
         for i in range(ITEMS):
             try:
                 d = m.data[baseIndex + i]
@@ -149,7 +148,7 @@ class CLinkedListWriterTC(SimTestCase):
     def debugNode(self, mem, baseAddr):
         baseIndex = baseAddr // (self.DATA_WIDTH // 8)
         
-        items=[]
+        items = []
         for i in range(self.ITEMS_IN_BLOCK):
             try:
                 d = mem.data[baseIndex + i]
@@ -174,8 +173,7 @@ class CLinkedListWriterTC(SimTestCase):
         u.baseAddr._ag.dout.append(BASE)
         u.rdPtr._ag.dout.append(ITEMS)
         
-        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rReq._ag, u.r._ag,
-                        u.wReq._ag, u.w._ag, u.wReqAck._ag)
+        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rDatapump, u.wDatapump)
         
         self.spotNextBaseAddr(m, BASE, BASE2)
         self.spotNextBaseAddr(m, BASE2, BASE + BASE2)
@@ -200,7 +198,7 @@ class CLinkedListWriterTC(SimTestCase):
   
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(CLinkedListWriterTC('test_regularUpload'))
+    # suite.addTest(CLinkedListWriterTC('test_regularUpload'))
     suite.addTest(unittest.makeSuite(CLinkedListWriterTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

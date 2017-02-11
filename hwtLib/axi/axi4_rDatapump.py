@@ -2,14 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from hwt.bitmask import mask
+from hwt.code import If, Switch, connect, log2ceil
 from hwt.interfaces.std import Signal, HandshakeSync, VectSignal
 from hwt.interfaces.utils import propagateClkRstn
-from hwt.code import If, Switch, connect, log2ceil
 from hwt.synthesizer.param import Param
+from hwtLib.axi.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.axi.axi_datapump_base import Axi_datapumpBase
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
-from hwtLib.interfaces.amba import (Axi4_r, AxiStream_withId)
+from hwtLib.interfaces.amba import Axi4_r
 from hwtLib.interfaces.amba_constants import RESP_OKAY
 
 
@@ -44,8 +45,7 @@ class Axi_rDatapump(Axi_datapumpBase):
         super()._declr()  # add clk, rst, axi addr channel and req channel
         with self._paramsShared():
             self.r = Axi4_r()
-            self.rOut = AxiStream_withId()
-            
+            self.driver = AxiRDatapumpIntf()
             self.errorRead = Signal()
         
             f = self.sizeRmFifo = HandshakedFifo(TransEndInfo)
@@ -54,17 +54,20 @@ class Axi_rDatapump(Axi_datapumpBase):
     
     def arIdHandler(self, lastReqDispatched):
         a = self.a
-        req_idBackup = self._reg("req_idBackup", self.req.id._dtype)
+        req = self.driver.req
+        req_idBackup = self._reg("req_idBackup", req.id._dtype)
+        
         If(lastReqDispatched,
-            req_idBackup ** self.req.id,
-            a.id ** self.req.id 
+            req_idBackup ** req.id,
+            a.id ** req.id 
         ).Else(
             a.id ** req_idBackup
         )
     
     def addrHandler(self, addRmSize, rErrFlag):
         ar = self.a
-        req = self.req
+        req = self.driver.req
+        r, s = self._reg, self._sig
         
         self.axiAddrDefaults() 
 
@@ -74,15 +77,15 @@ class Axi_rDatapump(Axi_datapumpBase):
             ADDR_STEP = self.getBurstAddrOffset()
             
                
-            lastReqDispatched = self._reg("lastReqDispatched", defVal=1) 
-            lenDebth = self._reg("lenDebth", req.len._dtype)
-            remBackup = self._reg("remBackup", req.rem._dtype)
-            rAddr = self._reg("r_addr", req.addr._dtype)
+            lastReqDispatched = r("lastReqDispatched", defVal=1) 
+            lenDebth = r("lenDebth", req.len._dtype)
+            remBackup = r("remBackup", req.rem._dtype)
+            rAddr = r("r_addr", req.addr._dtype)
                            
-            reqLen = self._sig("reqLen", req.len._dtype)
-            reqRem = self._sig("reqRem", req.rem._dtype)
+            reqLen = s("reqLen", req.len._dtype)
+            reqRem = s("reqRem", req.rem._dtype)
             
-            ack = self._sig("ar_ack")
+            ack = s("ar_ack")
             
             self.arIdHandler(lastReqDispatched)
             If(reqLen > LEN_MAX,
@@ -157,7 +160,7 @@ class Axi_rDatapump(Axi_datapumpBase):
     
     def dataHandler(self, rmSizeOut): 
         r = self.r
-        rOut = self.rOut
+        rOut = self.driver.r
         
         rErrFlag = self._reg("rErrFlag", defVal=0)
         If(r.valid & rOut.ready & (r.resp != RESP_OKAY),

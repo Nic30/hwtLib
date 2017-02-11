@@ -31,7 +31,7 @@ class Axi4_wDatapumpTC(SimTestCase):
     def test_simple(self):
         u = self.u
         
-        req = u.req._ag
+        req = u.driver._ag.req
         aw = u.a._ag.data
         
         # download one word from addr 0xff
@@ -47,9 +47,9 @@ class Axi4_wDatapumpTC(SimTestCase):
     def test_simpleWithData(self):
         u = self.u
         
-        req = u.req._ag
+        req = u.driver._ag.req
         aw = u.a._ag.data
-        wIn = u.wIn._ag
+        wIn = u.driver.w._ag
         w = u.w._ag.data
         b = u.b._ag.data
         
@@ -69,9 +69,9 @@ class Axi4_wDatapumpTC(SimTestCase):
     def test_singleLong(self):
         u = self.u
         
-        req = u.req._ag
+        req = u.driver._ag.req
         aw = u.a._ag.data
-        wIn = u.wIn._ag
+        wIn = u.driver.w._ag
         w = u.w._ag.data
         b = u.b._ag.data
         
@@ -89,14 +89,14 @@ class Axi4_wDatapumpTC(SimTestCase):
         
         self.assertEqual(len(w), self.LEN_MAX + 1)
         self.assertEqual(len(b), 0)
-        self.assertEqual(len(u.reqAck._ag.data), 1)
+        self.assertEqual(len(u.driver._ag.ack.data), 1)
         
     
     def test_multiple(self):
         u = self.u
-        req = u.req._ag
+        req = u.driver._ag.req
         aw = u.a._ag.data
-        wIn = u.wIn._ag
+        wIn = u.driver.w._ag
         w = u.w._ag.data
         b = u.b._ag.data
         N = 50
@@ -116,13 +116,13 @@ class Axi4_wDatapumpTC(SimTestCase):
         
         self.assertEqual(len(w), N)
         self.assertEqual(len(b), 0)
-        self.assertEqual(len(u.reqAck._ag.data), N)
+        self.assertEqual(len(u.driver._ag.ack.data), N)
         
     def test_multiple_randomized(self):
         u = self.u
-        req = u.req._ag
+        req = u.driver._ag.req
         aw = u.a._ag.data
-        wIn = u.wIn._ag
+        wIn = u.driver.w._ag
         w = u.w._ag.data
         b = u.b._ag.data
         N = 50
@@ -136,10 +136,10 @@ class Axi4_wDatapumpTC(SimTestCase):
         ra = self.randomize
         ra(u.a)
         ra(u.b)
-        ra(u.req)
-        ra(u.reqAck)
+        ra(u.driver.req)
+        ra(u.driver.ack)
         ra(u.w)
-        ra(u.wIn)
+        ra(u.driver.w)
         
         self.doSim(1200 * Time.ns)
         
@@ -150,13 +150,13 @@ class Axi4_wDatapumpTC(SimTestCase):
         
         self.assertEqual(len(w), N)
         self.assertEqual(len(b), 0)
-        self.assertEqual(len(u.reqAck._ag.data), N)
+        self.assertEqual(len(u.driver._ag.ack.data), N)
         
     def test_multiple_randomized2(self):
         u = self.u
-        req = u.req._ag
+        req = u.driver._ag.req
         aw = u.a._ag.data
-        wIn = u.wIn._ag
+        wIn = u.driver.w._ag
         w = u.w._ag.data
         b = u.b._ag.data
         N = 50
@@ -178,10 +178,10 @@ class Axi4_wDatapumpTC(SimTestCase):
         ra = self.randomize
         ra(u.a)
         ra(u.b)
-        ra(u.req)
-        ra(u.reqAck)
+        ra(u.driver.req)
+        ra(u.driver.ack)
         ra(u.w)
-        ra(u.wIn)
+        ra(u.driver.w)
         
         self.doSim(N * L * 25 * Time.ns)
         
@@ -195,7 +195,7 @@ class Axi4_wDatapumpTC(SimTestCase):
             self.assertValSequenceEqual(wd, expWD)
             
         self.assertEqual(len(b), 0)
-        self.assertEqual(len(u.reqAck._ag.data), N)
+        self.assertEqual(len(u.driver._ag.ack.data), N)
      
 class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
     LEN_MAX = 16

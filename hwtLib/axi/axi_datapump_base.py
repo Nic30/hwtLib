@@ -1,8 +1,6 @@
 from hwt.bitmask import mask
-from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.std import Handshaked, VectSignal, HandshakeSync
-from hwt.interfaces.utils import addClkRstn
 from hwt.code import log2ceil
+from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.interfaces.amba import Axi4_addr
@@ -10,61 +8,10 @@ from hwtLib.interfaces.amba_constants import BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, PROT_DEFAULT, QOS_DEFAULT, BYTES_IN_TRANS
 
 
-class AddrSizeHsAgent(HandshakedAgent):
-    def doRead(self, s):
-        intf = self.intf
-        r = s.read
-        
-        _id = r(intf.id)
-        addr = r(intf.addr)
-        _len = r(intf.len)
-        rem = r(intf.rem)
-        
-        return (_id, addr, _len, rem)
-
-    def mkReq(self, addr, _len, rem=0, _id=0):
-        return (_id, addr, _len, rem)
-
-    def doWrite(self, s, data):
-        intf = self.intf
-        w = s.w
-        
-        if data is None:
-            data = [None for _ in range(4)]
-
-        _id, addr, _len, rem = data
-        
-        w(_id, intf.id)
-        w(addr, intf.addr)
-        w(_len, intf.len)
-        w(rem, intf.rem)
-    
-class AddrSizeHs(Handshaked):
-    def _config(self):
-        self.ID_WIDTH = Param(4)
-        self.ADDR_WIDTH = Param(32)
-        self.DATA_WIDTH = Param(64)
-        self.MAX_LEN = Param(4096 // 8 - 1)
-    
-    def _declr(self):
-        self.id = VectSignal(self.ID_WIDTH)
-        
-        self.addr = VectSignal(self.ADDR_WIDTH)
-        #  len is number of words -1
-        self.len = VectSignal(log2ceil(self.MAX_LEN))
-        
-        # rem is number of bits in last word which is valid - 1
-        self.rem = VectSignal(log2ceil(self.DATA_WIDTH // 8))
-
-        HandshakeSync._declr(self)
-    
-    def _getSimAgent(self):
-        return AddrSizeHsAgent
-
 class Axi_datapumpBase(Unit):
     """
     @ivar param MAX_TRANS_OVERLAP: max number of concurrent transactions
- 
+    @ivar driver: interface which is used to drive this datapump (AxiRDatapumpIntf or AxiWDatapumpIntf)
     """
     def __init__(self, axiAddrCls=Axi4_addr):
         self._axiAddrCls = axiAddrCls
@@ -92,14 +39,13 @@ class Axi_datapumpBase(Unit):
             # address channel to axi
             self.a = self._axiAddrCls()
             self.a.LOCK_WIDTH = 2  # because all masters have it
-            # user requests
-            self.req = AddrSizeHs()
+
                 
     def getSizeAlignBits(self):
         return log2ceil(self.DATA_WIDTH // 8).val
     
     def useTransSplitting(self):
-        return self.req.len._dtype.bit_length() > self.a.len._dtype.bit_length()
+        return self.driver.req.len._dtype.bit_length() > self.a.len._dtype.bit_length()
     
     def getBurstAddrOffset(self):
         return (self.getAxiLenMax() + 1) << self.getSizeAlignBits()

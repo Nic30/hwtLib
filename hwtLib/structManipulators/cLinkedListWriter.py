@@ -10,10 +10,9 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 from hwt.synthesizer.vectorUtils import fitTo
-from hwtLib.axi.axi_datapump_base import AddrSizeHs
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync, streamAck
-from hwtLib.interfaces.amba import AxiStream_withId, AxiStream
+from hwtLib.axi.axiDatapumpIntf import AxiRDatapumpIntf, AxiWDatapumpIntf
 
 
 class CLinkedListWriter(Unit):
@@ -58,24 +57,19 @@ class CLinkedListWriter(Unit):
         
         with self._paramsShared():
             # read interface for datapump
-            # interface which sending requests to download data
-            self.rReq = AddrSizeHs()
-            self.rReq.MAX_LEN.set(1)  # because we are downloading only addres of next block
+            # interface which sending requests to download addr of next block
+            self.rDatapump = AxiRDatapumpIntf()
+            self.rDatapump.MAX_LEN.set(1)  # because we are downloading only addres of next block
             
-            # interface which is collecting all data and only data with specified id are processed
-            self.r = AxiStream_withId()
-            
-            self.dataIn = Handshaked()
         
             # write interface for datapump
-            self.wReq = AddrSizeHs()
+            self.wDatapump = AxiWDatapumpIntf()
+            self.wDatapump.MAX_LEN.set(self.BUFFER_CAPACITY // 2)
             assert evalParam(self.BUFFER_CAPACITY).val <= evalParam(self.ITEMS_IN_BLOCK).val
-            self.wReq.MAX_LEN.set(self.BUFFER_CAPACITY // 2)
-            self.w = AxiStream()
         
-        self.wReqAck = Handshaked()
-        self.wReqAck._replaceParam("DATA_WIDTH", self.ID_WIDTH)
-            
+            # interface for items which should be written into list
+            self.dataIn = Handshaked()
+        
         # interface to control internal register
         self.baseAddr = RegCntrl()
         self.baseAddr._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
@@ -101,7 +95,7 @@ class CLinkedListWriter(Unit):
     
     def rReqHandler(self, baseIndex, doReq):
         # always download only one word with address of next block
-        rReq = self.rReq
+        rReq = self.rDatapump.req
         rReq.addr ** self.indexToAddr(baseIndex + self.ITEMS_IN_BLOCK)
         rReq.id ** self.ID
         rReq.len ** 0
@@ -118,6 +112,8 @@ class CLinkedListWriter(Unit):
                  nextBaseAddrReady = nextBaseIndex is ready and nextBlockTransition_in can be used
         """
         r = self._reg
+        rIn = self.rDatapump.r
+        rReq = self.rDatapump.req
         
         addr_index_t = vecT(self.ADDR_WIDTH - self.ALIGN_BITS)
         baseIndex = r("baseIndex_backup", addr_index_t)
@@ -126,12 +122,12 @@ class CLinkedListWriter(Unit):
                                    "required",
                                    "pending",
                                    "prepared"])
-        isNextBaseAddr = self.r.valid & self.r.id._eq(self.ID)
+        isNextBaseAddr = rIn.valid & rIn.id._eq(self.ID)
         nextBaseFsm = FsmBuilder(self, t, "baseAddrLogic_fsm")\
         .Trans(t.uninitialized,
             (self.baseAddr.dout.vld, t.required)
         ).Trans(t.required,
-            (self.rReq.rd, t.pending)
+            (rReq.rd, t.pending)
         ).Trans(t.pending,
             (isNextBaseAddr, t.prepared)
         ).Trans(t.prepared,
@@ -147,9 +143,9 @@ class CLinkedListWriter(Unit):
         self.baseAddr.din ** self.indexToAddr(baseIndex)
         
         If(isNextBaseAddr,
-           nextBaseIndex ** self.addrToIndex(fitTo(self.r.data, self.rReq.addr))
+           nextBaseIndex ** self.addrToIndex(fitTo(rIn.data, rReq.addr))
         )
-        self.r.ready ** 1
+        rIn.ready ** 1
         
         self.rReqHandler(baseIndex, nextBaseFsm._eq(t.required))
         
@@ -157,7 +153,7 @@ class CLinkedListWriter(Unit):
         return baseIndex, nextBaseIndex, nextBaseReady 
 
     def timeoutHandler(self, rst, incr):
-        timeoutCntr = self._reg("timeoutCntr", vecT(log2ceil(self.TIMEOUT), signed=False), defVal=self.TIMEOUT)
+        timeoutCntr = self._reg("timeoutCntr", vecT(log2ceil(self.TIMEOUT) + 1, signed=False), defVal=self.TIMEOUT)
         If(rst,
            timeoutCntr ** self.TIMEOUT
         ).Elif((timeoutCntr != 0) & incr,
@@ -194,7 +190,7 @@ class CLinkedListWriter(Unit):
     
     def wReqDriver(self, en, baseIndex, lenByPtrs, inBlockRemain):
         s = self._sig
-        wReq = self.wReq
+        wReq = self.wDatapump.req
         BURST_LEN = self.BUFFER_CAPACITY // 2
         inBlockRemain_asPtrSize = fitTo(inBlockRemain, lenByPtrs)
                 
@@ -224,7 +220,7 @@ class CLinkedListWriter(Unit):
     
     def mvDataToW(self, prepareEn, dataMoveEn, reqLen, inBlockRemain, nextBlockTransition_out, dataCntr_out):
         f = self.dataFifo.dataOut
-        w = self.w
+        w = self.wDatapump.w
         nextBlockTransition = self._sig("mvDataToW_nextBlockTransition")
         nextBlockTransition ** (inBlockRemain <= fitTo(reqLen, inBlockRemain) + 1)
         If(prepareEn,
@@ -254,7 +250,7 @@ class CLinkedListWriter(Unit):
     def itemUploadLogic(self, baseIndex, nextBaseIndex, nextBaseReady, nextBlockTransition_out):
         r, s = self._reg, self._sig
         f = self.dataFifo
-        
+        w = self.wDatapump
            
         BURST_LEN = self.BUFFER_CAPACITY // 2
         bufferHasData = s("bufferHasData")
@@ -265,10 +261,10 @@ class CLinkedListWriter(Unit):
         
         dataCntr_t = vecT(log2ceil(BURST_LEN + 1), signed=False)
         dataCntr = r("dataCntr", dataCntr_t, defVal=0)  # counter of uploading data
-        reqLen_backup = r("reqLen_backup", self.wReq.len._dtype, defVal=0)
+        reqLen_backup = r("reqLen_backup", w.req.len._dtype, defVal=0)
         
         
-        gotWriteAck = self.wReqAck.vld & self.wReqAck.data._eq(self.ID)
+        gotWriteAck = w.ack.vld & w.ack.data._eq(self.ID)
         queueHasSpace, lenByPtrs = self.queuePtrLogic(fitTo(reqLen_backup, self.wrPtr.din) + 1, gotWriteAck)
         
         timeout = s("timeout")
@@ -282,7 +278,7 @@ class CLinkedListWriter(Unit):
             (timeout | (bufferHasData & queueHasSpace), fsm_t.reqPending)
             
         ).Trans(fsm_t.reqPending,
-            (self.wReq.rd, fsm_t.dataPending_prepare)
+            (w.req.rd, fsm_t.dataPending_prepare)
             
         ).Trans(fsm_t.dataPending_prepare,
             fsm_t.dataPending_send
@@ -302,7 +298,7 @@ class CLinkedListWriter(Unit):
         wReqEn = fsm._eq(fsm_t.reqPending)
         reqLen = self.wReqDriver(wReqEn, baseIndex, lenByPtrs, inBlockRemain)
         
-        If(wReqEn & self.wReq.rd,
+        If(wReqEn & w.req.rd,
            reqLen_backup ** reqLen
         )
 
@@ -319,7 +315,7 @@ class CLinkedListWriter(Unit):
            baseIndex ** nextBaseIndex   
         )
         
-        self.wReqAck.rd ** fsm._eq(fsm_t.waitForAck)
+        w.ack.rd ** fsm._eq(fsm_t.waitForAck)
         
     def _impl(self):
         propagateClkRstn(self)

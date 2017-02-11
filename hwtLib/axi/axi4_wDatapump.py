@@ -11,8 +11,9 @@ from hwtLib.axi.axi_datapump_base import Axi_datapumpBase
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync, streamAck
-from hwtLib.interfaces.amba import Axi4_w, AxiStream, Axi4_b
+from hwtLib.interfaces.amba import Axi4_w, Axi4_b
 from hwtLib.interfaces.amba_constants import RESP_OKAY
+from hwtLib.axi.axiDatapumpIntf import AxiWDatapumpIntf
 
 
 class WFifoIntf(Handshaked):
@@ -45,11 +46,9 @@ class Axi_wDatapump(Axi_datapumpBase):
             self.w = Axi4_w()
             self.b = Axi4_b()
 
-            self.wIn = AxiStream()
-            
             self.errorWrite = Signal()
-        self.reqAck = Handshaked()
-        self.reqAck._replaceParam("DATA_WIDTH", self.ID_WIDTH)
+            self.driver = AxiWDatapumpIntf()
+            
            
         with self._paramsShared():
             # fifo for id propagation and frame splitting on axi.w channel 
@@ -63,19 +62,20 @@ class Axi_wDatapump(Axi_datapumpBase):
             
 
     def axiAwHandler(self, wErrFlag):
-        req = self.req
+        req = self.driver.req
         aw = self.a
-
+        r = self._reg 
+        
         self.axiAddrDefaults()
 
         wInfo = self.writeInfoFifo.dataIn
         if self.useTransSplitting():
             LEN_MAX = mask(aw.len._dtype.bit_length())
             
-            lastReqDispatched = self._reg("lastReqDispatched", defVal=1)
-            lenDebth = self._reg("lenDebth", req.len._dtype)
-            addrBackup = self._reg("addrBackup", req.addr._dtype)
-            req_idBackup = self._reg("req_idBackup", self.req.id._dtype)
+            lastReqDispatched = r("lastReqDispatched", defVal=1)
+            lenDebth = r("lenDebth", req.len._dtype)
+            addrBackup = r("addrBackup", req.addr._dtype)
+            req_idBackup = r("req_idBackup", req.id._dtype)
             _id = self._sig("id", aw.id._dtype)
                     
             
@@ -94,8 +94,8 @@ class Axi_wDatapump(Axi_datapumpBase):
                        lastReqDispatched ** 1 
                     )
                 ),
-                streamSync(masters=[req], 
-                           slaves=[aw, wInfo], 
+                streamSync(masters=[req],
+                           slaves=[aw, wInfo],
                            extraConds={aw:[~wErrFlag]}),
             ).Else(
                 _id ** req_idBackup,
@@ -126,7 +126,7 @@ class Axi_wDatapump(Axi_datapumpBase):
            
     def axiWHandler(self, wErrFlag):
         w = self.w
-        wIn = self.wIn
+        wIn = self.driver.w
         
         wInfo = HsBuilder(self, self.writeInfoFifo.dataOut).reg().end
         bInfo = self.bInfoFifo.dataIn
@@ -168,20 +168,20 @@ class Axi_wDatapump(Axi_datapumpBase):
     def axiBHandler(self):
         wErrFlag = self._reg("wErrFlag", defVal=0)
         b = self.b
-        reqAck = self.reqAck
+        ack = self.driver.ack
         
         lastFlags = HsBuilder(self, self.bInfoFifo.dataOut).reg().end
         
-        If(lastFlags.vld & reqAck.rd & b.valid & (b.resp != RESP_OKAY),
+        If(lastFlags.vld & ack.rd & b.valid & (b.resp != RESP_OKAY),
            wErrFlag ** 1
         )
 
         self.errorWrite ** wErrFlag 
-        reqAck.data ** b.id
+        ack.data ** b.id
         streamSync(masters=[b, lastFlags],
-                   slaves=[reqAck],
+                   slaves=[ack],
                    extraConds={
-                               reqAck : [lastFlags.isLast]
+                               ack : [lastFlags.isLast]
                                })
         
         return wErrFlag

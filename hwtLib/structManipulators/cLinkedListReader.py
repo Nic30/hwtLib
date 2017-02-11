@@ -5,10 +5,9 @@ from hwt.code import If, In, Concat, connect, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import fitTo
-from hwtLib.axi.axi_datapump_base import AddrSizeHs
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
-from hwtLib.interfaces.amba import AxiStream_withId
+from hwtLib.axi.axiDatapumpIntf import AxiRDatapumpIntf
 
 
 class CLinkedListReader(Unit):
@@ -43,11 +42,10 @@ class CLinkedListReader(Unit):
         
         with self._paramsShared():
             # interface which sending requests to download data
-            self.req = AddrSizeHs()
-            self.req.MAX_LEN.set(self.BUFFER_CAPACITY // 2 - 1)
+            # and interface which is collecting all data and only data with specified id are processed
+            self.rDatapump = AxiRDatapumpIntf()
+            self.rDatapump.MAX_LEN.set(self.BUFFER_CAPACITY // 2 - 1)
             
-            # interface which is collecting all data and only data with specified id are processed
-            self.r = AxiStream_withId()
             self.dataOut = Handshaked()
             
         # (how much of items remains in block)
@@ -73,9 +71,9 @@ class CLinkedListReader(Unit):
     def _impl(self):
         propagateClkRstn(self)
         r, s = self._reg, self._sig
-        req = self.req
+        req = self.rDatapump.req
         f = self.dataFifo
-        dIn = self.r
+        dIn = self.rDatapump.r
         dBuffIn = f.dataIn
                 
         ALIGN_BITS = self.addrAlignBits()

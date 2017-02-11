@@ -3,18 +3,35 @@ from hwt.bitmask import mask
 
 class DenseMemory():
     """Simulation component"""
-    def __init__(self, cellSize, clk, arAg, rAg, awAg, wAg, wAckAg):
-        self.cellSize = cellSize
+    def __init__(self, cellWidth, clk, rDatapumpIntf=None, wDatapumpIntf=None):
+        assert cellWidth % 8 == 0
+        self.cellSize = cellWidth // 8
+        self.allMask = mask(self.cellSize)
+        
         self.data = {}
         
+        assert rDatapumpIntf is not None or wDatapumpIntf is not None
+        
+        if rDatapumpIntf is None:
+            arAg = rAg = None
+        else:
+            arAg = rDatapumpIntf.req._ag
+            rAg = rDatapumpIntf.r._ag
+             
         self.arAg = arAg  
         self.rAg = rAg   
+        self.rPending = []        
+        
+        if wDatapumpIntf is None:
+            awAg = wAg = wAckAg = None
+        else:
+            awAg = wDatapumpIntf.req._ag
+            wAg = wDatapumpIntf.w._ag
+            wAckAg = wDatapumpIntf.ack._ag
+
         self.awAg = awAg  
         self.wAg = wAg   
         self.wAckAg = wAckAg
-        
-        self.rPending = []
-        
         self.wPending = []
         
         self._registerOnClock(clk)
@@ -47,7 +64,7 @@ class DenseMemory():
         addr = req[1].val
         size = req[2].val + 1
         if req[3].val == 0:
-            lastWordBitmask = mask(self.cellSize // 8)
+            lastWordBitmask = self.allMask
         else:
             lastWordBitmask = mask(req[3].val)
             size += 1 
@@ -64,9 +81,9 @@ class DenseMemory():
     def doRead(self):
         _id, addr, size, lastWordBitmask = self.rPending.pop(0)
         
-        baseIndex = addr // (self.cellSize // 8)
-        if baseIndex * (self.cellSize // 8) != addr:
-            raise NotImplementedError("unaligned transaction not implemented")
+        baseIndex = addr // self.cellSize
+        if baseIndex * self.cellSize != addr:
+            raise NotImplementedError("unaligned transaction not implemented (0x%x)" % addr)
         
         for i in range(size):
             isLast = i == size - 1
@@ -77,12 +94,12 @@ class DenseMemory():
             
             if data == None:
                 raise AssertionError("Invalid read of uninitialized value on addr 0x%x" % 
-                                     (addr + i * (self.cellSize // 8)))
+                                     (addr + i * self.cellSize))
                 
             if isLast:
                 strb = lastWordBitmask
             else:
-                strb = mask(self.cellSize // 8) 
+                strb = self.allMask 
                    
             self.rAg.data.append((_id, data, strb, isLast))
     
@@ -92,8 +109,8 @@ class DenseMemory():
     def doWrite(self):
         _id, addr, size, lastWordBitmask = self.wPending.pop(0)
         
-        baseIndex = addr // (self.cellSize // 8)
-        if baseIndex * (self.cellSize // 8) != addr:
+        baseIndex = addr // self.cellSize
+        if baseIndex * self.cellSize != addr:
             raise NotImplementedError("unaligned transaction not implemented")
         
         for i in range(size):
@@ -111,14 +128,14 @@ class DenseMemory():
                         
             if data == None:
                 raise AssertionError("Invalid read of uninitialized value on addr 0x%x" % 
-                                     (addr + i * (self.cellSize // 8)))
+                                     (addr + i * self.cellSize))
                 
             if isLast:
                 expectedStrb = lastWordBitmask
             else:
-                expectedStrb = mask(self.cellSize // 8)
+                expectedStrb = self.allMask
 
-            if expectedStrb != mask(self.cellSize // 8):
+            if expectedStrb != self.allMask:
                 raise NotImplementedError()
             assert strb == expectedStrb
             

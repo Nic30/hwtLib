@@ -30,12 +30,12 @@ class Axi4_rDatapumpTC(SimTestCase):
         self.doSim(200 * Time.ns)
         
         self.assertEqual(len(u.a._ag.data), 0)
-        self.assertEqual(len(u.rOut._ag.data), 0)
+        self.assertEqual(len(u.driver.r._ag.data), 0)
         
     def test_notSplitedReq(self):
         u = self.u
         
-        req = u.req._ag
+        req = u.driver._ag.req
         
         # download one word from addr 0xff
         req.data.append(req.mkReq(0xff, 0))
@@ -43,12 +43,12 @@ class Axi4_rDatapumpTC(SimTestCase):
         
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(u.a._ag.data), 1)
-        self.assertEqual(len(u.rOut._ag.data), 0)
+        self.assertEqual(len(u.driver._ag.r.data), 0)
     
     def test_notSplitedReqWithData(self):
         u = self.u
         
-        req = u.req._ag
+        req = u.driver.req._ag
         r = u.r._ag
         
         # download one word from addr 0xff
@@ -60,8 +60,8 @@ class Axi4_rDatapumpTC(SimTestCase):
         
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(u.a._ag.data), 1)
-        self.assertEqual(len(u.rOut._ag.data), 1)
-        self.assertValSequenceEqual(u.rOut._ag.data[0], [0, 77, mask(64 // 8), 1])
+        self.assertEqual(len(u.driver._ag.r.data), 1)
+        self.assertValSequenceEqual(u.driver._ag.r.data[0], [0, 77, mask(64 // 8), 1])
         self.assertEqual(len(r.data), 2 - 1)  # 2. is now sended
          
     
@@ -69,9 +69,9 @@ class Axi4_rDatapumpTC(SimTestCase):
         u = self.u
         LEN_MAX = self.LEN_MAX
         
-        req = u.req._ag
+        req = u.driver.req._ag
         r = u.r._ag
-        rout = u.rOut._ag.data
+        rout = u.driver.r._ag.data
         
         # download 256 words from addr 0xff
         req.data.append(req.mkReq(0xff, LEN_MAX))
@@ -87,7 +87,7 @@ class Axi4_rDatapumpTC(SimTestCase):
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(u.a._ag.data), 1)
 
-        # self.assertEqual(valuesToInts(u.rOut._ag.data[0]), [77, mask(64 // 8), 0, 1])
+        # self.assertEqual(valuesToInts(u.driver._ag.r.data[0]), [77, mask(64 // 8), 0, 1])
         self.assertEqual(len(r.data), 2 - 1)  # no more data was taken
 
         self.assertEqual(len(rout), LEN_MAX + 1)
@@ -99,10 +99,10 @@ class Axi4_rDatapumpTC(SimTestCase):
         u = self.u
         LEN_MAX = self.LEN_MAX
         
-        req = u.req._ag
+        req = u.driver.req._ag
         r = u.r._ag
         ar = u.a._ag.data
-        rout = u.rOut._ag.data
+        rout = u.driver.r._ag.data
         
         # download 512 words from addr 0xff
         req.data.append(req.mkReq(0xff, 2 * LEN_MAX + 1))
@@ -123,10 +123,10 @@ class Axi4_rDatapumpTC(SimTestCase):
     def test_maxOverlap(self):
         u = self.u
         
-        req = u.req._ag
+        req = u.driver._ag.req
         r = u.r._ag
         ar = u.a._ag.data
-        rout = u.rOut._ag.data
+        rout = u.driver.r._ag.data
         
         for i in range(32):
             req.data.append(req.mkReq(i, 0))
@@ -149,10 +149,10 @@ class Axi4_rDatapumpTC(SimTestCase):
         u = self.u
         _id = 0
         
-        req = u.req._ag
+        req = u.driver._ag.req
         r = u.r._ag
         ar = u.a._ag.data
-        rout = u.rOut._ag.data
+        rout = u.driver.r._ag.data
         
         for i in range(64):
             req.data.append(req.mkReq(i, 0))
@@ -178,10 +178,10 @@ class Axi4_rDatapumpTC(SimTestCase):
 
         u = self.u
 
-        req = u.req._ag
+        req = u.driver._ag.req
         r = u.r._ag
         ar = u.a._ag.data
-        rout = u.rOut._ag.data
+        rout = u.driver.r._ag.data
         
         for i in range(FRAMES):
             req.data.append(req.mkReq(i, l, _id))
@@ -230,8 +230,8 @@ class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
     
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(Axi4_rDatapumpTC('test_maxOverlap'))
-    #suite.addTest(unittest.makeSuite(Axi4_rDatapumpTC))
+    #suite.addTest(Axi4_rDatapumpTC('test_maxOverlap'))
+    suite.addTest(unittest.makeSuite(Axi4_rDatapumpTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
