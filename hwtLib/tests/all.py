@@ -46,7 +46,6 @@ from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import Subunits
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
-from concurrencytest import ConcurrentTestSuite, fork_for_tests
 from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC
 
 if __name__ == "__main__":
@@ -112,6 +111,16 @@ if __name__ == "__main__":
     )
     runner = TextTestRunner(verbosity=2)
     
-    # Run same tests across 4 processes
-    concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests(multiprocessing.cpu_count()))
-    runner.run(concurrent_suite)
+    try:
+        from concurrencytest import ConcurrentTestSuite, fork_for_tests
+        useParallerlTest = True 
+    except ImportError:
+        # concurrencytest is not installed, use regular test runner
+        useParallerlTest = False
+        
+    if useParallerlTest:
+        # Run same tests across 4 processes
+        concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests(multiprocessing.cpu_count()))
+        runner.run(concurrent_suite)
+    else:
+        runner.run(suite)
