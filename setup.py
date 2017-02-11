@@ -11,7 +11,8 @@ setup(name='hwtLib',
       author_email='michal.o.socials@gmail.com',
       install_requires=[
         'hwt',
-        'Pillow', # there is code which is reading images
+        'Pillow', # there is code which is reading images (is is optional),
+        'concurrencytest' # used faster testing (optional) 
       ],
       license='MIT',
       packages = find_packages(),

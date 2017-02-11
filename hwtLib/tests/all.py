@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import multiprocessing
 from unittest import TestLoader, TextTestRunner, TestSuite
 
 from hwtLib.axi.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
@@ -45,11 +46,14 @@ from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import Subunits
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
-
+from concurrencytest import ConcurrentTestSuite, fork_for_tests
+from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC
 
 if __name__ == "__main__":
     def testSuiteFromTCs(*tcs):
         loader = TestLoader()
+        for tc in tcs:
+            tc._multiprocess_can_split_ = True
         loadedTcs = [loader.loadTestsFromTestCase(tc) for tc in tcs]
         suite = TestSuite(loadedTcs)
         return suite
@@ -100,10 +104,14 @@ if __name__ == "__main__":
         Axi3_wDatapump_direct_TC,
         AxiS_measuringFifoTC,
         
+        ArrayItemGetterTC,
         CLinkedListReaderTC,
         CLinkedListWriterTC,
         
         IpCoreWrapperTC,
     )
     runner = TextTestRunner(verbosity=2)
-    runner.run(suite)
+    
+    # Run same tests across 4 processes
+    concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests(multiprocessing.cpu_count()))
+    runner.run(concurrent_suite)
