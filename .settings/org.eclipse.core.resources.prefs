@@ -135,6 +135,7 @@ encoding//hwtLib/samples/rtlLvl/simpleRegister.py=utf-8
 encoding//hwtLib/samples/rtlLvl/simpleWhile.py=utf-8
 encoding//hwtLib/samples/rtlLvl/switchStatement.py=utf-8
 encoding//hwtLib/spi/controller.py=utf-8
+encoding//hwtLib/structManipulators/arrayItemGetter_test.py=utf-8
 encoding//hwtLib/structManipulators/cLinkedListReader_test.py=utf-8
 encoding//hwtLib/structManipulators/cLinkedListWriter.py=utf-8
 encoding//hwtLib/structManipulators/cLinkedListWriter_test.py=utf-8

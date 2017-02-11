@@ -1,11 +1,12 @@
-from hwt.code import log2ceil
+from hwt.code import log2ceil, Concat
 from hwt.interfaces.std import Handshaked, VectSignal
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 from hwt.synthesizer.vectorUtils import fitTo
-from hwtLib.axi.axi_datapump_base import AddrSizeHs
+from hwtLib.axi.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.handshaked.streamNode import streamSync
-from hwtLib.interfaces.amba import AxiStream_withId
+from hwt.hdlObjects.typeShortcuts import vec
+from hwt.interfaces.utils import addClkRstn
 
 
 class ArrayItemGetter(Unit):
@@ -14,13 +15,14 @@ class ArrayItemGetter(Unit):
     """
     def _config(self):
         self.ITEMS = Param(32)
-        self.ITEM_SIZE_IN_WORDS = Param(1)
+        self.ITEM_WIDTH = Param(64)
         self.ID = Param(0)
         self.ID_WIDTH = Param(4)
         self.DATA_WIDTH = Param(64)
         self.ADDR_WIDTH = Param(32)
          
     def _declr(self):
+        addClkRstn(self)
         # addr of start of array
         self.base = VectSignal(self.ADDR_WIDTH)
         
@@ -31,31 +33,32 @@ class ArrayItemGetter(Unit):
         
         # output item from array
         self.item = Handshaked()
-        self.item.DATA_WIDTH.set(self.DATA_WIDTH * self.ITEM_SIZE_IN_WORDS)
+        self.item.DATA_WIDTH.set(self.ITEM_WIDTH)
         
         with self._paramsShared():
             # interface for communication with datapump
-            self.req = AddrSizeHs()
-            self.req.MAX_LEN.set(self.ITEMS - 1)
-            self.r = AxiStream_withId()
+            self.rDatapump = AxiRDatapumpIntf()
+            self.rDatapump.MAX_LEN.set(self.ITEMS - 1)
     
     def _impl(self):
-        ITEM_SIZE_IN_WORDS = evalParam(self.ITEM_SIZE_IN_WORDS).val
+        ITEM_WIDTH = evalParam(self.ITEM_WIDTH).val
+        if ITEM_WIDTH % 8 != 0 or evalParam(self.DATA_WIDTH).val != ITEM_WIDTH:
+            raise NotImplementedError(ITEM_WIDTH)
+        ITEM_SIZE_IN_WORDS = 1
         
-        streamSync(masters=[self.index], slaves=[self.req])
-        req = self.req
+        addr = Concat(self.index.data, vec(0, log2ceil(ITEM_WIDTH // 8)))
         
-        req.addr ** (self.base + fitTo(self.index.data, req.addr) * ITEM_SIZE_IN_WORDS)
+        req = self.rDatapump.req
+        streamSync(masters=[self.index], slaves=[req])
+        
+        req.addr ** (self.base + fitTo(addr, req.addr))
         req.id ** self.ID
-        req.len ** (self.ITEM_SIZE_IN_WORDS - 1)
+        req.len ** (ITEM_SIZE_IN_WORDS - 1)
         req.rem ** 0
         
 
-        streamSync(masters=[self.r], slaves=[self.item])
-        if ITEM_SIZE_IN_WORDS == 1:
-            self.item.data ** self.r.data
-        else:
-            raise NotImplemented("[TODO] array[%d] of registers for each data word and logic which will wait for reader of item" % ITEM_SIZE_IN_WORDS)
+        streamSync(masters=[self.rDatapump.r], slaves=[self.item])
+        self.item.data ** self.rDatapump.r.data
         
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
