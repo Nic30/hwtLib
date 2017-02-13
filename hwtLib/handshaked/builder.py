@@ -9,11 +9,13 @@ from hwtLib.handshaked.fork import HandshakedFork
 #from hwtLib.handshaked.forkRegistered import HandshakedRegisteredFork
 
 from hwtLib.handshaked.mux import HandshakedMux
+from hwtLib.handshaked.join import HandshakedJoin
 
 class HsBuilder(AbstractStreamBuilder):
     """
     Helper class which simplifies building of large stream paths 
     """
+    JoinCls = HandshakedJoin
     FifoCls = HandshakedFifo
     ForkCls = HandshakedFork
     RegCls  = HandshakedReg

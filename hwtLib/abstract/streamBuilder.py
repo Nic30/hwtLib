@@ -1,7 +1,8 @@
 class AbstractStreamBuilder():
     """
-    @attention: this is just abstract class unit classes has to be specified
+    @attention: this is just abstract class unit classes has to be specified in concrete implementation
     
+    @cvar JoinCls: join unit class
     @cvar ForkCls: fork unit class
     @cvar ForkRegisteredCls: registered fork unit class
     @cvar FifoCls: fifo unit class
@@ -34,10 +35,38 @@ class AbstractStreamBuilder():
         return self.parent.clk
     
     def getRstn(self):
-        return self.parent.rst_n
-    
+        try:
+            return self.parent.rst_n
+        except AttributeError:
+            pass
+        return ~self.parent.rst
+        
     def getInfCls(self):
         return self.end.__class__
+    
+    def _findSuitableName(self, unitName):
+        # find suitable name for component
+        while True:
+            name = "%s_%s_%d" % (self.name, unitName, self.compId)
+            try:
+                getattr(self.parent, name)
+            except AttributeError:
+                return name
+                break
+            self.compId += 1
+        
+        self.compId += 1
+    
+    def _propagateClkRstn(self, u):
+        if hasattr(u, "clk"):
+            u.clk ** self.getClk() 
+        
+        if hasattr(u, 'rst_n'):
+            u.rst_n ** self.getRstn()
+
+        if hasattr(u, "rst"):
+            u.rst ** ~self.getRstn()
+        
     
     def _genericInstance(self, unitCls, unitName, setParams=lambda u: u):
         """
@@ -51,25 +80,42 @@ class AbstractStreamBuilder():
         u._updateParamsFrom(self.end)
         setParams(u)
         
-        # find suitable name for component
-        while True:
-            name = "%s_%s_%d" % (self.name, unitName, self.compId)
-            try:
-                getattr(self.parent, name)
-            except AttributeError:
-                setattr(self.parent, name, u)
-                break
-            self.compId += 1
-        
-        self.compId += 1
-        
-        if hasattr(u, "clk"):
-            u.clk ** self.getClk() 
-        
-        if hasattr(u, 'rst_n'):
-            u.rst_n ** self.getRstn()
-        
+        setattr(self.parent, self._findSuitableName(unitName), u)
+        self._propagateClkRstn(u)
+
         u.dataIn ** self.end 
+        
+        self.lastComp = u
+        self.end = u.dataOut  
+        
+        return self
+    
+    @classmethod
+    def join(cls, parent, srcInterfaces, name=None, configAs=None):
+        """
+        create builder from joined interfaces
+        @param parent: unit where builder should place components
+        @param srcInterfacecs: iterable of interfaces which should be joined together (lower index = higher priority)
+        @param configureAs: interface or another object which configuration should be applied 
+        """
+        srcInterfaces = list(srcInterfaces)
+        if configAs is None:
+            configAs = srcInterfaces[0]
+        
+        if name is None:
+            name = "gen_" + configAs._name 
+            
+        self = cls(parent, None, name=name)
+        
+        u = self.JoinCls(configAs.__class__)
+        u._updateParamsFrom(configAs)
+        u.INPUTS.set(len(srcInterfaces))
+        
+        setattr(self.parent, self._findSuitableName(name+"_join"), u)
+        self._propagateClkRstn(u)
+
+        for joinIn, inputIntf in zip(u.dataIn, srcInterfaces):
+            joinIn ** inputIntf 
         
         self.lastComp = u
         self.end = u.dataOut  
