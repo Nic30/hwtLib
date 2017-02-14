@@ -1,4 +1,4 @@
-from hwt.code import log2ceil, connect
+from hwt.code import log2ceil, connect, Or
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -7,6 +7,7 @@ from hwtLib.axi.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
+from hwtLib.logic.oneHotToBin import oneHotToBin
 
 
 class RStrictOrderInterconnect(Unit):
@@ -57,10 +58,7 @@ class RStrictOrderInterconnect(Unit):
         f = self.orderInfoFifo = HandshakedFifo(Handshaked)
         f.DEPTH.set(self.MAX_OVERLAP)
         f.DATA_WIDTH.set(self.DRIVER_INDEX_WIDTH) 
-    
-    def indexOfActiveReq(self):
-        raise NotImplementedError()
-    
+        
     def _impl(self):
         propagateClkRstn(self)
         fifoIn = self.orderInfoFifo.dataIn
@@ -69,13 +67,36 @@ class RStrictOrderInterconnect(Unit):
         
         dpReq = self.rDatapump.req
 
-        req = HsBuilder.join(self, map(lambda d: d.req, self.drivers)).end
+        req = HsBuilder.join(self, map(lambda d: d.req,
+                                       self.drivers)).end
         streamSync(masters=[req],
                    slaves=[dpReq,
                            fifoIn])
         connect(req, dpReq, exclude=[dpReq.vld, dpReq.rd])
-        fifoIn.data ** self.indexOfActiveReq()
-        fifoOut.rd ** (r.valid & r.last & selectedDriverReady)
+        fifoIn.data ** oneHotToBin(self, map(lambda d: d.req.vld,
+                                             self.drivers))
+        
+        driversR = list(map(lambda d: d.r,
+                            self.drivers))
+
+        selectedDriverReady = self._sig("selectedDriverReady")
+        selectedDriverReady ** Or(*map(lambda d : fifoOut.data._eq(d[0]) & d[1].ready,
+                                       enumerate(driversR))
+                                       )
+        
+        # extra enable signals based on selected driver from orderInfoFifo
+        extraHsEnableConds = {
+                               fifoOut : [r.last & selectedDriverReady] # on end of frame pop new item
+                               }
+        for i, d in enumerate(driversR):
+            extraHsEnableConds[d] = [fifoOut.data._eq(i)]
+            connect(r, d, exclude=[d.valid, d.ready])
+        
+        streamSync(masters=[r, fifoOut],
+                   slaves=driversR,
+                   extraConds=extraHsEnableConds)
+        
+        
         
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
