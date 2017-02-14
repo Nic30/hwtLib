@@ -39,6 +39,23 @@ class OneHotToBin(Unit):
                 )    
         self.bin.vld ** Or(*[bit for bit in iterBits(self.oneHot)])
 
+def oneHotToBin(parent, signals, resName="oneHotToBin"):
+    signals = list(signals)
+    res = parent._sig(resName, vecT(log2ceil(len(signals))))
+    leadingZeroTop = None
+    for i, s in enumerate(reversed(signals)):
+        connections = res ** i
+        if leadingZeroTop is None:
+            leadingZeroTop = connections 
+        else:
+            leadingZeroTop = If(s,
+                                connections
+                             ).Else(
+                                leadingZeroTop
+                             ) 
+               
+    return res
+
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = OneHotToBin()
