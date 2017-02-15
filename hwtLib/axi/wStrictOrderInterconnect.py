@@ -142,8 +142,6 @@ class WStrictOrderInterconnect(Unit):
         self.ackHandler()
 
         
-        
-        
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = WStrictOrderInterconnect()
