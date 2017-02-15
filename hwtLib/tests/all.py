@@ -48,6 +48,7 @@ from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC
 from hwtLib.handshaked.join_test import HsJoinTC, HsJoin_randomized_TC
+from hwtLib.axi.rStrictOrderInterconnect_test import RStrictOrderInterconnectTC
 
 if __name__ == "__main__":
     def testSuiteFromTCs(*tcs):
@@ -105,6 +106,8 @@ if __name__ == "__main__":
         Axi4_wDatapumpTC,
         Axi3_wDatapump_direct_TC,
         AxiS_measuringFifoTC,
+        
+        RStrictOrderInterconnectTC,
         
         ArrayItemGetterTC,
         CLinkedListReaderTC,
