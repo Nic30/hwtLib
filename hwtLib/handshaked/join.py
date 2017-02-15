@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.utils import addClkRstn
-from hwt.intfLvl import Param
 from hwt.code import And, If, Or
+from hwt.intfLvl import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
@@ -20,7 +19,6 @@ class HandshakedJoin(HandshakedCompBase):
         
     def _declr(self):
         with self._paramsShared():
-            addClkRstn(self)  # this is just for reference, not actualy used inside
             self.dataIn = self.intfCls(multipliedBy=self.INPUTS)
             self.dataOut = self.intfCls()
 
@@ -36,7 +34,7 @@ class HandshakedJoin(HandshakedCompBase):
         for d in data(dout):
             outMuxTop.extend(d ** None)
         
-        for i, din in enumerate(self.dataIn):
+        for i, din in reversed(list(enumerate(self.dataIn))):
             # dataIn.rd
             allLowerPriorNotReady =  map(lambda x:~x, vldSignals[:i])
             rd(din) ** (And(rd(dout), *allLowerPriorNotReady))

@@ -47,6 +47,7 @@ from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC
+from hwtLib.handshaked.join_test import HsJoinTC, HsJoin_randomized_TC
 
 if __name__ == "__main__":
     def testSuiteFromTCs(*tcs):
@@ -87,6 +88,8 @@ if __name__ == "__main__":
         ClkSynchronizerTC,
         RamTC,
         FifoTC,
+        HsJoinTC,
+        HsJoin_randomized_TC,
         FlipRegTC,
         FlipCntrTC,
         HsForkTC,

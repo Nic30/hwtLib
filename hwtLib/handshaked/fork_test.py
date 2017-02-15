@@ -5,12 +5,11 @@ import unittest
 
 from hwt.hdlObjects.constants import Time
 from hwt.interfaces.std import Handshaked
-from hwt.simulator.agentConnector import agInts
+from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.shortcuts import simPrepare
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import agent_randomize
 from hwtLib.handshaked.fork import HandshakedFork
-from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
 
 
 class HsForkWithReference(HandshakedFork):
@@ -30,11 +29,8 @@ class HsForkTC(SimTestCase):
 
         self.doSim(120 * Time.ns)
 
-        collected0 = agInts(u.dataOut[0])
-        collected1 = agInts(u.dataOut[1])
-        
-        self.assertSequenceEqual([1, 2, 3, 4, 5, 6], collected0)
-        self.assertSequenceEqual([1, 2, 3, 4, 5, 6], collected1)
+        self.assertValSequenceEqual(u.dataOut[0]._ag.data, [1, 2, 3, 4, 5, 6])
+        self.assertValSequenceEqual(u.dataOut[1]._ag.data, [1, 2, 3, 4, 5, 6])
         
         self.assertSequenceEqual([], u.dataIn._ag.data)
 
