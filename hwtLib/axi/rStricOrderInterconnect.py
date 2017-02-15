@@ -45,6 +45,9 @@ class RStrictOrderInterconnect(Unit):
         self.MAX_OVERLAP.set(e(datapump.MAX_OVERLAP))
     
     def connectAll(self, drivers, datapump):
+        """
+        Connect drivers to datapump using this component
+        """
         raise NotImplementedError()
 
     def _declr(self):
@@ -70,8 +73,7 @@ class RStrictOrderInterconnect(Unit):
         req = HsBuilder.join(self, map(lambda d: d.req,
                                        self.drivers)).end
         streamSync(masters=[req],
-                   slaves=[dpReq,
-                           fifoIn])
+                   slaves=[dpReq, fifoIn])
         connect(req, dpReq, exclude=[dpReq.vld, dpReq.rd])
         fifoIn.data ** oneHotToBin(self, map(lambda d: d.req.vld,
                                              self.drivers))
@@ -86,8 +88,8 @@ class RStrictOrderInterconnect(Unit):
         
         # extra enable signals based on selected driver from orderInfoFifo
         extraHsEnableConds = {
-                               fifoOut : [r.last & selectedDriverReady] # on end of frame pop new item
-                               }
+                              fifoOut : [r.last & selectedDriverReady] # on end of frame pop new item
+                             }
         for i, d in enumerate(driversR):
             extraHsEnableConds[d] = [fifoOut.data._eq(i)]
             connect(r, d, exclude=[d.valid, d.ready])
