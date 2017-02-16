@@ -4,6 +4,7 @@
 from hwt.code import And, If, Or, iterBits, ror
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwtLib.handshaked.join import HandshakedJoin
+from hwt.interfaces.utils import addClkRstn
 
 
 class HsJoinFairShare(HandshakedJoin):
@@ -17,6 +18,10 @@ class HsJoinFairShare(HandshakedJoin):
     
     combinational
     """
+    def _declr(self):
+        HandshakedJoin._declr(self)
+        addClkRstn(self)
+        
     def priorityOverriden(self, priority, vldSignals, index):
         owr = []
         for i, (p, vld) in  enumerate(zip(iterBits(priority), vldSignals)):
