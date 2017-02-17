@@ -8,6 +8,7 @@ from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
 from hwtLib.logic.oneHotToBin import oneHotToBin
+from hwt.serializer.constants import SERI_MODE
 
 
 class WStrictOrderInterconnect(Unit):
@@ -15,22 +16,32 @@ class WStrictOrderInterconnect(Unit):
     Strict order interconnect for AxiWDatapumpIntf
     ensures that response on request is delivered to driver which asked for it while transactions can overlap
     """
+    _serializerMode = SERI_MODE.PARAMS_UNIQ
+    
     def _config(self):
         self.DRIVER_CNT = Param(2)
-        self.MAX_OVERLAP = Param(16)
+        self.MAX_TRANS_OVERLAP = Param(16)
         AxiWDatapumpIntf._config(self)
     
-    def configureFromDrivers(self, drivers, datapump):
+    def configureFromDrivers(self, drivers, datapump, byInterfaces=False):
         """
         Check configuration of drivers and resolve MAX_LEN and aply it on datapump
         and this interconnect
         """
         e = lambda p: evalParam(p).val
-        ID_WIDTH = e(datapump.ID_WIDTH)
-        ADDR_WIDTH = e(datapump.ADDR_WIDTH)
-        DATA_WIDTH = e(datapump.DATA_WIDTH)
-        MAX_LEN = e(datapump.MAX_LEN)
+        
+        if byInterfaces:
+            _datapump = datapump.driver
+        
+        ID_WIDTH = e(_datapump.ID_WIDTH)
+        ADDR_WIDTH = e(_datapump.ADDR_WIDTH)
+        DATA_WIDTH = e(_datapump.DATA_WIDTH)
+        MAX_LEN = e(_datapump.MAX_LEN)
+        
         for d in drivers:
+            if byInterfaces:
+                d = d.wDatapump
+                
             assert ID_WIDTH == e(d.ID_WIDTH)
             assert ADDR_WIDTH == e(d.ADDR_WIDTH)
             assert DATA_WIDTH == e(d.DATA_WIDTH)
@@ -42,13 +53,19 @@ class WStrictOrderInterconnect(Unit):
         self.ADDR_WIDTH.set(ADDR_WIDTH)
         self.DATA_WIDTH.set(DATA_WIDTH)
         self.MAX_LEN.set(MAX_LEN)
-        self.MAX_OVERLAP.set(e(datapump.MAX_OVERLAP))
+        self.MAX_TRANS_OVERLAP.set(e(datapump.MAX_TRANS_OVERLAP))
+        self.DRIVER_CNT.set(len(drivers))
     
-    def connectAll(self, drivers, datapump):
+    def connectDrivers(self, drivers, datapump):
         """
         Connect drivers to datapump using this component
         """
-        raise NotImplementedError()
+        for i, driver in enumerate(drivers):
+            # width of signals should be configured by the widest
+            # others drivers can have smaller widths of some signals for example id
+            connect(driver.wDatapump, self.drivers[i], fit=True) 
+        
+        datapump.driver ** self.wDatapump
 
     def _declr(self):
         addClkRstn(self)
@@ -61,7 +78,7 @@ class WStrictOrderInterconnect(Unit):
         fW = self.orderInfoFifoW = HandshakedFifo(Handshaked)
         fAck = self.orderInfoFifoAck = HandshakedFifo(Handshaked)
         for f in [fW, fAck]:
-            f.DEPTH.set(self.MAX_OVERLAP)
+            f.DEPTH.set(self.MAX_TRANS_OVERLAP)
             f.DATA_WIDTH.set(self.DRIVER_INDEX_WIDTH) 
     
     def reqHandler(self):
