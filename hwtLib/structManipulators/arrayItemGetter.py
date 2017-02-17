@@ -1,4 +1,4 @@
-from hwt.code import log2ceil, Concat
+from hwt.code import log2ceil, Concat, Switch
 from hwt.interfaces.std import Handshaked, VectSignal
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
@@ -15,7 +15,7 @@ class ArrayItemGetter(Unit):
     """
     def _config(self):
         self.ITEMS = Param(32)
-        self.ITEM_WIDTH = Param(64)
+        self.ITEM_WIDTH = Param(32)
         self.ID = Param(0)
         self.ID_WIDTH = Param(4)
         self.DATA_WIDTH = Param(64)
@@ -42,9 +42,13 @@ class ArrayItemGetter(Unit):
     
     def _impl(self):
         ITEM_WIDTH = evalParam(self.ITEM_WIDTH).val
-        if ITEM_WIDTH % 8 != 0 or evalParam(self.DATA_WIDTH).val != ITEM_WIDTH:
-            raise NotImplementedError(ITEM_WIDTH)
+        DATA_WIDTH = evalParam(self.DATA_WIDTH).val
+        
+        ITEMS_IN_DATA_WORD = DATA_WIDTH//ITEM_WIDTH
         ITEM_SIZE_IN_WORDS = 1
+
+        if ITEM_WIDTH % 8 != 0 or ITEM_SIZE_IN_WORDS * DATA_WIDTH != ITEMS_IN_DATA_WORD * ITEM_WIDTH:
+            raise NotImplementedError(ITEM_WIDTH)
         
         addr = Concat(self.index.data, vec(0, log2ceil(ITEM_WIDTH // 8)))
         
@@ -58,8 +62,16 @@ class ArrayItemGetter(Unit):
         
 
         streamSync(masters=[self.rDatapump.r], slaves=[self.item])
-        self.item.data ** self.rDatapump.r.data
-        
+        if ITEMS_IN_DATA_WORD == 1:
+            self.item.data ** self.rDatapump.r.data
+        else:
+            # [TODO] itemIndex into fifo
+            r = self.rDatapump.r.data
+            Switch(itemIndex).addCases((i, self.item.data ** r[(ITEM_WIDTH*(i+1)): (ITEM_WIDTH *i)] 
+                                        for i in range(ITEMS_IN_DATA_WORD)))
+            
+            
+            
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = ArrayItemGetter()
