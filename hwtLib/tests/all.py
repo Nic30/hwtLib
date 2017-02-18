@@ -38,7 +38,6 @@ from hwtLib.samples.iLvl.statements.constDriver_test import ConstDriverTC
 from hwtLib.samples.iLvl.statements.fsm_test import FsmExampleTC, HadrcodedFsmExampleTC
 from hwtLib.samples.iLvl.statements.ifStm_test import IfStmTC
 from hwtLib.samples.iLvl.statements.switchStm_test import SwitchStmTC
-from hwtLib.structManipulators.arrayBuff_writer import ArrBuff_writer_TC
 from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC
 from hwtLib.structManipulators.cLinkedListReader_test import CLinkedListReaderTC
 from hwtLib.structManipulators.cLinkedListWriter_test import CLinkedListWriterTC
@@ -50,6 +49,7 @@ from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import Subunits
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
+from hwtLib.structManipulators.arrayBuff_writer_test import ArrayBuff_writer_TC
 
 
 if __name__ == "__main__":
@@ -112,7 +112,7 @@ if __name__ == "__main__":
         RStrictOrderInterconnectTC,
         
         ArrayItemGetterTC,
-        ArrBuff_writer_TC,
+        ArrayBuff_writer_TC,
         CLinkedListReaderTC,
         CLinkedListWriterTC,
         
