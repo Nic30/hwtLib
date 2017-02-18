@@ -1,252 +1,234 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+from hwt.bitmask import mask
+from hwt.code import If, Concat, connect, FsmBuilder, log2ceil
+from hwt.hdlObjects.typeShortcuts import vecT, vec
+from hwt.hdlObjects.types.enum import Enum
+from hwt.interfaces.std import Handshaked, VectSignal, RegCntrl, Signal
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.serializer.constants import SERI_MODE
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
+from hwtLib.axi.axiDatapumpIntf import AddrSizeHs, AxiWDatapumpIntf
+from hwtLib.handshaked.fifo import HandshakedFifo
+from hwtLib.handshaked.streamNode import streamSync
 
-from math import ceil
-import unittest
 
-from hwt.hdlObjects.constants import Time, NOP
-from hwt.simulator.shortcuts import simPrepare
-from hwt.simulator.simTestCase import SimTestCase
-from hwt.simulator.utils import agent_randomize
-from hwt.synthesizer.param import evalParam
-from hwtLib.structManipulators.arrBuff_writer import ArrBuff_writer
+def errListeners_inputSize(self):
+    inputSizeErr = self._reg("inputSizeErr_reg", defVal=0)
+    self.inputSizeErr ** inputSizeErr
+    If(self.items.vld & self.items.data._eq(0),
+       inputSizeErr ** 1
+    )
+    
+stT = Enum("st_t", ["waitOnInput", "waitOnDataTx", "waitOnAck"])
+class ArrayBuff_writer(Unit):
+    """
+    Collect items and send them over wDatapump when buffer is full or on timeout
+    Cyclically writes items into array over wDatapump
+    Maximum overlap of transactions is 1
+    
+    [TODO] better fit of items on bus
+    [TODO] fully pipeline
+    
+    items -> buff -> internal logic -> axi datapump
+    """
+    _serializerMode = SERI_MODE.PARAMS_UNIQ
+    
+    def _config(self):
+        AddrSizeHs._config(self)
+        self.ID = Param(3)
+        self.MAX_LEN.set(16)
+        self.SIZE_WIDTH = Param(16)
+        self.BUFF_DEPTH = Param(16)
+        self.TIMEOUT = Param(1024)
+        self.SIZE_BLOCK_ITEMS = Param(4096 // 8)
+        
+        self.DEBUG = True
 
+    def _declr(self):
+        addClkRstn(self)
+        
+        self.items = Handshaked()
+        self.items.DATA_WIDTH.set(self.SIZE_WIDTH)
+        
+        with self._paramsShared():
+            self.wDatapump = AxiWDatapumpIntf()
+        
+        self.uploaded = VectSignal(16)
+        
+        self.baseAddr = RegCntrl()
+        self.baseAddr.DATA_WIDTH.set(self.ADDR_WIDTH)
+        
+        if self.DEBUG:
+            self.lenBuff_remain = VectSignal(16)
+            self.inputSizeErr = Signal()
+            self.fifoItemsCnt = VectSignal(5)
+        
+        b = HandshakedFifo(Handshaked)
+        b.DATA_WIDTH.set(self.SIZE_WIDTH)
+        b.EXPORT_SIZE.set(True)
+        b.DEPTH.set(self.BUFF_DEPTH)
+        self.buff = b
 
-class ArrBuff_writer_TC(SimTestCase):
-    def setUp(self):
-        self.u = ArrBuff_writer()
-        self.u.TIMEOUT.set(32)
-        _, self.model, self.procs = simPrepare(self.u)
- 
-    def test_nop(self):
-        u = self.u
-        self.doSim(40 * 10 * Time.ns)
-        self.assertEqual(len(u.wDatapump.req._ag.data), 0)
-        self.assertEqual(len(u.wDatapump.w._ag.data), 0)
-        
-        self.assertValEqual(self.u.uploaded._ag.data[-1], 0)
-        
-    def test_timeout(self):
-        u = self.u
-        u.items._ag.data.append(16)
-        u.baseAddr._ag.dout.append(0x1230)
-        
-        self.doSim(40 * 10 * Time.ns)
-        
-        req = u.wDatapump.req._ag.data
-        self.assertEqual(len(u.items._ag.data), 0)
-        self.assertEqual(len(req), 1)
-        self.assertValSequenceEqual(req[0], [3, 0x1230, 0, 0])
-        
-        w = u.wDatapump.w._ag.data
-        self.assertEqual(len(w), 1)
-        self.assertValSequenceEqual(w[0], [16, 255, 1])
-        self.assertValEqual(self.u.uploaded._ag.data[-1], 0)
-    
-    def test_multipleTimeout(self):
-        u = self.u
-        
-        u.baseAddr._ag.dout.append(0x1230)
-        _id = evalParam(u.ID).val
-        
-        def itemsWithDelay(sim):
-            addSize = u.items._ag.data.append
-            addSize(16)
-            yield sim.wait(40 * 10 * Time.ns)
-            u.wDatapump.ack._ag.data.append(_id)
-            addSize(17)
-            u.wDatapump.ack._ag.data.append(_id)
-            
-        self.procs.append(itemsWithDelay)
-        
-        self.doSim(80 * 10 * Time.ns)
-        
-        self.assertEqual(len(u.items._ag.data), 0)
-        
-        req = u.wDatapump.req._ag.data
-        self.assertEqual(len(req), 2)
-        for i, _req in enumerate(req):
-            self.assertValSequenceEqual(_req, [3, 0x1230 + i * 8, 0, 0])
-        
-        w = u.wDatapump.w._ag.data
-        self.assertEqual(len(w), 2)
-        for i, _w in enumerate(w):
-            self.assertValSequenceEqual(_w, [16 + i, 255, 1])
-    
-        self.assertValEqual(self.model.uploadedCntr, 2)
-    
-       
-    
-    def test_timeoutWithMore(self):
-        u = self.u
-        _id = evalParam(u.ID).val
-        
-        u.items._ag.data.extend([16, 28, 99])
-        u.baseAddr._ag.dout.append(0x1230)
-        
-        u.wDatapump.ack._ag.data.extend([NOP for _ in range(32 + 3 * 2)])
-        u.wDatapump.ack._ag.data.append(_id)
-        
-        
-        self.doSim(70 * 10 * Time.ns)
-        self.assertEqual(len(u.items._ag.data), 0)
-        req = u.wDatapump.req._ag.data
-        self.assertEqual(len(req), 1)
-        self.assertValSequenceEqual(req[0], [_id, 0x1230, 2, 0])
-        
-        w = u.wDatapump.w._ag.data
-        self.assertEqual(len(w), 3)
-        self.assertValSequenceEqual(w[0], [16, 255, 0])
-        self.assertValSequenceEqual(w[1], [28, 255, 0])
-        self.assertValSequenceEqual(w[2], [99, 255, 1])
-        
-        self.assertEqual(len(u.wDatapump.ack._ag.data), 0)
-        
-        self.assertValEqual(self.u.uploaded._ag.data[-1], 3)
-        
-    
-    def test_fullFill(self):
-        u = self.u
-        N = 16
-        _id = evalParam(u.ID).val
+    def getRegisterFile(self):
+        rf = [
+            self.baseAddr,
+            self.uploaded
+            ]
 
-        u.baseAddr._ag.dout.append(0x1230)
-        u.items._ag.data.extend([88 for _ in range(N)])
-        u.wDatapump.ack._ag.data.extend([NOP for _ in range(N * 2)] + [_id, ])
-        
-        self.doSim(40 * 10 * Time.ns)
-        
-        self.assertEqual(len(u.items._ag.data), 0)
-        
-        req = u.wDatapump.req._ag.data
-        self.assertEqual(len(req), 1)
-        self.assertValSequenceEqual(req[0],
-                                 [_id, 0x1230, N - 1, 0])
-        w = u.wDatapump.w._ag.data
-        self.assertEqual(len(w), N)
-        for i, d in enumerate(w):
-            self.assertValSequenceEqual(d, [88, 255, int(i == 15)])
-        
-        self.assertEqual(len(u.wDatapump.ack._ag.data), 0)
-        
-        self.assertValEqual(self.u.uploaded._ag.data[-1], N)
+        if self.DEBUG:
+            rf += [ self.lenBuff_remain,
+            self.inputSizeErr,
+            self.fifoItemsCnt]
+        return rf
     
-    def test_fullFill_randomized(self):
-        u = self.u
-        N = 16
-        _id = evalParam(u.ID).val
-        randomize = self.randomize
+    def uploadedCntrHandler(self, st, reqAckHasCome, sizeOfitems):
+        uploadedCntr = self._reg("uploadedCntr", self.uploaded._dtype, defVal=0)
+        self.uploaded ** uploadedCntr
         
-        randomize(u.items)
-        randomize(u.wDatapump.w)
-        randomize(u.wDatapump.req)
-        randomize(u.wDatapump.ack)
-        
-        
-        u.baseAddr._ag.dout.append(0x1230)
-        u.items._ag.data.extend([88 for _ in range(2 * N - 1)])
-        u.wDatapump.ack._ag.data.extend([NOP for _ in range(N * 2)] + [_id, ])
-        
-        self.doSim(80 * 10 * Time.ns)
-        
-        self.assertEqual(len(u.items._ag.data), 0)
-        
-        req = u.wDatapump.req._ag.data
-        self.assertEqual(len(req), 1)
-        self.assertValSequenceEqual(req[0],
-                                 [_id, 0x1230, N - 1, 0])
-        w = u.wDatapump.w._ag.data
-        self.assertEqual(len(w), N)
-        for i, d in enumerate(w):
-            self.assertValSequenceEqual(d, [88, 255, int(i == 15)])
-        
-        self.assertEqual(len(u.wDatapump.ack._ag.data), 0)
-        
-        self.assertValEqual(self.u.uploaded._ag.data[-1], N)
-        
-    def test_fullFill_randomized2(self):
-        u = self.u
-        N = 16
-        _id = evalParam(u.ID).val
-        randomize = self.randomize
+        If(st._eq(stT.waitOnAck) & reqAckHasCome,
+           uploadedCntr ** (uploadedCntr + sizeOfitems)
+        )
 
-        u.baseAddr._ag.dout.append(0x1230)
-        u.items._ag.data.extend([1 + i for i in range(N)])
-        u.wDatapump.ack._ag.data.extend([NOP for _ in range(N * 2)] + [_id, ])
         
+    def _impl(self):
+        ALIGN_BITS = log2ceil(self.DATA_WIDTH // 8 - 1).val
+        TIMEOUT_MAX = self.TIMEOUT - 1
+        ITEMS = self.SIZE_BLOCK_ITEMS
+        buff = self.buff
+        reqAck = self.wDatapump.ack
+        req = self.wDatapump.req
+        w = self.wDatapump.w
         
-        randomize(u.wDatapump.w)
-        randomize(u.items)
-        randomize(u.wDatapump.req)
-        randomize(u.wDatapump.ack)
+        propagateClkRstn(self)
         
-        
-        self.dumpHdlTestbench(80 * 10 * Time.ns)
-        
-        self.assertEqual(len(u.items._ag.data), 0)
-        
-        req = u.wDatapump.req._ag.data
-        self.assertEqual(len(req), 1)
-        self.assertValSequenceEqual(req[0],
-                                 [_id, 0x1230, N - 1, 0])
-        w = u.wDatapump.w._ag.data
-        self.assertEqual(len(w), N)
-        self.assertEqual(len(u.wDatapump.ack._ag.data), 0)
-        
-        self.assertValEqual(self.u.uploaded._ag.data[-1], N) 
-    
-    def test_fullFill_randomized3(self):
-        u = self.u
-        BASE = 0x1230
-        ITEMS = evalParam(u.SIZE_BLOCK_ITEMS).val
-        N = ITEMS+10
-        _id = evalParam(u.ID).val
-        randomize = self.randomize
+        if self.DEBUG:
+            errListeners_inputSize(self)
+            connect(buff.size, self.fifoItemsCnt, fit=True)
 
-        u.baseAddr._ag.dout.append(BASE)
-        for i in range(N):
-            u.items._ag.data.append(1 + i)
-            
-        for _ in range(ceil(N / 16)):
-            u.wDatapump.ack._ag.data.append(_id)
+        sizeOfitems = self._reg("sizeOfitems", vecT(buff.size._dtype.bit_length()))
+      
         
-        def enReq(s):
-            u.wDatapump.req._ag.enable = False
-            yield s.wait(40*10* Time.ns)
-            yield from agent_randomize(u.wDatapump.req._ag)(s)
+        # aligned base addr
+        baseAddr = self._reg("baseAddrReg", vecT(self.ADDR_WIDTH - ALIGN_BITS))
+        If(self.baseAddr.dout.vld,
+           baseAddr ** self.baseAddr.dout.data[:ALIGN_BITS]
+        )
+        self.baseAddr.din ** Concat(baseAddr, vec(0, ALIGN_BITS))
         
-        self.procs.append(enReq)
+        # offset in buffer and its complement        
+        offset = self._reg("offset", vecT(log2ceil(ITEMS + 1), False), defVal=0)
+        remaining = self._reg("remaining", vecT(log2ceil(ITEMS + 1), False), defVal=ITEMS)
+        if self.DEBUG:
+            connect(remaining, self.lenBuff_remain, fit=True) 
         
-        randomize(u.wDatapump.w)
-        randomize(u.items)
-        #randomize(u.req)
-        randomize(u.wDatapump.ack)
+        addrTmp = self._sig("baseAddrTmp", baseAddr._dtype)
+        addrTmp ** (baseAddr + offset)
         
         
-        self.doSim(N * 30 * Time.ns)
+        # req values logic
+        req.id ** self.ID
+        req.addr ** Concat(addrTmp, vec(0, ALIGN_BITS))
+        req.rem ** 0
         
-        self.assertEqual(len(u.items._ag.data), 0)
+        sizeTmp = self._sig("sizeTmp", buff.size._dtype)
         
-        req = u.wDatapump.req._ag.data
-        self.assertEqual(len(req), ceil(N / 16))
-        for i, _req in enumerate(req):
-            addr = BASE + ((i * 16 * 8) % (ITEMS*8))
-            if (1+i)*16 > N:
-                l =  N - i*16
-            else:
-                l = 16
-            self.assertValSequenceEqual(_req,
-                                 [_id, addr, l-1, 0])
-        w = u.wDatapump.w._ag.data
-        self.assertEqual(len(w), N)
-        self.assertEqual(len(u.wDatapump.ack._ag.data), 0)
+        assert req.len._dtype.bit_length() == buff.size._dtype.bit_length() - 1 , (
+            req.len._dtype.bit_length(), buff.size._dtype.bit_length())
         
-        self.assertValEqual(self.u.uploaded._ag.data[-1], N) 
-                
+        buffSizeAsLen = self._sig("buffSizeAsLen", buff.size._dtype)
+        buffSizeAsLen ** (buff.size - 1)
+        buffSize_tmp = self._sig("buffSize_tmp", remaining._dtype)
+        connect(buff.size, buffSize_tmp, fit=True) 
+         
+        endOfLenBlock = (remaining - 1) < buffSize_tmp
+        
+        remainingAsLen = self._sig("remainingAsLen", remaining._dtype)
+        remainingAsLen ** (remaining - 1)
+        
+        If(endOfLenBlock,
+            connect(remainingAsLen, req.len, fit=True),
+            connect(remaining, sizeTmp, fit=True)
+        ).Else(
+            connect(buffSizeAsLen, req.len, fit=True),
+            sizeTmp ** buff.size
+        )
+
+        
+
+        lastWordCntr = self._reg("lastWordCntr", buff.size._dtype, 0)
+        w_last = lastWordCntr._eq(1)
+        w_ack = w.ready & buff.dataOut.vld
+        
+        # timeout logic
+        timeoutCntr = self._reg("timeoutCntr", vecT(log2ceil(self.TIMEOUT), False),
+                                defVal=TIMEOUT_MAX)
+        beginReq = buff.size._eq(self.BUFF_DEPTH) | timeoutCntr._eq(0)  # buffer is full or timeout
+        reqAckHasCome = self._sig("reqAckHasCome")
+        reqAckHasCome ** (reqAck.vld & reqAck.data._eq(self.ID))
+        st = FsmBuilder(self, stT)\
+        .Trans(stT.waitOnInput,
+            (beginReq & req.rd, stT.waitOnDataTx)
+        
+        ).Trans(stT.waitOnDataTx,
+            (w_last & w_ack, stT.waitOnAck)    
+        
+        ).Trans(stT.waitOnAck,
+            (reqAckHasCome, stT.waitOnInput)
+        
+        ).stateReg
+        
+
+        If(st._eq(stT.waitOnInput) & beginReq,  # timeout is counting only when there is pending data
+            # start new request
+            req.vld ** 1,
+            If(req.rd,
+                If(endOfLenBlock,
+                   offset ** 0,
+                   remaining ** ITEMS
+                ).Else(
+                   offset ** (offset + buff.size),
+                   remaining ** (remaining - buff.size)
+                ),
+                sizeOfitems ** sizeTmp,
+                timeoutCntr ** TIMEOUT_MAX
+            )
+        ).Else(
+            req.vld ** 0,
+            If(buff.dataOut.vld & st._eq(stT.waitOnInput) & (timeoutCntr != 0),
+               timeoutCntr ** (timeoutCntr - 1)
+            )
+        )
+
+        reqAck.rd ** st._eq(stT.waitOnAck)
+           
+        self.uploadedCntrHandler(st, reqAckHasCome, sizeOfitems)
+        
+        # it does not matter when lastWordCntr is changing when there is no request
+        startSendingData = st._eq(stT.waitOnInput) & beginReq & req.rd
+        If(startSendingData,
+            lastWordCntr ** sizeTmp
+        ).Elif((lastWordCntr != 0) & w_ack,
+            lastWordCntr ** (lastWordCntr - 1)   
+        )
+
+        buff.dataIn ** self.items 
+        
+
+        connect(buff.dataOut.data, w.data, fit=True)
+
+        streamSync(masters=[buff.dataOut],
+                   slaves=[w],
+                   extraConds={buff.dataOut:[st._eq(stT.waitOnDataTx)],
+                                          w:[st._eq(stT.waitOnDataTx)]
+                                                    })
+        w.strb ** mask(w.strb._dtype.bit_length())
+        w.last ** w_last
+
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    #suite.addTest(Size2Mem_TC('test_fullFill_randomized3'))
-    suite.addTest(unittest.makeSuite(ArrBuff_writer_TC))
-    runner = unittest.TextTestRunner(verbosity=3)
-    runner.run(suite)
-
+    from hwt.synthesizer.shortcuts import toRtl
+    u = ArrayBuff_writer()
+    u.TIMEOUT.set(32)
+    print(toRtl(u))
+        
+        
+    
