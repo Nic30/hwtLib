@@ -22,6 +22,10 @@ class ArrayItemGetterTC(SimTestCase):
         self.DATA_WIDTH = 64
         u.DATA_WIDTH.set(self.DATA_WIDTH)
         
+        self.ITEM_WIDTH = 64
+        u.ITEM_WIDTH.set(self.ITEM_WIDTH)
+        
+        
         _, self.model, self.procs = simPrepare(self.u)
     
     
