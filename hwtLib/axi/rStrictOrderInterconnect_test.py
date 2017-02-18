@@ -15,7 +15,7 @@ from hwtLib.axi.rStricOrderInterconnect import RStrictOrderInterconnect
 class RStrictOrderInterconnectTC(SimTestCase):
     def setUp(self):
         self.u = RStrictOrderInterconnect()
-        self.MAX_OVERLAP = evalParam(self.u.MAX_OVERLAP).val
+        self.MAX_TRANS_OVERLAP = evalParam(self.u.MAX_TRANS_OVERLAP).val
         self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
         _, self.model, self.procs = simPrepare(self.u)
     
@@ -35,7 +35,7 @@ class RStrictOrderInterconnectTC(SimTestCase):
         for i, driver in enumerate(u.drivers):
             driver.req._ag.data.append((i + 1, i + 1, i + 1, 0))
         
-        self.doSim(30 * Time.ns)
+        self.doSim(40 * Time.ns)
         
         for d in u.drivers:
             self.assertEqual(len(d.r._ag.data), 0)
