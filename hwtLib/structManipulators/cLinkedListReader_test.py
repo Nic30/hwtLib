@@ -7,9 +7,9 @@ from hwt.bitmask import mask
 from hwt.hdlObjects.constants import Time, NOP
 from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.utils import agent_randomize
 from hwt.synthesizer.param import evalParam
 from hwtLib.structManipulators.cLinkedListReader import CLinkedListReader
-from hwt.simulator.utils import agent_randomize
 
 
 class CLinkedListReaderTC(SimTestCase):

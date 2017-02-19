@@ -1,13 +1,13 @@
 from hwt.code import log2ceil, Concat, Switch, isPow2, connect
+from hwt.hdlObjects.typeShortcuts import vec
 from hwt.interfaces.std import Handshaked, VectSignal
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 from hwt.synthesizer.vectorUtils import fitTo
-from hwtLib.axi.axiDatapumpIntf import AxiRDatapumpIntf
-from hwtLib.handshaked.streamNode import streamSync
-from hwt.hdlObjects.typeShortcuts import vec
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
+from hwtLib.handshaked.streamNode import streamSync
 
 
 class ArrayItemGetter(Unit):

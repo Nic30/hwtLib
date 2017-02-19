@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -
+
 from hwt.bitmask import mask
 from hwt.code import If, Concat, connect, FsmBuilder, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT, vec
@@ -7,10 +10,9 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.constants import SERI_MODE
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.axi.axiDatapumpIntf import AddrSizeHs, AxiWDatapumpIntf
+from hwtLib.amba.axiDatapumpIntf import AddrSizeHs, AxiWDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
-
 
 def errListeners_inputSize(self):
     inputSizeErr = self._reg("inputSizeErr_reg", defVal=0)

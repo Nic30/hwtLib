@@ -1,5 +1,5 @@
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwtLib.interfaces.amba import AxiStream
+from hwtLib.amba.axis import AxiStream
 
 
 class UncosistentIntfDirection(Unit):

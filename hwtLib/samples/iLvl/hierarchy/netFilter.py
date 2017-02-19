@@ -3,7 +3,7 @@
 
 from hwt.intfLvl import Param, Unit, EmptyUnit
 from hwt.synthesizer.interfaceLevel.emptyUnit import setOut
-from hwtLib.interfaces.amba import AxiStream, AxiLite
+from hwtLib.amba.axis import AxiStream, AxiLite
 
 
 class HeadFieldExtractor(EmptyUnit):

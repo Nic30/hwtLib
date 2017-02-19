@@ -3,17 +3,17 @@
 
 import unittest
 
+from hwt.code import connect
 from hwt.hdlObjects.constants import DIRECTION, INTF_DIRECTION
 from hwt.interfaces.std import Signal
-from hwt.code import connect
+from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwt.synthesizer.interfaceLevel.emptyUnit import setOut
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwt.synthesizer.shortcuts import synthesised
-from hwtLib.interfaces.amba import Axi4
-from hwtLib.interfaces.ambaOthers import FullDuplexAxiStream 
+from hwtLib.amba.axi4 import Axi4
+from hwtLib.amba.fullDuplexAxiStream import FullDuplexAxiStream 
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import BaseSynthesizerTC
-from hwt.pyUtils.arrayQuery import where
 
 
 D = DIRECTION

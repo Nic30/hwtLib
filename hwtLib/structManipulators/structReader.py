@@ -1,14 +1,15 @@
 from hwt.code import Concat, If, log2ceil, ForEach
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import VldSynced, Handshaked, Signal
+from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam, Param
-from hwtLib.axi.axi_datapump_base import AddrSizeHs
-from hwtLib.interfaces.amba import AxiStream_withId
-from hwt.interfaces.utils import addClkRstn
+from hwtLib.amba.axiDatapumpIntf import AddrSizeHs
+from hwtLib.amba.axis import AxiStream_withId
 from hwtLib.handshaked.streamNode import streamSync
 from hwtLib.structManipulators.structUtils import StructFieldInfo, \
     StructBusBurstInfo
+
 
 def createInterface(fInfo):
     i = VldSynced()

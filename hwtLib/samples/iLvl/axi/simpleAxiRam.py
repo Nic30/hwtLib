@@ -6,7 +6,7 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.code import If
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.axi.axiLite_conv import AxiLiteConverter
+from hwtLib.amba.axiLite_conv import AxiLiteConverter
 from hwtLib.interfaces.amba import AxiLite
 from hwtLib.mem.ram import RamSingleClock
 

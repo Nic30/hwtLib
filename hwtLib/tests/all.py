@@ -4,12 +4,12 @@
 import multiprocessing
 from unittest import TestLoader, TextTestRunner, TestSuite
 
-from hwtLib.axi.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
-from hwtLib.axi.axi4_wDatapump_test import Axi4_wDatapumpTC, \
+from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
+from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC
-from hwtLib.axi.axi_test import AxiTC
-from hwtLib.axi.axis_measuringFifo_test import AxiS_measuringFifoTC
-from hwtLib.axi.rStrictOrderInterconnect_test import RStrictOrderInterconnectTC
+from hwtLib.amba.axi_test import AxiTC
+from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
+from hwtLib.amba.interconnect.rStrictOrderInterconnect_test import RStrictOrderInterconnectTC
 from hwtLib.handshaked.fifo_test import HsFifoTC
 from hwtLib.handshaked.fork_test import HsForkTC, HsFork_randomized_TC
 from hwtLib.handshaked.join_test import HsJoinTC, HsJoin_randomized_TC
@@ -38,6 +38,7 @@ from hwtLib.samples.iLvl.statements.constDriver_test import ConstDriverTC
 from hwtLib.samples.iLvl.statements.fsm_test import FsmExampleTC, HadrcodedFsmExampleTC
 from hwtLib.samples.iLvl.statements.ifStm_test import IfStmTC
 from hwtLib.samples.iLvl.statements.switchStm_test import SwitchStmTC
+from hwtLib.structManipulators.arrayBuff_writer_test import ArrayBuff_writer_TC
 from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC
 from hwtLib.structManipulators.cLinkedListReader_test import CLinkedListReaderTC
 from hwtLib.structManipulators.cLinkedListWriter_test import CLinkedListWriterTC
@@ -49,7 +50,6 @@ from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import Subunits
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
-from hwtLib.structManipulators.arrayBuff_writer_test import ArrayBuff_writer_TC
 
 
 if __name__ == "__main__":
