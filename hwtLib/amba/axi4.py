@@ -7,20 +7,20 @@ from hwtLib.amba.axis import AxiStream_withIdAgent
 from hwtLib.amba.constants import RESP_OKAY, BURST_INCR, CACHE_DEFAULT,\
     LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
-from hwtLib.amba.axi_intf_common import AxiMap
+from hwtLib.amba.axi_intf_common import AxiMap, Axi_id
 
 
 #####################################################################
-class Axi4_addr(AxiLite_addr):
+class Axi4_addr(AxiLite_addr, Axi_id):
     def _config(self):
         AxiLite_addr._config(self)
-        self.ID_WIDTH = Param(3)
+        Axi_id._config(self)
         self.LEN_WIDTH = 8
         self.LOCK_WIDTH = Param(1)
     
     def _declr(self):
         AxiLite_addr._declr(self)
-        self.id = VectSignal(self.ID_WIDTH)
+        Axi_id._declr(self)
         self.burst = VectSignal(2)
         self.cache = VectSignal(4)
         self.len = VectSignal(self.LEN_WIDTH)
@@ -127,14 +127,14 @@ class Axi4_addr_withUserAgent(BaseAxiAgent):
         w(user, intf.user)
 
 #####################################################################
-class Axi4_r(AxiLite_r):
+class Axi4_r(AxiLite_r, Axi_id):
     def _config(self):
         AxiLite_r._config(self)
-        self.ID_WIDTH = Param(3)
-    
+        Axi_id._config(self)
+        
     def _declr(self):
+        Axi_id._declr(self)
         AxiLite_r._declr(self)
-        self.id = VectSignal(self.ID_WIDTH)
         self.last = Signal()
     
     def _getSimAgent(self):
@@ -169,28 +169,28 @@ class Axi4_rAgent(BaseAxiAgent):
         w(resp, intf.resp)
         w(last, intf.last)
 #####################################################################    
-class Axi4_w(AxiLite_w):
+class Axi4_w(AxiLite_w, Axi_id):
     def _config(self):
         AxiLite_w._config(self)
-        self.ID_WIDTH = Param(3)
-    
+        Axi_id._config(self)
+        
     def _declr(self):
+        Axi_id._declr(self)
         AxiLite_w._declr(self)
-        self.id = VectSignal(self.ID_WIDTH)
         self.last = Signal()
     
     def _getSimAgent(self):
         return AxiStream_withIdAgent
 
 #####################################################################    
-class Axi4_b(AxiLite_b):
+class Axi4_b(AxiLite_b, Axi_id):
     def _config(self):
         AxiLite_b._config(self)
-        self.ID_WIDTH = Param(3)
+        Axi_id._config(self)
     
     def _declr(self):
+        Axi_id._declr(self)
         AxiLite_b._declr(self)
-        self.id = VectSignal(self.ID_WIDTH)
 
     def _getSimAgent(self):
         return Axi4_bAgent

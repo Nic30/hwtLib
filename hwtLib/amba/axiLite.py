@@ -1,23 +1,22 @@
 from hwt.hdlObjects.constants import DIRECTION
-from hwt.interfaces.std import VectSignal, Signal
+from hwt.interfaces.std import VectSignal
 from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
 from hwt.simulator.agentBase import AgentBase
 from hwt.synthesizer.interfaceLevel.interface import Interface
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axi_intf_common import AxiMap
+from hwtLib.amba.axi_intf_common import AxiMap, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 
 
 #################################################################
-class AxiLite_addr(Interface):
+class AxiLite_addr(Axi_hs):
     def _config(self):
         self.ADDR_WIDTH = Param(32)
         
     def _declr(self):
         self.addr = VectSignal(self.ADDR_WIDTH)
-        self.ready = Signal(masterDir=DIRECTION.IN)
-        self.valid = Signal()
-
+        Axi_hs._declr(self)
+        
     def _getSimAgent(self):
         return AxiLite_addrAgent
 
@@ -29,16 +28,15 @@ class AxiLite_addrAgent(BaseAxiAgent):
         s.write(data, self.intf.addr)
 
 #################################################################
-class AxiLite_r(Interface):
+class AxiLite_r(Axi_hs):
     def _config(self):
         self.DATA_WIDTH = Param(64)
         
     def _declr(self):
         self.data = VectSignal(self.DATA_WIDTH)
         self.resp = VectSignal(2)
-        self.ready = Signal(masterDir=DIRECTION.IN)
-        self.valid = Signal()
-
+        Axi_hs._declr(self)
+        
     def _getSimAgent(self):
         return AxiLite_rAgent
 
@@ -62,15 +60,14 @@ class AxiLite_rAgent(BaseAxiAgent):
         w(resp, intf.resp)
 
 #################################################################    
-class AxiLite_w(Interface):
+class AxiLite_w(Axi_hs):
     def _config(self):
         self.DATA_WIDTH = Param(64)
         
     def _declr(self):
         self.data = VectSignal(self.DATA_WIDTH)
         self.strb = VectSignal(self.DATA_WIDTH // 8)
-        self.ready = Signal(masterDir=DIRECTION.IN)
-        self.valid = Signal()
+        Axi_hs._declr(self)
         
     def _getSimAgent(self):
         return AxiLite_wAgent
@@ -93,12 +90,11 @@ class AxiLite_wAgent(BaseAxiAgent):
         w(strb, intf.strb)
 
 #################################################################    
-class AxiLite_b(Interface):
+class AxiLite_b(Axi_hs):
     def _declr(self):
         self.resp = VectSignal(2)
-        self.ready = Signal(masterDir=DIRECTION.IN)
-        self.valid = Signal()
-        
+        Axi_hs._declr(self)
+
     def _getSimAgent(self):
         return AxiLite_bAgent
 
@@ -196,8 +192,6 @@ class AxiLite_xil(AxiLite):
             self.w = AxiLite_w_xil()
             self.r = AxiLite_r_xil(masterDir=DIRECTION.IN)
             self.b = AxiLite_b_xil(masterDir=DIRECTION.IN)
-
-
     
 class IP_AXILite(IntfConfig):
     def __init__(self):

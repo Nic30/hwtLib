@@ -1,6 +1,7 @@
 from hwt.synthesizer.interfaceLevel.interface import Interface
 from hwt.synthesizer.param import Param
-from hwt.interfaces.std import VectSignal
+from hwt.interfaces.std import VectSignal, Signal
+from hwt.hdlObjects.constants import DIRECTION
 
 
 class Axi_id(Interface):
@@ -21,7 +22,11 @@ class Axi_user(Interface):
 class Axi_strb(Interface):
     def _declr(self):
         self.strb = VectSignal(self.DATA_WIDTH // 8)
-    
+
+class Axi_hs(Interface):
+    def _declr(self):
+        self.ready = Signal(masterDir=DIRECTION.IN)
+        self.valid = Signal()    
 
 def AxiMap(prefix, listOfNames, d=None):
     if d is None:
