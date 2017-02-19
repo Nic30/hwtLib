@@ -43,8 +43,6 @@ class ArrayBuff_writer(Unit):
         self.BUFF_DEPTH = Param(16)
         self.TIMEOUT = Param(1024)
         self.SIZE_BLOCK_ITEMS = Param(4096 // 8)
-        
-        self.DEBUG = True
 
     def _declr(self):
         addClkRstn(self)
@@ -60,10 +58,8 @@ class ArrayBuff_writer(Unit):
         self.baseAddr = RegCntrl()
         self.baseAddr.DATA_WIDTH.set(self.ADDR_WIDTH)
         
-        if self.DEBUG:
-            self.lenBuff_remain = VectSignal(16)
-            self.inputSizeErr = Signal()
-            self.fifoItemsCnt = VectSignal(5)
+        self.lenBuff_remain = VectSignal(16)
+        self.inputSizeErr = Signal()
         
         b = HandshakedFifo(Handshaked)
         b.DATA_WIDTH.set(self.SIZE_WIDTH)
@@ -74,13 +70,8 @@ class ArrayBuff_writer(Unit):
     def getRegisterFile(self):
         rf = [
             self.baseAddr,
-            self.uploaded
-            ]
-
-        if self.DEBUG:
-            rf += [ self.lenBuff_remain,
-            self.inputSizeErr,
-            self.fifoItemsCnt]
+            self.uploaded,
+            self.lenBuff_remain]
         return rf
     
     def uploadedCntrHandler(self, st, reqAckHasCome, sizeOfitems):
@@ -103,9 +94,7 @@ class ArrayBuff_writer(Unit):
         
         propagateClkRstn(self)
         
-        if self.DEBUG:
-            errListeners_inputSize(self)
-            connect(buff.size, self.fifoItemsCnt, fit=True)
+        errListeners_inputSize(self)
 
         sizeOfitems = self._reg("sizeOfitems", vecT(buff.size._dtype.bit_length()))
       
@@ -120,8 +109,7 @@ class ArrayBuff_writer(Unit):
         # offset in buffer and its complement        
         offset = self._reg("offset", vecT(log2ceil(ITEMS + 1), False), defVal=0)
         remaining = self._reg("remaining", vecT(log2ceil(ITEMS + 1), False), defVal=ITEMS)
-        if self.DEBUG:
-            connect(remaining, self.lenBuff_remain, fit=True) 
+        connect(remaining, self.lenBuff_remain, fit=True) 
         
         addrTmp = self._sig("baseAddrTmp", baseAddr._dtype)
         addrTmp ** (baseAddr + offset)
