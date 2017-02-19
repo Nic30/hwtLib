@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.intfLvl import Unit, Param
-from hwtLib.interfaces.amba import AxiStream
+from hwtLib.amba.axis import AxiStream
 from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream
 
 

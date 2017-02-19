@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.code import If, connect
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.code import If, connect
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.axi.axiLite_conv import AxiLiteConverter
-from hwtLib.interfaces.amba import AxiLite
+from hwtLib.amba.axiLite import AxiLite
+from hwtLib.amba.axiLite_comp.conv import AxiLiteConverter
 
 
 class SimpleAxiRegs(Unit):

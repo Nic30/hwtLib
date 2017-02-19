@@ -3,7 +3,7 @@
 
 from hwt.hdlObjects.typeShortcuts import hInt
 from hwt.intfLvl import Unit, Param
-from hwtLib.interfaces.amba import AxiStream
+from hwtLib.amba.axis import AxiStream
 
 
 class SimpleSubunit(Unit):

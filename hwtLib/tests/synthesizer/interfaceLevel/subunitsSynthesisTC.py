@@ -11,8 +11,8 @@ from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit, setOut
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.shortcuts import toRtl, synthesised
-from hwtLib.interfaces.amba import AxiStream
-from hwtLib.interfaces.ambaOthers import FullDuplexAxiStream 
+from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.fullDuplexAxiStream import FullDuplexAxiStream 
 from hwtLib.samples.iLvl.hierarchy.unitToUnitConnection import UnitToUnitConnection
 from hwtLib.samples.iLvl.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnection
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import BaseSynthesizerTC

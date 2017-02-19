@@ -1,7 +1,7 @@
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.ipCoreWrapper import IpCoreWrapper
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwtLib.interfaces.amba import AxiStream
+from hwtLib.amba.axis import AxiStream
 
 
 class ArrayIntfExample(Unit):

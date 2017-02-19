@@ -12,7 +12,7 @@ from hwt.synthesizer.param import Param, evalParam
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync, streamAck
-from hwtLib.axi.axiDatapumpIntf import AxiRDatapumpIntf, AxiWDatapumpIntf
+from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf, AxiWDatapumpIntf
 
 
 class CLinkedListWriter(Unit):

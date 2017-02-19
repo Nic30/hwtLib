@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -
+
 from hwt.hdlObjects.typeShortcuts import vecT, vec
 from hwt.interfaces.std import Handshaked, RegCntrl, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -7,7 +10,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
-from hwtLib.axi.axiDatapumpIntf import AxiRDatapumpIntf
+from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 
 
 class CLinkedListReader(Unit):
