@@ -9,7 +9,7 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import agent_randomize
 from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.denseMemory import DenseMemory
-from hwtLib.amba.interconnect.rStricOrderInterconnect import RStrictOrderInterconnect
+from hwtLib.amba.interconnect.rStricOrder import RStrictOrderInterconnect
 
 
 class RStrictOrderInterconnectTC(SimTestCase):

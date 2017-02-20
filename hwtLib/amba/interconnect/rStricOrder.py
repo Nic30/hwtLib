@@ -1,14 +1,15 @@
 from hwt.code import log2ceil, connect, Or
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.serializer.constants import SERI_MODE
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
+from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
 from hwtLib.logic.oneHotToBin import oneHotToBin
-from hwt.serializer.constants import SERI_MODE
 
 
 class RStrictOrderInterconnect(Unit):
@@ -105,13 +106,14 @@ class RStrictOrderInterconnect(Unit):
         
         # extra enable signals based on selected driver from orderInfoFifo
         extraHsEnableConds = {
-                              fifoOut : [r.last & selectedDriverReady] # on end of frame pop new item
+                              r : [fifoOut.vld]  # on end of frame pop new item
                              }
         for i, d in enumerate(driversR):
-            extraHsEnableConds[d] = [fifoOut.data._eq(i)]
+            extraHsEnableConds[d] = [fifoOut.vld & fifoOut.data._eq(i)]
             connect(r, d, exclude=[d.valid, d.ready])
         
-        streamSync(masters=[r, fifoOut],
+        fifoOut.rd ** (r.last & selectedDriverReady & r.valid)
+        streamSync(masters=[r],
                    slaves=driversR,
                    extraConds=extraHsEnableConds)
         
