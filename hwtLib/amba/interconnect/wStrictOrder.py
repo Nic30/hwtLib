@@ -1,19 +1,15 @@
-from hwt.code import log2ceil, connect, Or, Switch, ror
+from hwt.code import log2ceil, connect, Or, Switch
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
-from hwtLib.handshaked.builder import HsBuilder
+from hwtLib.amba.interconnect.axiInterconnectbase import AxiInterconnectBase
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
-from hwtLib.logic.oneHotToBin import oneHotToBin
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwtLib.handshaked.joinFair import HsJoinFairShare
 
 
-class WStrictOrderInterconnect(Unit):
+class WStrictOrderInterconnect(AxiInterconnectBase):
     """
     Strict order interconnect for AxiWDatapumpIntf
     ensures that response on request is delivered to driver which asked for it while transactions can overlap
@@ -25,50 +21,9 @@ class WStrictOrderInterconnect(Unit):
         self.MAX_TRANS_OVERLAP = Param(16)
         AxiWDatapumpIntf._config(self)
     
-    def configureFromDrivers(self, drivers, datapump, byInterfaces=False):
-        """
-        Check configuration of drivers and resolve MAX_LEN and aply it on datapump
-        and this interconnect
-        """
-        e = lambda p: evalParam(p).val
-        
-        if byInterfaces:
-            _datapump = datapump.driver
-        
-        ID_WIDTH = e(_datapump.ID_WIDTH)
-        ADDR_WIDTH = e(_datapump.ADDR_WIDTH)
-        DATA_WIDTH = e(_datapump.DATA_WIDTH)
-        MAX_LEN = e(_datapump.MAX_LEN)
-        
-        for d in drivers:
-            if byInterfaces:
-                d = d.wDatapump
-                
-            assert ID_WIDTH == e(d.ID_WIDTH)
-            assert ADDR_WIDTH == e(d.ADDR_WIDTH)
-            assert DATA_WIDTH == e(d.DATA_WIDTH)
-            MAX_LEN = max(MAX_LEN, e(d.MAX_LEN))
-        
-        datapump.MAX_LEN.set(MAX_LEN)
-
-        self.ID_WIDTH.set(ID_WIDTH)
-        self.ADDR_WIDTH.set(ADDR_WIDTH)
-        self.DATA_WIDTH.set(DATA_WIDTH)
-        self.MAX_LEN.set(MAX_LEN)
-        self.MAX_TRANS_OVERLAP.set(e(datapump.MAX_TRANS_OVERLAP))
-        self.DRIVER_CNT.set(len(drivers))
+    def getDpIntf(self, unit):
+        return unit.wDatapump
     
-    def connectDrivers(self, drivers, datapump):
-        """
-        Connect drivers to datapump using this component
-        """
-        for i, driver in enumerate(drivers):
-            # width of signals should be configured by the widest
-            # others drivers can have smaller widths of some signals for example id
-            connect(driver.wDatapump, self.drivers[i], fit=True) 
-        
-        datapump.driver ** self.wDatapump
-
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
@@ -83,31 +38,6 @@ class WStrictOrderInterconnect(Unit):
             f.DEPTH.set(self.MAX_TRANS_OVERLAP)
             f.DATA_WIDTH.set(self.DRIVER_INDEX_WIDTH) 
     
-    def reqHandler(self):
-        fWIn = self.orderInfoFifoW.dataIn
-        dpReq = self.wDatapump.req
-        priority = self._reg("priority", vecT(self.DRIVER_CNT), defVal=1)
-        priority ** ror(priority, 1)
-        
-        joinTmpl = self.drivers[0].req
-        reqJoin = HsJoinFairShare(joinTmpl.__class__)
-        reqJoin._updateParamsFrom(joinTmpl)
-        reqJoin.INPUTS.set(self.DRIVER_CNT)
-        reqJoin.EXPORT_SELECTED.set(True)
-        
-        self.reqJoin = reqJoin
-        
-        reqJoin.clk ** self.clk
-        reqJoin.rst_n ** self.rst_n
-        for i, d in enumerate(self.drivers):
-            reqJoin.dataIn[i] ** d.req
-        
-        req = reqJoin.dataOut
-        streamSync(masters=[req],
-                   slaves=[dpReq, fWIn])
-        connect(req, dpReq, exclude=[dpReq.vld, dpReq.rd])
-        fWIn.data ** oneHotToBin(self, reqJoin.selectedOneHot)
-        
     def wHandler(self):
         w = self.wDatapump.w
         fWOut = self.orderInfoFifoW.dataOut
@@ -170,7 +100,7 @@ class WStrictOrderInterconnect(Unit):
         
     def _impl(self):
         propagateClkRstn(self)
-        self.reqHandler()
+        self.reqHandler(self.wDatapump.req, self.orderInfoFifoW.dataIn)
         self.wHandler()
         self.ackHandler()
 

@@ -1,18 +1,18 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import log2ceil, connect, Or
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
-from hwtLib.handshaked.builder import HsBuilder
+from hwtLib.amba.interconnect.axiInterconnectbase import AxiInterconnectBase
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
-from hwtLib.logic.oneHotToBin import oneHotToBin
 
 
-class RStrictOrderInterconnect(Unit):
+class RStrictOrderInterconnect(AxiInterconnectBase):
     """
     Strict order interconnect for AxiRDatapumpIntf
     ensures that response on request is delivered to driver which asked for it while transactions can overlap
@@ -24,50 +24,9 @@ class RStrictOrderInterconnect(Unit):
         self.MAX_TRANS_OVERLAP = Param(16)
         AxiRDatapumpIntf._config(self)
     
-    def configureFromDrivers(self, drivers, datapump, byInterfaces=False):
-        """
-        Check configuration of drivers and resolve MAX_LEN and aply it on datapump
-        and this interconnect
-        """
-        if byInterfaces:
-            _datapump = datapump.driver
-            
-        e = lambda p: evalParam(p).val
-        ID_WIDTH = e(_datapump.ID_WIDTH)
-        ADDR_WIDTH = e(_datapump.ADDR_WIDTH)
-        DATA_WIDTH = e(_datapump.DATA_WIDTH)
-        MAX_LEN = e(_datapump.MAX_LEN)
+    def getDpIntf(self, unit):
+        return unit.rDatapump
         
-        for d in drivers:
-            if byInterfaces:
-                d = d.rDatapump
-            
-            assert ID_WIDTH == e(d.ID_WIDTH)
-            assert ADDR_WIDTH == e(d.ADDR_WIDTH)
-            assert DATA_WIDTH == e(d.DATA_WIDTH)
-            MAX_LEN = max(MAX_LEN, e(d.MAX_LEN))
-        
-        datapump.MAX_LEN.set(MAX_LEN)
-        
-        self.ID_WIDTH.set(ID_WIDTH)
-        self.ADDR_WIDTH.set(ADDR_WIDTH)
-        self.DATA_WIDTH.set(DATA_WIDTH)
-        self.MAX_LEN.set(MAX_LEN)
-        self.MAX_TRANS_OVERLAP.set(e(datapump.MAX_TRANS_OVERLAP))
-        self.DRIVER_CNT.set(len(drivers))
-        
-        
-    def connectDrivers(self, drivers, datapump):
-        """
-        Connect drivers to datapump using this component
-        """
-        for i, driver in enumerate(drivers):
-            # width of signals should be configured by the widest
-            # others drivers can have smaller widths of some signals for example id
-            connect(driver.rDatapump, self.drivers[i], fit=True) 
-        
-        datapump.driver ** self.rDatapump
-
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
@@ -82,19 +41,10 @@ class RStrictOrderInterconnect(Unit):
         
     def _impl(self):
         propagateClkRstn(self)
-        fifoIn = self.orderInfoFifo.dataIn
+        self.reqHandler(self.rDatapump.req, self.orderInfoFifo.dataIn)
+
         fifoOut = self.orderInfoFifo.dataOut
         r = self.rDatapump.r
-        
-        dpReq = self.rDatapump.req
-
-        req = HsBuilder.join(self, map(lambda d: d.req,
-                                       self.drivers)).end
-        streamSync(masters=[req],
-                   slaves=[dpReq, fifoIn])
-        connect(req, dpReq, exclude=[dpReq.vld, dpReq.rd])
-        fifoIn.data ** oneHotToBin(self, map(lambda d: d.req.vld,
-                                             self.drivers))
         
         driversR = list(map(lambda d: d.r,
                             self.drivers))

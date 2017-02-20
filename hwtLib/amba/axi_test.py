@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import unittest
 
 from hwtLib.amba.constants import BYTES_IN_TRANS
