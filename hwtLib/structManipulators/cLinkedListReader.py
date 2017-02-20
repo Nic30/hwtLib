@@ -198,22 +198,12 @@ class CLinkedListReader(Unit):
                rdPtr ** (rdPtr + 1)
             )
         )
-        # ignore data if not my data
-        # notMyData = ~In(dIn.id, [ID, ID_LAST])
-        # streamSync([dIn], [dBuffIn], extraConds={dIn   :[downloadPending | notMyData],
-        #                                        dBuffIn:[receivingData, downloadPending]})
-        #
-        If(dIn.valid & In(dIn.id, [ID, ID_LAST]),
-           # push data into buffer and increment rdPtr
-           streamSync(masters=[dIn],
-                      slaves=[dBuffIn],
-                      extraConds={dIn    :[downloadPending],
-                                  dBuffIn:[~((dIn.id._eq(ID_LAST)) & dIn.last), downloadPending]})
-        ).Else(
-           # ship next block addr
-           dBuffIn.vld ** 0,
-           dIn.ready ** 1   
-        )
+        # push data into buffer and increment rdPtr
+        streamSync(masters=[dIn],
+                   slaves=[dBuffIn],
+                   extraConds={dIn    :[downloadPending],
+                               dBuffIn:[dIn.id._eq(ID) | (dIn.id._eq(ID_LAST) & ~dIn.last), downloadPending]
+                               })
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = CLinkedListReader()
