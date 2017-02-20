@@ -7,6 +7,7 @@ from hwt.serializer.constants import SERI_MODE
 from hwt.code import If, Or, iterBits, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 
 class OneHotToBin(Unit):
@@ -26,25 +27,20 @@ class OneHotToBin(Unit):
     def _impl(self):
         W = evalParam(self.ONE_HOT_WIDTH).val
         
-        leadingZeroTop = None  # index is index of first empty record or last one
-        for i in reversed(range(W)):
-            connections = self.bin.data ** i
-            if leadingZeroTop is None:
-                leadingZeroTop = connections 
-            else:
-                leadingZeroTop = If(self.oneHot[i]._eq(1),
-                   connections
-                ).Else(
-                   leadingZeroTop
-                )    
+        self.bin.data ** oneHotToBin(self, self.oneHot)   
         self.bin.vld ** Or(*[bit for bit in iterBits(self.oneHot)])
 
 def oneHotToBin(parent, signals, resName="oneHotToBin"):
-    signals = list(signals)
+    if isinstance(signals, (RtlSignal, Signal)):
+        signals = [signals[i] for i in range(signals._dtype.bit_length())]
+    else:    
+        signals = list(signals)
+        
     res = parent._sig(resName, vecT(log2ceil(len(signals))))
     leadingZeroTop = None
     for i, s in enumerate(reversed(signals)):
-        connections = res ** i
+        connections = res ** (len(signals) - i - 1)
+        
         if leadingZeroTop is None:
             leadingZeroTop = connections 
         else:
