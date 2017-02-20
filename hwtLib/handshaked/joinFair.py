@@ -5,7 +5,16 @@ from hwt.code import And, If, Or, iterBits, ror
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwtLib.handshaked.join import HandshakedJoin
 from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.param import Param, evalParam
+from hwt.interfaces.std import VectSignal
 
+def priorityOverriden(priorityReg, vldSignals, index):
+    owr = []
+    for i, (p, vld) in  enumerate(zip(iterBits(priorityReg), vldSignals)):
+        if i != index:
+            owr.append(p & vld)
+        
+    return And(*owr)
 
 class HsJoinFairShare(HandshakedJoin):
     """
@@ -18,23 +27,22 @@ class HsJoinFairShare(HandshakedJoin):
     
     combinational
     """
+    def _config(self):
+        HandshakedJoin._config(self)
+        self.EXPORT_SELECTED = Param(True)
+    
     def _declr(self):
         HandshakedJoin._declr(self)
         addClkRstn(self)
-        
-    def priorityOverriden(self, priority, vldSignals, index):
-        owr = []
-        for i, (p, vld) in  enumerate(zip(iterBits(priority), vldSignals)):
-            if i != index:
-                owr.append(p & vld)
-            
-        return And(*owr)
+        if evalParam(self.EXPORT_SELECTED).val:
+            self.selectedOneHot = VectSignal(self.INPUTS)
         
     def _impl(self):
         rd = self.getRd
         vld = self.getVld
         data = self.getData
         dout = self.dataOut
+        EXPORT_SELECTED = evalParam(self.EXPORT_SELECTED).val
         
         priority = self._reg("priority", vecT(self.INPUTS), defVal=1)
         
@@ -45,10 +53,13 @@ class HsJoinFairShare(HandshakedJoin):
             outMuxTop.extend(d ** None)
         
         for i, din in enumerate(self.dataIn):
-            priorityOverride = self.priorityOverriden(priority, vldSignals, i)  
+            priorityOverride = priorityOverriden(priority, vldSignals, i)  
             # dataIn.rd
             allLowerPriorNotReady = map(lambda x:~x, vldSignals[:i])
-            rd(din) ** (And(rd(dout), *allLowerPriorNotReady) & ~priorityOverride)
+            isSelected = And(*allLowerPriorNotReady, ~priorityOverride) 
+            rd(din) ** (isSelected & rd(dout))
+            if EXPORT_SELECTED:
+                self.selectedOneHot[i] ** isSelected 
             
             # data out mux
             dataConnectExpr = []
