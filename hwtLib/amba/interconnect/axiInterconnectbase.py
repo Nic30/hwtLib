@@ -52,7 +52,7 @@ class AxiInterconnectBase(Unit):
             # others drivers can have smaller widths of some signals for example id
             connect(self.getDpIntf(driver), self.drivers[i], fit=True) 
         
-        datapump.driver ** self.rDatapump
+        datapump.driver ** self.getDpIntf(self)
     
     def reqHandler(self, dpReq, orderFifoIn):
         # join with roundrobin on requests form drivers and selected index is stored into orderFifo

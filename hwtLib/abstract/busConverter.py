@@ -1,10 +1,11 @@
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
-from hwt.hdlObjects.types.typeCast import toHVal
-from hwtLib.abstract.addrSpace import AddrSpaceItem
-from hwt.synthesizer.param import evalParam
 from hwt.code import log2ceil, connect
 from hwt.hdlObjects.constants import INTF_DIRECTION
+from hwt.hdlObjects.types.typeCast import toHVal
+from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import evalParam
+from hwtLib.abstract.addrSpace import AddrSpaceItem
+
 
 def unpackAddrMap(am):
     if isinstance(am, AddrSpaceItem):
