@@ -101,7 +101,7 @@ class WStrictOrderInterconnect(Unit):
                             self.drivers))
 
         selectedDriverVld = self._sig("selectedDriverWVld")
-        selectedDriverVld ** Or(*map(lambda d : fWOut.data._eq(d[0]) & d[1].ready,
+        selectedDriverVld ** Or(*map(lambda d : fWOut.data._eq(d[0]) & d[1].valid,
                                        enumerate(driversW))
                                        )
         selectedDriverLast = self._sig("selectedDriverLast")

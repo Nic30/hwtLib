@@ -9,7 +9,8 @@ from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
-from hwtLib.amba.interconnect.rStrictOrderInterconnect_test import RStrictOrderInterconnectTC
+from hwtLib.amba.interconnect.rStrictOrder_test import RStrictOrderInterconnectTC
+from hwtLib.amba.interconnect.wStrictOrder_test import WStrictOrderInterconnectTC
 from hwtLib.handshaked.fifo_test import HsFifoTC
 from hwtLib.handshaked.fork_test import HsForkTC, HsFork_randomized_TC
 from hwtLib.handshaked.join_test import HsJoinTC, HsJoin_randomized_TC
@@ -110,6 +111,7 @@ if __name__ == "__main__":
         AxiS_measuringFifoTC,
         
         RStrictOrderInterconnectTC,
+        WStrictOrderInterconnectTC,
         
         ArrayItemGetterTC,
         ArrayBuff_writer_TC,
