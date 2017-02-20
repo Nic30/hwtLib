@@ -1,4 +1,4 @@
-from hwt.code import log2ceil, connect, Or, Switch
+from hwt.code import log2ceil, connect, Or, Switch, ror
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.constants import SERI_MODE
@@ -9,6 +9,8 @@ from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
 from hwtLib.logic.oneHotToBin import oneHotToBin
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwtLib.handshaked.joinFair import HsJoinFairShare
 
 
 class WStrictOrderInterconnect(Unit):
@@ -84,14 +86,28 @@ class WStrictOrderInterconnect(Unit):
     def reqHandler(self):
         fWIn = self.orderInfoFifoW.dataIn
         dpReq = self.wDatapump.req
-
-        req = HsBuilder.join(self, map(lambda d: d.req,
-                                       self.drivers)).end
+        priority = self._reg("priority", vecT(self.DRIVER_CNT), defVal=1)
+        priority ** ror(priority, 1)
+        
+        joinTmpl = self.drivers[0].req
+        reqJoin = HsJoinFairShare(joinTmpl.__class__)
+        reqJoin._updateParamsFrom(joinTmpl)
+        reqJoin.INPUTS.set(self.DRIVER_CNT)
+        reqJoin.EXPORT_SELECTED.set(True)
+        
+        self.reqJoin = reqJoin
+        
+        reqJoin.clk ** self.clk
+        reqJoin.rst_n ** self.rst_n
+        for i, d in enumerate(self.drivers):
+            reqJoin.dataIn[i] ** d.req
+        
+        req = reqJoin.dataOut
         streamSync(masters=[req],
                    slaves=[dpReq, fWIn])
         connect(req, dpReq, exclude=[dpReq.vld, dpReq.rd])
-        fWIn.data ** oneHotToBin(self, map(lambda d: d.req.vld,
-                                             self.drivers))
+        fWIn.data ** oneHotToBin(self, reqJoin.selectedOneHot)
+        
     def wHandler(self):
         w = self.wDatapump.w
         fWOut = self.orderInfoFifoW.dataOut
