@@ -51,6 +51,7 @@ encoding//hwtLib/logic/binToOneHot.py=utf-8
 encoding//hwtLib/logic/cntrGray.py=utf-8
 encoding//hwtLib/logic/delayMs.py=utf-8
 encoding//hwtLib/logic/oneHotToBin.py=utf-8
+encoding//hwtLib/logic/oneHotToBin_test.py=utf-8
 encoding//hwtLib/mem/atomic/flipCntr.py=utf-8
 encoding//hwtLib/mem/atomic/flipCntr_test.py=utf-8
 encoding//hwtLib/mem/atomic/flipRam.py=utf-8

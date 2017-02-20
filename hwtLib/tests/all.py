@@ -16,6 +16,7 @@ from hwtLib.handshaked.fork_test import HsForkTC, HsFork_randomized_TC
 from hwtLib.handshaked.join_test import HsJoinTC, HsJoin_randomized_TC
 from hwtLib.handshaked.reg2_test import HsReg2TC
 from hwtLib.handshaked.reg_test import HsRegTC
+from hwtLib.logic.oneHotToBin_test import OneHotToBinTC
 from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
 from hwtLib.mem.atomic.flipReg_test import FlipRegTC
 from hwtLib.mem.cam_test import CamTC
@@ -82,6 +83,7 @@ if __name__ == "__main__":
         LutRamTC,
         FsmExampleTC,
         HadrcodedFsmExampleTC,
+        OneHotToBinTC,
         CntrTC,
         TwoCntrsTC,
         SampleRamTC,
