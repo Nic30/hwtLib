@@ -66,6 +66,43 @@ class RStrictOrderInterconnectTC(SimTestCase):
                                         (i + 1, i + 1, i + 1, 0))
    
 
+    def test_randomized(self):
+        u = self.u
+        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rDatapump)
+        rand = lambda intf: agent_randomize(intf._ag) 
+
+        for d in u.drivers:
+            rand(d.req)
+            rand(d.r)
+        rand(u.rDatapump.req)
+        rand(u.rDatapump.r)
+        
+        def prepare(driverIndex, addr, size, valBase=1, _id=1):
+            driver = u.drivers[driverIndex]
+            driver.req._ag.data.append((_id, addr, size - 1, 0))
+            expected = []
+            _mask = mask(self.DATA_WIDTH//8)
+            index = addr // (self.DATA_WIDTH // 8)
+            for i in range(size):
+                v = valBase + i
+                m.data[index + i] = v
+                d = (_id, v, _mask, int(i == size - 1))
+                expected.append(d)
+            return expected
+
+        def check(driverIndex, expected):
+            driverData = u.drivers[driverIndex].r._ag.data
+            self.assertEqual(len(driverData), len(expected))
+            for d, e in zip(driverData, expected):
+                self.assertValSequenceEqual(d, e)   
+                 
+        d0 = prepare(0, 0x1000, 3, 99, _id=0) #+ prepare(0, 0x2000, 1, 100, _id=0) + prepare(0, 0x3000, 16, 101)
+        d1 = prepare(1, 0x4000, 3, 200, _id=1) + prepare(1, 0x5000, 1, 201, _id=1) #+ prepare(1, 0x6000, 16, 202) #+ prepare(1, 0x7000, 16, 203)
+        
+        self.doSim(1000 * Time.ns)
+    
+        check(0, d0)
+        check(1, d1)
     
 if __name__ == "__main__":
     suite = unittest.TestSuite()

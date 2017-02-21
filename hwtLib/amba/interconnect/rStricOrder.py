@@ -55,17 +55,19 @@ class RStrictOrderInterconnect(AxiInterconnectBase):
                                        )
         
         # extra enable signals based on selected driver from orderInfoFifo
-        extraHsEnableConds = {
-                              r : [fifoOut.vld]  # on end of frame pop new item
-                             }
+        #extraHsEnableConds = {
+        #                      r : [fifoOut.vld]  # on end of frame pop new item
+        #                     }
         for i, d in enumerate(driversR):
-            extraHsEnableConds[d] = [fifoOut.vld & fifoOut.data._eq(i)]
+            #extraHsEnableConds[d]
+            d.valid ** (r.valid & fifoOut.vld & fifoOut.data._eq(i))
             connect(r, d, exclude=[d.valid, d.ready])
         
+        r.ready ** (fifoOut.vld &  selectedDriverReady)
         fifoOut.rd ** (r.last & selectedDriverReady & r.valid)
-        streamSync(masters=[r],
-                   slaves=driversR,
-                   extraConds=extraHsEnableConds)
+        #streamSync(masters=[r],
+        #           slaves=driversR,
+        #           extraConds=extraHsEnableConds)
         
         
         
