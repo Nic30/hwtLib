@@ -34,6 +34,7 @@ encoding//hwtLib/handshaked/fork.py=utf-8
 encoding//hwtLib/handshaked/fork_test.py=utf-8
 encoding//hwtLib/handshaked/join.py=utf-8
 encoding//hwtLib/handshaked/joinFair.py=utf-8
+encoding//hwtLib/handshaked/joinFair_test.py=utf-8
 encoding//hwtLib/handshaked/join_test.py=utf-8
 encoding//hwtLib/handshaked/mux.py=utf-8
 encoding//hwtLib/handshaked/ramReader.py=utf-8

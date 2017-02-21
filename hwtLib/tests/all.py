@@ -13,6 +13,7 @@ from hwtLib.amba.interconnect.rStrictOrder_test import RStrictOrderInterconnectT
 from hwtLib.amba.interconnect.wStrictOrder_test import WStrictOrderInterconnectTC
 from hwtLib.handshaked.fifo_test import HsFifoTC
 from hwtLib.handshaked.fork_test import HsForkTC, HsFork_randomized_TC
+from hwtLib.handshaked.joinFair_test import HsJoinFairTC
 from hwtLib.handshaked.join_test import HsJoinTC, HsJoin_randomized_TC
 from hwtLib.handshaked.reg2_test import HsReg2TC
 from hwtLib.handshaked.reg_test import HsRegTC
@@ -96,6 +97,7 @@ if __name__ == "__main__":
         FifoTC,
         HsJoinTC,
         HsJoin_randomized_TC,
+        HsJoinFairTC,
         FlipRegTC,
         FlipCntrTC,
         HsForkTC,

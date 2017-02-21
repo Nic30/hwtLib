@@ -54,10 +54,14 @@ class HsJoinFairShare(HandshakedJoin):
         
         for i, din in enumerate(self.dataIn):
             priorityOverride = priorityOverriden(priority, vldSignals, i)  
-            # dataIn.rd
-            allLowerPriorNotReady = map(lambda x:~x, vldSignals[:i])
-            isSelected = And(*allLowerPriorNotReady, ~priorityOverride) 
+            if i == 0:
+                isSelected = ~priorityOverride 
+            else:
+                allHigherPriorNotVld = map(lambda x:~x, vldSignals[:i])
+                isSelected = And(*allHigherPriorNotVld) | ~priorityOverride 
+                
             rd(din) ** (isSelected & rd(dout))
+            
             if EXPORT_SELECTED:
                 self.selectedOneHot[i] ** isSelected 
             
