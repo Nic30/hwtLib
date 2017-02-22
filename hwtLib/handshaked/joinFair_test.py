@@ -11,52 +11,74 @@ from hwt.simulator.utils import agent_randomize
 from hwtLib.handshaked.joinFair import HsJoinFairShare
 
 
-class HsJoinFairTC(SimTestCase):
+dataFn = lambda d: d._ag.data
+class HsJoinFair_2inputs_TC(SimTestCase):
     def setUp(self):
-        self.u = HsJoinFairShare(Handshaked)
-        self.u.DATA_WIDTH.set(8)
+        u = self.u = HsJoinFairShare(Handshaked)
+        self.INPUTS = 2
+        u.INPUTS.set(self.INPUTS)
+        u.DATA_WIDTH.set(8)
         _, self.model, self.procs = simPrepare(self.u)
     
+    def addToAllInputs(self, n):
+        u = self.u
+        for i, d in enumerate(u.dataIn):
+            d._ag.data = [ _i + (n * i) for _i in range(n)]
+
+        expected = []
+        for d in zip(*map(dataFn, u.dataIn)):
+            expected.extend(d)
+        
+        return expected
+            
     def test_passdata(self):
         u = self.u
-
-        u.dataIn[0]._ag.data = [1, 2, 3, 4, 5, 6]
-        u.dataIn[1]._ag.data = [7, 8, 9, 10, 11, 12]
-
-        expected = []
-        for d0, d1 in zip(u.dataIn[0]._ag.data, u.dataIn[1]._ag.data):
-            expected.extend([d0, d1])
+        expected = self.addToAllInputs(6)
             
-        self.doSim(300 * Time.ns)
+        self.doSim(self.INPUTS * 6 * 20 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
         
-        self.assertSequenceEqual([], u.dataIn[0]._ag.data)
-        self.assertSequenceEqual([], u.dataIn[1]._ag.data)
+        for d in u.dataIn:
+            self.assertSequenceEqual([], d._ag.data)
 
-    def test_passdata2(self):
+    def test_passdata_oneHasMore(self):
         u = self.u
 
-        u.dataIn[0]._ag.data = [1, 2, 3]
-        u.dataIn[1]._ag.data = [4, 5, 6]
-
-        expected = []
-        for d0, d1 in zip(u.dataIn[0]._ag.data, u.dataIn[1]._ag.data):
-            expected.extend([d0, d1])
+        expected = self.addToAllInputs(6)
         
         d = [7, 8, 9, 10, 11, 12]
-        u.dataIn[1]._ag.data.extend(d)
+        u.dataIn[self.INPUTS - 1]._ag.data.extend(d)
         expected.extend(d)
         
-        self.doSim(300 * Time.ns)
+        self.doSim(self.INPUTS * 6 * 20 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
         
-        self.assertSequenceEqual([], u.dataIn[0]._ag.data)
-        self.assertSequenceEqual([], u.dataIn[1]._ag.data)
+        for d in u.dataIn:
+            self.assertSequenceEqual([], d._ag.data)
 
+    def test_passData_onLowPriority(self):
+        u = self.u
+        lowPriority = u.dataIn[self.INPUTS - 1]
+        expected = [ _i for _i in range(6)]
+        
+        lowPriority._ag.data.extend(expected) 
 
-#class HsJoin_randomized_TC(HsJoinTC):
+        self.doSim(120 * Time.ns)
+
+        self.assertValSequenceEqual(u.dataOut._ag.data, expected)
+
+class HsJoinFair_3inputs_TC(HsJoinFair_2inputs_TC):
+    def setUp(self):
+        u = self.u = HsJoinFairShare(Handshaked)
+        self.INPUTS = 3
+        u.INPUTS.set(self.INPUTS)
+        u.DATA_WIDTH.set(8)
+        _, self.model, self.procs = simPrepare(self.u)
+   
+
+# class HsJoin_randomized_TC(HsJoinTC):
 #    def setUp(self):
 #        super(HsJoin_randomized_TC, self).setUp()
 #        #self.procs.append(agent_randomize(self.u.dataIn[0]._ag))
@@ -67,6 +89,7 @@ class HsJoinFairTC(SimTestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(FifoTC('test_normalOp'))
-    suite.addTest(unittest.makeSuite(HsJoinFairTC))
+    suite.addTest(unittest.makeSuite(HsJoinFair_2inputs_TC))
+    suite.addTest(unittest.makeSuite(HsJoinFair_3inputs_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
