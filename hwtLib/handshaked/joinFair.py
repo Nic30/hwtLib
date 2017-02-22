@@ -1,20 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import And, If, Or, iterBits, ror
+from hwt.code import And, If, Or, iterBits, rol, ror
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwtLib.handshaked.join import HandshakedJoin
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param, evalParam
 from hwt.interfaces.std import VectSignal
 
-def priorityOverriden(priorityReg, vldSignals, index):
-    owr = []
+def priorityAck(priorityReg, vldSignals, index):
+    priorityOverdrives = []
+    vldWithHigherPriority = list(vldSignals[:index])
+    
     for i, (p, vld) in  enumerate(zip(iterBits(priorityReg), vldSignals)):
-        if i != index:
-            owr.append(p & vld)
-        
-    return And(*owr)
+        if i > index:
+            priorityOverdrives.append(p & vld)
+    
+    # if not vldWithHigherPriority:
+    #    return ~Or(*priorityOverdrives)
+    # if not priorityOverdrives:
+    #    return ~Or(*vldWithHigherPriority)
+    ack = ~Or(*priorityOverdrives, *vldWithHigherPriority) | priorityReg[index]
+    
+    return ack
 
 class HsJoinFairShare(HandshakedJoin):
     """
@@ -48,35 +56,33 @@ class HsJoinFairShare(HandshakedJoin):
         
         vldSignals = list(map(vld, self.dataIn))  
         
+        isSelected_tmp = []
+        for i, din in enumerate(self.dataIn):
+            isSelected = self._sig("isSelected_%d" % i)
+            isSelected ** priorityAck(priority, vldSignals, i)
+            isSelected_tmp.append(isSelected)
+            
+            rd(din) ** (isSelected & rd(dout))
+
+            if EXPORT_SELECTED:
+                self.selectedOneHot[i] ** (isSelected & vld(din))
+            
+        # data out mux
         outMuxTop = []
         for d in data(dout):
             outMuxTop.extend(d ** None)
-        
-        for i, din in enumerate(self.dataIn):
-            priorityOverride = priorityOverriden(priority, vldSignals, i)  
-            if i == 0:
-                isSelected = ~priorityOverride 
-            else:
-                allHigherPriorNotVld = map(lambda x:~x, vldSignals[:i])
-                isSelected = And(*allHigherPriorNotVld) | ~priorityOverride 
-                
-            rd(din) ** (isSelected & rd(dout))
-            
-            if EXPORT_SELECTED:
-                self.selectedOneHot[i] ** isSelected 
-            
-            # data out mux
+        for isSelected, din in zip(reversed(isSelected_tmp), reversed(list(self.dataIn))):
             dataConnectExpr = []
             for _din, _dout in zip(data(din), data(dout)):
                 dataConnectExpr.extend(_dout ** _din)
            
-            outMuxTop = If(vld(din) & ~priorityOverride,
+            outMuxTop = If(vld(din) & isSelected,
                 dataConnectExpr
             ).Else(
                 outMuxTop
             )
-        priority ** ror(priority, 1)
             
+        priority ** rol(priority, 1)
         vld(dout) ** Or(*vldSignals)
                 
         
@@ -84,4 +90,5 @@ if __name__ == "__main__":
     from hwt.interfaces.std import Handshaked
     from hwt.synthesizer.shortcuts import toRtl
     u = HsJoinFairShare(Handshaked)
+    u.INPUTS.set(3)
     print(toRtl(u))

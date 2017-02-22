@@ -1,7 +1,6 @@
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam
-from hwt.code import connect, ror
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.code import connect 
 from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwtLib.handshaked.streamNode import streamSync
 from hwtLib.logic.oneHotToBin import oneHotToBin
@@ -56,9 +55,6 @@ class AxiInterconnectBase(Unit):
     
     def reqHandler(self, dpReq, orderFifoIn):
         # join with roundrobin on requests form drivers and selected index is stored into orderFifo
-        priority = self._reg("priority", vecT(self.DRIVER_CNT), defVal=1)
-        priority ** ror(priority, 1)
-        
         joinTmpl = self.drivers[0].req
         reqJoin = HsJoinFairShare(joinTmpl.__class__)
         reqJoin._updateParamsFrom(joinTmpl)
