@@ -3,21 +3,28 @@
 
 import unittest
 
+from hwt.bitmask import mask
 from hwt.hdlObjects.constants import Time
 from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import agent_randomize
-from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.interconnect.rStricOrder import RStrictOrderInterconnect
-from hwt.bitmask import mask
 
 
 class RStrictOrderInterconnectTC(SimTestCase):
     def setUp(self):
-        self.u = RStrictOrderInterconnect()
-        self.MAX_TRANS_OVERLAP = evalParam(self.u.MAX_TRANS_OVERLAP).val
-        self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
+        u = self.u = RStrictOrderInterconnect()
+        
+        self.DRIVERS_CNT = 3
+        u.DRIVER_CNT.set(self.DRIVERS_CNT)
+        
+        self.MAX_TRANS_OVERLAP = 4
+        u.MAX_TRANS_OVERLAP.set(self.MAX_TRANS_OVERLAP)
+        
+        self.DATA_WIDTH = 64
+        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        
         _, self.model, self.procs = simPrepare(self.u)
     
     
@@ -36,12 +43,12 @@ class RStrictOrderInterconnectTC(SimTestCase):
         for i, driver in enumerate(u.drivers):
             driver.req._ag.data.append((i + 1, i + 1, i + 1, 0))
         
-        self.doSim(40 * Time.ns)
+        self.doSim((self.DRIVERS_CNT * 20) * Time.ns)
         
         for d in u.drivers:
             self.assertEqual(len(d.r._ag.data), 0)
         
-        self.assertEqual(len(u.rDatapump.req._ag.data), 2)
+        self.assertEqual(len(u.rDatapump.req._ag.data), self.DRIVERS_CNT)
         for i, req in enumerate(u.rDatapump.req._ag.data):
             self.assertValSequenceEqual(req,
                                         (i + 1, i + 1, i + 1, 0))
@@ -60,7 +67,7 @@ class RStrictOrderInterconnectTC(SimTestCase):
         for i, d in enumerate(u.drivers):
             self.assertEqual(len(d.r._ag.data), i + 1 + 1)
         
-        self.assertEqual(len(u.rDatapump.req._ag.data), 2)
+        self.assertEqual(len(u.rDatapump.req._ag.data), self.DRIVERS_CNT)
         for i, req in enumerate(u.rDatapump.req._ag.data):
             self.assertValSequenceEqual(req,
                                         (i + 1, i + 1, i + 1, 0))
@@ -81,7 +88,7 @@ class RStrictOrderInterconnectTC(SimTestCase):
             driver = u.drivers[driverIndex]
             driver.req._ag.data.append((_id, addr, size - 1, 0))
             expected = []
-            _mask = mask(self.DATA_WIDTH//8)
+            _mask = mask(self.DATA_WIDTH // 8)
             index = addr // (self.DATA_WIDTH // 8)
             for i in range(size):
                 v = valBase + i
@@ -96,8 +103,8 @@ class RStrictOrderInterconnectTC(SimTestCase):
             for d, e in zip(driverData, expected):
                 self.assertValSequenceEqual(d, e)   
                  
-        d0 = prepare(0, 0x1000, 3, 99, _id=0) #+ prepare(0, 0x2000, 1, 100, _id=0) + prepare(0, 0x3000, 16, 101)
-        d1 = prepare(1, 0x4000, 3, 200, _id=1) + prepare(1, 0x5000, 1, 201, _id=1) #+ prepare(1, 0x6000, 16, 202) #+ prepare(1, 0x7000, 16, 203)
+        d0 = prepare(0, 0x1000, 3, 99, _id=0)  # + prepare(0, 0x2000, 1, 100, _id=0) + prepare(0, 0x3000, 16, 101)
+        d1 = prepare(1, 0x4000, 3, 200, _id=1) + prepare(1, 0x5000, 1, 201, _id=1)  # + prepare(1, 0x6000, 16, 202) #+ prepare(1, 0x7000, 16, 203)
         
         self.doSim(1000 * Time.ns)
     
@@ -106,7 +113,7 @@ class RStrictOrderInterconnectTC(SimTestCase):
     
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(AxiS_measuringFifoTC('test_withSizeBrake'))
+    #suite.addTest(RStrictOrderInterconnectTC('test_passWithouData'))
     suite.addTest(unittest.makeSuite(RStrictOrderInterconnectTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
