@@ -49,7 +49,7 @@ from hwtLib.structManipulators.cLinkedListWriter_test import CLinkedListWriterTC
 from hwtLib.tests.operators import OperatorTC
 from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.tests.statements import StatementsTC
-from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import InterfaceSynthesizerTC 
+from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import InterfaceSynthesizerTC
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import SubunitsSynthesisTC
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
@@ -75,7 +75,7 @@ if __name__ == "__main__":
         StatementTreesTC,
         StatementsTC,
         ErrorsTC,
-        
+
         # component verifications
         ConstDriverTC,
         SimpleTC,
@@ -115,26 +115,26 @@ if __name__ == "__main__":
         Axi4_wDatapumpTC,
         Axi3_wDatapump_direct_TC,
         AxiS_measuringFifoTC,
-        
+
         RStrictOrderInterconnectTC,
         WStrictOrderInterconnectTC,
-        
+
         ArrayItemGetterTC,
         ArrayBuff_writer_TC,
         CLinkedListReaderTC,
         CLinkedListWriterTC,
-        
+
         IpCoreWrapperTC,
     )
     runner = TextTestRunner(verbosity=2)
-    
+
     try:
         from concurrencytest import ConcurrentTestSuite, fork_for_tests
-        useParallerlTest = True 
+        useParallerlTest = True
     except ImportError:
         # concurrencytest is not installed, use regular test runner
         useParallerlTest = False
-        
+
     if useParallerlTest:
         # Run same tests across 4 processes
         concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests(multiprocessing.cpu_count()))
