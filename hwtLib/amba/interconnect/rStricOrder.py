@@ -64,7 +64,7 @@ class RStrictOrderInterconnect(AxiInterconnectBase):
             connect(r, d, exclude=[d.valid, d.ready])
         
         r.ready ** (fifoOut.vld &  selectedDriverReady)
-        fifoOut.rd ** (r.last & selectedDriverReady & r.valid)
+        fifoOut.rd ** (r.valid & r.last & selectedDriverReady)
         #streamSync(masters=[r],
         #           slaves=driversR,
         #           extraConds=extraHsEnableConds)
