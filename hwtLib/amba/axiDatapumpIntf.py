@@ -1,11 +1,12 @@
-from hwt.simulator.agentBase import AgentBase
+from hwt.code import log2ceil
+from hwt.hdlObjects.constants import DIRECTION
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VectSignal, HandshakeSync
-from hwt.synthesizer.param import Param
-from hwt.code import log2ceil
+from hwt.simulator.agentBase import AgentBase
 from hwt.synthesizer.interfaceLevel.interface import Interface
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream_withId, AxiStream
-from hwt.hdlObjects.constants import DIRECTION
+
 
 ag = lambda i: i._getSimAgent()(i) 
 
