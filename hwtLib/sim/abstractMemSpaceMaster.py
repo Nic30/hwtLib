@@ -30,7 +30,7 @@ class AbstractMemSpaceMaster(object):
     Abstraction over bus interface which converts it to memory space from where you can read or write
     """
     def __init__(self, bus, registerMap):
-        self.bus = bus
+        self._bus = bus
         self._decorateWithRegisters(registerMap)
 
     def _decorateWithRegisters(self, registerMap):
@@ -39,8 +39,9 @@ class AbstractMemSpaceMaster(object):
         """
         for addrSpaceItem in registerMap.values():
             msi = MemorySpaceItem(self, addrSpaceItem)
-            assert not hasattr(self, msi.name)
-            setattr(self, msi.name, msi)
+            name = addrSpaceItem.name
+            assert not hasattr(self, name)
+            setattr(self, name, msi)
 
     def _write(self, addr, size, data, mask, thenFn=None):
         raise NotImplementedError("Implement this method in concrete implementation of this class")
