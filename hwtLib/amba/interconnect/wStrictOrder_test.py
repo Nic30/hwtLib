@@ -30,8 +30,8 @@ class WStrictOrderInterconnectTC(SimTestCase):
         for d in u.drivers:
             self.assertEqual(len(d.ack._ag.data), 0)
         
-        self.assertEqual(len(u.wDatapump.req._ag.data), 0)
-        self.assertEqual(len(u.wDatapump.w._ag.data), 0)
+        self.assertEmpty(u.wDatapump.req._ag.data)
+        self.assertEmpty(u.wDatapump.w._ag.data)
     
     def test_passReq(self):
         u = self.u
@@ -41,13 +41,11 @@ class WStrictOrderInterconnectTC(SimTestCase):
         
         self.doSim(40 * Time.ns)
         
-        self.assertEqual(len(u.wDatapump.w._ag.data), 0)
+        self.assertEmpty(u.wDatapump.w._ag.data)
         
         req = u.wDatapump.req._ag.data
-        self.assertEqual(len(req), 2)
-        for i, _req in enumerate(req):
-            self.assertValSequenceEqual(_req,
-                                        (i + 1, i + 1, i + 1, 0))
+        expectedReq = [(i + 1, i + 1, i + 1, 0) for i in range(2)]
+        self.assertValSequenceEqual(req, expectedReq)
 
     def test_passData(self):
         u = self.u
