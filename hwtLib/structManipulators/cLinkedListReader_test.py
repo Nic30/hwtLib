@@ -7,10 +7,10 @@ from hwt.bitmask import mask
 from hwt.hdlObjects.constants import Time, NOP
 from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.simulator.utils import agent_randomize
 from hwt.synthesizer.param import evalParam
 from hwtLib.structManipulators.cLinkedListReader import CLinkedListReader
 
+#[TODO] randomizer does not work with agent for handshaked interface well
 
 class CLinkedListReaderTC(SimTestCase):
     def setUp(self):
@@ -18,8 +18,12 @@ class CLinkedListReaderTC(SimTestCase):
         self.ITEMS_IN_BLOCK = 31
         self.PTR_WIDTH = 8
         self.BUFFER_CAPACITY = 8
-        self.ID = evalParam(self.u.ID).val
-        self.ID_LAST = evalParam(self.u.ID_LAST).val
+        
+        def e(v):
+            return evalParam(v).val
+        
+        self.ID = e(self.u.ID)
+        self.ID_LAST = e(self.u.ID_LAST)
         self.MAX_LEN = self.BUFFER_CAPACITY // 2 - 1
         
         self.u.ITEMS_IN_BLOCK.set(self.ITEMS_IN_BLOCK)
@@ -162,42 +166,42 @@ class CLinkedListReaderTC(SimTestCase):
         self.doSim((len(reqData) + len(expectedReq) + 50) * 10 * Time.ns)
         self.checkOutputs(expectedReq, N)
 
-    #def test_downloadFullBlockRandomized(self):
-    #    randomize = lambda intf: self.procs.append(agent_randomize(intf._ag))
-    #    u = self.u
-    #    N = self.ITEMS_IN_BLOCK
-    #    ADDR_BASE = 0x1020
-    #    randomize(u.r)
-    #    randomize(u.req)
-    #    randomize(u.dataOut)
-    #    
-    #    
-    #    u.baseAddr._ag.dout.append(ADDR_BASE)
-    #    u.wrPtr._ag.dout.extend([NOP, N])
-    #    expectedReq, reqData = self.generateRequests(ADDR_BASE, [N])
-    #    u.r._ag.data.extend(reqData)
-    #    
-    #    self.doSim((len(reqData) + len(expectedReq) + 50) * 2 * 10 * Time.ns)
-    #    self.checkOutputs(expectedReq, N)
-    #    
-    #
-    #def test_downloadFullBlockRandomized5x(self):
-    #    randomize = lambda intf: self.procs.append(agent_randomize(intf._ag))
-    #    u = self.u
-    #    N = self.ITEMS_IN_BLOCK*5
-    #    ADDR_BASE = 0x1020
-    #    randomize(u.r)
-    #    randomize(u.req)
-    #    randomize(u.dataOut)
-    #    
-    #    
-    #    u.baseAddr._ag.dout.append(ADDR_BASE)
-    #    u.wrPtr._ag.dout.extend([NOP, N])
-    #    expectedReq, reqData = self.generateRequests(ADDR_BASE, [N])
-    #    u.r._ag.data.extend(reqData)
-    #    
-    #    self.doSim((len(reqData) + len(expectedReq) + 50) * 2 * 10 * Time.ns)
-    #    self.checkOutputs(expectedReq, N)                  
+    def test_downloadFullBlockRandomized(self):
+        u = self.u
+        N = self.ITEMS_IN_BLOCK
+        ADDR_BASE = 0x1020
+        self.randomize(u.rDatapump.r)
+        self.randomize(u.rDatapump.req)
+        self.randomize(u.dataOut)
+        
+        
+        u.baseAddr._ag.dout.append(ADDR_BASE)
+        u.wrPtr._ag.dout.extend([NOP, N])
+        expectedReq, reqData = self.generateRequests(ADDR_BASE, [N])
+        u.rDatapump.r._ag.data.extend(reqData)
+        
+        self.doSim((len(reqData) + len(expectedReq) + 50) * 2 * 10 * Time.ns)
+        
+        self.checkOutputs(expectedReq, N)
+        
+    
+    def test_downloadFullBlockRandomized5x(self):
+        u = self.u
+        N = self.ITEMS_IN_BLOCK * 5
+        ADDR_BASE = 0x1020
+    
+        self.randomize(u.rDatapump.r)
+        self.randomize(u.rDatapump.req)
+        self.randomize(u.dataOut)
+        
+        
+        u.baseAddr._ag.dout.append(ADDR_BASE)
+        u.wrPtr._ag.dout.extend([NOP, N])
+        expectedReq, reqData = self.generateRequests(ADDR_BASE, [N])
+        u.rDatapump.r._ag.data.extend(reqData)
+        
+        self.doSim((len(reqData) + len(expectedReq) + 50) * 2 * 10 * Time.ns)
+        self.checkOutputs(expectedReq, N)                  
               
     def test_downloadFullBlockNextAddrInSeparateReq(self):
         u = self.u
@@ -205,7 +209,7 @@ class CLinkedListReaderTC(SimTestCase):
         ADDR_BASE = 0x1020
         
         u.baseAddr._ag.dout.append(ADDR_BASE)
-        u.wrPtr._ag.dout.extend([NOP, self.MAX_LEN] + [ NOP for _ in range(self.MAX_LEN + 4)] + [ N ])
+        u.wrPtr._ag.dout.extend([NOP, self.MAX_LEN] + [ NOP for _ in range(self.MAX_LEN + 4)] + [N])
         
         expectedReq, reqData = self.generateRequests(ADDR_BASE, [self.MAX_LEN, N - self.MAX_LEN - 1])
         self.u.rDatapump.r._ag.data.extend(reqData)
@@ -217,13 +221,11 @@ class CLinkedListReaderTC(SimTestCase):
         req = self.u.rDatapump.req._ag.data
         dout = self.u.dataOut._ag.data
 
-        for i, expected in enumerate(expectedReq):
-            _req = req[i] 
-            self.assertValSequenceEqual(_req, expected, "(index=%d)" % i)
+        self.assertValSequenceEqual(req, expectedReq)
     
         self.assertEqual(len(dout), itemsCnt)
         for i, d in enumerate(dout):
-            self.assertValSequenceEqual([d, ], (i,))
+            self.assertValEqual(d, i)
     
     def generateRequests(self, baseAddress, spaceValues):
         """
@@ -236,26 +238,29 @@ class CLinkedListReaderTC(SimTestCase):
         wordCntr = 0
         inBlockRem = self.ITEMS_IN_BLOCK
         _baseAddress = baseAddress
-        
         for space in spaceValues:
             while space != 0:
                 constraingSpace = min(inBlockRem, space)
                 reqId = self.ID
                 if constraingSpace > self.MAX_LEN + 1:
                     reqLen = self.MAX_LEN
-                elif constraingSpace == 0:
+                elif inBlockRem == 0:
                     reqLen = 0
+                    reqId = self.ID_LAST
                 else:
                     if constraingSpace <= self.MAX_LEN + 1 and inBlockRem < self.MAX_LEN + 1: 
                         # we will download next* as well
                         reqLen = constraingSpace
                         reqId = self.ID_LAST
                     else:
+                    #if constraingSpace == inBlockRem:
+                    #    reqId = self.ID_LAST
+                    #    reqLen = constraingSpace
+                    #else:
                         reqLen = constraingSpace - 1
                     
-                    
                 inBlockIndex = self.ITEMS_IN_BLOCK - inBlockRem
-                req = [reqId, _baseAddress + inBlockIndex * 8 , reqLen, 0]
+                req = (reqId, _baseAddress + inBlockIndex * 8 , reqLen, 0)
                 requests.append(req)
 
                 for i in range(reqLen + 1):
