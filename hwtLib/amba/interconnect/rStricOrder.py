@@ -54,17 +54,20 @@ class RStrictOrderInterconnect(AxiInterconnectBase):
                                        enumerate(driversR))
                                        )
         
+        fifoOut_initialized = self._reg("fifoOut_initialized", defVal=0)
+        fifoOut_initialized ** (fifoOut_initialized | fifoOut.vld)
+        
         # extra enable signals based on selected driver from orderInfoFifo
         #extraHsEnableConds = {
         #                      r : [fifoOut.vld]  # on end of frame pop new item
         #                     }
         for i, d in enumerate(driversR):
             #extraHsEnableConds[d]
-            d.valid ** (r.valid & fifoOut.vld & fifoOut.data._eq(i))
+            d.valid ** (r.valid & fifoOut.vld & fifoOut.data._eq(i) & fifoOut_initialized)
             connect(r, d, exclude=[d.valid, d.ready])
         
-        r.ready ** (fifoOut.vld &  selectedDriverReady)
-        fifoOut.rd ** (r.valid & r.last & selectedDriverReady)
+        r.ready ** (fifoOut.vld &  selectedDriverReady & fifoOut_initialized)
+        fifoOut.rd ** (r.valid & r.last & selectedDriverReady & fifoOut_initialized)
         #streamSync(masters=[r],
         #           slaves=driversR,
         #           extraConds=extraHsEnableConds)

@@ -55,6 +55,9 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
                                        enumerate(driversW))
                                        )
         
+        fW_initialized = self._reg("fW_initialized", defVal=0)
+        fW_initialized ** (fW_initialized | fWOut.vld)
+        
         Switch(fWOut.data).addCases(
             [(i, connect(d, w, exclude=[d.valid, d.ready]))
                for i, d in enumerate(driversW)]
@@ -68,11 +71,11 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
         fAckIn.data ** fWOut.data
         
         # handshake logic
-        fWOut.rd ** (selectedDriverVld & selectedDriverLast & w.ready & fAckIn.rd)
+        fWOut.rd ** (selectedDriverVld & selectedDriverLast & w.ready & fAckIn.rd & fW_initialized)
         for i, d in enumerate(driversW):
-            d.ready ** (fWOut.data._eq(i) & w.ready & fWOut.vld & fAckIn.rd)
-        w.valid ** (selectedDriverVld & fWOut.vld & fAckIn.rd)
-        fAckIn.vld ** (selectedDriverVld & selectedDriverLast & w.ready & fWOut.vld)
+            d.ready ** (fWOut.data._eq(i) & w.ready & fWOut.vld & fAckIn.rd & fW_initialized)
+        w.valid ** (selectedDriverVld & fWOut.vld & fAckIn.rd & fW_initialized)
+        fAckIn.vld ** (selectedDriverVld & selectedDriverLast & w.ready & fWOut.vld & fW_initialized)
 
     def ackHandler(self):
         ack = self.wDatapump.ack
@@ -85,12 +88,15 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
                                        enumerate(driversAck))
                                        )
         
-        ack.rd ** (fAckOut.vld & selectedDriverAckReady)
-        fAckOut.rd ** (ack.vld & selectedDriverAckReady)
+        fAckOut_initialized = self._reg("fAckOut_initialized", defVal=0)
+        fAckOut_initialized ** (fAckOut_initialized | fAckOut.vld)
+        
+        ack.rd ** (fAckOut.vld & selectedDriverAckReady & fAckOut_initialized)
+        fAckOut.rd ** (ack.vld & selectedDriverAckReady & fAckOut_initialized)
         
         for i, d in enumerate(driversAck):
             connect(ack, d, exclude=[d.vld, d.rd])
-            d.vld ** (ack.vld & fAckOut.vld & fAckOut.data._eq(i))
+            d.vld ** (ack.vld & fAckOut.vld & fAckOut.data._eq(i) & fAckOut_initialized)
         
         
         

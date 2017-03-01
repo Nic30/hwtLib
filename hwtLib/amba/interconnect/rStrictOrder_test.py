@@ -7,7 +7,6 @@ from hwt.bitmask import mask
 from hwt.hdlObjects.constants import Time
 from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.simulator.utils import agent_randomize
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.interconnect.rStricOrder import RStrictOrderInterconnect
 
@@ -77,13 +76,12 @@ class RStrictOrderInterconnectTC(SimTestCase):
     def test_randomized(self):
         u = self.u
         m = DenseMemory(self.DATA_WIDTH, u.clk, u.rDatapump)
-        rand = lambda intf: agent_randomize(intf._ag) 
 
         for d in u.drivers:
-            rand(d.req)
-            rand(d.r)
-        rand(u.rDatapump.req)
-        rand(u.rDatapump.r)
+            self.randomize(d.req)
+            self.randomize(d.r)
+        self.randomize(u.rDatapump.req)
+        self.randomize(u.rDatapump.r)
         
         def prepare(driverIndex, addr, size, valBase=1, _id=1):
             driver = u.drivers[driverIndex]
