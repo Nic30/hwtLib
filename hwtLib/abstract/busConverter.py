@@ -87,29 +87,28 @@ class BusConverter(Unit):
         @param addrStep: step in addr between registers
         @param prefix: prefix for register name
         """
-        lastAddr = 0x0
+        nextFreeAddr = 0x0
         for reg in regs:
             if len(reg) == 3 and isinstance(reg[2], (list, tuple)):
                 addr, name, interfaces = reg
 
                 if addr is None:
-                    lastAddr += addrStep
-                    addr = lastAddr
+                    addr = nextFreeAddr
 
                 for i, intf in enumerate(interfaces):
                     # we expect all to be specified by interface because there
                     # should not be any any register without connection in subunits
                     fieldAddr = addr + i * addrStep
                     yield (fieldAddr, prefix + name + intf._name), intf
-                    lastAddr += addrStep
+                    nextFreeAddr += addrStep
 
             else:
                 addr, name = reg
                 if addr is None:
-                    lastAddr += addrStep
-                    addr = lastAddr
+                    addr = nextFreeAddr
                 else:
-                    lastAddr = addr
+                    nextFreeAddr = addr
+                nextFreeAddr += addrStep
 
                 yield (addr, prefix + name), None
 
