@@ -85,17 +85,13 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
                                        enumerate(driversAck))
                                        )
         
-        # extra enable signals based on selected driver from orderInfoFifo
-        extraHsEnableConds = {
-                              fAckOut : [selectedDriverAckReady]  # on end of frame pop new item
-                             }
-        for i, d in enumerate(driversAck):
-            extraHsEnableConds[d] = [fAckOut.data._eq(i)]
-            connect(ack, d, exclude=[d.vld, d.rd])
+        ack.rd ** (fAckOut.vld & selectedDriverAckReady)
+        fAckOut.rd ** (ack.vld & selectedDriverAckReady)
         
-        streamSync(masters=[ack, fAckOut],
-                   slaves=driversAck,
-                   extraConds=extraHsEnableConds)  
+        for i, d in enumerate(driversAck):
+            connect(ack, d, exclude=[d.vld, d.rd])
+            d.vld ** (ack.vld & fAckOut.vld & fAckOut.data._eq(i))
+        
         
         
     def _impl(self):
