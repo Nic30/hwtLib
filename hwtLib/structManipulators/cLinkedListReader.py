@@ -156,7 +156,7 @@ class CLinkedListReader(Unit):
                inBlockRemain ** (inBlockRemain - BURST_LEN)
             )
         ).Elif((fitTo(sizeByPtrs, inBlockRemain) >= inBlockRemain) & (inBlockRemain < BURST_LEN),
-            # we know that sizeByPtrs <= inBlockRemain thats why we cane resize it
+            # we know that sizeByPtrs <= inBlockRemain thats why we can resize it
             # we will download next* as well
             req.id ** ID_LAST,
             connect(constraingSpace, req.len, fit=True),
@@ -204,6 +204,7 @@ class CLinkedListReader(Unit):
                    extraConds={dIn    :[downloadPending],
                                dBuffIn:[dIn.id._eq(ID) | (dIn.id._eq(ID_LAST) & ~dIn.last), downloadPending]
                                })
+
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = CLinkedListReader()
