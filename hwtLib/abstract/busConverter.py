@@ -118,7 +118,6 @@ class BusConverter(Unit):
         intfMap = {}
         # build flatten register map
         for reg, intf in cls._resolveRegFiles("", evalParam(busDataWidth).val // 8, addrSpace):
-            print(reg)
             regsFlatten.append(reg)
             if intf is not None:
                 _, name = reg
