@@ -5,7 +5,6 @@ from math import ceil
 import unittest
 
 from hwt.hdlObjects.constants import Time, NOP
-from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import agent_randomize
 from hwt.synthesizer.param import evalParam
@@ -18,8 +17,7 @@ class ArrayBuff_writer_TC(SimTestCase):
         self.u.TIMEOUT.set(32)
         self.ID = evalParam(self.u.ID).val
         self.SIZE_BLOCK_ITEMS = evalParam(self.u.SIZE_BLOCK_ITEMS).val
-
-        _, self.model, self.procs = simPrepare(self.u)
+        self.prepareUnit(self.u)
 
     def test_nop(self):
         u = self.u
@@ -153,11 +151,11 @@ class ArrayBuff_writer_TC(SimTestCase):
         self.assertEmpty(u.items._ag.data)
 
         self.assertValSequenceEqual(u.wDatapump.req._ag.data,
-                                    [(self.ID, BASE + i * N * ADDR_STEP, N - 1 -i, 0)
+                                    [(self.ID, BASE + i * N * ADDR_STEP, N - 1 - i, 0)
                                       for i in range(2)])
         self.assertValSequenceEqual(u.wDatapump.w._ag.data,
                                     [(88, 255, int(i == 15)) for i in range(N)]
-                                    + [(88, 255, int(i == 14)) for i in range(N-1)])
+                                    + [(88, 255, int(i == 14)) for i in range(N - 1)])
 
         self.assertEmpty(u.wDatapump.ack._ag.data)
 
@@ -205,7 +203,7 @@ class ArrayBuff_writer_TC(SimTestCase):
         def enReq(s):
             u.wDatapump.req._ag.enable = False
             yield s.wait(40 * 10 * Time.ns)
-            yield from agent_randomize(u.wDatapump.req._ag)(s)
+            yield from agent_randomize(u.wDatapump.req._ag, 50 * Time.ns, self._rand.getrandbits(64))(s)
 
         self.procs.append(enReq)
 
