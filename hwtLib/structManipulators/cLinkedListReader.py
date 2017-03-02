@@ -1,30 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -
 
+from hwt.code import If, In, Concat, connect, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT, vec
 from hwt.interfaces.std import Handshaked, RegCntrl, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.code import If, In, Concat, connect, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import fitTo
+from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
-from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 
 
 class CLinkedListReader(Unit):
     """
-    This unit reads items from (circular) linked list like structure 
-    
+    This unit reads items from (circular) linked list like structure
+
     struct node {
         item_t items[ITEMS_IN_BLOCK],
-        struct node * next; 
+        struct node * next;
     };
-    
+
     synchronization is obtained by rdPtr/wrPtr (tail/head) pointer
     baseAddr is address of actual node
-    
+
     @attention: device reads only chunks of size <= BUFFER_CAPACITY/2,
     """
     def _config(self):
@@ -42,18 +42,18 @@ class CLinkedListReader(Unit):
 
     def _declr(self):
         addClkRstn(self)
-        
+
         with self._paramsShared():
             # interface which sending requests to download data
             # and interface which is collecting all data and only data with specified id are processed
             self.rDatapump = AxiRDatapumpIntf()
             self.rDatapump.MAX_LEN.set(self.BUFFER_CAPACITY // 2 - 1)
-            
+
             self.dataOut = Handshaked()
-            
+
         # (how much of items remains in block)
         self.inBlockRemain = VectSignal(log2ceil(self.ITEMS_IN_BLOCK + 1))
-        
+
         # interface to control internal register
         self.baseAddr = RegCntrl()
         self.baseAddr._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
@@ -61,13 +61,12 @@ class CLinkedListReader(Unit):
         self.wrPtr = RegCntrl()
         for ptr in [self.rdPtr, self.wrPtr]:
             ptr._replaceParam("DATA_WIDTH", self.PTR_WIDTH)
-                
 
         f = self.dataFifo = HandshakedFifo(Handshaked)
         f.EXPORT_SIZE.set(True)
         f.DATA_WIDTH.set(self.DATA_WIDTH)
         f.DEPTH.set(self.BUFFER_CAPACITY)
-    
+
     def getRegisterFile(self):
         return [
                 self.baseAddr,
@@ -75,10 +74,10 @@ class CLinkedListReader(Unit):
                 self.wrPtr,
                 self.inBlockRemain
                ]
-        
+
     def addrAlignBits(self):
         return log2ceil(self.DATA_WIDTH // 8).val
-    
+
     def _impl(self):
         propagateClkRstn(self)
         r, s = self._reg, self._sig
@@ -86,7 +85,7 @@ class CLinkedListReader(Unit):
         f = self.dataFifo
         dIn = self.rDatapump.r
         dBuffIn = f.dataIn
-                
+
         ALIGN_BITS = self.addrAlignBits()
         ID = self.ID
         BUFFER_CAPACITY = self.BUFFER_CAPACITY
@@ -97,15 +96,15 @@ class CLinkedListReader(Unit):
         # we are counting base next addr as item as well
         inBlock_t = vecT(log2ceil(self.ITEMS_IN_BLOCK + 1))
         ringSpace_t = vecT(self.PTR_WIDTH)
-        
+
         downloadPending = r("downloadPending", defVal=0)
-        
+
         # [TODO] maybe can be only index of page
         baseIndex = r("baseIndex", vecT(self.ADDR_WIDTH - ALIGN_BITS))
         inBlockRemain = r("inBlockRemain_reg", inBlock_t, defVal=self.ITEMS_IN_BLOCK)
         self.inBlockRemain ** inBlockRemain
 
-        # Logic of tail/head, 
+        # Logic of tail/head
         rdPtr = r("rdPtr", ringSpace_t, defVal=0)
         wrPtr = r("wrPtr", ringSpace_t, defVal=0)
         If(self.wrPtr.dout.vld,
@@ -113,20 +112,20 @@ class CLinkedListReader(Unit):
         )
         self.wrPtr.din ** wrPtr
         self.rdPtr.din ** rdPtr
-        
+
         # this means items are present in memory
-        hasSpace = (wrPtr != rdPtr) 
+        hasSpace = (wrPtr != rdPtr)
         doReq = s("doReq")
         doReq ** (bufferHasSpace & hasSpace & ~downloadPending & req.rd)
-        req.rem ** 0  
-        self.dataOut ** f.dataOut 
-             
+        req.rem ** 0
+        self.dataOut ** f.dataOut
+
         # logic of baseAddr and baseIndex
         baseAddr = Concat(baseIndex, vec(0, ALIGN_BITS))
         req.addr ** baseAddr
         self.baseAddr.din ** baseAddr
         dataAck = dIn.valid & In(dIn.id, [ID, ID_LAST]) & dBuffIn.rd
-        
+
         If(self.baseAddr.dout.vld,
             baseIndex ** self.baseAddr.dout.data[:ALIGN_BITS]
         ).Elif(dataAck & downloadPending,
@@ -136,10 +135,10 @@ class CLinkedListReader(Unit):
                baseIndex ** (baseIndex + 1) 
             )
         )
-        
+
         sizeByPtrs = s("sizeByPtrs", ringSpace_t)
         sizeByPtrs ** (wrPtr - rdPtr)
-        
+
         inBlockRemain_asPtrSize = fitTo(inBlockRemain, sizeByPtrs)
         constraingSpace = s("constraingSpace", ringSpace_t)
         If(inBlockRemain_asPtrSize < sizeByPtrs,
@@ -147,7 +146,7 @@ class CLinkedListReader(Unit):
         ).Else(
            constraingSpace ** sizeByPtrs
         )
-        
+
         If(constraingSpace > BURST_LEN,
             # download full burst
             req.id ** ID,
@@ -184,11 +183,10 @@ class CLinkedListReader(Unit):
                downloadPending ** hasSpace
             )
         )
-        
-        # into buffer pushing logic
 
+        # into buffer pushing logic
         dBuffIn.data ** dIn.data
-        
+
         isMyData = s("isMyData")
         isMyData ** (dIn.id._eq(ID) | (~dIn.last & dIn.id._eq(ID_LAST)))
         If(self.rdPtr.dout.vld,
@@ -212,5 +210,3 @@ if __name__ == "__main__":
     u.ITEMS_IN_BLOCK.set(31)
     u.PTR_WIDTH.set(8)
     print(toRtl(u))
-            
-        

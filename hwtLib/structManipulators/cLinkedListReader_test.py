@@ -10,7 +10,8 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import evalParam
 from hwtLib.structManipulators.cLinkedListReader import CLinkedListReader
 
-#[TODO] randomizer does not work with agent for handshaked interface well
+# [TODO] randomizer does not work with agent for handshaked interface well
+
 
 class CLinkedListReaderTC(SimTestCase):
     def setUp(self):
@@ -18,20 +19,20 @@ class CLinkedListReaderTC(SimTestCase):
         self.ITEMS_IN_BLOCK = 31
         self.PTR_WIDTH = 8
         self.BUFFER_CAPACITY = 8
-        
+
         def e(v):
             return evalParam(v).val
-        
+
         self.ID = e(self.u.ID)
         self.ID_LAST = e(self.u.ID_LAST)
         self.MAX_LEN = self.BUFFER_CAPACITY // 2 - 1
-        
+
         self.u.ITEMS_IN_BLOCK.set(self.ITEMS_IN_BLOCK)
         self.u.PTR_WIDTH.set(self.PTR_WIDTH)
         self.u.BUFFER_CAPACITY.set(self.BUFFER_CAPACITY)
-        
+
         _, self.model, self.procs = simPrepare(self.u)
-    
+
     def test_tailHeadPrincipe(self):
         BITS = 16
         MASK = mask(BITS)
@@ -45,101 +46,96 @@ class CLinkedListReaderTC(SimTestCase):
                 return n - MASK
             else:
                 return n
-        
+
         def size():
             return normalize(head - tail)
-    
-        
+
         self.assertEqual(size(), 0)
-        
+
         head = MASK
-        
+
         self.assertEqual(size(), MASK)
-        
-        tail = 10 
+
+        tail = 10
         self.assertEqual(size(), MASK - 10)
-        
+
         head = normalize(head + 5)
         self.assertEqual(size(), MASK - 5)
-    
+
     def test_nop(self):
         u = self.u
         self.doSim(200 * Time.ns)
-        
+
         self.assertEqual(len(u.rDatapump.req._ag.data), 0)
         self.assertEqual(len(u.dataOut._ag.data), 0)
-    
+
     def test_singleDescrReq(self):
         u = self.u
         t = 20
-        
+
         u.baseAddr._ag.dout.append(0x1020)
         u.wrPtr._ag.dout.append(self.MAX_LEN + 1)
-        
-        
+
         self.doSim(t * 10 * Time.ns)
-        
+
         req = u.rDatapump.req._ag.data
-        self.assertEqual(len(req), 1)
-        self.assertEqual(len(u.dataOut._ag.data), 0)
-    
-        self.assertValSequenceEqual(req[0],
-                                [self.ID, 0x1020, self.MAX_LEN, 0])
-    
+        self.assertEmpty(u.dataOut._ag.data)
+
+        self.assertValSequenceEqual(req,
+                                    [(self.ID, 0x1020, self.MAX_LEN, 0),
+                                     ])
+
     def test_singleDescrReqOnEdge(self):
         u = self.u
         t = 20
-        
+
         u.baseAddr._ag.dout.append(0x1020)
         u.rdPtr._ag.dout.append(mask(self.PTR_WIDTH))
-        u.wrPtr._ag.dout.append(self.MAX_LEN)  # space is self.MAX_LEN + 1 
-        
-        
+        u.wrPtr._ag.dout.append(self.MAX_LEN)  # space is self.MAX_LEN + 1
+
         self.doSim(t * 10 * Time.ns)
-        
+
         req = u.rDatapump.req._ag.data
-        self.assertEqual(len(req), 1)
         self.assertEqual(len(u.dataOut._ag.data), 0)
-    
-        self.assertValSequenceEqual(req[0],
-                                [self.ID, 0x1020, self.MAX_LEN, 0])
-    
+
+        self.assertValSequenceEqual(req,
+                                    [(self.ID, 0x1020, self.MAX_LEN, 0)])
+
     def test_singleDescrReqOnEdge2(self):
         u = self.u
         t = 20
-        
+
         u.baseAddr._ag.dout.append(0x1020)
         u.rdPtr._ag.dout.append(mask(self.PTR_WIDTH))
         u.wrPtr._ag.dout.append(self.MAX_LEN - 1)  # space is self.MAX_LEN
-        
-        
+
         self.doSim(t * 10 * Time.ns)
-        
+
         req = u.rDatapump.req._ag.data
-        self.assertEqual(len(req), 1)
-        self.assertEqual(len(u.dataOut._ag.data), 0)
-    
-        self.assertValSequenceEqual(req[0],
-                                [self.ID, 0x1020, self.MAX_LEN - 1, 0])
-    
+        self.assertEmpty(u.dataOut._ag.data)
+
+        self.assertValSequenceEqual(req,
+                                    [(self.ID, 0x1020, self.MAX_LEN - 1, 0),
+                                     ])
+
     def test_singleDescrReqMax(self):
         u = self.u
         t = 20
         N = self.MAX_LEN + 1
-        
+
         u.baseAddr._ag.dout.append(0x1020)
         u.wrPtr._ag.dout.append(N * (self.MAX_LEN + 1))
-        
-        
+
         self.doSim(t * 10 * Time.ns)
-        
+
         req = u.rDatapump.req._ag.data
-        self.assertEqual(len(req), 1)
         self.assertEqual(len(u.dataOut._ag.data), 0)
-    
-        self.assertValSequenceEqual(req[0],
-                                [self.ID, 0x1020, self.MAX_LEN, 0])
-    
+
+        self.assertValSequenceEqual(req,
+                                    [
+                                     (self.ID, 0x1020, self.MAX_LEN, 0)
+                                     ])
+
     def test_singleDescrWithData(self):
         u = self.u
         t = 25
@@ -147,22 +143,22 @@ class CLinkedListReaderTC(SimTestCase):
         ADDR_BASE = 0x1020
         u.baseAddr._ag.dout.append(0x1020)
         u.wrPtr._ag.dout.extend([NOP, N])
-        
+
         expectedReq, reqData = self.generateRequests(ADDR_BASE, [N])
         u.rDatapump.r._ag.data.extend(reqData)
         self.doSim(t * 10 * Time.ns)
         self.checkOutputs(expectedReq, N)
-        
+
     def test_downloadFullBlock(self):
         u = self.u
         N = self.ITEMS_IN_BLOCK
         ADDR_BASE = 0x1020
-        
+
         u.baseAddr._ag.dout.append(ADDR_BASE)
         u.wrPtr._ag.dout.extend([NOP, N])
         expectedReq, reqData = self.generateRequests(ADDR_BASE, [N])
         u.rDatapump.r._ag.data.extend(reqData)
-        
+
         self.doSim((len(reqData) + len(expectedReq) + 50) * 10 * Time.ns)
         self.checkOutputs(expectedReq, N)
 
@@ -173,60 +169,59 @@ class CLinkedListReaderTC(SimTestCase):
         self.randomize(u.rDatapump.r)
         self.randomize(u.rDatapump.req)
         self.randomize(u.dataOut)
-        
-        
+
         u.baseAddr._ag.dout.append(ADDR_BASE)
         u.wrPtr._ag.dout.extend([NOP, N])
         expectedReq, reqData = self.generateRequests(ADDR_BASE, [N])
         u.rDatapump.r._ag.data.extend(reqData)
-        
+
         self.doSim((len(reqData) + len(expectedReq) + 50) * 2 * 10 * Time.ns)
-        
+
         self.checkOutputs(expectedReq, N)
-        
-    
+
     def test_downloadFullBlockRandomized5x(self):
         u = self.u
         N = self.ITEMS_IN_BLOCK * 5
         ADDR_BASE = 0x1020
-    
+
         self.randomize(u.rDatapump.r)
         self.randomize(u.rDatapump.req)
         self.randomize(u.dataOut)
-        
-        
+
         u.baseAddr._ag.dout.append(ADDR_BASE)
         u.wrPtr._ag.dout.extend([NOP, N])
         expectedReq, reqData = self.generateRequests(ADDR_BASE, [N])
         u.rDatapump.r._ag.data.extend(reqData)
-        
+
         self.doSim((len(reqData) + len(expectedReq) + 50) * 2 * 10 * Time.ns)
-        self.checkOutputs(expectedReq, N)                  
-              
+        self.checkOutputs(expectedReq, N)
+
     def test_downloadFullBlockNextAddrInSeparateReq(self):
         u = self.u
         N = self.ITEMS_IN_BLOCK + 1
         ADDR_BASE = 0x1020
-        
+
         u.baseAddr._ag.dout.append(ADDR_BASE)
-        u.wrPtr._ag.dout.extend([NOP, self.MAX_LEN] + [ NOP for _ in range(self.MAX_LEN + 4)] + [N])
-        
-        expectedReq, reqData = self.generateRequests(ADDR_BASE, [self.MAX_LEN, N - self.MAX_LEN - 1])
+        u.wrPtr._ag.dout.extend([NOP, self.MAX_LEN] 
+                                + [ NOP for _ in range(self.MAX_LEN + 4)] + [N])
+
+        expectedReq, reqData = self.generateRequests(ADDR_BASE, 
+                                                     [self.MAX_LEN, N - self.MAX_LEN - 1])
         self.u.rDatapump.r._ag.data.extend(reqData)
-        
+
         self.doSim((len(reqData) + len(expectedReq) + 50) * 10 * Time.ns)
         self.checkOutputs(expectedReq, N - 1)
-    
+
     def checkOutputs(self, expectedReq, itemsCnt):
         req = self.u.rDatapump.req._ag.data
         dout = self.u.dataOut._ag.data
 
         self.assertValSequenceEqual(req, expectedReq)
-    
+
         self.assertEqual(len(dout), itemsCnt)
         for i, d in enumerate(dout):
             self.assertValEqual(d, i)
-    
+
     def generateRequests(self, baseAddress, spaceValues):
         """
         generate reference requests and data
@@ -253,14 +248,14 @@ class CLinkedListReaderTC(SimTestCase):
                         reqLen = constraingSpace
                         reqId = self.ID_LAST
                     else:
-                    #if constraingSpace == inBlockRem:
+                    # if constraingSpace == inBlockRem:
                     #    reqId = self.ID_LAST
                     #    reqLen = constraingSpace
-                    #else:
+                    # else:
                         reqLen = constraingSpace - 1
-                    
+
                 inBlockIndex = self.ITEMS_IN_BLOCK - inBlockRem
-                req = (reqId, _baseAddress + inBlockIndex * 8 , reqLen, 0)
+                req = (reqId, _baseAddress + inBlockIndex * 8, reqLen, 0)
                 requests.append(req)
 
                 for i in range(reqLen + 1):
@@ -269,9 +264,9 @@ class CLinkedListReaderTC(SimTestCase):
                         _baseAddress += baseAddress
                     else:
                         r = (reqId, wordCntr + i, mask(8), i == reqLen)
-                
+
                     responses.append(r)
-                
+
                 if reqId == self.ID_LAST:
                     inBlockRem = self.ITEMS_IN_BLOCK
                     wordCntr += reqLen
@@ -280,13 +275,12 @@ class CLinkedListReaderTC(SimTestCase):
                     inBlockRem -= reqLen + 1
                     wordCntr += reqLen + 1
                     space -= reqLen + 1
-        
-        return requests, responses        
-          
+
+        return requests, responses
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(CLinkedListReaderTC('test_downloadFullBlockRandomized'))
-    suite.addTest(unittest.makeSuite(CLinkedListReaderTC))
+    suite.addTest(CLinkedListReaderTC('test_downloadFullBlockRandomized'))
+    # suite.addTest(unittest.makeSuite(CLinkedListReaderTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-
