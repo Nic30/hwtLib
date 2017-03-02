@@ -5,12 +5,11 @@ import unittest
 
 from hwt.bitmask import mask
 from hwt.hdlObjects.constants import Time
-from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.amba.axi3 import Axi3_addr
+from hwtLib.amba.axi4 import Axi4_addr
 from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC
 from hwtLib.amba.axi4_wDatapump import Axi_wDatapump
-from hwtLib.amba.axi4 import Axi4_addr
-from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.constants import RESP_OKAY, BYTES_IN_TRANS
 
 
@@ -18,8 +17,9 @@ class Axi4_wDatapumpTC(SimTestCase):
     LEN_MAX = Axi4_rDatapumpTC.LEN_MAX
 
     def setUp(self):
-        u = Axi_wDatapump(axiAddrCls=Axi4_addr)
-        self.u, self.model, self.procs = simPrepare(u)
+        self.u = u = Axi_wDatapump(axiAddrCls=Axi4_addr)
+        u.MAX_LEN.set(16)
+        self.prepareUnit(u)
 
     def test_nop(self):
         u = self.u
@@ -208,12 +208,12 @@ class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
     def setUp(self):
         u = Axi_wDatapump(axiAddrCls=Axi3_addr)
         u.MAX_LEN.set(16)
-        self.u, self.model, self.procs = simPrepare(u)
+        self.prepareUnit(u)
 
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(Axi4_wDatapumpTC('test_multiple_randomized2'))
-    suite.addTest(unittest.makeSuite(Axi3_wDatapump_direct_TC))
+    suite.addTest(unittest.makeSuite(Axi4_wDatapumpTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
