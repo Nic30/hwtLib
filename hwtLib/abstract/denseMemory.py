@@ -2,13 +2,25 @@ from hwt.bitmask import mask
 
 
 class DenseMemory():
-    """Simulation component"""
-    def __init__(self, cellWidth, clk, rDatapumpIntf=None, wDatapumpIntf=None):
+    """
+    Simulation component
+    @ivar data: memory dict
+    """
+    def __init__(self, cellWidth, clk, rDatapumpIntf=None, wDatapumpIntf=None, parent=None):
+        """
+        @param cellWidth: width of items in memmory
+        @param clk: clk signal for synchronization
+        @param parent: parent instance of DenseMemory (memory will be shared with this instance) 
+        """
         assert cellWidth % 8 == 0
         self.cellSize = cellWidth // 8
         self.allMask = mask(self.cellSize)
 
-        self.data = {}
+        self.parent = parent
+        if parent is None:
+            self.data = {}
+        else:
+            self.data = parent.data
 
         assert rDatapumpIntf is not None or wDatapumpIntf is not None
 
@@ -142,3 +154,49 @@ class DenseMemory():
             self.data[baseIndex + i] = data
 
         self.doWriteAck(_id)
+
+    def malloc(self, size, keepOut=None):
+        """
+        Allocates a block of memory of size and initialize it with None (invalid value)
+        @param size: Size of each element.
+        @return: address of allocated memory
+        """
+        addr = 0 
+        k = self.data.keys()
+        if k:
+            addr = max(k)
+
+        if keepOut:
+            addr += keepOut
+
+        indx = addr // self.cellSize
+
+        d = self.data
+        for i in range(size // self.cellSize):
+            d[indx + i] = None
+
+        return addr
+
+    def calloc(self, num, size, keepOut=None):
+        """
+        Allocates a block of memory for an array of num elements, each of them
+        size bytes long, and initializes all its bits to zero.
+        @param num: Number of elements to allocate.
+        @param size: Size of each element.
+        @return: address of allocated memory
+        """
+        addr = 0
+        k = self.data.keys()
+        if k:
+            addr = max(k)
+
+        if keepOut:
+            addr += keepOut
+
+        indx = addr // self.cellSize
+
+        d = self.data
+        for i in range((num * size) // self.cellSize):
+            d[indx + i] = 0
+
+        return addr
