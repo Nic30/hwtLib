@@ -1,6 +1,10 @@
 from hwt.bitmask import mask
 
 
+class AllocationError(Exception):
+    pass
+
+
 class DenseMemory():
     """
     Simulation component
@@ -159,21 +163,29 @@ class DenseMemory():
         """
         Allocates a block of memory of size and initialize it with None (invalid value)
         @param size: Size of each element.
+        @param keepOut: space[B] to left between last structure in memory and start of this allocation block
         @return: address of allocated memory
         """
         addr = 0 
         k = self.data.keys()
         if k:
-            addr = max(k)
+            addr = (max(k) + 1) * self.cellSize
 
         if keepOut:
             addr += keepOut
 
         indx = addr // self.cellSize
+        if indx * self.cellSize != addr:
+            NotImplementedError("unaligned allocations not implemented (0x%x)" % addr)
 
         d = self.data
         for i in range(size // self.cellSize):
-            d[indx + i] = None
+            tmp = indx + i
+
+            if tmp in d.keys():
+                raise AllocationError("Address 0x%x is already occupied" % (tmp * self.cellSize))
+
+            d[tmp] = None
 
         return addr
 
@@ -188,15 +200,22 @@ class DenseMemory():
         addr = 0
         k = self.data.keys()
         if k:
-            addr = max(k)
+            addr = (max(k) + 1) * self.cellSize
 
         if keepOut:
             addr += keepOut
 
         indx = addr // self.cellSize
+        if indx * self.cellSize != addr:
+            NotImplementedError("unaligned allocations not implemented (0x%x)" % addr)
 
         d = self.data
         for i in range((num * size) // self.cellSize):
-            d[indx + i] = 0
+            tmp = indx + i
+
+            if tmp in d.keys():
+                raise AllocationError("Address 0x%x is already occupied" % (tmp * self.cellSize))
+
+            d[tmp] = 0
 
         return addr
