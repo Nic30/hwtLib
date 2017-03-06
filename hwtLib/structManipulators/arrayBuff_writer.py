@@ -45,7 +45,7 @@ class ArrayBuff_writer(Unit):
         self.SIZE_WIDTH = Param(16)
         self.BUFF_DEPTH = Param(16)
         self.TIMEOUT = Param(1024)
-        self.SIZE_BLOCK_ITEMS = Param(4096 // 8)
+        self.ITEMS = Param(4096 // 8)
 
     def _declr(self):
         addClkRstn(self)
@@ -88,7 +88,7 @@ class ArrayBuff_writer(Unit):
     def _impl(self):
         ALIGN_BITS = log2ceil(self.DATA_WIDTH // 8 - 1).val
         TIMEOUT_MAX = self.TIMEOUT - 1
-        ITEMS = self.SIZE_BLOCK_ITEMS
+        ITEMS = self.ITEMS
         buff = self.buff
         reqAck = self.wDatapump.ack
         req = self.wDatapump.req

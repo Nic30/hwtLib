@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from math import ceil
 import unittest
 
 from hwt.hdlObjects.constants import Time, NOP
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import agent_randomize
 from hwt.synthesizer.param import evalParam
-from hwtLib.structManipulators.arrayBuff_writer import ArrayBuff_writer
 from hwtLib.abstract.denseMemory import DenseMemory
+from hwtLib.structManipulators.arrayBuff_writer import ArrayBuff_writer
 
 
 class ArrayBuff_writer_TC(SimTestCase):
@@ -17,7 +16,7 @@ class ArrayBuff_writer_TC(SimTestCase):
         self.u = ArrayBuff_writer()
         self.u.TIMEOUT.set(32)
         self.ID = evalParam(self.u.ID).val
-        self.SIZE_BLOCK_ITEMS = evalParam(self.u.SIZE_BLOCK_ITEMS).val
+        self.ITEMS = evalParam(self.u.ITEMS).val
         self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
         self.prepareUnit(self.u)
 
@@ -189,14 +188,13 @@ class ArrayBuff_writer_TC(SimTestCase):
     def test_fullFill_randomized3(self):
         u = self.u
         BASE = 0x1230
-        N = self.SIZE_BLOCK_ITEMS + 10
-
+        MAGIC = 1
+        N = self.ITEMS + 10
+        m = DenseMemory(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
+        
         u.baseAddr._ag.dout.append(BASE)
         for i in range(N):
-            u.items._ag.data.append(1 + i)
-
-        for _ in range(ceil(N / 16)):
-            u.wDatapump.ack._ag.data.append(self.ID)
+            u.items._ag.data.append(MAGIC + i)
 
         def enReq(s):
             u.wDatapump.req._ag.enable = False
@@ -212,22 +210,12 @@ class ArrayBuff_writer_TC(SimTestCase):
 
         self.doSim(N * 50 * Time.ns)
 
-        self.assertEqual(len(u.items._ag.data), 0)
+        self.assertEmpty(u.items._ag.data)
+        d = m.getArray(BASE, self.DATA_WIDTH // 8, self.ITEMS)
 
-        req = u.wDatapump.req._ag.data
-        self.assertEqual(len(req), ceil(N / 16))
-        for i, _req in enumerate(req):
-            addr = BASE + ((i * 16 * 8) % (self.SIZE_BLOCK_ITEMS * 8))
-            if (1 + i) * 16 > N:
-                l = N - i * 16
-            else:
-                l = 16
-            self.assertValSequenceEqual(_req,
-                                        (self.ID, addr, l - 1, 0))
-        w = u.wDatapump.w._ag.data
-        self.assertEqual(len(w), N)
-        self.assertEmpty(u.wDatapump.ack._ag.data)
+        expected = [i + MAGIC if i >= 10 else i + self.ITEMS + MAGIC   for i in range(self.ITEMS)]
 
+        self.assertValSequenceEqual(d, expected)
         self.assertValEqual(self.u.uploaded._ag.data[-1], N)
 
 if __name__ == "__main__":
