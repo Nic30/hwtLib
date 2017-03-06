@@ -114,7 +114,8 @@ class CLinkedListReader(Unit):
         self.rdPtr.din ** rdPtr
 
         # this means items are present in memory
-        hasSpace = (wrPtr != rdPtr)
+        hasSpace = s("hasSpace")
+        hasSpace ** (wrPtr != rdPtr)
         doReq = s("doReq")
         doReq ** (bufferHasSpace & hasSpace & ~downloadPending & req.rd)
         req.rem ** 0
@@ -179,8 +180,8 @@ class CLinkedListReader(Unit):
             )
         ).Else(
             req.vld ** (bufferHasSpace & hasSpace),
-            If(bufferHasSpace,
-               downloadPending ** hasSpace
+            If(req.rd & bufferHasSpace & hasSpace,
+               downloadPending ** 1
             )
         )
 
