@@ -17,6 +17,7 @@ class Axi4_wDatapumpTC(SimTestCase):
     LEN_MAX = Axi4_rDatapumpTC.LEN_MAX
 
     def setUp(self):
+        super(Axi4_wDatapumpTC, self).setUp()
         self.u = u = Axi_wDatapump(axiAddrCls=Axi4_addr)
         u.MAX_LEN.set(16)
         self.prepareUnit(u)
