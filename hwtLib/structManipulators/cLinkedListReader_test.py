@@ -9,16 +9,16 @@ from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import evalParam
 from hwtLib.structManipulators.cLinkedListReader import CLinkedListReader
-
-# [TODO] randomizer does not work with agent for handshaked interface well
+from hwtLib.abstract.denseMemory import DenseMemory
 
 
 class CLinkedListReaderTC(SimTestCase):
     def setUp(self):
-        self.u = CLinkedListReader()
+        u = self.u = CLinkedListReader()
         self.ITEMS_IN_BLOCK = 31
         self.PTR_WIDTH = 8
         self.BUFFER_CAPACITY = 8
+        self.DATA_WIDTH = 64
 
         def e(v):
             return evalParam(v).val
@@ -27,9 +27,10 @@ class CLinkedListReaderTC(SimTestCase):
         self.ID_LAST = e(self.u.ID_LAST)
         self.MAX_LEN = self.BUFFER_CAPACITY // 2 - 1
 
-        self.u.ITEMS_IN_BLOCK.set(self.ITEMS_IN_BLOCK)
-        self.u.PTR_WIDTH.set(self.PTR_WIDTH)
-        self.u.BUFFER_CAPACITY.set(self.BUFFER_CAPACITY)
+        u.ITEMS_IN_BLOCK.set(self.ITEMS_IN_BLOCK)
+        u.PTR_WIDTH.set(self.PTR_WIDTH)
+        u.BUFFER_CAPACITY.set(self.BUFFER_CAPACITY)
+        u.DATA_WIDTH.set(self.DATA_WIDTH)
 
         _, self.model, self.procs = simPrepare(self.u)
 
@@ -165,36 +166,47 @@ class CLinkedListReaderTC(SimTestCase):
     def test_downloadFullBlockRandomized(self):
         u = self.u
         N = self.ITEMS_IN_BLOCK
-        ADDR_BASE = 0x1020
+        MAGIC = 6413
+
+        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rDatapump)
+        ADDR_BASE = m.calloc(N, 
+                             self.DATA_WIDTH // 8,
+                             keepOut=0x7020,
+                             initValues=[i + MAGIC for i in range(N)])
         self.randomize(u.rDatapump.r)
         self.randomize(u.rDatapump.req)
         self.randomize(u.dataOut)
 
         u.baseAddr._ag.dout.append(ADDR_BASE)
         u.wrPtr._ag.dout.extend([NOP, N])
-        expectedReq, reqData = self.generateRequests(ADDR_BASE, [N])
-        u.rDatapump.r._ag.data.extend(reqData)
 
-        self.doSim((len(reqData) + len(expectedReq) + 50) * 2 * 10 * Time.ns)
-
-        self.checkOutputs(expectedReq, N)
+        self.doSim(N * 50 * Time.ns)
+        self.assertValSequenceEqual(u.dataOut._ag.data, 
+                                    [i + MAGIC for i in range(N)])
 
     def test_downloadFullBlockRandomized5x(self):
         u = self.u
         N = self.ITEMS_IN_BLOCK * 5
-        ADDR_BASE = 0x1020
+        MAGIC = 456
 
+        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rDatapump)
+        ADDR_BASE = m.calloc(N, 
+                             self.DATA_WIDTH // 8,
+                             keepOut=0x1020,
+                             initValues=[i + MAGIC for i in range(N)])
+        
         self.randomize(u.rDatapump.r)
         self.randomize(u.rDatapump.req)
         self.randomize(u.dataOut)
 
         u.baseAddr._ag.dout.append(ADDR_BASE)
         u.wrPtr._ag.dout.extend([NOP, N])
-        expectedReq, reqData = self.generateRequests(ADDR_BASE, [N])
-        u.rDatapump.r._ag.data.extend(reqData)
 
-        self.doSim((len(reqData) + len(expectedReq) + 50) * 2 * 10 * Time.ns)
-        self.checkOutputs(expectedReq, N)
+        self.doSim(N * 50 * Time.ns)
+        
+        self.assertValSequenceEqual(u.dataOut._ag.data, 
+                                    [i + MAGIC for i in range(N)])
+
 
     def test_downloadFullBlockNextAddrInSeparateReq(self):
         u = self.u
@@ -205,7 +217,7 @@ class CLinkedListReaderTC(SimTestCase):
         u.wrPtr._ag.dout.extend([NOP, self.MAX_LEN] 
                                 + [ NOP for _ in range(self.MAX_LEN + 4)] + [N])
 
-        expectedReq, reqData = self.generateRequests(ADDR_BASE, 
+        expectedReq, reqData = self.generateRequests(ADDR_BASE,
                                                      [self.MAX_LEN, N - self.MAX_LEN - 1])
         self.u.rDatapump.r._ag.data.extend(reqData)
 
@@ -280,7 +292,7 @@ class CLinkedListReaderTC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(CLinkedListReaderTC('test_downloadFullBlockRandomized'))
+    suite.addTest(CLinkedListReaderTC('test_downloadFullBlockRandomized5x'))
     # suite.addTest(unittest.makeSuite(CLinkedListReaderTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
