@@ -16,10 +16,7 @@ def priorityAck(priorityReg, vldSignals, index):
         if i > index:
             priorityOverdrives.append(p & vld)
     
-    # if not vldWithHigherPriority:
-    #    return ~Or(*priorityOverdrives)
-    # if not priorityOverdrives:
-    #    return ~Or(*vldWithHigherPriority)
+
     ack = ~Or(*priorityOverdrives, *vldWithHigherPriority) | priorityReg[index]
     
     return ack

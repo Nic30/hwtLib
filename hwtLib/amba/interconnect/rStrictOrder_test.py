@@ -109,10 +109,42 @@ class RStrictOrderInterconnectTC(SimTestCase):
     
         check(0, d0)
         check(1, d1)
+        
+    def test_randomized2(self):
+        u = self.u
+        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rDatapump)
+        N = 17
+        
+        for d in u.drivers:
+            self.randomize(d.req)
+            self.randomize(d.r)
+        self.randomize(u.rDatapump.req)
+        self.randomize(u.rDatapump.r)
+        _mask = mask(self.DATA_WIDTH // 8)  
+        
+        expected = [[] for _ in u.drivers]
+        for _id, d in enumerate(u.drivers):
+            for i in range(N):
+                size = self._rand.getrandbits(3) + 1
+                magic = self._rand.getrandbits(16)
+                values = [i + magic for i in range(size)]
+                addr = m.calloc(size, 8, initValues=values)
+                
+                d.req._ag.data.append((_id, addr, size - 1, 0))
+                
+                for i2, v in enumerate(values):
+                    data = (_id, v, _mask, int(i2 == size - 1))
+                    expected[_id].append(data)
+                    
+        
+        self.doSim(self.DRIVERS_CNT * N * 200 * Time.ns)
+        
+        for expect, driver in zip(expected, u.drivers):
+            self.assertValSequenceEqual(driver.r._ag.data, expect)
     
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(RStrictOrderInterconnectTC('test_passWithouData'))
+    # suite.addTest(RStrictOrderInterconnectTC('test_passWithouData'))
     suite.addTest(unittest.makeSuite(RStrictOrderInterconnectTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

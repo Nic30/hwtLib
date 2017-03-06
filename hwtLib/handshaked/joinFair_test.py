@@ -9,6 +9,7 @@ from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import agent_randomize
 from hwtLib.handshaked.joinFair import HsJoinFairShare
+from hwt.simulator.agentConnector import valuesToInts
 
 
 dataFn = lambda d: d._ag.data
@@ -68,6 +69,20 @@ class HsJoinFair_2inputs_TC(SimTestCase):
         self.doSim(120 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
+        
+    def test_randomized(self):
+        u = self.u
+        N = 8
+        expected = []
+        for i, inp in enumerate(u.dataIn):
+            d = [i*N + i2 + 1 for i2 in range(N)]
+            
+            inp._ag.data.extend(d)
+            expected.extend(d)
+            
+        self.doSim(self.INPUTS * N * 50 * Time.ns)   
+        
+        self.assertEqual(set(valuesToInts(u.dataOut._ag.data)), set(expected)) 
 
 class HsJoinFair_3inputs_TC(HsJoinFair_2inputs_TC):
     def setUp(self):

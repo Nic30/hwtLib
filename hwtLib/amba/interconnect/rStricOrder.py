@@ -5,7 +5,7 @@ from hwt.code import log2ceil, connect, Or
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.param import Param
+from hwt.synthesizer.param import Param, evalParam
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.amba.interconnect.axiInterconnectbase import AxiInterconnectBase
 from hwtLib.handshaked.fifo import HandshakedFifo
@@ -40,6 +40,7 @@ class RStrictOrderInterconnect(AxiInterconnectBase):
         f.DATA_WIDTH.set(self.DRIVER_INDEX_WIDTH) 
         
     def _impl(self):
+        assert evalParam(self.DRIVER_CNT).val > 1, "It makes no sense to use interconnect in this case"
         propagateClkRstn(self)
         self.reqHandler(self.rDatapump.req, self.orderInfoFifo.dataIn)
 

@@ -15,10 +15,12 @@ from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
 class WStrictOrderInterconnectTC(SimTestCase):
     def setUp(self):
         self.u = WStrictOrderInterconnect()
-        self.MAX_TRANS_OVERLAP = evalParam(self.u.MAX_TRANS_OVERLAP).val
+        self.MAX_TRANS_OVERLAP = 4
+        self.u.MAX_TRANS_OVERLAP.set(self.MAX_TRANS_OVERLAP)
         self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
 
-        self.DRIVER_CNT = evalParam(self.u.DRIVER_CNT).val
+        self.DRIVER_CNT = 2
+        self.u.DRIVER_CNT.set(self.DRIVER_CNT)
         _, self.model, self.procs = simPrepare(self.u)
 
     def test_nop(self):
@@ -53,7 +55,7 @@ class WStrictOrderInterconnectTC(SimTestCase):
             _id = i + 1
             _len = i + 1
             driver.req._ag.data.append((_id, i + 1, _len, 0))
-            strb = mask(self.DATA_WIDTH//8)
+            strb = mask(self.DATA_WIDTH // 8)
             for i2 in range(_len + 1):
                 _data = i + i2 + 1
                 last = int(i2 == _len)
@@ -77,7 +79,7 @@ class WStrictOrderInterconnectTC(SimTestCase):
 
     def test_randomized(self):
         u = self.u
-        #m = DenseMemory(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
+        # m = DenseMemory(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
 
         for d in u.drivers:
             self.randomize(d.req)
@@ -99,7 +101,7 @@ class WStrictOrderInterconnectTC(SimTestCase):
                 v = valBase + i
                 d = (v, _mask, int(i == size - 1))
 
-                u.wDatapump.w._ag.data.append(d)
+                driver.w._ag.data.append(d)
                 u.wDatapump.ack._ag.data.append(driverIndex)
 
                 expected.append(d)
@@ -114,15 +116,51 @@ class WStrictOrderInterconnectTC(SimTestCase):
                 self.assertValSequenceEqual(d, e)
 
         d0 = prepare(0, 0x1000, 3, 99, _id=0) + prepare(0, 0x2000, 1, 100, _id=0) + prepare(0, 0x3000, 16, 101)
-        d1 = prepare(1, 0x4000, 3, 200, _id=1) + prepare(1, 0x5000, 1, 201, _id=1) # + prepare(1, 0x6000, 16, 202) #+ prepare(1, 0x7000, 16, 203)
+        d1 = prepare(1, 0x4000, 3, 200, _id=1) + prepare(1, 0x5000, 1, 201, _id=1)  # + prepare(1, 0x6000, 16, 202) #+ prepare(1, 0x7000, 16, 203)
 
         self.doSim(1000 * Time.ns)
 
         check(d0 + d1)
+        
+    def test_randomized2(self):
+        u = self.u
+        m = DenseMemory(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
+        N = 50
+        _mask = mask(self.DATA_WIDTH // 8)
+         
+        for d in u.drivers:
+            self.randomize(d.req)
+            self.randomize(d.w)
+            self.randomize(d.ack)
+
+        self.randomize(u.wDatapump.req)
+        self.randomize(u.wDatapump.w)
+        self.randomize(u.wDatapump.ack)
+
+        sectors = []
+        for i in range(N // self.DRIVER_CNT):
+            for _id, d in enumerate(u.drivers):
+                size = self._rand.getrandbits(3) + 1 
+                magic = self._rand.getrandbits(16)
+                addr = m.calloc(size, 8, initValues=[None for _ in range(size)])
+                
+                d.req._ag.data.append((_id, addr, size - 1, 0))
+                for i in range(size):
+                    data = (magic + i, _mask, int(i == size - 1))
+                    d.w._ag.data.append(data)
+                
+                values = [i + magic for i in range(size)]
+                sectors.append((addr, values))
+        
+        self.doSim(self.DRIVER_CNT * N * 100 * Time.ns)
+        
+        for addr, expected in sectors:
+            v = m.getArray(addr, 8, len(expected))
+            self.assertSequenceEqual(v, expected)
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(WStrictOrderInterconnectTC('test_randomized'))
-    suite.addTest(unittest.makeSuite(WStrictOrderInterconnectTC))
+    suite.addTest(WStrictOrderInterconnectTC('test_randomized2'))
+    # suite.addTest(unittest.makeSuite(WStrictOrderInterconnectTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

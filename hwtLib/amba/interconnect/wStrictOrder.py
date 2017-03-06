@@ -2,7 +2,7 @@ from hwt.code import log2ceil, connect, Or, Switch
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.param import Param
+from hwt.synthesizer.param import Param, evalParam
 from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
 from hwtLib.amba.interconnect.axiInterconnectbase import AxiInterconnectBase
 from hwtLib.handshaked.fifo import HandshakedFifo
@@ -55,9 +55,6 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
                                        enumerate(driversW))
                                        )
         
-        fW_initialized = self._reg("fW_initialized", defVal=0)
-        fW_initialized ** (fW_initialized | fWOut.vld)
-        
         Switch(fWOut.data).addCases(
             [(i, connect(d, w, exclude=[d.valid, d.ready]))
                for i, d in enumerate(driversW)]
@@ -71,11 +68,22 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
         fAckIn.data ** fWOut.data
         
         # handshake logic
-        fWOut.rd ** (selectedDriverVld & selectedDriverLast & w.ready & fAckIn.rd & fW_initialized)
+        fWOut.rd ** (selectedDriverVld & selectedDriverLast & w.ready & fAckIn.rd)
         for i, d in enumerate(driversW):
-            d.ready ** (fWOut.data._eq(i) & w.ready & fWOut.vld & fAckIn.rd & fW_initialized)
-        w.valid ** (selectedDriverVld & fWOut.vld & fAckIn.rd & fW_initialized)
-        fAckIn.vld ** (selectedDriverVld & selectedDriverLast & w.ready & fWOut.vld & fW_initialized)
+            d.ready ** (fWOut.data._eq(i) & w.ready & fWOut.vld & fAckIn.rd)
+        w.valid ** (selectedDriverVld & fWOut.vld & fAckIn.rd)
+        fAckIn.vld ** (selectedDriverVld & selectedDriverLast & w.ready & fWOut.vld)
+
+        #extraConds = {
+        #    fAckIn: [selectedDriverLast]
+        #    fWOut : []
+        #    }
+        #for i, d in enumerate(driversW):
+        #    extraConds[d] = [fWOut.data._eq(i)]
+        #    
+        #streamSync(masters=[w, fWOut], 
+        #           slaves=driversW+[fAckIn], 
+        #           extraConds=extraConds)
 
     def ackHandler(self):
         ack = self.wDatapump.ack
@@ -88,19 +96,17 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
                                        enumerate(driversAck))
                                        )
         
-        fAckOut_initialized = self._reg("fAckOut_initialized", defVal=0)
-        fAckOut_initialized ** (fAckOut_initialized | fAckOut.vld)
-        
-        ack.rd ** (fAckOut.vld & selectedDriverAckReady & fAckOut_initialized)
-        fAckOut.rd ** (ack.vld & selectedDriverAckReady & fAckOut_initialized)
+        ack.rd ** (fAckOut.vld & selectedDriverAckReady)
+        fAckOut.rd ** (ack.vld & selectedDriverAckReady)
         
         for i, d in enumerate(driversAck):
             connect(ack, d, exclude=[d.vld, d.rd])
-            d.vld ** (ack.vld & fAckOut.vld & fAckOut.data._eq(i) & fAckOut_initialized)
+            d.vld ** (ack.vld & fAckOut.vld & fAckOut.data._eq(i))
         
         
         
     def _impl(self):
+        assert evalParam(self.DRIVER_CNT).val > 1, "It makes no sense to use interconnect in this case"
         propagateClkRstn(self)
         self.reqHandler(self.wDatapump.req, self.orderInfoFifoW.dataIn)
         self.wHandler()
