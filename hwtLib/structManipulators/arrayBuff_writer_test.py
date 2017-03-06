@@ -9,6 +9,7 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import agent_randomize
 from hwt.synthesizer.param import evalParam
 from hwtLib.structManipulators.arrayBuff_writer import ArrayBuff_writer
+from hwtLib.abstract.denseMemory import DenseMemory
 
 
 class ArrayBuff_writer_TC(SimTestCase):
@@ -17,6 +18,7 @@ class ArrayBuff_writer_TC(SimTestCase):
         self.u.TIMEOUT.set(32)
         self.ID = evalParam(self.u.ID).val
         self.SIZE_BLOCK_ITEMS = evalParam(self.u.SIZE_BLOCK_ITEMS).val
+        self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
         self.prepareUnit(self.u)
 
     def test_nop(self):
@@ -132,32 +134,29 @@ class ArrayBuff_writer_TC(SimTestCase):
 
     def test_fullFill_randomized(self):
         u = self.u
-        N = 16
-        BASE = 0x1230
-        ADDR_STEP = 8
-        randomize = self.randomize
+        N = 2 * 16 - 1
+        m = DenseMemory(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
+        ITEM_SIZE = self.DATA_WIDTH // 8
+        MAGIC = 88
 
-        randomize(u.items)
-        randomize(u.wDatapump.w)
-        randomize(u.wDatapump.req)
-        randomize(u.wDatapump.ack)
+        self.randomize(u.items)
+        self.randomize(u.wDatapump.w)
+        self.randomize(u.wDatapump.req)
+        self.randomize(u.wDatapump.ack)
 
+        BASE = m.malloc(ITEM_SIZE * N)
         u.baseAddr._ag.dout.append(BASE)
-        u.items._ag.data.extend([88 for _ in range(2 * N - 1)])
-        u.wDatapump.ack._ag.data.extend([NOP for _ in range(N * 2)] + [self.ID, ])
+        u.items._ag.data.extend([MAGIC + i for i in range(N)])
 
         self.doSim(200 * 10 * Time.ns)
 
         self.assertEmpty(u.items._ag.data)
 
-        self.assertValSequenceEqual(u.wDatapump.req._ag.data,
-                                    [(self.ID, BASE + i * N * ADDR_STEP, N - 1 - i, 0)
-                                      for i in range(2)])
-        self.assertValSequenceEqual(u.wDatapump.w._ag.data,
-                                    [(88, 255, int(i == 15)) for i in range(N)]
-                                    + [(88, 255, int(i == 14)) for i in range(N - 1)])
-
         self.assertEmpty(u.wDatapump.ack._ag.data)
+
+        BASE_INDX = BASE // ITEM_SIZE
+        for i in range(N):
+            self.assertEqual(m.data[BASE_INDX + i], MAGIC + i)
 
         self.assertValEqual(self.u.uploaded._ag.data[-1], N)
 
@@ -191,7 +190,6 @@ class ArrayBuff_writer_TC(SimTestCase):
         u = self.u
         BASE = 0x1230
         N = self.SIZE_BLOCK_ITEMS + 10
-        randomize = self.randomize
 
         u.baseAddr._ag.dout.append(BASE)
         for i in range(N):
@@ -207,10 +205,10 @@ class ArrayBuff_writer_TC(SimTestCase):
 
         self.procs.append(enReq)
 
-        randomize(u.wDatapump.w)
-        randomize(u.items)
-        # randomize(u.req)
-        randomize(u.wDatapump.ack)
+        self.randomize(u.wDatapump.w)
+        self.randomize(u.items)
+        # self.randomize(u.req)
+        self.randomize(u.wDatapump.ack)
 
         self.doSim(N * 40 * Time.ns)
 
@@ -238,4 +236,3 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(ArrayBuff_writer_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-

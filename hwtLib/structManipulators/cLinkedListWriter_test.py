@@ -57,82 +57,75 @@ class CLinkedListWriterTC(SimTestCase):
     def test_singleBurst(self):
         u = self.u
         t = 20
-        
+
         u.baseAddr._ag.dout.append(0x1020)
         u.rdPtr._ag.dout.append(self.MAX_LEN + 1)
-        
+
         for i in range(self.MAX_LEN + 1):
             self.u.dataIn._ag.data.append(i)
-        
+
         self.doSim(t * 10 * Time.ns)
-        
-        req = u.wDatapump.req._ag.data
-        self.assertEqual(len(req), 1)
-        self.assertValSequenceEqual(req[0],
-                                [self.ID, 0x1020, self.MAX_LEN, 0])
+
+        self.assertValSequenceEqual(u.wDatapump.req._ag.data,
+                                    [(self.ID, 0x1020, self.MAX_LEN, 0)])
 
         self.assertEqual(len(u.wDatapump.w._ag.data), self.MAX_LEN + 1)
 
     def test_waitForAck(self):
         u = self.u
         t = 20
-        
+
         u.baseAddr._ag.dout.append(0x1020)
         u.rdPtr._ag.dout.append(self.MAX_LEN + 1)
-        
+
         for i in range(2 * (self.MAX_LEN + 1)):
             self.u.dataIn._ag.data.append(i)
-        
+
         self.doSim(t * 10 * Time.ns)
-        
-        req = u.wDatapump.req._ag.data
-        self.assertEqual(len(req), 1)
-        self.assertValSequenceEqual(req[0],
-                                [self.ID, 0x1020, self.MAX_LEN, 0])
+
+        self.assertValSequenceEqual(u.wDatapump.req._ag.data,
+                                    [(self.ID, 0x1020, self.MAX_LEN, 0)])
 
         self.assertEqual(len(u.wDatapump.w._ag.data), self.MAX_LEN + 1)
-    
-    
+
     def test_constrainedByPtrs(self):
         u = self.u
         t = 20
-        
+
         u.baseAddr._ag.dout.append(0x1020)
         u.rdPtr._ag.dout.append(self.MAX_LEN)
-        
+
         for i in range(self.MAX_LEN + 1):
             self.u.dataIn._ag.data.append(i)
-        
+
         self.doSim(t * 10 * Time.ns)
-        
-        req = u.wDatapump.req._ag.data
-        self.assertEqual(len(req), 1)
-        self.assertValSequenceEqual(req[0],
-                                [self.ID, 0x1020, self.MAX_LEN - 1, 0])
+
+        self.assertValSequenceEqual(u.wDatapump.req._ag.data,
+                                    [(self.ID, 0x1020, self.MAX_LEN - 1, 0)])
 
         self.assertEqual(len(u.wDatapump.w._ag.data), self.MAX_LEN)
-    
+
     def spotNextBaseAddr(self, mem, currentBase, nextBaseAddr):
         baseIndex = currentBase // (self.DATA_WIDTH // 8)
         mem.data[baseIndex + self.ITEMS_IN_BLOCK ] = nextBaseAddr
-        
+
     def test_regularUpload(self):
         u = self.u
         t = 100
         BASE = 0x1020
         ITEMS = 2 * (self.MAX_LEN + 1)
         MAGIC = 50
-        
+
         u.baseAddr._ag.dout.append(BASE)
         u.rdPtr._ag.dout.append(ITEMS)
-        
+
         m = DenseMemory(self.DATA_WIDTH, u.clk, u.rDatapump, u.wDatapump)
-        
+
         self.spotNextBaseAddr(m, BASE, 0x2020)
-        
+
         for i in range(ITEMS):
             self.u.dataIn._ag.data.append(i + MAGIC)
-        
+
         self.doSim(t * 10 * Time.ns)
 
         baseIndex = BASE // (self.DATA_WIDTH // 8)
@@ -144,10 +137,10 @@ class CLinkedListWriterTC(SimTestCase):
             except KeyError:
                 raise AssertionError("Invalid data on index %d" % i)
             self.assertValEqual(d, i + MAGIC, "Invalid data on index %d" % i)
-    
+
     def debugNode(self, mem, baseAddr):
         baseIndex = baseAddr // (self.DATA_WIDTH // 8)
-        
+
         items = []
         for i in range(self.ITEMS_IN_BLOCK):
             try:
@@ -159,9 +152,9 @@ class CLinkedListWriterTC(SimTestCase):
             nextAddr = mem.data[baseIndex + self.ITEMS_IN_BLOCK]
         except KeyError:
             nextAddr = None
-           
-        print("<Node 0x%x, items:%r\n    next:0x%x>" % (baseAddr, items, nextAddr)) 
-            
+
+        print("<Node 0x%x, items:%r\n    next:0x%x>" % (baseAddr, items, nextAddr))
+
     def test_regularUpload2(self):
         u = self.u
         t = 200
@@ -169,20 +162,19 @@ class CLinkedListWriterTC(SimTestCase):
         BASE2 = 0x2020
         ITEMS = self.ITEMS_IN_BLOCK * 2
         MAGIC = 50
-        
+
         u.baseAddr._ag.dout.append(BASE)
         u.rdPtr._ag.dout.append(ITEMS)
-        
+
         m = DenseMemory(self.DATA_WIDTH, u.clk, u.rDatapump, u.wDatapump)
-        
+
         self.spotNextBaseAddr(m, BASE, BASE2)
         self.spotNextBaseAddr(m, BASE2, BASE + BASE2)
         self.spotNextBaseAddr(m, BASE + BASE2, BASE + BASE2 + BASE)
-        
-        
+
         for i in range(ITEMS):
             self.u.dataIn._ag.data.append(i + MAGIC)
-        
+
         self.doSim(t * 10 * Time.ns)
 
         baseIndex = BASE // (self.DATA_WIDTH // 8)
