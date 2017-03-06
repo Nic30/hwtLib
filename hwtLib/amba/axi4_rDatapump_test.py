@@ -236,7 +236,7 @@ class Axi4_rDatapumpTC(SimTestCase):
 
         expected = []
         for _ in range(24):
-            size = int(self._rand.random() * self.LEN_MAX)
+            size = int(self._rand.random() * self.LEN_MAX)+1
             a = m.malloc(size)
             indx = a // m.cellSize
             data = []
