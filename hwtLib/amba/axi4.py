@@ -17,7 +17,7 @@ class Axi4_addr(AxiLite_addr, Axi_id):
         Axi_id._config(self)
         self.LEN_WIDTH = 8
         self.LOCK_WIDTH = Param(1)
-    
+
     def _declr(self):
         AxiLite_addr._declr(self)
         Axi_id._declr(self)
@@ -31,6 +31,7 @@ class Axi4_addr(AxiLite_addr, Axi_id):
 
     def _getSimAgent(self):
         return Axi4_addrAgent
+
 
 class Axi4_addrAgent(BaseAxiAgent):
     def doRead(self, s):
@@ -48,21 +49,20 @@ class Axi4_addrAgent(BaseAxiAgent):
         qos = r(intf.qos)
 
         return (_id, addr, burst, cache, _len, lock, prot, size, qos)
-    
+
     def mkReq(self, addr, _len, _id=0, burst=BURST_INCR,
                                        cache=CACHE_DEFAULT,
                                        lock=LOCK_DEFAULT,
                                        prot=PROT_DEFAULT,
                                        size=BYTES_IN_TRANS(8),
                                        qos=QOS_DEFAULT):
-        
+
         return (_id, addr, burst, cache, _len, lock, prot, size, qos)
-        
-        
+
     def doWrite(self, s, data):
         intf = self.intf
         w = s.w
-        
+
         if data is None:
             data = [None for _ in range(9)]
 
@@ -77,6 +77,7 @@ class Axi4_addrAgent(BaseAxiAgent):
         w(prot, intf.prot)
         w(size, intf.size)
         w(qos, intf.qos)
+
 
 class Axi4_addr_withUserAgent(BaseAxiAgent):
     def doRead(self, s):
@@ -94,7 +95,7 @@ class Axi4_addr_withUserAgent(BaseAxiAgent):
         qos = r(intf.qos)
         user = r(intf.user)
         return (_id, addr, burst, cache, _len, lock, prot, size, qos, user)
-    
+
     def mkReq(self, addr, _len, _id=0, burst=BURST_INCR,
                                        cache=CACHE_DEFAULT,
                                        lock=LOCK_DEFAULT,
@@ -104,8 +105,7 @@ class Axi4_addr_withUserAgent(BaseAxiAgent):
                                        user=0):
         
         return (_id, addr, burst, cache, _len, lock, prot, size, qos, user)
-        
-        
+
     def doWrite(self, s, data):
         intf = self.intf
         w = s.w
