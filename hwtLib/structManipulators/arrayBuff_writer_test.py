@@ -210,7 +210,7 @@ class ArrayBuff_writer_TC(SimTestCase):
         # self.randomize(u.req)
         self.randomize(u.wDatapump.ack)
 
-        self.doSim(N * 40 * Time.ns)
+        self.doSim(N * 50 * Time.ns)
 
         self.assertEqual(len(u.items._ag.data), 0)
 
