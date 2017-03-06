@@ -72,7 +72,7 @@ class Axi_rDatapump(Axi_datapumpBase):
         self.axiAddrDefaults() 
 
         # if axi len is smaller we have to use transaction splitting
-        if self.useTransSplitting(): 
+        if self.useTransSplitting():
             LEN_MAX = mask(ar.len._dtype.bit_length())
             ADDR_STEP = self.getBurstAddrOffset()
 
@@ -109,7 +109,7 @@ class Axi_rDatapump(Axi_datapumpBase):
             If(lastReqDispatched,
                ar.addr ** req.addr,
                rAddr ** (req.addr + ADDR_STEP),
-               
+
                reqLen ** req.len,
                reqRem ** req.rem,
                remBackup ** req.rem,
