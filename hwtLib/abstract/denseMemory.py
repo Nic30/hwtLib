@@ -190,7 +190,7 @@ class DenseMemory():
 
         return addr
 
-    def calloc(self, num, size, keepOut=None):
+    def calloc(self, num, size, keepOut=None, initValues=None):
         """
         Allocates a block of memory for an array of num elements, each of them
         size bytes long, and initializes all its bits to zero.
@@ -211,12 +211,38 @@ class DenseMemory():
             NotImplementedError("unaligned allocations not implemented (0x%x)" % addr)
 
         d = self.data
-        for i in range((num * size) // self.cellSize):
+        wordCnt = (num * size) // self.cellSize
+        if initValues is not None:
+            assert len(initValues) == wordCnt
+             
+        for i in range(wordCnt):
             tmp = indx + i
 
             if tmp in d.keys():
                 raise AllocationError("Address 0x%x is already occupied" % (tmp * self.cellSize))
-
-            d[tmp] = 0
-
+            if initValues is None:
+                d[tmp] = 0
+            else:
+                d[tmp] = initValues[i]
+                
         return addr
+    
+    def getArray(self, addr, itemSize, itemCnt):
+        if itemSize != self.cellSize:
+            raise NotImplementedError()
+        
+        baseIndex = addr // self.cellSize
+        if baseIndex * self.cellSize != addr:
+            raise NotImplementedError("unaligned not implemented")
+        
+        out = []
+        for i in range(baseIndex, baseIndex+itemCnt):
+            try:
+                v = self.data[i]
+            except KeyError:
+                v = None
+                
+            out.append(v)    
+        return out
+        
+        
