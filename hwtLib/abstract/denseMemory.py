@@ -56,14 +56,14 @@ class DenseMemory():
         clk._sigInside.simRisingSensProcs.add(self.checkRequests)
 
     def checkRequests(self, simulator):
-        if self.arAg:
+        if self.arAg is not None:
             if self.arAg.data:
                 self.onReadReq()
 
             if self.rPending:
                 self.doRead()
 
-        if self.awAg:
+        if self.awAg is not None:
             if self.awAg.data:
                 self.onWriteReq()
 
@@ -75,6 +75,7 @@ class DenseMemory():
     def parseReq(self, req):
         for i, v in enumerate(req):
             assert v._isFullVld(), (i, v)
+        assert len(req) == 4
 
         _id = req[0].val
         addr = req[1].val
@@ -166,7 +167,7 @@ class DenseMemory():
         @param keepOut: space[B] to left between last structure in memory and start of this allocation block
         @return: address of allocated memory
         """
-        addr = 0 
+        addr = 0
         k = self.data.keys()
         if k:
             addr = (max(k) + 1) * self.cellSize
