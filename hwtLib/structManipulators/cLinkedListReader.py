@@ -99,7 +99,6 @@ class CLinkedListReader(Unit):
 
         downloadPending = r("downloadPending", defVal=0)
 
-        # [TODO] maybe can be only index of page
         baseIndex = r("baseIndex", vecT(self.ADDR_WIDTH - ALIGN_BITS))
         inBlockRemain = r("inBlockRemain_reg", inBlock_t, defVal=self.ITEMS_IN_BLOCK)
         self.inBlockRemain ** inBlockRemain
@@ -148,6 +147,9 @@ class CLinkedListReader(Unit):
            constraingSpace ** sizeByPtrs
         )
 
+        constrainedByInBlockRemain = s("constrainedByInBlockRemain")
+        constrainedByInBlockRemain ** (fitTo(sizeByPtrs, inBlockRemain) >= inBlockRemain)
+        
         If(constraingSpace > BURST_LEN,
             # download full burst
             req.id ** ID,
@@ -155,16 +157,16 @@ class CLinkedListReader(Unit):
             If(doReq,
                inBlockRemain ** (inBlockRemain - BURST_LEN)
             )
-        ).Elif((fitTo(sizeByPtrs, inBlockRemain) >= inBlockRemain) & (inBlockRemain < BURST_LEN),
+        ).Elif(constrainedByInBlockRemain & (inBlockRemain < BURST_LEN),
             # we know that sizeByPtrs <= inBlockRemain thats why we can resize it
             # we will download next* as well
             req.id ** ID_LAST,
             connect(constraingSpace, req.len, fit=True),
             If(doReq,
-               inBlockRemain ** (inBlockRemain - (fitTo(constraingSpace, inBlockRemain) + 1))
+               inBlockRemain ** self.ITEMS_IN_BLOCK
             )
         ).Else(
-            # download leftover
+            # download data leftover
             req.id ** ID,
             connect(constraingSpace - 1, req.len, fit=True),
             If(doReq,
