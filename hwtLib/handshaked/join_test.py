@@ -18,6 +18,7 @@ class HsJoinWithReference(HandshakedJoin):
 
 class HsJoinTC(SimTestCase):
     def setUp(self):
+        super(HsJoinTC, self).setUp()
         self.u = HsJoinWithReference(Handshaked)
         self.u.DATA_WIDTH.set(8)
         self.prepareUnit(self.u)

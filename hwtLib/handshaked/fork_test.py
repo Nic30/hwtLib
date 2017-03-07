@@ -18,6 +18,7 @@ class HsForkWithReference(HandshakedFork):
 
 class HsForkTC(SimTestCase):
     def setUp(self):
+        super(HsForkTC, self).setUp()
         self.u = HsForkWithReference(Handshaked)
         self.u.DATA_WIDTH.set(4)
         self.prepareUnit(self.u)

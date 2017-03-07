@@ -8,11 +8,17 @@ from hwt.hdlObjects.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import agent_randomize
 from hwtLib.amba.axis_comp.measuringFifo import AxiS_measuringFifo
+from hwt.bitmask import mask
 
 
 class AxiS_measuringFifoTC(SimTestCase):
     def setUp(self):
-        self.u = AxiS_measuringFifo()
+        super(AxiS_measuringFifoTC, self).setUp()
+        u = self.u = AxiS_measuringFifo()
+        self.MAX_LEN = 15
+        u.MAX_LEN.set(self.MAX_LEN)
+        u.SIZES_BUFF_DEPTH.set(4)
+        
         self.prepareUnit(self.u)
 
     def test_nop(self):
@@ -26,7 +32,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         u = self.u
 
         u.dataIn._ag.data.extend([
-                                  (2, 255, 1),
+                                  (2, mask(8), 1),
                                  ])
 
         self.doSim(200 * Time.ns)
@@ -36,7 +42,7 @@ class AxiS_measuringFifoTC(SimTestCase):
     def test_singleWordPacketWithDelay(self):
         u = self.u
 
-        u.dataIn._ag.data.extend([(2, 255, 1),
+        u.dataIn._ag.data.extend([(2, mask(8), 1),
                                   ])
         u.dataOut._ag.enable = False
 
@@ -50,9 +56,9 @@ class AxiS_measuringFifoTC(SimTestCase):
         sizes = u.sizes._ag.data
         data = u.dataOut._ag.data
 
-        u.dataIn._ag.data.extend([(1, 255, 1),
-                                  (2, 255, 1),
-                                  (3, 255, 1)
+        u.dataIn._ag.data.extend([(1, mask(8), 1),
+                                  (2, mask(8), 1),
+                                  (3, mask(8), 1)
                                   ])
 
         self.doSim(200 * Time.ns)
@@ -66,8 +72,8 @@ class AxiS_measuringFifoTC(SimTestCase):
         data = u.dataOut._ag.data
 
         u.dataIn._ag.data.extend([
-                                  (1, 255, 0),
-                                  (2, 255, 1)
+                                  (1, mask(8), 0),
+                                  (2, mask(8), 1)
                                  ])
 
         self.doSim(200 * Time.ns)
@@ -104,8 +110,8 @@ class AxiS_measuringFifoTC(SimTestCase):
         data = u.dataOut._ag.data
 
         u.dataIn._ag.data.extend([
-                                  (1, 255, 0),
-                                  (2, 1, 1)
+                                  (1, mask(8), 0),
+                                  (2, mask(1), 1)
                                  ])
         self.doSim(200 * Time.ns)
         self.assertEqual(len(sizes), 1)
@@ -133,7 +139,7 @@ class AxiS_measuringFifoTC(SimTestCase):
 
         for i in range(N):
             u.dataIn._ag.data.extend([
-                                      (i+1, 255, i==5) for i in range(6)
+                                      (i+1, mask(8), i==5) for i in range(6)
                                      ])
         self.randomize(u.dataIn)
         self.randomize(u.dataOut)
@@ -156,8 +162,8 @@ class AxiS_measuringFifoTC(SimTestCase):
 
         random = Random(411)
         for i in range(N):
-            l = random.randint(0, 511)
-            d = [(i + 1, 255, int(i == (l - 1))) for i in range(l)]
+            l = random.randint(0, self.MAX_LEN+1)
+            d = [(i + 1, mask(8), int(i == (l - 1))) for i in range(l)]
             u.dataIn._ag.data.extend(d)
 
             expectedData.extend(d)
@@ -167,7 +173,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         self.randomize(u.dataOut)
         self.randomize(u.sizes)
 
-        self.doSim(len(expectedData) * 10 * 2.5 * Time.ns)
+        self.doSim(len(expectedData) * 30 * Time.ns)
 
         self.assertEqual(len(sizes), N)
         self.assertEqual(len(data), len(expectedData))
