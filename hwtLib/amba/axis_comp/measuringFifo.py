@@ -50,7 +50,7 @@ class AxiS_measuringFifo(Unit):
         db = self.dataBuff = AxiSFifo(AxiStream)
         # to place fifo in bram
         db.DATA_WIDTH.set(self.DATA_WIDTH)
-        db.DEPTH.set((self.MAX_LEN + 1) * 2 + 1)
+        db.DEPTH.set((self.MAX_LEN + 1) * 2)
 
         sb = self.sizesBuff = HandshakedFifo(Handshaked)
         sb.DEPTH.set(self.SIZES_BUFF_DEPTH)
@@ -83,7 +83,7 @@ class AxiS_measuringFifo(Unit):
         )
 
         length = self._sig("length", wordCntr._dtype)
-        If(dIn.strb != mask(dIn.strb._dtype.bit_length()),
+        If(dIn.strb != mask(STRB_BITS),
             length ** wordCntr
         ).Else(
             length ** (wordCntr + 1)
@@ -98,7 +98,11 @@ class AxiS_measuringFifo(Unit):
                    extraConds={
                                sb.dataIn: [dIn.last]
                               })
-
+        
+        #dIn.ready ** (sb.dataIn.rd & db.dataIn.ready)
+        #sb.dataIn.vld ** (dIn.valid & db.dataIn.ready & dIn.last)
+        #db.dataIn.valid ** (dIn.valid & sb.dataIn.rd)
+        
         self.sizes ** sb.dataOut
         self.dataOut ** db.dataOut
 
