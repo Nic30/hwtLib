@@ -82,3 +82,45 @@ class Axi3DenseMem(DenseMemory):
                                      (addr + i * self.cellSize))
 
             self.rAg.data.append((_id, data, RESP_OKAY, isLast))
+
+    def doWrite(self):
+        _id, addr, size, lastWordBitmask = self.wPending.pop(0)
+
+        baseIndex = addr // self.cellSize
+        if baseIndex * self.cellSize != addr:
+            raise NotImplementedError("unaligned transaction not implemented")
+
+        for i in range(size):
+            _id2, data, strb, last = self.wAg.data.pop(0)
+
+            assert _id2._isFullVld()
+            assert data._isFullVld()
+            assert strb._isFullVld()
+            assert last._isFullVld()
+            assert _id == _id2.val
+
+            data, strb, last = data.val, strb.val, bool(last.val)
+
+            isLast = i == size - 1
+
+            assert last == isLast
+
+            if data is None:
+                raise AssertionError("Invalid read of uninitialized value on addr 0x%x" % 
+                                     (addr + i * self.cellSize))
+
+            if isLast:
+                expectedStrb = lastWordBitmask
+            else:
+                expectedStrb = self.allMask
+
+            if expectedStrb != self.allMask:
+                raise NotImplementedError()
+            assert strb == expectedStrb
+
+            self.data[baseIndex + i] = data
+
+        self.doWriteAck(_id)
+
+    def doWriteAck(self, _id):
+        self.wAckAg.data.append((_id, RESP_OKAY))
