@@ -214,7 +214,7 @@ class DenseMemory():
         wordCnt = (num * size) // self.cellSize
         if initValues is not None:
             assert len(initValues) == wordCnt
-             
+
         for i in range(wordCnt):
             tmp = indx + i
 
@@ -224,25 +224,23 @@ class DenseMemory():
                 d[tmp] = 0
             else:
                 d[tmp] = initValues[i]
-                
+
         return addr
-    
+
     def getArray(self, addr, itemSize, itemCnt):
         if itemSize != self.cellSize:
             raise NotImplementedError()
-        
+
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
             raise NotImplementedError("unaligned not implemented")
-        
+
         out = []
         for i in range(baseIndex, baseIndex+itemCnt):
             try:
                 v = self.data[i]
             except KeyError:
                 v = None
-                
-            out.append(v)    
+
+            out.append(v)
         return out
-        
-        
