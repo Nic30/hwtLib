@@ -160,9 +160,8 @@ class AxiS_measuringFifoTC(SimTestCase):
         expectedData = []
         expectedLen = []
 
-        random = Random(411)
         for i in range(N):
-            l = random.randint(0, self.MAX_LEN+1)
+            l = int(self._rand.random() * (self.MAX_LEN+1+1))
             d = [(i + 1, mask(8), int(i == (l - 1))) for i in range(l)]
             u.dataIn._ag.data.extend(d)
 
@@ -173,7 +172,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         self.randomize(u.dataOut)
         self.randomize(u.sizes)
 
-        self.doSim(len(expectedData) * 30 * Time.ns)
+        self.doSim(len(expectedData) * 40 * Time.ns)
 
         self.assertEqual(len(sizes), N)
         self.assertEqual(len(data), len(expectedData))
