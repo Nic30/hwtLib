@@ -185,11 +185,13 @@ class ArrayBuff_writer_TC(SimTestCase):
 
         self.assertValEqual(self.u.uploaded._ag.data[-1], N)
 
-    def test_fullFill_randomized3(self):
+    def test_fullFill_randomized3(self, N = None):
         u = self.u
         BASE = 0x1230
         MAGIC = 1
-        N = self.ITEMS + 10
+        if N is None:
+            N = self.ITEMS + 10
+            
         m = DenseMemory(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
         
         u.baseAddr._ag.dout.append(BASE)
@@ -208,7 +210,7 @@ class ArrayBuff_writer_TC(SimTestCase):
         # self.randomize(u.req)
         self.randomize(u.wDatapump.ack)
 
-        self.doSim(N * 50 * Time.ns)
+        self.doSim(N * 500 * Time.ns)
 
         self.assertEmpty(u.items._ag.data)
         d = m.getArray(BASE, self.DATA_WIDTH // 8, self.ITEMS)
@@ -217,10 +219,13 @@ class ArrayBuff_writer_TC(SimTestCase):
 
         self.assertValSequenceEqual(d, expected)
         self.assertValEqual(self.u.uploaded._ag.data[-1], N)
-
+        
+    #def test_fullFill_randomized4(self):
+    #    self.test_fullFill_randomized3(N=3*self.ITEMS)
+  
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(Size2Mem_TC('test_fullFill_randomized3'))
-    suite.addTest(unittest.makeSuite(ArrayBuff_writer_TC))
+    suite.addTest(ArrayBuff_writer_TC('test_fullFill_randomized4'))
+    #suite.addTest(unittest.makeSuite(ArrayBuff_writer_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
