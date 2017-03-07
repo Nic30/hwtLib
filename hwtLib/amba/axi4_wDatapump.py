@@ -170,7 +170,7 @@ class Axi_wDatapump(Axi_datapumpBase):
         b = self.b
         ack = self.driver.ack
         
-        lastFlags = HsBuilder(self, self.bInfoFifo.dataOut).reg().end
+        lastFlags = self.bInfoFifo.dataOut
         
         If(lastFlags.vld & ack.rd & b.valid & (b.resp != RESP_OKAY),
            wErrFlag ** 1
