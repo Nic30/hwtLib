@@ -36,7 +36,7 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
         fAck = self.orderInfoFifoAck = HandshakedFifo(Handshaked)
         for f in [fW, fAck]:
             f.DEPTH.set(self.MAX_TRANS_OVERLAP)
-            f.DATA_WIDTH.set(self.DRIVER_INDEX_WIDTH) 
+            f.DATA_WIDTH.set(self.DRIVER_INDEX_WIDTH)
 
     def wHandler(self):
         w = self.wDatapump.w
@@ -94,7 +94,7 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
         selectedDriverAckReady = self._sig("selectedDriverAckReady")
         selectedDriverAckReady ** Or(*map(lambda d: fAckOut.data._eq(d[0]) & d[1].rd,
                                           enumerate(driversAck))
-                                       )
+                                     )
 
         ack.rd ** (fAckOut.vld & selectedDriverAckReady)
         fAckOut.rd ** (ack.vld & selectedDriverAckReady)

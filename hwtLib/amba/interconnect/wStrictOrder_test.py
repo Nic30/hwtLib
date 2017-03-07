@@ -121,7 +121,7 @@ class WStrictOrderInterconnectTC(SimTestCase):
     def test_randomized2(self):
         u = self.u
         m = DenseMemory(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
-        N = 50
+        N = 25
         _mask = mask(self.DATA_WIDTH // 8)
 
         for d in u.drivers:
@@ -135,7 +135,7 @@ class WStrictOrderInterconnectTC(SimTestCase):
 
         sectors = []
         framesCnt = [0 for _ in range(self.DRIVER_CNT)]
-        for i in range(N // self.DRIVER_CNT):
+        for i in range(N):
             for _id, d in enumerate(u.drivers):
                 size = self._rand.getrandbits(3) + 1
                 magic = self._rand.getrandbits(16)
@@ -150,12 +150,13 @@ class WStrictOrderInterconnectTC(SimTestCase):
                 sectors.append((_id, addr, values))
                 framesCnt[_id] += 1
 
-        self.doSim(self.DRIVER_CNT * N * 110 * Time.ns)
+        self.doSim(self.DRIVER_CNT * N * 250 * Time.ns)
 
         for _id, d in enumerate(u.drivers):
             self.assertEmpty(d.req._ag.data)
             self.assertEmpty(d.w._ag.data)
-            self.assertEquals(len(u.drivers[_id].ack._ag.data), framesCnt[_id])
+            self.assertEquals(len(u.drivers[_id].ack._ag.data),
+                              framesCnt[_id])
 
         for _id, addr, expected in sectors:
             v = m.getArray(addr, 8, len(expected))
