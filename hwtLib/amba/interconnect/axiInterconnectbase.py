@@ -1,9 +1,15 @@
+from hwt.code import connect, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam
-from hwt.code import connect 
 from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwtLib.handshaked.streamNode import streamSync
 from hwtLib.logic.oneHotToBin import oneHotToBin
+
+
+def getSizeWidth(maxLen, dataWidth):
+    alignBits = log2ceil(dataWidth // 8 - 1).val
+    lenBits = log2ceil(maxLen).val
+    return lenBits + alignBits
 
 class AxiInterconnectBase(Unit):
     def getDpIntf(self, unit):
