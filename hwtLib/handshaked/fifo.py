@@ -18,12 +18,12 @@ class HandshakedFifo(HandshakedCompBase):
     Fifo for handshaked interfaces
     """
     _regCls = HandshakedReg
-    
+
     def _config(self):
         self.DEPTH = Param(0)
         self.EXPORT_SIZE = Param(False)
         super()._config()
-        
+
     def _declr(self):
         with self._paramsShared():
             addClkRstn(self)
@@ -35,10 +35,10 @@ class HandshakedFifo(HandshakedCompBase):
         f.DATA_WIDTH.set(DW)
         f.DEPTH.set(self.DEPTH - 1)  # because there is an extra register
         f.EXPORT_SIZE.set(self.EXPORT_SIZE)
-        
+
         if evalParam(self.EXPORT_SIZE).val:
-            self.size = VectSignal(log2ceil(self.DEPTH + 1 + 1), signed=False) 
-    
+            self.size = VectSignal(log2ceil(self.DEPTH + 1 + 1), signed=False)
+
     def _impl(self):
         din = self.dataIn
         rd = self.getRd
@@ -46,16 +46,15 @@ class HandshakedFifo(HandshakedCompBase):
 
         propagateClkRstn(self)
         fifo = self.fifo
-        
+
         out = self.dataOut
-        
+
         # to fifo
         wr_en = ~fifo.dataIn.wait
-        rd(din) **  wr_en
+        rd(din) ** wr_en
         fifo.dataIn.data ** packed(din, exclude=[vld(din), rd(din)])
         fifo.dataIn.en ** (vld(din) & wr_en)
-        
-        
+
         # from fifo
         out_vld = self._reg("out_vld", defVal=0)
         vld(out) ** out_vld
@@ -63,21 +62,20 @@ class HandshakedFifo(HandshakedCompBase):
                         exclude=[vld(out), rd(out)])
         fifo.dataOut.en ** ((rd(out) | ~out_vld) & ~fifo.dataOut.wait)
         If(rd(out) | ~out_vld,
-           out_vld ** (~fifo.dataOut.wait) 
+           out_vld ** (~fifo.dataOut.wait)
         )
-        
+
         if evalParam(self.EXPORT_SIZE).val:
             sizeTmp = self._sig("sizeTmp", self.size._dtype)
             connect(fifo.size, sizeTmp, fit=True)
-            
+
             If(out_vld,
                self.size ** (sizeTmp + 1)
             ).Else(
                connect(fifo.size, self.size, fit=True)
             )
-    
-        
-        
+
+
 if __name__ == "__main__":
     from hwt.interfaces.std import Handshaked
     from hwt.synthesizer.shortcuts import toRtl
