@@ -8,18 +8,15 @@ from hwtLib.amba.axis_comp.reg import AxiSReg
 
 class AxiSFifo(AxiSCompBase, HandshakedFifo):
     """
-    Synchronous fifo for axi-stream interface. 
+    Synchronous fifo for axi-stream interface.
     """
     _regCls = AxiSReg
-            
+
 if __name__ == "__main__":
     from hwtLib.amba.axis import AxiStream_withoutSTRB
     from hwt.synthesizer.shortcuts import toRtl
-    
+
     u = AxiSFifo(AxiStream_withoutSTRB)
     u.DEPTH.set(4)
-    
-    print(toRtl(u))    
-            
-            
-            
+
+    print(toRtl(u))
