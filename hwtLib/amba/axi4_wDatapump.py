@@ -11,7 +11,6 @@ from hwtLib.amba.axi4 import Axi4_w, Axi4_b
 from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
 from hwtLib.amba.axi_datapump_base import Axi_datapumpBase
 from hwtLib.amba.constants import RESP_OKAY
-from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync, streamAck
 
@@ -126,7 +125,7 @@ class Axi_wDatapump(Axi_datapumpBase):
         w = self.w
         wIn = self.driver.w
 
-        wInfo = HsBuilder(self, self.writeInfoFifo.dataOut).reg().end
+        wInfo = self.writeInfoFifo.dataOut
         bInfo = self.bInfoFifo.dataIn
 
         w.id ** wInfo.id
@@ -138,7 +137,7 @@ class Axi_wDatapump(Axi_datapumpBase):
             doSplit = wordCntr._eq(self.getAxiLenMax()) | wIn.last
 
             If(streamAck([wInfo, wIn], [bInfo, w]),
-               If(wIn.last,
+               If(doSplit,
                    wordCntr ** 0
                ).Else(
                    wordCntr ** (wordCntr + 1)
@@ -147,7 +146,8 @@ class Axi_wDatapump(Axi_datapumpBase):
             extraConds = {wInfo: [doSplit],
                           bInfo: [doSplit],
                           w: [~wErrFlag]}
-            w.last ** (doSplit | wIn.last)
+            
+            w.last ** doSplit
 
         else:
             w.last ** wIn.last
