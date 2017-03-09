@@ -7,7 +7,7 @@ from hwtLib.handshaked.streamNode import streamAck
 
 
 
-class AxiSResizer(AxiSCompBase):
+class AxiS_resizer(AxiSCompBase):
     """
     Change data with of interface
     @attention: in upscale mode id and other signals which are not dependent on data width 
@@ -122,6 +122,13 @@ class AxiSResizer(AxiSCompBase):
             self.dataOut.last ** (self.dataIn.last & isLastItem)    
             self.getRd(self.dataIn) ** (self.getRd(self.dataOut) & isLastItem)
             self.getVld(self.dataOut) ** self.getVld(self.dataIn)
+            If(hs,
+               If(isLastItem,
+                   itemCntr ** 0
+               ).Else(
+                   itemCntr ** (itemCntr + 1)
+               )
+            )
              
         else:  # same
             self.dataOut ** self.dataIn
@@ -131,7 +138,7 @@ if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     from hwtLib.amba.axis import AxiStream_withId
     
-    u = AxiSResizer(AxiStream_withId)
+    u = AxiS_resizer(AxiStream_withId)
     u.DATA_WIDTH.set(128)
     u.OUT_DATA_WIDTH.set(32)
     print(toRtl(u))

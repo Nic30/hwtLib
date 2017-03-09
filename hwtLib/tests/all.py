@@ -54,6 +54,8 @@ from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import Subunits
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
+from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC,\
+    AxiS_resizer_downscale_TC
 
 
 if __name__ == "__main__":
@@ -115,6 +117,8 @@ if __name__ == "__main__":
         Axi4_wDatapumpTC,
         Axi3_wDatapump_direct_TC,
         AxiS_measuringFifoTC,
+        AxiS_resizer_upscale_TC,
+        AxiS_resizer_downscale_TC,
 
         RStrictOrderInterconnectTC,
         WStrictOrderInterconnectTC,
