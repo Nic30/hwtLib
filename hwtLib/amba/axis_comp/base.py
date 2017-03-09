@@ -20,3 +20,19 @@ class AxiSCompBase(HandshakedCompBase):
     
     def getRd(self, intf):
         return intf.ready
+
+    def getDataWidthDependent(self, intf):
+        s = []
+        s.append(intf.data)
+
+        try:
+            s.append(intf.strb)
+        except AttributeError:
+            pass
+        
+        try:
+            s.append(intf.keep)
+        except AttributeError:
+            pass
+        return s
+        
