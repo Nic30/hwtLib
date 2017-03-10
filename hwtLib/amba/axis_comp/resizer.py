@@ -4,6 +4,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.handshaked.streamNode import streamAck
+from hwtLib.amba.axis_comp.builder import AxiSBuilder
 
 
 
@@ -32,13 +33,15 @@ class AxiS_resizer(AxiSCompBase):
     def _impl(self):
         IN_DW = evalParam(self.DATA_WIDTH).val
         OUT_DW = evalParam(self.OUT_DATA_WIDTH).val
-        dIn = self.getDataWidthDependent(self.dataIn)
+      
         dOut = self.getDataWidthDependent(self.dataOut)
         
         if IN_DW < OUT_DW:  # UPSCALE
             if OUT_DW % IN_DW != 0:
                 raise NotImplementedError()
             ITEMS = OUT_DW // IN_DW 
+            dIn = self.getDataWidthDependent(self.dataIn)
+            
             itemCntr = self._reg("itemCntr", vecT(log2ceil(ITEMS + 1)), defVal=0)
             hs = streamAck([self.dataIn], [self.dataOut])
             isLastItem = (itemCntr._eq(ITEMS - 1) | self.dataIn.last)
@@ -100,9 +103,13 @@ class AxiS_resizer(AxiSCompBase):
             if IN_DW % OUT_DW != 0:
                 raise NotImplementedError()
             
+            dataIn = AxiSBuilder(self, self.dataIn).reg().end
+            dIn = self.getDataWidthDependent(dataIn)
+            
             ITEMS = IN_DW // OUT_DW  
             itemCntr = self._reg("itemCntr", vecT(log2ceil(ITEMS + 1)), defVal=0)
-            hs = streamAck([self.dataIn], [self.dataOut])
+            
+            hs = streamAck([dataIn], [self.dataOut])
             isLastItem = itemCntr._eq(ITEMS - 1)
             
             # connected item selected by itemCntr to output
@@ -110,18 +117,22 @@ class AxiS_resizer(AxiSCompBase):
                 w = outp._dtype.bit_length()
                 Switch(itemCntr)\
                 .addCases([
-                    (wordIndx, outp ** inp[((wordIndx+1)*w):(w*wordIndx)]) 
+                    (wordIndx, outp ** inp[((wordIndx + 1) * w):(w * wordIndx)]) 
                       for wordIndx in range(ITEMS)
-                    ])
+                    ])\
+                .Default(
+                   outp ** None
+                )
             
             # connect others signals directly
-            for inp, outp in zip(self.getData(self.dataIn), self.getData(self.dataOut)):
-                if inp not in dIn and inp is not self.dataIn.last:
+            for inp, outp in zip(self.getData(dataIn), self.getData(self.dataOut)):
+                if inp not in dIn and inp is not dataIn.last:
                     outp ** inp    
             
-            self.dataOut.last ** (self.dataIn.last & isLastItem)    
-            self.getRd(self.dataIn) ** (self.getRd(self.dataOut) & isLastItem)
-            self.getVld(self.dataOut) ** self.getVld(self.dataIn)
+            self.dataOut.last ** (dataIn.last & isLastItem)    
+            self.getRd(dataIn) ** (self.getRd(self.dataOut) & isLastItem)
+            self.getVld(self.dataOut) ** self.getVld(dataIn)
+            
             If(hs,
                If(isLastItem,
                    itemCntr ** 0
