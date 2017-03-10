@@ -20,6 +20,7 @@ encoding//hwtLib/amba/axis_comp/measuringFifo_test.py=utf-8
 encoding//hwtLib/amba/axis_comp/mux.py=utf-8
 encoding//hwtLib/amba/axis_comp/reg.py=utf-8
 encoding//hwtLib/amba/axis_comp/reg2.py=utf-8
+encoding//hwtLib/amba/axis_comp/resizer_test.py=utf-8
 encoding//hwtLib/amba/axis_comp/sampler.py=utf-8
 encoding//hwtLib/amba/axis_comp/sof.py=utf-8
 encoding//hwtLib/amba/axis_comp/storedBurst.py=utf-8
