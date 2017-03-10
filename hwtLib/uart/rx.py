@@ -29,7 +29,7 @@ class UartRx(Unit):
         # needs to be a power of 2
         # we oversample the line at a fixed rate to capture each RxD data bit at the "right" time
         # 8 times oversampling by default, use 16 for higher quality reception
-        self.OVERSAMPLING = Param(8)
+        self.OVERSAMPLING = Param(16)
         
     def _declr(self):
         os = evalParam(self.OVERSAMPLING).val
@@ -54,9 +54,7 @@ class UartRx(Unit):
         propagateClkRstn(self)
         sampleNow = self._sig("sampleNow")
         
-        self.baudGen.enable ** 1
-        
-        osTick = self.baudGen.tick
+        osTick = self.baudGen.bitTick
         # synchronize RxD to our clk domain
         RxD_sync = self._reg("RxD_sync", vecT(2), 0b11)
         If(osTick,
