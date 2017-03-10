@@ -6,18 +6,17 @@ import unittest
 
 from hwt.hdlObjects.constants import Time
 from hwt.interfaces.std import Handshaked
-from hwt.simulator.shortcuts import simPrepare
-from hwtLib.handshaked.fifo import HandshakedFifo
 from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.handshaked.fifo import HandshakedFifo
 
 
 class HsFifoTC(SimTestCase):
     def setUp(self):
-        self.u = HandshakedFifo(Handshaked)
-        self.u.DEPTH.set(8)
-        self.u.DATA_WIDTH.set(4)
-        self.u.EXPORT_SIZE.set(True)
-        _, self.model, self.procs = simPrepare(self.u)
+        u = self.u = HandshakedFifo(Handshaked)
+        u.DEPTH.set(8)
+        u.DATA_WIDTH.set(4)
+        u.EXPORT_SIZE.set(True)
+        self.prepareUnit(u)
     
     def test_stuckedData(self):
         u = self.u
