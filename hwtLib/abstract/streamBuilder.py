@@ -1,3 +1,7 @@
+from hwt.synthesizer.interfaceLevel.unitImplHelpers import getClk, getRst
+from hwt.interfaces.std import Rst_n
+getClk
+
 class AbstractStreamBuilder():
     """
     @attention: this is just abstract class unit classes has to be specified in concrete implementation
@@ -32,14 +36,14 @@ class AbstractStreamBuilder():
         self.compId = 0
     
     def getClk(self):
-        return self.parent.clk
+        return getClk(self.parent)
     
     def getRstn(self):
-        try:
-            return self.parent.rst_n
-        except AttributeError:
-            pass
-        return ~self.parent.rst
+        rst = getRst(self.parent)
+        if isinstance(rst, Rst_n):
+            return rst
+        else:
+            return ~rst
         
     def getInfCls(self):
         return self.end.__class__
