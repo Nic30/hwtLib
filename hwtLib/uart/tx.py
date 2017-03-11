@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, log2ceil, Concat
+from hwt.code import If, Concat
 from hwt.hdlObjects.typeShortcuts import vecT, hBit
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.clocking.timers import timers
+from hwtLib.clocking.clkBuilder import ClkBuilder
 
 
 # http://ece-research.unm.edu/jimp/vhdl_fpgas/slides/UART.pdf
@@ -23,30 +23,28 @@ class UartTx(Unit):
         self.txd = Signal()
         
     def _impl(self):
+        propagateClkRstn(self)
         START_BIT = hBit(0)
         STOP_BIT = hBit(1)
-        
-        propagateClkRstn(self)
-        tick = timers(self, [self.FREQ//self.BAUD])[0]
-        din = self.dataIn
-        
         r = self._reg
         CNTR_MAX = 10
+        BIT_RATE = self.FREQ // self.BAUD
+
+        din = self.dataIn
+
         data = r("data", vecT(CNTR_MAX))  # data + start bit + stop bit
-        cntr = r("cntr", vecT(log2ceil(CNTR_MAX), False), CNTR_MAX)
-        
         en = r("en")
-         
+        tick, last = ClkBuilder(self, self.clk).timers(
+                                                       [BIT_RATE, BIT_RATE * CNTR_MAX],
+                                                       en)
+
         If(~en & din.vld,
            data ** Concat(STOP_BIT, din.data, START_BIT),
            en ** 1
         ).Elif(tick & en,
-           data ** hBit(1)._concat(data[:1]), # sll where 1 is shifted from left
-           If(cntr._eq(0),
+           data ** hBit(1)._concat(data[:1]),  # sll where 1 is shifted from left
+           If(last,
               en ** 0,
-              cntr ** CNTR_MAX
-           ).Else(
-              cntr ** (cntr - 1)
            )
         )
         din.rd ** ~en
