@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import unittest
-
 from hwt.bitmask import mask
 from hwt.hdlObjects.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
@@ -213,6 +211,7 @@ class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
 
 
 if __name__ == "__main__":
+    import unittest
     suite = unittest.TestSuite()
     # suite.addTest(Axi4_wDatapumpTC('test_multiple_randomized2'))
     suite.addTest(unittest.makeSuite(Axi4_wDatapumpTC))
