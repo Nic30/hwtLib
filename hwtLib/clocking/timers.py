@@ -59,7 +59,7 @@ class TimerInfo(object):
             timer.tick = parentUnit._sig("timerTick%d" % timer.maxVal)
 
             if maxVal == 0:
-                timer.tick ** getClk(parentUnit)
+                timer.tick ** 1
             else:
                 r = parentUnit._reg("timerCntr%d" % timer.maxVal,
                                 vecT(log2ceil(maxVal + 1)),
