@@ -15,13 +15,14 @@ class UartTx(Unit):
     def _config(self):
         self.FREQ = Param(int(100e6))
         self.BAUD = Param(115200)
-    
+        #self.PARITY = Param(None)
+
     def _declr(self):
         addClkRstn(self)
         self.dataIn = Handshaked()
         self.dataIn.DATA_WIDTH.set(8)
         self.txd = Signal()
-        
+
     def _impl(self):
         propagateClkRstn(self)
         START_BIT = hBit(0)
@@ -49,9 +50,9 @@ class UartTx(Unit):
         )
         din.rd ** ~en
         self.txd ** data[0]
-        
+
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = UartTx()
     print(toRtl(u)) 
-        
+
