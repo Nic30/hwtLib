@@ -56,6 +56,7 @@ from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC,\
     AxiS_resizer_downscale_TC
+from hwtLib.uart.tx_test import UartTxTC
 
 
 if __name__ == "__main__":
@@ -110,6 +111,7 @@ if __name__ == "__main__":
         HsRegTC,
         HsReg2TC,
         CamTC,
+        UartTxTC,
         SimpleAxiRegsTC,
         AxiTC,
         Axi4_rDatapumpTC,

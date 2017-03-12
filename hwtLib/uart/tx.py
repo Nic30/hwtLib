@@ -6,16 +6,16 @@ from hwt.hdlObjects.typeShortcuts import vecT, hBit
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param
+from hwt.synthesizer.param import Param, evalParam
 from hwtLib.clocking.clkBuilder import ClkBuilder
 
 
 # http://ece-research.unm.edu/jimp/vhdl_fpgas/slides/UART.pdf
 class UartTx(Unit):
     def _config(self):
-        self.FREQ = Param(int(100e6))
-        self.BAUD = Param(115200)
-        #self.PARITY = Param(None)
+        self.FREQ = Param(115200)
+        self.BAUD = Param(115200) # number of bits per second
+        # self.PARITY = Param(None)
 
     def _declr(self):
         addClkRstn(self)
@@ -25,18 +25,21 @@ class UartTx(Unit):
         
     def _impl(self):
         propagateClkRstn(self)
+        r = self._reg
+
         START_BIT = hBit(0)
         STOP_BIT = hBit(1)
-        r = self._reg
-        CNTR_MAX = 10
+        BITS_TO_SEND = 1 + 8 + 1
         BIT_RATE = self.FREQ // self.BAUD
-
+        
+        assert evalParam(BIT_RATE).val >= 1
+        
         din = self.dataIn
 
-        data = r("data", vecT(CNTR_MAX))  # data + start bit + stop bit
-        en = r("en")
+        data = r("data", vecT(BITS_TO_SEND))  # data + start bit + stop bit
+        en = r("en", defVal=False)
         tick, last = ClkBuilder(self, self.clk).timers(
-                                                       [BIT_RATE, BIT_RATE * CNTR_MAX],
+                                                       [BIT_RATE, BIT_RATE * BITS_TO_SEND],
                                                        en)
 
         If(~en & din.vld,
@@ -51,7 +54,7 @@ class UartTx(Unit):
         din.rd ** ~en
         
         txd = r("reg_rxd", defVal=1)
-        If(tick,
+        If(tick & en,
            txd ** data[0]
         )
         self.txd ** txd
