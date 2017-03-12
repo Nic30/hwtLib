@@ -59,16 +59,12 @@ class UartRx(Unit):
            If(rxd_vld,
                 RxD_data ** Concat(rxd, RxD_data[9:1]),  # shift data from left
                 en ** ~lastBit,
-                self.dataOut.vld ** (lastBit & RxD_data[0]._eq(START_BIT) & rxd._eq(STOP_BIT))
-           ).Else(
-             self.dataOut.vld ** 0   
            )
         ).Elif(RxD_sync._eq(START_BIT),
             # potencial start bit detected, begin scanning sequence
             en ** 1,
-            self.dataOut.vld ** 0
         )
-        
+        self.dataOut.vld ** (en & rxd_vld & lastBit & RxD_data[0]._eq(START_BIT) & rxd._eq(STOP_BIT))
        
         self.dataOut.data ** RxD_data[9:1]
          
