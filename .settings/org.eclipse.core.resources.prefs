@@ -163,6 +163,5 @@ encoding//hwtLib/tests/synthesizer/interfaceLevel/subunitsSynthesisTC.py=utf-8
 encoding//hwtLib/tests/synthesizer/rtlLevel/optimalizator.py=utf-8
 encoding//hwtLib/tests/synthesizer/rtlLevel/synthesis.py=utf-8
 encoding//hwtLib/tests/synthesizer/value.py=utf-8
-encoding//hwtLib/uart/baudGen.py=utf-8
 encoding//hwtLib/uart/rx.py=utf-8
 encoding//hwtLib/uart/tx.py=utf-8

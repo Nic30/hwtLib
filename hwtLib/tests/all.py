@@ -9,6 +9,8 @@ from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
+from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
+    AxiS_resizer_downscale_TC
 from hwtLib.amba.interconnect.rStrictOrder_test import RStrictOrderInterconnectTC
 from hwtLib.amba.interconnect.wStrictOrder_test import WStrictOrderInterconnectTC
 from hwtLib.handshaked.fifo_test import HsFifoTC
@@ -54,8 +56,7 @@ from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import Subunits
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
-from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC,\
-    AxiS_resizer_downscale_TC
+from hwtLib.uart.rx_test import UartRxTC
 from hwtLib.uart.tx_test import UartTxTC
 
 
@@ -112,6 +113,7 @@ if __name__ == "__main__":
         HsReg2TC,
         CamTC,
         UartTxTC,
+        UartRxTC,
         SimpleAxiRegsTC,
         AxiTC,
         Axi4_rDatapumpTC,
