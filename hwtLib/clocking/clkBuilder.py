@@ -1,4 +1,9 @@
 from hwtLib.clocking.timers import TimerInfo
+from hwt.synthesizer.param import evalParam
+from hwt.hdlObjects.types.defs import BIT
+from hwt.code import If, log2ceil
+from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
+from hwt.hdlObjects.typeShortcuts import vecT
 
 
 class ClkBuilder(object):
@@ -13,7 +18,7 @@ class ClkBuilder(object):
         self.lastComp = None
         self.end = srcInterface
         if name is None:
-            name = "gen_" + srcInterface._name 
+            name = "gen_" + getSignalName(srcInterface)
             
         self.name = name
         self.compId = 0
@@ -32,3 +37,30 @@ class ClkBuilder(object):
         TimerInfo.instantiate(self.parent, timers, enableSig=enableSig)
         
         return list(map(lambda timer: timer.tick, timers))
+    
+    def oversample(self, sig, sampleCount, sampleTick):
+        """
+        [TODO] last sample is not sampled correctly
+        """
+        if sig._dtype != BIT:
+            raise  NotImplementedError()
+        n = getSignalName(sig)
+        
+        sCnt = evalParam(sampleCount).val
+        sampleDoneTick = self.timers([sampleCount],
+                                     enableSig=sampleTick)[0]
+        oversampleCntr = self.parent._reg(n + "_oversample_cntr%d" % (sCnt),
+                                          vecT(log2ceil(sampleCount)+1, False),
+                                          defVal=0)
+        
+        If(sampleTick,
+            If(sampleDoneTick,
+                oversampleCntr ** 0
+            ).Elif(sig,
+                oversampleCntr ** (oversampleCntr + 1)
+            )
+        )
+        
+        oversampled = self.parent._sig(n + "_oversampled%d" % (sCnt))
+        oversampled ** (oversampleCntr > (sampleCount // 2 - 1))
+        return oversampled, sampleDoneTick
