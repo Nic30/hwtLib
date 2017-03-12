@@ -48,7 +48,12 @@ class UartTx(Unit):
            )
         )
         din.rd ** ~en
-        self.txd ** data[0]
+        
+        txd = r("reg_rxd", defVal=1)
+        If(tick,
+           txd ** data[0]
+        )
+        self.txd ** txd
         
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
