@@ -15,7 +15,8 @@ class UartTx(Unit):
     def _config(self):
         self.FREQ = Param(int(100e6))
         self.BAUD = Param(115200)
-    
+        #self.PARITY = Param(None)
+
     def _declr(self):
         addClkRstn(self)
         self.dataIn = Handshaked()
