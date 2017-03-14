@@ -14,7 +14,8 @@ from hwtLib.clocking.clkBuilder import ClkBuilder
 class UartTx(Unit):
     def _config(self):
         self.FREQ = Param(115200)
-        self.BAUD = Param(115200) # number of bits per second
+        # number of bits per second
+        self.BAUD = Param(115200)
         # self.PARITY = Param(None)
 
     def _declr(self):
@@ -22,7 +23,7 @@ class UartTx(Unit):
         self.dataIn = Handshaked()
         self.dataIn.DATA_WIDTH.set(8)
         self.txd = Signal()
-        
+
     def _impl(self):
         propagateClkRstn(self)
         r = self._reg
@@ -31,9 +32,9 @@ class UartTx(Unit):
         STOP_BIT = hBit(1)
         BITS_TO_SEND = 1 + 8 + 1
         BIT_RATE = self.FREQ // self.BAUD
-        
+
         assert evalParam(BIT_RATE).val >= 1
-        
+
         din = self.dataIn
 
         data = r("data", vecT(BITS_TO_SEND))  # data + start bit + stop bit
@@ -46,21 +47,22 @@ class UartTx(Unit):
            data ** Concat(STOP_BIT, din.data, START_BIT),
            en ** 1
         ).Elif(tick & en,
-           data ** hBit(1)._concat(data[:1]),  # sll where 1 is shifted from left
-           If(last,
-              en ** 0,
-           )
+            # sll where 1 is shifted from left
+            data ** hBit(1)._concat(data[:1]),
+            If(last,
+               en ** 0,
+            )
         )
         din.rd ** ~en
-        
+
         txd = r("reg_rxd", defVal=1)
         If(tick & en,
            txd ** data[0]
         )
         self.txd ** txd
-        
+
+
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = UartTx()
-    print(toRtl(u)) 
-        
+    print(toRtl(u))
