@@ -58,6 +58,7 @@ from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC
 from hwtLib.uart.tx_test import UartTxTC
+from hwtLib.uart.tx_rx_test import UartTxRxTC
 
 
 if __name__ == "__main__":
