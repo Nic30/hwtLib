@@ -13,7 +13,7 @@ from hwtLib.clocking.clkBuilder import ClkBuilder
 # http://ece-research.unm.edu/jimp/vhdl_fpgas/slides/UART.pdf
 class UartTx(Unit):
     def _config(self):
-        self.FREQ = Param(115200)
+        self.FREQ = Param(int(100e6))
         # number of bits per second
         self.BAUD = Param(115200)
         # self.PARITY = Param(None)
