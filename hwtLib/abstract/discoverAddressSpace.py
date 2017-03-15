@@ -134,3 +134,12 @@ class AddressSpaceProbe(object):
             addrMap = self._extractAddressMap(converter, offset, addrModifier, sizeModifier)
 
         return addrMap
+
+
+def formatRegSpaceAsCHeader(bus, getMainSigFn, offset=0, prefix=""):
+    addrSpace = AddressSpaceProbe(bus, getMainSigFn, offset=offset).discover()
+    buff = ["#pragma once", ""]
+    for addr, asi in sorted(addrSpace.items(), key=lambda x: x[0]):
+        buff.append("#define %s 0x%x" % (prefix + asi.name.upper(), addr))
+
+    return "\n".join(buff)
