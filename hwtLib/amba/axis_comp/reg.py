@@ -10,10 +10,10 @@ class AxiSReg(AxiSCompBase, HandshakedReg):
     Register for axi stream interface
     """
     pass
-    
+
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     from hwtLib.amba.axis import AxiStream_withoutSTRB
     u = AxiSReg(AxiStream_withoutSTRB)
-    
+
     print(toRtl(u))

@@ -4,7 +4,7 @@ import re
 from hwt.bitmask import mask, selectBit
 from hwt.code import iterBits
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.interfaces.std import VldSynced, Signal
+from hwt.interfaces.std import VldSynced, Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
@@ -90,33 +90,12 @@ def crc_serial_shift(num_bits_to_shift,
     return lfsr_next
 
 
-def buildCrcMatrix(coefs, polyWidth, dataWidth):
-    polyW = len(coefs)
-    reg_cur = [0 for _ in range(polyW)]
-    data_cur = [0 for _ in range(dataWidth)]
-    reg_matrix = [[0 for _ in range(polyW)]
-                  for _ in range(polyW)]
-
-    # lfsr reg to lfsr reg connections
-    for n1 in range(polyW):
-        reg_cur[n1] = 1
-        if n1:
-            reg_cur[n1 - 1] = 0
-        reg_next = crc_serial_shift(dataWidth,
-                                    polyWidth,
-                                    coefs,
-                                    reg_cur,
-                                    dataWidth,
-                                    data_cur)
-        for n2, b in enumerate(reg_next):
-            if b:
-                reg_matrix[n2][n1] = 1
-
+def buildCrcMatrix_dataMatrix(coefs, polyWidth, dataWidth):
     # Data to lfsr reg,  matrix[MxN]
-    reg_cur = [0 for _ in range(polyW)]
+    reg_cur = [0 for _ in range(polyWidth)]
     data_cur = [0 for _ in range(dataWidth)]
     data_matrix = [[0 for _ in range(dataWidth)]
-                   for _ in range(polyW)]
+                   for _ in range(polyWidth)]
 
     for m1 in range(dataWidth):
         data_cur[m1] = 1
@@ -133,8 +112,81 @@ def buildCrcMatrix(coefs, polyWidth, dataWidth):
         for n2, b in enumerate(reg_next):
             if b:
                 data_matrix[n2][dataWidth - m1 - 1] = 1
+    return data_matrix
 
-    return reg_matrix, data_matrix
+
+def buildCrcMatrix_reg0Matrix(coefs, polyWidth, dataWidth):
+    reg_cur = [0 for _ in range(polyWidth)]
+    data_cur = [0 for _ in range(dataWidth)]
+    reg_matrix = [[0 for _ in range(polyWidth)]
+                  for _ in range(polyWidth)]
+
+    # lfsr reg to lfsr reg connections
+    for n1 in range(polyWidth):
+        reg_cur[n1] = 1
+        if n1:
+            reg_cur[n1 - 1] = 0
+        reg_next = crc_serial_shift(dataWidth,
+                                    polyWidth,
+                                    coefs,
+                                    reg_cur,
+                                    dataWidth,
+                                    data_cur)
+        for n2, b in enumerate(reg_next):
+            if b:
+                reg_matrix[n2][n1] = 1
+
+    return reg_matrix
+
+
+def buildCrcMatrix(coefs, polyWidth, dataWidth):
+    regMatrix = buildCrcMatrix_reg0Matrix(coefs, polyWidth, dataWidth)
+    dataMatrix = buildCrcMatrix_dataMatrix(coefs, polyWidth, dataWidth)
+
+    return regMatrix, dataMatrix
+
+
+class CrcComb(Unit):
+    """
+    Crc generator for any crc
+    polynom can be string in usual format or integer f.e."x^3+x+1" or 0x1
+    """
+    def _config(self):
+        self.DATA_WIDTH = Param(6)
+
+        self.POLY = Param(CRC_5_USB)
+        self.POLY_WIDTH = Param(6)
+
+    def _declr(self):
+        addClkRstn(self)
+        with self._paramsShared():
+            self.dataIn = VectSignal(self.DATA_WIDTH)
+            self.dataOut = VectSignal(self.POLY_WIDTH)
+
+    def _impl(self):
+        PW = evalParam(self.POLY_WIDTH).val
+        DW = evalParam(self.DATA_WIDTH).val
+        assert PW == DW
+        poly = evalParam(self.POLY).val
+        if isinstance(poly, str):
+            polyCoefs = parsePolyStr(poly, PW)
+        elif isinstance(poly, int):
+            polyCoefs = [selectBit(poly, i) for i in range(PW)]
+        else:
+            raise NotImplementedError()
+        xorMatrix = buildCrcMatrix_dataMatrix(polyCoefs, PW, DW)
+
+        for outBit, inMask in zip(iterBits(self.dataOut),
+                                  xorMatrix):
+            bit = None
+            for m, b in zip(inMask, iterBits(self.dataIn)):
+                if m:
+                    if bit is None:
+                        bit = b
+                    else:
+                        bit = bit ^ b
+            assert bit is not None
+            outBit ** bit
 
 
 class Crc(Unit):
@@ -198,5 +250,5 @@ class Crc(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    u = Crc()
+    u = CrcComb()
     print(toRtl(u))

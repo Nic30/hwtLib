@@ -14,10 +14,10 @@ class AxiSCompBase(HandshakedCompBase):
         assert(issubclass(hsIntfCls, AxiStream_withoutSTRB)), hsIntfCls
         self.intfCls = hsIntfCls
         Unit.__init__(self)
-        
+
     def getVld(self, intf):
         return intf.valid
-    
+
     def getRd(self, intf):
         return intf.ready
 
@@ -29,10 +29,9 @@ class AxiSCompBase(HandshakedCompBase):
             s.append(intf.strb)
         except AttributeError:
             pass
-        
+
         try:
             s.append(intf.keep)
         except AttributeError:
             pass
         return s
-        
