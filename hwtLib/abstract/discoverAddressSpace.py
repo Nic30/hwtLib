@@ -136,9 +136,9 @@ class AddressSpaceProbe(object):
         return addrMap
 
 
-def formatRegSpaceAsCHeader(bus, getMainSigFn, offset=0, prefix=""):
+def regSpace_formatAsCDefines(bus, getMainSigFn, offset=0, prefix=""):
     addrSpace = AddressSpaceProbe(bus, getMainSigFn, offset=offset).discover()
-    buff = ["#pragma once", ""]
+    buff = []
     for addr, asi in sorted(addrSpace.items(), key=lambda x: x[0]):
         buff.append("#define %s 0x%x" % (prefix + asi.name.upper(), addr))
 
