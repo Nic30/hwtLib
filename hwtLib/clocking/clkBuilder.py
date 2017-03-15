@@ -1,9 +1,9 @@
-from hwtLib.clocking.timers import TimerInfo
-from hwt.synthesizer.param import evalParam
-from hwt.hdlObjects.types.defs import BIT
 from hwt.code import If, log2ceil
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.defs import BIT
+from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
+from hwt.synthesizer.param import evalParam
+from hwtLib.clocking.timers import TimerInfo
 
 
 class ClkBuilder(object):
