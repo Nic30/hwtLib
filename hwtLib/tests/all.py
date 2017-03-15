@@ -10,7 +10,7 @@ from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
-    AxiS_resizer_downscale_TC
+    AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC
 from hwtLib.amba.interconnect.rStrictOrder_test import RStrictOrderInterconnectTC
 from hwtLib.amba.interconnect.wStrictOrder_test import WStrictOrderInterconnectTC
 from hwtLib.handshaked.fifo_test import HsFifoTC
@@ -114,6 +114,7 @@ if __name__ == "__main__":
         CamTC,
         UartTxTC,
         UartRxTC,
+        UartTxRxTC,
         SimpleAxiRegsTC,
         AxiTC,
         Axi4_rDatapumpTC,
@@ -123,6 +124,7 @@ if __name__ == "__main__":
         AxiS_measuringFifoTC,
         AxiS_resizer_upscale_TC,
         AxiS_resizer_downscale_TC,
+        AxiS_resizer_downAndUp_TC,
 
         RStrictOrderInterconnectTC,
         WStrictOrderInterconnectTC,
