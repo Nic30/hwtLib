@@ -12,4 +12,10 @@ class AxiSBuilder(AbstractStreamBuilder):
     FifoCls = AxiSFifo
     ForkCls = AxiSFork
     RegCls  = AxiSReg
-    MuxCls  = AxiSMux 
+    MuxCls  = AxiSMux
+    
+    def resize(self, newDataWidth):
+        from hwtLib.amba.axis_comp.resizer import AxiS_resizer
+        return self._genericInstance(AxiS_resizer, 
+                                     "resize",
+                                     lambda u: u.OUT_DATA_WIDTH.set(newDataWidth))

@@ -8,6 +8,7 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.clocking.clkBuilder import ClkBuilder
+from hwt.bitmask import mask
 
 
 class UartRx(Unit):
@@ -38,8 +39,8 @@ class UartRx(Unit):
         
         clkBuilder = ClkBuilder(self, self.clk)
         
-        en = self._reg("en", defVal=1)
-        RxD_data = self._reg("RxD_data", vecT(1+8))
+        en = self._reg("en", defVal=0)
+        RxD_data = self._reg("RxD_data", vecT(1 + 8), mask(8 + 1))
 
         sampleTick = clkBuilder.timers([(self.FREQ // self.BAUD) // self.OVERSAMPLING],
                                        enableSig=en)[0]
@@ -48,11 +49,11 @@ class UartRx(Unit):
         RxD_sync = self._reg("RxD_sync", defVal=1)
         RxD_sync ** self.rxd
         
-        rxd, rxd_vld = clkBuilder.oversample(RxD_sync, 
+        rxd, rxd_vld = clkBuilder.oversample(RxD_sync,
                                              self.OVERSAMPLING,
                                              sampleTick)
         lastBit = clkBuilder.timers([10],
-                                    enableSig=rxd_vld)[0]
+                                    enableSig=en & rxd_vld)[0]
         
         
         If(en,

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from random import Random
 import unittest
 
 from hwt.hdlObjects.constants import Time
