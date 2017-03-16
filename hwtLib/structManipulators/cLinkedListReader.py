@@ -202,8 +202,8 @@ class CLinkedListReader(Unit):
         # push data into buffer and increment rdPtr
         streamSync(masters=[dIn],
                    slaves=[dBuffIn],
-                   extraConds={dIn    :[downloadPending],
-                               dBuffIn:[dIn.id._eq(ID) | (dIn.id._eq(ID_LAST) & ~dIn.last), downloadPending]
+                   extraConds={dIn    :downloadPending,
+                               dBuffIn:(dIn.id._eq(ID) | (dIn.id._eq(ID_LAST) & ~dIn.last)) & downloadPending
                                })
 
 if __name__ == "__main__":

@@ -204,8 +204,8 @@ class ArrayBuff_writer(Unit):
 
         streamSync(masters=[buff.dataOut],
                    slaves=[w],
-                   extraConds={buff.dataOut: [st._eq(stT.waitOnDataTx)],
-                               w:            [st._eq(stT.waitOnDataTx)]
+                   extraConds={buff.dataOut: st._eq(stT.waitOnDataTx),
+                               w:            st._eq(stT.waitOnDataTx)
                                })
         w.strb ** mask(w.strb._dtype.bit_length())
         w.last ** w_last

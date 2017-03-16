@@ -93,13 +93,13 @@ class Axi_wDatapump(Axi_datapumpBase):
                 ),
                 streamSync(masters=[req],
                            slaves=[aw, wInfo],
-                           extraConds={aw: [~wErrFlag]}),
+                           extraConds={aw: ~wErrFlag}),
             ).Else(
                 _id ** req_idBackup,
                 aw.addr ** addrBackup,
                 connect(lenDebth, aw.len, fit=True),
 
-                streamSync(slaves=[aw, wInfo], extraConds={aw:[~wErrFlag]}),
+                streamSync(slaves=[aw, wInfo], extraConds={aw:~wErrFlag}),
 
                 req.rd ** 0,
 
@@ -143,17 +143,17 @@ class Axi_wDatapump(Axi_datapumpBase):
                    wordCntr ** (wordCntr + 1)
                )
             )
-            extraConds = {wInfo: [doSplit],
-                          bInfo: [doSplit],
-                          w: [~wErrFlag]}
+            extraConds = {wInfo: doSplit,
+                          bInfo: doSplit,
+                          w: ~wErrFlag}
             
             w.last ** doSplit
 
         else:
             w.last ** wIn.last
-            extraConds = {wInfo: [wIn.last],
-                          bInfo: [wIn.last],
-                          w: [~wErrFlag]}
+            extraConds = {wInfo: wIn.last,
+                          bInfo: wIn.last,
+                          w: ~wErrFlag}
 
         bInfo.isLast ** wIn.last
         streamSync(masters=[wIn, wInfo],
@@ -176,7 +176,7 @@ class Axi_wDatapump(Axi_datapumpBase):
         streamSync(masters=[b, lastFlags],
                    slaves=[ack],
                    extraConds={
-                               ack: [lastFlags.isLast]
+                               ack: lastFlags.isLast
                                })
 
         return wErrFlag

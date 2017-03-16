@@ -30,8 +30,8 @@ class AxiS_en(AxiSCompBase):
         dataEn = self.en | framePending
         streamSync(masters=[din],
                    slaves=[dout],
-                   extraConds={din: [dataEn],
-                               dout: [dataEn],
+                   extraConds={din: dataEn,
+                               dout: dataEn,
                                })
 
         connect(din, dout, exclude=[din.ready, din.valid])

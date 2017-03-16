@@ -116,7 +116,7 @@ class Axi_rDatapump(Axi_datapumpBase):
                ack ** (req.vld & addRmSize.rd & ar.ready),
                streamSync(masters=[req],
                           slaves=[addRmSize, ar],
-                          extraConds={ar:[~rErrFlag]}),
+                          extraConds={ar:~rErrFlag}),
             ).Else(
                req.rd ** 0,
                ar.addr ** rAddr,
@@ -128,7 +128,7 @@ class Axi_rDatapump(Axi_datapumpBase):
                reqLen ** lenDebth,
                reqRem ** remBackup,
                streamSync(slaves=[addRmSize, ar],
-                          extraConds={ar:[~rErrFlag]}),
+                          extraConds={ar:~rErrFlag}),
             )
         else:
             # if axi len is wider we can directly translate requests to axi
@@ -142,7 +142,7 @@ class Axi_rDatapump(Axi_datapumpBase):
 
             streamSync(masters=[req],
                        slaves=[ar, addRmSize],
-                       extraConds={ar: [~rErrFlag]})
+                       extraConds={ar:~rErrFlag})
 
     def remSizeToStrb(self, remSize, strb):
         strbBytes = 2 ** self.getSizeAlignBits()
@@ -177,8 +177,8 @@ class Axi_rDatapump(Axi_datapumpBase):
 
         streamSync(masters=[r, rmSizeOut],
                    slaves=[rOut],
-                   extraConds={rmSizeOut: [r.last],
-                               rOut: [~rErrFlag]})
+                   extraConds={rmSizeOut: r.last,
+                               rOut: ~rErrFlag})
 
         return rErrFlag
 

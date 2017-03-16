@@ -75,11 +75,10 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
         fAckIn.vld ** (selectedDriverVld & selectedDriverLast & w.ready & fWOut.vld)
 
         #extraConds = {
-        #    fAckIn: [selectedDriverLast]
-        #    fWOut : []
+        #    fAckIn: selectedDriverLast
         #    }
         #for i, d in enumerate(driversW):
-        #    extraConds[d] = [fWOut.data._eq(i)]
+        #    extraConds[d] = fWOut.data._eq(i)
         #    
         #streamSync(masters=[w, fWOut], 
         #           slaves=driversW+[fAckIn], 

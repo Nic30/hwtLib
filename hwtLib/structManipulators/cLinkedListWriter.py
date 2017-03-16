@@ -238,8 +238,8 @@ class CLinkedListWriter(Unit):
         )
         streamSync(masters=[f], slaves=[w],
             extraConds={
-                f : [dataMoveEn],
-                w : [dataMoveEn]
+                f : dataMoveEn,
+                w : dataMoveEn
             })
         w.data ** f.data
         w.last ** dataCntr_out._eq(0)

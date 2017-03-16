@@ -96,7 +96,7 @@ class AxiS_measuringFifo(Unit):
         streamSync(masters=[dIn],
                    slaves=[sb.dataIn, db.dataIn],
                    extraConds={
-                               sb.dataIn: [dIn.last]
+                               sb.dataIn: dIn.last
                               })
 
         # dIn.ready ** (sb.dataIn.rd & db.dataIn.ready)
