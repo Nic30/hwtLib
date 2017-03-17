@@ -152,6 +152,7 @@ encoding//hwtLib/structManipulators/cLinkedListReader_test.py=utf-8
 encoding//hwtLib/structManipulators/cLinkedListWriter.py=utf-8
 encoding//hwtLib/structManipulators/cLinkedListWriter_test.py=utf-8
 encoding//hwtLib/structManipulators/mmu_1pageLvl.py=utf-8
+encoding//hwtLib/structManipulators/mmu_2pageLvl.py=utf-8
 encoding//hwtLib/structManipulators/structWriter.py=utf-8
 encoding//hwtLib/tests/all.py=utf-8
 encoding//hwtLib/tests/operators.py=utf-8
