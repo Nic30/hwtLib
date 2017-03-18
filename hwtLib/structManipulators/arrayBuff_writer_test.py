@@ -163,17 +163,17 @@ class ArrayBuff_writer_TC(SimTestCase):
     def test_fullFill_extraAck(self):
         u = self.u
         N = 16
-        #randomize = self.randomize
+        # randomize = self.randomize
 
         u.baseAddr._ag.dout.append(0x1230)
         u.items._ag.data.extend([1 + i for i in range(N)])
         u.wDatapump.ack._ag.data.extend([NOP for _ in range(N * 2 - 1)] + 
                                         [self.ID + 1, self.ID, self.ID + 1])
 
-        #randomize(u.wDatapump.w)
-        #randomize(u.items)
-        #randomize(u.wDatapump.req)
-        #randomize(u.wDatapump.ack)
+        # randomize(u.wDatapump.w)
+        # randomize(u.items)
+        # randomize(u.wDatapump.req)
+        # randomize(u.wDatapump.ack)
 
         self.doSim(150 * 10 * Time.ns)
 
@@ -204,16 +204,16 @@ class ArrayBuff_writer_TC(SimTestCase):
         self.assertEqual(len(w), N)
 
         self.assertValEqual(self.u.uploaded._ag.data[-1], 0)
-        
+
     def test_fullFill_randomized3(self, N=None):
         u = self.u
         BASE = 0x1230
         MAGIC = 1
         if N is None:
             N = self.ITEMS + 10
-            
+
         m = DenseMemory(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
-        
+
         u.baseAddr._ag.dout.append(BASE)
         for i in range(N):
             u.items._ag.data.append(MAGIC + i)
@@ -235,14 +235,15 @@ class ArrayBuff_writer_TC(SimTestCase):
         self.assertEmpty(u.items._ag.data)
         d = m.getArray(BASE, self.DATA_WIDTH // 8, self.ITEMS)
 
-        expected = [i + MAGIC if i >= 10 else i + self.ITEMS + MAGIC   for i in range(self.ITEMS)]
+        expected = [i + MAGIC if i >= 10 else i + self.ITEMS + MAGIC for i in range(self.ITEMS)]
 
         self.assertValSequenceEqual(d, expected)
         self.assertValEqual(u.uploaded._ag.data[-1], N)
-        
+
     # def test_fullFill_randomized4(self):
     #    self.test_fullFill_randomized3(N=3*self.ITEMS)
-  
+
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(ArrayBuff_writer_TC('test_fullFill_withoutAck'))

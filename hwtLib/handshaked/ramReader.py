@@ -17,26 +17,26 @@ class HsRamPortReader(Unit):
     def _config(self):
         self.ADDR_WIDTH = Param(8)
         self.DATA_WIDTH = Param(32)
-        
+
         self.ADDR_LOW = Param(0)
         self.SIZE = Param(255)
-    
+
     def _declr(self):
         addClkRstn(self)
         # start reading data over dataOut
         self.en = HandshakeSync()
-        
+
         # delete active memoryset
         self.clean = HandshakeSync()
-        
+
         with self._paramsShared():
             self.dataIn = BramPort_withoutClk()
             self.dataOut = Handshaked() 
-    
+
     def fsm(self, data_flag, data_inReg, addr):
         st_t = Enum("st_t", ["idle", "sendingData", "inCleaning"])
         Out = self.dataOut
-        
+
         ADDR_HIGH = self.ADDR_LOW + self.SIZE - 1
         lastAddr = addr._eq(ADDR_HIGH)
 
@@ -52,7 +52,7 @@ class HsRamPortReader(Unit):
         ).Trans(st_t.inCleaning,
             (lastAddr, st_t.idle)
         ).stateReg
-                
+
     def _impl(self):
         In = self.dataIn
         Out = self.dataOut
@@ -61,32 +61,30 @@ class HsRamPortReader(Unit):
         data_reg = self.data_reg = self._reg("data_reg", In.dout._dtype)
         data_flag = self.data_flag = self._reg("data_flag_reg", defVal=0)
         data_inReg = self.data_inReg = self._reg("data_inReg_flag_reg", defVal=0)
-        
-        
+
         self.st = st = self.fsm(data_flag, data_inReg, addr)
         st_t = st._dtype
-        
+
         self.en.rd ** st._eq(st_t.idle)
-        self.clean.rd ** st._eq(st_t.idle) 
-        
+        self.clean.rd ** st._eq(st_t.idle)
+
         Out.vld ** (data_inReg | data_flag)
-        
+
         In.din ** 0
         In.en ** 1
         In.we ** st._eq(st_t.inCleaning)
         In.addr ** addr
 
-        
         If(data_flag,
            data_reg ** In.dout
         )
-        
+
         If(data_inReg,
            Out.data ** data_reg
         ).Else(
            Out.data ** In.dout
         )
-        
+
         # addr incrementig logic
         Switch(st)\
         .Case(st_t.idle,
@@ -99,7 +97,7 @@ class HsRamPortReader(Unit):
         ).Case(st_t.inCleaning,
             addr ** (addr + 1)
         )
-        
+
         # dataRegs logic
         If(st._eq(st_t.sendingData),
             data_flag ** 1,
@@ -116,7 +114,8 @@ class HsRamPortReader(Unit):
             data_flag ** 0,
             data_inReg ** 0 
         )
-        
+
+
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = HsRamPortReader()
