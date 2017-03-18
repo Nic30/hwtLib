@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -
 
-from hwt.code import log2ceil, connect, Concat, power, If
+from hwt.code import log2ceil, connect, Concat, If
 from hwt.interfaces.std import Handshaked, BramPort_withoutClk, \
     Signal
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
@@ -32,7 +32,7 @@ class MMU_2pageLvl(Unit):
     """
     def _config(self):
         # width of id signal for bus
-        self.ID_WIDTH = Param(0)
+        self.ID_WIDTH = Param(1)
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)
 
@@ -90,11 +90,10 @@ class MMU_2pageLvl(Unit):
         rpgt = self.lvl1Table
         rootW = self.lvl1Converter.w
         rpgt.dout ** None
-        rootW.addr.data ** rpgt.addr
+        rootW.addr ** rpgt.addr
         wEn = rpgt.en & rpgt.we
-        rootW.addr.vld ** wEn
-        rootW.data.data ** rpgt.din
-        rootW.data.vld ** wEn
+        rootW.vld ** wEn
+        rootW.data ** rpgt.din
 
         self.lvl1Storage.a ** self.lvl1Converter.ram
 
@@ -160,6 +159,7 @@ class MMU_2pageLvl(Unit):
         self.connectPhyout(segfaultFlag)
 
         self.segfault ** segfaultFlag
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl

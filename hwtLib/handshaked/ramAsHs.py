@@ -1,6 +1,7 @@
 from hwt.code import If
 from hwt.hdlObjects.constants import DIRECTION
-from hwt.interfaces.std import Handshaked, BramPort_withoutClk
+from hwt.interfaces.std import Handshaked, BramPort_withoutClk, HandshakeSync,\
+    VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.constants import SERI_MODE
 from hwt.synthesizer.interfaceLevel.interface import Interface
@@ -20,16 +21,15 @@ class RamHsR(Interface):
             self.data = Handshaked(masterDir=DIRECTION.IN)
 
 
-class RamHsW(Interface):
+class RamHsW(HandshakeSync):
     def _config(self):
         self.ADDR_WIDTH = Param(8)
         self.DATA_WIDTH = Param(8)
 
     def _declr(self):
-        self.addr = Handshaked()
-        self.addr._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
-        with self._paramsShared():
-            self.data = Handshaked()
+        super(RamHsW, self)._declr()
+        self.addr = VectSignal(self.ADDR_WIDTH)
+        self.data = VectSignal(self.DATA_WIDTH)
 
 
 class RamAsHs(Unit):
@@ -75,14 +75,13 @@ class RamAsHs(Unit):
            ram.addr ** r.addr.data 
         ).Else(
            ram.we ** 1,
-           ram.addr ** w.addr.data
+           ram.addr ** w.addr
         )
         wEn = ~rEn | ~r.addr.vld
-        w.addr.rd ** wEn
-        w.data.rd ** wEn
+        w.rd ** wEn
 
-        ram.din ** w.data.data
-        ram.en ** ((rEn & r.addr.vld) | (w.addr.vld & w.data.vld))
+        ram.din ** w.data
+        ram.en ** ((rEn & r.addr.vld) | w.vld)
         r.data.data ** readData
         r.data.vld ** ~readRegEmpty
 
@@ -90,5 +89,4 @@ class RamAsHs(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = RamAsHs()
-    print(toRtl(u))         
-            
+    print(toRtl(u))
