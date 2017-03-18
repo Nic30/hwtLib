@@ -18,22 +18,22 @@ class AxisFrameGen(Unit):
         self.CNTRL_AW = Param(4)
         self.CNTRL_DW = Param(32)
         self.DATA_WIDTH = Param(64)
-        
+
     def _declr(self):
         addClkRstn(self)
         self.axis_out = AxiStream()
         self.axis_out.DATA_WIDTH.replace(self.DATA_WIDTH)
-        
+
         self.cntrl = AxiLite()
         self.cntrl.ADDR_WIDTH.set(evalParam(self.CNTRL_AW))
         self.cntrl.DATA_WIDTH.set(evalParam(self.CNTRL_DW))
-            
+
         self.conv = AxiLiteConverter([(0x0, "enable"),
                                       (0x4, "len")
                                      ])
         self.conv.ADDR_WIDTH.set(self.CNTRL_AW)
         self.conv.DATA_WIDTH.set(self.CNTRL_DW)
-    
+
     def _impl(self):
         propagateClkRstn(self)
         cntr = self._reg("wordCntr", vecT(log2ceil(self.MAX_LEN)), defVal=0)
@@ -46,20 +46,19 @@ class AxisFrameGen(Unit):
            connect(cEn.dout.data, en, fit=True)
         )
         connect(en, cEn.din, fit=True)
-        
+
         cLen = self.conv.len
         If(cLen.dout.vld,
            connect(cLen.dout.data, _len, fit=True)
         )
         connect(_len, cLen.din, fit=True)
-        
-               
+
         out = self.axis_out
         connect(cntr, out.data, fit=True)
         out.strb ** mask(self.axis_out.strb._dtype.bit_length())
         out.last ** cntr._eq(0)
         out.valid ** en
-        
+
         If(cLen.dout.vld,
            connect(cLen.dout.data, cntr, fit=True)
         ).Else(
@@ -71,15 +70,14 @@ class AxisFrameGen(Unit):
                )
             )
         )
-        
 
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = AxisFrameGen()
     print(toRtl(u))
-    
-    #import os
-    #hwt.serializer.packager import Packager
-    #p = Packager(u)
-    #p.createPackage(os.path.expanduser("~/Documents/test_ip_repo/")) 
+
+    # import os
+    # hwt.serializer.packager import Packager
+    # p = Packager(u)
+    # p.createPackage(os.path.expanduser("~/Documents/test_ip_repo/")) 
