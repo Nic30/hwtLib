@@ -1,48 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.code import If, Concat, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT, hBit
 from hwt.hdlObjects.types.array import Array
-from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.std import Handshaked, VldSynced, Signal
+from hwt.interfaces.std import Handshaked, VldSynced
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.constants import SERI_MODE
-from hwt.code import If, Concat, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
-
-
-class AddrDataHsAgent(HandshakedAgent):
-    def doWrite(self, s, data):
-        i = self.intf
-        w = s.write
-        if data is None:
-            addr, d, mask = None, None, None
-        else:
-            addr, d, mask = data
-
-        w(addr, i.addr)
-        w(d, i.data)
-        w(mask, i.mask)
-
-    def doRead(self, s):
-        i = self.intf
-        r = s.read
-        return r(i.addr), r(i.data), r(i.mask)
-
-
-class AddrDataHs(Handshaked):
-    def _config(self):
-        Handshaked._config(self)
-        self.ADDR_WIDTH = Param(4)
-
-    def _declr(self):
-        Handshaked._declr(self)
-        self.addr = Signal(dtype=vecT(self.ADDR_WIDTH))
-        self.mask = Signal(dtype=vecT(self.DATA_WIDTH))
-
-    def _getSimAgent(self):
-        return AddrDataHsAgent
+from hwtLib.interfaces.addrDataHs import AddrDataBitMaskHs
 
 
 class Cam(Unit):
@@ -63,7 +30,7 @@ class Cam(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.match = Handshaked()
-            self.write = AddrDataHs()
+            self.write = AddrDataBitMaskHs()
             self.write.ADDR_WIDTH.set(log2ceil(self.ITEMS - 1))
         self.out = VldSynced()
         self.out._replaceParam("DATA_WIDTH", self.ITEMS)
@@ -104,4 +71,4 @@ class Cam(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = Cam()
-    print(toRtl(u))  
+    print(toRtl(u))
