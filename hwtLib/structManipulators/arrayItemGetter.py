@@ -59,14 +59,13 @@ class ArrayItemGetter(Unit):
         if ITEM_WIDTH % 8 != 0 or ITEM_SIZE_IN_WORDS * DATA_WIDTH != ITEMS_IN_DATA_WORD * ITEM_WIDTH:
             raise NotImplementedError(ITEM_WIDTH)
 
-        addr = Concat(self.index.data, vec(0, log2ceil(ITEM_WIDTH // 8)))
-
         req = self.rDatapump.req
         req.id ** self.ID
         req.len ** (ITEM_SIZE_IN_WORDS - 1)
         req.rem ** 0
 
         if ITEMS_IN_DATA_WORD == 1:
+            addr = Concat(self.index.data, vec(0, log2ceil(ITEM_WIDTH // 8)))
             req.addr ** (self.base + fitTo(addr, req.addr))
             streamSync(masters=[self.index], slaves=[req])
 
@@ -77,16 +76,21 @@ class ArrayItemGetter(Unit):
             r = self.rDatapump.r.data
             f = self.itemSubIndexFifo
             subIndexBits = f.dataIn.data._dtype.bit_length()
+            itemAlignBits = log2ceil(ITEM_WIDTH // 8)
+            addr = Concat(self.index.data[:subIndexBits],
+                          vec(0, itemAlignBits + subIndexBits))
 
-            req.addr ** (self.base + fitTo(addr, req.addr[subIndexBits:]))
-            f.dataIn.data ** req.addr[subIndexBits:]
-            streamSync(masters=[self.index], slaves=[req, f.dataIn])
+            req.addr ** (self.base + fitTo(addr, req.addr))
+            f.dataIn.data ** self.index.data[subIndexBits:]
+            streamSync(masters=[self.index],
+                       slaves=[req, f.dataIn])
 
             Switch(f.dataOut.data).addCases([
-                (i, self.item.data ** r[(ITEM_WIDTH * (i + 1)): (ITEM_WIDTH * i)])
+                (ITEMS_IN_DATA_WORD - i - 1, self.item.data ** r[(ITEM_WIDTH * (i + 1)): (ITEM_WIDTH * i)])
                 for i in range(ITEMS_IN_DATA_WORD)
                 ])
-            streamSync(masters=[self.rDatapump.r, f.dataOut], slaves=[self.item])
+            streamSync(masters=[self.rDatapump.r, f.dataOut],
+                       slaves=[self.item])
 
 
 if __name__ == "__main__":

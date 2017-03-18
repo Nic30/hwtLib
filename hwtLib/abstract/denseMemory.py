@@ -18,7 +18,9 @@ def reshapedInitItems(actualCellSize, requestedCellSize, values):
         for itemsInWord in zip(*[iter(values)] * itemsInCell):
             item = 0
             for iIndx, i2 in enumerate(itemsInWord):
-                item |= (i2 << (iIndx * actualCellSize * 8))
+                subIndx = itemsInCell - iIndx - 1
+                _i2 = (mask(actualCellSize * 8) & i2) << (subIndx * actualCellSize * 8)
+                item |= _i2
             yield item
     else:
         raise NotImplementedError()
@@ -234,7 +236,6 @@ class DenseMemory():
 
         if initValues is not None:
             initValues = list(reshapedInitItems(size, self.cellSize, initValues))
-
             assert len(initValues) == wordCnt, (len(initValues), wordCnt)
 
         for i in range(wordCnt):
