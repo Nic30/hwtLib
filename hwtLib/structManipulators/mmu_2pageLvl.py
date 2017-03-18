@@ -14,6 +14,8 @@ from hwtLib.handshaked.streamNode import streamSync
 from hwtLib.mem.ram import RamSingleClock
 from hwtLib.structManipulators.arrayItemGetter import ArrayItemGetter
 
+FLAG_INVALID = 1
+
 
 # http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0301h/I1026235.html
 class MMU_2pageLvl(Unit):
@@ -129,12 +131,15 @@ class MMU_2pageLvl(Unit):
         phyAddrBase = self.lvl2get.item
         pageOffset = self.pageOffsetFifo.dataOut
 
+        segfault = segfaultFlag | phyAddrBase.data[0]._eq(FLAG_INVALID)
         streamSync(masters=[phyAddrBase, pageOffset],
-                   slaves=[self.physOut])
+                   slaves=[self.physOut],
+                   extraConds={self.physOut:~segfault})
+
         self.physOut.data ** Concat(phyAddrBase.data[:self.PAGE_OFFSET_WIDTH], pageOffset.data)
 
     def segfaultChecker(self):
-        FLAG_INVALID = 1
+
         lvl1item = self.lvl1Converter.r.data
         lvl2item = self.lvl2get.item
         segfaultFlag = self._reg("segfaultFlag", defVal=False)
