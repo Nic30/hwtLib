@@ -5,6 +5,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.shortcuts import toRtl
 from hwtLib.amba.axis import AxiStream
 
+
 class AxiSPrefixer(Unit):
     """
     Prepend frame from prefix to every frame on data channel
