@@ -22,7 +22,7 @@ class HsJoinFair_2inputs_TC(SimTestCase):
         u.INPUTS.set(self.INPUTS)
         u.DATA_WIDTH.set(8)
         u.EXPORT_SELECTED.set(True)
-        _, self.model, self.procs = simPrepare(self.u)
+        self.prepareUnit(u)
 
     def addToAllInputs(self, n):
         u = self.u
