@@ -1,8 +1,27 @@
 from hwt.bitmask import mask
+from itertools import chain
 
 
 class AllocationError(Exception):
     pass
+
+
+def reshapedInitItems(actualCellSize, requestedCellSize, values):
+    if actualCellSize == requestedCellSize:
+        return values
+
+    if actualCellSize < requestedCellSize and requestedCellSize % actualCellSize == 0:
+        itemsInCell = requestedCellSize // actualCellSize
+        itemAlign = len(values) % itemsInCell
+        if itemAlign != 0:
+            values = chain(values, [0 for _ in range(itemsInCell - itemAlign)])
+        for itemsInWord in zip(*[iter(values)] * itemsInCell):
+            item = 0
+            for iIndx, i2 in enumerate(itemsInWord):
+                item |= (i2 << (iIndx * actualCellSize * 8))
+            yield item
+    else:
+        raise NotImplementedError()
 
 
 class DenseMemory():
@@ -212,8 +231,11 @@ class DenseMemory():
 
         d = self.data
         wordCnt = (num * size) // self.cellSize
+
         if initValues is not None:
-            assert len(initValues) == wordCnt
+            initValues = list(reshapedInitItems(size, self.cellSize, initValues))
+
+            assert len(initValues) == wordCnt, (len(initValues), wordCnt)
 
         for i in range(wordCnt):
             tmp = indx + i
@@ -236,7 +258,7 @@ class DenseMemory():
             raise NotImplementedError("unaligned not implemented")
 
         out = []
-        for i in range(baseIndex, baseIndex+itemCnt):
+        for i in range(baseIndex, baseIndex + itemCnt):
             try:
                 v = self.data[i]
             except KeyError:
