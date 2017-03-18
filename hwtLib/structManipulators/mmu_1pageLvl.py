@@ -69,7 +69,7 @@ class MMU_1pageLvl(Unit):
 
         # build translated addr from translated page addr and page offset
         physOut = self.physOut
-        physOut.data ** Concat(get.item.data, pageOffset.dataOut.data)
+        physOut.data ** Concat(get.item.data[:PAGE_OFFSET_BITS], pageOffset.dataOut.data)
         streamSync(masters=[get.item, pageOffset.dataOut],
                    slaves=[physOut])
 
