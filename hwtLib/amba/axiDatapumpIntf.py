@@ -9,7 +9,7 @@ from hwtLib.amba.axis import AxiStream_withId, AxiStream
 
 
 def ag(i):
-    i._getSimAgent()(i)
+    return i._getSimAgent()(i)
 
 
 class AddrSizeHs(Handshaked):
