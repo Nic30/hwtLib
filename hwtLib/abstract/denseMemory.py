@@ -7,9 +7,6 @@ class AllocationError(Exception):
 
 
 def reshapedInitItems(actualCellSize, requestedCellSize, values):
-    if actualCellSize == requestedCellSize:
-        return values
-
     if actualCellSize < requestedCellSize and requestedCellSize % actualCellSize == 0:
         itemsInCell = requestedCellSize // actualCellSize
         itemAlign = len(values) % itemsInCell
@@ -235,7 +232,8 @@ class DenseMemory():
         wordCnt = (num * size) // self.cellSize
 
         if initValues is not None:
-            initValues = list(reshapedInitItems(size, self.cellSize, initValues))
+            if size != self.cellSize:
+                initValues = list(reshapedInitItems(size, self.cellSize, initValues))
             assert len(initValues) == wordCnt, (len(initValues), wordCnt)
 
         for i in range(wordCnt):
