@@ -1,12 +1,55 @@
 from hwt.code import If
 from hwt.hdlObjects.constants import DIRECTION
-from hwt.interfaces.std import Handshaked, BramPort_withoutClk, HandshakeSync,\
-    VectSignal
+from hwt.interfaces.std import Handshaked, BramPort_withoutClk
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.constants import SERI_MODE
+from hwt.simulator.agentBase import AgentBase
 from hwt.synthesizer.interfaceLevel.interface import Interface
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
+from hwtLib.interfaces.addrDataHs import AddrDataHs
+
+
+def ag(i):
+    return i._getSimAgent()(i)
+
+
+class RamHsRAgent(AgentBase):
+    """
+    Composite agent with agent for addr and data channel
+    enable is shared
+    """
+
+    @property
+    def enable(self):
+        return self.__enable
+
+    @enable.setter
+    def enable(self, v):
+        """
+        Distribute change of enable on child agents
+        """
+        self.__enable = v
+
+        for o in [self.req, self.r]:
+            o.enable = v
+
+    def __init__(self, intf):
+        self.__enable = True
+        self.intf = intf
+
+        self.addr = intf.addr._ag = ag(intf.addr)
+        self.data = intf.data._ag = ag(intf.data)
+
+    def getDrivers(self):
+        return (self.addr.getDrivers() + 
+                self.data.getMonitors()
+                )
+
+    def getMonitors(self):
+        return (self.addr.getMonitors() + 
+                self.data.getDrivers()
+                )
 
 
 class RamHsR(Interface):
@@ -20,16 +63,8 @@ class RamHsR(Interface):
         with self._paramsShared():
             self.data = Handshaked(masterDir=DIRECTION.IN)
 
-
-class RamHsW(HandshakeSync):
-    def _config(self):
-        self.ADDR_WIDTH = Param(8)
-        self.DATA_WIDTH = Param(8)
-
-    def _declr(self):
-        super(RamHsW, self)._declr()
-        self.addr = VectSignal(self.ADDR_WIDTH)
-        self.data = VectSignal(self.DATA_WIDTH)
+    def _getSimAgent(self):
+        return RamHsRAgent
 
 
 class RamAsHs(Unit):
@@ -46,7 +81,7 @@ class RamAsHs(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.r = RamHsR()
-            self.w = RamHsW()
+            self.w = AddrDataHs()
             self.ram = BramPort_withoutClk()
 
     def _impl(self):
@@ -54,7 +89,7 @@ class RamAsHs(Unit):
         w = self.w
         ram = self.ram
 
-        readRegEmpty = self._reg("readRegEmpty", defVal=0)
+        readRegEmpty = self._reg("readRegEmpty", defVal=1)
         readDataPending = self._reg("readDataPending", defVal=0)
         readData = self._reg("readData", r.data.data._dtype)
 
@@ -63,11 +98,14 @@ class RamAsHs(Unit):
         If(readDataPending,
            readData ** ram.dout
         )
-        If(readDataPending & ~r.data.rd,
-           readRegEmpty ** 1
-        ).Elif(~readDataPending & r.data.rd,
-           readRegEmpty ** 0
+
+        If(r.data.rd,
+            readRegEmpty ** ~readDataPending
+        ).Else(
+            readRegEmpty ** ~(readDataPending | ~readRegEmpty)
+
         )
+
         r.addr.rd ** rEn
 
         If(rEn & r.addr.vld,
