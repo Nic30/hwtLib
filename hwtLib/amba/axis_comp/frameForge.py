@@ -42,6 +42,7 @@ def formatIntoWords(frameInfos):
     if wordRecord:
         yield actualWord, wordRecord
 
+
 class AxiSFrameForge(AxiSCompBase):
     """
     Assemble fields into frame on axi stream interface
