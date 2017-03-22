@@ -34,7 +34,7 @@ class Fifo(Unit):
 
     def _impl(self):
         DEPTH = self.DEPTH
-        assert evalParam(DEPTH).val > 0
+        assert evalParam(DEPTH).val > 0,  "Fifo is disabled in this case, do not use it entirely"
 
         index_t = vecT(log2ceil(DEPTH), False)
         s = self._sig
