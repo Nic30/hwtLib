@@ -29,20 +29,19 @@ class AxiS_append(AxiSCompBase):
 
         selected = self._reg("selected", vecT(log2ceil(2), False), defVal=0)
 
-        Switch(selected)\
-        .Case(0,
-              connect(In0, out, exclude={out.valid, out.ready}),
-              streamSync(masters=[In0], slaves=[out]),
-              In1.ready ** 0,
-              If(streamAck(masters=[In0], slaves=[out]) & In0.last,
-                 selected ** 1
-              )
-        ).Case(1,
+        If(selected,
               connect(In1, out, exclude={out.valid, out.ready}),
               In0.ready ** 0,
               streamSync(masters=[In1], slaves=[out]),
               If(streamAck(masters=[In1], slaves=[out]) & In1.last,
                  selected ** 0
+              )
+        ).Else(
+              connect(In0, out, exclude={out.valid, out.ready}),
+              streamSync(masters=[In0], slaves=[out]),
+              In1.ready ** 0,
+              If(streamAck(masters=[In0], slaves=[out]) & In0.last,
+                 selected ** 1
               )
         )
 
