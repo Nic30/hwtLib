@@ -1,10 +1,11 @@
 from hwtLib.types.ctypes import uint64_t, uint8_t, uint16_t, uint32_t
 from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.struct import HStruct
 
 phys_addr_t = uint64_t
 ptr = uint64_t
 #    struct rte_mbuf {
-rte_mbuf= [
+rte_mbuf= HStruct(
 #     MARKER      cacheline0;            #/*     0     0 */
      (ptr,        "buf_addr"),           #/*     0     8 */
      (phys_addr_t,"buf_physaddr"),       #/*     8     8 */
@@ -35,8 +36,8 @@ rte_mbuf= [
      (uint64_t,   "tx_offload"),         #/*    88     8 */
      (uint16_t,   "priv_size"),          #/*    96     2 */
      (uint16_t,   "timesync"),           #/*    98     2 */
-
-    ]
+     name = "rte_mbuf"
+    )
 #     /* size: 128, cachelines: 2, members: 25 */
 #     /* sum members: 94, holes: 1, sum holes: 6 */
 #     /* padding: 28 */
