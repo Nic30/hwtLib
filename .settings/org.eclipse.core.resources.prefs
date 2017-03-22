@@ -14,6 +14,7 @@ encoding//hwtLib/amba/axis_comp/builder.py=utf-8
 encoding//hwtLib/amba/axis_comp/extractor.py=utf-8
 encoding//hwtLib/amba/axis_comp/fifo.py=utf-8
 encoding//hwtLib/amba/axis_comp/fork.py=utf-8
+encoding//hwtLib/amba/axis_comp/frameForge_test.py=utf-8
 encoding//hwtLib/amba/axis_comp/frameGen_test.py=utf-8
 encoding//hwtLib/amba/axis_comp/frameLinkConv.py=utf-8
 encoding//hwtLib/amba/axis_comp/measuringFifo_test.py=utf-8

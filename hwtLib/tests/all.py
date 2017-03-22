@@ -45,7 +45,7 @@ from hwtLib.samples.iLvl.statements.fsm_test import FsmExampleTC, HadrcodedFsmEx
 from hwtLib.samples.iLvl.statements.ifStm_test import IfStmTC
 from hwtLib.samples.iLvl.statements.switchStm_test import SwitchStmTC
 from hwtLib.structManipulators.arrayBuff_writer_test import ArrayBuff_writer_TC
-from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC,\
+from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC, \
     ArrayItemGetter2in1WordTC
 from hwtLib.structManipulators.cLinkedListReader_test import CLinkedListReaderTC
 from hwtLib.structManipulators.cLinkedListWriter_test import CLinkedListWriterTC
@@ -62,6 +62,9 @@ from hwtLib.uart.tx_test import UartTxTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.handshaked.ramAsHs_test import RamAsHs_TC
 from hwtLib.structManipulators.mmu2pageLvl_test import MMU_2pageLvl_TC
+from hwtLib.amba.axis_comp.frameForge_test import AxiS_frameForge_TC
+from hwtLib.amba.axis_comp.append_test import AxiS_append_TC
+from hwtLib.structManipulators.structWriter_test import StructWriter_TC
 
 
 if __name__ == "__main__":
@@ -130,6 +133,8 @@ if __name__ == "__main__":
         AxiS_resizer_upscale_TC,
         AxiS_resizer_downscale_TC,
         AxiS_resizer_downAndUp_TC,
+        AxiS_frameForge_TC,
+        AxiS_append_TC,
 
         RStrictOrderInterconnectTC,
         WStrictOrderInterconnectTC,
@@ -140,6 +145,7 @@ if __name__ == "__main__":
         CLinkedListReaderTC,
         CLinkedListWriterTC,
         MMU_2pageLvl_TC,
+        StructWriter_TC,
 
         IpCoreWrapperTC,
     )
