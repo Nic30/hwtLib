@@ -1,4 +1,4 @@
-from hwt.bitmask import mask
+from hwt.bitmask import mask, selectBitRange
 from itertools import chain
 
 
@@ -32,7 +32,7 @@ class DenseMemory():
         """
         @param cellWidth: width of items in memmory
         @param clk: clk signal for synchronization
-        @param parent: parent instance of DenseMemory (memory will be shared with this instance) 
+        @param parent: parent instance of DenseMemory (memory will be shared with this instance)
         """
         assert cellWidth % 8 == 0
         self.cellSize = cellWidth // 8
@@ -159,7 +159,7 @@ class DenseMemory():
 
             isLast = i == size - 1
 
-            assert last == isLast
+            assert last == isLast, "write 0x%x, size %d, expected last:%d in word %d" % (addr, size, isLast, i)
 
             if data is None:
                 raise AssertionError("Invalid read of uninitialized value on addr 0x%x" % 
@@ -249,6 +249,9 @@ class DenseMemory():
         return addr
 
     def getArray(self, addr, itemSize, itemCnt):
+        """
+        Get array stored in memory
+        """
         if itemSize != self.cellSize:
             raise NotImplementedError()
 
@@ -265,3 +268,40 @@ class DenseMemory():
 
             out.append(v)
         return out
+
+    def getStruct(self, addr, structT):
+        """
+        Get HStruct from memory
+        """
+        cellWidth = self.cellSize * 8
+        bitAddr = addr * 8
+        s = structT.getValueCls()
+
+        for f in structT.fields:
+            fieldLen = f.type.bit_length()
+
+            # resolve value of field from memory
+            if f.name is not None:
+                fieldOffset = 0
+                field = 0
+                try:
+                    while True:
+                        a = bitAddr + fieldOffset
+                        indx = a // cellWidth
+                        off = a % cellWidth
+                        v = self.data[indx]
+                        if fieldOffset + cellWidth < fieldLen:
+                            bitsLen = cellWidth
+                        else:
+                            bitsLen = fieldLen - fieldOffset
+
+                        field |= selectBitRange(v, off, bitsLen) << fieldOffset
+                        if fieldLen <= fieldOffset + cellWidth:
+                            break
+                except KeyError:
+                    field = None
+                setattr(s, f.name, field)
+
+            bitAddr += fieldLen
+
+        return s
