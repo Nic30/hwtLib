@@ -8,6 +8,8 @@ from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
 from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC
 from hwtLib.amba.axi_test import AxiTC
+from hwtLib.amba.axis_comp.append_test import AxiS_append_TC
+from hwtLib.amba.axis_comp.frameForge_test import AxiS_frameForge_TC
 from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
     AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC
@@ -18,6 +20,7 @@ from hwtLib.handshaked.fork_test import HsForkTC, HsFork_randomized_TC
 from hwtLib.handshaked.joinFair_test import HsJoinFair_2inputs_TC, \
     HsJoinFair_3inputs_TC
 from hwtLib.handshaked.join_test import HsJoinTC, HsJoin_randomized_TC
+from hwtLib.handshaked.ramAsHs_test import RamAsHs_TC
 from hwtLib.handshaked.reg2_test import HsReg2TC
 from hwtLib.handshaked.reg_test import HsRegTC
 from hwtLib.logic.oneHotToBin_test import OneHotToBinTC
@@ -49,6 +52,8 @@ from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC, \
     ArrayItemGetter2in1WordTC
 from hwtLib.structManipulators.cLinkedListReader_test import CLinkedListReaderTC
 from hwtLib.structManipulators.cLinkedListWriter_test import CLinkedListWriterTC
+from hwtLib.structManipulators.mmu2pageLvl_test import MMU_2pageLvl_TC
+from hwtLib.structManipulators.structWriter_test import StructWriter_TC
 from hwtLib.tests.operators import OperatorTC
 from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.tests.statements import StatementsTC
@@ -58,13 +63,8 @@ from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC
-from hwtLib.uart.tx_test import UartTxTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
-from hwtLib.handshaked.ramAsHs_test import RamAsHs_TC
-from hwtLib.structManipulators.mmu2pageLvl_test import MMU_2pageLvl_TC
-from hwtLib.amba.axis_comp.frameForge_test import AxiS_frameForge_TC
-from hwtLib.amba.axis_comp.append_test import AxiS_append_TC
-from hwtLib.structManipulators.structWriter_test import StructWriter_TC
+from hwtLib.uart.tx_test import UartTxTC
 
 
 if __name__ == "__main__":
