@@ -1,11 +1,12 @@
-from hwt.simulator.simTestCase import SimTestCase
-from hwt.hdlObjects.types.struct import HStruct
-from hwtLib.types.ctypes import uint64_t
-from hwtLib.structManipulators.structWriter import StructWriter
 import unittest
-from hwtLib.abstract.denseMemory import DenseMemory
-from hwt.synthesizer.param import evalParam
+
 from hwt.hdlObjects.constants import Time
+from hwt.hdlObjects.types.struct import HStruct
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.param import evalParam
+from hwtLib.abstract.denseMemory import DenseMemory
+from hwtLib.structManipulators.structWriter import StructWriter
+from hwtLib.types.ctypes import uint64_t
 
 
 class StructWriter_TC(SimTestCase):
@@ -19,9 +20,9 @@ class StructWriter_TC(SimTestCase):
     def test_singleField(self):
         MAGIC = 54
         MAGIC2 = 0x1000
-        s = HStruct([
-                     (uint64_t, "field0")
-                     ])
+        s = HStruct(
+                    (uint64_t, "field0")
+                   )
 
         m = self.buildEnv(s)
         self.u.field0._ag.data.append(MAGIC)
@@ -34,10 +35,10 @@ class StructWriter_TC(SimTestCase):
     def test_doubleField(self):
         MAGIC = 54
         MAGIC2 = 0x1000
-        s = HStruct([
-                     (uint64_t, "field0"),
-                     (uint64_t, "field1")
-                     ])
+        s = HStruct(
+                    (uint64_t, "field0"),
+                    (uint64_t, "field1")
+                   )
 
         m = self.buildEnv(s)
         self.u.field0._ag.data.append(MAGIC)
@@ -57,11 +58,11 @@ class StructWriter_TC(SimTestCase):
     def test_tripleField(self):
         MAGIC = 54
         MAGIC2 = 0x1000
-        s = HStruct([
+        s = HStruct(
                      (uint64_t, "field0"),
                      (uint64_t, "field1"),
                      (uint64_t, "field2")
-                     ])
+                     )
 
         m = self.buildEnv(s)
         self.u.field0._ag.data.append(MAGIC)
@@ -84,15 +85,15 @@ class StructWriter_TC(SimTestCase):
     def test_holeOnStart(self):
         MAGIC = 54
         MAGIC2 = 0x1000
-        s = HStruct([
-                     (uint64_t, None),
-                     (uint64_t, None),
-                     (uint64_t, None),
-                     (uint64_t, None),
-                     (uint64_t, "field0"),
-                     (uint64_t, "field1"),
-                     (uint64_t, "field2")
-                     ])
+        s = HStruct(
+                    (uint64_t, None),
+                    (uint64_t, None),
+                    (uint64_t, None),
+                    (uint64_t, None),
+                    (uint64_t, "field0"),
+                    (uint64_t, "field1"),
+                    (uint64_t, "field2")
+                   )
 
         m = self.buildEnv(s)
         self.u.field0._ag.data.append(MAGIC)
@@ -116,22 +117,22 @@ class StructWriter_TC(SimTestCase):
     def test_holeInMiddle(self):
         MAGIC = 54
         MAGIC2 = 0x1000
-        s = HStruct([
-                     (uint64_t, "field0"),
-                     (uint64_t, None),
-                     (uint64_t, None),
-                     (uint64_t, None),
-                     (uint64_t, None),
-                     (uint64_t, "field1"),
-                     (uint64_t, "field2")
-                     ])
+        s = HStruct(
+                    (uint64_t, "field0"),
+                    (uint64_t, None),
+                    (uint64_t, None),
+                    (uint64_t, None),
+                    (uint64_t, None),
+                    (uint64_t, "field1"),
+                    (uint64_t, "field2")
+                   )
 
         m = self.buildEnv(s)
         self.u.field0._ag.data.append(MAGIC)
         self.u.field1._ag.data.append(MAGIC+1)
         self.u.field2._ag.data.append(MAGIC+2)
         self.u.set._ag.data.append(MAGIC2)
-
+        
         self.doSim(100 * Time.ns)
 
         self.assertEmpty(self.u.field0._ag.data)

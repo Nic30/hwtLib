@@ -13,6 +13,7 @@ from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync, streamAck
 from hwtLib.structManipulators.structReader import StructReader
 from hwtLib.structManipulators.structUtils import StructBusBurstInfo
+from hwt.hdlObjects.types.struct import HStruct
 
 
 class StructWriter(StructReader):
@@ -48,7 +49,7 @@ class StructWriter(StructReader):
         self.frameAssember = []
         for burstInfo in self._busBurstInfo:
             frameTemplate = [(f.type, f.name) for f in burstInfo.fieldInfos]
-            f = AxiS_frameForge(AxiStream, frameTemplate)
+            f = AxiS_frameForge(AxiStream, HStruct(*frameTemplate))
             self.frameAssember.append(f)
         self._registerArray("frameAssember", self.frameAssember)
 
@@ -71,19 +72,27 @@ class StructWriter(StructReader):
             ackPropageteInfo.clk ** self.clk
             ackPropageteInfo.rst_n ** self.rst_n
 
-            # propagate requests
-            def f(burst, indx):
-                return [req.addr ** (self.set.data + burst.addrOffset),
-                        req.len ** (burst.wordCnt() - 1),
-                        ackPropageteInfo.dataIn.data ** int(indx != 0),
-                        ]
+            def propagateRequests(burst, indx):
+                ack = streamAck(slaves=[req, ackPropageteInfo.dataIn])
+                statements = [req.addr ** (self.set.data + burst.addrOffset),
+                              req.len ** (burst.wordCnt() - 1),
+                              ackPropageteInfo.dataIn.data ** int(indx != 0),
+                              ]\
+                              + streamSync(slaves=[req, ackPropageteInfo.dataIn],
+                                           extraConds={req: self.set.vld,
+                                                       ackPropageteInfo.dataIn: self.set.vld})
 
-            ForEach(self, self._busBurstInfo, f,
-                    ack=streamAck(masters=[self.set],
-                                  slaves=[req, ackPropageteInfo.dataIn]))
+                isLast = indx == len(self._busBurstInfo) - 1
+                if isLast:
+                    statements.append(self.set.rd ** ack)
+                else:
+                    statements.append(self.set.rd ** 0)
+                
+                return statements, ack & self.set.vld
 
-            streamSync(masters=[self.set],
-                       slaves=[req, ackPropageteInfo.dataIn])
+            ForEach(self, self._busBurstInfo, propagateRequests)
+
+
 
             # connect write channel
             fa = self.frameAssember
@@ -101,14 +110,13 @@ class StructWriter(StructReader):
             # single frame
             fa = self.frameAssember[0]
 
-            # propagate requests
-            def f(burst):
+            def propagateRequests(burst):
+                ack = streamAck(masters=[self.set],
+                                  slaves=[req])
                 return [req.addr ** (self.set.data + burst.addrOffset),
                         req.len ** (burst.wordCnt() - 1),
-                        ]
-            ForEach(self, self._busBurstInfo, f,
-                    ack=streamAck(masters=[self.set],
-                                  slaves=[req]))
+                        ], ack
+            ForEach(self, self._busBurstInfo, propagateRequests)
 
             streamSync(masters=[self.set], slaves=[req])
 
@@ -129,25 +137,25 @@ if __name__ == "__main__":
     from hwtLib.types.ctypes import uint16_t, uint32_t, uint64_t
     from hwt.synthesizer.shortcuts import toRtl
 
-    s = [
+    s = HStruct(
         (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
-        #(uint64_t, None),  # name = None means this field will be ignored
+        (uint64_t, None),  # name = None means this field will be ignored
         (uint64_t, "item1"),
-        #(uint64_t, None),
-        #(uint16_t, "item2"),
-        #(uint16_t, "item3"),
-        #(uint32_t, "item4"),
-        #
-        #(uint32_t, None),
-        #(uint64_t, "item5"),  # this word is split on two bus words
-        #(uint32_t, None),
-        #
+        (uint64_t, None),
+        (uint16_t, "item2"),
+        (uint16_t, "item3"),
+        (uint32_t, "item4"),
+        
+        (uint32_t, None),
+        (uint64_t, "item5"),  # this word is split on two bus words
+        (uint32_t, None),
+        
         (uint64_t, None),
         (uint64_t, None),
         (uint64_t, None),
         (uint64_t, "item6"),
         (uint64_t, "item7"),
-        ]
+        )
 
     u = StructWriter(s)
     print(toRtl(u))
