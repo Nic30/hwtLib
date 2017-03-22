@@ -45,7 +45,8 @@ from hwtLib.samples.iLvl.statements.fsm_test import FsmExampleTC, HadrcodedFsmEx
 from hwtLib.samples.iLvl.statements.ifStm_test import IfStmTC
 from hwtLib.samples.iLvl.statements.switchStm_test import SwitchStmTC
 from hwtLib.structManipulators.arrayBuff_writer_test import ArrayBuff_writer_TC
-from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC
+from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC,\
+    ArrayItemGetter2in1WordTC
 from hwtLib.structManipulators.cLinkedListReader_test import CLinkedListReaderTC
 from hwtLib.structManipulators.cLinkedListWriter_test import CLinkedListWriterTC
 from hwtLib.tests.operators import OperatorTC
@@ -59,6 +60,8 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC
 from hwtLib.uart.tx_test import UartTxTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
+from hwtLib.handshaked.ramAsHs_test import RamAsHs_TC
+from hwtLib.structManipulators.mmu2pageLvl_test import MMU_2pageLvl_TC
 
 
 if __name__ == "__main__":
@@ -105,6 +108,7 @@ if __name__ == "__main__":
         HsJoin_randomized_TC,
         HsJoinFair_2inputs_TC,
         HsJoinFair_3inputs_TC,
+        RamAsHs_TC,
         FlipRegTC,
         FlipCntrTC,
         HsForkTC,
@@ -131,9 +135,11 @@ if __name__ == "__main__":
         WStrictOrderInterconnectTC,
 
         ArrayItemGetterTC,
+        ArrayItemGetter2in1WordTC,
         ArrayBuff_writer_TC,
         CLinkedListReaderTC,
         CLinkedListWriterTC,
+        MMU_2pageLvl_TC,
 
         IpCoreWrapperTC,
     )

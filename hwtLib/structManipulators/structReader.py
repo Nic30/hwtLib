@@ -1,21 +1,17 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import Concat, If, log2ceil, ForEach
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import VldSynced, Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam, Param
-from hwtLib.amba.axiDatapumpIntf import AddrSizeHs
-from hwtLib.amba.axis import AxiStream_withId
-from hwtLib.handshaked.streamNode import streamSync
+from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
+from hwtLib.handshaked.streamNode import streamSync, streamAck
 from hwtLib.structManipulators.structUtils import StructFieldInfo, \
     StructBusBurstInfo
-
-
-def createInterface(fInfo):
-    i = VldSynced()
-    i.DATA_WIDTH.set(fInfo.type.bit_length())
-    fInfo.interface = i
-    return i
+from hwt.hdlObjects.types.struct import HStruct
 
 
 class StructReader(Unit):
@@ -24,37 +20,48 @@ class StructReader(Unit):
     MAX_DUMMY_WORDS specifies maximum dummy bus words between fields if there is more of ignored space transaction will be split to
     @attention: interfaces of field will not send data in same time
     """
-    def __init__(self, structTemplate):
+    def __init__(self, structT):
         """
-        example of structTemplate:
+        example of structT:
 
         [(uint64_t, "item0"), # tuples (type, name) where type has to be instance of Bits type
          (uint64_t, None),    # name = None means this field will be ignored
          (uint64_t, "item1"),
         ]
+        or instance of HStruct
 
         * this unit will have item0, item1 interfaces to collect results
         """
         super(StructReader, self).__init__()
-        self._structTemplate = structTemplate
+        if isinstance(structT, HStruct):
+            self._structT = structT
+        else:
+            self._structT = HStruct(structT)
 
     def _config(self):
         self.ID = Param(0)
         self.MAX_DUMMY_WORDS = Param(1)
-        AddrSizeHs._config(self)
+        AxiRDatapumpIntf._config(self)
 
-    def declareFieldInterfaces(self):
+    def _createInterfaceForField(self, fInfo):
+        i = VldSynced()
+        i.DATA_WIDTH.set(fInfo.type.bit_length())
+        fInfo.interface = i
+        return i
+
+    def _declareFieldInterfaces(self):
         """
         Declare interfaces for struct fields and collect StructFieldInfo for each field
         """
         structInfo = []
         busDataWidth = evalParam(self.DATA_WIDTH).val
         startBitIndex = 0
-        for t, name in self._structTemplate:
+        for f in self._structT.fields:
+            name, t = f.name, f.type
             if name is not None:
                 info = StructFieldInfo(t, name)
                 startBitIndex = info.discoverFieldParts(busDataWidth, startBitIndex)
-                i = createInterface(info)
+                i = self._createInterfaceForField(info)
 
                 setattr(self, name, i)
                 structInfo.append(info)
@@ -66,7 +73,7 @@ class StructReader(Unit):
     def _declr(self):
         addClkRstn(self)
 
-        structInfo = self.declareFieldInterfaces()
+        structInfo = self._declareFieldInterfaces()
         self._busBurstInfo = StructBusBurstInfo.packFieldInfosToBusBurst(
                                     structInfo,
                                     evalParam(self.MAX_DUMMY_WORDS).val,
@@ -77,18 +84,17 @@ class StructReader(Unit):
 
         with self._paramsShared():
             # interface for communication with datapump
-            self.req = AddrSizeHs()
-            self.req.MAX_LEN.set(StructBusBurstInfo.sumOfWords(self._busBurstInfo))
-            self.r = AxiStream_withId()
+            self.rDatapump = AxiRDatapumpIntf()
+            self.rDatapump.MAX_LEN.set(StructBusBurstInfo.sumOfWords(self._busBurstInfo))
 
-        self.ack = Signal()  # ready signal form consumer of data from this unit
+        self.ack = Signal()  # ready signal form consumer of data from this unit (ready signal for all fields)
 
     def _impl(self):
         maxWordIndex = StructBusBurstInfo.sumOfWords(self._busBurstInfo)
         wordIndex = self._reg("wordIndex", vecT(log2ceil(maxWordIndex + 1)), 0)
 
-        r = self.r
-        req = self.req
+        r = self.rDatapump.r
+        req = self.rDatapump.req
 
         req.id ** self.ID
         req.rem ** 0
@@ -97,7 +103,8 @@ class StructReader(Unit):
             return [req.addr ** (self.get.data + burst.addrOffset),
                     req.len ** (burst.wordCnt() - 1),
                     ]
-        ForEach(self, self._busBurstInfo, f, ack=req.rd)
+        ForEach(self, self._busBurstInfo, f,
+                ack=streamAck(masters=[self.get], slaves=[req]))
 
         streamSync(masters=[self.get], slaves=[req])
 

@@ -1,8 +1,26 @@
-from hwt.bitmask import mask
+from hwt.bitmask import mask, selectBitRange
+from itertools import chain
 
 
 class AllocationError(Exception):
     pass
+
+
+def reshapedInitItems(actualCellSize, requestedCellSize, values):
+    if actualCellSize < requestedCellSize and requestedCellSize % actualCellSize == 0:
+        itemsInCell = requestedCellSize // actualCellSize
+        itemAlign = len(values) % itemsInCell
+        if itemAlign != 0:
+            values = chain(values, [0 for _ in range(itemsInCell - itemAlign)])
+        for itemsInWord in zip(*[iter(values)] * itemsInCell):
+            item = 0
+            for iIndx, i2 in enumerate(itemsInWord):
+                subIndx = itemsInCell - iIndx - 1
+                _i2 = (mask(actualCellSize * 8) & i2) << (subIndx * actualCellSize * 8)
+                item |= _i2
+            yield item
+    else:
+        raise NotImplementedError()
 
 
 class DenseMemory():
@@ -14,7 +32,7 @@ class DenseMemory():
         """
         @param cellWidth: width of items in memmory
         @param clk: clk signal for synchronization
-        @param parent: parent instance of DenseMemory (memory will be shared with this instance) 
+        @param parent: parent instance of DenseMemory (memory will be shared with this instance)
         """
         assert cellWidth % 8 == 0
         self.cellSize = cellWidth // 8
@@ -141,7 +159,7 @@ class DenseMemory():
 
             isLast = i == size - 1
 
-            assert last == isLast
+            assert last == isLast, "write 0x%x, size %d, expected last:%d in word %d" % (addr, size, isLast, i)
 
             if data is None:
                 raise AssertionError("Invalid read of uninitialized value on addr 0x%x" % 
@@ -212,8 +230,11 @@ class DenseMemory():
 
         d = self.data
         wordCnt = (num * size) // self.cellSize
+
         if initValues is not None:
-            assert len(initValues) == wordCnt
+            if size != self.cellSize:
+                initValues = list(reshapedInitItems(size, self.cellSize, initValues))
+            assert len(initValues) == wordCnt, (len(initValues), wordCnt)
 
         for i in range(wordCnt):
             tmp = indx + i
@@ -228,6 +249,9 @@ class DenseMemory():
         return addr
 
     def getArray(self, addr, itemSize, itemCnt):
+        """
+        Get array stored in memory
+        """
         if itemSize != self.cellSize:
             raise NotImplementedError()
 
@@ -236,7 +260,7 @@ class DenseMemory():
             raise NotImplementedError("unaligned not implemented")
 
         out = []
-        for i in range(baseIndex, baseIndex+itemCnt):
+        for i in range(baseIndex, baseIndex + itemCnt):
             try:
                 v = self.data[i]
             except KeyError:
@@ -244,3 +268,40 @@ class DenseMemory():
 
             out.append(v)
         return out
+
+    def getStruct(self, addr, structT):
+        """
+        Get HStruct from memory
+        """
+        cellWidth = self.cellSize * 8
+        bitAddr = addr * 8
+        s = structT.getValueCls()
+
+        for f in structT.fields:
+            fieldLen = f.type.bit_length()
+
+            # resolve value of field from memory
+            if f.name is not None:
+                fieldOffset = 0
+                field = 0
+                try:
+                    while True:
+                        a = bitAddr + fieldOffset
+                        indx = a // cellWidth
+                        off = a % cellWidth
+                        v = self.data[indx]
+                        if fieldOffset + cellWidth < fieldLen:
+                            bitsLen = cellWidth
+                        else:
+                            bitsLen = fieldLen - fieldOffset
+
+                        field |= selectBitRange(v, off, bitsLen) << fieldOffset
+                        if fieldLen <= fieldOffset + cellWidth:
+                            break
+                except KeyError:
+                    field = None
+                setattr(s, f.name, field)
+
+            bitAddr += fieldLen
+
+        return s

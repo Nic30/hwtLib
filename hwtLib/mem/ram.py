@@ -21,8 +21,8 @@ class RamSingleClock(Unit):
     def _declr(self):
         PORTS = evalParam(self.PORT_CNT).val
 
+        self.clk = Clk()
         with self._paramsShared():
-            self.clk = Clk()
             self.a = BramPort_withoutClk()
             for i in range(PORTS - 1):
                 name = self.genPortName(i + 1)
@@ -31,6 +31,9 @@ class RamSingleClock(Unit):
     @staticmethod
     def genPortName(index):
         return chr(ord('a') + index)
+
+    def getPortByIndx(self, index):
+        return getattr(self, self.genPortName(index))
 
     def connectPort(self, port, mem):
         If(self.clk._onRisingEdge() & port.en,
