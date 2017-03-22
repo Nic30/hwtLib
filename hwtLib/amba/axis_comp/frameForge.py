@@ -43,7 +43,7 @@ def formatIntoWords(frameInfos):
         yield actualWord, wordRecord
 
 
-class AxiSFrameForge(AxiSCompBase):
+class AxiS_frameForge(AxiSCompBase):
     """
     Assemble fields into frame on axi stream interface
     """
@@ -205,7 +205,7 @@ class AxiSFrameForge(AxiSCompBase):
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     from hwtLib.types.ctypes import uint64_t, uint8_t, uint16_t
-    u = AxiSFrameForge(AxiStream,
+    u = AxiS_frameForge(AxiStream,
                        # tuples (type, name) where type has to be instance of Bits type
                        [(uint64_t, "item0"),
                         (uint64_t, None),  # name = None means this field will be ignored

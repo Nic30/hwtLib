@@ -8,7 +8,7 @@ from hwt.synthesizer.param import evalParam, Param
 from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
-from hwtLib.amba.axis_comp.frameForge import AxiSFrameForge
+from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync, streamAck
 from hwtLib.structManipulators.structReader import StructReader
@@ -48,7 +48,7 @@ class StructWriter(StructReader):
         self.frameAssember = []
         for burstInfo in self._busBurstInfo:
             frameTemplate = [(f.type, f.name) for f in burstInfo.fieldInfos]
-            f = AxiSFrameForge(AxiStream, frameTemplate)
+            f = AxiS_frameForge(AxiStream, frameTemplate)
             self.frameAssember.append(f)
         self._registerArray("frameAssember", self.frameAssember)
 
