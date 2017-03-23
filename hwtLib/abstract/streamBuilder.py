@@ -115,7 +115,7 @@ class AbstractStreamBuilder():
         u._updateParamsFrom(configAs)
         u.INPUTS.set(len(srcInterfaces))
 
-        setattr(self.parent, self._findSuitableName(name+"_join"), u)
+        setattr(self.parent, self._findSuitableName(name + "_join"), u)
         self._propagateClkRstn(u)
 
         for joinIn, inputIntf in zip(u.dataIn, srcInterfaces):
@@ -150,11 +150,14 @@ class AbstractStreamBuilder():
         self.end = None  # invalidate None because port was fully connected
         return s
 
-    def reg(self):
+    def reg(self, latency=1, delay=0):
         """
         Create register on interface
         """
-        return self._genericInstance(self.RegCls, "reg")
+        def applyParams(u):
+            u.LATENCY.set(latency)
+            u.DELAY.set(delay)
+        return self._genericInstance(self.RegCls, "reg", setParams=applyParams)
 
     def fifo(self, depth):
         """
