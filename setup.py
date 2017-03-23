@@ -4,7 +4,7 @@
 from setuptools import setup, find_packages
 
 setup(name='hwtLib',
-      version='1.2',
+      version='1.3',
       description='library of hardware components and test for HWToolkit framework (FPGA devel. tools)',
       url='https://github.com/Nic30/hwtLib',
       author='Michal Orsak',
