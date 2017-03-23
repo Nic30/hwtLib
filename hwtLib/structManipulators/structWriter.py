@@ -17,6 +17,10 @@ from hwt.hdlObjects.types.struct import HStruct
 
 
 class StructWriter(StructReader):
+    """
+    Write struct specified in constructor over wDatapump interface on address
+    specified over set interface
+    """
     def _config(self):
         StructReader._config(self)
         self.MAX_OVERLAP = Param(2)
@@ -87,12 +91,10 @@ class StructWriter(StructReader):
                     statements.append(self.set.rd ** ack)
                 else:
                     statements.append(self.set.rd ** 0)
-                
+
                 return statements, ack & self.set.vld
 
             ForEach(self, self._busBurstInfo, propagateRequests)
-
-
 
             # connect write channel
             fa = self.frameAssember
@@ -112,7 +114,7 @@ class StructWriter(StructReader):
 
             def propagateRequests(burst):
                 ack = streamAck(masters=[self.set],
-                                  slaves=[req])
+                                slaves=[req])
                 return [req.addr ** (self.set.data + burst.addrOffset),
                         req.len ** (burst.wordCnt() - 1),
                         ], ack
@@ -145,11 +147,11 @@ if __name__ == "__main__":
         (uint16_t, "item2"),
         (uint16_t, "item3"),
         (uint32_t, "item4"),
-        
+
         (uint32_t, None),
         (uint64_t, "item5"),  # this word is split on two bus words
         (uint32_t, None),
-        
+
         (uint64_t, None),
         (uint64_t, None),
         (uint64_t, None),
@@ -159,4 +161,3 @@ if __name__ == "__main__":
 
     u = StructWriter(s)
     print(toRtl(u))
-    
