@@ -9,7 +9,6 @@ class AbstractStreamBuilder():
 
     @cvar JoinCls: join unit class
     @cvar ForkCls: fork unit class
-    @cvar ForkRegisteredCls: registered fork unit class
     @cvar FifoCls: fifo unit class
     @cvar RegCls : register unit class
     @cvar MuxCls : multiplexer unit class
