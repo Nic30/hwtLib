@@ -31,7 +31,7 @@ class AxiS_frameForge_TC(SimTestCase):
         u = self.u = AxiS_frameForge(AxiStream, structT)
         self.DATA_WIDTH = 64
         u.DATA_WIDTH.set(self.DATA_WIDTH)
-        
+
         self.prepareUnit(self.u)
         if randomized:
             for intf in u._interfaces:
@@ -43,8 +43,8 @@ class AxiS_frameForge_TC(SimTestCase):
         u = self.u
         t = 100
         if randomized:
-            t *= 2 
-            
+            t *= 2
+
         self.doSim(t * Time.ns)
 
         self.assertEmpty(u.dataOut._ag.data)
@@ -54,11 +54,11 @@ class AxiS_frameForge_TC(SimTestCase):
         u = self.u
         MAGIC = 468
         u.item0._ag.data.append(MAGIC)
-        
+
         t = 100
         if randomized:
-            t *= 2 
-            
+            t *= 2
+
         self.doSim(t * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
@@ -70,11 +70,11 @@ class AxiS_frameForge_TC(SimTestCase):
         MAGIC = 468
         u.item0._ag.data.append(MAGIC)
         u.item1._ag.data.append(MAGIC + 1)
-        
+
         t = 100
         if randomized:
-            t *= 2 
-            
+            t *= 2
+
         self.doSim(t * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
@@ -89,7 +89,7 @@ class AxiS_frameForge_TC(SimTestCase):
         u.item2._ag.data.append(MAGIC + 2)
         t = 200
         if randomized:
-            t *= 2 
+            t *= 2
         self.doSim(t * Time.ns)
 
         m = mask(self.DATA_WIDTH // 8)
@@ -98,7 +98,6 @@ class AxiS_frameForge_TC(SimTestCase):
                                      (MAGIC + 1, m, 0),
                                      (MAGIC + 2, m, 1),
                                      ])
-
 
     def test_r_nop1Field(self):
         self.test_nop1Field(randomized=True)
@@ -116,19 +115,20 @@ class AxiS_frameForge_TC(SimTestCase):
         u = self.u = AxiS_frameForge(AxiStream, s3field)
         self.DATA_WIDTH = 64
         u.DATA_WIDTH.set(self.DATA_WIDTH)
-        
+
         self.prepareUnit(self.u)
+
         def enDataOut(s):
             u.dataOut._ag.enable = False
             yield s.wait(50 * Time.ns)
             u.dataOut._ag.enable = True
         self.procs.append(enDataOut)
-        
+
         MAGIC = 468
         u.item0._ag.data.append(MAGIC)
         u.item1._ag.data.append(MAGIC + 1)
         u.item2._ag.data.append(MAGIC + 2)
-        
+
         t = 200
         self.doSim(t * Time.ns)
 
