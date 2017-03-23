@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import Concat, If, log2ceil, ForEach
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.code import ForEach, connect
 from hwt.hdlObjects.types.struct import HStruct
-from hwt.interfaces.std import VldSynced, Handshaked, Signal
-from hwt.interfaces.utils import addClkRstn
+from hwt.interfaces.std import Handshaked, Signal
+from hwt.interfaces.utils import propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam, Param
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
+from hwtLib.amba.axis import AxiStream_withoutSTRB
+from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.handshaked.streamNode import streamSync, streamAck
-from hwtLib.structManipulators.structUtils import StructFieldInfo, \
-    StructBusBurstInfo
+from hwtLib.structManipulators.structUtils import StructBusBurstInfo
 
 
-class StructReader(Unit):
+class StructReader(AxiS_frameParser):
     """
     This unit downloads required structure fields over rDatapump interface from address
     specified by get interface
@@ -28,7 +28,7 @@ class StructReader(Unit):
         @attention: interfaces for each field in struct will be dynamically created
         @attention: structT can not contain fields with variable size like HStream
         """
-        super(StructReader, self).__init__()
+        Unit.__init__(self)
         assert isinstance(structT, HStruct)
         self._structT = structT
 
@@ -36,42 +36,14 @@ class StructReader(Unit):
         self.ID = Param(0)
         self.MAX_DUMMY_WORDS = Param(1)
         AxiRDatapumpIntf._config(self)
-
-    def _createInterfaceForField(self, fInfo):
-        i = VldSynced()
-        i.DATA_WIDTH.set(fInfo.type.bit_length())
-        fInfo.interface = i
-        return i
-
-    def _declareFieldInterfaces(self):
-        """
-        Declare interfaces for struct fields and collect StructFieldInfo for each field
-        """
-        structInfo = []
-        busDataWidth = evalParam(self.DATA_WIDTH).val
-        startBitIndex = 0
-        for f in self._structT.fields:
-            name, t = f.name, f.type
-            if name is not None:
-                info = StructFieldInfo(t, name)
-                startBitIndex = info.discoverFieldParts(busDataWidth, startBitIndex)
-                i = self._createInterfaceForField(info)
-
-                setattr(self, name, i)
-                structInfo.append(info)
-            else:
-                startBitIndex += t.bit_length()
-
-        return structInfo
+        # if this is true field interfaces will be of type VldSynced
+        # and single ready signal will be used for all
+        # else every interface will be instance of Handshaked and it will
+        # have it's own ready(rd) signal
+        self.SHARED_READY = Param(False)
 
     def _declr(self):
-        addClkRstn(self)
-
-        structInfo = self._declareFieldInterfaces()
-        self._busBurstInfo = StructBusBurstInfo.packFieldInfosToBusBurst(
-                                    structInfo,
-                                    evalParam(self.MAX_DUMMY_WORDS).val,
-                                    evalParam(self.DATA_WIDTH).val // 8)
+        AxiS_frameParser._declr(self, declareInput=False)
 
         self.get = Handshaked()  # data signal is addr of structure to download
         self.get._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
@@ -80,65 +52,41 @@ class StructReader(Unit):
             # interface for communication with datapump
             self.rDatapump = AxiRDatapumpIntf()
             self.rDatapump.MAX_LEN.set(StructBusBurstInfo.sumOfWords(self._busBurstInfo))
-
-        self.ack = Signal()  # ready signal form consumer of data from this unit (ready signal for all fields)
+            # [TODO] do not use self._structT (bursts can be formated to something else)
+            self.parser = AxiS_frameParser(AxiStream_withoutSTRB, self._structT)
+        if evalParam(self.SHARED_READY).val:
+            self.ready = Signal()
 
     def _impl(self):
-        maxWordIndex = StructBusBurstInfo.sumOfWords(self._busBurstInfo)
-        wordIndex = self._reg("wordIndex", vecT(log2ceil(maxWordIndex + 1)), 0)
-
-        r = self.rDatapump.r
+        propagateClkRstn(self)
         req = self.rDatapump.req
 
         req.id ** self.ID
         req.rem ** 0
 
-        def f(burst):
-            return [req.addr ** (self.get.data + burst.addrOffset),
-                    req.len ** (burst.wordCnt() - 1),
-                    ]
-        ForEach(self, self._busBurstInfo, f,
-                ack=streamAck(masters=[self.get], slaves=[req]))
+        def f(burst, indx):
+            s = [req.addr ** (self.get.data + burst.addrOffset),
+                 req.len ** (burst.wordCnt() - 1),
+                 req.vld ** self.get.vld
+                 ]
+            if indx == len(self._busBurstInfo) - 1:
+                s.append(self.get.rd ** req.rd)
+            else:
+                s.append(self.get.rd ** 0)
 
-        streamSync(masters=[self.get], slaves=[req])
+            ack = streamAck(masters=[self.get], slaves=[self.rDatapump.req])
+            return s, ack
 
-        busVld = self._sig("busVld")
-        busVld ** (r.valid & r.id._eq(self.ID))
-        r.ready ** self.ack
+        ForEach(self, self._busBurstInfo, f)
 
-        for burstInfo in self._busBurstInfo:
-            for fieldInfo in burstInfo.fieldInfos:
-                lastPart = fieldInfo.parts[-1]
-                signalsOfParts = []
+        r = self.rDatapump.r
+        connect(r, self.parser.dataIn, exclude=[r.id, r.strb])
 
-                for i, part in enumerate(fieldInfo.parts):
-                    dataVld = busVld & wordIndex._eq(part.wordIndex)
-                    fPartSig = part.getSignal(r.data)
-
-                    if part is lastPart:
-                        signalsOfParts.append(fPartSig)
-                        fieldInfo.interface.data ** Concat(*signalsOfParts)
-                        fieldInfo.interface.vld ** dataVld
-
-                    else:
-                        if part.wordIndex < lastPart.wordIndex:
-                            # part is in some word before last, we have to store its value to reg till the last part arrive
-                            fPartReg = self._reg("%s_part_%d" % (fieldInfo.name, i), fPartSig._dtype)
-                            If(dataVld,
-                               fPartReg ** fPartSig
-                            )
-                            signalsOfParts.append(fPartReg)
-                        else:
-                            # part is in same word as last so we can take it directly
-                            signalsOfParts.append(fPartSig)
-
-        If(busVld,
-            If(r.last,
-               wordIndex ** 0
-            ).Else(
-                wordIndex ** (wordIndex + 1)
-            )
-        )
+        for burst in self._busBurstInfo:
+            for fieldInfo in burst.fieldInfos:
+                myIntf = getattr(self, fieldInfo.name)
+                parserIntf = getattr(self.parser, fieldInfo.name)
+                myIntf ** parserIntf
 
 
 if __name__ == "__main__":
