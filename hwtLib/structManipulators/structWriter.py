@@ -81,10 +81,10 @@ class StructWriter(StructReader):
                 statements = [req.addr ** (self.set.data + burst.addrOffset),
                               req.len ** (burst.wordCnt() - 1),
                               ackPropageteInfo.dataIn.data ** int(indx != 0),
-                              ]\
-                              + streamSync(slaves=[req, ackPropageteInfo.dataIn],
-                                           extraConds={req: self.set.vld,
-                                                       ackPropageteInfo.dataIn: self.set.vld})
+                              streamSync(slaves=[req, ackPropageteInfo.dataIn],
+                                         extraConds={req: self.set.vld,
+                                                     ackPropageteInfo.dataIn: self.set.vld})
+                              ]
 
                 isLast = indx == len(self._busBurstInfo) - 1
                 if isLast:
