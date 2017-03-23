@@ -3,6 +3,7 @@
 
 from hwt.code import Concat, If, log2ceil, ForEach
 from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import VldSynced, Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -29,7 +30,7 @@ class StructReader(Unit):
         """
         super(StructReader, self).__init__()
         assert isinstance(structT, HStruct)
-        self._structT = HStruct(structT)
+        self._structT = structT
 
     def _config(self):
         self.ID = Param(0)
@@ -143,7 +144,6 @@ class StructReader(Unit):
 if __name__ == "__main__":
     from hwtLib.types.ctypes import uint16_t, uint32_t, uint64_t
     from hwt.synthesizer.shortcuts import toRtl
-    from hwt.hdlObjects.types.struct import HStruct
 
     s = HStruct(
         (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
