@@ -11,32 +11,25 @@ from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.handshaked.streamNode import streamSync, streamAck
 from hwtLib.structManipulators.structUtils import StructFieldInfo, \
     StructBusBurstInfo
-from hwt.hdlObjects.types.struct import HStruct
 
 
 class StructReader(Unit):
     """
-    This unit downloads required structure fields
-    MAX_DUMMY_WORDS specifies maximum dummy bus words between fields if there is more of ignored space transaction will be split to
+    This unit downloads required structure fields over rDatapump interface from address
+    specified by get interface
+    MAX_DUMMY_WORDS specifies maximum dummy bus words between fields
+    if there is more of ignored space transaction will be split to
     @attention: interfaces of field will not send data in same time
     """
     def __init__(self, structT):
         """
-        example of structT:
-
-        [(uint64_t, "item0"), # tuples (type, name) where type has to be instance of Bits type
-         (uint64_t, None),    # name = None means this field will be ignored
-         (uint64_t, "item1"),
-        ]
-        or instance of HStruct
-
-        * this unit will have item0, item1 interfaces to collect results
+        @param structT: instance of HStruct which specifies data format to download
+        @attention: interfaces for each field in struct will be dynamically created
+        @attention: structT can not contain fields with variable size like HStream
         """
         super(StructReader, self).__init__()
-        if isinstance(structT, HStruct):
-            self._structT = structT
-        else:
-            self._structT = HStruct(structT)
+        assert isinstance(structT, HStruct)
+        self._structT = HStruct(structT)
 
     def _config(self):
         self.ID = Param(0)
@@ -150,8 +143,9 @@ class StructReader(Unit):
 if __name__ == "__main__":
     from hwtLib.types.ctypes import uint16_t, uint32_t, uint64_t
     from hwt.synthesizer.shortcuts import toRtl
+    from hwt.hdlObjects.types.struct import HStruct
 
-    s = [
+    s = HStruct(
         (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
         (uint64_t, None),  # name = None means this field will be ignored
         (uint64_t, "item1"),
@@ -169,7 +163,7 @@ if __name__ == "__main__":
         (uint64_t, None),
         (uint64_t, "item6"),
         (uint64_t, "item7"),
-        ]
+        )
 
     u = StructReader(s)
     print(toRtl(u))
