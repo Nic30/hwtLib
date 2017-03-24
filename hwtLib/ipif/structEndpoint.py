@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.code import If, c, FsmBuilder, Switch
 from hwt.hdlObjects.types.enum import Enum
 from hwt.hdlObjects.types.typeCast import toHVal
 from hwt.interfaces.utils import addClkRstn
-from hwt.code import If, c, FsmBuilder, Switch
 from hwt.synthesizer.param import evalParam
-from hwtLib.abstract.addrSpace import AddrSpaceItem
 from hwtLib.abstract.busConverter import BusConverter
 from hwtLib.interfaces.ipif import IPIF
 
 
-class IpifConverter(BusConverter):
+class IpifStructEndpoint(BusConverter):
     """
     IPIF converter generator
     byte enable and register clock enable signals are ignored
@@ -26,9 +25,11 @@ class IpifConverter(BusConverter):
             self.bus = IPIF()
             
         self.decorateWithConvertedInterfaces()
-        
+        assert self._suggestedAddrWidth() <= evalParam(self.ADDR_WIDTH).val
+                
     def _impl(self):
         DW_B = evalParam(self.DATA_WIDTH).val // 8 
+        assert self.OFFSET % DW_B == 0, "Offset is aligned to data width"
         # build read data output mux
         def isMyAddr(addrSig, addr, size):
             return (addrSig >= addr) & (addrSig < (toHVal(addr) + (size * DW_B)))
@@ -39,7 +40,7 @@ class IpifConverter(BusConverter):
         ipif.ip2bus_error ** 0
         addrVld = ipif.bus2ip_cs
         
-        isInMyAddrSpace = (addr >= self.getMinAddr()) & (addr <= self.getMaxAddr())
+        isInMyAddrSpace = (addr >= self._getMinAddr()) & (addr <= self._getMaxAddr())
         
         st = FsmBuilder(self, st_t)\
         .Trans(st_t.idle,
@@ -102,11 +103,18 @@ class IpifConverter(BusConverter):
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
+    from hwt.hdlObjects.types.struct import HStruct
+    from hwtLib.types.ctypes import uint32_t
+    from hwt.hdlObjects.types.array import Array
     # u = IpifConverter([(i * 4 , "data%d" % i) for i in range(2)] + 
     #                  [(3 * 4, "bramMapped", 32)])
     #
-    u = IpifConverter([(i * 4 , "data%d" % i) for i in range(2)] + 
-                      [AddrSpaceItem(3 * 4, "bramMapped", 32, 2)])
+    u = IpifStructEndpoint(
+            HStruct(
+                (uint32_t, "data0"),
+                (uint32_t, "data1"),
+                (Array(uint32_t, 32), "bramMapped")
+                ))
     
     print(toRtl(u))
     

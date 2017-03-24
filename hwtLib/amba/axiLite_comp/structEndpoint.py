@@ -10,8 +10,6 @@ from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.busConverter import BusConverter
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.constants import RESP_OKAY
-from hwt.hdlObjects.types.array import Array
-from hwt.hdlObjects.types.struct import HStruct
 
 
 class AxiLiteStructEndpoint(BusConverter):
@@ -28,7 +26,7 @@ class AxiLiteStructEndpoint(BusConverter):
             self.bus = AxiLite()
         
         self.decorateWithConvertedInterfaces()
-        assert self.suggestedAddrWidth() <= evalParam(self.ADDR_WIDTH).val
+        assert self._suggestedAddrWidth() <= evalParam(self.ADDR_WIDTH).val
 
     def readPart(self, awAddr, w_hs):
         DW_B = evalParam(self.DATA_WIDTH).val // 8 
@@ -176,6 +174,8 @@ class AxiLiteStructEndpoint(BusConverter):
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
+    from hwt.hdlObjects.types.array import Array
+    from hwt.hdlObjects.types.struct import HStruct
     from hwtLib.types.ctypes import uint32_t
     
     u = AxiLiteStructEndpoint(

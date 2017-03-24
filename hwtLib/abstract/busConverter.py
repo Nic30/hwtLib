@@ -9,7 +9,7 @@ from hwtLib.abstract.addrSpace import AddrSpaceItem
 
 
 class BusConverter(Unit):
-    def __init__(self, structTemplate):
+    def __init__(self, structTemplate, offset=0):
         """
         @param structTemplate:
                     interface types for field type:
@@ -18,18 +18,31 @@ class BusConverter(Unit):
         """
         Unit.__init__(self)
         self.STRUCT_TEMPLATE = structTemplate
-
-    def suggestedAddrWidth(self):
+        self.OFFSET = offset
+    
+    
+    def _getMaxAddr(self):
+        lastItem = self.ADRESS_MAP[-1]
+        if lastItem.size is None:
+            return lastItem.addr
+        else:
+            return lastItem.addr + self._getWordAddrStep() * lastItem.size
+    
+    def _getMinAddr(self):
+        return self.ADRESS_MAP[0].addr
+        
+    
+    def _suggestedAddrWidth(self):
         bitSize = self.STRUCT_TEMPLATE.bit_length()
         AW = evalParam(self.ADDR_WIDTH).val
-        maxAddr = bitSize // AW
+        maxAddr = self.OFFSET + bitSize // AW
 
         if bitSize % AW != 0:
             maxAddr += self.getWordAddrStep()
 
         return maxAddr.bit_length()
     
-    def getWordAddrStep(self):
+    def _getWordAddrStep(self):
         AW = evalParam(self.DATA_WIDTH).val
         return AW // 8
     
@@ -37,7 +50,7 @@ class BusConverter(Unit):
         self.ADRESS_MAP = []
         f = FrameTemplate.fromHStruct(self.STRUCT_TEMPLATE)
         f.resolveFieldPossitionsInFrame(evalParam(self.DATA_WIDTH).val, disolveArrays=False)
-        addrStep = self.getWordAddrStep()
+        addrStep = self._getWordAddrStep()
         
         for indx, fields in f.walkWords():
             if len(fields) > 1:
@@ -50,7 +63,7 @@ class BusConverter(Unit):
                     size = evalParam(field.type.size).val
                 else:
                     size = None
-                asi = AddrSpaceItem(indx * addrStep, field.name, size)
+                asi = AddrSpaceItem(self.OFFSET + indx * addrStep, field.name, size)
                 self.ADRESS_MAP.append(asi)    
         
         assert self.ADRESS_MAP
