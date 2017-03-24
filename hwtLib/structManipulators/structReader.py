@@ -3,6 +3,7 @@
 
 from hwt.code import ForEach, connect
 from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdlObjects.types.structUtils import StructBusBurstInfo
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -10,8 +11,7 @@ from hwt.synthesizer.param import evalParam, Param
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.amba.axis import AxiStream_withoutSTRB
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
-from hwtLib.handshaked.streamNode import streamSync, streamAck
-from hwtLib.structManipulators.structUtils import StructBusBurstInfo
+from hwtLib.handshaked.streamNode import streamAck
 
 
 class StructReader(AxiS_frameParser):

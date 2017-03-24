@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import ForEach
+from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdlObjects.types.structUtils import StructBusBurstInfo
 from hwt.interfaces.std import Handshaked, HandshakeSync
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import evalParam, Param
@@ -12,8 +14,6 @@ from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync, streamAck
 from hwtLib.structManipulators.structReader import StructReader
-from hwtLib.structManipulators.structUtils import StructBusBurstInfo
-from hwt.hdlObjects.types.struct import HStruct
 
 
 class StructWriter(StructReader):

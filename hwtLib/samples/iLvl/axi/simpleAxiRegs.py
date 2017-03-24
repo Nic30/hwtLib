@@ -7,7 +7,9 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axiLite import AxiLite
-from hwtLib.amba.axiLite_comp.conv import AxiLiteConverter
+from hwtLib.amba.axiLite_comp.structEndpoint import AxiLiteStructEndpoint
+from hwt.hdlObjects.types.struct import HStruct
+from hwtLib.types.ctypes import uint32_t
 
 
 class SimpleAxiRegs(Unit):
@@ -26,8 +28,10 @@ class SimpleAxiRegs(Unit):
             self.axi = AxiLite()
         
         with self._paramsShared():
-            self.conv = AxiLiteConverter([(0, "reg0"),
-                                          (4, "reg1")])
+            self.conv = AxiLiteStructEndpoint(
+                            HStruct((uint32_t, "reg0"),
+                                    (uint32_t, "reg1")
+                                    ))
         
         
     def _impl(self):

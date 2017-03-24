@@ -7,7 +7,7 @@ from hwt.synthesizer.param import evalParam
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.handshaked.streamNode import streamSync, streamAck
-from hwt.hdlObjects.types.frameTemplate import FrameTemplate
+from hwt.hdlObjects.types.structUtils import FrameTemplate
 
 
 class AxiS_frameForge(AxiSCompBase):
