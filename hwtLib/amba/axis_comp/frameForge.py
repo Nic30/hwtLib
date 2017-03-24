@@ -7,37 +7,7 @@ from hwt.synthesizer.param import evalParam
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.handshaked.streamNode import streamSync, streamAck
-
-
-class FrameTemplateItem(object):
-    def __init__(self, name, typ, inFrameBitOffset, internalInterface, externalInterface):
-        self.name = name
-        self.type = typ
-
-        self.inFrameBitOffset = inFrameBitOffset
-        # list of tuples (word index, inWordBitUpper, inWordBitLower)
-        self.appearsInWords = []
-
-        self.internalInterface = internalInterface
-        self.externalInterface = externalInterface
-
-
-def formatIntoWords(frameInfos):
-    wordRecord = []
-    actualWord = 0
-    for fi in frameInfos:
-        for w, _, _ in fi.appearsInWords:
-            if w == actualWord:
-                wordRecord.append(fi)
-            elif w > actualWord:
-                yield actualWord, wordRecord
-                wordRecord = [fi, ]
-                actualWord = w
-            else:
-                raise NotImplementedError("Input frame info has to be sorted")
-
-    if wordRecord:
-        yield actualWord, wordRecord
+from hwt.hdlObjects.types.frameTemplate import FrameTemplate
 
 
 class AxiS_frameForge(AxiSCompBase):
@@ -55,14 +25,9 @@ class AxiS_frameForge(AxiSCompBase):
         if axiSIntfCls is not AxiStream:
             raise NotImplementedError()
 
-        self._frameTemplate = []
-        inFrameOffset = 0
-        for f in structT.fields:
-            fi = FrameTemplateItem(f.name, f.type, inFrameOffset, None, None)
-            self._frameTemplate.append(fi)
-            inFrameOffset += f.type.bit_length()
+        self._frameTemplate = FrameTemplate.fromHStruct(structT)
 
-        assert len(self._frameTemplate) > 0
+        assert self._frameTemplate
         AxiSCompBase.__init__(self, axiSIntfCls)
 
     def _declr(self):
@@ -81,53 +46,12 @@ class AxiS_frameForge(AxiSCompBase):
                     setattr(self, item.name, p)
                 item.internalInterface = p
 
-    def _resolveFieldPossitionsInFrame(self):
-        """
-        @return: number of words
-        """
-        DW = evalParam(self.DATA_WIDTH).val
-        bitAddr = 0
-        for item in self._frameTemplate:
-            w = item.type.bit_length()
-            lower = item.inFrameBitOffset % DW
-            remInFirstWord = DW - (item.inFrameBitOffset % DW)
-
-            # align start
-            if w <= remInFirstWord:
-                upper = lower + w
-
-            item.appearsInWords.append((bitAddr // DW, upper, lower))
-            if w <= remInFirstWord:
-                bitAddr += w
-                continue
-
-            if w // DW > 0:
-                # take aligned middle of field
-                for _ in range(w // DW):
-                    item.appearsInWords.append(
-                                                (bitAddr // DW, DW, 0)
-                                                )
-                    bitAddr += DW
-
-            if w != 0:
-                # take reminder at the end
-                item.appearsInWords.append(
-                                            (bitAddr // DW, w, 0)
-                                            )
-                bitAddr += w
-
-        i = bitAddr // DW
-        if bitAddr % DW == 0:
-            return i
-        else:
-            return i + 1
-
     def _impl(self):
         dout = self.dataOut
-        maxWordIndex = self._resolveFieldPossitionsInFrame() - 1
+        maxWordIndex = self._frameTemplate.resolveFieldPossitionsInFrame(evalParam(self.DATA_WIDTH).val) - 1
         if maxWordIndex == 0:
             # single word frame
-            for i, recs in formatIntoWords(self._frameTemplate):
+            for i, recs in self._frameTemplate.walkWords():
                 assert i == 0
                 inPorts = []
                 wordData = self._sig("word%d" % i, dout.data._dtype)
@@ -154,7 +78,7 @@ class AxiS_frameForge(AxiSCompBase):
     
             wcntrSw = Switch(wordCntr_inversed)
             din = {}  # dict word index [] of interfaces
-            for i, recs in formatIntoWords(self._frameTemplate):
+            for i, recs in self._frameTemplate.walkWords():
                 inPorts = []
                 wordData = self._sig("word%d" % i, dout.data._dtype)
     

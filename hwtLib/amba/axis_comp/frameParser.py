@@ -1,13 +1,14 @@
+from math import inf
+
+from hwt.code import log2ceil, If, Concat, And
+from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.struct import HStruct
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import evalParam, Param
-from hwtLib.structManipulators.structUtils import StructFieldInfo, \
+from hwt.hdlObjects.types.structUtils import StructFieldInfo, \
     StructBusBurstInfo
 from hwt.interfaces.std import Handshaked, Signal, VldSynced
 from hwt.interfaces.utils import addClkRstn
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.code import log2ceil, If, Concat, And
-from math import inf
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import evalParam, Param
 
 
 class AxiS_frameParser(Unit):
