@@ -67,13 +67,12 @@ class CLinkedListReader(Unit):
         f.DATA_WIDTH.set(self.DATA_WIDTH)
         f.DEPTH.set(self.BUFFER_CAPACITY)
 
-    def getRegisterFile(self):
+    def getControlInterfaces(self):
         return [
                 self.baseAddr,
                 self.rdPtr,
                 self.wrPtr,
-                self.inBlockRemain
-               ]
+                self.inBlockRemain]
 
     def addrAlignBits(self):
         return log2ceil(self.DATA_WIDTH // 8).val

@@ -6,12 +6,13 @@ from hwt.interfaces.std import BramPort_withoutClk
 from hwt.code import c, If
 from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.busConverter import BusConverter
+from hwt.hdlObjects.types.array import Array
 
 
 def inRange(n, lower, size):
     return (n >= lower) & (n < (lower + size))
 
-class BramPortConvertor(BusConverter):
+class BramPortStructEndpoint(BusConverter):
     def _config(self):
         BramPort_withoutClk._config(self)
         
@@ -19,7 +20,7 @@ class BramPortConvertor(BusConverter):
         with self._paramsShared():
             self.bus = BramPort_withoutClk()
         
-        assert self.getMaxAddr() < (2 ** evalParam(self.ADDR_WIDTH).val)
+        assert self._suggestedAddrWidth() <= evalParam(self.ADDR_WIDTH).val
         self.decorateWithConvertedInterfaces()
     
     def _impl(self):
@@ -75,13 +76,18 @@ class BramPortConvertor(BusConverter):
                          
 
 if __name__ == "__main__":
+    from hwt.hdlObjects.types.struct import HStruct
     from hwt.synthesizer.shortcuts import toRtl
+    from hwtLib.types.ctypes import uint32_t
     
-    u = BramPortConvertor([
-                          (0, "reg0"),
-                          (1, "reg1"),
-                          (1024, "segment0", 1024),
-                          (2 * 1024, "segment1", 1024),
-                          (3 * 1024 + 4, "nonAligned0", 1024)
-                          ])
+    u = BramPortStructEndpoint(
+            HStruct(
+                (uint32_t, "reg0"),
+                (uint32_t, "reg1"),
+                (Array(uint32_t, 1024), "segment0"),
+                (Array(uint32_t, 1024), "segment1"),
+                (Array(uint32_t, 1024 + 4), "nonAligned0")
+                )
+            )
+    u.DATA_WIDTH.set(32)
     print(toRtl(u))

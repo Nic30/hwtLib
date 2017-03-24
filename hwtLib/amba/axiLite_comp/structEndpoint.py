@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, c, FsmBuilder, Or, log2ceil
+from hwt.code import If, c, FsmBuilder, Or, log2ceil, connect
 from hwt.hdlObjects.typeShortcuts import vec
 from hwt.hdlObjects.types.enum import Enum
 from hwt.hdlObjects.types.typeCast import toHVal
@@ -70,7 +70,7 @@ class AxiLiteStructEndpoint(BusConverter):
         for ai in reversed(self._directlyMapped):
             # we are directly sending data from register
             rAssigTop = If(arAddr._eq(ai.addr),
-                           r.data ** ai.port.din 
+                           connect(ai.port.din, r.data, fit=True) 
                         ).Else(
                            rAssigTop
                         )
@@ -158,11 +158,11 @@ class AxiLiteStructEndpoint(BusConverter):
         # output vld
         for ai in self._directlyMapped:
             out = ai.port.dout
-            out.data ** w.data 
+            connect(w.data, out.data, fit=True)  
             out.vld ** (w_hs & (awAddr._eq(vec(ai.addr, addrWidth))))
         
         for ai in self._bramPortMapped:
-            ai.port.din ** w.data 
+            connect(w.data, ai.port.din, fit=True)
             
         return awAddr, w_hs    
     

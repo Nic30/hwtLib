@@ -4,22 +4,28 @@ from hwt.bitmask import mask
 
 
 class AddrSpaceItem(object):
-    def __init__(self, addr, name, size=1, alignOffsetBits=None):
+    """
+    Container of informations about space in memory
+    @ivar port: port for this item on converter
+    @ivar children: nested addr space items (dict addr:addrspaceitem)
+    """
+    def __init__(self, addr, name, size=1, origin=None, alignOffsetBits=None):
         """
         @param addr: base addr for this addr item
         @param name: name of this addr item, (port with same name will be created for this item)
         @param size: used for memories, number of items in memory
         @param alignOffsetBits: used for memories, number of bits which should be trimmed from bus interface
                 to make aligned address for this item
-        @ivar port: port for this item on converter
-        @ivar children: nested addr space items (dict addr:addrspaceitem)
+        @param origin: object from which this was generated usually HStructField 
         """
+        self.port = None
+        self.children = {}
+
         self.name = name
         self.addr = addr
         self.size = size
         self.alignOffsetBits = alignOffsetBits
-        self.port = None
-        self.children = {}
+        self.origin = origin
 
     def assertNoOverlap(self, nextItem):
         left0 = self.addr + self.size

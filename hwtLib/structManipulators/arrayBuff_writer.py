@@ -70,12 +70,12 @@ class ArrayBuff_writer(Unit):
         b.DEPTH.set(self.BUFF_DEPTH)
         self.buff = b
 
-    def getRegisterFile(self):
-        rf = [
-            self.baseAddr,
-            self.uploaded,
-            self.lenBuff_remain]
-        return rf
+    def getControlInterfaces(self):
+        return [
+                self.baseAddr,
+                self.uploaded,
+                self.lenBuff_remain
+                ]
 
     def uploadedCntrHandler(self, st, reqAckHasCome, sizeOfitems):
         uploadedCntr = self._reg("uploadedCntr", self.uploaded._dtype, defVal=0)

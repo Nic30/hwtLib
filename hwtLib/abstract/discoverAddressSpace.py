@@ -76,7 +76,7 @@ class AddressSpaceProbe(object):
         coppy address space map from converter
         """
         m = {}
-        for item in converter._addrSpace:
+        for item in converter.ADRESS_MAP:
             item = copy(item)
 
             item.addr = offset + addrModifier(evalParam(item.addr).val)
