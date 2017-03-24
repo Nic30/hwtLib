@@ -30,7 +30,7 @@ class BusConverter(Unit):
         return maxAddr.bit_length()
     
     def getWordAddrStep(self):
-        AW = evalParam(self.ADDR_WIDTH).val
+        AW = evalParam(self.DATA_WIDTH).val
         return AW // 8
     
     def _parseAddrMap(self):
