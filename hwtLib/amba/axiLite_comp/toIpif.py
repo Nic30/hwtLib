@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.code import FsmBuilder, If, In, Switch, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.enum import Enum
 from hwt.interfaces.utils import addClkRstn
-from hwt.code import FsmBuilder, If, In, Switch, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.interfaces.amba import AxiLite
+from hwtLib.amba.axiLite import AxiLite
 from hwtLib.interfaces.ipif import IPIF
 
 
