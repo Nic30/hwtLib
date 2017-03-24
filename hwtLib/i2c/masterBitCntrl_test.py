@@ -4,16 +4,14 @@
 import unittest
 
 from hwt.hdlObjects.constants import Time
-from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl
 
 
 class I2CMasterBitCntrlTC(SimTestCase):
     def setUp(self):
-        u = I2cMasterBitCtrl()
-        self.u, self.model, self.procs = simPrepare(u)
-        
+        self.u = I2cMasterBitCtrl()
+        self.prepareUnit(self.u)
 
     def testNop(self):
         u = self.u
