@@ -10,11 +10,13 @@ from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.busConverter import BusConverter
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.constants import RESP_OKAY
+from hwt.hdlObjects.types.array import Array
+from hwt.hdlObjects.types.struct import HStruct
 
 
-class AxiLiteConverter(BusConverter):
+class AxiLiteStructEndpoint(BusConverter):
     """
-    Axi lite converter generator
+    Parse request from bus to fields of structure 
     """
     def _config(self):
         AxiLite._config(self)
@@ -26,7 +28,7 @@ class AxiLiteConverter(BusConverter):
             self.bus = AxiLite()
         
         self.decorateWithConvertedInterfaces()
-        assert self.getMaxAddr() < (2 ** evalParam(self.ADDR_WIDTH).val)
+        assert self.suggestedAddrWidth() <= evalParam(self.ADDR_WIDTH).val
 
     def readPart(self, awAddr, w_hs):
         DW_B = evalParam(self.DATA_WIDTH).val // 8 
@@ -34,9 +36,9 @@ class AxiLiteConverter(BusConverter):
         def isMyAddr(addrSig, addr, size):
             return (addrSig >= addr) & (addrSig < (toHVal(addr) + (size * DW_B)))
         
-        rSt_t = Enum('rSt_t', ['rdIdle', 'bramRd', 'rdData'])
-        ar = self.bus.ar
         r = self.bus.r
+        ar = self.bus.ar
+        rSt_t = Enum('rSt_t', ['rdIdle', 'bramRd', 'rdData'])
         isBramAddr = self._sig("isBramAddr")
         rdataReg = self._reg("rdataReg", r.data._dtype)
         
@@ -174,8 +176,15 @@ class AxiLiteConverter(BusConverter):
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    u = AxiLiteConverter([(i * 4 , "data%d" % i) for i in range(2)] + 
-                         [(3 * 4, "bramMapped", 32)])
+    from hwtLib.types.ctypes import uint32_t
+    
+    u = AxiLiteStructEndpoint(
+            HStruct(
+                (uint32_t , "data0"),
+                (uint32_t , "data1"),
+                (Array(uint32_t, 32), "bramMapped")
+                )
+            )
     u.ADDR_WIDTH.set(8)
     u.DATA_WIDTH.set(32)
     
