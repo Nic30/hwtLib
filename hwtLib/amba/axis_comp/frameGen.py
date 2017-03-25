@@ -5,8 +5,9 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.amba.axiLite import AxiLite
-from hwtLib.amba.axiLite_comp.conv import AxiLiteConverter
 from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axiLite_comp.structEndpoint import AxiLiteStructEndpoint
+from hwt.hdlObjects.types.struct import HStruct
 
 
 class AxisFrameGen(Unit):
@@ -28,9 +29,10 @@ class AxisFrameGen(Unit):
         self.cntrl.ADDR_WIDTH.set(evalParam(self.CNTRL_AW))
         self.cntrl.DATA_WIDTH.set(evalParam(self.CNTRL_DW))
 
-        self.conv = AxiLiteConverter([(0x0, "enable"),
-                                      (0x4, "len")
-                                     ])
+        self.conv = AxiLiteStructEndpoint(
+                        HStruct((vecT(self.CNTRL_DW), "enable"),
+                                (vecT(self.CNTRL_DW), "len")
+                                ))
         self.conv.ADDR_WIDTH.set(self.CNTRL_AW)
         self.conv.DATA_WIDTH.set(self.CNTRL_DW)
 

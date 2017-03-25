@@ -25,53 +25,51 @@ class BusConverter(Unit):
         Unit.__init__(self)
         self.STRUCT_TEMPLATE = structTemplate
         self.OFFSET = offset
-    
-    
+
     def _getMaxAddr(self):
         lastItem = self.ADRESS_MAP[-1]
         if lastItem.size is None:
             return lastItem.addr
         else:
             return lastItem.addr + self._getWordAddrStep() * lastItem.size
-    
+
     def _getMinAddr(self):
         return self.ADRESS_MAP[0].addr
-        
-    
+
     def _suggestedAddrWidth(self):
         bitSize = self.STRUCT_TEMPLATE.bit_length()
         AW = evalParam(self.ADDR_WIDTH).val
         maxAddr = self.OFFSET + bitSize // AW
 
         if bitSize % AW != 0:
-            maxAddr += self.getWordAddrStep()
+            maxAddr += self._getWordAddrStep()
 
         return maxAddr.bit_length()
-    
+
     def _getWordAddrStep(self):
         AW = evalParam(self.DATA_WIDTH).val
         return AW // 8
-    
+
     def _parseAddrMap(self):
         self.ADRESS_MAP = []
         f = FrameTemplate.fromHStruct(self.STRUCT_TEMPLATE)
         f.resolveFieldPossitionsInFrame(evalParam(self.DATA_WIDTH).val, disolveArrays=False)
         addrStep = self._getWordAddrStep()
-        
+
         for indx, fields in f.walkWords():
             for field in fields:
                 if field.name is None:
                     continue
-                assert len(field.appearsInWords) == 1 
+                assert len(field.appearsInWords) == 1
                 if isinstance(field.type, Array):
                     size = evalParam(field.type.size).val
                 else:
                     size = None
                 asi = AddrSpaceItem(self.OFFSET + indx * addrStep, field.name, size, origin=field)
-                self.ADRESS_MAP.append(asi)    
-        
+                self.ADRESS_MAP.append(asi)
+
         assert self.ADRESS_MAP
-        
+
     def decorateWithConvertedInterfaces(self):
         self._parseAddrMap()
 
@@ -90,7 +88,7 @@ class BusConverter(Unit):
                 dw = addrItem.origin.type.elmType.bit_length()
                 p.ADDR_WIDTH.set(log2ceil(addrItem.size - 1))
                 self._bramPortMapped.append(addrItem)
-            
+
             if dw == DW:
                 dw = self.DATA_WIDTH
                 p._replaceParam("DATA_WIDTH", dw)
@@ -119,7 +117,7 @@ class BusConverter(Unit):
         for m in interfaceMap:
             if isinstance(m, (InterfaceBase, RtlSignalBase)):
                 intf = m
-                name = getSignalName(intf) 
+                name = getSignalName(intf)
                 if isinstance(intf, (RtlSignalBase, Signal)):
                     dtype = intf._dtype
                     info = BusFieldInfo(access="r", fieldInterface=intf)
@@ -136,7 +134,7 @@ class BusConverter(Unit):
                     info = BusFieldInfo(access="rw", fieldInterface=intf)
                 else:
                     raise NotImplementedError(intf)
-                
+
                 yield (dtype, prefix + name, info)
 
                 if aliginFields:
@@ -158,14 +156,12 @@ class BusConverter(Unit):
                         fillUpWidth = DATA_WIDTH - typeOrListOfInterfaces.bit_length()
                         if fillUpWidth > 0:
                             yield (vecT(fillUpWidth), None, None)
-                    
                 else:
                     # tuple (list of interfacem prefix)
                     yield from cls._resolveRegStructFromIntfMap(prefix + nameOrPrefix,
                                                                 typeOrListOfInterfaces,
                                                                 DATA_WIDTH,
                                                                 align)
-
 
     @classmethod
     def _fromInterfaceMap(cls, parent, onParentName, bus, busDataWidth, configFn, interfaceMap):
@@ -181,11 +177,11 @@ class BusConverter(Unit):
                 interface or
                 tuple (list of interface, prefix, [align])
 
-                (align is optional flag if set all items from list will be aligned (little-endian) to bus word size, 
+                (align is optional flag if set all items from list will be aligned (little-endian) to bus word size,
                  default is false)
                 if interface is specified it will be automatically connected
         """
-        
+
         regsFlatten = []
         intfMap = {}
         DATA_WIDTH = evalParam(bus.DATA_WIDTH).val
@@ -225,6 +221,6 @@ class BusConverter(Unit):
                 convIntf.dout ** intf
 
             elif isinstance(intf, BramPort_withoutClk):
-                intf ** convIntf 
+                intf ** convIntf
             else:
                 raise NotImplementedError(intf)

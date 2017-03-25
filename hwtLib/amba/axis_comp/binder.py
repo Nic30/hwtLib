@@ -13,7 +13,7 @@ def axiStreamDec(sel, in0, in1, out):
        in1.ready ** 0
     ).Else(
        c(in1, out),
-       in0.ready ** 0 
+       in0.ready ** 0
     )
 
 
