@@ -88,7 +88,6 @@ encoding//hwtLib/samples/iLvl/builders/handshakedSimple.py=utf-8
 encoding//hwtLib/samples/iLvl/cameraToAxiStream.py=utf-8
 encoding//hwtLib/samples/iLvl/emptyUnitWithSpi.py=utf-8
 encoding//hwtLib/samples/iLvl/hdlComments.py=utf-8
-encoding//hwtLib/samples/iLvl/hierarchy/axiLiteSlaveContainer.py=utf-8
 encoding//hwtLib/samples/iLvl/hierarchy/groupOfBlockrams.py=utf-8
 encoding//hwtLib/samples/iLvl/hierarchy/netFilter.py=utf-8
 encoding//hwtLib/samples/iLvl/hierarchy/simpleSubunit.py=utf-8
