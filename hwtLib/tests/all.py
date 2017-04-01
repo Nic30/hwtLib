@@ -9,6 +9,7 @@ from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.append_test import AxiS_append_TC
+from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
 from hwtLib.amba.axis_comp.frameForge_test import AxiS_frameForge_TC
 from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
@@ -128,6 +129,7 @@ if __name__ == "__main__":
         Axi3_rDatapumpTC,
         Axi4_wDatapumpTC,
         Axi3_wDatapump_direct_TC,
+        AxiS_en_TC,
         AxiS_measuringFifoTC,
         AxiS_resizer_upscale_TC,
         AxiS_resizer_downscale_TC,

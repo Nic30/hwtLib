@@ -7,6 +7,8 @@ from hwt.interfaces.utils import addClkRstn
 
 class AxiS_en(AxiSCompBase):
     """
+    This component is like on-off switch for axi stream interface
+    which does care about frames.
     If en signal is 0 current frame is finished
     and next frame is started only when en is 1
     """
