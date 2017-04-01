@@ -57,31 +57,31 @@ def streamSync(masters=[], slaves=[], extraConds={}, skipWhen={}):
     expression = []
 
     def vld(intf):
-        try: 
+        try:
             s = skipWhen[intf]
             assert s is not None
         except KeyError:
             s = None
-        
+
         v = _getVld(intf)
         if s is None:
             return v
         else:
             return v | s
-        
+
     def rd(intf):
-        try: 
+        try:
             s = skipWhen[intf]
             assert s is not None
         except KeyError:
             s = None
-        
+
         r = _getRd(intf)
         if s is None:
             return r
         else:
-            return r | s      
-    
+            return r | s
+
     for m in masters:
         otherMasters = where(masters, lambda x: x is not m)
         try:
@@ -99,7 +99,7 @@ def streamSync(masters=[], slaves=[], extraConds={}, skipWhen={}):
                 *extra)
         if skip is not None:
             r = r & ~skip
-            
+
         expression.extend(
             _getRd(m) ** r
         )
@@ -109,16 +109,16 @@ def streamSync(masters=[], slaves=[], extraConds={}, skipWhen={}):
             extra = [extraConds[s], ]
         except KeyError:
             extra = []
-            
+
         try:
             skip = skipWhen[s]
         except KeyError:
             skip = None
-        
+
         v = And(*map(vld, masters),
                 *map(rd, otherSlaves),
                 *extra)
-        
+
         if skip is not None:
             v = v & ~skip
         expression.extend(
