@@ -70,6 +70,7 @@ class MMU_2pageLvl(Unit):
 
         # internal components
         self.lvl1Storage = RamSingleClock()
+        self.lvl1Storage.PORT_CNT.set(1)
         self.lvl1Converter = RamAsHs()
         for u in [self.lvl1Table, self.lvl1Converter, self.lvl1Storage]:
             u.DATA_WIDTH.set(self.ADDR_WIDTH)
