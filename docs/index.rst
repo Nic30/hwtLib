@@ -7,6 +7,7 @@ Welcome to hwtLib's generated documentation!
 ============================================
 
 .. toctree::
+   :maxdepth: 10
    :caption: Contents:
    
    hwtLib
