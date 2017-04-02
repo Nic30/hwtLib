@@ -25,7 +25,8 @@ def reshapedInitItems(actualCellSize, requestedCellSize, values):
 
 class DenseMemory():
     """
-    Simulation component
+    Dense memory for simulation purposes with datapump interfaces
+
     :ivar data: memory dict
     """
     def __init__(self, cellWidth, clk, rDatapumpIntf=None, wDatapumpIntf=None, parent=None):
@@ -181,6 +182,7 @@ class DenseMemory():
     def malloc(self, size, keepOut=None):
         """
         Allocates a block of memory of size and initialize it with None (invalid value)
+
         :param size: Size of each element.
         :param keepOut: space[B] to left between last structure in memory and start of this allocation block
         :return: address of allocated memory
@@ -212,6 +214,7 @@ class DenseMemory():
         """
         Allocates a block of memory for an array of num elements, each of them
         size bytes long, and initializes all its bits to zero.
+        
         :param num: Number of elements to allocate.
         :param size: Size of each element.
         :return: address of allocated memory

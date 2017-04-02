@@ -111,8 +111,7 @@ class CLinkedListWriter(Unit):
 
         :param nextBlockTransition_in: signal which means that baseIndex should be changed to nextBaseIndex
             if nextBaseAddrReady is not high this signal has no effect (= regular handshake)
-        :return: baseIndex  = baseAddr[:ALIGN_BITS],
-            nextBaseAddrReady = nextBaseIndex is ready and nextBlockTransition_in can be used
+        :return: (baseIndex, nextBaseIndex, nextBaseReady is ready and nextBlockTransition_in can be used)
         """
         r = self._reg
         rIn = self.rDatapump.r
