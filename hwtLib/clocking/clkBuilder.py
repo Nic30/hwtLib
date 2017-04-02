@@ -10,9 +10,9 @@ class ClkBuilder(object):
     
     def __init__(self, parent, srcInterface, name=None):
         """
-        @param parent: unit in which will be all units created by this builder instanciated
-        @param name: prefix for all instantiated units
-        @param srcInterface: input clock
+        :param parent: unit in which will be all units created by this builder instanciated
+        :param name: prefix for all instantiated units
+        :param srcInterface: input clock
         """
         self.parent = parent
         self.lastComp = None
@@ -26,11 +26,11 @@ class ClkBuilder(object):
     def timers(self, periods, enableSig=None):
         """
         generate counters specified by count of iterations
-        @param periods: list of integers/params which specifies periods of timers  
-        @param enableSig: enable signal for counters
-        @attention: if tick of timer his high and enable Sig falls low tick will stay high
+        :param periods: list of integers/params which specifies periods of timers  
+        :param enableSig: enable signal for counters
+        :attention: if tick of timer his high and enable Sig falls low tick will stay high
         
-        @return: list of tick signals from timers
+        :return: list of tick signals from timers
         """
         timers = [TimerInfo(i) for i in periods]
         TimerInfo.resolveSharing(timers)

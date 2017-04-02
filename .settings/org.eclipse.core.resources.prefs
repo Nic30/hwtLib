@@ -1,4 +1,5 @@
 eclipse.preferences.version=1
+encoding//docs/conf.py=utf-8
 encoding//hwtLib/amba/axi4_rDatapump.py=utf-8
 encoding//hwtLib/amba/axi4_rDatapump_test.py=utf-8
 encoding//hwtLib/amba/axi4_streamToMem.py=utf-8

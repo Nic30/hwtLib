@@ -258,7 +258,7 @@ class CLinkedListReaderTC(SimTestCase):
         """
         generate reference requests and data
         data words are containing it's indexes, baseAddresses are multiplies baseAddress
-        @param spaceValues: is iterable of space values
+        :param spaceValues: is iterable of space values
         """
         requests = []
         responses = []

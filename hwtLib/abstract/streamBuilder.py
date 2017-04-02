@@ -5,26 +5,26 @@ getClk
 
 class AbstractStreamBuilder():
     """
-    @attention: this is just abstract class unit classes has to be specified in concrete implementation
+    :attention: this is just abstract class unit classes has to be specified in concrete implementation
 
-    @cvar JoinCls: join unit class
-    @cvar ForkCls: fork unit class
-    @cvar FifoCls: fifo unit class
-    @cvar RegCls : register unit class
-    @cvar MuxCls : multiplexer unit class
+    :cvar JoinCls: join unit class
+    :cvar ForkCls: fork unit class
+    :cvar FifoCls: fifo unit class
+    :cvar RegCls: register unit class
+    :cvar MuxCls: multiplexer unit class
 
-    @ivar compId: used for sequential number of components
-    @ivar lastComp: last builded component
-    @ivar end     : last interface of data-path
+    :ivar compId: used for sequential number of components
+    :ivar lastComp: last builded component
+    :ivar end: last interface of data-path
 
-    @attention: input port is taken from self.end
+    :attention: input port is taken from self.end
     """
 
     def __init__(self, parent, srcInterface, name=None):
         """
-        @param parent: unit in which will be all units created by this builder instanciated
-        @param name: prefix for all instantiated units
-        @param srcInterface: start of data-path
+        :param parent: unit in which will be all units created by this builder instanciated
+        :param name: prefix for all instantiated units
+        :param srcInterface: start of data-path
         """
         self.parent = parent
         self.lastComp = None
@@ -73,9 +73,9 @@ class AbstractStreamBuilder():
 
     def _genericInstance(self, unitCls, unitName, setParams=lambda u: u):
         """
-        @param unitCls: class of unit which is being created
-        @param unitName: name for unitCls
-        @param setParams: function which updates parameters as is required
+        :param unitCls: class of unit which is being created
+        :param unitName: name for unitCls
+        :param setParams: function which updates parameters as is required
                         (parameters are already shared with self.end interface)
         """
 
@@ -97,9 +97,10 @@ class AbstractStreamBuilder():
     def join(cls, parent, srcInterfaces, name=None, configAs=None):
         """
         create builder from joined interfaces
-        @param parent: unit where builder should place components
-        @param srcInterfacecs: iterable of interfaces which should be joined together (lower index = higher priority)
-        @param configureAs: interface or another object which configuration should be applied
+
+        :param parent: unit where builder should place components
+        :param srcInterfacecs: iterable of interfaces which should be joined together (lower index = higher priority)
+        :param configureAs: interface or another object which configuration should be applied
         """
         srcInterfaces = list(srcInterfaces)
         if configAs is None:
@@ -128,7 +129,8 @@ class AbstractStreamBuilder():
     def fork(self, noOfOutputs):
         """
         creates fork - split one interface to many
-        @param noOfOutputs: number of output interfaces of the fork
+
+        :param noOfOutputs: number of output interfaces of the fork
         """
         def setChCnt(u):
             u.OUTPUTS.set(noOfOutputs)
@@ -138,7 +140,8 @@ class AbstractStreamBuilder():
     def forkTo(self, *outPorts):
         """
         Same like fork, but outputs ports are automatically connected
-        @param outPorts: ports on which should be outputs of fork connected
+
+        :param outPorts: ports on which should be outputs of fork connected
         """
         noOfOutputs = len(outPorts)
         s = self.fork(noOfOutputs)
@@ -169,7 +172,8 @@ class AbstractStreamBuilder():
     def mux(self, noOfOutputs):
         """
         Create a multiplexer with outputs specified by noOfOutputs
-        @param noOfOutputs: number of outputs of multiplexer
+
+        :param noOfOutputs: number of outputs of multiplexer
         """
         def setChCnt(u):
             u.OUTPUTS.set(noOfOutputs)

@@ -29,7 +29,7 @@ class AxiLiteStructEndpoint(BusConverter):
         assert self._suggestedAddrWidth() <= evalParam(self.ADDR_WIDTH).val, (self._suggestedAddrWidth(), evalParam(self.ADDR_WIDTH).val)
 
     def readPart(self, awAddr, w_hs):
-        DW_B = evalParam(self.DATA_WIDTH).val // 8 
+        DW_B = evalParam(self.DATA_WIDTH).val // 8
         # build read data output mux
 
         def isMyAddr(addrSig, addr, size):

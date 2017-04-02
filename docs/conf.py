@@ -19,6 +19,7 @@
 #
 import os
 import sys
+import re
 sys.path.insert(0,  os.path.abspath('../../HWToolkit/'))
 sys.path.insert(0,  os.path.abspath('../'))
 
@@ -32,10 +33,10 @@ sys.path.insert(0,  os.path.abspath('../'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
-    'sphinx.ext.todo',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.graphviz']
+              'sphinx.ext.todo',
+              'sphinx.ext.viewcode',
+              #'sphinx.ext.napoleon',
+              'sphinx.ext.graphviz']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -180,6 +181,18 @@ epub_copyright = copyright
 epub_exclude_files = ['search.html']
 
 autodoc_mock_imports = ['hwtHdlParsers']
+
+
+notskipregex = re.compile("_[^_]+")
+
+def skip(app, what, name, obj, skip, options):
+    if name == "__init__" or notskipregex.match(name):
+        return False
+    return skip
+
+
+def setup(app):
+    app.connect("autodoc-skip-member", skip)
 
 # update *.rst pages
 from sphinx.apidoc import main

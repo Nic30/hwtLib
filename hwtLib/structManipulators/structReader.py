@@ -20,13 +20,13 @@ class StructReader(AxiS_frameParser):
     specified by get interface
     MAX_DUMMY_WORDS specifies maximum dummy bus words between fields
     if there is more of ignored space transaction will be split to
-    @attention: interfaces of field will not send data in same time
+    :attention: interfaces of field will not send data in same time
     """
     def __init__(self, structT):
         """
-        @param structT: instance of HStruct which specifies data format to download
-        @attention: interfaces for each field in struct will be dynamically created
-        @attention: structT can not contain fields with variable size like HStream
+        :param structT: instance of HStruct which specifies data format to download
+        :attention: interfaces for each field in struct will be dynamically created
+        :attention: structT can not contain fields with variable size like HStream
         """
         Unit.__init__(self)
         assert isinstance(structT, HStruct)

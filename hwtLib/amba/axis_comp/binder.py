@@ -26,7 +26,7 @@ class AxiSBinder(Unit):
     """
     def __init__(self, axiIntfCls=AxiStream):
         """
-        @param axiIntfCls: class of interface which should be used as interface of this unit
+        :param axiIntfCls: class of interface which should be used as interface of this unit
         """
         assert(issubclass(axiIntfCls, AxiStream_withoutSTRB))
         self.axiIntfCls = axiIntfCls

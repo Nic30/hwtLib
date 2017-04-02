@@ -10,10 +10,10 @@ from hwt.synthesizer.param import evalParam
 
 def getEpSignal(sig, op):
     """
-    @param sig: main signal
-    @param op: operator on this signal
+    :param sig: main signal
+    :param op: operator on this signal
 
-    @return: signal modified by this operator or none if this operator is creating new datapath
+    :return: signal modified by this operator or none if this operator is creating new datapath
     """
     # we do not follow results of indexing like something[sig]
     if op.operator == AllOps.INDEX:
@@ -45,8 +45,8 @@ def getParentUnit(sig):
 class AddressSpaceProbe(object):
     def __init__(self, topIntf, getMainSigFn, offset=0):
         """
-        @param topIntf: interface on which should discovery start
-        @param getMainSigFn: function which gets the main signal
+        :param topIntf: interface on which should discovery start
+        :param getMainSigFn: function which gets the main signal
                  form interface which should this code care about
                  usually address
         """

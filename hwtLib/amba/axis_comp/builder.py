@@ -10,7 +10,9 @@ from hwtLib.amba.axis_comp.reg import AxiSReg
 class AxiSBuilder(AbstractStreamBuilder):
     """
     Helper class which simplifies building of large stream paths
-    @ivar end: actual endpoint where building process will continue
+
+    :ivar end: actual endpoint where building process will continue
+
     """
     FifoCls = AxiSFifo
     ForkCls = AxiSFork
@@ -43,8 +45,10 @@ class AxiSBuilder(AbstractStreamBuilder):
     def append(self, axis):
         """
         append frame from "axis" behind frame from actual "end"
-        @attention: frames are not merged they are just appended
-                    to merge frames use "forge"
+
+        :attention: frames are not merged they are just appended
+            to merge frames use "forge"
+
         """
         u = AxiS_append(self.getInfCls())
         u._updateParamsFrom(self.end)

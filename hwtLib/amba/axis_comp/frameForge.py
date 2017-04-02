@@ -16,11 +16,11 @@ class AxiS_frameForge(AxiSCompBase):
     """
     def __init__(self, axiSIntfCls, structT):
         """
-        @param hsIntfCls: class of interface which should be used as interface of this unit
-        @param structT: instance of HStruct used as template for this frame
-        if name is None no input port is generated and space is filled with invalid values
-        litle-endian encoding,
-        supported types of interfaces are: Handshaked, Signal
+        :param hsIntfCls: class of interface which should be used as interface of this unit
+        :param structT: instance of HStruct used as template for this frame
+            if name is None no input port is generated and space is filled with invalid values
+            litle-endian encoding,
+            supported types of interfaces are: Handshaked, Signal
         """
         if axiSIntfCls is not AxiStream:
             raise NotImplementedError()
@@ -55,7 +55,7 @@ class AxiS_frameForge(AxiSCompBase):
                 assert i == 0
                 inPorts = []
                 wordData = self._sig("word%d" % i, dout.data._dtype)
-    
+
                 for fi in recs:
                     assert fi.appearsInWords
                     for w, high, low in fi.appearsInWords:
@@ -75,13 +75,13 @@ class AxiS_frameForge(AxiSCompBase):
             wordCntr_inversed = self._reg("wordCntr_inversed",
                                           vecT(log2ceil(maxWordIndex + 1), False),
                                           defVal=maxWordIndex)
-    
+
             wcntrSw = Switch(wordCntr_inversed)
             din = {}  # dict word index [] of interfaces
             for i, recs in self._frameTemplate.walkWords():
                 inPorts = []
                 wordData = self._sig("word%d" % i, dout.data._dtype)
-    
+
                 for fi in recs:
                     assert fi.appearsInWords
                     for w, high, low in fi.appearsInWords:
@@ -98,16 +98,16 @@ class AxiS_frameForge(AxiSCompBase):
                     v = maxWordIndex
                 else:
                     v = wordCntr_inversed - 1
-    
+
                 if inPorts:
                     # input ready logic
                     wordEnConds = {}
                     for intf in inPorts:
                         wordEnConds[intf] = dout.ready & wordCntr_inversed._eq(maxWordIndex - i)
-    
+
                     streamSync(masters=inPorts,
                                extraConds=wordEnConds)
-    
+
                     # word cntr next logic
                     ack = streamAck(masters=inPorts, slaves=[dout])
                     a = If(ack,
@@ -121,20 +121,20 @@ class AxiS_frameForge(AxiSCompBase):
                 a.extend(dout.valid ** ack)
                 # data out logic
                 a.extend(dout.data ** wordData)
-    
+
                 wcntrSw = wcntrSw.Case(maxWordIndex - i, a)
-    
+
             # to prevent latches
             if not isPow2(maxWordIndex + 1):
                 default = wordCntr_inversed ** maxWordIndex
                 default.extend(dout.valid ** 0)
                 default.extend(dout.data ** None)
-    
+
                 wcntrSw.Default(default)
-    
+
             dout.last ** wordCntr_inversed._eq(0)
             dout.strb ** mask(8)
-    
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl

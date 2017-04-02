@@ -17,15 +17,17 @@ class CLinkedListReader(Unit):
     """
     This unit reads items from (circular) linked list like structure
 
-    struct node {
-        item_t items[ITEMS_IN_BLOCK],
-        struct node * next;
-    };
+    .. code-block:: c
+
+        struct node {
+            item_t items[ITEMS_IN_BLOCK],
+            struct node * next;
+        };
 
     synchronization is obtained by rdPtr/wrPtr (tail/head) pointer
     baseAddr is address of actual node
 
-    @attention: device reads only chunks of size <= BUFFER_CAPACITY/2,
+    :attention: device reads only chunks of size <= BUFFER_CAPACITY/2,
     """
     def _config(self):
         self.ID_WIDTH = Param(4)
@@ -148,7 +150,7 @@ class CLinkedListReader(Unit):
 
         constrainedByInBlockRemain = s("constrainedByInBlockRemain")
         constrainedByInBlockRemain ** (fitTo(sizeByPtrs, inBlockRemain) >= inBlockRemain)
-        
+
         If(constraingSpace > BURST_LEN,
             # download full burst
             req.id ** ID,

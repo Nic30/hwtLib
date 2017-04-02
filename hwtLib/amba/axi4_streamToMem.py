@@ -25,8 +25,10 @@ class Axi4streamToMem(Unit):
     Most simple DMA for AXI4 interface.
 
     0x0 control reg.
+
        rw bit 0 - on/off (1 means on)
        r  bit 1 - idle
+
     0x4 baseAddr
 
     Length of written data is specified by DATA_LEN.

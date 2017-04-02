@@ -17,7 +17,7 @@ from hwt.hdlObjects.types.hdlType import HdlType
 class BusConverter(Unit):
     def __init__(self, structTemplate, offset=0):
         """
-        @param structTemplate:
+        :param structTemplate:
                     interface types for field type:
                         primitive types like Bits -> RegCntrl interface
                         Array -> BramPort_withoutClk interface
@@ -104,15 +104,16 @@ class BusConverter(Unit):
     def _resolveRegStructFromIntfMap(cls, prefix, interfaceMap, DATA_WIDTH, aliginFields=False):
         """
         Generate flatened register map for HStruct
-        @param prefix: prefix for register name
-        @param interfaceMap: iterable of
+
+        :param prefix: prefix for register name
+        :param interfaceMap: iterable of
                  tuple (type, name) or
                  interface or
                  tuple (list of interface, prefix, [aliginFields])
 
                  (aliginFields is optional flag if set all items from list will be aligned to bus word size, default is false)
-        @param DATA_WIDTH: width of word
-        @return: generator of tuple (type, name, BusFieldInfo)
+        :param DATA_WIDTH: width of word
+        :return: generator of tuple (type, name, BusFieldInfo)
         """
         for m in interfaceMap:
             if isinstance(m, (InterfaceBase, RtlSignalBase)):
@@ -168,18 +169,16 @@ class BusConverter(Unit):
         """
         Generate converter by specified struct and connect interfaces if are specified
         in impl phase
-        @param parent: unit where converter should be instantiated
-        @param onParentName: name of converter in parent
-        @param bus: bus interface for converter
-        @param configFn: function (converter) which should be used for configuring of converter
-        @param interfaceMap: iterable of
-                tuple (type, name) or
-                interface or
-                tuple (list of interface, prefix, [align])
 
-                (align is optional flag if set all items from list will be aligned (little-endian) to bus word size,
-                 default is false)
-                if interface is specified it will be automatically connected
+        :param parent: unit where converter should be instantiated
+        :param onParentName: name of converter in parent
+        :param bus: bus interface for converter
+        :param configFn: function (converter) which should be used for configuring of converter
+        :param interfaceMap: iterable of tuple (type, name) or interface
+            or tuple (list of interface, prefix, optionally align)
+            (align is optional flag if set all items from list will be aligned (little-endian)
+            to bus word size, default is false)
+            if interface is specified it will be automatically connected
         """
 
         regsFlatten = []
