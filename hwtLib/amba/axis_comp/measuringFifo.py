@@ -15,7 +15,7 @@ from hwtLib.mem.fifo import Fifo
 
 def strbToRem(strbBits):
     """
-    @return: tuples (mask, numberofBits)
+    :return: tuples (mask, numberofBits)
     """
     for rem in range(strbBits):
         if (rem == 0):

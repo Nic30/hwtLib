@@ -10,11 +10,11 @@ from hwt.synthesizer.param import evalParam
 
 class TimerInfo(object):
     """
-    @ivar cntrRegister: counter register for this timer
-    @ivar tick: signal with tick from this timer
-    @ivar parent: parent TimerInfo object from which this timer can be generated
-    @ivar maxValOriginal: original value of maxVal
-    @ivar maxVal: evaluated value of maxVal
+    :ivar cntrRegister: counter register for this timer
+    :ivar tick: signal with tick from this timer
+    :ivar parent: parent TimerInfo object from which this timer can be generated
+    :ivar maxValOriginal: original value of maxVal
+    :ivar maxVal: evaluated value of maxVal
     """
     __slots__ = ['maxVal', 'maxValOriginal', 'parent', 'cntrRegister', 'tick']
     

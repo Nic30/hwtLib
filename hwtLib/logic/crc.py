@@ -45,7 +45,7 @@ def parsePolyStr(polyStr, width):
     x^2*7 - 1
     or
     x**2 - 1
-    @return: list of coeficients
+    :return: list of coeficients
     """
     termpat = re.compile('([-+]?\s*\d*\.?\d*)(x?\^?\d?)')
     res_dict = {}

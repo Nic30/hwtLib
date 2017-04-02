@@ -24,12 +24,12 @@ class MMU_2pageLvl(Unit):
     and only items from leaf page tables are download on each request
     over rDatapump interface
 
-    @attention: if item in pagetable is BAD_PHYS_ADDR output signal segfault becomes 1
+    :attention: if item in pagetable is BAD_PHYS_ADDR output signal segfault becomes 1
                 and unit will stop working
-    @attention: rootPageTable has to be initialized before first request
+    :attention: rootPageTable has to be initialized before first request
                over virtIn interface
-    @attention: rootPageTable has write only access
-    @attention: use value -1 to mark that page is not mapped, it will result in segfault signal asserted high
+    :attention: rootPageTable has write only access
+    :attention: use value -1 to mark that page is not mapped, it will result in segfault signal asserted high
                 when this address is accessed
     """
     def _config(self):
@@ -70,6 +70,7 @@ class MMU_2pageLvl(Unit):
 
         # internal components
         self.lvl1Storage = RamSingleClock()
+        self.lvl1Storage.PORT_CNT.set(1)
         self.lvl1Converter = RamAsHs()
         for u in [self.lvl1Table, self.lvl1Converter, self.lvl1Storage]:
             u.DATA_WIDTH.set(self.ADDR_WIDTH)

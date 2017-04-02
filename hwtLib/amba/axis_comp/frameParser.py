@@ -17,10 +17,10 @@ class AxiS_frameParser(Unit):
     """
     def __init__(self, axiSCls, structT):
         """
-        @param axiSCls: class of input axi stream interface
-        @param structT: instance of HStruct which specifies data format to download
-        @attention: interfaces for each field in struct will be dynamically created
-        @attention: structT can not contain fields with variable size like HStream
+        :param axiSCls: class of input axi stream interface
+        :param structT: instance of HStruct which specifies data format to download
+        :attention: interfaces for each field in struct will be dynamically created
+        :attention: structT can not contain fields with variable size like HStream
         """
         super(AxiS_frameParser, self).__init__()
         assert isinstance(structT, HStruct)

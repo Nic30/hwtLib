@@ -7,7 +7,7 @@ class HandshakedCompBase(Unit):
 
     def __init__(self, hsIntfCls):
         """
-        @param hsIntfCls: class of interface which should be used as interface of this unit
+        :param hsIntfCls: class of interface which should be used as interface of this unit
         """
         assert(issubclass(hsIntfCls, (Handshaked, HandshakeSync)))
         self.intfCls = hsIntfCls

@@ -8,7 +8,7 @@ class IOBUF(EmptyUnit):
     """
     Input output buffer which allow you to use external interface of the chip
     
-    @attention: we do not wont this in our serialized code 
+    :attention: we do not wont this in our serialized code 
                 because it is part of synthesis tool as well
                 thats why we are excluding it from serialization
     """

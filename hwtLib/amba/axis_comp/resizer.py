@@ -10,10 +10,11 @@ from hwtLib.amba.axis_comp.builder import AxiSBuilder
 class AxiS_resizer(AxiSCompBase):
     """
     Change data with of interface
-    @attention: in upscale mode id and other signals which are not dependent on data width 
-    are propagated only from last word
-    @attention: in downscale mode strb does not affect if word should be send this means that
-    there can be words with strb=0 if strb of input is ton fully set
+
+    :attention: in upscale mode id and other signals which are not dependent on data width
+        are propagated only from last word
+    :attention: in downscale mode strb does not affect if word should be send this means that
+        there can be words with strb=0 if strb of input is ton fully set
     """
     def _config(self):
         AxiSCompBase._config(self)

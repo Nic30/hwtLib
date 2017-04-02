@@ -33,7 +33,7 @@ class AxiSExtractor(Unit):
     (wordindex, name, bitoffset, size)"""
     def __init__(self, data_map):
         """
-        @param data_map: array of tupes (wordIndex, name) or (wordIndex, name, offset, bitSize)
+        :param data_map: array of tupes (wordIndex, name) or (wordIndex, name, offset, bitSize)
         """
         self.DATA_MAP = data_map
         super().__init__()

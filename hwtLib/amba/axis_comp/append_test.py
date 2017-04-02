@@ -20,7 +20,7 @@ class AxiS_append_TC(SimTestCase):
         self.doSim(100 * Time.ns)
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(MAGIC, m, 1)])
-    
+
     def test_passDupletFrame1word(self):
         m = mask(64 // 8)
         MAGIC = 987

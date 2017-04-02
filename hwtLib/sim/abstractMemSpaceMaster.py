@@ -11,7 +11,7 @@ class MemorySpaceItem(object):
     def write(self, data, thenFn=None):
         """
         write data to place in memory
-        @param thenFn: callback function with single parameter: readedData
+        :param thenFn: callback function with single parameter: readedData
         """
         asi = self.addrSpaceItem
         self.memHandler._write(asi.addr, asi.size, data, self.mask, thenFn=thenFn)
@@ -19,7 +19,7 @@ class MemorySpaceItem(object):
     def read(self, thenFn):
         """
         read data from place in memory
-        @param thenFn: callback function with single parameter: readedData
+        :param thenFn: callback function with single parameter: readedData
         """
         asi = self.addrSpaceItem
         self.memHandler._write(asi.addr, asi.size, thenFn=thenFn)
