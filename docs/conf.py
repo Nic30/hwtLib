@@ -140,8 +140,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'hwtLib.tex', 'hwtLib Documentation',
-     'Author', 'manual'),
+    (master_doc, 'hwtLib.tex', 'hwtLib generated documentation',
+     'Michal Orsak', 'manual'),
 ]
 
 
