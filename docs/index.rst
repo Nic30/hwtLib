@@ -1,5 +1,5 @@
 Welcome to hwtLib's generated documentation!
-==================================
+============================================
 
 This documentation is automatically generated from source code on every push into master which pass testing.
 hwtLib is package of hardware components (like vhld/verilog library) for HWToolkit (hwt python3 module) it 
