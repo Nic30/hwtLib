@@ -52,8 +52,24 @@ class TimerInfo(object):
         # raise NotImplementedError()
 
     @staticmethod
-    def _instantiateTimer(parentUnit, timer, enableSig=None):
+    def _instantiateTimer(parentUnit, timer, enableSig=None, rstSig=None):
+        """
+        :param enableSig: enable signal for all counters
+        :param rstSig: reset signal for all counters
+        """
+
         if timer.parent is None:
+            if enableSig is None:
+                if rstSig is None:
+                    updateEnSig = None
+                else:
+                    updateEnSig = enableSig
+            else:
+                if rstSig is None:
+                    updateEnSig = enableSig
+                else:
+                    updateEnSig = enableSig | rstSig
+    
             maxVal = timer.maxVal - 1
             assert maxVal >= 0
             timer.tick = parentUnit._sig("timerTick%d" % timer.maxVal)
@@ -66,12 +82,16 @@ class TimerInfo(object):
                                 maxVal
                                 )
                 timer.cntrRegister = r
-                nLogic = If(r._eq(0),
+                
+                rstCnd = r._eq(0)
+                if rstSig is not None:
+                    rstCnd = rstCnd | rstSig
+                nLogic = If(rstCnd,
                              r ** (timer.maxValOriginal - 1)  # use original to propagate parameter
                          ).Else(
                              r ** (r - 1)
                          )
-                if enableSig is not None:
+                if updateEnSig is not None:
                     If(enableSig,
                        nLogic
                     )
@@ -86,6 +106,7 @@ class TimerInfo(object):
             if p.maxVal == timer.maxVal:
                 timer.cntrRegister = p.cntrRegister 
                 timer.tick = p.tick
+
             elif p.maxVal < timer.maxVal:
                 maxVal = (timer.maxVal // p.maxVal) - 1
                 assert maxVal >= 0
@@ -100,8 +121,14 @@ class TimerInfo(object):
                     tick = p.tick
                 else:
                     tick = p.tick & enableSig
+                    
+                rstCnd = r._eq(0)
+                if rstSig is not None:
+                    rstCnd = rstCnd | rstSig
+                    tick = tick | rstSig
+
                 If(tick,
-                    If(r._eq(0),
+                    If(rstCnd,
                         r ** ((timer.maxValOriginal // p.maxValOriginal) - 1)  # use original to propagate parameter
                     ).Else(
                         r ** (r - 1)
@@ -117,10 +144,14 @@ class TimerInfo(object):
                 timer.tick = p.cntrRegister[bitIndx]
 
     @staticmethod
-    def instantiate(parentUnit, timers, enableSig=None):
+    def instantiate(parentUnit, timers, enableSig=None, rstSig=None):
+        """
+        :param enableSig: enable signal for all counters
+        :param rstSig: reset signal for all counters
+        """
         for timer in timers:
             if not hasattr(timer, "tick"):
-                TimerInfo._instantiateTimer(parentUnit, timer, enableSig=enableSig)
+                TimerInfo._instantiateTimer(parentUnit, timer, enableSig=enableSig, rstSig=rstSig)
             
     def __repr__(self):
         return "<%s maxVal=%d>" % (self.__class__.__name__, self.maxVal)

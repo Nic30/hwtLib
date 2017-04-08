@@ -23,18 +23,20 @@ class ClkBuilder(object):
         self.name = name
         self.compId = 0
         
-    def timers(self, periods, enableSig=None):
+    def timers(self, periods, enableSig=None, rstSig=None):
         """
         generate counters specified by count of iterations
+
         :param periods: list of integers/params which specifies periods of timers  
-        :param enableSig: enable signal for counters
+        :param enableSig: enable signal for all counters
+        :param rstSig: reset signal for all counters
         :attention: if tick of timer his high and enable Sig falls low tick will stay high
         
         :return: list of tick signals from timers
         """
         timers = [TimerInfo(i) for i in periods]
         TimerInfo.resolveSharing(timers)
-        TimerInfo.instantiate(self.parent, timers, enableSig=enableSig)
+        TimerInfo.instantiate(self.parent, timers, enableSig=enableSig, rstSig=rstSig)
         
         return list(map(lambda timer: timer.tick, timers))
     
