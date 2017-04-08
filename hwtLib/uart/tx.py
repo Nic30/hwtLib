@@ -55,7 +55,7 @@ class UartTx(Unit):
         )
         din.rd ** ~en
 
-        txd = r("reg_rxd", defVal=1)
+        txd = r("reg_txd", defVal=1)
         If(tick & en,
            txd ** data[0]
         )
