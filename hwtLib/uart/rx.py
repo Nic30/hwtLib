@@ -41,12 +41,13 @@ class UartRx(Unit):
         
         en = self._reg("en", defVal=0)
         first = self._reg("first", defVal=1)
-        RxD_data = self._reg("RxD_data", vecT(1 + 8), mask(8 + 1))
+        RxD_data = self._reg("RxD_data", vecT(1 + 8))
         startBitWasNotStartbit = self._sig("startBitWasNotStartbit") 
         # it can happen that there is just glitch on wire and bit was not startbit only begin was resolved wrong 
         
-        sampleTick = clkBuilder.timers([(self.FREQ // self.BAUD) // self.OVERSAMPLING],
-                                       enableSig=en)[0]
+        sampleTick = clkBuilder.timer(("sampleTick", (self.FREQ // self.BAUD) // self.OVERSAMPLING),
+                                       enableSig=en,
+                                       rstSig=~en)
         
         # synchronize RxD to our clk domain
         RxD_sync = self._reg("RxD_sync", defVal=1)
@@ -54,24 +55,30 @@ class UartRx(Unit):
         
         rxd, rxd_vld = clkBuilder.oversample(RxD_sync,
                                              self.OVERSAMPLING,
-                                             sampleTick)
-        isLastBit = clkBuilder.timers([10],
-                                    enableSig=en & rxd_vld,
-                                    rstSig=startBitWasNotStartbit)[0]
+                                             sampleTick,
+                                             rstSig=~en)
+        isLastBit = clkBuilder.timer(("isLastBitTick", 10),
+                                     enableSig=rxd_vld,
+                                     rstSig=~en)
         
         
         If(en,
            If(rxd_vld,
                 RxD_data ** Concat(rxd, RxD_data[9:1]),  # shift data from left
-                en ** ~isLastBit,
-                first ** isLastBit,
+                If(startBitWasNotStartbit,
+                    en ** 0,
+                    first ** 1,
+                ).Else(
+                    en ** ~isLastBit,
+                    first ** isLastBit,
+                )
            )
         ).Elif(RxD_sync._eq(START_BIT),
-            # potencial start bit detected, begin scanning sequence
+            # potential start bit detected, begin scanning sequence
             en ** 1,
         )
         startBitWasNotStartbit ** (en & first & rxd_vld & (rxd != START_BIT))
-        self.dataOut.vld ** (en & rxd_vld & isLastBit & RxD_data[0]._eq(START_BIT) & rxd._eq(STOP_BIT))
+        self.dataOut.vld ** (rxd_vld & isLastBit & RxD_data[0]._eq(START_BIT) & rxd._eq(STOP_BIT))
        
         self.dataOut.data ** RxD_data[9:1]
          

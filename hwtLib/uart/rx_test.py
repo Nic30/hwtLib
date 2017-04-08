@@ -12,7 +12,7 @@ class UartRxTC(SimTestCase):
 
         u = self.u = UartRx()
         u.BAUD.set(115200)
-        u.FREQ.set(115200 * self.OVERSAMPLING)
+        u.FREQ.set(115200 * self.OVERSAMPLING * 2)
         u.OVERSAMPLING.set(self.OVERSAMPLING)
         
         self.prepareUnit(u)
@@ -30,7 +30,7 @@ class UartRxTC(SimTestCase):
         STOP_BIT = 1
         
         rx = self.u.rxd._ag.data
-        os = self.OVERSAMPLING
+        os = self.OVERSAMPLING * 2
         for ch in string:
             rx.extend([START_BIT for _ in range(os)])
             for i in range(8):
@@ -39,14 +39,15 @@ class UartRxTC(SimTestCase):
             rx.extend([STOP_BIT for _ in range(os)])        
     
     def test_nop(self):
-        self.doSim(200 * Time.ns, )
+        self.u.rxd._ag.data.append(1)
+        self.doSim(200 * Time.ns,)
         self.assertEqual(self.getStr(), "")
         
         
     def test_simple(self):
         t = "simple"
         self.sendStr(t)
-        self.doSim(self.OVERSAMPLING * 10 * 10 * (len(t) + 5) * Time.ns)
+        self.doSim(self.OVERSAMPLING * 200 * (len(t) + 5) * Time.ns)
         self.assertEqual(self.getStr(), t)
         
         
