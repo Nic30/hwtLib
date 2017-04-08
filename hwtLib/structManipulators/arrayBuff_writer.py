@@ -14,14 +14,6 @@ from hwtLib.amba.axiDatapumpIntf import AddrSizeHs, AxiWDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
 
-
-def errListeners_inputSize(self):
-    inputSizeErr = self._reg("inputSizeErr_reg", defVal=0)
-    self.inputSizeErr ** inputSizeErr
-    If(self.items.vld & self.items.data._eq(0),
-       inputSizeErr ** 1
-    )
-
 stT = Enum("st_t", ["waitOnInput", "waitOnDataTx", "waitOnAck"])
 
 
@@ -61,8 +53,7 @@ class ArrayBuff_writer(Unit):
         self.baseAddr = RegCntrl()
         self.baseAddr.DATA_WIDTH.set(self.ADDR_WIDTH)
 
-        self.lenBuff_remain = VectSignal(16)
-        self.inputSizeErr = Signal()
+        self.buff_remain = VectSignal(16)
 
         b = HandshakedFifo(Handshaked)
         b.DATA_WIDTH.set(self.SIZE_WIDTH)
@@ -74,7 +65,7 @@ class ArrayBuff_writer(Unit):
         return [
                 self.baseAddr,
                 self.uploaded,
-                self.lenBuff_remain
+                self.buff_remain
                 ]
 
     def uploadedCntrHandler(self, st, reqAckHasCome, sizeOfitems):
@@ -96,9 +87,7 @@ class ArrayBuff_writer(Unit):
 
         propagateClkRstn(self)
 
-        errListeners_inputSize(self)
-
-        sizeOfitems = self._reg("sizeOfitems", vecT(buff.size._dtype.bit_length()))
+        sizeOfitems = self._reg("sizeOfItems", vecT(buff.size._dtype.bit_length()))
 
         # aligned base addr
         baseAddr = self._reg("baseAddrReg", vecT(self.ADDR_WIDTH - ALIGN_BITS))
@@ -110,7 +99,7 @@ class ArrayBuff_writer(Unit):
         # offset in buffer and its complement        
         offset = self._reg("offset", vecT(log2ceil(ITEMS + 1), False), defVal=0)
         remaining = self._reg("remaining", vecT(log2ceil(ITEMS + 1), False), defVal=ITEMS)
-        connect(remaining, self.lenBuff_remain, fit=True) 
+        connect(remaining, self.buff_remain, fit=True) 
 
         addrTmp = self._sig("baseAddrTmp", baseAddr._dtype)
         addrTmp ** (baseAddr + offset)

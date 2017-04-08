@@ -246,7 +246,7 @@ class ArrayBuff_writer_TC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(ArrayBuff_writer_TC('test_fullFill_withoutAck'))
-    # suite.addTest(unittest.makeSuite(ArrayBuff_writer_TC))
+    # suite.addTest(ArrayBuff_writer_TC('test_fullFill_withoutAck'))
+    suite.addTest(unittest.makeSuite(ArrayBuff_writer_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
