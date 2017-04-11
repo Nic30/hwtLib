@@ -5,18 +5,20 @@ from hwtLib.uart.rx import UartRx
 from hwt.bitmask import selectBit
 
 
-class UartRxTC(SimTestCase):
+class UartRxBasicTC(SimTestCase):
     def setUp(self):
         SimTestCase.setUp(self)
         self.OVERSAMPLING = 16
-
+        self.FREQ = 115200 * self.OVERSAMPLING
+        self.BAUD = 115200
+        
         u = self.u = UartRx()
-        u.BAUD.set(115200)
-        u.FREQ.set(115200 * self.OVERSAMPLING * 2)
+        u.BAUD.set(self.BAUD)
+        u.FREQ.set(self.FREQ)
         u.OVERSAMPLING.set(self.OVERSAMPLING)
         
         self.prepareUnit(u)
-    
+
     def getStr(self):
         s = ""
         for d in self.u.dataOut._ag.data:
@@ -30,7 +32,7 @@ class UartRxTC(SimTestCase):
         STOP_BIT = 1
         
         rx = self.u.rxd._ag.data
-        os = self.OVERSAMPLING * 2
+        os = self.FREQ // self.BAUD
         for ch in string:
             rx.extend([START_BIT for _ in range(os)])
             for i in range(8):
@@ -47,15 +49,28 @@ class UartRxTC(SimTestCase):
     def test_simple(self):
         t = "simple"
         self.sendStr(t)
-        self.doSim(self.OVERSAMPLING * 200 * (len(t) + 5) * Time.ns)
+        self.doSim(self.OVERSAMPLING * (self.FREQ // self.BAUD) * 10 * (len(t) + 5) * Time.ns)
         self.assertEqual(self.getStr(), t)
         
+class UartRxTC(UartRxBasicTC):
+    def setUp(self):
+        SimTestCase.setUp(self)
+        self.OVERSAMPLING = 16
+        self.FREQ = 115200 * self.OVERSAMPLING * 4
+        self.BAUD = 115200
         
+        u = self.u = UartRx()
+        u.BAUD.set(self.BAUD)
+        u.FREQ.set(self.FREQ)
+        u.OVERSAMPLING.set(self.OVERSAMPLING)
+        
+        self.prepareUnit(u)
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
     # suite.addTest(UartRxTC('test_simple'))
+    suite.addTest(unittest.makeSuite(UartRxBasicTC))
     suite.addTest(unittest.makeSuite(UartRxTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

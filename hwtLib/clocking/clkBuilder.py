@@ -7,7 +7,12 @@ from hwtLib.clocking.timers import TimerInfo
 
 
 class ClkBuilder(object):
-    
+    """
+    :ivar compId: last component id used to avoid name collisions
+    :ivar parent: unit in which will be all units created by this builder instanciated
+    :ivar name: prefix for all instantiated units
+    :ivar end: interface where builder endend
+    """
     def __init__(self, parent, srcInterface, name=None):
         """
         :param parent: unit in which will be all units created by this builder instanciated
@@ -15,7 +20,6 @@ class ClkBuilder(object):
         :param srcInterface: input clock
         """
         self.parent = parent
-        self.lastComp = None
         self.end = srcInterface
         if name is None:
             name = "gen_" + getSignalName(srcInterface)
@@ -45,6 +49,7 @@ class ClkBuilder(object):
 
             t = TimerInfo(period, name=name)
             timers.append(t)
+
         TimerInfo.resolveSharing(timers)
         TimerInfo.instantiate(self.parent, timers, enableSig=enableSig, rstSig=rstSig)
         
@@ -74,20 +79,19 @@ class ClkBuilder(object):
         sampleDoneTick = self.timer((n + "_oversampleDoneTick" , sampleCount),
                                     enableSig=sampleTick,
                                     rstSig=rstSig)
-        oversampleCntr = self.parent._reg(n + "_oversample_cntr%d" % (sCnt),
+        oversampleCntr = self.parent._reg(n + "_oversample%d_cntr" % (sCnt),
                                           vecT(log2ceil(sampleCount) + 1, False),
                                           defVal=0)
 
-        if rstSig is not None:
-            _sampleDoneTick = sampleDoneTick | rstSig
-            sampleTick = sampleTick | rstSig
-            
-        If(sampleTick,
-            If(_sampleDoneTick,
-                oversampleCntr ** 0
-            ).Elif(sig,
-                oversampleCntr ** (oversampleCntr + 1)
-            )
+        if rstSig is None:
+            rstSig = sampleDoneTick
+        else:
+            rstSig = rstSig | sampleDoneTick
+
+        If(sampleDoneTick,
+            oversampleCntr ** 0
+        ).Elif(sampleTick & sig,
+            oversampleCntr ** (oversampleCntr + 1)
         )
         
         oversampled = self.parent._sig(n + "_oversampled%d" % (sCnt))

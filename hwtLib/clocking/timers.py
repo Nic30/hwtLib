@@ -74,24 +74,13 @@ class TimerInfo(object):
                             maxVal
                             )
             timer.cntrRegister = r
-            if enableSig is None:
-                tick = p.tick
-            else:
-                tick = p.tick & enableSig
-                
-            rstCnd = r._eq(0)
-            if rstSig is not None:
-                rstCnd = rstCnd | rstSig
-                tick = tick | rstSig
 
-            If(tick,
-                If(rstCnd,
-                    r ** ((timer.maxValOriginal // p.maxValOriginal) - 1)  # use original to propagate parameter
-                ).Else(
-                    r ** (r - 1)
-                )
-            )
-            timer.tick ** (r._eq(0) & p.tick)
+            tick = TimerInfo._instantiateTimerTickLogic(timer, 
+                                                        (timer.maxValOriginal // p.maxValOriginal) - 1,
+                                                        p.tick & enableSig,
+                                                        rstSig)
+
+            timer.tick ** (tick & p.tick)
     
         else:
             # take specific bit from wider counter
@@ -101,6 +90,48 @@ class TimerInfo(object):
             timer.tick = p.cntrRegister[bitIndx]
             if enableSig is not None:
                 timer.tick = timer.tick & enableSig
+
+    @staticmethod
+    def _instantiateTimerTickLogic(timer, origMaxVal, enableSig, rstSig):
+        r = timer.cntrRegister
+        
+        if enableSig is None:
+            if rstSig is None:
+                If(r._eq(0),
+                     r ** origMaxVal  
+                 ).Else(
+                     r ** (r - 1)
+                 )
+            else:
+                If(rstSig | r._eq(0),
+                    r ** origMaxVal  
+                ).Else(
+                    r ** (r - 1)
+                )
+        else:
+            if rstSig is None:
+                If(enableSig,
+                     If(r._eq(0),
+                         r ** origMaxVal  
+                     ).Else(
+                         r ** (r - 1)
+                     )
+                )
+            else:
+                If(rstSig | (enableSig & r._eq(0)),
+                    r ** origMaxVal  
+                ).Elif(enableSig,
+                    r ** (r - 1)
+                )
+
+        tick = r._eq(0)
+        
+        if enableSig is not None:
+            tick = (tick & enableSig)
+
+        if rstSig is not None:
+            tick = (tick & ~rstSig)
+        return tick
         
     @staticmethod
     def _instantiateTimer(parentUnit, timer, enableSig=None, rstSig=None):
@@ -110,18 +141,8 @@ class TimerInfo(object):
         """
 
         if timer.parent is None:
-            if enableSig is None:
-                if rstSig is None:
-                    updateEnSig = None
-                else:
-                    updateEnSig = enableSig
-            else:
-                if rstSig is None:
-                    updateEnSig = enableSig
-                else:
-                    updateEnSig = enableSig | rstSig
-    
             maxVal = timer.maxVal - 1
+            origMaxVal = timer.maxValOriginal - 1  # use original to propagate parameter
             assert maxVal >= 0
 
             if maxVal == 0:
@@ -135,24 +156,7 @@ class TimerInfo(object):
                                 maxVal
                                 )
                 timer.cntrRegister = r
-                
-                rstCnd = r._eq(0)
-                if rstSig is not None:
-                    rstCnd = rstCnd | rstSig
-                nLogic = If(rstCnd,
-                             r ** (timer.maxValOriginal - 1)  # use original to propagate parameter
-                         ).Else(
-                             r ** (r - 1)
-                         )
-                if updateEnSig is not None:
-                    If(enableSig,
-                       nLogic
-                    )
-                    
-                tick = r._eq(0)
-                
-                if enableSig is not None:
-                    tick = (tick & enableSig) 
+                tick = TimerInfo._instantiateTimerTickLogic(timer, origMaxVal, enableSig, rstSig)
 
             timer.tick = parentUnit._sig(timer.name + "timerTick%d" % timer.maxVal)
             timer.tick ** tick
