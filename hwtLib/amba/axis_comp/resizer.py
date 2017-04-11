@@ -129,7 +129,7 @@ class AxiS_resizer(AxiSCompBase):
                 if inp not in dIn and inp is not dataIn.last:
                     outp ** inp
 
-            self.dataOut.last ** (dataIn.last & isLastItem)    
+            self.dataOut.last ** (dataIn.last & isLastItem)
             self.getRd(dataIn) ** (self.getRd(self.dataOut) & isLastItem)
             self.getVld(self.dataOut) ** self.getVld(dataIn)
 
