@@ -8,7 +8,7 @@ from hwt.synthesizer.param import Param
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axis_comp.fifo import AxiSFifo
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.handshaked.streamNode import streamSync
+from hwtLib.handshaked.streamNode import streamSync, streamAck
 from hwtLib.amba.axis import AxiStream
 from hwtLib.mem.fifo import Fifo
 
@@ -68,7 +68,7 @@ class AxiS_measuringFifo(Unit):
                              vecT(log2ceil(self.MAX_LEN+1)),
                              defVal=0)
 
-        If(dIn.valid & sb.dataIn.rd & db.dataIn.ready,
+        If(streamAck(masters=[dIn], slaves=[sb.dataIn, db.dataIn]),
             If(dIn.last,
                 wordCntr ** 0
             ).Else(
@@ -98,10 +98,6 @@ class AxiS_measuringFifo(Unit):
                    extraConds={
                                sb.dataIn: dIn.last
                               })
-
-        # dIn.ready ** (sb.dataIn.rd & db.dataIn.ready)
-        # sb.dataIn.vld ** (dIn.valid & db.dataIn.ready & dIn.last)
-        # db.dataIn.valid ** (dIn.valid & sb.dataIn.rd)
 
         self.sizes ** sb.dataOut
         self.dataOut ** db.dataOut

@@ -23,38 +23,67 @@ class ClkBuilder(object):
         self.name = name
         self.compId = 0
         
-    def timers(self, periods, enableSig=None):
+    def timers(self, periods, enableSig=None, rstSig=None):
         """
         generate counters specified by count of iterations
-        :param periods: list of integers/params which specifies periods of timers  
-        :param enableSig: enable signal for counters
+
+        :param periods: list of integers/params which specifies periods of timers
+            or tuple (name, integers/params)
+        :param enableSig: enable signal for all counters
+        :param rstSig: reset signal for all counters
         :attention: if tick of timer his high and enable Sig falls low tick will stay high
         
         :return: list of tick signals from timers
         """
-        timers = [TimerInfo(i) for i in periods]
+        timers = []
+        for p in periods:
+            if isinstance(p, (tuple, list)):
+                name, period = p
+            else:
+                name = None
+                period = p
+
+            t = TimerInfo(period, name=name)
+            timers.append(t)
         TimerInfo.resolveSharing(timers)
-        TimerInfo.instantiate(self.parent, timers, enableSig=enableSig)
+        TimerInfo.instantiate(self.parent, timers, enableSig=enableSig, rstSig=rstSig)
         
         return list(map(lambda timer: timer.tick, timers))
     
-    def oversample(self, sig, sampleCount, sampleTick):
+    def timer(self, period, enableSig=None, rstSig=None):
+        """
+        Same as timers, just for one
+        """
+        return self.timers([period, ], enableSig=enableSig, rstSig=rstSig)[0]
+    
+    def oversample(self, sig, sampleCount, sampleTick, rstSig=None):
         """
         [TODO] last sample is not sampled correctly
+        
+        :param sig: signal to oversample
+        :param sampleCount: count of samples to do
+        :param sampleTick: signal to enable next sample taking
+        :param rstSig: rstSig signal to reset internal counter, if is None it is not used
         """
         if sig._dtype != BIT:
             raise  NotImplementedError()
+
         n = getSignalName(sig)
         
         sCnt = evalParam(sampleCount).val
-        sampleDoneTick = self.timers([sampleCount],
-                                     enableSig=sampleTick)[0]
+        sampleDoneTick = self.timer((n + "_oversampleDoneTick" , sampleCount),
+                                    enableSig=sampleTick,
+                                    rstSig=rstSig)
         oversampleCntr = self.parent._reg(n + "_oversample_cntr%d" % (sCnt),
-                                          vecT(log2ceil(sampleCount)+1, False),
+                                          vecT(log2ceil(sampleCount) + 1, False),
                                           defVal=0)
-        
+
+        if rstSig is not None:
+            _sampleDoneTick = sampleDoneTick | rstSig
+            sampleTick = sampleTick | rstSig
+            
         If(sampleTick,
-            If(sampleDoneTick,
+            If(_sampleDoneTick,
                 oversampleCntr ** 0
             ).Elif(sig,
                 oversampleCntr ** (oversampleCntr + 1)

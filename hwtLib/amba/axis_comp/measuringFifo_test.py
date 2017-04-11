@@ -35,8 +35,8 @@ class AxiS_measuringFifoTC(SimTestCase):
                                  ])
 
         self.doSim(200 * Time.ns)
-        self.assertEqual(len(u.sizes._ag.data), 1)
-        self.assertEqual(len(u.dataOut._ag.data), 1)
+        self.assertValSequenceEqual(u.sizes._ag.data, [8, ])
+        self.assertValSequenceEqual(u.dataOut._ag.data, [(2, mask(8), 1), ])
 
     def test_singleWordPacketWithDelay(self):
         u = self.u
@@ -46,8 +46,8 @@ class AxiS_measuringFifoTC(SimTestCase):
         u.dataOut._ag.enable = False
 
         self.doSim(200 * Time.ns)
-        self.assertEqual(len(u.sizes._ag.data), 1)
-        self.assertEqual(len(u.dataOut._ag.data), 0)
+        self.assertValSequenceEqual(u.sizes._ag.data, [8, ])
+        self.assertEmpty(u.dataOut._ag.data, 0)
         self.assertValEqual(self.model.dataOut_last, 1)
 
     def test_multiplePackets(self):
@@ -55,39 +55,40 @@ class AxiS_measuringFifoTC(SimTestCase):
         sizes = u.sizes._ag.data
         data = u.dataOut._ag.data
 
-        u.dataIn._ag.data.extend([(1, mask(8), 1),
-                                  (2, mask(8), 1),
-                                  (3, mask(8), 1)
-                                  ])
+        goldenData = [(1, mask(8), 1),
+                      (2, mask(8), 1),
+                      (3, mask(8), 1)
+                      ]
+
+        u.dataIn._ag.data.extend(goldenData)
 
         self.doSim(200 * Time.ns)
-        self.assertEqual(len(sizes), 3)
-        self.assertEqual(len(data), 3)
-        self.assertValSequenceEqual(sizes, (8, 8, 8))
-
+        self.assertValSequenceEqual(data, goldenData)
+        self.assertValSequenceEqual(sizes, [8, 8, 8])
+        
     def test_doubleWordPacket(self):
         u = self.u
         sizes = u.sizes._ag.data
         data = u.dataOut._ag.data
 
-        u.dataIn._ag.data.extend([
-                                  (1, mask(8), 0),
-                                  (2, mask(8), 1)
-                                 ])
+        goldenData = [(1, mask(8), 0),
+                      (2, mask(8), 1)
+                      ]
+        u.dataIn._ag.data.extend(goldenData)
 
         self.doSim(200 * Time.ns)
-        self.assertEqual(len(sizes), 1)
-        self.assertEqual(len(data), 2)
+        self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, (16,))
 
     def test_withPause(self):
         u = self.u
         sizes = u.sizes._ag.data
         data = u.dataOut._ag.data
-
-        u.dataIn._ag.data.extend([
-                                  (i+1, 255, int(i==5)) for i in range(6)
-                                 ])
+        
+        goldenData = [
+                       (i + 1, 255, int(i == 5)) for i in range(6)
+                      ]
+        u.dataIn._ag.data.extend(goldenData)
 
         def pause(simulator):
             yield simulator.wait(3 * 10 * Time.ns)
@@ -99,22 +100,23 @@ class AxiS_measuringFifoTC(SimTestCase):
 
         self.doSim(200 * Time.ns)
 
-        self.assertEqual(len(sizes), 1)
-        self.assertEqual(len(data), 6)
-        self.assertValEqual(sizes[0], 6 * 8)
+        self.assertValSequenceEqual(data, goldenData)
+        self.assertValSequenceEqual(sizes, [6 * 8])
 
     def test_unalignedPacket(self):
         u = self.u
         sizes = u.sizes._ag.data
         data = u.dataOut._ag.data
 
-        u.dataIn._ag.data.extend([
-                                  (1, mask(8), 0),
-                                  (2, mask(1), 1)
-                                 ])
+        goldenData = [
+                       (1, mask(8), 0),
+                       (2, mask(1), 1)
+                      ]
+        u.dataIn._ag.data.extend(goldenData)
+        
         self.doSim(200 * Time.ns)
-        self.assertEqual(len(sizes), 1)
-        self.assertEqual(len(data), 2)
+        
+        self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, (9,))
 
     def test_unalignedPacket1Word(self):
@@ -122,12 +124,12 @@ class AxiS_measuringFifoTC(SimTestCase):
         sizes = u.sizes._ag.data
         data = u.dataOut._ag.data
 
-        u.dataIn._ag.data.extend([
-                                  (2, 1, 1),
-                                 ])
+        goldenData = [(2, 1, 1), ]
+        u.dataIn._ag.data.extend(goldenData)
+
         self.doSim(200 * Time.ns)
-        self.assertEqual(len(sizes), 1)
-        self.assertEqual(len(data), 1)
+        
+        self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, (1,))
 
     def test_randomized(self):
@@ -138,7 +140,7 @@ class AxiS_measuringFifoTC(SimTestCase):
 
         for i in range(N):
             u.dataIn._ag.data.extend([
-                                      (i+1, mask(8), i==5) for i in range(6)
+                                      (i + 1, mask(8), i == 5) for i in range(6)
                                      ])
         self.randomize(u.dataIn)
         self.randomize(u.dataOut)
@@ -160,7 +162,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         expectedLen = []
 
         for i in range(N):
-            l = int(self._rand.random() * (self.MAX_LEN+1+1))
+            l = int(self._rand.random() * (self.MAX_LEN + 1 + 1))
             d = [(i + 1, mask(8), int(i == (l - 1))) for i in range(l)]
             u.dataIn._ag.data.extend(d)
 
@@ -194,7 +196,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         for i in range(N):
             d = [(i + 1, 255, int(i == (L - 1))) for i in range(L)]
             u.dataIn._ag.data.extend(d)
-            expectedLen.append(L*8)
+            expectedLen.append(L * 8)
 
         self.randomize(u.dataIn)
         self.randomize(u.dataOut)
@@ -202,8 +204,8 @@ class AxiS_measuringFifoTC(SimTestCase):
 
         def sizesEn(s):
             yield s.wait((SIZE_BUFF_SIZE + 5) * 10 * Time.ns)
-            yield from agent_randomize(u.sizes._ag, 
-                                       50*Time.ns, 
+            yield from agent_randomize(u.sizes._ag,
+                                       50 * Time.ns,
                                        self._rand.getrandbits(64))(s)
 
         self.procs.append(sizesEn)
@@ -218,7 +220,7 @@ class AxiS_measuringFifoTC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(AxiS_measuringFifoTC('test_withPause'))
+    # suite.addTest(AxiS_measuringFifoTC('test_withPause'))
     suite.addTest(unittest.makeSuite(AxiS_measuringFifoTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
