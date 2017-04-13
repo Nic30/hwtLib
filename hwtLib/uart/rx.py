@@ -8,7 +8,6 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.clocking.clkBuilder import ClkBuilder
-from hwt.bitmask import mask
 
 
 class UartRx(Unit):
@@ -44,8 +43,8 @@ class UartRx(Unit):
         RxD_data = self._reg("RxD_data", vecT(1 + 8))
         startBitWasNotStartbit = self._sig("startBitWasNotStartbit") 
         # it can happen that there is just glitch on wire and bit was not startbit only begin was resolved wrong 
-        
-        sampleTick = clkBuilder.timer(("sampleTick", (self.FREQ // self.BAUD) // self.OVERSAMPLING),
+        # eval because otherwise vhdl int overflows
+        sampleTick = clkBuilder.timer(("sampleTick", self.FREQ // self.BAUD // self.OVERSAMPLING), 
                                        enableSig=en,
                                        rstSig=~en)
         
@@ -57,13 +56,14 @@ class UartRx(Unit):
                                              self.OVERSAMPLING,
                                              sampleTick,
                                              rstSig=~en)
+
         isLastBit = clkBuilder.timer(("isLastBitTick", 10),
                                      enableSig=rxd_vld,
                                      rstSig=~en)
         
         
         If(en,
-           If(rxd_vld,
+           If(rxd_vld, # [TODO] @100M it changes every 352ns it should be 868ns
                 RxD_data ** Concat(rxd, RxD_data[9:1]),  # shift data from left
                 If(startBitWasNotStartbit,
                     en ** 0,
@@ -77,8 +77,8 @@ class UartRx(Unit):
             # potential start bit detected, begin scanning sequence
             en ** 1,
         )
-        startBitWasNotStartbit ** (en & first & rxd_vld & (rxd != START_BIT))
-        self.dataOut.vld ** (rxd_vld & isLastBit & RxD_data[0]._eq(START_BIT) & rxd._eq(STOP_BIT))
+        startBitWasNotStartbit ** (first & rxd_vld & (rxd != START_BIT))
+        self.dataOut.vld ** (isLastBit & RxD_data[0]._eq(START_BIT) & rxd._eq(STOP_BIT))
        
         self.dataOut.data ** RxD_data[9:1]
          
