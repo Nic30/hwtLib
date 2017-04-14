@@ -21,33 +21,33 @@ class SimpleAxiRegs(Unit):
     def _config(self):
         self.ADDR_WIDTH = Param(8)
         self.DATA_WIDTH = Param(32)
-        
+
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
             self.axi = AxiLite()
-        
+
         with self._paramsShared():
             self.conv = AxiLiteStructEndpoint(
                             HStruct((uint32_t, "reg0"),
                                     (uint32_t, "reg1")
                                     ))
-        
-        
+
     def _impl(self):
         propagateClkRstn(self)
         connect(self.axi, self.conv.bus, fit=True)
-        
+
         reg0 = self._reg("reg0", vecT(32), defVal=0)
         reg1 = self._reg("reg1", vecT(32), defVal=1)
-        
+
         conv = self.conv
+
         def connectRegToConveror(convPort, reg):
             If(convPort.dout.vld,
                 reg ** convPort.dout.data
             )
             convPort.din ** reg 
-        
+
         connectRegToConveror(conv.reg0, reg0)
         connectRegToConveror(conv.reg1, reg1)
 

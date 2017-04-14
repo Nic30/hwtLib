@@ -17,32 +17,33 @@ class ErrorsTC(unittest.TestCase):
         u = InvalidTypeConnetion()
         with self.assertRaises(TypeConversionErr):
             toRtl(u)
-      
+
     def test_uncosistentIntfDirection(self):
         u = UncosistentIntfDirection()
         with self.assertRaises(IntfLvlConfErr):
             toRtl(u)
-      
+
     def test_multipleDriversOfChildNet(self):
         u = MultipleDriversOfChildNet()
         with self.assertRaises(SerializerException):
-            toRtl(u) 
-            
+            toRtl(u)
+
     def test_multipleDriversOfChildNet2(self):
         u = MultipleDriversOfChildNet2()
         with self.assertRaises(MultipleDriversExc):
-            toRtl(u) 
-    
+            toRtl(u)
+
     def test_unusedSubunit(self):
         u = UnusedSubunit()
         with self.assertRaises(SerializerException):
             toRtl(u)
-    
+
     def test_unusedSubunit2(self):
         u = UnusedSubunit2()
         with self.assertRaises(SerializerException):
             toRtl(u)
-                        
+
+
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     # suite.addTest(ErrorsTC('testBitAnd'))

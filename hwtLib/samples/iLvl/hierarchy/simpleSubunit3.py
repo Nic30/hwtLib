@@ -9,14 +9,14 @@ from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream
 class SimpleSubunit3(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(128)
-        
+
     def _declr(self):
         with self._paramsShared():
-            self.subunit0 = SimpleUnitAxiStream() 
-            
+            self.subunit0 = SimpleUnitAxiStream()
+
             self.a0 = AxiStream()
             self.b0 = AxiStream()
-        
+
     def _impl(self):
         u = self.subunit0
         u.a ** self.a0

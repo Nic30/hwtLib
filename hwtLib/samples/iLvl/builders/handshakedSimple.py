@@ -12,16 +12,16 @@ class HandshakedSimple(Unit):
         addClkRstn(self)
         self.a = Handshaked()
         self.b = Handshaked()
-        
+
     def _impl(self):
         b = HsBuilder(self, self.a)
 
         b.reg()
         b.fifo(16)
         b.reg()
-        
-        self.b ** b.end 
-        
+
+        self.b ** b.end
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl

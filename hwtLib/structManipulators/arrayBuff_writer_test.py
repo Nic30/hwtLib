@@ -167,7 +167,7 @@ class ArrayBuff_writer_TC(SimTestCase):
 
         u.baseAddr._ag.dout.append(0x1230)
         u.items._ag.data.extend([1 + i for i in range(N)])
-        u.wDatapump.ack._ag.data.extend([NOP for _ in range(N * 2 - 1)] + 
+        u.wDatapump.ack._ag.data.extend([NOP for _ in range(N * 2 - 1)] +
                                         [self.ID + 1, self.ID, self.ID + 1])
 
         # randomize(u.wDatapump.w)

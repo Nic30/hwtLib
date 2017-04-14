@@ -34,16 +34,17 @@ class AxiS_resizer(AxiSCompBase):
         IN_DW = evalParam(self.DATA_WIDTH).val
         OUT_DW = evalParam(self.OUT_DATA_WIDTH).val
 
-        dOut = self.getDataWidthDependent(self.dataOut)
-
         if IN_DW < OUT_DW:  # UPSCALE
             if OUT_DW % IN_DW != 0:
                 raise NotImplementedError()
             ITEMS = OUT_DW // IN_DW
             dIn = self.getDataWidthDependent(self.dataIn)
 
+            dataOut = self.dataOut 
+            dOut = self.getDataWidthDependent(dataOut)
+
             itemCntr = self._reg("itemCntr", vecT(log2ceil(ITEMS + 1)), defVal=0)
-            hs = streamAck([self.dataIn], [self.dataOut])
+            hs = streamAck([self.dataIn], [dataOut])
             isLastItem = (itemCntr._eq(ITEMS - 1) | self.dataIn.last)
 
             vld = self.getVld(self.dataIn)
@@ -78,11 +79,11 @@ class AxiS_resizer(AxiSCompBase):
                     outputs[outp].append(s)
 
             # dataIn/dataOut hs
-            self.getRd(self.dataIn) ** self.getRd(self.dataOut)
-            self.getVld(self.dataOut) ** (self.getVld(self.dataIn) & (isLastItem))    
+            self.getRd(self.dataIn) ** self.getRd(dataOut)
+            self.getVld(dataOut) ** (self.getVld(self.dataIn) & (isLastItem))
 
             # connect others signals directly
-            for inp, outp in zip(self.getData(self.dataIn), self.getData(self.dataOut)):
+            for inp, outp in zip(self.getData(self.dataIn), self.getData(dataOut)):
                 if inp not in dIn:
                     outp ** inp
 
@@ -99,14 +100,15 @@ class AxiS_resizer(AxiSCompBase):
                 )
             )
 
+
         elif IN_DW > OUT_DW:  # DOWNSCALE
             if IN_DW % OUT_DW != 0:
                 raise NotImplementedError()
-
+            dOut = self.getDataWidthDependent(self.dataOut)
             dataIn = AxiSBuilder(self, self.dataIn).reg().end
             dIn = self.getDataWidthDependent(dataIn)
 
-            ITEMS = IN_DW // OUT_DW  
+            ITEMS = IN_DW // OUT_DW
             itemCntr = self._reg("itemCntr", vecT(log2ceil(ITEMS + 1)), defVal=0)
 
             hs = streamAck([dataIn], [self.dataOut])
@@ -117,7 +119,7 @@ class AxiS_resizer(AxiSCompBase):
                 w = outp._dtype.bit_length()
                 Switch(itemCntr)\
                 .addCases([
-                    (wordIndx, outp ** inp[((wordIndx + 1) * w):(w * wordIndx)]) 
+                    (wordIndx, outp ** inp[((wordIndx + 1) * w):(w * wordIndx)])
                       for wordIndx in range(ITEMS)
                     ])\
                 .Default(
@@ -150,6 +152,6 @@ if __name__ == "__main__":
     from hwtLib.amba.axis import AxiStream_withId
 
     u = AxiS_resizer(AxiStream_withId)
-    u.DATA_WIDTH.set(128)
-    u.OUT_DATA_WIDTH.set(32)
+    u.DATA_WIDTH.set(32)
+    u.OUT_DATA_WIDTH.set(64)
     print(toRtl(u))

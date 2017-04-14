@@ -14,12 +14,12 @@ class InterfaceArraySample0(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(8)
         self.LEN = hInt(3)
-    
+
     def _declr(self):
         with self._paramsShared():
             self.a = VldSynced(multipliedBy=self.LEN)
             self.b = VldSynced(multipliedBy=self.LEN)
-    
+
     def _impl(self):
         # directly connect arrays, note that we are not using array items
         # and thats why they are not created
@@ -29,4 +29,3 @@ class InterfaceArraySample0(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(InterfaceArraySample0))
-

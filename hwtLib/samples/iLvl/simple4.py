@@ -9,7 +9,7 @@ from hwt.intfLvl import Param, Unit
 class SimpleUnit4(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(16)
-        
+
     def _declr(self):
         # create vector type of width DATA_WIDTH / 8
         # by default vector does not have any sign, if it is used in arithmetic
@@ -20,7 +20,7 @@ class SimpleUnit4(Unit):
         # this simplifies orientation in generated code
         self.a = Signal(dtype=dtype)
         self.b = Signal(dtype=dtype)
-        
+
     def _impl(self):
         self.a ** self.b
 

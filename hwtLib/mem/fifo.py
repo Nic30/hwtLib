@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.code import If, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import FifoWriter, FifoReader, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.constants import SERI_MODE
-from hwt.code import If, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 
@@ -17,7 +17,7 @@ class Fifo(Unit):
 
     def _config(self):
         self.DATA_WIDTH = Param(64)
-        self.DEPTH = Param(200)
+        self.DEPTH = Param(0)
         self.EXPORT_SIZE = Param(False)
         self.EXPORT_SPACE = Param(False)
 
@@ -66,7 +66,7 @@ class Fifo(Unit):
             If(wr_ptr._eq(MAX_DEPTH),
                 wr_ptr ** 0
             ).Else(
-                wr_ptr ** (wr_ptr + 1) 
+                wr_ptr ** (wr_ptr + 1)
             )
         )
 
@@ -102,7 +102,7 @@ class Fifo(Unit):
         If(wr_ptr._eq(rd_ptr),
             If(looped,
                 din.wait ** 1,
-                dout.wait ** 0 
+                dout.wait ** 0
             ).Else(
                 dout.wait ** 1,
                 din.wait ** 0

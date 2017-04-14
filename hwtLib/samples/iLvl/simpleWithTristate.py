@@ -11,7 +11,8 @@ class SimpleUnit(Unit):
         self.b = TristateSig()
 
     def _impl(self):
-        self.b ** self.a 
+        self.b ** self.a
+
 
 if __name__ == "__main__":  # alias python main function
     from hwt.synthesizer.shortcuts import toRtl

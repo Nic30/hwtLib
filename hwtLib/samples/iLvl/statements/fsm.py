@@ -16,15 +16,14 @@ class FsmExample(Unit):
         self.a = Signal()
         self.b = Signal()
         self.dout = Signal(dtype=vecT(3))
-            
-            
+
     def _impl(self):
         stT = Enum("st_t", ["a", "b", "aAndB"])
-        
+
         a = self.a
         b = self.b
         out = self.dout
-        
+
         st = FsmBuilder(self, stT)\
         .Trans(stT.a,
             (a & b, stT.aAndB),
@@ -36,8 +35,7 @@ class FsmExample(Unit):
             (a & ~b, stT.a),
             (~a & b, stT.b),
         ).stateReg
-        
-        
+
         Switch(st)\
         .Case(stT.a,
               out ** 1
@@ -46,15 +44,16 @@ class FsmExample(Unit):
         ).Case(stT.aAndB,
               out ** 3
         )
-        
+
+
 class HadrcodedFsmExample(FsmExample):
     def _impl(self):
         a = self.a
         b = self.b
         out = self.dout
-        
-        st = self._reg("st", vecT(3), 1) 
-        
+
+        st = self._reg("st", vecT(3), 1)
+
         If(st._eq(1),
             If(a & b,
                 st ** 3
@@ -82,8 +81,7 @@ class HadrcodedFsmExample(FsmExample):
         ).Else(
             st ** 1
         )
-        
-        
+
         Switch(st)\
         .Case(1,
             out ** 1
@@ -94,9 +92,8 @@ class HadrcodedFsmExample(FsmExample):
         ).Default(
             out ** None
         )
-        
-    
-            
+
+
 if __name__ == "__main__":
     u = FsmExample()
     print(toRtl(u))

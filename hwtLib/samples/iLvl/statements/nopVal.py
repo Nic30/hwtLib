@@ -14,15 +14,15 @@ class NopValSample(Unit):
         addClkRstn(self)
         self.en = Signal()
         self.dout = Signal()
-    
+
     def _impl(self):
         cntr = self._reg("cntr", vecT(8), 0)
-    
+
         If(self.en,
-          cntr ** (cntr + 1) 
+          cntr ** (cntr + 1)
         )
         self.dout ** cntr[7]
-    
+
 if __name__ == "__main__":
     u = NopValSample()
     print(toRtl(u))

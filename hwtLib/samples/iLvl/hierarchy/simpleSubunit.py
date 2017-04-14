@@ -10,7 +10,7 @@ class SimpleSubunit(Unit):
     def _declr(self):
         self.a = Signal()
         self.b = Signal()
-        
+
         # there we instantiate our subunit and register it by assigning to property of self 
         # it can be done in done in _impl as well,
         # but if you do it there it offers more possibilities for parallelization
@@ -21,7 +21,7 @@ class SimpleSubunit(Unit):
         u = self.subunit0
         u.a ** self.a
         self.b ** u.b
-        
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl

@@ -17,10 +17,10 @@ if __name__ == "__main__":
     syncRst = n.sig("rst")
 
     val = n.sig("val", t, clk, syncRst, 0)
-    val << s_in
-    s_out << val
+    val ** s_in
+    s_out ** val
 
     interf = [clk, syncRst, s_in, s_out]
 
-    for o in n.synthesize(interf):
+    for o in n.synthesize("simpleRegister", interf):
             print(formatVhdl(str(o)))

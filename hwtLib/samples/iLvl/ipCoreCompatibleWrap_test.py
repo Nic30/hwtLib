@@ -9,7 +9,7 @@ from hwt.serializer.ipCoreWrapper import IpCoreWrapper
 
 
 class IpCoreWrapperTC(unittest.TestCase):
-    
+
     def test_interfaces(self):
         u = IpCoreWrapper(ArrayIntfExample())
         toRtl(u)
