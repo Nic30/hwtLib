@@ -18,8 +18,9 @@ class SimpleUnitAxiStream(Unit):
             self.b = AxiStream()
 
     def _impl(self):
-        self.b ** self.a 
-        
+        self.b ** self.a
+
+
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = SimpleUnitAxiStream()

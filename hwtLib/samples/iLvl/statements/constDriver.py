@@ -9,10 +9,10 @@ class ConstDriverUnit(Unit):
     def _declr(self):
         self.out0 = Signal()
         self.out1 = Signal()
-    
+
     def _impl(self):
         self.out0 ** 0
-        self.out1 ** 1 
+        self.out1 ** 1
 
 
 if __name__ == "__main__":

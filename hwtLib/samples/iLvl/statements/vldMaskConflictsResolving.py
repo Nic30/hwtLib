@@ -14,24 +14,24 @@ class VldMaskConflictsResolving(Unit):
         self.a = Signal()
         self.b = Signal()
         self.c = Signal()
-    
+
     def _impl(self):
         a = self.a
         b = self.b
         c = self.c
-        
+
         If(a,
             If(b,
-              c ** 1   
+              c ** 1
             ).Else(
               c ** 0
-            )   
+            )
         ).Else(
             If(b,
-              c ** 1   
+              c ** 1
             ).Else(
               c ** 0
-            )   
+            )
         )
 
 if __name__ == "__main__":

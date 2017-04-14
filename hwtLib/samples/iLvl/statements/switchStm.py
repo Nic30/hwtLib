@@ -14,7 +14,7 @@ class SwitchStmUnit(Unit):
         self.b = Signal()
         self.c = Signal()
         self.d = Signal()
-            
+
     def _impl(self):
         Switch(self.sel)\
         .Case(0,
@@ -26,7 +26,7 @@ class SwitchStmUnit(Unit):
         ).Default(
             self.a ** 0
         )
-        
+
 
 if __name__ == "__main__":  # alias python main function
     from hwt.synthesizer.shortcuts import toRtl

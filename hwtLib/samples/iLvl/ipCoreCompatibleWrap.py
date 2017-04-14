@@ -8,11 +8,11 @@ class ArrayIntfExample(Unit):
     def _declr(self):
         addClkRstn(self)
         self.a = AxiStream(multipliedBy=2)
-    
+
     def _impl(self):
         for intf in self.a:
             intf.ready ** 1
-    
+
 
 if __name__ == "__main__":  # alias python main function
     # toRtl can be imported anywhere but we prefer to import it only when this script is running as main

@@ -41,13 +41,13 @@ class AxiS_resizer(AxiSCompBase):
             ITEMS = OUT_DW // IN_DW
             dIn = self.getDataWidthDependent(self.dataIn)
 
-            outReg = AxiSReg(self.intfCls)
-            self.outReg = outReg
+            #outReg = AxiSReg(self.intfCls)
+            #self.outReg = outReg
 
-            outReg.clk ** self.clk
-            outReg.rst_n ** self.rst_n
-            self.dataOut ** outReg.dataOut
-            dataOut = outReg.dataIn
+            #outReg.clk ** self.clk
+            #outReg.rst_n ** self.rst_n
+            #self.dataOut ** outReg.dataOut
+            dataOut = self.dataOut #outReg.dataIn
             dOut = self.getDataWidthDependent(dataOut)
 
             itemCntr = self._reg("itemCntr", vecT(log2ceil(ITEMS + 1)), defVal=0)
@@ -159,6 +159,6 @@ if __name__ == "__main__":
     from hwtLib.amba.axis import AxiStream_withId
 
     u = AxiS_resizer(AxiStream_withId)
-    u.DATA_WIDTH.set(128)
-    u.OUT_DATA_WIDTH.set(32)
+    u.DATA_WIDTH.set(32)
+    u.OUT_DATA_WIDTH.set(64)
     print(toRtl(u))

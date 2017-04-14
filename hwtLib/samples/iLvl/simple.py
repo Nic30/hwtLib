@@ -12,18 +12,18 @@ class SimpleUnit(Unit):
     def _declr(self):
         """
         _declr() is like header of Unit.
-        There you have to declare things which should be visible from outside.    
+        There you have to declare things which should be visible from outside.
         """ 
-        # interfaces "a" and "b" are accessible from outside when declared in _declr method, 
-        # this means they will be interfaces of Entity and all other units can connect anything to these interfaces   
+        # interfaces "a" and "b" are accessible from outside when declared in _declr method,
+        # this means they will be interfaces of Entity and all other units can connect anything to these interfaces
         # note that interfaces has to be properties of this object
-        # whis is kind of registration and without it, it can not be discovered
+        # which is kind of registration and without it, it can not be discovered
         self.a = Signal()
         self.b = Signal()
 
     def _impl(self):
         """
-        _impl() is like body of unit. 
+        _impl() is like body of unit.
         Logic and connections are specified in this function.
         """
 
@@ -40,25 +40,23 @@ if __name__ == "__main__":  # alias python main function
     print(toRtl(u))
 
 # expected Output (without # ofcourse)
-#--
-#--    In order to create a new unit you have to make new class derived from Unit.
-#--
-#library IEEE;
-#use IEEE.std_logic_1164.all;
-#use IEEE.numeric_std.all;
+# --
+# --    In order to create a new unit you have to make new class derived from Unit.
+# --
+# library IEEE;
+# use IEEE.std_logic_1164.all;
+# use IEEE.numeric_std.all;
 #
-#ENTITY SimpleUnit IS
-#    PORT (a : IN STD_LOGIC;
-#        b : OUT STD_LOGIC
-#    );
-#END SimpleUnit;
+# ENTITY SimpleUnit IS
+#     PORT (a : IN STD_LOGIC;
+#         b : OUT STD_LOGIC
+#     );
+# END SimpleUnit;
 #
-#ARCHITECTURE rtl OF SimpleUnit IS
-#    
-#    
-#    
-#BEGIN
-#    
-#    b <= a;
-#    
-#END ARCHITECTURE rtl;
+# ARCHITECTURE rtl OF SimpleUnit IS
+#
+# BEGIN
+#
+#     b <= a;
+#
+# END ARCHITECTURE rtl;

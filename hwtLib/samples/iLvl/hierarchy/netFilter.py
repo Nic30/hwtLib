@@ -69,7 +69,7 @@ class NetFilter(Unit):
         with self._paramsShared():
             self.din = AxiStream()
             self.export = AxiStream()
-            # self.cfg = AxiLite()
+            self.cfg = AxiLite()
 
             self.hfe = HeadFieldExtractor()
             self.pm = PatternMatch()
@@ -88,6 +88,7 @@ class NetFilter(Unit):
         s.filter.match ** s.pm.match
         s.exporter.din ** s.filter.dout
         s.export ** s.exporter.dout
+        self.filter.cfg ** s.cfg
 
 
 if __name__ == "__main__":

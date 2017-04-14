@@ -10,11 +10,11 @@ class SimpleWithNonDirectIntConncetion(Unit):
     Example of fact that interfaces does not have to be only extern
     the can be used even for connection inside unit
     """
-    
+
     def _declr(self):
         self.a = Signal()
         self.c = Signal()
-        
+
     def _impl(self):
         self.b = Signal()
 

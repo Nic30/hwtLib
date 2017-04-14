@@ -41,12 +41,15 @@ from hwtLib.samples.iLvl.ipCoreCompatibleWrap_test import IpCoreWrapperTC
 from hwtLib.samples.iLvl.mem.ram_test import RamTC as SampleRamTC
 from hwtLib.samples.iLvl.mem.reg_test import DRegTC
 from hwtLib.samples.iLvl.mem.rom_test import RomTC
+from hwtLib.samples.iLvl.operators.concat_test import ConcatTC
 from hwtLib.samples.iLvl.operators.indexing_test import IndexingTC
+from hwtLib.samples.iLvl.simpleAxiStream_test import SimpleUnitAxiStream_TC
 from hwtLib.samples.iLvl.simple_test import SimpleTC
 from hwtLib.samples.iLvl.statements.constDriver_test import ConstDriverTC
 from hwtLib.samples.iLvl.statements.fsm_test import FsmExampleTC, HadrcodedFsmExampleTC
 from hwtLib.samples.iLvl.statements.ifStm_test import IfStmTC
 from hwtLib.samples.iLvl.statements.switchStm_test import SwitchStmTC
+from hwtLib.samples.iLvl.statements.vldMaskConflictsResolving_test import VldMaskConflictsResolvingTC
 from hwtLib.structManipulators.arrayBuff_writer_test import ArrayBuff_writer_TC
 from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC, \
     ArrayItemGetter2in1WordTC
@@ -88,6 +91,8 @@ if __name__ == "__main__":
         ErrorsTC,
 
         # component verifications
+        ConcatTC,
+        VldMaskConflictsResolvingTC,
         ConstDriverTC,
         SimpleTC,
         SimpleSubunitTC,
@@ -106,6 +111,7 @@ if __name__ == "__main__":
         IndexingTC,
         ClkSynchronizerTC,
         RamTC,
+        SimpleUnitAxiStream_TC,
         FifoTC,
         HsJoinTC,
         HsJoin_randomized_TC,

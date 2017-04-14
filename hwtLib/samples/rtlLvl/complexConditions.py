@@ -54,7 +54,7 @@ def complexConds():
     )
     s_idle ** st._eq(stT.idle)
 
-    return n, [sd0, sd1, cntrlFifoVld, cntrlFifoLast, s_idle]
+    return n, [rst, clk, sd0, sd1, cntrlFifoVld, cntrlFifoLast, s_idle]
 
 if __name__ == "__main__":
     n, interf = complexConds()

@@ -12,14 +12,14 @@ class SimpleIfStatement(Unit):
         self.b = Signal()
         self.c = Signal()
         self.d = Signal()
-            
+
     def _impl(self):
         If(self.a,
            self.d ** self.b,
         ).Elif(self.b,
-           self.d ** self.c  
+           self.d ** self.c
         ).Else(
-           self.d ** 0 
+           self.d ** 0
         )
 
 if __name__ == "__main__":  # alias python main function
