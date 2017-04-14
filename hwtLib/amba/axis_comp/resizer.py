@@ -5,7 +5,6 @@ from hwt.synthesizer.param import Param, evalParam
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.handshaked.streamNode import streamAck
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
-from hwtLib.amba.axis_comp.reg import AxiSReg
 
 
 class AxiS_resizer(AxiSCompBase):
@@ -41,13 +40,7 @@ class AxiS_resizer(AxiSCompBase):
             ITEMS = OUT_DW // IN_DW
             dIn = self.getDataWidthDependent(self.dataIn)
 
-            #outReg = AxiSReg(self.intfCls)
-            #self.outReg = outReg
-
-            #outReg.clk ** self.clk
-            #outReg.rst_n ** self.rst_n
-            #self.dataOut ** outReg.dataOut
-            dataOut = self.dataOut #outReg.dataIn
+            dataOut = self.dataOut 
             dOut = self.getDataWidthDependent(dataOut)
 
             itemCntr = self._reg("itemCntr", vecT(log2ceil(ITEMS + 1)), defVal=0)
