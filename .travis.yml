@@ -12,7 +12,7 @@ python:
 
 install:
 - cd ..
-- pip3 install coveralls
+- pip3 install coveralls python-coveralls
 - git clone --depth=1 https://github.com/Nic30/HWToolkit.git
 - cd HWToolkit
 - python3 setup.py install
