@@ -37,18 +37,36 @@ class BusConverter(Unit):
         return self.ADRESS_MAP[0].addr
 
     def _suggestedAddrWidth(self):
+        """
+        Based on strut template and offset given resolve how many bits for
+        address is needed
+        """
         bitSize = self.STRUCT_TEMPLATE.bit_length()
-        AW = evalParam(self.ADDR_WIDTH).val
-        maxAddr = self.OFFSET + bitSize // AW
+        wordAddrStep = self._getWordAddrStep()
+        addrStep = self._getAddrStep()
+        
+        DW = evalParam(self.DATA_WIDTH).val
+        
+        maxAddr = (self.OFFSET + bitSize // addrStep) 
 
-        if bitSize % AW != 0:
-            maxAddr += self._getWordAddrStep()
+        # align to word size
+        if maxAddr % wordAddrStep != 0:
+            wordAddrStep += wordAddrStep - (maxAddr % wordAddrStep)
 
         return maxAddr.bit_length()
 
     def _getWordAddrStep(self):
-        AW = evalParam(self.DATA_WIDTH).val
-        return AW // 8
+        """
+        :return: size of one word in unit of address
+        """
+        DW = evalParam(self.DATA_WIDTH).val
+        return DW // self._getAddrStep()
+
+    def _getAddrStep(self):
+        """
+        :return: how many bits is one unit of address (f.e. 8 bits for  char * pointer)
+        """
+        return 8
 
     def _parseAddrMap(self):
         self.ADRESS_MAP = []
