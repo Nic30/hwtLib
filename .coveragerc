@@ -2,6 +2,9 @@
 omit =
     *tests.py
 
+source =
+    hwtLib
+
 [report]
 exclude_lines =
     pragma: no cover
