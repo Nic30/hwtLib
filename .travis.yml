@@ -12,14 +12,15 @@ python:
 
 install:
 - cd ..
-- pip3 install coveralls python-coveralls
+- pip3 install pytest coveralls
 - git clone --depth=1 https://github.com/Nic30/HWToolkit.git
 - cd HWToolkit
 - python3 setup.py install
 - cd ../hwtLib
 - python3 setup.py install
 script:
-- python3 -m pytest hwtLib/tests/all.py --doctest-modules --pep8 coveralls -v --cov coveralls --cov-report term-missing
+- python3 -m pytest hwtLib/tests/all.py --doctest-modules
+- coverage run hwtLib/tests/all.py
 
 deploy:
   provider: pypi
