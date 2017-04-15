@@ -70,102 +70,103 @@ from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
 
 
-if __name__ == "__main__":
-    def testSuiteFromTCs(*tcs):
-        loader = TestLoader()
-        for tc in tcs:
-            tc._multiprocess_can_split_ = True
-        loadedTcs = [loader.loadTestsFromTestCase(tc) for tc in tcs]
-        suite = TestSuite(loadedTcs)
-        return suite
+#if __name__ == "__main__":
+def testSuiteFromTCs(*tcs):
+    loader = TestLoader()
+    for tc in tcs:
+        tc._multiprocess_can_split_ = True
+    loadedTcs = [loader.loadTestsFromTestCase(tc) for tc in tcs]
+    suite = TestSuite(loadedTcs)
+    return suite
 
-    suite = testSuiteFromTCs(
-        InterfaceSynthesizerTC,
-        SubunitsSynthesisTC,
-        Expr2CondTC,
-        OperatorTC,
-        TestCaseSynthesis,
-        ValueTC,
-        StatementTreesTC,
-        StatementsTC,
-        ErrorsTC,
+suite = testSuiteFromTCs(
+    InterfaceSynthesizerTC,
+    SubunitsSynthesisTC,
+    Expr2CondTC,
+    OperatorTC,
+    TestCaseSynthesis,
+    ValueTC,
+    StatementTreesTC,
+    StatementsTC,
+    ErrorsTC,
 
-        # component verifications
-        ConcatTC,
-        VldMaskConflictsResolvingTC,
-        ConstDriverTC,
-        SimpleTC,
-        SimpleSubunitTC,
-        IfStmTC,
-        SwitchStmTC,
-        LutRamTC,
-        FsmExampleTC,
-        HadrcodedFsmExampleTC,
-        OneHotToBinTC,
-        CntrTC,
-        TwoCntrsTC,
-        SampleRamTC,
-        SelfRefCntrTC,
-        DRegTC,
-        RomTC,
-        IndexingTC,
-        ClkSynchronizerTC,
-        RamTC,
-        SimpleUnitAxiStream_TC,
-        FifoTC,
-        HsJoinTC,
-        HsJoin_randomized_TC,
-        HsJoinFair_2inputs_TC,
-        HsJoinFair_3inputs_TC,
-        RamAsHs_TC,
-        FlipRegTC,
-        FlipCntrTC,
-        HsForkTC,
-        HsFork_randomized_TC,
-        HsFifoTC,
-        HsRegL1D0TC,
-        HsRegL2D1TC,
-        CamTC,
-        UartTxTC,
-        UartRxBasicTC,
-        UartRxTC,
-        UartTxRxTC,
-        SimpleAxiRegsTC,
-        AxiTC,
-        Axi4_rDatapumpTC,
-        Axi3_rDatapumpTC,
-        Axi4_wDatapumpTC,
-        Axi3_wDatapump_direct_TC,
-        AxiS_en_TC,
-        AxiS_measuringFifoTC,
-        AxiS_resizer_upscale_TC,
-        AxiS_resizer_downscale_TC,
-        AxiS_resizer_downAndUp_TC,
-        AxiS_frameForge_TC,
-        AxiS_append_TC,
+    # component verifications
+    ConcatTC,
+    VldMaskConflictsResolvingTC,
+    ConstDriverTC,
+    SimpleTC,
+    SimpleSubunitTC,
+    IfStmTC,
+    SwitchStmTC,
+    LutRamTC,
+    FsmExampleTC,
+    HadrcodedFsmExampleTC,
+    OneHotToBinTC,
+    CntrTC,
+    TwoCntrsTC,
+    SampleRamTC,
+    SelfRefCntrTC,
+    DRegTC,
+    RomTC,
+    IndexingTC,
+    ClkSynchronizerTC,
+    RamTC,
+    SimpleUnitAxiStream_TC,
+    FifoTC,
+    HsJoinTC,
+    HsJoin_randomized_TC,
+    HsJoinFair_2inputs_TC,
+    HsJoinFair_3inputs_TC,
+    RamAsHs_TC,
+    FlipRegTC,
+    FlipCntrTC,
+    HsForkTC,
+    HsFork_randomized_TC,
+    HsFifoTC,
+    HsRegL1D0TC,
+    HsRegL2D1TC,
+    CamTC,
+    UartTxTC,
+    UartRxBasicTC,
+    UartRxTC,
+    UartTxRxTC,
+    SimpleAxiRegsTC,
+    AxiTC,
+    Axi4_rDatapumpTC,
+    Axi3_rDatapumpTC,
+    Axi4_wDatapumpTC,
+    Axi3_wDatapump_direct_TC,
+    AxiS_en_TC,
+    AxiS_measuringFifoTC,
+    AxiS_resizer_upscale_TC,
+    AxiS_resizer_downscale_TC,
+    AxiS_resizer_downAndUp_TC,
+    AxiS_frameForge_TC,
+    AxiS_append_TC,
 
-        RStrictOrderInterconnectTC,
-        WStrictOrderInterconnectTC,
+    RStrictOrderInterconnectTC,
+    WStrictOrderInterconnectTC,
 
-        ArrayItemGetterTC,
-        ArrayItemGetter2in1WordTC,
-        ArrayBuff_writer_TC,
-        CLinkedListReaderTC,
-        CLinkedListWriterTC,
-        MMU_2pageLvl_TC,
-        StructWriter_TC,
+    ArrayItemGetterTC,
+    ArrayItemGetter2in1WordTC,
+    ArrayBuff_writer_TC,
+    CLinkedListReaderTC,
+    CLinkedListWriterTC,
+    MMU_2pageLvl_TC,
+    StructWriter_TC,
 
-        IpCoreWrapperTC,
-    )
+    IpCoreWrapperTC,
+)
+if __name__ == '__main__':
     runner = TextTestRunner(verbosity=2)
-
+    
     try:
         from concurrencytest import ConcurrentTestSuite, fork_for_tests
         useParallerlTest = True
     except ImportError:
         # concurrencytest is not installed, use regular test runner
         useParallerlTest = False
-
+    
     if useParallerlTest:
         # Run same tests across 4 processes
         concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests(multiprocessing.cpu_count()))
