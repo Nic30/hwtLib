@@ -32,7 +32,7 @@ setup(name='hwtLib',
       author_email='michal.o.socials@gmail.com',
       install_requires=[
         'hwt',
-        'Pillow',  # there is code which is reading images (is is optional)
+        'Pillow',  # there are some components which are working with images
       ],
       license='MIT',
       packages=find_packages(),
