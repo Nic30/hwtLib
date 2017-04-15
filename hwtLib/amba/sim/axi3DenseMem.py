@@ -1,12 +1,22 @@
-from hwtLib.abstract.denseMemory import DenseMemory
-from hwt.synthesizer.param import evalParam
 from hwt.bitmask import mask
+from hwt.synthesizer.param import evalParam
+from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.constants import RESP_OKAY
 
 
 class Axi3DenseMem(DenseMemory):
+    """
+    Simulation memory for Axi3/4 interfaces (slave component)
+    """
     def __init__(self, clk, axi=None, axiAR=None, axiR=None, axiAW=None, axiW=None, axiB=None, parent=None):
-
+        """
+        :param clk: clk which should this memory use in simulation
+        :param axi: axi (Axi3/4 master) interface to listen on
+        :param axiAR, axiR, axiAW, axiW, axiB: splited interface use this if you do not have full axi interface
+        :attention: use axi or axi parts not bouth
+        :param parent: parent instance of this memory, memory will operate with same memory as parent one
+        :attention: memories are commiting into memory in "data" property after transaction is complete
+        """
         self.parent = parent
         if parent is None:
             self.data = {}
@@ -124,3 +134,4 @@ class Axi3DenseMem(DenseMemory):
 
     def doWriteAck(self, _id):
         self.wAckAg.data.append((_id, RESP_OKAY))
+    

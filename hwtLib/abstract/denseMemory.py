@@ -3,10 +3,21 @@ from itertools import chain
 
 
 class AllocationError(Exception):
+    """
+    Exception which says that requested allocation can not be performed
+    """
     pass
 
 
 def reshapedInitItems(actualCellSize, requestedCellSize, values):
+    """
+    Convert array item size and items cnt while size of array remains unchanged 
+    
+    :param actualCellSize: actual size of item in array
+    :param requestedCellSize: requested size of item in array
+    :param values: input array
+    :return: generator of new items of specified characteristik
+    """
     if actualCellSize < requestedCellSize and requestedCellSize % actualCellSize == 0:
         itemsInCell = requestedCellSize // actualCellSize
         itemAlign = len(values) % itemsInCell
@@ -20,7 +31,7 @@ def reshapedInitItems(actualCellSize, requestedCellSize, values):
                 item |= _i2
             yield item
     else:
-        raise NotImplementedError()
+        raise NotImplementedError("Reshaping of array from cell size %d to %d" % (actualCellSize, requestedCellSize))
 
 
 class DenseMemory():
@@ -75,6 +86,9 @@ class DenseMemory():
         clk._sigInside.simRisingSensProcs.add(self.checkRequests)
 
     def checkRequests(self, simulator):
+        """
+        Check if any request has appeared on interfaces
+        """
         if self.arAg is not None:
             if self.arAg.data:
                 self.onReadReq()
@@ -184,7 +198,7 @@ class DenseMemory():
         Allocates a block of memory of size and initialize it with None (invalid value)
 
         :param size: Size of each element.
-        :param keepOut: space[B] to left between last structure in memory and start of this allocation block
+        :param keepOut: optional memory spacing between this memory region and lastly allocated
         :return: address of allocated memory
         """
         addr = 0
@@ -217,6 +231,7 @@ class DenseMemory():
         
         :param num: Number of elements to allocate.
         :param size: Size of each element.
+        :param keepOut: optional memory spacing between this memory region and lastly allocated
         :return: address of allocated memory
         """
         addr = 0
