@@ -68,6 +68,7 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
+from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
 
 
 #if __name__ == "__main__":
@@ -132,6 +133,7 @@ suite = testSuiteFromTCs(
     UartTxRxTC,
     SimpleAxiRegsTC,
     AxiTC,
+    AxisFrameGenTC,
     Axi4_rDatapumpTC,
     Axi3_rDatapumpTC,
     Axi4_wDatapumpTC,

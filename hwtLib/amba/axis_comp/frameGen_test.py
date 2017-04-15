@@ -31,7 +31,7 @@ class AxisFrameGenTC(SimTestCase):
         # u.dataOut._ag.enable = False
         self.doSim(120 * Time.ns)
         self.assertValSequenceEqual(u.axis_out._ag.data,
-                        [[0, mask(8), 1] for _ in range(6)])
+                        [(0, mask(8), 1) for _ in range(6)])
         
     def test_len1(self):
         u = self.u
@@ -44,7 +44,7 @@ class AxisFrameGenTC(SimTestCase):
         self.doSim(120 * Time.ns)
         # self.assertValEqual(self.model.dataOut_data, 1)
         self.assertValSequenceEqual(u.axis_out._ag.data,
-                        [[ L - (i % (L + 1)), mask(8), int((i % (L + 1)) >= L)] for i in range(6)])
+                        [( L - (i % (L + 1)), mask(8), int((i % (L + 1)) >= L)) for i in range(6)])
 
     def test_len4(self):
         u = self.u
@@ -58,7 +58,7 @@ class AxisFrameGenTC(SimTestCase):
         self.doSim(120 * Time.ns)
         # self.assertValEqual(self.model.dataOut_data, 1)
         self.assertValSequenceEqual(u.axis_out._ag.data,
-                        [[ L - (i % (L + 1)), mask(8), int((i % (L + 1)) >= L)] for i in range(6)])
+                        [( L - (i % (L + 1)), mask(8), int((i % (L + 1)) >= L)) for i in range(6)])
                 
 
         
