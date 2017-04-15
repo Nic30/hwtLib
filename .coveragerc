@@ -1,6 +1,5 @@
 [run]
-omit =
-    *tests.py
+
 
 source =
     hwtLib
