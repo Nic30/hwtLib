@@ -18,21 +18,21 @@ class Axi_datapumpBase(Unit):
         a = axiAddrCls()
         self._addrHasUser = hasattr(a, "USER_WIDTH") 
         super().__init__()
-    
+
     def _config(self):
         self.MAX_TRANS_OVERLAP = Param(16)
         self.MAX_LEN = Param(4096 // 8 - 1)
-        
+
         self.ID_WIDTH = Param(4)
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)
         self.CACHE_VAL = Param(CACHE_DEFAULT)
         self.PROT_VAL = Param(PROT_DEFAULT)
         self.QOS_VAL = Param(QOS_DEFAULT)
-        
+
         if self._addrHasUser:
             self.ADDR_USER_VAL = Param(0)
-    
+
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
@@ -40,19 +40,18 @@ class Axi_datapumpBase(Unit):
             self.a = self._axiAddrCls()
             self.a.LOCK_WIDTH = 2  # because all masters have it
 
-                
     def getSizeAlignBits(self):
         return log2ceil(self.DATA_WIDTH // 8).val
-    
+
     def useTransSplitting(self):
         return self.driver.req.len._dtype.bit_length() > self.a.len._dtype.bit_length()
-    
+
     def getBurstAddrOffset(self):
         return (self.getAxiLenMax() + 1) << self.getSizeAlignBits()
 
     def getAxiLenMax(self):
         return mask(self.a.len._dtype.bit_length())
-    
+
     def axiAddrDefaults(self):
         a = self.a
         a.burst ** BURST_INCR

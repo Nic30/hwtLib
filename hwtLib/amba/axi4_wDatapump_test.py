@@ -9,7 +9,6 @@ from hwtLib.amba.axi4 import Axi4_addr
 from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC
 from hwtLib.amba.axi4_wDatapump import Axi_wDatapump
 from hwtLib.amba.constants import RESP_OKAY, BYTES_IN_TRANS
-from hwtLib.abstract.denseMemory import DenseMemory
 from hwt.synthesizer.param import evalParam
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 
@@ -254,7 +253,6 @@ class Axi3_wDatapump_small_splitting_TC(SimTestCase):
             if end:
                 break
 
-
         ra = self.randomize
         ra(u.a)
         ra(u.b)
@@ -265,7 +263,7 @@ class Axi3_wDatapump_small_splitting_TC(SimTestCase):
 
         self.doSim(N * 50 * Time.ns)
 
-        inMem = m.getArray(0, self.DATA_WIDTH // 8, N)
+        inMem = m.getArray(buff, self.DATA_WIDTH // 8, N)
         self.assertValSequenceEqual(inMem, data)
 
 
@@ -273,6 +271,8 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
     # suite.addTest(Axi4_wDatapumpTC('test_multiple_randomized2'))
+    suite.addTest(unittest.makeSuite(Axi4_wDatapumpTC))
+    suite.addTest(unittest.makeSuite(Axi3_wDatapump_direct_TC))
     suite.addTest(unittest.makeSuite(Axi3_wDatapump_small_splitting_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

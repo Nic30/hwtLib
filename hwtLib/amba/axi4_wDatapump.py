@@ -37,7 +37,7 @@ class Axi_wDatapump(Axi_datapumpBase):
     """
     Axi3/4 to axi write datapump,
     * splits request to correct request size
-    * simplifies axi communication without lose of performance 
+    * simplifies axi communication without lose of performance
     \n""" + Axi_datapumpBase.__doc__
 
     def _declr(self):
@@ -76,19 +76,24 @@ class Axi_wDatapump(Axi_datapumpBase):
             req_idBackup = r("req_idBackup", req.id._dtype)
             _id = self._sig("id", aw.id._dtype)
 
+            requiresSplit = req.len > LEN_MAX
+            requiresDebtSplit = lenDebth > LEN_MAX
             If(lastReqDispatched,
                 _id ** req.id,
                 aw.addr ** req.addr,
-                connect(req.len, aw.len, fit=True),
-
+                If(requiresSplit,
+                   aw.len ** LEN_MAX
+                ).Else(
+                    connect(req.len, aw.len, fit=True),
+                ),
                 req_idBackup ** req.id,
                 addrBackup ** (req.addr + self.getBurstAddrOffset()),
                 lenDebth ** (req.len - (LEN_MAX + 1)),
                 If(wInfo.rd & aw.ready & req.vld,
-                    If(req.len > LEN_MAX,
-                       lastReqDispatched ** 0 
+                    If(requiresSplit,
+                       lastReqDispatched ** 0
                     ).Else(
-                       lastReqDispatched ** 1 
+                       lastReqDispatched ** 1
                     )
                 ),
                 streamSync(masters=[req],
@@ -97,15 +102,18 @@ class Axi_wDatapump(Axi_datapumpBase):
             ).Else(
                 _id ** req_idBackup,
                 aw.addr ** addrBackup,
-                connect(lenDebth, aw.len, fit=True),
-
+                If(requiresDebtSplit,
+                   aw.len ** LEN_MAX
+                ).Else(
+                    connect(lenDebth, aw.len, fit=True)
+                ),
                 streamSync(slaves=[aw, wInfo], extraConds={aw:~wErrFlag}),
 
                 req.rd ** 0,
 
-                If(wInfo.rd & aw.ready,
+                If(streamAck(slaves=[wInfo, aw]),
                    addrBackup ** (addrBackup + self.getBurstAddrOffset()),
-                   lenDebth ** (lenDebth - LEN_MAX),
+                   lenDebth ** (lenDebth - (LEN_MAX+1)),
                    If(lenDebth <= LEN_MAX,
                       lastReqDispatched ** 1
                    )
@@ -143,17 +151,14 @@ class Axi_wDatapump(Axi_datapumpBase):
                    wordCntr ** (wordCntr + 1)
                )
             )
-            extraConds = {wInfo: doSplit,
-                          bInfo: doSplit,
-                          w: ~wErrFlag}
-            
-            w.last ** doSplit
 
         else:
-            w.last ** wIn.last
-            extraConds = {wInfo: wIn.last,
-                          bInfo: wIn.last,
-                          w: ~wErrFlag}
+            doSplit = wIn.last
+
+        extraConds = {wInfo: doSplit,
+                      bInfo: doSplit,
+                      w: ~wErrFlag}
+        w.last ** doSplit
 
         bInfo.isLast ** wIn.last
         streamSync(masters=[wIn, wInfo],
