@@ -34,9 +34,16 @@ class SimpleUnitWithParamTC(SimTestCase):
         u.DATA_WIDTH.set(32)
         self.prepareUnit(u)
         
-        self.assertEqual(evalParam(u.DATA_WIDTH), 32)
+        self.assertEqual(evalParam(u.DATA_WIDTH).val, 32)
         self.assertEqual(u.a._dtype.bit_length(), 32)
         self.assertEqual(u.b._dtype.bit_length(), 32)
+    
+    def test_canNotSetAfterSynth(self):
+        u = SimpleUnitWithParam()
+        self.prepareUnit(u)
+        
+        with self.assertRaises(AssertionError, msg="Can not set after it was synthetized"):
+            u.DATA_WIDTH.set(32)
         
 
 if __name__ == "__main__":
@@ -47,6 +54,13 @@ if __name__ == "__main__":
     u.DATA_WIDTH.set(1024)
 
     print(toRtl(u))
+    
+    import unittest
+    suite = unittest.TestSuite()
+    # suite.addTest(TwoCntrsTC('test_nothingEnable'))
+    suite.addTest(unittest.makeSuite(SimpleUnitWithParamTC))
+    runner = unittest.TextTestRunner(verbosity=3)
+    runner.run(suite)
 
 #  expected result
 # --
@@ -75,3 +89,4 @@ if __name__ == "__main__":
 #
 # END ARCHITECTURE rtl;
 
+# ...

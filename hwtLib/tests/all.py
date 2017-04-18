@@ -47,6 +47,7 @@ from hwtLib.samples.iLvl.mem.rom_test import RomTC
 from hwtLib.samples.iLvl.operators.concat_test import ConcatTC
 from hwtLib.samples.iLvl.operators.indexing_test import IndexingTC
 from hwtLib.samples.iLvl.simpleAxiStream_test import SimpleUnitAxiStream_TC
+from hwtLib.samples.iLvl.simpleWithParam import SimpleUnitWithParamTC
 from hwtLib.samples.iLvl.simple_test import SimpleTC
 from hwtLib.samples.iLvl.statements.constDriver_test import ConstDriverTC
 from hwtLib.samples.iLvl.statements.forLoopCntrl_test import StaticForLoopCntrlTC
@@ -94,6 +95,7 @@ suite = testSuiteFromTCs(
     StatementsTC,
     ErrorsTC,
     StaticForLoopCntrlTC,
+    SimpleUnitWithParamTC,
 
     # component verifications
     ConcatTC,
