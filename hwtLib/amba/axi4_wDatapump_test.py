@@ -9,6 +9,9 @@ from hwtLib.amba.axi4 import Axi4_addr
 from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC
 from hwtLib.amba.axi4_wDatapump import Axi_wDatapump
 from hwtLib.amba.constants import RESP_OKAY, BYTES_IN_TRANS
+from hwtLib.abstract.denseMemory import DenseMemory
+from hwt.synthesizer.param import evalParam
+from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 
 
 class Axi4_wDatapumpTC(SimTestCase):
@@ -210,10 +213,66 @@ class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
         self.prepareUnit(u)
 
 
+class Axi3_wDatapump_small_splitting_TC(SimTestCase):
+    LEN_MAX = 16
+
+    def setUp(self):
+        self.u = Axi_wDatapump(axiAddrCls=Axi3_addr)
+        self.u.MAX_LEN.set(4)
+        self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
+        self.prepareUnit(self.u)
+
+    def test_1024random(self):
+        u = self.u
+        req = u.driver._ag.req
+        wIn = u.driver.w._ag
+        dataMask = mask(self.DATA_WIDTH // 8)
+
+        m = Axi3DenseMem(u.clk, axiAW=u.a, axiW=u.w, axiB=u.b)
+        N = 1024
+        data = [self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]
+
+        buff = m.malloc(N * (self.DATA_WIDTH // 8))
+
+        dataIt = iter(data)
+        end = False
+        addr = 0
+        while True:
+            frameSize = self._rand.getrandbits(4) + 1
+            frame = []
+            try:
+                for _ in range(frameSize):
+                    frame.append(next(dataIt))
+            except StopIteration:
+                end = True
+
+            if frame:
+                req.data.append(req.mkReq(addr, len(frame) - 1))
+                wIn.data.extend([(d, dataMask, i == len(frame) - 1)
+                                 for i, d in enumerate(frame)])
+                addr += len(frame) * self.DATA_WIDTH // 8
+            if end:
+                break
+
+
+        ra = self.randomize
+        ra(u.a)
+        ra(u.b)
+        ra(u.driver.req)
+        ra(u.driver.ack)
+        ra(u.w)
+        ra(u.driver.w)
+
+        self.doSim(N * 50 * Time.ns)
+
+        inMem = m.getArray(0, self.DATA_WIDTH // 8, N)
+        self.assertValSequenceEqual(inMem, data)
+
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
     # suite.addTest(Axi4_wDatapumpTC('test_multiple_randomized2'))
-    suite.addTest(unittest.makeSuite(Axi4_wDatapumpTC))
+    suite.addTest(unittest.makeSuite(Axi3_wDatapump_small_splitting_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
