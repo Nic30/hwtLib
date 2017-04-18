@@ -6,7 +6,7 @@ from unittest import TestLoader, TextTestRunner, TestSuite
 
 from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
 from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
-    Axi3_wDatapump_direct_TC
+    Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.append_test import AxiS_append_TC
 from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
@@ -138,6 +138,7 @@ suite = testSuiteFromTCs(
     Axi3_rDatapumpTC,
     Axi4_wDatapumpTC,
     Axi3_wDatapump_direct_TC,
+    Axi3_wDatapump_small_splitting_TC,
     AxiS_en_TC,
     AxiS_measuringFifoTC,
     AxiS_resizer_upscale_TC,
@@ -161,14 +162,14 @@ suite = testSuiteFromTCs(
 )
 if __name__ == '__main__':
     runner = TextTestRunner(verbosity=2)
-    
+
     try:
         from concurrencytest import ConcurrentTestSuite, fork_for_tests
         useParallerlTest = True
     except ImportError:
         # concurrencytest is not installed, use regular test runner
         useParallerlTest = False
-    
+
     if useParallerlTest:
         # Run same tests across 4 processes
         concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests(multiprocessing.cpu_count()))
