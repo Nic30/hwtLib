@@ -15,7 +15,8 @@ from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
     AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC
 from hwtLib.amba.interconnect.rStrictOrder_test import RStrictOrderInterconnectTC
-from hwtLib.amba.interconnect.wStrictOrder_test import WStrictOrderInterconnectTC
+from hwtLib.amba.interconnect.wStrictOrder_test import WStrictOrderInterconnectTC,\
+    WStrictOrderInterconnect2TC
 from hwtLib.handshaked.fifo_test import HsFifoTC
 from hwtLib.handshaked.fork_test import HsForkTC, HsFork_randomized_TC
 from hwtLib.handshaked.joinFair_test import HsJoinFair_2inputs_TC, \
@@ -149,6 +150,7 @@ suite = testSuiteFromTCs(
 
     RStrictOrderInterconnectTC,
     WStrictOrderInterconnectTC,
+    WStrictOrderInterconnect2TC,
 
     ArrayItemGetterTC,
     ArrayItemGetter2in1WordTC,
