@@ -11,11 +11,13 @@ from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.append_test import AxiS_append_TC
 from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
 from hwtLib.amba.axis_comp.frameForge_test import AxiS_frameForge_TC
+from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
 from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
     AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC
 from hwtLib.amba.interconnect.rStrictOrder_test import RStrictOrderInterconnectTC
-from hwtLib.amba.interconnect.wStrictOrder_test import WStrictOrderInterconnectTC,\
+from hwtLib.amba.interconnect.wStrictOrderComplex_test import WStrictOrderInterconnectComplexTC
+from hwtLib.amba.interconnect.wStrictOrder_test import WStrictOrderInterconnectTC, \
     WStrictOrderInterconnect2TC
 from hwtLib.handshaked.fifo_test import HsFifoTC
 from hwtLib.handshaked.fork_test import HsForkTC, HsFork_randomized_TC
@@ -47,6 +49,7 @@ from hwtLib.samples.iLvl.operators.indexing_test import IndexingTC
 from hwtLib.samples.iLvl.simpleAxiStream_test import SimpleUnitAxiStream_TC
 from hwtLib.samples.iLvl.simple_test import SimpleTC
 from hwtLib.samples.iLvl.statements.constDriver_test import ConstDriverTC
+from hwtLib.samples.iLvl.statements.forLoopCntrl_test import StaticForLoopCntrlTC
 from hwtLib.samples.iLvl.statements.fsm_test import FsmExampleTC, HadrcodedFsmExampleTC
 from hwtLib.samples.iLvl.statements.ifStm_test import IfStmTC
 from hwtLib.samples.iLvl.statements.switchStm_test import SwitchStmTC
@@ -69,8 +72,6 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
-from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
-from hwtLib.amba.interconnect.wStrictOrderComplex_test import WStrictOrderInterconnectComplexTC
 
 
 #if __name__ == "__main__":
@@ -92,6 +93,7 @@ suite = testSuiteFromTCs(
     StatementTreesTC,
     StatementsTC,
     ErrorsTC,
+    StaticForLoopCntrlTC,
 
     # component verifications
     ConcatTC,

@@ -16,7 +16,7 @@ class ConstDriverTC(SimTestCase):
 
     def test_simple(self):
         u = self.u
-        self.doSim(10 * Time.ns)
+        self.doSim(20 * Time.ns)
 
         self.assertSequenceEqual([0], agInts(u.out0))
         self.assertSequenceEqual([1], agInts(u.out1))

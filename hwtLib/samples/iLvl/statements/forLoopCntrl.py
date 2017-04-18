@@ -1,10 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from hwt.code import If, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.interfaces.std import Signal, VectSignal
+from hwt.interfaces.std import Signal, VectSignal, HandshakeSync
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
-from hwt.code import If, log2ceil
-from hwt.synthesizer.shortcuts import toRtl
 
 
 class StaticForLoopCntrl(Unit):
@@ -13,14 +15,12 @@ class StaticForLoopCntrl(Unit):
 
     def _declr(self):
         addClkRstn(self)
-        self.counterW = log2ceil(self.ITERATIONS)
 
-        self.cntrlVld = Signal()
-        self.cntrlRd = Signal()
+        self.cntrl = HandshakeSync()
 
-        self.index = VectSignal(self.counterW)
-        self.bodyVld = Signal()
-        self.bodyRd = Signal()
+        self.COUNTER_WIDTH = log2ceil(self.ITERATIONS)
+        self.index = VectSignal(self.COUNTER_WIDTH)
+        self.body = HandshakeSync()
         self.bodyBreak = Signal()
 
     def _impl(self):
@@ -31,14 +31,14 @@ class StaticForLoopCntrl(Unit):
         break causes reset of counter
         """
 
-        counter = self._reg("counter", vecT(self.counterW + 1), 0)
+        counter = self._reg("counter", vecT(self.COUNTER_WIDTH), ITERATIONS - 1)
 
         If(counter._eq(0),
-            If(self.cntrlVld,
-               counter ** ITERATIONS
+            If(self.cntrl.vld,
+               counter ** (ITERATIONS - 1)
             )
         ).Else(
-            If(self.bodyRd,
+            If(self.body.rd,
                 If(self.bodyBreak,
                     counter ** 0 
                 ).Else(
@@ -47,11 +47,12 @@ class StaticForLoopCntrl(Unit):
             )
         )
 
-        self.cntrlRd ** counter._eq(0)
-        self.bodyVld ** (counter != 0) 
-        self.index ** (counter[self.counterW:0] - 1)
+        self.cntrl.rd ** counter._eq(0)
+        self.body.vld ** (counter != 0) 
+        self.index ** counter[self.COUNTER_WIDTH:0]
 
 
 if __name__ == "__main__":
+    from hwt.synthesizer.shortcuts import toRtl
     u = StaticForLoopCntrl()
     print(toRtl(u))

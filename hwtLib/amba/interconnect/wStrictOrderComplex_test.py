@@ -40,7 +40,7 @@ class WStrictOrderInterconnecComplex(Unit):
 
         self.aw ** dp.a
         self.w ** dp.w
-        self.b ** dp.b
+        dp.b ** self.b
 
         dp.driver ** ic.wDatapump
 
@@ -59,10 +59,9 @@ class WStrictOrderInterconnectComplexTC(SimTestCase):
         self.u.DRIVER_CNT.set(self.DRIVER_CNT)
         self.prepareUnit(self.u)
 
-    def test_3x512(self):
+    def test_3x128(self, N=128):
         u = self.u
         m = Axi3DenseMem(u.clk, axiAW=u.aw, axiW=u.w, axiB=u.b)
-        N = 512
         _mask = mask(self.DATA_WIDTH // 8)
         data = [[self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]
                 for _ in range(self.DRIVER_CNT)]
@@ -103,10 +102,10 @@ class WStrictOrderInterconnectComplexTC(SimTestCase):
         r(u.w)
         r(u.b)
 
-        self.doSim(self.DRIVER_CNT * N * 30 * Time.ns)
+        self.doSim(self.DRIVER_CNT * N * 50 * Time.ns)
         for i, baseAddr in enumerate(dataAddress):
             inMem = m.getArray(baseAddr, self.DATA_WIDTH // 8, N)
-            self.assertValSequenceEqual(inMem, data, "driver:%d" % i)
+            self.assertValSequenceEqual(inMem, data[i], "driver:%d" % i)
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
