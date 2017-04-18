@@ -195,6 +195,12 @@ class OperatorTC(unittest.TestCase):
             self.assertEqual(resBit.vldMask, 3)
             self.assertEqual(resBit.val, out, "a_in %d, b_in %d, out %d" % (a_in, b_in, out))
 
+    def test_bits_le(self):
+        a = vec(8, 8)
+        b = vec(16, 8)
+        self.assertTrue((a <= b).val)
+        self.assertFalse((b <= a).val)
+
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     # suite.addTest(OperatorTC('testBitAnd'))
