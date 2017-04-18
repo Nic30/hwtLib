@@ -54,6 +54,8 @@ class Axi3DenseMem(DenseMemory):
                 self.awAg = None
                 self.wAg = None
                 self.wAckAg = None
+            
+            assert axiAR is not None or axiAW is not None  
 
         self.cellSize = DW // 8
         self.allMask = mask(self.cellSize)
