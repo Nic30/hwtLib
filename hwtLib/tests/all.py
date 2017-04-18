@@ -70,6 +70,7 @@ from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
 from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
+from hwtLib.amba.interconnect.wStrictOrderComplex_test import WStrictOrderInterconnectComplexTC
 
 
 #if __name__ == "__main__":
@@ -151,6 +152,7 @@ suite = testSuiteFromTCs(
     RStrictOrderInterconnectTC,
     WStrictOrderInterconnectTC,
     WStrictOrderInterconnect2TC,
+    WStrictOrderInterconnectComplexTC,
 
     ArrayItemGetterTC,
     ArrayItemGetter2in1WordTC,

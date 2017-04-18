@@ -174,10 +174,10 @@ class WStrictOrderInterconnect2TC(SimTestCase):
         self.u.DRIVER_CNT.set(self.DRIVER_CNT)
         self.prepareUnit(self.u)
 
-    def test_3x512(self):
+    def test_3x128(self):
         u = self.u
         m = DenseMemory(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
-        N = 512
+        N = 128
         _mask = mask(self.DATA_WIDTH // 8)
         data = [[self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]
                 for _ in range(self.DRIVER_CNT)]
@@ -208,19 +208,20 @@ class WStrictOrderInterconnect2TC(SimTestCase):
                 if end:
                     break
 
-            for d in u.drivers:
-                self.randomize(d.req)
-                self.randomize(d.w)
-                self.randomize(d.ack)
+        ra = self.randomize
+        for d in u.drivers:
+            ra(d.req)
+            ra(d.w)
+            ra(d.ack)
 
-            self.randomize(u.wDatapump.req)
-            self.randomize(u.wDatapump.w)
-            self.randomize(u.wDatapump.ack)
+        ra(u.wDatapump.req)
+        ra(u.wDatapump.w)
+        ra(u.wDatapump.ack)
 
-        self.doSim(self.DRIVER_CNT * N * 30 * Time.ns)
+        self.doSim(self.DRIVER_CNT * N * 50 * Time.ns)
         for i, baseAddr in enumerate(dataAddress):
             inMem = m.getArray(baseAddr, self.DATA_WIDTH // 8, N)
-            self.assertValSequenceEqual(inMem, data, "driver:%d" % i)
+            self.assertValSequenceEqual(inMem, data[i], "driver:%d" % i)
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
