@@ -4,6 +4,8 @@
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal
 from hwt.intfLvl import Param, Unit
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.param import evalParam
 
 
 class SimpleUnitWithParam(Unit):
@@ -25,6 +27,17 @@ class SimpleUnitWithParam(Unit):
 
     def _impl(self):
         self.b ** self.a
+
+class SimpleUnitWithParamTC(SimTestCase):
+    def test_simple(self):
+        u = SimpleUnitWithParam()
+        u.DATA_WIDTH.set(32)
+        self.prepareUnit(u)
+        
+        self.assertEqual(evalParam(u.DATA_WIDTH), 32)
+        self.assertEqual(u.a._dtype.bit_length(), 32)
+        self.assertEqual(u.b._dtype.bit_length(), 32)
+        
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
@@ -61,3 +74,4 @@ if __name__ == "__main__":
 #     b <= a;
 #
 # END ARCHITECTURE rtl;
+
