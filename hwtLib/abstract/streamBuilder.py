@@ -3,7 +3,7 @@ from hwt.interfaces.std import Rst_n
 getClk
 
 
-class AbstractStreamBuilder():
+class AbstractStreamBuilder(object):
     """
     :attention: this is just abstract class unit classes has to be specified in concrete implementation
 
@@ -76,7 +76,7 @@ class AbstractStreamBuilder():
         :param unitCls: class of unit which is being created
         :param unitName: name for unitCls
         :param setParams: function which updates parameters as is required
-                        (parameters are already shared with self.end interface)
+            (parameters are already shared with self.end interface)
         """
 
         u = unitCls(self.getInfCls())
