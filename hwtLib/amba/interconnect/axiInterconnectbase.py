@@ -8,8 +8,9 @@ from hwtLib.logic.oneHotToBin import oneHotToBin
 
 def getSizeWidth(maxLen, dataWidth):
     alignBits = log2ceil(dataWidth // 8 - 1).val
-    lenBits = log2ceil(maxLen).val
+    lenBits = log2ceil(maxLen).val + 1
     return lenBits + alignBits
+
 
 class AxiInterconnectBase(Unit):
     def getDpIntf(self, unit):

@@ -1,6 +1,6 @@
 from hwt.bitmask import mask
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.interfaces.std import Handshaked
+from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.code import If, connect, Concat, Switch, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -33,7 +33,7 @@ class AxiS_measuringFifo(Unit):
     def _config(self):
         Fifo._config(self)
         self.SIZES_BUFF_DEPTH = Param(16)
-        self.MAX_LEN = Param(4096 // 8 - 1)
+        self.MAX_LEN = Param((2048 // 8) - 1)
 
     def getAlignBitsCnt(self):
         return log2ceil(self.DATA_WIDTH // 8).val
@@ -45,7 +45,7 @@ class AxiS_measuringFifo(Unit):
             self.dataOut = AxiStream()
 
         self.sizes = Handshaked()
-        self.sizes.DATA_WIDTH.set(log2ceil(self.MAX_LEN) + self.getAlignBitsCnt())
+        self.sizes.DATA_WIDTH.set(log2ceil(self.MAX_LEN) + 1 + self.getAlignBitsCnt())
 
         db = self.dataBuff = AxiSFifo(AxiStream)
         # to place fifo in bram
@@ -55,6 +55,7 @@ class AxiS_measuringFifo(Unit):
         sb = self.sizesBuff = HandshakedFifo(Handshaked)
         sb.DEPTH.set(self.SIZES_BUFF_DEPTH)
         sb.DATA_WIDTH.set(self.sizes.DATA_WIDTH.get())
+        self.errorAlignment = Signal()
 
     def _impl(self):
         propagateClkRstn(self)
@@ -65,11 +66,15 @@ class AxiS_measuringFifo(Unit):
         db = self.dataBuff
 
         wordCntr = self._reg("wordCntr",
-                             vecT(log2ceil(self.MAX_LEN+1)),
+                             vecT(log2ceil(self.MAX_LEN) + 1),
                              defVal=0)
+        errorAlignment = self._reg("errorAlignment_reg", defVal=0)
+        self.errorAlignment ** errorAlignment
 
+        overflow = wordCntr._eq(self.MAX_LEN)
+        last = dIn.last | overflow
         If(streamAck(masters=[dIn], slaves=[sb.dataIn, db.dataIn]),
-            If(dIn.last,
+            If(last,
                 wordCntr ** 0
             ).Else(
                 wordCntr ** (wordCntr + 1)
@@ -77,9 +82,13 @@ class AxiS_measuringFifo(Unit):
         )
         rem = self._sig("rem", vecT(log2ceil(STRB_BITS)))
         Switch(dIn.strb).addCases(
-           [(strb, rem ** r) for strb, r in strbToRem(STRB_BITS)]
+           [(strb, rem ** r)
+            for strb, r in strbToRem(STRB_BITS)]
         ).Default(
-            rem ** 0
+            rem ** 0,
+            If(dIn.valid,
+               errorAlignment ** 1
+            )
         )
 
         length = self._sig("length", wordCntr._dtype)
@@ -96,11 +105,12 @@ class AxiS_measuringFifo(Unit):
         streamSync(masters=[dIn],
                    slaves=[sb.dataIn, db.dataIn],
                    extraConds={
-                               sb.dataIn: dIn.last
+                               sb.dataIn: last
                               })
 
         self.sizes ** sb.dataOut
-        self.dataOut ** db.dataOut
+        connect(db.dataOut, self.dataOut, exclude=[db.dataOut.last])
+        self.dataOut.last ** db.dataOut.last
 
 
 if __name__ == "__main__":

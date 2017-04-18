@@ -113,7 +113,7 @@ class Axi3DenseMem(DenseMemory):
 
             isLast = i == size - 1
 
-            assert last == isLast
+            assert last == isLast, (addr, size, i)
 
             if data is None:
                 raise AssertionError("Invalid read of uninitialized value on addr 0x%x" % 

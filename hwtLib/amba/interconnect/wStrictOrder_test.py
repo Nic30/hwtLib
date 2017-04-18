@@ -5,7 +5,6 @@ import unittest
 
 from hwt.bitmask import mask
 from hwt.hdlObjects.constants import Time
-from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.denseMemory import DenseMemory
@@ -22,7 +21,7 @@ class WStrictOrderInterconnectTC(SimTestCase):
 
         self.DRIVER_CNT = 2
         self.u.DRIVER_CNT.set(self.DRIVER_CNT)
-        _, self.model, self.procs = simPrepare(self.u)
+        self.prepareUnit(self.u)
 
     def test_nop(self):
         u = self.u
@@ -162,9 +161,71 @@ class WStrictOrderInterconnectTC(SimTestCase):
             v = m.getArray(addr, 8, len(expected))
             self.assertSequenceEqual(v, expected)
 
+
+class WStrictOrderInterconnect2TC(SimTestCase):
+    def setUp(self):
+        super(WStrictOrderInterconnect2TC, self).setUp()
+        self.u = WStrictOrderInterconnect()
+        self.MAX_TRANS_OVERLAP = 4
+        self.u.MAX_TRANS_OVERLAP.set(self.MAX_TRANS_OVERLAP)
+        self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
+
+        self.DRIVER_CNT = 3
+        self.u.DRIVER_CNT.set(self.DRIVER_CNT)
+        self.prepareUnit(self.u)
+
+    def test_3x128(self):
+        u = self.u
+        m = DenseMemory(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
+        N = 128
+        _mask = mask(self.DATA_WIDTH // 8)
+        data = [[self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]
+                for _ in range(self.DRIVER_CNT)]
+
+        dataAddress = [m.malloc(N * self.DATA_WIDTH // 8) for _ in range(self.DRIVER_CNT)]
+
+        for di, _data in enumerate(data):
+            req = u.drivers[di].req._ag
+            wIn = u.drivers[di].w._ag
+            dataIt = iter(_data)
+
+            addr = dataAddress[di]
+            end = False
+            while True:
+                frameSize = self._rand.getrandbits(4) + 1
+                frame = []
+                try:
+                    for _ in range(frameSize):
+                        frame.append(next(dataIt))
+                except StopIteration:
+                    end = True
+
+                if frame:
+                    req.data.append(req.mkReq(addr, len(frame) - 1))
+                    wIn.data.extend([(d, _mask, i == len(frame) - 1)
+                                     for i, d in enumerate(frame)])
+                    addr += len(frame) * self.DATA_WIDTH // 8
+                if end:
+                    break
+
+        ra = self.randomize
+        for d in u.drivers:
+            ra(d.req)
+            ra(d.w)
+            ra(d.ack)
+
+        ra(u.wDatapump.req)
+        ra(u.wDatapump.w)
+        ra(u.wDatapump.ack)
+
+        self.doSim(self.DRIVER_CNT * N * 50 * Time.ns)
+        for i, baseAddr in enumerate(dataAddress):
+            inMem = m.getArray(baseAddr, self.DATA_WIDTH // 8, N)
+            self.assertValSequenceEqual(inMem, data[i], "driver:%d" % i)
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(WStrictOrderInterconnectTC('test_randomized'))
-    suite.addTest(unittest.makeSuite(WStrictOrderInterconnectTC))
+    suite.addTest(unittest.makeSuite(WStrictOrderInterconnect2TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

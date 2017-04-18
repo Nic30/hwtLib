@@ -12,26 +12,27 @@ from hwt.synthesizer.param import Param
 class GrayCntr(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(4)
-        
+
     def _declr(self):
         addClkRstn(self)
         self.en = Signal()
 
         self.dataOut = Signal(dtype=vecT(self.DATA_WIDTH))
-            
+
     def _impl(self):
         binCntr = self._reg("cntr_bin_reg", self.dataOut._dtype, 1) 
-        
+
         If(self.rst_n._isOn(),
            self.dataOut ** 0
         ).Else(
            self.dataOut ** binToGray(binCntr)
         )
-        
+
         If(self.en,
            binCntr ** (binCntr + 1)
         )
 
+
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    print(toRtl(GrayCntr))
+    print(toRtl(GrayCntr()))

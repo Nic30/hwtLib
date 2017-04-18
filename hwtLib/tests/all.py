@@ -6,7 +6,7 @@ from unittest import TestLoader, TextTestRunner, TestSuite
 
 from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
 from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
-    Axi3_wDatapump_direct_TC
+    Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.append_test import AxiS_append_TC
 from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
@@ -15,7 +15,8 @@ from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
     AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC
 from hwtLib.amba.interconnect.rStrictOrder_test import RStrictOrderInterconnectTC
-from hwtLib.amba.interconnect.wStrictOrder_test import WStrictOrderInterconnectTC
+from hwtLib.amba.interconnect.wStrictOrder_test import WStrictOrderInterconnectTC,\
+    WStrictOrderInterconnect2TC
 from hwtLib.handshaked.fifo_test import HsFifoTC
 from hwtLib.handshaked.fork_test import HsForkTC, HsFork_randomized_TC
 from hwtLib.handshaked.joinFair_test import HsJoinFair_2inputs_TC, \
@@ -69,6 +70,7 @@ from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
 from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
+from hwtLib.amba.interconnect.wStrictOrderComplex_test import WStrictOrderInterconnectComplexTC
 
 
 #if __name__ == "__main__":
@@ -138,6 +140,7 @@ suite = testSuiteFromTCs(
     Axi3_rDatapumpTC,
     Axi4_wDatapumpTC,
     Axi3_wDatapump_direct_TC,
+    Axi3_wDatapump_small_splitting_TC,
     AxiS_en_TC,
     AxiS_measuringFifoTC,
     AxiS_resizer_upscale_TC,
@@ -148,6 +151,8 @@ suite = testSuiteFromTCs(
 
     RStrictOrderInterconnectTC,
     WStrictOrderInterconnectTC,
+    WStrictOrderInterconnect2TC,
+    WStrictOrderInterconnectComplexTC,
 
     ArrayItemGetterTC,
     ArrayItemGetter2in1WordTC,
@@ -161,14 +166,14 @@ suite = testSuiteFromTCs(
 )
 if __name__ == '__main__':
     runner = TextTestRunner(verbosity=2)
-    
+
     try:
         from concurrencytest import ConcurrentTestSuite, fork_for_tests
         useParallerlTest = True
     except ImportError:
         # concurrencytest is not installed, use regular test runner
         useParallerlTest = False
-    
+
     if useParallerlTest:
         # Run same tests across 4 processes
         concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests(multiprocessing.cpu_count()))

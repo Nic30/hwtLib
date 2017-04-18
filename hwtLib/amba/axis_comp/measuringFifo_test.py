@@ -17,7 +17,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         self.MAX_LEN = 15
         u.MAX_LEN.set(self.MAX_LEN)
         u.SIZES_BUFF_DEPTH.set(4)
-        
+
         self.prepareUnit(self.u)
 
     def test_nop(self):
@@ -65,7 +65,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         self.doSim(200 * Time.ns)
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, [8, 8, 8])
-        
+
     def test_doubleWordPacket(self):
         u = self.u
         sizes = u.sizes._ag.data
@@ -84,7 +84,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         u = self.u
         sizes = u.sizes._ag.data
         data = u.dataOut._ag.data
-        
+
         goldenData = [
                        (i + 1, 255, int(i == 5)) for i in range(6)
                       ]
@@ -113,9 +113,9 @@ class AxiS_measuringFifoTC(SimTestCase):
                        (2, mask(1), 1)
                       ]
         u.dataIn._ag.data.extend(goldenData)
-        
+
         self.doSim(200 * Time.ns)
-        
+
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, (9,))
 
@@ -128,7 +128,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         u.dataIn._ag.data.extend(goldenData)
 
         self.doSim(200 * Time.ns)
-        
+
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, (1,))
 
@@ -217,6 +217,32 @@ class AxiS_measuringFifoTC(SimTestCase):
         for el, l in zip(expectedLen, sizes):
             self.assertValEqual(l, el)
 
+    def sendFrame(self, data):
+        u = self.u
+        _mask = 255
+        _d = [(d, _mask, int(i == (len(data) - 1))) 
+              for i, d in enumerate(data)]
+        u.dataIn._ag.data.extend(d)
+
+    def getFrames(self):
+        u = self.u
+        sizes = u.sizes._ag.data
+        data = u.dataOut._ag.data
+
+        data = iter(data)
+        for s in sizes:
+            assert s
+
+    #def test_overflow(self):
+    #    u = self.u
+    #    MAX_LEN = self.MAX_LEN
+    #    data = [i for i in range(MAX_LEN + 4)]
+    #    self.sendFrame(data)
+    #    f = self.getFrames()
+    #    self.assertEquals(f, 
+    #                      [[i for i in range(MAX_LEN + 1)], 
+    #                       [MAX_LEN, MAX_LEN + 1, MAX_LEN + 2, MAX_LEN + 3]])
+    #
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
