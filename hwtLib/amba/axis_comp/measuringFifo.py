@@ -1,6 +1,6 @@
 from hwt.bitmask import mask
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.interfaces.std import Handshaked
+from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.code import If, connect, Concat, Switch, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -55,6 +55,7 @@ class AxiS_measuringFifo(Unit):
         sb = self.sizesBuff = HandshakedFifo(Handshaked)
         sb.DEPTH.set(self.SIZES_BUFF_DEPTH)
         sb.DATA_WIDTH.set(self.sizes.DATA_WIDTH.get())
+        self.errorAlignment = Signal()
 
     def _impl(self):
         propagateClkRstn(self)
@@ -65,8 +66,10 @@ class AxiS_measuringFifo(Unit):
         db = self.dataBuff
 
         wordCntr = self._reg("wordCntr",
-                             vecT(log2ceil(self.MAX_LEN+1)),
+                             vecT(log2ceil(self.MAX_LEN + 1)),
                              defVal=0)
+        errorAlignment = self._reg("errorAlignment_reg", defVal=0)
+        self.errorAlignment ** errorAlignment
 
         If(streamAck(masters=[dIn], slaves=[sb.dataIn, db.dataIn]),
             If(dIn.last,
@@ -79,7 +82,8 @@ class AxiS_measuringFifo(Unit):
         Switch(dIn.strb).addCases(
            [(strb, rem ** r) for strb, r in strbToRem(STRB_BITS)]
         ).Default(
-            rem ** 0
+            rem ** 0,
+            errorAlignment ** 1
         )
 
         length = self._sig("length", wordCntr._dtype)
