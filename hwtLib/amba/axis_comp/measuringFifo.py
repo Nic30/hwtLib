@@ -83,7 +83,9 @@ class AxiS_measuringFifo(Unit):
            [(strb, rem ** r) for strb, r in strbToRem(STRB_BITS)]
         ).Default(
             rem ** 0,
-            errorAlignment ** 1
+            If(dIn.valid,
+               errorAlignment ** 1
+            )
         )
 
         length = self._sig("length", wordCntr._dtype)
