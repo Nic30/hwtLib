@@ -110,7 +110,7 @@ class AxiS_measuringFifo(Unit):
 
         self.sizes ** sb.dataOut
         connect(db.dataOut, self.dataOut, exclude=[db.dataOut.last])
-        self.dataOut.last ** last
+        self.dataOut.last ** db.dataOut.last
 
 
 if __name__ == "__main__":
