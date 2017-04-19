@@ -181,6 +181,17 @@ class TimerInfo(object):
         return "<%s maxVal=%d>" % (self.__class__.__name__, self.maxVal)
 
 
+class DynamicTimerInfo(TimerInfo):
+    def __init__(self, maxVal, name=None):
+        self.maxValOriginal = maxVal
+        self.maxVal = maxVal
+        self.parent = None
+
+        if name is None:
+            self.name = ""
+        else:
+            self.name = name
+
 if __name__ == "__main__":
     from hwt.synthesizer.interfaceLevel.unit import Unit
     from hwt.synthesizer.shortcuts import toRtl
