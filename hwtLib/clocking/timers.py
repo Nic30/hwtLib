@@ -1,7 +1,5 @@
 from hwt.code import log2ceil, If, isPow2
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.interfaces.std import Signal
-from hwt.interfaces.utils import addClkRstn
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.param import evalParam
 
@@ -191,38 +189,3 @@ class DynamicTimerInfo(TimerInfo):
             self.name = ""
         else:
             self.name = name
-
-if __name__ == "__main__":
-    from hwt.synthesizer.interfaceLevel.unit import Unit
-    from hwt.synthesizer.shortcuts import toRtl
-    from hwtLib.clocking.clkBuilder import ClkBuilder
-
-    class TimerInfoTest(Unit):
-        def _declr(self):
-            addClkRstn(self)
-
-            self.tick1 = Signal()
-            self.tick2 = Signal()
-            self.tick16 = Signal()
-
-            self.tick17 = Signal()
-            self.tick34 = Signal()
-
-            self.tick256 = Signal()
-
-            self.tick384 = Signal()
-
-        def _impl(self):
-            tick1, tick2, tick16, tick17, tick34, tick256, tick384 = ClkBuilder(self, self.clk)\
-                                                                        .timers([1, 2, 16, 17, 34, 256, 384])
-            self.tick1 ** tick1
-            self.tick2 ** tick2
-            self.tick16 ** tick16
-
-            self.tick17 ** tick17
-            self.tick34 ** tick34
-
-            self.tick256 ** tick256
-            self.tick384 ** tick384
-    u = TimerInfoTest()
-    print(toRtl(u))

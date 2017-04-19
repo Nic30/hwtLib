@@ -56,6 +56,7 @@ from hwtLib.samples.iLvl.statements.fsm_test import FsmExampleTC, HadrcodedFsmEx
 from hwtLib.samples.iLvl.statements.ifStm_test import IfStmTC
 from hwtLib.samples.iLvl.statements.switchStm_test import SwitchStmTC
 from hwtLib.samples.iLvl.statements.vldMaskConflictsResolving_test import VldMaskConflictsResolvingTC
+from hwtLib.samples.iLvl.timers import TimerTC
 from hwtLib.structManipulators.arrayBuff_writer_test import ArrayBuff_writer_TC
 from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC, \
     ArrayItemGetter2in1WordTC
@@ -76,7 +77,6 @@ from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
 
 
-#if __name__ == "__main__":
 def testSuiteFromTCs(*tcs):
     loader = TestLoader()
     for tc in tcs:
@@ -98,6 +98,7 @@ suite = testSuiteFromTCs(
     StaticForLoopCntrlTC,
     SimpleUnitWithParamTC,
     SimpleSubunit2TC,
+    TimerTC,
 
     # component verifications
     ConcatTC,
