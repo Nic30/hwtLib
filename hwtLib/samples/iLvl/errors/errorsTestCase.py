@@ -7,7 +7,7 @@ from hwt.synthesizer.shortcuts import toRtl
 from hwtLib.samples.iLvl.errors.invalidTypeConnetion import InvalidTypeConnetion
 from hwtLib.samples.iLvl.errors.multipleDriversOfChildNet import MultipleDriversOfChildNet, \
     MultipleDriversOfChildNet2
-from hwtLib.samples.iLvl.errors.unconsistentIntfDirection import UncosistentIntfDirection
+from hwtLib.samples.iLvl.errors.inconsistentIntfDirection import InconsistentIntfDirection
 from hwtLib.samples.iLvl.errors.unusedSubunit import UnusedSubunit, \
     UnusedSubunit2
 
@@ -18,8 +18,8 @@ class ErrorsTC(unittest.TestCase):
         with self.assertRaises(TypeConversionErr):
             toRtl(u)
 
-    def test_uncosistentIntfDirection(self):
-        u = UncosistentIntfDirection()
+    def test_inconsistentIntfDirection(self):
+        u = InconsistentIntfDirection()
         with self.assertRaises(IntfLvlConfErr):
             toRtl(u)
 

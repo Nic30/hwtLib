@@ -2,7 +2,7 @@ from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.amba.axis import AxiStream
 
 
-class UncosistentIntfDirection(Unit):
+class InconsistentIntfDirection(Unit):
     def _declr(self):
         self.a = AxiStream()
 
@@ -13,6 +13,6 @@ class UncosistentIntfDirection(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    u = UncosistentIntfDirection()
+    u = InconsistentIntfDirection()
     # expecting hwt.synthesizer.exceptions.IntfLvlConfErr
     print(toRtl(u))
