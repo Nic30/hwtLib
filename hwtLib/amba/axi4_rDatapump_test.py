@@ -205,6 +205,44 @@ class Axi4_rDatapumpTC(SimTestCase):
                                      ])
         self.assertValSequenceEqual(rout, expected)
 
+    def test_endstrbMultiFrame(self):
+        u = self.u
+        _id = 0
+        # MAGIC = self._rand.getrandbits(16)
+
+        req = u.driver._ag.req
+        r = u.r._ag
+        ar = u.a._ag.data
+        rout = u.driver.r._ag.data
+        lastRem = (self.DATA_WIDTH // 8) - 1
+
+        expected = []
+        l = self.LEN_MAX + 3
+        req.data.append(req.mkReq(0, l - 1, rem=lastRem))
+        for i2 in range(self.LEN_MAX + 3):
+            isLast = int(i2 == l - 1)
+            isLastOnBus = isLast or (i2 == self.LEN_MAX)
+
+            r.data.append((_id, i2 + 1, RESP_OKAY, isLastOnBus))
+            if isLast:
+                m = mask(lastRem)
+            else:
+                m = mask(self.DATA_WIDTH // 8)
+
+            expected.append((_id, i2 + 1, m, isLast))
+
+        self.doSim((len(expected) * 2 * 10) * Time.ns)
+
+        self.assertEmpty(req.data)
+
+        _id = 0
+        mkReq = self.mkDefaultAddrReq
+        self.assertValSequenceEqual(ar,
+                                    [mkReq(_id, 0, self.LEN_MAX),
+                                     mkReq(_id, (self.LEN_MAX + 1) * (self.DATA_WIDTH // 8), 1)
+                                     ])
+        self.assertValSequenceEqual(rout, expected)
+
     def test_multipleSplited(self):
         _id = 0
         FRAMES = 64
@@ -308,7 +346,7 @@ class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(Axi3_rDatapumpTC('test_endstrb'))
+    suite.addTest(Axi3_rDatapumpTC('test_endstrbMultiFrame'))
     # suite.addTest(unittest.makeSuite(Axi3_rDatapumpTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
