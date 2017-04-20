@@ -88,8 +88,10 @@ class TimerInfo(object):
             # take specific bit from wider counter
             assert isPow2(timer.maxVal), timer.maxVal
             bitIndx = log2ceil(timer.maxVal)
+
             timer.cntrRegister = p.cntrRegister
-            timer.tick = p.cntrRegister[bitIndx]
+
+            timer.tick = p.cntrRegister[bitIndx:]._eq(0)
             if enableSig is not None:
                 timer.tick = timer.tick & enableSig
 

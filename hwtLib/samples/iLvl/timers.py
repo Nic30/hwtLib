@@ -67,22 +67,25 @@ class TimerTC(SimTestCase):
     def test_basic(self):
         u = TimerTestUnit()
         self.prepareUnit(u)
-        CLK = 385
+        CLK =2* 390
+        RST = 5
 
         self.doSim(CLK * 10 * Time.ns)
         self.assertSequenceEqual(u.tick1._ag.data,
-                                 [((i + 1) * 10 + 5) * Time.ns for i in range(CLK - 1)])
-        print(u.tick2._ag.data)
+                                 [((i + 1) * 10 + RST) * Time.ns for i in range(CLK - 1)])
+        #print(u.tick2._ag.data)
         self.assertSequenceEqual(u.tick2._ag.data,
-                                 [((i + 1) * 20 + 5) * Time.ns for i in range(CLK // 2 - 1)])
+                                 [((i + 1) * 20 + RST) * Time.ns for i in range(CLK // 2 -1)])
         self.assertSequenceEqual(u.tick16._ag.data,
-                                 [((i + 1) * 160 + 5) * Time.ns for i in range(CLK // 16 - 1)])
+                                 [((i + 1) * 160 + RST) * Time.ns for i in range(CLK // 16)])
         self.assertSequenceEqual(u.tick17._ag.data,
-                                 [((i + 1) * 170 + 5) * Time.ns for i in range(CLK // 17 - 1)])
+                                 [((i + 1) * 170 + RST) * Time.ns for i in range(CLK // 17)])
         self.assertSequenceEqual(u.tick34._ag.data,
-                                 [((i + 1) * 340 + 5) * Time.ns for i in range(CLK // 34 - 1)])
-        self.assertSequenceEqual(u.tick256._ag.data, [(2560 + 5) * Time.ns])
-        self.assertSequenceEqual(u.tick384._ag.data, [(3840 + 5) * Time.ns])
+                                 [((i + 1) * 340 + RST) * Time.ns for i in range(CLK // 34)])
+        self.assertSequenceEqual(u.tick256._ag.data,
+                                 [((i + 1) * 2560 + RST) * Time.ns for i in range(CLK // 256)])
+        self.assertSequenceEqual(u.tick384._ag.data,
+                                 [((i + 1) * 3840 + RST) * Time.ns for i in range(CLK // 384)])
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
@@ -94,4 +97,3 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(TimerTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-
