@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3e
 # -*- coding: utf-8 -*-
 
 import unittest
@@ -15,9 +15,11 @@ from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 
 class Axi4_rDatapumpTC(SimTestCase):
     LEN_MAX = 255
+    DATA_WIDTH = 64
 
     def setUp(self):
         self.u = Axi_rDatapump()
+        self.u.DATA_WIDTH.set(self.DATA_WIDTH)
         self.prepareUnit(self.u)
 
     def mkDefaultAddrReq(self, _id, addr, _len):
@@ -168,6 +170,79 @@ class Axi4_rDatapumpTC(SimTestCase):
                                         for addr in range(64)
                                      ])
 
+    def test_endstrb(self):
+        u = self.u
+        _id = 0
+        # MAGIC = self._rand.getrandbits(16)
+
+        req = u.driver._ag.req
+        r = u.r._ag
+        ar = u.a._ag.data
+        rout = u.driver.r._ag.data
+
+        expected = []
+        for i in range(self.DATA_WIDTH // 8):
+            req.data.append(req.mkReq(i * (self.DATA_WIDTH // 8), 0, rem=i))
+            l = 1
+            for i2 in range(l):
+                isLast = int(i2 == l - 1)
+                r.data.append((_id, i2 + 1, RESP_OKAY, isLast))
+                if not isLast or i == 0:
+                    m = mask(self.DATA_WIDTH // 8)
+                else:
+                    m = mask(i)
+                expected.append((_id, i2 + 1, m, isLast))
+
+        self.doSim((len(expected) * 2 * 10) * Time.ns)
+
+        self.assertEmpty(req.data)
+
+        _id = 0
+        _len = 0
+        self.assertValSequenceEqual(ar,
+                                    [self.mkDefaultAddrReq(_id, i * (self.DATA_WIDTH // 8), 0)
+                                        for i in range(self.DATA_WIDTH // 8)
+                                     ])
+        self.assertValSequenceEqual(rout, expected)
+
+    def test_endstrbMultiFrame(self):
+        u = self.u
+        _id = 0
+        # MAGIC = self._rand.getrandbits(16)
+
+        req = u.driver._ag.req
+        r = u.r._ag
+        ar = u.a._ag.data
+        rout = u.driver.r._ag.data
+        lastRem = (self.DATA_WIDTH // 8) - 1
+
+        expected = []
+        l = self.LEN_MAX + 3
+        req.data.append(req.mkReq(0, l - 1, rem=lastRem))
+        for i2 in range(self.LEN_MAX + 3):
+            isLast = int(i2 == l - 1)
+            isLastOnBus = isLast or (i2 == self.LEN_MAX)
+
+            r.data.append((_id, i2 + 1, RESP_OKAY, isLastOnBus))
+            if isLast:
+                m = mask(lastRem)
+            else:
+                m = mask(self.DATA_WIDTH // 8)
+
+            expected.append((_id, i2 + 1, m, isLast))
+
+        self.doSim((len(expected) * 2 * 10) * Time.ns)
+
+        self.assertEmpty(req.data)
+
+        _id = 0
+        mkReq = self.mkDefaultAddrReq
+        self.assertValSequenceEqual(ar,
+                                    [mkReq(_id, 0, self.LEN_MAX),
+                                     mkReq(_id, (self.LEN_MAX + 1) * (self.DATA_WIDTH // 8), 1)
+                                     ])
+        self.assertValSequenceEqual(rout, expected)
+
     def test_multipleSplited(self):
         _id = 0
         FRAMES = 64
@@ -230,13 +305,13 @@ class Axi4_rDatapumpTC(SimTestCase):
             req.data.append(req.mkReq(addr, len(data) - 1, _id=_id))
             expected = [
                         (_id, d, mask(8), i == len(data) - 1)
-                          for i, d in enumerate(data)
+                        for i, d in enumerate(data)
                        ]
             return expected
 
         expected = []
         for _ in range(24):
-            size = int(self._rand.random() * self.LEN_MAX)+1
+            size = int(self._rand.random() * self.LEN_MAX) + 1
             a = m.malloc(size)
             indx = a // m.cellSize
             data = []
@@ -260,6 +335,7 @@ class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
 
     def setUp(self):
         self.u = Axi_rDatapump(axiAddrCls=Axi3_addr_withUser)
+        self.u.DATA_WIDTH.set(self.DATA_WIDTH)
         self.prepareUnit(self.u)
 
     def mkDefaultAddrReq(self, _id, addr, _len):
@@ -270,7 +346,7 @@ class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(Axi3_rDatapumpTC('test_randomized'))
+    suite.addTest(Axi3_rDatapumpTC('test_endstrbMultiFrame'))
     # suite.addTest(unittest.makeSuite(Axi3_rDatapumpTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

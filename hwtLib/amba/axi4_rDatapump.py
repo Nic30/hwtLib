@@ -168,7 +168,7 @@ class Axi_rDatapump(Axi_datapumpBase):
         rOut.id ** r.id
         rOut.data ** r.data
 
-        If(r.valid & r.last,
+        If(r.valid & r.last & rmSizeOut.propagateLast,
             self.remSizeToStrb(rmSizeOut.rem, rOut.strb)
         ).Else(
             rOut.strb ** mask(2 ** self.getSizeAlignBits())
@@ -178,7 +178,7 @@ class Axi_rDatapump(Axi_datapumpBase):
         streamSync(masters=[r, rmSizeOut],
                    slaves=[rOut],
                    extraConds={rmSizeOut: r.last,
-                               rOut: ~rErrFlag})
+                               rOut:~rErrFlag})
 
         return rErrFlag
 

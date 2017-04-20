@@ -17,15 +17,14 @@ class SPICntrlW(Unit):
     # https://github.com/medons/Zedboard_OLED_Example/blob/master/SpiCtrl.vhd
     def _config(self):
         self.SPI_FREQ_PESCALER = Param(32)
-        
+
     def _declr(self):
         addClkRstn(self)
         self.dataIn = VldSynced()
         self.dataIn.DATA_WIDTH.set(8)
-        self.dataOut = Spi() 
+        self.dataOut = Spi()
         self.dataInDone = Signal()
-            
-    
+
     def mainFsm(self, shift_counter, falling):
         stT = Enum("st_t", ["idle",
                             "send",
@@ -34,18 +33,17 @@ class SPICntrlW(Unit):
                             "hold3",
                             "hold4",
                             "done"])
-        
+
         In = self.dataIn.vld
-        
-        
+
         stb = FsmBuilder(self, stT)\
         .Trans(stT.idle,
-                   # Wait for SPI_EN to go high 
-                   (In, stT.send)
+            # Wait for SPI_EN to go high 
+            (In, stT.send)
         ).Trans(stT.send,
-                # Start sending bits, transition out when all bits are sent and SCLK is high
-                (shift_counter._eq(0b1000) & ~falling,
-                                                      stT.hold1)
+            # Start sending bits, transition out when all bits are sent and SCLK is high
+            (shift_counter._eq(0b1000) & ~falling,
+                               stT.hold1)
         ).Trans(stT.hold1,  # Hold CS low for a bit
             stT.hold2
         ).Trans(stT.hold2,  # Hold CS low for a bit
@@ -60,44 +58,43 @@ class SPICntrlW(Unit):
             )
         )
         return stb.stateReg
-    
+
     def _impl(self):
         presc = evalParam(self.SPI_FREQ_PESCALER).val
         assert isPow2(presc)
         delayShiftCntrBits = int(log2(presc))
         Out = self.dataOut
         In = self.dataIn
-        
+
         shift_counter = self._reg("shift_counter", vecT(4))
         falling = self._reg("falling", defVal=0)
         shift_register = self._reg("shift_register", In.data._dtype)
         delayCntr = self._reg("delayCntr", vecT(delayShiftCntrBits), defVal=0)
         mosiReg = self._reg("mosiReg", defVal=1)
-        
 
         st = self.mainFsm(shift_counter, falling)
         stT = st._dtype
         # shift_register = self._reg
-        
+
         clk_divided = ~delayCntr[delayShiftCntrBits - 1]
         Out.clk ** clk_divided
-        
+
         Out.mosi ** mosiReg
         Out.cs ** (st._eq(stT.idle) & In.vld)
         self.dataInDone ** st._eq(stT.done)
-        
+
         # CLK_DIV
         If(st._eq(stT.send),  # start clock counter when in send state
            delayCntr ** (delayCntr + 1)
         ).Else(# reset clock counter when not in send state
            delayCntr ** 0
         )
-        
+
         If(st._eq(stT.send),
             If(clk_divided,
-                falling ** 0 
+                falling ** 0
             ).Elif(~falling,
-                falling ** 1,  # Indicate that it is passed the falling edge
+                falling ** 1, # Indicate that it is passed the falling edge
             )
         )
 
@@ -111,13 +108,14 @@ class SPICntrlW(Unit):
             shift_register ** In.data ,
             mosiReg ** 1
         ).Case(stT.send,
-            If(~clk_divided & ~falling,  # if on the falling edge of Clk_divided
+            If(~clk_divided & ~falling, # if on the falling edge of Clk_divided
                 mosiReg ** shift_register[7],  # send out the MSB
                 shift_register ** shift_register[7:0]._concat(hBit(0)),
-                shift_counter ** (shift_counter + 1)  
+                shift_counter ** (shift_counter + 1)
             )
         )
-        
+
+
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string

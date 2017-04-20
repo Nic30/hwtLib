@@ -19,7 +19,7 @@ install:
 - cd ../hwtLib
 - python3 setup.py install
 script:
-- python3 -m pytest hwtLib/tests/all.py --doctest-modules
+#- python3 -m pytest hwtLib/tests/all.py --doctest-modules
 - coverage run --source=hwtLib setup.py test
 
 deploy:

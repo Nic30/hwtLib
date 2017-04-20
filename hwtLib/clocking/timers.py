@@ -1,7 +1,5 @@
 from hwt.code import log2ceil, If, isPow2
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.interfaces.std import Signal
-from hwt.interfaces.utils import addClkRstn
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.param import evalParam
 
@@ -16,17 +14,17 @@ class TimerInfo(object):
     :ivar name: name prefix which is used for registers and signals for this timer
     """
     __slots__ = ['maxVal', 'maxValOriginal', 'parent', 'cntrRegister', 'tick', 'name']
-    
+
     def __init__(self, maxVal, name=None):
-        self.maxValOriginal = maxVal 
+        self.maxValOriginal = maxVal
         self.maxVal = evalParam(maxVal).val
         self.parent = None
-        
+
         if name is None:
             self.name = ""
         else:
             self.name = name
-        
+
     @staticmethod
     def resolveSharing(timers):
         # filter out timers with maxVal == 1 because they are only clock
@@ -44,7 +42,7 @@ class TimerInfo(object):
                         t.parent = possibleParent
                         break
             else:
-                # this timer will have its own timer which will be enabled by 
+                # this timer will have its own timer which will be enabled by
                 # some other timer if there is suitable
                 for possibleParent in timers[(i + 1):]:
                     if t.maxVal % possibleParent.maxVal == 0:
@@ -52,87 +50,93 @@ class TimerInfo(object):
                             continue
                         t.parent = possibleParent
                         break
-                
+
     @staticmethod
     def _instantiateTimerWithParent(parentUnit, timer, parent, enableSig, rstSig):
         p = parent
         if not hasattr(p, "tick"):
             TimerInfo._instantiateTimer(parentUnit, p)
         assert hasattr(p, "tick")
-        
+
         if p.maxVal == timer.maxVal:
-            timer.cntrRegister = p.cntrRegister 
+            timer.cntrRegister = p.cntrRegister
             timer.tick = p.tick
 
         elif p.maxVal < timer.maxVal:
             maxVal = (timer.maxVal // p.maxVal) - 1
             assert maxVal >= 0
             timer.tick = parentUnit._sig(timer.name + "timerTick%d" % timer.maxVal)
-    
+
             r = parentUnit._reg(timer.name + "timerCntr%d" % timer.maxVal,
-                            vecT(log2ceil(maxVal + 1)),
-                            maxVal
-                            )
+                                vecT(log2ceil(maxVal + 1)),
+                                maxVal
+                                )
             timer.cntrRegister = r
 
-            tick = TimerInfo._instantiateTimerTickLogic(timer, 
+            en = p.tick
+            if enableSig is not None:
+                en = en & enableSig
+
+            tick = TimerInfo._instantiateTimerTickLogic(timer,
                                                         (timer.maxValOriginal // p.maxValOriginal) - 1,
-                                                        p.tick & enableSig,
+                                                        en,
                                                         rstSig)
 
             timer.tick ** (tick & p.tick)
-    
+
         else:
             # take specific bit from wider counter
             assert isPow2(timer.maxVal), timer.maxVal
             bitIndx = log2ceil(timer.maxVal)
-            timer.cntrRegister = p.cntrRegister 
-            timer.tick = p.cntrRegister[bitIndx]
+
+            timer.cntrRegister = p.cntrRegister
+
+            timer.tick = p.cntrRegister[bitIndx:]._eq(0)
             if enableSig is not None:
                 timer.tick = timer.tick & enableSig
 
     @staticmethod
     def _instantiateTimerTickLogic(timer, origMaxVal, enableSig, rstSig):
         r = timer.cntrRegister
-        
+
         if enableSig is None:
             if rstSig is None:
                 If(r._eq(0),
-                     r ** origMaxVal  
-                 ).Else(
-                     r ** (r - 1)
-                 )
+                    r ** origMaxVal
+                ).Else(
+                   r ** (r - 1)
+                )
             else:
                 If(rstSig | r._eq(0),
-                    r ** origMaxVal  
+                    r ** origMaxVal
                 ).Else(
                     r ** (r - 1)
                 )
         else:
             if rstSig is None:
                 If(enableSig,
-                     If(r._eq(0),
-                         r ** origMaxVal  
-                     ).Else(
-                         r ** (r - 1)
-                     )
+                    If(r._eq(0),
+                        r ** origMaxVal
+                    ).Else(
+                        r ** (r - 1)
+                    )
                 )
             else:
                 If(rstSig | (enableSig & r._eq(0)),
-                    r ** origMaxVal  
+                    r ** origMaxVal
                 ).Elif(enableSig,
                     r ** (r - 1)
                 )
 
         tick = r._eq(0)
-        
+
         if enableSig is not None:
             tick = (tick & enableSig)
 
         if rstSig is not None:
             tick = (tick & ~rstSig)
         return tick
-        
+
     @staticmethod
     def _instantiateTimer(parentUnit, timer, enableSig=None, rstSig=None):
         """
@@ -149,12 +153,12 @@ class TimerInfo(object):
                 if enableSig is None:
                     tick = 1
                 else:
-                    tick = enableSig 
+                    tick = enableSig
             else:
                 r = parentUnit._reg(timer.name + "timerCntr%d" % timer.maxVal,
-                                vecT(log2ceil(maxVal + 1)),
-                                maxVal
-                                )
+                                    vecT(log2ceil(maxVal + 1)),
+                                    maxVal
+                                    )
                 timer.cntrRegister = r
                 tick = TimerInfo._instantiateTimerTickLogic(timer, origMaxVal, enableSig, rstSig)
 
@@ -172,42 +176,18 @@ class TimerInfo(object):
         for timer in timers:
             if not hasattr(timer, "tick"):
                 TimerInfo._instantiateTimer(parentUnit, timer, enableSig=enableSig, rstSig=rstSig)
-            
+
     def __repr__(self):
         return "<%s maxVal=%d>" % (self.__class__.__name__, self.maxVal)
-    
-                
-if __name__ == "__main__":
-    from hwt.synthesizer.interfaceLevel.unit import Unit
-    from hwt.synthesizer.shortcuts import toRtl
-    from hwtLib.clocking.clkBuilder import ClkBuilder
-    
-    class TimerInfoTest(Unit):
-        def _declr(self):
-            addClkRstn(self)
-            
-            self.tick1 = Signal()
-            self.tick2 = Signal()
-            self.tick16 = Signal()
 
-            self.tick17 = Signal()
-            self.tick34 = Signal()
-            
-            self.tick256 = Signal()
-            
-            self.tick384 = Signal()
-        
-        def _impl(self):
-            tick1, tick2, tick16, tick17, tick34, tick256, tick384 = ClkBuilder(self, self.clk)\
-                                                                        .timers([1, 2, 16, 17, 34, 256, 384])
-            self.tick1 ** tick1
-            self.tick2 ** tick2
-            self.tick16 ** tick16
-            
-            self.tick17 ** tick17
-            self.tick34 ** tick34
-            
-            self.tick256 ** tick256
-            self.tick384 ** tick384
-    u = TimerInfoTest()
-    print(toRtl(u))  
+
+class DynamicTimerInfo(TimerInfo):
+    def __init__(self, maxVal, name=None):
+        self.maxValOriginal = maxVal
+        self.maxVal = maxVal
+        self.parent = None
+
+        if name is None:
+            self.name = ""
+        else:
+            self.name = name
