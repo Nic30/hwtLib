@@ -40,6 +40,7 @@ from hwtLib.samples.iLvl.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.samples.iLvl.arithmetic.twoCntrs_test import TwoCntrsTC
 from hwtLib.samples.iLvl.axi.simpleAxiRegs_test import SimpleAxiRegsTC
 from hwtLib.samples.iLvl.errors.errorsTestCase import ErrorsTC
+from hwtLib.samples.iLvl.hdlComments_test import HdlCommentsTC
 from hwtLib.samples.iLvl.hierarchy.simpleSubunit2 import SimpleSubunit2TC
 from hwtLib.samples.iLvl.hierarchy.simpleSubunit_test import SimpleSubunitTC
 from hwtLib.samples.iLvl.ipCoreCompatibleWrap_test import IpCoreWrapperTC
@@ -89,6 +90,7 @@ def testSuiteFromTCs(*tcs):
 
 suite = testSuiteFromTCs(
     RtlLvlTC,
+    HdlCommentsTC,
     InterfaceSynthesizerTC,
     SubunitsSynthesisTC,
     Expr2CondTC,
