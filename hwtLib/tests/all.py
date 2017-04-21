@@ -28,6 +28,7 @@ from hwtLib.handshaked.ramAsHs_test import RamAsHs_TC
 from hwtLib.handshaked.reg_test import HsRegL1D0TC, HsRegL2D1TC
 from hwtLib.logic.oneHotToBin_test import OneHotToBinTC
 from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
+from hwtLib.mem.atomic.flipRam_test import FlipRamTC
 from hwtLib.mem.atomic.flipReg_test import FlipRegTC
 from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.clkSynchronizer_test import ClkSynchronizerTC
@@ -130,6 +131,7 @@ suite = testSuiteFromTCs(
     RamAsHs_TC,
     FlipRegTC,
     FlipCntrTC,
+    FlipRamTC,
     HsForkTC,
     HsFork_randomized_TC,
     HsFifoTC,
