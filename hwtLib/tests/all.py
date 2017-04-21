@@ -69,6 +69,7 @@ from hwtLib.structManipulators.mmu2pageLvl_test import MMU_2pageLvl_TC
 from hwtLib.structManipulators.structWriter_test import StructWriter_TC
 from hwtLib.tests.operators import OperatorTC
 from hwtLib.tests.statementTrees import StatementTreesTC
+from hwtLib.tests.statementTreesInternal import StatementTreesInternalTC
 from hwtLib.tests.statements import StatementsTC
 from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import InterfaceSynthesizerTC
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import SubunitsSynthesisTC
@@ -97,6 +98,7 @@ suite = testSuiteFromTCs(
     OperatorTC,
     TestCaseSynthesis,
     ValueTC,
+    StatementTreesInternalTC,
     StatementTreesTC,
     StatementsTC,
     ErrorsTC,
