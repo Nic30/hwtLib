@@ -33,7 +33,7 @@ class StatementTreesTC(unittest.TestCase):
             self.assertEqual(template.switchOn, template.switchOn)
             self.assertEqual(len(template.cases), len(template.cases))
 
-    def strStructureCmp(self, tmpl, cont):  
+    def strStructureCmp(self, tmpl, cont):
         cont = formatVhdl(str(cont))
         _tmpl = rmWhitespaces.sub(" ", tmpl).strip()
         _cont = rmWhitespaces.sub(" ", cont).strip()

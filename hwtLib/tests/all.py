@@ -58,6 +58,7 @@ from hwtLib.samples.iLvl.statements.ifStm_test import IfStmTC
 from hwtLib.samples.iLvl.statements.switchStm_test import SwitchStmTC
 from hwtLib.samples.iLvl.statements.vldMaskConflictsResolving_test import VldMaskConflictsResolvingTC
 from hwtLib.samples.iLvl.timers import TimerTC
+from hwtLib.samples.rtlLvl.rtlLvl_test import RtlLvlTC
 from hwtLib.structManipulators.arrayBuff_writer_test import ArrayBuff_writer_TC
 from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC, \
     ArrayItemGetter2in1WordTC
@@ -87,6 +88,7 @@ def testSuiteFromTCs(*tcs):
     return suite
 
 suite = testSuiteFromTCs(
+    RtlLvlTC,
     InterfaceSynthesizerTC,
     SubunitsSynthesisTC,
     Expr2CondTC,
