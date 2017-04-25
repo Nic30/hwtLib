@@ -5,7 +5,6 @@ from hwt.code import If, c, FsmBuilder, Or, log2ceil, connect
 from hwt.hdlObjects.typeShortcuts import vec
 from hwt.hdlObjects.types.enum import Enum
 from hwt.hdlObjects.types.typeCast import toHVal
-from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.busConverter import BusConverter
 from hwtLib.amba.axiLite import AxiLite
@@ -14,19 +13,16 @@ from hwtLib.amba.constants import RESP_OKAY
 
 class AxiLiteStructEndpoint(BusConverter):
     """
-    Parse request from bus to fields of structure
+    Delegate request from bus to fields of structure
+    write has higher priority
+
+    :attention: interfaces are dynamically generated from names of fields in structure template
     """
-    def _config(self):
-        AxiLite._config(self)
+    _getWordAddrStep = AxiLite._getWordAddrStep
+    _getAddrStep = AxiLite._getAddrStep
 
-    def _declr(self):
-        addClkRstn(self)
-
-        with self._paramsShared():
-            self.bus = AxiLite()
-
-        self.decorateWithConvertedInterfaces()
-        assert self._suggestedAddrWidth() <= evalParam(self.ADDR_WIDTH).val, (self._suggestedAddrWidth(), evalParam(self.ADDR_WIDTH).val)
+    def __init__(self, structTemplate, offset=0, intfCls=AxiLite):
+        BusConverter.__init__(self, structTemplate, offset, intfCls)
 
     def readPart(self, awAddr, w_hs):
         DW_B = evalParam(self.DATA_WIDTH).val // 8
@@ -34,16 +30,16 @@ class AxiLiteStructEndpoint(BusConverter):
 
         def isMyAddr(addrSig, addr, size):
             return (addrSig >= addr) & (addrSig < (toHVal(addr) + (size * DW_B)))
-
         r = self.bus.r
         ar = self.bus.ar
         rSt_t = Enum('rSt_t', ['rdIdle', 'bramRd', 'rdData'])
         isBramAddr = self._sig("isBramAddr")
         rdataReg = self._reg("rdataReg", r.data._dtype)
+        isInAddrRange = (ar.addr >= self._getMinAddr()) & (ar.addr <= self._getMaxAddr())
 
         rSt = FsmBuilder(self, rSt_t, stateRegName='rSt')\
         .Trans(rSt_t.rdIdle,
-            (ar.valid & ~isBramAddr & ~w_hs, rSt_t.rdData),
+            (ar.valid & isInAddrRange & ~isBramAddr & ~w_hs, rSt_t.rdData),
             (ar.valid & isBramAddr & ~w_hs, rSt_t.bramRd)
         ).Trans(rSt_t.bramRd,
             (~w_hs, rSt_t.rdData)
@@ -58,9 +54,9 @@ class AxiLiteStructEndpoint(BusConverter):
         r.resp ** RESP_OKAY
 
         # save ar addr
-        arAddr = self._reg('arAddr', ar.addr._dtype) 
+        arAddr = self._reg('arAddr', ar.addr._dtype)
         If(ar.valid & arRd,
-            arAddr ** ar.addr 
+            arAddr ** ar.addr
         )
 
         _isInBramFlags = []
@@ -100,11 +96,11 @@ class AxiLiteStructEndpoint(BusConverter):
             assert addrHBit + bitForAligig <= evalParam(self.ADDR_WIDTH).val
 
             c(a[(addrHBit + bitForAligig):bitForAligig], port.addr, fit=True)
-            port.en ** 1
+            port.en ** ((_isMyAddr & ar.valid) | prioritizeWrite) 
             port.we ** prioritizeWrite
 
             rregAssigTop = If(_isMyAddr,
-                rdataReg ** port.dout 
+                rdataReg ** port.dout
             ).Else(
                 rregAssigTop
             )
@@ -123,41 +119,42 @@ class AxiLiteStructEndpoint(BusConverter):
         aw = self.bus.aw
         w = self.bus.w
         b = self.bus.b
+        isInAddrRange = (aw.addr >= self._getMinAddr()) & (aw.addr <= self._getMaxAddr())
 
         # write fsm
         wSt = FsmBuilder(self, wSt_t, "wSt")\
         .Trans(wSt_t.wrIdle,
-            (aw.valid, wSt_t.wrData)
+            (aw.valid & isInAddrRange, wSt_t.wrData)
         ).Trans(wSt_t.wrData,
             (w.valid, wSt_t.wrResp)
         ).Default(# Trans(wSt_t.wrResp,
             (b.ready, wSt_t.wrIdle)
         ).stateReg
 
-        awAddr = reg('awAddr', aw.addr._dtype) 
+        awAddr = reg('awAddr', aw.addr._dtype)
         w_hs = sig('w_hs')
 
         b.valid ** wSt._eq(wSt_t.wrResp)
 
-        awRd = wSt._eq(wSt_t.wrIdle)
-        aw.ready ** awRd 
+        awRd = wSt._eq(wSt_t.wrIdle) & isInAddrRange
+        aw.ready ** awRd
         wRd = wSt._eq(wSt_t.wrData)
-        w.ready ** wRd 
+        w.ready ** wRd
 
-        self.bus.b.resp ** RESP_OKAY 
-        w_hs ** (w.valid & wRd) 
+        self.bus.b.resp ** RESP_OKAY
+        w_hs ** (w.valid & wRd)
 
         # save aw addr
         If(awRd & aw.valid,
             awAddr ** aw.addr
         ).Else(
-            awAddr ** awAddr 
+            awAddr ** awAddr
         )
 
         # output vld
         for ai in self._directlyMapped:
             out = ai.port.dout
-            connect(w.data, out.data, fit=True)  
+            connect(w.data, out.data, fit=True)
             out.vld ** (w_hs & (awAddr._eq(vec(ai.addr, addrWidth))))
 
         for ai in self._bramPortMapped:

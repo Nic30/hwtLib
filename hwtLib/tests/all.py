@@ -7,6 +7,9 @@ from unittest import TestLoader, TextTestRunner, TestSuite
 from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
 from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
+from hwtLib.amba.axiLite_comp.structEndpoint_test import AxiLiteStructEndpointTC, \
+    AxiLiteStructEndpointDenseStartTC, AxiLiteStructEndpointDenseTC, \
+    AxiLiteStructEndpointOffsetTC, AxiLiteStructEndpointArray
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.append_test import AxiS_append_TC
 from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
@@ -150,6 +153,11 @@ suite = testSuiteFromTCs(
     UartTxRxTC,
     SimpleAxiRegsTC,
     AxiTC,
+    AxiLiteStructEndpointTC,
+    AxiLiteStructEndpointDenseStartTC,
+    AxiLiteStructEndpointDenseTC,
+    AxiLiteStructEndpointOffsetTC,
+    AxiLiteStructEndpointArray,
     AxisFrameGenTC,
     Axi4_rDatapumpTC,
     Axi3_rDatapumpTC,
