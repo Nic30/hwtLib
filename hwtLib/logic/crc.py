@@ -10,7 +10,6 @@ from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.logic.crcPoly import CRC_5_USB
 
-
 def parsePolyStr_parse_n(string):
     "Parse the number part of a polynomial string term"
     if not string:
@@ -189,6 +188,7 @@ class CrcComb(Unit):
             outBit ** bit
 
 
+# http://stackoverflow.com/questions/41734560/parallel-crc-32-calculation-ethernet-10ge-mac
 class Crc(Unit):
     """
     Crc generator for any crc
