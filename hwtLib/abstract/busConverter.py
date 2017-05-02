@@ -51,7 +51,7 @@ class BusConverter(Unit):
         with self._paramsShared():
             self.bus = self._intfCls()
 
-        self.decorateWithConvertedInterfaces()
+        self._decorateWithConvertedInterfaces()
         assert self._suggestedAddrWidth() <= evalParam(self.ADDR_WIDTH).val, (self._suggestedAddrWidth(), evalParam(self.ADDR_WIDTH).val)
 
     def _getMaxAddr(self):
@@ -104,7 +104,7 @@ class BusConverter(Unit):
 
         assert self.ADRESS_MAP
 
-    def decorateWithConvertedInterfaces(self):
+    def _decorateWithConvertedInterfaces(self):
         self._parseAddrMap()
 
         self._directlyMapped = []

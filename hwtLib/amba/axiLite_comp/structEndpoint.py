@@ -30,6 +30,7 @@ class AxiLiteStructEndpoint(BusConverter):
 
         def isMyAddr(addrSig, addr, size):
             return (addrSig >= addr) & (addrSig < (toHVal(addr) + (size * DW_B)))
+
         r = self.bus.r
         ar = self.bus.ar
         rSt_t = Enum('rSt_t', ['rdIdle', 'bramRd', 'rdData'])
@@ -43,7 +44,7 @@ class AxiLiteStructEndpoint(BusConverter):
             (ar.valid & isBramAddr & ~w_hs, rSt_t.bramRd)
         ).Trans(rSt_t.bramRd,
             (~w_hs, rSt_t.rdData)
-        ).Default(# Trans(rSt_t.rdData,
+        ).Trans(rSt_t.rdData,
             (r.ready, rSt_t.rdIdle)
         ).stateReg
 
