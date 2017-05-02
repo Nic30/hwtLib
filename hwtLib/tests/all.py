@@ -5,6 +5,7 @@ import multiprocessing
 from unittest import TestLoader, TextTestRunner, TestSuite
 
 from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
+from hwtLib.amba.axi4_streamToMem_test import Axi4_streamToMemTC
 from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
 from hwtLib.amba.axiLite_comp.structEndpoint_test import AxiLiteStructEndpointTC, \
@@ -17,7 +18,7 @@ from hwtLib.amba.axis_comp.frameForge_test import AxiS_frameForge_TC
 from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
 from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
-    AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC,\
+    AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC, \
     AxiS_resizer_upAndDown_TC
 from hwtLib.amba.interconnect.rStrictOrder_test import RStrictOrderInterconnectTC
 from hwtLib.amba.interconnect.wStrictOrderComplex_test import WStrictOrderInterconnectComplexTC
@@ -179,6 +180,7 @@ suite = testSuiteFromTCs(
     WStrictOrderInterconnect2TC,
     WStrictOrderInterconnectComplexTC,
 
+    Axi4_streamToMemTC,
     ArrayItemGetterTC,
     ArrayItemGetter2in1WordTC,
     ArrayBuff_writer_TC,
