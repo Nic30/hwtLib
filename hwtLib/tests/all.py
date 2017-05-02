@@ -17,7 +17,8 @@ from hwtLib.amba.axis_comp.frameForge_test import AxiS_frameForge_TC
 from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
 from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
-    AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC
+    AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC,\
+    AxiS_resizer_upAndDown_TC
 from hwtLib.amba.interconnect.rStrictOrder_test import RStrictOrderInterconnectTC
 from hwtLib.amba.interconnect.wStrictOrderComplex_test import WStrictOrderInterconnectComplexTC
 from hwtLib.amba.interconnect.wStrictOrder_test import WStrictOrderInterconnectTC, \
@@ -169,6 +170,7 @@ suite = testSuiteFromTCs(
     AxiS_resizer_upscale_TC,
     AxiS_resizer_downscale_TC,
     AxiS_resizer_downAndUp_TC,
+    AxiS_resizer_upAndDown_TC,
     AxiS_frameForge_TC,
     AxiS_append_TC,
 
