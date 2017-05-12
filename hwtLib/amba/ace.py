@@ -105,6 +105,7 @@ class Ace_addr(Axi4_addr):
 class AceSnoop_addr(Axi_hs):
     def _config(self):
         self.SNOOP_ADDR_WIDTH = Param(32)
+
     def _declr(self):
         self.addr = VectSignal(self.ADDR_WIDTH)
         self.snoop = VectSignal(4)
