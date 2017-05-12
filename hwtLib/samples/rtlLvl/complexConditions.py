@@ -3,11 +3,11 @@
 
 from hwt.code import If, Switch
 from hwt.hdlObjects.types.enum import Enum
-from hwt.serializer.vhdl.formater import formatVhdl
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
+from hwtLib.samples.rtlLvl.netlistToRtl import netlistToVhdlStr
 
 
-def complexConds():
+def ComplexConditions():
     n = RtlNetlist()
     stT = Enum('t_state', ["idle", "tsWait", "ts0Wait", "ts1Wait", "lenExtr"])
     clk = n.sig('clk')
@@ -56,8 +56,83 @@ def complexConds():
 
     return n, [rst, clk, sd0, sd1, cntrlFifoVld, cntrlFifoLast, s_idle]
 
-if __name__ == "__main__":
-    n, interf = complexConds()
 
-    for o in n.synthesize("ComplexConds", interf):
-        print(formatVhdl(str(o)))
+complexConditionsExpected =\
+"""
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+ENTITY ComplexConditions IS
+    PORT (clk : IN STD_LOGIC;
+        ctrlFifoLast : IN STD_LOGIC;
+        ctrlFifoVld : IN STD_LOGIC;
+        rst : IN STD_LOGIC;
+        s_idle : OUT STD_LOGIC;
+        sd0 : IN STD_LOGIC;
+        sd1 : IN STD_LOGIC
+    );
+END ComplexConditions;
+
+ARCHITECTURE rtl OF ComplexConditions IS
+    TYPE T_STATE IS (idle, tsWait, ts0Wait, ts1Wait, lenExtr);
+    SIGNAL st : t_state := idle;
+    SIGNAL st_next : t_state;
+BEGIN
+    s_idle <=  '1'  WHEN st = idle ELSE  '0' ;
+    assig_process_st: PROCESS (clk)
+    BEGIN
+        IF RISING_EDGE( clk ) THEN
+            IF rst = '1' THEN
+                st <= idle;
+            ELSE
+                st <= st_next;
+            END IF;
+        END IF;
+    END PROCESS;
+
+    assig_process_st_next: PROCESS (ctrlFifoLast, ctrlFifoVld, sd0, sd1, st)
+    BEGIN
+        st_next <= st;
+
+        CASE st IS
+        WHEN idle =>
+            IF (sd0 AND sd1)='1' THEN
+                st_next <= lenExtr;
+            ELSIF (sd0)='1' THEN
+                st_next <= ts1Wait;
+            ELSIF (sd1)='1' THEN
+                st_next <= ts0Wait;
+            ELSIF (ctrlFifoVld)='1' THEN
+                st_next <= tsWait;
+            END IF;
+        WHEN tsWait =>
+            IF (sd0 AND sd1)='1' THEN
+                st_next <= lenExtr;
+            ELSIF (sd0)='1' THEN
+                st_next <= ts1Wait;
+            ELSIF (sd1)='1' THEN
+                st_next <= ts0Wait;
+            ELSE
+                st_next <= st;
+            END IF;
+        WHEN ts0Wait =>
+            IF (sd0)='1' THEN
+                st_next <= lenExtr;
+            END IF;
+        WHEN ts1Wait =>
+            IF (sd1)='1' THEN
+                st_next <= lenExtr;
+            END IF;
+        WHEN OTHERS =>
+            IF (ctrlFifoVld AND ctrlFifoLast)='1' AND st = lenExtr THEN
+                st_next <= idle;
+            END IF;
+        END CASE;
+    END PROCESS;
+END ARCHITECTURE rtl;
+"""
+
+if __name__ == "__main__":
+    netlist, interfaces = ComplexConditions()
+    print(netlistToVhdlStr("ComplexConditions", netlist, interfaces))

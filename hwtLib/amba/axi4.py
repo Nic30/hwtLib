@@ -1,10 +1,10 @@
 from hwt.hdlObjects.constants import DIRECTION
 from hwt.synthesizer.param import Param, evalParam
-from hwtLib.amba.axiLite import AxiLite, AxiLite_b, AxiLite_w, AxiLite_r,\
+from hwtLib.amba.axiLite import AxiLite, AxiLite_b, AxiLite_w, AxiLite_r, \
     AxiLite_addr, IP_AXILite
 from hwt.interfaces.std import VectSignal, Signal
 from hwtLib.amba.axis import AxiStream_withIdAgent
-from hwtLib.amba.constants import RESP_OKAY, BURST_INCR, CACHE_DEFAULT,\
+from hwtLib.amba.constants import RESP_OKAY, BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwtLib.amba.axi_intf_common import AxiMap, Axi_id
@@ -103,13 +103,13 @@ class Axi4_addr_withUserAgent(BaseAxiAgent):
                                        size=BYTES_IN_TRANS(8),
                                        qos=QOS_DEFAULT,
                                        user=0):
-        
+
         return (_id, addr, burst, cache, _len, lock, prot, size, qos, user)
 
     def doWrite(self, s, data):
         intf = self.intf
         w = s.w
-        
+
         if data is None:
             data = [None for _ in range(10)]
 
@@ -126,19 +126,21 @@ class Axi4_addr_withUserAgent(BaseAxiAgent):
         w(qos, intf.qos)
         w(user, intf.user)
 
+
 #####################################################################
 class Axi4_r(AxiLite_r, Axi_id):
     def _config(self):
         AxiLite_r._config(self)
         Axi_id._config(self)
-        
+
     def _declr(self):
         Axi_id._declr(self)
         AxiLite_r._declr(self)
         self.last = Signal()
-    
+
     def _getSimAgent(self):
         return Axi4_rAgent
+
 
 class Axi4_rAgent(BaseAxiAgent):
     def doRead(self, s):
@@ -149,45 +151,48 @@ class Axi4_rAgent(BaseAxiAgent):
         data = r(intf.data)
         resp = r(intf.resp)
         last = r(intf.last)
-        
+
         return (_id, data, resp, last)
-    
+
     def addData(self, data, _id=0, resp=RESP_OKAY, last=True):
         self.data.append((_id, data, resp, last))
-    
+
     def doWrite(self, s, data):
         intf = self.intf
         w = s.w
-        
+
         if data is None:
             data = [None for _ in range(4)]
-        
+
         _id, data, resp, last = data
-        
+
         w(_id, intf.id)
         w(data, intf.data)
         w(resp, intf.resp)
         w(last, intf.last)
-#####################################################################    
+
+
+#####################################################################
 class Axi4_w(AxiLite_w, Axi_id):
     def _config(self):
         AxiLite_w._config(self)
         Axi_id._config(self)
-        
+
     def _declr(self):
         Axi_id._declr(self)
         AxiLite_w._declr(self)
         self.last = Signal()
-    
+
     def _getSimAgent(self):
         return AxiStream_withIdAgent
 
-#####################################################################    
+
+#####################################################################
 class Axi4_b(AxiLite_b, Axi_id):
     def _config(self):
         AxiLite_b._config(self)
         Axi_id._config(self)
-    
+
     def _declr(self):
         Axi_id._declr(self)
         AxiLite_b._declr(self)
@@ -200,30 +205,29 @@ class Axi4_bAgent(BaseAxiAgent):
     def doRead(self, s):
         r = s.r
         intf = self.intf
-        
+
         return r(intf.id), r(intf.resp)
-    
+
     def doWrite(self, s, data):
         w = s.write
         intf = self.intf
-        
+
         if data is None:
             data = [None for _ in range(2)]
-        
+
         _id, resp = data
-        
+
         w(_id, intf.id)
         w(resp, intf.resp)
-        
+
 
 #####################################################################
-
 class Axi4(AxiLite):
     def _config(self):
         AxiLite._config(self)
         self.ID_WIDTH = Param(6)
         self.LOCK_WIDTH = Param(1)
-        
+
     def _declr(self):
         with self._paramsShared():
             self.aw = Axi4_addr()
@@ -231,18 +235,23 @@ class Axi4(AxiLite):
             self.w = Axi4_w()
             self.r = Axi4_r(masterDir=DIRECTION.IN)
             self.b = Axi4_b(masterDir=DIRECTION.IN)
-    
+
     def _getIpCoreIntfClass(self):
         return IP_Axi4
 
 
-
 class Axi4_addr_xil(Axi4_addr):
     _NAME_SEPARATOR = ''
+
+
 class Axi4_r_xil(Axi4_r):
     _NAME_SEPARATOR = ''
+
+
 class Axi4_w_xil(Axi4_w):
     _NAME_SEPARATOR = ''
+
+
 class Axi4_b_xil(Axi4_b):
     _NAME_SEPARATOR = ''
 
@@ -254,9 +263,7 @@ class Axi4_xil(Axi4):
             self.aw = Axi4_addr_xil()
             self.w = Axi4_w_xil()
             self.r = Axi4_r_xil(masterDir=DIRECTION.IN)
-            self.b = Axi4_b_xil(masterDir=DIRECTION.IN)  
-
-
+            self.b = Axi4_b_xil(masterDir=DIRECTION.IN)
 
 
 class IP_Axi4(IP_AXILite):
@@ -268,10 +275,10 @@ class IP_Axi4(IP_AXILite):
         AxiMap('b', ['id'], self.map['b'])
         AxiMap('r', ['id', 'last'], self.map['r'])
         AxiMap('w', ['id', 'last'], self.map['w'])
-                     
+
     def postProcess(self, component, entity, allInterfaces, thisIf):
         self.endianness = "little"
-        param = lambda name, val :  self.addSimpleParam(thisIf, name, str(val))
+        param = lambda name, val: self.addSimpleParam(thisIf, name, str(val))
         param("ADDR_WIDTH", thisIf.aw.addr._dtype.bit_length())  # [TODO] width expression
         param("MAX_BURST_LENGTH", 256)
         param("NUM_READ_OUTSTANDING", 5)

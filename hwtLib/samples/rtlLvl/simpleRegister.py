@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.serializer.vhdl.formater import formatVhdl
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
+from hwtLib.samples.rtlLvl.netlistToRtl import netlistToVhdlStr
 
 
-if __name__ == "__main__":
+def SimpleRegister():
     t = vecT(8)
 
-    n = RtlNetlist("simpleRegister")
+    n = RtlNetlist()
 
     s_out = n.sig("s_out", t)
     s_in = n.sig("s_in", t)
@@ -21,6 +21,44 @@ if __name__ == "__main__":
     s_out ** val
 
     interf = [clk, syncRst, s_in, s_out]
+    return n, interf
 
-    for o in n.synthesize("simpleRegister", interf):
-            print(formatVhdl(str(o)))
+
+simpleRegisterExpected =\
+"""
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+ENTITY SimpleRegister IS
+    PORT (clk : IN STD_LOGIC;
+        rst : IN STD_LOGIC;
+        s_in : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+        s_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+    );
+END SimpleRegister;
+
+ARCHITECTURE rtl OF SimpleRegister IS
+    SIGNAL val : STD_LOGIC_VECTOR(7 DOWNTO 0) := X"00";
+    SIGNAL val_next : STD_LOGIC_VECTOR(7 DOWNTO 0);
+BEGIN
+    s_out <= val;
+    assig_process_val: PROCESS (clk)
+    BEGIN
+        IF RISING_EDGE( clk ) THEN
+            IF rst = '1' THEN
+                val <= X"00";
+            ELSE
+                val <= val_next;
+            END IF;
+        END IF;
+    END PROCESS;
+
+    val_next <= s_in;
+
+END ARCHITECTURE rtl;
+"""
+
+if __name__ == "__main__":
+    netlist, interfaces = SimpleRegister()
+    print(netlistToVhdlStr("SimpleRegister", netlist, interfaces))

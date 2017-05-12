@@ -5,8 +5,12 @@ import multiprocessing
 from unittest import TestLoader, TextTestRunner, TestSuite
 
 from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
+from hwtLib.amba.axi4_streamToMem_test import Axi4_streamToMemTC
 from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
+from hwtLib.amba.axiLite_comp.structEndpoint_test import AxiLiteStructEndpointTC, \
+    AxiLiteStructEndpointDenseStartTC, AxiLiteStructEndpointDenseTC, \
+    AxiLiteStructEndpointOffsetTC, AxiLiteStructEndpointArray
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.append_test import AxiS_append_TC
 from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
@@ -14,7 +18,8 @@ from hwtLib.amba.axis_comp.frameForge_test import AxiS_frameForge_TC
 from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
 from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
-    AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC
+    AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC, \
+    AxiS_resizer_upAndDown_TC
 from hwtLib.amba.interconnect.rStrictOrder_test import RStrictOrderInterconnectTC
 from hwtLib.amba.interconnect.wStrictOrderComplex_test import WStrictOrderInterconnectComplexTC
 from hwtLib.amba.interconnect.wStrictOrder_test import WStrictOrderInterconnectTC, \
@@ -26,8 +31,11 @@ from hwtLib.handshaked.joinFair_test import HsJoinFair_2inputs_TC, \
 from hwtLib.handshaked.join_test import HsJoinTC, HsJoin_randomized_TC
 from hwtLib.handshaked.ramAsHs_test import RamAsHs_TC
 from hwtLib.handshaked.reg_test import HsRegL1D0TC, HsRegL2D1TC
+from hwtLib.logic.crcUtils_test import CrcUtilsTC
+from hwtLib.logic.crc_test import CrcCombTC
 from hwtLib.logic.oneHotToBin_test import OneHotToBinTC
 from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
+from hwtLib.mem.atomic.flipRam_test import FlipRamTC
 from hwtLib.mem.atomic.flipReg_test import FlipRegTC
 from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.clkSynchronizer_test import ClkSynchronizerTC
@@ -39,6 +47,7 @@ from hwtLib.samples.iLvl.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.samples.iLvl.arithmetic.twoCntrs_test import TwoCntrsTC
 from hwtLib.samples.iLvl.axi.simpleAxiRegs_test import SimpleAxiRegsTC
 from hwtLib.samples.iLvl.errors.errorsTestCase import ErrorsTC
+from hwtLib.samples.iLvl.hdlComments_test import HdlCommentsTC
 from hwtLib.samples.iLvl.hierarchy.simpleSubunit2 import SimpleSubunit2TC
 from hwtLib.samples.iLvl.hierarchy.simpleSubunit_test import SimpleSubunitTC
 from hwtLib.samples.iLvl.ipCoreCompatibleWrap_test import IpCoreWrapperTC
@@ -57,6 +66,7 @@ from hwtLib.samples.iLvl.statements.ifStm_test import IfStmTC
 from hwtLib.samples.iLvl.statements.switchStm_test import SwitchStmTC
 from hwtLib.samples.iLvl.statements.vldMaskConflictsResolving_test import VldMaskConflictsResolvingTC
 from hwtLib.samples.iLvl.timers import TimerTC
+from hwtLib.samples.rtlLvl.rtlLvl_test import RtlLvlTC
 from hwtLib.structManipulators.arrayBuff_writer_test import ArrayBuff_writer_TC
 from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC, \
     ArrayItemGetter2in1WordTC
@@ -66,6 +76,7 @@ from hwtLib.structManipulators.mmu2pageLvl_test import MMU_2pageLvl_TC
 from hwtLib.structManipulators.structWriter_test import StructWriter_TC
 from hwtLib.tests.operators import OperatorTC
 from hwtLib.tests.statementTrees import StatementTreesTC
+from hwtLib.tests.statementTreesInternal import StatementTreesInternalTC
 from hwtLib.tests.statements import StatementsTC
 from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import InterfaceSynthesizerTC
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import SubunitsSynthesisTC
@@ -86,12 +97,15 @@ def testSuiteFromTCs(*tcs):
     return suite
 
 suite = testSuiteFromTCs(
+    RtlLvlTC,
+    HdlCommentsTC,
     InterfaceSynthesizerTC,
     SubunitsSynthesisTC,
     Expr2CondTC,
     OperatorTC,
     TestCaseSynthesis,
     ValueTC,
+    StatementTreesInternalTC,
     StatementTreesTC,
     StatementsTC,
     ErrorsTC,
@@ -130,6 +144,7 @@ suite = testSuiteFromTCs(
     RamAsHs_TC,
     FlipRegTC,
     FlipCntrTC,
+    FlipRamTC,
     HsForkTC,
     HsFork_randomized_TC,
     HsFifoTC,
@@ -140,8 +155,15 @@ suite = testSuiteFromTCs(
     UartRxBasicTC,
     UartRxTC,
     UartTxRxTC,
+    CrcUtilsTC,
+    CrcCombTC,
     SimpleAxiRegsTC,
     AxiTC,
+    AxiLiteStructEndpointTC,
+    AxiLiteStructEndpointDenseStartTC,
+    AxiLiteStructEndpointDenseTC,
+    AxiLiteStructEndpointOffsetTC,
+    AxiLiteStructEndpointArray,
     AxisFrameGenTC,
     Axi4_rDatapumpTC,
     Axi3_rDatapumpTC,
@@ -153,6 +175,7 @@ suite = testSuiteFromTCs(
     AxiS_resizer_upscale_TC,
     AxiS_resizer_downscale_TC,
     AxiS_resizer_downAndUp_TC,
+    AxiS_resizer_upAndDown_TC,
     AxiS_frameForge_TC,
     AxiS_append_TC,
 
@@ -161,6 +184,7 @@ suite = testSuiteFromTCs(
     WStrictOrderInterconnect2TC,
     WStrictOrderInterconnectComplexTC,
 
+    Axi4_streamToMemTC,
     ArrayItemGetterTC,
     ArrayItemGetter2in1WordTC,
     ArrayBuff_writer_TC,

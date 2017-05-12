@@ -1,37 +1,65 @@
-from hwt.code import log2ceil, connect
+from hwt.code import log2ceil
 from hwt.hdlObjects.constants import INTF_DIRECTION
+from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
+from hwt.hdlObjects.types.hdlType import HdlType
+from hwt.hdlObjects.types.struct import HStruct
 from hwt.hdlObjects.types.structUtils import FrameTemplate, BusFieldInfo
 from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import evalParam
-from hwtLib.abstract.addrSpace import AddrSpaceItem
 from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
-from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
+from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.hdlObjects.types.struct import HStruct
-from hwt.hdlObjects.types.hdlType import HdlType
+from hwt.synthesizer.param import evalParam
+from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
+from hwtLib.abstract.addrSpace import AddrSpaceItem
+from hwt.interfaces.utils import addClkRstn
 
 
 class BusConverter(Unit):
-    def __init__(self, structTemplate, offset=0):
+    """
+    Abstract unit
+    Delegate request from bus to fields of structure
+    write has higher priority
+
+    :attention: interfaces are dynamically generated from names of fields in structure template
+    """
+    def __init__(self, structTemplate, offset=0, intfCls=None):
         """
         :param structTemplate:
-                    interface types for field type:
-                        primitive types like Bits -> RegCntrl interface
-                        Array -> BramPort_withoutClk interface
+            interface types for field type:
+                primitive types like Bits -> RegCntrl interface
+                Array -> BramPort_withoutClk interface
         """
-        Unit.__init__(self)
+        assert intfCls is not None, "intfCls has to be specified"
+        self._intfCls = intfCls
         self.STRUCT_TEMPLATE = structTemplate
         self.OFFSET = offset
+        Unit.__init__(self)
+
+    def _getWordAddrStep(self):
+        raise NotImplementedError("Should be overriden in concrete implementation, this is abstract class")
+
+    def _getAddrStep(self):
+        raise NotImplementedError("Should be overriden in concrete implementation, this is abstract class")
+
+    def _config(self):
+        self._intfCls._config(self)
+
+    def _declr(self):
+        addClkRstn(self)
+
+        with self._paramsShared():
+            self.bus = self._intfCls()
+
+        self._decorateWithConvertedInterfaces()
+        assert self._suggestedAddrWidth() <= evalParam(self.ADDR_WIDTH).val, (self._suggestedAddrWidth(), evalParam(self.ADDR_WIDTH).val)
 
     def _getMaxAddr(self):
         lastItem = self.ADRESS_MAP[-1]
         if lastItem.size is None:
             return lastItem.addr
         else:
-            return lastItem.addr + self._getWordAddrStep() * lastItem.size
+            return lastItem.addr + self.WORD_ADDR_STEP * lastItem.size
 
     def _getMinAddr(self):
         return self.ADRESS_MAP[0].addr
@@ -42,12 +70,10 @@ class BusConverter(Unit):
         address is needed
         """
         bitSize = self.STRUCT_TEMPLATE.bit_length()
-        wordAddrStep = self._getWordAddrStep()
-        addrStep = self._getAddrStep()
-        
-        DW = evalParam(self.DATA_WIDTH).val
-        
-        maxAddr = (self.OFFSET + bitSize // addrStep) 
+        wordAddrStep = self.WORD_ADDR_STEP
+        addrStep = self.ADDR_STEP
+
+        maxAddr = (self.OFFSET + bitSize // addrStep)
 
         # align to word size
         if maxAddr % wordAddrStep != 0:
@@ -55,24 +81,14 @@ class BusConverter(Unit):
 
         return maxAddr.bit_length()
 
-    def _getWordAddrStep(self):
-        """
-        :return: size of one word in unit of address
-        """
-        DW = evalParam(self.DATA_WIDTH).val
-        return DW // self._getAddrStep()
-
-    def _getAddrStep(self):
-        """
-        :return: how many bits is one unit of address (f.e. 8 bits for  char * pointer)
-        """
-        return 8
-
     def _parseAddrMap(self):
         self.ADRESS_MAP = []
         f = FrameTemplate.fromHStruct(self.STRUCT_TEMPLATE)
         f.resolveFieldPossitionsInFrame(evalParam(self.DATA_WIDTH).val, disolveArrays=False)
-        addrStep = self._getWordAddrStep()
+        self.WORD_ADDR_STEP = self._getWordAddrStep()
+        self.ADDR_STEP = self._getAddrStep()
+
+        addrStep = self.WORD_ADDR_STEP
 
         for indx, fields in f.walkWords():
             for field in fields:
@@ -88,7 +104,7 @@ class BusConverter(Unit):
 
         assert self.ADRESS_MAP
 
-    def decorateWithConvertedInterfaces(self):
+    def _decorateWithConvertedInterfaces(self):
         self._parseAddrMap()
 
         self._directlyMapped = []
@@ -97,7 +113,7 @@ class BusConverter(Unit):
 
         for addrItem in self.ADRESS_MAP:
             if addrItem.size is None:
-                addrItem.size = 1
+                # addrItem.size = 1
                 p = RegCntrl()
                 dw = addrItem.origin.type.bit_length()
                 self._directlyMapped.append(addrItem)

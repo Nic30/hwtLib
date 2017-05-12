@@ -11,19 +11,19 @@ from hwtLib.interfaces.ipif import IPIF
 class IpifReg(Unit):
     def _config(self):
         IPIF._config(self)
-    
+
     def _declr(self):
         with self._paramsShared():
             addClkRstn(self)
             self.dataIn = IPIF()
             self.dataOut = IPIF()
-    
+
     def connectRegistered(self, intfFrom, intfTo):
         r = self._reg(intfFrom._name + "_reg", intfFrom._dtype)
         intfFrom._reg = r
         r ** intfFrom
         intfTo ** r
-            
+
     def _impl(self):
         din = self.dataIn
         dout = self.dataOut

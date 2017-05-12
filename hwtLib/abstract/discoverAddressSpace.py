@@ -47,29 +47,39 @@ class AddressSpaceProbe(object):
         """
         :param topIntf: interface on which should discovery start
         :param getMainSigFn: function which gets the main signal
-                 form interface which should this code care about
-                 usually address
+            form interface which should this code care about
+            usually address
         """
         self.topIntf = topIntf
         self.getMainSigFn = getMainSigFn
         self.offset = offset
 
     def discover(self):
-        return self._discoverAddressSpace(self.topIntf, self.offset)
+        return self._discoverAddressSpace(self.topIntf, self.offset, ignoreMyParent=False)
 
     @staticmethod
-    def pprint(addrSpaceDict, indent=0):
-        "pretty print"
+    def pprint(addrSpaceDict, indent=0, doPrint=True):
+        "pretty print for addrSpaceDict (result of discover())"
+        buff = []
 
         for addr in sorted(addrSpaceDict.keys()):
             item = addrSpaceDict[addr]
-            if item.size > 1:
+            if item.size is not None and item.size > 1:
                 size = "(size=%d)" % item.size
             else:
                 size = ""
             _indent = "".join(["    " for _ in range(indent)])
-            print("%s0x%x:%s%s" % (_indent, addr, item.name, size))
-            AddressSpaceProbe.pprint(item.children, indent + 1)
+            tmp = "%s0x%x:%s%s" % (_indent, addr, item.name, size)
+            if doPrint:
+                print(tmp)
+            else:
+                buff.append(tmp)
+
+            subTmp = AddressSpaceProbe.pprint(item.children, indent + 1)
+            if not doPrint and subTmp:
+                buff.append(subTmp)
+
+        return "\n".join(buff)
 
     def _extractAddressMap(self, converter, offset, addrModifier, sizeModifier):
         """
@@ -84,7 +94,7 @@ class AddressSpaceProbe(object):
             m[item.addr] = item
             _size = item.size
 
-            if item.size > 1:
+            if item.size is not None and item.size > 1:
                 port = getattr(converter, item.name)
                 if item.alignOffsetBits is not None:
                     def _addrModifier(childAddr):
@@ -122,7 +132,10 @@ class AddressSpaceProbe(object):
             else:
                 raise NotImplementedError(e.__class__)
 
-    def _discoverAddressSpace(self, topIntf, offset, addrModifier=lambda x: x, sizeModifier=lambda x: x):
+    def _discoverAddressSpace(self, topIntf, offset,
+                              addrModifier=lambda x: x,
+                              sizeModifier=lambda x: x,
+                              ignoreMyParent=True):
         _mainSig = self.getMainSigFn(topIntf)
         try:
             mainSig = _mainSig._sig
@@ -130,7 +143,7 @@ class AddressSpaceProbe(object):
             mainSig = _mainSig._sigInside
 
         addrMap = {}
-        for converter in self.walkToConverter(mainSig, ignoreMyParent=True):
+        for converter in self.walkToConverter(mainSig, ignoreMyParent=ignoreMyParent):
             addrMap = self._extractAddressMap(converter, offset, addrModifier, sizeModifier)
 
         return addrMap

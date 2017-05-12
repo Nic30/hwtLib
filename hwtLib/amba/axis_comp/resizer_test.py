@@ -109,7 +109,9 @@ class AxiS_resizer_downscale_TC(SimTestCase):
     def test_noLast(self):
         u = self.u
 
-        u.dataIn._ag.data.append((it(16, 1, 2, 3, 4), it(2, mask(2), mask(2), mask(2), mask(2)), 0))
+        u.dataIn._ag.data.append((it(16, 1, 2, 3, 4),
+                                  it(2, mask(2), mask(2), mask(2), mask(2)),
+                                  0))
         self.doSim(200 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
@@ -118,11 +120,26 @@ class AxiS_resizer_downscale_TC(SimTestCase):
     def test_withLast(self):
         u = self.u
 
-        u.dataIn._ag.data.append((it(16, 1, 2, 3, 4), it(2, mask(2), mask(2), mask(2), mask(2)), 1))
+        u.dataIn._ag.data.append((it(16, 1, 2, 3, 4),
+                                  it(2, mask(2), mask(2), mask(2), mask(2)),
+                                  1))
         self.doSim(200 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(i + 1, mask(2), i == 3) for i in range(4)])
+
+    def test_onlyPartOfMask(self):
+        u = self.u
+        u.dataIn._ag.data.append((
+                                  it(16, 1, 2, 3, 4),
+                                  it(2, mask(2), 0, 0, 0),
+                                  1)
+                                )
+        self.doSim(200 * Time.ns)
+
+        self.assertValSequenceEqual(u.dataOut._ag.data,
+                                    [(1, mask(2), 1),
+                                     ])
 
 
 class TestComp_AxiS_resizer_downAndUp(AxiS_resizer):
@@ -168,11 +185,40 @@ class AxiS_resizer_downAndUp_TC(SimTestCase):
         self.assertValSequenceEqual(u.dataOut._ag.data, data)
 
 
+class AxiS_resizer_upAndDown_TC(SimTestCase):
+    def setUp(self):
+        super(AxiS_resizer_upAndDown_TC, self).setUp()
+        u = self.u = TestComp_AxiS_resizer_downAndUp(AxiStream)
+        self.DW = 32
+        u.DATA_WIDTH.set(self.DW)
+        u.INTERNAL_SIZE.set(64)
+
+        self.prepareUnit(self.u)
+
+        self.randomize(u.dataIn)
+        self.randomize(u.dataOut)
+
+    def test_nop(self):
+        u = self.u
+        self.doSim(200 * Time.ns)
+
+        self.assertEmpty(u.dataOut._ag.data)
+
+    def test_simple(self):
+        u = self.u
+        data = [(311 * i, mask(self.DW // 8), int(i == 2)) for i in range(3)]
+        u.dataIn._ag.data.extend(data)
+        self.doSim(1000 * Time.ns)
+        self.assertValSequenceEqual(u.dataOut._ag.data, data)
+
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(AxiS_resizer_downscale_TC('test_noPass'))
+    #suite.addTest(AxiS_resizer_downscale_TC('test_onlyPartOfMask'))
     suite.addTest(unittest.makeSuite(AxiS_resizer_upscale_TC))
     suite.addTest(unittest.makeSuite(AxiS_resizer_downscale_TC))
     suite.addTest(unittest.makeSuite(AxiS_resizer_downAndUp_TC))
+    suite.addTest(unittest.makeSuite(AxiS_resizer_upAndDown_TC))
+
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

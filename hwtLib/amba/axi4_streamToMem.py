@@ -61,7 +61,7 @@ class Axi4streamToMem(Unit):
             addClkRstn(self)
             self.axi = Axi4()
             self.dataIn = Handshaked()
-        cntrl = self.cntrl = AxiLite()
+        cntrl = self.cntrlBus = AxiLite()
         regs = self.regsConventor = AxiLiteStructEndpoint(self.REGISTER_MAP)
 
         cntrl._replaceParam("ADDR_WIDTH", self.CNTRL_AW)
@@ -209,7 +209,7 @@ class Axi4streamToMem(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
-        self.regsConventor.bus ** self.cntrl
+        self.regsConventor.bus ** self.cntrlBus
         axi = self.axi
 
         # disable read channel
