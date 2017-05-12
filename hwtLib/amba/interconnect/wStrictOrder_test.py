@@ -9,6 +9,7 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
+from hwtLib.amba.axi4_rDatapump_test import mkReq
 
 
 class WStrictOrderInterconnectTC(SimTestCase):
@@ -201,7 +202,7 @@ class WStrictOrderInterconnect2TC(SimTestCase):
                     end = True
 
                 if frame:
-                    req.data.append(req.mkReq(addr, len(frame) - 1))
+                    req.data.append(mkReq(addr, len(frame) - 1))
                     wIn.data.extend([(d, _mask, i == len(frame) - 1)
                                      for i, d in enumerate(frame)])
                     addr += len(frame) * self.DATA_WIDTH // 8

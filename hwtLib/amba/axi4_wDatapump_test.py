@@ -6,7 +6,7 @@ from hwt.hdlObjects.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_addr
-from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC
+from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, mkReq
 from hwtLib.amba.axi4_wDatapump import Axi_wDatapump
 from hwtLib.amba.constants import RESP_OKAY, BYTES_IN_TRANS
 from hwt.synthesizer.param import evalParam
@@ -37,7 +37,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         aw = u.a._ag.data
 
         # download one word from addr 0xff
-        req.data.append(req.mkReq(0xff, 0))
+        req.data.append(mkReq(0xff, 0))
 
         self.doSim(200 * Time.ns)
 
@@ -58,7 +58,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         b = u.b._ag.data
 
         # download one word from addr 0xff
-        req.data.append(req.mkReq(0xff, 0))
+        req.data.append(mkReq(0xff, 0))
         wIn.data.append((77, mask(64 // 8 - 1), 1))
         b.append((0, RESP_OKAY))
 
@@ -81,7 +81,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         b = u.b._ag.data
 
         # download one word from addr 0xff
-        req.data.append(req.mkReq(0xff, self.LEN_MAX))
+        req.data.append(mkReq(0xff, self.LEN_MAX))
         for i in range(self.LEN_MAX + 1 + 10):
             wIn.data.append((100 + 1, mask(8), i == self.LEN_MAX))
         b.append((0, RESP_OKAY))
@@ -106,7 +106,7 @@ class Axi4_wDatapumpTC(SimTestCase):
 
         # download one word from addr 0xff
         for i in range(N):
-            req.data.append(req.mkReq((i * 8) + 0xff, 0))
+            req.data.append(mkReq((i * 8) + 0xff, 0))
             wIn.data.append((77, mask(64 // 8 - 1), 1))
             b.append((0, RESP_OKAY))
 
@@ -133,7 +133,7 @@ class Axi4_wDatapumpTC(SimTestCase):
 
         # download one word from addr 0xff
         for i in range(N):
-            req.data.append(req.mkReq((i * 8) + 0xff, 0))
+            req.data.append(mkReq((i * 8) + 0xff, 0))
             wIn.data.append((77, mask(64 // 8 - 1), 1))
             b.append((0, RESP_OKAY))
 
@@ -170,7 +170,7 @@ class Axi4_wDatapumpTC(SimTestCase):
 
         # download one word from addr 0xff
         for i in range(N):
-            req.data.append(req.mkReq((i * 8) + 0xff, L - 1))
+            req.data.append(mkReq((i * 8) + 0xff, L - 1))
             for i in range(L):
                 d = 77 + i
                 m = mask(64 // 8 - 1)
@@ -246,7 +246,7 @@ class Axi3_wDatapump_small_splitting_TC(SimTestCase):
                 end = True
 
             if frame:
-                req.data.append(req.mkReq(addr, len(frame) - 1))
+                req.data.append(mkReq(addr, len(frame) - 1))
                 wIn.data.extend([(d, dataMask, i == len(frame) - 1)
                                  for i, d in enumerate(frame)])
                 addr += len(frame) * self.DATA_WIDTH // 8

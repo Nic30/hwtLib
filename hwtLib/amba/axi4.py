@@ -1,13 +1,11 @@
 from hwt.hdlObjects.constants import DIRECTION
+from hwt.interfaces.std import VectSignal, Signal
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.amba.axiLite import AxiLite, AxiLite_b, AxiLite_w, AxiLite_r, \
     AxiLite_addr, IP_AXILite
-from hwt.interfaces.std import VectSignal, Signal
-from hwtLib.amba.axis import AxiStream_withIdAgent
-from hwtLib.amba.constants import RESP_OKAY, BURST_INCR, CACHE_DEFAULT, \
-    LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
-from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwtLib.amba.axi_intf_common import AxiMap, Axi_id
+from hwtLib.amba.axis import AxiStream_withIdAgent
+from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 
 
 #####################################################################
@@ -50,15 +48,6 @@ class Axi4_addrAgent(BaseAxiAgent):
 
         return (_id, addr, burst, cache, _len, lock, prot, size, qos)
 
-    def mkReq(self, addr, _len, _id=0, burst=BURST_INCR,
-                                       cache=CACHE_DEFAULT,
-                                       lock=LOCK_DEFAULT,
-                                       prot=PROT_DEFAULT,
-                                       size=BYTES_IN_TRANS(8),
-                                       qos=QOS_DEFAULT):
-
-        return (_id, addr, burst, cache, _len, lock, prot, size, qos)
-
     def doWrite(self, s, data):
         intf = self.intf
         w = s.w
@@ -94,16 +83,6 @@ class Axi4_addr_withUserAgent(BaseAxiAgent):
         size = r(intf.size)
         qos = r(intf.qos)
         user = r(intf.user)
-        return (_id, addr, burst, cache, _len, lock, prot, size, qos, user)
-
-    def mkReq(self, addr, _len, _id=0, burst=BURST_INCR,
-                                       cache=CACHE_DEFAULT,
-                                       lock=LOCK_DEFAULT,
-                                       prot=PROT_DEFAULT,
-                                       size=BYTES_IN_TRANS(8),
-                                       qos=QOS_DEFAULT,
-                                       user=0):
-
         return (_id, addr, burst, cache, _len, lock, prot, size, qos, user)
 
     def doWrite(self, s, data):
@@ -153,9 +132,6 @@ class Axi4_rAgent(BaseAxiAgent):
         last = r(intf.last)
 
         return (_id, data, resp, last)
-
-    def addData(self, data, _id=0, resp=RESP_OKAY, last=True):
-        self.data.append((_id, data, resp, last))
 
     def doWrite(self, s, data):
         intf = self.intf

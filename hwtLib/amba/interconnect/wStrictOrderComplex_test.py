@@ -15,6 +15,7 @@ from hwtLib.amba.axi4_wDatapump import Axi_wDatapump
 from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
 from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
+from hwtLib.amba.axi4_rDatapump_test import mkReq
 
 
 class WStrictOrderInterconnecComplex(Unit):
@@ -85,7 +86,7 @@ class WStrictOrderInterconnectComplexTC(SimTestCase):
                     end = True
 
                 if frame:
-                    req.data.append(req.mkReq(addr, len(frame) - 1))
+                    req.data.append(mkReq(addr, len(frame) - 1))
                     wIn.data.extend([(d, _mask, i == len(frame) - 1)
                                      for i, d in enumerate(frame)])
                     addr += len(frame) * self.DATA_WIDTH // 8

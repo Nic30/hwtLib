@@ -47,9 +47,6 @@ class AddrSizeHsAgent(HandshakedAgent):
 
         return (_id, addr, _len, rem)
 
-    def mkReq(self, addr, _len, rem=0, _id=0):
-        return (_id, addr, _len, rem)
-
     def doWrite(self, s, data):
         intf = self.intf
         w = s.w

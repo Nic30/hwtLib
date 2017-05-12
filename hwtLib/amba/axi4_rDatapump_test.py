@@ -13,6 +13,21 @@ from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, BYTES_IN_TRANS, \
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 
 
+def mkReq(addr, _len, rem=0, _id=0):
+    return (_id, addr, _len, rem)
+
+def mkReqAxi(addr, _len, _id=0, burst=BURST_INCR,
+                             cache=CACHE_DEFAULT,
+                             lock=LOCK_DEFAULT,
+                             prot=PROT_DEFAULT,
+                             size=BYTES_IN_TRANS(8),
+                             qos=QOS_DEFAULT):
+
+    return (_id, addr, burst, cache, _len, lock, prot, size, qos)
+
+def addData(ag, data, _id=0, resp=RESP_OKAY, last=True):
+    ag.data.append((_id, data, resp, last))
+
 class Axi4_rDatapumpTC(SimTestCase):
     LEN_MAX = 255
     DATA_WIDTH = 64
@@ -40,7 +55,7 @@ class Axi4_rDatapumpTC(SimTestCase):
         req = u.driver._ag.req
 
         # download one word from addr 0xff
-        req.data.append(req.mkReq(0xff, 0))
+        req.data.append(mkReq(0xff, 0))
         self.doSim((self.LEN_MAX + 3) * Time.ns)
 
         self.assertEqual(len(req.data), 0)
@@ -54,9 +69,9 @@ class Axi4_rDatapumpTC(SimTestCase):
         r = u.r._ag
 
         # download one word from addr 0xff
-        req.data.append(req.mkReq(0xff, 0))
+        req.data.append(mkReq(0xff, 0))
         for i in range(3):
-            r.addData(i + 77)
+            addData(r, i + 77)
 
         self.doSim((self.LEN_MAX + 3) * 10 * Time.ns)
 
@@ -77,13 +92,13 @@ class Axi4_rDatapumpTC(SimTestCase):
         rout = u.driver.r._ag.data
 
         # download 256 words from addr 0xff
-        req.data.append(req.mkReq(0xff, LEN_MAX))
+        req.data.append(mkReq(0xff, LEN_MAX))
         for i in range(LEN_MAX + 1):
-            r.addData(i + 77, last=(i == LEN_MAX))
+            addData(r, i + 77, last=(i == LEN_MAX))
 
         # dummy data
-        r.addData(11)
-        r.addData(12)
+        addData(r, 11)
+        addData(r, 12)
 
         self.doSim(((LEN_MAX + 6) * 10) * Time.ns)
 
@@ -108,7 +123,7 @@ class Axi4_rDatapumpTC(SimTestCase):
         rout = u.driver.r._ag.data
 
         # download 512 words from addr 0xff
-        req.data.append(req.mkReq(0xff, 2 * LEN_MAX + 1))
+        req.data.append(mkReq(0xff, 2 * LEN_MAX + 1))
 
         self.doSim(((LEN_MAX + 1) * 10) * Time.ns)
 
@@ -129,7 +144,7 @@ class Axi4_rDatapumpTC(SimTestCase):
         rout = u.driver.r._ag.data
 
         for i in range(32):
-            req.data.append(req.mkReq(i, 0))
+            req.data.append(mkReq(i, 0))
         #    r.addData(i + 77, last=(i == 255))
 
         self.doSim(((self.LEN_MAX + 6) * 10) * Time.ns)
@@ -154,7 +169,7 @@ class Axi4_rDatapumpTC(SimTestCase):
         rout = u.driver.r._ag.data
 
         for i in range(64):
-            req.data.append(req.mkReq(i, 0))
+            req.data.append(mkReq(i, 0))
             rdata = (_id, i + 1, RESP_OKAY, True)
             r.data.append(rdata)
 
@@ -182,7 +197,7 @@ class Axi4_rDatapumpTC(SimTestCase):
 
         expected = []
         for i in range(self.DATA_WIDTH // 8):
-            req.data.append(req.mkReq(i * (self.DATA_WIDTH // 8), 0, rem=i))
+            req.data.append(mkReq(i * (self.DATA_WIDTH // 8), 0, rem=i))
             l = 1
             for i2 in range(l):
                 isLast = int(i2 == l - 1)
@@ -218,7 +233,7 @@ class Axi4_rDatapumpTC(SimTestCase):
 
         expected = []
         l = self.LEN_MAX + 3
-        req.data.append(req.mkReq(0, l - 1, rem=lastRem))
+        req.data.append(mkReq(0, l - 1, rem=lastRem))
         for i2 in range(self.LEN_MAX + 3):
             isLast = int(i2 == l - 1)
             isLastOnBus = isLast or (i2 == self.LEN_MAX)
@@ -236,10 +251,10 @@ class Axi4_rDatapumpTC(SimTestCase):
         self.assertEmpty(req.data)
 
         _id = 0
-        mkReq = self.mkDefaultAddrReq
+        _mkReq = self.mkDefaultAddrReq
         self.assertValSequenceEqual(ar,
-                                    [mkReq(_id, 0, self.LEN_MAX),
-                                     mkReq(_id, (self.LEN_MAX + 1) * (self.DATA_WIDTH // 8), 1)
+                                    [_mkReq(_id, 0, self.LEN_MAX),
+                                     _mkReq(_id, (self.LEN_MAX + 1) * (self.DATA_WIDTH // 8), 1)
                                      ])
         self.assertValSequenceEqual(rout, expected)
 
@@ -256,7 +271,7 @@ class Axi4_rDatapumpTC(SimTestCase):
         rout = u.driver.r._ag.data
 
         for i in range(FRAMES):
-            req.data.append(req.mkReq(i, l, _id))
+            req.data.append(mkReq(i, l, _id))
             for i2 in range(l + 1):
                 isLast = (i2 > 0 and ((i2 % self.LEN_MAX) == 0) or (i2 == l))
                 rdata = (_id, i2, RESP_OKAY, isLast)
@@ -302,7 +317,7 @@ class Axi4_rDatapumpTC(SimTestCase):
         self.randomize(u.r)
 
         def prepareRequest(_id, addr, data):
-            req.data.append(req.mkReq(addr, len(data) - 1, _id=_id))
+            req.data.append(mkReq(addr, len(data) - 1, _id=_id))
             expected = [
                         (_id, d, mask(8), i == len(data) - 1)
                         for i, d in enumerate(data)
@@ -346,7 +361,8 @@ class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(Axi3_rDatapumpTC('test_endstrbMultiFrame'))
-    # suite.addTest(unittest.makeSuite(Axi3_rDatapumpTC))
+    # suite.addTest(Axi3_rDatapumpTC('test_endstrbMultiFrame'))
+    suite.addTest(unittest.makeSuite(Axi3_rDatapumpTC))
+    suite.addTest(unittest.makeSuite(Axi4_rDatapumpTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
