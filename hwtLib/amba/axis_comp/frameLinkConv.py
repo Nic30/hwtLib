@@ -20,8 +20,11 @@ def strbToRem(strbBits, remBits):
 
 class AxiSToFrameLink(Unit):
     """
-    Axi 4 stream to FrameLink 
-    based on AXI4_STREAM_FRAMELINK from fpgalib
+    Axi 4 stream to FrameLink
+    
+    format of user signal:
+    user[0]: start of packet
+    user[1]: end of packet
     """
     def _config(self):
         self.DATA_WIDTH = Param(32)
@@ -97,6 +100,10 @@ class AxiSToFrameLink(Unit):
 class FrameLinkToAxiS(Unit):
     """
     Framelink to axi-stream
+    
+    format of user signal:
+    user[0]: start of packet
+    user[1]: end of packet
     """
     def _config(self):
         AxiSToFrameLink._config(self)
