@@ -5,6 +5,8 @@ from hwt.intfLvl import Param, Unit, EmptyUnit
 from hwt.synthesizer.interfaceLevel.emptyUnit import setOut
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axiLite import AxiLite
+from hwtLib.amba.axis_comp.builder import AxiSBuilder
+from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 
 
 class HeadFieldExtractor(EmptyUnit):
@@ -21,7 +23,6 @@ class PatternMatch(EmptyUnit):
     def _declr(self):
         self.din = AxiStream()
         self.match = AxiStream()
-        self.cfg = AxiLite()
 
     def _impl(self):
         setOut(self.match)
@@ -30,23 +31,14 @@ class PatternMatch(EmptyUnit):
 class Filter(EmptyUnit):
     def _declr(self):
         self.headers = AxiStream()
-        self.match = AxiStream()
+        self.patternMatch = AxiStream()
+        
         self.din = AxiStream()
         self.dout = AxiStream()
         self.cfg = AxiLite()
 
     def _impl(self):
-        setOut(self.match, self.dout)
-
-
-class AxiStreamFork(EmptyUnit):
-    def _declr(self):
-        self.din = AxiStream()
-        self.dout0 = AxiStream()
-        self.dout1 = AxiStream()
-
-    def _impl(self):
-        setOut(self.dout0, self.dout1)
+        setOut(self.dout)
 
 
 class Exporter(EmptyUnit):
@@ -66,26 +58,25 @@ class NetFilter(Unit):
         self.DATA_WIDTH = Param(64)
 
     def _declr(self):
+        addClkRstn(self)
         with self._paramsShared():
             self.din = AxiStream()
             self.export = AxiStream()
             self.cfg = AxiLite()
 
             self.hfe = HeadFieldExtractor()
-            self.pm = PatternMatch()
+            self.patternMatch = PatternMatch()
             self.filter = Filter()
             self.exporter = Exporter()
 
-            self.forkHfe = AxiStreamFork()
-
     def _impl(self):
         s = self
+        propagateClkRstn(s)
+        AxiSBuilder(self, s.hfe.dout).forkTo(s.patternMatch.din, s.filter.din)
+        
         s.hfe.din ** s.din
-        s.forkHfe.din ** s.hfe.dout
-        s.pm.din ** s.forkHfe.dout0
-        s.filter.din ** s.forkHfe.dout1
         s.filter.headers ** s.hfe.headers
-        s.filter.match ** s.pm.match
+        s.filter.patternMatch ** s.patternMatch.match
         s.exporter.din ** s.filter.dout
         s.export ** s.exporter.dout
         self.filter.cfg ** s.cfg
@@ -94,7 +85,7 @@ class NetFilter(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     from hwt.serializer.ip_packager.packager import Packager
-    print(toRtl(NetFilter))
+    print(toRtl(NetFilter()))
 
     # s = NetFilter()
     # p = Packager(s)

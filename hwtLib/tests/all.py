@@ -49,6 +49,7 @@ from hwtLib.samples.iLvl.arithmetic.twoCntrs_test import TwoCntrsTC
 from hwtLib.samples.iLvl.axi.simpleAxiRegs_test import SimpleAxiRegsTC
 from hwtLib.samples.iLvl.errors.errorsTestCase import ErrorsTC
 from hwtLib.samples.iLvl.hdlComments_test import HdlCommentsTC
+from hwtLib.samples.iLvl.hierarchy.netFilter_test import NetFilterTC
 from hwtLib.samples.iLvl.hierarchy.simpleSubunit2 import SimpleSubunit2TC
 from hwtLib.samples.iLvl.hierarchy.simpleSubunit_test import SimpleSubunitTC
 from hwtLib.samples.iLvl.ipCoreCompatibleWrap_test import IpCoreWrapperTC
@@ -114,6 +115,7 @@ suite = testSuiteFromTCs(
     SimpleUnitWithParamTC,
     SimpleSubunit2TC,
     TimerTC,
+    NetFilterTC,
 
     # component verifications
     ConcatTC,
