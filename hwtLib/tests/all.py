@@ -31,6 +31,8 @@ from hwtLib.handshaked.joinFair_test import HsJoinFair_2inputs_TC, \
 from hwtLib.handshaked.join_test import HsJoinTC, HsJoin_randomized_TC
 from hwtLib.handshaked.ramAsHs_test import RamAsHs_TC
 from hwtLib.handshaked.reg_test import HsRegL1D0TC, HsRegL2D1TC
+from hwtLib.logic.crcUtils_test import CrcUtilsTC
+from hwtLib.logic.crc_test import CrcCombTC
 from hwtLib.logic.oneHotToBin_test import OneHotToBinTC
 from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
 from hwtLib.mem.atomic.flipRam_test import FlipRamTC
@@ -153,6 +155,8 @@ suite = testSuiteFromTCs(
     UartRxBasicTC,
     UartRxTC,
     UartTxRxTC,
+    CrcUtilsTC,
+    CrcCombTC,
     SimpleAxiRegsTC,
     AxiTC,
     AxiLiteStructEndpointTC,

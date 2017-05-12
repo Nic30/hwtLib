@@ -34,7 +34,6 @@ CRC_6_ITU = 0x03
 # telecom systems, G.707,G.832, MMC, SD
 CRC_7 = 0x09
 
-
 # Train Communication Network, IEC 60870-5
 CRC_7_MVB = 0x65
 
@@ -164,12 +163,11 @@ CRC_32K_2 = 0x32583499
 # aviation; AIXM
 CRC_32Q = 0x814141AB
 
-
 # GSM control channel[40][41]
 CRC_40_GSM = 0x0004820009
 
 # ECMA-182, XZ Utils
-CRC_64_ECMA =0x42F0E1EBA9EA3693
+CRC_64_ECMA = 0x42F0E1EBA9EA3693
 
 # HDLC, Swiss-Prot/TrEMBL; considered weak for hashing
 CRC_64_ISO = 0x000000000000001B
