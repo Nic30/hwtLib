@@ -4,6 +4,7 @@
 import multiprocessing
 from unittest import TestLoader, TextTestRunner, TestSuite
 
+from hwtLib.abstract.busConverter_test import BusConverterTC
 from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
 from hwtLib.amba.axi4_streamToMem_test import Axi4_streamToMemTC
 from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
@@ -162,6 +163,7 @@ suite = testSuiteFromTCs(
     CrcCombTC,
     SimpleAxiRegsTC,
     AxiTC,
+    BusConverterTC,
     AxiLiteStructEndpointTC,
     AxiLiteStructEndpointDenseStartTC,
     AxiLiteStructEndpointDenseTC,

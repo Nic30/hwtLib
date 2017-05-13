@@ -6,13 +6,13 @@ from hwt.hdlObjects.types.hdlType import HdlType
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.hdlObjects.types.structUtils import FrameTemplate, BusFieldInfo
 from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
+from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import evalParam
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwtLib.abstract.addrSpace import AddrSpaceItem
-from hwt.interfaces.utils import addClkRstn
 
 
 class BusConverter(Unit):
@@ -141,11 +141,10 @@ class BusConverter(Unit):
 
         :param prefix: prefix for register name
         :param interfaceMap: iterable of
-                 tuple (type, name) or
-                 interface or
-                 tuple (list of interface, prefix, [aliginFields])
-
-                 (aliginFields is optional flag if set all items from list will be aligned to bus word size, default is false)
+            tuple (type, name) or
+            interface or
+            tuple (list of interface, prefix, [aliginFields])
+            (aliginFields is optional flag if set all items from list will be aligned to bus word size, default is false)
         :param DATA_WIDTH: width of word
         :return: generator of tuple (type, name, BusFieldInfo)
         """
@@ -157,7 +156,7 @@ class BusConverter(Unit):
                     dtype = intf._dtype
                     info = BusFieldInfo(access="r", fieldInterface=intf)
                 elif isinstance(intf, VldSynced):
-                    assert intf._direction == INTF_DIRECTION.SLAVE
+                    #assert intf._direction == INTF_DIRECTION.SLAVE
                     dtype = intf.data._dtype
                     info = BusFieldInfo(access="w", fieldInterface=intf)
                 elif isinstance(intf, RegCntrl):
@@ -170,12 +169,13 @@ class BusConverter(Unit):
                 else:
                     raise NotImplementedError(intf)
 
-                yield (dtype, prefix + name, info)
 
                 if aliginFields:
                     fillUpWidth = DATA_WIDTH - dtype.bit_length()
                     if fillUpWidth > 0:
                         yield (vecT(fillUpWidth), None, None)
+
+                yield (dtype, prefix + name, info)
             else:
                 l = len(m)
                 if l == 2:
@@ -192,7 +192,7 @@ class BusConverter(Unit):
                         if fillUpWidth > 0:
                             yield (vecT(fillUpWidth), None, None)
                 else:
-                    # tuple (list of interfacem prefix)
+                    # tuple (list of interfaces, prefix)
                     yield from cls._resolveRegStructFromIntfMap(prefix + nameOrPrefix,
                                                                 typeOrListOfInterfaces,
                                                                 DATA_WIDTH,
