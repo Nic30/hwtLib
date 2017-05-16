@@ -30,12 +30,6 @@ class BramPortStructEndpointTC(AxiLiteStructEndpointTC):
 
     def randomizeAll(self):
         pass
-        #u = self.u
-        #for intf in u._interfaces:
-        #    if u not in (u.clk, u.rst_n, u.bus):
-        #        self.randomize(intf)
-
-       # self.randomize(u.bus)
 
     def test_nop(self):
         u = self.mySetUp(structTwoFields, 32)

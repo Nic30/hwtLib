@@ -14,7 +14,7 @@ class IPIF(Interface):
         self.bus2ip_addr = s(dtype=vecT(self.ADDR_WIDTH))
         self.bus2ip_data = s(dtype=vecT(self.DATA_WIDTH))
         # byte enable for bus2ip_data
-        self.bus2ip_be = s(dtype=vecT(4))
+        self.bus2ip_be = s(dtype=vecT(evalParam(self.DATA_WIDTH) // 8))
 
         # A High level indicates the transfer request is a user IP read.
         # A Low level indicates the transfer request is a user IP write.

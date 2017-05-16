@@ -177,8 +177,8 @@ if __name__ == "__main__":
 
     u = AxiLiteStructEndpoint(
             HStruct(
-                # (uint32_t, "data0"),
-                # (uint32_t, "data1"),
+                (uint32_t, "data0"),
+                (uint32_t, "data1"),
                 (Array(uint32_t, 32), "bramMapped")
                 )
             )
