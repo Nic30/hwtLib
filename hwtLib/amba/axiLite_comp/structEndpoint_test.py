@@ -128,7 +128,7 @@ class AxiLiteStructEndpointTC(SimTestCase):
         self.assertValSequenceEqual(u.bus.b._ag.data, [RESP_OKAY for _ in range(4)])
 
     def test_registerMap(self):
-        u = self.mySetUp(structTwoFields, 32)
+        u = self.mySetUp(self.STRUCT_TEMPLATE, 32)
         s = AddressSpaceProbe.pprint(self.registerMap, doPrint=False)
         expected = \
 """0x%x:field0

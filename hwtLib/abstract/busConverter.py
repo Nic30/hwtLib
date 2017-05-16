@@ -13,6 +13,11 @@ from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import evalParam
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwtLib.abstract.addrSpace import AddrSpaceItem
+from hwt.hdlObjects.types.typeCast import toHVal
+
+
+def inRange(n, lower, size):
+    return (n >= lower) & (n < (toHVal(lower) + size))
 
 
 class BusConverter(Unit):

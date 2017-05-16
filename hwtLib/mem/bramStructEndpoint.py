@@ -1,22 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import c, If
+from hwt.code import c, If, SwitchLogic, log2ceil, Switch
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import BramPort_withoutClk
-from hwtLib.abstract.busConverter import BusConverter
-
-
-def inRange(n, lower, size):
-    return (n >= lower) & (n < (lower + size))
+from hwtLib.abstract.busConverter import BusConverter, inRange
 
 
 class BramPortStructEndpoint(BusConverter):
     """
-    Delegate transaction from BrapmPort to fields of specified structure
+    Delegate transaction from BrapmPort interface to interfaces for fields of specified structure
 
-    :attention: interfaces are dynamically generated from names of fileds in structure template
+    :attention: interfaces are dynamically generated from names of fields in structure template
     """
     _getWordAddrStep = BramPort_withoutClk._getWordAddrStep
     _getAddrStep = BramPort_withoutClk._getAddrStep
@@ -29,7 +25,7 @@ class BramPortStructEndpoint(BusConverter):
 
         def connectRegIntfAlways(regIntf, _addr):
             return (
-                    c(bus.din, regIntf.dout.data) +
+                    c(bus.din, regIntf.dout.data) + 
                     c(bus.we & bus.en & bus.addr._eq(_addr), regIntf.dout.vld)
                    )
 
@@ -39,41 +35,49 @@ class BramPortStructEndpoint(BusConverter):
             c(bus.addr - addrOffset, addr_tmp)
 
             return (
-                c(addr_tmp, bramPort.addr, fit=True) +
-                c(bus.we & _addrVld, bramPort.we) +
-                c(bus.en & _addrVld, bramPort.en) +
+                c(addr_tmp, bramPort.addr, fit=True) + 
+                c(bus.we & _addrVld, bramPort.we) + 
+                c(bus.en & _addrVld, bramPort.en) + 
                 c(bus.din, bramPort.din))
+            
 
-        doutMuxTop = bus.dout ** None
+        
+        if self._directlyMapped:
+            readReg = self._reg("readReg", dtype=bus.dout._dtype)
+            # tuples (condition, assign statements)
+            readRegInputs = []
+            for ai in self._directlyMapped:
+                connectRegIntfAlways(ai.port, ai.addr)
+                readRegInputs.append((bus.addr._eq(ai.addr),
+                                      readReg ** ai.port.din
+                                      ))
+            SwitchLogic(readRegInputs)
+        else:
+            readReg = None
 
-        # reversed to more pretty code
-        for ai in reversed(self._bramPortMapped):
+        if self._bramPortMapped:
+            BRAMS_CNT = len(self._bramPortMapped)
+            bramIndxCases = []
+            readBramIndx = self._reg("readBramIndx", vecT(log2ceil(BRAMS_CNT + 1)))
+            outputSwitch = Switch(readBramIndx)
+            
+            for i, ai in enumerate(self._bramPortMapped):
+                # if we can use prefix instead of addr comparing do it
+                tmp = ai.port._addrSpaceItem.getMyAddrPrefix()
+                if tmp is None:
+                    _addrVld = inRange(bus.addr, ai.addr, ai.size)
+                else:
+                    prefix, subaddrBits = tmp
+                    _addrVld = bus.addr[:subaddrBits]._eq(prefix)
+    
+                connectBramPortAlways(ai.port, ai.addr, ai.size, _addrVld)
+                bramIndxCases.append((_addrVld, readBramIndx ** i))
+                outputSwitch.Case(i, bus.dout ** ai.port.dout)
 
-            # if we can use prefix instead of addr comparing do it
-            tmp = ai.port._addrSpaceItem.getMyAddrPrefix()
-            if tmp is None:
-                _addrVld = inRange(bus.addr, ai.addr, ai.size)
-            else:
-                prefix, subaddrBits = tmp
-                _addrVld = bus.addr[:subaddrBits]._eq(prefix)
-
-            connectBramPortAlways(ai.port, ai.addr, ai.size, _addrVld)
-            doutMuxTop = If(_addrVld,
-                            bus.dout ** ai.port.dout
-                         ).Else(
-                            doutMuxTop
-                         )
-
-        # reversed to more pretty code
-        for ai in reversed(self._directlyMapped):
-            connectRegIntfAlways(ai.port, ai.addr)
-
-            doutMuxTop = If(bus.addr._eq(ai.addr),
-                            bus.dout ** ai.port.din
-                         ).Else(
-                            doutMuxTop
-                         )
-
+            outputSwitch.Default(bus.dout ** readReg)    
+            SwitchLogic(bramIndxCases, default=readBramIndx ** BRAMS_CNT)
+        else:
+            bus.dout ** readReg
 
 if __name__ == "__main__":
     from hwt.hdlObjects.types.struct import HStruct

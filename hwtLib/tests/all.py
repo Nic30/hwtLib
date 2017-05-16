@@ -39,6 +39,9 @@ from hwtLib.logic.oneHotToBin_test import OneHotToBinTC
 from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
 from hwtLib.mem.atomic.flipRam_test import FlipRamTC
 from hwtLib.mem.atomic.flipReg_test import FlipRegTC
+from hwtLib.mem.bramStructEndpoint_test import BramPortStructEndpointTC, \
+    BramPortStructEndpointDenseTC, BramPortStructEndpointStartTC, \
+    BramPortStructEndpointOffsetTC, BramPortStructEndpointArray
 from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.clkSynchronizer_test import ClkSynchronizerTC
 from hwtLib.mem.fifo_test import FifoTC
@@ -146,6 +149,12 @@ suite = testSuiteFromTCs(
     HsJoinFair_2inputs_TC,
     HsJoinFair_3inputs_TC,
     RamAsHs_TC,
+    BramPortStructEndpointTC,      
+    BramPortStructEndpointDenseTC,  
+    BramPortStructEndpointStartTC,  
+    BramPortStructEndpointOffsetTC, 
+    BramPortStructEndpointArray,    
+
     FlipRegTC,
     FlipCntrTC,
     FlipRamTC,

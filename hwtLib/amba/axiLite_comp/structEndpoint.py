@@ -7,7 +7,7 @@ from hwt.hdlObjects.typeShortcuts import vec, vecT
 from hwt.hdlObjects.types.enum import Enum
 from hwt.hdlObjects.types.typeCast import toHVal
 from hwt.synthesizer.param import evalParam
-from hwtLib.abstract.busConverter import BusConverter
+from hwtLib.abstract.busConverter import BusConverter, inRange
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.constants import RESP_OKAY
 
@@ -28,9 +28,6 @@ class AxiLiteStructEndpoint(BusConverter):
     def readPart(self, awAddr, w_hs):
         DW_B = evalParam(self.DATA_WIDTH).val // 8
         # build read data output mux
-
-        def isMyAddr(addrSig, addr, size):
-            return (addrSig >= addr) & (addrSig < (toHVal(addr) + (size * DW_B)))
 
         r = self.bus.r
         ar = self.bus.ar
@@ -76,10 +73,10 @@ class AxiLiteStructEndpoint(BusConverter):
                 port = ai.port
     
                 # map addr for bram ports
-                _isMyAddr = isMyAddr(ar.addr, addr, size)
+                _isMyAddr = inRange(ar.addr, addr, size*DW_B)
                 _isInBramFlags.append(_isMyAddr)
     
-                prioritizeWrite = isMyAddr(awAddr, addr, size) & w_hs
+                prioritizeWrite = inRange(awAddr, addr, size*DW_B) & w_hs
     
                 a = self._sig("addr_forBram_" + port._name, awAddr._dtype)
                 If(prioritizeWrite,
