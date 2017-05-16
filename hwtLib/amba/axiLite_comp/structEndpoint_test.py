@@ -54,7 +54,7 @@ class AxiLiteStructEndpointTC(SimTestCase):
     def randomizeAll(self):
         u = self.u
         for intf in u._interfaces:
-            if u not in (u.clk, u.rst_n, u.bus):
+            if u not in (u.clk, u.rst_n, u.bus) and not isinstance(intf, BramPort_withoutClk):
                 self.randomize(intf)
 
         self.randomize(u.bus.ar)
@@ -82,7 +82,7 @@ class AxiLiteStructEndpointTC(SimTestCase):
         self.assertEmpty(u.field0._ag.dout)
         self.assertEmpty(u.field1._ag.dout)
 
-    def test_simpleRead(self):
+    def test_read(self):
         u = self.mySetUp(structTwoFields, 32)
         MAGIC = 100
         A = self.FIELD_ADDR
@@ -99,7 +99,7 @@ class AxiLiteStructEndpointTC(SimTestCase):
                                                        (MAGIC, RESP_OKAY),
                                                        (MAGIC + 1, RESP_OKAY)])
 
-    def test_simpleWrite(self):
+    def test_write(self):
         u = self.mySetUp(structTwoFields, 32)
         MAGIC = 100
         m = mask(32 // 8)
@@ -131,34 +131,19 @@ class AxiLiteStructEndpointTC(SimTestCase):
         u = self.mySetUp(structTwoFields, 32)
         s = AddressSpaceProbe.pprint(self.registerMap, doPrint=False)
         expected = \
-"""0x0:field0
-0x4:field1"""
+"""0x%x:field0
+0x%x:field1""" % tuple(self.FIELD_ADDR)
         self.assertEqual(s, expected)
+
 
 class AxiLiteStructEndpointDenseTC(AxiLiteStructEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDense
     FIELD_ADDR = [0x0, 0x8]
     
-    def test_registerMap(self):
-        u = self.mySetUp(structTwoFields, 32)
-        s = AddressSpaceProbe.pprint(self.registerMap, doPrint=False)
-        expected = \
-"""0x0:field0
-0x8:field1"""
-        self.assertEqual(s, expected)
-
 
 class AxiLiteStructEndpointDenseStartTC(AxiLiteStructEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDenseStart
     FIELD_ADDR = [0x4, 0x8]
-
-    def test_registerMap(self):
-        u = self.mySetUp(structTwoFields, 32)
-        s = AddressSpaceProbe.pprint(self.registerMap, doPrint=False)
-        expected = \
-"""0x4:field0
-0x8:field1"""
-        self.assertEqual(s, expected)
 
 
 class AxiLiteStructEndpointOffsetTC(AxiLiteStructEndpointTC):
@@ -174,29 +159,10 @@ class AxiLiteStructEndpointOffsetTC(AxiLiteStructEndpointTC):
         self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
-    def test_registerMap(self):
-        u = self.mySetUp(structTwoFields, 32)
-        s = AddressSpaceProbe.pprint(self.registerMap, doPrint=False)
-        expected = \
-"""0x4:field0
-0x8:field1"""
-        self.assertEqual(s, expected)
 
-
-class AxiLiteStructEndpointArray(SimTestCase):
+class AxiLiteStructEndpointArray(AxiLiteStructEndpointTC):
     STRUCT_TEMPLATE = structTwoArr
-    FIELD_ADDR = [0x4, 0x8]
-    mkRegisterMap = AxiLiteStructEndpointTC.mkRegisterMap
-    mySetUp = AxiLiteStructEndpointTC.mySetUp
-
-    def randomizeAll(self):
-        u = self.u
-
-        self.randomize(u.bus.ar)
-        self.randomize(u.bus.aw)
-        self.randomize(u.bus.r)
-        self.randomize(u.bus.w)
-        self.randomize(u.bus.b)
+    FIELD_ADDR = [0x0, 0x10]
 
     def test_nop(self):
         u = self.mySetUp(structTwoFields, 32)
@@ -213,6 +179,31 @@ class AxiLiteStructEndpointArray(SimTestCase):
         for i in range(8):
             self.assertValEqual(u.field0._ag.mem[i], MAGIC + 1)
             self.assertValEqual(u.field1._ag.mem[i], 2 * MAGIC + 1)
+
+    def test_read(self):
+        u = self.mySetUp(structTwoFields, 32)
+        regs = self.regs
+        MAGIC = 100
+
+        for i in range(4):
+            u.field0._ag.mem[i] = MAGIC + i + 1
+            u.field1._ag.mem[i] = 2 * MAGIC + i + 1
+            regs.field0.read(i, None)
+            regs.field1.read(i, None)
+
+        self.randomizeAll()
+        self.doSim(2 * 8 * 100 * Time.ns)
+
+        self.assertValSequenceEqual(u.bus._ag.r.data, [
+            (MAGIC + 1, RESP_OKAY),
+            (2 * MAGIC + 1, RESP_OKAY),
+            (MAGIC + 2, RESP_OKAY),
+            (2 * MAGIC + 2, RESP_OKAY),
+            (MAGIC + 3, RESP_OKAY),
+            (2 * MAGIC + 3, RESP_OKAY),
+            (MAGIC + 4, RESP_OKAY),
+            (2 * MAGIC + 4, RESP_OKAY),
+            ])
 
     def test_write(self):
         u = self.mySetUp(structTwoFields, 32)
@@ -232,6 +223,15 @@ class AxiLiteStructEndpointArray(SimTestCase):
         for i in range(4):
             self.assertValEqual(u.field0._ag.mem[i], MAGIC + i + 1)
             self.assertValEqual(u.field1._ag.mem[i], 2 * MAGIC + i + 1)
+
+
+    def test_registerMap(self):
+        u = self.mySetUp(structTwoFields, 32)
+        s = AddressSpaceProbe.pprint(self.registerMap, doPrint=False)
+        expected = \
+"""0x%x:field0(size=4)
+0x%x:field1(size=4)""" % tuple(self.FIELD_ADDR)
+        self.assertEqual(s, expected)
 
 if __name__ == "__main__":
     import unittest

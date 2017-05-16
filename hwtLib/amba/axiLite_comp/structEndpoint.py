@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, c, FsmBuilder, Or, log2ceil, connect
-from hwt.hdlObjects.typeShortcuts import vec
+from hwt.code import If, c, FsmBuilder, Or, log2ceil, connect, Switch, \
+    SwitchLogic
+from hwt.hdlObjects.typeShortcuts import vec, vecT
 from hwt.hdlObjects.types.enum import Enum
 from hwt.hdlObjects.types.typeCast import toHVal
 from hwt.synthesizer.param import evalParam
@@ -13,7 +14,7 @@ from hwtLib.amba.constants import RESP_OKAY
 
 class AxiLiteStructEndpoint(BusConverter):
     """
-    Delegate request from bus to fields of structure
+    Delegate request from AxiLite interface to fields of structure
     write has higher priority
 
     :attention: interfaces are dynamically generated from names of fields in structure template
@@ -35,7 +36,6 @@ class AxiLiteStructEndpoint(BusConverter):
         ar = self.bus.ar
         rSt_t = Enum('rSt_t', ['rdIdle', 'bramRd', 'rdData'])
         isBramAddr = self._sig("isBramAddr")
-        rdataReg = self._reg("rdataReg", r.data._dtype)
         isInAddrRange = (ar.addr >= self._getMinAddr()) & (ar.addr <= self._getMaxAddr())
 
         rSt = FsmBuilder(self, rSt_t, stateRegName='rSt')\
@@ -60,56 +60,60 @@ class AxiLiteStructEndpoint(BusConverter):
             arAddr ** ar.addr
         )
 
-        _isInBramFlags = []
-        rAssigTop = c(rdataReg, r.data)
-        rregAssigTop = rdataReg ** rdataReg
-        # rAssigTopCases =[]
-        for ai in reversed(self._directlyMapped):
-            # we are directly sending data from register
-            rAssigTop = If(arAddr._eq(ai.addr),
-                           connect(ai.port.din, r.data, fit=True)
-                        ).Else(
-                           rAssigTop
-                        )
+        if self._bramPortMapped:
+            rdataReg = self._reg("rdataReg", r.data._dtype)
+            _isInBramFlags = []
+            # list of tuples (cond, rdataReg assignment)
+            rregCases = []
+            # index of bram from where we reads from
+            bramRdIndx = self._reg("bramRdIndx", vecT(log2ceil(len(self._bramPortMapped))))
+            bramRdIndxSwitch = Switch(bramRdIndx)
+            bitForAligin = log2ceil(self._getWordAddrStep()).val
 
-        bitForAligig = log2ceil(self.DATA_WIDTH // 8 - 1).val
-        for ai in reversed(self._bramPortMapped):
-            size = ai.size
-            addr = ai.addr
-            port = ai.port
-
-            # map addr for bram ports
-            _isMyAddr = isMyAddr(ar.addr, addr, size)
-            _isInBramFlags.append(_isMyAddr)
-
-            prioritizeWrite = isMyAddr(awAddr, addr, size) & w_hs
-
-            a = self._sig("addr_forBram_" + port._name, awAddr._dtype)
-            If(prioritizeWrite,
-                a ** (awAddr - addr)
-            ).Elif(rSt._eq(rSt_t.rdIdle),
-                a ** (ar.addr - addr)
-            ).Else(
-                a ** (arAddr - addr)
+            for bramIndex, ai in enumerate(self._bramPortMapped):
+                size = ai.size
+                addr = ai.addr
+                port = ai.port
+    
+                # map addr for bram ports
+                _isMyAddr = isMyAddr(ar.addr, addr, size)
+                _isInBramFlags.append(_isMyAddr)
+    
+                prioritizeWrite = isMyAddr(awAddr, addr, size) & w_hs
+    
+                a = self._sig("addr_forBram_" + port._name, awAddr._dtype)
+                If(prioritizeWrite,
+                    a ** (awAddr - addr)
+                ).Elif(rSt._eq(rSt_t.rdIdle),
+                    a ** (ar.addr - addr)
+                ).Else(
+                    a ** (arAddr - addr)
+                )
+    
+                addrHBit = port.addr._dtype.bit_length() 
+                assert addrHBit + bitForAligin <= evalParam(self.ADDR_WIDTH).val
+    
+                c(a[(addrHBit + bitForAligin):bitForAligin], port.addr, fit=True)
+                port.en ** ((_isMyAddr & ar.valid) | prioritizeWrite) 
+                port.we ** prioritizeWrite
+    
+                rregCases.append((_isMyAddr, bramRdIndx ** bramIndex))
+                bramRdIndxSwitch.Case(bramIndex, rdataReg ** port.dout)
+    
+            bramRdIndxSwitch.Default(rdataReg ** rdataReg)
+            If(arRd,
+               SwitchLogic(rregCases)
             )
-
-            addrHBit = port.addr._dtype.bit_length() 
-            assert addrHBit + bitForAligig <= evalParam(self.ADDR_WIDTH).val
-
-            c(a[(addrHBit + bitForAligig):bitForAligig], port.addr, fit=True)
-            port.en ** ((_isMyAddr & ar.valid) | prioritizeWrite) 
-            port.we ** prioritizeWrite
-
-            rregAssigTop = If(_isMyAddr,
-                rdataReg ** port.dout
-            ).Else(
-                rregAssigTop
-            )
-
-        if _isInBramFlags:
             c(Or(*_isInBramFlags), isBramAddr)
+
         else:
+            rdataReg = None
             c(0, isBramAddr)
+        
+        SwitchLogic([(arAddr._eq(ai.addr),
+                      connect(ai.port.din, r.data, fit=True)) 
+                        for ai in self._directlyMapped],
+                    default=r.data ** rdataReg)
 
     def writePart(self):
         sig = self._sig
@@ -176,8 +180,8 @@ if __name__ == "__main__":
 
     u = AxiLiteStructEndpoint(
             HStruct(
-                (uint32_t, "data0"),
-                (uint32_t, "data1"),
+                # (uint32_t, "data0"),
+                # (uint32_t, "data1"),
                 (Array(uint32_t, 32), "bramMapped")
                 )
             )
