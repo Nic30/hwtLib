@@ -73,7 +73,7 @@ class InterfaceArraySample2TC(SimTestCase):
         
         self.doSim(50 * Time.ns)
         
-        for i in range(3):
+        for i in range(2):
             self.assertEmpty(u.a[i]._ag.data)
         
         self.assertValSequenceEqual(u.b[0]._ag.data, d0)
