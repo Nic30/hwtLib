@@ -92,6 +92,9 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
+from hwtLib.ipif.structEndpoint_test import IPIFStructEndpointTC, \
+    IPIFStructEndpointDenseTC, IPIFStructEndpointStartTC, \
+    IPIFStructEndpointOffsetTC, IPIFStructEndpointArray
 
 
 def testSuiteFromTCs(*tcs):
@@ -149,11 +152,11 @@ suite = testSuiteFromTCs(
     HsJoinFair_2inputs_TC,
     HsJoinFair_3inputs_TC,
     RamAsHs_TC,
-    BramPortStructEndpointTC,      
-    BramPortStructEndpointDenseTC,  
-    BramPortStructEndpointStartTC,  
-    BramPortStructEndpointOffsetTC, 
-    BramPortStructEndpointArray,    
+    BramPortStructEndpointTC,
+    BramPortStructEndpointDenseTC,
+    BramPortStructEndpointStartTC,
+    BramPortStructEndpointOffsetTC,
+    BramPortStructEndpointArray,
 
     FlipRegTC,
     FlipCntrTC,
@@ -207,6 +210,12 @@ suite = testSuiteFromTCs(
     CLinkedListWriterTC,
     MMU_2pageLvl_TC,
     StructWriter_TC,
+    
+    IPIFStructEndpointTC,
+    IPIFStructEndpointDenseTC,
+    IPIFStructEndpointStartTC,
+    IPIFStructEndpointOffsetTC,
+    IPIFStructEndpointArray,
 
     IpCoreWrapperTC,
 )

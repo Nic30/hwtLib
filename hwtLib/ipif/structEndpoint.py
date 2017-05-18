@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, c, FsmBuilder, Switch
+from hwt.code import If, c, FsmBuilder, Switch, log2ceil
 from hwt.hdlObjects.types.enum import Enum
 from hwt.hdlObjects.types.typeCast import toHVal
 from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.busConverter import BusConverter
-from hwtLib.interfaces.ipif import IPIF
+from hwtLib.ipif.intf import IPIF
 
 
 class IpifStructEndpoint(BusConverter):
@@ -41,7 +41,7 @@ class IpifStructEndpoint(BusConverter):
 
         st = FsmBuilder(self, st_t)\
         .Trans(st_t.idle,
-            (addrVld & isInMyAddrSpace & ipif.bus2ip_rnw, st_t.readDelay),
+            (addrVld & isInMyAddrSpace & ipif.bus2ip_rnw, st_t.rdData),
             (addrVld & isInMyAddrSpace & ~ipif.bus2ip_rnw, st_t.writeAck)
         ).Trans(st_t.writeAck,
             st_t.idle
@@ -64,14 +64,11 @@ class IpifStructEndpoint(BusConverter):
             a ** (addr - ai.addr)
 
             addrHBit = ai.port.addr._dtype.bit_length()
-            if ai.alignOffsetBits:
-                bitForAligig = ai.alignOffsetBits
-                assert addrHBit + bitForAligig <= evalParam(self.ADDR_WIDTH).val
-                c(a[(addrHBit + bitForAligig):bitForAligig], ai.port.addr, fit=True)
-            else:
-                c(a[addrHBit:], ai.port.addr, fit=True)
+            bitForAligig = ai.alignOffsetBits
+            assert addrHBit + bitForAligig <= evalParam(self.ADDR_WIDTH).val
+            c(a[(addrHBit + bitForAligig):bitForAligig], ai.port.addr, fit=True)
 
-            ai.port.en ** _isMyAddr
+            ai.port.en ** (_isMyAddr & ipif.bus2ip_cs)
             ai.port.we ** (_isMyAddr & wAck)
 
             dataToBus = If(_isMyAddr,
