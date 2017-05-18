@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import c, If, SwitchLogic, log2ceil, Switch
+from hwt.code import c, SwitchLogic, log2ceil, Switch
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import BramPort_withoutClk
@@ -31,6 +31,7 @@ class BramPortStructEndpoint(BusConverter):
 
         def connectBramPortAlways(bramPort, addrOffset, size, _addrVld):
             # explicit signal because vhdl cannot index the result of a type conversion
+            # [TODO] port._addrSpaceItem.getMyAddrPrefix()
             addr_tmp = self._sig(bramPort._name + "_addr_tmp", vecT(self.ADDR_WIDTH))
             c(bus.addr - addrOffset, addr_tmp)
 
@@ -58,7 +59,7 @@ class BramPortStructEndpoint(BusConverter):
         if self._bramPortMapped:
             BRAMS_CNT = len(self._bramPortMapped)
             bramIndxCases = []
-            readBramIndx = self._reg("readBramIndx", vecT(log2ceil(BRAMS_CNT + 1)))
+            readBramIndx = self._reg("readBramIndx", vecT(log2ceil(BRAMS_CNT + 1), False))
             outputSwitch = Switch(readBramIndx)
             
             for i, ai in enumerate(self._bramPortMapped):
@@ -70,7 +71,7 @@ class BramPortStructEndpoint(BusConverter):
                     prefix, subaddrBits = tmp
                     _addrVld = bus.addr[:subaddrBits]._eq(prefix)
     
-                connectBramPortAlways(ai.port, ai.addr, ai.size, _addrVld)
+                connectBramPortAlways(ai.port, ai.addr, ai.size, _addrVld & bus.en)
                 bramIndxCases.append((_addrVld, readBramIndx ** i))
                 outputSwitch.Case(i, bus.dout ** ai.port.dout)
 
