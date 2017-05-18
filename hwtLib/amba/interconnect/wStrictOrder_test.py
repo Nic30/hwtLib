@@ -155,7 +155,7 @@ class WStrictOrderInterconnectTC(SimTestCase):
         for _id, d in enumerate(u.drivers):
             self.assertEmpty(d.req._ag.data)
             self.assertEmpty(d.w._ag.data)
-            self.assertEquals(len(u.drivers[_id].ack._ag.data),
+            self.assertEqual(len(u.drivers[_id].ack._ag.data),
                               framesCnt[_id])
 
         for _id, addr, expected in sectors:
@@ -227,6 +227,8 @@ class WStrictOrderInterconnect2TC(SimTestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(WStrictOrderInterconnectTC('test_randomized'))
+    
+    suite.addTest(unittest.makeSuite(WStrictOrderInterconnectTC))
     suite.addTest(unittest.makeSuite(WStrictOrderInterconnect2TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
