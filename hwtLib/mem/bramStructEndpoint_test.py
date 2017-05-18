@@ -4,13 +4,13 @@
 from hwt.hdlObjects.constants import Time, READ, WRITE, NOP
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.structEndpoint_test import AxiLiteStructEndpointTC, \
-    addrGetter, AxiLiteStructEndpointArray, structTwoFieldsDense,\
+    addrGetter, AxiLiteStructEndpointArray, structTwoFieldsDense, \
     structTwoFieldsDenseStart
 from hwtLib.mem.bramPortSimMemSpaceMaster import BramPortSimMemSpaceMaster
 from hwtLib.mem.bramStructEndpoint import BramPortStructEndpoint
-import sys
 
 
+#import sys
 class BramPortStructEndpointTC(AxiLiteStructEndpointTC):
     FIELD_ADDR = [0x0, 0x1]
 
