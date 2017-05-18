@@ -221,8 +221,8 @@ class AxiLiteStructEndpointArray(AxiLiteStructEndpointTC):
 
         self.assertEmpty(u.bus._ag.r.data)
         for i in range(4):
-            self.assertValEqual(u.field0._ag.mem[i], MAGIC + i + 1)
-            self.assertValEqual(u.field1._ag.mem[i], 2 * MAGIC + i + 1)
+            self.assertValEqual(u.field0._ag.mem[i], MAGIC + i + 1, "index=%d" % i)
+            self.assertValEqual(u.field1._ag.mem[i], 2 * MAGIC + i + 1, "index=%d" % i)
 
 
     def test_registerMap(self):
