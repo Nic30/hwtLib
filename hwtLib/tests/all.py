@@ -55,6 +55,7 @@ from hwtLib.samples.iLvl.arithmetic.cntr_test import CntrTC
 from hwtLib.samples.iLvl.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.samples.iLvl.arithmetic.twoCntrs_test import TwoCntrsTC
 from hwtLib.samples.iLvl.axi.simpleAxiRegs_test import SimpleAxiRegsTC
+from hwtLib.samples.iLvl.emptyUnitWithSpi import EmptyUnitWithSpiTC
 from hwtLib.samples.iLvl.errors.errorsTestCase import ErrorsTC
 from hwtLib.samples.iLvl.hdlComments_test import HdlCommentsTC
 from hwtLib.samples.iLvl.hierarchy.netFilter_test import NetFilterTC
@@ -66,7 +67,9 @@ from hwtLib.samples.iLvl.mem.reg_test import DRegTC
 from hwtLib.samples.iLvl.mem.rom_test import RomTC
 from hwtLib.samples.iLvl.operators.concat_test import ConcatTC
 from hwtLib.samples.iLvl.operators.indexing_test import IndexingTC
+from hwtLib.samples.iLvl.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnectionTC
 from hwtLib.samples.iLvl.simpleAxiStream_test import SimpleUnitAxiStream_TC
+from hwtLib.samples.iLvl.simpleWithNonDirectIntConncetion import SimpleWithNonDirectIntConncetionTC
 from hwtLib.samples.iLvl.simpleWithParam import SimpleUnitWithParamTC
 from hwtLib.samples.iLvl.simple_test import SimpleTC
 from hwtLib.samples.iLvl.statements.constDriver_test import ConstDriverTC
@@ -111,6 +114,9 @@ suite = testSuiteFromTCs(
     HdlCommentsTC,
     InterfaceSynthesizerTC,
     SubunitsSynthesisTC,
+    EmptyUnitWithSpiTC,
+    Simple2withNonDirectIntConnectionTC,
+    SimpleWithNonDirectIntConncetionTC,
     Expr2CondTC,
     OperatorTC,
     TestCaseSynthesis,
