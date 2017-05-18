@@ -102,9 +102,15 @@ class BusConverter(Unit):
                 assert len(field.appearsInWords) == 1
                 if isinstance(field.type, Array):
                     size = evalParam(field.type.size).val
+                    alignOffsetBits = log2ceil(self._getWordAddrStep()).val
                 else:
                     size = None
-                asi = AddrSpaceItem(self.OFFSET + indx * addrStep, field.name, size, origin=field)
+                    alignOffsetBits = None
+                asi = AddrSpaceItem(self.OFFSET + indx * addrStep,
+                                    field.name,
+                                    size,
+                                    origin=field,
+                                    alignOffsetBits=alignOffsetBits)
                 self.ADRESS_MAP.append(asi)
 
         assert self.ADRESS_MAP
