@@ -60,7 +60,12 @@ from hwtLib.samples.iLvl.errors.errorsTestCase import ErrorsTC
 from hwtLib.samples.iLvl.hdlComments_test import HdlCommentsTC
 from hwtLib.samples.iLvl.hierarchy.netFilter_test import NetFilterTC
 from hwtLib.samples.iLvl.hierarchy.simpleSubunit2 import SimpleSubunit2TC
+from hwtLib.samples.iLvl.hierarchy.simpleSubunit3 import SimpleSubunit3TC
 from hwtLib.samples.iLvl.hierarchy.simpleSubunit_test import SimpleSubunitTC
+from hwtLib.samples.iLvl.hierarchy.unitToUnitConnection import UnitToUnitConnectionTC
+from hwtLib.samples.iLvl.intfArray.interfaceArray0 import InterfaceArraySample0TC
+from hwtLib.samples.iLvl.intfArray.interfaceArray1 import InterfaceArraySample1TC
+from hwtLib.samples.iLvl.intfArray.interfaceArray2 import InterfaceArraySample2TC
 from hwtLib.samples.iLvl.ipCoreCompatibleWrap_test import IpCoreWrapperTC
 from hwtLib.samples.iLvl.mem.ram_test import RamTC as SampleRamTC
 from hwtLib.samples.iLvl.mem.reg_test import DRegTC
@@ -99,8 +104,6 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
-from hwtLib.samples.iLvl.hierarchy.simpleSubunit3 import SimpleSubunit3TC
-from hwtLib.samples.iLvl.hierarchy.unitToUnitConnection import UnitToUnitConnectionTC
 
 
 def testSuiteFromTCs(*tcs):
@@ -134,6 +137,10 @@ suite = testSuiteFromTCs(
     SimpleSubunit2TC,
     TimerTC,
     NetFilterTC,
+    InterfaceArraySample0TC,
+    InterfaceArraySample1TC,
+    InterfaceArraySample2TC,
+    
 
     # component verifications
     ConcatTC,
