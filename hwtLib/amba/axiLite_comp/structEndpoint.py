@@ -65,7 +65,6 @@ class AxiLiteStructEndpoint(BusConverter):
             # index of bram from where we reads from
             bramRdIndx = self._reg("bramRdIndx", vecT(log2ceil(len(self._bramPortMapped))))
             bramRdIndxSwitch = Switch(bramRdIndx)
-            bitForAligin = log2ceil(self._getWordAddrStep()).val
 
             for bramIndex, ai in enumerate(self._bramPortMapped):
                 size = ai.size
@@ -87,7 +86,8 @@ class AxiLiteStructEndpoint(BusConverter):
                     a ** (arAddr - addr)
                 )
     
-                addrHBit = port.addr._dtype.bit_length() 
+                addrHBit = port.addr._dtype.bit_length()
+                bitForAligin = ai.alignOffsetBits
                 assert addrHBit + bitForAligin <= evalParam(self.ADDR_WIDTH).val
     
                 c(a[(addrHBit + bitForAligin):bitForAligin], port.addr, fit=True)
