@@ -82,7 +82,7 @@ class HsFifoTC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(FifoTC('test_normalOp'))
+    #suite.addTest(HsFifoTC('test_passdata'))
     suite.addTest(unittest.makeSuite(HsFifoTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
