@@ -92,15 +92,6 @@ class Ram_dp(Ram_sp):
         self.connectPort(self.b, self._mem)
 
 
-def getRamCls(noOfPorts):
-    if noOfPorts == 1:
-        return Ram_sp
-    elif noOfPorts == 2:
-        return Ram_dp
-    else:
-        raise NotImplementedError()
-
-
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(Ram_dp()))
