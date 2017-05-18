@@ -15,8 +15,8 @@ class AddrSpaceItem(object):
         :param addr: base addr for this addr item
         :param name: name of this addr item, (port with same name will be created for this item)
         :param size: used for memories, number of items in memory
-        :param alignOffsetBits: used for memories, number of bits which should be trimmed from bus interface
-                to make aligned address for this item
+        :param alignOffsetBits: used for memories, number of bits which should be trimmed (from LSB side)
+            from bus interface to make aligned address for this item
         :param origin: object from which this was generated usually HStructField
         """
         self.port = None
