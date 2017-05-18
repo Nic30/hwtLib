@@ -28,14 +28,18 @@ class SimpleSubunit2(Unit):
         
 
 class SimpleSubunit2TC(SimTestCase):
+    def setUp(self):
+        SimTestCase.setUp(self)
+        self.u = SimpleSubunit2()
+        self.prepareUnit(self.u)
+
     def test_simplePass(self):
-        u = SimpleSubunit2()
-        self.prepareUnit(u)
+        u = self.u
 
         data = [(5, 1, 0), (6, 1, 1)]
         u.a0._ag.data.extend(data)
         self.doSim(50 * Time.ns)
-        
+        self.assertEmpty(u.a0._ag.data)
         self.assertValSequenceEqual(u.b0._ag.data, data)
 
 

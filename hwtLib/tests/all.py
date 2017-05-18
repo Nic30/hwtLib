@@ -99,6 +99,8 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
+from hwtLib.samples.iLvl.hierarchy.simpleSubunit3 import SimpleSubunit3TC
+from hwtLib.samples.iLvl.hierarchy.unitToUnitConnection import UnitToUnitConnectionTC
 
 
 def testSuiteFromTCs(*tcs):
@@ -117,6 +119,8 @@ suite = testSuiteFromTCs(
     EmptyUnitWithSpiTC,
     Simple2withNonDirectIntConnectionTC,
     SimpleWithNonDirectIntConncetionTC,
+    SimpleSubunit3TC,
+    UnitToUnitConnectionTC,
     Expr2CondTC,
     OperatorTC,
     TestCaseSynthesis,
