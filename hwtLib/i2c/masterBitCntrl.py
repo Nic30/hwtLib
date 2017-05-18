@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.code import If, Concat, FsmBuilder, In, log2ceil
+from hwt.hdlObjects.constants import DIRECTION
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.enum import Enum
-from hwt.interfaces.std import Signal
+from hwt.interfaces.agents.rdSynced import RdSyncedAgent
+from hwt.interfaces.std import Signal, RdSynced, VectSignal
 from hwt.interfaces.utils import addClkRstn
-from hwt.code import If, Concat, FsmBuilder, In
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.interfaces.peripheral import I2c
+from hwtLib.i2c.intf import I2c
 
 
 NOP, START, STOP, READ, WRITE = range(5)
@@ -21,6 +23,32 @@ def hasRisen(last, actual):
 def hasFallen(last, actual):
     return last & ~actual
 
+
+class I2cBitCntrlCmd(RdSynced):
+    def _config(self):
+        pass
+    
+    def _declr(self):
+        self.din = Signal()
+        self.cmd = VectSignal(log2ceil(5))
+        self.rd = Signal(masterDir=DIRECTION.IN)
+    
+    def _getSimAgent(self):
+        return I2cBitCntrlCmdAgent
+
+class I2cBitCntrlCmdAgent(RdSyncedAgent):
+    def doRead(self, s):
+        """extract data from interface"""
+        return (s.read(self.intf.cmd), s.read(self.intf.din))
+    
+    def doWrite(self, s, data):
+        """write data to interface"""
+        if data is None:
+            cmd, d = None, None
+        else:
+            cmd, d = data
+        s.w(d, self.intf.din)
+        s.w(cmd, self.intf.cmd)
 
 class I2cMasterBitCtrl(Unit):
     """
@@ -67,13 +95,9 @@ class I2cMasterBitCtrl(Unit):
         addClkRstn(self)
         self.clk_cnt_initVal = Signal(dtype=vecT(16))
         self.i2c = I2c()
-
-        self.cmd = Signal(dtype=vecT(4))
-        self.cmd_ack = Signal()  # command completed
-        self.busy = Signal()  # i2c bus busy
+        
+        self.cntrl = I2cBitCntrlCmd()
         self.arbitrationLost = Signal()  # arbitration lost
-
-        self.din = Signal()
         self.dout = Signal()
 
     def stateClkGen(self, scl_sync, scl_t, scl):
@@ -85,7 +109,7 @@ class I2cMasterBitCtrl(Unit):
         # slave_wait is asserted when master wants to drive SCL high, but the slave pulls it low
         # slave_wait remains asserted until the slave releases SCL
         slave_wait = self._reg("slave_wait", defVal=0)
-        slave_wait ** ((~scl_t & delayedScl_t & ~scl) | (slave_wait and ~scl))
+        slave_wait ** ((~scl_t & delayedScl_t & ~scl) | (slave_wait & ~scl))
 
         clkCntr = self._reg("clkCntr",
                             vecT(self.CLK_CNTR_WIDTH, False),
@@ -107,7 +131,7 @@ class I2cMasterBitCtrl(Unit):
     def filter(self, name, sig):
         """attempt to remove glitches"""
         filter0 = self._reg(name + "_filter0", dtype=vecT(2), defVal=0)
-        filter0 ** (filter0[0]._concat(sig))
+        filter0 ** filter0[0]._concat(sig)
 
         # let filter_cnt to be shared between filters
         try:
@@ -136,8 +160,8 @@ class I2cMasterBitCtrl(Unit):
         """
         :attention: also dout driver
         """
-        lastScl = self._reg("lastScl", defVal=0)
-        lastSda = self._reg("lastSda", defVal=0)
+        lastScl = self._reg("lastScl", defVal=1)
+        lastSda = self._reg("lastSda", defVal=1)
 
         startCond = hasFallen(lastSda, sda) & scl     
         stopCond = hasRisen(lastSda, sda) & scl   
@@ -145,7 +169,7 @@ class I2cMasterBitCtrl(Unit):
         lastScl ** scl
         lastSda ** sda
 
-        dout = self._reg("dout", defVal=0)
+        dout = self._reg("doutReg", defVal=0)
         dout ** hasRisen(lastScl, scl)
         self.dout ** dout
 
@@ -154,11 +178,6 @@ class I2cMasterBitCtrl(Unit):
         scl_sync = lastScl & ~scl & ~scl_t
 
         return startCond, stopCond, scl_sync
-
-    def busyDriver(self, startCond, stopCond):
-        busy = self._reg("busy_reg", defVal=0)
-        busy ** ((startCond | busy) & ~stopCond)
-        self.busy ** busy
 
     def arbitrationLostDriver(self, st, sda, sda_chk, sda_t, stopCond, stateClkEn):
         """
@@ -171,7 +190,7 @@ class I2cMasterBitCtrl(Unit):
         al = self._reg("al", defVal=0)
         cmd_stop = self._reg("cmd_stop", defVal=0)
         If(stateClkEn,
-           cmd_stop ** self.cmd._eq(STOP)
+           cmd_stop ** self.cntrl.cmd._eq(STOP)
         )
 
         _al = (sda_chk & ~sda & ~sda_t)
@@ -185,8 +204,9 @@ class I2cMasterBitCtrl(Unit):
         return al
 
     def _impl(self):
-        cmd = self.cmd
-        cmd_ack = self.cmd_ack
+        cmd = self.cntrl.cmd
+        cmd_ack = self.cntrl.rd
+
         stT = Enum("stT",
                    ["idle",
                     "start_0", "start_1", "start_2", "start_3", "start_4",
@@ -207,7 +227,6 @@ class I2cMasterBitCtrl(Unit):
 
         startCond, stopCond, scl_sync = self.detectStartAndStop(scl, sda, scl_t)
         stateClkEn = self.stateClkGen(scl_sync, scl_t, scl)
-        self.busyDriver(startCond, stopCond)
         al = self.arbitrationLostDriver(st, sda, sda_chk, sda_t, stopCond, stateClkEn)
 
         def stateSequence(sequneceName, stateCnt):
@@ -223,11 +242,12 @@ class I2cMasterBitCtrl(Unit):
                          stateTo
                 )
         fsm.Trans(stT.idle,
-                  (al, stT.idle),
-                  (cmd._eq(START), stT.start_0),
-                  (cmd._eq(STOP), stT.stop_0),
-                  (cmd._eq(WRITE), stT.wr_0),
-                  (cmd._eq(READ), stT.rd_0),
+            (al, stT.idle),
+            (cmd._eq(NOP), stT.idle),
+            (cmd._eq(START), stT.start_0),
+            (cmd._eq(STOP), stT.stop_0),
+            (cmd._eq(WRITE), stT.wr_0),
+            (cmd._eq(READ), stT.rd_0),
         )
         stateSequence("start", 5)
         stateSequence("stop", 4)
@@ -259,14 +279,10 @@ class I2cMasterBitCtrl(Unit):
                         stT.stop_0, stT.stop_1, stT.stop_2]),
                sda_t ** 1
             ).Elif(In(st, [stT.wr_0, stT.wr_1, stT.wr_2, stT.wr_3]),
-               sda_t ** self.din 
+               sda_t ** ~self.cntrl.din 
             ),
             # cmd ack at the end of state sequence   
-            If(In(st, [stT.start_4, stT.stop_3, stT.rd_3, stT.wr_3]),
-                cmd_ack ** 1
-            ).Else(
-                cmd_ack ** 0
-            )
+            cmd_ack ** In(st, [stT.start_4, stT.stop_3, stT.rd_3, stT.wr_3])
         )
 
         self.i2c.scl.o ** 0

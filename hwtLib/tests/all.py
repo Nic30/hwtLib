@@ -33,6 +33,10 @@ from hwtLib.handshaked.joinFair_test import HsJoinFair_2inputs_TC, \
 from hwtLib.handshaked.join_test import HsJoinTC, HsJoin_randomized_TC
 from hwtLib.handshaked.ramAsHs_test import RamAsHs_TC
 from hwtLib.handshaked.reg_test import HsRegL1D0TC, HsRegL2D1TC
+from hwtLib.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
+from hwtLib.ipif.structEndpoint_test import IPIFStructEndpointTC, \
+    IPIFStructEndpointDenseTC, IPIFStructEndpointStartTC, \
+    IPIFStructEndpointOffsetTC, IPIFStructEndpointArray
 from hwtLib.logic.crcUtils_test import CrcUtilsTC
 from hwtLib.logic.crc_test import CrcCombTC
 from hwtLib.logic.oneHotToBin_test import OneHotToBinTC
@@ -92,9 +96,6 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
-from hwtLib.ipif.structEndpoint_test import IPIFStructEndpointTC, \
-    IPIFStructEndpointDenseTC, IPIFStructEndpointStartTC, \
-    IPIFStructEndpointOffsetTC, IPIFStructEndpointArray
 
 
 def testSuiteFromTCs(*tcs):
@@ -171,6 +172,7 @@ suite = testSuiteFromTCs(
     UartRxBasicTC,
     UartRxTC,
     UartTxRxTC,
+    I2CMasterBitCntrlTC,
     CrcUtilsTC,
     CrcCombTC,
     SimpleAxiRegsTC,

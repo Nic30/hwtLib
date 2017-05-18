@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.code import If, Concat
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.enum import Enum
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.code import If, Concat
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl
