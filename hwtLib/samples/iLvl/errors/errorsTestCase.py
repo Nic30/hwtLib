@@ -4,12 +4,12 @@ from hwt.serializer.exceptions import SerializerException
 from hwt.synthesizer.exceptions import TypeConversionErr, IntfLvlConfErr
 from hwt.synthesizer.rtlLevel.signalUtils.exceptions import MultipleDriversExc
 from hwt.synthesizer.shortcuts import toRtl
+from hwtLib.samples.iLvl.errors.accessingSubunitInternalIntf import AccessingSubunitInternalIntf
+from hwtLib.samples.iLvl.errors.inconsistentIntfDirection import InconsistentIntfDirection
 from hwtLib.samples.iLvl.errors.invalidTypeConnetion import InvalidTypeConnetion
 from hwtLib.samples.iLvl.errors.multipleDriversOfChildNet import MultipleDriversOfChildNet, \
     MultipleDriversOfChildNet2
-from hwtLib.samples.iLvl.errors.inconsistentIntfDirection import InconsistentIntfDirection
-from hwtLib.samples.iLvl.errors.unusedSubunit import UnusedSubunit, \
-    UnusedSubunit2
+from hwtLib.samples.iLvl.errors.unusedSubunit import UnusedSubunit, UnusedSubunit2
 
 
 class ErrorsTC(unittest.TestCase):
@@ -42,6 +42,12 @@ class ErrorsTC(unittest.TestCase):
         u = UnusedSubunit2()
         with self.assertRaises(SerializerException):
             toRtl(u)
+    
+    def test_accessingSubunitInternalIntf(self):
+        u = AccessingSubunitInternalIntf()
+        with self.assertRaises(AssertionError):
+            toRtl(u)
+    
 
 
 if __name__ == '__main__':
