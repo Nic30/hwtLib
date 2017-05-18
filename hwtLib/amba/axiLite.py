@@ -208,32 +208,6 @@ class AxiLiteAgent(AgentBase):
 
 
 #################################################################
-class AxiLite_addr_xil(AxiLite_addr):
-    _NAME_SEPARATOR = ''
-
-
-class AxiLite_r_xil(AxiLite_r):
-    _NAME_SEPARATOR = ''
-
-
-class AxiLite_w_xil(AxiLite_w):
-    _NAME_SEPARATOR = ''
-
-
-class AxiLite_b_xil(AxiLite_b):
-    _NAME_SEPARATOR = ''
-
-
-class AxiLite_xil(AxiLite):
-    def _declr(self):
-        with self._paramsShared():
-            self.aw = AxiLite_addr_xil()
-            self.ar = AxiLite_addr_xil()
-            self.w = AxiLite_w_xil()
-            self.r = AxiLite_r_xil(masterDir=DIRECTION.IN)
-            self.b = AxiLite_b_xil(masterDir=DIRECTION.IN)
-
-
 class IP_AXILite(IntfConfig):
     def __init__(self):
         super().__init__()

@@ -216,32 +216,6 @@ class Axi4(AxiLite):
         return IP_Axi4
 
 
-class Axi4_addr_xil(Axi4_addr):
-    _NAME_SEPARATOR = ''
-
-
-class Axi4_r_xil(Axi4_r):
-    _NAME_SEPARATOR = ''
-
-
-class Axi4_w_xil(Axi4_w):
-    _NAME_SEPARATOR = ''
-
-
-class Axi4_b_xil(Axi4_b):
-    _NAME_SEPARATOR = ''
-
-
-class Axi4_xil(Axi4):
-    def _declr(self):
-        with self._paramsShared():
-            self.ar = Axi4_addr_xil()
-            self.aw = Axi4_addr_xil()
-            self.w = Axi4_w_xil()
-            self.r = Axi4_r_xil(masterDir=DIRECTION.IN)
-            self.b = Axi4_b_xil(masterDir=DIRECTION.IN)
-
-
 class IP_Axi4(IP_AXILite):
     def __init__(self,):
         super().__init__()
