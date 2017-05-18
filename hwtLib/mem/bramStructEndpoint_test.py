@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdlObjects.constants import Time, READ, WRITE, NOP
-from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.structEndpoint_test import AxiLiteStructEndpointTC, \
-    addrGetter, structTwoFields, structTwoFieldsDense, structTwoFieldsDenseStart, structTwoArr
+    addrGetter, AxiLiteStructEndpointArray, structTwoFieldsDense,\
+    structTwoFieldsDenseStart
 from hwtLib.mem.bramPortSimMemSpaceMaster import BramPortSimMemSpaceMaster
 from hwtLib.mem.bramStructEndpoint import BramPortStructEndpoint
+import sys
 
 
 class BramPortStructEndpointTC(AxiLiteStructEndpointTC):
-    STRUCT_TEMPLATE = structTwoFields
     FIELD_ADDR = [0x0, 0x1]
 
     def mkRegisterMap(self, u):
@@ -19,7 +19,7 @@ class BramPortStructEndpointTC(AxiLiteStructEndpointTC):
         self.registerMap = registerMap
         self.regs = BramPortSimMemSpaceMaster(u.bus, registerMap)
 
-    def mySetUp(self, structTmpl, data_width=32):
+    def mySetUp(self, data_width=32):
         u = self.u = BramPortStructEndpoint(self.STRUCT_TEMPLATE)
 
         self.DATA_WIDTH = data_width
@@ -32,7 +32,7 @@ class BramPortStructEndpointTC(AxiLiteStructEndpointTC):
         pass
 
     def test_nop(self):
-        u = self.mySetUp(structTwoFields, 32)
+        u = self.mySetUp(32)
 
         self.randomizeAll()
         self.doSim(100 * Time.ns)
@@ -43,7 +43,7 @@ class BramPortStructEndpointTC(AxiLiteStructEndpointTC):
         self.assertEmpty(u.field1._ag.dout)
 
     def test_read(self):
-        u = self.mySetUp(structTwoFields, 32)
+        u = self.mySetUp( 32)
         MAGIC = 100
         A = self.FIELD_ADDR
         u.bus._ag.requests.extend([(READ, A[0]),
@@ -64,7 +64,7 @@ class BramPortStructEndpointTC(AxiLiteStructEndpointTC):
                                                        MAGIC + 1])
 
     def test_write(self):
-        u = self.mySetUp(structTwoFields, 32)
+        u = self.mySetUp( 32)
         MAGIC = 100
         A = self.FIELD_ADDR
         u.bus._ag.requests.extend([
@@ -96,10 +96,9 @@ class BramPortStructEndpointStartTC(BramPortStructEndpointTC):
 
 
 class BramPortStructEndpointOffsetTC(BramPortStructEndpointTC):
-    STRUCT_TEMPLATE = structTwoFields
     FIELD_ADDR = [0x1, 0x2]
 
-    def mySetUp(self, structTmpl, data_width=32):
+    def mySetUp(self, data_width=32):
         u = self.u = BramPortStructEndpoint(self.STRUCT_TEMPLATE, offset=0x1)
 
         self.DATA_WIDTH = data_width
@@ -108,18 +107,17 @@ class BramPortStructEndpointOffsetTC(BramPortStructEndpointTC):
         self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
-class BramPortStructEndpointArray(SimTestCase):
-    STRUCT_TEMPLATE = structTwoArr
+class BramPortStructEndpointArray(AxiLiteStructEndpointArray):
     FIELD_ADDR = [0x0, 0x4]
     mkRegisterMap = BramPortStructEndpointTC.mkRegisterMap
     mySetUp = BramPortStructEndpointTC.mySetUp
 
     def randomizeAll(self):
-        u = self.u
-        self.randomize(u.bus)
+        pass
+
 
     def test_nop(self):
-        u = self.mySetUp(structTwoFields, 32)
+        u = self.mySetUp(32)
         MAGIC = 100
 
         for i in range(8):
@@ -134,8 +132,34 @@ class BramPortStructEndpointArray(SimTestCase):
             self.assertValEqual(u.field0._ag.mem[i], MAGIC + 1 + i)
             self.assertValEqual(u.field1._ag.mem[i], 2 * MAGIC + 1 + i)
 
+    def test_read(self):
+        u = self.mySetUp(32)
+        #u.bus._ag._debug(sys.stdout)
+        regs = self.regs
+        MAGIC = 100
+        #u.bus._ag.requests.append(NOP)
+        for i in range(4):
+            u.field0._ag.mem[i] = MAGIC + i + 1
+            u.field1._ag.mem[i] = 2 * MAGIC + i + 1
+            regs.field0.read(i, None)
+            regs.field1.read(i, None)
+
+        self.randomizeAll()
+        self.doSim(200 * Time.ns)
+
+        self.assertValSequenceEqual(u.bus._ag.readed, [
+            MAGIC + 1,
+            2 * MAGIC + 1,
+            MAGIC + 2,
+            2 * MAGIC + 2,
+            MAGIC + 3,
+            2 * MAGIC + 3,
+            MAGIC + 4,
+            2 * MAGIC + 4,
+            ])
+
     def test_write(self):
-        u = self.mySetUp(structTwoFields, 32)
+        u = self.mySetUp(32)
         regs = self.regs
         MAGIC = 100
 
@@ -146,7 +170,7 @@ class BramPortStructEndpointArray(SimTestCase):
             regs.field1.write(i, 2 * MAGIC + i + 1)
 
         self.randomizeAll()
-        self.doSim(2 * 8 * 100 * Time.ns)
+        self.doSim(200 * Time.ns)
 
         self.assertEmpty(u.bus._ag.readed)
         for i in range(4):
@@ -162,7 +186,7 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(Axi4_streamToMemTC('test_endstrbMultiFrame'))
+    #suite.addTest(BramPortStructEndpointArray('test_read'))
     suite.addTest(unittest.makeSuite(BramPortStructEndpointTC))
     suite.addTest(unittest.makeSuite(BramPortStructEndpointDenseTC))
     suite.addTest(unittest.makeSuite(BramPortStructEndpointStartTC))
