@@ -23,7 +23,7 @@ class SimpleSubunit(Unit):
 
 class InterfaceArraySample2(Unit):
     """
-    Example unit which contains two subuints (u0 and u1)
+    Example unit which contains two subunits (u0 and u1)
     and two array interfaces (a and b)
     first items of this interfaces are connected to u0
     second to u1
