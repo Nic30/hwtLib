@@ -107,11 +107,24 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
+from hwt.simulator.hdlSimConfig import HdlSimConfig
+from hwt.simulator.hdlSimulator import HdlSimulator
+from hwt.simulator.simTestCase import SimTestCase
 
+
+def doSimWithoutLog(self, time):
+    sim = HdlSimulator()
+    # dummy config
+    sim.config = HdlSimConfig()
+    # run simulation, stimul processes are register after initial initialization
+    sim.simUnit(self.model, time=time, extraProcesses=self.procs)
+    return sim
 
 def testSuiteFromTCs(*tcs):
     loader = TestLoader()
     for tc in tcs:
+        if issubclass(tc, SimTestCase):
+            tc.doSim = doSimWithoutLog
         tc._multiprocess_can_split_ = True
     loadedTcs = [loader.loadTestsFromTestCase(tc) for tc in tcs]
     suite = TestSuite(loadedTcs)
@@ -244,6 +257,8 @@ suite = testSuiteFromTCs(
 
     IpCoreWrapperTC,
 )
+
+
 if __name__ == '__main__':
     runner = TextTestRunner(verbosity=2)
 
