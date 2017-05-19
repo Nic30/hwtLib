@@ -22,6 +22,7 @@ class Fifo(Unit):
         self.EXPORT_SPACE = Param(False)
 
     def _declr(self):
+        assert evalParam(self.DEPTH).val > 0,  "Fifo is disabled in this case, do not use it entirely"
         addClkRstn(self)
         with self._paramsShared():
             self.dataIn = FifoWriter()
@@ -34,7 +35,6 @@ class Fifo(Unit):
 
     def _impl(self):
         DEPTH = self.DEPTH
-        assert evalParam(DEPTH).val > 0,  "Fifo is disabled in this case, do not use it entirely"
 
         index_t = vecT(log2ceil(DEPTH), False)
         s = self._sig
@@ -124,7 +124,7 @@ class Fifo(Unit):
             )
             self.size ** size
         if evalParam(self.EXPORT_SPACE).val:
-            space = r("space_reg", self.size._dtype, self.DEPTH)
+            space = r("space_reg", self.size._dtype, DEPTH)
             If(fifo_read,
                 If(~fifo_write,
                    size ** (space + 1)
