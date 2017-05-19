@@ -18,6 +18,9 @@ class FifoTC(SimTestCase):
         u.DEPTH.set(4)
         u.EXPORT_SIZE.set(True)
         self.prepareUnit(u)
+        
+    def getTime(self, wordCnt):
+        return wordCnt * 10 * Time.ns
 
     def test_fifoSingleWord(self):
         u = self.u
@@ -38,7 +41,7 @@ class FifoTC(SimTestCase):
         u.dataIn._ag.data = copy(data)
         u.dataIn._ag.enable = False
 
-        self.doSim(80 * Time.ns)
+        self.doSim(self.getTime(8))
 
         self.assertValSequenceEqual(u.dataOut._ag.data, [])
         self.assertValSequenceEqual(u.dataIn._ag.data, data)
@@ -49,7 +52,7 @@ class FifoTC(SimTestCase):
         expected = list(range(4))
         u.dataIn._ag.data = copy(expected)
 
-        self.doSim(90 * Time.ns)
+        self.doSim(self.getTime(9))
 
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
 
@@ -59,14 +62,14 @@ class FifoTC(SimTestCase):
         u.dataOut._ag.enable = False
 
         def openOutput(s):
-            yield s.wait(9 * 10 * Time.ns)
+            yield s.wait(self.getTime(9))
             u.dataOut._ag.enable = True
         self.procs.append(openOutput)
 
         expected = list(range(2 * 8))
         u.dataIn._ag.data = copy(expected)
 
-        self.doSim(260 * Time.ns)
+        self.doSim(self.getTime(26))
 
         collected = u.dataOut._ag.data
         if hasSize:
@@ -82,7 +85,7 @@ class FifoTC(SimTestCase):
         u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
         u.dataOut._ag.enable = False
 
-        self.doSim(120 * Time.ns)
+        self.doSim(self.getTime(12))
 
         collected = agInts(u.dataOut)
 
@@ -96,11 +99,11 @@ class FifoTC(SimTestCase):
         u.dataIn._ag.data = [1, 2, 3, 4, 5, 6, 7, 8]
 
         def closeOutput(s):
-            yield s.wait(4 * 10 * Time.ns)
+            yield s.wait(self.getTime(4))
             u.dataOut._ag.enable = False
 
         self.procs.append(closeOutput)
-        self.doSim(150 * Time.ns)
+        self.doSim(self.getTime(15))
 
         collected = agInts(u.dataOut)
 
@@ -112,7 +115,7 @@ class FifoTC(SimTestCase):
         u = self.u
         u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
 
-        self.doSim(120 * Time.ns)
+        self.doSim(self.getTime(12))
 
         collected = agInts(u.dataOut)
         self.assertSequenceEqual([1, 2, 3, 4, 5, 6], collected)

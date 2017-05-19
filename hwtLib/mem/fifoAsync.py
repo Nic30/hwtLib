@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.code import If, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import Clk, Rst_n, FifoWriter, FifoReader
 from hwt.serializer.constants import SERI_MODE
-from hwt.code import If, log2ceil
 from hwtLib.logic.cntrGray import GrayCntr
 from hwtLib.mem.fifo import Fifo
+from hwt.synthesizer.param import evalParam
 
 
-class AsyncFifo(Fifo):
+class FifoAsync(Fifo):
     """
     Asynchronous fifo using BRAM memory
     http://www.asic-world.com/examples/vhdl/asyn_fifo.html
@@ -19,13 +20,20 @@ class AsyncFifo(Fifo):
     _serializerMode = SERI_MODE.PARAMS_UNIQ
     
     def _declr(self):
+        assert evalParam(self.DEPTH).val > 0,  "FifoAsync is disabled in this case, do not use it entirely"
+        if evalParam(self.EXPORT_SIZE).val or evalParam(self.EXPORT_SPACE).val:
+            raise NotImplementedError()
+    
         self.dataIn_clk = Clk() 
         self.dataOut_clk = Clk()
         self.rst_n = Rst_n()
         
         with self._paramsShared():
-            self.dataIn = FifoWriter()
-            self.dataOut = FifoReader()
+            with self._associated(clk=self.dataIn_clk):
+                self.dataIn = FifoWriter()
+
+            with self._associated(clk=self.dataOut_clk):
+                self.dataOut = FifoReader()
         
         
         self.pWr = GrayCntr()
@@ -36,8 +44,8 @@ class AsyncFifo(Fifo):
             cntr.DATA_WIDTH.set(self.addrW)
     
     def _impl(self):
-        mem_t = Array(vecT(self.DATA_WIDTH), self.DEPTH)
-        mem = self._sig("mem", mem_t)
+        memory_t = Array(vecT(self.DATA_WIDTH), self.DEPTH)
+        memory = self._sig("memory", memory_t)
         full = self._sig("full")
         empty = self._sig("empty")
         status = self._sig("status")
@@ -62,14 +70,14 @@ class AsyncFifo(Fifo):
         # data out logic
         If(OutClk,
             If(Out.en & ~empty,
-               Out.data ** mem[pNextWordToRead] 
+               Out.data ** memory[pNextWordToRead] 
             )
         )
 
         # data in logic
         If(InClk,
             If(In.en & ~full,
-               mem[pNextWordToWrite] ** In.data 
+               memory[pNextWordToWrite] ** In.data 
             )
         )
 
@@ -89,7 +97,7 @@ class AsyncFifo(Fifo):
         )
 
         # data in logic
-        presetFull = status and equalAddresses
+        presetFull = status & equalAddresses
 
         # D Flip-Flop w/ Asynchronous Preset.
         If(presetFull,
@@ -116,4 +124,6 @@ class AsyncFifo(Fifo):
         
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    print(toRtl(AsyncFifo))
+    u = FifoAsync()
+    u.DEPTH.set(4)
+    print(toRtl(u))

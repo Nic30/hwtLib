@@ -49,6 +49,7 @@ from hwtLib.mem.bramStructEndpoint_test import BramPortStructEndpointTC, \
     BramPortStructEndpointOffsetTC, BramPortStructEndpointArray
 from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.clkSynchronizer_test import ClkSynchronizerTC
+from hwtLib.mem.fifoAsync_test import FifoAsyncTC
 from hwtLib.mem.fifo_test import FifoTC
 from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ram_test import RamTC
@@ -167,6 +168,7 @@ suite = testSuiteFromTCs(
     RamTC,
     SimpleUnitAxiStream_TC,
     FifoTC,
+    FifoAsyncTC,
     HsJoinTC,
     HsJoin_randomized_TC,
     HsJoinFair_2inputs_TC,
