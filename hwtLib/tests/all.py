@@ -61,6 +61,7 @@ from hwtLib.mem.ram_test import RamTC
 from hwtLib.samples.iLvl.arithmetic.cntr_test import CntrTC
 from hwtLib.samples.iLvl.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.samples.iLvl.arithmetic.twoCntrs_test import TwoCntrsTC
+from hwtLib.samples.iLvl.arithmetic.widthCasting import WidthCastingExampleTC
 from hwtLib.samples.iLvl.axi.simpleAxiRegs_test import SimpleAxiRegsTC
 from hwtLib.samples.iLvl.emptyUnitWithSpi import EmptyUnitWithSpiTC
 from hwtLib.samples.iLvl.errors.errorsTestCase import ErrorsTC
@@ -163,6 +164,7 @@ suite = testSuiteFromTCs(
     ConcatTC,
     VldMaskConflictsResolvingTC,
     ConstDriverTC,
+    WidthCastingExampleTC,
     SimpleTC,
     SimpleSubunitTC,
     IfStmTC,

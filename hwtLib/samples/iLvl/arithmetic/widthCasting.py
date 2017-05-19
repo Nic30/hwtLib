@@ -6,6 +6,9 @@ from hwt.interfaces.std import VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.vectorUtils import fitTo
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.hdlObjects.constants import Time
+from hwt.bitmask import mask
 
 
 class WidthCastingExample(Unit):
@@ -27,6 +30,24 @@ class WidthCastingExample(Unit):
         b = fitTo(self.b, c)
 
         connect(a + b, c, self.d, fit=True)
+
+class WidthCastingExampleTC(SimTestCase):
+    def test_basic(self):
+        a = 255
+        b = 1 << 10
+        c = 1 << 11
+        u = WidthCastingExample()
+        self.prepareUnit(u)
+        
+        u.a._ag.data.append(a)
+        u.b._ag.data.append(b)
+        u.c._ag.data.append(c)
+        
+        self.doSim(20 * Time.ns)
+        d = (a + b + c) & mask(8)
+        self.assertValSequenceEqual(u.d._ag.data, [d, ])
+        
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
