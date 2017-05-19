@@ -29,7 +29,7 @@ class HandshakedBuilderSimpleTC(SimTestCase):
         u = HandshakedBuilderSimple()
         self.prepareUnit(u)
         
-        u.a._ag.data.append([1, 2, 3, 4])
+        u.a._ag.data.extend([1, 2, 3, 4])
         
         self.doSim(200 * Time.ns)
         
