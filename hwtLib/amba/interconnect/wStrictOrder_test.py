@@ -8,8 +8,8 @@ from hwt.hdlObjects.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.denseMemory import DenseMemory
-from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
 from hwtLib.amba.axi4_rDatapump_test import mkReq
+from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
 
 
 class WStrictOrderInterconnectTC(SimTestCase):
@@ -226,8 +226,8 @@ class WStrictOrderInterconnect2TC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(WStrictOrderInterconnectTC('test_randomized'))
-    
+    #suite.addTest(WStrictOrderInterconnect2TC('test_3x128'))
+
     suite.addTest(unittest.makeSuite(WStrictOrderInterconnectTC))
     suite.addTest(unittest.makeSuite(WStrictOrderInterconnect2TC))
     runner = unittest.TextTestRunner(verbosity=3)
