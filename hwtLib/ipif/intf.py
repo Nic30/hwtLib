@@ -77,8 +77,8 @@ class IPIFAgent(SyncAgentBase):
         mem object
     :ivar actual: actual request which is performed
     """
-    def __init__(self, intf, clk=None, rstn=None, allowNoReset=True):
-        super().__init__(intf, clk=clk, rstn=rstn, allowNoReset=allowNoReset)
+    def __init__(self, intf, allowNoReset=True):
+        super().__init__(intf, allowNoReset=allowNoReset)
 
         self.requests = []
         self.actual = NOP
