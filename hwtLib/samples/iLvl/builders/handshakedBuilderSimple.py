@@ -5,9 +5,11 @@ from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
 from hwt.intfLvl import Unit
 from hwtLib.handshaked.builder import HsBuilder
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.hdlObjects.constants import Time
 
 
-class HandshakedSimple(Unit):
+class HandshakedBuilderSimple(Unit):
     def _declr(self):
         addClkRstn(self)
         self.a = Handshaked()
@@ -22,7 +24,18 @@ class HandshakedSimple(Unit):
 
         self.b ** b.end
 
+class HandshakedBuilderSimpleTC(SimTestCase):
+    def test_passData(self):
+        u = HandshakedBuilderSimple()
+        self.prepareUnit(u)
+        
+        u.a._ag.data.append([1, 2, 3, 4])
+        
+        self.doSim(200 * Time.ns)
+        
+        self.assertValSequenceEqual(u.b._ag.data, [1, 2, 3, 4])
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    print(toRtl(HandshakedSimple))
+    print(toRtl(HandshakedBuilderSimple()))

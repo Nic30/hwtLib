@@ -112,6 +112,7 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
+from hwtLib.samples.iLvl.builders.handshakedBuilderSimple import HandshakedBuilderSimpleTC
 
 
 def doSimWithoutLog(self, time):
@@ -238,6 +239,7 @@ suite = testSuiteFromTCs(
     AxiS_frameForge_TC,
     AxiS_append_TC,
     AxiS_frameLinkConvTC,
+    HandshakedBuilderSimpleTC,
 
     RStrictOrderInterconnectTC,
     WStrictOrderInterconnectTC,
