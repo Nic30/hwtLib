@@ -4,6 +4,9 @@
 import multiprocessing
 from unittest import TestLoader, TextTestRunner, TestSuite
 
+from hwt.simulator.hdlSimConfig import HdlSimConfig
+from hwt.simulator.hdlSimulator import HdlSimulator
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.busConverter_test import BusConverterTC
 from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
 from hwtLib.amba.axi4_streamToMem_test import Axi4_streamToMemTC
@@ -38,6 +41,7 @@ from hwtLib.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
 from hwtLib.ipif.structEndpoint_test import IPIFStructEndpointTC, \
     IPIFStructEndpointDenseTC, IPIFStructEndpointStartTC, \
     IPIFStructEndpointOffsetTC, IPIFStructEndpointArray
+from hwtLib.logic.binToOneHot import BinToOneHotTC
 from hwtLib.logic.cntrGray import GrayCntrTC
 from hwtLib.logic.crcUtils_test import CrcUtilsTC
 from hwtLib.logic.crc_test import CrcCombTC
@@ -107,9 +111,6 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
-from hwt.simulator.hdlSimConfig import HdlSimConfig
-from hwt.simulator.hdlSimulator import HdlSimulator
-from hwt.simulator.simTestCase import SimTestCase
 
 
 def doSimWithoutLog(self, time):
@@ -171,6 +172,7 @@ suite = testSuiteFromTCs(
     HadrcodedFsmExampleTC,
     OneHotToBinTC,
     CntrTC,
+    BinToOneHotTC,
     GrayCntrTC,
     TwoCntrsTC,
     SampleRamTC,
