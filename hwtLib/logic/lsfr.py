@@ -4,12 +4,13 @@
 
 from hwt.bitmask import selectBit
 from hwt.code import iterBits, Xor, Concat
+from hwt.hdlObjects.constants import Time
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
-from hwtLib.logic.crcPoly import CRC_32
 
 
 class Lsfr(Unit):
@@ -18,9 +19,9 @@ class Lsfr(Unit):
     form of hardware pseudorandom generator
     """
     def _config(self):
-        self.POLY_WIDTH = Param(32)
-        self.POLY = Param(CRC_32)
-        self.SEED = Param(383)
+        self.POLY_WIDTH = Param(8)
+        self.POLY = Param(0x88)
+        self.SEED = Param(1)
 
     def _declr(self):
         addClkRstn(self)
@@ -38,8 +39,21 @@ class Lsfr(Unit):
         assert xorBits
 
         nextBit = Xor(*xorBits)
-        accumulator ** Concat(accumulator[self.POLY_WIDTH-1:], nextBit)
+        accumulator ** Concat(accumulator[self.POLY_WIDTH - 1:], nextBit)
         self.dataOut ** accumulator[0]
+
+
+class LsfrTC(SimTestCase):
+    def test_simple(self):
+        u = Lsfr()
+        self.prepareUnit(u)
+        
+        self.doSim(300 * Time.ns)
+        self.assertValSequenceEqual(u.dataOut._ag.data, 
+        [1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+         0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1])
+
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl

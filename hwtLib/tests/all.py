@@ -113,6 +113,7 @@ from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
 from hwtLib.samples.iLvl.builders.handshakedBuilderSimple import HandshakedBuilderSimpleTC
+from hwtLib.logic.lsfr import LsfrTC
 
 
 def doSimWithoutLog(self, time):
@@ -198,6 +199,7 @@ suite = testSuiteFromTCs(
     BramPortStructEndpointStartTC,
     BramPortStructEndpointOffsetTC,
     BramPortStructEndpointArray,
+    LsfrTC,
 
     FlipRegTC,
     FlipCntrTC,
