@@ -22,6 +22,7 @@ from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
     AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC, \
     AxiS_resizer_upAndDown_TC
+from hwtLib.amba.axis_comp.storedBurst_test import AxiSStoredBurstTC
 from hwtLib.amba.interconnect.rStrictOrder_test import RStrictOrderInterconnectTC
 from hwtLib.amba.interconnect.wStrictOrderComplex_test import WStrictOrderInterconnectComplexTC
 from hwtLib.amba.interconnect.wStrictOrder_test import WStrictOrderInterconnectTC, \
@@ -210,6 +211,7 @@ suite = testSuiteFromTCs(
     Axi4_wDatapumpTC,
     Axi3_wDatapump_direct_TC,
     Axi3_wDatapump_small_splitting_TC,
+    AxiSStoredBurstTC,
     AxiS_en_TC,
     AxiS_measuringFifoTC,
     AxiS_resizer_upscale_TC,

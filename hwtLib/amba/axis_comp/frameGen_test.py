@@ -5,7 +5,6 @@ import unittest
 
 from hwt.bitmask import mask
 from hwt.hdlObjects.constants import Time
-from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis_comp.frameGen import AxisFrameGen
 
@@ -13,7 +12,7 @@ from hwtLib.amba.axis_comp.frameGen import AxisFrameGen
 class AxisFrameGenTC(SimTestCase):
     def setUp(self):
         self.u = AxisFrameGen()
-        _, self.model, self.procs = simPrepare(self.u)
+        self.prepareUnit(self.u)
     
     def wReg(self, addr, val):  
         aw = self.u.cntrl._ag.aw.data
@@ -26,8 +25,6 @@ class AxisFrameGenTC(SimTestCase):
         self.wReg(0x4, 0)
         self.wReg(0x0, 1)
 
-
-
         # u.dataOut._ag.enable = False
         self.doSim(120 * Time.ns)
         self.assertValSequenceEqual(u.axis_out._ag.data,
@@ -38,7 +35,6 @@ class AxisFrameGenTC(SimTestCase):
         L = 1
         self.wReg(0x4, L)
         self.wReg(0x0, 1)
-
 
         # u.dataOut._ag.enable = False
         self.doSim(120 * Time.ns)
@@ -51,8 +47,6 @@ class AxisFrameGenTC(SimTestCase):
         L = 4
         self.wReg(0x4, L)
         self.wReg(0x0, 1)
-
-
 
         # u.dataOut._ag.enable = False
         self.doSim(120 * Time.ns)

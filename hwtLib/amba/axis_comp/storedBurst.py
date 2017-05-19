@@ -16,10 +16,12 @@ class AxiSStoredBurst(Unit):
     """
     This units send data stored in property DATA over axi-stream interface
     """
-
+    def __init__(self, data=[ord(c) for c in "Hello world"]):
+        super(AxiSStoredBurst, self).__init__()
+        self.DATA = data 
+        
     def _config(self):
         self.DATA_WIDTH = Param(64)
-        self.DATA = [ord(c) for c in "Hello world"]
         self.REPEAT = Param(False)
 
     def dataRd(self):
