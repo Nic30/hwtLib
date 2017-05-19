@@ -28,6 +28,9 @@ class SimpleAxiRegs(Unit):
             self.axi = AxiLite()
 
         with self._paramsShared():
+            # this structure is configuration of interfaces
+            # fields can also be arrays and metaclass can be used
+            # to specify field interface and R/W access to field
             self.conv = AxiLiteStructEndpoint(
                             HStruct((uint32_t, "reg0"),
                                     (uint32_t, "reg1")
