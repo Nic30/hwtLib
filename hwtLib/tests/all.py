@@ -37,6 +37,7 @@ from hwtLib.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
 from hwtLib.ipif.structEndpoint_test import IPIFStructEndpointTC, \
     IPIFStructEndpointDenseTC, IPIFStructEndpointStartTC, \
     IPIFStructEndpointOffsetTC, IPIFStructEndpointArray
+from hwtLib.logic.cntrGray import GrayCntrTC
 from hwtLib.logic.crcUtils_test import CrcUtilsTC
 from hwtLib.logic.crc_test import CrcCombTC
 from hwtLib.logic.oneHotToBin_test import OneHotToBinTC
@@ -155,6 +156,7 @@ suite = testSuiteFromTCs(
     HadrcodedFsmExampleTC,
     OneHotToBinTC,
     CntrTC,
+    GrayCntrTC,
     TwoCntrsTC,
     SampleRamTC,
     SelfRefCntrTC,
