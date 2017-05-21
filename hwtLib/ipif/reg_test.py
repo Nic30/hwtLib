@@ -11,6 +11,9 @@ from hwtLib.ipif.structEndpoint_test import IPIFStructEndpointTC
 
 
 class IpifRegWithEndpoint(Unit):
+    def __init__(self, STRUCT_TEMPLATE):
+        super(IpifRegWithEndpoint, self).__init__()
+        self.STRUCT_TEMPLATE = STRUCT_TEMPLATE
 
     def _config(self):
         self.DATA_WIDTH = Param(32)
@@ -35,7 +38,7 @@ class IpifRegTC(IPIFStructEndpointTC):
     FIELD_ADDR = [0x0, 0x4]
 
     def mySetUp(self, data_width=32):
-        u = self.u = IpifStructEndpoint(self.STRUCT_TEMPLATE)
+        u = self.u = IpifRegWithEndpoint(self.STRUCT_TEMPLATE)
 
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH.set(self.DATA_WIDTH)
