@@ -47,7 +47,7 @@ class UartTx(Unit):
            data ** Concat(STOP_BIT, din.data, START_BIT),
            en ** 1
         ).Elif(tick & en,
-            # sll where 1 is shifted from left
+            # srl where 1 is shifted from left
             data ** hBit(1)._concat(data[:1]),
             If(last,
                en ** 0,
