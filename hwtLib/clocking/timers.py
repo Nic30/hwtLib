@@ -78,7 +78,8 @@ class TimerInfo(object):
             if enableSig is not None:
                 en = en & enableSig
 
-            tick = TimerInfo._instantiateTimerTickLogic(timer,
+            tick = TimerInfo._instantiateTimerTickLogic(parentUnit,
+                                                        timer,
                                                         (timer.maxValOriginal // p.maxValOriginal) - 1,
                                                         en,
                                                         rstSig)
@@ -97,7 +98,7 @@ class TimerInfo(object):
                 timer.tick = timer.tick & enableSig
 
     @staticmethod
-    def _instantiateTimerTickLogic(timer, origMaxVal, enableSig, rstSig):
+    def _instantiateTimerTickLogic(parentUnit, timer, origMaxVal, enableSig, rstSig):
         r = timer.cntrRegister
 
         if enableSig is None:
@@ -136,6 +137,13 @@ class TimerInfo(object):
 
         if rstSig is not None:
             tick = (tick & ~rstSig)
+
+        if timer.name:
+            # wrap tick in signal
+            s = parentUnit._sig(timer.name)
+            s ** tick
+            tick = s
+
         return tick
 
     @staticmethod
@@ -161,7 +169,11 @@ class TimerInfo(object):
                                     maxVal
                                     )
                 timer.cntrRegister = r
-                tick = TimerInfo._instantiateTimerTickLogic(timer, origMaxVal, enableSig, rstSig)
+                tick = TimerInfo._instantiateTimerTickLogic(parentUnit, 
+                                                            timer,
+                                                            origMaxVal,
+                                                            enableSig,
+                                                            rstSig)
 
             timer.tick = parentUnit._sig(timer.name + "timerTick%d" % timer.maxVal)
             timer.tick ** tick
