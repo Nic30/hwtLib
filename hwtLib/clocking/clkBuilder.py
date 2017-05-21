@@ -134,15 +134,21 @@ class ClkBuilder(object):
         :param initVal: if last is None initVal will be used as its initialization value
         :return: signals which is high on on rising/falling edge or both (specified by rise, fall parameter)
         """
-        
+        namePrefix = getSignalName(sig)
         assert rise or fall
         if last is None:
-            last = self.parent._reg(getSignalName(sig) + "_edgeDetect_last", defVal=initVal)
+            last = self.parent._reg(namePrefix + "_edgeDetect_last", defVal=initVal)
             last ** sig
-
+        
+        if rise:
+            riseSig = self.parent._sig(namePrefix + "_rising")
+            riseSig ** (sig & ~last) 
+        if fall:
+            fallSig = self.parent._sig(namePrefix + "_falling")
+            fallSig ** (~sig & last)
         if rise and not fall:
-            return (sig & ~last)
+            return riseSig
         elif not rise and fall:
-            return (~sig & last)
+            return fallSig
         else:
-            return (sig & ~last, ~sig & last) 
+            return (riseSig, fallSig) 
