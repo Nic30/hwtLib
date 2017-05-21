@@ -9,13 +9,13 @@ from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
 class ClkBuilder(object):
     """
     :ivar compId: last component id used to avoid name collisions
-    :ivar parent: unit in which will be all units created by this builder instanciated
+    :ivar parent: unit in which will be all units created by this builder instantiated
     :ivar name: prefix for all instantiated units
-    :ivar end: interface where builder endend
+    :ivar end: interface where builder ended
     """
     def __init__(self, parent, srcInterface, name=None):
         """
-        :param parent: unit in which will be all units created by this builder instanciated
+        :param parent: unit in which will be all units created by this builder instantiated
         :param name: prefix for all instantiated units
         :param srcInterface: input clock
         """
@@ -32,10 +32,10 @@ class ClkBuilder(object):
         generate counters specified by count of iterations
 
         :param periods: list of integers/params which specifies periods of timers
-            or tuple (name, integers/params)
+            or tuple (name, integer/param)
         :param enableSig: enable signal for all counters
         :param rstSig: reset signal for all counters
-        :attention: if tick of timer his high and enable Sig falls low tick will stay high
+        :attention: if tick of timer his high and enableSig falls low tick will stay high
 
         :return: list of tick signals from timers
         """
@@ -123,3 +123,26 @@ class ClkBuilder(object):
         oversampled = self.parent._sig(n + "_oversampled%d" % (sCnt))
         oversampled ** (oversampleCntr > (sampleCount // 2 - 1))
         return oversampled, sampleDoneTick
+
+    def edgeDetector(self, sig, rise=False, fall=False, last=None, initVal=0):
+        """
+        :param sig: signal to detect edges on
+        :param rise: if True signal for rise detecting will be returned 
+        :param fall: if True signal for fall detecting will be returned 
+        :param last: last value for sig (use f.e. when you have register and it's next signal (sig=reg.next, last=reg))
+            if last is None last register will be automatically generated
+        :param initVal: if last is None initVal will be used as its initialization value
+        :return: signals which is high on on rising/falling edge or both (specified by rise, fall parameter)
+        """
+        
+        assert rise or fall
+        if last is None:
+            last = self.parent._reg(getSignalName(sig) + "_edgeDetect_last", defVal=initVal)
+            last ** sig
+
+        if rise and not fall:
+            return (sig & ~last)
+        elif not rise and fall:
+            return (~sig & last)
+        else:
+            return (sig & ~last, ~sig & last) 

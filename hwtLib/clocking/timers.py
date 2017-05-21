@@ -18,6 +18,7 @@ class TimerInfo(object):
     def __init__(self, maxVal, name=None):
         self.maxValOriginal = maxVal
         self.maxVal = evalParam(maxVal).val
+        assert isinstance(self.maxVal, int), self.maxVal
         self.parent = None
 
         if name is None:
@@ -55,7 +56,7 @@ class TimerInfo(object):
     def _instantiateTimerWithParent(parentUnit, timer, parent, enableSig, rstSig):
         p = parent
         if not hasattr(p, "tick"):
-            TimerInfo._instantiateTimer(parentUnit, p)
+            TimerInfo._instantiateTimer(parentUnit, p, enableSig, rstSig)
         assert hasattr(p, "tick")
 
         if p.maxVal == timer.maxVal:
