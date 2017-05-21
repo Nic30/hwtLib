@@ -1,17 +1,6 @@
+from hwt.interfaces.std import D, Signal
 from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig 
-from hwt.interfaces.std import Clk, s, D, Signal
-from hwt.interfaces.tristate import TristateClk, TristateSig
 from hwt.synthesizer.interfaceLevel.interface import Interface
-from hwt.simulator.agentBase import AgentBase
-from hwt.interfaces.agents.tristate import TristatePullUpAgent
-
-
-class Spi(Interface):
-    def _declr(self):
-        self.clk = Clk()
-        self.mosi = s()  # master out slave in
-        self.miso = s(masterDir=D.IN)  # master in slave out
-        self.cs = s()  # chip select
 
 
 class Uart(Interface):
@@ -21,9 +10,6 @@ class Uart(Interface):
     
     def _getIpCoreIntfClass(self):
         return IP_Uart        
-        
-
-
 
 class IP_Uart(IntfConfig):
     def __init__(self):
