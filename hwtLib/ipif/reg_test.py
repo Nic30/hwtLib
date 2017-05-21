@@ -8,6 +8,7 @@ from hwt.synthesizer.param import Param
 from hwtLib.ipif.intf import IPIF
 from hwtLib.ipif.structEndpoint import IpifStructEndpoint
 from hwtLib.ipif.structEndpoint_test import IPIFStructEndpointTC
+from hwtLib.ipif.reg import IpifReg
 
 
 class IpifRegWithEndpoint(Unit):
@@ -22,6 +23,7 @@ class IpifRegWithEndpoint(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.bus = IPIF()
+            self.reg = IpifReg()
             self.ep = IpifStructEndpoint(self.STRUCT_TEMPLATE)
             self.field0 = RegCntrl()
             self.field1 = RegCntrl()
@@ -29,7 +31,8 @@ class IpifRegWithEndpoint(Unit):
     def _impl(self):
         propagateClkRstn(self)
         ep = self.ep
-        ep.bus ** self.bus
+        self.reg.dataIn ** self.bus
+        ep.bus ** self.reg.dataOut
         self.field0 ** ep.field0
         self.field1 ** ep.field1
         
