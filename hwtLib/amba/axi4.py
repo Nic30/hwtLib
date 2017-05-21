@@ -50,7 +50,7 @@ class Axi4_addrAgent(BaseAxiAgent):
 
     def doWrite(self, s, data):
         intf = self.intf
-        w = s.w
+        w = s.write
 
         if data is None:
             data = [None for _ in range(9)]
@@ -87,7 +87,7 @@ class Axi4_addr_withUserAgent(BaseAxiAgent):
 
     def doWrite(self, s, data):
         intf = self.intf
-        w = s.w
+        w = s.write
 
         if data is None:
             data = [None for _ in range(10)]
@@ -135,7 +135,7 @@ class Axi4_rAgent(BaseAxiAgent):
 
     def doWrite(self, s, data):
         intf = self.intf
-        w = s.w
+        w = s.write
 
         if data is None:
             data = [None for _ in range(4)]
@@ -179,7 +179,7 @@ class Axi4_b(AxiLite_b, Axi_id):
 
 class Axi4_bAgent(BaseAxiAgent):
     def doRead(self, s):
-        r = s.r
+        r = s.read
         intf = self.intf
 
         return r(intf.id), r(intf.resp)

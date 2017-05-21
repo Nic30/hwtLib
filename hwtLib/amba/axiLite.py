@@ -58,7 +58,7 @@ class AxiLite_rAgent(BaseAxiAgent):
 
     def doWrite(self, s, data):
         intf = self.intf
-        w = s.w
+        w = s.write
         if data is None:
             data = [None for _ in range(2)]
 
@@ -88,12 +88,12 @@ class AxiLite_wAgent(BaseAxiAgent):
     """
     def doRead(self, s):
         intf = self.intf
-        r = s.r
+        r = s.read
         return (r(intf.data), r(intf.strb))
 
     def doWrite(self, s, data):
         intf = self.intf
-        w = s.w
+        w = s.write
         if data is None:
             data = [None for _ in range(2)]
 
@@ -118,10 +118,10 @@ class AxiLite_bAgent(BaseAxiAgent):
     :ivar data: iterable of resp
     """
     def doRead(self, s):
-        return s.r(self.intf.resp)
+        return s.read(self.intf.resp)
 
     def doWrite(self, s, data):
-        s.w(data, self.intf.resp)
+        s.write(data, self.intf.resp)
 
 
 #################################################################

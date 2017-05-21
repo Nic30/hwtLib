@@ -43,12 +43,13 @@ class I2cBitCntrlCmdAgent(RdSyncedAgent):
     
     def doWrite(self, s, data):
         """write data to interface"""
+        w = s.write
         if data is None:
             cmd, d = None, None
         else:
             cmd, d = data
-        s.w(d, self.intf.din)
-        s.w(cmd, self.intf.cmd)
+        w(d, self.intf.din)
+        w(cmd, self.intf.cmd)
 
 class I2cMasterBitCtrl(Unit):
     """

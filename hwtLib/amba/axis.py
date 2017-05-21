@@ -84,7 +84,7 @@ class AxiStreamAgent(BaseAxiAgent):
 
     def doWrite(self, s, data):
         intf = self.intf
-        w = s.w
+        w = s.write
 
         if data is None:
             data = [None for _ in range(3)]
@@ -110,7 +110,7 @@ class AxiStream_withIdAgent(BaseAxiAgent):
 
     def doWrite(self, s, data):
         intf = self.intf
-        w = s.w
+        w = s.write
 
         if data is None:
             data = [None for _ in range(4)]
@@ -137,7 +137,7 @@ class AxiStream_withUserAndStrbAgent(BaseAxiAgent):
 
     def doWrite(self, s, data):
         intf = self.intf
-        w = s.w
+        w = s.write
 
         if data is None:
             data = [None for _ in range(4)]

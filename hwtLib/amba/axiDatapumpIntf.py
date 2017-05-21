@@ -49,7 +49,7 @@ class AddrSizeHsAgent(HandshakedAgent):
 
     def doWrite(self, s, data):
         intf = self.intf
-        w = s.w
+        w = s.write
 
         if data is None:
             data = [None for _ in range(4)]

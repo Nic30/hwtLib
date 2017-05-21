@@ -105,12 +105,12 @@ class IPIFAgent(SyncAgentBase):
             raise NotImplementedError(rw)
 
         intf = self.intf
-        
-        s.w(1, intf.bus2ip_cs)
-        s.w(rw, intf.bus2ip_rnw)
-        s.w(addr, intf.bus2ip_addr)
-        s.w(wdata, intf.bus2ip_data)
-        s.w(wmask, intf.bus2ip_be)
+        w = s.write
+        w(1, intf.bus2ip_cs)
+        w(rw, intf.bus2ip_rnw)
+        w(addr, intf.bus2ip_addr)
+        w(wdata, intf.bus2ip_data)
+        w(wmask, intf.bus2ip_be)
 
     def monitor(self, s):
         raise NotImplementedError()
@@ -118,32 +118,34 @@ class IPIFAgent(SyncAgentBase):
     def driver(self, s):
         intf = self.intf
         actual = self.actual
-      
+        w = s.write
+        r = s.read
+    
         if self.requireInit:
-            s.w(0, intf.bus2ip_cs)
+            w(0, intf.bus2ip_cs)
             self.requireInit = False
 
         yield s.updateComplete         
         # now we are after clk edge
 
-        en = s.r(self.rst_n).val and self.enable
+        en = r(self.rst_n).val and self.enable
         if en and self.requests and self.actual is NOP:
             req = self.requests.pop(0)
             if req is NOP:
-                s.w(0, intf.bus2ip_cs)
+                w(0, intf.bus2ip_cs)
             else:
                 self.doReq(s, req)
                 self.actual = req  
         else:
-            s.w(0, intf.bus2ip_cs)
+            w(0, intf.bus2ip_cs)
 
         if actual is not NOP:
             yield s.updateComplete
             if actual[0] is READ:
-                rack = s.r(intf.ip2bus_rdack)
+                rack = r(intf.ip2bus_rdack)
                 assert rack.vldMask == 1
                 if rack.val:
-                    d = s.r(intf.ip2bus_data)
+                    d = r(intf.ip2bus_data)
                     if self._debugOutput is not None:
                         self._debugOutput.write("%s, on %r read_data: %d\n" % (
                                                 self.intf._getFullName(), s.now, d.val))
@@ -151,7 +153,7 @@ class IPIFAgent(SyncAgentBase):
                     self.actual = NOP
             else:
                 # write in progress
-                wack = s.r(intf.ip2bus_wrack)
+                wack = r(intf.ip2bus_wrack)
                 assert wack.vldMask == 1
                 if wack.val:
                     if self._debugOutput is not None:
