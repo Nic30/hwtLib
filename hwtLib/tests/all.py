@@ -45,6 +45,7 @@ from hwtLib.logic.binToOneHot import BinToOneHotTC
 from hwtLib.logic.cntrGray import GrayCntrTC
 from hwtLib.logic.crcUtils_test import CrcUtilsTC
 from hwtLib.logic.crc_test import CrcCombTC
+from hwtLib.logic.lsfr import LsfrTC
 from hwtLib.logic.oneHotToBin_test import OneHotToBinTC
 from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
 from hwtLib.mem.atomic.flipRam_test import FlipRamTC
@@ -63,6 +64,7 @@ from hwtLib.samples.iLvl.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.samples.iLvl.arithmetic.twoCntrs_test import TwoCntrsTC
 from hwtLib.samples.iLvl.arithmetic.widthCasting import WidthCastingExampleTC
 from hwtLib.samples.iLvl.axi.simpleAxiRegs_test import SimpleAxiRegsTC
+from hwtLib.samples.iLvl.builders.handshakedBuilderSimple import HandshakedBuilderSimpleTC
 from hwtLib.samples.iLvl.emptyUnitWithSpi import EmptyUnitWithSpiTC
 from hwtLib.samples.iLvl.errors.errorsTestCase import ErrorsTC
 from hwtLib.samples.iLvl.hdlComments_test import HdlCommentsTC
@@ -93,6 +95,7 @@ from hwtLib.samples.iLvl.statements.switchStm_test import SwitchStmTC
 from hwtLib.samples.iLvl.statements.vldMaskConflictsResolving_test import VldMaskConflictsResolvingTC
 from hwtLib.samples.iLvl.timers import TimerTC
 from hwtLib.samples.rtlLvl.rtlLvl_test import RtlLvlTC
+from hwtLib.spi.master_test import SpiMasterTC
 from hwtLib.structManipulators.arrayBuff_writer_test import ArrayBuff_writer_TC
 from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC, \
     ArrayItemGetter2in1WordTC
@@ -112,8 +115,6 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
-from hwtLib.samples.iLvl.builders.handshakedBuilderSimple import HandshakedBuilderSimpleTC
-from hwtLib.logic.lsfr import LsfrTC
 
 
 def doSimWithoutLog(self, time):
@@ -214,6 +215,7 @@ suite = testSuiteFromTCs(
     UartRxBasicTC,
     UartRxTC,
     UartTxRxTC,
+    SpiMasterTC,
     I2CMasterBitCntrlTC,
     CrcUtilsTC,
     CrcCombTC,

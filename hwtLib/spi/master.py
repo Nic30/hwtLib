@@ -26,7 +26,10 @@ class SpiCntrlDataAgent(HandshakedBiDirectionalAgent):
         """write data to interface"""
         w = s.write 
         intf = self.intf
-        slave, d, last = data
+        if data is None:
+            slave, d, last = None, None, None
+        else:
+            slave, d, last = data
         w(slave, intf.slave)
         w(d, intf.dout)
         w(last, intf.last)
@@ -86,7 +89,7 @@ class SpiMaster(Unit):
         self.csDecoder.DATA_WIDTH.set(self.SLAVE_CNT)
 
     def writePart(self, writeTick, isLastTick, data):
-        txReg = self._reg("rxReg", vecT(self.DATA_WIDTH))
+        txReg = self._reg("txReg", vecT(self.DATA_WIDTH))
         txInitialized = self._reg("txInitialized", defVal=0)
         If(writeTick,
             If(txInitialized,
@@ -98,13 +101,16 @@ class SpiMaster(Unit):
                txInitialized ** 1,
                txReg ** data 
             )
+        ).Elif(isLastTick,
+            txInitialized ** 0
         )
         self.spi.mosi ** txReg[self.DATA_WIDTH - 1]
 
     def readPart(self, readTick):
         rxReg = self._reg("rxReg", vecT(self.DATA_WIDTH))
+        
         If(readTick,
-           rxReg ** Concat(rxReg[:1], self.spi.miso)
+           rxReg ** Concat(rxReg[(self.DATA_WIDTH - 1):], self.spi.miso)
         )
         return rxReg
 
@@ -131,14 +137,19 @@ class SpiMaster(Unit):
         
         timersRst ** (~en | (requiresInitWait & initWaitDone))
         
+        clkIntern = self._reg("clkIntern", defVal=1)
         clkOut = self._reg("clkOut", defVal=1)
         If(spiClkHalfTick,
+           clkIntern ** ~clkIntern
+        )
+        
+        If(~requiresInitWait & spiClkHalfTick,
            clkOut ** ~clkOut
         )
         
-        self.spi.clk ** (clkOut | requiresInitWait)  # clk idle value is high
+        self.spi.clk ** clkOut  # clk idle value is high
 
-        clkRisign, clkFalling = builder.edgeDetector(clkOut, rise=True, fall=True, initVal=1)
+        clkRisign, clkFalling = builder.edgeDetector(clkIntern.next, rise=True, fall=True, initVal=1)
         
         rdEn = clkRisign & ~requiresInitWait
         wrEn = clkFalling & ~requiresInitWait
@@ -149,10 +160,11 @@ class SpiMaster(Unit):
         
         d = self.data
         slaveSelectWaitRequired = self._reg("slaveSelectWaitRequired", defVal=1)
-        
-        writeTick, readTick, initWaitDone, endOfWord = self.spiClkGen(
-            slaveSelectWaitRequired,
-            self.data.vld)
+        endOfWordDelayed = self._reg("endOfWordDelayed", defVal=0)
+        writeTick, readTick, initWaitDone, endOfWord = self.spiClkGen(slaveSelectWaitRequired,
+                                                                      ~ endOfWordDelayed & self.data.vld)
+
+        endOfWordDelayed ** endOfWord
         
         if self.HAS_RX:
             d.din ** self.readPart(readTick)
@@ -160,20 +172,20 @@ class SpiMaster(Unit):
             d.din ** None
             
         if self.HAS_TX:
-            self.writePart(writeTick, endOfWord, d.dout)
+            self.writePart(writeTick, endOfWordDelayed, d.dout)
         
-        If(initWaitDone,
-           slaveSelectWaitRequired ** 0
-        ).Elif(endOfWord,
+        If(endOfWord,
            slaveSelectWaitRequired ** d.last
+        ).Elif(initWaitDone,
+           slaveSelectWaitRequired ** 0
         )
         
         csD = self.csDecoder
         csD.din ** d.slave
         csD.en ** d.vld
         
-        self.spi.cs ** csD.dout 
-        d.rd ** endOfWord
+        self.spi.cs ** ~csD.dout 
+        d.rd ** endOfWordDelayed
 
 
 if __name__ == "__main__":

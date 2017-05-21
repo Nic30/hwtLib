@@ -1,10 +1,9 @@
-from hwt.bitmask import selectBit
+from hwt.bitmask import selectBit, mask
 from hwt.hdlObjects.constants import DIRECTION
-from hwt.hdlObjects.operatorDefs import onFallingEdge
 from hwt.interfaces.std import Clk, Signal, VectSignal
 from hwt.interfaces.tristate import TristateSig
 from hwt.simulator.agentBase import SyncAgentBase, AgentBase
-from hwt.simulator.shortcuts import onRisingEdge
+from hwt.simulator.shortcuts import onRisingEdge, onFallingEdge
 from hwt.simulator.types.simBits import simBitsT
 from hwt.synthesizer.exceptions import IntfLvlConfErr
 from hwt.synthesizer.interfaceLevel.interface import Interface
@@ -14,17 +13,27 @@ from hwt.synthesizer.param import Param
 class SpiAgent(SyncAgentBase):
     """
     Simulation agent for SPI interface
-    :attention: enable is not implemented
+
+    :ivar txData: data to transceive container
+    :ivar rxData: received data 
+    :ivar chipSelects: values of chip select
+
+    chipSelects, rxData and txData are lists of integers
     """
-    BITS_IN_BYTE = 8
+    BITS_IN_WORD = 8
     
     def __init__(self, intf, allowNoReset=False):
         AgentBase.__init__(self, intf)
+
         self.txData = []
         self.rxData = []
+        self.chipSelects = []
 
         self._txBitBuff = []
         self._rxBitBuff = []
+        self.csMask = mask(intf.cs._dtype.bit_length())
+        self.slaveEn = False
+
         # resolve clk and rstn
         self.clk = self.intf._getAssociatedClk()
         try:
@@ -35,18 +44,18 @@ class SpiAgent(SyncAgentBase):
             else:
                 raise e
             
-        # run monitor, driver only on rising edge of clk
+        # read on rising edge write on falling
         self.monitorRx = onRisingEdge(self.clk, self.monitorRx)
         self.monitorTx = onFallingEdge(self.clk, self.monitorTx)
         
-        self.driverRx = onRisingEdge(self.clk, self.driverRx)
-        self.driverTx = onFallingEdge(self.clk, self.driverTx)
+        self.driverRx = onFallingEdge(self.clk, self.driverRx)
+        self.driverTx = onRisingEdge(self.clk, self.driverTx)
     
     def splitBits(self, v):
-        return [selectBit(v, i) for i in range(self.BITS_IN_BYTE - 1, -1, -1)]
+        return [selectBit(v, i) for i in range(self.BITS_IN_WORD - 1, -1, -1)]
 
     def mergeBits(self, bits):
-        t = simBitsT(self.BITS_IN_BYTE, False)
+        t = simBitsT(self.BITS_IN_WORD, False)
         val = 0
         vldMask = 0
         time = -1
@@ -63,7 +72,7 @@ class SpiAgent(SyncAgentBase):
         d = sim.read(sig)
         bits = self._rxBitBuff
         bits.append(d)
-        if len(bits) == self.BITS_IN_BYTE: 
+        if len(bits) == self.BITS_IN_WORD: 
             self.rxData.append(self.mergeBits(bits))
             self._rxBitBuff = []
     
@@ -73,22 +82,47 @@ class SpiAgent(SyncAgentBase):
             if not self.txData:
                 return
             d = self.txData.pop(0)
-            bits = self._txBitBuff = self.splitOnBits(d)
+            bits = self._txBitBuff = self.splitBits(d)
             
         sim.write(bits.pop(0), sig)
         
     
     def monitorRx(self, s):
-        self.readRxSig(s, self.intf.mosi)
+        yield s.updateComplete
+        cs = s.read(self.intf.cs)
+        if self.enable and self.notReset(s):
+            assert cs._isFullVld()
+            if cs.val != self.csMask:  # if any slave is enabled
+                self.readRxSig(s, self.intf.mosi)
+                if not self._rxBitBuff:
+                    self.chipSelects.append(cs)
 
     def monitorTx(self, s):
-        self.writeTxSig(s, self.intf.miso)
+        cs = s.read(self.intf.cs)
+        if self.enable and self.notReset(s):
+            assert cs._isFullVld()
+            if cs.val != self.csMask:
+                self.writeTxSig(s, self.intf.miso)
  
     def driverRx(self, s):
-        self.readRxSig(s, self.intf.miso)
+        yield s.updateComplete
+        if self.enable and self.notReset(s) and self.slaveEn:
+            self.readRxSig(s, self.intf.miso)
 
     def driverTx(self, s):
-        self.writeTxSig(s, self.intf.mosi)
+        if self.enable and self.notReset(s):
+            if not self._txBitBuff:
+                try:
+                    cs = self.chipSelects.pop(0)
+                except IndexError:
+                    self.slaveEn = False
+                    s.write(self.csMask, self.intf.cs)
+                    return
+
+                self.slaveEn = True
+                s.write(cs, self.intf.cs)
+                
+            self.writeTxSig(s, self.intf.mosi)
  
     def getDrivers(self):
         return [self.driverRx, self.driverTx]
