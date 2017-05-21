@@ -5,7 +5,7 @@ from hwt.hdlObjects.types.struct import HStruct
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.structEndpoint import AxiLiteStructEndpoint
-from hwtLib.amba.constants import RESP_OKAY
+from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
 from hwtLib.types.ctypes import uint32_t
 from hwtLib.amba.axiLite import AxiLite
@@ -94,11 +94,13 @@ class AxiLiteStructEndpointTC(SimTestCase):
         self.randomizeAll()
         self.doSim(300 * Time.ns)
 
-        self.assertValSequenceEqual(u.bus.r._ag.data, [(MAGIC, RESP_OKAY),
-                                                       (MAGIC + 1, RESP_OKAY),
-                                                       (MAGIC, RESP_OKAY),
-                                                       (MAGIC + 1, RESP_OKAY)])
-
+        self.assertValSequenceEqual(u.bus.r._ag.data, 
+                                    [(MAGIC, RESP_OKAY),
+                                     (MAGIC + 1, RESP_OKAY),
+                                     (MAGIC, RESP_OKAY),
+                                     (MAGIC + 1, RESP_OKAY),
+                                     (None, RESP_SLVERR)])
+                                     
     def test_write(self):
         u = self.mySetUp(32)
         MAGIC = 100
@@ -124,8 +126,7 @@ class AxiLiteStructEndpointTC(SimTestCase):
         self.assertValSequenceEqual(u.field1._ag.dout, [MAGIC + 1,
                                                         MAGIC + 3
                                                         ])
-        self.assertValSequenceEqual(u.bus.w._ag.actualData, (MAGIC + 4, m))
-        self.assertValSequenceEqual(u.bus.b._ag.data, [RESP_OKAY for _ in range(4)])
+        self.assertValSequenceEqual(u.bus.b._ag.data, [RESP_OKAY for _ in range(4)] + [RESP_SLVERR])
 
     def test_registerMap(self):
         u = self.mySetUp(32)
