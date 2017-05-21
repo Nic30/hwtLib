@@ -99,7 +99,7 @@ class AxiS_frameParser(Unit):
 
                     if part is lastPart:
                         signalsOfParts.append(fPartSig)
-                        fieldInfo.interface.data ** Concat(*signalsOfParts)
+                        fieldInfo.interface.data ** Concat(*reversed(signalsOfParts))
                         fieldInfo.interface.vld ** dataVld
 
                     else:
@@ -179,7 +179,7 @@ if __name__ == "__main__":
         (uint64_t, "item6"),
         (uint64_t, "item7"),
         )
-
     u = AxiS_frameParser(AxiStream, s)
+    u.DATA_WIDTH.set(51)
     print(toRtl(u))
  
