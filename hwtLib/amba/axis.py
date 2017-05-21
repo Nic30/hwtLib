@@ -20,6 +20,34 @@ class AxiStream_withoutSTRB(Interface):
 
     def _getIpCoreIntfClass(self):
         return IP_AXIStream
+    
+    def _getSimAgent(self):
+        return AxiStream_withoutSTRBAgent
+
+class AxiStream_withoutSTRBAgent(BaseAxiAgent):
+    """
+    Data format is (data, last)
+    """
+    def doRead(self, s):
+        intf = self.intf
+        r = s.read
+
+        data = r(intf.data)
+        last = r(intf.last)
+
+        return (data, last)
+
+    def doWrite(self, s, data):
+        intf = self.intf
+        w = s.write
+
+        if data is None:
+            _data, last = None, None
+        else:
+            _data, last = data
+
+        w(_data, intf.data)
+        w(last, intf.last)
 
 
 class AxiStream(AxiStream_withoutSTRB, Axi_strb):
@@ -72,6 +100,9 @@ class AxiStream_withUserAndStrb(AxiStream, Axi_user):
 
 
 class AxiStreamAgent(BaseAxiAgent):
+    """
+    Data format is (data, strb, last)
+    """
     def doRead(self, s):
         intf = self.intf
         r = s.read
@@ -97,6 +128,9 @@ class AxiStreamAgent(BaseAxiAgent):
 
 
 class AxiStream_withIdAgent(BaseAxiAgent):
+    """
+    Data format is (id, data, strb, last)
+    """
     def doRead(self, s):
         intf = self.intf
         r = s.read
@@ -124,6 +158,9 @@ class AxiStream_withIdAgent(BaseAxiAgent):
 
 
 class AxiStream_withUserAndStrbAgent(BaseAxiAgent):
+    """
+    Data format is (data, strb, user, last)
+    """
     def doRead(self, s):
         intf = self.intf
         r = s.read
