@@ -7,7 +7,7 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axiLite import AxiLite
-from hwtLib.amba.axiLite_comp.structEndpoint import AxiLiteStructEndpoint
+from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwt.hdlObjects.types.struct import HStruct
 from hwtLib.types.ctypes import uint32_t
 
@@ -31,7 +31,7 @@ class SimpleAxiRegs(Unit):
             # this structure is configuration of interfaces
             # fields can also be arrays and metaclass can be used
             # to specify field interface and R/W access to field
-            self.conv = AxiLiteStructEndpoint(
+            self.conv = AxiLiteEndpoint(
                             HStruct((uint32_t, "reg0"),
                                     (uint32_t, "reg1")
                                     ))

@@ -15,7 +15,7 @@ from hwt.hdlObjects.types.struct import HStruct
 from hwtLib.types.ctypes import uint32_t
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axiLite import AxiLite
-from hwtLib.amba.axiLite_comp.structEndpoint import AxiLiteStructEndpoint
+from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT,\
     PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
 
@@ -62,7 +62,7 @@ class Axi4streamToMem(Unit):
             self.axi = Axi4()
             self.dataIn = Handshaked()
         cntrl = self.cntrlBus = AxiLite()
-        regs = self.regsConventor = AxiLiteStructEndpoint(self.REGISTER_MAP)
+        regs = self.regsConventor = AxiLiteEndpoint(self.REGISTER_MAP)
 
         cntrl._replaceParam("ADDR_WIDTH", self.CNTRL_AW)
         cntrl._replaceParam("DATA_WIDTH", self.DATA_WIDTH)

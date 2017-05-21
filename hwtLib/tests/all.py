@@ -12,9 +12,9 @@ from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
 from hwtLib.amba.axi4_streamToMem_test import Axi4_streamToMemTC
 from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
-from hwtLib.amba.axiLite_comp.structEndpoint_test import AxiLiteStructEndpointTC, \
-    AxiLiteStructEndpointDenseStartTC, AxiLiteStructEndpointDenseTC, \
-    AxiLiteStructEndpointOffsetTC, AxiLiteStructEndpointArray
+from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
+    AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC, \
+    AxiLiteEndpointOffsetTC, AxiLiteEndpointArray
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.append_test import AxiS_append_TC
 from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
@@ -39,10 +39,10 @@ from hwtLib.handshaked.join_test import HsJoinTC, HsJoin_randomized_TC
 from hwtLib.handshaked.ramAsHs_test import RamAsHs_TC
 from hwtLib.handshaked.reg_test import HsRegL1D0TC, HsRegL2D1TC
 from hwtLib.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
+from hwtLib.ipif.endpoint_test import IpifEndpointTC, \
+    IpifEndpointDenseTC, IpifEndpointStartTC, \
+    IpifEndpointOffsetTC, IpifEndpointArray
 from hwtLib.ipif.reg_test import IpifRegTC
-from hwtLib.ipif.structEndpoint_test import IPIFStructEndpointTC, \
-    IPIFStructEndpointDenseTC, IPIFStructEndpointStartTC, \
-    IPIFStructEndpointOffsetTC, IPIFStructEndpointArray
 from hwtLib.logic.binToOneHot import BinToOneHotTC
 from hwtLib.logic.cntrGray import GrayCntrTC
 from hwtLib.logic.crcUtils_test import CrcUtilsTC
@@ -52,9 +52,9 @@ from hwtLib.logic.oneHotToBin_test import OneHotToBinTC
 from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
 from hwtLib.mem.atomic.flipRam_test import FlipRamTC
 from hwtLib.mem.atomic.flipReg_test import FlipRegTC
-from hwtLib.mem.bramStructEndpoint_test import BramPortStructEndpointTC, \
-    BramPortStructEndpointDenseTC, BramPortStructEndpointStartTC, \
-    BramPortStructEndpointOffsetTC, BramPortStructEndpointArray
+from hwtLib.mem.bramEndpoint_test import BramPortEndpointTC, \
+    BramPortEndpointDenseTC, BramPortEndpointStartTC, \
+    BramPortEndpointOffsetTC, BramPortEndpointArray
 from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.clkSynchronizer_test import ClkSynchronizerTC
 from hwtLib.mem.fifoAsync_test import FifoAsyncTC
@@ -197,11 +197,11 @@ suite = testSuiteFromTCs(
     HsJoinFair_2inputs_TC,
     HsJoinFair_3inputs_TC,
     RamAsHs_TC,
-    BramPortStructEndpointTC,
-    BramPortStructEndpointDenseTC,
-    BramPortStructEndpointStartTC,
-    BramPortStructEndpointOffsetTC,
-    BramPortStructEndpointArray,
+    BramPortEndpointTC,
+    BramPortEndpointDenseTC,
+    BramPortEndpointStartTC,
+    BramPortEndpointOffsetTC,
+    BramPortEndpointArray,
     LsfrTC,
 
     FlipRegTC,
@@ -224,11 +224,11 @@ suite = testSuiteFromTCs(
     SimpleAxiRegsTC,
     AxiTC,
     BusConverterTC,
-    AxiLiteStructEndpointTC,
-    AxiLiteStructEndpointDenseStartTC,
-    AxiLiteStructEndpointDenseTC,
-    AxiLiteStructEndpointOffsetTC,
-    AxiLiteStructEndpointArray,
+    AxiLiteEndpointTC,
+    AxiLiteEndpointDenseStartTC,
+    AxiLiteEndpointDenseTC,
+    AxiLiteEndpointOffsetTC,
+    AxiLiteEndpointArray,
     AxisFrameGenTC,
     Axi4_rDatapumpTC,
     Axi3_rDatapumpTC,
@@ -262,11 +262,11 @@ suite = testSuiteFromTCs(
     MMU_2pageLvl_TC,
     StructWriter_TC,
     
-    IPIFStructEndpointTC,
-    IPIFStructEndpointDenseTC,
-    IPIFStructEndpointStartTC,
-    IPIFStructEndpointOffsetTC,
-    IPIFStructEndpointArray,
+    IpifEndpointTC,
+    IpifEndpointDenseTC,
+    IpifEndpointStartTC,
+    IpifEndpointOffsetTC,
+    IpifEndpointArray,
     IpifRegTC,
 
     IpCoreWrapperTC,

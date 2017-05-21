@@ -1,13 +1,13 @@
 from hwt.bitmask import mask
 from hwt.code import If, connect, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.amba.axiLite import AxiLite
+from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axiLite_comp.structEndpoint import AxiLiteStructEndpoint
-from hwt.hdlObjects.types.struct import HStruct
 
 
 class AxisFrameGen(Unit):
@@ -29,10 +29,11 @@ class AxisFrameGen(Unit):
         self.cntrl.ADDR_WIDTH.set(evalParam(self.CNTRL_AW))
         self.cntrl.DATA_WIDTH.set(evalParam(self.CNTRL_DW))
 
-        self.conv = AxiLiteStructEndpoint(
+        self.conv = AxiLiteEndpoint(
                         HStruct((vecT(self.CNTRL_DW), "enable"),
                                 (vecT(self.CNTRL_DW), "len")
-                                ))
+                                )
+                        )
         self.conv.ADDR_WIDTH.set(self.CNTRL_AW)
         self.conv.DATA_WIDTH.set(self.CNTRL_DW)
 

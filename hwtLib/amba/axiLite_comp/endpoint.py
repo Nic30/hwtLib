@@ -12,7 +12,7 @@ from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 
 
-class AxiLiteStructEndpoint(BusConverter):
+class AxiLiteEndpoint(BusConverter):
     """
     Delegate request from AxiLite interface to fields of structure
     write has higher priority
@@ -191,7 +191,7 @@ if __name__ == "__main__":
     from hwt.hdlObjects.types.struct import HStruct
     from hwtLib.types.ctypes import uint32_t
 
-    u = AxiLiteStructEndpoint(
+    u = AxiLiteEndpoint(
             HStruct(
                 (uint32_t, "data0"),
                 (uint32_t, "data1"),

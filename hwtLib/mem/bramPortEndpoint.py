@@ -8,7 +8,7 @@ from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.abstract.busConverter import BusConverter, inRange
 
 
-class BramPortStructEndpoint(BusConverter):
+class BramPortEndpoint(BusConverter):
     """
     Delegate transaction from BrapmPort interface to interfaces for fields of specified structure
 
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     from hwtLib.types.ctypes import uint32_t
 
-    u = BramPortStructEndpoint(
+    u = BramPortEndpoint(
             HStruct(
                 (uint32_t, "reg0"),
                 (uint32_t, "reg1"),

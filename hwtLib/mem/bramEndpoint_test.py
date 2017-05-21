@@ -3,32 +3,23 @@
 
 from hwt.hdlObjects.constants import Time, READ, WRITE, NOP
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
-from hwtLib.amba.axiLite_comp.structEndpoint_test import AxiLiteStructEndpointTC, \
-    AxiLiteStructEndpointArray, structTwoFieldsDense, structTwoFieldsDenseStart
-from hwtLib.ipif.simMaster import IPFISimMaster
-from hwtLib.ipif.structEndpoint import IpifStructEndpoint
-from hwt.interfaces.std import BramPort_withoutClk
-from hwtLib.ipif.intf import IPIF
+from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
+    addrGetter, AxiLiteEndpointArray, structTwoFieldsDense, \
+    structTwoFieldsDenseStart
+from hwtLib.mem.bramPortEndpoint import BramPortEndpoint
+from hwtLib.mem.bramPortSimMemSpaceMaster import BramPortSimMemSpaceMaster
 
 
-def addrGetter(intf):
-    if isinstance(intf, IPIF):
-        return intf.bus2ip_addr
-    elif isinstance(intf, BramPort_withoutClk):
-        return intf.addr
-    else:
-        raise TypeError(intf)
-
-class IPIFStructEndpointTC(AxiLiteStructEndpointTC):
-    FIELD_ADDR = [0x0, 0x4]
+class BramPortEndpointTC(AxiLiteEndpointTC):
+    FIELD_ADDR = [0x0, 0x1]
 
     def mkRegisterMap(self, u):
         registerMap = AddressSpaceProbe(u.bus, addrGetter).discover()
         self.registerMap = registerMap
-        self.regs = IPFISimMaster(u.bus, registerMap)
+        self.regs = BramPortSimMemSpaceMaster(u.bus, registerMap)
 
     def mySetUp(self, data_width=32):
-        u = self.u = IpifStructEndpoint(self.STRUCT_TEMPLATE)
+        u = self.u = BramPortEndpoint(self.STRUCT_TEMPLATE)
 
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH.set(self.DATA_WIDTH)
@@ -46,12 +37,12 @@ class IPIFStructEndpointTC(AxiLiteStructEndpointTC):
         self.doSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.readed)
-        self.assertIs(u.bus._ag.actual, NOP)
+        self.assertFalse(u.bus._ag.readPending)
         self.assertEmpty(u.field0._ag.dout)
         self.assertEmpty(u.field1._ag.dout)
 
     def test_read(self):
-        u = self.mySetUp(32)
+        u = self.mySetUp( 32)
         MAGIC = 100
         A = self.FIELD_ADDR
         u.bus._ag.requests.extend([(READ, A[0]),
@@ -72,10 +63,11 @@ class IPIFStructEndpointTC(AxiLiteStructEndpointTC):
                                                        MAGIC + 1])
 
     def test_write(self):
-        u = self.mySetUp(32)
+        u = self.mySetUp( 32)
         MAGIC = 100
         A = self.FIELD_ADDR
         u.bus._ag.requests.extend([
+            NOP, # assert is after reset
             (WRITE, A[0], MAGIC),
             (WRITE, A[1], MAGIC + 1),
             (WRITE, A[0], MAGIC + 2),
@@ -92,21 +84,21 @@ class IPIFStructEndpointTC(AxiLiteStructEndpointTC):
                                                         ])
 
 
-class IPIFStructEndpointDenseTC(IPIFStructEndpointTC):
+class BramPortEndpointDenseTC(BramPortEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDense
-    FIELD_ADDR = [0x0, 0x8]
+    FIELD_ADDR = [0x0, 0x2]
     
 
-class IPIFStructEndpointStartTC(IPIFStructEndpointTC):
+class BramPortEndpointStartTC(BramPortEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDenseStart
-    FIELD_ADDR = [0x4, 0x8]
+    FIELD_ADDR = [0x1, 0x2]
 
 
-class IPIFStructEndpointOffsetTC(IPIFStructEndpointTC):
-    FIELD_ADDR = [0x4, 0x8]
+class BramPortEndpointOffsetTC(BramPortEndpointTC):
+    FIELD_ADDR = [0x1, 0x2]
 
     def mySetUp(self, data_width=32):
-        u = self.u = IpifStructEndpoint(self.STRUCT_TEMPLATE, offset=0x4)
+        u = self.u = BramPortEndpoint(self.STRUCT_TEMPLATE, offset=0x1)
 
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH.set(self.DATA_WIDTH)
@@ -114,10 +106,10 @@ class IPIFStructEndpointOffsetTC(IPIFStructEndpointTC):
         self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
-class IPIFStructEndpointArray(AxiLiteStructEndpointArray):
-    FIELD_ADDR = [0x0, 0x10]
-    mkRegisterMap = IPIFStructEndpointTC.mkRegisterMap
-    mySetUp = IPIFStructEndpointTC.mySetUp
+class BramPortEndpointArray(AxiLiteEndpointArray):
+    FIELD_ADDR = [0x0, 0x4]
+    mkRegisterMap = BramPortEndpointTC.mkRegisterMap
+    mySetUp = BramPortEndpointTC.mySetUp
 
     def randomizeAll(self):
         pass
@@ -141,10 +133,10 @@ class IPIFStructEndpointArray(AxiLiteStructEndpointArray):
 
     def test_read(self):
         u = self.mySetUp(32)
-        # u.bus._ag._debug(sys.stdout)
+        #u.bus._ag._debug(sys.stdout)
         regs = self.regs
         MAGIC = 100
-        # u.bus._ag.requests.append(NOP)
+        #u.bus._ag.requests.append(NOP)
         for i in range(4):
             u.field0._ag.mem[i] = MAGIC + i + 1
             u.field1._ag.mem[i] = 2 * MAGIC + i + 1
@@ -177,12 +169,12 @@ class IPIFStructEndpointArray(AxiLiteStructEndpointArray):
             regs.field1.write(i, 2 * MAGIC + i + 1)
 
         self.randomizeAll()
-        self.doSim(400 * Time.ns)
+        self.doSim(200 * Time.ns)
 
         self.assertEmpty(u.bus._ag.readed)
         for i in range(4):
-            self.assertValEqual(u.field0._ag.mem[i], MAGIC + i + 1, "index=%d" % i)
-            self.assertValEqual(u.field1._ag.mem[i], 2 * MAGIC + i + 1, "index=%d" % i)
+            self.assertValEqual(u.field0._ag.mem[i], MAGIC + i + 1)
+            self.assertValEqual(u.field1._ag.mem[i], 2 * MAGIC + i + 1)
 
 
 
@@ -193,12 +185,12 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(IPIFStructEndpointArray('test_read'))
-    suite.addTest(unittest.makeSuite(IPIFStructEndpointTC))
-    suite.addTest(unittest.makeSuite(IPIFStructEndpointDenseTC))
-    suite.addTest(unittest.makeSuite(IPIFStructEndpointStartTC))
-    suite.addTest(unittest.makeSuite(IPIFStructEndpointOffsetTC))
-    suite.addTest(unittest.makeSuite(IPIFStructEndpointArray))
+    #suite.addTest(BramPortStructEndpointArray('test_read'))
+    suite.addTest(unittest.makeSuite(BramPortEndpointTC))
+    suite.addTest(unittest.makeSuite(BramPortEndpointDenseTC))
+    suite.addTest(unittest.makeSuite(BramPortEndpointStartTC))
+    suite.addTest(unittest.makeSuite(BramPortEndpointOffsetTC))
+    suite.addTest(unittest.makeSuite(BramPortEndpointArray))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

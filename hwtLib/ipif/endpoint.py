@@ -6,10 +6,10 @@ from hwt.hdlObjects.types.enum import Enum
 from hwt.hdlObjects.types.typeCast import toHVal
 from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.busConverter import BusConverter
-from hwtLib.ipif.intf import IPIF
+from hwtLib.ipif.intf import Ipif
 
 
-class IpifStructEndpoint(BusConverter):
+class IpifEndpoint(BusConverter):
     """
     Delegate request from bus to fields of structure
 
@@ -17,10 +17,10 @@ class IpifStructEndpoint(BusConverter):
     :attention: byte enable and register clock enable signals are ignored
     """
 
-    _getWordAddrStep = IPIF._getWordAddrStep
-    _getAddrStep = IPIF._getAddrStep
+    _getWordAddrStep = Ipif._getWordAddrStep
+    _getAddrStep = Ipif._getAddrStep
 
-    def __init__(self, structTemplate, offset=0, intfCls=IPIF):
+    def __init__(self, structTemplate, offset=0, intfCls=Ipif):
         BusConverter.__init__(self, structTemplate, offset, intfCls)
 
     def _impl(self):
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     # u = IpifConverter([(i * 4 , "data%d" % i) for i in range(2)] + 
     #                  [(3 * 4, "bramMapped", 32)])
     #
-    u = IpifStructEndpoint(
+    u = IpifEndpoint(
             HStruct(
                 (uint32_t, "data0"),
                 (uint32_t, "data1"),

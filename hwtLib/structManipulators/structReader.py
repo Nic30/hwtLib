@@ -20,6 +20,7 @@ class StructReader(AxiS_frameParser):
     specified by get interface
     MAX_DUMMY_WORDS specifies maximum dummy bus words between fields
     if there is more of ignored space transaction will be split to
+
     :attention: interfaces of field will not send data in same time
     """
     def __init__(self, structT):

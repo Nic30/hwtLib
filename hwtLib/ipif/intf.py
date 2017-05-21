@@ -7,7 +7,7 @@ from hwt.hdlObjects.constants import READ, WRITE, NOP
 from hwt.bitmask import mask
 
 
-class IPIF(Interface):
+class Ipif(Interface):
     READ = 1
     WRITE = 0
 
@@ -52,12 +52,12 @@ class IPIF(Interface):
         return 8
     
     def _getSimAgent(self):
-        return IPIFAgent
+        return IpifAgent
 
 
-class IPIFWithCE(IPIF):
+class IpifWithCE(Ipif):
     def _config(self):
-        super(IPIFWithCE, self)._config()
+        super(IpifWithCE, self)._config()
         self.REG_COUNT = Param(1)
 
     def _declr(self):
@@ -69,7 +69,7 @@ class IPIFWithCE(IPIF):
         self.bus2ip_wrce = s(dtype=ce_t)
 
 
-class IPIFAgent(SyncAgentBase):
+class IpifAgent(SyncAgentBase):
     """
     :ivar requests: list of tuples (request type, address, [write data]) - used for driver
     :ivar data: list of data in memory, used for monitor
@@ -94,12 +94,12 @@ class IPIFAgent(SyncAgentBase):
         addr = req[1]
         
         if rw == READ:
-            rw = IPIF.READ
+            rw = Ipif.READ
             wdata = None
             wmask = None
         elif rw == WRITE:
             wdata = req[2]
-            rw = IPIF.WRITE
+            rw = Ipif.WRITE
             wmask = self.wmaskAll
         else:
             raise NotImplementedError(rw)
@@ -118,6 +118,7 @@ class IPIFAgent(SyncAgentBase):
     def driver(self, s):
         intf = self.intf
         actual = self.actual
+        actual_next = actual
         w = s.write
         r = s.read
     
@@ -127,18 +128,6 @@ class IPIFAgent(SyncAgentBase):
 
         yield s.updateComplete         
         # now we are after clk edge
-
-        en = r(self.rst_n).val and self.enable
-        if en and self.requests and self.actual is NOP:
-            req = self.requests.pop(0)
-            if req is NOP:
-                w(0, intf.bus2ip_cs)
-            else:
-                self.doReq(s, req)
-                self.actual = req  
-        else:
-            w(0, intf.bus2ip_cs)
-
         if actual is not NOP:
             yield s.updateComplete
             if actual[0] is READ:
@@ -150,7 +139,7 @@ class IPIFAgent(SyncAgentBase):
                         self._debugOutput.write("%s, on %r read_data: %d\n" % (
                                                 self.intf._getFullName(), s.now, d.val))
                     self.readed.append(d)
-                    self.actual = NOP
+                    actual_next = NOP
             else:
                 # write in progress
                 wack = r(intf.ip2bus_wrack)
@@ -159,4 +148,19 @@ class IPIFAgent(SyncAgentBase):
                     if self._debugOutput is not None:
                         self._debugOutput.write("%s, on %r write_ack\n" % (
                                                 self.intf._getFullName(), s.now))
-                    self.actual = NOP
+                    actual_next = NOP
+
+
+        en = r(self.rst_n).val and self.enable
+        if en:
+            if self.actual is NOP:
+                if self.requests:
+                    req = self.requests.pop(0)
+                    if req is not NOP:
+                        self.doReq(s, req)
+                        self.actual = req  
+                        return
+            else:
+                self.actual = actual_next
+                return
+        w(0, intf.bus2ip_cs)

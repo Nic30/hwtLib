@@ -5,9 +5,9 @@ from hwt.interfaces.std import RegCntrl
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.ipif.intf import IPIF
-from hwtLib.ipif.structEndpoint import IpifStructEndpoint
-from hwtLib.ipif.structEndpoint_test import IPIFStructEndpointTC
+from hwtLib.ipif.intf import Ipif
+from hwtLib.ipif.endpoint import IpifEndpoint
+from hwtLib.ipif.endpoint_test import IpifEndpointTC
 from hwtLib.ipif.reg import IpifReg
 
 
@@ -22,9 +22,9 @@ class IpifRegWithEndpoint(Unit):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.bus = IPIF()
+            self.bus = Ipif()
             self.reg = IpifReg()
-            self.ep = IpifStructEndpoint(self.STRUCT_TEMPLATE)
+            self.ep = IpifEndpoint(self.STRUCT_TEMPLATE)
             self.field0 = RegCntrl()
             self.field1 = RegCntrl()
             
@@ -37,7 +37,7 @@ class IpifRegWithEndpoint(Unit):
         self.field1 ** ep.field1
         
 
-class IpifRegTC(IPIFStructEndpointTC):
+class IpifRegTC(IpifEndpointTC):
     FIELD_ADDR = [0x0, 0x4]
 
     def mySetUp(self, data_width=32):
@@ -53,8 +53,8 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(IPIFStructEndpointArray('test_read'))
-    suite.addTest(unittest.makeSuite(IPIFStructEndpointTC))
+    # suite.addTest(IpifEndpointArray('test_read'))
+    suite.addTest(unittest.makeSuite(IpifRegTC))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

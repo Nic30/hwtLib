@@ -4,7 +4,7 @@ from hwt.hdlObjects.types.array import Array
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
-from hwtLib.amba.axiLite_comp.structEndpoint import AxiLiteStructEndpoint
+from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
 from hwtLib.types.ctypes import uint32_t
@@ -42,7 +42,7 @@ def addrGetter(intf):
         raise TypeError(intf)
 
 
-class AxiLiteStructEndpointTC(SimTestCase):
+class AxiLiteEndpointTC(SimTestCase):
     STRUCT_TEMPLATE = structTwoFields
     FIELD_ADDR = [0x0, 0x4]
 
@@ -64,7 +64,7 @@ class AxiLiteStructEndpointTC(SimTestCase):
         self.randomize(u.bus.b)
 
     def mySetUp(self, data_width=32):
-        u = self.u = AxiLiteStructEndpoint(self.STRUCT_TEMPLATE)
+        u = self.u = AxiLiteEndpoint(self.STRUCT_TEMPLATE)
 
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH.set(self.DATA_WIDTH)
@@ -137,22 +137,22 @@ class AxiLiteStructEndpointTC(SimTestCase):
         self.assertEqual(s, expected)
 
 
-class AxiLiteStructEndpointDenseTC(AxiLiteStructEndpointTC):
+class AxiLiteEndpointDenseTC(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDense
     FIELD_ADDR = [0x0, 0x8]
     
 
-class AxiLiteStructEndpointDenseStartTC(AxiLiteStructEndpointTC):
+class AxiLiteEndpointDenseStartTC(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDenseStart
     FIELD_ADDR = [0x4, 0x8]
 
 
-class AxiLiteStructEndpointOffsetTC(AxiLiteStructEndpointTC):
+class AxiLiteEndpointOffsetTC(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structTwoFields
     FIELD_ADDR = [0x4, 0x8]
 
     def mySetUp(self, data_width=32):
-        u = self.u = AxiLiteStructEndpoint(self.STRUCT_TEMPLATE, offset=0x4)
+        u = self.u = AxiLiteEndpoint(self.STRUCT_TEMPLATE, offset=0x4)
 
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH.set(self.DATA_WIDTH)
@@ -161,7 +161,7 @@ class AxiLiteStructEndpointOffsetTC(AxiLiteStructEndpointTC):
         return u
 
 
-class AxiLiteStructEndpointArray(AxiLiteStructEndpointTC):
+class AxiLiteEndpointArray(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structTwoArr
     FIELD_ADDR = [0x0, 0x10]
 
@@ -239,11 +239,11 @@ if __name__ == "__main__":
     suite = unittest.TestSuite()
 
     # suite.addTest(Axi4_streamToMemTC('test_endstrbMultiFrame'))
-    suite.addTest(unittest.makeSuite(AxiLiteStructEndpointTC))
-    suite.addTest(unittest.makeSuite(AxiLiteStructEndpointDenseStartTC))
-    suite.addTest(unittest.makeSuite(AxiLiteStructEndpointDenseTC))
-    suite.addTest(unittest.makeSuite(AxiLiteStructEndpointOffsetTC))
-    suite.addTest(unittest.makeSuite(AxiLiteStructEndpointArray))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointOffsetTC))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointArray))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
