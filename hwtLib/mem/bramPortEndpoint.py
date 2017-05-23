@@ -25,7 +25,7 @@ class BramPortEndpoint(BusConverter):
 
         def connectRegIntfAlways(regIntf, _addr):
             return (
-                    c(bus.din, regIntf.dout.data) + 
+                    c(bus.din, regIntf.dout.data) +
                     c(bus.we & bus.en & bus.addr._eq(_addr), regIntf.dout.vld)
                    )
 
@@ -36,13 +36,11 @@ class BramPortEndpoint(BusConverter):
             c(bus.addr - addrOffset, addr_tmp)
 
             return (
-                c(addr_tmp, bramPort.addr, fit=True) + 
-                c(bus.we & _addrVld, bramPort.we) + 
-                c(bus.en & _addrVld, bramPort.en) + 
+                c(addr_tmp, bramPort.addr, fit=True) +
+                c(bus.we & _addrVld, bramPort.we) +
+                c(bus.en & _addrVld, bramPort.en) +
                 c(bus.din, bramPort.din))
-            
 
-        
         if self._directlyMapped:
             readReg = self._reg("readReg", dtype=bus.dout._dtype)
             # tuples (condition, assign statements)
@@ -61,7 +59,7 @@ class BramPortEndpoint(BusConverter):
             bramIndxCases = []
             readBramIndx = self._reg("readBramIndx", vecT(log2ceil(BRAMS_CNT + 1), False))
             outputSwitch = Switch(readBramIndx)
-            
+
             for i, ai in enumerate(self._bramPortMapped):
                 # if we can use prefix instead of addr comparing do it
                 tmp = ai.port._addrSpaceItem.getMyAddrPrefix()
@@ -70,12 +68,12 @@ class BramPortEndpoint(BusConverter):
                 else:
                     prefix, subaddrBits = tmp
                     _addrVld = bus.addr[:subaddrBits]._eq(prefix)
-    
+
                 connectBramPortAlways(ai.port, ai.addr, ai.size, _addrVld & bus.en)
                 bramIndxCases.append((_addrVld, readBramIndx ** i))
                 outputSwitch.Case(i, bus.dout ** ai.port.dout)
 
-            outputSwitch.Default(bus.dout ** readReg)    
+            outputSwitch.Default(bus.dout ** readReg)
             SwitchLogic(bramIndxCases, default=readBramIndx ** BRAMS_CNT)
         else:
             bus.dout ** readReg

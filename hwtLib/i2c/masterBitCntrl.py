@@ -27,20 +27,21 @@ def hasFallen(last, actual):
 class I2cBitCntrlCmd(RdSynced):
     def _config(self):
         pass
-    
+
     def _declr(self):
         self.din = Signal()
         self.cmd = VectSignal(log2ceil(5))
         self.rd = Signal(masterDir=DIRECTION.IN)
-    
+
     def _getSimAgent(self):
         return I2cBitCntrlCmdAgent
+
 
 class I2cBitCntrlCmdAgent(RdSyncedAgent):
     def doRead(self, s):
         """extract data from interface"""
         return (s.read(self.intf.cmd), s.read(self.intf.din))
-    
+
     def doWrite(self, s, data):
         """write data to interface"""
         w = s.write
@@ -50,6 +51,7 @@ class I2cBitCntrlCmdAgent(RdSyncedAgent):
             cmd, d = data
         w(d, self.intf.din)
         w(cmd, self.intf.cmd)
+
 
 class I2cMasterBitCtrl(Unit):
     """
@@ -96,7 +98,7 @@ class I2cMasterBitCtrl(Unit):
         addClkRstn(self)
         self.clk_cnt_initVal = Signal(dtype=vecT(16))
         self.i2c = I2c()
-        
+
         self.cntrl = I2cBitCntrlCmd()
         self.arbitrationLost = Signal()  # arbitration lost
         self.dout = Signal()
@@ -104,7 +106,7 @@ class I2cMasterBitCtrl(Unit):
     def stateClkGen(self, scl_sync, scl_t, scl):
         # whenever the slave is not ready it can delay the cycle by pulling SCL low
         # delay scl_oen
-        delayedScl_t = self._reg("delayedScl_t", defVal=1) 
+        delayedScl_t = self._reg("delayedScl_t", defVal=1)
         delayedScl_t ** scl_t
 
         # slave_wait is asserted when master wants to drive SCL high, but the slave pulls it low
@@ -144,7 +146,7 @@ class I2cMasterBitCtrl(Unit):
             If(filter_clk_cntr._eq(0),
                filter_clk_cntr ** self.clk_cnt_initVal
             ).Else(
-               filter_clk_cntr ** (filter_clk_cntr - 1)    
+               filter_clk_cntr ** (filter_clk_cntr - 1)
             )
 
         filter1 = self._reg(name + "_filter1", dtype=vecT(3), defVal=0b111)
@@ -152,8 +154,8 @@ class I2cMasterBitCtrl(Unit):
            filter1 ** Concat(filter1[2:], filter0[1])
         )
 
-        filtered = ((filter1[2] & filter1[1]) | 
-                    (filter1[2] & filter1[0]) | 
+        filtered = ((filter1[2] & filter1[1]) |
+                    (filter1[2] & filter1[0]) |
                     (filter1[1] & filter1[0]))
         return filtered
 
@@ -164,8 +166,8 @@ class I2cMasterBitCtrl(Unit):
         lastScl = self._reg("lastScl", defVal=1)
         lastSda = self._reg("lastSda", defVal=1)
 
-        startCond = hasFallen(lastSda, sda) & scl     
-        stopCond = hasRisen(lastSda, sda) & scl   
+        startCond = hasFallen(lastSda, sda) & scl
+        stopCond = hasRisen(lastSda, sda) & scl
 
         lastScl ** scl
         lastSda ** sda

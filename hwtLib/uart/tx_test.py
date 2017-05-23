@@ -12,16 +12,16 @@ class UartTxTC(SimTestCase):
         u.FREQ.set(115200)
         self.prepareUnit(u)
         self.randomize(u.dataIn)
-    
+
     def getStr(self):
         START_BIT = 0
-        STOP_BIT = 1 
+        STOP_BIT = 1
         s = ""
         d = iter(self.u.txd._ag.data)
         for bit in d:
             self.assertEqual(bit.vldMask, 0b1)
             _bit = valToInt(bit)
-            
+
             if _bit == START_BIT:
                 ch = 0
                 for i in range(10 - 1):
@@ -29,31 +29,28 @@ class UartTxTC(SimTestCase):
                     self.assertEqual(b.vldMask, 0b1)
                     _b = valToInt(b)
                     if i == 8:
-                        self.assertEqual(_b, STOP_BIT) 
+                        self.assertEqual(_b, STOP_BIT)
                     else:
                         ch |= _b << i
-                        
+
                 s = s + chr(ch)
-        
+
         return s
-    
+
     def sendStr(self, string):
         for ch in string:
             self.u.dataIn._ag.data.append(ord(ch))
-        
-    
+
     def test_nop(self):
         self.doSim(200 * Time.ns)
         self.assertEqual(self.getStr(), "")
-        
-        
+
     def test_simple(self):
         t = "simple"
         self.sendStr(t)
         self.doSim(10 * 10 * (len(t) + 10) * Time.ns)
         self.assertEqual(self.getStr(), t)
-        
-        
+
 
 if __name__ == "__main__":
     import unittest

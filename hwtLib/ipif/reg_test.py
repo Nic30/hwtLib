@@ -5,9 +5,9 @@ from hwt.interfaces.std import RegCntrl
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.ipif.intf import Ipif
 from hwtLib.ipif.endpoint import IpifEndpoint
 from hwtLib.ipif.endpoint_test import IpifEndpointTC
+from hwtLib.ipif.intf import Ipif
 from hwtLib.ipif.reg import IpifReg
 
 
@@ -27,7 +27,7 @@ class IpifRegWithEndpoint(Unit):
             self.ep = IpifEndpoint(self.STRUCT_TEMPLATE)
             self.field0 = RegCntrl()
             self.field1 = RegCntrl()
-            
+
     def _impl(self):
         propagateClkRstn(self)
         ep = self.ep
@@ -35,7 +35,7 @@ class IpifRegWithEndpoint(Unit):
         ep.bus ** self.reg.dataOut
         self.field0 ** ep.field0
         self.field1 ** ep.field1
-        
+
 
 class IpifRegTC(IpifEndpointTC):
     FIELD_ADDR = [0x0, 0x4]
@@ -48,7 +48,8 @@ class IpifRegTC(IpifEndpointTC):
 
         self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
-    
+
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()

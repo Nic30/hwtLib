@@ -127,6 +127,7 @@ def doSimWithoutLog(self, time):
     sim.simUnit(self.model, time=time, extraProcesses=self.procs)
     return sim
 
+
 def testSuiteFromTCs(*tcs):
     loader = TestLoader()
     for tc in tcs:
@@ -136,6 +137,7 @@ def testSuiteFromTCs(*tcs):
     loadedTcs = [loader.loadTestsFromTestCase(tc) for tc in tcs]
     suite = TestSuite(loadedTcs)
     return suite
+
 
 suite = testSuiteFromTCs(
     RtlLvlTC,

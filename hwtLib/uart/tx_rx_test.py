@@ -15,7 +15,7 @@ class TestUnit_uart(Unit):
         self.FREQ = Param(115200*16)
         self.BAUD = Param(115200)
         self.OVERSAMPLING = Param(16)
-    
+
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
@@ -30,8 +30,8 @@ class TestUnit_uart(Unit):
         self.rx.rxd ** self.tx.txd
         self.tx.dataIn ** self.din
         self.dout ** self.rx.dataOut
-        
-        
+
+
 class UartTxRxTC(SimTestCase):
     def setUp(self):
         SimTestCase.setUp(self)
@@ -40,26 +40,24 @@ class UartTxRxTC(SimTestCase):
         u.FREQ.set(115200*16)
         u.OVERSAMPLING.set(16)
         self.prepareUnit(u)
-    
+
     def getStr(self):
         return "".join([chr(valToInt(d)) for d in self.u.dout._ag.data])
-    
+
     def sendStr(self, string):
         for s in string:
             self.u.din._ag.data.append(ord(s))
-    
+
     def test_nop(self):
         self.doSim(200 * Time.ns)
         self.assertEqual(self.getStr(), "")
-        
-        
+
     def test_simple(self):
         t = "simple"
         self.sendStr(t)
         self.doSim(10 * 10 * (len(t) * 16 + 10) * Time.ns)
         self.assertEqual(self.getStr(), t)
-        
-        
+
 
 if __name__ == "__main__":
     import unittest

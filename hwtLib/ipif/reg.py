@@ -38,7 +38,7 @@ class IpifReg(Unit):
             else:
                 _dout = i
                 _din = getattr(dout, i._name)
-                
+
             self.connectRegistered(_din, _dout)
 
         cs = self._reg("bus2ip_cs_reg", defVal=0)
@@ -52,11 +52,11 @@ class IpifReg(Unit):
             cs ** din.bus2ip_cs,
             dout.bus2ip_cs ** cs
         )
-        
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = IpifReg()
 
     print(toRtl(u))
-    
+

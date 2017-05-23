@@ -94,13 +94,13 @@ class AxiLiteEndpointTC(SimTestCase):
         self.randomizeAll()
         self.doSim(300 * Time.ns)
 
-        self.assertValSequenceEqual(u.bus.r._ag.data, 
+        self.assertValSequenceEqual(u.bus.r._ag.data,
                                     [(MAGIC, RESP_OKAY),
                                      (MAGIC + 1, RESP_OKAY),
                                      (MAGIC, RESP_OKAY),
                                      (MAGIC + 1, RESP_OKAY),
                                      (None, RESP_SLVERR)])
-                                     
+
     def test_write(self):
         u = self.mySetUp(32)
         MAGIC = 100
@@ -129,7 +129,7 @@ class AxiLiteEndpointTC(SimTestCase):
         self.assertValSequenceEqual(u.bus.b._ag.data, [RESP_OKAY for _ in range(4)] + [RESP_SLVERR])
 
     def test_registerMap(self):
-        u = self.mySetUp(32)
+        self.mySetUp(32)
         s = AddressSpaceProbe.pprint(self.registerMap, doPrint=False)
         expected = \
 """0x%x:field0
@@ -140,7 +140,7 @@ class AxiLiteEndpointTC(SimTestCase):
 class AxiLiteEndpointDenseTC(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDense
     FIELD_ADDR = [0x0, 0x8]
-    
+
 
 class AxiLiteEndpointDenseStartTC(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDenseStart
@@ -225,14 +225,14 @@ class AxiLiteEndpointArray(AxiLiteEndpointTC):
             self.assertValEqual(u.field0._ag.mem[i], MAGIC + i + 1, "index=%d" % i)
             self.assertValEqual(u.field1._ag.mem[i], 2 * MAGIC + i + 1, "index=%d" % i)
 
-
     def test_registerMap(self):
-        u = self.mySetUp(32)
+        self.mySetUp(32)
         s = AddressSpaceProbe.pprint(self.registerMap, doPrint=False)
         expected = \
 """0x%x:field0(size=4)
 0x%x:field1(size=4)""" % tuple(self.FIELD_ADDR)
         self.assertEqual(s, expected)
+
 
 if __name__ == "__main__":
     import unittest

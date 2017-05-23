@@ -21,7 +21,7 @@ def strbToRem(strbBits, remBits):
 class AxiSToFrameLink(Unit):
     """
     Axi 4 stream to FrameLink
-    
+
     format of user signal:
     user[0]: start of packet
     user[1]: end of packet
@@ -100,7 +100,7 @@ class AxiSToFrameLink(Unit):
 class FrameLinkToAxiS(Unit):
     """
     Framelink to axi-stream
-    
+
     format of user signal:
     user[0]: start of packet
     user[1]: end of packet
@@ -121,7 +121,7 @@ class FrameLinkToAxiS(Unit):
         sop = self._sig("sop")
         eop = self._sig("eop")
 
-        Out.data ** In.data 
+        Out.data ** In.data
         Out.valid ** ~In.src_rdy_n
         In.dst_rdy_n ** ~Out.ready
 
