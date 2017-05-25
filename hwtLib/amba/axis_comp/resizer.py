@@ -1,22 +1,23 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import If, log2ceil, Concat, Switch
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.amba.axis_comp.base import AxiSCompBase
-from hwtLib.handshaked.streamNode import streamAck
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
-from hwt.serializer.simModel.serializer import SimModelSerializer
+from hwtLib.handshaked.streamNode import streamAck
 
 
 class AxiS_resizer(AxiSCompBase):
     """
     Change data with of interface
+
     :attention: start of frame is expected to be aligned on first word
     :attention: strb can be not fully set only in last word
     :attention: in upscale mode id and other signals which are not dependent on data width
         are propagated only from last word
-    :attention: in downscale mode strb does not affect if word should be send this means that
-        there can be words with strb=0 if strb of input is ton fully set
     """
     def _config(self):
         AxiSCompBase._config(self)
@@ -34,18 +35,16 @@ class AxiS_resizer(AxiSCompBase):
 
     def nextAreNotValidLogic(self, inStrb, actualItemIndx, ITEMS, ITEM_DW):
         res = None
-        ITEM_W = ITEM_DW//8
+        ITEM_W = ITEM_DW // 8
         for i in range(ITEMS - 1):  # -1 because if it is last we do not need this
             strbHi = ITEMS * ITEM_W
             strbLo = (i + 1) * ITEM_W
             othersNotValid = actualItemIndx._eq(i) & inStrb[strbHi:strbLo]._eq(0)
-            #print(i, othersNotValid)
             if res is None:
                 res = othersNotValid
             else:
                 res = res | othersNotValid
         if res is None:
-            #print(True)
             return True
 
         _res = self._sig("nextAreNotValid")
