@@ -39,6 +39,7 @@ from hwtLib.handshaked.joinFair_test import HsJoinFair_2inputs_TC, \
 from hwtLib.handshaked.join_test import HsJoinTC, HsJoin_randomized_TC
 from hwtLib.handshaked.ramAsHs_test import RamAsHs_TC
 from hwtLib.handshaked.reg_test import HsRegL1D0TC, HsRegL2D1TC
+from hwtLib.handshaked.resizer_test import HandshakedResizerTC
 from hwtLib.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
 from hwtLib.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointStartTC, \
@@ -215,6 +216,7 @@ suite = testSuiteFromTCs(
     HsFifoTC,
     HsRegL1D0TC,
     HsRegL2D1TC,
+    HandshakedResizerTC,
     CamTC,
     UartTxTC,
     UartRxBasicTC,
