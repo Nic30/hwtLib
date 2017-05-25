@@ -15,6 +15,7 @@ from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC, \
     AxiLiteEndpointOffsetTC, AxiLiteEndpointArray
+from hwtLib.amba.axi_ag_test import Axi_ag_TC
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.append_test import AxiS_append_TC
 from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
@@ -255,6 +256,7 @@ suite = testSuiteFromTCs(
     WStrictOrderInterconnect2TC,
     WStrictOrderInterconnectComplexTC,
 
+    Axi_ag_TC,
     Axi4_streamToMemTC,
     ArrayItemGetterTC,
     ArrayItemGetter2in1WordTC,
