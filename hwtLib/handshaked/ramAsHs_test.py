@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import unittest
-
 from hwt.hdlObjects.constants import Time, NOP
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.ramAsHs import RamAsHs, RamHsR
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwtLib.mem.ram import RamSingleClock
 from hwtLib.interfaces.addrDataHs import AddrDataHs
+from hwtLib.mem.ram import RamSingleClock
 
 
 class RamWithHs(RamAsHs):
@@ -55,6 +53,7 @@ class RamAsHs_TC(SimTestCase):
 
 
 if __name__ == "__main__":
+    import unittest
     suite = unittest.TestSuite()
     # suite.addTest(HsJoinFair_2inputs_TC('test_passdata'))
     suite.addTest(unittest.makeSuite(RamAsHs_TC))
