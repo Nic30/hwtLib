@@ -71,8 +71,8 @@ class Axi4_addrAgent(BaseAxiAgent):
 #####################################################################
 class Axi4_r(AxiLite_r, Axi_id):
     def _config(self):
-        AxiLite_r._config(self)
         Axi_id._config(self)
+        AxiLite_r._config(self)
 
     def _declr(self):
         Axi_id._declr(self)
@@ -94,7 +94,7 @@ class Axi4_rAgent(BaseAxiAgent):
         intf = self.intf
         r = s.read
 
-        _id = r(intf.valid)
+        _id = r(intf.id)
         data = r(intf.data)
         resp = r(intf.resp)
         last = r(intf.last)
