@@ -4,6 +4,7 @@
 from PIL import Image
 import os
 
+from hwt.bitmask import selectBit
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
 
@@ -13,16 +14,19 @@ pixels = im.load()
 
 
 # img is 8x16 array of bitmaps, each char is 8x8 pix big
-def printChar(ch):
+def printChar(ch, inverted=True):  # pragma: no cover
     ch = ord(ch)
     for y in range(8):
         row = getCharRow(ch, y)
         for x in range(8):
-            pix = row & (1 << (7 - x))
+            pix = selectBit(row, 8 - x - 1)
+            if inverted:
+                pix = not pix
+
             if pix:
-                pix = '#'
-            else:
                 pix = ' '
+            else:
+                pix = '#'
             print(pix, end="")  # Get the RGBA Value of the a pixel of an image
         print()
 
