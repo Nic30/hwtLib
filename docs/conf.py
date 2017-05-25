@@ -25,7 +25,7 @@ import sys
 import sphinx_bootstrap_theme
 
 
-sys.path.insert(0,  os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('../'))
 
 # -- General configuration ------------------------------------------------
 
@@ -39,7 +39,7 @@ sys.path.insert(0,  os.path.abspath('../'))
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.todo',
               'sphinx.ext.viewcode',
-              #'sphinx.ext.napoleon',
+              # 'sphinx.ext.napoleon',
               'sphinx.ext.graphviz']
 
 # Add any paths that contain templates here, relative to this directory.
@@ -92,7 +92,7 @@ todo_include_todos = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-#html_theme = 'alabaster'
+# html_theme = 'alabaster'
 
 html_theme = 'bootstrap'
 html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
@@ -193,7 +193,11 @@ autodoc_mock_imports = ['hwtHdlParsers']
 notskipregex = re.compile("_[^_]+")
 
 def skip(app, what, name, obj, skip, options):
-    if name == "__init__" or notskipregex.match(name):
+    # skip tests
+    if name.endswith("_test"):
+        return True
+    # do not skip hiden methods
+    if notskipregex.match(name):
         return False
     return skip
 
