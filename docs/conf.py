@@ -23,6 +23,7 @@ from sphinx.apidoc import main
 import sys
 
 import sphinx_bootstrap_theme
+import glob
 
 
 sys.path.insert(0, os.path.abspath('../'))
@@ -206,6 +207,9 @@ def setup(app):
     app.connect("autodoc-skip-member", skip)
 
 # update *.rst pages
-main(["-F", "-o", "../docs", "../hwtLib"])
+for file in glob.glob("*.rst"):
+    if file != "index.rst":
+        os.remove(file)
+main(["--force", "-o", "../docs", "../hwtLib"])
 
 
