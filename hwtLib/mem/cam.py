@@ -57,13 +57,15 @@ class Cam(Unit):
             outNext[i] ** mem[i]._eq(Concat(key.data, hBit(1)))
 
         self.out.data ** out
-        self.out.vld ** outVld 
+        self.out.vld ** outVld
 
     def _impl(self):
         # +1 bit to validity check
-        self._mem = self._sig("cam_mem", Array(vecT(self.DATA_WIDTH + 1), 
-                                               self.ITEMS),
-                                               [0 for _ in range(evalParam(self.ITEMS).val)])
+        self._mem = self._sig("cam_mem",
+                              Array(vecT(self.DATA_WIDTH + 1),
+                                    self.ITEMS),
+                              [0 for _ in range(evalParam(self.ITEMS).val)]
+                              )
         self.writeHandler(self._mem)
         self.matchHandler(self._mem)
 

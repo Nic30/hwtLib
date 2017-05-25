@@ -18,13 +18,13 @@ class ClkDiv3(Unit):
         self.rst_n = Rst_n()
 
         self.clkOut = Clk()
-    
+
     def _impl(self):
-        r_cnt = self._cntx.sig("r_cnt", typ=vecT(2))    
-        f_cnt = self._cntx.sig("f_cnt", typ=vecT(2))    
+        r_cnt = self._cntx.sig("r_cnt", typ=vecT(2))
+        f_cnt = self._cntx.sig("f_cnt", typ=vecT(2))
         rise = self._cntx.sig("rise")
         fall = self._cntx.sig("fall")
-        
+
         rst = self.rst_n._isOn()
         If(rst,
            r_cnt ** 0,
@@ -49,7 +49,7 @@ class ClkDiv3(Unit):
                 )
             )
         )
-        
+
         self.clkOut ** fall._eq(rise)
 
 if __name__ == "__main__":

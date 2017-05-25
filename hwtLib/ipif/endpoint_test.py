@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdlObjects.constants import Time, READ, WRITE, NOP
+from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointArray, structTwoFieldsDense, structTwoFieldsDenseStart
-from hwtLib.ipif.simMaster import IPFISimMaster
 from hwtLib.ipif.endpoint import IpifEndpoint
-from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.ipif.intf import Ipif
+from hwtLib.ipif.simMaster import IPFISimMaster
 
 
 def addrGetter(intf):
@@ -18,6 +18,7 @@ def addrGetter(intf):
         return intf.addr
     else:
         raise TypeError(intf)
+
 
 class IpifEndpointTC(AxiLiteEndpointTC):
     FIELD_ADDR = [0x0, 0x4]
@@ -95,7 +96,7 @@ class IpifEndpointTC(AxiLiteEndpointTC):
 class IpifEndpointDenseTC(IpifEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDense
     FIELD_ADDR = [0x0, 0x8]
-    
+
 
 class IpifEndpointStartTC(IpifEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDenseStart
@@ -114,6 +115,7 @@ class IpifEndpointOffsetTC(IpifEndpointTC):
         self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
+
 class IpifEndpointArray(AxiLiteEndpointArray):
     FIELD_ADDR = [0x0, 0x10]
     mkRegisterMap = IpifEndpointTC.mkRegisterMap
@@ -121,7 +123,6 @@ class IpifEndpointArray(AxiLiteEndpointArray):
 
     def randomizeAll(self):
         pass
-
 
     def test_nop(self):
         u = self.mySetUp(32)
@@ -183,7 +184,6 @@ class IpifEndpointArray(AxiLiteEndpointArray):
         for i in range(4):
             self.assertValEqual(u.field0._ag.mem[i], MAGIC + i + 1, "index=%d" % i)
             self.assertValEqual(u.field1._ag.mem[i], 2 * MAGIC + i + 1, "index=%d" % i)
-
 
 
 if __name__ == "__main__":

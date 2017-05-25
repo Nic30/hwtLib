@@ -127,8 +127,8 @@ class ClkBuilder(object):
     def edgeDetector(self, sig, rise=False, fall=False, last=None, initVal=0):
         """
         :param sig: signal to detect edges on
-        :param rise: if True signal for rise detecting will be returned 
-        :param fall: if True signal for fall detecting will be returned 
+        :param rise: if True signal for rise detecting will be returned
+        :param fall: if True signal for fall detecting will be returned
         :param last: last value for sig (use f.e. when you have register and it's next signal (sig=reg.next, last=reg))
             if last is None last register will be automatically generated
         :param initVal: if last is None initVal will be used as its initialization value
@@ -139,10 +139,10 @@ class ClkBuilder(object):
         if last is None:
             last = self.parent._reg(namePrefix + "_edgeDetect_last", defVal=initVal)
             last ** sig
-        
+
         if rise:
             riseSig = self.parent._sig(namePrefix + "_rising")
-            riseSig ** (sig & ~last) 
+            riseSig ** (sig & ~last)
         if fall:
             fallSig = self.parent._sig(namePrefix + "_falling")
             fallSig ** (~sig & last)
@@ -151,4 +151,4 @@ class ClkBuilder(object):
         elif not rise and fall:
             return fallSig
         else:
-            return (riseSig, fallSig) 
+            return (riseSig, fallSig)

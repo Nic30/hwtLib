@@ -18,8 +18,8 @@ class AxiSStoredBurst(Unit):
     """
     def __init__(self, data=[ord(c) for c in "Hello world"]):
         super(AxiSStoredBurst, self).__init__()
-        self.DATA = data 
-        
+        self.DATA = data
+
     def _config(self):
         self.DATA_WIDTH = Param(64)
         self.REPEAT = Param(False)
@@ -70,6 +70,7 @@ class AxiSStoredBurst(Unit):
         If(self.dataRd(),
             self.nextWordIndexLogic(wordIndex)
         )
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl

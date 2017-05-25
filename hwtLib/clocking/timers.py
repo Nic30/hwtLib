@@ -169,7 +169,7 @@ class TimerInfo(object):
                                     maxVal
                                     )
                 timer.cntrRegister = r
-                tick = TimerInfo._instantiateTimerTickLogic(parentUnit, 
+                tick = TimerInfo._instantiateTimerTickLogic(parentUnit,
                                                             timer,
                                                             origMaxVal,
                                                             enableSig,

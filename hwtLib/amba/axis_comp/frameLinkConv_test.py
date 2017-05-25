@@ -12,11 +12,12 @@ from hwtLib.amba.axis_comp.frameLinkConv import FrameLinkToAxiS, AxiSToFrameLink
 from hwt.synthesizer.param import Param
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 
+
 class FrameLinkConvTest(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(64)
         self.USER_WIDTH = Param(2)
-        
+
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
@@ -30,20 +31,20 @@ class FrameLinkConvTest(Unit):
         self.conv0.dataIn ** self.dataIn
         self.conv1.dataIn ** self.conv0.dataOut
         self.dataOut ** self.conv1.dataOut
-        
+
 
 class AxiS_frameLinkConvTC(SimTestCase):
     def setUp(self):
         super(AxiS_frameLinkConvTC, self).setUp()
         u = self.u = FrameLinkConvTest()
-        self.prepareUnit(self.u)
+        self.prepareUnit(u)
 
     def test_nop(self):
         u = self.u
         self.doSim(200 * Time.ns)
 
         self.assertEmpty(u.dataOut._ag.data)
-        
+
     def test_simple(self):
         u = self.u
 
@@ -53,9 +54,8 @@ class AxiS_frameLinkConvTC(SimTestCase):
 
         u.dataIn._ag.data.extend(d)
         self.doSim(200 * Time.ns)
-        
+
         self.assertValSequenceEqual(u.dataOut._ag.data, d)
-        
 
 
 if __name__ == "__main__":

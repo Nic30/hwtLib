@@ -141,13 +141,14 @@ if __name__ == "__main__":
     from hwtLib.types.ctypes import uint64_t, uint8_t, uint16_t
     from hwt.hdlObjects.types.struct import HStruct
     u = AxiS_frameForge(AxiStream,
-                       # tuples (type, name) where type has to be instance of Bits type
-                       HStruct((uint64_t, "item0"),
-                        (uint64_t, None),  # name = None means this field will be ignored
-                        (uint64_t, "item1"),
-                        (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
+                        # tuples (type, name) where type has to be instance of Bits type
+                        HStruct(
+                            (uint64_t, "item0"),
+                            (uint64_t, None),  # name = None means this field will be ignored
+                            (uint64_t, "item1"),
+                            (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
                         )
-                       )
+                        )
     u.DATA_WIDTH.set(64)
 
     print(toRtl(u))

@@ -25,11 +25,11 @@ class Ipif(Interface):
 
         # read /write addr
         self.bus2ip_addr = s(dtype=vecT(self.ADDR_WIDTH))
-        
+
         self.bus2ip_data = s(dtype=vecT(self.DATA_WIDTH))
         # byte enable for bus2ip_data
         self.bus2ip_be = s(dtype=vecT(evalParam(self.DATA_WIDTH) // 8))
-        
+
         self.ip2bus_data = s(dtype=vecT(self.DATA_WIDTH), masterDir=D.IN)
         # write ack
         self.ip2bus_wrack = s(masterDir=D.IN)
@@ -50,7 +50,7 @@ class Ipif(Interface):
              36 for 36 bit bram)
         """
         return 8
-    
+
     def _getSimAgent(self):
         return IpifAgent
 
@@ -83,7 +83,7 @@ class IpifAgent(SyncAgentBase):
         self.requests = []
         self.actual = NOP
         self.readed = []
-        
+
         self.wmaskAll = mask(intf.bus2ip_data._dtype.bit_length())
 
         self.mem = {}
@@ -92,7 +92,7 @@ class IpifAgent(SyncAgentBase):
     def doReq(self, s, req):
         rw = req[0]
         addr = req[1]
-        
+
         if rw == READ:
             rw = Ipif.READ
             wdata = None
@@ -121,12 +121,12 @@ class IpifAgent(SyncAgentBase):
         actual_next = actual
         w = s.write
         r = s.read
-    
+
         if self.requireInit:
             w(0, intf.bus2ip_cs)
             self.requireInit = False
 
-        yield s.updateComplete         
+        yield s.updateComplete
         # now we are after clk edge
         if actual is not NOP:
             yield s.updateComplete
@@ -150,7 +150,6 @@ class IpifAgent(SyncAgentBase):
                                                 self.intf._getFullName(), s.now))
                     actual_next = NOP
 
-
         en = r(self.rst_n).val and self.enable
         if en:
             if self.actual is NOP:
@@ -158,7 +157,7 @@ class IpifAgent(SyncAgentBase):
                     req = self.requests.pop(0)
                     if req is not NOP:
                         self.doReq(s, req)
-                        self.actual = req  
+                        self.actual = req
                         return
             else:
                 self.actual = actual_next

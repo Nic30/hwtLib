@@ -33,8 +33,7 @@ class SimpleWithNonDirectIntConncetionTC(SimTestCase):
         u.a._ag.data.extend(d)
         self.doSim(100 * Time.ns)
         self.assertValSequenceEqual(u.c._ag.data, d)
-        
-        
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
@@ -43,6 +42,5 @@ if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
-    
     from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(SimpleWithNonDirectIntConncetion()))

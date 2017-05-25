@@ -42,7 +42,7 @@ class BramPortEndpointTC(AxiLiteEndpointTC):
         self.assertEmpty(u.field1._ag.dout)
 
     def test_read(self):
-        u = self.mySetUp( 32)
+        u = self.mySetUp(32)
         MAGIC = 100
         A = self.FIELD_ADDR
         u.bus._ag.requests.extend([(READ, A[0]),
@@ -63,11 +63,11 @@ class BramPortEndpointTC(AxiLiteEndpointTC):
                                                        MAGIC + 1])
 
     def test_write(self):
-        u = self.mySetUp( 32)
+        u = self.mySetUp(32)
         MAGIC = 100
         A = self.FIELD_ADDR
         u.bus._ag.requests.extend([
-            NOP, # assert is after reset
+            NOP,  # assert is after reset
             (WRITE, A[0], MAGIC),
             (WRITE, A[1], MAGIC + 1),
             (WRITE, A[0], MAGIC + 2),
@@ -87,7 +87,7 @@ class BramPortEndpointTC(AxiLiteEndpointTC):
 class BramPortEndpointDenseTC(BramPortEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDense
     FIELD_ADDR = [0x0, 0x2]
-    
+
 
 class BramPortEndpointStartTC(BramPortEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDenseStart
@@ -106,6 +106,7 @@ class BramPortEndpointOffsetTC(BramPortEndpointTC):
         self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
+
 class BramPortEndpointArray(AxiLiteEndpointArray):
     FIELD_ADDR = [0x0, 0x4]
     mkRegisterMap = BramPortEndpointTC.mkRegisterMap
@@ -113,7 +114,6 @@ class BramPortEndpointArray(AxiLiteEndpointArray):
 
     def randomizeAll(self):
         pass
-
 
     def test_nop(self):
         u = self.mySetUp(32)
@@ -133,10 +133,10 @@ class BramPortEndpointArray(AxiLiteEndpointArray):
 
     def test_read(self):
         u = self.mySetUp(32)
-        #u.bus._ag._debug(sys.stdout)
+        # u.bus._ag._debug(sys.stdout)
         regs = self.regs
         MAGIC = 100
-        #u.bus._ag.requests.append(NOP)
+        # u.bus._ag.requests.append(NOP)
         for i in range(4):
             u.field0._ag.mem[i] = MAGIC + i + 1
             u.field1._ag.mem[i] = 2 * MAGIC + i + 1
@@ -177,15 +177,11 @@ class BramPortEndpointArray(AxiLiteEndpointArray):
             self.assertValEqual(u.field1._ag.mem[i], 2 * MAGIC + i + 1)
 
 
-
-
-
-
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    #suite.addTest(BramPortStructEndpointArray('test_read'))
+    # suite.addTest(BramPortStructEndpointArray('test_read'))
     suite.addTest(unittest.makeSuite(BramPortEndpointTC))
     suite.addTest(unittest.makeSuite(BramPortEndpointDenseTC))
     suite.addTest(unittest.makeSuite(BramPortEndpointStartTC))

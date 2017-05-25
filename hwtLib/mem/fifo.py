@@ -143,4 +143,3 @@ if __name__ == "__main__":
     # u.EXPORT_SIZE.set(True)
     u.DEPTH.set(16)
     print(toRtl(u))
-

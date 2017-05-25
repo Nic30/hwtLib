@@ -19,16 +19,15 @@ class RamTC(SimTestCase):
 
         u.a._ag.requests = [(WRITE, 0, 5), (WRITE, 1, 7),
                             (READ, 0), (READ, 1),
-                            (READ, 0), (READ, 1), (READ, 2)] 
-        
-        
+                            (READ, 0), (READ, 1), (READ, 2)]
+
         self.doSim(110 * Time.ns)
         self.assertSequenceEqual([5, 7, None, None, None, None, None, None],
-                                  valuesToInts(self.model.ram_memory._val.val))
+                                 valuesToInts(self.model.ram_memory._val.val))
         self.assertSequenceEqual([5, 7, 5, 7, None],
                                  valuesToInts(u.a._ag.readed))
 
-        
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(TwoCntrsTC('test_withStops'))

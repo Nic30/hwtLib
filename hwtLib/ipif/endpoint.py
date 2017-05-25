@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, c, FsmBuilder, Switch, log2ceil
+from hwt.code import If, c, FsmBuilder, Switch
 from hwt.hdlObjects.types.enum import Enum
 from hwt.hdlObjects.types.typeCast import toHVal
 from hwt.synthesizer.param import evalParam
