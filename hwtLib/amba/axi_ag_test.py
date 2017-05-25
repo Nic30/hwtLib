@@ -52,7 +52,7 @@ class Axi_ag_TC(SimTestCase):
         r = self._rand.getrandbits
         _id = r(6)
         resp = r(2)
-        return (id, resp)
+        return (_id, resp)
     
     def randR(self):
         """get random data read transaction"""
@@ -80,8 +80,8 @@ class Axi_ag_TC(SimTestCase):
         
         u.s.w._ag.data.extend(w)
         
-        u.s.r._ag.data.extend(r)
-        u.s.b._ag.data.extend(b)
+        u.m.r._ag.data.extend(r)
+        u.m.b._ag.data.extend(b)
         
         self.doSim(20 * N * Time.ns)
         
