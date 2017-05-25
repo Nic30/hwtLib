@@ -64,7 +64,7 @@ class Axi3_addr_withUserAgent(BaseAxiAgent):
         _id, addr, burst, cache, _len, lock, prot, size, qos, user = data
 
         w(_id, intf.id)
-        w(addr, intf.intf)
+        w(addr, intf.addr)
         w(burst, intf.burst)
         w(cache, intf.cache)
         w(_len, intf.len)
