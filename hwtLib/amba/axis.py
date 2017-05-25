@@ -1,22 +1,25 @@
-from hwt.hdlObjects.constants import DIRECTION
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
-from hwt.synthesizer.interfaceLevel.interface import Interface
 from hwt.synthesizer.param import Param
+from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_strb, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
-from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_strb
 
 
 # http://www.xilinx.com/support/documentation/ip_documentation/ug761_axi_reference_guide.pdf
-class AxiStream_withoutSTRB(Interface):
+class AxiStream_withoutSTRB(Axi_hs):
+    """
+    Bare AMBA AXI-stream interface
+    
+    :ivar data: main data signal
+    :ivar last: signal which if high this data is last in this frame
+    """
     def _config(self):
         self.DATA_WIDTH = Param(64)
 
     def _declr(self):
+        super(AxiStream_withoutSTRB, self)._declr()
         self.data = VectSignal(self.DATA_WIDTH)
         self.last = Signal()
-        self.ready = Signal(masterDir=DIRECTION.IN)
-        self.valid = Signal()
 
     def _getIpCoreIntfClass(self):
         return IP_AXIStream
@@ -26,7 +29,10 @@ class AxiStream_withoutSTRB(Interface):
 
 class AxiStream_withoutSTRBAgent(BaseAxiAgent):
     """
-    Data format is (data, last)
+    Simulation agent for :class:`.AxiStream_withoutSTRB` interface
+    
+    input/output data stored in list under "data" property
+    data contains tuples (data, strb, last)
     """
     def doRead(self, s):
         intf = self.intf
@@ -51,6 +57,12 @@ class AxiStream_withoutSTRBAgent(BaseAxiAgent):
 
 
 class AxiStream(AxiStream_withoutSTRB, Axi_strb):
+    """
+    :class:`.AxiStream_withoutSTRB` with strb signal
+    
+    :ivar strb: byte strobe signal, has bit for each byte of data, data valid if corresponding bit 
+        ins strb signal is high
+    """
     def _config(self):
         AxiStream_withoutSTRB._config(self)
         Axi_strb._config(self)
@@ -64,6 +76,11 @@ class AxiStream(AxiStream_withoutSTRB, Axi_strb):
 
 
 class AxiStream_withUserAndNoStrb(AxiStream_withoutSTRB, Axi_user):
+    """
+    :class:`.AxiStream_withoutSTRB` with user signal
+    
+    :ivar user: generic signal with user specified meaning
+    """
     def _config(self):
         AxiStream_withoutSTRB._config(self)
         Axi_user._config(self)
@@ -74,6 +91,11 @@ class AxiStream_withUserAndNoStrb(AxiStream_withoutSTRB, Axi_user):
 
 
 class AxiStream_withId(Axi_id, AxiStream):
+    """
+    :class:`.AxiStream` with id signal
+    
+    :ivar id: id signal, usually identifies type or destination of frame
+    """
     def _config(self):
         Axi_id._config(self)
         AxiStream._config(self)
@@ -87,6 +109,11 @@ class AxiStream_withId(Axi_id, AxiStream):
 
 
 class AxiStream_withUserAndStrb(AxiStream, Axi_user):
+    """
+    :class:`.AxiStream` with user signal
+    
+    :ivar user: generic signal with user specified meaning
+    """
     def _config(self):
         AxiStream._config(self)
         Axi_user._config(self)
@@ -101,7 +128,10 @@ class AxiStream_withUserAndStrb(AxiStream, Axi_user):
 
 class AxiStreamAgent(BaseAxiAgent):
     """
-    Data format is (data, strb, last)
+    Simulation agent for :class:`.AxiStream` interface
+    
+    input/output data stored in list under "data" property
+    data contains tuples (data, strb, last)
     """
     def doRead(self, s):
         intf = self.intf
@@ -129,7 +159,10 @@ class AxiStreamAgent(BaseAxiAgent):
 
 class AxiStream_withIdAgent(BaseAxiAgent):
     """
-    Data format is (id, data, strb, last)
+    Simulation agent for :class:`.AxiStream_withId` interface
+    
+    input/output data stored in list under "data" property
+    data contains tuples (id, data, strb, last)
     """
     def doRead(self, s):
         intf = self.intf
@@ -159,7 +192,10 @@ class AxiStream_withIdAgent(BaseAxiAgent):
 
 class AxiStream_withUserAndStrbAgent(BaseAxiAgent):
     """
-    Data format is (data, strb, user, last)
+    Simulation agent for :class:`.AxiStream_withUserAndStrb` interface
+    
+    input/output data stored in list under "data" property
+    data contains tuples (data, strb, user, last)
     """
     def doRead(self, s):
         intf = self.intf
@@ -188,6 +224,9 @@ class AxiStream_withUserAndStrbAgent(BaseAxiAgent):
 
 
 class IP_AXIStream(IntfConfig):
+    """
+    Class which specifies how to describe AxiStream interfaces in IP-core
+    """
     def __init__(self):
         super().__init__()
         self.name = "axis"
