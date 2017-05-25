@@ -6,8 +6,8 @@ from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param, evalParam
 from hwtLib.amba.axis_comp.base import AxiSCompBase
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.handshaked.streamNode import streamAck
+from hwtLib.amba.axis_comp.reg import AxiSReg
 
 
 class AxiS_resizer(AxiSCompBase):
@@ -121,7 +121,16 @@ class AxiS_resizer(AxiSCompBase):
         if IN_DW % OUT_DW != 0:
             raise NotImplementedError()
         dOut = self.getDataWidthDependent(self.dataOut)
-        dataIn = AxiSBuilder(self, self.dataIn).reg().end
+        
+        # instanciate AxiSReg, AxiSBuilder is not used to avoid dependencies
+        inReg = AxiSReg(self.intfCls)
+        inReg._updateParamsFrom(self.dataIn)
+        self.inReg = inReg
+        inReg.clk ** self.clk
+        inReg.rst_n ** self.rst_n
+        inReg.dataIn ** self.dataIn
+        dataIn = inReg.dataOut
+        
         dIn = self.getDataWidthDependent(dataIn)
 
         ITEMS = IN_DW // OUT_DW

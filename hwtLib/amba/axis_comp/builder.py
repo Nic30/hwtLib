@@ -7,6 +7,7 @@ from hwtLib.amba.axis_comp.fork import AxiSFork
 from hwtLib.amba.axis_comp.mux import AxiSMux
 from hwtLib.amba.axis_comp.reg import AxiSReg
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
+from hwtLib.amba.axis_comp.resizer import AxiS_resizer
 
 
 class AxiSBuilder(AbstractStreamBuilder):
@@ -20,6 +21,7 @@ class AxiSBuilder(AbstractStreamBuilder):
     ForkCls = AxiSFork
     RegCls = AxiSReg
     MuxCls = AxiSMux
+    ResizerCls = AxiS_resizer
 
     def resize(self, newDataWidth):
         """

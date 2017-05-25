@@ -12,6 +12,7 @@ class AbstractStreamBuilder(object):
     :cvar FifoCls: fifo unit class
     :cvar RegCls: register unit class
     :cvar MuxCls: multiplexer unit class
+    :cvar ResizerCls: resizer unit class
 
     :ivar compId: used for sequential number of components
     :ivar lastComp: last builded component
