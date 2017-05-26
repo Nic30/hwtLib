@@ -55,41 +55,39 @@ class I2cBitCntrlCmdAgent(RdSyncedAgent):
 
 class I2cMasterBitCtrl(Unit):
     """
-    -----------------------------------
-     Bit controller section
-    ----------------------------------
+    Translate simple commands into SCL/SDA transitions
+    Each command has 5 states, 0/1/2/3/idle
+    .. aafig::
+        start:    SCL  ~~~~~~~~~~~~~~\____
+                  SDA  XX/~~~~~~~\______
+                       x | 0 | 1 | 2 | 3 | i
+        
+        repstart  SCL  ______/~~~~~~~\___
+                  SDA  __/~~~~~~~\______
+                       x | 0 | 1 | 2 | 3 | i
+        
+        stop      SCL  _______/~~~~~~~~~~~
+                  SDA  ==\___________/~~~~~
+                       x | 0 | 1 | 2 | 3 | i
+        
+        write    SCL  ______/~~~~~~~\____
+                 SDA  XXX===============XX
+                      x | 0 | 1 | 2 | 3 | i
+        
+        read     SCL  ______/~~~~~~~\____
+                 SDA  XXXXXXX=XXXXXXXXXXX
+                      x | 0 | 1 | 2 | 3 | i
 
-     Translate simple commands into SCL/SDA transitions
-     Each command has 5 states, 0/1/2/3/idle
-
-     start:    SCL  ~~~~~~~~~~~~~~\____
-               SDA  XX/~~~~~~~\______
-                    x | 0 | 1 | 2 | 3 | i
-
-     repstart  SCL  ______/~~~~~~~\___
-               SDA  __/~~~~~~~\______
-                    x | 0 | 1 | 2 | 3 | i
-
-     stop      SCL  _______/~~~~~~~~~~~
-               SDA  ==\___________/~~~~~
-                    x | 0 | 1 | 2 | 3 | i
-
-     - write    SCL  ______/~~~~~~~\____
-               SDA  XXX===============XX
-                    x | 0 | 1 | 2 | 3 | i
-
-     - read     SCL  ______/~~~~~~~\____
-               SDA  XXXXXXX=XXXXXXXXXXX
-                    x | 0 | 1 | 2 | 3 | i
-
-     Timing:      Normal mode     Fast mode
-    ---------------------------------------------------------------
-     Fscl         100KHz          400KHz
-     Th_scl       4.0us           0.6us   High period of SCL
-     Tl_scl       4.7us           1.3us   Low period of SCL
-     Tsu:sta      4.7us           0.6us   setup time for a repeated start condition
-     Tsu:sto      4.0us           0.6us   setup time for a stop condition
-     Tbuf         4.7us           1.3us   Bus free time between a stop and start condition
+    ============ ============== ============================================================= 
+     Timing:      Normal mode    Fast mode
+    ============ ============== =============================================================
+     Fscl         100KHz         400KHz
+     Th_scl       4.0us          0.6us   High period of SCL
+     Tl_scl       4.7us          1.3us   Low period of SCL
+     Tsu:sta      4.7us          0.6us   setup time for a repeated start condition
+     Tsu:sto      4.0us          0.6us   setup time for a stop condition
+     Tbuf         4.7us          1.3us   Bus free time between a stop and start condition
+    ============ ============== =============================================================
     """
     def _config(self):
         self.CLK_CNTR_WIDTH = Param(16)
