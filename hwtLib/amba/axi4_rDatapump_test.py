@@ -1,7 +1,6 @@
 #!/usr/bin/env python3e
 # -*- coding: utf-8 -*-
 
-import unittest
 
 from hwt.bitmask import mask
 from hwt.hdlObjects.constants import Time
@@ -16,6 +15,7 @@ from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 def mkReq(addr, _len, rem=0, _id=0):
     return (_id, addr, _len, rem)
 
+
 def mkReqAxi(addr, _len, _id=0, burst=BURST_INCR,
                              cache=CACHE_DEFAULT,
                              lock=LOCK_DEFAULT,
@@ -27,6 +27,7 @@ def mkReqAxi(addr, _len, _id=0, burst=BURST_INCR,
 
 def addData(ag, data, _id=0, resp=RESP_OKAY, last=True):
     ag.data.append((_id, data, resp, last))
+
 
 class Axi4_rDatapumpTC(SimTestCase):
     LEN_MAX = 255
@@ -360,6 +361,7 @@ class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
 
 
 if __name__ == "__main__":
+    import unittest
     suite = unittest.TestSuite()
     # suite.addTest(Axi3_rDatapumpTC('test_endstrbMultiFrame'))
     suite.addTest(unittest.makeSuite(Axi3_rDatapumpTC))
