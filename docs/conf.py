@@ -17,13 +17,13 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import glob
 import os
 import re
-from sphinx.apidoc import main
-import sys
-
+from sphinx.apidoc import main as apidoc
 import sphinx_bootstrap_theme
-import glob
+import sys
+from hwt.pyUtils.fileHelpers import find_files
 
 
 sys.path.insert(0, os.path.abspath('../'))
@@ -79,7 +79,7 @@ language = 'en'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**test**']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -194,13 +194,10 @@ autodoc_mock_imports = ['hwtHdlParsers']
 notskipregex = re.compile("_[^_]+")
 
 def skip(app, what, name, obj, skip, options):
-    # skip tests
-    if name.endswith("_test"):
-        return True
     # do not skip hiden methods
-    if notskipregex.match(name):
+    if name == "__init__" or notskipregex.match(name):
         return False
-    return skip
+    return None
 
 
 def setup(app):
@@ -210,6 +207,8 @@ def setup(app):
 for file in glob.glob("*.rst"):
     if file != "index.rst":
         os.remove(file)
-main(["--force", "-o", "../docs", "../hwtLib"])
+        
+excluded_tests = list(find_files("../", "*_test.py"))
+apidoc(["--force", "-o", "../docs", "../hwtLib"] + excluded_tests)
 
 
