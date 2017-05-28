@@ -5,11 +5,30 @@
 
 Hw_toolkit is library for generating, manipulatin and analysis of HDL (verilog/vhdl...) code.
 This library contains:
-* components and helpers for Hw_toolkit
+* hardware components and helpers for Hw_toolkit
 * simulations, verifications and test of components for Hw_toolikt
-* tests of Hw toolikt itself
+* examples and tests of Hw toolikt itself
 
-This library contains components which we use at most in video processing/network applications.
+```python
+    from hwt.serializer.ip_packager.packager import Packager
+    from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
+    
+    u = AnyUnitClass()
 
-Hw toolikit can be downloaded from there https://github.com/Nic30/HWToolkit or via pip.
+    # export unit as IPCore
+    p = Packager(u)
+    p.createPackage(".")
+
+    # print addr space of unit, first argument is main interface, 
+    # lamda fn. describes which signal should be tracked (this example for AxiLite)
+    addrSpace = AddressSpaceProbe(u.cntrlBus, lambda intf: intf.ar.addr).discover()
+    for addr, addrSpaceItem in sorted(addrSpace.items(), key=lambda x: x[0]):
+        print("0x%x:   %r" % (addr, addrSpaceItem))
+```
+
+Library can be installed by command: 
+``` bash
+sudo pip3 installl hwtLib
+```
+
 
