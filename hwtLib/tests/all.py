@@ -32,6 +32,7 @@ from hwtLib.amba.interconnect.rStrictOrder_test import RStrictOrderInterconnectT
 from hwtLib.amba.interconnect.wStrictOrderComplex_test import WStrictOrderInterconnectComplexTC
 from hwtLib.amba.interconnect.wStrictOrder_test import WStrictOrderInterconnectTC, \
     WStrictOrderInterconnect2TC
+from hwtLib.clocking.clkDivider import ClkDiv3TC
 from hwtLib.handshaked.fifo_test import HsFifoTC
 from hwtLib.handshaked.fork_test import HsForkTC, HsFork_randomized_TC
 from hwtLib.handshaked.joinFair_test import HsJoinFair_2inputs_TC, \
@@ -207,6 +208,7 @@ suite = testSuiteFromTCs(
     BramPortEndpointOffsetTC,
     BramPortEndpointArray,
     LsfrTC,
+    ClkDiv3TC,
 
     FlipRegTC,
     FlipCntrTC,
