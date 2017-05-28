@@ -145,7 +145,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         ra(u.w)
         ra(u.driver.w)
 
-        self.doSim(N * 6 * 10 * Time.ns)
+        self.doSim(N * 8 * 10 * Time.ns)
 
         self.assertValSequenceEqual(aw,
                                     [
