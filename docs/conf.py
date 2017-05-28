@@ -23,6 +23,7 @@ import re
 from sphinx.apidoc import main as apidoc
 import sphinx_bootstrap_theme
 import sys
+
 from hwt.pyUtils.fileHelpers import find_files
 
 
