@@ -5,8 +5,9 @@ import unittest
 
 from hwt.hdlObjects.constants import Time
 from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.agents.rst import pullDownAfter
 from hwt.simulator.agentConnector import valuesToInts
-from hwt.simulator.shortcuts import simUnitVcd, oscilate, pullDownAfter, \
+from hwt.simulator.shortcuts import simUnitVcd, oscilate, \
     toSimModel, reconectUnitSignalsToModel
 from hwtLib.mem.clkSynchronizer import ClkSynchronizer
 
