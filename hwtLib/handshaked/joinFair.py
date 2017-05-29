@@ -1,26 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import And, If, Or, iterBits, rol, ror, SwitchLogic
+from hwt.code import Or, iterBits, rol, SwitchLogic
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwtLib.handshaked.join import HandshakedJoin
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param, evalParam
 from hwt.interfaces.std import VldSynced
-
-
-def priorityAck(priorityReg, vldSignals, index):
-    priorityOverdrives = []
-    vldWithHigherPriority = list(vldSignals[:index])
-
-    for i, (p, vld) in enumerate(zip(iterBits(priorityReg), vldSignals)):
-        if i > index:
-            priorityOverdrives.append(p & vld)
-
-
-    ack = ~Or(*priorityOverdrives, *vldWithHigherPriority) | priorityReg[index]
-
-    return ack
 
 
 class HsJoinFairShare(HandshakedJoin):
@@ -45,23 +31,32 @@ class HsJoinFairShare(HandshakedJoin):
             self.selectedOneHot = VldSynced()
             self.selectedOneHot._replaceParam("DATA_WIDTH", self.INPUTS)
 
-    def dataConnectionExpr(self, dIn, dOut):
-        """Create connection between input and output interface"""
-        data = self.getData
-        dataConnectExpr = []
-        outDataSignals = list(data(dOut))
+    @staticmethod
+    def priorityAck(priorityReg, vldSignals, index):
+        """
+        Generate ack logic for selected input
         
-        if dIn is None:
-            dIn = [None for _ in outDataSignals]
-        else:
-            dIn = data(dIn)
-        
-        for _din, _dout in zip(dIn, outDataSignals):
-            dataConnectExpr.extend(_dout ** _din)
-
-        return dataConnectExpr
-
+        :param priorityReg: priority register with one hot encoding, 1 means input of this index should have be prioritized.
+        :param vldSignals: list of vld signals of input
+        :param index: index of input for which you wont get ack logic
+        :return: ack signal for this input
+        """
+        priorityOverdrives = []
+        vldWithHigherPriority = list(vldSignals[:index])
+    
+        for i, (p, vld) in enumerate(zip(iterBits(priorityReg), vldSignals)):
+            if i > index:
+                priorityOverdrives.append(p & vld)
+    
+        # ack when no one with higher priority has vld or this input have the priority
+        ack = ~Or(*priorityOverdrives, *vldWithHigherPriority) | priorityReg[index]
+        return ack
+    
     def isSelectedLogic(self, EXPORT_SELECTED):
+        """
+        Resolve isSelected signal flags for each input, when isSelected flag signal is 1 it means
+        input has clearance to make transaction
+        """
         vld = self.getVld
         rd = self.getRd
         dout = self.dataOut
@@ -74,7 +69,7 @@ class HsJoinFairShare(HandshakedJoin):
         isSelectedFlags = []
         for i, din in enumerate(self.dataIn):
             isSelected = self._sig("isSelected_%d" % i)
-            isSelected ** priorityAck(priority, vldSignals, i)
+            isSelected ** self.priorityAck(priority, vldSignals, i)
             isSelectedFlags.append(isSelected)
 
             rd(din) ** (isSelected & rd(dout))
