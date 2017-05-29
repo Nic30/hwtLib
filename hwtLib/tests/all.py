@@ -107,6 +107,7 @@ from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC, \
 from hwtLib.structManipulators.cLinkedListReader_test import CLinkedListReaderTC
 from hwtLib.structManipulators.cLinkedListWriter_test import CLinkedListWriterTC
 from hwtLib.structManipulators.mmu2pageLvl_test import MMU_2pageLvl_TC
+from hwtLib.structManipulators.structReader_test import StructReaderTC
 from hwtLib.structManipulators.structWriter_test import StructWriter_TC
 from hwtLib.tests.operators import OperatorTC
 from hwtLib.tests.statementTrees import StatementTreesTC
@@ -269,6 +270,7 @@ suite = testSuiteFromTCs(
     CLinkedListWriterTC,
     MMU_2pageLvl_TC,
     StructWriter_TC,
+    StructReaderTC,
     
     IpifEndpointTC,
     IpifEndpointDenseTC,

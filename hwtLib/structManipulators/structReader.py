@@ -55,6 +55,7 @@ class StructReader(AxiS_frameParser):
             self.rDatapump.MAX_LEN.set(StructBusBurstInfo.sumOfWords(self._busBurstInfo))
             # [TODO] do not use self._structT (bursts can be formated to something else)
             self.parser = AxiS_frameParser(AxiStream_withoutSTRB, self._structT)
+
         if evalParam(self.SHARED_READY).val:
             self.ready = Signal()
 
