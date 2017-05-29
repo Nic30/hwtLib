@@ -100,8 +100,8 @@ class BusConverter(Unit):
                 if field.name is None:
                     continue
                 assert len(field.appearsInWords) == 1
-                if isinstance(field.type, Array):
-                    size = evalParam(field.type.size).val
+                if isinstance(field.dtype, Array):
+                    size = evalParam(field.dtype.size).val
                     alignOffsetBits = log2ceil(self._getWordAddrStep()).val
                 else:
                     size = None
@@ -126,11 +126,11 @@ class BusConverter(Unit):
             if addrItem.size is None:
                 # addrItem.size = 1
                 p = RegCntrl()
-                dw = addrItem.origin.type.bit_length()
+                dw = addrItem.origin.dtype.bit_length()
                 self._directlyMapped.append(addrItem)
             else:
                 p = BramPort_withoutClk()
-                dw = addrItem.origin.type.elmType.bit_length()
+                dw = addrItem.origin.dtype.elmType.bit_length()
                 p.ADDR_WIDTH.set(log2ceil(addrItem.size - 1))
                 self._bramPortMapped.append(addrItem)
 

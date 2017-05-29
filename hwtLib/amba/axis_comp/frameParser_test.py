@@ -78,7 +78,7 @@ def packFrame(dataWidth, structT, data):
                 value = data[i]
                 i += 1
 
-        t = field.type
+        t = field.dtype
         if isinstance(t, Bits):
             w = t.bit_length()
             while True:

@@ -35,20 +35,15 @@ class AxiS_frameForge(AxiSCompBase):
         self.dataOut = self.intfCls()
         for item in self._frameTemplate:
             if item.name is not None:
-                ep = item.externalInterface
-                if ep is not None:
-                    p = ep.__class__()
-                    setattr(self, item.name, p)
-                    p._shareParamsWith(ep)
-                else:
-                    p = Handshaked()
-                    p.DATA_WIDTH.set(item.type.bit_length())
-                    setattr(self, item.name, p)
+                p = Handshaked()
+                p.DATA_WIDTH.set(item.dtype.bit_length())
+                setattr(self, item.name, p)
                 item.internalInterface = p
 
     def _impl(self):
         dout = self.dataOut
-        maxWordIndex = self._frameTemplate.resolveFieldPossitionsInFrame(evalParam(self.DATA_WIDTH).val) - 1
+        DW = evalParam(self.DATA_WIDTH).val
+        maxWordIndex = self._frameTemplate.resolveFieldPossitionsInFrame(DW) - 1
         if maxWordIndex == 0:
             # single word frame
             for i, recs in self._frameTemplate.walkWords():

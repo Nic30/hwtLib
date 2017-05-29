@@ -43,7 +43,7 @@ class AxiS_frameParser(Unit):
             i = VldSynced()
         else:
             i = Handshaked()
-        i.DATA_WIDTH.set(fInfo.type.bit_length())
+        i.DATA_WIDTH.set(fInfo.dtype.bit_length())
         fInfo.interface = i
         return i
 
@@ -55,7 +55,7 @@ class AxiS_frameParser(Unit):
         busDataWidth = evalParam(self.DATA_WIDTH).val
         startBitIndex = 0
         for f in self._structT.fields:
-            name, t = f.name, f.type
+            name, t = f.name, f.dtype
             if name is not None:
                 info = StructFieldInfo(t, name)
                 startBitIndex = info.discoverFieldParts(busDataWidth, startBitIndex)

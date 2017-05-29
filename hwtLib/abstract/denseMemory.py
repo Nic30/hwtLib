@@ -296,7 +296,7 @@ class DenseMemory():
         s = structT.getValueCls()
 
         for f in structT.fields:
-            fieldLen = f.type.bit_length()
+            fieldLen = f.dtype.bit_length()
 
             # resolve value of field from memory
             if f.name is not None:

@@ -27,7 +27,7 @@ class StructWriter(StructReader):
 
     def _createInterfaceForField(self, fInfo):
         i = Handshaked()
-        i.DATA_WIDTH.set(fInfo.type.bit_length())
+        i.DATA_WIDTH.set(fInfo.dtype.bit_length())
         fInfo.interface = i
         return i
 
@@ -52,7 +52,7 @@ class StructWriter(StructReader):
 
         self.frameAssember = []
         for burstInfo in self._busBurstInfo:
-            frameTemplate = [(f.type, f.name) for f in burstInfo.fieldInfos]
+            frameTemplate = [(f.dtype, f.name) for f in burstInfo.fieldInfos]
             f = AxiS_frameForge(AxiStream, HStruct(*frameTemplate))
             self.frameAssember.append(f)
         self._registerArray("frameAssember", self.frameAssember)
