@@ -36,7 +36,7 @@ class HandshakedJoin(HandshakedCompBase):
         
         for i, din in reversed(list(enumerate(self.dataIn))):
             # dataIn.rd
-            allLowerPriorNotReady =  map(lambda x:~x, vldSignals[:i])
+            allLowerPriorNotReady = map(lambda x:~x, vldSignals[:i])
             rd(din) ** (And(rd(dout), *allLowerPriorNotReady))
             
             # data out mux
