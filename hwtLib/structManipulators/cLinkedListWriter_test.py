@@ -134,7 +134,7 @@ class CLinkedListWriterTC(SimTestCase):
         for i in range(ITEMS):
             try:
                 d = m.data[baseIndex + i]
-            except KeyError:
+            except KeyError: # pragma: no cover
                 raise AssertionError("Invalid data on index %d" % i)
             self.assertValEqual(d, i + MAGIC, "Invalid data on index %d" % i)
 
@@ -182,7 +182,7 @@ class CLinkedListWriterTC(SimTestCase):
         for i in range(ITEMS):
             try:
                 d = m.data[baseIndex + i]
-            except KeyError:
+            except KeyError: # pragma: no cover
                 raise AssertionError("Invalid data on index %d" % i)
             self.assertValEqual(d, i + MAGIC, "Invalid data on index %d" % i)
             
