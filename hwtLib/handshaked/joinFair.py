@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import And, If, Or, iterBits, rol, ror
+from hwt.code import And, If, Or, iterBits, rol, ror, SwitchLogic
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwtLib.handshaked.join import HandshakedJoin
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param, evalParam
-from hwt.interfaces.std import VectSignal, VldSynced
+from hwt.interfaces.std import VldSynced
 
 
 def priorityAck(priorityReg, vldSignals, index):
@@ -45,47 +45,70 @@ class HsJoinFairShare(HandshakedJoin):
             self.selectedOneHot = VldSynced()
             self.selectedOneHot._replaceParam("DATA_WIDTH", self.INPUTS)
 
-    def _impl(self):
-        rd = self.getRd
-        vld = self.getVld
+    def dataConnectionExpr(self, dIn, dOut):
+        """Create connection between input and output interface"""
         data = self.getData
-        dout = self.dataOut
-        EXPORT_SELECTED = evalParam(self.EXPORT_SELECTED).val
+        dataConnectExpr = []
+        outDataSignals = list(data(dOut))
+        
+        if dIn is None:
+            dIn = [None for _ in outDataSignals]
+        else:
+            dIn = data(dIn)
+        
+        for _din, _dout in zip(dIn, outDataSignals):
+            dataConnectExpr.extend(_dout ** _din)
 
+        return dataConnectExpr
+
+    def isSelectedLogic(self, EXPORT_SELECTED):
+        vld = self.getVld
+        rd = self.getRd
+        dout = self.dataOut
+        
         priority = self._reg("priority", vecT(self.INPUTS), defVal=1)
+        priority ** rol(priority, 1)
 
         vldSignals = list(map(vld, self.dataIn))
 
-        isSelected_tmp = []
+        isSelectedFlags = []
         for i, din in enumerate(self.dataIn):
             isSelected = self._sig("isSelected_%d" % i)
             isSelected ** priorityAck(priority, vldSignals, i)
-            isSelected_tmp.append(isSelected)
+            isSelectedFlags.append(isSelected)
 
             rd(din) ** (isSelected & rd(dout))
 
             if EXPORT_SELECTED:
                 self.selectedOneHot.data[i] ** (isSelected & vld(din))
-
-        # data out mux
-        outMuxTop = []
-        for d in data(dout):
-            outMuxTop.extend(d ** None)
-        for isSelected, din in zip(reversed(isSelected_tmp), reversed(list(self.dataIn))):
-            dataConnectExpr = []
-            for _din, _dout in zip(data(din), data(dout)):
-                dataConnectExpr.extend(_dout ** _din)
-
-            outMuxTop = If(vld(din) & isSelected,
-                dataConnectExpr
-            ).Else(
-                outMuxTop
-            )
-
-        priority ** rol(priority, 1)
-        vld(dout) ** Or(*vldSignals)
+        
         if EXPORT_SELECTED:
             self.selectedOneHot.vld ** (Or(*vldSignals) & rd(dout))
+        
+        return isSelectedFlags, vldSignals
+    
+    def inputMuxLogic(self, isSelectedFlags, vldSignals):
+        vld = self.getVld
+        dout = self.dataOut
+
+        # data out mux
+        dataCases = []
+        for isSelected, din in zip(isSelectedFlags, self.dataIn):
+            dataConnectExpr = self.dataConnectionExpr(din, dout)
+            cond = vld(din) & isSelected
+            dataCases.append((cond, dataConnectExpr))
+
+        dataDefault = self.dataConnectionExpr(None, dout)
+        SwitchLogic(dataCases, dataDefault)
+        vld(dout) ** Or(*vldSignals)
+
+    def _impl(self):
+        EXPORT_SELECTED = evalParam(self.EXPORT_SELECTED).val
+
+        isSelectedFlags, vldSignals = self.isSelectedLogic(EXPORT_SELECTED)
+        self.inputMuxLogic(isSelectedFlags, vldSignals)
+
+
 
 if __name__ == "__main__":
     from hwt.interfaces.std import Handshaked
