@@ -28,7 +28,7 @@ This library contains:
 
 Library can be installed by command: 
 ``` bash
-sudo pip3 installl hwtLib
+sudo pip3 install hwtLib
 ```
 
 
