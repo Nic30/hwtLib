@@ -138,7 +138,7 @@ class CLinkedListWriterTC(SimTestCase):
                 raise AssertionError("Invalid data on index %d" % i)
             self.assertValEqual(d, i + MAGIC, "Invalid data on index %d" % i)
 
-    def debugNode(self, mem, baseAddr):
+    def debugNode(self, mem, baseAddr): # pragma: no cover
         baseIndex = baseAddr // (self.DATA_WIDTH // 8)
 
         items = []
