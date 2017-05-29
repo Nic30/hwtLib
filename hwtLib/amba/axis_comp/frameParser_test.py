@@ -53,11 +53,11 @@ reference1 = {
 
 def packFrame(dataWidth, structT, data):
     """
-    Pack data into list of BitsVal
+    Pack data into list of BitsVal of specified dataWidth
 
     :param dataWidth: width of word
     :param structT: HStruct type instance
-    :param data: list of values for struct fields or dictionary {fieldName: value}
+    :param data: list of values for struct fields (with name specified) or dictionary {fieldName: value}
 
     :return: list of BitsVal which are representing values of words
     """
@@ -67,11 +67,17 @@ def packFrame(dataWidth, structT, data):
     actualVldMask = 0
     usedBits = 0
 
+    i = 0
     for field in structT.fields:
         if field.name is None:
             value = None
         else:
-            value = data[field.name]
+            if isinstance(data, dict):
+                value = data[field.name]
+            else:
+                value = data[i]
+                i += 1
+
         t = field.type
         if isinstance(t, Bits):
             w = t.bit_length()
