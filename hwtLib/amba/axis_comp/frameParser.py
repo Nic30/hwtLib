@@ -3,12 +3,13 @@ from math import inf
 from hwt.code import log2ceil, If, Concat, And
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.struct import HStruct
-from hwt.hdlObjects.types.structUtils import StructFieldInfo, \
-    StructBusBurstInfo
 from hwt.interfaces.std import Handshaked, Signal, VldSynced
+from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam, Param
+from hwt.hdlObjects.transactionTemplate import TransactionTemplate
+
 
 
 class AxiS_frameParser(Unit):
@@ -38,98 +39,81 @@ class AxiS_frameParser(Unit):
         # or use internal counter for synchronization
         self.SYNCHRONIZE_BY_LAST = Param(True)
 
-    def _createInterfaceForField(self, fInfo):
+    def _createInterfaceForField(self, transInfo):
         if evalParam(self.SHARED_READY).val:
             i = VldSynced()
         else:
             i = Handshaked()
-        i.DATA_WIDTH.set(fInfo.dtype.bit_length())
-        fInfo.interface = i
+        i.DATA_WIDTH.set(transInfo.dtype.bit_length())
         return i
 
-    def _declareFieldInterfaces(self):
-        """
-        Declare interfaces for struct fields and collect StructFieldInfo for each field
-        """
-        structInfo = []
-        busDataWidth = evalParam(self.DATA_WIDTH).val
-        startBitIndex = 0
-        for f in self._structT.fields:
-            name, t = f.name, f.dtype
-            if name is not None:
-                info = StructFieldInfo(t, name)
-                startBitIndex = info.discoverFieldParts(busDataWidth, startBitIndex)
-                i = self._createInterfaceForField(info)
+    def _getDataSignal(self, transactionPart):
+        busDataSignal = self.dataIn.data
+        bitRange = transactionPart.getBusWordBitRange()
+        return busDataSignal[bitRange[0]:bitRange[1]]
 
-                setattr(self, name, i)
-                structInfo.append(info)
-            else:
-                startBitIndex += t.bit_length()
-
-        return structInfo
-
-    def _declr(self, declareInput=True, maxDummyWords=inf):
+    def _declr(self):
         addClkRstn(self)
-        structInfo = self._declareFieldInterfaces()
-        self._busBurstInfo = StructBusBurstInfo.packFieldInfosToBusBurst(
-                                    structInfo,
-                                    maxDummyWords,
-                                    evalParam(self.DATA_WIDTH).val // 8)
+        self._fieldsToInterfaces = {}
+        self.parsed = StructIntf(self._structT,
+                                 self._createInterfaceForField)
 
-        if declareInput:
-            with self._paramsShared():
-                self.dataIn = self._axiSCls()
-                if evalParam(self.SHARED_READY).val:
-                    self.ready = Signal()
+        with self._paramsShared():
+            self.dataIn = self._axiSCls()
+            if evalParam(self.SHARED_READY).val:
+                self.parsed_ready = Signal()
 
-    def _impl(self):
-        r = self.dataIn
-        maxWordIndex = StructBusBurstInfo.sumOfWords(self._busBurstInfo)
-        wordIndex = self._reg("wordIndex", vecT(log2ceil(maxWordIndex + 1)), 0)
-        busVld = r.valid
+    def _connectDataSignals(self, tmpl, wordIndex):
+        busVld = self.dataIn.valid
+        
+        signalsOfParts = []
 
-        for burstInfo in self._busBurstInfo:
-            for fieldInfo in burstInfo.fieldInfos:
-                lastPart = fieldInfo.parts[-1]
-                signalsOfParts = []
+        for wIndx, transParts in tmpl.walkFrameWords():
+            isThisWord = wordIndex._eq(wIndx)
 
-                for i, part in enumerate(fieldInfo.parts):
-                    dataVld = busVld & wordIndex._eq(part.wordIndex)
-                    fPartSig = part.getSignal(r.data)
+            for part in transParts:
+                dataVld = busVld & isThisWord
+                fPartSig = self._getDataSignal(part)
+                fieldInfo = part.parent
+                isLastPart = fieldInfo.transactionParts[-1] is part
 
-                    if part is lastPart:
-                        signalsOfParts.append(fPartSig)
-                        fieldInfo.interface.data ** Concat(*reversed(signalsOfParts))
-                        fieldInfo.interface.vld ** dataVld
-
-                    else:
-                        if part.wordIndex < lastPart.wordIndex:
-                            # part is in some word before last, we have to store its value to reg till the last part arrive
-                            fPartReg = self._reg("%s_part_%d" % (fieldInfo.name, i), fPartSig._dtype)
-                            If(dataVld,
-                               fPartReg ** fPartSig
-                            )
-                            signalsOfParts.append(fPartReg)
-                        else:
-                            # part is in same word as last so we can take it directly
-                            signalsOfParts.append(fPartSig)
-
+                if isLastPart:
+                    signalsOfParts.append(fPartSig)
+                    intf = self.parsed._fieldsToInterfaces[fieldInfo.origin]
+                    intf.data ** Concat(*reversed(signalsOfParts))
+                    intf.vld ** dataVld
+                    signalsOfParts = []
+                else:
+                    # part is in some word as last part, we have to store its value to reg 
+                    # until the last part arrive
+                    fPartReg = self._reg("%s_part_%d" % (fieldInfo.name, len(signalsOfParts)), fPartSig._dtype)
+                    If(dataVld,
+                       fPartReg ** fPartSig
+                    )
+                    signalsOfParts.append(fPartReg)
+    
+    def _busReadyLogic(self, tmpl, wordIndex, maxWordIndex):
         if evalParam(self.SHARED_READY).val:
             busRd = self.ready
         else:
             # generate ready logic for struct fields
-            # dict index of word :  list of field parts
+            
+            # dict {index of word :  list of field parts which are ending in this word}
             endOfFieldsInWords = {}
-            for burstInfo in self._busBurstInfo:
-                for fieldInfo in burstInfo.fieldInfos:
-                    lastPart = fieldInfo.parts[-1]
-                    endOfFieldsInWords.setdefault(lastPart.wordIndex, [])\
-                                      .append(fieldInfo)
-
+            for tPart in tmpl.walkTransactionParts():
+                isPadding = tPart.parent is None
+                if not isPadding:
+                    tItem = tPart.parent
+                    isLastPart = tItem.transactionParts[-1] is tPart
+                    if isLastPart:
+                        wIndex = tmpl.wordIndxFromBitAddr(tPart.inFrameBitAddr)
+                        endOfFieldsInWords.setdefault(wIndex, [])\
+                                          .append(tItem)
+                    
             _busRd = None
             for i in range(maxWordIndex + 1):
                 fields = endOfFieldsInWords.get(i, [])
-                fiedsRd = map(lambda f: f.interface.rd,
+                fiedsRd = map(lambda f: self.parsed._fieldsToInterfaces[f.origin].rd,
                               fields)
                 isThisIndex = wordIndex._eq(i)
                 if _busRd is None:
@@ -139,6 +123,20 @@ class AxiS_frameParser(Unit):
 
             busRd = self._sig("busAck")
             busRd ** _busRd
+        return busRd
+    
+    def _impl(self):
+        r = self.dataIn
+        tmpl = TransactionTemplate.fromHStruct(self._structT)
+        DW = evalParam(self.DATA_WIDTH).val
+        _, bitAddrOfEnd, _, _ = tmpl.discoverTransactionInfos(DW)
+        maxWordIndex = bitAddrOfEnd // DW
+        wordIndex = self._reg("wordIndex", vecT(log2ceil(maxWordIndex + 1)), 0)
+        busVld = r.valid
+        
+        self._connectDataSignals(tmpl, wordIndex)
+        busRd = self._busReadyLogic(tmpl, wordIndex, maxWordIndex)
+
         r.ready ** busRd
 
         if evalParam(self.SYNCHRONIZE_BY_LAST).val:
@@ -178,6 +176,11 @@ if __name__ == "__main__":
         (uint64_t, None),
         (uint64_t, "item6"),
         (uint64_t, "item7"),
+        (HStruct(
+            (uint64_t, "item0"),
+            (uint64_t, "item1"),
+         ), 
+         "struct0")
         )
     u = AxiS_frameParser(AxiStream, s)
     u.DATA_WIDTH.set(51)

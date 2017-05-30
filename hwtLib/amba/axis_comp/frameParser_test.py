@@ -141,10 +141,7 @@ class AxiS_frameParserTC(SimTestCase):
         u = self.mySetUp(DW, structManyInts)
 
         self.doSim(300 * Time.ns)
-        for intf in u._interfaces:
-            if intf in [u.clk, u.rst_n, u.dataIn]:
-                continue
-
+        for intf in u.parsed._interfaces:
             self.assertEmpty(intf._ag.data)
 
     def _test_structManyInts_2x(self, dataWidth):
@@ -156,9 +153,7 @@ class AxiS_frameParserTC(SimTestCase):
 
         self.doSim(((8 * 64) / dataWidth) * 80 * Time.ns)
 
-        for intf in u._interfaces:
-            if intf in [u.clk, u.rst_n, u.dataIn]:
-                continue
+        for intf in u.parsed._interfaces:
             n = intf._name
             d = [reference0[n], reference1[n]]
             self.assertValSequenceEqual(intf._ag.data, d, n)
