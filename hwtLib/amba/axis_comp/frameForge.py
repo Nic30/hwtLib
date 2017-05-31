@@ -1,14 +1,22 @@
 from hwt.bitmask import mask
 from hwt.code import log2ceil, Switch, If, isPow2
 from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
+from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import evalParam
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.handshaked.streamNode import streamSync, streamAck
-from hwt.hdlObjects.types.structUtils import FrameTemplate
+from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 
+
+def instantiateSimpleFieldIntf(frameTemplateItem):
+    p = Handshaked()
+    p.DATA_WIDTH.set(frameTemplateItem.dtype.bit_length())
+
+    return p
 
 class AxiS_frameForge(AxiSCompBase):
     """
@@ -25,122 +33,114 @@ class AxiS_frameForge(AxiSCompBase):
         if axiSIntfCls is not AxiStream:
             raise NotImplementedError()
 
-        self._frameTemplate = FrameTemplate.fromHStruct(structT)
+        self._structT = structT
 
-        assert self._frameTemplate
         AxiSCompBase.__init__(self, axiSIntfCls)
 
     def _declr(self):
         addClkRstn(self)
         self.dataOut = self.intfCls()
-        for item in self._frameTemplate:
-            if item.name is not None:
-                p = Handshaked()
-                p.DATA_WIDTH.set(item.dtype.bit_length())
-                setattr(self, item.name, p)
-                item.internalInterface = p
+        self.dataIn = StructIntf(self._structT, instantiateSimpleFieldIntf)
 
     def _impl(self):
         dout = self.dataOut
+        tmpl = TransactionTemplate.fromHStruct(self._structT)
         DW = evalParam(self.DATA_WIDTH).val
-        maxWordIndex = self._frameTemplate.resolveFieldPossitionsInFrame(DW) - 1
-        if maxWordIndex == 0:
-            # single word frame
-            for i, recs in self._frameTemplate.walkWords():
-                assert i == 0
-                inPorts = []
-                wordData = self._sig("word%d" % i, dout.data._dtype)
+        _, bitAddrOfEnd, _, _ = tmpl.discoverTransactionInfos(DW)
+        maxWordIndex = (bitAddrOfEnd - 1) // DW
 
-                for fi in recs:
-                    assert fi.appearsInWords
-                    for w, high, low in fi.appearsInWords:
-                        if w == i:
-                            if fi.internalInterface is None:
-                                wordData[high:low] ** None
-                            else:
-                                intf = fi.internalInterface
-                                wordData[high:low] ** intf.data
-                                inPorts.append(intf)
-            streamSync(masters=inPorts, slaves=[dout])
-            dout.data ** wordData
-            dout.last ** 1
-            dout.strb ** mask(8)
-        else:
+        useCounter = maxWordIndex > 0
+        if useCounter:
             # multiple word frame
             wordCntr_inversed = self._reg("wordCntr_inversed",
                                           vecT(log2ceil(maxWordIndex + 1), False),
                                           defVal=maxWordIndex)
-
             wcntrSw = Switch(wordCntr_inversed)
-            din = {}  # dict word index [] of interfaces
-            for i, recs in self._frameTemplate.walkWords():
-                inPorts = []
-                wordData = self._sig("word%d" % i, dout.data._dtype)
 
-                for fi in recs:
-                    assert fi.appearsInWords
-                    for w, high, low in fi.appearsInWords:
-                        if w == i:
-                            if fi.internalInterface is None:
-                                wordData[high:low] ** None
-                            else:
-                                intf = fi.internalInterface
-                                wordData[high:low] ** intf.data
-                                inPorts.append(intf)
-                                l = din.setdefault(i, [])
-                                l.append(intf)
+        
+        for i, transactionParts in tmpl.walkFrameWords(skipPadding=False):
+            inPorts = []
+            wordData = self._sig("word%d" % i, dout.data._dtype)
+
+            for tPart in transactionParts:
+                high, low = tPart.getBusWordBitRange()
+                if tPart.isPadding:
+                    wordData[high:low] ** None
+                else:
+                    intf = self.dataIn._fieldsToInterfaces[tPart.parent.origin]
+                    wordData[high:low] ** intf.data
+                    inPorts.append(intf)
+
+            if useCounter:
                 if i == maxWordIndex:
-                    v = maxWordIndex
+                    nextWordIndex = maxWordIndex
                 else:
-                    v = wordCntr_inversed - 1
+                    nextWordIndex = wordCntr_inversed - 1
 
-                if inPorts:
-                    # input ready logic
-                    wordEnConds = {}
-                    for intf in inPorts:
-                        wordEnConds[intf] = dout.ready & wordCntr_inversed._eq(maxWordIndex - i)
+            if inPorts:
+                # input ready logic
+                wordEnConds = {}
+                for intf in inPorts:
+                    wordEnConds[intf] = dout.ready
+                    if useCounter:
+                        c = wordEnConds[intf]
+                        wordEnConds[intf] = c & wordCntr_inversed._eq(maxWordIndex - i)
 
-                    streamSync(masters=inPorts,
-                               extraConds=wordEnConds)
+                streamSync(masters=inPorts,
+                           # slaves=[dout],
+                           extraConds=wordEnConds)
 
-                    # word cntr next logic
-                    ack = streamAck(masters=inPorts, slaves=[dout])
-                    a = If(ack,
-                           wordCntr_inversed ** v
-                        )
+            if inPorts:
+                ack = streamAck(masters=inPorts)
+            else:
+                ack = 1
+
+            if useCounter:
+                # word cntr next logic
+                if ack is 1:
+                    _ack = dout.ready
                 else:
-                    ack = 1
-                    a = If(dout.ready,
-                           wordCntr_inversed ** v
-                        )
-                a.extend(dout.valid ** ack)
-                # data out logic
-                a.extend(dout.data ** wordData)
+                    _ack = ack & dout.ready
+                a = If(_ack,
+                       wordCntr_inversed ** nextWordIndex
+                    )
+            else:
+                a = []
 
-                wcntrSw = wcntrSw.Case(maxWordIndex - i, a)
+            a.extend(dout.valid ** ack)
+            # data out logic
+            a.extend(dout.data ** wordData)
 
-            # to prevent latches
-            if not isPow2(maxWordIndex + 1):
-                default = wordCntr_inversed ** maxWordIndex
-                default.extend(dout.valid ** 0)
-                default.extend(dout.data ** None)
+            if useCounter:
+                wcntrSw.Case(maxWordIndex - i, a)
 
-                wcntrSw.Default(default)
+        # to prevent latches
+        if not useCounter:
+            pass
+        elif not isPow2(maxWordIndex + 1):
+            default = wordCntr_inversed ** maxWordIndex
+            default.extend(dout.valid ** 0)
+            default.extend(dout.data ** None)
 
+            wcntrSw.Default(default)
+
+        if useCounter:
             dout.last ** wordCntr_inversed._eq(0)
-            dout.strb ** mask(8)
+        else:
+            dout.last ** 1
+        
+        dout.strb ** mask(8)
 
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     from hwtLib.types.ctypes import uint64_t, uint8_t, uint16_t
-    from hwt.hdlObjects.types.struct import HStruct
     u = AxiS_frameForge(AxiStream,
                         # tuples (type, name) where type has to be instance of Bits type
                         HStruct(
-                            (uint64_t, "item0"),
-                            (uint64_t, None),  # name = None means this field will be ignored
-                            (uint64_t, "item1"),
+                            #(uint64_t, "item0"),
+                            #(uint64_t, None),  # name = None means field is padding
+                            #(uint64_t, "item1"),
                             (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
                         )
                         )

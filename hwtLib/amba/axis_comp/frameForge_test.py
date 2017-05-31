@@ -34,9 +34,9 @@ class AxiS_frameForge_TC(SimTestCase):
 
         self.prepareUnit(self.u)
         if randomized:
-            for intf in u._interfaces:
-                if intf not in [u.clk, u.rst_n]:
-                    self.randomize(intf)
+            self.randomize(u.dataOut)
+            for intf in u.dataIn._fieldsToInterfaces.values():
+                self.randomize(intf)
 
     def test_nop1Field(self, randomized=False):
         self.instantiateFrameForge(s1field, randomized=randomized)
@@ -53,7 +53,7 @@ class AxiS_frameForge_TC(SimTestCase):
         self.instantiateFrameForge(s1field, randomized=randomized)
         u = self.u
         MAGIC = 468
-        u.item0._ag.data.append(MAGIC)
+        u.dataIn.item0._ag.data.append(MAGIC)
 
         t = 100
         if randomized:
@@ -68,8 +68,8 @@ class AxiS_frameForge_TC(SimTestCase):
         self.instantiateFrameForge(s1field_composit0, randomized=randomized)
         u = self.u
         MAGIC = 468
-        u.item0._ag.data.append(MAGIC)
-        u.item1._ag.data.append(MAGIC + 1)
+        u.dataIn.item0._ag.data.append(MAGIC)
+        u.dataIn.item1._ag.data.append(MAGIC + 1)
 
         t = 100
         if randomized:
@@ -84,12 +84,12 @@ class AxiS_frameForge_TC(SimTestCase):
         self.instantiateFrameForge(s3field, randomized=randomized)
         u = self.u
         MAGIC = 468
-        u.item0._ag.data.append(MAGIC)
-        u.item1._ag.data.append(MAGIC + 1)
-        u.item2._ag.data.append(MAGIC + 2)
+        u.dataIn.item0._ag.data.append(MAGIC)
+        u.dataIn.item1._ag.data.append(MAGIC + 1)
+        u.dataIn.item2._ag.data.append(MAGIC + 2)
         t = 200
         if randomized:
-            t *= 2
+            t *= 3
         self.doSim(t * Time.ns)
 
         m = mask(self.DATA_WIDTH // 8)
@@ -125,9 +125,9 @@ class AxiS_frameForge_TC(SimTestCase):
         self.procs.append(enDataOut)
 
         MAGIC = 468
-        u.item0._ag.data.append(MAGIC)
-        u.item1._ag.data.append(MAGIC + 1)
-        u.item2._ag.data.append(MAGIC + 2)
+        u.dataIn.item0._ag.data.append(MAGIC)
+        u.dataIn.item1._ag.data.append(MAGIC + 1)
+        u.dataIn.item2._ag.data.append(MAGIC + 2)
 
         t = 200
         self.doSim(t * Time.ns)
