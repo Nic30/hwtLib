@@ -101,8 +101,7 @@ class AxiS_frameParser(Unit):
             # dict {index of word :  list of field parts which are ending in this word}
             endOfFieldsInWords = {}
             for tPart in tmpl.walkTransactionParts():
-                isPadding = tPart.parent is None
-                if not isPadding:
+                if not tPart.isPadding:
                     tItem = tPart.parent
                     isLastPart = tItem.transactionParts[-1] is tPart
                     if isLastPart:
@@ -130,7 +129,7 @@ class AxiS_frameParser(Unit):
         tmpl = TransactionTemplate.fromHStruct(self._structT)
         DW = evalParam(self.DATA_WIDTH).val
         _, bitAddrOfEnd, _, _ = tmpl.discoverTransactionInfos(DW)
-        maxWordIndex = bitAddrOfEnd // DW
+        maxWordIndex = (bitAddrOfEnd - 1) // DW
         wordIndex = self._reg("wordIndex", vecT(log2ceil(maxWordIndex + 1)), 0)
         busVld = r.valid
         
@@ -179,7 +178,7 @@ if __name__ == "__main__":
         (HStruct(
             (uint64_t, "item0"),
             (uint64_t, "item1"),
-         ), 
+         ),
          "struct0")
         )
     u = AxiS_frameParser(AxiStream, s)
