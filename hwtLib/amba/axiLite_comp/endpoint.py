@@ -178,6 +178,7 @@ class AxiLiteEndpoint(BusConverter):
         return awAddr, w_hs
 
     def _impl(self):
+        self._parseTemplate()
         awAddr, w_hs = self.writePart()
         self.readPart(awAddr, w_hs)
 
@@ -192,7 +193,7 @@ if __name__ == "__main__":
             HStruct(
                 (uint32_t, "data0"),
                 (uint32_t, "data1"),
-                (Array(uint32_t, 32), "bramMapped")
+                #(Array(uint32_t, 32), "bramMapped")
                 )
             )
     u.ADDR_WIDTH.set(8)

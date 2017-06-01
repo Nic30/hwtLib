@@ -79,8 +79,8 @@ class AxiLiteEndpointTC(SimTestCase):
         self.doSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.r.data)
-        self.assertEmpty(u.field0._ag.dout)
-        self.assertEmpty(u.field1._ag.dout)
+        self.assertEmpty(u.decoded.field0._ag.dout)
+        self.assertEmpty(u.decoded.field1._ag.dout)
 
     def test_read(self):
         u = self.mySetUp(32)
@@ -88,8 +88,8 @@ class AxiLiteEndpointTC(SimTestCase):
         A = self.FIELD_ADDR
         u.bus.ar._ag.data.extend([A[0], A[1], A[0], A[1], A[1] + 0x4])
 
-        u.field0._ag.din.extend([MAGIC])
-        u.field1._ag.din.extend([MAGIC + 1])
+        u.decoded.field0._ag.din.extend([MAGIC])
+        u.decoded.field1._ag.din.extend([MAGIC + 1])
 
         self.randomizeAll()
         self.doSim(300 * Time.ns)
@@ -120,10 +120,10 @@ class AxiLiteEndpointTC(SimTestCase):
         self.randomizeAll()
         self.doSim(400 * Time.ns)
 
-        self.assertValSequenceEqual(u.field0._ag.dout, [MAGIC,
+        self.assertValSequenceEqual(u.decoded.field0._ag.dout, [MAGIC,
                                                         MAGIC + 2
                                                         ])
-        self.assertValSequenceEqual(u.field1._ag.dout, [MAGIC + 1,
+        self.assertValSequenceEqual(u.decoded.field1._ag.dout, [MAGIC + 1,
                                                         MAGIC + 3
                                                         ])
         self.assertValSequenceEqual(u.bus.b._ag.data, [RESP_OKAY for _ in range(4)] + [RESP_SLVERR])
@@ -170,16 +170,16 @@ class AxiLiteEndpointArray(AxiLiteEndpointTC):
         MAGIC = 100
 
         for i in range(8):
-            u.field0._ag.mem[i] = MAGIC + 1
-            u.field1._ag.mem[i] = 2 * MAGIC + 1
+            u.decoded.field0._ag.mem[i] = MAGIC + 1
+            u.decoded.field1._ag.mem[i] = 2 * MAGIC + 1
 
         self.randomizeAll()
         self.doSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.r.data)
         for i in range(8):
-            self.assertValEqual(u.field0._ag.mem[i], MAGIC + 1)
-            self.assertValEqual(u.field1._ag.mem[i], 2 * MAGIC + 1)
+            self.assertValEqual(u.decoded.field0._ag.mem[i], MAGIC + 1)
+            self.assertValEqual(u.decoded.field1._ag.mem[i], 2 * MAGIC + 1)
 
     def test_read(self):
         u = self.mySetUp(32)
@@ -187,8 +187,8 @@ class AxiLiteEndpointArray(AxiLiteEndpointTC):
         MAGIC = 100
 
         for i in range(4):
-            u.field0._ag.mem[i] = MAGIC + i + 1
-            u.field1._ag.mem[i] = 2 * MAGIC + i + 1
+            u.decoded.field0._ag.mem[i] = MAGIC + i + 1
+            u.decoded.field1._ag.mem[i] = 2 * MAGIC + i + 1
             regs.field0.read(i, None)
             regs.field1.read(i, None)
 
@@ -212,8 +212,8 @@ class AxiLiteEndpointArray(AxiLiteEndpointTC):
         MAGIC = 100
 
         for i in range(4):
-            u.field0._ag.mem[i] = None
-            u.field1._ag.mem[i] = None
+            u.decoded.field0._ag.mem[i] = None
+            u.decoded.field1._ag.mem[i] = None
             regs.field0.write(i, MAGIC + i + 1)
             regs.field1.write(i, 2 * MAGIC + i + 1)
 
@@ -222,8 +222,8 @@ class AxiLiteEndpointArray(AxiLiteEndpointTC):
 
         self.assertEmpty(u.bus._ag.r.data)
         for i in range(4):
-            self.assertValEqual(u.field0._ag.mem[i], MAGIC + i + 1, "index=%d" % i)
-            self.assertValEqual(u.field1._ag.mem[i], 2 * MAGIC + i + 1, "index=%d" % i)
+            self.assertValEqual(u.decoded.field0._ag.mem[i], MAGIC + i + 1, "index=%d" % i)
+            self.assertValEqual(u.decoded.field1._ag.mem[i], 2 * MAGIC + i + 1, "index=%d" % i)
 
     def test_registerMap(self):
         self.mySetUp(32)

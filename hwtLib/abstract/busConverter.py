@@ -1,11 +1,15 @@
 from hwt.code import log2ceil
 from hwt.hdlObjects.constants import INTF_DIRECTION
+from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
+from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.hdlType import HdlType
 from hwt.hdlObjects.types.struct import HStruct
-from hwt.hdlObjects.types.structUtils import FrameTemplate, BusFieldInfo
+from hwt.hdlObjects.types.structUtils import BusFieldInfo
+from hwt.hdlObjects.types.typeCast import toHVal
 from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
+from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -13,7 +17,6 @@ from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import evalParam
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwtLib.abstract.addrSpace import AddrSpaceItem
-from hwt.hdlObjects.types.typeCast import toHVal
 
 
 def inRange(n, lower, size):
@@ -56,8 +59,65 @@ class BusConverter(Unit):
         with self._paramsShared():
             self.bus = self._intfCls()
 
-        self._decorateWithConvertedInterfaces()
-        assert self._suggestedAddrWidth() <= evalParam(self.ADDR_WIDTH).val, (self._suggestedAddrWidth(), evalParam(self.ADDR_WIDTH).val)
+        self.decoded = StructIntf(self.STRUCT_TEMPLATE, instantiateFieldFn=self._mkFieldInterface)
+
+
+    def _parseTemplate(self):
+        self._directlyMapped = []
+        self._bramPortMapped = []
+        self.ADRESS_MAP = []
+
+        self.WORD_ADDR_STEP = self._getWordAddrStep()
+        self.ADDR_STEP = self._getAddrStep()
+        
+        AW = evalParam(self.ADDR_WIDTH).val
+        DW = evalParam(self.DATA_WIDTH).val
+        SUGGESTED_AW = self._suggestedAddrWidth()
+        assert SUGGESTED_AW <= AW, (SUGGESTED_AW, AW)
+        
+        tmpl = TransactionTemplate.fromHStruct(self.STRUCT_TEMPLATE)
+        tmpl.discoverTransactionInfos(DW,
+                                      inStructBitAddr=self.OFFSET,
+                                      inFrameBitAddr=self.OFFSET)
+
+        ADDR_STEP = self.WORD_ADDR_STEP
+        OFFSETBITS_OF_WORDS = log2ceil(self._getWordAddrStep()).val
+        for wIndx, tParts in tmpl.walkFrameWords():
+            for tPart in tParts:
+                if tPart.isPadding:
+                    continue
+                tItem = tPart.parent
+                t = tItem.dtype
+
+                assert len(tItem.transactionParts) == 1
+                
+                if isinstance(t, Array):
+                    size = evalParam(t.size).val
+                    alignOffsetBits = OFFSETBITS_OF_WORDS
+                else:
+                    size = None
+                    alignOffsetBits = None
+                
+                port = self.decoded._fieldsToInterfaces[tItem.origin]
+                asi = AddrSpaceItem(wIndx * ADDR_STEP,
+                                    tItem.name,
+                                    size,
+                                    origin=tItem.origin,
+                                    alignOffsetBits=alignOffsetBits)
+
+                asi.port = port
+                if isinstance(port, RegCntrl):
+                    self._directlyMapped.append(asi)
+                elif isinstance(port, BramPort_withoutClk):
+                    self._bramPortMapped.append(asi)
+                else:
+                    raise NotImplementedError(port)
+                self.ADRESS_MAP.append(asi)
+
+        
+        # for field, intf in self.decoded._fieldsToInterfaces.items():
+            
+
 
     def _getMaxAddr(self):
         lastItem = self.ADRESS_MAP[-1]
@@ -86,64 +146,28 @@ class BusConverter(Unit):
 
         return maxAddr.bit_length()
 
-    def _parseAddrMap(self):
-        self.ADRESS_MAP = []
-        f = FrameTemplate.fromHStruct(self.STRUCT_TEMPLATE)
-        f.resolveFieldPossitionsInFrame(evalParam(self.DATA_WIDTH).val, disolveArrays=False)
-        self.WORD_ADDR_STEP = self._getWordAddrStep()
-        self.ADDR_STEP = self._getAddrStep()
-
-        addrStep = self.WORD_ADDR_STEP
-
-        for indx, fields in f.walkWords():
-            for field in fields:
-                if field.name is None:
-                    continue
-                assert len(field.appearsInWords) == 1
-                if isinstance(field.dtype, Array):
-                    size = evalParam(field.dtype.size).val
-                    alignOffsetBits = log2ceil(self._getWordAddrStep()).val
-                else:
-                    size = None
-                    alignOffsetBits = None
-                asi = AddrSpaceItem(self.OFFSET + indx * addrStep,
-                                    field.name,
-                                    size,
-                                    origin=field,
-                                    alignOffsetBits=alignOffsetBits)
-                self.ADRESS_MAP.append(asi)
-
-        assert self.ADRESS_MAP
-
-    def _decorateWithConvertedInterfaces(self):
-        self._parseAddrMap()
-
-        self._directlyMapped = []
-        self._bramPortMapped = []
+    def _mkFieldInterface(self, field):
+        t = field.dtype
         DW = evalParam(self.DATA_WIDTH).val
 
-        for addrItem in self.ADRESS_MAP:
-            if addrItem.size is None:
-                # addrItem.size = 1
-                p = RegCntrl()
-                dw = addrItem.origin.dtype.bit_length()
-                self._directlyMapped.append(addrItem)
-            else:
-                p = BramPort_withoutClk()
-                dw = addrItem.origin.dtype.elmType.bit_length()
-                p.ADDR_WIDTH.set(log2ceil(addrItem.size - 1))
-                self._bramPortMapped.append(addrItem)
-
-            if dw == DW:
-                dw = self.DATA_WIDTH
-                p._replaceParam("DATA_WIDTH", dw)
-            else:
-                p.DATA_WIDTH.set(dw)
-
-            addrItem.port = p
-            p._addrSpaceItem = addrItem
-
-            setattr(self, addrItem.name, p)
+        if isinstance(t, Bits):
+            p = RegCntrl()
+            dw = t.bit_length()
+        elif isinstance(t, Array):
+            p = BramPort_withoutClk()
+            dw = t.elmType.bit_length()
+            p.ADDR_WIDTH.set(log2ceil(evalParam(t.size).val - 1))
+        else:
+            raise NotImplementedError(t)
+        
+        if dw == DW:
+            # use param instead of value to improve readabiltiy
+            dw = self.DATA_WIDTH
+            p._replaceParam("DATA_WIDTH", dw)
+        else:
+            p.DATA_WIDTH.set(dw)
+        
+        return p
 
     @classmethod
     def _resolveRegStructFromIntfMap(cls, prefix, interfaceMap, DATA_WIDTH, aliginFields=False):
@@ -167,7 +191,7 @@ class BusConverter(Unit):
                     dtype = intf._dtype
                     info = BusFieldInfo(access="r", fieldInterface=intf)
                 elif isinstance(intf, VldSynced):
-                    #assert intf._direction == INTF_DIRECTION.SLAVE
+                    # assert intf._direction == INTF_DIRECTION.SLAVE
                     dtype = intf.data._dtype
                     info = BusFieldInfo(access="w", fieldInterface=intf)
                 elif isinstance(intf, RegCntrl):
