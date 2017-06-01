@@ -1,5 +1,6 @@
 from hwt.bitmask import mask
 from hwt.code import log2ceil, Switch, If, isPow2
+from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
@@ -9,14 +10,7 @@ from hwt.synthesizer.param import evalParam
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.handshaked.streamNode import streamSync, streamAck
-from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 
-
-def instantiateSimpleFieldIntf(frameTemplateItem):
-    p = Handshaked()
-    p.DATA_WIDTH.set(frameTemplateItem.dtype.bit_length())
-
-    return p
 
 class AxiS_frameForge(AxiSCompBase):
     """
@@ -36,11 +30,17 @@ class AxiS_frameForge(AxiSCompBase):
         self._structT = structT
 
         AxiSCompBase.__init__(self, axiSIntfCls)
-
+    
+    @staticmethod
+    def _mkFieldIntf(frameTemplateItem):
+        p = Handshaked()
+        p.DATA_WIDTH.set(frameTemplateItem.dtype.bit_length())
+        return p
+    
     def _declr(self):
         addClkRstn(self)
         self.dataOut = self.intfCls()
-        self.dataIn = StructIntf(self._structT, instantiateSimpleFieldIntf)
+        self.dataIn = StructIntf(self._structT, self._mkFieldIntf)
 
     def _impl(self):
         dout = self.dataOut
@@ -138,9 +138,9 @@ if __name__ == "__main__":
     u = AxiS_frameForge(AxiStream,
                         # tuples (type, name) where type has to be instance of Bits type
                         HStruct(
-                            #(uint64_t, "item0"),
-                            #(uint64_t, None),  # name = None means field is padding
-                            #(uint64_t, "item1"),
+                            (uint64_t, "item0"),
+                            (uint64_t, None),  # name = None means field is padding
+                            (uint64_t, "item1"),
                             (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
                         )
                         )
