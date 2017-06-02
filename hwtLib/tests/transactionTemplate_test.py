@@ -13,11 +13,11 @@ s0 = HStruct(
     (uint16_t, "item2"),
     (uint16_t, "item3"),
     (uint32_t, "item4"),
-    
+
     (uint32_t, None),
     (uint64_t, "item5"),  # this word is split on two bus words
     (uint32_t, None),
-    
+
     (uint64_t, None),
     (uint64_t, None),
     (uint64_t, None),
@@ -80,13 +80,10 @@ class TransactionTemplateTC(unittest.TestCase):
         tmpl.discoverTransactionInfos(DW)
         self.assertEqual(s0at71bit_str, tmpl.__repr__(scale=2))
 
-        
-        
-
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(TransactionTemplateTC('test_basicSwitch'))
+    # suite.addTest(TransactionTemplateTC('test_TransactionTemplate_discoverTransactionInfos_s0_71bit'))
     suite.addTest(unittest.makeSuite(TransactionTemplateTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
