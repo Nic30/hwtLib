@@ -1,6 +1,7 @@
 from math import inf
 
 from hwt.code import log2ceil, If, Concat, And
+from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, Signal, VldSynced
@@ -8,8 +9,6 @@ from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam, Param
-from hwt.hdlObjects.transactionTemplate import TransactionTemplate
-
 
 
 class AxiS_frameParser(Unit):
@@ -65,7 +64,7 @@ class AxiS_frameParser(Unit):
 
     def _connectDataSignals(self, tmpl, wordIndex):
         busVld = self.dataIn.valid
-        
+
         signalsOfParts = []
 
         for wIndx, transParts in tmpl.walkFrameWords():
@@ -91,13 +90,13 @@ class AxiS_frameParser(Unit):
                        fPartReg ** fPartSig
                     )
                     signalsOfParts.append(fPartReg)
-    
+
     def _busReadyLogic(self, tmpl, wordIndex, maxWordIndex):
         if evalParam(self.SHARED_READY).val:
             busRd = self.ready
         else:
             # generate ready logic for struct fields
-            
+
             # dict {index of word :  list of field parts which are ending in this word}
             endOfFieldsInWords = {}
             for tPart in tmpl.walkTransactionParts():
@@ -108,7 +107,7 @@ class AxiS_frameParser(Unit):
                         wIndex = tmpl.wordIndxFromBitAddr(tPart.inFrameBitAddr)
                         endOfFieldsInWords.setdefault(wIndex, [])\
                                           .append(tItem)
-                    
+
             _busRd = None
             for i in range(maxWordIndex + 1):
                 fields = endOfFieldsInWords.get(i, [])
@@ -123,16 +122,16 @@ class AxiS_frameParser(Unit):
             busRd = self._sig("busAck")
             busRd ** _busRd
         return busRd
-    
+
     def _impl(self):
         r = self.dataIn
         tmpl = TransactionTemplate.fromHStruct(self._structT)
         DW = evalParam(self.DATA_WIDTH).val
-        _, bitAddrOfEnd, _, _ = tmpl.discoverTransactionInfos(DW)
+        _, bitAddrOfEnd, _ = tmpl.discoverTransactionParts(DW)
         maxWordIndex = (bitAddrOfEnd - 1) // DW
         wordIndex = self._reg("wordIndex", vecT(log2ceil(maxWordIndex + 1)), 0)
         busVld = r.valid
-        
+
         self._connectDataSignals(tmpl, wordIndex)
         busRd = self._busReadyLogic(tmpl, wordIndex, maxWordIndex)
 
