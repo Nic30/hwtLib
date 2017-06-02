@@ -81,23 +81,23 @@ def instantiateChilds():
 class TransactionTemplateTC(unittest.TestCase):
     def test_translateHStruct(self):
         DW = 64
-        tmpl = TransactionTemplate.fromHStruct(s0)
+        tmpl = TransactionTemplate(s0)
         config = TransactionTemplateConfig(DW, instantiateChilds)
-        tmpl.translateHStruct(config)
+        tmpl.translate(config)
         self.assertEqual(s0at64bit_str, tmpl.__repr__())
 
     def test_translateHStruct_s0_71bit(self):
         DW = 71
         config = TransactionTemplateConfig(DW, instantiateChilds)
-        tmpl = TransactionTemplate.fromHStruct(s0)
-        tmpl.translateHStruct(config)
+        tmpl = TransactionTemplate(s0)
+        tmpl.translate(config)
         self.assertEqual(s0at71bit_str, tmpl.__repr__(scale=2))
 
     def test_translateHStruct_s1_64(self):
         DW = 64
-        tmpl = TransactionTemplate.fromHStruct(s1)
+        tmpl = TransactionTemplate(s1)
         config = TransactionTemplateConfig(DW, instantiateChilds)
-        tmpl.translateHStruct(config)
+        tmpl.translate(config)
         print(tmpl)
         #self.assertEqual(s0at64bit_str, tmpl.__repr__())
 
