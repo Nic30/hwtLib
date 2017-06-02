@@ -99,7 +99,7 @@ class AxiS_frameParser(Unit):
 
             # dict {index of word :  list of field parts which are ending in this word}
             endOfFieldsInWords = {}
-            for tPart in tmpl.walkTransactionParts():
+            for tPart in tmpl.walkParts():
                 if not tPart.isPadding:
                     tItem = tPart.parent
                     isLastPart = tItem.transactionParts[-1] is tPart
