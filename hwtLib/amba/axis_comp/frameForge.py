@@ -30,13 +30,13 @@ class AxiS_frameForge(AxiSCompBase):
         self._structT = structT
 
         AxiSCompBase.__init__(self, axiSIntfCls)
-    
+
     @staticmethod
     def _mkFieldIntf(frameTemplateItem):
         p = Handshaked()
         p.DATA_WIDTH.set(frameTemplateItem.dtype.bit_length())
         return p
-    
+
     def _declr(self):
         addClkRstn(self)
         self.dataOut = self.intfCls()
@@ -46,7 +46,7 @@ class AxiS_frameForge(AxiSCompBase):
         dout = self.dataOut
         tmpl = TransactionTemplate.fromHStruct(self._structT)
         DW = evalParam(self.DATA_WIDTH).val
-        _, bitAddrOfEnd, _, _ = tmpl.discoverTransactionInfos(DW)
+        _, bitAddrOfEnd, _ = tmpl.discoverTransactionParts(DW)
         maxWordIndex = (bitAddrOfEnd - 1) // DW
 
         useCounter = maxWordIndex > 0
@@ -57,7 +57,6 @@ class AxiS_frameForge(AxiSCompBase):
                                           defVal=maxWordIndex)
             wcntrSw = Switch(wordCntr_inversed)
 
-        
         for i, transactionParts in tmpl.walkFrameWords(skipPadding=False):
             inPorts = []
             wordData = self._sig("word%d" % i, dout.data._dtype)
@@ -128,7 +127,7 @@ class AxiS_frameForge(AxiSCompBase):
             dout.last ** wordCntr_inversed._eq(0)
         else:
             dout.last ** 1
-        
+
         dout.strb ** mask(8)
 
 

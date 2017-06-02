@@ -61,6 +61,8 @@ class BusConverter(Unit):
 
         self.decoded = StructIntf(self.STRUCT_TEMPLATE, instantiateFieldFn=self._mkFieldInterface)
 
+    def constructAddrSpaceItemsForField(self):
+        raise NotImplementedError()
 
     def _parseTemplate(self):
         self._directlyMapped = []
@@ -69,16 +71,16 @@ class BusConverter(Unit):
 
         self.WORD_ADDR_STEP = self._getWordAddrStep()
         self.ADDR_STEP = self._getAddrStep()
-        
+
         AW = evalParam(self.ADDR_WIDTH).val
         DW = evalParam(self.DATA_WIDTH).val
         SUGGESTED_AW = self._suggestedAddrWidth()
         assert SUGGESTED_AW <= AW, (SUGGESTED_AW, AW)
-        
+
         tmpl = TransactionTemplate.fromHStruct(self.STRUCT_TEMPLATE)
-        tmpl.discoverTransactionInfos(DW,
-                                      inStructBitAddr=self.OFFSET,
-                                      inFrameBitAddr=self.OFFSET)
+        tmpl.translateHStruct(DW,
+                              inStructBitAddr=self.OFFSET,
+                              inFrameBitAddr=self.OFFSET)
 
         ADDR_STEP = self.WORD_ADDR_STEP
         OFFSETBITS_OF_WORDS = log2ceil(self._getWordAddrStep()).val
@@ -89,15 +91,15 @@ class BusConverter(Unit):
                 tItem = tPart.parent
                 t = tItem.dtype
 
-                assert len(tItem.transactionParts) == 1
-                
+                assert len(tItem.parts) == 1
+
                 if isinstance(t, Array):
                     size = evalParam(t.size).val
                     alignOffsetBits = OFFSETBITS_OF_WORDS
                 else:
                     size = None
                     alignOffsetBits = None
-                
+
                 port = self.decoded._fieldsToInterfaces[tItem.origin]
                 asi = AddrSpaceItem(wIndx * ADDR_STEP,
                                     tItem.name,
@@ -114,10 +116,7 @@ class BusConverter(Unit):
                     raise NotImplementedError(port)
                 self.ADRESS_MAP.append(asi)
 
-        
         # for field, intf in self.decoded._fieldsToInterfaces.items():
-            
-
 
     def _getMaxAddr(self):
         lastItem = self.ADRESS_MAP[-1]
@@ -159,14 +158,14 @@ class BusConverter(Unit):
             p.ADDR_WIDTH.set(log2ceil(evalParam(t.size).val - 1))
         else:
             raise NotImplementedError(t)
-        
+
         if dw == DW:
             # use param instead of value to improve readabiltiy
             dw = self.DATA_WIDTH
             p._replaceParam("DATA_WIDTH", dw)
         else:
             p.DATA_WIDTH.set(dw)
-        
+
         return p
 
     @classmethod
@@ -203,7 +202,6 @@ class BusConverter(Unit):
                     info = BusFieldInfo(access="rw", fieldInterface=intf)
                 else:
                     raise NotImplementedError(intf)
-
 
                 if aliginFields:
                     fillUpWidth = DATA_WIDTH - dtype.bit_length()

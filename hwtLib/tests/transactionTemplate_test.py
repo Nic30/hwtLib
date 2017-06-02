@@ -2,7 +2,9 @@ import unittest
 
 from hwt.hdlObjects.types.struct import HStruct
 from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
-from hwt.hdlObjects.transactionTemplate import TransactionTemplate
+from hwt.hdlObjects.transactionTemplate import TransactionTemplate,\
+    TransactionTemplateConfig
+from hwt.hdlObjects.types.array import Array
 
 
 s0 = HStruct(
@@ -13,11 +15,11 @@ s0 = HStruct(
     (uint16_t, "item2"),
     (uint16_t, "item3"),
     (uint32_t, "item4"),
-    
+
     (uint32_t, None),
     (uint64_t, "item5"),  # this word is split on two bus words
     (uint32_t, None),
-    
+
     (uint64_t, None),
     (uint64_t, None),
     (uint64_t, None),
@@ -66,27 +68,42 @@ s0at71bit_str = \
 12   |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|                                     struct0.item1                                     |
      -----------------------------------------------------------------------------------------------------------------------------------------------"""
 
+s1 = HStruct(
+            (Array(uint64_t, 10), "arr0"),
+            (Array(uint32_t, 5), "arr1")
+            )
+
+
+def instantiateChilds():
+    raise NotImplementedError()
+
 
 class TransactionTemplateTC(unittest.TestCase):
-    def test_TransactionTemplate_discoverTransactionInfos(self):
+    def test_translateHStruct(self):
         DW = 64
         tmpl = TransactionTemplate.fromHStruct(s0)
-        tmpl.discoverTransactionInfos(DW)
+        config = TransactionTemplateConfig(DW, instantiateChilds)
+        tmpl.translateHStruct(config)
         self.assertEqual(s0at64bit_str, tmpl.__repr__())
 
-    def test_TransactionTemplate_discoverTransactionInfos_s0_71bit(self):
+    def test_translateHStruct_s0_71bit(self):
         DW = 71
+        config = TransactionTemplateConfig(DW, instantiateChilds)
         tmpl = TransactionTemplate.fromHStruct(s0)
-        tmpl.discoverTransactionInfos(DW)
+        tmpl.translateHStruct(config)
         self.assertEqual(s0at71bit_str, tmpl.__repr__(scale=2))
 
-        
-        
-
+    def test_translateHStruct_s1_64(self):
+        DW = 64
+        tmpl = TransactionTemplate.fromHStruct(s1)
+        config = TransactionTemplateConfig(DW, instantiateChilds)
+        tmpl.translateHStruct(config)
+        print(tmpl)
+        #self.assertEqual(s0at64bit_str, tmpl.__repr__())
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(TransactionTemplateTC('test_basicSwitch'))
-    suite.addTest(unittest.makeSuite(TransactionTemplateTC))
+    suite.addTest(TransactionTemplateTC('test_translateHStruct_s1_64'))
+    #suite.addTest(unittest.makeSuite(TransactionTemplateTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
