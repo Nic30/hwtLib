@@ -45,6 +45,7 @@ class AxiS_frameForge(AxiSCompBase):
 
     def _impl(self):
         dout = self.dataOut
+        
         tmpl = TransactionTemplate(self._structT)
         DW = evalParam(self.DATA_WIDTH).val
         frame = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))[0]
