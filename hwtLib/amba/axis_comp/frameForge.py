@@ -1,5 +1,6 @@
 from hwt.bitmask import mask
 from hwt.code import log2ceil, Switch, If, isPow2
+from hwt.hdlObjects.transactionPart import FrameTemplate
 from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.struct import HStruct
@@ -44,10 +45,11 @@ class AxiS_frameForge(AxiSCompBase):
 
     def _impl(self):
         dout = self.dataOut
-        tmpl = TransactionTemplate.fromHStruct(self._structT)
+        tmpl = TransactionTemplate(self._structT)
         DW = evalParam(self.DATA_WIDTH).val
-        _, bitAddrOfEnd, _ = tmpl.discoverTransactionParts(DW)
-        maxWordIndex = (bitAddrOfEnd - 1) // DW
+        frame = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))[0]
+        words = list(frame.walkWords(showPadding=True)) # list of (wordIndex, [ transaction parts ])
+        maxWordIndex = words[-1][0]
 
         useCounter = maxWordIndex > 0
         if useCounter:
@@ -57,7 +59,7 @@ class AxiS_frameForge(AxiSCompBase):
                                           defVal=maxWordIndex)
             wcntrSw = Switch(wordCntr_inversed)
 
-        for i, transactionParts in tmpl.walkFrameWords(skipPadding=False):
+        for i, transactionParts in words:
             inPorts = []
             wordData = self._sig("word%d" % i, dout.data._dtype)
 
@@ -66,7 +68,7 @@ class AxiS_frameForge(AxiSCompBase):
                 if tPart.isPadding:
                     wordData[high:low] ** None
                 else:
-                    intf = self.dataIn._fieldsToInterfaces[tPart.parent.origin]
+                    intf = self.dataIn._fieldsToInterfaces[tPart.tmpl.origin]
                     wordData[high:low] ** intf.data
                     inPorts.append(intf)
 
