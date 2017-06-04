@@ -3,13 +3,14 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
-from hwt.hdlObjects.types.struct import HStruct
-from hwtLib.types.ctypes import uint64_t, uint32_t
-from hwtLib.amba.axis import AxiStream
 from hwt.bitmask import mask
+from hwt.hdlObjects.constants import Time
+from hwt.hdlObjects.types.struct import HStruct
+from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
+from hwtLib.types.ctypes import uint64_t, uint32_t
+
 
 s1field = HStruct(
     (uint64_t, "item0")
