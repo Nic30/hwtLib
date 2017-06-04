@@ -2,10 +2,20 @@ import unittest
 
 from hwt.hdlObjects.types.struct import HStruct
 from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
-from hwt.hdlObjects.transactionTemplate import TransactionTemplate,\
-    TransactionTemplateConfig
+from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 from hwt.hdlObjects.types.array import Array
+from hwt.hdlObjects.transactionPart import FrameTemplate
 
+s_basic = HStruct(
+    (uint64_t, "item0"),
+    (uint64_t, "item0"),
+    (uint64_t, None),
+)
+
+s_basic_srt = """<TransactionTemplate start:0, end:192
+    <TransactionTemplate name:item0, start:0, end:64>
+    <TransactionTemplate name:item0, start:64, end:128>
+>"""
 
 s0 = HStruct(
     (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
@@ -69,9 +79,19 @@ s0at71bit_str = \
      -----------------------------------------------------------------------------------------------------------------------------------------------"""
 
 s1 = HStruct(
-            (Array(uint64_t, 10), "arr0"),
+            (Array(uint64_t, 3), "arr0"),
             (Array(uint32_t, 5), "arr1")
             )
+
+s1_str = """     63                                                             0
+     -----------------------------------------------------------------
+0    |                            arr0[0]                            |
+1    |                            arr0[1]                            |
+2    |                            arr0[2]                            |
+3    |            arr1[1]            |            arr1[0]            |
+4    |            arr1[3]            |            arr1[2]            |
+5    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|            arr1[4]            |
+     -----------------------------------------------------------------"""
 
 
 def instantiateChilds():
@@ -82,28 +102,31 @@ class TransactionTemplateTC(unittest.TestCase):
     def test_translateHStruct(self):
         DW = 64
         tmpl = TransactionTemplate(s0)
-        config = TransactionTemplateConfig(DW, instantiateChilds)
-        tmpl.translate(config)
-        self.assertEqual(s0at64bit_str, tmpl.__repr__())
+        frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(s0at64bit_str, frames[0].__repr__())
 
     def test_translateHStruct_s0_71bit(self):
         DW = 71
-        config = TransactionTemplateConfig(DW, instantiateChilds)
         tmpl = TransactionTemplate(s0)
-        tmpl.translate(config)
-        self.assertEqual(s0at71bit_str, tmpl.__repr__(scale=2))
+        frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(s0at71bit_str, frames[0].__repr__(scale=2))
 
     def test_translateHStruct_s1_64(self):
         DW = 64
         tmpl = TransactionTemplate(s1)
-        config = TransactionTemplateConfig(DW, instantiateChilds)
-        tmpl.translate(config)
-        print(tmpl)
-        #self.assertEqual(s0at64bit_str, tmpl.__repr__())
+        frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(s1_str, frames[0].__repr__())
+
+    def test_transactionTemplateBasic(self):
+        tmpl = TransactionTemplate(s_basic)
+        self.assertEqual(s_basic_srt, tmpl.__repr__())
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(TransactionTemplateTC('test_translateHStruct_s1_64'))
-    #suite.addTest(unittest.makeSuite(TransactionTemplateTC))
+    #suite.addTest(TransactionTemplateTC('test_translateHStruct_s1_64'))
+    suite.addTest(unittest.makeSuite(TransactionTemplateTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
