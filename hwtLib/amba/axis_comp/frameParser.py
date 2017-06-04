@@ -1,12 +1,14 @@
 from math import inf
 
 from hwt.code import log2ceil, If, Concat, And
+from hwt.hdlObjects.transactionPart import FrameTemplate
 from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
+from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam, Param
 
@@ -62,23 +64,24 @@ class AxiS_frameParser(Unit):
             if evalParam(self.SHARED_READY).val:
                 self.parsed_ready = Signal()
 
-    def _connectDataSignals(self, tmpl, wordIndex):
+    def _connectDataSignals(self, words, wordIndex):
         busVld = self.dataIn.valid
 
         signalsOfParts = []
 
-        for wIndx, transParts in tmpl.walkFrameWords():
+        for wIndx, transParts in words:
             isThisWord = wordIndex._eq(wIndx)
 
             for part in transParts:
+                if part.isPadding:
+                    continue
                 dataVld = busVld & isThisWord
                 fPartSig = self._getDataSignal(part)
-                fieldInfo = part.parent
-                isLastPart = fieldInfo.transactionParts[-1] is part
+                fieldInfo = part.tmpl.origin
 
-                if isLastPart:
+                if part.isLastPart():
                     signalsOfParts.append(fPartSig)
-                    intf = self.parsed._fieldsToInterfaces[fieldInfo.origin]
+                    intf = self.parsed._fieldsToInterfaces[fieldInfo]
                     intf.data ** Concat(*reversed(signalsOfParts))
                     intf.vld ** dataVld
                     signalsOfParts = []
@@ -91,28 +94,16 @@ class AxiS_frameParser(Unit):
                     )
                     signalsOfParts.append(fPartReg)
 
-    def _busReadyLogic(self, tmpl, wordIndex, maxWordIndex):
+    def _busReadyLogic(self, words, wordIndex, maxWordIndex):
         if evalParam(self.SHARED_READY).val:
             busRd = self.ready
         else:
             # generate ready logic for struct fields
-
-            # dict {index of word :  list of field parts which are ending in this word}
-            endOfFieldsInWords = {}
-            for tPart in tmpl.walkParts():
-                if not tPart.isPadding:
-                    tItem = tPart.parent
-                    isLastPart = tItem.transactionParts[-1] is tPart
-                    if isLastPart:
-                        wIndex = tmpl.wordIndxFromBitAddr(tPart.inFrameBitAddr)
-                        endOfFieldsInWords.setdefault(wIndex, [])\
-                                          .append(tItem)
-
             _busRd = None
-            for i in range(maxWordIndex + 1):
-                fields = endOfFieldsInWords.get(i, [])
-                fiedsRd = map(lambda f: self.parsed._fieldsToInterfaces[f.origin].rd,
-                              fields)
+            for i, parts in words:
+                lastParts = where(parts, lambda p: not p.isPadding and p.isLastPart())
+                fiedsRd = map(lambda p: self.parsed._fieldsToInterfaces[p.tmpl.origin].rd,
+                              lastParts)
                 isThisIndex = wordIndex._eq(i)
                 if _busRd is None:
                     _busRd = And(isThisIndex, *fiedsRd)
@@ -125,15 +116,16 @@ class AxiS_frameParser(Unit):
 
     def _impl(self):
         r = self.dataIn
-        tmpl = TransactionTemplate.fromHStruct(self._structT)
+        tmpl = TransactionTemplate(self._structT)
         DW = evalParam(self.DATA_WIDTH).val
-        _, bitAddrOfEnd, _ = tmpl.discoverTransactionParts(DW)
-        maxWordIndex = (bitAddrOfEnd - 1) // DW
+        frame = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))[0]
+        words = list(frame.walkWords(showPadding=True))  # list of (wordIndex, [ transaction parts ])
+        maxWordIndex = words[-1][0]
         wordIndex = self._reg("wordIndex", vecT(log2ceil(maxWordIndex + 1)), 0)
         busVld = r.valid
 
-        self._connectDataSignals(tmpl, wordIndex)
-        busRd = self._busReadyLogic(tmpl, wordIndex, maxWordIndex)
+        self._connectDataSignals(words, wordIndex)
+        busRd = self._busReadyLogic(words, wordIndex, maxWordIndex)
 
         r.ready ** busRd
 
