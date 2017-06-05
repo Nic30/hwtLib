@@ -1,5 +1,5 @@
 from hwt.bitmask import mask
-from hwt.code import log2ceil, Switch, If, isPow2
+from hwt.code import log2ceil, Switch, If, isPow2, In
 from hwt.hdlObjects.transactionPart import FrameTemplate
 from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 from hwt.hdlObjects.typeShortcuts import vecT
@@ -11,6 +11,7 @@ from hwt.synthesizer.param import evalParam
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.handshaked.streamNode import streamSync, streamAck
+from math import inf
 
 
 class AxiS_frameForge(AxiSCompBase):
@@ -30,19 +31,22 @@ class AxiS_frameForge(AxiSCompBase):
         | field2  +------+                        
         +---------+                               
     """
-    def __init__(self, axiSIntfCls, structT):
+    def __init__(self, axiSIntfCls, structT, maxPaddingWords=inf):
         """
         :param hsIntfCls: class of interface which should be used as interface of this unit
         :param structT: instance of HStruct used as template for this frame
             if name is None no input port is generated and space is filled with invalid values
             litle-endian encoding,
             supported types of interfaces are: Handshaked, Signal
+            can be also instance of FrameTemplate
+        :param maxPaddingWords: maximum of continual padding words in frame,
+            if exceed frame is split and words are cut of
         """
         if axiSIntfCls is not AxiStream:
             raise NotImplementedError()
 
         self._structT = structT
-
+        self._maxPaddingWords = maxPaddingWords
         AxiSCompBase.__init__(self, axiSIntfCls)
 
     @staticmethod
@@ -55,17 +59,22 @@ class AxiS_frameForge(AxiSCompBase):
         addClkRstn(self)
         self.dataOut = self.intfCls()
         self.dataIn = StructIntf(self._structT, self._mkFieldIntf)
-
+    
+    def parseTemplate(self):
+        DW = evalParam(self.DATA_WIDTH).val
+        tmpl = TransactionTemplate(self._structT)
+        self._frame = list(FrameTemplate.framesFromTransactionTemplate(tmpl,
+                                                                       DW,
+                                                                       maxPaddingWords=self._maxPaddingWords))[0]
+        # list of (wordIndex, [ transaction parts ])
+        words = list(self._frame.walkWords(showPadding=True))
+        return words
+       
     def _impl(self):
         dout = self.dataOut
-
-        tmpl = TransactionTemplate(self._structT)
-        DW = evalParam(self.DATA_WIDTH).val
-        frame = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))[0]
-        # list of (wordIndex, [ transaction parts ])
-        words = list(frame.walkWords(showPadding=True))
-        maxWordIndex = words[-1][0]
-
+        words = self.parseTemplate()
+        maxWordIndex = self._frame.getWordCnt()
+        endsOfWords = [0, ]
         useCounter = maxWordIndex > 0
         if useCounter:
             # multiple word frame
@@ -76,6 +85,7 @@ class AxiS_frameForge(AxiSCompBase):
 
         for i, transactionParts in words:
             inPorts = []
+            lastInPorts = []
             wordData = self._sig("word%d" % i, dout.data._dtype)
 
             for tPart in transactionParts:
@@ -84,8 +94,11 @@ class AxiS_frameForge(AxiSCompBase):
                     wordData[high:low] ** None
                 else:
                     intf = self.dataIn._fieldsToInterfaces[tPart.tmpl.origin]
-                    wordData[high:low] ** intf.data
+                    fhigh, flow = tPart.getFieldBitRange()
+                    wordData[high:low] ** intf.data[fhigh:flow]
                     inPorts.append(intf)
+                    if tPart.isLastPart():
+                        lastInPorts.append(intf)
 
             if useCounter:
                 if i == maxWordIndex:
@@ -93,16 +106,16 @@ class AxiS_frameForge(AxiSCompBase):
                 else:
                     nextWordIndex = wordCntr_inversed - 1
 
-            if inPorts:
+            if lastInPorts:
                 # input ready logic
                 wordEnConds = {}
-                for intf in inPorts:
+                for intf in lastInPorts:
                     wordEnConds[intf] = dout.ready
                     if useCounter:
                         c = wordEnConds[intf]
                         wordEnConds[intf] = c & wordCntr_inversed._eq(maxWordIndex - i)
 
-                streamSync(masters=inPorts,
+                streamSync(masters=lastInPorts,
                            # slaves=[dout],
                            extraConds=wordEnConds)
 
@@ -141,7 +154,7 @@ class AxiS_frameForge(AxiSCompBase):
             wcntrSw.Default(default)
 
         if useCounter:
-            dout.last ** wordCntr_inversed._eq(0)
+            dout.last ** In(wordCntr_inversed, endsOfWords)
         else:
             dout.last ** 1
 

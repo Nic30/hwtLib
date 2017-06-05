@@ -14,13 +14,15 @@ from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync, streamAck
 from hwtLib.structManipulators.structReader import StructReader
+from hwt.hdlObjects.transactionPart import walkFlatten
 
 
 class StructWriter(StructReader):
     """
     Write struct specified in constructor over wDatapump interface on address
     specified over set interface
-    :ivar MAX_OVERLAP: parameter which specifies the maximumum number of concurrent transaction
+    
+    :ivar MAX_OVERLAP: parameter which specifies the maximum number of concurrent transaction
     """
     def _config(self):
         StructReader._config(self)
@@ -34,9 +36,10 @@ class StructWriter(StructReader):
 
     def _declr(self):
         addClkRstn(self)
+        self.parseTemplate()
         self.dataIn = StructIntf(self._structT,
                                  self.createInterfaceForField)
-
+        
         self.set = Handshaked()  # data signal is addr of structure to write
         self.set._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
         # write ack from slave
@@ -45,15 +48,11 @@ class StructWriter(StructReader):
         with self._paramsShared():
             # interface for communication with datapump
             self.wDatapump = AxiWDatapumpIntf()
-            maxWordIndex = self._words[-1][0]
-            self.wDatapump.MAX_LEN.set(maxWordIndex)
+            self.wDatapump.MAX_LEN.set(self.maxWordIndex() + 1)
 
-        self.frameAssember = []
-        for burstInfo in self._busBurstInfo:
-            frameTemplate = [(f.dtype, f.name) for f in burstInfo.fieldInfos]
-            f = AxiS_frameForge(AxiStream, HStruct(*frameTemplate))
-            self.frameAssember.append(f)
-        self._registerArray("frameAssember", self.frameAssember)
+        self.frameAssember = AxiS_frameForge(AxiStream,
+                                             self._structT,
+                                             maxPaddingWords=self._maxPaddingWords)
 
     def _impl(self):
         propagateClkRstn(self)
@@ -65,72 +64,51 @@ class StructWriter(StructReader):
         req.id ** self.ID
         req.rem ** 0
 
-        if len(self._busBurstInfo) > 1:
-            # multi frame
-            ackPropageteInfo = HandshakedFifo(Handshaked)
-            ackPropageteInfo.DATA_WIDTH.set(1)
-            ackPropageteInfo.DEPTH.set(self.MAX_OVERLAP)
-            self.ackPropageteInfo = ackPropageteInfo
-            ackPropageteInfo.clk ** self.clk
-            ackPropageteInfo.rst_n ** self.rst_n
+        # multi frame
+        ackPropageteInfo = HandshakedFifo(Handshaked)
+        ackPropageteInfo.DATA_WIDTH.set(1)
+        ackPropageteInfo.DEPTH.set(self.MAX_OVERLAP)
+        self.ackPropageteInfo = ackPropageteInfo
+        ackPropageteInfo.clk ** self.clk
+        ackPropageteInfo.rst_n ** self.rst_n
+        
+        def propagateRequests(frame, indx):
+            ack = streamAck(slaves=[req, ackPropageteInfo.dataIn])
+            statements = [req.addr ** (self.set.data + frame.startBitAddr // 8),
+                          req.len ** (frame.getWordCnt() - 1),
+                          ackPropageteInfo.dataIn.data ** int(indx != 0),
+                          streamSync(slaves=[req, ackPropageteInfo.dataIn],
+                                     extraConds={req: self.set.vld,
+                                                 ackPropageteInfo.dataIn: self.set.vld})
+                          ]
 
-            def propagateRequests(burst, indx):
-                ack = streamAck(slaves=[req, ackPropageteInfo.dataIn])
-                statements = [req.addr ** (self.set.data + burst.addrOffset),
-                              req.len ** (burst.wordCnt() - 1),
-                              ackPropageteInfo.dataIn.data ** int(indx != 0),
-                              streamSync(slaves=[req, ackPropageteInfo.dataIn],
-                                         extraConds={req: self.set.vld,
-                                                     ackPropageteInfo.dataIn: self.set.vld})
-                              ]
+            isLastFrame = indx == len(self._frames) - 1
+            if isLastFrame:
+                statements.append(self.set.rd ** ack)
+            else:
+                statements.append(self.set.rd ** 0)
 
-                isLast = indx == len(self._busBurstInfo) - 1
-                if isLast:
-                    statements.append(self.set.rd ** ack)
-                else:
-                    statements.append(self.set.rd ** 0)
+            return statements, ack & self.set.vld
 
-                return statements, ack & self.set.vld
+        StaticForEach(self, self._frames, propagateRequests)
 
-            StaticForEach(self, self._busBurstInfo, propagateRequests)
+        # connect write channel
+        
+        w ** self.frameAssember.dataOut
 
-            # connect write channel
-            fa = self.frameAssember
-            w ** AxiSBuilder(self, fa[0].dataOut)\
-                            .extend(map(lambda a: a.dataOut, fa[1:]))\
-                            .end
+        # propagate ack
+        streamSync(masters=[ack, ackPropageteInfo.dataOut],
+                   slaves=[self.writeAck],
+                   skipWhen={
+                             self.writeAck: ackPropageteInfo.dataOut.data._eq(0)
+                            })
 
-            # propagate ack
-            streamSync(masters=[ack, ackPropageteInfo.dataOut],
-                       slaves=[self.writeAck],
-                       skipWhen={
-                                 self.writeAck: ackPropageteInfo.dataOut.data._eq(0)
-                                })
-        else:
-            # single frame
-            fa = self.frameAssember[0]
 
-            def propagateRequests(burst):
-                ack = streamAck(masters=[self.set],
-                                slaves=[req])
-                return [req.addr ** (self.set.data + burst.addrOffset),
-                        req.len ** (burst.wordCnt() - 1),
-                        ], ack
-            StaticForEach(self, self._busBurstInfo, propagateRequests)
-
-            streamSync(masters=[self.set], slaves=[req])
-
-            w ** fa.dataOut
-
-            # propagate ack
-            streamSync(masters=[ack],
-                       slaves=[self.writeAck])
-
-        # connect fields to assembers by its name
-        for burstInfo, frameAssembler in zip(self._busBurstInfo, self.frameAssember):
-            for fieldInfo in burstInfo.fieldInfos:
-                intf = getattr(frameAssembler, fieldInfo.name)
-                intf ** fieldInfo.interface
+        # connect fields to assembler
+        for _, transTmpl in walkFlatten(self._tmpl):
+            f = transTmpl.origin
+            intf = self.frameAssember.dataIn._fieldsToInterfaces[f]
+            intf ** self.dataIn._fieldsToInterfaces[f]
 
 
 if __name__ == "__main__":
@@ -141,20 +119,20 @@ if __name__ == "__main__":
         (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
         (uint64_t, None),  # name = None means this field will be ignored
         (uint64_t, "item1"),
-        (uint64_t, None),
-        (uint16_t, "item2"),
-        (uint16_t, "item3"),
-        (uint32_t, "item4"),
-
-        (uint32_t, None),
-        (uint64_t, "item5"),  # this word is split on two bus words
-        (uint32_t, None),
-
-        (uint64_t, None),
-        (uint64_t, None),
-        (uint64_t, None),
-        (uint64_t, "item6"),
-        (uint64_t, "item7"),
+        # (uint64_t, None),
+        # (uint16_t, "item2"),
+        # (uint16_t, "item3"),
+        # (uint32_t, "item4"),
+        #
+        # (uint32_t, None),
+        # (uint64_t, "item5"),  # this word is split on two bus words
+        # (uint32_t, None),
+        #
+        # (uint64_t, None),
+        # (uint64_t, None),
+        # (uint64_t, None),
+        # (uint64_t, "item6"),
+        # (uint64_t, "item7"),
         )
 
     u = StructWriter(s)
