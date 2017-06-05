@@ -89,7 +89,7 @@ class StructReader(AxiS_frameParser):
         req.rem ** 0
 
         def f(frame, indx):
-            s = [req.addr ** (self.get.data + frame.startBitAddr),
+            s = [req.addr ** (self.get.data + frame.startBitAddr // 8),
                  req.len ** (frame.getWordCnt() - 1),
                  req.vld ** self.get.vld
                  ]
