@@ -42,10 +42,10 @@ class BusConverter(Unit):
         Unit.__init__(self)
 
     def _getWordAddrStep(self):
-        raise NotImplementedError("Should be overriden in concrete implementation, this is abstract class")
+        raise NotImplementedError("Should be overridden in concrete implementation, this is abstract class")
 
     def _getAddrStep(self):
-        raise NotImplementedError("Should be overriden in concrete implementation, this is abstract class")
+        raise NotImplementedError("Should be overridden in concrete implementation, this is abstract class")
 
     def _config(self):
         self._intfCls._config(self)
