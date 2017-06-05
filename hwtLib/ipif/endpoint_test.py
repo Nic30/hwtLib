@@ -107,7 +107,7 @@ class IpifEndpointOffsetTC(IpifEndpointTC):
     FIELD_ADDR = [0x4, 0x8]
 
     def mySetUp(self, data_width=32):
-        u = self.u = IpifEndpoint(self.STRUCT_TEMPLATE, offset=0x4)
+        u = self.u = IpifEndpoint(self.STRUCT_TEMPLATE, offset=0x4 * 8)
 
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH.set(self.DATA_WIDTH)
@@ -155,16 +155,16 @@ class IpifEndpointArray(AxiLiteEndpointArray):
         self.randomizeAll()
         self.doSim(200 * Time.ns)
 
-        self.assertValSequenceEqual(u.bus._ag.readed, [
-            MAGIC + 1,
-            2 * MAGIC + 1,
-            MAGIC + 2,
-            2 * MAGIC + 2,
-            MAGIC + 3,
-            2 * MAGIC + 3,
-            MAGIC + 4,
-            2 * MAGIC + 4,
-            ])
+        self.assertValSequenceEqual(u.bus._ag.readed,
+                                    [MAGIC + 1,
+                                     2 * MAGIC + 1,
+                                     MAGIC + 2,
+                                     2 * MAGIC + 2,
+                                     MAGIC + 3,
+                                     2 * MAGIC + 3,
+                                     MAGIC + 4,
+                                     2 * MAGIC + 4,
+                                     ])
 
     def test_write(self):
         u = self.mySetUp(32)
@@ -190,7 +190,7 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(IpifStructEndpointArray('test_read'))
+    # suite.addTest(IpifEndpointOffsetTC('test_registerMap'))
     suite.addTest(unittest.makeSuite(IpifEndpointTC))
     suite.addTest(unittest.makeSuite(IpifEndpointDenseTC))
     suite.addTest(unittest.makeSuite(IpifEndpointStartTC))

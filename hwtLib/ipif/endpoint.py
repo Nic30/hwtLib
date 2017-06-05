@@ -20,7 +20,7 @@ class IpifEndpoint(BusConverter):
     _getAddrStep = Ipif._getAddrStep
 
     def __init__(self, structTemplate, offset=0, intfCls=Ipif):
-        BusConverter.__init__(self, structTemplate, offset, intfCls)
+        BusConverter.__init__(self, structTemplate, offset=offset, intfCls=intfCls)
 
     def _impl(self):
         self._parseTemplate()
@@ -37,7 +37,7 @@ class IpifEndpoint(BusConverter):
         ipif.ip2bus_error ** 0
         addrVld = ipif.bus2ip_cs
 
-        isInMyAddrSpace = (addr >= self._getMinAddr()) & (addr < self._getMaxAddr())
+        isInMyAddrSpace = self.isInMyAddrRange(addr)
 
         st = FsmBuilder(self, st_t)\
         .Trans(st_t.idle,
@@ -62,10 +62,7 @@ class IpifEndpoint(BusConverter):
             _isMyAddr = isMyAddr(addr, _addr, t.bitAddrEnd // ADDR_STEP)
             port = self.getPort(t)
 
-            a = self._sig("addr_forBram_" + port._name, ipif.bus2ip_addr._dtype)
-            a ** (addr - _addr)
-
-            self.propagateAddr(a, ADDR_STEP, port.addr, port.dout._dtype.bit_length(), t)
+            self.propagateAddr(addr, ADDR_STEP, port.addr, port.dout._dtype.bit_length(), t)
 
             port.en ** (_isMyAddr & ipif.bus2ip_cs)
             port.we ** (_isMyAddr & wAck)
@@ -78,7 +75,7 @@ class IpifEndpoint(BusConverter):
 
             port.din ** ipif.bus2ip_data
 
-        for t in self._directlyMapped:  
+        for t in self._directlyMapped:
             _addr = t.bitAddr // ADDR_STEP
             port = self.getPort(t)
 
