@@ -1,4 +1,4 @@
-from hwt.code import log2ceil
+from hwt.code import log2ceil, connect
 from hwt.hdlObjects.constants import INTF_DIRECTION
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
@@ -114,6 +114,18 @@ class BusConverter(Unit):
             wordAddrStep += wordAddrStep - (maxAddr % wordAddrStep)
 
         return maxAddr.bit_length()
+
+    def propagateAlignedOffset(self, srcAddrSig, dstAddrSig, transactionTemplate):
+        addrHBit = dstAddrSig._dtype.bit_length()
+        _prefix = transactionTemplate.getMyAddrPrefix(self._getAddrStep())
+        try:
+            (_, bitForAligin) = _prefix
+        except TypeError:
+            bitForAligin = 0
+
+        assert addrHBit + bitForAligin <= evalParam(self.ADDR_WIDTH).val
+
+        return connect(srcAddrSig[(addrHBit + bitForAligin):bitForAligin], dstAddrSig, fit=True)
 
     def _mkFieldInterface(self, field):
         t = field.dtype

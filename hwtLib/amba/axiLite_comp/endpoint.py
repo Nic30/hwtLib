@@ -91,16 +91,8 @@ class AxiLiteEndpoint(BusConverter):
                     a ** (arAddr - addr)
                 )
 
-                addrHBit = port.addr._dtype.bit_length()
-                _prefix = t.getMyAddrPrefix(ADDR_STEP)
-                try:
-                    (_, bitForAligin) = _prefix
-                except TypeError:
-                    bitForAligin = 0
+                self.propagateAlignedOffset(a, port.addr, t)
 
-                assert addrHBit + bitForAligin <= evalParam(self.ADDR_WIDTH).val
-
-                c(a[(addrHBit + bitForAligin):bitForAligin], port.addr, fit=True)
                 port.en ** ((_isMyAddr & ar.valid) | prioritizeWrite)
                 port.we ** prioritizeWrite
 
@@ -204,7 +196,7 @@ if __name__ == "__main__":
             HStruct(
                 (uint32_t, "data0"),
                 (uint32_t, "data1"),
-                #(Array(uint32_t, 32), "bramMapped")
+                # (Array(uint32_t, 32), "bramMapped")
                 )
             )
     u.ADDR_WIDTH.set(8)
