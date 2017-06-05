@@ -78,7 +78,7 @@ class BusConverter(Unit):
         AW = evalParam(self.ADDR_WIDTH).val
         SUGGESTED_AW = self._suggestedAddrWidth()
         assert SUGGESTED_AW <= AW, (SUGGESTED_AW, AW)
-        tmpl = TransactionTemplate(self.STRUCT_TEMPLATE, bitAddr=self.OFFSET * 8)
+        tmpl = TransactionTemplate(self.STRUCT_TEMPLATE, bitAddr=self.OFFSET)
         fieldTrans = walkFlatten(tmpl, shouldEnterFn=lambda tmpl: not isinstance(tmpl.dtype, Array))
         for (_, transactionTmpl) in fieldTrans:
             intf = self.getPort(transactionTmpl)
@@ -132,7 +132,7 @@ class BusConverter(Unit):
         assert transTmpl.bitAddr % dstAddrStep == 0, "Has to be addressable by address with this step"
 
         addrIsAligned = transTmpl.bitAddr % transTmpl.bit_length() == 0
-        bitsForAlignment = ((dstAddrStep // srcAddrStep)-1).bit_length()
+        bitsForAlignment = ((dstAddrStep // srcAddrStep) - 1).bit_length()
         bitsOfSubAddr = ((transTmpl.bitAddrEnd - transTmpl.bitAddr - 1) // dstAddrStep).bit_length()
 
         if addrIsAligned:
