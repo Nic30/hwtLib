@@ -77,10 +77,7 @@ class BusConverter(Unit):
         SUGGESTED_AW = self._suggestedAddrWidth()
         assert SUGGESTED_AW <= AW, (SUGGESTED_AW, AW)
 
-        tmpl = TransactionTemplate.fromHStruct(self.STRUCT_TEMPLATE)
-        tmpl.translateHStruct(DW,
-                              inStructBitAddr=self.OFFSET,
-                              inFrameBitAddr=self.OFFSET)
+        tmpl = TransactionTemplate(self.STRUCT_TEMPLATE, bitAddr=self.OFFSET*8)
 
         ADDR_STEP = self.WORD_ADDR_STEP
         OFFSETBITS_OF_WORDS = log2ceil(self._getWordAddrStep()).val
