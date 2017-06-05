@@ -61,9 +61,6 @@ class BusConverter(Unit):
     def getPort(self, transactionTemplate):
         return self.decoded._fieldsToInterfaces[transactionTemplate.origin]
 
-    def constructAddrSpaceItemsForField(self):
-        raise NotImplementedError()
-
     def isInMyAddrRange(self, addrSig):
         return (addrSig >= self._getMinAddr()) & (addrSig < self._getMaxAddr())
 
