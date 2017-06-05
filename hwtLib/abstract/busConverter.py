@@ -1,4 +1,4 @@
-from hwt.code import log2ceil, connect
+from hwt.code import log2ceil
 from hwt.hdlObjects.constants import INTF_DIRECTION
 from hwt.hdlObjects.transactionPart import walkFlatten
 from hwt.hdlObjects.transactionTemplate import TransactionTemplate
@@ -27,8 +27,6 @@ class BusConverter(Unit):
     Abstract unit
     Delegate request from bus to fields of structure
     write has higher priority
-
-    :attention: interfaces are dynamically generated from names of fields in structure template
     """
     def __init__(self, structTemplate, offset=0, intfCls=None):
         """
@@ -65,6 +63,9 @@ class BusConverter(Unit):
 
     def constructAddrSpaceItemsForField(self):
         raise NotImplementedError()
+
+    def isInMyAddrRange(self, addrSig):
+        return (addrSig >= self._getMinAddr()) & (addrSig < self._getMaxAddr())
 
     def _parseTemplate(self):
         self._directlyMapped = []
@@ -131,12 +132,13 @@ class BusConverter(Unit):
         assert transTmpl.bitAddr % dstAddrStep == 0, "Has to be addressable by address with this step"
 
         addrIsAligned = transTmpl.bitAddr % transTmpl.bit_length() == 0
-        bitsForAlignment = (dstAddrStep // srcAddrStep).bit_length()
+        bitsForAlignment = ((dstAddrStep // srcAddrStep)-1).bit_length()
         bitsOfSubAddr = ((transTmpl.bitAddrEnd - transTmpl.bitAddr - 1) // dstAddrStep).bit_length()
+
         if addrIsAligned:
-            bitsOfPrefix = IN_ADDR_WIDTH - bitsOfSubAddr
-            prefix = transTmpl.bitAddr >> (bitsForAlignment + bitsOfSubAddr)
-            addrIsInRange = srcAddrSig[IN_ADDR_WIDTH:(IN_ADDR_WIDTH - bitsOfPrefix)]._eq(prefix >> bitsOfPrefix)
+            bitsOfPrefix = IN_ADDR_WIDTH - bitsOfSubAddr - bitsForAlignment
+            prefix = (transTmpl.bitAddr // srcAddrStep) >> (bitsForAlignment + bitsOfSubAddr)
+            addrIsInRange = srcAddrSig[IN_ADDR_WIDTH:(IN_ADDR_WIDTH - bitsOfPrefix)]._eq(prefix)
             addr_tmp = srcAddrSig
         else:
             _addr = transTmpl.bitAddr // srcAddrStep
@@ -145,7 +147,7 @@ class BusConverter(Unit):
             addr_tmp = self._sig(dstAddrSig._name + "_addr_tmp", vecT(self.ADDR_WIDTH))
             addr_tmp ** (srcAddrSig - _addr)
 
-        connectedAddr = (dstAddrSig ** addr_tmp[(bitsOfSubAddr + bitsForAlignment):bitsForAlignment])
+        connectedAddr = (dstAddrSig ** addr_tmp[(bitsOfSubAddr + bitsForAlignment):(bitsForAlignment)])
 
         return (addrIsInRange, connectedAddr)
 
