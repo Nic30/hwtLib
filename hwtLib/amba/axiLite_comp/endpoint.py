@@ -25,7 +25,7 @@ class AxiLiteEndpoint(BusConverter):
     def readPart(self, awAddr, w_hs):
         ADDR_STEP = self._getAddrStep()
         # build read data output mux
-
+        assert self.OFFSET % evalParam(self.DATA_WIDTH).val == 0, "Offset is aligned to data width"
         r = self.bus.r
         ar = self.bus.ar
         rSt_t = Enum('rSt_t', ['rdIdle', 'bramRd', 'rdData'])

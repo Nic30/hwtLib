@@ -154,7 +154,7 @@ class AxiLiteEndpointOffsetTC(AxiLiteEndpointTC):
     FIELD_ADDR = [0x4, 0x8]
 
     def mySetUp(self, data_width=32):
-        u = self.u = AxiLiteEndpoint(self.STRUCT_TEMPLATE, offset=0x4)
+        u = self.u = AxiLiteEndpoint(self.STRUCT_TEMPLATE, offset=0x4*8)
 
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH.set(self.DATA_WIDTH)
