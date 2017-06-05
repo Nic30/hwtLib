@@ -1,4 +1,3 @@
-from copy import copy
 import pprint
 
 from hwt.bitmask import mask
@@ -6,9 +5,9 @@ from hwt.hdlObjects.assignment import Assignment
 from hwt.hdlObjects.operator import Operator
 from hwt.hdlObjects.operatorDefs import AllOps
 from hwt.hdlObjects.portItem import PortItem
+from hwt.hdlObjects.types.array import Array
 from hwt.synthesizer.interfaceLevel.mainBases import UnitBase
 from hwtLib.abstract.busConverter import BusConverter
-from hwt.hdlObjects.types.array import Array
 
 
 def getEpSignal(sig, op):
@@ -56,8 +55,6 @@ class AddrSpaceItem(object):
         :param addr: base addr for this addr item
         :param name: name of this addr item, (port with same name will be created for this item)
         :param size: used for memories, number of items in memory
-        :param alignOffsetBits: used for memories, number of bits which should be trimmed (from LSB side)
-            from bus interface to make aligned address for this item
         :param origin: object from which this was generated usually HStructField
         """
         self.port = None
@@ -66,7 +63,6 @@ class AddrSpaceItem(object):
         self.name = name
         self.addr = addr
         self.size = size
-        self.alignOffsetBits = alignOffsetBits
         self.origin = origin
 
     def assertNoOverlap(self, nextItem):
@@ -156,9 +152,9 @@ class AddressSpaceProbe(object):
 
         return "\n".join(buff)
 
-    def _extractAddressMap(self, converter, offset, addrModifier, sizeModifier):
+    def _extractAddressMap(self, converter, offset):
         """
-        coppy address space map from converter
+        copy address space map from converter
         """
         m = {}
         ADDR_STEP = converter._getAddrStep()
@@ -166,35 +162,17 @@ class AddressSpaceProbe(object):
             addr = _item.bitAddr // ADDR_STEP
             if isinstance(_item.dtype, Array):
                 size = _item.itemCnt
-                _prefix = _item.getMyAddrPrefix(ADDR_STEP)
-                try:
-                    (_, bitForAligin) = _prefix
-                except TypeError:
-                    bitForAligin = 0
             else:
                 size = None
-                bitForAligin = 0
 
-            item = AddrSpaceItem(addr, _item.origin.name, size, _item.origin, bitForAligin)
-            item.addr = offset + addrModifier(addr)
+            item = AddrSpaceItem(addr, _item.origin.name, size, _item.origin)
+            item.addr = offset + addr
 
-            m[addr] = item
+            m[item.addr] = item
 
             if size is not None and size > 1:
-                port = converter.decoded._fieldsToInterfaces[_item.origin]
-                if item.alignOffsetBits is not None:
-                    def _addrModifier(childAddr):
-                        return childAddr << item.alignOffsetBits
-
-                    def _sizeModifier(x):
-                        return sizeModifier(x) << item.alignOffsetBits
-                else:
-                    _addrModifier = addrModifier
-                    _sizeModifier = sizeModifier
-
-                item.children = self._discoverAddressSpace(port, item.addr, _addrModifier, _sizeModifier)
-
-            item.size = sizeModifier(item.size)
+                port = converter.getPort(_item)
+                item.children = self._discoverAddressSpace(port, item.addr)
 
         return m
 
@@ -221,8 +199,6 @@ class AddressSpaceProbe(object):
                 raise NotImplementedError(e.__class__)
 
     def _discoverAddressSpace(self, topIntf, offset,
-                              addrModifier=lambda x: x,
-                              sizeModifier=lambda x: x,
                               ignoreMyParent=True):
         _mainSig = self.getMainSigFn(topIntf)
         try:
@@ -232,7 +208,7 @@ class AddressSpaceProbe(object):
 
         addrMap = {}
         for converter in self.walkToConverter(mainSig, ignoreMyParent=ignoreMyParent):
-            addrMap = self._extractAddressMap(converter, offset, addrModifier, sizeModifier)
+            addrMap = self._extractAddressMap(converter, offset)
 
         return addrMap
 
