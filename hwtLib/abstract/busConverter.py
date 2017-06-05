@@ -1,12 +1,13 @@
 from hwt.code import log2ceil, connect
 from hwt.hdlObjects.constants import INTF_DIRECTION
+from hwt.hdlObjects.transactionPart import walkFlatten
+from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
 from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.hdlType import HdlType
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.hdlObjects.types.structUtils import BusFieldInfo
-from hwt.hdlObjects.types.typeCast import toHVal
 from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
@@ -15,12 +16,10 @@ from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import evalParam
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
-from hwt.hdlObjects.transactionPart import walkFlatten
-from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 
 
-def inRange(n, lower, size):
-    return (n >= lower) & (n < (toHVal(lower) + size))
+def inRange(n, lower, end):
+    return (n >= lower) & (n < end)
 
 
 class BusConverter(Unit):
@@ -115,17 +114,40 @@ class BusConverter(Unit):
 
         return maxAddr.bit_length()
 
-    def propagateAlignedOffset(self, srcAddrSig, dstAddrSig, transactionTemplate):
-        addrHBit = dstAddrSig._dtype.bit_length()
-        _prefix = transactionTemplate.getMyAddrPrefix(self._getAddrStep())
-        try:
-            (_, bitForAligin) = _prefix
-        except TypeError:
-            bitForAligin = 0
+    def propagateAddr(self, srcAddrSig, srcAddrStep, dstAddrSig, dstAddrStep, transTmpl):
+        """
+        :param srcAddrSig: input signal with address
+        :param srcAddrStep: how many bits is addressing one unit of srcAddrSig
+        :param dstAddrSig: output signal for address
+        :param dstAddrStep: how many bits is addressing one unit of dstAddrSig
+        :param transTmpl: TransactionTemplate which has metainformations about this address space transition
+        """
+        IN_ADDR_WIDTH = srcAddrSig._dtype.bit_length()
 
-        assert addrHBit + bitForAligin <= evalParam(self.ADDR_WIDTH).val
+        # _prefix = transTmpl.getMyAddrPrefix(srcAddrStep)
+        assert dstAddrStep % srcAddrStep == 0
+        if not isinstance(transTmpl.dtype, Array):
+            raise TypeError()
+        assert transTmpl.bitAddr % dstAddrStep == 0, "Has to be addressable by address with this step"
 
-        return connect(srcAddrSig[(addrHBit + bitForAligin):bitForAligin], dstAddrSig, fit=True)
+        addrIsAligned = transTmpl.bitAddr % transTmpl.bit_length() == 0
+        bitsForAlignment = (dstAddrStep // srcAddrStep).bit_length()
+        bitsOfSubAddr = ((transTmpl.bitAddrEnd - transTmpl.bitAddr - 1) // dstAddrStep).bit_length()
+        if addrIsAligned:
+            bitsOfPrefix = IN_ADDR_WIDTH - bitsOfSubAddr
+            prefix = transTmpl.bitAddr >> (bitsForAlignment + bitsOfSubAddr)
+            addrIsInRange = srcAddrSig[IN_ADDR_WIDTH:(IN_ADDR_WIDTH - bitsOfPrefix)]._eq(prefix >> bitsOfPrefix)
+            addr_tmp = srcAddrSig
+        else:
+            _addr = transTmpl.bitAddr // srcAddrStep
+            _addrEnd = transTmpl.bitAddrEnd // srcAddrStep
+            addrIsInRange = inRange(srcAddrSig, _addr, _addrEnd)
+            addr_tmp = self._sig(dstAddrSig._name + "_addr_tmp", vecT(self.ADDR_WIDTH))
+            addr_tmp ** (srcAddrSig - _addr)
+
+        connectedAddr = (dstAddrSig ** addr_tmp[(bitsOfSubAddr + bitsForAlignment):bitsForAlignment])
+
+        return (addrIsInRange, connectedAddr)
 
     def _mkFieldInterface(self, field):
         t = field.dtype
@@ -142,7 +164,7 @@ class BusConverter(Unit):
             raise NotImplementedError(t)
 
         if dw == DW:
-            # use param instead of value to improve readabiltiy
+            # use param instead of value to improve readability
             dw = self.DATA_WIDTH
             p._replaceParam("DATA_WIDTH", dw)
         else:

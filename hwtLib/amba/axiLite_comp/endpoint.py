@@ -74,15 +74,15 @@ class AxiLiteEndpoint(BusConverter):
             for bramIndex, t in enumerate(self._bramPortMapped):
                 size = t.itemCnt
                 addr = t.bitAddr // ADDR_STEP
-                port = self.decoded._fieldsToInterfaces[t.origin]
+                port = self.getPort(t)
 
                 # map addr for bram ports
-                _isMyAddr = inRange(ar.addr, addr, size * DW_B)
+                a = self._sig("addr_forBram_" + port._name, awAddr._dtype)
+                (_isMyAddr, _) = self.propagateAddr(a, ADDR_STEP, port.addr, port.dout._dtype.bit_length(), t)
                 _isInBramFlags.append(_isMyAddr)
 
                 prioritizeWrite = inRange(awAddr, addr, size * DW_B) & w_hs
 
-                a = self._sig("addr_forBram_" + port._name, awAddr._dtype)
                 If(prioritizeWrite,
                     a ** (awAddr - addr)
                 ).Elif(rSt._eq(rSt_t.rdIdle),
@@ -91,7 +91,6 @@ class AxiLiteEndpoint(BusConverter):
                     a ** (arAddr - addr)
                 )
 
-                self.propagateAlignedOffset(a, port.addr, t)
 
                 port.en ** ((_isMyAddr & ar.valid) | prioritizeWrite)
                 port.we ** prioritizeWrite
@@ -194,8 +193,11 @@ if __name__ == "__main__":
 
     u = AxiLiteEndpoint(
             HStruct(
-                (uint32_t, "data0"),
-                (uint32_t, "data1"),
+                (Array(uint32_t, 4), "field0"),
+                (Array(uint32_t, 2), "field1"),
+                (Array(uint32_t, 4), "field2")
+                # (uint32_t, "data0"),
+                # (uint32_t, "data1"),
                 # (Array(uint32_t, 32), "bramMapped")
                 )
             )

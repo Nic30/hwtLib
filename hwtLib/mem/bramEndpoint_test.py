@@ -38,8 +38,8 @@ class BramPortEndpointTC(AxiLiteEndpointTC):
 
         self.assertEmpty(u.bus._ag.readed)
         self.assertFalse(u.bus._ag.readPending)
-        self.assertEmpty(u.field0._ag.dout)
-        self.assertEmpty(u.field1._ag.dout)
+        self.assertEmpty(u.decoded.field0._ag.dout)
+        self.assertEmpty(u.decoded.field1._ag.dout)
 
     def test_read(self):
         u = self.mySetUp(32)
@@ -51,8 +51,8 @@ class BramPortEndpointTC(AxiLiteEndpointTC):
                                    (READ, A[1])
                                    ])
 
-        u.field0._ag.din.append(MAGIC)
-        u.field1._ag.din.append(MAGIC + 1)
+        u.decoded.field0._ag.din.append(MAGIC)
+        u.decoded.field1._ag.din.append(MAGIC + 1)
 
         self.randomizeAll()
         self.doSim(300 * Time.ns)
@@ -76,10 +76,10 @@ class BramPortEndpointTC(AxiLiteEndpointTC):
         self.randomizeAll()
         self.doSim(400 * Time.ns)
 
-        self.assertValSequenceEqual(u.field0._ag.dout, [MAGIC,
+        self.assertValSequenceEqual(u.decoded.field0._ag.dout, [MAGIC,
                                                         MAGIC + 2
                                                         ])
-        self.assertValSequenceEqual(u.field1._ag.dout, [MAGIC + 1,
+        self.assertValSequenceEqual(u.decoded.field1._ag.dout, [MAGIC + 1,
                                                         MAGIC + 3
                                                         ])
 
@@ -120,16 +120,16 @@ class BramPortEndpointArray(AxiLiteEndpointArray):
         MAGIC = 100
 
         for i in range(8):
-            u.field0._ag.mem[i] = MAGIC + 1 + i
-            u.field1._ag.mem[i] = 2 * MAGIC + 1 + i
+            u.decoded.field0._ag.mem[i] = MAGIC + 1 + i
+            u.decoded.field1._ag.mem[i] = 2 * MAGIC + 1 + i
 
         self.randomizeAll()
         self.doSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.readed)
         for i in range(8):
-            self.assertValEqual(u.field0._ag.mem[i], MAGIC + 1 + i)
-            self.assertValEqual(u.field1._ag.mem[i], 2 * MAGIC + 1 + i)
+            self.assertValEqual(u.decoded.field0._ag.mem[i], MAGIC + 1 + i)
+            self.assertValEqual(u.decoded.field1._ag.mem[i], 2 * MAGIC + 1 + i)
 
     def test_read(self):
         u = self.mySetUp(32)
@@ -138,24 +138,24 @@ class BramPortEndpointArray(AxiLiteEndpointArray):
         MAGIC = 100
         # u.bus._ag.requests.append(NOP)
         for i in range(4):
-            u.field0._ag.mem[i] = MAGIC + i + 1
-            u.field1._ag.mem[i] = 2 * MAGIC + i + 1
+            u.decoded.field0._ag.mem[i] = MAGIC + i + 1
+            u.decoded.field1._ag.mem[i] = 2 * MAGIC + i + 1
             regs.field0.read(i, None)
             regs.field1.read(i, None)
 
         self.randomizeAll()
         self.doSim(200 * Time.ns)
 
-        self.assertValSequenceEqual(u.bus._ag.readed, [
-            MAGIC + 1,
-            2 * MAGIC + 1,
-            MAGIC + 2,
-            2 * MAGIC + 2,
-            MAGIC + 3,
-            2 * MAGIC + 3,
-            MAGIC + 4,
-            2 * MAGIC + 4,
-            ])
+        self.assertValSequenceEqual(u.bus._ag.readed,
+                                    [MAGIC + 1,
+                                     2 * MAGIC + 1,
+                                     MAGIC + 2,
+                                     2 * MAGIC + 2,
+                                     MAGIC + 3,
+                                     2 * MAGIC + 3,
+                                     MAGIC + 4,
+                                     2 * MAGIC + 4,
+                                    ])
 
     def test_write(self):
         u = self.mySetUp(32)
@@ -163,8 +163,8 @@ class BramPortEndpointArray(AxiLiteEndpointArray):
         MAGIC = 100
 
         for i in range(4):
-            u.field0._ag.mem[i] = None
-            u.field1._ag.mem[i] = None
+            u.decoded.field0._ag.mem[i] = None
+            u.decoded.field1._ag.mem[i] = None
             regs.field0.write(i, MAGIC + i + 1)
             regs.field1.write(i, 2 * MAGIC + i + 1)
 
@@ -173,8 +173,8 @@ class BramPortEndpointArray(AxiLiteEndpointArray):
 
         self.assertEmpty(u.bus._ag.readed)
         for i in range(4):
-            self.assertValEqual(u.field0._ag.mem[i], MAGIC + i + 1)
-            self.assertValEqual(u.field1._ag.mem[i], 2 * MAGIC + i + 1)
+            self.assertValEqual(u.decoded.field0._ag.mem[i], MAGIC + i + 1)
+            self.assertValEqual(u.decoded.field1._ag.mem[i], 2 * MAGIC + i + 1)
 
 
 if __name__ == "__main__":
