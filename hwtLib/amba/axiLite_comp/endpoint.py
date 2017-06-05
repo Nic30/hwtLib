@@ -24,8 +24,12 @@ class AxiLiteEndpoint(BusConverter):
     def __init__(self, structTemplate, offset=0, intfCls=AxiLite):
         BusConverter.__init__(self, structTemplate, offset, intfCls)
 
+    def isInMyAddrRange(self, addrSig):
+        return (addrSig >= self._getMinAddr()) & (addrSig < self._getMaxAddr())
+
     def readPart(self, awAddr, w_hs):
         DW_B = evalParam(self.DATA_WIDTH).val // 8
+        ADDR_STEP = self._getAddrStep()
         # build read data output mux
 
         r = self.bus.r
@@ -52,7 +56,7 @@ class AxiLiteEndpoint(BusConverter):
             arAddr ** ar.addr
         )
 
-        isInAddrRange = (arAddr >= self._getMinAddr()) & (arAddr <= self._getMaxAddr())
+        isInAddrRange = self.isInMyAddrRange(arAddr)
         r.valid ** rSt._eq(rSt_t.rdData)
         If(isInAddrRange,
             r.resp ** RESP_OKAY
@@ -67,11 +71,10 @@ class AxiLiteEndpoint(BusConverter):
             # index of bram from where we reads from
             bramRdIndx = self._reg("bramRdIndx", vecT(log2ceil(len(self._bramPortMapped))))
             bramRdIndxSwitch = Switch(bramRdIndx)
-
-            for bramIndex, ai in enumerate(self._bramPortMapped):
-                size = ai.size
-                addr = ai.addr
-                port = ai.port
+            for bramIndex, t in enumerate(self._bramPortMapped):
+                size = t.itemCnt
+                addr = t.bitAddr // ADDR_STEP
+                port = self.decoded._fieldsToInterfaces[t.origin]
 
                 # map addr for bram ports
                 _isMyAddr = inRange(ar.addr, addr, size * DW_B)
@@ -89,11 +92,16 @@ class AxiLiteEndpoint(BusConverter):
                 )
 
                 addrHBit = port.addr._dtype.bit_length()
-                bitForAligin = ai.alignOffsetBits
+                _prefix = t.getMyAddrPrefix(ADDR_STEP)
+                try:
+                    (_, bitForAligin) = _prefix
+                except TypeError:
+                    bitForAligin = 0
+
                 assert addrHBit + bitForAligin <= evalParam(self.ADDR_WIDTH).val
 
                 c(a[(addrHBit + bitForAligin):bitForAligin], port.addr, fit=True)
-                port.en ** ((_isMyAddr & ar.valid) | prioritizeWrite) 
+                port.en ** ((_isMyAddr & ar.valid) | prioritizeWrite)
                 port.we ** prioritizeWrite
 
                 rregCases.append((_isMyAddr, bramRdIndx ** bramIndex))
@@ -109,19 +117,20 @@ class AxiLiteEndpoint(BusConverter):
             rdataReg = None
             c(0, isBramAddr)
 
-        SwitchLogic([(arAddr._eq(ai.addr), connect(ai.port.din, r.data, fit=True))
-                     for ai in self._directlyMapped],
+        SwitchLogic([(arAddr._eq(t.bitAddr // ADDR_STEP),
+                      connect(self.decoded._fieldsToInterfaces[t.origin].din, r.data, fit=True))
+                     for t in self._directlyMapped],
                     default=r.data ** rdataReg)
 
     def writeRespPart(self, wAddr, respVld):
         b = self.bus.b
 
-        isInAddrRange = ((wAddr >= self._getMinAddr()) & (wAddr <= self._getMaxAddr()))
+        isInAddrRange = (self.isInMyAddrRange(wAddr))
 
         If(isInAddrRange,
            b.resp ** RESP_OKAY
         ).Else(
-           b.resp ** RESP_SLVERR 
+           b.resp ** RESP_SLVERR
         )
         b.valid ** respVld
 
@@ -129,6 +138,7 @@ class AxiLiteEndpoint(BusConverter):
         sig = self._sig
         reg = self._reg
         addrWidth = evalParam(self.ADDR_WIDTH).val
+        ADDR_STEP = self._getAddrStep()
 
         wSt_t = Enum('wSt_t', ['wrIdle', 'wrData', 'wrResp'])
         aw = self.bus.aw
@@ -141,7 +151,7 @@ class AxiLiteEndpoint(BusConverter):
             (aw.valid, wSt_t.wrData)
         ).Trans(wSt_t.wrData,
             (w.valid, wSt_t.wrResp)
-        ).Default(# Trans(wSt_t.wrResp,
+        ).Trans(wSt_t.wrResp,
             (b.ready, wSt_t.wrIdle)
         ).stateReg
 
@@ -165,13 +175,14 @@ class AxiLiteEndpoint(BusConverter):
         )
 
         # output vld
-        for ai in self._directlyMapped:
-            out = ai.port.dout
+        for t in self._directlyMapped:
+            out = self.getPort(t).dout
             connect(w.data, out.data, fit=True)
-            out.vld ** (w_hs & (awAddr._eq(vec(ai.addr, addrWidth))))
+            out.vld ** (w_hs & (awAddr._eq(vec(t.bitAddr // ADDR_STEP, addrWidth))))
 
-        for ai in self._bramPortMapped:
-            connect(w.data, ai.port.din, fit=True)
+        for t in self._bramPortMapped:
+            din = self.decoded._fieldsToInterfaces[t.origin].din
+            connect(w.data, din, fit=True)
 
         self.writeRespPart(awAddr, wSt._eq(wSt_t.wrResp))
 

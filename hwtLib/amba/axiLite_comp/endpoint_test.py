@@ -118,14 +118,16 @@ class AxiLiteEndpointTC(SimTestCase):
                                  (MAGIC + 4, m)])
 
         self.randomizeAll()
-        self.doSim(400 * Time.ns)
+        self.doSim(500 * Time.ns)
 
-        self.assertValSequenceEqual(u.decoded.field0._ag.dout, [MAGIC,
-                                                        MAGIC + 2
-                                                        ])
-        self.assertValSequenceEqual(u.decoded.field1._ag.dout, [MAGIC + 1,
-                                                        MAGIC + 3
-                                                        ])
+        self.assertValSequenceEqual(u.decoded.field0._ag.dout,
+                                    [MAGIC,
+                                     MAGIC + 2
+                                     ])
+        self.assertValSequenceEqual(u.decoded.field1._ag.dout, 
+                                    [MAGIC + 1,
+                                     MAGIC + 3
+                                     ])
         self.assertValSequenceEqual(u.bus.b._ag.data, [RESP_OKAY for _ in range(4)] + [RESP_SLVERR])
 
     def test_registerMap(self):

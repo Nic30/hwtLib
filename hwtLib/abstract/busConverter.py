@@ -1,6 +1,5 @@
 from hwt.code import log2ceil
 from hwt.hdlObjects.constants import INTF_DIRECTION
-from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
 from hwt.hdlObjects.types.bits import Bits
@@ -16,7 +15,8 @@ from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import evalParam
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
-from hwtLib.abstract.addrSpace import AddrSpaceItem
+from hwt.hdlObjects.transactionPart import walkFlatten
+from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 
 
 def inRange(n, lower, size):
@@ -61,6 +61,9 @@ class BusConverter(Unit):
 
         self.decoded = StructIntf(self.STRUCT_TEMPLATE, instantiateFieldFn=self._mkFieldInterface)
 
+    def getPort(self, transactionTemplate):
+        return self.decoded._fieldsToInterfaces[transactionTemplate.origin]
+
     def constructAddrSpaceItemsForField(self):
         raise NotImplementedError()
 
@@ -73,57 +76,27 @@ class BusConverter(Unit):
         self.ADDR_STEP = self._getAddrStep()
 
         AW = evalParam(self.ADDR_WIDTH).val
-        DW = evalParam(self.DATA_WIDTH).val
         SUGGESTED_AW = self._suggestedAddrWidth()
         assert SUGGESTED_AW <= AW, (SUGGESTED_AW, AW)
+        tmpl = TransactionTemplate(self.STRUCT_TEMPLATE, bitAddr=self.OFFSET * 8)
+        fieldTrans = walkFlatten(tmpl, shouldEnterFn=lambda tmpl: not isinstance(tmpl.dtype, Array))
+        for (_, transactionTmpl) in fieldTrans:
+            intf = self.getPort(transactionTmpl)
 
-        tmpl = TransactionTemplate(self.STRUCT_TEMPLATE, bitAddr=self.OFFSET*8)
-
-        ADDR_STEP = self.WORD_ADDR_STEP
-        OFFSETBITS_OF_WORDS = log2ceil(self._getWordAddrStep()).val
-        for wIndx, tParts in tmpl.walkFrameWords():
-            for tPart in tParts:
-                if tPart.isPadding:
-                    continue
-                tItem = tPart.parent
-                t = tItem.dtype
-
-                assert len(tItem.parts) == 1
-
-                if isinstance(t, Array):
-                    size = evalParam(t.size).val
-                    alignOffsetBits = OFFSETBITS_OF_WORDS
-                else:
-                    size = None
-                    alignOffsetBits = None
-
-                port = self.decoded._fieldsToInterfaces[tItem.origin]
-                asi = AddrSpaceItem(wIndx * ADDR_STEP,
-                                    tItem.name,
-                                    size,
-                                    origin=tItem.origin,
-                                    alignOffsetBits=alignOffsetBits)
-
-                asi.port = port
-                if isinstance(port, RegCntrl):
-                    self._directlyMapped.append(asi)
-                elif isinstance(port, BramPort_withoutClk):
-                    self._bramPortMapped.append(asi)
-                else:
-                    raise NotImplementedError(port)
-                self.ADRESS_MAP.append(asi)
-
-        # for field, intf in self.decoded._fieldsToInterfaces.items():
+            if isinstance(intf, RegCntrl):
+                self._directlyMapped.append(transactionTmpl)
+            elif isinstance(intf, BramPort_withoutClk):
+                self._bramPortMapped.append(transactionTmpl)
+            else:
+                raise NotImplementedError(intf)
+            self.ADRESS_MAP.append(transactionTmpl)
 
     def _getMaxAddr(self):
         lastItem = self.ADRESS_MAP[-1]
-        if lastItem.size is None:
-            return lastItem.addr
-        else:
-            return lastItem.addr + self.WORD_ADDR_STEP * lastItem.size
+        return lastItem.bitAddrEnd // self._getAddrStep()
 
     def _getMinAddr(self):
-        return self.ADRESS_MAP[0].addr
+        return self.ADRESS_MAP[0].bitAddr // self._getAddrStep()
 
     def _suggestedAddrWidth(self):
         """
