@@ -12,6 +12,8 @@ from hwtLib.amba.axis import AxiStream_withoutSTRB
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.handshaked.streamNode import streamAck
 from hwt.interfaces.structIntf import StructIntf
+from math import inf
+from hwt.hdlObjects.transactionPart import walkFlatten
 
 
 class StructReader(AxiS_frameParser):
@@ -22,27 +24,45 @@ class StructReader(AxiS_frameParser):
     if there is more of ignored space transaction will be split to
 
     :attention: interfaces of field will not send data in same time
+  
+    .. aafig::
+                                     +---------+
+                              +------> field0  |
+                              |      +---------+
+                      +-------+-+
+         input bus    |         |    +---------+
+        +-------------> reader  +----> field1  |
+                      |         |    +---------+
+                      +-------+-+
+                              |      +---------+
+                              +------> field2  |
+                                     +---------+
     """
-    def __init__(self, structT):
+    def __init__(self, structT, maxPaddingWords=inf):
         """
         :param structT: instance of HStruct which specifies data format to download
+        :param maxPaddingWords: maximum of continual padding words in frame,
+            if exceed frame is split and words are cut of
         :attention: interfaces for each field in struct will be dynamically created
         :attention: structT can not contain fields with variable size like HStream
         """
         Unit.__init__(self)
         assert isinstance(structT, HStruct)
         self._structT = structT
+        self._maxPaddingWords = maxPaddingWords
 
     def _config(self):
         self.ID = Param(0)
-        self.MAX_DUMMY_WORDS = Param(1)
         AxiRDatapumpIntf._config(self)
         # if this is true field interfaces will be of type VldSynced
         # and single ready signal will be used for all
         # else every interface will be instance of Handshaked and it will
         # have it's own ready(rd) signal
         self.SHARED_READY = Param(False)
-
+    
+    def maxWordIndex(self):
+        return max(map(lambda f: f.endBitAddr - 1, self._frames)) // evalParam(self.DATA_WIDTH).val
+        
     def _declr(self):
         addClkRstn(self)
         self.dataOut = StructIntf(self._structT,
@@ -50,14 +70,13 @@ class StructReader(AxiS_frameParser):
 
         self.get = Handshaked()  # data signal is addr of structure to download
         self.get._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
-        self._words = self.parseTemplate()
+        self.parseTemplate()
 
         with self._paramsShared():
             # interface for communication with datapump
             self.rDatapump = AxiRDatapumpIntf()
-            maxWordIndex = self._words[-1][0]
-            self.rDatapump.MAX_LEN.set(maxWordIndex + 1)
-            self.parser = AxiS_frameParser(AxiStream_withoutSTRB, self._structT)
+            self.rDatapump.MAX_LEN.set(self.maxWordIndex() + 1)
+            self.parser = AxiS_frameParser(AxiStream_withoutSTRB, self._structT, maxPaddingWords=self._maxPaddingWords)
 
         if evalParam(self.SHARED_READY).val:
             self.ready = Signal()
@@ -70,28 +89,29 @@ class StructReader(AxiS_frameParser):
         req.rem ** 0
 
         def f(frame, indx):
-            s = [req.addr ** (self.get.data + burst.addrOffset),
-                 req.len ** (burst.wordCnt() - 1),
+            s = [req.addr ** (self.get.data + frame.startBitAddr),
+                 req.len ** (frame.getWordCnt() - 1),
                  req.vld ** self.get.vld
                  ]
-            if indx == len(self._busBurstInfo) - 1:
-                s.append(self.get.rd ** req.rd)
+            isLastFrame = indx == len(self._frames) - 1
+            if isLastFrame:
+                rd = req.rd
             else:
-                s.append(self.get.rd ** 0)
+                rd = 0
+            s.append(self.get.rd ** rd)
 
             ack = streamAck(masters=[self.get], slaves=[self.rDatapump.req])
             return s, ack
 
-        StaticForEach(self, self._busBurstInfo, f)
+        StaticForEach(self, self._frames, f)
 
         r = self.rDatapump.r
         connect(r, self.parser.dataIn, exclude=[r.id, r.strb])
 
-        for burst in self._busBurstInfo:
-            for fieldInfo in burst.fieldInfos:
-                myIntf = getattr(self, fieldInfo.name)
-                parserIntf = getattr(self.parser, fieldInfo.name)
-                myIntf ** parserIntf
+        for _, field in walkFlatten(self._tmpl):
+            myIntf = self.dataOut._fieldsToInterfaces[field.origin]
+            parserIntf = self.parser.dataOut._fieldsToInterfaces[field.origin]
+            myIntf ** parserIntf
 
 
 if __name__ == "__main__":

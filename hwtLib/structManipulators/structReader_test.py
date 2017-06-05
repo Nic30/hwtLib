@@ -30,14 +30,14 @@ s0 = HStruct(
 def s0RandVal(tc):
     r = tc._rand.getrandbits
     data = {"item0": r(64),
-             "item1": r(64),
-             "item2": r(16),
-             "item3": r(16),
-             "item4": r(32),
-             "item5": r(64),
-             "item6": r(64),
-             "item7": r(64),
-             }
+            "item1": r(64),
+            "item2": r(16),
+            "item3": r(16),
+            "item4": r(32),
+            "item5": r(64),
+            "item6": r(64),
+            "item7": r(64),
+            }
 
     return data
 
@@ -70,7 +70,7 @@ class StructReaderTC(SimTestCase):
         for f in s0.fields:
             if f.name is not None:
                 expected = expectedFieldValues[f.name]
-                got = getattr(u, f.name)._ag.data
+                got = u.dataOut._fieldsToInterfaces[f]._ag.data
                 self.assertValSequenceEqual(got, expected)
 
 if __name__ == "__main__":

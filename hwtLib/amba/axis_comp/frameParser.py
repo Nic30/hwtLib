@@ -9,6 +9,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam, Param
+from math import inf
 
 
 class AxiS_frameParser(Unit):
@@ -29,7 +30,7 @@ class AxiS_frameParser(Unit):
                                      +---------+
 
     """
-    def __init__(self, axiSCls, structT):
+    def __init__(self, axiSCls, structT, maxPaddingWords=inf):
         """
         :param axiSCls: class of input axi stream interface
         :param structT: instance of HStruct which specifies data format to download
@@ -39,6 +40,7 @@ class AxiS_frameParser(Unit):
         assert isinstance(structT, HStruct)
         self._structT = structT
         self._axiSCls = axiSCls
+        self._maxPaddingWords = maxPaddingWords
 
     def _config(self):
         self.DATA_WIDTH = Param(64)
@@ -125,16 +127,18 @@ class AxiS_frameParser(Unit):
         return busRd
 
     def parseTemplate(self):
-        tmpl = TransactionTemplate(self._structT)
+        self._tmpl = TransactionTemplate(self._structT)
         DW = evalParam(self.DATA_WIDTH).val
-        frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))
-        return tmpl, frames
+        frames = FrameTemplate.framesFromTransactionTemplate(self._tmpl,
+                                                             DW,
+                                                             maxPaddingWords=self._maxPaddingWords)
+        self._frames = list(frames)
 
     def _impl(self):
         r = self.dataIn
-        _, frames = self.parseTemplate()
-        assert len(frames) == 1
-        words = list(frames[0].walkWords(showPadding=True))
+        self.parseTemplate()
+        assert len(self._frames) == 1
+        words = list(self._frames[0].walkWords(showPadding=True))
 
         maxWordIndex = words[-1][0]
         wordIndex = self._reg("wordIndex", vecT(log2ceil(maxWordIndex + 1)), 0)
