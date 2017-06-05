@@ -65,7 +65,7 @@ class IpifEndpoint(BusConverter):
             a = self._sig("addr_forBram_" + port._name, ipif.bus2ip_addr._dtype)
             a ** (addr - _addr)
 
-            self.propagateAlignedOffset(a, port.addr, t)
+            self.propagateAddr(a, ADDR_STEP, port.addr, port.dout._dtype.bit_length(), t)
 
             port.en ** (_isMyAddr & ipif.bus2ip_cs)
             port.we ** (_isMyAddr & wAck)
