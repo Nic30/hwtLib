@@ -27,6 +27,25 @@ class BusConverter(Unit):
     Abstract unit
     Delegate request from bus to fields of structure
     write has higher priority
+    
+    .. aafig::
+        +------+    +----------+     +---------+
+        | bus  +---->          +-----> field0  |
+        |      <----+          <-----+         |
+        +------+    |          |     +---------+
+                    |          |
+                    | endpoint |     +---------+
+                    |          +-----> field1  |
+                    |          <-----+         |
+                    |          |     +---------+
+                    |          |
+                    |          |     +---------+
+                    |          +-----> field2  |
+                    |          <-----+         |
+                    +----------+     +---------+
+
+    
+    
     """
     def __init__(self, structTemplate, offset=0, intfCls=None):
         """

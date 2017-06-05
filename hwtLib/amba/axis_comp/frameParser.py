@@ -6,7 +6,7 @@ from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
-from hwt.pyUtils.arrayQuery import where, flatten
+from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam, Param
 
@@ -14,12 +14,25 @@ from hwt.synthesizer.param import evalParam, Param
 class AxiS_frameParser(Unit):
     """
     Parse frame specified by HStruct into fields
+    
+    .. aafig::
+                                     +---------+
+                              +------> field0  |
+                              |      +---------+
+                      +-------+-+
+         input stream |         |    +---------+
+        +-------------> parser  +----> field1  |
+                      |         |    +---------+
+                      +-------+-+
+                              |      +---------+
+                              +------> field2  |
+                                     +---------+
+
     """
     def __init__(self, axiSCls, structT):
         """
         :param axiSCls: class of input axi stream interface
         :param structT: instance of HStruct which specifies data format to download
-        :attention: interfaces for each field in struct will be dynamically created
         :attention: structT can not contain fields with variable size like HStream
         """
         super(AxiS_frameParser, self).__init__()
@@ -46,7 +59,7 @@ class AxiS_frameParser(Unit):
         i.DATA_WIDTH.set(transInfo.dtype.bit_length())
         return i
 
-    def getDataSignal(self, transactionPart):
+    def getInDataSignal(self, transactionPart):
         busDataSignal = self.dataIn.data
         bitRange = transactionPart.getBusWordBitRange()
         return busDataSignal[bitRange[0]:bitRange[1]]
@@ -73,7 +86,7 @@ class AxiS_frameParser(Unit):
                 if part.isPadding:
                     continue
                 dataVld = busVld & isThisWord
-                fPartSig = self.getDataSignal(part)
+                fPartSig = self.getInDataSignal(part)
                 fieldInfo = part.tmpl.origin
 
                 if part.isLastPart():
@@ -115,17 +128,14 @@ class AxiS_frameParser(Unit):
         tmpl = TransactionTemplate(self._structT)
         DW = evalParam(self.DATA_WIDTH).val
         frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))
-        assert len(frames) == 1
-
-        words = map(lambda frame: frame.walkWords(showPadding=True), frames)
-        # list of (wordIndex, [ transaction parts ])
-        words = list(flatten(words))
-
-        return tmpl, frames, words
+        return tmpl, frames
 
     def _impl(self):
         r = self.dataIn
-        _, _, words = self.parseTemplate()
+        _, frames = self.parseTemplate()
+        assert len(frames) == 1
+        words = list(frames[0].walkWords(showPadding=True))
+
         maxWordIndex = words[-1][0]
         wordIndex = self._reg("wordIndex", vecT(log2ceil(maxWordIndex + 1)), 0)
         busVld = r.valid

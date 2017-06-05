@@ -13,6 +13,19 @@ class HandshakedFork(HandshakedCompBase):
     transaction is made in all interfaces or none of them
     
     combinational
+    
+    .. afig::
+                                     +---------+
+                              +------> clone0  |
+                              |      +---------+
+                      +-------+
+         input stream |       |      +---------+
+        +-------------> fork  +------> clone1  |
+                      |       |      +---------+
+                      +-------+
+                              |      +---------+
+                              +------> clone2  |
+                                     +---------+
     """
     def _config(self):
         self.OUTPUTS = Param(2)

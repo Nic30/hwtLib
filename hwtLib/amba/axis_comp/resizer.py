@@ -18,6 +18,26 @@ class AxiS_resizer(AxiSCompBase):
     :attention: strb can be not fully set only in last word
     :attention: in upscale mode id and other signals which are not dependent on data width
         are propagated only from last word
+        
+    .. aafig::
+                                         +-------------+
+                                         |             |
+        +-------------+  +-----------+   |             |
+        |stream,      +-->           |   |             |
+        |datawidth:64 |  | resizer   +--->stream,      |
+        +-------------+  | 64 to 256 |   |datawidth:256|
+                         +-----------+   |             |
+                                         |             |
+        +-------------+                  |             |
+        |             |                  +-------------+
+        |             |
+        |             |  +-----------+
+        |stream,      |  |           |   +-------------+
+        |datawidth:256+--> resizer   +--->stream,      |
+        |             |  | 256 to 64 |   |datawidth:64 |
+        |             |  +-----------+   +-------------+
+        |             |
+        +-------------+
     """
     def _config(self):
         AxiSCompBase._config(self)

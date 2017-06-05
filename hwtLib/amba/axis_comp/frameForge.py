@@ -16,6 +16,19 @@ from hwtLib.handshaked.streamNode import streamSync, streamAck
 class AxiS_frameForge(AxiSCompBase):
     """
     Assemble fields into frame on axi stream interface
+    
+    .. aafig::
+        +---------+                               
+        | field0  +------+                        
+        +---------+      |                        
+                       +-v-------+                
+        +---------+    |         | output stream  
+        | field1  +---->  forge  +--------------->
+        +---------+    |         |                
+                       +-^-------+                
+        +---------+      |                        
+        | field2  +------+                        
+        +---------+                               
     """
     def __init__(self, axiSIntfCls, structT):
         """

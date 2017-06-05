@@ -9,6 +9,19 @@ from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
 class HandshakedDemux(HandshakedCompBase):
+    """
+    .. aafig::
+                *----+ output0
+               *     +-------->
+         input |     |
+        +------>     | output1
+               |     +-------->
+               *     |
+                *-^--+
+                  |
+                  +
+                select
+    """
     def _config(self):
         self.OUTPUTS = Param(2)
         super()._config()
