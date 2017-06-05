@@ -6,7 +6,7 @@ from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
-from hwt.pyUtils.arrayQuery import where
+from hwt.pyUtils.arrayQuery import where, flatten
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam, Param
 
@@ -114,13 +114,18 @@ class AxiS_frameParser(Unit):
     def parseTemplate(self):
         tmpl = TransactionTemplate(self._structT)
         DW = evalParam(self.DATA_WIDTH).val
-        frame = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))[0]
-        words = list(frame.walkWords(showPadding=True))  # list of (wordIndex, [ transaction parts ])
-        return words
+        frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))
+        assert len(frames) == 1
+
+        words = map(lambda frame: frame.walkWords(showPadding=True), frames)
+        # list of (wordIndex, [ transaction parts ])
+        words = list(flatten(words))
+
+        return tmpl, frames, words
 
     def _impl(self):
         r = self.dataIn
-        words = self.parseTemplate()
+        _, _, words = self.parseTemplate()
         maxWordIndex = words[-1][0]
         wordIndex = self._reg("wordIndex", vecT(log2ceil(maxWordIndex + 1)), 0)
         busVld = r.valid

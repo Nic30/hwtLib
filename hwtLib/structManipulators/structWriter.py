@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import ForEach
+from hwt.code import StaticForEach
 from hwt.hdlObjects.types.struct import HStruct
-from hwt.hdlObjects.types.structUtils import StructBusBurstInfo
 from hwt.interfaces.std import Handshaked, HandshakeSync
+from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.param import evalParam, Param
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
@@ -20,6 +20,7 @@ class StructWriter(StructReader):
     """
     Write struct specified in constructor over wDatapump interface on address
     specified over set interface
+    :ivar MAX_OVERLAP: parameter which specifies the maximumum number of concurrent transaction
     """
     def _config(self):
         StructReader._config(self)
@@ -33,12 +34,8 @@ class StructWriter(StructReader):
 
     def _declr(self):
         addClkRstn(self)
-
-        structInfo = self._declareFieldInterfaces()
-        self._busBurstInfo = StructBusBurstInfo.packFieldInfosToBusBurst(
-                                    structInfo,
-                                    evalParam(self.MAX_DUMMY_WORDS).val,
-                                    evalParam(self.DATA_WIDTH).val // 8)
+        self.dataIn = StructIntf(self._structT,
+                                 self.createInterfaceForField)
 
         self.set = Handshaked()  # data signal is addr of structure to write
         self.set._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
@@ -48,7 +45,8 @@ class StructWriter(StructReader):
         with self._paramsShared():
             # interface for communication with datapump
             self.wDatapump = AxiWDatapumpIntf()
-            self.wDatapump.MAX_LEN.set(StructBusBurstInfo.sumOfWords(self._busBurstInfo))
+            maxWordIndex = self._words[-1][0]
+            self.wDatapump.MAX_LEN.set(maxWordIndex)
 
         self.frameAssember = []
         for burstInfo in self._busBurstInfo:
@@ -94,7 +92,7 @@ class StructWriter(StructReader):
 
                 return statements, ack & self.set.vld
 
-            ForEach(self, self._busBurstInfo, propagateRequests)
+            StaticForEach(self, self._busBurstInfo, propagateRequests)
 
             # connect write channel
             fa = self.frameAssember
@@ -118,7 +116,7 @@ class StructWriter(StructReader):
                 return [req.addr ** (self.set.data + burst.addrOffset),
                         req.len ** (burst.wordCnt() - 1),
                         ], ack
-            ForEach(self, self._busBurstInfo, propagateRequests)
+            StaticForEach(self, self._busBurstInfo, propagateRequests)
 
             streamSync(masters=[self.set], slaves=[req])
 

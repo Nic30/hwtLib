@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import ForEach, connect
+from hwt.code import StaticForEach, connect
 from hwt.hdlObjects.types.struct import HStruct
-from hwt.hdlObjects.types.structUtils import StructBusBurstInfo
 from hwt.interfaces.std import Handshaked, Signal
-from hwt.interfaces.utils import propagateClkRstn
+from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam, Param
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.amba.axis import AxiStream_withoutSTRB
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.handshaked.streamNode import streamAck
+from hwt.interfaces.structIntf import StructIntf
 
 
 class StructReader(AxiS_frameParser):
@@ -44,16 +44,19 @@ class StructReader(AxiS_frameParser):
         self.SHARED_READY = Param(False)
 
     def _declr(self):
-        AxiS_frameParser._declr(self, declareInput=False)
+        addClkRstn(self)
+        self.dataOut = StructIntf(self._structT,
+                                  self.createInterfaceForField)
 
         self.get = Handshaked()  # data signal is addr of structure to download
         self.get._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
+        self._words = self.parseTemplate()
 
         with self._paramsShared():
             # interface for communication with datapump
             self.rDatapump = AxiRDatapumpIntf()
-            self.rDatapump.MAX_LEN.set(StructBusBurstInfo.sumOfWords(self._busBurstInfo))
-            # [TODO] do not use self._structT (bursts can be formated to something else)
+            maxWordIndex = self._words[-1][0]
+            self.rDatapump.MAX_LEN.set(maxWordIndex + 1)
             self.parser = AxiS_frameParser(AxiStream_withoutSTRB, self._structT)
 
         if evalParam(self.SHARED_READY).val:
@@ -66,7 +69,7 @@ class StructReader(AxiS_frameParser):
         req.id ** self.ID
         req.rem ** 0
 
-        def f(burst, indx):
+        def f(frame, indx):
             s = [req.addr ** (self.get.data + burst.addrOffset),
                  req.len ** (burst.wordCnt() - 1),
                  req.vld ** self.get.vld
@@ -79,7 +82,7 @@ class StructReader(AxiS_frameParser):
             ack = streamAck(masters=[self.get], slaves=[self.rDatapump.req])
             return s, ack
 
-        ForEach(self, self._busBurstInfo, f)
+        StaticForEach(self, self._busBurstInfo, f)
 
         r = self.rDatapump.r
         connect(r, self.parser.dataIn, exclude=[r.id, r.strb])
