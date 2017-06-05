@@ -6,6 +6,7 @@ from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.abstract.busConverter import BusConverter
+from hwt.synthesizer.param import evalParam
 
 
 class BramPortEndpoint(BusConverter):
@@ -21,12 +22,13 @@ class BramPortEndpoint(BusConverter):
         BusConverter.__init__(self, structTemplate, offset, intfCls)
 
     def _impl(self):
-        bus = self.bus
         self._parseTemplate()
+        bus = self.bus
+        assert self.OFFSET % evalParam(self.DATA_WIDTH).val == 0, "Offset is aligned to data width"
 
         def connectRegIntfAlways(regIntf, _addr):
             return (
-                    c(bus.din, regIntf.dout.data) +
+                    c(bus.din, regIntf.dout.data) + 
                     c(bus.we & bus.en & bus.addr._eq(_addr), regIntf.dout.vld)
                    )
 

@@ -76,12 +76,14 @@ class BramPortEndpointTC(AxiLiteEndpointTC):
         self.randomizeAll()
         self.doSim(400 * Time.ns)
 
-        self.assertValSequenceEqual(u.decoded.field0._ag.dout, [MAGIC,
-                                                        MAGIC + 2
-                                                        ])
-        self.assertValSequenceEqual(u.decoded.field1._ag.dout, [MAGIC + 1,
-                                                        MAGIC + 3
-                                                        ])
+        self.assertValSequenceEqual(u.decoded.field0._ag.dout,
+                                    [MAGIC,
+                                     MAGIC + 2],
+                                    "field0")
+        self.assertValSequenceEqual(u.decoded.field1._ag.dout,
+                                    [MAGIC + 1,
+                                     MAGIC + 3],
+                                    "field1")
 
 
 class BramPortEndpointDenseTC(BramPortEndpointTC):
@@ -98,7 +100,7 @@ class BramPortEndpointOffsetTC(BramPortEndpointTC):
     FIELD_ADDR = [0x1, 0x2]
 
     def mySetUp(self, data_width=32):
-        u = self.u = BramPortEndpoint(self.STRUCT_TEMPLATE, offset=0x1)
+        u = self.u = BramPortEndpoint(self.STRUCT_TEMPLATE, offset=0x1 * 32)
 
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH.set(self.DATA_WIDTH)
