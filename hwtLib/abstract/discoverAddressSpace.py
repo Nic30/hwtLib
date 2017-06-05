@@ -1,11 +1,14 @@
+from copy import copy
+import pprint
+
+from hwt.bitmask import mask
+from hwt.hdlObjects.assignment import Assignment
 from hwt.hdlObjects.operator import Operator
+from hwt.hdlObjects.operatorDefs import AllOps
+from hwt.hdlObjects.portItem import PortItem
 from hwt.synthesizer.interfaceLevel.mainBases import UnitBase
 from hwtLib.abstract.busConverter import BusConverter
-from hwt.hdlObjects.assignment import Assignment
-from hwt.hdlObjects.portItem import PortItem
-from hwt.hdlObjects.operatorDefs import AllOps
-from copy import copy
-from hwt.synthesizer.param import evalParam
+from hwt.hdlObjects.types.array import Array
 
 
 def getEpSignal(sig, op):
@@ -40,6 +43,78 @@ def getParentUnit(sig):
     while not isinstance(intf._parent, UnitBase):
         intf = intf._parent
     return intf._parent
+
+
+class AddrSpaceItem(object):
+    """
+    Container of informations about space in memory
+    :ivar port: port for this item on converter
+    :ivar children: nested addr space items (dict addr:addrspaceitem)
+    """
+    def __init__(self, addr, name, size=1, origin=None, alignOffsetBits=None):
+        """
+        :param addr: base addr for this addr item
+        :param name: name of this addr item, (port with same name will be created for this item)
+        :param size: used for memories, number of items in memory
+        :param alignOffsetBits: used for memories, number of bits which should be trimmed (from LSB side)
+            from bus interface to make aligned address for this item
+        :param origin: object from which this was generated usually HStructField
+        """
+        self.port = None
+        self.children = {}
+
+        self.name = name
+        self.addr = addr
+        self.size = size
+        self.alignOffsetBits = alignOffsetBits
+        self.origin = origin
+
+    def assertNoOverlap(self, nextItem):
+        left0 = self.addr + self.size
+        right1 = nextItem.addr
+        assert left0 <= right1, (self, nextItem)
+
+    @staticmethod
+    def checkOverlapping(addrSpace):
+        """
+        :param addrSpace: sorted list of AddrSpaceItems
+        """
+        last = None
+        for item in addrSpace:
+            if last is None:
+                pass
+            else:
+                last.assertNoOverlap(item)
+
+            last = item
+
+    def getMyAddrPrefix(self):
+        """
+        :return: None if base addr is not aligned to size and prefix can not be used
+                 tuple (prefix, subAddrBits) if can be mapped by prefix
+        """
+        if self.size == 1:
+            return self.addr, 0
+        else:
+            subAddrBits = (self.size - 1).bit_length()
+
+        if self.addr & mask(subAddrBits):
+            # is addr is not aligned to size
+            return None
+        return self.addr >> subAddrBits, subAddrBits
+
+    def __repr__(self):
+        if self.children:
+            children = ",\n" + pprint.pformat(self.children, 2) + "\n "
+        else:
+            children = ""
+
+        if self.size is None:
+            size = 1
+        else:
+            size = self.size
+
+        return "<AddrSpaceItem %s, %d, size=%d%s>" % (self.name, self.addr, size, children)
 
 
 class AddressSpaceProbe(object):
@@ -86,16 +161,27 @@ class AddressSpaceProbe(object):
         coppy address space map from converter
         """
         m = {}
-        for item in converter.ADRESS_MAP:
-            item = copy(item)
+        ADDR_STEP = converter._getAddrStep()
+        for _item in converter.ADRESS_MAP:
+            addr = _item.bitAddr // ADDR_STEP
+            if isinstance(_item.dtype, Array):
+                size = _item.itemCnt
+                _prefix = _item.getMyAddrPrefix(ADDR_STEP)
+                try:
+                    (_, bitForAligin) = _prefix
+                except TypeError:
+                    bitForAligin = 0
+            else:
+                size = None
+                bitForAligin = 0
 
-            item.addr = offset + addrModifier(evalParam(item.addr).val)
+            item = AddrSpaceItem(addr, _item.origin.name, size, _item.origin, bitForAligin)
+            item.addr = offset + addrModifier(addr)
 
-            m[item.addr] = item
-            _size = item.size
+            m[addr] = item
 
-            if item.size is not None and item.size > 1:
-                port = getattr(converter, item.name)
+            if size is not None and size > 1:
+                port = converter.decoded._fieldsToInterfaces[_item.origin]
                 if item.alignOffsetBits is not None:
                     def _addrModifier(childAddr):
                         return childAddr << item.alignOffsetBits
@@ -107,7 +193,9 @@ class AddressSpaceProbe(object):
                     _sizeModifier = sizeModifier
 
                 item.children = self._discoverAddressSpace(port, item.addr, _addrModifier, _sizeModifier)
+
             item.size = sizeModifier(item.size)
+
         return m
 
     def walkToConverter(self, mainSig, ignoreMyParent=False):
