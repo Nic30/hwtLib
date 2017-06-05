@@ -8,7 +8,7 @@ from hwt.synthesizer.param import Param, evalParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
-class HandshakedMux(HandshakedCompBase):
+class HandshakedDemux(HandshakedCompBase):
     def _config(self):
         self.OUTPUTS = Param(2)
         super()._config()
@@ -44,5 +44,5 @@ class HandshakedMux(HandshakedCompBase):
 if __name__ == "__main__":
     from hwt.interfaces.std import Handshaked
     from hwt.synthesizer.shortcuts import toRtl
-    u = HandshakedMux(Handshaked)
+    u = HandshakedDemux(Handshaked)
     print(toRtl(u))   

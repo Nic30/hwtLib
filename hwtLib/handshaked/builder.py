@@ -5,7 +5,7 @@ from hwtLib.abstract.streamBuilder import AbstractStreamBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.fork import HandshakedFork
 from hwtLib.handshaked.join import HandshakedJoin
-from hwtLib.handshaked.mux import HandshakedMux
+from hwtLib.handshaked.demux import HandshakedDemux
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.resizer import HandshakedResizer
 
@@ -19,5 +19,5 @@ class HsBuilder(AbstractStreamBuilder):
     FifoCls = HandshakedFifo
     ForkCls = HandshakedFork
     RegCls  = HandshakedReg
-    MuxCls  = HandshakedMux
+    DemuxCls  = HandshakedDemux
     ResizerCls = HandshakedResizer

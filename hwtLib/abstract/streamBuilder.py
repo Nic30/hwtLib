@@ -12,6 +12,7 @@ class AbstractStreamBuilder(object):
     :cvar FifoCls: fifo unit class
     :cvar RegCls: register unit class
     :cvar MuxCls: multiplexer unit class
+    :cvar DemuxCls: demultiplexer unit class
     :cvar ResizerCls: resizer unit class
 
     :ivar compId: used for sequential number of components
@@ -170,13 +171,13 @@ class AbstractStreamBuilder(object):
             u.DEPTH.set(depth)
         return self._genericInstance(self.FifoCls, "fifo", setDepth)
 
-    def mux(self, noOfOutputs):
+    def demux(self, noOfOutputs):
         """
-        Create a multiplexer with outputs specified by noOfOutputs
+        Create a demultiplexer with outputs specified by noOfOutputs
 
         :param noOfOutputs: number of outputs of multiplexer
         """
         def setChCnt(u):
             u.OUTPUTS.set(noOfOutputs)
 
-        return self._genericInstance(self.MuxCls, 'mux', setChCnt)
+        return self._genericInstance(self.DemuxCls, 'demux', setChCnt)

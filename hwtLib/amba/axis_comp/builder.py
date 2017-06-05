@@ -4,7 +4,7 @@ from hwtLib.abstract.streamBuilder import AbstractStreamBuilder
 from hwtLib.amba.axis_comp.append import AxiS_append
 from hwtLib.amba.axis_comp.fifo import AxiSFifo
 from hwtLib.amba.axis_comp.fork import AxiSFork
-from hwtLib.amba.axis_comp.mux import AxiSMux
+from hwtLib.amba.axis_comp.demux import AxiSDemux
 from hwtLib.amba.axis_comp.reg import AxiSReg
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.amba.axis_comp.resizer import AxiS_resizer
@@ -20,14 +20,13 @@ class AxiSBuilder(AbstractStreamBuilder):
     FifoCls = AxiSFifo
     ForkCls = AxiSFork
     RegCls = AxiSReg
-    MuxCls = AxiSMux
+    DemuxCls = AxiSDemux
     ResizerCls = AxiS_resizer
 
     def resize(self, newDataWidth):
         """
         Change datawidth of axi stream
         """
-        from hwtLib.amba.axis_comp.resizer import AxiS_resizer
         return self._genericInstance(AxiS_resizer,
                                      "resize",
                                      lambda u: u.OUT_DATA_WIDTH.set(newDataWidth))
@@ -80,9 +79,9 @@ class AxiSBuilder(AbstractStreamBuilder):
 
         return self
     
-    #[TODO]
-    #@classmethod
-    #def forge(cls, parent, parts, intfCls, setupFn=None, once=False, name=None):
+    # [TODO]
+    # @classmethod
+    # def forge(cls, parent, parts, intfCls, setupFn=None, once=False, name=None):
     #    """
     #    generate frame from parts
     #    
