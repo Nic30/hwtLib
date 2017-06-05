@@ -240,7 +240,7 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(Axi4_streamToMemTC('test_endstrbMultiFrame'))
+    # suite.addTest(AxiLiteEndpointArray('test_write'))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))

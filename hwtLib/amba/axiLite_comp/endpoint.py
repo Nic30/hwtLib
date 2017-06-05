@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, c, FsmBuilder, Or, log2ceil, connect, Switch, \
+from hwt.code import If, FsmBuilder, Or, log2ceil, connect, Switch, \
     SwitchLogic
 from hwt.hdlObjects.typeShortcuts import vec, vecT
 from hwt.hdlObjects.types.enum import Enum
 from hwt.synthesizer.param import evalParam
-from hwtLib.abstract.busConverter import BusConverter, inRange
+from hwtLib.abstract.busConverter import BusConverter
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 
@@ -15,8 +15,6 @@ class AxiLiteEndpoint(BusConverter):
     """
     Delegate request from AxiLite interface to fields of structure
     write has higher priority
-
-    :attention: interfaces are dynamically generated from names of fields in structure template
     """
     _getWordAddrStep = AxiLite._getWordAddrStep
     _getAddrStep = AxiLite._getAddrStep
@@ -24,11 +22,7 @@ class AxiLiteEndpoint(BusConverter):
     def __init__(self, structTemplate, offset=0, intfCls=AxiLite):
         BusConverter.__init__(self, structTemplate, offset, intfCls)
 
-    def isInMyAddrRange(self, addrSig):
-        return (addrSig >= self._getMinAddr()) & (addrSig < self._getMaxAddr())
-
     def readPart(self, awAddr, w_hs):
-        DW_B = evalParam(self.DATA_WIDTH).val // 8
         ADDR_STEP = self._getAddrStep()
         # build read data output mux
 
@@ -72,41 +66,39 @@ class AxiLiteEndpoint(BusConverter):
             bramRdIndx = self._reg("bramRdIndx", vecT(log2ceil(len(self._bramPortMapped))))
             bramRdIndxSwitch = Switch(bramRdIndx)
             for bramIndex, t in enumerate(self._bramPortMapped):
-                size = t.itemCnt
-                addr = t.bitAddr // ADDR_STEP
                 port = self.getPort(t)
 
                 # map addr for bram ports
-                a = self._sig("addr_forBram_" + port._name, awAddr._dtype)
-                (_isMyAddr, _) = self.propagateAddr(a, ADDR_STEP, port.addr, port.dout._dtype.bit_length(), t)
-                _isInBramFlags.append(_isMyAddr)
-
-                prioritizeWrite = inRange(awAddr, addr, size * DW_B) & w_hs
+                dstAddrStep = port.dout._dtype.bit_length()
+                (_isMyArAddr, arAddrConnect) = self.propagateAddr(ar.addr, ADDR_STEP, port.addr, dstAddrStep, t)
+                (_, ar2AddrConnect) = self.propagateAddr(arAddr, ADDR_STEP, port.addr, dstAddrStep, t)
+                (_isMyAwAddr, awAddrConnect) = self.propagateAddr(awAddr, ADDR_STEP, port.addr, dstAddrStep, t)
+                prioritizeWrite = _isMyAwAddr & w_hs
 
                 If(prioritizeWrite,
-                    a ** (awAddr - addr)
+                    awAddrConnect
                 ).Elif(rSt._eq(rSt_t.rdIdle),
-                    a ** (ar.addr - addr)
+                    arAddrConnect
                 ).Else(
-                    a ** (arAddr - addr)
+                    ar2AddrConnect
                 )
+                _isInBramFlags.append(_isMyArAddr)
 
-
-                port.en ** ((_isMyAddr & ar.valid) | prioritizeWrite)
+                port.en ** ((_isMyArAddr & ar.valid) | prioritizeWrite)
                 port.we ** prioritizeWrite
 
-                rregCases.append((_isMyAddr, bramRdIndx ** bramIndex))
+                rregCases.append((_isMyArAddr, bramRdIndx ** bramIndex))
                 bramRdIndxSwitch.Case(bramIndex, rdataReg ** port.dout)
 
             bramRdIndxSwitch.Default(rdataReg ** rdataReg)
             If(arRd,
                SwitchLogic(rregCases)
             )
-            c(Or(*_isInBramFlags), isBramAddr)
+            isBramAddr ** Or(*_isInBramFlags)
 
         else:
             rdataReg = None
-            c(0, isBramAddr)
+            isBramAddr ** 0
 
         SwitchLogic([(arAddr._eq(t.bitAddr // ADDR_STEP),
                       connect(self.decoded._fieldsToInterfaces[t.origin].din, r.data, fit=True))
@@ -172,7 +164,7 @@ class AxiLiteEndpoint(BusConverter):
             out.vld ** (w_hs & (awAddr._eq(vec(t.bitAddr // ADDR_STEP, addrWidth))))
 
         for t in self._bramPortMapped:
-            din = self.decoded._fieldsToInterfaces[t.origin].din
+            din = self.getPort(t).din
             connect(w.data, din, fit=True)
 
         self.writeRespPart(awAddr, wSt._eq(wSt_t.wrResp))
@@ -194,7 +186,7 @@ if __name__ == "__main__":
     u = AxiLiteEndpoint(
             HStruct(
                 (Array(uint32_t, 4), "field0"),
-                (Array(uint32_t, 2), "field1"),
+                # (Array(uint32_t, 2), "field1"),
                 (Array(uint32_t, 4), "field2")
                 # (uint32_t, "data0"),
                 # (uint32_t, "data1"),
