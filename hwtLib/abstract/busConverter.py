@@ -1,5 +1,6 @@
 from hwt.code import log2ceil
 from hwt.hdlObjects.constants import INTF_DIRECTION
+from hwt.hdlObjects.transactionPart import walkFlatten
 from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
@@ -7,7 +8,6 @@ from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.hdlType import HdlType
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.hdlObjects.types.structUtils import BusFieldInfo
-from hwt.hdlObjects.types.typeCast import toHVal
 from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
@@ -16,11 +16,10 @@ from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import evalParam
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
-from hwtLib.abstract.addrSpace import AddrSpaceItem
 
 
-def inRange(n, lower, size):
-    return (n >= lower) & (n < (toHVal(lower) + size))
+def inRange(n, lower, end):
+    return (n >= lower) & (n < end)
 
 
 class BusConverter(Unit):
@@ -28,8 +27,6 @@ class BusConverter(Unit):
     Abstract unit
     Delegate request from bus to fields of structure
     write has higher priority
-
-    :attention: interfaces are dynamically generated from names of fields in structure template
     """
     def __init__(self, structTemplate, offset=0, intfCls=None):
         """
@@ -61,8 +58,11 @@ class BusConverter(Unit):
 
         self.decoded = StructIntf(self.STRUCT_TEMPLATE, instantiateFieldFn=self._mkFieldInterface)
 
-    def constructAddrSpaceItemsForField(self):
-        raise NotImplementedError()
+    def getPort(self, transactionTemplate):
+        return self.decoded._fieldsToInterfaces[transactionTemplate.origin]
+
+    def isInMyAddrRange(self, addrSig):
+        return (addrSig >= self._getMinAddr()) & (addrSig < self._getMaxAddr())
 
     def _parseTemplate(self):
         self._directlyMapped = []
@@ -73,57 +73,27 @@ class BusConverter(Unit):
         self.ADDR_STEP = self._getAddrStep()
 
         AW = evalParam(self.ADDR_WIDTH).val
-        DW = evalParam(self.DATA_WIDTH).val
         SUGGESTED_AW = self._suggestedAddrWidth()
         assert SUGGESTED_AW <= AW, (SUGGESTED_AW, AW)
+        tmpl = TransactionTemplate(self.STRUCT_TEMPLATE, bitAddr=self.OFFSET)
+        fieldTrans = walkFlatten(tmpl, shouldEnterFn=lambda tmpl: not isinstance(tmpl.dtype, Array))
+        for (_, transactionTmpl) in fieldTrans:
+            intf = self.getPort(transactionTmpl)
 
-        tmpl = TransactionTemplate(self.STRUCT_TEMPLATE, bitAddr=self.OFFSET*8)
-
-        ADDR_STEP = self.WORD_ADDR_STEP
-        OFFSETBITS_OF_WORDS = log2ceil(self._getWordAddrStep()).val
-        for wIndx, tParts in tmpl.walkFrameWords():
-            for tPart in tParts:
-                if tPart.isPadding:
-                    continue
-                tItem = tPart.parent
-                t = tItem.dtype
-
-                assert len(tItem.parts) == 1
-
-                if isinstance(t, Array):
-                    size = evalParam(t.size).val
-                    alignOffsetBits = OFFSETBITS_OF_WORDS
-                else:
-                    size = None
-                    alignOffsetBits = None
-
-                port = self.decoded._fieldsToInterfaces[tItem.origin]
-                asi = AddrSpaceItem(wIndx * ADDR_STEP,
-                                    tItem.name,
-                                    size,
-                                    origin=tItem.origin,
-                                    alignOffsetBits=alignOffsetBits)
-
-                asi.port = port
-                if isinstance(port, RegCntrl):
-                    self._directlyMapped.append(asi)
-                elif isinstance(port, BramPort_withoutClk):
-                    self._bramPortMapped.append(asi)
-                else:
-                    raise NotImplementedError(port)
-                self.ADRESS_MAP.append(asi)
-
-        # for field, intf in self.decoded._fieldsToInterfaces.items():
+            if isinstance(intf, RegCntrl):
+                self._directlyMapped.append(transactionTmpl)
+            elif isinstance(intf, BramPort_withoutClk):
+                self._bramPortMapped.append(transactionTmpl)
+            else:
+                raise NotImplementedError(intf)
+            self.ADRESS_MAP.append(transactionTmpl)
 
     def _getMaxAddr(self):
         lastItem = self.ADRESS_MAP[-1]
-        if lastItem.size is None:
-            return lastItem.addr
-        else:
-            return lastItem.addr + self.WORD_ADDR_STEP * lastItem.size
+        return lastItem.bitAddrEnd // self._getAddrStep()
 
     def _getMinAddr(self):
-        return self.ADRESS_MAP[0].addr
+        return self.ADRESS_MAP[0].bitAddr // self._getAddrStep()
 
     def _suggestedAddrWidth(self):
         """
@@ -142,6 +112,42 @@ class BusConverter(Unit):
 
         return maxAddr.bit_length()
 
+    def propagateAddr(self, srcAddrSig, srcAddrStep, dstAddrSig, dstAddrStep, transTmpl):
+        """
+        :param srcAddrSig: input signal with address
+        :param srcAddrStep: how many bits is addressing one unit of srcAddrSig
+        :param dstAddrSig: output signal for address
+        :param dstAddrStep: how many bits is addressing one unit of dstAddrSig
+        :param transTmpl: TransactionTemplate which has metainformations about this address space transition
+        """
+        IN_ADDR_WIDTH = srcAddrSig._dtype.bit_length()
+
+        # _prefix = transTmpl.getMyAddrPrefix(srcAddrStep)
+        assert dstAddrStep % srcAddrStep == 0
+        if not isinstance(transTmpl.dtype, Array):
+            raise TypeError()
+        assert transTmpl.bitAddr % dstAddrStep == 0, "Has to be addressable by address with this step"
+
+        addrIsAligned = transTmpl.bitAddr % transTmpl.bit_length() == 0
+        bitsForAlignment = ((dstAddrStep // srcAddrStep) - 1).bit_length()
+        bitsOfSubAddr = ((transTmpl.bitAddrEnd - transTmpl.bitAddr - 1) // dstAddrStep).bit_length()
+
+        if addrIsAligned:
+            bitsOfPrefix = IN_ADDR_WIDTH - bitsOfSubAddr - bitsForAlignment
+            prefix = (transTmpl.bitAddr // srcAddrStep) >> (bitsForAlignment + bitsOfSubAddr)
+            addrIsInRange = srcAddrSig[IN_ADDR_WIDTH:(IN_ADDR_WIDTH - bitsOfPrefix)]._eq(prefix)
+            addr_tmp = srcAddrSig
+        else:
+            _addr = transTmpl.bitAddr // srcAddrStep
+            _addrEnd = transTmpl.bitAddrEnd // srcAddrStep
+            addrIsInRange = inRange(srcAddrSig, _addr, _addrEnd)
+            addr_tmp = self._sig(dstAddrSig._name + "_addr_tmp", vecT(self.ADDR_WIDTH))
+            addr_tmp ** (srcAddrSig - _addr)
+
+        connectedAddr = (dstAddrSig ** addr_tmp[(bitsOfSubAddr + bitsForAlignment):(bitsForAlignment)])
+
+        return (addrIsInRange, connectedAddr)
+
     def _mkFieldInterface(self, field):
         t = field.dtype
         DW = evalParam(self.DATA_WIDTH).val
@@ -157,7 +163,7 @@ class BusConverter(Unit):
             raise NotImplementedError(t)
 
         if dw == DW:
-            # use param instead of value to improve readabiltiy
+            # use param instead of value to improve readability
             dw = self.DATA_WIDTH
             p._replaceParam("DATA_WIDTH", dw)
         else:

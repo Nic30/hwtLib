@@ -43,14 +43,14 @@ class AxisFrameGen(Unit):
         en = self._reg("enable", defVal=0)
         _len = self._reg("wordCntr", vecT(log2ceil(self.MAX_LEN)), defVal=0)
 
-        self.conv.bus ** self.cntrl 
-        cEn = self.conv.enable 
+        self.conv.bus ** self.cntrl
+        cEn = self.conv.decoded.enable
         If(cEn.dout.vld,
            connect(cEn.dout.data, en, fit=True)
         )
         connect(en, cEn.din, fit=True)
 
-        cLen = self.conv.len
+        cLen = self.conv.decoded.len
         If(cLen.dout.vld,
            connect(cLen.dout.data, _len, fit=True)
         )

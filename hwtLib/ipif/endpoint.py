@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, c, FsmBuilder, Switch
+from hwt.code import If, FsmBuilder, Switch
 from hwt.hdlObjects.types.enum import Enum
-from hwt.hdlObjects.types.typeCast import toHVal
 from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.busConverter import BusConverter
 from hwtLib.ipif.intf import Ipif
@@ -21,15 +20,16 @@ class IpifEndpoint(BusConverter):
     _getAddrStep = Ipif._getAddrStep
 
     def __init__(self, structTemplate, offset=0, intfCls=Ipif):
-        BusConverter.__init__(self, structTemplate, offset, intfCls)
+        BusConverter.__init__(self, structTemplate, offset=offset, intfCls=intfCls)
 
     def _impl(self):
+        self._parseTemplate()
         DW_B = evalParam(self.DATA_WIDTH).val // 8
         assert self.OFFSET % DW_B == 0, "Offset is aligned to data width"
         # build read data output mux
 
-        def isMyAddr(addrSig, addr, size):
-            return (addrSig >= addr) & (addrSig < (toHVal(addr) + (size * DW_B)))
+        def isMyAddr(addrSig, addr, end):
+            return (addrSig >= addr) & (addrSig < end)
 
         st_t = Enum('st_t', ['idle', "writeAck", 'readDelay', 'rdData'])
         ipif = self.bus
@@ -37,7 +37,7 @@ class IpifEndpoint(BusConverter):
         ipif.ip2bus_error ** 0
         addrVld = ipif.bus2ip_cs
 
-        isInMyAddrSpace = (addr >= self._getMinAddr()) & (addr <= self._getMaxAddr())
+        isInMyAddrSpace = self.isInMyAddrRange(addr)
 
         st = FsmBuilder(self, st_t)\
         .Trans(st_t.idle,
@@ -54,40 +54,39 @@ class IpifEndpoint(BusConverter):
         wAck = st._eq(st_t.writeAck)
         ipif.ip2bus_rdack ** st._eq(st_t.rdData)
         ipif.ip2bus_wrack ** wAck
-
+        ADDR_STEP = self._getAddrStep()
         dataToBus = ipif.ip2bus_data ** None
-        for ai in reversed(self._bramPortMapped):
+        for t in reversed(self._bramPortMapped):
             # map addr for bram ports
-            _isMyAddr = isMyAddr(addr, ai.addr, ai.size)
+            _addr = t.bitAddr // ADDR_STEP
+            _isMyAddr = isMyAddr(addr, _addr, t.bitAddrEnd // ADDR_STEP)
+            port = self.getPort(t)
 
-            a = self._sig("addr_forBram_" + ai.port._name, ipif.bus2ip_addr._dtype)
-            a ** (addr - ai.addr)
+            self.propagateAddr(addr, ADDR_STEP, port.addr, port.dout._dtype.bit_length(), t)
 
-            addrHBit = ai.port.addr._dtype.bit_length()
-            bitForAligig = ai.alignOffsetBits
-            assert addrHBit + bitForAligig <= evalParam(self.ADDR_WIDTH).val
-            c(a[(addrHBit + bitForAligig):bitForAligig], ai.port.addr, fit=True)
-
-            ai.port.en ** (_isMyAddr & ipif.bus2ip_cs)
-            ai.port.we ** (_isMyAddr & wAck)
+            port.en ** (_isMyAddr & ipif.bus2ip_cs)
+            port.we ** (_isMyAddr & wAck)
 
             dataToBus = If(_isMyAddr,
-                ipif.ip2bus_data ** ai.port.dout
+                ipif.ip2bus_data ** port.dout
             ).Else(
                 dataToBus
             )
 
-            ai.port.din ** ipif.bus2ip_data
+            port.din ** ipif.bus2ip_data
 
-        for ai in self._directlyMapped:
-            ai.port.dout.vld ** (addr._eq(ai.addr) & ~ipif.bus2ip_rnw & wAck)
-            ai.port.dout.data ** ipif.bus2ip_data
+        for t in self._directlyMapped:
+            _addr = t.bitAddr // ADDR_STEP
+            port = self.getPort(t)
+
+            port.dout.vld ** (addr._eq(_addr) & ~ipif.bus2ip_rnw & wAck)
+            port.dout.data ** ipif.bus2ip_data
 
         _isInBramFlags = []
         Switch(ipif.bus2ip_addr)\
         .addCases(
-                [(ai.addr, ipif.ip2bus_data ** ai.port.din) 
-                 for ai in self._directlyMapped]
+                [(t.bitAddr // ADDR_STEP, ipif.ip2bus_data ** self.getPort(t).din)
+                 for t in self._directlyMapped]
         ).Default(
             dataToBus
         )

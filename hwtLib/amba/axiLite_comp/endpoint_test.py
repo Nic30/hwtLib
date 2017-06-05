@@ -118,14 +118,16 @@ class AxiLiteEndpointTC(SimTestCase):
                                  (MAGIC + 4, m)])
 
         self.randomizeAll()
-        self.doSim(400 * Time.ns)
+        self.doSim(500 * Time.ns)
 
-        self.assertValSequenceEqual(u.decoded.field0._ag.dout, [MAGIC,
-                                                        MAGIC + 2
-                                                        ])
-        self.assertValSequenceEqual(u.decoded.field1._ag.dout, [MAGIC + 1,
-                                                        MAGIC + 3
-                                                        ])
+        self.assertValSequenceEqual(u.decoded.field0._ag.dout,
+                                    [MAGIC,
+                                     MAGIC + 2
+                                     ])
+        self.assertValSequenceEqual(u.decoded.field1._ag.dout, 
+                                    [MAGIC + 1,
+                                     MAGIC + 3
+                                     ])
         self.assertValSequenceEqual(u.bus.b._ag.data, [RESP_OKAY for _ in range(4)] + [RESP_SLVERR])
 
     def test_registerMap(self):
@@ -152,7 +154,7 @@ class AxiLiteEndpointOffsetTC(AxiLiteEndpointTC):
     FIELD_ADDR = [0x4, 0x8]
 
     def mySetUp(self, data_width=32):
-        u = self.u = AxiLiteEndpoint(self.STRUCT_TEMPLATE, offset=0x4)
+        u = self.u = AxiLiteEndpoint(self.STRUCT_TEMPLATE, offset=0x4*8)
 
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH.set(self.DATA_WIDTH)
@@ -238,7 +240,7 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(Axi4_streamToMemTC('test_endstrbMultiFrame'))
+    # suite.addTest(AxiLiteEndpointArray('test_write'))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))

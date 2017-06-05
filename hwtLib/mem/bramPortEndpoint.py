@@ -5,7 +5,8 @@ from hwt.code import c, SwitchLogic, log2ceil, Switch
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import BramPort_withoutClk
-from hwtLib.abstract.busConverter import BusConverter, inRange
+from hwtLib.abstract.busConverter import BusConverter
+from hwt.synthesizer.param import evalParam
 
 
 class BramPortEndpoint(BusConverter):
@@ -21,34 +22,27 @@ class BramPortEndpoint(BusConverter):
         BusConverter.__init__(self, structTemplate, offset, intfCls)
 
     def _impl(self):
+        self._parseTemplate()
         bus = self.bus
+        assert self.OFFSET % evalParam(self.DATA_WIDTH).val == 0, "Offset is aligned to data width"
 
         def connectRegIntfAlways(regIntf, _addr):
             return (
-                    c(bus.din, regIntf.dout.data) +
+                    c(bus.din, regIntf.dout.data) + 
                     c(bus.we & bus.en & bus.addr._eq(_addr), regIntf.dout.vld)
                    )
 
-        def connectBramPortAlways(bramPort, addrOffset, size, _addrVld):
-            # explicit signal because vhdl cannot index the result of a type conversion
-            # [TODO] port._addrSpaceItem.getMyAddrPrefix()
-            addr_tmp = self._sig(bramPort._name + "_addr_tmp", vecT(self.ADDR_WIDTH))
-            c(bus.addr - addrOffset, addr_tmp)
-
-            return (
-                c(addr_tmp, bramPort.addr, fit=True) +
-                c(bus.we & _addrVld, bramPort.we) +
-                c(bus.en & _addrVld, bramPort.en) +
-                c(bus.din, bramPort.din))
-
+        ADDR_STEP = self._getAddrStep()
         if self._directlyMapped:
             readReg = self._reg("readReg", dtype=bus.dout._dtype)
             # tuples (condition, assign statements)
             readRegInputs = []
-            for ai in self._directlyMapped:
-                connectRegIntfAlways(ai.port, ai.addr)
-                readRegInputs.append((bus.addr._eq(ai.addr),
-                                      readReg ** ai.port.din
+            for t in self._directlyMapped:
+                port = self.getPort(t)
+                _addr = t.bitAddr // ADDR_STEP
+                connectRegIntfAlways(port, _addr)
+                readRegInputs.append((bus.addr._eq(_addr),
+                                      readReg ** port.din
                                       ))
             SwitchLogic(readRegInputs)
         else:
@@ -60,18 +54,24 @@ class BramPortEndpoint(BusConverter):
             readBramIndx = self._reg("readBramIndx", vecT(log2ceil(BRAMS_CNT + 1), False))
             outputSwitch = Switch(readBramIndx)
 
-            for i, ai in enumerate(self._bramPortMapped):
+            for i, t in enumerate(self._bramPortMapped):
                 # if we can use prefix instead of addr comparing do it
-                tmp = ai.port._addrSpaceItem.getMyAddrPrefix()
-                if tmp is None:
-                    _addrVld = inRange(bus.addr, ai.addr, ai.size)
-                else:
-                    prefix, subaddrBits = tmp
-                    _addrVld = bus.addr[:subaddrBits]._eq(prefix)
+                _addr = t.bitAddr // ADDR_STEP
+                _addrEnd = t.bitAddrEnd // ADDR_STEP
+                port = self.getPort(t)
 
-                connectBramPortAlways(ai.port, ai.addr, ai.size, _addrVld & bus.en)
+                _addrVld, _ = self.propagateAddr(bus.addr,
+                                                 ADDR_STEP,
+                                                 port.addr,
+                                                 port.dout._dtype.bit_length(),
+                                                 t)
+
+                port.we ** (bus.we & _addrVld & bus.en)
+                port.en ** (bus.en & _addrVld & bus.en)
+                port.din ** bus.din
+
                 bramIndxCases.append((_addrVld, readBramIndx ** i))
-                outputSwitch.Case(i, bus.dout ** ai.port.dout)
+                outputSwitch.Case(i, bus.dout ** port.dout)
 
             outputSwitch.Default(bus.dout ** readReg)
             SwitchLogic(bramIndxCases, default=readBramIndx ** BRAMS_CNT)

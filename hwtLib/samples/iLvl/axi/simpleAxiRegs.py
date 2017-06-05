@@ -51,11 +51,10 @@ class SimpleAxiRegs(Unit):
             )
             convPort.din ** reg 
 
-        connectRegToConveror(conv.reg0, reg0)
-        connectRegToConveror(conv.reg1, reg1)
+        connectRegToConveror(conv.decoded.reg0, reg0)
+        connectRegToConveror(conv.decoded.reg1, reg1)
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = SimpleAxiRegs()
     print(toRtl(u))
-    

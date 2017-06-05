@@ -45,11 +45,12 @@ class AxiS_frameForge(AxiSCompBase):
 
     def _impl(self):
         dout = self.dataOut
-        
+
         tmpl = TransactionTemplate(self._structT)
         DW = evalParam(self.DATA_WIDTH).val
         frame = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))[0]
-        words = list(frame.walkWords(showPadding=True)) # list of (wordIndex, [ transaction parts ])
+        # list of (wordIndex, [ transaction parts ])
+        words = list(frame.walkWords(showPadding=True))
         maxWordIndex = words[-1][0]
 
         useCounter = maxWordIndex > 0

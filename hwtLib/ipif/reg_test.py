@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import RegCntrl
+from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
@@ -25,16 +25,14 @@ class IpifRegWithEndpoint(Unit):
             self.bus = Ipif()
             self.reg = IpifReg()
             self.ep = IpifEndpoint(self.STRUCT_TEMPLATE)
-            self.field0 = RegCntrl()
-            self.field1 = RegCntrl()
+            self.decoded = StructIntf(self.STRUCT_TEMPLATE, self.ep._mkFieldInterface)
 
     def _impl(self):
         propagateClkRstn(self)
         ep = self.ep
         self.reg.dataIn ** self.bus
         ep.bus ** self.reg.dataOut
-        self.field0 ** ep.field0
-        self.field1 ** ep.field1
+        self.decoded ** ep.decoded
 
 
 class IpifRegTC(IpifEndpointTC):

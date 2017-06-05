@@ -1,5 +1,3 @@
-from math import inf
-
 from hwt.code import log2ceil, If, Concat, And
 from hwt.hdlObjects.transactionPart import FrameTemplate
 from hwt.hdlObjects.transactionTemplate import TransactionTemplate
@@ -8,7 +6,7 @@ from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
-from hwt.pyUtils.arrayQuery import where
+from hwt.pyUtils.arrayQuery import where, flatten
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam, Param
 
@@ -40,7 +38,7 @@ class AxiS_frameParser(Unit):
         # or use internal counter for synchronization
         self.SYNCHRONIZE_BY_LAST = Param(True)
 
-    def _createInterfaceForField(self, transInfo):
+    def createInterfaceForField(self, transInfo):
         if evalParam(self.SHARED_READY).val:
             i = VldSynced()
         else:
@@ -48,23 +46,22 @@ class AxiS_frameParser(Unit):
         i.DATA_WIDTH.set(transInfo.dtype.bit_length())
         return i
 
-    def _getDataSignal(self, transactionPart):
+    def getDataSignal(self, transactionPart):
         busDataSignal = self.dataIn.data
         bitRange = transactionPart.getBusWordBitRange()
         return busDataSignal[bitRange[0]:bitRange[1]]
 
     def _declr(self):
         addClkRstn(self)
-        self._fieldsToInterfaces = {}
-        self.parsed = StructIntf(self._structT,
-                                 self._createInterfaceForField)
+        self.dataOut = StructIntf(self._structT,
+                                 self.createInterfaceForField)
 
         with self._paramsShared():
             self.dataIn = self._axiSCls()
             if evalParam(self.SHARED_READY).val:
-                self.parsed_ready = Signal()
+                self.dataOut_ready = Signal()
 
-    def _connectDataSignals(self, words, wordIndex):
+    def connectDataSignals(self, words, wordIndex):
         busVld = self.dataIn.valid
 
         signalsOfParts = []
@@ -76,12 +73,12 @@ class AxiS_frameParser(Unit):
                 if part.isPadding:
                     continue
                 dataVld = busVld & isThisWord
-                fPartSig = self._getDataSignal(part)
+                fPartSig = self.getDataSignal(part)
                 fieldInfo = part.tmpl.origin
 
                 if part.isLastPart():
                     signalsOfParts.append(fPartSig)
-                    intf = self.parsed._fieldsToInterfaces[fieldInfo]
+                    intf = self.dataOut._fieldsToInterfaces[fieldInfo]
                     intf.data ** Concat(*reversed(signalsOfParts))
                     intf.vld ** dataVld
                     signalsOfParts = []
@@ -94,7 +91,7 @@ class AxiS_frameParser(Unit):
                     )
                     signalsOfParts.append(fPartReg)
 
-    def _busReadyLogic(self, words, wordIndex, maxWordIndex):
+    def busReadyLogic(self, words, wordIndex, maxWordIndex):
         if evalParam(self.SHARED_READY).val:
             busRd = self.ready
         else:
@@ -102,7 +99,7 @@ class AxiS_frameParser(Unit):
             _busRd = None
             for i, parts in words:
                 lastParts = where(parts, lambda p: not p.isPadding and p.isLastPart())
-                fiedsRd = map(lambda p: self.parsed._fieldsToInterfaces[p.tmpl.origin].rd,
+                fiedsRd = map(lambda p: self.dataOut._fieldsToInterfaces[p.tmpl.origin].rd,
                               lastParts)
                 isThisIndex = wordIndex._eq(i)
                 if _busRd is None:
@@ -114,18 +111,27 @@ class AxiS_frameParser(Unit):
             busRd ** _busRd
         return busRd
 
-    def _impl(self):
-        r = self.dataIn
+    def parseTemplate(self):
         tmpl = TransactionTemplate(self._structT)
         DW = evalParam(self.DATA_WIDTH).val
-        frame = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))[0]
-        words = list(frame.walkWords(showPadding=True))  # list of (wordIndex, [ transaction parts ])
+        frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))
+        assert len(frames) == 1
+
+        words = map(lambda frame: frame.walkWords(showPadding=True), frames)
+        # list of (wordIndex, [ transaction parts ])
+        words = list(flatten(words))
+
+        return tmpl, frames, words
+
+    def _impl(self):
+        r = self.dataIn
+        _, _, words = self.parseTemplate()
         maxWordIndex = words[-1][0]
         wordIndex = self._reg("wordIndex", vecT(log2ceil(maxWordIndex + 1)), 0)
         busVld = r.valid
 
-        self._connectDataSignals(words, wordIndex)
-        busRd = self._busReadyLogic(words, wordIndex, maxWordIndex)
+        self.connectDataSignals(words, wordIndex)
+        busRd = self.busReadyLogic(words, wordIndex, maxWordIndex)
 
         r.ready ** busRd
 
