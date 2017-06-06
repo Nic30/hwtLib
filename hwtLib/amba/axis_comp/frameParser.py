@@ -1,5 +1,5 @@
 from hwt.code import log2ceil, If, Concat, And
-from hwt.hdlObjects.transactionPart import FrameTemplate
+from hwt.hdlObjects.frameTemplate import FrameTemplate
 from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.struct import HStruct

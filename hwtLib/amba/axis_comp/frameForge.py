@@ -1,6 +1,6 @@
 from hwt.bitmask import mask
 from hwt.code import log2ceil, Switch, If, isPow2, In
-from hwt.hdlObjects.transactionPart import FrameTemplate
+from hwt.hdlObjects.frameTemplate import FrameTemplate
 from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.struct import HStruct
