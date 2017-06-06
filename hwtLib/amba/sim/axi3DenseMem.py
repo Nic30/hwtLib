@@ -106,7 +106,7 @@ class Axi3DenseMem(DenseMemory):
             _id2, data, strb, last = self.wAg.data.pop(0)
 
             assert _id2._isFullVld()
-            assert data._isFullVld()
+            #assert data._isFullVld()
             assert strb._isFullVld()
             assert last._isFullVld()
             assert _id == _id2.val
