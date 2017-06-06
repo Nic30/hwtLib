@@ -73,7 +73,7 @@ class AxiS_frameForge(AxiSCompBase):
     def _impl(self):
         dout = self.dataOut
         words = self.parseTemplate()
-        maxWordIndex = self._frame.getWordCnt()
+        maxWordIndex = self._frame.getWordCnt() - 1
         endsOfWords = [0, ]
         useCounter = maxWordIndex > 0
         if useCounter:
