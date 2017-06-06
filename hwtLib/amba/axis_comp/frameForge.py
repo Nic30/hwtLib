@@ -96,9 +96,10 @@ class AxiS_frameForge(AxiSCompBase):
                                           defVal=maxWordIndex)
             wcntrSw = Switch(wordCntr_inversed)
 
-        endsOfWords = []
+        endsOfFrames = []
         wordsOfPrevFrames = 0
         for frame in self._frames:
+            print(frame)
             for _i, transactionParts in frame.walkWords(showPadding=True):
                 i = _i + wordsOfPrevFrames
                 
@@ -161,8 +162,10 @@ class AxiS_frameForge(AxiSCompBase):
                 if useCounter:
                     wcntrSw.Case(maxWordIndex - i, a)
                 
+                print(i, transactionParts[-1].endOfPart, frame.endBitAddr)
                 if transactionParts[-1].endOfPart == frame.endBitAddr:
-                    endsOfWords.append(maxWordIndex - i)
+                    
+                    endsOfFrames.append(maxWordIndex - i)
                     wordsOfPrevFrames += 1
     
         # to prevent latches
@@ -176,7 +179,7 @@ class AxiS_frameForge(AxiSCompBase):
             wcntrSw.Default(default)
 
         if useCounter:
-            dout.last ** In(wordCntr_inversed, endsOfWords)
+            dout.last ** In(wordCntr_inversed, endsOfFrames)
         else:
             dout.last ** 1
 
