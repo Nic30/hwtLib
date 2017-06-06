@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.interfaces.std import Signal
-from hwt.intfLvl import Unit
+from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.samples.iLvl.simple import SimpleUnit
 
 

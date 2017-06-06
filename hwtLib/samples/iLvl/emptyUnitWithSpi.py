@@ -3,10 +3,10 @@
 
 import unittest
 
-from hwt.intfLvl import EmptyUnit
+from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwt.synthesizer.shortcuts import toRtl
-from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.spi.intf import Spi
+from hwtLib.tests.statementTrees import StatementTreesTC
 
 
 class EmptyUnitWithSpi(EmptyUnit):
@@ -35,11 +35,11 @@ BEGIN
 END ARCHITECTURE rtl;
 """
 
+
 class EmptyUnitWithSpiTC(unittest.TestCase):
     def test_vhdl(self):
         vhdl = toRtl(EmptyUnitWithSpi())
         StatementTreesTC.strStructureCmp(self, expectedVhdl, vhdl)
-        
 
 
 if __name__ == "__main__":

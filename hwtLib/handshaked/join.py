@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import And, Or, SwitchLogic
-from hwt.intfLvl import Param
+from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
@@ -10,13 +10,13 @@ class HandshakedJoin(HandshakedCompBase):
     """
     Join input stream to single output stream
     inputs with lower number has higher priority
-    
+
     combinational
     """
     def _config(self):
         self.INPUTS = Param(2)
         super()._config()
-        
+
     def _declr(self):
         with self._paramsShared():
             self.dataIn = self.intfCls(multipliedBy=self.INPUTS)
@@ -27,12 +27,12 @@ class HandshakedJoin(HandshakedCompBase):
         data = self.getData
         dataConnectExpr = []
         outDataSignals = list(data(dOut))
-        
+
         if dIn is None:
             dIn = [None for _ in outDataSignals]
         else:
             dIn = data(dIn)
-        
+
         for _din, _dout in zip(dIn, outDataSignals):
             dataConnectExpr.extend(_dout ** _din)
 
@@ -42,25 +42,25 @@ class HandshakedJoin(HandshakedCompBase):
         rd = self.getRd
         vld = self.getVld
         dout = self.dataOut
-        
-        vldSignals = list(map(vld, self.dataIn))  
-        
+
+        vldSignals = list(map(vld, self.dataIn))
+
         # data out mux
         dataCases = []
         for i, din in enumerate(self.dataIn):
-            allLowerPriorNotReady = map(lambda x:~x, vldSignals[:i])
+            allLowerPriorNotReady = map(lambda x: ~x, vldSignals[:i])
             rd(din) ** (And(rd(dout), *allLowerPriorNotReady))
-            
+
             cond = vld(din)
             dataConnectExpr = self.dataConnectionExpr(din, dout)
             dataCases.append((cond, dataConnectExpr))
-        
+
         dataDefault = self.dataConnectionExpr(None, dout)
         SwitchLogic(dataCases, dataDefault)
-            
+
         vld(dout) ** Or(*vldSignals)
-        
-        
+
+
 if __name__ == "__main__":
     from hwt.interfaces.std import Handshaked
     from hwt.synthesizer.shortcuts import toRtl

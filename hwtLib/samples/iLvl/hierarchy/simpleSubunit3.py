@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.intfLvl import Unit, Param
-from hwtLib.amba.axis import AxiStream
-from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream
-from hwtLib.samples.iLvl.hierarchy.simpleSubunit2 import SimpleSubunit2TC
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
+from hwtLib.amba.axis import AxiStream
+from hwtLib.samples.iLvl.hierarchy.simpleSubunit2 import SimpleSubunit2TC
+from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream
 
 
 class SimpleSubunit3(Unit):
@@ -26,6 +27,7 @@ class SimpleSubunit3(Unit):
         u = self.subunit0
         u.a ** self.a0
         self.b0 ** u.b
+
 
 class SimpleSubunit3TC(SimpleSubunit2TC):
     def setUp(self):

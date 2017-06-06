@@ -16,7 +16,7 @@ from hwt.synthesizer.param import evalParam, Param
 class AxiS_frameParser(Unit):
     """
     Parse frame specified by HStruct into fields
-    
+
     .. aafig::
                                      +---------+
                               +------> field0  |
@@ -70,7 +70,7 @@ class AxiS_frameParser(Unit):
     def _declr(self):
         addClkRstn(self)
         self.dataOut = StructIntf(self._structT,
-                                 self.createInterfaceForField)
+                                  self.createInterfaceForField)
 
         with self._paramsShared():
             self.dataIn = self._axiSCls()
@@ -99,7 +99,7 @@ class AxiS_frameParser(Unit):
                     intf.vld ** dataVld
                     signalsOfParts = []
                 else:
-                    # part is in some word as last part, we have to store its value to reg 
+                    # part is in some word as last part, we have to store its value to register
                     # until the last part arrive
                     fPartReg = self._reg("%s_part_%d" % (fieldInfo.name, len(signalsOfParts)), fPartSig._dtype)
                     If(dataVld,
@@ -196,4 +196,3 @@ if __name__ == "__main__":
     u = AxiS_frameParser(AxiStream, s)
     u.DATA_WIDTH.set(51)
     print(toRtl(u))
- 

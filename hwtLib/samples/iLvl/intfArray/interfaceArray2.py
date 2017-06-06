@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.intfLvl import Unit, Param
 from hwtLib.amba.axis import AxiStream
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.hdlObjects.constants import Time
 from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
 class SimpleSubunit(Unit):
@@ -52,6 +53,7 @@ class InterfaceArraySample2(Unit):
         self.b[1] ** self.u1.d
         # u2out = connect(u2.d, b[2])
 
+
 class InterfaceArraySample2TC(SimTestCase):
     def setUp(self):
         SimTestCase.setUp(self)
@@ -70,12 +72,12 @@ class InterfaceArraySample2TC(SimTestCase):
               (6, 1, 1)]
         u.a[0]._ag.data.extend(d0)
         u.a[1]._ag.data.extend(d1)
-        
+
         self.doSim(50 * Time.ns)
-        
+
         for i in range(2):
             self.assertEmpty(u.a[i]._ag.data)
-        
+
         self.assertValSequenceEqual(u.b[0]._ag.data, d0)
         self.assertValSequenceEqual(u.b[1]._ag.data, d1)
 
