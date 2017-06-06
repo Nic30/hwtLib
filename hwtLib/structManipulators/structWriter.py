@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import StaticForEach
+from hwt.hdlObjects.transactionPart import walkFlatten
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, HandshakeSync
 from hwt.interfaces.structIntf import StructIntf
@@ -9,13 +10,13 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
 from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync, streamAck
 from hwtLib.structManipulators.structReader import StructReader
-from hwt.hdlObjects.transactionPart import walkFlatten
 
+SKIP = 1
+PROPAGATE = 0
 
 class StructWriter(StructReader):
     """
@@ -76,11 +77,16 @@ class StructWriter(StructReader):
             ack = streamAck(slaves=[req, ackPropageteInfo.dataIn])
             statements = [req.addr ** (self.set.data + frame.startBitAddr // 8),
                           req.len ** (frame.getWordCnt() - 1),
-                          ackPropageteInfo.dataIn.data ** int(indx != 0),
                           streamSync(slaves=[req, ackPropageteInfo.dataIn],
                                      extraConds={req: self.set.vld,
                                                  ackPropageteInfo.dataIn: self.set.vld})
                           ]
+            if indx != 0:
+                prop = SKIP
+            else:
+                prop = PROPAGATE
+
+            statements += ackPropageteInfo.dataIn.data ** prop
 
             isLastFrame = indx == len(self._frames) - 1
             if isLastFrame:
@@ -100,7 +106,7 @@ class StructWriter(StructReader):
         streamSync(masters=[ack, ackPropageteInfo.dataOut],
                    slaves=[self.writeAck],
                    skipWhen={
-                             self.writeAck: ackPropageteInfo.dataOut.data._eq(0)
+                             self.writeAck: ackPropageteInfo.dataOut.data._eq(PROPAGATE)
                             })
 
 
@@ -116,9 +122,9 @@ if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
 
     s = HStruct(
-        (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
-        (uint64_t, None),  # name = None means this field will be ignored
-        (uint64_t, "item1"),
+        # (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
+        # (uint64_t, None),  # name = None means this field will be ignored
+        # (uint64_t, "item1"),
         # (uint64_t, None),
         # (uint16_t, "item2"),
         # (uint16_t, "item3"),
@@ -133,6 +139,13 @@ if __name__ == "__main__":
         # (uint64_t, None),
         # (uint64_t, "item6"),
         # (uint64_t, "item7"),
+        (uint64_t, None),
+        (uint64_t, None),
+        (uint64_t, None),
+        (uint64_t, None),
+        (uint64_t, "field0"),
+        (uint64_t, "field1"),
+        (uint64_t, "field2")
         )
 
     u = StructWriter(s)
