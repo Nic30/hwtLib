@@ -93,40 +93,133 @@ s1_str = """     63                                                             
 5    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|            arr1[4]            |
      -----------------------------------------------------------------"""
 
+sWithPadding = HStruct(
+                       (uint64_t, "item0_0"),
+                       (uint64_t, "item0_1"),
+                       (uint64_t, None),
+                       (uint64_t, "item1_0"),
+                       (uint64_t, "item1_1"),
+                       (uint64_t, None)
+                       )
+
+sWithPadding_str = """     63                                                             0
+     -----------------------------------------------------------------
+0    |                            item0_0                            |
+1    |                            item0_1                            |
+2    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
+3    |                            item1_0                            |
+4    |                            item1_1                            |
+5    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
+     -----------------------------------------------------------------""" 
+
+sWithPaddingMultiframe0_str = """     63                                                             0
+     -----------------------------------------------------------------
+0    |                            item0_0                            |
+1    |                            item0_1                            |
+     -----------------------------------------------------------------"""
+
+sWithPaddingMultiframe1_str = """     63                                                             0
+     -----------------------------------------------------------------
+0    |                            item1_0                            |
+1    |                            item1_1                            |
+     -----------------------------------------------------------------""" 
+
+
+sWithStartPadding = HStruct(
+                       (uint64_t, None),
+                       (uint64_t, None),
+                       (uint64_t, "item0"),
+                       (uint64_t, "item1"),
+                    )
+
+sWithStartPadding_strTrim = """     63                                                             0
+     -----------------------------------------------------------------
+0    |                             item0                             |
+1    |                             item1                             |
+     -----------------------------------------------------------------"""
+
+sWithStartPadding_strKept = """     63                                                             0
+     -----------------------------------------------------------------
+0    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
+1    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
+2    |                             item0                             |
+3    |                             item1                             |
+     -----------------------------------------------------------------"""
 
 def instantiateChilds():
     raise NotImplementedError()
 
 
-class TransactionTemplateTC(unittest.TestCase):
-    def test_translateHStruct(self):
+class FrameTemplateTC(unittest.TestCase):
+    def test_s0at64bit(self):
         DW = 64
         tmpl = TransactionTemplate(s0)
         frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))
         self.assertEqual(len(frames), 1)
         self.assertEqual(s0at64bit_str, frames[0].__repr__())
 
-    def test_translateHStruct_s0_71bit(self):
+    def test_s0at71bit(self):
         DW = 71
         tmpl = TransactionTemplate(s0)
         frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))
         self.assertEqual(len(frames), 1)
         self.assertEqual(s0at71bit_str, frames[0].__repr__(scale=2))
 
-    def test_translateHStruct_s1_64(self):
+    def test_s1at64(self):
         DW = 64
         tmpl = TransactionTemplate(s1)
         frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))
         self.assertEqual(len(frames), 1)
         self.assertEqual(s1_str, frames[0].__repr__())
 
-    def test_transactionTemplateBasic(self):
+    def test_sBasic(self):
         tmpl = TransactionTemplate(s_basic)
         self.assertEqual(s_basic_srt, tmpl.__repr__())
 
+    def test_sWithPadding(self):
+        DW = 64
+        tmpl = TransactionTemplate(sWithPadding)
+        frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(sWithPadding_str, frames[0].__repr__())
+
+    def test_sWithPaddingMultiFrame(self):
+        DW = 64
+        tmpl = TransactionTemplate(sWithPadding)
+        frames = FrameTemplate.framesFromTransactionTemplate(tmpl,
+                                                             DW,
+                                                             maxPaddingWords=0,
+                                                             trimPaddingWordsOnStart=True,
+                                                             trimPaddingWordsOnEnd=True)
+        frames = list(frames)
+        self.assertEqual(len(frames), 2)
+        
+        self.assertEqual(sWithPaddingMultiframe0_str, frames[0].__repr__())
+        self.assertEqual(sWithPaddingMultiframe1_str, frames[1].__repr__())
+    
+    def test_sWithStartPadding(self):
+        DW = 64
+        tmpl = TransactionTemplate(sWithStartPadding)
+        frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW, 
+                                                                  maxPaddingWords=0,
+                                                                  trimPaddingWordsOnStart=True,
+                                                                  trimPaddingWordsOnEnd=True))
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(sWithStartPadding_strTrim, frames[0].__repr__())
+    
+    def test_sWithStartPaddingKept(self):
+        DW = 64
+        tmpl = TransactionTemplate(sWithStartPadding)
+        frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW, 
+                                                                  maxPaddingWords=2,
+                                                                  trimPaddingWordsOnStart=True,
+                                                                  trimPaddingWordsOnEnd=True))
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(sWithStartPadding_strKept, frames[0].__repr__())
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(TransactionTemplateTC('test_translateHStruct_s1_64'))
-    suite.addTest(unittest.makeSuite(TransactionTemplateTC))
+    #suite.addTest(FrameTemplateTC('test_sWithStartPadding'))
+    suite.addTest(unittest.makeSuite(FrameTemplateTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
