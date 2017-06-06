@@ -1,3 +1,5 @@
+from math import inf
+
 from hwt.bitmask import mask
 from hwt.code import log2ceil, Switch, If, isPow2, In
 from hwt.hdlObjects.frameTemplate import FrameTemplate
@@ -11,7 +13,6 @@ from hwt.synthesizer.param import evalParam
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.handshaked.streamNode import streamSync, streamAck
-from math import inf
 
 
 class AxiS_frameForge(AxiSCompBase):

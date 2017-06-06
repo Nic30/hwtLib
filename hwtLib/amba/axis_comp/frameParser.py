@@ -1,3 +1,5 @@
+from math import inf
+
 from hwt.code import log2ceil, If, Concat, And
 from hwt.hdlObjects.frameTemplate import FrameTemplate
 from hwt.hdlObjects.transactionTemplate import TransactionTemplate
@@ -9,7 +11,6 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam, Param
-from math import inf
 
 
 class AxiS_frameParser(Unit):
