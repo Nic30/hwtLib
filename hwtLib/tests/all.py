@@ -109,6 +109,7 @@ from hwtLib.structManipulators.cLinkedListWriter_test import CLinkedListWriterTC
 from hwtLib.structManipulators.mmu2pageLvl_test import MMU_2pageLvl_TC
 from hwtLib.structManipulators.structReader_test import StructReaderTC
 from hwtLib.structManipulators.structWriter_test import StructWriter_TC
+from hwtLib.tests.frameTemplate_test import FrameTemplateTC
 from hwtLib.tests.operators import OperatorTC
 from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.tests.statementTreesInternal import StatementTreesInternalTC
@@ -118,7 +119,6 @@ from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import Subunits
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
-from hwtLib.tests.transactionTemplate_test import TransactionTemplateTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
@@ -170,7 +170,7 @@ suite = testSuiteFromTCs(
     InterfaceArraySample0TC,
     InterfaceArraySample1TC,
     InterfaceArraySample2TC,
-    TransactionTemplateTC,
+    FrameTemplateTC,
     
 
     # component verifications
