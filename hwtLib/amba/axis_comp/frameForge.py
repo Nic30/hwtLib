@@ -99,7 +99,6 @@ class AxiS_frameForge(AxiSCompBase):
         endsOfFrames = []
         wordsOfPrevFrames = 0
         for frame in self._frames:
-            print(frame)
             for _i, transactionParts in frame.walkWords(showPadding=True):
                 i = _i + wordsOfPrevFrames
                 
@@ -162,9 +161,7 @@ class AxiS_frameForge(AxiSCompBase):
                 if useCounter:
                     wcntrSw.Case(maxWordIndex - i, a)
                 
-                print(i, transactionParts[-1].endOfPart, frame.endBitAddr)
                 if transactionParts[-1].endOfPart == frame.endBitAddr:
-                    
                     endsOfFrames.append(maxWordIndex - i)
                     wordsOfPrevFrames += 1
     
