@@ -95,7 +95,7 @@ class AxiS_frameForge(AxiSCompBase):
                                           defVal=maxWordIndex)
             wcntrSw = Switch(wordCntr_inversed)
 
-        endsOfWords = [0, ]
+        endsOfWords = []
         wordsOfPrevFrames = 0
         for frame in self._frames:
             for _i, transactionParts in frame.walkWords(showPadding=True):
@@ -189,15 +189,13 @@ if __name__ == "__main__":
                         # tuples (type, name) where type has to be instance of Bits type
                         HStruct(
                             (uint64_t, "item0"),
-                            # (uint64_t, None),  # name = None means field is padding
+                            (uint64_t, None),  # name = None means field is padding
                             (uint64_t, "item1"),
-                            (uint64_t, "item2"),
-                            # (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
+                            (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
                         ),
-                        # maxPaddingWords=1,
-                        # trimPaddingWordsOnStart=True,
-                        # trimPaddingWordsOnEnd=True
+                        maxPaddingWords=0,
+                        trimPaddingWordsOnStart=True,
+                        trimPaddingWordsOnEnd=True
                         )
     u.DATA_WIDTH.set(64)
-
     print(toRtl(u))

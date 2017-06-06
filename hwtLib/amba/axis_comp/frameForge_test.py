@@ -10,6 +10,7 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.types.ctypes import uint64_t, uint32_t
+from math import inf
 
 
 s1field = HStruct(
@@ -22,14 +23,34 @@ s3field = HStruct(
     (uint64_t, "item2")
     )
 
+s2Pading = HStruct(
+    (uint64_t, "item0_0"),
+    (uint64_t, "item0_1"),
+    (uint64_t, None),
+    (uint64_t, "item1_0"),
+    (uint64_t, "item1_1"),
+    (uint64_t, None),
+    )
+
 s1field_composit0 = HStruct(
     (uint32_t, "item0"), (uint32_t, "item1"),
     )
 
 
 class AxiS_frameForge_TC(SimTestCase):
-    def instantiateFrameForge(self, structT, DATA_WIDTH=64, randomized=True):
-        u = self.u = AxiS_frameForge(AxiStream, structT)
+    def instantiateFrameForge(self, structT,
+                              DATA_WIDTH=64,
+                              maxFrameLen=inf,
+                              maxPaddingWords=inf,
+                              trimPaddingWordsOnStart=False,
+                              trimPaddingWordsOnEnd=False,
+                              randomized=True):
+
+        u = self.u = AxiS_frameForge(AxiStream, structT,
+                                     maxFrameLen=maxFrameLen,
+                                     maxPaddingWords=maxPaddingWords,
+                                     trimPaddingWordsOnStart=trimPaddingWordsOnStart,
+                                     trimPaddingWordsOnEnd=trimPaddingWordsOnEnd)
         self.DATA_WIDTH = 64
         u.DATA_WIDTH.set(self.DATA_WIDTH)
 
@@ -140,6 +161,37 @@ class AxiS_frameForge_TC(SimTestCase):
                                      (MAGIC + 2, m, 1),
                                      ])
 
+    def test_s2Pading_normal(self):
+        u = self.u = AxiS_frameForge(AxiStream, s2Pading)
+        self.DATA_WIDTH = 64
+        u.DATA_WIDTH.set(self.DATA_WIDTH)
+
+        self.prepareUnit(self.u)
+
+        def enDataOut(s):
+            u.dataOut._ag.enable = False
+            yield s.wait(50 * Time.ns)
+            u.dataOut._ag.enable = True
+        self.procs.append(enDataOut)
+
+        MAGIC = 468
+        u.dataIn.item0_0._ag.data.append(MAGIC)
+        u.dataIn.item0_1._ag.data.append(MAGIC + 1)
+        u.dataIn.item1_0._ag.data.append(MAGIC + 2)
+        u.dataIn.item1_1._ag.data.append(MAGIC + 3)
+
+        t = 200
+        self.doSim(t * Time.ns)
+
+        m = mask(self.DATA_WIDTH // 8)
+        self.assertValSequenceEqual(u.dataOut._ag.data,
+                                    [(MAGIC, m, 0),
+                                     (MAGIC + 1, m, 0),
+                                     (None, m, 0),
+                                     (MAGIC + 2, m, 0),
+                                     (MAGIC + 3, m, 0),
+                                     (None, m, 1),
+                                     ])
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(AxiS_resizer_downscale_TC('test_noPass'))
