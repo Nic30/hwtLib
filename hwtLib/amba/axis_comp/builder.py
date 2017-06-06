@@ -109,6 +109,6 @@ class AxiSBuilder(AbstractStreamBuilder):
     #    
     #    self.lastComp = u
     #    self.end = u.dataOut
-        
+    #    return self
         
         
