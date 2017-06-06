@@ -1,7 +1,13 @@
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getClk, getRst
 from hwt.interfaces.std import Rst_n
-getClk
+from enum import Enum
 
+
+class JOIN_MODE(Enum):
+    ITERATIVE = 0  # input from index 0, 1,... etc if input is not ready all waits
+    PRIORITY = 1  # input with lowest lower index has priority 
+    FAIR_SHARE = 2  # priority flag is cycling on inputs, round robin like 
+    # SPECIAL_ORDER (use [ of numbers] or input handshaked interface with indexes)
 
 class AbstractStreamBuilder(object):
     """
