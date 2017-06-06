@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from math import inf
+
 from hwt.code import StaticForEach, connect
+from hwt.hdlObjects.frameTemplate import walkFlatten
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, Signal
+from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam, Param
@@ -11,9 +15,6 @@ from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.amba.axis import AxiStream_withoutSTRB
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.handshaked.streamNode import streamAck
-from hwt.interfaces.structIntf import StructIntf
-from math import inf
-from hwt.hdlObjects.transactionPart import walkFlatten
 
 
 class StructReader(AxiS_frameParser):
@@ -76,7 +77,9 @@ class StructReader(AxiS_frameParser):
             # interface for communication with datapump
             self.rDatapump = AxiRDatapumpIntf()
             self.rDatapump.MAX_LEN.set(self.maxWordIndex() + 1)
-            self.parser = AxiS_frameParser(AxiStream_withoutSTRB, self._structT, maxPaddingWords=self._maxPaddingWords)
+            self.parser = AxiS_frameParser(AxiStream_withoutSTRB, 
+                                           self._structT,
+                                           maxPaddingWords=self._maxPaddingWords)
 
         if evalParam(self.SHARED_READY).val:
             self.ready = Signal()

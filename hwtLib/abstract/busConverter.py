@@ -1,6 +1,6 @@
 from hwt.code import log2ceil
 from hwt.hdlObjects.constants import INTF_DIRECTION
-from hwt.hdlObjects.transactionPart import walkFlatten
+from hwt.hdlObjects.frameTemplate import walkFlatten
 from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array

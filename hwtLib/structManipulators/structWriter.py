@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import StaticForEach
-from hwt.hdlObjects.transactionPart import walkFlatten
+from hwt.hdlObjects.frameTemplate import walkFlatten
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, HandshakeSync
 from hwt.interfaces.structIntf import StructIntf
@@ -14,6 +14,7 @@ from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync, streamAck
 from hwtLib.structManipulators.structReader import StructReader
+
 
 SKIP = 1
 PROPAGATE = 0
