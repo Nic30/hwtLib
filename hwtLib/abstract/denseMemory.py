@@ -166,7 +166,7 @@ class DenseMemory():
         for i in range(size):
             data, strb, last = self.wAg.data.pop(0)
 
-            assert data._isFullVld()
+            #assert data._isFullVld()
             assert strb._isFullVld()
             assert last._isFullVld()
 
