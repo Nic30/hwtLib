@@ -272,8 +272,10 @@ class FrameTemplateTC(unittest.TestCase):
                     )
         frames = list(frames)
         self.assertEqual(len(frames), 2)
-        for frame, s in zip(frames, frameHeader_split_str):
+        for frame, s, end in zip(frames, frameHeader_split_str, [2 * DW, 5 * DW]):
             self.assertEqual(s, frame.__repr__())
+            self.assertEqual(frame.endBitAddr, end)
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
