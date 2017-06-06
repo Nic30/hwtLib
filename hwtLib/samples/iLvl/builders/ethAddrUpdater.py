@@ -12,8 +12,7 @@ from hwtLib.structManipulators.structReader import StructReader
 from hwtLib.structManipulators.structWriter import StructWriter
 from hwtLib.types.net.eth import Eth2Header
 from hwtLib.types.net.ip import IPv4Header
-
-
+from hwt.synthesizer.param import Param
 
 
 frameHeader = HStruct(
@@ -24,24 +23,24 @@ frameHeader = HStruct_selectFields(frameHeader, {"eth":{ "src", "dst"},
                                                  "ipv4":{ "src", "dst"}
                                                  })
 
-class StructUpdater(Unit):
+class EthAddrUpdater(Unit):
     """
     This is example unit which reads dst and src addresses(MAC and IPv4) from ethernet frame stored 
     in memory and writes this addresses in reverse direction into second frame.
     """
     def _config(self):
         Axi3._config(self)
-    
+        self.MAX_LEN = Param(8)
+
     def _declr(self):
         addClkRstn(self)
 
         with self._paramsShared():
             self.axi_m = Axi3()
+            self.axi_m.LOCK_WIDTH.set(2)
         
-        self.rxPacketAddr = Handshaked()
-        self.txPacketAddr = Handshaked()
-        for intf in [self.rxPacketAddr, self.txPacketAddr]:
-            intf._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
+        self.packetAddr = Handshaked()
+        self.packetAddr._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
         
         with self._paramsShared():
             self.rxPacketLoader = StructReader(frameHeader)
@@ -53,12 +52,13 @@ class StructUpdater(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
-
         connectDp(self, self.rxPacketLoader, self.rxDataPump, self.axi_m)
-        connectDp(self, self.rxPacketLoader, self.rxDataPump, self.axi_m)
+        connectDp(self, self.txPacketUpdater, self.txDataPump, self.axi_m)
         
-        rxR = self.rxPacketLoader
-        txW = self.txPacketUpdater 
+        self.txPacketUpdater.writeAck.rd ** 1
+        
+        rxR = self.rxPacketLoader.dataOut
+        txW = self.txPacketUpdater.dataIn
         
         def withFifo(interface):
             return HsBuilder(self, interface).fifo(4).end
@@ -69,8 +69,12 @@ class StructUpdater(Unit):
         txW.ipv4.dst ** withFifo(rxR.ipv4.src)
         txW.ipv4.src ** withFifo(rxR.ipv4.dst)
         
+        HsBuilder(self, self.packetAddr).forkTo(
+            self.rxPacketLoader.get,
+            self.txPacketUpdater.set)
+        
         
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    u = StructUpdater()
+    u = EthAddrUpdater()
     print(toRtl(u))
