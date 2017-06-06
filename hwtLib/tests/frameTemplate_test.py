@@ -4,7 +4,10 @@ from hwt.hdlObjects.types.struct import HStruct
 from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
 from hwt.hdlObjects.transactionTemplate import TransactionTemplate
 from hwt.hdlObjects.types.array import Array
-from hwt.hdlObjects.transactionPart import FrameTemplate
+from hwt.hdlObjects.frameTemplate import FrameTemplate
+from hwtLib.types.net.eth import Eth2Header
+from hwtLib.types.net.ip import IPv4Header
+from hwt.hdlObjects.types.structUtils import HStruct_selectFields
 
 s_basic = HStruct(
     (uint64_t, "item0"),
@@ -146,9 +149,36 @@ sWithStartPadding_strKept = """     63                                          
 3    |                             item1                             |
      -----------------------------------------------------------------"""
 
-def instantiateChilds():
-    raise NotImplementedError()
+_frameHeader = HStruct(
+    (Eth2Header, "eth"),
+    (IPv4Header, "ipv4"),
+    name="FrameHeader"
+    )
+frameHeader = HStruct_selectFields(_frameHeader,
+                                   {"eth":{ "src", "dst"},
+                                    "ipv4":{ "src", "dst"},
+                                    })
+frameHeader_str = """     63                                                             0
+     -----------------------------------------------------------------
+0    |    eth.src    |                    eth.dst                    |
+1    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|            eth.src            |
+2    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
+3    |   ipv4.dst    |           ipv4.src            |XXXXXXXXXXXXXXX|
+4    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|   ipv4.dst    |
+     -----------------------------------------------------------------"""
 
+frameHeader_split_str = [
+"""     63                                                             0
+     -----------------------------------------------------------------
+0    |    eth.src    |                    eth.dst                    |
+1    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|            eth.src            |
+     -----------------------------------------------------------------""",
+"""     63                                                             0
+     -----------------------------------------------------------------
+0    |   ipv4.dst    |           ipv4.src            |XXXXXXXXXXXXXXX|
+1    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|   ipv4.dst    |
+     -----------------------------------------------------------------"""
+    ]
 
 class FrameTemplateTC(unittest.TestCase):
     def test_s0at64bit(self):
@@ -179,18 +209,20 @@ class FrameTemplateTC(unittest.TestCase):
     def test_sWithPadding(self):
         DW = 64
         tmpl = TransactionTemplate(sWithPadding)
-        frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))
+        frames = FrameTemplate.framesFromTransactionTemplate(tmpl, DW)
+        frames = list(frames)
         self.assertEqual(len(frames), 1)
         self.assertEqual(sWithPadding_str, frames[0].__repr__())
 
     def test_sWithPaddingMultiFrame(self):
         DW = 64
         tmpl = TransactionTemplate(sWithPadding)
-        frames = FrameTemplate.framesFromTransactionTemplate(tmpl,
-                                                             DW,
-                                                             maxPaddingWords=0,
-                                                             trimPaddingWordsOnStart=True,
-                                                             trimPaddingWordsOnEnd=True)
+        frames = FrameTemplate.framesFromTransactionTemplate(
+                    tmpl,
+                    DW,
+                    maxPaddingWords=0,
+                    trimPaddingWordsOnStart=True,
+                    trimPaddingWordsOnEnd=True)
         frames = list(frames)
         self.assertEqual(len(frames), 2)
         
@@ -200,26 +232,52 @@ class FrameTemplateTC(unittest.TestCase):
     def test_sWithStartPadding(self):
         DW = 64
         tmpl = TransactionTemplate(sWithStartPadding)
-        frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW, 
-                                                                  maxPaddingWords=0,
-                                                                  trimPaddingWordsOnStart=True,
-                                                                  trimPaddingWordsOnEnd=True))
+        frames = FrameTemplate.framesFromTransactionTemplate(
+                    tmpl, DW,
+                    maxPaddingWords=0,
+                    trimPaddingWordsOnStart=True,
+                    trimPaddingWordsOnEnd=True)
+        frames = list(frames)
         self.assertEqual(len(frames), 1)
         self.assertEqual(sWithStartPadding_strTrim, frames[0].__repr__())
     
     def test_sWithStartPaddingKept(self):
         DW = 64
         tmpl = TransactionTemplate(sWithStartPadding)
-        frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW, 
-                                                                  maxPaddingWords=2,
-                                                                  trimPaddingWordsOnStart=True,
-                                                                  trimPaddingWordsOnEnd=True))
+        frames = FrameTemplate.framesFromTransactionTemplate(
+                    tmpl, DW,
+                    maxPaddingWords=2,
+                    trimPaddingWordsOnStart=True,
+                    trimPaddingWordsOnEnd=True)
+        frames = list(frames)
         self.assertEqual(len(frames), 1)
         self.assertEqual(sWithStartPadding_strKept, frames[0].__repr__())
 
+    def test_frameHeader(self):
+        DW = 64
+        tmpl = TransactionTemplate(frameHeader)
+        frames = FrameTemplate.framesFromTransactionTemplate(tmpl, DW)
+        frames = list(frames)
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(frameHeader_str, frames[0].__repr__())
+
+    def test_frameHeader_splited(self):
+        DW = 64
+        tmpl = TransactionTemplate(frameHeader)
+        frames = FrameTemplate.framesFromTransactionTemplate(
+                    tmpl, DW,
+                    maxPaddingWords=0,
+                    trimPaddingWordsOnStart=True,
+                    trimPaddingWordsOnEnd=True
+                    )
+        frames = list(frames)
+        self.assertEqual(len(frames), 2)
+        for frame, s in zip(frames, frameHeader_split_str):
+            self.assertEqual(s, frame.__repr__())
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(FrameTemplateTC('test_sWithStartPadding'))
+    # suite.addTest(FrameTemplateTC('test_sWithStartPadding'))
     suite.addTest(unittest.makeSuite(FrameTemplateTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
