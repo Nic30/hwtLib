@@ -20,10 +20,8 @@ frameHeader = HStruct(
     (Eth2Header, "eth"),
     (IPv4Header, "ipv4")
     )
-frameHeader = HStruct_selectFields(frameHeader, {"eth":{ "src"},
-                                                 "eth":{ "dst"},
-                                                 "ipv4":{ "src"},
-                                                 "ipv4":{ "dst"}
+frameHeader = HStruct_selectFields(frameHeader, {"eth":{ "src", "dst"},
+                                                 "ipv4":{ "src", "dst"}
                                                  })
 
 class StructUpdater(Unit):
