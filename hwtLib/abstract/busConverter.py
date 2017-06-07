@@ -1,6 +1,5 @@
 from hwt.code import log2ceil
 from hwt.hdlObjects.constants import INTF_DIRECTION
-from hwt.hdlObjects.frameTemplate import walkFlatten
 from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
@@ -95,7 +94,7 @@ class BusConverter(Unit):
         SUGGESTED_AW = self._suggestedAddrWidth()
         assert SUGGESTED_AW <= AW, (SUGGESTED_AW, AW)
         tmpl = TransTmpl(self.STRUCT_TEMPLATE, bitAddr=self.OFFSET)
-        fieldTrans = walkFlatten(tmpl, shouldEnterFn=lambda tmpl: not isinstance(tmpl.dtype, Array))
+        fieldTrans = tmpl.walkFlatten(shouldEnterFn=lambda tmpl: not isinstance(tmpl.dtype, Array))
         for (_, transactionTmpl) in fieldTrans:
             intf = self.getPort(transactionTmpl)
 

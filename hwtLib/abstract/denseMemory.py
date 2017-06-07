@@ -295,11 +295,11 @@ class DenseMemory():
         :param structT: instance of HStruct or FrameTemplate generated from it to resove structure of data
         """
         wordWidth = self.cellSize * 8
-        if bitAddr is not None:
+        if bitAddr is None:
             assert bitAddr is None
             bitAddr = addr * 8
         else:
-            assert bitAddr is not None
+            assert addr is not None
 
         s = structT.getValueCls()
 

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import StaticForEach
-from hwt.hdlObjects.frameTemplate import walkFlatten
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, HandshakeSync
 from hwt.interfaces.structIntf import StructIntf
@@ -111,7 +110,7 @@ class StructWriter(StructReader):
                             })
 
         # connect fields to assembler
-        for _, transTmpl in walkFlatten(self._tmpl):
+        for _, transTmpl in self._tmpl.walkFlatten():
             f = transTmpl.origin
             intf = self.frameAssember.dataIn._fieldsToInterfaces[f]
             intf ** self.dataIn._fieldsToInterfaces[f]

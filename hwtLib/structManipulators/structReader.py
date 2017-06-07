@@ -4,7 +4,6 @@
 from math import inf
 
 from hwt.code import StaticForEach, connect
-from hwt.hdlObjects.frameTemplate import walkFlatten
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.structIntf import StructIntf
@@ -111,7 +110,7 @@ class StructReader(AxiS_frameParser):
         r = self.rDatapump.r
         connect(r, self.parser.dataIn, exclude=[r.id, r.strb])
 
-        for _, field in walkFlatten(self._tmpl):
+        for _, field in self._tmpl.walkFlatten():
             myIntf = self.dataOut._fieldsToInterfaces[field.origin]
             parserIntf = self.parser.dataOut._fieldsToInterfaces[field.origin]
             myIntf ** parserIntf

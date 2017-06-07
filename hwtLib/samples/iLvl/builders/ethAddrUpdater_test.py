@@ -46,7 +46,7 @@ class EthAddrUpdaterTC(SimTestCase):
         
         self.doSim(1000 * Time.ns)
         
-        updatedFrame = m.getStruct(framePtr, frameHeader)
+        #updatedFrame = m.getStruct(framePtr, frameHeader)
         
         
 if __name__ == "__main__":
