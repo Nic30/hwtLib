@@ -2,22 +2,23 @@
 # -*- coding: utf-8 -*-
 
 from hwt.bitmask import mask
+from hwt.code import c, Concat, If, Switch, connect
 from hwt.hdlObjects.typeShortcuts import vec, vecT
 from hwt.hdlObjects.types.defs import BIT
 from hwt.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.code import c, Concat, If, Switch
+from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
-from hwt.pyUtils.arrayQuery import where
-from hwt.hdlObjects.types.struct import HStruct
-from hwtLib.types.ctypes import uint32_t
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
-from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT,\
+from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, \
     PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
+from hwtLib.types.ctypes import uint32_t
+from hwt.synthesizer.vectorUtils import fitTo
 
 
 class Axi4streamToMem(Unit):
@@ -82,10 +83,11 @@ class Axi4streamToMem(Unit):
         axi.aw.id ** 0
         axi.aw.burst ** BURST_INCR 
         axi.aw.cache ** CACHE_DEFAULT
+
         If(lenRem > self.MAX_BUTST_LEN,
-            axi.aw.len ** self.MAX_BUTST_LEN
+            axi.aw.len ** (self.MAX_BUTST_LEN - 1)
         ).Else(
-            axi.aw.len ** ((lenRem - 1)[axi.aw.len._dtype.bit_length():])
+            connect(lenRem - 1, axi.aw.len, fit=True) 
         )
         axi.aw.lock ** LOCK_DEFAULT
         axi.aw.prot ** PROT_DEFAULT
@@ -100,7 +102,7 @@ class Axi4streamToMem(Unit):
         ).Case(st_t.writeAddr,
             If(axi.aw.ready,
                 If(lenRem > self.MAX_BUTST_LEN,
-                   actualAddr ** (actualAddr + self.MAX_BUTST_LEN),
+                   actualAddr ** (actualAddr + (self.MAX_BUTST_LEN * evalParam(self.DATA_WIDTH).val // 8)),
                    lenRem ** (lenRem - self.MAX_BUTST_LEN)
                 ).Else(
                    actualAddr ** (actualAddr + lenRem),

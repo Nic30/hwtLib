@@ -3,6 +3,7 @@ from hwtLib.amba.axi4_streamToMem import Axi4streamToMem
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
 from hwt.hdlObjects.constants import Time
+from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 
 
 class Axi4_streamToMemTC(SimTestCase):
@@ -31,6 +32,25 @@ class Axi4_streamToMemTC(SimTestCase):
         self.assertEmpty(u.axi.aw._ag.data)
         self.assertEmpty(u.axi.w._ag.data)
 
+    def test_simpleTransfer(self):
+        u = self.u
+        regs = self.regs
+        N = 33
+        # self._rand.getrandbits(self.DATA_WIDTH)
+        sampleData = [i for i in range(N)]
+        m = Axi3DenseMem(u.clk, u.axi)
+        blockPtr = m.malloc(self.DATA_WIDTH // 8 * N)
+        
+        u.dataIn._ag.data.extend(sampleData)
+
+        regs.baseAddr.write(blockPtr)
+        regs.control.write(1)
+        
+        self.doSim(N * 30 * Time.ns) 
+
+        self.assertValSequenceEqual(m.getArray(blockPtr, self.DATA_WIDTH // 8, N), sampleData)
+        
+        
 
 if __name__ == "__main__":
     import unittest
