@@ -25,7 +25,7 @@ class StructReader(AxiS_frameParser):
     if there is more of ignored space transaction will be split to
 
     :attention: interfaces of field will not send data in same time
-  
+
     .. aafig::
                                      +---------+
                               +------> field0  |
@@ -60,10 +60,10 @@ class StructReader(AxiS_frameParser):
         # else every interface will be instance of Handshaked and it will
         # have it's own ready(rd) signal
         self.SHARED_READY = Param(False)
-    
+
     def maxWordIndex(self):
         return max(map(lambda f: f.endBitAddr - 1, self._frames)) // evalParam(self.DATA_WIDTH).val
-        
+
     def _declr(self):
         addClkRstn(self)
         self.dataOut = StructIntf(self._structT,
@@ -77,7 +77,7 @@ class StructReader(AxiS_frameParser):
             # interface for communication with datapump
             self.rDatapump = AxiRDatapumpIntf()
             self.rDatapump.MAX_LEN.set(self.maxWordIndex() + 1)
-            self.parser = AxiS_frameParser(AxiStream_withoutSTRB, 
+            self.parser = AxiS_frameParser(AxiStream_withoutSTRB,
                                            self._structT,
                                            maxPaddingWords=self._maxPaddingWords)
 

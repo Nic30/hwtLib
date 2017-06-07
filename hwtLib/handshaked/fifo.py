@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 
 
-from hwt.interfaces.std import VectSignal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.intfLvl import Param
 from hwt.code import packedWidth, packed, \
     connectUnpacked, If, connect, log2ceil
-from hwt.synthesizer.param import evalParam
+from hwt.interfaces.std import VectSignal
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.synthesizer.param import evalParam, Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.mem.fifo import Fifo

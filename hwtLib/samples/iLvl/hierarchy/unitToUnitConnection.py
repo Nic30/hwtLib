@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.intfLvl import Param, Unit
 from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream
 from hwtLib.samples.iLvl.hierarchy.simpleSubunit2 import SimpleSubunit2TC
 from hwtLib.samples.iLvl.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnection

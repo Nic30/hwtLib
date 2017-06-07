@@ -19,11 +19,12 @@ from hwtLib.structManipulators.structReader import StructReader
 SKIP = 1
 PROPAGATE = 0
 
+
 class StructWriter(StructReader):
     """
     Write struct specified in constructor over wDatapump interface on address
     specified over set interface
-    
+
     :ivar MAX_OVERLAP: parameter which specifies the maximum number of concurrent transaction
     """
     def _config(self):
@@ -41,7 +42,7 @@ class StructWriter(StructReader):
         self.parseTemplate()
         self.dataIn = StructIntf(self._structT,
                                  self.createInterfaceForField)
-        
+
         self.set = Handshaked()  # data signal is addr of structure to write
         self.set._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
         # write ack from slave
@@ -73,7 +74,7 @@ class StructWriter(StructReader):
         self.ackPropageteInfo = ackPropageteInfo
         ackPropageteInfo.clk ** self.clk
         ackPropageteInfo.rst_n ** self.rst_n
-        
+
         def propagateRequests(frame, indx):
             ack = streamAck(slaves=[req, ackPropageteInfo.dataIn])
             statements = [req.addr ** (self.set.data + frame.startBitAddr // 8),
@@ -100,7 +101,6 @@ class StructWriter(StructReader):
         StaticForEach(self, self._frames, propagateRequests)
 
         # connect write channel
-        
         w ** self.frameAssember.dataOut
 
         # propagate ack
@@ -109,7 +109,6 @@ class StructWriter(StructReader):
                    skipWhen={
                              self.writeAck: ackPropageteInfo.dataOut.data._eq(PROPAGATE)
                             })
-
 
         # connect fields to assembler
         for _, transTmpl in walkFlatten(self._tmpl):
@@ -123,30 +122,21 @@ if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
 
     s = HStruct(
-        # (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
-        # (uint64_t, None),  # name = None means this field will be ignored
-        # (uint64_t, "item1"),
-        # (uint64_t, None),
-        # (uint16_t, "item2"),
-        # (uint16_t, "item3"),
-        # (uint32_t, "item4"),
-        #
-        # (uint32_t, None),
-        # (uint64_t, "item5"),  # this word is split on two bus words
-        # (uint32_t, None),
-        #
-        # (uint64_t, None),
-        # (uint64_t, None),
-        # (uint64_t, None),
-        # (uint64_t, "item6"),
-        # (uint64_t, "item7"),
-        (uint64_t, None),
-        (uint64_t, None),
-        (uint64_t, None),
-        (uint64_t, None),
-        (uint64_t, "field0"),
-        (uint64_t, "field1"),
-        (uint64_t, "field2")
+            (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
+            (uint64_t, None),  # name = None means this field will be ignored
+            (uint64_t, "item1"),
+            (uint64_t, None),
+            (uint16_t, "item2"),
+            (uint16_t, "item3"),
+            (uint32_t, "item4"),
+            (uint32_t, None),
+            (uint64_t, "item5"),  # this word is split on two bus words
+            (uint32_t, None),
+            (uint64_t, None),
+            (uint64_t, None),
+            (uint64_t, None),
+            (uint64_t, "item6"),
+            (uint64_t, "item7"),
         )
 
     u = StructWriter(s)

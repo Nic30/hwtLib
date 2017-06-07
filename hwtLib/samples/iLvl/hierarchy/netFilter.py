@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.intfLvl import Param, Unit, EmptyUnit
-from hwt.synthesizer.interfaceLevel.emptyUnit import setOut
+from hwt.synthesizer.interfaceLevel.emptyUnit import setOut, EmptyUnit
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 
 
 class HeadFieldExtractor(EmptyUnit):
@@ -32,7 +33,7 @@ class Filter(EmptyUnit):
     def _declr(self):
         self.headers = AxiStream()
         self.patternMatch = AxiStream()
-        
+
         self.din = AxiStream()
         self.dout = AxiStream()
         self.cfg = AxiLite()
@@ -73,7 +74,7 @@ class NetFilter(Unit):
         s = self
         propagateClkRstn(s)
         AxiSBuilder(self, s.hfe.dout).forkTo(s.patternMatch.din, s.filter.din)
-        
+
         s.hfe.din ** s.din
         s.filter.headers ** s.hfe.headers
         s.filter.patternMatch ** s.patternMatch.match
@@ -84,9 +85,9 @@ class NetFilter(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    from hwt.serializer.ip_packager.packager import Packager
-    print(toRtl(NetFilter()))
+    # from hwt.serializer.ip_packager.packager import Packager
 
-    # s = NetFilter()
-    # p = Packager(s)
+    u = NetFilter()
+    print(toRtl(u))
+    # p = Packager(u)
     # p.createPackage("project/ip/")

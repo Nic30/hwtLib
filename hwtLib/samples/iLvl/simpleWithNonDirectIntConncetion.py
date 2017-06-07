@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import Signal
-from hwt.intfLvl import Unit
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hdlObjects.constants import Time
-import unittest
+from hwt.interfaces.std import Signal
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
 class SimpleWithNonDirectIntConncetion(Unit):
@@ -36,6 +35,7 @@ class SimpleWithNonDirectIntConncetionTC(SimTestCase):
 
 
 if __name__ == "__main__":
+    import unittest
     suite = unittest.TestSuite()
     # suite.addTest(SimpleWithNonDirectIntConncetionTC('test_passData'))
     suite.addTest(unittest.makeSuite(SimpleWithNonDirectIntConncetionTC))

@@ -3,9 +3,9 @@
 
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal
-from hwt.intfLvl import Param, Unit
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.param import evalParam
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import evalParam, Param
 
 
 class SimpleUnitWithParam(Unit):

@@ -3,8 +3,10 @@
 
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal, Clk
-from hwt.intfLvl import Param, Unit, c
 from hwtLib.mem.ram import Ram_dp
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
+from hwt.code import connect
 
 
 class GroupOfBlockrams(Unit):
@@ -14,7 +16,8 @@ class GroupOfBlockrams(Unit):
 
     def _declr(self):
         with self._paramsShared():
-            extData = lambda : Signal(dtype=vecT(self.DATA_WIDTH))
+            def extData():
+                return Signal(dtype=vecT(self.DATA_WIDTH))
             self.clk = Clk()
             self.we = Signal()
             self.addr = Signal(dtype=vecT(self.ADDR_WIDTH))
@@ -37,15 +40,15 @@ class GroupOfBlockrams(Unit):
         bramR = s.bramR
         bramW = s.bramW
 
-        c(s.clk,
-            bramR.a.clk, bramR.b.clk,
-            bramW.a.clk, bramW.b.clk)
-        c(s.we,
-            bramR.a.we, bramR.b.we,
-            bramW.a.we, bramW.b.we)
-        c(self.addr,
-            bramR.a.addr, bramR.b.addr,
-            bramW.a.addr, bramW.b.addr)
+        connect(s.clk,
+                bramR.a.clk, bramR.b.clk,
+                bramW.a.clk, bramW.b.clk)
+        connect(s.we,
+                bramR.a.we, bramR.b.we,
+                bramW.a.we, bramW.b.we)
+        connect(self.addr,
+                bramR.a.addr, bramR.b.addr,
+                bramW.a.addr, bramW.b.addr)
 
         bramW.a.din ** s.in_w_a
         bramW.b.din ** s.in_w_b

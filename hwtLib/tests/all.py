@@ -172,7 +172,6 @@ suite = testSuiteFromTCs(
     InterfaceArraySample1TC,
     InterfaceArraySample2TC,
     FrameTemplateTC,
-    
 
     # component verifications
     ConcatTC,
@@ -259,7 +258,7 @@ suite = testSuiteFromTCs(
     AxiS_frameParserTC,
     HandshakedBuilderSimpleTC,
     EthAddrUpdaterTC,
-    
+
     RStrictOrderInterconnectTC,
     WStrictOrderInterconnectTC,
     WStrictOrderInterconnect2TC,
@@ -275,7 +274,7 @@ suite = testSuiteFromTCs(
     MMU_2pageLvl_TC,
     StructWriter_TC,
     StructReaderTC,
-    
+
     IpifEndpointTC,
     IpifEndpointDenseTC,
     IpifEndpointStartTC,

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.hdlObjects.constants import Time
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
-from hwt.intfLvl import Unit
-from hwtLib.handshaked.builder import HsBuilder
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.hdlObjects.constants import Time
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwtLib.handshaked.builder import HsBuilder
 
 
 class HandshakedBuilderSimple(Unit):
@@ -24,15 +24,16 @@ class HandshakedBuilderSimple(Unit):
 
         self.b ** b.end
 
+
 class HandshakedBuilderSimpleTC(SimTestCase):
     def test_passData(self):
         u = HandshakedBuilderSimple()
         self.prepareUnit(u)
-        
+
         u.a._ag.data.extend([1, 2, 3, 4])
-        
+
         self.doSim(200 * Time.ns)
-        
+
         self.assertValSequenceEqual(u.b._ag.data, [1, 2, 3, 4])
 
 

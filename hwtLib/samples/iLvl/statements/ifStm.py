@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import Signal, VectSignal
-from hwt.intfLvl import Unit
 from hwt.code import If
-from hwt.interfaces.utils import addClkRstn
 from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.interfaces.std import Signal, VectSignal
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
 class SimpleIfStatement(Unit):

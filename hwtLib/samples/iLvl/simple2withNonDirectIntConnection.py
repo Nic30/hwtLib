@@ -4,10 +4,11 @@
 import unittest
 
 from hwt.hdlObjects.constants import Time
-from hwt.intfLvl import Param, Unit
-from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axis import AxiStream
 from hwt.interfaces.utils import addClkRstn
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
+from hwtLib.amba.axis import AxiStream
 
 
 class Simple2withNonDirectIntConnection(Unit):

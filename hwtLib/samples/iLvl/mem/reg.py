@@ -4,7 +4,7 @@
 from hwt.hdlObjects.types.defs import BIT
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRst, propagateClkRst
-from hwt.intfLvl import Unit
+from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
 class DReg(Unit):

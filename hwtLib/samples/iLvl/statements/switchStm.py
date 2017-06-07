@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.code import Switch
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal
-from hwt.intfLvl import Unit
-from hwt.code import Switch
+from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
 class SwitchStmUnit(Unit):
