@@ -9,11 +9,9 @@ class AxiLiteMemSpaceMaster(AbstractMemSpaceMaster):
         w = self._bus._ag.w.data
         w.append((data, mask))
 
-    def _write(self, addr, size, data, mask, thenFn=None):
+    def _write(self, addr, size, data, mask):
         self._writeAddr(self._bus._ag.aw, addr, size)
         self._writeData(data, mask)
         
-    def _read(self, addr, size, thenFn):
-        if thenFn:
-            raise NotImplementedError()
+    def _read(self, addr, size):
         self._writeAddr(self._bus._ag.ar, addr, size)
