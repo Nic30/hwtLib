@@ -177,7 +177,7 @@ class AbstractStreamBuilder(object):
             u.DEPTH.set(depth)
         return self._genericInstance(self.FifoCls, "fifo", setDepth)
 
-    def demux(self, noOfOutputs):
+    def demux(self, noOfOutputs, outputSelSignal):
         """
         Create a demultiplexer with outputs specified by noOfOutputs
 
@@ -185,5 +185,8 @@ class AbstractStreamBuilder(object):
         """
         def setChCnt(u):
             u.OUTPUTS.set(noOfOutputs)
-
-        return self._genericInstance(self.DemuxCls, 'demux', setChCnt)
+            
+        self._genericInstance(self.DemuxCls, 'demux', setChCnt)
+        self.lastComp.sel ** outputSelSignal
+        
+        return self
