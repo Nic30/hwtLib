@@ -11,7 +11,7 @@ class IPFISimMaster(AbstractMemSpaceMaster):
         # (request type, address, [write data])
         w.append((WRITE, addr, data))
 
-    def _read(self, addr, size, thenFn):
+    def _read(self, addr, size):
         r = self._bus._ag.requests
         # (request type, address, [write data])
         r.append((READ, addr))

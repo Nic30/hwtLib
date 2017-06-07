@@ -149,8 +149,8 @@ class IpifEndpointArray(AxiLiteEndpointArray):
         for i in range(4):
             u.decoded.field0._ag.mem[i] = MAGIC + i + 1
             u.decoded.field1._ag.mem[i] = 2 * MAGIC + i + 1
-            regs.field0.read(i, None)
-            regs.field1.read(i, None)
+            regs.field0.read(i)
+            regs.field1.read(i)
 
         self.randomizeAll()
         self.doSim(200 * Time.ns)
