@@ -1,9 +1,9 @@
-from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi4_streamToMem import Axi4streamToMem
-from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
-from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
 from hwt.hdlObjects.constants import Time
+from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
+from hwtLib.amba.axi4_streamToMem import Axi4streamToMem
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
+from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
 
 
 class Axi4_streamToMemTC(SimTestCase):
@@ -37,7 +37,7 @@ class Axi4_streamToMemTC(SimTestCase):
         regs = self.regs
         N = 33
 
-        sampleData = [self._rand.getrandbits(self.DATA_WIDTH) for i in range(N)]
+        sampleData = [self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]
         m = Axi3DenseMem(u.clk, u.axi)
         blockPtr = m.malloc(self.DATA_WIDTH // 8 * N)
         
