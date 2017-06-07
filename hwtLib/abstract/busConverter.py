@@ -119,8 +119,8 @@ class BusConverter(Unit):
         address is needed
         """
         bitSize = self.STRUCT_TEMPLATE.bit_length()
-        wordAddrStep = self.WORD_ADDR_STEP
-        addrStep = self.ADDR_STEP
+        wordAddrStep = self._getWordAddrStep()
+        addrStep = self._getAddrStep()
 
         maxAddr = (self.OFFSET + bitSize // addrStep)
 
