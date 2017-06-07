@@ -36,8 +36,8 @@ class Axi4_streamToMemTC(SimTestCase):
         u = self.u
         regs = self.regs
         N = 33
-        # self._rand.getrandbits(self.DATA_WIDTH)
-        sampleData = [i for i in range(N)]
+
+        sampleData = [self._rand.getrandbits(self.DATA_WIDTH) for i in range(N)]
         m = Axi3DenseMem(u.clk, u.axi)
         blockPtr = m.malloc(self.DATA_WIDTH // 8 * N)
         
