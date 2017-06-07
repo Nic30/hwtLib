@@ -1,7 +1,7 @@
 from hwt.code import log2ceil
 from hwt.hdlObjects.constants import INTF_DIRECTION
 from hwt.hdlObjects.frameTemplate import walkFlatten
-from hwt.hdlObjects.transactionTemplate import TransactionTemplate
+from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
 from hwt.hdlObjects.types.bits import Bits
@@ -77,8 +77,8 @@ class BusConverter(Unit):
 
         self.decoded = StructIntf(self.STRUCT_TEMPLATE, instantiateFieldFn=self._mkFieldInterface)
 
-    def getPort(self, transactionTemplate):
-        return self.decoded._fieldsToInterfaces[transactionTemplate.origin]
+    def getPort(self, transTmpl):
+        return self.decoded._fieldsToInterfaces[transTmpl.origin]
 
     def isInMyAddrRange(self, addrSig):
         return (addrSig >= self._getMinAddr()) & (addrSig < self._getMaxAddr())
@@ -94,7 +94,7 @@ class BusConverter(Unit):
         AW = evalParam(self.ADDR_WIDTH).val
         SUGGESTED_AW = self._suggestedAddrWidth()
         assert SUGGESTED_AW <= AW, (SUGGESTED_AW, AW)
-        tmpl = TransactionTemplate(self.STRUCT_TEMPLATE, bitAddr=self.OFFSET)
+        tmpl = TransTmpl(self.STRUCT_TEMPLATE, bitAddr=self.OFFSET)
         fieldTrans = walkFlatten(tmpl, shouldEnterFn=lambda tmpl: not isinstance(tmpl.dtype, Array))
         for (_, transactionTmpl) in fieldTrans:
             intf = self.getPort(transactionTmpl)
@@ -137,7 +137,7 @@ class BusConverter(Unit):
         :param srcAddrStep: how many bits is addressing one unit of srcAddrSig
         :param dstAddrSig: output signal for address
         :param dstAddrStep: how many bits is addressing one unit of dstAddrSig
-        :param transTmpl: TransactionTemplate which has metainformations about this address space transition
+        :param transTmpl: TransTmpl which has metainformations about this address space transition
         """
         IN_ADDR_WIDTH = srcAddrSig._dtype.bit_length()
 

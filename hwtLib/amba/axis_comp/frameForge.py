@@ -3,7 +3,7 @@ from math import inf
 from hwt.bitmask import mask
 from hwt.code import log2ceil, Switch, If, isPow2, In
 from hwt.hdlObjects.frameTemplate import FrameTemplate
-from hwt.hdlObjects.transactionTemplate import TransactionTemplate
+from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
@@ -71,8 +71,8 @@ class AxiS_frameForge(AxiSCompBase):
     
     def parseTemplate(self):
         DW = evalParam(self.DATA_WIDTH).val
-        tmpl = TransactionTemplate(self._structT)
-        self._frames = FrameTemplate.framesFromTransactionTemplate(
+        tmpl = TransTmpl(self._structT)
+        self._frames = FrameTemplate.framesFromTransTmpl(
             tmpl,
             DW,
             maxFrameLen=self._maxFrameLen,

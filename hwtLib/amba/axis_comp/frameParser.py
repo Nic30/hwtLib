@@ -2,7 +2,7 @@ from math import inf
 
 from hwt.code import log2ceil, If, Concat, And
 from hwt.hdlObjects.frameTemplate import FrameTemplate
-from hwt.hdlObjects.transactionTemplate import TransactionTemplate
+from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, Signal, VldSynced
@@ -128,9 +128,9 @@ class AxiS_frameParser(Unit):
         return busRd
 
     def parseTemplate(self):
-        self._tmpl = TransactionTemplate(self._structT)
+        self._tmpl = TransTmpl(self._structT)
         DW = evalParam(self.DATA_WIDTH).val
-        frames = FrameTemplate.framesFromTransactionTemplate(self._tmpl,
+        frames = FrameTemplate.framesFromTransTmpl(self._tmpl,
                                                              DW,
                                                              maxPaddingWords=self._maxPaddingWords)
         self._frames = list(frames)

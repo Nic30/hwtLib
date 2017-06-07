@@ -2,7 +2,7 @@ import unittest
 
 from hwt.hdlObjects.types.struct import HStruct
 from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
-from hwt.hdlObjects.transactionTemplate import TransactionTemplate
+from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.hdlObjects.types.array import Array
 from hwt.hdlObjects.frameTemplate import FrameTemplate
 from hwtLib.types.net.eth import Eth2Header
@@ -15,9 +15,9 @@ s_basic = HStruct(
     (uint64_t, None),
 )
 
-s_basic_srt = """<TransactionTemplate start:0, end:192
-    <TransactionTemplate name:item0, start:0, end:64>
-    <TransactionTemplate name:item0, start:64, end:128>
+s_basic_srt = """<TransTmpl start:0, end:192
+    <TransTmpl name:item0, start:0, end:64>
+    <TransTmpl name:item0, start:64, end:128>
 >"""
 
 s0 = HStruct(
@@ -183,41 +183,41 @@ frameHeader_split_str = [
 class FrameTemplateTC(unittest.TestCase):
     def test_s0at64bit(self):
         DW = 64
-        tmpl = TransactionTemplate(s0)
-        frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))
+        tmpl = TransTmpl(s0)
+        frames = list(FrameTemplate.framesFromTransTmpl(tmpl, DW))
         self.assertEqual(len(frames), 1)
         self.assertEqual(s0at64bit_str, frames[0].__repr__())
 
     def test_s0at71bit(self):
         DW = 71
-        tmpl = TransactionTemplate(s0)
-        frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))
+        tmpl = TransTmpl(s0)
+        frames = list(FrameTemplate.framesFromTransTmpl(tmpl, DW))
         self.assertEqual(len(frames), 1)
         self.assertEqual(s0at71bit_str, frames[0].__repr__(scale=2))
 
     def test_s1at64(self):
         DW = 64
-        tmpl = TransactionTemplate(s1)
-        frames = list(FrameTemplate.framesFromTransactionTemplate(tmpl, DW))
+        tmpl = TransTmpl(s1)
+        frames = list(FrameTemplate.framesFromTransTmpl(tmpl, DW))
         self.assertEqual(len(frames), 1)
         self.assertEqual(s1_str, frames[0].__repr__())
 
     def test_sBasic(self):
-        tmpl = TransactionTemplate(s_basic)
+        tmpl = TransTmpl(s_basic)
         self.assertEqual(s_basic_srt, tmpl.__repr__())
 
     def test_sWithPadding(self):
         DW = 64
-        tmpl = TransactionTemplate(sWithPadding)
-        frames = FrameTemplate.framesFromTransactionTemplate(tmpl, DW)
+        tmpl = TransTmpl(sWithPadding)
+        frames = FrameTemplate.framesFromTransTmpl(tmpl, DW)
         frames = list(frames)
         self.assertEqual(len(frames), 1)
         self.assertEqual(sWithPadding_str, frames[0].__repr__())
 
     def test_sWithPaddingMultiFrame(self):
         DW = 64
-        tmpl = TransactionTemplate(sWithPadding)
-        frames = FrameTemplate.framesFromTransactionTemplate(
+        tmpl = TransTmpl(sWithPadding)
+        frames = FrameTemplate.framesFromTransTmpl(
                     tmpl,
                     DW,
                     maxPaddingWords=0,
@@ -231,8 +231,8 @@ class FrameTemplateTC(unittest.TestCase):
     
     def test_sWithStartPadding(self):
         DW = 64
-        tmpl = TransactionTemplate(sWithStartPadding)
-        frames = FrameTemplate.framesFromTransactionTemplate(
+        tmpl = TransTmpl(sWithStartPadding)
+        frames = FrameTemplate.framesFromTransTmpl(
                     tmpl, DW,
                     maxPaddingWords=0,
                     trimPaddingWordsOnStart=True,
@@ -243,8 +243,8 @@ class FrameTemplateTC(unittest.TestCase):
     
     def test_sWithStartPaddingKept(self):
         DW = 64
-        tmpl = TransactionTemplate(sWithStartPadding)
-        frames = FrameTemplate.framesFromTransactionTemplate(
+        tmpl = TransTmpl(sWithStartPadding)
+        frames = FrameTemplate.framesFromTransTmpl(
                     tmpl, DW,
                     maxPaddingWords=2,
                     trimPaddingWordsOnStart=True,
@@ -255,16 +255,16 @@ class FrameTemplateTC(unittest.TestCase):
 
     def test_frameHeader(self):
         DW = 64
-        tmpl = TransactionTemplate(frameHeader)
-        frames = FrameTemplate.framesFromTransactionTemplate(tmpl, DW)
+        tmpl = TransTmpl(frameHeader)
+        frames = FrameTemplate.framesFromTransTmpl(tmpl, DW)
         frames = list(frames)
         self.assertEqual(len(frames), 1)
         self.assertEqual(frameHeader_str, frames[0].__repr__())
 
     def test_frameHeader_splited(self):
         DW = 64
-        tmpl = TransactionTemplate(frameHeader)
-        frames = FrameTemplate.framesFromTransactionTemplate(
+        tmpl = TransTmpl(frameHeader)
+        frames = FrameTemplate.framesFromTransTmpl(
                     tmpl, DW,
                     maxPaddingWords=0,
                     trimPaddingWordsOnStart=True,

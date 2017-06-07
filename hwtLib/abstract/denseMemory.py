@@ -166,7 +166,7 @@ class DenseMemory():
         for i in range(size):
             data, strb, last = self.wAg.data.pop(0)
 
-            #assert data._isFullVld()
+            # assert data._isFullVld()
             assert strb._isFullVld()
             assert last._isFullVld()
 
@@ -287,12 +287,20 @@ class DenseMemory():
             out.append(v)
         return out
 
-    def getStruct(self, addr, structT):
+    def getStruct(self, addr, structT, bitAddr=None):
         """
         Get HStruct from memory
+        
+        :param addr: address where get struct from
+        :param structT: instance of HStruct or FrameTemplate generated from it to resove structure of data
         """
-        cellWidth = self.cellSize * 8
-        bitAddr = addr * 8
+        wordWidth = self.cellSize * 8
+        if bitAddr is not None:
+            assert bitAddr is None
+            bitAddr = addr * 8
+        else:
+            assert bitAddr is not None
+
         s = structT.getValueCls()
 
         for f in structT.fields:
@@ -305,16 +313,16 @@ class DenseMemory():
                 try:
                     while True:
                         a = bitAddr + fieldOffset
-                        indx = a // cellWidth
-                        off = a % cellWidth
+                        indx = a // wordWidth
+                        off = a % wordWidth
                         v = self.data[indx]
-                        if fieldOffset + cellWidth < fieldLen:
-                            bitsLen = cellWidth
+                        if fieldOffset + wordWidth < fieldLen:
+                            bitsLen = wordWidth
                         else:
                             bitsLen = fieldLen - fieldOffset
 
                         field |= selectBitRange(v, off, bitsLen) << fieldOffset
-                        if fieldLen <= fieldOffset + cellWidth:
+                        if fieldLen <= fieldOffset + wordWidth:
                             break
                 except KeyError:
                     field = None
