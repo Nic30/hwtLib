@@ -152,8 +152,8 @@ class I2cMasterBitCtrl(Unit):
            filter1 ** Concat(filter1[2:], filter0[1])
         )
 
-        filtered = ((filter1[2] & filter1[1]) |
-                    (filter1[2] & filter1[0]) |
+        filtered = ((filter1[2] & filter1[1]) | 
+                    (filter1[2] & filter1[0]) | 
                     (filter1[1] & filter1[0]))
         return filtered
 
@@ -226,7 +226,7 @@ class I2cMasterBitCtrl(Unit):
         scl = self.filter("scl", self.i2c.scl.i)
         sda = self.filter("sda", self.i2c.sda.i)
 
-        startCond, stopCond, scl_sync = self.detectStartAndStop(scl, sda, scl_t)
+        _, stopCond, scl_sync = self.detectStartAndStop(scl, sda, scl_t)
         stateClkEn = self.stateClkGen(scl_sync, scl_t, scl)
         al = self.arbitrationLostDriver(st, sda, sda_chk, sda_t, stopCond, stateClkEn)
 
