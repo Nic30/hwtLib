@@ -209,21 +209,23 @@ class BusConverter(Unit):
                 name = getSignalName(intf)
                 if isinstance(intf, (RtlSignalBase, Signal)):
                     dtype = intf._dtype
-                    info = BusFieldInfo(access="r", fieldInterface=intf)
+                    access = "r"
                 elif isinstance(intf, VldSynced):
                     # assert intf._direction == INTF_DIRECTION.SLAVE
                     dtype = intf.data._dtype
-                    info = BusFieldInfo(access="w", fieldInterface=intf)
+                    access = "w"
                 elif isinstance(intf, RegCntrl):
                     dtype = intf.din._dtype
-                    info = BusFieldInfo(access="rw", fieldInterface=intf)
+                    access = "rw"
                 elif isinstance(intf, BramPort_withoutClk):
                     dtype = Array(vecT(evalParam(intf.DATA_WIDTH).val),
                                   2 ** evalParam(intf.ADDR_WIDTH).val)
-                    info = BusFieldInfo(access="rw", fieldInterface=intf)
+                    access = "rw"
                 else:
                     raise NotImplementedError(intf)
-
+                
+                info = BusFieldInfo(access=access, fieldInterface=intf)
+                
                 if aliginFields:
                     fillUpWidth = DATA_WIDTH - dtype.bit_length()
                     if fillUpWidth > 0:
@@ -290,7 +292,7 @@ class BusConverter(Unit):
 
         # connect interfaces as was specified by register map
         for regName, intf in intfMap.items():
-            convIntf = getattr(conv, regName)
+            convIntf = getattr(conv.decoded, regName)
 
             if isinstance(intf, Signal):
                 assert intf._direction == INTF_DIRECTION.MASTER
