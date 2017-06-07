@@ -4,11 +4,11 @@
 from hwt.code import If, FsmBuilder, Switch
 from hwt.hdlObjects.types.enum import Enum
 from hwt.synthesizer.param import evalParam
-from hwtLib.abstract.busConverter import BusConverter
+from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.ipif.intf import Ipif
 
 
-class IpifEndpoint(BusConverter):
+class IpifEndpoint(BusEndpoint):
     """
     Delegate request from bus to fields of structure
 
@@ -20,7 +20,7 @@ class IpifEndpoint(BusConverter):
     _getAddrStep = Ipif._getAddrStep
 
     def __init__(self, structTemplate, offset=0, intfCls=Ipif):
-        BusConverter.__init__(self, structTemplate, offset=offset, intfCls=intfCls)
+        BusEndpoint.__init__(self, structTemplate, offset=offset, intfCls=intfCls)
 
     def _impl(self):
         self._parseTemplate()

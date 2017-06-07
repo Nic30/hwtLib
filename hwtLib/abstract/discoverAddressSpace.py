@@ -7,7 +7,7 @@ from hwt.hdlObjects.operatorDefs import AllOps
 from hwt.hdlObjects.portItem import PortItem
 from hwt.hdlObjects.types.array import Array
 from hwt.synthesizer.interfaceLevel.mainBases import UnitBase
-from hwtLib.abstract.busConverter import BusConverter
+from hwtLib.abstract.busEndpoint import BusEndpoint
 
 
 def getEpSignal(sig, op):
@@ -184,7 +184,7 @@ class AddressSpaceProbe(object):
             return
 
         parent = getParentUnit(mainSig)
-        if isinstance(parent, BusConverter) and not ignoreMyParent:
+        if isinstance(parent, BusEndpoint) and not ignoreMyParent:
             yield parent
 
         for e in mainSig.endpoints:

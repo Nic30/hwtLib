@@ -6,12 +6,12 @@ from hwt.code import If, FsmBuilder, Or, log2ceil, connect, Switch, \
 from hwt.hdlObjects.typeShortcuts import vec, vecT
 from hwt.hdlObjects.types.enum import Enum
 from hwt.synthesizer.param import evalParam
-from hwtLib.abstract.busConverter import BusConverter
+from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 
 
-class AxiLiteEndpoint(BusConverter):
+class AxiLiteEndpoint(BusEndpoint):
     """
     Delegate request from AxiLite interface to fields of structure
     write has higher priority
@@ -20,7 +20,7 @@ class AxiLiteEndpoint(BusConverter):
     _getAddrStep = AxiLite._getAddrStep
 
     def __init__(self, structTemplate, offset=0, intfCls=AxiLite):
-        BusConverter.__init__(self, structTemplate, offset, intfCls)
+        BusEndpoint.__init__(self, structTemplate, offset, intfCls)
 
     def readPart(self, awAddr, w_hs):
         ADDR_STEP = self._getAddrStep()

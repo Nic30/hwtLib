@@ -1,5 +1,5 @@
 import unittest
-from hwtLib.abstract.busConverter import BusConverter
+from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwt.interfaces.std import RegCntrl, VectSignal, Signal, VldSynced
 
 def regCntr(name, width):
@@ -22,12 +22,12 @@ def vldSynced(name, width):
     a._loadDeclarations()
     return a
 
-class BusConverterTC(unittest.TestCase):
+class BusEndpointTC(unittest.TestCase):
     def test_resolveRegStructFromIntfMap(self):
         prefix = "abc"
         DATA_WIDTH = 32
         
-        fields = BusConverter._resolveRegStructFromIntfMap(
+        fields = BusEndpoint._resolveRegStructFromIntfMap(
                     prefix=prefix,
                     interfaceMap=[
                         regCntr("a", DATA_WIDTH),
@@ -51,7 +51,7 @@ class BusConverterTC(unittest.TestCase):
         prefix = "abc"
         DATA_WIDTH = 32
         
-        fields = BusConverter._resolveRegStructFromIntfMap(
+        fields = BusEndpoint._resolveRegStructFromIntfMap(
                     prefix=prefix,
                     interfaceMap=[
                         sig("a", DATA_WIDTH),
@@ -75,7 +75,7 @@ class BusConverterTC(unittest.TestCase):
         prefix = "abc"
         DATA_WIDTH = 32
         
-        fields = BusConverter._resolveRegStructFromIntfMap(
+        fields = BusEndpoint._resolveRegStructFromIntfMap(
                     prefix=prefix,
                     interfaceMap=[
                         vldSynced("a", DATA_WIDTH),
@@ -99,7 +99,7 @@ class BusConverterTC(unittest.TestCase):
         prefix = "abc"
         DATA_WIDTH = 32
         
-        fields = BusConverter._resolveRegStructFromIntfMap(
+        fields = BusEndpoint._resolveRegStructFromIntfMap(
                     prefix=prefix,
                     interfaceMap=[
                         regCntr("a", 8),
@@ -126,6 +126,6 @@ class BusConverterTC(unittest.TestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(AxiTC('test_axi_size'))
-    suite.addTest(unittest.makeSuite(BusConverterTC))
+    suite.addTest(unittest.makeSuite(BusEndpointTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)        

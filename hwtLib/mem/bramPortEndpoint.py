@@ -5,11 +5,11 @@ from hwt.code import c, SwitchLogic, log2ceil, Switch
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import BramPort_withoutClk
-from hwtLib.abstract.busConverter import BusConverter
+from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwt.synthesizer.param import evalParam
 
 
-class BramPortEndpoint(BusConverter):
+class BramPortEndpoint(BusEndpoint):
     """
     Delegate transaction from BrapmPort interface to interfaces for fields of specified structure
 
@@ -19,7 +19,7 @@ class BramPortEndpoint(BusConverter):
     _getAddrStep = BramPort_withoutClk._getAddrStep
 
     def __init__(self, structTemplate, offset=0, intfCls=BramPort_withoutClk):
-        BusConverter.__init__(self, structTemplate, offset, intfCls)
+        BusEndpoint.__init__(self, structTemplate, offset, intfCls)
 
     def _impl(self):
         self._parseTemplate()

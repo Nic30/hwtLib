@@ -7,7 +7,7 @@ from unittest import TestLoader, TextTestRunner, TestSuite
 from hwt.simulator.hdlSimConfig import HdlSimConfig
 from hwt.simulator.hdlSimulator import HdlSimulator
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.abstract.busConverter_test import BusConverterTC
+from hwtLib.abstract.busEndpoint_test import BusEndpointTC
 from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
 from hwtLib.amba.axi4_streamToMem_test import Axi4_streamToMemTC
 from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
@@ -69,6 +69,7 @@ from hwtLib.samples.iLvl.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.samples.iLvl.arithmetic.twoCntrs_test import TwoCntrsTC
 from hwtLib.samples.iLvl.arithmetic.widthCasting import WidthCastingExampleTC
 from hwtLib.samples.iLvl.axi.simpleAxiRegs_test import SimpleAxiRegsTC
+from hwtLib.samples.iLvl.builders.ethAddrUpdater_test import EthAddrUpdaterTC
 from hwtLib.samples.iLvl.builders.handshakedBuilderSimple import HandshakedBuilderSimpleTC
 from hwtLib.samples.iLvl.emptyUnitWithSpi import EmptyUnitWithSpiTC
 from hwtLib.samples.iLvl.errors.errorsTestCase import ErrorsTC
@@ -122,7 +123,6 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
-from hwtLib.samples.iLvl.builders.ethAddrUpdater_test import EthAddrUpdaterTC
 
 
 def doSimWithoutLog(self, time):
@@ -233,7 +233,7 @@ suite = testSuiteFromTCs(
     CrcCombTC,
     SimpleAxiRegsTC,
     AxiTC,
-    BusConverterTC,
+    BusEndpointTC,
     AxiLiteEndpointTC,
     AxiLiteEndpointDenseStartTC,
     AxiLiteEndpointDenseTC,

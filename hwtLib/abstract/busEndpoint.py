@@ -17,11 +17,7 @@ from hwt.synthesizer.param import evalParam
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 
 
-def inRange(n, lower, end):
-    return (n >= lower) & (n < end)
-
-
-class BusConverter(Unit):
+class BusEndpoint(Unit):
     """
     Abstract unit
     Delegate request from bus to fields of structure
