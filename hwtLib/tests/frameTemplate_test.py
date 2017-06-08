@@ -44,8 +44,8 @@ s0 = HStruct(
      ), "struct0"
     )
     )
-s0at64bit_str = \
-"""     63                                                             0
+s0at64bit_str = """<FrameTemplate start:0, end:896
+     63                                                             0
      -----------------------------------------------------------------
 0    |                             item0                             |
 1    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
@@ -61,10 +61,11 @@ s0at64bit_str = \
 11   |                             item7                             |
 12   |                         struct0.item0                         |
 13   |                         struct0.item1                         |
-     -----------------------------------------------------------------"""
+     -----------------------------------------------------------------
+>"""
 
-s0at71bit_str = \
-"""     70                                                                                                                                           0
+s0at71bit_str = """<FrameTemplate start:0, end:923
+     70                                                                                                                                           0
      -----------------------------------------------------------------------------------------------------------------------------------------------
 0    |XXXXXXXXXXXX|                                                             item0                                                             |
 1    |          item1           |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
@@ -79,14 +80,16 @@ s0at71bit_str = \
 10   |      struct0.item0      |                                                       item7                                                       |
 11   |             struct0.item1             |                                            struct0.item0                                            |
 12   |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|                                     struct0.item1                                     |
-     -----------------------------------------------------------------------------------------------------------------------------------------------"""
+     -----------------------------------------------------------------------------------------------------------------------------------------------
+>"""
 
 s1 = HStruct(
             (Array(uint64_t, 3), "arr0"),
             (Array(uint32_t, 5), "arr1")
             )
 
-s1_str = """     63                                                             0
+s1_str = """<FrameTemplate start:0, end:384
+     63                                                             0
      -----------------------------------------------------------------
 0    |                            arr0[0]                            |
 1    |                            arr0[1]                            |
@@ -94,7 +97,8 @@ s1_str = """     63                                                             
 3    |            arr1[1]            |            arr1[0]            |
 4    |            arr1[3]            |            arr1[2]            |
 5    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|            arr1[4]            |
-     -----------------------------------------------------------------"""
+     -----------------------------------------------------------------
+>"""
 
 sWithPadding = HStruct(
                        (uint64_t, "item0_0"),
@@ -105,7 +109,8 @@ sWithPadding = HStruct(
                        (uint64_t, None)
                        )
 
-sWithPadding_str = """     63                                                             0
+sWithPadding_str = """<FrameTemplate start:0, end:384
+     63                                                             0
      -----------------------------------------------------------------
 0    |                            item0_0                            |
 1    |                            item0_1                            |
@@ -113,20 +118,24 @@ sWithPadding_str = """     63                                                   
 3    |                            item1_0                            |
 4    |                            item1_1                            |
 5    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
-     -----------------------------------------------------------------""" 
+     -----------------------------------------------------------------
+>""" 
 
-sWithPaddingMultiframe0_str = """     63                                                             0
+sWithPaddingMultiframe_str = [ """<FrameTemplate start:0, end:128
+     63                                                             0
      -----------------------------------------------------------------
 0    |                            item0_0                            |
 1    |                            item0_1                            |
-     -----------------------------------------------------------------"""
-
-sWithPaddingMultiframe1_str = """     63                                                             0
+     -----------------------------------------------------------------
+>""",
+ """<FrameTemplate start:192, end:320
+     63                                                             0
      -----------------------------------------------------------------
 0    |                            item1_0                            |
 1    |                            item1_1                            |
-     -----------------------------------------------------------------""" 
-
+     -----------------------------------------------------------------
+>""" 
+]
 
 sWithStartPadding = HStruct(
                        (uint64_t, None),
@@ -135,19 +144,23 @@ sWithStartPadding = HStruct(
                        (uint64_t, "item1"),
                     )
 
-sWithStartPadding_strTrim = """     63                                                             0
+sWithStartPadding_strTrim = """<FrameTemplate start:128, end:256
+     63                                                             0
      -----------------------------------------------------------------
 0    |                             item0                             |
 1    |                             item1                             |
-     -----------------------------------------------------------------"""
+     -----------------------------------------------------------------
+>"""
 
-sWithStartPadding_strKept = """     63                                                             0
+sWithStartPadding_strKept = """<FrameTemplate start:0, end:256
+     63                                                             0
      -----------------------------------------------------------------
 0    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
 1    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
 2    |                             item0                             |
 3    |                             item1                             |
-     -----------------------------------------------------------------"""
+     -----------------------------------------------------------------
+>"""
 
 _frameHeader = HStruct(
     (Eth2Header, "eth"),
@@ -158,26 +171,32 @@ frameHeader = HStruct_selectFields(_frameHeader,
                                    {"eth":{ "src", "dst"},
                                     "ipv4":{ "src", "dst"},
                                     })
-frameHeader_str = """     63                                                             0
+frameHeader_str = """<FrameTemplate start:0, end:320
+     63                                                             0
      -----------------------------------------------------------------
 0    |    eth.src    |                    eth.dst                    |
 1    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|            eth.src            |
 2    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
 3    |   ipv4.dst    |           ipv4.src            |XXXXXXXXXXXXXXX|
 4    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|   ipv4.dst    |
-     -----------------------------------------------------------------"""
+     -----------------------------------------------------------------
+>"""
 
 frameHeader_split_str = [
-"""     63                                                             0
+"""<FrameTemplate start:0, end:128
+     63                                                             0
      -----------------------------------------------------------------
 0    |    eth.src    |                    eth.dst                    |
 1    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|            eth.src            |
-     -----------------------------------------------------------------""",
-"""     63                                                             0
+     -----------------------------------------------------------------
+>""",
+"""<FrameTemplate start:192, end:320
+     63                                                             0
      -----------------------------------------------------------------
 0    |   ipv4.dst    |           ipv4.src            |XXXXXXXXXXXXXXX|
 1    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|   ipv4.dst    |
-     -----------------------------------------------------------------"""
+     -----------------------------------------------------------------
+>"""
     ]
 
 class FrameTemplateTC(unittest.TestCase):
@@ -225,9 +244,8 @@ class FrameTemplateTC(unittest.TestCase):
                     trimPaddingWordsOnEnd=True)
         frames = list(frames)
         self.assertEqual(len(frames), 2)
-        
-        self.assertEqual(sWithPaddingMultiframe0_str, frames[0].__repr__())
-        self.assertEqual(sWithPaddingMultiframe1_str, frames[1].__repr__())
+        for frame, s in zip(frames, sWithPaddingMultiframe_str):
+            self.assertEqual(s, frame.__repr__())
     
     def test_sWithStartPadding(self):
         DW = 64
