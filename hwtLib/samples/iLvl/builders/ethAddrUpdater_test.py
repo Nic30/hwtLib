@@ -33,20 +33,33 @@ class EthAddrUpdaterTC(SimTestCase):
 
         def randFrame():  
             rand = self._rand.getrandbits
-            data = {"eth":{"src": rand(48), "dst": rand(48)},
-                    "ipv4":{"src":rand(32), "dst": rand(32)}}
+            data = {"eth":{"src": 1,#rand(48), 
+                           "dst": 2 #rand(48)
+                           },
+                    "ipv4":{"src": 3,#rand(32),
+                            "dst": 4#rand(32)
+                           }
+                    }
+            d = list(frameTmpl.packData(data))
+            print(d)
             ptr = m.calloc(ceil(frameHeader.bit_length() / DW),
                             DW // 8,
-                            initValues=list(frameTmpl.packData(data)))
+                            initValues=d)
             return ptr, data
         
         framePtr, frameData = randFrame()
         
         u.packetAddr._ag.data.append(framePtr)
         
+        #print(m.data)
         self.doSim(1000 * Time.ns)
-        
-        #updatedFrame = m.getStruct(framePtr, frameHeader)
+        #print(m.data)
+        updatedFrame = m.getStruct(framePtr, tmpl)
+        #print(updatedFrame)
+        self.assertValEqual(updatedFrame.eth.src, frameData["eth"]['dst'])
+        self.assertValEqual(updatedFrame.eth.dst, frameData["eth"]['src'])
+        self.assertValEqual(updatedFrame.eth.src, frameData["ipv4"]['dst'])
+        self.assertValEqual(updatedFrame.eth.dst, frameData["ipv4"]['src'])
         
         
 if __name__ == "__main__":
