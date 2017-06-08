@@ -1,5 +1,11 @@
-from hwt.bitmask import mask, selectBitRange
 from itertools import chain
+
+from hwt.bitmask import mask, selectBitRange
+from hwt.hdlObjects.transTmpl import TransTmpl
+from hwt.hdlObjects.types.array import Array
+from hwt.hdlObjects.types.bits import Bits
+from hwt.hdlObjects.types.struct import HStruct
+from hwt.simulator.types.simBits import simBitsT
 
 
 class AllocationError(Exception):
@@ -287,47 +293,92 @@ class DenseMemory():
             out.append(v)
         return out
 
+    def getBits(self, start, end):
+        """
+        Gets value of bits between selected range from memory
+        
+        :param start: bit address of start of bit of bits
+        :param end: bit address of first bit behind bits
+        :return: instance of BitsVal (derived from SimBits type) which contains copy of selected bits
+        """
+        wordWidth = self.cellSize * 8
+        
+        inFieldOffset = 0
+        allMask = mask(wordWidth)
+        value = simBitsT(end - start, None).fromPy(None)
+
+        while start != end:
+            assert start < end, (start, end)
+      
+            dataWordIndex = start // wordWidth 
+            v = self.data.get(dataWordIndex, None)
+            
+            endOfWord = (dataWordIndex + 1) * wordWidth
+            width = min(end, endOfWord) - start
+            offset = start % wordWidth
+            if v is None:
+                val = 0
+                vldMask = 0
+                updateTime = -1
+            elif isinstance(v, int):
+                val = selectBitRange(v, offset, width)
+                vldMask = allMask
+                updateTime = -1
+            else:
+                val = selectBitRange(v.val, offset, width)
+                vldMask = selectBitRange(v.vldMask, offset, width)
+                updateTime = v.updateTime
+
+            value.val |= val << inFieldOffset
+            value.vldMask |= vldMask << inFieldOffset
+            value.updateMask = max(value.updateTime, updateTime) 
+                        
+            inFieldOffset += width
+            start += width
+
+        return val
+    
+    def _getStruct(self, offset, transTmpl):
+        """
+        :param offset: global offset of this transTmpl (and struct)
+        :param transTmpl: instance of TransTmpl which specifies items in struct
+        """
+        dataDict = {}
+        for subTmpl in transTmpl.children:
+            t = subTmpl.dtype
+            name = subTmpl.origin.name
+            if isinstance(t, Bits):
+                value = self.getBits(subTmpl.bitAddr + offset, subTmpl.bitAddrEnd + offset)
+            elif isinstance(t, Array):
+                raise NotImplementedError()
+            elif isinstance(t, HStruct):
+                value = self._getStruct(offset, subTmpl)
+            else:
+                raise NotImplementedError(t)
+
+            dataDict[name] = value    
+        
+        return transTmpl.dtype.fromPy(dataDict)
+         
     def getStruct(self, addr, structT, bitAddr=None):
         """
         Get HStruct from memory
         
         :param addr: address where get struct from
         :param structT: instance of HStruct or FrameTemplate generated from it to resove structure of data
+        :param bitAddr: optional bit precisse address is is not None param addr has to be None
         """
-        wordWidth = self.cellSize * 8
         if bitAddr is None:
             assert bitAddr is None
             bitAddr = addr * 8
         else:
             assert addr is not None
-
-        s = structT.getValueCls()
-
-        for f in structT.fields:
-            fieldLen = f.dtype.bit_length()
-
-            # resolve value of field from memory
-            if f.name is not None:
-                fieldOffset = 0
-                field = 0
-                try:
-                    while True:
-                        a = bitAddr + fieldOffset
-                        indx = a // wordWidth
-                        off = a % wordWidth
-                        v = self.data[indx]
-                        if fieldOffset + wordWidth < fieldLen:
-                            bitsLen = wordWidth
-                        else:
-                            bitsLen = fieldLen - fieldOffset
-
-                        field |= selectBitRange(v, off, bitsLen) << fieldOffset
-                        if fieldLen <= fieldOffset + wordWidth:
-                            break
-                except KeyError:
-                    field = None
-                setattr(s, f.name, field)
-
-            bitAddr += fieldLen
-
-        return s
+        
+        if isinstance(structT, TransTmpl):
+            transTmpl = structT
+            structT = transTmpl.origin
+        else:
+            assert isinstance(structT, HStruct)
+            transTmpl = TransTmpl(structT)
+        
+        return self._getStruct(bitAddr, transTmpl)
