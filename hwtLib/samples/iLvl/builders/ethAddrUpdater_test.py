@@ -21,11 +21,11 @@ class EthAddrUpdaterTC(SimTestCase):
         self.prepareUnit(u)
 
         r = self.randomize
-        #r(u.axi_m.ar)
-        #r(u.axi_m.r)
-        #r(u.axi_m.aw)
-        #r(u.axi_m.w)
-        #r(u.axi_m.b)
+        r(u.axi_m.ar)
+        r(u.axi_m.r)
+        r(u.axi_m.aw)
+        r(u.axi_m.w)
+        r(u.axi_m.b)
 
         m = Axi3DenseMem(u.clk, u.axi_m)
         tmpl = TransTmpl(frameHeader)
@@ -33,16 +33,14 @@ class EthAddrUpdaterTC(SimTestCase):
 
         def randFrame():
             rand = self._rand.getrandbits
-            data = {"eth": {"src": 1, # rand(48),
-                            "dst": 2  # rand(48)
+            data = {"eth": {"src": rand(48),
+                            "dst": rand(48)
                             },
-                    "ipv4":{"src": 3, # rand(32),
-                            "dst": 4 # rand(32)
+                    "ipv4":{"src": rand(32),
+                            "dst": rand(32)
                            }
                     }
             d = list(frameTmpl.packData(data))
-            print(frameTmpl)
-            print(d)
             ptr = m.calloc(ceil(frameHeader.bit_length() / DW),
                            DW // 8,
                            initValues=d)
@@ -52,15 +50,12 @@ class EthAddrUpdaterTC(SimTestCase):
 
         u.packetAddr._ag.data.append(framePtr)
 
-        # print(m.data)
         self.doSim(1000 * Time.ns)
-        # print(m.data)
         updatedFrame = m.getStruct(framePtr, tmpl)
-        # print(updatedFrame)
         self.assertValEqual(updatedFrame.eth.src, frameData["eth"]['dst'])
         self.assertValEqual(updatedFrame.eth.dst, frameData["eth"]['src'])
-        self.assertValEqual(updatedFrame.eth.src, frameData["ipv4"]['dst'])
-        self.assertValEqual(updatedFrame.eth.dst, frameData["ipv4"]['src'])
+        self.assertValEqual(updatedFrame.ipv4.src, frameData["ipv4"]['dst'])
+        self.assertValEqual(updatedFrame.ipv4.dst, frameData["ipv4"]['src'])
 
 
 if __name__ == "__main__":
