@@ -111,6 +111,7 @@ from hwtLib.structManipulators.mmu2pageLvl_test import MMU_2pageLvl_TC
 from hwtLib.structManipulators.structReader_test import StructReaderTC
 from hwtLib.structManipulators.structWriter_test import StructWriter_TC
 from hwtLib.tests.frameTemplate_test import FrameTemplateTC
+from hwtLib.tests.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.operators import OperatorTC
 from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.tests.statementTreesInternal import StatementTreesInternalTC
@@ -283,6 +284,7 @@ suite = testSuiteFromTCs(
     IpifRegTC,
 
     IpCoreWrapperTC,
+    IpCorePackagerTC,
 )
 
 
