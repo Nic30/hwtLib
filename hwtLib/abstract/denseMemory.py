@@ -328,15 +328,16 @@ class DenseMemory():
                 val = selectBitRange(v.val, offset, width)
                 vldMask = selectBitRange(v.vldMask, offset, width)
                 updateTime = v.updateTime
-
-            value.val |= val << inFieldOffset
-            value.vldMask |= vldMask << inFieldOffset
+                
+            m = mask(width)
+            value.val |= (val & m) << inFieldOffset
+            value.vldMask |= (vldMask & m) << inFieldOffset
             value.updateMask = max(value.updateTime, updateTime) 
                         
             inFieldOffset += width
             start += width
 
-        return val
+        return value
     
     def _getStruct(self, offset, transTmpl):
         """
