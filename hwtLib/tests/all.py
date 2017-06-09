@@ -42,6 +42,7 @@ from hwtLib.handshaked.ramAsHs_test import RamAsHs_TC
 from hwtLib.handshaked.reg_test import HsRegL1D0TC, HsRegL2D1TC
 from hwtLib.handshaked.resizer_test import HandshakedResizerTC
 from hwtLib.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
+from hwtLib.img.charToBitmap_test import CharToBitmapTC
 from hwtLib.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointStartTC, \
     IpifEndpointOffsetTC, IpifEndpointArray
@@ -285,6 +286,7 @@ suite = testSuiteFromTCs(
 
     IpCoreWrapperTC,
     IpCorePackagerTC,
+    CharToBitmapTC,
 )
 
 

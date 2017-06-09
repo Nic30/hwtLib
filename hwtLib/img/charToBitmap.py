@@ -14,10 +14,13 @@ pixels = im.load()
 
 
 # img is 8x16 array of bitmaps, each char is 8x8 pix big
-def printChar(ch, inverted=True):  # pragma: no cover
+def asciiArtOfChar(ch, inverted=True):
     ch = ord(ch)
+    imgBuf = []
+
     for y in range(8):
         row = getCharRow(ch, y)
+        lineBuf = []
         for x in range(8):
             pix = selectBit(row, 8 - x - 1)
             if inverted:
@@ -27,8 +30,11 @@ def printChar(ch, inverted=True):  # pragma: no cover
                 pix = ' '
             else:
                 pix = '#'
-            print(pix, end="")  # Get the RGBA Value of the a pixel of an image
-        print()
+            lineBuf.append(pix)
+        imgBuf.append("".join(lineBuf))
+        lineBuf.clear()
+    
+    return "\n".join(imgBuf)
 
 def getCharRow(charOrd, row):
     CHARS_PER_ROW = 32
@@ -65,4 +71,4 @@ def addCharToBitmap(unit, name="charToBitmap"):
 
     
 if __name__ == "__main__":
-    printChar("A")
+    print(asciiArtOfChar("a", inverted=True))
