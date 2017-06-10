@@ -60,7 +60,7 @@ class ClkDiv3TC(SimTestCase):
     def test_oscilation(self):
         u = ClkDiv3()
         self.prepareUnit(u)
-        
+
         self.doSim(10 * 10 * Time.ns)
         expected = [(0, 0),
                     (15000.0, 1),
@@ -71,7 +71,6 @@ class ClkDiv3TC(SimTestCase):
                     (90000.0, 0)]
         self.assertValSequenceEqual(u.clkOut._ag.data,
                                     expected)
-        
 
 
 if __name__ == "__main__":
