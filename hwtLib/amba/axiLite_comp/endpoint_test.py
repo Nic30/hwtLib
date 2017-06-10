@@ -32,6 +32,13 @@ structTwoArr = HStruct(
                        (Array(uint32_t, 4), "field1")
                        )
 
+structStructsInArray = HStruct(
+                        (Array(HStruct(
+                                (uint32_t, "field0"),
+                                (uint32_t, "field1")),
+                              4), "arr"),
+                        )
+
 
 def addrGetter(intf):
     if isinstance(intf, AxiLite):
@@ -124,7 +131,7 @@ class AxiLiteEndpointTC(SimTestCase):
                                     [MAGIC,
                                      MAGIC + 2
                                      ])
-        self.assertValSequenceEqual(u.decoded.field1._ag.dout, 
+        self.assertValSequenceEqual(u.decoded.field1._ag.dout,
                                     [MAGIC + 1,
                                      MAGIC + 3
                                      ])
@@ -154,7 +161,7 @@ class AxiLiteEndpointOffsetTC(AxiLiteEndpointTC):
     FIELD_ADDR = [0x4, 0x8]
 
     def mySetUp(self, data_width=32):
-        u = self.u = AxiLiteEndpoint(self.STRUCT_TEMPLATE, offset=0x4*8)
+        u = self.u = AxiLiteEndpoint(self.STRUCT_TEMPLATE, offset=0x4 * 8)
 
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH.set(self.DATA_WIDTH)
@@ -236,16 +243,29 @@ class AxiLiteEndpointArray(AxiLiteEndpointTC):
         self.assertEqual(s, expected)
 
 
+class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
+    STRUCT_TEMPLATE = structStructsInArray
+    
+    def mySetUp(self, data_width=32):
+        u = self.u = AxiLiteEndpoint(self.STRUCT_TEMPLATE, shouldEnterFn=lambda tmpl: True)
+
+        self.DATA_WIDTH = data_width
+        u.DATA_WIDTH.set(self.DATA_WIDTH)
+
+        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
+        return u
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(AxiLiteEndpointArray('test_write'))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointOffsetTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointArray))
+    suite.addTest(AxiLiteEndpointStructsInArray('test_nop'))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointOffsetTC))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointArray))
+    #suite.addTest(unittest.makeSuite(AxiLiteEndpointStructsInArray))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

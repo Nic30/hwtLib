@@ -46,17 +46,23 @@ class BusEndpoint(Unit):
     
     
     """
-    def __init__(self, structTemplate, offset=0, intfCls=None):
+    def __init__(self, structTemplate, offset=0, intfCls=None, shouldEnterFn=None):
         """
-        :param structTemplate:
-            interface types for field type:
-                primitive types like Bits -> RegCntrl interface
-                Array -> BramPort_withoutClk interface
+        :param structTemplate: instance of HStruct which describes address space of this endpoint 
+        :param offset: offset of address space of this endpoint
+        :param intfCls: class of bus interface which should be used
+        :param shouldEnterFn: function(transactionTemplate) which should return true if structuralized type like Array or HStruct
+            should be interpreted as separate interfaces or not
         """
         assert intfCls is not None, "intfCls has to be specified"
+
         self._intfCls = intfCls
         self.STRUCT_TEMPLATE = structTemplate
         self.OFFSET = offset
+        if shouldEnterFn is None:
+            self.shouldEnterFn = lambda tmpl: not isinstance(tmpl.dtype, Array)
+        else:
+            self.shouldEnterFn = shouldEnterFn
         Unit.__init__(self)
 
     def _getWordAddrStep(self):
@@ -94,7 +100,7 @@ class BusEndpoint(Unit):
         SUGGESTED_AW = self._suggestedAddrWidth()
         assert SUGGESTED_AW <= AW, (SUGGESTED_AW, AW)
         tmpl = TransTmpl(self.STRUCT_TEMPLATE, bitAddr=self.OFFSET)
-        fieldTrans = tmpl.walkFlatten(shouldEnterFn=lambda tmpl: not isinstance(tmpl.dtype, Array))
+        fieldTrans = tmpl.walkFlatten(shouldEnterFn=self.shouldEnterFn)
         for (_, transactionTmpl) in fieldTrans:
             intf = self.getPort(transactionTmpl)
 
@@ -174,9 +180,13 @@ class BusEndpoint(Unit):
             p = RegCntrl()
             dw = t.bit_length()
         elif isinstance(t, Array):
-            p = BramPort_withoutClk()
-            dw = t.elmType.bit_length()
-            p.ADDR_WIDTH.set(log2ceil(evalParam(t.size).val - 1))
+            if self.shouldEnterFn(field):
+                p = StructIntf(t.elmType, instantiateFieldFn=self._mkFieldInterface, multipliedBy=t.size)
+                return p
+            else:
+                p = BramPort_withoutClk()
+                dw = t.elmType.bit_length()
+                p.ADDR_WIDTH.set(log2ceil(evalParam(t.size).val - 1))
         else:
             raise NotImplementedError(t)
 
