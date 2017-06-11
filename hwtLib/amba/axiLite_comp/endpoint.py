@@ -100,8 +100,8 @@ class AxiLiteEndpoint(BusEndpoint):
             rdataReg = None
             isBramAddr ** 0
 
-        SwitchLogic([(arAddr._eq(t.bitAddr // ADDR_STEP),
-                      connect(self.decoded._fieldsToInterfaces[t.origin].din, r.data, fit=True))
+        a = SwitchLogic([(arAddr._eq(t.bitAddr // ADDR_STEP),
+                      r.data ** self.getPort(t).din)
                      for t in self._directlyMapped],
                     default=r.data ** rdataReg)
 
