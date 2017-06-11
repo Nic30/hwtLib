@@ -15,6 +15,7 @@ from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import evalParam
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
+from copy import copy
 
 
 def inRange(n, lower, end):
@@ -26,7 +27,7 @@ class BusEndpoint(Unit):
     Abstract unit
     Delegate request from bus to fields of structure
     write has higher priority
-    
+
     .. aafig::
         +------+    +----------+     +---------+
         | bus  +---->          +-----> field0  |
@@ -43,12 +44,10 @@ class BusEndpoint(Unit):
                     |          <-----+         |
                     +----------+     +---------+
 
-    
-    
     """
     def __init__(self, structTemplate, offset=0, intfCls=None, shouldEnterFn=None):
         """
-        :param structTemplate: instance of HStruct which describes address space of this endpoint 
+        :param structTemplate: instance of HStruct which describes address space of this endpoint
         :param offset: offset of address space of this endpoint
         :param intfCls: class of bus interface which should be used
         :param shouldEnterFn: function(transactionTemplate) which should return true if structuralized type like Array or HStruct
@@ -83,7 +82,17 @@ class BusEndpoint(Unit):
         self.decoded = StructIntf(self.STRUCT_TEMPLATE, instantiateFieldFn=self._mkFieldInterface)
 
     def getPort(self, transTmpl):
-        return self.decoded._fieldsToInterfaces[transTmpl.origin]
+        try:
+            indexOnPort = transTmpl.indexOnPort
+        except AttributeError:
+            indexOnPort = None
+
+        port = self.decoded._fieldsToInterfaces[transTmpl.origin]
+        print(port)
+        if indexOnPort is None:
+            return port
+        else:
+            return port[indexOnPort]
 
     def isInMyAddrRange(self, addrSig):
         return (addrSig >= self._getMinAddr()) & (addrSig < self._getMaxAddr())
@@ -96,21 +105,40 @@ class BusEndpoint(Unit):
         self.WORD_ADDR_STEP = self._getWordAddrStep()
         self.ADDR_STEP = self._getAddrStep()
 
+        def getIndexOfPart(transTmpl):
+            index = 0
+            parentArray = transTmpl.parent
+            while not (isinstance(parentArray.dtype, Array) and parentArray.bitAddrEnd >= transTmpl.bitAddrEnd):
+                parentArray = parentArray.parent
+                if isinstance(parentArray.dtype, Array):
+                    index += (transTmpl.bitAddr - parentArray.bitAddr) // parentArray.getItemWidth()
+                    # [FIXME] not working correctly for multi level arrays
+            return index
+
         AW = evalParam(self.ADDR_WIDTH).val
         SUGGESTED_AW = self._suggestedAddrWidth()
         assert SUGGESTED_AW <= AW, (SUGGESTED_AW, AW)
         tmpl = TransTmpl(self.STRUCT_TEMPLATE, bitAddr=self.OFFSET)
         fieldTrans = tmpl.walkFlatten(shouldEnterFn=self.shouldEnterFn)
-        for (_, transactionTmpl) in fieldTrans:
-            intf = self.getPort(transactionTmpl)
+        for ((base, end), transTmpl) in fieldTrans:
+            intf = self.getPort(transTmpl)
 
             if isinstance(intf, RegCntrl):
-                self._directlyMapped.append(transactionTmpl)
+                if intf._multipliedBy is not None:
+                    _transactionTmpl = copy(transTmpl)
+                    _transactionTmpl.bitAddr = base
+                    _transactionTmpl.bitAddrEnd = end
+                    _transactionTmpl.indexOnPort = getIndexOfPart(_transactionTmpl)
+                    self._directlyMapped.append(_transactionTmpl)
+                    #self.decoded._fieldsToInterfaces[_transactionTmpl] = 
+                else:
+                    self._directlyMapped.append(transTmpl)
+
             elif isinstance(intf, BramPort_withoutClk):
-                self._bramPortMapped.append(transactionTmpl)
+                self._bramPortMapped.append(transTmpl)
             else:
                 raise NotImplementedError(intf)
-            self.ADRESS_MAP.append(transactionTmpl)
+            self.ADRESS_MAP.append(transTmpl)
 
     def _getMaxAddr(self):
         lastItem = self.ADRESS_MAP[-1]
@@ -202,7 +230,7 @@ class BusEndpoint(Unit):
     @classmethod
     def _resolveRegStructFromIntfMap(cls, prefix, interfaceMap, DATA_WIDTH, aliginFields=False):
         """
-        Generate flatened register map for HStruct
+        Generate flattened register map for HStruct
 
         :param prefix: prefix for register name
         :param interfaceMap: iterable of
@@ -233,9 +261,9 @@ class BusEndpoint(Unit):
                     access = "rw"
                 else:
                     raise NotImplementedError(intf)
-                
+
                 info = BusFieldInfo(access=access, fieldInterface=intf)
-                
+
                 if aliginFields:
                     fillUpWidth = DATA_WIDTH - dtype.bit_length()
                     if fillUpWidth > 0:
