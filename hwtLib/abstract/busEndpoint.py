@@ -88,7 +88,7 @@ class BusEndpoint(Unit):
             indexOnPort = None
 
         port = self.decoded._fieldsToInterfaces[transTmpl.origin]
-        print(port)
+
         if indexOnPort is None:
             return port
         else:
