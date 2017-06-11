@@ -97,10 +97,10 @@ class AxiLite_wAgent(BaseAxiAgent):
         if data is None:
             w(None, intf.data)
             w(None, intf.strb)
-
-        data, strb = data
-        w(data, intf.data)
-        w(strb, intf.strb)
+        else:
+            data, strb = data
+            w(data, intf.data)
+            w(strb, intf.strb)
 
 
 #################################################################
