@@ -1,7 +1,6 @@
-from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.interfaces.std import Handshaked, HandshakeSync
 from hwt.pyUtils.arrayQuery import where
-from hwt.synthesizer.interfaceLevel.interfaceUtils.proxy import InterfaceProxy
+from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
 class HandshakedCompBase(Unit):
