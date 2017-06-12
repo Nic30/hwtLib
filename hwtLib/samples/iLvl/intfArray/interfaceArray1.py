@@ -79,6 +79,5 @@ class InterfaceArraySample1TC(SimTestCase):
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    print(
-          toRtl(InterfaceArraySample1)
-    )
+    u = InterfaceArraySample1()
+    print(toRtl(u))

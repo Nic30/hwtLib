@@ -67,7 +67,10 @@ class AxiInterconnectBase(Unit):
 
     def reqHandler(self, dpReq, orderFifoIn):
         # join with roundrobin on requests form drivers and selected index is stored into orderFifo
-        joinTmpl = self.drivers[0].req
+
+        # because it is just proxy
+        joinTmpl = self.drivers[0].req._origIntf
+   
         reqJoin = HsJoinFairShare(joinTmpl.__class__)
         reqJoin._updateParamsFrom(joinTmpl)
         reqJoin.INPUTS.set(self.DRIVER_CNT)

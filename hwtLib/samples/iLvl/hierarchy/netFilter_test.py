@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import unittest
-
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.samples.iLvl.hierarchy.netFilter import NetFilter
 from hwt.synthesizer.shortcuts import toRtl
@@ -204,36 +202,16 @@ ENTITY gen_dout_fork_0 IS
 END gen_dout_fork_0;
 
 ARCHITECTURE rtl OF gen_dout_fork_0 IS
-    SIGNAL dataOut_0_data : STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
-    SIGNAL dataOut_0_last : STD_LOGIC;
-    SIGNAL dataOut_0_ready : STD_LOGIC;
-    SIGNAL dataOut_0_strb : STD_LOGIC_VECTOR((DATA_WIDTH / 8) - 1 DOWNTO 0);
-    SIGNAL dataOut_0_valid : STD_LOGIC;
-    SIGNAL dataOut_1_data : STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
-    SIGNAL dataOut_1_last : STD_LOGIC;
-    SIGNAL dataOut_1_ready : STD_LOGIC;
-    SIGNAL dataOut_1_strb : STD_LOGIC_VECTOR((DATA_WIDTH / 8) - 1 DOWNTO 0);
-    SIGNAL dataOut_1_valid : STD_LOGIC;
 BEGIN
-    dataIn_ready <= dataOut_0_ready AND dataOut_1_ready; 
-    dataOut_0_data <= dataIn_data; 
-    dataOut_0_last <= dataIn_last; 
-    dataOut_0_ready <= dataOut_ready( 0 ); 
-    dataOut_0_strb <= dataIn_strb; 
-    dataOut_0_valid <= dataIn_valid AND dataOut_1_ready; 
-    dataOut_1_data <= dataIn_data; 
-    dataOut_1_last <= dataIn_last; 
-    dataOut_1_ready <= dataOut_ready( 1 ); 
-    dataOut_1_strb <= dataIn_strb; 
-    dataOut_1_valid <= dataIn_valid AND dataOut_0_ready; 
-    dataOut_data( (DATA_WIDTH * 1) - 1 DOWNTO DATA_WIDTH * 0 ) <= dataOut_0_data; 
-    dataOut_data( (DATA_WIDTH * 2) - 1 DOWNTO DATA_WIDTH * 1 ) <= dataOut_1_data; 
-    dataOut_last( 0 ) <= dataOut_0_last; 
-    dataOut_last( 1 ) <= dataOut_1_last; 
-    dataOut_strb( ((DATA_WIDTH / 8) * 1) - 1 DOWNTO (DATA_WIDTH / 8) * 0 ) <= dataOut_0_strb; 
-    dataOut_strb( ((DATA_WIDTH / 8) * 2) - 1 DOWNTO (DATA_WIDTH / 8) * 1 ) <= dataOut_1_strb; 
-    dataOut_valid( 0 ) <= dataOut_0_valid; 
-    dataOut_valid( 1 ) <= dataOut_1_valid; 
+    dataIn_ready <= (dataOut_ready( 0 )) AND (dataOut_ready( 1 )); 
+    dataOut_data( 63 DOWNTO 0 ) <= dataIn_data; 
+    dataOut_data( 127 DOWNTO 64 ) <= dataIn_data; 
+    dataOut_last( 0 ) <= dataIn_last; 
+    dataOut_last( 1 ) <= dataIn_last; 
+    dataOut_strb( 7 DOWNTO 0 ) <= dataIn_strb; 
+    dataOut_strb( 15 DOWNTO 8 ) <= dataIn_strb; 
+    dataOut_valid( 0 ) <= dataIn_valid AND (dataOut_ready( 1 )); 
+    dataOut_valid( 1 ) <= dataIn_valid AND (dataOut_ready( 0 )); 
 END ARCHITECTURE rtl;
 --
 --    This unit has actually no functionality it is just example of hierarchical design.
@@ -332,16 +310,6 @@ ARCHITECTURE rtl OF NetFilter IS
     SIGNAL sig_gen_dout_fork_0_dataIn_ready : STD_LOGIC;
     SIGNAL sig_gen_dout_fork_0_dataIn_strb : STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL sig_gen_dout_fork_0_dataIn_valid : STD_LOGIC;
-    SIGNAL sig_gen_dout_fork_0_dataOut_0_data : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL sig_gen_dout_fork_0_dataOut_0_last : STD_LOGIC;
-    SIGNAL sig_gen_dout_fork_0_dataOut_0_ready : STD_LOGIC;
-    SIGNAL sig_gen_dout_fork_0_dataOut_0_strb : STD_LOGIC_VECTOR(7 DOWNTO 0);
-    SIGNAL sig_gen_dout_fork_0_dataOut_0_valid : STD_LOGIC;
-    SIGNAL sig_gen_dout_fork_0_dataOut_1_data : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL sig_gen_dout_fork_0_dataOut_1_last : STD_LOGIC;
-    SIGNAL sig_gen_dout_fork_0_dataOut_1_ready : STD_LOGIC;
-    SIGNAL sig_gen_dout_fork_0_dataOut_1_strb : STD_LOGIC_VECTOR(7 DOWNTO 0);
-    SIGNAL sig_gen_dout_fork_0_dataOut_1_valid : STD_LOGIC;
     SIGNAL sig_gen_dout_fork_0_dataOut_data : STD_LOGIC_VECTOR(127 DOWNTO 0);
     SIGNAL sig_gen_dout_fork_0_dataOut_last : STD_LOGIC_VECTOR(1 DOWNTO 0);
     SIGNAL sig_gen_dout_fork_0_dataOut_ready : STD_LOGIC_VECTOR(1 DOWNTO 0);
@@ -639,10 +607,10 @@ BEGIN
     sig_filter_cfg_w_data <= cfg_w_data; 
     sig_filter_cfg_w_strb <= cfg_w_strb; 
     sig_filter_cfg_w_valid <= cfg_w_valid; 
-    sig_filter_din_data <= sig_gen_dout_fork_0_dataOut_1_data; 
-    sig_filter_din_last <= sig_gen_dout_fork_0_dataOut_1_last; 
-    sig_filter_din_strb <= sig_gen_dout_fork_0_dataOut_1_strb; 
-    sig_filter_din_valid <= sig_gen_dout_fork_0_dataOut_1_valid; 
+    sig_filter_din_data <= sig_gen_dout_fork_0_dataOut_data( 127 DOWNTO 64 ); 
+    sig_filter_din_last <= sig_gen_dout_fork_0_dataOut_last( 1 ); 
+    sig_filter_din_strb <= sig_gen_dout_fork_0_dataOut_strb( 15 DOWNTO 8 ); 
+    sig_filter_din_valid <= sig_gen_dout_fork_0_dataOut_valid( 1 ); 
     sig_filter_dout_ready <= sig_exporter_din_ready; 
     sig_filter_headers_data <= sig_hfe_headers_data; 
     sig_filter_headers_last <= sig_hfe_headers_last; 
@@ -656,30 +624,21 @@ BEGIN
     sig_gen_dout_fork_0_dataIn_last <= sig_hfe_dout_last; 
     sig_gen_dout_fork_0_dataIn_strb <= sig_hfe_dout_strb; 
     sig_gen_dout_fork_0_dataIn_valid <= sig_hfe_dout_valid; 
-    sig_gen_dout_fork_0_dataOut_0_data <= sig_gen_dout_fork_0_dataOut_data( 63 DOWNTO 0 ); 
-    sig_gen_dout_fork_0_dataOut_0_last <= sig_gen_dout_fork_0_dataOut_last( 0 ); 
-    sig_gen_dout_fork_0_dataOut_0_ready <= sig_patternMatch_din_ready; 
-    sig_gen_dout_fork_0_dataOut_0_strb <= sig_gen_dout_fork_0_dataOut_strb( 7 DOWNTO 0 ); 
-    sig_gen_dout_fork_0_dataOut_0_valid <= sig_gen_dout_fork_0_dataOut_valid( 0 ); 
-    sig_gen_dout_fork_0_dataOut_1_data <= sig_gen_dout_fork_0_dataOut_data( 127 DOWNTO 64 ); 
-    sig_gen_dout_fork_0_dataOut_1_last <= sig_gen_dout_fork_0_dataOut_last( 1 ); 
-    sig_gen_dout_fork_0_dataOut_1_ready <= sig_filter_din_ready; 
-    sig_gen_dout_fork_0_dataOut_1_strb <= sig_gen_dout_fork_0_dataOut_strb( 15 DOWNTO 8 ); 
-    sig_gen_dout_fork_0_dataOut_1_valid <= sig_gen_dout_fork_0_dataOut_valid( 1 ); 
-    sig_gen_dout_fork_0_dataOut_ready( 0 ) <= sig_gen_dout_fork_0_dataOut_0_ready; 
-    sig_gen_dout_fork_0_dataOut_ready( 1 ) <= sig_gen_dout_fork_0_dataOut_1_ready; 
+    sig_gen_dout_fork_0_dataOut_ready( 0 ) <= sig_patternMatch_din_ready; 
+    sig_gen_dout_fork_0_dataOut_ready( 1 ) <= sig_filter_din_ready; 
     sig_hfe_din_data <= din_data; 
     sig_hfe_din_last <= din_last; 
     sig_hfe_din_strb <= din_strb; 
     sig_hfe_din_valid <= din_valid; 
     sig_hfe_dout_ready <= sig_gen_dout_fork_0_dataIn_ready; 
     sig_hfe_headers_ready <= sig_filter_headers_ready; 
-    sig_patternMatch_din_data <= sig_gen_dout_fork_0_dataOut_0_data; 
-    sig_patternMatch_din_last <= sig_gen_dout_fork_0_dataOut_0_last; 
-    sig_patternMatch_din_strb <= sig_gen_dout_fork_0_dataOut_0_strb; 
-    sig_patternMatch_din_valid <= sig_gen_dout_fork_0_dataOut_0_valid; 
+    sig_patternMatch_din_data <= sig_gen_dout_fork_0_dataOut_data( 63 DOWNTO 0 ); 
+    sig_patternMatch_din_last <= sig_gen_dout_fork_0_dataOut_last( 0 ); 
+    sig_patternMatch_din_strb <= sig_gen_dout_fork_0_dataOut_strb( 7 DOWNTO 0 ); 
+    sig_patternMatch_din_valid <= sig_gen_dout_fork_0_dataOut_valid( 0 ); 
     sig_patternMatch_match_ready <= sig_filter_patternMatch_ready; 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE rtl;
+"""
 
 class NetFilterTC(SimTestCase):
 
@@ -689,6 +648,7 @@ class NetFilterTC(SimTestCase):
         
 
 if __name__ == "__main__":
+    import unittest
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(NetFilterTC))
     runner = unittest.TextTestRunner(verbosity=3)
