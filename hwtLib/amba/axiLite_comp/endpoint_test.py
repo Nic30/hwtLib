@@ -35,8 +35,9 @@ structTwoArr = HStruct(
 structStructsInArray = HStruct(
                         (Array(HStruct(
                                 (uint32_t, "field0"),
-                                (uint32_t, "field1")),
-                              4), "arr"),
+                                (uint32_t, "field1")
+                                ),
+                               4), "arr"),
                         )
 
 
@@ -259,13 +260,13 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    suite.addTest(AxiLiteEndpointStructsInArray('test_nop'))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointOffsetTC))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointArray))
-    #suite.addTest(unittest.makeSuite(AxiLiteEndpointStructsInArray))
+    #suite.addTest(AxiLiteEndpointStructsInArray('test_nop'))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointOffsetTC))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointArray))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointStructsInArray))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

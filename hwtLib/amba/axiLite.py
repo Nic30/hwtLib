@@ -95,12 +95,12 @@ class AxiLite_wAgent(BaseAxiAgent):
         intf = self.intf
         w = s.write
         if data is None:
-            data = [None for _ in range(2)]
-
-        data, strb = data
-
-        w(data, intf.data)
-        w(strb, intf.strb)
+            w(None, intf.data)
+            w(None, intf.strb)
+        else:
+            data, strb = data
+            w(data, intf.data)
+            w(strb, intf.strb)
 
 
 #################################################################
@@ -163,7 +163,10 @@ class AxiLiteAgent(AgentBase):
     """
     Composite simulation agent with agent for every axi channel
     change of enable is propagated to each child
+
+    data for each agent is stored in agent for given channel (ar, aw, r, ... property)
     """
+
     @property
     def enable(self):
         return self.__enable
@@ -191,18 +194,18 @@ class AxiLiteAgent(AgentBase):
         self.b = ag(intf.b)
 
     def getDrivers(self):
-        return (self.aw.getDrivers() + 
-                self.ar.getDrivers() + 
-                self.w.getDrivers() + 
-                self.r.getMonitors() + 
+        return (self.aw.getDrivers() +
+                self.ar.getDrivers() +
+                self.w.getDrivers() +
+                self.r.getMonitors() +
                 self.b.getMonitors()
                 )
 
     def getMonitors(self):
-        return (self.aw.getMonitors() + 
-                self.ar.getMonitors() + 
-                self.w.getMonitors() + 
-                self.r.getDrivers() + 
+        return (self.aw.getMonitors() +
+                self.ar.getMonitors() +
+                self.w.getMonitors() +
+                self.r.getDrivers() +
                 self.b.getDrivers()
                 )
 
@@ -221,7 +224,7 @@ class IP_AXILite(IntfConfig):
                     'ar': AxiMap('ar', a_sigs),
                     'r': AxiMap('r', ['data', 'resp', 'valid', 'ready']),
                     'b': AxiMap('b', ['valid', 'ready', 'resp'])
-                     }
+                    }
 
     def postProcess(self, component, entity, allInterfaces, thisIf):
         self.endianness = "little"

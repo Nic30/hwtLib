@@ -83,6 +83,7 @@ from hwtLib.samples.iLvl.hierarchy.unitToUnitConnection import UnitToUnitConnect
 from hwtLib.samples.iLvl.intfArray.interfaceArray0 import InterfaceArraySample0TC
 from hwtLib.samples.iLvl.intfArray.interfaceArray1 import InterfaceArraySample1TC
 from hwtLib.samples.iLvl.intfArray.interfaceArray2 import InterfaceArraySample2TC
+from hwtLib.samples.iLvl.intfArray.interfaceArray3 import InterfaceArraySample3TC
 from hwtLib.samples.iLvl.ipCoreCompatibleWrap_test import IpCoreWrapperTC
 from hwtLib.samples.iLvl.mem.ram_test import RamTC as SampleRamTC
 from hwtLib.samples.iLvl.mem.reg_test import DRegTC
@@ -173,6 +174,7 @@ suite = testSuiteFromTCs(
     InterfaceArraySample0TC,
     InterfaceArraySample1TC,
     InterfaceArraySample2TC,
+    InterfaceArraySample3TC,
     FrameTemplateTC,
 
     # component verifications
