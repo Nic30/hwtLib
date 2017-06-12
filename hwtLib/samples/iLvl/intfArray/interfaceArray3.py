@@ -84,28 +84,30 @@ class InterfaceArraySample3TC(SimTestCase):
             for ch, d in zip(channel, data):
                 self.assertValSequenceEqual(ch._ag.data, d, ch._name)
 
-        pushData(u.a.aw, AW)
-        pushData(u.a.ar, AR)
-        pushData(u.a.r, R)
-        pushData(u.a.w, W)
-        pushData(u.a.b, B)
+        pushData(map(lambda ch: ch.aw, u.a), AW)
+        pushData(map(lambda ch: ch.ar, u.a), AR)
+        pushData(map(lambda ch: ch.r, u.b), R)
+        pushData(map(lambda ch: ch.w, u.a), W)
+        pushData(map(lambda ch: ch.b, u.b), B)
 
-        self.doSim(50 * Time.ns)
+        self.doSim(100 * Time.ns)
 
         for i in range(3):
-            for intf in [u.ar, u.aw, u.w, u.r, u.b]:
-                self.assertEmpty(intf[i]._ag.data)
+            a = u.a[i]
+            b = u.b[i]
+            for intf in [a.ar, a.aw, a.w, b.r, b.b]:
+                self.assertEmpty(intf._ag.data, intf)
 
-        checkData(u.b.aw, AW)
-        checkData(u.b.ar, AR)
-        checkData(u.b.r, R)
-        checkData(u.b.w, W)
-        checkData(u.b.b, B)
+        checkData(map(lambda ch: ch.aw, u.b), AW)
+        checkData(map(lambda ch: ch.ar, u.b), AR)
+        checkData(map(lambda ch: ch.r, u.a), R)
+        checkData(map(lambda ch: ch.w, u.b), W)
+        checkData(map(lambda ch: ch.b, u.a), B)
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(Simple2withNonDirectIntConnectionTC('test_passData'))
+    #suite.addTest(InterfaceArraySample3TC('test_simplePass'))
     suite.addTest(unittest.makeSuite(InterfaceArraySample3TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
