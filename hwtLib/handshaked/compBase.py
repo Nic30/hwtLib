@@ -1,6 +1,7 @@
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.interfaces.std import Handshaked, HandshakeSync
 from hwt.pyUtils.arrayQuery import where
+from hwt.synthesizer.interfaceLevel.interfaceUtils.proxy import InterfaceProxy
 
 
 class HandshakedCompBase(Unit):
@@ -9,7 +10,7 @@ class HandshakedCompBase(Unit):
         """
         :param hsIntfCls: class of interface which should be used as interface of this unit
         """
-        assert(issubclass(hsIntfCls, (Handshaked, HandshakeSync)))
+        assert(issubclass(hsIntfCls, (Handshaked, HandshakeSync))), hsIntfCls
         self.intfCls = hsIntfCls
         Unit.__init__(self)
 
