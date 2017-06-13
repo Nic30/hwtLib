@@ -203,15 +203,15 @@ END gen_dout_fork_0;
 
 ARCHITECTURE rtl OF gen_dout_fork_0 IS
 BEGIN
-    dataIn_ready <= (dataOut_ready( 0 )) AND (dataOut_ready( 1 )); 
+    dataIn_ready <= (dataOut_ready( 0 )) AND (dataOut_ready( 2 )); 
     dataOut_data( 63 DOWNTO 0 ) <= dataIn_data; 
-    dataOut_data( 127 DOWNTO 64 ) <= dataIn_data; 
+    dataOut_data( 191 DOWNTO 128 ) <= dataIn_data; 
     dataOut_last( 0 ) <= dataIn_last; 
-    dataOut_last( 1 ) <= dataIn_last; 
+    dataOut_last( 2 ) <= dataIn_last; 
     dataOut_strb( 7 DOWNTO 0 ) <= dataIn_strb; 
-    dataOut_strb( 15 DOWNTO 8 ) <= dataIn_strb; 
-    dataOut_valid( 0 ) <= dataIn_valid AND (dataOut_ready( 1 )); 
-    dataOut_valid( 1 ) <= dataIn_valid AND (dataOut_ready( 0 )); 
+    dataOut_strb( 23 DOWNTO 16 ) <= dataIn_strb; 
+    dataOut_valid( 0 ) <= dataIn_valid AND (dataOut_ready( 2 )); 
+    dataOut_valid( 2 ) <= dataIn_valid AND (dataOut_ready( 0 )); 
 END ARCHITECTURE rtl;
 --
 --    This unit has actually no functionality it is just example of hierarchical design.
@@ -607,10 +607,10 @@ BEGIN
     sig_filter_cfg_w_data <= cfg_w_data; 
     sig_filter_cfg_w_strb <= cfg_w_strb; 
     sig_filter_cfg_w_valid <= cfg_w_valid; 
-    sig_filter_din_data <= sig_gen_dout_fork_0_dataOut_data( 127 DOWNTO 64 ); 
-    sig_filter_din_last <= sig_gen_dout_fork_0_dataOut_last( 1 ); 
-    sig_filter_din_strb <= sig_gen_dout_fork_0_dataOut_strb( 15 DOWNTO 8 ); 
-    sig_filter_din_valid <= sig_gen_dout_fork_0_dataOut_valid( 1 ); 
+    sig_filter_din_data <= sig_gen_dout_fork_0_dataOut_data( 191 DOWNTO 128 ); 
+    sig_filter_din_last <= sig_gen_dout_fork_0_dataOut_last( 2 ); 
+    sig_filter_din_strb <= sig_gen_dout_fork_0_dataOut_strb( 23 DOWNTO 16 ); 
+    sig_filter_din_valid <= sig_gen_dout_fork_0_dataOut_valid( 2 ); 
     sig_filter_dout_ready <= sig_exporter_din_ready; 
     sig_filter_headers_data <= sig_hfe_headers_data; 
     sig_filter_headers_last <= sig_hfe_headers_last; 
@@ -625,7 +625,7 @@ BEGIN
     sig_gen_dout_fork_0_dataIn_strb <= sig_hfe_dout_strb; 
     sig_gen_dout_fork_0_dataIn_valid <= sig_hfe_dout_valid; 
     sig_gen_dout_fork_0_dataOut_ready( 0 ) <= sig_patternMatch_din_ready; 
-    sig_gen_dout_fork_0_dataOut_ready( 1 ) <= sig_filter_din_ready; 
+    sig_gen_dout_fork_0_dataOut_ready( 2 ) <= sig_filter_din_ready; 
     sig_hfe_din_data <= din_data; 
     sig_hfe_din_last <= din_last; 
     sig_hfe_din_strb <= din_strb; 
@@ -637,8 +637,7 @@ BEGIN
     sig_patternMatch_din_strb <= sig_gen_dout_fork_0_dataOut_strb( 7 DOWNTO 0 ); 
     sig_patternMatch_din_valid <= sig_gen_dout_fork_0_dataOut_valid( 0 ); 
     sig_patternMatch_match_ready <= sig_filter_patternMatch_ready; 
-END ARCHITECTURE rtl;
-"""
+END ARCHITECTURE rtl;"""
 
 class NetFilterTC(SimTestCase):
 
