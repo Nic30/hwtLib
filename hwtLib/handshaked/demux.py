@@ -33,7 +33,7 @@ class HandshakedDemux(HandshakedCompBase):
         
         with self._paramsShared():
             self.dataIn = self.intfCls()
-            self.dataOut = self.intfCls(multipliedBy=self.OUTPUTS)
+            self.dataOut = self.intfCls(asArraySize=self.OUTPUTS)
     
     def _impl(self):
         In = self.dataIn

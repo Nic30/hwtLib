@@ -22,8 +22,8 @@ class InterfaceArraySample0(Unit):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.a = VldSynced(multipliedBy=self.LEN)
-            self.b = VldSynced(multipliedBy=self.LEN)
+            self.a = VldSynced(asArraySize=self.LEN)
+            self.b = VldSynced(asArraySize=self.LEN)
 
     def _impl(self):
         # directly connect arrays, note that we are not using array items

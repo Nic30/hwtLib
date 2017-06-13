@@ -38,8 +38,8 @@ class InterfaceArraySample1(Unit):
 
         addClkRstn(self)
         with self._paramsShared():
-            self.a = VldSynced(multipliedBy=LEN)
-            self.b = VldSynced(multipliedBy=LEN)
+            self.a = VldSynced(asArraySize=LEN)
+            self.b = VldSynced(asArraySize=LEN)
 
             self.u0 = SimpleSubunit()
             self.u1 = SimpleSubunit()

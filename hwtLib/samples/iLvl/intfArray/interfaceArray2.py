@@ -36,8 +36,8 @@ class InterfaceArraySample2(Unit):
         addClkRstn(self)
         LEN = 2
         with self._paramsShared():
-            self.a = AxiStream(multipliedBy=LEN)
-            self.b = AxiStream(multipliedBy=LEN)
+            self.a = AxiStream(asArraySize=LEN)
+            self.b = AxiStream(asArraySize=LEN)
 
             self.u0 = SimpleSubunit()
             self.u1 = SimpleSubunit()

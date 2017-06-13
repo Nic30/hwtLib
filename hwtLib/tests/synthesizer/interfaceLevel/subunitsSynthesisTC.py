@@ -27,7 +27,7 @@ class UnitWithArrIntf(EmptyUnit):
     def _declr(self):
         with self._paramsShared():
             self.a = AxiStream()
-            self.b = AxiStream(multipliedBy=hInt(2))
+            self.b = AxiStream(asArraySize=hInt(2))
         
     def _impl(self):
         setOut(self.b)

@@ -30,7 +30,7 @@ class RStrictOrderInterconnect(AxiInterconnectBase):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.drivers = AxiRDatapumpIntf(multipliedBy=self.DRIVER_CNT)
+            self.drivers = AxiRDatapumpIntf(asArraySize=self.DRIVER_CNT)
             self.rDatapump = AxiRDatapumpIntf()
         
         self.DRIVER_INDEX_WIDTH = log2ceil(self.DRIVER_CNT).val

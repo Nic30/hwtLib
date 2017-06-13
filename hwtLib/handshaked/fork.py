@@ -34,7 +34,7 @@ class HandshakedFork(HandshakedCompBase):
     def _declr(self):
         with self._paramsShared():
             self.dataIn = self.intfCls()
-            self.dataOut = self.intfCls(multipliedBy=self.OUTPUTS)
+            self.dataOut = self.intfCls(asArraySize=self.OUTPUTS)
 
     def _impl(self):
         rd = self.getRd

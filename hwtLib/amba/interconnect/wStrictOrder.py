@@ -27,7 +27,7 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.drivers = AxiWDatapumpIntf(multipliedBy=self.DRIVER_CNT)
+            self.drivers = AxiWDatapumpIntf(asArraySize=self.DRIVER_CNT)
             self.wDatapump = AxiWDatapumpIntf()
 
         self.DRIVER_INDEX_WIDTH = log2ceil(self.DRIVER_CNT).val

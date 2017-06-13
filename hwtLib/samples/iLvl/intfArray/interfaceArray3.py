@@ -22,8 +22,8 @@ class InterfaceArraySample3(Unit):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.a = AxiLite(multipliedBy=self.SIZE)
-            self.b = AxiLite(multipliedBy=self.SIZE)
+            self.a = AxiLite(asArraySize=self.SIZE)
+            self.b = AxiLite(asArraySize=self.SIZE)
 
     def _impl(self):
         # directly connect arrays, note that we are not using array items

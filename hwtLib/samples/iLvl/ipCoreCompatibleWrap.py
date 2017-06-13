@@ -7,7 +7,7 @@ from hwtLib.amba.axis import AxiStream
 class ArrayIntfExample(Unit):
     def _declr(self):
         addClkRstn(self)
-        self.a = AxiStream(multipliedBy=2)
+        self.a = AxiStream(asArraySize=2)
 
     def _impl(self):
         for intf in self.a:

@@ -32,7 +32,7 @@ class WStrictOrderInterconnecComplex(Unit):
             self.aw.LOCK_WIDTH = 2
             self.w = Axi4_w()
             self.b = Axi4_b()
-            self.drivers = AxiWDatapumpIntf(multipliedBy=self.DRIVER_CNT)
+            self.drivers = AxiWDatapumpIntf(asArraySize=self.DRIVER_CNT)
 
     def _impl(self):
         propagateClkRstn(self)

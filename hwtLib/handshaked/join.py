@@ -19,7 +19,7 @@ class HandshakedJoin(HandshakedCompBase):
 
     def _declr(self):
         with self._paramsShared():
-            self.dataIn = self.intfCls(multipliedBy=self.INPUTS)
+            self.dataIn = self.intfCls(asArraySize=self.INPUTS)
             self.dataOut = self.intfCls()
 
     def dataConnectionExpr(self, dIn, dOut):

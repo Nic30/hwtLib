@@ -124,7 +124,7 @@ class BusEndpoint(Unit):
             intf = self.getPort(transTmpl)
 
             if isinstance(intf, RegCntrl):
-                if intf._multipliedBy is not None:
+                if intf._asArraySize is not None:
                     _transactionTmpl = copy(transTmpl)
                     _transactionTmpl.bitAddr = base
                     _transactionTmpl.bitAddrEnd = end
@@ -209,7 +209,7 @@ class BusEndpoint(Unit):
             dw = t.bit_length()
         elif isinstance(t, Array):
             if self.shouldEnterFn(field):
-                p = StructIntf(t.elmType, instantiateFieldFn=self._mkFieldInterface, multipliedBy=t.size)
+                p = StructIntf(t.elmType, instantiateFieldFn=self._mkFieldInterface, asArraySize=t.size)
                 return p
             else:
                 p = BramPort_withoutClk()

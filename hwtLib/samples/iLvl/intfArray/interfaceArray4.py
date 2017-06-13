@@ -6,19 +6,47 @@ from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import RegCntrl, BramPort_withoutClk
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
+from hwt.serializer.serializerClases.indent import getIndent
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam
 from hwtLib.types.ctypes import uint8_t
+from hwt.synthesizer.interfaceLevel.interfaceUtils.proxy import InterfaceProxy
 
 
 struct0 = HStruct(
-        (uint8_t, "f0"),
-        (Array(
-               HStruct((uint8_t, "f1"), (uint8_t, "f2")),
-               4), "arr0")
+        (Array(uint8_t, 1), "arr0")
     )
 
+struct1 = HStruct(
+        (uint8_t, "f0"),
+        (Array(
+               HStruct(
+                   (uint8_t, "f1"),
+                   (uint8_t, "f2")
+                   ),
+               2), "arr0")
+    )
+
+
+def pprintInterface(intf, prefix="", indent=0):
+    try:
+        s = intf._sig
+    except AttributeError:
+        s = ""
+    if s is not "":
+        s = repr(s)
+        
+    print("".join([getIndent(indent), prefix, repr(intf), " ", s]))
+    for i in intf._interfaces:
+        if isinstance(intf, InterfaceProxy):
+            assert isinstance(i, InterfaceProxy)
+        pprintInterface(i, indent=indent + 1)
+    
+    if intf._arrayElemCache: 
+        for i, p in enumerate(intf):
+            pprintInterface(p, prefix="p%d:" % i, indent=indent + 1)
+    
 
 class InterfaceArraySample4(Unit):
     @staticmethod
@@ -33,8 +61,12 @@ class InterfaceArraySample4(Unit):
             dw = t.bit_length()
         elif isinstance(t, Array):
             if self.shouldEnterFn(field):
-                p = StructIntf(t.elmType, instantiateFieldFn=self._mkFieldInterface, multipliedBy=t.size)
-                return p
+                if isinstance(t.elmType, Bits):
+                    p = RegCntrl(asArraySize=t.size)
+                    dw = t.bit_length()
+                else:
+                    p = StructIntf(t.elmType, instantiateFieldFn=self._mkFieldInterface, asArraySize=t.size)
+                    return p
             else:
                 p = BramPort_withoutClk()
                 dw = t.elmType.bit_length()
@@ -48,8 +80,8 @@ class InterfaceArraySample4(Unit):
 
     def _declr(self):
         addClkRstn(self)
-        self.a = StructIntf(struct0, instantiateFieldFn=self._mkFieldInterface, multipliedBy=3)
-        self.b = StructIntf(struct0, instantiateFieldFn=self._mkFieldInterface, multipliedBy=3)
+        self.a = StructIntf(struct0, instantiateFieldFn=self._mkFieldInterface, asArraySize=2)
+        self.b = StructIntf(struct0, instantiateFieldFn=self._mkFieldInterface, asArraySize=2)
     
     def _impl(self):
         self.b ** self.a
@@ -63,7 +95,11 @@ class InterfaceArraySample4b(InterfaceArraySample4):
 
 class InterfaceArraySample4c(InterfaceArraySample4b):    
     def _impl(self):
+        pprintInterface(self.a)
         for a, b in zip(self.a, self.b):
+            # assert len(a.arr0) == 2
+            # f1_width = b.arr0.f1.din._dtype.bit_length()
+            # assert f1_width == 8 * 2, f1_width
             b ** a
 
 
@@ -91,12 +127,8 @@ class InterfaceArraySample4TC(SimTestCase):
         self.assertValEqual(i, 3)
         
 
-        
-
-    def test_InterfaceArraySample4b(self):
-        u = InterfaceArraySample4b()
+    def _test(self, u):
         self.prepareUnit(u)
-
         r = self._rand.getrandbits
         def randInts():
             return [r(8) for _ in range(r(2) + 1)]
@@ -187,16 +219,29 @@ class InterfaceArraySample4TC(SimTestCase):
                 emp(b_arr.f2._ag.din)
                 dinEq(a_arr.f2, _f2_in)
 
+    def test_InterfaceArraySample4b(self):
+        u = InterfaceArraySample4b()
+        self._test(u)
+
+    def test_InterfaceArraySample4c(self):
+        u = InterfaceArraySample4c()
+        self._test(u)
+
+    def test_InterfaceArraySample4d(self):
+        u = InterfaceArraySample4d()
+        self._test(u)
+
 
 
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(InterfaceArraySample4TC('test_InterfaceArraySample4b_intfIterations'))
-    suite.addTest(unittest.makeSuite(InterfaceArraySample4TC))
+    suite.addTest(InterfaceArraySample4TC('test_InterfaceArraySample4c'))
+    # suite.addTest(unittest.makeSuite(InterfaceArraySample4TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
     
-    #from hwt.synthesizer.shortcuts import toRtl
-    #print(toRtl(InterfaceArraySample4d()))
+    # from hwt.synthesizer.shortcuts import toRtl
+    # print(toRtl(InterfaceArraySample4c()))
+    
