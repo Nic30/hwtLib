@@ -87,3 +87,11 @@ if __name__ == "__main__":
     print(
         toRtl(InterfaceArraySample2())
     )
+
+    import unittest
+    suite = unittest.TestSuite()
+    # suite.addTest(InterfaceArraySample2TC('test_simplePass'))
+    suite.addTest(unittest.makeSuite(InterfaceArraySample2TC))
+    runner = unittest.TextTestRunner(verbosity=3)
+    runner.run(suite)
+    
