@@ -36,17 +36,17 @@ def pprintInterface(intf, prefix="", indent=0):
         s = ""
     if s is not "":
         s = repr(s)
-        
+
     print("".join([getIndent(indent), prefix, repr(intf), " ", s]))
     for i in intf._interfaces:
         if isinstance(intf, InterfaceProxy):
             assert isinstance(i, InterfaceProxy)
         pprintInterface(i, indent=indent + 1)
-    
-    if intf._arrayElemCache: 
+
+    if intf._arrayElemCache:
         for i, p in enumerate(intf):
             pprintInterface(p, prefix="p%d:" % i, indent=indent + 1)
-    
+
 
 class InterfaceArraySample4(Unit):
     @staticmethod
@@ -82,18 +82,18 @@ class InterfaceArraySample4(Unit):
         addClkRstn(self)
         self.a = StructIntf(struct0, instantiateFieldFn=self._mkFieldInterface, asArraySize=2)
         self.b = StructIntf(struct0, instantiateFieldFn=self._mkFieldInterface, asArraySize=2)
-    
+
     def _impl(self):
         self.b ** self.a
-        
-        
-class InterfaceArraySample4b(InterfaceArraySample4):    
+
+
+class InterfaceArraySample4b(InterfaceArraySample4):
     @staticmethod
     def shouldEnterFn(field):
         return True
 
 
-class InterfaceArraySample4c(InterfaceArraySample4b):    
+class InterfaceArraySample4c(InterfaceArraySample4b):
     def _impl(self):
         pprintInterface(self.a)
         for a, b in zip(self.a, self.b):
@@ -103,7 +103,7 @@ class InterfaceArraySample4c(InterfaceArraySample4b):
             b ** a
 
 
-class InterfaceArraySample4d(InterfaceArraySample4b):    
+class InterfaceArraySample4d(InterfaceArraySample4b):
     def _impl(self):
         for a, b in zip(self.a, self.b):
             b.f0 ** a.f0
@@ -115,7 +115,7 @@ class InterfaceArraySample4TC(SimTestCase):
     def test_InterfaceArraySample4b_intfIterations(self):
         u = InterfaceArraySample4d()
         self.prepareUnit(u)
-        
+
         i = 0
         for intf in u.a:
             i += 1
@@ -123,17 +123,17 @@ class InterfaceArraySample4TC(SimTestCase):
             for _ in intf.arr0:
                 a += 1
             self.assertValEqual(a, 4, intf._origIntf)
-        
+
         self.assertValEqual(i, 3)
-        
 
     def _test(self, u):
         self.prepareUnit(u)
         r = self._rand.getrandbits
+
         def randInts():
             return [r(8) for _ in range(r(2) + 1)]
 
-        # [channel][dataIndex]        
+        # [channel][dataIndex]
         f0_in = []
         f0_out = []
 
@@ -154,19 +154,19 @@ class InterfaceArraySample4TC(SimTestCase):
 
             f0_in.append(_f0_in)
             f0_out.append(_f0_out)
-            
+
             arr_f1_in = []
             arr_f2_in = []
             arr_f1_out = []
-            arr_f2_out = []            
+            arr_f2_out = []
             for i2 in range(4):
                 _a = a.arr0[i2]
-                _b = b.arr0[i2]  
+                _b = b.arr0[i2]
                 _f1_in = randInts()
                 _f2_in = randInts()
                 _f1_out = randInts()
                 _f2_out = randInts()
-                
+
                 _a.f1._ag.dout.extend(_f1_out)
                 _a.f2._ag.dout.extend(_f2_out)
                 _b.f1._ag.din.extend(_f1_in)
@@ -177,12 +177,10 @@ class InterfaceArraySample4TC(SimTestCase):
                 arr_f2_out.append(_f2_out)
                 arr_f2_in.append(_f2_in)
 
-
             f1_out.append(arr_f1_out)
             f1_in.append(arr_f1_in)
             f2_out.append(arr_f2_out)
             f2_in.append(arr_f2_in)
-
 
         self.doSim(100 * Time.ns)
 
@@ -195,7 +193,6 @@ class InterfaceArraySample4TC(SimTestCase):
             """
             for d, ref in zip(regCntrl._ag.din, data):
                 self.assertValEqual(d, ref)
-            
 
         for i, (_f0_in, _f0_out, arr_f1_in, arr_f1_out, arr_f2_in, arr_f2_out, a, b) in enumerate(zip(
             f0_in, f0_out, f1_in, f1_out, f2_in, f2_out, u.a, u.b)):
@@ -207,10 +204,10 @@ class InterfaceArraySample4TC(SimTestCase):
 
             for i2, (a_arr, b_arr, _f1_in, _f1_out, _f2_in, _f2_out) in enumerate(zip(
                 a.arr0, b.arr0, arr_f1_in, arr_f1_out, arr_f2_in, arr_f2_out)):
-                
+
                 emp(a_arr.f1._ag.dout)
                 eq(b_arr.f1._ag.dout, _f1_out)
-                
+
                 emp(a_arr.f2._ag.dout)
                 eq(b_arr.f2._ag.dout, _f2_out)
 
@@ -230,8 +227,6 @@ class InterfaceArraySample4TC(SimTestCase):
     def test_InterfaceArraySample4d(self):
         u = InterfaceArraySample4d()
         self._test(u)
-
-
 
 
 if __name__ == "__main__":
