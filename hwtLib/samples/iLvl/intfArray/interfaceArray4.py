@@ -76,6 +76,22 @@ class InterfaceArraySample4d(InterfaceArraySample4b):
 
 
 class InterfaceArraySample4TC(SimTestCase):
+    def test_InterfaceArraySample4b_intfIterations(self):
+        u = InterfaceArraySample4d()
+        self.prepareUnit(u)
+        
+        i = 0
+        for intf in u.a:
+            i += 1
+            a = 0
+            for _ in intf.arr0:
+                a += 1
+            self.assertValEqual(a, 4, intf._origIntf)
+        
+        self.assertValEqual(i, 3)
+        
+
+        
 
     def test_InterfaceArraySample4b(self):
         u = InterfaceArraySample4b()
@@ -100,7 +116,7 @@ class InterfaceArraySample4TC(SimTestCase):
             b = u.b[i]
             _f0_in = randInts()
             _f0_out = randInts()
-            print(_f0_in)
+
             a.f0._ag.dout.extend(_f0_out)
             b.f0._ag.din.extend(_f0_in)
 
@@ -161,11 +177,11 @@ class InterfaceArraySample4TC(SimTestCase):
                 a.arr0, b.arr0, arr_f1_in, arr_f1_out, arr_f2_in, arr_f2_out)):
                 
                 emp(a_arr.f1._ag.dout)
-                eq(b_arr.f1._ag.dout, _f1_out, (i, i2))
+                eq(b_arr.f1._ag.dout, _f1_out)
                 
                 emp(a_arr.f2._ag.dout)
                 eq(b_arr.f2._ag.dout, _f2_out)
-                
+
                 emp(b_arr.f1._ag.din)
                 dinEq(a_arr.f1, _f1_in)
                 emp(b_arr.f2._ag.din)
@@ -177,10 +193,10 @@ class InterfaceArraySample4TC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(InterfaceArraySample3TC('test_simplePass'))
+    #suite.addTest(InterfaceArraySample4TC('test_InterfaceArraySample4b_intfIterations'))
     suite.addTest(unittest.makeSuite(InterfaceArraySample4TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
     
-    # from hwt.synthesizer.shortcuts import toRtl
-    # print(toRtl(InterfaceArraySample4d()))
+    #from hwt.synthesizer.shortcuts import toRtl
+    #print(toRtl(InterfaceArraySample4d()))
