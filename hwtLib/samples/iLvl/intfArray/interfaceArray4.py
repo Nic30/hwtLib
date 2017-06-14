@@ -6,13 +6,10 @@ from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import RegCntrl, BramPort_withoutClk
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
-from hwt.serializer.serializerClases.indent import getIndent
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import evalParam
 from hwtLib.types.ctypes import uint8_t
-from hwt.synthesizer.interfaceLevel.interfaceUtils.proxy import InterfaceProxy
-
 
 
 struct0 = HStruct(
@@ -24,29 +21,9 @@ struct0 = HStruct(
                    ),
                4), "arr0")
     )
-struct1 = HStruct(
-        (Array(uint8_t, 2), "arr0")
-    )
-
-
-def pprintInterface(intf, prefix="", indent=0):
-    try:
-        s = intf._sig
-    except AttributeError:
-        s = ""
-    if s is not "":
-        s = repr(s)
-
-    print("".join([getIndent(indent), prefix, repr(intf), " ", s]))
-    for i in intf._interfaces:
-        if isinstance(intf, InterfaceProxy):
-            assert isinstance(i, InterfaceProxy)
-        pprintInterface(i, indent=indent + 1)
-
-    if intf._arrayElemCache:
-        assert len(intf) == len(intf._arrayElemCache)
-        for i, p in enumerate(intf):
-            pprintInterface(p, prefix="p%d:" % i, indent=indent + 1)
+# struct0 = HStruct(
+#        (Array(uint8_t, 2), "arr0")
+#    )
 
 
 class InterfaceArraySample4(Unit):
@@ -96,11 +73,7 @@ class InterfaceArraySample4b(InterfaceArraySample4):
 
 class InterfaceArraySample4c(InterfaceArraySample4b):
     def _impl(self):
-        #pprintInterface(self.a)
         for a, b in zip(self.a, self.b):
-            # assert len(a.arr0) == 2
-            # f1_width = b.arr0.f1.din._dtype.bit_length()
-            # assert f1_width == 8 * 2, f1_width
             b ** a
 
 
@@ -162,8 +135,8 @@ class InterfaceArraySample4TC(SimTestCase):
             f0_out.append(_f0_out)
 
             arr_f1_in = []
-            arr_f2_in = []
             arr_f1_out = []
+            arr_f2_in = []
             arr_f2_out = []
             for i2 in range(4):
                 _a = a.arr0[i2]
@@ -174,13 +147,15 @@ class InterfaceArraySample4TC(SimTestCase):
                 _f2_out = randInts()
 
                 _a.f1._ag.dout.extend(_f1_out)
-                _a.f2._ag.dout.extend(_f2_out)
-                _b.f1._ag.din.extend(_f1_in)
-                _b.f2._ag.din.extend(_f2_in)
-
                 arr_f1_out.append(_f1_out)
+                
+                _b.f1._ag.din.extend(_f1_in)
                 arr_f1_in.append(_f1_in)
+
+                _a.f2._ag.dout.extend(_f2_out)
                 arr_f2_out.append(_f2_out)
+
+                _b.f2._ag.din.extend(_f2_in)
                 arr_f2_in.append(_f2_in)
 
             f1_out.append(arr_f1_out)
@@ -193,35 +168,40 @@ class InterfaceArraySample4TC(SimTestCase):
         emp = self.assertEmpty
         eq = self.assertValSequenceEqual
 
-        def dinEq(regCntrl, data):
+        def dinEq(regCntrl, data, *msg):
             """
             check if data on din signal are as expected
             """
             for d, ref in zip(regCntrl._ag.din, data):
-                self.assertValEqual(d, ref)
+                self.assertValEqual(d, ref, *msg)
 
         for i, (_f0_in, _f0_out, arr_f1_in, arr_f1_out, arr_f2_in, arr_f2_out, a, b) in enumerate(zip(
             f0_in, f0_out, f1_in, f1_out, f2_in, f2_out, u.a, u.b)):
-            emp(a.f0._ag.dout)
-            dinEq(a.f0, _f0_in)
 
-            eq(b.f0._ag.dout, _f0_out)
-            emp(b.f0._ag.din)
+            emp(a.f0._ag.dout, i)
+            dinEq(a.f0, _f0_in, i)
+
+            eq(b.f0._ag.dout, _f0_out, i)
+            emp(b.f0._ag.din, i)
 
             for i2, (a_arr, b_arr, _f1_in, _f1_out, _f2_in, _f2_out) in enumerate(zip(
-                a.arr0, b.arr0, arr_f1_in, arr_f1_out, arr_f2_in, arr_f2_out)):
+                a.arr0, b.arr0,
+                arr_f1_in,
+                arr_f1_out,
+                arr_f2_in,
+                arr_f2_out)):
 
-                emp(a_arr.f1._ag.dout)
-                eq(b_arr.f1._ag.dout, _f1_out)
-
-                emp(b_arr.f1._ag.din)
-                dinEq(a_arr.f1, _f1_in)
-
-                emp(a_arr.f2._ag.dout)
-                eq(b_arr.f2._ag.dout, _f2_out)
-
-                emp(b_arr.f2._ag.din)
-                dinEq(a_arr.f2, _f2_in)
+                emp(a_arr.f1._ag.dout, (i, i2))
+                eq(b_arr.f1._ag.dout, _f1_out, (i, i2))
+                
+                emp(b_arr.f1._ag.din, (i, i2))
+                dinEq(a_arr.f1, _f1_in, (i, i2))
+                
+                emp(a_arr.f2._ag.dout, (i, i2))
+                eq(b_arr.f2._ag.dout, _f2_out, (i, i2))
+                
+                emp(b_arr.f2._ag.din, (i, i2))
+                dinEq(a_arr.f2, _f2_in, (i, i2))
 
     def test_InterfaceArraySample4b(self):
         u = InterfaceArraySample4b()
@@ -239,13 +219,13 @@ class InterfaceArraySample4TC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(InterfaceArraySample4TC('test_InterfaceArraySample4b_intfIterations'))
-    #suite.addTest(InterfaceArraySample4TC('test_InterfaceArraySample4b'))
-
+    # suite.addTest(InterfaceArraySample4TC('test_InterfaceArraySample4b_intfIterations'))
+    # suite.addTest(InterfaceArraySample4TC('test_InterfaceArraySample4b'))
+    
     suite.addTest(unittest.makeSuite(InterfaceArraySample4TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
     from hwt.synthesizer.shortcuts import toRtl
-    #print(toRtl(InterfaceArraySample4c()))
+    print(toRtl(InterfaceArraySample4c()))
 
