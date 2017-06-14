@@ -8,7 +8,7 @@ from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.agents.rst import pullDownAfter
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.shortcuts import simUnitVcd, oscilate, \
-    toSimModel, reconectUnitSignalsToModel
+    toSimModel, reconnectUnitSignalsToModel
 from hwtLib.mem.clkSynchronizer import ClkSynchronizer
 
 
@@ -19,7 +19,7 @@ class ClkSynchronizerTC(unittest.TestCase):
         u = ClkSynchronizer()
         u.DATA_TYP = vecT(32)
         modelCls = toSimModel(u)
-        reconectUnitSignalsToModel(u, modelCls)
+        reconnectUnitSignalsToModel(u, modelCls)
         model = modelCls()
         
         self.u = u
