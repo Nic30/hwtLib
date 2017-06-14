@@ -54,7 +54,7 @@ class AxiS_frameParser(Unit):
         # or use internal counter for synchronization
         self.SYNCHRONIZE_BY_LAST = Param(True)
 
-    def createInterfaceForField(self, transInfo):
+    def createInterfaceForField(self, structIntf, transInfo):
         if evalParam(self.SHARED_READY).val:
             i = VldSynced()
         else:

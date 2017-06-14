@@ -59,7 +59,7 @@ class AxiS_frameForge(AxiSCompBase):
         AxiSCompBase.__init__(self, axiSIntfCls)
 
     @staticmethod
-    def _mkFieldIntf(frameTemplateItem):
+    def _mkFieldIntf(structIntf, frameTemplateItem):
         p = Handshaked()
         p.DATA_WIDTH.set(frameTemplateItem.dtype.bit_length())
         return p

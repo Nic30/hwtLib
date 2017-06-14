@@ -31,7 +31,7 @@ class InterfaceArraySample4(Unit):
     def shouldEnterFn(field):
         return False
 
-    def _mkFieldInterface(self, field):
+    def _mkFieldInterface(self, structIntf, field):
         t = field.dtype
 
         if isinstance(t, Bits):

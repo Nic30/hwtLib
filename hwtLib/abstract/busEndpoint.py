@@ -82,17 +82,7 @@ class BusEndpoint(Unit):
         self.decoded = StructIntf(self.STRUCT_TEMPLATE, instantiateFieldFn=self._mkFieldInterface)
 
     def getPort(self, transTmpl):
-        try:
-            indexOnPort = transTmpl.indexOnPort
-        except AttributeError:
-            indexOnPort = None
-
-        port = self.decoded._fieldsToInterfaces[transTmpl.origin]
-
-        if indexOnPort is None:
-            return port
-        else:
-            return port[indexOnPort]
+        return self.decoded._fieldsToInterfaces[transTmpl.origin]
 
     def isInMyAddrRange(self, addrSig):
         return (addrSig >= self._getMinAddr()) & (addrSig < self._getMaxAddr())
@@ -200,7 +190,7 @@ class BusEndpoint(Unit):
 
         return (addrIsInRange, connectedAddr)
 
-    def _mkFieldInterface(self, field):
+    def _mkFieldInterface(self, structIntf, field):
         t = field.dtype
         DW = evalParam(self.DATA_WIDTH).val
 
