@@ -2,14 +2,14 @@ from hwt.bitmask import mask
 from hwt.hdlObjects.constants import Time
 from hwt.hdlObjects.types.array import Array
 from hwt.hdlObjects.types.struct import HStruct
+from hwt.interfaces.std import BramPort_withoutClk
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
+from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
 from hwtLib.types.ctypes import uint32_t
-from hwtLib.amba.axiLite import AxiLite
-from hwt.interfaces.std import BramPort_withoutClk
 
 
 structTwoFields = HStruct(
@@ -260,13 +260,13 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    #suite.addTest(AxiLiteEndpointStructsInArray('test_nop'))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointOffsetTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointArray))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointStructsInArray))
+    suite.addTest(AxiLiteEndpointStructsInArray('test_nop'))
+    #suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
+    #suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
+    #suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
+    #suite.addTest(unittest.makeSuite(AxiLiteEndpointOffsetTC))
+    #suite.addTest(unittest.makeSuite(AxiLiteEndpointArray))
+    #suite.addTest(unittest.makeSuite(AxiLiteEndpointStructsInArray))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

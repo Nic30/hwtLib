@@ -1,4 +1,13 @@
 
+class PartialField(object):
+    """
+    HStruct field made from proxy interface
+    """
+    def __init__(self, originalField):
+        self._originalField = originalField
+        self.name = originalField.name
+
+
 class MemorySpaceItem(object):
     """
     Abstraction over place in memory, allows you read and write data to/from this space

@@ -1,3 +1,5 @@
+from copy import copy
+
 from hwt.code import log2ceil
 from hwt.hdlObjects.constants import INTF_DIRECTION
 from hwt.hdlObjects.transTmpl import TransTmpl
@@ -10,12 +12,13 @@ from hwt.hdlObjects.types.structUtils import BusFieldInfo
 from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.interfaceLevel.interfaceUtils.proxy import InterfaceProxy
 from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import evalParam
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
-from copy import copy
+from hwtLib.sim.abstractMemSpaceMaster import PartialField
 
 
 def inRange(n, lower, end):
@@ -82,10 +85,44 @@ class BusEndpoint(Unit):
         self.decoded = StructIntf(self.STRUCT_TEMPLATE, instantiateFieldFn=self._mkFieldInterface)
 
     def getPort(self, transTmpl):
-        return self.decoded._fieldsToInterfaces[transTmpl.origin]
+        o = transTmpl.origin
+        
+        return self.decoded._fieldsToInterfaces[o]
 
     def isInMyAddrRange(self, addrSig):
         return (addrSig >= self._getMinAddr()) & (addrSig < self._getMaxAddr())
+
+    def walkFieldsAndIntf(self, transTmpl, structIntf):
+        fieldTrans = transTmpl.walkFlatten(shouldEnterFn=self.shouldEnterFn)
+ 
+        def shouldEnterIntf(intf):
+            """
+            :return: tuple (shouldEnter, shouldYield)
+            """
+            if isinstance(intf, InterfaceProxy) and intf._itemsInOne == 1:
+                if isinstance(intf._origIntf, (RegCntrl, BramPort_withoutClk)):
+                    return (False, True)
+                else:
+                    return (True, False)
+            if isinstance(intf, (RegCntrl, BramPort_withoutClk)):
+                if intf._widthMultiplier is not None:
+                    return (False, False)
+                else:
+                    return (False, True)
+            else:
+                return (True, False)
+
+        intfs = structIntf._walkFlatten(shouldEnterIntf)
+
+        for (((base, end), transTmpl), intf) in zip(fieldTrans, intfs):
+            if isinstance(intf, InterfaceProxy):
+                _tTmpl = copy(transTmpl)
+                _tTmpl.bitAddr = base
+                _tTmpl.bitAddrEnd = end
+                _tTmpl.origin = PartialField(transTmpl.origin)
+                transTmpl = _tTmpl 
+
+            yield transTmpl, intf
 
     def _parseTemplate(self):
         self._directlyMapped = []
@@ -109,25 +146,23 @@ class BusEndpoint(Unit):
         SUGGESTED_AW = self._suggestedAddrWidth()
         assert SUGGESTED_AW <= AW, (SUGGESTED_AW, AW)
         tmpl = TransTmpl(self.STRUCT_TEMPLATE, bitAddr=self.OFFSET)
-        fieldTrans = tmpl.walkFlatten(shouldEnterFn=self.shouldEnterFn)
-        for ((base, end), transTmpl) in fieldTrans:
-            intf = self.getPort(transTmpl)
+        # fieldTrans = tmpl.walkFlatten(shouldEnterFn=self.shouldEnterFn)
+        
+        for transTmpl, intf in self.walkFieldsAndIntf(tmpl, self.decoded):
+            if isinstance(intf, InterfaceProxy):
+                self.decoded._fieldsToInterfaces[transTmpl.origin] = intf
+                intfClass = intf._origIntf.__class__ 
+            else:
+                intfClass = intf.__class__ 
+            
+            if issubclass(intfClass, RegCntrl):
+                self._directlyMapped.append(transTmpl)
 
-            if isinstance(intf, RegCntrl):
-                if intf._asArraySize is not None:
-                    _transactionTmpl = copy(transTmpl)
-                    _transactionTmpl.bitAddr = base
-                    _transactionTmpl.bitAddrEnd = end
-                    _transactionTmpl.indexOnPort = getIndexOfPart(_transactionTmpl)
-                    self._directlyMapped.append(_transactionTmpl)
-                    #self.decoded._fieldsToInterfaces[_transactionTmpl] = 
-                else:
-                    self._directlyMapped.append(transTmpl)
-
-            elif isinstance(intf, BramPort_withoutClk):
+            elif issubclass(intfClass, BramPort_withoutClk):
                 self._bramPortMapped.append(transTmpl)
             else:
                 raise NotImplementedError(intf)
+
             self.ADRESS_MAP.append(transTmpl)
 
     def _getMaxAddr(self):
