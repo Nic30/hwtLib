@@ -18,9 +18,9 @@ class AxiTestJunction(Unit):
         addClkRstn(self)
         self.s = self.axiCls()
         self.m = self.axiCls()
-    
+
     def _impl(self):
-        self.m ** self.s  
+        self.m ** self.s
 
 
 class Axi_ag_TC(SimTestCase):
@@ -39,9 +39,9 @@ class Axi_ag_TC(SimTestCase):
         prot = r(3)
         size = r(3)
         qos = r(4)
-        
+
         return (_id, addr, burst, cache, _len, lock, prot, size, qos)
-    
+
     def randA3u(self):
         """get random address transaction for axi 3 with user"""
         r = self._rand.getrandbits
@@ -55,7 +55,7 @@ class Axi_ag_TC(SimTestCase):
         size = r(3)
         qos = r(4)
         user = r(5)
-        
+
         return (_id, addr, burst, cache, _len, lock, prot, size, qos, user)
 
     def randW(self):
@@ -74,7 +74,7 @@ class Axi_ag_TC(SimTestCase):
         _id = r(6)
         resp = r(2)
         return (_id, resp)
-    
+
     def randR(self):
         """get random data read transaction"""
         r = self._rand.getrandbits
@@ -83,7 +83,7 @@ class Axi_ag_TC(SimTestCase):
         resp = r(2)
         last = r(1)
         return (_id, data, resp, last)
-        
+
     def test_axi4_ag(self):
         """Test if axi4 agent can transmit and receive data on all channels"""
         u = AxiTestJunction(Axi4)
@@ -95,27 +95,26 @@ class Axi_ag_TC(SimTestCase):
         w = [self.randW() for _ in range(N)]
         b = [self.randB() for _ in range(N)]
         r = [self.randR() for _ in range(N)]
-        
+
         u.s.aw._ag.data.extend(aw)
         u.s.ar._ag.data.extend(ar)
-        
+
         u.s.w._ag.data.extend(w)
-        
+
         u.m.r._ag.data.extend(r)
         u.m.b._ag.data.extend(b)
-        
+
         self.doSim(20 * N * Time.ns)
-        
+
         a = self.assertValSequenceEqual
-        
+
         a(u.m.aw._ag.data, aw)
         a(u.m.ar._ag.data, ar)
         a(u.m.w._ag.data, w)
-        
+
         a(u.s.r._ag.data, r)
         a(u.s.b._ag.data, b)
-        
-    
+
     def test_axi3_withAddrUser_ag(self):
         """Test if axi4 agent can transmit and receive data on all channels"""
         u = AxiTestJunction(Axi3_withAddrUser)
@@ -127,23 +126,23 @@ class Axi_ag_TC(SimTestCase):
         w = [self.randW() for _ in range(N)]
         b = [self.randB() for _ in range(N)]
         r = [self.randR() for _ in range(N)]
-        
+
         u.s.aw._ag.data.extend(aw)
         u.s.ar._ag.data.extend(ar)
-        
+
         u.s.w._ag.data.extend(w)
-        
+
         u.m.r._ag.data.extend(r)
         u.m.b._ag.data.extend(b)
-        
+
         self.doSim(20 * N * Time.ns)
-        
+
         a = self.assertValSequenceEqual
-        
+
         a(u.m.aw._ag.data, aw)
         a(u.m.ar._ag.data, ar)
         a(u.m.w._ag.data, w)
-        
+
         a(u.s.r._ag.data, r)
         a(u.s.b._ag.data, b)
 
