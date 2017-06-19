@@ -3,7 +3,6 @@
 
 from hwt.code import If, FsmBuilder, Switch
 from hwt.hdlObjects.types.enum import Enum
-from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.ipif.intf import Ipif
 
@@ -19,13 +18,11 @@ class IpifEndpoint(BusEndpoint):
     _getWordAddrStep = Ipif._getWordAddrStep
     _getAddrStep = Ipif._getAddrStep
 
-    def __init__(self, structTemplate, offset=0, intfCls=Ipif):
-        BusEndpoint.__init__(self, structTemplate, offset=offset, intfCls=intfCls)
+    def __init__(self, structTemplate, intfCls=Ipif, shouldEnterFn=None):
+        BusEndpoint.__init__(self, structTemplate, intfCls=intfCls, shouldEnterFn=None)
 
     def _impl(self):
         self._parseTemplate()
-        DW_B = evalParam(self.DATA_WIDTH).val // 8
-        assert self.OFFSET % DW_B == 0, "Offset is aligned to data width"
         # build read data output mux
 
         def isMyAddr(addrSig, addr, end):

@@ -5,10 +5,12 @@ from hwt.hdlObjects.constants import Time, READ, WRITE, NOP
 from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
-    AxiLiteEndpointArray, structTwoFieldsDense, structTwoFieldsDenseStart
+    structTwoFieldsDense, structTwoFieldsDenseStart, AxiLiteEndpointDenseTC,\
+    AxiLiteEndpointDenseStartTC
 from hwtLib.ipif.endpoint import IpifEndpoint
 from hwtLib.ipif.intf import Ipif
 from hwtLib.ipif.simMaster import IPFISimMaster
+from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArray
 
 
 def addrGetter(intf):
@@ -24,9 +26,8 @@ class IpifEndpointTC(AxiLiteEndpointTC):
     FIELD_ADDR = [0x0, 0x4]
 
     def mkRegisterMap(self, u):
-        registerMap = AddressSpaceProbe(u.bus, addrGetter).discover()
-        self.registerMap = registerMap
-        self.regs = IPFISimMaster(u.bus, registerMap)
+        self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
+        self.regs = IPFISimMaster(u.bus, self.addrProbe.discovered)
 
     def mySetUp(self, data_width=32):
         u = self.u = IpifEndpoint(self.STRUCT_TEMPLATE)
@@ -96,24 +97,16 @@ class IpifEndpointTC(AxiLiteEndpointTC):
 class IpifEndpointDenseTC(IpifEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDense
     FIELD_ADDR = [0x0, 0x8]
+    
+    def test_registerMap(self):
+        AxiLiteEndpointDenseTC.test_registerMap(self)
 
-
-class IpifEndpointStartTC(IpifEndpointTC):
+class IpifEndpointDenseStartTC(IpifEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDenseStart
     FIELD_ADDR = [0x4, 0x8]
 
-
-class IpifEndpointOffsetTC(IpifEndpointTC):
-    FIELD_ADDR = [0x4, 0x8]
-
-    def mySetUp(self, data_width=32):
-        u = self.u = IpifEndpoint(self.STRUCT_TEMPLATE, offset=0x4 * 8)
-
-        self.DATA_WIDTH = data_width
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
-
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
-        return u
+    def test_registerMap(self):
+        AxiLiteEndpointDenseStartTC.test_registerMap(self)
 
 
 class IpifEndpointArray(AxiLiteEndpointArray):
@@ -149,8 +142,8 @@ class IpifEndpointArray(AxiLiteEndpointArray):
         for i in range(4):
             u.decoded.field0._ag.mem[i] = MAGIC + i + 1
             u.decoded.field1._ag.mem[i] = 2 * MAGIC + i + 1
-            regs.field0.read(i)
-            regs.field1.read(i)
+            regs.field0[i].read()
+            regs.field1[i].read()
 
         self.randomizeAll()
         self.doSim(200 * Time.ns)
@@ -174,8 +167,8 @@ class IpifEndpointArray(AxiLiteEndpointArray):
         for i in range(4):
             u.decoded.field0._ag.mem[i] = None
             u.decoded.field1._ag.mem[i] = None
-            regs.field0.write(i, MAGIC + i + 1)
-            regs.field1.write(i, 2 * MAGIC + i + 1)
+            regs.field0[i].write(MAGIC + i + 1)
+            regs.field1[i].write(2 * MAGIC + i + 1)
 
         self.randomizeAll()
         self.doSim(400 * Time.ns)
@@ -193,8 +186,7 @@ if __name__ == "__main__":
     # suite.addTest(IpifEndpointOffsetTC('test_registerMap'))
     suite.addTest(unittest.makeSuite(IpifEndpointTC))
     suite.addTest(unittest.makeSuite(IpifEndpointDenseTC))
-    suite.addTest(unittest.makeSuite(IpifEndpointStartTC))
-    suite.addTest(unittest.makeSuite(IpifEndpointOffsetTC))
+    suite.addTest(unittest.makeSuite(IpifEndpointDenseStartTC))
     suite.addTest(unittest.makeSuite(IpifEndpointArray))
 
     runner = unittest.TextTestRunner(verbosity=3)

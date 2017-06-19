@@ -13,10 +13,9 @@ class Axi4_streamToMemTC(SimTestCase):
         u = self.u = Axi4streamToMem()
 
         def mkRegisterMap(u):
-            registerMap = AddressSpaceProbe(u.cntrlBus,
-                                            lambda intf: intf.ar.addr)\
-                                            .discover()
-            self.regs = AxiLiteMemSpaceMaster(u.cntrlBus, registerMap)
+            addrProbe = AddressSpaceProbe(u.cntrlBus,
+                                            lambda intf: intf.ar.addr)
+            self.regs = AxiLiteMemSpaceMaster(u.cntrlBus, addrProbe.discovered)
 
         self.DATA_WIDTH = 32
         u.DATA_WIDTH.set(self.DATA_WIDTH)

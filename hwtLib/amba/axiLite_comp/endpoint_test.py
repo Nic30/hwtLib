@@ -1,6 +1,5 @@
 from hwt.bitmask import mask
 from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.types.array import Array
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import BramPort_withoutClk
 from hwt.simulator.simTestCase import SimTestCase
@@ -16,6 +15,7 @@ structTwoFields = HStruct(
                           (uint32_t, "field0"),
                           (uint32_t, "field1")
                           )
+
 structTwoFieldsDense = HStruct(
                           (uint32_t, "field0"),
                           (uint32_t, None),
@@ -26,19 +26,6 @@ structTwoFieldsDenseStart = HStruct(
                           (uint32_t, "field0"),
                           (uint32_t, "field1")
                           )
-
-structTwoArr = HStruct(
-                       (Array(uint32_t, 4), "field0"),
-                       (Array(uint32_t, 4), "field1")
-                       )
-
-structStructsInArray = HStruct(
-                        (Array(HStruct(
-                                (uint32_t, "field0"),
-                                (uint32_t, "field1")
-                                ),
-                               4), "arr"),
-                        )
 
 
 def addrGetter(intf):
@@ -141,151 +128,50 @@ class AxiLiteEndpointTC(SimTestCase):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
         expected = \
-"""0x%x:field0
-0x%x:field1""" % tuple(self.FIELD_ADDR)
+"""struct {
+    <HdlType Bits, 31 DOWNTO 0, 32bits> field0 // start:0x0(bit) 0x0(byte)
+    <HdlType Bits, 31 DOWNTO 0, 32bits> field1 // start:0x20(bit) 0x4(byte)
+}"""
         self.assertEqual(s, expected)
 
 
 class AxiLiteEndpointDenseTC(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDense
     FIELD_ADDR = [0x0, 0x8]
-
+    def test_registerMap(self):
+        self.mySetUp(32)
+        s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
+        expected = \
+"""struct {
+    <HdlType Bits, 31 DOWNTO 0, 32bits> field0 // start:0x0(bit) 0x0(byte)
+    //<HdlType Bits, 31 DOWNTO 0, 32bits> empty space // start:0x20(bit) 0x4(byte)
+    <HdlType Bits, 31 DOWNTO 0, 32bits> field1 // start:0x40(bit) 0x8(byte)
+}"""
+        self.assertEqual(s, expected)
 
 class AxiLiteEndpointDenseStartTC(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDenseStart
     FIELD_ADDR = [0x4, 0x8]
 
-
-class AxiLiteEndpointOffsetTC(AxiLiteEndpointTC):
-    STRUCT_TEMPLATE = structTwoFields
-    FIELD_ADDR = [0x4, 0x8]
-
-    def mySetUp(self, data_width=32):
-        u = self.u = AxiLiteEndpoint(self.STRUCT_TEMPLATE, offset=0x4 * 8)
-
-        self.DATA_WIDTH = data_width
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
-
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
-        return u
-
-
-class AxiLiteEndpointArray(AxiLiteEndpointTC):
-    STRUCT_TEMPLATE = structTwoArr
-    FIELD_ADDR = [0x0, 0x10]
-
-    def test_nop(self):
-        u = self.mySetUp(32)
-        MAGIC = 100
-
-        for i in range(8):
-            u.decoded.field0._ag.mem[i] = MAGIC + 1
-            u.decoded.field1._ag.mem[i] = 2 * MAGIC + 1
-
-        self.randomizeAll()
-        self.doSim(100 * Time.ns)
-
-        self.assertEmpty(u.bus._ag.r.data)
-        for i in range(8):
-            self.assertValEqual(u.decoded.field0._ag.mem[i], MAGIC + 1)
-            self.assertValEqual(u.decoded.field1._ag.mem[i], 2 * MAGIC + 1)
-
-    def test_read(self):
-        u = self.mySetUp(32)
-        regs = self.regs
-        MAGIC = 100
-
-        for i in range(4):
-            u.decoded.field0._ag.mem[i] = MAGIC + i + 1
-            u.decoded.field1._ag.mem[i] = 2 * MAGIC + i + 1
-            regs.field0.read(i)
-            regs.field1.read(i)
-
-        self.randomizeAll()
-        self.doSim(2 * 8 * 100 * Time.ns)
-
-        self.assertValSequenceEqual(u.bus._ag.r.data, [
-            (MAGIC + 1, RESP_OKAY),
-            (2 * MAGIC + 1, RESP_OKAY),
-            (MAGIC + 2, RESP_OKAY),
-            (2 * MAGIC + 2, RESP_OKAY),
-            (MAGIC + 3, RESP_OKAY),
-            (2 * MAGIC + 3, RESP_OKAY),
-            (MAGIC + 4, RESP_OKAY),
-            (2 * MAGIC + 4, RESP_OKAY),
-            ])
-
-    def test_write(self):
-        u = self.mySetUp(32)
-        regs = self.regs
-        MAGIC = 100
-
-        for i in range(4):
-            u.decoded.field0._ag.mem[i] = None
-            u.decoded.field1._ag.mem[i] = None
-            regs.field0.write(i, MAGIC + i + 1)
-            regs.field1.write(i, 2 * MAGIC + i + 1)
-
-        self.randomizeAll()
-        self.doSim(2 * 8 * 100 * Time.ns)
-
-        self.assertEmpty(u.bus._ag.r.data)
-        for i in range(4):
-            self.assertValEqual(u.decoded.field0._ag.mem[i], MAGIC + i + 1, "index=%d" % i)
-            self.assertValEqual(u.decoded.field1._ag.mem[i], 2 * MAGIC + i + 1, "index=%d" % i)
-
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
         expected = \
-"""0x%x:field0(size=4)
-0x%x:field1(size=4)""" % tuple(self.FIELD_ADDR)
+"""struct {
+    //<HdlType Bits, 31 DOWNTO 0, 32bits> empty space // start:0x0(bit) 0x0(byte)
+    <HdlType Bits, 31 DOWNTO 0, 32bits> field0 // start:0x20(bit) 0x4(byte)
+    <HdlType Bits, 31 DOWNTO 0, 32bits> field1 // start:0x40(bit) 0x8(byte)
+}"""
         self.assertEqual(s, expected)
-
-
-class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
-    STRUCT_TEMPLATE = structStructsInArray
-
-    def mySetUp(self, data_width=32):
-        u = self.u = AxiLiteEndpoint(self.STRUCT_TEMPLATE, shouldEnterFn=lambda tmpl: True)
-
-        self.DATA_WIDTH = data_width
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
-
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
-        return u
-
-    def test_nop(self):
-        u = self.mySetUp(32)
-
-        self.randomizeAll()
-        self.doSim(100 * Time.ns)
-
-        self.assertEmpty(u.bus._ag.r.data)
-        for item in u.decoded.arr:
-            self.assertEmpty(item.field0._ag.dout)
-            self.assertEmpty(item.field1._ag.dout)
-
-    def test_registerMap(self):
-        self.mySetUp(32)
-        s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = \
-"""0x%x:field0(size=4)
-0x%x:field1(size=4)""" % tuple(self.FIELD_ADDR)
-        self.assertEqual(s, expected)
-
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    suite.addTest(AxiLiteEndpointStructsInArray('test_registerMap'))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointOffsetTC))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointArray))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointStructsInArray))
+    #suite.addTest(AxiLiteEndpointStructsInArray('test_write'))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

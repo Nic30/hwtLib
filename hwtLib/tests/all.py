@@ -13,8 +13,7 @@ from hwtLib.amba.axi4_streamToMem_test import Axi4_streamToMemTC
 from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
-    AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC, \
-    AxiLiteEndpointOffsetTC, AxiLiteEndpointArray
+    AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC
 from hwtLib.amba.axi_ag_test import Axi_ag_TC
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.append_test import AxiS_append_TC
@@ -44,8 +43,7 @@ from hwtLib.handshaked.resizer_test import HandshakedResizerTC
 from hwtLib.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
 from hwtLib.img.charToBitmap_test import CharToBitmapTC
 from hwtLib.ipif.endpoint_test import IpifEndpointTC, \
-    IpifEndpointDenseTC, IpifEndpointStartTC, \
-    IpifEndpointOffsetTC, IpifEndpointArray
+    IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.ipif.reg_test import IpifRegTC
 from hwtLib.logic.binToOneHot import BinToOneHotTC
 from hwtLib.logic.cntrGray import GrayCntrTC
@@ -57,8 +55,7 @@ from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
 from hwtLib.mem.atomic.flipRam_test import FlipRamTC
 from hwtLib.mem.atomic.flipReg_test import FlipRegTC
 from hwtLib.mem.bramEndpoint_test import BramPortEndpointTC, \
-    BramPortEndpointDenseTC, BramPortEndpointStartTC, \
-    BramPortEndpointOffsetTC, BramPortEndpointArray
+    BramPortEndpointDenseTC, BramPortEndpointArray, BramPortEndpointDenseStartTC
 from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.clkSynchronizer_test import ClkSynchronizerTC
 from hwtLib.mem.fifoAsync_test import FifoAsyncTC
@@ -127,6 +124,7 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
+from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArray
 
 
 def doSimWithoutLog(self, time):
@@ -213,8 +211,7 @@ suite = testSuiteFromTCs(
     RamAsHs_TC,
     BramPortEndpointTC,
     BramPortEndpointDenseTC,
-    BramPortEndpointStartTC,
-    BramPortEndpointOffsetTC,
+    BramPortEndpointDenseStartTC,
     BramPortEndpointArray,
     LsfrTC,
     ClkDiv3TC,
@@ -243,7 +240,6 @@ suite = testSuiteFromTCs(
     AxiLiteEndpointTC,
     AxiLiteEndpointDenseStartTC,
     AxiLiteEndpointDenseTC,
-    AxiLiteEndpointOffsetTC,
     AxiLiteEndpointArray,
     AxisFrameGenTC,
     Axi4_rDatapumpTC,
@@ -283,8 +279,7 @@ suite = testSuiteFromTCs(
 
     IpifEndpointTC,
     IpifEndpointDenseTC,
-    IpifEndpointStartTC,
-    IpifEndpointOffsetTC,
+    IpifEndpointDenseStartTC,
     IpifEndpointArray,
     IpifRegTC,
 
