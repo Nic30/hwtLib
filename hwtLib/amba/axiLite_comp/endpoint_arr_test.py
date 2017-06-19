@@ -34,6 +34,7 @@ def addrGetter(intf):
     else:
         raise TypeError(intf)
 
+
 class AxiLiteEndpointArray(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structTwoArr
     FIELD_ADDR = [0x0, 0x10]
@@ -104,15 +105,16 @@ class AxiLiteEndpointArray(AxiLiteEndpointTC):
         expected = \
 """struct {
     <HdlType Array of
-        <HdlType Bits, 31 DOWNTO 0, 32bits>[4]> field0 // start:0x0(bit) 0x0(byte)
+        <HdlType Bits, 32bits>[4]> field0 // start:0x0(bit) 0x0(byte)
     <HdlType Array of
-        <HdlType Bits, 31 DOWNTO 0, 32bits>[4]> field1 // start:0x80(bit) 0x10(byte)
+        <HdlType Bits, 32bits>[4]> field1 // start:0x80(bit) 0x10(byte)
 }"""
         self.assertEqual(s, expected)
 
 
 class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structStructsInArray
+
     def mySetUp(self, data_width=32):
         u = self.u = AxiLiteEndpoint(self.STRUCT_TEMPLATE, shouldEnterFn=lambda tmpl: True)
 
@@ -140,8 +142,8 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
 """struct {
     <HdlType Array of
         struct {
-            <HdlType Bits, 31 DOWNTO 0, 32bits> field0 // start:0x0(bit) 0x0(byte)
-            <HdlType Bits, 31 DOWNTO 0, 32bits> field1 // start:0x20(bit) 0x4(byte)
+            <HdlType Bits, 32bits> field0 // start:0x0(bit) 0x0(byte)
+            <HdlType Bits, 32bits> field1 // start:0x20(bit) 0x4(byte)
         }[4]> arr // start:0x0(bit) 0x0(byte)
 }"""
         self.assertEqual(s, expected)
@@ -150,8 +152,7 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
         u = self.mySetUp(32)
         MAGIC = 100
         MAGIC2 = 300
-        
-        
+
         u.bus.ar._ag.data.extend([i * 0x4 for i in range(4 * 2 + 1)])
 
         for i, a in enumerate(u.decoded.arr):
@@ -160,9 +161,9 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
 
         self.randomizeAll()
         self.doSim(500 * Time.ns)
-        expected = list(flatten([[(MAGIC + i, RESP_OKAY), (MAGIC2 + i, RESP_OKAY)] 
-                                 for i in range(4)], level=1)) + \
-                                [(None, RESP_SLVERR)]
+        expected = list(flatten([[(MAGIC + i, RESP_OKAY), (MAGIC2 + i, RESP_OKAY)]
+                                 for i in range(4)], level=1)
+                        ) + [(None, RESP_SLVERR)]
         self.assertValSequenceEqual(u.bus.r._ag.data, expected)
 
     def test_write(self):
@@ -171,22 +172,22 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
         MAGIC2 = 300
         m = mask(32 // 8)
         N = 4
-        
+
         u.bus.aw._ag.data.extend([i * 0x4 for i in range(N * 2 + 1)])
-        
+
         expected = [
             [(MAGIC + i + 1, m) for i in range(N)],
             [(MAGIC2 + i + 1, m) for i in range(N)]
             ]
-        
+
         u.bus.w._ag.data.extend(flatten(zip(expected[0], expected[1]), level=1))
         u.bus.w._ag.data.append((123, m))
 
         self.randomizeAll()
         self.doSim(800 * Time.ns)
-        
+
         for i, a in enumerate(u.decoded.arr):
-            # [index of field][index in arr][data index] 
+            # [index of field][index in arr][data index]
             self.assertValSequenceEqual(a.field0._ag.dout, [expected[0][i][0]])
             self.assertValSequenceEqual(a.field1._ag.dout, [expected[1][i][0]])
 
@@ -205,8 +206,7 @@ if __name__ == "__main__":
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-    
+
     # u = AxiLiteEndpoint(structStructsInArray, shouldEnterFn=lambda tmpl: True)
     # u.DATA_WIDTH.set(32)
     # print(toRtl(u))
-
