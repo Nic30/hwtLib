@@ -3,9 +3,9 @@ from hwtLib.sim.abstractMemSpaceMaster import AbstractMemSpaceMaster
 
 
 class IPFISimMaster(AbstractMemSpaceMaster):
-    def _writeAddr(self, addrChannel, addr, size):
-        addrChannel.data.append(addr)
-
+    """
+    Simulation address space master for IPIF interface 
+    """
     def _write(self, addr, size, data, mask):
         w = self._bus._ag.requests
         # (request type, address, [write data])
