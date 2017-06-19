@@ -1,3 +1,5 @@
+from hwt.hdlObjects.transTmpl import TransTmpl
+from hwt.hdlObjects.types.array import Array
 
 class PartialField(object):
     """
@@ -76,17 +78,18 @@ class AbstractMemSpaceMaster(object):
         self.WORD_ADDR_STEP = bus._getWordAddrStep()
         self._decorateWithRegisters(registerMap)
 
-    def _decorateWithRegisters(self, registerMap):
+    def _decorateWithRegisters(self, stuctT):
         """
         Decorate this object with attributes from memory space (name is same as specified in register map)
         """
-        for addrSpaceItem in registerMap.values():
-            if addrSpaceItem.size is not None:
-                msi = MemorySpaceItemArr(self, addrSpaceItem)
+        tmpl = TransTmpl(stuctT)
+        for trans in tmpl.children:
+            if isinstance(trans.dtype, Array):
+                msi = MemorySpaceItemArr(self, trans)
             else:
-                msi = MemorySpaceItem(self, addrSpaceItem)
-            name = addrSpaceItem.name
-            assert not hasattr(self, name)
+                msi = MemorySpaceItem(self, trans)
+            name = trans.origin.name
+            assert not hasattr(self, name), name
             setattr(self, name, msi)
 
     def _write(self, addr, size, data, mask):

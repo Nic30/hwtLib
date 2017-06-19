@@ -55,9 +55,8 @@ class AxiLiteEndpointTC(SimTestCase):
     FIELD_ADDR = [0x0, 0x4]
 
     def mkRegisterMap(self, u):
-        registerMap = AddressSpaceProbe(u.bus, addrGetter).discover()
-        self.registerMap = registerMap
-        self.regs = AxiLiteMemSpaceMaster(u.bus, registerMap)
+        self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
+        self.regs = AxiLiteMemSpaceMaster(u.bus, self.addrProbe.discovered)
 
     def randomizeAll(self):
         u = self.u
@@ -140,7 +139,7 @@ class AxiLiteEndpointTC(SimTestCase):
 
     def test_registerMap(self):
         self.mySetUp(32)
-        s = AddressSpaceProbe.pprint(self.registerMap, doPrint=False)
+        s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
         expected = \
 """0x%x:field0
 0x%x:field1""" % tuple(self.FIELD_ADDR)
@@ -237,7 +236,7 @@ class AxiLiteEndpointArray(AxiLiteEndpointTC):
 
     def test_registerMap(self):
         self.mySetUp(32)
-        s = AddressSpaceProbe.pprint(self.registerMap, doPrint=False)
+        s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
         expected = \
 """0x%x:field0(size=4)
 0x%x:field1(size=4)""" % tuple(self.FIELD_ADDR)
@@ -246,7 +245,7 @@ class AxiLiteEndpointArray(AxiLiteEndpointTC):
 
 class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structStructsInArray
-    
+
     def mySetUp(self, data_width=32):
         u = self.u = AxiLiteEndpoint(self.STRUCT_TEMPLATE, shouldEnterFn=lambda tmpl: True)
 
@@ -256,17 +255,42 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
         self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
+    def test_nop(self):
+        u = self.mySetUp(32)
+
+        self.randomizeAll()
+        self.doSim(100 * Time.ns)
+
+        self.assertEmpty(u.bus._ag.r.data)
+        for item in u.decoded.arr:
+            self.assertEmpty(item.field0._ag.dout)
+            self.assertEmpty(item.field1._ag.dout)
+
+    def test_registerMap(self):
+        self.mySetUp(32)
+        s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
+        expected = \
+"""0x%x:field0(size=4)
+0x%x:field1(size=4)""" % tuple(self.FIELD_ADDR)
+        self.assertEqual(s, expected)
+
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    suite.addTest(AxiLiteEndpointStructsInArray('test_nop'))
-    #suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
-    #suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
-    #suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
-    #suite.addTest(unittest.makeSuite(AxiLiteEndpointOffsetTC))
-    #suite.addTest(unittest.makeSuite(AxiLiteEndpointArray))
-    #suite.addTest(unittest.makeSuite(AxiLiteEndpointStructsInArray))
+    suite.addTest(AxiLiteEndpointStructsInArray('test_registerMap'))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointOffsetTC))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointArray))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointStructsInArray))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
+    
+    # u = AxiLiteEndpoint(structStructsInArray, shouldEnterFn=lambda tmpl: True)
+    # u.DATA_WIDTH.set(32)
+    # print(toRtl(u))
+
