@@ -12,6 +12,8 @@ from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
 from hwtLib.amba.axi4_streamToMem_test import Axi4_streamToMemTC
 from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
+from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArray, \
+    AxiLiteEndpointStructsInArray
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC
 from hwtLib.amba.axi_ag_test import Axi_ag_TC
@@ -124,7 +126,6 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
-from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArray
 
 
 def doSimWithoutLog(self, time):
@@ -241,6 +242,7 @@ suite = testSuiteFromTCs(
     AxiLiteEndpointDenseStartTC,
     AxiLiteEndpointDenseTC,
     AxiLiteEndpointArray,
+    AxiLiteEndpointStructsInArray,
     AxisFrameGenTC,
     Axi4_rDatapumpTC,
     Axi3_rDatapumpTC,
