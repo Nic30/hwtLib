@@ -40,7 +40,7 @@ class StructWriter(StructReader):
         addClkRstn(self)
         self.parseTemplate()
         self.dataIn = StructIntf(self._structT,
-                                 self.createInterfaceForField)
+                                 self._createInterfaceForField)
 
         self.set = Handshaked()  # data signal is addr of structure to write
         self.set._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
