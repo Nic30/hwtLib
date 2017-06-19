@@ -30,7 +30,7 @@ class StructWriter(StructReader):
         StructReader._config(self)
         self.MAX_OVERLAP = Param(2)
 
-    def _createInterfaceForField(self, fInfo):
+    def _createInterfaceForField(self, structT, fInfo):
         i = Handshaked()
         i.DATA_WIDTH.set(fInfo.dtype.bit_length())
         fInfo.interface = i
