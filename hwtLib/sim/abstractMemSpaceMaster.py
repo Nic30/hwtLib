@@ -14,59 +14,45 @@ class MemorySpaceItem(object):
     """
     Abstraction over place in memory, allows you read and write data to/from this space
     """
-    def __init__(self, memHandler, addrSpaceItem):
+    def __init__(self, memHandler, transTmpl, offset=0):
         self.memHandler = memHandler
-        self.addrSpaceItem = addrSpaceItem
+        self.transTmpl = transTmpl
         self.mask = -1
+        self.myAddr = transTmpl.bitAddr + offset
 
     def write(self, data):
         """
         write data to place in memory
         """
-        asi = self.addrSpaceItem
-        self.memHandler._write(asi.addr, asi.size, data, self.mask)
+        m = self.memHandler
+        m._write(self.myAddr // m.ADDR_STEP, 1, data, self.mask)
 
     def read(self):
         """
         read data from place in memory
         """
-        asi = self.addrSpaceItem
-        self.memHandler._write(asi.addr, asi.size)
+        m = self.memHandler
+        m._read(self.myAddr // m.ADDR_STEP, 1)
 
 
 class MemorySpaceItemArr(object):
     """
     Abstraction over place in memory, allows you read and write data to/from this space
     """
-    def __init__(self, memHandler, addrSpaceItem):
+    def __init__(self, memHandler, transTmpl):
         self.memHandler = memHandler
-        self.addrSpaceItem = addrSpaceItem
+        self.transTmpl = transTmpl
         self.mask = -1
 
-    def write(self, index, data):
-        """
-        write data to place in memory
-
-        :param index: index of item in this array
-        """
-        asi = self.addrSpaceItem
-        if index > asi.size or index < 0:
+    def __getitem__(self, index):
+        tTmpl = self.transTmpl
+        if index > tTmpl.itemCnt or index < 0:
             raise IndexError(index)
-        self.memHandler._write(asi.addr + self.memHandler.WORD_ADDR_STEP * index,
-                               1, data, self.mask)
 
-    def read(self, index):
-        """
-        read data from place in memory
-
-        :param index: index of item in this array
-        """
-        asi = self.addrSpaceItem
-        if index > asi.size or index < 0:
-            raise IndexError(index)
-        self.memHandler._read(asi.addr + self.memHandler.WORD_ADDR_STEP * index,
-                              asi.size)
-
+        m = self.memHandler
+        offset = m.WORD_ADDR_STEP * index * m.ADDR_STEP
+        return MemorySpaceItem(self.memHandler, self.transTmpl, offset)
+        
 
 class AbstractMemSpaceMaster(object):
     """
