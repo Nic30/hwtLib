@@ -155,9 +155,11 @@ class AddressSpaceProbe(object):
     def _extractStruct(self, converter, offset):
         t = converter.STRUCT_TEMPLATE
 
-        for bramPorts in converter._bramPortMapped:
-            raise NotImplementedError()
-
+        for transTmpl in converter._bramPortMapped:
+            # some arrays can have items with internal structure
+            memberT = self._discoverAddressSpace(converter.getPort(transTmpl), offset, ignoreMyParent=True)
+            if memberT is not None:
+                raise NotImplementedError("Nested address space")
         return t
 
     def walkToConverter(self, mainSig, ignoreMyParent=False):
@@ -190,10 +192,11 @@ class AddressSpaceProbe(object):
         except AttributeError:
             mainSig = _mainSig._sigInside
 
-        # addrMap = {}
+        t = None        
         for converter in self.walkToConverter(mainSig, ignoreMyParent=ignoreMyParent):
             # addrMap = self._extractAddressMap(converter, offset)
             t = self._extractStruct(converter, offset)
+            
         return t
 
 
