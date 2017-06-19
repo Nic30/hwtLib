@@ -19,13 +19,14 @@ class AxiLiteEndpoint(BusEndpoint):
     _getWordAddrStep = AxiLite._getWordAddrStep
     _getAddrStep = AxiLite._getAddrStep
 
-    def __init__(self, structTemplate, offset=0, intfCls=AxiLite, shouldEnterFn=None):
-        BusEndpoint.__init__(self, structTemplate, offset=offset, intfCls=intfCls, shouldEnterFn=shouldEnterFn)
+    def __init__(self, structTemplate, intfCls=AxiLite, shouldEnterFn=None):
+        BusEndpoint.__init__(self, structTemplate,
+                             intfCls=intfCls,
+                             shouldEnterFn=shouldEnterFn)
 
     def readPart(self, awAddr, w_hs):
         ADDR_STEP = self._getAddrStep()
         # build read data output mux
-        assert self.OFFSET % evalParam(self.DATA_WIDTH).val == 0, "Offset is aligned to data width"
         r = self.bus.r
         ar = self.bus.ar
         rSt_t = Enum('rSt_t', ['rdIdle', 'bramRd', 'rdData'])

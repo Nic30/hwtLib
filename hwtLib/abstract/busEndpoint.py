@@ -48,10 +48,9 @@ class BusEndpoint(Unit):
                     +----------+     +---------+
 
     """
-    def __init__(self, structTemplate, offset=0, intfCls=None, shouldEnterFn=None):
+    def __init__(self, structTemplate, intfCls=None, shouldEnterFn=None):
         """
         :param structTemplate: instance of HStruct which describes address space of this endpoint
-        :param offset: offset of address space of this endpoint
         :param intfCls: class of bus interface which should be used
         :param shouldEnterFn: function(transactionTemplate) which should return true if structuralized type like Array or HStruct
             should be interpreted as separate interfaces or not
@@ -60,7 +59,6 @@ class BusEndpoint(Unit):
 
         self._intfCls = intfCls
         self.STRUCT_TEMPLATE = structTemplate
-        self.OFFSET = offset
         if shouldEnterFn is None:
             self.shouldEnterFn = lambda tmpl: not isinstance(tmpl.dtype, Array)
         else:
@@ -86,7 +84,6 @@ class BusEndpoint(Unit):
 
     def getPort(self, transTmpl):
         o = transTmpl.origin
-        
         return self.decoded._fieldsToInterfaces[o]
 
     def isInMyAddrRange(self, addrSig):
@@ -94,7 +91,7 @@ class BusEndpoint(Unit):
 
     def walkFieldsAndIntf(self, transTmpl, structIntf):
         fieldTrans = transTmpl.walkFlatten(shouldEnterFn=self.shouldEnterFn)
- 
+
         def shouldEnterIntf(intf):
             """
             :return: tuple (shouldEnter, shouldYield)
@@ -120,7 +117,7 @@ class BusEndpoint(Unit):
                 _tTmpl.bitAddr = base
                 _tTmpl.bitAddrEnd = end
                 _tTmpl.origin = PartialField(transTmpl.origin)
-                transTmpl = _tTmpl 
+                transTmpl = _tTmpl
 
             yield transTmpl, intf
 
@@ -145,16 +142,16 @@ class BusEndpoint(Unit):
         AW = evalParam(self.ADDR_WIDTH).val
         SUGGESTED_AW = self._suggestedAddrWidth()
         assert SUGGESTED_AW <= AW, (SUGGESTED_AW, AW)
-        tmpl = TransTmpl(self.STRUCT_TEMPLATE, bitAddr=self.OFFSET)
+        tmpl = TransTmpl(self.STRUCT_TEMPLATE)
         # fieldTrans = tmpl.walkFlatten(shouldEnterFn=self.shouldEnterFn)
-        
+
         for transTmpl, intf in self.walkFieldsAndIntf(tmpl, self.decoded):
             if isinstance(intf, InterfaceProxy):
                 self.decoded._fieldsToInterfaces[transTmpl.origin] = intf
-                intfClass = intf._origIntf.__class__ 
+                intfClass = intf._origIntf.__class__
             else:
-                intfClass = intf.__class__ 
-            
+                intfClass = intf.__class__
+
             if issubclass(intfClass, RegCntrl):
                 self._directlyMapped.append(transTmpl)
 
@@ -174,14 +171,14 @@ class BusEndpoint(Unit):
 
     def _suggestedAddrWidth(self):
         """
-        Based on strut template and offset given resolve how many bits for
+        Based on strut template resolve how many bits for
         address is needed
         """
         bitSize = self.STRUCT_TEMPLATE.bit_length()
         wordAddrStep = self._getWordAddrStep()
         addrStep = self._getAddrStep()
 
-        maxAddr = (self.OFFSET + bitSize // addrStep)
+        maxAddr = (bitSize // addrStep)
 
         # align to word size
         if maxAddr % wordAddrStep != 0:

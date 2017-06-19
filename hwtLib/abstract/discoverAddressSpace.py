@@ -124,57 +124,41 @@ class AddressSpaceProbe(object):
         self.topIntf = topIntf
         self.getMainSigFn = getMainSigFn
         self.offset = offset
+        self.discovered = self._discoverAddressSpace(self.topIntf,
+                                                     self.offset,
+                                                     ignoreMyParent=False)
 
-    def discover(self):
-        return self._discoverAddressSpace(self.topIntf, self.offset, ignoreMyParent=False)
+    # def _extractAddressMap(self, converter, offset):
+    #    """
+    #    copy address space map from converter
+    #    """
+    #    m = {}
+    #    ADDR_STEP = converter._getAddrStep()
+    #    for _item in converter.ADRESS_MAP:
+    #        addr = _item.bitAddr // ADDR_STEP
+    #        if isinstance(_item.dtype, Array):
+    #            size = _item.itemCnt
+    #        else:
+    #            size = None
+    #
+    #        item = AddrSpaceItem(addr, _item.origin.name, size, _item.origin)
+    #        item.addr = offset + addr
+    #
+    #        m[item.addr] = item
+    #
+    #        if size is not None and size > 1:
+    #            port = converter.getPort(_item)
+    #            item.children = self._discoverAddressSpace(port, item.addr)
+    #
+    #    return m
 
-    @staticmethod
-    def pprint(addrSpaceDict, indent=0, doPrint=True):
-        "pretty print for addrSpaceDict (result of discover())"
-        buff = []
+    def _extractStruct(self, converter, offset):
+        t = converter.STRUCT_TEMPLATE
 
-        for addr in sorted(addrSpaceDict.keys()):
-            item = addrSpaceDict[addr]
-            if item.size is not None and item.size > 1:
-                size = "(size=%d)" % item.size
-            else:
-                size = ""
-            _indent = "".join(["    " for _ in range(indent)])
-            tmp = "%s0x%x:%s%s" % (_indent, addr, item.name, size)
-            if doPrint:
-                print(tmp)
-            else:
-                buff.append(tmp)
+        for bramPorts in converter._bramPortMapped:
+            raise NotImplementedError()
 
-            subTmp = AddressSpaceProbe.pprint(item.children, indent + 1)
-            if not doPrint and subTmp:
-                buff.append(subTmp)
-
-        return "\n".join(buff)
-
-    def _extractAddressMap(self, converter, offset):
-        """
-        copy address space map from converter
-        """
-        m = {}
-        ADDR_STEP = converter._getAddrStep()
-        for _item in converter.ADRESS_MAP:
-            addr = _item.bitAddr // ADDR_STEP
-            if isinstance(_item.dtype, Array):
-                size = _item.itemCnt
-            else:
-                size = None
-
-            item = AddrSpaceItem(addr, _item.origin.name, size, _item.origin)
-            item.addr = offset + addr
-
-            m[item.addr] = item
-
-            if size is not None and size > 1:
-                port = converter.getPort(_item)
-                item.children = self._discoverAddressSpace(port, item.addr)
-
-        return m
+        return t
 
     def walkToConverter(self, mainSig, ignoreMyParent=False):
         """
@@ -206,11 +190,11 @@ class AddressSpaceProbe(object):
         except AttributeError:
             mainSig = _mainSig._sigInside
 
-        addrMap = {}
+        # addrMap = {}
         for converter in self.walkToConverter(mainSig, ignoreMyParent=ignoreMyParent):
-            addrMap = self._extractAddressMap(converter, offset)
-
-        return addrMap
+            # addrMap = self._extractAddressMap(converter, offset)
+            t = self._extractStruct(converter, offset)
+        return t
 
 
 def regSpace_formatAsCDefines(bus, getMainSigFn, offset=0, prefix=""):
