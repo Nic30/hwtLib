@@ -192,8 +192,6 @@ epub_copyright = copyright
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
 
-autodoc_mock_imports = ['hwtHdlParsers']
-
 # aafig format, try to get working with pdf
 aafig_format = dict(latex='pdf', html='gif')
 
