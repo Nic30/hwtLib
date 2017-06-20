@@ -1,1 +1,4 @@
 html
+_build/
+*.rst
+!index.rst
