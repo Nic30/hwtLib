@@ -57,6 +57,7 @@ class I2cMasterBitCtrl(Unit):
     """
     Translate simple commands into SCL/SDA transitions
     Each command has 5 states, 0/1/2/3/idle
+
     .. aafig::
         start:    SCL  ~~~~~~~~~~~~~~\____
                   SDA  XX/~~~~~~~\______
