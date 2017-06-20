@@ -1,11 +1,11 @@
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.code import log2ceil, If, connect
 from hwt.interfaces.std import Handshaked, VectSignal, Signal, HandshakeSync
-from hwt.synthesizer.param import Param, evalParam
-from hwtLib.mem.ram import RamSingleClock
-from hwt.code import log2ceil, If, connect, packed
 from hwt.interfaces.utils import propagateClkRstn
-from hwtLib.logic.crc import CrcComb
-from hwtLib.logic.crcPoly import CRC_32
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param, evalParam
+from hwtLib.logic.crcComb import CrcComb
+from hwtLib.mem.ram import RamSingleClock
+
 
 CHT_FOUND = 1
 
@@ -45,6 +45,9 @@ class CLoockupResultIntf(Handshaked):
 
 # https://web.stanford.edu/class/cs166/lectures/13/Small13.pdf
 class CuckooHashTableCore(Unit):
+    """
+    [TODO] not finished yet
+    """
     def __init__(self, polynoms):
         super(CuckooHashTableCore, self).__init__()
         self.POLYNOMS = polynoms

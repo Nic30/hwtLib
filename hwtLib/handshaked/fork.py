@@ -14,7 +14,7 @@ class HandshakedFork(HandshakedCompBase):
 
     combinational
 
-    .. afig::
+    .. aafig::
                                      +---------+
                               +------> clone0  |
                               |      +---------+
