@@ -640,12 +640,14 @@ BEGIN
 END ARCHITECTURE rtl;
 """
 
+
 class NetFilterTC(SimTestCase):
 
     def test_serialization(self):
         u = NetFilter()
         StatementTreesTC.strStructureCmp(self, expected, toRtl(u))
-        
+        #print(toRtl(u))
+
 
 if __name__ == "__main__":
     import unittest
