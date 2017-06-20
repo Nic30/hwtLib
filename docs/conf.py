@@ -28,6 +28,8 @@ from hwt.pyUtils.fileHelpers import find_files
 
 
 sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "_ext")))
 
 # -- General configuration ------------------------------------------------
 
@@ -42,7 +44,8 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.todo',
               'sphinx.ext.viewcode',
               # 'sphinx.ext.napoleon',
-              'sphinx.ext.graphviz']
+              'sphinx.ext.graphviz',
+              'aafig']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -191,6 +194,14 @@ epub_exclude_files = ['search.html']
 
 autodoc_mock_imports = ['hwtHdlParsers']
 
+# aafig format, try to get working with pdf
+aafig_format = dict(latex='pdf', html='gif')
+
+aafig_default_options = dict(
+    scale=.75,
+    aspect=0.5,
+    proportional=True,
+)
 
 notskipregex = re.compile("_[^_]+")
 
@@ -211,5 +222,3 @@ for file in glob.glob("*.rst"):
         
 excluded_tests = list(find_files("../", "*_test.py"))
 apidoc(["--force", "-o", "../docs", "../hwtLib"] + excluded_tests)
-
-
