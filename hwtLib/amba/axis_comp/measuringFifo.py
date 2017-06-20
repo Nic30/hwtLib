@@ -28,7 +28,7 @@ def strbToRem(strbBits):
 class AxiS_measuringFifo(Unit):
     """
     Fifo which are counting sizes of frames and sends it over
-    dedicated handshaked interface
+    dedicated handshaked interface "sizes"
     """
     def _config(self):
         Fifo._config(self)
