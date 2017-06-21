@@ -3,9 +3,9 @@ from hwt.interfaces.std import Handshaked, VectSignal, Signal, HandshakeSync
 from hwt.synthesizer.param import Param
 
 
-class InsertPortAgent(HandshakedAgent):
+class InsertIntfAgent(HandshakedAgent):
     """
-    Simulation agent for `.InsertPort` interface
+    Simulation agent for `.InsertIntf` interface
     
     data format:
         * if interface has data signal, data format is tuple (hash, key, data, vldFlag)
@@ -66,7 +66,7 @@ class InsertIntf(HandshakeSync):
         self.vldFlag = Signal()
     
     def _getSimAgent(self):
-        return InsertPortAgent
+        return InsertIntfAgent
 
 
 class LookupKeyIntfAgent(HandshakedAgent):

@@ -1,4 +1,4 @@
-from hwt.code import log2ceil, If, connect, Concat
+from hwt.code import log2ceil, connect, Concat
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -11,11 +11,6 @@ from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.hashTable_intf import InsertIntf, LookupKeyIntf, \
     LookupResultIntf
 from hwtLib.mem.ram import RamSingleClock
-
-
-CHT_FOUND = 1
-INSERT_FAIL = 0
-INSERT_DONE = 1
 
 
 # https://web.stanford.edu/class/cs166/lectures/13/Small13.pdf
@@ -38,18 +33,19 @@ class HashTableCore(Unit):
 
     :ivar ITEMS_CNT: number of items in memory of hash table
     :ivar KEY_WIDTH: width of the key used by hash table
-    :ivar LOOKUP_HASH: flag if this interface should have hash signal
-    :ivar LOOKUP_KEY: flag if this interface should have hash signal
     :ivar DATA_WIDTH: width of data, can be zero and then no data interface is instantiated
+    :ivar LOOKUP_HASH: flag if this interface should have hash signal
+    :ivar LOOKUP_KEY: flag if this interface should have key signal
+    :ivar POLYNOME: polynome for crc hash used in this table
     """
-    def __init__(self, polynom):
+    def __init__(self, polynome):
         super(HashTableCore, self).__init__()
-        self.POLYNOM = polynom
+        self.POLYNOME = polynome
 
     def _config(self):
         self.ITEMS_CNT = Param(32)
-        self.DATA_WIDTH = Param(8)
         self.KEY_WIDTH = Param(16)
+        self.DATA_WIDTH = Param(8)
         self.LOOKUP_HASH = Param(False)
         self.LOOKUP_KEY = Param(False)
         
@@ -84,7 +80,7 @@ class HashTableCore(Unit):
         hashWidth = max(evalParam(self.KEY_WIDTH).val, self.HASH_WITH)
         h = self.hash = CrcComb()
         h.DATA_WIDTH.set(hashWidth)
-        h.POLY.set(self.POLYNOM)
+        h.POLY.set(self.POLYNOME)
         h.POLY_WIDTH.set(hashWidth)
 
     def parseKeyRec(self, sig):
