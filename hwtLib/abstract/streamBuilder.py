@@ -173,9 +173,12 @@ class AbstractStreamBuilder(object):
         """
         Create synchronous fifo of the size of depth
         """
-        def setDepth(u):
-            u.DEPTH.set(depth)
-        return self._genericInstance(self.FifoCls, "fifo", setDepth)
+        if int(depth) == 1:
+            return self.reg()
+        else:
+            def setDepth(u):
+                u.DEPTH.set(depth)
+            return self._genericInstance(self.FifoCls, "fifo", setDepth)
 
     def demux(self, noOfOutputs, outputSelSignal):
         """
