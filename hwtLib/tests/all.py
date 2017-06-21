@@ -126,6 +126,7 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
+from hwtLib.mem.hashTableCore_test import HashTableCoreTC
 
 
 def doSimWithoutLog(self, time):
@@ -288,6 +289,7 @@ suite = testSuiteFromTCs(
     IpCoreWrapperTC,
     IpCorePackagerTC,
     CharToBitmapTC,
+    HashTableCoreTC,
 )
 
 

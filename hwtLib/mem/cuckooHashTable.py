@@ -1,9 +1,9 @@
-from hwt.code import log2ceil, If, connect
-from hwt.interfaces.std import Handshaked, VectSignal, Signal, HandshakeSync
+from hwt.code import log2ceil
+from hwt.interfaces.std import Handshaked, VectSignal, Signal
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param, evalParam
-from hwtLib.logic.crcComb import CrcComb
+from hwtLib.mem.hashTable import LookupKeyIntf
 from hwtLib.mem.ram import RamSingleClock
 
 
@@ -20,21 +20,11 @@ class CInsertPort(Handshaked):
         self.hash = VectSignal(self.HASH_WIDTH)
         self.table = VectSignal(1)
 
-
-class CLoockupKeyIntf(HandshakeSync):
-    def _config(self):
-        self.KEY_WIDTH = Param(8)
-
-    def _declr(self):
-        HandshakeSync._declr(self)
-        self.key = VectSignal(self.KEY_WIDTH)
-
-
-class CLoockupResultIntf(Handshaked):
+class CLookupResultIntf(Handshaked):
     def _config(self):
         Handshaked._config(self)
         self.HASH_WIDTH = Param(8)
-        self.TABLE_CNT = Param(1)
+        self.TABLE_CNT = Param(2)
 
     def _declr(self):
         Handshaked._declr(self)
@@ -65,60 +55,26 @@ class CuckooHashTableCore(Unit):
             self.insert = CInsertPort()
             self.insert.HASH_WIDTH.set(self.HASH_WITH)
 
-            self.lookup = CLoockupKeyIntf()
+            self.lookup = LookupKeyIntf()
             self.lookup.KEY_WIDTH.set(self.KEY_WITH)
 
-            self.lookupRes = CLoockupResultIntf()
+            self.lookupRes = CLookupResultIntf()
             self.lookupRes.HASH_WIDTH.set(self.HASH_WITH)
             self.lookupRes.TABLE_CNT.set(self.TABLE_CNT)
         self.insertAck = Handshaked()
         self.insertAck.DATA_WIDTH.set(1)
 
         self.table = [RamSingleClock() for _ in range(TABLE_CNT)]
-        for t in self.table:
-            t.PORT_CNT.set(1)
-            t.ADDR_WIDTH.set(log2ceil(self.TABLE_SIZE))
-            t.DATA_WIDTH.set(1 + self.KEY_WIDTH + self.DATA_WIDTH)  # +1 for vldFlag
-        self._registerArray("table", self.table)
-
-        self.hash = [CrcComb() for _ in range()]
-        hashWidth = max(evalParam(self.KEY_WIDTH).val, self.HASH_WITH)
-        assert len(self.POLYNOMS) == TABLE_CNT
-        for h, poly in zip(self.hash, self.POLYNOMS):
-            h.DATA_WIDTH.set(hashWidth)
-            h.POLY.set(poly)
-            h.POLY_WIDTH.set(hashWidth)
+        with self._paramsShared():
+            self._registerArray("table", self.table)
+            for t in self.table:
+                t.ITEMS_CNT.set(self.TABLE_SIZE)
 
     def _impl(self):
         propagateClkRstn(self)
-        tables = list(map(lambda r: r.a, self.tables))
-        r = self._reg
 
-        for h in self.hash:
-            h.dataIn ** self.lookup.key
 
-        lookupEn = r("lookupEn", defVal=1)
-        lookupPendingReq = r("lookupPendingReq", defVal=0)
-        lookupPendingAck = r("lookupPendingAck", defVal=0)
-        lookupPending = lookupPendingReq != lookupPendingAck
-
-        self.lookup.rd ** lookupEn
-        for t, h in zip(tables, self.hash):
-            t.din ** self.insert.data
-            t.we ** ~lookupEn
-
-            If(lookupEn,
-               If(self.lookup.vld,
-                  lookupPendingReq ** ~lookupPendingReq
-               ),
-               connect(h.dataOut, t.addr, fit=True),
-               t.en ** self.lookup.vld,
-            ).Else(
-               connect(self.insert.hash, t.addr, fit=True),
-               t.en ** self.insert.vld
-            )
-
-            If(lookupPending,
-               lookupPendingAck ** ~lookupPendingAck
-            )
-            
+if __name__ == "__main__":
+    from hwt.synthesizer.shortcuts import toRtl
+    u = CuckooHashTableCore()
+    print(toRtl(u))
