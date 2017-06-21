@@ -19,8 +19,7 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY EmptyUnitWithSpi IS
-    GENERIC (
-        SPI_SLAVE_CNT : INTEGER := 1
+    GENERIC (SPI_SLAVE_CNT : INTEGER := 1
     );
     PORT (spi_clk : IN STD_LOGIC;
         spi_cs : IN STD_LOGIC_VECTOR(SPI_SLAVE_CNT - 1 DOWNTO 0);
