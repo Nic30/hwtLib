@@ -1,16 +1,11 @@
-from hwtLib.handshaked.resizer import HandshakedResizer
-from hwt.simulator.simTestCase import SimTestCase
-from hwt.interfaces.std import Handshaked
-from hwt.hdlObjects.constants import Time
-from hwt.pyUtils.arrayQuery import grouper
-from hwtLib.amba.axis_comp.resizer_test import it
 from hwt.bitmask import mask
+from hwt.hdlObjects.constants import Time
+from hwt.interfaces.std import Handshaked
+from hwt.pyUtils.arrayQuery import grouper
+from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.amba.axis_comp.resizer_test import it
+from hwtLib.handshaked.resizer import HandshakedResizer
 
-
-HandshakedResizer
-
-def nothing(intf):
-    pass
 
 class HandshakedResizerTC(SimTestCase):
     def test_1to1(self):
