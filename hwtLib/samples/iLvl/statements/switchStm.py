@@ -9,7 +9,7 @@ from hwt.synthesizer.interfaceLevel.unit import Unit
 
 class SwitchStmUnit(Unit):
     def _declr(self):
-        self.sel = Signal(dtype=vecT(2))
+        self.sel = Signal(dtype=vecT(3))
         self.a = Signal()
         self.b = Signal()
         self.c = Signal()

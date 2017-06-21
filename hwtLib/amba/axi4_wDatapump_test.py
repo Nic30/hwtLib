@@ -19,7 +19,7 @@ class Axi4_wDatapumpTC(SimTestCase):
     def setUp(self):
         super(Axi4_wDatapumpTC, self).setUp()
         self.u = u = Axi_wDatapump(axiAddrCls=Axi4_addr)
-        u.MAX_LEN.set(16)
+        u.MAX_LEN.set(self.LEN_MAX)
         self.prepareUnit(u)
 
     def test_nop(self):
@@ -59,12 +59,12 @@ class Axi4_wDatapumpTC(SimTestCase):
 
         # download one word from addr 0xff
         req.data.append(mkReq(0xff, 0))
-        wIn.data.append((77, mask(64 // 8 - 1), 1))
+        wIn.data.append((77, mask(64 // 8), 1))
         b.append((0, RESP_OKAY))
 
         self.doSim(200 * Time.ns)
 
-        self.assertValSequenceEqual(aw, [ 
+        self.assertValSequenceEqual(aw, [
                                          (0, 255, 1, 3, 0, 0, 0, BYTES_IN_TRANS(8), 0)
                                          ])
 
@@ -107,7 +107,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         # download one word from addr 0xff
         for i in range(N):
             req.data.append(mkReq((i * 8) + 0xff, 0))
-            wIn.data.append((77, mask(64 // 8 - 1), 1))
+            wIn.data.append((77, mask(64 // 8), 1))
             b.append((0, RESP_OKAY))
 
         self.doSim(1000 * Time.ns)
@@ -204,7 +204,7 @@ class Axi4_wDatapumpTC(SimTestCase):
 
 
 class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
-    LEN_MAX = 16
+    LEN_MAX = 15
 
     def setUp(self):
         u = Axi_wDatapump(axiAddrCls=Axi3_addr)
@@ -213,11 +213,11 @@ class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
 
 
 class Axi3_wDatapump_small_splitting_TC(SimTestCase):
-    LEN_MAX = 16
+    LEN_MAX = 3
 
     def setUp(self):
         self.u = Axi_wDatapump(axiAddrCls=Axi3_addr)
-        self.u.MAX_LEN.set(4)
+        self.u.MAX_LEN.set(self.LEN_MAX)
         self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
         self.prepareUnit(self.u)
 
@@ -237,7 +237,7 @@ class Axi3_wDatapump_small_splitting_TC(SimTestCase):
         end = False
         addr = 0
         while True:
-            frameSize = self._rand.getrandbits(4) + 1
+            frameSize = self._rand.getrandbits(self.LEN_MAX.bit_length()) + 1
             frame = []
             try:
                 for _ in range(frameSize):
@@ -270,7 +270,7 @@ class Axi3_wDatapump_small_splitting_TC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(Axi4_wDatapumpTC('test_multiple_randomized2'))
+    # suite.addTest(Axi4_wDatapumpTC('test_singleLong'))
     suite.addTest(unittest.makeSuite(Axi4_wDatapumpTC))
     suite.addTest(unittest.makeSuite(Axi3_wDatapump_direct_TC))
     suite.addTest(unittest.makeSuite(Axi3_wDatapump_small_splitting_TC))

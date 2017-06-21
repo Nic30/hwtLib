@@ -54,7 +54,7 @@ class Axi_ag_TC(SimTestCase):
         prot = r(3)
         size = r(3)
         qos = r(4)
-        user = r(5)
+        user = r(3)
 
         return (_id, addr, burst, cache, _len, lock, prot, size, qos, user)
 

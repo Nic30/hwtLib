@@ -1,5 +1,7 @@
 from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.hdlObjects.types.array import Array
+from hwt.bitmask import mask
+
 
 class PartialField(object):
     """
@@ -16,17 +18,19 @@ class MemorySpaceItem(object):
     """
     def __init__(self, memHandler, transTmpl, offset=0):
         self.memHandler = memHandler
-        self.transTmpl = transTmpl
-        self.mask = -1
+        t = self.transTmpl = transTmpl
         self.myAddr = transTmpl.bitAddr + offset
+        self.mask = memHandler.mask(t.bitAddr,
+                                    (t.bitAddrEnd - t.bitAddr) // self.memHandler.ADDR_STEP // 8)
+
 
     def write(self, data):
         """
         write data to place in memory
         """
         m = self.memHandler
+        t = self.transTmpl
         m._write(self.myAddr // m.ADDR_STEP, 1, data, self.mask)
-
     def read(self):
         """
         read data from place in memory
@@ -52,7 +56,7 @@ class MemorySpaceItemArr(object):
         m = self.memHandler
         offset = m.WORD_ADDR_STEP * index * m.ADDR_STEP
         return MemorySpaceItem(self.memHandler, self.transTmpl, offset)
-        
+
 
 class AbstractMemSpaceMaster(object):
     """
@@ -62,7 +66,11 @@ class AbstractMemSpaceMaster(object):
         self._bus = bus
         self.ADDR_STEP = bus._getAddrStep()
         self.WORD_ADDR_STEP = bus._getWordAddrStep()
+        self.DATA_WIDTH = int(bus.DATA_WIDTH)
         self._decorateWithRegisters(registerMap)
+
+    def mask(self, start, width):
+        return mask(width // 8)
 
     def _decorateWithRegisters(self, stuctT):
         """

@@ -11,6 +11,7 @@ from hwtLib.ipif.endpoint import IpifEndpoint
 from hwtLib.ipif.intf import Ipif
 from hwtLib.ipif.simMaster import IPFISimMaster
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArray
+from hwt.bitmask import mask
 
 
 def addrGetter(intf):
@@ -78,10 +79,10 @@ class IpifEndpointTC(AxiLiteEndpointTC):
         MAGIC = 100
         A = self.FIELD_ADDR
         u.bus._ag.requests.extend([
-            (WRITE, A[0], MAGIC),
-            (WRITE, A[1], MAGIC + 1),
-            (WRITE, A[0], MAGIC + 2),
-            (WRITE, A[1], MAGIC + 3)])
+            (WRITE, A[0], MAGIC, mask(32//8)),
+            (WRITE, A[1], MAGIC + 1, mask(32//8)),
+            (WRITE, A[0], MAGIC + 2, mask(32//8)),
+            (WRITE, A[1], MAGIC + 3, mask(32//8))])
 
         self.randomizeAll()
         self.doSim(400 * Time.ns)
@@ -97,9 +98,10 @@ class IpifEndpointTC(AxiLiteEndpointTC):
 class IpifEndpointDenseTC(IpifEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDense
     FIELD_ADDR = [0x0, 0x8]
-    
+
     def test_registerMap(self):
         AxiLiteEndpointDenseTC.test_registerMap(self)
+
 
 class IpifEndpointDenseStartTC(IpifEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDenseStart
@@ -184,9 +186,9 @@ if __name__ == "__main__":
     suite = unittest.TestSuite()
 
     # suite.addTest(IpifEndpointOffsetTC('test_registerMap'))
-    suite.addTest(unittest.makeSuite(IpifEndpointTC))
-    suite.addTest(unittest.makeSuite(IpifEndpointDenseTC))
-    suite.addTest(unittest.makeSuite(IpifEndpointDenseStartTC))
+    #suite.addTest(unittest.makeSuite(IpifEndpointTC))
+    #suite.addTest(unittest.makeSuite(IpifEndpointDenseTC))
+    #suite.addTest(unittest.makeSuite(IpifEndpointDenseStartTC))
     suite.addTest(unittest.makeSuite(IpifEndpointArray))
 
     runner = unittest.TextTestRunner(verbosity=3)

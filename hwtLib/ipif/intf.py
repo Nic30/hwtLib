@@ -71,7 +71,7 @@ class IpifWithCE(Ipif):
 
 class IpifAgent(SyncAgentBase):
     """
-    :ivar requests: list of tuples (request type, address, [write data]) - used for driver
+    :ivar requests: list of tuples (request type, address, [write data], [write mask]) - used for driver
     :ivar data: list of data in memory, used for monitor
     :ivar mem: if agent is in monitor mode (= is slave) all reads and writes are performed on
         mem object
@@ -84,7 +84,7 @@ class IpifAgent(SyncAgentBase):
         self.actual = NOP
         self.readed = []
 
-        self.wmaskAll = mask(intf.bus2ip_data._dtype.bit_length())
+        self.wmaskAll = mask(intf.bus2ip_data._dtype.bit_length()//8)
 
         self.mem = {}
         self.requireInit = True
@@ -100,7 +100,7 @@ class IpifAgent(SyncAgentBase):
         elif rw == WRITE:
             wdata = req[2]
             rw = Ipif.WRITE
-            wmask = self.wmaskAll
+            wmask = req[3]
         else:
             raise NotImplementedError(rw)
 

@@ -25,6 +25,7 @@ def mkReqAxi(addr, _len, _id=0, burst=BURST_INCR,
 
     return (_id, addr, burst, cache, _len, lock, prot, size, qos)
 
+
 def addData(ag, data, _id=0, resp=RESP_OKAY, last=True):
     ag.data.append((_id, data, resp, last))
 

@@ -60,7 +60,7 @@ class RStrictOrderInterconnectTC(SimTestCase):
             _len = i + 1
             driver.req._ag.data.append((_id, i + 1, _len, 0))
             for i2 in range(_len + 1):
-                d = (_id, i + 1, mask(self.DATA_WIDTH), i2 == _len)
+                d = (_id, i + 1, mask(self.DATA_WIDTH // 8), i2 == _len)
                 u.rDatapump.r._ag.data.append(d)
 
         self.doSim(200 * Time.ns)
