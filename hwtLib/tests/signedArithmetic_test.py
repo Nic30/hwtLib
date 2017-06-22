@@ -1,6 +1,7 @@
 import unittest
 from hwt.hdlObjects.types.bits import Bits
 from hwtLib.types.ctypes import int8_t
+from hwt.bitmask import mask
 
 
 int512_t = Bits(width=512, signed=True)
@@ -211,6 +212,16 @@ class SignedArithmeticTC(unittest.TestCase):
         self.assertEqual(int(t.fromPy(-10) - 20), -30)
         self.assertEqual(int(t.fromPy(10) - -20), 30)
 
+    def test_8b_cast(self, t=int8_t):
+        w = t.bit_length()
+        ut = Bits(w)
+        
+        self.assertEqual(int(t.fromPy(-1)._convert(ut)), mask(w))
+        self.assertEqual(int(t.fromPy(1)._convert(ut)), 1)
+        self.assertEqual(int(t.fromPy(0)._convert(ut)), 0)
+        self.assertEqual(int(ut.fromPy(1)._convert(t)), 1)
+        self.assertEqual(int(ut.fromPy(mask(w))._convert(t)), -1)
+        
 
     def test_512b_proper_val(self):
         self.test_8b_proper_val(int512_t)
@@ -250,6 +261,9 @@ class SignedArithmeticTC(unittest.TestCase):
 
     def test_512b_sub(self):
         self.test_8b_sub(int512_t)
+    
+    def test_512b_cast(self):
+        self.test_8b_cast(int512_t)
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
