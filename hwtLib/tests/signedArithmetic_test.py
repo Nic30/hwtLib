@@ -178,6 +178,40 @@ class SignedArithmeticTC(unittest.TestCase):
         with self.assertRaises(TypeError):
             t.fromPy(0) <= ut.fromPy(0)
 
+
+    def test_8b_add(self, t=int8_t):
+        ut = Bits(t.bit_length())
+        low, up = self.getMinMaxVal(t)
+
+        self.assertEqual(int(t.fromPy(-1) + -1), -2)
+        self.assertEqual(int(t.fromPy(-1) + 0), -1)
+        self.assertEqual(int(t.fromPy(1) + 0), 1)
+        self.assertEqual(int(t.fromPy(-1) + 1), 0)
+        self.assertEqual(int(t.fromPy(low) + 1), low + 1)
+        self.assertEqual(int(t.fromPy(low) + -1), up)
+        self.assertEqual(int(t.fromPy(up) + 1), low)
+        self.assertEqual(int(t.fromPy(up) + -1), up - 1)
+
+        self.assertEqual(int(t.fromPy(-10) + 20), 10)
+        self.assertEqual(int(t.fromPy(10) + -20), -10)
+
+    def test_8b_sub(self, t=int8_t):
+        ut = Bits(t.bit_length())
+        low, up = self.getMinMaxVal(t)
+
+        self.assertEqual(int(t.fromPy(-1) - -1), 0)
+        self.assertEqual(int(t.fromPy(-1) - 0), -1)
+        self.assertEqual(int(t.fromPy(1) - 0), 1)
+        self.assertEqual(int(t.fromPy(-1) - 1), -2)
+        self.assertEqual(int(t.fromPy(low) - 1), up)
+        self.assertEqual(int(t.fromPy(low) - -1), low + 1)
+        self.assertEqual(int(t.fromPy(up) - 1), up - 1)
+        self.assertEqual(int(t.fromPy(up) - -1), low)
+
+        self.assertEqual(int(t.fromPy(-10) - 20), -30)
+        self.assertEqual(int(t.fromPy(10) - -20), 30)
+
+
     def test_512b_proper_val(self):
         self.test_8b_proper_val(int512_t)
 
@@ -210,6 +244,12 @@ class SignedArithmeticTC(unittest.TestCase):
 
     def test_512b_ge(self):
         self.test_8b_ge(int512_t)
+
+    def test_512b_add(self):
+        self.test_8b_add(int512_t)
+
+    def test_512b_sub(self):
+        self.test_8b_sub(int512_t)
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
