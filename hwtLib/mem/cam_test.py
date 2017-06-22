@@ -7,6 +7,7 @@ from hwt.hdlObjects.constants import Time, NOP
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.cam import Cam
+from hwt.bitmask import mask
 
 
 class CamTC(SimTestCase):
@@ -15,9 +16,10 @@ class CamTC(SimTestCase):
         u = Cam()
         self.prepareUnit(u)
 
-        u.write._ag.data = [(0, 1, -1),
-                            (1, 3, -1),
-                            (7, 11, -1)]
+        m = mask(36)
+        u.write._ag.data = [(0, 1, m),
+                            (1, 3, m),
+                            (7, 11, m)]
 
         u.match._ag.data = [NOP, NOP, NOP, 1, 2, 3, 5, 11, 12]
 

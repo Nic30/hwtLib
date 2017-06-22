@@ -117,7 +117,7 @@ class Axi4streamToMem(Unit):
         """
         idle = st._eq(st._dtype.fullIdle)
         regs = self.regsConventor.decoded
-        regs.control.din ** Concat(onoff, idle._convert(BIT),
+        regs.control.din ** Concat(onoff, idle,
                                    vec(0, self.DATA_WIDTH - 2))
 
         If(regs.control.dout.vld,

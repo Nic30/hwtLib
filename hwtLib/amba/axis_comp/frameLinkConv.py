@@ -91,7 +91,7 @@ class AxiSToFrameLink(Unit):
             Switch(In.strb)\
             .addCases(remMap)
         ).Else(
-            Out.rem ** vec(-1, remBits)
+            Out.rem ** mask(remBits)
         )
 
         Out.sof_n ** ~sof
