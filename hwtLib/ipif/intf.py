@@ -150,7 +150,7 @@ class IpifAgent(SyncAgentBase):
                                                 self.intf._getFullName(), s.now))
                     actual_next = NOP
 
-        en = r(self.rst_n).val and self.enable
+        en = self.notReset(s) and self.enable
         if en:
             if self.actual is NOP:
                 if self.requests:

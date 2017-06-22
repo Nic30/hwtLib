@@ -37,7 +37,7 @@ class SpiAgent(SyncAgentBase):
         # resolve clk and rstn
         self.clk = self.intf._getAssociatedClk()
         try:
-            self.rst_n = self.getRst_n(allowNoReset=allowNoReset)
+            self.rst = self.intf._getAssociatedRst()
         except IntfLvlConfErr as e:
             if allowNoReset:
                 pass
