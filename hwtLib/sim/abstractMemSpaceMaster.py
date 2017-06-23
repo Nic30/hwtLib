@@ -70,7 +70,7 @@ class AbstractMemSpaceMaster(object):
         self._decorateWithRegisters(registerMap)
 
     def mask(self, start, width):
-        return mask(width // 8)
+        return mask(width // self.ADDR_STEP)
 
     def _decorateWithRegisters(self, stuctT):
         """
