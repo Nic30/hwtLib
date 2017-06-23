@@ -10,218 +10,227 @@ int512_t = Bits(width=512, signed=True)
 class SignedArithmeticTC(unittest.TestCase):
     def getMinMaxVal(self, dtype):
         m = dtype.all_mask()
-        low = -(m // 2) - 1
-        up = m // 2
-        return low, up
+        intLow = -(m // 2) - 1
+        intUp = m // 2
+        return dtype.fromPy(intLow), dtype.fromPy(intUp), intLow, intUp
+
+    def assertEqual(self, first, second, msg=None):
+        first = int(first)
+        second = int(second)
+
+        return unittest.TestCase.assertEqual(self, first, second, msg=msg)
 
     def test_8b_proper_val(self, t=int8_t):
-        v = t.fromPy(-1)
-        self.assertEqual(int(v), -1)
-        low, up = self.getMinMaxVal(t)
+        self.assertEqual(t.fromPy(-1), -1)
+        low, up, intLow, intUp = self.getMinMaxVal(t)
 
-        v = t.fromPy(low)
-        self.assertEqual(int(v), low)
+        self.assertEqual(low, intLow)
 
-        v = t.fromPy(up)
-        self.assertEqual(int(v), up)
+        self.assertEqual(up, intUp)
 
+        # value is not pythonic value
         with self.assertRaises(AssertionError):
             t.fromPy(low - 1)
 
         with self.assertRaises(AssertionError):
             t.fromPy(up + 1)
 
+        # value is out of range of type
+        with self.assertRaises(AssertionError):
+            t.fromPy(intLow - 1)
+
+        with self.assertRaises(AssertionError):
+            t.fromPy(intUp + 1)
+
     def test_8b_and(self, t=int8_t):
-        v = t.fromPy(-1)
+        low, up, intLow, intUp = self.getMinMaxVal(t)
         ut = Bits(t.bit_length())
         m = t.all_mask()
 
-        self.assertEqual(int(v & ut.fromPy(m)), -1)
-        self.assertEqual(int(v & ut.fromPy(0)), 0)
-        self.assertEqual(int(v & ut.fromPy(1)), 1)
+        v = t.fromPy(-1)
+        self.assertEqual(v & ut.fromPy(m), -1)
+        self.assertEqual(v & ut.fromPy(0), 0)
+        self.assertEqual(v & ut.fromPy(1), 1)
+        self.assertEqual(low & up, 0)
+        self.assertEqual(low & -1, intLow)
+        self.assertEqual(up & ut.fromPy(m), intUp)
 
     def test_8b_or(self, t=int8_t):
-        v = t.fromPy(-1)
         ut = Bits(t.bit_length())
         m = t.all_mask()
-        low, up = self.getMinMaxVal(t)
+        low, up, intLow, intUp = self.getMinMaxVal(t)
 
-        self.assertEqual(int(v | ut.fromPy(m)), -1)
-        self.assertEqual(int(v | ut.fromPy(0)), -1)
+        v = t.fromPy(-1)
+        self.assertEqual(v | ut.fromPy(m), -1)
+        self.assertEqual(v | ut.fromPy(0), -1)
 
-        v = t.fromPy(low)
-        self.assertEqual(int(v | ut.fromPy(m)), -1)
-        self.assertEqual(int(v | ut.fromPy(0)), low)
+        self.assertEqual(low | ut.fromPy(m), -1)
+        self.assertEqual(low | ut.fromPy(0), intLow)
 
-        v = t.fromPy(up)
-        self.assertEqual(int(v | ut.fromPy(m)), -1)
-        self.assertEqual(int(v | ut.fromPy(0)), up)
+        self.assertEqual(up | ut.fromPy(m), -1)
+        self.assertEqual(up | ut.fromPy(0), intUp)
 
     def test_8b_xor(self, t=int8_t):
-        v = t.fromPy(-1)
         ut = Bits(t.bit_length())
         m = t.all_mask()
 
-        self.assertEqual(int(v ^ ut.fromPy(m)), 0)
-        self.assertEqual(int(v ^ ut.fromPy(0)), -1)
-        self.assertEqual(int(v ^ ut.fromPy(1)), -2)
+        v = t.fromPy(-1)
+        self.assertEqual(v ^ ut.fromPy(m), 0)
+        self.assertEqual(v ^ ut.fromPy(0), -1)
+        self.assertEqual(v ^ ut.fromPy(1), -2)
 
     def test_8b_invert(self, t=int8_t):
-        low, up = self.getMinMaxVal(t)
+        low, up, intLow, intUp = self.getMinMaxVal(t)
 
-        self.assertEqual(int(~t.fromPy(-1)), 0)
-        self.assertEqual(int(~t.fromPy(low)), up)
-        self.assertEqual(int(~t.fromPy(up)), low)
+        self.assertEqual(~t.fromPy(-1), 0)
+        self.assertEqual(~low, intUp)
+        self.assertEqual(~up, intLow)
 
     def test_8b_eq(self, t=int8_t):
         ut = Bits(t.bit_length())
-        low, up = self.getMinMaxVal(t)
+        low, up, _, _ = self.getMinMaxVal(t)
 
         self.assertTrue(t.fromPy(-1)._eq(-1))
         self.assertTrue(t.fromPy(0)._eq(0))
-        self.assertTrue(t.fromPy(up)._eq(up))
-        self.assertTrue(t.fromPy(low)._eq(low))
+        self.assertTrue(up._eq(up))
+        self.assertTrue(low._eq(low))
 
         self.assertFalse(t.fromPy(0)._eq(-1))
         self.assertFalse(t.fromPy(-1)._eq(0))
-        self.assertFalse(t.fromPy(up)._eq(low))
-        self.assertFalse(t.fromPy(low)._eq(up))
+        self.assertFalse(up._eq(low))
+        self.assertFalse(low._eq(up))
 
         with self.assertRaises(TypeError):
             t.fromPy(0)._eq(ut.fromPy(0))
 
     def test_8b_ne(self, t=int8_t):
         ut = Bits(t.bit_length())
-        low, up = self.getMinMaxVal(t)
+        low, up, _, _ = self.getMinMaxVal(t)
 
         self.assertFalse(t.fromPy(-1) != -1)
         self.assertFalse(t.fromPy(0) != 0)
-        self.assertFalse(t.fromPy(up) != up)
-        self.assertFalse(t.fromPy(low) != low)
+        self.assertFalse(up != up)
+        self.assertFalse(low != low)
 
         self.assertTrue(t.fromPy(0) != -1)
         self.assertTrue(t.fromPy(-1) != 0)
-        self.assertTrue(t.fromPy(up) != low)
-        self.assertTrue(t.fromPy(low) != up)
+        self.assertTrue(up != low)
+        self.assertTrue(low != up)
 
         with self.assertRaises(TypeError):
             t.fromPy(0) != ut.fromPy(0)
 
     def test_8b_lt(self, t=int8_t):
         ut = Bits(t.bit_length())
-        low, up = self.getMinMaxVal(t)
+        low, up, _, _ = self.getMinMaxVal(t)
 
         self.assertFalse(t.fromPy(-1) < -1)
         self.assertFalse(t.fromPy(0) < 0)
         self.assertFalse(t.fromPy(1) < 1)
-        self.assertFalse(t.fromPy(up) < up)
-        self.assertFalse(t.fromPy(low) < low)
+        self.assertFalse(up < up)
+        self.assertFalse(low < low)
 
         self.assertFalse(t.fromPy(0) < -1)
         self.assertTrue(t.fromPy(-1) < 0)
-        self.assertFalse(t.fromPy(up) < low)
-        self.assertTrue(t.fromPy(low) < up)
+        self.assertFalse(up < low)
+        self.assertTrue(low < up)
 
         with self.assertRaises(TypeError):
             t.fromPy(0) < ut.fromPy(0)
 
     def test_8b_gt(self, t=int8_t):
         ut = Bits(t.bit_length())
-        low, up = self.getMinMaxVal(t)
+        low, up, _, _ = self.getMinMaxVal(t)
 
         self.assertFalse(t.fromPy(-1) > -1)
         self.assertFalse(t.fromPy(0) > 0)
         self.assertFalse(t.fromPy(1) > 1)
-        self.assertFalse(t.fromPy(up) > up)
-        self.assertFalse(t.fromPy(low) > low)
+        self.assertFalse(up > up)
+        self.assertFalse(low > low)
 
         self.assertTrue(t.fromPy(0) > -1)
         self.assertFalse(t.fromPy(-1) > 0)
-        self.assertTrue(t.fromPy(up) > low)
-        self.assertFalse(t.fromPy(low) > up)
+        self.assertTrue(up > low)
+        self.assertFalse(low > up)
 
         with self.assertRaises(TypeError):
             t.fromPy(0) > ut.fromPy(0)
 
     def test_8b_ge(self, t=int8_t):
         ut = Bits(t.bit_length())
-        low, up = self.getMinMaxVal(t)
+        low, up, _, _ = self.getMinMaxVal(t)
 
         self.assertTrue(t.fromPy(-1) >= -1)
         self.assertTrue(t.fromPy(0) >= 0)
         self.assertTrue(t.fromPy(1) >= 1)
-        self.assertTrue(t.fromPy(up) >= up)
-        self.assertTrue(t.fromPy(low) >= low)
+        self.assertTrue(up >= up)
+        self.assertTrue(low >= low)
 
         self.assertTrue(t.fromPy(0) >= -1)
         self.assertFalse(t.fromPy(-1) >= 0)
-        self.assertTrue(t.fromPy(up) >= low)
-        self.assertFalse(t.fromPy(low) >= up)
+        self.assertTrue(up >= low)
+        self.assertFalse(low >= up)
 
         with self.assertRaises(TypeError):
             t.fromPy(0) >= ut.fromPy(0)
 
     def test_8b_le(self, t=int8_t):
         ut = Bits(t.bit_length())
-        low, up = self.getMinMaxVal(t)
+        low, up, _, _ = self.getMinMaxVal(t)
 
         self.assertTrue(t.fromPy(-1) <= -1)
         self.assertTrue(t.fromPy(0) <= 0)
         self.assertTrue(t.fromPy(1) <= 1)
-        self.assertTrue(t.fromPy(up) <= up)
-        self.assertTrue(t.fromPy(low) <= low)
+        self.assertTrue(up <= up)
+        self.assertTrue(low <= low)
 
         self.assertFalse(t.fromPy(0) <= -1)
         self.assertTrue(t.fromPy(-1) <= 0)
-        self.assertFalse(t.fromPy(up) <= low)
-        self.assertTrue(t.fromPy(low) <= up)
+        self.assertFalse(up <= low)
+        self.assertTrue(low <= up)
 
         with self.assertRaises(TypeError):
             t.fromPy(0) <= ut.fromPy(0)
 
-
     def test_8b_add(self, t=int8_t):
-        ut = Bits(t.bit_length())
-        low, up = self.getMinMaxVal(t)
+        low, up, intLow, intUp = self.getMinMaxVal(t)
 
-        self.assertEqual(int(t.fromPy(-1) + -1), -2)
-        self.assertEqual(int(t.fromPy(-1) + 0), -1)
-        self.assertEqual(int(t.fromPy(1) + 0), 1)
-        self.assertEqual(int(t.fromPy(-1) + 1), 0)
-        self.assertEqual(int(t.fromPy(low) + 1), low + 1)
-        self.assertEqual(int(t.fromPy(low) + -1), up)
-        self.assertEqual(int(t.fromPy(up) + 1), low)
-        self.assertEqual(int(t.fromPy(up) + -1), up - 1)
+        self.assertEqual(t.fromPy(-1) + -1, -2)
+        self.assertEqual(t.fromPy(-1) + 0, -1)
+        self.assertEqual(t.fromPy(1) + 0, 1)
+        self.assertEqual(t.fromPy(-1) + 1, 0)
+        self.assertEqual(low + 1, intLow + 1)
+        self.assertEqual(low + -1, intUp)
+        self.assertEqual(up + 1, intLow)
+        self.assertEqual(up + -1, intUp - 1)
 
-        self.assertEqual(int(t.fromPy(-10) + 20), 10)
-        self.assertEqual(int(t.fromPy(10) + -20), -10)
+        self.assertEqual(t.fromPy(-10) + 20, 10)
+        self.assertEqual(t.fromPy(10) + -20, -10)
 
     def test_8b_sub(self, t=int8_t):
-        ut = Bits(t.bit_length())
-        low, up = self.getMinMaxVal(t)
+        low, up, intLow, intUp = self.getMinMaxVal(t)
 
-        self.assertEqual(int(t.fromPy(-1) - -1), 0)
-        self.assertEqual(int(t.fromPy(-1) - 0), -1)
-        self.assertEqual(int(t.fromPy(1) - 0), 1)
-        self.assertEqual(int(t.fromPy(-1) - 1), -2)
-        self.assertEqual(int(t.fromPy(low) - 1), up)
-        self.assertEqual(int(t.fromPy(low) - -1), low + 1)
-        self.assertEqual(int(t.fromPy(up) - 1), up - 1)
-        self.assertEqual(int(t.fromPy(up) - -1), low)
+        self.assertEqual(t.fromPy(-1) - -1, 0)
+        self.assertEqual(t.fromPy(-1) - 0, -1)
+        self.assertEqual(t.fromPy(1) - 0, 1)
+        self.assertEqual(t.fromPy(-1) - 1, -2)
+        self.assertEqual(low - 1, intUp)
+        self.assertEqual(low - -1, intLow + 1)
+        self.assertEqual(up - 1, intUp - 1)
+        self.assertEqual(up - -1, intLow)
 
-        self.assertEqual(int(t.fromPy(-10) - 20), -30)
-        self.assertEqual(int(t.fromPy(10) - -20), 30)
+        self.assertEqual(t.fromPy(-10) - 20, -30)
+        self.assertEqual(t.fromPy(10) - -20, 30)
 
     def test_8b_cast(self, t=int8_t):
         w = t.bit_length()
         ut = Bits(w)
-        
+
         self.assertEqual(int(t.fromPy(-1)._convert(ut)), mask(w))
         self.assertEqual(int(t.fromPy(1)._convert(ut)), 1)
         self.assertEqual(int(t.fromPy(0)._convert(ut)), 0)
         self.assertEqual(int(ut.fromPy(1)._convert(t)), 1)
         self.assertEqual(int(ut.fromPy(mask(w))._convert(t)), -1)
-        
 
     def test_512b_proper_val(self):
         self.test_8b_proper_val(int512_t)
@@ -261,7 +270,7 @@ class SignedArithmeticTC(unittest.TestCase):
 
     def test_512b_sub(self):
         self.test_8b_sub(int512_t)
-    
+
     def test_512b_cast(self):
         self.test_8b_cast(int512_t)
 
