@@ -62,6 +62,7 @@ from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.clkSynchronizer_test import ClkSynchronizerTC
 from hwtLib.mem.fifoAsync_test import FifoAsyncTC
 from hwtLib.mem.fifo_test import FifoTC
+from hwtLib.mem.hashTableCore_test import HashTableCoreTC
 from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ram_test import RamTC
 from hwtLib.samples.iLvl.arithmetic.cntr_test import CntrTC
@@ -90,6 +91,7 @@ from hwtLib.samples.iLvl.mem.reg_test import DRegTC
 from hwtLib.samples.iLvl.mem.rom_test import RomTC
 from hwtLib.samples.iLvl.operators.concat_test import ConcatTC
 from hwtLib.samples.iLvl.operators.indexing_test import IndexingTC
+from hwtLib.samples.iLvl.parametrization_test import ParametrizationTC
 from hwtLib.samples.iLvl.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnectionTC
 from hwtLib.samples.iLvl.simpleAxiStream_test import SimpleUnitAxiStream_TC
 from hwtLib.samples.iLvl.simpleWithNonDirectIntConncetion import SimpleWithNonDirectIntConncetionTC
@@ -115,6 +117,7 @@ from hwtLib.structManipulators.structWriter_test import StructWriter_TC
 from hwtLib.tests.frameTemplate_test import FrameTemplateTC
 from hwtLib.tests.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.operators import OperatorTC
+from hwtLib.tests.signedArithmetic_test import SignedArithmeticTC
 from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.tests.statementTreesInternal import StatementTreesInternalTC
 from hwtLib.tests.statements import StatementsTC
@@ -126,8 +129,6 @@ from hwtLib.tests.synthesizer.value import ValueTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
-from hwtLib.mem.hashTableCore_test import HashTableCoreTC
-from hwtLib.tests.signedArithmetic_test import SignedArithmeticTC
 
 
 def doSimWithoutLog(self, time):
@@ -162,6 +163,7 @@ suite = testSuiteFromTCs(
     UnitToUnitConnectionTC,
     Expr2CondTC,
     OperatorTC,
+    ParametrizationTC,
     SignedArithmeticTC,
     TestCaseSynthesis,
     ValueTC,
