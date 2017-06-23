@@ -6,7 +6,7 @@ from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal, VldSynced
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwtLib.clocking.clkBuilder import ClkBuilder
 
 
@@ -28,9 +28,9 @@ class UartRx(Unit):
         START_BIT = 0
         STOP_BIT = 1
 
-        os = evalParam(self.OVERSAMPLING).val
-        baud = evalParam(self.BAUD).val
-        freq = evalParam(self.FREQ).val
+        os = int(self.OVERSAMPLING)
+        baud = int(self.BAUD)
+        freq = int(self.FREQ)
         assert freq >= baud * os, "Frequency too low for current Baud rate and oversampling"
         assert os >= 8 and (os & (os - 1)) == 0, "Invalid oversampling value"
 

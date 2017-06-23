@@ -8,11 +8,19 @@ from hwt.interfaces.std import FifoWriter, FifoReader, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.constants import SERI_MODE
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 
 
 # https://eewiki.net/pages/viewpage.action?pageId=20939499
 class Fifo(Unit):
+    """
+    Generic fifo instance usually mapped to BRAM
+
+    :ivar EXPORT_SIZE: parameter, if true "size" signal will be exported
+    :ivar size: optional signal with count of items stored in this fifo
+    :ivar EXPORT_SPACE: parameter, if true "space" signal is exported
+    :ivar space: optional signal with count of items which can be added to this fifo
+    """
     _serializerMode = SERI_MODE.PARAMS_UNIQ
 
     def _config(self):
@@ -22,15 +30,15 @@ class Fifo(Unit):
         self.EXPORT_SPACE = Param(False)
 
     def _declr(self):
-        assert evalParam(self.DEPTH).val > 0,  "Fifo is disabled in this case, do not use it entirely"
+        assert int(self.DEPTH) > 0,  "Fifo is disabled in this case, do not use it entirely"
         addClkRstn(self)
         with self._paramsShared():
             self.dataIn = FifoWriter()
             self.dataOut = FifoReader()
 
-        if evalParam(self.EXPORT_SIZE).val:
+        if self.EXPORT_SIZE:
             self.size = VectSignal(log2ceil(self.DEPTH + 1), signed=False)
-        if evalParam(self.EXPORT_SPACE).val:
+        if self.EXPORT_SPACE:
             self.space = VectSignal(log2ceil(self.DEPTH + 1), signed=False)
 
     def _impl(self):
@@ -77,7 +85,7 @@ class Fifo(Unit):
             )
         )
 
-        # assert isPow2(evalParam(DEPTH).val), DEPTH
+        # assert isPow2(int(DEPTH)), DEPTH
 
         looped = r("looped", defVal=False)
 
@@ -111,7 +119,7 @@ class Fifo(Unit):
             din.wait ** 0,
             dout.wait ** 0 
         )
-        if evalParam(self.EXPORT_SIZE).val:
+        if self.EXPORT_SIZE:
             size = r("size_reg", self.size._dtype, 0)
             If(fifo_read,
                 If(~fifo_write,
@@ -123,7 +131,7 @@ class Fifo(Unit):
                 )
             )
             self.size ** size
-        if evalParam(self.EXPORT_SPACE).val:
+        if self.EXPORT_SPACE:
             space = r("space_reg", self.size._dtype, DEPTH)
             If(fifo_read,
                 If(~fifo_write,

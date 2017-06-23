@@ -5,7 +5,7 @@ from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import evalParam, Param
+from hwt.synthesizer.param import Param
 
 
 class SimpleUnitWithParam(Unit):
@@ -35,7 +35,7 @@ class SimpleUnitWithParamTC(SimTestCase):
         u.DATA_WIDTH.set(32)
         self.prepareUnit(u)
 
-        self.assertEqual(evalParam(u.DATA_WIDTH).val, 32)
+        self.assertEqual(int(u.DATA_WIDTH), 32)
         self.assertEqual(u.a._dtype.bit_length(), 32)
         self.assertEqual(u.b._dtype.bit_length(), 32)
 

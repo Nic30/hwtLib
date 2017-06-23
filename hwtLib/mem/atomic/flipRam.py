@@ -6,7 +6,6 @@ from hwt.interfaces.std import Signal, BramPort_withoutClk, Clk
 from hwt.interfaces.utils import propagateClk
 from hwt.serializer.constants import SERI_MODE
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import evalParam
 from hwtLib.mem.ram import RamSingleClock
 
 
@@ -28,7 +27,7 @@ class FlipRam(Unit):
         RamSingleClock._config(self)
 
     def _declr(self):
-        PORT_CNT = evalParam(self.PORT_CNT).val
+        PORT_CNT = int(self.PORT_CNT)
 
         with self._paramsShared():
             self.clk = Clk()
@@ -48,7 +47,7 @@ class FlipRam(Unit):
 
     def _impl(self):
         propagateClk(self)
-        PORT_CNT = evalParam(self.PORT_CNT).val
+        PORT_CNT = int(self.PORT_CNT)
 
         fa = self.firstA
         sa = self.secondA

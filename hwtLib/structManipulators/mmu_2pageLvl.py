@@ -6,7 +6,7 @@ from hwt.interfaces.std import Handshaked, BramPort_withoutClk, \
     Signal
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.ramAsHs import RamAsHs
@@ -47,8 +47,8 @@ class MMU_2pageLvl(Unit):
     def _declr(self):
         self.PAGE_OFFSET_WIDTH = log2ceil(self.PAGE_SIZE).val
         self.LVL1_PAGE_TABLE_INDX_WIDTH = log2ceil(self.LVL1_PAGE_TABLE_ITEMS).val
-        self.LVL2_PAGE_TABLE_INDX_WIDTH = evalParam(self.ADDR_WIDTH - self.LVL1_PAGE_TABLE_INDX_WIDTH - self.PAGE_OFFSET_WIDTH).val
-        self.LVL2_PAGE_TABLE_ITEMS = 2 ** evalParam(self.LVL2_PAGE_TABLE_INDX_WIDTH).val
+        self.LVL2_PAGE_TABLE_INDX_WIDTH = int(self.ADDR_WIDTH - self.LVL1_PAGE_TABLE_INDX_WIDTH - self.PAGE_OFFSET_WIDTH)
+        self.LVL2_PAGE_TABLE_ITEMS = 2 ** int(self.LVL2_PAGE_TABLE_INDX_WIDTH)
         assert self.LVL1_PAGE_TABLE_INDX_WIDTH > 0, self.LVL1_PAGE_TABLE_INDX_WIDTH
         assert self.LVL2_PAGE_TABLE_INDX_WIDTH > 0, self.LVL2_PAGE_TABLE_INDX_WIDTH
         assert self.LVL2_PAGE_TABLE_ITEMS > 1, self.LVL2_PAGE_TABLE_ITEMS

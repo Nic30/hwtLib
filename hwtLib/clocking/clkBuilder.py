@@ -2,7 +2,6 @@ from hwt.code import If, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.defs import BIT
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
-from hwt.synthesizer.param import evalParam
 from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
 
 
@@ -101,7 +100,7 @@ class ClkBuilder(object):
 
         n = getSignalName(sig)
 
-        sCnt = evalParam(sampleCount).val
+        sCnt = int(sampleCount)
         sampleDoneTick = self.timer((n + "_oversampleDoneTick", sampleCount),
                                     enableSig=sampleTick,
                                     rstSig=rstSig)

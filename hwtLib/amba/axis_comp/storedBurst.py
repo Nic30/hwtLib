@@ -8,7 +8,7 @@ from hwt.code import If, Switch
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream
 
 
@@ -33,7 +33,7 @@ class AxiSStoredBurst(Unit):
             self.dataOut = AxiStream()
 
     def nextWordIndexLogic(self, wordIndex):
-        if evalParam(self.REPEAT).val:
+        if self.REPEAT:
             return If(wordIndex < len(self.DATA),
                        wordIndex ** (wordIndex + 1)
                    ).Else(
@@ -45,7 +45,7 @@ class AxiSStoredBurst(Unit):
                    )
 
     def _impl(self):
-        self.DATA_WIDTH = evalParam(self.DATA_WIDTH).val
+        self.DATA_WIDTH = int(self.DATA_WIDTH)
         vldAll = mask(self.DATA_WIDTH // 8)
         dout = self.dataOut
         DATA_LEN = len(self.DATA)

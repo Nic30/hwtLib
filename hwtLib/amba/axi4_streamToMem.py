@@ -4,21 +4,19 @@
 from hwt.bitmask import mask
 from hwt.code import c, Concat, If, Switch, connect
 from hwt.hdlObjects.typeShortcuts import vec, vecT
-from hwt.hdlObjects.types.defs import BIT
 from hwt.hdlObjects.types.enum import Enum
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, \
     PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
 from hwtLib.types.ctypes import uint32_t
-from hwt.synthesizer.vectorUtils import fitTo
 
 
 class Axi4streamToMem(Unit):
@@ -78,20 +76,20 @@ class Axi4streamToMem(Unit):
         axi = self.axi
         st_t = st._dtype
 
-        axi.aw.valid ** st._eq(st_t.writeAddr) 
+        axi.aw.valid ** st._eq(st_t.writeAddr)
         axi.aw.addr ** actualAddr
         axi.aw.id ** 0
-        axi.aw.burst ** BURST_INCR 
+        axi.aw.burst ** BURST_INCR
         axi.aw.cache ** CACHE_DEFAULT
 
         If(lenRem > self.MAX_BUTST_LEN,
             axi.aw.len ** (self.MAX_BUTST_LEN - 1)
         ).Else(
-            connect(lenRem - 1, axi.aw.len, fit=True) 
+            connect(lenRem - 1, axi.aw.len, fit=True)
         )
         axi.aw.lock ** LOCK_DEFAULT
         axi.aw.prot ** PROT_DEFAULT
-        axi.aw.size ** BYTES_IN_TRANS(evalParam(self.DATA_WIDTH).val // 8)
+        axi.aw.size ** BYTES_IN_TRANS(self.DATA_WIDTH // 8)
         axi.aw.qos ** QOS_DEFAULT
 
         # lenRem, actualAddr logic
@@ -102,7 +100,7 @@ class Axi4streamToMem(Unit):
         ).Case(st_t.writeAddr,
             If(axi.aw.ready,
                 If(lenRem > self.MAX_BUTST_LEN,
-                   actualAddr ** (actualAddr + (self.MAX_BUTST_LEN * evalParam(self.DATA_WIDTH).val // 8)),
+                   actualAddr ** (actualAddr + (self.MAX_BUTST_LEN * self.DATA_WIDTH // 8)),
                    lenRem ** (lenRem - self.MAX_BUTST_LEN)
                 ).Else(
                    actualAddr ** (actualAddr + lenRem),
@@ -168,7 +166,7 @@ class Axi4streamToMem(Unit):
         """
         st_t = st._dtype
         w_en = st._eq(st_t.writeData) | st._eq(st_t.writeDataLast)
-        return w_en & self.dataIn.vld & self.axi.w.ready 
+        return w_en & self.dataIn.vld & self.axi.w.ready
 
     def dataWFeed(self, st, lenRem, actualLenRem):
         """
@@ -181,7 +179,7 @@ class Axi4streamToMem(Unit):
         last = st._eq(st_t.writeDataLast)
         w_en = st._eq(st_t.writeData) | last
 
-        w.valid ** (din.vld & w_en) 
+        w.valid ** (din.vld & w_en)
         w.data ** din.data
         w.id ** 0
         w.strb ** mask(w.strb._dtype.bit_length())
@@ -226,8 +224,9 @@ class Axi4streamToMem(Unit):
         baseAddr = self._reg("baseAddr_reg", vecT(self.ADDR_WIDTH), 0)
         st = self._reg("state_reg", st_t, st_t.fullIdle)
         actualAddr = self._reg("actualAddr_reg", vecT(self.ADDR_WIDTH))
-        lenRem = self._reg("lenRem_reg", vecT(evalParam(self.DATA_LEN).val.bit_length() + 1),
-                            self.DATA_LEN)
+        lenRem = self._reg("lenRem_reg",
+                           vecT(int(self.DATA_LEN).bit_length() + 1),
+                           self.DATA_LEN)
         actualLenRem = self._reg("actualLenRem_reg", axi.aw.len._dtype)
 
         self.connectRegisters(st, onoff, baseAddr)

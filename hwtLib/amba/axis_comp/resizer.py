@@ -4,7 +4,7 @@
 from hwt.code import If, log2ceil, Concat, Switch
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.handshaked.streamNode import streamAck
 from hwtLib.amba.axis_comp.reg import AxiSReg
@@ -18,7 +18,7 @@ class AxiS_resizer(AxiSCompBase):
     :attention: strb can be not fully set only in last word
     :attention: in upscale mode id and other signals which are not dependent on data width
         are propagated only from last word
-        
+
     .. aafig::
                                          +-------------+
                                          |             |
@@ -77,7 +77,7 @@ class AxiS_resizer(AxiSCompBase):
         ITEMS = OUT_DW // IN_DW
         dIn = self.getDataWidthDependent(self.dataIn)
 
-        dataOut = self.dataOut 
+        dataOut = self.dataOut
         dOut = self.getDataWidthDependent(dataOut)
 
         itemCntr = self._reg("itemCntr", vecT(log2ceil(ITEMS + 1)), defVal=0)
@@ -141,7 +141,7 @@ class AxiS_resizer(AxiSCompBase):
         if IN_DW % OUT_DW != 0:
             raise NotImplementedError()
         dOut = self.getDataWidthDependent(self.dataOut)
-        
+
         # instanciate AxiSReg, AxiSBuilder is not used to avoid dependencies
         inReg = AxiSReg(self.intfCls)
         inReg._updateParamsFrom(self.dataIn)
@@ -150,7 +150,7 @@ class AxiS_resizer(AxiSCompBase):
         inReg.rst_n ** self.rst_n
         inReg.dataIn ** self.dataIn
         dataIn = inReg.dataOut
-        
+
         dIn = self.getDataWidthDependent(dataIn)
 
         ITEMS = IN_DW // OUT_DW
@@ -195,8 +195,8 @@ class AxiS_resizer(AxiSCompBase):
         )
 
     def _impl(self):
-        IN_DW = evalParam(self.DATA_WIDTH).val
-        OUT_DW = evalParam(self.OUT_DATA_WIDTH).val
+        IN_DW = int(self.DATA_WIDTH)
+        OUT_DW = int(self.OUT_DATA_WIDTH)
 
         if IN_DW < OUT_DW:  # UPSCALE
             self.upscale(IN_DW, OUT_DW)

@@ -10,7 +10,7 @@ from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import evalParam, Param
+from hwt.synthesizer.param import Param
 
 
 class AxiS_frameParser(Unit):
@@ -55,7 +55,7 @@ class AxiS_frameParser(Unit):
         self.SYNCHRONIZE_BY_LAST = Param(True)
 
     def createInterfaceForField(self, structIntf, transInfo):
-        if evalParam(self.SHARED_READY).val:
+        if self.SHARED_READY:
             i = VldSynced()
         else:
             i = Handshaked()
@@ -74,7 +74,7 @@ class AxiS_frameParser(Unit):
 
         with self._paramsShared():
             self.dataIn = self._axiSCls()
-            if evalParam(self.SHARED_READY).val:
+            if self.SHARED_READY:
                 self.dataOut_ready = Signal()
 
     def connectDataSignals(self, words, wordIndex):
@@ -108,7 +108,7 @@ class AxiS_frameParser(Unit):
                     signalsOfParts.append(fPartReg)
 
     def busReadyLogic(self, words, wordIndex, maxWordIndex):
-        if evalParam(self.SHARED_READY).val:
+        if self.SHARED_READY:
             busRd = self.ready
         else:
             # generate ready logic for struct fields
@@ -129,7 +129,7 @@ class AxiS_frameParser(Unit):
 
     def parseTemplate(self):
         self._tmpl = TransTmpl(self._structT)
-        DW = evalParam(self.DATA_WIDTH).val
+        DW = int(self.DATA_WIDTH)
         frames = FrameTemplate.framesFromTransTmpl(self._tmpl,
                                                              DW,
                                                              maxPaddingWords=self._maxPaddingWords)
@@ -150,7 +150,7 @@ class AxiS_frameParser(Unit):
 
         r.ready ** busRd
 
-        if evalParam(self.SYNCHRONIZE_BY_LAST).val:
+        if self.SYNCHRONIZE_BY_LAST:
             last = r.last
         else:
             last = wordIndex._eq(maxWordIndex)

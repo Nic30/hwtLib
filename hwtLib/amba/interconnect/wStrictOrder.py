@@ -2,11 +2,10 @@ from hwt.code import log2ceil, connect, Or, Switch
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
 from hwtLib.amba.interconnect.axiInterconnectbase import AxiInterconnectBase
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.handshaked.streamNode import streamSync
 
 
 class WStrictOrderInterconnect(AxiInterconnectBase):
@@ -103,7 +102,7 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
             d.vld ** (ack.vld & fAckOut.vld & fAckOut.data._eq(i))
 
     def _impl(self):
-        assert evalParam(self.DRIVER_CNT).val > 1, "It makes no sense to use interconnect in this case"
+        assert int(self.DRIVER_CNT) > 1, "It makes no sense to use interconnect in this case"
         propagateClkRstn(self)
         self.reqHandler(self.wDatapump.req, self.orderInfoFifoW.dataIn)
         self.wHandler()

@@ -10,7 +10,7 @@ from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 
 
 class Lsfr(Unit):
@@ -31,7 +31,7 @@ class Lsfr(Unit):
         accumulator = self._reg("accumulator",
                                 vecT(self.POLY_WIDTH),
                                 defVal=self.SEED)
-        POLY = evalParam(self.POLY).val
+        POLY = int(self.POLY)
         xorBits = []
         for i, b in enumerate(iterBits(accumulator)):
             if selectBit(POLY, i):
@@ -49,10 +49,9 @@ class LsfrTC(SimTestCase):
         self.prepareUnit(u)
 
         self.doSim(300 * Time.ns)
-        self.assertValSequenceEqual(u.dataOut._ag.data, 
-        [1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-         0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1])
-
+        self.assertValSequenceEqual(u.dataOut._ag.data,
+         [1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+          0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1])
 
 
 if __name__ == "__main__":

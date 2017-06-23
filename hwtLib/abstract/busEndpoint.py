@@ -16,7 +16,6 @@ from hwt.synthesizer.interfaceLevel.interfaceUtils.proxy import InterfaceProxy
 from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
-from hwt.synthesizer.param import evalParam
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwtLib.sim.abstractMemSpaceMaster import PartialField
 
@@ -139,7 +138,7 @@ class BusEndpoint(Unit):
                     # [FIXME] not working correctly for multi level arrays
             return index
 
-        AW = evalParam(self.ADDR_WIDTH).val
+        AW = int(self.ADDR_WIDTH)
         SUGGESTED_AW = self._suggestedAddrWidth()
         assert SUGGESTED_AW <= AW, (SUGGESTED_AW, AW)
         tmpl = TransTmpl(self.STRUCT_TEMPLATE)
@@ -224,7 +223,7 @@ class BusEndpoint(Unit):
 
     def _mkFieldInterface(self, structIntf, field):
         t = field.dtype
-        DW = evalParam(self.DATA_WIDTH).val
+        DW = int(self.DATA_WIDTH)
 
         if isinstance(t, Bits):
             p = RegCntrl()
@@ -236,7 +235,7 @@ class BusEndpoint(Unit):
             else:
                 p = BramPort_withoutClk()
                 dw = t.elmType.bit_length()
-                p.ADDR_WIDTH.set(log2ceil(evalParam(t.size).val - 1))
+                p.ADDR_WIDTH.set(log2ceil(t.size - 1))
         else:
             raise NotImplementedError(t)
 
@@ -278,8 +277,8 @@ class BusEndpoint(Unit):
                     dtype = intf.din._dtype
                     access = "rw"
                 elif isinstance(intf, BramPort_withoutClk):
-                    dtype = Array(vecT(evalParam(intf.DATA_WIDTH).val),
-                                  2 ** evalParam(intf.ADDR_WIDTH).val)
+                    dtype = Array(vecT(int(intf.DATA_WIDTH)),
+                                  2 ** int(intf.ADDR_WIDTH))
                     access = "rw"
                 else:
                     raise NotImplementedError(intf)

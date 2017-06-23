@@ -6,7 +6,7 @@ from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal, VectSignal, HandshakeSync
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 
 
 class StaticForLoopCntrl(Unit):
@@ -24,7 +24,7 @@ class StaticForLoopCntrl(Unit):
         self.bodyBreak = Signal()
 
     def _impl(self):
-        ITERATIONS = evalParam(self.ITERATIONS).val
+        ITERATIONS = int(self.ITERATIONS)
         """
         Iterates from ITERATIONS -1 to 0 body is enabled by bodyVld and if bodyRd
         then counter is decremented for next iteration

@@ -9,7 +9,6 @@ from hwtLib.amba.axi4 import Axi4_addr
 from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, mkReq
 from hwtLib.amba.axi4_wDatapump import Axi_wDatapump
 from hwtLib.amba.constants import RESP_OKAY, BYTES_IN_TRANS
-from hwt.synthesizer.param import evalParam
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 
 
@@ -89,7 +88,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         self.doSim((10 + self.LEN_MAX) * 10 * Time.ns)
 
         self.assertValSequenceEqual(aw,
-                                 [(0, 0xff, 1, 3, self.LEN_MAX, 0, 0, BYTES_IN_TRANS(8), 0)])
+                                    [(0, 0xff, 1, 3, self.LEN_MAX, 0, 0, BYTES_IN_TRANS(8), 0)])
 
         self.assertEqual(len(w), self.LEN_MAX + 1)
         self.assertEmpty(b)
@@ -218,7 +217,7 @@ class Axi3_wDatapump_small_splitting_TC(SimTestCase):
     def setUp(self):
         self.u = Axi_wDatapump(axiAddrCls=Axi3_addr)
         self.u.MAX_LEN.set(self.LEN_MAX)
-        self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
+        self.DATA_WIDTH = int(self.u.DATA_WIDTH)
         self.prepareUnit(self.u)
 
     def test_1024random(self):

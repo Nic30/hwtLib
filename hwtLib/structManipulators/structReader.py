@@ -9,7 +9,7 @@ from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import evalParam, Param
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.amba.axis import AxiStream_withoutSTRB
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
@@ -61,7 +61,7 @@ class StructReader(AxiS_frameParser):
         self.SHARED_READY = Param(False)
 
     def maxWordIndex(self):
-        return max(map(lambda f: f.endBitAddr - 1, self._frames)) // evalParam(self.DATA_WIDTH).val
+        return max(map(lambda f: f.endBitAddr - 1, self._frames)) // int(self.DATA_WIDTH)
 
     def _declr(self):
         addClkRstn(self)
@@ -80,7 +80,7 @@ class StructReader(AxiS_frameParser):
                                            self._structT,
                                            maxPaddingWords=self._maxPaddingWords)
 
-        if evalParam(self.SHARED_READY).val:
+        if self.SHARED_READY:
             self.ready = Signal()
 
     def _impl(self):

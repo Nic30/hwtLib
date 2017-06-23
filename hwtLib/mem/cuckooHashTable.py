@@ -2,9 +2,9 @@ from hwt.code import log2ceil
 from hwt.interfaces.std import Handshaked, VectSignal, Signal
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
-from hwtLib.mem.hashTable import LookupKeyIntf
+from hwt.synthesizer.param import Param
 from hwtLib.mem.ram import RamSingleClock
+from hwtLib.mem.hashTable_intf import LookupKeyIntf
 
 
 CHT_FOUND = 1
@@ -19,6 +19,7 @@ class CInsertPort(Handshaked):
         super(Handshaked, self)._declr()
         self.hash = VectSignal(self.HASH_WIDTH)
         self.table = VectSignal(1)
+
 
 class CLookupResultIntf(Handshaked):
     def _config(self):
@@ -50,7 +51,7 @@ class CuckooHashTableCore(Unit):
 
     def _declr(self):
         self.HASH_WITH = log2ceil(self.TABLE_SIZE).val
-        TABLE_CNT = evalParam(self.TABLE_CNT).val
+        TABLE_CNT = int(self.TABLE_CNT)
         with self._paramsShared():
             self.insert = CInsertPort()
             self.insert.HASH_WIDTH.set(self.HASH_WITH)

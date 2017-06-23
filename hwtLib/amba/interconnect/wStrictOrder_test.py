@@ -6,7 +6,6 @@ import unittest
 from hwt.bitmask import mask
 from hwt.hdlObjects.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.axi4_rDatapump_test import mkReq
 from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
@@ -18,7 +17,7 @@ class WStrictOrderInterconnectTC(SimTestCase):
         self.u = WStrictOrderInterconnect()
         self.MAX_TRANS_OVERLAP = 4
         self.u.MAX_TRANS_OVERLAP.set(self.MAX_TRANS_OVERLAP)
-        self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
+        self.DATA_WIDTH = int(self.u.DATA_WIDTH)
 
         self.DRIVER_CNT = 2
         self.u.DRIVER_CNT.set(self.DRIVER_CNT)
@@ -169,7 +168,7 @@ class WStrictOrderInterconnect2TC(SimTestCase):
         self.u = WStrictOrderInterconnect()
         self.MAX_TRANS_OVERLAP = 4
         self.u.MAX_TRANS_OVERLAP.set(self.MAX_TRANS_OVERLAP)
-        self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
+        self.DATA_WIDTH = int(self.u.DATA_WIDTH)
 
         self.DRIVER_CNT = 3
         self.u.DRIVER_CNT.set(self.DRIVER_CNT)

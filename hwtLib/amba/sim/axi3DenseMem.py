@@ -1,5 +1,4 @@
 from hwt.bitmask import mask
-from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.constants import RESP_OKAY
 
@@ -28,7 +27,7 @@ class Axi3DenseMem(DenseMemory):
             assert axiR is None
             self.arAg = axi._ag.ar
             self.rAg = axi._ag.r
-            DW = evalParam(axi.DATA_WIDTH).val
+            DW = int(axi.DATA_WIDTH)
             self.awAg = axi._ag.aw
             self.wAg = axi._ag.w
             self.wAckAg = axi._ag.b
@@ -37,7 +36,7 @@ class Axi3DenseMem(DenseMemory):
             if axiAR is not None:
                 self.arAg = axiAR._ag
                 self.rAg = axiR._ag
-                DW = evalParam(axiR.DATA_WIDTH).val
+                DW = int(axiR.DATA_WIDTH)
             else:
                 assert axiR is None
                 self.arAg = None
@@ -47,15 +46,15 @@ class Axi3DenseMem(DenseMemory):
                 self.awAg = axiAW._ag
                 self.wAg = axiW._ag
                 self.wAckAg = axiB._ag
-                DW = evalParam(axiW.DATA_WIDTH).val
+                DW = int(axiW.DATA_WIDTH)
             else:
                 assert axiW is None
                 assert axiB is None
                 self.awAg = None
                 self.wAg = None
                 self.wAckAg = None
-            
-            assert axiAR is not None or axiAW is not None  
+
+            assert axiAR is not None or axiAW is not None
 
         self.cellSize = DW // 8
         self.allMask = mask(self.cellSize)
@@ -106,7 +105,7 @@ class Axi3DenseMem(DenseMemory):
             _id2, data, strb, last = self.wAg.data.pop(0)
 
             assert _id2._isFullVld()
-            #assert data._isFullVld()
+            # assert data._isFullVld()
             assert strb._isFullVld()
             assert last._isFullVld()
             assert _id == _id2.val

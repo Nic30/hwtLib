@@ -5,7 +5,6 @@ import unittest
 
 from hwt.hdlObjects.constants import Time, WRITE, NOP
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.mmu_2pageLvl import MMU_2pageLvl
 from hwt.bitmask import mask
@@ -15,14 +14,11 @@ class MMU_2pageLvl_TC(SimTestCase):
     def setUp(self):
         super(MMU_2pageLvl_TC, self).setUp()
 
-        def e(p):
-            return evalParam(p).val
-
         u = self.u = MMU_2pageLvl()
         self.prepareUnit(self.u)
-        self.DATA_WIDTH = e(u.DATA_WIDTH)
-        self.LVL2_PAGE_TABLE_ITEMS = e(u.LVL2_PAGE_TABLE_ITEMS)
-        self.LVL1_PAGE_TABLE_ITEMS = e(u.LVL1_PAGE_TABLE_ITEMS)
+        self.DATA_WIDTH = int(u.DATA_WIDTH)
+        self.LVL2_PAGE_TABLE_ITEMS = int(u.LVL2_PAGE_TABLE_ITEMS)
+        self.LVL1_PAGE_TABLE_ITEMS = int(u.LVL1_PAGE_TABLE_ITEMS)
 
     def buildVirtAddr(self, lvl1pgtIndx, lvl2pgtIndx, pageOffset):
         u = self.u
@@ -70,7 +66,7 @@ class MMU_2pageLvl_TC(SimTestCase):
     def test_translate10xRandomized(self):
         u = self.u
         N = 10
-        #self.randomize(u.rDatapump.req)
+        # self.randomize(u.rDatapump.req)
         self.randomize(u.rDatapump.r)
         self.randomize(u.virtIn)
         self.randomize(u.physOut)
@@ -83,7 +79,7 @@ class MMU_2pageLvl_TC(SimTestCase):
         for i in range(N):
             lvl2pgtData = [int(2 ** 12) * i2 if i + 1 == i2 else -1
                            for i2 in range(self.LVL2_PAGE_TABLE_ITEMS)]
-            lvl2pgt = m.calloc(self.LVL2_PAGE_TABLE_ITEMS, 
+            lvl2pgt = m.calloc(self.LVL2_PAGE_TABLE_ITEMS,
                                4,
                                initValues=lvl2pgtData)
 

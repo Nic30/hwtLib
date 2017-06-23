@@ -1,7 +1,7 @@
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.synthesizer.interfaceLevel.interface import Interface
-from hwt.synthesizer.param import Param, evalParam
-from hwt.interfaces.std import s, D
+from hwt.synthesizer.param import Param
+from hwt.interfaces.std import s, D, VectSignal
 from hwt.simulator.agentBase import SyncAgentBase
 from hwt.hdlObjects.constants import READ, WRITE, NOP
 from hwt.bitmask import mask
@@ -24,13 +24,13 @@ class Ipif(Interface):
         self.bus2ip_rnw = s()
 
         # read /write addr
-        self.bus2ip_addr = s(dtype=vecT(self.ADDR_WIDTH))
+        self.bus2ip_addr = VectSignal(self.ADDR_WIDTH)
 
-        self.bus2ip_data = s(dtype=vecT(self.DATA_WIDTH))
+        self.bus2ip_data = VectSignal(self.DATA_WIDTH)
         # byte enable for bus2ip_data
-        self.bus2ip_be = s(dtype=vecT(evalParam(self.DATA_WIDTH) // 8))
+        self.bus2ip_be = VectSignal(self.DATA_WIDTH // 8)
 
-        self.ip2bus_data = s(dtype=vecT(self.DATA_WIDTH), masterDir=D.IN)
+        self.ip2bus_data = VectSignal(self.DATA_WIDTH, masterDir=D.IN)
         # write ack
         self.ip2bus_wrack = s(masterDir=D.IN)
         # read ack
@@ -41,8 +41,7 @@ class Ipif(Interface):
         """
         :return: size of one word in unit of address
         """
-        DW = evalParam(self.DATA_WIDTH).val
-        return DW // self._getAddrStep()
+        return int(self.DATA_WIDTH) // self._getAddrStep()
 
     def _getAddrStep(self):
         """

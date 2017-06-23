@@ -3,8 +3,8 @@
 
 from hwt.interfaces.utils import addClkRstn
 from hwt.code import If, c
-from hwtLib.handshaked.compBase import HandshakedCompBase 
-from hwt.synthesizer.param import Param, evalParam
+from hwtLib.handshaked.compBase import HandshakedCompBase
+from hwt.synthesizer.param import Param
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 
 
@@ -16,7 +16,7 @@ class HandshakedReg(HandshakedCompBase):
         HandshakedCompBase._config(self)
         self.LATENCY = Param(1)
         self.DELAY = Param(0)
-        
+
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
@@ -26,16 +26,16 @@ class HandshakedReg(HandshakedCompBase):
     def _impl_latency(self, inVld, inRd, inData, outVld, outRd, prefix):
         isOccupied = self._reg(prefix + "isOccupied", defVal=0)
         regs_we = self._sig(prefix + 'reg_we')
-        
+
         outData = []
         for iin in inData:
             r = self._reg(prefix + 'reg_' + iin._name, iin._dtype)
-            
+
             If(regs_we,
                 r ** iin
             )
             outData.append(r)
-    
+
         If(isOccupied,
             If(outRd & ~inVld,
                 isOccupied ** 0
@@ -45,7 +45,7 @@ class HandshakedReg(HandshakedCompBase):
                isOccupied ** 1
             )
         )
-        
+
         If(isOccupied,
            c(outRd, inRd),
            outVld ** 1,
@@ -64,7 +64,7 @@ class HandshakedReg(HandshakedCompBase):
         ).Else(
            wordLoaded ** inVld
         )
-        
+
         outData = []
         for iin in inData:
             r = self._reg('reg_' + getSignalName(iin), iin._dtype)
@@ -72,21 +72,20 @@ class HandshakedReg(HandshakedCompBase):
                r ** iin
             )
             outData.append(r)
-        
-        
+
         inRd ** ~wordLoaded
         outVld ** wordLoaded
-        
+
         return outData
-    
+
     def _impl(self):
-        LATENCY = evalParam(self.LATENCY).val
-        DELAY = evalParam(self.DELAY).val
-        
+        LATENCY = int(self.LATENCY)
+        DELAY = int(self.DELAY)
+
         vld = self.getVld
         rd = self.getRd
         data = self.getData
-        
+
         Out = self.dataOut
         In = self.dataIn
         if LATENCY == 1 and DELAY == 0:
@@ -98,13 +97,14 @@ class HandshakedReg(HandshakedCompBase):
             outData = self._implLatencyAndDelay(latency1_vld, latency1_rd, outData, vld(Out), rd(Out), "latency2_delay1_")
         else:
             raise NotImplementedError(LATENCY, DELAY)
-        
+
         for ds, dm in zip(data(Out), outData):
             ds ** dm
+
 
 if __name__ == "__main__":
     from hwt.interfaces.std import Handshaked
     from hwt.synthesizer.shortcuts import toRtl
     u = HandshakedReg(Handshaked)
-    
+
     print(toRtl(u))
