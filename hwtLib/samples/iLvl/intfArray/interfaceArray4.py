@@ -8,7 +8,6 @@ from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import evalParam
 from hwtLib.types.ctypes import uint8_t
 
 
@@ -48,7 +47,7 @@ class InterfaceArraySample4(Unit):
             else:
                 p = BramPort_withoutClk()
                 dw = t.elmType.bit_length()
-                p.ADDR_WIDTH.set(log2ceil(evalParam(t.size).val - 1))
+                p.ADDR_WIDTH.set(log2ceil(int(t.size) - 1))
         else:
             raise NotImplementedError(t)
 
@@ -148,7 +147,7 @@ class InterfaceArraySample4TC(SimTestCase):
 
                 _a.f1._ag.dout.extend(_f1_out)
                 arr_f1_out.append(_f1_out)
-                
+
                 _b.f1._ag.din.extend(_f1_in)
                 arr_f1_in.append(_f1_in)
 
@@ -193,13 +192,13 @@ class InterfaceArraySample4TC(SimTestCase):
 
                 emp(a_arr.f1._ag.dout, (i, i2))
                 eq(b_arr.f1._ag.dout, _f1_out, (i, i2))
-                
+
                 emp(b_arr.f1._ag.din, (i, i2))
                 dinEq(a_arr.f1, _f1_in, (i, i2))
-                
+
                 emp(a_arr.f2._ag.dout, (i, i2))
                 eq(b_arr.f2._ag.dout, _f2_out, (i, i2))
-                
+
                 emp(b_arr.f2._ag.din, (i, i2))
                 dinEq(a_arr.f2, _f2_in, (i, i2))
 
@@ -221,11 +220,10 @@ if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(InterfaceArraySample4TC('test_InterfaceArraySample4b_intfIterations'))
     # suite.addTest(InterfaceArraySample4TC('test_InterfaceArraySample4b'))
-    
+
     suite.addTest(unittest.makeSuite(InterfaceArraySample4TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
     from hwt.synthesizer.shortcuts import toRtl
     print(toRtl(InterfaceArraySample4c()))
-

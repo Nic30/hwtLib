@@ -3,7 +3,7 @@ from hwt.code import iterBits
 from hwt.interfaces.std import VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwtLib.logic.crcPoly import CRC_5_USB
 from hwtLib.logic.crcUtils import parsePolyStr, buildCrcMatrix_dataMatrix
 
@@ -29,10 +29,11 @@ class CrcComb(Unit):
             self.dataOut = VectSignal(self.POLY_WIDTH)
 
     def _impl(self):
-        PW = evalParam(self.POLY_WIDTH).val
-        DW = evalParam(self.DATA_WIDTH).val
+        PW = int(self.POLY_WIDTH)
+        DW = int(self.DATA_WIDTH)
         # assert PW == DW
-        poly = evalParam(self.POLY).val
+        poly = int(self.POLY)
+
         if isinstance(poly, str):
             polyCoefs = parsePolyStr(poly, PW)
         elif isinstance(poly, int):

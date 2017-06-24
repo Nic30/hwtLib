@@ -1,6 +1,6 @@
 from hwt.code import log2ceil
 from hwt.interfaces.std import VectSignal
-from hwt.interfaces.utils import propagateClkRstn
+from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.param import Param
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, InsertIntf, \
@@ -37,17 +37,17 @@ class CuckooHashTableCore(HashTableCore):
         """
         :param polynomials: list of polynomials for crc hashers used in tables 
         """
-        super(CuckooHashTableCore, self).__init__()
+        super(HashTableCore, self).__init__()
         self.POLYNOMIALS = polynomials
 
     def _config(self):
-        self.TABLE_CNT = Param(2)
-        self.TABLE_SIZE = Param(1024)
+        self.TABLE_SIZE = Param(32)
         self.DATA_WIDTH = Param(32)
         self.KEY_WIDTH = Param(8)
 
     def _declr(self):
-        assert int(self.TABLE_CNT) == len(self.POLYNOMIALS)
+        addClkRstn(self)
+        self.TABLE_CNT = len(self.POLYNOMIALS)
         self.HASH_WITH = log2ceil(self.TABLE_SIZE).val
 
         with self._paramsShared():
@@ -55,7 +55,6 @@ class CuckooHashTableCore(HashTableCore):
             self.insert.HASH_WIDTH.set(self.HASH_WITH)
 
             self.lookup = LookupKeyIntf()
-            self.lookup.KEY_WIDTH.set(self.KEY_WITH)
 
             self.lookupRes = CLookupResultIntf()
             self.lookupRes.HASH_WIDTH.set(self.HASH_WITH)
@@ -65,7 +64,7 @@ class CuckooHashTableCore(HashTableCore):
         self.table = [HashTableCore(p) for p  in self.POLYNOMIALS]
         with self._paramsShared():
             self._registerArray("table", self.table)
-            for t in zip(self.table, self.POLYNOMIALS):
+            for t in self.table:
                 t.ITEMS_CNT.set(self.TABLE_SIZE)
 
     def _impl(self):
@@ -75,5 +74,6 @@ class CuckooHashTableCore(HashTableCore):
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    u = CuckooHashTableCore()
+    from hwtLib.logic.crcPoly import CRC_32
+    u = CuckooHashTableCore([CRC_32, CRC_32])
     print(toRtl(u))

@@ -10,13 +10,14 @@ from hwtLib.handshaked.reg import HandshakedReg
 class HsRegL1D0TC(SimTestCase):
     LATENCY = 1
     DELAY = 0
+
     def setUp(self):
         SimTestCase.setUp(self)
         self.u = HandshakedReg(Handshaked)
         self.u.DELAY.set(self.DELAY)
         self.u.LATENCY.set(self.LATENCY)
         self.prepareUnit(self.u)
-    
+
     def test_passdata(self):
         u = self.u
         u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
@@ -31,7 +32,7 @@ class HsRegL1D0TC(SimTestCase):
         u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
         self.randomize(u.dataIn)
         self.randomize(u.dataOut)
-        
+
         self.doSim((self.DELAY + self.LATENCY) * 600 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, [1, 2, 3, 4, 5, 6])

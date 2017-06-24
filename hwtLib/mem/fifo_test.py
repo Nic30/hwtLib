@@ -7,7 +7,6 @@ import unittest
 from hwt.hdlObjects.constants import Time
 from hwt.simulator.agentConnector import agInts
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.param import evalParam
 from hwtLib.mem.fifo import Fifo
 
 
@@ -18,7 +17,7 @@ class FifoTC(SimTestCase):
         u.DEPTH.set(4)
         u.EXPORT_SIZE.set(True)
         self.prepareUnit(u)
-        
+
     def getTime(self, wordCnt):
         return wordCnt * 10 * Time.ns
 
@@ -58,7 +57,6 @@ class FifoTC(SimTestCase):
 
     def test_multiple(self):
         u = self.u
-        hasSize = evalParam(u.EXPORT_SIZE).val
         u.dataOut._ag.enable = False
 
         def openOutput(s):
@@ -72,7 +70,7 @@ class FifoTC(SimTestCase):
         self.doSim(self.getTime(26))
 
         collected = u.dataOut._ag.data
-        if hasSize:
+        if u.EXPORT_SIZE:
             self.assertValSequenceEqual(u.size._ag.data,
                 [0, 0, 1, 2, 3, 4, 4, 4, 4, 4,
                  3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 1, 0])

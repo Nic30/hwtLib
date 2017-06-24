@@ -8,7 +8,7 @@ from hwt.hdlObjects.types.enum import Enum
 from hwt.interfaces.std import Handshaked, RegCntrl
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf, AxiWDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
@@ -17,7 +17,7 @@ from hwtLib.handshaked.streamNode import streamSync, streamAck
 
 class CLinkedListWriter(Unit):
     """
-    This unit writes items to (circular) linked list like structure 
+    This unit writes items to (circular) linked list like structure
     (List does not necessary need to be circular but space is specified by two pointers 
     like in circular queue)
 
@@ -33,8 +33,8 @@ class CLinkedListWriter(Unit):
     baseAddr is address of actual node
 
     :attention: device writes chunks of max size <= BUFFER_CAPACITY/2
-    :attention: next addr is downloaded on background when items are uploaded 
-               (= has to be set when this unit enters this block) 
+    :attention: next addr is downloaded on background when items are uploaded
+               (= has to be set when this unit enters this block)
 
     :note: wrPtr == rdPtr   => queue is empty and there is (2^PTR_WIDTH) - 1 of empty space
         wrPtr == rdPtr+1 => queue is full
@@ -68,7 +68,7 @@ class CLinkedListWriter(Unit):
             # write interface for datapump
             self.wDatapump = AxiWDatapumpIntf()
             self.wDatapump.MAX_LEN.set(self.BUFFER_CAPACITY // 2)
-            assert evalParam(self.BUFFER_CAPACITY).val <= evalParam(self.ITEMS_IN_BLOCK).val
+            assert self.BUFFER_CAPACITY <= self.ITEMS_IN_BLOCK
 
             # interface for items which should be written into list
             self.dataIn = Handshaked()
@@ -101,7 +101,7 @@ class CLinkedListWriter(Unit):
         rReq.addr ** self.indexToAddr(baseIndex + self.ITEMS_IN_BLOCK)
         rReq.id ** self.ID
         rReq.len ** 0
-        rReq.rem ** 0 
+        rReq.rem ** 0
 
         rReq.vld ** doReq
 

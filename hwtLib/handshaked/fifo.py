@@ -6,7 +6,7 @@ from hwt.code import packedWidth, packed, \
     connectUnpacked, If, connect, log2ceil
 from hwt.interfaces.std import VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.param import evalParam, Param
+from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.mem.fifo import Fifo
@@ -35,7 +35,7 @@ class HandshakedFifo(HandshakedCompBase):
         f.DEPTH.set(self.DEPTH - 1)  # because there is an extra register
         f.EXPORT_SIZE.set(self.EXPORT_SIZE)
 
-        if evalParam(self.EXPORT_SIZE).val:
+        if self.EXPORT_SIZE:
             self.size = VectSignal(log2ceil(self.DEPTH + 1 + 1), signed=False)
 
     def _impl(self):
@@ -64,7 +64,7 @@ class HandshakedFifo(HandshakedCompBase):
            out_vld ** (~fifo.dataOut.wait)
         )
 
-        if evalParam(self.EXPORT_SIZE).val:
+        if self.EXPORT_SIZE:
             sizeTmp = self._sig("sizeTmp", self.size._dtype)
             connect(fifo.size, sizeTmp, fit=True)
 

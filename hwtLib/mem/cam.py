@@ -8,7 +8,7 @@ from hwt.interfaces.std import Handshaked, VldSynced
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.constants import SERI_MODE
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwtLib.interfaces.addrDataHs import AddrDataBitMaskHs
 
 
@@ -53,7 +53,7 @@ class Cam(Unit):
         key.rd ** 1
         outVld ** key.vld
 
-        for i in range(evalParam(self.ITEMS).val):
+        for i in range(int(self.ITEMS)):
             outNext[i] ** mem[i]._eq(Concat(key.data, hBit(1)))
 
         self.out.data ** out
@@ -64,7 +64,7 @@ class Cam(Unit):
         self._mem = self._sig("cam_mem",
                               Array(vecT(self.DATA_WIDTH + 1),
                                     self.ITEMS),
-                              [0 for _ in range(evalParam(self.ITEMS).val)]
+                              [0 for _ in range(int(self.ITEMS))]
                               )
         self.writeHandler(self._mem)
         self.matchHandler(self._mem)

@@ -6,7 +6,6 @@ from hwt.hdlObjects.typeShortcuts import hInt
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import evalParam
 from hwtLib.amba.axiLite import AxiLite
 
 
@@ -37,7 +36,7 @@ class InterfaceArraySample3b(InterfaceArraySample3):
     which is not using items of these array interfaces
     """
     def _impl(self):
-        for i in range(evalParam(self.SIZE).val):
+        for i in range(int(self.SIZE)):
             self.b[i] ** self.a[i]
 
 

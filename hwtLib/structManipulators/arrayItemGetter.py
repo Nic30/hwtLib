@@ -3,7 +3,7 @@ from hwt.hdlObjects.typeShortcuts import vec
 from hwt.interfaces.std import Handshaked, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
@@ -36,7 +36,7 @@ class ArrayItemGetter(Unit):
         self.item = Handshaked()
         self.item.DATA_WIDTH.set(self.ITEM_WIDTH)
 
-        self.ITEMS_IN_DATA_WORD = evalParam(self.DATA_WIDTH).val // evalParam(self.ITEM_WIDTH).val
+        self.ITEMS_IN_DATA_WORD = int(self.DATA_WIDTH) // int(self.ITEM_WIDTH)
 
         with self._paramsShared():
             # interface for communication with datapump
@@ -51,8 +51,8 @@ class ArrayItemGetter(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
-        ITEM_WIDTH = evalParam(self.ITEM_WIDTH).val
-        DATA_WIDTH = evalParam(self.DATA_WIDTH).val
+        ITEM_WIDTH = int(self.ITEM_WIDTH)
+        DATA_WIDTH = int(self.DATA_WIDTH)
         ITEMS_IN_DATA_WORD = self.ITEMS_IN_DATA_WORD
         ITEM_SIZE_IN_WORDS = 1
 

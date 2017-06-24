@@ -4,7 +4,6 @@
 from hwt.code import If, Concat, log2ceil, Switch, splitOnParts
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.param import evalParam
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
 
@@ -22,12 +21,12 @@ class HandshakedResizer(HandshakedCompBase):
         :param outIntfConfigFn: function outIntfConfigFn(input interface) which will be applied on dataOut
         """
         HandshakedCompBase.__init__(self, hsIntfCls)
-        
+
         assert len(scale) == 2
-        scale = (evalParam(scale[0]).val, evalParam(scale[1]).val)
-        assert scale[0] == 1 or scale[1] == 1 
-        assert scale[0] > 0 and scale[1] > 0 
-        
+        scale = (int(scale[0]), int(scale[1]))
+        assert scale[0] == 1 or scale[1] == 1
+        assert scale[0] > 0 and scale[1] > 0
+
         self._scale = scale
 
         self._inIntfConfigFn = inIntfConfigFn
@@ -40,10 +39,10 @@ class HandshakedResizer(HandshakedCompBase):
         addClkRstn(self)
         self.dataIn = self.intfCls()
         self._inIntfConfigFn(self.dataIn)
-        
+
         self.dataOut = self.intfCls()
         self._outIntfConfigFn(self.dataOut)
-        
+
     def _upscaleDataPassLogic(self, inputRegs_cntr, ITEMS):
 
         # valid when all registers are loaded and input with last datapart is valid 
@@ -77,13 +76,12 @@ class HandshakedResizer(HandshakedCompBase):
             dout ** Concat(din, *reversed(inputRegs))
 
         self._upscaleDataPassLogic(inputRegs_cntr, factor)
-    
-    
+
     def _downscale(self, factor):
         inputRegs_cntr = self._reg("inputRegs_cntr",
                                    vecT(log2ceil(factor + 1), False),
                                    defVal=0)
-        
+
         # instanciate HandshakedReg, handshaked builder is not used to avoid dependencies
         inReg = HandshakedReg(self.intfCls)
         inReg._updateParamsFrom(self.dataIn)
@@ -100,11 +98,10 @@ class HandshakedResizer(HandshakedCompBase):
             Switch(inputRegs_cntr).addCases(
                 [(i, dout ** inPart) for i, inPart in enumerate(inParts)]
                 )
-        
+
         self.getVld(dataOut) ** self.getVld(dataIn)
         self.getRd(dataIn) ** (inputRegs_cntr._eq(factor - 1) & self.getRd(dataOut))
-        
-        
+
         If(self.getVld(dataIn) & self.getRd(dataOut),
             If(inputRegs_cntr._eq(factor - 1),
                inputRegs_cntr ** 0
@@ -121,9 +118,8 @@ class HandshakedResizer(HandshakedCompBase):
             self._upscale(scale[1])
         else:
             self.dataOut ** self.dataIn
-            return 
+            return
 
-        
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl

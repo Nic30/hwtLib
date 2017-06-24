@@ -1,6 +1,6 @@
 from hwt.hdlObjects.constants import DIRECTION
 from hwt.interfaces.std import VectSignal, Signal
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axiLite import AxiLite, AxiLite_b, AxiLite_r, \
     AxiLite_addr, IP_AXILite
 from hwtLib.amba.axi_intf_common import AxiMap, Axi_id
@@ -22,7 +22,7 @@ class Axi4_addr(AxiLite_addr, Axi_id):
         self.burst = VectSignal(2)
         self.cache = VectSignal(4)
         self.len = VectSignal(self.LEN_WIDTH)
-        self.lock = VectSignal(evalParam(self.LOCK_WIDTH).val)
+        self.lock = VectSignal(int(self.LOCK_WIDTH))
         self.prot = VectSignal(3)
         self.size = VectSignal(3)
         self.qos = VectSignal(4)

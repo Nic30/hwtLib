@@ -8,7 +8,6 @@ from hwt.hdlObjects.constants import Time
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import evalParam
 from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_w, Axi4_b
 from hwtLib.amba.axi4_wDatapump import Axi_wDatapump
@@ -54,7 +53,7 @@ class WStrictOrderInterconnectComplexTC(SimTestCase):
         self.u = WStrictOrderInterconnecComplex()
         self.MAX_TRANS_OVERLAP = 4
         self.u.MAX_TRANS_OVERLAP.set(self.MAX_TRANS_OVERLAP)
-        self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
+        self.DATA_WIDTH = int(self.u.DATA_WIDTH)
 
         self.DRIVER_CNT = 3
         self.u.DRIVER_CNT.set(self.DRIVER_CNT)

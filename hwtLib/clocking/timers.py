@@ -1,7 +1,6 @@
 from hwt.code import log2ceil, If, isPow2
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.pyUtils.arrayQuery import where
-from hwt.synthesizer.param import evalParam
 
 
 class TimerInfo(object):
@@ -17,7 +16,7 @@ class TimerInfo(object):
 
     def __init__(self, maxVal, name=None):
         self.maxValOriginal = maxVal
-        self.maxVal = evalParam(maxVal).val
+        self.maxVal = int(maxVal)
         assert isinstance(self.maxVal, int), self.maxVal
         self.parent = None
 

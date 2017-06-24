@@ -9,7 +9,6 @@ from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.param import evalParam
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.handshaked.streamNode import streamSync, streamAck
@@ -18,19 +17,19 @@ from hwtLib.handshaked.streamNode import streamSync, streamAck
 class AxiS_frameForge(AxiSCompBase):
     """
     Assemble fields into frame on axi stream interface
-    
+
     .. aafig::
-        +---------+                               
-        | field0  +------+                        
-        +---------+      |                        
-                       +-v-------+                
-        +---------+    |         | output stream  
+        +---------+
+        | field0  +------+
+        +---------+      |
+                       +-v-------+
+        +---------+    |         | output stream
         | field1  +---->  forge  +--------------->
-        +---------+    |         |                
-                       +-^-------+                
-        +---------+      |                        
-        | field2  +------+                        
-        +---------+                               
+        +---------+    |         |
+                       +-^-------+
+        +---------+      |
+        | field2  +------+
+        +---------+
     """
     def __init__(self, axiSIntfCls, structT,
                  maxFrameLen=inf,
@@ -68,9 +67,9 @@ class AxiS_frameForge(AxiSCompBase):
         addClkRstn(self)
         self.dataOut = self.intfCls()
         self.dataIn = StructIntf(self._structT, self._mkFieldIntf)
-    
+
     def parseTemplate(self):
-        DW = evalParam(self.DATA_WIDTH).val
+        DW = int(self.DATA_WIDTH)
         tmpl = TransTmpl(self._structT)
         self._frames = FrameTemplate.framesFromTransTmpl(
             tmpl,
@@ -83,7 +82,6 @@ class AxiS_frameForge(AxiSCompBase):
 
         self._frames = list(self._frames)
 
-       
     def _impl(self):
         dout = self.dataOut
         self.parseTemplate()
@@ -101,11 +99,11 @@ class AxiS_frameForge(AxiSCompBase):
         for frame in self._frames:
             for _i, transactionParts in frame.walkWords(showPadding=True):
                 i = _i + wordsOfPrevFrames
-                
+
                 inPorts = []
                 lastInPorts = []
                 wordData = self._sig("word%d" % i, dout.data._dtype)
-    
+
                 for tPart in transactionParts:
                     high, low = tPart.getBusWordBitRange()
                     if tPart.isPadding:

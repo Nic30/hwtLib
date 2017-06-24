@@ -3,7 +3,6 @@ import unittest
 from hwt.hdlObjects.constants import Time
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.structWriter import StructWriter
 from hwtLib.types.ctypes import uint64_t
@@ -14,7 +13,7 @@ class StructWriter_TC(SimTestCase):
         u = self.u = StructWriter(structT)
         u.DATA_WIDTH.set(64)
         self.prepareUnit(u)
-        m = DenseMemory(evalParam(u.DATA_WIDTH).val, u.clk, wDatapumpIntf=u.wDatapump)
+        m = DenseMemory(int(u.DATA_WIDTH), u.clk, wDatapumpIntf=u.wDatapump)
         return m
 
     def test_singleField(self):
@@ -68,7 +67,7 @@ class StructWriter_TC(SimTestCase):
         m = self.buildEnv(s)
         u = self.u
         dIn = u.dataIn
-        
+
         dIn.field0._ag.data.append(MAGIC)
         dIn.field1._ag.data.append(MAGIC + 1)
         dIn.field2._ag.data.append(MAGIC + 2)
@@ -102,7 +101,7 @@ class StructWriter_TC(SimTestCase):
         m = self.buildEnv(s)
         u = self.u
         dIn = u.dataIn
-        
+
         dIn.field0._ag.data.append(MAGIC)
         dIn.field1._ag.data.append(MAGIC + 1)
         dIn.field2._ag.data.append(MAGIC + 2)
@@ -120,7 +119,6 @@ class StructWriter_TC(SimTestCase):
         self.assertValEqual(s_got.field1, MAGIC + 1)
         self.assertValEqual(s_got.field2, MAGIC + 2)
 
-
     def test_holeInMiddle(self):
         MAGIC = 54
         MAGIC2 = 0x1000
@@ -137,12 +135,12 @@ class StructWriter_TC(SimTestCase):
         m = self.buildEnv(s)
         u = self.u
         dIn = u.dataIn
-        
+
         dIn.field0._ag.data.append(MAGIC)
         dIn.field1._ag.data.append(MAGIC + 1)
         dIn.field2._ag.data.append(MAGIC + 2)
         u.set._ag.data.append(MAGIC2)
-        
+
         self.doSim(100 * Time.ns)
 
         self.assertEmpty(dIn.field0._ag.data)

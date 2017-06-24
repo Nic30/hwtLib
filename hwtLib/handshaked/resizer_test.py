@@ -16,15 +16,15 @@ class HandshakedResizerTC(SimTestCase):
         # self.randomize(u.dataIn)
         # self.randomize(u.dataOut)
         N = 10
-        
+
         d = [self._rand.getrandbits(32) for _ in range(N)]
-        
+
         u.dataIn._ag.data.extend(d)
-        
+
         self.doSim(N * 40 * Time.ns)
-        
+
         self.assertValSequenceEqual(u.dataOut._ag.data, d)
-    
+
     def test_1to3(self):
         u = HandshakedResizer(Handshaked, [1, 3],
                               lambda intf: intf.DATA_WIDTH.set(32),
@@ -33,20 +33,20 @@ class HandshakedResizerTC(SimTestCase):
         # self.randomize(u.dataIn)
         # self.randomize(u.dataOut)
         N = 9
-        
+
         d = [self._rand.getrandbits(32) for _ in range(N)]
-        
+
         u.dataIn._ag.data.extend(d)
-        
+
         self.doSim(N * 40 * Time.ns)
-        
+
         expected = []
         for a, b, c in grouper(3, d):
             v = it(32, a, b, c)
             expected.append(v)
-        
+
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
-    
+
     def test_3to1(self):
         u = HandshakedResizer(Handshaked, [3, 1],
                               lambda intf: intf.DATA_WIDTH.set(3 * 32),
@@ -55,18 +55,18 @@ class HandshakedResizerTC(SimTestCase):
         # self.randomize(u.dataIn)
         # self.randomize(u.dataOut)
         N = 9
-        
+
         d = [self._rand.getrandbits(3 * 32) for _ in range(N)]
-        
+
         u.dataIn._ag.data.extend(d)
-        
+
         self.doSim(3 * N * 40 * Time.ns)
-        
+
         expected = []
         m = mask(32)
         for a in d:
             expected.extend([a & m, (a >> 32) & m, (a >> 64) & m])
-        
+
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
 
 if __name__ == "__main__":

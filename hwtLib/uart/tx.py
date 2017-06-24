@@ -6,7 +6,7 @@ from hwt.hdlObjects.typeShortcuts import vecT, hBit
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwtLib.clocking.clkBuilder import ClkBuilder
 
 
@@ -33,7 +33,7 @@ class UartTx(Unit):
         BITS_TO_SEND = 1 + 8 + 1
         BIT_RATE = self.FREQ // self.BAUD
 
-        assert evalParam(BIT_RATE).val >= 1
+        assert BIT_RATE >= 1
 
         din = self.dataIn
 

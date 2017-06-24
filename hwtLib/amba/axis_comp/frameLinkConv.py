@@ -6,7 +6,7 @@ from hwt.code import Concat, Switch, If
 from hwt.hdlObjects.typeShortcuts import vec
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream_withUserAndStrb
 from hwtLib.interfaces.frameLink import FrameLink
 
@@ -37,7 +37,7 @@ class AxiSToFrameLink(Unit):
             self.dataOut = FrameLink()
 
     def _impl(self):
-        assert(evalParam(self.USER_WIDTH).val == 2)  # this is how is protocol specified
+        assert(int(self.USER_WIDTH) == 2)  # this is how is protocol specified
         In = self.dataIn
         Out = self.dataOut
 

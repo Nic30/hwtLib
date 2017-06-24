@@ -5,7 +5,6 @@ from hwt.code import If, FsmBuilder, Or, log2ceil, connect, Switch, \
     SwitchLogic
 from hwt.hdlObjects.typeShortcuts import vec, vecT
 from hwt.hdlObjects.types.enum import Enum
-from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
@@ -121,7 +120,7 @@ class AxiLiteEndpoint(BusEndpoint):
     def writePart(self):
         sig = self._sig
         reg = self._reg
-        addrWidth = evalParam(self.ADDR_WIDTH).val
+        addrWidth = int(self.ADDR_WIDTH)
         ADDR_STEP = self._getAddrStep()
 
         wSt_t = Enum('wSt_t', ['wrIdle', 'wrData', 'wrResp'])

@@ -2,7 +2,7 @@ from hwt.code import log2ceil, connect, Concat
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwtLib.handshaked.ramAsHs import RamAsHs
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import streamSync
@@ -18,11 +18,11 @@ class HashTableCore(Unit):
     """
     Generic hash table, in block RAM
     there is a input key which is hashed ad this has is used as an index into memory
-    item on this place is checked and returned on "lookupRes" interface 
+    item on this place is checked and returned on "lookupRes" interface
     (item does have to be found, see "found" flag in LookupResultIntf)
-    
-    memory is an array of items in format 
-    
+
+    memory is an array of items in format
+
     .. code-block:: c
 
         struct item {
@@ -48,17 +48,17 @@ class HashTableCore(Unit):
         self.DATA_WIDTH = Param(8)
         self.LOOKUP_HASH = Param(False)
         self.LOOKUP_KEY = Param(False)
-        
+
     def _declr(self):
         addClkRstn(self)
         assert int(self.KEY_WIDTH) > 0
         assert int(self.DATA_WIDTH) >= 0
         assert int(self.ITEMS_CNT) > 1
-        
+
         self.HASH_WITH = log2ceil(self.ITEMS_CNT).val
 
-        assert self.HASH_WITH < int(self.KEY_WIDTH), "It makes no sense to use hash table when you can use key directly as index"
-        
+        assert self.HASH_WITH < int(self.KEY_WIDTH), ("It makes no sense to use hash table when you can use key directly as index", self.HASH_WITH, self.KEY_WIDTH)
+
         with self._paramsShared():
             self.insert = InsertIntf()
             self.insert.HASH_WIDTH.set(self.HASH_WITH)
@@ -76,8 +76,8 @@ class HashTableCore(Unit):
         tc = self.tableConnector = RamAsHs()
         tc.ADDR_WIDTH.set(t.ADDR_WIDTH.get())
         tc.DATA_WIDTH.set(t.DATA_WIDTH.get())
-        
-        hashWidth = max(evalParam(self.KEY_WIDTH).val, self.HASH_WITH)
+
+        hashWidth = max(int(self.KEY_WIDTH), int(self.HASH_WITH))
         h = self.hash = CrcComb()
         h.DATA_WIDTH.set(hashWidth)
         h.POLY.set(self.POLYNOME)
@@ -89,29 +89,29 @@ class HashTableCore(Unit):
         """
         DW = int(self.DATA_WIDTH)
         KW = int(self.KEY_WIDTH)
-        
+
         vldFlag = sig[0]
 
         dataLow = 1
         dataHi = dataLow + DW
-        if dataHi > dataLow: 
+        if dataHi > dataLow:
             data = sig[dataHi:dataLow]
         else:
             data = None
-        
+
         keyLow = dataHi
         keyHi = keyLow + KW
         # assert keyHi > keyLow
-        
+
         key = sig[keyHi:keyLow]
-        
+
         return (key, data, vldFlag)
-    
+
     def lookupLogic(self, ramR):
         h = self.hash
         l = self.lookup
         res = self.lookupRes
-        
+
         # tmp storage for original key and hash for later check
         origKeyReg = HandshakedReg(LookupKeyIntf)
         origKeyReg.KEY_WIDTH.set(self.KEY_WIDTH)
@@ -119,14 +119,13 @@ class HashTableCore(Unit):
         origKeyReg.dataIn.key ** l.key
         origKeyReg.clk ** self.clk
         origKeyReg.rst_n ** self.rst_n
-        
+
         origKey = origKeyReg.dataOut
-        
 
         # hash key and address with has in table
         h.dataIn ** l.key
         # has can be wider
-        connect(h.dataOut, ramR.addr.data, fit=True) 
+        connect(h.dataOut, ramR.addr.data, fit=True)
 
         inputSlaves = [ramR.addr, origKeyReg.dataIn]
         outputMasters = [origKey, ramR.data, ]
@@ -139,7 +138,7 @@ class HashTableCore(Unit):
             origHashReg.clk ** self.clk
             origHashReg.rst_n ** self.rst_n
             connect(h.dataOut, origHashReg.dataIn.data, fit=True)
-            
+
             inputSlaves.append(origHashReg.dataIn)
             outputMasters.append(origHashReg.dataOut)
 
@@ -149,7 +148,7 @@ class HashTableCore(Unit):
         # propagate loaded data
         streamSync(masters=outputMasters,
                    slaves=[res])
-            
+
         key, data, vldFlag = self.parseKeyRec(ramR.data.data)
 
         if self.LOOKUP_HASH:
@@ -157,22 +156,22 @@ class HashTableCore(Unit):
 
         if self.LOOKUP_KEY:
             res.key ** origKey.key
-            
+
         if self.DATA_WIDTH:
             res.data ** data
 
-        res.found ** (origKey.key._eq(key) & vldFlag) 
-        
+        res.found ** (origKey.key._eq(key) & vldFlag)
+
     def insertLogic(self, ramW):
         In = self.insert
-        
+
         if self.DATA_WIDTH:
             rec = Concat(In.key, In.data, In.vldFlag)
         else:
             rec = Concat(In.key, In.vldFlag)
 
         ramW.data ** rec
-        ramW.addr ** In.hash 
+        ramW.addr ** In.hash
         streamSync(masters=[In], slaves=[ramW])
 
     def _impl(self):
@@ -187,4 +186,4 @@ class HashTableCore(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = HashTableCore(CRC_32)
-    print(toRtl(u))  
+    print(toRtl(u))

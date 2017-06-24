@@ -6,7 +6,6 @@ import unittest
 from hwt.hdlObjects.constants import Time, NOP
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import agent_randomize
-from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.arrayBuff_writer import ArrayBuff_writer
 
@@ -16,9 +15,9 @@ class ArrayBuff_writer_TC(SimTestCase):
         super(ArrayBuff_writer_TC, self).setUp()
         self.u = ArrayBuff_writer()
         self.u.TIMEOUT.set(32)
-        self.ID = evalParam(self.u.ID).val
-        self.ITEMS = evalParam(self.u.ITEMS).val
-        self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
+        self.ID = int(self.u.ID)
+        self.ITEMS = int(self.u.ITEMS)
+        self.DATA_WIDTH = int(self.u.DATA_WIDTH)
         self.prepareUnit(self.u)
 
     def test_nop(self):

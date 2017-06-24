@@ -1,5 +1,5 @@
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwtLib.logic.crcPoly import CRC_5_USB
 from hwt.interfaces.std import VldSynced, VectSignal
 from hwt.interfaces.utils import addClkRstn
@@ -28,9 +28,9 @@ class Crc(Unit):
             self.dataOut = VectSignal(self.POLY_WIDTH)
 
     def _impl(self):
-        PW = evalParam(self.POLY_WIDTH).val
-        DW = evalParam(self.DATA_WIDTH).val
-        poly = evalParam(self.POLY).val
+        PW = int(self.POLY_WIDTH)
+        DW = int(self.DATA_WIDTH)
+        poly = int(self.POLY)
         if isinstance(poly, str):
             polyCoefs = parsePolyStr(poly, PW)
         elif isinstance(poly, int):

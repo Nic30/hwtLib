@@ -7,7 +7,7 @@ from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import BramPort, Clk, BramPort_withoutClk
 from hwt.serializer.constants import SERI_MODE
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 
 
 class RamSingleClock(Unit):
@@ -19,7 +19,7 @@ class RamSingleClock(Unit):
         self.PORT_CNT = Param(1)
 
     def _declr(self):
-        PORTS = evalParam(self.PORT_CNT).val
+        PORTS = int(self.PORT_CNT)
 
         self.clk = Clk()
         with self._paramsShared():
@@ -44,7 +44,7 @@ class RamSingleClock(Unit):
         )
 
     def _impl(self):
-        PORTS = evalParam(self.PORT_CNT).val
+        PORTS = int(self.PORT_CNT)
         dt = Array(vecT(self.DATA_WIDTH), power(2, self.ADDR_WIDTH))
         self._mem = self._sig("ram_memory", dt)
 
