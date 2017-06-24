@@ -1,46 +1,44 @@
 from hwt.code import log2ceil
-from hwt.interfaces.std import Handshaked, VectSignal, Signal
+from hwt.interfaces.std import VectSignal
 from hwt.interfaces.utils import propagateClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
-from hwtLib.mem.hashTable import LookupKeyIntf
-from hwtLib.mem.ram import RamSingleClock
+from hwt.synthesizer.param import Param
+from hwtLib.mem.hashTableCore import HashTableCore
+from hwtLib.mem.hashTable_intf import LookupKeyIntf, InsertIntf, \
+    LookupResultIntf
 
 
-CHT_FOUND = 1
-
-
-class CInsertPort(Handshaked):
+class CInsertIntf(InsertIntf):
     def _config(self):
-        Handshaked._config(self)
-        self.HASH_WIDTH = Param(8)
-
-    def _declr(self):
-        super(Handshaked, self)._declr()
-        self.hash = VectSignal(self.HASH_WIDTH)
-        self.table = VectSignal(1)
-
-class CLookupResultIntf(Handshaked):
-    def _config(self):
-        Handshaked._config(self)
-        self.HASH_WIDTH = Param(8)
+        super(CInsertIntf, self)._config()
         self.TABLE_CNT = Param(2)
 
     def _declr(self):
-        Handshaked._declr(self)
-        self.hash = VectSignal(self.HASH_WIDTH)
+        super(CInsertIntf, self)._declr()
+        self.table = VectSignal(log2ceil(self.TABLE_CNT))
+
+class CLookupResultIntf(LookupResultIntf):
+    def _config(self):
+        super(CLookupResultIntf, self)._config()
+        self.TABLE_CNT = Param(2)
+
+    def _declr(self):
+        super(CLookupResultIntf, self)._config()
         self.table = VectSignal(self.TABLE_CNT)
-        self.found = Signal()
 
 
 # https://web.stanford.edu/class/cs166/lectures/13/Small13.pdf
-class CuckooHashTableCore(Unit):
+class CuckooHashTableCore(HashTableCore):
     """
-    [TODO] not finished yet
+    Cuckoo hash uses more tables with different hash functions
+    This is just simple container of these tables 
     """
-    def __init__(self, polynoms):
+
+    def __init__(self, polynomials):
+        """
+        :param polynomials: list of polynomials for crc hashers used in tables 
+        """
         super(CuckooHashTableCore, self).__init__()
-        self.POLYNOMS = polynoms
+        self.POLYNOMIALS = polynomials
 
     def _config(self):
         self.TABLE_CNT = Param(2)
@@ -49,10 +47,11 @@ class CuckooHashTableCore(Unit):
         self.KEY_WIDTH = Param(8)
 
     def _declr(self):
+        assert int(self.TABLE_CNT) == len(self.POLYNOMIALS)
         self.HASH_WITH = log2ceil(self.TABLE_SIZE).val
-        TABLE_CNT = evalParam(self.TABLE_CNT).val
+
         with self._paramsShared():
-            self.insert = CInsertPort()
+            self.insert = CInsertIntf()
             self.insert.HASH_WIDTH.set(self.HASH_WITH)
 
             self.lookup = LookupKeyIntf()
@@ -61,17 +60,17 @@ class CuckooHashTableCore(Unit):
             self.lookupRes = CLookupResultIntf()
             self.lookupRes.HASH_WIDTH.set(self.HASH_WITH)
             self.lookupRes.TABLE_CNT.set(self.TABLE_CNT)
-        self.insertAck = Handshaked()
-        self.insertAck.DATA_WIDTH.set(1)
 
-        self.table = [RamSingleClock() for _ in range(TABLE_CNT)]
+
+        self.table = [HashTableCore(p) for p  in self.POLYNOMIALS]
         with self._paramsShared():
             self._registerArray("table", self.table)
-            for t in self.table:
+            for t in zip(self.table, self.POLYNOMIALS):
                 t.ITEMS_CNT.set(self.TABLE_SIZE)
 
     def _impl(self):
         propagateClkRstn(self)
+        raise NotImplementedError()
 
 
 if __name__ == "__main__":
