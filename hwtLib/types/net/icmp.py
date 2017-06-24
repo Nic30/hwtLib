@@ -4,7 +4,7 @@ from hwt.hdlObjects.typeShortcuts import vecT
 
 ICMP_header = HStruct(
                     (vecT(8), "type"), (vecT(8), "code"), (vecT(16), "checksum"),
-                    (vecT(32), "restOfHeader")  
+                    (vecT(32), "restOfHeader")
                 )
 
 class ICMP_TYPE:
