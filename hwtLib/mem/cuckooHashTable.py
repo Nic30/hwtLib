@@ -30,7 +30,8 @@ class CLookupResultIntf(LookupResultIntf):
 class CuckooHashTableCore(HashTableCore):
     """
     Cuckoo hash uses more tables with different hash functions
-    This is just simple container of these tables 
+    This is just simple container of these tables
+    [TODO] only prototype yet
     """
 
     def __init__(self, polynomials):
