@@ -8,6 +8,7 @@ from hwtLib.amba.axis_comp.demux import AxiSDemux
 from hwtLib.amba.axis_comp.reg import AxiSReg
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.amba.axis_comp.resizer import AxiS_resizer
+from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 
 
 class AxiSBuilder(AbstractStreamBuilder):
@@ -78,37 +79,51 @@ class AxiSBuilder(AbstractStreamBuilder):
             self.append(axis)
 
         return self
-    
-    # [TODO]
-    # @classmethod
-    # def forge(cls, parent, parts, intfCls, setupFn=None, once=False, name=None):
-    #    """
-    #    generate frame from parts
-    #    
-    #    :param parent: unit where generated units should be instantiated
-    #    :param parts: list of parts (signals, interfaces, values etc)
-    #    :param intfCls: class for output interface
-    #    :param setupFn: setup function for output interface
-    #    :param once: specifies if frame generation should be repeated or not
-    #    :param name: name prefix for generated units
-    #    """
-    #    
-    #    
-    #    template = HStruct(
-    #                    )
-    #
-    #    
-    #    u = AxiS_frameForge(intfCls,
-    #                        template
-    #                        )
-    #    if setupFn:
-    #        setupFn(u)
-    #    
-    #    self = AxiSBuilder(parent, u.dataOut, name)
-    #    setattr(parent, self._findSuitableName("append"), u)
-    #    
-    #    self.lastComp = u
-    #    self.end = u.dataOut
-    #    return self
+
+    def parse(self, typeToParse):
+        """
+        :param typeToParse: structuralized type to parse
+        :return: interface with parsed data (StructIntf for HStruct f.e.) 
+        """
+        u = AxiS_frameParser(self.getInfCls(),
+                            typeToParse
+                            )
+        u._updateParamsFrom(self.end)
+
+        setattr(self.parent, self._findSuitableName("parser"), u)
+        self._propagateClkRstn(u)
+
+        u.dataIn ** self.end
+
+        self.lastComp = u
+        self.end = None
+
+        return u.dataOut
+
+    @classmethod
+    def forge(cls, parent, typeToForge, intfCls, setupFn=None, name=None):
+        """
+        generate frame assembler for specified type
         
+        :param parent: unit where generated units should be instantiated
+        :param typeToForge: instance of htype used as template for frame to assembly
+        :param intfCls: class for output interface
+        :param setupFn: setup function for output interface
+        :param name: name prefix for generated units
+        :return: 
+        """
+        
+        u = AxiS_frameForge(intfCls,
+                            typeToForge
+                            )
+        if setupFn:
+            setupFn(u)
+        
+        self = AxiSBuilder(parent, u.dataOut, name)
+        setattr(parent, self._findSuitableName("append"), u)
+        
+        self.lastComp = u
+        self.end = u.dataOut
+        return self, u.dataIn
+         
         
