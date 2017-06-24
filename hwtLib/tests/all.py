@@ -114,6 +114,7 @@ from hwtLib.structManipulators.cLinkedListWriter_test import CLinkedListWriterTC
 from hwtLib.structManipulators.mmu2pageLvl_test import MMU_2pageLvl_TC
 from hwtLib.structManipulators.structReader_test import StructReaderTC
 from hwtLib.structManipulators.structWriter_test import StructWriter_TC
+from hwtLib.tests.dumpTestBench_test import DumpTestbenchTC
 from hwtLib.tests.frameTemplate_test import FrameTemplateTC
 from hwtLib.tests.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.operators import OperatorTC
@@ -294,6 +295,7 @@ suite = testSuiteFromTCs(
     IpCorePackagerTC,
     CharToBitmapTC,
     HashTableCoreTC,
+    DumpTestbenchTC,
 )
 
 
