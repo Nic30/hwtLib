@@ -9,7 +9,7 @@ from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 class AxiStream_withoutSTRB(Axi_hs):
     """
     Bare AMBA AXI-stream interface
-    
+
     :ivar data: main data signal
     :ivar last: signal which if high this data is last in this frame
     """
@@ -23,14 +23,15 @@ class AxiStream_withoutSTRB(Axi_hs):
 
     def _getIpCoreIntfClass(self):
         return IP_AXIStream
-    
+
     def _getSimAgent(self):
         return AxiStream_withoutSTRBAgent
+
 
 class AxiStream_withoutSTRBAgent(BaseAxiAgent):
     """
     Simulation agent for :class:`.AxiStream_withoutSTRB` interface
-    
+
     input/output data stored in list under "data" property
     data contains tuples (data, strb, last)
     """
@@ -59,9 +60,9 @@ class AxiStream_withoutSTRBAgent(BaseAxiAgent):
 class AxiStream(AxiStream_withoutSTRB, Axi_strb):
     """
     :class:`.AxiStream_withoutSTRB` with strb signal
-    
-    :ivar strb: byte strobe signal, has bit for each byte of data, data valid if corresponding bit 
-        ins strb signal is high
+
+    :ivar strb: byte strobe signal, has bit for each byte of data,
+        data valid if corresponding bit ins strb signal is high
     """
     def _config(self):
         AxiStream_withoutSTRB._config(self)
@@ -78,7 +79,7 @@ class AxiStream(AxiStream_withoutSTRB, Axi_strb):
 class AxiStream_withUserAndNoStrb(AxiStream_withoutSTRB, Axi_user):
     """
     :class:`.AxiStream_withoutSTRB` with user signal
-    
+
     :ivar user: generic signal with user specified meaning
     """
     def _config(self):
@@ -93,7 +94,7 @@ class AxiStream_withUserAndNoStrb(AxiStream_withoutSTRB, Axi_user):
 class AxiStream_withId(Axi_id, AxiStream):
     """
     :class:`.AxiStream` with id signal
-    
+
     :ivar id: id signal, usually identifies type or destination of frame
     """
     def _config(self):
@@ -111,7 +112,7 @@ class AxiStream_withId(Axi_id, AxiStream):
 class AxiStream_withUserAndStrb(AxiStream, Axi_user):
     """
     :class:`.AxiStream` with user signal
-    
+
     :ivar user: generic signal with user specified meaning
     """
     def _config(self):
@@ -129,7 +130,7 @@ class AxiStream_withUserAndStrb(AxiStream, Axi_user):
 class AxiStreamAgent(BaseAxiAgent):
     """
     Simulation agent for :class:`.AxiStream` interface
-    
+
     input/output data stored in list under "data" property
     data contains tuples (data, strb, last)
     """
@@ -160,7 +161,7 @@ class AxiStreamAgent(BaseAxiAgent):
 class AxiStream_withIdAgent(BaseAxiAgent):
     """
     Simulation agent for :class:`.AxiStream_withId` interface
-    
+
     input/output data stored in list under "data" property
     data contains tuples (id, data, strb, last)
     """
@@ -193,7 +194,7 @@ class AxiStream_withIdAgent(BaseAxiAgent):
 class AxiStream_withUserAndStrbAgent(BaseAxiAgent):
     """
     Simulation agent for :class:`.AxiStream_withUserAndStrb` interface
-    
+
     input/output data stored in list under "data" property
     data contains tuples (data, strb, user, last)
     """
