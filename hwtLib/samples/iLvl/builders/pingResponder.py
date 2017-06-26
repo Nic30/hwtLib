@@ -31,7 +31,7 @@ class PingResponder(Unit):
         addClkRstn(self)
 
         self.myIp = Signal(dtype=ipv4_t)
-        
+
         with self._paramsShared():
             self.rx = AxiStream()
             self.tx = AxiStream()
