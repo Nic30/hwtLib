@@ -65,7 +65,8 @@ class AxiS_frameForge(AxiSCompBase):
 
     def _declr(self):
         addClkRstn(self)
-        self.dataOut = self.intfCls()
+        with self._paramsShared():
+            self.dataOut = self.intfCls()
         self.dataIn = StructIntf(self._structT, self._mkFieldIntf)
 
     def parseTemplate(self):
@@ -115,13 +116,13 @@ class AxiS_frameForge(AxiSCompBase):
                         inPorts.append(intf)
                         if tPart.isLastPart():
                             lastInPorts.append(intf)
-    
+
                 if useCounter:
                     if i == maxWordIndex:
                         nextWordIndex = maxWordIndex
                     else:
                         nextWordIndex = wordCntr_inversed - 1
-    
+
                 if lastInPorts:
                     # input ready logic
                     wordEnConds = {}
@@ -130,16 +131,16 @@ class AxiS_frameForge(AxiSCompBase):
                         if useCounter:
                             c = wordEnConds[intf]
                             wordEnConds[intf] = c & wordCntr_inversed._eq(maxWordIndex - i)
-    
+
                     streamSync(masters=lastInPorts,
                                # slaves=[dout],
                                extraConds=wordEnConds)
-    
+
                 if inPorts:
                     ack = streamAck(masters=inPorts)
                 else:
                     ack = 1
-    
+
                 if useCounter:
                     # word cntr next logic
                     if ack is 1:
@@ -151,18 +152,18 @@ class AxiS_frameForge(AxiSCompBase):
                         )
                 else:
                     a = []
-    
+
                 a.extend(dout.valid ** ack)
                 # data out logic
                 a.extend(dout.data ** wordData)
-    
+
                 if useCounter:
                     wcntrSw.Case(maxWordIndex - i, a)
-                
+
                 if transactionParts[-1].endOfPart == frame.endBitAddr:
                     endsOfFrames.append(maxWordIndex - i)
                     wordsOfPrevFrames += 1
-    
+
         # to prevent latches
         if not useCounter:
             pass
@@ -178,7 +179,7 @@ class AxiS_frameForge(AxiSCompBase):
         else:
             dout.last ** 1
 
-        dout.strb ** mask(8)
+        dout.strb ** mask(int(self.DATA_WIDTH // 8))
 
 
 if __name__ == "__main__":
