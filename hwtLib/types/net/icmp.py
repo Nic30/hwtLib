@@ -1,6 +1,5 @@
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.hdlObjects.typeShortcuts import vecT
-from enum import Enum
 
 ICMP_header_t = HStruct(
                     (vecT(8), "type"), (vecT(8), "code"), (vecT(16), "checksum"),
@@ -16,7 +15,7 @@ ICMP_echo_header_t = HStruct(
               )
 
 
-class ICMP_TYPE(Enum):
+class ICMP_TYPE():
     ECHO_REPLY = 0
     DESTINATION_UNREACHABLE = 3
     REDIRECT = 5

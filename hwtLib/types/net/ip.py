@@ -1,5 +1,3 @@
-from enum import Enum
-
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.struct import HStruct
 from hwtLib.types.ctypes import uint8_t, uint16_t
@@ -16,17 +14,17 @@ ipv6_t = vecT(128)
 ipver_t = vecT(4)
 
 
-class IP_FLAGS(Enum):
+class IP_FLAGS():
     DONT_FRAGMENT = 0b010
     MORE_FRAGMENTS = 0b100
 
 
-class IP_PROTOCOL(Enum):
+class IP_PROTOCOL():
     HOPOPT = 0
     ICMP = 1
     IGMP = 2
     GGP = 3
-    IPv4 = 4 # (encapsulated)
+    IPv4 = 4  # (encapsulated)
     TCP = 6
     EGP = 8
     IGP = 9

@@ -1,5 +1,3 @@
-from enum import Enum
-
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.struct import HStruct
 
@@ -23,7 +21,7 @@ Eth2Header_t = HStruct(
     )
 
 
-class ETHER_TYPE(Enum):
+class ETHER_TYPE():
     IPv4 = 0x0800
     ARP = 0x0806
     # wake on LAN
@@ -43,5 +41,5 @@ def pprint_eth_addr(mac) :
 
 def parse_eth_addr(macStr):
     splited = macStr.split(":")
-    splited = map(lambda num: int(num, 16), splited)
+    splited = map(lambda num: int(num, 16).to_bytes(1, byteorder='big'), splited)
     return b"".join(splited)
