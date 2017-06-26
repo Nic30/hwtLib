@@ -30,8 +30,6 @@ def hstruct_checksum(structVal):
     """
     valAsShorts = iterBits(structVal, bitsInOne=8)
     valAsShorts = list(map(lambda x: x.val, valAsShorts))
-    print(len(valAsShorts), structVal._dtype.sizeof())
-    print(valAsShorts)
     return checksum(valAsShorts)
 
 
@@ -67,26 +65,27 @@ def pingResponder_model(packet):
 
 class PingResponderTC(SimTestCase):
 
-    def create_ICMP_echo_frame(self, ethSrc="00:1:2:3:4:5", ethDst="6:7:8:9:10:11",
-                                     ipSrc="192.168.0.1", ipDst="192.168.0.1"):
+    def create_ICMP_echo_frame(self,
+                               ethSrc="00:1:2:3:4:5", ethDst="6:7:8:9:10:11",
+                               ipSrc="192.168.0.1", ipDst="192.168.0.1"):
 
         v = echoFrame_t.fromPy({
-                "eth" : {
+                "eth": {
                     "src": parse_eth_addr(ethSrc),
                     "dst": parse_eth_addr(ethDst),
-                    "typ" : ETHER_TYPE.IPv4,
+                    "type": ETHER_TYPE.IPv4,
                 },
-                "ip" : {
+                "ip": {
                     "version": IPv4,
                     "ihl": IHL_DEFAULT,
                     "dscp": 0,
                     "ecn": 0,
-                    "totalLen" : IPv4Header_t.sizeof() + ICMP_echo_header_t.sizeof(),
+                    "totalLen": IPv4Header_t.sizeof() + ICMP_echo_header_t.sizeof(),
                     "id": 0,
                     "flags": 0,
                     "ttl": 100,
                     "protocol": IP_PROTOCOL.ICMP,
-                    "checksum" : 0,
+                    "headerChecksum": 0,
                     "src": socket.inet_aton(ipSrc),
                     "dst": socket.inet_aton(ipDst)
                 },
@@ -95,10 +94,9 @@ class PingResponderTC(SimTestCase):
                     "code": 0,
                     "checksum": 0,
                     "identifier": 0,
-                    "reqNo": 0
-                },
-                "payload": int.from_bytes(b"abcd", byteorder="big")        
-            
+                    "seqNo": 0,
+                    "payload": int.from_bytes(b"abcd", byteorder="big")
+                }
             })
 
         v.ip.headerChecksum.val = hstruct_checksum(v.ip)
