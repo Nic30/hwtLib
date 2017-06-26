@@ -5,8 +5,8 @@ from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
 from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.hdlObjects.types.array import Array
 from hwt.hdlObjects.frameTemplate import FrameTemplate
-from hwtLib.types.net.eth import Eth2Header
-from hwtLib.types.net.ip import IPv4Header
+from hwtLib.types.net.eth import Eth2Header_t
+from hwtLib.types.net.ip import IPv4Header_t
 from hwt.hdlObjects.types.structUtils import HStruct_selectFields
 
 s_basic = HStruct(
@@ -163,8 +163,8 @@ sWithStartPadding_strKept = """<FrameTemplate start:0, end:256
 >"""
 
 _frameHeader = HStruct(
-    (Eth2Header, "eth"),
-    (IPv4Header, "ipv4"),
+    (Eth2Header_t, "eth"),
+    (IPv4Header_t, "ipv4"),
     name="FrameHeader"
     )
 frameHeader = HStruct_selectFields(_frameHeader,

@@ -3,6 +3,7 @@ from hwt.hdlObjects.types.structUtils import HStruct_selectFields
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axi3 import Axi3, Axi3_addr
 from hwtLib.amba.axi4_rDatapump import Axi_rDatapump
 from hwtLib.amba.axi4_wDatapump import Axi_wDatapump
@@ -10,14 +11,13 @@ from hwtLib.amba.axi_datapump_utils import connectDp
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.structManipulators.structReader import StructReader
 from hwtLib.structManipulators.structWriter import StructWriter
-from hwtLib.types.net.eth import Eth2Header
-from hwtLib.types.net.ip import IPv4Header
-from hwt.synthesizer.param import Param
+from hwtLib.types.net.eth import Eth2Header_t
+from hwtLib.types.net.ip import IPv4Header_t
 
 
 frameHeader = HStruct(
-    (Eth2Header, "eth"),
-    (IPv4Header, "ipv4")
+    (Eth2Header_t, "eth"),
+    (IPv4Header_t, "ipv4")
     )
 frameHeader = HStruct_selectFields(frameHeader, {"eth": {"src", "dst"},
                                                  "ipv4": {"src", "dst"}
