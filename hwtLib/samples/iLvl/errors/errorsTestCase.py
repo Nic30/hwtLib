@@ -25,7 +25,7 @@ class ErrorsTC(unittest.TestCase):
 
     def test_multipleDriversOfChildNet(self):
         u = MultipleDriversOfChildNet()
-        with self.assertRaises(SerializerException):
+        with self.assertRaises(AssertionError):
             toRtl(u)
 
     def test_multipleDriversOfChildNet2(self):
@@ -35,12 +35,12 @@ class ErrorsTC(unittest.TestCase):
 
     def test_unusedSubunit(self):
         u = UnusedSubunit()
-        with self.assertRaises(SerializerException):
+        with self.assertRaises(AssertionError):
             toRtl(u)
 
     def test_unusedSubunit2(self):
         u = UnusedSubunit2()
-        with self.assertRaises(SerializerException):
+        with self.assertRaises(AssertionError):
             toRtl(u)
     
     def test_accessingSubunitInternalIntf(self):
