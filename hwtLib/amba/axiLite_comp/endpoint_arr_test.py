@@ -105,9 +105,9 @@ class AxiLiteEndpointArray(AxiLiteEndpointTC):
         expected = \
 """struct {
     <HdlType Array of
-        <HdlType Bits, 32bits>[4]> field0 // start:0x0(bit) 0x0(byte)
+        <HdlType Bits, 32bits, unsigned>[4]> field0 // start:0x0(bit) 0x0(byte)
     <HdlType Array of
-        <HdlType Bits, 32bits>[4]> field1 // start:0x80(bit) 0x10(byte)
+        <HdlType Bits, 32bits, unsigned>[4]> field1 // start:0x80(bit) 0x10(byte)
 }"""
         self.assertEqual(s, expected)
 
@@ -142,8 +142,8 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
 """struct {
     <HdlType Array of
         struct {
-            <HdlType Bits, 32bits> field0 // start:0x0(bit) 0x0(byte)
-            <HdlType Bits, 32bits> field1 // start:0x20(bit) 0x4(byte)
+            <HdlType Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
+            <HdlType Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
         }[4]> arr // start:0x0(bit) 0x0(byte)
 }"""
         self.assertEqual(s, expected)

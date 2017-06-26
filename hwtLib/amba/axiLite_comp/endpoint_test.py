@@ -129,8 +129,8 @@ class AxiLiteEndpointTC(SimTestCase):
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
         expected = \
 """struct {
-    <HdlType Bits, 32bits> field0 // start:0x0(bit) 0x0(byte)
-    <HdlType Bits, 32bits> field1 // start:0x20(bit) 0x4(byte)
+    <HdlType Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
+    <HdlType Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
 }"""
         self.assertEqual(s, expected)
 
@@ -144,9 +144,9 @@ class AxiLiteEndpointDenseTC(AxiLiteEndpointTC):
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
         expected = \
 """struct {
-    <HdlType Bits, 32bits> field0 // start:0x0(bit) 0x0(byte)
-    //<HdlType Bits, 32bits> empty space // start:0x20(bit) 0x4(byte)
-    <HdlType Bits, 32bits> field1 // start:0x40(bit) 0x8(byte)
+    <HdlType Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
+    //<HdlType Bits, 32bits, unsigned> empty space // start:0x20(bit) 0x4(byte)
+    <HdlType Bits, 32bits, unsigned> field1 // start:0x40(bit) 0x8(byte)
 }"""
         self.assertEqual(s, expected)
 
@@ -159,9 +159,9 @@ class AxiLiteEndpointDenseStartTC(AxiLiteEndpointTC):
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
         expected = \
 """struct {
-    //<HdlType Bits, 32bits> empty space // start:0x0(bit) 0x0(byte)
-    <HdlType Bits, 32bits> field0 // start:0x20(bit) 0x4(byte)
-    <HdlType Bits, 32bits> field1 // start:0x40(bit) 0x8(byte)
+    //<HdlType Bits, 32bits, unsigned> empty space // start:0x0(bit) 0x0(byte)
+    <HdlType Bits, 32bits, unsigned> field0 // start:0x20(bit) 0x4(byte)
+    <HdlType Bits, 32bits, unsigned> field1 // start:0x40(bit) 0x8(byte)
 }"""
         self.assertEqual(s, expected)
 
