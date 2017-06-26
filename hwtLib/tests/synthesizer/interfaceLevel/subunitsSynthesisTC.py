@@ -16,6 +16,7 @@ from hwtLib.amba.fullDuplexAxiStream import FullDuplexAxiStream
 from hwtLib.samples.iLvl.hierarchy.unitToUnitConnection import UnitToUnitConnection
 from hwtLib.samples.iLvl.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnection
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import BaseSynthesizerTC
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 
 
 D = DIRECTION
@@ -96,6 +97,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
             def _config(self):
                 self.DATA_WIDTH = Param(64)
             def _declr(self):
+                addClkRstn(self)
                 with self._paramsShared():
                     self.a = AxiStream()
                     self.b = AxiStream()
@@ -105,6 +107,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
                     self.u2 = Simple2withNonDirectIntConnection()
                 
             def _impl(self):
+                propagateClkRstn(self)
                 self.u0.a ** self.a
                 self.u1.a ** self.u0.c 
                 self.u2.a ** self.u1.c 
@@ -127,6 +130,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
             def _config(self):
                 self.DATA_WIDTH = Param(64)
             def _declr(self):
+                addClkRstn(self)
                 with self._paramsShared():
                     self.a = AxiStream()
                     self.b0 = AxiStream()
@@ -138,6 +142,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
                     self.u2_1 = Simple2withNonDirectIntConnection()
                 
             def _impl(self):
+                propagateClkRstn(self)
                 self.u0.a ** self.a
                 self.u1.a ** self.u0.c
                                  
