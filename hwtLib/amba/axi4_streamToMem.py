@@ -203,7 +203,7 @@ class Axi4streamToMem(Unit):
             If(lenRem > self.MAX_BUTST_LEN,
                actualLenRem ** self.MAX_BUTST_LEN
             ).Else(
-               actualLenRem ** lenRem[actualLenRem._dtype.bit_length():]
+               connect(lenRem, actualLenRem, fit=True)
             )
         )
 
