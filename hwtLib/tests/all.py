@@ -116,6 +116,7 @@ from hwtLib.structManipulators.structReader_test import StructReaderTC
 from hwtLib.structManipulators.structWriter_test import StructWriter_TC
 from hwtLib.tests.dumpTestBench_test import DumpTestbenchTC
 from hwtLib.tests.frameTemplate_test import FrameTemplateTC
+from hwtLib.tests.hstructVal_test import HStructValTC
 from hwtLib.tests.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.operators import OperatorTC
 from hwtLib.tests.signedArithmetic_test import SignedArithmeticTC
@@ -166,6 +167,7 @@ suite = testSuiteFromTCs(
     Expr2CondTC,
     OperatorTC,
     ValSlicingTC,
+    HStructValTC,
     ParametrizationTC,
     SignedArithmeticTC,
     TestCaseSynthesis,
