@@ -188,8 +188,8 @@ class AbstractStreamBuilder(object):
         """
         def setChCnt(u):
             u.OUTPUTS.set(noOfOutputs)
-            
+
         self._genericInstance(self.DemuxCls, 'demux', setChCnt)
         self.lastComp.sel ** outputSelSignal
-        
+
         return self
