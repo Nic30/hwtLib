@@ -42,6 +42,11 @@ class DoubleDReg(Unit):
         self.dout ** self.reg1.dout
 
 
+class OptimizedOutReg(DReg):
+    def _impl(self):
+        DReg._impl(self)
+        self._reg("unconnected")
+
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = DoubleDReg()

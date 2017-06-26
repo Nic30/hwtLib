@@ -6,7 +6,8 @@ import unittest
 from hwt.hdlObjects.constants import Time
 from hwt.simulator.agentConnector import agInts
 from hwt.simulator.shortcuts import simUnitVcd, simPrepare
-from hwtLib.samples.iLvl.mem.reg import DReg, DoubleDReg
+from hwtLib.samples.iLvl.mem.reg import DReg, DoubleDReg, OptimizedOutReg
+from hwt.synthesizer.shortcuts import toRtl
 
 
 class DRegTC(unittest.TestCase):
@@ -41,10 +42,14 @@ class DRegTC(unittest.TestCase):
         # check simulation results
         self.assertSequenceEqual(expected, recieved)
 
+    def test_optimizedOutReg(self):
+        u = OptimizedOutReg()
+        self.assertNotIn("unconnected", toRtl(u))
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_withStops'))
+    #suite.addTest(DRegTC('test_optimizedOutReg'))
     suite.addTest(unittest.makeSuite(DRegTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
