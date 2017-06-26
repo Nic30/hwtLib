@@ -127,6 +127,7 @@ from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import Subunits
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.synthesizer.value import ValueTC
+from hwtLib.tests.valSlicing_test import ValSlicingTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
@@ -164,6 +165,7 @@ suite = testSuiteFromTCs(
     UnitToUnitConnectionTC,
     Expr2CondTC,
     OperatorTC,
+    ValSlicingTC,
     ParametrizationTC,
     SignedArithmeticTC,
     TestCaseSynthesis,
