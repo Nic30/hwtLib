@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.bitmask import mask
-from hwt.hdlObjects.typeShortcuts import hInt, hBool, hBit, vec
+from hwt.hdlObjects.typeShortcuts import hInt, hBool, hBit, vec, vecT
 from hwt.hdlObjects.types.defs import INT, STR
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwt.synthesizer.rtlLevel.signalUtils.walkers import walkAllOriginSignals
@@ -201,9 +201,25 @@ class OperatorTC(unittest.TestCase):
         self.assertTrue((a <= b).val)
         self.assertFalse((b <= a).val)
 
+    
+    def test_bits_sig_slice_on_slice(self):
+        n = RtlNetlist()
+        s = n.sig("s", vecT(16))
+        self.assertIs(s[10:0][2:0], s[2:0])
+        self.assertIs(s[10:0][4:1], s[4:1])
+        self.assertIs(s[12:5][4:1], s[9:6])
+    
+    def test_bits_sig_slice_on_slice_of_slice(self):
+        n = RtlNetlist()
+        s = n.sig("s", vecT(16))
+        self.assertIs(s[10:0][7:0][2:0], s[2:0])
+        self.assertIs(s[10:0][7:0][4:1], s[4:1])
+        self.assertIs(s[12:5][7:1][4:1], s[10:7])
+        
+
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    # suite.addTest(OperatorTC('testBitAnd'))
+    #suite.addTest(OperatorTC('test_bits_sig_slice_on_slice_of_slice'))
     suite.addTest(unittest.makeSuite(OperatorTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
