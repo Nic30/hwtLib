@@ -1,12 +1,10 @@
-from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
-from hwt.hdlObjects.types.struct import HStruct
-from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
-from hwtLib.amba.axis import AxiStream_withoutSTRB
 from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.types.bits import Bits
-from hwt.simulator.types.simBits import simBitsT
-from hwt.bitmask import mask
+from hwt.hdlObjects.types.struct import HStruct
+from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.amba.axis import AxiStream_withoutSTRB, packAxiSFrame, \
+    unpackAxiSFrame
+from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
+from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
 
 
 structManyInts = HStruct(
@@ -51,83 +49,6 @@ reference1 = {
 }
 
 
-def packFrame(dataWidth, structT, data):
-    """
-    Pack data into list of BitsVal of specified dataWidth
-
-    :param dataWidth: width of word
-    :param structT: HStruct type instance
-    :param data: list of values for struct fields (with name specified) or dictionary {fieldName: value}
-
-    :return: list of BitsVal which are representing values of words
-    """
-    typeOfWord = simBitsT(dataWidth, None)
-
-    actualVal = 0
-    actualVldMask = 0
-    usedBits = 0
-
-    i = 0
-    for field in structT.fields:
-        if field.name is None:
-            value = None
-        else:
-            if isinstance(data, dict):
-                value = data[field.name]
-            else:
-                value = data[i]
-                i += 1
-
-        t = field.dtype
-        if isinstance(t, Bits):
-            w = t.bit_length()
-            while True:
-                fieldEnd = usedBits + w
-                if fieldEnd <= dataWidth:
-                    # there is space in this word
-                    if value is not None:
-                        actualVal |= value << usedBits
-                        actualVldMask |= mask(w) << usedBits
-                    usedBits += w
-                else:
-                    # we can not fit this field into this word
-                    space = dataWidth - usedBits
-                    if value is not None:
-                        m = mask(space)
-                        actualVal |= (value & m) << usedBits
-                        actualVldMask |= m << usedBits
-                        value >>= space
-                    w -= space
-
-                if fieldEnd >= dataWidth:
-                    yield typeOfWord.getValueCls()(actualVal, typeOfWord, actualVldMask, -1)
-                    actualVal = 0
-                    actualVldMask = 0
-                    if fieldEnd < dataWidth:
-                        usedBits += w
-                    else:
-                        usedBits = 0
-
-                if fieldEnd <= dataWidth:
-                    break
-
-        else:
-            raise NotImplementedError()
-
-    if usedBits:
-        yield typeOfWord.getValueCls()(actualVal, typeOfWord, actualVldMask, -1)
-
-
-def packAxiSFrame(dataWidth, structT, data, withStrb=False):
-    if withStrb:
-        raise NotImplementedError()
-    words = list(packFrame(dataWidth, structT, data))
-    end = len(words) - 1
-    for i, d in enumerate(words):
-        last = int(i == end)
-        yield (d, last)
-
-
 class AxiS_frameParserTC(SimTestCase):
     def mySetUp(self, dataWidth, structTemplate):
         u = AxiS_frameParser(AxiStream_withoutSTRB, structTemplate)
@@ -135,6 +56,19 @@ class AxiS_frameParserTC(SimTestCase):
         self.prepareUnit(u)
 
         return u
+    
+    def test_packAxiSFrame(self):
+        t = structManyInts
+        DW = 32
+        d1 = t.fromPy(reference0)
+        
+        f = list(packAxiSFrame(DW, d1))
+        
+        d2 = unpackAxiSFrame(t, f, lambda x: x[0])
+        
+        for k in reference0.keys():
+            self.assertEqual(getattr(d1, k), getattr(d2, k), k)
+        
 
     def test_structManyInts_64_nop(self):
         DW = 64
@@ -148,8 +82,8 @@ class AxiS_frameParserTC(SimTestCase):
         structT = structManyInts
         u = self.mySetUp(dataWidth, structT)
 
-        u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, structT, reference0))
-        u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, structT, reference1))
+        u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, structT.fromPy(reference0)))
+        u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, structT.fromPy(reference1)))
 
         self.doSim(((8 * 64) / dataWidth) * 80 * Time.ns)
 
@@ -171,7 +105,7 @@ class AxiS_frameParserTC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(AxiS_measuringFifoTC('test_withPause'))
+    #suite.addTest(AxiS_frameParserTC('test_structManyInts_51_2x'))
     suite.addTest(unittest.makeSuite(AxiS_frameParserTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

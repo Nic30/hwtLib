@@ -4,7 +4,7 @@ from hwt.hdlObjects.types.struct import HStruct
 from hwtLib.structManipulators.structReader import StructReader
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwt.hdlObjects.constants import Time
-from hwtLib.amba.axis_comp.frameParser_test import packFrame
+from hwt.code import iterBits
 
 
 s0 = HStruct(
@@ -61,7 +61,7 @@ class StructReaderTC(SimTestCase):
             for name, val in d.items():
                 expectedFieldValues[name].append(val)
  
-            asFrame = list(packFrame(DW, s0, d))
+            asFrame = list(iterBits(s0.fromPy(d), bitsInOne=DW, skipPadding=False, fillup=True))
             addr = m.calloc(len(asFrame), DW // 8, initValues=asFrame)
             u.get._ag.data.append(addr)
         
