@@ -26,6 +26,7 @@ echoFrame_t = HStruct(
 class PingResponder(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(32)
+        self.IS_BIGENDIAN = Param(True)
 
     def _declr(self):
         addClkRstn(self)
@@ -49,12 +50,6 @@ class PingResponder(Unit):
         for f in dtype.fields:
             name = f.name
             In = getattr(parsed, name)
-
-            # switch dst and src
-            if name == "src":
-                name = "dst"
-            elif name == "dst":
-                name = "src"
             reg = getattr(regs, name)
 
             if isinstance(In, StructIntf):
@@ -80,15 +75,21 @@ class PingResponder(Unit):
             for f in t.fields:
                 name = f.name
                 In = getattr(resp, name)
+                # switch dst and src
+                if name == "src":
+                    name = "dst"
+                elif name == "dst":
+                    name = "src"
                 Out = getattr(forgeIn, name)
                 self.connectResp(In, Out, sendingReply)
 
     def icmpChecksum(self, header):
         # Concat(vec(0, 8), header.code) = 0
         return ~(header.identifier + 
-                 header.seqNo + 
+                 header.seqNo  + 
                  header.payload[16:] + 
-                 header.payload[32:16])
+                 header.payload[32:16]
+                 )
 
     def _impl(self):
         parsed = AxiSBuilder(self, self.rx).parse(echoFrame_t)
@@ -112,11 +113,12 @@ class PingResponder(Unit):
 
         def setup_output(out):
             out.DATA_WIDTH.set(self.DATA_WIDTH)
+            out.IS_BIGENDIAN.set(self.IS_BIGENDIAN)
 
         txBuilder, forgeIn = AxiSBuilder.forge(self,
-                                             echoFrame_t,
-                                             AxiStream,
-                                             setup_output)
+                                               echoFrame_t,
+                                               AxiStream,
+                                               setup_output)
 
         self.connectResp(resp, forgeIn, sendingReply)
         tx = txBuilder.end
@@ -124,8 +126,7 @@ class PingResponder(Unit):
         
         
         If(self.rx.last & self.rx.valid,
-           # note that src and dst were swapped
-           sendingReply ** (self.myIp._eq(resp.ip.src) & isEchoReq) 
+           sendingReply ** (self.myIp._eq(resp.ip.dst) & isEchoReq) 
         ).Elif(tx.valid & tx.last,
            sendingReply ** 0
         )
@@ -137,5 +138,5 @@ if __name__ == "__main__":  # alias python main function
     # we create instance of our unit
     u = PingResponder()
     # there is more of synthesis methods. toRtl() returns formated hdl string
-    print(toRtl(u))
+    print(toRtlA(u))
 

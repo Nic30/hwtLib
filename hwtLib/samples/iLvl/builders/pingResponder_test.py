@@ -8,6 +8,11 @@ from hwtLib.samples.iLvl.builders.pingResponder import PingResponder, \
 from hwtLib.types.net.eth import parse_eth_addr, ETHER_TYPE
 from hwtLib.types.net.icmp import ICMP_TYPE, ICMP_echo_header_t
 from hwtLib.types.net.ip import IPv4, IHL_DEFAULT, IPv4Header_t, IP_PROTOCOL
+from hwtLib.amba.axis_comp.frameParser_test import packAxiSFrame
+from hwt.hdlObjects.constants import Time
+from hwtLib.amba.axis import unpackAxiSFrame
+from hwt.simulator.agentConnector import valToInt
+from hwt.hdlObjects.types.structUtils import HStruct_unpack
 
 
 def carry_around_add(a, b):
@@ -33,41 +38,58 @@ def hstruct_checksum(structVal):
     return checksum(valAsShorts)
 
 
-def pingResponder_model(packet):
+def pingResponder_model(packetStructVal):
     """
-    :param packet: arrayy of bytes from packet
-    """
-    # Modify it to an ICMP Echo Reply packet.
-    #
-    # Note that I have not checked content of the packet, but treat all packets
-    # been sent to our TUN device as an ICMP Echo Request.
+    Modify ICMP Echo Request to an ICMP Echo Reply packet.
 
+    :param packet: struct val of packet
+    """
+    print(packetStructVal._dtype)
+    packet = iterBits(packetStructVal, bitsInOne=8, skipPadding=False)
+    packet = list(map(valToInt, packet))
+    eth = 0
+    # swap eht addr
+    packet[(eth + 0):(eth + 6)], packet[(eth + 6):(eth + 12)] = packet[(eth + 6):(eth + 12)], packet[(eth + 0):(eth + 6)]
+    
+    
+    ip = 2 * 6 + 2
     # Swap source and destination address.
-    packet[12:16], packet[16:20] = packet[16:20], packet[12:16]
+    packet[(ip + 12):(ip + 16)], packet[(ip + 16):(ip + 20)] = packet[(ip + 16):(ip + 20)], packet[(ip + 12):(ip + 16)]
 
+    icmp = ip + 20
     # Change ICMP type code to Echo Reply (0).
-    packet[20] = ICMP_TYPE.ECHO_REPLY
+    packet[icmp] = ICMP_TYPE.ECHO_REPLY
 
     # Calculate new  ICMP Checksum field.
     checksum = 0
     # for every 16-bit of the ICMP payload:
-    for i in range(20, len(packet), 2):
+    for i in range(icmp, len(packet), 2):
         half_word = (packet[i] << 8) + (packet[i + 1])
         checksum += half_word
     # Get one's complement of the checksum.
     checksum = ~(checksum + 4) & 0xffff
-    # Put the new checksum back into the packet.
-    packet[22] = checksum >> 8
-    packet[23] = checksum & ((1 << 8) - 1)
+    # Put the new checksum back into the packet. (bigendian)
+    packet[icmp + 2] = checksum >> 8
+    packet[icmp + 3] = checksum & ((1 << 8) - 1)
 
     return bytes(packet)
 
 
 class PingResponderTC(SimTestCase):
+    def setUp(self):
+        self.DATA_WIDTH = 32
+
+        SimTestCase.setUp(self)
+        u = self.u = PingResponder()
+        u.DATA_WIDTH.set(self.DATA_WIDTH)
+
+        self.prepareUnit(u)
+
+
 
     def create_ICMP_echo_frame(self,
                                ethSrc="00:1:2:3:4:5", ethDst="6:7:8:9:10:11",
-                               ipSrc="192.168.0.1", ipDst="192.168.0.1"):
+                               ipSrc="192.168.0.1", ipDst="192.168.0.2"):
 
         v = echoFrame_t.fromPy({
                 "eth": {
@@ -83,6 +105,7 @@ class PingResponderTC(SimTestCase):
                     "totalLen": IPv4Header_t.sizeof() + ICMP_echo_header_t.sizeof(),
                     "id": 0,
                     "flags": 0,
+                    "fragmentOffset": 0,
                     "ttl": 100,
                     "protocol": IP_PROTOCOL.ICMP,
                     "headerChecksum": 0,
@@ -104,22 +127,51 @@ class PingResponderTC(SimTestCase):
 
         return v
 
-    def test_reply1x(self):
-        u = PingResponder()
-        self.prepareUnit(u)
-
+    def test_struct_packUnpack(self):
         f = self.create_ICMP_echo_frame()
+        asBytes = iterBits(f, bitsInOne=8, skipPadding=False)
+        asBytes = list(map(valToInt, asBytes))
+        
+        f_out = HStruct_unpack(echoFrame_t, asBytes, dataWidth=8)
+
+        self.assertEqual(f, f_out)
+
+        _f = f
+        f = f_out
+        asBytes = iterBits(f, bitsInOne=8, skipPadding=False)
+        asBytes = list(map(valToInt, asBytes))
+        
+        f_out = HStruct_unpack(echoFrame_t, asBytes, dataWidth=8)
+        
+        self.assertEqual(_f, f_out)
+        
+    
+    def test_reply1x(self):
+        u = self.u
+        f = self.create_ICMP_echo_frame()
+
+        u.rx._ag.data.extend(packAxiSFrame(self.DATA_WIDTH, f, withStrb=True))
+        u.myIp._ag.data.append(int.from_bytes(socket.inet_aton("192.168.0.2"), byteorder="little"))
+        self.doSim(500 * Time.ns)
+        
+        res = unpackAxiSFrame(echoFrame_t, u.tx._ag.data)
+        model_res = pingResponder_model(f)
+        
+        _res = iterBits(res, bitsInOne=8, skipPadding=False)
+        _res = bytes(map(valToInt, _res))
+        print("")
+        print("f", f)
+        print("res", res)
+        print("model_res", HStruct_unpack(echoFrame_t, model_res, dataWidth=8))
+
+        self.assertEqual(_res, model_res)
 
 
 if __name__ == "__main__":
-    # this is how you can run testcase,
-    # there are many way and lots of tools support direct running of tests (like eclipse)
     suite = unittest.TestSuite()
 
-    # this is how you can select specific test
-    # suite.addTest(SimpleTC('test_simple'))
+    suite.addTest(PingResponderTC('test_reply1x'))
 
-    # this is how you add all test from testcase
-    suite.addTest(unittest.makeSuite(PingResponderTC))
+    # suite.addTest(unittest.makeSuite(PingResponderTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
