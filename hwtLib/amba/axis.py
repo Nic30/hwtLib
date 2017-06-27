@@ -5,8 +5,8 @@ from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_strb, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwt.bitmask import mask
 from hwt.code import iterBits, Concat
-from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.hdlObjects.types.structUtils import walkFlattenFields
+from hwt.pyUtils.arrayQuery import iter_with_last, take
+from hwt.hdlObjects.types.structUtils import walkFlattenFields, HStruct_unpack
 
 
 # http://www.xilinx.com/support/documentation/ip_documentation/ug761_axi_reference_guide.pdf
@@ -245,62 +245,48 @@ def packAxiSFrame(dataWidth, structVal, withStrb=False):
             yield (d, last)
 
 
-def unpackAxiSFrame(structT, frameData, getDataFn):
+def unpackAxiSFrame(structT, frameData, getDataFn=None, dataWidth=None):
     """
     opposite of packAxiSFrame
     """
-    val = structT.fromPy(None)
-
-    fData = iter(frameData)
+    if getDataFn is None:
+        def _getDataFn(x):
+            return x[0]
     
-    # actual is storage variable for items from frameData
-    actualOffset = 0
-    dataWidth = None
-    actual = None
+        getDataFn = _getDataFn
 
-    for f in walkFlattenFields(val, skipPadding=False):
-        # walk flatten fields and take values from fData and parse them to field
-        required = f._dtype.bit_length()
+    return HStruct_unpack(structT, frameData, getDataFn, dataWidth)
 
-        if actual is None:
-            actualOffset = 0
-            try:
-                actual = getDataFn(next(fData))
-            except StopIteration:
-                raise Exception("Input frame data too short")
+
+def axiSFrame_toBytes(intf, frameData):
+    """
+    Unpack frame data to array of bytes
+    
+    :param intf: interface the frame comes from to resolve data format
+    :param frameData: data collected by agent
+    :return: array of bytes (of type Bits(8) ) (if interface has strb it is used in last to cut off unused bytes at the end)
+    """
+    
+    bytesInWord = int(intf.DATA_WIDTH) // 8
+    hasStrb = hasattr(intf, "strb")
+    result = []
+
+    bytesInThisWord = bytesInWord    
+    for d in frameData:
+        if hasStrb:
+            data, strb, last = d
             
-            dataWidth = actual._dtype.bit_length()
-            actuallyHave = dataWidth
+            if last:
+                bytesInThisWord = strb.val.bit_length()
+            else:
+                bytesInThisWord = bytesInWord
         else:
-            actuallyHave = actual._dtype.bit_length() - actualOffset
-
-        while actuallyHave < required:
-            # collect data for this field
-            try:
-                d = getDataFn(next(fData))
-            except StopIteration:
-                raise Exception("Input frame data too short")
-      
-            actual = Concat(d, actual)
-            actuallyHave += dataWidth
-
-        if actuallyHave >= required:
-            # parse value of actual to field
-            v = actual[(required + actualOffset): actualOffset]._convert(f._dtype)
-            f.val = v.val
-            f.vldMask = v.vldMask
-            f.updateTime = v.updateTime
-
-            # update slice out what was taken
-            actuallyHave -= required
-            actualOffset += required
-
-        if actuallyHave == 0:
-            actual = None
-
-    assert actual is None
-    return val
-
+            data, last = d
+            
+        result.extend(take(iterBits(data, bitsInOne=8), bytesInThisWord))
+    
+    return result
+            
 class IP_AXIStream(IntfConfig):
     """
     Class which specifies how to describe AxiStream interfaces in IP-core
