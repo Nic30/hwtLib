@@ -1,12 +1,12 @@
+from hwt.bitmask import mask
+from hwt.code import iterBits
+from hwt.hdlObjects.types.structUtils import HStruct_unpack
 from hwt.interfaces.std import Signal, VectSignal
+from hwt.pyUtils.arrayQuery import iter_with_last, take
 from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_strb, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
-from hwt.bitmask import mask
-from hwt.code import iterBits, Concat
-from hwt.pyUtils.arrayQuery import iter_with_last, take
-from hwt.hdlObjects.types.structUtils import walkFlattenFields, HStruct_unpack
 
 
 # http://www.xilinx.com/support/documentation/ip_documentation/ug761_axi_reference_guide.pdf
@@ -14,10 +14,14 @@ class AxiStream_withoutSTRB(Axi_hs):
     """
     Bare AMBA AXI-stream interface
 
+    :ivar IS_BIGENDIAN: Param which specifies if interface uses bigendian byte order or litleendian byte order
+    :attention: no checks are made for endianity, this is just information
+    :ivar DATA_WIDTH: Param which specifies width of data signal 
     :ivar data: main data signal
     :ivar last: signal which if high this data is last in this frame
     """
     def _config(self):
+        self.IS_BIGENDIAN = Param(False)
         self.DATA_WIDTH = Param(64)
 
     def _declr(self):
