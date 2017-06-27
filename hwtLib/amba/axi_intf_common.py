@@ -26,11 +26,11 @@ class Axi_strb(Interface):
 class Axi_hs(HandshakeSync):
     """
     AXI handshake interface with ready and valid signal
+    (same as HandshakeSync just vld is valid and rd is ready)
+    transaction happens when both ready and valid are high
     
     :ivar ready: when high slave is ready to receive data
     :ivar valid: when high master is sending data to slave
-
-    transaction happens when both ready and valid are high
     """
     def _declr(self):
         self.ready = Signal(masterDir=DIRECTION.IN)
