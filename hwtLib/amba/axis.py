@@ -16,6 +16,11 @@ class AxiStream_withoutSTRB(Axi_hs):
 
     :ivar IS_BIGENDIAN: Param which specifies if interface uses bigendian byte order or litleendian byte order
     :attention: no checks are made for endianity, this is just information
+    :note: bigendian for interface means that items which are send through this interface has reversed byte endianity
+        that means that most significant byte is is on lower address than les significant ones
+        f.e. litle endian value 0x1a2b will be 0x2b1a
+        but iterface itselelf is not reversed in any way
+
     :ivar DATA_WIDTH: Param which specifies width of data signal 
     :ivar data: main data signal
     :ivar last: signal which if high this data is last in this frame
