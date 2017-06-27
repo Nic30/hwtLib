@@ -42,7 +42,7 @@ class IP_PROTOCOL():
     L2TP = 115
     SMP = 121
     SCTP = 132
-    
+
 
 IPv4Header_t = HStruct(
     (vecT(4), "version"), (vecT(4), "ihl"), (vecT(6), "dscp"), (vecT(2), "ecn"), (uint16_t, "totalLen"),
