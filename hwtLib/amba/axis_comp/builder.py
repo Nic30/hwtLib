@@ -103,6 +103,7 @@ class AxiSBuilder(AbstractStreamBuilder):
     def forge(cls, parent, typeToForge, intfCls, setupFn=None, name=None):
         """
         generate frame assembler for specified type
+        :note: you can set endianity and others in setupFn
 
         :param parent: unit where generated units should be instantiated
         :param typeToForge: instance of htype used as template for frame to assembly

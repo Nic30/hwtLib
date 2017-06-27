@@ -9,6 +9,7 @@ from hwt.interfaces.std import Handshaked, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
 from hwt.pyUtils.arrayQuery import where
+from hwt.synthesizer.byteOrder import reverseByteOrder
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 
@@ -37,14 +38,14 @@ class AxiS_frameParser(Unit):
         :param structT: instance of HStruct which specifies data format to download
         :attention: structT can not contain fields with variable size like HStream
         """
-        super(AxiS_frameParser, self).__init__()
         assert isinstance(structT, HStruct)
         self._structT = structT
         self._axiSCls = axiSCls
         self._maxPaddingWords = maxPaddingWords
+        super(AxiS_frameParser, self).__init__()
 
     def _config(self):
-        self.DATA_WIDTH = Param(64)
+        self._axiSCls._config(self)
         # if this is true field interfaces will be of type VldSynced
         # and single ready signal will be used for all
         # else every interface will be instance of Handshaked and it will
@@ -79,7 +80,11 @@ class AxiS_frameParser(Unit):
 
     def connectDataSignals(self, words, wordIndex):
         busVld = self.dataIn.valid
-
+        if self.IS_BIGENDIAN:
+            byteOrderCare = reverseByteOrder
+        else:
+            def byteOrderCare(sig):
+                return sig
         signalsOfParts = []
 
         for wIndx, transParts in words:
@@ -95,7 +100,11 @@ class AxiS_frameParser(Unit):
                 if part.isLastPart():
                     signalsOfParts.append(fPartSig)
                     intf = self.dataOut._fieldsToInterfaces[fieldInfo]
-                    intf.data ** Concat(*reversed(signalsOfParts))
+                    intf.data ** byteOrderCare(
+                                               Concat(
+                                                      *reversed(signalsOfParts)
+                                                     )
+                                              )
                     intf.vld ** dataVld
                     signalsOfParts = []
                 else:

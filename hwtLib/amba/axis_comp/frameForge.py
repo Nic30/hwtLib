@@ -9,6 +9,7 @@ from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.byteOrder import reverseByteOrder
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.handshaked.streamNode import streamSync, streamAck
@@ -85,6 +86,12 @@ class AxiS_frameForge(AxiSCompBase):
 
     def _impl(self):
         dout = self.dataOut
+        if self.IS_BIGENDIAN:
+            byteOrderCare = reverseByteOrder
+        else:
+            def byteOrderCare(sig):
+                return sig
+        
         self.parseTemplate()
         maxWordIndex = sum(map(lambda f: f.getWordCnt(), self._frames)) - 1
         useCounter = maxWordIndex > 0
@@ -112,7 +119,7 @@ class AxiS_frameForge(AxiSCompBase):
                     else:
                         intf = self.dataIn._fieldsToInterfaces[tPart.tmpl.origin]
                         fhigh, flow = tPart.getFieldBitRange()
-                        wordData[high:low] ** intf.data[fhigh:flow]
+                        wordData[high:low] ** byteOrderCare(intf.data)[fhigh:flow]
                         inPorts.append(intf)
                         if tPart.isLastPart():
                             lastInPorts.append(intf)
