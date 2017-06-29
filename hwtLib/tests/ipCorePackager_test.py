@@ -22,7 +22,7 @@ from hwt.interfaces.utils import addClkRst
 
 
 class Handshaked_withIP(Handshaked):
-    def _getSimAgent(self):
+    def _getIpCoreIntfClass(self):
         return IP_Handshake
 
 class IpCoreIntfTest(Unit):
