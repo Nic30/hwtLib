@@ -1,6 +1,6 @@
 from hwt.code import connect, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwtLib.handshaked.joinFair import HsJoinFairShare
+from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import streamSync
 from hwtLib.logic.oneHotToBin import oneHotToBin
 
@@ -65,21 +65,11 @@ class AxiInterconnectBase(Unit):
         # join with roundrobin on requests form drivers and selected index is stored into orderFifo
 
         # because it is just proxy
-        joinTmpl = self.drivers[0].req._origIntf
+        driversReq = list(map(lambda d: d.req, self.drivers))
+        b = HsBuilder.join_fair(self, driversReq, exportSelected=True)
+        req = b.end
+        reqJoin = b.lastComp
 
-        reqJoin = HsJoinFairShare(joinTmpl.__class__)
-        reqJoin._updateParamsFrom(joinTmpl)
-        reqJoin.INPUTS.set(self.DRIVER_CNT)
-        reqJoin.EXPORT_SELECTED.set(True)
-
-        self.reqJoin = reqJoin
-
-        reqJoin.clk ** self.clk
-        reqJoin.rst_n ** self.rst_n
-        for i, d in enumerate(self.drivers):
-            reqJoin.dataIn[i] ** d.req
-
-        req = reqJoin.dataOut
         streamSync(masters=[req],
                    slaves=[dpReq, orderFifoIn])
         connect(req, dpReq, exclude=[dpReq.vld, dpReq.rd])

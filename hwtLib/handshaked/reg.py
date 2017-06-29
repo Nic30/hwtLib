@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.utils import addClkRstn
 from hwt.code import If, c
-from hwtLib.handshaked.compBase import HandshakedCompBase
-from hwt.synthesizer.param import Param
+from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
+from hwt.synthesizer.param import Param
+from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
 class HandshakedReg(HandshakedCompBase):

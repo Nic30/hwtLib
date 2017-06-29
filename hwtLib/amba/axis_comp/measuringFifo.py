@@ -1,15 +1,18 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.bitmask import mask
+from hwt.code import If, connect, Concat, Switch, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.code import If, connect, Concat, Switch, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
+from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axis_comp.fifo import AxiSFifo
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync, streamAck
-from hwtLib.amba.axis import AxiStream
 from hwtLib.mem.fifo import Fifo
 
 
@@ -59,7 +62,7 @@ class AxiS_measuringFifo(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
-        dIn = AxiSBuilder(self, self.dataIn).reg().end
+        dIn = AxiSBuilder(self, self.dataIn).buff().end
         STRB_BITS = dIn.strb._dtype.bit_length()
 
         sb = self.sizesBuff

@@ -3,13 +3,13 @@
 
 from hwt.code import Or, iterBits, rol, SwitchLogic
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwtLib.handshaked.join import HandshakedJoin
+from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
 from hwt.interfaces.std import VldSynced
 
 
-class HsJoinFairShare(HandshakedJoin):
+class HsJoinFairShare(HsJoinPrioritized):
     """
     Join input stream to single output stream
     inputs with lower number has higher priority
@@ -21,11 +21,11 @@ class HsJoinFairShare(HandshakedJoin):
     combinational
     """
     def _config(self):
-        HandshakedJoin._config(self)
+        HsJoinPrioritized._config(self)
         self.EXPORT_SELECTED = Param(True)
 
     def _declr(self):
-        HandshakedJoin._declr(self)
+        HsJoinPrioritized._declr(self)
         addClkRstn(self)
         if self.EXPORT_SELECTED:
             self.selectedOneHot = VldSynced()

@@ -18,7 +18,6 @@ from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC
 from hwtLib.amba.axi_ag_test import Axi_ag_TC
 from hwtLib.amba.axi_test import AxiTC
-from hwtLib.amba.axis_comp.append_test import AxiS_append_TC
 from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
 from hwtLib.amba.axis_comp.frameForge_test import AxiS_frameForge_TC
 from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
@@ -35,13 +34,14 @@ from hwtLib.amba.interconnect.wStrictOrder_test import WStrictOrderInterconnectT
     WStrictOrderInterconnect2TC
 from hwtLib.clocking.clkDivider import ClkDiv3TC
 from hwtLib.handshaked.fifo_test import HsFifoTC
-from hwtLib.handshaked.fork_test import HsForkTC, HsFork_randomized_TC
 from hwtLib.handshaked.joinFair_test import HsJoinFair_2inputs_TC, \
     HsJoinFair_3inputs_TC
-from hwtLib.handshaked.join_test import HsJoinTC, HsJoin_randomized_TC
+from hwtLib.handshaked.joinPrioritized_test import HsJoinPrioritizedTC, HsJoinPrioritized_randomized_TC
 from hwtLib.handshaked.ramAsHs_test import RamAsHs_TC
 from hwtLib.handshaked.reg_test import HsRegL1D0TC, HsRegL2D1TC
-from hwtLib.handshaked.resizer_test import HandshakedResizerTC
+from hwtLib.handshaked.resizer_test import HsResizerTC
+from hwtLib.handshaked.splitCopy_test import HsSplitCopyTC, \
+    HsSplitCopy_randomized_TC
 from hwtLib.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
 from hwtLib.img.charToBitmap_test import CharToBitmapTC
 from hwtLib.ipif.endpoint_test import IpifEndpointTC, \
@@ -216,8 +216,8 @@ suite = testSuiteFromTCs(
     SimpleUnitAxiStream_TC,
     FifoTC,
     FifoAsyncTC,
-    HsJoinTC,
-    HsJoin_randomized_TC,
+    HsJoinPrioritizedTC,
+    HsJoinPrioritized_randomized_TC,
     HsJoinFair_2inputs_TC,
     HsJoinFair_3inputs_TC,
     RamAsHs_TC,
@@ -231,12 +231,12 @@ suite = testSuiteFromTCs(
     FlipRegTC,
     FlipCntrTC,
     FlipRamTC,
-    HsForkTC,
-    HsFork_randomized_TC,
+    HsSplitCopyTC,
+    HsSplitCopy_randomized_TC,
     HsFifoTC,
     HsRegL1D0TC,
     HsRegL2D1TC,
-    HandshakedResizerTC,
+    HsResizerTC,
     CamTC,
     UartTxTC,
     UartRxBasicTC,
@@ -268,7 +268,6 @@ suite = testSuiteFromTCs(
     AxiS_resizer_downAndUp_TC,
     AxiS_resizer_upAndDown_TC,
     AxiS_frameForge_TC,
-    AxiS_append_TC,
     AxiS_frameLinkConvTC,
     AxiS_frameParserTC,
     HandshakedBuilderSimpleTC,

@@ -4,14 +4,14 @@ from hwt.interfaces.std import Handshaked
 from hwt.pyUtils.arrayQuery import grouper
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis_comp.resizer_test import it
-from hwtLib.handshaked.resizer import HandshakedResizer
+from hwtLib.handshaked.resizer import HsResizer
 
 
-class HandshakedResizerTC(SimTestCase):
+class HsResizerTC(SimTestCase):
     def test_1to1(self):
-        u = HandshakedResizer(Handshaked, [1, 1],
-                              lambda intf: intf.DATA_WIDTH.set(32),
-                              lambda intf: intf.DATA_WIDTH.set(32))
+        u = HsResizer(Handshaked, [1, 1],
+                      lambda intf: intf.DATA_WIDTH.set(32),
+                      lambda intf: intf.DATA_WIDTH.set(32))
         self.prepareUnit(u)
         # self.randomize(u.dataIn)
         # self.randomize(u.dataOut)
@@ -26,9 +26,9 @@ class HandshakedResizerTC(SimTestCase):
         self.assertValSequenceEqual(u.dataOut._ag.data, d)
 
     def test_1to3(self):
-        u = HandshakedResizer(Handshaked, [1, 3],
-                              lambda intf: intf.DATA_WIDTH.set(32),
-                              lambda intf: intf.DATA_WIDTH.set(3 * 32))
+        u = HsResizer(Handshaked, [1, 3],
+                      lambda intf: intf.DATA_WIDTH.set(32),
+                      lambda intf: intf.DATA_WIDTH.set(3 * 32))
         self.prepareUnit(u)
         # self.randomize(u.dataIn)
         # self.randomize(u.dataOut)
@@ -48,9 +48,9 @@ class HandshakedResizerTC(SimTestCase):
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
 
     def test_3to1(self):
-        u = HandshakedResizer(Handshaked, [3, 1],
-                              lambda intf: intf.DATA_WIDTH.set(3 * 32),
-                              lambda intf: intf.DATA_WIDTH.set(32))
+        u = HsResizer(Handshaked, [3, 1],
+                      lambda intf: intf.DATA_WIDTH.set(3 * 32),
+                      lambda intf: intf.DATA_WIDTH.set(32))
         self.prepareUnit(u)
         # self.randomize(u.dataIn)
         # self.randomize(u.dataOut)
@@ -73,6 +73,6 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
     #suite.addTest(HandshakedResizerTC('test_1to3'))
-    suite.addTest(unittest.makeSuite(HandshakedResizerTC))
+    suite.addTest(unittest.makeSuite(HsResizerTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

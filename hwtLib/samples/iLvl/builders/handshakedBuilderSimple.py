@@ -18,9 +18,9 @@ class HandshakedBuilderSimple(Unit):
     def _impl(self):
         b = HsBuilder(self, self.a)
 
-        b.reg()
-        b.fifo(16)
-        b.reg()
+        b.buff()
+        b.buff(items=16)
+        b.buff(latency=2, delay=1)
 
         self.b ** b.end
 

@@ -61,7 +61,7 @@ class EthAddrUpdater(Unit):
         txW = self.txPacketUpdater.dataIn
 
         def withFifo(interface):
-            return HsBuilder(self, interface).fifo(4).end
+            return HsBuilder(self, interface).buff(items=4).end
 
         txW.eth.dst ** withFifo(rxR.eth.src)
         txW.eth.src ** withFifo(rxR.eth.dst)
@@ -69,7 +69,7 @@ class EthAddrUpdater(Unit):
         txW.ipv4.dst ** withFifo(rxR.ipv4.src)
         txW.ipv4.src ** withFifo(rxR.ipv4.dst)
 
-        HsBuilder(self, self.packetAddr).forkTo(
+        HsBuilder(self, self.packetAddr).split_copy_to(
             self.rxPacketLoader.get,
             self.txPacketUpdater.set)
 

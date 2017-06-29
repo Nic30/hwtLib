@@ -7,7 +7,7 @@ from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
-class HandshakedFork(HandshakedCompBase):
+class HsSplitCopy(HandshakedCompBase):
     """
     Clone input stream to n identical output streams
     transaction is made in all interfaces or none of them
@@ -62,5 +62,5 @@ class HandshakedFork(HandshakedCompBase):
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    u = HandshakedFork(Handshaked)
+    u = HsSplitCopy(Handshaked)
     print(toRtl(u))

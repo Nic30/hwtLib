@@ -8,7 +8,7 @@ from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
 
 
-class HandshakedResizer(HandshakedCompBase):
+class HsResizer(HandshakedCompBase):
     """
     Resize width of handshaked interface
     """
