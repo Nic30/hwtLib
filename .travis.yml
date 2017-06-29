@@ -1,4 +1,3 @@
-sudo: required
 dist: trusty
 language: python
 git:
@@ -8,19 +7,22 @@ cache:
   apt: true
 
 python:
-- '3.5'
+  - '3.5'
+  - '3.6'
+  - "nightly"
 
 install:
-- cd ..
-- pip3 install pytest coveralls
-- git clone --depth=1 https://github.com/Nic30/HWToolkit.git
-- cd HWToolkit
-- python3 setup.py install
-- cd ../hwtLib
-- python3 setup.py install
+  - cd ..
+  - pip install pytest coveralls
+  - git clone --depth=1 https://github.com/Nic30/HWToolkit.git
+  - cd HWToolkit
+  - python setup.py install
+  - cd ../hwtLib
+  - python setup.py install
+
 script:
-#- python3 -m pytest hwtLib/tests/all.py --doctest-modules
-- coverage run --source=hwtLib setup.py test
+  #- python3 -m pytest hwtLib/tests/all.py --doctest-modules
+  - coverage run --source=hwtLib setup.py test
 
 deploy:
   provider: pypi
