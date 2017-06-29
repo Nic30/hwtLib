@@ -10,7 +10,6 @@ ICMP_header_t = HStruct(
 ICMP_echo_header_t = HStruct(
                     (vecT(8), "type"), (vecT(8), "code"), (vecT(16), "checksum"),
                     (vecT(16), "identifier"), (vecT(16), "seqNo"),
-                    (vecT(32), "payload"),
                     name="ICMP_echo_header_t"
               )
 
