@@ -4,7 +4,10 @@ import unittest
 
 from hwt.hdlObjects.types.array import Array
 from hwt.hdlObjects.types.struct import HStruct
+from hwt.interfaces.std import BramPort, Handshaked
+from hwt.serializer.ip_packager.interfaces.std import IP_Handshake
 from hwt.serializer.ip_packager.packager import Packager
+from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.amba.axi4_streamToMem import Axi4streamToMem
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axis import AxiStream_withUserAndStrb, AxiStream_withId
@@ -12,6 +15,42 @@ from hwtLib.amba.axis_comp.en import AxiS_en
 from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl
 from hwtLib.mem.fifo import Fifo
 from hwtLib.types.ctypes import uint64_t
+from hwtLib.uart.intf import Uart
+from hwt.interfaces.differential import DifferentialSig
+from hwt.code import If, connect
+from hwt.interfaces.utils import addClkRst
+
+
+class Handshaked_withIP(Handshaked):
+    def _getSimAgent(self):
+        return IP_Handshake
+
+class IpCoreIntfTest(Unit):
+    def _declr(self):
+        addClkRst(self)
+
+        self.ram0 = BramPort()
+        self.ram1 = BramPort()
+        self.uart = Uart()
+        self.hsIn = Handshaked_withIP()
+        self.hsOut = Handshaked_withIP()
+        self.difIn = DifferentialSig()
+
+    def _impl(self):
+        r0 = self._reg("r0", defVal=0)
+        self.uart.tx ** self.uart.rx
+        self.ram0 ** self.ram1
+
+        If(self.hsIn.vld,
+           r0 ** (self.difIn.p & ~self.difIn.n)
+        )
+        If(r0,
+           self.hsOut ** self.hsIn
+        ).Else(
+           connect(r0, self.hsOut.data, fit=True),
+           self.hsOut.vld ** 1
+        )
+        
 
 
 class IpCorePackagerTC(unittest.TestCase):
@@ -34,7 +73,8 @@ class IpCorePackagerTC(unittest.TestCase):
                                      )),
                      I2cMasterBitCtrl(),
                      f,
-                     Axi4streamToMem()
+                     Axi4streamToMem(),
+                     IpCoreIntfTest()
                      ]
         for u in testUnits:
             p = Packager(u)
