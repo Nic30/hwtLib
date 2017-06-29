@@ -1,18 +1,17 @@
 import socket
-import unittest
 
 from hwt.code import iterBits
+from hwt.hdlObjects.constants import Time
+from hwt.hdlObjects.types.structUtils import HStruct_unpack
+from hwt.simulator.agentConnector import valToInt
 from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.amba.axis import unpackAxiSFrame
+from hwtLib.amba.axis_comp.frameParser_test import packAxiSFrame
 from hwtLib.samples.iLvl.builders.pingResponder import PingResponder, \
     echoFrame_t
 from hwtLib.types.net.eth import parse_eth_addr, ETHER_TYPE
 from hwtLib.types.net.icmp import ICMP_TYPE, ICMP_echo_header_t
 from hwtLib.types.net.ip import IPv4, IHL_DEFAULT, IPv4Header_t, IP_PROTOCOL
-from hwtLib.amba.axis_comp.frameParser_test import packAxiSFrame
-from hwt.hdlObjects.constants import Time
-from hwtLib.amba.axis import unpackAxiSFrame
-from hwt.simulator.agentConnector import valToInt
-from hwt.hdlObjects.types.structUtils import HStruct_unpack
 
 
 def carry_around_add(a, b):
@@ -33,9 +32,9 @@ def hstruct_checksum(structVal):
     """
     Checksum of values in StructValue instance
     """
-    valAsShorts = iterBits(structVal, bitsInOne=8)
-    valAsShorts = list(map(lambda x: x.val, valAsShorts))
-    return checksum(valAsShorts)
+    valAsBytes = iterBits(structVal, bitsInOne=8)
+    valAsBytes = list(map(lambda x: x.val, valAsBytes))
+    return checksum(valAsBytes)
 
 
 def pingResponder_model(packetStructVal):
@@ -44,7 +43,6 @@ def pingResponder_model(packetStructVal):
 
     :param packet: struct val of packet
     """
-    print(packetStructVal._dtype)
     packet = iterBits(packetStructVal, bitsInOne=8, skipPadding=False)
     packet = list(map(valToInt, packet))
     eth = 0
@@ -60,6 +58,10 @@ def pingResponder_model(packetStructVal):
     # Change ICMP type code to Echo Reply (0).
     packet[icmp] = ICMP_TYPE.ECHO_REPLY
 
+    # clean checksum
+    packet[icmp + 2] = 0
+    packet[icmp + 3] = 0
+
     # Calculate new  ICMP Checksum field.
     checksum = 0
     # for every 16-bit of the ICMP payload:
@@ -67,7 +69,7 @@ def pingResponder_model(packetStructVal):
         half_word = (packet[i] << 8) + (packet[i + 1])
         checksum += half_word
     # Get one's complement of the checksum.
-    checksum = ~(checksum + 4) & 0xffff
+    checksum = ~checksum & 0xffff
     # Put the new checksum back into the packet. (bigendian)
     packet[icmp + 2] = checksum >> 8
     packet[icmp + 3] = checksum & ((1 << 8) - 1)
@@ -118,7 +120,6 @@ class PingResponderTC(SimTestCase):
                     "checksum": 0,
                     "identifier": 0,
                     "seqNo": 0,
-                    "payload": int.from_bytes(b"abcd", byteorder="big")
                 }
             })
 
@@ -159,19 +160,22 @@ class PingResponderTC(SimTestCase):
         
         _res = iterBits(res, bitsInOne=8, skipPadding=False)
         _res = bytes(map(valToInt, _res))
-        print("")
-        print("f", f)
-        print("res", res)
-        print("model_res", HStruct_unpack(echoFrame_t, model_res, dataWidth=8))
+        # print("")
+        # print("f", f)
+        # print("res", res)
+        # print("model_res", HStruct_unpack(echoFrame_t, model_res, dataWidth=8))
 
         self.assertEqual(_res, model_res)
 
 
 if __name__ == "__main__":
+    import unittest
     suite = unittest.TestSuite()
-
+    
     suite.addTest(PingResponderTC('test_reply1x'))
-
+    
     # suite.addTest(unittest.makeSuite(PingResponderTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
+    
+

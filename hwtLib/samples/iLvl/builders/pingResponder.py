@@ -24,6 +24,14 @@ echoFrame_t = HStruct(
 
 # https://github.com/hamsternz/FPGA_Webserver/tree/master/hdl/icmp
 class PingResponder(Unit):
+    """
+    Listen for echo request on rx axi stream interface and respond with echo response on tx interface
+    
+    :note: incoming checksum is not checked
+    :attention: you have to ping "ping -s 0 <ip>" because unit ignores additional data in packet and linux by
+        defaults adds it
+    """
+
     def _config(self):
         self.DATA_WIDTH = Param(32)
         self.IS_BIGENDIAN = Param(True)
@@ -37,8 +45,10 @@ class PingResponder(Unit):
             self.rx = AxiStream()
             self.tx = AxiStream()
 
-    def reqLoad(self, parsed, regs, freeze):
+    def req_load(self, parsed, regs, freeze):
         """
+        Load request from parser input into registers
+        
         :param parsed: input interface with parsed fields of ICPM frame
         :param regs: registers for ICMP frame
         :param freeze: signal to freeze value in registers
@@ -53,7 +63,7 @@ class PingResponder(Unit):
             reg = getattr(regs, name)
 
             if isinstance(In, StructIntf):
-                self.reqLoad(In, reg, freeze)
+                self.req_load(In, reg, freeze)
             else:
                 if isinstance(reg, Value) or not isinstance(reg, RtlMemoryBase):
                     # we have an exact value to use, ignore this intput
@@ -65,7 +75,15 @@ class PingResponder(Unit):
                 )
                 In.rd ** ~freeze
 
-    def connectResp(self, resp, forgeIn, sendingReply):
+    def connect_resp(self, resp, forgeIn, sendingReply):
+        """
+        Connect response data on inputs of frame forge
+        
+        :param resp: registers with response data
+        :param forgeIn: input interface of frame forge
+        :param sendingRepply: flag which signalizes that data should be forged into frame and send
+        """
+
         t = resp._dtype
 
         if isinstance(t, Bits):
@@ -75,52 +93,56 @@ class PingResponder(Unit):
             for f in t.fields:
                 name = f.name
                 In = getattr(resp, name)
+
                 # switch dst and src
                 if name == "src":
                     name = "dst"
                 elif name == "dst":
                     name = "src"
-                Out = getattr(forgeIn, name)
-                self.connectResp(In, Out, sendingReply)
 
-    def icmpChecksum(self, header):
-        # Concat(vec(0, 8), header.code) = 0
+                Out = getattr(forgeIn, name)
+                self.connect_resp(In, Out, sendingReply)
+
+    def icmp_checksum(self, header):
+        """
+        :note: we do not need to care about endianity because parser/forge will swap it for us
+            and we can work with little endians only
+        :return: checksum for icmp header
+        """
+
+        # type, code, checksum = 0 
         return ~(header.identifier + 
-                 header.seqNo  + 
-                 header.payload[16:] + 
-                 header.payload[32:16]
+                 header.seqNo
                  )
 
     def _impl(self):
-        parsed = AxiSBuilder(self, self.rx).parse(echoFrame_t)
-        # sof = AxiSBuilder(self, self.rx).startOfFrame()
-
         sendingReply = self._reg("sendingReply", defVal=0)
         resp = self._reg("resp", echoFrame_t)
         isEchoReq = self._reg("isEchoReq", defVal=0)
 
         resp.icmp.type = resp.icmp.type._dtype.fromPy(ICMP_TYPE.ECHO_REPLY)
         resp.icmp.code = resp.icmp.code._dtype.fromPy(0)
+        resp.icmp.checksum = self.icmp_checksum(resp.icmp)
         
         
-        resp.icmp.checksum = self.icmpChecksum(resp.icmp)
-        self.reqLoad(parsed, resp, sendingReply)
+        parsed = AxiSBuilder(self, self.rx).parse(echoFrame_t)
+        self.req_load(parsed, resp, sendingReply)
 
         t = parsed.icmp.type
         If(t.vld,
            isEchoReq ** t.data._eq(ICMP_TYPE.ECHO_REQUEST)
         )
 
-        def setup_output(out):
+        def setup_frame_forge(out):
             out.DATA_WIDTH.set(self.DATA_WIDTH)
             out.IS_BIGENDIAN.set(self.IS_BIGENDIAN)
 
         txBuilder, forgeIn = AxiSBuilder.forge(self,
                                                echoFrame_t,
                                                AxiStream,
-                                               setup_output)
+                                               setup_frame_forge)
 
-        self.connectResp(resp, forgeIn, sendingReply)
+        self.connect_resp(resp, forgeIn, sendingReply)
         tx = txBuilder.end
         self.tx ** tx
         
@@ -138,5 +160,5 @@ if __name__ == "__main__":  # alias python main function
     # we create instance of our unit
     u = PingResponder()
     # there is more of synthesis methods. toRtl() returns formated hdl string
-    print(toRtlA(u))
+    print(toRtl(u))
 

@@ -72,6 +72,7 @@ from hwtLib.samples.iLvl.arithmetic.widthCasting import WidthCastingExampleTC
 from hwtLib.samples.iLvl.axi.simpleAxiRegs_test import SimpleAxiRegsTC
 from hwtLib.samples.iLvl.builders.ethAddrUpdater_test import EthAddrUpdaterTC
 from hwtLib.samples.iLvl.builders.handshakedBuilderSimple import HandshakedBuilderSimpleTC
+from hwtLib.samples.iLvl.builders.pingResponder_test import PingResponderTC
 from hwtLib.samples.iLvl.emptyUnitWithSpi import EmptyUnitWithSpiTC
 from hwtLib.samples.iLvl.errors.errorsTestCase import ErrorsTC
 from hwtLib.samples.iLvl.hdlComments_test import HdlCommentsTC
@@ -300,6 +301,7 @@ suite = testSuiteFromTCs(
     CharToBitmapTC,
     HashTableCoreTC,
     DumpTestbenchTC,
+    PingResponderTC,
 )
 
 
