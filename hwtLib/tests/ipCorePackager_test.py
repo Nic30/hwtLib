@@ -2,9 +2,12 @@ import shutil
 import tempfile
 import unittest
 
+from hwt.code import If, connect
 from hwt.hdlObjects.types.array import Array
 from hwt.hdlObjects.types.struct import HStruct
+from hwt.interfaces.differential import DifferentialSig
 from hwt.interfaces.std import BramPort, Handshaked
+from hwt.interfaces.utils import addClkRst
 from hwt.serializer.ip_packager.interfaces.std import IP_Handshake
 from hwt.serializer.ip_packager.packager import Packager
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -16,9 +19,6 @@ from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl
 from hwtLib.mem.fifo import Fifo
 from hwtLib.types.ctypes import uint64_t
 from hwtLib.uart.intf import Uart
-from hwt.interfaces.differential import DifferentialSig
-from hwt.code import If, connect
-from hwt.interfaces.utils import addClkRst
 
 
 class Handshaked_withIP(Handshaked):
