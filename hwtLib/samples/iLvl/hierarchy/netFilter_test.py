@@ -190,7 +190,7 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-ENTITY gen_dout_fork_0 IS
+ENTITY gen_dout_splitCopy_0 IS
     GENERIC (DATA_WIDTH : INTEGER := 64;
         IS_BIGENDIAN : BOOLEAN := False;
         OUTPUTS : INTEGER := 2
@@ -206,9 +206,9 @@ ENTITY gen_dout_fork_0 IS
         dataOut_strb : OUT STD_LOGIC_VECTOR(((DATA_WIDTH / 8) * OUTPUTS) - 1 DOWNTO 0);
         dataOut_valid : OUT STD_LOGIC_VECTOR(OUTPUTS - 1 DOWNTO 0)
     );
-END gen_dout_fork_0;
+END gen_dout_splitCopy_0;
 
-ARCHITECTURE rtl OF gen_dout_fork_0 IS
+ARCHITECTURE rtl OF gen_dout_splitCopy_0 IS
 BEGIN
     dataIn_ready <= (dataOut_ready( 0 )) AND (dataOut_ready( 1 ));
     dataOut_data( 63 DOWNTO 0 ) <= dataIn_data;
@@ -313,16 +313,16 @@ ARCHITECTURE rtl OF NetFilter IS
     SIGNAL sig_filter_patternMatch_ready : STD_LOGIC;
     SIGNAL sig_filter_patternMatch_strb : STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL sig_filter_patternMatch_valid : STD_LOGIC;
-    SIGNAL sig_gen_dout_fork_0_dataIn_data : STD_LOGIC_VECTOR(63 DOWNTO 0);
-    SIGNAL sig_gen_dout_fork_0_dataIn_last : STD_LOGIC;
-    SIGNAL sig_gen_dout_fork_0_dataIn_ready : STD_LOGIC;
-    SIGNAL sig_gen_dout_fork_0_dataIn_strb : STD_LOGIC_VECTOR(7 DOWNTO 0);
-    SIGNAL sig_gen_dout_fork_0_dataIn_valid : STD_LOGIC;
-    SIGNAL sig_gen_dout_fork_0_dataOut_data : STD_LOGIC_VECTOR(127 DOWNTO 0);
-    SIGNAL sig_gen_dout_fork_0_dataOut_last : STD_LOGIC_VECTOR(1 DOWNTO 0);
-    SIGNAL sig_gen_dout_fork_0_dataOut_ready : STD_LOGIC_VECTOR(1 DOWNTO 0);
-    SIGNAL sig_gen_dout_fork_0_dataOut_strb : STD_LOGIC_VECTOR(15 DOWNTO 0);
-    SIGNAL sig_gen_dout_fork_0_dataOut_valid : STD_LOGIC_VECTOR(1 DOWNTO 0);
+    SIGNAL sig_gen_dout_splitCopy_0_dataIn_data : STD_LOGIC_VECTOR(63 DOWNTO 0);
+    SIGNAL sig_gen_dout_splitCopy_0_dataIn_last : STD_LOGIC;
+    SIGNAL sig_gen_dout_splitCopy_0_dataIn_ready : STD_LOGIC;
+    SIGNAL sig_gen_dout_splitCopy_0_dataIn_strb : STD_LOGIC_VECTOR(7 DOWNTO 0);
+    SIGNAL sig_gen_dout_splitCopy_0_dataIn_valid : STD_LOGIC;
+    SIGNAL sig_gen_dout_splitCopy_0_dataOut_data : STD_LOGIC_VECTOR(127 DOWNTO 0);
+    SIGNAL sig_gen_dout_splitCopy_0_dataOut_last : STD_LOGIC_VECTOR(1 DOWNTO 0);
+    SIGNAL sig_gen_dout_splitCopy_0_dataOut_ready : STD_LOGIC_VECTOR(1 DOWNTO 0);
+    SIGNAL sig_gen_dout_splitCopy_0_dataOut_strb : STD_LOGIC_VECTOR(15 DOWNTO 0);
+    SIGNAL sig_gen_dout_splitCopy_0_dataOut_valid : STD_LOGIC_VECTOR(1 DOWNTO 0);
     SIGNAL sig_hfe_din_data : STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL sig_hfe_din_last : STD_LOGIC;
     SIGNAL sig_hfe_din_ready : STD_LOGIC;
@@ -419,7 +419,7 @@ ARCHITECTURE rtl OF NetFilter IS
        );
     END COMPONENT;
 
-    COMPONENT gen_dout_fork_0 IS
+    COMPONENT gen_dout_splitCopy_0 IS
        GENERIC (DATA_WIDTH : INTEGER := 64;
             IS_BIGENDIAN : BOOLEAN := False;
             OUTPUTS : INTEGER := 2
@@ -552,21 +552,21 @@ BEGIN
              patternMatch_valid => sig_filter_patternMatch_valid
         );
 
-    gen_dout_fork_0_inst : COMPONENT gen_dout_fork_0
+    gen_dout_splitCopy_0_inst : COMPONENT gen_dout_splitCopy_0
         GENERIC MAP (DATA_WIDTH => 64,
             IS_BIGENDIAN => False,
             OUTPUTS => 2
         )
-        PORT MAP ( dataIn_data => sig_gen_dout_fork_0_dataIn_data,
-             dataIn_last => sig_gen_dout_fork_0_dataIn_last,
-             dataIn_ready => sig_gen_dout_fork_0_dataIn_ready,
-             dataIn_strb => sig_gen_dout_fork_0_dataIn_strb,
-             dataIn_valid => sig_gen_dout_fork_0_dataIn_valid,
-             dataOut_data => sig_gen_dout_fork_0_dataOut_data,
-             dataOut_last => sig_gen_dout_fork_0_dataOut_last,
-             dataOut_ready => sig_gen_dout_fork_0_dataOut_ready,
-             dataOut_strb => sig_gen_dout_fork_0_dataOut_strb,
-             dataOut_valid => sig_gen_dout_fork_0_dataOut_valid
+        PORT MAP ( dataIn_data => sig_gen_dout_splitCopy_0_dataIn_data,
+             dataIn_last => sig_gen_dout_splitCopy_0_dataIn_last,
+             dataIn_ready => sig_gen_dout_splitCopy_0_dataIn_ready,
+             dataIn_strb => sig_gen_dout_splitCopy_0_dataIn_strb,
+             dataIn_valid => sig_gen_dout_splitCopy_0_dataIn_valid,
+             dataOut_data => sig_gen_dout_splitCopy_0_dataOut_data,
+             dataOut_last => sig_gen_dout_splitCopy_0_dataOut_last,
+             dataOut_ready => sig_gen_dout_splitCopy_0_dataOut_ready,
+             dataOut_strb => sig_gen_dout_splitCopy_0_dataOut_strb,
+             dataOut_valid => sig_gen_dout_splitCopy_0_dataOut_valid
         );
 
     hfe_inst : COMPONENT hfe
@@ -639,10 +639,10 @@ BEGIN
     sig_filter_cfg_w_data <= cfg_w_data;
     sig_filter_cfg_w_strb <= cfg_w_strb;
     sig_filter_cfg_w_valid <= cfg_w_valid;
-    sig_filter_din_data <= sig_gen_dout_fork_0_dataOut_data( 127 DOWNTO 64 );
-    sig_filter_din_last <= sig_gen_dout_fork_0_dataOut_last( 1 );
-    sig_filter_din_strb <= sig_gen_dout_fork_0_dataOut_strb( 15 DOWNTO 8 );
-    sig_filter_din_valid <= sig_gen_dout_fork_0_dataOut_valid( 1 );
+    sig_filter_din_data <= sig_gen_dout_splitCopy_0_dataOut_data( 127 DOWNTO 64 );
+    sig_filter_din_last <= sig_gen_dout_splitCopy_0_dataOut_last( 1 );
+    sig_filter_din_strb <= sig_gen_dout_splitCopy_0_dataOut_strb( 15 DOWNTO 8 );
+    sig_filter_din_valid <= sig_gen_dout_splitCopy_0_dataOut_valid( 1 );
     sig_filter_dout_ready <= sig_exporter_din_ready;
     sig_filter_headers_data <= sig_hfe_headers_data;
     sig_filter_headers_last <= sig_hfe_headers_last;
@@ -652,25 +652,24 @@ BEGIN
     sig_filter_patternMatch_last <= sig_patternMatch_match_last;
     sig_filter_patternMatch_strb <= sig_patternMatch_match_strb;
     sig_filter_patternMatch_valid <= sig_patternMatch_match_valid;
-    sig_gen_dout_fork_0_dataIn_data <= sig_hfe_dout_data;
-    sig_gen_dout_fork_0_dataIn_last <= sig_hfe_dout_last;
-    sig_gen_dout_fork_0_dataIn_strb <= sig_hfe_dout_strb;
-    sig_gen_dout_fork_0_dataIn_valid <= sig_hfe_dout_valid;
-    sig_gen_dout_fork_0_dataOut_ready( 0 ) <= sig_patternMatch_din_ready;
-    sig_gen_dout_fork_0_dataOut_ready( 1 ) <= sig_filter_din_ready;
+    sig_gen_dout_splitCopy_0_dataIn_data <= sig_hfe_dout_data;
+    sig_gen_dout_splitCopy_0_dataIn_last <= sig_hfe_dout_last;
+    sig_gen_dout_splitCopy_0_dataIn_strb <= sig_hfe_dout_strb;
+    sig_gen_dout_splitCopy_0_dataIn_valid <= sig_hfe_dout_valid;
+    sig_gen_dout_splitCopy_0_dataOut_ready( 0 ) <= sig_patternMatch_din_ready;
+    sig_gen_dout_splitCopy_0_dataOut_ready( 1 ) <= sig_filter_din_ready;
     sig_hfe_din_data <= din_data;
     sig_hfe_din_last <= din_last;
     sig_hfe_din_strb <= din_strb;
     sig_hfe_din_valid <= din_valid;
-    sig_hfe_dout_ready <= sig_gen_dout_fork_0_dataIn_ready;
+    sig_hfe_dout_ready <= sig_gen_dout_splitCopy_0_dataIn_ready;
     sig_hfe_headers_ready <= sig_filter_headers_ready;
-    sig_patternMatch_din_data <= sig_gen_dout_fork_0_dataOut_data( 63 DOWNTO 0 );
-    sig_patternMatch_din_last <= sig_gen_dout_fork_0_dataOut_last( 0 );
-    sig_patternMatch_din_strb <= sig_gen_dout_fork_0_dataOut_strb( 7 DOWNTO 0 );
-    sig_patternMatch_din_valid <= sig_gen_dout_fork_0_dataOut_valid( 0 );
+    sig_patternMatch_din_data <= sig_gen_dout_splitCopy_0_dataOut_data( 63 DOWNTO 0 );
+    sig_patternMatch_din_last <= sig_gen_dout_splitCopy_0_dataOut_last( 0 );
+    sig_patternMatch_din_strb <= sig_gen_dout_splitCopy_0_dataOut_strb( 7 DOWNTO 0 );
+    sig_patternMatch_din_valid <= sig_gen_dout_splitCopy_0_dataOut_valid( 0 );
     sig_patternMatch_match_ready <= sig_filter_patternMatch_ready;
 END ARCHITECTURE rtl;
-
 """
 
 
@@ -678,8 +677,8 @@ class NetFilterTC(SimTestCase):
 
     def test_serialization(self):
         u = NetFilter()
-        #StatementTreesTC.strStructureCmp(self, expected, toRtl(u))
-        print(toRtl(u))
+        StatementTreesTC.strStructureCmp(self, expected, toRtl(u))
+        #print(toRtl(u))
 
 
 if __name__ == "__main__":

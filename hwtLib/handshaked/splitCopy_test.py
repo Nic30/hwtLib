@@ -7,19 +7,19 @@ from hwt.hdlObjects.constants import Time
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.handshaked.fork import HandshakedFork
+from hwtLib.handshaked.splitCopy import HsSplitCopy
 
 
-class HsForkWithReference(HandshakedFork):
+class HsSplitCopyWithReference(HsSplitCopy):
     def _declr(self):
-        HandshakedFork._declr(self)
+        HsSplitCopy._declr(self)
         addClkRstn(self)
 
 
-class HsForkTC(SimTestCase):
+class HsSplitCopyTC(SimTestCase):
     def setUp(self):
-        super(HsForkTC, self).setUp()
-        self.u = HsForkWithReference(Handshaked)
+        super(HsSplitCopyTC, self).setUp()
+        self.u = HsSplitCopyWithReference(Handshaked)
         self.u.DATA_WIDTH.set(4)
         self.prepareUnit(self.u)
 
@@ -35,15 +35,15 @@ class HsForkTC(SimTestCase):
         self.assertSequenceEqual([], u.dataIn._ag.data)
 
 
-class HsFork_randomized_TC(HsForkTC):
+class HsSplitCopy_randomized_TC(HsSplitCopyTC):
     def setUp(self):
-        super(HsFork_randomized_TC, self).setUp()
+        super(HsSplitCopy_randomized_TC, self).setUp()
         self.randomize(self.u.dataIn)
 
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(FifoTC('test_normalOp'))
-    suite.addTest(unittest.makeSuite(HsFork_randomized_TC))
+    suite.addTest(unittest.makeSuite(HsSplitCopy_randomized_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

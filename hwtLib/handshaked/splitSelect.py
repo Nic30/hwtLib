@@ -8,8 +8,11 @@ from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
-class HandshakedDemux(HandshakedCompBase):
+class HsSplitSelect(HandshakedCompBase):
     """
+    Split data from input interface to output interface based on explicit output index
+    provided by select interface
+
     .. aafig::
                 *----+ output0
                *     +-------->
@@ -42,7 +45,7 @@ class HandshakedDemux(HandshakedCompBase):
         for index, outIntf in enumerate(self.dataOut):
             for ini, outi in zip(In._interfaces, outIntf._interfaces):
                 if ini == self.getVld(In):
-                    outi ** (ini & self.sel._eq(index)) 
+                    outi ** (ini & self.sel._eq(index))
                 elif ini == rd(In):
                     pass
                 else:  # data
@@ -50,7 +53,7 @@ class HandshakedDemux(HandshakedCompBase):
 
         Switch(self.sel).addCases(
             [(index, rd(In) ** rd(out))
-               for index, out in enumerate(self.dataOut)]
+             for index, out in enumerate(self.dataOut)]
         )
 
 

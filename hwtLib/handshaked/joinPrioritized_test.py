@@ -7,18 +7,18 @@ from hwt.hdlObjects.constants import Time
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.handshaked.join import HandshakedJoin
+from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
 
 
-class HsJoinWithReference(HandshakedJoin):
+class HsJoinWithReference(HsJoinPrioritized):
     def _declr(self):
-        HandshakedJoin._declr(self)
+        HsJoinPrioritized._declr(self)
         addClkRstn(self)
 
 
-class HsJoinTC(SimTestCase):
+class HsJoinPrioritizedTC(SimTestCase):
     def setUp(self):
-        super(HsJoinTC, self).setUp()
+        super(HsJoinPrioritizedTC, self).setUp()
         self.u = HsJoinWithReference(Handshaked)
         self.u.DATA_WIDTH.set(8)
         self.prepareUnit(self.u)
@@ -38,9 +38,9 @@ class HsJoinTC(SimTestCase):
             self.assertEmpty(d._ag.data)
 
 
-class HsJoin_randomized_TC(HsJoinTC):
+class HsJoinPrioritized_randomized_TC(HsJoinPrioritizedTC):
     def setUp(self):
-        super(HsJoin_randomized_TC, self).setUp()
+        super(HsJoinPrioritized_randomized_TC, self).setUp()
         #self.procs.append(agent_randomize(self.u.dataIn[0]._ag))
         #self.procs.append(agent_randomize(self.u.dataIn[1]._ag))
         self.randomize(self.u.dataOut)
@@ -48,6 +48,6 @@ class HsJoin_randomized_TC(HsJoinTC):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(FifoTC('test_normalOp'))
-    suite.addTest(unittest.makeSuite(HsJoin_randomized_TC))
+    suite.addTest(unittest.makeSuite(HsJoinPrioritized_randomized_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -1,6 +1,6 @@
 from hwt.bitmask import selectBit, mask
 from hwt.hdlObjects.constants import DIRECTION
-from hwt.interfaces.std import Clk, Signal, VectSignal
+from hwt.interfaces.std import Clk, Signal, VectSignal, Rst_n
 from hwt.interfaces.tristate import TristateSig
 from hwt.simulator.agentBase import SyncAgentBase, AgentBase
 from hwt.simulator.shortcuts import onRisingEdge, onFallingEdge
@@ -15,13 +15,13 @@ class SpiAgent(SyncAgentBase):
     Simulation agent for SPI interface
 
     :ivar txData: data to transceive container
-    :ivar rxData: received data 
+    :ivar rxData: received data
     :ivar chipSelects: values of chip select
 
     chipSelects, rxData and txData are lists of integers
     """
     BITS_IN_WORD = 8
-    
+
     def __init__(self, intf, allowNoReset=False):
         AgentBase.__init__(self, intf)
 
@@ -35,22 +35,24 @@ class SpiAgent(SyncAgentBase):
         self.slaveEn = False
 
         # resolve clk and rstn
-        self.clk = self.intf._getAssociatedClk()
+        self.clk = self.intf._getAssociatedClk()._sigInside
         try:
             self.rst = self.intf._getAssociatedRst()
+            self.rstOffIn = isinstance(self.rst, Rst_n)
+            self.rst = self.rst._sigInside
         except IntfLvlConfErr as e:
             if allowNoReset:
                 pass
             else:
                 raise e
-            
+
         # read on rising edge write on falling
         self.monitorRx = onRisingEdge(self.clk, self.monitorRx)
         self.monitorTx = onFallingEdge(self.clk, self.monitorTx)
-        
+
         self.driverRx = onFallingEdge(self.clk, self.driverRx)
         self.driverTx = onRisingEdge(self.clk, self.driverTx)
-    
+
     def splitBits(self, v):
         return [selectBit(v, i) for i in range(self.BITS_IN_WORD - 1, -1, -1)]
 
@@ -65,17 +67,17 @@ class SpiAgent(SyncAgentBase):
             vldMask <<= 1
             vldMask |= v.vldMask
             time = max(time, v.updateTime)
-            
+
         return t.getValueCls()(val, t, vldMask, time)
-    
+
     def readRxSig(self, sim, sig):
         d = sim.read(sig)
         bits = self._rxBitBuff
         bits.append(d)
-        if len(bits) == self.BITS_IN_WORD: 
+        if len(bits) == self.BITS_IN_WORD:
             self.rxData.append(self.mergeBits(bits))
             self._rxBitBuff = []
-    
+
     def writeTxSig(self, sim, sig):
         bits = self._txBitBuff
         if not bits:
@@ -83,10 +85,9 @@ class SpiAgent(SyncAgentBase):
                 return
             d = self.txData.pop(0)
             bits = self._txBitBuff = self.splitBits(d)
-            
+
         sim.write(bits.pop(0), sig)
-        
-    
+
     def monitorRx(self, s):
         yield s.updateComplete
         cs = s.read(self.intf.cs)
@@ -103,7 +104,7 @@ class SpiAgent(SyncAgentBase):
             assert cs._isFullVld()
             if cs.val != self.csMask:
                 self.writeTxSig(s, self.intf.miso)
- 
+
     def driverRx(self, s):
         yield s.updateComplete
         if self.enable and self.notReset(s) and self.slaveEn:
@@ -121,14 +122,15 @@ class SpiAgent(SyncAgentBase):
 
                 self.slaveEn = True
                 s.write(cs, self.intf.cs)
-                
+
             self.writeTxSig(s, self.intf.mosi)
- 
+
     def getDrivers(self):
         return [self.driverRx, self.driverTx]
-    
+
     def getMonitors(self):
         return [self.monitorRx, self.monitorTx]
+
 
 # http://www.corelis.com/education/SPI_Tutorial.htm
 class Spi(Interface):
@@ -143,7 +145,7 @@ class Spi(Interface):
         self.mosi = Signal()  # master out slave in
         self.miso = Signal(masterDir=DIRECTION.IN)  # master in slave out
         self.cs = VectSignal(self.SLAVE_CNT)  # chip select
-        
+
         self._associatedClk = self.clk
 
     def _getSimAgent(self):
@@ -163,9 +165,9 @@ class SpiTristate(Spi):
         with self._paramsShared():
             self.io = TristateSig()  # mosi and miso in one wire
         self.cs = VectSignal(self.SLAVE_CNT)  # chip select
-        
+
         self._associatedClk = self.clk
-        
+
 
 class QSPI(SpiTristate):
     """

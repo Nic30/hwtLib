@@ -6,7 +6,7 @@ from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
-class HandshakedJoin(HandshakedCompBase):
+class HsJoinPrioritized(HandshakedCompBase):
     """
     Join input stream to single output stream
     inputs with lower number has higher priority
@@ -64,5 +64,5 @@ class HandshakedJoin(HandshakedCompBase):
 if __name__ == "__main__":
     from hwt.interfaces.std import Handshaked
     from hwt.synthesizer.shortcuts import toRtl
-    u = HandshakedJoin(Handshaked)
+    u = HandshakedJoinPrioritized(Handshaked)
     print(toRtl(u))

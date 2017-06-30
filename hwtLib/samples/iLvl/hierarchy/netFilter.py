@@ -73,7 +73,7 @@ class NetFilter(Unit):
     def _impl(self):
         s = self
         propagateClkRstn(s)
-        AxiSBuilder(self, s.hfe.dout).forkTo(s.patternMatch.din, s.filter.din)
+        AxiSBuilder(self, s.hfe.dout).split_copy_to(s.patternMatch.din, s.filter.din)
 
         s.hfe.din ** s.din
         s.filter.headers ** s.hfe.headers
