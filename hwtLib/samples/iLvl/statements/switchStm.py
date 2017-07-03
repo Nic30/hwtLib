@@ -8,23 +8,26 @@ from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
 class SwitchStmUnit(Unit):
+    """
+    Example which is using switch statement to create multiplexer
+    """
     def _declr(self):
         self.sel = Signal(dtype=vecT(3))
+        self.out = Signal()
         self.a = Signal()
         self.b = Signal()
         self.c = Signal()
-        self.d = Signal()
 
     def _impl(self):
         Switch(self.sel)\
         .Case(0,
-            self.a ** self.b
+            self.out ** self.a
         ).Case(1,
-            self.a ** self.c
+            self.out ** self.b
         ).Case(2,
-            self.a ** self.d
+            self.out ** self.c
         ).Default(
-            self.a ** 0
+            self.out ** 0
         )
 
 
