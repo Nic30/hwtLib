@@ -10,6 +10,7 @@ from hwt.simulator.agentConnector import agInts
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.shortcuts import toRtl
 from hwtLib.samples.iLvl.statements.switchStm import SwitchStmUnit
+from hwt.serializer.systemC.serializer import SystemCSerializer
 
 
 switchStm_vhdl = """--
@@ -98,6 +99,10 @@ class SwitchStmTC(SimTestCase):
         s = toRtl(u, serializer=VerilogSerializer)
         self.assertEqual(s, switchStm_verilog)
 
+    #def test_systemcSerialization(self):
+    #    u = SwitchStmUnit()
+    #    s = toRtl(u, serializer=SystemCSerializer)
+    #    print(s)
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(TwoCntrsTC('test_nothingEnable'))
