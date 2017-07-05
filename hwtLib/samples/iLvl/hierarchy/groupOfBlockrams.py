@@ -17,7 +17,7 @@ class GroupOfBlockrams(Unit):
         with self._paramsShared():
             def extData():
                 return VectSignal(self.DATA_WIDTH)
-            
+
             self.clk = Clk()
             self.en = Signal()
             self.we = Signal()

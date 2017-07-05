@@ -7,7 +7,6 @@ import unittest
 from hwt.hdlObjects.statements import IfContainer, SwitchContainer
 from hwt.hdlObjects.types.defs import INT
 from hwt.hdlObjects.types.enum import Enum
-from hwt.serializer.vhdl.formater import formatVhdl
 from hwt.synthesizer.assigRenderer import renderIfTree
 from hwt.code import c, If, Switch
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
@@ -33,8 +32,8 @@ class StatementTreesTC(unittest.TestCase):
             self.assertEqual(template.switchOn, template.switchOn)
             self.assertEqual(len(template.cases), len(template.cases))
 
-    def strStructureCmp(self, tmpl, cont):
-        cont = formatVhdl(str(cont))
+    def strStructureCmp(self, cont, tmpl):
+        cont = str(cont)
         _tmpl = rmWhitespaces.sub(" ", tmpl).strip()
         _cont = rmWhitespaces.sub(" ", cont).strip()
 
@@ -55,7 +54,7 @@ class StatementTreesTC(unittest.TestCase):
         container = container[0]
         tmpl = IfContainer([a], ifTrue=[c(1, b)], ifFalse=[c(0, b)])
 
-        self.compareStructure(tmpl, container)
+        self.compareStructure(container, tmpl)
 
     def test_basicSwitch(self):
         a = self.n.sig('a', typ=INT)
@@ -67,7 +66,7 @@ class StatementTreesTC(unittest.TestCase):
         cont = cont[0]
 
         tmpl = SwitchContainer(a, [(i, c(i, b)) for i in range(3)] + [(None, c(3, b))])
-        self.compareStructure(tmpl, cont)
+        self.compareStructure(cont, tmpl)
 
     def test_ifsInSwitch(self):
         n = self.n
@@ -150,7 +149,7 @@ class StatementTreesTC(unittest.TestCase):
         END CASE
 
         """
-        self.strStructureCmp(tmpl, cont)
+        self.strStructureCmp(cont, tmpl)
 
     def test_ifs2LvlInSwitch(self):
         n = self.n
@@ -241,7 +240,7 @@ class StatementTreesTC(unittest.TestCase):
         END CASE
 
         """
-        self.strStructureCmp(tmpl, cont)
+        self.strStructureCmp(cont, tmpl)
 
     def test_ifs3LvlInSwitch(self):
         n = self.n
@@ -293,7 +292,7 @@ class StatementTreesTC(unittest.TestCase):
                    c(st, st)
                 )
             )
-    
+
         cont = list(renderIfTree(assigs))
         self.assertEqual(len(cont), 1)
         cont = cont[0]
@@ -338,7 +337,8 @@ class StatementTreesTC(unittest.TestCase):
         END CASE
 
         """
-        self.strStructureCmp(tmpl, cont)
+        self.strStructureCmp(cont, tmpl)
+
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     # suite.addTest(StatementTreesTC('test_ifs3LvlInSwitch'))
