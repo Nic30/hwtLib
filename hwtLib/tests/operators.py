@@ -143,7 +143,7 @@ class OperatorTC(unittest.TestCase):
     def test_ADD_InvalidOperands(self):
         a = self.n.sig('a', typ=STR)
         b = self.n.sig('b')
-        self.assertRaises(NotImplementedError, lambda: a + b)
+        self.assertRaises(TypeError, lambda: a + b)
 
     def test_ADD_IntBits(self):
         a = vec(7, 8)
