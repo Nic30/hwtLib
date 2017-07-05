@@ -62,19 +62,20 @@ module SwitchStmUnit(input  a,
     always @(a or b or c or sel) begin: assig_process_out
         case(sel)
             3'b000:
-                out = a;
+                out <= a;
             3'b001:
-                out = b;
+                out <= b;
             3'b010:
-                out = c;
+                out <= c;
             default:
-                out = 1'b0;
-        endcase;
+                out <= 1'b0;
+        endcase
     end
 
 endmodule"""
 
 switchStm_systemc = """"""
+
 
 class SwitchStmTC(SimTestCase):
     def test_allCases(self):

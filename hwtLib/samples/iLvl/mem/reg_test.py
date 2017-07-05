@@ -64,18 +64,18 @@ module DReg(input  clk,
         input  rst
     );
 
-    reg internReg = 1'b0;    
-    wire internReg_next;    
-    assign dout = internReg; 
+    reg internReg = 1'b0;
+    wire internReg_next;
+    assign dout = internReg;
     always @(posedge clk) begin: assig_process_internReg
         if(rst == 1'b1)  begin
-            internReg = 1'b0;
+            internReg <= 1'b0;
         end else begin
-            internReg = internReg_next;
-        end;
+            internReg <= internReg_next;
+        end
     end
 
-    assign internReg_next = din; 
+    assign internReg_next = din;
 endmodule"""
 
 class DRegTC(SimTestCase):
