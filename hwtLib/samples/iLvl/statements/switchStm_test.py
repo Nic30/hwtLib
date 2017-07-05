@@ -4,13 +4,13 @@
 import unittest
 
 from hwt.hdlObjects.constants import Time
+from hwt.serializer.systemC.serializer import SystemCSerializer
 from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.simulator.agentConnector import agInts
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.shortcuts import toRtl
 from hwtLib.samples.iLvl.statements.switchStm import SwitchStmUnit
-from hwt.serializer.systemC.serializer import SystemCSerializer
 
 
 switchStm_vhdl = """--
@@ -73,6 +73,7 @@ module SwitchStmUnit(input  a,
     end
 endmodule"""
 
+switchStm_systemc = """"""
 
 class SwitchStmTC(SimTestCase):
     def test_allCases(self):
@@ -102,7 +103,8 @@ class SwitchStmTC(SimTestCase):
     #def test_systemcSerialization(self):
     #    u = SwitchStmUnit()
     #    s = toRtl(u, serializer=SystemCSerializer)
-    #    print(s)
+    #     self.assertEqual(s, switchStm_systemc)
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(TwoCntrsTC('test_nothingEnable'))
