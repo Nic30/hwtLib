@@ -61,16 +61,17 @@ module SwitchStmUnit(input  a,
 
     always @(a or b or c or sel) begin: assig_process_out
         case(sel)
-            2'b000:
+            3'b000:
                 out = a;
-            2'b001:
+            3'b001:
                 out = b;
-            2'b010:
+            3'b010:
                 out = c;
             default:
                 out = 2'b0;
         endcase;
     end
+
 endmodule"""
 
 switchStm_systemc = """"""
