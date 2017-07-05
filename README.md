@@ -9,7 +9,7 @@ sudo pip3 install hwtLib
 
 
 Any component can be exported as IPCore using Packager class from hwt or as pure code by toRtl().
-Target language is pecified by keyword serializer.
+Target language is specified by keyword serializer.
 ```python
     from hwt.serializer.ip_packager.packager import Packager
     
