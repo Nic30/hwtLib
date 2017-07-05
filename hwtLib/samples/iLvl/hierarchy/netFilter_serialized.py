@@ -686,15 +686,15 @@ netFilter_verilog = """module hfe #(parameter  DIN_DATA_WIDTH = 64,
         output  headers_valid
     );
 
-    assign din_ready = 2'bx; 
+    assign din_ready = 1'bx; 
     assign dout_data = 64'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; 
-    assign dout_last = 2'bx; 
+    assign dout_last = 1'bx; 
     assign dout_strb = 8'bxxxxxxxx; 
-    assign dout_valid = 2'bx; 
+    assign dout_valid = 1'bx; 
     assign headers_data = 64'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; 
-    assign headers_last = 2'bx; 
+    assign headers_last = 1'bx; 
     assign headers_strb = 8'bxxxxxxxx; 
-    assign headers_valid = 2'bx; 
+    assign headers_valid = 1'bx; 
 endmodule
 module patternMatch #(parameter  DIN_DATA_WIDTH = 64,
         parameter  DIN_IS_BIGENDIAN = 0,
@@ -712,11 +712,11 @@ module patternMatch #(parameter  DIN_DATA_WIDTH = 64,
         output  match_valid
     );
 
-    assign din_ready = 2'bx; 
+    assign din_ready = 1'bx; 
     assign match_data = 64'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; 
-    assign match_last = 2'bx; 
+    assign match_last = 1'bx; 
     assign match_strb = 8'bxxxxxxxx; 
-    assign match_valid = 2'bx; 
+    assign match_valid = 1'bx; 
 endmodule
 module filter #(parameter  CFG_ADDR_WIDTH = 32,
         parameter  CFG_DATA_WIDTH = 64,
@@ -767,21 +767,21 @@ module filter #(parameter  CFG_ADDR_WIDTH = 32,
         input  patternMatch_valid
     );
 
-    assign cfg_ar_ready = 2'bx; 
-    assign cfg_aw_ready = 2'bx; 
+    assign cfg_ar_ready = 1'bx; 
+    assign cfg_aw_ready = 1'bx; 
     assign cfg_b_resp = 2'bxx; 
-    assign cfg_b_valid = 2'bx; 
+    assign cfg_b_valid = 1'bx; 
     assign cfg_r_data = 64'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; 
     assign cfg_r_resp = 2'bxx; 
-    assign cfg_r_valid = 2'bx; 
-    assign cfg_w_ready = 2'bx; 
-    assign din_ready = 2'bx; 
+    assign cfg_r_valid = 1'bx; 
+    assign cfg_w_ready = 1'bx; 
+    assign din_ready = 1'bx; 
     assign dout_data = 64'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; 
-    assign dout_last = 2'bx; 
+    assign dout_last = 1'bx; 
     assign dout_strb = 8'bxxxxxxxx; 
-    assign dout_valid = 2'bx; 
-    assign headers_ready = 2'bx; 
-    assign patternMatch_ready = 2'bx; 
+    assign dout_valid = 1'bx; 
+    assign headers_ready = 1'bx; 
+    assign patternMatch_ready = 1'bx; 
 endmodule
 module exporter #(parameter  DIN_DATA_WIDTH = 64,
         parameter  DIN_IS_BIGENDIAN = 0,
@@ -799,11 +799,11 @@ module exporter #(parameter  DIN_DATA_WIDTH = 64,
         output  dout_valid
     );
 
-    assign din_ready = 2'bx; 
+    assign din_ready = 1'bx; 
     assign dout_data = 64'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx; 
-    assign dout_last = 2'bx; 
+    assign dout_last = 1'bx; 
     assign dout_strb = 8'bxxxxxxxx; 
-    assign dout_valid = 2'bx; 
+    assign dout_valid = 1'bx; 
 endmodule
 module gen_dout_splitCopy_0 #(parameter  DATA_WIDTH = 64,
         parameter  IS_BIGENDIAN = 0,
