@@ -68,7 +68,7 @@ module SwitchStmUnit(input  a,
             3'b010:
                 out = c;
             default:
-                out = 2'b0;
+                out = 1'b0;
         endcase;
     end
 
