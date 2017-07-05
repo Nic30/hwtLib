@@ -6,7 +6,6 @@ import os
 
 from hwt.bitmask import selectBit
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.hdlObjects.types.array import Array
 
 
 im = Image.open(os.path.dirname(__file__) + "/charToBitmap_font.png")  # Can be many different formats.
@@ -33,24 +32,25 @@ def asciiArtOfChar(ch, inverted=True):
             lineBuf.append(pix)
         imgBuf.append("".join(lineBuf))
         lineBuf.clear()
-    
+
     return "\n".join(imgBuf)
+
 
 def getCharRow(charOrd, row):
     CHARS_PER_ROW = 32
     xpos = charOrd % CHARS_PER_ROW
-    xbase = xpos * 8  
+    xbase = xpos * 8
     ypos = charOrd // CHARS_PER_ROW
     ybase = ypos * 8 + row
-    
+
     for y in range(8):
         n = 0
         for x in range(8):
             pix = pixels[x + xbase, y + ybase]
-            
+
             if pix != 0 and pix != 1:
                 raise NotImplementedError("Unimplemented color %s" % str(pix))
-            
+
             n |= (pix << (7 - x))
         return n
 
@@ -65,10 +65,10 @@ def addCharToBitmap(unit, name="charToBitmap"):
     for ch in range(128):
         for row in range(8):
             rom.append(getCharRow(ch, row))
-            
-    mem = unit._sig(name, Array(vecT(8), 128 * 8), defVal=rom)
+
+    mem = unit._sig(name, vecT(8)[128 * 8], defVal=rom)
     return mem
 
-    
+
 if __name__ == "__main__":
     print(asciiArtOfChar("a", inverted=True))

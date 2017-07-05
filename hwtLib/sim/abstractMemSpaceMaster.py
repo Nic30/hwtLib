@@ -1,6 +1,6 @@
 from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.types.array import Array
 from hwt.bitmask import mask
+from hwt.hdlObjects.types.array import Array
 
 
 class PartialField(object):
@@ -23,7 +23,6 @@ class MemorySpaceItem(object):
         self.mask = memHandler.mask(t.bitAddr,
                                     (t.bitAddrEnd - t.bitAddr) // self.memHandler.ADDR_STEP // 8)
 
-
     def write(self, data):
         """
         write data to place in memory
@@ -31,6 +30,7 @@ class MemorySpaceItem(object):
         m = self.memHandler
         t = self.transTmpl
         m._write(self.myAddr // m.ADDR_STEP, 1, data, self.mask)
+
     def read(self):
         """
         read data from place in memory

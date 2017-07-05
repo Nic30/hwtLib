@@ -1,6 +1,5 @@
 from hwt.bitmask import mask
 from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.types.array import Array
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.amba.axiLite import AxiLite
@@ -13,16 +12,16 @@ from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
 
 
 structTwoArr = HStruct(
-                       (Array(uint32_t, 4), "field0"),
-                       (Array(uint32_t, 4), "field1")
+                       (uint32_t[4], "field0"),
+                       (uint32_t[4], "field1")
                        )
 
 structStructsInArray = HStruct(
-                        (Array(HStruct(
+                        (HStruct(
                                 (uint32_t, "field0"),
                                 (uint32_t, "field1")
-                                ),
-                               4), "arr"),
+                                )[4],
+                         "arr"),
                         )
 
 

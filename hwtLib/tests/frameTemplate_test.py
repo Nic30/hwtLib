@@ -3,7 +3,6 @@ import unittest
 from hwt.hdlObjects.types.struct import HStruct
 from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
 from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.types.array import Array
 from hwt.hdlObjects.frameTemplate import FrameTemplate
 from hwtLib.types.net.eth import Eth2Header_t
 from hwtLib.types.net.ip import IPv4Header_t
@@ -84,8 +83,8 @@ s0at71bit_str = """<FrameTemplate start:0, end:923
 >"""
 
 s1 = HStruct(
-            (Array(uint64_t, 3), "arr0"),
-            (Array(uint32_t, 5), "arr1")
+            (uint64_t[3], "arr0"),
+            (uint32_t[5], "arr1")
             )
 
 s1_str = """<FrameTemplate start:0, end:384
@@ -199,6 +198,7 @@ frameHeader_split_str = [
 >"""
     ]
 
+
 class FrameTemplateTC(unittest.TestCase):
     def test_s0at64bit(self):
         DW = 64
@@ -246,7 +246,7 @@ class FrameTemplateTC(unittest.TestCase):
         self.assertEqual(len(frames), 2)
         for frame, s in zip(frames, sWithPaddingMultiframe_str):
             self.assertEqual(s, frame.__repr__())
-    
+
     def test_sWithStartPadding(self):
         DW = 64
         tmpl = TransTmpl(sWithStartPadding)
@@ -258,7 +258,7 @@ class FrameTemplateTC(unittest.TestCase):
         frames = list(frames)
         self.assertEqual(len(frames), 1)
         self.assertEqual(sWithStartPadding_strTrim, frames[0].__repr__())
-    
+
     def test_sWithStartPaddingKept(self):
         DW = 64
         tmpl = TransTmpl(sWithStartPadding)

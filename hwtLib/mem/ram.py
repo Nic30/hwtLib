@@ -3,7 +3,6 @@
 
 from hwt.code import If, power
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import BramPort, Clk, BramPort_withoutClk
 from hwt.serializer.constants import SERI_MODE
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -45,7 +44,7 @@ class RamSingleClock(Unit):
 
     def _impl(self):
         PORTS = int(self.PORT_CNT)
-        dt = Array(vecT(self.DATA_WIDTH), power(2, self.ADDR_WIDTH))
+        dt = vecT(self.DATA_WIDTH)[power(2, self.ADDR_WIDTH)]
         self._mem = self._sig("ram_memory", dt)
 
         for i in range(PORTS):
@@ -75,7 +74,7 @@ class Ram_sp(Unit):
         )
 
     def _impl(self):
-        dt = Array(vecT(self.DATA_WIDTH), power(2, self.ADDR_WIDTH))
+        dt = vecT(self.DATA_WIDTH)[power(2, self.ADDR_WIDTH)]
         self._mem = self._sig("ram_memory", dt)
 
         self.connectPort(self.a, self._mem)

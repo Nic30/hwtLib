@@ -3,7 +3,6 @@
 
 from hwt.code import If, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import FifoWriter, FifoReader, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.constants import SERI_MODE
@@ -48,7 +47,7 @@ class Fifo(Unit):
         s = self._sig
         r = self._reg
 
-        mem = self.mem = s("memory", Array(vecT(self.DATA_WIDTH), self.DEPTH))
+        mem = self.mem = s("memory", vecT(self.DATA_WIDTH)[self.DEPTH])
         wr_ptr = r("wr_ptr", index_t, 0)
         rd_ptr = r("rd_ptr", index_t, 0)
         MAX_DEPTH = DEPTH - 1

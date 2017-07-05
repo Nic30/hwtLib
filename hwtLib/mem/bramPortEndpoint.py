@@ -3,7 +3,6 @@
 
 from hwt.code import c, SwitchLogic, log2ceil, Switch
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.abstract.busEndpoint import BusEndpoint
 
@@ -85,9 +84,9 @@ if __name__ == "__main__":
             HStruct(
                 (uint32_t, "reg0"),
                 (uint32_t, "reg1"),
-                (Array(uint32_t, 1024), "segment0"),
-                (Array(uint32_t, 1024), "segment1"),
-                (Array(uint32_t, 1024 + 4), "nonAligned0")
+                (uint32_t[1024], "segment0"),
+                (uint32_t[1024], "segment1"),
+                (uint32_t[1024 + 4], "nonAligned0")
                 )
             )
     u.DATA_WIDTH.set(32)

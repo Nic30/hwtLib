@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import Signal, Clk
 from hwt.code import connect, If
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -20,7 +19,7 @@ class SimpleAsyncRam(Unit):
         self.dout = Signal(dtype=vecT(8))
 
     def _impl(self):
-        self._ram = ram = self._sig("ram_data", Array(vecT(8), 4))
+        self._ram = ram = self._sig("ram_data", vecT(8)[4])
         connect(ram[self.addr_out], self.dout),
         connect(self.din, ram[self.addr_in])
 
@@ -31,7 +30,7 @@ class SimpleSyncRam(SimpleAsyncRam):
         self.clk = Clk()
 
     def _impl(self):
-        self._ram = ram = self._sig("ram_data", Array(vecT(8), 4))
+        self._ram = ram = self._sig("ram_data", vecT(8)[4])
 
         If(self.clk._onRisingEdge(),
            self.dout ** ram[self.addr_out],
