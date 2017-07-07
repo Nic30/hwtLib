@@ -4,13 +4,14 @@
 import unittest
 
 from hwt.hdlObjects.constants import Time
+from hwt.serializer.systemC.serializer import SystemCSerializer
+from hwt.serializer.verilog.serializer import VerilogSerializer
+from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.simulator.agentConnector import agInts
 from hwt.simulator.shortcuts import simPrepare
-from hwtLib.samples.iLvl.mem.reg import DReg, DoubleDReg, OptimizedOutReg
-from hwt.synthesizer.shortcuts import toRtl
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.serializer.vhdl.serializer import VhdlSerializer
-from hwt.serializer.verilog.serializer import VerilogSerializer
+from hwt.synthesizer.shortcuts import toRtl
+from hwtLib.samples.iLvl.mem.reg import DReg, DoubleDReg, OptimizedOutReg
 
 
 dreg_vhdl = """--
@@ -78,6 +79,55 @@ module DReg(input  clk,
     assign internReg_next = din;
 endmodule"""
 
+
+dreg_systemc = """/* 
+    Basic d flip flop
+
+    :attention: using this unit is pointless because HWToolkit can automatically
+        generate such a register for any interface and datatype
+     */
+
+#include <systemc.h>
+
+
+SC_MODULE(DReg) {
+    //interfaces
+    sc_in<sc_uint<1>> clk;
+    sc_in<sc_uint<1>> rst;
+    sc_in<sc_uint<1>> din;
+    sc_out<sc_uint<1>> dout;
+
+    //internal signals
+    sc_signal<sc_uint<1>> internReg('0');
+    sc_signal<sc_uint<1>> internReg_next('X');
+
+    //processes inside this component
+    void assig_process_dout() {
+        dout.write(internReg.read());
+    }
+    void assig_process_internReg() {
+        if(rst.read() == '1') {
+            internReg.write('0');
+        end else {
+            internReg.write(internReg_next.read());
+        }
+    }
+    void assig_process_internReg_next() {
+        internReg_next.write(din.read());
+    }
+
+
+    SC_CTOR(DReg){
+        SC_METHOD(assig_process_dout);
+        sensitive << internReg;
+        SC_METHOD(assig_process_internReg);
+        sensitive <<  clk .pos();
+        SC_METHOD(assig_process_internReg_next);
+        sensitive << din;
+    }
+  }
+};"""
+
 class DRegTC(SimTestCase):
     def setUpUnit(self, u):
         self.u, self.model, self.procs = simPrepare(u)
@@ -117,6 +167,10 @@ class DRegTC(SimTestCase):
     def test_dreg_verilog(self):
         s = toRtl(DReg(), serializer=VerilogSerializer)
         self.assertEqual(s, dreg_verilog)
+
+    def test_dreg_systemc(self):
+        s = toRtl(DReg(), serializer=SystemCSerializer)
+        self.assertEqual(s, dreg_systemc)
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
