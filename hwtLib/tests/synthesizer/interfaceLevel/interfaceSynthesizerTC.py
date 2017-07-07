@@ -37,7 +37,7 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
         """
         Check interface directions pre and after synthesis
         """
-        from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream
+        from hwtLib.samples.simpleAxiStream import SimpleUnitAxiStream
         u = SimpleUnitAxiStream()
         u._loadDeclarations()
         m = self.assertIsM
@@ -83,7 +83,7 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
         m(u.b.strb)
        
     def test_SimpleUnit2(self):
-        from hwtLib.samples.iLvl.simpleAxiStream import SimpleUnitAxiStream
+        from hwtLib.samples.simpleAxiStream import SimpleUnitAxiStream
         u = SimpleUnitAxiStream()
         u._loadDeclarations()
         ex = lambda i : self.assertTrue(i._isExtern)
@@ -111,7 +111,7 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
         
     
     def test_SimpleSubUnit2(self):
-        from hwtLib.samples.iLvl.hierarchy.simpleSubunit2 import SimpleSubunit2
+        from hwtLib.samples.hierarchy.simpleSubunit2 import SimpleSubunit2
         u = SimpleSubunit2()
         u = synthesised(u)
     
@@ -121,7 +121,7 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
             self.assertDirOut(u, pn)
         
     def test_signalInstances(self):
-        from hwtLib.samples.iLvl.simple import SimpleUnit
+        from hwtLib.samples.simple import SimpleUnit
         bram = SimpleUnit()
         bram = synthesised(bram)
     

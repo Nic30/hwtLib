@@ -14,8 +14,8 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.shortcuts import toRtl, synthesised
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.fullDuplexAxiStream import FullDuplexAxiStream
-from hwtLib.samples.iLvl.hierarchy.unitToUnitConnection import UnitToUnitConnection
-from hwtLib.samples.iLvl.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnection
+from hwtLib.samples.hierarchy.unitToUnitConnection import UnitToUnitConnection
+from hwtLib.samples.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnection
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import BaseSynthesizerTC
 
 
@@ -58,7 +58,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
         """
         Check interface directions pre and after synthesis
         """
-        from hwtLib.samples.iLvl.hierarchy.groupOfBlockrams import GroupOfBlockrams
+        from hwtLib.samples.hierarchy.groupOfBlockrams import GroupOfBlockrams
         u = GroupOfBlockrams()
         u._loadDeclarations()
         u = synthesised(u)

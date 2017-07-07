@@ -1,5 +1,5 @@
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.samples.iLvl.builders.handshakedBuilderSimple import HandshakedBuilderSimple
+from hwtLib.samples.builders.handshakedBuilderSimple import HandshakedBuilderSimple
 from hwt.hdlObjects.constants import Time
 from io import StringIO
 import unittest
