@@ -129,6 +129,7 @@ SC_MODULE(DReg) {
   }
 };"""
 
+
 class DRegTC(SimTestCase):
     def setUpUnit(self, u):
         self.u, self.model, self.procs = simPrepare(u)
