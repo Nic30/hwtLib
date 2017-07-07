@@ -74,7 +74,42 @@ module SwitchStmUnit(input  a,
 
 endmodule"""
 
-switchStm_systemc = """"""
+switchStm_systemc = """#include <systemc.h>
+
+
+SC_MODULE(SwitchStmUnit) {
+    //interfaces
+    sc_in<sc_uint<3>> sel;
+    sc_out<sc_uint<1>> out;
+    sc_in<sc_uint<1>> a;
+    sc_in<sc_uint<1>> b;
+    sc_in<sc_uint<1>> c;
+
+    //processes inside this component
+    void assig_process_out() {
+        case(sel.read()) {
+            sc_uint<3>("000"):
+                out.write(a.read());
+                break;
+            sc_uint<3>("001"):
+                out.write(b.read());
+                break;
+            sc_uint<3>("010"):
+                out.write(c.read());
+                break;
+            default:
+                out.write('0');
+                break;
+        }
+    }
+
+
+    SC_CTOR(SwitchStmUnit){
+        SC_METHOD(method.name);
+        sensitive << a << sel << b << c;
+    }
+  }
+};"""
 
 
 class SwitchStmTC(SimTestCase):
@@ -102,10 +137,10 @@ class SwitchStmTC(SimTestCase):
         s = toRtl(u, serializer=VerilogSerializer)
         self.assertEqual(s, switchStm_verilog)
 
-    #def test_systemcSerialization(self):
-    #    u = SwitchStmUnit()
-    #    s = toRtl(u, serializer=SystemCSerializer)
-    #     self.assertEqual(s, switchStm_systemc)
+    def test_systemcSerialization(self):
+        u = SwitchStmUnit()
+        s = toRtl(u, serializer=SystemCSerializer)
+        self.assertEqual(s, switchStm_systemc)
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
