@@ -35,7 +35,7 @@ class Expr2CondTC(unittest.TestCase):
         self.assertEqual(e, _e)
 
         andOp = e.origin.ops[0].origin
-        self.assertEqual(andOp.operator, AllOps.AND_LOG)
+        self.assertEqual(andOp.operator, AllOps.AND)
 
         op0 = andOp.ops[0]
         op1 = andOp.ops[1]
