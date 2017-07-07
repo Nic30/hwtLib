@@ -7,8 +7,9 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.shortcuts import toRtl
 from hwtLib.samples.iLvl.hierarchy.netFilter import NetFilter
 from hwtLib.samples.iLvl.hierarchy.netFilter_serialized import netFilter_vhdl, \
-    netFilter_verilog
+    netFilter_verilog, netFilter_systemc
 from hwtLib.tests.statementTrees import StatementTreesTC
+from hwt.serializer.systemC.serializer import SystemCSerializer
 
 
 class NetFilterTC(SimTestCase):
@@ -23,6 +24,11 @@ class NetFilterTC(SimTestCase):
         u = NetFilter()
         s = toRtl(u, serializer=VerilogSerializer)
         StatementTreesTC.strStructureCmp(self, s, netFilter_verilog)
+
+    def test_systemc_serialization(self):
+        u = NetFilter()
+        s = toRtl(u, serializer=SystemCSerializer)
+        StatementTreesTC.strStructureCmp(self, s, netFilter_systemc)
 
 if __name__ == "__main__":
     import unittest
