@@ -105,8 +105,8 @@ SC_MODULE(SwitchStmUnit) {
 
 
     SC_CTOR(SwitchStmUnit){
-        SC_METHOD(method.name);
-        sensitive << a << sel << b << c;
+        SC_METHOD(assig_process_out);
+        sensitive << a << b << c << sel;
     }
   }
 };"""
@@ -140,6 +140,7 @@ class SwitchStmTC(SimTestCase):
     def test_systemcSerialization(self):
         u = SwitchStmUnit()
         s = toRtl(u, serializer=SystemCSerializer)
+        print(s)
         self.assertEqual(s, switchStm_systemc)
 
 if __name__ == "__main__":
