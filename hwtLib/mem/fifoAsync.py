@@ -3,7 +3,6 @@
 
 from hwt.code import If, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import Clk, Rst_n, FifoWriter, FifoReader
 from hwt.serializer.constants import SERI_MODE
 from hwtLib.logic.cntrGray import GrayCntr
@@ -42,7 +41,7 @@ class FifoAsync(Fifo):
             cntr.DATA_WIDTH.set(self.addrW)
 
     def _impl(self):
-        memory_t = Array(vecT(self.DATA_WIDTH), self.DEPTH)
+        memory_t = vecT(self.DATA_WIDTH)[self.DEPTH]
         memory = self._sig("memory", memory_t)
         full = self._sig("full")
         empty = self._sig("empty")

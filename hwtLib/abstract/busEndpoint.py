@@ -28,6 +28,7 @@ class BusEndpoint(Unit):
     """
     Abstract unit
     Delegate request from bus to fields of structure
+    (fields are represented by various interfaces)
     write has higher priority
 
     .. aafig::
@@ -332,7 +333,7 @@ class BusEndpoint(Unit):
 
         regsFlatten = []
         intfMap = {}
-        DATA_WIDTH = evalParam(bus.DATA_WIDTH).val
+        DATA_WIDTH = int(bus.DATA_WIDTH)
         # build flatten register map
         for typ, name, info in cls._resolveRegStructFromIntfMap("", interfaceMap, DATA_WIDTH):
             if info is not None:

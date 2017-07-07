@@ -93,14 +93,10 @@ if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     from hwt.hdlObjects.types.struct import HStruct
     from hwtLib.types.ctypes import uint32_t
-    from hwt.hdlObjects.types.array import Array
-    # u = IpifConverter([(i * 4 , "data%d" % i) for i in range(2)] + 
-    #                  [(3 * 4, "bramMapped", 32)])
-    #
     u = IpifEndpoint(
             HStruct(
                 (uint32_t, "data0"),
                 (uint32_t, "data1"),
-                (Array(uint32_t, 32), "bramMapped")
+                (uint32_t[32], "bramMapped")
                 ))
     print(toRtl(u))

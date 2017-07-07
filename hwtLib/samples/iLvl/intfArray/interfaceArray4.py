@@ -13,15 +13,13 @@ from hwtLib.types.ctypes import uint8_t
 
 struct0 = HStruct(
         (uint8_t, "f0"),
-        (Array(
-               HStruct(
-                   (uint8_t, "f1"),
-                   (uint8_t, "f2")
-                   ),
-               4), "arr0")
+        (HStruct(
+             (uint8_t, "f1"),
+             (uint8_t, "f2")
+             )[4], "arr0")
     )
 # struct0 = HStruct(
-#        (Array(uint8_t, 2), "arr0")
+#        (uint8_t[2], "arr0")
 #    )
 
 

@@ -3,7 +3,6 @@
 
 from hwt.code import If, Concat, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT, hBit
-from hwt.hdlObjects.types.array import Array
 from hwt.interfaces.std import Handshaked, VldSynced
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.constants import SERI_MODE
@@ -62,8 +61,7 @@ class Cam(Unit):
     def _impl(self):
         # +1 bit to validity check
         self._mem = self._sig("cam_mem",
-                              Array(vecT(self.DATA_WIDTH + 1),
-                                    self.ITEMS),
+                              vecT(self.DATA_WIDTH + 1)[self.ITEMS],
                               [0 for _ in range(int(self.ITEMS))]
                               )
         self.writeHandler(self._mem)
