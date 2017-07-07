@@ -74,7 +74,13 @@ module SwitchStmUnit(input  a,
 
 endmodule"""
 
-switchStm_systemc = """#include <systemc.h>
+switchStm_systemc = """/*
+
+    Example which is using switch statement to create multiplexer
+    
+*/
+
+#include <systemc.h>
 
 
 SC_MODULE(SwitchStmUnit) {
@@ -103,8 +109,7 @@ SC_MODULE(SwitchStmUnit) {
         }
     }
 
-
-    SC_CTOR(SwitchStmUnit){
+    SC_CTOR(SwitchStmUnit) {
         SC_METHOD(assig_process_out);
         sensitive << a << b << c << sel;
     }
@@ -140,7 +145,6 @@ class SwitchStmTC(SimTestCase):
     def test_systemcSerialization(self):
         u = SwitchStmUnit()
         s = toRtl(u, serializer=SystemCSerializer)
-        print(s)
         self.assertEqual(s, switchStm_systemc)
 
 if __name__ == "__main__":

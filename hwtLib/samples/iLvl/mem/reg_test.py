@@ -80,12 +80,14 @@ module DReg(input  clk,
 endmodule"""
 
 
-dreg_systemc = """/* 
+dreg_systemc = """/*
+
     Basic d flip flop
 
     :attention: using this unit is pointless because HWToolkit can automatically
         generate such a register for any interface and datatype
-     */
+    
+*/
 
 #include <systemc.h>
 
@@ -116,8 +118,7 @@ SC_MODULE(DReg) {
         internReg_next.write(din.read());
     }
 
-
-    SC_CTOR(DReg){
+    SC_CTOR(DReg) {
         SC_METHOD(assig_process_dout);
         sensitive << internReg;
         SC_METHOD(assig_process_internReg);
