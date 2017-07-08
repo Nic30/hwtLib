@@ -133,6 +133,7 @@ from hwtLib.tests.valSlicing_test import ValSlicingTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
+from hwtLib.samples.showcase0_test import Showcase0TC
 
 
 def doSimWithoutLog(self, time):
@@ -188,6 +189,7 @@ suite = testSuiteFromTCs(
     InterfaceArraySample3TC,
     InterfaceArraySample4TC,
     FrameTemplateTC,
+    Showcase0TC,
 
     # component verifications
     ConcatTC,
