@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, Concat, log2ceil, Switch, splitOnParts
+from hwt.code import If, Concat, log2ceil, Switch
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
 
@@ -94,7 +95,8 @@ class HsResizer(HandshakedCompBase):
 
         # create output mux
         for din, dout in zip(self.getData(dataIn), self.getData(dataOut)):
-            inParts = splitOnParts(din, factor)
+            widthOfPart = din._dtype.bit_length() // factor
+            inParts = iterBits(din, bitsInOne=widthOfPart)
             Switch(inputRegs_cntr).addCases(
                 [(i, dout ** inPart) for i, inPart in enumerate(inParts)]
                 )
@@ -124,8 +126,8 @@ class HsResizer(HandshakedCompBase):
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     from hwt.interfaces.std import Handshaked
-    u = HandshakedResizer(Handshaked,
-                          [1, 3],
-                          lambda intf: intf.DATA_WIDTH.set(32),
-                          lambda intf: intf.DATA_WIDTH.set(3*32))
+    u = HsResizer(Handshaked,
+                  [1, 3],
+                  lambda intf: intf.DATA_WIDTH.set(32),
+                  lambda intf: intf.DATA_WIDTH.set(3 * 32))
     print(toRtl(u))

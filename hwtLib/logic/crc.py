@@ -1,12 +1,12 @@
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param
-from hwtLib.logic.crcPoly import CRC_5_USB
-from hwt.interfaces.std import VldSynced, VectSignal
-from hwt.interfaces.utils import addClkRstn
-from hwtLib.logic.crcUtils import parsePolyStr, buildCrcMatrix
 from hwt.bitmask import selectBit
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.code import iterBits
+from hwt.interfaces.std import VldSynced, VectSignal
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.vectorUtils import iterBits
+from hwtLib.logic.crcPoly import CRC_5_USB
+from hwtLib.logic.crcUtils import parsePolyStr, buildCrcMatrix
 
 
 # http://stackoverflow.com/questions/41734560/parallel-crc-32-calculation-ethernet-10ge-mac

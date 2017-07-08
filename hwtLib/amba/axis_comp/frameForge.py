@@ -91,7 +91,7 @@ class AxiS_frameForge(AxiSCompBase):
         else:
             def byteOrderCare(sig):
                 return sig
-        
+
         self.parseTemplate()
         maxWordIndex = sum(map(lambda f: f.getWordCnt(), self._frames)) - 1
         useCounter = maxWordIndex > 0

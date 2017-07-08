@@ -3,7 +3,7 @@
 
 
 from hwt.bitmask import selectBit
-from hwt.code import iterBits, Xor, Concat
+from hwt.code import Xor, Concat
 from hwt.hdlObjects.constants import Time
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal
@@ -11,6 +11,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.vectorUtils import iterBits
 
 
 class Lsfr(Unit):

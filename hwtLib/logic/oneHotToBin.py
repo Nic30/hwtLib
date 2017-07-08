@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, Or, iterBits, log2ceil
+from hwt.code import If, Or, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal, VldSynced
 from hwt.serializer.constants import SERI_MODE
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.synthesizer.vectorUtils import iterBits
 
 
 class OneHotToBin(Unit):

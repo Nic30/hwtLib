@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import Or, iterBits, rol, SwitchLogic
+from hwt.code import Or, rol, SwitchLogic
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
+from hwt.interfaces.std import VldSynced
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
-from hwt.interfaces.std import VldSynced
+from hwt.synthesizer.vectorUtils import iterBits
+from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
 
 
 class HsJoinFairShare(HsJoinPrioritized):

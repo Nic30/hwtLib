@@ -18,6 +18,7 @@ from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwtLib.sim.abstractMemSpaceMaster import PartialField
+from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import walkFlatten
 
 
 def inRange(n, lower, end):
@@ -109,7 +110,7 @@ class BusEndpoint(Unit):
             else:
                 return (True, False)
 
-        intfs = structIntf._walkFlatten(shouldEnterIntf)
+        intfs = walkFlatten(structIntf, shouldEnterIntf)
 
         for (((base, end), transTmpl), intf) in zip(fieldTrans, intfs):
             if isinstance(intf, InterfaceProxy):
