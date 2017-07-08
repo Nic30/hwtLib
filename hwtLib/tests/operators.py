@@ -115,7 +115,7 @@ class OperatorTC(unittest.TestCase):
         self.assertIs(a, ~ ~a)
 
     def test_downto(self):
-        a = self.n.sig('a', typ=INT)
+        a = self.n.sig('a', dtype=INT)
         a.defaultVal = hInt(10)
         b = hInt(0)
         r = a._downto(b)
@@ -124,7 +124,7 @@ class OperatorTC(unittest.TestCase):
         self.assertEqual(res.val[1].val, 0)
 
     def test_walkAllOriginSignalsDownto(self):
-        a = self.n.sig('a', typ=INT)
+        a = self.n.sig('a', dtype=INT)
         a.defaultVal = hInt(10)
         b = hInt(0)
         r = a._downto(b)
@@ -132,7 +132,7 @@ class OperatorTC(unittest.TestCase):
         self.assertSetEqual(origins, set([a]))
 
     def test_walkAllOriginSignalsDowntoAndPlus(self):
-        a = self.n.sig('a', typ=INT)
+        a = self.n.sig('a', dtype=INT)
         a.defaultVal = hInt(10)
         b = hInt(0)
         am = a + hInt(5)
@@ -141,7 +141,7 @@ class OperatorTC(unittest.TestCase):
         self.assertSetEqual(origins, set([a]))
 
     def test_ADD_InvalidOperands(self):
-        a = self.n.sig('a', typ=STR)
+        a = self.n.sig('a', dtype=STR)
         b = self.n.sig('b')
         self.assertRaises(TypeError, lambda: a + b)
 
@@ -201,21 +201,20 @@ class OperatorTC(unittest.TestCase):
         self.assertTrue((a <= b).val)
         self.assertFalse((b <= a).val)
 
-    
     def test_bits_sig_slice_on_slice(self):
         n = RtlNetlist()
         s = n.sig("s", vecT(16))
         self.assertIs(s[10:0][2:0], s[2:0])
         self.assertIs(s[10:0][4:1], s[4:1])
         self.assertIs(s[12:5][4:1], s[9:6])
-    
+
     def test_bits_sig_slice_on_slice_of_slice(self):
         n = RtlNetlist()
         s = n.sig("s", vecT(16))
         self.assertIs(s[10:0][7:0][2:0], s[2:0])
         self.assertIs(s[10:0][7:0][4:1], s[4:1])
         self.assertIs(s[12:5][7:1][4:1], s[10:7])
-        
+
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

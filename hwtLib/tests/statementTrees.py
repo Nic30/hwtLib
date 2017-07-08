@@ -57,8 +57,8 @@ class StatementTreesTC(unittest.TestCase):
         self.compareStructure(container, tmpl)
 
     def test_basicSwitch(self):
-        a = self.n.sig('a', typ=INT)
-        b = self.n.sig('b', typ=INT)
+        a = self.n.sig('a', dtype=INT)
+        b = self.n.sig('b', dtype=INT)
 
         assigs = Switch(a).addCases([(i, c(i, b)) for i in range(4)])
         cont = list(renderIfTree(assigs))
