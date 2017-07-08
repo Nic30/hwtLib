@@ -148,7 +148,9 @@ def doSimWithoutLog(self, time):
 def testSuiteFromTCs(*tcs):
     loader = TestLoader()
     for tc in tcs:
-        if issubclass(tc, SimTestCase):
+        # skip AxiLiteEndpointTC because we need one to test original methods
+        # from SimTestCase
+        if issubclass(tc, SimTestCase) and tc is not AxiLiteEndpointTC:
             tc.doSim = doSimWithoutLog
         tc._multiprocess_can_split_ = True
     loadedTcs = [loader.loadTestsFromTestCase(tc) for tc in tcs]
