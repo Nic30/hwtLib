@@ -42,7 +42,6 @@ class Showcase0(Unit):
         # behavior same as uint32_t (which is Bits(32, signed=False))
         self.c = Signal(dtype=Bits(32))
         # VectSignal is just shortcut for Signal(dtype=Bits(...))
-        self.c_sign = VectSignal(32, signed=True)
         self.fitted = VectSignal(16)
         self.contOut = VectSignal(32)
 
@@ -66,6 +65,12 @@ class Showcase0(Unit):
         self.h = VectSignal(8)
         self.i = VectSignal(2)
         self.j = VectSignal(8)
+
+        # collision with hdl keywords are automatically resolved and fixed
+        # as well as case sensitivity care and other collisions
+        self.out = Signal()
+        self.output = Signal()
+        self.sc_signal = VectSignal(8)
 
     def _impl(self):
         """
@@ -137,7 +142,7 @@ class Showcase0(Unit):
 
         # all statements like Switch, For and others are in hwt.code
 
-        # names of generated signals are patched to avoid collisions
+        # names of generated signals are patched to avoid collisions automatically
         r0 = self._reg("r", Bits(2), defVal=0)
         r1 = self._reg("r", Bits(2), defVal=0)
 
@@ -145,17 +150,34 @@ class Showcase0(Unit):
         r1 ** r0
 
         # type of signal can be array as well, this allow to create memories like BRAM...
-        # mem will be synchronous ROM in this case
-        mem = self._sig("mem", uint8_t[4], defVal=[i for i in range(4)])
+        # rom will be synchronous ROM in this case
+        rom = self._sig("rom", uint8_t[4], defVal=[i for i in range(4)])
 
         If(self.clk._onRisingEdge(),
-           self.j ** mem[r1]
+           self.j ** rom[r1]
+        )
+
+        self.out ** 0
+        # None is converted to value with zero validity mask
+        self.output ** None
+
+        # statements in target language are resolved from AST
+        # this if statement will be resolved as Switch statement
+        If(a._eq(1),
+           self.sc_signal ** 0
+        ).Elif(a._eq(2),
+           self.sc_signal ** 1
+        ).Elif(a._eq(3),
+           self.sc_signal ** 3
+        ).Else(
+           self.sc_signal ** 4
         )
 
 
 if __name__ == "__main__":  # alias python main function
     from hwt.synthesizer.shortcuts import toRtl
-    # new instance has to be created everytime because toRtl is modifies the unit
-    print(toRtl(Showcase0(), serializer=VhdlSerializer))
-    print(toRtl(Showcase0(), serializer=VerilogSerializer))
+    # * new instance has to be created every time because toRtl is modifies the unit
+    # * serializers are using templates which can be customized
+    # print(toRtl(Showcase0(), serializer=VhdlSerializer))
+    # print(toRtl(Showcase0(), serializer=VerilogSerializer))
     print(toRtl(Showcase0(), serializer=SystemCSerializer))
