@@ -2,7 +2,7 @@ from hwt.code import connect, If, Concat
 from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwtLib.types.ctypes import uint32_t, int32_t, uint8_t
+from hwtLib.types.ctypes import uint32_t, int32_t, uint8_t, int8_t
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.serializer.verilog.serializer import VerilogSerializer
@@ -71,6 +71,8 @@ class Showcase0(Unit):
         self.out = Signal()
         self.output = Signal()
         self.sc_signal = VectSignal(8)
+
+        self.k = VectSignal(32)
 
     def _impl(self):
         """
@@ -173,7 +175,14 @@ class Showcase0(Unit):
            self.sc_signal ** 4
         )
 
-
+        # ram working on falling edge of clk
+        # note that rams are usually working on rising edge
+        fRam = self._sig("fallingEdgeRam", int8_t[4])
+        If(self.clk._onFallingEdge(),
+           # fit can extend signal and also shrink it
+           connect(a, fRam[r1], fit=True),
+           connect(fRam[r1]._unsigned(), self.k, fit=True)
+        )
 
 showcase0_vhdl = """--
 --    Every HW component class has to be derived from Unit class (any kind of inheritance supported)
@@ -202,6 +211,7 @@ ENTITY Showcase0 IS
         h : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
         i : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
         j : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+        k : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
         out_0 : OUT STD_LOGIC;
         output : OUT STD_LOGIC;
         rst_n : IN STD_LOGIC;
@@ -210,15 +220,17 @@ ENTITY Showcase0 IS
 END Showcase0;
 
 ARCHITECTURE rtl OF Showcase0 IS
-    TYPE arrT_0 IS ARRAY ((3) DOWNTO 0) OF UNSIGNED(7 DOWNTO 0);
+    TYPE arrT_0 IS ARRAY ((3) DOWNTO 0) OF SIGNED(7 DOWNTO 0);
+    TYPE arrT_1 IS ARRAY ((3) DOWNTO 0) OF UNSIGNED(7 DOWNTO 0);
     CONSTANT const_private_signal : UNSIGNED(31 DOWNTO 0) := TO_UNSIGNED(123, 32);
+    SIGNAL fallingEdgeRam : arrT_0;
     SIGNAL r : STD_LOGIC := '0';
     SIGNAL r_0 : STD_LOGIC_VECTOR(1 DOWNTO 0) := "00";
     SIGNAL r_1 : STD_LOGIC_VECTOR(1 DOWNTO 0) := "00";
     SIGNAL r_next : STD_LOGIC;
     SIGNAL r_next_0 : STD_LOGIC_VECTOR(1 DOWNTO 0);
     SIGNAL r_next_1 : STD_LOGIC_VECTOR(1 DOWNTO 0);
-    CONSTANT rom : arrT_0 := (TO_UNSIGNED(0, 8),
+    CONSTANT rom : arrT_1 := (TO_UNSIGNED(0, 8),
         TO_UNSIGNED(1, 8),
         TO_UNSIGNED(2, 8),
         TO_UNSIGNED(3, 8));
@@ -232,6 +244,13 @@ BEGIN
     cmp5 <=  '1'  WHEN b = TO_SIGNED(4, 32) ELSE  '0' ;
     contOut <= STD_LOGIC_VECTOR( const_private_signal );
     f <= r;
+    assig_process_fallingEdgeRam: PROCESS (clk)
+    BEGIN
+        IF FALLING_EDGE( clk ) THEN 
+            fallingEdgeRam( TO_INTEGER(UNSIGNED(r_1)) ) <= SIGNED( a( 7 DOWNTO 0 ) );
+        END IF;
+    END PROCESS;
+
     fitted <= STD_LOGIC_VECTOR( a( 15 DOWNTO 0 ) );
     g <= ((a( 1 )) AND (b( 1 ))) & (((a( 0 )) XOR (b( 0 ))) OR (a( 1 ))) & STD_LOGIC_VECTOR( a( 5 DOWNTO 0 ) );
     assig_process_h: PROCESS (a, r)
@@ -251,6 +270,13 @@ BEGIN
     BEGIN
         IF RISING_EDGE( clk ) THEN 
             j <= STD_LOGIC_VECTOR( rom( TO_INTEGER(UNSIGNED(r_1)) ) );
+        END IF;
+    END PROCESS;
+
+    assig_process_k: PROCESS (clk)
+    BEGIN
+        IF FALLING_EDGE( clk ) THEN 
+            k <= X"000000" & STD_LOGIC_VECTOR( UNSIGNED( fallingEdgeRam( TO_INTEGER(UNSIGNED(r_1)) ) ) );
         END IF;
     END PROCESS;
 
@@ -339,6 +365,7 @@ module Showcase0(input [31:0] a,
         output reg [7:0] h,
         input [1:0] i,
         output reg [7:0] j,
+        output reg [31:0] k,
         output  out,
         output  output_0,
         input  rst_n,
@@ -346,6 +373,7 @@ module Showcase0(input [31:0] a,
     );
 
     wire [31:0] const_private_signal = $unsigned(123);
+    reg signed [7:0] fallingEdgeRam [4-1:0];
     reg r = 1'b0;
     reg [1:0] r_0 = 2'b00;
     reg [1:0] r_1 = 2'b00;
@@ -362,8 +390,12 @@ module Showcase0(input [31:0] a,
     assign cmp5 = b == $signed(4);
     assign contOut = $unsigned( const_private_signal );
     assign f = r;
+    always @(negedge clk) begin: assig_process_fallingEdgeRam
+        fallingEdgeRam[ r_1 ] <= $signed( a[ 7:0 ] );
+    end
+
     assign fitted = $unsigned( a[ 15:0 ] );
-    assign g = (a[ 1 ]) & (b[ 1 ]) & ((a[ 0 ]) ^ (b[ 0 ])) | (a[ 1 ]) & $unsigned( a[ 5:0 ] );
+    assign g = {{(a[ 1 ]) & (b[ 1 ]) , ((a[ 0 ]) ^ (b[ 0 ])) | (a[ 1 ])} , $unsigned( a[ 5:0 ] )};
     always @(a or r) begin: assig_process_h
         if((a[ 2 ])==1'b1) begin
             if((r)==1'b1) begin
@@ -378,6 +410,10 @@ module Showcase0(input [31:0] a,
 
     always @(posedge clk) begin: assig_process_j
         j <= $unsigned( rom );
+    end
+
+    always @(negedge clk) begin: assig_process_k
+        k <= {24'h000000 , $unsigned( $unsigned( fallingEdgeRam[ r_1 ] ) )};
     end
 
     assign out = 1'b0;
@@ -448,5 +484,5 @@ if __name__ == "__main__":  # alias python main function
     # * new instance has to be created every time because toRtl is modifies the unit
     # * serializers are using templates which can be customized
     print(toRtl(Showcase0(), serializer=VhdlSerializer))
-    #print(toRtl(Showcase0(), serializer=VerilogSerializer))
-    #print(toRtl(Showcase0(), serializer=SystemCSerializer))
+    print(toRtl(Showcase0(), serializer=VerilogSerializer))
+    # print(toRtl(Showcase0(), serializer=SystemCSerializer))
