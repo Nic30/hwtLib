@@ -215,6 +215,12 @@ class OperatorTC(unittest.TestCase):
         self.assertIs(s[10:0][7:0][4:1], s[4:1])
         self.assertIs(s[12:5][7:1][4:1], s[10:7])
 
+    def test_bits_mul(self):
+        n = RtlNetlist()
+        s = n.sig("s", vecT(16))
+        s * 10
+        s * s
+
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
