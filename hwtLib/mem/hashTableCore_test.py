@@ -19,8 +19,9 @@ class HashTableCoreTC(SimTestCase):
         self.prepareUnit(self.u)
 
         # clean up memory
-        for v in self.model.table_inst.ram_memory.defaultVal.val:
-            v.vldMask = v._dtype.all_mask()
+        mem = self.model.table_inst.ram_memory.defaultVal
+        for i in range(mem._dtype.size):
+            mem.val[i] = mem._dtype.elmType.fromPy(0)
 
     def test_lookupInEmpty(self):
         u = self.u
