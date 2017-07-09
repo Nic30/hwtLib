@@ -26,7 +26,7 @@ def addrGetter(intf):
 class IpifEndpointTC(AxiLiteEndpointTC):
     FIELD_ADDR = [0x0, 0x4]
 
-    def mkRegisterMap(self, u):
+    def mkRegisterMap(self, u, modelCls):
         self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
         self.regs = IPFISimMaster(u.bus, self.addrProbe.discovered)
 

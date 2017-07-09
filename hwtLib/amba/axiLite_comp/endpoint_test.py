@@ -41,7 +41,7 @@ class AxiLiteEndpointTC(SimTestCase):
     STRUCT_TEMPLATE = structTwoFields
     FIELD_ADDR = [0x0, 0x4]
 
-    def mkRegisterMap(self, u):
+    def mkRegisterMap(self, u, modelCls):
         self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
         self.regs = AxiLiteMemSpaceMaster(u.bus, self.addrProbe.discovered)
 
