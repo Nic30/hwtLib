@@ -14,7 +14,8 @@ class DumpTestbenchTC(SimTestCase):
 
         buff = StringIO()
         self.dumpHdlTestbench(200 * Time.ns, buff)
-        self.assertEqual(buff.getvalue(), HandshakedBuilderSimple_dump)
+        s = buff.getvalue()
+        self.assertEqual(s, HandshakedBuilderSimple_dump)
         self.assertValSequenceEqual(u.b._ag.data, [1, 2, 3, 4])
 
 HandshakedBuilderSimple_dump = \
@@ -35,13 +36,13 @@ ARCHITECTURE rtl OF HandshakedBuilderSimple_tb IS
     SIGNAL clk : STD_LOGIC := '0';
     SIGNAL rst_n : STD_LOGIC := '0';
     COMPONENT HandshakedBuilderSimple IS
-       GENERIC (A_DATA_WIDTH : INTEGER := 64;
-            B_DATA_WIDTH : INTEGER := 64
+       GENERIC (a_DATA_WIDTH : INTEGER := 64;
+            b_DATA_WIDTH : INTEGER := 64
        );
-       PORT (a_data : IN STD_LOGIC_VECTOR(A_DATA_WIDTH - 1 DOWNTO 0);
+       PORT (a_data : IN STD_LOGIC_VECTOR(a_DATA_WIDTH - 1 DOWNTO 0);
             a_rd : OUT STD_LOGIC;
             a_vld : IN STD_LOGIC;
-            b_data : OUT STD_LOGIC_VECTOR(B_DATA_WIDTH - 1 DOWNTO 0);
+            b_data : OUT STD_LOGIC_VECTOR(b_DATA_WIDTH - 1 DOWNTO 0);
             b_rd : IN STD_LOGIC;
             b_vld : OUT STD_LOGIC;
             clk : IN STD_LOGIC;
@@ -51,8 +52,8 @@ ARCHITECTURE rtl OF HandshakedBuilderSimple_tb IS
 
 BEGIN
     HandshakedBuilderSimple_inst : COMPONENT HandshakedBuilderSimple
-        GENERIC MAP (A_DATA_WIDTH => 64,
-            B_DATA_WIDTH => 64
+        GENERIC MAP (a_DATA_WIDTH => 64,
+            b_DATA_WIDTH => 64
         )
         PORT MAP ( a_data => a_data,
              a_rd => a_rd,

@@ -1,5 +1,4 @@
 from hwt.bitmask import mask
-from hwt.code import iterBits
 from hwt.hdlObjects.types.structUtils import HStruct_unpack
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.pyUtils.arrayQuery import iter_with_last, take
@@ -7,6 +6,7 @@ from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_strb, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
+from hwt.synthesizer.vectorUtils import iterBits
 
 
 # http://www.xilinx.com/support/documentation/ip_documentation/ug761_axi_reference_guide.pdf
@@ -21,7 +21,7 @@ class AxiStream_withoutSTRB(Axi_hs):
         f.e. litle endian value 0x1a2b will be 0x2b1a
         but iterface itselelf is not reversed in any way
 
-    :ivar DATA_WIDTH: Param which specifies width of data signal 
+    :ivar DATA_WIDTH: Param which specifies width of data signal
     :ivar data: main data signal
     :ivar last: signal which if high this data is last in this frame
     """
@@ -261,7 +261,7 @@ def unpackAxiSFrame(structT, frameData, getDataFn=None, dataWidth=None):
     if getDataFn is None:
         def _getDataFn(x):
             return x[0]
-    
+
         getDataFn = _getDataFn
 
     return HStruct_unpack(structT, frameData, getDataFn, dataWidth)
@@ -270,32 +270,33 @@ def unpackAxiSFrame(structT, frameData, getDataFn=None, dataWidth=None):
 def axiSFrame_toBytes(intf, frameData):
     """
     Unpack frame data to array of bytes
-    
+
     :param intf: interface the frame comes from to resolve data format
     :param frameData: data collected by agent
     :return: array of bytes (of type Bits(8) ) (if interface has strb it is used in last to cut off unused bytes at the end)
     """
-    
+
     bytesInWord = int(intf.DATA_WIDTH) // 8
     hasStrb = hasattr(intf, "strb")
     result = []
 
-    bytesInThisWord = bytesInWord    
+    bytesInThisWord = bytesInWord
     for d in frameData:
         if hasStrb:
             data, strb, last = d
-            
+
             if last:
                 bytesInThisWord = strb.val.bit_length()
             else:
                 bytesInThisWord = bytesInWord
         else:
             data, last = d
-            
+
         result.extend(take(iterBits(data, bitsInOne=8), bytesInThisWord))
-    
+
     return result
-            
+
+
 class IP_AXIStream(IntfConfig):
     """
     Class which specifies how to describe AxiStream interfaces in IP-core

@@ -69,7 +69,7 @@ module DReg(input  clk,
     wire internReg_next;
     assign dout = internReg;
     always @(posedge clk) begin: assig_process_internReg
-        if(rst == 1'b1)  begin
+        if(rst == 1'b1) begin
             internReg <= 1'b0;
         end else begin
             internReg <= internReg_next;
@@ -128,6 +128,7 @@ SC_MODULE(DReg) {
     }
   }
 };"""
+
 
 class DRegTC(SimTestCase):
     def setUpUnit(self, u):

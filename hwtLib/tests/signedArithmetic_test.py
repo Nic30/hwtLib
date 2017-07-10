@@ -227,10 +227,26 @@ class SignedArithmeticTC(unittest.TestCase):
         ut = Bits(w)
 
         self.assertEqual(int(t.fromPy(-1)._convert(ut)), mask(w))
+        self.assertEqual(int(t.fromPy(-1)._unsigned()), mask(w))
+        self.assertEqual(int(t.fromPy(-1)._vec()), mask(w))
         self.assertEqual(int(t.fromPy(1)._convert(ut)), 1)
         self.assertEqual(int(t.fromPy(0)._convert(ut)), 0)
         self.assertEqual(int(ut.fromPy(1)._convert(t)), 1)
         self.assertEqual(int(ut.fromPy(mask(w))._convert(t)), -1)
+        self.assertEqual(int(ut.fromPy(mask(w))._signed()), -1)
+
+    def test_8b_mul(self, t=int8_t):
+        w = t.bit_length()
+        low, up, _, _ = self.getMinMaxVal(t)
+        ut = Bits(w)
+
+        self.assertEqual(int(t.fromPy(-1) * t.fromPy(-1)), 1)
+        self.assertEqual(int(t.fromPy(0) * t.fromPy(-1)), 0)
+        self.assertEqual(int(ut.fromPy(0) * ut.fromPy(1)), 0)
+        self.assertEqual(int(ut.fromPy(mask(w)) * ut.fromPy(2)), (mask(w) << 1) & mask(w))
+        self.assertEqual(int(t.fromPy(-1) * ut.fromPy(2)), -2)
+        self.assertEqual(low * t.fromPy(2), 0)
+        self.assertEqual(up * t.fromPy(2), -2)
 
     def test_512b_proper_val(self):
         self.test_8b_proper_val(int512_t)
@@ -273,6 +289,9 @@ class SignedArithmeticTC(unittest.TestCase):
 
     def test_512b_cast(self):
         self.test_8b_cast(int512_t)
+
+    def test_512b_mul(self):
+        self.test_8b_mul(int512_t)
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

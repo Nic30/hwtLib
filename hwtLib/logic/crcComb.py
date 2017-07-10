@@ -1,9 +1,9 @@
 from hwt.bitmask import selectBit
-from hwt.code import iterBits
 from hwt.interfaces.std import VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.logic.crcPoly import CRC_5_USB
 from hwtLib.logic.crcUtils import parsePolyStr, buildCrcMatrix_dataMatrix
 

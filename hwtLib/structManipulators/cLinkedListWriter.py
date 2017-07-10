@@ -18,8 +18,8 @@ from hwtLib.handshaked.streamNode import streamSync, streamAck
 class CLinkedListWriter(Unit):
     """
     This unit writes items to (circular) linked list like structure
-    (List does not necessary need to be circular but space is specified by two pointers 
-    like in circular queue)
+    (List does not necessary need to be circular but space is specified
+     by two pointers like in circular queue)
 
     .. code-block:: c
 
@@ -36,7 +36,8 @@ class CLinkedListWriter(Unit):
     :attention: next addr is downloaded on background when items are uploaded
                (= has to be set when this unit enters this block)
 
-    :note: wrPtr == rdPtr   => queue is empty and there is (2^PTR_WIDTH) - 1 of empty space
+    :note: wrPtr == rdPtr   => queue is empty
+        and there is (2^PTR_WIDTH) - 1 of empty space
         wrPtr == rdPtr+1 => queue is full
         wrPtr+1 == rdPtr   => there is (2^PTR_WIDTH) - 2 of empty space
         spaceToWrite = rdPtr - wrPtr - 1 (with uint16_t)

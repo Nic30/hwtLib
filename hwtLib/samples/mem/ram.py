@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.code import If
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal, Clk
-from hwt.code import connect, If
 from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.serializer.simModel.serializer import SimModelSerializer
 
 
 class SimpleAsyncRam(Unit):
@@ -20,8 +21,8 @@ class SimpleAsyncRam(Unit):
 
     def _impl(self):
         self._ram = ram = self._sig("ram_data", vecT(8)[4])
-        connect(ram[self.addr_out], self.dout),
-        connect(self.din, ram[self.addr_in])
+        self.dout ** ram[self.addr_out],
+        ram[self.addr_in] ** self.din
 
 
 class SimpleSyncRam(SimpleAsyncRam):
@@ -41,4 +42,4 @@ class SimpleSyncRam(SimpleAsyncRam):
 if __name__ == "__main__":  # alias python main function
     from hwt.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
-    print(toRtl(SimpleSyncRam))
+    print(toRtl(SimpleSyncRam(), serializer=SimModelSerializer))

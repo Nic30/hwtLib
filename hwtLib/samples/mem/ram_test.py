@@ -29,8 +29,10 @@ class RamTC(SimTestCase):
         u.din._ag.data = [10, 11, 12, 13, 14, 15, 16, 17]
         self.doSim(80 * Time.ns)
 
-        self.assertSequenceEqual(valuesToInts(self.model.ram_data._val.val), [None, 17, 16, 15])
-        self.assertSequenceEqual(agInts(u.dout), [None, 10, 11, 12, None, None, None, 17])
+        self.assertSequenceEqual(valuesToInts([v for v in self.model.ram_data._val]),
+                                 [None, 17, 16, 15])
+        self.assertSequenceEqual(agInts(u.dout),
+                                 [None, 10, 11, 12, None, None, None, 17])
 
     def test_sync_allData(self):
         self.setUpSync()
@@ -41,13 +43,15 @@ class RamTC(SimTestCase):
         u.din._ag.data = [10, 11, 12, 13, 14, 15, 16, 17]
         self.doSim(80 * Time.ns)
 
-        self.assertSequenceEqual(valuesToInts(self.model.ram_data._val.val), [None, 17, 16, 15])
-        self.assertSequenceEqual(agInts(u.dout), [None, None, 10, 11, 12, 13, None, None])
+        self.assertSequenceEqual(valuesToInts([v for v in self.model.ram_data._val]),
+                                 [None, 17, 16, 15])
+        self.assertSequenceEqual(agInts(u.dout),
+                                 [None, None, 10, 11, 12, 13, None, None])
 
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_nothingEnable'))
+    # suite.addTest(RamTC('test_sync_allData'))
     suite.addTest(unittest.makeSuite(RamTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

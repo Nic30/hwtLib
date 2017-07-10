@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 
-from hwt.code import packedWidth, packed, \
-    connectUnpacked, If, connect, log2ceil
+from hwt.code import If, connect, log2ceil
 from hwt.interfaces.std import VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import packIntf, \
+    connectPacked
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
@@ -30,7 +31,7 @@ class HandshakedFifo(HandshakedCompBase):
             self.dataOut = self.intfCls()
 
         f = self.fifo = Fifo()
-        DW = packedWidth(self.dataIn) - 2  # 2 for control (valid, ready)
+        DW = self.dataIn._bit_length() - 2  # 2 for control (valid, ready)
         f.DATA_WIDTH.set(DW)
         f.DEPTH.set(self.DEPTH - 1)  # because there is an extra register
         f.EXPORT_SIZE.set(self.EXPORT_SIZE)
@@ -51,14 +52,15 @@ class HandshakedFifo(HandshakedCompBase):
         # to fifo
         wr_en = ~fifo.dataIn.wait
         rd(din) ** wr_en
-        fifo.dataIn.data ** packed(din, exclude=[vld(din), rd(din)])
+        fifo.dataIn.data ** packIntf(din, exclude=[vld(din), rd(din)])
         fifo.dataIn.en ** (vld(din) & wr_en)
 
         # from fifo
         out_vld = self._reg("out_vld", defVal=0)
         vld(out) ** out_vld
-        connectUnpacked(fifo.dataOut.data, out,
-                        exclude=[vld(out), rd(out)])
+        connectPacked(fifo.dataOut.data,
+                      out,
+                      exclude=[vld(out), rd(out)])
         fifo.dataOut.en ** ((rd(out) | ~out_vld) & ~fifo.dataOut.wait)
         If(rd(out) | ~out_vld,
            out_vld ** (~fifo.dataOut.wait)

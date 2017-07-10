@@ -4,7 +4,7 @@ from hwt.hdlObjects.types.struct import HStruct
 from hwtLib.structManipulators.structReader import StructReader
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwt.hdlObjects.constants import Time
-from hwt.code import iterBits
+from hwt.synthesizer.vectorUtils import iterBits
 
 
 s0 = HStruct(
@@ -27,6 +27,7 @@ s0 = HStruct(
     (uint64_t, "item7"),
     )
 
+
 def s0RandVal(tc):
     r = tc._rand.getrandbits
     data = {"item0": r(64),
@@ -41,15 +42,16 @@ def s0RandVal(tc):
 
     return data
 
+
 class StructReaderTC(SimTestCase):
     def test_simpleFields(self):
         u = StructReader(s0)
         DW = 64
-        N = 3 
+        N = 3
         self.prepareUnit(u)
 
         m = DenseMemory(DW, u.clk, u.rDatapump)
-        
+
         # init expectedFieldValues
         expectedFieldValues = {}
         for f in s0.fields:
@@ -60,13 +62,16 @@ class StructReaderTC(SimTestCase):
             d = s0RandVal(self)
             for name, val in d.items():
                 expectedFieldValues[name].append(val)
- 
-            asFrame = list(iterBits(s0.fromPy(d), bitsInOne=DW, skipPadding=False, fillup=True))
+
+            asFrame = list(iterBits(s0.fromPy(d),
+                                    bitsInOne=DW,
+                                    skipPadding=False,
+                                    fillup=True))
             addr = m.calloc(len(asFrame), DW // 8, initValues=asFrame)
             u.get._ag.data.append(addr)
-        
+
         self.doSim(500 * Time.ns)
-        
+
         for f in s0.fields:
             if f.name is not None:
                 expected = expectedFieldValues[f.name]

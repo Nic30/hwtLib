@@ -9,6 +9,7 @@ from hwtLib.samples.statements.forLoopCntrl import StaticForLoopCntrl
 
 class StaticForLoopCntrlTC(SimTestCase):
     ITERATIONS = 5
+
     def setUp(self):
         super(StaticForLoopCntrlTC, self).setUp()
         self.u = StaticForLoopCntrl()
@@ -19,7 +20,7 @@ class StaticForLoopCntrlTC(SimTestCase):
         u = self.u
         u.bodyBreak._ag.data.append(0)
         u.cntrl._ag.data.extend([1 for _ in range(10)])
-        
+
         self.doSim(110 * Time.ns)
 
         self.assertValSequenceEqual(u.index._ag.data, [4, ] + (2 * [4, 3, 2, 1, 0]))

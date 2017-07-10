@@ -23,7 +23,7 @@ class RamTC(SimTestCase):
 
         self.doSim(110 * Time.ns)
         self.assertSequenceEqual([5, 7, None, None, None, None, None, None],
-                                 valuesToInts(self.model.ram_memory._val.val))
+                                 valuesToInts(self.model.ram_memory._val))
         self.assertSequenceEqual([5, 7, 5, 7, None],
                                  valuesToInts(u.a._ag.readed))
 

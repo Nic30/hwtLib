@@ -94,6 +94,7 @@ from hwtLib.samples.operators.concat_test import ConcatTC
 from hwtLib.samples.operators.indexing_test import IndexingTC
 from hwtLib.samples.parametrization_test import ParametrizationTC
 from hwtLib.samples.rtlLvl.rtlLvl_test import RtlLvlTC
+from hwtLib.samples.showcase0_test import Showcase0TC
 from hwtLib.samples.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnectionTC
 from hwtLib.samples.simpleAxiStream_test import SimpleUnitAxiStream_TC
 from hwtLib.samples.simpleWithNonDirectIntConncetion import SimpleWithNonDirectIntConncetionTC
@@ -121,6 +122,7 @@ from hwtLib.tests.hstructVal_test import HStructValTC
 from hwtLib.tests.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.operators import OperatorTC
 from hwtLib.tests.signedArithmetic_test import SignedArithmeticTC
+from hwtLib.tests.simEvents_test import SimEventsTC
 from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.tests.statementTreesInternal import StatementTreesInternalTC
 from hwtLib.tests.statements import StatementsTC
@@ -147,7 +149,9 @@ def doSimWithoutLog(self, time):
 def testSuiteFromTCs(*tcs):
     loader = TestLoader()
     for tc in tcs:
-        if issubclass(tc, SimTestCase):
+        # skip AxiLiteEndpointTC because we need one to test original methods
+        # from SimTestCase
+        if issubclass(tc, SimTestCase) and tc is not AxiLiteEndpointTC:
             tc.doSim = doSimWithoutLog
         tc._multiprocess_can_split_ = True
     loadedTcs = [loader.loadTestsFromTestCase(tc) for tc in tcs]
@@ -188,6 +192,8 @@ suite = testSuiteFromTCs(
     InterfaceArraySample3TC,
     InterfaceArraySample4TC,
     FrameTemplateTC,
+    Showcase0TC,
+    SimEventsTC,
 
     # component verifications
     ConcatTC,

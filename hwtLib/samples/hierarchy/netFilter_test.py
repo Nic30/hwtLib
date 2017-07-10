@@ -18,7 +18,6 @@ class NetFilterTC(SimTestCase):
         u = NetFilter()
         s = toRtl(u, serializer=VhdlSerializer)
         StatementTreesTC.strStructureCmp(self, s, netFilter_vhdl)
-        # print(toRtl(u))
 
     def test_verilog_serialization(self):
         u = NetFilter()

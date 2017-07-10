@@ -1,10 +1,10 @@
 import socket
 
-from hwt.code import iterBits
 from hwt.hdlObjects.constants import Time
 from hwt.hdlObjects.types.structUtils import HStruct_unpack
 from hwt.simulator.agentConnector import valToInt
 from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.amba.axis import unpackAxiSFrame
 from hwtLib.amba.axis_comp.frameParser_test import packAxiSFrame
 from hwtLib.samples.builders.pingResponder import PingResponder, \
