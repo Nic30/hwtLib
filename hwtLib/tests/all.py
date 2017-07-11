@@ -117,6 +117,7 @@ from hwtLib.structManipulators.mmu2pageLvl_test import MMU_2pageLvl_TC
 from hwtLib.structManipulators.structReader_test import StructReaderTC
 from hwtLib.structManipulators.structWriter_test import StructWriter_TC
 from hwtLib.tests.dumpTestBench_test import DumpTestbenchTC
+from hwtLib.tests.fileUtils_test import FileUtilsTC
 from hwtLib.tests.frameTemplate_test import FrameTemplateTC
 from hwtLib.tests.hstructVal_test import HStructValTC
 from hwtLib.tests.ipCorePackager_test import IpCorePackagerTC
@@ -160,6 +161,7 @@ def testSuiteFromTCs(*tcs):
 
 
 suite = testSuiteFromTCs(
+    FileUtilsTC,
     RtlLvlTC,
     HdlCommentsTC,
     InterfaceSynthesizerTC,
