@@ -1,12 +1,13 @@
-import unittest
-
-from hwt.simulator.simTestCase import SimTestCase
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
-from hwtLib.amba.axiLite import AxiLite
-from hwt.simulator.utils import pprintInterface, pprintAgents
 from _io import StringIO
 import re
+import unittest
+
+from hwt.interfaces.utils import addClkRstn
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.utils import pprintInterface, pprintAgents
+from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
+from hwtLib.amba.axiLite import AxiLite
+
 
 axi_str = """'axi'
     'axi.aw'
