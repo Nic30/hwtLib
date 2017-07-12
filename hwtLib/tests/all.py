@@ -124,6 +124,7 @@ from hwtLib.tests.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.operators import OperatorTC
 from hwtLib.tests.signedArithmetic_test import SignedArithmeticTC
 from hwtLib.tests.simEvents_test import SimEventsTC
+from hwtLib.tests.simulatorUtlls_test import SimulatorUtilsTC
 from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.tests.statementTreesInternal import StatementTreesInternalTC
 from hwtLib.tests.statements import StatementsTC
@@ -196,6 +197,7 @@ suite = testSuiteFromTCs(
     FrameTemplateTC,
     Showcase0TC,
     SimEventsTC,
+    SimulatorUtilsTC,
 
     # component verifications
     ConcatTC,
