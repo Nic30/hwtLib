@@ -199,7 +199,6 @@ class AxiS_frameForge_TC(SimTestCase):
                                      trimPaddingWordsOnEnd=True,
                                      trimPaddingWordsOnStart=True,
                                      maxPaddingWords=0)
-        print(toRtl(u))
         self.DATA_WIDTH = 64
         u.DATA_WIDTH.set(self.DATA_WIDTH)
 
