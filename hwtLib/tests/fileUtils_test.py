@@ -49,6 +49,7 @@ class FileUtilsTC(unittest.TestCase):
             self.assertFound(d, "*.a", {a, a2, a3})
             self.assertFound(d, "*.*", {a, a2, a3})
             self.assertFound(d, "a.*", {a})
+            self.assertFound(d, "*", {a, a2}, recursive=False)
 
 
 if __name__ == "__main__":
