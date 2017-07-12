@@ -25,6 +25,7 @@ class Handshaked_withIP(Handshaked):
     def _getIpCoreIntfClass(self):
         return IP_Handshake
 
+
 class IpCoreIntfTest(Unit):
     def _declr(self):
         addClkRst(self)
@@ -50,7 +51,6 @@ class IpCoreIntfTest(Unit):
            connect(r0, self.hsOut.data, fit=True),
            self.hsOut.vld ** 1
         )
-        
 
 
 class IpCorePackagerTC(unittest.TestCase):
@@ -78,7 +78,7 @@ class IpCorePackagerTC(unittest.TestCase):
                      ]
         for u in testUnits:
             serializeAsIpcore(u, folderName=self.test_dir)
-            
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

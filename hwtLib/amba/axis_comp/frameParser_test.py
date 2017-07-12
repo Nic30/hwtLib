@@ -56,19 +56,18 @@ class AxiS_frameParserTC(SimTestCase):
         self.prepareUnit(u)
 
         return u
-    
+
     def test_packAxiSFrame(self):
         t = structManyInts
         DW = 32
         d1 = t.fromPy(reference0)
-        
+
         f = list(packAxiSFrame(DW, d1))
-        
+
         d2 = unpackAxiSFrame(t, f, lambda x: x[0])
-        
+
         for k in reference0.keys():
             self.assertEqual(getattr(d1, k), getattr(d2, k), k)
-        
 
     def test_structManyInts_64_nop(self):
         DW = 64
@@ -105,7 +104,7 @@ class AxiS_frameParserTC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(AxiS_frameParserTC('test_structManyInts_51_2x'))
+    # suite.addTest(AxiS_frameParserTC('test_structManyInts_51_2x'))
     suite.addTest(unittest.makeSuite(AxiS_frameParserTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
