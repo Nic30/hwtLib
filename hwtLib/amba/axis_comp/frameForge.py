@@ -168,8 +168,9 @@ class AxiS_frameForge(AxiSCompBase):
                     wcntrSw.Case(maxWordIndex - i, a)
 
                 if transactionParts[-1].endOfPart == frame.endBitAddr:
-                    endsOfFrames.append(maxWordIndex - i)
-                    wordsOfPrevFrames += 1
+                    inversedIndexOfEndOfFrame = maxWordIndex - i 
+                    endsOfFrames.append(inversedIndexOfEndOfFrame)
+                wordsOfPrevFrames += 1
 
         # to prevent latches
         if not useCounter:
@@ -206,3 +207,4 @@ if __name__ == "__main__":
                         )
     u.DATA_WIDTH.set(64)
     print(toRtl(u))
+    print(u._frames)
