@@ -19,6 +19,7 @@ from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl
 from hwtLib.mem.fifo import Fifo
 from hwtLib.types.ctypes import uint64_t
 from hwtLib.uart.intf import Uart
+from hwt.synthesizer.shortcuts import serializeAsIpcore
 
 
 class Handshaked_withIP(Handshaked):
@@ -77,8 +78,7 @@ class IpCorePackagerTC(unittest.TestCase):
                      IpCoreIntfTest()
                      ]
         for u in testUnits:
-            p = Packager(u)
-            p.createPackage(self.test_dir)
+            serializeAsIpcore(u, folderName=self.test_dir)
             
 
 if __name__ == "__main__":
