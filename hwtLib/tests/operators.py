@@ -8,6 +8,7 @@ from hwt.hdlObjects.typeShortcuts import hInt, hBool, hBit, vec, vecT
 from hwt.hdlObjects.types.defs import INT, STR
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwt.synthesizer.rtlLevel.signalUtils.walkers import walkAllOriginSignals
+from hwt.hdlObjects.types.bits import Bits
 
 
 andTable = [(None, None, None),
@@ -220,11 +221,26 @@ class OperatorTC(unittest.TestCase):
         s = n.sig("s", vecT(16))
         s * 10
         s * s
-
+    
+    def test_array_eq_neq(self):
+        t = Bits(8)[5]
+        v0 = t.fromPy(range(5))
+        v1 = t.fromPy({0:10, 1:2})
+        v2 = t.fromPy([1, 2, 3, 4, 5])
+        
+        self.assertTrue(v0._eq(v0))
+        with self.assertRaises(ValueError):
+            self.assertNotEqual(v0, v1)
+        self.assertNotEqual(v0, v2)
+        with self.assertRaises(ValueError):
+            self.assertNotEqual(v1, v2)
+        with self.assertRaises(ValueError):
+            self.assertNotEqual(v1, v1)
+        self.assertTrue(v2, v2)
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    #suite.addTest(OperatorTC('test_bits_sig_slice_on_slice_of_slice'))
+    # suite.addTest(OperatorTC('test_bits_sig_slice_on_slice_of_slice'))
     suite.addTest(unittest.makeSuite(OperatorTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
