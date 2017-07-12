@@ -238,6 +238,14 @@ class OperatorTC(unittest.TestCase):
             self.assertNotEqual(v1, v1)
         self.assertTrue(v2, v2)
 
+    def test_int_neg(self):
+        self.assertEqual(int(INT.fromPy(-10)), -10)
+        self.assertEqual(int(-INT.fromPy(10)), -10)
+        self.assertEqual(int(-INT.fromPy(10)), -10)
+        v = -INT.fromPy(None)
+        self.assertEqual(v.val, 0)
+        self.assertEqual(v.vldMask, 0)
+
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     # suite.addTest(OperatorTC('test_bits_sig_slice_on_slice_of_slice'))
