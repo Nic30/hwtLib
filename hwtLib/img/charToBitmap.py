@@ -55,19 +55,20 @@ def getCharRow(charOrd, row):
         return n
 
 
-def addCharToBitmap(unit, name="charToBitmap"):
+def addCharToBitmap():
     """
     Add rom to translate ascii to 8x8 char bitmap,
     first row is placed on lower address,
     font is taken from png image
+    
+    :return: vecT(8)[128 * 8] where are stored bitmaps of chars, up is first lower char is first
     """
     rom = []
     for ch in range(128):
         for row in range(8):
             rom.append(getCharRow(ch, row))
 
-    mem = unit._sig(name, vecT(8)[128 * 8], defVal=rom)
-    return mem
+    return vecT(8)[128 * 8].fromPy(rom)
 
 
 if __name__ == "__main__":

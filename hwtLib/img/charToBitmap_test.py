@@ -1,5 +1,7 @@
 import unittest
-from hwtLib.img.charToBitmap import asciiArtOfChar
+
+from hwt.simulator.agentConnector import valToInt
+from hwtLib.img.charToBitmap import asciiArtOfChar, addCharToBitmap
 
 
 A = """#   ####
@@ -52,6 +54,13 @@ class CharToBitmapTC(unittest.TestCase):
     def test_a_inverted(self):
         self.assertEqual(asciiArtOfChar("a", inverted=True), a_inverted)
         
+    def test_dot_in_hw(self):
+        dot_golden = [255, 255, 255, 255, 255, 0b10111111, 255, 255]
+        a = addCharToBitmap()
+        for i, item in enumerate(dot_golden):
+            self.assertEqual(valToInt(a[ord(".") * 8 + i]), item, i)
+        
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
