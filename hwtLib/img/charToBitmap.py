@@ -5,7 +5,7 @@ from PIL import Image
 import os
 
 from hwt.bitmask import selectBit
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 
 
 im = Image.open(os.path.dirname(__file__) + "/charToBitmap_font.png")  # Can be many different formats.
@@ -68,7 +68,7 @@ def addCharToBitmap():
         for row in range(8):
             rom.append(getCharRow(ch, row))
 
-    return vecT(8)[128 * 8].fromPy(rom)
+    return Bits(8)[128 * 8].fromPy(rom)
 
 
 if __name__ == "__main__":
