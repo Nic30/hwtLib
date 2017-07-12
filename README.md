@@ -22,3 +22,10 @@ Target language is specified by keyword serializer.
     p = Packager(u)
     p.createPackage(".")
 ```
+
+
+Repositories with opensource HW:
+
+https://github.com/enjoy-digital?tab=repositories
+
+https://github.com/cfelton/rhea
