@@ -13,12 +13,12 @@ from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.interfaceUtils.proxy import InterfaceProxy
+from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import walkFlatten
 from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwtLib.sim.abstractMemSpaceMaster import PartialField
-from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import walkFlatten
 
 
 def inRange(n, lower, end):
@@ -130,21 +130,10 @@ class BusEndpoint(Unit):
         self.WORD_ADDR_STEP = self._getWordAddrStep()
         self.ADDR_STEP = self._getAddrStep()
 
-        def getIndexOfPart(transTmpl):
-            index = 0
-            parentArray = transTmpl.parent
-            while not (isinstance(parentArray.dtype, Array) and parentArray.bitAddrEnd >= transTmpl.bitAddrEnd):
-                parentArray = parentArray.parent
-                if isinstance(parentArray.dtype, Array):
-                    index += (transTmpl.bitAddr - parentArray.bitAddr) // parentArray.getItemWidth()
-                    # [FIXME] not working correctly for multi level arrays
-            return index
-
         AW = int(self.ADDR_WIDTH)
         SUGGESTED_AW = self._suggestedAddrWidth()
         assert SUGGESTED_AW <= AW, (SUGGESTED_AW, AW)
         tmpl = TransTmpl(self.STRUCT_TEMPLATE)
-        # fieldTrans = tmpl.walkFlatten(shouldEnterFn=self.shouldEnterFn)
 
         for transTmpl, intf in self.walkFieldsAndIntf(tmpl, self.decoded):
             if isinstance(intf, InterfaceProxy):
@@ -164,10 +153,16 @@ class BusEndpoint(Unit):
             self.ADRESS_MAP.append(transTmpl)
 
     def _getMaxAddr(self):
+        """"
+        Get maximum address value for this endpoint
+        """
         lastItem = self.ADRESS_MAP[-1]
         return lastItem.bitAddrEnd // self._getAddrStep()
 
     def _getMinAddr(self):
+        """"
+        Get minimum address value for this endpoint
+        """
         return self.ADRESS_MAP[0].bitAddr // self._getAddrStep()
 
     def _suggestedAddrWidth(self):
