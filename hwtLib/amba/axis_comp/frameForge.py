@@ -107,6 +107,7 @@ class AxiS_frameForge(AxiSCompBase):
         for frame in self._frames:
             for _i, transactionParts in frame.walkWords(showPadding=True):
                 i = _i + wordsOfPrevFrames
+                inversedI = maxWordIndex - i
 
                 inPorts = []
                 lastInPorts = []
@@ -137,7 +138,7 @@ class AxiS_frameForge(AxiSCompBase):
                         wordEnConds[intf] = dout.ready
                         if useCounter:
                             c = wordEnConds[intf]
-                            wordEnConds[intf] = c & wordCntr_inversed._eq(maxWordIndex - i)
+                            wordEnConds[intf] = c & wordCntr_inversed._eq(inversedI)
 
                     streamSync(masters=lastInPorts,
                                # slaves=[dout],
@@ -165,11 +166,11 @@ class AxiS_frameForge(AxiSCompBase):
                 a.extend(dout.data ** wordData)
 
                 if useCounter:
-                    wcntrSw.Case(maxWordIndex - i, a)
+                    wcntrSw.Case(inversedI, a)
 
                 if transactionParts[-1].endOfPart == frame.endBitAddr:
-                    endsOfFrames.append(maxWordIndex - i)
-                    wordsOfPrevFrames += 1
+                    endsOfFrames.append(inversedI)
+                    wordsOfPrevFrames += frame.getWordCnt()
 
         # to prevent latches
         if not useCounter:
@@ -206,3 +207,4 @@ if __name__ == "__main__":
                         )
     u.DATA_WIDTH.set(64)
     print(toRtl(u))
+    print(u._frames)

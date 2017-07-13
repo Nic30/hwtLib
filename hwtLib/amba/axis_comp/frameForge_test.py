@@ -11,6 +11,7 @@ from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.types.ctypes import uint64_t, uint32_t
 from math import inf
+from hwt.synthesizer.shortcuts import toRtl
 
 
 s1field = HStruct(
@@ -192,6 +193,40 @@ class AxiS_frameForge_TC(SimTestCase):
                                      (MAGIC + 3, m, 0),
                                      (None, m, 1),
                                      ])
+
+    def test_s2Pading_spliting(self):
+        u = self.u = AxiS_frameForge(AxiStream, s2Pading,
+                                     trimPaddingWordsOnEnd=True,
+                                     trimPaddingWordsOnStart=True,
+                                     maxPaddingWords=0)
+        self.DATA_WIDTH = 64
+        u.DATA_WIDTH.set(self.DATA_WIDTH)
+
+        self.prepareUnit(self.u)
+
+        def enDataOut(s):
+            u.dataOut._ag.enable = False
+            yield s.wait(50 * Time.ns)
+            u.dataOut._ag.enable = True
+        self.procs.append(enDataOut)
+
+        MAGIC = 468
+        u.dataIn.item0_0._ag.data.append(MAGIC)
+        u.dataIn.item0_1._ag.data.append(MAGIC + 1)
+        u.dataIn.item1_0._ag.data.append(MAGIC + 2)
+        u.dataIn.item1_1._ag.data.append(MAGIC + 3)
+
+        t = 200
+        self.doSim(t * Time.ns)
+
+        m = mask(self.DATA_WIDTH // 8)
+        self.assertValSequenceEqual(u.dataOut._ag.data,
+                                    [(MAGIC, m, 0),
+                                     (MAGIC + 1, m, 1),
+                                     (MAGIC + 2, m, 0),
+                                     (MAGIC + 3, m, 1),
+                                     ])
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(AxiS_resizer_downscale_TC('test_noPass'))
