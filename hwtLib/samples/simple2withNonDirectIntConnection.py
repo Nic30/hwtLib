@@ -31,18 +31,19 @@ class Simple2withNonDirectIntConnection(Unit):
         b ** self.a
         self.c ** b
 
+
 class Simple2withNonDirectIntConnectionTC(SimTestCase):
     def test_passData(self):
         u = Simple2withNonDirectIntConnection()
         self.prepareUnit(u)
-        
+
         # (data, strb, last)
         u.a._ag.data.extend([
             (1, 1, 0),
             (2, 1, 1)
             ])
         self.doSim(100 * Time.ns)
-        
+
         self.assertValSequenceEqual(u.c._ag.data,
             [
             (1, 1, 0),
