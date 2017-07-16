@@ -28,6 +28,10 @@ class DReg(Unit):
 
 
 class DoubleDReg(Unit):
+    """
+    :attention: using DReg unit instance is pointless because it can be instantiated
+        by _reg in this unit
+    """
     def _declr(self):
         DReg._declr(self)
 
