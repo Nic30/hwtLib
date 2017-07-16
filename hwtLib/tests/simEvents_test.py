@@ -1,4 +1,4 @@
-from inspect import isgeneratorfunction
+from inspect import isfunction
 import types
 import unittest
 
@@ -13,18 +13,18 @@ class ProcCallWrap():
         self.procFn = procFn
         self.calls = 0
 
-    def __call__(self, model, sim):
+    def __call__(self, model, sim, io):
         # if sim.now > 0:
         #     print(int(sim.now // 1000), self.procFn.__name__[len("assig_process_"):])
         self.calls += 1
-        return self.procFn(model, sim)
+        return self.procFn(model, sim, io)
 
 
 class SimEventsTC(SimTestCase):
     def mockProcesses(self, unit, modelCls):
         for name in dir(modelCls):
             pFn = getattr(modelCls, name)
-            if not isgeneratorfunction(pFn):
+            if not name.startswith("assig") or not isfunction(pFn):
                 continue
 
             p = ProcCallWrap(pFn)

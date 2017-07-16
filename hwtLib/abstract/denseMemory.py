@@ -17,8 +17,8 @@ class AllocationError(Exception):
 
 def reshapedInitItems(actualCellSize, requestedCellSize, values):
     """
-    Convert array item size and items cnt while size of array remains unchanged 
-    
+    Convert array item size and items cnt while size of array remains unchanged
+
     :param actualCellSize: actual size of item in array
     :param requestedCellSize: requested size of item in array
     :param values: input array
@@ -91,7 +91,7 @@ class DenseMemory():
     def _registerOnClock(self, clk):
         clk._sigInside.simRisingSensProcs.add(self.checkRequests)
 
-    def checkRequests(self, simulator):
+    def checkRequests(self, simulator, _):
         """
         Check if any request has appeared on interfaces
         """
@@ -108,8 +108,6 @@ class DenseMemory():
 
             if self.wPending and self.wPending[0][2] <= len(self.wAg.data):
                 self.doWrite()
-
-        return set()
 
     def parseReq(self, req):
         for i, v in enumerate(req):
