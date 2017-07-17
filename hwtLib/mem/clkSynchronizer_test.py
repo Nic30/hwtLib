@@ -13,7 +13,9 @@ from hwtLib.mem.clkSynchronizer import ClkSynchronizer
 
 
 CLK_PERIOD = 10 * Time.ns
-        
+
+
+# [TODO] rewrite using SimTestcase instead of deprecated simUnitVcd
 class ClkSynchronizerTC(unittest.TestCase):
     def setUp(self):
         u = ClkSynchronizer()
@@ -21,54 +23,55 @@ class ClkSynchronizerTC(unittest.TestCase):
         modelCls = toSimModel(u)
         reconnectUnitSignalsToModel(u, modelCls)
         model = modelCls()
-        
+
         self.u = u
         self.model = model
-    
-    def doSim(self, dataInStimul, name, time=100 * Time.ns): 
+
+    def doSim(self, dataInStimul, name, time=100 * Time.ns):
         collected = []
         u = self.u
-                
+
         def dataCollector(s):
             yield s.wait(CLK_PERIOD + 0.001)  # random small value to collect data after it is set
             while True:
                 d = s.read(u.outData)
                 collected.append(d)
                 yield s.wait(CLK_PERIOD)
-        
-        simUnitVcd(self.model, [oscilate(u.inClk, CLK_PERIOD),
-                       oscilate(u.outClk, CLK_PERIOD, initWait=CLK_PERIOD / 4),
-                       pullDownAfter(u.rst, CLK_PERIOD * 2),
-                       dataCollector,
-                       dataInStimul], "tmp/clkSynchronizer_" + name + ".vcd", time=100 * Time.ns)   
+
+        simUnitVcd(self.model,
+                   [oscilate(u.inClk, CLK_PERIOD),
+                    oscilate(u.outClk, CLK_PERIOD, initWait=CLK_PERIOD / 4),
+                    pullDownAfter(u.rst, CLK_PERIOD * 2),
+                    dataCollector,
+                    dataInStimul], "tmp/clkSynchronizer_" + name + ".vcd", time=100 * Time.ns)
         return collected
-    
+
     def test_normalOp(self):
         u = self.u
 
         expected = [0, 0, 0, None, 0, 1, 2, 3, 4]
-        
+
         def dataInStimul(s):
             yield s.wait(3 * CLK_PERIOD)
             for i in range(127):
                 s.write(i, u.inData)
                 yield s.wait(CLK_PERIOD)
-                
+
         collected = self.doSim(dataInStimul, "normalOp")
         self.assertSequenceEqual(expected, valuesToInts(collected))
 
     def test_invalidData(self):
         u = self.u
-    
+
         CLK_PERIOD = 10 * Time.ns
         expected = [0, 0, 0, None, None, None, None, None, None]
-        
+
         def dataInStimul(s):
             yield s.wait(3 * CLK_PERIOD)
             for _ in range(127):
                 yield s.wait(CLK_PERIOD)
                 s.write(None, u.inData)
-        
+
         collected = self.doSim(dataInStimul, "invalidData")
         self.assertSequenceEqual(expected, valuesToInts(collected))
 

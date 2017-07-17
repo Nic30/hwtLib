@@ -214,7 +214,7 @@ class AxiS_resizer_upAndDown_TC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(AxiS_resizer_downscale_TC('test_onlyPartOfMask'))
+    #suite.addTest(AxiS_resizer_downscale_TC('test_noLast'))
     suite.addTest(unittest.makeSuite(AxiS_resizer_upscale_TC))
     suite.addTest(unittest.makeSuite(AxiS_resizer_downscale_TC))
     suite.addTest(unittest.makeSuite(AxiS_resizer_downAndUp_TC))
