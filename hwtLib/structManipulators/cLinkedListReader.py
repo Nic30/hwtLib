@@ -3,6 +3,7 @@
 
 from hwt.code import If, In, Concat, connect, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT, vec
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Handshaked, RegCntrl, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -70,11 +71,15 @@ class CLinkedListReader(Unit):
         f.DEPTH.set(self.BUFFER_CAPACITY)
 
     def getControlInterfaces(self):
-        return [
+        return (
                 self.baseAddr,
                 self.rdPtr,
+                Bits(16),  # padding
                 self.wrPtr,
-                self.inBlockRemain]
+                Bits(16),  # padding
+                self.inBlockRemain,
+                Bits(32 - self.inBlockRemain._dtype.bit_length()),  # padding
+                )
 
     def addrAlignBits(self):
         return log2ceil(self.DATA_WIDTH // 8).val

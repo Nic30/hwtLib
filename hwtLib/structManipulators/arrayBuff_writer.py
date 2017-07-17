@@ -4,6 +4,7 @@
 from hwt.bitmask import mask
 from hwt.code import If, Concat, connect, FsmBuilder, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT, vec
+from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.enum import Enum
 from hwt.interfaces.std import Handshaked, VectSignal, RegCntrl
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -13,7 +14,6 @@ from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AddrSizeHs, AxiWDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
-from hwt.serializer.simModel.serializer import SimModelSerializer
 
 
 stT = Enum("st_t", ["waitOnInput", "waitOnDataTx", "waitOnAck"])
@@ -64,11 +64,14 @@ class ArrayBuff_writer(Unit):
         self.buff = b
 
     def getControlInterfaces(self):
-        return [
+        return (
                 self.baseAddr,
                 self.uploaded,
-                self.buff_remain
-                ]
+                Bits(16),  # padding
+                
+                self.buff_remain,
+                Bits(16),  # padding
+                )
 
     def uploadedCntrHandler(self, st, reqAckHasCome, sizeOfitems):
         uploadedCntr = self._reg("uploadedCntr", self.uploaded._dtype, defVal=0)

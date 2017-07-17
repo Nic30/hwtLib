@@ -6,17 +6,12 @@ from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import Array
 from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.hdlType import HdlType
-from hwt.hdlObjects.types.struct import HStruct
-from hwt.hdlObjects.types.structUtils import BusFieldInfo
 from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
-from hwt.interfaces.structIntf import StructIntf
+from hwt.interfaces.structIntf import StructIntf, HTypeFromIntfMap
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.interfaceUtils.proxy import InterfaceProxy
 from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import walkFlatten
-from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwtLib.sim.abstractMemSpaceMaster import PartialField
 
@@ -188,7 +183,7 @@ class BusEndpoint(Unit):
         :param srcAddrStep: how many bits is addressing one unit of srcAddrSig
         :param dstAddrSig: output signal for address
         :param dstAddrStep: how many bits is addressing one unit of dstAddrSig
-        :param transTmpl: TransTmpl which has metainformations about this address space transition
+        :param transTmpl: TransTmpl which has meta-informations about this address space transition
         """
         IN_ADDR_WIDTH = srcAddrSig._dtype.bit_length()
 
@@ -196,7 +191,7 @@ class BusEndpoint(Unit):
         assert dstAddrStep % srcAddrStep == 0
         if not isinstance(transTmpl.dtype, Array):
             raise TypeError()
-        assert transTmpl.bitAddr % dstAddrStep == 0, "Has to be addressable by address with this step"
+        assert transTmpl.bitAddr % dstAddrStep == 0, "Has to be addressable by address with this step (%r)" % (transTmpl)
 
         addrIsAligned = transTmpl.bitAddr % transTmpl.bit_length() == 0
         bitsForAlignment = ((dstAddrStep // srcAddrStep) - 1).bit_length()
@@ -246,71 +241,6 @@ class BusEndpoint(Unit):
         return p
 
     @classmethod
-    def _resolveRegStructFromIntfMap(cls, prefix, interfaceMap, DATA_WIDTH, aliginFields=False):
-        """
-        Generate flattened register map for HStruct
-
-        :param prefix: prefix for register name
-        :param interfaceMap: iterable of
-            tuple (type, name) or
-            interface or
-            tuple (list of interface, prefix, [aliginFields])
-            (aliginFields is optional flag if set all items from list will be aligned to bus word size, default is false)
-        :param DATA_WIDTH: width of word
-        :return: generator of tuple (type, name, BusFieldInfo)
-        """
-        for m in interfaceMap:
-            if isinstance(m, (InterfaceBase, RtlSignalBase)):
-                intf = m
-                name = getSignalName(intf)
-                if isinstance(intf, (RtlSignalBase, Signal)):
-                    dtype = intf._dtype
-                    access = "r"
-                elif isinstance(intf, VldSynced):
-                    # assert intf._direction == INTF_DIRECTION.SLAVE
-                    dtype = intf.data._dtype
-                    access = "w"
-                elif isinstance(intf, RegCntrl):
-                    dtype = intf.din._dtype
-                    access = "rw"
-                elif isinstance(intf, BramPort_withoutClk):
-                    dtype = Array(vecT(int(intf.DATA_WIDTH)),
-                                  2 ** int(intf.ADDR_WIDTH))
-                    access = "rw"
-                else:
-                    raise NotImplementedError(intf)
-
-                info = BusFieldInfo(access=access, fieldInterface=intf)
-
-                if aliginFields:
-                    fillUpWidth = DATA_WIDTH - dtype.bit_length()
-                    if fillUpWidth > 0:
-                        yield (vecT(fillUpWidth), None, None)
-
-                yield (dtype, prefix + name, info)
-            else:
-                l = len(m)
-                if l == 2:
-                    typeOrListOfInterfaces, nameOrPrefix = m
-                    align = False
-                else:
-                    typeOrListOfInterfaces, nameOrPrefix, align = m
-
-                if isinstance(typeOrListOfInterfaces, HdlType):
-                    # tuple (type, name)
-                    yield (typeOrListOfInterfaces, prefix + nameOrPrefix, None)
-                    if align:
-                        fillUpWidth = DATA_WIDTH - typeOrListOfInterfaces.bit_length()
-                        if fillUpWidth > 0:
-                            yield (vecT(fillUpWidth), None, None)
-                else:
-                    # tuple (list of interfaces, prefix)
-                    yield from cls._resolveRegStructFromIntfMap(prefix + nameOrPrefix,
-                                                                typeOrListOfInterfaces,
-                                                                DATA_WIDTH,
-                                                                align)
-
-    @classmethod
     def _fromInterfaceMap(cls, parent, onParentName, bus, busDataWidth, configFn, interfaceMap):
         """
         Generate converter by specified struct and connect interfaces if are specified
@@ -320,26 +250,13 @@ class BusEndpoint(Unit):
         :param onParentName: name of converter in parent
         :param bus: bus interface for converter
         :param configFn: function (converter) which should be used for configuring of converter
-        :param interfaceMap: iterable of tuple (type, name) or interface
-            or tuple (list of interface, prefix, optionally align)
-            (align is optional flag if set all items from list will be aligned (little-endian)
-            to bus word size, default is false)
+        :param interfaceMap: take a look at HTypeFromIntfMap
             if interface is specified it will be automatically connected
         """
 
-        regsFlatten = []
-        intfMap = {}
-        DATA_WIDTH = int(bus.DATA_WIDTH)
-        # build flatten register map
-        for typ, name, info in cls._resolveRegStructFromIntfMap("", interfaceMap, DATA_WIDTH):
-            if info is not None:
-                regsFlatten.append((typ, name, info))
-                intfMap[name] = info.fieldInterface
-            else:
-                regsFlatten.append((typ, name))
-
+        t = HTypeFromIntfMap(interfaceMap)
         # instantiate converter
-        conv = cls(HStruct(*regsFlatten))
+        conv = cls(t)
         configFn(conv)
 
         setattr(parent, onParentName, conv)
