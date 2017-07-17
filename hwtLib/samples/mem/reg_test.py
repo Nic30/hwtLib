@@ -39,10 +39,10 @@ BEGIN
     dout <= internReg;
     assig_process_internReg: PROCESS (clk)
     BEGIN
-        IF RISING_EDGE( clk ) THEN 
-            IF rst = '1' THEN 
+        IF RISING_EDGE( clk ) THEN
+            IF rst = '1' THEN
                 internReg <= '0';
-            ELSE 
+            ELSE
                 internReg <= internReg_next;
             END IF;
         END IF;
