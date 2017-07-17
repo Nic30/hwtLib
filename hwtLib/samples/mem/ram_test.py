@@ -24,9 +24,9 @@ class RamTC(SimTestCase):
         self.setUpAsync()
         u = self.u
 
-        u.addr_in._ag.data = [0, 1, 2, 3, None, 3, 2, 1]
-        u.addr_out._ag.data = [None, 0, 1, 2, 3, None, 0, 1]
-        u.din._ag.data = [10, 11, 12, 13, 14, 15, 16, 17]
+        u.addr_in._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
+        u.addr_out._ag.data.extend([None, 0, 1, 2, 3, None, 0, 1])
+        u.din._ag.data.extend([10, 11, 12, 13, 14, 15, 16, 17])
         self.doSim(80 * Time.ns)
 
         self.assertSequenceEqual(valuesToInts([v for v in self.model.ram_data._val]),
@@ -38,9 +38,9 @@ class RamTC(SimTestCase):
         self.setUpSync()
         u = self.u
 
-        u.addr_in._ag.data = [0, 1, 2, 3, None, 3, 2, 1]
-        u.addr_out._ag.data = [None, 0, 1, 2, 3, None, 0, 1]
-        u.din._ag.data = [10, 11, 12, 13, 14, 15, 16, 17]
+        u.addr_in._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
+        u.addr_out._ag.data.extend([None, 0, 1, 2, 3, None, 0, 1])
+        u.din._ag.data.extend([10, 11, 12, 13, 14, 15, 16, 17])
         self.doSim(80 * Time.ns)
 
         self.assertSequenceEqual(valuesToInts([v for v in self.model.ram_data._val]),

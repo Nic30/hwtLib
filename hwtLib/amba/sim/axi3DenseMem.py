@@ -1,3 +1,5 @@
+from collections import deque
+
 from hwt.bitmask import mask
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.constants import RESP_OKAY
@@ -58,9 +60,9 @@ class Axi3DenseMem(DenseMemory):
 
         self.cellSize = DW // 8
         self.allMask = mask(self.cellSize)
-        self.rPending = []
+        self.rPending = deque()
 
-        self.wPending = []
+        self.wPending = deque()
 
         self._registerOnClock(clk)
 
@@ -75,7 +77,7 @@ class Axi3DenseMem(DenseMemory):
         return (_id, addr, size, self.allMask)
 
     def doRead(self):
-        _id, addr, size, lastWordBitmask = self.rPending.pop(0)
+        _id, addr, size, lastWordBitmask = self.rPending.popleft()
 
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
@@ -95,14 +97,14 @@ class Axi3DenseMem(DenseMemory):
             self.rAg.data.append((_id, data, RESP_OKAY, isLast))
 
     def doWrite(self):
-        _id, addr, size, lastWordBitmask = self.wPending.pop(0)
+        _id, addr, size, lastWordBitmask = self.wPending.popleft()
 
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
             raise NotImplementedError("unaligned transaction not implemented")
 
         for i in range(size):
-            _id2, data, strb, last = self.wAg.data.pop(0)
+            _id2, data, strb, last = self.wAg.data.popleft()
 
             assert _id2._isFullVld()
             # assert data._isFullVld()

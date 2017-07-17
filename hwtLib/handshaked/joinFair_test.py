@@ -27,7 +27,7 @@ class HsJoinFair_2inputs_TC(SimTestCase):
     def addToAllInputs(self, n):
         u = self.u
         for i, d in enumerate(u.dataIn):
-            d._ag.data = [_i + (n * i) for _i in range(n)]
+            d._ag.data.extend([_i + (n * i) for _i in range(n)])
 
         expected = []
         for d in zip(*map(dataFn, u.dataIn)):

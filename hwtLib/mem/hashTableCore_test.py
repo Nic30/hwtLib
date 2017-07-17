@@ -41,7 +41,7 @@ class HashTableCoreTC(SimTestCase):
         def tryInsertNotFoundAndLookupIt(s):
             # wait for lookup
             yield s.wait(50 * Time.ns)
-            _hash, key, _, found = u.lookupRes._ag.data.pop(0)
+            _hash, key, _, found = u.lookupRes._ag.data.popleft()
             data = self._rand.getrandbits(8)
 
             self.assertValEqual(found, False)

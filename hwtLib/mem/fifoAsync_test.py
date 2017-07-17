@@ -24,7 +24,7 @@ class FifoAsyncTC(FifoTC):
     def test_tryMore(self):
         u = self.u
 
-        u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
+        u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
         u.dataOut._ag.enable = False
 
         self.doSim(self.getTime(12))
@@ -38,7 +38,7 @@ class FifoAsyncTC(FifoTC):
     def test_tryMore2(self):
         u = self.u
 
-        u.dataIn._ag.data = [1, 2, 3, 4, 5, 6, 7, 8]
+        u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6, 7, 8])
 
         def closeOutput(s):
             yield s.wait(self.getTime(3))
@@ -46,7 +46,7 @@ class FifoAsyncTC(FifoTC):
 
         self.procs.append(closeOutput)
         self.doSim(self.getTime(16))
-        
+
         collected = u.dataOut._ag.data
 
         self.assertValSequenceEqual(self.model.memory._val.val, [5, 6, 4, 3])

@@ -25,7 +25,7 @@ class HsSplitCopyTC(SimTestCase):
 
     def test_passdata(self):
         u = self.u
-        u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
+        u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
 
         self.doSim(150 * Time.ns)
 

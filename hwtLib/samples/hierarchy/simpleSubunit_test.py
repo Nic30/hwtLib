@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from copy import copy
 import unittest
 
 from hwt.hdlObjects.constants import Time
@@ -26,13 +25,10 @@ class SimpleSubunitTC(SimTestCase):
         # None represents invalid value (like universal "x" in vhdl)
         inputData = [0, 1, 0, 1, None, 0, None, 1, None, 0]
 
-        # expected data are same as input data,
-        # but because data in inputData will be consumed, we have to make a copy 
-        expected = copy(inputData)
-
-        # assign inputData to data property of agent for interface "a"
-        # now in simulation driver of a will pop data from input data and it will put them on interface "a"
-        u.a._ag.data = inputData
+        # add inputData to agent for interface "a"
+        # now agent of "a" will popleft data from input data
+        # and it will put them on interface "a"
+        u.a._ag.data.extend(inputData)
 
         # now we run simulation, we use our unit "u", our monitors and drivers of interfaces stored in "procs",
         # we save dum of value changes into file "tmp/simple.vcd" (which is default)
@@ -42,7 +38,7 @@ class SimpleSubunitTC(SimTestCase):
         # now we use part of unittest framework to check results
         # use assertValSequenceEqual which sill automatically convert
         # value objects to integer representation and checks them
-        self.assertValSequenceEqual(u.b._ag.data, expected)
+        self.assertValSequenceEqual(u.b._ag.data, inputData)
 
         # you can also access signals inside model by it's signal names
         # this names can differ in order to avoid name collision (suffix is usually used, or invalid character is replaced)

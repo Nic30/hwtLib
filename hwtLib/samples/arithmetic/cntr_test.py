@@ -18,14 +18,14 @@ class CntrTC(SimTestCase):
     def test_overflow(self):
         u = self.u
 
-        u.en._ag.data = [1]
+        u.en._ag.data.append(1)
         self.doSim(90 * Time.ns)
         self.assertSequenceEqual([0, 0, 1, 2, 3, 0, 1, 2, 3], agInts(u.val))
 
     def test_contingWithStops(self):
         u = self.u
 
-        u.en._ag.data = [1, 0, 1, 1, 0, 0, 0]
+        u.en._ag.data.extend([1, 0, 1, 1, 0, 0, 0])
         self.doSim(90 * Time.ns)
         self.assertSequenceEqual([0, 0, 0, 1, 2, 2, 2, 2, 2], agInts(u.val))
 

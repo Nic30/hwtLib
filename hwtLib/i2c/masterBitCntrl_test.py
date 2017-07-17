@@ -18,7 +18,7 @@ class I2CMasterBitCntrlTC(SimTestCase):
     def test_nop(self):
         u = self.u
         u.cntrl._ag.data.append((NOP, 0))
-        u.clk_cnt_initVal._ag.data = [4]
+        u.clk_cnt_initVal._ag.data.append(4)
         self.doSim(200 * Time.ns)
 
         self.assertEmpty(u.i2c._ag.bits)
@@ -26,7 +26,7 @@ class I2CMasterBitCntrlTC(SimTestCase):
     def test_startbit(self):
         u = self.u
         u.cntrl._ag.data.extend([(START, 0), (NOP, 0)])
-        u.clk_cnt_initVal._ag.data = [4]
+        u.clk_cnt_initVal._ag.data.append(4)
         self.doSim(600 * Time.ns)
 
         self.assertEqual(u.i2c._ag.bits, [I2cAgent.START])
@@ -44,7 +44,7 @@ class I2CMasterBitCntrlTC(SimTestCase):
              (NOP, 0)
             ]
             )
-        u.clk_cnt_initVal._ag.data = [4]
+        u.clk_cnt_initVal._ag.data.append(4)
         self.doSim(700 * Time.ns)
 
         self.assertValSequenceEqual(u.i2c._ag.bits,

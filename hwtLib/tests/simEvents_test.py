@@ -35,7 +35,7 @@ class SimEventsTC(SimTestCase):
         u = SimpleRom()
         self.prepareUnit(u, onAfterToRtl=self.mockProcesses)
 
-        u.addr._ag.data = [0, 1, 2, 3, None, 3, 2, 1]
+        u.addr._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
         self.doSim(80 * Time.ns)
 
@@ -46,7 +46,7 @@ class SimEventsTC(SimTestCase):
         u = SimpleSyncRom()
         self.prepareUnit(u, onAfterToRtl=self.mockProcesses)
 
-        u.addr._ag.data = [0, 1, 2, 3, None, 3, 2, 1]
+        u.addr._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
         self.doSim(90 * Time.ns)
         for p in self.model._processes:
@@ -56,8 +56,8 @@ class SimEventsTC(SimTestCase):
         u = FsmExample()
         self.prepareUnit(u, onAfterToRtl=self.mockProcesses)
 
-        u.a._ag.data = [1, 1, 1, 0, 0, 0, 0, 0]
-        u.b._ag.data = [0, 1, 0, 0, 1, 0, 1, 0]
+        u.a._ag.data.extend([1, 1, 1, 0, 0, 0, 0, 0])
+        u.b._ag.data.extend([0, 1, 0, 0, 1, 0, 1, 0])
 
         self.doSim(80 * Time.ns)
 

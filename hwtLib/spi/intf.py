@@ -8,6 +8,7 @@ from hwt.simulator.types.simBits import simBitsT
 from hwt.synthesizer.exceptions import IntfLvlConfErr
 from hwt.synthesizer.interfaceLevel.interface import Interface
 from hwt.synthesizer.param import Param
+from collections import deque
 
 
 class SpiAgent(SyncAgentBase):
@@ -25,12 +26,12 @@ class SpiAgent(SyncAgentBase):
     def __init__(self, intf, allowNoReset=False):
         AgentBase.__init__(self, intf)
 
-        self.txData = []
-        self.rxData = []
-        self.chipSelects = []
+        self.txData = deque()
+        self.rxData = deque()
+        self.chipSelects = deque()
 
-        self._txBitBuff = []
-        self._rxBitBuff = []
+        self._txBitBuff = deque()
+        self._rxBitBuff = deque()
         self.csMask = mask(intf.cs._dtype.bit_length())
         self.slaveEn = False
 
@@ -54,7 +55,7 @@ class SpiAgent(SyncAgentBase):
         self.driverTx = onRisingEdge(self.clk, self.driverTx)
 
     def splitBits(self, v):
-        return [selectBit(v, i) for i in range(self.BITS_IN_WORD - 1, -1, -1)]
+        return deque([selectBit(v, i) for i in range(self.BITS_IN_WORD - 1, -1, -1)])
 
     def mergeBits(self, bits):
         t = simBitsT(self.BITS_IN_WORD, False)
@@ -83,10 +84,10 @@ class SpiAgent(SyncAgentBase):
         if not bits:
             if not self.txData:
                 return
-            d = self.txData.pop(0)
+            d = self.txData.popleft()
             bits = self._txBitBuff = self.splitBits(d)
 
-        sim.write(bits.pop(0), sig)
+        sim.write(bits.popleft(), sig)
 
     def monitorRx(self, s):
         yield s.updateComplete
@@ -114,7 +115,7 @@ class SpiAgent(SyncAgentBase):
         if self.enable and self.notReset(s):
             if not self._txBitBuff:
                 try:
-                    cs = self.chipSelects.pop(0)
+                    cs = self.chipSelects.popleft()
                 except IndexError:
                     self.slaveEn = False
                     s.write(self.csMask, self.intf.cs)
