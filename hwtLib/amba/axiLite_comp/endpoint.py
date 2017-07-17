@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, FsmBuilder, Or, log2ceil, connect, Switch, \
-    SwitchLogic
+    SwitchLogic, Concat
 from hwt.hdlObjects.typeShortcuts import vec, vecT
 from hwt.hdlObjects.types.enum import Enum
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
+from hwt.pyUtils.arrayQuery import groupedby
+from hwt.hdlObjects.types.bits import Bits
 
 
 class AxiLiteEndpoint(BusEndpoint):
@@ -25,6 +27,7 @@ class AxiLiteEndpoint(BusEndpoint):
 
     def readPart(self, awAddr, w_hs):
         ADDR_STEP = self._getAddrStep()
+        DW = int(self.DATA_WIDTH)
         # build read data output mux
         r = self.bus.r
         ar = self.bus.ar
@@ -100,9 +103,33 @@ class AxiLiteEndpoint(BusEndpoint):
             rdataReg = None
             isBramAddr ** 0
 
-        SwitchLogic([(arAddr._eq(t.bitAddr // ADDR_STEP),
-                      r.data ** self.getPort(t).din)
-                     for t in self._directlyMapped],
+        directlyMappedWors = []
+        for w, items in groupedby(self._directlyMapped, lambda t: t.bitAddr // DW * (DW // ADDR_STEP)):
+            lastBit = 0
+            res = []
+            items.sort(key=lambda t: t.bitAddr)
+            for t in items:
+                b = t.bitAddr % DW
+                if b > lastBit:
+                    # add padding
+                    pad_w = b - lastBit
+                    pad = Bits(pad_w).fromPy(None)
+                    res.append(pad)
+                    lastBit += pad_w
+                din = self.getPort(t).din
+                res.append(din)
+                lastBit += din._dtype.bit_length() 
+
+            if lastBit != DW:
+                # add at end padding
+                pad = Bits(DW - lastBit).fromPy(None)
+                res.append(pad)
+
+            directlyMappedWors.append((w, Concat(*res)))
+                
+        
+        SwitchLogic([(arAddr._eq(w[0]), r.data ** w[1])
+                     for w in directlyMappedWors],
                     default=r.data ** rdataReg)
 
     def writeRespPart(self, wAddr, respVld):
@@ -118,6 +145,7 @@ class AxiLiteEndpoint(BusEndpoint):
         b.valid ** respVld
 
     def writePart(self):
+        DW = int(self.DATA_WIDTH)
         sig = self._sig
         reg = self._reg
         addrWidth = int(self.ADDR_WIDTH)
@@ -160,8 +188,14 @@ class AxiLiteEndpoint(BusEndpoint):
         # output vld
         for t in self._directlyMapped:
             out = self.getPort(t).dout
-            connect(w.data, out.data, fit=True)
-            out.vld ** (w_hs & (awAddr._eq(vec(t.bitAddr // ADDR_STEP, addrWidth))))
+            try:
+                width = t.getItemWidth()
+            except TypeError:
+                width = t.bitAddrEnd - t.bitAddr
+
+            offset = t.bitAddr % DW
+            out.data ** w.data[(offset + width): offset] 
+            out.vld ** (w_hs & (awAddr._eq(vec(t.bitAddr // DW * (DW // ADDR_STEP), addrWidth))))
 
         for t in self._bramPortMapped:
             din = self.getPort(t).din

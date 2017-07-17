@@ -14,10 +14,66 @@ from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import walkFlatten
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwtLib.sim.abstractMemSpaceMaster import PartialField
+from hwt.hdlObjects.types.hdlType import HdlType
+from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
+from hwt.pyUtils.arrayQuery import where
 
 
 def inRange(n, lower, end):
     return (n >= lower) & (n < end)
+
+
+def walkIntfMap(intfMap):
+    if isinstance(intfMap, (InterfaceBase, RtlSignalBase)):
+        yield intfMap
+    elif isinstance(intfMap, tuple):
+        try:
+            item, name = intfMap
+        except (TypeError, ValueError):
+            name = None
+        if isinstance(name, str):
+            # is named something
+            yield from walkIntfMap(item)
+        else:
+            # is struct described by tuple
+            for item in intfMap:
+                yield from walkIntfMap(item)
+            
+    elif isinstance(intfMap, HdlType):
+        pass
+    else:
+        for item in intfMap:
+            yield from walkIntfMap(item)
+
+def walkStructIntfAndIntfMap(structIntf, intfMap):
+    if isinstance(intfMap, (InterfaceBase, RtlSignalBase)):
+        yield structIntf, intfMap
+    elif isinstance(intfMap, tuple):
+        try:
+            item, name = intfMap
+        except (TypeError, ValueError):
+            name = None
+        if isinstance(name, str):
+            # is named something
+            yield from walkStructIntfAndIntfMap(structIntf, item)
+        else:
+            # is struct described by tuple
+            intfMap = list(where(intfMap, lambda x: not isinstance(x, HdlType)))
+            assert len(intfMap) == len(structIntf._interfaces), (intfMap, structIntf)
+            for sItem, item in zip(structIntf._interfaces, intfMap):
+                yield from walkStructIntfAndIntfMap(sItem, item)
+            
+    elif isinstance(intfMap, HdlType):
+        pass
+    else:
+        if structIntf._isInterfaceArray():
+            a = structIntf
+        else:
+            a = structIntf._interfaces
+            
+        assert len(a) == len(intfMap)
+        for sItem, item in zip(a, intfMap):
+            yield from walkStructIntfAndIntfMap(sItem, item)
 
 
 class BusEndpoint(Unit):
@@ -48,8 +104,8 @@ class BusEndpoint(Unit):
         """
         :param structTemplate: instance of HStruct which describes address space of this endpoint
         :param intfCls: class of bus interface which should be used
-        :param shouldEnterFn: function(transactionTemplate) which should return true if structuralized type like Array or HStruct
-            should be interpreted as separate interfaces or not
+        :param shouldEnterFn: function(transactionTemplate) which should return True if structuralized type like Array or HStruct
+            should be interpreted as separate interfaces or False if not
         """
         assert intfCls is not None, "intfCls has to be specified"
 
@@ -253,10 +309,16 @@ class BusEndpoint(Unit):
         :param interfaceMap: take a look at HTypeFromIntfMap
             if interface is specified it will be automatically connected
         """
+        terminalFields = set()
+        t = HTypeFromIntfMap(interfaceMap, terminalFields)
 
-        t = HTypeFromIntfMap(interfaceMap)
+        def shouldEnter(tmpl):
+            shouldYield = tmpl in terminalFields
+            shouldEnter = not shouldYield
+            return shouldEnter, shouldYield
+        
         # instantiate converter
-        conv = cls(t)
+        conv = cls(t, shouldEnterFn=shouldEnter)
         configFn(conv)
 
         setattr(parent, onParentName, conv)
@@ -264,9 +326,7 @@ class BusEndpoint(Unit):
         conv.bus ** bus
 
         # connect interfaces as was specified by register map
-        for regName, intf in intfMap.items():
-            convIntf = getattr(conv.decoded, regName)
-
+        for convIntf, intf in walkStructIntfAndIntfMap(conv.decoded, interfaceMap):
             if isinstance(intf, Signal):
                 assert intf._direction == INTF_DIRECTION.MASTER
                 convIntf.din ** intf
