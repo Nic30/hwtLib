@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from copy import copy
 import unittest
 
 from hwt.hdlObjects.constants import Time
@@ -25,7 +24,7 @@ class FifoTC(SimTestCase):
         u = self.u
 
         expected = [1]
-        u.dataIn._ag.data = copy(expected)
+        u.dataIn._ag.data.extend(expected)
 
         self.doSim(90 * Time.ns)
 
@@ -37,7 +36,7 @@ class FifoTC(SimTestCase):
         u = self.u
 
         data = [1, 2, 3, 4]
-        u.dataIn._ag.data = copy(data)
+        u.dataIn._ag.data.extend(data)
         u.dataIn._ag.enable = False
 
         self.doSim(self.getTime(8))
@@ -49,7 +48,7 @@ class FifoTC(SimTestCase):
         u = self.u
 
         expected = list(range(4))
-        u.dataIn._ag.data = copy(expected)
+        u.dataIn._ag.data.extend(expected)
 
         self.doSim(self.getTime(9))
 
@@ -65,7 +64,7 @@ class FifoTC(SimTestCase):
         self.procs.append(openOutput)
 
         expected = list(range(2 * 8))
-        u.dataIn._ag.data = copy(expected)
+        u.dataIn._ag.data.extend(expected)
 
         self.doSim(self.getTime(26))
 
@@ -80,7 +79,7 @@ class FifoTC(SimTestCase):
     def test_tryMore(self):
         u = self.u
 
-        u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
+        u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
         u.dataOut._ag.enable = False
 
         self.doSim(self.getTime(12))
@@ -94,7 +93,7 @@ class FifoTC(SimTestCase):
     def test_tryMore2(self):
         u = self.u
 
-        u.dataIn._ag.data = [1, 2, 3, 4, 5, 6, 7, 8]
+        u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6, 7, 8])
 
         def closeOutput(s):
             yield s.wait(self.getTime(4))
@@ -111,7 +110,7 @@ class FifoTC(SimTestCase):
 
     def test_doloop(self):
         u = self.u
-        u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
+        u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
 
         self.doSim(self.getTime(12))
 

@@ -20,7 +20,7 @@ class HsRegL1D0TC(SimTestCase):
 
     def test_passdata(self):
         u = self.u
-        u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
+        u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
 
         self.doSim((self.DELAY + self.LATENCY) * 120 * Time.ns)
 
@@ -29,7 +29,7 @@ class HsRegL1D0TC(SimTestCase):
 
     def test_r_passdata(self):
         u = self.u
-        u.dataIn._ag.data = [1, 2, 3, 4, 5, 6]
+        u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
         self.randomize(u.dataIn)
         self.randomize(u.dataOut)
 

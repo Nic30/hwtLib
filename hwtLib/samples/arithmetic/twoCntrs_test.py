@@ -21,8 +21,8 @@ class TwoCntrsTC(SimTestCase):
 
     def test_nothingEnable(self):
         u = self.u
-        u.a_en._ag.data = [0]
-        u.b_en._ag.data = [0]
+        u.a_en._ag.data.append(0)
+        u.b_en._ag.data.append(0)
 
         self.doSim(90 * Time.ns)
 
@@ -33,8 +33,8 @@ class TwoCntrsTC(SimTestCase):
 
     def test_allEnable(self):
         u = self.u
-        u.a_en._ag.data = [1]
-        u.b_en._ag.data = [1]
+        u.a_en._ag.data.append(1)
+        u.b_en._ag.data.append(1)
 
         self.doSim(90 * Time.ns)
         self.assertSequenceEqual(nineOnes, agInts(u.eq))
@@ -44,8 +44,8 @@ class TwoCntrsTC(SimTestCase):
 
     def test_aEnable(self):
         u = self.u
-        u.a_en._ag.data = [1]
-        u.b_en._ag.data = [0]
+        u.a_en._ag.data.append(1)
+        u.b_en._ag.data.append(0)
 
         self.doSim(90 * Time.ns)
         self.assertSequenceEqual([1, 1, 0, 0, 0, 0, 0, 0, 0], agInts(u.eq))
@@ -55,8 +55,8 @@ class TwoCntrsTC(SimTestCase):
 
     def test_nonValid(self):
         u = self.u
-        u.a_en._ag.data = [None]
-        u.b_en._ag.data = [None]
+        u.a_en._ag.data.append(None)
+        u.b_en._ag.data.append(None)
 
         self.doSim(90 * Time.ns)
         self.assertSequenceEqual([1, 1, None, None, None, None, None, None, None], agInts(u.eq))
@@ -66,8 +66,8 @@ class TwoCntrsTC(SimTestCase):
 
     def test_withStops(self):
         u = self.u
-        u.a_en._ag.data = [0, 1, 0, 0, 1]
-        u.b_en._ag.data = [0, 1, 1, 0, 0, 1]
+        u.a_en._ag.data.extend([0, 1, 0, 0, 1])
+        u.b_en._ag.data.extend([0, 1, 1, 0, 0, 1])
 
         self.doSim(90 * Time.ns)
         self.assertSequenceEqual([1, 1, 1, 0, 0, 1, 1, 1, 1], agInts(u.eq))

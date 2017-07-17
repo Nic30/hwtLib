@@ -17,9 +17,9 @@ class RamTC(SimTestCase):
         u.ADDR_WIDTH.set(3)
         self.prepareUnit(u)
 
-        u.a._ag.requests = [(WRITE, 0, 5), (WRITE, 1, 7),
-                            (READ, 0), (READ, 1),
-                            (READ, 0), (READ, 1), (READ, 2)]
+        u.a._ag.requests.extend([(WRITE, 0, 5), (WRITE, 1, 7),
+                                 (READ, 0), (READ, 1),
+                                 (READ, 0), (READ, 1), (READ, 2)])
 
         self.doSim(110 * Time.ns)
         self.assertSequenceEqual([5, 7, None, None, None, None, None, None],

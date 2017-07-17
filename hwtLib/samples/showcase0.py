@@ -7,6 +7,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.systemC.serializer import SystemCSerializer
+from hwt.serializer.simModel.serializer import SimModelSerializer
 
 
 def foo(condition0, statements, condition1, fallback0, fallback1):
@@ -246,8 +247,9 @@ BEGIN
     f <= r;
     assig_process_fallingEdgeRam: PROCESS (clk)
     BEGIN
-        IF FALLING_EDGE( clk ) THEN 
+        IF FALLING_EDGE( clk ) THEN
             fallingEdgeRam( TO_INTEGER(UNSIGNED(r_1)) ) <= SIGNED( a( 7 DOWNTO 0 ) );
+            k <= X"000000" & STD_LOGIC_VECTOR( UNSIGNED( fallingEdgeRam( TO_INTEGER(UNSIGNED(r_1)) ) ) );
         END IF;
     END PROCESS;
 
@@ -255,12 +257,12 @@ BEGIN
     g <= ((a( 1 )) AND (b( 1 ))) & (((a( 0 )) XOR (b( 0 ))) OR (a( 1 ))) & STD_LOGIC_VECTOR( a( 5 DOWNTO 0 ) );
     assig_process_h: PROCESS (a, r)
     BEGIN
-        IF (a( 2 ))='1' THEN 
-            IF (r)='1' THEN 
+        IF (a( 2 ))='1' THEN
+            IF (r)='1' THEN
                 h <= X"00";
-            ELSIF (a( 1 ))='1' THEN 
+            ELSIF (a( 1 ))='1' THEN
                 h <= X"01";
-            ELSE 
+            ELSE
                 h <= X"02";
             END IF;
         END IF;
@@ -268,15 +270,8 @@ BEGIN
 
     assig_process_j: PROCESS (clk)
     BEGIN
-        IF RISING_EDGE( clk ) THEN 
+        IF RISING_EDGE( clk ) THEN
             j <= STD_LOGIC_VECTOR( rom( TO_INTEGER(UNSIGNED(r_1)) ) );
-        END IF;
-    END PROCESS;
-
-    assig_process_k: PROCESS (clk)
-    BEGIN
-        IF FALLING_EDGE( clk ) THEN 
-            k <= X"000000" & STD_LOGIC_VECTOR( UNSIGNED( fallingEdgeRam( TO_INTEGER(UNSIGNED(r_1)) ) ) );
         END IF;
     END PROCESS;
 
@@ -284,33 +279,15 @@ BEGIN
     output <= 'X';
     assig_process_r: PROCESS (clk)
     BEGIN
-        IF RISING_EDGE( clk ) THEN 
-            IF rst_n = '0' THEN 
+        IF RISING_EDGE( clk ) THEN
+            IF rst_n = '0' THEN
                 r <= '0';
-            ELSE 
-                r <= r_next;
-            END IF;
-        END IF;
-    END PROCESS;
-
-    assig_process_r_0: PROCESS (clk)
-    BEGIN
-        IF RISING_EDGE( clk ) THEN 
-            IF rst_n = '0' THEN 
-                r_0 <= "00";
-            ELSE 
-                r_0 <= r_next_0;
-            END IF;
-        END IF;
-    END PROCESS;
-
-    assig_process_r_1: PROCESS (clk)
-    BEGIN
-        IF RISING_EDGE( clk ) THEN 
-            IF rst_n = '0' THEN 
                 r_1 <= "00";
-            ELSE 
+                r_0 <= "00";
+            ELSE
+                r <= r_next;
                 r_1 <= r_next_1;
+                r_0 <= r_next_0;
             END IF;
         END IF;
     END PROCESS;
@@ -320,7 +297,7 @@ BEGIN
     assig_process_r_next_1: PROCESS (e, r)
     BEGIN
         r_next <= r;
-        IF (NOT  r )='1' THEN 
+        IF (NOT  r )='1' THEN
             r_next <= e;
         END IF;
     END PROCESS;
@@ -391,7 +368,8 @@ module Showcase0(input [31:0] a,
     assign contOut = $unsigned( const_private_signal );
     assign f = r;
     always @(negedge clk) begin: assig_process_fallingEdgeRam
-        fallingEdgeRam[ r_1 ] <= $signed( a[ 7:0 ] );
+        fallingEdgeRam[ r_1 ] <= $signed( a[ 7:0 ] );;
+        k <= {24'h000000 , $unsigned( $unsigned( fallingEdgeRam[ r_1 ] ) )};
     end
 
     assign fitted = $unsigned( a[ 15:0 ] );
@@ -412,33 +390,17 @@ module Showcase0(input [31:0] a,
         j <= $unsigned( rom );
     end
 
-    always @(negedge clk) begin: assig_process_k
-        k <= {24'h000000 , $unsigned( $unsigned( fallingEdgeRam[ r_1 ] ) )};
-    end
-
     assign out = 1'b0;
     assign output_0 = 1'bx;
     always @(posedge clk) begin: assig_process_r
         if(rst_n == 1'b0) begin
             r <= 1'b0;
-        end else begin
-            r <= r_next;
-        end
-    end
-
-    always @(posedge clk) begin: assig_process_r_0
-        if(rst_n == 1'b0) begin
+            r_1 <= 2'b00;
             r_0 <= 2'b00;
         end else begin
-            r_0 <= r_next_0;
-        end
-    end
-
-    always @(posedge clk) begin: assig_process_r_1
-        if(rst_n == 1'b0) begin
-            r_1 <= 2'b00;
-        end else begin
+            r <= r_next;
             r_1 <= r_next_1;
+            r_0 <= r_next_0;
         end
     end
 
@@ -483,6 +445,7 @@ if __name__ == "__main__":  # alias python main function
     from hwt.synthesizer.shortcuts import toRtl
     # * new instance has to be created every time because toRtl is modifies the unit
     # * serializers are using templates which can be customized
+    #print(toRtl(Showcase0(), serializer=SimModelSerializer))
     print(toRtl(Showcase0(), serializer=VhdlSerializer))
     print(toRtl(Showcase0(), serializer=VerilogSerializer))
     # print(toRtl(Showcase0(), serializer=SystemCSerializer))

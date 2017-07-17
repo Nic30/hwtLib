@@ -14,7 +14,7 @@ class RomTC(SimTestCase):
         u = SimpleRom()
         self.prepareUnit(u)
 
-        u.addr._ag.data = [0, 1, 2, 3, None, 3, 2, 1]
+        u.addr._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
         self.doSim(80 * Time.ns)
 
@@ -24,7 +24,7 @@ class RomTC(SimTestCase):
         u = SimpleSyncRom()
         self.prepareUnit(u)
 
-        u.addr._ag.data = [0, 1, 2, 3, None, 3, 2, 1]
+        u.addr._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
         self.doSim(90 * Time.ns)
 

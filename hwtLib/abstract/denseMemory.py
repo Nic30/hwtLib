@@ -6,6 +6,7 @@ from hwt.hdlObjects.types.array import Array
 from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.simulator.types.simBits import simBitsT
+from collections import deque
 
 
 class AllocationError(Exception):
@@ -17,8 +18,8 @@ class AllocationError(Exception):
 
 def reshapedInitItems(actualCellSize, requestedCellSize, values):
     """
-    Convert array item size and items cnt while size of array remains unchanged 
-    
+    Convert array item size and items cnt while size of array remains unchanged
+
     :param actualCellSize: actual size of item in array
     :param requestedCellSize: requested size of item in array
     :param values: input array
@@ -72,7 +73,7 @@ class DenseMemory():
 
         self.arAg = arAg
         self.rAg = rAg
-        self.rPending = []
+        self.rPending = deque()
 
         if wDatapumpIntf is None:
             awAg = wAg = wAckAg = None
@@ -84,14 +85,14 @@ class DenseMemory():
         self.awAg = awAg
         self.wAg = wAg
         self.wAckAg = wAckAg
-        self.wPending = []
+        self.wPending = deque()
 
         self._registerOnClock(clk)
 
     def _registerOnClock(self, clk):
         clk._sigInside.simRisingSensProcs.add(self.checkRequests)
 
-    def checkRequests(self, simulator):
+    def checkRequests(self, simulator, _):
         """
         Check if any request has appeared on interfaces
         """
@@ -108,8 +109,6 @@ class DenseMemory():
 
             if self.wPending and self.wPending[0][2] <= len(self.wAg.data):
                 self.doWrite()
-
-        return set()
 
     def parseReq(self, req):
         for i, v in enumerate(req):
@@ -135,7 +134,7 @@ class DenseMemory():
         self.wPending.append(self.parseReq(writeReq))
 
     def doRead(self):
-        _id, addr, size, lastWordBitmask = self.rPending.pop(0)
+        _id, addr, size, lastWordBitmask = self.rPending.popleft()
 
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
@@ -163,14 +162,14 @@ class DenseMemory():
         self.wAckAg.data.append(_id)
 
     def doWrite(self):
-        _id, addr, size, lastWordBitmask = self.wPending.pop(0)
+        _id, addr, size, lastWordBitmask = self.wPending.popleft()
 
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
             raise NotImplementedError("unaligned transaction not implemented")
 
         for i in range(size):
-            data, strb, last = self.wAg.data.pop(0)
+            data, strb, last = self.wAg.data.popleft()
 
             # assert data._isFullVld()
             assert strb._isFullVld()
@@ -234,7 +233,7 @@ class DenseMemory():
         """
         Allocates a block of memory for an array of num elements, each of them
         size bytes long, and initializes all its bits to zero.
-        
+
         :param num: Number of elements to allocate.
         :param size: Size of each element.
         :param keepOut: optional memory spacing between this memory region and lastly allocated

@@ -1,4 +1,4 @@
-from inspect import isgeneratorfunction
+from inspect import isfunction
 import types
 import unittest
 
@@ -13,18 +13,18 @@ class ProcCallWrap():
         self.procFn = procFn
         self.calls = 0
 
-    def __call__(self, model, sim):
+    def __call__(self, model, sim, io):
         # if sim.now > 0:
         #     print(int(sim.now // 1000), self.procFn.__name__[len("assig_process_"):])
         self.calls += 1
-        return self.procFn(model, sim)
+        return self.procFn(model, sim, io)
 
 
 class SimEventsTC(SimTestCase):
     def mockProcesses(self, unit, modelCls):
         for name in dir(modelCls):
             pFn = getattr(modelCls, name)
-            if not isgeneratorfunction(pFn):
+            if not name.startswith("assig") or not isfunction(pFn):
                 continue
 
             p = ProcCallWrap(pFn)
@@ -35,7 +35,7 @@ class SimEventsTC(SimTestCase):
         u = SimpleRom()
         self.prepareUnit(u, onAfterToRtl=self.mockProcesses)
 
-        u.addr._ag.data = [0, 1, 2, 3, None, 3, 2, 1]
+        u.addr._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
         self.doSim(80 * Time.ns)
 
@@ -46,7 +46,7 @@ class SimEventsTC(SimTestCase):
         u = SimpleSyncRom()
         self.prepareUnit(u, onAfterToRtl=self.mockProcesses)
 
-        u.addr._ag.data = [0, 1, 2, 3, None, 3, 2, 1]
+        u.addr._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
         self.doSim(90 * Time.ns)
         for p in self.model._processes:
@@ -56,8 +56,8 @@ class SimEventsTC(SimTestCase):
         u = FsmExample()
         self.prepareUnit(u, onAfterToRtl=self.mockProcesses)
 
-        u.a._ag.data = [1, 1, 1, 0, 0, 0, 0, 0]
-        u.b._ag.data = [0, 1, 0, 0, 1, 0, 1, 0]
+        u.a._ag.data.extend([1, 1, 1, 0, 0, 0, 0, 0])
+        u.b._ag.data.extend([0, 1, 0, 0, 1, 0, 1, 0])
 
         self.doSim(80 * Time.ns)
 

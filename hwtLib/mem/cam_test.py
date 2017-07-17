@@ -17,11 +17,11 @@ class CamTC(SimTestCase):
         self.prepareUnit(u)
 
         m = mask(36)
-        u.write._ag.data = [(0, 1, m),
-                            (1, 3, m),
-                            (7, 11, m)]
+        u.write._ag.data.extend([(0, 1, m),
+                                 (1, 3, m),
+                                 (7, 11, m)])
 
-        u.match._ag.data = [NOP, NOP, NOP, 1, 2, 3, 5, 11, 12]
+        u.match._ag.data.extend([NOP, NOP, NOP, 1, 2, 3, 5, 11, 12])
 
         self.doSim(160 * Time.ns)
         self.assertSequenceEqual(valuesToInts(u.out._ag.data),

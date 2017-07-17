@@ -123,10 +123,10 @@ class SwitchStmTC(SimTestCase):
         self.prepareUnit(self.u)
 
         u = self.u
-        u.sel._ag.data = [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 1]
-        u.a._ag.data = [0, 1, 0, 0, 0, 0, 0, 0, 1, None, 0]
-        u.b._ag.data = [0, 0, 0, 1, 0, 0, 0, 0, 1, None, 0]
-        u.c._ag.data = [0, 0, 0, 0, 0, 1, 0, 0, 1, None, 0]
+        u.sel._ag.data.extend([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 1])
+        u.a._ag.data.extend([0, 1, 0, 0, 0, 0, 0, 0, 1, None, 0])
+        u.b._ag.data.extend([0, 0, 0, 1, 0, 0, 0, 0, 1, None, 0])
+        u.c._ag.data.extend([0, 0, 0, 0, 0, 1, 0, 0, 1, None, 0])
 
         self.doSim(200 * Time.ns)
 

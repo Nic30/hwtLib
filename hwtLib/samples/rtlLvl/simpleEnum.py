@@ -49,13 +49,9 @@ END SimpleEnum;
 
 ARCHITECTURE rtl OF SimpleEnum IS
     TYPE FSMT IS (send0, send1);
-
     SIGNAL fsmSt : fsmT := send0;
     SIGNAL fsmSt_next : fsmT;
-
-
 BEGIN
-
     assig_process_fsmSt: PROCESS (clk)
     BEGIN
         IF RISING_EDGE( clk ) THEN
@@ -66,25 +62,18 @@ BEGIN
             END IF;
         END IF;
     END PROCESS;
-
-    assig_process_fsmSt_next: PROCESS (fsmSt)
+    
+    assig_process_fsmSt_next: PROCESS (fsmSt, s_in0, s_in1)
     BEGIN
         IF fsmSt = send0 THEN
             fsmSt_next <= send1;
-        ELSE
-            fsmSt_next <= send0;
-        END IF;
-    END PROCESS;
-
-    assig_process_s_out: PROCESS (fsmSt, s_in0, s_in1)
-    BEGIN
-        IF fsmSt = send0 THEN
             s_out <= s_in0;
         ELSE
+            fsmSt_next <= send0;
             s_out <= s_in1;
         END IF;
     END PROCESS;
-
+    
 END ARCHITECTURE rtl;
 """
 

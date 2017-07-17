@@ -15,8 +15,8 @@ class VldMaskConflictsResolvingTC(SimTestCase):
 
     def test_allCases(self):
         u = self.u
-        u.a._ag.data = [0, 1, None, 0, 0, 0, 0, 0, 1, None, 0]
-        u.b._ag.data = [0, 0, 0, 1, None, 0, 0, 0, 1, None, 0]
+        u.a._ag.data.extend([0, 1, None, 0, 0, 0, 0, 0, 1, None, 0])
+        u.b._ag.data.extend([0, 0, 0, 1, None, 0, 0, 0, 1, None, 0])
 
         self.doSim(200 * Time.ns)
 

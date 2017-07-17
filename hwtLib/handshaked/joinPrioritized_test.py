@@ -26,8 +26,8 @@ class HsJoinPrioritizedTC(SimTestCase):
     def test_passdata(self):
         u = self.u
 
-        u.dataIn[0]._ag.data = [1, 2, 3, 4, 5, 6]
-        u.dataIn[1]._ag.data = [7, 8, 9, 10, 11, 12]
+        u.dataIn[0]._ag.data.extend([1, 2, 3, 4, 5, 6])
+        u.dataIn[1]._ag.data.extend([7, 8, 9, 10, 11, 12])
 
         self.doSim(300 * Time.ns)
 

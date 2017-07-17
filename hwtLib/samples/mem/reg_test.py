@@ -39,10 +39,10 @@ BEGIN
     dout <= internReg;
     assig_process_internReg: PROCESS (clk)
     BEGIN
-        IF RISING_EDGE( clk ) THEN 
-            IF rst = '1' THEN 
+        IF RISING_EDGE( clk ) THEN
+            IF rst = '1' THEN
                 internReg <= '0';
-            ELSE 
+            ELSE
                 internReg <= internReg_next;
             END IF;
         END IF;
@@ -137,7 +137,7 @@ class DRegTC(SimTestCase):
     def test_simple(self):
         self.setUpUnit(DReg())
 
-        self.u.din._ag.data = [i % 2 for i in range(6)] + [None, None, 0, 1]
+        self.u.din._ag.data.extend([i % 2 for i in range(6)] + [None, None, 0, 1])
         expected = [0, 0, 1, 0, 1, 0, 1, None, None, 0]
 
         self.doSim(100 * Time.ns)
@@ -148,7 +148,7 @@ class DRegTC(SimTestCase):
     def test_double(self):
         self.setUpUnit(DoubleDReg())
 
-        self.u.din._ag.data = [i % 2 for i in range(6)] + [None, None, 0, 1]
+        self.u.din._ag.data.extend([i % 2 for i in range(6)] + [None, None, 0, 1])
         expected = [0, 0, 0, 1, 0, 1, 0, 1, None, None]
 
         self.doSim(100 * Time.ns)

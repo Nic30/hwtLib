@@ -1,10 +1,12 @@
+from collections import deque
+
+from hwt.bitmask import mask
+from hwt.hdlObjects.constants import READ, WRITE, NOP
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.synthesizer.interfaceLevel.interface import Interface
-from hwt.synthesizer.param import Param
 from hwt.interfaces.std import s, D, VectSignal
 from hwt.simulator.agentBase import SyncAgentBase
-from hwt.hdlObjects.constants import READ, WRITE, NOP
-from hwt.bitmask import mask
+from hwt.synthesizer.interfaceLevel.interface import Interface
+from hwt.synthesizer.param import Param
 
 
 class Ipif(Interface):
@@ -79,9 +81,9 @@ class IpifAgent(SyncAgentBase):
     def __init__(self, intf, allowNoReset=True):
         super().__init__(intf, allowNoReset=allowNoReset)
 
-        self.requests = []
+        self.requests = deque()
         self.actual = NOP
-        self.readed = []
+        self.readed = deque()
 
         self.wmaskAll = mask(intf.bus2ip_data._dtype.bit_length()//8)
 
@@ -153,7 +155,7 @@ class IpifAgent(SyncAgentBase):
         if en:
             if self.actual is NOP:
                 if self.requests:
-                    req = self.requests.pop(0)
+                    req = self.requests.popleft()
                     if req is not NOP:
                         self.doReq(s, req)
                         self.actual = req

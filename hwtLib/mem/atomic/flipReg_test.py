@@ -18,9 +18,9 @@ class FlipRegTC(SimTestCase):
         u = self.u
 
         # u.select_sig._ag.initDelay = 6 * Time.ns
-        u.select_sig._ag.data = [0, 0, 0, 0, 1, 0]
-        u.first._ag.dout = [1]
-        u.second._ag.dout = [2]
+        u.select_sig._ag.data.extend([0, 0, 0, 0, 1, 0])
+        u.first._ag.dout.append(1)
+        u.second._ag.dout.append(2)
 
         self.doSim(90 * Time.ns)
 

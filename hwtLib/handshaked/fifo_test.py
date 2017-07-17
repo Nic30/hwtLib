@@ -20,7 +20,7 @@ class HsFifoTC(SimTestCase):
 
     def test_stuckedData(self):
         u = self.u
-        u.dataIn._ag.data = [1]
+        u.dataIn._ag.data.append(1)
 
         u.dataOut._ag.enable = False
         self.doSim(120 * Time.ns)
@@ -29,7 +29,7 @@ class HsFifoTC(SimTestCase):
     def test_withPause(self):
         u = self.u
         golden = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        u.dataIn._ag.data = copy(golden)
+        u.dataIn._ag.data.extend(golden)
 
         def pause(simulator):
             yield simulator.wait(3 * 10 * Time.ns)
@@ -51,7 +51,7 @@ class HsFifoTC(SimTestCase):
     def test_withPause2(self):
         u = self.u
         golden = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        u.dataIn._ag.data = copy(golden)
+        u.dataIn._ag.data.extend(golden)
 
         def pause(simulator):
             yield simulator.wait(4 * 10 * Time.ns)
@@ -73,7 +73,7 @@ class HsFifoTC(SimTestCase):
     def test_passdata(self):
         u = self.u
         golden = [1, 2, 3, 4, 5, 6]
-        u.dataIn._ag.data = copy(golden)
+        u.dataIn._ag.data.extend(golden)
 
         self.doSim(120 * Time.ns)
 

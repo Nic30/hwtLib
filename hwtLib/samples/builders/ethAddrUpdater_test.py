@@ -36,7 +36,7 @@ class EthAddrUpdaterTC(SimTestCase):
             data = {"eth": {"src": rand(48),
                             "dst": rand(48)
                             },
-                    "ipv4":{"src": rand(32),
+                    "ipv4": {"src": rand(32),
                             "dst": rand(32)
                            }
                     }

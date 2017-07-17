@@ -17,7 +17,7 @@ class FlipCntrTC(SimTestCase):
     def test_nop(self):
         u = self.u
 
-        u.doIncr._ag.data = [0, 0]
+        u.doIncr._ag.data.extend([0, 0])
         self.doSim(90 * Time.ns)
 
         self.assertSequenceEqual([0 for _ in range(9)], valuesToInts(u.data._ag.din))
@@ -25,8 +25,8 @@ class FlipCntrTC(SimTestCase):
     def test_incr(self):
         u = self.u
 
-        u.doIncr._ag.data = [0, 0, 1, 0, 0, 0]
-        u.doFlip._ag.data = [NOP, NOP, NOP, 1, NOP, NOP]
+        u.doIncr._ag.data.extend([0, 0, 1, 0, 0, 0])
+        u.doFlip._ag.data.extend([NOP, NOP, NOP, 1, NOP, NOP])
 
         self.doSim(90 * Time.ns)
 
