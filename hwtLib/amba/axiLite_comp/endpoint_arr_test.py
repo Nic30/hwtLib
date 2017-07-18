@@ -193,7 +193,7 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(AxiLiteEndpointStructsInArray('test_write'))
+    #suite.addTest(AxiLiteEndpointArray('test_read'))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))

@@ -104,7 +104,7 @@ class AxiLiteEndpoint(BusEndpoint):
             isBramAddr ** 0
 
         directlyMappedWors = []
-        for w, items in groupedby(self._directlyMapped, lambda t: t.bitAddr // DW * (DW // ADDR_STEP)):
+        for w, items in sorted(groupedby(self._directlyMapped, lambda t: t.bitAddr // DW * (DW // ADDR_STEP)), key=lambda x: x[0]):
             lastBit = 0
             res = []
             items.sort(key=lambda t: t.bitAddr)
@@ -125,12 +125,15 @@ class AxiLiteEndpoint(BusEndpoint):
                 pad = Bits(DW - lastBit).fromPy(None)
                 res.append(pad)
 
-            directlyMappedWors.append((w, Concat(*res)))
+            directlyMappedWors.append((w, Concat(*reversed(res))))
                 
         
-        SwitchLogic([(arAddr._eq(w[0]), r.data ** w[1])
-                     for w in directlyMappedWors],
-                    default=r.data ** rdataReg)
+        Switch(arAddr).addCases(
+                    [(w[0], r.data ** w[1])
+                     for w in directlyMappedWors] 
+                ).Default(
+                    r.data ** rdataReg
+                )
 
     def writeRespPart(self, wAddr, respVld):
         b = self.bus.b
