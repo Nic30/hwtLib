@@ -129,7 +129,7 @@ class AbstractStreamBuilder(object):
         srcInterfaces = list(srcInterfaces)
         if name is None:
             if configAs is None:
-                name = "gen_join_"
+                name = "gen_join"
             else:
                 name = "gen_" + configAs._name
 
