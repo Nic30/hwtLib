@@ -1,12 +1,12 @@
-from hwt.interfaces.std import Rst_n, Signal
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getClk, getRst
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.interfaces.std import Rst_n, Handshaked
 from hwt.synthesizer.interfaceLevel.interfaceUtils.proxy import InterfaceProxy
+from hwt.synthesizer.interfaceLevel.unitImplHelpers import getClk, getRst
 
 
 class AbstractStreamBuilder(object):
     """
-    :attention: this is just abstract class unit classes has to be specified in concrete implementation
+    :attention: this is just abstract class unit classes has to be specified
+        in concrete implementation
 
     :cvar FifoCls: fifo unit class
     :cvar JoinSelectCls: select order based join unit class
@@ -52,9 +52,15 @@ class AbstractStreamBuilder(object):
         self.compId = 0
 
     def getClk(self):
+        """
+        lookup clock signal on parent
+        """
         return getClk(self.parent)
 
     def getRstn(self):
+        """
+        lookup reset(n) signal on parent
+        """
         rst = getRst(self.parent)
         if isinstance(rst, Rst_n):
             return rst
@@ -62,16 +68,24 @@ class AbstractStreamBuilder(object):
             return ~rst
 
     def getInfCls(self):
+        """
+        Get class of interface which this builder is currently using.
+        """
         return self._getIntfCls(self.end)
 
     def _getIntfCls(self, intf):
+        """
+        Get real interface class of interface
+        """
         if isinstance(intf, InterfaceProxy):
             return intf._origIntf.__class__
 
         return intf.__class__
 
     def _findSuitableName(self, unitName):
-        # find suitable name for component
+        """
+        find suitable name for component (= name without collisions)
+        """
         while True:
             name = "%s_%s_%d" % (self.name, unitName, self.compId)
             try:
@@ -84,6 +98,9 @@ class AbstractStreamBuilder(object):
         self.compId += 1
 
     def _propagateClkRstn(self, u):
+        """
+        Connect clock and reset to unit "u"
+        """
         if hasattr(u, "clk"):
             u.clk ** self.getClk()
 
@@ -95,6 +112,8 @@ class AbstractStreamBuilder(object):
 
     def _genericInstance(self, unitCls, unitName, setParams=lambda u: u):
         """
+        Instantiate generic component and connect basics
+
         :param unitCls: class of unit which is being created
         :param unitName: name for unitCls
         :param setParams: function which updates parameters as is required
@@ -118,7 +137,7 @@ class AbstractStreamBuilder(object):
     @classmethod
     def _join(cls, joinCls, parent, srcInterfaces, name, configAs, extraConfigFn):
         """
-        create builder from joined interfaces
+        Create builder from many interfaces by joining them together
 
         :param joinCls: join component class which should be used
         :param parent: unit where builder should place components
@@ -171,8 +190,8 @@ class AbstractStreamBuilder(object):
 
     def buff(self, items=1, latency=None, delay=None):
         """
-        User registers and fifos to create buffer of specified paramters
-        (if items <= latency registers are used else fifo is used)
+        Use registers and fifos to create buffer of specified paramters
+        :note: if items <= latency registers are used else fifo is used
 
         :param items: number of items in buffer
         :param latency: latency of buffer (number of clk ticks required to get data
@@ -249,8 +268,8 @@ class AbstractStreamBuilder(object):
         def setChCnt(u):
             u.OUTPUTS.set(noOfOutputs)
 
-        self._genericInstance(self.DemuxCls, 'demux', setChCnt)
-        if isinstance(outputSelSignalOrSequence, (RtlSignal, Signal)):
+        self._genericInstance(self.SplitSelectCls, 'select', setChCnt)
+        if isinstance(outputSelSignalOrSequence, Handshaked):
             self.lastComp.sel ** outputSelSignalOrSequence
         else:
             raise NotImplementedError("Output sequence")
@@ -264,7 +283,7 @@ class AbstractStreamBuilder(object):
         :param outputs: ports on which should be outputs of split component connected to
         """
         noOfOutputs = len(outputs)
-        s = self.split_select(noOfOutputs)
+        s = self.split_select(outputSelSignalOrSequence, noOfOutputs)
 
         for toComponent, fromFork in zip(outputs, self.end):
             toComponent ** fromFork
@@ -278,13 +297,55 @@ class AbstractStreamBuilder(object):
 
         :param noOfOutputs: number of output interfaces of the fork
         """
-        raise NotImplementedError()
+        def setChCnt(u):
+            u.OUTPUTS.set(noOfOutputs)
+
+        self._genericInstance(self.SplitPrioritizedCls, 'splitPrio', setChCnt)
+        return self
 
     def split_prioritized_to(self, *outputs):
-        raise NotImplementedError()
+        """
+        Same like split_prioritized, but outputs are automatically connected
+
+        :param outputs: ports on which should be outputs of split component connected to
+        """
+        noOfOutputs = len(outputs)
+
+        s = self.split_prioritized(noOfOutputs)
+        for toComponent, fromFork in zip(outputs, self.end):
+            toComponent ** fromFork
+
+        self.end = None  # invalidate None because port was fully connected
+        return s
 
     def split_fair(self, noOfOutputs, exportSelected=False):
-        raise NotImplementedError()
+        """
+        Create a rund robin selector with number of outputs specified by noOfOutputs
+
+        :param noOfOutputs: number of outputs of multiplexer
+        :param exportSelected: if is True split component will have interface "selectedOneHot"
+            of type VldSynced wich will have one hot index of selected item
+        """
+
+        def setChCnt(u):
+            u.OUTPUTS.set(noOfOutputs)
+
+        self._genericInstance(self.SplitFairCls, 'splitFair', setChCnt)
+        return self
 
     def split_fair_to(self, *outputs, exportSelected=False):
-        raise NotImplementedError()
+        """
+        Same like split_fair, but outputs are automatically connected
+
+        :param outputs: ports on which should be outputs of split component connected to
+        :param exportSelected: if is True split component will have interface "selectedOneHot"
+            of type VldSynced wich will have one hot index of selected item
+        """
+        noOfOutputs = len(outputs)
+
+        s = self.split_fair(noOfOutputs, exportSelected=exportSelected)
+        for toComponent, fromFork in zip(outputs, self.end):
+            toComponent ** fromFork
+
+        self.end = None  # invalidate None because port was fully connected
+        return s
