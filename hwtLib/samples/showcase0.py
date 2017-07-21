@@ -484,7 +484,7 @@ SC_MODULE(Showcase0) {
     sc_uint<1> r = '0';
     sc_uint<2> r_0 = sc_uint<2>("00");
     sc_uint<2> r_1 = sc_uint<2>("00");
-    sc_uint<1> r_next;
+    sc_signal<sc_uint<1>> r_next;
     sc_signal<sc_uint<2>> r_next_0;
     sc_signal<sc_uint<2>> r_next_1;
     sc_uint<8> rom [4] = {sc_biguint<8>(0),
@@ -533,11 +533,11 @@ SC_MODULE(Showcase0) {
     void assig_process_h() {
         if((a.read()[2]) == '1') {
             if(r == '1') {
-                h = sc_uint<8>("0x00");
+                h.write(sc_uint<8>("0x00"));
             } else if((a.read()[1]) == '1') {
-                h = sc_uint<8>("0x01");
+                h.write(sc_uint<8>("0x01"));
             } else {
-                h = sc_uint<8>("0x02");
+                h.write(sc_uint<8>("0x02"));
             }
         }
     }
@@ -556,7 +556,7 @@ SC_MODULE(Showcase0) {
             r_1 = sc_uint<2>("00");
             r_0 = sc_uint<2>("00");
         } else {
-            r = r_next;
+            r = r_next.read();
             r_1 = r_next_1.read();
             r_0 = r_next_0.read();
         }
@@ -568,24 +568,24 @@ SC_MODULE(Showcase0) {
         r_next_1.write(r_0);
     }
     void assig_process_r_next_1() {
-        r_next = r;
+        r_next.write(r);
         if((~r) == '1') {
-            r_next = e.read();
+            r_next.write(e.read());
         }
     }
     void assig_process_sc_signal() {
         switch(a.read()) {
         case sc_biguint<32>(1):
-            sc_signal_0 = sc_uint<8>("0x00");
+            sc_signal_0.write(sc_uint<8>("0x00"));
             break;
         case sc_biguint<32>(2):
-            sc_signal_0 = sc_uint<8>("0x01");
+            sc_signal_0.write(sc_uint<8>("0x01"));
             break;
         case sc_biguint<32>(3):
-            sc_signal_0 = sc_uint<8>("0x03");
+            sc_signal_0.write(sc_uint<8>("0x03"));
             break;
         default:
-            sc_signal_0 = sc_uint<8>("0x04");
+            sc_signal_0.write(sc_uint<8>("0x04"));
             break;
         }
     }

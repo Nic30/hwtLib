@@ -24,9 +24,7 @@ def SimpleRegister():
     return n, interf
 
 
-simpleRegisterExpected =\
-"""
-library IEEE;
+simpleRegisterExpected ="""library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
@@ -45,7 +43,7 @@ BEGIN
     s_out <= val;
     assig_process_val: PROCESS (clk)
     BEGIN
-        IF RISING_EDGE( clk ) THEN
+        IF RISING_EDGE(clk) THEN
             IF rst = '1' THEN
                 val <= X"00";
             ELSE
@@ -53,11 +51,9 @@ BEGIN
             END IF;
         END IF;
     END PROCESS;
-
+    
     val_next <= s_in;
-
-END ARCHITECTURE rtl;
-"""
+END ARCHITECTURE rtl;"""
 
 if __name__ == "__main__":
     netlist, interfaces = SimpleRegister()

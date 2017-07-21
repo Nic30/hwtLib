@@ -201,15 +201,15 @@ END gen_dout_splitCopy_0;
 
 ARCHITECTURE rtl OF gen_dout_splitCopy_0 IS
 BEGIN
-    dataIn_ready <= (dataOut_ready( 0 )) AND (dataOut_ready( 1 ));
-    dataOut_data( 63 DOWNTO 0 ) <= dataIn_data;
-    dataOut_data( 127 DOWNTO 64 ) <= dataIn_data;
-    dataOut_last( 0 ) <= dataIn_last;
-    dataOut_last( 1 ) <= dataIn_last;
-    dataOut_strb( 7 DOWNTO 0 ) <= dataIn_strb;
-    dataOut_strb( 15 DOWNTO 8 ) <= dataIn_strb;
-    dataOut_valid( 0 ) <= dataIn_valid AND (dataOut_ready( 1 ));
-    dataOut_valid( 1 ) <= dataIn_valid AND (dataOut_ready( 0 ));
+    dataIn_ready <= (dataOut_ready(0)) AND (dataOut_ready(1));
+    dataOut_data(63 DOWNTO 0) <= dataIn_data;
+    dataOut_data(127 DOWNTO 64) <= dataIn_data;
+    dataOut_last(0) <= dataIn_last;
+    dataOut_last(1) <= dataIn_last;
+    dataOut_strb(7 DOWNTO 0) <= dataIn_strb;
+    dataOut_strb(15 DOWNTO 8) <= dataIn_strb;
+    dataOut_valid(0) <= dataIn_valid AND (dataOut_ready(1));
+    dataOut_valid(1) <= dataIn_valid AND (dataOut_ready(0));
 END ARCHITECTURE rtl;
 --
 --    This unit has actually no functionality it is just example of hierarchical design.
@@ -630,10 +630,10 @@ BEGIN
     sig_filter_cfg_w_data <= cfg_w_data;
     sig_filter_cfg_w_strb <= cfg_w_strb;
     sig_filter_cfg_w_valid <= cfg_w_valid;
-    sig_filter_din_data <= sig_gen_dout_splitCopy_0_dataOut_data( 127 DOWNTO 64 );
-    sig_filter_din_last <= sig_gen_dout_splitCopy_0_dataOut_last( 1 );
-    sig_filter_din_strb <= sig_gen_dout_splitCopy_0_dataOut_strb( 15 DOWNTO 8 );
-    sig_filter_din_valid <= sig_gen_dout_splitCopy_0_dataOut_valid( 1 );
+    sig_filter_din_data <= sig_gen_dout_splitCopy_0_dataOut_data(127 DOWNTO 64);
+    sig_filter_din_last <= sig_gen_dout_splitCopy_0_dataOut_last(1);
+    sig_filter_din_strb <= sig_gen_dout_splitCopy_0_dataOut_strb(15 DOWNTO 8);
+    sig_filter_din_valid <= sig_gen_dout_splitCopy_0_dataOut_valid(1);
     sig_filter_dout_ready <= sig_exporter_din_ready;
     sig_filter_headers_data <= sig_hfe_headers_data;
     sig_filter_headers_last <= sig_hfe_headers_last;
@@ -647,18 +647,18 @@ BEGIN
     sig_gen_dout_splitCopy_0_dataIn_last <= sig_hfe_dout_last;
     sig_gen_dout_splitCopy_0_dataIn_strb <= sig_hfe_dout_strb;
     sig_gen_dout_splitCopy_0_dataIn_valid <= sig_hfe_dout_valid;
-    sig_gen_dout_splitCopy_0_dataOut_ready( 0 ) <= sig_patternMatch_din_ready;
-    sig_gen_dout_splitCopy_0_dataOut_ready( 1 ) <= sig_filter_din_ready;
+    sig_gen_dout_splitCopy_0_dataOut_ready(0) <= sig_patternMatch_din_ready;
+    sig_gen_dout_splitCopy_0_dataOut_ready(1) <= sig_filter_din_ready;
     sig_hfe_din_data <= din_data;
     sig_hfe_din_last <= din_last;
     sig_hfe_din_strb <= din_strb;
     sig_hfe_din_valid <= din_valid;
     sig_hfe_dout_ready <= sig_gen_dout_splitCopy_0_dataIn_ready;
     sig_hfe_headers_ready <= sig_filter_headers_ready;
-    sig_patternMatch_din_data <= sig_gen_dout_splitCopy_0_dataOut_data( 63 DOWNTO 0 );
-    sig_patternMatch_din_last <= sig_gen_dout_splitCopy_0_dataOut_last( 0 );
-    sig_patternMatch_din_strb <= sig_gen_dout_splitCopy_0_dataOut_strb( 7 DOWNTO 0 );
-    sig_patternMatch_din_valid <= sig_gen_dout_splitCopy_0_dataOut_valid( 0 );
+    sig_patternMatch_din_data <= sig_gen_dout_splitCopy_0_dataOut_data(63 DOWNTO 0);
+    sig_patternMatch_din_last <= sig_gen_dout_splitCopy_0_dataOut_last(0);
+    sig_patternMatch_din_strb <= sig_gen_dout_splitCopy_0_dataOut_strb(7 DOWNTO 0);
+    sig_patternMatch_din_valid <= sig_gen_dout_splitCopy_0_dataOut_valid(0);
     sig_patternMatch_match_ready <= sig_filter_patternMatch_ready;
 END ARCHITECTURE rtl;"""
 
@@ -670,20 +670,20 @@ netFilter_verilog = """module hfe #(parameter  din_DATA_WIDTH = 64,
         parameter  headers_DATA_WIDTH = 64,
         parameter  headers_IS_BIGENDIAN = 0
     )(input [din_DATA_WIDTH- 1:0] din_data,
-        input  din_last,
-        output  din_ready,
+        input din_last,
+        output din_ready,
         input [din_DATA_WIDTH / 8- 1:0] din_strb,
-        input  din_valid,
+        input din_valid,
         output [dout_DATA_WIDTH- 1:0] dout_data,
-        output  dout_last,
-        input  dout_ready,
+        output dout_last,
+        input dout_ready,
         output [dout_DATA_WIDTH / 8- 1:0] dout_strb,
-        output  dout_valid,
+        output dout_valid,
         output [headers_DATA_WIDTH- 1:0] headers_data,
-        output  headers_last,
-        input  headers_ready,
+        output headers_last,
+        input headers_ready,
         output [headers_DATA_WIDTH / 8- 1:0] headers_strb,
-        output  headers_valid
+        output headers_valid
     );
 
     assign din_ready = 1'bx;
@@ -701,15 +701,15 @@ module patternMatch #(parameter  din_DATA_WIDTH = 64,
         parameter  match_DATA_WIDTH = 64,
         parameter  match_IS_BIGENDIAN = 0
     )(input [din_DATA_WIDTH- 1:0] din_data,
-        input  din_last,
-        output  din_ready,
+        input din_last,
+        output din_ready,
         input [din_DATA_WIDTH / 8- 1:0] din_strb,
-        input  din_valid,
+        input din_valid,
         output [match_DATA_WIDTH- 1:0] match_data,
-        output  match_last,
-        input  match_ready,
+        output match_last,
+        input match_ready,
         output [match_DATA_WIDTH / 8- 1:0] match_strb,
-        output  match_valid
+        output match_valid
     );
 
     assign din_ready = 1'bx;
@@ -729,42 +729,42 @@ module filter #(parameter  cfg_ADDR_WIDTH = 32,
         parameter  patternMatch_DATA_WIDTH = 64,
         parameter  patternMatch_IS_BIGENDIAN = 0
     )(input [cfg_ADDR_WIDTH- 1:0] cfg_ar_addr,
-        output  cfg_ar_ready,
-        input  cfg_ar_valid,
+        output cfg_ar_ready,
+        input cfg_ar_valid,
         input [cfg_ADDR_WIDTH- 1:0] cfg_aw_addr,
-        output  cfg_aw_ready,
-        input  cfg_aw_valid,
-        input  cfg_b_ready,
+        output cfg_aw_ready,
+        input cfg_aw_valid,
+        input cfg_b_ready,
         output [1:0] cfg_b_resp,
-        output  cfg_b_valid,
+        output cfg_b_valid,
         output [cfg_DATA_WIDTH- 1:0] cfg_r_data,
-        input  cfg_r_ready,
+        input cfg_r_ready,
         output [1:0] cfg_r_resp,
-        output  cfg_r_valid,
+        output cfg_r_valid,
         input [cfg_DATA_WIDTH- 1:0] cfg_w_data,
-        output  cfg_w_ready,
+        output cfg_w_ready,
         input [cfg_DATA_WIDTH / 8- 1:0] cfg_w_strb,
-        input  cfg_w_valid,
+        input cfg_w_valid,
         input [din_DATA_WIDTH- 1:0] din_data,
-        input  din_last,
-        output  din_ready,
+        input din_last,
+        output din_ready,
         input [din_DATA_WIDTH / 8- 1:0] din_strb,
-        input  din_valid,
+        input din_valid,
         output [dout_DATA_WIDTH- 1:0] dout_data,
-        output  dout_last,
-        input  dout_ready,
+        output dout_last,
+        input dout_ready,
         output [dout_DATA_WIDTH / 8- 1:0] dout_strb,
-        output  dout_valid,
+        output dout_valid,
         input [headers_DATA_WIDTH- 1:0] headers_data,
-        input  headers_last,
-        output  headers_ready,
+        input headers_last,
+        output headers_ready,
         input [headers_DATA_WIDTH / 8- 1:0] headers_strb,
-        input  headers_valid,
+        input headers_valid,
         input [patternMatch_DATA_WIDTH- 1:0] patternMatch_data,
-        input  patternMatch_last,
-        output  patternMatch_ready,
+        input patternMatch_last,
+        output patternMatch_ready,
         input [patternMatch_DATA_WIDTH / 8- 1:0] patternMatch_strb,
-        input  patternMatch_valid
+        input patternMatch_valid
     );
 
     assign cfg_ar_ready = 1'bx;
@@ -788,15 +788,15 @@ module exporter #(parameter  din_DATA_WIDTH = 64,
         parameter  dout_DATA_WIDTH = 64,
         parameter  dout_IS_BIGENDIAN = 0
     )(input [din_DATA_WIDTH- 1:0] din_data,
-        input  din_last,
-        output  din_ready,
+        input din_last,
+        output din_ready,
         input [din_DATA_WIDTH / 8- 1:0] din_strb,
-        input  din_valid,
+        input din_valid,
         output [dout_DATA_WIDTH- 1:0] dout_data,
-        output  dout_last,
-        input  dout_ready,
+        output dout_last,
+        input dout_ready,
         output [dout_DATA_WIDTH / 8- 1:0] dout_strb,
-        output  dout_valid
+        output dout_valid
     );
 
     assign din_ready = 1'bx;
@@ -809,10 +809,10 @@ module gen_dout_splitCopy_0 #(parameter  DATA_WIDTH = 64,
         parameter  IS_BIGENDIAN = 0,
         parameter  OUTPUTS = 2
     )(input [DATA_WIDTH- 1:0] dataIn_data,
-        input  dataIn_last,
-        output  dataIn_ready,
+        input dataIn_last,
+        output dataIn_ready,
         input [DATA_WIDTH / 8- 1:0] dataIn_strb,
-        input  dataIn_valid,
+        input dataIn_valid,
         output reg [DATA_WIDTH * OUTPUTS- 1:0] dataOut_data,
         output reg [OUTPUTS- 1:0] dataOut_last,
         input [OUTPUTS- 1:0] dataOut_ready,
@@ -820,37 +820,37 @@ module gen_dout_splitCopy_0 #(parameter  DATA_WIDTH = 64,
         output reg [OUTPUTS- 1:0] dataOut_valid
     );
 
-    assign dataIn_ready = (dataOut_ready[ 0 ]) & (dataOut_ready[ 1 ]);
+    assign dataIn_ready = (dataOut_ready[0]) & (dataOut_ready[1]);
     always @(dataIn_data) begin: assig_process_dataOut_data
-        dataOut_data[ 63:0 ] <= dataIn_data;
+        dataOut_data[63:0] <= dataIn_data;
     end
 
     always @(dataIn_data) begin: assig_process_dataOut_data_0
-        dataOut_data[ 127:64 ] <= dataIn_data;
+        dataOut_data[127:64] <= dataIn_data;
     end
 
     always @(dataIn_last) begin: assig_process_dataOut_last
-        dataOut_last[ 0 ] <= dataIn_last;
+        dataOut_last[0] <= dataIn_last;
     end
 
     always @(dataIn_last) begin: assig_process_dataOut_last_0
-        dataOut_last[ 1 ] <= dataIn_last;
+        dataOut_last[1] <= dataIn_last;
     end
 
     always @(dataIn_strb) begin: assig_process_dataOut_strb
-        dataOut_strb[ 7:0 ] <= dataIn_strb;
+        dataOut_strb[7:0] <= dataIn_strb;
     end
 
     always @(dataIn_strb) begin: assig_process_dataOut_strb_0
-        dataOut_strb[ 15:8 ] <= dataIn_strb;
+        dataOut_strb[15:8] <= dataIn_strb;
     end
 
     always @(dataIn_valid or dataOut_ready) begin: assig_process_dataOut_valid
-        dataOut_valid[ 0 ] <= dataIn_valid & (dataOut_ready[ 1 ]);
+        dataOut_valid[0] <= dataIn_valid & (dataOut_ready[1]);
     end
 
     always @(dataIn_valid or dataOut_ready) begin: assig_process_dataOut_valid_0
-        dataOut_valid[ 1 ] <= dataIn_valid & (dataOut_ready[ 0 ]);
+        dataOut_valid[1] <= dataIn_valid & (dataOut_ready[0]);
     end
 
 endmodule
@@ -864,34 +864,34 @@ module NetFilter #(parameter  DATA_WIDTH = 64,
         parameter  din_IS_BIGENDIAN = 0,
         parameter  export_IS_BIGENDIAN = 0
     )(input [cfg_ADDR_WIDTH- 1:0] cfg_ar_addr,
-        output  cfg_ar_ready,
-        input  cfg_ar_valid,
+        output cfg_ar_ready,
+        input cfg_ar_valid,
         input [cfg_ADDR_WIDTH- 1:0] cfg_aw_addr,
-        output  cfg_aw_ready,
-        input  cfg_aw_valid,
-        input  cfg_b_ready,
+        output cfg_aw_ready,
+        input cfg_aw_valid,
+        input cfg_b_ready,
         output [1:0] cfg_b_resp,
-        output  cfg_b_valid,
+        output cfg_b_valid,
         output [DATA_WIDTH- 1:0] cfg_r_data,
-        input  cfg_r_ready,
+        input cfg_r_ready,
         output [1:0] cfg_r_resp,
-        output  cfg_r_valid,
+        output cfg_r_valid,
         input [DATA_WIDTH- 1:0] cfg_w_data,
-        output  cfg_w_ready,
+        output cfg_w_ready,
         input [DATA_WIDTH / 8- 1:0] cfg_w_strb,
-        input  cfg_w_valid,
-        input  clk,
+        input cfg_w_valid,
+        input clk,
         input [DATA_WIDTH- 1:0] din_data,
-        input  din_last,
-        output  din_ready,
+        input din_last,
+        output din_ready,
         input [DATA_WIDTH / 8- 1:0] din_strb,
-        input  din_valid,
+        input din_valid,
         output [DATA_WIDTH- 1:0] export_data,
-        output  export_last,
-        input  export_ready,
+        output export_last,
+        input export_ready,
         output [DATA_WIDTH / 8- 1:0] export_strb,
-        output  export_valid,
-        input  rst_n
+        output export_valid,
+        input rst_n
     );
 
     wire [63:0] sig_exporter_din_data;
@@ -1127,10 +1127,10 @@ module NetFilter #(parameter  DATA_WIDTH = 64,
     assign sig_filter_cfg_w_data = cfg_w_data;
     assign sig_filter_cfg_w_strb = cfg_w_strb;
     assign sig_filter_cfg_w_valid = cfg_w_valid;
-    assign sig_filter_din_data = sig_gen_dout_splitCopy_0_dataOut_data[ 127:64 ];
-    assign sig_filter_din_last = sig_gen_dout_splitCopy_0_dataOut_last[ 1 ];
-    assign sig_filter_din_strb = sig_gen_dout_splitCopy_0_dataOut_strb[ 15:8 ];
-    assign sig_filter_din_valid = sig_gen_dout_splitCopy_0_dataOut_valid[ 1 ];
+    assign sig_filter_din_data = sig_gen_dout_splitCopy_0_dataOut_data[127:64];
+    assign sig_filter_din_last = sig_gen_dout_splitCopy_0_dataOut_last[1];
+    assign sig_filter_din_strb = sig_gen_dout_splitCopy_0_dataOut_strb[15:8];
+    assign sig_filter_din_valid = sig_gen_dout_splitCopy_0_dataOut_valid[1];
     assign sig_filter_dout_ready = sig_exporter_din_ready;
     assign sig_filter_headers_data = sig_hfe_headers_data;
     assign sig_filter_headers_last = sig_hfe_headers_last;
@@ -1145,11 +1145,11 @@ module NetFilter #(parameter  DATA_WIDTH = 64,
     assign sig_gen_dout_splitCopy_0_dataIn_strb = sig_hfe_dout_strb;
     assign sig_gen_dout_splitCopy_0_dataIn_valid = sig_hfe_dout_valid;
     always @(sig_patternMatch_din_ready) begin: assig_process_sig_gen_dout_splitCopy_0_dataOut_ready
-        sig_gen_dout_splitCopy_0_dataOut_ready[ 0 ] <= sig_patternMatch_din_ready;
+        sig_gen_dout_splitCopy_0_dataOut_ready[0] <= sig_patternMatch_din_ready;
     end
 
     always @(sig_filter_din_ready) begin: assig_process_sig_gen_dout_splitCopy_0_dataOut_ready_0
-        sig_gen_dout_splitCopy_0_dataOut_ready[ 1 ] <= sig_filter_din_ready;
+        sig_gen_dout_splitCopy_0_dataOut_ready[1] <= sig_filter_din_ready;
     end
 
     assign sig_hfe_din_data = din_data;
@@ -1158,10 +1158,10 @@ module NetFilter #(parameter  DATA_WIDTH = 64,
     assign sig_hfe_din_valid = din_valid;
     assign sig_hfe_dout_ready = sig_gen_dout_splitCopy_0_dataIn_ready;
     assign sig_hfe_headers_ready = sig_filter_headers_ready;
-    assign sig_patternMatch_din_data = sig_gen_dout_splitCopy_0_dataOut_data[ 63:0 ];
-    assign sig_patternMatch_din_last = sig_gen_dout_splitCopy_0_dataOut_last[ 0 ];
-    assign sig_patternMatch_din_strb = sig_gen_dout_splitCopy_0_dataOut_strb[ 7:0 ];
-    assign sig_patternMatch_din_valid = sig_gen_dout_splitCopy_0_dataOut_valid[ 0 ];
+    assign sig_patternMatch_din_data = sig_gen_dout_splitCopy_0_dataOut_data[63:0];
+    assign sig_patternMatch_din_last = sig_gen_dout_splitCopy_0_dataOut_last[0];
+    assign sig_patternMatch_din_strb = sig_gen_dout_splitCopy_0_dataOut_strb[7:0];
+    assign sig_patternMatch_din_valid = sig_gen_dout_splitCopy_0_dataOut_valid[0];
     assign sig_patternMatch_match_ready = sig_filter_patternMatch_ready;
 endmodule"""
 
@@ -1217,7 +1217,6 @@ SC_MODULE(hfe) {
     }
 
     SC_CTOR(hfe) {
-        
         SC_METHOD(assig_process_din_ready);
         
         SC_METHOD(assig_process_dout_data);
@@ -1237,7 +1236,6 @@ SC_MODULE(hfe) {
         SC_METHOD(assig_process_headers_valid);
         
     }
-  }
 };
 #include <systemc.h>
 
@@ -1273,7 +1271,6 @@ SC_MODULE(patternMatch) {
     }
 
     SC_CTOR(patternMatch) {
-        
         SC_METHOD(assig_process_din_ready);
         
         SC_METHOD(assig_process_match_data);
@@ -1285,7 +1282,6 @@ SC_MODULE(patternMatch) {
         SC_METHOD(assig_process_match_valid);
         
     }
-  }
 };
 #include <systemc.h>
 
@@ -1378,7 +1374,6 @@ SC_MODULE(filter) {
     }
 
     SC_CTOR(filter) {
-        
         SC_METHOD(assig_process_cfg_ar_ready);
         
         SC_METHOD(assig_process_cfg_aw_ready);
@@ -1410,7 +1405,6 @@ SC_MODULE(filter) {
         SC_METHOD(assig_process_patternMatch_ready);
         
     }
-  }
 };
 #include <systemc.h>
 
@@ -1446,7 +1440,6 @@ SC_MODULE(exporter) {
     }
 
     SC_CTOR(exporter) {
-        
         SC_METHOD(assig_process_din_ready);
         
         SC_METHOD(assig_process_dout_data);
@@ -1458,7 +1451,6 @@ SC_MODULE(exporter) {
         SC_METHOD(assig_process_dout_valid);
         
     }
-  }
 };
 #include <systemc.h>
 
@@ -1478,35 +1470,34 @@ SC_MODULE(gen_dout_splitCopy_0) {
 
     //processes inside this component
     void assig_process_dataIn_ready() {
-        dataIn_ready.write((dataOut_ready.read()[ 0 ]) & (dataOut_ready.read()[ 1 ]));
+        dataIn_ready.write((dataOut_ready.read()[0]) & (dataOut_ready.read()[1]));
     }
     void assig_process_dataOut_data() {
-        dataOut_data.range( 64 ,  0 ).write(dataIn_data.read());
+        dataOut_data.range(64, 0).write(dataIn_data.read());
     }
     void assig_process_dataOut_data_0() {
-        dataOut_data.range( 128 ,  64 ).write(dataIn_data.read());
+        dataOut_data.range(128, 64).write(dataIn_data.read());
     }
     void assig_process_dataOut_last() {
-        dataOut_last[ 0 ].write(dataIn_last.read());
+        dataOut_last[0].write(dataIn_last.read());
     }
     void assig_process_dataOut_last_0() {
-        dataOut_last[ 1 ].write(dataIn_last.read());
+        dataOut_last[1].write(dataIn_last.read());
     }
     void assig_process_dataOut_strb() {
-        dataOut_strb.range( 8 ,  0 ).write(dataIn_strb.read());
+        dataOut_strb.range(8, 0).write(dataIn_strb.read());
     }
     void assig_process_dataOut_strb_0() {
-        dataOut_strb.range( 16 ,  8 ).write(dataIn_strb.read());
+        dataOut_strb.range(16, 8).write(dataIn_strb.read());
     }
     void assig_process_dataOut_valid() {
-        dataOut_valid[ 0 ].write(dataIn_valid.read() & (dataOut_ready.read()[ 1 ]));
+        dataOut_valid[0].write(dataIn_valid.read() & (dataOut_ready.read()[1]));
     }
     void assig_process_dataOut_valid_0() {
-        dataOut_valid[ 1 ].write(dataIn_valid.read() & (dataOut_ready.read()[ 0 ]));
+        dataOut_valid[1].write(dataIn_valid.read() & (dataOut_ready.read()[0]));
     }
 
     SC_CTOR(gen_dout_splitCopy_0) {
-        
         SC_METHOD(assig_process_dataIn_ready);
         sensitive << dataOut_ready;
         SC_METHOD(assig_process_dataOut_data);
@@ -1526,18 +1517,19 @@ SC_MODULE(gen_dout_splitCopy_0) {
         SC_METHOD(assig_process_dataOut_valid_0);
         sensitive << dataIn_valid << dataOut_ready;
     }
-  }
 };
-/* 
+/*
+
     This unit has actually no functionality it is just example of hierarchical design.
-     */
+    
+*/
 
 #include <systemc.h>
 
 
 SC_MODULE(NetFilter) {
     //interfaces
-    sc_in<sc_uint<1>> clk;
+    sc_in_clk clk;
     sc_in<sc_uint<1>> rst_n;
     sc_out<sc_uint<1>> din_ready;
     sc_in<sc_uint<1>> din_valid;
@@ -1568,88 +1560,88 @@ SC_MODULE(NetFilter) {
     sc_out<sc_uint<1>> cfg_b_valid;
 
     //internal signals
-    sc_signal<sc_uint<64>> sig_exporter_din_data(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_exporter_din_last('X');
-    sc_signal<sc_uint<1>> sig_exporter_din_ready('X');
-    sc_signal<sc_uint<8>> sig_exporter_din_strb(sc_uint<8>("XXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_exporter_din_valid('X');
-    sc_signal<sc_uint<64>> sig_exporter_dout_data(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_exporter_dout_last('X');
-    sc_signal<sc_uint<1>> sig_exporter_dout_ready('X');
-    sc_signal<sc_uint<8>> sig_exporter_dout_strb(sc_uint<8>("XXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_exporter_dout_valid('X');
-    sc_signal<sc_uint<32>> sig_filter_cfg_ar_addr(sc_uint<32>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_filter_cfg_ar_ready('X');
-    sc_signal<sc_uint<1>> sig_filter_cfg_ar_valid('X');
-    sc_signal<sc_uint<32>> sig_filter_cfg_aw_addr(sc_uint<32>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_filter_cfg_aw_ready('X');
-    sc_signal<sc_uint<1>> sig_filter_cfg_aw_valid('X');
-    sc_signal<sc_uint<1>> sig_filter_cfg_b_ready('X');
-    sc_signal<sc_uint<2>> sig_filter_cfg_b_resp(sc_uint<2>("XX"));
-    sc_signal<sc_uint<1>> sig_filter_cfg_b_valid('X');
-    sc_signal<sc_uint<64>> sig_filter_cfg_r_data(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_filter_cfg_r_ready('X');
-    sc_signal<sc_uint<2>> sig_filter_cfg_r_resp(sc_uint<2>("XX"));
-    sc_signal<sc_uint<1>> sig_filter_cfg_r_valid('X');
-    sc_signal<sc_uint<64>> sig_filter_cfg_w_data(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_filter_cfg_w_ready('X');
-    sc_signal<sc_uint<8>> sig_filter_cfg_w_strb(sc_uint<8>("XXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_filter_cfg_w_valid('X');
-    sc_signal<sc_uint<64>> sig_filter_din_data(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_filter_din_last('X');
-    sc_signal<sc_uint<1>> sig_filter_din_ready('X');
-    sc_signal<sc_uint<8>> sig_filter_din_strb(sc_uint<8>("XXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_filter_din_valid('X');
-    sc_signal<sc_uint<64>> sig_filter_dout_data(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_filter_dout_last('X');
-    sc_signal<sc_uint<1>> sig_filter_dout_ready('X');
-    sc_signal<sc_uint<8>> sig_filter_dout_strb(sc_uint<8>("XXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_filter_dout_valid('X');
-    sc_signal<sc_uint<64>> sig_filter_headers_data(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_filter_headers_last('X');
-    sc_signal<sc_uint<1>> sig_filter_headers_ready('X');
-    sc_signal<sc_uint<8>> sig_filter_headers_strb(sc_uint<8>("XXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_filter_headers_valid('X');
-    sc_signal<sc_uint<64>> sig_filter_patternMatch_data(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_filter_patternMatch_last('X');
-    sc_signal<sc_uint<1>> sig_filter_patternMatch_ready('X');
-    sc_signal<sc_uint<8>> sig_filter_patternMatch_strb(sc_uint<8>("XXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_filter_patternMatch_valid('X');
-    sc_signal<sc_uint<64>> sig_gen_dout_splitCopy_0_dataIn_data(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_gen_dout_splitCopy_0_dataIn_last('X');
-    sc_signal<sc_uint<1>> sig_gen_dout_splitCopy_0_dataIn_ready('X');
-    sc_signal<sc_uint<8>> sig_gen_dout_splitCopy_0_dataIn_strb(sc_uint<8>("XXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_gen_dout_splitCopy_0_dataIn_valid('X');
-    sc_signal<sc_biguint<128>> sig_gen_dout_splitCopy_0_dataOut_data(sc_biguint<128>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<2>> sig_gen_dout_splitCopy_0_dataOut_last(sc_uint<2>("XX"));
-    sc_signal<sc_uint<2>> sig_gen_dout_splitCopy_0_dataOut_ready(sc_uint<2>("XX"));
-    sc_signal<sc_uint<16>> sig_gen_dout_splitCopy_0_dataOut_strb(sc_uint<16>("XXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<2>> sig_gen_dout_splitCopy_0_dataOut_valid(sc_uint<2>("XX"));
-    sc_signal<sc_uint<64>> sig_hfe_din_data(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_hfe_din_last('X');
-    sc_signal<sc_uint<1>> sig_hfe_din_ready('X');
-    sc_signal<sc_uint<8>> sig_hfe_din_strb(sc_uint<8>("XXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_hfe_din_valid('X');
-    sc_signal<sc_uint<64>> sig_hfe_dout_data(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_hfe_dout_last('X');
-    sc_signal<sc_uint<1>> sig_hfe_dout_ready('X');
-    sc_signal<sc_uint<8>> sig_hfe_dout_strb(sc_uint<8>("XXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_hfe_dout_valid('X');
-    sc_signal<sc_uint<64>> sig_hfe_headers_data(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_hfe_headers_last('X');
-    sc_signal<sc_uint<1>> sig_hfe_headers_ready('X');
-    sc_signal<sc_uint<8>> sig_hfe_headers_strb(sc_uint<8>("XXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_hfe_headers_valid('X');
-    sc_signal<sc_uint<64>> sig_patternMatch_din_data(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_patternMatch_din_last('X');
-    sc_signal<sc_uint<1>> sig_patternMatch_din_ready('X');
-    sc_signal<sc_uint<8>> sig_patternMatch_din_strb(sc_uint<8>("XXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_patternMatch_din_valid('X');
-    sc_signal<sc_uint<64>> sig_patternMatch_match_data(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_patternMatch_match_last('X');
-    sc_signal<sc_uint<1>> sig_patternMatch_match_ready('X');
-    sc_signal<sc_uint<8>> sig_patternMatch_match_strb(sc_uint<8>("XXXXXXXX"));
-    sc_signal<sc_uint<1>> sig_patternMatch_match_valid('X');
+    sc_signal<sc_uint<64>> sig_exporter_din_data;
+    sc_signal<sc_uint<1>> sig_exporter_din_last;
+    sc_signal<sc_uint<1>> sig_exporter_din_ready;
+    sc_signal<sc_uint<8>> sig_exporter_din_strb;
+    sc_signal<sc_uint<1>> sig_exporter_din_valid;
+    sc_signal<sc_uint<64>> sig_exporter_dout_data;
+    sc_signal<sc_uint<1>> sig_exporter_dout_last;
+    sc_signal<sc_uint<1>> sig_exporter_dout_ready;
+    sc_signal<sc_uint<8>> sig_exporter_dout_strb;
+    sc_signal<sc_uint<1>> sig_exporter_dout_valid;
+    sc_signal<sc_uint<32>> sig_filter_cfg_ar_addr;
+    sc_signal<sc_uint<1>> sig_filter_cfg_ar_ready;
+    sc_signal<sc_uint<1>> sig_filter_cfg_ar_valid;
+    sc_signal<sc_uint<32>> sig_filter_cfg_aw_addr;
+    sc_signal<sc_uint<1>> sig_filter_cfg_aw_ready;
+    sc_signal<sc_uint<1>> sig_filter_cfg_aw_valid;
+    sc_signal<sc_uint<1>> sig_filter_cfg_b_ready;
+    sc_signal<sc_uint<2>> sig_filter_cfg_b_resp;
+    sc_signal<sc_uint<1>> sig_filter_cfg_b_valid;
+    sc_signal<sc_uint<64>> sig_filter_cfg_r_data;
+    sc_signal<sc_uint<1>> sig_filter_cfg_r_ready;
+    sc_signal<sc_uint<2>> sig_filter_cfg_r_resp;
+    sc_signal<sc_uint<1>> sig_filter_cfg_r_valid;
+    sc_signal<sc_uint<64>> sig_filter_cfg_w_data;
+    sc_signal<sc_uint<1>> sig_filter_cfg_w_ready;
+    sc_signal<sc_uint<8>> sig_filter_cfg_w_strb;
+    sc_signal<sc_uint<1>> sig_filter_cfg_w_valid;
+    sc_signal<sc_uint<64>> sig_filter_din_data;
+    sc_signal<sc_uint<1>> sig_filter_din_last;
+    sc_signal<sc_uint<1>> sig_filter_din_ready;
+    sc_signal<sc_uint<8>> sig_filter_din_strb;
+    sc_signal<sc_uint<1>> sig_filter_din_valid;
+    sc_signal<sc_uint<64>> sig_filter_dout_data;
+    sc_signal<sc_uint<1>> sig_filter_dout_last;
+    sc_signal<sc_uint<1>> sig_filter_dout_ready;
+    sc_signal<sc_uint<8>> sig_filter_dout_strb;
+    sc_signal<sc_uint<1>> sig_filter_dout_valid;
+    sc_signal<sc_uint<64>> sig_filter_headers_data;
+    sc_signal<sc_uint<1>> sig_filter_headers_last;
+    sc_signal<sc_uint<1>> sig_filter_headers_ready;
+    sc_signal<sc_uint<8>> sig_filter_headers_strb;
+    sc_signal<sc_uint<1>> sig_filter_headers_valid;
+    sc_signal<sc_uint<64>> sig_filter_patternMatch_data;
+    sc_signal<sc_uint<1>> sig_filter_patternMatch_last;
+    sc_signal<sc_uint<1>> sig_filter_patternMatch_ready;
+    sc_signal<sc_uint<8>> sig_filter_patternMatch_strb;
+    sc_signal<sc_uint<1>> sig_filter_patternMatch_valid;
+    sc_signal<sc_uint<64>> sig_gen_dout_splitCopy_0_dataIn_data;
+    sc_signal<sc_uint<1>> sig_gen_dout_splitCopy_0_dataIn_last;
+    sc_signal<sc_uint<1>> sig_gen_dout_splitCopy_0_dataIn_ready;
+    sc_signal<sc_uint<8>> sig_gen_dout_splitCopy_0_dataIn_strb;
+    sc_signal<sc_uint<1>> sig_gen_dout_splitCopy_0_dataIn_valid;
+    sc_signal<sc_biguint<128>> sig_gen_dout_splitCopy_0_dataOut_data;
+    sc_signal<sc_uint<2>> sig_gen_dout_splitCopy_0_dataOut_last;
+    sc_signal<sc_uint<2>> sig_gen_dout_splitCopy_0_dataOut_ready;
+    sc_signal<sc_uint<16>> sig_gen_dout_splitCopy_0_dataOut_strb;
+    sc_signal<sc_uint<2>> sig_gen_dout_splitCopy_0_dataOut_valid;
+    sc_signal<sc_uint<64>> sig_hfe_din_data;
+    sc_signal<sc_uint<1>> sig_hfe_din_last;
+    sc_signal<sc_uint<1>> sig_hfe_din_ready;
+    sc_signal<sc_uint<8>> sig_hfe_din_strb;
+    sc_signal<sc_uint<1>> sig_hfe_din_valid;
+    sc_signal<sc_uint<64>> sig_hfe_dout_data;
+    sc_signal<sc_uint<1>> sig_hfe_dout_last;
+    sc_signal<sc_uint<1>> sig_hfe_dout_ready;
+    sc_signal<sc_uint<8>> sig_hfe_dout_strb;
+    sc_signal<sc_uint<1>> sig_hfe_dout_valid;
+    sc_signal<sc_uint<64>> sig_hfe_headers_data;
+    sc_signal<sc_uint<1>> sig_hfe_headers_last;
+    sc_signal<sc_uint<1>> sig_hfe_headers_ready;
+    sc_signal<sc_uint<8>> sig_hfe_headers_strb;
+    sc_signal<sc_uint<1>> sig_hfe_headers_valid;
+    sc_signal<sc_uint<64>> sig_patternMatch_din_data;
+    sc_signal<sc_uint<1>> sig_patternMatch_din_last;
+    sc_signal<sc_uint<1>> sig_patternMatch_din_ready;
+    sc_signal<sc_uint<8>> sig_patternMatch_din_strb;
+    sc_signal<sc_uint<1>> sig_patternMatch_din_valid;
+    sc_signal<sc_uint<64>> sig_patternMatch_match_data;
+    sc_signal<sc_uint<1>> sig_patternMatch_match_last;
+    sc_signal<sc_uint<1>> sig_patternMatch_match_ready;
+    sc_signal<sc_uint<8>> sig_patternMatch_match_strb;
+    sc_signal<sc_uint<1>> sig_patternMatch_match_valid;
 
     //processes inside this component
     void assig_process_cfg_ar_ready() {
@@ -1734,16 +1726,16 @@ SC_MODULE(NetFilter) {
         sig_filter_cfg_w_valid.write(cfg_w_valid.read());
     }
     void assig_process_sig_filter_din_data() {
-        sig_filter_din_data.write(sig_gen_dout_splitCopy_0_dataOut_data.read().range( 128 ,  64 ));
+        sig_filter_din_data.write(sig_gen_dout_splitCopy_0_dataOut_data.read().range(128, 64));
     }
     void assig_process_sig_filter_din_last() {
-        sig_filter_din_last.write(sig_gen_dout_splitCopy_0_dataOut_last.read()[ 1 ]);
+        sig_filter_din_last.write(sig_gen_dout_splitCopy_0_dataOut_last.read()[1]);
     }
     void assig_process_sig_filter_din_strb() {
-        sig_filter_din_strb.write(sig_gen_dout_splitCopy_0_dataOut_strb.read().range( 16 ,  8 ));
+        sig_filter_din_strb.write(sig_gen_dout_splitCopy_0_dataOut_strb.read().range(16, 8));
     }
     void assig_process_sig_filter_din_valid() {
-        sig_filter_din_valid.write(sig_gen_dout_splitCopy_0_dataOut_valid.read()[ 1 ]);
+        sig_filter_din_valid.write(sig_gen_dout_splitCopy_0_dataOut_valid.read()[1]);
     }
     void assig_process_sig_filter_dout_ready() {
         sig_filter_dout_ready.write(sig_exporter_din_ready.read());
@@ -1785,10 +1777,10 @@ SC_MODULE(NetFilter) {
         sig_gen_dout_splitCopy_0_dataIn_valid.write(sig_hfe_dout_valid.read());
     }
     void assig_process_sig_gen_dout_splitCopy_0_dataOut_ready() {
-        sig_gen_dout_splitCopy_0_dataOut_ready[ 0 ].write(sig_patternMatch_din_ready.read());
+        sig_gen_dout_splitCopy_0_dataOut_ready[0].write(sig_patternMatch_din_ready.read());
     }
     void assig_process_sig_gen_dout_splitCopy_0_dataOut_ready_0() {
-        sig_gen_dout_splitCopy_0_dataOut_ready[ 1 ].write(sig_filter_din_ready.read());
+        sig_gen_dout_splitCopy_0_dataOut_ready[1].write(sig_filter_din_ready.read());
     }
     void assig_process_sig_hfe_din_data() {
         sig_hfe_din_data.write(din_data.read());
@@ -1809,16 +1801,16 @@ SC_MODULE(NetFilter) {
         sig_hfe_headers_ready.write(sig_filter_headers_ready.read());
     }
     void assig_process_sig_patternMatch_din_data() {
-        sig_patternMatch_din_data.write(sig_gen_dout_splitCopy_0_dataOut_data.read().range( 64 ,  0 ));
+        sig_patternMatch_din_data.write(sig_gen_dout_splitCopy_0_dataOut_data.read().range(64, 0));
     }
     void assig_process_sig_patternMatch_din_last() {
-        sig_patternMatch_din_last.write(sig_gen_dout_splitCopy_0_dataOut_last.read()[ 0 ]);
+        sig_patternMatch_din_last.write(sig_gen_dout_splitCopy_0_dataOut_last.read()[0]);
     }
     void assig_process_sig_patternMatch_din_strb() {
-        sig_patternMatch_din_strb.write(sig_gen_dout_splitCopy_0_dataOut_strb.read().range( 8 ,  0 ));
+        sig_patternMatch_din_strb.write(sig_gen_dout_splitCopy_0_dataOut_strb.read().range(8, 0));
     }
     void assig_process_sig_patternMatch_din_valid() {
-        sig_patternMatch_din_valid.write(sig_gen_dout_splitCopy_0_dataOut_valid.read()[ 0 ]);
+        sig_patternMatch_din_valid.write(sig_gen_dout_splitCopy_0_dataOut_valid.read()[0]);
     }
     void assig_process_sig_patternMatch_match_ready() {
         sig_patternMatch_match_ready.write(sig_filter_patternMatch_ready.read());
@@ -1833,7 +1825,6 @@ SC_MODULE(NetFilter) {
     patternMatch patternMatch_inst;
 
     SC_CTOR(NetFilter) : exporter_inst("exporter_inst"), filter_inst("filter_inst"), gen_dout_splitCopy_0_inst("gen_dout_splitCopy_0_inst"), hfe_inst("hfe_inst"), patternMatch_inst("patternMatch_inst") {
-        
         SC_METHOD(assig_process_cfg_ar_ready);
         sensitive << sig_filter_cfg_ar_ready;
         SC_METHOD(assig_process_cfg_aw_ready);
@@ -2033,5 +2024,4 @@ SC_MODULE(NetFilter) {
         patternMatch.match_last(sig_patternMatch_match_last);
         patternMatch.match_strb(sig_patternMatch_match_strb);
     }
-  }
 };"""

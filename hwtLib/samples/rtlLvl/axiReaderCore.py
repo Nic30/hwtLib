@@ -55,18 +55,19 @@ ARCHITECTURE rtl OF AxiReaderCore IS
 BEGIN
     assig_process_rSt: PROCESS (arRd, arVld, rRd, rVld)
     BEGIN
-        IF (arRd)='1' THEN
-            IF (arVld)='1' THEN
+        IF arRd = '1' THEN
+            IF arVld = '1' THEN
                 rSt <= rdData;
             ELSE
                 rSt <= rdIdle;
             END IF;
-        ELSIF (rRd AND rVld)='1' THEN
+        ELSIF (rRd AND rVld) = '1' THEN
             rSt <= rdIdle;
         ELSE
             rSt <= rdData;
         END IF;
     END PROCESS;
+    
 END ARCHITECTURE rtl;
 """
 

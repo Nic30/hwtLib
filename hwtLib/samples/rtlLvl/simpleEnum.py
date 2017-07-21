@@ -54,7 +54,7 @@ ARCHITECTURE rtl OF SimpleEnum IS
 BEGIN
     assig_process_fsmSt: PROCESS (clk)
     BEGIN
-        IF RISING_EDGE( clk ) THEN
+        IF RISING_EDGE(clk) THEN
             IF rst = '1' THEN
                 fsmSt <= send0;
             ELSE
