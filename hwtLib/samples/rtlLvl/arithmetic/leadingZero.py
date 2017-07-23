@@ -36,8 +36,8 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY LeadingZero IS
-    PORT (s_in : IN STD_LOGIC_VECTOR(63 DOWNTO 0);
-        s_indexOfFirstZero : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+    PORT (s_in: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+        s_indexOfFirstZero: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
 END LeadingZero;
 
@@ -63,10 +63,9 @@ BEGIN
             s_indexOfFirstZero <= X"07";
         END IF;
     END PROCESS;
-    
+
 END ARCHITECTURE rtl;"""
 
 if __name__ == "__main__":
     netlist, interfaces = LeadingZero()
     print(netlistToVhdlStr("LeadingZero", netlist, interfaces))
-

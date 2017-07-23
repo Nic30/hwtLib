@@ -31,8 +31,8 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY SimpleComentedUnit IS
-    PORT (a : IN STD_LOGIC;
-        b : OUT STD_LOGIC
+    PORT (a: IN STD_LOGIC;
+        b: OUT STD_LOGIC
     );
 END SimpleComentedUnit;
 
@@ -58,8 +58,8 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY SimpleComentedUnit2 IS
-    PORT (a : IN STD_LOGIC;
-        b : OUT STD_LOGIC
+    PORT (a: IN STD_LOGIC;
+        b: OUT STD_LOGIC
     );
 END SimpleComentedUnit2;
 
@@ -87,8 +87,8 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY SimpleComentedUnit3 IS
-    PORT (a : IN STD_LOGIC;
-        b : OUT STD_LOGIC
+    PORT (a: IN STD_LOGIC;
+        b: OUT STD_LOGIC
     );
 END SimpleComentedUnit3;
 

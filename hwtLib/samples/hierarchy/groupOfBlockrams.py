@@ -206,14 +206,14 @@ BEGIN
         GENERIC MAP (ADDR_WIDTH => 8,
             DATA_WIDTH => 64
         )
-        PORT MAP (a_clk => sig_bramW_a_clk,
-            a_addr => sig_bramW_a_addr,
+        PORT MAP (a_addr => sig_bramW_a_addr,
+            a_clk => sig_bramW_a_clk,
             a_din => sig_bramW_a_din,
             a_dout => sig_bramW_a_dout,
             a_en => sig_bramW_a_en,
             a_we => sig_bramW_a_we,
-            b_clk => sig_bramW_b_clk,
             b_addr => sig_bramW_b_addr,
+            b_clk => sig_bramW_b_clk,
             b_din => sig_bramW_b_din,
             b_dout => sig_bramW_b_dout,
             b_en => sig_bramW_b_en,
