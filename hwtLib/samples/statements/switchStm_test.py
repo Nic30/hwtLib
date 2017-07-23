@@ -52,23 +52,23 @@ switchStm_verilog = """/*
     Example which is using switch statement to create multiplexer
     
 */
-module SwitchStmUnit(input  a,
-        input  b,
-        input  c,
-        output reg  out,
+module SwitchStmUnit(input a,
+        input b,
+        input c,
+        output reg out,
         input [2:0] sel
     );
 
     always @(a or b or c or sel) begin: assig_process_out
         case(sel)
-            3'b000:
-                out <= a;
-            3'b001:
-                out <= b;
-            3'b010:
-                out <= c;
-            default:
-                out <= 1'b0;
+        3'b000:
+            out <= a;
+        3'b001:
+            out <= b;
+        3'b010:
+            out <= c;
+        default:
+            out <= 1'b0;
         endcase
     end
 
@@ -93,19 +93,19 @@ SC_MODULE(SwitchStmUnit) {
 
     //processes inside this component
     void assig_process_out() {
-        case(sel.read()) {
-            sc_uint<3>("000"):
-                out.write(a.read());
-                break;
-            sc_uint<3>("001"):
-                out.write(b.read());
-                break;
-            sc_uint<3>("010"):
-                out.write(c.read());
-                break;
-            default:
-                out.write('0');
-                break;
+        switch(sel.read()) {
+        case sc_uint<3>("000"):
+            out.write(a.read());
+            break;
+        case sc_uint<3>("001"):
+            out.write(b.read());
+            break;
+        case sc_uint<3>("010"):
+            out.write(c.read());
+            break;
+        default:
+            out.write('0');
+            break;
         }
     }
 
@@ -113,7 +113,6 @@ SC_MODULE(SwitchStmUnit) {
         SC_METHOD(assig_process_out);
         sensitive << a << b << c << sel;
     }
-  }
 };"""
 
 

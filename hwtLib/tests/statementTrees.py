@@ -117,31 +117,31 @@ class StatementTreesTC(unittest.TestCase):
         tmpl = """
         CASE st IS
             WHEN idle =>
-                IF (sd0 AND sd1)='1' THEN
+                IF (sd0 AND sd1) = '1' THEN
                     st_next <= lenExtr;
                 ELSE 
                     st_next <= ts1Wait;
                 END IF;
             WHEN tsWait =>
-                IF (sd0 AND sd1)='1' THEN
+                IF (sd0 AND sd1) = '1' THEN
                     st_next <= lenExtr;
                 ELSE 
                     st_next <= ts1Wait;
                 END IF;
             WHEN ts0Wait =>
-                IF (sd0)='1' THEN 
+                IF sd0 = '1' THEN 
                     st_next <= lenExtr;
                 ELSE 
                     st_next <= st;
                 END IF;
             WHEN ts1Wait =>
-                IF (sd1)='1' THEN 
+                IF sd1 = '1' THEN 
                     st_next <= lenExtr;
                 ELSE 
                     st_next <= st;
                 END IF;
             WHEN OTHERS =>
-                IF (ctrlFifoVld AND ctrlFifoLast)='1' THEN
+                IF (ctrlFifoVld AND ctrlFifoLast) = '1' THEN
                     st_next <= idle;
                 ELSE 
                     st_next <= st;
@@ -206,33 +206,33 @@ class StatementTreesTC(unittest.TestCase):
         tmpl = """
         CASE st IS
             WHEN idle =>
-                IF (sd0 AND sd1)='1' THEN
+                IF (sd0 AND sd1) = '1' THEN
                     st_next <= lenExtr;
-                ELSIF (ctrlFifoVld)='1' THEN
+                ELSIF ctrlFifoVld = '1' THEN
                     st_next <= tsWait;
                 ELSE
                     st_next <= st;
                 END IF;
             WHEN tsWait =>
-                IF (sd0 AND sd1)='1' THEN
+                IF (sd0 AND sd1) = '1' THEN
                     st_next <= lenExtr;
                 ELSE
                     st_next <= st;
                 END IF;
             WHEN ts0Wait =>
-                IF (sd0)='1' THEN
+                IF sd0 = '1' THEN
                     st_next <= lenExtr;
                 ELSE
                     st_next <= st;
                 END IF;
             WHEN ts1Wait =>
-                IF (sd1)='1' THEN
+                IF sd1 = '1' THEN
                     st_next <= lenExtr;
                 ELSE
                     st_next <= st;
                 END IF;
             WHEN OTHERS =>
-                IF (ctrlFifoVld AND ctrlFifoLast)='1' THEN
+                IF (ctrlFifoVld AND ctrlFifoLast) = '1' THEN
                     st_next <= idle;
                 ELSE
                     st_next <= st;
@@ -299,37 +299,37 @@ class StatementTreesTC(unittest.TestCase):
         tmpl = """
         CASE st IS
             WHEN idle =>
-                IF (sd0 AND sd1)='1' THEN
+                IF (sd0 AND sd1) = '1' THEN
                     st_next <= lenExtr;
-                ELSIF (sd0)='1' THEN
+                ELSIF sd0 = '1' THEN
                     st_next <= ts1Wait;
-                ELSIF (ctrlFifoVld)='1' THEN
+                ELSIF ctrlFifoVld = '1' THEN
                     st_next <= tsWait;
                 ELSE
                     st_next <= st;
                 END IF;
             WHEN tsWait =>
-                IF (sd0 AND sd1)='1' THEN
+                IF (sd0 AND sd1) = '1' THEN
                     st_next <= lenExtr;
-                ELSIF (sd0)='1' THEN
+                ELSIF sd0 = '1' THEN
                     st_next <= ts1Wait;
                 ELSE
                     st_next <= st;
                 END IF;
             WHEN ts0Wait =>
-                IF (sd0)='1' THEN
+                IF sd0 = '1' THEN
                     st_next <= lenExtr;
                 ELSE
                     st_next <= st;
                 END IF;
             WHEN ts1Wait =>
-                IF (sd1)='1' THEN
+                IF sd1 = '1' THEN
                     st_next <= lenExtr;
                 ELSE
                     st_next <= st;
                 END IF;
             WHEN OTHERS =>
-                IF (ctrlFifoVld AND ctrlFifoLast)='1' THEN
+                IF (ctrlFifoVld AND ctrlFifoLast) = '1' THEN
                     st_next <= idle;
                 ELSE
                     st_next <= st;

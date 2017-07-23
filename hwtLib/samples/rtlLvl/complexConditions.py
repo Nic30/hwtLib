@@ -57,9 +57,7 @@ def ComplexConditions():
     return n, [rst, clk, sd0, sd1, cntrlFifoVld, cntrlFifoLast, s_idle]
 
 
-complexConditionsExpected =\
-"""
-library IEEE;
+complexConditionsExpected = """library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
@@ -79,10 +77,10 @@ ARCHITECTURE rtl OF ComplexConditions IS
     SIGNAL st : t_state := idle;
     SIGNAL st_next : t_state;
 BEGIN
-    s_idle <=  '1'  WHEN st = idle ELSE  '0' ;
+    s_idle <= '1' WHEN st = idle ELSE '0';
     assig_process_st: PROCESS (clk)
     BEGIN
-        IF RISING_EDGE( clk ) THEN
+        IF RISING_EDGE(clk) THEN
             IF rst = '1' THEN
                 st <= idle;
             ELSE
@@ -90,48 +88,47 @@ BEGIN
             END IF;
         END IF;
     END PROCESS;
-
+    
     assig_process_st_next: PROCESS (ctrlFifoLast, ctrlFifoVld, sd0, sd1, st)
     BEGIN
         st_next <= st;
-
         CASE st IS
         WHEN idle =>
-            IF (sd0 AND sd1)='1' THEN
+            IF (sd0 AND sd1) = '1' THEN
                 st_next <= lenExtr;
-            ELSIF (sd0)='1' THEN
+            ELSIF sd0 = '1' THEN
                 st_next <= ts1Wait;
-            ELSIF (sd1)='1' THEN
+            ELSIF sd1 = '1' THEN
                 st_next <= ts0Wait;
-            ELSIF (ctrlFifoVld)='1' THEN
+            ELSIF ctrlFifoVld = '1' THEN
                 st_next <= tsWait;
             END IF;
         WHEN tsWait =>
-            IF (sd0 AND sd1)='1' THEN
+            IF (sd0 AND sd1) = '1' THEN
                 st_next <= lenExtr;
-            ELSIF (sd0)='1' THEN
+            ELSIF sd0 = '1' THEN
                 st_next <= ts1Wait;
-            ELSIF (sd1)='1' THEN
+            ELSIF sd1 = '1' THEN
                 st_next <= ts0Wait;
             ELSE
                 st_next <= st;
             END IF;
         WHEN ts0Wait =>
-            IF (sd0)='1' THEN
+            IF sd0 = '1' THEN
                 st_next <= lenExtr;
             END IF;
         WHEN ts1Wait =>
-            IF (sd1)='1' THEN
+            IF sd1 = '1' THEN
                 st_next <= lenExtr;
             END IF;
         WHEN OTHERS =>
-            IF (ctrlFifoVld AND ctrlFifoLast)='1' AND st = lenExtr THEN
+            IF (ctrlFifoVld AND ctrlFifoLast) = '1' AND st = lenExtr THEN
                 st_next <= idle;
             END IF;
         END CASE;
     END PROCESS;
-END ARCHITECTURE rtl;
-"""
+    
+END ARCHITECTURE rtl;"""
 
 if __name__ == "__main__":
     netlist, interfaces = ComplexConditions()

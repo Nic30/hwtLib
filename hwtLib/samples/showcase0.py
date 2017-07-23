@@ -236,31 +236,31 @@ ARCHITECTURE rtl OF Showcase0 IS
         TO_UNSIGNED(2, 8),
         TO_UNSIGNED(3, 8));
 BEGIN
-    c <= STD_LOGIC_VECTOR( a + UNSIGNED( b ) );
-    cmp0 <=  '1'  WHEN a < TO_UNSIGNED(4, 32) ELSE  '0' ;
-    cmp1 <=  '1'  WHEN a > TO_UNSIGNED(4, 32) ELSE  '0' ;
-    cmp2 <=  '1'  WHEN b <= TO_SIGNED(4, 32) ELSE  '0' ;
-    cmp3 <=  '1'  WHEN b >= TO_SIGNED(4, 32) ELSE  '0' ;
-    cmp4 <=  '1'  WHEN b /= TO_SIGNED(4, 32) ELSE  '0' ;
-    cmp5 <=  '1'  WHEN b = TO_SIGNED(4, 32) ELSE  '0' ;
-    contOut <= STD_LOGIC_VECTOR( const_private_signal );
+    c <= STD_LOGIC_VECTOR(a + UNSIGNED(b));
+    cmp0 <= '1' WHEN a < TO_UNSIGNED(4, 32) ELSE '0';
+    cmp1 <= '1' WHEN a > TO_UNSIGNED(4, 32) ELSE '0';
+    cmp2 <= '1' WHEN b <= TO_SIGNED(4, 32) ELSE '0';
+    cmp3 <= '1' WHEN b >= TO_SIGNED(4, 32) ELSE '0';
+    cmp4 <= '1' WHEN b /= TO_SIGNED(4, 32) ELSE '0';
+    cmp5 <= '1' WHEN b = TO_SIGNED(4, 32) ELSE '0';
+    contOut <= STD_LOGIC_VECTOR(const_private_signal);
     f <= r;
     assig_process_fallingEdgeRam: PROCESS (clk)
     BEGIN
-        IF FALLING_EDGE( clk ) THEN
-            fallingEdgeRam( TO_INTEGER(UNSIGNED(r_1)) ) <= SIGNED( a( 7 DOWNTO 0 ) );
-            k <= X"000000" & STD_LOGIC_VECTOR( UNSIGNED( fallingEdgeRam( TO_INTEGER(UNSIGNED(r_1)) ) ) );
+        IF FALLING_EDGE(clk) THEN
+            fallingEdgeRam(TO_INTEGER(UNSIGNED(r_1))) <= SIGNED(a(7 DOWNTO 0));
+            k <= X"000000" & STD_LOGIC_VECTOR(UNSIGNED(fallingEdgeRam(TO_INTEGER(UNSIGNED(r_1)))));
         END IF;
     END PROCESS;
 
-    fitted <= STD_LOGIC_VECTOR( a( 15 DOWNTO 0 ) );
-    g <= ((a( 1 )) AND (b( 1 ))) & (((a( 0 )) XOR (b( 0 ))) OR (a( 1 ))) & STD_LOGIC_VECTOR( a( 5 DOWNTO 0 ) );
+    fitted <= STD_LOGIC_VECTOR(a(15 DOWNTO 0));
+    g <= ((a(1)) AND (b(1))) & (((a(0)) XOR (b(0))) OR (a(1))) & STD_LOGIC_VECTOR(a(5 DOWNTO 0));
     assig_process_h: PROCESS (a, r)
     BEGIN
-        IF (a( 2 ))='1' THEN
-            IF (r)='1' THEN
+        IF (a(2)) = '1' THEN
+            IF r = '1' THEN
                 h <= X"00";
-            ELSIF (a( 1 ))='1' THEN
+            ELSIF (a(1)) = '1' THEN
                 h <= X"01";
             ELSE
                 h <= X"02";
@@ -270,8 +270,8 @@ BEGIN
 
     assig_process_j: PROCESS (clk)
     BEGIN
-        IF RISING_EDGE( clk ) THEN
-            j <= STD_LOGIC_VECTOR( rom( TO_INTEGER(UNSIGNED(r_1)) ) );
+        IF RISING_EDGE(clk) THEN
+            j <= STD_LOGIC_VECTOR(rom(TO_INTEGER(UNSIGNED(r_1))));
         END IF;
     END PROCESS;
 
@@ -279,7 +279,7 @@ BEGIN
     output <= 'X';
     assig_process_r: PROCESS (clk)
     BEGIN
-        IF RISING_EDGE( clk ) THEN
+        IF RISING_EDGE(clk) THEN
             IF rst_n = '0' THEN
                 r <= '0';
                 r_1 <= "00";
@@ -297,7 +297,7 @@ BEGIN
     assig_process_r_next_1: PROCESS (e, r)
     BEGIN
         r_next <= r;
-        IF (NOT  r )='1' THEN
+        IF (NOT r) = '1' THEN
             r_next <= e;
         END IF;
     END PROCESS;
@@ -326,30 +326,30 @@ showcase0_verilog = """/*
 module Showcase0(input [31:0] a,
         input signed [31:0] b,
         output [31:0] c,
-        input  clk,
-        output  cmp0,
-        output  cmp1,
-        output  cmp2,
-        output  cmp3,
-        output  cmp4,
-        output  cmp5,
+        input clk,
+        output cmp0,
+        output cmp1,
+        output cmp2,
+        output cmp3,
+        output cmp4,
+        output cmp5,
         output [31:0] contOut,
         input [31:0] d,
-        input  e,
-        output  f,
+        input e,
+        output f,
         output [15:0] fitted,
         output [7:0] g,
         output reg [7:0] h,
         input [1:0] i,
         output reg [7:0] j,
         output reg [31:0] k,
-        output  out,
-        output  output_0,
-        input  rst_n,
+        output out,
+        output output_0,
+        input rst_n,
         output reg [7:0] sc_signal
     );
 
-    wire [31:0] const_private_signal = $unsigned(123);
+    reg [31:0] const_private_signal = 123;
     reg signed [7:0] fallingEdgeRam [4-1:0];
     reg r = 1'b0;
     reg [1:0] r_0 = 2'b00;
@@ -358,27 +358,27 @@ module Showcase0(input [31:0] a,
     wire [1:0] r_next_0;
     wire [1:0] r_next_1;
     reg [7:0] rom;
-    assign c = $unsigned( a + $unsigned( b ) );
-    assign cmp0 = a < $unsigned(4);
-    assign cmp1 = a > $unsigned(4);
+    assign c = a + $unsigned(b);
+    assign cmp0 = a < 4;
+    assign cmp1 = a > 4;
     assign cmp2 = b <= $signed(4);
     assign cmp3 = b >= $signed(4);
     assign cmp4 = b != $signed(4);
     assign cmp5 = b == $signed(4);
-    assign contOut = $unsigned( const_private_signal );
+    assign contOut = const_private_signal;
     assign f = r;
     always @(negedge clk) begin: assig_process_fallingEdgeRam
-        fallingEdgeRam[ r_1 ] <= $signed( a[ 7:0 ] );;
-        k <= {24'h000000 , $unsigned( $unsigned( fallingEdgeRam[ r_1 ] ) )};
+        fallingEdgeRam[r_1] <= $signed(a[7:0]);
+        k <= {24'h000000, $unsigned(fallingEdgeRam[r_1])};
     end
 
-    assign fitted = $unsigned( a[ 15:0 ] );
-    assign g = {{(a[ 1 ]) & (b[ 1 ]) , ((a[ 0 ]) ^ (b[ 0 ])) | (a[ 1 ])} , $unsigned( a[ 5:0 ] )};
+    assign fitted = a[15:0];
+    assign g = {{(a[1]) & (b[1]), ((a[0]) ^ (b[0])) | (a[1])}, a[5:0]};
     always @(a or r) begin: assig_process_h
-        if((a[ 2 ])==1'b1) begin
+        if((a[2])==1'b1) begin
             if((r)==1'b1) begin
                 h <= 8'h00;
-            end else if((a[ 1 ])==1'b1) begin
+            end else if((a[1])==1'b1) begin
                 h <= 8'h01;
             end else begin
                 h <= 8'h02;
@@ -387,7 +387,7 @@ module Showcase0(input [31:0] a,
     end
 
     always @(posedge clk) begin: assig_process_j
-        j <= $unsigned( rom );
+        j <= rom;
     end
 
     assign out = 1'b0;
@@ -408,38 +408,233 @@ module Showcase0(input [31:0] a,
     assign r_next_1 = r_0;
     always @(e or r) begin: assig_process_r_next
         r_next <= r;
-        if((~ r )==1'b1) begin
+        if((~r)==1'b1) begin
             r_next <= e;
         end
     end
 
     always @(a) begin: assig_process_sc_signal
         case(a)
-            $unsigned(1):
-                sc_signal <= 8'h00;
-            $unsigned(2):
-                sc_signal <= 8'h01;
-            $unsigned(3):
-                sc_signal <= 8'h03;
-            default:
-                sc_signal <= 8'h04;
+        1:
+            sc_signal <= 8'h00;
+        2:
+            sc_signal <= 8'h01;
+        3:
+            sc_signal <= 8'h03;
+        default:
+            sc_signal <= 8'h04;
         endcase
     end
 
     always @(r_1) begin: rom_0
         case(r_1)
-            0:
-                rom <= $unsigned(0);
-            1:
-                rom <= $unsigned(1);
-            2:
-                rom <= $unsigned(2);
-            3:
-                rom <= $unsigned(3);
+        0:
+            rom <= 0;
+        1:
+            rom <= 1;
+        2:
+            rom <= 2;
+        3:
+            rom <= 3;
         endcase
     end
 
 endmodule"""
+
+
+showcase0_systemc = """/*
+
+    Every HW component class has to be derived from Unit class (any kind of inheritance supported)
+    
+*/
+
+#include <systemc.h>
+
+
+SC_MODULE(Showcase0) {
+    //interfaces
+    sc_in<sc_uint<32>> a;
+    sc_in<sc_int<32>> b;
+    sc_out<sc_uint<32>> c;
+    sc_out<sc_uint<16>> fitted;
+    sc_out<sc_uint<32>> contOut;
+    sc_in<sc_uint<32>> d;
+    sc_in<sc_uint<1>> e;
+    sc_out<sc_uint<1>> f;
+    sc_out<sc_uint<8>> g;
+    sc_in_clk clk;
+    sc_in<sc_uint<1>> rst_n;
+    sc_out<sc_uint<1>> cmp0;
+    sc_out<sc_uint<1>> cmp1;
+    sc_out<sc_uint<1>> cmp2;
+    sc_out<sc_uint<1>> cmp3;
+    sc_out<sc_uint<1>> cmp4;
+    sc_out<sc_uint<1>> cmp5;
+    sc_out<sc_uint<8>> h;
+    sc_in<sc_uint<2>> i;
+    sc_out<sc_uint<8>> j;
+    sc_out<sc_uint<1>> out;
+    sc_out<sc_uint<1>> output;
+    sc_out<sc_uint<8>> sc_signal_0;
+    sc_out<sc_uint<32>> k;
+
+    //internal signals
+    sc_uint<32> const_private_signal = sc_biguint<32>(123);
+    sc_int<8> fallingEdgeRam [4];
+    sc_uint<1> r = '0';
+    sc_uint<2> r_0 = sc_uint<2>("00");
+    sc_uint<2> r_1 = sc_uint<2>("00");
+    sc_signal<sc_uint<1>> r_next;
+    sc_signal<sc_uint<2>> r_next_0;
+    sc_signal<sc_uint<2>> r_next_1;
+    sc_uint<8> rom [4] = {sc_biguint<8>(0),
+        sc_biguint<8>(1),
+        sc_biguint<8>(2),
+        sc_biguint<8>(3)};
+
+    //processes inside this component
+    void assig_process_c() {
+        c.write(static_cast<sc_uint<32>>(a.read() + static_cast<sc_uint<32>>(b.read())));
+    }
+    void assig_process_cmp0() {
+        cmp0.write(a.read() < sc_biguint<32>(4));
+    }
+    void assig_process_cmp1() {
+        cmp1.write(a.read() > sc_biguint<32>(4));
+    }
+    void assig_process_cmp2() {
+        cmp2.write(b.read() <= sc_biguint<32>(4));
+    }
+    void assig_process_cmp3() {
+        cmp3.write(b.read() >= sc_biguint<32>(4));
+    }
+    void assig_process_cmp4() {
+        cmp4.write(b.read() != sc_biguint<32>(4));
+    }
+    void assig_process_cmp5() {
+        cmp5.write(b.read() == sc_biguint<32>(4));
+    }
+    void assig_process_contOut() {
+        contOut.write(static_cast<sc_uint<32>>(const_private_signal));
+    }
+    void assig_process_f() {
+        f.write(r);
+    }
+    void assig_process_fallingEdgeRam() {
+        fallingEdgeRam[r_1] = static_cast<sc_int<8>>(a.read().range(8, 0));
+        k = sc_uint<24>("0x000000") & static_cast<sc_uint<8>>(static_cast<sc_uint<8>>(fallingEdgeRam[r_1]));
+    }
+    void assig_process_fitted() {
+        fitted.write(static_cast<sc_uint<16>>(a.read().range(16, 0)));
+    }
+    void assig_process_g() {
+        g.write((a.read()[1]) & (b.read()[1]) & ((a.read()[0]) ^ (b.read()[0])) | (a.read()[1]) & static_cast<sc_uint<6>>(a.read().range(6, 0)));
+    }
+    void assig_process_h() {
+        if((a.read()[2]) == '1') {
+            if(r == '1') {
+                h.write(sc_uint<8>("0x00"));
+            } else if((a.read()[1]) == '1') {
+                h.write(sc_uint<8>("0x01"));
+            } else {
+                h.write(sc_uint<8>("0x02"));
+            }
+        }
+    }
+    void assig_process_j() {
+        j = static_cast<sc_uint<8>>(rom[r_1]);
+    }
+    void assig_process_out() {
+        out.write('0');
+    }
+    void assig_process_output() {
+        output.write('X');
+    }
+    void assig_process_r() {
+        if(rst_n.read() == '0') {
+            r = '0';
+            r_1 = sc_uint<2>("00");
+            r_0 = sc_uint<2>("00");
+        } else {
+            r = r_next.read();
+            r_1 = r_next_1.read();
+            r_0 = r_next_0.read();
+        }
+    }
+    void assig_process_r_next() {
+        r_next_0.write(i.read());
+    }
+    void assig_process_r_next_0() {
+        r_next_1.write(r_0);
+    }
+    void assig_process_r_next_1() {
+        r_next.write(r);
+        if((~r) == '1') {
+            r_next.write(e.read());
+        }
+    }
+    void assig_process_sc_signal() {
+        switch(a.read()) {
+        case sc_biguint<32>(1):
+            sc_signal_0.write(sc_uint<8>("0x00"));
+            break;
+        case sc_biguint<32>(2):
+            sc_signal_0.write(sc_uint<8>("0x01"));
+            break;
+        case sc_biguint<32>(3):
+            sc_signal_0.write(sc_uint<8>("0x03"));
+            break;
+        default:
+            sc_signal_0.write(sc_uint<8>("0x04"));
+            break;
+        }
+    }
+
+    SC_CTOR(Showcase0) {
+        SC_METHOD(assig_process_c);
+        sensitive << a << b;
+        SC_METHOD(assig_process_cmp0);
+        sensitive << a;
+        SC_METHOD(assig_process_cmp1);
+        sensitive << a;
+        SC_METHOD(assig_process_cmp2);
+        sensitive << b;
+        SC_METHOD(assig_process_cmp3);
+        sensitive << b;
+        SC_METHOD(assig_process_cmp4);
+        sensitive << b;
+        SC_METHOD(assig_process_cmp5);
+        sensitive << b;
+        SC_METHOD(assig_process_contOut);
+        
+        SC_METHOD(assig_process_f);
+        sensitive << r;
+        SC_METHOD(assig_process_fallingEdgeRam);
+        sensitive << clk.neg();
+        SC_METHOD(assig_process_fitted);
+        sensitive << a;
+        SC_METHOD(assig_process_g);
+        sensitive << a << b;
+        SC_METHOD(assig_process_h);
+        sensitive << a << r;
+        SC_METHOD(assig_process_j);
+        sensitive << clk.pos();
+        SC_METHOD(assig_process_out);
+        
+        SC_METHOD(assig_process_output);
+        
+        SC_METHOD(assig_process_r);
+        sensitive << clk.pos();
+        SC_METHOD(assig_process_r_next);
+        sensitive << i;
+        SC_METHOD(assig_process_r_next_0);
+        sensitive << r_0;
+        SC_METHOD(assig_process_r_next_1);
+        sensitive << e << r;
+        SC_METHOD(assig_process_sc_signal);
+        sensitive << a;
+    }
+};"""
 
 if __name__ == "__main__":  # alias python main function
     from hwt.synthesizer.shortcuts import toRtl
@@ -448,4 +643,4 @@ if __name__ == "__main__":  # alias python main function
     #print(toRtl(Showcase0(), serializer=SimModelSerializer))
     print(toRtl(Showcase0(), serializer=VhdlSerializer))
     print(toRtl(Showcase0(), serializer=VerilogSerializer))
-    # print(toRtl(Showcase0(), serializer=SystemCSerializer))
+    print(toRtl(Showcase0(), serializer=SystemCSerializer))

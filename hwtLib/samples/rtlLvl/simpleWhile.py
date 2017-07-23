@@ -33,9 +33,7 @@ def SimpleWhile():
     return n, interf
 
 
-simpleWhileExpected = \
-"""
-library IEEE;
+simpleWhileExpected = """library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
@@ -55,7 +53,7 @@ ARCHITECTURE rtl OF SimpleWhile IS
 BEGIN
     assig_process_counter: PROCESS (clk)
     BEGIN
-        IF RISING_EDGE( clk ) THEN
+        IF RISING_EDGE(clk) THEN
             IF rst = '1' THEN
                 counter <= X"00";
             ELSE
@@ -63,20 +61,19 @@ BEGIN
             END IF;
         END IF;
     END PROCESS;
-
-    assig_process_counter_next: PROCESS (boundry, counter, en, start)
+    
+    assig_process_counter_next: PROCESS (counter, en, start)
     BEGIN
         counter_next <= counter;
-
-        IF (start)='1' THEN
+        IF start = '1' THEN
             counter_next <= boundry;
-        ELSIF (en)='1' THEN
-            counter_next <= STD_LOGIC_VECTOR( UNSIGNED( counter ) - 1 );
+        ELSIF en = '1' THEN
+            counter_next <= STD_LOGIC_VECTOR(UNSIGNED(counter) - 1);
         END IF;
     END PROCESS;
+    
     s_out <= counter;
-END ARCHITECTURE rtl;
-"""
+END ARCHITECTURE rtl;"""
 
 if __name__ == "__main__":
     netlist, interfaces = SimpleWhile()

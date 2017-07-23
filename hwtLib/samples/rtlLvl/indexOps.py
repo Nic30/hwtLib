@@ -38,9 +38,7 @@ def IndexOps():
 
     return n, interf
 
-indexOpsExpected = \
-"""
-library IEEE;
+indexOpsExpected = """library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
@@ -58,19 +56,14 @@ ENTITY IndexOps IS
 END IndexOps;
 
 ARCHITECTURE rtl OF IndexOps IS
-
 BEGIN
-
-    s_out <= (s_in( 3 DOWNTO 0 )) & X"2";
-    s_out2( 3 DOWNTO 0 ) <= s_in2( 3 DOWNTO 0 );
-    s_out2( 7 DOWNTO 4 ) <= s_in2( 7 DOWNTO 4 );
-    s_out3 <= s_in3( 7 DOWNTO 0 );
-    s_out4( 7 DOWNTO 0 ) <= s_in4a;
-    s_out4( 15 DOWNTO 8 ) <= s_in4b;
-
-END ARCHITECTURE rtl;
-
-"""
+    s_out <= (s_in(3 DOWNTO 0)) & X"2";
+    s_out2(3 DOWNTO 0) <= s_in2(3 DOWNTO 0);
+    s_out2(7 DOWNTO 4) <= s_in2(7 DOWNTO 4);
+    s_out3 <= s_in3(7 DOWNTO 0);
+    s_out4(7 DOWNTO 0) <= s_in4a;
+    s_out4(15 DOWNTO 8) <= s_in4b;
+END ARCHITECTURE rtl;"""
 
 if __name__ == "__main__":
     netlist, interfaces = IndexOps()

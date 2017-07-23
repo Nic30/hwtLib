@@ -47,7 +47,7 @@ ARCHITECTURE rtl OF Counter IS
 BEGIN
     assig_process_cnt: PROCESS (clk)
     BEGIN
-        IF RISING_EDGE( clk ) THEN
+        IF RISING_EDGE(clk) THEN
             IF rst = '1' THEN
                 cnt <= X"00";
             ELSE
@@ -55,20 +55,17 @@ BEGIN
             END IF;
         END IF;
     END PROCESS;
-
+    
     assig_process_cnt_next: PROCESS (cnt, en)
     BEGIN
         cnt_next <= cnt;
-
-        IF (en)='1' THEN
-            cnt_next <= STD_LOGIC_VECTOR( UNSIGNED( cnt ) + 1 );
+        IF en = '1' THEN
+            cnt_next <= STD_LOGIC_VECTOR(UNSIGNED(cnt) + 1);
         END IF;
     END PROCESS;
-
+    
     s_out <= cnt;
-
-END ARCHITECTURE rtl;
-"""
+END ARCHITECTURE rtl;"""
 
 if __name__ == "__main__":
     netlist, interfaces = Counter()

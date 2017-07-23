@@ -31,9 +31,7 @@ def LeadingZero():
 
     return n, interf
 
-leadingZeroExpected = \
-"""
-library IEEE;
+leadingZeroExpected = """library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
@@ -45,30 +43,28 @@ END LeadingZero;
 
 ARCHITECTURE rtl OF LeadingZero IS
 BEGIN
-
     assig_process_s_indexOfFirstZero: PROCESS (s_in)
     BEGIN
-        IF (s_in( 0 )) = '0' THEN
+        IF (s_in(0)) = '0' THEN
             s_indexOfFirstZero <= X"00";
-        ELSIF (s_in( 1 )) = '0' THEN
+        ELSIF (s_in(1)) = '0' THEN
             s_indexOfFirstZero <= X"01";
-        ELSIF (s_in( 2 )) = '0' THEN
+        ELSIF (s_in(2)) = '0' THEN
             s_indexOfFirstZero <= X"02";
-        ELSIF (s_in( 3 )) = '0' THEN
+        ELSIF (s_in(3)) = '0' THEN
             s_indexOfFirstZero <= X"03";
-        ELSIF (s_in( 4 )) = '0' THEN
+        ELSIF (s_in(4)) = '0' THEN
             s_indexOfFirstZero <= X"04";
-        ELSIF (s_in( 5 )) = '0' THEN
+        ELSIF (s_in(5)) = '0' THEN
             s_indexOfFirstZero <= X"05";
-        ELSIF (s_in( 6 )) = '0' THEN
+        ELSIF (s_in(6)) = '0' THEN
             s_indexOfFirstZero <= X"06";
         ELSE
             s_indexOfFirstZero <= X"07";
         END IF;
     END PROCESS;
-
-END ARCHITECTURE rtl;
-"""
+    
+END ARCHITECTURE rtl;"""
 
 if __name__ == "__main__":
     netlist, interfaces = LeadingZero()

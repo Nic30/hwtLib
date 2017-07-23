@@ -39,7 +39,7 @@ BEGIN
     dout <= internReg;
     assig_process_internReg: PROCESS (clk)
     BEGIN
-        IF RISING_EDGE( clk ) THEN
+        IF RISING_EDGE(clk) THEN
             IF rst = '1' THEN
                 internReg <= '0';
             ELSE
@@ -59,10 +59,10 @@ dreg_verilog = """/*
         generate such a register for any interface and datatype
     
 */
-module DReg(input  clk,
-        input  din,
-        output  dout,
-        input  rst
+module DReg(input clk,
+        input din,
+        output dout,
+        input rst
     );
 
     reg internReg = 1'b0;
@@ -94,24 +94,24 @@ dreg_systemc = """/*
 
 SC_MODULE(DReg) {
     //interfaces
-    sc_in<sc_uint<1>> clk;
+    sc_in_clk clk;
     sc_in<sc_uint<1>> rst;
     sc_in<sc_uint<1>> din;
     sc_out<sc_uint<1>> dout;
 
     //internal signals
-    sc_signal<sc_uint<1>> internReg('0');
-    sc_signal<sc_uint<1>> internReg_next('X');
+    sc_uint<1> internReg = '0';
+    sc_signal<sc_uint<1>> internReg_next;
 
     //processes inside this component
     void assig_process_dout() {
-        dout.write(internReg.read());
+        dout.write(internReg);
     }
     void assig_process_internReg() {
         if(rst.read() == '1') {
-            internReg.write('0');
-        end else {
-            internReg.write(internReg_next.read());
+            internReg = '0';
+        } else {
+            internReg = internReg_next.read();
         }
     }
     void assig_process_internReg_next() {
@@ -122,11 +122,10 @@ SC_MODULE(DReg) {
         SC_METHOD(assig_process_dout);
         sensitive << internReg;
         SC_METHOD(assig_process_internReg);
-        sensitive <<  clk .pos();
+        sensitive << clk.pos();
         SC_METHOD(assig_process_internReg_next);
         sensitive << din;
     }
-  }
 };"""
 
 
