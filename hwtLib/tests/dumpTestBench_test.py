@@ -1,8 +1,9 @@
-from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.samples.builders.handshakedBuilderSimple import HandshakedBuilderSimple
-from hwt.hdlObjects.constants import Time
 from io import StringIO
 import unittest
+
+from hwt.hdlObjects.constants import Time
+from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.samples.builders.handshakedBuilderSimple import HandshakedBuilderSimple
 
 
 class DumpTestbenchTC(SimTestCase):
@@ -18,8 +19,7 @@ class DumpTestbenchTC(SimTestCase):
         self.assertEqual(s, HandshakedBuilderSimple_dump)
         self.assertValSequenceEqual(u.b._ag.data, [1, 2, 3, 4])
 
-HandshakedBuilderSimple_dump = \
-"""library IEEE;
+HandshakedBuilderSimple_dump = """library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
@@ -27,42 +27,42 @@ ENTITY HandshakedBuilderSimple_tb IS
 
 END HandshakedBuilderSimple_tb;
 ARCHITECTURE rtl OF HandshakedBuilderSimple_tb IS
-    SIGNAL a_data : STD_LOGIC_VECTOR(63 DOWNTO 0) := X"0000000000000000";
-    SIGNAL a_rd : STD_LOGIC := '0';
-    SIGNAL a_vld : STD_LOGIC := '0';
-    SIGNAL b_data : STD_LOGIC_VECTOR(63 DOWNTO 0) := X"0000000000000000";
-    SIGNAL b_rd : STD_LOGIC := '0';
-    SIGNAL b_vld : STD_LOGIC := '0';
-    SIGNAL clk : STD_LOGIC := '0';
-    SIGNAL rst_n : STD_LOGIC := '0';
+    SIGNAL a_data: STD_LOGIC_VECTOR(63 DOWNTO 0) := X"0000000000000000";
+    SIGNAL a_rd: STD_LOGIC := '0';
+    SIGNAL a_vld: STD_LOGIC := '0';
+    SIGNAL b_data: STD_LOGIC_VECTOR(63 DOWNTO 0) := X"0000000000000000";
+    SIGNAL b_rd: STD_LOGIC := '0';
+    SIGNAL b_vld: STD_LOGIC := '0';
+    SIGNAL clk: STD_LOGIC := '0';
+    SIGNAL rst_n: STD_LOGIC := '0';
     COMPONENT HandshakedBuilderSimple IS
-       GENERIC (a_DATA_WIDTH : INTEGER := 64;
-            b_DATA_WIDTH : INTEGER := 64
+       GENERIC (a_DATA_WIDTH: INTEGER := 64;
+            b_DATA_WIDTH: INTEGER := 64
        );
-       PORT (a_data : IN STD_LOGIC_VECTOR(a_DATA_WIDTH - 1 DOWNTO 0);
-            a_rd : OUT STD_LOGIC;
-            a_vld : IN STD_LOGIC;
-            b_data : OUT STD_LOGIC_VECTOR(b_DATA_WIDTH - 1 DOWNTO 0);
-            b_rd : IN STD_LOGIC;
-            b_vld : OUT STD_LOGIC;
-            clk : IN STD_LOGIC;
-            rst_n : IN STD_LOGIC
+       PORT (a_data: IN STD_LOGIC_VECTOR(a_DATA_WIDTH - 1 DOWNTO 0);
+            a_rd: OUT STD_LOGIC;
+            a_vld: IN STD_LOGIC;
+            b_data: OUT STD_LOGIC_VECTOR(b_DATA_WIDTH - 1 DOWNTO 0);
+            b_rd: IN STD_LOGIC;
+            b_vld: OUT STD_LOGIC;
+            clk: IN STD_LOGIC;
+            rst_n: IN STD_LOGIC
        );
     END COMPONENT;
 
 BEGIN
-    HandshakedBuilderSimple_inst : COMPONENT HandshakedBuilderSimple
+    HandshakedBuilderSimple_inst: COMPONENT HandshakedBuilderSimple
         GENERIC MAP (a_DATA_WIDTH => 64,
             b_DATA_WIDTH => 64
         )
-        PORT MAP ( a_data => a_data,
-             a_rd => a_rd,
-             a_vld => a_vld,
-             b_data => b_data,
-             b_rd => b_rd,
-             b_vld => b_vld,
-             clk => clk,
-             rst_n => rst_n
+        PORT MAP (a_data => a_data,
+            a_rd => a_rd,
+            a_vld => a_vld,
+            b_data => b_data,
+            b_rd => b_rd,
+            b_vld => b_vld,
+            clk => clk,
+            rst_n => rst_n
         );
 
     a_data_driver: PROCESS --()

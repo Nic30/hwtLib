@@ -36,18 +36,16 @@ def AxiReaderCore():
 
     return n, [rSt, arRd, arVld, rVld, rRd]
 
-axiReaderCoreExpected = \
-"""
-library IEEE;
+axiReaderCoreExpected = """library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY AxiReaderCore IS
-    PORT (arRd : IN STD_LOGIC;
-        arVld : IN STD_LOGIC;
-        rRd : IN STD_LOGIC;
-        rSt : OUT rSt_t;
-        rVld : IN STD_LOGIC
+    PORT (arRd: IN STD_LOGIC;
+        arVld: IN STD_LOGIC;
+        rRd: IN STD_LOGIC;
+        rSt: OUT rSt_t;
+        rVld: IN STD_LOGIC
     );
 END AxiReaderCore;
 
@@ -67,9 +65,8 @@ BEGIN
             rSt <= rdData;
         END IF;
     END PROCESS;
-    
-END ARCHITECTURE rtl;
-"""
+
+END ARCHITECTURE rtl;"""
 
 if __name__ == "__main__":
     netlist, interfaces = AxiReaderCore()

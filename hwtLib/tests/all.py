@@ -78,7 +78,7 @@ from hwtLib.samples.builders.pingResponder_test import PingResponderTC
 from hwtLib.samples.emptyUnitWithSpi import EmptyUnitWithSpiTC
 from hwtLib.samples.errors.errorsTestCase import ErrorsTC
 from hwtLib.samples.hdlComments_test import HdlCommentsTC
-from hwtLib.samples.hierarchy.netFilter_test import NetFilterTC
+from hwtLib.samples.hierarchy.hierarchySerialization_test import HierarchySerializationTC
 from hwtLib.samples.hierarchy.simpleSubunit2 import SimpleSubunit2TC
 from hwtLib.samples.hierarchy.simpleSubunit3 import SimpleSubunit3TC
 from hwtLib.samples.hierarchy.simpleSubunit_test import SimpleSubunitTC
@@ -190,7 +190,7 @@ suite = testSuiteFromTCs(
     SimpleUnitWithParamTC,
     SimpleSubunit2TC,
     TimerTC,
-    NetFilterTC,
+    HierarchySerializationTC,
     InterfaceArraySample0TC,
     InterfaceArraySample1TC,
     InterfaceArraySample2TC,

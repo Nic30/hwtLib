@@ -62,20 +62,20 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY ComplexConditions IS
-    PORT (clk : IN STD_LOGIC;
-        ctrlFifoLast : IN STD_LOGIC;
-        ctrlFifoVld : IN STD_LOGIC;
-        rst : IN STD_LOGIC;
-        s_idle : OUT STD_LOGIC;
-        sd0 : IN STD_LOGIC;
-        sd1 : IN STD_LOGIC
+    PORT (clk: IN STD_LOGIC;
+        ctrlFifoLast: IN STD_LOGIC;
+        ctrlFifoVld: IN STD_LOGIC;
+        rst: IN STD_LOGIC;
+        s_idle: OUT STD_LOGIC;
+        sd0: IN STD_LOGIC;
+        sd1: IN STD_LOGIC
     );
 END ComplexConditions;
 
 ARCHITECTURE rtl OF ComplexConditions IS
     TYPE T_STATE IS (idle, tsWait, ts0Wait, ts1Wait, lenExtr);
-    SIGNAL st : t_state := idle;
-    SIGNAL st_next : t_state;
+    SIGNAL st: t_state := idle;
+    SIGNAL st_next: t_state;
 BEGIN
     s_idle <= '1' WHEN st = idle ELSE '0';
     assig_process_st: PROCESS (clk)
@@ -88,7 +88,7 @@ BEGIN
             END IF;
         END IF;
     END PROCESS;
-    
+
     assig_process_st_next: PROCESS (ctrlFifoLast, ctrlFifoVld, sd0, sd1, st)
     BEGIN
         st_next <= st;
@@ -122,12 +122,12 @@ BEGIN
                 st_next <= lenExtr;
             END IF;
         WHEN OTHERS =>
-            IF (ctrlFifoVld AND ctrlFifoLast) = '1' AND st = lenExtr THEN
+            IF (ctrlFifoVld AND ctrlFifoLast) = '1' THEN
                 st_next <= idle;
             END IF;
         END CASE;
     END PROCESS;
-    
+
 END ARCHITECTURE rtl;"""
 
 if __name__ == "__main__":

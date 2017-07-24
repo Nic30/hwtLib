@@ -193,45 +193,45 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY Showcase0 IS
-    PORT (a : IN UNSIGNED(31 DOWNTO 0);
-        b : IN SIGNED(31 DOWNTO 0);
-        c : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-        clk : IN STD_LOGIC;
-        cmp0 : OUT STD_LOGIC;
-        cmp1 : OUT STD_LOGIC;
-        cmp2 : OUT STD_LOGIC;
-        cmp3 : OUT STD_LOGIC;
-        cmp4 : OUT STD_LOGIC;
-        cmp5 : OUT STD_LOGIC;
-        contOut : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-        d : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
-        e : IN STD_LOGIC;
-        f : OUT STD_LOGIC;
-        fitted : OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
-        g : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-        h : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-        i : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
-        j : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-        k : OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
-        out_0 : OUT STD_LOGIC;
-        output : OUT STD_LOGIC;
-        rst_n : IN STD_LOGIC;
-        sc_signal : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+    PORT (a: IN UNSIGNED(31 DOWNTO 0);
+        b: IN SIGNED(31 DOWNTO 0);
+        c: OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+        clk: IN STD_LOGIC;
+        cmp0: OUT STD_LOGIC;
+        cmp1: OUT STD_LOGIC;
+        cmp2: OUT STD_LOGIC;
+        cmp3: OUT STD_LOGIC;
+        cmp4: OUT STD_LOGIC;
+        cmp5: OUT STD_LOGIC;
+        contOut: OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+        d: IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+        e: IN STD_LOGIC;
+        f: OUT STD_LOGIC;
+        fitted: OUT STD_LOGIC_VECTOR(15 DOWNTO 0);
+        g: OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+        h: OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+        i: IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+        j: OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+        k: OUT STD_LOGIC_VECTOR(31 DOWNTO 0);
+        out_0: OUT STD_LOGIC;
+        output: OUT STD_LOGIC;
+        rst_n: IN STD_LOGIC;
+        sc_signal: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
 END Showcase0;
 
 ARCHITECTURE rtl OF Showcase0 IS
     TYPE arrT_0 IS ARRAY ((3) DOWNTO 0) OF SIGNED(7 DOWNTO 0);
     TYPE arrT_1 IS ARRAY ((3) DOWNTO 0) OF UNSIGNED(7 DOWNTO 0);
-    CONSTANT const_private_signal : UNSIGNED(31 DOWNTO 0) := TO_UNSIGNED(123, 32);
-    SIGNAL fallingEdgeRam : arrT_0;
-    SIGNAL r : STD_LOGIC := '0';
-    SIGNAL r_0 : STD_LOGIC_VECTOR(1 DOWNTO 0) := "00";
-    SIGNAL r_1 : STD_LOGIC_VECTOR(1 DOWNTO 0) := "00";
-    SIGNAL r_next : STD_LOGIC;
-    SIGNAL r_next_0 : STD_LOGIC_VECTOR(1 DOWNTO 0);
-    SIGNAL r_next_1 : STD_LOGIC_VECTOR(1 DOWNTO 0);
-    CONSTANT rom : arrT_1 := (TO_UNSIGNED(0, 8),
+    CONSTANT const_private_signal: UNSIGNED(31 DOWNTO 0) := TO_UNSIGNED(123, 32);
+    SIGNAL fallingEdgeRam: arrT_0;
+    SIGNAL r: STD_LOGIC := '0';
+    SIGNAL r_0: STD_LOGIC_VECTOR(1 DOWNTO 0) := "00";
+    SIGNAL r_1: STD_LOGIC_VECTOR(1 DOWNTO 0) := "00";
+    SIGNAL r_next: STD_LOGIC;
+    SIGNAL r_next_0: STD_LOGIC_VECTOR(1 DOWNTO 0);
+    SIGNAL r_next_1: STD_LOGIC_VECTOR(1 DOWNTO 0);
+    CONSTANT rom: arrT_1 := (TO_UNSIGNED(0, 8),
         TO_UNSIGNED(1, 8),
         TO_UNSIGNED(2, 8),
         TO_UNSIGNED(3, 8));

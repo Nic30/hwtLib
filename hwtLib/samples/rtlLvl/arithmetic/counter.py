@@ -28,22 +28,21 @@ def Counter():
     return n, interf
 
 counterExpected = \
-"""
-library IEEE;
+"""library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY Counter IS
-    PORT (clk : IN STD_LOGIC;
-        en : IN STD_LOGIC;
-        rst : IN STD_LOGIC;
-        s_out : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+    PORT (clk: IN STD_LOGIC;
+        en: IN STD_LOGIC;
+        rst: IN STD_LOGIC;
+        s_out: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
 END Counter;
 
 ARCHITECTURE rtl OF Counter IS
-    SIGNAL cnt : STD_LOGIC_VECTOR(7 DOWNTO 0) := X"00";
-    SIGNAL cnt_next : STD_LOGIC_VECTOR(7 DOWNTO 0);
+    SIGNAL cnt: STD_LOGIC_VECTOR(7 DOWNTO 0) := X"00";
+    SIGNAL cnt_next: STD_LOGIC_VECTOR(7 DOWNTO 0);
 BEGIN
     assig_process_cnt: PROCESS (clk)
     BEGIN
@@ -55,7 +54,7 @@ BEGIN
             END IF;
         END IF;
     END PROCESS;
-    
+
     assig_process_cnt_next: PROCESS (cnt, en)
     BEGIN
         cnt_next <= cnt;
@@ -63,7 +62,7 @@ BEGIN
             cnt_next <= STD_LOGIC_VECTOR(UNSIGNED(cnt) + 1);
         END IF;
     END PROCESS;
-    
+
     s_out <= cnt;
 END ARCHITECTURE rtl;"""
 

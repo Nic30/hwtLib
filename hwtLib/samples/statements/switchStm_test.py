@@ -21,11 +21,11 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY SwitchStmUnit IS
-    PORT (a : IN STD_LOGIC;
-        b : IN STD_LOGIC;
-        c : IN STD_LOGIC;
-        out_0 : OUT STD_LOGIC;
-        sel : IN STD_LOGIC_VECTOR(2 DOWNTO 0)
+    PORT (a: IN STD_LOGIC;
+        b: IN STD_LOGIC;
+        c: IN STD_LOGIC;
+        out_0: OUT STD_LOGIC;
+        sel: IN STD_LOGIC_VECTOR(2 DOWNTO 0)
     );
 END SwitchStmUnit;
 

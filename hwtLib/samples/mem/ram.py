@@ -5,7 +5,6 @@ from hwt.code import If
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal, Clk
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.serializer.simModel.serializer import SimModelSerializer
 
 
 class SimpleAsyncRam(Unit):
@@ -39,7 +38,7 @@ class SimpleSyncRam(SimpleAsyncRam):
         )
 
 
-if __name__ == "__main__":  # alias python main function
+if __name__ == "__main__":  # alias python "main" function
     from hwt.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
-    print(toRtl(SimpleSyncRam(), serializer=SimModelSerializer))
+    print(toRtl(SimpleSyncRam()))

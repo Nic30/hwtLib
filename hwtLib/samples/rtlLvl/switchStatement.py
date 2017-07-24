@@ -21,15 +21,13 @@ def SwitchStatement():
     interf = [In, Out]
     return n, interf
 
-switchStatementExpected = \
-"""
-library IEEE;
+switchStatementExpected = """library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY SwitchStatement IS
-    PORT (input : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-        output : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+    PORT (input: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+        output: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
 END SwitchStatement;
 
@@ -58,8 +56,7 @@ BEGIN
         END CASE;
     END PROCESS;
 
-END ARCHITECTURE rtl;
-"""
+END ARCHITECTURE rtl;"""
 
 if __name__ == "__main__":
     netlist, interfaces = SwitchStatement()
