@@ -127,8 +127,7 @@ class AxiLiteEndpointTC(SimTestCase):
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = \
-"""struct {
+        expected = """struct {
     <Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
     <Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
 }"""
@@ -138,17 +137,17 @@ class AxiLiteEndpointTC(SimTestCase):
 class AxiLiteEndpointDenseTC(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDense
     FIELD_ADDR = [0x0, 0x8]
-    
+
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = \
-"""struct {
+        expected = """struct {
     <Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
     //<Bits, 32bits, unsigned> empty space // start:0x20(bit) 0x4(byte)
     <Bits, 32bits, unsigned> field1 // start:0x40(bit) 0x8(byte)
 }"""
         self.assertEqual(s, expected)
+
 
 class AxiLiteEndpointDenseStartTC(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDenseStart
@@ -157,8 +156,7 @@ class AxiLiteEndpointDenseStartTC(AxiLiteEndpointTC):
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = \
-"""struct {
+        expected = """struct {
     //<Bits, 32bits, unsigned> empty space // start:0x0(bit) 0x0(byte)
     <Bits, 32bits, unsigned> field0 // start:0x20(bit) 0x4(byte)
     <Bits, 32bits, unsigned> field1 // start:0x40(bit) 0x8(byte)
@@ -169,15 +167,14 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    #suite.addTest(AxiLiteEndpointStructsInArray('test_write'))
+    # suite.addTest(AxiLiteEndpointStructsInArray('test_write'))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-    
+
     # u = AxiLiteEndpoint(structStructsInArray, shouldEnterFn=lambda tmpl: True)
     # u.DATA_WIDTH.set(32)
     # print(toRtl(u))
-
