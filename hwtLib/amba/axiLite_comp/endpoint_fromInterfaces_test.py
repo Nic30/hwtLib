@@ -1,45 +1,44 @@
-from hwt.bitmask import mask
 from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import BramPort_withoutClk
 from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
-from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
+from hwtLib.amba.axiLite_comp.endpoint_arr_test import addrGetter
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
-from hwtLib.types.ctypes import uint32_t
+from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.param import Param
 
 
-structTwoFields = HStruct(
-                          (uint32_t, "field0"),
-                          (uint32_t, "field1")
-                          )
+class TestComponent(Unit):
+    """
+    Containter of AxiLiteEndpoint constructed by fromInterfaceMap
+    """
+    def _config(self):
+        self.ADDR_WIDTH = Param(32)
+        self.DATA_WIDTH = Param(32)
 
-structTwoFieldsDense = HStruct(
-                          (uint32_t, "field0"),
-                          (uint32_t, None),
-                          (uint32_t, "field1")
-                          )
-structTwoFieldsDenseStart = HStruct(
-                          (uint32_t, None),
-                          (uint32_t, "field0"),
-                          (uint32_t, "field1")
-                          )
+    def _declr(self):
+        addClkRstn(self)
+        with self._paramsShared():
+            self.bus = AxiLite()
+
+    def _impl(self):
+        def configEp(ep):
+            ep._updateParamsFrom(self)
+
+        interfaceMap = []
+        AxiLiteEndpoint.fromInterfaceMap(self,
+                                         "axiLiteConv",
+                                         self.bus,
+                                         configEp,
+                                         interfaceMap)
+        Unit._impl(self)
 
 
-def addrGetter(intf):
-    if isinstance(intf, AxiLite):
-        return intf.ar.addr
-    elif isinstance(intf, BramPort_withoutClk):
-        return intf.addr
-    else:
-        raise TypeError(intf)
-
-
-class AxiLiteEndpointTC(SimTestCase):
-    STRUCT_TEMPLATE = structTwoFields
-    FIELD_ADDR = [0x0, 0x4]
+class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
 
     def mkRegisterMap(self, u, modelCls):
         self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
@@ -132,49 +131,3 @@ class AxiLiteEndpointTC(SimTestCase):
     <Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
 }"""
         self.assertEqual(s, expected)
-
-
-class AxiLiteEndpointDenseTC(AxiLiteEndpointTC):
-    STRUCT_TEMPLATE = structTwoFieldsDense
-    FIELD_ADDR = [0x0, 0x8]
-
-    def test_registerMap(self):
-        self.mySetUp(32)
-        s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = """struct {
-    <Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
-    //<Bits, 32bits, unsigned> empty space // start:0x20(bit) 0x4(byte)
-    <Bits, 32bits, unsigned> field1 // start:0x40(bit) 0x8(byte)
-}"""
-        self.assertEqual(s, expected)
-
-
-class AxiLiteEndpointDenseStartTC(AxiLiteEndpointTC):
-    STRUCT_TEMPLATE = structTwoFieldsDenseStart
-    FIELD_ADDR = [0x4, 0x8]
-
-    def test_registerMap(self):
-        self.mySetUp(32)
-        s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = """struct {
-    //<Bits, 32bits, unsigned> empty space // start:0x0(bit) 0x0(byte)
-    <Bits, 32bits, unsigned> field0 // start:0x20(bit) 0x4(byte)
-    <Bits, 32bits, unsigned> field1 // start:0x40(bit) 0x8(byte)
-}"""
-        self.assertEqual(s, expected)
-
-if __name__ == "__main__":
-    import unittest
-    suite = unittest.TestSuite()
-
-    # suite.addTest(AxiLiteEndpointStructsInArray('test_write'))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
-
-    runner = unittest.TextTestRunner(verbosity=3)
-    runner.run(suite)
-
-    # u = AxiLiteEndpoint(structStructsInArray, shouldEnterFn=lambda tmpl: True)
-    # u.DATA_WIDTH.set(32)
-    # print(toRtl(u))
