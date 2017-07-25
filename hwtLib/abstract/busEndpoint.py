@@ -38,12 +38,13 @@ def walkIntfMap(intfMap):
             # is struct described by tuple
             for item in intfMap:
                 yield from walkIntfMap(item)
-            
+
     elif isinstance(intfMap, HdlType):
         pass
     else:
         for item in intfMap:
             yield from walkIntfMap(item)
+
 
 def walkStructIntfAndIntfMap(structIntf, intfMap):
     if isinstance(intfMap, (InterfaceBase, RtlSignalBase)):
@@ -62,7 +63,7 @@ def walkStructIntfAndIntfMap(structIntf, intfMap):
             assert len(intfMap) == len(structIntf._interfaces), (intfMap, structIntf)
             for sItem, item in zip(structIntf._interfaces, intfMap):
                 yield from walkStructIntfAndIntfMap(sItem, item)
-            
+
     elif isinstance(intfMap, HdlType):
         pass
     else:
@@ -70,7 +71,7 @@ def walkStructIntfAndIntfMap(structIntf, intfMap):
             a = structIntf
         else:
             a = structIntf._interfaces
-            
+
         assert len(a) == len(intfMap)
         for sItem, item in zip(a, intfMap):
             yield from walkStructIntfAndIntfMap(sItem, item)
@@ -296,37 +297,15 @@ class BusEndpoint(Unit):
 
         return p
 
-    @classmethod
-    def _fromInterfaceMap(cls, parent, onParentName, bus, busDataWidth, configFn, interfaceMap):
+    def connectByInterfaceMap(self, interfaceMap):
         """
-        Generate converter by specified struct and connect interfaces if are specified
-        in impl phase
-
-        :param parent: unit where converter should be instantiated
-        :param onParentName: name of converter in parent
-        :param bus: bus interface for converter
-        :param configFn: function (converter) which should be used for configuring of converter
-        :param interfaceMap: take a look at HTypeFromIntfMap
-            if interface is specified it will be automatically connected
-        """
-        terminalFields = set()
-        t = HTypeFromIntfMap(interfaceMap, terminalFields)
-
-        def shouldEnter(tmpl):
-            shouldYield = tmpl in terminalFields
-            shouldEnter = not shouldYield
-            return shouldEnter, shouldYield
+        Connect "decoded" struct interface to interfaces specified
+        in iterface map
         
-        # instantiate converter
-        conv = cls(t, shouldEnterFn=shouldEnter)
-        configFn(conv)
-
-        setattr(parent, onParentName, conv)
-
-        conv.bus ** bus
-
+        :param interfaceMap: list of interfaces or tuple (typen)
+        """
         # connect interfaces as was specified by register map
-        for convIntf, intf in walkStructIntfAndIntfMap(conv.decoded, interfaceMap):
+        for convIntf, intf in walkStructIntfAndIntfMap(self.decoded, interfaceMap):
             if isinstance(intf, Signal):
                 assert intf._direction == INTF_DIRECTION.MASTER
                 convIntf.din ** intf
@@ -346,3 +325,22 @@ class BusEndpoint(Unit):
                 intf ** convIntf
             else:
                 raise NotImplementedError(intf)
+
+    @classmethod
+    def fromInterfaceMap(cls, interfaceMap):
+        """
+        Generate converter by specified struct 
+
+        :param interfaceMap: take a look at HTypeFromIntfMap
+            if interface is specified it will be automatically connected
+        """
+        terminalFields = set()
+        t = HTypeFromIntfMap(interfaceMap, terminalFields)
+
+        def shouldEnter(tmpl):
+            shouldYield = tmpl in terminalFields
+            shouldEnter = not shouldYield
+            return shouldEnter, shouldYield
+
+        # instantiate converter
+        return cls(t, shouldEnterFn=shouldEnter)
