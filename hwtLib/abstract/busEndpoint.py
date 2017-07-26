@@ -17,6 +17,7 @@ from hwtLib.sim.abstractMemSpaceMaster import PartialField
 from hwt.hdlObjects.types.hdlType import HdlType
 from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
 from hwt.pyUtils.arrayQuery import where
+from hwt.hdlObjects.types.struct import HStruct
 
 
 def inRange(n, lower, end):
@@ -46,26 +47,41 @@ def walkIntfMap(intfMap):
             yield from walkIntfMap(item)
 
 
+def isPaddingInIntfMap(item):
+    if isinstance(item, HdlType):
+        return True
+    else:
+        try:
+            if isinstance(item, tuple):
+                _item, name = item
+                if name is None:
+                    return True
+        except ValueError:
+            pass
+
+    return False 
+
 def walkStructIntfAndIntfMap(structIntf, intfMap):
     if isinstance(intfMap, (InterfaceBase, RtlSignalBase)):
         yield structIntf, intfMap
     elif isinstance(intfMap, tuple):
         try:
             item, name = intfMap
-        except (TypeError, ValueError):
+            if isinstance(item, HdlType):
+                return
+        except ValueError:
             name = None
+
         if isinstance(name, str):
             # is named something
             yield from walkStructIntfAndIntfMap(structIntf, item)
         else:
             # is struct described by tuple
-            intfMap = list(where(intfMap, lambda x: not isinstance(x, HdlType)))
+            intfMap = list(where(intfMap, lambda x: not isPaddingInIntfMap(x)))
             assert len(intfMap) == len(structIntf._interfaces), (intfMap, structIntf)
             for sItem, item in zip(structIntf._interfaces, intfMap):
                 yield from walkStructIntfAndIntfMap(sItem, item)
 
-    elif isinstance(intfMap, HdlType):
-        pass
     else:
         if structIntf._isInterfaceArray():
             a = structIntf
@@ -105,8 +121,9 @@ class BusEndpoint(Unit):
         """
         :param structTemplate: instance of HStruct which describes address space of this endpoint
         :param intfCls: class of bus interface which should be used
-        :param shouldEnterFn: function(transactionTemplate) which should return True if structuralized type like Array or HStruct
-            should be interpreted as separate interfaces or False if not
+        :param shouldEnterFn: function(transactionTemplate) which should return (shouldEnter, shouldUse)
+            where shouldEnter is flag that means iterator over this interface should look inside of this actual object
+            and shouldUse flag means that this field should be used (to create interface) 
         """
         assert intfCls is not None, "intfCls has to be specified"
 
@@ -142,27 +159,27 @@ class BusEndpoint(Unit):
     def isInMyAddrRange(self, addrSig):
         return (addrSig >= self._getMinAddr()) & (addrSig < self._getMaxAddr())
 
-    def walkFieldsAndIntf(self, transTmpl, structIntf):
-        fieldTrans = transTmpl.walkFlatten(shouldEnterFn=self.shouldEnterFn)
-
-        def shouldEnterIntf(intf):
-            """
-            :return: tuple (shouldEnter, shouldYield)
-            """
-            if isinstance(intf, InterfaceProxy) and intf._itemsInOne == 1:
-                if isinstance(intf._origIntf, (RegCntrl, BramPort_withoutClk)):
-                    return (False, True)
-                else:
-                    return (True, False)
-            if isinstance(intf, (RegCntrl, BramPort_withoutClk)):
-                if intf._widthMultiplier is not None:
-                    return (False, False)
-                else:
-                    return (False, True)
+    @staticmethod
+    def _shouldEnterIntf(intf):
+        """
+        :return: tuple (shouldEnter, shouldYield)
+        """
+        if isinstance(intf, InterfaceProxy) and intf._itemsInOne == 1:
+            if isinstance(intf._origIntf, (RegCntrl, BramPort_withoutClk)):
+                return (False, True)
             else:
                 return (True, False)
+        if isinstance(intf, (RegCntrl, BramPort_withoutClk)):
+            if intf._widthMultiplier is not None:
+                return (False, False)
+            else:
+                return (False, True)
+        else:
+            return (True, False)
 
-        intfs = walkFlatten(structIntf, shouldEnterIntf)
+    def walkFieldsAndIntf(self, transTmpl, structIntf):
+        fieldTrans = transTmpl.walkFlatten(shouldEnterFn=lambda tmpl: self.shouldEnterFn(tmpl.origin))
+        intfs = walkFlatten(structIntf, self._shouldEnterIntf)
 
         for (((base, end), transTmpl), intf) in zip(fieldTrans, intfs):
             if isinstance(intf, InterfaceProxy):
@@ -247,7 +264,7 @@ class BusEndpoint(Unit):
         # _prefix = transTmpl.getMyAddrPrefix(srcAddrStep)
         assert dstAddrStep % srcAddrStep == 0
         if not isinstance(transTmpl.dtype, Array):
-            raise TypeError()
+            raise TypeError(transTmpl.dtype)
         assert transTmpl.bitAddr % dstAddrStep == 0, "Has to be addressable by address with this step (%r)" % (transTmpl)
 
         addrIsAligned = transTmpl.bitAddr % transTmpl.bit_length() == 0
@@ -274,27 +291,38 @@ class BusEndpoint(Unit):
         t = field.dtype
         DW = int(self.DATA_WIDTH)
 
-        if isinstance(t, Bits):
-            p = RegCntrl()
-            dw = t.bit_length()
-        elif isinstance(t, Array):
-            if self.shouldEnterFn(field):
-                p = StructIntf(t.elmType, instantiateFieldFn=self._mkFieldInterface, asArraySize=t.size)
-                return p
-            else:
+        shouldEnter, shouldUse = self.shouldEnterFn(field) 
+        if shouldUse:
+            if isinstance(t, Bits):
+                p = RegCntrl()
+                dw = t.bit_length()
+            elif isinstance(t, Array):
                 p = BramPort_withoutClk()
+                assert isinstance(t.elmType, Bits)
                 dw = t.elmType.bit_length()
                 p.ADDR_WIDTH.set(log2ceil(t.size - 1))
-        else:
-            raise NotImplementedError(t)
+            else:
+                raise NotImplementedError(t)
+    
+            if dw == DW:
+                # use param instead of value to improve readability
+                dw = self.DATA_WIDTH
+                p._replaceParam("DATA_WIDTH", dw)
+            else:
+                p.DATA_WIDTH.set(dw)
 
-        if dw == DW:
-            # use param instead of value to improve readability
-            dw = self.DATA_WIDTH
-            p._replaceParam("DATA_WIDTH", dw)
-        else:
-            p.DATA_WIDTH.set(dw)
-
+        elif shouldEnter:
+            if isinstance(t, Array):
+                if isinstance(t.elmType, Bits):
+                    p = RegCntrl(asArraySize=t.size)
+                    dw = t.elmType.bit_length()
+                else:
+                    return StructIntf(t.elmType, instantiateFieldFn=self._mkFieldInterface, asArraySize=t.size)
+            elif isinstance(t, HStruct):
+                return StructIntf(t, instantiateFieldFn=self._mkFieldInterface)
+            else:
+                raise TypeError()
+                
         return p
 
     def connectByInterfaceMap(self, interfaceMap):
@@ -302,7 +330,7 @@ class BusEndpoint(Unit):
         Connect "decoded" struct interface to interfaces specified
         in iterface map
         
-        :param interfaceMap: list of interfaces or tuple (typen)
+        :param interfaceMap: list of interfaces or tuple (type or interface, name)
         """
         # connect interfaces as was specified by register map
         for convIntf, intf in walkStructIntfAndIntfMap(self.decoded, interfaceMap):
@@ -319,7 +347,7 @@ class BusEndpoint(Unit):
 
             elif isinstance(intf, VldSynced):
                 assert intf._direction == INTF_DIRECTION.SLAVE
-                convIntf.dout ** intf
+                intf ** convIntf.dout
 
             elif isinstance(intf, BramPort_withoutClk):
                 intf ** convIntf

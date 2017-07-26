@@ -1,18 +1,52 @@
 from hwt.hdlObjects.constants import Time
-from hwt.interfaces.std import BramPort_withoutClk
+from hwt.interfaces.std import BramPort_withoutClk, VldSynced, RegCntrl, \
+    VectSignal, Signal
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.param import Param
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import addrGetter
+from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
-from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.param import Param
+from hwt.hdlObjects.types.bits import Bits
 
 
-class TestComponent(Unit):
+class Loop(Unit):
+    """
+    Simple loop for any interface
+    """
+    def __init__(self, interfaceCls):
+        self.interfaceCls = interfaceCls
+        super(Loop, self).__init__()
+
+    def _config(self):
+        self.interfaceCls._config(self)
+
+    def _declr(self):
+        with self._paramsShared():
+            self.din = self.interfaceCls()
+            self.dout = self.interfaceCls()
+
+    def _impl(self):
+        self.dout ** self.din
+
+
+class SigLoop(Unit):
+    def _config(self):
+        self.DATA_WIDTH = Param(32)
+
+    def _declr(self):
+        self.din = VectSignal(self.DATA_WIDTH)
+        self.dout = VectSignal(self.DATA_WIDTH)
+
+    def _impl(self):
+        self.dout ** self.din
+
+
+class TestUnittWithChilds(Unit):
     """
     Containter of AxiLiteEndpoint constructed by fromInterfaceMap
     """
@@ -24,18 +58,52 @@ class TestComponent(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.bus = AxiLite()
+            
+            self.signalLoop = SigLoop()
+            self.signalIn = VectSignal(self.DATA_WIDTH)
+
+            self.regCntrlLoop = Loop(RegCntrl)
+            self.regCntrlOut = RegCntrl()
+
+            self.vldSyncedLoop = Loop(VldSynced)
+            self.vldSyncedOut = VldSynced()
+
+
+        with self._paramsShared(exclude={self.ADDR_WIDTH}):
+            self.bramLoop = Loop(BramPort_withoutClk)
+            self.bramLoop.ADDR_WIDTH.set(2)
+
+            self.bramOut = BramPort_withoutClk()
+            self.bramOut.ADDR_WIDTH.set(2)
 
     def _impl(self):
+        self.signalLoop.din ** self.signalIn
+        self.regCntrlOut ** self.regCntrlLoop.dout 
+        self.vldSyncedOut ** self.vldSyncedLoop.dout 
+        self.bramOut ** self.bramLoop.dout
+        
         def configEp(ep):
             ep._updateParamsFrom(self)
+        rltSig10 = self._sig("sig", Bits(self.DATA_WIDTH), defVal=10)
+        interfaceMap = (
+            (rltSig10, "rltSig10"),
+            (self.signalLoop.dout, "signal"),
+            (self.regCntrlLoop.din, "regCntrl"),
+            (self.vldSyncedLoop.din, "vldSynced"),
+            (self.bramLoop.din, "bram"),
+            (Bits(self.DATA_WIDTH), None),
+            )
 
-        interfaceMap = []
-        AxiLiteEndpoint.fromInterfaceMap(self,
-                                         "axiLiteConv",
-                                         self.bus,
-                                         configEp,
-                                         interfaceMap)
-        Unit._impl(self)
+        axiLiteConv = AxiLiteEndpoint.fromInterfaceMap(interfaceMap)
+        axiLiteConv._updateParamsFrom(self)
+        self.conv = axiLiteConv
+
+        axiLiteConv.connectByInterfaceMap(interfaceMap)
+        axiLiteConv.bus ** self.bus
+        axiLiteConv.decoded.vldSynced.din ** None
+        
+
+        propagateClkRstn(self)
 
 
 class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
@@ -47,7 +115,7 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
     def randomizeAll(self):
         u = self.u
         for intf in u._interfaces:
-            if u not in (u.clk, u.rst_n, u.bus) and not isinstance(intf, BramPort_withoutClk):
+            if u not in (u.clk, u.rst_n, u.bus) and not isinstance(intf, (BramPort_withoutClk, VldSynced, Signal)):
                 self.randomize(intf)
 
         self.randomize(u.bus.ar)
@@ -57,7 +125,7 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
         self.randomize(u.bus.b)
 
     def mySetUp(self, data_width=32):
-        u = self.u = AxiLiteEndpoint(self.STRUCT_TEMPLATE)
+        u = self.u = TestUnittWithChilds()
 
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH.set(self.DATA_WIDTH)
@@ -72,62 +140,82 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
         self.doSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.r.data)
-        self.assertEmpty(u.decoded.field0._ag.dout)
-        self.assertEmpty(u.decoded.field1._ag.dout)
+        self.assertEmpty(u.bus._ag.b.data)
+        self.assertEmpty(u.regCntrlOut._ag.dout)
+        self.assertEmpty(u.vldSyncedOut._ag.data)
+        self.assertEqual(u.bramOut._ag.mem, {})
 
     def test_read(self):
         u = self.mySetUp(32)
         MAGIC = 100
-        A = self.FIELD_ADDR
-        u.bus.ar._ag.data.extend([A[0], A[1], A[0], A[1], A[1] + 0x4])
+        r = self.regs
 
-        u.decoded.field0._ag.din.extend([MAGIC])
-        u.decoded.field1._ag.din.extend([MAGIC + 1])
+        r.rltSig10.read()
+
+        u.signalIn._ag.data.append(MAGIC)
+        r.signal.read()
+
+        u.regCntrlOut._ag.din.extend([MAGIC + 1])
+        r.regCntrl.read()
+        
+        r.vldSynced.read()
+        
+        for i in range(4):
+            u.bramOut._ag.mem[i] = MAGIC + 2 + i
+            r.bram[i].read()
+        
 
         self.randomizeAll()
-        self.doSim(300 * Time.ns)
+        self.doSim(600 * Time.ns)
 
         self.assertValSequenceEqual(u.bus.r._ag.data,
-                                    [(MAGIC, RESP_OKAY),
-                                     (MAGIC + 1, RESP_OKAY),
+                                    [(10, RESP_OKAY),
                                      (MAGIC, RESP_OKAY),
                                      (MAGIC + 1, RESP_OKAY),
-                                     (None, RESP_SLVERR)])
+                                     (None, RESP_OKAY), ] + 
+                                    [(MAGIC + 2 + i, RESP_OKAY) for i in range(4)])
 
     def test_write(self):
         u = self.mySetUp(32)
         MAGIC = 100
-        m = mask(32 // 8)
-        A = self.FIELD_ADDR
-        u.bus.aw._ag.data.extend([A[0],
-                                  A[1],
-                                  A[0],
-                                  A[1],
-                                  A[1] + 0x4])
-        u.bus.w._ag.data.extend([(MAGIC, m),
-                                 (MAGIC + 1, m),
-                                 (MAGIC + 2, m),
-                                 (MAGIC + 3, m),
-                                 (MAGIC + 4, m)])
+        r = self.regs
 
+        r.regCntrl.write(MAGIC)
+        r.vldSynced.write(MAGIC + 1)
+        for i in range(4):
+            r.bram[i].write(MAGIC + 2 + i)
+        
         self.randomizeAll()
-        self.doSim(500 * Time.ns)
+        self.doSim(800 * Time.ns)
 
-        self.assertValSequenceEqual(u.decoded.field0._ag.dout,
-                                    [MAGIC,
-                                     MAGIC + 2
-                                     ])
-        self.assertValSequenceEqual(u.decoded.field1._ag.dout,
-                                    [MAGIC + 1,
-                                     MAGIC + 3
-                                     ])
-        self.assertValSequenceEqual(u.bus.b._ag.data, [RESP_OKAY for _ in range(4)] + [RESP_SLVERR])
+        self.assertValSequenceEqual(u.regCntrlOut._ag.dout,
+                                    [MAGIC, ])
+        self.assertValSequenceEqual(u.vldSyncedOut._ag.data,
+                                    [MAGIC + 1, ])
+        self.assertValSequenceEqual(u.bus.b._ag.data, [RESP_OKAY for _ in range(6)])
 
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
         expected = """struct {
-    <Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
-    <Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
+    <Bits, DATA_WIDTH, 32bits> rltSig10 // start:0x0(bit) 0x0(byte)
+    <Bits, DATA_WIDTH, 32bits> signal // start:0x20(bit) 0x4(byte)
+    <Bits, DATA_WIDTH, 32bits> regCntrl // start:0x40(bit) 0x8(byte)
+    <Bits, DATA_WIDTH, 32bits> vldSynced // start:0x60(bit) 0xc(byte)
+    <Bits, 32bits>[4] bram // start:0x80(bit) 0x10(byte)
+    //<Bits, DATA_WIDTH, 32bits> empty space // start:0x100(bit) 0x20(byte)
 }"""
         self.assertEqual(s, expected)
+
+if __name__ == "__main__":
+    import unittest
+    suite = unittest.TestSuite()
+    
+    # suite.addTest(AxiLiteEndpoint_fromInterfaceTC('test_read'))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpoint_fromInterfaceTC))
+    runner = unittest.TextTestRunner(verbosity=3)
+    runner.run(suite)
+    # from hwt.synthesizer.shortcuts import toRtl
+    # u = TestUnittWithChilds()
+    # u.DATA_WIDTH.set(32)
+    # print(toRtl(u))

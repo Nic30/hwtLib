@@ -139,6 +139,7 @@ from hwtLib.tests.valSlicing_test import ValSlicingTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
+from hwtLib.amba.axiLite_comp.endpoint_fromInterfaces_test import AxiLiteEndpoint_fromInterfaceTC
 
 
 def doSimWithoutLog(self, time):
@@ -268,6 +269,7 @@ suite = testSuiteFromTCs(
     AxiLiteEndpointStructsInArray,
     AxiLiteEndpoint_struct_TC,
     AxiLiteEndpoint_arrayStruct_TC,
+    AxiLiteEndpoint_fromInterfaceTC,
 
     AxisFrameGenTC,
     Axi4_rDatapumpTC,
