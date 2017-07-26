@@ -46,7 +46,7 @@ class IpifReg(Unit):
         # now bus2ip_cs has to be set after addr etc are valid
         # but we must not let start another transaction directly after one ended
         If(dout.ip2bus_rdack._reg | dout.ip2bus_wrack._reg,
-            cs ** 0 ,
+            cs ** 0,
             dout.bus2ip_cs ** 0
         ).Else(
             cs ** din.bus2ip_cs,
