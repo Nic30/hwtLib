@@ -40,8 +40,7 @@ s0 = HStruct(
     (HStruct(
         (uint64_t, "item0"),
         (uint64_t, "item1"),
-     ), "struct0"
-    )
+     ), "struct0")
     )
 s0at64bit_str = """<FrameTemplate start:0, end:896
      63                                                             0
