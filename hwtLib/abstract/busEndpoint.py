@@ -17,7 +17,7 @@ from hwtLib.sim.abstractMemSpaceMaster import PartialField
 from hwt.hdlObjects.types.hdlType import HdlType
 from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
 from hwt.pyUtils.arrayQuery import where
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdlObjects.types.struct import HStruct, HStructField
 
 
 def inRange(n, lower, end):
@@ -121,19 +121,27 @@ class BusEndpoint(Unit):
         """
         :param structTemplate: instance of HStruct which describes address space of this endpoint
         :param intfCls: class of bus interface which should be used
-        :param shouldEnterFn: function(transactionTemplate) which should return (shouldEnter, shouldUse)
-            where shouldEnter is flag that means iterator over this interface should look inside of this actual object
-            and shouldUse flag means that this field should be used (to create interface) 
+        :param shouldEnterFn: function(structField) return (shouldEnter, shouldUse)
+            where shouldEnter is flag that means iterator over this interface
+            should look inside of this actual object
+            and shouldUse flag means that this field should be used (to create interface)
         """
         assert intfCls is not None, "intfCls has to be specified"
 
         self._intfCls = intfCls
         self.STRUCT_TEMPLATE = structTemplate
         if shouldEnterFn is None:
-            self.shouldEnterFn = lambda tmpl: not isinstance(tmpl.dtype, Array)
+            self.shouldEnterFn = self._defaultShouldEnterFn
         else:
             self.shouldEnterFn = shouldEnterFn
         Unit.__init__(self)
+
+    @staticmethod
+    def _defaultShouldEnterFn(field):
+        t = field.dtype
+        shouldEnter = isinstance(t, HStruct)
+        shouldUse = not shouldEnter
+        return shouldEnter, shouldUse
 
     def _getWordAddrStep(self):
         raise NotImplementedError("Should be overridden in concrete implementation, this is abstract class")
@@ -177,8 +185,15 @@ class BusEndpoint(Unit):
         else:
             return (True, False)
 
+    def _shouldEnterForTransTmpl(self, tmpl):
+        o = tmpl.origin
+        if isinstance(o, HStructField):
+            return self.shouldEnterFn(o)
+        else:
+            return (True, False)
+
     def walkFieldsAndIntf(self, transTmpl, structIntf):
-        fieldTrans = transTmpl.walkFlatten(shouldEnterFn=lambda tmpl: self.shouldEnterFn(tmpl.origin))
+        fieldTrans = transTmpl.walkFlatten(shouldEnterFn=self._shouldEnterForTransTmpl)
         intfs = walkFlatten(structIntf, self._shouldEnterIntf)
 
         for (((base, end), transTmpl), intf) in zip(fieldTrans, intfs):
@@ -291,7 +306,7 @@ class BusEndpoint(Unit):
         t = field.dtype
         DW = int(self.DATA_WIDTH)
 
-        shouldEnter, shouldUse = self.shouldEnterFn(field) 
+        shouldEnter, shouldUse = self.shouldEnterFn(field)
         if shouldUse:
             if isinstance(t, Bits):
                 p = RegCntrl()
@@ -303,7 +318,7 @@ class BusEndpoint(Unit):
                 p.ADDR_WIDTH.set(log2ceil(t.size - 1))
             else:
                 raise NotImplementedError(t)
-    
+
             if dw == DW:
                 # use param instead of value to improve readability
                 dw = self.DATA_WIDTH
@@ -322,14 +337,14 @@ class BusEndpoint(Unit):
                 return StructIntf(t, instantiateFieldFn=self._mkFieldInterface)
             else:
                 raise TypeError()
-                
+
         return p
 
     def connectByInterfaceMap(self, interfaceMap):
         """
         Connect "decoded" struct interface to interfaces specified
         in iterface map
-        
+
         :param interfaceMap: list of interfaces or tuple (type or interface, name)
         """
         # connect interfaces as was specified by register map
@@ -357,7 +372,7 @@ class BusEndpoint(Unit):
     @classmethod
     def fromInterfaceMap(cls, interfaceMap):
         """
-        Generate converter by specified struct 
+        Generate converter by specified struct
 
         :param interfaceMap: take a look at HTypeFromIntfMap
             if interface is specified it will be automatically connected

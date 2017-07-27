@@ -9,6 +9,7 @@ from hwtLib.types.ctypes import uint32_t
 from hwt.pyUtils.arrayQuery import flatten
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC
+from hwt.hdlObjects.types.bits import Bits
 
 
 structTwoArr = HStruct(
@@ -101,8 +102,7 @@ class AxiLiteEndpointArray(AxiLiteEndpointTC):
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = \
-"""struct {
+        expected = """struct {
     <Bits, 32bits, unsigned>[4] field0 // start:0x0(bit) 0x0(byte)
     <Bits, 32bits, unsigned>[4] field1 // start:0x80(bit) 0x10(byte)
 }"""
@@ -113,7 +113,10 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structStructsInArray
 
     def mySetUp(self, data_width=32):
-        u = self.u = AxiLiteEndpoint(self.STRUCT_TEMPLATE, shouldEnterFn=lambda tmpl: True)
+        u = AxiLiteEndpoint(self.STRUCT_TEMPLATE,
+                            shouldEnterFn=lambda x: (True,
+                                                     isinstance(x.dtype, Bits)))
+        self.u = u
 
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH.set(self.DATA_WIDTH)
@@ -135,8 +138,7 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = \
-"""struct {
+        expected = """struct {
     struct {
         <Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
         <Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
@@ -193,7 +195,7 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    #suite.addTest(AxiLiteEndpointArray('test_read'))
+    # suite.addTest(AxiLiteEndpointArray('test_read'))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))

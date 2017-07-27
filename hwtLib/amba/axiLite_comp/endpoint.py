@@ -126,11 +126,10 @@ class AxiLiteEndpoint(BusEndpoint):
                 res.append(pad)
 
             directlyMappedWors.append((w, Concat(*reversed(res))))
-                
-        
+
         Switch(arAddr).addCases(
                     [(w[0], r.data ** w[1])
-                     for w in directlyMappedWors] 
+                     for w in directlyMappedWors]
                 ).Default(
                     r.data ** rdataReg
                 )
@@ -197,7 +196,7 @@ class AxiLiteEndpoint(BusEndpoint):
                 width = t.bitAddrEnd - t.bitAddr
 
             offset = t.bitAddr % DW
-            out.data ** w.data[(offset + width): offset] 
+            out.data ** w.data[(offset + width): offset]
             out.vld ** (w_hs & (awAddr._eq(vec(t.bitAddr // DW * (DW // ADDR_STEP), addrWidth))))
 
         for t in self._bramPortMapped:

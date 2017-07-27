@@ -9,7 +9,12 @@ from hwt.hdlObjects.types.defs import INT, STR
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwt.synthesizer.rtlLevel.signalUtils.walkers import walkAllOriginSignals
 from hwt.hdlObjects.types.bits import Bits
+from hwt.hdlObjects.types.boolean import Boolean
+from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 
+n = RtlNetlist()
+s0 = n.sig("s0", Boolean())
+s1 = n.sig("s1")
 
 andTable = [(None, None, None),
             (None, 0, 0),
@@ -17,14 +22,52 @@ andTable = [(None, None, None),
             (0, None, 0),
             (0, 0, 0),
             (0, 1, 0),
-            (1, 1, 1)]
+            (1, 1, 1),
+            (s0, 1, s0),
+            (s0, 0, 0),
+            (1, s0, s0),
+            (0, s0, 0),
+            ]
 orTable = [(None, None, None),
            (None, 0, None),
            (None, 1, 1),
            (0, None, None),
            (0, 0, 0),
            (0, 1, 1),
-           (1, 1, 1)]
+           (1, 1, 1),
+           (s0, 1, 1),
+           (s0, 0, s0),
+           (1, s0, 1),
+           (0, s0, s0),
+           ]
+xorTable = [(None, None, None),
+            (None, 0, None),
+            (None, 1, None),
+            (0, None, None),
+            (0, 0, 0),
+            (0, 1, 1),
+            (1, 1, 0),
+            (s0, 1, ~s0),
+            (s0, 0, s0),
+            (1, s0, ~s0),
+            (0, s0, s0),
+            ]
+
+bitvals = {
+    1: hBit(1),
+    0: hBit(0),
+    None: hBit(None),
+    s0: s1,
+    ~s0: ~s1
+}
+
+boolvals = {
+    1: hBool(1),
+    0: hBool(0),
+    None: hBool(None),
+    s0: s0,
+    ~s0: ~s0
+}
 
 
 class OperatorTC(unittest.TestCase):
@@ -47,69 +90,63 @@ class OperatorTC(unittest.TestCase):
             self.assertEqual(res.vldMask, 1)
             self.assertEqual(res.updateTime, -1)
 
-    def test_BitAnd(self):
-        vals = {
-            1: hBit(1),
-            0: hBit(0),
-            None: hBit(None)
-        }
-
+    def _test_And(self, vals):
         for a, b, expected in andTable:
             res = vals[a] & vals[b]
             expectedRes = vals[expected]
 
-            self.assertEqual(expectedRes.val, res.val,
-                             "%s & %s  val=%s (should be %s)" % (repr(a), repr(b), repr(res.val), repr(expectedRes.val)))
-            self.assertEqual(expectedRes.vldMask, res.vldMask,
-                             "%s & %s  vldMask=%s (should be %s)" % (repr(a), repr(b), repr(res.vldMask), repr(expectedRes.vldMask)))
+            if isinstance(expectedRes, RtlSignalBase):
+                self.assertIs(res, expectedRes)
+            else:
+                self.assertEqual(expectedRes.val, res.val,
+                                 "%r & %r  val=%r (should be %r)" % (a, b, res.val, expectedRes.val))
+                self.assertEqual(expectedRes.vldMask, res.vldMask,
+                                 "%r & %r  vldMask=%r (should be %r)" % (a, b, res.vldMask, expectedRes.vldMask))
 
-    def test_BitOr(self):
-        vals = {
-            1: hBit(1),
-            0: hBit(0),
-            None: hBit(None)
-        }
-
+    def _test_Or(self, vals):
         for a, b, expected in orTable:
             res = vals[a] | vals[b]
             expectedRes = vals[expected]
 
-            self.assertEqual(expectedRes.val, res.val,
-                             "%s & %s  val=%s (should be %s)" % (repr(a), repr(b), repr(res.val), repr(expectedRes.val)))
-            self.assertEqual(expectedRes.vldMask, res.vldMask,
-                             "%s & %s  vldMask=%s (should be %s)" % (repr(a), repr(b), repr(res.vldMask), repr(expectedRes.vldMask)))
+            if isinstance(expectedRes, RtlSignalBase):
+                self.assertIs(res, expectedRes)
+            else:
+                self.assertEqual(expectedRes.val, res.val,
+                                 "%r | %r  val=%r (should be %r)" % (a, b, res.val, expectedRes.val))
+                self.assertEqual(expectedRes.vldMask, res.vldMask,
+                                 "%r | %r  vldMask=%r (should be %r)" % (a, b, res.vldMask, expectedRes.vldMask))
+
+    def _test_Xor(self, vals):
+        for a, b, expected in xorTable:
+            res = vals[a] ^ vals[b]
+            expectedRes = vals[expected]
+
+            if isinstance(expectedRes, RtlSignalBase):
+                self.assertIs(res, expectedRes)
+            else:
+                if expectedRes.vldMask:
+                    self.assertEqual(expectedRes.val, res.val,
+                                     "%r ^ %r  val=%r (should be %r)" % (a, b, res.val, expectedRes.val))
+                self.assertEqual(expectedRes.vldMask, res.vldMask,
+                                 "%r ^ %r  vldMask=%r (should be %r)" % (a, b, res.vldMask, expectedRes.vldMask))
 
     def test_BoolAnd(self):
-        vals = {
-            1: hBool(1),
-            0: hBool(0),
-            None: hBool(None)
-        }
+        self._test_And(boolvals)
 
-        for a, b, expected in andTable:
-            res = vals[a] & vals[b]
-            expectedRes = vals[expected]
-
-            self.assertEqual(expectedRes.val, res.val,
-                             "%s & %s  val=%s (should be %s)" % (repr(a), repr(b), repr(res.val), repr(expectedRes.val)))
-            self.assertEqual(expectedRes.vldMask, res.vldMask,
-                             "%s & %s  vldMask=%s (should be %s)" % (repr(a), repr(b), repr(res.vldMask), repr(expectedRes.vldMask)))
+    def test_BitAnd(self):
+        self._test_And(bitvals)
 
     def test_BoolOr(self):
-        vals = {
-            1: hBool(1),
-            0: hBool(0),
-            None: hBool(None)
-        }
+        self._test_Or(boolvals)
 
-        for a, b, expected in orTable:
-            res = vals[a] | vals[b]
-            expectedRes = vals[expected]
+    def test_BitOr(self):
+        self._test_Or(bitvals)
 
-            self.assertEqual(expectedRes.val, res.val,
-                             "%s & %s  val=%s (should be %s)" % (repr(a), repr(b), repr(res.val), repr(expectedRes.val)))
-            self.assertEqual(expectedRes.vldMask, res.vldMask,
-                             "%s & %s  vldMask=%s (should be %s)" % (repr(a), repr(b), repr(res.vldMask), repr(expectedRes.vldMask)))
+    def test_BoolXor(self):
+        self._test_Xor(boolvals)
+
+    def test_BitXor(self):
+        self._test_Xor(bitvals)
 
     def test_notNotIsOrigSig(self):
         a = self.n.sig("a")
@@ -221,13 +258,13 @@ class OperatorTC(unittest.TestCase):
         s = n.sig("s", vecT(16))
         s * 10
         s * s
-    
+
     def test_array_eq_neq(self):
         t = Bits(8)[5]
         v0 = t.fromPy(range(5))
-        v1 = t.fromPy({0:10, 1:2})
+        v1 = t.fromPy({0: 10, 1: 2})
         v2 = t.fromPy([1, 2, 3, 4, 5])
-        
+
         self.assertTrue(v0._eq(v0))
         with self.assertRaises(ValueError):
             self.assertNotEqual(v0, v1)
@@ -245,6 +282,7 @@ class OperatorTC(unittest.TestCase):
         v = -INT.fromPy(None)
         self.assertEqual(v.val, 0)
         self.assertEqual(v.vldMask, 0)
+
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
