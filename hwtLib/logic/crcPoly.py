@@ -150,6 +150,7 @@ CRC_30 = 0x2030B9C7
 
 # HDLC, ANSI X3.66, ITU-T V.42, Ethernet, Serial ATA, MPEG-2, PKZIP, Gzip, Bzip2, PNG, many others
 CRC_32 = 0x04C11DB7
+CRC_32_ETH_RESIDUE = 0xC704DD7B # (is not crc polynom...)
 
 # (Castagnoli), iSCSI, SCTP, G.hn payload, SSE4.2, Btrfs, ext4, Ceph
 CRC_32C = 0x1EDC6F41

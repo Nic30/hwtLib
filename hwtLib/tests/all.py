@@ -14,6 +14,7 @@ from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArray, \
     AxiLiteEndpointStructsInArray
+from hwtLib.amba.axiLite_comp.endpoint_fromInterfaces_test import AxiLiteEndpoint_fromInterfaceTC
 from hwtLib.amba.axiLite_comp.endpoint_struct_test import AxiLiteEndpoint_arrayStruct_TC, \
     AxiLiteEndpoint_struct_TC
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
@@ -52,7 +53,7 @@ from hwtLib.ipif.reg_test import IpifRegTC
 from hwtLib.logic.binToOneHot import BinToOneHotTC
 from hwtLib.logic.cntrGray import GrayCntrTC
 from hwtLib.logic.crcUtils_test import CrcUtilsTC
-from hwtLib.logic.crc_test import CrcCombTC
+from hwtLib.logic.crc_test import CrcCombTC, CrcTC
 from hwtLib.logic.lsfr import LsfrTC
 from hwtLib.logic.oneHotToBin_test import OneHotToBinTC
 from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
@@ -139,7 +140,6 @@ from hwtLib.tests.valSlicing_test import ValSlicingTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
-from hwtLib.amba.axiLite_comp.endpoint_fromInterfaces_test import AxiLiteEndpoint_fromInterfaceTC
 
 
 def doSimWithoutLog(self, time):
@@ -259,6 +259,7 @@ suite = testSuiteFromTCs(
     I2CMasterBitCntrlTC,
     CrcUtilsTC,
     CrcCombTC,
+    CrcTC,
     SimpleAxiRegsTC,
     AxiTC,
     BusEndpointTC,

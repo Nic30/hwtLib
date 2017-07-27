@@ -45,7 +45,7 @@ class CrcComb(Unit):
         for outBit, inMask in zip(iterBits(self.dataOut),
                                   xorMatrix):
             bit = None
-            for m, b in zip(inMask, iterBits(self.dataIn)):
+            for m, b in zip(reversed(inMask), iterBits(self.dataIn)):
                 if m:
                     if bit is None:
                         bit = b

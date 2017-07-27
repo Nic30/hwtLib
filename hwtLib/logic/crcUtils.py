@@ -66,6 +66,15 @@ def crc_serial_shift(num_bits_to_shift,
                      lfsr_cur,
                      dataWidth,
                      data_cur):
+    """
+    :param polySize: bit size of polynomial
+    :param coefs: array of 1,0 which representing the polynomial
+    :param lfsr_cur: array with single 1 flag which specifies
+        for which bit we are currently counting the crc
+    :pram dataWidth: bit widtho of input signal to this crc round
+    :pram data_cur: ray with single 1 flag which specifies
+        for which bit we are currently counting the crc
+    """
 
     assert num_bits_to_shift <= dataWidth
 
@@ -83,6 +92,7 @@ def crc_serial_shift(num_bits_to_shift,
                 lfsr_next[i] = lfsr_next[i - 1]
 
         lfsr_next[0] = lfsr_upper_bit ^ data_cur[j]
+
     return lfsr_next
 
 
@@ -100,20 +110,24 @@ def buildCrcMatrix_dataMatrix(coefs, polyWidth, dataWidth):
                    for _ in range(polyWidth)]
 
     for m1 in range(dataWidth):
+        # set flag for crc_serial_shift
         data_cur[m1] = 1
         if m1:
+            # clean last flag
             data_cur[m1 - 1] = 0
 
-        reg_next = crc_serial_shift(dataWidth,
-                                    polyWidth,
-                                    coefs,
-                                    reg_cur,
-                                    dataWidth,
-                                    data_cur)
+        _data_matrix = crc_serial_shift(dataWidth,
+                                        polyWidth,
+                                        coefs,
+                                        reg_cur,
+                                        dataWidth,
+                                        data_cur)
 
-        for n2, b in enumerate(reg_next):
+        for n2, b in enumerate(_data_matrix):
             if b:
-                data_matrix[n2][dataWidth - m1 - 1] = 1
+                # dataWidth - m1 - 1
+                data_matrix[n2][m1] = 1
+
     return data_matrix
 
 
@@ -128,12 +142,14 @@ def buildCrcMatrix_reg0Matrix(coefs, polyWidth, dataWidth):
         reg_cur[n1] = 1
         if n1:
             reg_cur[n1 - 1] = 0
+
         reg_next = crc_serial_shift(dataWidth,
                                     polyWidth,
                                     coefs,
                                     reg_cur,
                                     dataWidth,
                                     data_cur)
+
         for n2, b in enumerate(reg_next):
             if b:
                 reg_matrix[n2][n1] = 1
