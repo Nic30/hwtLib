@@ -25,13 +25,12 @@ class Crc(Unit):
         # also  refin, reference in
         self.REVERSE_IN = Param(False)
         self.REVERSE_OUT = Param(False)
-        
+
         # also xorout
         # output = this ^ value in reg
         # for example ethernet has 0xffffffff
         # (0 or mask(POLY_WIDTH) is automatically reduced)
         self.FINAL_XOR_VAL = Param(0)
-        
         self.SEED = Param(0)
 
     def _declr(self):
@@ -82,9 +81,7 @@ class Crc(Unit):
 
         # just rename to make code shorter
         d = self.wrapWithName(self.dataIn.data, "d")
-        
         dataXorMatrix = iter(dataXorMatrix)
-        
         regCrcBits = self.build_CRC_XOR(iterBits(reg), regXorMatrix)
 
         _dataBits = iterBits(d)
@@ -99,7 +96,7 @@ class Crc(Unit):
             if dbit is not None:
                 # just rename to make code shorter
                 dbit = self.wrapWithName(dbit, "d_%d" % i)
-                
+
             if rbit is not None:
                 # just rename to make code shorter
                 rbit = self.wrapWithName(rbit, "r_%d" % i)
@@ -117,7 +114,7 @@ class Crc(Unit):
            # regNext is in format 0 ... N, we need to reverse it to litle endian
            reg ** Concat(*reversed(regNext))
         )
-        
+
         outXor = int(self.FINAL_XOR_VAL)
         if self.REVERSE_OUT:
             _reg = reversedBits(reg)
