@@ -1,0 +1,51 @@
+import unittest
+
+from hwt.code import connect
+from hwt.interfaces.std import VectSignal
+from hwt.serializer.vhdl.serializer import VhdlSerializer
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.shortcuts import toRtl
+
+TmpVarExample_asVhdl = """library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+ENTITY TmpVarExample IS
+    PORT (a: IN STD_LOGIC_VECTOR(31 DOWNTO 0);
+        b: OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
+    );
+END TmpVarExample;
+
+ARCHITECTURE rtl OF TmpVarExample IS
+BEGIN
+    assig_process_b: PROCESS (a)
+    VARIABLE tmpTypeConv: STD_LOGIC_VECTOR(8 - 1 DOWNTO 0);
+    BEGIN
+    tmpTypeConv := STD_LOGIC_VECTOR(UNSIGNED(a(7 DOWNTO 0)) + 4);
+        b <= X"0000000" & (tmpTypeConv(3 DOWNTO 0));
+    END PROCESS;
+
+END ARCHITECTURE rtl;"""
+
+
+class TmpVarExample(Unit):
+    def _declr(self):
+        self.a = VectSignal(32)
+        self.b = VectSignal(32)
+
+    def _impl(self):
+        a = self.a[8:] + 4
+        connect(a[4:], self.b, fit=True)
+
+
+class Serializer_tmpVar_TC(unittest.TestCase):
+    def test_add_to_slice_vhdl(self):
+        s = toRtl(TmpVarExample(), serializer=VhdlSerializer)
+        self.assertEqual(s, TmpVarExample_asVhdl)
+
+if __name__ == '__main__':
+    suite = unittest.TestSuite()
+    # suite.addTest(RdSyncedPipe('test_basic_data_pass'))
+    suite.addTest(unittest.makeSuite(Serializer_tmpVar_TC))
+    runner = unittest.TextTestRunner(verbosity=3)
+    runner.run(suite)

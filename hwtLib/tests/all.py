@@ -125,6 +125,8 @@ from hwtLib.tests.frameTemplate_test import FrameTemplateTC
 from hwtLib.tests.hstructVal_test import HStructValTC
 from hwtLib.tests.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.operators import OperatorTC
+from hwtLib.tests.rdSynced_agent_test import RdSynced_agent_TC
+from hwtLib.tests.serializer_tmpVar_test import Serializer_tmpVar_TC
 from hwtLib.tests.signedArithmetic_test import SignedArithmeticTC
 from hwtLib.tests.simEvents_test import SimEventsTC
 from hwtLib.tests.simulatorUtlls_test import SimulatorUtilsTC
@@ -140,7 +142,6 @@ from hwtLib.tests.valSlicing_test import ValSlicingTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
-from hwtLib.tests.rdSynced_agent_test import RdSynced_agent_TC
 
 
 def doSimWithoutLog(self, time):
@@ -203,6 +204,7 @@ suite = testSuiteFromTCs(
     SimEventsTC,
     SimulatorUtilsTC,
     RdSynced_agent_TC,
+    Serializer_tmpVar_TC,
 
     # component verifications
     ConcatTC,
