@@ -187,15 +187,23 @@ class BusEndpoint(Unit):
 
     def _shouldEnterForTransTmpl(self, tmpl):
         o = tmpl.origin
+        
         if isinstance(o, HStructField):
-            return self.shouldEnterFn(o)
+            w = tmpl.bitAddrEnd - tmpl.bitAddr
+            shouldEnter, shoulUse = self.shouldEnterFn(o)
+            origW = tmpl.origin.dtype.bit_length()
+            if not shoulUse and origW > w and isinstance(tmpl.dtype, Bits):
+                return (False, True)
+            else:
+                return shouldEnter, shoulUse
         else:
             return (True, False)
 
     def walkFieldsAndIntf(self, transTmpl, structIntf):
         fieldTrans = transTmpl.walkFlatten(shouldEnterFn=self._shouldEnterForTransTmpl)
         intfs = walkFlatten(structIntf, self._shouldEnterIntf)
-
+        
+        hasAnyInterface = False
         for (((base, end), transTmpl), intf) in zip(fieldTrans, intfs):
             if isinstance(intf, InterfaceProxy):
                 _tTmpl = copy(transTmpl)
@@ -203,8 +211,11 @@ class BusEndpoint(Unit):
                 _tTmpl.bitAddrEnd = end
                 _tTmpl.origin = PartialField(transTmpl.origin)
                 transTmpl = _tTmpl
-
+            
             yield transTmpl, intf
+            hasAnyInterface = True
+        
+        assert hasAnyInterface
 
     def _parseTemplate(self):
         self._directlyMapped = []
@@ -303,6 +314,11 @@ class BusEndpoint(Unit):
         return (addrIsInRange, connectedAddr)
 
     def _mkFieldInterface(self, structIntf, field):
+        """
+        Instantiate field interface for fields in structure template of this endpoint
+        
+        :return: interface for specified field
+        """
         t = field.dtype
         DW = int(self.DATA_WIDTH)
 
@@ -319,13 +335,6 @@ class BusEndpoint(Unit):
             else:
                 raise NotImplementedError(t)
 
-            if dw == DW:
-                # use param instead of value to improve readability
-                dw = self.DATA_WIDTH
-                p._replaceParam("DATA_WIDTH", dw)
-            else:
-                p.DATA_WIDTH.set(dw)
-
         elif shouldEnter:
             if isinstance(t, Array):
                 if isinstance(t.elmType, Bits):
@@ -336,7 +345,14 @@ class BusEndpoint(Unit):
             elif isinstance(t, HStruct):
                 return StructIntf(t, instantiateFieldFn=self._mkFieldInterface)
             else:
-                raise TypeError()
+                raise TypeError(t)
+        
+        if dw == DW:
+            # use param instead of value to improve readability
+            dw = self.DATA_WIDTH
+            p._replaceParam("DATA_WIDTH", dw)
+        else:
+            p.DATA_WIDTH.set(dw)
 
         return p
 
@@ -377,12 +393,15 @@ class BusEndpoint(Unit):
         :param interfaceMap: take a look at HTypeFromIntfMap
             if interface is specified it will be automatically connected
         """
-        terminalFields = set()
-        t = HTypeFromIntfMap(interfaceMap, terminalFields)
+        t = HTypeFromIntfMap(interfaceMap)
 
-        def shouldEnter(tmpl):
-            shouldYield = tmpl in terminalFields
-            shouldEnter = not shouldYield
+        def shouldEnter(field):
+            if field.meta is None:
+                shouldEnter = False
+            else:
+                shouldEnter = field.meta.split
+
+            shouldYield = not shouldEnter
             return shouldEnter, shouldYield
 
         # instantiate converter

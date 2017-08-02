@@ -8,6 +8,7 @@ from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.resizer import HsResizer
 from hwtLib.handshaked.splitCopy import HsSplitCopy
+from hwtLib.handshaked.splitPrioritized import HsSplitPrioritized
 from hwtLib.handshaked.splitSelect import HsSplitSelect
 
 
@@ -22,6 +23,6 @@ class HsBuilder(AbstractStreamBuilder):
     ResizerCls = HsResizer
     RegCls = HandshakedReg
     SplitCopyCls = HsSplitCopy
-    SplitSelectCls = HsSplitSelect
     SplitFairCls = NotImplemented
-    SplitPrioritizedCls = NotImplemented
+    SplitPrioritizedCls = HsSplitPrioritized
+    SplitSelectCls = HsSplitSelect
