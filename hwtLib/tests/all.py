@@ -76,6 +76,7 @@ from hwtLib.samples.arithmetic.widthCasting import WidthCastingExampleTC
 from hwtLib.samples.axi.simpleAxiRegs_test import SimpleAxiRegsTC
 from hwtLib.samples.builders.ethAddrUpdater_test import EthAddrUpdaterTC
 from hwtLib.samples.builders.handshakedBuilderSimple import HandshakedBuilderSimpleTC
+from hwtLib.samples.builders.hsBuilderSplit_test import HsBuilderSplit_TC
 from hwtLib.samples.builders.pingResponder_test import PingResponderTC
 from hwtLib.samples.emptyUnitWithSpi import EmptyUnitWithSpiTC
 from hwtLib.samples.errors.errorsTestCase import ErrorsTC
@@ -255,6 +256,7 @@ suite = testSuiteFromTCs(
     HsRegL1D0TC,
     HsRegL2D1TC,
     HsResizerTC,
+    HsBuilderSplit_TC,
     CamTC,
     UartTxTC,
     UartRxBasicTC,

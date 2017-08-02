@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import Switch, SwitchLogic
+from hwt.code import SwitchLogic
 from hwt.interfaces.std import Handshaked
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
+from hwtLib.handshaked.reg import HandshakedReg
+from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 
 
 class HsSplitSelect(HandshakedCompBase):
@@ -29,6 +31,8 @@ class HsSplitSelect(HandshakedCompBase):
         super()._config()
 
     def _declr(self):
+        addClkRstn(self)
+
         outputs = int(self.OUTPUTS)
         assert outputs > 1, outputs
 
@@ -42,25 +46,38 @@ class HsSplitSelect(HandshakedCompBase):
     def _impl(self):
         In = self.dataIn
         rd = self.getRd
+
         sel = self.selectOneHot
+        r = HandshakedReg(Handshaked)
+        r.DATA_WIDTH.set(sel.data._dtype.bit_length())
+        self.selReg = r
+        r.dataIn ** sel
+        propagateClkRstn(self)
+        sel = r.dataOut
 
         for index, outIntf in enumerate(self.dataOut):
             for ini, outi in zip(In._interfaces, outIntf._interfaces):
                 if ini == self.getVld(In):
-                    outi ** (sel.vld & ini & sel.data._eq(index))
+                    # out.vld
+                    outi ** (sel.vld & ini & sel.data[index])
                 elif ini == rd(In):
                     pass
                 else:  # data
                     outi ** ini
+
+        din = self.dataIn
         SwitchLogic(
-            cases=[
-                (sel.data[index],
+            cases=[(~sel.vld, [sel.rd ** 0,
+                                rd(In) ** 0])
+                  ] +
+                  [(sel.data[index],
                     [rd(In) ** rd(out),
-                     sel.rd ** (rd(out) & self.getVld(out))])
-                for index, out in enumerate(self.dataOut)],
+                     sel.rd ** (rd(out) & self.getVld(din) & sel.vld)])
+                   for index, out in enumerate(self.dataOut)],
             default=[
-                    sel.rd ** None,
-                    rd(In) ** None])
+                     sel.rd ** None,
+                     rd(In) ** None
+                     ])
 
 
 if __name__ == "__main__":

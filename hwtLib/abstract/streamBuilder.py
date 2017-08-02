@@ -275,11 +275,13 @@ class AbstractStreamBuilder(object):
         if isinstance(outputSelSignalOrSequence, Handshaked):
             self.lastComp.selectOneHot ** outputSelSignalOrSequence
         else:
+            seq = outputSelSignalOrSequence
             t = vecT(self.lastComp.selectOneHot.data._dtype.bit_length())
-            size = len(outputSelSignalOrSequence)
+            size = len(seq)
+            ohIndexes = map(lambda x: 1 << x, seq)
             indexes = self.parent._sig(self.name + "split_seq",
                                        t[size],
-                                       defVal=outputSelSignalOrSequence)
+                                       defVal=ohIndexes)
             actual = self.parent._reg(self.name + "split_seq_index",
                                       vecT(size.bit_length()),
                                       0)
@@ -287,7 +289,7 @@ class AbstractStreamBuilder(object):
             iin.data ** indexes[actual]
             iin.vld ** 1
             If(iin.rd,
-               If(actual._eq(size),
+               If(actual._eq(size - 1),
                   actual ** 0
                ).Else(
                   actual ** (actual + 1)
