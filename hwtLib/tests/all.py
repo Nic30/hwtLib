@@ -144,6 +144,7 @@ from hwtLib.tests.valSlicing_test import ValSlicingTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
+from hwtLib.tests.transTmpl_test import TransTmpl_TC
 
 
 def doSimWithoutLog(self, time):
@@ -207,6 +208,7 @@ suite = testSuiteFromTCs(
     SimulatorUtilsTC,
     RdSynced_agent_TC,
     Serializer_tmpVar_TC,
+    TransTmpl_TC,
 
     # component verifications
     ConcatTC,
