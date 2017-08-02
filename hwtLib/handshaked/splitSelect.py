@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import Switch
+from hwt.code import Switch, SwitchLogic
+from hwt.interfaces.std import Handshaked
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
@@ -31,8 +32,8 @@ class HsSplitSelect(HandshakedCompBase):
         outputs = int(self.OUTPUTS)
         assert outputs > 1, outputs
 
-        self.sel = Handshaked()
-        self.sel.DATA_WIDTH.set(outputs.bit_length())
+        self.selectOneHot = Handshaked()
+        self.selectOneHot.DATA_WIDTH.set(outputs)
 
         with self._paramsShared():
             self.dataIn = self.intfCls()
@@ -41,7 +42,7 @@ class HsSplitSelect(HandshakedCompBase):
     def _impl(self):
         In = self.dataIn
         rd = self.getRd
-        sel = self.sel
+        sel = self.selectOneHot
 
         for index, outIntf in enumerate(self.dataOut):
             for ini, outi in zip(In._interfaces, outIntf._interfaces):
@@ -51,19 +52,18 @@ class HsSplitSelect(HandshakedCompBase):
                     pass
                 else:  # data
                     outi ** ini
-
-        Switch(self.sel.data).addCases(
-            [(index, [rd(In) ** rd(out),
-                      sel.rd ** (rd(out) & self.getVld(out))])
-             for index, out in enumerate(self.dataOut)]
-        ).Default(
-                  sel.rd ** None,
-                  rd(In) ** None
-                  )
+        SwitchLogic(
+            cases=[
+                (sel.data[index],
+                    [rd(In) ** rd(out),
+                     sel.rd ** (rd(out) & self.getVld(out))])
+                for index, out in enumerate(self.dataOut)],
+            default=[
+                    sel.rd ** None,
+                    rd(In) ** None])
 
 
 if __name__ == "__main__":
-    from hwt.interfaces.std import Handshaked
     from hwt.synthesizer.shortcuts import toRtl
     u = HsSplitSelect(Handshaked)
     print(toRtl(u))
