@@ -67,10 +67,10 @@ class ArrayBuff_writer(Unit):
         return (
                 self.baseAddr,
                 self.uploaded,
-                Bits(16),  # padding
+                (Bits(16), None),  # padding
                 
                 self.buff_remain,
-                Bits(16),  # padding
+                (Bits(16), None),  # padding
                 )
 
     def uploadedCntrHandler(self, st, reqAckHasCome, sizeOfitems):

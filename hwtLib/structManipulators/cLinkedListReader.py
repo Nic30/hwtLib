@@ -74,11 +74,11 @@ class CLinkedListReader(Unit):
         return (
                 self.baseAddr,
                 self.rdPtr,
-                Bits(16),  # padding
+                (Bits(16), None),  # padding
                 self.wrPtr,
-                Bits(16),  # padding
+                (Bits(16), None),  # padding
                 self.inBlockRemain,
-                Bits(32 - self.inBlockRemain._dtype.bit_length()),  # padding
+                (Bits(32 - self.inBlockRemain._dtype.bit_length()), None),  # padding
                 )
 
     def addrAlignBits(self):
