@@ -48,7 +48,7 @@ class SigLoop(Unit):
 
 class TestUnittWithChilds(Unit):
     """
-    Containter of AxiLiteEndpoint constructed by fromInterfaceMap
+    Container of AxiLiteEndpoint constructed by fromInterfaceMap
     """
     def _config(self):
         self.ADDR_WIDTH = Param(32)
@@ -105,6 +105,54 @@ class TestUnittWithChilds(Unit):
 
         propagateClkRstn(self)
 
+
+class TestUnittWithArr(Unit):
+    """
+    Container of AxiLiteEndpoint constructed by fromInterfaceMap
+    """
+    def _config(self):
+        self.ADDR_WIDTH = Param(32)
+        self.DATA_WIDTH = Param(32)
+
+    def _declr(self):
+        addClkRstn(self)
+        with self._paramsShared():
+            self.bus = AxiLite()
+            
+            self.regCntrlLoop0 = Loop(RegCntrl)
+            self.regCntrlOut0 = RegCntrl()
+
+            self.regCntrlLoop1 = Loop(RegCntrl)
+            self.regCntrlOut1 = RegCntrl()
+
+            self.regCntrlLoop2 = Loop(RegCntrl)
+            self.regCntrlOut2 = RegCntrl()
+
+
+
+    def _impl(self):
+        self.regCntrlOut0 ** self.regCntrlLoop0.dout 
+        self.regCntrlOut1 ** self.regCntrlLoop1.dout 
+        self.regCntrlOut2 ** self.regCntrlLoop2.dout 
+        
+        def configEp(ep):
+            ep._updateParamsFrom(self)
+        interfaceMap = (
+            ([self.regCntrlLoop0.din,
+              self.regCntrlLoop1.din,
+              self.regCntrlLoop2.din,
+              ], "regCntrl"),
+            )
+
+        axiLiteConv = AxiLiteEndpoint.fromInterfaceMap(interfaceMap)
+        axiLiteConv._updateParamsFrom(self)
+        self.conv = axiLiteConv
+
+        axiLiteConv.connectByInterfaceMap(interfaceMap)
+        axiLiteConv.bus ** self.bus
+        
+
+        propagateClkRstn(self)
 
 class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
 
@@ -207,15 +255,86 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
 }"""
         self.assertEqual(s, expected)
 
+class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
+    def mySetUp(self, data_width=32):
+        u = self.u = TestUnittWithArr()
+
+        self.DATA_WIDTH = data_width
+        u.DATA_WIDTH.set(self.DATA_WIDTH)
+
+        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
+        return u
+
+    def test_nop(self):
+        u = self.mySetUp(32)
+
+        self.randomizeAll()
+        self.doSim(100 * Time.ns)
+
+        self.assertEmpty(u.bus._ag.r.data)
+        self.assertEmpty(u.bus._ag.b.data)
+        self.assertEmpty(u.regCntrlOut0._ag.dout)
+        self.assertEmpty(u.regCntrlOut1._ag.dout)
+        self.assertEmpty(u.regCntrlOut2._ag.dout)
+    
+    def test_read(self):
+        u = self.mySetUp(32)
+        MAGIC = 100
+        r = self.regs
+
+        u.regCntrlOut0._ag.din.extend([MAGIC])
+        r.regCntrl[0].read()
+
+        u.regCntrlOut1._ag.din.extend([MAGIC + 1])
+        r.regCntrl[1].read()
+
+        u.regCntrlOut2._ag.din.extend([MAGIC + 2])
+        r.regCntrl[2].read()
+
+
+        self.randomizeAll()
+        self.doSim(600 * Time.ns)
+
+        self.assertValSequenceEqual(u.bus.r._ag.data,
+                                    [(MAGIC, RESP_OKAY),
+                                     (MAGIC + 1, RESP_OKAY),
+                                     (MAGIC + 2, RESP_OKAY)
+                                     ])
+
+    def test_write(self):
+        u = self.mySetUp(32)
+        MAGIC = 100
+        r = self.regs
+        
+        for i in range(3):
+            r.regCntrl[i].write(MAGIC + i)
+        
+        self.randomizeAll()
+        self.doSim(800 * Time.ns)
+
+        for i in range(3):
+            intf = getattr(u, "regCntrlOut%d" % i)
+        self.assertValSequenceEqual(intf._ag.dout,
+                                    [MAGIC + i, ])
+        self.assertValSequenceEqual(u.bus.b._ag.data, [RESP_OKAY for _ in range(3)])
+
+    def test_registerMap(self):
+        self.mySetUp(32)
+        s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
+        expected = """struct {
+    <Bits, DATA_WIDTH, 32bits>[3] regCntrl // start:0x0(bit) 0x0(byte)
+}"""
+        self.assertEqual(s, expected)
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
     
     # suite.addTest(AxiLiteEndpoint_fromInterfaceTC('test_read'))
     suite.addTest(unittest.makeSuite(AxiLiteEndpoint_fromInterfaceTC))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpoint_fromInterface_arr_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
     # from hwt.synthesizer.shortcuts import toRtl
-    # u = TestUnittWithChilds()
+    # u = TestUnittWithArr()
     # u.DATA_WIDTH.set(32)
     # print(toRtl(u))
