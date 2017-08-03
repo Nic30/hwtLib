@@ -1,6 +1,8 @@
 from hwt.interfaces.std import Rst_n, Handshaked
 from hwt.synthesizer.interfaceLevel.interfaceUtils.proxy import InterfaceProxy
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getClk, getRst
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.code import If
 
 
 class AbstractStreamBuilder(object):
@@ -261,8 +263,9 @@ class AbstractStreamBuilder(object):
         Create a demultiplexer with number of outputs specified by noOfOutputs
 
         :param noOfOutputs: number of outputs of multiplexer
-        :param outputSelSignalOrSequence: signal to control selected output or sequence
-            of output indexes which should be used (will be repeated)
+        :param outputSelSignalOrSequence: handshaked interface (onehot encoded)
+            to control selected output or sequence of output indexes
+            which should be used (will be repeated)
         """
 
         def setChCnt(u):
@@ -270,9 +273,28 @@ class AbstractStreamBuilder(object):
 
         self._genericInstance(self.SplitSelectCls, 'select', setChCnt)
         if isinstance(outputSelSignalOrSequence, Handshaked):
-            self.lastComp.sel ** outputSelSignalOrSequence
+            self.lastComp.selectOneHot ** outputSelSignalOrSequence
         else:
-            raise NotImplementedError("Output sequence")
+            seq = outputSelSignalOrSequence
+            t = vecT(self.lastComp.selectOneHot.data._dtype.bit_length())
+            size = len(seq)
+            ohIndexes = map(lambda x: 1 << x, seq)
+            indexes = self.parent._sig(self.name + "split_seq",
+                                       t[size],
+                                       defVal=ohIndexes)
+            actual = self.parent._reg(self.name + "split_seq_index",
+                                      vecT(size.bit_length()),
+                                      0)
+            iin = self.lastComp.selectOneHot
+            iin.data ** indexes[actual]
+            iin.vld ** 1
+            If(iin.rd,
+               If(actual._eq(size - 1),
+                  actual ** 0
+               ).Else(
+                  actual ** (actual + 1)
+               )
+            )
 
         return self
 

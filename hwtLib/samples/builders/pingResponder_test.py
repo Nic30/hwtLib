@@ -48,8 +48,7 @@ def pingResponder_model(packetStructVal):
     eth = 0
     # swap eht addr
     packet[(eth + 0):(eth + 6)], packet[(eth + 6):(eth + 12)] = packet[(eth + 6):(eth + 12)], packet[(eth + 0):(eth + 6)]
-    
-    
+
     ip = 2 * 6 + 2
     # Swap source and destination address.
     packet[(ip + 12):(ip + 16)], packet[(ip + 16):(ip + 20)] = packet[(ip + 16):(ip + 20)], packet[(ip + 12):(ip + 16)]
@@ -86,8 +85,6 @@ class PingResponderTC(SimTestCase):
         u.DATA_WIDTH.set(self.DATA_WIDTH)
 
         self.prepareUnit(u)
-
-
 
     def create_ICMP_echo_frame(self,
                                ethSrc="00:1:2:3:4:5", ethDst="6:7:8:9:10:11",
@@ -132,7 +129,7 @@ class PingResponderTC(SimTestCase):
         f = self.create_ICMP_echo_frame()
         asBytes = iterBits(f, bitsInOne=8, skipPadding=False)
         asBytes = list(map(valToInt, asBytes))
-        
+
         f_out = HStruct_unpack(echoFrame_t, asBytes, dataWidth=8)
 
         self.assertEqual(f, f_out)
@@ -141,12 +138,11 @@ class PingResponderTC(SimTestCase):
         f = f_out
         asBytes = iterBits(f, bitsInOne=8, skipPadding=False)
         asBytes = list(map(valToInt, asBytes))
-        
+
         f_out = HStruct_unpack(echoFrame_t, asBytes, dataWidth=8)
-        
+
         self.assertEqual(_f, f_out)
-        
-    
+
     def test_reply1x(self):
         u = self.u
         f = self.create_ICMP_echo_frame()
@@ -154,10 +150,10 @@ class PingResponderTC(SimTestCase):
         u.rx._ag.data.extend(packAxiSFrame(self.DATA_WIDTH, f, withStrb=True))
         u.myIp._ag.data.append(int.from_bytes(socket.inet_aton("192.168.0.2"), byteorder="little"))
         self.doSim(500 * Time.ns)
-        
+
         res = unpackAxiSFrame(echoFrame_t, u.tx._ag.data)
         model_res = pingResponder_model(f)
-        
+
         _res = iterBits(res, bitsInOne=8, skipPadding=False)
         _res = bytes(map(valToInt, _res))
         # print("")
@@ -171,11 +167,7 @@ class PingResponderTC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    
-    suite.addTest(PingResponderTC('test_reply1x'))
-    
-    # suite.addTest(unittest.makeSuite(PingResponderTC))
+    # suite.addTest(PingResponderTC('test_reply1x'))
+    suite.addTest(unittest.makeSuite(PingResponderTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-    
-

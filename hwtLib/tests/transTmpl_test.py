@@ -11,7 +11,7 @@ class TransTmpl_TC(unittest.TestCase):
                     (uint8_t, "c"))
         trans = TransTmpl(t)
         self.assertEqual(len(list(trans.walkFlatten())), 3)
-    
+
     def test_walkFlatten_arr(self):
         t = HStruct((uint8_t[4], "a"))
         trans = TransTmpl(t)

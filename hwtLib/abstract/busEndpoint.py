@@ -24,29 +24,6 @@ def inRange(n, lower, end):
     return (n >= lower) & (n < end)
 
 
-def walkIntfMap(intfMap):
-    if isinstance(intfMap, (InterfaceBase, RtlSignalBase)):
-        yield intfMap
-    elif isinstance(intfMap, tuple):
-        try:
-            item, name = intfMap
-        except (TypeError, ValueError):
-            name = None
-        if isinstance(name, str):
-            # is named something
-            yield from walkIntfMap(item)
-        else:
-            # is struct described by tuple
-            for item in intfMap:
-                yield from walkIntfMap(item)
-
-    elif isinstance(intfMap, HdlType):
-        pass
-    else:
-        for item in intfMap:
-            yield from walkIntfMap(item)
-
-
 def isPaddingInIntfMap(item):
     if isinstance(item, HdlType):
         return True
@@ -59,7 +36,8 @@ def isPaddingInIntfMap(item):
         except ValueError:
             pass
 
-    return False 
+    return False
+
 
 def walkStructIntfAndIntfMap(structIntf, intfMap):
     if isinstance(intfMap, (InterfaceBase, RtlSignalBase)):
