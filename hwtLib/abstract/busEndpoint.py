@@ -165,7 +165,7 @@ class BusEndpoint(Unit):
 
     def _shouldEnterForTransTmpl(self, tmpl):
         o = tmpl.origin
-        
+
         if isinstance(o, HStructField):
             w = tmpl.bitAddrEnd - tmpl.bitAddr
             shouldEnter, shoulUse = self.shouldEnterFn(o)
@@ -180,7 +180,7 @@ class BusEndpoint(Unit):
     def walkFieldsAndIntf(self, transTmpl, structIntf):
         fieldTrans = transTmpl.walkFlatten(shouldEnterFn=self._shouldEnterForTransTmpl)
         intfs = walkFlatten(structIntf, self._shouldEnterIntf)
-        
+
         hasAnyInterface = False
         for (((base, end), transTmpl), intf) in zip(fieldTrans, intfs):
             if isinstance(intf, InterfaceProxy):
@@ -189,10 +189,10 @@ class BusEndpoint(Unit):
                 _tTmpl.bitAddrEnd = end
                 _tTmpl.origin = PartialField(transTmpl.origin)
                 transTmpl = _tTmpl
-            
+
             yield transTmpl, intf
             hasAnyInterface = True
-        
+
         assert hasAnyInterface
 
     def _parseTemplate(self):
@@ -294,7 +294,7 @@ class BusEndpoint(Unit):
     def _mkFieldInterface(self, structIntf, field):
         """
         Instantiate field interface for fields in structure template of this endpoint
-        
+
         :return: interface for specified field
         """
         t = field.dtype
@@ -324,7 +324,7 @@ class BusEndpoint(Unit):
                 return StructIntf(t, instantiateFieldFn=self._mkFieldInterface)
             else:
                 raise TypeError(t)
-        
+
         if dw == DW:
             # use param instead of value to improve readability
             dw = self.DATA_WIDTH
