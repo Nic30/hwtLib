@@ -8,7 +8,7 @@ from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.enum import Enum
 from hwt.interfaces.std import Handshaked, VectSignal, RegCntrl
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.serializer.constants import SERI_MODE
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AddrSizeHs, AxiWDatapumpIntf
@@ -19,6 +19,7 @@ from hwtLib.handshaked.streamNode import streamSync
 stT = Enum("st_t", ["waitOnInput", "waitOnDataTx", "waitOnAck"])
 
 
+@serializeParamsUniq
 class ArrayBuff_writer(Unit):
     """
     Collect items and send them over wDatapump when buffer is full or on timeout
@@ -30,7 +31,6 @@ class ArrayBuff_writer(Unit):
 
     items -> buff -> internal logic -> axi datapump
     """
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
 
     def _config(self):
         AddrSizeHs._config(self)

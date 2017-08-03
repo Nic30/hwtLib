@@ -4,18 +4,18 @@
 from hwt.code import If, Or, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal, VldSynced
-from hwt.serializer.constants import SERI_MODE
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.vectorUtils import iterBits
 
 
+@serializeParamsUniq
 class OneHotToBin(Unit):
     """
     Converts one hot signal to binary, bin.vld is high when oneHot != 0
     """
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
 
     def _config(self):
         self.ONE_HOT_WIDTH = Param(8)

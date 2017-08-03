@@ -5,12 +5,13 @@ from hwt.code import If, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import FifoWriter, FifoReader, VectSignal
 from hwt.interfaces.utils import addClkRstn
-from hwt.serializer.constants import SERI_MODE
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 
 
 # https://eewiki.net/pages/viewpage.action?pageId=20939499
+@serializeParamsUniq
 class Fifo(Unit):
     """
     Generic fifo instance usually mapped to BRAM
@@ -20,7 +21,6 @@ class Fifo(Unit):
     :ivar EXPORT_SPACE: parameter, if true "space" signal is exported
     :ivar space: optional signal with count of items which can be added to this fifo
     """
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
 
     def _config(self):
         self.DATA_WIDTH = Param(64)

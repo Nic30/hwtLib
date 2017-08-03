@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.code import If, c
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal, RegCntrl
 from hwt.interfaces.utils import addClkRstn
-from hwt.serializer.constants import SERI_MODE
-from hwt.code import If, c
+from hwt.serializer.mode import serializeOnce
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 
 
+@serializeOnce
 class FlipRegister(Unit):
     """
     Switchable register, there are two registers and two sets of ports,
@@ -22,7 +23,6 @@ class FlipRegister(Unit):
 
     Then select is set and access is flipped. Reader now has access to reg 0 and writer to reg 1.
     """
-    _serializerMode = SERI_MODE.ONCE
 
     def _config(self):
         self.DATA_WIDTH = Param(32)

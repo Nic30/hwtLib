@@ -5,12 +5,13 @@ from hwt.code import If, Concat, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT, hBit
 from hwt.interfaces.std import Handshaked, VldSynced
 from hwt.interfaces.utils import addClkRstn
-from hwt.serializer.constants import SERI_MODE
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.interfaces.addrDataHs import AddrDataBitMaskHs
+from hwt.serializer.mode import serializeParamsUniq
 
 
+@serializeParamsUniq
 class Cam(Unit):
     """
     Content addressable memory
@@ -19,7 +20,6 @@ class Cam(Unit):
 
     MATCH_LATENCY = 1
     """
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
 
     def _config(self):
         self.DATA_WIDTH = Param(36)

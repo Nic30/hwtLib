@@ -1171,21 +1171,21 @@ netFilter_systemc = """#include <systemc.h>
 
 SC_MODULE(hfe) {
     //interfaces
-    sc_out<sc_uint<1>> din_ready;
-    sc_in<sc_uint<1>> din_valid;
     sc_in<sc_uint<64>> din_data;
     sc_in<sc_uint<1>> din_last;
+    sc_out<sc_uint<1>> din_ready;
     sc_in<sc_uint<8>> din_strb;
-    sc_in<sc_uint<1>> dout_ready;
-    sc_out<sc_uint<1>> dout_valid;
+    sc_in<sc_uint<1>> din_valid;
     sc_out<sc_uint<64>> dout_data;
     sc_out<sc_uint<1>> dout_last;
+    sc_in<sc_uint<1>> dout_ready;
     sc_out<sc_uint<8>> dout_strb;
-    sc_in<sc_uint<1>> headers_ready;
-    sc_out<sc_uint<1>> headers_valid;
+    sc_out<sc_uint<1>> dout_valid;
     sc_out<sc_uint<64>> headers_data;
     sc_out<sc_uint<1>> headers_last;
+    sc_in<sc_uint<1>> headers_ready;
     sc_out<sc_uint<8>> headers_strb;
+    sc_out<sc_uint<1>> headers_valid;
 
     //processes inside this component
     void assig_process_din_ready() {
@@ -1242,16 +1242,16 @@ SC_MODULE(hfe) {
 
 SC_MODULE(patternMatch) {
     //interfaces
-    sc_out<sc_uint<1>> din_ready;
-    sc_in<sc_uint<1>> din_valid;
     sc_in<sc_uint<64>> din_data;
     sc_in<sc_uint<1>> din_last;
+    sc_out<sc_uint<1>> din_ready;
     sc_in<sc_uint<8>> din_strb;
-    sc_in<sc_uint<1>> match_ready;
-    sc_out<sc_uint<1>> match_valid;
+    sc_in<sc_uint<1>> din_valid;
     sc_out<sc_uint<64>> match_data;
     sc_out<sc_uint<1>> match_last;
+    sc_in<sc_uint<1>> match_ready;
     sc_out<sc_uint<8>> match_strb;
+    sc_out<sc_uint<1>> match_valid;
 
     //processes inside this component
     void assig_process_din_ready() {
@@ -1288,43 +1288,43 @@ SC_MODULE(patternMatch) {
 
 SC_MODULE(filter) {
     //interfaces
-    sc_out<sc_uint<1>> headers_ready;
-    sc_in<sc_uint<1>> headers_valid;
-    sc_in<sc_uint<64>> headers_data;
-    sc_in<sc_uint<1>> headers_last;
-    sc_in<sc_uint<8>> headers_strb;
-    sc_out<sc_uint<1>> patternMatch_ready;
-    sc_in<sc_uint<1>> patternMatch_valid;
-    sc_in<sc_uint<64>> patternMatch_data;
-    sc_in<sc_uint<1>> patternMatch_last;
-    sc_in<sc_uint<8>> patternMatch_strb;
-    sc_out<sc_uint<1>> din_ready;
-    sc_in<sc_uint<1>> din_valid;
-    sc_in<sc_uint<64>> din_data;
-    sc_in<sc_uint<1>> din_last;
-    sc_in<sc_uint<8>> din_strb;
-    sc_in<sc_uint<1>> dout_ready;
-    sc_out<sc_uint<1>> dout_valid;
-    sc_out<sc_uint<64>> dout_data;
-    sc_out<sc_uint<1>> dout_last;
-    sc_out<sc_uint<8>> dout_strb;
-    sc_in<sc_uint<32>> cfg_aw_addr;
-    sc_out<sc_uint<1>> cfg_aw_ready;
-    sc_in<sc_uint<1>> cfg_aw_valid;
     sc_in<sc_uint<32>> cfg_ar_addr;
     sc_out<sc_uint<1>> cfg_ar_ready;
     sc_in<sc_uint<1>> cfg_ar_valid;
-    sc_in<sc_uint<64>> cfg_w_data;
-    sc_in<sc_uint<8>> cfg_w_strb;
-    sc_out<sc_uint<1>> cfg_w_ready;
-    sc_in<sc_uint<1>> cfg_w_valid;
-    sc_out<sc_uint<64>> cfg_r_data;
-    sc_out<sc_uint<2>> cfg_r_resp;
-    sc_in<sc_uint<1>> cfg_r_ready;
-    sc_out<sc_uint<1>> cfg_r_valid;
-    sc_out<sc_uint<2>> cfg_b_resp;
+    sc_in<sc_uint<32>> cfg_aw_addr;
+    sc_out<sc_uint<1>> cfg_aw_ready;
+    sc_in<sc_uint<1>> cfg_aw_valid;
     sc_in<sc_uint<1>> cfg_b_ready;
+    sc_out<sc_uint<2>> cfg_b_resp;
     sc_out<sc_uint<1>> cfg_b_valid;
+    sc_out<sc_uint<64>> cfg_r_data;
+    sc_in<sc_uint<1>> cfg_r_ready;
+    sc_out<sc_uint<2>> cfg_r_resp;
+    sc_out<sc_uint<1>> cfg_r_valid;
+    sc_in<sc_uint<64>> cfg_w_data;
+    sc_out<sc_uint<1>> cfg_w_ready;
+    sc_in<sc_uint<8>> cfg_w_strb;
+    sc_in<sc_uint<1>> cfg_w_valid;
+    sc_in<sc_uint<64>> din_data;
+    sc_in<sc_uint<1>> din_last;
+    sc_out<sc_uint<1>> din_ready;
+    sc_in<sc_uint<8>> din_strb;
+    sc_in<sc_uint<1>> din_valid;
+    sc_out<sc_uint<64>> dout_data;
+    sc_out<sc_uint<1>> dout_last;
+    sc_in<sc_uint<1>> dout_ready;
+    sc_out<sc_uint<8>> dout_strb;
+    sc_out<sc_uint<1>> dout_valid;
+    sc_in<sc_uint<64>> headers_data;
+    sc_in<sc_uint<1>> headers_last;
+    sc_out<sc_uint<1>> headers_ready;
+    sc_in<sc_uint<8>> headers_strb;
+    sc_in<sc_uint<1>> headers_valid;
+    sc_in<sc_uint<64>> patternMatch_data;
+    sc_in<sc_uint<1>> patternMatch_last;
+    sc_out<sc_uint<1>> patternMatch_ready;
+    sc_in<sc_uint<8>> patternMatch_strb;
+    sc_in<sc_uint<1>> patternMatch_valid;
 
     //processes inside this component
     void assig_process_cfg_ar_ready() {
@@ -1411,16 +1411,16 @@ SC_MODULE(filter) {
 
 SC_MODULE(exporter) {
     //interfaces
-    sc_out<sc_uint<1>> din_ready;
-    sc_in<sc_uint<1>> din_valid;
     sc_in<sc_uint<64>> din_data;
     sc_in<sc_uint<1>> din_last;
+    sc_out<sc_uint<1>> din_ready;
     sc_in<sc_uint<8>> din_strb;
-    sc_in<sc_uint<1>> dout_ready;
-    sc_out<sc_uint<1>> dout_valid;
+    sc_in<sc_uint<1>> din_valid;
     sc_out<sc_uint<64>> dout_data;
     sc_out<sc_uint<1>> dout_last;
+    sc_in<sc_uint<1>> dout_ready;
     sc_out<sc_uint<8>> dout_strb;
+    sc_out<sc_uint<1>> dout_valid;
 
     //processes inside this component
     void assig_process_din_ready() {
@@ -1457,16 +1457,16 @@ SC_MODULE(exporter) {
 
 SC_MODULE(gen_dout_splitCopy_0) {
     //interfaces
-    sc_out<sc_uint<1>> dataIn_ready;
-    sc_in<sc_uint<1>> dataIn_valid;
     sc_in<sc_uint<64>> dataIn_data;
     sc_in<sc_uint<1>> dataIn_last;
+    sc_out<sc_uint<1>> dataIn_ready;
     sc_in<sc_uint<8>> dataIn_strb;
-    sc_in<sc_uint<2>> dataOut_ready;
-    sc_out<sc_uint<2>> dataOut_valid;
+    sc_in<sc_uint<1>> dataIn_valid;
     sc_out<sc_biguint<128>> dataOut_data;
     sc_out<sc_uint<2>> dataOut_last;
+    sc_in<sc_uint<2>> dataOut_ready;
     sc_out<sc_uint<16>> dataOut_strb;
+    sc_out<sc_uint<2>> dataOut_valid;
 
     //processes inside this component
     void assig_process_dataIn_ready() {
@@ -1529,35 +1529,35 @@ SC_MODULE(gen_dout_splitCopy_0) {
 
 SC_MODULE(NetFilter) {
     //interfaces
-    sc_in_clk clk;
-    sc_in<sc_uint<1>> rst_n;
-    sc_out<sc_uint<1>> din_ready;
-    sc_in<sc_uint<1>> din_valid;
-    sc_in<sc_uint<64>> din_data;
-    sc_in<sc_uint<1>> din_last;
-    sc_in<sc_uint<8>> din_strb;
-    sc_in<sc_uint<1>> export_ready;
-    sc_out<sc_uint<1>> export_valid;
-    sc_out<sc_uint<64>> export_data;
-    sc_out<sc_uint<1>> export_last;
-    sc_out<sc_uint<8>> export_strb;
-    sc_in<sc_uint<32>> cfg_aw_addr;
-    sc_out<sc_uint<1>> cfg_aw_ready;
-    sc_in<sc_uint<1>> cfg_aw_valid;
     sc_in<sc_uint<32>> cfg_ar_addr;
     sc_out<sc_uint<1>> cfg_ar_ready;
     sc_in<sc_uint<1>> cfg_ar_valid;
-    sc_in<sc_uint<64>> cfg_w_data;
-    sc_in<sc_uint<8>> cfg_w_strb;
-    sc_out<sc_uint<1>> cfg_w_ready;
-    sc_in<sc_uint<1>> cfg_w_valid;
-    sc_out<sc_uint<64>> cfg_r_data;
-    sc_out<sc_uint<2>> cfg_r_resp;
-    sc_in<sc_uint<1>> cfg_r_ready;
-    sc_out<sc_uint<1>> cfg_r_valid;
-    sc_out<sc_uint<2>> cfg_b_resp;
+    sc_in<sc_uint<32>> cfg_aw_addr;
+    sc_out<sc_uint<1>> cfg_aw_ready;
+    sc_in<sc_uint<1>> cfg_aw_valid;
     sc_in<sc_uint<1>> cfg_b_ready;
+    sc_out<sc_uint<2>> cfg_b_resp;
     sc_out<sc_uint<1>> cfg_b_valid;
+    sc_out<sc_uint<64>> cfg_r_data;
+    sc_in<sc_uint<1>> cfg_r_ready;
+    sc_out<sc_uint<2>> cfg_r_resp;
+    sc_out<sc_uint<1>> cfg_r_valid;
+    sc_in<sc_uint<64>> cfg_w_data;
+    sc_out<sc_uint<1>> cfg_w_ready;
+    sc_in<sc_uint<8>> cfg_w_strb;
+    sc_in<sc_uint<1>> cfg_w_valid;
+    sc_in_clk clk;
+    sc_in<sc_uint<64>> din_data;
+    sc_in<sc_uint<1>> din_last;
+    sc_out<sc_uint<1>> din_ready;
+    sc_in<sc_uint<8>> din_strb;
+    sc_in<sc_uint<1>> din_valid;
+    sc_out<sc_uint<64>> export_data;
+    sc_out<sc_uint<1>> export_last;
+    sc_in<sc_uint<1>> export_ready;
+    sc_out<sc_uint<8>> export_strb;
+    sc_out<sc_uint<1>> export_valid;
+    sc_in<sc_uint<1>> rst_n;
 
     //internal signals
     sc_signal<sc_uint<64>> sig_exporter_din_data;
@@ -1941,87 +1941,87 @@ SC_MODULE(NetFilter) {
         sensitive << sig_filter_patternMatch_ready;
 
         // connect ports
-        exporter.din_ready(sig_exporter_din_ready);
-        exporter.din_valid(sig_exporter_din_valid);
         exporter.din_data(sig_exporter_din_data);
         exporter.din_last(sig_exporter_din_last);
+        exporter.din_ready(sig_exporter_din_ready);
         exporter.din_strb(sig_exporter_din_strb);
-        exporter.dout_ready(sig_exporter_dout_ready);
-        exporter.dout_valid(sig_exporter_dout_valid);
+        exporter.din_valid(sig_exporter_din_valid);
         exporter.dout_data(sig_exporter_dout_data);
         exporter.dout_last(sig_exporter_dout_last);
+        exporter.dout_ready(sig_exporter_dout_ready);
         exporter.dout_strb(sig_exporter_dout_strb);
-        filter.headers_ready(sig_filter_headers_ready);
-        filter.headers_valid(sig_filter_headers_valid);
-        filter.headers_data(sig_filter_headers_data);
-        filter.headers_last(sig_filter_headers_last);
-        filter.headers_strb(sig_filter_headers_strb);
-        filter.patternMatch_ready(sig_filter_patternMatch_ready);
-        filter.patternMatch_valid(sig_filter_patternMatch_valid);
-        filter.patternMatch_data(sig_filter_patternMatch_data);
-        filter.patternMatch_last(sig_filter_patternMatch_last);
-        filter.patternMatch_strb(sig_filter_patternMatch_strb);
-        filter.din_ready(sig_filter_din_ready);
-        filter.din_valid(sig_filter_din_valid);
-        filter.din_data(sig_filter_din_data);
-        filter.din_last(sig_filter_din_last);
-        filter.din_strb(sig_filter_din_strb);
-        filter.dout_ready(sig_filter_dout_ready);
-        filter.dout_valid(sig_filter_dout_valid);
-        filter.dout_data(sig_filter_dout_data);
-        filter.dout_last(sig_filter_dout_last);
-        filter.dout_strb(sig_filter_dout_strb);
-        filter.cfg_aw_addr(sig_filter_cfg_aw_addr);
-        filter.cfg_aw_ready(sig_filter_cfg_aw_ready);
-        filter.cfg_aw_valid(sig_filter_cfg_aw_valid);
+        exporter.dout_valid(sig_exporter_dout_valid);
         filter.cfg_ar_addr(sig_filter_cfg_ar_addr);
         filter.cfg_ar_ready(sig_filter_cfg_ar_ready);
         filter.cfg_ar_valid(sig_filter_cfg_ar_valid);
-        filter.cfg_w_data(sig_filter_cfg_w_data);
-        filter.cfg_w_strb(sig_filter_cfg_w_strb);
-        filter.cfg_w_ready(sig_filter_cfg_w_ready);
-        filter.cfg_w_valid(sig_filter_cfg_w_valid);
-        filter.cfg_r_data(sig_filter_cfg_r_data);
-        filter.cfg_r_resp(sig_filter_cfg_r_resp);
-        filter.cfg_r_ready(sig_filter_cfg_r_ready);
-        filter.cfg_r_valid(sig_filter_cfg_r_valid);
-        filter.cfg_b_resp(sig_filter_cfg_b_resp);
+        filter.cfg_aw_addr(sig_filter_cfg_aw_addr);
+        filter.cfg_aw_ready(sig_filter_cfg_aw_ready);
+        filter.cfg_aw_valid(sig_filter_cfg_aw_valid);
         filter.cfg_b_ready(sig_filter_cfg_b_ready);
+        filter.cfg_b_resp(sig_filter_cfg_b_resp);
         filter.cfg_b_valid(sig_filter_cfg_b_valid);
-        gen_dout_splitCopy_0.dataIn_ready(sig_gen_dout_splitCopy_0_dataIn_ready);
-        gen_dout_splitCopy_0.dataIn_valid(sig_gen_dout_splitCopy_0_dataIn_valid);
+        filter.cfg_r_data(sig_filter_cfg_r_data);
+        filter.cfg_r_ready(sig_filter_cfg_r_ready);
+        filter.cfg_r_resp(sig_filter_cfg_r_resp);
+        filter.cfg_r_valid(sig_filter_cfg_r_valid);
+        filter.cfg_w_data(sig_filter_cfg_w_data);
+        filter.cfg_w_ready(sig_filter_cfg_w_ready);
+        filter.cfg_w_strb(sig_filter_cfg_w_strb);
+        filter.cfg_w_valid(sig_filter_cfg_w_valid);
+        filter.din_data(sig_filter_din_data);
+        filter.din_last(sig_filter_din_last);
+        filter.din_ready(sig_filter_din_ready);
+        filter.din_strb(sig_filter_din_strb);
+        filter.din_valid(sig_filter_din_valid);
+        filter.dout_data(sig_filter_dout_data);
+        filter.dout_last(sig_filter_dout_last);
+        filter.dout_ready(sig_filter_dout_ready);
+        filter.dout_strb(sig_filter_dout_strb);
+        filter.dout_valid(sig_filter_dout_valid);
+        filter.headers_data(sig_filter_headers_data);
+        filter.headers_last(sig_filter_headers_last);
+        filter.headers_ready(sig_filter_headers_ready);
+        filter.headers_strb(sig_filter_headers_strb);
+        filter.headers_valid(sig_filter_headers_valid);
+        filter.patternMatch_data(sig_filter_patternMatch_data);
+        filter.patternMatch_last(sig_filter_patternMatch_last);
+        filter.patternMatch_ready(sig_filter_patternMatch_ready);
+        filter.patternMatch_strb(sig_filter_patternMatch_strb);
+        filter.patternMatch_valid(sig_filter_patternMatch_valid);
         gen_dout_splitCopy_0.dataIn_data(sig_gen_dout_splitCopy_0_dataIn_data);
         gen_dout_splitCopy_0.dataIn_last(sig_gen_dout_splitCopy_0_dataIn_last);
+        gen_dout_splitCopy_0.dataIn_ready(sig_gen_dout_splitCopy_0_dataIn_ready);
         gen_dout_splitCopy_0.dataIn_strb(sig_gen_dout_splitCopy_0_dataIn_strb);
-        gen_dout_splitCopy_0.dataOut_ready(sig_gen_dout_splitCopy_0_dataOut_ready);
-        gen_dout_splitCopy_0.dataOut_valid(sig_gen_dout_splitCopy_0_dataOut_valid);
+        gen_dout_splitCopy_0.dataIn_valid(sig_gen_dout_splitCopy_0_dataIn_valid);
         gen_dout_splitCopy_0.dataOut_data(sig_gen_dout_splitCopy_0_dataOut_data);
         gen_dout_splitCopy_0.dataOut_last(sig_gen_dout_splitCopy_0_dataOut_last);
+        gen_dout_splitCopy_0.dataOut_ready(sig_gen_dout_splitCopy_0_dataOut_ready);
         gen_dout_splitCopy_0.dataOut_strb(sig_gen_dout_splitCopy_0_dataOut_strb);
-        hfe.din_ready(sig_hfe_din_ready);
-        hfe.din_valid(sig_hfe_din_valid);
+        gen_dout_splitCopy_0.dataOut_valid(sig_gen_dout_splitCopy_0_dataOut_valid);
         hfe.din_data(sig_hfe_din_data);
         hfe.din_last(sig_hfe_din_last);
+        hfe.din_ready(sig_hfe_din_ready);
         hfe.din_strb(sig_hfe_din_strb);
-        hfe.dout_ready(sig_hfe_dout_ready);
-        hfe.dout_valid(sig_hfe_dout_valid);
+        hfe.din_valid(sig_hfe_din_valid);
         hfe.dout_data(sig_hfe_dout_data);
         hfe.dout_last(sig_hfe_dout_last);
+        hfe.dout_ready(sig_hfe_dout_ready);
         hfe.dout_strb(sig_hfe_dout_strb);
-        hfe.headers_ready(sig_hfe_headers_ready);
-        hfe.headers_valid(sig_hfe_headers_valid);
+        hfe.dout_valid(sig_hfe_dout_valid);
         hfe.headers_data(sig_hfe_headers_data);
         hfe.headers_last(sig_hfe_headers_last);
+        hfe.headers_ready(sig_hfe_headers_ready);
         hfe.headers_strb(sig_hfe_headers_strb);
-        patternMatch.din_ready(sig_patternMatch_din_ready);
-        patternMatch.din_valid(sig_patternMatch_din_valid);
+        hfe.headers_valid(sig_hfe_headers_valid);
         patternMatch.din_data(sig_patternMatch_din_data);
         patternMatch.din_last(sig_patternMatch_din_last);
+        patternMatch.din_ready(sig_patternMatch_din_ready);
         patternMatch.din_strb(sig_patternMatch_din_strb);
-        patternMatch.match_ready(sig_patternMatch_match_ready);
-        patternMatch.match_valid(sig_patternMatch_match_valid);
+        patternMatch.din_valid(sig_patternMatch_din_valid);
         patternMatch.match_data(sig_patternMatch_match_data);
         patternMatch.match_last(sig_patternMatch_match_last);
+        patternMatch.match_ready(sig_patternMatch_match_ready);
         patternMatch.match_strb(sig_patternMatch_match_strb);
+        patternMatch.match_valid(sig_patternMatch_match_valid);
     }
 };"""

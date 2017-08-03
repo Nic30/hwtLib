@@ -4,18 +4,18 @@
 from hwt.code import If, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Clk, Rst_n, FifoWriter, FifoReader
-from hwt.serializer.constants import SERI_MODE
 from hwtLib.logic.cntrGray import GrayCntr
 from hwtLib.mem.fifo import Fifo
+from hwt.serializer.mode import serializeParamsUniq
 
 
+@serializeParamsUniq
 class FifoAsync(Fifo):
     """
     Asynchronous fifo using BRAM memory based on:
     http://www.asic-world.com/examples/vhdl/asyn_fifo.html
 
     """
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
 
     def _declr(self):
         assert int(self.DEPTH) > 0,  "FifoAsync is disabled in this case, do not use it entirely"

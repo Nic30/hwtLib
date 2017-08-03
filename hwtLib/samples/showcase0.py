@@ -456,27 +456,27 @@ SC_MODULE(Showcase0) {
     sc_in<sc_uint<32>> a;
     sc_in<sc_int<32>> b;
     sc_out<sc_uint<32>> c;
-    sc_out<sc_uint<16>> fitted;
-    sc_out<sc_uint<32>> contOut;
-    sc_in<sc_uint<32>> d;
-    sc_in<sc_uint<1>> e;
-    sc_out<sc_uint<1>> f;
-    sc_out<sc_uint<8>> g;
     sc_in_clk clk;
-    sc_in<sc_uint<1>> rst_n;
     sc_out<sc_uint<1>> cmp0;
     sc_out<sc_uint<1>> cmp1;
     sc_out<sc_uint<1>> cmp2;
     sc_out<sc_uint<1>> cmp3;
     sc_out<sc_uint<1>> cmp4;
     sc_out<sc_uint<1>> cmp5;
+    sc_out<sc_uint<32>> contOut;
+    sc_in<sc_uint<32>> d;
+    sc_in<sc_uint<1>> e;
+    sc_out<sc_uint<1>> f;
+    sc_out<sc_uint<16>> fitted;
+    sc_out<sc_uint<8>> g;
     sc_out<sc_uint<8>> h;
     sc_in<sc_uint<2>> i;
     sc_out<sc_uint<8>> j;
+    sc_out<sc_uint<32>> k;
     sc_out<sc_uint<1>> out;
     sc_out<sc_uint<1>> output;
+    sc_in<sc_uint<1>> rst_n;
     sc_out<sc_uint<8>> sc_signal_0;
-    sc_out<sc_uint<32>> k;
 
     //internal signals
     sc_uint<32> const_private_signal = sc_biguint<32>(123);

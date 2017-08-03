@@ -95,9 +95,9 @@ dreg_systemc = """/*
 SC_MODULE(DReg) {
     //interfaces
     sc_in_clk clk;
-    sc_in<sc_uint<1>> rst;
     sc_in<sc_uint<1>> din;
     sc_out<sc_uint<1>> dout;
+    sc_in<sc_uint<1>> rst;
 
     //internal signals
     sc_uint<1> internReg = '0';

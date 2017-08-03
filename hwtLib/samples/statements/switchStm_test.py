@@ -85,11 +85,11 @@ switchStm_systemc = """/*
 
 SC_MODULE(SwitchStmUnit) {
     //interfaces
-    sc_in<sc_uint<3>> sel;
-    sc_out<sc_uint<1>> out;
     sc_in<sc_uint<1>> a;
     sc_in<sc_uint<1>> b;
     sc_in<sc_uint<1>> c;
+    sc_out<sc_uint<1>> out;
+    sc_in<sc_uint<3>> sel;
 
     //processes inside this component
     void assig_process_out() {

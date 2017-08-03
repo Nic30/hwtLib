@@ -4,19 +4,19 @@
 from hwt.code import log2ceil, connect, Or
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.serializer.constants import SERI_MODE
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.amba.interconnect.axiInterconnectbase import AxiInterconnectBase
 from hwtLib.handshaked.fifo import HandshakedFifo
 
 
+@serializeParamsUniq
 class RStrictOrderInterconnect(AxiInterconnectBase):
     """
     Strict order interconnect for AxiRDatapumpIntf
     ensures that response on request is delivered to driver which asked for it while transactions can overlap
     """
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
 
     def _config(self):
         self.DRIVER_CNT = Param(2)

@@ -4,13 +4,13 @@
 from hwt.code import If, power
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import BramPort, Clk, BramPort_withoutClk
-from hwt.serializer.constants import SERI_MODE
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 
 
+@serializeParamsUniq
 class RamSingleClock(Unit):
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
 
     def _config(self):
         self.DATA_WIDTH = Param(64)
@@ -51,11 +51,11 @@ class RamSingleClock(Unit):
             self.connectPort(getattr(self, self.genPortName(i)), self._mem)
 
 
+@serializeParamsUniq
 class Ram_sp(Unit):
     """
     Write first variant
     """
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
 
     def _config(self):
         self.DATA_WIDTH = Param(64)
