@@ -20,7 +20,7 @@ class HsSplitCopy(HandshakedCompBase):
                               |      +---------+
                       +-------+
          input stream |       |      +---------+
-        +-------------> fork  +------> clone1  |
+        +-------------> copy  +------> clone1  |
                       |       |      +---------+
                       +-------+
                               |      +---------+

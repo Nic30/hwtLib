@@ -21,6 +21,21 @@ class HsSplitFair(HsSplitCopy):
 
     combinational
 
+
+    .. aafig::
+                                     +-------+
+                              +------> out0  |
+                              |      +-------+
+                      +-------+
+         input stream |       |      +-------+
+        +-------------> split +------> out1  |
+                      |       |      +-------+
+                      +-------+
+                              |      +-------+
+                              +------> out2  |
+                                     +-------+
+
+
     :ivar selectedOneHot: handshaked interface with one hot encoded
         index of selected output
     """
