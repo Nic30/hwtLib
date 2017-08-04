@@ -227,6 +227,7 @@ ddr_reg_verilog = """module DDR_Reg(input clk,
 
 endmodule"""
 
+
 class DRegTC(SimTestCase):
     def setUpUnit(self, u):
         self.u, self.model, self.procs = simPrepare(u)
