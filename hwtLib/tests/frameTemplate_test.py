@@ -166,8 +166,8 @@ _frameHeader = HStruct(
     name="FrameHeader"
     )
 frameHeader = HStruct_selectFields(_frameHeader,
-                                   {"eth":{ "src", "dst"},
-                                    "ipv4":{ "src", "dst"},
+                                   {"eth": {"src", "dst"},
+                                    "ipv4": {"src", "dst"},
                                     })
 frameHeader_str = """<FrameTemplate start:0, end:320
      63                                                             0
@@ -196,6 +196,22 @@ frameHeader_split_str = [
      -----------------------------------------------------------------
 >"""
     ]
+
+s2 = s = HStruct(
+        (uint64_t, "item0"),
+        (uint32_t, None),
+        (uint64_t, "item5"),
+        (uint32_t, None),
+        )
+
+s2_oneFrame = """<FrameTemplate start:0, end:192
+     63                                                             0
+     -----------------------------------------------------------------
+0    |                             item0                             |
+1    |             item5             |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
+2    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|             item5             |
+     -----------------------------------------------------------------
+>"""
 
 
 class FrameTemplateTC(unittest.TestCase):
@@ -293,10 +309,32 @@ class FrameTemplateTC(unittest.TestCase):
             self.assertEqual(s, frame.__repr__())
             self.assertEqual(frame.endBitAddr, end)
 
+    def test_s2_oneFrame(self):
+        DW = 64
+        tmpl = TransTmpl(s2)
+        frames = FrameTemplate.framesFromTransTmpl(
+                    tmpl, DW,
+                    )
+        frames = list(frames)
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(repr(frames[0]), s2_oneFrame)
+
+    def test_s2_oneFrame_tryToTrim(self):
+        DW = 64
+        tmpl = TransTmpl(s2)
+        frames = FrameTemplate.framesFromTransTmpl(
+                    tmpl, DW,
+                    maxPaddingWords=0,
+                    trimPaddingWordsOnStart=True,
+                    trimPaddingWordsOnEnd=True
+                    )
+        frames = list(frames)
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(repr(frames[0]), s2_oneFrame)
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(FrameTemplateTC('test_sWithStartPadding'))
+    #suite.addTest(FrameTemplateTC('test_frameHeader_splited'))
     suite.addTest(unittest.makeSuite(FrameTemplateTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
