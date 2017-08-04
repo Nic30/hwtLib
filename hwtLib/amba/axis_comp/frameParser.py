@@ -1,5 +1,3 @@
-from math import inf
-
 from hwt.code import log2ceil, If, Concat, And
 from hwt.hdlObjects.frameTemplate import FrameTemplate
 from hwt.hdlObjects.transTmpl import TransTmpl
@@ -32,16 +30,27 @@ class AxiS_frameParser(Unit):
                                      +---------+
 
     """
-    def __init__(self, axiSCls, structT, maxPaddingWords=inf):
+    def __init__(self, axiSCls, structT,
+                 tmpl=None, frames=None):
         """
         :param axiSCls: class of input axi stream interface
         :param structT: instance of HStruct which specifies data format to download
+        :param tmpl: instance of TransTmpl for this structT
+        :param frames: list of FrameTemplate instances for this tmpl
+        :note: if tmpl and frames are None they are resolved from structT parseTemplate
         :attention: structT can not contain fields with variable size like HStream
         """
         assert isinstance(structT, HStruct)
         self._structT = structT
         self._axiSCls = axiSCls
-        self._maxPaddingWords = maxPaddingWords
+
+        if tmpl is not None:
+            assert frames is not None, "tmpl and frames can be used only together"
+        else:
+            assert frames is None, "tmpl and frames can be used only together"
+
+        self._tmpl = tmpl
+        self._frames = frames
         super(AxiS_frameParser, self).__init__()
 
     def _config(self):
@@ -137,12 +146,14 @@ class AxiS_frameParser(Unit):
         return busRd
 
     def parseTemplate(self):
-        self._tmpl = TransTmpl(self._structT)
-        DW = int(self.DATA_WIDTH)
-        frames = FrameTemplate.framesFromTransTmpl(self._tmpl,
-                                                             DW,
-                                                             maxPaddingWords=self._maxPaddingWords)
-        self._frames = list(frames)
+        if self._tmpl is None:
+            self._tmpl = TransTmpl(self._structT)
+
+        if self._frames is None:
+            DW = int(self.DATA_WIDTH)
+            frames = FrameTemplate.framesFromTransTmpl(self._tmpl,
+                                                       DW)
+            self._frames = list(frames)
 
     def _impl(self):
         r = self.dataIn

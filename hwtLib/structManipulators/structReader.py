@@ -14,6 +14,8 @@ from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.amba.axis import AxiStream_withoutSTRB
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.handshaked.streamNode import streamAck
+from hwt.hdlObjects.transTmpl import TransTmpl
+from hwt.hdlObjects.frameTemplate import FrameTemplate
 
 
 class StructReader(AxiS_frameParser):
@@ -38,7 +40,8 @@ class StructReader(AxiS_frameParser):
                               +------> field2  |
                                      +---------+
     """
-    def __init__(self, structT, maxPaddingWords=inf):
+    def __init__(self, structT, maxPaddingWords=inf, maxFrameLen=inf,
+                 trimPaddingWordsOnStart=False, trimPaddingWordsOnEnd=False):
         """
         :param structT: instance of HStruct which specifies data format to download
         :param maxPaddingWords: maximum of continual padding words in frame,
@@ -49,7 +52,10 @@ class StructReader(AxiS_frameParser):
         Unit.__init__(self)
         assert isinstance(structT, HStruct)
         self._structT = structT
+        self._maxFrameLen = maxFrameLen
         self._maxPaddingWords = maxPaddingWords
+        self._trimPaddingWordsOnStart = trimPaddingWordsOnStart
+        self._trimPaddingWordsOnEnd = trimPaddingWordsOnEnd
 
     def _config(self):
         self.ID = Param(0)
@@ -62,6 +68,20 @@ class StructReader(AxiS_frameParser):
 
     def maxWordIndex(self):
         return max(map(lambda f: f.endBitAddr - 1, self._frames)) // int(self.DATA_WIDTH)
+
+    def parseTemplate(self):
+        self._tmpl = TransTmpl(self._structT)
+
+        DW = int(self.DATA_WIDTH)
+        frames = FrameTemplate.framesFromTransTmpl(
+                    self._tmpl,
+                    DW,
+                    maxFrameLen=self._maxFrameLen,
+                    maxPaddingWords=self._maxPaddingWords,
+                    trimPaddingWordsOnStart=self._trimPaddingWordsOnStart,
+                    trimPaddingWordsOnEnd=self._trimPaddingWordsOnEnd)
+
+        self._frames = list(frames)
 
     def _declr(self):
         addClkRstn(self)
@@ -78,7 +98,8 @@ class StructReader(AxiS_frameParser):
             self.rDatapump.MAX_LEN.set(self.maxWordIndex() + 1)
             self.parser = AxiS_frameParser(AxiStream_withoutSTRB,
                                            self._structT,
-                                           maxPaddingWords=self._maxPaddingWords)
+                                           tmpl=self._tmpl,
+                                           frames=self._frames)
 
         if self.SHARED_READY:
             self.ready = Signal()
@@ -140,5 +161,7 @@ if __name__ == "__main__":
         (uint64_t, "item7"),
         )
 
-    u = StructReader(s)
+    u = StructReader(s, maxPaddingWords=0,
+                     trimPaddingWordsOnEnd=True,
+                     trimPaddingWordsOnStart=True)
     print(toRtl(u))
