@@ -28,10 +28,10 @@ class StructReader(AxiS_frameParser):
     :attention: interfaces of field will not send data in same time
 
     .. aafig::
-                                     +---------+
-                              +------> field0  |
-                              |      +---------+
-            bus req   +-------+-+
+            get (base addr)          +---------+
+         +----------------    +------> field0  |
+                         |    |      +---------+
+            bus req   +--v---+-+
          <------------+         |    +---------+
                       | reader  +----> field1  |
          +------------>         |    +---------+
@@ -39,6 +39,8 @@ class StructReader(AxiS_frameParser):
                               |      +---------+
                               +------> field2  |
                                      +---------+
+
+    :note: names in the picture are just illustrative
     """
     def __init__(self, structT, maxPaddingWords=inf, maxFrameLen=inf,
                  trimPaddingWordsOnStart=False, trimPaddingWordsOnEnd=False):
@@ -100,6 +102,7 @@ class StructReader(AxiS_frameParser):
                                            self._structT,
                                            tmpl=self._tmpl,
                                            frames=self._frames)
+            self.parser.SYNCHRONIZE_BY_LAST.set(False)
 
         if self.SHARED_READY:
             self.ready = Signal()

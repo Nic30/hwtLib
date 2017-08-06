@@ -29,6 +29,7 @@ class AxiS_frameParser(Unit):
                               +------> field2  |
                                      +---------+
 
+    :note: names in the picture are just illustrative
     """
     def __init__(self, axiSCls, structT,
                  tmpl=None, frames=None):
@@ -38,6 +39,7 @@ class AxiS_frameParser(Unit):
         :param tmpl: instance of TransTmpl for this structT
         :param frames: list of FrameTemplate instances for this tmpl
         :note: if tmpl and frames are None they are resolved from structT parseTemplate
+        :note: this unit can parse sequence of frames, if they are specified by "frames"
         :attention: structT can not contain fields with variable size like HStream
         """
         assert isinstance(structT, HStruct)
@@ -155,12 +157,18 @@ class AxiS_frameParser(Unit):
                                                        DW)
             self._frames = list(frames)
 
+    def chainFrameWords(self):
+        offset = 0
+        for f in self._frames:
+            for wi, w in f.walkWords(showPadding=True):
+                yield (offset + wi, w)
+            offset += wi + 1
+
     def _impl(self):
         r = self.dataIn
         self.parseTemplate()
-        assert len(self._frames) == 1
-        words = list(self._frames[0].walkWords(showPadding=True))
-
+        words = list(self.chainFrameWords())
+        assert not (self.SYNCHRONIZE_BY_LAST and len(self._frames) > 1)
         maxWordIndex = words[-1][0]
         wordIndex = self._reg("wordIndex", vecT(log2ceil(maxWordIndex + 1)), 0)
         busVld = r.valid
