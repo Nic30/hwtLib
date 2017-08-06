@@ -12,6 +12,8 @@ from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.types.ctypes import uint64_t, uint32_t
 from math import inf
 from hwt.synthesizer.shortcuts import toRtl
+from hwt.hdlObjects.transTmpl import TransTmpl
+from hwt.hdlObjects.frameTemplate import FrameTemplate
 
 
 s1field = HStruct(
@@ -46,12 +48,16 @@ class AxiS_frameForge_TC(SimTestCase):
                               trimPaddingWordsOnStart=False,
                               trimPaddingWordsOnEnd=False,
                               randomized=True):
-
-        u = self.u = AxiS_frameForge(AxiStream, structT,
+        tmpl = TransTmpl(structT)
+        frames = list(FrameTemplate.framesFromTransTmpl(
+                                     tmpl,
+                                     DATA_WIDTH,
                                      maxFrameLen=maxFrameLen,
                                      maxPaddingWords=maxPaddingWords,
                                      trimPaddingWordsOnStart=trimPaddingWordsOnStart,
-                                     trimPaddingWordsOnEnd=trimPaddingWordsOnEnd)
+                                     trimPaddingWordsOnEnd=trimPaddingWordsOnEnd))
+        u = self.u = AxiS_frameForge(AxiStream, structT,
+                                     tmpl, frames)
         self.DATA_WIDTH = 64
         u.DATA_WIDTH.set(self.DATA_WIDTH)
 
@@ -195,11 +201,17 @@ class AxiS_frameForge_TC(SimTestCase):
                                      ])
 
     def test_s2Pading_spliting(self):
-        u = self.u = AxiS_frameForge(AxiStream, s2Pading,
-                                     trimPaddingWordsOnEnd=True,
-                                     trimPaddingWordsOnStart=True,
-                                     maxPaddingWords=0)
+        structT = s2Pading
         self.DATA_WIDTH = 64
+        tmpl = TransTmpl(structT)
+        frames = list(FrameTemplate.framesFromTransTmpl(
+                                     tmpl,
+                                     self.DATA_WIDTH,
+                                     maxPaddingWords=0,
+                                     trimPaddingWordsOnStart=True,
+                                     trimPaddingWordsOnEnd=True))
+        u = self.u = AxiS_frameForge(AxiStream, structT,
+                                     tmpl, frames)
         u.DATA_WIDTH.set(self.DATA_WIDTH)
 
         self.prepareUnit(self.u)
