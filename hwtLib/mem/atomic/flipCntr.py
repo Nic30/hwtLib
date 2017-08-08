@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.code import If
 from hwt.interfaces.std import Signal, HandshakeSync, \
     RegCntrl
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.serializer.constants import SERI_MODE
-from hwt.code import If
+from hwt.serializer.mode import serializeOnce
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.mem.atomic.flipReg import FlipRegister
 
 
+@serializeOnce
 class FlipCntr(Unit):
     """
     Counter with FlipRegister which is form memory with atomic access
@@ -18,7 +19,6 @@ class FlipCntr(Unit):
     interface doFilip drives switching of memories in flip register
     dataIn has higher priority than doIncr
     """
-    _serializerMode = SERI_MODE.ONCE
 
     def _config(self):
         self.DATA_WIDTH = Param(18)

@@ -4,11 +4,12 @@
 from hwt.code import If
 from hwt.interfaces.std import Signal, BramPort_withoutClk, Clk
 from hwt.interfaces.utils import propagateClk
-from hwt.serializer.constants import SERI_MODE
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.mem.ram import RamSingleClock
 
 
+@serializeParamsUniq
 class FlipRam(Unit):
     """
     Switchable RAM, there are two memories and two sets of ports,
@@ -21,7 +22,6 @@ class FlipRam(Unit):
 
     Then select is set and access is flipped. Reader now has access to RAM 0 and writer to RAM 1.
     """
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
 
     def _config(self):
         RamSingleClock._config(self)

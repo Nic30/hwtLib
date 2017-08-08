@@ -11,7 +11,8 @@ from hwt.simulator.agentConnector import agInts
 from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.shortcuts import toRtl
-from hwtLib.samples.mem.reg import DReg, DoubleDReg, OptimizedOutReg
+from hwtLib.samples.mem.reg import DReg, DoubleDReg, OptimizedOutReg,\
+    AsyncResetReg, DDR_Reg
 
 
 dreg_vhdl = """--
@@ -95,9 +96,9 @@ dreg_systemc = """/*
 SC_MODULE(DReg) {
     //interfaces
     sc_in_clk clk;
-    sc_in<sc_uint<1>> rst;
     sc_in<sc_uint<1>> din;
     sc_out<sc_uint<1>> dout;
+    sc_in<sc_uint<1>> rst;
 
     //internal signals
     sc_uint<1> internReg = '0';
@@ -127,6 +128,104 @@ SC_MODULE(DReg) {
         sensitive << din;
     }
 };"""
+
+asyncResetReg_verilog = """module AsyncResetReg(input clk,
+        input din,
+        output dout,
+        input rst
+    );
+
+    reg internReg = 1'b0;
+    assign dout = internReg;
+    always @(posedge clk or posedge rst) begin: assig_process_internReg
+        if(rst == 1'b1) begin
+            internReg <= 1'b0;
+        end else begin
+            internReg <= din;
+        end
+    end
+
+endmodule"""
+
+asyncResetReg_vhdl = """library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+ENTITY AsyncResetReg IS
+    PORT (clk: IN STD_LOGIC;
+        din: IN STD_LOGIC;
+        dout: OUT STD_LOGIC;
+        rst: IN STD_LOGIC
+    );
+END AsyncResetReg;
+
+ARCHITECTURE rtl OF AsyncResetReg IS
+    SIGNAL internReg: STD_LOGIC := '0';
+BEGIN
+    dout <= internReg;
+    assig_process_internReg: PROCESS (clk, rst)
+    BEGIN
+        IF rst = '1' THEN
+            internReg <= '0';
+        ELSIF RISING_EDGE(clk) THEN
+            internReg <= din;
+        END IF;
+    END PROCESS;
+
+END ARCHITECTURE rtl;"""
+
+
+ddr_reg_vhdl = """library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+ENTITY DDR_Reg IS
+    PORT (clk: IN STD_LOGIC;
+        din: IN STD_LOGIC;
+        dout: OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+        rst: IN STD_LOGIC
+    );
+END DDR_Reg;
+
+ARCHITECTURE rtl OF DDR_Reg IS
+    SIGNAL internReg: STD_LOGIC := '0';
+    SIGNAL internReg_0: STD_LOGIC := '0';
+BEGIN
+    dout <= internReg & internReg_0;
+    assig_process_internReg: PROCESS (clk)
+    BEGIN
+        IF RISING_EDGE(clk) THEN
+            internReg <= din;
+        END IF;
+    END PROCESS;
+
+    assig_process_internReg_0: PROCESS (clk)
+    BEGIN
+        IF FALLING_EDGE(clk) THEN
+            internReg_0 <= din;
+        END IF;
+    END PROCESS;
+
+END ARCHITECTURE rtl;"""
+
+ddr_reg_verilog = """module DDR_Reg(input clk,
+        input din,
+        output [1:0] dout,
+        input rst
+    );
+
+    reg internReg = 1'b0;
+    reg internReg_0 = 1'b0;
+    assign dout = {internReg, internReg_0};
+    always @(posedge clk) begin: assig_process_internReg
+        internReg <= din;
+    end
+
+    always @(negedge clk) begin: assig_process_internReg_0
+        internReg_0 <= din;
+    end
+
+endmodule"""
 
 
 class DRegTC(SimTestCase):
@@ -172,6 +271,23 @@ class DRegTC(SimTestCase):
     def test_dreg_systemc(self):
         s = toRtl(DReg(), serializer=SystemCSerializer)
         self.assertEqual(s, dreg_systemc)
+
+    def test_AsyncResetReg_vhdl(self):
+        s = toRtl(AsyncResetReg(), serializer=VhdlSerializer)
+        self.assertEqual(s, asyncResetReg_vhdl)
+
+    def test_AsyncResetReg_verilog(self):
+        s = toRtl(AsyncResetReg(), serializer=VerilogSerializer)
+        self.assertEqual(s, asyncResetReg_verilog)
+
+    def test_DDR_Reg_vhdl(self):
+        s = toRtl(DDR_Reg(), serializer=VhdlSerializer)
+        self.assertEqual(s, ddr_reg_vhdl)
+
+    def test_DDR_Reg_verilog(self):
+        s = toRtl(DDR_Reg(), serializer=VerilogSerializer)
+        self.assertEqual(s, ddr_reg_verilog)
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

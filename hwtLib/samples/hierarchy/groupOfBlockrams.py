@@ -114,8 +114,8 @@ BEGIN
     END PROCESS;
 
 END ARCHITECTURE rtl;
---Object of class Entity(bramR) was not serialized due its serializer mode
---Object of class Architecture(rtl) was not serialized due its serializer mode
+--Object of class Entity, "bramR" was not serialized as specified
+--Object of class Architecture, "rtl" was not serialized as specified
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;

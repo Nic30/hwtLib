@@ -33,7 +33,11 @@ class HashTableCore(Unit):
 
     :ivar ITEMS_CNT: number of items in memory of hash table
     :ivar KEY_WIDTH: width of the key used by hash table
-    :ivar DATA_WIDTH: width of data, can be zero and then no data interface is instantiated
+    :ivar DATA_WIDTH: width of data, can be zero and then no data
+        interface is instantiated
+    :ivar LOOKUP_ID_WIDTH: width of id signal for lookup (tag used only
+        by parent component to mark this lookup for later result processing,
+        can be 0)
     :ivar LOOKUP_HASH: flag if this interface should have hash signal
     :ivar LOOKUP_KEY: flag if this interface should have key signal
     :ivar POLYNOME: polynome for crc hash used in this table
@@ -46,6 +50,7 @@ class HashTableCore(Unit):
         self.ITEMS_CNT = Param(32)
         self.KEY_WIDTH = Param(16)
         self.DATA_WIDTH = Param(8)
+        self.LOOKUP_ID_WIDTH = Param(0)
         self.LOOKUP_HASH = Param(False)
         self.LOOKUP_KEY = Param(False)
 
@@ -117,6 +122,8 @@ class HashTableCore(Unit):
         origKeyReg.KEY_WIDTH.set(self.KEY_WIDTH)
         self.origKeyReg = origKeyReg
         origKeyReg.dataIn.key ** l.key
+        if l.LOOKUP_ID_WIDTH:
+            origKeyReg.dataIn.lookupId ** l.lookupId
         origKeyReg.clk ** self.clk
         origKeyReg.rst_n ** self.rst_n
 
@@ -157,9 +164,12 @@ class HashTableCore(Unit):
         if self.LOOKUP_KEY:
             res.key ** origKey.key
 
+        if self.LOOKUP_ID_WIDTH:
+            res.lookupId ** origKey.lookupId
+
         if self.DATA_WIDTH:
             res.data ** data
-
+        res.occupied ** vldFlag
         res.found ** (origKey.key._eq(key) & vldFlag)
 
     def insertLogic(self, ramW):

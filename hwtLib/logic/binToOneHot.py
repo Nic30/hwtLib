@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import log2ceil
+from hwt.hdlObjects.constants import Time
 from hwt.interfaces.std import s, VectSignal
-from hwt.serializer.constants import SERI_MODE
+from hwt.serializer.mode import serializeParamsUniq
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
-from hwt.simulator.simTestCase import SimTestCase
-from hwt.hdlObjects.constants import Time
 
 
+@serializeParamsUniq
 class BinToOneHot(Unit):
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
 
     def _config(self):
         self.DATA_WIDTH = Param(8)

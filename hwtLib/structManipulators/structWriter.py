@@ -25,6 +25,23 @@ class StructWriter(StructReader):
     specified over set interface
 
     :ivar MAX_OVERLAP: parameter which specifies the maximum number of concurrent transaction
+
+    .. aafig::
+            set (base addr)          +---------+
+         +----------------    +------> field0  |
+                         |    |      +---------+
+           bus w req  +--v---+-+
+         <------------+         |    +---------+
+           bus w data |         +----> field1  |
+         <------------+ reader  |    +---------+
+           bus w ack  |         |
+         +------------>         |
+                      +-------+-+
+                              |      +---------+
+                              +------> field2  |
+                                     +---------+
+
+    :note: names in the picture are just illustrative
     """
     def _config(self):
         StructReader._config(self)
@@ -54,7 +71,8 @@ class StructWriter(StructReader):
 
         self.frameAssember = AxiS_frameForge(AxiStream,
                                              self._structT,
-                                             maxPaddingWords=self._maxPaddingWords)
+                                             tmpl=self._tmpl,
+                                             frames=self._frames)
 
     def _impl(self):
         propagateClkRstn(self)

@@ -31,12 +31,11 @@ class AxiS_frameForge(AxiSCompBase):
         +---------+      |
         | field2  +------+
         +---------+
+
+    :note: names in the picture are just illustrative
     """
     def __init__(self, axiSIntfCls, structT,
-                 maxFrameLen=inf,
-                 maxPaddingWords=inf,
-                 trimPaddingWordsOnStart=False,
-                 trimPaddingWordsOnEnd=False):
+                 tmpl=None, frames=None):
         """
         :param hsIntfCls: class of interface which should be used as interface of this unit
         :param structT: instance of HStruct used as template for this frame
@@ -44,17 +43,18 @@ class AxiS_frameForge(AxiSCompBase):
             litle-endian encoding,
             supported types of interfaces are: Handshaked, Signal
             can be also instance of FrameTemplate
-        :param maxPaddingWords: maximum of continual padding words in frame,
-            if exceed frame is split and words are cut of
+        :param tmpl: instance of TransTmpl for this structT
+        :param frames: list of FrameTemplate instances for this tmpl
+        :note: if tmpl and frames are None they are resolved from structT parseTemplate
+        :note: this unit can parse sequence of frames, if they are specified by "frames"
+        :note: structT can contain fields with variable size like HStream
         """
         if axiSIntfCls is not AxiStream:
             raise NotImplementedError()
 
         self._structT = structT
-        self._maxFrameLen = maxFrameLen
-        self._maxPaddingWords = maxPaddingWords
-        self._trimPaddingWordsOnStart = trimPaddingWordsOnStart
-        self._trimPaddingWordsOnEnd = trimPaddingWordsOnEnd
+        self._tmpl = tmpl
+        self._frames = frames
 
         AxiSCompBase.__init__(self, axiSIntfCls)
 
@@ -71,18 +71,14 @@ class AxiS_frameForge(AxiSCompBase):
         self.dataIn = StructIntf(self._structT, self._mkFieldIntf)
 
     def parseTemplate(self):
-        DW = int(self.DATA_WIDTH)
-        tmpl = TransTmpl(self._structT)
-        self._frames = FrameTemplate.framesFromTransTmpl(
-            tmpl,
-            DW,
-            maxFrameLen=self._maxFrameLen,
-            maxPaddingWords=self._maxPaddingWords,
-            trimPaddingWordsOnStart=self._trimPaddingWordsOnStart,
-            trimPaddingWordsOnEnd=self._trimPaddingWordsOnEnd
-            )
+        if self._tmpl is None:
+            self._tmpl = TransTmpl(self._structT)
 
-        self._frames = list(self._frames)
+        if self._frames is None:
+            DW = int(self.DATA_WIDTH)
+            frames = FrameTemplate.framesFromTransTmpl(self._tmpl,
+                                                       DW)
+            self._frames = list(frames)
 
     def _impl(self):
         dout = self.dataOut

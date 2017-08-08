@@ -69,11 +69,11 @@ fsmExample_systemc= """#include <systemc.h>
 
 SC_MODULE(FsmExample) {
     //interfaces
-    sc_in_clk clk;
-    sc_in<sc_uint<1>> rst_n;
     sc_in<sc_uint<1>> a;
     sc_in<sc_uint<1>> b;
+    sc_in_clk clk;
     sc_out<sc_uint<3>> dout;
+    sc_in<sc_uint<1>> rst_n;
 
     //internal signals
     sc_uint<2> st = 0;
@@ -137,6 +137,7 @@ SC_MODULE(FsmExample) {
     }
 };"""
 
+
 class FsmExampleTC(SimTestCase):
     def setUp(self):
         super(FsmExampleTC, self).setUp()
@@ -159,7 +160,8 @@ class FsmExampleTC(SimTestCase):
 
     def test_systemc(self):
         s = toRtl(FsmExample(), serializer=SystemCSerializer)
-        self.assertEqual(s, fsmExample_systemc)        
+        self.assertEqual(s, fsmExample_systemc)
+
 
 class HadrcodedFsmExampleTC(FsmExampleTC):
     def setUp(self):
@@ -173,5 +175,6 @@ if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(TwoCntrsTC('test_nothingEnable'))
     suite.addTest(unittest.makeSuite(FsmExampleTC))
+    suite.addTest(unittest.makeSuite(HadrcodedFsmExampleTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

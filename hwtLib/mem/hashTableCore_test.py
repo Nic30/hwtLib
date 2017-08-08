@@ -41,10 +41,11 @@ class HashTableCoreTC(SimTestCase):
         def tryInsertNotFoundAndLookupIt(s):
             # wait for lookup
             yield s.wait(50 * Time.ns)
-            _hash, key, _, found = u.lookupRes._ag.data.popleft()
+            _hash, key, _, found, occupied = u.lookupRes._ag.data.popleft()
             data = self._rand.getrandbits(8)
 
             self.assertValEqual(found, False)
+            self.assertValEqual(occupied, False)
 
             u.insert._ag.data.append((_hash, key, data, 1))
 
@@ -54,8 +55,8 @@ class HashTableCoreTC(SimTestCase):
             u.lookup._ag.data.extend([key, key2])
             yield s.wait(50 * Time.ns)
 
-            expected0 = tuple(valuesToInts((_hash, key, data, 1)))
-            expected1 = (21, key2, 0, 0)
+            expected0 = tuple(valuesToInts((_hash, key, data, 1, 1)))
+            expected1 = (21, key2, 0, 0, 0)
 
             self.assertValSequenceEqual(u.lookupRes._ag.data,
                                         [expected0, expected1])

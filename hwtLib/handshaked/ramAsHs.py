@@ -2,7 +2,7 @@ from hwt.code import If
 from hwt.hdlObjects.constants import DIRECTION
 from hwt.interfaces.std import Handshaked, BramPort_withoutClk
 from hwt.interfaces.utils import addClkRstn
-from hwt.serializer.constants import SERI_MODE
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.simulator.agentBase import AgentBase
 from hwt.synthesizer.interfaceLevel.interface import Interface
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -67,11 +67,11 @@ class RamHsR(Interface):
         return RamHsRAgent
 
 
+@serializeParamsUniq
 class RamAsHs(Unit):
     """
     Converter from ram port to handshaked interfaces
     """
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
 
     def _config(self):
         self.ADDR_WIDTH = Param(32)
