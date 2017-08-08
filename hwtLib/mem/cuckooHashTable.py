@@ -45,6 +45,31 @@ class CuckooHashTableCore(HashTableCore):
 
     Inserting into table does not have to be successful and in this case,
     fsm ends up in infinite loop and it will be reinserting items.
+    
+    
+    .. aafig::
+                    +-------------------------------------------+
+                    |                                           |
+                    | CuckooHashTable                           |
+        insert      |                                   ++      |
+        +--------------------------------------+ +----------+   |
+                    |                          | |      ++  |   | lookupRes
+        lookup      |                        +-v-v---+      +----------->
+        +------------------------------------> stash |      |   |
+                    |  +--------------------->       |      |   |
+                    |  |               +-----+       |      |   |
+         delete     |  |               |     +---+---+      |   |
+        +--------------+           +---v---+     |          |   |
+                    |              | insert|  lookup        |   |
+         clean      |  +--------+  +-^--+--+     |          |   |
+        +-------------->cleanFSM+----+  |    +---v----+     |   |
+                    |  +--------+       +----> tables |     |   |
+                    |                        +--------+     |   |
+                    |                         lookupRes     |   |
+                    |                            +----------+   |
+                    |                                           |
+                    +-------------------------------------------+
+
     """
 
     def __init__(self, polynomials):

@@ -41,7 +41,18 @@ class HashTableCore(Unit):
     :ivar LOOKUP_HASH: flag if this interface should have hash signal
     :ivar LOOKUP_KEY: flag if this interface should have key signal
     :ivar POLYNOME: polynome for crc hash used in this table
+    
+    
+    .. aafig::
+
+        insert      +-----------+      
+        ------------>           |  lookupRes
+        lookup      | HashTable +----------->
+        ------------>           |
+                    +-----------+
+
     """
+
     def __init__(self, polynome):
         super(HashTableCore, self).__init__()
         self.POLYNOME = polynome
