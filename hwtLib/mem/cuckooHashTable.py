@@ -9,6 +9,8 @@ from hwtLib.handshaked.builder import HsBuilder
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.enum import Enum
 from hwtLib.handshaked.streamNode import streamAck, streamSync
+from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdlObjects.types.defs import BIT
 
 
 class ORIGIN_TYPE():
@@ -45,18 +47,17 @@ class CuckooHashTableCore(HashTableCore):
 
     Inserting into table does not have to be successful and in this case,
     fsm ends up in infinite loop and it will be reinserting items.
-    
-    
+
     .. aafig::
                     +-------------------------------------------+
                     |                                           |
                     | CuckooHashTable                           |
-        insert      |                                   ++      |
+        insert      |                                           |
         +--------------------------------------+ +----------+   |
-                    |                          | |      ++  |   | lookupRes
+                    |                          | |          |   | lookupRes
         lookup      |                        +-v-v---+      +----------->
-        +------------------------------------> stash |      |   |
-                    |  +--------------------->       |      |   |
+        +------------------------------------>       |      |   |
+                    |  +---------------------> stash |      |   |
                     |  |               +-----+       |      |   |
          delete     |  |               |     +---+---+      |   |
         +--------------+           +---v---+     |          |   |
@@ -116,61 +117,32 @@ class CuckooHashTableCore(HashTableCore):
 
         return addr, addr._eq(lastAddr)
 
-    def insetOfTablesDriver(self, state, cleanAddr, insertTargetOH,
-                            insertHash, insertData, insertKey, insertVld):
+    def insetOfTablesDriver(self, insertTargetOH, stash):
         """
-        :param state: actual fsm state of insert core
-        :param cleanAddr: address for cleaning of items
         :param insertTargetOH: index of table where insert should be performed,
             one hot encoding
-        :param insertTmpHash: hash under which item should be stored in target table
-        :param insertTmpKey: key hold by insert core
-        :param insertTmpData: data hold by insert core
-
-
-        :note: there are two sets of temporary registers for table
-            lookup and insert operation "stash" which contains data
-            we would like to insert and "tmp" which contains
-            result of lookup operation before insertion
         """
 
-        fsm_t = state._dtype
-
         for i, t in enumerate(self.tables):
-            t.insert.key ** insertKey
+            t.insert.key ** stash.key
             if self.DATA_WIDTH:
-                t.insert.data ** insertData
+                t.insert.data ** stash.data
 
         for t in self.tables:
             ins = t.insert
-            If(state._eq(fsm_t.cleaning),
-                ins.hash ** cleanAddr,
-            ).Else(
-                ins.hash ** insertHash
-            )
-
-            ins.key ** insertTmpKey
+            ins.hash ** stash.hash
+            ins.key ** stash.key
 
             if self.DATA_WIDTH:
-                ins.data ** insertTmpData
+                ins.data ** stash.data
+                ins.vld ** insertTargetOH[i]
+                ins.vldFlag ** stash.vldFlag
 
-            Switch(state)\
-                .Case(fsm_t.cleaning,
-                      ins.vld ** 1,
-                      ins.vldFlag ** 0
-                ).Case(fsm_t.insert,
-                      ins.vld ** insertTargetOH[i],
-                      ins.vldFlag ** 1
-                ).Default(
-                    ins.vld ** 0,
-                    ins.vldFlag ** 1
-                )
-
-    def lookupResOfTablesDriver(self, en, insertTargetOH_out, insertTmpHash_out):
+    def lookupResOfTablesDriver(self, resRead, resAck, insertTargetOH_out):
         tables = self.tables
         res = list(map(lambda t: t.lookupRes, tables))
         # synchronize all lookupRes from all tables
-        streamSync(masters=res, extraConds={lr: en for lr in res})
+        streamSync(masters=res, extraConds={lr: resAck for lr in res})
 
         insertFinal = self._reg("insertFinal")
         # select empty space or victim witch which current insert item
@@ -180,8 +152,7 @@ class CuckooHashTableCore(HashTableCore):
         isEmptyOH = list(map(lambda t: ~t.lookupRes.occupied, tables))
         _insertFinal = Or(*insertFoundOH, *isEmptyOH)
 
-        If(en & lookupResAck,
-           #insertTmpHash_out ** 
+        If(resRead & lookupResAck,
             If(Or(*insertFoundOH),
                 insertTargetOH_out ** Concat(*insertFoundOH)
             ).Elif(Or(*isEmptyOH),
@@ -198,26 +169,28 @@ class CuckooHashTableCore(HashTableCore):
         )
         return lookupResAck, insertFinal, insertFoundOH
 
-    def reinsertCore(self):
+    def insertCore(self):
         """
         Insert core has register which contains value which should be inserted
+
+        lookup,
+        look
         """
         lookup = self.lookup
         lookupRes = self.lookupRes
         insert = self.insert
         tables = self.tables
 
-        targetOH = self._reg("targetOH", vecT(self.TABLE_CNT))
-        tmpHash = self._reg("tmpHash", vecT(self.HASH_WITH))
-        tmpKey = self._reg("tmpKey", vecT(self.KEY_WIDTH))
-        if self.DATA_WIDTH:
-            tmpData = self._reg("tmpData", vecT(self.DATA_WIDTH))
-        else:
-            tmpData = None
+        # stash is storage for item which is going to be swapped with actual
+        stash_t = HStruct(
+            (vecT(self.KEY_WIDTH), "key"),
+            (vecT(self.DATA_WIDTH), "data"),
+            )
+        stash = self._reg("stash", stash_t)
 
-        # specifies if current data are from outside or it is reinserting
+        targetOH = self._reg("targetOH", vecT(self.TABLE_CNT))
         lookupOrigin = self._reg("lookupOrigin", vecT(2))
-        insertOrigin = self._reg("insertOrigin", vecT(2))
+        # specifies if current data are from outside or it is reinserting
 
         cleanAck = self._sig("cleanAck")
         cleanAddr, cleanLast = self.cleanUpAddrIterator(cleanAck)
@@ -233,7 +206,7 @@ class CuckooHashTableCore(HashTableCore):
         insertAck = streamAck(slaves=map(lambda t: t.insert, tables))
 
         fsm_t = Enum("insertFsm_t", ["idle", "cleaning",
-                                     "lookup", "lookupRes", "insert"])
+                                     "lookup", "lookupResWaitRd", "lookupResAck"])
 
         isExternLookup = lookupOrigin._eq(ORIGIN_TYPE.LOOKUP)
         state = FsmBuilder(self, fsm_t, "insertFsm")\
@@ -247,19 +220,15 @@ class CuckooHashTableCore(HashTableCore):
             ).Trans(fsm_t.lookup,
                     # search and resolve in which table item should be stored
                     (lookupAck, fsm_t.insert)
-            ).Trans(fsm_t.lookupRes,
+            ).Trans(fsm_t.lookupResWaitRd,
+                    
+            ).Trans(fsm_t.lookupResAck,
                     # process lookupRes, if we are going to insert on place where
                     # valid item is, it has to be stored
-                    (lookupResAck & isExternLookup & ~lookupRes.rd,
-                     fsm_t.lookupRes),
-                    (lookupResAck & isExternLookup,
-                     fsm_t.idle),
-                    (lookupResAck,
-                     fsm_t.insert)
-            ).Trans(fsm_t.insert,
+                    (isExternLookup & lookupRes.rd, fsm_t.lookupResAck),
                     # insert into specified table
-                    (insertAck & insertFinal, fsm_t.idle),
-                    (insertAck & ~insertFinal, fsm_t.lookup)
+                    (~isExternLookup & insertAck & insertFinal, fsm_t.idle),
+                    (~isExternLookup & insertAck & ~insertFinal, fsm_t.lookup)
             ).stateReg
 
         cleanAck ** (streamAck(slaves=[t.insert for t in tables]) &
@@ -275,18 +244,18 @@ class CuckooHashTableCore(HashTableCore):
         If(isIdle,
             If(insert.vld,
                lookupOrigin ** ORIGIN_TYPE.INSERT,
-               tmpKey ** insert.key,
-               tmpData ** insert.data,
+               stash.key ** insert.key,
+               stash.data ** insert.data,
+               stash.vldFlag ** 1,
             ).Elif(lookup.vld,
                lookupOrigin ** ORIGIN_TYPE.LOOKUP,
-               tmpKey ** lookup.key,
+               stash.key ** lookup.key,
             )
         )
 
         insert.rd ** (isIdle & ~self.clean.vld)
 
-        self.insetOfTablesDriver(state, cleanAddr, targetOH,
-                                 tmpHash, tmpKey, tmpData)
+        self.insetOfTablesDriver(targetOH, stash)
         self.lookupResDriver(state, lookupOrigin, lookupAck, insertFound)
         self.lookupOfTablesDriver(state, tmpKey, lookupOrigin)
 
@@ -328,7 +297,8 @@ class CuckooHashTableCore(HashTableCore):
 
     def _impl(self):
         propagateClkRstn(self)
-        self.reinsertCore()
+        self.insertCore()
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
