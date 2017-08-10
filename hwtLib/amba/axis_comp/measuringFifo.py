@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.bitmask import mask
-from hwt.code import If, connect, Concat, Switch, log2ceil
+from hwt.code import If, connect, Concat, Switch, log2ceil, SwitchLogic
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -15,17 +15,6 @@ from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync, streamAck
 from hwtLib.mem.fifo import Fifo
 
-
-def strbToRem(strbBits):
-    """
-    :return: tuples (mask, numberofBits)
-    """
-    for rem in range(strbBits):
-        if (rem == 0):
-            strb = mask(strbBits)
-        else:
-            strb = mask(rem)
-        yield strb, rem
 
 
 class AxiS_measuringFifo(Unit):
@@ -84,14 +73,16 @@ class AxiS_measuringFifo(Unit):
             )
         )
         rem = self._sig("rem", vecT(log2ceil(STRB_BITS)))
-        Switch(dIn.strb).addCases(
-           [(strb, rem ** r)
-            for strb, r in strbToRem(STRB_BITS)]
-        ).Default(
-            rem ** 0,
-            If(dIn.valid,
-               errorAlignment ** 1
-            )
+        SwitchLogic(
+            cases=[
+                (dIn.strb[i], rem ** (0 if i == STRB_BITS - 1 else i + 1))
+                for i in reversed(range(STRB_BITS))],
+            default=[
+                rem ** 0,
+                If(dIn.valid,
+                   errorAlignment ** 1
+                )
+            ]
         )
 
         length = self._sig("length", wordCntr._dtype)
@@ -103,7 +94,8 @@ class AxiS_measuringFifo(Unit):
 
         sb.dataIn.data ** Concat(length, rem)
 
-        connect(dIn, db.dataIn, exclude=[dIn.valid, dIn.ready])
+        connect(dIn, db.dataIn, exclude=[dIn.valid, dIn.ready, dIn.last])
+        db.dataIn.last ** last
 
         streamSync(masters=[dIn],
                    slaves=[sb.dataIn, db.dataIn],
@@ -112,8 +104,7 @@ class AxiS_measuringFifo(Unit):
                               })
 
         self.sizes ** sb.dataOut
-        connect(db.dataOut, self.dataOut, exclude=[db.dataOut.last])
-        self.dataOut.last ** db.dataOut.last
+        connect(db.dataOut, self.dataOut)
 
 
 if __name__ == "__main__":
