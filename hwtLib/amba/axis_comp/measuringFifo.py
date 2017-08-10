@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.bitmask import mask
-from hwt.code import If, connect, Concat, Switch, log2ceil, SwitchLogic
+from hwt.code import If, connect, Concat, log2ceil, SwitchLogic
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -14,7 +14,6 @@ from hwtLib.amba.axis_comp.fifo import AxiSFifo
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync, streamAck
 from hwtLib.mem.fifo import Fifo
-
 
 
 class AxiS_measuringFifo(Unit):
@@ -86,7 +85,7 @@ class AxiS_measuringFifo(Unit):
         )
 
         length = self._sig("length", wordCntr._dtype)
-        If(dIn.strb != mask(STRB_BITS),
+        If(last & (dIn.strb != mask(STRB_BITS)),
             length ** wordCntr
         ).Else(
             length ** (wordCntr + 1)
