@@ -127,7 +127,7 @@ class AxiS_frameParser(Unit):
                     )
                     signalsOfParts.append(fPartReg)
 
-    def busReadyLogic(self, words, wordIndex, maxWordIndex):
+    def busReadyLogic(self, words, wordIndex):
         if self.SHARED_READY:
             busRd = self.ready
         else:
@@ -174,7 +174,7 @@ class AxiS_frameParser(Unit):
         busVld = r.valid
 
         self.connectDataSignals(words, wordIndex)
-        busRd = self.busReadyLogic(words, wordIndex, maxWordIndex)
+        busRd = self.busReadyLogic(words, wordIndex)
 
         r.ready ** busRd
 
