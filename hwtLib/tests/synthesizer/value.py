@@ -4,11 +4,22 @@
 import unittest
 
 from hwt.hdlObjects.typeShortcuts import hBool, hInt, vec, hStr
+from enum import Enum
+from hwt.hdlObjects.types.bits import Bits
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.hdlObjects.types.defs import BIT
 
 
 class ValueTC(unittest.TestCase):
     def assertValEq(self, first, second, msg=None):
-        return self.assertEqual(first.val, second, msg=msg)
+        try:
+            first = int(first)
+        except ValueError:
+            first = None
+
+        return self.assertEqual(first, second, msg=msg)
 
     def assertValNEq(self, first, second, msg=None):
         return self.assertNotEqual(first.val, second, msg=msg)
@@ -71,6 +82,85 @@ class ValueTC(unittest.TestCase):
         self.assertValEq(v8 // v4, 2)
         self.assertValEq(v8 // v2, 4)
         self.assertValEq(v4 // v2, 2)
+
+    def test_BitsFromPyEnum(self):
+        class PyEnumCls(Enum):
+            A = 1
+            B = 3
+            C = 4
+
+        t = Bits(2)
+
+        self.assertValEq(t.fromPy(PyEnumCls.A), 1)
+        self.assertValEq(t.fromPy(PyEnumCls.B), 3)
+        with self.assertRaises(ValueError):
+            t.fromPy(PyEnumCls.C)
+
+    def test_BitsFromIncompatibleType(self):
+        t = Bits(2)
+        with self.assertRaises(ValueError):
+            t.fromPy("a1")
+
+        with self.assertRaises(TypeError):
+            t.fromPy(object())
+
+    def test_BitsIndexOnSingleBit(self):
+        t = Bits(1)
+        v = t.fromPy(1)
+        with self.assertRaises(TypeError):
+            v[0]
+
+        t = Bits(1, forceVector=True)
+        v = t.fromPy(1)
+        self.assertValEq(v[0], 1)
+
+    def test_BitsConcatIncompatibleType(self):
+        t = Bits(1)
+        v = t.fromPy(1)
+        with self.assertRaises(TypeError):
+            v._concat(hInt(2))
+
+    def test_BitsIndexTypes(self):
+        t = Bits(8)
+        v = t.fromPy(1)
+        with self.assertRaises(TypeError):
+            v[object()]
+        with self.assertRaises(IndexError):
+            v[9:]
+        with self.assertRaises(IndexError):
+            v[:-1]
+
+        p = Param(2)
+        self.assertIsInstance(v[p], RtlSignalBase)
+        self.assertEqual(v[p]._dtype.bit_length(), 1)
+
+        p2 = p._downto(0)
+        self.assertIsInstance(v[p2], RtlSignalBase)
+        self.assertEqual(v[p2]._dtype.bit_length(), 2)
+
+        p3 = Param("abc")
+        with self.assertRaises(TypeError):
+            v[p3]
+
+        a = RtlSignal(None, "a", BIT)
+        a._const = False
+        with self.assertRaises(TypeError):
+            v[p] = a
+
+        v[p] = 1
+        self.assertValEq(v, 5)
+
+        v[p2] = 2
+        self.assertValEq(v, 6)
+
+        with self.assertRaises(TypeError):
+            v[hInt(None)] = 2
+
+    def test_BitsMulInvalidType(self):
+        t = Bits(8)
+        v = t.fromPy(1)
+        with self.assertRaises(TypeError):
+            v * "a"
 
 
 if __name__ == '__main__':
