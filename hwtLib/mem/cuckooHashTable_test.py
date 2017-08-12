@@ -35,13 +35,30 @@ class CuckooHashTableTC(SimTestCase):
     def test_simpleInsert(self):
         u = self.u
         u.clean._ag.data.append(1)
-        self.doSim(400 * Time.ns)
+        reference = {56: 11,
+                     99: 55,
+                     104: 78,
+                     15: 79,
+                     16: 90}
+
+        def planInsert(sim):
+            yield sim.wait(30 * Time.ns)
+            for k, v in sorted(reference.items(), key=lambda x: x[0]):
+                u.insert._ag.data.append((k, v))
+
+        self.procs.append(planInsert)
+
+        self.doSim(600 * Time.ns)
         for t in self.TABLE_MEMS:
             self.assertEqual(len(t), self.TABLE_SIZE)
             for i in range(self.TABLE_SIZE):
-                _, _, vldFlag = self.parseItem(t[i])
-                self.assertValEqual(vldFlag, 0, i)
-
+                key, data, vldFlag = self.parseItem(t[i])
+                if vldFlag:
+                    key = int(key)
+                    self.assertIn(key, reference)
+                    self.assertValEqual(data, reference[key])
+                    del reference[key]
+        self.assertEqual(reference, {})
 
 
 if __name__ == "__main__":

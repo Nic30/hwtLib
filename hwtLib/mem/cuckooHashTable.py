@@ -1,16 +1,16 @@
-from hwt.code import log2ceil, FsmBuilder, And, Or, If, Switch, ror, SwitchLogic, \
-    connect, Concat, In
+from hwt.code import log2ceil, FsmBuilder, And, Or, If, ror, SwitchLogic, \
+    connect, Concat
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.defs import BIT
 from hwt.hdlObjects.types.enum import Enum
 from hwt.hdlObjects.types.struct import HStruct
-from hwt.interfaces.std import VectSignal, Handshaked, HandshakeSync
+from hwt.interfaces.std import VectSignal, HandshakeSync
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.param import Param
-from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import streamAck, streamSync
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf
+from hwt.interfaces.agents.handshaked import HandshakedAgent
 
 
 class ORIGIN_TYPE():
@@ -29,6 +29,39 @@ class CInsertIntf(HandshakeSync):
         self.key = VectSignal(self.KEY_WIDTH)
         if self.DATA_WIDTH:
             self.data = VectSignal(self.DATA_WIDTH)
+
+    def _getSimAgent(self):
+        return CInsertIntfAgent
+
+
+class CInsertIntfAgent(HandshakedAgent):
+    """
+    Agent for CInsertIntf interface
+    """
+    def __init__(self, intf):
+        HandshakedAgent.__init__(self, intf)
+        self._hasData = bool(intf.DATA_WIDTH)
+
+    def doRead(self, s):
+        r = s.read
+        intf = self.intf
+        if self._hasData:
+            return r(intf.key), r(intf.data)
+        else:
+            return r(intf.key)
+
+    def doWrite(self, s, data):
+        w = s.write
+        intf = self.intf
+        if self._hasData:
+            if data is None:
+                k = None
+                d = None
+            else:
+                k, d = data
+            return w(k, intf.key), w(d, intf.data)
+        else:
+            return w(data, intf.key)
 
 
 # https://web.stanford.edu/class/cs166/lectures/13/Small13.pdf
@@ -136,8 +169,12 @@ class CuckooHashTable(HashTableCore):
                               state._eq(fsm_t.lookupResAck) & insertTargetOH[i])
                 ins.vldFlag ** stash.vldFlag
 
-    def lookupResOfTablesDriver(self, resRead, resAck, insertTargetOH_out):
+    def lookupResOfTablesDriver(self, resRead, resAck):
         tables = self.tables
+        # one hot encoded index where item should be stored (where was found
+        # or where is place)
+        targetOH = self._reg("targetOH", vecT(self.TABLE_CNT))
+
         res = list(map(lambda t: t.lookupRes, tables))
         # synchronize all lookupRes from all tables
         streamSync(masters=res, extraConds={lr: resAck for lr in res})
@@ -152,21 +189,20 @@ class CuckooHashTable(HashTableCore):
 
         If(resRead & lookupResAck,
             If(Or(*insertFoundOH),
-                insertTargetOH_out ** Concat(*insertFoundOH)
-            ).Elif(Or(*isEmptyOH),
-                insertTargetOH_out ** Concat(*isEmptyOH)
+                targetOH ** Concat(*insertFoundOH)
             ).Else(
-                # [TODO] assert has only one 1, it should if everythning else works
-                # but noone ever knows
-                If(insertTargetOH_out,
-                   insertTargetOH_out ** ror(insertTargetOH_out, 1)
-                ).Else(
-                   insertTargetOH_out ** (1 << (self.TABLE_CNT - 1))
-                )
+                SwitchLogic([(empty, targetOH ** (1 << i))
+                             for i, empty in enumerate(isEmptyOH)
+                            ],
+                            default=If(targetOH,
+                                       targetOH ** ror(targetOH, 1)
+                                    ).Else(
+                                       targetOH ** (1 << (self.TABLE_CNT - 1))
+                                    ))
             ),
             insertFinal ** _insertFinal
         )
-        return lookupResAck, insertFinal, insertFoundOH
+        return lookupResAck, insertFinal, insertFoundOH, targetOH
 
     def insertAddrSelect(self, targetOH, state, cleanAddr):
         insertIndex = self._sig("insertIndex", vecT(self.HASH_WITH))
@@ -193,8 +229,6 @@ class CuckooHashTable(HashTableCore):
             (BIT, "vldFlag")
             )
         stash = self._reg("stash", stash_t)
-
-        targetOH = self._reg("targetOH", vecT(self.TABLE_CNT))
         lookupOrigin = self._reg("lookupOrigin", vecT(2))
 
         cleanAck = self._sig("cleanAck")
@@ -203,9 +237,9 @@ class CuckooHashTable(HashTableCore):
         lookupResNext = self._sig("lookupResNext")
         (lookupResAck,
          insertFinal,
-         insertFound) = self.lookupResOfTablesDriver(lookupResRead,
-                                                     lookupResNext,
-                                                     targetOH)
+         insertFound,
+         targetOH) = self.lookupResOfTablesDriver(lookupResRead,
+                                                     lookupResNext)
         lookupAck = streamAck(slaves=map(lambda t: t.lookup, tables))
         insertAck = streamAck(slaves=map(lambda t: t.insert, tables))
 
@@ -228,7 +262,7 @@ class CuckooHashTable(HashTableCore):
             ).Trans(fsm_t.lookupResWaitRd,
                     # process result of lookup and
                     # write data stash to tables if required
-                    (lookupResAck, fsm_t.lookupResWaitRd)
+                    (lookupResAck, fsm_t.lookupResAck)
             ).Trans(fsm_t.lookupResAck,
                     # process lookupRes, if we are going to insert on place where
                     # valid item is, it has to be stored
