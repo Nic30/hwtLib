@@ -119,6 +119,9 @@ class ValueTC(unittest.TestCase):
         v = t.fromPy(1)
         with self.assertRaises(TypeError):
             v._concat(hInt(2))
+        p = Param(1)
+        with self.assertRaises(TypeError):
+            v._concat(p)
 
     def test_BitsIndexTypes(self):
         t = Bits(8)
@@ -169,6 +172,9 @@ class ValueTC(unittest.TestCase):
 
         v._setitem__val(hInt(None), hInt(1))
         self.assertValEq(v, None)
+
+        with self.assertRaises(TypeError):
+            v[hStr("asfs")]
 
     def test_BitsMulInvalidType(self):
         t = Bits(8)
