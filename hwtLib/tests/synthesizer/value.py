@@ -147,6 +147,9 @@ class ValueTC(unittest.TestCase):
         with self.assertRaises(TypeError):
             v[p] = a
 
+        with self.assertRaises(TypeError):
+            v[a] = p
+
         v[p] = 1
         self.assertValEq(v, 5)
 
@@ -155,6 +158,14 @@ class ValueTC(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             v[hInt(None)] = 2
+
+        v[:] = 0
+        self.assertValEq(v, 0)
+
+        v[2] = 1
+        self.assertValEq(v, 4)
+        v[3:] = p
+        self.assertValEq(v, 2)
 
     def test_BitsMulInvalidType(self):
         t = Bits(8)
