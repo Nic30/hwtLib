@@ -167,6 +167,9 @@ class ValueTC(unittest.TestCase):
         v[3:] = p
         self.assertValEq(v, 2)
 
+        v._setitem__val(hInt(None), hInt(1))
+        self.assertValEq(v, None)
+
     def test_BitsMulInvalidType(self):
         t = Bits(8)
         v = t.fromPy(1)
