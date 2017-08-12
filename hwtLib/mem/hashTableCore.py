@@ -44,11 +44,11 @@ class HashTableCore(Unit):
 
     .. aafig::
 
-        insert      +-----------+
-        ------------>           |  lookupRes
-        lookup      | HashTable +----------->
-        ------------>           |
-                    +-----------+
+        insert  +-----------+
+        -------->           | lookupRes
+        lookup  | HashTable +---------->
+        -------->           |
+                +-----------+
 
     """
 
@@ -98,7 +98,7 @@ class HashTableCore(Unit):
         h.POLY.set(self.POLYNOME)
         h.POLY_WIDTH.set(hashWidth)
 
-    def parseKeyRec(self, sig):
+    def parseItem(self, sig):
         """
         Parse data stored in hash table
         """
@@ -124,23 +124,23 @@ class HashTableCore(Unit):
 
     def lookupLogic(self, ramR):
         h = self.hash
-        l = self.lookup
+        lookup = self.lookup
         res = self.lookupRes
 
         # tmp storage for original key and hash for later check
         origKeyReg = HandshakedReg(LookupKeyIntf)
         origKeyReg.KEY_WIDTH.set(self.KEY_WIDTH)
         self.origKeyReg = origKeyReg
-        origKeyReg.dataIn.key ** l.key
-        if l.LOOKUP_ID_WIDTH:
-            origKeyReg.dataIn.lookupId ** l.lookupId
+        origKeyReg.dataIn.key ** lookup.key
+        if lookup.LOOKUP_ID_WIDTH:
+            origKeyReg.dataIn.lookupId ** lookup.lookupId
         origKeyReg.clk ** self.clk
         origKeyReg.rst_n ** self.rst_n
 
         origKey = origKeyReg.dataOut
 
         # hash key and address with has in table
-        h.dataIn ** l.key
+        h.dataIn ** lookup.key
         # has can be wider
         connect(h.dataOut, ramR.addr.data, fit=True)
 
@@ -159,14 +159,14 @@ class HashTableCore(Unit):
             inputSlaves.append(origHashReg.dataIn)
             outputMasters.append(origHashReg.dataOut)
 
-        streamSync(masters=[l],
+        streamSync(masters=[lookup],
                    slaves=inputSlaves)
 
         # propagate loaded data
         streamSync(masters=outputMasters,
                    slaves=[res])
 
-        key, data, vldFlag = self.parseKeyRec(ramR.data.data)
+        key, data, vldFlag = self.parseItem(ramR.data.data)
 
         if self.LOOKUP_HASH:
             res.hash ** origHashReg.dataOut.data

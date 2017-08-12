@@ -1,16 +1,16 @@
-from hwt.code import log2ceil, FsmBuilder, And, Or, If, Switch, ror, SwitchLogic,\
+from hwt.code import log2ceil, FsmBuilder, And, Or, If, Switch, ror, SwitchLogic, \
     connect, Concat, In
+from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.defs import BIT
+from hwt.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import VectSignal, Handshaked, HandshakeSync
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.param import Param
+from hwtLib.handshaked.builder import HsBuilder
+from hwtLib.handshaked.streamNode import streamAck, streamSync
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf
-from hwtLib.handshaked.builder import HsBuilder
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.hdlObjects.types.enum import Enum
-from hwtLib.handshaked.streamNode import streamAck, streamSync
-from hwt.hdlObjects.types.struct import HStruct
-from hwt.hdlObjects.types.defs import BIT
 
 
 class ORIGIN_TYPE():
@@ -32,7 +32,7 @@ class CInsertIntf(HandshakeSync):
 
 
 # https://web.stanford.edu/class/cs166/lectures/13/Small13.pdf
-class CuckooHashTableCore(HashTableCore):
+class CuckooHashTable(HashTableCore):
     """
     Cuckoo hash uses more tables with different hash functions
 
@@ -105,6 +105,7 @@ class CuckooHashTableCore(HashTableCore):
             self._registerArray("table", self.tables)
             for t in self.tables:
                 t.ITEMS_CNT.set(self.TABLE_SIZE)
+                t.LOOKUP_HASH.set(True)
 
     def cleanUpAddrIterator(self, en):
         lastAddr = self.TABLE_SIZE - 1
@@ -117,25 +118,22 @@ class CuckooHashTableCore(HashTableCore):
 
         return addr, addr._eq(lastAddr)
 
-    def insetOfTablesDriver(self, insertTargetOH, stash):
+    def insetOfTablesDriver(self, state, insertTargetOH, insertIndex, stash):
         """
+        :param state: state register of main fsm
         :param insertTargetOH: index of table where insert should be performed,
             one hot encoding
         """
-
+        fsm_t = state._dtype
         for i, t in enumerate(self.tables):
-            t.insert.key ** stash.key
-            if self.DATA_WIDTH:
-                t.insert.data ** stash.data
-
-        for t in self.tables:
             ins = t.insert
-            ins.hash ** stash.hash
+            ins.hash ** insertIndex
             ins.key ** stash.key
 
             if self.DATA_WIDTH:
                 ins.data ** stash.data
-                ins.vld ** insertTargetOH[i]
+                ins.vld ** Or(state._eq(fsm_t.cleaning),
+                              state._eq(fsm_t.lookupResAck) & insertTargetOH[i])
                 ins.vldFlag ** stash.vldFlag
 
     def lookupResOfTablesDriver(self, resRead, resAck, insertTargetOH_out):
@@ -149,7 +147,7 @@ class CuckooHashTableCore(HashTableCore):
         # should be swapped with
         lookupResAck = streamAck(masters=map(lambda t: t.lookupRes, tables))
         insertFoundOH = list(map(lambda t: t.lookupRes.found, tables))
-        isEmptyOH = list(map(lambda t: ~t.lookupRes.occupied, tables))
+        isEmptyOH = list(map(lambda t:~t.lookupRes.occupied, tables))
         _insertFinal = Or(*insertFoundOH, *isEmptyOH)
 
         If(resRead & lookupResAck,
@@ -158,7 +156,8 @@ class CuckooHashTableCore(HashTableCore):
             ).Elif(Or(*isEmptyOH),
                 insertTargetOH_out ** Concat(*isEmptyOH)
             ).Else(
-                # [TODO] assert has only one 1
+                # [TODO] assert has only one 1, it should if everythning else works
+                # but noone ever knows
                 If(insertTargetOH_out,
                    insertTargetOH_out ** ror(insertTargetOH_out, 1)
                 ).Else(
@@ -169,13 +168,19 @@ class CuckooHashTableCore(HashTableCore):
         )
         return lookupResAck, insertFinal, insertFoundOH
 
-    def insertCore(self):
-        """
-        Insert core has register which contains value which should be inserted
+    def insertAddrSelect(self, targetOH, state, cleanAddr):
+        insertIndex = self._sig("insertIndex", vecT(self.HASH_WITH))
+        If(state._eq(state._dtype.cleaning),
+            insertIndex ** cleanAddr
+        ).Else(
+            SwitchLogic([(targetOH[i],
+                          insertIndex ** t.lookupRes.hash)
+                         for i, t in enumerate(self.tables)],
+                        default=insertIndex ** None)
+        )
+        return insertIndex
 
-        lookup,
-        look
-        """
+    def insertCore(self):
         lookup = self.lookup
         lookupRes = self.lookupRes
         insert = self.insert
@@ -185,28 +190,28 @@ class CuckooHashTableCore(HashTableCore):
         stash_t = HStruct(
             (vecT(self.KEY_WIDTH), "key"),
             (vecT(self.DATA_WIDTH), "data"),
+            (BIT, "vldFlag")
             )
         stash = self._reg("stash", stash_t)
 
         targetOH = self._reg("targetOH", vecT(self.TABLE_CNT))
         lookupOrigin = self._reg("lookupOrigin", vecT(2))
-        # specifies if current data are from outside or it is reinserting
 
         cleanAck = self._sig("cleanAck")
         cleanAddr, cleanLast = self.cleanUpAddrIterator(cleanAck)
-
-        collectLookupRes_en = self._sig("collectLookupRes_en")
+        lookupResRead = self._sig("lookupResRead")
+        lookupResNext = self._sig("lookupResNext")
         (lookupResAck,
          insertFinal,
-         insertFound) = self.lookupResOfTablesDriver(collectLookupRes_en,
-                                                     targetOH,
-                                                     tmpHash)
+         insertFound) = self.lookupResOfTablesDriver(lookupResRead,
+                                                     lookupResNext,
+                                                     targetOH)
         lookupAck = streamAck(slaves=map(lambda t: t.lookup, tables))
-
         insertAck = streamAck(slaves=map(lambda t: t.insert, tables))
 
         fsm_t = Enum("insertFsm_t", ["idle", "cleaning",
-                                     "lookup", "lookupResWaitRd", "lookupResAck"])
+                                     "lookup", "lookupResWaitRd",
+                                     "lookupResAck"])
 
         isExternLookup = lookupOrigin._eq(ORIGIN_TYPE.LOOKUP)
         state = FsmBuilder(self, fsm_t, "insertFsm")\
@@ -219,9 +224,11 @@ class CuckooHashTableCore(HashTableCore):
                     (cleanLast, fsm_t.idle)
             ).Trans(fsm_t.lookup,
                     # search and resolve in which table item should be stored
-                    (lookupAck, fsm_t.insert)
+                    (lookupAck, fsm_t.lookupResWaitRd)
             ).Trans(fsm_t.lookupResWaitRd,
-                    
+                    # process result of lookup and
+                    # write data stash to tables if required
+                    (lookupResAck, fsm_t.lookupResWaitRd)
             ).Trans(fsm_t.lookupResAck,
                     # process lookupRes, if we are going to insert on place where
                     # valid item is, it has to be stored
@@ -231,13 +238,11 @@ class CuckooHashTableCore(HashTableCore):
                     (~isExternLookup & insertAck & ~insertFinal, fsm_t.lookup)
             ).stateReg
 
-        cleanAck ** (streamAck(slaves=[t.insert for t in tables]) &
+        cleanAck ** (streamAck(slaves=[t.insert for t in tables]) & 
                      state._eq(fsm_t.cleaning))
-        collectLookupRes_en ** And(state._eq(fsm_t.lookupRes),
-                                   Or(lookupOrigin != ORIGIN_TYPE.LOOKUP, lookupRes.rd))
-        If(collectLookupRes_en & lookupAck,
-           insertOrigin ** lookupOrigin
-        )
+        lookupResRead ** state._eq(fsm_t.lookupResWaitRd)
+        lookupResNext ** And(state._eq(fsm_t.lookupResAck),
+                             Or(lookupOrigin != ORIGIN_TYPE.LOOKUP, lookupRes.rd))
 
         isIdle = state._eq(fsm_t.idle)
         self.clean.rd ** isIdle
@@ -250,19 +255,22 @@ class CuckooHashTableCore(HashTableCore):
             ).Elif(lookup.vld,
                lookupOrigin ** ORIGIN_TYPE.LOOKUP,
                stash.key ** lookup.key,
+            ).Elif(self.clean.vld,
+               stash.vldFlag ** 0
             )
         )
 
         insert.rd ** (isIdle & ~self.clean.vld)
 
-        self.insetOfTablesDriver(targetOH, stash)
+        insertIndex = self.insertAddrSelect(targetOH, state, cleanAddr)
+        self.insetOfTablesDriver(state, targetOH, insertIndex, stash)
         self.lookupResDriver(state, lookupOrigin, lookupAck, insertFound)
-        self.lookupOfTablesDriver(state, tmpKey, lookupOrigin)
+        self.lookupOfTablesDriver(state, stash.key, lookupOrigin)
 
-    def lookupOfTablesDriver(self, state, tmpKey, lookupOrigin):
+    def lookupOfTablesDriver(self, state, tableKey, lookupOrigin):
         fsm_t = state._dtype
         for t in self.tables:
-            t.lookup.key ** tmpKey
+            t.lookup.key ** tableKey
 
         # activate lookup only in lookup state
         en = state._eq(fsm_t.lookup)
@@ -284,8 +292,8 @@ class CuckooHashTableCore(HashTableCore):
         """
         fsm_t = state._dtype
         lookupRes = self.lookupRes
-        lookupRes.vld ** (state._eq(fsm_t.lookupRes) &
-                          lookupOrigin._eq(ORIGIN_TYPE.LOOKUP) &
+        lookupRes.vld ** (state._eq(fsm_t.lookupResAck) & 
+                          lookupOrigin._eq(ORIGIN_TYPE.LOOKUP) & 
                           lookupAck)
 
         SwitchLogic([(insertFoundOH[i],
@@ -303,5 +311,5 @@ class CuckooHashTableCore(HashTableCore):
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     from hwtLib.logic.crcPoly import CRC_32
-    u = CuckooHashTableCore([CRC_32, CRC_32])
+    u = CuckooHashTable([CRC_32, CRC_32])
     print(toRtl(u))
