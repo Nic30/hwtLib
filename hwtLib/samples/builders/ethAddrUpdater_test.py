@@ -37,8 +37,8 @@ class EthAddrUpdaterTC(SimTestCase):
                             "dst": rand(48)
                             },
                     "ipv4": {"src": rand(32),
-                            "dst": rand(32)
-                           }
+                             "dst": rand(32)
+                            }
                     }
             d = list(frameTmpl.packData(data))
             ptr = m.calloc(ceil(frameHeader.bit_length() / DW),

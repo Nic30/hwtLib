@@ -1,6 +1,4 @@
 from hwt.code import log2ceil, If, Concat, And
-from hwt.hdlObjects.frameTemplate import FrameTemplate
-from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, Signal, VldSynced
@@ -8,11 +6,12 @@ from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.byteOrder import reverseByteOrder
-from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
+from hwtLib.amba.axis_comp.base import AxiSCompBase
+from hwtLib.amba.axis_comp.templateBasedUnit import TemplateBasedUnit
 
 
-class AxiS_frameParser(Unit):
+class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
     """
     Parse frame specified by HStruct into fields
 
@@ -31,8 +30,7 @@ class AxiS_frameParser(Unit):
 
     :note: names in the picture are just illustrative
     """
-    def __init__(self, axiSCls, structT,
-                 tmpl=None, frames=None):
+    def __init__(self, axiSCls, structT, tmpl=None, frames=None):
         """
         :param axiSCls: class of input axi stream interface
         :param structT: instance of HStruct which specifies data format to download
@@ -44,7 +42,6 @@ class AxiS_frameParser(Unit):
         """
         assert isinstance(structT, HStruct)
         self._structT = structT
-        self._axiSCls = axiSCls
 
         if tmpl is not None:
             assert frames is not None, "tmpl and frames can be used only together"
@@ -53,10 +50,10 @@ class AxiS_frameParser(Unit):
 
         self._tmpl = tmpl
         self._frames = frames
-        super(AxiS_frameParser, self).__init__()
+        AxiSCompBase.__init__(self, axiSCls)
 
     def _config(self):
-        self._axiSCls._config(self)
+        self.intfCls._config(self)
         # if this is true field interfaces will be of type VldSynced
         # and single ready signal will be used for all
         # else every interface will be instance of Handshaked and it will
@@ -85,7 +82,7 @@ class AxiS_frameParser(Unit):
                                   self.createInterfaceForField)
 
         with self._paramsShared():
-            self.dataIn = self._axiSCls()
+            self.dataIn = self.intfCls()
             if self.SHARED_READY:
                 self.dataOut_ready = Signal()
 
@@ -98,7 +95,7 @@ class AxiS_frameParser(Unit):
                 return sig
         signalsOfParts = []
 
-        for wIndx, transParts in words:
+        for wIndx, transParts, _ in words:
             isThisWord = wordIndex._eq(wIndx)
 
             for part in transParts:
@@ -133,7 +130,7 @@ class AxiS_frameParser(Unit):
         else:
             # generate ready logic for struct fields
             _busRd = None
-            for i, parts in words:
+            for i, parts, _ in words:
                 lastParts = where(parts, lambda p: not p.isPadding and p.isLastPart())
                 fiedsRd = map(lambda p: self.dataOut._fieldsToInterfaces[p.tmpl.origin].rd,
                               lastParts)
@@ -146,23 +143,6 @@ class AxiS_frameParser(Unit):
             busRd = self._sig("busAck")
             busRd ** _busRd
         return busRd
-
-    def parseTemplate(self):
-        if self._tmpl is None:
-            self._tmpl = TransTmpl(self._structT)
-
-        if self._frames is None:
-            DW = int(self.DATA_WIDTH)
-            frames = FrameTemplate.framesFromTransTmpl(self._tmpl,
-                                                       DW)
-            self._frames = list(frames)
-
-    def chainFrameWords(self):
-        offset = 0
-        for f in self._frames:
-            for wi, w in f.walkWords(showPadding=True):
-                yield (offset + wi, w)
-            offset += wi + 1
 
     def _impl(self):
         r = self.dataIn

@@ -1,9 +1,5 @@
-from math import inf
-
 from hwt.bitmask import mask
 from hwt.code import log2ceil, Switch, If, isPow2, In
-from hwt.hdlObjects.frameTemplate import FrameTemplate
-from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
@@ -12,10 +8,11 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.byteOrder import reverseByteOrder
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
+from hwtLib.amba.axis_comp.templateBasedUnit import TemplateBasedUnit
 from hwtLib.handshaked.streamNode import streamSync, streamAck
 
 
-class AxiS_frameForge(AxiSCompBase):
+class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
     """
     Assemble fields into frame on axi stream interface
 
@@ -66,21 +63,13 @@ class AxiS_frameForge(AxiSCompBase):
 
     def _declr(self):
         addClkRstn(self)
+        self.parseTemplate()
         with self._paramsShared():
             self.dataOut = self.intfCls()
         self.dataIn = StructIntf(self._structT, self._mkFieldIntf)
 
-    def parseTemplate(self):
-        if self._tmpl is None:
-            self._tmpl = TransTmpl(self._structT)
-
-        if self._frames is None:
-            DW = int(self.DATA_WIDTH)
-            frames = FrameTemplate.framesFromTransTmpl(self._tmpl,
-                                                       DW)
-            self._frames = list(frames)
-
     def _impl(self):
+        words = list(self.chainFrameWords())
         dout = self.dataOut
         if self.IS_BIGENDIAN:
             byteOrderCare = reverseByteOrder
@@ -89,7 +78,7 @@ class AxiS_frameForge(AxiSCompBase):
                 return sig
 
         self.parseTemplate()
-        maxWordIndex = sum(map(lambda f: f.getWordCnt(), self._frames)) - 1
+        maxWordIndex = words[-1][0]
         useCounter = maxWordIndex > 0
         if useCounter:
             # multiple word frame
@@ -99,74 +88,70 @@ class AxiS_frameForge(AxiSCompBase):
             wcntrSw = Switch(wordCntr_inversed)
 
         endsOfFrames = []
-        wordsOfPrevFrames = 0
-        for frame in self._frames:
-            for _i, transactionParts in frame.walkWords(showPadding=True):
-                i = _i + wordsOfPrevFrames
-                inversedI = maxWordIndex - i
+        for i, transactionParts, last in words:
+            inversedI = maxWordIndex - i
 
-                inPorts = []
-                lastInPorts = []
-                wordData = self._sig("word%d" % i, dout.data._dtype)
+            inPorts = []
+            lastInPorts = []
+            wordData = self._sig("word%d" % i, dout.data._dtype)
 
-                for tPart in transactionParts:
-                    high, low = tPart.getBusWordBitRange()
-                    if tPart.isPadding:
-                        wordData[high:low] ** None
-                    else:
-                        intf = self.dataIn._fieldsToInterfaces[tPart.tmpl.origin]
-                        fhigh, flow = tPart.getFieldBitRange()
-                        wordData[high:low] ** byteOrderCare(intf.data)[fhigh:flow]
-                        inPorts.append(intf)
-                        if tPart.isLastPart():
-                            lastInPorts.append(intf)
-
-                if useCounter:
-                    if i == maxWordIndex:
-                        nextWordIndex = maxWordIndex
-                    else:
-                        nextWordIndex = wordCntr_inversed - 1
-
-                if lastInPorts:
-                    # input ready logic
-                    wordEnConds = {}
-                    for intf in lastInPorts:
-                        wordEnConds[intf] = dout.ready
-                        if useCounter:
-                            c = wordEnConds[intf]
-                            wordEnConds[intf] = c & wordCntr_inversed._eq(inversedI)
-
-                    streamSync(masters=lastInPorts,
-                               # slaves=[dout],
-                               extraConds=wordEnConds)
-
-                if inPorts:
-                    ack = streamAck(masters=inPorts)
+            for tPart in transactionParts:
+                high, low = tPart.getBusWordBitRange()
+                if tPart.isPadding:
+                    wordData[high:low] ** None
                 else:
-                    ack = 1
+                    intf = self.dataIn._fieldsToInterfaces[tPart.tmpl.origin]
+                    fhigh, flow = tPart.getFieldBitRange()
+                    wordData[high:low] ** byteOrderCare(intf.data)[fhigh:flow]
+                    inPorts.append(intf)
+                    if tPart.isLastPart():
+                        lastInPorts.append(intf)
 
-                if useCounter:
-                    # word cntr next logic
-                    if ack is 1:
-                        _ack = dout.ready
-                    else:
-                        _ack = ack & dout.ready
-                    a = If(_ack,
-                           wordCntr_inversed ** nextWordIndex
-                        )
+            if useCounter:
+                if i == maxWordIndex:
+                    nextWordIndex = maxWordIndex
                 else:
-                    a = []
+                    nextWordIndex = wordCntr_inversed - 1
 
-                a.extend(dout.valid ** ack)
-                # data out logic
-                a.extend(dout.data ** wordData)
+            if lastInPorts:
+                # input ready logic
+                wordEnConds = {}
+                for intf in lastInPorts:
+                    wordEnConds[intf] = dout.ready
+                    if useCounter:
+                        c = wordEnConds[intf]
+                        wordEnConds[intf] = c & wordCntr_inversed._eq(inversedI)
 
-                if useCounter:
-                    wcntrSw.Case(inversedI, a)
+                streamSync(masters=lastInPorts,
+                           # slaves=[dout],
+                           extraConds=wordEnConds)
 
-                if transactionParts[-1].endOfPart == frame.endBitAddr:
-                    endsOfFrames.append(inversedI)
-                    wordsOfPrevFrames += frame.getWordCnt()
+            if inPorts:
+                ack = streamAck(masters=inPorts)
+            else:
+                ack = 1
+
+            if useCounter:
+                # word cntr next logic
+                if ack is 1:
+                    _ack = dout.ready
+                else:
+                    _ack = ack & dout.ready
+                a = If(_ack,
+                       wordCntr_inversed ** nextWordIndex
+                    )
+            else:
+                a = []
+
+            a.extend(dout.valid ** ack)
+            # data out logic
+            a.extend(dout.data ** wordData)
+
+            if useCounter:
+                wcntrSw.Case(inversedI, a)
+
+            if last:
+                endsOfFrames.append(inversedI)
 
         # to prevent latches
         if not useCounter:
@@ -196,10 +181,7 @@ if __name__ == "__main__":
                             (uint64_t, None),  # name = None means field is padding
                             (uint64_t, "item1"),
                             (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
-                        ),
-                        maxPaddingWords=0,
-                        trimPaddingWordsOnStart=True,
-                        trimPaddingWordsOnEnd=True
+                        )
                         )
     u.DATA_WIDTH.set(64)
     print(toRtl(u))

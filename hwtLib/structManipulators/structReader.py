@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from math import inf
-
 from hwt.code import StaticForEach, connect
+from hwt.hdlObjects.frameTemplate import FrameTemplate
+from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.structIntf import StructIntf
@@ -13,18 +13,25 @@ from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.amba.axis import AxiStream_withoutSTRB
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
+from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import streamAck
-from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.frameTemplate import FrameTemplate
 
 
 class StructReader(AxiS_frameParser):
     """
-    This unit downloads required structure fields over rDatapump interface from address
-    specified by get interface
-    MAX_DUMMY_WORDS specifies maximum dummy bus words between fields
-    if there is more of ignored space transaction will be split to
-
+    This unit downloads required structure fields over rDatapump
+    interface from address specified by get interface
+    :ivar MAX_DUMMY_WORDS: Param, specifies maximum dummy bus words between fields
+        if there is more of ignored space transaction will be split to
+    :ivar ID: Param, id for transactions on bus
+    :ivar READ_ACK: Param, if true ready on "get" will be set only
+        when component is in idle (if false "get"
+        is regular handshaked interface)
+    :ivar SHARED_READY: Param, if this is true field interfaces
+        will be of type VldSynced and single ready signal
+        will be used for all else every interface
+        will be instance of Handshaked and it
+        will have it's own ready(rd) signal
     :attention: interfaces of field will not send data in same time
 
     .. aafig::
@@ -41,49 +48,50 @@ class StructReader(AxiS_frameParser):
                                      +---------+
 
     :note: names in the picture are just illustrative
+
     """
-    def __init__(self, structT, maxPaddingWords=inf, maxFrameLen=inf,
-                 trimPaddingWordsOnStart=False, trimPaddingWordsOnEnd=False):
+    def __init__(self, structT, tmpl=None, frames=None):
         """
         :param structT: instance of HStruct which specifies data format to download
-        :param maxPaddingWords: maximum of continual padding words in frame,
-            if exceed frame is split and words are cut of
+        :param tmpl: instance of TransTmpl for this structT
+        :param frames: list of FrameTemplate instances for this tmpl
+        :note: if tmpl and frames are None they are resolved from structT parseTemplate
+        :note: this unit can parse sequence of frames, if they are specified by "frames"
         :attention: interfaces for each field in struct will be dynamically created
         :attention: structT can not contain fields with variable size like HStream
         """
         Unit.__init__(self)
         assert isinstance(structT, HStruct)
         self._structT = structT
-        self._maxFrameLen = maxFrameLen
-        self._maxPaddingWords = maxPaddingWords
-        self._trimPaddingWordsOnStart = trimPaddingWordsOnStart
-        self._trimPaddingWordsOnEnd = trimPaddingWordsOnEnd
+        if tmpl is not None:
+            assert frames is not None, "tmpl and frames can be used only together"
+        else:
+            assert frames is None, "tmpl and frames can be used only together"
+
+        self._tmpl = tmpl
+        self._frames = frames
 
     def _config(self):
         self.ID = Param(0)
         AxiRDatapumpIntf._config(self)
-        # if this is true field interfaces will be of type VldSynced
-        # and single ready signal will be used for all
-        # else every interface will be instance of Handshaked and it will
-        # have it's own ready(rd) signal
+        self.READ_ACK = Param(False)
         self.SHARED_READY = Param(False)
 
     def maxWordIndex(self):
         return max(map(lambda f: f.endBitAddr - 1, self._frames)) // int(self.DATA_WIDTH)
 
     def parseTemplate(self):
-        self._tmpl = TransTmpl(self._structT)
+        if self._tmpl is None:
+            self._tmpl = TransTmpl(self._structT)
+        if self._frames is None:
+            DW = int(self.DATA_WIDTH)
+            frames = FrameTemplate.framesFromTransTmpl(
+                        self._tmpl,
+                        DW,
+                        trimPaddingWordsOnStart=True,
+                        trimPaddingWordsOnEnd=True)
 
-        DW = int(self.DATA_WIDTH)
-        frames = FrameTemplate.framesFromTransTmpl(
-                    self._tmpl,
-                    DW,
-                    maxFrameLen=self._maxFrameLen,
-                    maxPaddingWords=self._maxPaddingWords,
-                    trimPaddingWordsOnStart=self._trimPaddingWordsOnStart,
-                    trimPaddingWordsOnEnd=self._trimPaddingWordsOnEnd)
-
-        self._frames = list(frames)
+            self._frames = list(frames)
 
     def _declr(self):
         addClkRstn(self)
@@ -113,20 +121,24 @@ class StructReader(AxiS_frameParser):
 
         req.id ** self.ID
         req.rem ** 0
+        if self.READ_ACK:
+            get = self.get
+        else:
+            get = HsBuilder(self, self.get).buff().end
 
         def f(frame, indx):
-            s = [req.addr ** (self.get.data + frame.startBitAddr // 8),
+            s = [req.addr ** (get.data + frame.startBitAddr // 8),
                  req.len ** (frame.getWordCnt() - 1),
-                 req.vld ** self.get.vld
+                 req.vld ** get.vld
                  ]
             isLastFrame = indx == len(self._frames) - 1
             if isLastFrame:
                 rd = req.rd
             else:
                 rd = 0
-            s.append(self.get.rd ** rd)
+            s.append(get.rd ** rd)
 
-            ack = streamAck(masters=[self.get], slaves=[self.rDatapump.req])
+            ack = streamAck(masters=[get], slaves=[self.rDatapump.req])
             return s, ack
 
         StaticForEach(self, self._frames, f)
@@ -164,7 +176,5 @@ if __name__ == "__main__":
         (uint64_t, "item7"),
         )
 
-    u = StructReader(s, maxPaddingWords=0,
-                     trimPaddingWordsOnEnd=True,
-                     trimPaddingWordsOnStart=True)
+    u = StructReader(s)
     print(toRtl(u))
