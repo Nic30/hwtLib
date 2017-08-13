@@ -24,8 +24,11 @@ from sphinx.apidoc import main as apidoc
 import sphinx_bootstrap_theme
 import sys
 
-from hwt.pyUtils.fileHelpers import find_files
-
+try:
+    from hwt.pyUtils.fileHelpers import find_files
+except ImportError:
+    sys.path.insert(0, os.path.abspath('../../HWToolkit'))
+    from hwt.pyUtils.fileHelpers import find_files
 
 sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath(
@@ -170,8 +173,6 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
-
-
 # -- Options for Epub output ----------------------------------------------
 
 # Bibliographic Dublin Core info.
@@ -203,6 +204,7 @@ aafig_default_options = dict(
 
 notskipregex = re.compile("_[^_]+")
 
+
 def skip(app, what, name, obj, skip, options):
     # do not skip hiden methods
     if name == "__init__" or notskipregex.match(name):
@@ -213,10 +215,11 @@ def skip(app, what, name, obj, skip, options):
 def setup(app):
     app.connect("autodoc-skip-member", skip)
 
+
 # update *.rst pages
 for file in glob.glob("*.rst"):
     if file != "index.rst":
         os.remove(file)
-        
+
 excluded_tests = list(find_files("../", "*_test.py"))
-apidoc(["--force", "-o", "../docs", "../hwtLib"] + excluded_tests)
+apidoc([__name__, "--full", "-o", "../docs", "../hwtLib"] + excluded_tests)

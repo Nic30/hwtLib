@@ -21,6 +21,7 @@ class StructReader(AxiS_frameParser):
     """
     This unit downloads required structure fields over rDatapump
     interface from address specified by get interface
+
     :ivar MAX_DUMMY_WORDS: Param, specifies maximum dummy bus words between fields
         if there is more of ignored space transaction will be split to
     :ivar ID: Param, id for transactions on bus

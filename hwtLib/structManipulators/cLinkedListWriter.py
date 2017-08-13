@@ -19,7 +19,7 @@ class CLinkedListWriter(Unit):
     """
     This unit writes items to (circular) linked list like structure
     (List does not necessary need to be circular but space is specified
-     by two pointers like in circular queue)
+    by two pointers like in circular queue)
 
     .. code-block:: c
 
@@ -27,7 +27,6 @@ class CLinkedListWriter(Unit):
             item_t items[ITEMS_IN_BLOCK],
             struct node * next;
         };
-
 
     synchronization is obtained by rdPtr/wrPtr (tail/head) pointer
     baseAddr is address of actual node
