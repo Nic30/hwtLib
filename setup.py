@@ -28,7 +28,7 @@ setup(name='hwtLib',
       author='Michal Orsak',
       author_email='michal.o.socials@gmail.com',
       install_requires=[
-        'hwt>=1.6',
+        'hwt>=1.7',
         'Pillow',  # there are some components which are working with images
       ],
       license='MIT',
