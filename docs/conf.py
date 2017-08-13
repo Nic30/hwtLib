@@ -219,6 +219,7 @@ def setup(app):
 # update *.rst pages
 for file in glob.glob("*.rst"):
     if file != "index.rst":
+        print("removing: ", file)
         os.remove(file)
 
 excluded_tests = list(find_files("../", "*_test.py"))
