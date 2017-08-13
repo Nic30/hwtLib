@@ -15,7 +15,7 @@ def getEpSignal(sig, op):
     """
     # we do not follow results of indexing like something[sig]
     if op.operator == AllOps.INDEX:
-        if op.ops[0] is not sig:
+        if op.operands[0] is not sig:
             return
     if op.operator not in [AllOps.INDEX,
                            AllOps.ADD,
@@ -25,7 +25,7 @@ def getEpSignal(sig, op):
                            AllOps.CONCAT]:
         return
 
-    if sig in op.ops:
+    if sig in op.operands:
         return op.result
 
 

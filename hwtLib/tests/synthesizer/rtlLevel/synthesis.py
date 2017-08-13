@@ -32,7 +32,7 @@ class TestCaseSynthesis(unittest.TestCase):
         self.assertEqual(assig.dst, a)
         onRisE = assig.cond.pop()
         self.assertEqual(onRisE.origin.operator, AllOps.RISING_EDGE)
-        self.assertEqual(onRisE.origin.ops[0], clk)
+        self.assertEqual(onRisE.origin.operands[0], clk)
 
     def test_syncSigWithReset(self):
         c = self.n
