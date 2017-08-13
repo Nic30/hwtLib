@@ -118,6 +118,7 @@ class CuckooHashTable(HashTableCore):
         self.TABLE_SIZE = Param(32)
         self.DATA_WIDTH = Param(32)
         self.KEY_WIDTH = Param(8)
+        self.LOOKUP_KEY = Param(False)
 
     def _declr(self):
         addClkRstn(self)
@@ -151,7 +152,8 @@ class CuckooHashTable(HashTableCore):
 
         return addr, addr._eq(lastAddr)
 
-    def insetOfTablesDriver(self, state, insertTargetOH, insertIndex, stash):
+    def insetOfTablesDriver(self, state, insertTargetOH, insertIndex,
+                            stash, isExternLookup):
         """
         :param state: state register of main fsm
         :param insertTargetOH: index of table where insert should be performed,
@@ -166,7 +168,9 @@ class CuckooHashTable(HashTableCore):
             if self.DATA_WIDTH:
                 ins.data ** stash.data
                 ins.vld ** Or(state._eq(fsm_t.cleaning),
-                              state._eq(fsm_t.lookupResAck) & insertTargetOH[i])
+                              state._eq(fsm_t.lookupResAck) & 
+                              insertTargetOH[i] & 
+                              ~ isExternLookup)
                 ins.vldFlag ** stash.vldFlag
 
     def lookupResOfTablesDriver(self, resRead, resAck):
@@ -184,7 +188,7 @@ class CuckooHashTable(HashTableCore):
         # should be swapped with
         lookupResAck = streamAck(masters=map(lambda t: t.lookupRes, tables))
         insertFoundOH = list(map(lambda t: t.lookupRes.found, tables))
-        isEmptyOH = list(map(lambda t:~t.lookupRes.occupied, tables))
+        isEmptyOH = list(map(lambda t: ~t.lookupRes.occupied, tables))
         _insertFinal = Or(*insertFoundOH, *isEmptyOH)
 
         If(resRead & lookupResAck,
@@ -193,7 +197,7 @@ class CuckooHashTable(HashTableCore):
             ).Else(
                 SwitchLogic([(empty, targetOH ** (1 << i))
                              for i, empty in enumerate(isEmptyOH)
-                            ],
+                             ],
                             default=If(targetOH,
                                        targetOH ** ror(targetOH, 1)
                                     ).Else(
@@ -266,7 +270,7 @@ class CuckooHashTable(HashTableCore):
             ).Trans(fsm_t.lookupResAck,
                     # process lookupRes, if we are going to insert on place where
                     # valid item is, it has to be stored
-                    (isExternLookup & lookupRes.rd, fsm_t.lookupResAck),
+                    (isExternLookup & lookupRes.rd, fsm_t.idle),
                     # insert into specified table
                     (~isExternLookup & insertAck & insertFinal, fsm_t.idle),
                     (~isExternLookup & insertAck & ~insertFinal, fsm_t.lookup)
@@ -297,7 +301,7 @@ class CuckooHashTable(HashTableCore):
         insert.rd ** (isIdle & ~self.clean.vld)
 
         insertIndex = self.insertAddrSelect(targetOH, state, cleanAddr)
-        self.insetOfTablesDriver(state, targetOH, insertIndex, stash)
+        self.insetOfTablesDriver(state, targetOH, insertIndex, stash, isExternLookup)
         self.lookupResDriver(state, lookupOrigin, lookupAck, insertFound)
         self.lookupOfTablesDriver(state, stash.key, lookupOrigin)
 

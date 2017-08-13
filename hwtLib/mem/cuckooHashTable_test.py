@@ -2,6 +2,7 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.cuckooHashTable import CuckooHashTable
 from hwt.hdlObjects.constants import Time
+from pprint import pprint
 
 
 class CuckooHashTableTC(SimTestCase):
@@ -11,10 +12,38 @@ class CuckooHashTableTC(SimTestCase):
         u = self.u = CuckooHashTable([CRC_32, CRC_32])
         u.KEY_WIDTH.set(16)
         u.DATA_WIDTH.set(8)
+        u.LOOKUP_KEY.set(True)
         u.TABLE_SIZE.set(self.TABLE_SIZE)
+        self.TABLE_CNT = 2
         self.prepareUnit(u)
         self.TABLE_MEMS = [getattr(self.model, "table%d_inst" % i).table_inst.ram_memory._val.val
-                           for i in range(2)]
+                           for i in range(self.TABLE_CNT)]
+
+    def cleanupMemory(self):
+        for ti in range(self.TABLE_CNT):
+            table = getattr(self.model, "table%d_inst" % ti).table_inst
+            mem = table.ram_memory.defaultVal
+            for i in range(mem._dtype.size):
+                mem.val[i] = mem._dtype.elmType.fromPy(0)
+
+    def checkContains(self, reference):
+        d = self.hashTableAsDict()
+        for key, data in d.items():
+            self.assertIn(key, reference)
+            self.assertValEqual(data, reference[key])
+            del reference[key]
+        self.assertEqual(reference, {})
+
+    def hashTableAsDict(self):
+        d = {}
+        for t in self.TABLE_MEMS:
+            self.assertEqual(len(t), self.TABLE_SIZE)
+            for i in range(self.TABLE_SIZE):
+                key, data, vldFlag = self.parseItem(t[i])
+                if vldFlag:
+                    key = int(key)
+                    d[key] = data
+        return d
 
     def parseItem(self, item):
         """
@@ -48,17 +77,28 @@ class CuckooHashTableTC(SimTestCase):
 
         self.procs.append(planInsert)
 
-        self.doSim(600 * Time.ns)
-        for t in self.TABLE_MEMS:
-            self.assertEqual(len(t), self.TABLE_SIZE)
-            for i in range(self.TABLE_SIZE):
-                key, data, vldFlag = self.parseItem(t[i])
-                if vldFlag:
-                    key = int(key)
-                    self.assertIn(key, reference)
-                    self.assertValEqual(data, reference[key])
-                    del reference[key]
-        self.assertEqual(reference, {})
+        self.doSim(650 * Time.ns)
+        self.checkContains(reference)
+
+    def test_simpleInsertAndLookup(self):
+        u = self.u
+        self.cleanupMemory()
+        reference = {56: 11,
+                     99: 55,
+                     104: 78,
+                     15: 79,
+                     16: 90}
+        expected = []
+        found = 1
+        occupied = 1
+        for k, v in sorted(reference.items(), key=lambda x: x[0]):
+            u.insert._ag.data.append((k, v))
+            u.lookup._ag.data.append(k)
+            expected.append((k, v, found, occupied))
+
+        self.doSim(800 * Time.ns)
+        self.checkContains(reference)
+        self.assertValSequenceEqual(u.lookupRes._ag.data, expected)
 
 
 if __name__ == "__main__":
