@@ -2,7 +2,6 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.cuckooHashTable import CuckooHashTable
 from hwt.hdlObjects.constants import Time
-from pprint import pprint
 
 
 class CuckooHashTableTC(SimTestCase):
@@ -99,6 +98,40 @@ class CuckooHashTableTC(SimTestCase):
         self.doSim(800 * Time.ns)
         self.checkContains(reference)
         self.assertValSequenceEqual(u.lookupRes._ag.data, expected)
+
+    def test_80p_fill(self):
+        u = self.u
+        self.cleanupMemory()
+        CNT = int(self.TABLE_SIZE * self.TABLE_CNT * 0.8)
+        reference = {i + 1: i + 2 for i in range(CNT)}
+        for k, v in sorted(reference.items(), key=lambda x: x[0]):
+            u.insert._ag.data.append((k, v))
+
+        self.doSim(CNT * 60 * Time.ns)
+        self.checkContains(reference)
+
+    def test_delete(self):
+        u = self.u
+        self.cleanupMemory()
+        reference = {56: 11,
+                     99: 55,
+                     104: 78,
+                     15: 79,
+                     16: 90}
+        toDelete = [15, 99]
+
+        for k, v in sorted(reference.items(), key=lambda x: x[0]):
+            u.insert._ag.data.append((k, v))
+
+        def doDelete(sim):
+            yield sim.wait(350 * Time.ns)
+            u.delete._ag.data.extend(toDelete)
+        self.procs.append(doDelete)
+
+        self.doSim(500 * Time.ns)
+        for k in toDelete:
+            del reference[k]
+        self.checkContains(reference)
 
 
 if __name__ == "__main__":
