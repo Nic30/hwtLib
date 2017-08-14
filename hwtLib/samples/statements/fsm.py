@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.enum import HEnum
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn
 from hwt.code import FsmBuilder, Switch, If
@@ -18,7 +18,7 @@ class FsmExample(Unit):
         self.dout = Signal(dtype=vecT(3))
 
     def _impl(self):
-        stT = Enum("st_t", ["a", "b", "aAndB"])
+        stT = HEnum("st_t", ["a", "b", "aAndB"])
 
         a = self.a
         b = self.b

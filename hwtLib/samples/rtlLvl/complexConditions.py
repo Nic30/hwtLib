@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Switch
-from hwt.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.enum import HEnum
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.netlistToRtl import netlistToVhdlStr
 
 
 def ComplexConditions():
     n = RtlNetlist()
-    stT = Enum('t_state', ["idle", "tsWait", "ts0Wait", "ts1Wait", "lenExtr"])
+    stT = HEnum('t_state', ["idle", "tsWait", "ts0Wait", "ts1Wait", "lenExtr"])
     clk = n.sig('clk')
     rst = n.sig("rst")
 

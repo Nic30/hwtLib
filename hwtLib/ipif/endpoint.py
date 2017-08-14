@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, FsmBuilder, Switch
-from hwt.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.enum import HEnum
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.ipif.intf import Ipif
 
@@ -28,7 +28,7 @@ class IpifEndpoint(BusEndpoint):
         def isMyAddr(addrSig, addr, end):
             return (addrSig >= addr) & (addrSig < end)
 
-        st_t = Enum('st_t', ['idle', "writeAck", 'readDelay', 'rdData'])
+        st_t = HEnum('st_t', ['idle', "writeAck", 'readDelay', 'rdData'])
         ipif = self.bus
         addr = ipif.bus2ip_addr
         ipif.ip2bus_error ** 0

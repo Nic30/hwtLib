@@ -5,7 +5,7 @@ from hwt.bitmask import mask
 from hwt.code import If, Concat, connect, FsmBuilder, log2ceil
 from hwt.hdlObjects.typeShortcuts import vecT, vec
 from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.enum import HEnum
 from hwt.interfaces.std import Handshaked, VectSignal, RegCntrl
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.mode import serializeParamsUniq
@@ -16,7 +16,7 @@ from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync
 
 
-stT = Enum("st_t", ["waitOnInput", "waitOnDataTx", "waitOnAck"])
+stT = HEnum("st_t", ["waitOnInput", "waitOnDataTx", "waitOnAck"])
 
 
 @serializeParamsUniq

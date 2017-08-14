@@ -4,7 +4,7 @@
 from hwt.bitmask import mask
 from hwt.code import If, Concat, connect, log2ceil, FsmBuilder, power
 from hwt.hdlObjects.typeShortcuts import vecT, vec
-from hwt.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.enum import HEnum
 from hwt.interfaces.std import Handshaked, RegCntrl
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -120,7 +120,7 @@ class CLinkedListWriter(Unit):
         addr_index_t = vecT(self.ADDR_WIDTH - self.ALIGN_BITS)
         baseIndex = r("baseIndex_backup", addr_index_t)
         nextBaseIndex = r("nextBaseIndex", addr_index_t)
-        t = Enum("nextBaseFsm_t", ["uninitialized",
+        t = HEnum("nextBaseFsm_t", ["uninitialized",
                                    "required",
                                    "pending",
                                    "prepared"])
@@ -268,7 +268,7 @@ class CLinkedListWriter(Unit):
         queueHasSpace, lenByPtrs = self.queuePtrLogic(fitTo(reqLen_backup, self.wrPtr.din) + 1, gotWriteAck)
 
         timeout = s("timeout")
-        fsm_t = Enum("itemUploadingFsm_t", ["idle",
+        fsm_t = HEnum("itemUploadingFsm_t", ["idle",
                                             "reqPending",
                                             "dataPending_prepare",
                                             "dataPending_send",

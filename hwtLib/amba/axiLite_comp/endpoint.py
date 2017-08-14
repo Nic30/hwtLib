@@ -4,7 +4,7 @@
 from hwt.code import If, FsmBuilder, Or, log2ceil, connect, Switch, \
     SwitchLogic, Concat
 from hwt.hdlObjects.typeShortcuts import vec, vecT
-from hwt.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.enum import HEnum
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
@@ -31,7 +31,7 @@ class AxiLiteEndpoint(BusEndpoint):
         # build read data output mux
         r = self.bus.r
         ar = self.bus.ar
-        rSt_t = Enum('rSt_t', ['rdIdle', 'bramRd', 'rdData'])
+        rSt_t = HEnum('rSt_t', ['rdIdle', 'bramRd', 'rdData'])
         isBramAddr = self._sig("isBramAddr")
 
         rSt = FsmBuilder(self, rSt_t, stateRegName='rSt')\
@@ -153,7 +153,7 @@ class AxiLiteEndpoint(BusEndpoint):
         addrWidth = int(self.ADDR_WIDTH)
         ADDR_STEP = self._getAddrStep()
 
-        wSt_t = Enum('wSt_t', ['wrIdle', 'wrData', 'wrResp'])
+        wSt_t = HEnum('wSt_t', ['wrIdle', 'wrData', 'wrResp'])
         aw = self.bus.aw
         w = self.bus.w
         b = self.bus.b

@@ -6,7 +6,7 @@ import unittest
 
 from hwt.hdlObjects.statements import IfContainer, SwitchContainer
 from hwt.hdlObjects.types.defs import INT
-from hwt.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.enum import HEnum
 from hwt.synthesizer.assigRenderer import renderIfTree
 from hwt.code import c, If, Switch
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
@@ -70,7 +70,7 @@ class StatementTreesTC(unittest.TestCase):
 
     def test_ifsInSwitch(self):
         n = self.n
-        stT = Enum('t_state', ["idle", "tsWait", "ts0Wait", "ts1Wait", "lenExtr"])
+        stT = HEnum('t_state', ["idle", "tsWait", "ts0Wait", "ts1Wait", "lenExtr"])
         clk = n.sig('clk')
         rst = n.sig("rst")
 
@@ -119,31 +119,31 @@ class StatementTreesTC(unittest.TestCase):
             WHEN idle =>
                 IF (sd0 AND sd1) = '1' THEN
                     st_next <= lenExtr;
-                ELSE 
+                ELSE
                     st_next <= ts1Wait;
                 END IF;
             WHEN tsWait =>
                 IF (sd0 AND sd1) = '1' THEN
                     st_next <= lenExtr;
-                ELSE 
+                ELSE
                     st_next <= ts1Wait;
                 END IF;
             WHEN ts0Wait =>
-                IF sd0 = '1' THEN 
+                IF sd0 = '1' THEN
                     st_next <= lenExtr;
-                ELSE 
+                ELSE
                     st_next <= st;
                 END IF;
             WHEN ts1Wait =>
-                IF sd1 = '1' THEN 
+                IF sd1 = '1' THEN
                     st_next <= lenExtr;
-                ELSE 
+                ELSE
                     st_next <= st;
                 END IF;
             WHEN OTHERS =>
                 IF (ctrlFifoVld AND ctrlFifoLast) = '1' THEN
                     st_next <= idle;
-                ELSE 
+                ELSE
                     st_next <= st;
                 END IF;
         END CASE
@@ -153,7 +153,7 @@ class StatementTreesTC(unittest.TestCase):
 
     def test_ifs2LvlInSwitch(self):
         n = self.n
-        stT = Enum('t_state', ["idle", "tsWait", "ts0Wait", "ts1Wait", "lenExtr"])
+        stT = HEnum('t_state', ["idle", "tsWait", "ts0Wait", "ts1Wait", "lenExtr"])
         clk = n.sig('clk')
         rst = n.sig("rst")
 
@@ -244,7 +244,7 @@ class StatementTreesTC(unittest.TestCase):
 
     def test_ifs3LvlInSwitch(self):
         n = self.n
-        stT = Enum('t_state', ["idle", "tsWait", "ts0Wait", "ts1Wait", "lenExtr"])
+        stT = HEnum('t_state', ["idle", "tsWait", "ts0Wait", "ts1Wait", "lenExtr"])
         clk = n.sig('clk')
         rst = n.sig("rst")
 
