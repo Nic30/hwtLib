@@ -142,6 +142,7 @@ from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.transTmpl_test import TransTmpl_TC
 from hwtLib.tests.types.operators_test import OperatorTC
 from hwtLib.tests.types.signedArithmetic_test import SignedArithmeticTC
+from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.valSlicing_test import ValSlicingTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
@@ -212,6 +213,7 @@ suite = testSuiteFromTCs(
     SerializerModes_TC,
     Serializer_tmpVar_TC,
     TransTmpl_TC,
+    UnionTC,
 
     # component verifications
     ConcatTC,
