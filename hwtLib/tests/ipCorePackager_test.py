@@ -3,7 +3,6 @@ import tempfile
 import unittest
 
 from hwt.code import If, connect
-from hwt.hdlObjects.types.array import Array
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.differential import DifferentialSig
 from hwt.interfaces.std import BramPort, Handshaked
@@ -68,8 +67,8 @@ class IpCorePackagerTC(unittest.TestCase):
         testUnits = [AxiS_en(AxiStream_withUserAndStrb),
                      AxiS_en(AxiStream_withId),
                      AxiLiteEndpoint(HStruct(
-                         (uint64_t, "f0"),
-                         (Array(uint64_t, 10), "arr0")
+                                         (uint64_t, "f0"),
+                                         (uint64_t[10], "arr0")
                                      )),
                      I2cMasterBitCtrl(),
                      f,
