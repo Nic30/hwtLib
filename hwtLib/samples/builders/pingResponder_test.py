@@ -1,5 +1,6 @@
 import socket
 
+from hwt.code import sizeof
 from hwt.hdlObjects.constants import Time
 from hwt.hdlObjects.types.structUtils import HStruct_unpack
 from hwt.simulator.agentConnector import valToInt
@@ -101,7 +102,7 @@ class PingResponderTC(SimTestCase):
                     "ihl": IHL_DEFAULT,
                     "dscp": 0,
                     "ecn": 0,
-                    "totalLen": IPv4Header_t.sizeof() + ICMP_echo_header_t.sizeof(),
+                    "totalLen": sizeof(IPv4Header_t) + sizeof(ICMP_echo_header_t),
                     "id": 0,
                     "flags": 0,
                     "fragmentOffset": 0,
