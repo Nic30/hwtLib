@@ -135,7 +135,7 @@ class LookupResultIntfAgent(HandshakedAgent):
         if self.hasKey:
             append(r(intf.key))
 
-        if self.hasHash:
+        if self.hasData:
             append(r(intf.data))
 
         append(r(intf.found))
@@ -155,7 +155,7 @@ class LookupResultIntfAgent(HandshakedAgent):
         if self.hasKey:
             w(next(dIt), intf.key)
 
-        if self.hasHash:
+        if self.hasData:
             w(next(dIt), intf.data)
 
         w(next(dIt), intf.found)

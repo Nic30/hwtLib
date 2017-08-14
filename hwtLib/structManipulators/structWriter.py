@@ -13,6 +13,7 @@ from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import streamSync, streamAck
 from hwtLib.structManipulators.structReader import StructReader
+from hwtLib.handshaked.builder import HsBuilder
 
 
 SKIP = 1
@@ -25,6 +26,9 @@ class StructWriter(StructReader):
     specified over set interface
 
     :ivar MAX_OVERLAP: parameter which specifies the maximum number of concurrent transaction
+    :ivar WRITE_ACK: Param, if true ready on "set" will be set only
+        when component is in idle (if false "set"
+        is regular handshaked interface)
 
     .. aafig::
             set (base addr)          +---------+
@@ -46,6 +50,7 @@ class StructWriter(StructReader):
     def _config(self):
         StructReader._config(self)
         self.MAX_OVERLAP = Param(2)
+        self.WRITE_ACK = Param(False)
 
     def _createInterfaceForField(self, structT, fInfo):
         i = Handshaked()
@@ -80,6 +85,10 @@ class StructWriter(StructReader):
         req = self.wDatapump.req
         w = self.wDatapump.w
         ack = self.wDatapump.ack
+        if self.WRITE_ACK:
+            _set = self.set
+        else:
+            _set = HsBuilder(self, self.set).buff().end
 
         req.id ** self.ID
         req.rem ** 0
@@ -94,11 +103,11 @@ class StructWriter(StructReader):
 
         def propagateRequests(frame, indx):
             ack = streamAck(slaves=[req, ackPropageteInfo.dataIn])
-            statements = [req.addr ** (self.set.data + frame.startBitAddr // 8),
+            statements = [req.addr ** (_set.data + frame.startBitAddr // 8),
                           req.len ** (frame.getWordCnt() - 1),
                           streamSync(slaves=[req, ackPropageteInfo.dataIn],
-                                     extraConds={req: self.set.vld,
-                                                 ackPropageteInfo.dataIn: self.set.vld})
+                                     extraConds={req: _set.vld,
+                                                 ackPropageteInfo.dataIn: _set.vld})
                           ]
             if indx != 0:
                 prop = SKIP
@@ -109,11 +118,11 @@ class StructWriter(StructReader):
 
             isLastFrame = indx == len(self._frames) - 1
             if isLastFrame:
-                statements.append(self.set.rd ** ack)
+                statements.append(_set.rd ** ack)
             else:
-                statements.append(self.set.rd ** 0)
+                statements.append(_set.rd ** 0)
 
-            return statements, ack & self.set.vld
+            return statements, ack & _set.vld
 
         StaticForEach(self, self._frames, propagateRequests)
 

@@ -27,9 +27,6 @@ try:
 except ImportError:
     from sha import sha
 
-
-
-
 try:
     import aafigure
 except ImportError:
@@ -66,13 +63,13 @@ class AafigDirective(images.Image):
     has_content = True
     required_arguments = 0
     own_option_spec = dict(
-        line_width   = float,
-        background   = str,
-        foreground   = str,
-        fill         = str,
-        aspect       = directives.nonnegative_int,
-        textual      = directives.flag,
-        proportional = directives.flag,
+        line_width=float,
+        background=str,
+        foreground=str,
+        fill=str,
+        aspect=directives.nonnegative_int,
+        textual=directives.flag,
+        proportional=directives.flag,
     )
     option_spec = directives.images.Image.option_spec.copy()
     option_spec.update(own_option_spec)
@@ -95,7 +92,7 @@ class AafigDirective(images.Image):
         if isinstance(image_node, nodes.system_message):
             return [image_node]
         text = '\n'.join(self.content)
-        image_node.aafig = dict(options = aafig_options, text = text)
+        image_node.aafig = dict(options=aafig_options, text=text)
         return [image_node]
 
 
@@ -104,30 +101,30 @@ def render_aafig_images(app, doctree):
     merge_dict(format_map, DEFAULT_FORMATS)
     if aafigure is None:
         app.builder.warn('aafigure module not installed, ASCII art images '
-                'will be redered as literal text')
+                         'will be redered as literal text')
     for img in doctree.traverse(nodes.image):
+        text = img.aafig['text']
         if not hasattr(img, 'aafig'):
             continue
         if aafigure is None:
             img.replace_self(nodes.literal_block(text, text))
             continue
         options = img.aafig['options']
-        text = img.aafig['text']
-        format = app.builder.format
+        _format = app.builder.format
         merge_dict(options, app.builder.config.aafig_default_options)
-        if format in format_map:
-            options['format'] = format_map[format]
+        if _format in format_map:
+            options['format'] = format_map[_format]
         else:
             app.builder.warn('unsupported builder format "%s", please '
                     'add a custom entry in aafig_format config option '
-                    'for this builder' % format)
+                    'for this builder' % _format)
             img.replace_self(nodes.literal_block(text, text))
             continue
         if options['format'] is None:
             img.replace_self(nodes.literal_block(text, text))
             continue
         try:
-            fname, outfn, id, extra = render_aafigure(app, text, options)
+            fname, _, _, extra = render_aafigure(app, text, options)
         except AafigError as exc:
             app.builder.warn('aafigure error: ' + str(exc))
             img.replace_self(nodes.literal_block(text, text))
@@ -146,7 +143,7 @@ def render_aafigure(app, text, options):
     """
     Render an ASCII art figure into the requested format output file.
     """
-
+    _id = None
     if aafigure is None:
         raise AafigError('aafigure module not installed')
 
@@ -176,12 +173,12 @@ def render_aafigure(app, text, options):
                     try:
                         with open(metadata_fname, 'r') as f:
                             extra = f.read()
-                    except:
+                    except Exception:
                         raise AafigError()
                 finally:
                     if f is not None:
                         f.close()
-            return relfn, outfn, id, extra
+            return relfn, outfn, _id, extra
     except AafigError:
         pass
 
@@ -199,7 +196,7 @@ def render_aafigure(app, text, options):
         with open(metadata_fname, 'w') as f:
             f.write(extra)
 
-    return relfn, outfn, id, extra
+    return relfn, outfn, _id, extra
 
 
 def setup(app):

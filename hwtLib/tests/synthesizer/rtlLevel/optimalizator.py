@@ -23,7 +23,7 @@ class Expr2CondTC(unittest.TestCase):
         e = self.a
         cond = e._dtype.convert(e, BOOL)
         self.assertTrue(cond.origin.operator == AllOps.EQ)
-        self.assertEqual(cond.origin.ops[0], self.a, 1)
+        self.assertEqual(cond.origin.operands[0], self.a, 1)
 
     def test_NotAnd(self):
         e = ~(self.a & self.b)
@@ -31,14 +31,14 @@ class Expr2CondTC(unittest.TestCase):
         cond = e._convert(BOOL)
 
         self.assertEqual(cond.origin.operator, AllOps.EQ)
-        _e = cond.origin.ops[0]
+        _e = cond.origin.operands[0]
         self.assertEqual(e, _e)
 
-        andOp = e.origin.ops[0].origin
+        andOp = e.origin.operands[0].origin
         self.assertEqual(andOp.operator, AllOps.AND)
 
-        op0 = andOp.ops[0]
-        op1 = andOp.ops[1]
+        op0 = andOp.operands[0]
+        op1 = andOp.operands[1]
 
         self.assertEqual(op0, self.a)
         self.assertEqual(op1, self.b)

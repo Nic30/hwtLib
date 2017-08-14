@@ -239,6 +239,7 @@ class AxiS_frameForge_TC(SimTestCase):
                                      (MAGIC + 3, m, 1),
                                      ])
 
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(AxiS_resizer_downscale_TC('test_noPass'))

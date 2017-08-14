@@ -5,6 +5,8 @@ from hwtLib.structManipulators.structReader import StructReader
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwt.hdlObjects.constants import Time
 from hwt.synthesizer.vectorUtils import iterBits
+from hwt.hdlObjects.frameTemplate import FrameTemplate
+from hwt.hdlObjects.transTmpl import TransTmpl
 
 
 s0 = HStruct(
@@ -44,8 +46,7 @@ def s0RandVal(tc):
 
 
 class StructReaderTC(SimTestCase):
-    def test_simpleFields(self):
-        u = StructReader(s0)
+    def _test_s0(self, u):
         DW = 64
         N = 3
         self.prepareUnit(u)
@@ -77,6 +78,23 @@ class StructReaderTC(SimTestCase):
                 expected = expectedFieldValues[f.name]
                 got = u.dataOut._fieldsToInterfaces[f]._ag.data
                 self.assertValSequenceEqual(got, expected)
+
+    def test_simpleFields(self):
+        u = StructReader(s0)
+        self._test_s0(u)
+
+    def test_multiframe(self):
+        tmpl = TransTmpl(s0)
+        DATA_WIDTH = 64
+        frames = list(FrameTemplate.framesFromTransTmpl(
+                             tmpl,
+                             DATA_WIDTH,
+                             maxPaddingWords=0,
+                             trimPaddingWordsOnStart=True,
+                             trimPaddingWordsOnEnd=True))
+        u = StructReader(s0, tmpl=tmpl, frames=frames)
+        self._test_s0(u)
+
 
 if __name__ == "__main__":
     import unittest

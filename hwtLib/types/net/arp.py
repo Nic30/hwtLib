@@ -43,7 +43,7 @@ class ARP_OPTCODE():
 
     MAPOS_UNARP = 23
     OP_EXP1 = 24
-    OP_EXP2 = 25    
+    OP_EXP2 = 25
 
 
 arp_ipv4_t = HStruct(
@@ -52,8 +52,8 @@ arp_ipv4_t = HStruct(
         (uint8_t, "hlen"),  # hardware address length
         (uint8_t, "plen"),  # protocol address length
         (uint16_t, "opcode"),
-        (mac_t, "sHwAddr")  # sender hw address
+        (mac_t, "sHwAddr"),  # sender hw address
         (ipv4_t, "sProtAddr"),  # sender protocol address
-        (mac_t, "tHwAddr")  # target hw address
+        (mac_t, "tHwAddr"),  # target hw address
         (ipv4_t, "tProtAddr"),  # target protocol address
-    ) 
+    )
