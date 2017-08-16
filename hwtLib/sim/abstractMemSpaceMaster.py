@@ -1,6 +1,6 @@
 from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.bitmask import mask
-from hwt.hdlObjects.types.array import Array
+from hwt.hdlObjects.types.array import HArray
 from hwt.hdlObjects.types.struct import HStruct
 
 
@@ -20,11 +20,11 @@ class MemorySpaceItem(object):
     def __init__(self, memHandler, transTmpl, offset=0):
         self.memHandler = memHandler
         t = self.transTmpl = transTmpl
-        self.myBitAddr = transTmpl.bitAddr + offset 
+        self.myBitAddr = transTmpl.bitAddr + offset
         self.myAddr = self.myBitAddr // memHandler._ADDR_STEP
-        
+
         self.mask = memHandler._mask(t.bitAddr,
-                                    (t.bitAddrEnd - t.bitAddr) // self.memHandler._ADDR_STEP // 8)
+                                     (t.bitAddrEnd - t.bitAddr) // self.memHandler._ADDR_STEP // 8)
 
     def write(self, data):
         """
@@ -32,7 +32,7 @@ class MemorySpaceItem(object):
         """
         m = self.memHandler
         # t = self.transTmpl
-        m._write(self.myAddr , 1, data, self.mask)
+        m._write(self.myAddr, 1, data, self.mask)
 
     def read(self):
         """
@@ -50,7 +50,7 @@ class MemorySpaceItemStruct(object):
     def _decorateWithRegisters(self, memHandler, structT):
         """
         Decorate this object with attributes from memory space (name is same as specified in register map)
-        
+
         :param memHandler: instance of AbstractMemSpaceMaster(subclass of)
         :param structT: instance of HStruct or TransTmpl used as template
         """
@@ -61,7 +61,7 @@ class MemorySpaceItemStruct(object):
 
         for trans in tmpl.children:
             t = trans.dtype
-            if isinstance(t, Array):
+            if isinstance(t, HArray):
                 msi = MemorySpaceItemArr(memHandler, trans, offset=self._offset)
             elif isinstance(t, HStruct):
                 msi = MemorySpaceItemStruct(memHandler, trans, offset=self._offset)
@@ -71,6 +71,7 @@ class MemorySpaceItemStruct(object):
             name = trans.origin.name
             assert not hasattr(self, name), name
             setattr(self, name, msi)
+
 
 class MemorySpaceItemArr(object):
     """
@@ -85,13 +86,13 @@ class MemorySpaceItemArr(object):
         t = self.transTmpl.dtype.elmType
         if isinstance(t, HStruct):
             self.itemCls = MemorySpaceItemStruct
-        elif isinstance(t, Array):
+        elif isinstance(t, HArray):
             self.itemCls = MemorySpaceItemArr
         else:
             self.itemCls = MemorySpaceItem
-        
+
         self.itemSize = transTmpl.children.bit_length()
-            
+
     def __getitem__(self, index):
         # tTmpl = self.transTmpl
         item = self.items_cache[index]

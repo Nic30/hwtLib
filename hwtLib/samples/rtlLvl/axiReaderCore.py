@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.enum import HEnum
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.netlistToRtl import netlistToVhdlStr
 
 
 def AxiReaderCore():
     n = RtlNetlist()
-    rSt_t = Enum('rSt_t', ['rdIdle', 'rdData'])
+    rSt_t = HEnum('rSt_t', ['rdIdle', 'rdData'])
 
     rSt = n.sig('rSt', rSt_t)
     arRd = n.sig('arRd')

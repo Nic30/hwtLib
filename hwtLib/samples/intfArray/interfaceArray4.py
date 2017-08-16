@@ -1,6 +1,6 @@
 from hwt.code import log2ceil
 from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.types.array import Array
+from hwt.hdlObjects.types.array import HArray
 from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import RegCntrl, BramPort_withoutClk
@@ -34,7 +34,7 @@ class InterfaceArraySample4(Unit):
         if isinstance(t, Bits):
             p = RegCntrl()
             dw = t.bit_length()
-        elif isinstance(t, Array):
+        elif isinstance(t, HArray):
             if self.shouldEnterFn(field):
                 if isinstance(t.elmType, Bits):
                     p = RegCntrl(asArraySize=t.size)

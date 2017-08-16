@@ -4,7 +4,7 @@
 from hwt.code import If, Concat, FsmBuilder, In, log2ceil
 from hwt.hdlObjects.constants import DIRECTION
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.enum import HEnum
 from hwt.interfaces.agents.rdSynced import RdSyncedAgent
 from hwt.interfaces.std import Signal, RdSynced, VectSignal
 from hwt.interfaces.utils import addClkRstn
@@ -209,7 +209,7 @@ class I2cMasterBitCtrl(Unit):
         cmd = self.cntrl.cmd
         cmd_ack = self.cntrl.rd
 
-        stT = Enum("stT",
+        stT = HEnum("stT",
                    ["idle",
                     "start_0", "start_1", "start_2", "start_3", "start_4",
                     "stop_0", "stop_1", "stop_2", "stop_3",

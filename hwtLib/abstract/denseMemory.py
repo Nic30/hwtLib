@@ -2,7 +2,7 @@ from itertools import chain
 
 from hwt.bitmask import mask, selectBitRange
 from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.types.array import Array
+from hwt.hdlObjects.types.array import HArray
 from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.simulator.types.simBits import simBitsT
@@ -38,7 +38,8 @@ def reshapedInitItems(actualCellSize, requestedCellSize, values):
                 item |= _i2
             yield item
     else:
-        raise NotImplementedError("Reshaping of array from cell size %d to %d" % (actualCellSize, requestedCellSize))
+        raise NotImplementedError("Reshaping of array from cell size %d to %d" % (
+                                    actualCellSize, requestedCellSize))
 
 
 class DenseMemory():
@@ -295,23 +296,23 @@ class DenseMemory():
     def getBits(self, start, end):
         """
         Gets value of bits between selected range from memory
-        
+
         :param start: bit address of start of bit of bits
         :param end: bit address of first bit behind bits
         :return: instance of BitsVal (derived from SimBits type) which contains copy of selected bits
         """
         wordWidth = self.cellSize * 8
-        
+
         inFieldOffset = 0
         allMask = mask(wordWidth)
         value = simBitsT(end - start, None).fromPy(None)
 
         while start != end:
             assert start < end, (start, end)
-      
-            dataWordIndex = start // wordWidth 
+
+            dataWordIndex = start // wordWidth
             v = self.data.get(dataWordIndex, None)
-            
+
             endOfWord = (dataWordIndex + 1) * wordWidth
             width = min(end, endOfWord) - start
             offset = start % wordWidth
@@ -327,17 +328,17 @@ class DenseMemory():
                 val = selectBitRange(v.val, offset, width)
                 vldMask = selectBitRange(v.vldMask, offset, width)
                 updateTime = v.updateTime
-                
+
             m = mask(width)
             value.val |= (val & m) << inFieldOffset
             value.vldMask |= (vldMask & m) << inFieldOffset
             value.updateMask = max(value.updateTime, updateTime) 
-                        
+
             inFieldOffset += width
             start += width
 
         return value
-    
+
     def _getStruct(self, offset, transTmpl):
         """
         :param offset: global offset of this transTmpl (and struct)
@@ -349,7 +350,7 @@ class DenseMemory():
             name = subTmpl.origin.name
             if isinstance(t, Bits):
                 value = self.getBits(subTmpl.bitAddr + offset, subTmpl.bitAddrEnd + offset)
-            elif isinstance(t, Array):
+            elif isinstance(t, HArray):
                 raise NotImplementedError()
             elif isinstance(t, HStruct):
                 value = self._getStruct(offset, subTmpl)

@@ -2,7 +2,7 @@ from hwt.code import log2ceil, FsmBuilder, And, Or, If, ror, SwitchLogic, \
     connect, Concat
 from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.defs import BIT
-from hwt.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.enum import HEnum
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import VectSignal, HandshakeSync
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
@@ -313,7 +313,7 @@ class CuckooHashTable(HashTableCore):
         lookupAck = streamAck(slaves=map(lambda t: t.lookup, tables))
         insertAck = streamAck(slaves=map(lambda t: t.insert, tables))
 
-        fsm_t = Enum("insertFsm_t", ["idle", "cleaning",
+        fsm_t = HEnum("insertFsm_t", ["idle", "cleaning",
                                      "lookup", "lookupResWaitRd",
                                      "lookupResAck"])
 

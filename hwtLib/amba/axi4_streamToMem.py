@@ -4,7 +4,7 @@
 from hwt.bitmask import mask
 from hwt.code import c, Concat, If, Switch, connect
 from hwt.hdlObjects.typeShortcuts import vec, vecT
-from hwt.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.enum import HEnum
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -218,7 +218,7 @@ class Axi4streamToMem(Unit):
 
         axi.b.ready ** 1  # we do ignore write confirmations
 
-        st_t = Enum("state_type", ["fullIdle", "writeAddr", "writeData", "writeDataLast"])
+        st_t = HEnum("state_type", ["fullIdle", "writeAddr", "writeData", "writeDataLast"])
 
         onoff = self._reg("on_off_reg", defVal=0)
         baseAddr = self._reg("baseAddr_reg", vecT(self.ADDR_WIDTH), 0)

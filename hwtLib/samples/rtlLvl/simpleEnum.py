@@ -3,14 +3,14 @@
 
 from hwt.code import If
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.hdlObjects.types.enum import Enum
+from hwt.hdlObjects.types.enum import HEnum
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.netlistToRtl import netlistToVhdlStr
 
 
 def SimpleEnum():
     t = vecT(8)
-    fsmT = Enum('fsmT', ['send0', 'send1'])
+    fsmT = HEnum('fsmT', ['send0', 'send1'])
 
     n = RtlNetlist()
 
@@ -31,6 +31,7 @@ def SimpleEnum():
 
     interf = [clk, syncRst, s_in0, s_in1, s_out]
     return n, interf
+
 
 simpleEnumExpected = """library IEEE;
 use IEEE.std_logic_1164.all;

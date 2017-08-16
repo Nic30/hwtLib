@@ -4,7 +4,7 @@ from hwt.code import log2ceil
 from hwt.hdlObjects.constants import INTF_DIRECTION
 from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.hdlObjects.types.array import Array
+from hwt.hdlObjects.types.array import HArray
 from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf, HTypeFromIntfMap
@@ -267,7 +267,7 @@ class BusEndpoint(Unit):
 
         # _prefix = transTmpl.getMyAddrPrefix(srcAddrStep)
         assert dstAddrStep % srcAddrStep == 0
-        if not isinstance(transTmpl.dtype, Array):
+        if not isinstance(transTmpl.dtype, HArray):
             raise TypeError(transTmpl.dtype)
         assert transTmpl.bitAddr % dstAddrStep == 0, "Has to be addressable by address with this step (%r)" % (transTmpl)
 
@@ -305,7 +305,7 @@ class BusEndpoint(Unit):
             if isinstance(t, Bits):
                 p = RegCntrl()
                 dw = t.bit_length()
-            elif isinstance(t, Array):
+            elif isinstance(t, HArray):
                 p = BramPort_withoutClk()
                 assert isinstance(t.elmType, Bits)
                 dw = t.elmType.bit_length()
@@ -314,7 +314,7 @@ class BusEndpoint(Unit):
                 raise NotImplementedError(t)
 
         elif shouldEnter:
-            if isinstance(t, Array):
+            if isinstance(t, HArray):
                 if isinstance(t.elmType, Bits):
                     p = RegCntrl(asArraySize=t.size)
                     dw = t.elmType.bit_length()
