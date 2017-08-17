@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat
-from hwt.hdlObjects.typeShortcuts import vecT, hBit
+from hwt.hdlObjects.typeShortcuts import hBit
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -37,7 +38,7 @@ class UartTx(Unit):
 
         din = self.dataIn
 
-        data = r("data", vecT(BITS_TO_SEND))  # data + start bit + stop bit
+        data = r("data", Bits(BITS_TO_SEND))  # data + start bit + stop bit
         en = r("en", defVal=False)
         tick, last = ClkBuilder(self, self.clk).timers(
                                                        [BIT_RATE, BIT_RATE * BITS_TO_SEND],

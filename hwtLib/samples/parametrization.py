@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import Concat
+from hwt.hdlObjects.typeShortcuts import vec
 from hwt.interfaces.std import VectSignal
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
-from hwt.hdlObjects.typeShortcuts import vec
 
 
 class ParametrizationExample(Unit):

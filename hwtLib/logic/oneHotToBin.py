@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Or, log2ceil
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.interfaces.std import Signal, VldSynced
+from hwt.hdlObjects.types.bits import Bits
+from hwt.interfaces.std import Signal, VldSynced, VectSignal
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
@@ -21,7 +21,7 @@ class OneHotToBin(Unit):
         self.ONE_HOT_WIDTH = Param(8)
 
     def _declr(self):
-        self.oneHot = Signal(dtype=vecT(self.ONE_HOT_WIDTH))
+        self.oneHot = VectSignal(self.ONE_HOT_WIDTH)
         self.bin = VldSynced()
         self.bin.DATA_WIDTH.set(log2ceil(self.ONE_HOT_WIDTH))
 
@@ -36,7 +36,7 @@ def oneHotToBin(parent, signals, resName="oneHotToBin"):
     else:
         signals = list(signals)
 
-    res = parent._sig(resName, vecT(log2ceil(len(signals))))
+    res = parent._sig(resName, Bits(log2ceil(len(signals))))
     leadingZeroTop = None
     for i, s in enumerate(reversed(signals)):
         connections = res ** (len(signals) - i - 1)

@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.interfaces.std import Signal
+from hwt.hdlObjects.types.bits import Bits
+from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
@@ -16,10 +16,10 @@ class Cntr(Unit):
     def _declr(self):
         addClkRstn(self)
         self.en = Signal()
-        self.val = Signal(dtype=vecT(self.DATA_WIDTH))
+        self.val = VectSignal(self.DATA_WIDTH)
 
     def _impl(self):
-        reg = self._reg("counter", vecT(self.DATA_WIDTH), 0)
+        reg = self._reg("counter", Bits(self.DATA_WIDTH), 0)
 
         If(self.en,
            reg ** (reg + 1)

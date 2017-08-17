@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
 from hwt.hdlObjects.types.struct import HStruct

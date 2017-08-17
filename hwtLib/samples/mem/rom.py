@@ -2,18 +2,18 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.interfaces.std import Signal, Clk
+from hwt.hdlObjects.types.bits import Bits
+from hwt.interfaces.std import Clk, VectSignal
 from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
 class SimpleRom(Unit):
     def _declr(self):
-        self.addr = Signal(dtype=vecT(2))
-        self.dout = Signal(dtype=vecT(8))
+        self.addr = VectSignal(2)
+        self.dout = VectSignal(8)
 
     def _impl(self):
-        rom = self._sig("rom_data", vecT(8)[4], defVal=[1, 2, 3, 4])
+        rom = self._sig("rom_data", Bits(8)[4], defVal=[1, 2, 3, 4])
         self.dout ** rom[self.addr]
 
 
@@ -23,7 +23,7 @@ class SimpleSyncRom(SimpleRom):
         self.clk = Clk()
 
     def _impl(self):
-        rom = self._sig("rom_data", vecT(8)[4], defVal=[1, 2, 3, 4])
+        rom = self._sig("rom_data", Bits(8)[4], defVal=[1, 2, 3, 4])
 
         If(self.clk._onRisingEdge(),
            self.dout ** rom[self.addr]

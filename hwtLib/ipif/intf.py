@@ -2,7 +2,7 @@ from collections import deque
 
 from hwt.bitmask import mask
 from hwt.hdlObjects.constants import READ, WRITE, NOP
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import s, D, VectSignal
 from hwt.simulator.agentBase import SyncAgentBase
 from hwt.synthesizer.interfaceLevel.interface import Interface
@@ -63,7 +63,7 @@ class IpifWithCE(Ipif):
 
     def _declr(self):
         super()._declr()
-        ce_t = vecT(self.REG_COUNT)
+        ce_t = Bits(self.REG_COUNT)
         # read chip enable bus
         self.bus2ip_rdce = s(dtype=ce_t)
         # Write chip enable bus

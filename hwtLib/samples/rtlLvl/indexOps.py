@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.typeShortcuts import vecT, vec
+from hwt.hdlObjects.typeShortcuts import vec
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.netlistToRtl import netlistToVhdlStr
+from hwt.hdlObjects.types.bits import Bits
 
 
 def IndexOps():
-    t = vecT(8)
+    t = Bits(8)
     n = RtlNetlist()
 
     s_in = n.sig("s_in", t)
@@ -16,13 +17,13 @@ def IndexOps():
     s_in2 = n.sig("s_in2", t)
     s_out2 = n.sig("s_out2", t)
 
-    s_in3 = n.sig("s_in3", vecT(16))
+    s_in3 = n.sig("s_in3", Bits(16))
     s_out3 = n.sig("s_out3", t)
 
     s_in4a = n.sig("s_in4a", t)
     s_in4b = n.sig("s_in4b", t)
 
-    s_out4 = n.sig("s_out4", vecT(16))
+    s_out4 = n.sig("s_out4", Bits(16))
 
     s_out ** s_in[4:]._concat(vec(2, 4))
 

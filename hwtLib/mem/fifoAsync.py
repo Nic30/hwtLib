@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, log2ceil
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Clk, Rst_n, FifoWriter, FifoReader
+from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.logic.cntrGray import GrayCntr
 from hwtLib.mem.fifo import Fifo
-from hwt.serializer.mode import serializeParamsUniq
 
 
 @serializeParamsUniq
@@ -41,7 +41,7 @@ class FifoAsync(Fifo):
             cntr.DATA_WIDTH.set(self.addrW)
 
     def _impl(self):
-        memory_t = vecT(self.DATA_WIDTH)[self.DEPTH]
+        memory_t = Bits(self.DATA_WIDTH)[self.DEPTH]
         memory = self._sig("memory", memory_t)
         full = self._sig("full")
         empty = self._sig("empty")

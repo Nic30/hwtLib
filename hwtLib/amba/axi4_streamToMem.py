@@ -3,7 +3,8 @@
 
 from hwt.bitmask import mask
 from hwt.code import c, Concat, If, Switch, connect
-from hwt.hdlObjects.typeShortcuts import vec, vecT
+from hwt.hdlObjects.typeShortcuts import vec
+from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.enum import HEnum
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
@@ -221,11 +222,11 @@ class Axi4streamToMem(Unit):
         st_t = HEnum("state_type", ["fullIdle", "writeAddr", "writeData", "writeDataLast"])
 
         onoff = self._reg("on_off_reg", defVal=0)
-        baseAddr = self._reg("baseAddr_reg", vecT(self.ADDR_WIDTH), 0)
+        baseAddr = self._reg("baseAddr_reg", Bits(self.ADDR_WIDTH), 0)
         st = self._reg("state_reg", st_t, st_t.fullIdle)
-        actualAddr = self._reg("actualAddr_reg", vecT(self.ADDR_WIDTH))
+        actualAddr = self._reg("actualAddr_reg", Bits(self.ADDR_WIDTH))
         lenRem = self._reg("lenRem_reg",
-                           vecT(int(self.DATA_LEN).bit_length() + 1),
+                           Bits(int(self.DATA_LEN).bit_length() + 1),
                            self.DATA_LEN)
         actualLenRem = self._reg("actualLenRem_reg", axi.aw.len._dtype)
 

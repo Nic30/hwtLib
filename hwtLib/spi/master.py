@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat, sll
-from hwt.hdlObjects.typeShortcuts import vecT 
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -12,6 +11,7 @@ from hwtLib.handshaked.intfBiDirectional import HandshakedBiDirectional, \
     HandshakedBiDirectionalAgent
 from hwtLib.logic.binToOneHot import BinToOneHot
 from hwtLib.spi.intf import Spi
+from hwt.hdlObjects.types.bits import Bits
 
 
 class SpiCntrlDataAgent(HandshakedBiDirectionalAgent):
@@ -87,7 +87,7 @@ class SpiMaster(Unit):
         self.csDecoder.DATA_WIDTH.set(self.SLAVE_CNT)
 
     def writePart(self, writeTick, isLastTick, data):
-        txReg = self._reg("txReg", vecT(self.DATA_WIDTH))
+        txReg = self._reg("txReg", Bits(self.DATA_WIDTH))
         txInitialized = self._reg("txInitialized", defVal=0)
         If(writeTick,
             If(txInitialized,
@@ -105,7 +105,7 @@ class SpiMaster(Unit):
         self.spi.mosi ** txReg[self.DATA_WIDTH - 1]
 
     def readPart(self, readTick):
-        rxReg = self._reg("rxReg", vecT(self.DATA_WIDTH))
+        rxReg = self._reg("rxReg", Bits(self.DATA_WIDTH))
 
         If(readTick,
            rxReg ** Concat(rxReg[(self.DATA_WIDTH - 1):], self.spi.miso)

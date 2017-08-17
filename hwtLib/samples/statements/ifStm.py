@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.hdlObjects.types.bits import Bits
 
 
 class SimpleIfStatement(Unit):
@@ -75,7 +75,7 @@ class SimpleIfStatement2c(Unit):
         self.d = VectSignal(2)
 
     def _impl(self):
-        r = self._reg("reg_d", vecT(2), defVal=0)
+        r = self._reg("reg_d", Bits(2), defVal=0)
 
         If(self.a & self.b,
             If(self.c,

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.hdlObjects.types.bits import Bits
 
 
 class SimpleUnitWithParam(Unit):
@@ -18,11 +18,12 @@ class SimpleUnitWithParam(Unit):
         self.DATA_WIDTH = Param(8)
 
     def _declr(self):
-        # vecT is shortcut for vector type first parameter is width, second optional is signed flag
-        dt = vecT(self.DATA_WIDTH)
+        # first parameter of Bits HDL type constructor is width, second optional is signed flag
+        dt = Bits(self.DATA_WIDTH)
         # dt is now type vector with width specified by parameter DATA_WIDTH
         # it means it is 8bit width we specify data type for every signal
         self.a = Signal(dtype=dt)
+        # you can also use shortcut VectorSignal(width)
         self.b = Signal(dtype=dt)
 
     def _impl(self):

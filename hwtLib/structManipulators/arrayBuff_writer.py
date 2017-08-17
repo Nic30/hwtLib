@@ -3,7 +3,7 @@
 
 from hwt.bitmask import mask
 from hwt.code import If, Concat, connect, FsmBuilder, log2ceil
-from hwt.hdlObjects.typeShortcuts import vecT, vec
+from hwt.hdlObjects.typeShortcuts import vec
 from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.enum import HEnum
 from hwt.interfaces.std import Handshaked, VectSignal, RegCntrl
@@ -92,18 +92,18 @@ class ArrayBuff_writer(Unit):
 
         propagateClkRstn(self)
 
-        sizeOfitems = self._reg("sizeOfItems", vecT(buff.size._dtype.bit_length()))
+        sizeOfitems = self._reg("sizeOfItems", Bits(buff.size._dtype.bit_length()))
 
         # aligned base addr
-        baseAddr = self._reg("baseAddrReg", vecT(self.ADDR_WIDTH - ALIGN_BITS))
+        baseAddr = self._reg("baseAddrReg", Bits(self.ADDR_WIDTH - ALIGN_BITS))
         If(self.baseAddr.dout.vld,
            baseAddr ** self.baseAddr.dout.data[:ALIGN_BITS]
         )
         self.baseAddr.din ** Concat(baseAddr, vec(0, ALIGN_BITS))
 
         # offset in buffer and its complement        
-        offset = self._reg("offset", vecT(log2ceil(ITEMS + 1), False), defVal=0)
-        remaining = self._reg("remaining", vecT(log2ceil(ITEMS + 1), False), defVal=ITEMS)
+        offset = self._reg("offset", Bits(log2ceil(ITEMS + 1), signed=False), defVal=0)
+        remaining = self._reg("remaining", Bits(log2ceil(ITEMS + 1), signed=False), defVal=ITEMS)
         connect(remaining, self.buff_remain, fit=True) 
 
         addrTmp = self._sig("baseAddrTmp", baseAddr._dtype)
@@ -142,7 +142,7 @@ class ArrayBuff_writer(Unit):
         w_ack = w.ready & buff.dataOut.vld
 
         # timeout logic
-        timeoutCntr = self._reg("timeoutCntr", vecT(log2ceil(self.TIMEOUT), False),
+        timeoutCntr = self._reg("timeoutCntr", Bits(log2ceil(self.TIMEOUT), False),
                                 defVal=TIMEOUT_MAX)
         beginReq = buff.size._eq(self.BUFF_DEPTH) | timeoutCntr._eq(0)  # buffer is full or timeout
         reqAckHasCome = self._sig("reqAckHasCome")

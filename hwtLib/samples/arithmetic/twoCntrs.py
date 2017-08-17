@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.hdlObjects.types.bits import Bits
 
 
 class TwoCntrs(Unit):
@@ -21,7 +21,7 @@ class TwoCntrs(Unit):
         self.gt = Signal()
 
     def _impl(self):
-        index_t = vecT(8, False)
+        index_t = Bits(8, signed=False)
 
         a = self._reg("reg_a", index_t, defVal=0)
         b = self._reg("reg_b", index_t, defVal=0)

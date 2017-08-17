@@ -3,21 +3,20 @@ from copy import copy
 from hwt.code import log2ceil
 from hwt.hdlObjects.constants import INTF_DIRECTION
 from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.array import HArray
 from hwt.hdlObjects.types.bits import Bits
+from hwt.hdlObjects.types.hdlType import HdlType
+from hwt.hdlObjects.types.struct import HStruct, HStructField
 from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf, HTypeFromIntfMap
 from hwt.interfaces.utils import addClkRstn
+from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interfaceLevel.interfaceUtils.proxy import InterfaceProxy
 from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import walkFlatten
+from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwtLib.sim.abstractMemSpaceMaster import PartialField
-from hwt.hdlObjects.types.hdlType import HdlType
-from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
-from hwt.pyUtils.arrayQuery import where
-from hwt.hdlObjects.types.struct import HStruct, HStructField
 
 
 def inRange(n, lower, end):
@@ -284,7 +283,7 @@ class BusEndpoint(Unit):
             _addr = transTmpl.bitAddr // srcAddrStep
             _addrEnd = transTmpl.bitAddrEnd // srcAddrStep
             addrIsInRange = inRange(srcAddrSig, _addr, _addrEnd)
-            addr_tmp = self._sig(dstAddrSig._name + "_addr_tmp", vecT(self.ADDR_WIDTH))
+            addr_tmp = self._sig(dstAddrSig._name + "_addr_tmp", Bits(self.ADDR_WIDTH))
             addr_tmp ** (srcAddrSig - _addr)
 
         connectedAddr = (dstAddrSig ** addr_tmp[(bitsOfSubAddr + bitsForAlignment):(bitsForAlignment)])

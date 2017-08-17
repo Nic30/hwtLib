@@ -3,7 +3,7 @@
 
 from hwt.code import If, FsmBuilder, Or, log2ceil, connect, Switch, \
     SwitchLogic, Concat
-from hwt.hdlObjects.typeShortcuts import vec, vecT
+from hwt.hdlObjects.typeShortcuts import vec
 from hwt.hdlObjects.types.enum import HEnum
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axiLite import AxiLite
@@ -66,7 +66,7 @@ class AxiLiteEndpoint(BusEndpoint):
             # list of tuples (cond, rdataReg assignment)
             rregCases = []
             # index of bram from where we reads from
-            bramRdIndx = self._reg("bramRdIndx", vecT(log2ceil(len(self._bramPortMapped))))
+            bramRdIndx = self._reg("bramRdIndx", Bits(log2ceil(len(self._bramPortMapped))))
             bramRdIndxSwitch = Switch(bramRdIndx)
             for bramIndex, t in enumerate(self._bramPortMapped):
                 port = self.getPort(t)

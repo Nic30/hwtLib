@@ -1,6 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.bitmask import mask
 from hwt.code import If, connect, log2ceil
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -30,8 +33,8 @@ class AxisFrameGen(Unit):
         self.cntrl._replaceParam("DATA_WIDTH", self.CNTRL_DW)
 
         self.conv = AxiLiteEndpoint(
-                        HStruct((vecT(self.CNTRL_DW), "enable"),
-                                (vecT(self.CNTRL_DW), "len")
+                        HStruct((Bits(self.CNTRL_DW), "enable"),
+                                (Bits(self.CNTRL_DW), "len")
                                 )
                         )
         self.conv.ADDR_WIDTH.set(self.CNTRL_AW)
@@ -39,9 +42,9 @@ class AxisFrameGen(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
-        cntr = self._reg("wordCntr", vecT(log2ceil(self.MAX_LEN)), defVal=0)
+        cntr = self._reg("wordCntr", Bits(log2ceil(self.MAX_LEN)), defVal=0)
         en = self._reg("enable", defVal=0)
-        _len = self._reg("wordCntr", vecT(log2ceil(self.MAX_LEN)), defVal=0)
+        _len = self._reg("wordCntr", Bits(log2ceil(self.MAX_LEN)), defVal=0)
 
         self.conv.bus ** self.cntrl
         cEn = self.conv.decoded.enable

@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Switch
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.interfaces.std import Signal
+from hwt.interfaces.std import Signal, VectSignal
 from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
@@ -12,7 +11,7 @@ class SwitchStmUnit(Unit):
     Example which is using switch statement to create multiplexer
     """
     def _declr(self):
-        self.sel = Signal(dtype=vecT(3))
+        self.sel = VectSignal(3)
         self.out = Signal()
         self.a = Signal()
         self.b = Signal()

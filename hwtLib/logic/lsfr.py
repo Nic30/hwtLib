@@ -5,7 +5,7 @@
 from hwt.bitmask import selectBit
 from hwt.code import Xor, Concat
 from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
@@ -30,7 +30,7 @@ class Lsfr(Unit):
 
     def _impl(self):
         accumulator = self._reg("accumulator",
-                                vecT(self.POLY_WIDTH),
+                                Bits(self.POLY_WIDTH),
                                 defVal=self.SEED)
         POLY = int(self.POLY)
         xorBits = []

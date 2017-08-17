@@ -61,7 +61,7 @@ def addCharToBitmap():
     first row is placed on lower address,
     font is taken from png image
     
-    :return: vecT(8)[128 * 8] where are stored bitmaps of chars, up is first lower char is first
+    :return: Bits(8)[128 * 8] where are stored bitmaps of chars, up is first lower char is first
     """
     rom = []
     for ch in range(128):

@@ -1,6 +1,6 @@
 from hwt.bitmask import selectBit, mask
 from hwt.code import If, Concat
-from hwt.hdlObjects.typeShortcuts import vecT, vec
+from hwt.hdlObjects.typeShortcuts import vec
 from hwt.interfaces.std import VldSynced, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -9,6 +9,7 @@ from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.logic.crcPoly import CRC_5_USB, CRC_32
 from hwtLib.logic.crcUtils import parsePolyStr, buildCrcMatrix
 from hwt.synthesizer.byteOrder import reversedBits
+from hwt.hdlObjects.types.bits import Bits
 
 
 # http://stackoverflow.com/questions/41734560/parallel-crc-32-calculation-ethernet-10ge-mac
@@ -76,7 +77,7 @@ class Crc(Unit):
         regXorMatrix, dataXorMatrix = buildCrcMatrix(polyCoefs, PW, DW)
 
         reg = self._reg("r",
-                        vecT(self.POLY_WIDTH),
+                        Bits(self.POLY_WIDTH),
                         self.SEED)
 
         # just rename to make code shorter

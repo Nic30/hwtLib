@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.ipCoreWrapper import IpCoreWrapper
 from hwt.synthesizer.interfaceLevel.unit import Unit

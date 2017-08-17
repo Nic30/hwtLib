@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat, log2ceil, Switch
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.handshaked.compBase import HandshakedCompBase
@@ -62,7 +62,7 @@ class HsResizer(HandshakedCompBase):
 
     def _upscale(self, factor):
         inputRegs_cntr = self._reg("inputRegs_cntr",
-                                   vecT(log2ceil(factor + 1), False),
+                                   Bits(log2ceil(factor + 1), False),
                                    defVal=0)
 
         for din, dout in zip(self.getData(self.dataIn), self.getData(self.dataOut)):
@@ -80,7 +80,7 @@ class HsResizer(HandshakedCompBase):
 
     def _downscale(self, factor):
         inputRegs_cntr = self._reg("inputRegs_cntr",
-                                   vecT(log2ceil(factor + 1), False),
+                                   Bits(log2ceil(factor + 1), False),
                                    defVal=0)
 
         # instanciate HandshakedReg, handshaked builder is not used to avoid dependencies

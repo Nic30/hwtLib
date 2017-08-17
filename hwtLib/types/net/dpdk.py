@@ -1,4 +1,4 @@
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.struct import HStruct
 from hwtLib.types.ctypes import uint64_t, uint8_t, uint16_t, uint32_t
 
@@ -25,7 +25,7 @@ rte_mbuf = HStruct(
     (uint64_t,   "hash"),               # /*    44     8 */
     (uint32_t,   "seqn"),               # /*    52     4 */
     (uint16_t,   "vlan_tci_outer"),     # /*    56     2 */
-    (vecT(6*8), None),
+    (Bits(6*8), None),
     # /* XXX 6 bytes hole, try to pack */
     # /* --- cacheline 1 boundary (64 bytes) --- */
     # MARKER                     cacheline1;           /*    64     0 */

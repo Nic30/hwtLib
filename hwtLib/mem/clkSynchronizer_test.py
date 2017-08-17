@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.agents.rst import pullDownAfter
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.shortcuts import simUnitVcd, oscilate, \
@@ -19,7 +19,7 @@ CLK_PERIOD = 10 * Time.ns
 class ClkSynchronizerTC(unittest.TestCase):
     def setUp(self):
         u = ClkSynchronizer()
-        u.DATA_TYP = vecT(32)
+        u.DATA_TYP = Bits(32)
         modelCls = toSimModel(u)
         reconnectUnitSignalsToModel(u, modelCls)
         model = modelCls()

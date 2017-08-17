@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.handshaked.builder import HsBuilder
 from hwt.interfaces.std import Handshaked

@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, log2ceil, Concat, Switch
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axis_comp.base import AxiSCompBase
-from hwtLib.handshaked.streamNode import streamAck
 from hwtLib.amba.axis_comp.reg import AxiSReg
+from hwtLib.handshaked.streamNode import streamAck
 
 
 class AxiS_resizer(AxiSCompBase):
@@ -80,7 +80,7 @@ class AxiS_resizer(AxiSCompBase):
         dataOut = self.dataOut
         dOut = self.getDataWidthDependent(dataOut)
 
-        itemCntr = self._reg("itemCntr", vecT(log2ceil(ITEMS + 1)), defVal=0)
+        itemCntr = self._reg("itemCntr", Bits(log2ceil(ITEMS + 1)), defVal=0)
         hs = streamAck([self.dataIn], [dataOut])
         isLastItem = (itemCntr._eq(ITEMS - 1) | self.dataIn.last)
 
@@ -154,7 +154,7 @@ class AxiS_resizer(AxiSCompBase):
         dIn = self.getDataWidthDependent(dataIn)
 
         ITEMS = IN_DW // OUT_DW
-        itemCntr = self._reg("itemCntr", vecT(log2ceil(ITEMS + 1)), defVal=0)
+        itemCntr = self._reg("itemCntr", Bits(log2ceil(ITEMS + 1)), defVal=0)
 
         hs = streamAck([dataIn], [self.dataOut])
         isLastItem = itemCntr._eq(ITEMS - 1)

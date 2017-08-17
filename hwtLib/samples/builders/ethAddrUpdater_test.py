@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from math import ceil
 
 from hwt.hdlObjects.constants import Time

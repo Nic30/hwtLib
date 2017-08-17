@@ -1,36 +1,36 @@
-from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdlObjects.types.bits import Bits
 
 
-vlan_t = vecT(12)  
-mac_t = vecT(6 * 8)
+vlan_t = Bits(12)  
+mac_t = Bits(6 * 8)
 
 
 syncword = 0b1010101010101010101010101010101010101010101010101010101010101011
 
 EthPreambule_t = HStruct(
-    (vecT(7 * 8), "preambule"),
-    (vecT(8), "startOfFrameDelimiter"),
+    (Bits(7 * 8), "preambule"),
+    (Bits(8), "startOfFrameDelimiter"),
     name="EthPreambule_t"
 )
 
 Eth2Header_t = HStruct(
     (mac_t, "dst"),
     (mac_t, "src"),
-    (vecT(2 * 8), "type"),
+    (Bits(2 * 8), "type"),
     name="Eth2Header_t"
 )
 
 Tag802_1q = HStruct(
-    (vecT(16), "tpid"),
-    (vecT(16), "tci")
+    (Bits(16), "tpid"),
+    (Bits(16), "tci")
     )
 
 Eth802_1qHeader_t = HStruct(
     (mac_t, "dst"),
     (mac_t, "src"),
     (Tag802_1q, "tag"),
-    (vecT(2 * 8), "type"),
+    (Bits(2 * 8), "type"),
     name="Eth802_1qHeader_t"
 )
 

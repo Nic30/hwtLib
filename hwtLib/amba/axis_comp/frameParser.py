@@ -1,5 +1,8 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import log2ceil, If, Concat, And
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
@@ -150,7 +153,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
         words = list(self.chainFrameWords())
         assert not (self.SYNCHRONIZE_BY_LAST and len(self._frames) > 1)
         maxWordIndex = words[-1][0]
-        wordIndex = self._reg("wordIndex", vecT(log2ceil(maxWordIndex + 1)), 0)
+        wordIndex = self._reg("wordIndex", Bits(log2ceil(maxWordIndex + 1)), 0)
         busVld = r.valid
 
         self.connectDataSignals(words, wordIndex)

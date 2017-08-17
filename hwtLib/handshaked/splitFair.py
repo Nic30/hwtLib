@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Or, rol, connect
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
@@ -60,7 +60,7 @@ class HsSplitFair(HsSplitCopy):
         din = self.dataIn
         EXPORT_SELECTED = bool(self.EXPORT_SELECTED)
 
-        priority = self._reg("priority", vecT(self.OUTPUTS), defVal=1)
+        priority = self._reg("priority", Bits(self.OUTPUTS), defVal=1)
         priority ** rol(priority, 1)
 
         rdSignals = list(map(rd, self.dataOut))
@@ -90,6 +90,7 @@ class HsSplitFair(HsSplitCopy):
             self.getRd(self.dataIn) ** (Or(*rdSignals) & self.selectedOneHot.rd)
         else:
             self.getRd(self.dataIn) ** Or(*rdSignals)
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl

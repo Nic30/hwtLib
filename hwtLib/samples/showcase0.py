@@ -1,13 +1,16 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import connect, If, Concat
 from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
+from hwt.interfaces.utils import addClkRstn
+from hwt.serializer.simModel.serializer import SimModelSerializer
+from hwt.serializer.systemC.serializer import SystemCSerializer
+from hwt.serializer.verilog.serializer import VerilogSerializer
+from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.types.ctypes import uint32_t, int32_t, uint8_t, int8_t
-from hwt.interfaces.utils import addClkRstn
-from hwt.serializer.vhdl.serializer import VhdlSerializer
-from hwt.serializer.verilog.serializer import VerilogSerializer
-from hwt.serializer.systemC.serializer import SystemCSerializer
-from hwt.serializer.simModel.serializer import SimModelSerializer
 
 
 def foo(condition0, statements, condition1, fallback0, fallback1):

@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.netlistToRtl import netlistToVhdlStr
 
 
 def LeadingZero():
-    t = vecT(64)
-    resT = vecT(8)
+    t = Bits(64)
+    resT = Bits(8)
     n = RtlNetlist()
 
     s_in = n.sig("s_in", t)

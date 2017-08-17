@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Or, rol, SwitchLogic
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import VldSynced
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
@@ -62,7 +62,7 @@ class HsJoinFairShare(HsJoinPrioritized):
         rd = self.getRd
         dout = self.dataOut
 
-        priority = self._reg("priority", vecT(self.INPUTS), defVal=1)
+        priority = self._reg("priority", Bits(self.INPUTS), defVal=1)
         priority ** rol(priority, 1)
 
         vldSignals = list(map(vld, self.dataIn))

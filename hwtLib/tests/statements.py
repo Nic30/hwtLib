@@ -4,7 +4,8 @@
 import unittest
 
 from hwt.hdlObjects.statements import IfContainer
-from hwt.hdlObjects.typeShortcuts import vecT, hBit
+from hwt.hdlObjects.typeShortcuts import hBit
+from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.defs import BIT
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 
@@ -15,7 +16,7 @@ class StatementsTC(unittest.TestCase):
                            (0, 1),
                            (1, 0),
                            (1, 1)]:
-            resT = vecT(2)
+            resT = Bits(2)
             nl = RtlNetlist()
 
             res = nl.sig("res", resT)

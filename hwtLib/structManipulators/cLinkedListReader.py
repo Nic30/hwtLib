@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -
 
 from hwt.code import If, In, Concat, connect, log2ceil
-from hwt.hdlObjects.typeShortcuts import vecT, vec
+from hwt.hdlObjects.typeShortcuts import vec
 from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Handshaked, RegCntrl, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -100,12 +100,12 @@ class CLinkedListReader(Unit):
         bufferHasSpace = s("bufferHasSpace")
         bufferHasSpace ** (f.size < (BURST_LEN + 1))
         # we are counting base next addr as item as well
-        inBlock_t = vecT(log2ceil(self.ITEMS_IN_BLOCK + 1))
-        ringSpace_t = vecT(self.PTR_WIDTH)
+        inBlock_t = Bits(log2ceil(self.ITEMS_IN_BLOCK + 1))
+        ringSpace_t = Bits(self.PTR_WIDTH)
 
         downloadPending = r("downloadPending", defVal=0)
 
-        baseIndex = r("baseIndex", vecT(self.ADDR_WIDTH - ALIGN_BITS))
+        baseIndex = r("baseIndex", Bits(self.ADDR_WIDTH - ALIGN_BITS))
         inBlockRemain = r("inBlockRemain_reg", inBlock_t, defVal=self.ITEMS_IN_BLOCK)
         self.inBlockRemain ** inBlockRemain
 

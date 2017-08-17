@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat, If
-from hwt.hdlObjects.typeShortcuts import hBit, vec, vecT
+from hwt.hdlObjects.typeShortcuts import hBit, vec
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Signal, Clk
 from hwt.serializer.mode import serializeExclude
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -38,9 +39,9 @@ def mkLutRamCls(DATA_WIDTH):
         def _impl(self):
             s = self._sig
             wclk_in = s("wclk_in")
-            mem = self._cntx.sig("mem", vecT(DATA_WIDTH + 1),
+            mem = self._cntx.sig("mem", Bits(DATA_WIDTH + 1),
                                  defVal=hBit(None)._concat(self.INIT))
-            a_in = s("a_in", vecT(6))
+            a_in = s("a_in", Bits(6))
             d_in = s("d_in")
             we_in = s("we_in")
 

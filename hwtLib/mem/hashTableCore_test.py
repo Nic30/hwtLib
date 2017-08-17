@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.logic.crcPoly import CRC_32

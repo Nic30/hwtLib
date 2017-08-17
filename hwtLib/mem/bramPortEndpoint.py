@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import c, SwitchLogic, log2ceil, Switch
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.abstract.busEndpoint import BusEndpoint
 
@@ -48,7 +48,7 @@ class BramPortEndpoint(BusEndpoint):
         if self._bramPortMapped:
             BRAMS_CNT = len(self._bramPortMapped)
             bramIndxCases = []
-            readBramIndx = self._reg("readBramIndx", vecT(log2ceil(BRAMS_CNT + 1), False))
+            readBramIndx = self._reg("readBramIndx", Bits(log2ceil(BRAMS_CNT + 1), False))
             outputSwitch = Switch(readBramIndx)
 
             for i, t in enumerate(self._bramPortMapped):

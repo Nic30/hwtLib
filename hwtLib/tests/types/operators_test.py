@@ -4,13 +4,14 @@
 import unittest
 
 from hwt.bitmask import mask
-from hwt.hdlObjects.typeShortcuts import hInt, hBool, hBit, vec, vecT
-from hwt.hdlObjects.types.defs import INT, STR
-from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
-from hwt.synthesizer.rtlLevel.signalUtils.walkers import walkAllOriginSignals
+from hwt.hdlObjects.typeShortcuts import hInt, hBool, hBit, vec
 from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.boolean import Boolean
+from hwt.hdlObjects.types.defs import INT, STR
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
+from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
+from hwt.synthesizer.rtlLevel.signalUtils.walkers import walkAllOriginSignals
+
 
 n = RtlNetlist()
 s0 = n.sig("s0", Boolean())
@@ -241,21 +242,21 @@ class OperatorTC(unittest.TestCase):
 
     def test_bits_sig_slice_on_slice(self):
         n = RtlNetlist()
-        s = n.sig("s", vecT(16))
+        s = n.sig("s", Bits(16))
         self.assertIs(s[10:0][2:0], s[2:0])
         self.assertIs(s[10:0][4:1], s[4:1])
         self.assertIs(s[12:5][4:1], s[9:6])
 
     def test_bits_sig_slice_on_slice_of_slice(self):
         n = RtlNetlist()
-        s = n.sig("s", vecT(16))
+        s = n.sig("s", Bits(16))
         self.assertIs(s[10:0][7:0][2:0], s[2:0])
         self.assertIs(s[10:0][7:0][4:1], s[4:1])
         self.assertIs(s[12:5][7:1][4:1], s[10:7])
 
     def test_bits_mul(self):
         n = RtlNetlist()
-        s = n.sig("s", vecT(16))
+        s = n.sig("s", Bits(16))
         s * 10
         s * s
 

@@ -5,11 +5,11 @@ import math
 
 from hwt.bitmask import mask
 from hwt.code import If, Switch
-from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream
+from hwt.hdlObjects.types.bits import Bits
 
 
 class AxiSStoredBurst(Unit):
@@ -51,7 +51,7 @@ class AxiSStoredBurst(Unit):
         DATA_LEN = len(self.DATA)
 
         wordIndex_w = int(math.log2(DATA_LEN) + 1)
-        wordIndex = self._reg("wordIndex", vecT(wordIndex_w), defVal=0)
+        wordIndex = self._reg("wordIndex", Bits(wordIndex_w), defVal=0)
 
         Switch(wordIndex)\
         .addCases([(i, dout.data ** d)

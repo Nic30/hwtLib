@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, connect
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
+from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
-from hwt.hdlObjects.types.struct import HStruct
 from hwtLib.types.ctypes import uint32_t
 
 
@@ -40,8 +40,8 @@ class SimpleAxiRegs(Unit):
         propagateClkRstn(self)
         connect(self.axi, self.conv.bus, fit=True)
 
-        reg0 = self._reg("reg0", vecT(32), defVal=0)
-        reg1 = self._reg("reg1", vecT(32), defVal=1)
+        reg0 = self._reg("reg0", Bits(32), defVal=0)
+        reg1 = self._reg("reg1", Bits(32), defVal=1)
 
         conv = self.conv
 

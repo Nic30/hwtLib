@@ -3,7 +3,6 @@
 
 from hwt.code import If, Concat, FsmBuilder, In, log2ceil
 from hwt.hdlObjects.constants import DIRECTION
-from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.enum import HEnum
 from hwt.interfaces.agents.rdSynced import RdSyncedAgent
 from hwt.interfaces.std import Signal, RdSynced, VectSignal
@@ -11,6 +10,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.i2c.intf import I2c
+from hwt.hdlObjects.types.bits import Bits
 
 
 NOP, START, STOP, READ, WRITE = range(5)
@@ -95,7 +95,7 @@ class I2cMasterBitCtrl(Unit):
 
     def _declr(self):
         addClkRstn(self)
-        self.clk_cnt_initVal = Signal(dtype=vecT(16))
+        self.clk_cnt_initVal = VectSignal(16)
         self.i2c = I2c()
 
         self.cntrl = I2cBitCntrlCmd()
@@ -114,7 +114,7 @@ class I2cMasterBitCtrl(Unit):
         slave_wait ** ((~scl_t & delayedScl_t & ~scl) | (slave_wait & ~scl))
 
         clkCntr = self._reg("clkCntr",
-                            vecT(self.CLK_CNTR_WIDTH, False),
+                            Bits(self.CLK_CNTR_WIDTH, False),
                             defVal=self.clk_cnt_initVal)
         stateClkEn = self._reg("stateClkEn", defVal=1)
 
@@ -132,7 +132,7 @@ class I2cMasterBitCtrl(Unit):
 
     def filter(self, name, sig):
         """attempt to remove glitches"""
-        filter0 = self._reg(name + "_filter0", dtype=vecT(2), defVal=0)
+        filter0 = self._reg(name + "_filter0", dtype=Bits(2), defVal=0)
         filter0 ** filter0[0]._concat(sig)
 
         # let filter_cnt to be shared between filters
@@ -140,7 +140,7 @@ class I2cMasterBitCtrl(Unit):
             filter_clk_cntr = self.filter_clk_cntr
         except AttributeError:
             filter_clk_cntr = self.filter_clk_cntr = self._reg("filter_clk_cntr",
-                                                               vecT(self.CLK_CNTR_WIDTH),
+                                                               Bits(self.CLK_CNTR_WIDTH),
                                                                defVal=self.clk_cnt_initVal)
             If(filter_clk_cntr._eq(0),
                filter_clk_cntr ** self.clk_cnt_initVal
@@ -148,7 +148,7 @@ class I2cMasterBitCtrl(Unit):
                filter_clk_cntr ** (filter_clk_cntr - 1)
             )
 
-        filter1 = self._reg(name + "_filter1", dtype=vecT(3), defVal=0b111)
+        filter1 = self._reg(name + "_filter1", dtype=Bits(3), defVal=0b111)
         If(filter_clk_cntr._eq(0),
            filter1 ** Concat(filter1[2:], filter0[1])
         )

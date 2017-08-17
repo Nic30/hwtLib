@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat, log2ceil
-from hwt.hdlObjects.typeShortcuts import vecT, hBit
+from hwt.hdlObjects.typeShortcuts import hBit
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Handshaked, VldSynced
 from hwt.interfaces.utils import addClkRstn
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.interfaces.addrDataHs import AddrDataBitMaskHs
-from hwt.serializer.mode import serializeParamsUniq
 
 
 @serializeParamsUniq
@@ -61,7 +62,7 @@ class Cam(Unit):
     def _impl(self):
         # +1 bit to validity check
         self._mem = self._sig("cam_mem",
-                              vecT(self.DATA_WIDTH + 1)[self.ITEMS],
+                              Bits(self.DATA_WIDTH + 1)[self.ITEMS],
                               [0 for _ in range(int(self.ITEMS))]
                               )
         self.writeHandler(self._mem)

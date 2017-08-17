@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.constants import Time
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Clk
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.hdlObjects.constants import Time
+from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
 class ClkDiv3(Unit):
@@ -22,8 +22,8 @@ class ClkDiv3(Unit):
 
     def _impl(self):
         clk = self.clk
-        r_cnt = self._sig("r_cnt", vecT(2))
-        f_cnt = self._sig("f_cnt", vecT(2))
+        r_cnt = self._sig("r_cnt", Bits(2))
+        f_cnt = self._sig("f_cnt", Bits(2))
         rise = self._sig("rise")
         fall = self._sig("fall")
         CNTR_MAX = 2

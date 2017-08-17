@@ -1,4 +1,8 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import unittest
+
 from hwt.synthesizer.shortcuts import toRtl
 from hwtLib.samples.parametrization import ParametrizationExample
 

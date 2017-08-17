@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.interfaces.std import Signal
-from hwt.interfaces.utils import addClkRstn
 from hwt.code import If, binToGray
+from hwt.hdlObjects.constants import Time
+from hwt.interfaces.std import Signal, VectSignal
+from hwt.interfaces.utils import addClkRstn
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
-from hwt.simulator.simTestCase import SimTestCase
-from hwt.hdlObjects.constants import Time
 
 
 class GrayCntr(Unit):
@@ -20,7 +19,7 @@ class GrayCntr(Unit):
         addClkRstn(self)
         self.en = Signal()
 
-        self.dataOut = Signal(dtype=vecT(self.DATA_WIDTH))
+        self.dataOut = VectSignal(self.DATA_WIDTH)
 
     def _impl(self):
         binCntr = self._reg("cntr_bin_reg", self.dataOut._dtype, self.INIT_VAL) 

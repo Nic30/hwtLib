@@ -1,16 +1,19 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import log2ceil, FsmBuilder, And, Or, If, ror, SwitchLogic, \
     connect, Concat
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.defs import BIT
 from hwt.hdlObjects.types.enum import HEnum
 from hwt.hdlObjects.types.struct import HStruct
+from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import VectSignal, HandshakeSync
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.streamNode import streamAck, streamSync
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf
-from hwt.interfaces.agents.handshaked import HandshakedAgent
 
 
 class ORIGIN_TYPE():
@@ -149,7 +152,7 @@ class CuckooHashTable(HashTableCore):
     def cleanUpAddrIterator(self, en):
         lastAddr = self.TABLE_SIZE - 1
         addr = self._reg("cleanupAddr",
-                         vecT(log2ceil(lastAddr), signed=False),
+                         Bits(log2ceil(lastAddr), signed=False),
                          defVal=0)
         If(en,
            addr ** (addr + 1)
@@ -186,7 +189,7 @@ class CuckooHashTable(HashTableCore):
         tables = self.tables
         # one hot encoded index where item should be stored (where was found
         # or where is place)
-        targetOH = self._reg("targetOH", vecT(self.TABLE_CNT))
+        targetOH = self._reg("targetOH", Bits(self.TABLE_CNT))
 
         res = list(map(lambda t: t.lookupRes, tables))
         # synchronize all lookupRes from all tables
@@ -218,7 +221,7 @@ class CuckooHashTable(HashTableCore):
         return lookupResAck, insertFinal, insertFoundOH, targetOH
 
     def insertAddrSelect(self, targetOH, state, cleanAddr):
-        insertIndex = self._sig("insertIndex", vecT(self.HASH_WITH))
+        insertIndex = self._sig("insertIndex", Bits(self.HASH_WITH))
         If(state._eq(state._dtype.cleaning),
             insertIndex ** cleanAddr
         ).Else(
@@ -294,12 +297,12 @@ class CuckooHashTable(HashTableCore):
 
         # stash is storage for item which is going to be swapped with actual
         stash_t = HStruct(
-            (vecT(self.KEY_WIDTH), "key"),
-            (vecT(self.DATA_WIDTH), "data"),
+            (Bits(self.KEY_WIDTH), "key"),
+            (Bits(self.DATA_WIDTH), "data"),
             (BIT, "vldFlag")
             )
         stash = self._reg("stash", stash_t)
-        lookupOrigin = self._reg("lookupOrigin", vecT(2))
+        lookupOrigin = self._reg("lookupOrigin", Bits(2))
 
         cleanAck = self._sig("cleanAck")
         cleanAddr, cleanLast = self.cleanUpAddrIterator(cleanAck)

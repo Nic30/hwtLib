@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -10,7 +10,7 @@ from hwt.synthesizer.interfaceLevel.unit import Unit
 
 class SelfRefCntr(Unit):
     def _declr(self):
-        self.dt = vecT(8, False)
+        self.dt = Bits(8, signed=False)
 
         addClkRstn(self)
 

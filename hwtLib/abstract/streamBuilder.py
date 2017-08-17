@@ -1,8 +1,8 @@
+from hwt.code import If
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Rst_n, Handshaked
 from hwt.synthesizer.interfaceLevel.interfaceUtils.proxy import InterfaceProxy
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getClk, getRst
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.code import If
 
 
 class AbstractStreamBuilder(object):
@@ -276,14 +276,14 @@ class AbstractStreamBuilder(object):
             self.lastComp.selectOneHot ** outputSelSignalOrSequence
         else:
             seq = outputSelSignalOrSequence
-            t = vecT(self.lastComp.selectOneHot.data._dtype.bit_length())
+            t = Bits(self.lastComp.selectOneHot.data._dtype.bit_length())
             size = len(seq)
             ohIndexes = map(lambda x: 1 << x, seq)
             indexes = self.parent._sig(self.name + "split_seq",
                                        t[size],
                                        defVal=ohIndexes)
             actual = self.parent._reg(self.name + "split_seq_index",
-                                      vecT(size.bit_length()),
+                                      Bits(size.bit_length()),
                                       0)
             iin = self.lastComp.selectOneHot
             iin.data ** indexes[actual]

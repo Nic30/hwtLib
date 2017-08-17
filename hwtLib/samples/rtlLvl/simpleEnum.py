@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.enum import HEnum
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.netlistToRtl import netlistToVhdlStr
 
 
 def SimpleEnum():
-    t = vecT(8)
+    t = Bits(8)
     fsmT = HEnum('fsmT', ['send0', 'send1'])
 
     n = RtlNetlist()

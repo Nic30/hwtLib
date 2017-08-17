@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.interfaces.std import Signal
 from hwt.code import connect
+from hwt.hdlObjects.types.bits import Bits
+from hwt.interfaces.std import Signal, VectSignal
 from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
 class SimpleIndexingSplit(Unit):
     def _declr(self):
-        self.a = Signal(dtype=vecT(2))
+        self.a = VectSignal(2)
         self.b = Signal()
         self.c = Signal()
 
@@ -20,7 +20,7 @@ class SimpleIndexingSplit(Unit):
 
 class SimpleIndexingJoin(Unit):
     def _declr(self):
-        self.a = Signal(dtype=vecT(2))
+        self.a = VectSignal(2)
         self.b = Signal()
         self.c = Signal()
 
@@ -31,9 +31,9 @@ class SimpleIndexingJoin(Unit):
 
 class SimpleIndexingRangeJoin(Unit):
     def _declr(self):
-        self.a = Signal(dtype=vecT(4))
-        self.b = Signal(dtype=vecT(2))
-        self.c = Signal(dtype=vecT(2))
+        self.a = VectSignal(4)
+        self.b = VectSignal(2)
+        self.c = VectSignal(2)
 
     def _impl(self):
         self.a[2:0] ** self.b
@@ -42,12 +42,12 @@ class SimpleIndexingRangeJoin(Unit):
 
 class IndexingInernRangeSplit(Unit):
     def _declr(self):
-        self.a = Signal(dtype=vecT(4))
-        self.b = Signal(dtype=vecT(4))
+        self.a = VectSignal(4)
+        self.b = VectSignal(4)
 
     def _impl(self):
-        internA = self._sig("internA", vecT(2))
-        internB = self._sig("internB", vecT(2))
+        internA = self._sig("internA", Bits(2))
+        internB = self._sig("internB", Bits(2))
 
         internA ** self.a[2:]
         internB ** self.a[:2]
@@ -58,8 +58,8 @@ class IndexingInernRangeSplit(Unit):
 
 class IndexingInernSplit(Unit):
     def _declr(self):
-        self.a = Signal(dtype=vecT(2))
-        self.b = Signal(dtype=vecT(2))
+        self.a = VectSignal(2)
+        self.b = VectSignal(2)
 
     def _impl(self):
         internA = self._sig("internA")
@@ -80,7 +80,7 @@ class IndexingInernJoin(Unit):
         self.d = Signal()
 
     def _impl(self):
-        intern = self._sig("internSig", vecT(2))
+        intern = self._sig("internSig", Bits(2))
 
         intern[0] ** self.a
         intern[1] ** self.b

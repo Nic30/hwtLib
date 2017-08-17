@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.netlistToRtl import netlistToVhdlStr
 
 
 def SimpleRegister():
-    t = vecT(8)
+    t = Bits(8)
 
     n = RtlNetlist()
 

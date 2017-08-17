@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Signal, VldSynced
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -40,7 +40,7 @@ class UartRx(Unit):
 
         en = self._reg("en", defVal=0)
         first = self._reg("first", defVal=1)
-        RxD_data = self._reg("RxD_data", vecT(1 + 8))
+        RxD_data = self._reg("RxD_data", Bits(1 + 8))
         startBitWasNotStartbit = self._sig("startBitWasNotStartbit")
         # it can happen that there is just glitch on wire and bit was not startbit only begin was resolved wrong
         # eval because otherwise vhdl int overflows

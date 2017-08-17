@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.interfaces.std import Signal
 from hwt.code import Concat
+from hwt.interfaces.std import Signal, VectSignal
 from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
@@ -14,7 +13,7 @@ class SimpleConcat(Unit):
         self.a2 = Signal()
         self.a3 = Signal()
 
-        self.a_out = Signal(dtype=vecT(4))
+        self.a_out = VectSignal(4)
 
     def _impl(self):
         self.a_out ** Concat(self.a3, self.a2, self.a1, self.a0)

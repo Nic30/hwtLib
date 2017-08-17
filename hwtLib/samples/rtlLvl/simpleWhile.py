@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.netlistToRtl import netlistToVhdlStr
 
 
 def SimpleWhile():
-    t = vecT(8)
+    t = Bits(8)
     n = RtlNetlist()
 
     boundary = n.sig("boundary", t, defVal=8)

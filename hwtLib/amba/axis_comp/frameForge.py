@@ -1,6 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.bitmask import mask
 from hwt.code import log2ceil, Switch, If, isPow2, In
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.structIntf import StructIntf
@@ -83,7 +86,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
         if useCounter:
             # multiple word frame
             wordCntr_inversed = self._reg("wordCntr_inversed",
-                                          vecT(log2ceil(maxWordIndex + 1), False),
+                                          Bits(log2ceil(maxWordIndex + 1), False),
                                           defVal=maxWordIndex)
             wcntrSw = Switch(wordCntr_inversed)
 

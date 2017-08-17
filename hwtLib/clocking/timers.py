@@ -1,5 +1,5 @@
 from hwt.code import log2ceil, If, isPow2
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.pyUtils.arrayQuery import where
 
 
@@ -68,7 +68,7 @@ class TimerInfo(object):
             timer.tick = parentUnit._sig(timer.name + "timerTick%d" % timer.maxVal)
 
             r = parentUnit._reg(timer.name + "timerCntr%d" % timer.maxVal,
-                                vecT(log2ceil(maxVal + 1)),
+                                Bits(log2ceil(maxVal + 1)),
                                 maxVal
                                 )
             timer.cntrRegister = r
@@ -164,7 +164,7 @@ class TimerInfo(object):
                     tick = enableSig
             else:
                 r = parentUnit._reg(timer.name + "timerCntr%d" % timer.maxVal,
-                                    vecT(log2ceil(maxVal + 1)),
+                                    Bits(log2ceil(maxVal + 1)),
                                     maxVal
                                     )
                 timer.cntrRegister = r

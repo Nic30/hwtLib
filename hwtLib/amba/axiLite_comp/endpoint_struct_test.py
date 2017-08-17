@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.hdlObjects.constants import Time
 from hwt.hdlObjects.types.struct import HStruct
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC

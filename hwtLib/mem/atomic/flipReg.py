@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, c
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Signal, RegCntrl
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeOnce
@@ -52,8 +52,8 @@ class FlipRegister(Unit):
                )
 
     def _impl(self):
-        first = self._reg("first_reg", vecT(self.DATA_WIDTH), defVal=self.DEFAULT_VAL)
-        second = self._reg("second_reg", vecT(self.DATA_WIDTH), defVal=self.DEFAULT_VAL)
+        first = self._reg("first_reg", Bits(self.DATA_WIDTH), defVal=self.DEFAULT_VAL)
+        second = self._reg("second_reg", Bits(self.DATA_WIDTH), defVal=self.DEFAULT_VAL)
 
         If(self.select_sig,
            self.connectWriteIntf(second, first) + 

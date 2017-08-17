@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, log2ceil
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal, HandshakeSync
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -31,7 +31,7 @@ class StaticForLoopCntrl(Unit):
         break causes reset of counter
         """
 
-        counter = self._reg("counter", vecT(self.COUNTER_WIDTH), ITERATIONS - 1)
+        counter = self._reg("counter", Bits(self.COUNTER_WIDTH), ITERATIONS - 1)
 
         If(counter._eq(0),
             If(self.cntrl.vld,

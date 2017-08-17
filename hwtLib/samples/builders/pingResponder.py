@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import If
 from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.struct import HStruct

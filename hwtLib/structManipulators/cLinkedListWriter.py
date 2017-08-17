@@ -3,7 +3,8 @@
 
 from hwt.bitmask import mask
 from hwt.code import If, Concat, connect, log2ceil, FsmBuilder, power
-from hwt.hdlObjects.typeShortcuts import vecT, vec
+from hwt.hdlObjects.typeShortcuts import vec
+from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.enum import HEnum
 from hwt.interfaces.std import Handshaked, RegCntrl
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -117,7 +118,7 @@ class CLinkedListWriter(Unit):
         rIn = self.rDatapump.r
         rReq = self.rDatapump.req
 
-        addr_index_t = vecT(self.ADDR_WIDTH - self.ALIGN_BITS)
+        addr_index_t = Bits(self.ADDR_WIDTH - self.ALIGN_BITS)
         baseIndex = r("baseIndex_backup", addr_index_t)
         nextBaseIndex = r("nextBaseIndex", addr_index_t)
         t = HEnum("nextBaseFsm_t", ["uninitialized",
@@ -154,7 +155,7 @@ class CLinkedListWriter(Unit):
         return baseIndex, nextBaseIndex, nextBaseReady 
 
     def timeoutHandler(self, rst, incr):
-        timeoutCntr = self._reg("timeoutCntr", vecT(log2ceil(self.TIMEOUT) + 1, signed=False), defVal=self.TIMEOUT)
+        timeoutCntr = self._reg("timeoutCntr", Bits(log2ceil(self.TIMEOUT) + 1, signed=False), defVal=self.TIMEOUT)
         If(rst,
            timeoutCntr ** self.TIMEOUT
         ).Elif((timeoutCntr != 0) & incr,
@@ -164,7 +165,7 @@ class CLinkedListWriter(Unit):
 
     def queuePtrLogic(self, wrPtrIncrVal, wrPtrIncrEn):
         r, s = self._reg, self._sig
-        ringSpace_t = vecT(self.PTR_WIDTH)
+        ringSpace_t = Bits(self.PTR_WIDTH)
 
         # Logic of tail/head, 
         rdPtr = r("rdPtr", ringSpace_t, defVal=0)
@@ -196,7 +197,7 @@ class CLinkedListWriter(Unit):
         inBlockRemain_asPtrSize = fitTo(inBlockRemain, lenByPtrs)
 
         # wReq driver
-        ringSpace_t = vecT(self.PTR_WIDTH)
+        ringSpace_t = Bits(self.PTR_WIDTH)
         constraingLen = s("constraingSpace", ringSpace_t)
 
         If(inBlockRemain_asPtrSize < lenByPtrs,
@@ -257,10 +258,10 @@ class CLinkedListWriter(Unit):
         bufferHasData = s("bufferHasData")
         bufferHasData ** (f.size > (BURST_LEN - 1))
         # we are counting base next addr as item as well
-        addr_index_t = vecT(self.ADDR_WIDTH - self.ALIGN_BITS)
+        addr_index_t = Bits(self.ADDR_WIDTH - self.ALIGN_BITS)
         baseIndex = r("baseIndex", addr_index_t)
 
-        dataCntr_t = vecT(log2ceil(BURST_LEN + 1), signed=False)
+        dataCntr_t = Bits(log2ceil(BURST_LEN + 1), signed=False)
         dataCntr = r("dataCntr", dataCntr_t, defVal=0)  # counter of uploading data
         reqLen_backup = r("reqLen_backup", w.req.len._dtype, defVal=0)
 
@@ -291,7 +292,7 @@ class CLinkedListWriter(Unit):
         timeout ** self.timeoutHandler(fsm != fsm_t.idle,
                                        (f.size != 0) & queueHasSpace)
 
-        inBlock_t = vecT(log2ceil(self.ITEMS_IN_BLOCK + 1))
+        inBlock_t = Bits(log2ceil(self.ITEMS_IN_BLOCK + 1))
         inBlockRemain = r("inBlockRemain_reg", inBlock_t, defVal=self.ITEMS_IN_BLOCK)
 
         wReqEn = fsm._eq(fsm_t.reqPending)

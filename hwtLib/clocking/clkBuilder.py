@@ -1,8 +1,8 @@
 from hwt.code import If, log2ceil
-from hwt.hdlObjects.typeShortcuts import vecT
 from hwt.hdlObjects.types.defs import BIT
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
+from hwt.hdlObjects.types.bits import Bits
 
 
 class ClkBuilder(object):
@@ -105,7 +105,7 @@ class ClkBuilder(object):
                                     enableSig=sampleTick,
                                     rstSig=rstSig)
         oversampleCntr = self.parent._reg(n + "_oversample%d_cntr" % (sCnt),
-                                          vecT(log2ceil(sampleCount) + 1, False),
+                                          Bits(log2ceil(sampleCount) + 1, False),
                                           defVal=0)
 
         if rstSig is None:

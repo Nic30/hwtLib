@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.hdlObjects.types.enum import HEnum
-from hwt.interfaces.std import Signal
-from hwt.interfaces.utils import addClkRstn
 from hwt.code import FsmBuilder, Switch, If
+from hwt.hdlObjects.types.bits import Bits
+from hwt.hdlObjects.types.enum import HEnum
+from hwt.interfaces.std import Signal, VectSignal
+from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.shortcuts import toRtl
 
@@ -15,7 +15,7 @@ class FsmExample(Unit):
         addClkRstn(self)
         self.a = Signal()
         self.b = Signal()
-        self.dout = Signal(dtype=vecT(3))
+        self.dout = VectSignal(3)
 
     def _impl(self):
         stT = HEnum("st_t", ["a", "b", "aAndB"])
@@ -52,7 +52,7 @@ class HadrcodedFsmExample(FsmExample):
         b = self.b
         out = self.dout
 
-        st = self._reg("st", vecT(3), 1)
+        st = self._reg("st", Bits(3), 1)
 
         If(st._eq(1),
             If(a & b,

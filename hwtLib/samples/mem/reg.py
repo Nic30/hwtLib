@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.types.defs import BIT
-from hwt.interfaces.std import Signal
-from hwt.interfaces.utils import addClkRst, propagateClkRst
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.code import If, Concat
-from hwt.hdlObjects.typeShortcuts import vecT
-
 """
 :note: everything in hwtLib.samples is just example
     and it is usually more elegant way to do this
 """
+
+from hwt.code import If, Concat
+from hwt.hdlObjects.types.bits import Bits
+from hwt.hdlObjects.types.defs import BIT
+from hwt.interfaces.std import Signal
+from hwt.interfaces.utils import addClkRst, propagateClkRst
+from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
 class DReg(Unit):
@@ -70,7 +70,7 @@ class DDR_Reg(Unit):
         addClkRst(self)
 
         self.din = Signal(dtype=BIT)
-        self.dout = Signal(dtype=vecT(2))
+        self.dout = Bits(2)
 
     def _impl(self):
         din = self.din

@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.hdlObjects.constants import Time
 from hwt.interfaces.std import BramPort_withoutClk, VldSynced, RegCntrl, \
     VectSignal, Signal

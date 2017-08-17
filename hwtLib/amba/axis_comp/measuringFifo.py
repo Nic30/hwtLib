@@ -3,7 +3,7 @@
 
 from hwt.bitmask import mask
 from hwt.code import If, connect, Concat, log2ceil, SwitchLogic
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -57,7 +57,7 @@ class AxiS_measuringFifo(Unit):
         db = self.dataBuff
 
         wordCntr = self._reg("wordCntr",
-                             vecT(log2ceil(self.MAX_LEN) + 1),
+                             Bits(log2ceil(self.MAX_LEN) + 1),
                              defVal=0)
         errorAlignment = self._reg("errorAlignment_reg", defVal=0)
         self.errorAlignment ** errorAlignment
@@ -71,7 +71,7 @@ class AxiS_measuringFifo(Unit):
                 wordCntr ** (wordCntr + 1)
             )
         )
-        rem = self._sig("rem", vecT(log2ceil(STRB_BITS)))
+        rem = self._sig("rem", Bits(log2ceil(STRB_BITS)))
         SwitchLogic(
             cases=[
                 (dIn.strb[i], rem ** (0 if i == STRB_BITS - 1 else i + 1))
