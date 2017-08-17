@@ -19,16 +19,16 @@ class Expr2CondTC(unittest.TestCase):
     def test_signalTypes(self):
         self.assertEqual(self.a.defaultVal.vldMask, 0)
 
-    def test_STD_LOGIC2BoolConversion(self):
+    def test_bit2BoolConversion(self):
         e = self.a
-        cond = e._dtype.convert(e, BOOL)
+        cond = e._auto_cast(BOOL)
         self.assertTrue(cond.origin.operator == AllOps.EQ)
         self.assertEqual(cond.origin.operands[0], self.a, 1)
 
     def test_NotAnd(self):
         e = ~(self.a & self.b)
         self.assertEqual(e.origin.operator, AllOps.NOT)
-        cond = e._convert(BOOL)
+        cond = e._auto_cast(BOOL)
 
         self.assertEqual(cond.origin.operator, AllOps.EQ)
         _e = cond.origin.operands[0]

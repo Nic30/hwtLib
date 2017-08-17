@@ -84,7 +84,7 @@ class Showcase0(Unit):
         b = self.b
 
         # ** is overloaded to do assignment
-        self.c ** (a + b._convert(a._dtype))
+        self.c ** (a + b._auto_cast(a._dtype))
 
         # width of signals is not same, this would raise TypeError on regular assignment,
         # this behavior can be overriden by calling connect with fit=True

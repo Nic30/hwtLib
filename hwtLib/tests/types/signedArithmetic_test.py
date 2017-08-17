@@ -230,13 +230,13 @@ class SignedArithmeticTC(unittest.TestCase):
         w = t.bit_length()
         ut = Bits(w)
 
-        self.assertEqual(int(t.fromPy(-1)._convert(ut)), mask(w))
+        self.assertEqual(int(t.fromPy(-1)._auto_cast(ut)), mask(w))
         self.assertEqual(int(t.fromPy(-1)._unsigned()), mask(w))
         self.assertEqual(int(t.fromPy(-1)._vec()), mask(w))
-        self.assertEqual(int(t.fromPy(1)._convert(ut)), 1)
-        self.assertEqual(int(t.fromPy(0)._convert(ut)), 0)
-        self.assertEqual(int(ut.fromPy(1)._convert(t)), 1)
-        self.assertEqual(int(ut.fromPy(mask(w))._convert(t)), -1)
+        self.assertEqual(int(t.fromPy(1)._auto_cast(ut)), 1)
+        self.assertEqual(int(t.fromPy(0)._auto_cast(ut)), 0)
+        self.assertEqual(int(ut.fromPy(1)._auto_cast(t)), 1)
+        self.assertEqual(int(ut.fromPy(mask(w))._auto_cast(t)), -1)
         self.assertEqual(int(ut.fromPy(mask(w))._signed()), -1)
 
     def test_8b_mul(self, t=int8_t):
