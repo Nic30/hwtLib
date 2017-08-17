@@ -7,9 +7,8 @@
 """
 
 from hwt.code import If, Concat
-from hwt.hdlObjects.types.bits import Bits
 from hwt.hdlObjects.types.defs import BIT
-from hwt.interfaces.std import Signal
+from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRst, propagateClkRst
 from hwt.synthesizer.interfaceLevel.unit import Unit
 
@@ -24,8 +23,8 @@ class DReg(Unit):
     def _declr(self):
         addClkRst(self)
 
-        self.din = Signal(dtype=BIT)
-        self.dout = Signal(dtype=BIT)
+        self.din = Signal()
+        self.dout = Signal()
 
     def _impl(self):
         internReg = self._reg("internReg", BIT, defVal=False)
@@ -70,7 +69,7 @@ class DDR_Reg(Unit):
         addClkRst(self)
 
         self.din = Signal(dtype=BIT)
-        self.dout = Bits(2)
+        self.dout = VectSignal(2)
 
     def _impl(self):
         din = self.din
