@@ -22,7 +22,7 @@ class ArrayBuff_writer_TC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.doSim(40 * 10 * Time.ns)
+        self.doSim(10 * 10 * Time.ns)
         self.assertEqual(len(u.wDatapump.req._ag.data), 0)
         self.assertEqual(len(u.wDatapump.w._ag.data), 0)
 
@@ -229,7 +229,7 @@ class ArrayBuff_writer_TC(SimTestCase):
         # self.randomize(u.req)
         self.randomize(u.wDatapump.ack)
 
-        self.doSim(N * 100 * Time.ns)
+        self.doSim(N * 40 * Time.ns)
 
         self.assertEmpty(u.items._ag.data)
         d = m.getArray(BASE, self.DATA_WIDTH // 8, self.ITEMS)
