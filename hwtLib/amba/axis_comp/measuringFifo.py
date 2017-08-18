@@ -25,7 +25,8 @@ class AxiS_measuringFifo(Unit):
         Fifo._config(self)
         self.SIZES_BUFF_DEPTH = Param(16)
         self.MAX_LEN = Param((2048 // 8) - 1)
-
+        self.EXPORT_ALIGNMENT_ERROR = Param(False)
+        
     def getAlignBitsCnt(self):
         return log2ceil(self.DATA_WIDTH // 8).val
 
@@ -46,7 +47,9 @@ class AxiS_measuringFifo(Unit):
         sb = self.sizesBuff = HandshakedFifo(Handshaked)
         sb.DEPTH.set(self.SIZES_BUFF_DEPTH)
         sb.DATA_WIDTH.set(self.sizes.DATA_WIDTH.get())
-        self.errorAlignment = Signal()
+        
+        if self.EXPORT_ALIGNMENT_ERROR:
+            self.errorAlignment = Signal()
 
     def _impl(self):
         propagateClkRstn(self)
@@ -59,8 +62,6 @@ class AxiS_measuringFifo(Unit):
         wordCntr = self._reg("wordCntr",
                              Bits(log2ceil(self.MAX_LEN) + 1),
                              defVal=0)
-        errorAlignment = self._reg("errorAlignment_reg", defVal=0)
-        self.errorAlignment ** errorAlignment
 
         overflow = wordCntr._eq(self.MAX_LEN)
         last = dIn.last | overflow
@@ -78,12 +79,16 @@ class AxiS_measuringFifo(Unit):
                 for i in reversed(range(STRB_BITS))],
             default=[
                 rem ** 0,
-                If(dIn.valid,
-                   errorAlignment ** 1
-                )
+
             ]
         )
-
+        if self.EXPORT_ALIGNMENT_ERROR:
+            errorAlignment = self._reg("errorAlignment_reg", defVal=0)
+            self.errorAlignment ** errorAlignment
+            If(dIn.valid & (dIn.strb != mask(STRB_BITS)) & ~dIn.last,
+               errorAlignment ** 1
+            )
+        
         length = self._sig("length", wordCntr._dtype)
         If(last & (dIn.strb != mask(STRB_BITS)),
             length ** wordCntr
@@ -109,4 +114,5 @@ class AxiS_measuringFifo(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = AxiS_measuringFifo()
+    u.EXPORT_ALIGNMENT_ERROR.set(True)
     print(toRtl(u))
