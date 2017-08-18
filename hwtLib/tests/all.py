@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import multiprocessing
 from unittest import TestLoader, TextTestRunner, TestSuite
 
 from hwt.simulator.hdlSimConfig import HdlSimConfig
@@ -350,7 +349,7 @@ if __name__ == '__main__':
 
     if useParallerlTest:
         # Run same tests across 4 processes
-        concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests(multiprocessing.cpu_count()))
+        concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests())
         runner.run(concurrent_suite)
     else:
         runner.run(suite)
