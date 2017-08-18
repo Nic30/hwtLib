@@ -196,7 +196,7 @@ END ARCHITECTURE rtl;"""
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(FrameTemplateTC('test_sWithStartPadding'))
+    # suite.addTest(FrameTmplTC('test_sWithStartPadding'))
     suite.addTest(unittest.makeSuite(DumpTestbenchTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

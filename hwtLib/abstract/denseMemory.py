@@ -366,7 +366,7 @@ class DenseMemory():
         Get HStruct from memory
         
         :param addr: address where get struct from
-        :param structT: instance of HStruct or FrameTemplate generated from it to resove structure of data
+        :param structT: instance of HStruct or FrameTmpl generated from it to resove structure of data
         :param bitAddr: optional bit precisse address is is not None param addr has to be None
         """
         if bitAddr is None:

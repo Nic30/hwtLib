@@ -42,9 +42,9 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             if name is None no input port is generated and space is filled with invalid values
             litle-endian encoding,
             supported types of interfaces are: Handshaked, Signal
-            can be also instance of FrameTemplate
+            can be also instance of FrameTmpl
         :param tmpl: instance of TransTmpl for this structT
-        :param frames: list of FrameTemplate instances for this tmpl
+        :param frames: list of FrameTmpl instances for this tmpl
         :note: if tmpl and frames are None they are resolved from structT parseTemplate
         :note: this unit can parse sequence of frames, if they are specified by "frames"
         :note: structT can contain fields with variable size like HStream
@@ -59,9 +59,9 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
         AxiSCompBase.__init__(self, axiSIntfCls)
 
     @staticmethod
-    def _mkFieldIntf(structIntf, frameTemplateItem):
+    def _mkFieldIntf(structIntf, frameTmplItem):
         p = Handshaked()
-        p.DATA_WIDTH.set(frameTemplateItem.dtype.bit_length())
+        p.DATA_WIDTH.set(frameTmplItem.dtype.bit_length())
         return p
 
     def _declr(self):

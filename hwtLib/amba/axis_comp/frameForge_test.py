@@ -13,7 +13,7 @@ from hwtLib.types.ctypes import uint64_t, uint32_t
 from math import inf
 from hwt.synthesizer.shortcuts import toRtl
 from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.frameTemplate import FrameTemplate
+from hwt.hdlObjects.frameTmpl import FrameTmpl
 
 
 s1field = HStruct(
@@ -49,7 +49,7 @@ class AxiS_frameForge_TC(SimTestCase):
                               trimPaddingWordsOnEnd=False,
                               randomized=True):
         tmpl = TransTmpl(structT)
-        frames = list(FrameTemplate.framesFromTransTmpl(
+        frames = list(FrameTmpl.framesFromTransTmpl(
                                      tmpl,
                                      DATA_WIDTH,
                                      maxFrameLen=maxFrameLen,
@@ -204,7 +204,7 @@ class AxiS_frameForge_TC(SimTestCase):
         structT = s2Pading
         self.DATA_WIDTH = 64
         tmpl = TransTmpl(structT)
-        frames = list(FrameTemplate.framesFromTransTmpl(
+        frames = list(FrameTmpl.framesFromTransTmpl(
                                      tmpl,
                                      self.DATA_WIDTH,
                                      maxPaddingWords=0,

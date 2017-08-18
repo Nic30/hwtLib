@@ -3,7 +3,7 @@ import unittest
 from hwt.hdlObjects.types.struct import HStruct
 from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
 from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.frameTemplate import FrameTemplate
+from hwt.hdlObjects.frameTmpl import FrameTmpl
 from hwtLib.types.net.eth import Eth2Header_t
 from hwtLib.types.net.ip import IPv4Header_t
 from hwt.hdlObjects.types.structUtils import HStruct_selectFields
@@ -42,7 +42,7 @@ s0 = HStruct(
         (uint64_t, "item1"),
      ), "struct0")
     )
-s0at64bit_str = """<FrameTemplate start:0, end:896
+s0at64bit_str = """<FrameTmpl start:0, end:896
      63                                                             0
      -----------------------------------------------------------------
 0    |                             item0                             |
@@ -62,7 +62,7 @@ s0at64bit_str = """<FrameTemplate start:0, end:896
      -----------------------------------------------------------------
 >"""
 
-s0at71bit_str = """<FrameTemplate start:0, end:923
+s0at71bit_str = """<FrameTmpl start:0, end:923
      70                                                                                                                                           0
      -----------------------------------------------------------------------------------------------------------------------------------------------
 0    |XXXXXXXXXXXX|                                                             item0                                                             |
@@ -86,7 +86,7 @@ s1 = HStruct(
             (uint32_t[5], "arr1")
             )
 
-s1_str = """<FrameTemplate start:0, end:384
+s1_str = """<FrameTmpl start:0, end:384
      63                                                             0
      -----------------------------------------------------------------
 0    |                            arr0[0]                            |
@@ -107,7 +107,7 @@ sWithPadding = HStruct(
                        (uint64_t, None)
                        )
 
-sWithPadding_str = """<FrameTemplate start:0, end:384
+sWithPadding_str = """<FrameTmpl start:0, end:384
      63                                                             0
      -----------------------------------------------------------------
 0    |                            item0_0                            |
@@ -119,14 +119,14 @@ sWithPadding_str = """<FrameTemplate start:0, end:384
      -----------------------------------------------------------------
 >""" 
 
-sWithPaddingMultiframe_str = [ """<FrameTemplate start:0, end:128
+sWithPaddingMultiframe_str = [ """<FrameTmpl start:0, end:128
      63                                                             0
      -----------------------------------------------------------------
 0    |                            item0_0                            |
 1    |                            item0_1                            |
      -----------------------------------------------------------------
 >""",
- """<FrameTemplate start:192, end:320
+ """<FrameTmpl start:192, end:320
      63                                                             0
      -----------------------------------------------------------------
 0    |                            item1_0                            |
@@ -142,7 +142,7 @@ sWithStartPadding = HStruct(
                        (uint64_t, "item1"),
                     )
 
-sWithStartPadding_strTrim = """<FrameTemplate start:128, end:256
+sWithStartPadding_strTrim = """<FrameTmpl start:128, end:256
      63                                                             0
      -----------------------------------------------------------------
 0    |                             item0                             |
@@ -150,7 +150,7 @@ sWithStartPadding_strTrim = """<FrameTemplate start:128, end:256
      -----------------------------------------------------------------
 >"""
 
-sWithStartPadding_strKept = """<FrameTemplate start:0, end:256
+sWithStartPadding_strKept = """<FrameTmpl start:0, end:256
      63                                                             0
      -----------------------------------------------------------------
 0    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
@@ -169,7 +169,7 @@ frameHeader = HStruct_selectFields(_frameHeader,
                                    {"eth": {"src", "dst"},
                                     "ipv4": {"src", "dst"},
                                     })
-frameHeader_str = """<FrameTemplate start:0, end:320
+frameHeader_str = """<FrameTmpl start:0, end:320
      63                                                             0
      -----------------------------------------------------------------
 0    |    eth.src    |                    eth.dst                    |
@@ -181,14 +181,14 @@ frameHeader_str = """<FrameTemplate start:0, end:320
 >"""
 
 frameHeader_split_str = [
-"""<FrameTemplate start:0, end:128
+"""<FrameTmpl start:0, end:128
      63                                                             0
      -----------------------------------------------------------------
 0    |    eth.src    |                    eth.dst                    |
 1    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|            eth.src            |
      -----------------------------------------------------------------
 >""",
-"""<FrameTemplate start:192, end:320
+"""<FrameTmpl start:192, end:320
      63                                                             0
      -----------------------------------------------------------------
 0    |   ipv4.dst    |           ipv4.src            |XXXXXXXXXXXXXXX|
@@ -197,14 +197,14 @@ frameHeader_split_str = [
 >"""
     ]
 
-s2 = s = HStruct(
+s2 = HStruct(
         (uint64_t, "item0"),
         (uint32_t, None),
         (uint64_t, "item5"),
         (uint32_t, None),
         )
 
-s2_oneFrame = """<FrameTemplate start:0, end:192
+s2_oneFrame = """<FrameTmpl start:0, end:192
      63                                                             0
      -----------------------------------------------------------------
 0    |                             item0                             |
@@ -214,25 +214,25 @@ s2_oneFrame = """<FrameTemplate start:0, end:192
 >"""
 
 
-class FrameTemplateTC(unittest.TestCase):
+class FrameTmplTC(unittest.TestCase):
     def test_s0at64bit(self):
         DW = 64
         tmpl = TransTmpl(s0)
-        frames = list(FrameTemplate.framesFromTransTmpl(tmpl, DW))
+        frames = list(FrameTmpl.framesFromTransTmpl(tmpl, DW))
         self.assertEqual(len(frames), 1)
         self.assertEqual(s0at64bit_str, frames[0].__repr__())
 
     def test_s0at71bit(self):
         DW = 71
         tmpl = TransTmpl(s0)
-        frames = list(FrameTemplate.framesFromTransTmpl(tmpl, DW))
+        frames = list(FrameTmpl.framesFromTransTmpl(tmpl, DW))
         self.assertEqual(len(frames), 1)
         self.assertEqual(s0at71bit_str, frames[0].__repr__(scale=2))
 
     def test_s1at64(self):
         DW = 64
         tmpl = TransTmpl(s1)
-        frames = list(FrameTemplate.framesFromTransTmpl(tmpl, DW))
+        frames = list(FrameTmpl.framesFromTransTmpl(tmpl, DW))
         self.assertEqual(len(frames), 1)
         self.assertEqual(s1_str, frames[0].__repr__())
 
@@ -243,7 +243,7 @@ class FrameTemplateTC(unittest.TestCase):
     def test_sWithPadding(self):
         DW = 64
         tmpl = TransTmpl(sWithPadding)
-        frames = FrameTemplate.framesFromTransTmpl(tmpl, DW)
+        frames = FrameTmpl.framesFromTransTmpl(tmpl, DW)
         frames = list(frames)
         self.assertEqual(len(frames), 1)
         self.assertEqual(sWithPadding_str, frames[0].__repr__())
@@ -251,7 +251,7 @@ class FrameTemplateTC(unittest.TestCase):
     def test_sWithPaddingMultiFrame(self):
         DW = 64
         tmpl = TransTmpl(sWithPadding)
-        frames = FrameTemplate.framesFromTransTmpl(
+        frames = FrameTmpl.framesFromTransTmpl(
                     tmpl,
                     DW,
                     maxPaddingWords=0,
@@ -265,7 +265,7 @@ class FrameTemplateTC(unittest.TestCase):
     def test_sWithStartPadding(self):
         DW = 64
         tmpl = TransTmpl(sWithStartPadding)
-        frames = FrameTemplate.framesFromTransTmpl(
+        frames = FrameTmpl.framesFromTransTmpl(
                     tmpl, DW,
                     maxPaddingWords=0,
                     trimPaddingWordsOnStart=True,
@@ -277,7 +277,7 @@ class FrameTemplateTC(unittest.TestCase):
     def test_sWithStartPaddingKept(self):
         DW = 64
         tmpl = TransTmpl(sWithStartPadding)
-        frames = FrameTemplate.framesFromTransTmpl(
+        frames = FrameTmpl.framesFromTransTmpl(
                     tmpl, DW,
                     maxPaddingWords=2,
                     trimPaddingWordsOnStart=True,
@@ -289,7 +289,7 @@ class FrameTemplateTC(unittest.TestCase):
     def test_frameHeader(self):
         DW = 64
         tmpl = TransTmpl(frameHeader)
-        frames = FrameTemplate.framesFromTransTmpl(tmpl, DW)
+        frames = FrameTmpl.framesFromTransTmpl(tmpl, DW)
         frames = list(frames)
         self.assertEqual(len(frames), 1)
         self.assertEqual(frameHeader_str, frames[0].__repr__())
@@ -297,7 +297,7 @@ class FrameTemplateTC(unittest.TestCase):
     def test_frameHeader_splited(self):
         DW = 64
         tmpl = TransTmpl(frameHeader)
-        frames = FrameTemplate.framesFromTransTmpl(
+        frames = FrameTmpl.framesFromTransTmpl(
                     tmpl, DW,
                     maxPaddingWords=0,
                     trimPaddingWordsOnStart=True,
@@ -312,7 +312,7 @@ class FrameTemplateTC(unittest.TestCase):
     def test_s2_oneFrame(self):
         DW = 64
         tmpl = TransTmpl(s2)
-        frames = FrameTemplate.framesFromTransTmpl(
+        frames = FrameTmpl.framesFromTransTmpl(
                     tmpl, DW,
                     )
         frames = list(frames)
@@ -322,7 +322,7 @@ class FrameTemplateTC(unittest.TestCase):
     def test_s2_oneFrame_tryToTrim(self):
         DW = 64
         tmpl = TransTmpl(s2)
-        frames = FrameTemplate.framesFromTransTmpl(
+        frames = FrameTmpl.framesFromTransTmpl(
                     tmpl, DW,
                     maxPaddingWords=0,
                     trimPaddingWordsOnStart=True,
@@ -332,9 +332,10 @@ class FrameTemplateTC(unittest.TestCase):
         self.assertEqual(len(frames), 1)
         self.assertEqual(repr(frames[0]), s2_oneFrame)
 
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(FrameTemplateTC('test_frameHeader_splited'))
-    suite.addTest(unittest.makeSuite(FrameTemplateTC))
+    # suite.addTest(FrameTmplTC('test_frameHeader_splited'))
+    suite.addTest(unittest.makeSuite(FrameTmplTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

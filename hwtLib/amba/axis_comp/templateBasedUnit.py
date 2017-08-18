@@ -1,4 +1,4 @@
-from hwt.hdlObjects.frameTemplate import FrameTemplate
+from hwt.hdlObjects.frameTmpl import FrameTmpl
 from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.pyUtils.arrayQuery import iter_with_last
@@ -14,7 +14,7 @@ class TemplateBasedUnit(Unit):
 
         if self._frames is None:
             DW = int(self.DATA_WIDTH)
-            frames = FrameTemplate.framesFromTransTmpl(self._tmpl,
+            frames = FrameTmpl.framesFromTransTmpl(self._tmpl,
                                                        DW)
             self._frames = list(frames)
 

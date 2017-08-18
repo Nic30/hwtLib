@@ -4,7 +4,7 @@
 from math import ceil
 
 from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.frameTemplate import FrameTemplate
+from hwt.hdlObjects.frameTmpl import FrameTmpl
 from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
@@ -32,7 +32,7 @@ class EthAddrUpdaterTC(SimTestCase):
 
         m = Axi3DenseMem(u.clk, u.axi_m)
         tmpl = TransTmpl(frameHeader)
-        frameTmpl = list(FrameTemplate.framesFromTransTmpl(tmpl, DW))[0]
+        frameTmpl = list(FrameTmpl.framesFromTransTmpl(tmpl, DW))[0]
 
         def randFrame():
             rand = self._rand.getrandbits

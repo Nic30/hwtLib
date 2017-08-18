@@ -38,7 +38,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
         :param axiSCls: class of input axi stream interface
         :param structT: instance of HStruct which specifies data format to download
         :param tmpl: instance of TransTmpl for this structT
-        :param frames: list of FrameTemplate instances for this tmpl
+        :param frames: list of FrameTmpl instances for this tmpl
         :note: if tmpl and frames are None they are resolved from structT parseTemplate
         :note: this unit can parse sequence of frames, if they are specified by "frames"
         :attention: structT can not contain fields with variable size like HStream

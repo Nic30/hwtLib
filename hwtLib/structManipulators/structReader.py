@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import StaticForEach, connect
-from hwt.hdlObjects.frameTemplate import FrameTemplate
+from hwt.hdlObjects.frameTmpl import FrameTmpl
 from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.hdlObjects.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, Signal
@@ -55,7 +55,7 @@ class StructReader(AxiS_frameParser):
         """
         :param structT: instance of HStruct which specifies data format to download
         :param tmpl: instance of TransTmpl for this structT
-        :param frames: list of FrameTemplate instances for this tmpl
+        :param frames: list of FrameTmpl instances for this tmpl
         :note: if tmpl and frames are None they are resolved from structT parseTemplate
         :note: this unit can parse sequence of frames, if they are specified by "frames"
         :attention: interfaces for each field in struct will be dynamically created
@@ -86,7 +86,7 @@ class StructReader(AxiS_frameParser):
             self._tmpl = TransTmpl(self._structT)
         if self._frames is None:
             DW = int(self.DATA_WIDTH)
-            frames = FrameTemplate.framesFromTransTmpl(
+            frames = FrameTmpl.framesFromTransTmpl(
                         self._tmpl,
                         DW,
                         trimPaddingWordsOnStart=True,

@@ -8,7 +8,7 @@ from hwtLib.structManipulators.structReader import StructReader
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwt.hdlObjects.constants import Time
 from hwt.synthesizer.vectorUtils import iterBits
-from hwt.hdlObjects.frameTemplate import FrameTemplate
+from hwt.hdlObjects.frameTmpl import FrameTmpl
 from hwt.hdlObjects.transTmpl import TransTmpl
 
 
@@ -89,7 +89,7 @@ class StructReaderTC(SimTestCase):
     def test_multiframe(self):
         tmpl = TransTmpl(s0)
         DATA_WIDTH = 64
-        frames = list(FrameTemplate.framesFromTransTmpl(
+        frames = list(FrameTmpl.framesFromTransTmpl(
                              tmpl,
                              DATA_WIDTH,
                              maxPaddingWords=0,
