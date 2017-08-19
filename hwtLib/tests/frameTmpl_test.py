@@ -1,12 +1,13 @@
 import unittest
 
 from hwt.hdlObjects.types.struct import HStruct
-from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
+from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t, uint8_t
 from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.hdlObjects.frameTmpl import FrameTmpl
 from hwtLib.types.net.eth import Eth2Header_t
 from hwtLib.types.net.ip import IPv4Header_t
 from hwt.hdlObjects.types.structUtils import HStruct_selectFields
+from hwt.hdlObjects.types.union import HUnion
 
 s_basic = HStruct(
     (uint64_t, "item0"),
@@ -214,6 +215,20 @@ s2_oneFrame = """<FrameTmpl start:0, end:192
 >"""
 
 
+struct_with_union = HStruct(
+                       (HUnion(
+                         (uint8_t, "a"),
+                         (uint8_t, "b"),
+                        ), "u")
+                    )
+
+struct_with_union_str = """<FrameTmpl start:0, end:64
+     63                                                             0
+     -----------------------------------------------------------------
+0    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|   u   |
+     -----------------------------------------------------------------
+>"""
+
 class FrameTmplTC(unittest.TestCase):
     def test_s0at64bit(self):
         DW = 64
@@ -332,6 +347,15 @@ class FrameTmplTC(unittest.TestCase):
         self.assertEqual(len(frames), 1)
         self.assertEqual(repr(frames[0]), s2_oneFrame)
 
+    def test_struct_with_union(self):
+        DW = 64
+        tmpl = TransTmpl(struct_with_union)
+        frames = FrameTmpl.framesFromTransTmpl(
+                    tmpl, DW,
+                    )
+        frames = list(frames)
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(repr(frames[0]), struct_with_union_str)
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
