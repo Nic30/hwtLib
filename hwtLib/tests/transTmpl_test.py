@@ -1,7 +1,24 @@
 import unittest
 from hwt.hdlObjects.types.struct import HStruct
-from hwtLib.types.ctypes import uint8_t
+from hwtLib.types.ctypes import uint8_t, uint16_t
 from hwt.hdlObjects.transTmpl import TransTmpl
+from hwt.hdlObjects.types.union import HUnion
+
+union0 = HUnion(
+            (HStruct(
+                (uint8_t, "a0"),
+                (uint8_t, "a1"),
+             ), "a"),
+            (uint16_t, "b"),
+            )
+union0_str = """<TransTmpl start:0, end:16
+    <TransTmpl name:a, start:0, end:16
+        <TransTmpl name:a0, start:0, end:8>
+        <TransTmpl name:a1, start:8, end:16>
+    >
+    <OR>
+    <TransTmpl name:b, start:0, end:16>
+>"""
 
 
 class TransTmpl_TC(unittest.TestCase):
@@ -16,6 +33,20 @@ class TransTmpl_TC(unittest.TestCase):
         t = HStruct((uint8_t[4], "a"))
         trans = TransTmpl(t)
         self.assertEqual(len(list(trans.walkFlatten())), 4)
+
+    def test__repr__union(self):
+        s = repr(TransTmpl(union0))
+        self.assertEqual(s, union0_str)
+
+    def test_walkFlatten_union(self):
+        trans = TransTmpl(union0)
+        fl = list(trans.walkFlatten())
+        self.assertEqual(len(fl), 1)
+        children = list(fl[0].walkFlattenChilds())
+        self.assertEqual(len(children), 2)
+
+        self.assertEqual(len(list(children[0])), 2)
+        self.assertEqual(len(list(children[1])), 1)
 
 
 if __name__ == "__main__":

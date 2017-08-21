@@ -1,12 +1,13 @@
 import unittest
 
 from hwt.hdlObjects.types.struct import HStruct
-from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
+from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t, uint8_t
 from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.hdlObjects.frameTmpl import FrameTmpl
 from hwtLib.types.net.eth import Eth2Header_t
 from hwtLib.types.net.ip import IPv4Header_t
 from hwt.hdlObjects.types.structUtils import HStruct_selectFields
+from hwt.hdlObjects.types.union import HUnion
 
 s_basic = HStruct(
     (uint64_t, "item0"),
@@ -213,6 +214,35 @@ s2_oneFrame = """<FrameTmpl start:0, end:192
      -----------------------------------------------------------------
 >"""
 
+union0 = HUnion(
+            (HStruct(
+                (uint8_t, "a0"),
+                (uint8_t, "a1"),
+             ), "a"),
+            (uint16_t, "b"),
+            )
+
+union0_8b_str = """<FrameTmpl start:0, end:16
+     7      0
+     ---------
+0    |<union>|
+0    | a.a0  |
+0    |   b   |
+1    |<union>|
+1    | a.a1  |
+1    |   b   |
+     ---------
+>"""
+
+union0_16b_str = """<FrameTmpl start:0, end:16
+     15             0
+     -----------------
+0    |    <union>    |
+0    | a.a1  | a.a0  |
+0    |       b       |
+     -----------------
+>"""
+
 
 class FrameTmplTC(unittest.TestCase):
     def test_s0at64bit(self):
@@ -332,10 +362,26 @@ class FrameTmplTC(unittest.TestCase):
         self.assertEqual(len(frames), 1)
         self.assertEqual(repr(frames[0]), s2_oneFrame)
 
+    def test_union0at8b(self):
+        DW = 8
+        tmpl = TransTmpl(union0)
+        frames = FrameTmpl.framesFromTransTmpl(tmpl, DW)
+        frames = list(frames)
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(repr(frames[0]), union0_8b_str)
+
+    def test_union0at16b(self):
+        DW = 16
+        tmpl = TransTmpl(union0)
+        frames = FrameTmpl.framesFromTransTmpl(tmpl, DW)
+        frames = list(frames)
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(repr(frames[0]), union0_16b_str)
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(FrameTmplTC('test_frameHeader_splited'))
+    # suite.addTest(FrameTmplTC('test_union0at16b'))
     suite.addTest(unittest.makeSuite(FrameTmplTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
