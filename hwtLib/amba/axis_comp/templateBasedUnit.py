@@ -1,7 +1,7 @@
 from hwt.hdlObjects.frameTmpl import FrameTmpl
 from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.pyUtils.arrayQuery import iter_with_last
+from hwt.synthesizer.interfaceLevel.unit import Unit
 
 
 class TemplateBasedUnit(Unit):
@@ -15,7 +15,7 @@ class TemplateBasedUnit(Unit):
         if self._frames is None:
             DW = int(self.DATA_WIDTH)
             frames = FrameTmpl.framesFromTransTmpl(self._tmpl,
-                                                       DW)
+                                                   DW)
             self._frames = list(frames)
 
     def chainFrameWords(self):
