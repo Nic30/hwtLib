@@ -124,7 +124,7 @@ from hwtLib.structManipulators.structWriter_test import StructWriter_TC
 from hwtLib.tests.dumpTestBench_test import DumpTestbenchTC
 from hwtLib.tests.fileUtils_test import FileUtilsTC
 from hwtLib.tests.frameTmpl_test import FrameTmplTC
-from hwtLib.tests.hstructVal_test import HStructValTC
+from hwtLib.tests.types.hstructVal_test import HStructValTC
 from hwtLib.tests.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.rdSynced_agent_test import RdSynced_agent_TC
 from hwtLib.tests.serializerModes_test import SerializerModes_TC

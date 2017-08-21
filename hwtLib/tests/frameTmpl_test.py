@@ -214,6 +214,22 @@ s2_oneFrame = """<FrameTmpl start:0, end:192
      -----------------------------------------------------------------
 >"""
 
+struct_with_union = HStruct(
+                       (HUnion(
+                         (uint8_t, "a"),
+                         (uint8_t, "b"),
+                        ), "u")
+                    )
+
+struct_with_union_str = """<FrameTmpl start:0, end:64
+     63                                                             0
+     -----------------------------------------------------------------
+0    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|<union>|
+0    |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|  u.a  |
+0    |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|  u.b  |
+     -----------------------------------------------------------------
+>"""
+
 union0 = HUnion(
             (HStruct(
                 (uint8_t, "a0"),
@@ -361,6 +377,16 @@ class FrameTmplTC(unittest.TestCase):
         frames = list(frames)
         self.assertEqual(len(frames), 1)
         self.assertEqual(repr(frames[0]), s2_oneFrame)
+
+    def test_struct_with_union(self):
+        DW = 64
+        tmpl = TransTmpl(struct_with_union)
+        frames = FrameTmpl.framesFromTransTmpl(
+                    tmpl, DW,
+                    )
+        frames = list(frames)
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(repr(frames[0]), struct_with_union_str)
 
     def test_union0at8b(self):
         DW = 8
