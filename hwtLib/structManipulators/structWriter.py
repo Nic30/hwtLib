@@ -52,11 +52,8 @@ class StructWriter(StructReader):
         self.MAX_OVERLAP = Param(2)
         self.WRITE_ACK = Param(False)
 
-    def _createInterfaceForField(self, structT, fInfo):
-        i = Handshaked()
-        i.DATA_WIDTH.set(fInfo.dtype.bit_length())
-        fInfo.interface = i
-        return i
+    def _createInterfaceForField(self, parent, structField):
+        return AxiS_frameForge._mkFieldIntf(parent, structField)
 
     def _declr(self):
         addClkRstn(self)
