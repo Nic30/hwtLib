@@ -13,7 +13,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf, AxiWDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.handshaked.streamNode import streamSync, streamAck
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 class CLinkedListWriter(Unit):
@@ -234,15 +234,11 @@ class CLinkedListWriter(Unit):
                 inBlockRemain ** (inBlockRemain - (fitTo(reqLen, inBlockRemain) + 1))
             )
         ).Elif(dataMoveEn,
-            If(streamAck(masters=[f], slaves=[w]),
+            If(StreamNode(masters=[f], slaves=[w]).ack(),
                dataCntr_out ** (dataCntr_out - 1)
             )
         )
-        streamSync(masters=[f], slaves=[w],
-            extraConds={
-                f : dataMoveEn,
-                w : dataMoveEn
-            })
+        StreamNode(masters=[f], slaves=[w]).sync(dataMoveEn)
         w.data ** f.data
         w.last ** dataCntr_out._eq(0)
         w.strb ** mask(w.strb._dtype.bit_length())

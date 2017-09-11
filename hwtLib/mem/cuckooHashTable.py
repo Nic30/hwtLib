@@ -11,7 +11,7 @@ from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import VectSignal, HandshakeSync
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.param import Param
-from hwtLib.handshaked.streamNode import streamAck, streamSync
+from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf
 
@@ -182,7 +182,7 @@ class CuckooHashTable(HashTableCore):
                 ins.vld ** Or(state._eq(fsm_t.cleaning),
                               state._eq(fsm_t.lookupResAck) & 
                               insertTargetOH[i] & 
-                              ~isExternLookup)
+                              ~ isExternLookup)
                 ins.vldFlag ** stash.vldFlag
 
     def lookupResOfTablesDriver(self, resRead, resAck):
@@ -193,12 +193,12 @@ class CuckooHashTable(HashTableCore):
 
         res = list(map(lambda t: t.lookupRes, tables))
         # synchronize all lookupRes from all tables
-        streamSync(masters=res, extraConds={lr: resAck for lr in res})
+        StreamNode(masters=res).sync(resAck)
 
         insertFinal = self._reg("insertFinal")
         # select empty space or victim witch which current insert item
         # should be swapped with
-        lookupResAck = streamAck(masters=map(lambda t: t.lookupRes, tables))
+        lookupResAck = StreamNode(masters=map(lambda t: t.lookupRes, tables)).ack()
         insertFoundOH = list(map(lambda t: t.lookupRes.found, tables))
         isEmptyOH = list(map(lambda t:~t.lookupRes.occupied, tables))
         _insertFinal = Or(*insertFoundOH, *isEmptyOH)
@@ -256,7 +256,7 @@ class CuckooHashTable(HashTableCore):
         priority = [self.clean, self.delete, self.insert, lookup]
         for i, intf in enumerate(priority):
             withLowerPrio = priority[:i]
-            intf.rd ** And(isIdle, *map(lambda x: ~x.vld, withLowerPrio))
+            intf.rd ** And(isIdle, *map(lambda x:~x.vld, withLowerPrio))
 
     def lookupOfTablesDriver(self, state, tableKey):
         fsm_t = state._dtype
@@ -265,12 +265,7 @@ class CuckooHashTable(HashTableCore):
 
         # activate lookup only in lookup state
         en = state._eq(fsm_t.lookup)
-        extraConds = {}
-        for t in self.tables:
-            extraConds[t.lookup] = en
-
-        streamSync(slaves=[t.lookup for t in self.tables],
-                   extraConds=extraConds)
+        StreamNode(slaves=[t.lookup for t in self.tables]).sync(en)
 
     def lookupResDriver(self, state, lookupOrigin, lookupAck, insertFoundOH):
         """
@@ -313,8 +308,8 @@ class CuckooHashTable(HashTableCore):
          insertFound,
          targetOH) = self.lookupResOfTablesDriver(lookupResRead,
                                                   lookupResNext)
-        lookupAck = streamAck(slaves=map(lambda t: t.lookup, tables))
-        insertAck = streamAck(slaves=map(lambda t: t.insert, tables))
+        lookupAck = StreamNode(slaves=map(lambda t: t.lookup, tables)).ack()
+        insertAck = StreamNode(slaves=map(lambda t: t.insert, tables)).ack()
 
         fsm_t = HEnum("insertFsm_t", ["idle", "cleaning",
                                      "lookup", "lookupResWaitRd",
@@ -346,7 +341,7 @@ class CuckooHashTable(HashTableCore):
                     (~isExternLookup & insertAck & ~insertFinal, fsm_t.lookup)
             ).stateReg
 
-        cleanAck ** (streamAck(slaves=[t.insert for t in tables]) & 
+        cleanAck ** (StreamNode(slaves=[t.insert for t in tables]).ack() & 
                      state._eq(fsm_t.cleaning))
         lookupResRead ** state._eq(fsm_t.lookupResWaitRd)
         lookupResNext ** And(state._eq(fsm_t.lookupResAck),

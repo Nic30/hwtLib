@@ -8,7 +8,7 @@ from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.ramAsHs import RamAsHs
 from hwtLib.handshaked.reg import HandshakedReg
-from hwtLib.handshaked.streamNode import streamSync
+from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.crcComb import CrcComb
 from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.hashTable_intf import InsertIntf, LookupKeyIntf, \
@@ -162,12 +162,12 @@ class HashTableCore(Unit):
             inputSlaves.append(origHashReg.dataIn)
             outputMasters.append(origHashReg.dataOut)
 
-        streamSync(masters=[lookup],
-                   slaves=inputSlaves)
+        StreamNode(masters=[lookup],
+                   slaves=inputSlaves).sync()
 
         # propagate loaded data
-        streamSync(masters=outputMasters,
-                   slaves=[res])
+        StreamNode(masters=outputMasters,
+                   slaves=[res]).sync()
 
         key, data, vldFlag = self.parseItem(ramR.data.data)
 
@@ -195,7 +195,7 @@ class HashTableCore(Unit):
 
         ramW.data ** rec
         ramW.addr ** In.hash
-        streamSync(masters=[In], slaves=[ramW])
+        StreamNode(masters=[In], slaves=[ramW]).sync()
 
     def _impl(self):
         propagateClkRstn(self)

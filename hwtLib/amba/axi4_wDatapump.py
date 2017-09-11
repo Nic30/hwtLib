@@ -12,7 +12,7 @@ from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
 from hwtLib.amba.axi_datapump_base import Axi_datapumpBase
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.handshaked.streamNode import streamSync, streamAck
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 class WFifoIntf(Handshaked):
@@ -96,9 +96,9 @@ class Axi_wDatapump(Axi_datapumpBase):
                        lastReqDispatched ** 1
                     )
                 ),
-                streamSync(masters=[req],
+                StreamNode(masters=[req],
                            slaves=[aw, wInfo],
-                           extraConds={aw: ~wErrFlag}),
+                           extraConds={aw: ~wErrFlag}).sync(),
             ).Else(
                 _id ** req_idBackup,
                 aw.addr ** addrBackup,
@@ -107,11 +107,11 @@ class Axi_wDatapump(Axi_datapumpBase):
                 ).Else(
                     connect(lenDebth, aw.len, fit=True)
                 ),
-                streamSync(slaves=[aw, wInfo], extraConds={aw:~wErrFlag}),
+                StreamNode(slaves=[aw, wInfo], extraConds={aw:~wErrFlag}).sync(),
 
                 req.rd ** 0,
 
-                If(streamAck(slaves=[wInfo, aw]),
+                If(StreamNode(slaves=[wInfo, aw]).ack(),
                    addrBackup ** (addrBackup + self.getBurstAddrOffset()),
                    lenDebth ** (lenDebth - (LEN_MAX+1)),
                    If(lenDebth <= LEN_MAX,
@@ -127,7 +127,7 @@ class Axi_wDatapump(Axi_datapumpBase):
             wInfo.id ** req.id
             aw.addr ** req.addr
             connect(req.len, aw.len, fit=True)
-            streamSync(masters=[req], slaves=[aw, wInfo])
+            StreamNode(masters=[req], slaves=[aw, wInfo]).sync()
 
     def axiWHandler(self, wErrFlag):
         w = self.w
@@ -144,7 +144,7 @@ class Axi_wDatapump(Axi_datapumpBase):
             wordCntr = self._reg("wWordCntr", self.a.len._dtype, 0)
             doSplit = wordCntr._eq(self.getAxiLenMax()) | wIn.last
 
-            If(streamAck([wInfo, wIn], [bInfo, w]),
+            If(StreamNode([wInfo, wIn], [bInfo, w]).ack(),
                If(doSplit,
                    wordCntr ** 0
                ).Else(
@@ -161,10 +161,10 @@ class Axi_wDatapump(Axi_datapumpBase):
         w.last ** doSplit
 
         bInfo.isLast ** wIn.last
-        streamSync(masters=[wIn, wInfo],
+        StreamNode(masters=[wIn, wInfo],
                    slaves=[bInfo, w],
                    extraConds=extraConds
-                   )
+                   ).sync()
 
     def axiBHandler(self):
         wErrFlag = self._reg("wErrFlag", defVal=0)
@@ -176,13 +176,13 @@ class Axi_wDatapump(Axi_datapumpBase):
            wErrFlag ** 1
         )
 
-        self.errorWrite ** wErrFlag 
+        self.errorWrite ** wErrFlag
         ack.data ** b.id
-        streamSync(masters=[b, lastFlags],
+        StreamNode(masters=[b, lastFlags],
                    slaves=[ack],
                    extraConds={
                                ack: lastFlags.isLast
-                               })
+                               }).sync()
 
         return wErrFlag
 
@@ -192,6 +192,7 @@ class Axi_wDatapump(Axi_datapumpBase):
         wErrFlag = self.axiBHandler()
         self.axiAwHandler(wErrFlag)
         self.axiWHandler(wErrFlag)
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl

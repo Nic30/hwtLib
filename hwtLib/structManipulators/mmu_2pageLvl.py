@@ -10,9 +10,10 @@ from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.ramAsHs import RamAsHs
-from hwtLib.handshaked.streamNode import streamSync
+from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.ram import RamSingleClock
 from hwtLib.structManipulators.arrayItemGetter import ArrayItemGetter
+
 
 FLAG_INVALID = 1
 
@@ -111,8 +112,8 @@ class MMU_2pageLvl(Unit):
         lvl2indx.data ** virtIn.data[(self.LVL2_PAGE_TABLE_INDX_WIDTH + self.PAGE_OFFSET_WIDTH):self.PAGE_OFFSET_WIDTH]
         connect(virtIn.data, pageOffset.dataIn.data, fit=True)
         lvl1readAddr.data ** virtIn.data[:(self.LVL2_PAGE_TABLE_INDX_WIDTH + self.PAGE_OFFSET_WIDTH)]
-        streamSync(masters=[virtIn],
-                   slaves=[lvl2indx, lvl1readAddr, pageOffset.dataIn])
+        StreamNode(masters=[virtIn],
+                   slaves=[lvl2indx, lvl1readAddr, pageOffset.dataIn]).sync()
 
     def connectL2Load(self, lvl2base, segfaultFlag):
         lvl2get = self.lvl2get
@@ -122,20 +123,20 @@ class MMU_2pageLvl(Unit):
 
         lvl2get.base ** lvl2base.data
         lvl2get.index.data ** lvl2indx.data
-        streamSync(masters=[lvl2base, lvl2indx],
+        StreamNode(masters=[lvl2base, lvl2indx],
                    slaves=[lvl2get.index],
                    extraConds={
                                lvl2get.index:~segfaultFlag
-                              })
+                              }).sync()
 
     def connectPhyout(self, segfaultFlag):
         phyAddrBase = self.lvl2get.item
         pageOffset = self.pageOffsetFifo.dataOut
 
         segfault = segfaultFlag | phyAddrBase.data[0]._eq(FLAG_INVALID)
-        streamSync(masters=[phyAddrBase, pageOffset],
+        StreamNode(masters=[phyAddrBase, pageOffset],
                    slaves=[self.physOut],
-                   extraConds={self.physOut:~segfault})
+                   extraConds={self.physOut:~segfault}).sync()
 
         self.physOut.data ** Concat(phyAddrBase.data[:self.PAGE_OFFSET_WIDTH], pageOffset.data)
 

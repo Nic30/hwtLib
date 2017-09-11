@@ -14,7 +14,7 @@ from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.amba.axis import AxiStream_withoutSTRB
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.handshaked.builder import HsBuilder
-from hwtLib.handshaked.streamNode import streamAck
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 class StructReader(AxiS_frameParser):
@@ -139,7 +139,7 @@ class StructReader(AxiS_frameParser):
                 rd = 0
             s.append(get.rd ** rd)
 
-            ack = streamAck(masters=[get], slaves=[self.rDatapump.req])
+            ack = StreamNode(masters=[get], slaves=[self.rDatapump.req]).ack()
             return s, ack
 
         StaticForEach(self, self._frames, f)

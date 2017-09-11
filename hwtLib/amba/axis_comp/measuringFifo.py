@@ -12,7 +12,7 @@ from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axis_comp.fifo import AxiSFifo
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.handshaked.streamNode import streamSync, streamAck
+from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.fifo import Fifo
 
 
@@ -65,7 +65,7 @@ class AxiS_measuringFifo(Unit):
 
         overflow = wordCntr._eq(self.MAX_LEN)
         last = dIn.last | overflow
-        If(streamAck(masters=[dIn], slaves=[sb.dataIn, db.dataIn]),
+        If(StreamNode(masters=[dIn], slaves=[sb.dataIn, db.dataIn]).ack(),
             If(last,
                 wordCntr ** 0
             ).Else(
@@ -101,11 +101,10 @@ class AxiS_measuringFifo(Unit):
         connect(dIn, db.dataIn, exclude=[dIn.valid, dIn.ready, dIn.last])
         db.dataIn.last ** last
 
-        streamSync(masters=[dIn],
+        StreamNode(masters=[dIn],
                    slaves=[sb.dataIn, db.dataIn],
-                   extraConds={
-                               sb.dataIn: last
-                              })
+                   extraConds={sb.dataIn: last
+                               }).sync()
 
         self.sizes ** sb.dataOut
         connect(db.dataOut, self.dataOut)

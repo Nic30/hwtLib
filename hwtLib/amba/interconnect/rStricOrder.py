@@ -65,9 +65,9 @@ class RStrictOrderInterconnect(AxiInterconnectBase):
 
         r.ready ** (fifoOut.vld & selectedDriverReady)
         fifoOut.rd ** (r.valid & r.last & selectedDriverReady)
-        # streamSync(masters=[r],
+        # StreamNode(masters=[r],
         #           slaves=driversR,
-        #           extraConds=extraHsEnableConds)
+        #           extraConds=extraHsEnableConds).sync()
 
 
 if __name__ == "__main__":
