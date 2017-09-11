@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from enum import Enum
 import unittest
 
 from hwt.hdlObjects.typeShortcuts import hBool, hInt, vec, hStr
-from enum import Enum
 from hwt.hdlObjects.types.bits import Bits
-from hwt.synthesizer.param import Param
-from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.hdlObjects.types.defs import BIT
 
 
 class ValueTC(unittest.TestCase):
+
     def assertValEq(self, first, second, msg=None):
         try:
             first = int(first)
@@ -104,83 +101,6 @@ class ValueTC(unittest.TestCase):
         with self.assertRaises(TypeError):
             t.fromPy(object())
 
-    def test_BitsIndexOnSingleBit(self):
-        t = Bits(1)
-        v = t.fromPy(1)
-        with self.assertRaises(TypeError):
-            v[0]
-
-        t = Bits(1, forceVector=True)
-        v = t.fromPy(1)
-        self.assertValEq(v[0], 1)
-
-    def test_BitsConcatIncompatibleType(self):
-        t = Bits(1)
-        v = t.fromPy(1)
-        with self.assertRaises(TypeError):
-            v._concat(hInt(2))
-        p = Param(1)
-        with self.assertRaises(TypeError):
-            v._concat(p)
-
-    def test_BitsIndexTypes(self):
-        t = Bits(8)
-        v = t.fromPy(1)
-        with self.assertRaises(TypeError):
-            v[object()]
-        with self.assertRaises(IndexError):
-            v[9:]
-        with self.assertRaises(IndexError):
-            v[:-1]
-
-        p = Param(2)
-        self.assertIsInstance(v[p], RtlSignalBase)
-        self.assertEqual(v[p]._dtype.bit_length(), 1)
-
-        p2 = p._downto(0)
-        self.assertIsInstance(v[p2], RtlSignalBase)
-        self.assertEqual(v[p2]._dtype.bit_length(), 2)
-
-        p3 = Param("abc")
-        with self.assertRaises(TypeError):
-            v[p3]
-
-        a = RtlSignal(None, "a", BIT)
-        a._const = False
-        with self.assertRaises(TypeError):
-            v[p] = a
-
-        with self.assertRaises(TypeError):
-            v[a] = p
-
-        v[p] = 1
-        self.assertValEq(v, 5)
-
-        v[p2] = 2
-        self.assertValEq(v, 6)
-
-        with self.assertRaises(TypeError):
-            v[hInt(None)] = 2
-
-        v[:] = 0
-        self.assertValEq(v, 0)
-
-        v[2] = 1
-        self.assertValEq(v, 4)
-        v[3:] = p
-        self.assertValEq(v, 2)
-
-        v._setitem__val(hInt(None), hInt(1))
-        self.assertValEq(v, None)
-
-        with self.assertRaises(TypeError):
-            v[hStr("asfs")]
-
-    def test_BitsMulInvalidType(self):
-        t = Bits(8)
-        v = t.fromPy(1)
-        with self.assertRaises(TypeError):
-            v * "a"
 
 
 if __name__ == '__main__':

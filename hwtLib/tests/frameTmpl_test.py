@@ -118,23 +118,23 @@ sWithPadding_str = """<FrameTmpl start:0, end:384
 4    |                            item1_1                            |
 5    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
      -----------------------------------------------------------------
->""" 
+>"""
 
-sWithPaddingMultiframe_str = [ """<FrameTmpl start:0, end:128
+sWithPaddingMultiframe_str = [
+"""<FrameTmpl start:0, end:128
      63                                                             0
      -----------------------------------------------------------------
 0    |                            item0_0                            |
 1    |                            item0_1                            |
      -----------------------------------------------------------------
 >""",
- """<FrameTmpl start:192, end:320
+"""<FrameTmpl start:192, end:320
      63                                                             0
      -----------------------------------------------------------------
 0    |                            item1_0                            |
 1    |                            item1_1                            |
      -----------------------------------------------------------------
->""" 
-]
+>"""]
 
 sWithStartPadding = HStruct(
                        (uint64_t, None),
