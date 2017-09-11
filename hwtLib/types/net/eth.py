@@ -1,10 +1,9 @@
-from hwt.hdlObjects.types.struct import HStruct
 from hwt.hdlObjects.types.bits import Bits
+from hwt.hdlObjects.types.struct import HStruct
 
 
-vlan_t = Bits(12)  
+vlan_t = Bits(12)
 mac_t = Bits(6 * 8)
-
 
 syncword = 0b1010101010101010101010101010101010101010101010101010101010101011
 
@@ -34,6 +33,7 @@ Eth802_1qHeader_t = HStruct(
     name="Eth802_1qHeader_t"
 )
 
+
 class ETHER_TYPE():
     IPv4 = 0x0800
     ARP = 0x0806
@@ -47,7 +47,7 @@ class ETHER_TYPE():
     MPLS_multicast = 0x8848
 
 
-def pprint_eth_addr(mac) :
+def pprint_eth_addr(mac):
     macStr = "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x" % (ord(mac[i]) for i in range(6))
     return macStr
 
