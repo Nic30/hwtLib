@@ -29,7 +29,7 @@ echoFrame_t = HStruct(
 class PingResponder(Unit):
     """
     Listen for echo request on rx axi stream interface and respond with echo response on tx interface
-    
+
     :note: incoming checksum is not checked
     :attention: you have to ping "ping -s 0 <ip>" because unit ignores additional data in packet and linux by
         defaults adds it
@@ -51,7 +51,7 @@ class PingResponder(Unit):
     def req_load(self, parsed, regs, freeze):
         """
         Load request from parser input into registers
-        
+
         :param parsed: input interface with parsed fields of ICPM frame
         :param regs: registers for ICMP frame
         :param freeze: signal to freeze value in registers
@@ -81,7 +81,7 @@ class PingResponder(Unit):
     def connect_resp(self, resp, forgeIn, sendingReply):
         """
         Connect response data on inputs of frame forge
-        
+
         :param resp: registers with response data
         :param forgeIn: input interface of frame forge
         :param sendingRepply: flag which signalizes that data should be forged into frame and send
@@ -113,8 +113,8 @@ class PingResponder(Unit):
         :return: checksum for icmp header
         """
 
-        # type, code, checksum = 0 
-        return ~(header.identifier + 
+        # type, code, checksum = 0
+        return ~(header.identifier +
                  header.seqNo
                  )
 
@@ -126,8 +126,7 @@ class PingResponder(Unit):
         resp.icmp.type = resp.icmp.type._dtype.fromPy(ICMP_TYPE.ECHO_REPLY)
         resp.icmp.code = resp.icmp.code._dtype.fromPy(0)
         resp.icmp.checksum = self.icmp_checksum(resp.icmp)
-        
-        
+
         parsed = AxiSBuilder(self, self.rx).parse(echoFrame_t)
         self.req_load(parsed, resp, sendingReply)
 
@@ -148,8 +147,7 @@ class PingResponder(Unit):
         self.connect_resp(resp, forgeIn, sendingReply)
         tx = txBuilder.end
         self.tx ** tx
-        
-        
+
         If(self.rx.last & self.rx.valid,
            sendingReply ** (self.myIp._eq(resp.ip.dst) & isEchoReq) 
         ).Elif(tx.valid & tx.last,

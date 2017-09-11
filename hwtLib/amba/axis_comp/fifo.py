@@ -9,7 +9,7 @@ from hwtLib.amba.axis_comp.reg import AxiSReg
 class AxiSFifo(AxiSCompBase, HandshakedFifo):
     """
     Synchronous fifo for axi-stream interface.
-    
+
     .. aafig::
                  +-+-+-+-+-+
          input   | | | | | | output
@@ -18,6 +18,7 @@ class AxiSFifo(AxiSCompBase, HandshakedFifo):
                  +-+-+-+-+-+
     """
     _regCls = AxiSReg
+
 
 if __name__ == "__main__":
     from hwtLib.amba.axis import AxiStream_withoutSTRB

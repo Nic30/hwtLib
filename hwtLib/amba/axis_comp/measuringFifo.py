@@ -26,7 +26,7 @@ class AxiS_measuringFifo(Unit):
         self.SIZES_BUFF_DEPTH = Param(16)
         self.MAX_LEN = Param((2048 // 8) - 1)
         self.EXPORT_ALIGNMENT_ERROR = Param(False)
-        
+
     def getAlignBitsCnt(self):
         return log2ceil(self.DATA_WIDTH // 8).val
 
@@ -47,7 +47,7 @@ class AxiS_measuringFifo(Unit):
         sb = self.sizesBuff = HandshakedFifo(Handshaked)
         sb.DEPTH.set(self.SIZES_BUFF_DEPTH)
         sb.DATA_WIDTH.set(self.sizes.DATA_WIDTH.get())
-        
+
         if self.EXPORT_ALIGNMENT_ERROR:
             self.errorAlignment = Signal()
 
@@ -88,7 +88,7 @@ class AxiS_measuringFifo(Unit):
             If(dIn.valid & (dIn.strb != mask(STRB_BITS)) & ~dIn.last,
                errorAlignment ** 1
             )
-        
+
         length = self._sig("length", wordCntr._dtype)
         If(last & (dIn.strb != mask(STRB_BITS)),
             length ** wordCntr
