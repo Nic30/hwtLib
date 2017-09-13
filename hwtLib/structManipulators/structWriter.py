@@ -11,7 +11,7 @@ from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.handshaked.streamNode import streamSync, streamAck
+from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.structManipulators.structReader import StructReader
 from hwtLib.handshaked.builder import HsBuilder
 
@@ -52,11 +52,8 @@ class StructWriter(StructReader):
         self.MAX_OVERLAP = Param(2)
         self.WRITE_ACK = Param(False)
 
-    def _createInterfaceForField(self, structT, fInfo):
-        i = Handshaked()
-        i.DATA_WIDTH.set(fInfo.dtype.bit_length())
-        fInfo.interface = i
-        return i
+    def _createInterfaceForField(self, parent, structField):
+        return AxiS_frameForge._mkFieldIntf(parent, structField)
 
     def _declr(self):
         addClkRstn(self)
@@ -102,12 +99,11 @@ class StructWriter(StructReader):
         ackPropageteInfo.rst_n ** self.rst_n
 
         def propagateRequests(frame, indx):
-            ack = streamAck(slaves=[req, ackPropageteInfo.dataIn])
+            ack = StreamNode(slaves=[req, ackPropageteInfo.dataIn]).ack()
             statements = [req.addr ** (_set.data + frame.startBitAddr // 8),
                           req.len ** (frame.getWordCnt() - 1),
-                          streamSync(slaves=[req, ackPropageteInfo.dataIn],
-                                     extraConds={req: _set.vld,
-                                                 ackPropageteInfo.dataIn: _set.vld})
+                          StreamNode(slaves=[req, ackPropageteInfo.dataIn],
+                                     ).sync(_set.vld)
                           ]
             if indx != 0:
                 prop = SKIP
@@ -130,11 +126,11 @@ class StructWriter(StructReader):
         w ** self.frameAssember.dataOut
 
         # propagate ack
-        streamSync(masters=[ack, ackPropageteInfo.dataOut],
+        StreamNode(masters=[ack, ackPropageteInfo.dataOut],
                    slaves=[self.writeAck],
                    skipWhen={
                              self.writeAck: ackPropageteInfo.dataOut.data._eq(PROPAGATE)
-                            })
+                            }).sync()
 
         # connect fields to assembler
         for _, transTmpl in self._tmpl.walkFlatten():

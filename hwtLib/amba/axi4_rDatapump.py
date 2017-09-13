@@ -11,7 +11,7 @@ from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.amba.axi_datapump_base import Axi_datapumpBase
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.handshaked.streamNode import streamSync
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 class TransEndInfo(HandshakeSync):
@@ -114,9 +114,9 @@ class Axi_rDatapump(Axi_datapumpBase):
                reqRem ** req.rem,
                remBackup ** req.rem,
                ack ** (req.vld & addRmSize.rd & ar.ready),
-               streamSync(masters=[req],
+               StreamNode(masters=[req],
                           slaves=[addRmSize, ar],
-                          extraConds={ar:~rErrFlag}),
+                          extraConds={ar:~rErrFlag}).sync(),
             ).Else(
                req.rd ** 0,
                ar.addr ** rAddr,
@@ -127,8 +127,8 @@ class Axi_rDatapump(Axi_datapumpBase):
 
                reqLen ** lenDebth,
                reqRem ** remBackup,
-               streamSync(slaves=[addRmSize, ar],
-                          extraConds={ar:~rErrFlag}),
+               StreamNode(slaves=[addRmSize, ar],
+                          extraConds={ar:~rErrFlag}).sync(),
             )
         else:
             # if axi len is wider we can directly translate requests to axi
@@ -140,9 +140,9 @@ class Axi_rDatapump(Axi_datapumpBase):
             addRmSize.rem ** req.rem
             addRmSize.propagateLast ** 1
 
-            streamSync(masters=[req],
+            StreamNode(masters=[req],
                        slaves=[ar, addRmSize],
-                       extraConds={ar:~rErrFlag})
+                       extraConds={ar:~rErrFlag}).sync()
 
     def remSizeToStrb(self, remSize, strb):
         strbBytes = 2 ** self.getSizeAlignBits()
@@ -175,10 +175,10 @@ class Axi_rDatapump(Axi_datapumpBase):
         )
         rOut.last ** (r.last & rmSizeOut.propagateLast)
 
-        streamSync(masters=[r, rmSizeOut],
+        StreamNode(masters=[r, rmSizeOut],
                    slaves=[rOut],
                    extraConds={rmSizeOut: r.last,
-                               rOut:~rErrFlag})
+                               rOut:~rErrFlag}).sync()
 
         return rErrFlag
 

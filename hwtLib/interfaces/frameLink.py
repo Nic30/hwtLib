@@ -6,9 +6,12 @@ from hwt.synthesizer.param import Param
 
 
 class FrameLink(Interface):
+    """
+    Stream with "byte enable" and "start/end of frame/packet"
+    """
     def _config(self):
         self.DATA_WIDTH = Param(32)
-        
+
     def _declr(self):
         self.data = VectSignal(self.DATA_WIDTH)
         self.rem = VectSignal(log2ceil(self.DATA_WIDTH // 8))

@@ -7,7 +7,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.amba.axis_comp.reg import AxiSReg
-from hwtLib.handshaked.streamNode import streamAck
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 class AxiS_resizer(AxiSCompBase):
@@ -81,7 +81,7 @@ class AxiS_resizer(AxiSCompBase):
         dOut = self.getDataWidthDependent(dataOut)
 
         itemCntr = self._reg("itemCntr", Bits(log2ceil(ITEMS + 1)), defVal=0)
-        hs = streamAck([self.dataIn], [dataOut])
+        hs = StreamNode([self.dataIn], [dataOut]).ack()
         isLastItem = (itemCntr._eq(ITEMS - 1) | self.dataIn.last)
 
         vld = self.getVld(self.dataIn)
@@ -156,7 +156,7 @@ class AxiS_resizer(AxiSCompBase):
         ITEMS = IN_DW // OUT_DW
         itemCntr = self._reg("itemCntr", Bits(log2ceil(ITEMS + 1)), defVal=0)
 
-        hs = streamAck([dataIn], [self.dataOut])
+        hs = StreamNode([dataIn], [self.dataOut]).ack()
         isLastItem = itemCntr._eq(ITEMS - 1)
         strbLastOverride = self.nextAreNotValidLogic(dataIn.strb,
                                                      itemCntr,

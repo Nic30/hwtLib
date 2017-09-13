@@ -1,7 +1,7 @@
 from hwt.code import connect, log2ceil
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.handshaked.builder import HsBuilder
-from hwtLib.handshaked.streamNode import streamSync
+from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.oneHotToBin import oneHotToBin
 
 
@@ -70,7 +70,7 @@ class AxiInterconnectBase(Unit):
         req = b.end
         reqJoin = b.lastComp
 
-        streamSync(masters=[req],
-                   slaves=[dpReq, orderFifoIn])
+        StreamNode(masters=[req],
+                   slaves=[dpReq, orderFifoIn]).sync()
         connect(req, dpReq, exclude=[dpReq.vld, dpReq.rd])
         orderFifoIn.data ** oneHotToBin(self, reqJoin.selectedOneHot.data)

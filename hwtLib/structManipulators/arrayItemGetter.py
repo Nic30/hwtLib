@@ -10,7 +10,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.handshaked.streamNode import streamSync
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 class ArrayItemGetter(Unit):
@@ -70,10 +70,10 @@ class ArrayItemGetter(Unit):
         if ITEMS_IN_DATA_WORD == 1:
             addr = Concat(self.index.data, vec(0, log2ceil(ITEM_WIDTH // 8)))
             req.addr ** (self.base + fitTo(addr, req.addr))
-            streamSync(masters=[self.index], slaves=[req])
+            StreamNode(masters=[self.index], slaves=[req]).sync()
 
             self.item.data ** self.rDatapump.r.data
-            streamSync(masters=[self.rDatapump.r], slaves=[self.item])
+            StreamNode(masters=[self.rDatapump.r], slaves=[self.item]).sync()
 
         else:
             r = self.rDatapump.r.data
@@ -85,15 +85,15 @@ class ArrayItemGetter(Unit):
 
             req.addr ** (self.base + fitTo(addr, req.addr))
             f.dataIn.data ** self.index.data[subIndexBits:]
-            streamSync(masters=[self.index],
-                       slaves=[req, f.dataIn])
+            StreamNode(masters=[self.index],
+                       slaves=[req, f.dataIn]).sync()
 
             Switch(f.dataOut.data).addCases([
                 (ITEMS_IN_DATA_WORD - i - 1, self.item.data ** r[(ITEM_WIDTH * (i + 1)): (ITEM_WIDTH * i)])
                 for i in range(ITEMS_IN_DATA_WORD)
                 ])
-            streamSync(masters=[self.rDatapump.r, f.dataOut],
-                       slaves=[self.item])
+            StreamNode(masters=[self.rDatapump.r, f.dataOut],
+                       slaves=[self.item]).sync()
 
 
 if __name__ == "__main__":

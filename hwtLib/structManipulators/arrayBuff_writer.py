@@ -13,7 +13,7 @@ from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AddrSizeHs, AxiWDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.handshaked.streamNode import streamSync
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 stT = HEnum("st_t", ["waitOnInput", "waitOnDataTx", "waitOnAck"])
@@ -68,7 +68,6 @@ class ArrayBuff_writer(Unit):
                 self.baseAddr,
                 self.uploaded,
                 (Bits(16), None),  # padding
-                
                 self.buff_remain,
                 (Bits(16), None),  # padding
                 )
@@ -101,10 +100,10 @@ class ArrayBuff_writer(Unit):
         )
         self.baseAddr.din ** Concat(baseAddr, vec(0, ALIGN_BITS))
 
-        # offset in buffer and its complement        
+        # offset in buffer and its complement
         offset = self._reg("offset", Bits(log2ceil(ITEMS + 1), signed=False), defVal=0)
         remaining = self._reg("remaining", Bits(log2ceil(ITEMS + 1), signed=False), defVal=ITEMS)
-        connect(remaining, self.buff_remain, fit=True) 
+        connect(remaining, self.buff_remain, fit=True)
 
         addrTmp = self._sig("baseAddrTmp", baseAddr._dtype)
         addrTmp ** (baseAddr + offset)
@@ -196,13 +195,12 @@ class ArrayBuff_writer(Unit):
 
         connect(buff.dataOut.data, w.data, fit=True)
 
-        streamSync(masters=[buff.dataOut],
-                   slaves=[w],
-                   extraConds={buff.dataOut: st._eq(stT.waitOnDataTx),
-                               w:            st._eq(stT.waitOnDataTx)
-                               })
+        StreamNode(masters=[buff.dataOut],
+                   slaves=[w]
+                   ).sync(st._eq(stT.waitOnDataTx))
         w.strb ** mask(w.strb._dtype.bit_length())
         w.last ** w_last
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl

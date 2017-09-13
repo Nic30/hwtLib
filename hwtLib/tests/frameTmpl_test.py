@@ -118,23 +118,23 @@ sWithPadding_str = """<FrameTmpl start:0, end:384
 4    |                            item1_1                            |
 5    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
      -----------------------------------------------------------------
->""" 
+>"""
 
-sWithPaddingMultiframe_str = [ """<FrameTmpl start:0, end:128
+sWithPaddingMultiframe_str = [
+"""<FrameTmpl start:0, end:128
      63                                                             0
      -----------------------------------------------------------------
 0    |                            item0_0                            |
 1    |                            item0_1                            |
      -----------------------------------------------------------------
 >""",
- """<FrameTmpl start:192, end:320
+"""<FrameTmpl start:192, end:320
      63                                                             0
      -----------------------------------------------------------------
 0    |                            item1_0                            |
 1    |                            item1_1                            |
      -----------------------------------------------------------------
->""" 
-]
+>"""]
 
 sWithStartPadding = HStruct(
                        (uint64_t, None),
@@ -214,7 +214,6 @@ s2_oneFrame = """<FrameTmpl start:0, end:192
      -----------------------------------------------------------------
 >"""
 
-
 struct_with_union = HStruct(
                        (HUnion(
                          (uint8_t, "a"),
@@ -225,9 +224,41 @@ struct_with_union = HStruct(
 struct_with_union_str = """<FrameTmpl start:0, end:64
      63                                                             0
      -----------------------------------------------------------------
-0    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|   u   |
+0    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|<union>|
+0    |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|  u.a  |
+0    |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|  u.b  |
      -----------------------------------------------------------------
 >"""
+
+union0 = HUnion(
+            (HStruct(
+                (uint8_t, "a0"),
+                (uint8_t, "a1"),
+             ), "a"),
+            (uint16_t, "b"),
+            )
+
+union0_8b_str = """<FrameTmpl start:0, end:16
+     7      0
+     ---------
+0    |<union>|
+0    | a.a0  |
+0    |   b   |
+1    |<union>|
+1    | a.a1  |
+1    |   b   |
+     ---------
+>"""
+
+union0_16b_str = """<FrameTmpl start:0, end:16
+     15             0
+     -----------------
+0    |    <union>    |
+0    | a.a1  | a.a0  |
+0    |       b       |
+     -----------------
+>"""
+
 
 class FrameTmplTC(unittest.TestCase):
     def test_s0at64bit(self):
@@ -357,9 +388,26 @@ class FrameTmplTC(unittest.TestCase):
         self.assertEqual(len(frames), 1)
         self.assertEqual(repr(frames[0]), struct_with_union_str)
 
+    def test_union0at8b(self):
+        DW = 8
+        tmpl = TransTmpl(union0)
+        frames = FrameTmpl.framesFromTransTmpl(tmpl, DW)
+        frames = list(frames)
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(repr(frames[0]), union0_8b_str)
+
+    def test_union0at16b(self):
+        DW = 16
+        tmpl = TransTmpl(union0)
+        frames = FrameTmpl.framesFromTransTmpl(tmpl, DW)
+        frames = list(frames)
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(repr(frames[0]), union0_16b_str)
+
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(FrameTmplTC('test_frameHeader_splited'))
+    # suite.addTest(FrameTmplTC('test_union0at16b'))
     suite.addTest(unittest.makeSuite(FrameTmplTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

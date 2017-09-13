@@ -47,6 +47,7 @@ from hwtLib.handshaked.splitCopy_test import HsSplitCopyTC, \
     HsSplitCopy_randomized_TC
 from hwtLib.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
 from hwtLib.img.charToBitmap_test import CharToBitmapTC
+from hwtLib.interfaces.unionIntf_test import UnionIntfTC
 from hwtLib.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.ipif.reg_test import IpifRegTC
@@ -124,7 +125,6 @@ from hwtLib.structManipulators.structWriter_test import StructWriter_TC
 from hwtLib.tests.dumpTestBench_test import DumpTestbenchTC
 from hwtLib.tests.fileUtils_test import FileUtilsTC
 from hwtLib.tests.frameTmpl_test import FrameTmplTC
-from hwtLib.tests.types.hstructVal_test import HStructValTC
 from hwtLib.tests.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.rdSynced_agent_test import RdSynced_agent_TC
 from hwtLib.tests.serializerModes_test import SerializerModes_TC
@@ -139,11 +139,12 @@ from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import Subunits
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.transTmpl_test import TransTmpl_TC
+from hwtLib.tests.types.bitsSlicing_test import BitsSlicingTC
+from hwtLib.tests.types.hstructVal_test import HStructValTC
 from hwtLib.tests.types.operators_test import OperatorTC
 from hwtLib.tests.types.signedArithmetic_test import SignedArithmeticTC
 from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
-from hwtLib.tests.valSlicing_test import ValSlicingTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
@@ -184,7 +185,7 @@ suite = testSuiteFromTCs(
     UnitToUnitConnectionTC,
     Expr2CondTC,
     OperatorTC,
-    ValSlicingTC,
+    BitsSlicingTC,
     HStructValTC,
     ParametrizationTC,
     SignedArithmeticTC,
@@ -213,6 +214,7 @@ suite = testSuiteFromTCs(
     Serializer_tmpVar_TC,
     TransTmpl_TC,
     UnionTC,
+    UnionIntfTC,
 
     # component verifications
     ConcatTC,

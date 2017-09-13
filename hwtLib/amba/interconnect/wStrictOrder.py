@@ -82,9 +82,9 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
         #for i, d in enumerate(driversW):
         #    extraConds[d] = fWOut.data._eq(i)
         #    
-        #streamSync(masters=[w, fWOut], 
-        #           slaves=driversW+[fAckIn], 
-        #           extraConds=extraConds)
+        #StreamNode(masters=[w, fWOut], 
+        #           slaves=driversW+[fAckIn],
+        #           extraConds=extraConds).sync()
 
     def ackHandler(self):
         ack = self.wDatapump.ack

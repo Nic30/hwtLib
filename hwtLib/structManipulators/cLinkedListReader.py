@@ -11,7 +11,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.handshaked.streamNode import streamSync
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 class CLinkedListReader(Unit):
@@ -206,11 +206,11 @@ class CLinkedListReader(Unit):
             )
         )
         # push data into buffer and increment rdPtr
-        streamSync(masters=[dIn],
+        StreamNode(masters=[dIn],
                    slaves=[dBuffIn],
-                   extraConds={dIn    :downloadPending,
-                               dBuffIn:(dIn.id._eq(ID) | (dIn.id._eq(ID_LAST) & ~dIn.last)) & downloadPending
-                               })
+                   extraConds={dIn: downloadPending,
+                               dBuffIn: (dIn.id._eq(ID) | (dIn.id._eq(ID_LAST) & ~dIn.last)) & downloadPending
+                               }).sync()
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
