@@ -96,16 +96,18 @@ class StreamNode():
         """
         masters = self.masters
         slaves = self.slaves
-        skipWhen = self.skipWhen
 
-        # also note that only slaves or only masters, means you are always generating/receiving
-        # data from/to node
-        assert masters or slaves, "Atleast one stream has to be present"
+        if not masters and not slaves:
+            # node is empty
+            assert not self.extraConds
+            assert not self.skipWhen
+            return []
 
+        # check if there is not not any mess in extraConds/skipWhen
         for i in self.extraConds.keys():
             assert i in masters or i in slaves, i
 
-        for i in skipWhen.keys():
+        for i in self.skipWhen.keys():
             assert i in masters or i in slaves, i
 
         # this expression container is there to allow usage of this function
@@ -130,7 +132,7 @@ class StreamNode():
                 v = v & enSig
 
             if isinstance(s, ExclusiveStreamGroups):
-                a = s.sync(r)
+                a = s.sync(v)
             else:
                 a = _getVld(s) ** v
 
@@ -175,6 +177,9 @@ class StreamNode():
 
             acks.append(a)
 
+        if not acks:
+            return True
+
         return And(*acks)
 
     def getExtraAndSkip(self, intf):
@@ -203,7 +208,11 @@ class StreamNode():
         except KeyError:
             s = None
 
-        v = _getVld(intf)
+        if isinstance(intf, ExclusiveStreamGroups):
+            v = intf.ack()
+        else:
+            v = _getVld(intf)
+
         if s is None:
             return v
         else:
@@ -219,7 +228,11 @@ class StreamNode():
         except KeyError:
             s = None
 
-        r = _getRd(intf)
+        if isinstance(intf, ExclusiveStreamGroups):
+            r = intf.ack()
+        else:
+            r = _getRd(intf)
+
         if s is None:
             return r
         else:
@@ -262,5 +275,5 @@ class StreamNode():
 
         if skip is not None:
             v = v & ~skip
-        
+
         return v
