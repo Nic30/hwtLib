@@ -1,25 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import List, Dict, Optional, Union
+from typing import List, Optional, Union
 
 from hwt.bitmask import mask
 from hwt.code import log2ceil, Switch, If, isPow2, In, SwitchLogic
+from hwt.hdlObjects.frameTmpl import FrameTmpl
 from hwt.hdlObjects.frameTmplUtils import ChoicesOfFrameParts
+from hwt.hdlObjects.transPart import TransPart
+from hwt.hdlObjects.transTmpl import TransTmpl
 from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdlObjects.types.hdlType import HdlType
+from hwt.hdlObjects.types.struct import HStruct, HStructField
 from hwt.hdlObjects.types.union import HUnion
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.unionIntf import UnionSink
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.byteOrder import reverseByteOrder
-from hwt.synthesizer.interfaceLevel.interface import Interface
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
+from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.amba.axis_comp.templateBasedUnit import TemplateBasedUnit
-from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
 
 
@@ -42,8 +45,10 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
         | field2  +------+
         +---------+
     """
-    def __init__(self, axiSIntfCls, structT,
-                 tmpl=None, frames=None):
+    def __init__(self, axiSIntfCls,
+                 structT: HdlType,
+                 tmpl: Optional[TransTmpl]=None,
+                 frames: Optional[List[FrameTmpl]]=None):
         """
         :param hsIntfCls: class of interface which should be used as interface of this unit
         :param structT: instance of HStruct used as template for this frame
@@ -68,7 +73,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
         AxiSCompBase.__init__(self, axiSIntfCls)
 
     @staticmethod
-    def _mkFieldIntf(parent, structField):
+    def _mkFieldIntf(parent: StructIntf, structField: HStructField):
         """
         Instantiate interface for all members of input type
         """
@@ -101,22 +106,10 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
         self.dataIn = intfCls(self._structT, self._mkFieldIntf)
 
-    def choiceIsSelected(self, interfaceOfChoice):
-        """
-        Check if union member is selected by _select interface in union interface
-        """
-        parent = interfaceOfChoice._parent
-        try:
-            r = self._tmpRegsForSelect[parent]
-        except KeyError:
-            r = HsBuilder(self, parent._select).buff().end
-            self._tmpRegsForSelect[parent] = r
-
-        i = parent._interfaces.index(interfaceOfChoice)
-        return r.data._eq(i), r.vld
-
     def connectPartsOfWord(self, wordData_out: RtlSignal,
-                           tPart, inPorts_out, lastInPorts_out: List[Interface]):
+                           tPart: Union[TransPart, ChoicesOfFrameParts],
+                           inPorts_out: List[Union[Handshaked, StreamNode]],
+                           lastInPorts_out: List[Union[Handshaked, StreamNode]]):
         """
         Connect transactions parts to signal for word of output stream
 
@@ -140,7 +133,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             for choice in tPart:
                 tmp = self._sig("union_tmp_", Bits(w))
                 intfOfChoice = tToIntf[choice.tmpl.origin]
-                isSelected, isSelectValid = self.choiceIsSelected(intfOfChoice)
+                isSelected, isSelectValid = AxiS_frameParser.choiceIsSelected(self, intfOfChoice)
                 unionChoices.append((isSelected, wordData_out[high:low] ** tmp))
 
                 isSelected = isSelected & isSelectValid
@@ -176,7 +169,10 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
                 if tPart.isLastPart():
                     lastInPorts_out.append(intf)
 
-    def handshakeLogicForWord(self, lastInPorts, en, inPorts):
+    def handshakeLogicForWord(self,
+                              inPorts: List[Union[Handshaked, StreamNode]],
+                              lastInPorts: List[Union[Handshaked, StreamNode]],
+                              en: Union[bool, RtlSignal]):
         if lastInPorts:
             # instantiate rd logic of input streams
             StreamNode(masters=lastInPorts).sync(en)
@@ -229,7 +225,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             else:
                 en = True
             en = self.dataOut.ready & en
-            ack = self.handshakeLogicForWord(lastInPorts, en, inPorts)
+            ack = self.handshakeLogicForWord(inPorts, lastInPorts, en)
             if useCounter:
                 # word cntr next logic
                 if i == maxWordIndex:
@@ -283,28 +279,13 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    from hwtLib.types.ctypes import uint64_t, uint32_t, int32_t, uint8_t, uint16_t
-    #t = unionSimple = HUnion(
-    #    (uint32_t, "a"),
-    #    (int32_t, "b")
-    #    )
-    t = HUnion(
-           (HStruct(
-               (uint64_t, "itemA0"),
-               (uint64_t, "itemA1")
-               ), "frameA"),
-           (HStruct(
-               (uint32_t, "itemB0"),
-               (uint32_t, "itemB1"),
-               (uint32_t, "itemB2"),
-               (uint32_t, "itemB3")
-               ), "frameB")
-           )
-    #t = HStruct((uint64_t, "item0"),
-    #           (uint64_t, None),  # name = None means field is padding
-    #           (uint64_t, "item1"),
-    #           (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
-    #           )
+    from hwtLib.types.ctypes import uint64_t,  uint8_t, uint16_t
+
+    t = HStruct((uint64_t, "item0"),
+                (uint64_t, None),  # name = None means field is padding
+                (uint64_t, "item1"),
+                (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
+                )
     u = AxiS_frameForge(AxiStream, t)
     u.DATA_WIDTH.set(64)
     print(toRtl(u))
