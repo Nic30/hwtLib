@@ -1,11 +1,14 @@
+from itertools import product
+
 from hwt.hdlObjects.constants import Time
 from hwt.hdlObjects.types.struct import HStruct
+from hwt.interfaces.structIntf import StructIntf
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis import AxiStream_withoutSTRB, packAxiSFrame, \
     unpackAxiSFrame
+from hwtLib.amba.axis_comp.frameForge_test import unionOfStructs, unionSimple
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
-from hwtLib.amba.axis_comp.frameForge_test import unionOfStructs
 
 
 structManyInts = HStruct(
@@ -83,86 +86,129 @@ reference_unionOfStructs3 = (
     )
 
 
+reference_unionSimple0 = ("a", MAGIC + 1)
+reference_unionSimple1 = ("a", MAGIC + 10)
+reference_unionSimple2 = ("b", MAGIC + 2)
+reference_unionSimple3 = ("b", MAGIC + 20)
+
+
+TEST_DW = [15, 16, 32, 51, 64, 128, 512]
+RAND_FLAGS = [False, True]
+
+
+def testMatrix(fn):
+    def test_wrap(self):
+        for dw, randomized in product(TEST_DW, RAND_FLAGS):
+            try:
+                fn(self, dw, randomized)
+            except Exception as e:
+                m = "DW:%d, Randomized:%r" % (dw, randomized)
+                e.args = (m + e.args[0], *e.args[1:])
+                raise
+    return test_wrap
+
+
 class AxiS_frameParserTC(SimTestCase):
-    def mySetUp(self, dataWidth, structTemplate):
+
+    def randomizeIntf(self, intf):
+        if isinstance(intf, StructIntf):
+            for _intf in intf._interfaces:
+                self.randomizeIntf(_intf)
+        else:
+            self.randomize(intf)
+
+    def mySetUp(self, dataWidth, structTemplate, randomize=False):
         u = AxiS_frameParser(AxiStream_withoutSTRB, structTemplate)
         u.DATA_WIDTH.set(dataWidth)
         self.prepareUnit(u)
+        if randomize:
+            self.randomizeIntf(u.dataIn)
+            self.randomizeIntf(u.dataOut)
 
         return u
 
     def test_packAxiSFrame(self):
         t = structManyInts
-        DW = 32
-        d1 = t.fromPy(reference0)
-        f = list(packAxiSFrame(DW, d1))
-        d2 = unpackAxiSFrame(t, f, lambda x: x[0])
+        for DW in TEST_DW:
+            d1 = t.fromPy(reference0)
+            f = list(packAxiSFrame(DW, d1))
+            d2 = unpackAxiSFrame(t, f, lambda x: x[0])
 
-        for k in reference0.keys():
-            self.assertEqual(getattr(d1, k), getattr(d2, k), k)
+            for k in reference0.keys():
+                self.assertEqual(getattr(d1, k), getattr(d2, k), (DW, k))
 
-    def test_structManyInts_64_nop(self):
-        DW = 64
-        u = self.mySetUp(DW, structManyInts)
+    @testMatrix
+    def test_structManyInts_nop(self, dataWidth, randomize):
+        u = self.mySetUp(dataWidth, structManyInts, randomize)
 
         self.doSim(300 * Time.ns)
         for intf in u.dataOut._interfaces:
             self.assertEmpty(intf._ag.data)
 
-    def _test_structManyInts_2x(self, DW):
+    @testMatrix
+    def test_structManyInts_2x(self, dataWidth, randomize):
         t = structManyInts
-        u = self.mySetUp(DW, t)
+        u = self.mySetUp(dataWidth, t, randomize)
 
-        u.dataIn._ag.data.extend(packAxiSFrame(DW, t.fromPy(reference0)))
-        u.dataIn._ag.data.extend(packAxiSFrame(DW, t.fromPy(reference1)))
+        u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, t.fromPy(reference0)))
+        u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, t.fromPy(reference1)))
 
-        self.doSim(((8 * 64) / DW) * 80 * Time.ns)
+        t = ((8 * 64) / dataWidth) * 80 * Time.ns
+        if randomize:
+            t *= 3 * dataWidth / 16
+
+        self.doSim(t)
 
         for intf in u.dataOut._interfaces:
             n = intf._name
             d = [reference0[n], reference1[n]]
             self.assertValSequenceEqual(intf._ag.data, d, n)
 
-    def test_structManyInts_64_2x(self):
-        self._test_structManyInts_2x(64)
-
-    def test_structManyInts_32_2x(self):
-        self._test_structManyInts_2x(32)
-
-    def test_structManyInts_51_2x(self):
-        self._test_structManyInts_2x(51)
-
-    def test_unionOfStructs_nop(self, DW=64):
+    @testMatrix
+    def test_unionOfStructs_nop(self, dataWidth, randomize):
         t = unionOfStructs
-        u = self.mySetUp(DW, t)
+        u = self.mySetUp(dataWidth, t, randomize)
+        t = 150 * Time.ns
+        if randomize:
+            t *= 3 * dataWidth / 16
 
-        self.doSim(150 * Time.ns)
+        self.doSim(t)
         for i in [u.dataOut.frameA, u.dataOut.frameB]:
             for intf in i._interfaces:
                 self.assertEmpty(intf._ag.data)
 
-    def test_unionOfStructs_noSel(self, DW=32):
+    @testMatrix
+    def test_unionOfStructs_noSel(self, dataWidth, randomize):
         t = unionOfStructs
-        u = self.mySetUp(DW, t)
+        u = self.mySetUp(dataWidth, t, randomize)
 
         for d in [reference_unionOfStructs0, reference_unionOfStructs2]:
-            u.dataIn._ag.data.extend(packAxiSFrame(DW, t.fromPy(d)))
+            u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, t.fromPy(d)))
 
-        self.doSim(150 * Time.ns)
+        t = 150 * Time.ns
+        if randomize:
+            t *= 3 * dataWidth / 16
+        self.doSim(t)
+
         for i in [u.dataOut.frameA, u.dataOut.frameB]:
             for intf in i._interfaces:
                 self.assertEmpty(intf._ag.data)
 
-    def test_unionOfStructs(self, DW=32):
+    @testMatrix
+    def test_unionOfStructs(self, dataWidth, randomize):
         t = unionOfStructs
-        u = self.mySetUp(DW, t)
+        u = self.mySetUp(dataWidth, t, randomize)
 
         for d in [reference_unionOfStructs0, reference_unionOfStructs2,
                   reference_unionOfStructs1, reference_unionOfStructs3]:
-            u.dataIn._ag.data.extend(packAxiSFrame(DW, t.fromPy(d)))
+            u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, t.fromPy(d)))
         u.dataOut._select._ag.data.extend([0, 1, 0, 1])
 
-        self.doSim(300 * Time.ns)
+        t = 300 * Time.ns
+        if randomize:
+            t *= 8 * dataWidth / 16
+        self.doSim(t)
+
         for i in [u.dataOut.frameA, u.dataOut.frameB]:
             if i._name == "frameA":
                 v0 = reference_unionOfStructs0[1]
@@ -176,11 +222,36 @@ class AxiS_frameParserTC(SimTestCase):
                 vals = v0[n], v1[n]
                 self.assertValSequenceEqual(intf._ag.data, vals, (i._name, n))
 
+    @testMatrix
+    def test_simpleUnion(self, dataWidth, randomize):
+        t = unionSimple
+        u = self.mySetUp(dataWidth, t, randomize)
+
+        for d in [reference_unionSimple0, reference_unionSimple2,
+                  reference_unionSimple1, reference_unionSimple3]:
+            u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, t.fromPy(d)))
+        u.dataOut._select._ag.data.extend([0, 1, 0, 1])
+
+        t = 300 * Time.ns
+        if randomize:
+            t *= 8 * dataWidth / 16
+        self.doSim(t)
+
+        for i in [u.dataOut.a, u.dataOut.b]:
+            if i._name == "a":
+                v0 = reference_unionSimple0[1]
+                v1 = reference_unionSimple1[1]
+            else:
+                v0 = reference_unionSimple2[1]
+                v1 = reference_unionSimple3[1]
+
+            self.assertValSequenceEqual(i._ag.data, [v0, v1], i._name)
+
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(AxiS_frameParserTC('test_unionOfStructs'))
-    suite.addTest(unittest.makeSuite(AxiS_frameParserTC))
+    suite.addTest(AxiS_frameParserTC('test_unionOfStructs'))
+    # suite.addTest(unittest.makeSuite(AxiS_frameParserTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
