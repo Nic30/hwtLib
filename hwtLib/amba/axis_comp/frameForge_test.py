@@ -276,7 +276,7 @@ class AxiS_frameForge_TC(SimTestCase):
         MAGIC = 498
         t = 100
         if randomized:
-            t *= 3
+            t *= 8
 
         u.dataIn.frameA.itemA0._ag.data.extend([MAGIC + 1, MAGIC + 3])
         u.dataIn.frameA.itemA1._ag.data.extend([MAGIC + 2, MAGIC + 4])
@@ -291,6 +291,9 @@ class AxiS_frameForge_TC(SimTestCase):
                                      (MAGIC + 3, m, 0),
                                      (MAGIC + 4, m, 1),
                                      ])
+
+    def test_r_unionOfStructs_frameA(self):
+        self.test_unionOfStructs_frameA(randomized=True)
 
     def test_unionOfStructs_simple(self, randomized=False):
         self.instantiateFrameForge(unionSimple,
@@ -313,6 +316,9 @@ class AxiS_frameForge_TC(SimTestCase):
                                     [(MAGIC + 1, m, 1),
                                      (MAGIC + 3, m, 1),
                                      ])
+
+    def test_r_unionOfStructs_simple(self):
+        self.test_unionOfStructs_simple(randomized=True)
 
 
 if __name__ == "__main__":
