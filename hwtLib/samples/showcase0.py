@@ -5,15 +5,14 @@ from hwt.code import connect, If, Concat
 from hwt.hdlObjects.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
-from hwt.serializer.simModel.serializer import SimModelSerializer
-from hwt.serializer.systemC.serializer import SystemCSerializer
-from hwt.serializer.verilog.serializer import VerilogSerializer
-from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.types.ctypes import uint32_t, int32_t, uint8_t, int8_t
 
 
 def foo(condition0, statements, condition1, fallback0, fallback1):
+    """
+    Python functions used as macro
+    """
     return If(condition0,
               statements
            ).Elif(condition1,
@@ -444,7 +443,6 @@ module Showcase0(input [31:0] a,
 
 endmodule"""
 
-
 showcase0_systemc = """/*
 
     Every HW component class has to be derived from Unit class (any kind of inheritance supported)
@@ -640,10 +638,21 @@ SC_MODULE(Showcase0) {
 };"""
 
 if __name__ == "__main__":  # alias python main function
+    from pprint import pprint
+
     from hwt.synthesizer.shortcuts import toRtl
+    from hwt.serializer.vhdl.serializer import VhdlSerializer
+    from hwt.serializer.verilog.serializer import VerilogSerializer
+    from hwt.serializer.systemC.serializer import SystemCSerializer
+    #from hwt.serializer.simModel.serializer import SimModelSerializer
+    from hwt.serializer.resourceUsageResolver.resolver import ResourceUsageResolver
+
     # * new instance has to be created every time because toRtl is modifies the unit
     # * serializers are using templates which can be customized
     #print(toRtl(Showcase0(), serializer=SimModelSerializer))
     print(toRtl(Showcase0(), serializer=VhdlSerializer))
     print(toRtl(Showcase0(), serializer=VerilogSerializer))
     print(toRtl(Showcase0(), serializer=SystemCSerializer))
+    r = ResourceUsageResolver()
+    print(toRtl(Showcase0(), serializer=r))
+    pprint(r.report())
