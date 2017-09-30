@@ -20,11 +20,10 @@ class Cntr(Unit):
 
     def _impl(self):
         reg = self._reg("counter", Bits(self.DATA_WIDTH), 0)
-
+        
+        # if there is no assignment into reg, value is kept
         If(self.en,
            reg ** (reg + 1)
-        ).Else(
-           reg ** reg
         )
 
         self.val ** reg

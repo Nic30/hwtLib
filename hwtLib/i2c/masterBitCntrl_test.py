@@ -3,11 +3,11 @@
 
 import unittest
 
+from hwt.bitmask import selectBit
 from hwt.hdlObjects.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl, NOP, START, STOP, READ, WRITE
 from hwtLib.i2c.intf import I2cAgent
-from hwt.bitmask import selectBit
+from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl, NOP, START, STOP, READ, WRITE
 
 
 class I2CMasterBitCntrlTC(SimTestCase):
