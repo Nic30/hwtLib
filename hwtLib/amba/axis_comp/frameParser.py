@@ -124,14 +124,9 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
         Check if union member is selected by _select interface in union interface
         """
         parent = interfaceOfChoice._parent
-        try:
-            r = self._tmpRegsForSelect[parent]
-        except KeyError:
-            r = HsBuilder(self, parent._select).buff().end
-            self._tmpRegsForSelect[parent] = r
-
+        r = self._tmpRegsForSelect[parent]
         i = parent._interfaces.index(interfaceOfChoice)
-        return r.data._eq(i), r.vld
+        return i, r.data._eq(i), r.vld
 
     def connectParts(self,
                      allOutNodes: ListOfOutNodeInfos,
@@ -165,24 +160,28 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
         tToIntf = self.dataOut._fieldsToInterfaces
 
         if isinstance(part, ChoicesOfFrameParts):
-            unionGroup = ExclusieveListOfHsNodes()
+            parentIntf = tToIntf[part.origin.parent.origin]
+            try:
+                sel = self._tmpRegsForSelect[parentIntf]
+            except KeyError:
+                sel = HsBuilder(self, parentIntf._select).buff().end
+                self._tmpRegsForSelect[parentIntf] = sel
+            unionGroup = ExclusieveListOfHsNodes(sel)
+
             # for unions
             for choice in part:
                 # connect data signals of choices and collect info about streams
                 intfOfChoice = tToIntf[choice.tmpl.origin]
-                isSelected, isSelectValid = self.choiceIsSelected(intfOfChoice)
+                selIndex, isSelected, isSelectValid = self.choiceIsSelected(intfOfChoice)
                 _exclusiveEn = isSelectValid & isSelected & exclusiveEn
 
                 unionMemberPart = ListOfOutNodeInfos()
                 for p in choice:
                     self.connectPart(unionMemberPart, p, en, _exclusiveEn)
-                unionGroup.append(unionMemberPart)
-                print(unionGroup)
+                unionGroup.append(selIndex, unionMemberPart)
 
             hsNondes.append(unionGroup)
 
-            parentIntf = tToIntf[part.origin.parent.origin]
-            sel = self._tmpRegsForSelect[parentIntf]
             if part.isLastPart():
                 # synchronization of reading from _select register for unions
                 selNode = InNodeInfo(sel, en)
@@ -277,47 +276,47 @@ if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     from hwtLib.amba.axis import AxiStream
 
-    t = HStruct(
-      (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
-      (uint64_t, None),  # name = None means this field will be ignored
-      (uint64_t, "item1"),
-      (uint64_t, None),
-      (uint16_t, "item2"),
-      (uint16_t, "item3"),
-      (uint32_t, "item4"),
-      (uint32_t, None),
-      (uint64_t, "item5"),  # this word is split on two bus words
-      (uint32_t, None),
-      (uint64_t, None),
-      (uint64_t, None),
-      (uint64_t, None),
-      (uint64_t, "item6"),
-      (uint64_t, "item7"),
-      (HStruct(
-          (uint64_t, "item0"),
-          (uint64_t, "item1"),
-       ),
-       "struct0")
-      )
-    t = HUnion(
-        (uint32_t, "a"),
-        (int32_t, "b")
-        )
+    #t = HStruct(
+    #  (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
+    #  (uint64_t, None),  # name = None means this field will be ignored
+    #  (uint64_t, "item1"),
+    #  (uint64_t, None),
+    #  (uint16_t, "item2"),
+    #  (uint16_t, "item3"),
+    #  (uint32_t, "item4"),
+    #  (uint32_t, None),
+    #  (uint64_t, "item5"),  # this word is split on two bus words
+    #  (uint32_t, None),
+    #  (uint64_t, None),
+    #  (uint64_t, None),
+    #  (uint64_t, None),
+    #  (uint64_t, "item6"),
+    #  (uint64_t, "item7"),
+    #  (HStruct(
+    #      (uint64_t, "item0"),
+    #      (uint64_t, "item1"),
+    #   ),
+    #   "struct0")
+    #  )
+    #t = HUnion(
+    #    (uint32_t, "a"),
+    #    (int32_t, "b")
+    #    )
 
     t = HUnion(
         (HStruct(
             (uint64_t, "itemA0"),
-            (uint64_t, "itemA1")
+            # (uint64_t, "itemA1")
             ), "frameA"),
         (HStruct(
             (uint32_t, "itemB0"),
             (uint32_t, "itemB1"),
-            (uint32_t, "itemB2"),
-            (uint32_t, "itemB3")
+            # (uint32_t, "itemB2"),
+            # (uint32_t, "itemB3")
             ), "frameB")
         )
     u = AxiS_frameParser(AxiStream, t)
-    u.DATA_WIDTH.set(15)
+    u.DATA_WIDTH.set(51)
     print(
     toRtl(u)
        )

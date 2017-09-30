@@ -204,7 +204,7 @@ class AxiS_frameParserTC(SimTestCase):
             u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, t.fromPy(d)))
         u.dataOut._select._ag.data.extend([0, 1, 0, 1])
 
-        t = 300 * Time.ns
+        t = 500 * Time.ns
         if randomize:
             t *= 8 * dataWidth / 16
         self.doSim(t)

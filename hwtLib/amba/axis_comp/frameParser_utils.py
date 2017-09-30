@@ -6,6 +6,7 @@ from hwt.interfaces.std import Handshaked, VldSynced
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.hdlObjects.value import Value
 
 
 class InNodeInfo():
@@ -49,14 +50,6 @@ class OutNodeInfo():
         self.en = en
         self.exclusiveEn = exclusiveEn
         self.pendingReg = parent._reg(outInterface._name + "_pending_", defVal=1)
-
-    def exclusiveAck(self):
-        en = self.exclusiveEn
-        ack = self.ack()
-        if en is None:
-            return ack
-        else:
-            return ack & en
 
     def ack(self) -> RtlSignal:
         ack = self.outInterface.rd
@@ -105,12 +98,6 @@ class ListOfOutNodeInfos(list):
         else:
             return hBit(1)
 
-    def exclusiveAck(self) -> RtlSignal:
-        if self:
-            return And(*map(lambda x: x.exclusiveAck(), self))
-        else:
-            return hBit(1)
-
     def sync(self, allNodes: List[OutNodeInfo], en: RtlSignal) -> None:
         for node in self:
             if node is not self:
@@ -118,16 +105,29 @@ class ListOfOutNodeInfos(list):
 
 
 class ExclusieveListOfHsNodes(list):
+    """
+    @ivar selectorIntf: selector for this node
+    """
+
+    def __init__(self, selectorIntf):
+        self.selectorIntf = selectorIntf
+
+    def append(self, selectorVal, item):
+        return list.append(self, (selectorVal, item))
 
     def ack(self) -> RtlSignal:
+        ack = hBit(1)
         if self:
-            return Or(*map(lambda x: x.exclusiveAck(), self))
-        else:
-            return hBit(1)
+            acks = list(map(lambda x: x[1].ack() & self.selectorIntf.data._eq(x[0]), self))
+            print("acks", acks)
+            ack = Or(*acks)
+
+        return ack & self.selectorIntf.vld
+        
 
     def sync(self, allNodes: List[OutNodeInfo], en: RtlSignal) -> None:
         nodesWithoutMe = list(where(allNodes, lambda x: x is not self))
-        for item in self:
+        for index, item in self:
             item.sync(nodesWithoutMe, en)
 
 
