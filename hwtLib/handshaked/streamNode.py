@@ -27,6 +27,7 @@ def _exStreamMemberAck(m):
 class ExclusiveStreamGroups(list):
     """
     list of tuples (cond, StreamNode instance)
+    Only one stream from this group can be activated at the time
     """
     def __hash__(self):
         return id(self)
