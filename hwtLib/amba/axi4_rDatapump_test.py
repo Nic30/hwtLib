@@ -35,6 +35,7 @@ class Axi4_rDatapumpTC(SimTestCase):
     DATA_WIDTH = 64
 
     def setUp(self):
+        super(Axi4_rDatapumpTC, self).setUp()
         self.u = Axi_rDatapump()
         self.u.DATA_WIDTH.set(self.DATA_WIDTH)
         self.prepareUnit(self.u)
@@ -351,6 +352,7 @@ class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
     LEN_MAX = 15
 
     def setUp(self):
+        SimTestCase.setUp(self)
         self.u = Axi_rDatapump(axiAddrCls=Axi3_addr_withUser)
         self.u.DATA_WIDTH.set(self.DATA_WIDTH)
         self.prepareUnit(self.u)

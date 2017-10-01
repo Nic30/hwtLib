@@ -13,6 +13,7 @@ from hwtLib.abstract.denseMemory import DenseMemory
 
 class CLinkedListReaderTC(SimTestCase):
     def setUp(self):
+        super(CLinkedListReaderTC, self).setUp()
         u = self.u = CLinkedListReader()
         self.ITEMS_IN_BLOCK = 31
         self.PTR_WIDTH = 8

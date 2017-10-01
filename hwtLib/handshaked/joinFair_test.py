@@ -17,6 +17,7 @@ def dataFn(d):
 
 class HsJoinFair_2inputs_TC(SimTestCase):
     def setUp(self):
+        super(HsJoinFair_2inputs_TC, self).setUp()
         u = self.u = HsJoinFairShare(Handshaked)
         self.INPUTS = 2
         u.INPUTS.set(self.INPUTS)
@@ -108,6 +109,7 @@ class HsJoinFair_2inputs_TC(SimTestCase):
 
 class HsJoinFair_3inputs_TC(HsJoinFair_2inputs_TC):
     def setUp(self):
+        SimTestCase.setUp(self)
         u = self.u = HsJoinFairShare(Handshaked)
         self.INPUTS = 3
         u.INPUTS.set(self.INPUTS)
