@@ -27,8 +27,8 @@ class SimpleUnit(Unit):
         Logic and connections are specified in this function.
         """
 
-        # ** operator creates assignment. First parameter is source rest are destinations.
-        self.b ** self.a  # a drives b
+        # call operator creates assignment. First parameter is source rest are destinations.
+        self.b(self.a)  # a drives b
         # directions of a and b interfaces are derived automatically, if signal has driver it is output
 
 if __name__ == "__main__":  # alias python main function

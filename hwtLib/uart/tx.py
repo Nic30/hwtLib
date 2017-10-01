@@ -45,22 +45,22 @@ class UartTx(Unit):
                                                        en)
 
         If(~en & din.vld,
-           data ** Concat(STOP_BIT, din.data, START_BIT),
-           en ** 1
+           data(Concat(STOP_BIT, din.data, START_BIT)),
+           en(1)
         ).Elif(tick & en,
             # srl where 1 is shifted from left
-            data ** hBit(1)._concat(data[:1]),
+            data(hBit(1)._concat(data[:1])),
             If(last,
-               en ** 0,
+               en(0),
             )
         )
-        din.rd ** ~en
+        din.rd(~en)
 
         txd = r("reg_txd", defVal=1)
         If(tick & en,
-           txd ** data[0]
+           txd(data[0])
         )
-        self.txd ** txd
+        self.txd(txd)
 
 
 if __name__ == "__main__":

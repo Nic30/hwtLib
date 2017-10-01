@@ -47,9 +47,9 @@ class SimpleAxiRegs(Unit):
 
         def connectRegToConveror(convPort, reg):
             If(convPort.dout.vld,
-                reg ** convPort.dout.data
+                reg(convPort.dout.data)
             )
-            convPort.din ** reg 
+            convPort.din(reg) 
 
         connectRegToConveror(conv.decoded.reg0, reg0)
         connectRegToConveror(conv.decoded.reg1, reg1)

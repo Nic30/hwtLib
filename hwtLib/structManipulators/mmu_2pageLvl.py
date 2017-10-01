@@ -93,13 +93,13 @@ class MMU_2pageLvl(Unit):
     def connectLvl1PageTable(self):
         rpgt = self.lvl1Table
         rootW = self.lvl1Converter.w
-        rpgt.dout ** None
-        rootW.addr ** rpgt.addr
+        rpgt.dout(None)
+        rootW.addr(rpgt.addr)
         wEn = rpgt.en & rpgt.we
-        rootW.vld ** wEn
-        rootW.data ** rpgt.din
+        rootW.vld(wEn)
+        rootW.data(rpgt.din)
 
-        self.lvl1Storage.a ** self.lvl1Converter.ram
+        self.lvl1Storage.a(self.lvl1Converter.ram)
 
         lvl1read = self.lvl1Converter.r
         return lvl1read
@@ -109,9 +109,11 @@ class MMU_2pageLvl(Unit):
         lvl2indx = self.lvl2indxFifo.dataIn
         pageOffset = self.pageOffsetFifo
 
-        lvl2indx.data ** virtIn.data[(self.LVL2_PAGE_TABLE_INDX_WIDTH + self.PAGE_OFFSET_WIDTH):self.PAGE_OFFSET_WIDTH]
+        lvl2indx.data(virtIn.data[(self.LVL2_PAGE_TABLE_INDX_WIDTH 
+                                   + self.PAGE_OFFSET_WIDTH):self.PAGE_OFFSET_WIDTH])
         connect(virtIn.data, pageOffset.dataIn.data, fit=True)
-        lvl1readAddr.data ** virtIn.data[:(self.LVL2_PAGE_TABLE_INDX_WIDTH + self.PAGE_OFFSET_WIDTH)]
+        lvl1readAddr.data(virtIn.data[:(self.LVL2_PAGE_TABLE_INDX_WIDTH 
+                                           + self.PAGE_OFFSET_WIDTH)])
         StreamNode(masters=[virtIn],
                    slaves=[lvl2indx, lvl1readAddr, pageOffset.dataIn]).sync()
 
@@ -119,10 +121,10 @@ class MMU_2pageLvl(Unit):
         lvl2get = self.lvl2get
         lvl2indx = self.lvl2indxFifo.dataOut
 
-        self.rDatapump ** lvl2get.rDatapump
+        self.rDatapump(lvl2get.rDatapump)
 
-        lvl2get.base ** lvl2base.data
-        lvl2get.index.data ** lvl2indx.data
+        lvl2get.base(lvl2base.data)
+        lvl2get.index.data(lvl2indx.data)
         StreamNode(masters=[lvl2base, lvl2indx],
                    slaves=[lvl2get.index],
                    extraConds={
@@ -138,7 +140,8 @@ class MMU_2pageLvl(Unit):
                    slaves=[self.physOut],
                    extraConds={self.physOut:~segfault}).sync()
 
-        self.physOut.data ** Concat(phyAddrBase.data[:self.PAGE_OFFSET_WIDTH], pageOffset.data)
+        self.physOut.data(Concat(phyAddrBase.data[:self.PAGE_OFFSET_WIDTH],
+                                 pageOffset.data))
 
     def segfaultChecker(self):
 
@@ -150,7 +153,7 @@ class MMU_2pageLvl(Unit):
             return intf.vld & intf.data[0]._eq(FLAG_INVALID)
 
         If(errVal(lvl1item) | errVal(lvl2item),
-           segfaultFlag ** 1
+           segfaultFlag(1)
         )
 
         return segfaultFlag
@@ -165,7 +168,7 @@ class MMU_2pageLvl(Unit):
         self.connectL2Load(lvl1read.data, segfaultFlag)
         self.connectPhyout(segfaultFlag)
 
-        self.segfault ** segfaultFlag
+        self.segfault(segfaultFlag)
 
 
 if __name__ == "__main__":

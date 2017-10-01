@@ -24,7 +24,7 @@ class StatementsTC(unittest.TestCase):
             b = nl.sig("b", BIT)
 
             def w(val):
-                return res ** val
+                return res(val)
 
             a.defaultVal = hBit(a_in)
             b.defaultVal = hBit(b_in)

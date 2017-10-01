@@ -22,11 +22,11 @@ def ComplexConditions():
 
     def tsWaitLogic(ifNoTsRd):
         return If(sd0 & sd1,
-                   st ** stT.lenExtr
+                   st(stT.lenExtr)
                ).Elif(sd0,
-                   st ** stT.ts1Wait
+                   st(stT.ts1Wait)
                ).Elif(sd1,
-                   st ** stT.ts0Wait
+                   st(stT.ts0Wait)
                ).Else(
                    ifNoTsRd
                )
@@ -34,25 +34,25 @@ def ComplexConditions():
     .Case(stT.idle,
         tsWaitLogic(
             If(cntrlFifoVld,
-               st ** stT.tsWait 
+               st(stT.tsWait)
             )
         )
     ).Case(stT.tsWait,
-        tsWaitLogic(st ** st)
+        tsWaitLogic(st(st))
     ).Case(stT.ts0Wait,
         If(sd0,
-           st ** stT.lenExtr
+           st(stT.lenExtr)
         )
     ).Case(stT.ts1Wait,
         If(sd1,
-           st ** stT.lenExtr
+           st(stT.lenExtr)
         )
     ).Case(stT.lenExtr,
         If(cntrlFifoVld & cntrlFifoLast,
-           st ** stT.idle
+           st(stT.idle)
         )
     )
-    s_idle ** st._eq(stT.idle)
+    s_idle(st._eq(stT.idle))
 
     return n, [rst, clk, sd0, sd1, cntrlFifoVld, cntrlFifoLast, s_idle]
 

@@ -52,27 +52,27 @@ class FifoAsync(Fifo):
         Out = self.dataOut
         OutClk = self.dataOut_clk._onRisingEdge()
 
-        self.pWr.en ** (In.en & ~full)
-        self.pWr.clk ** self.dataIn_clk
-        self.pWr.rst_n ** self.rst_n
+        self.pWr.en(In.en & ~full)
+        self.pWr.clk(self.dataIn_clk)
+        self.pWr.rst_n(self.rst_n)
         pNextWordToWrite = self.pWr.dataOut
 
-        self.pRd.en ** (Out.en & ~empty)
-        self.pRd.clk ** self.dataOut_clk 
-        self.pRd.rst_n ** self.rst_n
+        self.pRd.en(Out.en & ~empty)
+        self.pRd.clk(self.dataOut_clk) 
+        self.pRd.rst_n(self.rst_n)
         pNextWordToRead = self.pRd.dataOut
 
         # data out logic
         If(OutClk,
             If(Out.en & ~empty,
-               Out.data ** memory[pNextWordToRead] 
+               Out.data(memory[pNextWordToRead]) 
             )
         )
 
         # data in logic
         If(InClk,
             If(In.en & ~full,
-               memory[pNextWordToWrite] ** In.data 
+               memory[pNextWordToWrite](In.data) 
             )
         )
 
@@ -86,9 +86,9 @@ class FifoAsync(Fifo):
 
         # status ltching
         If(rstStatus | self.rst_n._isOn(),
-            status ** 0  # Going 'Empty'.
+            status(0)  # Going 'Empty'.
         ).Elif(setStatus,
-            status ** 1  # Going 'Full'
+            status(1)  # Going 'Full'
         )
 
         # data in logic
@@ -96,26 +96,26 @@ class FifoAsync(Fifo):
 
         # D Flip-Flop w/ Asynchronous Preset.
         If(presetFull,
-            full ** 1
+            full(1)
         ).Else(
             If(InClk,
-               full ** 0 
+               full(0) 
             )
         )
-        In.wait ** full 
+        In.wait(full) 
 
         # data out logic
         presetEmpty = ~status & equalAddresses
 
         # D Flip-Flop w/ Asynchronous Preset.
         If(presetEmpty,
-            empty ** 1
+            empty(1)
         ).Else(
             If(OutClk,
-               empty ** 0 
+               empty(0) 
             )
         )
-        Out.wait ** empty
+        Out.wait(empty)
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl

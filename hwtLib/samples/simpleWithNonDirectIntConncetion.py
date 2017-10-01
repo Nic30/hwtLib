@@ -20,8 +20,8 @@ class SimpleWithNonDirectIntConncetion(Unit):
     def _impl(self):
         self.b = Signal()
 
-        self.b ** self.a
-        self.c ** self.b
+        self.b(self.a)
+        self.c(self.b)
 
 
 class SimpleWithNonDirectIntConncetionTC(SimTestCase):

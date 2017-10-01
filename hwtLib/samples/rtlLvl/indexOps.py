@@ -25,15 +25,15 @@ def IndexOps():
 
     s_out4 = n.sig("s_out4", Bits(16))
 
-    s_out ** s_in[4:]._concat(vec(2, 4))
+    s_out(s_in[4:]._concat(vec(2, 4)))
 
-    s_out2[4:] ** s_in2[4:]
-    s_out2[:4] ** s_in2[:4]
+    s_out2[4:](s_in2[4:])
+    s_out2[:4](s_in2[:4])
 
-    s_out3 ** s_in3[8:]
+    s_out3(s_in3[8:])
 
-    s_out4[8:] ** s_in4a
-    s_out4[(8 + 8):8] ** s_in4b
+    s_out4[8:](s_in4a)
+    s_out4[(8 + 8):8](s_in4b)
 
     interf = [s_in, s_out, s_in2, s_out2, s_in3, s_out3, s_in4a, s_in4b, s_out4]
 

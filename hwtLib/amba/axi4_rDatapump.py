@@ -58,10 +58,10 @@ class Axi_rDatapump(Axi_datapumpBase):
         req_idBackup = self._reg("req_idBackup", req.id._dtype)
 
         If(lastReqDispatched,
-            req_idBackup ** req.id,
-            a.id ** req.id 
+            req_idBackup(req.id),
+            a.id(req.id) 
         ).Else(
-            a.id ** req_idBackup
+            a.id(req_idBackup)
         )
 
     def addrHandler(self, addRmSize, rErrFlag):
@@ -88,57 +88,57 @@ class Axi_rDatapump(Axi_datapumpBase):
 
             self.arIdHandler(lastReqDispatched)
             If(reqLen > LEN_MAX,
-               ar.len ** LEN_MAX,
-               addRmSize.rem ** 0,
-               addRmSize.propagateLast ** 0
+               ar.len(LEN_MAX),
+               addRmSize.rem(0),
+               addRmSize.propagateLast(0)
             ).Else(
                connect(reqLen, ar.len, fit=True),  # connect only lower bits of len
-               addRmSize.rem ** reqRem,
-               addRmSize.propagateLast ** 1
+               addRmSize.rem(reqRem),
+               addRmSize.propagateLast(1)
             )
 
             If(ack,
                 If(reqLen > LEN_MAX,
-                    lenDebth ** (reqLen - (LEN_MAX + 1)),
-                    lastReqDispatched ** 0
+                    lenDebth(reqLen - (LEN_MAX + 1)),
+                    lastReqDispatched(0)
                 ).Else(
-                    lastReqDispatched ** 1
+                    lastReqDispatched(1)
                 )
             )
 
             If(lastReqDispatched,
-               ar.addr ** req.addr,
-               rAddr ** (req.addr + ADDR_STEP),
+               ar.addr(req.addr),
+               rAddr(req.addr + ADDR_STEP),
 
-               reqLen ** req.len,
-               reqRem ** req.rem,
-               remBackup ** req.rem,
-               ack ** (req.vld & addRmSize.rd & ar.ready),
+               reqLen(req.len),
+               reqRem(req.rem),
+               remBackup(req.rem),
+               ack(req.vld & addRmSize.rd & ar.ready),
                StreamNode(masters=[req],
                           slaves=[addRmSize, ar],
                           extraConds={ar:~rErrFlag}).sync(),
             ).Else(
-               req.rd ** 0,
-               ar.addr ** rAddr,
-               ack ** (addRmSize.rd & ar.ready),
+               req.rd(0),
+               ar.addr(rAddr),
+               ack(addRmSize.rd & ar.ready),
                If(ack,
-                  rAddr ** (rAddr + ADDR_STEP) 
+                  rAddr(rAddr + ADDR_STEP) 
                ),
 
-               reqLen ** lenDebth,
-               reqRem ** remBackup,
+               reqLen(lenDebth),
+               reqRem(remBackup),
                StreamNode(slaves=[addRmSize, ar],
                           extraConds={ar:~rErrFlag}).sync(),
             )
         else:
             # if axi len is wider we can directly translate requests to axi
-            ar.id ** req.id
-            ar.addr ** req.addr
+            ar.id(req.id)
+            ar.addr(req.addr)
 
             connect(req.len, ar.len, fit=True)
 
-            addRmSize.rem ** req.rem
-            addRmSize.propagateLast ** 1
+            addRmSize.rem(req.rem)
+            addRmSize.propagateLast(1)
 
             StreamNode(masters=[req],
                        slaves=[ar, addRmSize],
@@ -149,9 +149,9 @@ class Axi_rDatapump(Axi_datapumpBase):
 
         return Switch(remSize)\
                 .Case(0,
-                      strb ** mask(strbBytes)
+                      strb(mask(strbBytes))
                 ).addCases(
-                 [ (i + 1, strb ** mask(i + 1)) 
+                 [ (i + 1, strb(mask(i + 1))) 
                    for i in range(strbBytes - 1)]
                 )
 
@@ -161,19 +161,19 @@ class Axi_rDatapump(Axi_datapumpBase):
 
         rErrFlag = self._reg("rErrFlag", defVal=0)
         If(r.valid & rOut.ready & (r.resp != RESP_OKAY),
-           rErrFlag ** 1
+           rErrFlag(1)
         )
-        self.errorRead ** rErrFlag
+        self.errorRead(rErrFlag)
 
-        rOut.id ** r.id
-        rOut.data ** r.data
+        rOut.id(r.id)
+        rOut.data(r.data)
 
         If(r.valid & r.last & rmSizeOut.propagateLast,
             self.remSizeToStrb(rmSizeOut.rem, rOut.strb)
         ).Else(
-            rOut.strb ** mask(2 ** self.getSizeAlignBits())
+            rOut.strb(mask(2 ** self.getSizeAlignBits()))
         )
-        rOut.last ** (r.last & rmSizeOut.propagateLast)
+        rOut.last(r.last & rmSizeOut.propagateLast)
 
         StreamNode(masters=[r, rmSizeOut],
                    slaves=[rOut],

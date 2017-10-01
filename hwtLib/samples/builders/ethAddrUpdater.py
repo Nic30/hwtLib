@@ -58,7 +58,7 @@ class EthAddrUpdater(Unit):
         connectDp(self, self.rxPacketLoader, self.rxDataPump, self.axi_m)
         connectDp(self, self.txPacketUpdater, self.txDataPump, self.axi_m)
 
-        self.txPacketUpdater.writeAck.rd ** 1
+        self.txPacketUpdater.writeAck.rd(1)
 
         rxR = self.rxPacketLoader.dataOut
         txW = self.txPacketUpdater.dataIn
@@ -66,11 +66,11 @@ class EthAddrUpdater(Unit):
         def withFifo(interface):
             return HsBuilder(self, interface).buff(items=4).end
 
-        txW.eth.dst ** withFifo(rxR.eth.src)
-        txW.eth.src ** withFifo(rxR.eth.dst)
+        txW.eth.dst(withFifo(rxR.eth.src))
+        txW.eth.src(withFifo(rxR.eth.dst))
 
-        txW.ipv4.dst ** withFifo(rxR.ipv4.src)
-        txW.ipv4.src ** withFifo(rxR.ipv4.dst)
+        txW.ipv4.dst(withFifo(rxR.ipv4.src))
+        txW.ipv4.src(withFifo(rxR.ipv4.dst))
 
         HsBuilder(self, self.packetAddr).split_copy_to(
             self.rxPacketLoader.get,

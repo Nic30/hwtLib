@@ -122,7 +122,7 @@ class StreamNode():
             if isinstance(m, ExclusiveStreamGroups):
                 a = m.sync(r)
             else:
-                a = _getRd(m) ** r
+                a = _getRd(m)(r)
 
             expression.extend(a)
 
@@ -135,7 +135,7 @@ class StreamNode():
             if isinstance(s, ExclusiveStreamGroups):
                 a = s.sync(v)
             else:
-                a = _getVld(s) ** v
+                a = _getVld(s)(v)
 
             expression.extend(a)
 

@@ -30,9 +30,9 @@ class IpifRegWithEndpoint(Unit):
     def _impl(self):
         propagateClkRstn(self)
         ep = self.ep
-        self.reg.dataIn ** self.bus
-        ep.bus ** self.reg.dataOut
-        self.decoded ** ep.decoded
+        self.reg.dataIn(self.bus)
+        ep.bus(self.reg.dataOut)
+        self.decoded(ep.decoded)
 
 
 class IpifRegTC(IpifEndpointTC):

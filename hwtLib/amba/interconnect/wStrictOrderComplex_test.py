@@ -38,13 +38,12 @@ class WStrictOrderInterconnecComplex(Unit):
         dp = self.dp
         ic = self.ic
 
-        self.aw ** dp.a
-        self.w ** dp.w
-        dp.b ** self.b
+        self.aw(dp.a)
+        self.w(dp.w)
+        dp.b(self.b)
 
-        dp.driver ** ic.wDatapump
-
-        ic.drivers ** self.drivers
+        dp.driver(ic.wDatapump)
+        ic.drivers(self.drivers)
 
 
 class WStrictOrderInterconnectComplexTC(SimTestCase):

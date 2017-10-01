@@ -37,10 +37,10 @@ class Cam(Unit):
 
     def writeHandler(self, mem):
         w = self.write
-        w.rd ** 1
+        w.rd(1)
 
         If(self.clk._onRisingEdge() & w.vld,
-           mem[w.addr] ** Concat(w.data, w.mask[0])
+           mem[w.addr](Concat(w.data, w.mask[0]))
         )
 
     def matchHandler(self, mem):
@@ -50,14 +50,14 @@ class Cam(Unit):
         outNext = out.next
         outVld = self._reg("out_vld_reg", defVal=0)
 
-        key.rd ** 1
-        outVld ** key.vld
+        key.rd(1)
+        outVld(key.vld)
 
         for i in range(int(self.ITEMS)):
-            outNext[i] ** mem[i]._eq(Concat(key.data, hBit(1)))
+            outNext[i](mem[i]._eq(Concat(key.data, hBit(1))))
 
-        self.out.data ** out
-        self.out.vld ** outVld
+        self.out.data(out)
+        self.out.vld(outVld)
 
     def _impl(self):
         # +1 bit to validity check

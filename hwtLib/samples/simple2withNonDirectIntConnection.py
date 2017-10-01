@@ -28,8 +28,8 @@ class Simple2withNonDirectIntConnection(Unit):
             self.b = AxiStream()
         b = self.b
 
-        b ** self.a
-        self.c ** b
+        b(self.a)
+        self.c(b)
 
 
 class Simple2withNonDirectIntConnectionTC(SimTestCase):

@@ -17,11 +17,11 @@ class SimpleIfStatement(Unit):
 
     def _impl(self):
         If(self.a,
-           self.d ** self.b,
+           self.d(self.b),
         ).Elif(self.b,
-           self.d ** self.c
+           self.d(self.c)
         ).Else(
-           self.d ** 0
+           self.d(0)
         )
         
 class SimpleIfStatement2(Unit):
@@ -37,12 +37,12 @@ class SimpleIfStatement2(Unit):
 
         If(self.a,
             If(self.b & self.c,
-               r ** 1,
+               r(1),
             ).Else(
-               r ** 0
+               r(0)
             )
         )
-        self.d ** r
+        self.d(r)
 
 
 class SimpleIfStatement2b(Unit):
@@ -58,12 +58,12 @@ class SimpleIfStatement2b(Unit):
 
         If(self.a & self.b,
             If(self.c,
-               r ** 1,
+               r(1),
             )
         ).Elif(self.c,
-            r ** 0
+            r(0)
         )
-        self.d ** r
+        self.d(r)
 
 
 class SimpleIfStatement2c(Unit):
@@ -79,14 +79,14 @@ class SimpleIfStatement2c(Unit):
 
         If(self.a & self.b,
             If(self.c,
-               r ** 0,
+               r(0),
             )
         ).Elif(self.c,
-            r ** 1
+            r(1)
         ).Else(
-            r ** 2
+            r(2)
         )
-        self.d ** r
+        self.d(r)
 
 if __name__ == "__main__":  # alias python main function
     from hwt.synthesizer.shortcuts import toRtl

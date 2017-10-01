@@ -18,7 +18,7 @@ class InNodeInfo():
 
     def sync(self, others: List['OutNodeInfo'], en: RtlSignal):
         ackOfOthers = getAckOfOthers(self, others)
-        self.inInterface.rd ** (ackOfOthers & en & self.en)
+        self.inInterface.rd(ackOfOthers & en & self.en)
 
     def ack(self) -> RtlSignal:
         return self.inInterface.vld
@@ -51,7 +51,7 @@ class OutNodeInfo():
         self.pendingReg = parent._reg(outInterface._name + "_pending_", defVal=1)
         ack = self.outInterface.rd
         self._ack = parent._sig(outInterface._name + "_ack")
-        self._ack ** (ack | ~self.pendingReg)
+        self._ack(ack | ~self.pendingReg)
 
     def ack(self) -> RtlSignal:
         # if output is not selected in union we do not need to care
@@ -69,14 +69,14 @@ class OutNodeInfo():
 
         If(en,
            If(ackOfOthers & self.ack(),
-              self.pendingReg ** 1,
+              self.pendingReg(1),
            ).Elif(self.pendingReg & self.outInterface.rd,
-              self.pendingReg ** 0
+              self.pendingReg(0)
            )
         )
 
         # value of this node was not consumed and it is enabled
-        self.outInterface.vld ** (self.pendingReg & en)
+        self.outInterface.vld(self.pendingReg & en)
 
     def __repr__(self):
         return "<OutNodeInfo for %s>" % self.outInterface._name

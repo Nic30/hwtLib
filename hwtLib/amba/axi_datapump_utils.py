@@ -24,28 +24,28 @@ def connectDp(parent, controller, datapump, axi):
         controller = controller[0]
 
     if isinstance(datapump, Axi_rDatapump):
-        axi.ar ** datapump.a
-        datapump.r ** axi.r
+        axi.ar(datapump.a)
+        datapump.r(axi.r)
 
         if isinstance(controller, (list, tuple)):
             interconnect = RStrictOrderInterconnect()
             # @for cntrl, reqIn in zip(controller, req_join.dataIn):
-            # @    reqIn ** HsBuilder(parent, cntrl.rDatapump.req).reg().end
+            # @    reqIn(HsBuilder(parent, cntrl.rDatapump.req).reg().end)
 
-            # datapump.driver.req ** req_join.dataOut
+            # datapump.driver.req(req_join.dataOut)
         else:
-            datapump.driver ** controller.rDatapump
+            datapump.driver(controller.rDatapump)
             return
 
     elif isinstance(datapump, Axi_wDatapump):
-        axi.aw ** datapump.a
-        axi.w ** datapump.w
-        datapump.b ** axi.b
+        axi.aw(datapump.a)
+        axi.w(datapump.w)
+        datapump.b(axi.b)
 
         if isinstance(controller, (list, tuple)):
             interconnect = WStrictOrderInterconnect()
         else:
-            datapump.driver ** controller.wDatapump
+            datapump.driver(controller.wDatapump)
             return
 
     else:
@@ -53,6 +53,6 @@ def connectDp(parent, controller, datapump, axi):
 
     interconnect.configureFromDrivers(controller, datapump, byInterfaces=True)
     setattr(parent, datapump._name + "_interconnect", interconnect)
-    interconnect.clk ** parent.clk
-    interconnect.rst_n ** parent.rst_n
+    interconnect.clk(parent.clk)
+    interconnect.rst_n(parent.rst_n)
     interconnect.connectDrivers(controller, datapump)

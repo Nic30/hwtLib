@@ -284,9 +284,9 @@ class BusEndpoint(Unit):
             _addrEnd = transTmpl.bitAddrEnd // srcAddrStep
             addrIsInRange = inRange(srcAddrSig, _addr, _addrEnd)
             addr_tmp = self._sig(dstAddrSig._name + "_addr_tmp", Bits(self.ADDR_WIDTH))
-            addr_tmp ** (srcAddrSig - _addr)
+            addr_tmp(srcAddrSig - _addr)
 
-        connectedAddr = (dstAddrSig ** addr_tmp[(bitsOfSubAddr + bitsForAlignment):(bitsForAlignment)])
+        connectedAddr = (dstAddrSig(addr_tmp[(bitsOfSubAddr + bitsForAlignment):(bitsForAlignment)]))
 
         return (addrIsInRange, connectedAddr)
 
@@ -344,21 +344,21 @@ class BusEndpoint(Unit):
         for convIntf, intf in walkStructIntfAndIntfMap(self.decoded, interfaceMap):
             if isinstance(intf, Signal):
                 assert intf._direction == INTF_DIRECTION.MASTER
-                convIntf.din ** intf
+                convIntf.din(intf)
 
             elif isinstance(intf, RtlSignalBase):
-                convIntf.din ** intf
+                convIntf.din(intf)
 
             elif isinstance(intf, RegCntrl):
                 assert intf._direction == INTF_DIRECTION.SLAVE
-                intf ** convIntf
+                intf(convIntf)
 
             elif isinstance(intf, VldSynced):
                 assert intf._direction == INTF_DIRECTION.SLAVE
-                intf ** convIntf.dout
+                intf(convIntf.dout)
 
             elif isinstance(intf, BramPort_withoutClk):
-                intf ** convIntf
+                intf(convIntf)
             else:
                 raise NotImplementedError(intf)
 

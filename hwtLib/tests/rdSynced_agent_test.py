@@ -14,7 +14,7 @@ class RdSyncedPipe(Unit):
         self.b = RdSynced()
 
     def _impl(self):
-        self.b ** self.a
+        self.b(self.a)
 
 
 class RdSynced_agent_TC(SimTestCase):

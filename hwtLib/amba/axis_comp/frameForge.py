@@ -143,7 +143,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
                 tmp = self._sig("union_tmp_", Bits(w))
                 intfOfChoice = tToIntf[choice.tmpl.origin]
                 _, isSelected, isSelectValid = AxiS_frameParser.choiceIsSelected(self, intfOfChoice)
-                unionChoices.append((isSelected, wordData_out[high:low] ** tmp))
+                unionChoices.append((isSelected, wordData_out[high:low](tmp)))
 
                 isSelected = isSelected & isSelectValid
 
@@ -161,7 +161,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             
             # generate data out mux
             SwitchLogic(unionChoices,
-                        default=wordData_out ** None)
+                        default=wordData_out(None))
 
             inPorts_out.append(inPortGroups)
             lastInPorts_out.append(lastInPortsGroups)
@@ -170,11 +170,11 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             # connect parts of fields to output signal
             high, low = tPart.getBusWordBitRange()
             if tPart.isPadding:
-                wordData_out[high:low] ** None
+                wordData_out[high:low](None)
             else:
                 intf = tToIntf[tPart.tmpl.origin]
                 fhigh, flow = tPart.getFieldBitRange()
-                wordData_out[high:low] ** self.byteOrderCare(intf.data)[fhigh:flow]
+                wordData_out[high:low](self.byteOrderCare(intf.data)[fhigh:flow])
                 inPorts_out.append(intf)
 
                 if tPart.isLastPart():
@@ -254,16 +254,16 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
                     _ack = dout.ready & ack
 
                 a = If(_ack,
-                       wordCntr_inversed ** nextWordIndex
+                       wordCntr_inversed(nextWordIndex)
                     )
             else:
                 a = []
 
-            a.extend(dout.valid ** ack)
+            a.extend(dout.valid(ack))
             
             if multipleWords:
                 # data out logic
-                a.extend(dout.data ** wordData)
+                a.extend(dout.data(wordData))
                 wcntrSw.Case(inversedIndx, a)
 
             if isLast:
@@ -273,23 +273,23 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
         if not multipleWords:
             pass
         elif not isPow2(maxWordIndex + 1):
-            default = wordCntr_inversed ** maxWordIndex
-            default.extend(dout.valid ** 0)
-            default.extend(dout.data ** None)
+            default = wordCntr_inversed(maxWordIndex)
+            default.extend(dout.valid(0))
+            default.extend(dout.data(None))
 
             wcntrSw.Default(default)
 
         if multipleWords:
-            dout.last ** In(wordCntr_inversed, endsOfFrames)
+            dout.last(In(wordCntr_inversed, endsOfFrames))
             for r in self._tmpRegsForSelect.values():
-                r.rd ** (ack & wordCntr_inversed._eq(endsOfFrames[-1]) & dout.ready)
+                r.rd(ack & wordCntr_inversed._eq(endsOfFrames[-1]) & dout.ready)
 
         else:
-            dout.last ** 1
+            dout.last(1)
             for r in self._tmpRegsForSelect.values():
-                r.rd ** (ack & dout.ready)
+                r.rd(ack & dout.ready)
 
-        dout.strb ** mask(int(self.DATA_WIDTH // 8))
+        dout.strb(mask(int(self.DATA_WIDTH // 8)))
 
 
 if __name__ == "__main__":

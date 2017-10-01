@@ -53,7 +53,7 @@ class CrcComb(Unit):
                         bit = bit ^ b
             assert bit is not None
 
-            outBit ** bit
+            outBit(bit)
 
 
 if __name__ == "__main__":

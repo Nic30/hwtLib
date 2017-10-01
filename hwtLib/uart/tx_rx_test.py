@@ -27,9 +27,9 @@ class TestUnit_uart(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
-        self.rx.rxd ** self.tx.txd
-        self.tx.dataIn ** self.din
-        self.dout ** self.rx.dataOut
+        self.rx.rxd(self.tx.txd)
+        self.tx.dataIn(self.din)
+        self.dout(self.rx.dataOut)
 
 
 class UartTxRxTC(SimTestCase):

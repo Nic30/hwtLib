@@ -39,10 +39,10 @@ class FlipRegister(Unit):
     def connectWriteIntf(self, regA, regB):
         return (
             If(self.first.dout.vld,
-                regA ** self.first.dout.data
+                regA(self.first.dout.data)
             ) + 
             If(self.second.dout.vld,
-               regB ** self.second.dout.data
+               regB(self.second.dout.data)
             )
         )
 

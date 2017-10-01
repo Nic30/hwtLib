@@ -210,11 +210,11 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
             # connect all parts in this group to output stream
             signalsOfParts.append(fPartSig)
             intf = self.dataOut._fieldsToInterfaces[fieldInfo]
-            intf.data ** self.byteOrderCare(
-                                       Concat(
-                                              *reversed(signalsOfParts)
-                                             )
-                                      )
+            intf.data(self.byteOrderCare(
+                            Concat(
+                                   *reversed(signalsOfParts)
+                                  ))
+                      )
             on = OutNodeInfo(self, intf, en, exclusiveEn)
             hsNondes.append(on)
         else:
@@ -225,7 +225,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
                                                  len(signalsOfParts)),
                                  fPartSig._dtype)
             If(dataVld,
-               fPartReg ** fPartSig
+               fPartReg(fPartSig)
             )
             signalsOfParts.append(fPartReg)
 
@@ -258,13 +258,13 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
 
         if self.SHARED_READY:
             busReady = self.dataOut_ready
-            r.ready ** busReady
+            r.ready(busReady)
         else:
             busReady = self._sig("busReady")
-            busReady ** allOutNodes.ack()
+            busReady(allOutNodes.ack())
             allOutNodes.sync(busVld)
 
-        r.ready ** busReady
+        r.ready(busReady)
 
 
         if hasMultipleWords:
@@ -275,9 +275,9 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
                 
             If(busVld & busReady,
                 If(last,
-                   wordIndex ** 0
+                   wordIndex(0)
                 ).Else(
-                    wordIndex ** (wordIndex + 1)
+                    wordIndex(wordIndex + 1)
                 )
             )
 

@@ -20,12 +20,12 @@ class SelfRefCntr(Unit):
         cntr = self._reg("cntr", self.dt, defVal=0)
 
         If(cntr._eq(4),
-           cntr ** 0
+           cntr(0)
         ).Else(
-           cntr ** (cntr + 1)
+           cntr(cntr + 1)
         )
 
-        self.dout ** cntr
+        self.dout(cntr)
 
 
 if __name__ == "__main__":

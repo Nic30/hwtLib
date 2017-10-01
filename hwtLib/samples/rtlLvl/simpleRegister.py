@@ -17,8 +17,8 @@ def SimpleRegister():
     syncRst = n.sig("rst")
 
     val = n.sig("val", t, clk, syncRst, 0)
-    val ** s_in
-    s_out ** val
+    val(s_in)
+    s_out(val)
 
     interf = [clk, syncRst, s_in, s_out]
     return n, interf

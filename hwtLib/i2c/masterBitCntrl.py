@@ -106,12 +106,12 @@ class I2cMasterBitCtrl(Unit):
         # whenever the slave is not ready it can delay the cycle by pulling SCL low
         # delay scl_oen
         delayedScl_t = self._reg("delayedScl_t", defVal=1)
-        delayedScl_t ** scl_t
+        delayedScl_t(scl_t)
 
         # slave_wait is asserted when master wants to drive SCL high, but the slave pulls it low
         # slave_wait remains asserted until the slave releases SCL
         slave_wait = self._reg("slave_wait", defVal=0)
-        slave_wait ** ((~scl_t & delayedScl_t & ~scl) | (slave_wait & ~scl))
+        slave_wait((~scl_t & delayedScl_t & ~scl) | (slave_wait & ~scl))
 
         clkCntr = self._reg("clkCntr",
                             Bits(self.CLK_CNTR_WIDTH, False),
@@ -119,13 +119,13 @@ class I2cMasterBitCtrl(Unit):
         stateClkEn = self._reg("stateClkEn", defVal=1)
 
         If(clkCntr._eq(0) | scl_sync,
-           clkCntr ** self.clk_cnt_initVal,
-           stateClkEn ** 1
+           clkCntr(self.clk_cnt_initVal),
+           stateClkEn(1)
         ).Elif(slave_wait,
-           stateClkEn ** 0
+           stateClkEn(0)
         ).Else(
-           clkCntr ** (clkCntr - 1),
-           stateClkEn ** 0
+           clkCntr(clkCntr - 1),
+           stateClkEn(0)
         )
 
         return stateClkEn
@@ -133,7 +133,7 @@ class I2cMasterBitCtrl(Unit):
     def filter(self, name, sig):
         """attempt to remove glitches"""
         filter0 = self._reg(name + "_filter0", dtype=Bits(2), defVal=0)
-        filter0 ** filter0[0]._concat(sig)
+        filter0(filter0[0]._concat(sig))
 
         # let filter_cnt to be shared between filters
         try:
@@ -143,14 +143,14 @@ class I2cMasterBitCtrl(Unit):
                                                                Bits(self.CLK_CNTR_WIDTH),
                                                                defVal=self.clk_cnt_initVal)
             If(filter_clk_cntr._eq(0),
-               filter_clk_cntr ** self.clk_cnt_initVal
+               filter_clk_cntr(self.clk_cnt_initVal)
             ).Else(
-               filter_clk_cntr ** (filter_clk_cntr - 1)
+               filter_clk_cntr(filter_clk_cntr - 1)
             )
 
         filter1 = self._reg(name + "_filter1", dtype=Bits(3), defVal=0b111)
         If(filter_clk_cntr._eq(0),
-           filter1 ** Concat(filter1[2:], filter0[1])
+           filter1(Concat(filter1[2:], filter0[1]))
         )
 
         filtered = ((filter1[2] & filter1[1]) | 
@@ -168,12 +168,12 @@ class I2cMasterBitCtrl(Unit):
         startCond = hasFallen(lastSda, sda) & scl
         stopCond = hasRisen(lastSda, sda) & scl
 
-        lastScl ** scl
-        lastSda ** sda
+        lastScl(scl)
+        lastSda(sda)
 
         dout = self._reg("doutReg", defVal=0)
-        dout ** hasRisen(lastScl, scl)
-        self.dout ** dout
+        dout(hasRisen(lastScl, scl))
+        self.dout(dout)
 
         # master drives SCL high, but another master pulls it low
         # master start counting down its low cycle now (clock synchronization)
@@ -192,16 +192,16 @@ class I2cMasterBitCtrl(Unit):
         al = self._reg("al", defVal=0)
         cmd_stop = self._reg("cmd_stop", defVal=0)
         If(stateClkEn,
-           cmd_stop ** self.cntrl.cmd._eq(STOP)
+           cmd_stop(self.cntrl.cmd._eq(STOP))
         )
 
         _al = (sda_chk & ~sda & ~sda_t)
         If(st._eq(st._dtype.idle),
-           al ** (_al | (stopCond & ~cmd_stop))
+           al(_al | (stopCond & ~cmd_stop))
         ).Else(
-           al ** _al
+           al(_al)
         )
-        self.arbitrationLost ** al
+        self.arbitrationLost(al)
 
         return al
 
@@ -257,40 +257,40 @@ class I2cMasterBitCtrl(Unit):
         stateSequence("wr", 4)
 
         If(al,
-           cmd_ack ** 0,
-           sda_t ** 0,
-           scl_t ** 0,
-           sda_chk ** 0,
+           cmd_ack(0),
+           sda_t(0),
+           scl_t(0),
+           sda_chk(0),
         ).Else(
             If(In(st, [stT.start_1, stT.start_2, stT.start_3,
                        stT.stop_1, stT.stop_2, stT.stop_3,
                        stT.rd_1, stT.rd_2,
                        stT.wr_1, stT.wr_2]),
-               scl_t ** 0
+               scl_t(0)
             ).Elif(In(st, [stT.start_4, stT.stop_0,
                            stT.rd_0, stT.rd_3,
                            stT.wr_0, stT.wr_3]),
-               scl_t ** 1
+               scl_t(1)
             ),
 
             If(In(st, [stT.start_0, stT.start_1,
                        stT.stop_3,
                        stT.rd_0, stT.rd_1, stT.rd_2, stT.rd_3]),
-               sda_t ** 0
+               sda_t(0)
             ).Elif(In(st, [stT.start_2, stT.start_3, stT.start_4,
                         stT.stop_0, stT.stop_1, stT.stop_2]),
-               sda_t ** 1
+               sda_t(1)
             ).Elif(In(st, [stT.wr_0, stT.wr_1, stT.wr_2, stT.wr_3]),
-               sda_t ** ~self.cntrl.din 
+               sda_t(~self.cntrl.din)
             ),
             # cmd ack at the end of state sequence   
-            cmd_ack ** In(st, [stT.start_4, stT.stop_3, stT.rd_3, stT.wr_3])
+            cmd_ack(In(st, [stT.start_4, stT.stop_3, stT.rd_3, stT.wr_3]))
         )
 
-        self.i2c.scl.o ** 0
-        self.i2c.sda.o ** 0
-        self.i2c.scl.t ** scl_t
-        self.i2c.sda.t ** sda_t
+        self.i2c.scl.o(0)
+        self.i2c.sda.o(0)
+        self.i2c.scl.t(scl_t)
+        self.i2c.sda.t(sda_t)
 
 
 if __name__ == "__main__":

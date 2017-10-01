@@ -75,12 +75,12 @@ class NetFilter(Unit):
         propagateClkRstn(s)
         AxiSBuilder(self, s.hfe.dout).split_copy_to(s.patternMatch.din, s.filter.din)
 
-        s.hfe.din ** s.din
-        s.filter.headers ** s.hfe.headers
-        s.filter.patternMatch ** s.patternMatch.match
-        s.exporter.din ** s.filter.dout
-        s.export ** s.exporter.dout
-        self.filter.cfg ** s.cfg
+        s.hfe.din(s.din)
+        s.filter.headers(s.hfe.headers)
+        s.filter.patternMatch(s.patternMatch.match)
+        s.exporter.din(s.filter.dout)
+        s.export(s.exporter.dout)
+        self.filter.cfg(s.cfg)
 
 
 if __name__ == "__main__":

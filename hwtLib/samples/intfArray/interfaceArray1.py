@@ -19,7 +19,7 @@ class SimpleSubunit(Unit):
             self.d = VldSynced()
 
     def _impl(self):
-        self.d ** self.c
+        self.d(self.c)
 
 
 class InterfaceArraySample1(Unit):
@@ -47,12 +47,12 @@ class InterfaceArraySample1(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
-        self.u0.c ** self.a[0]
-        self.u1.c ** self.a[1]
+        self.u0.c(self.a[0])
+        self.u1.c(self.a[1])
         # u2in = connect(a[2], u2.c)
 
-        self.b[0] ** self.u0.d
-        self.b[1] ** self.u1.d
+        self.b[0](self.u0.d)
+        self.b[1](self.u1.d)
         # u2out = connect(u2.d, b[2])
 
 

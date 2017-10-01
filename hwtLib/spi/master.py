@@ -91,24 +91,24 @@ class SpiMaster(Unit):
         txInitialized = self._reg("txInitialized", defVal=0)
         If(writeTick,
             If(txInitialized,
-                txReg ** sll(txReg, 1),
+                txReg(sll(txReg, 1)),
                 If(isLastTick,
-                   txInitialized ** 0,
+                   txInitialized(0),
                 )
             ).Else(
-               txInitialized ** 1,
-               txReg ** data 
+               txInitialized(1),
+               txReg(data)
             )
         ).Elif(isLastTick,
-            txInitialized ** 0
+            txInitialized(0)
         )
-        self.spi.mosi ** txReg[self.DATA_WIDTH - 1]
+        self.spi.mosi(txReg[self.DATA_WIDTH - 1])
 
     def readPart(self, readTick):
         rxReg = self._reg("rxReg", Bits(self.DATA_WIDTH))
 
         If(readTick,
-           rxReg ** Concat(rxReg[(self.DATA_WIDTH - 1):], self.spi.miso)
+           rxReg(Concat(rxReg[(self.DATA_WIDTH - 1):], self.spi.miso))
         )
         return rxReg
 
@@ -133,19 +133,19 @@ class SpiMaster(Unit):
             enableSig=en,
             rstSig=timersRst)
 
-        timersRst ** (~en | (requiresInitWait & initWaitDone))
+        timersRst(~en | (requiresInitWait & initWaitDone))
 
         clkIntern = self._reg("clkIntern", defVal=1)
         clkOut = self._reg("clkOut", defVal=1)
         If(spiClkHalfTick,
-           clkIntern ** ~clkIntern
+           clkIntern(~clkIntern)
         )
 
         If(~requiresInitWait & spiClkHalfTick,
-           clkOut ** ~clkOut
+           clkOut(~clkOut)
         )
 
-        self.spi.clk ** clkOut  # clk idle value is high
+        self.spi.clk(clkOut)  # clk idle value is high
 
         clkRisign, clkFalling = builder.edgeDetector(clkIntern.next, rise=True, fall=True, initVal=1)
 
@@ -161,28 +161,28 @@ class SpiMaster(Unit):
         writeTick, readTick, initWaitDone, endOfWord = self.spiClkGen(slaveSelectWaitRequired,
                                                                       ~ endOfWordDelayed & self.data.vld)
 
-        endOfWordDelayed ** endOfWord
+        endOfWordDelayed(endOfWord)
 
         if self.HAS_RX:
-            d.din ** self.readPart(readTick)
+            d.din(self.readPart(readTick))
         else:
-            d.din ** None
+            d.din(None)
 
         if self.HAS_TX:
             self.writePart(writeTick, endOfWordDelayed, d.dout)
 
         If(endOfWord,
-           slaveSelectWaitRequired ** d.last
+           slaveSelectWaitRequired(d.last)
         ).Elif(initWaitDone,
-           slaveSelectWaitRequired ** 0
+           slaveSelectWaitRequired(0)
         )
 
         csD = self.csDecoder
-        csD.din ** d.slave
-        csD.en ** d.vld
+        csD.din(d.slave)
+        csD.en(d.vld)
 
-        self.spi.cs ** ~csD.dout
-        d.rd ** endOfWordDelayed
+        self.spi.cs(~csD.dout)
+        d.rd(endOfWordDelayed)
 
 
 if __name__ == "__main__":

@@ -42,7 +42,7 @@ class Crc(Unit):
 
     def wrapWithName(self, sig, name):
         _sig = self._sig(name, sig._dtype)
-        _sig ** sig
+        _sig(sig)
         return _sig
 
     def parsePoly(self, POLY_WIDTH):
@@ -113,7 +113,7 @@ class Crc(Unit):
 
         If(self.dataIn.vld,
            # regNext is in format 0 ... N, we need to reverse it to litle endian
-           reg ** Concat(*reversed(regNext))
+           reg(Concat(*reversed(regNext)))
         )
 
         outXor = int(self.FINAL_XOR_VAL)
@@ -123,11 +123,11 @@ class Crc(Unit):
             _reg = reg
 
         if outXor == 0:
-            self.dataOut ** _reg
+            self.dataOut(_reg)
         elif outXor == mask(int(self.POLY_WIDTH)):
-            self.dataOut ** ~_reg
+            self.dataOut(~_reg)
         else:
-            self.dataOut ** (_reg ^ self.FINAL_XOR_VAL)
+            self.dataOut(_reg ^ self.FINAL_XOR_VAL)
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl

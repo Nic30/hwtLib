@@ -5,8 +5,8 @@ from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi3 import Axi3_withAddrUser
+from hwtLib.amba.axi4 import Axi4
 
 
 class AxiTestJunction(Unit):
@@ -20,7 +20,7 @@ class AxiTestJunction(Unit):
         self.m = self.axiCls()
 
     def _impl(self):
-        self.m ** self.s
+        self.m(self.s)
 
 
 class Axi_ag_TC(SimTestCase):

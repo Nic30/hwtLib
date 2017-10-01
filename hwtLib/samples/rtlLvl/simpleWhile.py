@@ -22,12 +22,12 @@ def SimpleWhile():
 
     counter = n.sig("counter", t, clk, syncRst, 0)
     If(start,
-        counter ** boundary
+        counter(boundary)
     ).Elif(en,
-        counter ** (counter - 1)
+        counter(counter - 1)
     )
 
-    s_out ** counter
+    s_out(counter)
 
     interf = [clk, syncRst, start, en, s_out]
     return n, interf

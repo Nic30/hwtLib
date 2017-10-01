@@ -23,10 +23,10 @@ class Cntr(Unit):
         
         # if there is no assignment into reg, value is kept
         If(self.en,
-           reg ** (reg + 1)
+           reg(reg + 1)
         )
 
-        self.val ** reg
+        self.val(reg)
 
 
 if __name__ == "__main__":  # "python main function"

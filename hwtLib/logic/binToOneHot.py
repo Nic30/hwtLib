@@ -28,10 +28,10 @@ class BinToOneHot(Unit):
         WIDTH = self.DATA_WIDTH
         if int(WIDTH) == 1:
             # empty_gen
-            self.dout[0] ** en
+            self.dout[0](en)
         else:
             for i in range(int(WIDTH)):
-                self.dout[i] ** (dIn._eq(i) & en)
+                self.dout[i](dIn._eq(i) & en)
 
 
 class BinToOneHotTC(SimTestCase):

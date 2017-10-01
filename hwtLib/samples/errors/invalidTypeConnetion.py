@@ -8,8 +8,8 @@ class InvalidTypeConnetion(Unit):
         self.b = VectSignal(64)
 
     def _impl(self):
-        # missing fitTo()
-        self.a ** self.b
+        # wrong size can be overriden by connect(src, dst, fit=True)
+        self.a(self.b)
 
 
 if __name__ == "__main__":

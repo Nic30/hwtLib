@@ -47,16 +47,16 @@ class HsResizer(HandshakedCompBase):
     def _upscaleDataPassLogic(self, inputRegs_cntr, ITEMS):
 
         # valid when all registers are loaded and input with last datapart is valid 
-        self.getVld(self.dataOut) ** (inputRegs_cntr._eq(ITEMS - 1) & self.getVld(self.dataIn))
+        self.getVld(self.dataOut)(inputRegs_cntr._eq(ITEMS - 1) & self.getVld(self.dataIn))
 
-        self.getRd(self.dataIn) ** ((inputRegs_cntr != ITEMS) | self.getRd(self.dataOut))
+        self.getRd(self.dataIn)((inputRegs_cntr != ITEMS) | self.getRd(self.dataOut))
         If(inputRegs_cntr._eq(ITEMS - 1),
             If(self.getVld(self.dataIn) & self.getRd(self.dataOut),
-               inputRegs_cntr ** 0
+               inputRegs_cntr(0)
             )
         ).Else(
             If(self.getVld(self.dataIn),
-               inputRegs_cntr ** (inputRegs_cntr + 1)
+               inputRegs_cntr(inputRegs_cntr + 1)
             )
         )
 
@@ -72,9 +72,9 @@ class HsResizer(HandshakedCompBase):
 
             for i, r in enumerate(inputRegs):
                 If(inputRegs_cntr._eq(i) & self.getVld(self.dataIn),
-                   r ** din
+                   r(din)
                 )
-            dout ** Concat(din, *reversed(inputRegs))
+            dout(Concat(din, *reversed(inputRegs)))
 
         self._upscaleDataPassLogic(inputRegs_cntr, factor)
 
@@ -87,9 +87,9 @@ class HsResizer(HandshakedCompBase):
         inReg = HandshakedReg(self.intfCls)
         inReg._updateParamsFrom(self.dataIn)
         self.inReg = inReg
-        inReg.clk ** self.clk
-        inReg.rst_n ** self.rst_n
-        inReg.dataIn ** self.dataIn
+        inReg.clk(self.clk)
+        inReg.rst_n(self.rst_n)
+        inReg.dataIn(self.dataIn)
         dataIn = inReg.dataOut
         dataOut = self.dataOut
 
@@ -98,17 +98,17 @@ class HsResizer(HandshakedCompBase):
             widthOfPart = din._dtype.bit_length() // factor
             inParts = iterBits(din, bitsInOne=widthOfPart)
             Switch(inputRegs_cntr).addCases(
-                [(i, dout ** inPart) for i, inPart in enumerate(inParts)]
+                [(i, dout(inPart)) for i, inPart in enumerate(inParts)]
                 )
 
-        self.getVld(dataOut) ** self.getVld(dataIn)
-        self.getRd(dataIn) ** (inputRegs_cntr._eq(factor - 1) & self.getRd(dataOut))
+        self.getVld(dataOut)(self.getVld(dataIn))
+        self.getRd(dataIn)(inputRegs_cntr._eq(factor - 1) & self.getRd(dataOut))
 
         If(self.getVld(dataIn) & self.getRd(dataOut),
             If(inputRegs_cntr._eq(factor - 1),
-               inputRegs_cntr ** 0
+               inputRegs_cntr(0)
             ).Else(
-               inputRegs_cntr ** (inputRegs_cntr + 1)
+               inputRegs_cntr(inputRegs_cntr + 1)
             )
         )
 
@@ -119,7 +119,7 @@ class HsResizer(HandshakedCompBase):
         elif scale[0] < scale[1]:
             self._upscale(scale[1])
         else:
-            self.dataOut ** self.dataIn
+            self.dataOut(self.dataIn)
             return
 
 

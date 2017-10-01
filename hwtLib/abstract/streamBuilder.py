@@ -104,13 +104,13 @@ class AbstractStreamBuilder(object):
         Connect clock and reset to unit "u"
         """
         if hasattr(u, "clk"):
-            u.clk ** self.getClk()
+            u.clk(self.getClk())
 
         if hasattr(u, 'rst_n'):
-            u.rst_n ** self.getRstn()
+            u.rst_n(self.getRstn())
 
         if hasattr(u, "rst"):
-            u.rst ** ~self.getRstn()
+            u.rst(~self.getRstn())
 
     def _genericInstance(self, unitCls, unitName, setParams=lambda u: u):
         """
@@ -129,7 +129,7 @@ class AbstractStreamBuilder(object):
         setattr(self.parent, self._findSuitableName(unitName), u)
         self._propagateClkRstn(u)
 
-        u.dataIn ** self.end
+        u.dataIn(self.end)
 
         self.lastComp = u
         self.end = u.dataOut
@@ -169,7 +169,7 @@ class AbstractStreamBuilder(object):
         self._propagateClkRstn(u)
 
         for joinIn, inputIntf in zip(u.dataIn, srcInterfaces):
-            joinIn ** inputIntf
+            joinIn(inputIntf)
 
         self.lastComp = u
         self.end = u.dataOut
@@ -253,7 +253,7 @@ class AbstractStreamBuilder(object):
         s = self.split_copy(noOfOutputs)
 
         for toComponent, fromFork in zip(outputs, self.end):
-            toComponent ** fromFork
+            toComponent(fromFork)
 
         self.end = None  # invalidate None because port was fully connected
         return s
@@ -273,7 +273,7 @@ class AbstractStreamBuilder(object):
 
         self._genericInstance(self.SplitSelectCls, 'select', setChCnt)
         if isinstance(outputSelSignalOrSequence, Handshaked):
-            self.lastComp.selectOneHot ** outputSelSignalOrSequence
+            self.lastComp.selectOneHot(outputSelSignalOrSequence)
         else:
             seq = outputSelSignalOrSequence
             t = Bits(self.lastComp.selectOneHot.data._dtype.bit_length())
@@ -286,13 +286,13 @@ class AbstractStreamBuilder(object):
                                       Bits(size.bit_length()),
                                       0)
             iin = self.lastComp.selectOneHot
-            iin.data ** indexes[actual]
-            iin.vld ** 1
+            iin.data(indexes[actual])
+            iin.vld(1)
             If(iin.rd,
                If(actual._eq(size - 1),
-                  actual ** 0
+                  actual(0)
                ).Else(
-                  actual ** (actual + 1)
+                  actual(actual + 1)
                )
             )
 
@@ -308,7 +308,7 @@ class AbstractStreamBuilder(object):
         s = self.split_select(outputSelSignalOrSequence, noOfOutputs)
 
         for toComponent, fromFork in zip(outputs, self.end):
-            toComponent ** fromFork
+            toComponent(fromFork)
 
         self.end = None  # invalidate None because port was fully connected
         return s
@@ -335,7 +335,7 @@ class AbstractStreamBuilder(object):
 
         s = self.split_prioritized(noOfOutputs)
         for toComponent, fromFork in zip(outputs, self.end):
-            toComponent ** fromFork
+            toComponent(fromFork)
 
         self.end = None  # invalidate None because port was fully connected
         return s
@@ -367,7 +367,7 @@ class AbstractStreamBuilder(object):
 
         s = self.split_fair(noOfOutputs, exportSelected=exportSelected)
         for toComponent, fromFork in zip(outputs, self.end):
-            toComponent ** fromFork
+            toComponent(fromFork)
 
         self.end = None  # invalidate None because port was fully connected
         return s

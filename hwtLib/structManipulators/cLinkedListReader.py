@@ -98,7 +98,7 @@ class CLinkedListReader(Unit):
         BURST_LEN = BUFFER_CAPACITY // 2
         ID_LAST = self.ID_LAST
         bufferHasSpace = s("bufferHasSpace")
-        bufferHasSpace ** (f.size < (BURST_LEN + 1))
+        bufferHasSpace(f.size < (BURST_LEN + 1))
         # we are counting base next addr as item as well
         inBlock_t = Bits(log2ceil(self.ITEMS_IN_BLOCK + 1))
         ringSpace_t = Bits(self.PTR_WIDTH)
@@ -107,102 +107,102 @@ class CLinkedListReader(Unit):
 
         baseIndex = r("baseIndex", Bits(self.ADDR_WIDTH - ALIGN_BITS))
         inBlockRemain = r("inBlockRemain_reg", inBlock_t, defVal=self.ITEMS_IN_BLOCK)
-        self.inBlockRemain ** inBlockRemain
+        self.inBlockRemain(inBlockRemain)
 
         # Logic of tail/head
         rdPtr = r("rdPtr", ringSpace_t, defVal=0)
         wrPtr = r("wrPtr", ringSpace_t, defVal=0)
         If(self.wrPtr.dout.vld,
-            wrPtr ** self.wrPtr.dout.data
+            wrPtr(self.wrPtr.dout.data)
         )
-        self.wrPtr.din ** wrPtr
-        self.rdPtr.din ** rdPtr
+        self.wrPtr.din(wrPtr)
+        self.rdPtr.din(rdPtr)
 
         # this means items are present in memory
         hasSpace = s("hasSpace")
-        hasSpace ** (wrPtr != rdPtr)
+        hasSpace(wrPtr != rdPtr)
         doReq = s("doReq")
-        doReq ** (bufferHasSpace & hasSpace & ~downloadPending & req.rd)
-        req.rem ** 0
-        self.dataOut ** f.dataOut
+        doReq(bufferHasSpace & hasSpace & ~downloadPending & req.rd)
+        req.rem(0)
+        self.dataOut(f.dataOut)
 
         # logic of baseAddr and baseIndex
         baseAddr = Concat(baseIndex, vec(0, ALIGN_BITS))
-        req.addr ** baseAddr
-        self.baseAddr.din ** baseAddr
+        req.addr(baseAddr)
+        self.baseAddr.din(baseAddr)
         dataAck = dIn.valid & In(dIn.id, [ID, ID_LAST]) & dBuffIn.rd
 
         If(self.baseAddr.dout.vld,
-            baseIndex ** self.baseAddr.dout.data[:ALIGN_BITS]
+            baseIndex(self.baseAddr.dout.data[:ALIGN_BITS])
         ).Elif(dataAck & downloadPending,
             If(dIn.last & dIn.id._eq(ID_LAST),
-               baseIndex ** dIn.data[self.ADDR_WIDTH:ALIGN_BITS]
+               baseIndex(dIn.data[self.ADDR_WIDTH:ALIGN_BITS])
             ).Else(
-               baseIndex ** (baseIndex + 1) 
+               baseIndex(baseIndex + 1) 
             )
         )
 
         sizeByPtrs = s("sizeByPtrs", ringSpace_t)
-        sizeByPtrs ** (wrPtr - rdPtr)
+        sizeByPtrs(wrPtr - rdPtr)
 
         inBlockRemain_asPtrSize = fitTo(inBlockRemain, sizeByPtrs)
         constraingSpace = s("constraingSpace", ringSpace_t)
         If(inBlockRemain_asPtrSize < sizeByPtrs,
-           constraingSpace ** inBlockRemain_asPtrSize
+           constraingSpace(inBlockRemain_asPtrSize)
         ).Else(
-           constraingSpace ** sizeByPtrs
+           constraingSpace(sizeByPtrs)
         )
 
         constrainedByInBlockRemain = s("constrainedByInBlockRemain")
-        constrainedByInBlockRemain ** (fitTo(sizeByPtrs, inBlockRemain) >= inBlockRemain)
+        constrainedByInBlockRemain(fitTo(sizeByPtrs, inBlockRemain) >= inBlockRemain)
 
         If(constraingSpace > BURST_LEN,
             # download full burst
-            req.id ** ID,
-            req.len ** (BURST_LEN - 1),
+            req.id(ID),
+            req.len(BURST_LEN - 1),
             If(doReq,
-               inBlockRemain ** (inBlockRemain - BURST_LEN)
+               inBlockRemain(inBlockRemain - BURST_LEN)
             )
         ).Elif(constrainedByInBlockRemain & (inBlockRemain < BURST_LEN),
             # we know that sizeByPtrs <= inBlockRemain thats why we can resize it
             # we will download next* as well
-            req.id ** ID_LAST,
+            req.id(ID_LAST),
             connect(constraingSpace, req.len, fit=True),
             If(doReq,
-               inBlockRemain ** self.ITEMS_IN_BLOCK
+               inBlockRemain(self.ITEMS_IN_BLOCK)
             )
         ).Else(
             # download data leftover
-            req.id ** ID,
+            req.id(ID),
             connect(constraingSpace - 1, req.len, fit=True),
             If(doReq,
-               inBlockRemain ** (inBlockRemain - fitTo(constraingSpace, inBlockRemain))
+               inBlockRemain(inBlockRemain - fitTo(constraingSpace, inBlockRemain))
             )
         )
 
         # logic of req dispatching
         If(downloadPending,
-            req.vld ** 0,
+            req.vld(0),
             If(dataAck & dIn.last,
-                downloadPending ** 0
+                downloadPending(0)
             )
         ).Else(
-            req.vld ** (bufferHasSpace & hasSpace),
+            req.vld(bufferHasSpace & hasSpace),
             If(req.rd & bufferHasSpace & hasSpace,
-               downloadPending ** 1
+               downloadPending(1)
             )
         )
 
         # into buffer pushing logic
-        dBuffIn.data ** dIn.data
+        dBuffIn.data(dIn.data)
 
         isMyData = s("isMyData")
-        isMyData ** (dIn.id._eq(ID) | (~dIn.last & dIn.id._eq(ID_LAST)))
+        isMyData(dIn.id._eq(ID) | (~dIn.last & dIn.id._eq(ID_LAST)))
         If(self.rdPtr.dout.vld,
-            rdPtr ** self.rdPtr.dout.data
+            rdPtr(self.rdPtr.dout.data)
         ).Else(
             If(dIn.valid & downloadPending & dBuffIn.rd & isMyData,
-               rdPtr ** (rdPtr + 1)
+               rdPtr(rdPtr + 1)
             )
         )
         # push data into buffer and increment rdPtr

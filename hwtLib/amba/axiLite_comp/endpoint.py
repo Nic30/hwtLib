@@ -45,20 +45,20 @@ class AxiLiteEndpoint(BusEndpoint):
         ).stateReg
 
         arRd = rSt._eq(rSt_t.rdIdle)
-        ar.ready ** (arRd & ~w_hs)
+        ar.ready(arRd & ~w_hs)
 
         # save ar addr
         arAddr = self._reg('arAddr', ar.addr._dtype)
         If(ar.valid & arRd,
-            arAddr ** ar.addr
+            arAddr(ar.addr)
         )
 
         isInAddrRange = self.isInMyAddrRange(arAddr)
-        r.valid ** rSt._eq(rSt_t.rdData)
+        r.valid(rSt._eq(rSt_t.rdData))
         If(isInAddrRange,
-            r.resp ** RESP_OKAY
+            r.resp(RESP_OKAY)
         ).Else(
-            r.resp ** RESP_SLVERR
+            r.resp(RESP_SLVERR)
         )
         if self._bramPortMapped:
             rdataReg = self._reg("rdataReg", r.data._dtype)
@@ -87,21 +87,21 @@ class AxiLiteEndpoint(BusEndpoint):
                 )
                 _isInBramFlags.append(_isMyArAddr)
 
-                port.en ** ((_isMyArAddr & ar.valid) | prioritizeWrite)
-                port.we ** prioritizeWrite
+                port.en((_isMyArAddr & ar.valid) | prioritizeWrite)
+                port.we(prioritizeWrite)
 
-                rregCases.append((_isMyArAddr, bramRdIndx ** bramIndex))
-                bramRdIndxSwitch.Case(bramIndex, rdataReg ** port.dout)
+                rregCases.append((_isMyArAddr, bramRdIndx(bramIndex)))
+                bramRdIndxSwitch.Case(bramIndex, rdataReg(port.dout))
 
-            bramRdIndxSwitch.Default(rdataReg ** rdataReg)
+            bramRdIndxSwitch.Default(rdataReg(rdataReg))
             If(arRd,
                SwitchLogic(rregCases)
             )
-            isBramAddr ** Or(*_isInBramFlags)
+            isBramAddr(Or(*_isInBramFlags))
 
         else:
             rdataReg = None
-            isBramAddr ** 0
+            isBramAddr(0)
 
         directlyMappedWors = []
         for w, items in sorted(groupedby(self._directlyMapped, lambda t: t.bitAddr // DW * (DW // ADDR_STEP)), key=lambda x: x[0]):
@@ -128,10 +128,10 @@ class AxiLiteEndpoint(BusEndpoint):
             directlyMappedWors.append((w, Concat(*reversed(res))))
 
         Switch(arAddr).addCases(
-                    [(w[0], r.data ** w[1])
+                    [(w[0], r.data(w[1]))
                      for w in directlyMappedWors]
                 ).Default(
-                    r.data ** rdataReg
+                    r.data(rdataReg)
                 )
 
     def writeRespPart(self, wAddr, respVld):
@@ -140,11 +140,11 @@ class AxiLiteEndpoint(BusEndpoint):
         isInAddrRange = (self.isInMyAddrRange(wAddr))
 
         If(isInAddrRange,
-           b.resp ** RESP_OKAY
+           b.resp(RESP_OKAY)
         ).Else(
-           b.resp ** RESP_SLVERR
+           b.resp(RESP_SLVERR)
         )
-        b.valid ** respVld
+        b.valid(respVld)
 
     def writePart(self):
         DW = int(self.DATA_WIDTH)
@@ -172,19 +172,19 @@ class AxiLiteEndpoint(BusEndpoint):
         w_hs = sig('w_hs')
 
         awRd = wSt._eq(wSt_t.wrIdle)
-        aw.ready ** awRd
+        aw.ready(awRd)
         aw_hs = awRd & aw.valid
 
         wRd = wSt._eq(wSt_t.wrData)
-        w.ready ** wRd
+        w.ready(wRd)
 
-        w_hs ** (w.valid & wRd)
+        w_hs(w.valid & wRd)
 
         # save aw addr
         If(aw_hs,
-            awAddr ** aw.addr
+            awAddr(aw.addr)
         ).Else(
-            awAddr ** awAddr
+            awAddr(awAddr)
         )
 
         # output vld
@@ -196,8 +196,8 @@ class AxiLiteEndpoint(BusEndpoint):
                 width = t.bitAddrEnd - t.bitAddr
 
             offset = t.bitAddr % DW
-            out.data ** w.data[(offset + width): offset]
-            out.vld ** (w_hs & (awAddr._eq(vec(t.bitAddr // DW * (DW // ADDR_STEP), addrWidth))))
+            out.data(w.data[(offset + width): offset])
+            out.vld(w_hs & (awAddr._eq(vec(t.bitAddr // DW * (DW // ADDR_STEP), addrWidth))))
 
         for t in self._bramPortMapped:
             din = self.getPort(t).din

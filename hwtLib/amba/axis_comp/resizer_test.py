@@ -154,9 +154,9 @@ class TestComp_AxiS_resizer_downAndUp(AxiS_resizer):
             self.dataOut = AxiStream()
 
     def _impl(self):
-        self.dataOut ** AxiSBuilder(self, self.dataIn)\
-                            .resize(self.INTERNAL_SIZE)\
-                            .resize(self.DATA_WIDTH).end
+        self.dataOut(AxiSBuilder(self, self.dataIn)\
+                        .resize(self.INTERNAL_SIZE)\
+                        .resize(self.DATA_WIDTH).end)
 
 
 class AxiS_resizer_downAndUp_TC(SimTestCase):

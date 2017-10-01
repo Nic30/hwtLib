@@ -21,16 +21,16 @@ def AxiReaderCore():
     If(arRd,
        # rdIdle
         If(arVld,
-           rSt ** rSt_t.rdData
+           rSt(rSt_t.rdData)
         ).Else(
-           rSt ** rSt_t.rdIdle
+           rSt(rSt_t.rdIdle)
         )
     ).Else(
         # rdData
         If(rRd & rVld,
-           rSt ** rSt_t.rdIdle
+           rSt(rSt_t.rdIdle)
         ).Else(
-           rSt ** rSt_t.rdData
+           rSt(rSt_t.rdData)
         )
     )
 

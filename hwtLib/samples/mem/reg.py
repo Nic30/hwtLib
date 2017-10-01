@@ -29,8 +29,8 @@ class DReg(Unit):
     def _impl(self):
         internReg = self._reg("internReg", BIT, defVal=False)
 
-        internReg ** self.din
-        self.dout ** internReg
+        internReg(self.din)
+        self.dout(internReg)
 
 
 class DoubleDReg(Unit):
@@ -47,9 +47,9 @@ class DoubleDReg(Unit):
     def _impl(self):
         propagateClkRst(self)
 
-        self.reg0.din ** self.din
-        self.reg1.din ** self.reg0.dout
-        self.dout ** self.reg1.dout
+        self.reg0.din(self.din)
+        self.reg1.din(self.reg0.dout)
+        self.dout(self.reg1.dout)
 
 
 class AsyncResetReg(DReg):
@@ -57,11 +57,11 @@ class AsyncResetReg(DReg):
         internReg = self._sig("internReg", BIT, defVal=False)
 
         If(self.rst._isOn(),
-           internReg ** 0,
+           internReg(0),
         ).Elif(self.clk._onRisingEdge(),
-           internReg ** self.din,
+           internReg(self.din),
         )
-        self.dout ** internReg
+        self.dout(internReg)
 
 
 class DDR_Reg(Unit):
@@ -77,12 +77,12 @@ class DDR_Reg(Unit):
         internReg = [self._sig("internReg", BIT, defVal=False) for _ in range(2)]
 
         If(self.clk._onRisingEdge(),
-           internReg[0] ** din,
+           internReg[0](din),
         )
         If(self.clk._onFallingEdge(),
-           internReg[1] ** din,
+           internReg[1](din),
         )
-        self.dout ** Concat(*internReg)
+        self.dout(Concat(*internReg))
 
 
 class OptimizedOutReg(DReg):

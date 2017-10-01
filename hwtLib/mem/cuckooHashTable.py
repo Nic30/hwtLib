@@ -155,7 +155,7 @@ class CuckooHashTable(HashTableCore):
                          Bits(log2ceil(lastAddr), signed=False),
                          defVal=0)
         If(en,
-           addr ** (addr + 1)
+           addr(addr + 1)
         )
 
         return addr, addr._eq(lastAddr)
@@ -174,16 +174,16 @@ class CuckooHashTable(HashTableCore):
         fsm_t = state._dtype
         for i, t in enumerate(self.tables):
             ins = t.insert
-            ins.hash ** insertIndex
-            ins.key ** stash.key
+            ins.hash(insertIndex)
+            ins.key(stash.key)
 
             if self.DATA_WIDTH:
-                ins.data ** stash.data
-                ins.vld ** Or(state._eq(fsm_t.cleaning),
-                              state._eq(fsm_t.lookupResAck) & 
-                              insertTargetOH[i] & 
-                              ~ isExternLookup)
-                ins.vldFlag ** stash.vldFlag
+                ins.data(stash.data)
+                ins.vld(Or(state._eq(fsm_t.cleaning),
+                           state._eq(fsm_t.lookupResAck) & 
+                           insertTargetOH[i] & 
+                           ~ isExternLookup))
+                ins.vldFlag(stash.vldFlag)
 
     def lookupResOfTablesDriver(self, resRead, resAck):
         tables = self.tables
@@ -205,30 +205,30 @@ class CuckooHashTable(HashTableCore):
 
         If(resRead & lookupResAck,
             If(Or(*insertFoundOH),
-                targetOH ** Concat(*reversed(insertFoundOH))
+                targetOH(Concat(*reversed(insertFoundOH)))
             ).Else(
-                SwitchLogic([(empty, targetOH ** (1 << i))
+                SwitchLogic([(empty, targetOH(1 << i))
                              for i, empty in enumerate(isEmptyOH)
                              ],
                             default=If(targetOH,
-                                       targetOH ** ror(targetOH, 1)
+                                       targetOH(ror(targetOH, 1))
                                     ).Else(
-                                       targetOH ** (1 << (self.TABLE_CNT - 1))
+                                       targetOH(1 << (self.TABLE_CNT - 1))
                                     ))
             ),
-            insertFinal ** _insertFinal
+            insertFinal(_insertFinal)
         )
         return lookupResAck, insertFinal, insertFoundOH, targetOH
 
     def insertAddrSelect(self, targetOH, state, cleanAddr):
         insertIndex = self._sig("insertIndex", Bits(self.HASH_WITH))
         If(state._eq(state._dtype.cleaning),
-            insertIndex ** cleanAddr
+            insertIndex(cleanAddr)
         ).Else(
             SwitchLogic([(targetOH[i],
-                          insertIndex ** t.lookupRes.hash)
+                          insertIndex(t.lookupRes.hash))
                          for i, t in enumerate(self.tables)],
-                        default=insertIndex ** None)
+                        default=insertIndex(None))
         )
         return insertIndex
 
@@ -238,30 +238,30 @@ class CuckooHashTable(HashTableCore):
         delete = self.delete
         If(isIdle,
             If(self.clean.vld,
-               stash.vldFlag ** 0
+               stash.vldFlag(0)
             ).Elif(delete.vld,
-               stash.key ** delete.key,
-               lookupOrigin_out ** ORIGIN_TYPE.DELETE,
-               stash.vldFlag ** 0,
+               stash.key(delete.key),
+               lookupOrigin_out(ORIGIN_TYPE.DELETE),
+               stash.vldFlag(0),
             ).Elif(insert.vld,
-               lookupOrigin_out ** ORIGIN_TYPE.INSERT,
-               stash.key ** insert.key,
-               stash.data ** insert.data,
-               stash.vldFlag ** 1,
+               lookupOrigin_out(ORIGIN_TYPE.INSERT),
+               stash.key(insert.key),
+               stash.data(insert.data),
+               stash.vldFlag(1),
             ).Elif(lookup.vld,
-               lookupOrigin_out ** ORIGIN_TYPE.LOOKUP,
-               stash.key ** lookup.key,
+               lookupOrigin_out(ORIGIN_TYPE.LOOKUP),
+               stash.key(lookup.key),
             )
         )
         priority = [self.clean, self.delete, self.insert, lookup]
         for i, intf in enumerate(priority):
             withLowerPrio = priority[:i]
-            intf.rd ** And(isIdle, *map(lambda x:~x.vld, withLowerPrio))
+            intf.rd(And(isIdle, *map(lambda x:~x.vld, withLowerPrio)))
 
     def lookupOfTablesDriver(self, state, tableKey):
         fsm_t = state._dtype
         for t in self.tables:
-            t.lookup.key ** tableKey
+            t.lookup.key(tableKey)
 
         # activate lookup only in lookup state
         en = state._eq(fsm_t.lookup)
@@ -274,7 +274,7 @@ class CuckooHashTable(HashTableCore):
         """
         fsm_t = state._dtype
         lookupRes = self.lookupRes
-        lookupRes.vld ** (state._eq(fsm_t.lookupResAck) & 
+        lookupRes.vld(state._eq(fsm_t.lookupResAck) & 
                           lookupOrigin._eq(ORIGIN_TYPE.LOOKUP) & 
                           lookupAck)
 
@@ -341,11 +341,11 @@ class CuckooHashTable(HashTableCore):
                     (~isExternLookup & insertAck & ~insertFinal, fsm_t.lookup)
             ).stateReg
 
-        cleanAck ** (StreamNode(slaves=[t.insert for t in tables]).ack() & 
+        cleanAck(StreamNode(slaves=[t.insert for t in tables]).ack() & 
                      state._eq(fsm_t.cleaning))
-        lookupResRead ** state._eq(fsm_t.lookupResWaitRd)
-        lookupResNext ** And(state._eq(fsm_t.lookupResAck),
-                             Or(lookupOrigin != ORIGIN_TYPE.LOOKUP, lookupRes.rd))
+        lookupResRead(state._eq(fsm_t.lookupResWaitRd))
+        lookupResNext(And(state._eq(fsm_t.lookupResAck),
+                          Or(lookupOrigin != ORIGIN_TYPE.LOOKUP, lookupRes.rd)))
 
         isIdle = state._eq(fsm_t.idle)
         self.stashLoad(isIdle, stash, lookupOrigin)

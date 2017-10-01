@@ -14,7 +14,7 @@ class ArrayIntfExample(Unit):
 
     def _impl(self):
         for intf in self.a:
-            intf.ready ** 1
+            intf.ready(1)
 
 
 if __name__ == "__main__":  # alias python main function

@@ -22,11 +22,11 @@ def SimpleEnum():
 
     fsmSt = n.sig("fsmSt", fsmT, clk, syncRst, fsmT.send0)
     If(fsmSt._eq(fsmT.send0),
-        s_out ** s_in0,
-        fsmSt ** fsmT.send1,
+        s_out(s_in0),
+        fsmSt(fsmT.send1),
     ).Else(
-        s_out ** s_in1 ,
-        fsmSt ** fsmT.send0
+        s_out(s_in1),
+        fsmSt(fsmT.send0)
     )
 
     interf = [clk, syncRst, s_in0, s_in1, s_out]

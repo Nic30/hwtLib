@@ -40,8 +40,8 @@ class Lsfr(Unit):
         assert xorBits
 
         nextBit = Xor(*xorBits)
-        accumulator ** Concat(accumulator[self.POLY_WIDTH - 1:], nextBit)
-        self.dataOut ** accumulator[0]
+        accumulator(Concat(accumulator[self.POLY_WIDTH - 1:], nextBit))
+        self.dataOut(accumulator[0])
 
 
 class LsfrTC(SimTestCase):

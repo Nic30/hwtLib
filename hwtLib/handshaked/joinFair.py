@@ -63,23 +63,23 @@ class HsJoinFairShare(HsJoinPrioritized):
         dout = self.dataOut
 
         priority = self._reg("priority", Bits(self.INPUTS), defVal=1)
-        priority ** rol(priority, 1)
+        priority(rol(priority, 1))
 
         vldSignals = list(map(vld, self.dataIn))
 
         isSelectedFlags = []
         for i, din in enumerate(self.dataIn):
             isSelected = self._sig("isSelected_%d" % i)
-            isSelected ** self.priorityAck(priority, vldSignals, i)
+            isSelected(self.priorityAck(priority, vldSignals, i))
             isSelectedFlags.append(isSelected)
 
-            rd(din) ** (isSelected & rd(dout))
+            rd(din)(isSelected & rd(dout))
 
             if self.EXPORT_SELECTED:
-                self.selectedOneHot.data[i] ** (isSelected & vld(din))
+                self.selectedOneHot.data[i](isSelected & vld(din))
 
         if self.EXPORT_SELECTED:
-            self.selectedOneHot.vld ** (Or(*vldSignals) & rd(dout))
+            self.selectedOneHot.vld(Or(*vldSignals) & rd(dout))
 
         return isSelectedFlags, vldSignals
 
@@ -96,7 +96,7 @@ class HsJoinFairShare(HsJoinPrioritized):
 
         dataDefault = self.dataConnectionExpr(None, dout)
         SwitchLogic(dataCases, dataDefault)
-        vld(dout) ** Or(*vldSignals)
+        vld(dout)(Or(*vldSignals))
 
     def _impl(self):
         isSelectedFlags, vldSignals = self.isSelectedLogic()

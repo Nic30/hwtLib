@@ -37,9 +37,9 @@ class RamSingleClock(Unit):
     def connectPort(self, port, mem):
         If(self.clk._onRisingEdge() & port.en,
            If(port.we,
-              mem[port.addr] ** port.din
+              mem[port.addr](port.din)
            ),
-           port.dout ** mem[port.addr]
+           port.dout(mem[port.addr])
         )
 
     def _impl(self):
@@ -68,9 +68,9 @@ class Ram_sp(Unit):
     def connectPort(self, port, mem):
         If(port.clk._onRisingEdge() & port.en,
            If(port.we,
-              mem[port.addr] ** port.din
+              mem[port.addr](port.din)
            ),
-           port.dout ** mem[port.addr]
+           port.dout(mem[port.addr])
         )
 
     def _impl(self):

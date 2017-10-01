@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwtLib.handshaked.builder import HsBuilder
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwtLib.handshaked.builder import HsBuilder
 
 
 class HsBuilderSplit(Unit):
@@ -73,7 +73,7 @@ class HsBuilderSplit(Unit):
             .split_fair_to(self.b_0, self.b_1, self.b_2,
                            exportSelected=True)
 
-        self.b_selected ** b.lastComp.selectedOneHot
+        self.b_selected(b.lastComp.selectedOneHot)
 
         # send data output interface which is ready and has higher priority (=lowest index)
         HsBuilder(self, self.c).split_prioritized_to(self.c_0, self.c_1)

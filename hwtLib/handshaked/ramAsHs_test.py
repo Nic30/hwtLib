@@ -23,9 +23,9 @@ class RamWithHs(RamAsHs):
 
     def _impl(self):
         propagateClkRstn(self)
-        self.conv.r ** self.r
-        self.conv.w ** self.w
-        self.ram.a ** self.conv.ram
+        self.conv.r(self.r)
+        self.conv.w(self.w)
+        self.ram.a(self.conv.ram)
 
 
 class RamAsHs_TC(SimTestCase):

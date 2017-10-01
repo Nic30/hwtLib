@@ -25,8 +25,8 @@ class SimpleSubunit3(Unit):
     def _impl(self):
         propagateClkRstn(self)
         u = self.subunit0
-        u.a ** self.a0
-        self.b0 ** u.b
+        u.a(self.a0)
+        self.b0(u.b)
 
 
 class SimpleSubunit3TC(SimpleSubunit2TC):

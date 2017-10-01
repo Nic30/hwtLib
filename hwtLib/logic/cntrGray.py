@@ -24,10 +24,10 @@ class GrayCntr(Unit):
     def _impl(self):
         binCntr = self._reg("cntr_bin_reg", self.dataOut._dtype, self.INIT_VAL) 
 
-        self.dataOut ** binToGray(binCntr)
+        self.dataOut(binToGray(binCntr))
 
         If(self.en,
-           binCntr ** (binCntr + 1)
+           binCntr(binCntr + 1)
         )
 
 

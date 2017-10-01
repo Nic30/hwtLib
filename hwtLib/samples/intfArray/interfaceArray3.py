@@ -27,7 +27,7 @@ class InterfaceArraySample3(Unit):
     def _impl(self):
         # directly connect arrays, note that we are not using array items
         # and thats why they are not created
-        self.b ** self.a
+        self.b(self.a)
 
 
 class InterfaceArraySample3b(InterfaceArraySample3):
@@ -37,7 +37,7 @@ class InterfaceArraySample3b(InterfaceArraySample3):
     """
     def _impl(self):
         for i in range(int(self.SIZE)):
-            self.b[i] ** self.a[i]
+            self.b[i](self.a[i])
 
 
 class InterfaceArraySample3TC(SimTestCase):

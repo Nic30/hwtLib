@@ -15,7 +15,7 @@ def SwitchStatement():
     Out = n.sig("output", t)
 
     Switch(In).addCases(
-        [(i, Out ** (i + 1)) for i in range(8)]
+        [(i, Out(i + 1)) for i in range(8)]
     )
 
     interf = [In, Out]

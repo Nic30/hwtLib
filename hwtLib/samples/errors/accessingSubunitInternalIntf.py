@@ -16,6 +16,6 @@ class AccessingSubunitInternalIntf(Unit):
     def _impl(self):
         propagateClkRstn(self)
         u = self.subunit0
-        u.a ** self.a0
-        self.c0 ** u.b
-        self.b0 ** u.c
+        u.a(self.a0)
+        self.c0(u.b)
+        self.b0(u.c)

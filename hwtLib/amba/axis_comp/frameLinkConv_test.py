@@ -28,9 +28,9 @@ class FrameLinkConvTest(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
-        self.conv0.dataIn ** self.dataIn
-        self.conv1.dataIn ** self.conv0.dataOut
-        self.dataOut ** self.conv1.dataOut
+        self.conv0.dataIn(self.dataIn)
+        self.conv1.dataIn(self.conv0.dataOut)
+        self.dataOut(self.conv1.dataOut)
 
 
 class AxiS_frameLinkConvTC(SimTestCase):

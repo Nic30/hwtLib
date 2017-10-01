@@ -34,7 +34,7 @@ class HsJoinPrioritized(HandshakedCompBase):
             dIn = data(dIn)
 
         for _din, _dout in zip(dIn, outDataSignals):
-            dataConnectExpr.extend(_dout ** _din)
+            dataConnectExpr.extend(_dout(_din))
 
         return dataConnectExpr
 
@@ -49,7 +49,7 @@ class HsJoinPrioritized(HandshakedCompBase):
         dataCases = []
         for i, din in enumerate(self.dataIn):
             allLowerPriorNotReady = map(lambda x: ~x, vldSignals[:i])
-            rd(din) ** (And(rd(dout), *allLowerPriorNotReady))
+            rd(din)(And(rd(dout), *allLowerPriorNotReady))
 
             cond = vld(din)
             dataConnectExpr = self.dataConnectionExpr(din, dout)
@@ -58,7 +58,7 @@ class HsJoinPrioritized(HandshakedCompBase):
         dataDefault = self.dataConnectionExpr(None, dout)
         SwitchLogic(dataCases, dataDefault)
 
-        vld(dout) ** Or(*vldSignals)
+        vld(dout)(Or(*vldSignals))
 
 
 if __name__ == "__main__":

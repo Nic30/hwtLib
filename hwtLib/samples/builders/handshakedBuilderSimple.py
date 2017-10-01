@@ -22,7 +22,7 @@ class HandshakedBuilderSimple(Unit):
         b.buff(items=16)
         b.buff(latency=2, delay=1)
 
-        self.b ** b.end
+        self.b(b.end)
 
 
 class HandshakedBuilderSimpleTC(SimTestCase):

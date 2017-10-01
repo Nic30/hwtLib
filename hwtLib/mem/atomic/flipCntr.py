@@ -32,20 +32,20 @@ class FlipCntr(Unit):
             self.cntr = FlipRegister()
 
     def flipHandler(self):
-        self.doFlip.rd ** 1
+        self.doFlip.rd(1)
 
         flipSt = self._reg("flipState", defVal=0)
         If(self.doFlip.vld,
-            flipSt ** ~flipSt
+            flipSt(~flipSt)
         )
-        self.cntr.select_sig ** flipSt
+        self.cntr.select_sig(flipSt)
 
     def dataHanldler(self):
         cntr = self.cntr
-        cntr.first.dout.data ** (cntr.first.din + 1)
-        cntr.first.dout.vld ** self.doIncr
+        cntr.first.dout.data(cntr.first.din + 1)
+        cntr.first.dout.vld(self.doIncr)
 
-        cntr.second ** self.data
+        cntr.second(self.data)
 
     def _impl(self):
         propagateClkRstn(self)

@@ -39,7 +39,7 @@ class AxiSBuilder(AbstractStreamBuilder):
 
         ack = intf.valid & intf.ready
         If(ack,
-           lastseen ** intf.last
+           lastseen(intf.last)
         )
 
         return lastseen
@@ -57,7 +57,7 @@ class AxiSBuilder(AbstractStreamBuilder):
         setattr(self.parent, self._findSuitableName("parser"), u)
         self._propagateClkRstn(u)
 
-        u.dataIn ** self.end
+        u.dataIn(self.end)
 
         self.lastComp = u
         self.end = None

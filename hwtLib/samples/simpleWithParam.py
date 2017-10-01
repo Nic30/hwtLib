@@ -27,7 +27,7 @@ class SimpleUnitWithParam(Unit):
         self.b = Signal(dtype=dt)
 
     def _impl(self):
-        self.b ** self.a
+        self.b(self.a)
 
 
 class SimpleUnitWithParamTC(SimTestCase):

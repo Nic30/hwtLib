@@ -25,9 +25,9 @@ class UnitToUnitConnection(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
-        self.u0.a ** self.a0
-        self.u1.a ** self.u0.c
-        self.b0 ** self.u1.c
+        self.u0.a(self.a0)
+        self.u1.a(self.u0.c)
+        self.b0(self.u1.c)
 
 
 class UnitToUnitConnectionTC(SimpleSubunit2TC):

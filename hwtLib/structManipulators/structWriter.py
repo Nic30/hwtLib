@@ -10,10 +10,10 @@ from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
+from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.structManipulators.structReader import StructReader
-from hwtLib.handshaked.builder import HsBuilder
 
 
 SKIP = 1
@@ -77,31 +77,29 @@ class StructWriter(StructReader):
                                              frames=self._frames)
 
     def _impl(self):
-        propagateClkRstn(self)
-
         req = self.wDatapump.req
         w = self.wDatapump.w
         ack = self.wDatapump.ack
-        if self.WRITE_ACK:
-            _set = self.set
-        else:
-            _set = HsBuilder(self, self.set).buff().end
-
-        req.id ** self.ID
-        req.rem ** 0
 
         # multi frame
         ackPropageteInfo = HandshakedFifo(Handshaked)
         ackPropageteInfo.DATA_WIDTH.set(1)
         ackPropageteInfo.DEPTH.set(self.MAX_OVERLAP)
         self.ackPropageteInfo = ackPropageteInfo
-        ackPropageteInfo.clk ** self.clk
-        ackPropageteInfo.rst_n ** self.rst_n
+        propagateClkRstn(self)
+
+        if self.WRITE_ACK:
+            _set = self.set
+        else:
+            _set = HsBuilder(self, self.set).buff().end
+
+        req.id(self.ID)
+        req.rem(0)
 
         def propagateRequests(frame, indx):
             ack = StreamNode(slaves=[req, ackPropageteInfo.dataIn]).ack()
-            statements = [req.addr ** (_set.data + frame.startBitAddr // 8),
-                          req.len ** (frame.getWordCnt() - 1),
+            statements = [req.addr(_set.data + frame.startBitAddr // 8),
+                          req.len(frame.getWordCnt() - 1),
                           StreamNode(slaves=[req, ackPropageteInfo.dataIn],
                                      ).sync(_set.vld)
                           ]
@@ -110,20 +108,20 @@ class StructWriter(StructReader):
             else:
                 prop = PROPAGATE
 
-            statements += ackPropageteInfo.dataIn.data ** prop
+            statements += ackPropageteInfo.dataIn.data(prop)
 
             isLastFrame = indx == len(self._frames) - 1
             if isLastFrame:
-                statements.append(_set.rd ** ack)
+                statements.append(_set.rd(ack))
             else:
-                statements.append(_set.rd ** 0)
+                statements.append(_set.rd(0))
 
             return statements, ack & _set.vld
 
         StaticForEach(self, self._frames, propagateRequests)
 
         # connect write channel
-        w ** self.frameAssember.dataOut
+        w(self.frameAssember.dataOut)
 
         # propagate ack
         StreamNode(masters=[ack, ackPropageteInfo.dataOut],
@@ -136,7 +134,7 @@ class StructWriter(StructReader):
         for _, transTmpl in self._tmpl.walkFlatten():
             f = transTmpl.origin
             intf = self.frameAssember.dataIn._fieldsToInterfaces[f]
-            intf ** self.dataIn._fieldsToInterfaces[f]
+            intf(self.dataIn._fieldsToInterfaces[f])
 
 
 if __name__ == "__main__":
