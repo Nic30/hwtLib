@@ -4,8 +4,10 @@
 from hwt.hdl.constants import Time
 from hwt.hdl.typeShortcuts import hInt
 from hwt.interfaces.utils import addClkRstn
+from hwt.serializer.resourceUsageResolver.resolver import ResourceUsageResolver
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.shortcuts import toRtl
 from hwtLib.amba.axiLite import AxiLite
 
 
@@ -103,13 +105,28 @@ class InterfaceArraySample3TC(SimTestCase):
         checkData(map(lambda ch: ch.w, u.b), W)
         checkData(map(lambda ch: ch.b, u.a), B)
 
+    def test_resources(self):
+        u = InterfaceArraySample3()
+        expected = {}
+
+        s = ResourceUsageResolver()
+        toRtl(u, serializer=s)
+        self.assertDictEqual(s.report(), expected)
+
+    def test_resources_b(self):
+        u = InterfaceArraySample3b()
+        expected = {}
+
+        s = ResourceUsageResolver()
+        toRtl(u, serializer=s)
+        self.assertDictEqual(s.report(), expected)
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(InterfaceArraySample3TC('test_simplePass'))
+    # suite.addTest(InterfaceArraySample3TC('test_simplePass'))
     suite.addTest(unittest.makeSuite(InterfaceArraySample3TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-    
-    from hwt.synthesizer.shortcuts import toRtl
+
     print(toRtl(InterfaceArraySample3b()))

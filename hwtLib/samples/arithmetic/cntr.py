@@ -4,7 +4,7 @@
 from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
-from hwt.interfaces.utils import addClkRstn
+from hwt.interfaces.utils import addClkRst
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 
@@ -14,7 +14,7 @@ class Cntr(Unit):
         self.DATA_WIDTH = Param(2)
 
     def _declr(self):
-        addClkRstn(self)
+        addClkRst(self)
         self.en = Signal()
         self.val = VectSignal(self.DATA_WIDTH)
 

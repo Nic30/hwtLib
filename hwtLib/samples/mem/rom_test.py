@@ -4,7 +4,11 @@
 import unittest
 
 from hwt.hdl.constants import Time
+from hwt.serializer.resourceUsageResolver.resolver import ResourceUsageResolver
+from hwt.serializer.resourceUsageResolver.resourceTypes import ResourceRAM, \
+    ResourceFF
 from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.shortcuts import toRtl
 from hwtLib.samples.mem.rom import SimpleRom, SimpleSyncRom
 
 
@@ -30,6 +34,27 @@ class RomTC(SimTestCase):
 
         self.assertValSequenceEqual(u.dout._ag.data, [None, 1, 2, 3, 4, None, 4, 3, 2])
 
+    def test_sync_resources(self):
+        u = SimpleSyncRom()
+        expected = {
+            ResourceRAM(8, 4, 0, 1, 0, 0, 0, 0): 1,
+            ResourceFF: 8,
+            }
+
+        s = ResourceUsageResolver()
+        toRtl(u, serializer=s)
+        self.assertDictEqual(s.report(), expected)
+    
+    def test_async_resources(self):
+        u = SimpleRom()
+        expected = {
+            ResourceRAM(8, 4, 0, 1, 0, 0, 0, 0): 1,
+            }
+
+        s = ResourceUsageResolver()
+        toRtl(u, serializer=s)
+        self.assertDictEqual(s.report(), expected)
+    
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
