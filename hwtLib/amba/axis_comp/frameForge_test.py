@@ -260,7 +260,7 @@ class AxiS_frameForge_TC(SimTestCase):
     def test_unionOfStructs_nop(self, randomized=False):
         self.instantiateFrameForge(unionOfStructs, randomized=randomized)
         u = self.u
-        t = 50
+        t = 60
         if randomized:
             t *= 3
         self.doSim(t * Time.ns)
@@ -274,7 +274,7 @@ class AxiS_frameForge_TC(SimTestCase):
         self.instantiateFrameForge(unionOfStructs, randomized=randomized)
         u = self.u
         MAGIC = 498
-        t = 100
+        t = 120
         if randomized:
             t *= 8
 
@@ -301,19 +301,20 @@ class AxiS_frameForge_TC(SimTestCase):
                                    randomized=randomized)
         u = self.u
         MAGIC = 498
-        t = 100
+        t = 50
         if randomized:
-            t *= 3
+            t *= 6
 
         u.dataIn.a._ag.data.extend([MAGIC + 1, MAGIC + 3])
         u.dataIn.b._ag.data.extend([MAGIC + 2])
-        u.dataIn._select._ag.data.extend([0, 0])
+        u.dataIn._select._ag.data.extend([0, 1, 0])
 
         self.doSim(t * Time.ns)
 
         m = mask(self.DATA_WIDTH // 8)
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(MAGIC + 1, m, 1),
+                                     (MAGIC + 2, m, 1),
                                      (MAGIC + 3, m, 1),
                                      ])
 
