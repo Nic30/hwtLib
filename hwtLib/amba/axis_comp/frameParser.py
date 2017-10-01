@@ -131,7 +131,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
     def connectParts(self,
                      allOutNodes: ListOfOutNodeInfos,
                      words,
-                     wordIndexReg: RtlSignal):
+                     wordIndexReg: Optional[RtlSignal]):
         """
         Create main datamux from dataIn to dataOut
         """
@@ -139,7 +139,11 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
             # each word index is used and there may be TransParts which are
             # representation of padding
             outNondes = ListOfOutNodeInfos()
-            isThisWord = wordIndexReg._eq(wIndx)
+            if wordIndexReg is None:
+                isThisWord = hBit(1)
+            else:
+                isThisWord = wordIndexReg._eq(wIndx)
+
             for part in transParts:
                 self.connectPart(outNondes, part, isThisWord, hBit(1))
 
@@ -231,7 +235,12 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
         words = list(self.chainFrameWords())
         assert not (self.SYNCHRONIZE_BY_LAST and len(self._frames) > 1)
         maxWordIndex = words[-1][0]
-        wordIndex = self._reg("wordIndex", Bits(log2ceil(maxWordIndex + 1)), 0)
+        hasMultipleWords = maxWordIndex > 0
+        if hasMultipleWords:
+            wordIndex = self._reg("wordIndex", Bits(log2ceil(maxWordIndex + 1)), 0)
+        else:
+            wordIndex = None
+
         busVld = r.valid
 
         if self.IS_BIGENDIAN:
@@ -257,18 +266,20 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
 
         r.ready ** busReady
 
-        if self.SYNCHRONIZE_BY_LAST:
-            last = r.last
-        else:
-            last = wordIndex._eq(maxWordIndex)
 
-        If(busVld & busReady,
-            If(last,
-               wordIndex ** 0
-            ).Else(
-                wordIndex ** (wordIndex + 1)
+        if hasMultipleWords:
+            if self.SYNCHRONIZE_BY_LAST:
+                last = r.last
+            else:
+                last = wordIndex._eq(maxWordIndex)
+                
+            If(busVld & busReady,
+                If(last,
+                   wordIndex ** 0
+                ).Else(
+                    wordIndex ** (wordIndex + 1)
+                )
             )
-        )
 
 
 if __name__ == "__main__":
@@ -306,17 +317,17 @@ if __name__ == "__main__":
     t = HUnion(
         (HStruct(
             (uint64_t, "itemA0"),
-            # (uint64_t, "itemA1")
+            (uint64_t, "itemA1")
             ), "frameA"),
         (HStruct(
             (uint32_t, "itemB0"),
             (uint32_t, "itemB1"),
-            # (uint32_t, "itemB2"),
-            # (uint32_t, "itemB3")
+            (uint32_t, "itemB2"),
+            (uint32_t, "itemB3")
             ), "frameB")
         )
     u = AxiS_frameParser(AxiStream, t)
-    u.DATA_WIDTH.set(51)
+    u.DATA_WIDTH.set(64)
     print(
     toRtl(u)
        )
