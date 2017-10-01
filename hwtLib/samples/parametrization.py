@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat
-from hwt.hdlObjects.typeShortcuts import vec
+from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.std import VectSignal
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param

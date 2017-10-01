@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from hwt.bitmask import mask
-from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.constants import Time
+from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
@@ -12,7 +12,7 @@ from hwtLib.types.ctypes import uint32_t
 from hwt.pyUtils.arrayQuery import flatten
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 
 
 structTwoArr = HStruct(

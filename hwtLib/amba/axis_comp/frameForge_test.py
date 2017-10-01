@@ -5,11 +5,11 @@ from math import inf
 import unittest
 
 from hwt.bitmask import mask
-from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.frameTmpl import FrameTmpl
-from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.types.struct import HStruct
-from hwt.hdlObjects.types.union import HUnion
+from hwt.hdl.constants import Time
+from hwt.hdl.frameTmpl import FrameTmpl
+from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.types.struct import HStruct
+from hwt.hdl.types.union import HUnion
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge

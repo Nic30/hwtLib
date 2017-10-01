@@ -1,11 +1,11 @@
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.logic.crcComb import CrcComb
 from hwtLib.logic.crcPoly import CRC_32, CRC_1, CRC_16_CCITT, CRC_8_CCITT
 from hwtLib.logic.crc import Crc
 from binascii import crc32
 from hwt.bitmask import mask  # , selectBit
-from hwt.hdlObjects.typeShortcuts import vec
+from hwt.hdl.typeShortcuts import vec
 # from scapy.layers.sctp import crc32c
 # from array import array
 

@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import StaticForEach, connect
-from hwt.hdlObjects.frameTmpl import FrameTmpl
-from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.frameTmpl import FrameTmpl
+from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn

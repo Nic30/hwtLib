@@ -5,7 +5,7 @@ from PIL import Image
 import os
 
 from hwt.bitmask import selectBit
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 
 
 im = Image.open(os.path.dirname(__file__) + "/charToBitmap_font.png")  # Can be many different formats.

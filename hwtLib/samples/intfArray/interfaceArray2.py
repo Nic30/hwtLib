@@ -3,7 +3,7 @@
 
 from hwtLib.amba.axis import AxiStream
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.interfaceLevel.unit import Unit

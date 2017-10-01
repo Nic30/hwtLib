@@ -2,7 +2,7 @@ from inspect import isfunction
 import types
 import unittest
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.samples.mem.rom import SimpleRom, SimpleSyncRom
 from hwtLib.samples.statements.fsm import FsmExample

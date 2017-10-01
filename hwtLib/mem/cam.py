@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat, log2ceil
-from hwt.hdlObjects.typeShortcuts import hBit
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.typeShortcuts import hBit
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, VldSynced
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq

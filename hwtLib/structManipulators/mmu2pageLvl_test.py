@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time, WRITE, NOP
+from hwt.hdl.constants import Time, WRITE, NOP
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.mmu_2pageLvl import MMU_2pageLvl

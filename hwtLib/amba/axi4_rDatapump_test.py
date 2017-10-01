@@ -3,7 +3,7 @@
 
 
 from hwt.bitmask import mask
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi3 import Axi3_addr_withUser
 from hwtLib.amba.axi4_rDatapump import Axi_rDatapump

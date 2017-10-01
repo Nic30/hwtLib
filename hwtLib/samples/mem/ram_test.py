@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import agInts, valuesToInts
 from hwtLib.samples.mem.ram import SimpleAsyncRam, SimpleSyncRam
 from hwt.simulator.simTestCase import SimTestCase

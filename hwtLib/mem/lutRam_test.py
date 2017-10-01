@@ -3,7 +3,7 @@
 
 
 from hwt.bitmask import selectBit
-from hwt.hdlObjects.constants import WRITE, READ, Time
+from hwt.hdl.constants import WRITE, READ, Time
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.lutRam import RAM64X1S

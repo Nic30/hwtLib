@@ -3,7 +3,7 @@
 
 from hwt.bitmask import mask
 from hwt.code import If, connect, Concat, log2ceil, SwitchLogic
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit

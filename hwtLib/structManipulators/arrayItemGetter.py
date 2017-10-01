@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import log2ceil, Concat, Switch, isPow2
-from hwt.hdlObjects.typeShortcuts import vec
+from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.std import Handshaked, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit

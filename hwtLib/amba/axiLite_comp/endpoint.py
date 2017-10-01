@@ -3,13 +3,13 @@
 
 from hwt.code import If, FsmBuilder, Or, log2ceil, connect, Switch, \
     SwitchLogic, Concat
-from hwt.hdlObjects.typeShortcuts import vec
-from hwt.hdlObjects.types.enum import HEnum
+from hwt.hdl.typeShortcuts import vec
+from hwt.hdl.types.enum import HEnum
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 from hwt.pyUtils.arrayQuery import groupedby
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 
 
 class AxiLiteEndpoint(BusEndpoint):
@@ -215,7 +215,7 @@ class AxiLiteEndpoint(BusEndpoint):
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    from hwt.hdlObjects.types.struct import HStruct
+    from hwt.hdl.types.struct import HStruct
     from hwtLib.types.ctypes import uint32_t
 
     u = AxiLiteEndpoint(

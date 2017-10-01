@@ -11,7 +11,7 @@ from hwtLib.handshaked.intfBiDirectional import HandshakedBiDirectional, \
     HandshakedBiDirectionalAgent
 from hwtLib.logic.binToOneHot import BinToOneHot
 from hwtLib.spi.intf import Spi
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 
 
 class SpiCntrlDataAgent(HandshakedBiDirectionalAgent):

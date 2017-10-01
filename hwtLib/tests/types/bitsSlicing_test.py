@@ -1,9 +1,9 @@
 import unittest
 
-from hwt.hdlObjects.typeShortcuts import vec, hBit, hInt, hStr
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.defs import BIT
-from hwt.hdlObjects.value import Value
+from hwt.hdl.typeShortcuts import vec, hBit, hInt, hStr
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.defs import BIT
+from hwt.hdl.value import Value
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist

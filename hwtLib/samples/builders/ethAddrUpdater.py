@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.types.struct import HStruct
-from hwt.hdlObjects.types.structUtils import HStruct_selectFields
+from hwt.hdl.types.struct import HStruct
+from hwt.hdl.types.structUtils import HStruct_selectFields
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit

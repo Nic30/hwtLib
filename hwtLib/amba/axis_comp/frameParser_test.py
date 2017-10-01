@@ -1,7 +1,7 @@
 from itertools import product
 
-from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.constants import Time
+from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.structIntf import StructIntf
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis import AxiStream_withoutSTRB, packAxiSFrame, \

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import agInts
 from hwtLib.samples.statements.fsm import FsmExample, HadrcodedFsmExample
 from hwt.simulator.simTestCase import SimTestCase

@@ -1,5 +1,5 @@
 from hwt.code import log2ceil, If, isPow2
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.pyUtils.arrayQuery import where
 
 

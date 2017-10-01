@@ -3,7 +3,7 @@ import tempfile
 import unittest
 
 from hwt.code import If, connect
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.differential import DifferentialSig
 from hwt.interfaces.std import BramPort, Handshaked
 from hwt.interfaces.utils import addClkRst

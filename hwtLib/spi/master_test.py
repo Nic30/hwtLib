@@ -1,6 +1,6 @@
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.spi.master import SpiMaster
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 
 
 class SpiMasterTC(SimTestCase):

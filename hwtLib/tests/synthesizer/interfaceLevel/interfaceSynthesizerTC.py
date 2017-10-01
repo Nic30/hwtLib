@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.code import connect
-from hwt.hdlObjects.constants import DIRECTION, INTF_DIRECTION
+from hwt.hdl.constants import DIRECTION, INTF_DIRECTION
 from hwt.interfaces.std import Signal
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit

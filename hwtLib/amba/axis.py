@@ -1,5 +1,5 @@
 from hwt.bitmask import mask
-from hwt.hdlObjects.types.structUtils import HStruct_unpack
+from hwt.hdl.types.structUtils import HStruct_unpack
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.pyUtils.arrayQuery import iter_with_last, take
 from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig

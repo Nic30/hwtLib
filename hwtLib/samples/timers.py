@@ -7,7 +7,7 @@ from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.clocking.clkBuilder import ClkBuilder
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 
 
 class TimerInfoTest(Unit):

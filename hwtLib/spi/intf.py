@@ -1,5 +1,5 @@
 from hwt.bitmask import selectBit, mask
-from hwt.hdlObjects.constants import DIRECTION
+from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import Clk, Signal, VectSignal, Rst_n
 from hwt.interfaces.tristate import TristateSig
 from hwt.simulator.agentBase import SyncAgentBase, AgentBase

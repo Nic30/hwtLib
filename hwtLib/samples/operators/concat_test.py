@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.bitmask import selectBit
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwtLib.samples.operators.concat import SimpleConcat
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.agentConnector import agInts

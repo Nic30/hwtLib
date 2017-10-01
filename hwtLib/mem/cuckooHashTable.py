@@ -3,10 +3,10 @@
 
 from hwt.code import log2ceil, FsmBuilder, And, Or, If, ror, SwitchLogic, \
     connect, Concat
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.defs import BIT
-from hwt.hdlObjects.types.enum import HEnum
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.defs import BIT
+from hwt.hdl.types.enum import HEnum
+from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import VectSignal, HandshakeSync
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn

@@ -7,7 +7,7 @@
 """
 
 from hwt.code import If, Concat
-from hwt.hdlObjects.types.defs import BIT
+from hwt.hdl.types.defs import BIT
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRst, propagateClkRst
 from hwt.synthesizer.interfaceLevel.unit import Unit

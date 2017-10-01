@@ -1,5 +1,5 @@
 from hwt.code import log2ceil
-from hwt.hdlObjects.constants import DIRECTION
+from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VectSignal, HandshakeSync
 from hwt.simulator.agentBase import AgentBase

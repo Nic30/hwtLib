@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import c, SwitchLogic, log2ceil, Switch
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.abstract.busEndpoint import BusEndpoint
 
@@ -76,7 +76,7 @@ class BramPortEndpoint(BusEndpoint):
             bus.dout ** readReg
 
 if __name__ == "__main__":
-    from hwt.hdlObjects.types.struct import HStruct
+    from hwt.hdl.types.struct import HStruct
     from hwt.synthesizer.shortcuts import toRtl
     from hwtLib.types.ctypes import uint32_t
 

@@ -1,5 +1,5 @@
 from hwt.bitmask import mask
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked
 from hwt.pyUtils.arrayQuery import grouper
 from hwt.simulator.simTestCase import SimTestCase

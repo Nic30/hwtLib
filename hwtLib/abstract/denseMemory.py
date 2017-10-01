@@ -1,10 +1,10 @@
 from itertools import chain
 
 from hwt.bitmask import mask, selectBitRange
-from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.types.array import HArray
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.types.array import HArray
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.struct import HStruct
 from hwt.simulator.types.simBits import simBitsT
 from collections import deque
 

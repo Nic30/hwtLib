@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.std import BramPort_withoutClk, VldSynced, RegCntrl, \
     VectSignal, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -14,7 +14,7 @@ from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import addrGetter
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 
 
 class Loop(Unit):

@@ -1,6 +1,6 @@
 from hwt.code import And, Or
 from hwt.pyUtils.arrayQuery import where
-from hwt.hdlObjects.typeShortcuts import hBit
+from hwt.hdl.typeShortcuts import hBit
 
 
 def _getRd(intf):

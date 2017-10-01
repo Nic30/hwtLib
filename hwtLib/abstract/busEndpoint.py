@@ -1,12 +1,12 @@
 from copy import copy
 
 from hwt.code import log2ceil
-from hwt.hdlObjects.constants import INTF_DIRECTION
-from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.types.array import HArray
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.hdlType import HdlType
-from hwt.hdlObjects.types.struct import HStruct, HStructField
+from hwt.hdl.constants import INTF_DIRECTION
+from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.types.array import HArray
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.hdlType import HdlType
+from hwt.hdl.types.struct import HStruct, HStructField
 from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf, HTypeFromIntfMap
 from hwt.interfaces.utils import addClkRstn

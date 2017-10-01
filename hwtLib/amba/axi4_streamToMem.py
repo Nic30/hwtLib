@@ -3,10 +3,10 @@
 
 from hwt.bitmask import mask
 from hwt.code import c, Concat, If, Switch, connect
-from hwt.hdlObjects.typeShortcuts import vec
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.enum import HEnum
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.typeShortcuts import vec
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.enum import HEnum
+from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.pyUtils.arrayQuery import where

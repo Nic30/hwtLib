@@ -1,8 +1,8 @@
 from collections import deque
 
 from hwt.bitmask import mask
-from hwt.hdlObjects.constants import READ, WRITE, NOP
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.constants import READ, WRITE, NOP
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import s, D, VectSignal
 from hwt.simulator.agentBase import SyncAgentBase
 from hwt.synthesizer.interfaceLevel.interface import Interface

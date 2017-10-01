@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import FsmBuilder, Switch, If
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.enum import HEnum
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit

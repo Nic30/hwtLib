@@ -1,8 +1,8 @@
 import unittest
 
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.struct import HStruct
-from hwt.hdlObjects.types.union import HUnion
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.struct import HStruct
+from hwt.hdl.types.union import HUnion
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.unionIntf import UnionSink, UnionSource

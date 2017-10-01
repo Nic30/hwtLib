@@ -1,4 +1,4 @@
-from hwt.hdlObjects.constants import DIRECTION
+from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import VectSignal, Signal
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axiLite import AxiLite, AxiLite_b, AxiLite_r, \

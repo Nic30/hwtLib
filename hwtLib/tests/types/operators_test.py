@@ -4,10 +4,10 @@
 import unittest
 
 from hwt.bitmask import mask
-from hwt.hdlObjects.typeShortcuts import hInt, hBool, hBit, vec
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.boolean import Boolean
-from hwt.hdlObjects.types.defs import INT, STR
+from hwt.hdl.typeShortcuts import hInt, hBool, hBit, vec
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.boolean import Boolean
+from hwt.hdl.types.defs import INT, STR
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwt.synthesizer.rtlLevel.signalUtils.walkers import walkAllOriginSignals

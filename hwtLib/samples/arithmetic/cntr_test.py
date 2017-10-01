@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import agInts
 from hwtLib.samples.arithmetic.cntr import Cntr
 from hwt.simulator.simTestCase import SimTestCase

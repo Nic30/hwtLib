@@ -4,15 +4,15 @@
 from typing import Optional, List, Union
 
 from hwt.code import log2ceil, If, Concat
-from hwt.hdlObjects.frameTmpl import FrameTmpl
-from hwt.hdlObjects.frameTmplUtils import ChoicesOfFrameParts
-from hwt.hdlObjects.transPart import TransPart
-from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.typeShortcuts import hBit
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.hdlType import HdlType
-from hwt.hdlObjects.types.struct import HStruct, HStructField
-from hwt.hdlObjects.types.union import HUnion
+from hwt.hdl.frameTmpl import FrameTmpl
+from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
+from hwt.hdl.transPart import TransPart
+from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.typeShortcuts import hBit
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.hdlType import HdlType
+from hwt.hdl.types.struct import HStruct, HStructField
+from hwt.hdl.types.union import HUnion
 from hwt.interfaces.std import Handshaked, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.unionIntf import UnionSource, UnionSink

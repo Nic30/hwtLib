@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import log2ceil
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.std import s, VectSignal
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.simulator.simTestCase import SimTestCase

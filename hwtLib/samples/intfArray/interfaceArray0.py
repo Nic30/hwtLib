@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.typeShortcuts import hInt
+from hwt.hdl.constants import Time
+from hwt.hdl.typeShortcuts import hInt
 from hwt.interfaces.std import VldSynced
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase

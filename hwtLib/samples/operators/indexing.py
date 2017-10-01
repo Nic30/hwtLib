@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import connect
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.synthesizer.interfaceLevel.unit import Unit
 

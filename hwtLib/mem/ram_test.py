@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import WRITE, READ, Time
+from hwt.hdl.constants import WRITE, READ, Time
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.ram import Ram_sp

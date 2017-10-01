@@ -1,4 +1,4 @@
-from hwt.hdlObjects.constants import DIRECTION
+from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import VectSignal
 from hwt.pyUtils.arrayQuery import single
 from hwt.synthesizer.param import Param

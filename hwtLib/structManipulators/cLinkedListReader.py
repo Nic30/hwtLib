@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -
 
 from hwt.code import If, In, Concat, connect, log2ceil
-from hwt.hdlObjects.typeShortcuts import vec
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.typeShortcuts import vec
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, RegCntrl, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit

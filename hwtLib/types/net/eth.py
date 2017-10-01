@@ -1,5 +1,5 @@
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.struct import HStruct
 
 
 vlan_t = Bits(12)

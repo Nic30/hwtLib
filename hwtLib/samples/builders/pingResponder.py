@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.struct import HStruct
-from hwt.hdlObjects.value import Value
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.struct import HStruct
+from hwt.hdl.value import Value
 from hwt.interfaces.std import Signal
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn

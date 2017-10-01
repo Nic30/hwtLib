@@ -1,8 +1,8 @@
 from hwt.code import If, log2ceil
-from hwt.hdlObjects.types.defs import BIT
+from hwt.hdl.types.defs import BIT
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 
 
 class ClkBuilder(object):

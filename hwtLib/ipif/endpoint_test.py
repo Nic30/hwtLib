@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.constants import Time, READ, WRITE, NOP
+from hwt.hdl.constants import Time, READ, WRITE, NOP
 from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \

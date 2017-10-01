@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, FsmBuilder, Switch
-from hwt.hdlObjects.types.enum import HEnum
+from hwt.hdl.types.enum import HEnum
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.ipif.intf import Ipif
 
@@ -91,7 +91,7 @@ class IpifEndpoint(BusEndpoint):
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    from hwt.hdlObjects.types.struct import HStruct
+    from hwt.hdl.types.struct import HStruct
     from hwtLib.types.ctypes import uint32_t
     u = IpifEndpoint(
             HStruct(

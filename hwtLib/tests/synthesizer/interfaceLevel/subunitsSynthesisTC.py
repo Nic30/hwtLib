@@ -3,8 +3,8 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import DIRECTION
-from hwt.hdlObjects.typeShortcuts import hInt
+from hwt.hdl.constants import DIRECTION
+from hwt.hdl.typeShortcuts import hInt
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.exceptions import TypeConversionErr
@@ -17,7 +17,7 @@ from hwtLib.amba.fullDuplexAxiStream import FullDuplexAxiStream
 from hwtLib.samples.hierarchy.unitToUnitConnection import UnitToUnitConnection
 from hwtLib.samples.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnection
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import BaseSynthesizerTC
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 
 
 D = DIRECTION

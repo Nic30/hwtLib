@@ -4,7 +4,7 @@
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.logic.crcPoly import CRC_32
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import valuesToInts
 
 
