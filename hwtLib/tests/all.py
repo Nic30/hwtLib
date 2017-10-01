@@ -150,7 +150,7 @@ from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
 
 
-def doSimWithoutLog(self, time):
+def doSimWithoutLog(self, time, name=None, config=None):
     sim = HdlSimulator()
     # dummy config
     sim.config = HdlSimConfig()
