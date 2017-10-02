@@ -11,6 +11,9 @@ from hwt.simulator.agentConnector import agInts
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.shortcuts import toRtl
 from hwtLib.samples.statements.switchStm import SwitchStmUnit
+from hwt.hdl.operatorDefs import AllOps
+from hwt.serializer.resourceUsageResolver.resourceTypes import ResourceMUX
+from hwt.serializer.resourceUsageResolver.resolver import ResourceUsageResolver
 
 
 switchStm_vhdl = """--
@@ -145,6 +148,16 @@ class SwitchStmTC(SimTestCase):
         u = SwitchStmUnit()
         s = toRtl(u, serializer=SystemCSerializer)
         self.assertEqual(s, switchStm_systemc)
+
+    def test_resources(self):
+        u = SwitchStmUnit()
+
+        expected = {(ResourceMUX, 1, 4): 1}
+
+        s = ResourceUsageResolver()
+        toRtl(u, serializer=s)
+        r = s.report()
+        self.assertDictEqual(r, expected)
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

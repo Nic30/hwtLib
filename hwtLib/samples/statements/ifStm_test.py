@@ -2,10 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.constants import Time
+from hwt.hdl.operatorDefs import AllOps
+from hwt.serializer.resourceUsageResolver.resolver import ResourceUsageResolver
+from hwt.serializer.resourceUsageResolver.resourceTypes import ResourceMUX, \
+    ResourceFF
 from hwt.simulator.agentConnector import agInts
-from hwtLib.samples.statements.ifStm import SimpleIfStatement,\
-    SimpleIfStatement2, SimpleIfStatement2b, SimpleIfStatement2c
 from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.shortcuts import toRtl
+from hwtLib.samples.statements.ifStm import SimpleIfStatement, \
+    SimpleIfStatement2, SimpleIfStatement2b, SimpleIfStatement2c
 
 
 class IfStmTC(SimTestCase):
@@ -87,6 +92,21 @@ class IfStmTC(SimTestCase):
         self.doSim(100 * Time.ns)
 
         self.assertValSequenceEqual(u.d._ag.data, expected_dd)
+
+    def test_resources_SimpleIfStatement2c(self):
+        u = SimpleIfStatement2c()
+
+        expected = {
+            (AllOps.AND, 1): 1,
+            (AllOps.EQ, 1): 1,
+            (ResourceMUX, 2, 2): 1,
+            (ResourceMUX, 2, 3): 1,
+            ResourceFF: 2,}
+            
+        s = ResourceUsageResolver()
+        toRtl(u, serializer=s)
+        r = s.report()
+        self.assertDictEqual(r, expected)
 
 if __name__ == "__main__":
     import unittest
