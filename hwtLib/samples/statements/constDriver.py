@@ -11,8 +11,8 @@ class ConstDriverUnit(Unit):
         self.out1 = Signal()
 
     def _impl(self):
-        self.out0 ** 0
-        self.out1 ** 1
+        self.out0(0)
+        self.out1(1)
 
 
 if __name__ == "__main__":

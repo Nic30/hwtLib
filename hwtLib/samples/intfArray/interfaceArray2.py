@@ -3,7 +3,7 @@
 
 from hwtLib.amba.axis import AxiStream
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -19,7 +19,7 @@ class SimpleSubunit(Unit):
             self.d = AxiStream()
 
     def _impl(self):
-        self.d ** self.c
+        self.d(self.c)
 
 
 class InterfaceArraySample2(Unit):
@@ -45,12 +45,12 @@ class InterfaceArraySample2(Unit):
 
     def _impl(self):
 
-        self.u0.c ** self.a[0]
-        self.u1.c ** self.a[1]
+        self.u0.c(self.a[0])
+        self.u1.c(self.a[1])
         # u2in = connect(a[2], u2.c)
 
-        self.b[0] ** self.u0.d
-        self.b[1] ** self.u1.d
+        self.b[0](self.u0.d)
+        self.b[1](self.u1.d)
         # u2out = connect(u2.d, b[2])
 
 

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.types.enum import HEnum
+from hwt.hdl.types.enum import HEnum
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.netlistToRtl import netlistToVhdlStr
 
@@ -21,16 +21,16 @@ def AxiReaderCore():
     If(arRd,
        # rdIdle
         If(arVld,
-           rSt ** rSt_t.rdData
+           rSt(rSt_t.rdData)
         ).Else(
-           rSt ** rSt_t.rdIdle
+           rSt(rSt_t.rdIdle)
         )
     ).Else(
         # rdData
         If(rRd & rVld,
-           rSt ** rSt_t.rdIdle
+           rSt(rSt_t.rdIdle)
         ).Else(
-           rSt ** rSt_t.rdData
+           rSt(rSt_t.rdData)
         )
     )
 

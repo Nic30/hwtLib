@@ -1,6 +1,6 @@
 from hwt.code import And, Or
 from hwt.pyUtils.arrayQuery import where
-from hwt.hdlObjects.typeShortcuts import hBit
+from hwt.hdl.typeShortcuts import hBit
 
 
 def _getRd(intf):
@@ -27,6 +27,7 @@ def _exStreamMemberAck(m):
 class ExclusiveStreamGroups(list):
     """
     list of tuples (cond, StreamNode instance)
+    Only one stream from this group can be activated at the time
     """
     def __hash__(self):
         return id(self)
@@ -121,7 +122,7 @@ class StreamNode():
             if isinstance(m, ExclusiveStreamGroups):
                 a = m.sync(r)
             else:
-                a = _getRd(m) ** r
+                a = _getRd(m)(r)
 
             expression.extend(a)
 
@@ -134,7 +135,7 @@ class StreamNode():
             if isinstance(s, ExclusiveStreamGroups):
                 a = s.sync(v)
             else:
-                a = _getVld(s) ** v
+                a = _getVld(s)(v)
 
             expression.extend(a)
 

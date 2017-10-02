@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Or, rol, connect
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
@@ -61,22 +61,22 @@ class HsSplitFair(HsSplitCopy):
         EXPORT_SELECTED = bool(self.EXPORT_SELECTED)
 
         priority = self._reg("priority", Bits(self.OUTPUTS), defVal=1)
-        priority ** rol(priority, 1)
+        priority(rol(priority, 1))
 
         rdSignals = list(map(rd, self.dataOut))
 
         for i, dout in enumerate(self.dataOut):
             isSelected = self._sig("isSelected_%d" % i)
-            isSelected ** HsJoinFairShare.priorityAck(priority, rdSignals, i)
+            isSelected(HsJoinFairShare.priorityAck(priority, rdSignals, i))
 
             if EXPORT_SELECTED:
-                self.selectedOneHot.data[i] ** (isSelected & vld(din))
-                vld(dout) ** (isSelected & vld(din) & self.selectedOneHot.rd)
+                self.selectedOneHot.data[i](isSelected & vld(din))
+                vld(dout)(isSelected & vld(din) & self.selectedOneHot.rd)
             else:
-                vld(dout) ** (isSelected & vld(din))
+                vld(dout)(isSelected & vld(din))
 
         if EXPORT_SELECTED:
-            self.selectedOneHot.vld ** (Or(*rdSignals) & vld(din))
+            self.selectedOneHot.vld(Or(*rdSignals) & vld(din))
 
         return rdSignals
 
@@ -87,9 +87,9 @@ class HsSplitFair(HsSplitCopy):
             connect(self.dataIn, dout, exclude={self.getRd(dout), self.getVld(dout)})
 
         if self.EXPORT_SELECTED:
-            self.getRd(self.dataIn) ** (Or(*rdSignals) & self.selectedOneHot.rd)
+            self.getRd(self.dataIn)(Or(*rdSignals) & self.selectedOneHot.rd)
         else:
-            self.getRd(self.dataIn) ** Or(*rdSignals)
+            self.getRd(self.dataIn)(Or(*rdSignals))
 
 
 if __name__ == "__main__":

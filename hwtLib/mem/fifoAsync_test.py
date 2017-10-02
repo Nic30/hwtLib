@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwtLib.mem.fifoAsync import FifoAsync
 from hwtLib.mem.fifo_test import FifoTC
 

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, c
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, RegCntrl
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeOnce
@@ -39,10 +39,10 @@ class FlipRegister(Unit):
     def connectWriteIntf(self, regA, regB):
         return (
             If(self.first.dout.vld,
-                regA ** self.first.dout.data
+                regA(self.first.dout.data)
             ) + 
             If(self.second.dout.vld,
-               regB ** self.second.dout.data
+               regB(self.second.dout.data)
             )
         )
 

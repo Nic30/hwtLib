@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.std import BramPort_withoutClk, VldSynced, RegCntrl, \
     VectSignal, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -14,7 +14,7 @@ from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import addrGetter
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 
 
 class Loop(Unit):
@@ -34,7 +34,7 @@ class Loop(Unit):
             self.dout = self.interfaceCls()
 
     def _impl(self):
-        self.dout ** self.din
+        self.dout(self.din)
 
 
 class SigLoop(Unit):
@@ -46,7 +46,7 @@ class SigLoop(Unit):
         self.dout = VectSignal(self.DATA_WIDTH)
 
     def _impl(self):
-        self.dout ** self.din
+        self.dout(self.din)
 
 
 class TestUnittWithChilds(Unit):
@@ -80,10 +80,10 @@ class TestUnittWithChilds(Unit):
             self.bramOut.ADDR_WIDTH.set(2)
 
     def _impl(self):
-        self.signalLoop.din ** self.signalIn
-        self.regCntrlOut ** self.regCntrlLoop.dout 
-        self.vldSyncedOut ** self.vldSyncedLoop.dout 
-        self.bramOut ** self.bramLoop.dout
+        self.signalLoop.din(self.signalIn)
+        self.regCntrlOut(self.regCntrlLoop.dout) 
+        self.vldSyncedOut(self.vldSyncedLoop.dout) 
+        self.bramOut(self.bramLoop.dout)
         
         def configEp(ep):
             ep._updateParamsFrom(self)
@@ -102,8 +102,8 @@ class TestUnittWithChilds(Unit):
         self.conv = axiLiteConv
 
         axiLiteConv.connectByInterfaceMap(interfaceMap)
-        axiLiteConv.bus ** self.bus
-        axiLiteConv.decoded.vldSynced.din ** None
+        axiLiteConv.bus(self.bus)
+        axiLiteConv.decoded.vldSynced.din(None)
         
 
         propagateClkRstn(self)
@@ -134,9 +134,9 @@ class TestUnittWithArr(Unit):
 
 
     def _impl(self):
-        self.regCntrlOut0 ** self.regCntrlLoop0.dout 
-        self.regCntrlOut1 ** self.regCntrlLoop1.dout 
-        self.regCntrlOut2 ** self.regCntrlLoop2.dout 
+        self.regCntrlOut0(self.regCntrlLoop0.dout) 
+        self.regCntrlOut1(self.regCntrlLoop1.dout) 
+        self.regCntrlOut2(self.regCntrlLoop2.dout) 
         
         def configEp(ep):
             ep._updateParamsFrom(self)
@@ -152,7 +152,7 @@ class TestUnittWithArr(Unit):
         self.conv = axiLiteConv
 
         axiLiteConv.connectByInterfaceMap(interfaceMap)
-        axiLiteConv.bus ** self.bus
+        axiLiteConv.bus(self.bus)
         
 
         propagateClkRstn(self)

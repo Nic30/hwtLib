@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -22,8 +22,8 @@ class SimpleSubunit2(Unit):
     def _impl(self):
         propagateClkRstn(self)
         u = self.subunit0
-        u.a ** self.a0
-        self.b0 ** u.b
+        u.a(self.a0)
+        self.b0(u.b)
 
 
 class SimpleSubunit2TC(SimTestCase):

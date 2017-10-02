@@ -1,11 +1,12 @@
 import unittest
-from hwt.synthesizer.interfaceLevel.unit import Unit
+
+from hwt.code import Concat
 from hwt.interfaces.std import Signal, VectSignal
-from hwt.synthesizer.shortcuts import toRtl
 from hwt.serializer.mode import serializeExclude, serializeOnce, \
     serializeParamsUniq
-from hwt.code import Concat
+from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.shortcuts import toRtl
 
 
 class SimpeUnit(Unit):
@@ -13,7 +14,7 @@ class SimpeUnit(Unit):
         self.a = Signal()
 
     def _impl(self):
-        self.a ** 1
+        self.a(1)
 
 
 @serializeExclude
@@ -47,7 +48,7 @@ class A(Unit):
         self.u7.B.set(12)
 
     def _impl(self):
-        self.a ** Concat(*[getattr(self, "u%d" % i).a for i in range(7)])
+        self.a(Concat(*[getattr(self, "u%d" % i).a for i in range(7)]))
 
 
 expected_vhdl = """--Object of class Entity, "ExcludedUnit" was not serialized as specified

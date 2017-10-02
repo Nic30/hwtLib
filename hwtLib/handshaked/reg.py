@@ -32,49 +32,49 @@ class HandshakedReg(HandshakedCompBase):
             r = self._reg(prefix + 'reg_' + iin._name, iin._dtype)
 
             If(regs_we,
-                r ** iin
+                r(iin)
             )
             outData.append(r)
 
         If(isOccupied,
             If(outRd & ~inVld,
-                isOccupied ** 0
+                isOccupied(0)
             )
         ).Else(
             If(inVld,
-               isOccupied ** 1
+               isOccupied(1)
             )
         )
 
         If(isOccupied,
            c(outRd, inRd),
-           outVld ** 1,
-           regs_we ** (inVld & outRd)
+           outVld(1),
+           regs_we(inVld & outRd)
         ).Else(
-           inRd ** 1,
-           outVld ** 0,
-           regs_we ** inVld
+           inRd(1),
+           outVld(0),
+           regs_we(inVld)
         )
         return outData
 
     def _implLatencyAndDelay(self, inVld, inRd, inData, outVld, outRd, prefix):
         wordLoaded = self._reg("wordLoaded", defVal=0)
         If(wordLoaded,
-           wordLoaded ** ~outRd
+           wordLoaded(~outRd)
         ).Else(
-           wordLoaded ** inVld
+           wordLoaded(inVld)
         )
 
         outData = []
         for iin in inData:
             r = self._reg('reg_' + getSignalName(iin), iin._dtype)
             If(~wordLoaded,
-               r ** iin
+               r(iin)
             )
             outData.append(r)
 
-        inRd ** ~wordLoaded
-        outVld ** wordLoaded
+        inRd(~wordLoaded)
+        outVld(wordLoaded)
 
         return outData
 
@@ -99,7 +99,7 @@ class HandshakedReg(HandshakedCompBase):
             raise NotImplementedError(LATENCY, DELAY)
 
         for ds, dm in zip(data(Out), outData):
-            ds ** dm
+            ds(dm)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, log2ceil, Concat, Switch
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axis_comp.base import AxiSCompBase
@@ -68,7 +68,7 @@ class AxiS_resizer(AxiSCompBase):
             return True
 
         _res = self._sig("nextAreNotValid")
-        _res ** res
+        _res(res)
         return _res
 
     def upscale(self, IN_DW, OUT_DW):
@@ -96,44 +96,44 @@ class AxiS_resizer(AxiSCompBase):
                     r = self._reg("reg_" + inp._name + "_%d" % wordIndx, inp._dtype, defVal=0)
 
                     If(hs & isLastItem,
-                       r ** 0
+                       r(0)
                     ).Elif(vld & itemCntr._eq(wordIndx),
-                       r ** inp
+                       r(inp)
                     )
 
                     If(itemCntr._eq(wordIndx),
-                       s ** inp
+                       s(inp)
                     ).Else(
-                       s ** r
+                       s(r)
                     )
                 else:  # last item does not need register
                     If(itemCntr._eq(wordIndx),
-                       s ** inp
+                       s(inp)
                     ).Else(
-                       s ** 0
+                       s(0)
                     )
 
                 outputs[outp].append(s)
 
         # dataIn/dataOut hs
-        self.getRd(self.dataIn) ** self.getRd(dataOut)
-        self.getVld(dataOut) ** (vld & (isLastItem))
+        self.getRd(self.dataIn)(self.getRd(dataOut))
+        self.getVld(dataOut)(vld & (isLastItem))
 
         # connect others signals directly
         for inp, outp in zip(self.getData(self.dataIn), self.getData(dataOut)):
             if inp not in dIn:
-                outp ** inp
+                outp(inp)
 
         # connect data signals to utput
         for outp, outItems in outputs.items():
-            outp ** Concat(*reversed(outItems))
+            outp(Concat(*reversed(outItems)))
 
         # itemCntr next logic
         If(hs,
             If(isLastItem,
-                itemCntr ** 0
+                itemCntr(0)
             ).Else(
-                itemCntr ** (itemCntr + 1)
+                itemCntr(itemCntr + 1)
             )
         )
 
@@ -146,9 +146,9 @@ class AxiS_resizer(AxiSCompBase):
         inReg = AxiSReg(self.intfCls)
         inReg._updateParamsFrom(self.dataIn)
         self.inReg = inReg
-        inReg.clk ** self.clk
-        inReg.rst_n ** self.rst_n
-        inReg.dataIn ** self.dataIn
+        inReg.clk(self.clk)
+        inReg.rst_n(self.rst_n)
+        inReg.dataIn(self.dataIn)
         dataIn = inReg.dataOut
 
         dIn = self.getDataWidthDependent(dataIn)
@@ -170,27 +170,27 @@ class AxiS_resizer(AxiSCompBase):
             w = outp._dtype.bit_length()
             Switch(itemCntr)\
             .addCases([
-                (wordIndx, outp ** inp[((wordIndx + 1) * w):(w * wordIndx)])
+                (wordIndx, outp(inp[((wordIndx + 1) * w):(w * wordIndx)]))
                   for wordIndx in range(ITEMS)
                 ])\
             .Default(
-               outp ** None
+               outp(None)
             )
 
         # connect others signals directly
         for inp, outp in zip(self.getData(dataIn), self.getData(self.dataOut)):
             if inp not in dIn and inp is not dataIn.last:
-                outp ** inp
+                outp(inp)
 
-        self.dataOut.last ** (dataIn.last & isLastItem)
-        self.getRd(dataIn) ** (self.getRd(self.dataOut) & isLastItem & dataIn.valid)
-        self.getVld(self.dataOut) ** self.getVld(dataIn)
+        self.dataOut.last(dataIn.last & isLastItem)
+        self.getRd(dataIn)(self.getRd(self.dataOut) & isLastItem & dataIn.valid)
+        self.getVld(self.dataOut)(self.getVld(dataIn))
 
         If(hs,
            If(isLastItem,
-               itemCntr ** 0
+               itemCntr(0)
            ).Else(
-               itemCntr ** (itemCntr + 1)
+               itemCntr(itemCntr + 1)
            )
         )
 

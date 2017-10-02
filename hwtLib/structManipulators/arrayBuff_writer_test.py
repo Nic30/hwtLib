@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time, NOP
+from hwt.hdl.constants import Time, NOP
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import agent_randomize
 from hwtLib.abstract.denseMemory import DenseMemory

@@ -1,4 +1,4 @@
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked, VldSynced
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.agentConnector import valToInt
@@ -27,9 +27,9 @@ class TestUnit_uart(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
-        self.rx.rxd ** self.tx.txd
-        self.tx.dataIn ** self.din
-        self.dout ** self.rx.dataOut
+        self.rx.rxd(self.tx.txd)
+        self.tx.dataIn(self.din)
+        self.dout(self.rx.dataOut)
 
 
 class UartTxRxTC(SimTestCase):

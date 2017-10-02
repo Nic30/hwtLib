@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Clk, VectSignal
 from hwt.synthesizer.interfaceLevel.unit import Unit
 
@@ -14,7 +14,7 @@ class SimpleRom(Unit):
 
     def _impl(self):
         rom = self._sig("rom_data", Bits(8)[4], defVal=[1, 2, 3, 4])
-        self.dout ** rom[self.addr]
+        self.dout(rom[self.addr])
 
 
 class SimpleSyncRom(SimpleRom):
@@ -26,7 +26,7 @@ class SimpleSyncRom(SimpleRom):
         rom = self._sig("rom_data", Bits(8)[4], defVal=[1, 2, 3, 4])
 
         If(self.clk._onRisingEdge(),
-           self.dout ** rom[self.addr]
+           self.dout(rom[self.addr])
         )
 
 

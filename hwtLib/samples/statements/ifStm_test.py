@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import agInts
 from hwtLib.samples.statements.ifStm import SimpleIfStatement,\
     SimpleIfStatement2, SimpleIfStatement2b, SimpleIfStatement2c
@@ -28,12 +28,12 @@ class IfStmTC(SimTestCase):
 
         #If(a,
         #    If(b & c,
-        #       r ** 1,
+        #       r(1),
         #    ).Else(
-        #       r ** 0
+        #       r(0)
         #    )
         #)
-        #d ** r
+        #d(r)
 
         u.a._ag.data.extend([1, 1, 1,    0, 0, 0,    1, 0, 1, 0])
         u.b._ag.data.extend([0, 1, None, 0, 1, None, 1, 0, 0, 0])
@@ -49,12 +49,12 @@ class IfStmTC(SimTestCase):
         self.prepareUnit(u)
         #If(a & b,
         #    If(c,
-        #       r ** 1,
+        #       r(1),
         #    )
         #).Elif(c,
-        #    r ** 0
+        #    r(0)
         #)
-        #d ** r
+        #d(r)
 
         u.a._ag.data.extend([1, 1, 1,    0, 0, 0,    1, 0, 1, 0])
         u.b._ag.data.extend([0, 1, None, 0, 1, None, 1, 0, 0, 0])
@@ -70,14 +70,14 @@ class IfStmTC(SimTestCase):
         self.prepareUnit(u)
         #If(a & b,
         #    If(c,
-        #       r ** 0,
+        #       r(0),
         #    )
         #).Elif(c,
-        #    r ** 1
+        #    r(1)
         #).Else(
-        #    r ** 2
+        #    r(2)
         #)
-        #d ** r
+        #d(r)
 
         u.a._ag.data.extend([0, 1, 1, 1,    0,    0, 0,    1, 0, 1, 0])
         u.b._ag.data.extend([0, 0, 1, None, 0,    1, None, 1, 0, 0, 0])

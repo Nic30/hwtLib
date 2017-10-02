@@ -5,7 +5,7 @@ from hwt.interfaces.std import Signal
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 
 
 class SimpleUnitWithParam(Unit):
@@ -27,7 +27,7 @@ class SimpleUnitWithParam(Unit):
         self.b = Signal(dtype=dt)
 
     def _impl(self):
-        self.b ** self.a
+        self.b(self.a)
 
 
 class SimpleUnitWithParamTC(SimTestCase):

@@ -3,8 +3,8 @@
 
 from hwt.bitmask import mask
 from hwt.code import If, connect, log2ceil
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
@@ -46,7 +46,7 @@ class AxisFrameGen(Unit):
         en = self._reg("enable", defVal=0)
         _len = self._reg("wordCntr", Bits(log2ceil(self.MAX_LEN)), defVal=0)
 
-        self.conv.bus ** self.cntrl
+        self.conv.bus(self.cntrl)
         cEn = self.conv.decoded.enable
         If(cEn.dout.vld,
            connect(cEn.dout.data, en, fit=True)
@@ -61,18 +61,18 @@ class AxisFrameGen(Unit):
 
         out = self.axis_out
         connect(cntr, out.data, fit=True)
-        out.strb ** mask(self.axis_out.strb._dtype.bit_length())
-        out.last ** cntr._eq(0)
-        out.valid ** en
+        out.strb(mask(self.axis_out.strb._dtype.bit_length()))
+        out.last(cntr._eq(0))
+        out.valid(en)
 
         If(cLen.dout.vld,
            connect(cLen.dout.data, cntr, fit=True)
         ).Else(
             If(out.ready & en,
                If(cntr._eq(0),
-                  cntr ** _len
+                  cntr(_len)
                ).Else(
-                  cntr ** (cntr - 1) 
+                  cntr(cntr - 1) 
                )
             )
         )

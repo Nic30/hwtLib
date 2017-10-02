@@ -50,9 +50,9 @@ class RStrictOrderInterconnect(AxiInterconnectBase):
                             self.drivers))
 
         selectedDriverReady = self._sig("selectedDriverReady")
-        selectedDriverReady ** Or(*map(lambda d: fifoOut.data._eq(d[0]) & d[1].ready,
-                                       enumerate(driversR))
-                                       )
+        selectedDriverReady(Or(*map(lambda d: fifoOut.data._eq(d[0]) & d[1].ready,
+                                    enumerate(driversR))
+                                    ))
 
         # extra enable signals based on selected driver from orderInfoFifo
         # extraHsEnableConds = {
@@ -60,11 +60,11 @@ class RStrictOrderInterconnect(AxiInterconnectBase):
         #                     }
         for i, d in enumerate(driversR):
             # extraHsEnableConds[d]
-            d.valid ** (r.valid & fifoOut.vld & fifoOut.data._eq(i))
+            d.valid(r.valid & fifoOut.vld & fifoOut.data._eq(i))
             connect(r, d, exclude=[d.valid, d.ready])
 
-        r.ready ** (fifoOut.vld & selectedDriverReady)
-        fifoOut.rd ** (r.valid & r.last & selectedDriverReady)
+        r.ready(fifoOut.vld & selectedDriverReady)
+        fifoOut.rd(r.valid & r.last & selectedDriverReady)
         # StreamNode(masters=[r],
         #           slaves=driversR,
         #           extraConds=extraHsEnableConds).sync()

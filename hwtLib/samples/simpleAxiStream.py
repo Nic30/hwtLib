@@ -19,7 +19,7 @@ class SimpleUnitAxiStream(Unit):
             self.b = AxiStream()
 
     def _impl(self):
-        self.b ** self.a
+        self.b(self.a)
 
 
 if __name__ == "__main__":

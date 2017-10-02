@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, binToGray
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
@@ -24,10 +24,10 @@ class GrayCntr(Unit):
     def _impl(self):
         binCntr = self._reg("cntr_bin_reg", self.dataOut._dtype, self.INIT_VAL) 
 
-        self.dataOut ** binToGray(binCntr)
+        self.dataOut(binToGray(binCntr))
 
         If(self.en,
-           binCntr ** (binCntr + 1)
+           binCntr(binCntr + 1)
         )
 
 

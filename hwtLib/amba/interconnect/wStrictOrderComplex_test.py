@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.bitmask import mask
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -38,13 +38,12 @@ class WStrictOrderInterconnecComplex(Unit):
         dp = self.dp
         ic = self.ic
 
-        self.aw ** dp.a
-        self.w ** dp.w
-        dp.b ** self.b
+        self.aw(dp.a)
+        self.w(dp.w)
+        dp.b(self.b)
 
-        dp.driver ** ic.wDatapump
-
-        ic.drivers ** self.drivers
+        dp.driver(ic.wDatapump)
+        ic.drivers(self.drivers)
 
 
 class WStrictOrderInterconnectComplexTC(SimTestCase):

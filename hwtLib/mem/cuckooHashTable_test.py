@@ -4,7 +4,7 @@
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.cuckooHashTable import CuckooHashTable
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 
 
 class CuckooHashTableTC(SimTestCase):

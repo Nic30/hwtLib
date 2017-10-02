@@ -19,8 +19,8 @@ class SimpleSubunit(Unit):
 
     def _impl(self):
         u = self.subunit0
-        u.a ** self.a
-        self.b ** u.b
+        u.a(self.a)
+        self.b(u.b)
 
 
 if __name__ == "__main__":

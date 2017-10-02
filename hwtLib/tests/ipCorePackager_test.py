@@ -3,7 +3,7 @@ import tempfile
 import unittest
 
 from hwt.code import If, connect
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.differential import DifferentialSig
 from hwt.interfaces.std import BramPort, Handshaked
 from hwt.interfaces.utils import addClkRst
@@ -38,17 +38,17 @@ class IpCoreIntfTest(Unit):
 
     def _impl(self):
         r0 = self._reg("r0", defVal=0)
-        self.uart.tx ** self.uart.rx
-        self.ram0 ** self.ram1
+        self.uart.tx(self.uart.rx)
+        self.ram0(self.ram1)
 
         If(self.hsIn.vld,
-           r0 ** (self.difIn.p & ~self.difIn.n)
+           r0(self.difIn.p & ~self.difIn.n)
         )
         If(r0,
-           self.hsOut ** self.hsIn
+           self.hsOut(self.hsIn)
         ).Else(
            connect(r0, self.hsOut.data, fit=True),
-           self.hsOut.vld ** 1
+           self.hsOut.vld(1)
         )
 
 

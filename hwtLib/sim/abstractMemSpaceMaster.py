@@ -1,7 +1,7 @@
-from hwt.hdlObjects.transTmpl import TransTmpl
+from hwt.hdl.transTmpl import TransTmpl
 from hwt.bitmask import mask
-from hwt.hdlObjects.types.array import HArray
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.types.array import HArray
+from hwt.hdl.types.struct import HStruct
 
 
 class PartialField(object):

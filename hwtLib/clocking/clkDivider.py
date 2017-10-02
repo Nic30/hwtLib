@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.constants import Time
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Clk
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
@@ -30,30 +30,30 @@ class ClkDiv3(Unit):
 
 
         If(self.rst_n._isOn(),
-           r_cnt ** 0,
-           rise ** 1,
-           f_cnt ** CNTR_MAX,
-           fall ** 1
+           r_cnt(0),
+           rise(1),
+           f_cnt(CNTR_MAX),
+           fall(1)
         ).Else(
             If(clk._onRisingEdge(),
                 If(r_cnt._eq(CNTR_MAX),
-                    r_cnt ** 0,
-                    rise ** ~rise
+                    r_cnt(0),
+                    rise(~rise)
                 ).Else(
-                    r_cnt ** (r_cnt + 1),
+                    r_cnt(r_cnt + 1),
                 )
             ),
             If(clk._onFallingEdge(),
                 If(f_cnt._eq(CNTR_MAX),
-                    f_cnt ** 0,
-                    fall ** ~fall
+                    f_cnt(0),
+                    fall(~fall)
                 ).Else(
-                    f_cnt ** (f_cnt + 1),
+                    f_cnt(f_cnt + 1),
                 )
             )
         )
 
-        self.clkOut ** ((r_cnt != CNTR_MAX) & (f_cnt != CNTR_MAX))  # fall._eq(rise)
+        self.clkOut((r_cnt != CNTR_MAX) & (f_cnt != CNTR_MAX))  # fall._eq(rise)
 
 
 class ClkDiv3TC(SimTestCase):

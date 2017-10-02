@@ -3,7 +3,7 @@
 
 from hwt.bitmask import mask
 from hwt.code import If, connect, Concat, log2ceil, SwitchLogic
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -67,46 +67,46 @@ class AxiS_measuringFifo(Unit):
         last = dIn.last | overflow
         If(StreamNode(masters=[dIn], slaves=[sb.dataIn, db.dataIn]).ack(),
             If(last,
-                wordCntr ** 0
+                wordCntr(0)
             ).Else(
-                wordCntr ** (wordCntr + 1)
+                wordCntr(wordCntr + 1)
             )
         )
         rem = self._sig("rem", Bits(log2ceil(STRB_BITS)))
         SwitchLogic(
             cases=[
-                (dIn.strb[i], rem ** (0 if i == STRB_BITS - 1 else i + 1))
+                (dIn.strb[i], rem(0 if i == STRB_BITS - 1 else i + 1))
                 for i in reversed(range(STRB_BITS))],
             default=[
-                rem ** 0,
+                rem(0),
 
             ]
         )
         if self.EXPORT_ALIGNMENT_ERROR:
             errorAlignment = self._reg("errorAlignment_reg", defVal=0)
-            self.errorAlignment ** errorAlignment
+            self.errorAlignment(errorAlignment)
             If(dIn.valid & (dIn.strb != mask(STRB_BITS)) & ~dIn.last,
-               errorAlignment ** 1
+               errorAlignment(1)
             )
 
         length = self._sig("length", wordCntr._dtype)
         If(last & (dIn.strb != mask(STRB_BITS)),
-            length ** wordCntr
+            length(wordCntr)
         ).Else(
-            length ** (wordCntr + 1)
+            length(wordCntr + 1)
         )
 
-        sb.dataIn.data ** Concat(length, rem)
+        sb.dataIn.data(Concat(length, rem))
 
         connect(dIn, db.dataIn, exclude=[dIn.valid, dIn.ready, dIn.last])
-        db.dataIn.last ** last
+        db.dataIn.last(last)
 
         StreamNode(masters=[dIn],
                    slaves=[sb.dataIn, db.dataIn],
                    extraConds={sb.dataIn: last
                                }).sync()
 
-        self.sizes ** sb.dataOut
+        self.sizes(sb.dataOut)
         connect(db.dataOut, self.dataOut)
 
 

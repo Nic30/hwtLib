@@ -5,14 +5,14 @@ from typing import List, Optional, Union
 
 from hwt.bitmask import mask
 from hwt.code import log2ceil, Switch, If, isPow2, In, SwitchLogic
-from hwt.hdlObjects.frameTmpl import FrameTmpl
-from hwt.hdlObjects.frameTmplUtils import ChoicesOfFrameParts
-from hwt.hdlObjects.transPart import TransPart
-from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.hdlType import HdlType
-from hwt.hdlObjects.types.struct import HStruct, HStructField
-from hwt.hdlObjects.types.union import HUnion
+from hwt.hdl.frameTmpl import FrameTmpl
+from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
+from hwt.hdl.transPart import TransPart
+from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.hdlType import HdlType
+from hwt.hdl.types.struct import HStruct, HStructField
+from hwt.hdl.types.union import HUnion
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.unionIntf import UnionSink
@@ -23,6 +23,7 @@ from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.amba.axis_comp.templateBasedUnit import TemplateBasedUnit
+from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
 
 
@@ -125,16 +126,24 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             # connnect parts of union to output signal
             w = tPart.bit_length()
             high, low = tPart.getBusWordBitRange()
+            parentIntf = tToIntf[tPart.origin.parent.origin]
+
+            if parentIntf not in self._tmpRegsForSelect.keys():
+                sel = HsBuilder(self, parentIntf._select).buff().end
+                self._tmpRegsForSelect[parentIntf] = sel
 
             inPortGroups = ExclusiveStreamGroups()
             lastInPortsGroups = ExclusiveStreamGroups()
+            
+            # tuples (cond, part of data mux for dataOut)
             unionChoices = []
-
+            
+            # for all union choices
             for choice in tPart:
                 tmp = self._sig("union_tmp_", Bits(w))
                 intfOfChoice = tToIntf[choice.tmpl.origin]
-                isSelected, isSelectValid = AxiS_frameParser.choiceIsSelected(self, intfOfChoice)
-                unionChoices.append((isSelected, wordData_out[high:low] ** tmp))
+                _, isSelected, isSelectValid = AxiS_frameParser.choiceIsSelected(self, intfOfChoice)
+                unionChoices.append((isSelected, wordData_out[high:low](tmp)))
 
                 isSelected = isSelected & isSelectValid
 
@@ -143,14 +152,16 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
                 inPortGroups.append((isSelected, inPortsNode))
                 lastInPortsGroups.append((isSelected, lastPortsNode))
-
+                
+                # walk all parts in union choice
                 for _tPart in choice:
                     self.connectPartsOfWord(tmp, _tPart,
                                             inPortsNode.masters,
                                             lastPortsNode.masters)
-
+            
+            # generate data out mux
             SwitchLogic(unionChoices,
-                        default=wordData_out ** None)
+                        default=wordData_out(None))
 
             inPorts_out.append(inPortGroups)
             lastInPorts_out.append(lastInPortsGroups)
@@ -159,11 +170,11 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             # connect parts of fields to output signal
             high, low = tPart.getBusWordBitRange()
             if tPart.isPadding:
-                wordData_out[high:low] ** None
+                wordData_out[high:low](None)
             else:
                 intf = tToIntf[tPart.tmpl.origin]
                 fhigh, flow = tPart.getFieldBitRange()
-                wordData_out[high:low] ** self.byteOrderCare(intf.data)[fhigh:flow]
+                wordData_out[high:low](self.byteOrderCare(intf.data)[fhigh:flow])
                 inPorts_out.append(intf)
 
                 if tPart.isLastPart():
@@ -199,8 +210,8 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
         dout = self.dataOut
         self.parseTemplate()
         maxWordIndex = words[-1][0]
-        useCounter = maxWordIndex > 0
-        if useCounter:
+        multipleWords = maxWordIndex > 0
+        if multipleWords:
             # multiple word frame
             wordCntr_inversed = self._reg("wordCntr_inversed",
                                           Bits(log2ceil(maxWordIndex + 1), False),
@@ -213,20 +224,24 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
             inPorts = []
             lastInPorts = []
-            wordData = self._sig("word%d" % i, dout.data._dtype)
-
+            if multipleWords:
+                wordData = self._sig("word%d" % i, dout.data._dtype)
+            else:
+                wordData = self.dataOut.data
+            
             for tPart in transParts:
                 self.connectPartsOfWord(wordData, tPart,
                                         inPorts,
                                         lastInPorts)
 
-            if useCounter:
+            if multipleWords:
                 en = wordCntr_inversed._eq(inversedIndx)
             else:
                 en = True
             en = self.dataOut.ready & en
+
             ack = self.handshakeLogicForWord(inPorts, lastInPorts, en)
-            if useCounter:
+            if multipleWords:
                 # word cntr next logic
                 if i == maxWordIndex:
                     nextWordIndex = maxWordIndex
@@ -239,54 +254,58 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
                     _ack = dout.ready & ack
 
                 a = If(_ack,
-                       wordCntr_inversed ** nextWordIndex
+                       wordCntr_inversed(nextWordIndex)
                     )
             else:
                 a = []
 
-            a.extend(dout.valid ** ack)
-            # data out logic
-            a.extend(dout.data ** wordData)
-
-            if useCounter:
+            a.extend(dout.valid(ack))
+            
+            if multipleWords:
+                # data out logic
+                a.extend(dout.data(wordData))
                 wcntrSw.Case(inversedIndx, a)
 
             if isLast:
                 endsOfFrames.append(inversedIndx)
 
         # to prevent latches
-        if not useCounter:
+        if not multipleWords:
             pass
         elif not isPow2(maxWordIndex + 1):
-            default = wordCntr_inversed ** maxWordIndex
-            default.extend(dout.valid ** 0)
-            default.extend(dout.data ** None)
+            default = wordCntr_inversed(maxWordIndex)
+            default.extend(dout.valid(0))
+            default.extend(dout.data(None))
 
             wcntrSw.Default(default)
 
-        if useCounter:
-            dout.last ** In(wordCntr_inversed, endsOfFrames)
+        if multipleWords:
+            dout.last(In(wordCntr_inversed, endsOfFrames))
             for r in self._tmpRegsForSelect.values():
-                r.rd ** (ack & wordCntr_inversed._eq(endsOfFrames[-1]))
+                r.rd(ack & wordCntr_inversed._eq(endsOfFrames[-1]) & dout.ready)
 
         else:
-            dout.last ** 1
+            dout.last(1)
             for r in self._tmpRegsForSelect.values():
-                r.rd ** ack
+                r.rd(ack & dout.ready)
 
-        dout.strb ** mask(int(self.DATA_WIDTH // 8))
+        dout.strb(mask(int(self.DATA_WIDTH // 8)))
 
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    from hwtLib.types.ctypes import uint64_t,  uint8_t, uint16_t
+    from hwtLib.types.ctypes import uint64_t, uint32_t, int32_t, uint8_t, uint16_t
 
     t = HStruct((uint64_t, "item0"),
                 (uint64_t, None),  # name = None means field is padding
                 (uint64_t, "item1"),
                 (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
                 )
+    t = HUnion(
+        (uint32_t, "a"),
+        (int32_t, "b")
+        )
     u = AxiS_frameForge(AxiStream, t)
-    u.DATA_WIDTH.set(64)
+    u.DATA_WIDTH.set(32)
     print(toRtl(u))
     # print(u._frames)

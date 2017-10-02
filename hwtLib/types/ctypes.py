@@ -1,4 +1,4 @@
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 
 
 char = Bits(8, False)

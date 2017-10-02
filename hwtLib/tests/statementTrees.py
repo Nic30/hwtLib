@@ -4,9 +4,9 @@
 import re
 import unittest
 
-from hwt.hdlObjects.statements import IfContainer, SwitchContainer
-from hwt.hdlObjects.types.defs import INT
-from hwt.hdlObjects.types.enum import HEnum
+from hwt.hdl.statements import IfContainer, SwitchContainer
+from hwt.hdl.types.defs import INT
+from hwt.hdl.types.enum import HEnum
 from hwt.synthesizer.assigRenderer import renderIfTree
 from hwt.code import c, If, Switch
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.types.defs import BIT
+from hwt.hdl.types.defs import BIT
 from hwt.interfaces.std import Rst, Signal, Clk
 from hwt.synthesizer.interfaceLevel.unit import Unit
 
@@ -35,11 +35,11 @@ class ClkSynchronizer(Unit):
         outReg0 = reg("outReg0", self.outClk)
         outReg1 = reg("outReg1", self.outClk)
 
-        inReg ** self.inData
+        inReg(self.inData)
 
-        outReg0 ** inReg
-        outReg1 ** outReg0
-        self.outData ** outReg1
+        outReg0(inReg)
+        outReg1(outReg0)
+        self.outData(outReg1)
 
 
 if __name__ == "__main__":

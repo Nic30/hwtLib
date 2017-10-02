@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.bitmask import mask
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_addr
@@ -206,6 +206,7 @@ class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
     LEN_MAX = 15
 
     def setUp(self):
+        SimTestCase.setUp(self)
         u = Axi_wDatapump(axiAddrCls=Axi3_addr)
         u.MAX_LEN.set(16)
         self.prepareUnit(u)
@@ -215,6 +216,7 @@ class Axi3_wDatapump_small_splitting_TC(SimTestCase):
     LEN_MAX = 3
 
     def setUp(self):
+        super(Axi3_wDatapump_small_splitting_TC, self).setUp()
         self.u = Axi_wDatapump(axiAddrCls=Axi3_addr)
         self.u.MAX_LEN.set(self.LEN_MAX)
         self.DATA_WIDTH = int(self.u.DATA_WIDTH)

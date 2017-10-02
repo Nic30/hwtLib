@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, log2ceil
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal, HandshakeSync
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -35,21 +35,21 @@ class StaticForLoopCntrl(Unit):
 
         If(counter._eq(0),
             If(self.cntrl.vld,
-               counter ** (ITERATIONS - 1)
+               counter(ITERATIONS - 1)
             )
         ).Else(
             If(self.body.rd,
                 If(self.bodyBreak,
-                    counter ** 0 
+                    counter(0) 
                 ).Else(
-                    counter ** (counter - 1)
+                    counter(counter - 1)
                 )
             )
         )
 
-        self.cntrl.rd ** counter._eq(0)
-        self.body.vld ** (counter != 0) 
-        self.index ** counter[self.COUNTER_WIDTH:0]
+        self.cntrl.rd(counter._eq(0))
+        self.body.vld(counter != 0) 
+        self.index(counter[self.COUNTER_WIDTH:0])
 
 
 if __name__ == "__main__":

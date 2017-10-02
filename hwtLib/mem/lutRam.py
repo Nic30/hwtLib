@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat, If
-from hwt.hdlObjects.typeShortcuts import hBit, vec
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.typeShortcuts import hBit, vec
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, Clk
 from hwt.serializer.mode import serializeExclude
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -45,17 +45,17 @@ def mkLutRamCls(DATA_WIDTH):
             d_in = s("d_in")
             we_in = s("we_in")
 
-            wclk_in ** (self.wclk ^ self.IS_WCLK_INVERTED)
-            we_in ** self.we
-            a_in ** Concat(self.a5, self.a4, self.a3, self.a2, self.a1, self.a0)
-            d_in ** self.d
+            wclk_in(self.wclk ^ self.IS_WCLK_INVERTED)
+            we_in(self.we)
+            a_in(Concat(self.a5, self.a4, self.a3, self.a2, self.a1, self.a0))
+            d_in(self.d)
 
             # ReadBehavior
-            self.o ** mem[a_in]
+            self.o(mem[a_in])
 
             # WriteBehavior
             If(wclk_in._onRisingEdge() & we_in,
-               mem[a_in] ** d_in
+               mem[a_in](d_in)
             )
 
     RAMnX1S.__name__ = "RAM%dX1S" % DATA_WIDTH

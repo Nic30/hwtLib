@@ -8,7 +8,7 @@ class ExampleChild(Unit):
         self.d = Handshaked()
 
     def _impl(self):
-        self.d ** self.c
+        self.d(self.c)
 
 
 class MultipleDriversOfChildNet(Unit):
@@ -20,16 +20,16 @@ class MultipleDriversOfChildNet(Unit):
 
     def _impl(self):
         # interface directions in collision
-        self.ch.d ** self.a
-        self.b ** self.ch.c
+        self.ch.d(self.a)
+        self.b(self.ch.c)
 
 
 class MultipleDriversOfChildNet2(MultipleDriversOfChildNet):
     def _impl(self):
-        self.ch.c ** self.a
-        self.b ** self.ch.d
+        self.ch.c(self.a)
+        self.b(self.ch.d)
         # another colliding driver for b.vld
-        self.b.vld ** 1
+        self.b.vld(1)
 
 
 if __name__ == "__main__":

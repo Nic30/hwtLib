@@ -5,7 +5,7 @@ from hwt.code import If
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 
 
 class TwoCntrs(Unit):
@@ -27,17 +27,17 @@ class TwoCntrs(Unit):
         b = self._reg("reg_b", index_t, defVal=0)
 
         If(self.a_en,
-           a ** (a + 1)
+           a(a + 1)
         )
 
         If(self.b_en,
-           b ** (b + 1)
+           b(b + 1)
         )
 
-        self.eq ** a._eq(b)
-        self.ne ** (a != b)
-        self.lt ** (a < b)
-        self.gt ** (a > b)
+        self.eq(a._eq(b))
+        self.ne(a != b)
+        self.lt(a < b)
+        self.gt(a > b)
 
 
 if __name__ == "__main__":

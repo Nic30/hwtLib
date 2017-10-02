@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import log2ceil, Concat, Switch, isPow2
-from hwt.hdlObjects.typeShortcuts import vec
+from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.std import Handshaked, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -63,16 +63,16 @@ class ArrayItemGetter(Unit):
             raise NotImplementedError(ITEM_WIDTH)
 
         req = self.rDatapump.req
-        req.id ** self.ID
-        req.len ** (ITEM_SIZE_IN_WORDS - 1)
-        req.rem ** 0
+        req.id(self.ID)
+        req.len(ITEM_SIZE_IN_WORDS - 1)
+        req.rem(0)
 
         if ITEMS_IN_DATA_WORD == 1:
             addr = Concat(self.index.data, vec(0, log2ceil(ITEM_WIDTH // 8)))
-            req.addr ** (self.base + fitTo(addr, req.addr))
+            req.addr(self.base + fitTo(addr, req.addr))
             StreamNode(masters=[self.index], slaves=[req]).sync()
 
-            self.item.data ** self.rDatapump.r.data
+            self.item.data(self.rDatapump.r.data)
             StreamNode(masters=[self.rDatapump.r], slaves=[self.item]).sync()
 
         else:
@@ -83,13 +83,13 @@ class ArrayItemGetter(Unit):
             addr = Concat(self.index.data[:subIndexBits],
                           vec(0, itemAlignBits + subIndexBits))
 
-            req.addr ** (self.base + fitTo(addr, req.addr))
-            f.dataIn.data ** self.index.data[subIndexBits:]
+            req.addr(self.base + fitTo(addr, req.addr))
+            f.dataIn.data(self.index.data[subIndexBits:])
             StreamNode(masters=[self.index],
                        slaves=[req, f.dataIn]).sync()
 
             Switch(f.dataOut.data).addCases([
-                (ITEMS_IN_DATA_WORD - i - 1, self.item.data ** r[(ITEM_WIDTH * (i + 1)): (ITEM_WIDTH * i)])
+                (ITEMS_IN_DATA_WORD - i - 1, self.item.data(r[(ITEM_WIDTH * (i + 1)): (ITEM_WIDTH * i)]))
                 for i in range(ITEMS_IN_DATA_WORD)
                 ])
             StreamNode(masters=[self.rDatapump.r, f.dataOut],

@@ -1,4 +1,4 @@
-from hwt.hdlObjects.constants import WRITE, READ
+from hwt.hdl.constants import WRITE, READ
 from hwtLib.sim.abstractMemSpaceMaster import AbstractMemSpaceMaster
 
 

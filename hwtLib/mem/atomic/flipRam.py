@@ -53,21 +53,21 @@ class FlipRam(Unit):
         sa = self.secondA
 
         If(self.select_sig,
-           self.ram0.a ** fa,
-           self.ram1.a ** sa
+           self.ram0.a(fa),
+           self.ram1.a(sa)
         ).Else(
-           self.ram0.a ** sa,
-           self.ram1.a ** fa 
+           self.ram0.a(sa),
+           self.ram1.a(fa) 
         )
         if PORT_CNT == 2:
             fb = self.firstB
             sb = self.secondB
             If(self.select_sig,
-               self.ram0.b ** fb,
-               self.ram1.b ** sb,
+               self.ram0.b(fb),
+               self.ram1.b(sb),
             ).Else(
-               self.ram0.b ** sb,
-               self.ram1.b ** fb
+               self.ram0.b(sb),
+               self.ram1.b(fb)
             )
         elif PORT_CNT > 2:
             raise NotImplementedError()

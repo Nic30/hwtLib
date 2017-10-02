@@ -51,19 +51,19 @@ class HandshakedFifo(HandshakedCompBase):
 
         # to fifo
         wr_en = ~fifo.dataIn.wait
-        rd(din) ** wr_en
-        fifo.dataIn.data ** packIntf(din, exclude=[vld(din), rd(din)])
-        fifo.dataIn.en ** (vld(din) & wr_en)
+        rd(din)(wr_en)
+        fifo.dataIn.data(packIntf(din, exclude=[vld(din), rd(din)]))
+        fifo.dataIn.en(vld(din) & wr_en)
 
         # from fifo
         out_vld = self._reg("out_vld", defVal=0)
-        vld(out) ** out_vld
+        vld(out)(out_vld)
         connectPacked(fifo.dataOut.data,
                       out,
                       exclude=[vld(out), rd(out)])
-        fifo.dataOut.en ** ((rd(out) | ~out_vld) & ~fifo.dataOut.wait)
+        fifo.dataOut.en((rd(out) | ~out_vld) & ~fifo.dataOut.wait)
         If(rd(out) | ~out_vld,
-           out_vld ** (~fifo.dataOut.wait)
+           out_vld(~fifo.dataOut.wait)
         )
 
         if self.EXPORT_SIZE:
@@ -71,7 +71,7 @@ class HandshakedFifo(HandshakedCompBase):
             connect(fifo.size, sizeTmp, fit=True)
 
             If(out_vld,
-               self.size ** (sizeTmp + 1)
+               self.size(sizeTmp + 1)
             ).Else(
                connect(fifo.size, self.size, fit=True)
             )

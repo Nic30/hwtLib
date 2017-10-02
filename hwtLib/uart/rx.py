@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VldSynced
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -50,7 +50,7 @@ class UartRx(Unit):
 
         # synchronize RxD to our clk domain
         RxD_sync = self._reg("RxD_sync", defVal=1)
-        RxD_sync ** self.rxd
+        RxD_sync(self.rxd)
 
         rxd, rxd_vld = clkBuilder.oversample(RxD_sync,
                                              self.OVERSAMPLING,
@@ -62,23 +62,23 @@ class UartRx(Unit):
                                      rstSig=~en)
         If(en,
            If(rxd_vld,
-                RxD_data ** Concat(rxd, RxD_data[9:1]),  # shift data from left
+                RxD_data(Concat(rxd, RxD_data[9:1])),  # shift data from left
                 If(startBitWasNotStartbit,
-                    en ** 0,
-                    first ** 1,
+                    en(0),
+                    first(1),
                 ).Else(
-                    en ** ~isLastBit,
-                    first ** isLastBit,
+                    en(~isLastBit),
+                    first(isLastBit),
                 )
            )
         ).Elif(RxD_sync._eq(START_BIT),
             # potential start bit detected, begin scanning sequence
-            en ** 1,
+            en(1),
         )
-        startBitWasNotStartbit ** (first & rxd_vld & (rxd != START_BIT))
-        self.dataOut.vld ** (isLastBit & RxD_data[0]._eq(START_BIT) & rxd._eq(STOP_BIT))
+        startBitWasNotStartbit(first & rxd_vld & (rxd != START_BIT))
+        self.dataOut.vld(isLastBit & RxD_data[0]._eq(START_BIT) & rxd._eq(STOP_BIT))
 
-        self.dataOut.data ** RxD_data[9:1]
+        self.dataOut.data(RxD_data[9:1])
 
 
 if __name__ == "__main__":

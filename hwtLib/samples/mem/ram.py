@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Clk, VectSignal
 from hwt.synthesizer.interfaceLevel.unit import Unit
 
@@ -20,8 +20,8 @@ class SimpleAsyncRam(Unit):
 
     def _impl(self):
         self._ram = ram = self._sig("ram_data", Bits(8)[4])
-        self.dout ** ram[self.addr_out],
-        ram[self.addr_in] ** self.din
+        self.dout(ram[self.addr_out]),
+        ram[self.addr_in](self.din)
 
 
 class SimpleSyncRam(SimpleAsyncRam):
@@ -33,8 +33,8 @@ class SimpleSyncRam(SimpleAsyncRam):
         self._ram = ram = self._sig("ram_data", Bits(8)[4])
 
         If(self.clk._onRisingEdge(),
-           self.dout ** ram[self.addr_out],
-           ram[self.addr_in] ** self.din
+           self.dout(ram[self.addr_out]),
+           ram[self.addr_in](self.din)
         )
 
 

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.constants import Time
+from hwt.hdl.types.struct import HStruct
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.types.ctypes import uint32_t, uint16_t
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 
 
 structHierarchy = HStruct(

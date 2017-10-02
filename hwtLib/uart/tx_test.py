@@ -1,6 +1,6 @@
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.uart.tx import UartTx
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import valToInt
 
 

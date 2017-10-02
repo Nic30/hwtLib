@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -20,12 +20,12 @@ class SelfRefCntr(Unit):
         cntr = self._reg("cntr", self.dt, defVal=0)
 
         If(cntr._eq(4),
-           cntr ** 0
+           cntr(0)
         ).Else(
-           cntr ** (cntr + 1)
+           cntr(cntr + 1)
         )
 
-        self.dout ** cntr
+        self.dout(cntr)
 
 
 if __name__ == "__main__":

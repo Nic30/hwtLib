@@ -1,8 +1,8 @@
 import unittest
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.types.struct import HStruct
 from hwtLib.types.ctypes import uint8_t, uint16_t
-from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.types.union import HUnion
+from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.types.union import HUnion
 
 union0 = HUnion(
             (HStruct(

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.typeShortcuts import hInt
+from hwt.hdl.constants import Time
+from hwt.hdl.typeShortcuts import hInt
 from hwt.interfaces.std import VldSynced
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
@@ -28,7 +28,7 @@ class InterfaceArraySample0(Unit):
     def _impl(self):
         # directly connect arrays, note that we are not using array items
         # and thats why they are not created
-        self.b ** self.a
+        self.b(self.a)
 
 
 class InterfaceArraySample0TC(SimTestCase):

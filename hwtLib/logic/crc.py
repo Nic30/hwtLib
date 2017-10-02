@@ -1,6 +1,6 @@
 from hwt.bitmask import selectBit, mask
 from hwt.code import If, Concat
-from hwt.hdlObjects.typeShortcuts import vec
+from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.std import VldSynced, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -9,7 +9,7 @@ from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.logic.crcPoly import CRC_5_USB, CRC_32
 from hwtLib.logic.crcUtils import parsePolyStr, buildCrcMatrix
 from hwt.synthesizer.byteOrder import reversedBits
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 
 
 # http://stackoverflow.com/questions/41734560/parallel-crc-32-calculation-ethernet-10ge-mac
@@ -42,7 +42,7 @@ class Crc(Unit):
 
     def wrapWithName(self, sig, name):
         _sig = self._sig(name, sig._dtype)
-        _sig ** sig
+        _sig(sig)
         return _sig
 
     def parsePoly(self, POLY_WIDTH):
@@ -113,7 +113,7 @@ class Crc(Unit):
 
         If(self.dataIn.vld,
            # regNext is in format 0 ... N, we need to reverse it to litle endian
-           reg ** Concat(*reversed(regNext))
+           reg(Concat(*reversed(regNext)))
         )
 
         outXor = int(self.FINAL_XOR_VAL)
@@ -123,11 +123,11 @@ class Crc(Unit):
             _reg = reg
 
         if outXor == 0:
-            self.dataOut ** _reg
+            self.dataOut(_reg)
         elif outXor == mask(int(self.POLY_WIDTH)):
-            self.dataOut ** ~_reg
+            self.dataOut(~_reg)
         else:
-            self.dataOut ** (_reg ^ self.FINAL_XOR_VAL)
+            self.dataOut(_reg ^ self.FINAL_XOR_VAL)
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl

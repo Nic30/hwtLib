@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -28,8 +28,8 @@ class Simple2withNonDirectIntConnection(Unit):
             self.b = AxiStream()
         b = self.b
 
-        b ** self.a
-        self.c ** b
+        b(self.a)
+        self.c(b)
 
 
 class Simple2withNonDirectIntConnectionTC(SimTestCase):

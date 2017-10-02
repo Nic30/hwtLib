@@ -3,9 +3,9 @@
 
 from math import ceil
 
-from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.frameTmpl import FrameTmpl
-from hwt.hdlObjects.transTmpl import TransTmpl
+from hwt.hdl.constants import Time
+from hwt.hdl.frameTmpl import FrameTmpl
+from hwt.hdl.transTmpl import TransTmpl
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 from hwtLib.samples.builders.ethAddrUpdater import EthAddrUpdater, \

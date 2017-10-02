@@ -3,10 +3,10 @@
 
 import unittest
 
-from hwt.hdlObjects.statements import IfContainer
-from hwt.hdlObjects.typeShortcuts import hBit
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.defs import BIT
+from hwt.hdl.statements import IfContainer
+from hwt.hdl.typeShortcuts import hBit
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.defs import BIT
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 
 
@@ -24,7 +24,7 @@ class StatementsTC(unittest.TestCase):
             b = nl.sig("b", BIT)
 
             def w(val):
-                return res ** val
+                return res(val)
 
             a.defaultVal = hBit(a_in)
             b.defaultVal = hBit(b_in)

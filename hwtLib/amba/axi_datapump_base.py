@@ -54,11 +54,11 @@ class Axi_datapumpBase(Unit):
 
     def axiAddrDefaults(self):
         a = self.a
-        a.burst ** BURST_INCR
-        a.cache ** self.CACHE_VAL
-        a.lock ** LOCK_DEFAULT
-        a.prot ** self.PROT_VAL
-        a.qos ** self.QOS_VAL
-        a.size ** BYTES_IN_TRANS(self.DATA_WIDTH // 8)
+        a.burst(BURST_INCR)
+        a.cache(self.CACHE_VAL)
+        a.lock(LOCK_DEFAULT)
+        a.prot(self.PROT_VAL)
+        a.qos(self.QOS_VAL)
+        a.size(BYTES_IN_TRANS(self.DATA_WIDTH // 8))
         if self._addrHasUser:
-            a.user ** self.ADDR_USER_VAL
+            a.user(self.ADDR_USER_VAL)

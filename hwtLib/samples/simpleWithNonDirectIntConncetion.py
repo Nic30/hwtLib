@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.std import Signal
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -20,8 +20,8 @@ class SimpleWithNonDirectIntConncetion(Unit):
     def _impl(self):
         self.b = Signal()
 
-        self.b ** self.a
-        self.c ** self.b
+        self.b(self.a)
+        self.c(self.b)
 
 
 class SimpleWithNonDirectIntConncetionTC(SimTestCase):

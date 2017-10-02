@@ -22,15 +22,15 @@ class VldMaskConflictsResolving(Unit):
 
         If(a,
             If(b,
-              c ** 1
+              c(1)
             ).Else(
-              c ** 0
+              c(0)
             )
         ).Else(
             If(b,
-              c ** 1
+              c(1)
             ).Else(
-              c ** 0
+              c(0)
             )
         )
 

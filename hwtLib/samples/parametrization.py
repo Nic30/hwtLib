@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat
-from hwt.hdlObjects.typeShortcuts import vec
+from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.std import VectSignal
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
@@ -31,7 +31,7 @@ class ParametrizationExample(Unit):
         assert int(self.PARAM_10 + 10) == 20
         assert int(self.PARAM_1_sll_512) == 1 << 512
 
-        self.dout ** Concat(self.din, self.din)
+        self.dout(Concat(self.din, self.din))
 
 if __name__ == "__main__":  # alias python main function
     # toRtl can be imported anywhere but we prefer to import it only when this script is running as main

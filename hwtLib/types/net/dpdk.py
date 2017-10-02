@@ -1,5 +1,5 @@
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.struct import HStruct
 from hwtLib.types.ctypes import uint64_t, uint8_t, uint16_t, uint32_t
 
 

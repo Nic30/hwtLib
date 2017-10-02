@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import connect
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.synthesizer.interfaceLevel.unit import Unit
 
@@ -14,8 +14,8 @@ class SimpleIndexingSplit(Unit):
         self.c = Signal()
 
     def _impl(self):
-        self.b ** self.a[0]
-        self.c ** self.a[1]
+        self.b(self.a[0])
+        self.c(self.a[1])
 
 
 class SimpleIndexingJoin(Unit):
@@ -25,8 +25,8 @@ class SimpleIndexingJoin(Unit):
         self.c = Signal()
 
     def _impl(self):
-        self.a[0] ** self.b
-        self.a[1] ** self.c
+        self.a[0](self.b)
+        self.a[1](self.c)
 
 
 class SimpleIndexingRangeJoin(Unit):
@@ -36,8 +36,8 @@ class SimpleIndexingRangeJoin(Unit):
         self.c = VectSignal(2)
 
     def _impl(self):
-        self.a[2:0] ** self.b
-        self.a[4:2] ** self.c
+        self.a[2:0](self.b)
+        self.a[4:2](self.c)
 
 
 class IndexingInernRangeSplit(Unit):
@@ -49,11 +49,11 @@ class IndexingInernRangeSplit(Unit):
         internA = self._sig("internA", Bits(2))
         internB = self._sig("internB", Bits(2))
 
-        internA ** self.a[2:]
-        internB ** self.a[:2]
+        internA(self.a[2:])
+        internB(self.a[:2])
 
-        self.b[2:] ** internA
-        self.b[:2] ** internB
+        self.b[2:](internA)
+        self.b[:2](internB)
 
 
 class IndexingInernSplit(Unit):
@@ -65,11 +65,11 @@ class IndexingInernSplit(Unit):
         internA = self._sig("internA")
         internB = self._sig("internB")
 
-        internA ** self.a[0]
-        internB ** self.a[1]
+        internA(self.a[0])
+        internB(self.a[1])
 
-        self.b[0] ** internA
-        self.b[1] ** internB
+        self.b[0](internA)
+        self.b[1](internB)
 
 
 class IndexingInernJoin(Unit):
@@ -82,8 +82,8 @@ class IndexingInernJoin(Unit):
     def _impl(self):
         intern = self._sig("internSig", Bits(2))
 
-        intern[0] ** self.a
-        intern[1] ** self.b
+        intern[0](self.a)
+        intern[1](self.b)
 
         connect(intern[0], self.c)
         connect(intern[1], self.d)

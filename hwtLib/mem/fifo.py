@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, log2ceil
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import FifoWriter, FifoReader, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
@@ -62,25 +62,25 @@ class Fifo(Unit):
         # Update Tail pointer as needed
         If(fifo_read,
             If(rd_ptr._eq(MAX_DEPTH),
-               rd_ptr ** 0
+               rd_ptr(0)
             ).Else(
-               rd_ptr ** (rd_ptr + 1)
+               rd_ptr(rd_ptr + 1)
             )
         )
 
         # Increment Head pointer as needed
         If(fifo_write,
             If(wr_ptr._eq(MAX_DEPTH),
-                wr_ptr ** 0
+                wr_ptr(0)
             ).Else(
-                wr_ptr ** (wr_ptr + 1)
+                wr_ptr(wr_ptr + 1)
             )
         )
 
         If(self.clk._onRisingEdge(),
             If(fifo_write,
                 # Write Data to Memory
-                mem[wr_ptr] ** din.data
+                mem[wr_ptr](din.data)
             )
         )
 
@@ -88,60 +88,60 @@ class Fifo(Unit):
 
         looped = r("looped", defVal=False)
 
-        fifo_read ** (dout.en & (looped | (wr_ptr != rd_ptr)))
+        fifo_read(dout.en & (looped | (wr_ptr != rd_ptr)))
         If(self.clk._onRisingEdge(),
             If(fifo_read,
                 # Update data output
-                dout.data ** mem[rd_ptr]
+                dout.data(mem[rd_ptr])
             )
         )
 
-        fifo_write ** (din.en & (~looped | (wr_ptr != rd_ptr)))
+        fifo_write(din.en & (~looped | (wr_ptr != rd_ptr)))
 
         # looped logic
         If(din.en & wr_ptr._eq(MAX_DEPTH),
-            looped ** True
+            looped(True)
         ).Elif(dout.en & rd_ptr._eq(MAX_DEPTH),
-            looped ** False
+            looped(False)
         )
 
         # Update Empty and Full flags
         If(wr_ptr._eq(rd_ptr),
             If(looped,
-                din.wait ** 1,
-                dout.wait ** 0
+                din.wait(1),
+                dout.wait(0)
             ).Else(
-                dout.wait ** 1,
-                din.wait ** 0
+                dout.wait(1),
+                din.wait(0)
             )
         ).Else(
-            din.wait ** 0,
-            dout.wait ** 0 
+            din.wait(0),
+            dout.wait(0) 
         )
         if self.EXPORT_SIZE:
             size = r("size_reg", self.size._dtype, 0)
             If(fifo_read,
                 If(~fifo_write,
-                   size ** (size - 1)
+                   size(size - 1)
                 )
             ).Else(
                 If(fifo_write,
-                   size ** (size + 1)
+                   size(size + 1)
                 )
             )
-            self.size ** size
+            self.size(size)
         if self.EXPORT_SPACE:
             space = r("space_reg", self.size._dtype, DEPTH)
             If(fifo_read,
                 If(~fifo_write,
-                   size ** (space + 1)
+                   size(space + 1)
                 )
             ).Else(
                 If(fifo_write,
-                   size ** (space - 1)
+                   size(space - 1)
                 )
             )
-            self.space ** space
+            self.space(space)
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl

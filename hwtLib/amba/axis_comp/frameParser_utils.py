@@ -1,12 +1,11 @@
 from typing import List, Union, Optional
 
 from hwt.code import If, And, Or
-from hwt.hdlObjects.typeShortcuts import hBit
+from hwt.hdl.typeShortcuts import hBit
 from hwt.interfaces.std import Handshaked, VldSynced
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.hdlObjects.value import Value
 
 
 class InNodeInfo():
@@ -19,7 +18,7 @@ class InNodeInfo():
 
     def sync(self, others: List['OutNodeInfo'], en: RtlSignal):
         ackOfOthers = getAckOfOthers(self, others)
-        self.inInterface.rd ** (ackOfOthers & en & self.en)
+        self.inInterface.rd(ackOfOthers & en & self.en)
 
     def ack(self) -> RtlSignal:
         return self.inInterface.vld
@@ -50,15 +49,16 @@ class OutNodeInfo():
         self.en = en
         self.exclusiveEn = exclusiveEn
         self.pendingReg = parent._reg(outInterface._name + "_pending_", defVal=1)
+        ack = self.outInterface.rd
+        self._ack = parent._sig(outInterface._name + "_ack")
+        self._ack(ack | ~self.pendingReg)
 
     def ack(self) -> RtlSignal:
-        ack = self.outInterface.rd
-
         # if output is not selected in union we do not need to care
         # about it's ready
         # if self.exclusiveEn is not None:
         #     ack = ack | ~self.exclusiveEn
-        return ack | ~self.pendingReg
+        return self._ack
 
     def sync(self, others: List['OutNodeInfo'], en: RtlSignal):
         en = en & self.en
@@ -66,18 +66,17 @@ class OutNodeInfo():
             en = en & self.exclusiveEn
 
         ackOfOthers = getAckOfOthers(self, others)
-        myRd = self.outInterface.rd
 
         If(en,
-           If(ackOfOthers & (myRd | ~self.pendingReg),
-              self.pendingReg ** 1,
-           ).Elif(self.pendingReg & myRd,
-              self.pendingReg ** 0
+           If(ackOfOthers & self.ack(),
+              self.pendingReg(1),
+           ).Elif(self.pendingReg & self.outInterface.rd,
+              self.pendingReg(0)
            )
         )
 
         # value of this node was not consumed and it is enabled
-        self.outInterface.vld ** (self.pendingReg & en)
+        self.outInterface.vld(self.pendingReg & en)
 
     def __repr__(self):
         return "<OutNodeInfo for %s>" % self.outInterface._name
@@ -99,9 +98,10 @@ class ListOfOutNodeInfos(list):
             return hBit(1)
 
     def sync(self, allNodes: List[OutNodeInfo], en: RtlSignal) -> None:
+        nodesWithoutMe = list(where(allNodes, lambda x: x is not self))
         for node in self:
-            if node is not self:
-                node.sync(allNodes, en)
+            _allNodes = nodesWithoutMe + self
+            node.sync(_allNodes, en)
 
 
 class ExclusieveListOfHsNodes(list):
@@ -119,7 +119,6 @@ class ExclusieveListOfHsNodes(list):
         ack = hBit(1)
         if self:
             acks = list(map(lambda x: x[1].ack() & self.selectorIntf.data._eq(x[0]), self))
-            print("acks", acks)
             ack = Or(*acks)
 
         return ack & self.selectorIntf.vld
@@ -132,7 +131,7 @@ class ExclusieveListOfHsNodes(list):
 
 
 class WordFactory():
-    def __init__(self, wordIndexReg: RtlSignal):
+    def __init__(self, wordIndexReg: Optional[RtlSignal]):
         self.words = []
         self.wordIndexReg = wordIndexReg
 
@@ -140,8 +139,15 @@ class WordFactory():
         self.words.append((index, hsNodes))
 
     def ack(self) -> RtlSignal:
-        acks = list(map(lambda x: self.wordIndexReg._eq(x[0]) & x[1].ack(),
-                        self.words))
+        if self.wordIndexReg is None:
+            def getAck(x):
+                return x[1].ack()
+        else:
+            def getAck(x):
+                return self.wordIndexReg._eq(x[0]) & x[1].ack()
+
+        acks = list(map(getAck, self.words))
+        
         if acks:
             return Or(*acks)
         else:

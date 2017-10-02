@@ -3,13 +3,13 @@
 
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.types.struct import HStruct
 from hwtLib.structManipulators.structReader import StructReader
 from hwtLib.abstract.denseMemory import DenseMemory
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.synthesizer.vectorUtils import iterBits
-from hwt.hdlObjects.frameTmpl import FrameTmpl
-from hwt.hdlObjects.transTmpl import TransTmpl
+from hwt.hdl.frameTmpl import FrameTmpl
+from hwt.hdl.transTmpl import TransTmpl
 
 
 s0 = HStruct(

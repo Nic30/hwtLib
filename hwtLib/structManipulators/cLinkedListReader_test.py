@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.bitmask import mask
-from hwt.hdlObjects.constants import Time, NOP
+from hwt.hdl.constants import Time, NOP
 from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.structManipulators.cLinkedListReader import CLinkedListReader
@@ -13,6 +13,7 @@ from hwtLib.abstract.denseMemory import DenseMemory
 
 class CLinkedListReaderTC(SimTestCase):
     def setUp(self):
+        super(CLinkedListReaderTC, self).setUp()
         u = self.u = CLinkedListReader()
         self.ITEMS_IN_BLOCK = 31
         self.PTR_WIDTH = 8

@@ -1,7 +1,7 @@
 from itertools import product
 
-from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.constants import Time
+from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.structIntf import StructIntf
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis import AxiStream_withoutSTRB, packAxiSFrame, \
@@ -137,11 +137,15 @@ class AxiS_frameParserTC(SimTestCase):
             for k in reference0.keys():
                 self.assertEqual(getattr(d1, k), getattr(d2, k), (DW, k))
 
+    def runMatrixSim(self, time, dataWidth, randomize):
+        self.doSim(time, name="tmp/" + self.getTestName()
+                         + ("_dw%d_r%d" % (dataWidth, randomize))+ ".vcd")
+
     @testMatrix
     def test_structManyInts_nop(self, dataWidth, randomize):
         u = self.mySetUp(dataWidth, structManyInts, randomize)
 
-        self.doSim(300 * Time.ns)
+        self.runMatrixSim(300 * Time.ns, dataWidth, randomize)
         for intf in u.dataOut._interfaces:
             self.assertEmpty(intf._ag.data)
 
@@ -157,7 +161,7 @@ class AxiS_frameParserTC(SimTestCase):
         if randomize:
             t *= 3 * dataWidth / 16
 
-        self.doSim(t)
+        self.runMatrixSim(t, dataWidth, randomize)
 
         for intf in u.dataOut._interfaces:
             n = intf._name
@@ -172,7 +176,7 @@ class AxiS_frameParserTC(SimTestCase):
         if randomize:
             t *= 3 * dataWidth / 16
 
-        self.doSim(t)
+        self.runMatrixSim(t, dataWidth, randomize)
         for i in [u.dataOut.frameA, u.dataOut.frameB]:
             for intf in i._interfaces:
                 self.assertEmpty(intf._ag.data)
@@ -188,7 +192,7 @@ class AxiS_frameParserTC(SimTestCase):
         t = 150 * Time.ns
         if randomize:
             t *= 3 * dataWidth / 16
-        self.doSim(t)
+        self.runMatrixSim(t, dataWidth, randomize)
 
         for i in [u.dataOut.frameA, u.dataOut.frameB]:
             for intf in i._interfaces:
@@ -207,7 +211,7 @@ class AxiS_frameParserTC(SimTestCase):
         t = 500 * Time.ns
         if randomize:
             t *= 8 * dataWidth / 16
-        self.doSim(t)
+        self.runMatrixSim(t, dataWidth, randomize)
 
         for i in [u.dataOut.frameA, u.dataOut.frameB]:
             if i._name == "frameA":
@@ -235,7 +239,7 @@ class AxiS_frameParserTC(SimTestCase):
         t = 300 * Time.ns
         if randomize:
             t *= 8 * dataWidth / 16
-        self.doSim(t)
+        self.runMatrixSim(t, dataWidth, randomize)
 
         for i in [u.dataOut.a, u.dataOut.b]:
             if i._name == "a":
@@ -252,6 +256,6 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
     suite.addTest(AxiS_frameParserTC('test_unionOfStructs'))
-    # suite.addTest(unittest.makeSuite(AxiS_frameParserTC))
+    suite.addTest(unittest.makeSuite(AxiS_frameParserTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

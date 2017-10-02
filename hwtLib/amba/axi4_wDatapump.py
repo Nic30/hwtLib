@@ -79,53 +79,53 @@ class Axi_wDatapump(Axi_datapumpBase):
             requiresSplit = req.len > LEN_MAX
             requiresDebtSplit = lenDebth > LEN_MAX
             If(lastReqDispatched,
-                _id ** req.id,
-                aw.addr ** req.addr,
+                _id(req.id),
+                aw.addr(req.addr),
                 If(requiresSplit,
-                   aw.len ** LEN_MAX
+                   aw.len(LEN_MAX)
                 ).Else(
                     connect(req.len, aw.len, fit=True),
                 ),
-                req_idBackup ** req.id,
-                addrBackup ** (req.addr + self.getBurstAddrOffset()),
-                lenDebth ** (req.len - (LEN_MAX + 1)),
+                req_idBackup(req.id),
+                addrBackup(req.addr + self.getBurstAddrOffset()),
+                lenDebth(req.len - (LEN_MAX + 1)),
                 If(wInfo.rd & aw.ready & req.vld,
                     If(requiresSplit,
-                       lastReqDispatched ** 0
+                       lastReqDispatched(0)
                     ).Else(
-                       lastReqDispatched ** 1
+                       lastReqDispatched(1)
                     )
                 ),
                 StreamNode(masters=[req],
                            slaves=[aw, wInfo],
                            extraConds={aw: ~wErrFlag}).sync(),
             ).Else(
-                _id ** req_idBackup,
-                aw.addr ** addrBackup,
+                _id(req_idBackup),
+                aw.addr(addrBackup),
                 If(requiresDebtSplit,
-                   aw.len ** LEN_MAX
+                   aw.len(LEN_MAX)
                 ).Else(
                     connect(lenDebth, aw.len, fit=True)
                 ),
                 StreamNode(slaves=[aw, wInfo], extraConds={aw:~wErrFlag}).sync(),
 
-                req.rd ** 0,
+                req.rd(0),
 
                 If(StreamNode(slaves=[wInfo, aw]).ack(),
-                   addrBackup ** (addrBackup + self.getBurstAddrOffset()),
-                   lenDebth ** (lenDebth - (LEN_MAX+1)),
+                   addrBackup(addrBackup + self.getBurstAddrOffset()),
+                   lenDebth(lenDebth - (LEN_MAX+1)),
                    If(lenDebth <= LEN_MAX,
-                      lastReqDispatched ** 1
+                      lastReqDispatched(1)
                    )
                 )
             )
-            aw.id ** _id
-            wInfo.id ** _id
+            aw.id(_id)
+            wInfo.id(_id)
 
         else:
-            aw.id ** req.id
-            wInfo.id ** req.id
-            aw.addr ** req.addr
+            aw.id(req.id)
+            wInfo.id(req.id)
+            aw.addr(req.addr)
             connect(req.len, aw.len, fit=True)
             StreamNode(masters=[req], slaves=[aw, wInfo]).sync()
 
@@ -136,9 +136,9 @@ class Axi_wDatapump(Axi_datapumpBase):
         wInfo = self.writeInfoFifo.dataOut
         bInfo = self.bInfoFifo.dataIn
 
-        w.id ** wInfo.id
-        w.data ** wIn.data
-        w.strb ** wIn.strb
+        w.id(wInfo.id)
+        w.data(wIn.data)
+        w.strb(wIn.strb)
 
         if self.useTransSplitting():
             wordCntr = self._reg("wWordCntr", self.a.len._dtype, 0)
@@ -146,9 +146,9 @@ class Axi_wDatapump(Axi_datapumpBase):
 
             If(StreamNode([wInfo, wIn], [bInfo, w]).ack(),
                If(doSplit,
-                   wordCntr ** 0
+                   wordCntr(0)
                ).Else(
-                   wordCntr ** (wordCntr + 1)
+                   wordCntr(wordCntr + 1)
                )
             )
 
@@ -158,9 +158,9 @@ class Axi_wDatapump(Axi_datapumpBase):
         extraConds = {wInfo: doSplit,
                       bInfo: doSplit,
                       w: ~wErrFlag}
-        w.last ** doSplit
+        w.last(doSplit)
 
-        bInfo.isLast ** wIn.last
+        bInfo.isLast(wIn.last)
         StreamNode(masters=[wIn, wInfo],
                    slaves=[bInfo, w],
                    extraConds=extraConds
@@ -173,11 +173,11 @@ class Axi_wDatapump(Axi_datapumpBase):
         lastFlags = self.bInfoFifo.dataOut
 
         If(lastFlags.vld & ack.rd & b.valid & (b.resp != RESP_OKAY),
-           wErrFlag ** 1
+           wErrFlag(1)
         )
 
-        self.errorWrite ** wErrFlag
-        ack.data ** b.id
+        self.errorWrite(wErrFlag)
+        ack.data(b.id)
         StreamNode(masters=[b, lastFlags],
                    slaves=[ack],
                    extraConds={

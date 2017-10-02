@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import connect, If, Concat
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -85,8 +85,8 @@ class Showcase0(Unit):
         a = self.a
         b = self.b
 
-        # ** is overloaded to do assignment
-        self.c ** (a + b._auto_cast(a._dtype))
+        # "call" is overloaded to do assignment
+        self.c(a + b._auto_cast(a._dtype))
 
         # width of signals is not same, this would raise TypeError on regular assignment,
         # this behavior can be overriden by calling connect with fit=True
@@ -98,7 +98,7 @@ class Showcase0(Unit):
 
         # it is possible to create signal explicitly by calling ._sig
         const_private_signal = self._sig("const_private_signal", dtype=uint32_t, defVal=123)
-        self.contOut ** const_private_signal
+        self.contOut(const_private_signal)
 
         # this signal will be optimized out because it has no effect on any output
         # default type is BIT
@@ -111,32 +111,32 @@ class Showcase0(Unit):
         If(~r,  # ~ is negation operator
            # you can directly assign to register and it will assign to its next value
            # (assigned value appears in it in second clk tick)
-           r ** self.e
+           r(self.e)
         )
         # again signals has to affect output or they will be optimized out
-        self.f ** r
+        self.f(r)
 
         # instead of and, or, xor use &, |, ^ because they are overridden to do the job
         tmp0 = a[1] & b[1]
         tmp1 = (a[0] ^ b[0]) | a[1]
 
         # bit concatenation is done by Concat function, python like slicing supported
-        self.g ** Concat(tmp0, tmp1, a[6:])
+        self.g(Concat(tmp0, tmp1, a[6:]))
 
         # comparison operators works as expected
         c = self.cmp
-        c[0] ** (a < 4)
-        c[1] ** (a > 4)
-        c[2] ** (b <= 4)
-        c[3] ** (b >= 4)
-        c[4] ** (b != 4)
+        c[0](a < 4)
+        c[1](a > 4)
+        c[2](b <= 4)
+        c[3](b >= 4)
+        c[4](b != 4)
         # except for ==, overriding == would have many unintended consequences in python
-        c[5] ** b._eq(4)
+        c[5](b._eq(4))
 
         # all statements are just lists of conditional assignments
-        statements0 = self.h ** 0
-        statements1 = self.h ** 1
-        statements2 = self.h ** 2
+        statements0 = self.h(0)
+        statements1 = self.h(1)
+        statements2 = self.h(2)
         statements3 = foo(r, statements0, a[1], statements1, statements2)
         assert len(statements3) == 3
         If(a[2],
@@ -151,31 +151,31 @@ class Showcase0(Unit):
         r0 = self._reg("r", Bits(2), defVal=0)
         r1 = self._reg("r", Bits(2), defVal=0)
 
-        r0 ** self.i
-        r1 ** r0
+        r0(self.i)
+        r1(r0)
 
         # type of signal can be array as well, this allow to create memories like BRAM...
         # rom will be synchronous ROM in this case
         rom = self._sig("rom", uint8_t[4], defVal=[i for i in range(4)])
 
         If(self.clk._onRisingEdge(),
-           self.j ** rom[r1]
+           self.j(rom[r1])
         )
 
-        self.out ** 0
+        self.out(0)
         # None is converted to value with zero validity mask
-        self.output ** None
+        self.output(None)
 
         # statements in target language are resolved from AST
         # this if statement will be resolved as Switch statement
         If(a._eq(1),
-           self.sc_signal ** 0
+           self.sc_signal(0)
         ).Elif(a._eq(2),
-           self.sc_signal ** 1
+           self.sc_signal(1)
         ).Elif(a._eq(3),
-           self.sc_signal ** 3
+           self.sc_signal(3)
         ).Else(
-           self.sc_signal ** 4
+           self.sc_signal(4)
         )
 
         # ram working on falling edge of clk

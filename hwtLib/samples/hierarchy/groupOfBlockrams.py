@@ -49,14 +49,14 @@ class GroupOfBlockrams(Unit):
         connect(s.we, *map(lambda i: i.we, all_bram_ports))
         connect(s.addr, *map(lambda i: i.addr, all_bram_ports))
 
-        bramW.a.din ** s.in_w_a
-        bramW.b.din ** s.in_w_b
-        bramR.a.din ** s.in_r_a
-        bramR.b.din ** s.in_r_b
-        s.out_w_a ** bramW.a.dout
-        s.out_w_b ** bramW.b.dout
-        s.out_r_a ** bramR.a.dout
-        s.out_r_b ** bramR.b.dout
+        bramW.a.din(s.in_w_a)
+        bramW.b.din(s.in_w_b)
+        bramR.a.din(s.in_r_a)
+        bramR.b.din(s.in_r_b)
+        s.out_w_a(bramW.a.dout)
+        s.out_w_b(bramW.b.dout)
+        s.out_r_a(bramR.a.dout)
+        s.out_r_b(bramR.b.dout)
 
 groupOfBlockrams_as_vhdl = """library IEEE;
 use IEEE.std_logic_1164.all;

@@ -4,8 +4,8 @@
 from enum import Enum
 import unittest
 
-from hwt.hdlObjects.typeShortcuts import hBool, hInt, vec, hStr
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.typeShortcuts import hBool, hInt, vec, hStr
+from hwt.hdl.types.bits import Bits
 
 
 class ValueTC(unittest.TestCase):

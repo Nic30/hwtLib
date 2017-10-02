@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from hwt.hdlObjects.types.union import HUnion
+from hwt.hdl.types.union import HUnion
 from hwtLib.types.ctypes import uint8_t, uint16_t, int8_t, uint32_t
 from hwt.bitmask import mask
-from hwt.hdlObjects.types.struct import HStruct
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.struct import HStruct
+from hwt.hdl.types.bits import Bits
 
 
 class UnionTC(unittest.TestCase):

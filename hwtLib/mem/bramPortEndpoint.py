@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import c, SwitchLogic, log2ceil, Switch
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.abstract.busEndpoint import BusEndpoint
 
@@ -39,7 +39,7 @@ class BramPortEndpoint(BusEndpoint):
                 _addr = t.bitAddr // ADDR_STEP
                 connectRegIntfAlways(port, _addr)
                 readRegInputs.append((bus.addr._eq(_addr),
-                                      readReg ** port.din
+                                      readReg(port.din)
                                       ))
             SwitchLogic(readRegInputs)
         else:
@@ -63,20 +63,21 @@ class BramPortEndpoint(BusEndpoint):
                                                  port.dout._dtype.bit_length(),
                                                  t)
 
-                port.we ** (bus.we & _addrVld & bus.en)
-                port.en ** (bus.en & _addrVld & bus.en)
-                port.din ** bus.din
+                port.we(bus.we & _addrVld & bus.en)
+                port.en(bus.en & _addrVld & bus.en)
+                port.din(bus.din)
 
-                bramIndxCases.append((_addrVld, readBramIndx ** i))
-                outputSwitch.Case(i, bus.dout ** port.dout)
+                bramIndxCases.append((_addrVld, readBramIndx(i)))
+                outputSwitch.Case(i, bus.dout(port.dout))
 
-            outputSwitch.Default(bus.dout ** readReg)
-            SwitchLogic(bramIndxCases, default=readBramIndx ** BRAMS_CNT)
+            outputSwitch.Default(bus.dout(readReg))
+            SwitchLogic(bramIndxCases,
+                        default=readBramIndx(BRAMS_CNT))
         else:
-            bus.dout ** readReg
+            bus.dout(readReg)
 
 if __name__ == "__main__":
-    from hwt.hdlObjects.types.struct import HStruct
+    from hwt.hdl.types.struct import HStruct
     from hwt.synthesizer.shortcuts import toRtl
     from hwtLib.types.ctypes import uint32_t
 

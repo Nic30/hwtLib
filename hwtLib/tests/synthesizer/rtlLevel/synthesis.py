@@ -3,8 +3,8 @@
 
 import unittest
 
-from hwt.hdlObjects.assignment import Assignment
-from hwt.hdlObjects.operatorDefs import AllOps
+from hwt.hdl.assignment import Assignment
+from hwt.hdl.operatorDefs import AllOps
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.indexOps import IndexOps

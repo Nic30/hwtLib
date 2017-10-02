@@ -3,7 +3,7 @@
 
 
 from hwt.bitmask import mask
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi3 import Axi3_addr_withUser
 from hwtLib.amba.axi4_rDatapump import Axi_rDatapump
@@ -35,6 +35,7 @@ class Axi4_rDatapumpTC(SimTestCase):
     DATA_WIDTH = 64
 
     def setUp(self):
+        super(Axi4_rDatapumpTC, self).setUp()
         self.u = Axi_rDatapump()
         self.u.DATA_WIDTH.set(self.DATA_WIDTH)
         self.prepareUnit(self.u)
@@ -351,6 +352,7 @@ class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
     LEN_MAX = 15
 
     def setUp(self):
+        SimTestCase.setUp(self)
         self.u = Axi_rDatapump(axiAddrCls=Axi3_addr_withUser)
         self.u.DATA_WIDTH.set(self.DATA_WIDTH)
         self.prepareUnit(self.u)

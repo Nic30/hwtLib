@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import agent_randomize
 from hwtLib.amba.axis_comp.measuringFifo import AxiS_measuringFifo

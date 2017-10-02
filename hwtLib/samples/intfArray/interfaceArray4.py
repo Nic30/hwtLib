@@ -1,8 +1,8 @@
 from hwt.code import log2ceil
-from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.types.array import HArray
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.constants import Time
+from hwt.hdl.types.array import HArray
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import RegCntrl, BramPort_withoutClk
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
@@ -59,7 +59,7 @@ class InterfaceArraySample4(Unit):
         self.b = StructIntf(struct0, instantiateFieldFn=self._mkFieldInterface, asArraySize=3)
 
     def _impl(self):
-        self.b ** self.a
+        self.b(self.a)
 
 
 class InterfaceArraySample4b(InterfaceArraySample4):
@@ -71,15 +71,15 @@ class InterfaceArraySample4b(InterfaceArraySample4):
 class InterfaceArraySample4c(InterfaceArraySample4b):
     def _impl(self):
         for a, b in zip(self.a, self.b):
-            b ** a
+            b(a)
 
 
 class InterfaceArraySample4d(InterfaceArraySample4b):
     def _impl(self):
         for a, b in zip(self.a, self.b):
-            b.f0 ** a.f0
+            b.f0(a.f0)
             for a_arr, b_arr in zip(a.arr0, b.arr0):
-                b_arr ** a_arr
+                b_arr(a_arr)
 
 
 class InterfaceArraySample4TC(SimTestCase):

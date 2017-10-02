@@ -3,9 +3,9 @@
 
 from hwt.bitmask import mask
 from hwt.code import If, Concat, connect, log2ceil, FsmBuilder, power
-from hwt.hdlObjects.typeShortcuts import vec
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.enum import HEnum
+from hwt.hdl.typeShortcuts import vec
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Handshaked, RegCntrl
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -99,12 +99,12 @@ class CLinkedListWriter(Unit):
     def rReqHandler(self, baseIndex, doReq):
         # always download only one word with address of next block
         rReq = self.rDatapump.req
-        rReq.addr ** self.indexToAddr(baseIndex + self.ITEMS_IN_BLOCK)
-        rReq.id ** self.ID
-        rReq.len ** 0
-        rReq.rem ** 0
+        rReq.addr(self.indexToAddr(baseIndex + self.ITEMS_IN_BLOCK))
+        rReq.id(self.ID)
+        rReq.len(0)
+        rReq.rem(0)
 
-        rReq.vld ** doReq
+        rReq.vld(doReq)
 
     def baseAddrLogic(self, nextBlockTransition_in):
         """
@@ -138,16 +138,16 @@ class CLinkedListWriter(Unit):
         ).stateReg
 
         If(self.baseAddr.dout.vld,
-           baseIndex ** self.addrToIndex(self.baseAddr.dout.data),
+           baseIndex(self.addrToIndex(self.baseAddr.dout.data)),
         ).Elif(nextBlockTransition_in,
-           baseIndex ** nextBaseIndex   
+           baseIndex(nextBaseIndex)
         )
-        self.baseAddr.din ** self.indexToAddr(baseIndex)
+        self.baseAddr.din(self.indexToAddr(baseIndex))
 
         If(isNextBaseAddr,
-           nextBaseIndex ** self.addrToIndex(fitTo(rIn.data, rReq.addr))
+           nextBaseIndex(self.addrToIndex(fitTo(rIn.data, rReq.addr)))
         )
-        rIn.ready ** 1
+        rIn.ready(1)
 
         self.rReqHandler(baseIndex, nextBaseFsm._eq(t.required))
 
@@ -157,9 +157,9 @@ class CLinkedListWriter(Unit):
     def timeoutHandler(self, rst, incr):
         timeoutCntr = self._reg("timeoutCntr", Bits(log2ceil(self.TIMEOUT) + 1, signed=False), defVal=self.TIMEOUT)
         If(rst,
-           timeoutCntr ** self.TIMEOUT
+           timeoutCntr(self.TIMEOUT)
         ).Elif((timeoutCntr != 0) & incr,
-           timeoutCntr ** (timeoutCntr - 1)
+           timeoutCntr(timeoutCntr - 1)
         )
         return timeoutCntr._eq(0) 
 
@@ -172,19 +172,19 @@ class CLinkedListWriter(Unit):
         wrPtr = r("wrPtr", ringSpace_t, defVal=(power(2, self.PTR_WIDTH) - 1))
 
         If(self.wrPtr.dout.vld,
-           wrPtr ** self.wrPtr.dout.data
+           wrPtr(self.wrPtr.dout.data)
         ).Elif(wrPtrIncrEn,
-           wrPtr ** (wrPtr + wrPtrIncrVal)
+           wrPtr(wrPtr + wrPtrIncrVal)
         )
 
         If(self.rdPtr.dout.vld,
-           rdPtr ** self.rdPtr.dout.data
+           rdPtr(self.rdPtr.dout.data)
         )
-        self.wrPtr.din ** wrPtr
-        self.rdPtr.din ** rdPtr
+        self.wrPtr.din(wrPtr)
+        self.rdPtr.din(rdPtr)
 
         lenByPtrs = s("lenByPtrs", ringSpace_t)
-        lenByPtrs ** (rdPtr - wrPtr - 2)  # size - 1
+        lenByPtrs(rdPtr - wrPtr - 2)  # size - 1
 
         # this means items are present in memory
         queueHasSpace = (wrPtr + 1 != rdPtr)
@@ -201,22 +201,22 @@ class CLinkedListWriter(Unit):
         constraingLen = s("constraingSpace", ringSpace_t)
 
         If(inBlockRemain_asPtrSize < lenByPtrs,
-          constraingLen ** inBlockRemain_asPtrSize
+          constraingLen(inBlockRemain_asPtrSize)
         ).Else(
-          constraingLen ** lenByPtrs
+          constraingLen(lenByPtrs)
         )
         reqLen = s("reqLen", wReq.len._dtype)
         If(constraingLen > BURST_LEN,
-           reqLen ** BURST_LEN
+           reqLen(BURST_LEN)
         ).Else(
            connect(constraingLen, reqLen, fit=True)
         )
 
-        wReq.id ** self.ID
-        wReq.addr ** self.indexToAddr(baseIndex)
-        wReq.rem ** 0
-        wReq.len ** reqLen
-        wReq.vld ** en
+        wReq.id(self.ID)
+        wReq.addr(self.indexToAddr(baseIndex))
+        wReq.rem(0)
+        wReq.len(reqLen)
+        wReq.vld(en)
 
         return reqLen
 
@@ -224,26 +224,26 @@ class CLinkedListWriter(Unit):
         f = self.dataFifo.dataOut
         w = self.wDatapump.w
         nextBlockTransition = self._sig("mvDataToW_nextBlockTransition")
-        nextBlockTransition ** (inBlockRemain <= fitTo(reqLen, inBlockRemain) + 1)
+        nextBlockTransition(inBlockRemain <= fitTo(reqLen, inBlockRemain) + 1)
         If(prepareEn,
-            dataCntr_out ** fitTo(reqLen, dataCntr_out),
+            dataCntr_out(fitTo(reqLen, dataCntr_out)),
 
             If(nextBlockTransition_out,
-                inBlockRemain ** self.ITEMS_IN_BLOCK
+                inBlockRemain(self.ITEMS_IN_BLOCK)
             ).Else(
-                inBlockRemain ** (inBlockRemain - (fitTo(reqLen, inBlockRemain) + 1))
+                inBlockRemain(inBlockRemain - (fitTo(reqLen, inBlockRemain) + 1))
             )
         ).Elif(dataMoveEn,
             If(StreamNode(masters=[f], slaves=[w]).ack(),
-               dataCntr_out ** (dataCntr_out - 1)
+               dataCntr_out(dataCntr_out - 1)
             )
         )
         StreamNode(masters=[f], slaves=[w]).sync(dataMoveEn)
-        w.data ** f.data
-        w.last ** dataCntr_out._eq(0)
-        w.strb ** mask(w.strb._dtype.bit_length())
-        self.dataFifo.dataIn ** self.dataIn
-        nextBlockTransition_out ** (nextBlockTransition & prepareEn)
+        w.data(f.data)
+        w.last(dataCntr_out._eq(0))
+        w.strb(mask(w.strb._dtype.bit_length()))
+        self.dataFifo.dataIn(self.dataIn)
+        nextBlockTransition_out(nextBlockTransition & prepareEn)
 
     def itemUploadLogic(self, baseIndex, nextBaseIndex, nextBaseReady, nextBlockTransition_out):
         r, s = self._reg, self._sig
@@ -252,7 +252,7 @@ class CLinkedListWriter(Unit):
 
         BURST_LEN = self.BUFFER_CAPACITY // 2
         bufferHasData = s("bufferHasData")
-        bufferHasData ** (f.size > (BURST_LEN - 1))
+        bufferHasData(f.size > (BURST_LEN - 1))
         # we are counting base next addr as item as well
         addr_index_t = Bits(self.ADDR_WIDTH - self.ALIGN_BITS)
         baseIndex = r("baseIndex", addr_index_t)
@@ -285,8 +285,8 @@ class CLinkedListWriter(Unit):
             (gotWriteAck, fsm_t.idle)    
         ).stateReg
 
-        timeout ** self.timeoutHandler(fsm != fsm_t.idle,
-                                       (f.size != 0) & queueHasSpace)
+        timeout(self.timeoutHandler(fsm != fsm_t.idle,
+                                    (f.size != 0) & queueHasSpace))
 
         inBlock_t = Bits(log2ceil(self.ITEMS_IN_BLOCK + 1))
         inBlockRemain = r("inBlockRemain_reg", inBlock_t, defVal=self.ITEMS_IN_BLOCK)
@@ -295,7 +295,7 @@ class CLinkedListWriter(Unit):
         reqLen = self.wReqDriver(wReqEn, baseIndex, lenByPtrs, inBlockRemain)
 
         If(wReqEn & w.req.rd,
-           reqLen_backup ** reqLen
+           reqLen_backup(reqLen)
         )
 
         dataMoveEn = fsm._eq(fsm_t.dataPending_send)
@@ -304,20 +304,21 @@ class CLinkedListWriter(Unit):
                                inBlockRemain, nextBlockTransition_out, dataCntr)
 
         If(self.baseAddr.dout.vld,
-           baseIndex ** self.addrToIndex(self.baseAddr.dout.data),
+           baseIndex(self.addrToIndex(self.baseAddr.dout.data)),
         ).Elif(prepareEn,
-           baseIndex ** (baseIndex + reqLen_backup + 1)    
+           baseIndex(baseIndex + reqLen_backup + 1)    
         ).Elif(nextBlockTransition_out,
-           baseIndex ** nextBaseIndex   
+           baseIndex(nextBaseIndex)
         )
 
-        w.ack.rd ** fsm._eq(fsm_t.waitForAck)
+        w.ack.rd(fsm._eq(fsm_t.waitForAck))
 
     def _impl(self):
         propagateClkRstn(self)
         nextBlockTransition = self._sig("nextBlockTransition")
         baseIndex, nextBaseIndex, nextBaseReady = self.baseAddrLogic(nextBlockTransition)
         self.itemUploadLogic(baseIndex, nextBaseIndex, nextBaseReady, nextBlockTransition)
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl

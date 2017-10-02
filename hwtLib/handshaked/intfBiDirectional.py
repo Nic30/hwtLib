@@ -1,6 +1,6 @@
 from collections import deque
 
-from hwt.hdlObjects.constants import DIRECTION
+from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VectSignal, Signal
 

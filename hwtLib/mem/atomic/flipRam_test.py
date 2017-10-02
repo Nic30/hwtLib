@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time, NOP, WRITE, READ
+from hwt.hdl.constants import Time, NOP, WRITE, READ
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.atomic.flipRam import FlipRam
 

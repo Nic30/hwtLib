@@ -49,32 +49,32 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
                             self.drivers))
 
         selectedDriverVld = self._sig("selectedDriverWVld")
-        selectedDriverVld ** Or(*map(lambda d: fWOut.data._eq(d[0]) & d[1].valid,
-                                     enumerate(driversW))
-                                )
+        selectedDriverVld(Or(*map(lambda d: fWOut.data._eq(d[0]) & d[1].valid,
+                                  enumerate(driversW))
+                            ))
         selectedDriverLast = self._sig("selectedDriverLast")
-        selectedDriverLast ** Or(*map(lambda d: fWOut.data._eq(d[0]) & d[1].last,
-                                      enumerate(driversW))
-                                 )
+        selectedDriverLast(Or(*map(lambda d: fWOut.data._eq(d[0]) & d[1].last,
+                                   enumerate(driversW))
+                             ))
 
         Switch(fWOut.data).addCases(
             [(i, connect(d, w, exclude=[d.valid, d.ready]))
                for i, d in enumerate(driversW)]
 
         ).Default(
-            w.data ** None,
-            w.strb ** None,
-            w.last ** None
+            w.data(None),
+            w.strb(None),
+            w.last(None)
         )
 
-        fAckIn.data ** fWOut.data
+        fAckIn.data(fWOut.data)
 
         # handshake logic
-        fWOut.rd ** (selectedDriverVld & selectedDriverLast & w.ready & fAckIn.rd)
+        fWOut.rd(selectedDriverVld & selectedDriverLast & w.ready & fAckIn.rd)
         for i, d in enumerate(driversW):
-            d.ready ** (fWOut.data._eq(i) & w.ready & fWOut.vld & fAckIn.rd)
-        w.valid ** (selectedDriverVld & fWOut.vld & fAckIn.rd)
-        fAckIn.vld ** (selectedDriverVld & selectedDriverLast & w.ready & fWOut.vld)
+            d.ready(fWOut.data._eq(i) & w.ready & fWOut.vld & fAckIn.rd)
+        w.valid(selectedDriverVld & fWOut.vld & fAckIn.rd)
+        fAckIn.vld(selectedDriverVld & selectedDriverLast & w.ready & fWOut.vld)
 
         #extraConds = {
         #    fAckIn: selectedDriverLast
@@ -93,16 +93,16 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
                               self.drivers))
 
         selectedDriverAckReady = self._sig("selectedDriverAckReady")
-        selectedDriverAckReady ** Or(*map(lambda d: fAckOut.data._eq(d[0]) & d[1].rd,
-                                          enumerate(driversAck))
-                                     )
+        selectedDriverAckReady(Or(*map(lambda d: fAckOut.data._eq(d[0]) & d[1].rd,
+                                       enumerate(driversAck))
+                                 ))
 
-        ack.rd ** (fAckOut.vld & selectedDriverAckReady)
-        fAckOut.rd ** (ack.vld & selectedDriverAckReady)
+        ack.rd(fAckOut.vld & selectedDriverAckReady)
+        fAckOut.rd(ack.vld & selectedDriverAckReady)
 
         for i, d in enumerate(driversAck):
             connect(ack, d, exclude=[d.vld, d.rd])
-            d.vld ** (ack.vld & fAckOut.vld & fAckOut.data._eq(i))
+            d.vld(ack.vld & fAckOut.vld & fAckOut.data._eq(i))
 
     def _impl(self):
         assert int(self.DRIVER_CNT) > 1, "It makes no sense to use interconnect in this case"

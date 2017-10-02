@@ -1,13 +1,13 @@
 import unittest
 
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.types.struct import HStruct
 from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t, uint8_t
-from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.frameTmpl import FrameTmpl
+from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.frameTmpl import FrameTmpl
 from hwtLib.types.net.eth import Eth2Header_t
 from hwtLib.types.net.ip import IPv4Header_t
-from hwt.hdlObjects.types.structUtils import HStruct_selectFields
-from hwt.hdlObjects.types.union import HUnion
+from hwt.hdl.types.structUtils import HStruct_selectFields
+from hwt.hdl.types.union import HUnion
 
 s_basic = HStruct(
     (uint64_t, "item0"),

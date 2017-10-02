@@ -1,4 +1,4 @@
-from hwt.hdlObjects.constants import DIRECTION
+from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import VectSignal, Signal, HandshakeSync
 from hwt.synthesizer.interfaceLevel.interface import Interface
 from hwt.synthesizer.param import Param

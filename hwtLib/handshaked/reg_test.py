@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.reg import HandshakedReg

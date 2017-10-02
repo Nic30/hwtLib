@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.netlistToRtl import netlistToVhdlStr
 
@@ -17,7 +17,7 @@ def LeadingZero():
 
     leadingZeroTop = None  # index is index of first empty record or last one
     for i in reversed(range(8)):
-        connections = index ** i
+        connections = index(i)
         if leadingZeroTop is None:
             leadingZeroTop = connections 
         else:

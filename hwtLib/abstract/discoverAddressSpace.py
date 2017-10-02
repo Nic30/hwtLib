@@ -1,7 +1,7 @@
-from hwt.hdlObjects.assignment import Assignment
-from hwt.hdlObjects.operator import Operator
-from hwt.hdlObjects.operatorDefs import AllOps
-from hwt.hdlObjects.portItem import PortItem
+from hwt.hdl.assignment import Assignment
+from hwt.hdl.operator import Operator
+from hwt.hdl.operatorDefs import AllOps
+from hwt.hdl.portItem import PortItem
 from hwt.synthesizer.interfaceLevel.mainBases import UnitBase
 from hwtLib.abstract.busEndpoint import BusEndpoint
 

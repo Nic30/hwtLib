@@ -8,7 +8,7 @@ class ExampleChild(Unit):
         self.d = Signal()
 
     def _impl(self):
-        self.d ** self.c
+        self.d(self.c)
 
 
 class UnusedSubunit(Unit):
@@ -20,7 +20,7 @@ class UnusedSubunit(Unit):
 
     def _impl(self):
         # self.child left unconnected -> error
-        self.b ** self.a
+        self.b(self.a)
 
 
 class UnusedSubunit2(Unit):
@@ -34,10 +34,10 @@ class UnusedSubunit2(Unit):
 
     def _impl(self):
         # chain of children is left unconnected -> error
-        self.b ** self.a
+        self.b(self.a)
 
-        self.child1.c ** self.child0.d
-        self.child2.c ** self.child1.d
+        self.child1.c(self.child0.d)
+        self.child2.c(self.child1.d)
 
 
 if __name__ == "__main__":

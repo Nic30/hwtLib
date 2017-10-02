@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import log2ceil
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.std import s, VectSignal
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.simulator.simTestCase import SimTestCase
@@ -28,10 +28,10 @@ class BinToOneHot(Unit):
         WIDTH = self.DATA_WIDTH
         if int(WIDTH) == 1:
             # empty_gen
-            self.dout[0] ** en
+            self.dout[0](en)
         else:
             for i in range(int(WIDTH)):
-                self.dout[i] ** (dIn._eq(i) & en)
+                self.dout[i](dIn._eq(i) & en)
 
 
 class BinToOneHotTC(SimTestCase):

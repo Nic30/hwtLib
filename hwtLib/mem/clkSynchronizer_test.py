@@ -3,8 +3,8 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.constants import Time
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.agents.rst import pullDownAfter
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.shortcuts import simUnitVcd, oscilate, \

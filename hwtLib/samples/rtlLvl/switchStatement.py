@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Switch
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.netlistToRtl import netlistToVhdlStr
 
@@ -15,7 +15,7 @@ def SwitchStatement():
     Out = n.sig("output", t)
 
     Switch(In).addCases(
-        [(i, Out ** (i + 1)) for i in range(8)]
+        [(i, Out(i + 1)) for i in range(8)]
     )
 
     interf = [In, Out]

@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import StaticForEach, connect
-from hwt.hdlObjects.frameTmpl import FrameTmpl
-from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.frameTmpl import FrameTmpl
+from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
@@ -120,24 +120,24 @@ class StructReader(AxiS_frameParser):
         propagateClkRstn(self)
         req = self.rDatapump.req
 
-        req.id ** self.ID
-        req.rem ** 0
+        req.id(self.ID)
+        req.rem(0)
         if self.READ_ACK:
             get = self.get
         else:
             get = HsBuilder(self, self.get).buff().end
 
         def f(frame, indx):
-            s = [req.addr ** (get.data + frame.startBitAddr // 8),
-                 req.len ** (frame.getWordCnt() - 1),
-                 req.vld ** get.vld
+            s = [req.addr(get.data + frame.startBitAddr // 8),
+                 req.len(frame.getWordCnt() - 1),
+                 req.vld(get.vld)
                  ]
             isLastFrame = indx == len(self._frames) - 1
             if isLastFrame:
                 rd = req.rd
             else:
                 rd = 0
-            s.append(get.rd ** rd)
+            s.append(get.rd(rd))
 
             ack = StreamNode(masters=[get], slaves=[self.rDatapump.req]).ack()
             return s, ack
@@ -150,7 +150,7 @@ class StructReader(AxiS_frameParser):
         for _, field in self._tmpl.walkFlatten():
             myIntf = self.dataOut._fieldsToInterfaces[field.origin]
             parserIntf = self.parser.dataOut._fieldsToInterfaces[field.origin]
-            myIntf ** parserIntf
+            myIntf(parserIntf)
 
 
 if __name__ == "__main__":

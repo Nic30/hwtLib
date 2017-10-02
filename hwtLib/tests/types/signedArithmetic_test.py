@@ -1,5 +1,5 @@
 import unittest
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwtLib.types.ctypes import int8_t
 from hwt.bitmask import mask
 from hwt.simulator.agentConnector import valToInt

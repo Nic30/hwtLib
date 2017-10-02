@@ -1,8 +1,8 @@
 from hwt.code import If, log2ceil
-from hwt.hdlObjects.types.defs import BIT
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.defs import BIT
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
-from hwt.hdlObjects.types.bits import Bits
 
 
 class ClkBuilder(object):
@@ -83,7 +83,7 @@ class ClkBuilder(object):
         tick = DynamicTimerInfo._instantiateTimerTickLogic(timer, origMaxVal, enableSig, rstSig)
 
         timer.tick = parentUnit._sig(timer.name + "_delayTick")
-        timer.tick ** tick
+        timer.tick(tick)
         return timer.tick
 
     def oversample(self, sig, sampleCount, sampleTick, rstSig=None):
@@ -114,13 +114,13 @@ class ClkBuilder(object):
             rstSig = rstSig | sampleDoneTick
 
         If(sampleDoneTick,
-            oversampleCntr ** 0
+            oversampleCntr(0)
         ).Elif(sampleTick & sig,
-            oversampleCntr ** (oversampleCntr + 1)
+            oversampleCntr(oversampleCntr + 1)
         )
 
         oversampled = self.parent._sig(n + "_oversampled%d" % (sCnt))
-        oversampled ** (oversampleCntr > (sampleCount // 2 - 1))
+        oversampled(oversampleCntr > (sampleCount // 2 - 1))
         return oversampled, sampleDoneTick
 
     def edgeDetector(self, sig, rise=False, fall=False, last=None, initVal=0):
@@ -137,14 +137,14 @@ class ClkBuilder(object):
         assert rise or fall
         if last is None:
             last = self.parent._reg(namePrefix + "_edgeDetect_last", defVal=initVal)
-            last ** sig
+            last(sig)
 
         if rise:
             riseSig = self.parent._sig(namePrefix + "_rising")
-            riseSig ** (sig & ~last)
+            riseSig(sig & ~last)
         if fall:
             fallSig = self.parent._sig(namePrefix + "_falling")
-            fallSig ** (~sig & last)
+            fallSig(~sig & last)
         if rise and not fall:
             return riseSig
         elif not rise and fall:

@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.struct import HStruct
-from hwt.hdlObjects.value import Value
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.struct import HStruct
+from hwt.hdl.value import Value
 from hwt.interfaces.std import Signal
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
@@ -70,13 +70,13 @@ class PingResponder(Unit):
             else:
                 if isinstance(reg, Value) or not isinstance(reg, RtlMemoryBase):
                     # we have an exact value to use, ignore this intput
-                    In.rd ** 1
+                    In.rd(1)
                     continue
 
                 If(In.vld & ~freeze,
-                   reg ** In.data
+                   reg(In.data)
                 )
-                In.rd ** ~freeze
+                In.rd(~freeze)
 
     def connect_resp(self, resp, forgeIn, sendingReply):
         """
@@ -90,8 +90,8 @@ class PingResponder(Unit):
         t = resp._dtype
 
         if isinstance(t, Bits):
-            forgeIn.data ** resp
-            forgeIn.vld ** sendingReply
+            forgeIn.data(resp)
+            forgeIn.vld(sendingReply)
         else:
             for f in t.fields:
                 name = f.name
@@ -132,7 +132,7 @@ class PingResponder(Unit):
 
         t = parsed.icmp.type
         If(t.vld,
-           isEchoReq ** t.data._eq(ICMP_TYPE.ECHO_REQUEST)
+           isEchoReq(t.data._eq(ICMP_TYPE.ECHO_REQUEST))
         )
 
         def setup_frame_forge(out):
@@ -146,12 +146,12 @@ class PingResponder(Unit):
 
         self.connect_resp(resp, forgeIn, sendingReply)
         tx = txBuilder.end
-        self.tx ** tx
+        self.tx(tx)
 
         If(self.rx.last & self.rx.valid,
-           sendingReply ** (self.myIp._eq(resp.ip.dst) & isEchoReq) 
+           sendingReply(self.myIp._eq(resp.ip.dst) & isEchoReq) 
         ).Elif(tx.valid & tx.last,
-           sendingReply ** 0
+           sendingReply(0)
         )
 
 

@@ -3,8 +3,9 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import DIRECTION
-from hwt.hdlObjects.typeShortcuts import hInt
+from hwt.hdl.constants import DIRECTION
+from hwt.hdl.typeShortcuts import hInt
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.exceptions import TypeConversionErr
@@ -17,7 +18,6 @@ from hwtLib.amba.fullDuplexAxiStream import FullDuplexAxiStream
 from hwtLib.samples.hierarchy.unitToUnitConnection import UnitToUnitConnection
 from hwtLib.samples.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnection
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import BaseSynthesizerTC
-from hwt.hdlObjects.types.bits import Bits
 
 
 D = DIRECTION
@@ -49,9 +49,9 @@ class UnitWithArrIntfParent(Unit):
             self.u0 = UnitWithArrIntf()
 
     def _impl(self):
-        self.u0.a ** self.a
-        self.b0 ** self.u0.b[0]
-        self.b1 ** self.u0.b[1]
+        self.u0.a(self.a)
+        self.b0(self.u0.b[0])
+        self.b1(self.u0.b[1])
 
 
 class SubunitsSynthesisTC(BaseSynthesizerTC):
@@ -73,7 +73,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
                 self.b = Signal(dtype=dt)
 
             def _impl(self):
-                self.b ** self.a
+                self.b(self.a)
 
         class OuterUnit(Unit):
             def _declr(self):
@@ -83,8 +83,8 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
                 self.iu = InternUnit()
 
             def _impl(self):
-                self.iu.a ** self.a
-                self.b ** self.iu.b
+                self.iu.a(self.a)
+                self.b(self.iu.b)
 
         self.assertRaises(TypeConversionErr, lambda: toRtl(OuterUnit))
 
@@ -112,10 +112,10 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
 
             def _impl(self):
                 propagateClkRstn(self)
-                self.u0.a ** self.a
-                self.u1.a ** self.u0.c
-                self.u2.a ** self.u1.c
-                self.b ** self.u2.c
+                self.u0.a(self.a)
+                self.u1.a(self.u0.c)
+                self.u2.a(self.u1.c)
+                self.b(self.u2.c)
 
         u = ThreeSubunits()
         u._loadDeclarations()
@@ -148,14 +148,14 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
 
             def _impl(self):
                 propagateClkRstn(self)
-                self.u0.a ** self.a
-                self.u1.a ** self.u0.c
+                self.u0.a(self.a)
+                self.u1.a(self.u0.c)
 
-                self.u2_0.a ** self.u1.b[0]
-                self.u2_1.a ** self.u1.b[1]
+                self.u2_0.a(self.u1.b[0])
+                self.u2_1.a(self.u1.b[1])
 
-                self.b0 ** self.u2_0.c
-                self.b1 ** self.u2_1.c
+                self.b0(self.u2_0.c)
+                self.b1(self.u2_1.c)
 
         u = ThreeSubunits()
         u._loadDeclarations()
@@ -169,8 +169,8 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
                 self.dataOut = FullDuplexAxiStream()
 
             def _impl(self):
-                self.dataOut.tx ** self.dataIn.tx
-                self.dataIn.rx ** self.dataOut.rx
+                self.dataOut.tx(self.dataIn.tx)
+                self.dataIn.rx(self.dataOut.rx)
 
         u = FDStreamConnection()
         u._loadDeclarations()

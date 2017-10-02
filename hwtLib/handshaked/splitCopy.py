@@ -43,10 +43,10 @@ class HsSplitCopy(HandshakedCompBase):
 
         for io in self.dataOut:
             for i, o in zip(data(self.dataIn), data(io)):
-                o ** i
+                o(i)
 
         outRd = And(*[rd(i) for i in self.dataOut])
-        rd(self.dataIn) ** outRd
+        rd(self.dataIn)(outRd)
 
         for o in self.dataOut:
             # everyone else is ready and input is valid
@@ -57,7 +57,7 @@ class HsSplitCopy(HandshakedCompBase):
                 deps.append(rd(otherO))
             _vld = And(*deps)
 
-            vld(o) ** _vld
+            vld(o)(_vld)
 
 
 if __name__ == "__main__":

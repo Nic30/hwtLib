@@ -1,5 +1,5 @@
 from hwt.bitmask import selectBit
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import valToInt
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.uart.rx import UartRx

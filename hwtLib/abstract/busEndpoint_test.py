@@ -3,8 +3,8 @@
 
 import unittest
 
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.struct import HStruct, HStructFieldMeta
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.struct import HStruct, HStructFieldMeta
 from hwt.interfaces.std import RegCntrl, VectSignal, VldSynced
 from hwt.interfaces.structIntf import HTypeFromIntfMap
 

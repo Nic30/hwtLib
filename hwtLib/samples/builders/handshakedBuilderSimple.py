@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
@@ -22,7 +22,7 @@ class HandshakedBuilderSimple(Unit):
         b.buff(items=16)
         b.buff(latency=2, delay=1)
 
-        self.b ** b.end
+        self.b(b.end)
 
 
 class HandshakedBuilderSimpleTC(SimTestCase):

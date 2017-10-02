@@ -134,16 +134,16 @@ class HashTableCore(Unit):
         origKeyReg = HandshakedReg(LookupKeyIntf)
         origKeyReg.KEY_WIDTH.set(self.KEY_WIDTH)
         self.origKeyReg = origKeyReg
-        origKeyReg.dataIn.key ** lookup.key
+        origKeyReg.dataIn.key(lookup.key)
         if lookup.LOOKUP_ID_WIDTH:
-            origKeyReg.dataIn.lookupId ** lookup.lookupId
-        origKeyReg.clk ** self.clk
-        origKeyReg.rst_n ** self.rst_n
+            origKeyReg.dataIn.lookupId(lookup.lookupId)
+        origKeyReg.clk(self.clk)
+        origKeyReg.rst_n(self.rst_n)
 
         origKey = origKeyReg.dataOut
 
         # hash key and address with has in table
-        h.dataIn ** lookup.key
+        h.dataIn(lookup.key)
         # has can be wider
         connect(h.dataOut, ramR.addr.data, fit=True)
 
@@ -155,8 +155,8 @@ class HashTableCore(Unit):
             origHashReg.DATA_WIDTH.set(self.HASH_WITH)
 
             self.origHashReg = origHashReg
-            origHashReg.clk ** self.clk
-            origHashReg.rst_n ** self.rst_n
+            origHashReg.clk(self.clk)
+            origHashReg.rst_n(self.rst_n)
             connect(h.dataOut, origHashReg.dataIn.data, fit=True)
 
             inputSlaves.append(origHashReg.dataIn)
@@ -172,18 +172,18 @@ class HashTableCore(Unit):
         key, data, vldFlag = self.parseItem(ramR.data.data)
 
         if self.LOOKUP_HASH:
-            res.hash ** origHashReg.dataOut.data
+            res.hash(origHashReg.dataOut.data)
 
         if self.LOOKUP_KEY:
-            res.key ** origKey.key
+            res.key(origKey.key)
 
         if self.LOOKUP_ID_WIDTH:
-            res.lookupId ** origKey.lookupId
+            res.lookupId(origKey.lookupId)
 
         if self.DATA_WIDTH:
-            res.data ** data
-        res.occupied ** vldFlag
-        res.found ** (origKey.key._eq(key) & vldFlag)
+            res.data(data)
+        res.occupied(vldFlag)
+        res.found(origKey.key._eq(key) & vldFlag)
 
     def insertLogic(self, ramW):
         In = self.insert
@@ -193,15 +193,15 @@ class HashTableCore(Unit):
         else:
             rec = Concat(In.key, In.vldFlag)
 
-        ramW.data ** rec
-        ramW.addr ** In.hash
+        ramW.data(rec)
+        ramW.addr(In.hash)
         StreamNode(masters=[In], slaves=[ramW]).sync()
 
     def _impl(self):
         propagateClkRstn(self)
 
         table = self.tableConnector
-        self.table.a ** table.ram
+        self.table.a(table.ram)
         self.lookupLogic(table.r)
         self.insertLogic(table.w)
 

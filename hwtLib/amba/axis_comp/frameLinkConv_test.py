@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.bitmask import mask
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -28,9 +28,9 @@ class FrameLinkConvTest(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
-        self.conv0.dataIn ** self.dataIn
-        self.conv1.dataIn ** self.conv0.dataOut
-        self.dataOut ** self.conv1.dataOut
+        self.conv0.dataIn(self.dataIn)
+        self.conv1.dataIn(self.conv0.dataOut)
+        self.dataOut(self.conv1.dataOut)
 
 
 class AxiS_frameLinkConvTC(SimTestCase):

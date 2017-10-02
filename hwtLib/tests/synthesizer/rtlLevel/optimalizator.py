@@ -3,8 +3,8 @@
 
 import unittest
 
-from hwt.hdlObjects.operatorDefs import AllOps
-from hwt.hdlObjects.types.defs import BOOL
+from hwt.hdl.operatorDefs import AllOps
+from hwt.hdl.types.defs import BOOL
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 
 

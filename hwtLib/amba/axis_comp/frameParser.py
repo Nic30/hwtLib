@@ -4,15 +4,15 @@
 from typing import Optional, List, Union
 
 from hwt.code import log2ceil, If, Concat
-from hwt.hdlObjects.frameTmpl import FrameTmpl
-from hwt.hdlObjects.frameTmplUtils import ChoicesOfFrameParts
-from hwt.hdlObjects.transPart import TransPart
-from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.typeShortcuts import hBit
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.hdlType import HdlType
-from hwt.hdlObjects.types.struct import HStruct, HStructField
-from hwt.hdlObjects.types.union import HUnion
+from hwt.hdl.frameTmpl import FrameTmpl
+from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
+from hwt.hdl.transPart import TransPart
+from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.typeShortcuts import hBit
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.hdlType import HdlType
+from hwt.hdl.types.struct import HStruct, HStructField
+from hwt.hdl.types.union import HUnion
 from hwt.interfaces.std import Handshaked, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.unionIntf import UnionSource, UnionSink
@@ -131,7 +131,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
     def connectParts(self,
                      allOutNodes: ListOfOutNodeInfos,
                      words,
-                     wordIndexReg: RtlSignal):
+                     wordIndexReg: Optional[RtlSignal]):
         """
         Create main datamux from dataIn to dataOut
         """
@@ -139,7 +139,11 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
             # each word index is used and there may be TransParts which are
             # representation of padding
             outNondes = ListOfOutNodeInfos()
-            isThisWord = wordIndexReg._eq(wIndx)
+            if wordIndexReg is None:
+                isThisWord = hBit(1)
+            else:
+                isThisWord = wordIndexReg._eq(wIndx)
+
             for part in transParts:
                 self.connectPart(outNondes, part, isThisWord, hBit(1))
 
@@ -206,11 +210,11 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
             # connect all parts in this group to output stream
             signalsOfParts.append(fPartSig)
             intf = self.dataOut._fieldsToInterfaces[fieldInfo]
-            intf.data ** self.byteOrderCare(
-                                       Concat(
-                                              *reversed(signalsOfParts)
-                                             )
-                                      )
+            intf.data(self.byteOrderCare(
+                            Concat(
+                                   *reversed(signalsOfParts)
+                                  ))
+                      )
             on = OutNodeInfo(self, intf, en, exclusiveEn)
             hsNondes.append(on)
         else:
@@ -221,7 +225,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
                                                  len(signalsOfParts)),
                                  fPartSig._dtype)
             If(dataVld,
-               fPartReg ** fPartSig
+               fPartReg(fPartSig)
             )
             signalsOfParts.append(fPartReg)
 
@@ -231,7 +235,12 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
         words = list(self.chainFrameWords())
         assert not (self.SYNCHRONIZE_BY_LAST and len(self._frames) > 1)
         maxWordIndex = words[-1][0]
-        wordIndex = self._reg("wordIndex", Bits(log2ceil(maxWordIndex + 1)), 0)
+        hasMultipleWords = maxWordIndex > 0
+        if hasMultipleWords:
+            wordIndex = self._reg("wordIndex", Bits(log2ceil(maxWordIndex + 1)), 0)
+        else:
+            wordIndex = None
+
         busVld = r.valid
 
         if self.IS_BIGENDIAN:
@@ -249,26 +258,28 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
 
         if self.SHARED_READY:
             busReady = self.dataOut_ready
-            r.ready ** busReady
+            r.ready(busReady)
         else:
             busReady = self._sig("busReady")
-            busReady ** allOutNodes.ack()
+            busReady(allOutNodes.ack())
             allOutNodes.sync(busVld)
 
-        r.ready ** busReady
+        r.ready(busReady)
 
-        if self.SYNCHRONIZE_BY_LAST:
-            last = r.last
-        else:
-            last = wordIndex._eq(maxWordIndex)
 
-        If(busVld & busReady,
-            If(last,
-               wordIndex ** 0
-            ).Else(
-                wordIndex ** (wordIndex + 1)
+        if hasMultipleWords:
+            if self.SYNCHRONIZE_BY_LAST:
+                last = r.last
+            else:
+                last = wordIndex._eq(maxWordIndex)
+                
+            If(busVld & busReady,
+                If(last,
+                   wordIndex(0)
+                ).Else(
+                    wordIndex(wordIndex + 1)
+                )
             )
-        )
 
 
 if __name__ == "__main__":
@@ -306,17 +317,17 @@ if __name__ == "__main__":
     t = HUnion(
         (HStruct(
             (uint64_t, "itemA0"),
-            # (uint64_t, "itemA1")
+            (uint64_t, "itemA1")
             ), "frameA"),
         (HStruct(
             (uint32_t, "itemB0"),
             (uint32_t, "itemB1"),
-            # (uint32_t, "itemB2"),
-            # (uint32_t, "itemB3")
+            (uint32_t, "itemB2"),
+            (uint32_t, "itemB3")
             ), "frameB")
         )
     u = AxiS_frameParser(AxiStream, t)
-    u.DATA_WIDTH.set(51)
+    u.DATA_WIDTH.set(64)
     print(
     toRtl(u)
        )

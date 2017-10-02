@@ -1,5 +1,5 @@
 from hwt.code import If
-from hwt.hdlObjects.constants import DIRECTION
+from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import Handshaked, BramPort_withoutClk
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
@@ -94,34 +94,34 @@ class RamAsHs(Unit):
         readData = self._reg("readData", r.data.data._dtype)
 
         rEn = readRegEmpty | r.data.rd
-        readDataPending ** (r.addr.vld & rEn)
+        readDataPending(r.addr.vld & rEn)
         If(readDataPending,
-           readData ** ram.dout
+           readData(ram.dout)
         )
 
         If(r.data.rd,
-            readRegEmpty ** ~readDataPending
+            readRegEmpty(~readDataPending)
         ).Else(
-            readRegEmpty ** ~(readDataPending | ~readRegEmpty)
+            readRegEmpty(~(readDataPending | ~readRegEmpty))
 
         )
 
-        r.addr.rd ** rEn
+        r.addr.rd(rEn)
 
         If(rEn & r.addr.vld,
-           ram.we ** 0,
-           ram.addr ** r.addr.data 
+           ram.we(0),
+           ram.addr(r.addr.data) 
         ).Else(
-           ram.we ** 1,
-           ram.addr ** w.addr
+           ram.we(1),
+           ram.addr(w.addr)
         )
         wEn = ~rEn | ~r.addr.vld
-        w.rd ** wEn
+        w.rd(wEn)
 
-        ram.din ** w.data
-        ram.en ** ((rEn & r.addr.vld) | w.vld)
-        r.data.data ** readData
-        r.data.vld ** ~readRegEmpty
+        ram.din(w.data)
+        ram.en((rEn & r.addr.vld) | w.vld)
+        r.data.data(readData)
+        r.data.vld(~readRegEmpty)
 
 
 if __name__ == "__main__":

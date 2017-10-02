@@ -20,13 +20,13 @@ class SwitchStmUnit(Unit):
     def _impl(self):
         Switch(self.sel)\
         .Case(0,
-            self.out ** self.a
+            self.out(self.a)
         ).Case(1,
-            self.out ** self.b
+            self.out(self.b)
         ).Case(2,
-            self.out ** self.c
+            self.out(self.c)
         ).Default(
-            self.out ** 0
+            self.out(0)
         )
 
 

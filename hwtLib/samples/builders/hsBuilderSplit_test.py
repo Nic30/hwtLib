@@ -3,7 +3,7 @@
 
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.samples.builders.hsBuilderSplit import HsBuilderSplit
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 
 
 class HsBuilderSplit_TC(SimTestCase):

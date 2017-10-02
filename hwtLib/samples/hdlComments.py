@@ -17,7 +17,7 @@ class SimpleComentedUnit(Unit):
         self.b = Signal()
 
     def _impl(self):
-        self.b ** self.a
+        self.b(self.a)
 
 
 simpleComentedUnitExpected =\

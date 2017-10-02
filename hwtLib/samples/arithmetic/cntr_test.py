@@ -3,10 +3,15 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
+from hwt.hdl.operatorDefs import AllOps
+from hwt.serializer.resourceUsageResolver.resolver import ResourceUsageResolver
+from hwt.serializer.resourceUsageResolver.resourceTypes import ResourceMUX, \
+    ResourceFF
 from hwt.simulator.agentConnector import agInts
-from hwtLib.samples.arithmetic.cntr import Cntr
 from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.shortcuts import toRtl
+from hwtLib.samples.arithmetic.cntr import Cntr
 
 
 class CntrTC(SimTestCase):
@@ -28,6 +33,31 @@ class CntrTC(SimTestCase):
         u.en._ag.data.extend([1, 0, 1, 1, 0, 0, 0])
         self.doSim(90 * Time.ns)
         self.assertSequenceEqual([0, 0, 0, 1, 2, 2, 2, 2, 2], agInts(u.val))
+
+    def test_resources_2b(self):
+        u = Cntr()
+
+        expected = {(AllOps.ADD, 2): 1,
+                    (ResourceMUX, 2, 2): 1,
+                     ResourceFF: 2}
+
+        s = ResourceUsageResolver()
+        toRtl(u, serializer=s)
+        r = s.report()
+        self.assertDictEqual(r, expected)
+
+    def test_resources_150b(self):
+        u = Cntr()
+        u.DATA_WIDTH.set(150)
+
+        expected = {(AllOps.ADD, 150): 1,
+                    (ResourceMUX, 150, 2): 1,
+                     ResourceFF: 150}
+
+        s = ResourceUsageResolver()
+        toRtl(u, serializer=s)
+        r = s.report()
+        self.assertDictEqual(r, expected)
 
 
 if __name__ == "__main__":

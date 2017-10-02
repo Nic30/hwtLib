@@ -9,7 +9,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 
 
 class AxiSStoredBurst(Unit):
@@ -35,13 +35,13 @@ class AxiSStoredBurst(Unit):
     def nextWordIndexLogic(self, wordIndex):
         if self.REPEAT:
             return If(wordIndex < len(self.DATA),
-                       wordIndex ** (wordIndex + 1)
+                       wordIndex(wordIndex + 1)
                    ).Else(
-                       wordIndex ** 0
+                       wordIndex(0)
                    )
         else:
             return If(wordIndex < len(self.DATA),
-                       wordIndex ** (wordIndex + 1)
+                       wordIndex(wordIndex + 1)
                    )
 
     def _impl(self):
@@ -54,17 +54,17 @@ class AxiSStoredBurst(Unit):
         wordIndex = self._reg("wordIndex", Bits(wordIndex_w), defVal=0)
 
         Switch(wordIndex)\
-        .addCases([(i, dout.data ** d)
+        .addCases([(i, dout.data(d))
                     for i, d in enumerate(self.DATA)])\
-        .Default(dout.data ** None)
+        .Default(dout.data(None))
 
-        dout.last ** wordIndex._eq(DATA_LEN - 1)
+        dout.last(wordIndex._eq(DATA_LEN - 1))
         If(wordIndex < DATA_LEN,
-            dout.strb ** vldAll,
-            dout.valid ** 1
+            dout.strb(vldAll),
+            dout.valid(1)
         ).Else(
-            dout.strb ** None,
-            dout.valid ** 0
+            dout.strb(None),
+            dout.valid(0)
         )
 
         If(self.dataRd(),

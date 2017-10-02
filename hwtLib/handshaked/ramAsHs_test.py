@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.constants import Time, NOP
+from hwt.hdl.constants import Time, NOP
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.ramAsHs import RamAsHs, RamHsR
@@ -23,9 +23,9 @@ class RamWithHs(RamAsHs):
 
     def _impl(self):
         propagateClkRstn(self)
-        self.conv.r ** self.r
-        self.conv.w ** self.w
-        self.ram.a ** self.conv.ram
+        self.conv.r(self.r)
+        self.conv.w(self.w)
+        self.ram.a(self.conv.ram)
 
 
 class RamAsHs_TC(SimTestCase):

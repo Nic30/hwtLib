@@ -1,5 +1,5 @@
 from hwt.code import log2ceil, If, isPow2
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.pyUtils.arrayQuery import where
 
 
@@ -83,7 +83,7 @@ class TimerInfo(object):
                                                         en,
                                                         rstSig)
 
-            timer.tick ** (tick & p.tick)
+            timer.tick(tick & p.tick)
 
         else:
             # take specific bit from wider counter
@@ -103,30 +103,30 @@ class TimerInfo(object):
         if enableSig is None:
             if rstSig is None:
                 If(r._eq(0),
-                    r ** origMaxVal
+                    r(origMaxVal)
                 ).Else(
-                   r ** (r - 1)
+                   r(r - 1)
                 )
             else:
                 If(rstSig | r._eq(0),
-                    r ** origMaxVal
+                    r(origMaxVal)
                 ).Else(
-                    r ** (r - 1)
+                    r(r - 1)
                 )
         else:
             if rstSig is None:
                 If(enableSig,
                     If(r._eq(0),
-                        r ** origMaxVal
+                        r(origMaxVal)
                     ).Else(
-                        r ** (r - 1)
+                        r(r - 1)
                     )
                 )
             else:
                 If(rstSig | (enableSig & r._eq(0)),
-                    r ** origMaxVal
+                    r(origMaxVal)
                 ).Elif(enableSig,
-                    r ** (r - 1)
+                    r(r - 1)
                 )
 
         tick = r._eq(0)
@@ -140,7 +140,7 @@ class TimerInfo(object):
         if timer.name:
             # wrap tick in signal
             s = parentUnit._sig(timer.name)
-            s ** tick
+            s(tick)
             tick = s
 
         return tick
@@ -175,7 +175,7 @@ class TimerInfo(object):
                                                             rstSig)
 
             timer.tick = parentUnit._sig(timer.name + "timerTick%d" % timer.maxVal)
-            timer.tick ** tick
+            timer.tick(tick)
         else:
             TimerInfo._instantiateTimerWithParent(parentUnit, timer, timer.parent, enableSig, rstSig)
 

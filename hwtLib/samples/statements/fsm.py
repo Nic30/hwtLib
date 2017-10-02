@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import FsmBuilder, Switch, If
-from hwt.hdlObjects.types.bits import Bits
-from hwt.hdlObjects.types.enum import HEnum
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
@@ -38,11 +38,11 @@ class FsmExample(Unit):
 
         Switch(st)\
         .Case(stT.a,
-              out ** 1
+              out(1)
         ).Case(stT.b,
-              out ** 2
+              out(2)
         ).Case(stT.aAndB,
-              out ** 3
+              out(3)
         )
 
 
@@ -56,41 +56,41 @@ class HadrcodedFsmExample(FsmExample):
 
         If(st._eq(1),
             If(a & b,
-                st ** 3
+                st(3)
             ).Elif(b,
-                st ** 2
+                st(2)
             ).Else(
-                st ** st
+                st(st)
             )
         ).Elif(st._eq(2),
             If(a & b,
-               st ** 3
+               st(3)
             ).Elif(a,
-                st ** 1
+                st(1)
             ).Else(
-                st ** st
+                st(st)
             )
         ).Elif(st._eq(3),
             If(a & ~b,
-               st ** 1
+               st(1)
             ).Elif(~a & b,
-                st ** 2
+                st(2)
             ).Else(
-                st ** st
+                st(st)
             )
         ).Else(
-            st ** 1
+            st(1)
         )
 
         Switch(st)\
         .Case(1,
-            out ** 1
+            out(1)
         ).Case(2,
-            out ** 2
+            out(2)
         ).Case(3,
-            out ** 3
+            out(3)
         ).Default(
-            out ** None
+            out(None)
         )
 
 

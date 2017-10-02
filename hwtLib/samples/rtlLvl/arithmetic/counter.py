@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.netlistToRtl import netlistToVhdlStr
 
@@ -18,10 +18,10 @@ def Counter():
     cnt = n.sig("cnt", t, clk=clk, syncRst=rst, defVal=0)
 
     If(en,
-       cnt ** (cnt + 1)
+       cnt(cnt + 1)
     )
 
-    s_out ** cnt
+    s_out(cnt)
 
     interf = [rst, clk, s_out, en]
 

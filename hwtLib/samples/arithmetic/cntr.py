@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.hdlObjects.types.bits import Bits
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
-from hwt.interfaces.utils import addClkRstn
+from hwt.interfaces.utils import addClkRst
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 
@@ -14,7 +14,7 @@ class Cntr(Unit):
         self.DATA_WIDTH = Param(2)
 
     def _declr(self):
-        addClkRstn(self)
+        addClkRst(self)
         self.en = Signal()
         self.val = VectSignal(self.DATA_WIDTH)
 
@@ -23,10 +23,10 @@ class Cntr(Unit):
         
         # if there is no assignment into reg, value is kept
         If(self.en,
-           reg ** (reg + 1)
+           reg(reg + 1)
         )
 
-        self.val ** reg
+        self.val(reg)
 
 
 if __name__ == "__main__":  # "python main function"

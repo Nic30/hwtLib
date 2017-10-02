@@ -7,7 +7,7 @@ from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.clocking.clkBuilder import ClkBuilder
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 
 
 class TimerInfoTest(Unit):
@@ -28,15 +28,15 @@ class TimerInfoTest(Unit):
     def _impl(self):
         tick1, tick2, tick16, tick17, tick34, tick256, tick384 = ClkBuilder(self, self.clk)\
                                                                     .timers([1, 2, 16, 17, 34, 256, 384])
-        self.tick1 ** tick1
-        self.tick2 ** tick2
-        self.tick16 ** tick16
+        self.tick1(tick1)
+        self.tick2(tick2)
+        self.tick16(tick16)
 
-        self.tick17 ** tick17
-        self.tick34 ** tick34
+        self.tick17(tick17)
+        self.tick34(tick34)
 
-        self.tick256 ** tick256
-        self.tick384 ** tick384
+        self.tick256(tick256)
+        self.tick384(tick384)
 
 
 class TimerTestUnit(Unit):
@@ -60,7 +60,7 @@ class TimerTestUnit(Unit):
 
         for intf in self._interfaces:
             if intf not in [self.clk, self.rst_n]:
-                intf.vld ** getattr(self.core, getSignalName(intf))
+                intf.vld(getattr(self.core, getSignalName(intf)))
 
 
 class TimerTC(SimTestCase):

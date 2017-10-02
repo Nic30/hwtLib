@@ -1,6 +1,6 @@
 import unittest
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.std import RdSynced
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
@@ -14,7 +14,7 @@ class RdSyncedPipe(Unit):
         self.b = RdSynced()
 
     def _impl(self):
-        self.b ** self.a
+        self.b(self.a)
 
 
 class RdSynced_agent_TC(SimTestCase):

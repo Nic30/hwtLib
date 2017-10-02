@@ -51,7 +51,7 @@ class HsSplitSelect(HandshakedCompBase):
         r = HandshakedReg(Handshaked)
         r.DATA_WIDTH.set(sel.data._dtype.bit_length())
         self.selReg = r
-        r.dataIn ** sel
+        r.dataIn(sel)
         propagateClkRstn(self)
         sel = r.dataOut
 
@@ -59,24 +59,24 @@ class HsSplitSelect(HandshakedCompBase):
             for ini, outi in zip(In._interfaces, outIntf._interfaces):
                 if ini == self.getVld(In):
                     # out.vld
-                    outi ** (sel.vld & ini & sel.data[index])
+                    outi(sel.vld & ini & sel.data[index])
                 elif ini == rd(In):
                     pass
                 else:  # data
-                    outi ** ini
+                    outi(ini)
 
         din = self.dataIn
         SwitchLogic(
-            cases=[(~sel.vld, [sel.rd ** 0,
-                                rd(In) ** 0])
+            cases=[(~sel.vld, [sel.rd(0),
+                                rd(In)(0)])
                   ] +
                   [(sel.data[index],
-                    [rd(In) ** rd(out),
-                     sel.rd ** (rd(out) & self.getVld(din) & sel.vld)])
+                    [rd(In)(rd(out)),
+                     sel.rd(rd(out) & self.getVld(din) & sel.vld)])
                    for index, out in enumerate(self.dataOut)],
             default=[
-                     sel.rd ** None,
-                     rd(In) ** None
+                     sel.rd(None),
+                     rd(In)(None)
                      ])
 
 
