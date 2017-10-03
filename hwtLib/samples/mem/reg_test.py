@@ -12,7 +12,9 @@ from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.shortcuts import toRtl
 from hwtLib.samples.mem.reg import DReg, DoubleDReg, OptimizedOutReg,\
-    AsyncResetReg, DDR_Reg
+    AsyncResetReg, DDR_Reg, Latch
+from hwt.serializer.resourceUsageResolver.resourceTypes import ResourceLatch
+from hwt.serializer.resourceUsageResolver.resolver import ResourceUsageResolver
 
 
 dreg_vhdl = """--
@@ -287,6 +289,16 @@ class DRegTC(SimTestCase):
     def test_DDR_Reg_verilog(self):
         s = toRtl(DDR_Reg(), serializer=VerilogSerializer)
         self.assertEqual(s, ddr_reg_verilog)
+
+    def test_latch_resources(self):
+        u = Latch()
+        expected = {
+            ResourceLatch: 1,
+        }
+
+        s = ResourceUsageResolver()
+        toRtl(u, serializer=s)
+        self.assertDictEqual(s.report(), expected)
 
 
 if __name__ == "__main__":
