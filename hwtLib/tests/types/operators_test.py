@@ -6,7 +6,7 @@ import unittest
 from hwt.bitmask import mask
 from hwt.hdl.typeShortcuts import hInt, hBool, hBit, vec
 from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.boolean import Boolean
+from hwt.hdl.types.bool import HBool
 from hwt.hdl.types.defs import INT, STR
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
@@ -14,7 +14,7 @@ from hwt.synthesizer.rtlLevel.signalUtils.walkers import walkAllOriginSignals
 
 
 n = RtlNetlist()
-s0 = n.sig("s0", Boolean())
+s0 = n.sig("s0", HBool())
 s1 = n.sig("s1")
 
 andTable = [(None, None, None),
