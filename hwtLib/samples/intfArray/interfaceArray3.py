@@ -4,7 +4,7 @@
 from hwt.hdl.constants import Time
 from hwt.hdl.typeShortcuts import hInt
 from hwt.interfaces.utils import addClkRstn
-from hwt.serializer.resourceUsageResolver.resolver import ResourceUsageResolver
+from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.shortcuts import toRtl
@@ -109,7 +109,7 @@ class InterfaceArraySample3TC(SimTestCase):
         u = InterfaceArraySample3()
         expected = {}
 
-        s = ResourceUsageResolver()
+        s = ResourceAnalyzer()
         toRtl(u, serializer=s)
         self.assertDictEqual(s.report(), expected)
 
@@ -117,7 +117,7 @@ class InterfaceArraySample3TC(SimTestCase):
         u = InterfaceArraySample3b()
         expected = {}
 
-        s = ResourceUsageResolver()
+        s = ResourceAnalyzer()
         toRtl(u, serializer=s)
         self.assertDictEqual(s.report(), expected)
 

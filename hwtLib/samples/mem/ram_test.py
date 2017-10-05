@@ -7,9 +7,9 @@ from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import agInts, valuesToInts
 from hwtLib.samples.mem.ram import SimpleAsyncRam, SimpleSyncRam
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.serializer.resourceUsageResolver.resourceTypes import ResourceRAM,\
+from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceRAM,\
     ResourceFF
-from hwt.serializer.resourceUsageResolver.resolver import ResourceUsageResolver
+from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.synthesizer.shortcuts import toRtl
 
 
@@ -58,7 +58,7 @@ class RamTC(SimTestCase):
             ResourceRAM(8, 4, 0, 0, 0, 0, 1, 1): 1,
         }
 
-        s = ResourceUsageResolver()
+        s = ResourceAnalyzer()
         toRtl(u, serializer=s)
         self.assertDictEqual(s.report(), expected)
 
@@ -68,7 +68,7 @@ class RamTC(SimTestCase):
             ResourceRAM(8, 4, 0, 1, 1, 0, 0, 0): 1,
         }
 
-        s = ResourceUsageResolver()
+        s = ResourceAnalyzer()
         toRtl(u, serializer=s)
         self.assertDictEqual(s.report(), expected)
 

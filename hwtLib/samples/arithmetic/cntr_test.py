@@ -5,8 +5,8 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.hdl.operatorDefs import AllOps
-from hwt.serializer.resourceUsageResolver.resolver import ResourceUsageResolver
-from hwt.serializer.resourceUsageResolver.resourceTypes import ResourceMUX, \
+from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
+from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
     ResourceFF
 from hwt.simulator.agentConnector import agInts
 from hwt.simulator.simTestCase import SimTestCase
@@ -41,7 +41,7 @@ class CntrTC(SimTestCase):
                     (ResourceMUX, 2, 2): 1,
                      ResourceFF: 2}
 
-        s = ResourceUsageResolver()
+        s = ResourceAnalyzer()
         toRtl(u, serializer=s)
         r = s.report()
         self.assertDictEqual(r, expected)
@@ -54,7 +54,7 @@ class CntrTC(SimTestCase):
                     (ResourceMUX, 150, 2): 1,
                      ResourceFF: 150}
 
-        s = ResourceUsageResolver()
+        s = ResourceAnalyzer()
         toRtl(u, serializer=s)
         r = s.report()
         self.assertDictEqual(r, expected)

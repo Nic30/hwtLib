@@ -4,8 +4,8 @@
 import unittest
 
 from hwt.hdl.constants import Time
-from hwt.serializer.resourceUsageResolver.resolver import ResourceUsageResolver
-from hwt.serializer.resourceUsageResolver.resourceTypes import ResourceRAM
+from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
+from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceRAM
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.shortcuts import toRtl
 from hwtLib.samples.mem.rom import SimpleRom, SimpleSyncRom
@@ -39,7 +39,7 @@ class RomTC(SimTestCase):
             ResourceRAM(8, 4, 0, 1, 0, 0, 0, 0): 1,
             }
 
-        s = ResourceUsageResolver()
+        s = ResourceAnalyzer()
         toRtl(u, serializer=s)
         self.assertDictEqual(s.report(), expected)
     
@@ -49,7 +49,7 @@ class RomTC(SimTestCase):
             ResourceRAM(8, 4, 0, 0, 0, 0, 1, 0): 1,
             }
 
-        s = ResourceUsageResolver()
+        s = ResourceAnalyzer()
         toRtl(u, serializer=s)
         self.assertDictEqual(s.report(), expected)
     

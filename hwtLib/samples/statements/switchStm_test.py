@@ -12,8 +12,8 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.shortcuts import toRtl
 from hwtLib.samples.statements.switchStm import SwitchStmUnit
 from hwt.hdl.operatorDefs import AllOps
-from hwt.serializer.resourceUsageResolver.resourceTypes import ResourceMUX
-from hwt.serializer.resourceUsageResolver.resolver import ResourceUsageResolver
+from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX
+from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 
 
 switchStm_vhdl = """--
@@ -154,7 +154,7 @@ class SwitchStmTC(SimTestCase):
 
         expected = {(ResourceMUX, 1, 4): 1}
 
-        s = ResourceUsageResolver()
+        s = ResourceAnalyzer()
         toRtl(u, serializer=s)
         r = s.report()
         self.assertDictEqual(r, expected)

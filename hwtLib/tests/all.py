@@ -148,6 +148,7 @@ from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
+from hwtLib.tests.resourceAnalyzer_test import ResourceAnalyzer_TC
 
 
 def doSimWithoutLog(self, time, name=None, config=None):
@@ -215,6 +216,7 @@ suite = testSuiteFromTCs(
     TransTmpl_TC,
     UnionTC,
     UnionIntfTC,
+    ResourceAnalyzer_TC,
 
     # component verifications
     ConcatTC,

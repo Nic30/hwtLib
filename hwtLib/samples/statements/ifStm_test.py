@@ -3,8 +3,8 @@
 
 from hwt.hdl.constants import Time
 from hwt.hdl.operatorDefs import AllOps
-from hwt.serializer.resourceUsageResolver.resolver import ResourceUsageResolver
-from hwt.serializer.resourceUsageResolver.resourceTypes import ResourceMUX, \
+from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
+from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
     ResourceFF
 from hwt.simulator.agentConnector import agInts
 from hwt.simulator.simTestCase import SimTestCase
@@ -103,7 +103,7 @@ class IfStmTC(SimTestCase):
             (ResourceMUX, 2, 3): 1,
             ResourceFF: 2,}
             
-        s = ResourceUsageResolver()
+        s = ResourceAnalyzer()
         toRtl(u, serializer=s)
         r = s.report()
         self.assertDictEqual(r, expected)
