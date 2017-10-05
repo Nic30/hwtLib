@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3alu
 # -*- coding: utf-8 -*-
 
 import unittest
@@ -7,7 +7,7 @@ from hwt.bitmask import mask
 from hwt.hdl.typeShortcuts import hInt, hBool, hBit, vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.bool import HBool
-from hwt.hdl.types.defs import INT, STR
+from hwt.hdl.types.defs import INT, STR, BOOL
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwt.synthesizer.rtlLevel.signalUtils.walkers import walkAllOriginSignals
@@ -59,7 +59,7 @@ bitvals = {
     0: hBit(0),
     None: hBit(None),
     s0: s1,
-    ~s0: ~s1
+    ~ s0:~s1
 }
 
 boolvals = {
@@ -67,7 +67,7 @@ boolvals = {
     0: hBool(0),
     None: hBool(None),
     s0: s0,
-    ~s0: ~s0
+    ~ s0:~s0
 }
 
 
@@ -283,6 +283,16 @@ class OperatorTC(unittest.TestCase):
         v = -INT.fromPy(None)
         self.assertEqual(v.val, 0)
         self.assertEqual(v.vldMask, 0)
+
+    def test_int_to_bool(self):
+        self.assertFalse(bool(INT.fromPy(0)._auto_cast(BOOL)))
+        self.assertTrue(bool(INT.fromPy(1)._auto_cast(BOOL)))
+        self.assertTrue(bool(INT.fromPy(-11)._auto_cast(BOOL)))
+        self.assertTrue(bool(INT.fromPy(500)._auto_cast(BOOL)))
+        
+        with self.assertRaises(ValueError):
+            bool(INT.fromPy(None)._auto_cast(BOOL))
+    
 
 
 if __name__ == '__main__':
