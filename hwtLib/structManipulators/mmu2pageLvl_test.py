@@ -56,7 +56,8 @@ class MMU_2pageLvl_TC(SimTestCase):
         u.lvl1Table._ag.requests.append((WRITE, MAGIC, lvl2pgt))
 
         va = self.buildVirtAddr(MAGIC, 0, 0)
-        u.virtIn._ag.data.append(va)
+        # wait for lvl1Table storage init
+        u.virtIn._ag.data.extend([NOP, NOP, va])
 
         self.doSim(100 * Time.ns)
 
@@ -95,7 +96,7 @@ class MMU_2pageLvl_TC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(MMU_2pageLvl_TC('test_translate10xRandomized'))
-    # suite.addTest(unittest.makeSuite(MMU_2pageLvl_TC))
+    # suite.addTest(MMU_2pageLvl_TC('test_translate10xRandomized'))
+    suite.addTest(unittest.makeSuite(MMU_2pageLvl_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

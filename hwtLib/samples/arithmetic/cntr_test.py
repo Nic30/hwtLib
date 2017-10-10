@@ -5,8 +5,8 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.hdl.operatorDefs import AllOps
-from hwt.serializer.resourceUsageResolver.resolver import ResourceUsageResolver
-from hwt.serializer.resourceUsageResolver.resourceTypes import ResourceMUX, \
+from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
+from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
     ResourceFF
 from hwt.simulator.agentConnector import agInts
 from hwt.simulator.simTestCase import SimTestCase
@@ -25,14 +25,16 @@ class CntrTC(SimTestCase):
 
         u.en._ag.data.append(1)
         self.doSim(90 * Time.ns)
-        self.assertSequenceEqual([0, 0, 1, 2, 3, 0, 1, 2, 3], agInts(u.val))
+        self.assertValSequenceEqual(u.val._ag.data,
+                                    [0, 1, 2, 3, 0, 1, 2, 3])
 
     def test_contingWithStops(self):
         u = self.u
 
         u.en._ag.data.extend([1, 0, 1, 1, 0, 0, 0])
         self.doSim(90 * Time.ns)
-        self.assertSequenceEqual([0, 0, 0, 1, 2, 2, 2, 2, 2], agInts(u.val))
+        self.assertValSequenceEqual(u.val._ag.data,
+                                    [0, 1, 1, 2, 3, 3, 3, 3])
 
     def test_resources_2b(self):
         u = Cntr()
@@ -41,7 +43,7 @@ class CntrTC(SimTestCase):
                     (ResourceMUX, 2, 2): 1,
                      ResourceFF: 2}
 
-        s = ResourceUsageResolver()
+        s = ResourceAnalyzer()
         toRtl(u, serializer=s)
         r = s.report()
         self.assertDictEqual(r, expected)
@@ -54,7 +56,7 @@ class CntrTC(SimTestCase):
                     (ResourceMUX, 150, 2): 1,
                      ResourceFF: 150}
 
-        s = ResourceUsageResolver()
+        s = ResourceAnalyzer()
         toRtl(u, serializer=s)
         r = s.report()
         self.assertDictEqual(r, expected)
@@ -62,7 +64,7 @@ class CntrTC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(CntrTC('test_overflow'))
+    # suite.addTest(CntrTC('test_contingWithStops'))
     suite.addTest(unittest.makeSuite(CntrTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -1,24 +1,42 @@
 import unittest
 
-from hwt.hdl.types.struct import HStruct
-from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t, uint8_t
-from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.frameTmpl import FrameTmpl
-from hwtLib.types.net.eth import Eth2Header_t
-from hwtLib.types.net.ip import IPv4Header_t
+from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.structUtils import HStruct_selectFields
 from hwt.hdl.types.union import HUnion
+from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t, uint8_t
+from hwtLib.types.net.eth import Eth2Header_t
+from hwtLib.types.net.ip import IPv4Header_t
+
 
 s_basic = HStruct(
     (uint64_t, "item0"),
-    (uint64_t, "item0"),
+    (uint64_t, "item1"),
     (uint64_t, None),
 )
 
 s_basic_srt = """<TransTmpl start:0, end:192
     <TransTmpl name:item0, start:0, end:64>
-    <TransTmpl name:item0, start:64, end:128>
+    <TransTmpl name:item1, start:64, end:128>
 >"""
+
+s_basic_3frame_srt = ["""<FrameTmpl start:0, end:64
+     63                                                             0
+     -----------------------------------------------------------------
+0    |                             item0                             |
+     -----------------------------------------------------------------
+>""", """<FrameTmpl start:64, end:128
+     63                                                             0
+     -----------------------------------------------------------------
+0    |                             item1                             |
+     -----------------------------------------------------------------
+>""", """<FrameTmpl start:128, end:192
+     63                                                             0
+     -----------------------------------------------------------------
+0    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
+     -----------------------------------------------------------------
+>"""]
 
 s0 = HStruct(
     (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
@@ -404,10 +422,19 @@ class FrameTmplTC(unittest.TestCase):
         self.assertEqual(len(frames), 1)
         self.assertEqual(repr(frames[0]), union0_16b_str)
 
+    def test_basic_tripleFrame(self):
+        DW = 64
+        tmpl = TransTmpl(s_basic)
+        frames = FrameTmpl.framesFromTransTmpl(tmpl, DW, maxFrameLen=64)
+        frames = list(frames)
+        self.assertEqual(len(frames), 3)
+        for f, ref in zip(frames, s_basic_3frame_srt):
+            self.assertEqual(repr(f), ref)
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(FrameTmplTC('test_union0at16b'))
+    #suite.addTest(FrameTmplTC('test_frameHeader'))
     suite.addTest(unittest.makeSuite(FrameTmplTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

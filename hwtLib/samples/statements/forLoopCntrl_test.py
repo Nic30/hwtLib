@@ -23,7 +23,8 @@ class StaticForLoopCntrlTC(SimTestCase):
 
         self.doSim(110 * Time.ns)
 
-        self.assertValSequenceEqual(u.index._ag.data, [4, ] + (2 * [4, 3, 2, 1, 0]))
+        self.assertValSequenceEqual(u.index._ag.data,
+                                    (2 * [4, 3, 2, 1, 0]))
 
 
 if __name__ == "__main__":

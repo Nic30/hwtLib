@@ -120,7 +120,66 @@ class UnionTC(unittest.TestCase):
         
         self.assertEqual(int(v.bits), 1 | 3 << 16 | 2 << 24 | 6 << (24 + 16) | 3 << (2 * 24) | 9 << (2 * 24 + 16))
 
-
+    def test_hunion_type_eq(self):
+        t0 = HUnion(
+                (HStruct(
+                    (uint16_t, "a"),
+                    (uint8_t, "b"),
+                    )[3], "arr"),
+                (Bits(24 * 3), "bits")
+            )
+        t1 = HUnion(
+                (HStruct(
+                    (uint16_t, "a"),
+                    (uint8_t, "b"),
+                    )[3], "arr"),
+                (Bits(24 * 3), "bits")
+            )
+        self.assertEqual(t0, t1)
+        self.assertEqual(t1, t0)
+        
+        t1 = HUnion(
+                (Bits(24 * 3), "bits"),
+                (HStruct(
+                    (uint16_t, "a"),
+                    (uint8_t, "b"),
+                    )[3], "arr")
+            )
+        
+        self.assertEqual(t0, t1)
+        self.assertEqual(t1, t0)
+        
+        t1 = HUnion(
+                (uint32_t, "bits"),
+                (uint8_t[4], "arr"),
+            )
+        self.assertNotEqual(t0, t1)
+        self.assertNotEqual(t1, t0)
+        
+        t1 = HUnion(
+                (Bits(24 * 3), "bbits"),
+                (HStruct(
+                    (uint16_t, "a"),
+                    (uint8_t, "b"),
+                    )[3], "arr")
+            )
+        self.assertNotEqual(t0, t1)
+        self.assertNotEqual(t1, t0)
+        
+        t1 = Bits(24 * 3)
+        self.assertNotEqual(t0, t1)
+        self.assertNotEqual(t1, t0)
+        
+        t1 = HUnion(
+                (Bits(24 * 3, signed=False), "bits"),
+                (HStruct(
+                    (uint16_t, "a"),
+                    (uint8_t, "b"),
+                    )[3], "arr")
+            )
+        self.assertNotEqual(t0, t1)
+        self.assertNotEqual(t1, t0)
+        
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     # suite.addTest(ValueTC('testValue'))

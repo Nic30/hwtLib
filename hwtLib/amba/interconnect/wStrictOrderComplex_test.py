@@ -10,11 +10,11 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_w, Axi4_b
+from hwtLib.amba.axi4_rDatapump_test import mkReq
 from hwtLib.amba.axi4_wDatapump import Axi_wDatapump
 from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
 from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
-from hwtLib.amba.axi4_rDatapump_test import mkReq
 
 
 class WStrictOrderInterconnecComplex(Unit):
@@ -101,7 +101,7 @@ class WStrictOrderInterconnectComplexTC(SimTestCase):
         r(u.w)
         r(u.b)
 
-        self.doSim(self.DRIVER_CNT * N * 50 * Time.ns)
+        self.doSim(self.DRIVER_CNT * N * 40 * Time.ns)
         for i, baseAddr in enumerate(dataAddress):
             inMem = m.getArray(baseAddr, self.DATA_WIDTH // 8, N)
             self.assertValSequenceEqual(inMem, data[i], "driver:%d" % i)

@@ -90,6 +90,22 @@ class OptimizedOutReg(DReg):
         DReg._impl(self)
         self._reg("unconnected")
 
+
+class Latch(Unit):
+    """
+    Example showing how to implement latch in hwt
+    """
+    def _declr(self):
+        self.din = Signal()
+        self.dout = Signal()
+        self.en = Signal()
+
+    def _impl(self):
+        If(self.en,
+           self.dout(self.din)
+        )
+
+
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
     u = DDR_Reg()

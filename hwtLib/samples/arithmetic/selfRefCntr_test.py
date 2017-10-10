@@ -4,7 +4,6 @@
 import unittest
 
 from hwt.hdl.constants import Time
-from hwt.simulator.agentConnector import agInts
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.samples.arithmetic.selfRefCntr import SelfRefCntr
 
@@ -19,7 +18,8 @@ class SelfRefCntrTC(SimTestCase):
         u = self.u
 
         self.doSim(90 * Time.ns)
-        self.assertSequenceEqual([0, 0, 1, 2, 3, 4, 0, 1, 2], agInts(u.dout))
+        self.assertSequenceEqual(u.dout._ag.data,
+                                 [0, 1, 2, 3, 4, 0, 1, 2])
 
 
 if __name__ == "__main__":

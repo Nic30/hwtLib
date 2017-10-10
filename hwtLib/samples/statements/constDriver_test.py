@@ -3,9 +3,8 @@
 
 
 from hwt.hdl.constants import Time
-from hwt.simulator.agentConnector import agInts
-from hwtLib.samples.statements.constDriver import ConstDriverUnit
 from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.samples.statements.constDriver import ConstDriverUnit
 
 
 class ConstDriverTC(SimTestCase):
@@ -18,8 +17,8 @@ class ConstDriverTC(SimTestCase):
         u = self.u
         self.doSim(20 * Time.ns)
 
-        self.assertSequenceEqual([0], agInts(u.out0))
-        self.assertSequenceEqual([1], agInts(u.out1))
+        self.assertValSequenceEqual(u.out0._ag.data, [0, 0])
+        self.assertValSequenceEqual(u.out1._ag.data, [1, 1])
 
 
 if __name__ == "__main__":

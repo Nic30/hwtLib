@@ -4,7 +4,6 @@
 import unittest
 
 from hwt.hdl.constants import Time, NOP
-from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.atomic.flipCntr import FlipCntr
 
@@ -20,17 +19,19 @@ class FlipCntrTC(SimTestCase):
         u.doIncr._ag.data.extend([0, 0])
         self.doSim(90 * Time.ns)
 
-        self.assertSequenceEqual([0 for _ in range(9)], valuesToInts(u.data._ag.din))
+        self.assertValSequenceEqual(u.data._ag.din,
+                                    [0 for _ in range(8)])
 
     def test_incr(self):
         u = self.u
 
-        u.doIncr._ag.data.extend([0, 0, 1, 0, 0, 0])
-        u.doFlip._ag.data.extend([NOP, NOP, NOP, 1, NOP, NOP])
+        u.doIncr._ag.data.extend([0, 1, 0, 0, 0])
+        u.doFlip._ag.data.extend([NOP, NOP, 1, NOP, NOP])
 
         self.doSim(90 * Time.ns)
 
-        self.assertSequenceEqual([0, 0, 0, 0] + [1 for _ in range(5)], valuesToInts(u.data._ag.din))
+        self.assertValSequenceEqual(u.data._ag.din,
+                                    [0, 0] + [1 for _ in range(6)])
 
 
 if __name__ == "__main__":

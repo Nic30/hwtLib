@@ -4,9 +4,12 @@
 import unittest
 
 from hwt.hdl.constants import Time
+from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
+from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceRAM
 from hwt.simulator.agentConnector import agInts, valuesToInts
-from hwtLib.samples.mem.ram import SimpleAsyncRam, SimpleSyncRam
 from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.shortcuts import toRtl
+from hwtLib.samples.mem.ram import SimpleAsyncRam, SimpleSyncRam
 
 
 class RamTC(SimTestCase):
@@ -48,10 +51,29 @@ class RamTC(SimTestCase):
         self.assertSequenceEqual(agInts(u.dout),
                                  [None, None, 10, 11, 12, 13, None, None])
 
+    def test_async_resources(self):
+        u = SimpleAsyncRam()
+        expected = {
+            ResourceRAM(8, 4, 0, 0, 0, 0, 1, 1): 1,
+        }
+
+        s = ResourceAnalyzer()
+        toRtl(u, serializer=s)
+        self.assertDictEqual(s.report(), expected)
+
+    def test_sync_resources(self):
+        u = SimpleSyncRam()
+        expected = {
+            ResourceRAM(8, 4, 0, 1, 1, 0, 0, 0): 1,
+        }
+
+        s = ResourceAnalyzer()
+        toRtl(u, serializer=s)
+        self.assertDictEqual(s.report(), expected)
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(RamTC('test_sync_allData'))
+    #suite.addTest(RamTC('test_sync_resources'))
     suite.addTest(unittest.makeSuite(RamTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

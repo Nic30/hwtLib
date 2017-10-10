@@ -89,8 +89,8 @@ class IpifAgent(SyncAgentBase):
 
         self.mem = {}
         self.requireInit = True
-
-    def doReq(self, s, req):
+    
+    def doReq(self, sim, req):
         rw = req[0]
         addr = req[1]
 
@@ -106,31 +106,31 @@ class IpifAgent(SyncAgentBase):
             raise NotImplementedError(rw)
 
         intf = self.intf
-        w = s.write
+        w = sim.write
         w(1, intf.bus2ip_cs)
         w(rw, intf.bus2ip_rnw)
         w(addr, intf.bus2ip_addr)
         w(wdata, intf.bus2ip_data)
         w(wmask, intf.bus2ip_be)
 
-    def monitor(self, s):
+    def monitor(self, sim):
         raise NotImplementedError()
 
-    def driver(self, s):
+    def driver(self, sim):
         intf = self.intf
         actual = self.actual
         actual_next = actual
-        w = s.write
-        r = s.read
+        w = sim.write
+        r = sim.read
 
         if self.requireInit:
             w(0, intf.bus2ip_cs)
             self.requireInit = False
 
-        yield s.updateComplete
+        yield sim.waitOnCombUpdate()
+        yield sim.waitOnCombUpdate()
         # now we are after clk edge
         if actual is not NOP:
-            yield s.updateComplete
             if actual[0] is READ:
                 rack = r(intf.ip2bus_rdack)
                 assert rack.vldMask == 1
@@ -138,7 +138,8 @@ class IpifAgent(SyncAgentBase):
                     d = r(intf.ip2bus_data)
                     if self._debugOutput is not None:
                         self._debugOutput.write("%s, on %r read_data: %d\n" % (
-                                                self.intf._getFullName(), s.now, d.val))
+                                                self.intf._getFullName(),
+                                                sim.now, d.val))
                     self.readed.append(d)
                     actual_next = NOP
             else:
@@ -148,16 +149,17 @@ class IpifAgent(SyncAgentBase):
                 if wack.val:
                     if self._debugOutput is not None:
                         self._debugOutput.write("%s, on %r write_ack\n" % (
-                                                self.intf._getFullName(), s.now))
+                                                self.intf._getFullName(),
+                                                sim.now))
                     actual_next = NOP
 
-        en = self.notReset(s) and self.enable
+        en = self.notReset(sim)
         if en:
             if self.actual is NOP:
                 if self.requests:
                     req = self.requests.popleft()
                     if req is not NOP:
-                        self.doReq(s, req)
+                        self.doReq(sim, req)
                         self.actual = req
                         return
             else:

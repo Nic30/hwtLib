@@ -12,7 +12,9 @@ from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.shortcuts import toRtl
 from hwtLib.samples.mem.reg import DReg, DoubleDReg, OptimizedOutReg,\
-    AsyncResetReg, DDR_Reg
+    AsyncResetReg, DDR_Reg, Latch
+from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceLatch
+from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 
 
 dreg_vhdl = """--
@@ -238,23 +240,24 @@ class DRegTC(SimTestCase):
         self.u.din._ag.data.extend([i % 2 for i in range(6)] + [None, None, 0, 1])
         expected = [0, 0, 1, 0, 1, 0, 1, None, None, 0]
 
-        self.doSim(100 * Time.ns)
-        recieved = agInts(self.u.dout)
+        self.doSim(110 * Time.ns)
+        recieved = self.u.dout._ag.data
+
         # check simulation results
-        self.assertSequenceEqual(expected, recieved)
+        self.assertValSequenceEqual(recieved, expected)
 
     def test_double(self):
         self.setUpUnit(DoubleDReg())
 
         self.u.din._ag.data.extend([i % 2 for i in range(6)] + [None, None, 0, 1])
-        expected = [0, 0, 0, 1, 0, 1, 0, 1, None, None]
+        expected = [0, 0, 0, 1, 0, 1, 0, 1, None]
 
         self.doSim(100 * Time.ns)
 
-        recieved = agInts(self.u.dout)
+        recieved = self.u.dout._ag.data
 
         # check simulation results
-        self.assertSequenceEqual(expected, recieved)
+        self.assertValSequenceEqual(recieved, expected)
 
     def test_optimizedOutReg(self):
         u = OptimizedOutReg()
@@ -287,6 +290,16 @@ class DRegTC(SimTestCase):
     def test_DDR_Reg_verilog(self):
         s = toRtl(DDR_Reg(), serializer=VerilogSerializer)
         self.assertEqual(s, ddr_reg_verilog)
+
+    def test_latch_resources(self):
+        u = Latch()
+        expected = {
+            ResourceLatch: 1,
+        }
+
+        s = ResourceAnalyzer()
+        toRtl(u, serializer=s)
+        self.assertDictEqual(s.report(), expected)
 
 
 if __name__ == "__main__":

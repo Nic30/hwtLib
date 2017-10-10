@@ -88,6 +88,7 @@ class SimpleIfStatement2c(Unit):
         )
         self.d(r)
 
+
 if __name__ == "__main__":  # alias python main function
     from hwt.synthesizer.shortcuts import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string

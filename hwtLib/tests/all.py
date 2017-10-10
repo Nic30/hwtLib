@@ -45,6 +45,7 @@ from hwtLib.handshaked.reg_test import HsRegL1D0TC, HsRegL2D1TC
 from hwtLib.handshaked.resizer_test import HsResizerTC
 from hwtLib.handshaked.splitCopy_test import HsSplitCopyTC, \
     HsSplitCopy_randomized_TC
+from hwtLib.i2c.i2cAgent_test import I2cAgent_TC
 from hwtLib.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
 from hwtLib.img.charToBitmap_test import CharToBitmapTC
 from hwtLib.interfaces.unionIntf_test import UnionIntfTC
@@ -66,7 +67,7 @@ from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.clkSynchronizer_test import ClkSynchronizerTC
 from hwtLib.mem.cuckooHashTable_test import CuckooHashTableTC
 from hwtLib.mem.fifoAsync_test import FifoAsyncTC
-from hwtLib.mem.fifo_test import FifoTC
+from hwtLib.mem.fifo_test import FifoAgentsTC, FifoTC
 from hwtLib.mem.hashTableCore_test import HashTableCoreTC
 from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ram_test import RamTC
@@ -127,6 +128,7 @@ from hwtLib.tests.fileUtils_test import FileUtilsTC
 from hwtLib.tests.frameTmpl_test import FrameTmplTC
 from hwtLib.tests.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.rdSynced_agent_test import RdSynced_agent_TC
+from hwtLib.tests.resourceAnalyzer_test import ResourceAnalyzer_TC
 from hwtLib.tests.serializerModes_test import SerializerModes_TC
 from hwtLib.tests.serializer_tmpVar_test import Serializer_tmpVar_TC
 from hwtLib.tests.simEvents_test import SimEventsTC
@@ -215,6 +217,7 @@ suite = testSuiteFromTCs(
     TransTmpl_TC,
     UnionTC,
     UnionIntfTC,
+    ResourceAnalyzer_TC,
 
     # component verifications
     ConcatTC,
@@ -241,6 +244,7 @@ suite = testSuiteFromTCs(
     ClkSynchronizerTC,
     RamTC,
     SimpleUnitAxiStream_TC,
+    FifoAgentsTC,
     FifoTC,
     FifoAsyncTC,
     HsJoinPrioritizedTC,
@@ -271,6 +275,7 @@ suite = testSuiteFromTCs(
     UartRxTC,
     UartTxRxTC,
     SpiMasterTC,
+    I2cAgent_TC,
     I2CMasterBitCntrlTC,
     CrcUtilsTC,
     CrcCombTC,

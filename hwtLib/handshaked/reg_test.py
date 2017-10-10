@@ -43,10 +43,11 @@ class HsRegL2D1TC(HsRegL1D0TC):
     LATENCY = 2
     DELAY = 1
 
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(HsRegTC('test_passdata'))
+    #suite.addTest(HsRegL1D0TC('test_r_passdata'))
     suite.addTest(unittest.makeSuite(HsRegL1D0TC))
     suite.addTest(unittest.makeSuite(HsRegL2D1TC))
     runner = unittest.TextTestRunner(verbosity=3)

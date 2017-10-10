@@ -4,9 +4,56 @@
 import unittest
 
 from hwt.hdl.constants import Time
-from hwt.simulator.agentConnector import agInts
+from hwt.interfaces.std import FifoReader, FifoWriter
+from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwtLib.mem.fifo import Fifo
+
+
+class FifoReaderPassTrought(Unit):
+    def _declr(self):
+        addClkRstn(self)
+        self.din = FifoReader()
+        self.dout = FifoReader()
+
+    def _impl(self):
+        self.dout(self.din)
+
+
+class FifoWriterPassTrought(FifoReaderPassTrought):
+    def _declr(self):
+        addClkRstn(self)
+        self.din = FifoWriter()
+        self.dout = FifoWriter()
+
+
+class FifoAgentsTC(SimTestCase):
+    def test_fifoReader(self):
+        u = FifoReaderPassTrought()
+
+        self.prepareUnit(u)
+        self.randomize(u.din)
+        self.randomize(u.dout)
+
+        ref = [i for i in range(30)]
+        u.din._ag.data.extend(ref)
+        self.doSim(120 * 10 * Time.ns)
+        
+        self.assertValSequenceEqual(u.dout._ag.data, ref)
+
+    def test_fifoWriter(self):
+        u = FifoWriterPassTrought()
+
+        self.prepareUnit(u)
+        self.randomize(u.din)
+        self.randomize(u.dout)
+
+        ref = [i for i in range(30)]
+        u.din._ag.data.extend(ref)
+        self.doSim(120 * 10 * Time.ns)
+        
+        self.assertValSequenceEqual(u.dout._ag.data, ref)
 
 
 class FifoTC(SimTestCase):
@@ -37,7 +84,7 @@ class FifoTC(SimTestCase):
 
         data = [1, 2, 3, 4]
         u.dataIn._ag.data.extend(data)
-        u.dataIn._ag.enable = False
+        u.dataIn._ag._enabled = False
 
         self.doSim(self.getTime(8))
 
@@ -56,11 +103,11 @@ class FifoTC(SimTestCase):
 
     def test_multiple(self):
         u = self.u
-        u.dataOut._ag.enable = False
+        u.dataOut._ag._enabled = False
 
-        def openOutput(s):
-            yield s.wait(self.getTime(9))
-            u.dataOut._ag.enable = True
+        def openOutput(sim):
+            yield sim.wait(self.getTime(9))
+            u.dataOut._ag.setEnable(True, sim)
         self.procs.append(openOutput)
 
         expected = list(range(2 * 8))
@@ -71,7 +118,7 @@ class FifoTC(SimTestCase):
         collected = u.dataOut._ag.data
         if u.EXPORT_SIZE:
             self.assertValSequenceEqual(u.size._ag.data,
-                [0, 0, 1, 2, 3, 4, 4, 4, 4, 4,
+                [0, 1, 2, 3, 4, 4, 4, 4, 4,
                  3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 1, 0])
 
         self.assertValSequenceEqual(collected, expected)
@@ -80,11 +127,11 @@ class FifoTC(SimTestCase):
         u = self.u
 
         u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
-        u.dataOut._ag.enable = False
+        u.dataOut._ag._enabled = False
 
         self.doSim(self.getTime(12))
 
-        collected = agInts(u.dataOut)
+        collected = u.dataOut._ag.data
 
         self.assertValSequenceEqual(self.model.memory._val, [1, 2, 3, 4])
         self.assertValSequenceEqual(collected, [])
@@ -95,14 +142,14 @@ class FifoTC(SimTestCase):
 
         u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6, 7, 8])
 
-        def closeOutput(s):
-            yield s.wait(self.getTime(4))
-            u.dataOut._ag.enable = False
+        def closeOutput(sim):
+            yield sim.wait(self.getTime(4))
+            u.dataOut._ag.setEnable(False, sim)
 
         self.procs.append(closeOutput)
         self.doSim(self.getTime(15))
 
-        collected = agInts(u.dataOut)
+        collected = u.dataOut._ag.data
 
         self.assertValSequenceEqual(self.model.memory._val.val, [5, 6, 3, 4])
         self.assertSequenceEqual(collected, [1, 2])
@@ -114,14 +161,16 @@ class FifoTC(SimTestCase):
 
         self.doSim(self.getTime(12))
 
-        collected = agInts(u.dataOut)
+        collected = u.dataOut._ag.data
+
         self.assertSequenceEqual([1, 2, 3, 4, 5, 6], collected)
         self.assertSequenceEqual([], u.dataIn._ag.data)
 
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(FifoTC('test_normalOp'))
+    #suite.addTest(FifoTC('test_multiple'))
+    suite.addTest(unittest.makeSuite(FifoAgentsTC))
     suite.addTest(unittest.makeSuite(FifoTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -144,7 +144,6 @@ class MMU_2pageLvl(Unit):
                                  pageOffset.data))
 
     def segfaultChecker(self):
-
         lvl1item = self.lvl1Converter.r.data
         lvl2item = self.lvl2get.item
         segfaultFlag = self._reg("segfaultFlag", defVal=False)

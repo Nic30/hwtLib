@@ -150,9 +150,10 @@ class FsmExampleTC(SimTestCase):
         u.a._ag.data.extend([1, 1, 1, 0, 0, 0, 0, 0])
         u.b._ag.data.extend([0, 1, 0, 0, 1, 0, 1, 0])
 
-        self.doSim(80 * Time.ns)
+        self.doSim(90 * Time.ns)
 
-        self.assertSequenceEqual([1, 1, 3, 1, 1, 2, 2, 2], agInts(u.dout))
+        self.assertValSequenceEqual(u.dout._ag.data,
+                                    [1, 1, 3, 1, 1, 2, 2, 2])
 
     def test_verilog(self):
         s = toRtl(FsmExample(), serializer=VerilogSerializer)
