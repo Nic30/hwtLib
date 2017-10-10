@@ -2,12 +2,11 @@ from collections import deque
 
 from hwt.bitmask import selectBit, mask
 from hwt.hdl.constants import DIRECTION
-from hwt.interfaces.std import Clk, Signal, VectSignal, Rst_n
+from hwt.interfaces.std import Clk, Signal, VectSignal
 from hwt.interfaces.tristate import TristateSig
 from hwt.simulator.agentBase import SyncAgentBase, AgentBase
 from hwt.simulator.shortcuts import OnFallingCallbackLoop, OnRisingCallbackLoop
 from hwt.simulator.types.simBits import simBitsT
-from hwt.synthesizer.exceptions import IntfLvlConfErr
 from hwt.synthesizer.interfaceLevel.interface import Interface
 from hwt.synthesizer.param import Param
 
@@ -38,18 +37,7 @@ class SpiAgent(SyncAgentBase):
 
         # resolve clk and rstn
         self.clk = self.intf._getAssociatedClk()._sigInside
-        try:
-            self.rst = self.intf._getAssociatedRst()
-            self.rstOffIn = isinstance(self.rst, Rst_n)
-            self.rst = self.rst._sigInside
-            self.notReset = self._notReset
-        except IntfLvlConfErr as e:
-            self.rst = None
-            self.notReset = self._notReset_dummy
-            if allowNoReset:
-                pass
-            else:
-                raise e
+        self._discoverReset(allowNoReset=allowNoReset)
 
         # read on rising edge write on falling
         self.monitorRx = OnRisingCallbackLoop(self.clk,
