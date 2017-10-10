@@ -101,8 +101,8 @@ class ArrayItemGetter2in1WordTC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(ArrayItemGetter2in1WordTC('test_get'))
-    # suite.addTest(unittest.makeSuite(ArrayItemGetterTC))
-    # suite.addTest(unittest.makeSuite(ArrayItemGetter2in1WordTC))
+    # suite.addTest(ArrayItemGetter2in1WordTC('test_get'))
+    suite.addTest(unittest.makeSuite(ArrayItemGetterTC))
+    suite.addTest(unittest.makeSuite(ArrayItemGetter2in1WordTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -51,7 +51,7 @@ class AxiLiteEndpointTC(SimTestCase):
     def randomizeAll(self):
         u = self.u
         for intf in u._interfaces:
-            if u not in (u.clk, u.rst_n, u.bus) and not isinstance(intf, BramPort_withoutClk):
+            if intf not in (u.clk, u.rst_n, u.bus) and not isinstance(intf, BramPort_withoutClk):
                 self.randomize(intf)
 
         self.randomize(u.bus.ar)

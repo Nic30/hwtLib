@@ -25,7 +25,7 @@ class FifoAsyncTC(FifoTC):
         u = self.u
 
         u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
-        u.dataOut._ag.enable = False
+        u.dataOut._ag._enabled = False
 
         self.doSim(self.getTime(12))
 
@@ -40,9 +40,9 @@ class FifoAsyncTC(FifoTC):
 
         u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6, 7, 8])
 
-        def closeOutput(s):
-            yield s.wait(self.getTime(3))
-            u.dataOut._ag.enable = False
+        def closeOutput(sim):
+            yield sim.wait(self.getTime(3))
+            u.dataOut._ag.setEnable(False, sim)
 
         self.procs.append(closeOutput)
         self.doSim(self.getTime(16))

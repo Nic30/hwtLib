@@ -30,10 +30,10 @@ class ClkDiv3(Unit):
 
 
         If(self.rst_n._isOn(),
-           r_cnt(0),
+           r_cnt(CNTR_MAX),
            rise(1),
-           f_cnt(CNTR_MAX),
-           fall(1)
+           f_cnt(1),
+           fall(0)
         ).Else(
             If(clk._onRisingEdge(),
                 If(r_cnt._eq(CNTR_MAX),
@@ -63,12 +63,12 @@ class ClkDiv3TC(SimTestCase):
 
         self.doSim(10 * 10 * Time.ns)
         expected = [(0, 0),
-                    (15000.0, 1),
-                    (30000.0, 0),
-                    (45000.0, 1),
-                    (60000.0, 0),
-                    (75000.0, 1),
-                    (90000.0, 0)]
+                    (20000.0, 1),
+                    (35000.0, 0),
+                    (50000.0, 1),
+                    (65000.0, 0),
+                    (80000.0, 1),
+                    (95000.0, 0)]
         self.assertValSequenceEqual(u.clkOut._ag.data,
                                     expected)
 

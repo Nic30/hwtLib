@@ -56,7 +56,7 @@ class BramPortEndpointTC(AxiLiteEndpointTC):
         u.decoded.field1._ag.din.append(MAGIC + 1)
 
         self.randomizeAll()
-        self.doSim(300 * Time.ns)
+        self.doSim(100 * Time.ns)
 
         self.assertValSequenceEqual(u.bus._ag.readed, [MAGIC,
                                                        MAGIC + 1,
@@ -177,7 +177,7 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(BramPortStructEndpointArray('test_read'))
+    #suite.addTest(BramPortEndpointTC('test_read'))
     suite.addTest(unittest.makeSuite(BramPortEndpointTC))
     suite.addTest(unittest.makeSuite(BramPortEndpointDenseTC))
     suite.addTest(unittest.makeSuite(BramPortEndpointDenseStartTC))

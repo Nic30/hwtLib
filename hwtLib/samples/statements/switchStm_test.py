@@ -130,7 +130,7 @@ class SwitchStmTC(SimTestCase):
         u.b._ag.data.extend([0, 0, 0, 1, 0, 0, 0, 0, 1, None, 0])
         u.c._ag.data.extend([0, 0, 0, 0, 0, 1, 0, 0, 1, None, 0])
 
-        self.doSim(200 * Time.ns)
+        self.doSim(110 * Time.ns)
 
         self.assertSequenceEqual([0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0], agInts(u.out))
 

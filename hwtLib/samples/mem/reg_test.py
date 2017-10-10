@@ -240,23 +240,24 @@ class DRegTC(SimTestCase):
         self.u.din._ag.data.extend([i % 2 for i in range(6)] + [None, None, 0, 1])
         expected = [0, 0, 1, 0, 1, 0, 1, None, None, 0]
 
-        self.doSim(100 * Time.ns)
-        recieved = agInts(self.u.dout)
+        self.doSim(110 * Time.ns)
+        recieved = self.u.dout._ag.data
+
         # check simulation results
-        self.assertSequenceEqual(expected, recieved)
+        self.assertValSequenceEqual(recieved, expected)
 
     def test_double(self):
         self.setUpUnit(DoubleDReg())
 
         self.u.din._ag.data.extend([i % 2 for i in range(6)] + [None, None, 0, 1])
-        expected = [0, 0, 0, 1, 0, 1, 0, 1, None, None]
+        expected = [0, 0, 0, 1, 0, 1, 0, 1, None]
 
         self.doSim(100 * Time.ns)
 
-        recieved = agInts(self.u.dout)
+        recieved = self.u.dout._ag.data
 
         # check simulation results
-        self.assertSequenceEqual(expected, recieved)
+        self.assertValSequenceEqual(recieved, expected)
 
     def test_optimizedOutReg(self):
         u = OptimizedOutReg()

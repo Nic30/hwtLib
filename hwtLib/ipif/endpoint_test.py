@@ -5,7 +5,7 @@ from hwt.hdl.constants import Time, READ, WRITE, NOP
 from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
-    structTwoFieldsDense, structTwoFieldsDenseStart, AxiLiteEndpointDenseTC,\
+    structTwoFieldsDense, structTwoFieldsDenseStart, AxiLiteEndpointDenseTC, \
     AxiLiteEndpointDenseStartTC
 from hwtLib.ipif.endpoint import IpifEndpoint
 from hwtLib.ipif.intf import Ipif
@@ -78,11 +78,12 @@ class IpifEndpointTC(AxiLiteEndpointTC):
         u = self.mySetUp(32)
         MAGIC = 100
         A = self.FIELD_ADDR
+        m = mask(32 // 8)
         u.bus._ag.requests.extend([
-            (WRITE, A[0], MAGIC, mask(32//8)),
-            (WRITE, A[1], MAGIC + 1, mask(32//8)),
-            (WRITE, A[0], MAGIC + 2, mask(32//8)),
-            (WRITE, A[1], MAGIC + 3, mask(32//8))])
+            (WRITE, A[0], MAGIC, m),
+            (WRITE, A[1], MAGIC + 1, m),
+            (WRITE, A[0], MAGIC + 2, m),
+            (WRITE, A[1], MAGIC + 3, m)])
 
         self.randomizeAll()
         self.doSim(400 * Time.ns)
@@ -186,9 +187,9 @@ if __name__ == "__main__":
     suite = unittest.TestSuite()
 
     # suite.addTest(IpifEndpointOffsetTC('test_registerMap'))
-    #suite.addTest(unittest.makeSuite(IpifEndpointTC))
-    #suite.addTest(unittest.makeSuite(IpifEndpointDenseTC))
-    #suite.addTest(unittest.makeSuite(IpifEndpointDenseStartTC))
+    suite.addTest(unittest.makeSuite(IpifEndpointTC))
+    suite.addTest(unittest.makeSuite(IpifEndpointDenseTC))
+    suite.addTest(unittest.makeSuite(IpifEndpointDenseStartTC))
     suite.addTest(unittest.makeSuite(IpifEndpointArray))
 
     runner = unittest.TextTestRunner(verbosity=3)

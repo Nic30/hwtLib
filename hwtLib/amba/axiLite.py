@@ -166,17 +166,6 @@ class AxiLiteAgent(AgentBase):
     data for each agent is stored in agent for given channel (ar, aw, r, ... property)
     """
 
-    @property
-    def enable(self):
-        return self.__enable
-
-    @enable.setter
-    def enable(self, v):
-        self.__enable = v
-
-        for o in [self.ar, self.aw, self.r, self.w, self.b]:
-            o.enable = v
-
     def __init__(self, intf):
         self.__enable = True
         self.intf = intf
@@ -191,6 +180,16 @@ class AxiLiteAgent(AgentBase):
         self.r = ag(intf.r)
         self.w = ag(intf.w)
         self.b = ag(intf.b)
+
+    def getEnable(self):
+        return self.__enable
+
+    def setEnable(self, en, sim):
+        if self.__enable != en:
+            self.__enable = en
+    
+            for o in [self.ar, self.aw, self.r, self.w, self.b]:
+                o.setEnable(en, sim)
 
     def getDrivers(self):
         return (self.aw.getDrivers() +

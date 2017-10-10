@@ -28,7 +28,7 @@ class RdSynced_agent_TC(SimTestCase):
 
         u.a._ag.data.extend(range(10))
 
-        self.doSim(150 * Time.ns)
+        self.doSim(120 * Time.ns)
 
         self.assertValSequenceEqual(u.b._ag.data, list(range(10)) + [None])
 

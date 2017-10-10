@@ -5,7 +5,6 @@ import unittest
 
 from hwt.hdl.constants import Time, NOP
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.simulator.utils import agent_randomize
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.arrayBuff_writer import ArrayBuff_writer
 
@@ -166,7 +165,7 @@ class ArrayBuff_writer_TC(SimTestCase):
 
         u.baseAddr._ag.dout.append(0x1230)
         u.items._ag.data.extend([1 + i for i in range(N)])
-        u.wDatapump.ack._ag.data.extend([NOP for _ in range(N * 2 - 1)] +
+        u.wDatapump.ack._ag.data.extend([NOP for _ in range(N * 2 - 1)] + 
                                         [self.ID + 1, self.ID, self.ID + 1])
 
         # randomize(u.wDatapump.w)
@@ -220,7 +219,7 @@ class ArrayBuff_writer_TC(SimTestCase):
         def enReq(s):
             u.wDatapump.req._ag.enable = False
             yield s.wait(32 * 10 * Time.ns)
-            yield from agent_randomize(u.wDatapump.req._ag, 50 * Time.ns, self._rand.getrandbits(64))(s)
+            yield from self.simpleRandomizationProcess(u.wDatapump.req._ag)(s)
 
         self.procs.append(enReq)
 

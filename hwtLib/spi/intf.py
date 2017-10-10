@@ -1,14 +1,15 @@
+from collections import deque
+
 from hwt.bitmask import selectBit, mask
 from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import Clk, Signal, VectSignal, Rst_n
 from hwt.interfaces.tristate import TristateSig
 from hwt.simulator.agentBase import SyncAgentBase, AgentBase
-from hwt.simulator.shortcuts import onRisingEdge, onFallingEdge
+from hwt.simulator.shortcuts import OnFallingCallbackLoop, OnRisingCallbackLoop
 from hwt.simulator.types.simBits import simBitsT
 from hwt.synthesizer.exceptions import IntfLvlConfErr
 from hwt.synthesizer.interfaceLevel.interface import Interface
 from hwt.synthesizer.param import Param
-from collections import deque
 
 
 class SpiAgent(SyncAgentBase):
@@ -41,19 +42,37 @@ class SpiAgent(SyncAgentBase):
             self.rst = self.intf._getAssociatedRst()
             self.rstOffIn = isinstance(self.rst, Rst_n)
             self.rst = self.rst._sigInside
+            self.notReset = self._notReset
         except IntfLvlConfErr as e:
+            self.rst = None
+            self.notReset = self._notReset_dummy
             if allowNoReset:
                 pass
             else:
                 raise e
 
         # read on rising edge write on falling
-        self.monitorRx = onRisingEdge(self.clk, self.monitorRx)
-        self.monitorTx = onFallingEdge(self.clk, self.monitorTx)
+        self.monitorRx = OnRisingCallbackLoop(self.clk,
+                                              self.monitorRx,
+                                              self.getEnable)
+        self.monitorTx = OnFallingCallbackLoop(self.clk,
+                                               self.monitorTx,
+                                               self.getEnable)
 
-        self.driverRx = onFallingEdge(self.clk, self.driverRx)
-        self.driverTx = onRisingEdge(self.clk, self.driverTx)
+        self.driverRx = OnFallingCallbackLoop(self.clk,
+                                              self.driverRx,
+                                              self.getEnable)
+        self.driverTx = OnRisingCallbackLoop(self.clk,
+                                             self.driverTx,
+                                             self.getEnable)
 
+    def setEnable(self, en):
+        self._enabled = en
+        self.monitorRx.setEnable(en)
+        self.monitorTx.setEnable(en)
+        self.driverRx.setEnable(en)
+        self.driverTx.setEnable(en)
+        
     def splitBits(self, v):
         return deque([selectBit(v, i) for i in range(self.BITS_IN_WORD - 1, -1, -1)])
 
@@ -89,30 +108,30 @@ class SpiAgent(SyncAgentBase):
 
         sim.write(bits.popleft(), sig)
 
-    def monitorRx(self, s):
-        yield s.updateComplete
-        cs = s.read(self.intf.cs)
-        if self.enable and self.notReset(s):
+    def monitorRx(self, sim):
+        yield sim.waitOnCombUpdate()
+        cs = sim.read(self.intf.cs)
+        if self.notReset(sim):
             assert cs._isFullVld()
             if cs.val != self.csMask:  # if any slave is enabled
-                self.readRxSig(s, self.intf.mosi)
+                self.readRxSig(sim, self.intf.mosi)
                 if not self._rxBitBuff:
                     self.chipSelects.append(cs)
 
-    def monitorTx(self, s):
-        cs = s.read(self.intf.cs)
-        if self.enable and self.notReset(s):
+    def monitorTx(self, sim):
+        cs = sim.read(self.intf.cs)
+        if self.notReset(sim):
             assert cs._isFullVld()
             if cs.val != self.csMask:
-                self.writeTxSig(s, self.intf.miso)
+                self.writeTxSig(sim, self.intf.miso)
 
-    def driverRx(self, s):
-        yield s.updateComplete
-        if self.enable and self.notReset(s) and self.slaveEn:
-            self.readRxSig(s, self.intf.miso)
+    def driverRx(self, sim):
+        yield sim.waitOnCombUpdate()
+        if self.notReset(sim) and self.slaveEn:
+            self.readRxSig(sim, self.intf.miso)
 
     def driverTx(self, s):
-        if self.enable and self.notReset(s):
+        if self.notReset(s):
             if not self._txBitBuff:
                 try:
                     cs = self.chipSelects.popleft()

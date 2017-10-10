@@ -42,11 +42,20 @@ class BinToOneHotTC(SimTestCase):
         u.en._ag.data.append(1)
         u.din._ag.data.extend(range(8))
 
-        self.doSim(90 * Time.ns)
+        self.doSim(80 * Time.ns)
 
-        self.assertValSequenceEqual(u.dout._ag.data, [1 << i for i in range(8)])
+        self.assertValSequenceEqual(u.dout._ag.data,
+                                    [1 << i for i in range(8)])
 
 
 if __name__ == "__main__":
+    import unittest
     from hwt.synthesizer.shortcuts import toRtl
+
     print(toRtl(BinToOneHot()))
+    
+    suite = unittest.TestSuite()
+    # suite.addTest(IndexingTC('test_split'))
+    suite.addTest(unittest.makeSuite(BinToOneHotTC))
+    runner = unittest.TextTestRunner(verbosity=3)
+    runner.run(suite)

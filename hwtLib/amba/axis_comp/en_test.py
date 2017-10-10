@@ -63,11 +63,6 @@ class AxiS_en_TC(SimTestCase):
         MAGIC = 987
         u = self.u
 
-        def en():
-            while True:
-                yield 1
-                yield 0
-        u.en._ag.data = en()
         d = [(MAGIC + 1, m, 1),
              (MAGIC + 2, m, 0),
              (MAGIC + 3, m, 1),
@@ -75,6 +70,7 @@ class AxiS_en_TC(SimTestCase):
              (MAGIC + 5, m, 0),
              (MAGIC + 6, m, 1)
              ]
+        u.en._ag.data.extend([(i + 1) % 2 for i in range(20 * len(d))])
         u.dataIn._ag.data.extend(d)
         self.doSim(200 * len(d) * Time.ns)
         self.assertValSequenceEqual(u.dataOut._ag.data, d)

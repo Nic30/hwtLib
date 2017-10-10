@@ -4,13 +4,12 @@
 import unittest
 
 from hwt.hdl.constants import Time
-from hwt.simulator.agentConnector import agInts, valuesToInts
-from hwtLib.samples.mem.ram import SimpleAsyncRam, SimpleSyncRam
-from hwt.simulator.simTestCase import SimTestCase
-from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceRAM,\
-    ResourceFF
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
+from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceRAM
+from hwt.simulator.agentConnector import agInts, valuesToInts
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.shortcuts import toRtl
+from hwtLib.samples.mem.ram import SimpleAsyncRam, SimpleSyncRam
 
 
 class RamTC(SimTestCase):

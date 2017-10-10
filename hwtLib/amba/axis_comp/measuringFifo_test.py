@@ -5,9 +5,9 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.simulator.utils import agent_randomize
 from hwtLib.amba.axis_comp.measuringFifo import AxiS_measuringFifo
 from hwt.bitmask import mask
+from _random import Random
 
 
 class AxiS_measuringFifoTC(SimTestCase):
@@ -43,7 +43,7 @@ class AxiS_measuringFifoTC(SimTestCase):
 
         u.dataIn._ag.data.extend([(2, mask(8), 1),
                                   ])
-        u.dataOut._ag.enable = False
+        u.dataOut._ag._enabled = False
 
         self.doSim(200 * Time.ns)
         self.assertValSequenceEqual(u.sizes._ag.data, [8, ])
@@ -173,7 +173,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         self.randomize(u.dataOut)
         self.randomize(u.sizes)
 
-        self.doSim(len(expectedData) * 40 * Time.ns)
+        self.doSim(len(expectedData) * 30 * Time.ns)
 
         self.assertEqual(len(sizes), N)
         self.assertEqual(len(data), len(expectedData))
@@ -202,11 +202,9 @@ class AxiS_measuringFifoTC(SimTestCase):
         self.randomize(u.dataOut)
         u.sizes._ag.enable = False
 
-        def sizesEn(s):
-            yield s.wait((SIZE_BUFF_SIZE + 5) * 10 * Time.ns)
-            yield from agent_randomize(u.sizes._ag,
-                                       50 * Time.ns,
-                                       self._rand.getrandbits(64))(s)
+        def sizesEn(sim):
+            yield sim.wait((SIZE_BUFF_SIZE + 5) * 10 * Time.ns)
+            yield from self.simpleRandomizationProcess(u.sizes._ag)(sim)
 
         self.procs.append(sizesEn)
 

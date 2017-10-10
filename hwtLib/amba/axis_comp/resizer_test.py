@@ -45,30 +45,33 @@ class AxiS_resizer_upscale_TC(SimTestCase):
     def test_simple(self):
         u = self.u
 
-        u.dataIn._ag.data.extend([(1, mask(2), i == 3) for i in range(4)])
-        self.doSim(200 * Time.ns)
+        m = mask(2)
+        u.dataIn._ag.data.extend([(1, m, i == 3) for i in range(4)])
+        self.doSim(300 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
-                                    [(it(16, 1, 1, 1, 1), it(2, mask(2), mask(2), mask(2), mask(2)), 1)])
+                                    [(it(16, 1, 1, 1, 1), it(2, m, m, m, m), 1)])
 
     def test_noLast(self):
         u = self.u
-
-        u.dataIn._ag.data.extend([(1, mask(2), 0) for _ in range(4)])
-        self.doSim(200 * Time.ns)
+        
+        m = mask(2)
+        u.dataIn._ag.data.extend([(1, m, 0) for _ in range(4)])
+        self.doSim(300 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
-                                    [(it(16, 1, 1, 1, 1), it(2, mask(2), mask(2), mask(2), mask(2)), 0)])
+                                    [(it(16, 1, 1, 1, 1), it(2, m, m, m, m), 0)])
 
     def test_multiLast(self):
         u = self.u
 
         expected = []
+        m = mask(2)
         for i in range(4):
-            u.dataIn._ag.data.extend([(1, mask(2), i2 == i) for i2 in range(i + 1)])
+            u.dataIn._ag.data.extend([(1, m, i2 == i) for i2 in range(i + 1)])
 
             expected.append((it(16, *[1 if i2 <= i else 0 for i2 in range(4)]),
-                             it(2, *[mask(2) if i2 <= i else 0 for i2 in range(4)]),
+                             it(2, *[m if i2 <= i else 0 for i2 in range(4)]),
                              1
                              ))
 
