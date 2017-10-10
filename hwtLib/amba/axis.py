@@ -267,36 +267,6 @@ def unpackAxiSFrame(structT, frameData, getDataFn=None, dataWidth=None):
     return HStruct_unpack(structT, frameData, getDataFn, dataWidth)
 
 
-def axiSFrame_toBytes(intf, frameData):
-    """
-    Unpack frame data to array of bytes
-
-    :param intf: interface the frame comes from to resolve data format
-    :param frameData: data collected by agent
-    :return: array of bytes (of type Bits(8) ) (if interface has strb it is used in last to cut off unused bytes at the end)
-    """
-
-    bytesInWord = int(intf.DATA_WIDTH) // 8
-    hasStrb = hasattr(intf, "strb")
-    result = []
-
-    bytesInThisWord = bytesInWord
-    for d in frameData:
-        if hasStrb:
-            data, strb, last = d
-
-            if last:
-                bytesInThisWord = strb.val.bit_length()
-            else:
-                bytesInThisWord = bytesInWord
-        else:
-            data, last = d
-
-        result.extend(take(iterBits(data, bitsInOne=8), bytesInThisWord))
-
-    return result
-
-
 class IP_AXIStream(IntfConfig):
     """
     Class which specifies how to describe AxiStream interfaces in IP-core
