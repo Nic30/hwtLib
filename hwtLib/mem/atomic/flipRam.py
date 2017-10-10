@@ -31,9 +31,11 @@ class FlipRam(Unit):
 
         with self._paramsShared():
             self.clk = Clk()
+
+            # to let IDEs resolve type of port
             self.firstA = BramPort_withoutClk()
             self.secondA = BramPort_withoutClk()
-
+            
             if PORT_CNT == 2:
                 self.firstB = BramPort_withoutClk()
                 self.secondB = BramPort_withoutClk()

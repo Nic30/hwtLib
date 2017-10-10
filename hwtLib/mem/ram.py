@@ -7,6 +7,7 @@ from hwt.interfaces.std import BramPort, Clk, BramPort_withoutClk
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 
 @serializeParamsUniq
@@ -22,19 +23,24 @@ class RamSingleClock(Unit):
 
         self.clk = Clk()
         with self._paramsShared():
+            # to let IDEs resolve type of port
             self.a = BramPort_withoutClk()
+
             for i in range(PORTS - 1):
-                name = self.genPortName(i + 1)
-                setattr(self, name, BramPort_withoutClk())
+                self._sportPort(i + 1)
+
+    def _sportPort(self, index) -> None:
+        name = self.genPortName(index)
+        setattr(self, name, BramPort_withoutClk())
 
     @staticmethod
-    def genPortName(index):
+    def genPortName(index) -> str:
         return chr(ord('a') + index)
 
-    def getPortByIndx(self, index):
+    def getPortByIndx(self, index) -> BramPort_withoutClk:
         return getattr(self, self.genPortName(index))
 
-    def connectPort(self, port, mem):
+    def connectPort(self, port: BramPort_withoutClk, mem: RtlSignal):
         If(self.clk._onRisingEdge() & port.en,
            If(port.we,
               mem[port.addr](port.din)
