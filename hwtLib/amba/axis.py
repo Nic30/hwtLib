@@ -1,12 +1,12 @@
 from hwt.bitmask import mask
 from hwt.hdl.types.structUtils import HStruct_unpack
 from hwt.interfaces.std import Signal, VectSignal
-from hwt.pyUtils.arrayQuery import iter_with_last, take
+from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_strb, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
-from hwt.synthesizer.vectorUtils import iterBits
 
 
 # http://www.xilinx.com/support/documentation/ip_documentation/ug761_axi_reference_guide.pdf
@@ -37,8 +37,8 @@ class AxiStream_withoutSTRB(Axi_hs):
     def _getIpCoreIntfClass(self):
         return IP_AXIStream
 
-    def _getSimAgent(self):
-        return AxiStream_withoutSTRBAgent
+    def _initSimAgent(self):
+        self._ag = AxiStream_withoutSTRBAgent(self)
 
 
 class AxiStream_withoutSTRBAgent(BaseAxiAgent):
@@ -85,8 +85,8 @@ class AxiStream(AxiStream_withoutSTRB, Axi_strb):
         AxiStream_withoutSTRB._declr(self)
         Axi_strb._declr(self)
 
-    def _getSimAgent(self):
-        return AxiStreamAgent
+    def _initSimAgent(self):
+        self._ag = AxiStreamAgent(self)
 
 
 class AxiStream_withUserAndNoStrb(AxiStream_withoutSTRB, Axi_user):
@@ -118,8 +118,8 @@ class AxiStream_withId(Axi_id, AxiStream):
         Axi_id._declr(self)
         AxiStream._declr(self)
 
-    def _getSimAgent(self):
-        return AxiStream_withIdAgent
+    def _initSimAgent(self):
+        self._ag = AxiStream_withIdAgent(self)
 
 
 class AxiStream_withUserAndStrb(AxiStream, Axi_user):
@@ -136,8 +136,8 @@ class AxiStream_withUserAndStrb(AxiStream, Axi_user):
         AxiStream._declr(self)
         Axi_user._declr(self)
 
-    def _getSimAgent(self):
-        return AxiStream_withUserAndStrbAgent
+    def _initSimAgent(self):
+        self._ag = AxiStream_withUserAndStrbAgent(self)
 
 
 class AxiStreamAgent(BaseAxiAgent):

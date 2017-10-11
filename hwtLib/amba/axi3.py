@@ -23,8 +23,8 @@ class Axi3_addr_withUser(Axi3_addr):
         Axi3_addr._declr(self)
         self.user = VectSignal(self.USER_WIDTH)
 
-    def _getSimAgent(self):
-        return Axi3_addr_withUserAgent
+    def _initSimAgent(self):
+        self._ag = Axi3_addr_withUserAgent(self)
 
 
 class Axi3_addr_withUserAgent(BaseAxiAgent):

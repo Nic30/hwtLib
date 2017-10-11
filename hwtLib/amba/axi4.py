@@ -27,8 +27,8 @@ class Axi4_addr(AxiLite_addr, Axi_id):
         self.size = VectSignal(3)
         self.qos = VectSignal(4)
 
-    def _getSimAgent(self):
-        return Axi4_addrAgent
+    def _initSimAgent(self):
+        self._ag = Axi4_addrAgent(self)
 
 
 class Axi4_addrAgent(BaseAxiAgent):
@@ -79,8 +79,8 @@ class Axi4_r(AxiLite_r, Axi_id):
         AxiLite_r._declr(self)
         self.last = Signal()
 
-    def _getSimAgent(self):
-        return Axi4_rAgent
+    def _initSimAgent(self):
+        self._ag = Axi4_rAgent(self)
 
 
 class Axi4_rAgent(BaseAxiAgent):
@@ -130,8 +130,8 @@ class Axi4_b(AxiLite_b, Axi_id):
         Axi_id._declr(self)
         AxiLite_b._declr(self)
 
-    def _getSimAgent(self):
-        return Axi4_bAgent
+    def _initSimAgent(self):
+        self._ag = Axi4_bAgent(self)
 
 
 class Axi4_bAgent(BaseAxiAgent):

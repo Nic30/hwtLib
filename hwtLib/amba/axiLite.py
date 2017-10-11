@@ -17,8 +17,8 @@ class AxiLite_addr(Axi_hs):
         self.addr = VectSignal(self.ADDR_WIDTH)
         Axi_hs._declr(self)
 
-    def _getSimAgent(self):
-        return AxiLite_addrAgent
+    def _initSimAgent(self):
+        self._ag = AxiLite_addrAgent(self)
 
 
 class AxiLite_addrAgent(BaseAxiAgent):
@@ -42,8 +42,8 @@ class AxiLite_r(Axi_hs):
         self.resp = VectSignal(2)
         Axi_hs._declr(self)
 
-    def _getSimAgent(self):
-        return AxiLite_rAgent
+    def _initSimAgent(self):
+        self._ag = AxiLite_rAgent(self)
 
 
 class AxiLite_rAgent(BaseAxiAgent):
@@ -78,8 +78,8 @@ class AxiLite_w(Axi_hs):
         self.strb = VectSignal(self.DATA_WIDTH // 8)
         Axi_hs._declr(self)
 
-    def _getSimAgent(self):
-        return AxiLite_wAgent
+    def _initSimAgent(self):
+        self._ag = AxiLite_wAgent(self)
 
 
 class AxiLite_wAgent(BaseAxiAgent):
@@ -109,8 +109,8 @@ class AxiLite_b(Axi_hs):
         self.resp = VectSignal(2)
         Axi_hs._declr(self)
 
-    def _getSimAgent(self):
-        return AxiLite_bAgent
+    def _initSimAgent(self):
+        self._ag = AxiLite_bAgent(self)
 
 
 class AxiLite_bAgent(BaseAxiAgent):
@@ -141,8 +141,8 @@ class AxiLite(Interface):
     def _getIpCoreIntfClass(self):
         return IP_AXILite
 
-    def _getSimAgent(self):
-        return AxiLiteAgent
+    def _initSimAgent(self):
+        self._ag = AxiLiteAgent(self)
 
     def _getWordAddrStep(self):
         """
@@ -171,8 +171,8 @@ class AxiLiteAgent(AgentBase):
         self.intf = intf
 
         def ag(intf):
-            agent = intf._getSimAgent()(intf)
-            intf._ag = agent
+            intf._initSimAgent()
+            agent = intf._ag
             return agent
 
         self.ar = ag(intf.ar)

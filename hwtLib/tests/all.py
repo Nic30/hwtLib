@@ -48,7 +48,6 @@ from hwtLib.handshaked.splitCopy_test import HsSplitCopyTC, \
 from hwtLib.i2c.i2cAgent_test import I2cAgent_TC
 from hwtLib.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
 from hwtLib.img.charToBitmap_test import CharToBitmapTC
-from hwtLib.interfaces.unionIntf_test import UnionIntfTC
 from hwtLib.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.ipif.reg_test import IpifRegTC
@@ -147,6 +146,7 @@ from hwtLib.tests.types.operators_test import OperatorTC
 from hwtLib.tests.types.signedArithmetic_test import SignedArithmeticTC
 from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
+from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC

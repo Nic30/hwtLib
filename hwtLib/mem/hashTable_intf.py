@@ -65,8 +65,8 @@ class InsertIntf(HandshakeSync):
 
         self.vldFlag = Signal()
 
-    def _getSimAgent(self):
-        return InsertIntfAgent
+    def _initSimAgent(self):
+        self._ag = InsertIntfAgent(self)
 
 
 class LookupKeyIntfAgent(HandshakedAgent):
@@ -106,8 +106,8 @@ class LookupKeyIntf(HandshakeSync):
             self.lookupId = VectSignal(self.LOOKUP_ID_WIDTH)
         self.key = VectSignal(self.KEY_WIDTH)
 
-    def _getSimAgent(self):
-        return LookupKeyIntfAgent
+    def _initSimAgent(self):
+        self._ag = LookupKeyIntfAgent(self)
 
 
 class LookupResultIntfAgent(HandshakedAgent):
@@ -207,5 +207,6 @@ class LookupResultIntf(Handshaked):
         self.found = Signal()
         self.occupied = Signal()
 
-    def _getSimAgent(self):
-        return LookupResultIntfAgent
+    def _initSimAgent(self):
+        self._ag = LookupResultIntfAgent(self)
+

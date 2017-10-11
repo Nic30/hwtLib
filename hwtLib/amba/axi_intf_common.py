@@ -36,7 +36,7 @@ class Axi_hs(HandshakeSync):
         self.ready = Signal(masterDir=DIRECTION.IN)
         self.valid = Signal()
     
-    def _getSimAgent(self):
+    def _initSimAgent(self):
         raise NotImplementedError()
 
 

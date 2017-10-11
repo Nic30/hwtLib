@@ -31,8 +31,8 @@ class AddrDataHs(HandshakeSync):
         self.addr = VectSignal(self.ADDR_WIDTH)
         self.data = VectSignal(self.DATA_WIDTH)
 
-    def _getSimAgent(self):
-        return AddrDataHsAgent
+    def _initSimAgent(self):
+        self._ag = AddrDataHsAgent(self)
 
 
 class AddrDataMaskHsAgent(HandshakedAgent):
@@ -59,5 +59,5 @@ class AddrDataBitMaskHs(AddrDataHs):
         super(AddrDataBitMaskHs, self)._declr()
         self.mask = VectSignal(self.DATA_WIDTH)
 
-    def _getSimAgent(self):
-        return AddrDataMaskHsAgent
+    def _initSimAgent(self):
+        self._ag = AddrDataMaskHsAgent(self)
