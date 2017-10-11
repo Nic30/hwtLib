@@ -1,6 +1,10 @@
 from hwt.code import log2ceil, If, isPow2
 from hwt.hdl.types.bits import Bits
 from hwt.pyUtils.arrayQuery import where
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from typing import Optional, Union
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.hdl.value import Value
 
 
 class TimerInfo(object):
@@ -97,18 +101,27 @@ class TimerInfo(object):
                 timer.tick = timer.tick & enableSig
 
     @staticmethod
-    def _instantiateTimerTickLogic(parentUnit, timer, origMaxVal, enableSig, rstSig):
+    def _instantiateTimerTickLogic(parentUnit: Unit, timer: RtlSignal,
+                                   origMaxVal: Union[int, RtlSignal, Value],
+                                   enableSig: Optional[RtlSignal],
+                                   rstSig: Optional[RtlSignal]) -> RtlSignal:
+        """
+        Instantiate logic of this timer
+        
+        :return: tick signal from this timer
+        """
         r = timer.cntrRegister
 
+        tick = r._eq(0)
         if enableSig is None:
             if rstSig is None:
-                If(r._eq(0),
+                If(tick,
                     r(origMaxVal)
                 ).Else(
                    r(r - 1)
                 )
             else:
-                If(rstSig | r._eq(0),
+                If(rstSig | tick,
                     r(origMaxVal)
                 ).Else(
                     r(r - 1)
@@ -116,20 +129,19 @@ class TimerInfo(object):
         else:
             if rstSig is None:
                 If(enableSig,
-                    If(r._eq(0),
+                    If(tick,
                         r(origMaxVal)
                     ).Else(
                         r(r - 1)
                     )
                 )
             else:
-                If(rstSig | (enableSig & r._eq(0)),
+                If(rstSig | (enableSig & tick),
                     r(origMaxVal)
                 ).Elif(enableSig,
                     r(r - 1)
                 )
 
-        tick = r._eq(0)
 
         if enableSig is not None:
             tick = (tick & enableSig)
@@ -154,7 +166,8 @@ class TimerInfo(object):
 
         if timer.parent is None:
             maxVal = timer.maxVal - 1
-            origMaxVal = timer.maxValOriginal - 1  # use original to propagate parameter
+            # use original to propagate parameter
+            origMaxVal = timer.maxValOriginal - 1
             assert maxVal >= 0
 
             if maxVal == 0:
@@ -177,7 +190,8 @@ class TimerInfo(object):
             timer.tick = parentUnit._sig(timer.name + "timerTick%d" % timer.maxVal)
             timer.tick(tick)
         else:
-            TimerInfo._instantiateTimerWithParent(parentUnit, timer, timer.parent, enableSig, rstSig)
+            TimerInfo._instantiateTimerWithParent(parentUnit, timer,
+                                                  timer.parent, enableSig, rstSig)
 
     @staticmethod
     def instantiate(parentUnit, timers, enableSig=None, rstSig=None):
@@ -187,13 +201,17 @@ class TimerInfo(object):
         """
         for timer in timers:
             if not hasattr(timer, "tick"):
-                TimerInfo._instantiateTimer(parentUnit, timer, enableSig=enableSig, rstSig=rstSig)
+                TimerInfo._instantiateTimer(parentUnit, timer,
+                                            enableSig=enableSig, rstSig=rstSig)
 
     def __repr__(self):
         return "<%s maxVal=%d>" % (self.__class__.__name__, self.maxVal)
 
 
 class DynamicTimerInfo(TimerInfo):
+    """
+    Meta informations about timer with dynamic period
+    """
     def __init__(self, maxVal, name=None):
         self.maxValOriginal = maxVal
         self.maxVal = maxVal
@@ -203,3 +221,54 @@ class DynamicTimerInfo(TimerInfo):
             self.name = ""
         else:
             self.name = name
+            
+    @staticmethod
+    def _instantiateTimerTickLogic(timer:RtlSignal,
+                                   period:RtlSignal,
+                                   enableSig:Optional[RtlSignal],
+                                   rstSig:Optional[RtlSignal]):
+        """
+        Instantiate incrementing timer with optional reset and enable signal
+        
+        :param timer: timer main register
+        :param period: signal with actual period
+        :param enableSig: optional enable signal for this timer
+        :param rstSig: optional reset signal for this timer
+        """
+
+        r = timer.cntrRegister
+        tick = r._eq(period - 1)
+        if enableSig is None:
+            if rstSig is None:
+                cond = tick
+            else:
+                cond = rstSig | tick,
+
+            If(cond,
+                r(0)
+            ).Else(
+                r(r + 0)
+            )
+        else:
+            if rstSig is None:
+                If(enableSig,
+                    If(tick,
+                        r(0)
+                    ).Else(
+                        r(r + 1)
+                    )
+                )
+            else:
+                If(rstSig | (enableSig & tick),
+                    r(0)
+                ).Elif(enableSig,
+                    r(r + 1)
+                )
+        
+        if enableSig is not None:
+            tick = (tick & enableSig)
+
+        if rstSig is not None:
+            tick = (tick & ~rstSig)
+        
+        return tick
