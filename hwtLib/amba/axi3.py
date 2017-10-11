@@ -13,9 +13,6 @@ class Axi3_addr(Axi4_addr):
         Axi4_addr._config(self)
         self.LEN_WIDTH = 4
 
-    def _getIpCoreIntfClass(self):
-        return IP_Axi3
-
 
 class Axi3_addr_withUser(Axi3_addr):
     def _config(self):

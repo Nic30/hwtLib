@@ -10,6 +10,7 @@ from hwt.interfaces.utils import addClkRst
 from hwt.serializer.ip_packager.interfaces.std import IP_Handshake
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.shortcuts import serializeAsIpcore
+from hwtLib.amba.axi3 import Axi3, Axi3_withAddrUser
 from hwtLib.amba.axi4_streamToMem import Axi4streamToMem
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axis import AxiStream_withUserAndStrb, AxiStream_withId
@@ -35,6 +36,11 @@ class IpCoreIntfTest(Unit):
         self.hsIn = Handshaked_withIP()
         self.hsOut = Handshaked_withIP()
         self.difIn = DifferentialSig()
+        self.axi3s0 = Axi3()
+        self.axi3m0 = Axi3()
+        self.axi3s1 = Axi3_withAddrUser()
+        self.axi3m1 = Axi3_withAddrUser()
+        
 
     def _impl(self):
         r0 = self._reg("r0", defVal=0)
@@ -51,6 +57,9 @@ class IpCoreIntfTest(Unit):
            self.hsOut.vld(1)
         )
 
+        self.axi3s0(self.axi3m0)
+        self.axi3s1(self.axi3m1)
+        
 
 class IpCorePackagerTC(unittest.TestCase):
     def setUp(self):
