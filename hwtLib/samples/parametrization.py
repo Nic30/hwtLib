@@ -14,7 +14,8 @@ class ParametrizationExample(Unit):
         self.PARAM_10 = Param(10)
         try:
             self.PARAM_1_sll_512 = Param(1 << 512)
-            assert False, "Parameter with int value which is too big to fit in integer type of target hdl language"
+            raise AssertionError("Parameter with int value which is"
+                                 "too big to fit in integer type of target hdl language")
         except TypeError:
             # portable type for large int, generally int in verilog/vhdl is 32b wide
             self.PARAM_1_sll_512 = Param(vec(1 << 512, width=512 + 1))

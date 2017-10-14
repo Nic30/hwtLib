@@ -163,7 +163,7 @@ class LookupResultIntfAgent(HandshakedAgent):
 
         try:
             next(dIt)
-            assert False, "To many items in data %r" % data
+            raise AssertionError("To many items in data %r" % data)
         except IndexError:
             return
 
