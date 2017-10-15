@@ -4,7 +4,7 @@ from hwt.interfaces.agents.tristate import TristateAgent, \
     TristateClkAgent, toGenerator
 from hwt.interfaces.tristate import TristateClk, TristateSig
 from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
-from hwt.simulator.agentBase import AgentBase, AgentWitReset
+from hwt.simulator.agentBase import AgentWitReset
 from hwt.synthesizer.interfaceLevel.interface import Interface
 
 
@@ -16,8 +16,8 @@ class I2c(Interface):
     def _getIpCoreIntfClass(self):
         return IP_IIC
 
-    def _getSimAgent(self):
-        return I2cAgent
+    def _initSimAgent(self):
+        self._ag = I2cAgent(self)
 
 
 class I2cAgent(AgentWitReset):

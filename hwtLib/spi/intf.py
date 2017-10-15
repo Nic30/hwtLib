@@ -156,8 +156,8 @@ class Spi(Interface):
 
         self._associatedClk = self.clk
 
-    def _getSimAgent(self):
-        return SpiAgent
+    def _initSimAgent(self):
+        self._ag = SpiAgent(self)
 
 
 class SpiTristate(Spi):

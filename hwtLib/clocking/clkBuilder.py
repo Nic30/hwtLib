@@ -3,6 +3,8 @@ from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from typing import Tuple
 
 
 class ClkBuilder(object):
@@ -60,7 +62,7 @@ class ClkBuilder(object):
         """
         return self.timers([period, ], enableSig=enableSig, rstSig=rstSig)[0]
 
-    def timerDynamic(self, periodSig, enableSig=None, rstSig=None):
+    def timerDynamic(self, periodSig, enableSig=None, rstSig=None) -> RtlSignal:
         """
         Same as timer, just period is signal which can be configured dynamically
         """
@@ -73,20 +75,23 @@ class ClkBuilder(object):
 
         timer = DynamicTimerInfo(periodSig, name)
         maxVal = timer.maxVal - 1
-        origMaxVal = timer.maxValOriginal - 1  # use original to propagate parameter
         assert maxVal._dtype.bit_length() > 0
 
         r = parentUnit._reg(timer.name + "_delayCntr",
                             periodSig._dtype,
+                            defVal=0
                             )
         timer.cntrRegister = r
-        tick = DynamicTimerInfo._instantiateTimerTickLogic(timer, origMaxVal, enableSig, rstSig)
+        tick = DynamicTimerInfo._instantiateTimerTickLogic(timer,
+                                                           periodSig,
+                                                           enableSig,
+                                                           rstSig)
 
         timer.tick = parentUnit._sig(timer.name + "_delayTick")
         timer.tick(tick)
         return timer.tick
 
-    def oversample(self, sig, sampleCount, sampleTick, rstSig=None):
+    def oversample(self, sig, sampleCount, sampleTick, rstSig=None) -> Tuple[RtlSignal, RtlSignal]:
         """
         [TODO] last sample is not sampled correctly
 
@@ -94,6 +99,8 @@ class ClkBuilder(object):
         :param sampleCount: count of samples to do
         :param sampleTick: signal to enable next sample taking
         :param rstSig: rstSig signal to reset internal counter, if is None it is not used
+
+        :return: typle (oversampled signal, oversample valid signal) 
         """
         if sig._dtype != BIT:
             raise NotImplementedError()

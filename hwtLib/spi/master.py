@@ -46,8 +46,8 @@ class SpiCntrlData(HandshakedBiDirectional):
         HandshakedBiDirectional._declr(self)
         self.last = Signal()
 
-    def _getSimAgent(self):
-        return SpiCntrlDataAgent
+    def _initSimAgent(self):
+        self._ag = SpiCntrlDataAgent(self)
 
 
 class SpiMaster(Unit):

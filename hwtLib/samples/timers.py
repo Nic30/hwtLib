@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import Signal, HandshakeSync
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwtLib.clocking.clkBuilder import ClkBuilder
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hdl.constants import Time
+from hwt.interfaces.std import Signal, HandshakeSync, VectSignal
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
+from hwtLib.clocking.clkBuilder import ClkBuilder
 
 
 class TimerInfoTest(Unit):
@@ -62,20 +62,35 @@ class TimerTestUnit(Unit):
             if intf not in [self.clk, self.rst_n]:
                 intf.vld(getattr(self.core, getSignalName(intf)))
 
+class DynamicCounterInstancesExample(Unit):
+    def _declr(self):
+        addClkRstn(self)
+        self.period = VectSignal(10)
+        self.en = Signal()
+        self.rstCntr = Signal()
+        
+        self.cntr0 = Signal()
+        self.cntr1 = Signal()
+
+    def _impl(self):
+        b = ClkBuilder(self, self.clk)
+        self.cntr0(b.timerDynamic(self.period, self.en))
+        self.cntr1(b.timerDynamic(self.period, self.en, rstSig=self.rstCntr))
+
 
 class TimerTC(SimTestCase):
     def test_basic(self):
         u = TimerTestUnit()
         self.prepareUnit(u)
-        CLK =2* 390
+        CLK = 2 * 390
         RST = 5
 
         self.doSim(CLK * 10 * Time.ns)
         self.assertSequenceEqual(u.tick1._ag.data,
                                  [((i + 1) * 10 + RST) * Time.ns for i in range(CLK - 1)])
-        #print(u.tick2._ag.data)
+        # print(u.tick2._ag.data)
         self.assertSequenceEqual(u.tick2._ag.data,
-                                 [((i + 1) * 20 + RST) * Time.ns for i in range(CLK // 2 -1)])
+                                 [((i + 1) * 20 + RST) * Time.ns for i in range(CLK // 2 - 1)])
         self.assertSequenceEqual(u.tick16._ag.data,
                                  [((i + 1) * 160 + RST) * Time.ns for i in range(CLK // 16)])
         self.assertSequenceEqual(u.tick17._ag.data,
@@ -87,10 +102,29 @@ class TimerTC(SimTestCase):
         self.assertSequenceEqual(u.tick384._ag.data,
                                  [((i + 1) * 3840 + RST) * Time.ns for i in range(CLK // 384)])
 
+    def test_dynamic_simple(self):
+        u = DynamicCounterInstancesExample()
+
+        self.prepareUnit(u)
+        
+        u.en._ag.data.append(1)
+        u.rstCntr._ag.data.extend([0, 0, 0, 0, 1, 1, 1, 0])
+        u.period._ag.data.append(5)
+        
+        self.doSim(200 * Time.ns)
+        self.assertValSequenceEqual(
+            u.cntr0._ag.data,
+            [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0])
+        self.assertValSequenceEqual(
+            u.cntr1._ag.data,
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0])
+        
+
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
-    u = TimerInfoTest()
-    print(toRtl(u))
+    # from hwt.synthesizer.shortcuts import toRtl
+    # u = TimerInfoTest()
+    # u = DynamicCounterInstancesExample()
+    # print(toRtl(u))
 
     import unittest
     suite = unittest.TestSuite()

@@ -33,8 +33,8 @@ class I2cBitCntrlCmd(RdSynced):
         self.cmd = VectSignal(log2ceil(5))
         self.rd = Signal(masterDir=DIRECTION.IN)
 
-    def _getSimAgent(self):
-        return I2cBitCntrlCmdAgent
+    def _initSimAgent(self):
+        self._ag = I2cBitCntrlCmdAgent(self)
 
 
 class I2cBitCntrlCmdAgent(RdSyncedAgent):

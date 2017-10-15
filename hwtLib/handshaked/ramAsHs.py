@@ -10,10 +10,6 @@ from hwt.synthesizer.param import Param
 from hwtLib.interfaces.addrDataHs import AddrDataHs
 
 
-def ag(i):
-    return i._getSimAgent()(i)
-
-
 class RamHsRAgent(AgentBase):
     """
     Composite agent with agent for addr and data channel
@@ -38,8 +34,11 @@ class RamHsRAgent(AgentBase):
         self.__enable = True
         self.intf = intf
 
-        self.addr = intf.addr._ag = ag(intf.addr)
-        self.data = intf.data._ag = ag(intf.data)
+        intf.addr._initSimAgent()
+        self.addr = intf.addr._ag
+
+        intf.data._initSimAgent()
+        self.data = intf.data._ag
 
     def getDrivers(self):
         return (self.addr.getDrivers() + 
@@ -63,8 +62,8 @@ class RamHsR(Interface):
         with self._paramsShared():
             self.data = Handshaked(masterDir=DIRECTION.IN)
 
-    def _getSimAgent(self):
-        return RamHsRAgent
+    def _initSimAgent(self):
+        self._ag = RamHsRAgent(self)
 
 
 @serializeParamsUniq

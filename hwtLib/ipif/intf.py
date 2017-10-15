@@ -52,8 +52,8 @@ class Ipif(Interface):
         """
         return 8
 
-    def _getSimAgent(self):
-        return IpifAgent
+    def _initSimAgent(self):
+        self._ag = IpifAgent(self)
 
 
 class IpifWithCE(Ipif):

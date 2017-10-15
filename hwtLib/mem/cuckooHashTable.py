@@ -33,8 +33,8 @@ class CInsertIntf(HandshakeSync):
         if self.DATA_WIDTH:
             self.data = VectSignal(self.DATA_WIDTH)
 
-    def _getSimAgent(self):
-        return CInsertIntfAgent
+    def _initSimAgent(self):
+        self._ag = CInsertIntfAgent(self)
 
 
 class CInsertIntfAgent(HandshakedAgent):

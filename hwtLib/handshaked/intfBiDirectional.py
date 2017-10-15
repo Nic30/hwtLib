@@ -45,5 +45,5 @@ class HandshakedBiDirectional(Handshaked):
         self.vld = Signal()
         self.rd = Signal(masterDir=DIRECTION.IN)
 
-    def _getSimAgent(self):
-        return HandshakedBiDirectionalAgent
+    def _initSimAgent(self):
+        self._ag = HandshakedBiDirectionalAgent(self)
