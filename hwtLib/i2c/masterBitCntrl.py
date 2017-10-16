@@ -3,6 +3,7 @@
 
 from hwt.code import If, Concat, FsmBuilder, In, log2ceil
 from hwt.hdl.constants import DIRECTION
+from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.agents.rdSynced import RdSyncedAgent
 from hwt.interfaces.std import Signal, RdSynced, VectSignal
@@ -10,7 +11,6 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.i2c.intf import I2c
-from hwt.hdl.types.bits import Bits
 
 
 NOP, START, STOP, READ, WRITE = range(5)
