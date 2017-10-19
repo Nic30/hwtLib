@@ -22,7 +22,7 @@ class PyTest(TestCommand):
 
 
 setup(name='hwtLib',
-      version='1.8',
+      version='1.9',
       description='library of hardware components and test for HWToolkit framework (FPGA devel. tools)',
       url='https://github.com/Nic30/hwtLib',
       author='Michal Orsak',
