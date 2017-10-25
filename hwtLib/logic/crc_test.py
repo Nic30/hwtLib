@@ -141,6 +141,7 @@ class CrcCombTC(SimTestCase):
         crc = 0x449C
         self.assertValSequenceEqual(u.dataOut._ag.data, [crc])
 
+
 class CrcTC(SimTestCase):
     def setUpCrc(self, poly, polyWidth, dataWidth=None):
         if dataWidth is None:

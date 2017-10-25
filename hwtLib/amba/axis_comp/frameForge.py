@@ -46,6 +46,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
         | field2  +------+
         +---------+
     """
+
     def __init__(self, axiSIntfCls,
                  structT: HdlType,
                  tmpl: Optional[TransTmpl]=None,
@@ -134,15 +135,16 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
             inPortGroups = ExclusiveStreamGroups()
             lastInPortsGroups = ExclusiveStreamGroups()
-            
+
             # tuples (cond, part of data mux for dataOut)
             unionChoices = []
-            
+
             # for all union choices
             for choice in tPart:
                 tmp = self._sig("union_tmp_", Bits(w))
                 intfOfChoice = tToIntf[choice.tmpl.origin]
-                _, isSelected, isSelectValid = AxiS_frameParser.choiceIsSelected(self, intfOfChoice)
+                _, isSelected, isSelectValid = AxiS_frameParser.choiceIsSelected(
+                    self, intfOfChoice)
                 unionChoices.append((isSelected, wordData_out[high:low](tmp)))
 
                 isSelected = isSelected & isSelectValid
@@ -152,13 +154,13 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
                 inPortGroups.append((isSelected, inPortsNode))
                 lastInPortsGroups.append((isSelected, lastPortsNode))
-                
+
                 # walk all parts in union choice
                 for _tPart in choice:
                     self.connectPartsOfWord(tmp, _tPart,
                                             inPortsNode.masters,
                                             lastPortsNode.masters)
-            
+
             # generate data out mux
             SwitchLogic(unionChoices,
                         default=wordData_out(None))
@@ -174,7 +176,8 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             else:
                 intf = tToIntf[tPart.tmpl.origin]
                 fhigh, flow = tPart.getFieldBitRange()
-                wordData_out[high:low](self.byteOrderCare(intf.data)[fhigh:flow])
+                wordData_out[high:low](
+                    self.byteOrderCare(intf.data)[fhigh:flow])
                 inPorts_out.append(intf)
 
                 if tPart.isLastPart():
@@ -228,7 +231,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
                 wordData = self._sig("word%d" % i, dout.data._dtype)
             else:
                 wordData = self.dataOut.data
-            
+
             for tPart in transParts:
                 self.connectPartsOfWord(wordData, tPart,
                                         inPorts,
@@ -255,12 +258,12 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
                 a = If(_ack,
                        wordCntr_inversed(nextWordIndex)
-                    )
+                       )
             else:
                 a = []
 
             a.extend(dout.valid(ack))
-            
+
             if multipleWords:
                 # data out logic
                 a.extend(dout.data(wordData))
@@ -282,7 +285,8 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
         if multipleWords:
             dout.last(In(wordCntr_inversed, endsOfFrames))
             for r in self._tmpRegsForSelect.values():
-                r.rd(ack & wordCntr_inversed._eq(endsOfFrames[-1]) & dout.ready)
+                r.rd(ack & wordCntr_inversed._eq(
+                    endsOfFrames[-1]) & dout.ready)
 
         else:
             dout.last(1)
@@ -294,17 +298,14 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.shortcuts import toRtl
-    from hwtLib.types.ctypes import uint64_t, uint32_t, int32_t, uint8_t, uint16_t
+    from hwtLib.types.ctypes import uint64_t, uint8_t, uint16_t
 
     t = HStruct((uint64_t, "item0"),
                 (uint64_t, None),  # name = None means field is padding
                 (uint64_t, "item1"),
                 (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
                 )
-    t = HUnion(
-        (uint32_t, "a"),
-        (int32_t, "b")
-        )
+
     u = AxiS_frameForge(AxiStream, t)
     u.DATA_WIDTH.set(32)
     print(toRtl(u))
