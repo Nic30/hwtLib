@@ -39,7 +39,7 @@ class FifoAgentsTC(SimTestCase):
         ref = [i for i in range(30)]
         u.din._ag.data.extend(ref)
         self.doSim(120 * 10 * Time.ns)
-        
+
         self.assertValSequenceEqual(u.dout._ag.data, ref)
 
     def test_fifoWriter(self):
@@ -52,7 +52,7 @@ class FifoAgentsTC(SimTestCase):
         ref = [i for i in range(30)]
         u.din._ag.data.extend(ref)
         self.doSim(120 * 10 * Time.ns)
-        
+
         self.assertValSequenceEqual(u.dout._ag.data, ref)
 
 
