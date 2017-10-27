@@ -83,7 +83,7 @@ class HsResizer(HandshakedCompBase):
                                    Bits(log2ceil(factor + 1), False),
                                    defVal=0)
 
-        # instanciate HandshakedReg, handshaked builder is not used to avoid dependencies
+        # instantiate HandshakedReg, handshaked builder is not used to avoid dependencies
         inReg = HandshakedReg(self.intfCls)
         inReg._updateParamsFrom(self.dataIn)
         self.inReg = inReg

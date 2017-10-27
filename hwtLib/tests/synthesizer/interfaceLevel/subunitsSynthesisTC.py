@@ -16,8 +16,10 @@ from hwt.synthesizer.shortcuts import toRtl, synthesised
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.fullDuplexAxiStream import FullDuplexAxiStream
 from hwtLib.samples.hierarchy.unitToUnitConnection import UnitToUnitConnection
-from hwtLib.samples.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnection
-from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import BaseSynthesizerTC
+from hwtLib.samples.simple2withNonDirectIntConnection import \
+    Simple2withNonDirectIntConnection
+from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import \
+    BaseSynthesizerTC
 
 
 D = DIRECTION
@@ -97,6 +99,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
     def test_threeSubUnits(self):
         class ThreeSubunits(Unit):
             """a -> u0 -> u1 -> u2 -> b"""
+
             def _config(self):
                 self.DATA_WIDTH = Param(64)
 
@@ -131,6 +134,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
     def test_threeLvlSubUnitsArrIntf(self):
         class ThreeSubunits(Unit):
             """a -> u0 -> u1 -> u2 -> b"""
+
             def _config(self):
                 self.DATA_WIDTH = Param(64)
 
@@ -175,6 +179,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
         u = FDStreamConnection()
         u._loadDeclarations()
         u = synthesised(u)
+
 
 if __name__ == '__main__':
     # print(toRtl(UnitWithArrIntfParent))
