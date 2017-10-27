@@ -3,7 +3,8 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.samples.builders.handshakedBuilderSimple import HandshakedBuilderSimple
+from hwtLib.samples.builders.handshakedBuilderSimple import \
+    HandshakedBuilderSimple
 
 
 class DumpTestbenchTC(SimTestCase):
@@ -18,6 +19,7 @@ class DumpTestbenchTC(SimTestCase):
         s = buff.getvalue()
         self.assertEqual(s, HandshakedBuilderSimple_dump)
         self.assertValSequenceEqual(u.b._ag.data, [1, 2, 3, 4])
+
 
 HandshakedBuilderSimple_dump = """library IEEE;
 use IEEE.std_logic_1164.all;

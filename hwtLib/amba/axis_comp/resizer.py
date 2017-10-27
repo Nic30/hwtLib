@@ -142,7 +142,7 @@ class AxiS_resizer(AxiSCompBase):
             raise NotImplementedError()
         dOut = self.getDataWidthDependent(self.dataOut)
 
-        # instanciate AxiSReg, AxiSBuilder is not used to avoid dependencies
+        # instantiate AxiSReg, AxiSBuilder is not used to avoid dependencies
         inReg = AxiSReg(self.intfCls)
         inReg._updateParamsFrom(self.dataIn)
         self.inReg = inReg
