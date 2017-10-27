@@ -5,7 +5,7 @@ from hwt.code import If, log2ceil
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal, HandshakeSync
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 
 

@@ -5,7 +5,7 @@ from hwt.code import If, connect
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint

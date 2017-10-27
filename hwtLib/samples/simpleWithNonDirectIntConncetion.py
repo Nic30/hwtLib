@@ -4,7 +4,7 @@
 from hwt.hdl.constants import Time
 from hwt.interfaces.std import Signal
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 
 
 class SimpleWithNonDirectIntConncetion(Unit):

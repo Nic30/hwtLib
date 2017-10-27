@@ -5,7 +5,7 @@ from hwt.code import If, Or, log2ceil
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VldSynced, VectSignal
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.vectorUtils import iterBits

@@ -1,6 +1,6 @@
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwtLib.samples.simpleWithNonDirectIntConncetion import SimpleWithNonDirectIntConncetion
 
 

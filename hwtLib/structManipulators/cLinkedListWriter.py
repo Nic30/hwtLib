@@ -8,7 +8,7 @@ from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Handshaked, RegCntrl
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf, AxiWDatapumpIntf

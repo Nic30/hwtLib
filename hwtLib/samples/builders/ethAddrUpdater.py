@@ -5,7 +5,7 @@ from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.structUtils import HStruct_selectFields
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi3 import Axi3, Axi3_addr
 from hwtLib.amba.axi4_rDatapump import Axi_rDatapump

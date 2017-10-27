@@ -3,7 +3,7 @@
 
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.ipCoreWrapper import IpCoreWrapper
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
 
 

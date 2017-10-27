@@ -1,5 +1,5 @@
 import unittest
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.interfaces.std import VectSignal, Signal
 from hwt.code import Switch
 from hwt.synthesizer.shortcuts import toRtl

@@ -5,7 +5,7 @@ from hwt.hdl.constants import Time
 from hwt.interfaces.std import VldSynced
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 
 

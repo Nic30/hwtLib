@@ -6,7 +6,7 @@ from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 
 

@@ -3,7 +3,7 @@
 
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.ipif.endpoint import IpifEndpoint
 from hwtLib.ipif.endpoint_test import IpifEndpointTC

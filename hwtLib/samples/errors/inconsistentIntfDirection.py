@@ -1,4 +1,4 @@
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
 
 

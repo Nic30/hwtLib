@@ -3,7 +3,7 @@
 
 from hwt.hdl.types.defs import BIT
 from hwt.interfaces.std import Rst, Signal, Clk
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 
 
 class ClkSynchronizer(Unit):

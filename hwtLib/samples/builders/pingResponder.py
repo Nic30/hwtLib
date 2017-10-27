@@ -8,7 +8,7 @@ from hwt.hdl.value import Value
 from hwt.interfaces.std import Signal
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.mainBases import RtlMemoryBase
 from hwtLib.amba.axis import AxiStream

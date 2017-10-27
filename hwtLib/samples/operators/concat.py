@@ -3,7 +3,7 @@
 
 from hwt.code import Concat
 from hwt.interfaces.std import Signal, VectSignal
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 
 
 class SimpleConcat(Unit):

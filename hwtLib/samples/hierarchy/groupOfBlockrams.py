@@ -3,7 +3,7 @@
 
 from hwt.code import connect
 from hwt.interfaces.std import Signal, Clk, VectSignal
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.mem.ram import Ram_dp
 

@@ -7,7 +7,7 @@ from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Clk
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 
 
 class ClkDiv3(Unit):

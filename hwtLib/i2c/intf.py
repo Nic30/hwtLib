@@ -5,7 +5,7 @@ from hwt.interfaces.agents.tristate import TristateAgent, \
 from hwt.interfaces.tristate import TristateClk, TristateSig
 from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
 from hwt.simulator.agentBase import AgentWitReset
-from hwt.synthesizer.interfaceLevel.interface import Interface
+from hwt.synthesizer.interface import Interface
 
 
 class I2c(Interface):

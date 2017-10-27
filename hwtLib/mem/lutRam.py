@@ -6,7 +6,7 @@ from hwt.hdl.typeShortcuts import hBit, vec
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, Clk
 from hwt.serializer.mode import serializeExclude
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 
 

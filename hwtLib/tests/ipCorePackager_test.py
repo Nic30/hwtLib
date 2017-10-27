@@ -8,7 +8,7 @@ from hwt.interfaces.differential import DifferentialSig
 from hwt.interfaces.std import BramPort, Handshaked
 from hwt.interfaces.utils import addClkRst
 from hwt.serializer.ip_packager.interfaces.std import IP_Handshake
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.shortcuts import serializeAsIpcore
 from hwtLib.amba.axi3 import Axi3, Axi3_withAddrUser
 from hwtLib.amba.axi4_streamToMem import Axi4streamToMem

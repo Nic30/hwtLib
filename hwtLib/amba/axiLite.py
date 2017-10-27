@@ -2,7 +2,7 @@ from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import VectSignal
 from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
 from hwt.simulator.agentBase import AgentBase
-from hwt.synthesizer.interfaceLevel.interface import Interface
+from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi_intf_common import AxiMap, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent

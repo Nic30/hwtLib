@@ -3,7 +3,7 @@
 
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream
 from hwtLib.samples.hierarchy.simpleSubunit2 import SimpleSubunit2TC

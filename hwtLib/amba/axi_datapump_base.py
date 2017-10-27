@@ -1,7 +1,7 @@
 from hwt.bitmask import mask
 from hwt.code import log2ceil
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi4 import Axi4_addr
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, \

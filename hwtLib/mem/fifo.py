@@ -6,7 +6,7 @@ from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import FifoWriter, FifoReader, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 
 

@@ -9,7 +9,7 @@ from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Handshaked, VectSignal, RegCntrl
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AddrSizeHs, AxiWDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo

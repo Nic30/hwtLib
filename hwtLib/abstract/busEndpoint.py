@@ -14,8 +14,8 @@ from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interfaceLevel.interfaceUtils.proxy import InterfaceProxy
 from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import walkFlatten
 from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
-from hwt.synthesizer.interfaceLevel.unit import Unit
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
+from hwt.synthesizer.unit import Unit
 from hwtLib.sim.abstractMemSpaceMaster import PartialField
 
 
@@ -55,7 +55,8 @@ def walkStructIntfAndIntfMap(structIntf, intfMap):
         else:
             # is struct described by tuple
             intfMap = list(where(intfMap, lambda x: not isPaddingInIntfMap(x)))
-            assert len(intfMap) == len(structIntf._interfaces), (intfMap, structIntf)
+            assert len(intfMap) == len(
+                structIntf._interfaces), (intfMap, structIntf)
             for sItem, item in zip(structIntf._interfaces, intfMap):
                 yield from walkStructIntfAndIntfMap(sItem, item)
 
@@ -94,6 +95,7 @@ class BusEndpoint(Unit):
                     +----------+     +---------+
 
     """
+
     def __init__(self, structTemplate, intfCls=None, shouldEnterFn=None):
         """
         :param structTemplate: instance of HStruct which describes address space of this endpoint
@@ -121,10 +123,12 @@ class BusEndpoint(Unit):
         return shouldEnter, shouldUse
 
     def _getWordAddrStep(self):
-        raise NotImplementedError("Should be overridden in concrete implementation, this is abstract class")
+        raise NotImplementedError(
+            "Should be overridden in concrete implementation, this is abstract class")
 
     def _getAddrStep(self):
-        raise NotImplementedError("Should be overridden in concrete implementation, this is abstract class")
+        raise NotImplementedError(
+            "Should be overridden in concrete implementation, this is abstract class")
 
     def _config(self):
         self._intfCls._config(self)
@@ -135,7 +139,8 @@ class BusEndpoint(Unit):
         with self._paramsShared():
             self.bus = self._intfCls()
 
-        self.decoded = StructIntf(self.STRUCT_TEMPLATE, instantiateFieldFn=self._mkFieldInterface)
+        self.decoded = StructIntf(
+            self.STRUCT_TEMPLATE, instantiateFieldFn=self._mkFieldInterface)
 
     def getPort(self, transTmpl):
         o = transTmpl.origin
@@ -177,7 +182,8 @@ class BusEndpoint(Unit):
             return (True, False)
 
     def walkFieldsAndIntf(self, transTmpl, structIntf):
-        fieldTrans = transTmpl.walkFlatten(shouldEnterFn=self._shouldEnterForTransTmpl)
+        fieldTrans = transTmpl.walkFlatten(
+            shouldEnterFn=self._shouldEnterForTransTmpl)
         intfs = walkFlatten(structIntf, self._shouldEnterIntf)
 
         hasAnyInterface = False
@@ -268,25 +274,31 @@ class BusEndpoint(Unit):
         assert dstAddrStep % srcAddrStep == 0
         if not isinstance(transTmpl.dtype, HArray):
             raise TypeError(transTmpl.dtype)
-        assert transTmpl.bitAddr % dstAddrStep == 0, "Has to be addressable by address with this step (%r)" % (transTmpl)
+        assert transTmpl.bitAddr % dstAddrStep == 0, "Has to be addressable by address with this step (%r)" % (
+            transTmpl)
 
         addrIsAligned = transTmpl.bitAddr % transTmpl.bit_length() == 0
         bitsForAlignment = ((dstAddrStep // srcAddrStep) - 1).bit_length()
-        bitsOfSubAddr = ((transTmpl.bitAddrEnd - transTmpl.bitAddr - 1) // dstAddrStep).bit_length()
+        bitsOfSubAddr = (
+            (transTmpl.bitAddrEnd - transTmpl.bitAddr - 1) // dstAddrStep).bit_length()
 
         if addrIsAligned:
             bitsOfPrefix = IN_ADDR_WIDTH - bitsOfSubAddr - bitsForAlignment
-            prefix = (transTmpl.bitAddr // srcAddrStep) >> (bitsForAlignment + bitsOfSubAddr)
-            addrIsInRange = srcAddrSig[IN_ADDR_WIDTH:(IN_ADDR_WIDTH - bitsOfPrefix)]._eq(prefix)
+            prefix = (transTmpl.bitAddr //
+                      srcAddrStep) >> (bitsForAlignment + bitsOfSubAddr)
+            addrIsInRange = srcAddrSig[IN_ADDR_WIDTH:(
+                IN_ADDR_WIDTH - bitsOfPrefix)]._eq(prefix)
             addr_tmp = srcAddrSig
         else:
             _addr = transTmpl.bitAddr // srcAddrStep
             _addrEnd = transTmpl.bitAddrEnd // srcAddrStep
             addrIsInRange = inRange(srcAddrSig, _addr, _addrEnd)
-            addr_tmp = self._sig(dstAddrSig._name + "_addr_tmp", Bits(self.ADDR_WIDTH))
+            addr_tmp = self._sig(dstAddrSig._name +
+                                 "_addr_tmp", Bits(self.ADDR_WIDTH))
             addr_tmp(srcAddrSig - _addr)
 
-        connectedAddr = (dstAddrSig(addr_tmp[(bitsOfSubAddr + bitsForAlignment):(bitsForAlignment)]))
+        connectedAddr = (dstAddrSig(
+            addr_tmp[(bitsOfSubAddr + bitsForAlignment):(bitsForAlignment)]))
 
         return (addrIsInRange, connectedAddr)
 

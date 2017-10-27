@@ -3,7 +3,7 @@
 
 from hwt.interfaces.std import Signal
 from hwt.code import If
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 
 
 class VldMaskConflictsResolving(Unit):

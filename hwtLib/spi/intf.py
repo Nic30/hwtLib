@@ -7,7 +7,7 @@ from hwt.interfaces.tristate import TristateSig
 from hwt.simulator.agentBase import SyncAgentBase, AgentBase
 from hwt.simulator.shortcuts import OnFallingCallbackLoop, OnRisingCallbackLoop
 from hwt.simulator.types.simBits import simBitsT
-from hwt.synthesizer.interfaceLevel.interface import Interface
+from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 
 

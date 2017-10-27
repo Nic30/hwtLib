@@ -10,7 +10,7 @@ from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.exceptions import TypeConversionErr
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit, setOut
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.shortcuts import toRtl, synthesised
 from hwtLib.amba.axis import AxiStream

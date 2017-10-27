@@ -4,7 +4,7 @@
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi3 import Axi3_withAddrUser
 from hwtLib.amba.axi4 import Axi4
 

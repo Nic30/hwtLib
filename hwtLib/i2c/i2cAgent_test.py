@@ -2,7 +2,7 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwtLib.i2c.intf import I2c, I2cAgent
 
 

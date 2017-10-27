@@ -6,7 +6,7 @@ import math
 from hwt.bitmask import mask
 from hwt.code import If, Switch
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream
 from hwt.hdl.types.bits import Bits

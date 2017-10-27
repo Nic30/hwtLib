@@ -8,7 +8,7 @@ from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.agents.rdSynced import RdSyncedAgent
 from hwt.interfaces.std import Signal, RdSynced, VectSignal
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.i2c.intf import I2c
 

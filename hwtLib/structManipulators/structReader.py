@@ -8,7 +8,7 @@ from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.amba.axis import AxiStream_withoutSTRB

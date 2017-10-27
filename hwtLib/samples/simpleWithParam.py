@@ -3,7 +3,7 @@
 
 from hwt.interfaces.std import Signal
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.hdl.types.bits import Bits
 
