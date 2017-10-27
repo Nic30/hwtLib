@@ -7,7 +7,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.utils import toRtl
 from hwtLib.amba.axiLite import AxiLite
 
 

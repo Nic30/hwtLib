@@ -11,6 +11,6 @@ class AxiSSpliSelect(AxiSCompBase, HsSplitSelect):
 
 if __name__ == "__main__":
     from hwtLib.amba.axis import AxiStream
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = AxiSSpliSelect(AxiStream)
     print(toRtl(u))

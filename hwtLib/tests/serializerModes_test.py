@@ -6,7 +6,7 @@ from hwt.serializer.mode import serializeExclude, serializeOnce, \
     serializeParamsUniq
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.utils import toRtl
 
 
 class SimpeUnit(Unit):

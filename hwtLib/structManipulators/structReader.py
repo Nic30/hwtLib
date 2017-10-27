@@ -155,7 +155,7 @@ class StructReader(AxiS_frameParser):
 
 if __name__ == "__main__":
     from hwtLib.types.ctypes import uint16_t, uint32_t, uint64_t
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
 
     s = HStruct(
         (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type

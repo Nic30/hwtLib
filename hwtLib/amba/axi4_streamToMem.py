@@ -236,7 +236,7 @@ class Axi4streamToMem(Unit):
         self.dataWFeed(st, lenRem, actualLenRem)
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = Axi4streamToMem()
     # u = AxiLiteRegs(Axi4streamToMem().REGISTER_MAP)
     print(toRtl(u))

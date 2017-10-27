@@ -640,7 +640,7 @@ SC_MODULE(Showcase0) {
 if __name__ == "__main__":  # alias python main function
     from pprint import pprint
 
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     from hwt.serializer.vhdl.serializer import VhdlSerializer
     from hwt.serializer.verilog.serializer import VerilogSerializer
     from hwt.serializer.systemC.serializer import SystemCSerializer

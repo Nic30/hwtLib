@@ -144,7 +144,7 @@ class Fifo(Unit):
             self.space(space)
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = Fifo()
     u.DATA_WIDTH.set(8)
     # u.EXPORT_SIZE.set(True)

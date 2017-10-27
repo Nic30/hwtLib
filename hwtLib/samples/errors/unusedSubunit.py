@@ -41,7 +41,7 @@ class UnusedSubunit2(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = UnusedSubunit2()
     # hwt.serializer.exceptions.SerializerException
     print(toRtl(u))

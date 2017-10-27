@@ -46,7 +46,7 @@ class I2cAgent_TC(SimTestCase):
 
 
 if __name__ == "__main__":
-    # from hwt.synthesizer.shortcuts import toRtl
+    # from hwt.synthesizer.utils import toRtl
     # print(toRtl(I2CSimplePassTrought()))
     suite = unittest.TestSuite()
     suite.addTest(I2cAgent_TC('test_simple'))

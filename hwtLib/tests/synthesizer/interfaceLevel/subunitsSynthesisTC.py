@@ -12,7 +12,7 @@ from hwt.synthesizer.exceptions import TypeConversionErr
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit, setOut
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
-from hwt.synthesizer.shortcuts import toRtl, synthesised
+from hwt.synthesizer.utils import toRtl, synthesised
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.fullDuplexAxiStream import FullDuplexAxiStream
 from hwtLib.samples.hierarchy.unitToUnitConnection import UnitToUnitConnection

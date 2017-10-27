@@ -53,6 +53,6 @@ def oneHotToBin(parent, signals, resName="oneHotToBin"):
     return res
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = OneHotToBin()
     print(toRtl(u))

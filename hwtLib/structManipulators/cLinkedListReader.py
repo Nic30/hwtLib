@@ -213,7 +213,7 @@ class CLinkedListReader(Unit):
                                }).sync()
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = CLinkedListReader()
     u.BUFFER_CAPACITY.set(8)
     u.ITEMS_IN_BLOCK.set(31)

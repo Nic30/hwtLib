@@ -73,5 +73,5 @@ class AxiSStoredBurst(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     print(toRtl(AxiSStoredBurst))

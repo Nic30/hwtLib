@@ -50,7 +50,7 @@ class BinToOneHotTC(SimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
 
     print(toRtl(BinToOneHot()))
     

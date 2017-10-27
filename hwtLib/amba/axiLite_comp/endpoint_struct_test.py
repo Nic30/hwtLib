@@ -199,7 +199,7 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(AxiLiteEndpoint_arrayStruct_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-    # from hwt.synthesizer.shortcuts import toRtl
+    # from hwt.synthesizer.utils import toRtl
     # u = AxiLiteEndpoint(structHierarchyArr, shouldEnterFn=lambda x: (True, True))
     # u.DATA_WIDTH.set(32)
     # print(toRtl(u))

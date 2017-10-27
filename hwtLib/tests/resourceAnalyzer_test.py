@@ -2,7 +2,7 @@ import unittest
 from hwt.synthesizer.unit import Unit
 from hwt.interfaces.std import VectSignal, Signal
 from hwt.code import Switch
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.utils import toRtl
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
     ResourceLatch

@@ -55,7 +55,7 @@ class IpifReg(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = IpifReg()
 
     print(toRtl(u))

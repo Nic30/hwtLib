@@ -171,6 +171,6 @@ class MMU_2pageLvl(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = MMU_2pageLvl()
     print(toRtl(u))

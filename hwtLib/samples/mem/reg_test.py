@@ -10,7 +10,7 @@ from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.simulator.agentConnector import agInts
 from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.utils import toRtl
 from hwtLib.samples.mem.reg import DReg, DoubleDReg, OptimizedOutReg,\
     AsyncResetReg, DDR_Reg, Latch
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceLatch

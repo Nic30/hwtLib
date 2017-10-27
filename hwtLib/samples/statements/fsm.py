@@ -7,7 +7,7 @@ from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.utils import toRtl
 
 
 class FsmExample(Unit):

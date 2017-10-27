@@ -39,6 +39,6 @@ class SimpleSyncRam(SimpleAsyncRam):
 
 
 if __name__ == "__main__":  # alias python "main" function
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     print(toRtl(SimpleSyncRam()))

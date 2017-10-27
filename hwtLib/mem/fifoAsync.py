@@ -118,7 +118,7 @@ class FifoAsync(Fifo):
         Out.wait(empty)
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = FifoAsync()
     u.DEPTH.set(4)
     print(toRtl(u))

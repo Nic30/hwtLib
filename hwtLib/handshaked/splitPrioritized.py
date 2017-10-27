@@ -43,7 +43,7 @@ class HsSplitPrioritized(HsSplitCopy):
 
 if __name__ == "__main__":
     from hwt.interfaces.std import Handshaked
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = HsSplitPrioritized(Handshaked)
     u.OUTPUTS.set(4)
     print(toRtl(u))

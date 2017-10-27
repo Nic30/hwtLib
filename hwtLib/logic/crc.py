@@ -131,7 +131,7 @@ class Crc(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = Crc()
     u.POLY.set(CRC_32)
     u.DATA_WIDTH.set(8)

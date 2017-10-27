@@ -111,7 +111,7 @@ class AxiS_measuringFifo(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = AxiS_measuringFifo()
     u.EXPORT_ALIGNMENT_ERROR.set(True)
     print(toRtl(u))

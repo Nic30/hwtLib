@@ -55,6 +55,6 @@ class SimpleAxiRegs(Unit):
         connectRegToConveror(conv.decoded.reg1, reg1)
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = SimpleAxiRegs()
     print(toRtl(u))

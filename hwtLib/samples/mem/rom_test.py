@@ -7,7 +7,7 @@ from hwt.hdl.constants import Time
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceRAM
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.utils import toRtl
 from hwtLib.samples.mem.rom import SimpleRom, SimpleSyncRom
 
 

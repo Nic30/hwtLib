@@ -4,7 +4,7 @@ from hwt.code import connect
 from hwt.interfaces.std import VectSignal
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.utils import toRtl
 
 TmpVarExample_asVhdl = """library IEEE;
 use IEEE.std_logic_1164.all;

@@ -70,6 +70,6 @@ class Cam(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = Cam()
     print(toRtl(u))

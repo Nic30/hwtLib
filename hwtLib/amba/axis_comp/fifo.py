@@ -22,7 +22,7 @@ class AxiSFifo(AxiSCompBase, HandshakedFifo):
 
 if __name__ == "__main__":
     from hwtLib.amba.axis import AxiStream_withoutSTRB
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
 
     u = AxiSFifo(AxiStream_withoutSTRB)
     u.DEPTH.set(4)

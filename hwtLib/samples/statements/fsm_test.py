@@ -6,7 +6,7 @@ from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import agInts
 from hwtLib.samples.statements.fsm import FsmExample, HadrcodedFsmExample
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.utils import toRtl
 from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.systemC.serializer import SystemCSerializer
 

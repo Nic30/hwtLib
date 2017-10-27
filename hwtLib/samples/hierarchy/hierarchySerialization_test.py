@@ -5,7 +5,7 @@ from hwt.serializer.systemC.serializer import SystemCSerializer
 from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.utils import toRtl
 from hwtLib.samples.hierarchy.groupOfBlockrams import GroupOfBlockrams, \
     groupOfBlockrams_as_vhdl
 from hwtLib.samples.hierarchy.netFilter import NetFilter

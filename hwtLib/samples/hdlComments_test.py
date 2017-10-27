@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.utils import toRtl
 from hwtLib.samples.hdlComments import SimpleComentedUnit, \
     simpleComentedUnit2Expected, SimpleComentedUnit3, \
     simpleComentedUnit3Expected, SimpleComentedUnit2, simpleComentedUnitExpected
