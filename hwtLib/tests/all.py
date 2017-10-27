@@ -13,10 +13,10 @@ from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArray, \
     AxiLiteEndpointStructsInArray
-from hwtLib.amba.axiLite_comp.endpoint_fromInterfaces_test import AxiLiteEndpoint_fromInterfaceTC, \
-    AxiLiteEndpoint_fromInterface_arr_TC
-from hwtLib.amba.axiLite_comp.endpoint_struct_test import AxiLiteEndpoint_arrayStruct_TC, \
-    AxiLiteEndpoint_struct_TC
+from hwtLib.amba.axiLite_comp.endpoint_fromInterfaces_test import \
+    AxiLiteEndpoint_fromInterfaceTC, AxiLiteEndpoint_fromInterface_arr_TC
+from hwtLib.amba.axiLite_comp.endpoint_struct_test import \
+    AxiLiteEndpoint_arrayStruct_TC, AxiLiteEndpoint_struct_TC
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC
 from hwtLib.amba.axi_ag_test import Axi_ag_TC
@@ -31,15 +31,18 @@ from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
     AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC, \
     AxiS_resizer_upAndDown_TC
 from hwtLib.amba.axis_comp.storedBurst_test import AxiSStoredBurstTC
-from hwtLib.amba.interconnect.rStrictOrder_test import RStrictOrderInterconnectTC
-from hwtLib.amba.interconnect.wStrictOrderComplex_test import WStrictOrderInterconnectComplexTC
-from hwtLib.amba.interconnect.wStrictOrder_test import WStrictOrderInterconnectTC, \
-    WStrictOrderInterconnect2TC
+from hwtLib.amba.interconnect.rStrictOrder_test import \
+    RStrictOrderInterconnectTC
+from hwtLib.amba.interconnect.wStrictOrderComplex_test import \
+    WStrictOrderInterconnectComplexTC
+from hwtLib.amba.interconnect.wStrictOrder_test import \
+    WStrictOrderInterconnectTC, WStrictOrderInterconnect2TC
 from hwtLib.clocking.clkDivider import ClkDiv3TC
 from hwtLib.handshaked.fifo_test import HsFifoTC
 from hwtLib.handshaked.joinFair_test import HsJoinFair_2inputs_TC, \
     HsJoinFair_3inputs_TC
-from hwtLib.handshaked.joinPrioritized_test import HsJoinPrioritizedTC, HsJoinPrioritized_randomized_TC
+from hwtLib.handshaked.joinPrioritized_test import HsJoinPrioritizedTC, \
+    HsJoinPrioritized_randomized_TC
 from hwtLib.handshaked.ramAsHs_test import RamAsHs_TC
 from hwtLib.handshaked.reg_test import HsRegL1D0TC, HsRegL2D1TC
 from hwtLib.handshaked.resizer_test import HsResizerTC
@@ -61,7 +64,8 @@ from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
 from hwtLib.mem.atomic.flipRam_test import FlipRamTC
 from hwtLib.mem.atomic.flipReg_test import FlipRegTC
 from hwtLib.mem.bramEndpoint_test import BramPortEndpointTC, \
-    BramPortEndpointDenseTC, BramPortEndpointArray, BramPortEndpointDenseStartTC
+    BramPortEndpointDenseTC, BramPortEndpointArray, \
+    BramPortEndpointDenseStartTC
 from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.clkSynchronizer_test import ClkSynchronizerTC
 from hwtLib.mem.cuckooHashTable_test import CuckooHashTableTC
@@ -76,17 +80,20 @@ from hwtLib.samples.arithmetic.twoCntrs_test import TwoCntrsTC
 from hwtLib.samples.arithmetic.widthCasting import WidthCastingExampleTC
 from hwtLib.samples.axi.simpleAxiRegs_test import SimpleAxiRegsTC
 from hwtLib.samples.builders.ethAddrUpdater_test import EthAddrUpdaterTC
-from hwtLib.samples.builders.handshakedBuilderSimple import HandshakedBuilderSimpleTC
+from hwtLib.samples.builders.handshakedBuilderSimple import \
+    HandshakedBuilderSimpleTC
 from hwtLib.samples.builders.hsBuilderSplit_test import HsBuilderSplit_TC
 from hwtLib.samples.builders.pingResponder_test import PingResponderTC
 from hwtLib.samples.emptyUnitWithSpi import EmptyUnitWithSpiTC
 from hwtLib.samples.errors.errorsTestCase import ErrorsTC
 from hwtLib.samples.hdlComments_test import HdlCommentsTC
-from hwtLib.samples.hierarchy.hierarchySerialization_test import HierarchySerializationTC
+from hwtLib.samples.hierarchy.hierarchySerialization_test import \
+    HierarchySerializationTC
 from hwtLib.samples.hierarchy.simpleSubunit2 import SimpleSubunit2TC
 from hwtLib.samples.hierarchy.simpleSubunit3 import SimpleSubunit3TC
 from hwtLib.samples.hierarchy.simpleSubunit_test import SimpleSubunitTC
-from hwtLib.samples.hierarchy.unitToUnitConnection import UnitToUnitConnectionTC
+from hwtLib.samples.hierarchy.unitToUnitConnection import \
+    UnitToUnitConnectionTC
 from hwtLib.samples.intfArray.interfaceArray0 import InterfaceArraySample0TC
 from hwtLib.samples.intfArray.interfaceArray1 import InterfaceArraySample1TC
 from hwtLib.samples.intfArray.interfaceArray2 import InterfaceArraySample2TC
@@ -101,24 +108,30 @@ from hwtLib.samples.operators.indexing_test import IndexingTC
 from hwtLib.samples.parametrization_test import ParametrizationTC
 from hwtLib.samples.rtlLvl.rtlLvl_test import RtlLvlTC
 from hwtLib.samples.showcase0_test import Showcase0TC
-from hwtLib.samples.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnectionTC
+from hwtLib.samples.simple2withNonDirectIntConnection import \
+    Simple2withNonDirectIntConnectionTC
 from hwtLib.samples.simpleAxiStream_test import SimpleUnitAxiStream_TC
-from hwtLib.samples.simpleWithNonDirectIntConncetion import SimpleWithNonDirectIntConncetionTC
+from hwtLib.samples.simpleWithNonDirectIntConncetion import \
+    SimpleWithNonDirectIntConncetionTC
 from hwtLib.samples.simpleWithParam import SimpleUnitWithParamTC
 from hwtLib.samples.simple_test import SimpleTC
 from hwtLib.samples.statements.constDriver_test import ConstDriverTC
 from hwtLib.samples.statements.forLoopCntrl_test import StaticForLoopCntrlTC
-from hwtLib.samples.statements.fsm_test import FsmExampleTC, HadrcodedFsmExampleTC
+from hwtLib.samples.statements.fsm_test import FsmExampleTC, \
+    HadrcodedFsmExampleTC
 from hwtLib.samples.statements.ifStm_test import IfStmTC
 from hwtLib.samples.statements.switchStm_test import SwitchStmTC
-from hwtLib.samples.statements.vldMaskConflictsResolving_test import VldMaskConflictsResolvingTC
+from hwtLib.samples.statements.vldMaskConflictsResolving_test import \
+    VldMaskConflictsResolvingTC
 from hwtLib.samples.timers import TimerTC
 from hwtLib.spi.master_test import SpiMasterTC
 from hwtLib.structManipulators.arrayBuff_writer_test import ArrayBuff_writer_TC
 from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC, \
     ArrayItemGetter2in1WordTC
-from hwtLib.structManipulators.cLinkedListReader_test import CLinkedListReaderTC
-from hwtLib.structManipulators.cLinkedListWriter_test import CLinkedListWriterTC
+from hwtLib.structManipulators.cLinkedListReader_test import \
+    CLinkedListReaderTC
+from hwtLib.structManipulators.cLinkedListWriter_test import \
+    CLinkedListWriterTC
 from hwtLib.structManipulators.mmu2pageLvl_test import MMU_2pageLvl_TC
 from hwtLib.structManipulators.structReader_test import StructReaderTC
 from hwtLib.structManipulators.structWriter_test import StructWriter_TC
@@ -135,8 +148,10 @@ from hwtLib.tests.simulatorUtlls_test import SimulatorUtilsTC
 from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.tests.statementTreesInternal import StatementTreesInternalTC
 from hwtLib.tests.statements import StatementsTC
-from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import InterfaceSynthesizerTC
-from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import SubunitsSynthesisTC
+from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import \
+    InterfaceSynthesizerTC
+from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import \
+    SubunitsSynthesisTC
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
 from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
 from hwtLib.tests.transTmpl_test import TransTmpl_TC
@@ -156,7 +171,8 @@ def doSimWithoutLog(self, time, name=None, config=None):
     sim = HdlSimulator()
     # dummy config
     sim.config = HdlSimConfig()
-    # run simulation, stimul processes are register after initial initialization
+    # run simulation, stimul processes are register after initial
+    # initialization
     sim.simUnit(self.model, time=time, extraProcesses=self.procs)
     return sim
 
