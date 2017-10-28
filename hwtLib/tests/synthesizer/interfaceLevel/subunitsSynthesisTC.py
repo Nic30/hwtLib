@@ -10,9 +10,9 @@ from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.exceptions import TypeConversionErr
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit, setOut
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
-from hwt.synthesizer.utils import toRtl, synthesised
+from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.utils import toRtl
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.fullDuplexAxiStream import FullDuplexAxiStream
 from hwtLib.samples.hierarchy.unitToUnitConnection import UnitToUnitConnection
@@ -23,6 +23,16 @@ from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import \
 
 
 D = DIRECTION
+
+
+def synthesised(u, targetPlatform=None):
+    assert not u._wasSynthetised()
+    if not hasattr(u, "_interfaces"):
+        u._loadDeclarations()
+
+    for _ in u._toRtl(targetPlatform):
+        pass
+    return u
 
 
 class UnitWithArrIntf(EmptyUnit):
