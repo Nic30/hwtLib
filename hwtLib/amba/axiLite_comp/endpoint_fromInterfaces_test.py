@@ -6,7 +6,7 @@ from hwt.interfaces.std import BramPort_withoutClk, VldSynced, RegCntrl, \
     VectSignal, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite import AxiLite
@@ -337,7 +337,7 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(AxiLiteEndpoint_fromInterface_arr_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-    # from hwt.synthesizer.shortcuts import toRtl
+    # from hwt.synthesizer.utils import toRtl
     # u = TestUnittWithArr()
     # u.DATA_WIDTH.set(32)
     # print(toRtl(u))

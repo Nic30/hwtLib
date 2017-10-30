@@ -5,7 +5,7 @@ from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import VldSynced, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.byteOrder import reversedBits
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.logic.crcPoly import CRC_5_USB, CRC_32
@@ -131,7 +131,7 @@ class Crc(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = Crc()
     u.POLY.set(CRC_32)
     u.DATA_WIDTH.set(8)

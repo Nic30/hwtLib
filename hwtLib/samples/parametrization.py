@@ -4,7 +4,7 @@
 from hwt.code import Concat
 from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.std import VectSignal
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 
 
@@ -36,7 +36,7 @@ class ParametrizationExample(Unit):
 
 if __name__ == "__main__":  # alias python main function
     # toRtl can be imported anywhere but we prefer to import it only when this script is running as main
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     # we create instance of our unit
     u = ParametrizationExample()
     # there is more of synthesis methods. toRtl() returns formated hdl string

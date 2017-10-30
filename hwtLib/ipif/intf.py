@@ -5,7 +5,7 @@ from hwt.hdl.constants import READ, WRITE, NOP
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import s, D, VectSignal
 from hwt.simulator.agentBase import SyncAgentBase
-from hwt.synthesizer.interfaceLevel.interface import Interface
+from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 
 

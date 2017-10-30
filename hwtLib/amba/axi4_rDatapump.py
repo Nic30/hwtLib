@@ -189,6 +189,6 @@ class Axi_rDatapump(Axi_datapumpBase):
         self.addrHandler(self.sizeRmFifo.dataIn, rErrFlag)
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = Axi_rDatapump()
     print(toRtl(u))

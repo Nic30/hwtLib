@@ -1,4 +1,4 @@
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.interfaces.std import VectSignal
 
 
@@ -13,7 +13,7 @@ class InvalidTypeConnetion(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = InvalidTypeConnetion()
     # expecting hwt.synthesizer.exceptions.TypeConversionErr
     print(toRtl(u))

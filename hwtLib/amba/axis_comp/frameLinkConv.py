@@ -5,7 +5,7 @@ from hwt.bitmask import mask
 from hwt.code import Concat, Switch, If
 from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream_withUserAndStrb
 from hwtLib.interfaces.frameLink import FrameLink
@@ -140,6 +140,6 @@ class FrameLinkToAxiS(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = AxiSToFrameLink()
     print(toRtl(u))

@@ -3,7 +3,7 @@ import unittest
 from hwt.serializer.exceptions import SerializerException
 from hwt.synthesizer.exceptions import TypeConversionErr, IntfLvlConfErr
 from hwt.synthesizer.rtlLevel.signalUtils.exceptions import MultipleDriversExc
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.utils import toRtl
 from hwtLib.samples.errors.accessingSubunitInternalIntf import AccessingSubunitInternalIntf
 from hwtLib.samples.errors.inconsistentIntfDirection import InconsistentIntfDirection
 from hwtLib.samples.errors.invalidTypeConnetion import InvalidTypeConnetion

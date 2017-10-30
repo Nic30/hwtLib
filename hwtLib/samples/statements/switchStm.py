@@ -3,7 +3,7 @@
 
 from hwt.code import Switch
 from hwt.interfaces.std import Signal, VectSignal
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 
 
 class SwitchStmUnit(Unit):
@@ -31,6 +31,6 @@ class SwitchStmUnit(Unit):
 
 
 if __name__ == "__main__":  # alias python main function
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
     print(toRtl(SwitchStmUnit()))

@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.utils import toRtl
 from hwtLib.samples.ipCoreCompatibleWrap import ArrayIntfExample
 from hwt.serializer.ipCoreWrapper import IpCoreWrapper
 

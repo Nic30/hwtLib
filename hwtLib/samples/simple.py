@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.interfaces.std import Signal
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 
 
 class SimpleUnit(Unit):
@@ -33,7 +33,7 @@ class SimpleUnit(Unit):
 
 if __name__ == "__main__":  # alias python main function
     # toRtl can be imported anywhere but we prefer to import it only when this script is running as main
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     # we create instance of our unit
     u = SimpleUnit()
     # there is more of synthesis methods. toRtl() returns formated hdl string

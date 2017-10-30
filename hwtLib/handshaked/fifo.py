@@ -79,7 +79,7 @@ class HandshakedFifo(HandshakedCompBase):
 
 if __name__ == "__main__":
     from hwt.interfaces.std import Handshaked
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = HandshakedFifo(Handshaked)
     u.DEPTH.set(8)
     u.DATA_WIDTH.set(4)

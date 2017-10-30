@@ -8,7 +8,7 @@ from hwt.hdl.value import Value
 from hwt.interfaces.std import Signal
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.mainBases import RtlMemoryBase
 from hwtLib.amba.axis import AxiStream
@@ -157,7 +157,7 @@ class PingResponder(Unit):
 
 if __name__ == "__main__":  # alias python main function
     # toRtl can be imported anywhere but we prefer to import it only when this script is running as main
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     # we create instance of our unit
     u = PingResponder()
     # there is more of synthesis methods. toRtl() returns formated hdl string

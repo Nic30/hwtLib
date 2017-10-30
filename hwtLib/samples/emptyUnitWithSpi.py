@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.utils import toRtl
 from hwtLib.spi.intf import Spi
 from hwtLib.tests.statementTrees import StatementTreesTC
 

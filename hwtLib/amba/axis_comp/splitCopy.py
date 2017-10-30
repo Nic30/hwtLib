@@ -11,6 +11,6 @@ class AxiSSplitCopy(AxiSCompBase, HsSplitCopy):
 
 if __name__ == "__main__":
     from hwtLib.amba.axis import AxiStream
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = AxiSSplitCopy(AxiStream)
     print(toRtl(u))

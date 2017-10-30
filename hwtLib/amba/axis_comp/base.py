@@ -1,4 +1,4 @@
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.amba.axis import AxiStream_withoutSTRB
 

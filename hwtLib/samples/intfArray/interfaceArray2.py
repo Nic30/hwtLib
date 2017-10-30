@@ -6,7 +6,7 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 
 
 class SimpleSubunit(Unit):
@@ -83,7 +83,7 @@ class InterfaceArraySample2TC(SimTestCase):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     print(
         toRtl(InterfaceArraySample2())
     )

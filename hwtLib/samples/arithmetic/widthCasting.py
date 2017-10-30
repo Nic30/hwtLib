@@ -4,7 +4,7 @@
 from hwt.code import connect
 from hwt.interfaces.std import VectSignal
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import fitTo
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.hdl.constants import Time
@@ -50,7 +50,7 @@ class WidthCastingExampleTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
 
     u = WidthCastingExample()
     print(toRtl(u))

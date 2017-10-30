@@ -195,6 +195,6 @@ class Axi_wDatapump(Axi_datapumpBase):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = Axi_wDatapump()
     print(toRtl(u))

@@ -6,7 +6,7 @@ import unittest
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.bitmask import mask
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream_withUserAndStrb
 from hwtLib.amba.axis_comp.frameLinkConv import FrameLinkToAxiS, AxiSToFrameLink
 from hwt.synthesizer.param import Param

@@ -284,7 +284,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
 
 if __name__ == "__main__":
     from hwtLib.types.ctypes import uint16_t, uint32_t, uint64_t, int32_t
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     from hwtLib.amba.axis import AxiStream
 
     #t = HStruct(

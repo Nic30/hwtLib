@@ -1,7 +1,7 @@
 from hwt.bitmask import selectBit
 from hwt.interfaces.std import VectSignal
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.logic.crcPoly import CRC_5_USB
@@ -57,6 +57,6 @@ class CrcComb(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = CrcComb()
     print(toRtl(u))

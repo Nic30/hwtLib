@@ -6,7 +6,7 @@ import unittest
 from hwt.serializer.systemC.serializer import SystemCSerializer
 from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.vhdl.serializer import VhdlSerializer
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.utils import toRtl
 from hwtLib.samples.showcase0 import Showcase0, showcase0_vhdl, \
     showcase0_verilog, showcase0_systemc
 

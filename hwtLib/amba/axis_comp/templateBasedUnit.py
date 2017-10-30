@@ -1,7 +1,7 @@
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 
 
 class TemplateBasedUnit(Unit):

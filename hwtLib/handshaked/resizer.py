@@ -124,7 +124,7 @@ class HsResizer(HandshakedCompBase):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     from hwt.interfaces.std import Handshaked
     u = HsResizer(Handshaked,
                   [1, 3],

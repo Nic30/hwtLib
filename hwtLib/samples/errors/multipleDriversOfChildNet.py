@@ -1,4 +1,4 @@
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.interfaces.std import Handshaked
 
 
@@ -33,7 +33,7 @@ class MultipleDriversOfChildNet2(MultipleDriversOfChildNet):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = MultipleDriversOfChildNet2()
     # hwt.serializer.exceptions.SerializerException
     print(toRtl(u))

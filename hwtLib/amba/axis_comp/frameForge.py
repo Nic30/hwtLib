@@ -297,7 +297,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     from hwtLib.types.ctypes import uint64_t, uint8_t, uint16_t
 
     t = HStruct((uint64_t, "item0"),

@@ -1,6 +1,6 @@
 from hwt.interfaces.std import D, Signal
 from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
-from hwt.synthesizer.interfaceLevel.interface import Interface
+from hwt.synthesizer.interface import Interface
 
 
 class Uart(Interface):

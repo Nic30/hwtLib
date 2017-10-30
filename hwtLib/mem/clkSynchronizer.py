@@ -3,7 +3,7 @@
 
 from hwt.hdl.types.defs import BIT
 from hwt.interfaces.std import Rst, Signal, Clk
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 
 
 class ClkSynchronizer(Unit):
@@ -43,5 +43,5 @@ class ClkSynchronizer(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     print(toRtl(ClkSynchronizer))

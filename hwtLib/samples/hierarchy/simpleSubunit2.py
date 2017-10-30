@@ -4,7 +4,7 @@
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
 from hwtLib.samples.simpleAxiStream import SimpleUnitAxiStream
 
@@ -43,7 +43,7 @@ class SimpleSubunit2TC(SimTestCase):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     print(toRtl(SimpleSubunit2()))
 
     import unittest

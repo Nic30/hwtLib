@@ -3,7 +3,7 @@
 
 from hwt.interfaces.std import Signal
 from hwt.code import If
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 
 
 class VldMaskConflictsResolving(Unit):
@@ -35,6 +35,6 @@ class VldMaskConflictsResolving(Unit):
         )
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = VldMaskConflictsResolving()
     print(toRtl(u))

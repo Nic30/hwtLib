@@ -63,6 +63,6 @@ class HsJoinPrioritized(HandshakedCompBase):
 
 if __name__ == "__main__":
     from hwt.interfaces.std import Handshaked
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = HsJoinPrioritized(Handshaked)
     print(toRtl(u))

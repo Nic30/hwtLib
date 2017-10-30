@@ -105,7 +105,7 @@ class HsJoinFairShare(HsJoinPrioritized):
 
 if __name__ == "__main__":
     from hwt.interfaces.std import Handshaked
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = HsJoinFairShare(Handshaked)
     u.INPUTS.set(3)
     print(toRtl(u))

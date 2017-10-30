@@ -3,7 +3,7 @@ from hwt.hdl.types.bits import Bits
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from typing import Optional, Union
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.hdl.value import Value
 
 

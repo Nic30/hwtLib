@@ -6,8 +6,8 @@ from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.utils import toRtl
 
 
 class FsmExample(Unit):

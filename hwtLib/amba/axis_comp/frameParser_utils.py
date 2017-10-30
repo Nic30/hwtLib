@@ -4,7 +4,7 @@ from hwt.code import If, And, Or
 from hwt.hdl.typeShortcuts import hBit
 from hwt.interfaces.std import Handshaked, VldSynced
 from hwt.pyUtils.arrayQuery import where
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 

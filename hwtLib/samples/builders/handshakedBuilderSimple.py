@@ -5,7 +5,7 @@ from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwtLib.handshaked.builder import HsBuilder
 
 
@@ -38,5 +38,5 @@ class HandshakedBuilderSimpleTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     print(toRtl(HandshakedBuilderSimple()))

@@ -206,7 +206,7 @@ class AxiS_resizer(AxiSCompBase):
             raise AssertionError("Input and output width are same, this instance is useless")
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     from hwtLib.amba.axis import AxiStream_withId
 
     u = AxiS_resizer(AxiStream_withId)

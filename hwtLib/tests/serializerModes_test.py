@@ -4,9 +4,9 @@ from hwt.code import Concat
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.serializer.mode import serializeExclude, serializeOnce, \
     serializeParamsUniq
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.utils import toRtl
 
 
 class SimpeUnit(Unit):

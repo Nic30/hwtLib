@@ -10,7 +10,7 @@ from hwt.code import If, Concat
 from hwt.hdl.types.defs import BIT
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRst, propagateClkRst
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 
 
 class DReg(Unit):
@@ -107,6 +107,6 @@ class Latch(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = DDR_Reg()
     print(toRtl(u))

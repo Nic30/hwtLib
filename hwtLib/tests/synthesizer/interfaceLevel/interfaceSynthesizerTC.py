@@ -10,11 +10,11 @@ from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwt.synthesizer.interfaceLevel.emptyUnit import setOut
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
-from hwt.synthesizer.shortcuts import synthesised
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.fullDuplexAxiStream import FullDuplexAxiStream
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import \
     BaseSynthesizerTC
+from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import synthesised
 
 
 D = DIRECTION

@@ -5,7 +5,7 @@ from hwt.code import connect, If, Concat
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwtLib.types.ctypes import uint32_t, int32_t, uint8_t, int8_t
 
 
@@ -640,7 +640,7 @@ SC_MODULE(Showcase0) {
 if __name__ == "__main__":  # alias python main function
     from pprint import pprint
 
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     from hwt.serializer.vhdl.serializer import VhdlSerializer
     from hwt.serializer.verilog.serializer import VerilogSerializer
     from hwt.serializer.systemC.serializer import SystemCSerializer

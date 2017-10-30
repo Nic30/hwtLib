@@ -4,7 +4,7 @@
 from hwt.code import If
 from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwtLib.ipif.intf import Ipif
 
 
@@ -55,7 +55,7 @@ class IpifReg(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = IpifReg()
 
     print(toRtl(u))

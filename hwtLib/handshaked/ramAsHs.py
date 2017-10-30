@@ -4,8 +4,8 @@ from hwt.interfaces.std import Handshaked, BramPort_withoutClk
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.simulator.agentBase import AgentBase
-from hwt.synthesizer.interfaceLevel.interface import Interface
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.interface import Interface
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.interfaces.addrDataHs import AddrDataHs
 
@@ -124,6 +124,6 @@ class RamAsHs(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = RamAsHs()
     print(toRtl(u))

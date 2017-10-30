@@ -78,7 +78,7 @@ class BramPortEndpoint(BusEndpoint):
 
 if __name__ == "__main__":
     from hwt.hdl.types.struct import HStruct
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     from hwtLib.types.ctypes import uint32_t
 
     u = BramPortEndpoint(

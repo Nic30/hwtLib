@@ -3,7 +3,7 @@
 
 from hwt.code import connect
 from hwt.interfaces.std import Signal, Clk, VectSignal
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.mem.ram import Ram_dp
 
@@ -247,5 +247,5 @@ BEGIN
 END ARCHITECTURE rtl;"""
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     print(toRtl(GroupOfBlockrams()))

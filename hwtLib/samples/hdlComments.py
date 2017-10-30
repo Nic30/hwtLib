@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from hwt.interfaces.std import Signal
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.shortcuts import toRtl
+from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.utils import toRtl
 
 
 class SimpleComentedUnit(Unit):

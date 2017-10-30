@@ -5,7 +5,7 @@ from hwt.code import If
 from hwt.interfaces.std import Signal, BramPort_withoutClk, Clk
 from hwt.interfaces.utils import propagateClk
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwtLib.mem.ram import RamSingleClock
 
 
@@ -76,5 +76,5 @@ class FlipRam(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     print(toRtl(FlipRam))

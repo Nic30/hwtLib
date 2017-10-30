@@ -4,7 +4,7 @@
 from hwt.code import If, Concat, sll
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.clocking.clkBuilder import ClkBuilder
 from hwtLib.handshaked.intfBiDirectional import HandshakedBiDirectional, \
@@ -186,6 +186,6 @@ class SpiMaster(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = SpiMaster()
     print(toRtl(u))

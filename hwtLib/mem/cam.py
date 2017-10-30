@@ -7,7 +7,7 @@ from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, VldSynced
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.interfaces.addrDataHs import AddrDataBitMaskHs
 
@@ -70,6 +70,6 @@ class Cam(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = Cam()
     print(toRtl(u))

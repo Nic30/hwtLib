@@ -6,7 +6,7 @@ from hwt.interfaces.std import Signal, HandshakeSync, \
     RegCntrl
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.mode import serializeOnce
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.mem.atomic.flipReg import FlipRegister
 
@@ -54,5 +54,5 @@ class FlipCntr(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     print(toRtl(FlipCntr()))
