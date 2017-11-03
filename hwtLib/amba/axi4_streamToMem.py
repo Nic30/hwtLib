@@ -18,6 +18,7 @@ from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, \
     PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
 from hwtLib.types.ctypes import uint32_t
+from hwt.synthesizer.vectorUtils import fitTo
 
 
 class Axi4streamToMem(Unit):
@@ -104,7 +105,7 @@ class Axi4streamToMem(Unit):
                    actualAddr(actualAddr + (self.MAX_BUTST_LEN * self.DATA_WIDTH // 8)),
                    lenRem(lenRem - self.MAX_BUTST_LEN)
                 ).Else(
-                   actualAddr(actualAddr + lenRem),
+                   actualAddr(actualAddr + fitTo(lenRem, actualAddr)),
                    lenRem(0)
                 )
             )

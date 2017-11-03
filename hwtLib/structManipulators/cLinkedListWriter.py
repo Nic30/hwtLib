@@ -193,7 +193,7 @@ class CLinkedListWriter(Unit):
     def wReqDriver(self, en, baseIndex, lenByPtrs, inBlockRemain):
         s = self._sig
         wReq = self.wDatapump.req
-        BURST_LEN = self.BUFFER_CAPACITY // 2
+        BURST_LEN = self.BUFFER_CAPACITY // 2 - 1
         inBlockRemain_asPtrSize = fitTo(inBlockRemain, lenByPtrs)
 
         # wReq driver
@@ -306,7 +306,7 @@ class CLinkedListWriter(Unit):
         If(self.baseAddr.dout.vld,
            baseIndex(self.addrToIndex(self.baseAddr.dout.data)),
         ).Elif(prepareEn,
-           baseIndex(baseIndex + reqLen_backup + 1)    
+           baseIndex(baseIndex + fitTo(reqLen_backup, baseIndex) + 1)    
         ).Elif(nextBlockTransition_out,
            baseIndex(nextBaseIndex)
         )

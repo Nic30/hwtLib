@@ -14,6 +14,7 @@ from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AddrSizeHs, AxiWDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
+from hwt.synthesizer.vectorUtils import fitTo
 
 
 stT = HEnum("st_t", ["waitOnInput", "waitOnDataTx", "waitOnAck"])
@@ -65,20 +66,21 @@ class ArrayBuff_writer(Unit):
 
     def getControlInterfaces(self):
         return (
-                self.baseAddr,
-                self.uploaded,
-                (Bits(16), None),  # padding
-                self.buff_remain,
-                (Bits(16), None),  # padding
-                )
+            self.baseAddr,
+            self.uploaded,
+            (Bits(16), None),  # padding
+            self.buff_remain,
+            (Bits(16), None),  # padding
+        )
 
     def uploadedCntrHandler(self, st, reqAckHasCome, sizeOfitems):
-        uploadedCntr = self._reg("uploadedCntr", self.uploaded._dtype, defVal=0)
+        uploadedCntr = self._reg(
+            "uploadedCntr", self.uploaded._dtype, defVal=0)
         self.uploaded(uploadedCntr)
 
         If(st._eq(stT.waitOnAck) & reqAckHasCome,
-           uploadedCntr(uploadedCntr + sizeOfitems)
-        )
+           uploadedCntr(uploadedCntr + fitTo(sizeOfitems, uploadedCntr))
+           )
 
     def _impl(self):
         ALIGN_BITS = log2ceil(self.DATA_WIDTH // 8 - 1).val
@@ -91,22 +93,25 @@ class ArrayBuff_writer(Unit):
 
         propagateClkRstn(self)
 
-        sizeOfitems = self._reg("sizeOfItems", Bits(buff.size._dtype.bit_length()))
+        sizeOfitems = self._reg("sizeOfItems", Bits(
+            buff.size._dtype.bit_length()))
 
         # aligned base addr
         baseAddr = self._reg("baseAddrReg", Bits(self.ADDR_WIDTH - ALIGN_BITS))
         If(self.baseAddr.dout.vld,
            baseAddr(self.baseAddr.dout.data[:ALIGN_BITS])
-        )
+           )
         self.baseAddr.din(Concat(baseAddr, vec(0, ALIGN_BITS)))
 
         # offset in buffer and its complement
-        offset = self._reg("offset", Bits(log2ceil(ITEMS + 1), signed=False), defVal=0)
-        remaining = self._reg("remaining", Bits(log2ceil(ITEMS + 1), signed=False), defVal=ITEMS)
+        offset_t = Bits(log2ceil(ITEMS + 1), signed=False)
+        offset = self._reg("offset", offset_t, defVal=0)
+        remaining = self._reg("remaining", Bits(
+            log2ceil(ITEMS + 1), signed=False), defVal=ITEMS)
         connect(remaining, self.buff_remain, fit=True)
 
         addrTmp = self._sig("baseAddrTmp", baseAddr._dtype)
-        addrTmp(baseAddr + offset)
+        addrTmp(baseAddr + fitTo(offset, baseAddr))
 
         # req values logic
         req.id(self.ID)
@@ -131,7 +136,7 @@ class ArrayBuff_writer(Unit):
         If(endOfLenBlock,
             connect(remainingAsLen, req.len, fit=True),
             connect(remaining, sizeTmp, fit=True)
-        ).Else(
+           ).Else(
             connect(buffSizeAsLen, req.len, fit=True),
             sizeTmp(buff.size)
         )
@@ -143,20 +148,21 @@ class ArrayBuff_writer(Unit):
         # timeout logic
         timeoutCntr = self._reg("timeoutCntr", Bits(log2ceil(self.TIMEOUT), False),
                                 defVal=TIMEOUT_MAX)
-        beginReq = buff.size._eq(self.BUFF_DEPTH) | timeoutCntr._eq(0)  # buffer is full or timeout
+        beginReq = buff.size._eq(self.BUFF_DEPTH) | timeoutCntr._eq(
+            0)  # buffer is full or timeout
         reqAckHasCome = self._sig("reqAckHasCome")
         reqAckHasCome(reqAck.vld & reqAck.data._eq(self.ID))
         st = FsmBuilder(self, stT)\
-        .Trans(stT.waitOnInput,
-            (beginReq & req.rd, stT.waitOnDataTx)
+            .Trans(stT.waitOnInput,
+                   (beginReq & req.rd, stT.waitOnDataTx)
 
-        ).Trans(stT.waitOnDataTx,
-            (w_last & w_ack, stT.waitOnAck)
+                   ).Trans(stT.waitOnDataTx,
+                           (w_last & w_ack, stT.waitOnAck)
 
-        ).Trans(stT.waitOnAck,
-            (reqAckHasCome, stT.waitOnInput)
+                           ).Trans(stT.waitOnAck,
+                                   (reqAckHasCome, stT.waitOnInput)
 
-        ).stateReg
+                                   ).stateReg
 
         If(st._eq(stT.waitOnInput) & beginReq,  # timeout is counting only when there is pending data
             # start new request
@@ -165,31 +171,32 @@ class ArrayBuff_writer(Unit):
                 If(endOfLenBlock,
                    offset(0),
                    remaining(ITEMS)
-                ).Else(
-                   offset(offset + buff.size),
-                   remaining(remaining - buff.size)
+                   ).Else(
+                    offset(offset + fitTo(buff.size, offset)),
+                    remaining(remaining - fitTo(buff.size, remaining))
                 ),
                 sizeOfitems(sizeTmp),
                 timeoutCntr(TIMEOUT_MAX)
-            )
-        ).Else(
+               )
+           ).Else(
             req.vld(0),
             If(buff.dataOut.vld & st._eq(stT.waitOnInput) & (timeoutCntr != 0),
                timeoutCntr(timeoutCntr - 1)
-            )
+               )
         )
 
         reqAck.rd(st._eq(stT.waitOnAck))
 
         self.uploadedCntrHandler(st, reqAckHasCome, sizeOfitems)
 
-        # it does not matter when lastWordCntr is changing when there is no request
+        # it does not matter when lastWordCntr is changing when there is no
+        # request
         startSendingData = st._eq(stT.waitOnInput) & beginReq & req.rd
         If(startSendingData,
             lastWordCntr(sizeTmp)
-        ).Elif((lastWordCntr != 0) & w_ack,
-            lastWordCntr(lastWordCntr - 1)
-        )
+           ).Elif((lastWordCntr != 0) & w_ack,
+                  lastWordCntr(lastWordCntr - 1)
+                  )
 
         buff.dataIn(self.items)
 
