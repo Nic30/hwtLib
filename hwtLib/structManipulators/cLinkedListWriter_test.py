@@ -16,7 +16,7 @@ class CLinkedListWriterTC(SimTestCase):
         self.ITEMS_IN_BLOCK = 31
         self.PTR_WIDTH = 8
         self.BUFFER_CAPACITY = 7
-        self.TIMEOUT = 40 
+        self.TIMEOUT = 40
         self.ID = int(self.u.ID)
         self.MAX_LEN = self.BUFFER_CAPACITY // 2 - 1
         self.DATA_WIDTH = int(self.u.DATA_WIDTH)
