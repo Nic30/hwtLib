@@ -165,6 +165,7 @@ from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
+from hwtLib.logic.bitonicSorter import BitonicSorterTC
 
 
 def doSimWithoutLog(self, time, name=None, config=None):
@@ -274,6 +275,7 @@ suite = testSuiteFromTCs(
     BramPortEndpointArray,
     LsfrTC,
     ClkDiv3TC,
+    BitonicSorterTC,
 
     FlipRegTC,
     FlipCntrTC,
