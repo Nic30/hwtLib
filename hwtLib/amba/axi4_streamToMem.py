@@ -35,7 +35,8 @@ class Axi4streamToMem(Unit):
     Length of written data is specified by DATA_LEN.
     Input data is splited on smaller frames to fit MAX_BUTST_LEN.
 
-    If there is transaction pending idle flag is 0, if on/off is set to 0 in this state
+    If there is transaction pending idle flag is 0,
+    if on/off is set to 0 in this state
     unit continues until all data are send and then stayes off.
     This could be use as synchronization with the software.
 

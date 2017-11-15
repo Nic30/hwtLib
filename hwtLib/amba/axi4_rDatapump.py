@@ -59,8 +59,8 @@ class Axi_rDatapump(Axi_datapumpBase):
 
         If(lastReqDispatched,
             req_idBackup(req.id),
-            a.id(req.id) 
-        ).Else(
+            a.id(req.id)
+           ).Else(
             a.id(req_idBackup)
         )
 
@@ -69,7 +69,7 @@ class Axi_rDatapump(Axi_datapumpBase):
         req = self.driver.req
         r, s = self._reg, self._sig
 
-        self.axiAddrDefaults() 
+        self.axiAddrDefaults()
 
         # if axi len is smaller we have to use transaction splitting
         if self.useTransSplitting():
@@ -91,20 +91,21 @@ class Axi_rDatapump(Axi_datapumpBase):
                ar.len(LEN_MAX),
                addRmSize.rem(0),
                addRmSize.propagateLast(0)
-            ).Else(
-               connect(reqLen, ar.len, fit=True),  # connect only lower bits of len
-               addRmSize.rem(reqRem),
-               addRmSize.propagateLast(1)
+               ).Else(
+                # connect only lower bits of len
+                connect(reqLen, ar.len, fit=True),
+                addRmSize.rem(reqRem),
+                addRmSize.propagateLast(1)
             )
 
             If(ack,
                 If(reqLen > LEN_MAX,
                     lenDebth(reqLen - (LEN_MAX + 1)),
                     lastReqDispatched(0)
-                ).Else(
+                   ).Else(
                     lastReqDispatched(1)
                 )
-            )
+               )
 
             If(lastReqDispatched,
                ar.addr(req.addr),
@@ -116,19 +117,19 @@ class Axi_rDatapump(Axi_datapumpBase):
                ack(req.vld & addRmSize.rd & ar.ready),
                StreamNode(masters=[req],
                           slaves=[addRmSize, ar],
-                          extraConds={ar:~rErrFlag}).sync(),
-            ).Else(
-               req.rd(0),
-               ar.addr(rAddr),
-               ack(addRmSize.rd & ar.ready),
-               If(ack,
-                  rAddr(rAddr + ADDR_STEP) 
-               ),
+                          extraConds={ar: ~rErrFlag}).sync(),
+               ).Else(
+                req.rd(0),
+                ar.addr(rAddr),
+                ack(addRmSize.rd & ar.ready),
+                If(ack,
+                   rAddr(rAddr + ADDR_STEP)
+                   ),
 
-               reqLen(lenDebth),
-               reqRem(remBackup),
-               StreamNode(slaves=[addRmSize, ar],
-                          extraConds={ar:~rErrFlag}).sync(),
+                reqLen(lenDebth),
+                reqRem(remBackup),
+                StreamNode(slaves=[addRmSize, ar],
+                           extraConds={ar: ~rErrFlag}).sync(),
             )
         else:
             # if axi len is wider we can directly translate requests to axi
@@ -142,27 +143,27 @@ class Axi_rDatapump(Axi_datapumpBase):
 
             StreamNode(masters=[req],
                        slaves=[ar, addRmSize],
-                       extraConds={ar:~rErrFlag}).sync()
+                       extraConds={ar: ~rErrFlag}).sync()
 
     def remSizeToStrb(self, remSize, strb):
         strbBytes = 2 ** self.getSizeAlignBits()
 
         return Switch(remSize)\
-                .Case(0,
-                      strb(mask(strbBytes))
-                ).addCases(
-                 [ (i + 1, strb(mask(i + 1))) 
-                   for i in range(strbBytes - 1)]
-                )
+            .Case(0,
+                  strb(mask(strbBytes))
+                  ).addCases(
+            [(i + 1, strb(mask(i + 1)))
+             for i in range(strbBytes - 1)]
+        )
 
-    def dataHandler(self, rmSizeOut): 
+    def dataHandler(self, rmSizeOut):
         r = self.r
         rOut = self.driver.r
 
         rErrFlag = self._reg("rErrFlag", defVal=0)
         If(r.valid & rOut.ready & (r.resp != RESP_OKAY),
            rErrFlag(1)
-        )
+           )
         self.errorRead(rErrFlag)
 
         rOut.id(r.id)
@@ -170,7 +171,7 @@ class Axi_rDatapump(Axi_datapumpBase):
 
         If(r.valid & r.last & rmSizeOut.propagateLast,
             self.remSizeToStrb(rmSizeOut.rem, rOut.strb)
-        ).Else(
+           ).Else(
             rOut.strb(mask(2 ** self.getSizeAlignBits()))
         )
         rOut.last(r.last & rmSizeOut.propagateLast)
@@ -178,7 +179,7 @@ class Axi_rDatapump(Axi_datapumpBase):
         StreamNode(masters=[r, rmSizeOut],
                    slaves=[rOut],
                    extraConds={rmSizeOut: r.last,
-                               rOut:~rErrFlag}).sync()
+                               rOut: ~rErrFlag}).sync()
 
         return rErrFlag
 
@@ -187,6 +188,7 @@ class Axi_rDatapump(Axi_datapumpBase):
 
         rErrFlag = self.dataHandler(self.sizeRmFifo.dataOut)
         self.addrHandler(self.sizeRmFifo.dataIn, rErrFlag)
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
