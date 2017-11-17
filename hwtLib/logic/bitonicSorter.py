@@ -9,7 +9,8 @@ from hwt.hdl.constants import Time
 class BitonicSorter(Unit):
     def __init__(self, cmpFn=lambda x, y: x < y):
         """
-        :param cmpFn: function (item0, item1) if returns true, items are not swaped
+        :param cmpFn: function (item0, item1) if returns true,
+            items are not swaped
         """
         Unit.__init__(self)
         self.cmpFn = cmpFn
@@ -64,7 +65,7 @@ class BitonicSorter(Unit):
                 # keep
                 _x[i](x[i]),
                 _x[i + dist](x[i + dist])
-            ).Else(
+               ).Else(
                 # swap
                 _x[i](x[i + dist]),
                 _x[i + dist](x[i]),
@@ -78,6 +79,11 @@ class BitonicSorter(Unit):
 
 
 class BitonicSorterTC(SimTestCase):
+    def createUnit(self):
+        u = BitonicSorter()
+        self.prepareUnit(u)
+        return u
+
     def getOutputs(self):
         return [outp._ag.data[-1] for outp in self.u.outputs]
 
@@ -86,8 +92,7 @@ class BitonicSorterTC(SimTestCase):
             p._ag.data.append(v)
 
     def test_reversed(self):
-        u = BitonicSorter()
-        self.prepareUnit(u)
+        u = self.createUnit()
 
         ref = [i for i in range(int(u.ITEMS))]
         self.setInputs(reversed(ref))
@@ -96,8 +101,7 @@ class BitonicSorterTC(SimTestCase):
         self.assertValSequenceEqual(self.getOutputs(), ref)
 
     def test_sorted(self):
-        u = BitonicSorter()
-        self.prepareUnit(u)
+        u = self.createUnit()
 
         ref = [i for i in range(int(u.ITEMS))]
         self.setInputs(ref)
