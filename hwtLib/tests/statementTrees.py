@@ -1,15 +1,15 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
-import re
-import unittest
-
+from hwt.code import c, If, Switch
 from hwt.hdl.statements import IfContainer, SwitchContainer
 from hwt.hdl.types.defs import INT
 from hwt.hdl.types.enum import HEnum
 from hwt.synthesizer.assigRenderer import renderIfTree
-from hwt.code import c, If, Switch
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
+import re
+import unittest
+from hwt.serializer.vhdl.serializer import VhdlSerializer
 
 
 rmWhitespaces = re.compile(r'\s+', re.MULTILINE)
@@ -33,7 +33,8 @@ class StatementTreesTC(unittest.TestCase):
             self.assertEqual(len(template.cases), len(template.cases))
 
     def strStructureCmp(self, cont, tmpl):
-        cont = str(cont)
+        if not isinstance(cont, str):
+            cont = VhdlSerializer.asHdl(cont, VhdlSerializer.getBaseContext())
         _tmpl = rmWhitespaces.sub(" ", tmpl).strip()
         _cont = rmWhitespaces.sub(" ", cont).strip()
 
@@ -65,12 +66,14 @@ class StatementTreesTC(unittest.TestCase):
         self.assertEqual(len(cont), 1)
         cont = cont[0]
 
-        tmpl = SwitchContainer(a, [(i, c(i, b)) for i in range(3)] + [(None, c(3, b))])
+        tmpl = SwitchContainer(a, [(i, c(i, b)) for i in range(3)]
+                               + [(None, c(3, b))])
         self.compareStructure(cont, tmpl)
 
     def test_ifsInSwitch(self):
         n = self.n
-        stT = HEnum('t_state', ["idle", "tsWait", "ts0Wait", "ts1Wait", "lenExtr"])
+        stT = HEnum('t_state', ["idle", "tsWait", "ts0Wait",
+                                "ts1Wait", "lenExtr"])
         clk = n.sig('clk')
         rst = n.sig("rst")
 
@@ -82,10 +85,10 @@ class StatementTreesTC(unittest.TestCase):
 
         def tsWaitLogic():
             return If(sd0 & sd1,
-                      c(stT.lenExtr, st)
-                      ).Else(
+                       c(stT.lenExtr, st)
+                   ).Else(
                        c(stT.ts1Wait, st)
-                       )
+                   )
         assigs = Switch(st)\
                  .Case(stT.idle,
                        tsWaitLogic()

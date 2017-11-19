@@ -1,8 +1,8 @@
-from hwt.serializer.vhdl.formater import formatVhdl
+from hwt.serializer.vhdl.serializer import VhdlSerializer
 
 
 def netlistToVhdlStr(name, netlist, interfaces):
-    return formatVhdl("\n".join([str(o)
-                                 for o in netlist.synthesize(name, interfaces)
-                                 ])
-                      )
+    ctx = VhdlSerializer.getBaseContext()
+    return "\n".join([VhdlSerializer.asHdl(o, ctx)
+                      for o in netlist.synthesize(name, interfaces)
+                      ])
