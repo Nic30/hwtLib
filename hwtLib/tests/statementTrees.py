@@ -1,15 +1,16 @@
-# -*- coding: utf-8 -*-
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import re
+import unittest
 
 from hwt.code import c, If, Switch
 from hwt.hdl.statements import IfContainer, SwitchContainer
 from hwt.hdl.types.defs import INT
 from hwt.hdl.types.enum import HEnum
+from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.assigRenderer import renderIfTree
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
-import re
-import unittest
-from hwt.serializer.vhdl.serializer import VhdlSerializer
 
 
 rmWhitespaces = re.compile(r'\s+', re.MULTILINE)
@@ -341,6 +342,7 @@ class StatementTreesTC(unittest.TestCase):
 
         """
         self.strStructureCmp(cont, tmpl)
+
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
