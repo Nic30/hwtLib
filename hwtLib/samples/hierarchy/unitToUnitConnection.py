@@ -36,6 +36,7 @@ class UnitToUnitConnectionTC(SimpleSubunit2TC):
         self.u = UnitToUnitConnection()
         self.prepareUnit(self.u)
 
+
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    print(toRtl(UnitToUnitConnection))
+    print(toRtl(UnitToUnitConnection()))

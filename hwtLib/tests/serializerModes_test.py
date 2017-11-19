@@ -190,6 +190,7 @@ class SerializerModes_TC(unittest.TestCase):
         s = toRtl(A())
         self.assertEqual(s, expected_vhdl)
 
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(TransTmpl_TC('test_walkFlatten_arr'))

@@ -3,8 +3,8 @@
 
 from hwt.code import connect
 from hwt.interfaces.std import Signal, Clk, VectSignal
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 from hwtLib.mem.ram import Ram_dp
 
 
@@ -44,10 +44,10 @@ class GroupOfBlockrams(Unit):
 
         all_bram_ports = [bramR.a, bramR.b, bramW.a, bramW.b]
 
-        connect(s.clk, *map(lambda i: i.clk, all_bram_ports))
-        connect(s.en, *map(lambda i: i.en, all_bram_ports))
-        connect(s.we, *map(lambda i: i.we, all_bram_ports))
-        connect(s.addr, *map(lambda i: i.addr, all_bram_ports))
+        connect(s.clk, *[i.clk for i in all_bram_ports])
+        connect(s.en, *[i.en for i in all_bram_ports])
+        connect(s.we, *[i.we for i in all_bram_ports])
+        connect(s.addr, *[i.addr for i in all_bram_ports])
 
         bramW.a.din(s.in_w_a)
         bramW.b.din(s.in_w_b)
@@ -57,6 +57,7 @@ class GroupOfBlockrams(Unit):
         s.out_w_b(bramW.b.dout)
         s.out_r_a(bramR.a.dout)
         s.out_r_b(bramR.b.dout)
+
 
 groupOfBlockrams_as_vhdl = """library IEEE;
 use IEEE.std_logic_1164.all;

@@ -43,6 +43,7 @@ class Serializer_tmpVar_TC(unittest.TestCase):
         s = toRtl(TmpVarExample(), serializer=VhdlSerializer)
         self.assertEqual(s, TmpVarExample_asVhdl)
 
+
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     # suite.addTest(RdSyncedPipe('test_basic_data_pass'))
