@@ -212,7 +212,8 @@ BEGIN
     dataOut_valid(1) <= dataIn_valid AND (dataOut_ready(0));
 END ARCHITECTURE rtl;
 --
---    This unit has actually no functionality it is just example of hierarchical design.
+--    This unit has actually no functionality it is just example
+--    of hierarchical design.
 --    
 library IEEE;
 use IEEE.std_logic_1164.all;
