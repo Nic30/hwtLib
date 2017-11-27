@@ -119,14 +119,17 @@ class PingResponder(Unit):
                  )
 
     def _impl(self):
+        # tmp registers
         sendingReply = self._reg("sendingReply", defVal=0)
         resp = self._reg("resp", echoFrame_t)
         isEchoReq = self._reg("isEchoReq", defVal=0)
 
+        # set fields of reply
         resp.icmp.type = resp.icmp.type._dtype.fromPy(ICMP_TYPE.ECHO_REPLY)
         resp.icmp.code = resp.icmp.code._dtype.fromPy(0)
         resp.icmp.checksum = self.icmp_checksum(resp.icmp)
 
+        # parse input frame
         parsed = AxiSBuilder(self, self.rx).parse(echoFrame_t)
         self.req_load(parsed, resp, sendingReply)
 
@@ -139,6 +142,7 @@ class PingResponder(Unit):
             out.DATA_WIDTH.set(self.DATA_WIDTH)
             out.IS_BIGENDIAN.set(self.IS_BIGENDIAN)
 
+        # create output frame
         txBuilder, forgeIn = AxiSBuilder.forge(self,
                                                echoFrame_t,
                                                AxiStream,
@@ -148,8 +152,9 @@ class PingResponder(Unit):
         tx = txBuilder.end
         self.tx(tx)
 
+        # update state flags
         If(self.rx.last & self.rx.valid,
-           sendingReply(self.myIp._eq(resp.ip.dst) & isEchoReq) 
+           sendingReply(self.myIp._eq(resp.ip.dst) & isEchoReq)
         ).Elif(tx.valid & tx.last,
            sendingReply(0)
         )

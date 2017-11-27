@@ -68,14 +68,16 @@ class HsBuilderSplit(Unit):
         a.split_copy_to(self.a_0, self.a_1, self.a_2)
 
         # round robin like split, data is send only to one of output ports
-        # and there is cycling flag which selects priority for each output to assert uniform load
+        # and there is cycling flag which selects priority for each output
+        # to assert uniform load
         b = HsBuilder(self, self.b)\
             .split_fair_to(self.b_0, self.b_1, self.b_2,
                            exportSelected=True)
 
         self.b_selected(b.lastComp.selectedOneHot)
 
-        # send data output interface which is ready and has higher priority (=lowest index)
+        # send data output interface which is ready and has higher priority
+        # (=lowest index)
         HsBuilder(self, self.c).split_prioritized_to(self.c_0, self.c_1)
 
         # explicitly select output

@@ -51,7 +51,8 @@ class Axi4streamToMem(Unit):
         self.DATA_WIDTH = Param(32)
         self.CNTRL_AW = Param(5)
 
-        self.DATA_LEN = Param(33)  # size of data which should be transfered in worlds
+        # size of data which should be transfered in worlds
+        self.DATA_LEN = Param(33)
         self.MAX_BUTST_LEN = Param(16)
         self.REGISTER_MAP = HStruct(
                              (uint32_t, "control"),
@@ -216,12 +217,13 @@ class Axi4streamToMem(Unit):
         axi = self.axi
 
         # disable read channel
-        c(0, *where(axi.ar._interfaces, lambda x: x is not axi.ar.ready))    
+        c(0, *where(axi.ar._interfaces, lambda x: x is not axi.ar.ready))
         axi.r.ready(0)
 
         axi.b.ready(1)  # we do ignore write confirmations
 
-        st_t = HEnum("state_type", ["fullIdle", "writeAddr", "writeData", "writeDataLast"])
+        st_t = HEnum("state_type", ["fullIdle", "writeAddr", "writeData",
+                                    "writeDataLast"])
 
         onoff = self._reg("on_off_reg", defVal=0)
         baseAddr = self._reg("baseAddr_reg", Bits(self.ADDR_WIDTH), 0)
@@ -236,6 +238,7 @@ class Axi4streamToMem(Unit):
         self.axiWAddrHandler(st, baseAddr, actualAddr, lenRem)
         self.mainFsm(st, onoff, lenRem, actualLenRem)
         self.dataWFeed(st, lenRem, actualLenRem)
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
