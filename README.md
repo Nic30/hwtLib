@@ -44,6 +44,7 @@ class HandshakedBuilderSimple(Unit):
         #    * data width resizers
         #    * various stream join/split components
         #    * clock domain crossing
+        # there are other examples in https://github.com/Nic30/hwtLib/tree/master/hwtLib/samples/builders
 
         # for most of stream interfaces like AvalonST, FrameLink ...
         # there is builder with same program interface
@@ -101,6 +102,7 @@ if __name__ == "__main__":
     p = Packager(u)
     p.createPackage(".")
 ```
+
 
 
 Repositories with opensource HW:
