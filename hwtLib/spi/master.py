@@ -24,7 +24,7 @@ class SpiCntrlDataAgent(HandshakedBiDirectionalAgent):
 
     def doWrite(self, s, data):
         """write data to interface"""
-        w = s.write 
+        w = s.write
         intf = self.intf
         if data is None:
             slave, d, last = None, None, None

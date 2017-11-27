@@ -641,6 +641,7 @@ if __name__ == "__main__":  # alias python main function
     from pprint import pprint
 
     from hwt.synthesizer.utils import toRtl
+    from hwt.serializer.hwt.serializer import HwtSerializer
     from hwt.serializer.vhdl.serializer import VhdlSerializer
     from hwt.serializer.verilog.serializer import VerilogSerializer
     from hwt.serializer.systemC.serializer import SystemCSerializer
@@ -649,10 +650,12 @@ if __name__ == "__main__":  # alias python main function
 
     # * new instance has to be created every time because toRtl is modifies the unit
     # * serializers are using templates which can be customized
-    #print(toRtl(Showcase0(), serializer=SimModelSerializer))
+    print(toRtl(Showcase0(), serializer=HwtSerializer))
     print(toRtl(Showcase0(), serializer=VhdlSerializer))
     print(toRtl(Showcase0(), serializer=VerilogSerializer))
     print(toRtl(Showcase0(), serializer=SystemCSerializer))
+    #print(toRtl(Showcase0(), serializer=SimModelSerializer))
+
     r = ResourceAnalyzer()
     print(toRtl(Showcase0(), serializer=r))
     pprint(r.report())

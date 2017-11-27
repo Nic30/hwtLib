@@ -25,6 +25,7 @@ class AxiTC(unittest.TestCase):
     def test_getSizeWidth(self):
         self.assertEqual(getSizeWidth(255, 64), 12)
 
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(AxiTC('test_axi_size'))

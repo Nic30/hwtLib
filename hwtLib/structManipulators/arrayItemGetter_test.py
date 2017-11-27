@@ -99,6 +99,7 @@ class ArrayItemGetter2in1WordTC(SimTestCase):
                                       for i in range(N)
                                     ])
 
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(ArrayItemGetter2in1WordTC('test_get'))
