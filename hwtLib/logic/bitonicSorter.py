@@ -79,6 +79,8 @@ class BitonicSorter(Unit):
 
 
 class BitonicSorterTC(SimTestCase):
+    SIM_TIME = 40 * Time.ns
+
     def createUnit(self):
         u = BitonicSorter()
         self.prepareUnit(u)
@@ -97,7 +99,7 @@ class BitonicSorterTC(SimTestCase):
         ref = [i for i in range(int(u.ITEMS))]
         self.setInputs(reversed(ref))
 
-        self.doSim(50 * Time.ns)
+        self.doSim(self.SIM_TIME)
         self.assertValSequenceEqual(self.getOutputs(), ref)
 
     def test_sorted(self):
@@ -106,7 +108,7 @@ class BitonicSorterTC(SimTestCase):
         ref = [i for i in range(int(u.ITEMS))]
         self.setInputs(ref)
 
-        self.doSim(50 * Time.ns)
+        self.doSim(self.SIM_TIME)
         self.assertValSequenceEqual(self.getOutputs(), ref)
 
 
