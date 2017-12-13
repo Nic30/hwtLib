@@ -41,7 +41,7 @@ class CntrTC(SimTestCase):
 
         expected = {(AllOps.ADD, 2): 1,
                     (ResourceMUX, 2, 2): 1,
-                     ResourceFF: 2}
+                    ResourceFF: 2}
 
         s = ResourceAnalyzer()
         toRtl(u, serializer=s)
@@ -54,7 +54,7 @@ class CntrTC(SimTestCase):
 
         expected = {(AllOps.ADD, 150): 1,
                     (ResourceMUX, 150, 2): 1,
-                     ResourceFF: 150}
+                    ResourceFF: 150}
 
         s = ResourceAnalyzer()
         toRtl(u, serializer=s)

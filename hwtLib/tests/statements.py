@@ -49,6 +49,7 @@ class StatementsTC(unittest.TestCase):
             self.assertEqual(newVal.val, expected)
             self.assertEqual(newVal.vldMask, 3)
 
+
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(StatementsTC))

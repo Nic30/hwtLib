@@ -22,15 +22,17 @@ frameHeader = HStruct(
     (Eth2Header_t, "eth"),
     (IPv4Header_t, "ipv4")
     )
-frameHeader = HStruct_selectFields(frameHeader, {"eth": {"src", "dst"},
-                                                 "ipv4": {"src", "dst"}
-                                                 })
+frameHeader = HStruct_selectFields(frameHeader,
+                                   {"eth": {"src", "dst"},
+                                    "ipv4": {"src", "dst"}
+                                    })
 
 
 class EthAddrUpdater(Unit):
     """
-    This is example unit which reads dst and src addresses(MAC and IPv4) from ethernet frame stored
-    in memory and writes this addresses in reverse direction into second frame.
+    This is example unit which reads dst and src addresses(MAC and IPv4)
+    from ethernet frame stored in memory and writes this addresses
+    in reverse direction into second frame.
     """
     def _config(self):
         Axi3._config(self)
@@ -64,7 +66,9 @@ class EthAddrUpdater(Unit):
         txW = self.txPacketUpdater.dataIn
 
         def withFifo(interface):
-            return HsBuilder(self, interface).buff(items=4).end
+            return HsBuilder(self, interface)\
+                      .buff(items=4)\
+                      .end
 
         txW.eth.dst(withFifo(rxR.eth.src))
         txW.eth.src(withFifo(rxR.eth.dst))

@@ -14,8 +14,9 @@ class SimpleUnit(Unit):
         _declr() is like header of Unit.
         There you have to declare things which should be visible from outside.
         """
-        # interfaces "a" and "b" are accessible from outside when declared in _declr method,
-        # this means they will be interfaces of Entity and all other units can connect anything to these interfaces
+        # interfaces "a" and "b" are accessible from outside when declared
+        # in _declr method, this means they will be interfaces of Entity
+        # and all other units can connect anything to these interfaces
         # note that interfaces has to be properties of this object
         # which is kind of registration and without it, it can not be discovered
         self.a = Signal()
@@ -24,20 +25,26 @@ class SimpleUnit(Unit):
     def _impl(self):
         """
         _impl() is like body of unit.
-        Logic and connections are specified in this function.
+        Logic and connections are specified i`qn this function.
         """
 
-        # call operator creates assignment. First parameter is source rest are destinations.
-        self.b(self.a)  # a drives b
-        # directions of a and b interfaces are derived automatically, if signal has driver it is output
+        # call operator creates assignment. First parameter is source rest
+        # are destinations.
+        self.b(self.a)  # a drives b, "()" because "=" can not be overriden
+        # directions of a and b interfaces are derived automatically,
+        # if signal has driver it is output
+
 
 if __name__ == "__main__":  # alias python main function
-    # toRtl can be imported anywhere but we prefer to import it only when this script is running as main
+    # toRtl can be imported anywhere but we prefer to import it only
+    # when this script is running as main
     from hwt.synthesizer.utils import toRtl
+    # there are other serializers ...
+    from hwt.serializer.vhdl.serializer import VhdlSerializer
     # we create instance of our unit
     u = SimpleUnit()
     # there is more of synthesis methods. toRtl() returns formated hdl string
-    print(toRtl(u))
+    print(toRtl(u, serializer=VhdlSerializer()))
 
 # expected Output (without # ofcourse)
 # --

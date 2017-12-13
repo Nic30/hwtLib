@@ -4,6 +4,7 @@ from hwt.hdl.typeShortcuts import vec, hBit, hInt, hStr
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.value import Value
+from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
@@ -21,7 +22,8 @@ class BitsSlicingTC(unittest.TestCase):
             if not isinstance(second, Value):
                 if isinstance(second, int):
                     first = int(first)
-                    return unittest.TestCase.assertEqual(self, first, second, msg=msg)
+                    return unittest.TestCase.assertEqual(self, first,
+                                                         second, msg=msg)
                 else:
                     second = second.staticEval()
 
@@ -31,7 +33,8 @@ class BitsSlicingTC(unittest.TestCase):
         unittest.TestCase.assertEqual(self, first, second, msg=msg)
 
     def assertStrEq(self, first, second, msg=None):
-        first = repr(first).replace(" ", "")
+        ctx = VhdlSerializer.getBaseContext()
+        first = VhdlSerializer.asHdl(first, ctx).replace(" ", "")
         unittest.TestCase.assertEqual(self, first, second, msg=msg)
 
     def test_slice_bits(self):

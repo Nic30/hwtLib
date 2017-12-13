@@ -166,6 +166,7 @@ class AxiLiteEndpointDenseStartTC(AxiLiteEndpointTC):
 }"""
         self.assertEqual(s, expected)
 
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()

@@ -53,8 +53,10 @@ class Exporter(EmptyUnit):
 
 class NetFilter(Unit):
     """
-    This unit has actually no functionality it is just example of hierarchical design.
+    This unit has actually no functionality it is just example
+    of hierarchical design.
     """
+
     def _config(self):
         self.DATA_WIDTH = Param(64)
 
@@ -73,7 +75,8 @@ class NetFilter(Unit):
     def _impl(self):
         s = self
         propagateClkRstn(s)
-        AxiSBuilder(self, s.hfe.dout).split_copy_to(s.patternMatch.din, s.filter.din)
+        AxiSBuilder(self, s.hfe.dout).split_copy_to(s.patternMatch.din,
+                                                    s.filter.din)
 
         s.hfe.din(s.din)
         s.filter.headers(s.hfe.headers)

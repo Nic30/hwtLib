@@ -17,6 +17,7 @@ from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.unit import Unit
 from hwtLib.sim.abstractMemSpaceMaster import PartialField
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 
 def inRange(n, lower, end):
@@ -98,12 +99,14 @@ class BusEndpoint(Unit):
 
     def __init__(self, structTemplate, intfCls=None, shouldEnterFn=None):
         """
-        :param structTemplate: instance of HStruct which describes address space of this endpoint
+        :param structTemplate: instance of HStruct which describes
+            address space of this endpoint
         :param intfCls: class of bus interface which should be used
         :param shouldEnterFn: function(structField) return (shouldEnter, shouldUse)
             where shouldEnter is flag that means iterator over this interface
             should look inside of this actual object
-            and shouldUse flag means that this field should be used (to create interface)
+            and shouldUse flag means that this field should be used
+            (to create interface)
         """
         assert intfCls is not None, "intfCls has to be specified"
 
@@ -260,13 +263,18 @@ class BusEndpoint(Unit):
 
         return maxAddr.bit_length()
 
-    def propagateAddr(self, srcAddrSig, srcAddrStep, dstAddrSig, dstAddrStep, transTmpl):
+    def propagateAddr(self, srcAddrSig: RtlSignal,
+                      srcAddrStep: int,
+                      dstAddrSig: RtlSignal,
+                      dstAddrStep: int,
+                      transTmpl: TransTmpl):
         """
         :param srcAddrSig: input signal with address
         :param srcAddrStep: how many bits is addressing one unit of srcAddrSig
         :param dstAddrSig: output signal for address
         :param dstAddrStep: how many bits is addressing one unit of dstAddrSig
-        :param transTmpl: TransTmpl which has meta-informations about this address space transition
+        :param transTmpl: TransTmpl which has meta-informations
+            about this address space transition
         """
         IN_ADDR_WIDTH = srcAddrSig._dtype.bit_length()
 
@@ -274,8 +282,9 @@ class BusEndpoint(Unit):
         assert dstAddrStep % srcAddrStep == 0
         if not isinstance(transTmpl.dtype, HArray):
             raise TypeError(transTmpl.dtype)
-        assert transTmpl.bitAddr % dstAddrStep == 0, "Has to be addressable by address with this step (%r)" % (
-            transTmpl)
+        assert transTmpl.bitAddr % dstAddrStep == 0, (
+            "Has to be addressable by address with this step (%r)" % (
+                transTmpl))
 
         addrIsAligned = transTmpl.bitAddr % transTmpl.bit_length() == 0
         bitsForAlignment = ((dstAddrStep // srcAddrStep) - 1).bit_length()
@@ -330,7 +339,9 @@ class BusEndpoint(Unit):
                     p = RegCntrl(asArraySize=t.size)
                     dw = t.elmType.bit_length()
                 else:
-                    return StructIntf(t.elmType, instantiateFieldFn=self._mkFieldInterface, asArraySize=t.size)
+                    return StructIntf(t.elmType,
+                                      instantiateFieldFn=self._mkFieldInterface,
+                                      asArraySize=t.size)
             elif isinstance(t, HStruct):
                 return StructIntf(t, instantiateFieldFn=self._mkFieldInterface)
             else:
@@ -350,10 +361,12 @@ class BusEndpoint(Unit):
         Connect "decoded" struct interface to interfaces specified
         in iterface map
 
-        :param interfaceMap: list of interfaces or tuple (type or interface, name)
+        :param interfaceMap: list of interfaces
+            or tuple (type or interface, name)
         """
         # connect interfaces as was specified by register map
-        for convIntf, intf in walkStructIntfAndIntfMap(self.decoded, interfaceMap):
+        for convIntf, intf in walkStructIntfAndIntfMap(self.decoded,
+                                                       interfaceMap):
             if isinstance(intf, Signal):
                 assert intf._direction == INTF_DIRECTION.MASTER
                 convIntf.din(intf)

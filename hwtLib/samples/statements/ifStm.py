@@ -23,7 +23,8 @@ class SimpleIfStatement(Unit):
         ).Else(
            self.d(0)
         )
-        
+
+
 class SimpleIfStatement2(Unit):
     def _declr(self):
         addClkRstn(self)
@@ -89,7 +90,18 @@ class SimpleIfStatement2c(Unit):
         self.d(r)
 
 
+class SimpleIfStatement3(SimpleIfStatement):
+    def _impl(self):
+        If(self.a,
+           self.d(0),
+        ).Elif(self.b,
+           self.d(0)
+        ).Else(
+           self.d(0)
+        )
+
+
 if __name__ == "__main__":  # alias python main function
     from hwt.synthesizer.utils import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
-    print(toRtl(SimpleIfStatement2c()))
+    print(toRtl(SimpleIfStatement3()))

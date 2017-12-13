@@ -66,16 +66,20 @@ class AxiLiteEndpoint(BusEndpoint):
             # list of tuples (cond, rdataReg assignment)
             rregCases = []
             # index of bram from where we reads from
-            bramRdIndx = self._reg("bramRdIndx", Bits(log2ceil(len(self._bramPortMapped))))
+            bramRdIndx = self._reg("bramRdIndx", Bits(
+                log2ceil(len(self._bramPortMapped))))
             bramRdIndxSwitch = Switch(bramRdIndx)
             for bramIndex, t in enumerate(self._bramPortMapped):
                 port = self.getPort(t)
 
                 # map addr for bram ports
                 dstAddrStep = port.dout._dtype.bit_length()
-                (_isMyArAddr, arAddrConnect) = self.propagateAddr(ar.addr, ADDR_STEP, port.addr, dstAddrStep, t)
-                (_, ar2AddrConnect) = self.propagateAddr(arAddr, ADDR_STEP, port.addr, dstAddrStep, t)
-                (_isMyAwAddr, awAddrConnect) = self.propagateAddr(awAddr, ADDR_STEP, port.addr, dstAddrStep, t)
+                (_isMyArAddr, arAddrConnect) = self.propagateAddr(
+                    ar.addr, ADDR_STEP, port.addr, dstAddrStep, t)
+                (_, ar2AddrConnect) = self.propagateAddr(
+                    arAddr, ADDR_STEP, port.addr, dstAddrStep, t)
+                (_isMyAwAddr, awAddrConnect) = self.propagateAddr(
+                    awAddr, ADDR_STEP, port.addr, dstAddrStep, t)
                 prioritizeWrite = _isMyAwAddr & w_hs
 
                 If(prioritizeWrite,
@@ -104,7 +108,9 @@ class AxiLiteEndpoint(BusEndpoint):
             isBramAddr(0)
 
         directlyMappedWors = []
-        for w, items in sorted(groupedby(self._directlyMapped, lambda t: t.bitAddr // DW * (DW // ADDR_STEP)), key=lambda x: x[0]):
+        for w, items in sorted(groupedby(self._directlyMapped,
+                                         lambda t: t.bitAddr // DW * (DW // ADDR_STEP)),
+                               key=lambda x: x[0]):
             lastBit = 0
             res = []
             items.sort(key=lambda t: t.bitAddr)
@@ -118,7 +124,7 @@ class AxiLiteEndpoint(BusEndpoint):
                     lastBit += pad_w
                 din = self.getPort(t).din
                 res.append(din)
-                lastBit += din._dtype.bit_length() 
+                lastBit += din._dtype.bit_length()
 
             if lastBit != DW:
                 # add at end padding
@@ -128,11 +134,11 @@ class AxiLiteEndpoint(BusEndpoint):
             directlyMappedWors.append((w, Concat(*reversed(res))))
 
         Switch(arAddr).addCases(
-                    [(w[0], r.data(w[1]))
-                     for w in directlyMappedWors]
-                ).Default(
-                    r.data(rdataReg)
-                )
+            [(w[0], r.data(w[1]))
+             for w in directlyMappedWors]
+        ).Default(
+            r.data(rdataReg)
+        )
 
     def writeRespPart(self, wAddr, respVld):
         b = self.bus.b
@@ -160,13 +166,13 @@ class AxiLiteEndpoint(BusEndpoint):
 
         # write fsm
         wSt = FsmBuilder(self, wSt_t, "wSt")\
-        .Trans(wSt_t.wrIdle,
-            (aw.valid, wSt_t.wrData)
-        ).Trans(wSt_t.wrData,
-            (w.valid, wSt_t.wrResp)
-        ).Trans(wSt_t.wrResp,
-            (b.ready, wSt_t.wrIdle)
-        ).stateReg
+            .Trans(wSt_t.wrIdle,
+                (aw.valid, wSt_t.wrData)
+            ).Trans(wSt_t.wrData,
+                (w.valid, wSt_t.wrResp)
+            ).Trans(wSt_t.wrResp,
+                (b.ready, wSt_t.wrIdle)
+           ).stateReg
 
         awAddr = reg('awAddr', aw.addr._dtype)
         w_hs = sig('w_hs')
@@ -197,7 +203,8 @@ class AxiLiteEndpoint(BusEndpoint):
 
             offset = t.bitAddr % DW
             out.data(w.data[(offset + width): offset])
-            out.vld(w_hs & (awAddr._eq(vec(t.bitAddr // DW * (DW // ADDR_STEP), addrWidth))))
+            out.vld(w_hs & (awAddr._eq(vec(t.bitAddr // DW * (DW // ADDR_STEP),
+                                           addrWidth))))
 
         for t in self._bramPortMapped:
             din = self.getPort(t).din
@@ -215,20 +222,40 @@ class AxiLiteEndpoint(BusEndpoint):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
+    from hwt.serializer.vhdl.serializer import VhdlSerializer
     from hwt.hdl.types.struct import HStruct
-    from hwtLib.types.ctypes import uint32_t
+    from hwtLib.types.ctypes import uint32_t, uint16_t
 
-    u = AxiLiteEndpoint(
-            HStruct(
-                (uint32_t[4], "field0"),
-                # (uint32_t[2], "field1"),
-                (uint32_t[4], "field2")
-                # (uint32_t, "data0"),
-                # (uint32_t, "data1"),
-                # (uint32_t[32], "bramMapped")
-                )
-            )
+    t = HStruct(
+        (uint32_t[4], "data0"),
+        # optimized address selection because data are aligned
+        (uint32_t[4], "data1"),
+        (uint32_t[2], "data2"),
+        (uint32_t, "data3"),
+        # padding
+        (uint32_t[32], None),
+        # type can be any type
+        (HStruct(
+            (uint16_t, "data4a"),
+            (uint16_t, "data4b"),
+            (uint32_t, "data4c")
+        ), "data4"),
+    )
+
+    # type flattening can be specified by shouldEnterFn parameter
+    # target interface can be overriden by _mkFieldInterface function
+
+    # There are other bus endpoints, for example:
+    # IpifEndpoint, I2cEndpoint, AvalonMmEndpoint and others
+    # decoded interfaces for data type will be same just bus interface
+    # will difer
+    u = AxiLiteEndpoint(t)
+
+    # configuration
     u.ADDR_WIDTH.set(8)
     u.DATA_WIDTH.set(32)
 
-    print(toRtl(u))
+    print(toRtl(u, serializer=VhdlSerializer))
+    print(u.bus)
+    print(u.decoded.data3)
+    print(u.decoded.data4)
