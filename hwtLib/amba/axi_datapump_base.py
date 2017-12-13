@@ -13,6 +13,7 @@ class Axi_datapumpBase(Unit):
     :ivar param MAX_TRANS_OVERLAP: max number of concurrent transactions
     :ivar driver: interface which is used to drive this datapump (AxiRDatapumpIntf or AxiWDatapumpIntf)
     """
+
     def __init__(self, axiAddrCls=Axi4_addr):
         self._axiAddrCls = axiAddrCls
         a = axiAddrCls()
@@ -29,6 +30,7 @@ class Axi_datapumpBase(Unit):
         self.CACHE_VAL = Param(CACHE_DEFAULT)
         self.PROT_VAL = Param(PROT_DEFAULT)
         self.QOS_VAL = Param(QOS_DEFAULT)
+        self.LOCK_WIDTH = Param(2)
 
         if self._addrHasUser:
             self.ADDR_USER_VAL = Param(0)
@@ -38,7 +40,8 @@ class Axi_datapumpBase(Unit):
         with self._paramsShared():
             # address channel to axi
             self.a = self._axiAddrCls()
-            self.a.LOCK_WIDTH = 2  # because all masters have it
+            # because all masters have it
+            self.a.LOCK_WIDTH = int(self.LOCK_WIDTH)
 
     def getSizeAlignBits(self):
         return log2ceil(self.DATA_WIDTH // 8).val
