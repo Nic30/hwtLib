@@ -55,8 +55,19 @@ expected_vhdl = """--Object of class Entity, "ExcludedUnit" was not serialized a
 --Object of class Architecture, "rtl" was not serialized as specified
 --Object of class Entity, "ExcludedUnit" was not serialized as specified
 --Object of class Architecture, "rtl" was not serialized as specified
---Object of class Entity, "OnceUnit" was not serialized as specified
---Object of class Architecture, "rtl" was not serialized as specified
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+ENTITY OnceUnit IS
+    PORT (a: OUT STD_LOGIC
+    );
+END OnceUnit;
+
+ARCHITECTURE rtl OF OnceUnit IS
+BEGIN
+    a <= '1';
+END ARCHITECTURE rtl;
 --Object of class Entity, "OnceUnit" was not serialized as specified
 --Object of class Architecture, "rtl" was not serialized as specified
 --Object of class Entity, "OnceUnit" was not serialized as specified
