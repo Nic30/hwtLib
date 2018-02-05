@@ -9,15 +9,19 @@ from hwtLib.abstract.busEndpoint import BusEndpoint
 
 class BramPortEndpoint(BusEndpoint):
     """
-    Delegate transaction from BrapmPort interface to interfaces for fields of specified structure
+    Delegate transaction from BrapmPort interface to interfaces
+    for fields of specified structure
 
-    :attention: interfaces are dynamically generated from names of fields in structure template
+    :attention: interfaces are dynamically generated from names
+        of fields in structure template
     """
     _getWordAddrStep = BramPort_withoutClk._getWordAddrStep
     _getAddrStep = BramPort_withoutClk._getAddrStep
 
-    def __init__(self, structTemplate, intfCls=BramPort_withoutClk, shouldEnterFn=None):
-        BusEndpoint.__init__(self, structTemplate, intfCls=intfCls, shouldEnterFn=shouldEnterFn)
+    def __init__(self, structTemplate, intfCls=BramPort_withoutClk,
+                 shouldEnterFn=None):
+        BusEndpoint.__init__(self, structTemplate,
+                             intfCls=intfCls, shouldEnterFn=shouldEnterFn)
 
     def _impl(self):
         self._parseTemplate()
@@ -25,9 +29,9 @@ class BramPortEndpoint(BusEndpoint):
 
         def connectRegIntfAlways(regIntf, _addr):
             return (
-                    c(bus.din, regIntf.dout.data) + 
-                    c(bus.we & bus.en & bus.addr._eq(_addr), regIntf.dout.vld)
-                   )
+                c(bus.din, regIntf.dout.data) +
+                c(bus.we & bus.en & bus.addr._eq(_addr), regIntf.dout.vld)
+            )
 
         ADDR_STEP = self._getAddrStep()
         if self._directlyMapped:
@@ -48,7 +52,8 @@ class BramPortEndpoint(BusEndpoint):
         if self._bramPortMapped:
             BRAMS_CNT = len(self._bramPortMapped)
             bramIndxCases = []
-            readBramIndx = self._reg("readBramIndx", Bits(log2ceil(BRAMS_CNT + 1), False))
+            readBramIndx = self._reg("readBramIndx", Bits(
+                log2ceil(BRAMS_CNT + 1), False))
             outputSwitch = Switch(readBramIndx)
 
             for i, t in enumerate(self._bramPortMapped):
@@ -76,19 +81,20 @@ class BramPortEndpoint(BusEndpoint):
         else:
             bus.dout(readReg)
 
+
 if __name__ == "__main__":
     from hwt.hdl.types.struct import HStruct
     from hwt.synthesizer.utils import toRtl
     from hwtLib.types.ctypes import uint32_t
 
     u = BramPortEndpoint(
-            HStruct(
-                (uint32_t, "reg0"),
-                (uint32_t, "reg1"),
-                (uint32_t[1024], "segment0"),
-                (uint32_t[1024], "segment1"),
-                (uint32_t[1024 + 4], "nonAligned0")
-                )
-            )
+        HStruct(
+            (uint32_t, "reg0"),
+            (uint32_t, "reg1"),
+            (uint32_t[1024], "segment0"),
+            (uint32_t[1024], "segment1"),
+            (uint32_t[1024 + 4], "nonAligned0")
+        )
+    )
     u.DATA_WIDTH.set(32)
     print(toRtl(u))

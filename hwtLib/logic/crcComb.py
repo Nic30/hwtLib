@@ -28,18 +28,22 @@ class CrcComb(Unit):
             self.dataIn = VectSignal(self.DATA_WIDTH)
             self.dataOut = VectSignal(self.POLY_WIDTH)
 
-    def _impl(self):
+    def parsePoly(self):
         PW = int(self.POLY_WIDTH)
-        DW = int(self.DATA_WIDTH)
-        # assert PW == DW
         poly = int(self.POLY)
-
         if isinstance(poly, str):
             polyCoefs = parsePolyStr(poly, PW)
         elif isinstance(poly, int):
             polyCoefs = [selectBit(poly, i) for i in range(PW)]
         else:
             raise NotImplementedError()
+
+        return polyCoefs, PW
+
+    def _impl(self):
+        DW = int(self.DATA_WIDTH)
+        # assert PW == DW
+        polyCoefs, PW = self.parsePoly()
         xorMatrix = buildCrcMatrix_dataMatrix(polyCoefs, PW, DW)
 
         for outBit, inMask in zip(iterBits(self.dataOut),
