@@ -10,7 +10,6 @@ from hwt.hdl.types.bool import HBool
 from hwt.hdl.types.defs import INT, STR, BOOL
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
-from hwt.synthesizer.rtlLevel.signalUtils.walkers import walkAllOriginSignals
 
 
 n = RtlNetlist()
@@ -167,23 +166,6 @@ class OperatorTC(unittest.TestCase):
         res = r.staticEval()
         self.assertEqual(res.val[0].val, 10)
         self.assertEqual(res.val[1].val, 0)
-
-    def test_walkAllOriginSignalsDownto(self):
-        a = self.n.sig('a', dtype=INT)
-        a.defaultVal = hInt(10)
-        b = hInt(0)
-        r = a._downto(b)
-        origins = set(walkAllOriginSignals(r))
-        self.assertSetEqual(origins, set([a]))
-
-    def test_walkAllOriginSignalsDowntoAndPlus(self):
-        a = self.n.sig('a', dtype=INT)
-        a.defaultVal = hInt(10)
-        b = hInt(0)
-        am = a + hInt(5)
-        r = am._downto(b)
-        origins = set(walkAllOriginSignals(r))
-        self.assertSetEqual(origins, set([a]))
 
     def test_ADD_InvalidOperands(self):
         a = self.n.sig('a', dtype=STR)
