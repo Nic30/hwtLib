@@ -6,7 +6,8 @@ import unittest
 from hwt.synthesizer.utils import toRtl
 from hwtLib.samples.hdlComments import SimpleComentedUnit, \
     simpleComentedUnit2Expected, SimpleComentedUnit3, \
-    simpleComentedUnit3Expected, SimpleComentedUnit2, simpleComentedUnitExpected
+    simpleComentedUnit3Expected, SimpleComentedUnit2, \
+    simpleComentedUnitExpected
 from hwtLib.tests.statementTrees import StatementTreesTC
 
 

@@ -11,6 +11,7 @@ class ParametrizationTC(unittest.TestCase):
     def test_ParametrizationExample(self):
         toRtl(ParametrizationExample())
 
+
 if __name__ == "__main__":
     # this is how you can run testcase,
     # there are many way and lots of tools support direct running of tests (like eclipse)

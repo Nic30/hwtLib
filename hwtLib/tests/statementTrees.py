@@ -5,12 +5,13 @@ import re
 import unittest
 
 from hwt.code import c, If, Switch
-from hwt.hdl.statements import IfContainer, SwitchContainer
 from hwt.hdl.types.defs import INT
 from hwt.hdl.types.enum import HEnum
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.assigRenderer import renderIfTree
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
+from hwt.hdl.ifContainter import IfContainer
+from hwt.hdl.switchContainer import SwitchContainer
 
 
 rmWhitespaces = re.compile(r'\s+', re.MULTILINE)
@@ -45,13 +46,14 @@ class StatementTreesTC(unittest.TestCase):
         a = self.n.sig('a')
         b = self.n.sig('b')
 
-        assigs = If(a,
-                    c(1, b)
-                    ).Else(
-                       c(0, b)
-                    )
+        obj = If(a,
+                 c(1, b)
+              ).Else(
+                 c(0, b)
+              )
 
-        container = list(renderIfTree(assigs))
+        container, io_change = obj._try_reduce()
+        self.assertFalse(io_change)
         self.assertEqual(len(container), 1)
         container = container[0]
         tmpl = IfContainer([a], ifTrue=[c(1, b)], ifFalse=[c(0, b)])
@@ -62,8 +64,9 @@ class StatementTreesTC(unittest.TestCase):
         a = self.n.sig('a', dtype=INT)
         b = self.n.sig('b', dtype=INT)
 
-        assigs = Switch(a).addCases([(i, c(i, b)) for i in range(4)])
-        cont = list(renderIfTree(assigs))
+        obj = Switch(a).addCases([(i, c(i, b)) for i in range(4)])
+        cont, io_change = obj._try_reduce()
+        self.assertFalse(io_change)
         self.assertEqual(len(cont), 1)
         cont = cont[0]
 
