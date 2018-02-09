@@ -16,7 +16,7 @@ def mkLutRamCls(DATA_WIDTH):
     hdl code will be excluded from serialization because we expect vendor library to contains it
     """
 
-    #@serializeExclude
+    @serializeExclude
     class RAMnX1S(Unit):
 
         def _config(self):
