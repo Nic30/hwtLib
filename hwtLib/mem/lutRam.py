@@ -16,7 +16,7 @@ def mkLutRamCls(DATA_WIDTH):
     hdl code will be excluded from serialization because we expect vendor library to contains it
     """
 
-    @serializeExclude
+    #@serializeExclude
     class RAMnX1S(Unit):
 
         def _config(self):
@@ -60,6 +60,7 @@ def mkLutRamCls(DATA_WIDTH):
 
     RAMnX1S.__name__ = "RAM%dX1S" % DATA_WIDTH
     return RAMnX1S
+
 
 RAM64X1S = mkLutRamCls(64)
 

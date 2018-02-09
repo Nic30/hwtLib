@@ -8,10 +8,10 @@ from hwt.code import c, If, Switch
 from hwt.hdl.types.defs import INT
 from hwt.hdl.types.enum import HEnum
 from hwt.serializer.vhdl.serializer import VhdlSerializer
-from hwt.synthesizer.assigRenderer import renderIfTree
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwt.hdl.ifContainter import IfContainer
 from hwt.hdl.switchContainer import SwitchContainer
+from hwt.synthesizer.andReducedContainer import AndReducedContainer
 
 
 rmWhitespaces = re.compile(r'\s+', re.MULTILINE)
@@ -47,18 +47,19 @@ class StatementTreesTC(unittest.TestCase):
         b = self.n.sig('b')
 
         obj = If(a,
-                 c(1, b)
-              ).Else(
-                 c(0, b)
-              )
+                 b(1)
+                 ).Else(
+            b(0)
+        )
 
         container, io_change = obj._try_reduce()
         self.assertFalse(io_change)
         self.assertEqual(len(container), 1)
         container = container[0]
-        tmpl = IfContainer([a], ifTrue=[c(1, b)], ifFalse=[c(0, b)])
-
-        self.compareStructure(container, tmpl)
+        tmpl = IfContainer(AndReducedContainer([a, ]),
+                           ifTrue=[b(1)],
+                           ifFalse=[b(0)])
+        self.compareStructure(tmpl, container)
 
     def test_basicSwitch(self):
         a = self.n.sig('a', dtype=INT)
@@ -72,7 +73,7 @@ class StatementTreesTC(unittest.TestCase):
 
         tmpl = SwitchContainer(a, [(i, c(i, b)) for i in range(3)]
                                + [(None, c(3, b))])
-        self.compareStructure(cont, tmpl)
+        self.compareStructure(tmpl, cont)
 
     def test_ifsInSwitch(self):
         n = self.n
@@ -89,36 +90,37 @@ class StatementTreesTC(unittest.TestCase):
 
         def tsWaitLogic():
             return If(sd0 & sd1,
-                       c(stT.lenExtr, st)
-                   ).Else(
-                       c(stT.ts1Wait, st)
-                   )
-        assigs = Switch(st)\
-                 .Case(stT.idle,
-                       tsWaitLogic()
-                 ).Case(stT.tsWait,
-                        tsWaitLogic()
-                 ).Case(stT.ts0Wait,
-                        If(sd0,
-                           c(stT.lenExtr, st)
-                        ).Else(
-                           c(st, st)
-                        )
-                 ).Case(stT.ts1Wait,
-                        If(sd1,
-                           c(stT.lenExtr, st)
-                        ).Else(
-                           c(st, st)
-                        )
-                 ).Case(stT.lenExtr,
-                        If(cntrlFifoVld & cntrlFifoLast,
-                           c(stT.idle, st)
-                        ).Else(
-                          c(st, st)
-                        )
-                 )
+                      c(stT.lenExtr, st)
+                      ).Else(
+                c(stT.ts1Wait, st)
+            )
+        obj = Switch(st)\
+            .Case(stT.idle,
+                  tsWaitLogic()
+                  ).Case(stT.tsWait,
+                         tsWaitLogic()
+                         ).Case(stT.ts0Wait,
+                                If(sd0,
+                                   c(stT.lenExtr, st)
+                                   ).Else(
+                                    c(st, st)
+                                )
+                                ).Case(stT.ts1Wait,
+                                       If(sd1,
+                                          c(stT.lenExtr, st)
+                                          ).Else(
+                                           c(st, st)
+                                       )
+                                       ).Case(stT.lenExtr,
+                                              If(cntrlFifoVld & cntrlFifoLast,
+                                                 c(stT.idle, st)
+                                                 ).Else(
+                                                  c(st, st)
+                                              )
+                                              )
 
-        cont = list(renderIfTree(assigs))
+        cont, io_change = obj._try_reduce()
+        self.assertFalse(io_change)
         self.assertEqual(len(cont), 1)
         cont = cont[0]
         tmpl = """
@@ -160,7 +162,8 @@ class StatementTreesTC(unittest.TestCase):
 
     def test_ifs2LvlInSwitch(self):
         n = self.n
-        stT = HEnum('t_state', ["idle", "tsWait", "ts0Wait", "ts1Wait", "lenExtr"])
+        stT = HEnum('t_state', ["idle", "tsWait",
+                                "ts0Wait", "ts1Wait", "lenExtr"])
         clk = n.sig('clk')
         rst = n.sig("rst")
 
@@ -173,41 +176,42 @@ class StatementTreesTC(unittest.TestCase):
         def tsWaitLogic(ifNoTsRd):
             return If(sd0 & sd1,
                       c(stT.lenExtr, st)
-                   ).Else(
-                       ifNoTsRd
-                   )
-        assigs = Switch(st)\
-                .Case(stT.idle,
-                      tsWaitLogic(
-                                 If(cntrlFifoVld,
-                                    c(stT.tsWait, st)
-                                 ).Else(
+                      ).Else(
+                ifNoTsRd
+            )
+        obj = Switch(st)\
+            .Case(stT.idle,
+                  tsWaitLogic(
+                      If(cntrlFifoVld,
+                         c(stT.tsWait, st)
+                         ).Else(
+                          c(st, st)
+                      )
+                  )
+                  ).Case(stT.tsWait,
+                         tsWaitLogic(c(st, st))
+                         ).Case(stT.ts0Wait,
+                                If(sd0,
+                                   c(stT.lenExtr, st)
+                                   ).Else(
                                     c(st, st)
-                                 )
-                                 )
-                ).Case(stT.tsWait,
-                       tsWaitLogic(c(st, st))
-                ).Case(stT.ts0Wait,
-                       If(sd0,
-                          c(stT.lenExtr, st)
-                       ).Else(
-                          c(st, st)
-                       )
-                ).Case(stT.ts1Wait,
-                       If(sd1,
-                          c(stT.lenExtr, st)
-                       ).Else(
-                          c(st, st)
-                       )
-                ).Case(stT.lenExtr,
-                       If(cntrlFifoVld & cntrlFifoLast,
-                          c(stT.idle, st)
-                       ).Else(
-                          c(st, st)
-                       )
-                )
+                                )
+                                ).Case(stT.ts1Wait,
+                                       If(sd1,
+                                          c(stT.lenExtr, st)
+                                          ).Else(
+                                           c(st, st)
+                                       )
+                                       ).Case(stT.lenExtr,
+                                              If(cntrlFifoVld & cntrlFifoLast,
+                                                 c(stT.idle, st)
+                                                 ).Else(
+                                                  c(st, st)
+                                              )
+                                              )
 
-        cont = list(renderIfTree(assigs))
+        cont, io_change = obj._try_reduce()
+        self.assertFalse(io_change)
         self.assertEqual(len(cont), 1)
         cont = cont[0]
         tmpl = """
@@ -251,7 +255,8 @@ class StatementTreesTC(unittest.TestCase):
 
     def test_ifs3LvlInSwitch(self):
         n = self.n
-        stT = HEnum('t_state', ["idle", "tsWait", "ts0Wait", "ts1Wait", "lenExtr"])
+        stT = HEnum('t_state', ["idle", "tsWait",
+                                "ts0Wait", "ts1Wait", "lenExtr"])
         clk = n.sig('clk')
         rst = n.sig("rst")
 
@@ -262,45 +267,46 @@ class StatementTreesTC(unittest.TestCase):
         cntrlFifoLast = n.sig('ctrlFifoLast')
 
         def tsWaitLogic(ifNoTsRd):
-            return  If(sd0 & sd1,
-                       c(stT.lenExtr, st)
-                    ).Elif(sd0,
-                       c(stT.ts1Wait, st)
-                    ).Else(
-                       ifNoTsRd
-                    )
-        assigs = Switch(st)\
-            .Case(stT.idle,
-                tsWaitLogic(
-                    If(cntrlFifoVld,
-                       c(stT.tsWait, st)
-                    ).Else(
-                       c(st, st)
-                    )
-                )
-            ).Case(stT.tsWait,
-                tsWaitLogic(c(st, st))
-            ).Case(stT.ts0Wait,
-                If(sd0,
-                   c(stT.lenExtr, st)
-                ).Else(
-                   c(st, st)
-                )
-            ).Case(stT.ts1Wait,
-                If(sd1,
-                   c(stT.lenExtr, st)
-                ).Else(
-                   c(st, st)
-                )
-            ).Case(stT.lenExtr,
-                If(cntrlFifoVld & cntrlFifoLast,
-                   c(stT.idle, st)
-                ).Else(
-                   c(st, st)
-                )
+            return If(sd0 & sd1,
+                      c(stT.lenExtr, st)
+                      ).Elif(sd0,
+                             c(stT.ts1Wait, st)
+                             ).Else(
+                ifNoTsRd
             )
+        obj = Switch(st)\
+            .Case(stT.idle,
+                  tsWaitLogic(
+                      If(cntrlFifoVld,
+                         c(stT.tsWait, st)
+                         ).Else(
+                          c(st, st)
+                      )
+                  )
+                  ).Case(stT.tsWait,
+                         tsWaitLogic(c(st, st))
+                         ).Case(stT.ts0Wait,
+                                If(sd0,
+                                   c(stT.lenExtr, st)
+                                   ).Else(
+                                    c(st, st)
+                                )
+                                ).Case(stT.ts1Wait,
+                                       If(sd1,
+                                          c(stT.lenExtr, st)
+                                          ).Else(
+                                           c(st, st)
+                                       )
+                                       ).Case(stT.lenExtr,
+                                              If(cntrlFifoVld & cntrlFifoLast,
+                                                 c(stT.idle, st)
+                                                 ).Else(
+                                                  c(st, st)
+                                              )
+                                              )
 
-        cont = list(renderIfTree(assigs))
+        cont, io_change = obj._try_reduce()
+        self.assertFalse(io_change)
         self.assertEqual(len(cont), 1)
         cont = cont[0]
         tmpl = """
@@ -349,7 +355,7 @@ class StatementTreesTC(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    # suite.addTest(StatementTreesTC('test_ifs3LvlInSwitch'))
+    # suite.addTest(StatementTreesTC('test_ifs2LvlInSwitch'))
     suite.addTest(unittest.makeSuite(StatementTreesTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -32,7 +32,8 @@ class ClkSynchronizerTC(unittest.TestCase):
         u = self.u
 
         def dataCollector(s):
-            yield s.wait(CLK_PERIOD + 0.001)  # random small value to collect data after it is set
+            # random small value to collect data after it is set
+            yield s.wait(CLK_PERIOD + 0.001)
             while True:
                 d = s.read(u.outData)
                 collected.append(d)
@@ -43,7 +44,9 @@ class ClkSynchronizerTC(unittest.TestCase):
                     oscilate(u.outClk, CLK_PERIOD, initWait=CLK_PERIOD / 4),
                     pullDownAfter(u.rst, CLK_PERIOD * 2),
                     dataCollector,
-                    dataInStimul], "tmp/clkSynchronizer_" + name + ".vcd", time=100 * Time.ns)
+                    dataInStimul],
+                   "tmp/clkSynchronizer_" + name + ".vcd",
+                   time=100 * Time.ns)
         return collected
 
     def test_normalOp(self):
@@ -74,6 +77,7 @@ class ClkSynchronizerTC(unittest.TestCase):
 
         collected = self.doSim(dataInStimul, "invalidData")
         self.assertSequenceEqual(expected, valuesToInts(collected))
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

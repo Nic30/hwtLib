@@ -46,7 +46,8 @@ class LutRamTC(SimTestCase):
         applyRequests(u, requests)
 
         self.doSim(time=80 * Time.ns)
-        self.assertSequenceEqual(valuesToInts(u.o._ag.data), [0, 0, 0, 1, 0, 0, 0, 0])
+        self.assertSequenceEqual(valuesToInts(u.o._ag.data),
+                                 [0, 0, 0, 1, 0, 0, 0, 0])
 
 
 if __name__ == "__main__":

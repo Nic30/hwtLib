@@ -1,6 +1,6 @@
 from hwt.code import And, Or
-from hwt.pyUtils.arrayQuery import where
 from hwt.hdl.typeShortcuts import hBit
+from hwt.pyUtils.arrayQuery import where
 
 
 def _getRd(intf):
@@ -29,6 +29,7 @@ class ExclusiveStreamGroups(list):
     list of tuples (cond, StreamNode instance)
     Only one stream from this group can be activated at the time
     """
+
     def __hash__(self):
         return id(self)
 
@@ -64,15 +65,19 @@ class StreamNode():
     :ivar slaves: interfaces which are outputs of this node
     :ivar extraConds: dict interface : extraConditionSignal
         where extra conditions will be added to expression for channel enable
-        for master it means it will get ready only when extraConditionSignal is 1
-        for slave it means it will not get valid only when extraConditionSignal is 1
-        but all interfaces have to wait on each other
+        for master it means it will get ready only when extraConditionSignal
+        is 1 for slave it means it will not get valid only
+        when extraConditionSignal is 1 but all interfaces have to wait
+        on each other
     :ivar skipWhen: dict interface : skipSignal
-        where if skipSignal is high interface is disconnected from stream sync node
-        and others does not have to wait on it (master does not need to have valid and slave ready)
+        where if skipSignal is high interface is disconnected from stream
+        sync node and others does not have to wait on it
+        (master does not need to have valid and slave ready)
     :attention: skipWhen has higher priority
     """
-    def __init__(self, masters=None, slaves=None, extraConds=None, skipWhen=None):
+
+    def __init__(self, masters=None, slaves=None,
+                 extraConds=None, skipWhen=None):
         if masters is None:
             masters = []
         if slaves is None:
@@ -122,7 +127,7 @@ class StreamNode():
             if isinstance(m, ExclusiveStreamGroups):
                 a = m.sync(r)
             else:
-                a = _getRd(m)(r)
+                a = [_getRd(m)(r), ]
 
             expression.extend(a)
 
@@ -135,7 +140,7 @@ class StreamNode():
             if isinstance(s, ExclusiveStreamGroups):
                 a = s.sync(v)
             else:
-                a = _getVld(s)(v)
+                a = [_getVld(s)(v), ]
 
             expression.extend(a)
 
