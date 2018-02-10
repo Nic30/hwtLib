@@ -104,4 +104,4 @@ class SimpleIfStatement3(SimpleIfStatement):
 if __name__ == "__main__":  # alias python main function
     from hwt.synthesizer.utils import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
-    print(toRtl(SimpleIfStatement3()))
+    print(toRtl(SimpleIfStatement2c()))

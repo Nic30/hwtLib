@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from copy import copy
 import unittest
 
 from hwt.hdl.constants import Time

@@ -14,6 +14,7 @@ from hwtLib.amba.axis_comp.fifo import AxiSFifo
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.fifo import Fifo
+from hwt.serializer.simModel.serializer import SimModelSerializer
 
 
 class AxiS_measuringFifo(Unit):
@@ -21,6 +22,7 @@ class AxiS_measuringFifo(Unit):
     Fifo which are counting sizes of frames and sends it over
     dedicated handshaked interface "sizes"
     """
+
     def _config(self):
         Fifo._config(self)
         self.SIZES_BUFF_DEPTH = Param(16)
@@ -37,7 +39,9 @@ class AxiS_measuringFifo(Unit):
             self.dataOut = AxiStream()
 
         self.sizes = Handshaked()
-        self.sizes.DATA_WIDTH.set(log2ceil(self.MAX_LEN) + 1 + self.getAlignBitsCnt())
+        self.sizes.DATA_WIDTH.set(log2ceil(self.MAX_LEN)
+                                  + 1
+                                  + self.getAlignBitsCnt())
 
         db = self.dataBuff = AxiSFifo(AxiStream)
         # to place fifo in bram
@@ -68,9 +72,9 @@ class AxiS_measuringFifo(Unit):
         If(StreamNode(masters=[dIn], slaves=[sb.dataIn, db.dataIn]).ack(),
             If(last,
                 wordCntr(0)
-            ).Else(
+               ).Else(
                 wordCntr(wordCntr + 1)
-            )
+        )
         )
         rem = self._sig("rem", Bits(log2ceil(STRB_BITS)))
         SwitchLogic(
@@ -87,12 +91,12 @@ class AxiS_measuringFifo(Unit):
             self.errorAlignment(errorAlignment)
             If(dIn.valid & (dIn.strb != mask(STRB_BITS)) & ~dIn.last,
                errorAlignment(1)
-            )
+               )
 
         length = self._sig("length", wordCntr._dtype)
         If(last & (dIn.strb != mask(STRB_BITS)),
             length(wordCntr)
-        ).Else(
+           ).Else(
             length(wordCntr + 1)
         )
 
@@ -113,5 +117,7 @@ class AxiS_measuringFifo(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
     u = AxiS_measuringFifo()
-    u.EXPORT_ALIGNMENT_ERROR.set(True)
-    print(toRtl(u))
+    #u.EXPORT_ALIGNMENT_ERROR.set(True)
+    u.MAX_LEN.set(15)
+    u.SIZES_BUFF_DEPTH.set(4)
+    print(toRtl(u, serializer=SimModelSerializer))

@@ -7,11 +7,9 @@ from hwt.hdl.constants import Time
 from hwt.serializer.systemC.serializer import SystemCSerializer
 from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.vhdl.serializer import VhdlSerializer
-from hwt.simulator.agentConnector import agInts
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.utils import toRtl
 from hwtLib.samples.statements.switchStm import SwitchStmUnit
-from hwt.hdl.operatorDefs import AllOps
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 
@@ -132,7 +130,8 @@ class SwitchStmTC(SimTestCase):
 
         self.doSim(110 * Time.ns)
 
-        self.assertSequenceEqual([0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0], agInts(u.out))
+        self.assertValSequenceEqual(u.out._ag.data,
+                                    [0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0])
 
     def test_vhdlSerialization(self):
         u = SwitchStmUnit()
@@ -147,6 +146,7 @@ class SwitchStmTC(SimTestCase):
     def test_systemcSerialization(self):
         u = SwitchStmUnit()
         s = toRtl(u, serializer=SystemCSerializer)
+        print(s)
         self.assertEqual(s, switchStm_systemc)
 
     def test_resources(self):
@@ -158,6 +158,7 @@ class SwitchStmTC(SimTestCase):
         toRtl(u, serializer=s)
         r = s.report()
         self.assertDictEqual(r, expected)
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

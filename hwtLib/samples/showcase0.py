@@ -133,12 +133,12 @@ class Showcase0(Unit):
         # except for ==, overriding == would have many unintended consequences in python
         c[5](b._eq(4))
 
-        # all statements are just lists of conditional assignments
+        # all statements are just objects
         statements0 = self.h(0)
         statements1 = self.h(1)
         statements2 = self.h(2)
         statements3 = foo(r, statements0, a[1], statements1, statements2)
-        assert len(statements3) == 3
+        assert isinstance(statements3, If)
         If(a[2],
             # also when there is not value specified in the branch of dataflow (= in this case there is no else
             # this signal will become latched)

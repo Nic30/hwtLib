@@ -6,8 +6,8 @@ import unittest
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
 
 
@@ -41,14 +41,13 @@ class Simple2withNonDirectIntConnectionTC(SimTestCase):
         u.a._ag.data.extend([
             (1, 1, 0),
             (2, 1, 1)
-            ])
+        ])
         self.doSim(100 * Time.ns)
 
-        self.assertValSequenceEqual(u.c._ag.data,
-            [
+        self.assertValSequenceEqual(u.c._ag.data, [
             (1, 1, 0),
             (2, 1, 1)
-            ])
+        ])
 
 
 if __name__ == "__main__":
@@ -59,4 +58,5 @@ if __name__ == "__main__":
     runner.run(suite)
 
     from hwt.synthesizer.utils import toRtl
-    print(toRtl(Simple2withNonDirectIntConnection))
+    u = Simple2withNonDirectIntConnection()
+    print(toRtl(u))

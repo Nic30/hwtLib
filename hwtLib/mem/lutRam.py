@@ -61,6 +61,7 @@ def mkLutRamCls(DATA_WIDTH):
     RAMnX1S.__name__ = "RAM%dX1S" % DATA_WIDTH
     return RAMnX1S
 
+
 RAM64X1S = mkLutRamCls(64)
 
 

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+
 import unittest
 
-from hwt.hdl.statements import IfContainer
+from hwt.hdl.ifContainter import IfContainer
 from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
@@ -30,9 +31,9 @@ class StatementsTC(unittest.TestCase):
             b.defaultVal = hBit(b_in)
 
             stm = IfContainer(set([a & b, ]),
-                              ifTrue=w(0),
-                              elIfs=[([a, ], w(1)), ],
-                              ifFalse=w(2)
+                              ifTrue=[res(0), ],
+                              elIfs=[([a, ], [res(1)]), ],
+                              ifFalse=[res(2), ]
                               )
 
             if a_in and b_in:

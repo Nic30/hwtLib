@@ -3,11 +3,10 @@
 
 import unittest
 
+from hwt.bitmask import mask
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis_comp.measuringFifo import AxiS_measuringFifo
-from hwt.bitmask import mask
-from _random import Random
 
 
 class AxiS_measuringFifoTC(SimTestCase):

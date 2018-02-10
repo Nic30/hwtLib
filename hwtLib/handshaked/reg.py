@@ -12,6 +12,7 @@ class HandshakedReg(HandshakedCompBase):
     """
     Register for Handshaked interface
     """
+
     def _config(self):
         HandshakedCompBase._config(self)
         self.LATENCY = Param(1)
@@ -51,18 +52,18 @@ class HandshakedReg(HandshakedCompBase):
            outVld(1),
            regs_we(inVld & outRd)
         ).Else(
-           inRd(1),
-           outVld(0),
-           regs_we(inVld)
+            inRd(1),
+            outVld(0),
+            regs_we(inVld)
         )
         return outData
 
     def _implLatencyAndDelay(self, inVld, inRd, inData, outVld, outRd, prefix):
-        wordLoaded = self._reg("wordLoaded", defVal=0)
+        wordLoaded = self._reg(prefix + "wordLoaded", defVal=0)
         If(wordLoaded,
            wordLoaded(~outRd)
-        ).Else(
-           wordLoaded(inVld)
+           ).Else(
+            wordLoaded(inVld)
         )
 
         outData = []
@@ -70,7 +71,7 @@ class HandshakedReg(HandshakedCompBase):
             r = self._reg('reg_' + getSignalName(iin), iin._dtype)
             If(~wordLoaded,
                r(iin)
-            )
+               )
             outData.append(r)
 
         inRd(~wordLoaded)
@@ -89,12 +90,17 @@ class HandshakedReg(HandshakedCompBase):
         Out = self.dataOut
         In = self.dataIn
         if LATENCY == 1 and DELAY == 0:
-            outData = self._impl_latency(vld(In), rd(In), data(In), vld(Out), rd(Out), "latency1_")
+            outData = self._impl_latency(vld(In), rd(
+                In), data(In), vld(Out), rd(Out), "latency1_")
         elif LATENCY == 2 and DELAY == 1:
             latency1_vld = self._sig("latency1_vld")
             latency1_rd = self._sig("latency1_rd")
-            outData = self._impl_latency(vld(In), rd(In), data(In), latency1_vld, latency1_rd, "latency1_")
-            outData = self._implLatencyAndDelay(latency1_vld, latency1_rd, outData, vld(Out), rd(Out), "latency2_delay1_")
+            outData = self._impl_latency(vld(In), rd(In), data(In),
+                                         latency1_vld, latency1_rd,
+                                         "latency1_")
+            outData = self._implLatencyAndDelay(latency1_vld, latency1_rd, outData,
+                                                vld(Out), rd(Out),
+                                                "latency2_delay1_")
         else:
             raise NotImplementedError(LATENCY, DELAY)
 
