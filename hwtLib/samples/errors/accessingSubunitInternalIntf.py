@@ -12,7 +12,6 @@ class AccessingSubunitInternalIntf(Unit):
         self.b0 = Signal()
         self.c0 = Signal()
 
-
     def _impl(self):
         propagateClkRstn(self)
         u = self.subunit0

@@ -106,7 +106,7 @@ class Showcase0(Unit):
 
         # by _reg function usual d-register can be instantiated
         # to be able to use this this unit has to have clock defined (you can force any signal as clock
-        # if you call self._cntx._reg directly)
+        # if you call self._ctx._reg directly)
         r = self._reg("r", defVal=0)
         If(~r,  # ~ is negation operator
            # you can directly assign to register and it will assign to its next value

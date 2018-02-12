@@ -9,6 +9,7 @@ from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
+from hwt.pyUtils.andReducedList import AndReducedList
 
 
 class StatementsTC(unittest.TestCase):
@@ -30,7 +31,7 @@ class StatementsTC(unittest.TestCase):
             a.defaultVal = hBit(a_in)
             b.defaultVal = hBit(b_in)
 
-            stm = IfContainer(set([a & b, ]),
+            stm = IfContainer(AndReducedList([a & b, ]),
                               ifTrue=[res(0), ],
                               elIfs=[([a, ], [res(1)]), ],
                               ifFalse=[res(2), ]

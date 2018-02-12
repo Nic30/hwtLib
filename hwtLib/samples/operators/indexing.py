@@ -38,6 +38,7 @@ class SimpleIndexingRangeJoin(Unit):
     def _impl(self):
         self.a[2:0](self.b)
         self.a[4:2](self.c)
+        assert len(self.a._sig.drivers) == 2
 
 
 class IndexingInernRangeSplit(Unit):

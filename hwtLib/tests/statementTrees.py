@@ -5,13 +5,13 @@ import re
 import unittest
 
 from hwt.code import c, If, Switch
-from hwt.hdl.types.defs import INT
-from hwt.hdl.types.enum import HEnum
-from hwt.serializer.vhdl.serializer import VhdlSerializer
-from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwt.hdl.ifContainter import IfContainer
 from hwt.hdl.switchContainer import SwitchContainer
-from hwt.synthesizer.andReducedContainer import AndReducedContainer
+from hwt.hdl.types.defs import INT
+from hwt.hdl.types.enum import HEnum
+from hwt.pyUtils.andReducedList import AndReducedList
+from hwt.serializer.vhdl.serializer import VhdlSerializer
+from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 
 
 rmWhitespaces = re.compile(r'\s+', re.MULTILINE)
@@ -56,7 +56,7 @@ class StatementTreesTC(unittest.TestCase):
         self.assertFalse(io_change)
         self.assertEqual(len(container), 1)
         container = container[0]
-        tmpl = IfContainer(AndReducedContainer([a, ]),
+        tmpl = IfContainer(AndReducedList([a, ]),
                            ifTrue=[b(1)],
                            ifFalse=[b(0)])
         self.compareStructure(tmpl, container)

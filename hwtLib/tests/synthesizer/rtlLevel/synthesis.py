@@ -6,10 +6,10 @@ import unittest
 from hwt.code import If
 from hwt.hdl.assignment import Assignment
 from hwt.hdl.operatorDefs import AllOps
+from hwt.hdl.typeShortcuts import hBit
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.indexOps import IndexOps
-from hwt.hdl.typeShortcuts import hBit
 
 
 class TestCaseSynthesis(unittest.TestCase):
@@ -33,7 +33,7 @@ class TestCaseSynthesis(unittest.TestCase):
 
         self.assertEqual(len(_if.cond), 1)
         self.assertEqual(len(_if.ifTrue), 1)
-        self.assertEqual(len(_if.ifFalse), 0)
+        self.assertEqual(_if.ifFalse, None)
         self.assertEqual(len(_if.elIfs), 0)
 
         assig = _if.ifTrue[0]
@@ -57,7 +57,7 @@ class TestCaseSynthesis(unittest.TestCase):
 
         self.assertEqual(len(_if.cond), 1)
         self.assertEqual(len(_if.ifTrue), 1)
-        self.assertEqual(len(_if.ifFalse), 0)
+        self.assertEqual(_if.ifFalse, None)
         self.assertEqual(len(_if.elIfs), 0)
 
         if_reset = _if.ifTrue[0]

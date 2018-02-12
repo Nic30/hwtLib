@@ -7,7 +7,6 @@ from hwt.hdl.constants import Time
 from hwt.serializer.systemC.serializer import SystemCSerializer
 from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.vhdl.serializer import VhdlSerializer
-from hwt.simulator.agentConnector import agInts
 from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.utils import toRtl

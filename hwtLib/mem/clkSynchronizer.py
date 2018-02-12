@@ -26,7 +26,7 @@ class ClkSynchronizer(Unit):
 
     def _impl(self):
         def reg(name, clk):
-            return self._cntx.sig(name,
+            return self._ctx.sig(name,
                                   self.DATA_TYP,
                                   clk=clk,
                                   syncRst=self.rst,

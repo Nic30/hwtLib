@@ -40,7 +40,6 @@ class IpCoreIntfTest(Unit):
         self.axi3m0 = Axi3()
         self.axi3s1 = Axi3_withAddrUser()
         self.axi3m1 = Axi3_withAddrUser()
-        
 
     def _impl(self):
         r0 = self._reg("r0", defVal=0)
@@ -59,7 +58,7 @@ class IpCoreIntfTest(Unit):
 
         self.axi3s0(self.axi3m0)
         self.axi3s1(self.axi3m1)
-        
+
 
 class IpCorePackagerTC(unittest.TestCase):
     def setUp(self):
