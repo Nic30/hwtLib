@@ -40,7 +40,7 @@ class FlipRegister(Unit):
         return (
             If(self.first.dout.vld,
                 regA(self.first.dout.data)
-            ) + 
+            ),  
             If(self.second.dout.vld,
                regB(self.second.dout.data)
             )
@@ -56,10 +56,10 @@ class FlipRegister(Unit):
         second = self._reg("second_reg", Bits(self.DATA_WIDTH), defVal=self.DEFAULT_VAL)
 
         If(self.select_sig,
-           self.connectWriteIntf(second, first) + 
+           self.connectWriteIntf(second, first),
            self.connectReadIntf(second, first)
         ).Else(
-           self.connectReadIntf(first, second) + 
+           self.connectReadIntf(first, second), 
            self.connectWriteIntf(first, second)
         )
 
