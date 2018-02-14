@@ -65,11 +65,11 @@ BEGIN
     assig_process_fsmSt_next: PROCESS (fsmSt, s_in0, s_in1)
     BEGIN
         IF fsmSt = send0 THEN
-            fsmSt_next <= send1;
             s_out <= s_in0;
+            fsmSt_next <= send1;
         ELSE
-            fsmSt_next <= send0;
             s_out <= s_in1;
+            fsmSt_next <= send0;
         END IF;
     END PROCESS;
 

@@ -146,7 +146,6 @@ class SwitchStmTC(SimTestCase):
     def test_systemcSerialization(self):
         u = SwitchStmUnit()
         s = toRtl(u, serializer=SystemCSerializer)
-        print(s)
         self.assertEqual(s, switchStm_systemc)
 
     def test_resources(self):

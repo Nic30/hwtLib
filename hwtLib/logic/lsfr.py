@@ -19,6 +19,7 @@ class Lsfr(Unit):
     Linear shift feedback register,
     form of hardware pseudorandom generator
     """
+
     def _config(self):
         self.POLY_WIDTH = Param(8)
         self.POLY = Param(0x88)
@@ -50,9 +51,10 @@ class LsfrTC(SimTestCase):
         self.prepareUnit(u)
 
         self.doSim(300 * Time.ns)
-        self.assertValSequenceEqual(u.dataOut._ag.data,
-         [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-          0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1])
+        self.assertValSequenceEqual(
+            u.dataOut._ag.data,
+            [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+             0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1])
 
 
 if __name__ == "__main__":
