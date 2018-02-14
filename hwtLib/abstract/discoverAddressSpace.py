@@ -67,7 +67,7 @@ class AddressSpaceProbe(object):
 
     def walkToConverter(self, mainSig):
         """
-        we walk mainSig down to endpoints and we are searching for any bus converter instance
+        walk mainSig down to endpoints and search for any bus converter instance
         """
         if mainSig is None:
             return
@@ -86,7 +86,9 @@ class AddressSpaceProbe(object):
                 if e.src is mainSig:
                     yield from self.walkToConverter(e.dst)
             else:
-                raise NotImplementedError(e.__class__)
+                for outp in e._outputs: 
+                    if outp is mainSig:
+                        yield from self.walkToConverter(outp)
 
     def _discoverAddressSpace(self, topIntf, offset):
         _mainSig = self.getMainSigFn(topIntf)
