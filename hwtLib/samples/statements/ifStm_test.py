@@ -11,7 +11,11 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.utils import toRtl
 from hwtLib.samples.statements.ifStm import SimpleIfStatement, \
     SimpleIfStatement2, SimpleIfStatement2b, SimpleIfStatement2c,\
-    SimpleIfStatement3
+    SimpleIfStatement3, SimpleIfStatementMergable,\
+    SimpleIfStatementMergable_vhdl, SimpleIfStatementMergable1,\
+    SimpleIfStatementMergable1_vhdl, SimpleIfStatementMergable2,\
+    SimpleIfStatementMergable2_vhdl
+from hwt.serializer.vhdl.serializer import VhdlSerializer
 
 
 class IfStmTC(SimTestCase):
@@ -133,6 +137,18 @@ class IfStmTC(SimTestCase):
         toRtl(u, serializer=s)
         r = s.report()
         self.assertDictEqual(r, expected)
+
+    def test_SimpleIfStatementMergable_vhdl(self):
+        s = toRtl(SimpleIfStatementMergable(), serializer=VhdlSerializer)
+        self.assertEqual(s, SimpleIfStatementMergable_vhdl)
+
+    def test_SimpleIfStatementMergable1_vhdl(self):
+        s = toRtl(SimpleIfStatementMergable1(), serializer=VhdlSerializer)
+        self.assertEqual(s, SimpleIfStatementMergable1_vhdl)
+
+    def test_SimpleIfStatementMergable2_vhdl(self):
+        s = toRtl(SimpleIfStatementMergable2(), serializer=VhdlSerializer)
+        self.assertEqual(s, SimpleIfStatementMergable2_vhdl)
 
 
 if __name__ == "__main__":
