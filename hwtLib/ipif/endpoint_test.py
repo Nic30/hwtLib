@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.bitmask import mask
 from hwt.hdl.constants import Time, READ, WRITE, NOP
 from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
+from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArray
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     structTwoFieldsDense, structTwoFieldsDenseStart, AxiLiteEndpointDenseTC, \
     AxiLiteEndpointDenseStartTC
 from hwtLib.ipif.endpoint import IpifEndpoint
 from hwtLib.ipif.intf import Ipif
 from hwtLib.ipif.simMaster import IPFISimMaster
-from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArray
-from hwt.bitmask import mask
 
 
 def addrGetter(intf):
@@ -178,15 +178,17 @@ class IpifEndpointArray(AxiLiteEndpointArray):
 
         self.assertEmpty(u.bus._ag.readed)
         for i in range(4):
-            self.assertValEqual(u.decoded.field0._ag.mem[i], MAGIC + i + 1, "index=%d" % i)
-            self.assertValEqual(u.decoded.field1._ag.mem[i], 2 * MAGIC + i + 1, "index=%d" % i)
+            self.assertValEqual(
+                u.decoded.field0._ag.mem[i], MAGIC + i + 1, "index=%d" % i)
+            self.assertValEqual(
+                u.decoded.field1._ag.mem[i], 2 * MAGIC + i + 1, "index=%d" % i)
 
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(IpifEndpointOffsetTC('test_registerMap'))
+    # suite.addTest(IpifEndpointTC('test_nop'))
     suite.addTest(unittest.makeSuite(IpifEndpointTC))
     suite.addTest(unittest.makeSuite(IpifEndpointDenseTC))
     suite.addTest(unittest.makeSuite(IpifEndpointDenseStartTC))
