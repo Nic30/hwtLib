@@ -1,6 +1,6 @@
 from hwt.hdl.assignment import Assignment
 from hwt.hdl.operator import Operator
-from hwt.hdl.operatorDefs import AllOps
+from hwt.hdl.operatorDefs import AllOps, isEventDependentOp
 from hwt.hdl.portItem import PortItem
 from hwt.synthesizer.interfaceLevel.mainBases import UnitBase
 from hwtLib.abstract.busEndpoint import BusEndpoint
@@ -51,7 +51,7 @@ class AddressSpaceProbe(object):
         self.topIntf = topIntf
         self.getMainSigFn = getMainSigFn
         self.offset = offset
-        self.seen = set()
+        self.seen = set([None, ])
         self.discovered = self._discoverAddressSpace(self.topIntf,
                                                      self.offset)
 
@@ -60,7 +60,8 @@ class AddressSpaceProbe(object):
 
         for transTmpl in converter._bramPortMapped:
             # some arrays can have items with internal structure
-            memberT = self._discoverAddressSpace(converter.getPort(transTmpl), offset)
+            memberT = self._discoverAddressSpace(
+                converter.getPort(transTmpl), offset)
             if memberT is not None:
                 raise NotImplementedError("Nested address space")
         return t
@@ -69,26 +70,26 @@ class AddressSpaceProbe(object):
         """
         walk mainSig down to endpoints and search for any bus converter instance
         """
-        if mainSig is None:
+        if mainSig in self.seen:
             return
 
+        self.seen.add(mainSig)
+
         parent = getParentUnit(mainSig)
+
         if isinstance(parent, BusEndpoint) and parent not in self.seen:
             self.seen.add(parent)
             yield parent
 
         for e in mainSig.endpoints:
-            if isinstance(e, Operator):
+            if isinstance(e, Operator) and not isEventDependentOp(e):
                 ep = getEpSignal(mainSig, e)
-                if ep is not None:
-                    yield from self.walkToConverter(ep)
+                yield from self.walkToConverter(ep)
             elif isinstance(e, (Assignment, PortItem)):
-                if e.src is mainSig:
-                    yield from self.walkToConverter(e.dst)
+                yield from self.walkToConverter(e.dst)
             else:
-                for outp in e._outputs: 
-                    if outp is mainSig:
-                        yield from self.walkToConverter(outp)
+                for outp in e._outputs:
+                    yield from self.walkToConverter(outp)
 
     def _discoverAddressSpace(self, topIntf, offset):
         _mainSig = self.getMainSigFn(topIntf)
