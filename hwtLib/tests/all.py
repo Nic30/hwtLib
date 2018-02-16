@@ -55,6 +55,7 @@ from hwtLib.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.ipif.reg_test import IpifRegTC
 from hwtLib.logic.binToOneHot import BinToOneHotTC
+from hwtLib.logic.bitonicSorter import BitonicSorterTC
 from hwtLib.logic.cntrGray import GrayCntrTC
 from hwtLib.logic.crcUtils_test import CrcUtilsTC
 from hwtLib.logic.crc_test import CrcCombTC, CrcTC
@@ -118,7 +119,7 @@ from hwtLib.samples.simple_test import SimpleTC
 from hwtLib.samples.statements.constDriver_test import ConstDriverTC
 from hwtLib.samples.statements.forLoopCntrl_test import StaticForLoopCntrlTC
 from hwtLib.samples.statements.fsm_test import FsmExampleTC, \
-    HadrcodedFsmExampleTC
+    HadrcodedFsmExampleTC, FsmSerializationTC
 from hwtLib.samples.statements.ifStm_test import IfStmTC
 from hwtLib.samples.statements.switchStm_test import SwitchStmTC
 from hwtLib.samples.statements.vldMaskConflictsResolving_test import \
@@ -165,7 +166,6 @@ from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
-from hwtLib.logic.bitonicSorter import BitonicSorterTC
 
 
 def doSimWithoutLog(self, time, name=None, config=None):
@@ -246,6 +246,7 @@ suite = testSuiteFromTCs(
     IfStmTC,
     SwitchStmTC,
     LutRamTC,
+    FsmSerializationTC,
     FsmExampleTC,
     HadrcodedFsmExampleTC,
     OneHotToBinTC,

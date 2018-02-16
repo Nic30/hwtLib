@@ -14,7 +14,8 @@ from hwtLib.samples.statements.ifStm import SimpleIfStatement, \
     SimpleIfStatement3, SimpleIfStatementMergable,\
     SimpleIfStatementMergable_vhdl, SimpleIfStatementMergable1,\
     SimpleIfStatementMergable1_vhdl, SimpleIfStatementMergable2,\
-    SimpleIfStatementMergable2_vhdl
+    SimpleIfStatementMergable2_vhdl, IfStatementPartiallyEnclosed,\
+    IfStatementPartiallyEnclosed_vhdl
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 
 
@@ -149,6 +150,10 @@ class IfStmTC(SimTestCase):
     def test_SimpleIfStatementMergable2_vhdl(self):
         s = toRtl(SimpleIfStatementMergable2(), serializer=VhdlSerializer)
         self.assertEqual(s, SimpleIfStatementMergable2_vhdl)
+
+    def test_IfStatementPartiallyEnclosed_vhdl(self):
+        s = toRtl(IfStatementPartiallyEnclosed(), serializer=VhdlSerializer)
+        self.assertEqual(s, IfStatementPartiallyEnclosed_vhdl)
 
 
 if __name__ == "__main__":

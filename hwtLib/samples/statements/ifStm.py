@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.interfaces.std import Signal, VectSignal
+from hwt.hdl.types.bits import Bits
+from hwt.interfaces.std import Signal, VectSignal, Clk
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.unit import Unit
-from hwt.hdl.types.bits import Bits
 
 
 class SimpleIfStatement(Unit):
@@ -256,7 +256,79 @@ BEGIN
 END ARCHITECTURE rtl;"""
 
 
+class IfStatementPartiallyEnclosed(Unit):
+    def _declr(self):
+        self.clk = Clk()
+        self.a = Signal()
+        self.b = Signal()
+
+        self.c = Signal()
+        self.d = Signal()
+
+    def _impl(self):
+        a = self._reg("a_reg")
+        b = self._reg("b_reg")
+
+        If(self.c,
+            a(1),
+            b(1),
+        ).Elif(self.d,
+               a(0)
+        ).Else(
+            a(1),
+            b(1),
+        )
+        self.a(a)
+        self.b(b)
+
+
+IfStatementPartiallyEnclosed_vhdl = """library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+ENTITY IfStatementPartiallyEnclosed IS
+    PORT (a: OUT STD_LOGIC;
+        b: OUT STD_LOGIC;
+        c: IN STD_LOGIC;
+        clk: IN STD_LOGIC;
+        d: IN STD_LOGIC
+    );
+END IfStatementPartiallyEnclosed;
+
+ARCHITECTURE rtl OF IfStatementPartiallyEnclosed IS
+    SIGNAL a_reg: STD_LOGIC;
+    SIGNAL a_reg_next: STD_LOGIC;
+    SIGNAL b_reg: STD_LOGIC;
+    SIGNAL b_reg_next: STD_LOGIC;
+BEGIN
+    a <= a_reg;
+    assig_process_a_reg_next: PROCESS (c, d)
+    BEGIN
+        IF c = '1' THEN
+            a_reg_next <= '1';
+            b_reg_next <= '1';
+        ELSIF d = '1' THEN
+            a_reg_next <= '0';
+            b_reg_next <= b_reg;
+        ELSE
+            a_reg_next <= '1';
+            b_reg_next <= '1';
+        END IF;
+    END PROCESS;
+
+    b <= b_reg;
+    assig_process_b_reg: PROCESS (clk)
+    BEGIN
+        IF RISING_EDGE(clk) THEN
+            b_reg <= b_reg_next;
+            a_reg <= a_reg_next;
+        END IF;
+    END PROCESS;
+
+END ARCHITECTURE rtl;"""
+
+
 if __name__ == "__main__":  # alias python main function
     from hwt.synthesizer.utils import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
-    print(toRtl(SimpleIfStatementMergable1()))
+    print(toRtl(IfStatementPartiallyEnclosed()))
