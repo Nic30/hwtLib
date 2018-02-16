@@ -59,24 +59,18 @@ class HadrcodedFsmExample(FsmExample):
                 st(3)
             ).Elif(b,
                 st(2)
-            ).Else(
-                st(st)
             )
         ).Elif(st._eq(2),
             If(a & b,
                st(3)
             ).Elif(a,
                 st(1)
-            ).Else(
-                st(st)
             )
         ).Elif(st._eq(3),
             If(a & ~b,
                st(1)
             ).Elif(~a & b,
                 st(2)
-            ).Else(
-                st(st)
             )
         ).Else(
             st(1)

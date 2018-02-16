@@ -57,9 +57,10 @@ BEGIN
 
     assig_process_cnt_next: PROCESS (cnt, en)
     BEGIN
-        cnt_next <= cnt;
         IF en = '1' THEN
             cnt_next <= STD_LOGIC_VECTOR(UNSIGNED(cnt) + 1);
+        ELSE
+            cnt_next <= cnt;
         END IF;
     END PROCESS;
 

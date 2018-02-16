@@ -64,11 +64,12 @@ BEGIN
 
     assig_process_counter_next: PROCESS (counter, en, start)
     BEGIN
-        counter_next <= counter;
         IF start = '1' THEN
             counter_next <= boundary;
         ELSIF en = '1' THEN
             counter_next <= STD_LOGIC_VECTOR(UNSIGNED(counter) - 1);
+        ELSE
+            counter_next <= counter;
         END IF;
     END PROCESS;
 

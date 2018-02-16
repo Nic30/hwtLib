@@ -89,6 +89,9 @@ BEGIN
     assig_process_a_dout: PROCESS (a_clk)
     BEGIN
         IF (RISING_EDGE(a_clk)) AND (a_en = '1') THEN
+            IF a_we = '1' THEN
+                ram_memory(TO_INTEGER(UNSIGNED(a_addr))) <= a_din;
+            END IF;
             a_dout <= ram_memory(TO_INTEGER(UNSIGNED(a_addr)));
         END IF;
     END PROCESS;
@@ -96,21 +99,10 @@ BEGIN
     assig_process_b_dout: PROCESS (b_clk)
     BEGIN
         IF (RISING_EDGE(b_clk)) AND (b_en = '1') THEN
+            IF b_we = '1' THEN
+                ram_memory(TO_INTEGER(UNSIGNED(b_addr))) <= b_din;
+            END IF;
             b_dout <= ram_memory(TO_INTEGER(UNSIGNED(b_addr)));
-        END IF;
-    END PROCESS;
-
-    assig_process_ram_memory: PROCESS (a_clk)
-    BEGIN
-        IF (RISING_EDGE(a_clk)) AND (a_en = '1') AND a_we = '1' THEN
-            ram_memory(TO_INTEGER(UNSIGNED(a_addr))) <= a_din;
-        END IF;
-    END PROCESS;
-
-    assig_process_ram_memory_0: PROCESS (b_clk)
-    BEGIN
-        IF (RISING_EDGE(b_clk)) AND (b_en = '1') AND b_we = '1' THEN
-            ram_memory(TO_INTEGER(UNSIGNED(b_addr))) <= b_din;
         END IF;
     END PROCESS;
 

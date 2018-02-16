@@ -91,7 +91,6 @@ BEGIN
 
     assig_process_st_next: PROCESS (ctrlFifoLast, ctrlFifoVld, sd0, sd1, st)
     BEGIN
-        st_next <= st;
         CASE st IS
         WHEN idle =>
             IF (sd0 AND sd1) = '1' THEN
@@ -102,6 +101,8 @@ BEGIN
                 st_next <= ts0Wait;
             ELSIF ctrlFifoVld = '1' THEN
                 st_next <= tsWait;
+            ELSE
+                st_next <= st;
             END IF;
         WHEN tsWait =>
             IF (sd0 AND sd1) = '1' THEN
@@ -116,14 +117,20 @@ BEGIN
         WHEN ts0Wait =>
             IF sd0 = '1' THEN
                 st_next <= lenExtr;
+            ELSE
+                st_next <= st;
             END IF;
         WHEN ts1Wait =>
             IF sd1 = '1' THEN
                 st_next <= lenExtr;
+            ELSE
+                st_next <= st;
             END IF;
         WHEN OTHERS =>
             IF (ctrlFifoVld AND ctrlFifoLast) = '1' THEN
                 st_next <= idle;
+            ELSE
+                st_next <= st;
             END IF;
         END CASE;
     END PROCESS;

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import connect, If, Concat
+from hwt.code import connect, If, Concat, Switch
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
@@ -51,7 +51,7 @@ class Showcase0(Unit):
         # this signal will have no driver and it will be considered to be an input
         self.d = VectSignal(32)
 
-        # names of public ports can not be same because they need to accessed from parent
+        # names of public ports can not be same because they need to be accessible from parent
         self.e = Signal()
         self.f = Signal()
         self.g = VectSignal(8)
@@ -70,7 +70,7 @@ class Showcase0(Unit):
         self.j = VectSignal(8)
 
         # collision with hdl keywords are automatically resolved and fixed
-        # as well as case sensitivity care and other collisions
+        # as well as case sensitivity care and other collisions in target HDL
         self.out = Signal()
         self.output = Signal()
         self.sc_signal = VectSignal(8)
@@ -80,12 +80,16 @@ class Showcase0(Unit):
     def _impl(self):
         """
         Purpose of this method
-        In this method all public interfaces and configuration has been made and they can not be edited.
+        In this method all public interfaces and configuration
+        has been made and they can not be edited.
         """
+        # create local variable to make code shorter
         a = self.a
         b = self.b
 
         # "call" is overloaded to do assignment
+        # it means c = a + b in target HDL
+        # type conversion is can be done by _auto_cast or _reinterpret_cast method call
         self.c(a + b._auto_cast(a._dtype))
 
         # width of signals is not same, this would raise TypeError on regular assignment,
@@ -96,23 +100,29 @@ class Showcase0(Unit):
         # most of the types have physical size, bit_lenght returns size of this type in bits
         assert self.a._dtype.bit_length() == 32
 
-        # it is possible to create signal explicitly by calling ._sig
+        # it is possible to create signal explicitly by calling ._sig method
+        # result of every operator is signal
         const_private_signal = self._sig("const_private_signal", dtype=uint32_t, defVal=123)
         self.contOut(const_private_signal)
 
         # this signal will be optimized out because it has no effect on any output
-        # default type is BIT
+        # self.d will remain because it is part of interface
         self._sig("optimizedOut", dtype=uint32_t, defVal=123)
 
         # by _reg function usual d-register can be instantiated
-        # to be able to use this this unit has to have clock defined (you can force any signal as clock
-        # if you call self._ctx._reg directly)
+        # to be able to use this this unit has to have clock defined 
+        # (you can force any signal as clock if you call self._ctx._reg directly)
+        # default type is BIT
         r = self._reg("r", defVal=0)
-        If(~r,  # ~ is negation operator
+
+        # HDL If statement is object
+        # ~ is negation operator
+        If(~r,
            # you can directly assign to register and it will assign to its next value
            # (assigned value appears in it in second clk tick)
            r(self.e)
         )
+
         # again signals has to affect output or they will be optimized out
         self.f(r)
 
@@ -123,15 +133,17 @@ class Showcase0(Unit):
         # bit concatenation is done by Concat function, python like slicing supported
         self.g(Concat(tmp0, tmp1, a[6:]))
 
-        # comparison operators works as expected
-        c = self.cmp
-        c[0](a < 4)
-        c[1](a > 4)
-        c[2](b <= 4)
-        c[3](b >= 4)
-        c[4](b != 4)
-        # except for ==, overriding == would have many unintended consequences in python
-        c[5](b._eq(4))
+        # results of comparison operators assigned to bits of cmp signal
+        cmp = self.cmp
+        cmp[0](a < 4)
+        cmp[1](a > 4)
+        cmp[2](b <= 4)
+        cmp[3](b >= 4)
+        cmp[4](b != 4)
+        # _eq() is used as ==,
+        # overriding == would have many unintended consequences in python
+        # (it would make all signals unhasable)
+        cmp[5](b._eq(4))
 
         # all statements are just objects
         statements0 = self.h(0)
@@ -140,12 +152,12 @@ class Showcase0(Unit):
         statements3 = foo(r, statements0, a[1], statements1, statements2)
         assert isinstance(statements3, If)
         If(a[2],
-            # also when there is not value specified in the branch of dataflow (= in this case there is no else
-            # this signal will become latched)
+            # also when there is not value specified in the branch of dataflow
+            # (= in this case there is no else this signal will become latched)
             statements3
         )
 
-        # all statements like Switch, For and others are in hwt.code
+        # all statements like If, Switch, For and others are in hwt.code
 
         # names of generated signals are patched to avoid collisions automatically
         r0 = self._reg("r", Bits(2), defVal=0)
@@ -164,19 +176,24 @@ class Showcase0(Unit):
 
         self.out(0)
         # None is converted to value with zero validity mask
+        # same as self.output._dtype.fromPy(0, vldMask=0)
         self.output(None)
 
-        # statements in target language are resolved from AST
-        # this if statement will be resolved as Switch statement
-        If(a._eq(1),
-           self.sc_signal(0)
-        ).Elif(a._eq(2),
+        # statements are code-generator frendly
+        stm = \
+        Switch(a).Case(1,
+            self.sc_signal(0)
+        ).Case(2,
            self.sc_signal(1)
-        ).Elif(a._eq(3),
-           self.sc_signal(3)
-        ).Else(
-           self.sc_signal(4)
         )
+        compileTimeCondition = True
+
+        if compileTimeCondition:
+            stm.Case(3,
+               self.sc_signal(3)
+            ).Default(
+               self.sc_signal(4)
+            )
 
         # ram working on falling edge of clk
         # note that rams are usually working on rising edge
@@ -283,13 +300,13 @@ BEGIN
     BEGIN
         IF RISING_EDGE(clk) THEN
             IF rst_n = '0' THEN
-                r <= '0';
                 r_1 <= "00";
                 r_0 <= "00";
+                r <= '0';
             ELSE
-                r <= r_next;
                 r_1 <= r_next_1;
                 r_0 <= r_next_0;
+                r <= r_next;
             END IF;
         END IF;
     END PROCESS;
@@ -298,9 +315,10 @@ BEGIN
     r_next_1 <= r_0;
     assig_process_r_next_1: PROCESS (e, r)
     BEGIN
-        r_next <= r;
         IF (NOT r) = '1' THEN
             r_next <= e;
+        ELSE
+            r_next <= r;
         END IF;
     END PROCESS;
 
@@ -396,22 +414,23 @@ module Showcase0(input [31:0] a,
     assign output_0 = 1'bx;
     always @(posedge clk) begin: assig_process_r
         if(rst_n == 1'b0) begin
-            r <= 1'b0;
             r_1 <= 2'b00;
             r_0 <= 2'b00;
+            r <= 1'b0;
         end else begin
-            r <= r_next;
             r_1 <= r_next_1;
             r_0 <= r_next_0;
+            r <= r_next;
         end
     end
 
     assign r_next_0 = i;
     assign r_next_1 = r_0;
     always @(e or r) begin: assig_process_r_next
-        r_next <= r;
         if((~r)==1'b1) begin
             r_next <= e;
+        end else begin
+            r_next <= r;
         end
     end
 
@@ -553,13 +572,13 @@ SC_MODULE(Showcase0) {
     }
     void assig_process_r() {
         if(rst_n.read() == '0') {
-            r = '0';
             r_1 = sc_uint<2>("00");
             r_0 = sc_uint<2>("00");
+            r = '0';
         } else {
-            r = r_next.read();
             r_1 = r_next_1.read();
             r_0 = r_next_0.read();
+            r = r_next.read();
         }
     }
     void assig_process_r_next() {
@@ -569,9 +588,10 @@ SC_MODULE(Showcase0) {
         r_next_1.write(r_0);
     }
     void assig_process_r_next_1() {
-        r_next.write(r);
         if((~r) == '1') {
             r_next.write(e.read());
+        } else {
+            r_next.write(r);
         }
     }
     void assig_process_sc_signal() {
@@ -656,6 +676,6 @@ if __name__ == "__main__":  # alias python main function
     print(toRtl(Showcase0(), serializer=SystemCSerializer))
     #print(toRtl(Showcase0(), serializer=SimModelSerializer))
 
-    r = ResourceAnalyzer()
-    print(toRtl(Showcase0(), serializer=r))
-    pprint(r.report())
+    #r = ResourceAnalyzer()
+    #print(toRtl(Showcase0(), serializer=r))
+    #pprint(r.report())

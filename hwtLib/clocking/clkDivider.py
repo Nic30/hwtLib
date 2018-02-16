@@ -28,7 +28,6 @@ class ClkDiv3(Unit):
         fall = self._sig("fall")
         CNTR_MAX = 2
 
-
         If(self.rst_n._isOn(),
            r_cnt(CNTR_MAX),
            rise(1),
