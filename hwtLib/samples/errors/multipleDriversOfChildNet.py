@@ -21,6 +21,8 @@ class MultipleDriversOfChildNet(Unit):
     def _impl(self):
         # interface directions in collision
         self.ch.d(self.a)
+        self.ch.c.data(1)
+        self.ch.c.vld(1)
         self.b(self.ch.c)
 
 
