@@ -39,7 +39,8 @@ class CntrTC(SimTestCase):
         u = Cntr()
 
         expected = {(AllOps.ADD, 2): 1,
-                    (ResourceMUX, 2, 2): 1,
+                    # 1 for reset, one for en
+                    (ResourceMUX, 2, 2): 2,
                     ResourceFF: 2}
 
         s = ResourceAnalyzer()
@@ -52,7 +53,8 @@ class CntrTC(SimTestCase):
         u.DATA_WIDTH.set(150)
 
         expected = {(AllOps.ADD, 150): 1,
-                    (ResourceMUX, 150, 2): 1,
+                    # 1 for reset, one for en
+                    (ResourceMUX, 150, 2): 2,
                     ResourceFF: 150}
 
         s = ResourceAnalyzer()
@@ -63,7 +65,7 @@ class CntrTC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(CntrTC('test_contingWithStops'))
+    # suite.addTest(CntrTC('test_resources_150b'))
     suite.addTest(unittest.makeSuite(CntrTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
