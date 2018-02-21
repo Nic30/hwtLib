@@ -38,28 +38,32 @@ class RomTC(SimTestCase):
     def test_sync_resources(self):
         u = SimpleSyncRom()
         expected = {
-            ResourceRAM(8, 4, 0, 1, 0, 0, 0, 0): 1,
+            ResourceRAM(8, 4,
+                        0, 1, 0, 0,
+                        0, 0, 0, 0): 1,
         }
 
         s = ResourceAnalyzer()
         toRtl(u, serializer=s)
-        print(s.report())
         self.assertDictEqual(s.report(), expected)
 
     def test_async_resources(self):
         u = SimpleRom()
         expected = {
-            ResourceRAM(8, 4, 0, 0, 0, 0, 1, 0): 1,
+            ResourceRAM(8, 4,
+                        0, 0, 0, 0,
+                        0, 1, 0, 0): 1,
         }
 
         s = ResourceAnalyzer()
         toRtl(u, serializer=s)
-        self.assertDictEqual(s.report(), expected)
+        r = s.report()
+        self.assertDictEqual(r, expected)
 
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(RomTC('test_sync_resources'))
+    # suite.addTest(RomTC('test_sync_resources'))
     suite.addTest(unittest.makeSuite(RomTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
