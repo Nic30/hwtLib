@@ -68,7 +68,7 @@ class Axi3DenseMem(DenseMemory):
 
     def parseReq(self, req):
         for i, v in enumerate(req):
-            assert v._isFullVld(), (i, v)
+            assert v._isFullVld(), ("Invalid AXI request", i, v)
 
         _id = req[0].val
         addr = req[1].val

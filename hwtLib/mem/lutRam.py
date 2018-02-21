@@ -39,7 +39,7 @@ def mkLutRamCls(DATA_WIDTH):
         def _impl(self):
             s = self._sig
             wclk_in = s("wclk_in")
-            mem = self._cntx.sig("mem", Bits(DATA_WIDTH + 1),
+            mem = self._ctx.sig("mem", Bits(DATA_WIDTH + 1),
                                  defVal=hBit(None)._concat(self.INIT))
             a_in = s("a_in", Bits(6))
             d_in = s("d_in")
@@ -60,6 +60,7 @@ def mkLutRamCls(DATA_WIDTH):
 
     RAMnX1S.__name__ = "RAM%dX1S" % DATA_WIDTH
     return RAMnX1S
+
 
 RAM64X1S = mkLutRamCls(64)
 

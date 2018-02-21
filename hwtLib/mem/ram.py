@@ -99,4 +99,4 @@ class Ram_dp(Ram_sp):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    print(toRtl(Ram_dp()))
+    print(toRtl(Ram_sp()))

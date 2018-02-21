@@ -256,17 +256,18 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
                 else:
                     _ack = dout.ready & ack
 
-                a = If(_ack,
-                       wordCntr_inversed(nextWordIndex)
-                       )
+                a = [If(_ack,
+                        wordCntr_inversed(nextWordIndex)
+                     ),
+                    ]
             else:
                 a = []
 
-            a.extend(dout.valid(ack))
+            a.append(dout.valid(ack))
 
             if multipleWords:
                 # data out logic
-                a.extend(dout.data(wordData))
+                a.append(dout.data(wordData))
                 wcntrSw.Case(inversedIndx, a)
 
             if isLast:
@@ -277,8 +278,8 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             pass
         elif not isPow2(maxWordIndex + 1):
             default = wordCntr_inversed(maxWordIndex)
-            default.extend(dout.valid(0))
-            default.extend(dout.data(None))
+            default.append(dout.valid(0))
+            default.append(dout.data(None))
 
             wcntrSw.Default(default)
 

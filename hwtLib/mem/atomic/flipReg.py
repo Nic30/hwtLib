@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, c
+from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, RegCntrl
 from hwt.interfaces.utils import addClkRstn
@@ -18,8 +18,8 @@ class FlipRegister(Unit):
     By select you can choose between regs.
 
     This component is meant to be form of synchronization.
-    Example first reg is connected to first set of ports, writer performs actualizations on first reg
-    and reader reads data from second ram by second set of ports.
+    Example first reg is connected to first set of ports, writer performs actualizations
+    on first reg and reader reads data from second ram by second set of ports.
 
     Then select is set and access is flipped. Reader now has access to reg 0 and writer to reg 1.
     """
@@ -37,33 +37,36 @@ class FlipRegister(Unit):
             self.select_sig = Signal()
 
     def connectWriteIntf(self, regA, regB):
-        return (
+        return [
             If(self.first.dout.vld,
                 regA(self.first.dout.data)
-            ) + 
+            ),
             If(self.second.dout.vld,
                regB(self.second.dout.data)
             )
-        )
+        ]
 
     def connectReadIntf(self, regA, regB):
-        return (c(regA, self.first.din) + 
-                c(regB, self.second.din)
-               )
+        return [
+            self.first.din(regA),
+            self.second.din(regB)
+        ]
 
     def _impl(self):
         first = self._reg("first_reg", Bits(self.DATA_WIDTH), defVal=self.DEFAULT_VAL)
         second = self._reg("second_reg", Bits(self.DATA_WIDTH), defVal=self.DEFAULT_VAL)
 
         If(self.select_sig,
-           self.connectWriteIntf(second, first) + 
-           self.connectReadIntf(second, first)
+           self.connectReadIntf(second, first),
+           self.connectWriteIntf(second, first)
         ).Else(
-           self.connectReadIntf(first, second) + 
+           self.connectReadIntf(first, second),
            self.connectWriteIntf(first, second)
         )
+
 
 if __name__ == "__main__":  # alias python main function
     from hwt.synthesizer.utils import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
-    print(toRtl(FlipRegister))
+    u = FlipRegister()
+    print(toRtl(u))

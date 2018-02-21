@@ -37,10 +37,9 @@ class I2CMasterBitCntrlTC(SimTestCase):
         u = self.u
         addr = 13
         mode = 1
-        ack = 0
         u.cntrl._ag.data.extend(
-            [(START, 0), ] + 
-            [(WRITE, selectBit(addr, 7 - i - 1)) for i in range(7)] + 
+            [(START, 0), ] +
+            [(WRITE, selectBit(addr, 7 - i - 1)) for i in range(7)] +
             [(WRITE, mode),
              (READ, 0),
              (NOP, 0)

@@ -16,7 +16,8 @@ class TimerInfo(object):
     :ivar maxVal: evaluated value of maxVal
     :ivar name: name prefix which is used for registers and signals for this timer
     """
-    __slots__ = ['maxVal', 'maxValOriginal', 'parent', 'cntrRegister', 'tick', 'name']
+    __slots__ = ['maxVal', 'maxValOriginal',
+                 'parent', 'cntrRegister', 'tick', 'name']
 
     def __init__(self, maxVal, name=None):
         self.maxValOriginal = maxVal
@@ -69,23 +70,25 @@ class TimerInfo(object):
         elif p.maxVal < timer.maxVal:
             maxVal = (timer.maxVal // p.maxVal) - 1
             assert maxVal >= 0
-            timer.tick = parentUnit._sig(timer.name + "timerTick%d" % timer.maxVal)
+            timer.tick = parentUnit._sig(
+                timer.name + "timerTick%d" % timer.maxVal)
 
-            r = parentUnit._reg(timer.name + "timerCntr%d" % timer.maxVal,
-                                Bits(log2ceil(maxVal + 1)),
-                                maxVal
-                                )
-            timer.cntrRegister = r
+            timer.cntrRegister = parentUnit._reg(
+                timer.name + "timerCntr%d" % timer.maxVal,
+                Bits(log2ceil(maxVal + 1)),
+                maxVal
+            )
 
             en = p.tick
             if enableSig is not None:
                 en = en & enableSig
 
-            tick = TimerInfo._instantiateTimerTickLogic(parentUnit,
-                                                        timer,
-                                                        (timer.maxValOriginal // p.maxValOriginal) - 1,
-                                                        en,
-                                                        rstSig)
+            tick = TimerInfo._instantiateTimerTickLogic(
+                parentUnit,
+                timer,
+                (timer.maxValOriginal // p.maxValOriginal) - 1,
+                en,
+                rstSig)
 
             timer.tick(tick & p.tick)
 
@@ -107,7 +110,7 @@ class TimerInfo(object):
                                    rstSig: Optional[RtlSignal]) -> RtlSignal:
         """
         Instantiate logic of this timer
-        
+
         :return: tick signal from this timer
         """
         r = timer.cntrRegister
@@ -117,13 +120,13 @@ class TimerInfo(object):
             if rstSig is None:
                 If(tick,
                     r(origMaxVal)
-                ).Else(
-                   r(r - 1)
+                   ).Else(
+                    r(r - 1)
                 )
             else:
                 If(rstSig | tick,
                     r(origMaxVal)
-                ).Else(
+                   ).Else(
                     r(r - 1)
                 )
         else:
@@ -141,7 +144,6 @@ class TimerInfo(object):
                 ).Elif(enableSig,
                     r(r - 1)
                 )
-
 
         if enableSig is not None:
             tick = (tick & enableSig)
@@ -176,22 +178,25 @@ class TimerInfo(object):
                 else:
                     tick = enableSig
             else:
-                r = parentUnit._reg(timer.name + "timerCntr%d" % timer.maxVal,
-                                    Bits(log2ceil(maxVal + 1)),
-                                    maxVal
-                                    )
-                timer.cntrRegister = r
+                timer.cntrRegister = parentUnit._reg(
+                    timer.name + "timerCntr%d" % timer.maxVal,
+                    Bits(log2ceil(maxVal + 1)),
+                    maxVal
+                )
                 tick = TimerInfo._instantiateTimerTickLogic(parentUnit,
                                                             timer,
                                                             origMaxVal,
                                                             enableSig,
                                                             rstSig)
 
-            timer.tick = parentUnit._sig(timer.name + "timerTick%d" % timer.maxVal)
+            timer.tick = parentUnit._sig(
+                timer.name + "timerTick%d" % timer.maxVal
+            )
             timer.tick(tick)
         else:
-            TimerInfo._instantiateTimerWithParent(parentUnit, timer,
-                                                  timer.parent, enableSig, rstSig)
+            TimerInfo._instantiateTimerWithParent(
+                parentUnit, timer,
+                timer.parent, enableSig, rstSig)
 
     @staticmethod
     def instantiate(parentUnit, timers, enableSig=None, rstSig=None):
@@ -212,6 +217,7 @@ class DynamicTimerInfo(TimerInfo):
     """
     Meta informations about timer with dynamic period
     """
+
     def __init__(self, maxVal, name=None):
         self.maxValOriginal = maxVal
         self.maxVal = maxVal
@@ -221,15 +227,15 @@ class DynamicTimerInfo(TimerInfo):
             self.name = ""
         else:
             self.name = name
-            
+
     @staticmethod
-    def _instantiateTimerTickLogic(timer:RtlSignal,
-                                   period:RtlSignal,
-                                   enableSig:Optional[RtlSignal],
-                                   rstSig:Optional[RtlSignal]):
+    def _instantiateTimerTickLogic(timer: RtlSignal,
+                                   period: RtlSignal,
+                                   enableSig: Optional[RtlSignal],
+                                   rstSig: Optional[RtlSignal]):
         """
         Instantiate incrementing timer with optional reset and enable signal
-        
+
         :param timer: timer main register
         :param period: signal with actual period
         :param enableSig: optional enable signal for this timer
@@ -264,11 +270,11 @@ class DynamicTimerInfo(TimerInfo):
                 ).Elif(enableSig,
                     r(r + 1)
                 )
-        
+
         if enableSig is not None:
             tick = (tick & enableSig)
 
         if rstSig is not None:
             tick = (tick & ~rstSig)
-        
+
         return tick

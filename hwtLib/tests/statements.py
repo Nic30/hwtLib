@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+
 import unittest
 
-from hwt.hdl.statements import IfContainer
+from hwt.hdl.ifContainter import IfContainer
 from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
+from hwt.pyUtils.andReducedList import AndReducedList
 
 
 class StatementsTC(unittest.TestCase):
@@ -29,10 +31,10 @@ class StatementsTC(unittest.TestCase):
             a.defaultVal = hBit(a_in)
             b.defaultVal = hBit(b_in)
 
-            stm = IfContainer(set([a & b, ]),
-                              ifTrue=w(0),
-                              elIfs=[([a, ], w(1)), ],
-                              ifFalse=w(2)
+            stm = IfContainer(AndReducedList([a & b, ]),
+                              ifTrue=[res(0), ],
+                              elIfs=[([a, ], [res(1)]), ],
+                              ifFalse=[res(2), ]
                               )
 
             if a_in and b_in:

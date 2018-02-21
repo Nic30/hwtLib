@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from copy import copy
 import unittest
 
 from hwt.hdl.constants import Time
@@ -80,9 +79,10 @@ class HsFifoTC(SimTestCase):
         self.assertValSequenceEqual(u.dataOut._ag.data, golden)
         self.assertValSequenceEqual(u.dataIn._ag.data, [])
 
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(HsFifoTC('test_passdata'))
+    # suite.addTest(HsFifoTC('test_passdata'))
     suite.addTest(unittest.makeSuite(HsFifoTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

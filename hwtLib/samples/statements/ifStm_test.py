@@ -11,7 +11,12 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.utils import toRtl
 from hwtLib.samples.statements.ifStm import SimpleIfStatement, \
     SimpleIfStatement2, SimpleIfStatement2b, SimpleIfStatement2c,\
-    SimpleIfStatement3
+    SimpleIfStatement3, SimpleIfStatementMergable,\
+    SimpleIfStatementMergable_vhdl, SimpleIfStatementMergable1,\
+    SimpleIfStatementMergable1_vhdl, SimpleIfStatementMergable2,\
+    SimpleIfStatementMergable2_vhdl, IfStatementPartiallyEnclosed,\
+    IfStatementPartiallyEnclosed_vhdl
+from hwt.serializer.vhdl.serializer import VhdlSerializer
 
 
 class IfStmTC(SimTestCase):
@@ -44,7 +49,7 @@ class IfStmTC(SimTestCase):
         u.a._ag.data.extend([1, 1, 1,    0, 0, 0,    1, 0, 1, 0])
         u.b._ag.data.extend([0, 1, None, 0, 1, None, 1, 0, 0, 0])
         u.c._ag.data.extend([0, 0, 0,    0, 1, 0,    1, 0, 1, 0])
-        expected_dd =       [0, 0, 0,    0, 0, 0,    0, 1, 1, 0]
+        expected_dd = [0, 0, 0,    0, 0, 0,    0, 1, 1, 0]
 
         self.doSim(110 * Time.ns)
 
@@ -65,7 +70,7 @@ class IfStmTC(SimTestCase):
         u.a._ag.data.extend([1, 1, 1,    0, 0, 0,    1, 0, 1, 0])
         u.b._ag.data.extend([0, 1, None, 0, 1, None, 1, 0, 0, 0])
         u.c._ag.data.extend([0, 0, 0,    0, 1, 0,    1, 0, 1, 0])
-        expected_dd =       [0, 0, 0,    0, 0, 0,    0, 1, 1, 0]
+        expected_dd = [0, 0, 0,    0, 0, 0,    0, 1, 1, 0]
 
         self.doSim(110 * Time.ns)
 
@@ -88,10 +93,9 @@ class IfStmTC(SimTestCase):
         u.a._ag.data.extend([0, 1, 1, 1,    0,    0, 0,    1, 0, 1, 0])
         u.b._ag.data.extend([0, 0, 1, None, 0,    1, None, 1, 0, 0, 0])
         u.c._ag.data.extend([1, 0, 0, 0,    0,    1, 0,    1, 0, 1, 0])
-        expected_dd =       [0, 1, 2, 2,    None, 2, 1,    2, 0, 2]
+        expected_dd = [0, 1, 2, 2,    None, 2, 1,    2, 0, 2]
 
         self.doSim(110 * Time.ns)
-
         self.assertValSequenceEqual(u.d._ag.data, expected_dd)
 
     def test_resources_SimpleIfStatement2c(self):
@@ -101,7 +105,7 @@ class IfStmTC(SimTestCase):
             (AllOps.AND, 1): 1,
             (AllOps.EQ, 1): 1,
             (ResourceMUX, 2, 2): 1,
-            (ResourceMUX, 2, 3): 1,
+            (ResourceMUX, 2, 4): 1,
             ResourceFF: 2,
         }
 
@@ -134,11 +138,27 @@ class IfStmTC(SimTestCase):
         r = s.report()
         self.assertDictEqual(r, expected)
 
+    def test_SimpleIfStatementMergable_vhdl(self):
+        s = toRtl(SimpleIfStatementMergable(), serializer=VhdlSerializer)
+        self.assertEqual(s, SimpleIfStatementMergable_vhdl)
+
+    def test_SimpleIfStatementMergable1_vhdl(self):
+        s = toRtl(SimpleIfStatementMergable1(), serializer=VhdlSerializer)
+        self.assertEqual(s, SimpleIfStatementMergable1_vhdl)
+
+    def test_SimpleIfStatementMergable2_vhdl(self):
+        s = toRtl(SimpleIfStatementMergable2(), serializer=VhdlSerializer)
+        self.assertEqual(s, SimpleIfStatementMergable2_vhdl)
+
+    def test_IfStatementPartiallyEnclosed_vhdl(self):
+        s = toRtl(IfStatementPartiallyEnclosed(), serializer=VhdlSerializer)
+        self.assertEqual(s, IfStatementPartiallyEnclosed_vhdl)
+
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_nothingEnable'))
+    # suite.addTest(IfStmTC('test_resources_SimpleIfStatement2c'))
     suite.addTest(unittest.makeSuite(IfStmTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

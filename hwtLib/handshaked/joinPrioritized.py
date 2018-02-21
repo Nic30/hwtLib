@@ -13,6 +13,7 @@ class HsJoinPrioritized(HandshakedCompBase):
 
     combinational
     """
+
     def _config(self):
         self.INPUTS = Param(2)
         super()._config()
@@ -34,7 +35,7 @@ class HsJoinPrioritized(HandshakedCompBase):
             dIn = data(dIn)
 
         for _din, _dout in zip(dIn, outDataSignals):
-            dataConnectExpr.extend(_dout(_din))
+            dataConnectExpr.append(_dout(_din))
 
         return dataConnectExpr
 

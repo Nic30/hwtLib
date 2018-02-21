@@ -54,7 +54,9 @@ class RamTC(SimTestCase):
     def test_async_resources(self):
         u = SimpleAsyncRam()
         expected = {
-            ResourceRAM(8, 4, 0, 0, 0, 0, 1, 1): 1,
+            ResourceRAM(8, 4,
+                        0, 0, 0, 0,
+                        0, 1, 1, 0): 1,
         }
 
         s = ResourceAnalyzer()
@@ -64,7 +66,9 @@ class RamTC(SimTestCase):
     def test_sync_resources(self):
         u = SimpleSyncRam()
         expected = {
-            ResourceRAM(8, 4, 0, 1, 1, 0, 0, 0): 1,
+            ResourceRAM(8, 4,
+                        0, 1, 1, 0,
+                        0, 0, 0, 0): 1,
         }
 
         s = ResourceAnalyzer()
@@ -73,7 +77,7 @@ class RamTC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(RamTC('test_sync_resources'))
+    #suite.addTest(RamTC('test_async_resources'))
     suite.addTest(unittest.makeSuite(RamTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

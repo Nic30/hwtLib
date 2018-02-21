@@ -21,7 +21,8 @@ class RomTC(SimTestCase):
 
         self.doSim(80 * Time.ns)
 
-        self.assertValSequenceEqual(u.dout._ag.data, [1, 2, 3, 4, None, 4, 3, 2])
+        self.assertValSequenceEqual(
+            u.dout._ag.data, [1, 2, 3, 4, None, 4, 3, 2])
 
     def test_sync_allData(self):
         u = SimpleSyncRom()
@@ -31,32 +32,38 @@ class RomTC(SimTestCase):
 
         self.doSim(90 * Time.ns)
 
-        self.assertValSequenceEqual(u.dout._ag.data, [None, 1, 2, 3, 4, None, 4, 3, 2])
+        self.assertValSequenceEqual(
+            u.dout._ag.data, [None, 1, 2, 3, 4, None, 4, 3, 2])
 
     def test_sync_resources(self):
         u = SimpleSyncRom()
         expected = {
-            ResourceRAM(8, 4, 0, 1, 0, 0, 0, 0): 1,
-            }
+            ResourceRAM(8, 4,
+                        0, 1, 0, 0,
+                        0, 0, 0, 0): 1,
+        }
 
         s = ResourceAnalyzer()
         toRtl(u, serializer=s)
         self.assertDictEqual(s.report(), expected)
-    
+
     def test_async_resources(self):
         u = SimpleRom()
         expected = {
-            ResourceRAM(8, 4, 0, 0, 0, 0, 1, 0): 1,
-            }
+            ResourceRAM(8, 4,
+                        0, 0, 0, 0,
+                        0, 1, 0, 0): 1,
+        }
 
         s = ResourceAnalyzer()
         toRtl(u, serializer=s)
-        self.assertDictEqual(s.report(), expected)
-    
+        r = s.report()
+        self.assertDictEqual(r, expected)
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_nothingEnable'))
+    # suite.addTest(RomTC('test_sync_resources'))
     suite.addTest(unittest.makeSuite(RomTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

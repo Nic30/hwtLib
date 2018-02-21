@@ -95,8 +95,8 @@ if __name__ == "__main__":
     from hwtLib.types.ctypes import uint32_t
     u = IpifEndpoint(
             HStruct(
-                (uint32_t, "data0"),
-                (uint32_t, "data1"),
+                (uint32_t, "field0"),
+                (uint32_t, "field1"),
                 (uint32_t[32], "bramMapped")
                 ))
     print(toRtl(u))

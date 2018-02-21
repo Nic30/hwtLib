@@ -21,6 +21,8 @@ class MultipleDriversOfChildNet(Unit):
     def _impl(self):
         # interface directions in collision
         self.ch.d(self.a)
+        self.ch.c.data(1)
+        self.ch.c.vld(1)
         self.b(self.ch.c)
 
 
@@ -34,7 +36,7 @@ class MultipleDriversOfChildNet2(MultipleDriversOfChildNet):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    u = MultipleDriversOfChildNet2()
+    u = MultipleDriversOfChildNet()
     # hwt.serializer.exceptions.SerializerException
     print(toRtl(u))
 

@@ -108,7 +108,7 @@ class StructWriter(StructReader):
             else:
                 prop = PROPAGATE
 
-            statements += ackPropageteInfo.dataIn.data(prop)
+            statements.append(ackPropageteInfo.dataIn.data(prop))
 
             isLastFrame = indx == len(self._frames) - 1
             if isLastFrame:

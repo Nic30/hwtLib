@@ -21,6 +21,7 @@ class AxiS_measuringFifo(Unit):
     Fifo which are counting sizes of frames and sends it over
     dedicated handshaked interface "sizes"
     """
+
     def _config(self):
         Fifo._config(self)
         self.SIZES_BUFF_DEPTH = Param(16)
@@ -37,7 +38,9 @@ class AxiS_measuringFifo(Unit):
             self.dataOut = AxiStream()
 
         self.sizes = Handshaked()
-        self.sizes.DATA_WIDTH.set(log2ceil(self.MAX_LEN) + 1 + self.getAlignBitsCnt())
+        self.sizes.DATA_WIDTH.set(log2ceil(self.MAX_LEN)
+                                  + 1
+                                  + self.getAlignBitsCnt())
 
         db = self.dataBuff = AxiSFifo(AxiStream)
         # to place fifo in bram
@@ -87,7 +90,7 @@ class AxiS_measuringFifo(Unit):
             self.errorAlignment(errorAlignment)
             If(dIn.valid & (dIn.strb != mask(STRB_BITS)) & ~dIn.last,
                errorAlignment(1)
-            )
+               )
 
         length = self._sig("length", wordCntr._dtype)
         If(last & (dIn.strb != mask(STRB_BITS)),
@@ -113,5 +116,7 @@ class AxiS_measuringFifo(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
     u = AxiS_measuringFifo()
-    u.EXPORT_ALIGNMENT_ERROR.set(True)
-    print(toRtl(u))
+    #u.EXPORT_ALIGNMENT_ERROR.set(True)
+    u.MAX_LEN.set(15)
+    u.SIZES_BUFF_DEPTH.set(4)
+    print(toRtl(u ))

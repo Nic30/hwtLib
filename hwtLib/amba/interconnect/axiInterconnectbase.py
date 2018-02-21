@@ -37,7 +37,7 @@ class AxiInterconnectBase(Unit):
             assert DATA_WIDTH == int(d.DATA_WIDTH)
             MAX_LEN = max(MAX_LEN, int(d.MAX_LEN))
 
-        if datapump._cntx.synthesised:
+        if datapump._ctx.synthesised:
             dpMaxLen = int(datapump.MAX_LEN)
             assert dpMaxLen == MAX_LEN, (dpMaxLen, MAX_LEN)
         else:

@@ -30,13 +30,14 @@ class FlipCntrTC(SimTestCase):
 
         self.doSim(90 * Time.ns)
 
-        self.assertValSequenceEqual(u.data._ag.din,
-                                    [0, 0] + [1 for _ in range(6)])
+        self.assertValSequenceEqual(
+            u.data._ag.din,
+            [0, 0] + [1 for _ in range(6)])
 
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_withStops'))
+    # suite.addTest(FlipCntrTC('test_nop'))
     suite.addTest(unittest.makeSuite(FlipCntrTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

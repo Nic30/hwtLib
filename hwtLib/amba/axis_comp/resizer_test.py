@@ -54,7 +54,7 @@ class AxiS_resizer_upscale_TC(SimTestCase):
 
     def test_noLast(self):
         u = self.u
-        
+
         m = mask(2)
         u.dataIn._ag.data.extend([(1, m, 0) for _ in range(4)])
         self.doSim(300 * Time.ns)

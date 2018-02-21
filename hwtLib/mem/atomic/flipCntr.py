@@ -55,4 +55,5 @@ class FlipCntr(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    print(toRtl(FlipCntr()))
+    u = FlipCntr()
+    print(toRtl(u))

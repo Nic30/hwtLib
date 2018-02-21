@@ -152,7 +152,7 @@ class CrcTC(SimTestCase):
         self.POLY_WIDTH = polyWidth
         # u.REVERSE_IN.set(True)
         u.REVERSE_OUT.set(True)
-        
+
         m = vec(mask(polyWidth), polyWidth)
         u.FINAL_XOR_VAL.set(m)
         u.DATA_WIDTH.set(dataWidth)
@@ -170,22 +170,20 @@ class CrcTC(SimTestCase):
         u.dataIn._ag.data.append(stoi(b"aaaa"))
         self.doSim(20 * Time.ns)
         out32 = int(u.dataOut._ag.data[-1])
-        
+
         u = self.setUpCrc(poly, 32, 16)
         u.dataIn._ag.data.extend([stoi(b"aa") for _ in range(2)])
         self.doSim(20 * Time.ns)
         out16 = int(u.dataOut._ag.data[-1])
-        
+
         u = self.setUpCrc(poly, 32, 8)
         u.dataIn._ag.data.extend([ord("a") for _ in range(4)])
         self.doSim(20 * Time.ns)
         out8 = int(u.dataOut._ag.data[-1])
-        
+
         # print("32:%x" % out32, "16:%x" % out16, "8:%x" % out8)
         self.assertEqual(out32, out16)
         self.assertEqual(out16, out8)
-        
-        
 
     def test_simple(self):
         u = self.setUpCrc(vec(CRC_32, 32), 32)
@@ -211,7 +209,7 @@ class CrcTC(SimTestCase):
         # print("out_rev:  %x" % reverseBits(out, 32))
         # print("~out:     %x" % asUnsigned(~out, 32))
         # print("~out_rev: %x" % asUnsigned(~reverseBits(out, 32), 32))
-        
+
         self.assertEqual(out, crc32(inp))
 
 
@@ -225,4 +223,3 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(CrcTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-    

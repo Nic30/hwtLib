@@ -52,7 +52,7 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(IpifEndpointArray('test_read'))
+    # suite.addTest(IpifRegTC('test_read'))
     suite.addTest(unittest.makeSuite(IpifRegTC))
 
     runner = unittest.TextTestRunner(verbosity=3)
