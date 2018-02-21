@@ -1,14 +1,16 @@
 import unittest
 
 from hwt.synthesizer.exceptions import TypeConversionErr, IntfLvlConfErr
-from hwt.synthesizer.rtlLevel.signalUtils.exceptions import MultipleDriversErr,\
-    NoDriverErr
+from hwt.synthesizer.rtlLevel.signalUtils.exceptions import \
+    MultipleDriversErr, NoDriverErr
 from hwt.synthesizer.utils import toRtl
-from hwtLib.samples.errors.accessingSubunitInternalIntf import AccessingSubunitInternalIntf
-from hwtLib.samples.errors.inconsistentIntfDirection import InconsistentIntfDirection
+from hwtLib.samples.errors.accessingSubunitInternalIntf import \
+    AccessingSubunitInternalIntf
+from hwtLib.samples.errors.inconsistentIntfDirection import \
+    InconsistentIntfDirection
 from hwtLib.samples.errors.invalidTypeConnetion import InvalidTypeConnetion
-from hwtLib.samples.errors.multipleDriversOfChildNet import MultipleDriversOfChildNet, \
-    MultipleDriversOfChildNet2
+from hwtLib.samples.errors.multipleDriversOfChildNet import \
+    MultipleDriversOfChildNet, MultipleDriversOfChildNet2
 from hwtLib.samples.errors.unusedSubunit import UnusedSubunit, UnusedSubunit2
 
 
@@ -25,7 +27,7 @@ class ErrorsTC(unittest.TestCase):
 
     def test_multipleDriversOfChildNet(self):
         u = MultipleDriversOfChildNet()
-        with self.assertRaises(MultipleDriversErr):
+        with self.assertRaises((MultipleDriversErr, NoDriverErr)):
             toRtl(u)
 
     def test_multipleDriversOfChildNet2(self):
