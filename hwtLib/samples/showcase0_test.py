@@ -8,7 +8,8 @@ from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.utils import toRtl
 from hwtLib.samples.showcase0 import Showcase0, showcase0_vhdl, \
-    showcase0_verilog, showcase0_systemc
+    showcase0_verilog, showcase0_systemc, showcase0_hwt
+from hwt.serializer.hwt.serializer import HwtSerializer
 
 
 class Showcase0TC(unittest.TestCase):
@@ -23,6 +24,10 @@ class Showcase0TC(unittest.TestCase):
     def test_systemc(self):
         s = toRtl(Showcase0(), serializer=SystemCSerializer)
         self.assertEqual(s, showcase0_systemc)
+
+    def test_hwt(self):
+        s = toRtl(Showcase0(), serializer=HwtSerializer)
+        self.assertEqual(s, showcase0_hwt)
 
 
 if __name__ == "__main__":
