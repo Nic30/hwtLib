@@ -160,7 +160,7 @@ class OperatorTC(unittest.TestCase):
 
     def test_downto(self):
         a = self.n.sig('a', dtype=INT)
-        a.defaultVal = hInt(10)
+        a.defVal = hInt(10)
         b = hInt(0)
         r = a._downto(b)
         res = r.staticEval()

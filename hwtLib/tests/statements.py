@@ -28,8 +28,8 @@ class StatementsTC(unittest.TestCase):
             def w(val):
                 return res(val)
 
-            a.defaultVal = hBit(a_in)
-            b.defaultVal = hBit(b_in)
+            a.defVal = hBit(a_in)
+            b.defVal = hBit(b_in)
 
             stm = IfContainer(AndReducedList([a & b, ]),
                               ifTrue=[res(0), ],

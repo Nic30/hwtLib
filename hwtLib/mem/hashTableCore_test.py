@@ -22,7 +22,7 @@ class HashTableCoreTC(SimTestCase):
         self.prepareUnit(self.u)
 
         # clean up memory
-        mem = self.model.table_inst.ram_memory.defaultVal
+        mem = self.model.table_inst.ram_memory.defVal
         for i in range(mem._dtype.size):
             mem.val[i] = mem._dtype.elmType.fromPy(0)
 
