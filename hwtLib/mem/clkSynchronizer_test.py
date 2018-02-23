@@ -27,7 +27,7 @@ class ClkSynchronizerTC(unittest.TestCase):
         self.u = u
         self.model = model
 
-    def doSim(self, dataInStimul, name, time=100 * Time.ns):
+    def doSim(self, dataInStimul, name, until=100 * Time.ns):
         collected = []
         u = self.u
 
@@ -46,7 +46,7 @@ class ClkSynchronizerTC(unittest.TestCase):
                     dataCollector,
                     dataInStimul],
                    "tmp/clkSynchronizer_" + name + ".vcd",
-                   time=100 * Time.ns)
+                   until=100 * Time.ns)
         return collected
 
     def test_normalOp(self):
