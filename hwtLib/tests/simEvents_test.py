@@ -37,7 +37,7 @@ class SimEventsTC(SimTestCase):
 
         u.addr._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
-        self.doSim(80 * Time.ns)
+        self.runSim(80 * Time.ns)
 
         for p in self.model._processes:
             self.assertEqual(p.calls, 8)
@@ -48,7 +48,7 @@ class SimEventsTC(SimTestCase):
 
         u.addr._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
-        self.doSim(90 * Time.ns)
+        self.runSim(90 * Time.ns)
         for p in self.model._processes:
             self.assertEqual(p.calls, 9 + 1, p.procFn)
 
@@ -59,7 +59,7 @@ class SimEventsTC(SimTestCase):
         u.a._ag.data.extend([1, 1, 1, 0, 0, 0, 0, 0])
         u.b._ag.data.extend([0, 1, 0, 0, 1, 0, 1, 0])
 
-        self.doSim(80 * Time.ns)
+        self.runSim(80 * Time.ns)
 
         for p in self.model._processes:
             # st_next will be evaluated after write of agents and after write from st

@@ -138,7 +138,7 @@ class AxiS_frameParserTC(SimTestCase):
                 self.assertEqual(getattr(d1, k), getattr(d2, k), (DW, k))
 
     def runMatrixSim(self, time, dataWidth, randomize):
-        self.doSim(time, name="tmp/" + self.getTestName()
+        self.runSim(time, name="tmp/" + self.getTestName()
                          + ("_dw%d_r%d" % (dataWidth, randomize)) + ".vcd")
 
     @testMatrix

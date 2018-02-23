@@ -50,7 +50,7 @@ class LsfrTC(SimTestCase):
         u = Lsfr()
         self.prepareUnit(u)
 
-        self.doSim(300 * Time.ns)
+        self.runSim(300 * Time.ns)
         self.assertValSequenceEqual(
             u.dataOut._ag.data,
             [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0,

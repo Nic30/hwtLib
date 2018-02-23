@@ -21,7 +21,7 @@ class FlipRegTC(SimTestCase):
         u.first._ag.dout.append(1)
         u.second._ag.dout.append(2)
 
-        self.doSim(90 * Time.ns)
+        self.runSim(90 * Time.ns)
 
         self.assertValSequenceEqual(u.first._ag.din,
                                     [0, 1, 1, 2, 1, 1, 1, 1])

@@ -60,7 +60,7 @@ class ClkDiv3TC(SimTestCase):
         u = ClkDiv3()
         self.prepareUnit(u)
 
-        self.doSim(10 * 10 * Time.ns)
+        self.runSim(10 * 10 * Time.ns)
         expected = [(0, 0),
                     (20000.0, 1),
                     (35000.0, 0),

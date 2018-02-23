@@ -29,7 +29,7 @@ class StructWriter_TC(SimTestCase):
         m = self.buildEnv(s)
         self.u.dataIn.field0._ag.data.append(MAGIC)
         self.u.set._ag.data.append(MAGIC2)
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         s_got = m.getStruct(MAGIC2, s)
         self.assertValEqual(s_got.field0, MAGIC)
@@ -48,7 +48,7 @@ class StructWriter_TC(SimTestCase):
         u.dataIn.field1._ag.data.append(MAGIC + 1)
         u.set._ag.data.append(MAGIC2)
 
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.dataIn.field0._ag.data)
         self.assertEmpty(u.dataIn.field1._ag.data)
@@ -76,7 +76,7 @@ class StructWriter_TC(SimTestCase):
         dIn.field2._ag.data.append(MAGIC + 2)
         u.set._ag.data.append(MAGIC2)
 
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(dIn.field0._ag.data)
         self.assertEmpty(dIn.field1._ag.data)
@@ -110,7 +110,7 @@ class StructWriter_TC(SimTestCase):
         dIn.field2._ag.data.append(MAGIC + 2)
         u.set._ag.data.append(MAGIC2)
 
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(dIn.field0._ag.data)
         self.assertEmpty(dIn.field1._ag.data)
@@ -144,7 +144,7 @@ class StructWriter_TC(SimTestCase):
         dIn.field2._ag.data.append(MAGIC + 2)
         u.set._ag.data.append(MAGIC2)
 
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(dIn.field0._ag.data)
         self.assertEmpty(dIn.field1._ag.data)

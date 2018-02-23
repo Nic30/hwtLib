@@ -28,7 +28,7 @@ class Axi4_streamToMemTC(SimTestCase):
     def test_nop(self):
         u = self.u
 
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.axi.ar._ag.data)
         self.assertEmpty(u.axi.aw._ag.data)
@@ -48,7 +48,7 @@ class Axi4_streamToMemTC(SimTestCase):
         regs.baseAddr.write(blockPtr)
         regs.control.write(1)
         
-        self.doSim(N * 30 * Time.ns) 
+        self.runSim(N * 30 * Time.ns) 
 
         self.assertValSequenceEqual(m.getArray(blockPtr, self.DATA_WIDTH // 8, N), sampleData)
         

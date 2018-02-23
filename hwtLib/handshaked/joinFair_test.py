@@ -40,7 +40,7 @@ class HsJoinFair_2inputs_TC(SimTestCase):
         u = self.u
         expected = self.addToAllInputs(6)
 
-        self.doSim(self.INPUTS * 6 * 20 * Time.ns)
+        self.runSim(self.INPUTS * 6 * 20 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
 
@@ -60,7 +60,7 @@ class HsJoinFair_2inputs_TC(SimTestCase):
         u.dataIn[self.INPUTS - 1]._ag.data.extend(d)
         expected.extend(d)
 
-        self.doSim(self.INPUTS * 6 * 20 * Time.ns)
+        self.runSim(self.INPUTS * 6 * 20 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
 
@@ -80,7 +80,7 @@ class HsJoinFair_2inputs_TC(SimTestCase):
 
         lowPriority._ag.data.extend(expected)
 
-        self.doSim(120 * Time.ns)
+        self.runSim(120 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
 
@@ -101,7 +101,7 @@ class HsJoinFair_2inputs_TC(SimTestCase):
 
         self.randomize(u.dataOut)
 
-        self.doSim(self.INPUTS * N * 50 * Time.ns)
+        self.runSim(self.INPUTS * N * 50 * Time.ns)
 
         self.assertEqual(set(valuesToInts(u.dataOut._ag.data)),
                          set(expected))

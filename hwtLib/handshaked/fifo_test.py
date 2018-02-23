@@ -22,7 +22,7 @@ class HsFifoTC(SimTestCase):
         u.dataIn._ag.data.append(1)
 
         u.dataOut._ag.enable = False
-        self.doSim(120 * Time.ns)
+        self.runSim(120 * Time.ns)
         self.assertValEqual(self.model.dataOut_data, 1)
 
     def test_withPause(self):
@@ -42,7 +42,7 @@ class HsFifoTC(SimTestCase):
 
         self.procs.append(pause)
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, golden)
         self.assertSequenceEqual(u.dataIn._ag.data, [])
@@ -64,7 +64,7 @@ class HsFifoTC(SimTestCase):
 
         self.procs.append(pause)
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, golden)
         self.assertSequenceEqual(u.dataIn._ag.data, [])
@@ -74,7 +74,7 @@ class HsFifoTC(SimTestCase):
         golden = [1, 2, 3, 4, 5, 6]
         u.dataIn._ag.data.extend(golden)
 
-        self.doSim(120 * Time.ns)
+        self.runSim(120 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, golden)
         self.assertValSequenceEqual(u.dataIn._ag.data, [])

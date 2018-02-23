@@ -27,7 +27,7 @@ class FifoAsyncTC(FifoTC):
         u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
         u.dataOut._ag._enabled = False
 
-        self.doSim(self.getTime(12))
+        self.runSim(self.getTime(12))
 
         collected = u.dataOut._ag.data
 
@@ -45,7 +45,7 @@ class FifoAsyncTC(FifoTC):
             u.dataOut._ag.setEnable(False, sim)
 
         self.procs.append(closeOutput)
-        self.doSim(self.getTime(16))
+        self.runSim(self.getTime(16))
 
         collected = u.dataOut._ag.data
 

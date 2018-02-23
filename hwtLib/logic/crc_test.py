@@ -102,7 +102,7 @@ class CrcCombTC(SimTestCase):
         inp = b"a"
 
         u.dataIn._ag.data.append(int.from_bytes(inp, byteorder='little'))
-        self.doSim(20 * Time.ns)
+        self.runSim(20 * Time.ns)
 
         crc = 97
         self.assertValSequenceEqual(u.dataOut._ag.data, [crc])
@@ -113,7 +113,7 @@ class CrcCombTC(SimTestCase):
         inp = b"a"
 
         u.dataIn._ag.data.append(int.from_bytes(inp, byteorder='little'))
-        self.doSim(20 * Time.ns)
+        self.runSim(20 * Time.ns)
 
         crc = 0x20
         self.assertValSequenceEqual(u.dataOut._ag.data, [crc])
@@ -124,7 +124,7 @@ class CrcCombTC(SimTestCase):
         inp = b"aaaa"
 
         u.dataIn._ag.data.append(int.from_bytes(inp, byteorder='little'))
-        self.doSim(20 * Time.ns)
+        self.runSim(20 * Time.ns)
 
         crc = 0xB0E91122
 
@@ -136,7 +136,7 @@ class CrcCombTC(SimTestCase):
         inp = b"aa"
 
         u.dataIn._ag.data.append(int.from_bytes(inp, byteorder='little'))
-        self.doSim(20 * Time.ns)
+        self.runSim(20 * Time.ns)
 
         crc = 0x449C
         self.assertValSequenceEqual(u.dataOut._ag.data, [crc])
@@ -168,17 +168,17 @@ class CrcTC(SimTestCase):
         poly = vec(CRC_32, 32)
         u = self.setUpCrc(poly, 32)
         u.dataIn._ag.data.append(stoi(b"aaaa"))
-        self.doSim(20 * Time.ns)
+        self.runSim(20 * Time.ns)
         out32 = int(u.dataOut._ag.data[-1])
 
         u = self.setUpCrc(poly, 32, 16)
         u.dataIn._ag.data.extend([stoi(b"aa") for _ in range(2)])
-        self.doSim(20 * Time.ns)
+        self.runSim(20 * Time.ns)
         out16 = int(u.dataOut._ag.data[-1])
 
         u = self.setUpCrc(poly, 32, 8)
         u.dataIn._ag.data.extend([ord("a") for _ in range(4)])
-        self.doSim(20 * Time.ns)
+        self.runSim(20 * Time.ns)
         out8 = int(u.dataOut._ag.data[-1])
 
         # print("32:%x" % out32, "16:%x" % out16, "8:%x" % out8)
@@ -191,7 +191,7 @@ class CrcTC(SimTestCase):
 
         u.dataIn._ag.data.append(stoi(inp))
         # u.dataIn._ag.data.extend([ord("a") for _ in range(4)])
-        self.doSim(30 * Time.ns)
+        self.runSim(30 * Time.ns)
         out = int(u.dataOut._ag.data[-1])
         # print("%x" % stoi(inp))
         # print("crc32:    %x" % crc32(inp))

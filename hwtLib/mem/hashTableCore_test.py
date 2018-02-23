@@ -31,7 +31,7 @@ class HashTableCoreTC(SimTestCase):
 
         u.lookup._ag.data.extend([0, self._rand.getrandbits(8), self._rand.getrandbits(8)])
 
-        self.doSim(150 * Time.ns)
+        self.runSim(150 * Time.ns)
 
         for d in u.lookupRes._ag.data:
             found = d[-1]
@@ -66,7 +66,7 @@ class HashTableCoreTC(SimTestCase):
 
         self.procs.append(tryInsertNotFoundAndLookupIt)
 
-        self.doSim(300 * Time.ns)
+        self.runSim(300 * Time.ns)
 
 
 if __name__ == "__main__":

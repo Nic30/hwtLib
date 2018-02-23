@@ -33,7 +33,7 @@ class HsBuilderSplit_TC(SimTestCase):
         eSel = [0, 2, 1, 2, 1, 0]
         u.e_select._ag.data.extend([1 << i for i in eSel])
 
-        self.doSim(300 * Time.ns)
+        self.runSim(300 * Time.ns)
 
         for a in [u.a_0, u.a_1, u.a_2]:
             self.assertValSequenceEqual(a._ag.data, aRef)

@@ -29,7 +29,7 @@ class IfStmTC(SimTestCase):
         u.b._ag.data.extend([0, 1, None, 0, 1, None, 1, 0])
         u.c._ag.data.extend([0, 0, 0, 0, 1, 0, 0, 0])
 
-        self.doSim(80 * Time.ns)
+        self.runSim(80 * Time.ns)
 
         self.assertSequenceEqual([0, 1, None, 0, 1, None, 0, 0], agInts(u.d))
 
@@ -51,7 +51,7 @@ class IfStmTC(SimTestCase):
         u.c._ag.data.extend([0, 0, 0,    0, 1, 0,    1, 0, 1, 0])
         expected_dd = [0, 0, 0,    0, 0, 0,    0, 1, 1, 0]
 
-        self.doSim(110 * Time.ns)
+        self.runSim(110 * Time.ns)
 
         self.assertValSequenceEqual(u.d._ag.data, expected_dd)
 
@@ -72,7 +72,7 @@ class IfStmTC(SimTestCase):
         u.c._ag.data.extend([0, 0, 0,    0, 1, 0,    1, 0, 1, 0])
         expected_dd = [0, 0, 0,    0, 0, 0,    0, 1, 1, 0]
 
-        self.doSim(110 * Time.ns)
+        self.runSim(110 * Time.ns)
 
         self.assertValSequenceEqual(u.d._ag.data, expected_dd)
 
@@ -95,7 +95,7 @@ class IfStmTC(SimTestCase):
         u.c._ag.data.extend([1, 0, 0, 0,    0,    1, 0,    1, 0, 1, 0])
         expected_dd = [0, 1, 2, 2,    None, 2, 1,    2, 0, 2]
 
-        self.doSim(110 * Time.ns)
+        self.runSim(110 * Time.ns)
         self.assertValSequenceEqual(u.d._ag.data, expected_dd)
 
     def test_resources_SimpleIfStatement2c(self):
@@ -123,7 +123,7 @@ class IfStmTC(SimTestCase):
         u.c._ag.data.extend([1, 0, 0, 0,    0,    1, 0,    1, 0, 1, 0])
         expected_dd = [0 for _ in range(11)]
 
-        self.doSim(110 * Time.ns)
+        self.runSim(110 * Time.ns)
 
         self.assertValSequenceEqual(u.d._ag.data, expected_dd)
 

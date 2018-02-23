@@ -33,7 +33,7 @@ class CLinkedListWriterTC(SimTestCase):
         for i in range(self.MAX_LEN + 1):
             self.u.dataIn._ag.data.append(i)
 
-        self.doSim((self.TIMEOUT + 10) * 10 * Time.ns)
+        self.runSim((self.TIMEOUT + 10) * 10 * Time.ns)
 
         self.assertEqual(len(u.rDatapump.req._ag.data), 0)
         self.assertEqual(len(u.wDatapump.req._ag.data), 0)
@@ -46,7 +46,7 @@ class CLinkedListWriterTC(SimTestCase):
         u.baseAddr._ag.dout.append(0x1020)
         u.rdPtr._ag.dout.append(self.MAX_LEN + 1)
 
-        self.doSim(t * 10 * Time.ns)
+        self.runSim(t * 10 * Time.ns)
 
         req = u.wDatapump.req._ag.data
         self.assertEqual(len(req), 0)
@@ -62,7 +62,7 @@ class CLinkedListWriterTC(SimTestCase):
         for i in range(self.MAX_LEN + 1):
             self.u.dataIn._ag.data.append(i)
 
-        self.doSim(t * 10 * Time.ns)
+        self.runSim(t * 10 * Time.ns)
 
         self.assertValSequenceEqual(u.wDatapump.req._ag.data,
                                     [(self.ID, 0x1020, self.MAX_LEN, 0)])
@@ -79,7 +79,7 @@ class CLinkedListWriterTC(SimTestCase):
         for i in range(2 * (self.MAX_LEN + 1)):
             self.u.dataIn._ag.data.append(i)
 
-        self.doSim(t * 10 * Time.ns)
+        self.runSim(t * 10 * Time.ns)
 
         self.assertValSequenceEqual(u.wDatapump.req._ag.data,
                                     [(self.ID, 0x1020, self.MAX_LEN, 0)])
@@ -96,7 +96,7 @@ class CLinkedListWriterTC(SimTestCase):
         for i in range(self.MAX_LEN + 1):
             self.u.dataIn._ag.data.append(i)
 
-        self.doSim(t * 10 * Time.ns)
+        self.runSim(t * 10 * Time.ns)
 
         self.assertValSequenceEqual(u.wDatapump.req._ag.data,
                                     [(self.ID, 0x1020, self.MAX_LEN - 1, 0)])
@@ -124,7 +124,7 @@ class CLinkedListWriterTC(SimTestCase):
         for i in range(ITEMS):
             self.u.dataIn._ag.data.append(i + MAGIC)
 
-        self.doSim(t * 10 * Time.ns)
+        self.runSim(t * 10 * Time.ns)
 
         baseIndex = BASE // (self.DATA_WIDTH // 8)
         # print()
@@ -173,7 +173,7 @@ class CLinkedListWriterTC(SimTestCase):
         for i in range(ITEMS):
             self.u.dataIn._ag.data.append(i + MAGIC)
 
-        self.doSim(t * 10 * Time.ns)
+        self.runSim(t * 10 * Time.ns)
 
         baseIndex = BASE // (self.DATA_WIDTH // 8)
 

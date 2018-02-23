@@ -38,7 +38,7 @@ class RamAsHs_TC(SimTestCase):
         self.prepareUnit(u)
 
     def test_nop(self):
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
         self.assertEmpty(self.u.r.data._ag.data)
 
     def test_writeAndRead(self):
@@ -47,7 +47,7 @@ class RamAsHs_TC(SimTestCase):
 
         u.w._ag.data.extend([(25, MAGIC), (26, MAGIC+1)])
         u.r.addr._ag.data.extend([NOP for _ in range(3)] + [25, 26])
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertValSequenceEqual(u.r.data._ag.data, [MAGIC, MAGIC+1])
 

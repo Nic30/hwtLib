@@ -20,7 +20,7 @@ class AxiS_en_TC(SimTestCase):
         u = self.u
         u.en._ag.data += [0]
         u.dataIn._ag.data.append((MAGIC, m, 1))
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
         self.assertEmpty(u.dataOut._ag.data)
 
     def test_pass(self):
@@ -36,7 +36,7 @@ class AxiS_en_TC(SimTestCase):
              (MAGIC + 6, m, 1)
              ]
         u.dataIn._ag.data.extend(d)
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
         self.assertValSequenceEqual(u.dataOut._ag.data, d)
 
     def test_passFirstBreakContinue(self):
@@ -52,7 +52,7 @@ class AxiS_en_TC(SimTestCase):
              (MAGIC + 6, m, 1)
              ]
         u.dataIn._ag.data.extend(d)
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
         self.assertValSequenceEqual(u.dataOut._ag.data, d)
 
     def test_randomized(self):
@@ -72,7 +72,7 @@ class AxiS_en_TC(SimTestCase):
              ]
         u.en._ag.data.extend([(i + 1) % 2 for i in range(20 * len(d))])
         u.dataIn._ag.data.extend(d)
-        self.doSim(200 * len(d) * Time.ns)
+        self.runSim(200 * len(d) * Time.ns)
         self.assertValSequenceEqual(u.dataOut._ag.data, d)
 
 

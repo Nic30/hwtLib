@@ -45,7 +45,7 @@ class LutRamTC(SimTestCase):
                     (READ, 2), (READ, 3), (READ, 2)]
         applyRequests(u, requests)
 
-        self.doSim(80 * Time.ns)
+        self.runSim(80 * Time.ns)
         self.assertSequenceEqual(valuesToInts(u.o._ag.data),
                                  [0, 0, 0, 1, 0, 0, 0, 0])
 

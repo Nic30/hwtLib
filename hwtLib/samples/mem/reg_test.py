@@ -239,7 +239,7 @@ class DRegTC(SimTestCase):
         self.u.din._ag.data.extend([i % 2 for i in range(6)] + [None, None, 0, 1])
         expected = [0, 0, 1, 0, 1, 0, 1, None, None, 0]
 
-        self.doSim(110 * Time.ns)
+        self.runSim(110 * Time.ns)
         recieved = self.u.dout._ag.data
 
         # check simulation results
@@ -251,7 +251,7 @@ class DRegTC(SimTestCase):
         self.u.din._ag.data.extend([i % 2 for i in range(6)] + [None, None, 0, 1])
         expected = [0, 0, 0, 1, 0, 1, 0, 1, None]
 
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         recieved = self.u.dout._ag.data
 

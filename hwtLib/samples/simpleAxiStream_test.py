@@ -27,7 +27,7 @@ class SimpleUnitAxiStream_TC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEqual(len(u.b._ag.data), 0)
 
@@ -39,7 +39,7 @@ class SimpleUnitAxiStream_TC(SimTestCase):
                              (12, mask(u.a.strb._dtype.bit_length()), 1)
                              ])
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
         self.assertEqual(len(u.b._ag.data), 2)
 
 if __name__ == "__main__":

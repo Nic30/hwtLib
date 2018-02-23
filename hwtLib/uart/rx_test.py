@@ -42,13 +42,13 @@ class UartRxBasicTC(SimTestCase):
 
     def test_nop(self):
         self.u.rxd._ag.data.append(1)
-        self.doSim(200 * Time.ns,)
+        self.runSim(200 * Time.ns,)
         self.assertEqual(self.getStr(), "")
 
     def test_simple(self):
         t = "simple"
         self.sendStr(t)
-        self.doSim(self.OVERSAMPLING * (self.FREQ // self.BAUD) * 10 * (len(t) + 5) * Time.ns)
+        self.runSim(self.OVERSAMPLING * (self.FREQ // self.BAUD) * 10 * (len(t) + 5) * Time.ns)
         self.assertEqual(self.getStr(), t)
 
 

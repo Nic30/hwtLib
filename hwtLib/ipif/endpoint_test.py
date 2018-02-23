@@ -46,7 +46,7 @@ class IpifEndpointTC(AxiLiteEndpointTC):
         u = self.mySetUp(32)
 
         self.randomizeAll()
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.readed)
         self.assertIs(u.bus._ag.actual, NOP)
@@ -67,7 +67,7 @@ class IpifEndpointTC(AxiLiteEndpointTC):
         u.decoded.field1._ag.din.append(MAGIC + 1)
 
         self.randomizeAll()
-        self.doSim(300 * Time.ns)
+        self.runSim(300 * Time.ns)
 
         self.assertValSequenceEqual(u.bus._ag.readed, [MAGIC,
                                                        MAGIC + 1,
@@ -86,7 +86,7 @@ class IpifEndpointTC(AxiLiteEndpointTC):
             (WRITE, A[1], MAGIC + 3, m)])
 
         self.randomizeAll()
-        self.doSim(400 * Time.ns)
+        self.runSim(400 * Time.ns)
 
         self.assertValSequenceEqual(u.decoded.field0._ag.dout, [MAGIC,
                                                                 MAGIC + 2
@@ -129,7 +129,7 @@ class IpifEndpointArray(AxiLiteEndpointArray):
             u.decoded.field1._ag.mem[i] = 2 * MAGIC + 1 + i
 
         self.randomizeAll()
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.readed)
         for i in range(8):
@@ -149,7 +149,7 @@ class IpifEndpointArray(AxiLiteEndpointArray):
             regs.field1[i].read()
 
         self.randomizeAll()
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(u.bus._ag.readed,
                                     [MAGIC + 1,
@@ -174,7 +174,7 @@ class IpifEndpointArray(AxiLiteEndpointArray):
             regs.field1[i].write(2 * MAGIC + i + 1)
 
         self.randomizeAll()
-        self.doSim(400 * Time.ns)
+        self.runSim(400 * Time.ns)
 
         self.assertEmpty(u.bus._ag.readed)
         for i in range(4):

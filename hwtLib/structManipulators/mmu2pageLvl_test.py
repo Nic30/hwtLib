@@ -27,7 +27,7 @@ class MMU_2pageLvl_TC(SimTestCase):
     def test_nop(self):
         u = self.u
 
-        self.doSim(10 * 10 * Time.ns)
+        self.runSim(10 * 10 * Time.ns)
 
         self.assertEmpty(u.rDatapump.req._ag.data)
         self.assertEmpty(u.physOut._ag.data)
@@ -40,7 +40,7 @@ class MMU_2pageLvl_TC(SimTestCase):
 
         u.virtIn._ag.data.extend([NOP for _ in range(self.LVL1_PAGE_TABLE_ITEMS + 5)] + [0, ])
 
-        self.doSim((self.LVL1_PAGE_TABLE_ITEMS + 20) * 10 * Time.ns)
+        self.runSim((self.LVL1_PAGE_TABLE_ITEMS + 20) * 10 * Time.ns)
         self.assertEmpty(u.physOut._ag.data)
         self.assertValEqual(u.segfault._ag.data[-1], 1)
 
@@ -59,7 +59,7 @@ class MMU_2pageLvl_TC(SimTestCase):
         # wait for lvl1Table storage init
         u.virtIn._ag.data.extend([NOP, NOP, va])
 
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.physOut._ag.data)
         self.assertValEqual(u.segfault._ag.data[-1], 1)
@@ -89,7 +89,7 @@ class MMU_2pageLvl_TC(SimTestCase):
             virt.append(v)
             expected.append(int(2 ** 12) * (i + 1) + i + 1)
 
-        self.doSim(N*300 * Time.ns)
+        self.runSim(N*300 * Time.ns)
 
         self.assertValSequenceEqual(u.physOut._ag.data, expected)
         self.assertValEqual(u.segfault._ag.data[-1], 0)

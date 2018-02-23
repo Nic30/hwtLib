@@ -91,7 +91,7 @@ class InterfaceArraySample3TC(SimTestCase):
         pushData(map(lambda ch: ch.w, u.a), W)
         pushData(map(lambda ch: ch.b, u.b), B)
 
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         for i in range(3):
             a = u.a[i]

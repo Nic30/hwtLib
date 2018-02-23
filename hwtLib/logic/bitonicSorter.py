@@ -99,7 +99,7 @@ class BitonicSorterTC(SimTestCase):
         ref = [i for i in range(int(u.ITEMS))]
         self.setInputs(reversed(ref))
 
-        self.doSim(self.SIM_TIME)
+        self.runSim(self.SIM_TIME)
         self.assertValSequenceEqual(self.getOutputs(), ref)
 
     def test_sorted(self):
@@ -108,7 +108,7 @@ class BitonicSorterTC(SimTestCase):
         ref = [i for i in range(int(u.ITEMS))]
         self.setInputs(ref)
 
-        self.doSim(self.SIM_TIME)
+        self.runSim(self.SIM_TIME)
         self.assertValSequenceEqual(self.getOutputs(), ref)
 
 

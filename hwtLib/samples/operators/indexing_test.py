@@ -22,7 +22,7 @@ class IndexingTC(SimTestCase):
         self.setUpUnit(u)
         u.a._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
-        self.doSim(80 * Time.ns)
+        self.runSim(80 * Time.ns)
 
         self.assertValSequenceEqual(u.b._ag.data,
                                     [0, 1, 0, 1, None, 1, 0, 1])
@@ -36,7 +36,7 @@ class IndexingTC(SimTestCase):
         u.b._ag.data.extend([0, 1, 0, 1, None, 1, 0, 1])
         u.c._ag.data.extend([0, 0, 1, 1, None, 1, 1, 0])
 
-        self.doSim(80 * Time.ns)
+        self.runSim(80 * Time.ns)
 
         self.assertValSequenceEqual(u.a._ag.data,
                                     [0, 1, 2, 3, None, 3, 2, 1])
@@ -48,7 +48,7 @@ class IndexingTC(SimTestCase):
         u.b._ag.data.extend([0, 3, 0, 3, None, 3, 0, 3])
         u.c._ag.data.extend([0, 0, 3, 3, None, 3, 3, 0])
 
-        self.doSim(80 * Time.ns)
+        self.runSim(80 * Time.ns)
 
         self.assertValSequenceEqual(u.a._ag.data,
                                     [0, 3, 12, 15, None, 15, 12, 3])
@@ -59,7 +59,7 @@ class IndexingTC(SimTestCase):
 
         u.a._ag.data.extend([0, 1, 2, 3, None, 3, 0, 3])
 
-        self.doSim(80 * Time.ns)
+        self.runSim(80 * Time.ns)
 
         self.assertValSequenceEqual(u.b._ag.data,
                                     [0, 1, 2, 3, None, 3, 0, 3])
@@ -71,7 +71,7 @@ class IndexingTC(SimTestCase):
         u.a._ag.data.extend([0, 1, 0, 1, None, 0, 1, 0])
         u.b._ag.data.extend([0, 0, 1, 1, None, 0, 1, 0])
 
-        self.doSim(80 * Time.ns)
+        self.runSim(80 * Time.ns)
 
         self.assertValSequenceEqual(u.c._ag.data,
                                     [0, 1, 0, 1, None, 0, 1, 0])
@@ -84,7 +84,7 @@ class IndexingTC(SimTestCase):
         reference = list(range(2 ** 4)) + [None, ]
         u.a._ag.data.extend(reference)
 
-        self.doSim((2 ** 4 + 1) * 10 * Time.ns)
+        self.runSim((2 ** 4 + 1) * 10 * Time.ns)
 
         self.assertValSequenceEqual(u.b._ag.data,
                                     reference)

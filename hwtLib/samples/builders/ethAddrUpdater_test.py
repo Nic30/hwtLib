@@ -53,7 +53,7 @@ class EthAddrUpdaterTC(SimTestCase):
 
         u.packetAddr._ag.data.append(framePtr)
 
-        self.doSim(1000 * Time.ns)
+        self.runSim(1000 * Time.ns)
         updatedFrame = m.getStruct(framePtr, tmpl)
         self.assertValEqual(updatedFrame.eth.src, frameData["eth"]['dst'])
         self.assertValEqual(updatedFrame.eth.dst, frameData["eth"]['src'])

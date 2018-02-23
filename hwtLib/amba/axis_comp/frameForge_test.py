@@ -92,7 +92,7 @@ class AxiS_frameForge_TC(SimTestCase):
         if randomized:
             t *= 2
 
-        self.doSim(t * Time.ns)
+        self.runSim(t * Time.ns)
 
         self.assertEmpty(u.dataOut._ag.data)
 
@@ -106,7 +106,7 @@ class AxiS_frameForge_TC(SimTestCase):
         if randomized:
             t *= 2
 
-        self.doSim(t * Time.ns)
+        self.runSim(t * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(MAGIC, mask(self.DATA_WIDTH // 8), 1)])
@@ -122,7 +122,7 @@ class AxiS_frameForge_TC(SimTestCase):
         if randomized:
             t *= 2
 
-        self.doSim(t * Time.ns)
+        self.runSim(t * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(((MAGIC + 1) << 32) | MAGIC, mask(self.DATA_WIDTH // 8), 1)])
@@ -137,7 +137,7 @@ class AxiS_frameForge_TC(SimTestCase):
         t = 200
         if randomized:
             t *= 3
-        self.doSim(t * Time.ns)
+        self.runSim(t * Time.ns)
 
         m = mask(self.DATA_WIDTH // 8)
         self.assertValSequenceEqual(u.dataOut._ag.data,
@@ -177,7 +177,7 @@ class AxiS_frameForge_TC(SimTestCase):
         u.dataIn.item2._ag.data.append(MAGIC + 2)
 
         t = 200
-        self.doSim(t * Time.ns)
+        self.runSim(t * Time.ns)
 
         m = mask(self.DATA_WIDTH // 8)
         self.assertValSequenceEqual(u.dataOut._ag.data,
@@ -206,7 +206,7 @@ class AxiS_frameForge_TC(SimTestCase):
         u.dataIn.item1_1._ag.data.append(MAGIC + 3)
 
         t = 200
-        self.doSim(t * Time.ns)
+        self.runSim(t * Time.ns)
 
         m = mask(self.DATA_WIDTH // 8)
         self.assertValSequenceEqual(u.dataOut._ag.data,
@@ -247,7 +247,7 @@ class AxiS_frameForge_TC(SimTestCase):
         u.dataIn.item1_1._ag.data.append(MAGIC + 3)
 
         t = 200
-        self.doSim(t * Time.ns)
+        self.runSim(t * Time.ns)
 
         m = mask(self.DATA_WIDTH // 8)
         self.assertValSequenceEqual(u.dataOut._ag.data,
@@ -263,7 +263,7 @@ class AxiS_frameForge_TC(SimTestCase):
         t = 60
         if randomized:
             t *= 3
-        self.doSim(t * Time.ns)
+        self.runSim(t * Time.ns)
 
         self.assertEmpty(u.dataOut._ag.data)
 
@@ -282,7 +282,7 @@ class AxiS_frameForge_TC(SimTestCase):
         u.dataIn.frameA.itemA1._ag.data.extend([MAGIC + 2, MAGIC + 4])
         u.dataIn._select._ag.data.extend([0, 0])
 
-        self.doSim(t * Time.ns)
+        self.runSim(t * Time.ns)
 
         m = mask(self.DATA_WIDTH // 8)
         self.assertValSequenceEqual(u.dataOut._ag.data,
@@ -309,7 +309,7 @@ class AxiS_frameForge_TC(SimTestCase):
         u.dataIn.b._ag.data.extend([MAGIC + 2])
         u.dataIn._select._ag.data.extend([0, 1, 0])
 
-        self.doSim(t * Time.ns)
+        self.runSim(t * Time.ns)
 
         m = mask(self.DATA_WIDTH // 8)
         self.assertValSequenceEqual(u.dataOut._ag.data,

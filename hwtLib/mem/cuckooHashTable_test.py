@@ -56,7 +56,7 @@ class CuckooHashTableTC(SimTestCase):
     def test_clean(self):
         u = self.u
         u.clean._ag.data.append(1)
-        self.doSim(400 * Time.ns)
+        self.runSim(400 * Time.ns)
         for t in self.TABLE_MEMS:
             self.assertEqual(len(t), self.TABLE_SIZE)
             for i in range(self.TABLE_SIZE):
@@ -79,7 +79,7 @@ class CuckooHashTableTC(SimTestCase):
 
         self.procs.append(planInsert)
 
-        self.doSim(650 * Time.ns)
+        self.runSim(650 * Time.ns)
         self.checkContains(reference)
 
     def test_simpleInsertAndLookup(self):
@@ -98,7 +98,7 @@ class CuckooHashTableTC(SimTestCase):
             u.lookup._ag.data.append(k)
             expected.append((k, v, found, occupied))
 
-        self.doSim(800 * Time.ns)
+        self.runSim(800 * Time.ns)
         self.checkContains(reference)
         self.assertValSequenceEqual(u.lookupRes._ag.data, expected)
 
@@ -110,7 +110,7 @@ class CuckooHashTableTC(SimTestCase):
         for k, v in sorted(reference.items(), key=lambda x: x[0]):
             u.insert._ag.data.append((k, v))
 
-        self.doSim(CNT * 60 * Time.ns)
+        self.runSim(CNT * 60 * Time.ns)
         self.checkContains(reference)
 
     def test_delete(self):
@@ -131,7 +131,7 @@ class CuckooHashTableTC(SimTestCase):
             u.delete._ag.data.extend(toDelete)
         self.procs.append(doDelete)
 
-        self.doSim(500 * Time.ns)
+        self.runSim(500 * Time.ns)
         for k in toDelete:
             del reference[k]
         self.checkContains(reference)

@@ -27,7 +27,7 @@ class ClkSynchronizerTC(unittest.TestCase):
         self.u = u
         self.model = model
 
-    def doSim(self, dataInStimul, name, until=100 * Time.ns):
+    def runSim(self, dataInStimul, name, until=100 * Time.ns):
         collected = []
         u = self.u
 
@@ -60,7 +60,7 @@ class ClkSynchronizerTC(unittest.TestCase):
                 s.write(i, u.inData)
                 yield s.wait(CLK_PERIOD)
 
-        collected = self.doSim(dataInStimul, "normalOp")
+        collected = self.runSim(dataInStimul, "normalOp")
         self.assertSequenceEqual(expected, valuesToInts(collected))
 
     def test_invalidData(self):
@@ -75,7 +75,7 @@ class ClkSynchronizerTC(unittest.TestCase):
                 yield s.wait(CLK_PERIOD)
                 s.write(None, u.inData)
 
-        collected = self.doSim(dataInStimul, "invalidData")
+        collected = self.runSim(dataInStimul, "invalidData")
         self.assertSequenceEqual(expected, valuesToInts(collected))
 
 

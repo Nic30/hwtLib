@@ -22,7 +22,7 @@ class SimpleAxiRegsTC(SimTestCase):
     def test_nop(self):
         u = self.u
 
-        self.doSim(250 * Time.ns)
+        self.runSim(250 * Time.ns)
 
         self.assertEmpty(u.axi._ag.r.data)
         self.assertEmpty(u.axi._ag.b.data)
@@ -33,7 +33,7 @@ class SimpleAxiRegsTC(SimTestCase):
 
         axi.w.data += [(11, allMask), (37, allMask)]
 
-        self.doSim(250 * Time.ns)
+        self.runSim(250 * Time.ns)
 
         self.assertEqual(len(axi.w.data), 2 - 1)
         self.assertEmpty(u.axi._ag.r.data)
@@ -46,7 +46,7 @@ class SimpleAxiRegsTC(SimTestCase):
         axi.aw.data += [0, 4]
         axi.w.data += [(11, allMask), (37, allMask)]
 
-        self.doSim(250 * Time.ns)
+        self.runSim(250 * Time.ns)
 
         self.assertEmpty(axi.aw.data)
         self.assertEmpty(axi.w.data)

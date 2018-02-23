@@ -33,7 +33,7 @@ class AxiLiteEndpoint_struct_TC(AxiLiteEndpointTC):
         u = self.mySetUp(32)
 
         self.randomizeAll()
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.r.data)
         self.assertEmpty(u.decoded.a.field0._ag.dout)
@@ -52,7 +52,7 @@ class AxiLiteEndpoint_struct_TC(AxiLiteEndpointTC):
         u.decoded.a.field1._ag.din.extend([MAGIC + 1])
 
         self.randomizeAll()
-        self.doSim(300 * Time.ns)
+        self.runSim(300 * Time.ns)
 
         self.assertValSequenceEqual(u.bus.r._ag.data,
                                     [(MAGIC, RESP_OKAY),
@@ -81,7 +81,7 @@ class AxiLiteEndpoint_struct_TC(AxiLiteEndpointTC):
             r.a.field1.write(MAGIC + i + 2)
 
         self.randomizeAll()
-        self.doSim(500 * Time.ns)
+        self.runSim(500 * Time.ns)
 
         self.assertValSequenceEqual(u.decoded.a.field0._ag.dout,
                                     [MAGIC,
@@ -111,7 +111,7 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
         u = self.mySetUp(32)
 
         self.randomizeAll()
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.r.data)
         for i in range(3):
@@ -151,7 +151,7 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
             u.decoded.a[i].field1._ag.din.append(MAGIC + 32 + i)
 
         self.randomizeAll()
-        self.doSim(800 * Time.ns)
+        self.runSim(800 * Time.ns)
 
         readed = u.bus.r._ag.data
         self.assertEqual(len(readed), len(expected))
@@ -175,7 +175,7 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
             r.a[i % 3].field1.write(d)
 
         self.randomizeAll()
-        self.doSim(1200 * Time.ns)
+        self.runSim(1200 * Time.ns)
 
         for i in range(3):
             self.assertValSequenceEqual(u.decoded.a[i].field0._ag.dout,

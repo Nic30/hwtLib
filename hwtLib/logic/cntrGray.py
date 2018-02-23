@@ -37,7 +37,7 @@ class GrayCntrTC(SimTestCase):
         self.prepareUnit(u)
         u.en._ag.data.append(1)
         
-        self.doSim(170 * Time.ns)
+        self.runSim(170 * Time.ns)
         self.assertValSequenceEqual(u.dataOut._ag.data, [
             0b0000, 
             0b0001,

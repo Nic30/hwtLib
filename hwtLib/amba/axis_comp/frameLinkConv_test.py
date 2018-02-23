@@ -41,7 +41,7 @@ class AxiS_frameLinkConvTC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEmpty(u.dataOut._ag.data)
 
@@ -53,7 +53,7 @@ class AxiS_frameLinkConvTC(SimTestCase):
              (14, mask(1), 0b10, 1)]
 
         u.dataIn._ag.data.extend(d)
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, d)
 

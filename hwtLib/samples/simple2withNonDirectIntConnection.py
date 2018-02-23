@@ -42,7 +42,7 @@ class Simple2withNonDirectIntConnectionTC(SimTestCase):
             (1, 1, 0),
             (2, 1, 1)
         ])
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertValSequenceEqual(u.c._ag.data, [
             (1, 1, 0),

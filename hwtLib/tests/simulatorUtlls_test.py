@@ -173,7 +173,7 @@ class SimulatorUtilsTC(SimTestCase):
         u = ExampleWithArrayAxiLite()
         pointerRe = re.compile("0x[a-f0-9]*")
         self.prepareUnit(u)
-        self.doSim(1)
+        self.runSim(1)
         
         o = StringIO()
         pprintAgents(u.clk, file=o)

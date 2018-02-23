@@ -19,7 +19,7 @@ class RomTC(SimTestCase):
 
         u.addr._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
-        self.doSim(80 * Time.ns)
+        self.runSim(80 * Time.ns)
 
         self.assertValSequenceEqual(
             u.dout._ag.data, [1, 2, 3, 4, None, 4, 3, 2])
@@ -30,7 +30,7 @@ class RomTC(SimTestCase):
 
         u.addr._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
-        self.doSim(90 * Time.ns)
+        self.runSim(90 * Time.ns)
 
         self.assertValSequenceEqual(
             u.dout._ag.data, [None, 1, 2, 3, 4, None, 4, 3, 2])

@@ -74,7 +74,7 @@ class StructReaderTC(SimTestCase):
             addr = m.calloc(len(asFrame), DW // 8, initValues=asFrame)
             u.get._ag.data.append(addr)
 
-        self.doSim(500 * Time.ns)
+        self.runSim(500 * Time.ns)
 
         for f in s0.fields:
             if f.name is not None:

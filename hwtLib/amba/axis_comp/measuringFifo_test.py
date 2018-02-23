@@ -21,7 +21,7 @@ class AxiS_measuringFifoTC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEqual(len(u.sizes._ag.data), 0)
         self.assertEqual(len(u.dataOut._ag.data), 0)
@@ -33,7 +33,7 @@ class AxiS_measuringFifoTC(SimTestCase):
                                   (2, mask(8), 1),
                                  ])
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
         self.assertValSequenceEqual(u.sizes._ag.data, [8, ])
         self.assertValSequenceEqual(u.dataOut._ag.data, [(2, mask(8), 1), ])
 
@@ -44,7 +44,7 @@ class AxiS_measuringFifoTC(SimTestCase):
                                   ])
         u.dataOut._ag._enabled = False
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
         self.assertValSequenceEqual(u.sizes._ag.data, [8, ])
         self.assertEmpty(u.dataOut._ag.data, 0)
         self.assertValEqual(self.model.dataOut_last, 1)
@@ -61,7 +61,7 @@ class AxiS_measuringFifoTC(SimTestCase):
 
         u.dataIn._ag.data.extend(goldenData)
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, [8, 8, 8])
 
@@ -75,7 +75,7 @@ class AxiS_measuringFifoTC(SimTestCase):
                       ]
         u.dataIn._ag.data.extend(goldenData)
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, (16,))
 
@@ -97,7 +97,7 @@ class AxiS_measuringFifoTC(SimTestCase):
 
         self.procs.append(pause)
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, [6 * 8])
@@ -113,7 +113,7 @@ class AxiS_measuringFifoTC(SimTestCase):
                       ]
         u.dataIn._ag.data.extend(goldenData)
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, (9,))
@@ -126,7 +126,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         goldenData = [(2, 1, 1), ]
         u.dataIn._ag.data.extend(goldenData)
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, (1,))
@@ -145,7 +145,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         self.randomize(u.dataOut)
         self.randomize(u.sizes)
 
-        self.doSim(N * 6 * 10 * 3 * Time.ns)
+        self.runSim(N * 6 * 10 * 3 * Time.ns)
 
         self.assertEqual(len(sizes), N)
         self.assertEqual(len(data), N * 6)
@@ -172,7 +172,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         self.randomize(u.dataOut)
         self.randomize(u.sizes)
 
-        self.doSim(len(expectedData) * 30 * Time.ns)
+        self.runSim(len(expectedData) * 30 * Time.ns)
 
         self.assertEqual(len(sizes), N)
         self.assertEqual(len(data), len(expectedData))
@@ -207,7 +207,7 @@ class AxiS_measuringFifoTC(SimTestCase):
 
         self.procs.append(sizesEn)
 
-        self.doSim(N * 6 * 10 * 3 * Time.ns)
+        self.runSim(N * 6 * 10 * 3 * Time.ns)
 
         self.assertEqual(len(sizes), N)
         self.assertEqual(len(data), N * 6)

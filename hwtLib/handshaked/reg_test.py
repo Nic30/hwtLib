@@ -22,7 +22,7 @@ class HsRegL1D0TC(SimTestCase):
         u = self.u
         u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
 
-        self.doSim((self.DELAY + self.LATENCY) * 120 * Time.ns)
+        self.runSim((self.DELAY + self.LATENCY) * 120 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, [1, 2, 3, 4, 5, 6])
         self.assertValSequenceEqual([], u.dataIn._ag.data)
@@ -33,7 +33,7 @@ class HsRegL1D0TC(SimTestCase):
         self.randomize(u.dataIn)
         self.randomize(u.dataOut)
 
-        self.doSim((self.DELAY + self.LATENCY) * 600 * Time.ns)
+        self.runSim((self.DELAY + self.LATENCY) * 600 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, [1, 2, 3, 4, 5, 6])
         self.assertValSequenceEqual([], u.dataIn._ag.data)
