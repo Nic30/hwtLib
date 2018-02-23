@@ -3,19 +3,23 @@
 
 import unittest
 
-from hwt.bitmask import mask
+from hwt.bitmask import mask, mask_bytes
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis_comp.measuringFifo import AxiS_measuringFifo
+from hwt.pyUtils.arrayQuery import take, iter_with_last
 
 
 class AxiS_measuringFifoTC(SimTestCase):
     def setUp(self):
         super(AxiS_measuringFifoTC, self).setUp()
         u = self.u = AxiS_measuringFifo()
+        self.DATA_WIDTH = 64
         self.MAX_LEN = 15
+
         u.MAX_LEN.set(self.MAX_LEN)
         u.SIZES_BUFF_DEPTH.set(4)
+        u.DATA_WIDTH.set(self.DATA_WIDTH)
 
         self.prepareUnit(self.u)
 
@@ -30,8 +34,8 @@ class AxiS_measuringFifoTC(SimTestCase):
         u = self.u
 
         u.dataIn._ag.data.extend([
-                                  (2, mask(8), 1),
-                                 ])
+            (2, mask(8), 1),
+        ])
 
         self.runSim(200 * Time.ns)
         self.assertValSequenceEqual(u.sizes._ag.data, [8, ])
@@ -85,8 +89,8 @@ class AxiS_measuringFifoTC(SimTestCase):
         data = u.dataOut._ag.data
 
         goldenData = [
-                       (i + 1, 255, int(i == 5)) for i in range(6)
-                      ]
+            (i + 1, 255, int(i == 5)) for i in range(6)
+        ]
         u.dataIn._ag.data.extend(goldenData)
 
         def pause(simulator):
@@ -108,9 +112,9 @@ class AxiS_measuringFifoTC(SimTestCase):
         data = u.dataOut._ag.data
 
         goldenData = [
-                       (1, mask(8), 0),
-                       (2, mask(1), 1)
-                      ]
+            (1, mask(8), 0),
+            (2, mask(1), 1)
+        ]
         u.dataIn._ag.data.extend(goldenData)
 
         self.runSim(200 * Time.ns)
@@ -139,8 +143,8 @@ class AxiS_measuringFifoTC(SimTestCase):
 
         for i in range(N):
             u.dataIn._ag.data.extend([
-                                      (i + 1, mask(8), i == 5) for i in range(6)
-                                     ])
+                (i + 1, mask(8), i == 5) for i in range(6)
+            ])
         self.randomize(u.dataIn)
         self.randomize(u.dataOut)
         self.randomize(u.sizes)
@@ -161,12 +165,12 @@ class AxiS_measuringFifoTC(SimTestCase):
         expectedLen = []
 
         for i in range(N):
-            l = int(self._rand.random() * (self.MAX_LEN + 1 + 1))
-            d = [(i + 1, mask(8), int(i == (l - 1))) for i in range(l)]
+            _l = int(self._rand.random() * (self.MAX_LEN + 1 + 1))
+            d = [(i + 1, mask(8), int(i == (_l - 1))) for i in range(_l)]
             u.dataIn._ag.data.extend(d)
 
             expectedData.extend(d)
-            expectedLen.append(l * 8)
+            expectedLen.append(_l * 8)
 
         self.randomize(u.dataIn)
         self.randomize(u.dataOut)
@@ -216,34 +220,50 @@ class AxiS_measuringFifoTC(SimTestCase):
 
     def sendFrame(self, data):
         u = self.u
-        _mask = 255
-        _d = [(d, _mask, int(i == (len(data) - 1))) 
+        _mask = mask(self.DATA_WIDTH // 8)
+        _d = [(d, _mask, int(i == (len(data) - 1)))
               for i, d in enumerate(data)]
-        u.dataIn._ag.data.extend(d)
+        u.dataIn._ag.data.extend(_d)
 
     def getFrames(self):
         u = self.u
         sizes = u.sizes._ag.data
-        data = u.dataOut._ag.data
+        data = iter(u.dataOut._ag.data)
+        size_of_word = self.DATA_WIDTH // 8
 
-        data = iter(data)
+        frames = []
         for s in sizes:
-            assert s
+            _s = int(s)
+            words = _s // size_of_word
+            if _s / size_of_word - words > 0.0:
+                words += 1
 
-    #def test_overflow(self):
-    #    u = self.u
-    #    MAX_LEN = self.MAX_LEN
-    #    data = [i for i in range(MAX_LEN + 4)]
-    #    self.sendFrame(data)
-    #    f = self.getFrames()
-    #    self.assertEquals(f, 
-    #                      [[i for i in range(MAX_LEN + 1)], 
-    #                       [MAX_LEN, MAX_LEN + 1, MAX_LEN + 2, MAX_LEN + 3]])
-    #
+            frame = []
+            for last, (_d, _mask,  _last) in iter_with_last(take(data, words)):
+                self.assertValEqual(_last, last)
+                _mask = int(_mask)
+                _d.val = mask_bytes(_d.val, _mask, size_of_word)
+                _d.vldMask = mask_bytes(_d.vldMask, _mask, size_of_word)
+                frame.append(int(_d))
+            frames.append(frame)
+
+        return frames
+
+    def test_overflow(self):
+        MAX_LEN = self.MAX_LEN
+        data = [i for i in range(MAX_LEN + 4)]
+        self.sendFrame(data)
+
+        self.runSim((MAX_LEN + 10) * 10 * Time.ns)
+        f = self.getFrames()
+        self.assertEquals(f,
+                          [[i for i in range(MAX_LEN + 1)],
+                           [MAX_LEN + 1, MAX_LEN + 2, MAX_LEN + 3]])
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(AxiS_measuringFifoTC('test_withPause'))
-    suite.addTest(unittest.makeSuite(AxiS_measuringFifoTC))
+    suite.addTest(AxiS_measuringFifoTC('test_overflow'))
+    # suite.addTest(unittest.makeSuite(AxiS_measuringFifoTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
