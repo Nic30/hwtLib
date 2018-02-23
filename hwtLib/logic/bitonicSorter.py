@@ -1,9 +1,9 @@
-from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.param import Param
-from hwt.interfaces.std import VectSignal
 from hwt.code import If
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hdl.constants import Time
+from hwt.interfaces.std import VectSignal
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 
 
 class BitonicSorter(Unit):
