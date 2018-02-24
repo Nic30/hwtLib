@@ -14,8 +14,8 @@ python:
 install:
   - cd ..
   - pip install pytest coveralls
-  - git clone --depth=1 https://github.com/Nic30/HWToolkit.git
-  - cd HWToolkit
+  - git clone --depth=1 https://github.com/Nic30/hwt.git
+  - cd hwt
   - python setup.py install
   - cd ../hwtLib
   - python setup.py install

@@ -27,7 +27,7 @@ import sys
 try:
     from hwt.pyUtils.fileHelpers import find_files
 except ImportError:
-    sys.path.insert(0, os.path.abspath('../../HWToolkit'))
+    sys.path.insert(0, os.path.abspath('../../hwt'))
     from hwt.pyUtils.fileHelpers import find_files
 
 sys.path.insert(0, os.path.abspath('../'))
