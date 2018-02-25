@@ -17,13 +17,19 @@ class HsFifoTC(SimTestCase):
         u.EXPORT_SIZE.set(True)
         self.prepareUnit(u)
 
+    def test_nop(self):
+        u = self.u
+        self.runSim(120 * Time.ns)
+        self.assertEqual(len(u.dataOut._ag.data), 0)
+
     def test_stuckedData(self):
         u = self.u
         u.dataIn._ag.data.append(1)
 
-        u.dataOut._ag.enable = False
+        u.dataOut._ag._enabled = False
         self.runSim(120 * Time.ns)
         self.assertValEqual(self.model.dataOut_data, 1)
+        self.assertEqual(len(u.dataOut._ag.data), 0)
 
     def test_withPause(self):
         u = self.u
@@ -32,13 +38,13 @@ class HsFifoTC(SimTestCase):
 
         def pause(simulator):
             yield simulator.wait(3 * 10 * Time.ns)
-            u.dataOut._ag.enable = False
+            u.dataOut._ag.setEnable_asMonitor(False, simulator)
             yield simulator.wait(3 * 10 * Time.ns)
-            u.dataOut._ag.enable = True
+            u.dataOut._ag.setEnable_asMonitor(True, simulator)
             yield simulator.wait(3 * 10 * Time.ns)
-            u.dataIn._ag.enable = False
+            u.dataIn._ag.setEnable_asDriver(False, simulator)
             yield simulator.wait(3 * 10 * Time.ns)
-            u.dataIn._ag.enable = True
+            u.dataIn._ag.setEnable_asDriver(True, simulator)
 
         self.procs.append(pause)
 
@@ -54,13 +60,13 @@ class HsFifoTC(SimTestCase):
 
         def pause(simulator):
             yield simulator.wait(4 * 10 * Time.ns)
-            u.dataOut._ag.enable = False
+            u.dataOut._ag.setEnable_asMonitor(False, simulator)
             yield simulator.wait(3 * 10 * Time.ns)
-            u.dataOut._ag.enable = True
+            u.dataOut._ag.setEnable_asMonitor(True, simulator)
             yield simulator.wait(3 * 10 * Time.ns)
-            u.dataIn._ag.enable = False
+            u.dataIn._ag.setEnable_asDriver(False, simulator)
             yield simulator.wait(3 * 10 * Time.ns)
-            u.dataIn._ag.enable = True
+            u.dataIn._ag.setEnable_asDriver(True, simulator)
 
         self.procs.append(pause)
 
