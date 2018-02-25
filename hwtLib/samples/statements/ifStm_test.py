@@ -49,7 +49,7 @@ class IfStmTC(SimTestCase):
         u.a._ag.data.extend([1, 1, 1,    0, 0, 0,    1, 0, 1, 0])
         u.b._ag.data.extend([0, 1, None, 0, 1, None, 1, 0, 0, 0])
         u.c._ag.data.extend([0, 0, 0,    0, 1, 0,    1, 0, 1, 0])
-        expected_dd = [0, 0, 0,    0, 0, 0,    0, 1, 1, 0]
+        expected_dd = [      0, 0, 0,    0, 0, 0,    0, 1, 1, 0]
 
         self.runSim(110 * Time.ns)
 
@@ -67,10 +67,10 @@ class IfStmTC(SimTestCase):
         # )
         # d(r)
 
-        u.a._ag.data.extend([1, 1, 1,    0, 0, 0,    1, 0, 1, 0])
-        u.b._ag.data.extend([0, 1, None, 0, 1, None, 1, 0, 0, 0])
-        u.c._ag.data.extend([0, 0, 0,    0, 1, 0,    1, 0, 1, 0])
-        expected_dd = [0, 0, 0,    0, 0, 0,    0, 1, 1, 0]
+        u.a._ag.data.extend([1, 1, 1,       0,    0, 0,     1, 0, 1, 0])
+        u.b._ag.data.extend([0, 1, None,    0,    1, None,  1, 0, 0, 0])
+        u.c._ag.data.extend([0, 0, 0,       0,    1, 0,     1, 0, 1, 0])
+        expected_dd = [   0, 0, 0, None,    None, 0, 0,     1, 1, 0]
 
         self.runSim(110 * Time.ns)
 
