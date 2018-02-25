@@ -106,6 +106,21 @@ class Latch(Unit):
         )
 
 
+class DReg_asyncRst(Unit):
+    def _declr(self):
+        DReg._declr(self)
+
+    def _impl(self):
+        r = self._sig("r")
+        If(self.rst._isOn(),
+           r(0)
+        ).Elif(self.clk._onRisingEdge(),
+           r(self.din)
+        )
+
+        self.dout(r)
+
+
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
     u = DDR_Reg()
