@@ -119,4 +119,4 @@ if __name__ == "__main__":
     #u.EXPORT_ALIGNMENT_ERROR.set(True)
     u.MAX_LEN.set(15)
     u.SIZES_BUFF_DEPTH.set(4)
-    print(toRtl(u ))
+    print(toRtl(u))

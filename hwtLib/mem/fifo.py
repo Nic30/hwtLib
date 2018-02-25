@@ -65,10 +65,10 @@ class Fifo(Unit):
         If(fifo_read,
             If(rd_ptr._eq(MAX_DEPTH),
                rd_ptr(0)
-               ).Else(
+            ).Else(
                 rd_ptr(rd_ptr + 1)
             )
-           )
+        )
 
         # Increment Head pointer as needed
         If(fifo_write,
@@ -83,8 +83,8 @@ class Fifo(Unit):
             If(fifo_write,
                 # Write Data to Memory
                 mem[wr_ptr](din.data)
-               )
-           )
+            )
+        )
 
         # assert isPow2(int(DEPTH)), DEPTH
 
@@ -95,27 +95,27 @@ class Fifo(Unit):
             If(fifo_read,
                 # Update data output
                 dout.data(mem[rd_ptr])
-               )
-           )
+            )
+        )
 
         fifo_write(din.en & (~looped | (wr_ptr != rd_ptr)))
 
         # looped logic
         If(din.en & wr_ptr._eq(MAX_DEPTH),
             looped(True)
-           ).Elif(dout.en & rd_ptr._eq(MAX_DEPTH),
-                  looped(False)
-                  )
+        ).Elif(dout.en & rd_ptr._eq(MAX_DEPTH),
+            looped(False)
+        )
 
         # Update Empty and Full flags
         If(wr_ptr._eq(rd_ptr),
             If(looped,
                 din.wait(1),
                 dout.wait(0)
-               ).Else(
+            ).Else(
                 dout.wait(1),
                 din.wait(0)
-        )
+            )
         ).Else(
             din.wait(0),
             dout.wait(0)
@@ -125,11 +125,11 @@ class Fifo(Unit):
             If(fifo_read,
                 If(~fifo_write,
                    size(size - 1)
-                   )
-               ).Else(
+                )
+            ).Else(
                 If(fifo_write,
                    size(size + 1)
-                   )
+                )
             )
             self.size(size)
         if self.EXPORT_SPACE:
@@ -137,11 +137,11 @@ class Fifo(Unit):
             If(fifo_read,
                 If(~fifo_write,
                    size(space + 1)
-                   )
-               ).Else(
+                )
+            ).Else(
                 If(fifo_write,
                    size(space - 1)
-                   )
+                )
             )
             self.space(space)
 
