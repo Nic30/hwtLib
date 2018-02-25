@@ -95,9 +95,9 @@ class AxiS_measuringFifoTC(SimTestCase):
 
         def pause(simulator):
             yield simulator.wait(3 * 10 * Time.ns)
-            u.dataOut._ag.enable = False
+            u.dataOut._ag.setEnable_asMonitor(False, simulator)
             yield simulator.wait(3 * 10 * Time.ns)
-            u.dataOut._ag.enable = True
+            u.dataOut._ag.setEnable_asMonitor(True, simulator)
 
         self.procs.append(pause)
 
@@ -263,7 +263,7 @@ class AxiS_measuringFifoTC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(AxiS_measuringFifoTC('test_overflow'))
-    # suite.addTest(unittest.makeSuite(AxiS_measuringFifoTC))
+    # suite.addTest(AxiS_measuringFifoTC('test_singleWordPacket'))
+    suite.addTest(unittest.makeSuite(AxiS_measuringFifoTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
