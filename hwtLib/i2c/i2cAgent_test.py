@@ -10,7 +10,7 @@ class I2CSimplePassTrought(Unit):
     def _declr(self):
         self.i = I2c()
         self.o = I2c()
-    
+
     def _impl(self):
         self.o(self.i)
 
@@ -31,7 +31,7 @@ class I2cAgent_TC(SimTestCase):
         self.doSim(100 * Time.ns)
         self.assertValSequenceEqual(u.o._ag.bits,
                                     [I2cAgent.START] + [0 for _ in range(10)])
-    
+
     def test_simple(self):
         u = self.u
 
@@ -42,7 +42,6 @@ class I2cAgent_TC(SimTestCase):
         self.doSim(100 * Time.ns)
         self.assertValSequenceEqual(u.o._ag.bits,
                                     expected)
-
 
 
 if __name__ == "__main__":
