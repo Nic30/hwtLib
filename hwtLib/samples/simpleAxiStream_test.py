@@ -14,6 +14,7 @@ class SynchronizedSimpleUnitAxiStream(SimpleUnitAxiStream):
     """
     Unit with reference clk added
     """
+
     def _declr(self):
         SimpleUnitAxiStream._declr(self)
         addClkRstn(self)
@@ -42,10 +43,10 @@ class SimpleUnitAxiStream_TC(SimTestCase):
         self.doSim(200 * Time.ns)
         self.assertEqual(len(u.b._ag.data), 2)
 
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(SimpleUnitAxiStream_TC('test_nop'))
     suite.addTest(unittest.makeSuite(SimpleUnitAxiStream_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-
