@@ -30,7 +30,7 @@ class SimpleWithNonDirectIntConncetionTC(SimTestCase):
         self.prepareUnit(u)
         d = [0, 1, 0, 1, 0]
         u.a._ag.data.extend(d)
-        self.doSim(50 * Time.ns)
+        self.runSim(50 * Time.ns)
         self.assertValSequenceEqual(u.c._ag.data, d)
 
 

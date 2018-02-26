@@ -28,7 +28,7 @@ class I2cAgent_TC(SimTestCase):
         ref = [0]
         u.i._ag.bits.extend(ref)
 
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
         self.assertValSequenceEqual(u.o._ag.bits,
                                     [I2cAgent.START] + [0 for _ in range(10)])
 
@@ -39,7 +39,7 @@ class I2cAgent_TC(SimTestCase):
         expected = [I2cAgent.START, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0]
         u.i._ag.bits.extend(ref)
 
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
         self.assertValSequenceEqual(u.o._ag.bits,
                                     expected)
 

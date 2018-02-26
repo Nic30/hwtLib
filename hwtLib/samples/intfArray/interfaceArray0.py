@@ -44,7 +44,7 @@ class InterfaceArraySample0TC(SimTestCase):
         u.a[1]._ag.data.extend([9])
         u.a[2]._ag.data.extend([10, 11, 12, 13])
 
-        self.doSim(50 * Time.ns)
+        self.runSim(50 * Time.ns)
 
         for i in range(3):
             self.assertEmpty(u.a[i]._ag.data)

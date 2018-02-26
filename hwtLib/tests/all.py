@@ -168,13 +168,13 @@ from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
 
 
-def doSimWithoutLog(self, time, name=None, config=None):
+def runSimWithoutLog(self, until, name=None, config=None):
     sim = HdlSimulator()
     # dummy config
     sim.config = HdlSimConfig()
     # run simulation, stimul processes are register after initial
     # initialization
-    sim.simUnit(self.model, time=time, extraProcesses=self.procs)
+    sim.simUnit(self.model, until=until, extraProcesses=self.procs)
     return sim
 
 
@@ -184,7 +184,7 @@ def testSuiteFromTCs(*tcs):
         # skip AxiLiteEndpointTC because we need one to test original methods
         # from SimTestCase
         if issubclass(tc, SimTestCase) and tc is not AxiLiteEndpointTC:
-            tc.doSim = doSimWithoutLog
+            tc.runSim = runSimWithoutLog
         tc._multiprocess_can_split_ = True
     loadedTcs = [loader.loadTestsFromTestCase(tc) for tc in tcs]
     suite = TestSuite(loadedTcs)

@@ -24,7 +24,7 @@ class TwoCntrsTC(SimTestCase):
         u.a_en._ag.data.append(0)
         u.b_en._ag.data.append(0)
 
-        self.doSim(90 * Time.ns)
+        self.runSim(90 * Time.ns)
 
         self.assertSequenceEqual(eightOnes, agInts(u.eq))
         self.assertSequenceEqual(eightZeros, agInts(u.gt))
@@ -36,7 +36,7 @@ class TwoCntrsTC(SimTestCase):
         u.a_en._ag.data.append(1)
         u.b_en._ag.data.append(1)
 
-        self.doSim(90 * Time.ns)
+        self.runSim(90 * Time.ns)
         self.assertSequenceEqual(eightOnes, agInts(u.eq))
         self.assertSequenceEqual(eightZeros, agInts(u.gt))
         self.assertSequenceEqual(eightZeros, agInts(u.lt))
@@ -47,7 +47,7 @@ class TwoCntrsTC(SimTestCase):
         u.a_en._ag.data.append(1)
         u.b_en._ag.data.append(0)
 
-        self.doSim(90 * Time.ns)
+        self.runSim(90 * Time.ns)
         self.assertSequenceEqual([1, 0, 0, 0, 0, 0, 0, 0], agInts(u.eq))
         self.assertSequenceEqual([0, 1, 1, 1, 1, 1, 1, 1], agInts(u.gt))
         self.assertSequenceEqual(eightZeros, agInts(u.lt))
@@ -58,7 +58,7 @@ class TwoCntrsTC(SimTestCase):
         u.a_en._ag.data.append(None)
         u.b_en._ag.data.append(None)
 
-        self.doSim(90 * Time.ns)
+        self.runSim(90 * Time.ns)
         self.assertSequenceEqual([1, None, None, None, None, None, None, None], agInts(u.eq))
         self.assertSequenceEqual([0, None, None, None, None, None, None, None], agInts(u.gt))
         self.assertSequenceEqual([0, None, None, None, None, None, None, None], agInts(u.lt))
@@ -69,7 +69,7 @@ class TwoCntrsTC(SimTestCase):
         u.a_en._ag.data.extend([1, 0, 0, 1])
         u.b_en._ag.data.extend([1, 1, 0, 0, 1])
 
-        self.doSim(90 * Time.ns)
+        self.runSim(90 * Time.ns)
         self.assertSequenceEqual([1, 1, 0, 0, 1, 1, 1, 1], agInts(u.eq))
         self.assertSequenceEqual(eightZeros, agInts(u.gt))
         self.assertSequenceEqual([0, 0, 1, 1, 0, 0, 0, 0], agInts(u.lt))

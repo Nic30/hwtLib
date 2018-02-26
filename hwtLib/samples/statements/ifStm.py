@@ -273,7 +273,7 @@ class IfStatementPartiallyEnclosed(Unit):
             a(1),
             b(1),
         ).Elif(self.d,
-               a(0)
+            a(0)
         ).Else(
             a(1),
             b(1),
@@ -331,4 +331,5 @@ END ARCHITECTURE rtl;"""
 if __name__ == "__main__":  # alias python main function
     from hwt.synthesizer.utils import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
-    print(toRtl(IfStatementPartiallyEnclosed()))
+    u = IfStatementPartiallyEnclosed()
+    print(toRtl(u))

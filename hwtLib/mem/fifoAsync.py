@@ -12,7 +12,7 @@ from hwtLib.mem.fifo import Fifo
 @serializeParamsUniq
 class FifoAsync(Fifo):
     """
-    Asynchronous fifo using BRAM memory based on:
+    Asynchronous fifo using BRAM memory, based on:
     http://www.asic-world.com/examples/vhdl/asyn_fifo.html
 
     """
@@ -22,7 +22,7 @@ class FifoAsync(Fifo):
         if int(self.EXPORT_SIZE) or int(self.EXPORT_SPACE):
             raise NotImplementedError()
 
-        self.dataIn_clk = Clk() 
+        self.dataIn_clk = Clk()
         self.dataOut_clk = Clk()
         self.rst_n = Rst_n()
 
@@ -41,11 +41,12 @@ class FifoAsync(Fifo):
             cntr.DATA_WIDTH.set(self.addrW)
 
     def _impl(self):
+        ST_EMPTY, ST_FULL = 0, 1
         memory_t = Bits(self.DATA_WIDTH)[self.DEPTH]
         memory = self._sig("memory", memory_t)
-        full = self._sig("full")
-        empty = self._sig("empty")
-        status = self._sig("status")
+        full = self._sig("full", defVal=0)
+        empty = self._sig("empty", defVal=1)
+        status = self._sig("status", defVal=ST_EMPTY)
 
         In = self.dataIn
         InClk = self.dataIn_clk._onRisingEdge()
@@ -58,14 +59,14 @@ class FifoAsync(Fifo):
         pNextWordToWrite = self.pWr.dataOut
 
         self.pRd.en(Out.en & ~empty)
-        self.pRd.clk(self.dataOut_clk) 
+        self.pRd.clk(self.dataOut_clk)
         self.pRd.rst_n(self.rst_n)
         pNextWordToRead = self.pRd.dataOut
 
         # data out logic
         If(OutClk,
             If(Out.en & ~empty,
-               Out.data(memory[pNextWordToRead]) 
+               Out.data(memory[pNextWordToRead])
             )
         )
 
@@ -84,25 +85,24 @@ class FifoAsync(Fifo):
         setStatus = nw[aw - 2]._eq(nr[aw - 1]) & (nw[aw - 1] ^ nr[aw - 2])
         rstStatus = (nw[aw - 2] ^ nr[aw - 1]) & nw[aw - 1]._eq(nr[aw - 2])
 
-        # status ltching
+        # status latching
         If(rstStatus | self.rst_n._isOn(),
-            status(0)  # Going 'Empty'.
+            status(ST_EMPTY)
         ).Elif(setStatus,
-            status(1)  # Going 'Full'
+            status(ST_FULL)
         )
 
         # data in logic
+
         presetFull = status & equalAddresses
 
-        # D Flip-Flop w/ Asynchronous Preset.
+        # D Flip-Flop with Asynchronous Preset.
         If(presetFull,
             full(1)
-        ).Else(
-            If(InClk,
-               full(0) 
-            )
+        ).Elif(InClk,
+            full(0)
         )
-        In.wait(full) 
+        In.wait(full)
 
         # data out logic
         presetEmpty = ~status & equalAddresses
@@ -112,10 +112,11 @@ class FifoAsync(Fifo):
             empty(1)
         ).Else(
             If(OutClk,
-               empty(0) 
+               empty(0)
             )
         )
         Out.wait(empty)
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl

@@ -160,7 +160,7 @@ class InterfaceArraySample4TC(SimTestCase):
             f2_out.append(arr_f2_out)
             f2_in.append(arr_f2_in)
 
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         emp = self.assertEmpty
         eq = self.assertValSequenceEqual

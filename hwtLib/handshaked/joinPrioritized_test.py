@@ -32,7 +32,7 @@ class HsJoinPrioritizedTC(SimTestCase):
         t = 20
         if self.randomized:
             t *= 2
-        self.doSim(t * 10 * Time.ns)
+        self.runSim(t * 10 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])

@@ -23,7 +23,7 @@ class CntrTC(SimTestCase):
         u = self.u
 
         u.en._ag.data.append(1)
-        self.doSim(90 * Time.ns)
+        self.runSim(90 * Time.ns)
         self.assertValSequenceEqual(u.val._ag.data,
                                     [0, 1, 2, 3, 0, 1, 2, 3])
 
@@ -31,7 +31,7 @@ class CntrTC(SimTestCase):
         u = self.u
 
         u.en._ag.data.extend([1, 0, 1, 1, 0, 0, 0])
-        self.doSim(90 * Time.ns)
+        self.runSim(90 * Time.ns)
         self.assertValSequenceEqual(u.val._ag.data,
                                     [0, 1, 1, 2, 3, 3, 3, 3])
 

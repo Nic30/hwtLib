@@ -42,7 +42,7 @@ class BinToOneHotTC(SimTestCase):
         u.en._ag.data.append(1)
         u.din._ag.data.extend(range(8))
 
-        self.doSim(80 * Time.ns)
+        self.runSim(80 * Time.ns)
 
         self.assertValSequenceEqual(u.dout._ag.data,
                                     [1 << i for i in range(8)])

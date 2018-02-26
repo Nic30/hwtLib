@@ -104,7 +104,7 @@ class Axi_ag_TC(SimTestCase):
         u.m.r._ag.data.extend(r)
         u.m.b._ag.data.extend(b)
 
-        self.doSim(20 * N * Time.ns)
+        self.runSim(20 * N * Time.ns)
 
         a = self.assertValSequenceEqual
 
@@ -135,7 +135,7 @@ class Axi_ag_TC(SimTestCase):
         u.m.r._ag.data.extend(r)
         u.m.b._ag.data.extend(b)
 
-        self.doSim(20 * N * Time.ns)
+        self.runSim(20 * N * Time.ns)
 
         a = self.assertValSequenceEqual
 

@@ -4,6 +4,8 @@
 import unittest
 
 from hwt.hdl.constants import Time
+from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
+from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceLatch
 from hwt.serializer.systemC.serializer import SystemCSerializer
 from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.vhdl.serializer import VhdlSerializer
@@ -11,9 +13,7 @@ from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.utils import toRtl
 from hwtLib.samples.mem.reg import DReg, DoubleDReg, OptimizedOutReg,\
-    AsyncResetReg, DDR_Reg, Latch
-from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceLatch
-from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
+    AsyncResetReg, DDR_Reg, Latch, DReg_asyncRst
 
 
 dreg_vhdl = """--
@@ -236,10 +236,11 @@ class DRegTC(SimTestCase):
     def test_simple(self):
         self.setUpUnit(DReg())
 
-        self.u.din._ag.data.extend([i % 2 for i in range(6)] + [None, None, 0, 1])
+        self.u.din._ag.data.extend(
+            [i % 2 for i in range(6)] + [None, None, 0, 1])
         expected = [0, 0, 1, 0, 1, 0, 1, None, None, 0]
 
-        self.doSim(110 * Time.ns)
+        self.runSim(110 * Time.ns)
         recieved = self.u.dout._ag.data
 
         # check simulation results
@@ -248,15 +249,27 @@ class DRegTC(SimTestCase):
     def test_double(self):
         self.setUpUnit(DoubleDReg())
 
-        self.u.din._ag.data.extend([i % 2 for i in range(6)] + [None, None, 0, 1])
+        self.u.din._ag.data.extend(
+            [i % 2 for i in range(6)] + [None, None, 0, 1])
         expected = [0, 0, 0, 1, 0, 1, 0, 1, None]
 
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         recieved = self.u.dout._ag.data
 
         # check simulation results
         self.assertValSequenceEqual(recieved, expected)
+
+    def test_async_rst(self):
+        u = DReg_asyncRst()
+        self.setUpUnit(u)
+
+        CLK = 10 * Time.ns
+
+        self.u.rst._ag.initDelay = 3 * CLK
+        self.u.din._ag.data.extend([1, 0, 1, 0, 1])
+        self.runSim(10 * CLK)
+        self.assertValSequenceEqual(self.u.dout._ag.data, [0, 1, 0, 1, 0, 1, 1])
 
     def test_optimizedOutReg(self):
         u = OptimizedOutReg()

@@ -48,7 +48,7 @@ class Axi4_rDatapumpTC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEmpty(u.a._ag.data)
         self.assertEmpty(u.driver.r._ag.data)
@@ -60,7 +60,7 @@ class Axi4_rDatapumpTC(SimTestCase):
 
         # download one word from addr 0xff
         req.data.append(mkReq(0xff, 0))
-        self.doSim((self.LEN_MAX + 3) * Time.ns)
+        self.runSim((self.LEN_MAX + 3) * Time.ns)
 
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(u.a._ag.data), 1)
@@ -77,7 +77,7 @@ class Axi4_rDatapumpTC(SimTestCase):
         for i in range(3):
             addData(r, i + 77)
 
-        self.doSim((self.LEN_MAX + 3) * 10 * Time.ns)
+        self.runSim((self.LEN_MAX + 3) * 10 * Time.ns)
 
         self.assertEmpty(req.data)
         self.assertEqual(len(u.a._ag.data), 1)
@@ -104,7 +104,7 @@ class Axi4_rDatapumpTC(SimTestCase):
         addData(r, 11)
         addData(r, 12)
 
-        self.doSim(((LEN_MAX + 6) * 10) * Time.ns)
+        self.runSim(((LEN_MAX + 6) * 10) * Time.ns)
 
         self.assertEmpty(req.data)
         self.assertEqual(len(u.a._ag.data), 1)
@@ -129,7 +129,7 @@ class Axi4_rDatapumpTC(SimTestCase):
         # download 512 words from addr 0xff
         req.data.append(mkReq(0xff, 2 * LEN_MAX + 1))
 
-        self.doSim(((LEN_MAX + 1) * 10) * Time.ns)
+        self.runSim(((LEN_MAX + 1) * 10) * Time.ns)
 
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(rout), 0)
@@ -154,7 +154,7 @@ class Axi4_rDatapumpTC(SimTestCase):
             req.data.append(mkReq(i, 0))
         #    r.addData(i + 77, last=(i == 255))
 
-        self.doSim(((self.LEN_MAX + 6) * 10) * Time.ns)
+        self.runSim(((self.LEN_MAX + 6) * 10) * Time.ns)
 
         self.assertEqual(len(req.data), 15)
         self.assertEqual(len(rout), 0)
@@ -180,7 +180,7 @@ class Axi4_rDatapumpTC(SimTestCase):
             rdata = (_id, i + 1, RESP_OKAY, True)
             r.data.append(rdata)
 
-        self.doSim(((64 + 4) * 10) * Time.ns)
+        self.runSim(((64 + 4) * 10) * Time.ns)
 
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(rout), 64)
@@ -215,7 +215,7 @@ class Axi4_rDatapumpTC(SimTestCase):
                     m = mask(i)
                 expected.append((_id, i2 + 1, m, isLast))
 
-        self.doSim((len(expected) * 2 * 10) * Time.ns)
+        self.runSim((len(expected) * 2 * 10) * Time.ns)
 
         self.assertEmpty(req.data)
 
@@ -256,7 +256,7 @@ class Axi4_rDatapumpTC(SimTestCase):
 
             expected.append((_id, i2 + 1, m, isLast))
 
-        self.doSim((len(expected) * 2 * 10) * Time.ns)
+        self.runSim((len(expected) * 2 * 10) * Time.ns)
 
         self.assertEmpty(req.data)
 
@@ -289,7 +289,7 @@ class Axi4_rDatapumpTC(SimTestCase):
                 rdata = (_id, i2, RESP_OKAY, isLast)
                 r.data.append(rdata)
 
-        self.doSim(((len(r.data) + 4) * 10) * Time.ns)
+        self.runSim(((len(r.data) + 4) * 10) * Time.ns)
 
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(ar), FRAMES * 2)
@@ -353,7 +353,7 @@ class Axi4_rDatapumpTC(SimTestCase):
             e = prepareRequest(1, a, data)
             expected.extend(e)
 
-        self.doSim(len(expected) * 70 * Time.ns)
+        self.runSim(len(expected) * 70 * Time.ns)
 
         self.assertEmpty(u.driver.req._ag.data)
         self.assertValSequenceEqual(u.driver.r._ag.data, expected)

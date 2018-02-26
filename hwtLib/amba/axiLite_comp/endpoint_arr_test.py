@@ -51,7 +51,7 @@ class AxiLiteEndpointArray(AxiLiteEndpointTC):
             u.decoded.field1._ag.mem[i] = 2 * MAGIC + 1
 
         self.randomizeAll()
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.r.data)
         for i in range(8):
@@ -70,7 +70,7 @@ class AxiLiteEndpointArray(AxiLiteEndpointTC):
             regs.field1[i].read()
 
         self.randomizeAll()
-        self.doSim(2 * 8 * 100 * Time.ns)
+        self.runSim(2 * 8 * 100 * Time.ns)
 
         self.assertValSequenceEqual(u.bus._ag.r.data, [
             (MAGIC + 1, RESP_OKAY),
@@ -95,7 +95,7 @@ class AxiLiteEndpointArray(AxiLiteEndpointTC):
             regs.field1[i].write(2 * MAGIC + i + 1)
 
         self.randomizeAll()
-        self.doSim(2 * 8 * 100 * Time.ns)
+        self.runSim(2 * 8 * 100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.r.data)
         for i in range(4):
@@ -131,7 +131,7 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
         u = self.mySetUp(32)
 
         self.randomizeAll()
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.r.data)
         for item in u.decoded.arr:
@@ -161,7 +161,7 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
             a.field1._ag.din.extend([MAGIC2 + i])
 
         self.randomizeAll()
-        self.doSim(500 * Time.ns)
+        self.runSim(500 * Time.ns)
         expected = list(flatten([[(MAGIC + i, RESP_OKAY), (MAGIC2 + i, RESP_OKAY)]
                                  for i in range(4)], level=1)
                         ) + [(None, RESP_SLVERR)]
@@ -185,7 +185,7 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
         u.bus.w._ag.data.append((123, m))
 
         self.randomizeAll()
-        self.doSim(800 * Time.ns)
+        self.runSim(800 * Time.ns)
 
         for i, a in enumerate(u.decoded.arr):
             # [index of field][index in arr][data index]

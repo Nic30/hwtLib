@@ -24,7 +24,7 @@ class Axi4_wDatapumpTC(SimTestCase):
     def test_nop(self):
         u = self.u
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEmpty(u.a._ag.data)
         self.assertEmpty(u.w._ag.data)
@@ -38,7 +38,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         # download one word from addr 0xff
         req.data.append(mkReq(0xff, 0))
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(aw,
                                     [
@@ -61,7 +61,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         wIn.data.append((77, mask(64 // 8), 1))
         b.append((0, RESP_OKAY))
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(aw, [
                                          (0, 255, 1, 3, 0, 0, 0, BYTES_IN_TRANS(8), 0)
@@ -85,7 +85,7 @@ class Axi4_wDatapumpTC(SimTestCase):
             wIn.data.append((100 + 1, mask(8), i == self.LEN_MAX))
         b.append((0, RESP_OKAY))
 
-        self.doSim((10 + self.LEN_MAX) * 10 * Time.ns)
+        self.runSim((10 + self.LEN_MAX) * 10 * Time.ns)
 
         self.assertValSequenceEqual(aw,
                                     [(0, 0xff, 1, 3, self.LEN_MAX, 0, 0, BYTES_IN_TRANS(8), 0)])
@@ -109,7 +109,7 @@ class Axi4_wDatapumpTC(SimTestCase):
             wIn.data.append((77, mask(64 // 8), 1))
             b.append((0, RESP_OKAY))
 
-        self.doSim(1000 * Time.ns)
+        self.runSim(1000 * Time.ns)
 
         self.assertValSequenceEqual(aw,
                                    [
@@ -144,7 +144,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         ra(u.w)
         ra(u.driver.w)
 
-        self.doSim(N * 8 * 10 * Time.ns)
+        self.runSim(N * 8 * 10 * Time.ns)
 
         self.assertValSequenceEqual(aw,
                                     [
@@ -186,7 +186,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         ra(u.w)
         ra(u.driver.w)
 
-        self.doSim(N * L * 10 * 5 * Time.ns)
+        self.runSim(N * L * 10 * 5 * Time.ns)
 
         self.assertValSequenceEqual(aw,
                                     [
@@ -262,7 +262,7 @@ class Axi3_wDatapump_small_splitting_TC(SimTestCase):
         ra(u.w)
         ra(u.driver.w)
 
-        self.doSim(N * 50 * Time.ns)
+        self.runSim(N * 50 * Time.ns)
 
         inMem = m.getArray(buff, self.DATA_WIDTH // 8, N)
         self.assertValSequenceEqual(inMem, data)

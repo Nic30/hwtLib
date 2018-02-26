@@ -87,7 +87,7 @@ class TimerTC(SimTestCase):
         CLK = 2 * 390
         RST = 5
 
-        self.doSim(CLK * 10 * Time.ns)
+        self.runSim(CLK * 10 * Time.ns)
         self.assertSequenceEqual(u.tick1._ag.data,
                                  [((i + 1) * 10 + RST) * Time.ns
                                   for i in range(CLK - 1)])
@@ -120,7 +120,7 @@ class TimerTC(SimTestCase):
         u.rstCntr._ag.data.extend([0, 0, 0, 0, 1, 1, 1, 0])
         u.period._ag.data.append(5)
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
         self.assertValSequenceEqual(
             u.cntr0._ag.data,
             [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0])

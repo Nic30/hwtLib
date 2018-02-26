@@ -63,7 +63,7 @@ class HandshakedBuilderSimpleTC(SimTestCase):
         # add data on input of agent for "a" interface
         u.a._ag.data.extend([1, 2, 3, 4])
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         # check if data was recieved on "b" interface 
         self.assertValSequenceEqual(u.b._ag.data, [1, 2, 3, 4])

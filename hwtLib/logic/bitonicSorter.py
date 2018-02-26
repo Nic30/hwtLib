@@ -1,9 +1,9 @@
-from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.param import Param
-from hwt.interfaces.std import VectSignal
 from hwt.code import If
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.hdl.constants import Time
+from hwt.interfaces.std import VectSignal
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 
 
 class BitonicSorter(Unit):
@@ -99,7 +99,7 @@ class BitonicSorterTC(SimTestCase):
         ref = [i for i in range(int(u.ITEMS))]
         self.setInputs(reversed(ref))
 
-        self.doSim(self.SIM_TIME)
+        self.runSim(self.SIM_TIME)
         self.assertValSequenceEqual(self.getOutputs(), ref)
 
     def test_sorted(self):
@@ -108,7 +108,7 @@ class BitonicSorterTC(SimTestCase):
         ref = [i for i in range(int(u.ITEMS))]
         self.setInputs(ref)
 
-        self.doSim(self.SIM_TIME)
+        self.runSim(self.SIM_TIME)
         self.assertValSequenceEqual(self.getOutputs(), ref)
 
 

@@ -101,7 +101,7 @@ class WStrictOrderInterconnectComplexTC(SimTestCase):
         r(u.w)
         r(u.b)
 
-        self.doSim(self.DRIVER_CNT * N * 40 * Time.ns)
+        self.runSim(self.DRIVER_CNT * N * 40 * Time.ns)
         for i, baseAddr in enumerate(dataAddress):
             inMem = m.getArray(baseAddr, self.DATA_WIDTH // 8, N)
             self.assertValSequenceEqual(inMem, data[i], "driver:%d" % i)

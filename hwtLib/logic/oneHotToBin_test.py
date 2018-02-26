@@ -30,7 +30,7 @@ class OneHotToBinTC(SimTestCase):
         oneHot = u.oneHot._ag.data
         oneHot.append(0)
 
-        self.doSim(4 * 10 * Time.ns)
+        self.runSim(4 * 10 * Time.ns)
 
         self.assertValSequenceEqual(u.bin._ag.data,[])
 
@@ -42,7 +42,7 @@ class OneHotToBinTC(SimTestCase):
             oneHot.append(1 << i)
         oneHot.append(0)
 
-        self.doSim((self.ONE_HOT_WIDTH + 3) * 10 * Time.ns)
+        self.runSim((self.ONE_HOT_WIDTH + 3) * 10 * Time.ns)
 
         self.assertValSequenceEqual(u.bin._ag.data, range(self.ONE_HOT_WIDTH))
 

@@ -16,7 +16,7 @@ class SpiMasterTC(SimTestCase):
         u.data._ag.data.append([0, 7, 1])
         u.spi._ag.txData.append(11)
 
-        self.doSim(1500 * Time.ns)
+        self.runSim(1500 * Time.ns)
         self.assertValSequenceEqual(u.data._ag.dinData, [11])
         self.assertValSequenceEqual(u.spi._ag.rxData, [7])
         self.assertValSequenceEqual(u.spi._ag.chipSelects, [0])
@@ -28,7 +28,7 @@ class SpiMasterTC(SimTestCase):
         u.data._ag.data.extend(([0, 7, 0], [0, 99, 1]))
         u.spi._ag.txData.extend([11, 48])
 
-        self.doSim(2000 * Time.ns)
+        self.runSim(2000 * Time.ns)
         self.assertValSequenceEqual(u.data._ag.dinData, [11, 48])
         self.assertValSequenceEqual(u.spi._ag.rxData, [7, 99])
         self.assertValSequenceEqual(u.spi._ag.chipSelects, [0, 0])
@@ -40,7 +40,7 @@ class SpiMasterTC(SimTestCase):
         u.data._ag.data.extend(([0, 7, 1], [0, 99, 1]))
         u.spi._ag.txData.extend([11, 48])
 
-        self.doSim(2000 * Time.ns)
+        self.runSim(2000 * Time.ns)
         self.assertValSequenceEqual(u.data._ag.dinData, [11, 48])
         self.assertValSequenceEqual(u.spi._ag.rxData, [7, 99])
         self.assertValSequenceEqual(u.spi._ag.chipSelects, [0, 0])

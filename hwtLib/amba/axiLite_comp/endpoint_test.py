@@ -73,7 +73,7 @@ class AxiLiteEndpointTC(SimTestCase):
         u = self.mySetUp(32)
 
         self.randomizeAll()
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.r.data)
         self.assertEmpty(u.decoded.field0._ag.dout)
@@ -89,7 +89,7 @@ class AxiLiteEndpointTC(SimTestCase):
         u.decoded.field1._ag.din.extend([MAGIC + 1])
 
         self.randomizeAll()
-        self.doSim(300 * Time.ns)
+        self.runSim(300 * Time.ns)
 
         self.assertValSequenceEqual(u.bus.r._ag.data,
                                     [(MAGIC, RESP_OKAY),
@@ -115,7 +115,7 @@ class AxiLiteEndpointTC(SimTestCase):
                                  (MAGIC + 4, m)])
 
         self.randomizeAll()
-        self.doSim(500 * Time.ns)
+        self.runSim(500 * Time.ns)
 
         self.assertValSequenceEqual(u.decoded.field0._ag.dout,
                                     [MAGIC,

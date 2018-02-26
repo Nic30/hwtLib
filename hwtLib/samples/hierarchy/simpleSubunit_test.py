@@ -36,7 +36,7 @@ class SimpleSubunitTC(SimTestCase):
         # and drivers of interfaces stored in "procs",
         # we save dum of value changes into file "tmp/simple.vcd"
         # (which is default) and we let simulation run for 100 ns
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         # now we use part of unittest framework to check results
         # use assertValSequenceEqual which sill automatically convert

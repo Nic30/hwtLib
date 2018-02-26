@@ -35,7 +35,7 @@ class BramPortEndpointTC(AxiLiteEndpointTC):
         u = self.mySetUp(32)
 
         self.randomizeAll()
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.readed)
         self.assertFalse(u.bus._ag.readPending)
@@ -56,7 +56,7 @@ class BramPortEndpointTC(AxiLiteEndpointTC):
         u.decoded.field1._ag.din.append(MAGIC + 1)
 
         self.randomizeAll()
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertValSequenceEqual(u.bus._ag.readed, [MAGIC,
                                                        MAGIC + 1,
@@ -75,7 +75,7 @@ class BramPortEndpointTC(AxiLiteEndpointTC):
             (WRITE, A[1], MAGIC + 3)])
 
         self.randomizeAll()
-        self.doSim(400 * Time.ns)
+        self.runSim(400 * Time.ns)
 
         self.assertValSequenceEqual(u.decoded.field0._ag.dout,
                                     [MAGIC,
@@ -120,7 +120,7 @@ class BramPortEndpointArray(AxiLiteEndpointArray):
             u.decoded.field1._ag.mem[i] = 2 * MAGIC + 1 + i
 
         self.randomizeAll()
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.readed)
         for i in range(8):
@@ -140,7 +140,7 @@ class BramPortEndpointArray(AxiLiteEndpointArray):
             regs.field1[i].read()
 
         self.randomizeAll()
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(u.bus._ag.readed,
                                     [MAGIC + 1,
@@ -165,7 +165,7 @@ class BramPortEndpointArray(AxiLiteEndpointArray):
             regs.field1[i].write(2 * MAGIC + i + 1)
 
         self.randomizeAll()
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEmpty(u.bus._ag.readed)
         for i in range(4):

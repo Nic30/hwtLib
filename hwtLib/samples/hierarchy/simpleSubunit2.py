@@ -37,7 +37,7 @@ class SimpleSubunit2TC(SimTestCase):
 
         data = [(5, 1, 0), (6, 1, 1)]
         u.a0._ag.data.extend(data)
-        self.doSim(50 * Time.ns)
+        self.runSim(50 * Time.ns)
         self.assertEmpty(u.a0._ag.data)
         self.assertValSequenceEqual(u.b0._ag.data, data)
 

@@ -33,7 +33,7 @@ class ConcatTC(SimTestCase):
 
         # addValues(u, [0, 1, 2, 4, 8, (1 << 4) - 1, None, 3, 2, 1])
         addValues(u, [2, 4, (1 << 4) - 1, None, 3, 2, 1])
-        self.doSim(70 * Time.ns)
+        self.runSim(70 * Time.ns)
         self.assertValSequenceEqual(u.a_out._ag.data,
                                     [2, 4, 15, None, 3, 2, 1])
 

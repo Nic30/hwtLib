@@ -49,13 +49,13 @@ class UartTxRxTC(SimTestCase):
             self.u.din._ag.data.append(ord(s))
 
     def test_nop(self):
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
         self.assertEqual(self.getStr(), "")
 
     def test_simple(self):
         t = "simple"
         self.sendStr(t)
-        self.doSim(10 * 10 * (len(t) * 16 + 10) * Time.ns)
+        self.runSim(10 * 10 * (len(t) * 16 + 10) * Time.ns)
         self.assertEqual(self.getStr(), t)
 
 

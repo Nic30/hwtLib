@@ -153,7 +153,7 @@ class PingResponderTC(SimTestCase):
 
         u.rx._ag.data.extend(packAxiSFrame(self.DATA_WIDTH, f, withStrb=True))
         u.myIp._ag.data.append(int.from_bytes(socket.inet_aton("192.168.0.2"), byteorder="little"))
-        self.doSim(500 * Time.ns)
+        self.runSim(500 * Time.ns)
 
         res = unpackAxiSFrame(echoFrame_t, u.tx._ag.data)
         model_res = pingResponder_model(f)

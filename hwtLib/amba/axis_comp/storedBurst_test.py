@@ -18,7 +18,7 @@ class AxiSStoredBurstTC(SimTestCase):
         self.prepareUnit(u)
         self.randomize(u.dataOut)
 
-        self.doSim(20 * (len(DATA) + 2) * Time.ns)
+        self.runSim(20 * (len(DATA) + 2) * Time.ns)
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(d, mask(8), d == DATA[-1]) for d in DATA])
 
@@ -29,7 +29,7 @@ class AxiSStoredBurstTC(SimTestCase):
         self.prepareUnit(u)
         self.randomize(u.dataOut)
 
-        self.doSim(20 * (len(DATA) * 2 + 2) * Time.ns)
+        self.runSim(20 * (len(DATA) * 2 + 2) * Time.ns)
         data = [(d, mask(8), d == DATA[-1]) for d in DATA]
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     data * 2)

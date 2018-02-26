@@ -26,7 +26,7 @@ class AxisFrameGenTC(SimTestCase):
         self.wReg(0x0, 1)
 
         # u.dataOut._ag.enable = False
-        self.doSim(120 * Time.ns)
+        self.runSim(120 * Time.ns)
         self.assertValSequenceEqual(u.axis_out._ag.data,
                                     [(0, mask(8), 1) for _ in range(6)])
 
@@ -37,7 +37,7 @@ class AxisFrameGenTC(SimTestCase):
         self.wReg(0x0, 1)
 
         # u.dataOut._ag.enable = False
-        self.doSim(120 * Time.ns)
+        self.runSim(120 * Time.ns)
         # self.assertValEqual(self.model.dataOut_data, 1)
         expected = [(L - (i % (L + 1)), mask(8), int((i % (L + 1)) >= L)) for i in range(6)]
         self.assertValSequenceEqual(u.axis_out._ag.data, expected)
@@ -49,7 +49,7 @@ class AxisFrameGenTC(SimTestCase):
         self.wReg(0x0, 1)
 
         # u.dataOut._ag.enable = False
-        self.doSim(120 * Time.ns)
+        self.runSim(120 * Time.ns)
         # self.assertValEqual(self.model.dataOut_data, 1)
         expected = [(L - (i % (L + 1)), mask(8), int((i % (L + 1)) >= L)) for i in range(6)]
         self.assertValSequenceEqual(u.axis_out._ag.data, expected)

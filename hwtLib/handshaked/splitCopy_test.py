@@ -27,7 +27,7 @@ class HsSplitCopyTC(SimTestCase):
         u = self.u
         u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
 
-        self.doSim(150 * Time.ns)
+        self.runSim(150 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut[0]._ag.data, [1, 2, 3, 4, 5, 6])
         self.assertValSequenceEqual(u.dataOut[1]._ag.data, [1, 2, 3, 4, 5, 6])

@@ -188,7 +188,7 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
         u = self.mySetUp(32)
 
         self.randomizeAll()
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.r.data)
         self.assertEmpty(u.bus._ag.b.data)
@@ -217,7 +217,7 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
         
 
         self.randomizeAll()
-        self.doSim(600 * Time.ns)
+        self.runSim(600 * Time.ns)
 
         self.assertValSequenceEqual(u.bus.r._ag.data,
                                     [(10, RESP_OKAY),
@@ -237,7 +237,7 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
             r.bram[i].write(MAGIC + 2 + i)
         
         self.randomizeAll()
-        self.doSim(800 * Time.ns)
+        self.runSim(800 * Time.ns)
 
         self.assertValSequenceEqual(u.regCntrlOut._ag.dout,
                                     [MAGIC, ])
@@ -272,7 +272,7 @@ class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
         u = self.mySetUp(32)
 
         self.randomizeAll()
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.r.data)
         self.assertEmpty(u.bus._ag.b.data)
@@ -296,7 +296,7 @@ class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
 
 
         self.randomizeAll()
-        self.doSim(600 * Time.ns)
+        self.runSim(600 * Time.ns)
 
         self.assertValSequenceEqual(u.bus.r._ag.data,
                                     [(MAGIC, RESP_OKAY),
@@ -313,7 +313,7 @@ class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
             r.regCntrl[i].write(MAGIC + i)
         
         self.randomizeAll()
-        self.doSim(800 * Time.ns)
+        self.runSim(800 * Time.ns)
 
         for i in range(3):
             intf = getattr(u, "regCntrlOut%d" % i)

@@ -6,8 +6,8 @@ from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import FifoWriter, FifoReader, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 
 
 # https://eewiki.net/pages/viewpage.action?pageId=20939499
@@ -29,7 +29,8 @@ class Fifo(Unit):
         self.EXPORT_SPACE = Param(False)
 
     def _declr(self):
-        assert int(self.DEPTH) > 0,  "Fifo is disabled in this case, do not use it entirely"
+        assert int(
+            self.DEPTH) > 0,  "Fifo is disabled in this case, do not use it entirely"
         addClkRstn(self)
         with self._paramsShared():
             self.dataIn = FifoWriter()
@@ -55,7 +56,8 @@ class Fifo(Unit):
         dout = self.dataOut
         din = self.dataIn
 
-        # we are storing signals to properties because someone else may use them
+        # we are storing signals to properties because someone else may use
+        # them
         self.__fifo_write = fifo_write = s("fifo_write")
         self.__fifo_read = fifo_read = s("fifo_read")
 
@@ -64,7 +66,7 @@ class Fifo(Unit):
             If(rd_ptr._eq(MAX_DEPTH),
                rd_ptr(0)
             ).Else(
-               rd_ptr(rd_ptr + 1)
+                rd_ptr(rd_ptr + 1)
             )
         )
 
@@ -72,10 +74,10 @@ class Fifo(Unit):
         If(fifo_write,
             If(wr_ptr._eq(MAX_DEPTH),
                 wr_ptr(0)
-            ).Else(
+               ).Else(
                 wr_ptr(wr_ptr + 1)
             )
-        )
+           )
 
         If(self.clk._onRisingEdge(),
             If(fifo_write,
@@ -116,7 +118,7 @@ class Fifo(Unit):
             )
         ).Else(
             din.wait(0),
-            dout.wait(0) 
+            dout.wait(0)
         )
         if self.EXPORT_SIZE:
             size = r("size_reg", self.size._dtype, 0)
@@ -142,6 +144,7 @@ class Fifo(Unit):
                 )
             )
             self.space(space)
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl

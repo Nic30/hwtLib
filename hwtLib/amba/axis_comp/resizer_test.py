@@ -38,7 +38,7 @@ class AxiS_resizer_upscale_TC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEmpty(u.dataOut._ag.data)
 
@@ -47,7 +47,7 @@ class AxiS_resizer_upscale_TC(SimTestCase):
 
         m = mask(2)
         u.dataIn._ag.data.extend([(1, m, i == 3) for i in range(4)])
-        self.doSim(300 * Time.ns)
+        self.runSim(300 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(it(16, 1, 1, 1, 1), it(2, m, m, m, m), 1)])
@@ -57,7 +57,7 @@ class AxiS_resizer_upscale_TC(SimTestCase):
 
         m = mask(2)
         u.dataIn._ag.data.extend([(1, m, 0) for _ in range(4)])
-        self.doSim(300 * Time.ns)
+        self.runSim(300 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(it(16, 1, 1, 1, 1), it(2, m, m, m, m), 0)])
@@ -75,7 +75,7 @@ class AxiS_resizer_upscale_TC(SimTestCase):
                              1
                              ))
 
-        self.doSim(700 * Time.ns)
+        self.runSim(700 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     expected)
@@ -84,7 +84,7 @@ class AxiS_resizer_upscale_TC(SimTestCase):
         u = self.u
         u.dataIn._ag.data.extend([(1, mask(2), 0) for _ in range(2)])
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEmpty(u.dataOut._ag.data)
 
@@ -105,7 +105,7 @@ class AxiS_resizer_downscale_TC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEmpty(u.dataOut._ag.data)
 
@@ -115,7 +115,7 @@ class AxiS_resizer_downscale_TC(SimTestCase):
         u.dataIn._ag.data.append((it(16, 1, 2, 3, 4),
                                   it(2, mask(2), mask(2), mask(2), mask(2)),
                                   0))
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(i + 1, mask(2), 0) for i in range(4)])
@@ -126,7 +126,7 @@ class AxiS_resizer_downscale_TC(SimTestCase):
         u.dataIn._ag.data.append((it(16, 1, 2, 3, 4),
                                   it(2, mask(2), mask(2), mask(2), mask(2)),
                                   1))
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(i + 1, mask(2), i == 3) for i in range(4)])
@@ -138,7 +138,7 @@ class AxiS_resizer_downscale_TC(SimTestCase):
                                   it(2, mask(2), 0, 0, 0),
                                   1)
                                 )
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(1, mask(2), 1),
@@ -176,7 +176,7 @@ class AxiS_resizer_downAndUp_TC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEmpty(u.dataOut._ag.data)
 
@@ -184,7 +184,7 @@ class AxiS_resizer_downAndUp_TC(SimTestCase):
         u = self.u
         data = [(311 * i, mask(self.DW // 8), i == 2) for i in range(3)]
         u.dataIn._ag.data.extend(data)
-        self.doSim(1300 * Time.ns)
+        self.runSim(1300 * Time.ns)
         self.assertValSequenceEqual(u.dataOut._ag.data, data)
 
 
@@ -203,7 +203,7 @@ class AxiS_resizer_upAndDown_TC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEmpty(u.dataOut._ag.data)
 
@@ -211,7 +211,7 @@ class AxiS_resizer_upAndDown_TC(SimTestCase):
         u = self.u
         data = [(311 * i, mask(self.DW // 8), int(i == 2)) for i in range(3)]
         u.dataIn._ag.data.extend(data)
-        self.doSim(1000 * Time.ns)
+        self.runSim(1000 * Time.ns)
         self.assertValSequenceEqual(u.dataOut._ag.data, data)
 
 

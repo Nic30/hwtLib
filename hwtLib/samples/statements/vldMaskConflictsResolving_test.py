@@ -17,7 +17,7 @@ class VldMaskConflictsResolvingTC(SimTestCase):
         u.a._ag.data.extend([0, 1, None, 0, 0, 0, 0, 0, 1, None, 0])
         u.b._ag.data.extend([0, 0, 0, 1, None, 0, 0, 0, 1, None, 0])
 
-        self.doSim(120 * Time.ns)
+        self.runSim(120 * Time.ns)
 
         self.assertValSequenceEqual(u.c._ag.data,
                                     [0, 0, 0, 1, None, 0, 0, 0, 1, None, 0, 0])

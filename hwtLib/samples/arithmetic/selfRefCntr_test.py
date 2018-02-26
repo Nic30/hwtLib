@@ -17,7 +17,7 @@ class SelfRefCntrTC(SimTestCase):
     def test_overflow(self):
         u = self.u
 
-        self.doSim(90 * Time.ns)
+        self.runSim(90 * Time.ns)
         self.assertSequenceEqual(u.dout._ag.data,
                                  [0, 1, 2, 3, 4, 0, 1, 2])
 

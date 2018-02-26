@@ -38,7 +38,7 @@ class FifoAgentsTC(SimTestCase):
 
         ref = [i for i in range(30)]
         u.din._ag.data.extend(ref)
-        self.doSim(120 * 10 * Time.ns)
+        self.runSim(120 * 10 * Time.ns)
 
         self.assertValSequenceEqual(u.dout._ag.data, ref)
 
@@ -51,7 +51,7 @@ class FifoAgentsTC(SimTestCase):
 
         ref = [i for i in range(30)]
         u.din._ag.data.extend(ref)
-        self.doSim(120 * 10 * Time.ns)
+        self.runSim(120 * 10 * Time.ns)
 
         self.assertValSequenceEqual(u.dout._ag.data, ref)
 
@@ -73,7 +73,7 @@ class FifoTC(SimTestCase):
         expected = [1]
         u.dataIn._ag.data.extend(expected)
 
-        self.doSim(90 * Time.ns)
+        self.runSim(90 * Time.ns)
 
         collected = u.dataOut._ag.data
 
@@ -86,7 +86,7 @@ class FifoTC(SimTestCase):
         u.dataIn._ag.data.extend(data)
         u.dataIn._ag._enabled = False
 
-        self.doSim(self.getTime(8))
+        self.runSim(self.getTime(8))
 
         self.assertValSequenceEqual(u.dataOut._ag.data, [])
         self.assertValSequenceEqual(u.dataIn._ag.data, data)
@@ -97,7 +97,7 @@ class FifoTC(SimTestCase):
         expected = list(range(4))
         u.dataIn._ag.data.extend(expected)
 
-        self.doSim(self.getTime(9))
+        self.runSim(self.getTime(9))
 
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
 
@@ -113,7 +113,7 @@ class FifoTC(SimTestCase):
         expected = list(range(2 * 8))
         u.dataIn._ag.data.extend(expected)
 
-        self.doSim(self.getTime(26))
+        self.runSim(self.getTime(26))
 
         collected = u.dataOut._ag.data
         if u.EXPORT_SIZE:
@@ -129,7 +129,7 @@ class FifoTC(SimTestCase):
         u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
         u.dataOut._ag._enabled = False
 
-        self.doSim(self.getTime(12))
+        self.runSim(self.getTime(12))
 
         collected = u.dataOut._ag.data
 
@@ -147,7 +147,7 @@ class FifoTC(SimTestCase):
             u.dataOut._ag.setEnable(False, sim)
 
         self.procs.append(closeOutput)
-        self.doSim(self.getTime(15))
+        self.runSim(self.getTime(15))
 
         collected = u.dataOut._ag.data
 
@@ -159,7 +159,7 @@ class FifoTC(SimTestCase):
         u = self.u
         u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
 
-        self.doSim(self.getTime(12))
+        self.runSim(self.getTime(12))
 
         collected = u.dataOut._ag.data
 

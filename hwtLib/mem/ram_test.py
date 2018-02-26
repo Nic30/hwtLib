@@ -21,7 +21,7 @@ class RamTC(SimTestCase):
                                  (READ, 0), (READ, 1),
                                  (READ, 0), (READ, 1), (READ, 2)])
 
-        self.doSim(110 * Time.ns)
+        self.runSim(110 * Time.ns)
         self.assertSequenceEqual(valuesToInts(self.model.ram_memory._val),
                                  [5, 7, None, None, None, None, None, None])
         self.assertSequenceEqual(valuesToInts(u.a._ag.readed),

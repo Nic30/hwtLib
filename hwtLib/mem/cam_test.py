@@ -23,7 +23,7 @@ class CamTC(SimTestCase):
 
         u.match._ag.data.extend([NOP, NOP, NOP, 1, 2, 3, 5, 11, 12])
 
-        self.doSim(160 * Time.ns)
+        self.runSim(160 * Time.ns)
         self.assertSequenceEqual(valuesToInts(u.out._ag.data),
                                  [1, 0, 2, 0, 128, 0])
 

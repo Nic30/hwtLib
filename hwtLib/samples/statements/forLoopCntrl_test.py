@@ -21,7 +21,7 @@ class StaticForLoopCntrlTC(SimTestCase):
         u.bodyBreak._ag.data.append(0)
         u.cntrl._ag.data.extend([1 for _ in range(10)])
 
-        self.doSim(110 * Time.ns)
+        self.runSim(110 * Time.ns)
 
         self.assertValSequenceEqual(u.index._ag.data,
                                     (2 * [4, 3, 2, 1, 0]))

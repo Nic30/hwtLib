@@ -43,7 +43,7 @@ class WidthCastingExampleTC(SimTestCase):
         u.b._ag.data.append(b)
         u.c._ag.data.append(c)
         
-        self.doSim(20 * Time.ns)
+        self.runSim(20 * Time.ns)
         d = (a + b + c) & mask(8)
         self.assertValSequenceEqual(u.d._ag.data, [d, ])
         

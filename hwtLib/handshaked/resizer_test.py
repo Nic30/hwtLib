@@ -21,7 +21,7 @@ class HsResizerTC(SimTestCase):
 
         u.dataIn._ag.data.extend(d)
 
-        self.doSim(N * 40 * Time.ns)
+        self.runSim(N * 40 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, d)
 
@@ -38,7 +38,7 @@ class HsResizerTC(SimTestCase):
 
         u.dataIn._ag.data.extend(d)
 
-        self.doSim(N * 40 * Time.ns)
+        self.runSim(N * 40 * Time.ns)
 
         expected = []
         for a, b, c in grouper(3, d):
@@ -60,7 +60,7 @@ class HsResizerTC(SimTestCase):
 
         u.dataIn._ag.data.extend(d)
 
-        self.doSim(3 * N * 40 * Time.ns)
+        self.runSim(3 * N * 40 * Time.ns)
 
         expected = []
         m = mask(32)

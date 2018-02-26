@@ -28,7 +28,7 @@ class ArrayItemGetterTC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEqual(len(u.rDatapump.req._ag.data), 0)
         self.assertEqual(len(u.item._ag.data), 0)
@@ -46,7 +46,7 @@ class ArrayItemGetterTC(SimTestCase):
         m = DenseMemory(self.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
         m.data[BASE // 8 + INDEX] = MAGIC
 
-        self.doSim(t * 10 * Time.ns)
+        self.runSim(t * 10 * Time.ns)
 
         self.assertValSequenceEqual(u.item._ag.data, [MAGIC, ])
 
@@ -70,7 +70,7 @@ class ArrayItemGetter2in1WordTC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEqual(len(u.rDatapump.req._ag.data), 0)
         self.assertEqual(len(u.item._ag.data), 0)
@@ -91,7 +91,7 @@ class ArrayItemGetter2in1WordTC(SimTestCase):
         u.base._ag.data.append(base)
         u.index._ag.data.extend([i for i in range(N)])
 
-        self.doSim(t * 10 * Time.ns)
+        self.runSim(t * 10 * Time.ns)
 
         self.assertValSequenceEqual(u.item._ag.data,
                                     [
