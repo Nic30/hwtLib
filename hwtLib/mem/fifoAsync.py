@@ -53,12 +53,12 @@ class FifoAsync(Fifo):
         Out = self.dataOut
         OutClk = self.dataOut_clk._onRisingEdge()
 
-        self.pWr.en(1)
+        self.pWr.en(In.en & ~full)
         self.pWr.clk(self.dataIn_clk)
         self.pWr.rst_n(self.rst_n)
         pNextWordToWrite = self.pWr.dataOut
 
-        self.pRd.en(1)
+        self.pRd.en(Out.en & ~empty)
         self.pRd.clk(self.dataOut_clk)
         self.pRd.rst_n(self.rst_n)
         pNextWordToRead = self.pRd.dataOut
@@ -94,8 +94,7 @@ class FifoAsync(Fifo):
 
         # data in logic
 
-        presetFull = self._sig("presetFull")
-        presetFull(status & equalAddresses)
+        presetFull = status & equalAddresses
 
         # D Flip-Flop with Asynchronous Preset.
         If(presetFull,
