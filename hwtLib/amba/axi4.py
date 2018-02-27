@@ -86,7 +86,7 @@ class Axi4_r(AxiLite_r, Axi_id):
 class Axi4_rAgent(BaseAxiAgent):
     """
     Simulation agent for :class:`.Axi4_r` interface
-    
+
     input/output data stored in list under "data" property
     data contains tuples (id, data, resp, last)
     """
@@ -120,6 +120,7 @@ class Axi4_rAgent(BaseAxiAgent):
 class Axi4_w(AxiStream_withId):
     pass
 
+
 #####################################################################
 class Axi4_b(AxiLite_b, Axi_id):
     def _config(self):
@@ -137,7 +138,7 @@ class Axi4_b(AxiLite_b, Axi_id):
 class Axi4_bAgent(BaseAxiAgent):
     """
     Simulation agent for :class:`.Axi4_b` interface
-    
+
     input/output data stored in list under "data" property
     data contains tuples (id, resp)
     """
@@ -164,7 +165,7 @@ class Axi4_bAgent(BaseAxiAgent):
 class Axi4(AxiLite):
     """
     Basic AMBA AXI4 interface
-    
+
     :ivar ar: read address channel
     :ivar r:  read data channel
     :ivar aw: write address channel
