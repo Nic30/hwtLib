@@ -9,14 +9,18 @@ class Axi3DenseMem(DenseMemory):
     """
     Simulation memory for Axi3/4 interfaces (slave component)
     """
-    def __init__(self, clk, axi=None, axiAR=None, axiR=None, axiAW=None, axiW=None, axiB=None, parent=None):
+    def __init__(self, clk, axi=None, axiAR=None, axiR=None, axiAW=None,
+                 axiW=None, axiB=None, parent=None):
         """
         :param clk: clk which should this memory use in simulation
         :param axi: axi (Axi3/4 master) interface to listen on
-        :param axiAR, axiR, axiAW, axiW, axiB: splited interface use this if you do not have full axi interface
+        :param axiAR, axiR, axiAW, axiW, axiB: splited interface use this
+            if you do not have full axi interface
         :attention: use axi or axi parts not bouth
-        :param parent: parent instance of this memory, memory will operate with same memory as parent one
-        :attention: memories are commiting into memory in "data" property after transaction is complete
+        :param parent: parent instance of this memory, memory will operate
+            with same memory as parent one
+        :attention: memories are commiting into memory in "data" property
+            after transaction is complete
         """
         self.parent = parent
         if parent is None:
@@ -81,7 +85,8 @@ class Axi3DenseMem(DenseMemory):
 
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
-            raise NotImplementedError("unaligned transaction not implemented (0x%x)" % addr)
+            raise NotImplementedError(
+                "unaligned transaction not implemented (0x%x)" % addr)
 
         for i in range(size):
             isLast = i == size - 1
@@ -91,8 +96,9 @@ class Axi3DenseMem(DenseMemory):
                 data = None
 
             if data is None:
-                raise AssertionError("Invalid read of uninitialized value on addr 0x%x" % 
-                                     (addr + i * self.cellSize))
+                raise AssertionError(
+                    "Invalid read of uninitialized value on addr 0x%x"
+                    % (addr + i * self.cellSize))
 
             self.rAg.data.append((_id, data, RESP_OKAY, isLast))
 
@@ -119,8 +125,9 @@ class Axi3DenseMem(DenseMemory):
             assert last == isLast, (addr, size, i)
 
             if data is None:
-                raise AssertionError("Invalid read of uninitialized value on addr 0x%x" % 
-                                     (addr + i * self.cellSize))
+                raise AssertionError(
+                    "Invalid read of uninitialized value on addr 0x%x"
+                    % (addr + i * self.cellSize))
 
             if isLast:
                 expectedStrb = lastWordBitmask
@@ -137,4 +144,3 @@ class Axi3DenseMem(DenseMemory):
 
     def doWriteAck(self, _id):
         self.wAckAg.data.append((_id, RESP_OKAY))
-    
