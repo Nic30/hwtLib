@@ -68,7 +68,8 @@ class AddressSpaceProbe(object):
 
     def walkToConverter(self, mainSig):
         """
-        walk mainSig down to endpoints and search for any bus converter instance
+        walk mainSig down to endpoints and search for any bus converter
+        instance
         """
         if mainSig in self.seen:
             return
@@ -106,12 +107,3 @@ class AddressSpaceProbe(object):
             t = self._extractStruct(converter, offset)
 
         return t
-
-
-def regSpace_formatAsCDefines(bus, getMainSigFn, offset=0, prefix=""):
-    addrSpace = AddressSpaceProbe(bus, getMainSigFn, offset=offset).discover()
-    buff = []
-    for addr, asi in sorted(addrSpace.items(), key=lambda x: x[0]):
-        buff.append("#define %s 0x%x" % (prefix + asi.name.upper(), addr))
-
-    return "\n".join(buff)
