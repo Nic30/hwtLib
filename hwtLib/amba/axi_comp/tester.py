@@ -36,7 +36,7 @@ class AxiTester(Unit):
         with self._paramsShared():
             self.axi = self._axiCls()
 
-        c = self.cntr = AxiLite()
+        c = self.cntrl = AxiLite()
         c._replaceParam("DATA_WIDTH", self.CNTRL_DATA_WIDTH)
         c._replaceParam("ADDR_WIDTH", self.CNTRL_ADDR_WIDTH)
 
@@ -93,7 +93,7 @@ class AxiTester(Unit):
     def _impl(self):
         propagateClkRstn(self)
 
-        self.axi_ep.bus(self.cntr)
+        self.axi_ep.bus(self.cntrl)
 
         ep = self.axi_ep.decoded
         id_reg_val = int.from_bytes("test".encode(), byteorder="little")
