@@ -4,8 +4,6 @@
 from hwt.bitmask import mask
 from hwt.hdl.constants import Time
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import BramPort_withoutClk
-from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 from hwtLib.types.ctypes import uint32_t
@@ -27,15 +25,6 @@ structStructsInArray = HStruct(
                                 )[4],
                          "arr"),
                         )
-
-
-def addrGetter(intf):
-    if isinstance(intf, AxiLite):
-        return intf.ar.addr
-    elif isinstance(intf, BramPort_withoutClk):
-        return intf.addr
-    else:
-        raise TypeError(intf)
 
 
 class AxiLiteEndpointArray(AxiLiteEndpointTC):
@@ -193,6 +182,7 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
             self.assertValSequenceEqual(a.field1._ag.dout, [expected[1][i][0]])
 
         self.assertValSequenceEqual(u.bus.b._ag.data, [RESP_OKAY for _ in range(2 * N)] + [RESP_SLVERR])
+
 
 if __name__ == "__main__":
     import unittest
