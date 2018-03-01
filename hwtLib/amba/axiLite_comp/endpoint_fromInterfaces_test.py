@@ -11,10 +11,10 @@ from hwt.synthesizer.param import Param
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
-from hwtLib.amba.axiLite_comp.endpoint_arr_test import addrGetter
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
 from hwt.hdl.types.bits import Bits
+from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
 
 
 class Loop(Unit):
@@ -61,7 +61,7 @@ class TestUnittWithChilds(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.bus = AxiLite()
-            
+
             self.signalLoop = SigLoop()
             self.signalIn = VectSignal(self.DATA_WIDTH)
 
@@ -70,7 +70,6 @@ class TestUnittWithChilds(Unit):
 
             self.vldSyncedLoop = Loop(VldSynced)
             self.vldSyncedOut = VldSynced()
-
 
         with self._paramsShared(exclude={self.ADDR_WIDTH}):
             self.bramLoop = Loop(BramPort_withoutClk)
@@ -81,10 +80,10 @@ class TestUnittWithChilds(Unit):
 
     def _impl(self):
         self.signalLoop.din(self.signalIn)
-        self.regCntrlOut(self.regCntrlLoop.dout) 
-        self.vldSyncedOut(self.vldSyncedLoop.dout) 
+        self.regCntrlOut(self.regCntrlLoop.dout)
+        self.vldSyncedOut(self.vldSyncedLoop.dout)
         self.bramOut(self.bramLoop.dout)
-        
+
         def configEp(ep):
             ep._updateParamsFrom(self)
         rltSig10 = self._sig("sig", Bits(self.DATA_WIDTH), defVal=10)
@@ -104,7 +103,6 @@ class TestUnittWithChilds(Unit):
         axiLiteConv.connectByInterfaceMap(interfaceMap)
         axiLiteConv.bus(self.bus)
         axiLiteConv.decoded.vldSynced.din(None)
-        
 
         propagateClkRstn(self)
 
@@ -121,7 +119,7 @@ class TestUnittWithArr(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.bus = AxiLite()
-            
+
             self.regCntrlLoop0 = Loop(RegCntrl)
             self.regCntrlOut0 = RegCntrl()
 
@@ -131,13 +129,11 @@ class TestUnittWithArr(Unit):
             self.regCntrlLoop2 = Loop(RegCntrl)
             self.regCntrlOut2 = RegCntrl()
 
-
-
     def _impl(self):
-        self.regCntrlOut0(self.regCntrlLoop0.dout) 
-        self.regCntrlOut1(self.regCntrlLoop1.dout) 
-        self.regCntrlOut2(self.regCntrlLoop2.dout) 
-        
+        self.regCntrlOut0(self.regCntrlLoop0.dout)
+        self.regCntrlOut1(self.regCntrlLoop1.dout)
+        self.regCntrlOut2(self.regCntrlLoop2.dout)
+
         def configEp(ep):
             ep._updateParamsFrom(self)
         interfaceMap = (
@@ -153,9 +149,9 @@ class TestUnittWithArr(Unit):
 
         axiLiteConv.connectByInterfaceMap(interfaceMap)
         axiLiteConv.bus(self.bus)
-        
 
         propagateClkRstn(self)
+
 
 class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
 
@@ -166,7 +162,8 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
     def randomizeAll(self):
         u = self.u
         for intf in u._interfaces:
-            if u not in (u.clk, u.rst_n, u.bus) and not isinstance(intf, (BramPort_withoutClk, VldSynced, Signal)):
+            if u not in (u.clk, u.rst_n, u.bus) and not isinstance(intf,
+                    (BramPort_withoutClk, VldSynced, Signal)):
                 self.randomize(intf)
 
         self.randomize(u.bus.ar)
@@ -208,13 +205,11 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
 
         u.regCntrlOut._ag.din.extend([MAGIC + 1])
         r.regCntrl.read()
-        
         r.vldSynced.read()
-        
+
         for i in range(4):
             u.bramOut._ag.mem[i] = MAGIC + 2 + i
             r.bram[i].read()
-        
 
         self.randomizeAll()
         self.runSim(600 * Time.ns)
@@ -223,7 +218,7 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
                                     [(10, RESP_OKAY),
                                      (MAGIC, RESP_OKAY),
                                      (MAGIC + 1, RESP_OKAY),
-                                     (None, RESP_OKAY), ] + 
+                                     (None, RESP_OKAY), ] +
                                     [(MAGIC + 2 + i, RESP_OKAY) for i in range(4)])
 
     def test_write(self):
@@ -235,7 +230,7 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
         r.vldSynced.write(MAGIC + 1)
         for i in range(4):
             r.bram[i].write(MAGIC + 2 + i)
-        
+
         self.randomizeAll()
         self.runSim(800 * Time.ns)
 
@@ -258,6 +253,7 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
 }"""
         self.assertEqual(s, expected)
 
+
 class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
     def mySetUp(self, data_width=32):
         u = self.u = TestUnittWithArr()
@@ -279,7 +275,7 @@ class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
         self.assertEmpty(u.regCntrlOut0._ag.dout)
         self.assertEmpty(u.regCntrlOut1._ag.dout)
         self.assertEmpty(u.regCntrlOut2._ag.dout)
-    
+
     def test_read(self):
         u = self.mySetUp(32)
         MAGIC = 100
@@ -294,7 +290,6 @@ class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
         u.regCntrlOut2._ag.din.extend([MAGIC + 2])
         r.regCntrl[2].read()
 
-
         self.randomizeAll()
         self.runSim(600 * Time.ns)
 
@@ -308,10 +303,10 @@ class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
         u = self.mySetUp(32)
         MAGIC = 100
         r = self.regs
-        
+
         for i in range(3):
             r.regCntrl[i].write(MAGIC + i)
-        
+
         self.randomizeAll()
         self.runSim(800 * Time.ns)
 
@@ -328,10 +323,12 @@ class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
     <Bits, DATA_WIDTH, 32bits>[3] regCntrl // start:0x0(bit) 0x0(byte)
 }"""
         self.assertEqual(s, expected)
+
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    
+
     # suite.addTest(AxiLiteEndpoint_fromInterfaceTC('test_read'))
     suite.addTest(unittest.makeSuite(AxiLiteEndpoint_fromInterfaceTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpoint_fromInterface_arr_TC))
