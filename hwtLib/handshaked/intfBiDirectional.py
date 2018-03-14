@@ -20,7 +20,7 @@ class HandshakedBiDirectionalAgent(HandshakedAgent):
         d = self.dinData.popleft()
         simulator.write(d, self.intf.din)
 
-    def onDriverWirteAck(self, simulator):
+    def onDriverWriteAck(self, simulator):
         "read din"
         d = simulator.read(self.intf.din)
         self.dinData.append(d)

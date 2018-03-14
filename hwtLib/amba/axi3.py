@@ -30,7 +30,7 @@ class Axi3_addr_withUser(Axi3_addr):
 class Axi3_addr_withUserAgent(BaseAxiAgent):
     """
     Simulation agent for :class:`.Axi3_addr_withUser` interface
-    
+
     input/output data stored in list under "data" property
     data contains tuples (id, addr, burst, cache, len, lock, prot, size, qos, user)
     """

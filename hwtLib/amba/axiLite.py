@@ -187,7 +187,6 @@ class AxiLiteAgent(AgentBase):
     def setEnable(self, en, sim):
         if self.__enable != en:
             self.__enable = en
-    
             for o in [self.ar, self.aw, self.r, self.w, self.b]:
                 o.setEnable(en, sim)
 

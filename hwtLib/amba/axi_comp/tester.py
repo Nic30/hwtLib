@@ -1,24 +1,28 @@
-from hwt.synthesizer.unit import Unit
+from hwt.code import FsmBuilder, If, connect
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.defs import BIT
+from hwt.hdl.types.enum import HEnum
+from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axiLite import AxiLite
-from hwtLib.mem.ram import Ram_dp
-from hwt.code import log2ceil, FsmBuilder, If, connect
-from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
-from hwt.hdl.types.struct import HStruct
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import toRtl
 from hwtLib.amba.axi3 import Axi3
-from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.defs import BIT, BOOL
-from hwt.hdl.types.enum import HEnum
+from hwtLib.amba.axiLite import AxiLite
+from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 
 
-SEND_AW, SEND_W, RECV_B, SEND_AR, RECV_R = range(5)
+SEND_AW, SEND_W, RECV_B, SEND_AR, RECV_R = range(1, 6)
 
 
 class AxiTester(Unit):
     """
+    Tester for AXI3/4 interfaces
 
+    Can precisely control order and timing
+    of read address/write address/read/write/write response transactions
+    Allows to read and specify values of controls signals like cache/lock/burst
+    etc...
     """
 
     def __init__(self, axiCls):
@@ -47,43 +51,50 @@ class AxiTester(Unit):
 
     def _add_ep(self):
         strb_w = self.DATA_WIDTH // 8
+        # [TODO] hotfix, should be self.DATA_WIDTH
+        data_field_w = self.CNTRL_DATA_WIDTH
+
         mem_space = HStruct(
             (Bits(32), "id_reg"),
             (Bits(32), "cmd_and_status"),
             (Bits(self.ADDR_WIDTH), "addr"),
             # a or w id
-            (Bits(self.ID_WIDTH), "a_w_id"),
-            (Bits(32-int(self.ID_WIDTH)), None),
-
-            (Bits(self.ID_WIDTH), "b_id"),
-            (Bits(32-int(self.ID_WIDTH)), None),
+            (Bits(self.ID_WIDTH), "ar_aw_w_id"),
+            (Bits(32 - int(self.ID_WIDTH)), None),
 
             (Bits(2), "burst"),
-            (Bits(32-2), None),
+            (Bits(32 - 2), None),
             (Bits(4), "cache"),
-            (Bits(32-4), None),
+            (Bits(32 - 4), None),
             (Bits(self.LEN_WIDTH), "len"),
-            (Bits(32-int(self.LEN_WIDTH)), None),
+            (Bits(32 - int(self.LEN_WIDTH)), None),
             (Bits(self.LOCK_WIDTH), "lock"),
-            (Bits(32-int(self.LOCK_WIDTH)), None),
+            (Bits(32 - int(self.LOCK_WIDTH)), None),
             (Bits(3), "prot"),
-            (Bits(32-3), None),
+            (Bits(32 - 3), None),
             (Bits(3), "size"),
-            (Bits(32-3), None),
+            (Bits(32 - 3), None),
             (Bits(4), "qos"),
-            (Bits(32-4), None),
-            (Bits(self.DATA_WIDTH), "r_data"),
-            (Bits(self.DATA_WIDTH), "w_data"),
+            (Bits(32 - 4), None),
+
+            (Bits(self.ID_WIDTH), "r_id"),
+            (Bits(32 - int(self.ID_WIDTH)), None),
+            (Bits(data_field_w), "r_data"),
             (Bits(2), "r_resp"),
-            (Bits(32-2), None),
-            (Bits(2), "b_resp"),
-            (Bits(32-2), None),
+            (Bits(32 - 2), None),
             (BIT, "r_last"),
-            (Bits(32-1), None),
+            (Bits(32 - 1), None),
+
+            (Bits(self.ID_WIDTH), "b_id"),
+            (Bits(32 - int(self.ID_WIDTH)), None),
+            (Bits(2), "b_resp"),
+            (Bits(32 - 2), None),
+
+            (Bits(data_field_w), "w_data"),
             (BIT, "w_last"),
-            (Bits(32-1), None),
+            (Bits(32 - 1), None),
             (Bits(strb_w), "w_strb"),
-            (Bits(32-int(strb_w)), None),
+            (Bits(32 - int(strb_w)), None),
         )
 
         ep = self.axi_ep = AxiLiteEndpoint(mem_space)
@@ -99,15 +110,40 @@ class AxiTester(Unit):
         id_reg_val = int.from_bytes("test".encode(), byteorder="little")
         ep.id_reg.din(id_reg_val)
 
-        def cmd_en(cmd_code):
-            cmd = ep.cmd_and_status.dout
-            return cmd.vld & (cmd.data._eq(cmd_code))
+        def connected_reg(name, input_=None, inputEn=None, fit=False):
+            port = getattr(ep, name)
+            reg = self._reg(name, port.din._dtype)
+            e = If(port.dout.vld,
+                   connect(port.dout.data, reg, fit=fit)
+                )
+            if input_ is not None:
+                e.Elif(inputEn,
+                    connect(input_, reg, fit=fit)
+                )
+            port.din(reg)
+            return reg
 
-        state_t = HEnum("state_t", ["ready", "wait_ar", "wait_aw",
-                                    "wait_w", "wait_b", "wait_r"])
+        cmdIn = ep.cmd_and_status.dout
+        cmd = self._reg("reg_cmd", cmdIn.data._dtype, defVal=0)
+        cmdVld = self._reg("reg_cmd_vld", defVal=0)
+        If(cmdIn.vld,
+           connect(cmdIn.data, cmd, fit=True)
+        )
+        partDone = self._sig("partDone")
+        If(partDone,
+           cmdVld(0)
+        ).Elif(cmdIn.vld,
+           cmdVld(1)
+        )
+
+        def cmd_en(cmd_code):
+            return cmdVld & cmd._eq(cmd_code)
+
+        state_t = HEnum("state_t",
+                        ["ready", "wait_ar", "wait_aw",
+                         "wait_w", "wait_b", "wait_r"])
 
         axi = self.axi
-        #SEND_AW, SEND_W, RECV_B, SEND_AR, RECV_R 
         st = FsmBuilder(self, state_t)\
             .Trans(state_t.ready,
                    (cmd_en(SEND_AW) & ~axi.aw.ready, state_t.wait_aw),
@@ -116,36 +152,28 @@ class AxiTester(Unit):
                    (cmd_en(RECV_R) & ~axi.r.valid, state_t.wait_r),
                    (cmd_en(RECV_B) & ~axi.b.valid, state_t.wait_b),
             ).Trans(state_t.wait_aw,
-                    (axi.aw.ready, state_t.ready)
+                (axi.aw.ready, state_t.ready)
             ).Trans(state_t.wait_ar,
-                    (axi.ar.ready, state_t.ready)
+                (axi.ar.ready, state_t.ready)
             ).Trans(state_t.wait_w,
-                    (axi.w.ready, state_t.ready)
+                (axi.w.ready, state_t.ready)
             ).Trans(state_t.wait_r,
-                    (axi.r.valid, state_t.ready)
+                (axi.r.valid, state_t.ready)
             ).Trans(state_t.wait_b,
-                    (axi.b.valid, state_t.ready)
+                (axi.b.valid, state_t.ready)
             ).stateReg
 
-        connect(st._eq(state_t.ready)._reinterpret_cast(BIT),
-                ep.cmd_and_status.din, fit=True)
+        partDone((st._eq(state_t.wait_aw) & axi.aw.ready) |
+                 (st._eq(state_t.wait_ar) & axi.ar.ready) |
+                 (st._eq(state_t.wait_w) & axi.w.ready) |
+                 (st._eq(state_t.wait_r) & axi.r.valid) |
+                 (st._eq(state_t.wait_b) & axi.b.valid))
 
         ready = st._eq(state_t.ready)
+        connect((st._eq(state_t.ready) & ~ep.cmd_and_status.dout.vld)._reinterpret_cast(BIT),
+                ep.cmd_and_status.din, fit=True)
 
-        def connected_reg(name, input_=None, inputEn=None):
-            port = getattr(ep, name)
-            reg = self._reg(name, port.din._dtype)
-            e = If(port.dout.vld,
-                   reg(port.dout.data)
-                )
-            if input_ is not None:
-                e.Elif(inputEn,
-                    reg(input_)
-                )
-            port.din(reg)
-            return reg
-
-        a_w_id = connected_reg("a_w_id")
+        a_w_id = connected_reg("ar_aw_w_id")
         addr = connected_reg("addr")
         burst = connected_reg("burst")
         cache = connected_reg("cache")
@@ -174,17 +202,19 @@ class AxiTester(Unit):
 
         r = axi.r
         r_rd = (ready & cmd_en(RECV_R)) | st._eq(state_t.wait_r)
-        connected_reg("r_data", r.data, r.valid & r_rd)
-        connected_reg("r_resp", r.resp, r.valid & r_rd)
+        r_en = r.valid & r_rd
+        connected_reg("r_id", r.id, r_en)
+        connected_reg("r_data", r.data, r_en, fit=True)
+        connected_reg("r_resp", r.resp, r_en)
         connected_reg("r_last")
         r.ready(r_rd)
 
         w = axi.w
-        w_data = connected_reg("w_data")
+        w_data = connected_reg("w_data", fit=True)
         w_last = connected_reg("w_last")
         w_strb = connected_reg("w_strb")
         w.id(a_w_id)
-        w.data(w_data)
+        connect(w_data, w.data, fit=True)
         w.strb(w_strb)
         w.last(w_last)
         w_vld = (ready & cmd_en(SEND_W)) | st._eq(state_t.wait_w)
@@ -199,5 +229,6 @@ class AxiTester(Unit):
 
 if __name__ == "__main__":
     u = AxiTester(Axi3)
-    u.DATA_WIDTH.set(32)
+    #u.DATA_WIDTH.set(32)
+    # , serializer=SimModelSerializer
     print(toRtl(u))

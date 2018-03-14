@@ -5,7 +5,6 @@ import unittest
 
 from hwt.code import If
 from hwt.hdl.assignment import Assignment
-from hwt.hdl.operatorDefs import AllOps
 from hwt.hdl.typeShortcuts import hBit
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
@@ -31,7 +30,6 @@ class TestCaseSynthesis(unittest.TestCase):
         _if = a.drivers[0]
         self.assertIsInstance(_if, If)
 
-        self.assertEqual(len(_if.cond), 1)
         self.assertEqual(len(_if.ifTrue), 1)
         self.assertEqual(_if.ifFalse, None)
         self.assertEqual(len(_if.elIfs), 0)
@@ -40,9 +38,7 @@ class TestCaseSynthesis(unittest.TestCase):
         self.assertEqual(assig.src, a.next)
         self.assertEqual(assig.dst, a)
 
-        onRisE = _if.cond.pop()
-        self.assertEqual(onRisE.origin.operator, AllOps.RISING_EDGE)
-        self.assertEqual(onRisE.origin.operands[0], clk)
+        self.assertIs(_if.cond, clk._onRisingEdge())
 
     def test_syncSigWithReset(self):
         c = self.n
@@ -55,16 +51,14 @@ class TestCaseSynthesis(unittest.TestCase):
         _if = a.drivers[0]
         self.assertIsInstance(_if, If)
 
-        self.assertEqual(len(_if.cond), 1)
+        self.assertIs(_if.cond, clk._onRisingEdge())
         self.assertEqual(len(_if.ifTrue), 1)
         self.assertEqual(_if.ifFalse, None)
         self.assertEqual(len(_if.elIfs), 0)
 
         if_reset = _if.ifTrue[0]
 
-        self.assertEqual(len(if_reset.cond), 1)
-        rst_eq1 = rst._eq(1)
-        self.assertIs(if_reset.cond[0], rst_eq1)
+        self.assertIs(if_reset.cond, rst._isOn())
         self.assertEqual(len(if_reset.ifTrue), 1)
         self.assertEqual(len(if_reset.ifFalse), 1)
         self.assertEqual(len(if_reset.elIfs), 0)

@@ -1,17 +1,63 @@
 from hwtLib.sim.abstractMemSpaceMaster import AbstractMemSpaceMaster
+from hwt.interfaces.agents.handshaked import HandshakedReadListener
+
+
+class TupleWithCallback(tuple):
+    def __new__(cls, *args):
+        return tuple.__new__(cls, args)
 
 
 class AxiLiteMemSpaceMaster(AbstractMemSpaceMaster):
+    """
+    Controller of AxiLite simulation agent which keeps track of axi lite transactions
+    and aggregates them to proper register names on target bus
+    """
+
+    def __init__(self, bus, registerMap):
+        super(AxiLiteMemSpaceMaster, self).__init__(bus, registerMap)
+        self._r_planed_words_cnt = 0
+        self._w_planed_words_cnt = 0
+        self._read_listener = None
+
     def _writeAddr(self, addrChannel, addr, size):
+        """
+        add address transaction to addr channel of agent
+        """
         addrChannel.data.append(addr)
 
-    def _writeData(self, data, mask):
-        w = self._bus._ag.w.data
-        w.append((data, mask))
+    def _writeData(self, data, mask, onDone=None):
+        """
+        add data write transaction to agent
 
-    def _write(self, addr, size, data, mask):
+        :param onDone: callback function(sim) -> None
+        """
+        if onDone:
+            d = TupleWithCallback(data, mask)
+            d.onDone = onDone
+        else:
+            d = (data, mask)
+
+        self._bus._ag.w.data.append(d)
+
+    def _write(self, addr, size, data, mask, onDone=None):
+        """
+        add write address and write data to agent
+
+        :param onDone: callback function(sim) -> None
+        """
         self._writeAddr(self._bus._ag.aw, addr, size)
-        self._writeData(data, mask)
+        self._w_planed_words_cnt += 1
+        self._writeData(data, mask, onDone=onDone)
 
-    def _read(self, addr, size):
+    def _read(self, addr, size, onDone=None):
+        """
+        add read address transaction to agent
+        """
         self._writeAddr(self._bus._ag.ar, addr, size)
+        self._r_planed_words_cnt += 1
+
+        if onDone:
+            if self._read_listener is None:
+                self._read_listener = HandshakedReadListener(self._bus.r._ag)
+
+            self._read_listener.register(self._r_planed_words_cnt, onDone)
