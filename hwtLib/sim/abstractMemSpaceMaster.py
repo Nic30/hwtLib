@@ -8,6 +8,7 @@ class PartialField(object):
     """
     HStruct field made from proxy interface
     """
+
     def __init__(self, originalField):
         self._originalField = originalField
         self.name = originalField.name
@@ -17,6 +18,7 @@ class MemorySpaceItem(object):
     """
     Abstraction over place in memory, allows you read and write data to/from this space
     """
+
     def __init__(self, memHandler, transTmpl, offset=0):
         self.memHandler = memHandler
         t = self.transTmpl = transTmpl
@@ -24,22 +26,29 @@ class MemorySpaceItem(object):
         self.myAddr = self.myBitAddr // memHandler._ADDR_STEP
 
         self.mask = memHandler._mask(t.bitAddr,
-                                     (t.bitAddrEnd - t.bitAddr) // self.memHandler._ADDR_STEP // 8)
+                                     (t.bitAddrEnd - t.bitAddr) // (
+                                         self.memHandler._ADDR_STEP * 8))
+        self.w_resp = []
+        self.r_resp = []
 
-    def write(self, data):
+    def _add_write_resp(self, resp):
+        self.w_resp.append(resp)
+
+    def _add_read_resp(self, resp):
+        self.r_resp.append(resp)
+
+    def write(self, data, onDone=None):
         """
         write data to place in memory
         """
-        m = self.memHandler
         # t = self.transTmpl
-        m._write(self.myAddr, 1, data, self.mask)
+        self.memHandler._write(self.myAddr, 1, data, self.mask, onDone=onDone)
 
-    def read(self):
+    def read(self, onDone=None):
         """
         read data from place in memory
         """
-        m = self.memHandler
-        m._read(self.myAddr, 1)
+        self.memHandler._read(self.myAddr, 1, onDone=onDone)
 
 
 class MemorySpaceItemStruct(object):
@@ -49,7 +58,8 @@ class MemorySpaceItemStruct(object):
 
     def _decorateWithRegisters(self, memHandler, structT):
         """
-        Decorate this object with attributes from memory space (name is same as specified in register map)
+        Decorate this object with attributes from memory space
+        (name is same as specified in register map)
 
         :param memHandler: instance of AbstractMemSpaceMaster(subclass of)
         :param structT: instance of HStruct or TransTmpl used as template
@@ -62,9 +72,11 @@ class MemorySpaceItemStruct(object):
         for trans in tmpl.children:
             t = trans.dtype
             if isinstance(t, HArray):
-                msi = MemorySpaceItemArr(memHandler, trans, offset=self._offset)
+                msi = MemorySpaceItemArr(
+                    memHandler, trans, offset=self._offset)
             elif isinstance(t, HStruct):
-                msi = MemorySpaceItemStruct(memHandler, trans, offset=self._offset)
+                msi = MemorySpaceItemStruct(
+                    memHandler, trans, offset=self._offset)
             else:
                 msi = MemorySpaceItem(memHandler, trans, offset=self._offset)
 
@@ -75,8 +87,10 @@ class MemorySpaceItemStruct(object):
 
 class MemorySpaceItemArr(object):
     """
-    Abstraction over place in memory, allows you read and write data to/from this space
+    Abstraction over place in memory, allows you read and write data
+    to/from this space
     """
+
     def __init__(self, memHandler, transTmpl, offset=0):
         self._offset = transTmpl.bitAddr + offset
         self.memHandler = memHandler
@@ -101,15 +115,17 @@ class MemorySpaceItemArr(object):
 
         m = self.memHandler
         offset = self._offset + self.itemSize * index
-        mi = self.itemCls(self.memHandler, self.transTmpl.children, offset)
+        mi = self.itemCls(m, self.transTmpl.children, offset)
         self.items_cache[index] = mi
         return mi
 
 
 class AbstractMemSpaceMaster(MemorySpaceItemStruct):
     """
-    Abstraction over bus interface which converts it to memory space from where you can read or write
+    Abstraction over bus interface which converts it to memory space
+    from where you can read or write
     """
+
     def __init__(self, bus, registerMap):
         self._bus = bus
         self._ADDR_STEP = bus._getAddrStep()
@@ -118,11 +134,35 @@ class AbstractMemSpaceMaster(MemorySpaceItemStruct):
         self._offset = 0
         self._decorateWithRegisters(self, registerMap)
 
+    def parse_responses(self):
+        """
+        Parse responses after sim
+        """
+        raise NotImplementedError(
+            "Implement this method in concrete implementation of this class")
+
     def _mask(self, start, width):
         return mask(width // self._ADDR_STEP)
 
-    def _write(self, addr, size, data, mask):
-        raise NotImplementedError("Implement this method in concrete implementation of this class")
+    def _write(self, addr, size, data, mask, onDone=None):
+        """
+        Add write transaction to agent of interface
 
-    def _read(self, addr, size):
-        raise NotImplementedError("Implement this method in concrete implementation of this class")
+        :param addr: address value on bus to write on
+        :param size: size of data to write in bites
+        :param data: data to write on bus
+        :param onDone: on write done callback function(sim) -> None
+        """
+        raise NotImplementedError(
+            "Implement this method in concrete implementation of this class")
+
+    def _read(self, addr, size, onDone=None):
+        """
+        Add read transaction to agent of interface
+        :param addr: address value on bus to read froms
+        :param size: size of data to read in bites
+        :param onDone: on read done callback function(sim) -> None
+
+        """
+        raise NotImplementedError(
+            "Implement this method in concrete implementation of this class")
