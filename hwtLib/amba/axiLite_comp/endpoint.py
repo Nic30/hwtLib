@@ -200,7 +200,9 @@ class AxiLiteEndpoint(BusEndpoint):
                 width = t.getItemWidth()
             except TypeError:
                 width = t.bitAddrEnd - t.bitAddr
-
+            
+            if width > DW:
+                raise NotImplementedError("Fields wider than DATA_WIDTH not supported yet", t)
             offset = t.bitAddr % DW
             out.data(w.data[(offset + width): offset])
             out.vld(w_hs & (awAddr._eq(vec(t.bitAddr // DW * (DW // ADDR_STEP),
