@@ -10,7 +10,6 @@ from hwt.synthesizer.utils import toRtl
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
-from hwt.serializer.simModel.serializer import SimModelSerializer
 
 
 SEND_AW, SEND_W, RECV_B, SEND_AR, RECV_R = range(1, 6)
@@ -52,6 +51,9 @@ class AxiTester(Unit):
 
     def _add_ep(self):
         strb_w = self.DATA_WIDTH // 8
+        # [TODO] hotfix, should be self.DATA_WIDTH
+        data_field_w = self.CNTRL_DATA_WIDTH
+
         mem_space = HStruct(
             (Bits(32), "id_reg"),
             (Bits(32), "cmd_and_status"),
@@ -77,7 +79,7 @@ class AxiTester(Unit):
 
             (Bits(self.ID_WIDTH), "r_id"),
             (Bits(32 - int(self.ID_WIDTH)), None),
-            (Bits(self.DATA_WIDTH), "r_data"),
+            (Bits(data_field_w), "r_data"),
             (Bits(2), "r_resp"),
             (Bits(32 - 2), None),
             (BIT, "r_last"),
@@ -88,7 +90,7 @@ class AxiTester(Unit):
             (Bits(2), "b_resp"),
             (Bits(32 - 2), None),
 
-            (Bits(self.DATA_WIDTH), "w_data"),
+            (Bits(data_field_w), "w_data"),
             (BIT, "w_last"),
             (Bits(32 - 1), None),
             (Bits(strb_w), "w_strb"),
@@ -108,15 +110,15 @@ class AxiTester(Unit):
         id_reg_val = int.from_bytes("test".encode(), byteorder="little")
         ep.id_reg.din(id_reg_val)
 
-        def connected_reg(name, input_=None, inputEn=None):
+        def connected_reg(name, input_=None, inputEn=None, fit=False):
             port = getattr(ep, name)
             reg = self._reg(name, port.din._dtype)
             e = If(port.dout.vld,
-                   reg(port.dout.data)
+                   connect(port.dout.data, reg, fit=fit)
                 )
             if input_ is not None:
                 e.Elif(inputEn,
-                    reg(input_)
+                    connect(input_, reg, fit=fit)
                 )
             port.din(reg)
             return reg
@@ -202,17 +204,17 @@ class AxiTester(Unit):
         r_rd = (ready & cmd_en(RECV_R)) | st._eq(state_t.wait_r)
         r_en = r.valid & r_rd
         connected_reg("r_id", r.id, r_en)
-        connected_reg("r_data", r.data, r_en)
+        connected_reg("r_data", r.data, r_en, fit=True)
         connected_reg("r_resp", r.resp, r_en)
         connected_reg("r_last")
         r.ready(r_rd)
 
         w = axi.w
-        w_data = connected_reg("w_data")
+        w_data = connected_reg("w_data", fit=True)
         w_last = connected_reg("w_last")
         w_strb = connected_reg("w_strb")
         w.id(a_w_id)
-        w.data(w_data)
+        connect(w_data, w.data, fit=True)
         w.strb(w_strb)
         w.last(w_last)
         w_vld = (ready & cmd_en(SEND_W)) | st._eq(state_t.wait_w)
@@ -227,6 +229,6 @@ class AxiTester(Unit):
 
 if __name__ == "__main__":
     u = AxiTester(Axi3)
-    u.DATA_WIDTH.set(32)
+    #u.DATA_WIDTH.set(32)
     # , serializer=SimModelSerializer
     print(toRtl(u))
