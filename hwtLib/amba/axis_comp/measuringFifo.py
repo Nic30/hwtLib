@@ -21,6 +21,9 @@ class AxiS_measuringFifo(Unit):
     Fifo which are counting sizes of frames and sends it over
     dedicated handshaked interface "sizes"
     """
+    def __init__(self, stream_t=AxiStream):
+        self._stream_t = stream_t
+        super(AxiS_measuringFifo, self).__init__()
 
     def _config(self):
         Fifo._config(self)
@@ -34,15 +37,15 @@ class AxiS_measuringFifo(Unit):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.dataIn = AxiStream()
-            self.dataOut = AxiStream()
+            self.dataIn = self._stream_t()
+            self.dataOut = self._stream_t()
 
         self.sizes = Handshaked()
         self.sizes.DATA_WIDTH.set(log2ceil(self.MAX_LEN)
                                   + 1
                                   + self.getAlignBitsCnt())
 
-        db = self.dataBuff = AxiSFifo(AxiStream)
+        db = self.dataBuff = AxiSFifo(self._stream_t)
         # to place fifo in bram
         db.DATA_WIDTH.set(self.DATA_WIDTH)
         db.DEPTH.set((self.MAX_LEN + 1) * 2)
