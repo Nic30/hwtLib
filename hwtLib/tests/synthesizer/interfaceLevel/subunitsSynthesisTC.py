@@ -20,6 +20,7 @@ from hwtLib.samples.simple2withNonDirectIntConnection import \
     Simple2withNonDirectIntConnection
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import \
     BaseSynthesizerTC
+from hwt.serializer.vhdl.serializer import VhdlSerializer
 
 
 D = DIRECTION
@@ -91,6 +92,59 @@ class UnitWithGenericOfChild(Unit):
         tmp = self._sig("tmp", self.ch.a._dtype)
         tmp(self.b)
         self.b(tmp)
+
+UnitWithGenericOfChild_vhdl = """library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+ENTITY ch IS
+    GENERIC (NESTED_PARAM: INTEGER := 123
+    );
+    PORT (a: IN STD_LOGIC_VECTOR(NESTED_PARAM - 1 DOWNTO 0);
+        b: OUT STD_LOGIC_VECTOR(NESTED_PARAM - 1 DOWNTO 0)
+    );
+END ch;
+
+ARCHITECTURE rtl OF ch IS
+    SIGNAL tmp: STD_LOGIC_VECTOR(NESTED_PARAM - 1 DOWNTO 0);
+BEGIN
+    b <= tmp;
+    tmp <= a;
+END ARCHITECTURE rtl;
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
+ENTITY UnitWithGenericOfChild IS
+    PORT (a: IN STD_LOGIC_VECTOR(122 DOWNTO 0);
+        b: OUT STD_LOGIC_VECTOR(122 DOWNTO 0)
+    );
+END UnitWithGenericOfChild;
+
+ARCHITECTURE rtl OF UnitWithGenericOfChild IS
+    SIGNAL sig_ch_a: STD_LOGIC_VECTOR(122 DOWNTO 0);
+    SIGNAL sig_ch_b: STD_LOGIC_VECTOR(122 DOWNTO 0);
+    SIGNAL tmp: STD_LOGIC_VECTOR(123 - 1 DOWNTO 0);
+    COMPONENT ch IS
+       GENERIC (NESTED_PARAM: INTEGER := 123
+       );
+       PORT (a: IN STD_LOGIC_VECTOR(NESTED_PARAM - 1 DOWNTO 0);
+            b: OUT STD_LOGIC_VECTOR(NESTED_PARAM - 1 DOWNTO 0)
+       );
+    END COMPONENT;
+
+BEGIN
+    ch_inst: COMPONENT ch
+        GENERIC MAP (NESTED_PARAM => 123
+        )
+        PORT MAP (a => sig_ch_a,
+            b => sig_ch_b
+        );
+
+    b <= tmp;
+    sig_ch_a <= a;
+    tmp <= b;
+END ARCHITECTURE rtl;"""
 
 
 class SubunitsSynthesisTC(BaseSynthesizerTC):
@@ -219,7 +273,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
 
     def test_used_param_from_other_unit(self):
         u = UnitWithGenericOfChild()
-        print(toRtl(u))
+        self.assertEqual(toRtl(u, serializer=VhdlSerializer), UnitWithGenericOfChild_vhdl)
 
 
 if __name__ == '__main__':
