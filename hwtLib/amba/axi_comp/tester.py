@@ -134,7 +134,7 @@ class AxiTester(Unit):
             return reg
 
         cmdIn = ep.cmd_and_status.dout
-        cmd = self._reg("reg_cmd", Bits(cmdIn.data._dtype.bitlength()), defVal=0)
+        cmd = self._reg("reg_cmd", Bits(cmdIn.data._dtype.bit_length()), defVal=0)
         cmdVld = self._reg("reg_cmd_vld", defVal=0)
         If(cmdIn.vld,
            connect(cmdIn.data, cmd, fit=True)
