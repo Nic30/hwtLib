@@ -8,7 +8,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi4 import Axi4
-from hwtLib.amba.axiLite import AxiLite
+from hwtLib.amba.axiLite import AxiLite, Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from os.path import expanduser
 
@@ -27,8 +27,9 @@ class AxiTester(Unit):
     etc...
     """
 
-    def __init__(self, axiCls):
+    def __init__(self, axiCls=Axi4, cntrlCls=Axi4Lite):
         self._axiCls = axiCls
+        self._cntrlCls = cntrlCls
         super(AxiTester, self).__init__()
 
     def _config(self):
@@ -41,7 +42,7 @@ class AxiTester(Unit):
         with self._paramsShared():
             self.axi = self._axiCls()
 
-        c = self.cntrl = AxiLite()
+        c = self.cntrl = self._cntrlCls()
         c._replaceParam("DATA_WIDTH", self.CNTRL_DATA_WIDTH)
         c._replaceParam("ADDR_WIDTH", self.CNTRL_ADDR_WIDTH)
 
@@ -110,8 +111,12 @@ class AxiTester(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
+        exclude = set()
+        for ch in [self.cntrl.aw, self.cntrl.ar]:
+            if hasattr(ch, "prot"):
+                exclude.add(ch.prot)
 
-        self.axi_ep.bus(self.cntrl)
+        connect(self.cntrl, self.axi_ep.bus, exclude=exclude)
 
         ep = self.axi_ep.decoded
         id_reg_val = int.from_bytes("test".encode(), byteorder="little")
@@ -237,9 +242,9 @@ class AxiTester(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    #from hwt.serializer.ip_packager.packager import Packager
+    from hwt.serializer.ip_packager.packager import Packager
     u = AxiTester(Axi4)
-    print(toRtl(u))
-    #p = Packager(u)
-    #p.createPackage(expanduser("~"))
+    # print(toRtl(u))
+    p = Packager(u)
+    p.createPackage(expanduser("~"))
     

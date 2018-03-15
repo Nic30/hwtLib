@@ -207,6 +207,26 @@ class AxiLiteAgent(AgentBase):
                 )
 
 
+class Axi4Lite_addr(AxiLite_addr):
+    def _declr(self):
+        super(Axi4Lite_addr, self)._declr()
+        self.prot = VectSignal(3)
+
+
+class Axi4Lite(AxiLite):
+
+    def _declr(self):
+        with self._paramsShared():
+            self.aw = Axi4Lite_addr()
+            self.ar = Axi4Lite_addr()
+            self.w = AxiLite_w()
+            self.r = AxiLite_r(masterDir=DIRECTION.IN)
+            self.b = AxiLite_b(masterDir=DIRECTION.IN)
+
+    def _getIpCoreIntfClass(self):
+        return IP_AXI4Lite
+
+
 #################################################################
 class IP_AXILite(IntfConfig):
     def __init__(self):
@@ -229,3 +249,15 @@ class IP_AXILite(IntfConfig):
         self.addWidthParam(thisIf, "DATA_WIDTH", thisIf.DATA_WIDTH)
         self.addSimpleParam(thisIf, "PROTOCOL", "AXI4LITE")
         self.addSimpleParam(thisIf, "READ_WRITE_MODE", "READ_WRITE")
+
+
+class IP_AXI4Lite(IP_AXILite):
+    def __init__(self):
+        super().__init__()
+        a_sigs = ['addr', 'prot', 'valid', 'ready']
+        self.map = {'aw': AxiMap('aw', a_sigs),
+                    'w': AxiMap('w', ['data', 'strb', 'valid', 'ready']),
+                    'ar': AxiMap('ar', a_sigs),
+                    'r': AxiMap('r', ['data', 'resp', 'valid', 'ready']),
+                    'b': AxiMap('b', ['valid', 'ready', 'resp'])
+                    }
