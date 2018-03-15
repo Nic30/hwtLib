@@ -6,7 +6,6 @@ from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.utils import toRtl
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
@@ -228,6 +227,7 @@ class AxiTester(Unit):
 
 
 if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
     u = AxiTester(Axi3)
     #u.DATA_WIDTH.set(32)
     # , serializer=SimModelSerializer
