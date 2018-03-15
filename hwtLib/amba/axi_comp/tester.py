@@ -7,6 +7,7 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi3 import Axi3
+from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axiLite import AxiLite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 
@@ -32,7 +33,6 @@ class AxiTester(Unit):
         self._axiCls._config(self)
         self.CNTRL_DATA_WIDTH = Param(32)
         self.CNTRL_ADDR_WIDTH = Param(32)
-        self.LEN_WIDTH = Param(4)
 
     def _declr(self):
         addClkRstn(self)
@@ -52,6 +52,12 @@ class AxiTester(Unit):
         strb_w = self.DATA_WIDTH // 8
         # [TODO] hotfix, should be self.DATA_WIDTH
         data_field_w = self.CNTRL_DATA_WIDTH
+        if isinstance(self.axi, Axi4):
+            len_width = 8
+        elif isinstance(self.axi, Axi3):
+            len_width = 4
+        else:
+            raise NotImplementedError()
 
         mem_space = HStruct(
             (Bits(32), "id_reg"),
@@ -65,8 +71,8 @@ class AxiTester(Unit):
             (Bits(32 - 2), None),
             (Bits(4), "cache"),
             (Bits(32 - 4), None),
-            (Bits(self.LEN_WIDTH), "len"),
-            (Bits(32 - int(self.LEN_WIDTH)), None),
+            (Bits(len_width), "len"),
+            (Bits(32 - len_width), None),
             (Bits(self.LOCK_WIDTH), "lock"),
             (Bits(32 - int(self.LOCK_WIDTH)), None),
             (Bits(3), "prot"),
@@ -228,7 +234,5 @@ class AxiTester(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    u = AxiTester(Axi3)
-    #u.DATA_WIDTH.set(32)
-    # , serializer=SimModelSerializer
+    u = AxiTester(Axi4)
     print(toRtl(u))
