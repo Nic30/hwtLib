@@ -6,7 +6,7 @@ import unittest
 from hwt.hdl.constants import DIRECTION
 from hwt.hdl.typeShortcuts import hInt
 from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal
+from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.exceptions import TypeConversionErr
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit, setOut
@@ -64,6 +64,33 @@ class UnitWithArrIntfParent(Unit):
         self.u0.a(self.a)
         self.b0(self.u0.b[0])
         self.b1(self.u0.b[1])
+
+
+class UnitWithGenericOnPort(Unit):
+    def _config(self):
+        self.NESTED_PARAM = Param(123)
+
+    def _declr(self):
+        self.a = VectSignal(self.NESTED_PARAM)
+        self.b = VectSignal(self.NESTED_PARAM)
+
+    def _impl(self):
+        tmp = self._sig("tmp", self.a._dtype)
+        tmp(self.a)
+        self.b(tmp)
+
+
+class UnitWithGenericOfChild(Unit):
+    def _declr(self):
+        self.a = VectSignal(123)
+        self.b = VectSignal(123)
+        self.ch = UnitWithGenericOnPort()
+
+    def _impl(self):
+        self.ch.a(self.a)
+        tmp = self._sig("tmp", self.ch.a._dtype)
+        tmp(self.b)
+        self.b(tmp)
 
 
 class SubunitsSynthesisTC(BaseSynthesizerTC):
@@ -190,12 +217,16 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
         u._loadDeclarations()
         u = synthesised(u)
 
+    def test_used_param_from_other_unit(self):
+        u = UnitWithGenericOfChild()
+        print(toRtl(u))
+
 
 if __name__ == '__main__':
     # print(toRtl(UnitWithArrIntfParent))
 
     suite = unittest.TestSuite()
-    # suite.addTest(SubunitsSynthesisTC('test_subUnitWithArrIntf'))
-    suite.addTest(unittest.makeSuite(SubunitsSynthesisTC))
+    suite.addTest(SubunitsSynthesisTC('test_used_param_from_other_unit'))
+    #suite.addTest(unittest.makeSuite(SubunitsSynthesisTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
