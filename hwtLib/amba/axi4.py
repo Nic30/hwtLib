@@ -90,6 +90,7 @@ class Axi4_rAgent(BaseAxiAgent):
     input/output data stored in list under "data" property
     data contains tuples (id, data, resp, last)
     """
+
     def doRead(self, s):
         intf = self.intf
         r = s.read
@@ -142,6 +143,7 @@ class Axi4_bAgent(BaseAxiAgent):
     input/output data stored in list under "data" property
     data contains tuples (id, resp)
     """
+
     def doRead(self, s):
         r = s.read
         intf = self.intf
@@ -172,6 +174,7 @@ class Axi4(AxiLite):
     :ivar w: write data channel
     :ivar b: write acknowledge channel
     """
+
     def _config(self):
         AxiLite._config(self)
         self.ID_WIDTH = Param(6)
@@ -192,6 +195,7 @@ class Axi4(AxiLite):
 class IP_Axi4(IP_AXILite):
     def __init__(self,):
         super().__init__()
+        self.quartus_name = "axi4"
         A_SIGS = ['id', 'burst', 'cache', 'len', 'lock', 'prot', 'size', 'qos']
         AxiMap('ar', A_SIGS, self.map['ar'])
         AxiMap('r', ['id', 'last'], self.map['r'])
@@ -201,11 +205,16 @@ class IP_Axi4(IP_AXILite):
 
     def postProcess(self, component, entity, allInterfaces, thisIf):
         self.endianness = "little"
-        param = lambda name, val: self.addSimpleParam(thisIf, name, str(val))
-        param("ADDR_WIDTH", thisIf.aw.addr._dtype.bit_length())  # [TODO] width expression
+
+        def param(name, val):
+            return self.addSimpleParam(thisIf, name, str(val))
+        # [TODO] width expression
+        param("ADDR_WIDTH", thisIf.aw.addr._dtype.bit_length())
         param("MAX_BURST_LENGTH", 256)
         param("NUM_READ_OUTSTANDING", 5)
         param("NUM_WRITE_OUTSTANDING", 5)
         param("PROTOCOL", "AXI4")
         param("READ_WRITE_MODE", "READ_WRITE")
         param("SUPPORTS_NARROW_BURST", 0)
+    
+    
