@@ -10,8 +10,6 @@ from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axiLite import AxiLite, Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
-from os.path import expanduser
-
 
 
 SEND_AW, SEND_W, RECV_B, SEND_AR, RECV_R = range(1, 6)
@@ -136,7 +134,7 @@ class AxiTester(Unit):
             return reg
 
         cmdIn = ep.cmd_and_status.dout
-        cmd = self._reg("reg_cmd", cmdIn.data._dtype, defVal=0)
+        cmd = self._reg("reg_cmd", Bits(cmdIn.data._dtype.bitlength()), defVal=0)
         cmdVld = self._reg("reg_cmd_vld", defVal=0)
         If(cmdIn.vld,
            connect(cmdIn.data, cmd, fit=True)
@@ -183,7 +181,7 @@ class AxiTester(Unit):
 
         ready = st._eq(state_t.ready)
         tmp = self._sig("tmp")
-        tmp((st._eq(state_t.ready) & ~ep.cmd_and_status.dout.vld)._reinterpret_cast(BIT))
+        tmp(st._eq(state_t.ready) & ~ep.cmd_and_status.dout.vld)
         connect(tmp, ep.cmd_and_status.din, fit=True)
 
         a_w_id = connected_reg("ar_aw_w_id")
@@ -243,8 +241,10 @@ class AxiTester(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
     from hwt.serializer.ip_packager.packager import Packager
+    from os.path import expanduser
+
     u = AxiTester(Axi4)
     # print(toRtl(u))
     p = Packager(u)
     p.createPackage(expanduser("~"))
-    
+
