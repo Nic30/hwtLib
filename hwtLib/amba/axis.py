@@ -277,12 +277,16 @@ class IP_AXIStream(IntfConfig):
         self.version = "1.0"
         self.vendor = "xilinx.com"
         self.library = "interface"
-        self.map = {'id': "TID",
-                    'data': "TDATA",
-                    'last': "TLAST",
-                    'valid': "TVALID",
-                    'strb': "TSTRB",
-                    'keep': "TKEEP",
-                    'user': 'TUSER',
-                    'ready': "TREADY"
-                    }
+        self.map = {
+            'id': "TID",
+            'data': "TDATA",
+            'last': "TLAST",
+            'valid': "TVALID",
+            'strb': "TSTRB",
+            'keep': "TKEEP",
+            'user': 'TUSER',
+            'ready': "TREADY"
+        }
+        self.quartus_map = {
+            k: v.lower() for k,v in self.map.items()
+        }

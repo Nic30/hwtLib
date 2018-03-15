@@ -6,9 +6,9 @@ from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.utils import toRtl
 from hwtLib.amba.axi3 import Axi3
-from hwtLib.amba.axiLite import AxiLite
+from hwtLib.amba.axi4 import Axi4
+from hwtLib.amba.axiLite import AxiLite, Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 
 
@@ -25,22 +25,22 @@ class AxiTester(Unit):
     etc...
     """
 
-    def __init__(self, axiCls):
+    def __init__(self, axiCls=Axi4, cntrlCls=Axi4Lite):
         self._axiCls = axiCls
+        self._cntrlCls = cntrlCls
         super(AxiTester, self).__init__()
 
     def _config(self):
         self._axiCls._config(self)
         self.CNTRL_DATA_WIDTH = Param(32)
         self.CNTRL_ADDR_WIDTH = Param(32)
-        self.LEN_WIDTH = Param(4)
 
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
             self.axi = self._axiCls()
 
-        c = self.cntrl = AxiLite()
+        c = self.cntrl = self._cntrlCls()
         c._replaceParam("DATA_WIDTH", self.CNTRL_DATA_WIDTH)
         c._replaceParam("ADDR_WIDTH", self.CNTRL_ADDR_WIDTH)
 
@@ -53,6 +53,12 @@ class AxiTester(Unit):
         strb_w = self.DATA_WIDTH // 8
         # [TODO] hotfix, should be self.DATA_WIDTH
         data_field_w = self.CNTRL_DATA_WIDTH
+        if isinstance(self.axi, Axi4):
+            len_width = 8
+        elif isinstance(self.axi, Axi3):
+            len_width = 4
+        else:
+            raise NotImplementedError()
 
         mem_space = HStruct(
             (Bits(32), "id_reg"),
@@ -66,8 +72,8 @@ class AxiTester(Unit):
             (Bits(32 - 2), None),
             (Bits(4), "cache"),
             (Bits(32 - 4), None),
-            (Bits(self.LEN_WIDTH), "len"),
-            (Bits(32 - int(self.LEN_WIDTH)), None),
+            (Bits(len_width), "len"),
+            (Bits(32 - len_width), None),
             (Bits(self.LOCK_WIDTH), "lock"),
             (Bits(32 - int(self.LOCK_WIDTH)), None),
             (Bits(3), "prot"),
@@ -103,8 +109,12 @@ class AxiTester(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
+        exclude = set()
+        for ch in [self.cntrl.aw, self.cntrl.ar]:
+            if hasattr(ch, "prot"):
+                exclude.add(ch.prot)
 
-        self.axi_ep.bus(self.cntrl)
+        connect(self.cntrl, self.axi_ep.bus, exclude=exclude)
 
         ep = self.axi_ep.decoded
         id_reg_val = int.from_bytes("test".encode(), byteorder="little")
@@ -112,7 +122,7 @@ class AxiTester(Unit):
 
         def connected_reg(name, input_=None, inputEn=None, fit=False):
             port = getattr(ep, name)
-            reg = self._reg(name, port.din._dtype)
+            reg = self._reg(name, Bits(port.din._dtype.bit_length()))
             e = If(port.dout.vld,
                    connect(port.dout.data, reg, fit=fit)
                 )
@@ -124,7 +134,7 @@ class AxiTester(Unit):
             return reg
 
         cmdIn = ep.cmd_and_status.dout
-        cmd = self._reg("reg_cmd", cmdIn.data._dtype, defVal=0)
+        cmd = self._reg("reg_cmd", Bits(cmdIn.data._dtype.bit_length()), defVal=0)
         cmdVld = self._reg("reg_cmd_vld", defVal=0)
         If(cmdIn.vld,
            connect(cmdIn.data, cmd, fit=True)
@@ -170,8 +180,9 @@ class AxiTester(Unit):
                  (st._eq(state_t.wait_b) & axi.b.valid))
 
         ready = st._eq(state_t.ready)
-        connect((st._eq(state_t.ready) & ~ep.cmd_and_status.dout.vld)._reinterpret_cast(BIT),
-                ep.cmd_and_status.din, fit=True)
+        tmp = self._sig("tmp")
+        tmp(st._eq(state_t.ready) & ~ep.cmd_and_status.dout.vld)
+        connect(tmp, ep.cmd_and_status.din, fit=True)
 
         a_w_id = connected_reg("ar_aw_w_id")
         addr = connected_reg("addr")
@@ -228,7 +239,12 @@ class AxiTester(Unit):
 
 
 if __name__ == "__main__":
-    u = AxiTester(Axi3)
-    #u.DATA_WIDTH.set(32)
-    # , serializer=SimModelSerializer
-    print(toRtl(u))
+    from hwt.synthesizer.utils import toRtl
+    from hwt.serializer.ip_packager.packager import Packager
+    from os.path import expanduser
+
+    u = AxiTester(Axi4)
+    # print(toRtl(u))
+    p = Packager(u)
+    p.createPackage(expanduser("~"))
+
