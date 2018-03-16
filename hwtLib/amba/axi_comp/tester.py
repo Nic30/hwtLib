@@ -53,22 +53,22 @@ class AxiTester(Unit):
         strb_w = self.DATA_WIDTH // 8
         # [TODO] hotfix, should be self.DATA_WIDTH
         data_field_w = self.CNTRL_DATA_WIDTH
-        if isinstance(self.axi, Axi4):
-            len_width = 8
-        elif isinstance(self.axi, Axi3):
+        if isinstance(self.axi, Axi3):
             len_width = 4
+        elif isinstance(self.axi, Axi4):
+            len_width = 8
         else:
             raise NotImplementedError()
 
         mem_space = HStruct(
-            (Bits(32), "id_reg"),
+            (Bits(32), "id_reg"), # 0x00
             (Bits(32), "cmd_and_status"),
             (Bits(self.ADDR_WIDTH), "addr"),
             # a or w id
             (Bits(self.ID_WIDTH), "ar_aw_w_id"),
-            (Bits(32 - int(self.ID_WIDTH)), None),
+            (Bits(32 - int(self.ID_WIDTH)), None), 
 
-            (Bits(2), "burst"),
+            (Bits(2), "burst"), # 0x10
             (Bits(32 - 2), None),
             (Bits(4), "cache"),
             (Bits(32 - 4), None),
@@ -76,7 +76,7 @@ class AxiTester(Unit):
             (Bits(32 - len_width), None),
             (Bits(self.LOCK_WIDTH), "lock"),
             (Bits(32 - int(self.LOCK_WIDTH)), None),
-            (Bits(3), "prot"),
+            (Bits(3), "prot"), # 0x20
             (Bits(32 - 3), None),
             (Bits(3), "size"),
             (Bits(32 - 3), None),
@@ -85,7 +85,7 @@ class AxiTester(Unit):
 
             (Bits(self.ID_WIDTH), "r_id"),
             (Bits(32 - int(self.ID_WIDTH)), None),
-            (Bits(data_field_w), "r_data"),
+            (Bits(data_field_w), "r_data"), # 0x30
             (Bits(2), "r_resp"),
             (Bits(32 - 2), None),
             (BIT, "r_last"),
@@ -93,7 +93,7 @@ class AxiTester(Unit):
 
             (Bits(self.ID_WIDTH), "b_id"),
             (Bits(32 - int(self.ID_WIDTH)), None),
-            (Bits(2), "b_resp"),
+            (Bits(2), "b_resp"), # 0x40
             (Bits(32 - 2), None),
 
             (Bits(data_field_w), "w_data"),
@@ -101,6 +101,7 @@ class AxiTester(Unit):
             (Bits(32 - 1), None),
             (Bits(strb_w), "w_strb"),
             (Bits(32 - int(strb_w)), None),
+            # 0x50
         )
 
         ep = self.axi_ep = AxiLiteEndpoint(mem_space)
@@ -121,8 +122,11 @@ class AxiTester(Unit):
         ep.id_reg.din(id_reg_val)
 
         def connected_reg(name, input_=None, inputEn=None, fit=False):
+            if input_ is not None:
+                assert inputEn is not None
+
             port = getattr(ep, name)
-            reg = self._reg(name, Bits(port.din._dtype.bit_length()))
+            reg = self._reg(name, port.din._dtype)
             e = If(port.dout.vld,
                    connect(port.dout.data, reg, fit=fit)
                 )
@@ -134,7 +138,7 @@ class AxiTester(Unit):
             return reg
 
         cmdIn = ep.cmd_and_status.dout
-        cmd = self._reg("reg_cmd", Bits(cmdIn.data._dtype.bit_length()), defVal=0)
+        cmd = self._reg("reg_cmd", cmdIn.data._dtype, defVal=0)
         cmdVld = self._reg("reg_cmd_vld", defVal=0)
         If(cmdIn.vld,
            connect(cmdIn.data, cmd, fit=True)
@@ -156,11 +160,11 @@ class AxiTester(Unit):
         axi = self.axi
         st = FsmBuilder(self, state_t)\
             .Trans(state_t.ready,
-                   (cmd_en(SEND_AW) & ~axi.aw.ready, state_t.wait_aw),
-                   (cmd_en(SEND_AR) & ~axi.ar.ready, state_t.wait_ar),
-                   (cmd_en(SEND_W) & ~axi.w.ready, state_t.wait_w),
-                   (cmd_en(RECV_R) & ~axi.r.valid, state_t.wait_r),
-                   (cmd_en(RECV_B) & ~axi.b.valid, state_t.wait_b),
+                   (cmd_en(SEND_AW), state_t.wait_aw),
+                   (cmd_en(SEND_AR), state_t.wait_ar),
+                   (cmd_en(SEND_W), state_t.wait_w),
+                   (cmd_en(RECV_R), state_t.wait_r),
+                   (cmd_en(RECV_B), state_t.wait_b),
             ).Trans(state_t.wait_aw,
                 (axi.aw.ready, state_t.ready)
             ).Trans(state_t.wait_ar,
@@ -206,33 +210,34 @@ class AxiTester(Unit):
             p.size(size)
             p.qos(qos)
 
-        aw_vld = (ready & cmd_en(SEND_AW)) | st._eq(state_t.wait_aw)
+        aw_vld = st._eq(state_t.wait_aw)
         axi.aw.valid(aw_vld)
-        ar_vld = (ready & cmd_en(SEND_AR)) | st._eq(state_t.wait_ar)
+        ar_vld = st._eq(state_t.wait_ar)
         axi.ar.valid(ar_vld)
 
         r = axi.r
-        r_rd = (ready & cmd_en(RECV_R)) | st._eq(state_t.wait_r)
+        r_rd = st._eq(state_t.wait_r)
         r_en = r.valid & r_rd
         connected_reg("r_id", r.id, r_en)
         connected_reg("r_data", r.data, r_en, fit=True)
         connected_reg("r_resp", r.resp, r_en)
-        connected_reg("r_last")
+        connected_reg("r_last", r.last, r_en)
         r.ready(r_rd)
 
         w = axi.w
         w_data = connected_reg("w_data", fit=True)
         w_last = connected_reg("w_last")
         w_strb = connected_reg("w_strb")
-        w.id(a_w_id)
+        if hasattr(w, "id"):
+            w.id(a_w_id)
         connect(w_data, w.data, fit=True)
         w.strb(w_strb)
         w.last(w_last)
-        w_vld = (ready & cmd_en(SEND_W)) | st._eq(state_t.wait_w)
+        w_vld = st._eq(state_t.wait_w)
         w.valid(w_vld)
 
         b = axi.b
-        b_rd = (ready & cmd_en(RECV_B)) | st._eq(state_t.wait_b)
+        b_rd = st._eq(state_t.wait_b)
         connected_reg("b_id", b.id, b.valid & b_rd)
         connected_reg("b_resp")
         b.ready(b_rd)
