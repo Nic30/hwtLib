@@ -4,7 +4,7 @@ from hwt.synthesizer.param import Param
 from hwtLib.amba.axiLite import AxiLite, AxiLite_b, AxiLite_r, \
     AxiLite_addr, IP_AXILite
 from hwtLib.amba.axi_intf_common import AxiMap, Axi_id
-from hwtLib.amba.axis import AxiStream_withId
+from hwtLib.amba.axis import AxiStream_withId, AxiStream
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 
 
@@ -118,7 +118,7 @@ class Axi4_rAgent(BaseAxiAgent):
 
 
 #####################################################################
-class Axi4_w(AxiStream_withId):
+class Axi4_w(AxiStream):
     pass
 
 
