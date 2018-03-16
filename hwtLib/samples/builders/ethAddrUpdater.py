@@ -7,7 +7,7 @@ from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axi3 import Axi3, Axi3_addr
+from hwtLib.amba.axi3 import Axi3, Axi3_addr, Axi3_w
 from hwtLib.amba.axi4_rDatapump import Axi_rDatapump
 from hwtLib.amba.axi4_wDatapump import Axi_wDatapump
 from hwtLib.amba.axi_datapump_utils import connectDp
@@ -53,7 +53,7 @@ class EthAddrUpdater(Unit):
             self.rxDataPump = Axi_rDatapump(Axi3_addr)
 
             self.txPacketUpdater = StructWriter(frameHeader)
-            self.txDataPump = Axi_wDatapump(Axi3_addr)
+            self.txDataPump = Axi_wDatapump(Axi3_addr, Axi3_w)
 
     def _impl(self):
         propagateClkRstn(self)

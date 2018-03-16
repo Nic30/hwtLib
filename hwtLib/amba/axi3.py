@@ -6,6 +6,7 @@ from hwtLib.amba.axi4 import IP_Axi4, Axi4_w, Axi4_r, Axi4_b, Axi4, \
     Axi4_addr
 from hwtLib.amba.axi_intf_common import AxiMap
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
+from hwtLib.amba.axis import AxiStream_withId
 
 
 class Axi3_addr(Axi4_addr):
@@ -72,12 +73,16 @@ class Axi3_addr_withUserAgent(BaseAxiAgent):
         w(user, intf.user)
 
 
+class Axi3_w(AxiStream_withId):
+    pass
+
+
 class Axi3(Axi4):
     def _declr(self):
         with self._paramsShared():
             self.aw = Axi3_addr()
             self.ar = Axi3_addr()
-            self.w = Axi4_w()
+            self.w = Axi3_w()
             self.r = Axi4_r(masterDir=DIRECTION.IN)
             self.b = Axi4_b(masterDir=DIRECTION.IN)
 
@@ -94,7 +99,7 @@ class Axi3_withAddrUser(Axi4):
         with self._paramsShared():
             self.aw = Axi3_addr_withUser()
             self.ar = Axi3_addr_withUser()
-            self.w = Axi4_w()
+            self.w = Axi3_w()
             self.r = Axi4_r(masterDir=DIRECTION.IN)
             self.b = Axi4_b(masterDir=DIRECTION.IN)
 

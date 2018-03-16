@@ -185,7 +185,7 @@ class Axi4streamToMem(Unit):
 
         w.valid(din.vld & w_en)
         w.data(din.data)
-        w.id(0)
+
         w.strb(mask(w.strb._dtype.bit_length()))
         w.last(last)
 

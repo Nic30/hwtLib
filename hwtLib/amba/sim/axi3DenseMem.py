@@ -62,6 +62,11 @@ class Axi3DenseMem(DenseMemory):
 
             assert axiAR is not None or axiAW is not None
 
+        if self.wAg is not None:
+            self.HAS_W_ID = hasattr(self.wAg.intf, "id")
+        else:
+            self.HAS_W_ID = False
+
         self.cellSize = DW // 8
         self.allMask = mask(self.cellSize)
         self.rPending = deque()
@@ -110,13 +115,16 @@ class Axi3DenseMem(DenseMemory):
             raise NotImplementedError("unaligned transaction not implemented")
 
         for i in range(size):
-            _id2, data, strb, last = self.wAg.data.popleft()
+            if self.HAS_W_ID:
+                _id2, data, strb, last = self.wAg.data.popleft()
+                assert _id2._isFullVld()
+                assert _id == _id2.val
+            else:
+                data, strb, last = self.wAg.data.popleft()
 
-            assert _id2._isFullVld()
             # assert data._isFullVld()
             assert strb._isFullVld()
             assert last._isFullVld()
-            assert _id == _id2.val
 
             data, strb, last = data.val, strb.val, bool(last.val)
 

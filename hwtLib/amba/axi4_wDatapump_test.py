@@ -20,6 +20,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         self.u = u = Axi_wDatapump(axiAddrCls=Axi4_addr)
         u.MAX_LEN.set(self.LEN_MAX)
         self.prepareUnit(u)
+        self.HAS_W_ID = hasattr(self.u.w, "id")
 
     def test_nop(self):
         u = self.u
@@ -175,7 +176,12 @@ class Axi4_wDatapumpTC(SimTestCase):
                 m = mask(64 // 8 - 1)
                 l = i == (L - 1)
                 wIn.data.append((d, m, l))
-                expectedWData.append((0, d, m, int(l)))
+                if self.HAS_W_ID:
+                    beat = (0, d, m, int(l))
+                else:
+                    beat = (d, m, int(l))
+
+                expectedWData.append(beat)
             b.append((0, RESP_OKAY))
 
         ra = self.randomize
@@ -210,6 +216,7 @@ class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
         u = Axi_wDatapump(axiAddrCls=Axi3_addr)
         u.MAX_LEN.set(16)
         self.prepareUnit(u)
+        self.HAS_W_ID = hasattr(self.u.w, "id")
 
 
 class Axi3_wDatapump_small_splitting_TC(SimTestCase):
@@ -221,6 +228,7 @@ class Axi3_wDatapump_small_splitting_TC(SimTestCase):
         self.u.MAX_LEN.set(self.LEN_MAX)
         self.DATA_WIDTH = int(self.u.DATA_WIDTH)
         self.prepareUnit(self.u)
+        self.HAS_W_ID = hasattr(self.u.w, "id")
 
     def test_1024random(self):
         u = self.u

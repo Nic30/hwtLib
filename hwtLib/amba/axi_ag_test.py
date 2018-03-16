@@ -58,15 +58,17 @@ class Axi_ag_TC(SimTestCase):
 
         return (_id, addr, burst, cache, _len, lock, prot, size, qos, user)
 
-    def randW(self):
+    def randW(self, hasId=True):
         """get random data write transaction"""
         r = self._rand.getrandbits
-        _id = r(6)
         data = r(64)
         strb = r(64 // 8)
         last = r(1)
-
-        return (_id, data, strb, last)
+        if hasId:
+            _id = r(6)
+            return (_id, data, strb, last)
+        else:
+            return (data, strb, last)
 
     def randB(self):
         """get random data write acknowledge transaction"""
@@ -92,7 +94,7 @@ class Axi_ag_TC(SimTestCase):
 
         aw = [self.randA() for _ in range(N)]
         ar = [self.randA() for _ in range(N)]
-        w = [self.randW() for _ in range(N)]
+        w = [self.randW(False) for _ in range(N)]
         b = [self.randB() for _ in range(N)]
         r = [self.randR() for _ in range(N)]
 
@@ -116,7 +118,7 @@ class Axi_ag_TC(SimTestCase):
         a(u.s.b._ag.data, b)
 
     def test_axi3_withAddrUser_ag(self):
-        """Test if axi4 agent can transmit and receive data on all channels"""
+        """Test if axi3 agent can transmit and receive data on all channels"""
         u = AxiTestJunction(Axi3_withAddrUser)
         self.prepareUnit(u)
         N = 10
