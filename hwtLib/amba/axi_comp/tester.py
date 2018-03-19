@@ -1,4 +1,4 @@
-from hwt.code import FsmBuilder, If, connect
+from hwt.code import FsmBuilder, If, connect, Concat
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.enum import HEnum
@@ -102,6 +102,8 @@ class AxiTester(Unit):
             (Bits(strb_w), "w_strb"),
             (Bits(32 - int(strb_w)), None),
             # 0x50
+            (Bits(5*2), "hs"),
+            (Bits(5*2 - 1), None),
         )
 
         ep = self.axi_ep = AxiLiteEndpoint(mem_space)
@@ -185,7 +187,7 @@ class AxiTester(Unit):
 
         ready = st._eq(state_t.ready)
         tmp = self._sig("tmp")
-        tmp(st._eq(state_t.ready) & ~ep.cmd_and_status.dout.vld)
+        tmp(ready & ~ep.cmd_and_status.dout.vld)
         connect(tmp, ep.cmd_and_status.din, fit=True)
 
         a_w_id = connected_reg("ar_aw_w_id")
@@ -212,7 +214,7 @@ class AxiTester(Unit):
 
         aw_vld = st._eq(state_t.wait_aw)
         axi.aw.valid(aw_vld)
-        ar_vld = st._eq(state_t.wait_ar)
+        ar_vld = st._eq(state_t.wait_ar)._reinterpret_cast(BIT)
         axi.ar.valid(ar_vld)
 
         r = axi.r
@@ -241,6 +243,12 @@ class AxiTester(Unit):
         connected_reg("b_id", b.id, b.valid & b_rd)
         connected_reg("b_resp")
         b.ready(b_rd)
+
+        ep.hs.din(Concat(ar_vld, axi.ar.ready,
+                         aw_vld, axi.aw.ready,
+                         r.valid, r_rd,
+                         b.valid, b_rd,
+                         w_vld, w.ready))
 
 
 if __name__ == "__main__":
