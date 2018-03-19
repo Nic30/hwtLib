@@ -232,6 +232,7 @@ class IP_AXILite(IntfConfig):
     def __init__(self):
         super().__init__()
         self.name = "aximm"
+        self.quartus_name = "axi3lite"
         self.version = "1.0"
         self.vendor = "xilinx.com"
         self.library = "interface"
@@ -254,6 +255,7 @@ class IP_AXILite(IntfConfig):
 class IP_AXI4Lite(IP_AXILite):
     def __init__(self):
         super().__init__()
+        self.quartus_name = "axi4lite"
         a_sigs = ['addr', 'prot', 'valid', 'ready']
         self.map = {'aw': AxiMap('aw', a_sigs),
                     'w': AxiMap('w', ['data', 'strb', 'valid', 'ready']),
