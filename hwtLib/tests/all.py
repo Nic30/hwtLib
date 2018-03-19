@@ -166,6 +166,7 @@ from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
+from hwtLib.amba.axiLite_comp.reg_test import AxiRegTC
 
 
 def runSimWithoutLog(self, until, name=None, config=None):
@@ -311,6 +312,7 @@ suite = testSuiteFromTCs(
     AxiLiteEndpoint_arrayStruct_TC,
     AxiLiteEndpoint_fromInterfaceTC,
     AxiLiteEndpoint_fromInterface_arr_TC,
+    AxiRegTC,
 
     AxisFrameGenTC,
     Axi4_rDatapumpTC,
