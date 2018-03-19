@@ -11,7 +11,8 @@ def getEpSignal(sig, op):
     :param sig: main signal
     :param op: operator on this signal
 
-    :return: signal modified by this operator or none if this operator is creating new datapath
+    :return: signal modified by this operator or none if this operator
+        is creating new datapath
     """
     # we do not follow results of indexing like something[sig]
     if op.operator == AllOps.INDEX:
