@@ -7,7 +7,7 @@ from hwtLib.amba.axi4 import IP_Axi4, Axi4_w, Axi4_r, Axi4_b, Axi4, \
 from hwtLib.amba.axi_intf_common import AxiMap, Axi_id
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwtLib.amba.axis import AxiStream_withId
-from hwtLib.amba.axiLite import AxiLite_addr
+from hwtLib.amba.axiLite import AxiLite_addr, AxiLite
 
 
 class Axi3_addr(Axi4_addr):
@@ -126,6 +126,11 @@ class Axi3_w(AxiStream_withId):
 
 
 class Axi3(Axi4):
+    def _config(self):
+        AxiLite._config(self)
+        self.ID_WIDTH = Param(6)
+        self.LOCK_WIDTH = Param(2)
+
     def _declr(self):
         with self._paramsShared():
             self.aw = Axi3_addr()
