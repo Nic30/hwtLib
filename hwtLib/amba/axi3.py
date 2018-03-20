@@ -106,7 +106,7 @@ class Axi3_addr_withUserAgent(BaseAxiAgent):
         w = s.write
 
         if data is None:
-            data = [None for _ in range(10)]
+            data = (None for _ in range(9))
 
         _id, addr, burst, cache, _len, lock, prot, size, user = data
 

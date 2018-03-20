@@ -24,7 +24,7 @@ class AxiTesterTC(SimTestCase):
         u.DATA_WIDTH.set(32)
 
         self.prepareUnit(u, onAfterToRtl=self.mkRegisterMap)
-        self.m = Axi3DenseMem(u.clk, u.axi)
+        self.m = Axi3DenseMem(u.clk, u.m_axi)
 
     def mkRegisterMap(self, u, modelCls):
         bus = u.cntrl
@@ -32,7 +32,7 @@ class AxiTesterTC(SimTestCase):
         self.regs = AxiLiteMemSpaceMaster(bus, self.addrProbe.discovered)
 
     def randomize_all(self):
-        axi = self.u.axi
+        axi = self.u.m_axi
 
         self.randomize(axi.aw)
         self.randomize(axi.ar)

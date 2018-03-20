@@ -14,10 +14,12 @@ class AxiStream_withoutSTRB(Axi_hs):
     """
     Bare AMBA AXI-stream interface
 
-    :ivar IS_BIGENDIAN: Param which specifies if interface uses bigendian byte order or litleendian byte order
+    :ivar IS_BIGENDIAN: Param which specifies if interface uses bigendian
+        byte order or litleendian byte order
     :attention: no checks are made for endianity, this is just information
-    :note: bigendian for interface means that items which are send through this interface has reversed byte endianity
-        that means that most significant byte is is on lower address than les significant ones
+    :note: bigendian for interface means that items which are send through
+        this interface has reversed byte endianity that means that most significant
+        byte is is on lower address than les significant ones
         f.e. litle endian value 0x1a2b will be 0x2b1a
         but iterface itselelf is not reversed in any way
 
@@ -288,5 +290,5 @@ class IP_AXIStream(IntfConfig):
             'ready': "TREADY"
         }
         self.quartus_map = {
-            k: v.lower() for k,v in self.map.items()
+            k: v.lower() for k, v in self.map.items()
         }
