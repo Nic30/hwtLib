@@ -29,6 +29,7 @@ class AxiTester(Unit):
         self._axiCls = axiCls
         self._cntrlCls = cntrlCls
         super(AxiTester, self).__init__()
+        self.LOCK_WIDTH = 1
 
     def _config(self):
         self._axiCls._config(self)
@@ -39,6 +40,7 @@ class AxiTester(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.m_axi = self._axiCls()
+            self.m_axi.LOCK_WIDTH = self.LOCK_WIDTH
 
         c = self.cntrl = self._cntrlCls()
         c._replaceParam("DATA_WIDTH", self.CNTRL_DATA_WIDTH)
@@ -210,7 +212,8 @@ class AxiTester(Unit):
             p.lock(lock)
             p.prot(prot)
             p.size(size)
-            p.qos(qos)
+            if hasattr(p, "qos"):
+                p.qos(qos)
 
         aw_vld = st._eq(state_t.wait_aw)
         axi.aw.valid(aw_vld)
