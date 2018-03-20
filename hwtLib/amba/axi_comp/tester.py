@@ -38,7 +38,7 @@ class AxiTester(Unit):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.axi = self._axiCls()
+            self.m_axi = self._axiCls()
 
         c = self.cntrl = self._cntrlCls()
         c._replaceParam("DATA_WIDTH", self.CNTRL_DATA_WIDTH)
@@ -53,9 +53,9 @@ class AxiTester(Unit):
         strb_w = self.DATA_WIDTH // 8
         # [TODO] hotfix, should be self.DATA_WIDTH
         data_field_w = self.CNTRL_DATA_WIDTH
-        if isinstance(self.axi, Axi3):
+        if isinstance(self.m_axi, Axi3):
             len_width = 4
-        elif isinstance(self.axi, Axi4):
+        elif isinstance(self.m_axi, Axi4):
             len_width = 8
         else:
             raise NotImplementedError()
@@ -159,7 +159,7 @@ class AxiTester(Unit):
                         ["ready", "wait_ar", "wait_aw",
                          "wait_w", "wait_b", "wait_r"])
 
-        axi = self.axi
+        axi = self.m_axi
         st = FsmBuilder(self, state_t)\
             .Trans(state_t.ready,
                    (cmd_en(SEND_AW), state_t.wait_aw),
