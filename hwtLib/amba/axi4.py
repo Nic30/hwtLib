@@ -4,8 +4,12 @@ from hwt.synthesizer.param import Param
 from hwtLib.amba.axiLite import AxiLite, AxiLite_b, AxiLite_r, \
     AxiLite_addr, IP_AXILite
 from hwtLib.amba.axi_intf_common import AxiMap, Axi_id
-from hwtLib.amba.axis import AxiStream_withId, AxiStream
+from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
+from hwt.hdl.entity import Entity
+from hwt.synthesizer.interface import Interface
+from typing import List
+from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 
 
 #####################################################################
@@ -203,6 +207,15 @@ class IP_Axi4(IP_AXILite):
         AxiMap('w', ['id', 'last'], self.map['w'])
         AxiMap('b', ['id'], self.map['b'])
 
+    def asQuartusTcl(self, buff: List[str], version: str, component,
+                     entity: Entity, allInterfaces: List[Interface],
+                     thisIf: Interface):
+        IP_AXILite.asQuartusTcl(self, buff, version,
+                                component, entity, allInterfaces, thisIf)
+        name = getSignalName(thisIf)
+        self.quartus_prop(buff, name, "readDataReorderingDepth", 1)
+        self.quartus_prop(buff, name, "bridgesToMaster", "")
+
     def postProcess(self, component, entity, allInterfaces, thisIf):
         self.endianness = "little"
 
@@ -216,5 +229,3 @@ class IP_Axi4(IP_AXILite):
         param("PROTOCOL", "AXI4")
         param("READ_WRITE_MODE", "READ_WRITE")
         param("SUPPORTS_NARROW_BURST", 0)
-    
-    
