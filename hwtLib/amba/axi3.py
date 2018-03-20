@@ -110,7 +110,7 @@ class Axi3_withAddrUser(Axi4):
 class IP_Axi3(IP_Axi4):
     def __init__(self):
         super(IP_Axi3, self).__init__()
-        self.quartus_name = "axi3"
+        self.quartus_name = "axi"
 
     def postProcess(self, component, entity, allInterfaces, thisIf):
         super().postProcess(component, entity, allInterfaces, thisIf)
