@@ -244,6 +244,20 @@ class IP_AXILite(IntfConfig):
                     'b': AxiMap('b', ['valid', 'ready', 'resp'])
                     }
 
+    def get_quartus_map(self):
+        if self.quartus_map is None:
+            self.quartus_map = self._toLowerCase(self.map)
+        return IntfConfig.get_quartus_map(self)
+
+    def _toLowerCase(self, d):
+        if isinstance(d, dict):
+            new_d = {}
+            for k, v in d.items():
+                new_d[k.lower()] = self._toLowerCase(v)
+            return new_d
+        else:
+            return d.lower()
+
     def postProcess(self, component, entity, allInterfaces, thisIf):
         self.endianness = "little"
         self.addWidthParam(thisIf, "ADDR_WIDTH", thisIf.ADDR_WIDTH)
