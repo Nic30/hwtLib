@@ -29,7 +29,6 @@ class AxiTester(Unit):
         self._axiCls = axiCls
         self._cntrlCls = cntrlCls
         super(AxiTester, self).__init__()
-        self.LOCK_WIDTH = 1
 
     def _config(self):
         self._axiCls._config(self)
@@ -40,7 +39,7 @@ class AxiTester(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.m_axi = self._axiCls()
-            self.m_axi.LOCK_WIDTH = self.LOCK_WIDTH
+            self.m_axi.LOCK_WIDTH.set(self.LOCK_WIDTH) 
 
         c = self.cntrl = self._cntrlCls()
         c._replaceParam("DATA_WIDTH", self.CNTRL_DATA_WIDTH)
@@ -259,7 +258,7 @@ if __name__ == "__main__":
     from hwt.serializer.ip_packager.packager import Packager
     from os.path import expanduser
 
-    u = AxiTester(Axi4)
+    u = AxiTester(Axi3)
     # print(toRtl(u))
     p = Packager(u)
     p.createPackage(expanduser("~"))
