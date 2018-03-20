@@ -12,8 +12,10 @@ from hwtLib.amba.axiLite import AxiLite_addr
 
 class Axi3_addr(Axi4_addr):
     def _config(self):
-        Axi4_addr._config(self)
+        AxiLite_addr._config(self)
+        Axi_id._config(self)
         self.LEN_WIDTH = 4
+        self.LOCK_WIDTH = Param(2)
 
     def _declr(self):
         AxiLite_addr._declr(self)
@@ -37,6 +39,41 @@ class Axi3_addr_withUser(Axi3_addr):
 
     def _initSimAgent(self):
         self._ag = Axi3_addr_withUserAgent(self)
+
+
+class Axi4_addrAgent(BaseAxiAgent):
+    def doRead(self, s):
+        intf = self.intf
+        r = s.read
+
+        addr = r(intf.addr)
+        _id = r(intf.id)
+        burst = r(intf.burst)
+        cache = r(intf.cache)
+        _len = r(intf.len)
+        lock = r(intf.lock)
+        prot = r(intf.prot)
+        size = r(intf.size)
+
+        return (_id, addr, burst, cache, _len, lock, prot, size)
+
+    def doWrite(self, s, data):
+        intf = self.intf
+        w = s.write
+
+        if data is None:
+            data = [None for _ in range(9)]
+
+        _id, addr, burst, cache, _len, lock, prot, size = data
+
+        w(_id, intf.id)
+        w(addr, intf.addr)
+        w(burst, intf.burst)
+        w(cache, intf.cache)
+        w(_len, intf.len)
+        w(lock, intf.lock)
+        w(prot, intf.prot)
+        w(size, intf.size)
 
 
 class Axi3_addr_withUserAgent(BaseAxiAgent):
