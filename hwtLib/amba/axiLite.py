@@ -6,6 +6,9 @@ from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi_intf_common import AxiMap, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
+from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
+from hwt.hdl.entity import Entity
+from typing import List
 
 
 #################################################################
@@ -25,6 +28,7 @@ class AxiLite_addrAgent(BaseAxiAgent):
     """
     :ivar data: iterable of addr
     """
+
     def doRead(self, s):
         return s.read(self.intf.addr)
 
@@ -50,6 +54,7 @@ class AxiLite_rAgent(BaseAxiAgent):
     """
     :ivar data: iterable of tuples (data, resp)
     """
+
     def doRead(self, s):
         r = s.read
         intf = self.intf
@@ -86,6 +91,7 @@ class AxiLite_wAgent(BaseAxiAgent):
     """
     :ivar data: iterable of tuples (data, strb)
     """
+
     def doRead(self, s):
         intf = self.intf
         r = s.read
@@ -117,6 +123,7 @@ class AxiLite_bAgent(BaseAxiAgent):
     """
     :ivar data: iterable of resp
     """
+
     def doRead(self, s):
         return s.read(self.intf.resp)
 
@@ -257,6 +264,16 @@ class IP_AXILite(IntfConfig):
             return new_d
         else:
             return d.lower()
+
+    def asQuartusTcl(self, buff: List[str], version: str, component,
+                     entity: Entity, allInterfaces: List[Interface],
+                     thisIf: Interface):
+        IntfConfig.asQuartusTcl(self, buff, version,
+                                component, entity, allInterfaces, thisIf)
+        name = getSignalName(thisIf)
+        self.quartus_prop(buff, name, "readIssuingCapability", 1)
+        self.quartus_prop(buff, name, "writeIssuingCapability", 1)
+        self.quartus_prop(buff, name, "combinedIssuingCapability", 1)
 
     def postProcess(self, component, entity, allInterfaces, thisIf):
         self.endianness = "little"
