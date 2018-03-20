@@ -207,15 +207,6 @@ class IP_Axi4(IP_AXILite):
         AxiMap('w', ['id', 'last'], self.map['w'])
         AxiMap('b', ['id'], self.map['b'])
 
-    def asQuartusTcl(self, buff: List[str], version: str, component,
-                     entity: Entity, allInterfaces: List[Interface],
-                     thisIf: Interface):
-        IP_AXILite.asQuartusTcl(self, buff, version,
-                                component, entity, allInterfaces, thisIf)
-        name = getSignalName(thisIf)
-        self.quartus_prop(buff, name, "readDataReorderingDepth", 1)
-        self.quartus_prop(buff, name, "bridgesToMaster", "")
-
     def postProcess(self, component, entity, allInterfaces, thisIf):
         self.endianness = "little"
 

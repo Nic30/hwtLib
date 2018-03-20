@@ -1,4 +1,4 @@
-from hwt.hdl.constants import DIRECTION
+from hwt.hdl.constants import DIRECTION, INTF_DIRECTION
 from hwt.interfaces.std import VectSignal
 from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
 from hwt.simulator.agentBase import AgentBase
@@ -271,9 +271,16 @@ class IP_AXILite(IntfConfig):
         IntfConfig.asQuartusTcl(self, buff, version,
                                 component, entity, allInterfaces, thisIf)
         name = getSignalName(thisIf)
-        self.quartus_prop(buff, name, "readIssuingCapability", 1)
-        self.quartus_prop(buff, name, "writeIssuingCapability", 1)
-        self.quartus_prop(buff, name, "combinedIssuingCapability", 1)
+        if thisIf._direction == INTF_DIRECTION.MASTER:
+            self.quartus_prop(buff, name, "readIssuingCapability", 1)
+            self.quartus_prop(buff, name, "writeIssuingCapability", 1)
+            self.quartus_prop(buff, name, "combinedIssuingCapability", 1)
+        else:
+            self.quartus_prop(buff, name, "readAcceptanceCapability", 1)
+            self.quartus_prop(buff, name, "writeAcceptanceCapability", 1)
+            self.quartus_prop(buff, name, "combinedAcceptanceCapability", 1)
+            self.quartus_prop(buff, name, "readDataReorderingDepth", 1)
+            self.quartus_prop(buff, name, "bridgesToMaster", "")
 
     def postProcess(self, component, entity, allInterfaces, thisIf):
         self.endianness = "little"
