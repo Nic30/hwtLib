@@ -167,6 +167,7 @@ from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
 from hwtLib.amba.axiLite_comp.reg_test import AxiRegTC
+from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
 
 
 def runSimWithoutLog(self, until, name=None, config=None):
@@ -236,6 +237,7 @@ suite = testSuiteFromTCs(
     UnionTC,
     UnionIntfTC,
     ResourceAnalyzer_TC,
+    VhdlSerializer_TC,
 
     # component verifications
     ConcatTC,
