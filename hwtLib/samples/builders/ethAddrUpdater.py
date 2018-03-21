@@ -43,7 +43,6 @@ class EthAddrUpdater(Unit):
 
         with self._paramsShared():
             self.axi_m = Axi3()
-            self.axi_m.LOCK_WIDTH.set(2)
 
         self.packetAddr = Handshaked()
         self.packetAddr._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
