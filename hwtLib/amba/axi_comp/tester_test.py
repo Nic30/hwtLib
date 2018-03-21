@@ -14,6 +14,22 @@ from hwtLib.amba.constants import BYTES_IN_TRANS, PROT_DEFAULT, LOCK_DEFAULT,\
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.bitmask import mask
 from itertools import islice
+from collections import deque
+
+
+class SimProcessSequence(deque):
+    def onPartDone(self, sim):
+        if self:
+            self.actual = actual = self.popleft()
+            actual(sim, self.onPartDone)
+        else:
+            self.actual = None
+
+    def run(self, sim):
+        self.actual = actual = self.popleft()
+        actual(sim, self.onPartDone)
+        return
+        yield
 
 
 class AxiTesterTC(SimTestCase):
@@ -44,23 +60,18 @@ class AxiTesterTC(SimTestCase):
         self.randomize_all()
         self.runSim(200 * Time.ns)
 
-    def poolWhileBussy(self, onReady):
+    def poolWhileBussy(self, sim, onReady):
         def repeatWaitIfNotReady(sim):
             d = self.u.cntrl.r._ag.data[-1][0]
             d = int(d)
-            print("repeatWaitIfNotReady", d, sim.now / (Time.ns * 10))
             if d:
                 # ready, run callback
                 onReady(sim)
             else:
                 # not ready pool again
-                pool_wait(sim)
+                self.poolWhileBussy(sim, onReady)
 
-        def pool_wait(sim):
-            print("pool_wait", sim.now / (Time.ns * 10))
-            self.regs.cmd_and_status.read(onDone=repeatWaitIfNotReady)
-
-        return pool_wait
+        self.regs.cmd_and_status.read(onDone=repeatWaitIfNotReady)
 
     def test_read(self):
         self.randomize_all()
@@ -75,23 +86,22 @@ class AxiTesterTC(SimTestCase):
         expected_data = []
         self.transactionCompleted = 0
 
-        transactions = [(1, 1), (3, 2), (8, 3)]
+        transactions = [(1, 1), (2, 3), (3, 8)]
         tIt = iter(transactions)
 
-        def spotNewTransaction(sim):
-            if sim:
-                t = sim.now / (Time.ns *10)
-            else:
-                t = 0
-            print("spotNewTransaction", t)
-            id_, words = next(tIt)
+        def spotNewTransaction(sim, onDone):
+            try:
+                id_, words = next(tIt)
+            except StopIteration:
+                return
+
             magic = MAGIC * id_
             initValues = [magic + i for i in range(words)]
             memPtr = m.calloc(words, WORD_SIZE,
                               initValues=initValues)
             expected_data.append(initValues)
+            self.expected_id = id_
 
-            # 1
             r.ar_aw_w_id.write(id_)
             r.addr.write(memPtr)
             r.burst.write(BURST_INCR)
@@ -102,61 +112,60 @@ class AxiTesterTC(SimTestCase):
             r.size.write(BYTES_IN_TRANS(WORD_SIZE))
             r.qos.write(0)
 
-            dataIter = iter_with_last(initValues)
+            self.wordIt = iter_with_last(initValues)
+            r.cmd_and_status.write(SEND_AR, onDone=onDone)
 
-            def data_read(sim, onDone=None):
-                print("data_read", sim.now / (Time.ns *10))
-                # 3
-                last, d = next(dataIter)
+        def data_read_req(sim, onDone):
+            try:
+                self.extected_last, self.extected_d = next(self.wordIt)
+            except StopIteration:
+                raise Exception("Underflow")
+            r.cmd_and_status.write(RECV_R, onDone=onDone)
 
-                r.r_id.read()
-                r.r_data.read()
-                r.r_resp.read()
+        def data_read_regisers(sim, onDone):
+            # 3
+            r.r_id.read()
+            r.r_data.read()
+            r.r_resp.read()
+            r.r_last.read(onDone=onDone)
 
-                def checkBeat(sim):
-                    print("checkBeat", sim.now / (Time.ns *10))
-                    trans_id = cntrl_r[-4][0]
-                    trans_data = cntrl_r[-3][0]
-                    trans_resp = cntrl_r[-2][0]
-                    trans_last = cntrl_r[-1][0]
-                    print("last", trans_last)
-                    for t in islice(cntrl_r, len(cntrl_r)-4, len(cntrl_r)):
-                        self.assertValEqual(t[1], RESP_OKAY)
+        def checkBeat(sim, onDone):
+            trans_id = cntrl_r[-4][0]
+            trans_data = cntrl_r[-3][0]
+            trans_resp = cntrl_r[-2][0]
+            trans_last = cntrl_r[-1][0]
 
-                    print("id", id_)
-                    self.assertValEqual(trans_id & ID_MASK, id_)
-                    self.assertValEqual(trans_data, d)
-                    self.assertValEqual(trans_resp & 0b11, RESP_OKAY)
-                    self.assertValEqual(trans_last & 1, last)
-                    self.transactionCompleted += 1
+            for t in islice(cntrl_r, len(cntrl_r) - 4, len(cntrl_r)):
+                self.assertValEqual(t[1], RESP_OKAY)
 
-                    if onDone:
-                        # 4
-                        onDone(sim)
+            id_, d, last = self.expected_id, self.extected_d, self.extected_last
+            self.assertValEqual(trans_id & ID_MASK, id_)
+            self.assertValEqual(trans_data, d)
+            self.assertValEqual(trans_resp & 0b11, RESP_OKAY)
+            self.assertValEqual(trans_last & 1, last)
+            self.transactionCompleted += 1
+            onDone(sim)
 
-                r.r_last.read(onDone=checkBeat)
-
-            wordIt = iter_with_last(range(words))
-
-            def recieveBeat(sim):
-                print("recieveBeat", sim.now / (Time.ns *10))
-                # 2
-                last, wordIndex = next(wordIt) 
-                if last:
-                    def callback(sim):
-                        return data_read(sim, spotNewTransaction)
-                else:
-                    callback = data_read(sim, recieveBeat)
-
-                r.cmd_and_status.write(RECV_R,
-                                       onDone=self.poolWhileBussy(callback))
-
-            r.cmd_and_status.write(SEND_AR, onDone=self.poolWhileBussy(recieveBeat))
-
-        spotNewTransaction(None)
-        self.runSim(3000 * Time.ns)
+        pool = self.poolWhileBussy
+        seq = SimProcessSequence()
+        for _, len_ in transactions:
+            seq.extend([
+                pool,
+                spotNewTransaction
+            ])
+            for _ in range(len_):
+                seq.extend([
+                    pool,
+                    data_read_req,
+                    pool,
+                    data_read_regisers,
+                    checkBeat,
+                ])
+        self.procs.append(seq.run)
+        self.runSim(4000 * Time.ns)
+        self.assertEmpty(seq)
         self.assertEqual(len(self.u.cntrl.w._ag.data), 0)
-        self.assertEqual(self.transactionCompleted, 3)
+        self.assertEqual(self.transactionCompleted, sum([x[1] for x in transactions]))
 
 
 if __name__ == "__main__":

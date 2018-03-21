@@ -237,16 +237,11 @@ class AxiTester(Unit):
         connected_reg("b_resp")
         b.ready(b_rd)
 
-        def to_bit(sig):
-            s = self._sig("tmp")
-            s(sig)
-            return s
-
-        ep.hs.din(Concat(to_bit(ar_vld), axi.ar.ready,
-                         to_bit(aw_vld), axi.aw.ready,
-                         r.valid, to_bit(r_rd),
-                         b.valid, to_bit(b_rd),
-                         to_bit(w_vld), w.ready))
+        ep.hs.din(Concat(ar_vld, axi.ar.ready,
+                         aw_vld, axi.aw.ready,
+                         r.valid, r_rd,
+                         b.valid, b_rd,
+                         w_vld, w.ready))
 
 
 if __name__ == "__main__":
