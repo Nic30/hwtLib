@@ -6,10 +6,6 @@ from hwtLib.amba.axiLite import AxiLite, AxiLite_b, AxiLite_r, \
 from hwtLib.amba.axi_intf_common import AxiMap, Axi_id
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
-from hwt.hdl.entity import Entity
-from hwt.synthesizer.interface import Interface
-from typing import List
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 
 
 #####################################################################
