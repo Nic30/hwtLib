@@ -1,4 +1,4 @@
-from hwt.hdl.constants import DIRECTION
+from hwt.hdl.constants import DIRECTION, INTF_DIRECTION
 from hwt.interfaces.std import VectSignal
 from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
 from hwt.simulator.agentBase import AgentBase
@@ -6,6 +6,9 @@ from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi_intf_common import AxiMap, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
+from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
+from hwt.hdl.entity import Entity
+from typing import List
 
 
 #################################################################
@@ -25,6 +28,7 @@ class AxiLite_addrAgent(BaseAxiAgent):
     """
     :ivar data: iterable of addr
     """
+
     def doRead(self, s):
         return s.read(self.intf.addr)
 
@@ -50,6 +54,7 @@ class AxiLite_rAgent(BaseAxiAgent):
     """
     :ivar data: iterable of tuples (data, resp)
     """
+
     def doRead(self, s):
         r = s.read
         intf = self.intf
@@ -86,6 +91,7 @@ class AxiLite_wAgent(BaseAxiAgent):
     """
     :ivar data: iterable of tuples (data, strb)
     """
+
     def doRead(self, s):
         intf = self.intf
         r = s.read
@@ -117,6 +123,7 @@ class AxiLite_bAgent(BaseAxiAgent):
     """
     :ivar data: iterable of resp
     """
+
     def doRead(self, s):
         return s.read(self.intf.resp)
 
@@ -243,6 +250,37 @@ class IP_AXILite(IntfConfig):
                     'r': AxiMap('r', ['data', 'resp', 'valid', 'ready']),
                     'b': AxiMap('b', ['valid', 'ready', 'resp'])
                     }
+
+    def get_quartus_map(self):
+        if self.quartus_map is None:
+            self.quartus_map = self._toLowerCase(self.map)
+        return IntfConfig.get_quartus_map(self)
+
+    def _toLowerCase(self, d):
+        if isinstance(d, dict):
+            new_d = {}
+            for k, v in d.items():
+                new_d[k.lower()] = self._toLowerCase(v)
+            return new_d
+        else:
+            return d.lower()
+
+    def asQuartusTcl(self, buff: List[str], version: str, component,
+                     entity: Entity, allInterfaces: List[Interface],
+                     thisIf: Interface):
+        IntfConfig.asQuartusTcl(self, buff, version,
+                                component, entity, allInterfaces, thisIf)
+        name = getSignalName(thisIf)
+        if thisIf._direction == INTF_DIRECTION.MASTER:
+            self.quartus_prop(buff, name, "readIssuingCapability", 1)
+            self.quartus_prop(buff, name, "writeIssuingCapability", 1)
+            self.quartus_prop(buff, name, "combinedIssuingCapability", 1)
+        else:
+            self.quartus_prop(buff, name, "readAcceptanceCapability", 1)
+            self.quartus_prop(buff, name, "writeAcceptanceCapability", 1)
+            self.quartus_prop(buff, name, "combinedAcceptanceCapability", 1)
+            self.quartus_prop(buff, name, "readDataReorderingDepth", 1)
+            self.quartus_prop(buff, name, "bridgesToMaster", "")
 
     def postProcess(self, component, entity, allInterfaces, thisIf):
         self.endianness = "little"

@@ -38,7 +38,7 @@ class AxiTester(Unit):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.axi = self._axiCls()
+            self.m_axi = self._axiCls()
 
         c = self.cntrl = self._cntrlCls()
         c._replaceParam("DATA_WIDTH", self.CNTRL_DATA_WIDTH)
@@ -53,9 +53,9 @@ class AxiTester(Unit):
         strb_w = self.DATA_WIDTH // 8
         # [TODO] hotfix, should be self.DATA_WIDTH
         data_field_w = self.CNTRL_DATA_WIDTH
-        if isinstance(self.axi, Axi3):
+        if isinstance(self.m_axi, Axi3):
             len_width = 4
-        elif isinstance(self.axi, Axi4):
+        elif isinstance(self.m_axi, Axi4):
             len_width = 8
         else:
             raise NotImplementedError()
@@ -159,7 +159,7 @@ class AxiTester(Unit):
                         ["ready", "wait_ar", "wait_aw",
                          "wait_w", "wait_b", "wait_r"])
 
-        axi = self.axi
+        axi = self.m_axi
         st = FsmBuilder(self, state_t)\
             .Trans(state_t.ready,
                    (cmd_en(SEND_AW), state_t.wait_aw),
@@ -210,7 +210,8 @@ class AxiTester(Unit):
             p.lock(lock)
             p.prot(prot)
             p.size(size)
-            p.qos(qos)
+            if hasattr(p, "qos"):
+                p.qos(qos)
 
         aw_vld = st._eq(state_t.wait_aw)
         axi.aw.valid(aw_vld)
@@ -244,11 +245,16 @@ class AxiTester(Unit):
         connected_reg("b_resp")
         b.ready(b_rd)
 
-        ep.hs.din(Concat(ar_vld, axi.ar.ready,
-                         aw_vld, axi.aw.ready,
-                         r.valid, r_rd,
-                         b.valid, b_rd,
-                         w_vld, w.ready))
+        def to_bit(sig):
+            s = self._sig("tmp")
+            s(sig)
+            return s
+
+        ep.hs.din(Concat(to_bit(ar_vld), axi.ar.ready,
+                         to_bit(aw_vld), axi.aw.ready,
+                         r.valid, to_bit(r_rd),
+                         b.valid, to_bit(b_rd),
+                         to_bit(w_vld), w.ready))
 
 
 if __name__ == "__main__":
@@ -256,7 +262,7 @@ if __name__ == "__main__":
     from hwt.serializer.ip_packager.packager import Packager
     from os.path import expanduser
 
-    u = AxiTester(Axi4)
+    u = AxiTester(Axi3)
     # print(toRtl(u))
     p = Packager(u)
     p.createPackage(expanduser("~"))

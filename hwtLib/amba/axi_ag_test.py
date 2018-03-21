@@ -27,7 +27,7 @@ class Axi_ag_TC(SimTestCase):
     """
     Simple test of axi3/4 interfaces and agents for them
     """
-    def randA(self):
+    def randAxi4A(self):
         """get random address transaction"""
         r = self._rand.getrandbits
         _id = r(6)
@@ -42,7 +42,7 @@ class Axi_ag_TC(SimTestCase):
 
         return (_id, addr, burst, cache, _len, lock, prot, size, qos)
 
-    def randA3u(self):
+    def randAxi3Au(self):
         """get random address transaction for axi 3 with user"""
         r = self._rand.getrandbits
         _id = r(6)
@@ -53,10 +53,9 @@ class Axi_ag_TC(SimTestCase):
         lock = r(1)
         prot = r(3)
         size = r(3)
-        qos = r(4)
         user = r(3)
 
-        return (_id, addr, burst, cache, _len, lock, prot, size, qos, user)
+        return (_id, addr, burst, cache, _len, lock, prot, size, user)
 
     def randW(self, hasId=True):
         """get random data write transaction"""
@@ -92,8 +91,8 @@ class Axi_ag_TC(SimTestCase):
         self.prepareUnit(u)
         N = 10
 
-        aw = [self.randA() for _ in range(N)]
-        ar = [self.randA() for _ in range(N)]
+        aw = [self.randAxi4A() for _ in range(N)]
+        ar = [self.randAxi4A() for _ in range(N)]
         w = [self.randW(False) for _ in range(N)]
         b = [self.randB() for _ in range(N)]
         r = [self.randR() for _ in range(N)]
@@ -123,8 +122,8 @@ class Axi_ag_TC(SimTestCase):
         self.prepareUnit(u)
         N = 10
 
-        aw = [self.randA3u() for _ in range(N)]
-        ar = [self.randA3u() for _ in range(N)]
+        aw = [self.randAxi3Au() for _ in range(N)]
+        ar = [self.randAxi3Au() for _ in range(N)]
         w = [self.randW() for _ in range(N)]
         b = [self.randB() for _ in range(N)]
         r = [self.randR() for _ in range(N)]

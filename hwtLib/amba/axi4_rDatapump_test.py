@@ -370,8 +370,7 @@ class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
 
     def mkDefaultAddrReq(self, _id, addr, _len):
         return (_id, addr, BURST_INCR, CACHE_DEFAULT, _len,
-                LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS(8),
-                QOS_DEFAULT, 0)
+                LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS(8), 0)
 
 
 if __name__ == "__main__":
