@@ -1,7 +1,7 @@
 from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import VectSignal
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axiLite import AxiLite
+from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwtLib.amba.axi3 import Axi3_addr, Axi3_r, Axi3_b, IP_Axi3, Axi3
@@ -101,9 +101,11 @@ class Axi4(Axi3):
     :ivar w: write data channel
     :ivar b: write acknowledge channel
     """
+    LEN_WIDTH = 8
+    LOCK_WIDTH = 1
 
     def _config(self):
-        AxiLite._config(self)
+        Axi4Lite._config(self)
         self.ID_WIDTH = Param(6)
         self.LOCK_WIDTH = 1
 

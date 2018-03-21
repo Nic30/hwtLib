@@ -1,16 +1,15 @@
 from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import VectSignal, Signal
-from hwt.pyUtils.arrayQuery import single
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axiLite import AxiLite_addr, AxiLite, AxiLite_r, AxiLite_b,\
-    IP_AXILite
+from hwtLib.amba.axi3Lite import Axi3Lite_addr, Axi3Lite, Axi3Lite_r, Axi3Lite_b,\
+    IP_Axi3Lite
 from hwtLib.amba.axi_intf_common import AxiMap, Axi_id
 from hwtLib.amba.axis import AxiStream_withId
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 
 
 #####################################################################
-class Axi3_addr(AxiLite_addr, Axi_id):
+class Axi3_addr(Axi3Lite_addr, Axi_id):
     """
     Axi3 address channel interface
     """
@@ -18,11 +17,11 @@ class Axi3_addr(AxiLite_addr, Axi_id):
     LEN_WIDTH = 4
 
     def _config(self):
-        AxiLite_addr._config(self)
+        Axi3Lite_addr._config(self)
         Axi_id._config(self)
 
     def _declr(self):
-        AxiLite_addr._declr(self)
+        Axi3Lite_addr._declr(self)
         Axi_id._declr(self)
         self.burst = VectSignal(2)
         self.cache = VectSignal(4)
@@ -135,17 +134,17 @@ class Axi3_w(AxiStream_withId):
 
 
 #####################################################################
-class Axi3_r(AxiLite_r, Axi_id):
+class Axi3_r(Axi3Lite_r, Axi_id):
     """
     Axi 3 read channel interface
     """
     def _config(self):
         Axi_id._config(self)
-        AxiLite_r._config(self)
+        Axi3Lite_r._config(self)
 
     def _declr(self):
         Axi_id._declr(self)
-        AxiLite_r._declr(self)
+        Axi3Lite_r._declr(self)
         self.last = Signal()
 
     def _initSimAgent(self):
@@ -187,17 +186,17 @@ class Axi3_rAgent(BaseAxiAgent):
 
 
 #####################################################################
-class Axi3_b(AxiLite_b, Axi_id):
+class Axi3_b(Axi3Lite_b, Axi_id):
     """
     Axi3 write response channel interface
     """
     def _config(self):
         Axi_id._config(self)
-        AxiLite_b._config(self)
+        Axi3Lite_b._config(self)
 
     def _declr(self):
         Axi_id._declr(self)
-        AxiLite_b._declr(self)
+        Axi3Lite_b._declr(self)
 
     def _initSimAgent(self):
         self._ag = Axi3_bAgent(self)
@@ -231,14 +230,15 @@ class Axi3_bAgent(BaseAxiAgent):
 
 
 #####################################################################
-class Axi3(AxiLite):
+class Axi3(Axi3Lite):
     """
     Axi3 bus interface
     """
     LOCK_WIDTH = 2
+    LEN_WIDTH = 4
 
     def _config(self):
-        AxiLite._config(self)
+        Axi3Lite._config(self)
         self.ID_WIDTH = Param(6)
 
     def _declr(self):
@@ -273,7 +273,7 @@ class Axi3_withAddrUser(Axi3):
         return IP_Axi3_withAddrUser
 
 
-class IP_Axi3(IP_AXILite):
+class IP_Axi3(IP_Axi3Lite):
     """
     IP core interface meta for Axi3 interface
     """

@@ -3,7 +3,7 @@
 
 from hwt.synthesizer.interfaceLevel.emptyUnit import setOut, EmptyUnit
 from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axiLite import AxiLite
+from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.unit import Unit
@@ -36,7 +36,7 @@ class Filter(EmptyUnit):
 
         self.din = AxiStream()
         self.dout = AxiStream()
-        self.cfg = AxiLite()
+        self.cfg = Axi4Lite()
 
     def _impl(self):
         setOut(self.dout)
@@ -65,7 +65,7 @@ class NetFilter(Unit):
         with self._paramsShared():
             self.din = AxiStream()
             self.export = AxiStream()
-            self.cfg = AxiLite()
+            self.cfg = Axi4Lite()
 
             self.hfe = HeadFieldExtractor()
             self.patternMatch = PatternMatch()

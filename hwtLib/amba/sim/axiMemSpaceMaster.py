@@ -1,5 +1,7 @@
 from hwtLib.sim.abstractMemSpaceMaster import AbstractMemSpaceMaster
 from hwt.interfaces.agents.handshaked import HandshakedReadListener
+from hwtLib.amba.axi4Lite import Axi4Lite
+from hwtLib.amba.axi3Lite import Axi3Lite
 
 
 class TupleWithCallback(tuple):
@@ -18,8 +20,21 @@ class AxiLiteMemSpaceMaster(AbstractMemSpaceMaster):
         self._r_planed_words_cnt = 0
         self._w_planed_words_cnt = 0
         self._read_listener = None
+        if isinstance(bus, Axi4Lite):
+            self._writeAddr = self._axi4lite_writeAddr
+        elif isinstance(bus, Axi3Lite):
+            self._writeAddr = self._axi3lite_writeAddr
+        else:
+            raise TypeError(bus)
 
-    def _writeAddr(self, addrChannel, addr, size):
+    def _axi4lite_writeAddr(self, addrChannel, addr, size):
+        """
+        add address transaction to addr channel of agent
+        """
+        prot = 0 
+        addrChannel.data.append((addr, prot))
+
+    def _axi3lite_writeAddr(self, addrChannel, addr, size):
         """
         add address transaction to addr channel of agent
         """

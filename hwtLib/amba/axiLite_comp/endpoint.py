@@ -6,7 +6,7 @@ from hwt.code import If, FsmBuilder, Or, log2ceil, connect, Switch, \
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.enum import HEnum
 from hwtLib.abstract.busEndpoint import BusEndpoint
-from hwtLib.amba.axiLite import AxiLite
+from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 from hwt.pyUtils.arrayQuery import groupedby
 from hwt.hdl.types.bits import Bits
@@ -17,10 +17,10 @@ class AxiLiteEndpoint(BusEndpoint):
     Delegate request from AxiLite interface to fields of structure
     write has higher priority
     """
-    _getWordAddrStep = AxiLite._getWordAddrStep
-    _getAddrStep = AxiLite._getAddrStep
+    _getWordAddrStep = Axi4Lite._getWordAddrStep
+    _getAddrStep = Axi4Lite._getAddrStep
 
-    def __init__(self, structTemplate, intfCls=AxiLite, shouldEnterFn=None):
+    def __init__(self, structTemplate, intfCls=Axi4Lite, shouldEnterFn=None):
         BusEndpoint.__init__(self, structTemplate,
                              intfCls=intfCls,
                              shouldEnterFn=shouldEnterFn)

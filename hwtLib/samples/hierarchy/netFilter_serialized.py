@@ -89,9 +89,11 @@ ENTITY filter IS
         patternMatch_IS_BIGENDIAN: BOOLEAN := False
     );
     PORT (cfg_ar_addr: IN STD_LOGIC_VECTOR(cfg_ADDR_WIDTH - 1 DOWNTO 0);
+        cfg_ar_prot: IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         cfg_ar_ready: OUT STD_LOGIC;
         cfg_ar_valid: IN STD_LOGIC;
         cfg_aw_addr: IN STD_LOGIC_VECTOR(cfg_ADDR_WIDTH - 1 DOWNTO 0);
+        cfg_aw_prot: IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         cfg_aw_ready: OUT STD_LOGIC;
         cfg_aw_valid: IN STD_LOGIC;
         cfg_b_ready: IN STD_LOGIC;
@@ -226,9 +228,11 @@ ENTITY NetFilter IS
         export_IS_BIGENDIAN: BOOLEAN := False
     );
     PORT (cfg_ar_addr: IN STD_LOGIC_VECTOR(cfg_ADDR_WIDTH - 1 DOWNTO 0);
+        cfg_ar_prot: IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         cfg_ar_ready: OUT STD_LOGIC;
         cfg_ar_valid: IN STD_LOGIC;
         cfg_aw_addr: IN STD_LOGIC_VECTOR(cfg_ADDR_WIDTH - 1 DOWNTO 0);
+        cfg_aw_prot: IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         cfg_aw_ready: OUT STD_LOGIC;
         cfg_aw_valid: IN STD_LOGIC;
         cfg_b_ready: IN STD_LOGIC;
@@ -269,9 +273,11 @@ ARCHITECTURE rtl OF NetFilter IS
     SIGNAL sig_exporter_dout_strb: STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL sig_exporter_dout_valid: STD_LOGIC;
     SIGNAL sig_filter_cfg_ar_addr: STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL sig_filter_cfg_ar_prot: STD_LOGIC_VECTOR(2 DOWNTO 0);
     SIGNAL sig_filter_cfg_ar_ready: STD_LOGIC;
     SIGNAL sig_filter_cfg_ar_valid: STD_LOGIC;
     SIGNAL sig_filter_cfg_aw_addr: STD_LOGIC_VECTOR(31 DOWNTO 0);
+    SIGNAL sig_filter_cfg_aw_prot: STD_LOGIC_VECTOR(2 DOWNTO 0);
     SIGNAL sig_filter_cfg_aw_ready: STD_LOGIC;
     SIGNAL sig_filter_cfg_aw_valid: STD_LOGIC;
     SIGNAL sig_filter_cfg_b_ready: STD_LOGIC;
@@ -372,9 +378,11 @@ ARCHITECTURE rtl OF NetFilter IS
             patternMatch_IS_BIGENDIAN: BOOLEAN := False
        );
        PORT (cfg_ar_addr: IN STD_LOGIC_VECTOR(cfg_ADDR_WIDTH - 1 DOWNTO 0);
+            cfg_ar_prot: IN STD_LOGIC_VECTOR(2 DOWNTO 0);
             cfg_ar_ready: OUT STD_LOGIC;
             cfg_ar_valid: IN STD_LOGIC;
             cfg_aw_addr: IN STD_LOGIC_VECTOR(cfg_ADDR_WIDTH - 1 DOWNTO 0);
+            cfg_aw_prot: IN STD_LOGIC_VECTOR(2 DOWNTO 0);
             cfg_aw_ready: OUT STD_LOGIC;
             cfg_aw_valid: IN STD_LOGIC;
             cfg_b_ready: IN STD_LOGIC;
@@ -506,9 +514,11 @@ BEGIN
             patternMatch_IS_BIGENDIAN => False
         )
         PORT MAP (cfg_ar_addr => sig_filter_cfg_ar_addr,
+            cfg_ar_prot => sig_filter_cfg_ar_prot,
             cfg_ar_ready => sig_filter_cfg_ar_ready,
             cfg_ar_valid => sig_filter_cfg_ar_valid,
             cfg_aw_addr => sig_filter_cfg_aw_addr,
+            cfg_aw_prot => sig_filter_cfg_aw_prot,
             cfg_aw_ready => sig_filter_cfg_aw_ready,
             cfg_aw_valid => sig_filter_cfg_aw_valid,
             cfg_b_ready => sig_filter_cfg_b_ready,
@@ -623,8 +633,10 @@ BEGIN
     sig_exporter_din_valid <= sig_filter_dout_valid;
     sig_exporter_dout_ready <= export_ready;
     sig_filter_cfg_ar_addr <= cfg_ar_addr;
+    sig_filter_cfg_ar_prot <= cfg_ar_prot;
     sig_filter_cfg_ar_valid <= cfg_ar_valid;
     sig_filter_cfg_aw_addr <= cfg_aw_addr;
+    sig_filter_cfg_aw_prot <= cfg_aw_prot;
     sig_filter_cfg_aw_valid <= cfg_aw_valid;
     sig_filter_cfg_b_ready <= cfg_b_ready;
     sig_filter_cfg_r_ready <= cfg_r_ready;
@@ -730,9 +742,11 @@ module filter #(parameter  cfg_ADDR_WIDTH = 32,
         parameter  patternMatch_DATA_WIDTH = 64,
         parameter  patternMatch_IS_BIGENDIAN = 0
     )(input [cfg_ADDR_WIDTH- 1:0] cfg_ar_addr,
+        input [2:0] cfg_ar_prot,
         output cfg_ar_ready,
         input cfg_ar_valid,
         input [cfg_ADDR_WIDTH- 1:0] cfg_aw_addr,
+        input [2:0] cfg_aw_prot,
         output cfg_aw_ready,
         input cfg_aw_valid,
         input cfg_b_ready,
@@ -857,7 +871,8 @@ module gen_dout_splitCopy_0 #(parameter  DATA_WIDTH = 64,
 endmodule
 /*
 
-    This unit has actually no functionality it is just example of hierarchical design.
+    This unit has actually no functionality it is just example
+    of hierarchical design.
     
 */
 module NetFilter #(parameter  DATA_WIDTH = 64,
@@ -865,9 +880,11 @@ module NetFilter #(parameter  DATA_WIDTH = 64,
         parameter  din_IS_BIGENDIAN = 0,
         parameter  export_IS_BIGENDIAN = 0
     )(input [cfg_ADDR_WIDTH- 1:0] cfg_ar_addr,
+        input [2:0] cfg_ar_prot,
         output cfg_ar_ready,
         input cfg_ar_valid,
         input [cfg_ADDR_WIDTH- 1:0] cfg_aw_addr,
+        input [2:0] cfg_aw_prot,
         output cfg_aw_ready,
         input cfg_aw_valid,
         input cfg_b_ready,
@@ -906,9 +923,11 @@ module NetFilter #(parameter  DATA_WIDTH = 64,
     wire [7:0] sig_exporter_dout_strb;
     wire sig_exporter_dout_valid;
     wire [31:0] sig_filter_cfg_ar_addr;
+    wire [2:0] sig_filter_cfg_ar_prot;
     wire sig_filter_cfg_ar_ready;
     wire sig_filter_cfg_ar_valid;
     wire [31:0] sig_filter_cfg_aw_addr;
+    wire [2:0] sig_filter_cfg_aw_prot;
     wire sig_filter_cfg_aw_ready;
     wire sig_filter_cfg_aw_valid;
     wire sig_filter_cfg_b_ready;
@@ -1005,9 +1024,11 @@ module NetFilter #(parameter  DATA_WIDTH = 64,
         .patternMatch_DATA_WIDTH(64),
         .patternMatch_IS_BIGENDIAN(0)
         ) filter_inst (.cfg_ar_addr(sig_filter_cfg_ar_addr),
+        .cfg_ar_prot(sig_filter_cfg_ar_prot),
         .cfg_ar_ready(sig_filter_cfg_ar_ready),
         .cfg_ar_valid(sig_filter_cfg_ar_valid),
         .cfg_aw_addr(sig_filter_cfg_aw_addr),
+        .cfg_aw_prot(sig_filter_cfg_aw_prot),
         .cfg_aw_ready(sig_filter_cfg_aw_ready),
         .cfg_aw_valid(sig_filter_cfg_aw_valid),
         .cfg_b_ready(sig_filter_cfg_b_ready),
@@ -1120,8 +1141,10 @@ module NetFilter #(parameter  DATA_WIDTH = 64,
     assign sig_exporter_din_valid = sig_filter_dout_valid;
     assign sig_exporter_dout_ready = export_ready;
     assign sig_filter_cfg_ar_addr = cfg_ar_addr;
+    assign sig_filter_cfg_ar_prot = cfg_ar_prot;
     assign sig_filter_cfg_ar_valid = cfg_ar_valid;
     assign sig_filter_cfg_aw_addr = cfg_aw_addr;
+    assign sig_filter_cfg_aw_prot = cfg_aw_prot;
     assign sig_filter_cfg_aw_valid = cfg_aw_valid;
     assign sig_filter_cfg_b_ready = cfg_b_ready;
     assign sig_filter_cfg_r_ready = cfg_r_ready;
@@ -1290,9 +1313,11 @@ SC_MODULE(patternMatch) {
 SC_MODULE(filter) {
     //interfaces
     sc_in<sc_uint<32>> cfg_ar_addr;
+    sc_in<sc_uint<3>> cfg_ar_prot;
     sc_out<sc_uint<1>> cfg_ar_ready;
     sc_in<sc_uint<1>> cfg_ar_valid;
     sc_in<sc_uint<32>> cfg_aw_addr;
+    sc_in<sc_uint<3>> cfg_aw_prot;
     sc_out<sc_uint<1>> cfg_aw_ready;
     sc_in<sc_uint<1>> cfg_aw_valid;
     sc_in<sc_uint<1>> cfg_b_ready;
@@ -1521,7 +1546,8 @@ SC_MODULE(gen_dout_splitCopy_0) {
 };
 /*
 
-    This unit has actually no functionality it is just example of hierarchical design.
+    This unit has actually no functionality it is just example
+    of hierarchical design.
     
 */
 
@@ -1531,9 +1557,11 @@ SC_MODULE(gen_dout_splitCopy_0) {
 SC_MODULE(NetFilter) {
     //interfaces
     sc_in<sc_uint<32>> cfg_ar_addr;
+    sc_in<sc_uint<3>> cfg_ar_prot;
     sc_out<sc_uint<1>> cfg_ar_ready;
     sc_in<sc_uint<1>> cfg_ar_valid;
     sc_in<sc_uint<32>> cfg_aw_addr;
+    sc_in<sc_uint<3>> cfg_aw_prot;
     sc_out<sc_uint<1>> cfg_aw_ready;
     sc_in<sc_uint<1>> cfg_aw_valid;
     sc_in<sc_uint<1>> cfg_b_ready;
@@ -1572,9 +1600,11 @@ SC_MODULE(NetFilter) {
     sc_signal<sc_uint<8>> sig_exporter_dout_strb;
     sc_signal<sc_uint<1>> sig_exporter_dout_valid;
     sc_signal<sc_uint<32>> sig_filter_cfg_ar_addr;
+    sc_signal<sc_uint<3>> sig_filter_cfg_ar_prot;
     sc_signal<sc_uint<1>> sig_filter_cfg_ar_ready;
     sc_signal<sc_uint<1>> sig_filter_cfg_ar_valid;
     sc_signal<sc_uint<32>> sig_filter_cfg_aw_addr;
+    sc_signal<sc_uint<3>> sig_filter_cfg_aw_prot;
     sc_signal<sc_uint<1>> sig_filter_cfg_aw_ready;
     sc_signal<sc_uint<1>> sig_filter_cfg_aw_valid;
     sc_signal<sc_uint<1>> sig_filter_cfg_b_ready;
@@ -1702,11 +1732,17 @@ SC_MODULE(NetFilter) {
     void assig_process_sig_filter_cfg_ar_addr() {
         sig_filter_cfg_ar_addr.write(cfg_ar_addr.read());
     }
+    void assig_process_sig_filter_cfg_ar_prot() {
+        sig_filter_cfg_ar_prot.write(cfg_ar_prot.read());
+    }
     void assig_process_sig_filter_cfg_ar_valid() {
         sig_filter_cfg_ar_valid.write(cfg_ar_valid.read());
     }
     void assig_process_sig_filter_cfg_aw_addr() {
         sig_filter_cfg_aw_addr.write(cfg_aw_addr.read());
+    }
+    void assig_process_sig_filter_cfg_aw_prot() {
+        sig_filter_cfg_aw_prot.write(cfg_aw_prot.read());
     }
     void assig_process_sig_filter_cfg_aw_valid() {
         sig_filter_cfg_aw_valid.write(cfg_aw_valid.read());
@@ -1864,10 +1900,14 @@ SC_MODULE(NetFilter) {
         sensitive << export_ready;
         SC_METHOD(assig_process_sig_filter_cfg_ar_addr);
         sensitive << cfg_ar_addr;
+        SC_METHOD(assig_process_sig_filter_cfg_ar_prot);
+        sensitive << cfg_ar_prot;
         SC_METHOD(assig_process_sig_filter_cfg_ar_valid);
         sensitive << cfg_ar_valid;
         SC_METHOD(assig_process_sig_filter_cfg_aw_addr);
         sensitive << cfg_aw_addr;
+        SC_METHOD(assig_process_sig_filter_cfg_aw_prot);
+        sensitive << cfg_aw_prot;
         SC_METHOD(assig_process_sig_filter_cfg_aw_valid);
         sensitive << cfg_aw_valid;
         SC_METHOD(assig_process_sig_filter_cfg_b_ready);
@@ -1953,9 +1993,11 @@ SC_MODULE(NetFilter) {
         exporter.dout_strb(sig_exporter_dout_strb);
         exporter.dout_valid(sig_exporter_dout_valid);
         filter.cfg_ar_addr(sig_filter_cfg_ar_addr);
+        filter.cfg_ar_prot(sig_filter_cfg_ar_prot);
         filter.cfg_ar_ready(sig_filter_cfg_ar_ready);
         filter.cfg_ar_valid(sig_filter_cfg_ar_valid);
         filter.cfg_aw_addr(sig_filter_cfg_aw_addr);
+        filter.cfg_aw_prot(sig_filter_cfg_aw_prot);
         filter.cfg_aw_ready(sig_filter_cfg_aw_ready);
         filter.cfg_aw_valid(sig_filter_cfg_aw_valid);
         filter.cfg_b_ready(sig_filter_cfg_b_ready);

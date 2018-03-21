@@ -1,17 +1,18 @@
-from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC
-from hwtLib.amba.axiLite import AxiLite
-from hwtLib.abstract.busEndpoint import BusEndpoint
-from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
-from hwtLib.amba.axiLite_comp.reg import AxiLiteReg
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.synthesizer.unit import Unit
+from hwtLib.abstract.busEndpoint import BusEndpoint
+from hwtLib.amba.axi4Lite import Axi4Lite
+from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
+from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC
+from hwtLib.amba.axiLite_comp.reg import AxiLiteReg
 
 
 class EpWithReg(Unit):
     """
     Unit with AxiLiteEndpoint and AxiLiteReg together
     """
-    def __init__(self, structTemplate, intfCls=AxiLite, shouldEnterFn=None):
+
+    def __init__(self, structTemplate, intfCls=Axi4Lite, shouldEnterFn=None):
         BusEndpoint.__init__(self, structTemplate,
                              intfCls=intfCls,
                              shouldEnterFn=shouldEnterFn)

@@ -6,7 +6,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import pprintInterface, pprintAgents
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
-from hwtLib.amba.axiLite import AxiLite
+from hwtLib.amba.axi3Lite import Axi3Lite
 
 
 axi_str = """'axi'
@@ -151,43 +151,44 @@ u_ag_str = """<hwt.interfaces.agents.clk.OscilatorAgent object at 0x7f2c812d4ef0
             <hwtLib.amba.axiLite.AxiLite_bAgent object at 0x7f2c812f0ba8>
 """ 
 
-class ExampleWithArrayAxiLite(EmptyUnit):
+
+class ExampleWithArrayAxi3Lite(EmptyUnit):
     def _declr(self):
         addClkRstn(self)
-        self.axi = AxiLite(asArraySize=3)
+        self.axi = Axi3Lite(asArraySize=3)
 
 
 class SimulatorUtilsTC(SimTestCase):
     def test_pprintInterface(self):
-        u = ExampleWithArrayAxiLite()
+        u = ExampleWithArrayAxi3Lite()
         o = StringIO()
         self.prepareUnit(u)
         pprintInterface(u.clk, file=o)
         self.assertEqual(o.getvalue(), "'clk'\n")
-        
+
         o = StringIO()
         pprintInterface(u.axi, file=o)
         self.assertEqual(o.getvalue(), axi_str)
 
     def test_pprintAgents(self):
-        u = ExampleWithArrayAxiLite()
+        u = ExampleWithArrayAxi3Lite()
         pointerRe = re.compile("0x[a-f0-9]*")
         self.prepareUnit(u)
         self.runSim(1)
-        
+
         o = StringIO()
         pprintAgents(u.clk, file=o)
         self.assertEmpty(pointerRe.sub(o.getvalue(), ""), pointerRe.sub(clk_ag_str, ""))
-        
+
         o = StringIO()
         pprintAgents(u.axi, file=o)
         self.assertEmpty(pointerRe.sub(o.getvalue(), ""), pointerRe.sub(axi_ag_str, ""))
-        
+
         o = StringIO()
         pprintAgents(u, file=o)
         self.assertEmpty(pointerRe.sub(o.getvalue(), ""), pointerRe.sub(u_ag_str, ""))
 
-        
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(IpCorePackagerTC('test_sWithStartPadding'))

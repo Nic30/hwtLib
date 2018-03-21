@@ -1,5 +1,5 @@
 from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axiLite import Axi4Lite
+from hwtLib.amba.axi4Lite import Axi4Lite
 from hwt.interfaces.utils import addClkRstn
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 

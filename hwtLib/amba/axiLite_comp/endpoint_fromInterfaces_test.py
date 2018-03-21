@@ -9,7 +9,7 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
-from hwtLib.amba.axiLite import AxiLite
+from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
@@ -60,7 +60,7 @@ class TestUnittWithChilds(Unit):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.bus = AxiLite()
+            self.bus = Axi4Lite()
 
             self.signalLoop = SigLoop()
             self.signalIn = VectSignal(self.DATA_WIDTH)
@@ -118,7 +118,7 @@ class TestUnittWithArr(Unit):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.bus = AxiLite()
+            self.bus = Axi4Lite()
 
             self.regCntrlLoop0 = Loop(RegCntrl)
             self.regCntrlOut0 = RegCntrl()

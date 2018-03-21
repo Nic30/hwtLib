@@ -7,12 +7,19 @@ from hwt.bitmask import mask
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis_comp.frameGen import AxisFrameGen
+from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
+from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
+from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
 
 
 class AxisFrameGenTC(SimTestCase):
     def setUp(self):
         self.u = AxisFrameGen()
-        self.prepareUnit(self.u)
+        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
+
+    def mkRegisterMap(self, u, modelCls):
+        self.addrProbe = AddressSpaceProbe(u.cntrl, addrGetter)
+        self.regs = AxiLiteMemSpaceMaster(u.cntrl, self.addrProbe.discovered)
 
     def wReg(self, addr, val):
         aw = self.u.cntrl._ag.aw.data
@@ -22,8 +29,8 @@ class AxisFrameGenTC(SimTestCase):
 
     def test_len0(self):
         u = self.u
-        self.wReg(0x4, 0)
-        self.wReg(0x0, 1)
+        self.regs.len.write(0)
+        self.regs.enable.write(1)
 
         # u.dataOut._ag.enable = False
         self.runSim(120 * Time.ns)
@@ -33,8 +40,8 @@ class AxisFrameGenTC(SimTestCase):
     def test_len1(self):
         u = self.u
         L = 1
-        self.wReg(0x4, L)
-        self.wReg(0x0, 1)
+        self.regs.len.write(L)
+        self.regs.enable.write(1)
 
         # u.dataOut._ag.enable = False
         self.runSim(120 * Time.ns)
@@ -45,8 +52,8 @@ class AxisFrameGenTC(SimTestCase):
     def test_len4(self):
         u = self.u
         L = 4
-        self.wReg(0x4, L)
-        self.wReg(0x0, 1)
+        self.regs.len.write(L)
+        self.regs.enable.write(1)
 
         # u.dataOut._ag.enable = False
         self.runSim(120 * Time.ns)

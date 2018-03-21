@@ -8,7 +8,7 @@ from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import toRtl
-from hwtLib.amba.axiLite import AxiLite
+from hwtLib.amba.axi4Lite import Axi4Lite
 
 
 class InterfaceArraySample3(Unit):
@@ -18,13 +18,13 @@ class InterfaceArraySample3(Unit):
     """
     def _config(self):
         self.SIZE = hInt(3)
-        AxiLite._config(self)
+        Axi4Lite._config(self)
 
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.a = AxiLite(asArraySize=self.SIZE)
-            self.b = AxiLite(asArraySize=self.SIZE)
+            self.a = Axi4Lite(asArraySize=self.SIZE)
+            self.b = Axi4Lite(asArraySize=self.SIZE)
 
     def _impl(self):
         # directly connect arrays, note that we are not using array items
@@ -55,15 +55,18 @@ class InterfaceArraySample3TC(SimTestCase):
     def _test(self, u):
         self.prepareUnit(u)
         r = self._rand.getrandbits
+        CH_CNT = 3
 
-        def randItns():
-            return [r(32) for _ in range(r(2))]
+        def randAddr():
+            prot= 0
+            return [(r(32), prot) for _ in range(r(2))]
 
-        def randInt3():
-            return [randItns() for _ in range(3)]
+        def randAddr3():
+            return [randAddr()
+                    for _ in range(CH_CNT)]
 
-        AW = randInt3()
-        AR = randInt3()
+        AW = randAddr3()
+        AR = randAddr3()
         R = [[(r(32), r(2)), (r(32), r(2))],
              [(r(32), r(2)), (r(32), r(2)), (r(32), r(2))],
              [(r(32), r(2))],
@@ -77,12 +80,15 @@ class InterfaceArraySample3TC(SimTestCase):
              [r(2), r(2)]
              ]
 
-        def pushData(channel, data):
-            for ch, d in zip(channel, data):
+        def pushData(channels, data):
+            """
+            Push data to all agents in interface array
+            """
+            for ch, d in zip(channels, data):
                 ch._ag.data.extend(d)
 
-        def checkData(channel, data):
-            for ch, d in zip(channel, data):
+        def checkData(channels, data):
+            for ch, d in zip(channels, data):
                 self.assertValSequenceEqual(ch._ag.data, d, ch._name)
 
         pushData(map(lambda ch: ch.aw, u.a), AW)
@@ -120,6 +126,7 @@ class InterfaceArraySample3TC(SimTestCase):
         s = ResourceAnalyzer()
         toRtl(u, serializer=s)
         self.assertDictEqual(s.report(), expected)
+
 
 if __name__ == "__main__":
     import unittest

@@ -7,7 +7,7 @@ from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import BramPort_withoutClk
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
-from hwtLib.amba.axiLite import AxiLite
+from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
@@ -15,24 +15,24 @@ from hwtLib.types.ctypes import uint32_t
 
 
 structTwoFields = HStruct(
-                          (uint32_t, "field0"),
-                          (uint32_t, "field1")
-                          )
+    (uint32_t, "field0"),
+    (uint32_t, "field1")
+)
 
 structTwoFieldsDense = HStruct(
-                          (uint32_t, "field0"),
-                          (uint32_t, None),
-                          (uint32_t, "field1")
-                          )
+    (uint32_t, "field0"),
+    (uint32_t, None),
+    (uint32_t, "field1")
+)
 structTwoFieldsDenseStart = HStruct(
-                          (uint32_t, None),
-                          (uint32_t, "field0"),
-                          (uint32_t, "field1")
-                          )
+    (uint32_t, None),
+    (uint32_t, "field0"),
+    (uint32_t, "field1")
+)
 
 
 def addrGetter(intf):
-    if isinstance(intf, AxiLite):
+    if isinstance(intf, Axi4Lite):
         return intf.ar.addr
     elif isinstance(intf, BramPort_withoutClk):
         return intf.addr
@@ -43,6 +43,9 @@ def addrGetter(intf):
 class AxiLiteEndpointTC(SimTestCase):
     STRUCT_TEMPLATE = structTwoFields
     FIELD_ADDR = [0x0, 0x4]
+
+    def aTrans(self, addr, prot=0):
+        return (addr, prot)
 
     def mkRegisterMap(self, u, modelCls):
         self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
@@ -83,7 +86,9 @@ class AxiLiteEndpointTC(SimTestCase):
         u = self.mySetUp(32)
         MAGIC = 100
         A = self.FIELD_ADDR
-        u.bus.ar._ag.data.extend([A[0], A[1], A[0], A[1], A[1] + 0x4])
+
+        u.bus.ar._ag.data.extend(map(self.aTrans,
+                                     [A[0], A[1], A[0], A[1], A[1] + 0x4]))
 
         u.decoded.field0._ag.din.extend([MAGIC])
         u.decoded.field1._ag.din.extend([MAGIC + 1])
@@ -103,11 +108,12 @@ class AxiLiteEndpointTC(SimTestCase):
         MAGIC = 100
         m = mask(32 // 8)
         A = self.FIELD_ADDR
-        u.bus.aw._ag.data.extend([A[0],
-                                  A[1],
-                                  A[0],
-                                  A[1],
-                                  A[1] + 0x4])
+        u.bus.aw._ag.data.extend(map(self.aTrans,
+                                     [A[0],
+                                      A[1],
+                                      A[0],
+                                      A[1],
+                                      A[1] + 0x4]))
         u.bus.w._ag.data.extend([(MAGIC, m),
                                  (MAGIC + 1, m),
                                  (MAGIC + 2, m),
@@ -125,7 +131,8 @@ class AxiLiteEndpointTC(SimTestCase):
                                     [MAGIC + 1,
                                      MAGIC + 3
                                      ])
-        self.assertValSequenceEqual(u.bus.b._ag.data, [RESP_OKAY for _ in range(4)] + [RESP_SLVERR])
+        self.assertValSequenceEqual(
+            u.bus.b._ag.data, [RESP_OKAY for _ in range(4)] + [RESP_SLVERR])
 
     def test_registerMap(self):
         self.mySetUp(32)

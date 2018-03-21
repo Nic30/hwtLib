@@ -8,7 +8,8 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi4 import Axi4
-from hwtLib.amba.axiLite import AxiLite, Axi4Lite
+from hwtLib.amba.axi3Lite import Axi3Lite
+from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 
 
@@ -52,13 +53,9 @@ class AxiTester(Unit):
     def _add_ep(self):
         strb_w = self.DATA_WIDTH // 8
         # [TODO] hotfix, should be self.DATA_WIDTH
-        data_field_w = self.CNTRL_DATA_WIDTH
-        if isinstance(self.m_axi, Axi3):
-            len_width = 4
-        elif isinstance(self.m_axi, Axi4):
-            len_width = 8
-        else:
-            raise NotImplementedError()
+        DATA_FIELD_W = self.CNTRL_DATA_WIDTH
+        LEN_WIDTH = self.m_axi.LEN_WIDTH
+        LOCK_WIDTH = self.m_axi.LOCK_WIDTH
 
         mem_space = HStruct(
             (Bits(32), "id_reg"), # 0x00
@@ -72,10 +69,10 @@ class AxiTester(Unit):
             (Bits(32 - 2), None),
             (Bits(4), "cache"),
             (Bits(32 - 4), None),
-            (Bits(len_width), "len"),
-            (Bits(32 - len_width), None),
-            (Bits(self.LOCK_WIDTH), "lock"),
-            (Bits(32 - int(self.LOCK_WIDTH)), None),
+            (Bits(LEN_WIDTH), "len"),
+            (Bits(32 - LEN_WIDTH), None),
+            (Bits(LOCK_WIDTH), "lock"),
+            (Bits(32 - LOCK_WIDTH), None),
             (Bits(3), "prot"), # 0x20
             (Bits(32 - 3), None),
             (Bits(3), "size"),
@@ -85,7 +82,7 @@ class AxiTester(Unit):
 
             (Bits(self.ID_WIDTH), "r_id"),
             (Bits(32 - int(self.ID_WIDTH)), None),
-            (Bits(data_field_w), "r_data"), # 0x30
+            (Bits(DATA_FIELD_W), "r_data"), # 0x30
             (Bits(2), "r_resp"),
             (Bits(32 - 2), None),
             (BIT, "r_last"),
@@ -96,7 +93,7 @@ class AxiTester(Unit):
             (Bits(2), "b_resp"), # 0x40
             (Bits(32 - 2), None),
 
-            (Bits(data_field_w), "w_data"),
+            (Bits(DATA_FIELD_W), "w_data"),
             (BIT, "w_last"),
             (Bits(32 - 1), None),
             (Bits(strb_w), "w_strb"),
@@ -106,18 +103,13 @@ class AxiTester(Unit):
             (Bits(5*2 - 1), None),
         )
 
-        ep = self.axi_ep = AxiLiteEndpoint(mem_space)
+        ep = self.axi_ep = AxiLiteEndpoint(mem_space, intfCls=self._cntrlCls)
         ep.DATA_WIDTH.set(self.CNTRL_DATA_WIDTH)
         ep.ADDR_WIDTH.set(self.CNTRL_ADDR_WIDTH)
 
     def _impl(self):
         propagateClkRstn(self)
-        exclude = set()
-        for ch in [self.cntrl.aw, self.cntrl.ar]:
-            if hasattr(ch, "prot"):
-                exclude.add(ch.prot)
-
-        connect(self.cntrl, self.axi_ep.bus, exclude=exclude)
+        self.axi_ep.bus(self.cntrl)
 
         ep = self.axi_ep.decoded
         id_reg_val = int.from_bytes("test".encode(), byteorder="little")
@@ -259,11 +251,11 @@ class AxiTester(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    from hwt.serializer.ip_packager.packager import Packager
-    from os.path import expanduser
+    #from hwt.serializer.ip_packager.packager import Packager
+    #from os.path import expanduser
 
     u = AxiTester(Axi3)
-    # print(toRtl(u))
-    p = Packager(u)
-    p.createPackage(expanduser("~"))
+    print(toRtl(u))
+    #p = Packager(u)
+    #p.createPackage(expanduser("~"))
 

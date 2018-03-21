@@ -116,6 +116,9 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
         self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
+    def aTrans(self, addr, prot=0):
+        return (addr, prot)
+
     def test_nop(self):
         u = self.mySetUp(32)
 
@@ -143,7 +146,8 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
         MAGIC = 100
         MAGIC2 = 300
 
-        u.bus.ar._ag.data.extend([i * 0x4 for i in range(4 * 2 + 1)])
+        a = self.aTrans
+        u.bus.ar._ag.data.extend([a(i * 0x4) for i in range(4 * 2 + 1)])
 
         for i, a in enumerate(u.decoded.arr):
             a.field0._ag.din.extend([MAGIC + i])
@@ -163,7 +167,8 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
         m = mask(32 // 8)
         N = 4
 
-        u.bus.aw._ag.data.extend([i * 0x4 for i in range(N * 2 + 1)])
+        a = self.aTrans
+        u.bus.aw._ag.data.extend([a(i * 0x4) for i in range(N * 2 + 1)])
 
         expected = [
             [(MAGIC + i + 1, m) for i in range(N)],
@@ -181,7 +186,8 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
             self.assertValSequenceEqual(a.field0._ag.dout, [expected[0][i][0]])
             self.assertValSequenceEqual(a.field1._ag.dout, [expected[1][i][0]])
 
-        self.assertValSequenceEqual(u.bus.b._ag.data, [RESP_OKAY for _ in range(2 * N)] + [RESP_SLVERR])
+        self.assertValSequenceEqual(u.bus.b._ag.data,
+                                    [RESP_OKAY for _ in range(2 * N)] + [RESP_SLVERR])
 
 
 if __name__ == "__main__":

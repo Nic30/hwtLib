@@ -1,18 +1,19 @@
+from typing import List
+
 from hwt.hdl.constants import DIRECTION, INTF_DIRECTION
+from hwt.hdl.entity import Entity
 from hwt.interfaces.std import VectSignal
 from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
 from hwt.simulator.agentBase import AgentBase
 from hwt.synthesizer.interface import Interface
+from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi_intf_common import AxiMap, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
-from hwt.hdl.entity import Entity
-from typing import List
 
 
 #################################################################
-class AxiLite_addr(Axi_hs):
+class Axi3Lite_addr(Axi_hs):
     def _config(self):
         self.ADDR_WIDTH = Param(32)
 
@@ -21,10 +22,10 @@ class AxiLite_addr(Axi_hs):
         Axi_hs._declr(self)
 
     def _initSimAgent(self):
-        self._ag = AxiLite_addrAgent(self)
+        self._ag = Axi3Lite_addrAgent(self)
 
 
-class AxiLite_addrAgent(BaseAxiAgent):
+class Axi3Lite_addrAgent(BaseAxiAgent):
     """
     :ivar data: iterable of addr
     """
@@ -37,7 +38,7 @@ class AxiLite_addrAgent(BaseAxiAgent):
 
 
 #################################################################
-class AxiLite_r(Axi_hs):
+class Axi3Lite_r(Axi_hs):
     def _config(self):
         self.DATA_WIDTH = Param(64)
 
@@ -74,7 +75,7 @@ class AxiLite_rAgent(BaseAxiAgent):
 
 
 #################################################################
-class AxiLite_w(Axi_hs):
+class Axi3Lite_w(Axi_hs):
     def _config(self):
         self.DATA_WIDTH = Param(64)
 
@@ -84,10 +85,10 @@ class AxiLite_w(Axi_hs):
         Axi_hs._declr(self)
 
     def _initSimAgent(self):
-        self._ag = AxiLite_wAgent(self)
+        self._ag = Axi3Lite_wAgent(self)
 
 
-class AxiLite_wAgent(BaseAxiAgent):
+class Axi3Lite_wAgent(BaseAxiAgent):
     """
     :ivar data: iterable of tuples (data, strb)
     """
@@ -110,16 +111,16 @@ class AxiLite_wAgent(BaseAxiAgent):
 
 
 #################################################################
-class AxiLite_b(Axi_hs):
+class Axi3Lite_b(Axi_hs):
     def _declr(self):
         self.resp = VectSignal(2)
         Axi_hs._declr(self)
 
     def _initSimAgent(self):
-        self._ag = AxiLite_bAgent(self)
+        self._ag = Axi3Lite_bAgent(self)
 
 
-class AxiLite_bAgent(BaseAxiAgent):
+class Axi3Lite_bAgent(BaseAxiAgent):
     """
     :ivar data: iterable of resp
     """
@@ -132,24 +133,24 @@ class AxiLite_bAgent(BaseAxiAgent):
 
 
 #################################################################
-class AxiLite(Interface):
+class Axi3Lite(Interface):
     def _config(self):
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)
 
     def _declr(self):
         with self._paramsShared():
-            self.aw = AxiLite_addr()
-            self.ar = AxiLite_addr()
-            self.w = AxiLite_w()
-            self.r = AxiLite_r(masterDir=DIRECTION.IN)
-            self.b = AxiLite_b(masterDir=DIRECTION.IN)
+            self.aw = Axi3Lite_addr()
+            self.ar = Axi3Lite_addr()
+            self.w = Axi3Lite_w()
+            self.r = Axi3Lite_r(masterDir=DIRECTION.IN)
+            self.b = Axi3Lite_b(masterDir=DIRECTION.IN)
 
     def _getIpCoreIntfClass(self):
-        return IP_AXILite
+        return IP_Axi3Lite
 
     def _initSimAgent(self):
-        self._ag = AxiLiteAgent(self)
+        self._ag = Axi3LiteAgent(self)
 
     def _getWordAddrStep(self):
         """
@@ -165,7 +166,7 @@ class AxiLite(Interface):
         return 8
 
 
-class AxiLiteAgent(AgentBase):
+class Axi3LiteAgent(AgentBase):
     """
     Composite simulation agent with agent for every axi channel
     change of enable is propagated to each child
@@ -214,28 +215,8 @@ class AxiLiteAgent(AgentBase):
                 )
 
 
-class Axi4Lite_addr(AxiLite_addr):
-    def _declr(self):
-        super(Axi4Lite_addr, self)._declr()
-        self.prot = VectSignal(3)
-
-
-class Axi4Lite(AxiLite):
-
-    def _declr(self):
-        with self._paramsShared():
-            self.aw = Axi4Lite_addr()
-            self.ar = Axi4Lite_addr()
-            self.w = AxiLite_w()
-            self.r = AxiLite_r(masterDir=DIRECTION.IN)
-            self.b = AxiLite_b(masterDir=DIRECTION.IN)
-
-    def _getIpCoreIntfClass(self):
-        return IP_AXI4Lite
-
-
 #################################################################
-class IP_AXILite(IntfConfig):
+class IP_Axi3Lite(IntfConfig):
     def __init__(self):
         super().__init__()
         self.name = "aximm"
@@ -289,16 +270,3 @@ class IP_AXILite(IntfConfig):
         self.addWidthParam(thisIf, "DATA_WIDTH", thisIf.DATA_WIDTH)
         self.addSimpleParam(thisIf, "PROTOCOL", "AXI4LITE")
         self.addSimpleParam(thisIf, "READ_WRITE_MODE", "READ_WRITE")
-
-
-class IP_AXI4Lite(IP_AXILite):
-    def __init__(self):
-        super().__init__()
-        self.quartus_name = "axi4lite"
-        a_sigs = ['addr', 'prot', 'valid', 'ready']
-        self.map = {'aw': AxiMap('aw', a_sigs),
-                    'w': AxiMap('w', ['data', 'strb', 'valid', 'ready']),
-                    'ar': AxiMap('ar', a_sigs),
-                    'r': AxiMap('r', ['data', 'resp', 'valid', 'ready']),
-                    'b': AxiMap('b', ['valid', 'ready', 'resp'])
-                    }

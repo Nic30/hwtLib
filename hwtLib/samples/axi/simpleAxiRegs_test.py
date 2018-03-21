@@ -43,7 +43,7 @@ class SimpleAxiRegsTC(SimTestCase):
         u = self.u
         axi = u.axi._ag
 
-        axi.aw.data += [0, 4]
+        axi.aw.data += [(0, 0), (4, 0)]
         axi.w.data += [(11, allMask), (37, allMask)]
 
         self.runSim(250 * Time.ns)
@@ -57,6 +57,7 @@ class SimpleAxiRegsTC(SimTestCase):
 
         self.assertEqual(valuesToInts([model.reg0._oldVal, model.reg1._oldVal]),
                          [11, 37])
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
