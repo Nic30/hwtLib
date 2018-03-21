@@ -276,6 +276,7 @@ class IP_AXIStream(IntfConfig):
     def __init__(self):
         super().__init__()
         self.name = "axis"
+        self.quartus_name = "axi4stream"
         self.version = "1.0"
         self.vendor = "xilinx.com"
         self.library = "interface"

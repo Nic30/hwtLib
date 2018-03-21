@@ -239,7 +239,8 @@ class IP_AXILite(IntfConfig):
     def __init__(self):
         super().__init__()
         self.name = "aximm"
-        self.quartus_name = "axi3lite"
+        # quartus 17.10 does not have axi3lite
+        self.quartus_name = "axi4lite"
         self.version = "1.0"
         self.vendor = "xilinx.com"
         self.library = "interface"
