@@ -4,6 +4,7 @@ from hwtLib.amba.axi4_rDatapump import Axi_rDatapump
 from hwtLib.amba.axi4_wDatapump import Axi_wDatapump
 from hwtLib.amba.interconnect.rStricOrder import RStrictOrderInterconnect
 from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
+from hwt.code import connect
 
 
 def connectDp(parent, controller, datapump, axi):
@@ -39,7 +40,12 @@ def connectDp(parent, controller, datapump, axi):
 
     elif isinstance(datapump, Axi_wDatapump):
         axi.aw(datapump.a)
-        axi.w(datapump.w)
+        # axi3/4 connection
+        if not hasattr(axi.w, "id") and hasattr(datapump.w, "id"):
+            exclude = [datapump.w.id]
+        else:
+            exclude = []
+        connect(datapump.w, axi.w, exclude=exclude)
         datapump.b(axi.b)
 
         if isinstance(controller, (list, tuple)):
