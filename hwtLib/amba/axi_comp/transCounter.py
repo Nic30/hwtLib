@@ -1,13 +1,13 @@
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axi4 import Axi4
+from hwt.code import If, connect
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
-from hwt.hdl.types.struct import HStruct
-from hwt.hdl.types.bits import Bits
-from hwtLib.amba.axiLite import AxiLite
+from hwt.synthesizer.unit import Unit
+from hwtLib.amba.axi4 import Axi4
+from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.handshaked.streamNode import StreamNode
-from hwt.code import If, connect
 
 
 class AxiTransactionCouter(Unit):
@@ -32,7 +32,7 @@ class AxiTransactionCouter(Unit):
             self.master = self._axiCls()
             self.slave = self._axiCls()
 
-        self.cntrl = AxiLite()
+        self.cntrl = Axi4Lite()
         mem_space = HStruct(
             (Bits(1), "control"),
             (Bits(32-1), None),
