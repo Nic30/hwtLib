@@ -28,7 +28,6 @@ class WStrictOrderInterconnecComplex(Unit):
             self.ic = WStrictOrderInterconnect()
 
             self.aw = Axi3_addr()
-            self.aw.LOCK_WIDTH = 2
             self.w = Axi4_w()
             self.b = Axi4_b()
             self.drivers = AxiWDatapumpIntf(asArraySize=self.DRIVER_CNT)

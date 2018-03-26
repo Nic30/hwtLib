@@ -18,7 +18,7 @@ class Axi4_addr(Axi3_addr):
     LOCK_WIDTH = 1
 
     def _declr(self):
-        super(Axi4_addr, self)._declr()
+        Axi3_addr._declr(self)
         self.qos = VectSignal(4)
 
     def _initSimAgent(self):
