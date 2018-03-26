@@ -30,7 +30,6 @@ class Axi_datapumpBase(Unit):
         self.CACHE_VAL = Param(CACHE_DEFAULT)
         self.PROT_VAL = Param(PROT_DEFAULT)
         self.QOS_VAL = Param(QOS_DEFAULT)
-        self.LOCK_WIDTH = Param(2)
 
         if self._addrHasUser:
             self.ADDR_USER_VAL = Param(0)
@@ -40,8 +39,6 @@ class Axi_datapumpBase(Unit):
         with self._paramsShared():
             # address channel to axi
             self.a = self._axiAddrCls()
-            # because all masters have it
-            self.a.LOCK_WIDTH = int(self.LOCK_WIDTH)
 
     def getSizeAlignBits(self):
         return log2ceil(self.DATA_WIDTH // 8).val

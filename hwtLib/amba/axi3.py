@@ -13,8 +13,8 @@ class Axi3_addr(Axi3Lite_addr, Axi_id):
     """
     Axi3 address channel interface
     """
-    LOCK_WIDTH = 2
     LEN_WIDTH = 4
+    LOCK_WIDTH = 2
 
     def _config(self):
         Axi3Lite_addr._config(self)
