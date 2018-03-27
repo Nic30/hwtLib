@@ -34,6 +34,7 @@ class ParametrizationExample(Unit):
 
         self.dout(Concat(self.din, self.din))
 
+
 if __name__ == "__main__":  # alias python main function
     # toRtl can be imported anywhere but we prefer to import it only when this script is running as main
     from hwt.synthesizer.utils import toRtl
