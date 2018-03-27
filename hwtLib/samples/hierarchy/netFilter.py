@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.synthesizer.interfaceLevel.emptyUnit import setOut, EmptyUnit
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axi4Lite import Axi4Lite
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
-from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.interfaceLevel.emptyUnit import setOut, EmptyUnit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
+from hwtLib.amba.axi4Lite import Axi4Lite
+from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axis_comp.builder import AxiSBuilder
 
 
 class HeadFieldExtractor(EmptyUnit):
