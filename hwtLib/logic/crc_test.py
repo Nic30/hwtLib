@@ -212,6 +212,13 @@ class CrcTC(SimTestCase):
 
         self.assertEqual(out, crc32(inp))
 
+    def test_wide(self):
+        u = self.setUpCrc(vec(CRC_32, 32), 32, dataWidth=240)
+        u.dataIn._ag.data.extend([0, 0])
+        self.runSim(40 * Time.ns)
+        out = int(u.dataOut._ag.data[-1])
+        self.assertEqual(out, 0x04128908)
+
 
 if __name__ == "__main__":
     import unittest
