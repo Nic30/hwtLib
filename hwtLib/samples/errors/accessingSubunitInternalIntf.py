@@ -18,3 +18,9 @@ class AccessingSubunitInternalIntf(Unit):
         u.a(self.a0)
         self.c0(u.b)
         self.b0(u.c)
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = AccessingSubunitInternalIntf()
+    print(toRtl(u))
