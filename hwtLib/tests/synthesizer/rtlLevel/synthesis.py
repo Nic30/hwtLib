@@ -9,9 +9,12 @@ from hwt.hdl.typeShortcuts import hBit
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.indexOps import IndexOps
+from hwtLib.mem.atomic.flipReg import FlipRegister
+from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import synthesised
+from hwt.hdl.statements import HdlStatement
 
 
-class TestCaseSynthesis(unittest.TestCase):
+class BasicSynthesisTC(unittest.TestCase):
 
     def setUp(self):
         unittest.TestCase.setUp(self)
@@ -78,6 +81,22 @@ class TestCaseSynthesis(unittest.TestCase):
         s = VhdlSerializer.Architecture(arch, VhdlSerializer.getBaseContext())
 
         self.assertNotIn("sig_", s)
+
+
+class StatementsConsystencyTC(unittest.TestCase):
+    def test_if_stm_merging(self):
+        u = FlipRegister()
+        synthesised(u)
+        c = u._ctx
+        for s in c.signals:
+            for e in s.endpoints:
+                if isinstance(e, HdlStatement):
+                    self.assertIs(e.parentStm, None, (s, e))
+                    self.assertIn(e, c.statements)
+            for d in s.drivers:
+                if isinstance(d, HdlStatement):
+                    self.assertIs(d.parentStm, None, (s, d))
+                    self.assertIn(d, c.statements)
 
 
 if __name__ == '__main__':

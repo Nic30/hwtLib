@@ -154,7 +154,7 @@ from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import \
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import \
     SubunitsSynthesisTC
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
-from hwtLib.tests.synthesizer.rtlLevel.synthesis import TestCaseSynthesis
+from hwtLib.tests.synthesizer.rtlLevel.synthesis import BasicSynthesisTC, StatementsConsystencyTC
 from hwtLib.tests.transTmpl_test import TransTmpl_TC
 from hwtLib.tests.types.bitsSlicing_test import BitsSlicingTC
 from hwtLib.tests.types.hstructVal_test import HStructValTC
@@ -211,7 +211,8 @@ suite = testSuiteFromTCs(
     HStructValTC,
     ParametrizationTC,
     SignedArithmeticTC,
-    TestCaseSynthesis,
+    BasicSynthesisTC,
+    StatementsConsystencyTC,
     ValueTC,
     StatementTreesInternalTC,
     StatementTreesTC,
