@@ -14,6 +14,7 @@ from hwt.synthesizer.param import Param
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf
+from hwtLib.logic.crcPoly import CRC_32C, CRC_32K
 
 
 class ORIGIN_TYPE():
@@ -109,7 +110,7 @@ class CuckooHashTable(HashTableCore):
 
     """
 
-    def __init__(self, polynomials):
+    def __init__(self, polynomials=[CRC_32K, CRC_32C]):
         """
         :param polynomials: list of polynomials for crc hashers used in tables
             for each item in this list table will be instantiated
