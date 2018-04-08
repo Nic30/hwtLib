@@ -12,6 +12,8 @@ from hwtLib.samples.rtlLvl.indexOps import IndexOps
 from hwtLib.mem.atomic.flipReg import FlipRegister
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import synthesised
 from hwt.hdl.statements import HdlStatement
+from hwtLib.mem.cuckooHashTable import CuckooHashTable
+from hwtLib.samples.statements.ifStm import SimpleIfStatement3
 
 
 class BasicSynthesisTC(unittest.TestCase):
@@ -84,8 +86,7 @@ class BasicSynthesisTC(unittest.TestCase):
 
 
 class StatementsConsystencyTC(unittest.TestCase):
-    def test_if_stm_merging(self):
-        u = FlipRegister()
+    def check_consystency(self, u):
         synthesised(u)
         c = u._ctx
         for s in c.signals:
@@ -97,6 +98,23 @@ class StatementsConsystencyTC(unittest.TestCase):
                 if isinstance(d, HdlStatement):
                     self.assertIs(d.parentStm, None, (s, d))
                     self.assertIn(d, c.statements)
+        for stm in c.statements:
+            self.assertIs(stm.parentStm, None)
+
+    def test_if_stm_merging(self):
+        u = FlipRegister()
+        self.check_consystency(u)
+
+    def test_comples_stm_ops(self):
+        u = CuckooHashTable()
+        self.check_consystency(u)
+
+    def test_rm_statement(self):
+        u = SimpleIfStatement3()
+        self.check_consystency(u)
+        stms = u._ctx.statements
+        self.assertEqual(len(stms), 1)
+        self.assertIsInstance(list(stms)[0], Assignment)
 
 
 if __name__ == '__main__':
