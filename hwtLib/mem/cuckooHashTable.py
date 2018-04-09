@@ -181,8 +181,8 @@ class CuckooHashTable(HashTableCore):
             if self.DATA_WIDTH:
                 ins.data(stash.data)
                 ins.vld(Or(state._eq(fsm_t.cleaning),
-                           state._eq(fsm_t.lookupResAck) & 
-                           insertTargetOH[i] & 
+                           state._eq(fsm_t.lookupResAck) &
+                           insertTargetOH[i] &
                            ~ isExternLookup))
                 ins.vldFlag(stash.vldFlag)
 
