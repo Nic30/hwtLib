@@ -673,124 +673,99 @@ from hwt.synthesizer.unit import Unit
 class Showcase0(Unit):
 
     def _declr(self):
-        self.a = Signal(dtype=Bits(32, signed=False, forceVector=False, negated=False))
-        self.b = Signal(dtype=Bits(32, signed=True, forceVector=False, negated=False))
-        self.c = Signal(dtype=Bits(32, signed=None, forceVector=False, negated=False))
-        self.clk = Signal(dtype=Bits(1, signed=None, forceVector=False, negated=False))
-        self.cmp0 = Signal(dtype=Bits(1, signed=None, forceVector=False, negated=False))
-        self.cmp1 = Signal(dtype=Bits(1, signed=None, forceVector=False, negated=False))
-        self.cmp2 = Signal(dtype=Bits(1, signed=None, forceVector=False, negated=False))
-        self.cmp3 = Signal(dtype=Bits(1, signed=None, forceVector=False, negated=False))
-        self.cmp4 = Signal(dtype=Bits(1, signed=None, forceVector=False, negated=False))
-        self.cmp5 = Signal(dtype=Bits(1, signed=None, forceVector=False, negated=False))
-        self.contOut = Signal(dtype=Bits(32, signed=None, forceVector=True, negated=False))
-        self.d = Signal(dtype=Bits(32, signed=None, forceVector=True, negated=False))
-        self.e = Signal(dtype=Bits(1, signed=None, forceVector=False, negated=False))
-        self.f = Signal(dtype=Bits(1, signed=None, forceVector=False, negated=False))
-        self.fitted = Signal(dtype=Bits(16, signed=None, forceVector=True, negated=False))
-        self.g = Signal(dtype=Bits(8, signed=None, forceVector=True, negated=False))
-        self.h = Signal(dtype=Bits(8, signed=None, forceVector=True, negated=False))
-        self.i = Signal(dtype=Bits(2, signed=None, forceVector=True, negated=False))
-        self.j = Signal(dtype=Bits(8, signed=None, forceVector=True, negated=False))
-        self.k = Signal(dtype=Bits(32, signed=None, forceVector=True, negated=False))
-        self.out = Signal(dtype=Bits(1, signed=None, forceVector=False, negated=False))
-        self.output = Signal(dtype=Bits(1, signed=None, forceVector=False, negated=False))
-        self.rst_n = Signal(dtype=Bits(1, signed=None, forceVector=False, negated=True))
-        self.sc_signal = Signal(dtype=Bits(8, signed=None, forceVector=True, negated=False))
+        self.a = Signal(dtype=Bits(32, signed=False))
+        self.b = Signal(dtype=Bits(32, signed=True))
+        self.c = Signal(dtype=Bits(32))
+        self.clk = Signal(dtype=Bits(1))
+        self.cmp0 = Signal(dtype=Bits(1))
+        self.cmp1 = Signal(dtype=Bits(1))
+        self.cmp2 = Signal(dtype=Bits(1))
+        self.cmp3 = Signal(dtype=Bits(1))
+        self.cmp4 = Signal(dtype=Bits(1))
+        self.cmp5 = Signal(dtype=Bits(1))
+        self.contOut = Signal(dtype=Bits(32, forceVector=True))
+        self.d = Signal(dtype=Bits(32, forceVector=True))
+        self.e = Signal(dtype=Bits(1))
+        self.f = Signal(dtype=Bits(1))
+        self.fitted = Signal(dtype=Bits(16, forceVector=True))
+        self.g = Signal(dtype=Bits(8, forceVector=True))
+        self.h = Signal(dtype=Bits(8, forceVector=True))
+        self.i = Signal(dtype=Bits(2, forceVector=True))
+        self.j = Signal(dtype=Bits(8, forceVector=True))
+        self.k = Signal(dtype=Bits(32, forceVector=True))
+        self.out = Signal(dtype=Bits(1))
+        self.output = Signal(dtype=Bits(1))
+        self.rst_n = Signal(dtype=Bits(1, negated=True))
+        self.sc_signal = Signal(dtype=Bits(8, forceVector=True))
 
     def _impl(self):
         a, b, c, clk, cmp0, cmp1, cmp2, cmp3, cmp4, cmp5, contOut, d, e, f, fitted, g, h, i, j, k, out, output, rst_n, sc_signal = self.a, self.b, self.c, self.clk, self.cmp0, self.cmp1, self.cmp2, self.cmp3, self.cmp4, self.cmp5, self.contOut, self.d, self.e, self.f, self.fitted, self.g, self.h, self.i, self.j, self.k, self.out, self.output, self.rst_n, self.sc_signal
         # constants 
-        const_4_2 = Bits(8, signed=None, forceVector=True, negated=False).fromPy(4, vldMask=255)
-        const_4_1 = Bits(32, signed=True, forceVector=False, negated=False).fromPy(4, vldMask=4294967295)
-        const_4_0 = Bits(32, signed=False, forceVector=False, negated=False).fromPy(4, vldMask=4294967295)
-        const_3_1 = Bits(8, signed=None, forceVector=True, negated=False).fromPy(3, vldMask=255)
-        const_3_0 = Bits(32, signed=False, forceVector=False, negated=False).fromPy(3, vldMask=4294967295)
-        const_3 = HArrayVal({0: Bits(8, signed=False, forceVector=False, negated=False).fromPy(0, vldMask=255),
-            1: Bits(8, signed=False, forceVector=False, negated=False).fromPy(1, vldMask=255),
-            2: Bits(8, signed=False, forceVector=False, negated=False).fromPy(2, vldMask=255),
-            3: Bits(8, signed=False, forceVector=False, negated=False).fromPy(3, vldMask=255)}, HArray(Bits(8, signed=False, forceVector=False, negated=False), 4), 1)
-        const_2_2 = Bits(32, signed=False, forceVector=False, negated=False).fromPy(2, vldMask=4294967295)
-        const_2_1 = Bits(8, signed=None, forceVector=True, negated=False).fromPy(2, vldMask=255)
-        const_2_0 = 2
-        const_2 = SliceVal((6, 0), SLICE, 1)
-        const_1_3 = Bits(32, signed=False, forceVector=False, negated=False).fromPy(1, vldMask=4294967295)
-        const_1_2 = Bits(8, signed=None, forceVector=True, negated=False).fromPy(1, vldMask=255)
-        const_1_1 = 1
-        const_1_0 = Bits(1, signed=None, forceVector=False, negated=False).fromPy(1, vldMask=1)
-        const_123_0 = Bits(32, signed=False, forceVector=False, negated=False).fromPy(123, vldMask=4294967295)
-        const_1 = SliceVal((16, 0), SLICE, 1)
-        const_0_5 = Bits(2, signed=None, forceVector=False, negated=False).fromPy(0, vldMask=3)
-        const_0_4 = Bits(1, signed=None, forceVector=False, negated=False).fromPy(0, vldMask=0)
-        const_0_3 = Bits(8, signed=None, forceVector=True, negated=False).fromPy(0, vldMask=255)
-        const_0_2 = 0
-        const_0_1 = Bits(24, signed=None, forceVector=True, negated=False).fromPy(0, vldMask=16777215)
-        const_0_0 = Bits(1, signed=None, forceVector=False, negated=False).fromPy(0, vldMask=1)
-        const_0 = SliceVal((8, 0), SLICE, 1)
+        const_0_0 = None
         # internal signals
-        const_private_signal = self._sig("const_private_signal", Bits(32, signed=False, forceVector=False, negated=False), defVal=Bits(32, signed=False, forceVector=False, negated=False).fromPy(123, vldMask=4294967295))
-        fallingEdgeRam = self._sig("fallingEdgeRam", HArray(Bits(8, signed=True, forceVector=False, negated=False), 4), defVal=HArrayVal({}, HArray(Bits(8, signed=True, forceVector=False, negated=False), 4), 0))
-        r = self._sig("r", Bits(1, signed=None, forceVector=False, negated=False), defVal=Bits(1, signed=None, forceVector=False, negated=False).fromPy(0, vldMask=1))
-        r_0 = self._sig("r_0", Bits(2, signed=None, forceVector=False, negated=False), defVal=Bits(2, signed=None, forceVector=False, negated=False).fromPy(0, vldMask=3))
-        r_1 = self._sig("r_1", Bits(2, signed=None, forceVector=False, negated=False), defVal=Bits(2, signed=None, forceVector=False, negated=False).fromPy(0, vldMask=3))
-        r_next = self._sig("r_next", Bits(1, signed=None, forceVector=False, negated=False), defVal=Bits(1, signed=None, forceVector=False, negated=False).fromPy(0, vldMask=0))
-        r_next_0 = self._sig("r_next_0", Bits(2, signed=None, forceVector=False, negated=False), defVal=Bits(2, signed=None, forceVector=False, negated=False).fromPy(0, vldMask=0))
-        r_next_1 = self._sig("r_next_1", Bits(2, signed=None, forceVector=False, negated=False), defVal=Bits(2, signed=None, forceVector=False, negated=False).fromPy(0, vldMask=0))
-        rom = self._sig("rom", HArray(Bits(8, signed=False, forceVector=False, negated=False), 4), defVal=HArrayVal({0: Bits(8, signed=False, forceVector=False, negated=False).fromPy(0, vldMask=255),
-            1: Bits(8, signed=False, forceVector=False, negated=False).fromPy(1, vldMask=255),
-            2: Bits(8, signed=False, forceVector=False, negated=False).fromPy(2, vldMask=255),
-            3: Bits(8, signed=False, forceVector=False, negated=False).fromPy(3, vldMask=255)}, HArray(Bits(8, signed=False, forceVector=False, negated=False), 4), 1))
+        const_private_signal = self._sig("const_private_signal", Bits(32, signed=False), defVal=0x7b)
+        fallingEdgeRam = self._sig("fallingEdgeRam", HArray(Bits(8, signed=True), 4), defVal=None)
+        r = self._sig("r", Bits(1), defVal=0x0)
+        r_0 = self._sig("r_0", Bits(2), defVal=0x0)
+        r_1 = self._sig("r_1", Bits(2), defVal=0x0)
+        r_next = self._sig("r_next", Bits(1), defVal=None)
+        r_next_0 = self._sig("r_next_0", Bits(2), defVal=None)
+        r_next_1 = self._sig("r_next_1", Bits(2), defVal=None)
+        rom = self._sig("rom", HArray(Bits(8, signed=False), 4), defVal={0: 0x0,
+            1: 0x1,
+            2: 0x2,
+            3: 0x3})
         # assig_process_c sensitivity: a, b
-        c((a + (b)._reinterpret_cast(Bits(32, signed=False, forceVector=False, negated=False)))._reinterpret_cast(Bits(32, signed=None, forceVector=False, negated=False)))
+        c((a + (b)._reinterpret_cast(Bits(32, signed=False)))._reinterpret_cast(Bits(32)))
         # assig_process_cmp0 sensitivity: a
-        cmp0((a < const_4_0)._ternary(const_1_0, const_0_0))
+        cmp0((a < 0x4)._ternary(Bits(1).fromPy(0x1), Bits(1).fromPy(0x0)))
         # assig_process_cmp1 sensitivity: a
-        cmp1((a > const_4_0)._ternary(const_1_0, const_0_0))
+        cmp1((a > 0x4)._ternary(Bits(1).fromPy(0x1), Bits(1).fromPy(0x0)))
         # assig_process_cmp2 sensitivity: b
-        cmp2((b <= const_4_1)._ternary(const_1_0, const_0_0))
+        cmp2((b <= 0x4)._ternary(Bits(1).fromPy(0x1), Bits(1).fromPy(0x0)))
         # assig_process_cmp3 sensitivity: b
-        cmp3((b >= const_4_1)._ternary(const_1_0, const_0_0))
+        cmp3((b >= 0x4)._ternary(Bits(1).fromPy(0x1), Bits(1).fromPy(0x0)))
         # assig_process_cmp4 sensitivity: b
-        cmp4((b != const_4_1)._ternary(const_1_0, const_0_0))
+        cmp4((b != 0x4)._ternary(Bits(1).fromPy(0x1), Bits(1).fromPy(0x0)))
         # assig_process_cmp5 sensitivity: b
-        cmp5((b._eq(const_4_1))._ternary(const_1_0, const_0_0))
+        cmp5((b._eq(0x4))._ternary(Bits(1).fromPy(0x1), Bits(1).fromPy(0x0)))
         # assig_process_contOut sensitivity: 
-        contOut((const_123_0)._reinterpret_cast(Bits(32, signed=None, forceVector=False, negated=False)))
+        contOut((const_private_signal)._reinterpret_cast(Bits(32)))
         # assig_process_f sensitivity: r
         f(r)
         # assig_process_fallingEdgeRam sensitivity: (SENSITIVITY.FALLING, clk)
         If((clk)._onFallingEdge(),
-            fallingEdgeRam[(r_1)._reinterpret_cast(INT)](((a)[const_0])._reinterpret_cast(Bits(8, signed=True, forceVector=True, negated=False))),
-            k(Concat(const_0_1, (((fallingEdgeRam)[(r_1)._reinterpret_cast(INT)])._reinterpret_cast(Bits(8, signed=False, forceVector=False, negated=False)))._reinterpret_cast(Bits(8, signed=None, forceVector=False, negated=False)))),
+            fallingEdgeRam[(r_1)._reinterpret_cast(INT)](((a)[8:0])._reinterpret_cast(Bits(8, signed=True, forceVector=True))),
+            k(Concat(Bits(24, forceVector=True).fromPy(0x0), (((fallingEdgeRam)[(r_1)._reinterpret_cast(INT)])._reinterpret_cast(Bits(8, signed=False)))._reinterpret_cast(Bits(8)))),
         )
         # assig_process_fitted sensitivity: a
-        fitted(((a)[const_1])._reinterpret_cast(Bits(16, signed=None, forceVector=True, negated=False)))
+        fitted(((a)[16:0])._reinterpret_cast(Bits(16, forceVector=True)))
         # assig_process_g sensitivity: a, b
-        g(Concat(Concat(((a)[const_1_1]) & ((b)[const_1_1]), (((a)[const_0_2]) ^ ((b)[const_0_2])) | ((a)[const_1_1])), ((a)[const_2])._reinterpret_cast(Bits(6, signed=None, forceVector=True, negated=False))))
+        g(Concat(Concat(((a)[1]) & ((b)[1]), (((a)[0]) ^ ((b)[0])) | ((a)[1])), ((a)[6:0])._reinterpret_cast(Bits(6, forceVector=True))))
         # assig_process_h sensitivity: a, r
-        If((a)[const_2_0],
+        If((a)[2],
             If(r,
-                h(const_0_3),
-            ).Elif((a)[const_1_1],
-                h(const_1_2),
+                h(0x0),
+            ).Elif((a)[1],
+                h(0x1),
             ).Else(
-                h(const_2_1),
+                h(0x2),
             ),
         )
         # assig_process_j sensitivity: (SENSITIVITY.RISING, clk)
         If((clk)._onRisingEdge(),
-            j(((const_3)[(r_1)._reinterpret_cast(INT)])._reinterpret_cast(Bits(8, signed=None, forceVector=False, negated=False))),
+            j(((rom)[(r_1)._reinterpret_cast(INT)])._reinterpret_cast(Bits(8))),
         )
         # assig_process_out sensitivity: 
-        out(const_0_0)
+        out(0x0)
         # assig_process_output sensitivity: 
-        output(const_0_4)
+        output(const_0_0)
         # assig_process_r sensitivity: (SENSITIVITY.RISING, clk)
         If((clk)._onRisingEdge(),
-            If(rst_n._eq(const_0_0),
-                r_1(const_0_5),
-                r_0(const_0_5),
-                r(const_0_0),
+            If(rst_n._eq(0x0),
+                r_1(0x0),
+                r_0(0x0),
+                r(0x0),
             ).Else(
                 r_1(r_next_1),
                 r_0(r_next_0),
@@ -808,14 +783,14 @@ class Showcase0(Unit):
             r_next(r),
         )
         # assig_process_sc_signal sensitivity: a
-        If(a._eq(const_1_3),
-            sc_signal(const_0_3),
-        ).Elif(a._eq(const_2_2),
-            sc_signal(const_1_2),
-        ).Elif(a._eq(const_3_0),
-            sc_signal(const_3_1),
+        If(a._eq(0x1),
+            sc_signal(0x0),
+        ).Elif(a._eq(0x2),
+            sc_signal(0x1),
+        ).Elif(a._eq(0x3),
+            sc_signal(0x3),
         ).Else(
-            sc_signal(const_4_2),
+            sc_signal(0x4),
         )"""
 
 if __name__ == "__main__":  # alias python main function
