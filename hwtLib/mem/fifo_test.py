@@ -79,7 +79,7 @@ class FifoTC(SimTestCase):
 
         self.assertValSequenceEqual(collected, expected)
 
-    def test_fifoWritterDisable(self):
+    def test_fifoWriterDisable(self):
         u = self.u
 
         data = [1, 2, 3, 4]
