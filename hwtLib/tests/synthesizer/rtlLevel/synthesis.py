@@ -14,6 +14,7 @@ from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import synthesi
 from hwt.hdl.statements import HdlStatement
 from hwtLib.mem.cuckooHashTable import CuckooHashTable
 from hwtLib.samples.statements.ifStm import SimpleIfStatement3
+from hwt.synthesizer.dummyPlatform import DummyPlatform
 
 
 class BasicSynthesisTC(unittest.TestCase):
@@ -78,7 +79,7 @@ class BasicSynthesisTC(unittest.TestCase):
 
     def test_indexOps(self):
         c, interf = IndexOps()
-        _, arch = list(c.synthesize("indexOps", interf))
+        _, arch = list(c.synthesize("indexOps", interf, DummyPlatform()))
 
         s = VhdlSerializer.Architecture(arch, VhdlSerializer.getBaseContext())
 

@@ -21,12 +21,13 @@ from hwtLib.samples.simple2withNonDirectIntConnection import \
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import \
     BaseSynthesizerTC
 from hwt.serializer.vhdl.serializer import VhdlSerializer
+from hwt.synthesizer.dummyPlatform import DummyPlatform
 
 
 D = DIRECTION
 
 
-def synthesised(u, targetPlatform=None):
+def synthesised(u: Unit, targetPlatform=DummyPlatform()):
     assert not u._wasSynthetised()
     if not hasattr(u, "_interfaces"):
         u._loadDeclarations()
@@ -92,6 +93,7 @@ class UnitWithGenericOfChild(Unit):
         tmp = self._sig("tmp", self.ch.a._dtype)
         tmp(self.b)
         self.b(tmp)
+
 
 UnitWithGenericOfChild_vhdl = """library IEEE;
 use IEEE.std_logic_1164.all;
@@ -273,7 +275,8 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
 
     def test_used_param_from_other_unit(self):
         u = UnitWithGenericOfChild()
-        self.assertEqual(toRtl(u, serializer=VhdlSerializer), UnitWithGenericOfChild_vhdl)
+        self.assertEqual(toRtl(u, serializer=VhdlSerializer),
+                         UnitWithGenericOfChild_vhdl)
 
 
 if __name__ == '__main__':
@@ -281,6 +284,6 @@ if __name__ == '__main__':
 
     suite = unittest.TestSuite()
     suite.addTest(SubunitsSynthesisTC('test_used_param_from_other_unit'))
-    #suite.addTest(unittest.makeSuite(SubunitsSynthesisTC))
+    # suite.addTest(unittest.makeSuite(SubunitsSynthesisTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
