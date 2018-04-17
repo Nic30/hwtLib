@@ -34,7 +34,7 @@ class ParamsUniqUnit(SimpeUnit):
         self.B = Param(1)
 
 
-class A(Unit):
+class ExampleA(Unit):
     def _declr(self):
         self.a = VectSignal(7)
         self.u0 = ExcludedUnit()
@@ -110,12 +110,12 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-ENTITY A IS
-    PORT (a_0: OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
+ENTITY ExampleA IS
+    PORT (a: OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
     );
-END A;
+END ExampleA;
 
-ARCHITECTURE rtl OF A IS
+ARCHITECTURE rtl OF ExampleA IS
     SIGNAL sig_u0_a: STD_LOGIC;
     SIGNAL sig_u1_a: STD_LOGIC;
     SIGNAL sig_u2_a: STD_LOGIC;
@@ -192,13 +192,14 @@ BEGIN
         PORT MAP (a_0 => sig_u7_a_0
         );
 
-    a_0 <= sig_u0_a & sig_u1_a & sig_u2_a & sig_u3_a & sig_u4_a & sig_u5_a_0 & sig_u6_a_0;
+    a <= sig_u0_a & sig_u1_a & sig_u2_a & sig_u3_a & sig_u4_a & sig_u5_a_0 & sig_u6_a_0;
 END ARCHITECTURE rtl;"""
 
 
 class SerializerModes_TC(unittest.TestCase):
     def test_all(self):
-        s = toRtl(A())
+        s = toRtl(ExampleA())
+        print(s)
         self.assertEqual(s, expected_vhdl)
 
 
