@@ -169,6 +169,7 @@ from hwtLib.uart.tx_test import UartTxTC
 from hwtLib.amba.axiLite_comp.reg_test import AxiRegTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
 from hwtLib.amba.axi_comp.tester_test import AxiTesterTC
+from hwtLib.logic.segment7_test import Segment7TC
 
 
 def runSimWithoutLog(self, until, name=None, config=None):
@@ -233,6 +234,7 @@ suite = testSuiteFromTCs(
     SimEventsTC,
     SimulatorUtilsTC,
     RdSynced_agent_TC,
+    Segment7TC,
     SerializerModes_TC,
     Serializer_tmpVar_TC,
     TransTmpl_TC,

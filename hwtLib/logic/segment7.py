@@ -53,4 +53,9 @@ class Segment7(Unit):
             # display off when value is out of range
             0b1111111
         ]
-        Switch(self.dataIn).addCases(enumerate(dec))
+        Switch(self.dataIn).addCases(enumerate([self.dataOut(v) for v in dec]))
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    print(toRtl(Segment7()))
