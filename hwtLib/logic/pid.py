@@ -62,3 +62,8 @@ class PidController(Unit):
 
         u(Add(u, a[0] * err, a[1] * y[0], a[2] * y[1], a[3] * y[2], key=trim))
         self.output(u)
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    print(toRtl(PidController()))
