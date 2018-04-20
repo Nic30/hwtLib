@@ -15,6 +15,8 @@ from hwt.hdl.statements import HdlStatement
 from hwtLib.mem.cuckooHashTable import CuckooHashTable
 from hwtLib.samples.statements.ifStm import SimpleIfStatement3
 from hwt.synthesizer.dummyPlatform import DummyPlatform
+from hwtLib.samples.mem.ram import SimpleAsyncRam
+from hwtLib.logic.segment7 import Segment7
 
 
 class BasicSynthesisTC(unittest.TestCase):
@@ -99,6 +101,7 @@ class StatementsConsystencyTC(unittest.TestCase):
                 if isinstance(d, HdlStatement):
                     self.assertIs(d.parentStm, None, (s, d))
                     self.assertIn(d, c.statements)
+
         for stm in c.statements:
             self.assertIs(stm.parentStm, None)
 
@@ -116,6 +119,17 @@ class StatementsConsystencyTC(unittest.TestCase):
         stms = u._ctx.statements
         self.assertEqual(len(stms), 1)
         self.assertIsInstance(list(stms)[0], Assignment)
+
+    def test_index_inputs_with_assignment_has_endpoint(self):
+        u = SimpleAsyncRam()
+        self.check_consystency(u)
+
+        self.assertEqual(len(u.addr_in._sigInside.endpoints), 1)
+        self.assertEqual(len(u.addr_out._sigInside.endpoints), 1)
+
+    def test_if_inputs_correc(self):
+        u = Segment7()
+        self.check_consystency(u)
 
 
 if __name__ == '__main__':
