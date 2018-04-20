@@ -20,7 +20,7 @@ class SimpleAsyncRam(Unit):
 
     def _impl(self):
         self._ram = ram = self._sig("ram_data", Bits(8)[4])
-        self.dout(ram[self.addr_out]),
+        self.dout(ram[self.addr_out])
         ram[self.addr_in](self.din)
 
 
@@ -41,4 +41,5 @@ class SimpleSyncRam(SimpleAsyncRam):
 if __name__ == "__main__":  # alias python "main" function
     from hwt.synthesizer.utils import toRtl
     # there is more of synthesis methods. toRtl() returns formated vhdl string
-    print(toRtl(SimpleSyncRam()))
+    u = SimpleAsyncRam()
+    print(toRtl(u))
