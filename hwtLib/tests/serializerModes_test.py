@@ -199,7 +199,6 @@ END ARCHITECTURE rtl;"""
 class SerializerModes_TC(unittest.TestCase):
     def test_all(self):
         s = toRtl(ExampleA())
-        print(s)
         self.assertEqual(s, expected_vhdl)
 
 
