@@ -18,6 +18,7 @@ class SimpleConcat(Unit):
     def _impl(self):
         self.a_out(Concat(self.a3, self.a2, self.a1, self.a0))
 
+
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
     print(toRtl(SimpleConcat))
