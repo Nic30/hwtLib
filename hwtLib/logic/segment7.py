@@ -50,11 +50,14 @@ class Segment7(Unit):
             0b0000000,
             # 9
             0b0000100,
-            # display off when value is out of range
-            0b1111111
-        ]
-        Switch(self.dataIn).addCases(enumerate([self.dataOut(v) for v in dec]))
 
+        ]
+        Switch(self.dataIn) \
+        .addCases(enumerate([self.dataOut(v) for v in dec])) \
+        .Default(
+           # display off when value is out of range
+           self.dataOut(0b1111111)    
+        )
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
