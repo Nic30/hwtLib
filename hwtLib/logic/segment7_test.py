@@ -66,7 +66,7 @@ BEGIN
             dataOut <= "0000000";
         WHEN X"9" =>
             dataOut <= "0000100";
-        WHEN X"a" =>
+        WHEN OTHERS =>
             dataOut <= "1111111";
         END CASE;
     END PROCESS;
