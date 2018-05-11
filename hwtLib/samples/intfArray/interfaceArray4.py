@@ -12,12 +12,12 @@ from hwtLib.types.ctypes import uint8_t
 
 
 struct0 = HStruct(
-        (uint8_t, "f0"),
-        (HStruct(
-             (uint8_t, "f1"),
-             (uint8_t, "f2")
-             )[4], "arr0")
-    )
+    (uint8_t, "f0"),
+    (HStruct(
+            (uint8_t, "f1"),
+        (uint8_t, "f2")
+    )[4], "arr0")
+)
 # struct0 = HStruct(
 #        (uint8_t[2], "arr0")
 #    )
@@ -40,7 +40,10 @@ class InterfaceArraySample4(Unit):
                     p = RegCntrl(asArraySize=t.size)
                     dw = t.elmType.bit_length()
                 else:
-                    p = StructIntf(t.elmType, instantiateFieldFn=self._mkFieldInterface, asArraySize=t.size)
+                    p = StructIntf(
+                        t.elmType,
+                        instantiateFieldFn=self._mkFieldInterface,
+                        asArraySize=t.size)
                     return p
             else:
                 p = BramPort_withoutClk()
@@ -55,8 +58,10 @@ class InterfaceArraySample4(Unit):
 
     def _declr(self):
         addClkRstn(self)
-        self.a = StructIntf(struct0, instantiateFieldFn=self._mkFieldInterface, asArraySize=3)
-        self.b = StructIntf(struct0, instantiateFieldFn=self._mkFieldInterface, asArraySize=3)
+        self.a = StructIntf(
+            struct0, instantiateFieldFn=self._mkFieldInterface, asArraySize=3)
+        self.b = StructIntf(
+            struct0, instantiateFieldFn=self._mkFieldInterface, asArraySize=3)
 
     def _impl(self):
         self.b(self.a)
@@ -172,8 +177,10 @@ class InterfaceArraySample4TC(SimTestCase):
             for d, ref in zip(regCntrl._ag.din, data):
                 self.assertValEqual(d, ref, *msg)
 
-        for i, (_f0_in, _f0_out, arr_f1_in, arr_f1_out, arr_f2_in, arr_f2_out, a, b) in enumerate(zip(
-            f0_in, f0_out, f1_in, f1_out, f2_in, f2_out, u.a, u.b)):
+        for i, (_f0_in, _f0_out, arr_f1_in, arr_f1_out, arr_f2_in,
+                arr_f2_out, a, b) in enumerate(zip(
+                f0_in, f0_out, f1_in, f1_out, f2_in,
+                f2_out, u.a, u.b)):
 
             emp(a.f0._ag.dout, i)
             dinEq(a.f0, _f0_in, i)
@@ -182,11 +189,11 @@ class InterfaceArraySample4TC(SimTestCase):
             emp(b.f0._ag.din, i)
 
             for i2, (a_arr, b_arr, _f1_in, _f1_out, _f2_in, _f2_out) in enumerate(zip(
-                a.arr0, b.arr0,
-                arr_f1_in,
-                arr_f1_out,
-                arr_f2_in,
-                arr_f2_out)):
+                    a.arr0, b.arr0,
+                    arr_f1_in,
+                    arr_f1_out,
+                    arr_f2_in,
+                    arr_f2_out)):
 
                 emp(a_arr.f1._ag.dout, (i, i2))
                 eq(b_arr.f1._ag.dout, _f1_out, (i, i2))

@@ -5,8 +5,8 @@ from hwt.hdl.constants import Time
 from hwt.interfaces.std import VldSynced
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 
 
 class SimpleSubunit(Unit):
@@ -67,12 +67,12 @@ class InterfaceArraySample1TC(SimTestCase):
 
         u.a[0]._ag.data.extend([1, 2, 3])
         u.a[1]._ag.data.extend([9, 10])
-        
+
         self.runSim(50 * Time.ns)
-        
+
         for i in range(2):
             self.assertEmpty(u.a[i]._ag.data)
-        
+
         self.assertValSequenceEqual(u.b[0]._ag.data, [1, 2, 3])
         self.assertValSequenceEqual(u.b[1]._ag.data, [9, 10])
 
