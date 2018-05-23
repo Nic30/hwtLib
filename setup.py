@@ -22,13 +22,13 @@ class PyTest(TestCommand):
 
 
 setup(name='hwtLib',
-      version='2.1',
+      version='2.2',
       description='library of hardware components and test for HWToolkit framework (hwt, FPGA devel. tools)',
       url='https://github.com/Nic30/hwtLib',
       author='Michal Orsak',
       author_email='michal.o.socials@gmail.com',
       install_requires=[
-        'hwt>=2.1',
+        'hwt>=2.2',
         'Pillow',  # there are some components which are working with images
       ],
       license='MIT',
