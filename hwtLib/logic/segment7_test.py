@@ -17,19 +17,21 @@ segment7_vhdl = """--
 --
 --    :note: led in display becomes active when output = 0
 --
---    display pin connection:
+--    Display pin connection on image below.
 --
---    -------------
---    |     0     |
---    -------------
---    | 5 |   | 1 |
---    -------------
---    |     6     |
---    -------------
---    | 4 |   | 2 |
---    -------------
---    |     3     |
---    -------------
+--    .. code-block:: raw
+--
+--        -------------
+--        |     0     |
+--        -------------
+--        | 5 |   | 1 |
+--        -------------
+--        |     6     |
+--        -------------
+--        | 4 |   | 2 |
+--        -------------
+--        |     3     |
+--        -------------
 --    
 library IEEE;
 use IEEE.std_logic_1164.all;
