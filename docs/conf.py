@@ -20,7 +20,7 @@
 import glob
 import os
 import re
-from sphinx.apidoc import main as apidoc
+from sphinx.ext.apidoc import main as apidoc_main
 import sphinx_bootstrap_theme
 import sys
 
@@ -222,5 +222,6 @@ for file in glob.glob("*.rst"):
         print("removing: ", file)
         os.remove(file)
 
-excluded_tests = list(find_files("../", "*_test.py"))
-apidoc([__name__, "--full", "-o", "../docs", "../hwtLib"] + excluded_tests)
+excluded_tests = list(find_files("../", "*_test.py")) + ["../hwtLib/tests"]
+apidoc_main(["--module-first", "--full",
+             "--output-dir", "../docs", "../hwtLib"] + excluded_tests)
