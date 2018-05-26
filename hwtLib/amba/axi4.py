@@ -12,7 +12,7 @@ class Axi4_addr(Axi3_addr):
     """
     Axi4 address channel interface
     (axi3 address channel with different size of len and lock signals
-     and additional qos signal)
+    and additional qos signal)
     """
     LEN_WIDTH = 8
     LOCK_WIDTH = 1

@@ -9,19 +9,21 @@ class Segment7(Unit):
 
     :note: led in display becomes active when output = 0
 
-    display pin connection:
+    Display pin connection on image below.
 
-    -------------
-    |     0     |
-    -------------
-    | 5 |   | 1 |
-    -------------
-    |     6     |
-    -------------
-    | 4 |   | 2 |
-    -------------
-    |     3     |
-    -------------
+    .. code-block:: raw
+
+        -------------
+        |     0     |
+        -------------
+        | 5 |   | 1 |
+        -------------
+        |     6     |
+        -------------
+        | 4 |   | 2 |
+        -------------
+        |     3     |
+        -------------
     """
 
     def _declr(self):
