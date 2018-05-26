@@ -7,9 +7,11 @@ Library can be installed by command:
 sudo pip3 install hwtLib
 ```
 
+hwtLib is the library of hardware components for hwt framework. Relation of hwt and hwtLib is similar as C and stdlib relation. 
 
-Any component can be exported as IPCore using Packager class from hwt or as pure code by toRtl().
-Target language is specified by keyword serializer.
+
+Any component can be exported as IPCore using Packager class from hwt or as HDL code by toRtl(). Target language is specified by keyword serializer.
+
 ```python
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
