@@ -10,10 +10,6 @@ Interfaces of components are usually not shown in documentation directly
 instead they are declared in _declr() method of unit and they can be seen in sourcecode same for parameters in _config().
  
 
-You can also download this doc in `PDF
-<https://media.readthedocs.org/pdf/hwtlib/latest/hwtlib.pdf>`_.
-
-
 .. toctree::
    :maxdepth: 3
    :caption: Contents:
