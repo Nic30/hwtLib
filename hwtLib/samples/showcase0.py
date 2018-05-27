@@ -145,15 +145,16 @@ class Showcase0(Unit):
         # (it would make all signals unhasable)
         cmp[5](b._eq(4))
 
+        h = self.h
         # all statements are just objects
-        statements0 = self.h(0)
-        statements1 = self.h(1)
-        statements2 = self.h(2)
+        statements0 = h(0)
+        statements1 = h(1)
+        statements2 = h(2)
         statements3 = foo(r, statements0, a[1], statements1, statements2)
         assert isinstance(statements3, If)
         If(a[2],
             # also when there is not value specified in the branch of dataflow
-            # (= in this case there is no else this signal will become latched)
+            # (in this case there is missing else branch) this signal will become latched
             statements3
         )
 
