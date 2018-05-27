@@ -101,7 +101,7 @@ def render_aafig_images(app, doctree):
     merge_dict(format_map, DEFAULT_FORMATS)
     if aafigure is None:
         app.builder.warn('aafigure module not installed, ASCII art images '
-                         'will be redered as literal text')
+                         'will be rendered as literal text')
     for img in doctree.traverse(nodes.image):
         text = img.aafig['text']
         if not hasattr(img, 'aafig'):
