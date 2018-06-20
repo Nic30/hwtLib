@@ -28,17 +28,17 @@ class TransEndInfo(HandshakeSync):
 
 class Axi_rDatapump(Axi_datapumpBase):
     """
-    Foward req to axi ar channel
-    and collect data to data channel form axi r channel
+    Forward request to axi address read channel
+    and collect data to data channel form axi read channel
 
     This unit simplifies axi interface,
     blocks data channel when there is no request pending
     and contains frame merging logic if is required
 
-    if req len is wider transaction is internally splited to multiple
+    if req len is wider transaction is internally split to multiple
     transactions, but read data are single packet as requested
 
-    errorRead stays high when there was error on axi r channel
+    errorRead stays high when there was error on axi read channel
     it will not affect unit functionality
     \n""" + Axi_datapumpBase.__doc__
 
@@ -91,7 +91,7 @@ class Axi_rDatapump(Axi_datapumpBase):
                ar.len(LEN_MAX),
                addRmSize.rem(0),
                addRmSize.propagateLast(0)
-               ).Else(
+            ).Else(
                 # connect only lower bits of len
                 connect(reqLen, ar.len, fit=True),
                 addRmSize.rem(reqRem),
@@ -102,10 +102,10 @@ class Axi_rDatapump(Axi_datapumpBase):
                 If(reqLen > LEN_MAX,
                     lenDebth(reqLen - (LEN_MAX + 1)),
                     lastReqDispatched(0)
-                   ).Else(
+                ).Else(
                     lastReqDispatched(1)
                 )
-               )
+            )
 
             If(lastReqDispatched,
                ar.addr(req.addr),
@@ -118,13 +118,13 @@ class Axi_rDatapump(Axi_datapumpBase):
                StreamNode(masters=[req],
                           slaves=[addRmSize, ar],
                           extraConds={ar: ~rErrFlag}).sync(),
-               ).Else(
+            ).Else(
                 req.rd(0),
                 ar.addr(rAddr),
                 ack(addRmSize.rd & ar.ready),
                 If(ack,
                    rAddr(rAddr + ADDR_STEP)
-                   ),
+                ),
 
                 reqLen(lenDebth),
                 reqRem(remBackup),
@@ -163,7 +163,7 @@ class Axi_rDatapump(Axi_datapumpBase):
         rErrFlag = self._reg("rErrFlag", defVal=0)
         If(r.valid & rOut.ready & (r.resp != RESP_OKAY),
            rErrFlag(1)
-           )
+        )
         self.errorRead(rErrFlag)
 
         rOut.id(r.id)

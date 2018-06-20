@@ -67,4 +67,5 @@ RAM64X1S = mkLutRamCls(64)
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    print(toRtl(RAM64X1S))
+    u = RAM64X1S()
+    print(toRtl(u))
