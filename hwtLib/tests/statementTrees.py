@@ -39,7 +39,7 @@ class StatementTreesTC(unittest.TestCase):
         _tmpl = rmWhitespaces.sub(" ", tmpl).strip()
         _cont = rmWhitespaces.sub(" ", cont).strip()
 
-        self.assertEquals(_tmpl, _cont)
+        self.assertEqual(_tmpl, _cont)
 
     def test_baicIf(self):
         a = self.n.sig('a')

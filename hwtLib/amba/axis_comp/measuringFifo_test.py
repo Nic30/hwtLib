@@ -256,9 +256,9 @@ class AxiS_measuringFifoTC(SimTestCase):
 
         self.runSim((MAX_LEN + 10) * 10 * Time.ns)
         f = self.getFrames()
-        self.assertEquals(f,
-                          [[i for i in range(MAX_LEN + 1)],
-                           [MAX_LEN + 1, MAX_LEN + 2, MAX_LEN + 3]])
+        self.assertEqual(f,
+                         [[i for i in range(MAX_LEN + 1)],
+                          [MAX_LEN + 1, MAX_LEN + 2, MAX_LEN + 3]])
 
 
 if __name__ == "__main__":
