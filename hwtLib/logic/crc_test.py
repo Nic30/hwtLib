@@ -1,182 +1,74 @@
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.logic.crcComb import CrcComb
-from hwtLib.logic.crcPoly import CRC_32, CRC_1, CRC_16_CCITT, CRC_8_CCITT
+from hwtLib.logic.crcPoly import CRC_32 
 from hwtLib.logic.crc import Crc
-from binascii import crc32
+
+from binascii import crc32, crc_hqx
+# crc32 input reflected, result reflected,
+# poly 0x4C11DB7, init 0xFFFFFFFF, final 0xFFFFFFFF
+
 from hwt.bitmask import mask  # , selectBit
 from hwt.hdl.typeShortcuts import vec
-# from scapy.layers.sctp import crc32c
-# from array import array
-
-def stoi(s):
-    return int.from_bytes(s, byteorder='little')
-#
-#
-# def asUnsigned(val, width):
-#    return val & mask(width)
-#
-# def inv(val):
-#    width = 32
-#    return asUnsigned(~val & mask(width), width)
-#
-# def reverseBits(val, width):
-#    v = 0
-#    for i in range(width):
-#        v |= (selectBit(val, width - i - 1) << i)
-#    return v
-#
-# CRC_32_2 = 0xEDB88320
-#
-# table = array('L')
-# for byte in range(256):
-#    crc = 0
-#    for bit in range(8):
-#        if (byte ^ crc) & 1:
-#            crc = (crc >> 1) ^ CRC_32_2
-#        else:
-#            crc >>= 1
-#        byte >>= 1
-#    table.append(crc)
-#
-#
-# def crc32_2(string):
-#    value = 0xffffffff
-#    for ch in string:
-#        v = ord(ch)
-#        value = table[(v ^ value) & 0xff] ^ (value >> 8)
-#
-#    return -1 - value
-#
-#
-# def crc32_3(string):
-#    value = 0xffffffff
-#    for ch in string:
-#        v = reverseBits(ord(ch), 8)
-#        value = table[(v ^ value) & 0xff] ^ (value >> 8)
-#
-#    return -1 - value
-#
-#
-# def crc32_4(string):
-#    value = 0xffffffff
-#    for ch in string:
-#        v = ord(ch)
-#        value = table[(v ^ value) & 0xff] ^ (value >> 8)
-#
-#    return value
-#
-#
-# def crc32_5(string):
-#    value = 0xffffffff
-#    for ch in string:
-#        v = reverseBits(ord(ch), 8)
-#        value = table[(v ^ value) & 0xff] ^ (value >> 8)
-#
-#    return value
+from hwtLib.logic.crcComb_test import stoi
+from hwt.pyUtils.arrayQuery import grouper
 
 
-class CrcCombTC(SimTestCase):
+def pr(name, val):
+    print("{:10s}:  0x{:08X} {:032b}".format(name, val, val))
 
-    def setUpCrc(self, poly, polyWidth, dataWidth=None):
-        if dataWidth is None:
-            dataWidth = polyWidth
-        u = self.u = CrcComb()
-        self.DATA_WIDTH = dataWidth
-        self.POLY_WIDTH = polyWidth
-        u.DATA_WIDTH.set(dataWidth)
-        u.POLY_WIDTH.set(polyWidth)
-        u.POLY.set(poly)
-        self.prepareUnit(u)
 
-    # def doHash(self, string):
-    #    string = bytes(string)
-    #    wordSize = self.DATA_WIDTH // 8
-    #    assert len(string) % wordSize == 0
-    #    # for s in grouper(wordSize, string):
-    #    self.u.dataIn._ag.data.append(int.from_bytes(inp, byteorder='little'))
-
-    def test_crc1(self):
-        self.setUpCrc(CRC_1, 8, 8)
-        u = self.u
-        inp = b"a"
-
-        u.dataIn._ag.data.append(int.from_bytes(inp, byteorder='little'))
-        self.runSim(20 * Time.ns)
-
-        crc = 97
-        self.assertValSequenceEqual(u.dataOut._ag.data, [crc])
-
-    def test_crc8(self):
-        self.setUpCrc(CRC_8_CCITT, 8, 8)
-        u = self.u
-        inp = b"a"
-
-        u.dataIn._ag.data.append(int.from_bytes(inp, byteorder='little'))
-        self.runSim(20 * Time.ns)
-
-        crc = 0x20
-        self.assertValSequenceEqual(u.dataOut._ag.data, [crc])
-
-    def test_crc32(self):
-        self.setUpCrc(CRC_32, 32)
-        u = self.u
-        inp = b"aaaa"
-
-        u.dataIn._ag.data.append(int.from_bytes(inp, byteorder='little'))
-        self.runSim(20 * Time.ns)
-
-        crc = 0xB0E91122
-
-        self.assertValSequenceEqual(u.dataOut._ag.data, [crc])
-
-    def test_crc16(self):
-        self.setUpCrc(CRC_16_CCITT, 16)
-        u = self.u
-        inp = b"aa"
-
-        u.dataIn._ag.data.append(int.from_bytes(inp, byteorder='little'))
-        self.runSim(20 * Time.ns)
-
-        crc = 0x449C
-        self.assertValSequenceEqual(u.dataOut._ag.data, [crc])
+C_240B = (b"\x00\x00\x00\x00"
+          b"\x00\x00\x00\x00"
+          b"\x00\x00\x00\x00"
+          b"\x12\x34\x56\x78"
+          b"\x00\x00\x00\x00"
+          b"\x00\x00\x00\x00"
+          b"\x00\x00\x00\x00"
+          b"\xf0\xe0\xd0\xc3"
+          b"\x00\x00\x00\x00"
+          b"\xb9\xfd\xee\x5b"
+          b"\x00\xff\x01\x02"
+          b"\x03\x07\x00\x00"
+          b"\x00\x00\x00\x00"
+          b"\x00\x00\x00\x00"
+          b"\x00\x00\x00\x00")
 
 
 class CrcTC(SimTestCase):
-    def setUpCrc(self, poly, polyWidth, dataWidth=None):
+
+    def setUpCrc(self, poly, dataWidth=None,
+                 refin=True, refout=True,
+                 initval=mask(32), finxor=mask(32)):
         if dataWidth is None:
-            dataWidth = polyWidth
-        u = self.u = Crc()
+            dataWidth = poly.WIDTH
 
         self.DATA_WIDTH = dataWidth
-        self.POLY_WIDTH = polyWidth
-        # u.REVERSE_IN.set(True)
-        u.REVERSE_OUT.set(True)
+        self.POLY_WIDTH = poly.WIDTH
 
-        m = vec(mask(polyWidth), polyWidth)
-        u.FINAL_XOR_VAL.set(m)
+        u = self.u = Crc()
+        u.INIT.set(vec(initval, poly.WIDTH))
         u.DATA_WIDTH.set(dataWidth)
-        u.POLY_WIDTH.set(polyWidth)
-        u.POLY.set(poly)
-        u.SEED.set(m)
+        u.REFIN.set(refin)
+        u.REFOUT.set(refout)
+        u.POLY_WIDTH.set(poly.WIDTH)
+        u.POLY.set(vec(poly.POLY, poly.WIDTH))
+        u.XOROUT.set(vec(finxor, poly.WIDTH))
 
         self.prepareUnit(u)
-
         return u
 
     def test_works_with_any_data_width(self):
-        poly = vec(CRC_32, 32)
-        u = self.setUpCrc(poly, 32)
+        u = self.setUpCrc(CRC_32)
         u.dataIn._ag.data.append(stoi(b"aaaa"))
         self.runSim(20 * Time.ns)
         out32 = int(u.dataOut._ag.data[-1])
 
-        u = self.setUpCrc(poly, 32, 16)
+        u = self.setUpCrc(CRC_32, 16)
         u.dataIn._ag.data.extend([stoi(b"aa") for _ in range(2)])
         self.runSim(20 * Time.ns)
         out16 = int(u.dataOut._ag.data[-1])
 
-        u = self.setUpCrc(poly, 32, 8)
+        u = self.setUpCrc(CRC_32, 8)
         u.dataIn._ag.data.extend([ord("a") for _ in range(4)])
         self.runSim(20 * Time.ns)
         out8 = int(u.dataOut._ag.data[-1])
@@ -186,47 +78,152 @@ class CrcTC(SimTestCase):
         self.assertEqual(out16, out8)
 
     def test_simple(self):
-        u = self.setUpCrc(vec(CRC_32, 32), 32)
-        inp = b"aaaa"
+        u = self.setUpCrc(CRC_32)
+        inp = b"abcd"
 
         u.dataIn._ag.data.append(stoi(inp))
         # u.dataIn._ag.data.extend([ord("a") for _ in range(4)])
         self.runSim(30 * Time.ns)
         out = int(u.dataOut._ag.data[-1])
-        # print("%x" % stoi(inp))
-        # print("crc32:    %x" % crc32(inp))
-        # print("crc32_2:  %x" % asUnsigned(crc32_2("aaaa"), 32))
-        # print("crc32_3:  %x" % asUnsigned(crc32_3("aaaa"), 32))
-        # print("crc32_4:  %x" % asUnsigned(crc32_4("aaaa"), 32))
-        #
-        # print("~crc32:   %x" % inv(crc32(inp)))
-        # print("~crc32_2: %x" % inv(crc32_2("aaaa")))
-        # print("~crc32_3: %x" % inv(crc32_3("aaaa")))
-        # print("~crc32_4: %x" % inv(crc32_4("aaaa")))
-        #
-        # print("crc32c:   %x" % crc32c([ord("a") for _ in range(4)]))
-        # print("out:      %x" % out)
-        # print("out_rev:  %x" % reverseBits(out, 32))
-        # print("~out:     %x" % asUnsigned(~out, 32))
-        # print("~out_rev: %x" % asUnsigned(~reverseBits(out, 32), 32))
+        ref = crc32(inp)
+        self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
+    
+    def test_CRC32_0(self):
+        u = self.setUpCrc(CRC_32)
+        inp = b"\x00\x00\x00\x00"
 
-        self.assertEqual(out, crc32(inp))
+        u.dataIn._ag.data.append(stoi(inp))
+        # u.dataIn._ag.data.extend([ord("a") for _ in range(4)])
+        self.runSim(30 * Time.ns)
+        out = int(u.dataOut._ag.data[-1])
+        ref = crc32(inp)
+        self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
 
-    def test_wide(self):
-        u = self.setUpCrc(vec(CRC_32, 32), 32, dataWidth=240)
+    def test_CRC32_dual_0(self):
+        u = self.setUpCrc(CRC_32)
+        inp = b"\x00\x00\x00\x00\x00\x00\x00\x00"
+
         u.dataIn._ag.data.extend([0, 0])
+        # u.dataIn._ag.data.extend([ord("a") for _ in range(4)])
         self.runSim(40 * Time.ns)
         out = int(u.dataOut._ag.data[-1])
-        self.assertEqual(out, 0x04128908)
+        ref = crc32(inp)
+        self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
+
+    def test_CRC32_wide_dual_0(self):
+        u = self.setUpCrc(CRC_32, dataWidth=32 * 8)
+        u.dataIn._ag.data.extend([0, 0])
+        self.runSim(50 * Time.ns)
+        out = int(u.dataOut._ag.data[-1])
+        inp = (0).to_bytes(2*32, byteorder="little")
+        ref = crc32(inp)
+        self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
+
+    def test_3x32b(self):
+        u = self.setUpCrc(CRC_32)
+        u.dataIn._ag.data.extend([
+            stoi("abcd"),
+            stoi("efgh"),
+            stoi("ijkl")
+        ])
+        ref = crc32("abcdefghijkl".encode())
+        self.runSim(50 * Time.ns)
+        out = int(u.dataOut._ag.data[-1])
+        self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
+
+    def test_240B_CRC32_bare(self):
+        u = self.setUpCrc(CRC_32, dataWidth=240,
+                          refin=False, refout=False,
+                          initval=0, finxor=0)
+
+        u.dataIn._ag.data += [
+            stoi(C_240B[:len(C_240B) // 2]),
+            stoi(C_240B[len(C_240B) // 2:]),
+        ]
+        # print("\n")
+        #
+        # for _d in C_240B:
+        #    print(" 0x%x" % _d, end='')
+        
+        self.runSim(40 * Time.ns)
+        out = int(u.dataOut._ag.data[-1])
+        ref = 0x28A4D370
+        self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
+
+    def test_240B_CRC32_init(self):
+        u = self.setUpCrc(CRC_32, dataWidth=240,
+                          refin=False, refout=False,
+                          initval=mask(32), finxor=0)
+
+        u.dataIn._ag.data += [
+            stoi(C_240B[:len(C_240B) // 2]),
+            stoi(C_240B[len(C_240B) // 2:]),
+        ]
+        
+        self.runSim(40 * Time.ns)
+        out = int(u.dataOut._ag.data[-1])
+        
+        ref = 0xC7CA64AF
+        self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
+
+    def test_240B_CRC32_init_refout(self):
+        u = self.setUpCrc(CRC_32, dataWidth=240,
+                          refin=False, finxor=0)
+
+        u.dataIn._ag.data += [
+            stoi(C_240B[:len(C_240B) // 2]),
+            stoi(C_240B[len(C_240B) // 2:]),
+        ]
+        
+        self.runSim(40 * Time.ns)
+        out = int(u.dataOut._ag.data[-1])
+        ref = 0xF52653E3
+        self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
+
+    def test_240B_CRC32_init_refout_finxor(self):
+        u = self.setUpCrc(CRC_32, dataWidth=240,
+                          refin=False)
+
+        u.dataIn._ag.data += [
+            stoi(C_240B[:len(C_240B) // 2]),
+            stoi(C_240B[len(C_240B) // 2:]),
+        ]
+        
+        self.runSim(40 * Time.ns)
+        out = int(u.dataOut._ag.data[-1])
+        ref = 0x0AD9AC1C
+        self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
+
+    def test_240B(self):
+        u = self.setUpCrc(CRC_32, dataWidth=240)
+
+        u.dataIn._ag.data += [
+            stoi(C_240B[:len(C_240B) // 2]),
+            stoi(C_240B[len(C_240B) // 2:]),
+        ]
+        self.runSim(40 * Time.ns)
+        out = int(u.dataOut._ag.data[-1])
+        ref = crc32(C_240B)
+        self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
+
+    def test_240B_CRC32_32b(self):
+        u = self.setUpCrc(CRC_32)
+
+        u.dataIn._ag.data += [stoi(d) for d in grouper(4, C_240B)]
+        self.runSim((3 + len(u.dataIn._ag.data)) * 10 * Time.ns)
+        out = int(u.dataOut._ag.data[-1])
+        ref = crc32(C_240B)
+        self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
 
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(CrcCombTC('test_crc1'))
-    # suite.addTest(CrcCombTC('test_crc8'))
-    # suite.addTest(CrcCombTC('test_crc32'))
-    suite.addTest(unittest.makeSuite(CrcCombTC))
+    # suite.addTest(CrcTC('test_simple'))
+    # suite.addTest(CrcTC('test_wide'))
+    # suite.addTest(CrcTC('test_240B_CRC32_init_refout_finxor'))
+    # suite.addTest(CrcTC('test_240B'))
+    
     suite.addTest(unittest.makeSuite(CrcTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
