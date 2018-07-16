@@ -23,7 +23,7 @@ class Lsfr(Unit):
     def _config(self):
         self.POLY_WIDTH = Param(8)
         self.POLY = Param(0x88)
-        self.SEED = Param(1)
+        self.INIT = Param(1)
 
     def _declr(self):
         addClkRstn(self)
@@ -32,7 +32,7 @@ class Lsfr(Unit):
     def _impl(self):
         accumulator = self._reg("accumulator",
                                 Bits(self.POLY_WIDTH),
-                                defVal=self.SEED)
+                                defVal=self.INIT)
         POLY = int(self.POLY)
         xorBits = []
         for i, b in enumerate(iterBits(accumulator)):

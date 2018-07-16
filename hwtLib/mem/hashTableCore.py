@@ -98,7 +98,7 @@ class HashTableCore(Unit):
         hashWidth = max(int(self.KEY_WIDTH), int(self.HASH_WITH))
         h = self.hash = CrcComb()
         h.DATA_WIDTH.set(hashWidth)
-        h.POLY.set(self.POLYNOME)
+        h.setConfig(self.POLYNOME)
         h.POLY_WIDTH.set(hashWidth)
 
     def parseItem(self, sig):

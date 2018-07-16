@@ -59,7 +59,7 @@ class HashTableCoreTC(SimTestCase):
             yield s.wait(50 * Time.ns)
 
             expected0 = tuple(valuesToInts((_hash, key, data, 1, 1)))
-            expected1 = (21, key2, 0, 0, 0)
+            expected1 = (14, key2, 0, 0, 0)
 
             self.assertValSequenceEqual(u.lookupRes._ag.data,
                                         [expected0, expected1])

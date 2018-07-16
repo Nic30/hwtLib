@@ -343,8 +343,14 @@ class CRC_32:
 
 # (Castagnoli), iSCSI, SCTP, G.hn payload, SSE4.2, Btrfs, ext4, Ceph
 class CRC_32C:
+    INIT = 0Xffffffff
+    CHECK = 0xe3069283
     POLY = 0x1EDC6F41
     WIDTH = 32
+    REFIN = True
+    REFOUT = True
+    RESIDUE = 0xb798b438
+    XOROUT = 0xffffffff
 
 
 # Koopman {1,3,28}
