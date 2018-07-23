@@ -58,7 +58,8 @@ from hwtLib.logic.binToOneHot import BinToOneHotTC
 from hwtLib.logic.bitonicSorter import BitonicSorterTC
 from hwtLib.logic.cntrGray import GrayCntrTC
 from hwtLib.logic.crcUtils_test import CrcUtilsTC
-from hwtLib.logic.crc_test import CrcCombTC, CrcTC
+from hwtLib.logic.crcComb_test import CrcCombTC
+from hwtLib.logic.crc_test import CrcTC
 from hwtLib.logic.lsfr import LsfrTC
 from hwtLib.logic.oneHotToBin_test import OneHotToBinTC
 from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC

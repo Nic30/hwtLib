@@ -14,7 +14,7 @@ from hwt.synthesizer.param import Param
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf
-from hwtLib.logic.crcPoly import CRC_32C, CRC_32K
+from hwtLib.logic.crcPoly import CRC_32, CRC_32C 
 
 
 class ORIGIN_TYPE():
@@ -24,6 +24,7 @@ class ORIGIN_TYPE():
 
 
 class CInsertIntf(HandshakeSync):
+
     def _config(self):
         self.KEY_WIDTH = Param(8)
         self.DATA_WIDTH = Param(0)
@@ -111,7 +112,7 @@ class CuckooHashTable(HashTableCore):
 
     """
 
-    def __init__(self, polynomials=[CRC_32K, CRC_32C]):
+    def __init__(self, polynomials=[CRC_32, CRC_32C]):
         """
         :param polynomials: list of polynomials for crc hashers used in tables
             for each item in this list table will be instantiated
@@ -182,9 +183,9 @@ class CuckooHashTable(HashTableCore):
             if self.DATA_WIDTH:
                 ins.data(stash.data)
                 ins.vld(Or(state._eq(fsm_t.cleaning),
-                           state._eq(fsm_t.lookupResAck) &
-                           insertTargetOH[i] &
-                           ~ isExternLookup))
+                           state._eq(fsm_t.lookupResAck) & 
+                           insertTargetOH[i] & 
+                           ~isExternLookup))
                 ins.vldFlag(stash.vldFlag)
 
     def lookupResOfTablesDriver(self, resRead, resAck):
@@ -203,7 +204,7 @@ class CuckooHashTable(HashTableCore):
         lookupResAck = StreamNode(masters=map(
             lambda t: t.lookupRes, tables)).ack()
         insertFoundOH = list(map(lambda t: t.lookupRes.found, tables))
-        isEmptyOH = list(map(lambda t: ~t.lookupRes.occupied, tables))
+        isEmptyOH = list(map(lambda t:~t.lookupRes.occupied, tables))
         _insertFinal = Or(*insertFoundOH, *isEmptyOH)
 
         If(resRead & lookupResAck,
@@ -259,7 +260,7 @@ class CuckooHashTable(HashTableCore):
         priority = [self.clean, self.delete, self.insert, lookup]
         for i, intf in enumerate(priority):
             withLowerPrio = priority[:i]
-            intf.rd(And(isIdle, *map(lambda x: ~x.vld, withLowerPrio)))
+            intf.rd(And(isIdle, *map(lambda x:~x.vld, withLowerPrio)))
 
     def lookupOfTablesDriver(self, state, tableKey):
         fsm_t = state._dtype
@@ -277,8 +278,8 @@ class CuckooHashTable(HashTableCore):
         """
         fsm_t = state._dtype
         lookupRes = self.lookupRes
-        lookupRes.vld(state._eq(fsm_t.lookupResAck) &
-                      lookupOrigin._eq(ORIGIN_TYPE.LOOKUP) &
+        lookupRes.vld(state._eq(fsm_t.lookupResAck) & 
+                      lookupOrigin._eq(ORIGIN_TYPE.LOOKUP) & 
                       lookupAck)
 
         SwitchLogic([(insertFoundOH[i],
@@ -329,7 +330,7 @@ class CuckooHashTable(HashTableCore):
             .Trans(fsm_t.idle,
                    (self.clean.vld, fsm_t.cleaning),
                    # before each insert suitable place has to be searched first
-                   (self.insert.vld | self.lookup.vld |
+                   (self.insert.vld | self.lookup.vld | 
                     self.delete.vld, fsm_t.lookup)
                    ).Trans(fsm_t.cleaning,
                            # walk all items and clean it's vldFlags
@@ -349,17 +350,17 @@ class CuckooHashTable(HashTableCore):
                                                    # be stored
                                                    (lookupOrigin._eq(
                                                        ORIGIN_TYPE.DELETE), fsm_t.idle),
-                                                   (isExternLookup &
+                                                   (isExternLookup & 
                                                     lookupRes.rd, fsm_t.idle),
                                                    # insert into specified
                                                    # table
-                                                   (~isExternLookup & insertAck &
+                                                   (~isExternLookup & insertAck & 
                                                     insertFinal, fsm_t.idle),
-                                                   (~isExternLookup & insertAck &
+                                                   (~isExternLookup & insertAck & 
                                                     ~insertFinal, fsm_t.lookup)
                                                    ).stateReg
 
-        cleanAck(StreamNode(slaves=[t.insert for t in tables]).ack() &
+        cleanAck(StreamNode(slaves=[t.insert for t in tables]).ack() & 
                  state._eq(fsm_t.cleaning))
         lookupResRead(state._eq(fsm_t.lookupResWaitRd))
         lookupResNext(And(state._eq(fsm_t.lookupResAck),

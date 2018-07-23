@@ -1,38 +1,24 @@
-from hwt.bitmask import selectBit, mask
+from hwt.bitmask import selectBit
 from hwt.code import If, Concat
-from hwt.hdl.typeShortcuts import vec
+from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import VldSynced, VectSignal
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.byteOrder import reversedBits
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import iterBits
-from hwtLib.logic.crcPoly import CRC_5_USB, CRC_32
-from hwtLib.logic.crcUtils import parsePolyStr, buildCrcMatrix
+from hwtLib.logic.crcComb import CrcComb, reversedEndianity
 
 
-# http://stackoverflow.com/questions/41734560/parallel-crc-32-calculation-ethernet-10ge-mac
+# http://www.rightxlight.co.jp/technical/crc-verilog-hdl
+# http://outputlogic.com/my-stuff/parallel_crc_generator_whitepaper.pdf
 class Crc(Unit):
     """
     Crc generator for any crc
     polynom can be string in usual format or integer f.e."x^3+x+1" or 0b1011
     """
+
     def _config(self):
-        self.DATA_WIDTH = Param(5)
-
-        self.POLY = Param(CRC_5_USB)
-        self.POLY_WIDTH = Param(5)
-        # also  refin, reference in
-        self.REVERSE_IN = Param(False)
-        self.REVERSE_OUT = Param(False)
-
-        # also xorout
-        # output = this ^ value in reg
-        # for example ethernet has 0xffffffff
-        # (0 or mask(POLY_WIDTH) is automatically reduced)
-        self.FINAL_XOR_VAL = Param(0)
-        self.SEED = Param(0)
+        CrcComb._config(self)
 
     def _declr(self):
         addClkRstn(self)
@@ -45,99 +31,62 @@ class Crc(Unit):
         _sig(sig)
         return _sig
 
-    def parsePoly(self, POLY_WIDTH):
-        poly = int(self.POLY)
-        if isinstance(poly, str):
-            return parsePolyStr(poly, POLY_WIDTH)
-        elif isinstance(poly, int):
-            return [selectBit(poly, i) for i in range(POLY_WIDTH)]
-        else:
-            raise TypeError()
-
-    def build_CRC_XOR(self, inputBits, xorMatrix):
-        inputBits = list(inputBits)
-        crcBits = []
-        for regMask in xorMatrix:
-            bit = None
-            for m, b in zip(regMask, inputBits):
-                if m:
-                    if bit is None:
-                        bit = b
-                    else:
-                        bit = bit ^ b
-            crcBits.append(bit)
-
-        return crcBits
-
     def _impl(self):
-        PW = int(self.POLY_WIDTH)
+        # prepare constants and bit arrays for inputs
         DW = int(self.DATA_WIDTH)
-        polyCoefs = self.parsePoly(PW)
+        polyBits, PW = CrcComb.parsePoly(self.POLY, self.POLY_WIDTH)
+        
+        XOROUT = int(self.XOROUT)
+        finBits = [hBit(selectBit(XOROUT, i))
+                    for i in range(PW)]
 
-        regXorMatrix, dataXorMatrix = buildCrcMatrix(polyCoefs, PW, DW)
+        # rename "dataIn_data" to "d" to make code shorter
+        _d = self.wrapWithName(self.dataIn.data, "d")
+        inBits = list(iterBits(_d))
+        if not self.IN_IS_BIGENDIAN:
+            inBits = reversedEndianity(inBits)
+        
 
-        reg = self._reg("r",
+        state = self._reg("c",
                         Bits(self.POLY_WIDTH),
-                        self.SEED)
+                        self.INIT)
+        stateBits = list(iterBits(state))
 
-        # just rename to make code shorter
-        d = self.wrapWithName(self.dataIn.data, "d")
-        dataXorMatrix = iter(dataXorMatrix)
-        regCrcBits = self.build_CRC_XOR(iterBits(reg), regXorMatrix)
-
-        _dataBits = iterBits(d)
-        if self.REVERSE_IN:
-            _dataBits = reversed(list(_dataBits))
-
-        dataCrcBits = self.build_CRC_XOR(_dataBits, dataXorMatrix)
-
-        regNext = []
-        assert len(regCrcBits) == len(dataCrcBits)
-        for i, (dbit, rbit) in enumerate(zip(regCrcBits, dataCrcBits)):
-            if dbit is not None:
-                # just rename to make code shorter
-                dbit = self.wrapWithName(dbit, "d_%d" % i)
-
-            if rbit is not None:
-                # just rename to make code shorter
-                rbit = self.wrapWithName(rbit, "r_%d" % i)
-
-            if dbit is None:
-                bit = rbit
-            elif rbit is None:
-                bit = dbit
-            else:
-                bit = dbit ^ rbit
-
-            regNext.append(bit)
+        # build xor tree for CRC computation
+        crcMatrix = CrcComb.buildCrcXorMatrix(DW, polyBits)
+        res = CrcComb.applyCrcXorMatrix(
+            crcMatrix, inBits,
+            stateBits, bool(self.REFIN))
+       
+        # next state logic
+        # wrap crc next signals to separate signal to have nice code
+        stateNext = []
+        for i, crcbit in enumerate(res):
+            b = self.wrapWithName(crcbit, "crc_%d" % i)
+            stateNext.append(b)
 
         If(self.dataIn.vld,
            # regNext is in format 0 ... N, we need to reverse it to litle endian
-           reg(Concat(*reversed(regNext)))
+           state(Concat(*reversed(stateNext)))
         )
-
-        outXor = int(self.FINAL_XOR_VAL)
-        if self.REVERSE_OUT:
-            _reg = reversedBits(reg)
+        
+        # output connection
+        if self.REFOUT:
+            finBits = reversed(finBits)
+            self.dataOut(
+                Concat(*[ rb ^ fb 
+                         for rb, fb in zip(iterBits(state), finBits)]
+                )
+            )
         else:
-            _reg = reg
-
-        if outXor == 0:
-            self.dataOut(_reg)
-        elif outXor == mask(int(self.POLY_WIDTH)):
-            self.dataOut(~_reg)
-        else:
-            self.dataOut(_reg ^ self.FINAL_XOR_VAL)
+            self.dataOut(state ^ Concat(*finBits))
 
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
+    from hwtLib.logic.crcPoly import CRC_32
     u = Crc()
-    u.POLY.set(CRC_32)
+    CrcComb.setConfig(u, CRC_32)
     u.DATA_WIDTH.set(8)
-    u.POLY_WIDTH.set(32)
-    u.REVERSE_IN.set(True)
-    u.REVERSE_OUT.set(True)
-    u.FINAL_XOR_VAL.set(vec(mask(32), 32))
-    u.SEED.set(vec(mask(32), 32))
+
     print(toRtl(u))
