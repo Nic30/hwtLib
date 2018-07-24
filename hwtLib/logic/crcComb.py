@@ -42,7 +42,7 @@ def reversedBitsInBytes(bitArray):
     tmp = []
     for db in grouper(8, bitArray):
         tmp.extend(reversed(db))
-    return  tmp
+    return tmp
 
 
 # http://www.sunshine2k.de/coding/javascript/crc/crc_js.html
@@ -57,7 +57,7 @@ class CrcComb(Unit):
                 Result not reflected,
                 Initial Value: 0x0,
                 Final Xor is not applied
-    
+
     :ivar DATA_WIDTH: width of data in signal
     :ivar POLY: specified CRC polynome, str, int or Bits value
     :ivar POLY_WIDTH: width of POLY
@@ -68,7 +68,7 @@ class CrcComb(Unit):
         each byte is reflected before being processed.
     :ivar REFOUT: Same as REFIN except for output
     :ivar XOROUT: value to xor result with
-    
+
     """
 
     def _config(self):
@@ -79,7 +79,7 @@ class CrcComb(Unit):
         self.POLY_WIDTH = Param(CRC_5_USB.WIDTH)
         self.REFIN = Param(False)
         self.REFOUT = Param(False)
-        self.XOROUT = Param(0) 
+        self.XOROUT = Param(0)
 
     def setConfig(self, crcConfigCls):
         """
@@ -110,14 +110,15 @@ class CrcComb(Unit):
             polyCoefs = parsePolyStr(poly, PW)
         elif isinstance(poly, int):
             polyCoefs = [selectBit(poly, i)
-                          for i in range(PW)]
+                         for i in range(PW)]
         else:
             raise NotImplementedError()
 
         # LSB is usuaaly 1
         return polyCoefs, PW
 
-    # based on hhttps://github.com/alexforencich/fpga-utils/blob/master/crcgen.py
+    # based on
+    # hhttps://github.com/alexforencich/fpga-utils/blob/master/crcgen.py
     @staticmethod
     def buildCrcXorMatrix(data_width: int,
                           polyBits: List[bool]) -> List[Tuple[List[bool], List[bool]]]:
@@ -126,7 +127,7 @@ class CrcComb(Unit):
             (excluding bits of signal wit current crc state)
         :param polyBits
         :note: all bits are in format [LSB:MSB]
-        
+
         :return: crc_mask contains rows where each row describes which bits
             should be XORed to get bit of resut
             row is [mask_for_state_reg, mask_for_data]
@@ -136,20 +137,20 @@ class CrcComb(Unit):
         # list index is output bit index
         # initial state is 1:1 mapping from previous state to next state
         crc_mask = deque([
-            [[int(x == y) for y in range(PW)], [0] * DW ]
-                for x in range(PW)
+            [[int(x == y) for y in range(PW)], [0] * DW]
+            for x in range(PW)
         ])
-    
+
         for i in range(DW - 1, -1, -1):
             # determine shift in value
             # current value in last FF, XOR with input data bit (MSB first)
             val = crc_mask[-1]
             val[1][i] = int(not val[1][i])
-    
+
             # shift
             crc_mask.appendleft(val)
             crc_mask.pop()
-    
+
             # add XOR inputs at correct indicies
             first = True
             val_s, val_d = val
@@ -169,7 +170,7 @@ class CrcComb(Unit):
         if refin:
             inBits = reversedBitsInBytes(inBits)
             #stateBits = list(reversed(stateBits))
-            
+
         outBits = []
         for (stateMask, dataMask) in crcMatrix:
             v = hBit(0)  # neutral value for XOR
@@ -187,7 +188,7 @@ class CrcComb(Unit):
 
         assert len(outBits) == len(stateBits)
         return outBits
-        
+
     def _impl(self):
         DW = int(self.DATA_WIDTH)
         polyBits, PW = self.parsePoly(self.POLY, self.POLY_WIDTH)
@@ -198,8 +199,8 @@ class CrcComb(Unit):
         initBits = [hBit(selectBit(_INIT, i))
                     for i in range(PW)]
         finBits = [hBit(selectBit(XOROUT, i))
-                    for i in range(PW)]
-        
+                   for i in range(PW)]
+
         # rename to have shorter code
         _inD = self._sig("d", self.dataIn._dtype)
         _inD(self.dataIn)
@@ -207,18 +208,18 @@ class CrcComb(Unit):
 
         if not self.IN_IS_BIGENDIAN:
             inBits = reversedEndianity(inBits)
-        
+
         outBits = iterBits(self.dataOut)
 
         crcMatrix = self.buildCrcXorMatrix(DW, polyBits)
         res = self.applyCrcXorMatrix(
             crcMatrix, inBits,
             initBits, bool(self.REFIN))
-        
+
         if self.REFOUT:
             res = list(reversed(res))
             finBits = reversedBitsInBytes(finBits)
-        
+
         for ob, b, fb in zip(outBits, res, finBits):
             ob(b ^ fb)
 
@@ -226,9 +227,9 @@ class CrcComb(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
     from hwtLib.logic.crcPoly import CRC_32
-    
+
     u = CrcComb()
     u.DATA_WIDTH.set(8)
     u.setConfig(CRC_5_USB)
-    
+
     print(toRtl(u))
