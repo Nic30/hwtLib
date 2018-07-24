@@ -21,7 +21,7 @@ def extendToSize(data, items, pad=0):
 
 
 def reversedEndianity(bitArray):
-    assert len(bitArray) % 8 == 0
+    #assert len(bitArray) % 8 == 0
     w = len(bitArray)
     i = w
 
@@ -72,7 +72,7 @@ class CrcComb(Unit):
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(5)
+        self.DATA_WIDTH = Param(8)
         self.INIT = Param(0)
         self.IN_IS_BIGENDIAN = Param(False)
         self.POLY = Param(CRC_5_USB.POLY)
@@ -178,7 +178,7 @@ class CrcComb(Unit):
                 if useBit:
                     v = v ^ b
 
-            assert len(dataMask) == len(inBits)
+            assert len(dataMask) == len(inBits), (len(dataMask), len(inBits)) 
             for useBit, b in zip(dataMask, inBits):
                 if useBit:
                     v = v ^ b

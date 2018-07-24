@@ -86,7 +86,7 @@ if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
     from hwtLib.logic.crcPoly import CRC_32
     u = Crc()
-    CrcComb.setConfig(u, CRC_32)
-    u.DATA_WIDTH.set(8)
+    # CrcComb.setConfig(u, CRC_32)
+    # u.DATA_WIDTH.set(8)
 
     print(toRtl(u))

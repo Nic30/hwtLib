@@ -7,7 +7,6 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.logic.crcComb import CrcComb, reversedEndianity, reversedBitsInBytes
 from hwtLib.logic.crcPoly import CRC_1, CRC_8_CCITT, CRC_16_CCITT, CRC_32, \
     CRC_8_SAE_J1850
-from hwt.pyUtils.arrayQuery import grouper
 
 
 def reverseBits(val, width):
