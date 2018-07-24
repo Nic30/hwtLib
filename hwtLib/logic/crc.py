@@ -26,6 +26,12 @@ class Crc(Unit):
             self.dataIn = VldSynced()
             self.dataOut = VectSignal(self.POLY_WIDTH)
 
+    def setConfig(self, crcConfigCls):
+        """
+        Apply configuration from CRC configuration class
+        """
+        CrcComb.setConfig(self, crcConfigCls)
+
     def wrapWithName(self, sig, name):
         _sig = self._sig(name, sig._dtype)
         _sig(sig)
@@ -35,21 +41,20 @@ class Crc(Unit):
         # prepare constants and bit arrays for inputs
         DW = int(self.DATA_WIDTH)
         polyBits, PW = CrcComb.parsePoly(self.POLY, self.POLY_WIDTH)
-        
+
         XOROUT = int(self.XOROUT)
         finBits = [hBit(selectBit(XOROUT, i))
-                    for i in range(PW)]
+                   for i in range(PW)]
 
         # rename "dataIn_data" to "d" to make code shorter
         _d = self.wrapWithName(self.dataIn.data, "d")
         inBits = list(iterBits(_d))
         if not self.IN_IS_BIGENDIAN:
             inBits = reversedEndianity(inBits)
-        
 
         state = self._reg("c",
-                        Bits(self.POLY_WIDTH),
-                        self.INIT)
+                          Bits(self.POLY_WIDTH),
+                          self.INIT)
         stateBits = list(iterBits(state))
 
         # build xor tree for CRC computation
@@ -57,7 +62,7 @@ class Crc(Unit):
         res = CrcComb.applyCrcXorMatrix(
             crcMatrix, inBits,
             stateBits, bool(self.REFIN))
-       
+
         # next state logic
         # wrap crc next signals to separate signal to have nice code
         stateNext = []
@@ -66,17 +71,18 @@ class Crc(Unit):
             stateNext.append(b)
 
         If(self.dataIn.vld,
-           # regNext is in format 0 ... N, we need to reverse it to litle endian
+           # regNext is in format 0 ... N, we need to reverse it to litle
+           # endian
            state(Concat(*reversed(stateNext)))
-        )
-        
+           )
+
         # output connection
         if self.REFOUT:
             finBits = reversed(finBits)
             self.dataOut(
-                Concat(*[ rb ^ fb 
+                Concat(*[rb ^ fb
                          for rb, fb in zip(iterBits(state), finBits)]
-                )
+                       )
             )
         else:
             self.dataOut(state ^ Concat(*finBits))
