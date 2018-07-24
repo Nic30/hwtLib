@@ -21,7 +21,12 @@ def extendToSize(data, items, pad=0):
 
 
 def reversedEndianity(bitArray):
-    assert len(bitArray) % 8 == 0
+    to_byte_fill = len(bitArray) % 8 == 0
+    if to_byte_fill > 0:
+        to_byte_fill = 8 - to_byte_fill 
+    for _ in range(to_byte_fill):
+        bitArray.append(hBit(0))
+
     w = len(bitArray)
     i = w
 
