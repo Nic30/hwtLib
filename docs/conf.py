@@ -32,7 +32,9 @@ except ImportError:
     sys.path.insert(0, os.path.abspath('../../hwt'))
     from hwt.pyUtils.fileHelpers import find_files
 
+# add hwtLib to path
 sys.path.insert(0, os.path.abspath('../'))
+# add local sphinx extensions to path 
 sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), "_ext")))
 
