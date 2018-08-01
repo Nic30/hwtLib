@@ -25,8 +25,10 @@ import sphinx_bootstrap_theme
 import sys
 
 try:
+    # normal state, hwt should be installed
     from hwt.pyUtils.fileHelpers import find_files
 except ImportError:
+    # development state
     sys.path.insert(0, os.path.abspath('../../hwt'))
     from hwt.pyUtils.fileHelpers import find_files
 
@@ -48,7 +50,8 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               # 'sphinx.ext.napoleon',
               'sphinx.ext.graphviz',
-              'aafig']
+              'aafig',
+              'sphinx_hwt']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

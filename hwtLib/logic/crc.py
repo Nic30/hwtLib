@@ -15,6 +15,8 @@ class Crc(Unit):
     """
     Crc generator for any crc
     polynom can be string in usual format or integer f.e."x^3+x+1" or 0b1011
+    
+    .. hwt-schematic::
     """
 
     def _config(self):
