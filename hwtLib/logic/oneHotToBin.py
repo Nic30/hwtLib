@@ -15,6 +15,8 @@ from hwt.synthesizer.vectorUtils import iterBits
 class OneHotToBin(Unit):
     """
     Converts one hot signal to binary, bin.vld is high when oneHot != 0
+    
+    .. hwt-schematic::
     """
 
     def _config(self):
