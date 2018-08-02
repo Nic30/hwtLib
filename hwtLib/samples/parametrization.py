@@ -9,6 +9,9 @@ from hwt.synthesizer.param import Param
 
 
 class ParametrizationExample(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _config(self):
         self.PARAM_0 = Param(0)
         self.PARAM_10 = Param(10)

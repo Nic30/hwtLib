@@ -11,6 +11,8 @@ from hwt.hdl.types.bits import Bits
 class SimpleUnitWithParam(Unit):
     """
     Simple parametrized unit.
+
+    .. hwt-schematic::
     """
     def _config(self):
         # declaration of parameter DATA_WIDTH with default value 8

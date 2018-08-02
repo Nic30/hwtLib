@@ -8,6 +8,11 @@ from hwt.synthesizer.unit import Unit
 class SimpleUnit(Unit):
     """
     In order to create a new unit you have to make new class derived from Unit.
+
+    You can use sphinx-hwt plugin for sphinx document generator
+    to generate interactive schematic and documentation.
+
+    .. hwt-schematic::
     """
 
     def _declr(self):
