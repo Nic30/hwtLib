@@ -13,8 +13,8 @@ from hwtLib.logic.crcComb import CrcComb, reversedEndianity
 # http://outputlogic.com/my-stuff/parallel_crc_generator_whitepaper.pdf
 class Crc(Unit):
     """
-    Crc generator for any crc
-    polynom can be string in usual format or integer f.e."x^3+x+1" or 0b1011
+    Crc generator for any crc,
+    polynome can be string in usual format or integer ("x^3+x+1" or 0b1011)
     
     .. hwt-schematic::
     """
