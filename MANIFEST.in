@@ -1,1 +1,2 @@
 recursive-include hwtLib *.png
+include README.md
