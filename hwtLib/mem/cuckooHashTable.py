@@ -109,7 +109,8 @@ class CuckooHashTable(HashTableCore):
                     |                            +----------+   |
                     |                                           |
                     +-------------------------------------------+
-
+    
+    .. hwt-schematic::
     """
 
     def __init__(self, polynomials=[CRC_32, CRC_32C]):

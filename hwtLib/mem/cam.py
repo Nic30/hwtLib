@@ -20,6 +20,8 @@ class Cam(Unit):
     Simple combinational version
 
     MATCH_LATENCY = 1
+    
+    .. hwt-schematic::
     """
 
     def _config(self):

@@ -1,5 +1,8 @@
 # http://reveng.sourceforge.net/crc-catalogue/all.htm
 
+"""
+Library of common CRC configurations
+"""
 
 # also known as parity bit
 class CRC_1:

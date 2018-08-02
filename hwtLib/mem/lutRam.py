@@ -12,11 +12,10 @@ from hwt.synthesizer.param import Param
 
 def mkLutRamCls(DATA_WIDTH):
     """
-    Lut ram generator
+    Lut ram generator,
     hdl code will be excluded from serialization because we expect vendor library to contains it
     """
 
-    @serializeExclude
     class RAMnX1S(Unit):
 
         def _config(self):
@@ -62,7 +61,8 @@ def mkLutRamCls(DATA_WIDTH):
     return RAMnX1S
 
 
-RAM64X1S = mkLutRamCls(64)
+# exclude from serialization because it is part of sources provided from FPGA vendor
+RAM64X1S = serializeExclude(mkLutRamCls(64))
 
 
 if __name__ == "__main__":

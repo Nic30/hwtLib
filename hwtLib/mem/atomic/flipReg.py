@@ -22,6 +22,8 @@ class FlipRegister(Unit):
     on first reg and reader reads data from second ram by second set of ports.
 
     Then select is set and access is flipped. Reader now has access to reg 0 and writer to reg 1.
+    
+    .. hwt-schematic::
     """
 
     def _config(self):
