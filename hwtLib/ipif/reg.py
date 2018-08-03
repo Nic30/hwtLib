@@ -9,6 +9,11 @@ from hwtLib.ipif.intf import Ipif
 
 
 class IpifReg(Unit):
+    """
+    Register for IPIF interface, used to break critical paths
+
+    .. hwt-schematic::
+    """
     def _config(self):
         Ipif._config(self)
 

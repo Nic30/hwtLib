@@ -7,6 +7,8 @@ from hwtLib.amba.axis_comp.builder import AxiSBuilder
 class AxiLiteReg(Unit):
     """
     Register for AXI3/4/lite interface
+    
+    .. hwt-schematic::
     """
     def __init__(self, axiCls=Axi4Lite):
         self._axiCls = axiCls

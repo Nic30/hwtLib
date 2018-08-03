@@ -6,10 +6,12 @@ from hwt.interfaces.std import Rst, Signal, Clk
 from hwt.synthesizer.unit import Unit
 
 
+# http://www.sunburst-design.com/papers/CummingsSNUG2008Boston_CDC.pdf
 class ClkSynchronizer(Unit):
     """
     Signal synchronization between two clock domains
-    http://www.sunburst-design.com/papers/CummingsSNUG2008Boston_CDC.pdf
+    
+    .. hwt-schematic::
     """
 
     def _config(self):

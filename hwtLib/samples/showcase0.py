@@ -25,7 +25,10 @@ def foo(condition0, statements, condition1, fallback0, fallback1):
 class Showcase0(Unit):
     """
     Every HW component class has to be derived from Unit class (any kind of inheritance supported)
+    
+    .. hwt-schematic::
     """
+
     def __init__(self):
         # constructor can be overloaded but parent one has to be called
         super(Showcase0, self).__init__()
@@ -209,6 +212,8 @@ class Showcase0(Unit):
 showcase0_vhdl = """--
 --    Every HW component class has to be derived from Unit class (any kind of inheritance supported)
 --    
+--    .. hwt-schematic::
+--    
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
@@ -344,6 +349,8 @@ showcase0_verilog = """/*
 
     Every HW component class has to be derived from Unit class (any kind of inheritance supported)
     
+    .. hwt-schematic::
+    
 */
 module Showcase0(input [31:0] a,
         input signed [31:0] b,
@@ -467,6 +474,8 @@ endmodule"""
 showcase0_systemc = """/*
 
     Every HW component class has to be derived from Unit class (any kind of inheritance supported)
+    
+    .. hwt-schematic::
     
 */
 

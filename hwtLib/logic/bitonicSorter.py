@@ -7,6 +7,11 @@ from hwt.synthesizer.unit import Unit
 
 
 class BitonicSorter(Unit):
+    """
+    Bitonic sorter of arbitrary data
+    
+    .. hwt-schematic::
+    """
     def __init__(self, cmpFn=lambda x, y: x < y):
         """
         :param cmpFn: function (item0, item1) if returns true,

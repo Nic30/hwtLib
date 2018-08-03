@@ -8,6 +8,10 @@ from hwtLib.amba.axis import AxiStream
 
 
 class ArrayIntfExample(Unit):
+    """
+    .. hwt-schematic::
+    """
+
     def _declr(self):
         addClkRstn(self)
         self.a = AxiStream(asArraySize=2)

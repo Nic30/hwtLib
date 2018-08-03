@@ -16,6 +16,8 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
     """
     Strict order interconnect for AxiWDatapumpIntf
     ensures that response on request is delivered to driver which asked for it while transactions can overlap
+    
+    .. hwt-schematic::
     """
 
     def _config(self):

@@ -12,7 +12,9 @@ from hwt.synthesizer.param import Param
 
 @serializeParamsUniq
 class BinToOneHot(Unit):
-
+    """
+    Little endian encoded number to number in one-hot encoding
+    """
     def _config(self):
         self.DATA_WIDTH = Param(8)
 

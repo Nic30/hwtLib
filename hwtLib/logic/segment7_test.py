@@ -3,11 +3,6 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
-from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.shortcuts import simPrepare
-from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.logic.oneHotToBin import OneHotToBin
 from hwt.synthesizer.utils import toRtl
 from hwtLib.logic.segment7 import Segment7
 from hwt.serializer.vhdl.serializer import VhdlSerializer
@@ -32,6 +27,8 @@ segment7_vhdl = """--
 --        -------------
 --        |     3     |
 --        -------------
+--
+--    .. hwt-schematic::
 --    
 library IEEE;
 use IEEE.std_logic_1164.all;

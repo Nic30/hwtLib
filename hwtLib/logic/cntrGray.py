@@ -13,6 +13,11 @@ from hwt.synthesizer.unit import Unit
 
 @serializeParamsUniq
 class GrayCntr(Unit):
+    """
+    Counter for gray code
+    
+    .. hwt-schematic::
+    """
     def _config(self):
         self.DATA_WIDTH = Param(4)
         self.INIT_VAL = Param(0)  # binary

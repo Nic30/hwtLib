@@ -1,2 +1,3 @@
 recursive-include hwtLib *.png
 include README.md
+include MANIFEST.in

@@ -89,6 +89,8 @@ class I2cMasterBitCtrl(Unit):
      Tsu:sto      4.0us          0.6us   setup time for a stop condition
      Tbuf         4.7us          1.3us   Bus free time between a stop and start condition
     ============ ============== =============================================================
+    
+    .. hwt-schematic::
     """
     def _config(self):
         self.CLK_CNTR_WIDTH = Param(16)

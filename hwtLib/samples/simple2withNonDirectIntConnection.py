@@ -12,6 +12,10 @@ from hwtLib.amba.axis import AxiStream
 
 
 class Simple2withNonDirectIntConnection(Unit):
+    """
+    .. hwt-schematic::
+    """
+
     def _config(self):
         self.DATA_WIDTH = Param(8)
 

@@ -21,6 +21,8 @@ class FlipRam(Unit):
     and reader reads data from second ram by second set of ports.
 
     Then select is set and access is flipped. Reader now has access to RAM 0 and writer to RAM 1.
+    
+    .. hwt-schematic::
     """
 
     def _config(self):

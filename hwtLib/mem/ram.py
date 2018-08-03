@@ -12,7 +12,11 @@ from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 @serializeParamsUniq
 class RamSingleClock(Unit):
-
+    """
+    RAM with only one clock signal
+    
+    .. hwt-schematic::
+    """
     def _config(self):
         self.DATA_WIDTH = Param(64)
         self.ADDR_WIDTH = Param(4)
@@ -60,7 +64,7 @@ class RamSingleClock(Unit):
 @serializeParamsUniq
 class Ram_sp(Unit):
     """
-    Write first variant
+    Single port RAM, write-first variant
     """
 
     def _config(self):

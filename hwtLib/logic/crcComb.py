@@ -49,8 +49,8 @@ def reversedBitsInBytes(bitArray):
 # http://www.ijsret.org/pdf/121757.pdf
 class CrcComb(Unit):
     """
-    CRC generator
-    polynomial can be string in usual format or integer (f.e."x^3+x+1" or 0b1011)
+    CRC generator,
+    polynomial can be string in usual format or integer ("x^3+x+1" or 0b1011)
 
     :attention: Input not reflected,
                 Result not reflected,
@@ -68,6 +68,7 @@ class CrcComb(Unit):
     :ivar REFOUT: Same as REFIN except for output
     :ivar XOROUT: value to xor result with
 
+    .. hwt-schematic::
     """
 
     def _config(self):

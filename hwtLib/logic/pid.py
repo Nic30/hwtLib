@@ -27,6 +27,8 @@ class PidController(Unit):
     a3 = - K_d / T_s
 
     :note: You can obtain coeficiet f.e. by Ziegler-Nichols method.
+    
+    .. hwt-schematic::
     """
 
     def _config(self):

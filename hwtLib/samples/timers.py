@@ -11,6 +11,9 @@ from hwtLib.clocking.clkBuilder import ClkBuilder
 
 
 class TimerInfoTest(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         addClkRstn(self)
 
@@ -41,6 +44,10 @@ class TimerInfoTest(Unit):
 
 
 class TimerTestUnit(Unit):
+    """
+    .. hwt-schematic::
+    """
+
     def _declr(self):
         addClkRstn(self)
 
@@ -65,6 +72,9 @@ class TimerTestUnit(Unit):
 
 
 class DynamicCounterInstancesExample(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         addClkRstn(self)
         self.period = VectSignal(10)

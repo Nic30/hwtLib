@@ -24,6 +24,8 @@ class Segment7(Unit):
         -------------
         |     3     |
         -------------
+
+    .. hwt-schematic::
     """
 
     def _declr(self):
