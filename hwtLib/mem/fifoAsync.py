@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, log2ceil
+from hwt.code import If, log2ceil, isPow2
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Clk, Rst_n, FifoWriter, FifoReader
 from hwt.serializer.mode import serializeParamsUniq
@@ -18,7 +18,11 @@ class FifoAsync(Fifo):
     """
 
     def _declr(self):
-        assert int(self.DEPTH) > 0,  "FifoAsync is disabled in this case, do not use it entirely"
+        assert int(self.DEPTH) > 0, "FifoAsync is disabled in this case, do not use it entirely"
+        
+        assert isPow2(self.DEPTH), "FifoAsync DEPTH has to be power of 2" 
+        # pow 2 because of gray conter counters
+        
         if int(self.EXPORT_SIZE) or int(self.EXPORT_SPACE):
             raise NotImplementedError()
 
@@ -93,11 +97,12 @@ class FifoAsync(Fifo):
         )
 
         # data in logic
-
         presetFull = status & equalAddresses
 
         # D Flip-Flop with Asynchronous Preset.
-        If(presetFull,
+        If(self.rst_n._isOn(),
+            full(0)
+        ).Elif(presetFull,
             full(1)
         ).Elif(InClk,
             full(0)
@@ -108,12 +113,12 @@ class FifoAsync(Fifo):
         presetEmpty = ~status & equalAddresses
 
         # D Flip-Flop w/ Asynchronous Preset.
-        If(presetEmpty,
+        If(self.rst_n._isOn(),
+            empty(0)
+        ).Elif(presetEmpty,
             empty(1)
-        ).Else(
-            If(OutClk,
-               empty(0)
-            )
+        ).Elif(OutClk,
+            empty(0)
         )
         Out.wait(empty)
 

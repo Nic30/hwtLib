@@ -4,54 +4,26 @@
 import unittest
 
 from hwt.hdl.constants import Time
+from hwt.simulator.simTestCase import SimTestCase
+
 from hwtLib.mem.fifoAsync import FifoAsync
 from hwtLib.mem.fifo_test import FifoTC
 
 
 class FifoAsyncTC(FifoTC):
-    CLK_IN = 30 * Time.ns
+    IN_CLK = 30 * Time.ns
+    CLK = max(FifoTC.OUT_CLK, IN_CLK)
 
     def setUp(self):
+        SimTestCase.setUp(self)
         u = self.u = FifoAsync()
         u.DATA_WIDTH.set(8)
-        u.DEPTH.set(4)
+        u.DEPTH.set(self.ITEMS)
         self.prepareUnit(u)
-        u.dataIn_clk._ag.period = 30 * Time.ns
-
-    def getTime(self, wordCnt):
-        return wordCnt * self.CLK_IN
-
-    def test_tryMore(self):
-        u = self.u
-
-        u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
-        u.dataOut._ag._enabled = False
-
-        self.runSim(self.getTime(12))
-
-        collected = u.dataOut._ag.data
-
-        self.assertValSequenceEqual(self.model.memory._val, [1, 2, 4, 3])
-        self.assertValSequenceEqual(collected, [])
-        self.assertValSequenceEqual(u.dataIn._ag.data, [5, 6])
-
-    def test_tryMore2(self):
-        u = self.u
-
-        u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6, 7, 8])
-
-        def closeOutput(sim):
-            yield sim.wait(self.getTime(3))
-            u.dataOut._ag.setEnable(False, sim)
-
-        self.procs.append(closeOutput)
-        self.runSim(self.getTime(16))
-
-        collected = u.dataOut._ag.data
-
-        self.assertValSequenceEqual(collected, [1, 2, 3])
-        self.assertValSequenceEqual(u.dataIn._ag.data, [8])
-        self.assertValSequenceEqual(self.model.memory._val.val, [5, 6, 4, 7])
+        u.dataIn_clk._ag.period = self.IN_CLK
+    
+    def test_tryMore2(self, capturedOffset=1):
+        FifoTC.test_tryMore2(self, capturedOffset=capturedOffset) 
 
 
 if __name__ == "__main__":

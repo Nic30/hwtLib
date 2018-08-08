@@ -3,14 +3,15 @@
 
 
 from hwt.code import If, connect, log2ceil
-from hwt.interfaces.std import VectSignal
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.interfaces.std import VectSignal, Clk
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn, propagateRstn
 from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import packIntf, \
     connectPacked
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.mem.fifo import Fifo
+from typing import Optional, Tuple
 
 
 class HandshakedFifo(HandshakedCompBase):
@@ -25,8 +26,9 @@ class HandshakedFifo(HandshakedCompBase):
         super()._config()
 
     def _declr(self):
+        addClkRstn(self)
+
         with self._paramsShared():
-            addClkRstn(self)
             self.dataIn = self.intfCls()
             self.dataOut = self.intfCls()
 
@@ -39,41 +41,53 @@ class HandshakedFifo(HandshakedCompBase):
         if self.EXPORT_SIZE:
             self.size = VectSignal(log2ceil(self.DEPTH + 1 + 1), signed=False)
 
-    def _impl(self):
-        din = self.dataIn
+    def _impl(self, clks:Optional[Tuple[Clk, Clk]]=None):
+        """
+        :clks: optional tuple (inClk, outClk)
+        """
         rd = self.getRd
         vld = self.getVld
 
-        propagateClkRstn(self)
-        fifo = self.fifo
-
-        out = self.dataOut
+        # connect clock and resets
+        if clks is None:
+            propagateClkRstn(self)
+            inClk, outClk = (None, None) 
+        else:
+            propagateRstn(self)
+            inClk, outClk = clks
+            self.fifo.dataIn_clk(inClk)
+            self.fifo.dataOut_clk(outClk)
+            
 
         # to fifo
-        wr_en = ~fifo.dataIn.wait
+        fIn = self.fifo.dataIn
+        din = self.dataIn
+        wr_en = ~fIn.wait
         rd(din)(wr_en)
-        fifo.dataIn.data(packIntf(din, exclude=[vld(din), rd(din)]))
-        fifo.dataIn.en(vld(din) & wr_en)
+        fIn.data(packIntf(din, exclude=[vld(din), rd(din)]))
+        fIn.en(vld(din) & wr_en)
 
         # from fifo
-        out_vld = self._reg("out_vld", defVal=0)
-        vld(out)(out_vld)
-        connectPacked(fifo.dataOut.data,
-                      out,
-                      exclude=[vld(out), rd(out)])
-        fifo.dataOut.en((rd(out) | ~out_vld) & ~fifo.dataOut.wait)
-        If(rd(out) | ~out_vld,
-           out_vld(~fifo.dataOut.wait)
+        fOut = self.fifo.dataOut
+        dout = self.dataOut
+        out_vld = self._reg("out_vld", defVal=0, clk=outClk)
+        vld(dout)(out_vld)
+        connectPacked(fOut.data,
+                      dout,
+                      exclude=[vld(dout), rd(dout)])
+        fOut.en((rd(dout) | ~out_vld) & ~fOut.wait)
+        If(rd(dout) | ~out_vld,
+           out_vld(~fOut.wait)
         )
 
         if self.EXPORT_SIZE:
             sizeTmp = self._sig("sizeTmp", self.size._dtype)
-            connect(fifo.size, sizeTmp, fit=True)
+            connect(self.fifo.size, sizeTmp, fit=True)
 
             If(out_vld,
                self.size(sizeTmp + 1)
             ).Else(
-               connect(fifo.size, self.size, fit=True)
+               connect(self.fifo.size, self.size, fit=True)
             )
 
 
