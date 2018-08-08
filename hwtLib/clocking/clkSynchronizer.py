@@ -11,6 +11,10 @@ class ClkSynchronizer(Unit):
     """
     Signal synchronization between two clock domains
     
+    :attention: multibits signals should not be sychronized using this sychronizer
+        instead handshake or req-ack sychronization should be used for controll signals
+        and main data should be passed over couble of registers
+    
     .. hwt-schematic::
     """
 
