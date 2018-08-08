@@ -171,6 +171,7 @@ from hwtLib.amba.axiLite_comp.reg_test import AxiRegTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
 from hwtLib.amba.axi_comp.tester_test import AxiTesterTC
 from hwtLib.logic.segment7_test import Segment7TC
+from hwtLib.handshaked.fifoAsync_test import HsFifoAsyncTC
 
 
 def runSimWithoutLog(self, until, name=None, config=None):
@@ -292,6 +293,7 @@ suite = testSuiteFromTCs(
     HsSplitCopyTC,
     HsSplitCopy_randomized_TC,
     HsFifoTC,
+    HsFifoAsyncTC,
     HsRegL1D0TC,
     HsRegL2D1TC,
     HsResizerTC,
