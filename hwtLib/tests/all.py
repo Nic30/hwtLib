@@ -69,7 +69,7 @@ from hwtLib.mem.bramEndpoint_test import BramPortEndpointTC, \
     BramPortEndpointDenseTC, BramPortEndpointArray, \
     BramPortEndpointDenseStartTC
 from hwtLib.mem.cam_test import CamTC
-from hwtLib.mem.clkSynchronizer_test import ClkSynchronizerTC
+from hwtLib.clocking.clkSynchronizer_test import ClkSynchronizerTC
 from hwtLib.mem.cuckooHashTable_test import CuckooHashTableTC
 from hwtLib.mem.fifoAsync_test import FifoAsyncTC
 from hwtLib.mem.fifo_test import FifoAgentsTC, FifoTC

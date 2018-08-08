@@ -9,7 +9,7 @@ from hwt.interfaces.agents.rst import pullDownAfter
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.shortcuts import simUnitVcd, oscilate, \
     toSimModel, reconnectUnitSignalsToModel
-from hwtLib.mem.clkSynchronizer import ClkSynchronizer
+from hwtLib.clocking.clkSynchronizer import ClkSynchronizer
 
 
 CLK_PERIOD = 10 * Time.ns
