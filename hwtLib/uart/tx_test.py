@@ -1,6 +1,6 @@
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.uart.tx import UartTx
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import valToInt
 
 
@@ -42,13 +42,13 @@ class UartTxTC(SimTestCase):
             self.u.dataIn._ag.data.append(ord(ch))
 
     def test_nop(self):
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
         self.assertEqual(self.getStr(), "")
 
     def test_simple(self):
         t = "simple"
         self.sendStr(t)
-        self.doSim(10 * 10 * (len(t) + 10) * Time.ns)
+        self.runSim(10 * 10 * (len(t) + 10) * Time.ns)
         self.assertEqual(self.getStr(), t)
 
 

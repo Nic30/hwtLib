@@ -5,7 +5,7 @@ from hwt.code import If, connect
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn
 from hwtLib.amba.axis_comp.base import AxiSCompBase
-from hwtLib.handshaked.streamNode import streamAck, streamSync
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 class AxiS_en(AxiSCompBase):
@@ -26,23 +26,21 @@ class AxiS_en(AxiSCompBase):
         dout = self.dataOut
 
         framePending = self._reg("framePending", defVal=False)
-        ack = streamAck([din], [dout])
+        ack = StreamNode([din], [dout]).ack()
 
         If(framePending & ack,
-           framePending ** ~din.last
+           framePending(~din.last)
         )
 
         dataEn = self.en | framePending
-        streamSync(masters=[din],
-                   slaves=[dout],
-                   extraConds={din: dataEn,
-                               dout: dataEn,
-                               })
+        StreamNode(masters=[din],
+                   slaves=[dout]).sync(dataEn)
 
         connect(din, dout, exclude=[din.ready, din.valid])
 
+
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     from hwtLib.amba.axis import AxiStream_withoutSTRB
     u = AxiS_en(AxiStream_withoutSTRB)
 

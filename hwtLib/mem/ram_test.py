@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import WRITE, READ, Time
+from hwt.hdl.constants import WRITE, READ, Time
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.ram import Ram_sp
@@ -17,15 +17,15 @@ class RamTC(SimTestCase):
         u.ADDR_WIDTH.set(3)
         self.prepareUnit(u)
 
-        u.a._ag.requests = [(WRITE, 0, 5), (WRITE, 1, 7),
-                            (READ, 0), (READ, 1),
-                            (READ, 0), (READ, 1), (READ, 2)]
+        u.a._ag.requests.extend([(WRITE, 0, 5), (WRITE, 1, 7),
+                                 (READ, 0), (READ, 1),
+                                 (READ, 0), (READ, 1), (READ, 2)])
 
-        self.doSim(110 * Time.ns)
-        self.assertSequenceEqual([5, 7, None, None, None, None, None, None],
-                                 valuesToInts(self.model.ram_memory._val.val))
-        self.assertSequenceEqual([5, 7, 5, 7, None],
-                                 valuesToInts(u.a._ag.readed))
+        self.runSim(110 * Time.ns)
+        self.assertSequenceEqual(valuesToInts(self.model.ram_memory._val),
+                                 [5, 7, None, None, None, None, None, None])
+        self.assertSequenceEqual(valuesToInts(u.a._ag.readed),
+                                 [5, 7, 5, 7, None])
 
 
 if __name__ == "__main__":

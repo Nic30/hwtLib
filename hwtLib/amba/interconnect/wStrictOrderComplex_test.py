@@ -4,18 +4,17 @@
 import unittest
 
 from hwt.bitmask import mask
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import evalParam
+from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_w, Axi4_b
+from hwtLib.amba.axi4_rDatapump_test import mkReq
 from hwtLib.amba.axi4_wDatapump import Axi_wDatapump
 from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
 from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
-from hwtLib.amba.axi4_rDatapump_test import mkReq
 
 
 class WStrictOrderInterconnecComplex(Unit):
@@ -29,23 +28,21 @@ class WStrictOrderInterconnecComplex(Unit):
             self.ic = WStrictOrderInterconnect()
 
             self.aw = Axi3_addr()
-            self.aw.LOCK_WIDTH = 2
             self.w = Axi4_w()
             self.b = Axi4_b()
-            self.drivers = AxiWDatapumpIntf(multipliedBy=self.DRIVER_CNT)
+            self.drivers = AxiWDatapumpIntf(asArraySize=self.DRIVER_CNT)
 
     def _impl(self):
         propagateClkRstn(self)
         dp = self.dp
         ic = self.ic
 
-        self.aw ** dp.a
-        self.w ** dp.w
-        dp.b ** self.b
+        self.aw(dp.a)
+        self.w(dp.w)
+        dp.b(self.b)
 
-        dp.driver ** ic.wDatapump
-
-        ic.drivers ** self.drivers
+        dp.driver(ic.wDatapump)
+        ic.drivers(self.drivers)
 
 
 class WStrictOrderInterconnectComplexTC(SimTestCase):
@@ -54,7 +51,7 @@ class WStrictOrderInterconnectComplexTC(SimTestCase):
         self.u = WStrictOrderInterconnecComplex()
         self.MAX_TRANS_OVERLAP = 4
         self.u.MAX_TRANS_OVERLAP.set(self.MAX_TRANS_OVERLAP)
-        self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
+        self.DATA_WIDTH = int(self.u.DATA_WIDTH)
 
         self.DRIVER_CNT = 3
         self.u.DRIVER_CNT.set(self.DRIVER_CNT)
@@ -103,7 +100,7 @@ class WStrictOrderInterconnectComplexTC(SimTestCase):
         r(u.w)
         r(u.b)
 
-        self.doSim(self.DRIVER_CNT * N * 50 * Time.ns)
+        self.runSim(self.DRIVER_CNT * N * 40 * Time.ns)
         for i, baseAddr in enumerate(dataAddress):
             inMem = m.getArray(baseAddr, self.DATA_WIDTH // 8, N)
             self.assertValSequenceEqual(inMem, data[i], "driver:%d" % i)

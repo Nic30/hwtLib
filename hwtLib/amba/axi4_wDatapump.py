@@ -7,12 +7,12 @@ from hwt.interfaces.std import Signal, Handshaked, VectSignal, \
     HandshakeSync
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axi4 import Axi4_w, Axi4_b
+from hwtLib.amba.axi4 import Axi4_w, Axi4_b, Axi4_addr
 from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
 from hwtLib.amba.axi_datapump_base import Axi_datapumpBase
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.handshaked.streamNode import streamSync, streamAck
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 class WFifoIntf(Handshaked):
@@ -39,11 +39,14 @@ class Axi_wDatapump(Axi_datapumpBase):
     * splits request to correct request size
     * simplifies axi communication without lose of performance
     \n""" + Axi_datapumpBase.__doc__
+    def __init__(self, axiAddrCls=Axi4_addr, axiWCls=Axi4_w):
+        self._axiWCls = axiWCls
+        Axi_datapumpBase.__init__(self, axiAddrCls=axiAddrCls)
 
     def _declr(self):
         super()._declr()  # add clk, rst, axi addr channel and req channel
         with self._paramsShared():
-            self.w = Axi4_w()
+            self.w = self._axiWCls()
             self.b = Axi4_b()
 
             self.errorWrite = Signal()
@@ -79,55 +82,55 @@ class Axi_wDatapump(Axi_datapumpBase):
             requiresSplit = req.len > LEN_MAX
             requiresDebtSplit = lenDebth > LEN_MAX
             If(lastReqDispatched,
-                _id ** req.id,
-                aw.addr ** req.addr,
+                _id(req.id),
+                aw.addr(req.addr),
                 If(requiresSplit,
-                   aw.len ** LEN_MAX
+                   aw.len(LEN_MAX)
                 ).Else(
                     connect(req.len, aw.len, fit=True),
                 ),
-                req_idBackup ** req.id,
-                addrBackup ** (req.addr + self.getBurstAddrOffset()),
-                lenDebth ** (req.len - (LEN_MAX + 1)),
+                req_idBackup(req.id),
+                addrBackup(req.addr + self.getBurstAddrOffset()),
+                lenDebth(req.len - (LEN_MAX + 1)),
                 If(wInfo.rd & aw.ready & req.vld,
                     If(requiresSplit,
-                       lastReqDispatched ** 0
+                       lastReqDispatched(0)
                     ).Else(
-                       lastReqDispatched ** 1
+                       lastReqDispatched(1)
                     )
                 ),
-                streamSync(masters=[req],
+                StreamNode(masters=[req],
                            slaves=[aw, wInfo],
-                           extraConds={aw: ~wErrFlag}),
+                           extraConds={aw: ~wErrFlag}).sync(),
             ).Else(
-                _id ** req_idBackup,
-                aw.addr ** addrBackup,
+                _id(req_idBackup),
+                aw.addr(addrBackup),
                 If(requiresDebtSplit,
-                   aw.len ** LEN_MAX
+                   aw.len(LEN_MAX)
                 ).Else(
                     connect(lenDebth, aw.len, fit=True)
                 ),
-                streamSync(slaves=[aw, wInfo], extraConds={aw:~wErrFlag}),
+                StreamNode(slaves=[aw, wInfo], extraConds={aw:~wErrFlag}).sync(),
 
-                req.rd ** 0,
+                req.rd(0),
 
-                If(streamAck(slaves=[wInfo, aw]),
-                   addrBackup ** (addrBackup + self.getBurstAddrOffset()),
-                   lenDebth ** (lenDebth - (LEN_MAX+1)),
+                If(StreamNode(slaves=[wInfo, aw]).ack(),
+                   addrBackup(addrBackup + self.getBurstAddrOffset()),
+                   lenDebth(lenDebth - (LEN_MAX+1)),
                    If(lenDebth <= LEN_MAX,
-                      lastReqDispatched ** 1
+                      lastReqDispatched(1)
                    )
                 )
             )
-            aw.id ** _id
-            wInfo.id ** _id
+            aw.id(_id)
+            wInfo.id(_id)
 
         else:
-            aw.id ** req.id
-            wInfo.id ** req.id
-            aw.addr ** req.addr
+            aw.id(req.id)
+            wInfo.id(req.id)
+            aw.addr(req.addr)
             connect(req.len, aw.len, fit=True)
-            streamSync(masters=[req], slaves=[aw, wInfo])
+            StreamNode(masters=[req], slaves=[aw, wInfo]).sync()
 
     def axiWHandler(self, wErrFlag):
         w = self.w
@@ -136,19 +139,21 @@ class Axi_wDatapump(Axi_datapumpBase):
         wInfo = self.writeInfoFifo.dataOut
         bInfo = self.bInfoFifo.dataIn
 
-        w.id ** wInfo.id
-        w.data ** wIn.data
-        w.strb ** wIn.strb
+        if hasattr(w, "id"):
+            # AXI3 has, AXI4 does not
+            w.id(wInfo.id)
+        w.data(wIn.data)
+        w.strb(wIn.strb)
 
         if self.useTransSplitting():
             wordCntr = self._reg("wWordCntr", self.a.len._dtype, 0)
             doSplit = wordCntr._eq(self.getAxiLenMax()) | wIn.last
 
-            If(streamAck([wInfo, wIn], [bInfo, w]),
+            If(StreamNode([wInfo, wIn], [bInfo, w]).ack(),
                If(doSplit,
-                   wordCntr ** 0
+                   wordCntr(0)
                ).Else(
-                   wordCntr ** (wordCntr + 1)
+                   wordCntr(wordCntr + 1)
                )
             )
 
@@ -158,13 +163,13 @@ class Axi_wDatapump(Axi_datapumpBase):
         extraConds = {wInfo: doSplit,
                       bInfo: doSplit,
                       w: ~wErrFlag}
-        w.last ** doSplit
+        w.last(doSplit)
 
-        bInfo.isLast ** wIn.last
-        streamSync(masters=[wIn, wInfo],
+        bInfo.isLast(wIn.last)
+        StreamNode(masters=[wIn, wInfo],
                    slaves=[bInfo, w],
                    extraConds=extraConds
-                   )
+                   ).sync()
 
     def axiBHandler(self):
         wErrFlag = self._reg("wErrFlag", defVal=0)
@@ -173,16 +178,16 @@ class Axi_wDatapump(Axi_datapumpBase):
         lastFlags = self.bInfoFifo.dataOut
 
         If(lastFlags.vld & ack.rd & b.valid & (b.resp != RESP_OKAY),
-           wErrFlag ** 1
+           wErrFlag(1)
         )
 
-        self.errorWrite ** wErrFlag 
-        ack.data ** b.id
-        streamSync(masters=[b, lastFlags],
+        self.errorWrite(wErrFlag)
+        ack.data(b.id)
+        StreamNode(masters=[b, lastFlags],
                    slaves=[ack],
                    extraConds={
                                ack: lastFlags.isLast
-                               })
+                               }).sync()
 
         return wErrFlag
 
@@ -193,7 +198,8 @@ class Axi_wDatapump(Axi_datapumpBase):
         self.axiAwHandler(wErrFlag)
         self.axiWHandler(wErrFlag)
 
+
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = Axi_wDatapump()
     print(toRtl(u))

@@ -3,7 +3,7 @@
 
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.ipif.endpoint import IpifEndpoint
 from hwtLib.ipif.endpoint_test import IpifEndpointTC
@@ -30,9 +30,9 @@ class IpifRegWithEndpoint(Unit):
     def _impl(self):
         propagateClkRstn(self)
         ep = self.ep
-        self.reg.dataIn ** self.bus
-        ep.bus ** self.reg.dataOut
-        self.decoded ** ep.decoded
+        self.reg.dataIn(self.bus)
+        ep.bus(self.reg.dataOut)
+        self.decoded(ep.decoded)
 
 
 class IpifRegTC(IpifEndpointTC):
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(IpifEndpointArray('test_read'))
+    # suite.addTest(IpifRegTC('test_read'))
     suite.addTest(unittest.makeSuite(IpifRegTC))
 
     runner = unittest.TextTestRunner(verbosity=3)

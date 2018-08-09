@@ -3,8 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time, NOP
-from hwt.simulator.agentConnector import valuesToInts
+from hwt.hdl.constants import Time, NOP
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.atomic.flipCntr import FlipCntr
 
@@ -17,25 +16,28 @@ class FlipCntrTC(SimTestCase):
     def test_nop(self):
         u = self.u
 
-        u.doIncr._ag.data = [0, 0]
-        self.doSim(90 * Time.ns)
+        u.doIncr._ag.data.extend([0, 0])
+        self.runSim(90 * Time.ns)
 
-        self.assertSequenceEqual([0 for _ in range(9)], valuesToInts(u.data._ag.din))
+        self.assertValSequenceEqual(u.data._ag.din,
+                                    [0 for _ in range(8)])
 
     def test_incr(self):
         u = self.u
 
-        u.doIncr._ag.data = [0, 0, 1, 0, 0, 0]
-        u.doFlip._ag.data = [NOP, NOP, NOP, 1, NOP, NOP]
+        u.doIncr._ag.data.extend([0, 1, 0, 0, 0])
+        u.doFlip._ag.data.extend([NOP, NOP, 1, NOP, NOP])
 
-        self.doSim(90 * Time.ns)
+        self.runSim(90 * Time.ns)
 
-        self.assertSequenceEqual([0, 0, 0, 0] + [1 for _ in range(5)], valuesToInts(u.data._ag.din))
+        self.assertValSequenceEqual(
+            u.data._ag.din,
+            [0, 0] + [1 for _ in range(6)])
 
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_withStops'))
+    # suite.addTest(FlipCntrTC('test_nop'))
     suite.addTest(unittest.makeSuite(FlipCntrTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

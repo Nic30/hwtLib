@@ -1,19 +1,34 @@
-from math import inf
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-from hwt.code import log2ceil, If, Concat, And
-from hwt.hdlObjects.frameTemplate import FrameTemplate
-from hwt.hdlObjects.transTmpl import TransTmpl
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.hdlObjects.types.struct import HStruct
+from typing import Optional, List, Union
+
+from hwt.code import log2ceil, If, Concat
+from hwt.hdl.frameTmpl import FrameTmpl
+from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
+from hwt.hdl.transPart import TransPart
+from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.typeShortcuts import hBit
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.hdlType import HdlType
+from hwt.hdl.types.struct import HStruct, HStructField
+from hwt.hdl.types.union import HUnion
 from hwt.interfaces.std import Handshaked, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
+from hwt.interfaces.unionIntf import UnionSource, UnionSink
 from hwt.interfaces.utils import addClkRstn
-from hwt.pyUtils.arrayQuery import where
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import evalParam, Param
+from hwt.synthesizer.byteOrder import reverseByteOrder
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwtLib.amba.axis_comp.base import AxiSCompBase
+from hwtLib.amba.axis_comp.frameParser_utils import ListOfOutNodeInfos, \
+    ExclusieveListOfHsNodes, InNodeInfo, InNodeReadOnlyInfo, OutNodeInfo, \
+    WordFactory
+from hwtLib.amba.axis_comp.templateBasedUnit import TemplateBasedUnit
+from hwtLib.handshaked.builder import HsBuilder
 
 
-class AxiS_frameParser(Unit):
+class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
     """
     Parse frame specified by HStruct into fields
 
@@ -30,21 +45,34 @@ class AxiS_frameParser(Unit):
                               +------> field2  |
                                      +---------+
 
+    :note: names in the picture are just illustrative
     """
-    def __init__(self, axiSCls, structT, maxPaddingWords=inf):
+    def __init__(self, axiSCls,
+                 structT: HdlType,
+                 tmpl: Optional[TransTmpl]=None,
+                 frames: Optional[List[FrameTmpl]]=None):
         """
         :param axiSCls: class of input axi stream interface
         :param structT: instance of HStruct which specifies data format to download
+        :param tmpl: instance of TransTmpl for this structT
+        :param frames: list of FrameTmpl instances for this tmpl
+        :note: if tmpl and frames are None they are resolved from structT parseTemplate
+        :note: this unit can parse sequence of frames, if they are specified by "frames"
         :attention: structT can not contain fields with variable size like HStream
         """
-        super(AxiS_frameParser, self).__init__()
-        assert isinstance(structT, HStruct)
         self._structT = structT
-        self._axiSCls = axiSCls
-        self._maxPaddingWords = maxPaddingWords
+
+        if tmpl is not None:
+            assert frames is not None, "tmpl and frames can be used only together"
+        else:
+            assert frames is None, "tmpl and frames can be used only together"
+
+        self._tmpl = tmpl
+        self._frames = frames
+        AxiSCompBase.__init__(self, axiSCls)
 
     def _config(self):
-        self.DATA_WIDTH = Param(64)
+        self.intfCls._config(self)
         # if this is true field interfaces will be of type VldSynced
         # and single ready signal will be used for all
         # else every interface will be instance of Handshaked and it will
@@ -54,145 +82,252 @@ class AxiS_frameParser(Unit):
         # or use internal counter for synchronization
         self.SYNCHRONIZE_BY_LAST = Param(True)
 
-    def createInterfaceForField(self, transInfo):
-        if evalParam(self.SHARED_READY).val:
-            i = VldSynced()
+    def _mkFieldIntf(self, parent: Union[StructIntf, UnionSource],
+                     structField: HStructField):
+        t = structField.dtype
+        if isinstance(t, HUnion):
+            return UnionSource(t, parent._instantiateFieldFn)
+        elif isinstance(t, HStruct):
+            return StructIntf(t, parent._instantiateFieldFn)
         else:
-            i = Handshaked()
-        i.DATA_WIDTH.set(transInfo.dtype.bit_length())
-        return i
-
-    def getInDataSignal(self, transactionPart):
-        busDataSignal = self.dataIn.data
-        bitRange = transactionPart.getBusWordBitRange()
-        return busDataSignal[bitRange[0]:bitRange[1]]
+            if self.SHARED_READY:
+                i = VldSynced()
+            else:
+                i = Handshaked()
+            i.DATA_WIDTH.set(structField.dtype.bit_length())
+            return i
 
     def _declr(self):
         addClkRstn(self)
-        self.dataOut = StructIntf(self._structT,
-                                  self.createInterfaceForField)
+
+        if isinstance(self._structT, HStruct):
+            intfCls = StructIntf
+        elif isinstance(self._structT, HUnion):
+            intfCls = UnionSource
+        else:
+            raise TypeError(self._structT)
+
+        self.dataOut = intfCls(self._structT, self._mkFieldIntf)
 
         with self._paramsShared():
-            self.dataIn = self._axiSCls()
-            if evalParam(self.SHARED_READY).val:
+            self.dataIn = self.intfCls()
+            if self.SHARED_READY:
                 self.dataOut_ready = Signal()
 
-    def connectDataSignals(self, words, wordIndex):
-        busVld = self.dataIn.valid
+    def getInDataSignal(self, transPart: TransPart):
+        busDataSignal = self.dataIn.data
+        high, low = transPart.getBusWordBitRange()
+        return busDataSignal[high:low]
 
-        signalsOfParts = []
+    def choiceIsSelected(self, interfaceOfChoice: Union[UnionSource, UnionSink]):
+        """
+        Check if union member is selected by _select interface in union interface
+        """
+        parent = interfaceOfChoice._parent
+        r = self._tmpRegsForSelect[parent]
+        i = parent._interfaces.index(interfaceOfChoice)
+        return i, r.data._eq(i), r.vld
 
-        for wIndx, transParts in words:
-            isThisWord = wordIndex._eq(wIndx)
+    def connectParts(self,
+                     allOutNodes: ListOfOutNodeInfos,
+                     words,
+                     wordIndexReg: Optional[RtlSignal]):
+        """
+        Create main datamux from dataIn to dataOut
+        """
+        for wIndx, transParts, _ in words:
+            # each word index is used and there may be TransParts which are
+            # representation of padding
+            outNondes = ListOfOutNodeInfos()
+            if wordIndexReg is None:
+                isThisWord = hBit(1)
+            else:
+                isThisWord = wordIndexReg._eq(wIndx)
 
             for part in transParts:
-                if part.isPadding:
-                    continue
-                dataVld = busVld & isThisWord
-                fPartSig = self.getInDataSignal(part)
-                fieldInfo = part.tmpl.origin
+                self.connectPart(outNondes, part, isThisWord, hBit(1))
 
-                if part.isLastPart():
-                    signalsOfParts.append(fPartSig)
-                    intf = self.dataOut._fieldsToInterfaces[fieldInfo]
-                    intf.data ** Concat(*reversed(signalsOfParts))
-                    intf.vld ** dataVld
-                    signalsOfParts = []
-                else:
-                    # part is in some word as last part, we have to store its value to register
-                    # until the last part arrive
-                    fPartReg = self._reg("%s_part_%d" % (fieldInfo.name, len(signalsOfParts)), fPartSig._dtype)
-                    If(dataVld,
-                       fPartReg ** fPartSig
-                    )
-                    signalsOfParts.append(fPartReg)
+            allOutNodes.addWord(wIndx, outNondes)
 
-    def busReadyLogic(self, words, wordIndex, maxWordIndex):
-        if evalParam(self.SHARED_READY).val:
-            busRd = self.ready
+    def connectPart(self,
+                    hsNondes: list,
+                    part: Union[TransPart, ChoicesOfFrameParts],
+                    en: Union[RtlSignal, bool],
+                    exclusiveEn: Optional[RtlSignal]=hBit(1)):
+        """
+        Create datamux for one word in main fsm
+        and colect metainformations for handshake logic
+
+        :param hsNondes: list of nodes of handshaked logic
+        """
+        busVld = self.dataIn.valid
+        tToIntf = self.dataOut._fieldsToInterfaces
+
+        if isinstance(part, ChoicesOfFrameParts):
+            parentIntf = tToIntf[part.origin.parent.origin]
+            try:
+                sel = self._tmpRegsForSelect[parentIntf]
+            except KeyError:
+                sel = HsBuilder(self, parentIntf._select).buff().end
+                self._tmpRegsForSelect[parentIntf] = sel
+            unionGroup = ExclusieveListOfHsNodes(sel)
+
+            # for unions
+            for choice in part:
+                # connect data signals of choices and collect info about streams
+                intfOfChoice = tToIntf[choice.tmpl.origin]
+                selIndex, isSelected, isSelectValid = self.choiceIsSelected(intfOfChoice)
+                _exclusiveEn = isSelectValid & isSelected & exclusiveEn
+
+                unionMemberPart = ListOfOutNodeInfos()
+                for p in choice:
+                    self.connectPart(unionMemberPart, p, en, _exclusiveEn)
+                unionGroup.append(selIndex, unionMemberPart)
+
+            hsNondes.append(unionGroup)
+
+            if part.isLastPart():
+                # synchronization of reading from _select register for unions
+                selNode = InNodeInfo(sel, en)
+            else:
+                selNode = InNodeReadOnlyInfo(sel, en)
+            hsNondes.append(selNode)
+            return
+
+        if part.isPadding:
+            return
+
+        fPartSig = self.getInDataSignal(part)
+        fieldInfo = part.tmpl.origin
+
+        try:
+            signalsOfParts = self._signalsOfParts[part.tmpl]
+        except KeyError:
+            signalsOfParts = []
+            self._signalsOfParts[part.tmpl] = signalsOfParts
+
+        if part.isLastPart():
+            # connect all parts in this group to output stream
+            signalsOfParts.append(fPartSig)
+            intf = self.dataOut._fieldsToInterfaces[fieldInfo]
+            intf.data(self.byteOrderCare(
+                            Concat(
+                                   *reversed(signalsOfParts)
+                                  ))
+                      )
+            on = OutNodeInfo(self, intf, en, exclusiveEn)
+            hsNondes.append(on)
         else:
-            # generate ready logic for struct fields
-            _busRd = None
-            for i, parts in words:
-                lastParts = where(parts, lambda p: not p.isPadding and p.isLastPart())
-                fiedsRd = map(lambda p: self.dataOut._fieldsToInterfaces[p.tmpl.origin].rd,
-                              lastParts)
-                isThisIndex = wordIndex._eq(i)
-                if _busRd is None:
-                    _busRd = And(isThisIndex, *fiedsRd)
-                else:
-                    _busRd = _busRd | And(isThisIndex, *fiedsRd)
-
-            busRd = self._sig("busAck")
-            busRd ** _busRd
-        return busRd
-
-    def parseTemplate(self):
-        self._tmpl = TransTmpl(self._structT)
-        DW = evalParam(self.DATA_WIDTH).val
-        frames = FrameTemplate.framesFromTransTmpl(self._tmpl,
-                                                             DW,
-                                                             maxPaddingWords=self._maxPaddingWords)
-        self._frames = list(frames)
+            dataVld = busVld & en & exclusiveEn
+            # part is in some word as last part, we have to store its value to register
+            # until the last part arrive
+            fPartReg = self._reg("%s_part_%d" % (fieldInfo.name,
+                                                 len(signalsOfParts)),
+                                 fPartSig._dtype)
+            If(dataVld,
+               fPartReg(fPartSig)
+            )
+            signalsOfParts.append(fPartReg)
 
     def _impl(self):
         r = self.dataIn
         self.parseTemplate()
-        assert len(self._frames) == 1
-        words = list(self._frames[0].walkWords(showPadding=True))
-
+        words = list(self.chainFrameWords())
+        assert not (self.SYNCHRONIZE_BY_LAST and len(self._frames) > 1)
         maxWordIndex = words[-1][0]
-        wordIndex = self._reg("wordIndex", vecT(log2ceil(maxWordIndex + 1)), 0)
+        hasMultipleWords = maxWordIndex > 0
+        if hasMultipleWords:
+            wordIndex = self._reg("wordIndex", Bits(log2ceil(maxWordIndex + 1)), 0)
+        else:
+            wordIndex = None
+
         busVld = r.valid
 
-        self.connectDataSignals(words, wordIndex)
-        busRd = self.busReadyLogic(words, wordIndex, maxWordIndex)
-
-        r.ready ** busRd
-
-        if evalParam(self.SYNCHRONIZE_BY_LAST).val:
-            last = r.last
+        if self.IS_BIGENDIAN:
+            byteOrderCare = reverseByteOrder
         else:
-            last = wordIndex._eq(maxWordIndex)
+            def byteOrderCare(sig):
+                return sig
 
-        If(busVld & busRd,
-            If(last,
-               wordIndex ** 0
-            ).Else(
-                wordIndex ** (wordIndex + 1)
+        self.byteOrderCare = byteOrderCare
+        self._tmpRegsForSelect = {}
+        self._signalsOfParts = {}
+
+        allOutNodes = WordFactory(wordIndex)
+        self.connectParts(allOutNodes, words, wordIndex)
+
+        if self.SHARED_READY:
+            busReady = self.dataOut_ready
+            r.ready(busReady)
+        else:
+            busReady = self._sig("busReady")
+            busReady(allOutNodes.ack())
+            allOutNodes.sync(busVld)
+
+        r.ready(busReady)
+
+
+        if hasMultipleWords:
+            if self.SYNCHRONIZE_BY_LAST:
+                last = r.last
+            else:
+                last = wordIndex._eq(maxWordIndex)
+                
+            If(busVld & busReady,
+                If(last,
+                   wordIndex(0)
+                ).Else(
+                    wordIndex(wordIndex + 1)
+                )
             )
-        )
 
 
 if __name__ == "__main__":
-    from hwtLib.types.ctypes import uint16_t, uint32_t, uint64_t
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwtLib.types.ctypes import uint16_t, uint32_t, uint64_t, int32_t
+    from hwt.synthesizer.utils import toRtl
     from hwtLib.amba.axis import AxiStream
 
-    s = HStruct(
-        (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
-        (uint64_t, None),  # name = None means this field will be ignored
-        (uint64_t, "item1"),
-        (uint64_t, None),
-        (uint16_t, "item2"),
-        (uint16_t, "item3"),
-        (uint32_t, "item4"),
+    #t = HStruct(
+    #  (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
+    #  (uint64_t, None),  # name = None means this field will be ignored
+    #  (uint64_t, "item1"),
+    #  (uint64_t, None),
+    #  (uint16_t, "item2"),
+    #  (uint16_t, "item3"),
+    #  (uint32_t, "item4"),
+    #  (uint32_t, None),
+    #  (uint64_t, "item5"),  # this word is split on two bus words
+    #  (uint32_t, None),
+    #  (uint64_t, None),
+    #  (uint64_t, None),
+    #  (uint64_t, None),
+    #  (uint64_t, "item6"),
+    #  (uint64_t, "item7"),
+    #  (HStruct(
+    #      (uint64_t, "item0"),
+    #      (uint64_t, "item1"),
+    #   ),
+    #   "struct0")
+    #  )
+    #t = HUnion(
+    #    (uint32_t, "a"),
+    #    (int32_t, "b")
+    #    )
 
-        (uint32_t, None),
-        (uint64_t, "item5"),  # this word is split on two bus words
-        (uint32_t, None),
-
-        (uint64_t, None),
-        (uint64_t, None),
-        (uint64_t, None),
-        (uint64_t, "item6"),
-        (uint64_t, "item7"),
+    t = HUnion(
         (HStruct(
-            (uint64_t, "item0"),
-            (uint64_t, "item1"),
-         ),
-         "struct0")
+            (uint64_t, "itemA0"),
+            (uint64_t, "itemA1")
+            ), "frameA"),
+        (HStruct(
+            (uint32_t, "itemB0"),
+            (uint32_t, "itemB1"),
+            (uint32_t, "itemB2"),
+            (uint32_t, "itemB3")
+            ), "frameB")
         )
-    u = AxiS_frameParser(AxiStream, s)
-    u.DATA_WIDTH.set(51)
-    print(toRtl(u))
+    u = AxiS_frameParser(AxiStream, t)
+    u.DATA_WIDTH.set(64)
+    print(
+    toRtl(u)
+       )

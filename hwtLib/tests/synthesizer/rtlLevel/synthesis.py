@@ -3,14 +3,24 @@
 
 import unittest
 
-from hwt.hdlObjects.assignment import Assignment
-from hwt.hdlObjects.operatorDefs import AllOps
+from hwt.code import If
+from hwt.hdl.assignment import Assignment
+from hwt.hdl.typeShortcuts import hBit
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.indexOps import IndexOps
+from hwtLib.mem.atomic.flipReg import FlipRegister
+from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import synthesised
+from hwt.hdl.statements import HdlStatement
+from hwtLib.mem.cuckooHashTable import CuckooHashTable
+from hwtLib.samples.statements.ifStm import SimpleIfStatement3
+from hwt.synthesizer.dummyPlatform import DummyPlatform
+from hwtLib.samples.mem.ram import SimpleAsyncRam
+from hwtLib.logic.segment7 import Segment7
+from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl
 
 
-class TestCaseSynthesis(unittest.TestCase):
+class BasicSynthesisTC(unittest.TestCase):
 
     def setUp(self):
         unittest.TestCase.setUp(self)
@@ -24,41 +34,113 @@ class TestCaseSynthesis(unittest.TestCase):
         n = self.n
         clk = n.sig("ap_clk")
         a = n.sig("a", clk=clk)
+
         self.assertEqual(len(a.drivers), 1)
-        assig = next(iter(a.drivers))
-        self.assertIsInstance(assig, Assignment)
-        self.assertEqual(len(assig.cond), 1)
+        _if = a.drivers[0]
+        self.assertIsInstance(_if, If)
+
+        self.assertEqual(len(_if.ifTrue), 1)
+        self.assertEqual(_if.ifFalse, None)
+        self.assertEqual(len(_if.elIfs), 0)
+
+        assig = _if.ifTrue[0]
         self.assertEqual(assig.src, a.next)
         self.assertEqual(assig.dst, a)
-        onRisE = assig.cond.pop()
-        self.assertEqual(onRisE.origin.operator, AllOps.RISING_EDGE)
-        self.assertEqual(onRisE.origin.ops[0], clk)
+
+        self.assertIs(_if.cond, clk._onRisingEdge())
 
     def test_syncSigWithReset(self):
         c = self.n
         clk = c.sig("ap_clk")
         rst = c.sig("ap_rst")
         a = c.sig("a", clk=clk, syncRst=rst, defVal=0)
-        self.assertEqual(len(a.drivers), 2)
-        d_it = iter(sorted(list(a.drivers), key=lambda o: id(o)))
-        a_reset = next(d_it)
-        a_next = next(d_it)
-        self.assertIsInstance(a_reset, Assignment)
-        self.assertIsInstance(a_next, Assignment)
 
-        # [TODO] not eq operator is diffrent object
-        # self.assertEqual(a_reset.cond, {clk.opOnRisigEdge(), rst})
-        # self.assertEqual(a_reset.src, 0)
-        # self.assertEqual(a_next.cond, {clk.opOnRisigEdge(), rst.opNot()})
-        # self.assertEqual(a_next.src, a.next)
+        self.assertEqual(len(a.drivers), 1)
+
+        _if = a.drivers[0]
+        self.assertIsInstance(_if, If)
+
+        self.assertIs(_if.cond, clk._onRisingEdge())
+        self.assertEqual(len(_if.ifTrue), 1)
+        self.assertEqual(_if.ifFalse, None)
+        self.assertEqual(len(_if.elIfs), 0)
+
+        if_reset = _if.ifTrue[0]
+
+        self.assertIs(if_reset.cond, rst._isOn())
+        self.assertEqual(len(if_reset.ifTrue), 1)
+        self.assertEqual(len(if_reset.ifFalse), 1)
+        self.assertEqual(len(if_reset.elIfs), 0)
+
+        a_reset = if_reset.ifTrue[0]
+        a_next = if_reset.ifFalse[0]
+        self.assertIsInstance(a_reset, Assignment)
+        self.assertEqual(a_reset.src, hBit(0))
+
+        self.assertIsInstance(a_next, Assignment)
+        self.assertEqual(a_next.src, a.next)
 
     def test_indexOps(self):
         c, interf = IndexOps()
-        _, arch = list(c.synthesize("indexOps", interf))
+        _, arch = list(c.synthesize("indexOps", interf, DummyPlatform()))
 
-        s = VhdlSerializer.Architecture(arch, VhdlSerializer.getBaseNameScope())
+        s = VhdlSerializer.Architecture(arch, VhdlSerializer.getBaseContext())
 
         self.assertNotIn("sig_", s)
+
+
+class StatementsConsystencyTC(unittest.TestCase):
+    def check_consystency(self, u):
+        synthesised(u)
+        c = u._ctx
+        for s in c.signals:
+            for e in s.endpoints:
+                if isinstance(e, HdlStatement):
+                    self.assertIs(e.parentStm, None, (s, e))
+                    self.assertIn(e, c.statements)
+            for d in s.drivers:
+                if isinstance(d, HdlStatement):
+                    self.assertIs(d.parentStm, None, (s, d))
+                    self.assertIn(d, c.statements)
+
+        for stm in c.statements:
+            self.assertIs(stm.parentStm, None)
+
+    def test_if_stm_merging(self):
+        u = FlipRegister()
+        self.check_consystency(u)
+
+    def test_comples_stm_ops(self):
+        u = CuckooHashTable()
+        self.check_consystency(u)
+
+    def test_rm_statement(self):
+        u = SimpleIfStatement3()
+        self.check_consystency(u)
+        stms = u._ctx.statements
+        self.assertEqual(len(stms), 1)
+        self.assertIsInstance(list(stms)[0], Assignment)
+
+    def test_index_inputs_with_assignment_has_endpoint(self):
+        u = SimpleAsyncRam()
+        self.check_consystency(u)
+
+        self.assertEqual(len(u.addr_in._sigInside.endpoints), 1)
+        self.assertEqual(len(u.addr_out._sigInside.endpoints), 1)
+
+    def test_if_inputs_correc(self):
+        u = Segment7()
+        self.check_consystency(u)
+
+    def test_stm_enclosure_consystency(self):
+        u = I2cMasterBitCtrl()
+        self.check_consystency(u)
+
+        # test there is not a latch
+        for stm in u._ctx.statements:
+            if not stm._is_completly_event_dependent:
+                diff = stm._enclosed_for.symmetric_difference(stm._outputs)
+                self.assertEqual(diff, set(), "\n%r" % stm)
 
 
 if __name__ == '__main__':

@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, log2ceil, Concat, Switch
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axis_comp.base import AxiSCompBase
-from hwtLib.handshaked.streamNode import streamAck
 from hwtLib.amba.axis_comp.reg import AxiSReg
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 class AxiS_resizer(AxiSCompBase):
@@ -18,7 +18,7 @@ class AxiS_resizer(AxiSCompBase):
     :attention: strb can be not fully set only in last word
     :attention: in upscale mode id and other signals which are not dependent on data width
         are propagated only from last word
-        
+
     .. aafig::
                                          +-------------+
                                          |             |
@@ -68,7 +68,7 @@ class AxiS_resizer(AxiSCompBase):
             return True
 
         _res = self._sig("nextAreNotValid")
-        _res ** res
+        _res(res)
         return _res
 
     def upscale(self, IN_DW, OUT_DW):
@@ -77,11 +77,11 @@ class AxiS_resizer(AxiSCompBase):
         ITEMS = OUT_DW // IN_DW
         dIn = self.getDataWidthDependent(self.dataIn)
 
-        dataOut = self.dataOut 
+        dataOut = self.dataOut
         dOut = self.getDataWidthDependent(dataOut)
 
-        itemCntr = self._reg("itemCntr", vecT(log2ceil(ITEMS + 1)), defVal=0)
-        hs = streamAck([self.dataIn], [dataOut])
+        itemCntr = self._reg("itemCntr", Bits(log2ceil(ITEMS + 1)), defVal=0)
+        hs = StreamNode([self.dataIn], [dataOut]).ack()
         isLastItem = (itemCntr._eq(ITEMS - 1) | self.dataIn.last)
 
         vld = self.getVld(self.dataIn)
@@ -96,44 +96,44 @@ class AxiS_resizer(AxiSCompBase):
                     r = self._reg("reg_" + inp._name + "_%d" % wordIndx, inp._dtype, defVal=0)
 
                     If(hs & isLastItem,
-                       r ** 0
+                       r(0)
                     ).Elif(vld & itemCntr._eq(wordIndx),
-                       r ** inp
+                       r(inp)
                     )
 
                     If(itemCntr._eq(wordIndx),
-                       s ** inp
+                       s(inp)
                     ).Else(
-                       s ** r
+                       s(r)
                     )
                 else:  # last item does not need register
                     If(itemCntr._eq(wordIndx),
-                       s ** inp
+                       s(inp)
                     ).Else(
-                       s ** 0
+                       s(0)
                     )
 
                 outputs[outp].append(s)
 
         # dataIn/dataOut hs
-        self.getRd(self.dataIn) ** self.getRd(dataOut)
-        self.getVld(dataOut) ** (vld & (isLastItem))
+        self.getRd(self.dataIn)(self.getRd(dataOut))
+        self.getVld(dataOut)(vld & (isLastItem))
 
         # connect others signals directly
         for inp, outp in zip(self.getData(self.dataIn), self.getData(dataOut)):
             if inp not in dIn:
-                outp ** inp
+                outp(inp)
 
         # connect data signals to utput
         for outp, outItems in outputs.items():
-            outp ** Concat(*reversed(outItems))
+            outp(Concat(*reversed(outItems)))
 
         # itemCntr next logic
         If(hs,
             If(isLastItem,
-                itemCntr ** 0
+                itemCntr(0)
             ).Else(
-                itemCntr ** (itemCntr + 1)
+                itemCntr(itemCntr + 1)
             )
         )
 
@@ -141,22 +141,22 @@ class AxiS_resizer(AxiSCompBase):
         if IN_DW % OUT_DW != 0:
             raise NotImplementedError()
         dOut = self.getDataWidthDependent(self.dataOut)
-        
-        # instanciate AxiSReg, AxiSBuilder is not used to avoid dependencies
+
+        # instantiate AxiSReg, AxiSBuilder is not used to avoid dependencies
         inReg = AxiSReg(self.intfCls)
         inReg._updateParamsFrom(self.dataIn)
         self.inReg = inReg
-        inReg.clk ** self.clk
-        inReg.rst_n ** self.rst_n
-        inReg.dataIn ** self.dataIn
+        inReg.clk(self.clk)
+        inReg.rst_n(self.rst_n)
+        inReg.dataIn(self.dataIn)
         dataIn = inReg.dataOut
-        
+
         dIn = self.getDataWidthDependent(dataIn)
 
         ITEMS = IN_DW // OUT_DW
-        itemCntr = self._reg("itemCntr", vecT(log2ceil(ITEMS + 1)), defVal=0)
+        itemCntr = self._reg("itemCntr", Bits(log2ceil(ITEMS + 1)), defVal=0)
 
-        hs = streamAck([dataIn], [self.dataOut])
+        hs = StreamNode([dataIn], [self.dataOut]).ack()
         isLastItem = itemCntr._eq(ITEMS - 1)
         strbLastOverride = self.nextAreNotValidLogic(dataIn.strb,
                                                      itemCntr,
@@ -170,33 +170,33 @@ class AxiS_resizer(AxiSCompBase):
             w = outp._dtype.bit_length()
             Switch(itemCntr)\
             .addCases([
-                (wordIndx, outp ** inp[((wordIndx + 1) * w):(w * wordIndx)])
+                (wordIndx, outp(inp[((wordIndx + 1) * w):(w * wordIndx)]))
                   for wordIndx in range(ITEMS)
                 ])\
             .Default(
-               outp ** None
+               outp(None)
             )
 
         # connect others signals directly
         for inp, outp in zip(self.getData(dataIn), self.getData(self.dataOut)):
             if inp not in dIn and inp is not dataIn.last:
-                outp ** inp
+                outp(inp)
 
-        self.dataOut.last ** (dataIn.last & isLastItem)
-        self.getRd(dataIn) ** (self.getRd(self.dataOut) & isLastItem & dataIn.valid)
-        self.getVld(self.dataOut) ** self.getVld(dataIn)
+        self.dataOut.last(dataIn.last & isLastItem)
+        self.getRd(dataIn)(self.getRd(self.dataOut) & isLastItem & dataIn.valid)
+        self.getVld(self.dataOut)(self.getVld(dataIn))
 
         If(hs,
            If(isLastItem,
-               itemCntr ** 0
+               itemCntr(0)
            ).Else(
-               itemCntr ** (itemCntr + 1)
+               itemCntr(itemCntr + 1)
            )
         )
 
     def _impl(self):
-        IN_DW = evalParam(self.DATA_WIDTH).val
-        OUT_DW = evalParam(self.OUT_DATA_WIDTH).val
+        IN_DW = int(self.DATA_WIDTH)
+        OUT_DW = int(self.OUT_DATA_WIDTH)
 
         if IN_DW < OUT_DW:  # UPSCALE
             self.upscale(IN_DW, OUT_DW)
@@ -206,7 +206,7 @@ class AxiS_resizer(AxiSCompBase):
             raise AssertionError("Input and output width are same, this instance is useless")
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     from hwtLib.amba.axis import AxiStream_withId
 
     u = AxiS_resizer(AxiStream_withId)

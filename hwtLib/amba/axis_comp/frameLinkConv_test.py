@@ -3,10 +3,10 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.bitmask import mask
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream_withUserAndStrb
 from hwtLib.amba.axis_comp.frameLinkConv import FrameLinkToAxiS, AxiSToFrameLink
 from hwt.synthesizer.param import Param
@@ -28,9 +28,9 @@ class FrameLinkConvTest(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
-        self.conv0.dataIn ** self.dataIn
-        self.conv1.dataIn ** self.conv0.dataOut
-        self.dataOut ** self.conv1.dataOut
+        self.conv0.dataIn(self.dataIn)
+        self.conv1.dataIn(self.conv0.dataOut)
+        self.dataOut(self.conv1.dataOut)
 
 
 class AxiS_frameLinkConvTC(SimTestCase):
@@ -41,7 +41,7 @@ class AxiS_frameLinkConvTC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEmpty(u.dataOut._ag.data)
 
@@ -53,7 +53,7 @@ class AxiS_frameLinkConvTC(SimTestCase):
              (14, mask(1), 0b10, 1)]
 
         u.dataIn._ag.data.extend(d)
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, d)
 

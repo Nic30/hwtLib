@@ -3,10 +3,8 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time, NOP
+from hwt.hdl.constants import Time, NOP
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.simulator.utils import agent_randomize
-from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.arrayBuff_writer import ArrayBuff_writer
 
@@ -16,14 +14,14 @@ class ArrayBuff_writer_TC(SimTestCase):
         super(ArrayBuff_writer_TC, self).setUp()
         self.u = ArrayBuff_writer()
         self.u.TIMEOUT.set(32)
-        self.ID = evalParam(self.u.ID).val
-        self.ITEMS = evalParam(self.u.ITEMS).val
-        self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
+        self.ID = int(self.u.ID)
+        self.ITEMS = int(self.u.ITEMS)
+        self.DATA_WIDTH = int(self.u.DATA_WIDTH)
         self.prepareUnit(self.u)
 
     def test_nop(self):
         u = self.u
-        self.doSim(40 * 10 * Time.ns)
+        self.runSim(10 * 10 * Time.ns)
         self.assertEqual(len(u.wDatapump.req._ag.data), 0)
         self.assertEqual(len(u.wDatapump.w._ag.data), 0)
 
@@ -34,7 +32,7 @@ class ArrayBuff_writer_TC(SimTestCase):
         u.items._ag.data.append(16)
         u.baseAddr._ag.dout.append(0x1230)
 
-        self.doSim(40 * 10 * Time.ns)
+        self.runSim(40 * 10 * Time.ns)
 
         req = u.wDatapump.req._ag.data
         self.assertEmpty(u.items._ag.data)
@@ -64,7 +62,7 @@ class ArrayBuff_writer_TC(SimTestCase):
 
         self.procs.append(itemsWithDelay)
 
-        self.doSim(80 * 10 * Time.ns)
+        self.runSim(80 * 10 * Time.ns)
 
         self.assertEmpty(u.items._ag.data)
 
@@ -89,7 +87,7 @@ class ArrayBuff_writer_TC(SimTestCase):
         u.wDatapump.ack._ag.data.extend([NOP for _ in range(32 + 3 * 2)])
         u.wDatapump.ack._ag.data.append(self.ID)
 
-        self.doSim(70 * 10 * Time.ns)
+        self.runSim(70 * 10 * Time.ns)
         self.assertEqual(len(u.items._ag.data), 0)
         req = u.wDatapump.req._ag.data
         self.assertValSequenceEqual(req,
@@ -115,7 +113,7 @@ class ArrayBuff_writer_TC(SimTestCase):
         u.items._ag.data.extend([88 for _ in range(N)])
         u.wDatapump.ack._ag.data.extend([NOP for _ in range(N * 2)] + [self.ID, ])
 
-        self.doSim(40 * 10 * Time.ns)
+        self.runSim(40 * 10 * Time.ns)
 
         self.assertEqual(len(u.items._ag.data), 0)
 
@@ -148,7 +146,7 @@ class ArrayBuff_writer_TC(SimTestCase):
         u.baseAddr._ag.dout.append(BASE)
         u.items._ag.data.extend([MAGIC + i for i in range(N)])
 
-        self.doSim(200 * 10 * Time.ns)
+        self.runSim(200 * 10 * Time.ns)
 
         self.assertEmpty(u.items._ag.data)
 
@@ -167,7 +165,7 @@ class ArrayBuff_writer_TC(SimTestCase):
 
         u.baseAddr._ag.dout.append(0x1230)
         u.items._ag.data.extend([1 + i for i in range(N)])
-        u.wDatapump.ack._ag.data.extend([NOP for _ in range(N * 2 - 1)] +
+        u.wDatapump.ack._ag.data.extend([NOP for _ in range(N * 2 - 1)] + 
                                         [self.ID + 1, self.ID, self.ID + 1])
 
         # randomize(u.wDatapump.w)
@@ -175,7 +173,7 @@ class ArrayBuff_writer_TC(SimTestCase):
         # randomize(u.wDatapump.req)
         # randomize(u.wDatapump.ack)
 
-        self.doSim(150 * 10 * Time.ns)
+        self.runSim(150 * 10 * Time.ns)
 
         self.assertEqual(len(u.items._ag.data), 0)
 
@@ -194,7 +192,7 @@ class ArrayBuff_writer_TC(SimTestCase):
         u.baseAddr._ag.dout.append(0x1230)
         u.items._ag.data.extend([1 + i for i in range(N)])
 
-        self.doSim(150 * 10 * Time.ns)
+        self.runSim(150 * 10 * Time.ns)
 
         self.assertEqual(len(u.items._ag.data), 0)
 
@@ -221,7 +219,7 @@ class ArrayBuff_writer_TC(SimTestCase):
         def enReq(s):
             u.wDatapump.req._ag.enable = False
             yield s.wait(32 * 10 * Time.ns)
-            yield from agent_randomize(u.wDatapump.req._ag, 50 * Time.ns, self._rand.getrandbits(64))(s)
+            yield from self.simpleRandomizationProcess(u.wDatapump.req._ag)(s)
 
         self.procs.append(enReq)
 
@@ -230,7 +228,7 @@ class ArrayBuff_writer_TC(SimTestCase):
         # self.randomize(u.req)
         self.randomize(u.wDatapump.ack)
 
-        self.doSim(N * 100 * Time.ns)
+        self.runSim(N * 40 * Time.ns)
 
         self.assertEmpty(u.items._ag.data)
         d = m.getArray(BASE, self.DATA_WIDTH // 8, self.ITEMS)

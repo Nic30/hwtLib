@@ -3,7 +3,7 @@
 
 
 from hwt.bitmask import selectBit
-from hwt.hdlObjects.constants import WRITE, READ, Time
+from hwt.hdl.constants import WRITE, READ, Time
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.lutRam import RAM64X1S
@@ -45,8 +45,9 @@ class LutRamTC(SimTestCase):
                     (READ, 2), (READ, 3), (READ, 2)]
         applyRequests(u, requests)
 
-        self.doSim(time=80 * Time.ns)
-        self.assertSequenceEqual(valuesToInts(u.o._ag.data), [0, 0, 0, 1, 0, 0, 0, 0])
+        self.runSim(80 * Time.ns)
+        self.assertSequenceEqual(valuesToInts(u.o._ag.data),
+                                 [0, 0, 0, 1, 0, 0, 0, 0])
 
 
 if __name__ == "__main__":

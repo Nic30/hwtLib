@@ -1,15 +1,11 @@
 from hwt.code import log2ceil
-from hwt.hdlObjects.constants import DIRECTION
+from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VectSignal, HandshakeSync
 from hwt.simulator.agentBase import AgentBase
-from hwt.synthesizer.interfaceLevel.interface import Interface
+from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream_withId, AxiStream
-
-
-def ag(i):
-    return i._getSimAgent()(i)
 
 
 class AddrSizeHs(Handshaked):
@@ -31,8 +27,8 @@ class AddrSizeHs(Handshaked):
 
         HandshakeSync._declr(self)
 
-    def _getSimAgent(self):
-        return AddrSizeHsAgent
+    def _initSimAgent(self):
+        self._ag = AddrSizeHsAgent(self)
 
 
 class AddrSizeHsAgent(HandshakedAgent):
@@ -75,8 +71,8 @@ class AxiRDatapumpIntf(Interface):
             self.req = AddrSizeHs()
             self.r = AxiStream_withId(masterDir=DIRECTION.IN)
 
-    def _getSimAgent(self):
-        return AxiRDatapumpIntfAgent
+    def _initSimAgent(self):
+        self._ag = AxiRDatapumpIntfAgent(self)
 
 
 class AxiRDatapumpIntfAgent(AgentBase):
@@ -102,9 +98,12 @@ class AxiRDatapumpIntfAgent(AgentBase):
     def __init__(self, intf):
         self.__enable = True
         self.intf = intf
+        
+        intf.req._initSimAgent()
+        self.req = intf.req._ag
 
-        self.req = intf.req._ag = ag(intf.req)
-        self.r = intf.r._ag = ag(intf.r)
+        intf.r._initSimAgent()
+        self.r = intf.r._ag
 
     def getDrivers(self):
         return (self.req.getDrivers() +
@@ -133,8 +132,8 @@ class AxiWDatapumpIntf(Interface):
         self.ack = Handshaked(masterDir=DIRECTION.IN)
         self.ack._replaceParam("DATA_WIDTH", self.ID_WIDTH)
 
-    def _getSimAgent(self):
-        return AxiWDatapumpIntfAgent
+    def _initSimAgent(self):
+        self._ag = AxiWDatapumpIntfAgent(self)
 
 
 class AxiWDatapumpIntfAgent(AgentBase):
@@ -161,9 +160,14 @@ class AxiWDatapumpIntfAgent(AgentBase):
         self.__enable = True
         self.intf = intf
 
-        self.req = intf.req._ag = ag(intf.req)
-        self.w = intf.w._ag = ag(intf.w)
-        self.ack = intf.ack._ag = ag(intf.ack)
+        intf.req._initSimAgent()
+        self.req = intf.req._ag
+        
+        intf.w._initSimAgent()
+        self.w = intf.w._ag
+        
+        intf.ack._initSimAgent()
+        self.ack = intf.ack._ag
 
     def getDrivers(self):
         return (self.req.getDrivers() +

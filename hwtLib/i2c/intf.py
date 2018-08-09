@@ -1,8 +1,11 @@
-from hwt.interfaces.agents.tristate import TristatePullUpAgent
+from collections import deque
+
+from hwt.interfaces.agents.tristate import TristateAgent, \
+    TristateClkAgent, toGenerator
 from hwt.interfaces.tristate import TristateClk, TristateSig
 from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
-from hwt.simulator.agentBase import AgentBase
-from hwt.synthesizer.interfaceLevel.interface import Interface
+from hwt.simulator.agentBase import AgentWitReset
+from hwt.synthesizer.interface import Interface
 
 
 class I2c(Interface):
@@ -13,37 +16,75 @@ class I2c(Interface):
     def _getIpCoreIntfClass(self):
         return IP_IIC
 
-    def _getSimAgent(self):
-        return I2cAgent
+    def _initSimAgent(self):
+        self._ag = I2cAgent(self)
 
 
-class I2cAgent(AgentBase):
+class I2cAgent(AgentWitReset):
     START = "start"
 
-    def __init__(self, intf):
-        AgentBase.__init__(self, intf)
-        self.bits = []
-        self.listenForStart = True
+    def __init__(self, intf, allowNoReset=True):
+        AgentWitReset.__init__(self, intf, allowNoReset=allowNoReset)
+        self.bits = deque()
+        self.start = True
+        self.sda = TristateAgent(intf.sda)
+        self.sda.collectData = False
+        self.sda.selfSynchronization = False
 
     def startListener(self, sim):
-        if self.listenForStart:
+        if self.start:
             self.bits.append(self.START)
-            self.listenForStart = False
+            self.start = False
 
+        return
+        yield
+
+    def startSender(self, sim):
+        if self.start:
+            self.sda._write(0, sim)
+            self.start = False
+        return
+        yield
+    
     def getMonitors(self):
-        intf = self.intf
-        self.sdaPullUp = TristatePullUpAgent(intf.sda)
-        self.sclPullUp = TristatePullUpAgent(intf.scl,
-                                             onRisingCallback=self.monitor,
-                                             onFallingCallback=self.startListener)
-        return (self.sdaPullUp.getMonitors() + 
-                self.sclPullUp.getMonitors()
+        self.scl = TristateClkAgent(self.intf.scl,
+                                    onRisingCallback=self.monitor,
+                                    onFallingCallback=self.startListener)
+        return (self.sda.getMonitors() + 
+                self.scl.getMonitors()
+                )
+
+    def getDrivers(self):
+        self.scl = TristateClkAgent(self.intf.scl,
+                                    onRisingCallback=self.driver,
+                                    onFallingCallback=self.startSender)
+        return ([toGenerator(self.driver)] +  # initial initialization
+                self.sda.getDrivers() + 
+                self.scl.getDrivers()
                 )
 
     def monitor(self, sim):
-        if sim.now > 0:
+        # now intf.sdc is rising
+        yield sim.waitOnCombUpdate()
+        # wait on all agents to update values and on 
+        # simulator to appply them
+        if sim.now > 0 and self.notReset(sim):
             v = sim.read(self.intf.sda.i)
             self.bits.append(v)
+
+    def driver(self, sim):
+        # now intf.sdc is rising
+        # yield sim.wait(1)
+        # yield sim.waitOnCombUpdate()
+        yield from self.sda.driver(sim)
+        # now we are after clk
+        # prepare data for next clk
+        if self.bits:
+            b = self.bits.popleft()
+            if b == self.START:
+                return
+            self.sda._write(b, sim)
+
 
 
 class IP_IIC(IntfConfig):
@@ -53,10 +94,10 @@ class IP_IIC(IntfConfig):
         self.version = "1.0"
         self.vendor = "xilinx.com"
         self.library = "interface"
-        self.map = {'scl': {"t": "SCL_T",
+        self.map = {"scl": {"t": "SCL_T",
                             "i": "SCL_I",
                             "o": "SCL_O"},
-                    'sda': {"t": "SDA_T",
+                    "sda": {"t": "SDA_T",
                             "i": "SDA_I",
                             "o": "SDA_O"}
                     }

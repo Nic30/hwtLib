@@ -4,12 +4,12 @@
 from hwt.code import If
 from hwt.interfaces.std import Signal, BramPort_withoutClk, Clk
 from hwt.interfaces.utils import propagateClk
-from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import evalParam
+from hwt.serializer.mode import serializeParamsUniq
+from hwt.synthesizer.unit import Unit
 from hwtLib.mem.ram import RamSingleClock
 
 
+@serializeParamsUniq
 class FlipRam(Unit):
     """
     Switchable RAM, there are two memories and two sets of ports,
@@ -21,20 +21,23 @@ class FlipRam(Unit):
     and reader reads data from second ram by second set of ports.
 
     Then select is set and access is flipped. Reader now has access to RAM 0 and writer to RAM 1.
+    
+    .. hwt-schematic::
     """
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
 
     def _config(self):
         RamSingleClock._config(self)
 
     def _declr(self):
-        PORT_CNT = evalParam(self.PORT_CNT).val
+        PORT_CNT = int(self.PORT_CNT)
 
         with self._paramsShared():
             self.clk = Clk()
+
+            # to let IDEs resolve type of port
             self.firstA = BramPort_withoutClk()
             self.secondA = BramPort_withoutClk()
-
+            
             if PORT_CNT == 2:
                 self.firstB = BramPort_withoutClk()
                 self.secondB = BramPort_withoutClk()
@@ -48,32 +51,32 @@ class FlipRam(Unit):
 
     def _impl(self):
         propagateClk(self)
-        PORT_CNT = evalParam(self.PORT_CNT).val
+        PORT_CNT = int(self.PORT_CNT)
 
         fa = self.firstA
         sa = self.secondA
 
         If(self.select_sig,
-           self.ram0.a ** fa,
-           self.ram1.a ** sa
+           self.ram0.a(fa),
+           self.ram1.a(sa)
         ).Else(
-           self.ram0.a ** sa,
-           self.ram1.a ** fa 
+           self.ram0.a(sa),
+           self.ram1.a(fa) 
         )
         if PORT_CNT == 2:
             fb = self.firstB
             sb = self.secondB
             If(self.select_sig,
-               self.ram0.b ** fb,
-               self.ram1.b ** sb,
+               self.ram0.b(fb),
+               self.ram1.b(sb),
             ).Else(
-               self.ram0.b ** sb,
-               self.ram1.b ** fb
+               self.ram0.b(sb),
+               self.ram1.b(fb)
             )
         elif PORT_CNT > 2:
             raise NotImplementedError()
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     print(toRtl(FlipRam))

@@ -1,17 +1,13 @@
 from hwt.code import If
-from hwt.hdlObjects.constants import DIRECTION
+from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import Handshaked, BramPort_withoutClk
 from hwt.interfaces.utils import addClkRstn
-from hwt.serializer.constants import SERI_MODE
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.simulator.agentBase import AgentBase
-from hwt.synthesizer.interfaceLevel.interface import Interface
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.interface import Interface
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.interfaces.addrDataHs import AddrDataHs
-
-
-def ag(i):
-    return i._getSimAgent()(i)
 
 
 class RamHsRAgent(AgentBase):
@@ -38,8 +34,11 @@ class RamHsRAgent(AgentBase):
         self.__enable = True
         self.intf = intf
 
-        self.addr = intf.addr._ag = ag(intf.addr)
-        self.data = intf.data._ag = ag(intf.data)
+        intf.addr._initSimAgent()
+        self.addr = intf.addr._ag
+
+        intf.data._initSimAgent()
+        self.data = intf.data._ag
 
     def getDrivers(self):
         return (self.addr.getDrivers() + 
@@ -63,15 +62,15 @@ class RamHsR(Interface):
         with self._paramsShared():
             self.data = Handshaked(masterDir=DIRECTION.IN)
 
-    def _getSimAgent(self):
-        return RamHsRAgent
+    def _initSimAgent(self):
+        self._ag = RamHsRAgent(self)
 
 
+@serializeParamsUniq
 class RamAsHs(Unit):
     """
     Converter from ram port to handshaked interfaces
     """
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
 
     def _config(self):
         self.ADDR_WIDTH = Param(32)
@@ -94,37 +93,37 @@ class RamAsHs(Unit):
         readData = self._reg("readData", r.data.data._dtype)
 
         rEn = readRegEmpty | r.data.rd
-        readDataPending ** (r.addr.vld & rEn)
+        readDataPending(r.addr.vld & rEn)
         If(readDataPending,
-           readData ** ram.dout
+           readData(ram.dout)
         )
 
         If(r.data.rd,
-            readRegEmpty ** ~readDataPending
+            readRegEmpty(~readDataPending)
         ).Else(
-            readRegEmpty ** ~(readDataPending | ~readRegEmpty)
+            readRegEmpty(~(readDataPending | ~readRegEmpty))
 
         )
 
-        r.addr.rd ** rEn
+        r.addr.rd(rEn)
 
         If(rEn & r.addr.vld,
-           ram.we ** 0,
-           ram.addr ** r.addr.data 
+           ram.we(0),
+           ram.addr(r.addr.data) 
         ).Else(
-           ram.we ** 1,
-           ram.addr ** w.addr
+           ram.we(1),
+           ram.addr(w.addr)
         )
         wEn = ~rEn | ~r.addr.vld
-        w.rd ** wEn
+        w.rd(wEn)
 
-        ram.din ** w.data
-        ram.en ** ((rEn & r.addr.vld) | w.vld)
-        r.data.data ** readData
-        r.data.vld ** ~readRegEmpty
+        ram.din(w.data)
+        ram.en((rEn & r.addr.vld) | w.vld)
+        r.data.data(readData)
+        r.data.vld(~readRegEmpty)
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = RamAsHs()
     print(toRtl(u))

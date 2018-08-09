@@ -1,18 +1,20 @@
-from hwt.hdlObjects.constants import DIRECTION
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.interfaces.std import s
 from hwt.code import log2ceil
-from hwt.synthesizer.interfaceLevel.interface import Interface
+from hwt.hdl.constants import DIRECTION
+from hwt.interfaces.std import s, VectSignal
+from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 
 
 class FrameLink(Interface):
+    """
+    Stream with "byte enable" and "start/end of frame/packet"
+    """
     def _config(self):
         self.DATA_WIDTH = Param(32)
-        
+
     def _declr(self):
-        self.data = s(dtype=vecT(self.DATA_WIDTH))
-        self.rem = s(dtype=vecT(log2ceil(self.DATA_WIDTH // 8)))
+        self.data = VectSignal(self.DATA_WIDTH)
+        self.rem = VectSignal(log2ceil(self.DATA_WIDTH // 8))
         self.src_rdy_n = s()
         self.dst_rdy_n = s(masterDir=DIRECTION.IN)
         self.sof_n = s()

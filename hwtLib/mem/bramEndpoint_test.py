@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.constants import Time, READ, WRITE, NOP
+from hwt.hdl.constants import Time, READ, WRITE, NOP
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
-    addrGetter, AxiLiteEndpointArray, structTwoFieldsDense, \
-    structTwoFieldsDenseStart
+    addrGetter, structTwoFieldsDense, \
+    structTwoFieldsDenseStart, AxiLiteEndpointDenseStartTC, \
+    AxiLiteEndpointDenseTC
 from hwtLib.mem.bramPortEndpoint import BramPortEndpoint
 from hwtLib.mem.bramPortSimMemSpaceMaster import BramPortSimMemSpaceMaster
+from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArray
 
 
 class BramPortEndpointTC(AxiLiteEndpointTC):
     FIELD_ADDR = [0x0, 0x1]
 
-    def mkRegisterMap(self, u):
-        registerMap = AddressSpaceProbe(u.bus, addrGetter).discover()
-        self.registerMap = registerMap
-        self.regs = BramPortSimMemSpaceMaster(u.bus, registerMap)
+    def mkRegisterMap(self, u, modelCls):
+        self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
+        self.regs = BramPortSimMemSpaceMaster(u.bus, self.addrProbe.discovered)
 
     def mySetUp(self, data_width=32):
         u = self.u = BramPortEndpoint(self.STRUCT_TEMPLATE)
@@ -34,7 +35,7 @@ class BramPortEndpointTC(AxiLiteEndpointTC):
         u = self.mySetUp(32)
 
         self.randomizeAll()
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.readed)
         self.assertFalse(u.bus._ag.readPending)
@@ -55,7 +56,7 @@ class BramPortEndpointTC(AxiLiteEndpointTC):
         u.decoded.field1._ag.din.append(MAGIC + 1)
 
         self.randomizeAll()
-        self.doSim(300 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertValSequenceEqual(u.bus._ag.readed, [MAGIC,
                                                        MAGIC + 1,
@@ -74,7 +75,7 @@ class BramPortEndpointTC(AxiLiteEndpointTC):
             (WRITE, A[1], MAGIC + 3)])
 
         self.randomizeAll()
-        self.doSim(400 * Time.ns)
+        self.runSim(400 * Time.ns)
 
         self.assertValSequenceEqual(u.decoded.field0._ag.dout,
                                     [MAGIC,
@@ -90,23 +91,16 @@ class BramPortEndpointDenseTC(BramPortEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDense
     FIELD_ADDR = [0x0, 0x2]
 
+    def test_registerMap(self):
+        AxiLiteEndpointDenseTC.test_registerMap(self)
 
-class BramPortEndpointStartTC(BramPortEndpointTC):
+
+class BramPortEndpointDenseStartTC(BramPortEndpointTC):
     STRUCT_TEMPLATE = structTwoFieldsDenseStart
     FIELD_ADDR = [0x1, 0x2]
 
-
-class BramPortEndpointOffsetTC(BramPortEndpointTC):
-    FIELD_ADDR = [0x1, 0x2]
-
-    def mySetUp(self, data_width=32):
-        u = self.u = BramPortEndpoint(self.STRUCT_TEMPLATE, offset=0x1 * 32)
-
-        self.DATA_WIDTH = data_width
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
-
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
-        return u
+    def test_registerMap(self):
+        AxiLiteEndpointDenseStartTC.test_registerMap(self)
 
 
 class BramPortEndpointArray(AxiLiteEndpointArray):
@@ -126,7 +120,7 @@ class BramPortEndpointArray(AxiLiteEndpointArray):
             u.decoded.field1._ag.mem[i] = 2 * MAGIC + 1 + i
 
         self.randomizeAll()
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.bus._ag.readed)
         for i in range(8):
@@ -142,11 +136,11 @@ class BramPortEndpointArray(AxiLiteEndpointArray):
         for i in range(4):
             u.decoded.field0._ag.mem[i] = MAGIC + i + 1
             u.decoded.field1._ag.mem[i] = 2 * MAGIC + i + 1
-            regs.field0.read(i)
-            regs.field1.read(i)
+            regs.field0[i].read()
+            regs.field1[i].read()
 
         self.randomizeAll()
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(u.bus._ag.readed,
                                     [MAGIC + 1,
@@ -167,11 +161,11 @@ class BramPortEndpointArray(AxiLiteEndpointArray):
         for i in range(4):
             u.decoded.field0._ag.mem[i] = None
             u.decoded.field1._ag.mem[i] = None
-            regs.field0.write(i, MAGIC + i + 1)
-            regs.field1.write(i, 2 * MAGIC + i + 1)
+            regs.field0[i].write(MAGIC + i + 1)
+            regs.field1[i].write(2 * MAGIC + i + 1)
 
         self.randomizeAll()
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEmpty(u.bus._ag.readed)
         for i in range(4):
@@ -183,11 +177,10 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(BramPortStructEndpointArray('test_read'))
+    #suite.addTest(BramPortEndpointTC('test_read'))
     suite.addTest(unittest.makeSuite(BramPortEndpointTC))
     suite.addTest(unittest.makeSuite(BramPortEndpointDenseTC))
-    suite.addTest(unittest.makeSuite(BramPortEndpointStartTC))
-    suite.addTest(unittest.makeSuite(BramPortEndpointOffsetTC))
+    suite.addTest(unittest.makeSuite(BramPortEndpointDenseStartTC))
     suite.addTest(unittest.makeSuite(BramPortEndpointArray))
 
     runner = unittest.TextTestRunner(verbosity=3)

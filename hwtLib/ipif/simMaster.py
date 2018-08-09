@@ -1,17 +1,23 @@
-from hwt.hdlObjects.constants import WRITE, READ
+from hwt.hdl.constants import WRITE, READ
 from hwtLib.sim.abstractMemSpaceMaster import AbstractMemSpaceMaster
 
 
 class IPFISimMaster(AbstractMemSpaceMaster):
-    def _writeAddr(self, addrChannel, addr, size):
-        addrChannel.data.append(addr)
+    """
+    Simulation address space master for IPIF interface
+    """
+    def _write(self, addr, size, data, mask, onDone=None):
+        if onDone:
+            raise NotImplementedError()
 
-    def _write(self, addr, size, data, mask):
         w = self._bus._ag.requests
         # (request type, address, [write data])
-        w.append((WRITE, addr, data))
+        w.append((WRITE, addr, data, mask))
+        
+    def _read(self, addr, size, onDone=None):
+        if onDone:
+            raise NotImplementedError()
 
-    def _read(self, addr, size):
         r = self._bus._ag.requests
         # (request type, address, [write data])
         r.append((READ, addr))

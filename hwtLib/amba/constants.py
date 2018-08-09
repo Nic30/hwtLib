@@ -4,7 +4,7 @@ BURST_WRAP = 0b10
 
 
 def BYTES_IN_TRANS(n):
-    assert isinstance(n, int)
+    n = int(n)
     return n.bit_length() - 1
 
 

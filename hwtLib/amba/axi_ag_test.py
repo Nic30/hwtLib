@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwtLib.amba.axi4 import Axi4
+from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi3 import Axi3_withAddrUser
+from hwtLib.amba.axi4 import Axi4
 
 
 class AxiTestJunction(Unit):
@@ -18,16 +18,16 @@ class AxiTestJunction(Unit):
         addClkRstn(self)
         self.s = self.axiCls()
         self.m = self.axiCls()
-    
+
     def _impl(self):
-        self.m ** self.s  
+        self.m(self.s)
 
 
 class Axi_ag_TC(SimTestCase):
     """
     Simple test of axi3/4 interfaces and agents for them
     """
-    def randA(self):
+    def randAxi4A(self):
         """get random address transaction"""
         r = self._rand.getrandbits
         _id = r(6)
@@ -39,10 +39,10 @@ class Axi_ag_TC(SimTestCase):
         prot = r(3)
         size = r(3)
         qos = r(4)
-        
+
         return (_id, addr, burst, cache, _len, lock, prot, size, qos)
-    
-    def randA3u(self):
+
+    def randAxi3Au(self):
         """get random address transaction for axi 3 with user"""
         r = self._rand.getrandbits
         _id = r(6)
@@ -53,20 +53,21 @@ class Axi_ag_TC(SimTestCase):
         lock = r(1)
         prot = r(3)
         size = r(3)
-        qos = r(4)
-        user = r(5)
-        
-        return (_id, addr, burst, cache, _len, lock, prot, size, qos, user)
+        user = r(3)
 
-    def randW(self):
+        return (_id, addr, burst, cache, _len, lock, prot, size, user)
+
+    def randW(self, hasId=True):
         """get random data write transaction"""
         r = self._rand.getrandbits
-        _id = r(6)
         data = r(64)
         strb = r(64 // 8)
         last = r(1)
-
-        return (_id, data, strb, last)
+        if hasId:
+            _id = r(6)
+            return (_id, data, strb, last)
+        else:
+            return (data, strb, last)
 
     def randB(self):
         """get random data write acknowledge transaction"""
@@ -74,7 +75,7 @@ class Axi_ag_TC(SimTestCase):
         _id = r(6)
         resp = r(2)
         return (_id, resp)
-    
+
     def randR(self):
         """get random data read transaction"""
         r = self._rand.getrandbits
@@ -83,67 +84,66 @@ class Axi_ag_TC(SimTestCase):
         resp = r(2)
         last = r(1)
         return (_id, data, resp, last)
-        
+
     def test_axi4_ag(self):
         """Test if axi4 agent can transmit and receive data on all channels"""
         u = AxiTestJunction(Axi4)
         self.prepareUnit(u)
         N = 10
 
-        aw = [self.randA() for _ in range(N)]
-        ar = [self.randA() for _ in range(N)]
-        w = [self.randW() for _ in range(N)]
+        aw = [self.randAxi4A() for _ in range(N)]
+        ar = [self.randAxi4A() for _ in range(N)]
+        w = [self.randW(False) for _ in range(N)]
         b = [self.randB() for _ in range(N)]
         r = [self.randR() for _ in range(N)]
-        
+
         u.s.aw._ag.data.extend(aw)
         u.s.ar._ag.data.extend(ar)
-        
+
         u.s.w._ag.data.extend(w)
-        
+
         u.m.r._ag.data.extend(r)
         u.m.b._ag.data.extend(b)
-        
-        self.doSim(20 * N * Time.ns)
-        
+
+        self.runSim(20 * N * Time.ns)
+
         a = self.assertValSequenceEqual
-        
+
         a(u.m.aw._ag.data, aw)
         a(u.m.ar._ag.data, ar)
         a(u.m.w._ag.data, w)
-        
+
         a(u.s.r._ag.data, r)
         a(u.s.b._ag.data, b)
-        
-    
+
     def test_axi3_withAddrUser_ag(self):
-        """Test if axi4 agent can transmit and receive data on all channels"""
+        """Test if axi3 agent can transmit and receive data on all channels"""
         u = AxiTestJunction(Axi3_withAddrUser)
         self.prepareUnit(u)
         N = 10
 
-        aw = [self.randA3u() for _ in range(N)]
-        ar = [self.randA3u() for _ in range(N)]
+        aw = [self.randAxi3Au() for _ in range(N)]
+        ar = [self.randAxi3Au() for _ in range(N)]
         w = [self.randW() for _ in range(N)]
         b = [self.randB() for _ in range(N)]
         r = [self.randR() for _ in range(N)]
-        
+
         u.s.aw._ag.data.extend(aw)
         u.s.ar._ag.data.extend(ar)
-        
+
         u.s.w._ag.data.extend(w)
-        
+
         u.m.r._ag.data.extend(r)
         u.m.b._ag.data.extend(b)
-        
-        self.doSim(20 * N * Time.ns)
-        
+
+        self.runSim(20 * N * Time.ns)
+
         a = self.assertValSequenceEqual
-        
+
         a(u.m.aw._ag.data, aw)
         a(u.m.ar._ag.data, ar)
         a(u.m.w._ag.data, w)
-        
+
         a(u.s.r._ag.data, r)
         a(u.s.b._ag.data, b)
 

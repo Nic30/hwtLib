@@ -1,10 +1,15 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.types.struct import HStruct
 from hwtLib.structManipulators.structReader import StructReader
 from hwtLib.abstract.denseMemory import DenseMemory
-from hwt.hdlObjects.constants import Time
-from hwtLib.amba.axis_comp.frameParser_test import packFrame
+from hwt.hdl.constants import Time
+from hwt.synthesizer.vectorUtils import iterBits
+from hwt.hdl.frameTmpl import FrameTmpl
+from hwt.hdl.transTmpl import TransTmpl
 
 
 s0 = HStruct(
@@ -27,6 +32,7 @@ s0 = HStruct(
     (uint64_t, "item7"),
     )
 
+
 def s0RandVal(tc):
     r = tc._rand.getrandbits
     data = {"item0": r(64),
@@ -41,15 +47,15 @@ def s0RandVal(tc):
 
     return data
 
+
 class StructReaderTC(SimTestCase):
-    def test_simpleFields(self):
-        u = StructReader(s0)
+    def _test_s0(self, u):
         DW = 64
-        N = 3 
+        N = 3
         self.prepareUnit(u)
 
         m = DenseMemory(DW, u.clk, u.rDatapump)
-        
+
         # init expectedFieldValues
         expectedFieldValues = {}
         for f in s0.fields:
@@ -60,18 +66,38 @@ class StructReaderTC(SimTestCase):
             d = s0RandVal(self)
             for name, val in d.items():
                 expectedFieldValues[name].append(val)
- 
-            asFrame = list(packFrame(DW, s0, d))
+
+            asFrame = list(iterBits(s0.fromPy(d),
+                                    bitsInOne=DW,
+                                    skipPadding=False,
+                                    fillup=True))
             addr = m.calloc(len(asFrame), DW // 8, initValues=asFrame)
             u.get._ag.data.append(addr)
-        
-        self.doSim(500 * Time.ns)
-        
+
+        self.runSim(500 * Time.ns)
+
         for f in s0.fields:
             if f.name is not None:
                 expected = expectedFieldValues[f.name]
                 got = u.dataOut._fieldsToInterfaces[f]._ag.data
                 self.assertValSequenceEqual(got, expected)
+
+    def test_simpleFields(self):
+        u = StructReader(s0)
+        self._test_s0(u)
+
+    def test_multiframe(self):
+        tmpl = TransTmpl(s0)
+        DATA_WIDTH = 64
+        frames = list(FrameTmpl.framesFromTransTmpl(
+                             tmpl,
+                             DATA_WIDTH,
+                             maxPaddingWords=0,
+                             trimPaddingWordsOnStart=True,
+                             trimPaddingWordsOnEnd=True))
+        u = StructReader(s0, tmpl=tmpl, frames=frames)
+        self._test_s0(u)
+
 
 if __name__ == "__main__":
     import unittest

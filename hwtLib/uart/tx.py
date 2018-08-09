@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat
-from hwt.hdlObjects.typeShortcuts import vecT, hBit
+from hwt.hdl.typeShortcuts import hBit
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.param import Param
 from hwtLib.clocking.clkBuilder import ClkBuilder
 
 
@@ -33,36 +34,36 @@ class UartTx(Unit):
         BITS_TO_SEND = 1 + 8 + 1
         BIT_RATE = self.FREQ // self.BAUD
 
-        assert evalParam(BIT_RATE).val >= 1
+        assert BIT_RATE >= 1
 
         din = self.dataIn
 
-        data = r("data", vecT(BITS_TO_SEND))  # data + start bit + stop bit
+        data = r("data", Bits(BITS_TO_SEND))  # data + start bit + stop bit
         en = r("en", defVal=False)
         tick, last = ClkBuilder(self, self.clk).timers(
                                                        [BIT_RATE, BIT_RATE * BITS_TO_SEND],
                                                        en)
 
         If(~en & din.vld,
-           data ** Concat(STOP_BIT, din.data, START_BIT),
-           en ** 1
+           data(Concat(STOP_BIT, din.data, START_BIT)),
+           en(1)
         ).Elif(tick & en,
             # srl where 1 is shifted from left
-            data ** hBit(1)._concat(data[:1]),
+            data(hBit(1)._concat(data[:1])),
             If(last,
-               en ** 0,
+               en(0),
             )
         )
-        din.rd ** ~en
+        din.rd(~en)
 
         txd = r("reg_txd", defVal=1)
         If(tick & en,
-           txd ** data[0]
+           txd(data[0])
         )
-        self.txd ** txd
+        self.txd(txd)
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = UartTx()
     print(toRtl(u))

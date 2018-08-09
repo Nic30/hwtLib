@@ -2,35 +2,36 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import c, SwitchLogic, log2ceil, Switch
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.hdlObjects.types.array import Array
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.abstract.busEndpoint import BusEndpoint
-from hwt.synthesizer.param import evalParam
 
 
 class BramPortEndpoint(BusEndpoint):
     """
-    Delegate transaction from BrapmPort interface to interfaces for fields of specified structure
+    Delegate transaction from BrapmPort interface to interfaces
+    for fields of specified structure
 
-    :attention: interfaces are dynamically generated from names of fields in structure template
+    :attention: interfaces are dynamically generated from names
+        of fields in structure template
     """
     _getWordAddrStep = BramPort_withoutClk._getWordAddrStep
     _getAddrStep = BramPort_withoutClk._getAddrStep
 
-    def __init__(self, structTemplate, offset=0, intfCls=BramPort_withoutClk):
-        BusEndpoint.__init__(self, structTemplate, offset, intfCls)
+    def __init__(self, structTemplate, intfCls=BramPort_withoutClk,
+                 shouldEnterFn=None):
+        BusEndpoint.__init__(self, structTemplate,
+                             intfCls=intfCls, shouldEnterFn=shouldEnterFn)
 
     def _impl(self):
         self._parseTemplate()
         bus = self.bus
-        assert self.OFFSET % evalParam(self.DATA_WIDTH).val == 0, "Offset is aligned to data width"
 
         def connectRegIntfAlways(regIntf, _addr):
             return (
-                    c(bus.din, regIntf.dout.data) + 
-                    c(bus.we & bus.en & bus.addr._eq(_addr), regIntf.dout.vld)
-                   )
+                c(bus.din, regIntf.dout.data) +
+                c(bus.we & bus.en & bus.addr._eq(_addr), regIntf.dout.vld)
+            )
 
         ADDR_STEP = self._getAddrStep()
         if self._directlyMapped:
@@ -42,7 +43,7 @@ class BramPortEndpoint(BusEndpoint):
                 _addr = t.bitAddr // ADDR_STEP
                 connectRegIntfAlways(port, _addr)
                 readRegInputs.append((bus.addr._eq(_addr),
-                                      readReg ** port.din
+                                      readReg(port.din)
                                       ))
             SwitchLogic(readRegInputs)
         else:
@@ -51,7 +52,8 @@ class BramPortEndpoint(BusEndpoint):
         if self._bramPortMapped:
             BRAMS_CNT = len(self._bramPortMapped)
             bramIndxCases = []
-            readBramIndx = self._reg("readBramIndx", vecT(log2ceil(BRAMS_CNT + 1), False))
+            readBramIndx = self._reg("readBramIndx", Bits(
+                log2ceil(BRAMS_CNT + 1), False))
             outputSwitch = Switch(readBramIndx)
 
             for i, t in enumerate(self._bramPortMapped):
@@ -66,31 +68,33 @@ class BramPortEndpoint(BusEndpoint):
                                                  port.dout._dtype.bit_length(),
                                                  t)
 
-                port.we ** (bus.we & _addrVld & bus.en)
-                port.en ** (bus.en & _addrVld & bus.en)
-                port.din ** bus.din
+                port.we(bus.we & _addrVld & bus.en)
+                port.en(bus.en & _addrVld & bus.en)
+                port.din(bus.din)
 
-                bramIndxCases.append((_addrVld, readBramIndx ** i))
-                outputSwitch.Case(i, bus.dout ** port.dout)
+                bramIndxCases.append((_addrVld, readBramIndx(i)))
+                outputSwitch.Case(i, bus.dout(port.dout))
 
-            outputSwitch.Default(bus.dout ** readReg)
-            SwitchLogic(bramIndxCases, default=readBramIndx ** BRAMS_CNT)
+            outputSwitch.Default(bus.dout(readReg))
+            SwitchLogic(bramIndxCases,
+                        default=readBramIndx(BRAMS_CNT))
         else:
-            bus.dout ** readReg
+            bus.dout(readReg)
+
 
 if __name__ == "__main__":
-    from hwt.hdlObjects.types.struct import HStruct
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.hdl.types.struct import HStruct
+    from hwt.synthesizer.utils import toRtl
     from hwtLib.types.ctypes import uint32_t
 
     u = BramPortEndpoint(
-            HStruct(
-                (uint32_t, "reg0"),
-                (uint32_t, "reg1"),
-                (Array(uint32_t, 1024), "segment0"),
-                (Array(uint32_t, 1024), "segment1"),
-                (Array(uint32_t, 1024 + 4), "nonAligned0")
-                )
-            )
+        HStruct(
+            (uint32_t, "reg0"),
+            (uint32_t, "reg1"),
+            (uint32_t[1024], "segment0"),
+            (uint32_t[1024], "segment1"),
+            (uint32_t[1024 + 4], "nonAligned0")
+        )
+    )
     u.DATA_WIDTH.set(32)
     print(toRtl(u))

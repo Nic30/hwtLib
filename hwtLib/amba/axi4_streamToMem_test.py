@@ -1,4 +1,7 @@
-from hwt.hdlObjects.constants import Time
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi4_streamToMem import Axi4streamToMem
@@ -12,11 +15,10 @@ class Axi4_streamToMemTC(SimTestCase):
 
         u = self.u = Axi4streamToMem()
 
-        def mkRegisterMap(u):
-            registerMap = AddressSpaceProbe(u.cntrlBus,
-                                            lambda intf: intf.ar.addr)\
-                                            .discover()
-            self.regs = AxiLiteMemSpaceMaster(u.cntrlBus, registerMap)
+        def mkRegisterMap(u, modelCls):
+            addrProbe = AddressSpaceProbe(u.cntrlBus,
+                                          lambda intf: intf.ar.addr)
+            self.regs = AxiLiteMemSpaceMaster(u.cntrlBus, addrProbe.discovered)
 
         self.DATA_WIDTH = 32
         u.DATA_WIDTH.set(self.DATA_WIDTH)
@@ -26,7 +28,7 @@ class Axi4_streamToMemTC(SimTestCase):
     def test_nop(self):
         u = self.u
 
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.axi.ar._ag.data)
         self.assertEmpty(u.axi.aw._ag.data)
@@ -46,7 +48,7 @@ class Axi4_streamToMemTC(SimTestCase):
         regs.baseAddr.write(blockPtr)
         regs.control.write(1)
         
-        self.doSim(N * 30 * Time.ns) 
+        self.runSim(N * 30 * Time.ns) 
 
         self.assertValSequenceEqual(m.getArray(blockPtr, self.DATA_WIDTH // 8, N), sampleData)
         

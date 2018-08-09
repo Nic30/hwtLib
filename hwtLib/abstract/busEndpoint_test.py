@@ -1,13 +1,22 @@
-import unittest
-from hwtLib.abstract.busEndpoint import BusEndpoint
-from hwt.interfaces.std import RegCntrl, VectSignal, Signal, VldSynced
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
+import unittest
+
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.struct import HStruct, HStructFieldMeta
+from hwt.interfaces.std import RegCntrl, VectSignal, VldSynced
+from hwt.interfaces.structIntf import HTypeFromIntfMap
+
+
+# example methods for interface construction
 def regCntr(name, width):
     a = RegCntrl()
-    a.DATA_WIDTH.set(width)
+    a.DATA_WIDTH = width
     a._name = name
     a._loadDeclarations()
     return a
+
 
 def sig(name, width):
     a = VectSignal(width)
@@ -15,117 +24,111 @@ def sig(name, width):
     a._loadDeclarations()
     return a
 
+
 def vldSynced(name, width):
     a = VldSynced()
-    a.DATA_WIDTH.set(width)
+    a.DATA_WIDTH = width
     a._name = name
     a._loadDeclarations()
     return a
 
+
 class BusEndpointTC(unittest.TestCase):
-    def test_resolveRegStructFromIntfMap(self):
-        prefix = "abc"
+    def test_HTypeFromIntfMap_Struct(self):
         DATA_WIDTH = 32
-        
-        fields = BusEndpoint._resolveRegStructFromIntfMap(
-                    prefix=prefix,
-                    interfaceMap=[
-                        regCntr("a", DATA_WIDTH),
-                        regCntr("b", DATA_WIDTH)
-                        ],
-                    DATA_WIDTH=DATA_WIDTH,
-                    aliginFields=False)
-        fields = list(fields)
 
-        self.assertEqual(len(fields), 2)
-        
-        for f, name in zip(fields, ["a", "b"]):
-            self.assertEqual(f[0].bit_length(), DATA_WIDTH)
-            self.assertEqual(f[1], prefix + name)
-            info = f[2]
-            self.assertEqual(info.access, "rw")
-            self.assertEqual(info.disolveArray, False)
-            self.assertIsInstance(info.fieldInterface, (RegCntrl,))
+        t = HTypeFromIntfMap([
+                              regCntr("a", DATA_WIDTH),
+                              regCntr("b", DATA_WIDTH),
+                              sig("c", DATA_WIDTH),
+                              vldSynced("d", DATA_WIDTH),
+                              ])
 
-    def test_resolveRegStructFromIntfMap_sig(self):
-        prefix = "abc"
+        _t = Bits(DATA_WIDTH)
+        self.assertEqual(t, HStruct(
+                (_t, "a"),
+                (_t, "b"),
+                (_t, "c"),
+                (_t, "d"),
+            ))
+
+    def test_HTypeFromIntfMap_Padding(self):
         DATA_WIDTH = 32
-        
-        fields = BusEndpoint._resolveRegStructFromIntfMap(
-                    prefix=prefix,
-                    interfaceMap=[
-                        sig("a", DATA_WIDTH),
-                        sig("b", DATA_WIDTH)
-                        ],
-                    DATA_WIDTH=DATA_WIDTH,
-                    aliginFields=False)
-        fields = list(fields)
 
-        self.assertEqual(len(fields), 2)
-        
-        for f, name in zip(fields, ["a", "b"]):
-            self.assertEqual(f[0].bit_length(), DATA_WIDTH)
-            self.assertEqual(f[1], prefix + name)
-            info = f[2]
-            self.assertEqual(info.access, "r")
-            self.assertEqual(info.disolveArray, False)
-            self.assertIsInstance(info.fieldInterface, (Signal,))
+        t = HTypeFromIntfMap([
+                              regCntr("a", DATA_WIDTH),
+                              regCntr("b", DATA_WIDTH),
+                              sig("c", DATA_WIDTH),
+                              (Bits(4 * DATA_WIDTH), None),
+                              vldSynced("d", DATA_WIDTH),
+                              ])
+        _t = Bits(DATA_WIDTH)
+        t2 = HStruct(
+                (_t, "a"),
+                (_t, "b"),
+                (_t, "c"),
+                (Bits(4 * DATA_WIDTH), None),
+                (_t, "d"),
+            )
 
-    def test_resolveRegStructFromIntfMap_vldSynced(self):
-        prefix = "abc"
+        self.assertEqual(t, t2)
+
+    def test_HTypeFromIntfMap_Array(self):
         DATA_WIDTH = 32
-        
-        fields = BusEndpoint._resolveRegStructFromIntfMap(
-                    prefix=prefix,
-                    interfaceMap=[
-                        vldSynced("a", DATA_WIDTH),
-                        vldSynced("b", DATA_WIDTH)
-                        ],
-                    DATA_WIDTH=DATA_WIDTH,
-                    aliginFields=False)
-        fields = list(fields)
 
-        self.assertEqual(len(fields), 2)
-        
-        for f, name in zip(fields, ["a", "b"]):
-            self.assertEqual(f[0].bit_length(), DATA_WIDTH)
-            self.assertEqual(f[1], prefix + name)
-            info = f[2]
-            self.assertEqual(info.access, "w")
-            self.assertEqual(info.disolveArray, False)
-            self.assertIsInstance(info.fieldInterface, (VldSynced))
+        t = HTypeFromIntfMap([
+                              regCntr("a", DATA_WIDTH),
+                              (Bits(4 * DATA_WIDTH), None),
+                              ([vldSynced("d", DATA_WIDTH) for _ in range(4)], "ds")
+                              ])
 
-    def test_resolveRegStructFromIntfMap_aligin(self):
-        prefix = "abc"
+        _t = Bits(DATA_WIDTH)
+        t2 = HStruct(
+                (_t, "a"),
+                (Bits(4 * DATA_WIDTH), None),
+                (_t[4], "ds", HStructFieldMeta(split=True)),
+            )
+        self.assertEqual(t, t2)
+
+    def test_HTypeFromIntfMap_StructArray(self):
         DATA_WIDTH = 32
+
+        t = HTypeFromIntfMap((
+                              regCntr("a", DATA_WIDTH),
+                              (Bits(4 * DATA_WIDTH), None),
+                              ([(vldSynced("d", DATA_WIDTH),
+                                 sig("e", DATA_WIDTH),
+                                 (Bits(DATA_WIDTH * 2), None),
+                                 sig("f", DATA_WIDTH),
+                                 ) for _ in range(4)], "ds")
+                              ))
         
-        fields = BusEndpoint._resolveRegStructFromIntfMap(
-                    prefix=prefix,
-                    interfaceMap=[
-                        regCntr("a", 8),
-                        regCntr("b", 8)
-                        ],
-                    DATA_WIDTH=DATA_WIDTH,
-                    aliginFields=True)
-        fields = list(fields)
-        self.assertEqual(len(fields), 4)
-        
-        for f, name, width in zip(fields, [None, "a", None, "b"], [32 - 8, 8, 32 - 8, 8]):
-            self.assertEqual(f[0].bit_length(), width)
-            if name is None:
-                self.assertEqual(f[1], None)
-                self.assertEqual(f[2], None)
-            else:
-                self.assertEqual(f[1], prefix + name)
-                info = f[2]
-                self.assertEqual(info.access, "rw")
-                self.assertEqual(info.disolveArray, False)
-                self.assertIsInstance(info.fieldInterface, (RegCntrl,))    
-        
+        _t = Bits(DATA_WIDTH)
+        self.assertEqual(t, HStruct(
+                (_t, "a"),
+                (Bits(4 * DATA_WIDTH), None),
+                (HStruct(
+                    (_t, "d"),
+                    (_t, "e"),
+                    (Bits(2 * DATA_WIDTH), None),
+                    (_t, "f"),
+                    )[4], "ds", HStructFieldMeta(split=True)),
+            ))
+
+
+    def test_HTypeFromIntfMap_wrongArray(self):
+        DATA_WIDTH = 32
+        with self.assertRaises(AssertionError):
+            HTypeFromIntfMap([
+                              ([sig("e", DATA_WIDTH),
+                                sig("e", 2 * DATA_WIDTH),
+                                 ], "ds")
+                              ])
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(AxiTC('test_axi_size'))
+    #suite.addTest(BusEndpointTC('test_HTypeFromIntfMap_Struct'))
     suite.addTest(unittest.makeSuite(BusEndpointTC))
     runner = unittest.TextTestRunner(verbosity=3)
-    runner.run(suite)        
+    runner.run(suite)

@@ -1,6 +1,10 @@
+from hwt.bitmask import mask
+from hwt.hdl.types.structUtils import HStruct_unpack
 from hwt.interfaces.std import Signal, VectSignal
+from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_strb, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 
@@ -9,11 +13,22 @@ from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 class AxiStream_withoutSTRB(Axi_hs):
     """
     Bare AMBA AXI-stream interface
-    
+
+    :ivar IS_BIGENDIAN: Param which specifies if interface uses bigendian
+        byte order or litleendian byte order
+    :attention: no checks are made for endianity, this is just information
+    :note: bigendian for interface means that items which are send through
+        this interface has reversed byte endianity that means that most significant
+        byte is is on lower address than les significant ones
+        f.e. litle endian value 0x1a2b will be 0x2b1a
+        but iterface itselelf is not reversed in any way
+
+    :ivar DATA_WIDTH: Param which specifies width of data signal
     :ivar data: main data signal
     :ivar last: signal which if high this data is last in this frame
     """
     def _config(self):
+        self.IS_BIGENDIAN = Param(False)
         self.DATA_WIDTH = Param(64)
 
     def _declr(self):
@@ -23,14 +38,15 @@ class AxiStream_withoutSTRB(Axi_hs):
 
     def _getIpCoreIntfClass(self):
         return IP_AXIStream
-    
-    def _getSimAgent(self):
-        return AxiStream_withoutSTRBAgent
+
+    def _initSimAgent(self):
+        self._ag = AxiStream_withoutSTRBAgent(self)
+
 
 class AxiStream_withoutSTRBAgent(BaseAxiAgent):
     """
     Simulation agent for :class:`.AxiStream_withoutSTRB` interface
-    
+
     input/output data stored in list under "data" property
     data contains tuples (data, strb, last)
     """
@@ -59,9 +75,9 @@ class AxiStream_withoutSTRBAgent(BaseAxiAgent):
 class AxiStream(AxiStream_withoutSTRB, Axi_strb):
     """
     :class:`.AxiStream_withoutSTRB` with strb signal
-    
-    :ivar strb: byte strobe signal, has bit for each byte of data, data valid if corresponding bit 
-        ins strb signal is high
+
+    :ivar strb: byte strobe signal, has bit for each byte of data,
+        data valid if corresponding bit ins strb signal is high
     """
     def _config(self):
         AxiStream_withoutSTRB._config(self)
@@ -71,14 +87,14 @@ class AxiStream(AxiStream_withoutSTRB, Axi_strb):
         AxiStream_withoutSTRB._declr(self)
         Axi_strb._declr(self)
 
-    def _getSimAgent(self):
-        return AxiStreamAgent
+    def _initSimAgent(self):
+        self._ag = AxiStreamAgent(self)
 
 
 class AxiStream_withUserAndNoStrb(AxiStream_withoutSTRB, Axi_user):
     """
     :class:`.AxiStream_withoutSTRB` with user signal
-    
+
     :ivar user: generic signal with user specified meaning
     """
     def _config(self):
@@ -93,7 +109,7 @@ class AxiStream_withUserAndNoStrb(AxiStream_withoutSTRB, Axi_user):
 class AxiStream_withId(Axi_id, AxiStream):
     """
     :class:`.AxiStream` with id signal
-    
+
     :ivar id: id signal, usually identifies type or destination of frame
     """
     def _config(self):
@@ -104,14 +120,14 @@ class AxiStream_withId(Axi_id, AxiStream):
         Axi_id._declr(self)
         AxiStream._declr(self)
 
-    def _getSimAgent(self):
-        return AxiStream_withIdAgent
+    def _initSimAgent(self):
+        self._ag = AxiStream_withIdAgent(self)
 
 
 class AxiStream_withUserAndStrb(AxiStream, Axi_user):
     """
     :class:`.AxiStream` with user signal
-    
+
     :ivar user: generic signal with user specified meaning
     """
     def _config(self):
@@ -122,14 +138,14 @@ class AxiStream_withUserAndStrb(AxiStream, Axi_user):
         AxiStream._declr(self)
         Axi_user._declr(self)
 
-    def _getSimAgent(self):
-        return AxiStream_withUserAndStrbAgent
+    def _initSimAgent(self):
+        self._ag = AxiStream_withUserAndStrbAgent(self)
 
 
 class AxiStreamAgent(BaseAxiAgent):
     """
     Simulation agent for :class:`.AxiStream` interface
-    
+
     input/output data stored in list under "data" property
     data contains tuples (data, strb, last)
     """
@@ -160,7 +176,7 @@ class AxiStreamAgent(BaseAxiAgent):
 class AxiStream_withIdAgent(BaseAxiAgent):
     """
     Simulation agent for :class:`.AxiStream_withId` interface
-    
+
     input/output data stored in list under "data" property
     data contains tuples (id, data, strb, last)
     """
@@ -193,7 +209,7 @@ class AxiStream_withIdAgent(BaseAxiAgent):
 class AxiStream_withUserAndStrbAgent(BaseAxiAgent):
     """
     Simulation agent for :class:`.AxiStream_withUserAndStrb` interface
-    
+
     input/output data stored in list under "data" property
     data contains tuples (data, strb, user, last)
     """
@@ -223,6 +239,36 @@ class AxiStream_withUserAndStrbAgent(BaseAxiAgent):
         w(last, intf.last)
 
 
+def packAxiSFrame(dataWidth, structVal, withStrb=False):
+    """
+    pack data of structure into words on axis interface
+    """
+    if withStrb:
+        maskAll = mask(dataWidth // 8)
+
+    words = iterBits(structVal, bitsInOne=dataWidth, skipPadding=False, fillup=True)
+    for last, d in iter_with_last(words):
+        assert d._dtype.bit_length() == dataWidth, d._dtype.bit_length()
+        if withStrb:
+            # [TODO] mask in last resolved from size of datatype, mask for padding
+            yield (d, maskAll, last)
+        else:
+            yield (d, last)
+
+
+def unpackAxiSFrame(structT, frameData, getDataFn=None, dataWidth=None):
+    """
+    opposite of packAxiSFrame
+    """
+    if getDataFn is None:
+        def _getDataFn(x):
+            return x[0]
+
+        getDataFn = _getDataFn
+
+    return HStruct_unpack(structT, frameData, getDataFn, dataWidth)
+
+
 class IP_AXIStream(IntfConfig):
     """
     Class which specifies how to describe AxiStream interfaces in IP-core
@@ -230,15 +276,20 @@ class IP_AXIStream(IntfConfig):
     def __init__(self):
         super().__init__()
         self.name = "axis"
+        self.quartus_name = "axi4stream"
         self.version = "1.0"
         self.vendor = "xilinx.com"
         self.library = "interface"
-        self.map = {'id': "TID",
-                    'data': "TDATA",
-                    'last': "TLAST",
-                    'valid': "TVALID",
-                    'strb': "TSTRB",
-                    'keep': "TKEEP",
-                    'user': 'TUSER',
-                    'ready': "TREADY"
-                    }
+        self.map = {
+            'id': "TID",
+            'data': "TDATA",
+            'last': "TLAST",
+            'valid': "TVALID",
+            'strb': "TSTRB",
+            'keep': "TKEEP",
+            'user': 'TUSER',
+            'ready': "TREADY"
+        }
+        self.quartus_map = {
+            k: v.lower() for k, v in self.map.items()
+        }

@@ -1,10 +1,12 @@
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.synthesizer.interfaceLevel.interface import Interface
-from hwt.synthesizer.param import Param, evalParam
-from hwt.interfaces.std import s, D
-from hwt.simulator.agentBase import SyncAgentBase
-from hwt.hdlObjects.constants import READ, WRITE, NOP
+from collections import deque
+
 from hwt.bitmask import mask
+from hwt.hdl.constants import READ, WRITE, NOP
+from hwt.hdl.types.bits import Bits
+from hwt.interfaces.std import s, D, VectSignal
+from hwt.simulator.agentBase import SyncAgentBase
+from hwt.synthesizer.interface import Interface
+from hwt.synthesizer.param import Param
 
 
 class Ipif(Interface):
@@ -24,13 +26,13 @@ class Ipif(Interface):
         self.bus2ip_rnw = s()
 
         # read /write addr
-        self.bus2ip_addr = s(dtype=vecT(self.ADDR_WIDTH))
+        self.bus2ip_addr = VectSignal(self.ADDR_WIDTH)
 
-        self.bus2ip_data = s(dtype=vecT(self.DATA_WIDTH))
+        self.bus2ip_data = VectSignal(self.DATA_WIDTH)
         # byte enable for bus2ip_data
-        self.bus2ip_be = s(dtype=vecT(evalParam(self.DATA_WIDTH) // 8))
+        self.bus2ip_be = VectSignal(self.DATA_WIDTH // 8)
 
-        self.ip2bus_data = s(dtype=vecT(self.DATA_WIDTH), masterDir=D.IN)
+        self.ip2bus_data = VectSignal(self.DATA_WIDTH, masterDir=D.IN)
         # write ack
         self.ip2bus_wrack = s(masterDir=D.IN)
         # read ack
@@ -41,8 +43,7 @@ class Ipif(Interface):
         """
         :return: size of one word in unit of address
         """
-        DW = evalParam(self.DATA_WIDTH).val
-        return DW // self._getAddrStep()
+        return int(self.DATA_WIDTH) // self._getAddrStep()
 
     def _getAddrStep(self):
         """
@@ -51,8 +52,8 @@ class Ipif(Interface):
         """
         return 8
 
-    def _getSimAgent(self):
-        return IpifAgent
+    def _initSimAgent(self):
+        self._ag = IpifAgent(self)
 
 
 class IpifWithCE(Ipif):
@@ -62,7 +63,7 @@ class IpifWithCE(Ipif):
 
     def _declr(self):
         super()._declr()
-        ce_t = vecT(self.REG_COUNT)
+        ce_t = Bits(self.REG_COUNT)
         # read chip enable bus
         self.bus2ip_rdce = s(dtype=ce_t)
         # Write chip enable bus
@@ -71,7 +72,7 @@ class IpifWithCE(Ipif):
 
 class IpifAgent(SyncAgentBase):
     """
-    :ivar requests: list of tuples (request type, address, [write data]) - used for driver
+    :ivar requests: list of tuples (request type, address, [write data], [write mask]) - used for driver
     :ivar data: list of data in memory, used for monitor
     :ivar mem: if agent is in monitor mode (= is slave) all reads and writes are performed on
         mem object
@@ -80,16 +81,16 @@ class IpifAgent(SyncAgentBase):
     def __init__(self, intf, allowNoReset=True):
         super().__init__(intf, allowNoReset=allowNoReset)
 
-        self.requests = []
+        self.requests = deque()
         self.actual = NOP
-        self.readed = []
+        self.readed = deque()
 
-        self.wmaskAll = mask(intf.bus2ip_data._dtype.bit_length())
+        self.wmaskAll = mask(intf.bus2ip_data._dtype.bit_length()//8)
 
         self.mem = {}
         self.requireInit = True
-
-    def doReq(self, s, req):
+    
+    def doReq(self, sim, req):
         rw = req[0]
         addr = req[1]
 
@@ -100,36 +101,36 @@ class IpifAgent(SyncAgentBase):
         elif rw == WRITE:
             wdata = req[2]
             rw = Ipif.WRITE
-            wmask = self.wmaskAll
+            wmask = req[3]
         else:
             raise NotImplementedError(rw)
 
         intf = self.intf
-        w = s.write
+        w = sim.write
         w(1, intf.bus2ip_cs)
         w(rw, intf.bus2ip_rnw)
         w(addr, intf.bus2ip_addr)
         w(wdata, intf.bus2ip_data)
         w(wmask, intf.bus2ip_be)
 
-    def monitor(self, s):
+    def monitor(self, sim):
         raise NotImplementedError()
 
-    def driver(self, s):
+    def driver(self, sim):
         intf = self.intf
         actual = self.actual
         actual_next = actual
-        w = s.write
-        r = s.read
+        w = sim.write
+        r = sim.read
 
         if self.requireInit:
             w(0, intf.bus2ip_cs)
             self.requireInit = False
 
-        yield s.updateComplete
+        yield sim.waitOnCombUpdate()
+        yield sim.waitOnCombUpdate()
         # now we are after clk edge
         if actual is not NOP:
-            yield s.updateComplete
             if actual[0] is READ:
                 rack = r(intf.ip2bus_rdack)
                 assert rack.vldMask == 1
@@ -137,7 +138,8 @@ class IpifAgent(SyncAgentBase):
                     d = r(intf.ip2bus_data)
                     if self._debugOutput is not None:
                         self._debugOutput.write("%s, on %r read_data: %d\n" % (
-                                                self.intf._getFullName(), s.now, d.val))
+                                                self.intf._getFullName(),
+                                                sim.now, d.val))
                     self.readed.append(d)
                     actual_next = NOP
             else:
@@ -147,16 +149,17 @@ class IpifAgent(SyncAgentBase):
                 if wack.val:
                     if self._debugOutput is not None:
                         self._debugOutput.write("%s, on %r write_ack\n" % (
-                                                self.intf._getFullName(), s.now))
+                                                self.intf._getFullName(),
+                                                sim.now))
                     actual_next = NOP
 
-        en = r(self.rst_n).val and self.enable
+        en = self.notReset(sim)
         if en:
             if self.actual is NOP:
                 if self.requests:
-                    req = self.requests.pop(0)
+                    req = self.requests.popleft()
                     if req is not NOP:
-                        self.doReq(s, req)
+                        self.doReq(sim, req)
                         self.actual = req
                         return
             else:

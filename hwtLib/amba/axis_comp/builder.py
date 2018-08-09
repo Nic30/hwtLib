@@ -1,13 +1,12 @@
 from hwt.code import If
-from hwt.hdlObjects.types.struct import HStruct
 from hwtLib.abstract.streamBuilder import AbstractStreamBuilder
-from hwtLib.amba.axis_comp.append import AxiS_append
 from hwtLib.amba.axis_comp.fifo import AxiSFifo
-from hwtLib.amba.axis_comp.fork import AxiSFork
-from hwtLib.amba.axis_comp.demux import AxiSDemux
-from hwtLib.amba.axis_comp.reg import AxiSReg
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
+from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
+from hwtLib.amba.axis_comp.reg import AxiSReg
 from hwtLib.amba.axis_comp.resizer import AxiS_resizer
+from hwtLib.amba.axis_comp.splitCopy import AxiSSplitCopy
+from hwtLib.amba.axis_comp.splitSelect import AxiSSpliSelect
 
 
 class AxiSBuilder(AbstractStreamBuilder):
@@ -18,9 +17,9 @@ class AxiSBuilder(AbstractStreamBuilder):
 
     """
     FifoCls = AxiSFifo
-    ForkCls = AxiSFork
     RegCls = AxiSReg
-    DemuxCls = AxiSDemux
+    SplitCopyCls = AxiSSplitCopy
+    SplitSelectCls = AxiSSpliSelect
     ResizerCls = AxiS_resizer
 
     def resize(self, newDataWidth):
@@ -40,75 +39,60 @@ class AxiSBuilder(AbstractStreamBuilder):
 
         ack = intf.valid & intf.ready
         If(ack,
-           lastseen ** intf.last
+           lastseen(intf.last)
         )
 
         return lastseen
 
-    def append(self, axis):
+    def parse(self, typeToParse):
         """
-        append frame from "axis" behind frame from actual "end"
-
-        :attention: frames are not merged they are just appended
-            to merge frames use "forge"
-
+        :param typeToParse: structuralized type to parse
+        :return: interface with parsed data (StructIntf for HStruct f.e.)
         """
-        u = AxiS_append(self.getInfCls())
+        u = AxiS_frameParser(self.getInfCls(),
+                             typeToParse
+                             )
         u._updateParamsFrom(self.end)
 
-        setattr(self.parent, self._findSuitableName("append"), u)
+        setattr(self.parent, self._findSuitableName("parser"), u)
         self._propagateClkRstn(u)
 
-        u.dataIn0 ** self.end
-        u.dataIn1 ** axis
+        u.dataIn(self.end)
+
+        self.lastComp = u
+        self.end = None
+
+        return u.dataOut
+
+    @classmethod
+    def forge(cls, parent, typeToForge, intfCls, setupFn=None, name=None):
+        """
+        generate frame assembler for specified type
+        :note: you can set endianity and others in setupFn
+
+        :param parent: unit where generated units should be instantiated
+        :param typeToForge: instance of htype used as template for frame to assembly
+        :param intfCls: class for output interface
+        :param setupFn: setup function for output interface
+        :param name: name prefix for generated units
+        :return: tuple (builder, interface with forged frame)
+        """
+
+        u = AxiS_frameForge(intfCls,
+                            typeToForge
+                            )
+        if setupFn:
+            setupFn(u)
+
+        if name is None:
+            # name can not be empty due AxiSBuilder initialization without interface
+            name = "forged"
+
+        self = AxiSBuilder(parent, None, name)
+        setattr(parent, self._findSuitableName("forge"), u)
+        self._propagateClkRstn(u)
+        self.end = u.dataOut
 
         self.lastComp = u
         self.end = u.dataOut
-
-        return self
-
-    def extend(self, listOfAxis):
-        """
-        For each axi stream from "listOfAxis" append frame behind frame from actual "end"
-        
-        :attention: frames are not merged they are just appended
-            to merge frames use "forge"
-        """
-        for axis in listOfAxis:
-            self.append(axis)
-
-        return self
-    
-    # [TODO]
-    # @classmethod
-    # def forge(cls, parent, parts, intfCls, setupFn=None, once=False, name=None):
-    #    """
-    #    generate frame from parts
-    #    
-    #    :param parent: unit where generated units should be instantiated
-    #    :param parts: list of parts (signals, interfaces, values etc)
-    #    :param intfCls: class for output interface
-    #    :param setupFn: setup function for output interface
-    #    :param once: specifies if frame generation should be repeated or not
-    #    :param name: name prefix for generated units
-    #    """
-    #    
-    #    
-    #    template = HStruct(
-    #                    )
-    #
-    #    
-    #    u = AxiS_frameForge(intfCls,
-    #                        template
-    #                        )
-    #    if setupFn:
-    #        setupFn(u)
-    #    
-    #    self = AxiSBuilder(parent, u.dataOut, name)
-    #    setattr(parent, self._findSuitableName("append"), u)
-    #    
-    #    self.lastComp = u
-    #    self.end = u.dataOut
-    #    return self
-        
-        
+        return self, u.dataIn

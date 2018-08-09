@@ -2,34 +2,32 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Switch
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdl.types.bits import Bits
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.samples.rtlLvl.netlistToRtl import netlistToVhdlStr
 
 
 def SwitchStatement():
-    t = vecT(8)
+    t = Bits(8)
     n = RtlNetlist()
 
     In = n.sig("input", t, defVal=8)
     Out = n.sig("output", t)
 
     Switch(In).addCases(
-        [(i, Out ** (i + 1)) for i in range(8)]
+        [(i, Out(i + 1)) for i in range(8)]
     )
 
     interf = [In, Out]
     return n, interf
 
-switchStatementExpected = \
-"""
-library IEEE;
+switchStatementExpected = """library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY SwitchStatement IS
-    PORT (input : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-        output : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+    PORT (input: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+        output: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
 END SwitchStatement;
 
@@ -58,8 +56,7 @@ BEGIN
         END CASE;
     END PROCESS;
 
-END ARCHITECTURE rtl;
-"""
+END ARCHITECTURE rtl;"""
 
 if __name__ == "__main__":
     netlist, interfaces = SwitchStatement()

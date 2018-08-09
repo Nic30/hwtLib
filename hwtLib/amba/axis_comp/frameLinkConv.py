@@ -3,10 +3,10 @@
 
 from hwt.bitmask import mask
 from hwt.code import Concat, Switch, If
-from hwt.hdlObjects.typeShortcuts import vec
+from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream_withUserAndStrb
 from hwtLib.interfaces.frameLink import FrameLink
 
@@ -37,7 +37,7 @@ class AxiSToFrameLink(Unit):
             self.dataOut = FrameLink()
 
     def _impl(self):
-        assert(evalParam(self.USER_WIDTH).val == 2)  # this is how is protocol specified
+        assert(int(self.USER_WIDTH) == 2)  # this is how is protocol specified
         In = self.dataIn
         Out = self.dataOut
 
@@ -45,16 +45,16 @@ class AxiSToFrameLink(Unit):
         lastSeenLast = self._reg("lastSeenLast", defVal=1)
         sof = lastSeenLast
 
-        Out.data ** In.data
-        Out.src_rdy_n ** ~In.valid
+        Out.data(In.data)
+        Out.src_rdy_n(~In.valid)
 
         outRd = ~Out.dst_rdy_n
         If(In.valid & outRd,
-           lastSeenLast ** In.last
+           lastSeenLast(In.last)
         )
-        In.ready ** outRd
+        In.ready(outRd)
 
-        Out.eof_n ** ~In.last
+        Out.eof_n(~In.last)
 
         # AXI_USER(0) -> FL_SOP_N
         # Always set FL_SOP_N when FL_SOF_N - added for compatibility with xilinx 
@@ -62,9 +62,9 @@ class AxiSToFrameLink(Unit):
         # protocol would be broken.
         sop = In.user[0]
         If(sof,
-           Out.sop_n ** 0
+           Out.sop_n(0)
         ).Else(
-           Out.sop_n ** ~sop
+           Out.sop_n( ~sop)
         )
 
         # AXI_USER(1) -> FL_EOP_N
@@ -73,9 +73,9 @@ class AxiSToFrameLink(Unit):
         # protocol would be broken.
         eop = In.user[1]
         If(In.last,
-           Out.eop_n ** 0
+           Out.eop_n(0)
         ).Else(
-           Out.eop_n ** ~eop
+           Out.eop_n(~eop)
         )
 
         remMap = []
@@ -83,7 +83,7 @@ class AxiSToFrameLink(Unit):
         strbBits = In.strb._dtype.bit_length()
 
         for strb, rem in strbToRem(strbBits, remBits):
-            remMap.append((strb, Out.rem ** rem))
+            remMap.append((strb, Out.rem(rem)))
 
         end_of_part_or_transaction = In.last | eop
 
@@ -91,10 +91,10 @@ class AxiSToFrameLink(Unit):
             Switch(In.strb)\
             .addCases(remMap)
         ).Else(
-            Out.rem ** vec(-1, remBits)
+            Out.rem(mask(remBits))
         )
 
-        Out.sof_n ** ~sof
+        Out.sof_n(~sof)
 
 
 class FrameLinkToAxiS(Unit):
@@ -121,25 +121,25 @@ class FrameLinkToAxiS(Unit):
         sop = self._sig("sop")
         eop = self._sig("eop")
 
-        Out.data ** In.data
-        Out.valid ** ~In.src_rdy_n
-        In.dst_rdy_n ** ~Out.ready
+        Out.data(In.data)
+        Out.valid(~In.src_rdy_n)
+        In.dst_rdy_n(~Out.ready)
 
-        Out.last ** ~In.eof_n
-        eop ** ~In.eop_n
-        sop ** ~In.sop_n
+        Out.last(~In.eof_n)
+        eop(~In.eop_n)
+        sop(~In.sop_n)
 
-        Out.user ** Concat(eop, sop)
+        Out.user(Concat(eop, sop))
 
         strbMap = []
         remBits = In.rem._dtype.bit_length()
         strbBits = Out.strb._dtype.bit_length()
         for strb, rem in strbToRem(strbBits, remBits):
-            strbMap.append((rem, Out.strb ** strb))
+            strbMap.append((rem, Out.strb(strb)))
         Switch(In.rem).addCases(strbMap)
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = AxiSToFrameLink()
     print(toRtl(u))

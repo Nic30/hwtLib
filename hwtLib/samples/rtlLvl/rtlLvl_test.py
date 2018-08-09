@@ -19,12 +19,13 @@ from hwtLib.tests.statementTrees import StatementTreesTC
 
 
 class RtlLvlTC(unittest.TestCase):
-    def strStructureCmp(self, tmpl, cont):
-        return StatementTreesTC.strStructureCmp(self, tmpl, cont)
+    def strStructureCmp(self, cont, tmpl):
+        return StatementTreesTC.strStructureCmp(self, cont, tmpl)
 
     def cmp(self, getNetlistFn, expected):
         netlist, interfaces = getNetlistFn()
-        self.strStructureCmp(expected, netlistToVhdlStr(getNetlistFn.__name__, netlist, interfaces))
+        self.strStructureCmp(netlistToVhdlStr(
+            getNetlistFn.__name__, netlist, interfaces), expected)
 
     def test_arithmetic_counter(self):
         self.cmp(Counter, counterExpected)

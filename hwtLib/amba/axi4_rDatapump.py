@@ -11,7 +11,7 @@ from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.amba.axi_datapump_base import Axi_datapumpBase
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.handshaked.streamNode import streamSync
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 class TransEndInfo(HandshakeSync):
@@ -28,17 +28,17 @@ class TransEndInfo(HandshakeSync):
 
 class Axi_rDatapump(Axi_datapumpBase):
     """
-    Foward req to axi ar channel
-    and collect data to data channel form axi r channel
+    Forward request to axi address read channel
+    and collect data to data channel form axi read channel
 
     This unit simplifies axi interface,
     blocks data channel when there is no request pending
     and contains frame merging logic if is required
 
-    if req len is wider transaction is internally splited to multiple
+    if req len is wider transaction is internally split to multiple
     transactions, but read data are single packet as requested
 
-    errorRead stays high when there was error on axi r channel
+    errorRead stays high when there was error on axi read channel
     it will not affect unit functionality
     \n""" + Axi_datapumpBase.__doc__
 
@@ -58,10 +58,10 @@ class Axi_rDatapump(Axi_datapumpBase):
         req_idBackup = self._reg("req_idBackup", req.id._dtype)
 
         If(lastReqDispatched,
-            req_idBackup ** req.id,
-            a.id ** req.id 
-        ).Else(
-            a.id ** req_idBackup
+            req_idBackup(req.id),
+            a.id(req.id)
+           ).Else(
+            a.id(req_idBackup)
         )
 
     def addrHandler(self, addRmSize, rErrFlag):
@@ -69,7 +69,7 @@ class Axi_rDatapump(Axi_datapumpBase):
         req = self.driver.req
         r, s = self._reg, self._sig
 
-        self.axiAddrDefaults() 
+        self.axiAddrDefaults()
 
         # if axi len is smaller we have to use transaction splitting
         if self.useTransSplitting():
@@ -88,97 +88,98 @@ class Axi_rDatapump(Axi_datapumpBase):
 
             self.arIdHandler(lastReqDispatched)
             If(reqLen > LEN_MAX,
-               ar.len ** LEN_MAX,
-               addRmSize.rem ** 0,
-               addRmSize.propagateLast ** 0
+               ar.len(LEN_MAX),
+               addRmSize.rem(0),
+               addRmSize.propagateLast(0)
             ).Else(
-               connect(reqLen, ar.len, fit=True),  # connect only lower bits of len
-               addRmSize.rem ** reqRem,
-               addRmSize.propagateLast ** 1
+                # connect only lower bits of len
+                connect(reqLen, ar.len, fit=True),
+                addRmSize.rem(reqRem),
+                addRmSize.propagateLast(1)
             )
 
             If(ack,
                 If(reqLen > LEN_MAX,
-                    lenDebth ** (reqLen - (LEN_MAX + 1)),
-                    lastReqDispatched ** 0
+                    lenDebth(reqLen - (LEN_MAX + 1)),
+                    lastReqDispatched(0)
                 ).Else(
-                    lastReqDispatched ** 1
+                    lastReqDispatched(1)
                 )
             )
 
             If(lastReqDispatched,
-               ar.addr ** req.addr,
-               rAddr ** (req.addr + ADDR_STEP),
+               ar.addr(req.addr),
+               rAddr(req.addr + ADDR_STEP),
 
-               reqLen ** req.len,
-               reqRem ** req.rem,
-               remBackup ** req.rem,
-               ack ** (req.vld & addRmSize.rd & ar.ready),
-               streamSync(masters=[req],
+               reqLen(req.len),
+               reqRem(req.rem),
+               remBackup(req.rem),
+               ack(req.vld & addRmSize.rd & ar.ready),
+               StreamNode(masters=[req],
                           slaves=[addRmSize, ar],
-                          extraConds={ar:~rErrFlag}),
+                          extraConds={ar: ~rErrFlag}).sync(),
             ).Else(
-               req.rd ** 0,
-               ar.addr ** rAddr,
-               ack ** (addRmSize.rd & ar.ready),
-               If(ack,
-                  rAddr ** (rAddr + ADDR_STEP) 
-               ),
+                req.rd(0),
+                ar.addr(rAddr),
+                ack(addRmSize.rd & ar.ready),
+                If(ack,
+                   rAddr(rAddr + ADDR_STEP)
+                ),
 
-               reqLen ** lenDebth,
-               reqRem ** remBackup,
-               streamSync(slaves=[addRmSize, ar],
-                          extraConds={ar:~rErrFlag}),
+                reqLen(lenDebth),
+                reqRem(remBackup),
+                StreamNode(slaves=[addRmSize, ar],
+                           extraConds={ar: ~rErrFlag}).sync(),
             )
         else:
             # if axi len is wider we can directly translate requests to axi
-            ar.id ** req.id
-            ar.addr ** req.addr
+            ar.id(req.id)
+            ar.addr(req.addr)
 
             connect(req.len, ar.len, fit=True)
 
-            addRmSize.rem ** req.rem
-            addRmSize.propagateLast ** 1
+            addRmSize.rem(req.rem)
+            addRmSize.propagateLast(1)
 
-            streamSync(masters=[req],
+            StreamNode(masters=[req],
                        slaves=[ar, addRmSize],
-                       extraConds={ar:~rErrFlag})
+                       extraConds={ar: ~rErrFlag}).sync()
 
     def remSizeToStrb(self, remSize, strb):
         strbBytes = 2 ** self.getSizeAlignBits()
 
         return Switch(remSize)\
-                .Case(0,
-                      strb ** mask(strbBytes)
-                ).addCases(
-                 [ (i + 1, strb ** mask(i + 1)) 
-                   for i in range(strbBytes - 1)]
-                )
+            .Case(0,
+                  strb(mask(strbBytes))
+                  ).addCases(
+            [(i + 1, strb(mask(i + 1)))
+             for i in range(strbBytes - 1)]
+        )
 
-    def dataHandler(self, rmSizeOut): 
+    def dataHandler(self, rmSizeOut):
         r = self.r
         rOut = self.driver.r
 
         rErrFlag = self._reg("rErrFlag", defVal=0)
         If(r.valid & rOut.ready & (r.resp != RESP_OKAY),
-           rErrFlag ** 1
+           rErrFlag(1)
         )
-        self.errorRead ** rErrFlag
+        self.errorRead(rErrFlag)
 
-        rOut.id ** r.id
-        rOut.data ** r.data
+        rOut.id(r.id)
+        rOut.data(r.data)
 
         If(r.valid & r.last & rmSizeOut.propagateLast,
             self.remSizeToStrb(rmSizeOut.rem, rOut.strb)
-        ).Else(
-            rOut.strb ** mask(2 ** self.getSizeAlignBits())
+           ).Else(
+            rOut.strb(mask(2 ** self.getSizeAlignBits()))
         )
-        rOut.last ** (r.last & rmSizeOut.propagateLast)
+        rOut.last(r.last & rmSizeOut.propagateLast)
 
-        streamSync(masters=[r, rmSizeOut],
+        StreamNode(masters=[r, rmSizeOut],
                    slaves=[rOut],
                    extraConds={rmSizeOut: r.last,
-                               rOut:~rErrFlag})
+                               rOut: ~rErrFlag}).sync()
 
         return rErrFlag
 
@@ -188,7 +189,8 @@ class Axi_rDatapump(Axi_datapumpBase):
         rErrFlag = self.dataHandler(self.sizeRmFifo.dataOut)
         self.addrHandler(self.sizeRmFifo.dataIn, rErrFlag)
 
+
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = Axi_rDatapump()
     print(toRtl(u))

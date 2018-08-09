@@ -5,14 +5,15 @@ from hwt.code import log2ceil, connect, Concat, If
 from hwt.interfaces.std import Handshaked, BramPort_withoutClk, \
     Signal
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.ramAsHs import RamAsHs
-from hwtLib.handshaked.streamNode import streamSync
+from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.ram import RamSingleClock
 from hwtLib.structManipulators.arrayItemGetter import ArrayItemGetter
+
 
 FLAG_INVALID = 1
 
@@ -47,8 +48,8 @@ class MMU_2pageLvl(Unit):
     def _declr(self):
         self.PAGE_OFFSET_WIDTH = log2ceil(self.PAGE_SIZE).val
         self.LVL1_PAGE_TABLE_INDX_WIDTH = log2ceil(self.LVL1_PAGE_TABLE_ITEMS).val
-        self.LVL2_PAGE_TABLE_INDX_WIDTH = evalParam(self.ADDR_WIDTH - self.LVL1_PAGE_TABLE_INDX_WIDTH - self.PAGE_OFFSET_WIDTH).val
-        self.LVL2_PAGE_TABLE_ITEMS = 2 ** evalParam(self.LVL2_PAGE_TABLE_INDX_WIDTH).val
+        self.LVL2_PAGE_TABLE_INDX_WIDTH = int(self.ADDR_WIDTH - self.LVL1_PAGE_TABLE_INDX_WIDTH - self.PAGE_OFFSET_WIDTH)
+        self.LVL2_PAGE_TABLE_ITEMS = 2 ** int(self.LVL2_PAGE_TABLE_INDX_WIDTH)
         assert self.LVL1_PAGE_TABLE_INDX_WIDTH > 0, self.LVL1_PAGE_TABLE_INDX_WIDTH
         assert self.LVL2_PAGE_TABLE_INDX_WIDTH > 0, self.LVL2_PAGE_TABLE_INDX_WIDTH
         assert self.LVL2_PAGE_TABLE_ITEMS > 1, self.LVL2_PAGE_TABLE_ITEMS
@@ -92,13 +93,13 @@ class MMU_2pageLvl(Unit):
     def connectLvl1PageTable(self):
         rpgt = self.lvl1Table
         rootW = self.lvl1Converter.w
-        rpgt.dout ** None
-        rootW.addr ** rpgt.addr
+        rpgt.dout(None)
+        rootW.addr(rpgt.addr)
         wEn = rpgt.en & rpgt.we
-        rootW.vld ** wEn
-        rootW.data ** rpgt.din
+        rootW.vld(wEn)
+        rootW.data(rpgt.din)
 
-        self.lvl1Storage.a ** self.lvl1Converter.ram
+        self.lvl1Storage.a(self.lvl1Converter.ram)
 
         lvl1read = self.lvl1Converter.r
         return lvl1read
@@ -108,39 +109,41 @@ class MMU_2pageLvl(Unit):
         lvl2indx = self.lvl2indxFifo.dataIn
         pageOffset = self.pageOffsetFifo
 
-        lvl2indx.data ** virtIn.data[(self.LVL2_PAGE_TABLE_INDX_WIDTH + self.PAGE_OFFSET_WIDTH):self.PAGE_OFFSET_WIDTH]
+        lvl2indx.data(virtIn.data[(self.LVL2_PAGE_TABLE_INDX_WIDTH 
+                                   + self.PAGE_OFFSET_WIDTH):self.PAGE_OFFSET_WIDTH])
         connect(virtIn.data, pageOffset.dataIn.data, fit=True)
-        lvl1readAddr.data ** virtIn.data[:(self.LVL2_PAGE_TABLE_INDX_WIDTH + self.PAGE_OFFSET_WIDTH)]
-        streamSync(masters=[virtIn],
-                   slaves=[lvl2indx, lvl1readAddr, pageOffset.dataIn])
+        lvl1readAddr.data(virtIn.data[:(self.LVL2_PAGE_TABLE_INDX_WIDTH 
+                                           + self.PAGE_OFFSET_WIDTH)])
+        StreamNode(masters=[virtIn],
+                   slaves=[lvl2indx, lvl1readAddr, pageOffset.dataIn]).sync()
 
     def connectL2Load(self, lvl2base, segfaultFlag):
         lvl2get = self.lvl2get
         lvl2indx = self.lvl2indxFifo.dataOut
 
-        self.rDatapump ** lvl2get.rDatapump
+        self.rDatapump(lvl2get.rDatapump)
 
-        lvl2get.base ** lvl2base.data
-        lvl2get.index.data ** lvl2indx.data
-        streamSync(masters=[lvl2base, lvl2indx],
+        lvl2get.base(lvl2base.data)
+        lvl2get.index.data(lvl2indx.data)
+        StreamNode(masters=[lvl2base, lvl2indx],
                    slaves=[lvl2get.index],
                    extraConds={
                                lvl2get.index:~segfaultFlag
-                              })
+                              }).sync()
 
     def connectPhyout(self, segfaultFlag):
         phyAddrBase = self.lvl2get.item
         pageOffset = self.pageOffsetFifo.dataOut
 
         segfault = segfaultFlag | phyAddrBase.data[0]._eq(FLAG_INVALID)
-        streamSync(masters=[phyAddrBase, pageOffset],
+        StreamNode(masters=[phyAddrBase, pageOffset],
                    slaves=[self.physOut],
-                   extraConds={self.physOut:~segfault})
+                   extraConds={self.physOut:~segfault}).sync()
 
-        self.physOut.data ** Concat(phyAddrBase.data[:self.PAGE_OFFSET_WIDTH], pageOffset.data)
+        self.physOut.data(Concat(phyAddrBase.data[:self.PAGE_OFFSET_WIDTH],
+                                 pageOffset.data))
 
     def segfaultChecker(self):
-
         lvl1item = self.lvl1Converter.r.data
         lvl2item = self.lvl2get.item
         segfaultFlag = self._reg("segfaultFlag", defVal=False)
@@ -149,7 +152,7 @@ class MMU_2pageLvl(Unit):
             return intf.vld & intf.data[0]._eq(FLAG_INVALID)
 
         If(errVal(lvl1item) | errVal(lvl2item),
-           segfaultFlag ** 1
+           segfaultFlag(1)
         )
 
         return segfaultFlag
@@ -164,10 +167,10 @@ class MMU_2pageLvl(Unit):
         self.connectL2Load(lvl1read.data, segfaultFlag)
         self.connectPhyout(segfaultFlag)
 
-        self.segfault ** segfaultFlag
+        self.segfault(segfaultFlag)
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     u = MMU_2pageLvl()
     print(toRtl(u))

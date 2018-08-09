@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+
 import unittest
 
-from hwt.hdlObjects.statements import IfContainer
-from hwt.hdlObjects.typeShortcuts import vecT, hBit
-from hwt.hdlObjects.types.defs import BIT
+from hwt.hdl.ifContainter import IfContainer
+from hwt.hdl.typeShortcuts import hBit
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.defs import BIT
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 
 
@@ -15,7 +17,7 @@ class StatementsTC(unittest.TestCase):
                            (0, 1),
                            (1, 0),
                            (1, 1)]:
-            resT = vecT(2)
+            resT = Bits(2)
             nl = RtlNetlist()
 
             res = nl.sig("res", resT)
@@ -23,15 +25,15 @@ class StatementsTC(unittest.TestCase):
             b = nl.sig("b", BIT)
 
             def w(val):
-                return res ** val
+                return res(val)
 
-            a.defaultVal = hBit(a_in)
-            b.defaultVal = hBit(b_in)
+            a.defVal = hBit(a_in)
+            b.defVal = hBit(b_in)
 
-            stm = IfContainer(set([a & b, ]),
-                              ifTrue=w(0),
-                              elIfs=[([a, ], w(1)), ],
-                              ifFalse=w(2)
+            stm = IfContainer(a & b,
+                              ifTrue=[res(0), ],
+                              elIfs=[(a, [res(1)]), ],
+                              ifFalse=[res(2), ]
                               )
 
             if a_in and b_in:
@@ -47,6 +49,7 @@ class StatementsTC(unittest.TestCase):
 
             self.assertEqual(newVal.val, expected)
             self.assertEqual(newVal.vldMask, 3)
+
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()

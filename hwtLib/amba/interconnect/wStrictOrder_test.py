@@ -4,9 +4,8 @@
 import unittest
 
 from hwt.bitmask import mask
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.axi4_rDatapump_test import mkReq
 from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
@@ -18,7 +17,7 @@ class WStrictOrderInterconnectTC(SimTestCase):
         self.u = WStrictOrderInterconnect()
         self.MAX_TRANS_OVERLAP = 4
         self.u.MAX_TRANS_OVERLAP.set(self.MAX_TRANS_OVERLAP)
-        self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
+        self.DATA_WIDTH = int(self.u.DATA_WIDTH)
 
         self.DRIVER_CNT = 2
         self.u.DRIVER_CNT.set(self.DRIVER_CNT)
@@ -26,7 +25,7 @@ class WStrictOrderInterconnectTC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         for d in u.drivers:
             self.assertEqual(len(d.ack._ag.data), 0)
@@ -40,7 +39,7 @@ class WStrictOrderInterconnectTC(SimTestCase):
         for i, driver in enumerate(u.drivers):
             driver.req._ag.data.append((i + 1, i + 1, i + 1, 0))
 
-        self.doSim(40 * Time.ns)
+        self.runSim(40 * Time.ns)
 
         self.assertEmpty(u.wDatapump.w._ag.data)
 
@@ -64,7 +63,7 @@ class WStrictOrderInterconnectTC(SimTestCase):
                 driver.w._ag.data.append(d)
                 expectedW.append(d)
 
-        self.doSim(80 * Time.ns)
+        self.runSim(80 * Time.ns)
 
         req = u.wDatapump.req._ag.data
         wData = u.wDatapump.w._ag.data
@@ -112,7 +111,7 @@ class WStrictOrderInterconnectTC(SimTestCase):
         prepare(1, 0x4000, 3, 200, _id=1)
         prepare(1, 0x5000, 1, 201, _id=1)  # + prepare(1, 0x6000, 16, 202) #+ prepare(1, 0x7000, 16, 203)
 
-        self.doSim(2000 * Time.ns)
+        self.runSim(2000 * Time.ns)
 
         for addr, seed, size in sectors:
             expected = [seed + i for i in range(size)]
@@ -150,7 +149,7 @@ class WStrictOrderInterconnectTC(SimTestCase):
                 sectors.append((_id, addr, values))
                 framesCnt[_id] += 1
 
-        self.doSim(self.DRIVER_CNT * N * 250 * Time.ns)
+        self.runSim(self.DRIVER_CNT * N * 250 * Time.ns)
 
         for _id, d in enumerate(u.drivers):
             self.assertEmpty(d.req._ag.data)
@@ -169,7 +168,7 @@ class WStrictOrderInterconnect2TC(SimTestCase):
         self.u = WStrictOrderInterconnect()
         self.MAX_TRANS_OVERLAP = 4
         self.u.MAX_TRANS_OVERLAP.set(self.MAX_TRANS_OVERLAP)
-        self.DATA_WIDTH = evalParam(self.u.DATA_WIDTH).val
+        self.DATA_WIDTH = int(self.u.DATA_WIDTH)
 
         self.DRIVER_CNT = 3
         self.u.DRIVER_CNT.set(self.DRIVER_CNT)
@@ -219,7 +218,7 @@ class WStrictOrderInterconnect2TC(SimTestCase):
         ra(u.wDatapump.w)
         ra(u.wDatapump.ack)
 
-        self.doSim(self.DRIVER_CNT * N * 50 * Time.ns)
+        self.runSim(self.DRIVER_CNT * N * 50 * Time.ns)
         for i, baseAddr in enumerate(dataAddress):
             inMem = m.getArray(baseAddr, self.DATA_WIDTH // 8, N)
             self.assertValSequenceEqual(inMem, data[i], "driver:%d" % i)

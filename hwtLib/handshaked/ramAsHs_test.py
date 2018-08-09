@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdlObjects.constants import Time, NOP
+from hwt.hdl.constants import Time, NOP
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.ramAsHs import RamAsHs, RamHsR
@@ -23,9 +23,9 @@ class RamWithHs(RamAsHs):
 
     def _impl(self):
         propagateClkRstn(self)
-        self.conv.r ** self.r
-        self.conv.w ** self.w
-        self.ram.a ** self.conv.ram
+        self.conv.r(self.r)
+        self.conv.w(self.w)
+        self.ram.a(self.conv.ram)
 
 
 class RamAsHs_TC(SimTestCase):
@@ -38,7 +38,7 @@ class RamAsHs_TC(SimTestCase):
         self.prepareUnit(u)
 
     def test_nop(self):
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
         self.assertEmpty(self.u.r.data._ag.data)
 
     def test_writeAndRead(self):
@@ -47,7 +47,7 @@ class RamAsHs_TC(SimTestCase):
 
         u.w._ag.data.extend([(25, MAGIC), (26, MAGIC+1)])
         u.r.addr._ag.data.extend([NOP for _ in range(3)] + [25, 26])
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertValSequenceEqual(u.r.data._ag.data, [MAGIC, MAGIC+1])
 

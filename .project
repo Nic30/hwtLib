@@ -3,7 +3,8 @@
 	<name>hwtLib</name>
 	<comment></comment>
 	<projects>
-		<project>HWToolkit</project>
+		<project>hwt</project>
+		<project>pyDigitalWaveTools</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

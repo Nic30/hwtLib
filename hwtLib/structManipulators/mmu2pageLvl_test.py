@@ -3,9 +3,8 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time, WRITE, NOP
+from hwt.hdl.constants import Time, WRITE, NOP
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.param import evalParam
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.mmu_2pageLvl import MMU_2pageLvl
 from hwt.bitmask import mask
@@ -15,14 +14,11 @@ class MMU_2pageLvl_TC(SimTestCase):
     def setUp(self):
         super(MMU_2pageLvl_TC, self).setUp()
 
-        def e(p):
-            return evalParam(p).val
-
         u = self.u = MMU_2pageLvl()
         self.prepareUnit(self.u)
-        self.DATA_WIDTH = e(u.DATA_WIDTH)
-        self.LVL2_PAGE_TABLE_ITEMS = e(u.LVL2_PAGE_TABLE_ITEMS)
-        self.LVL1_PAGE_TABLE_ITEMS = e(u.LVL1_PAGE_TABLE_ITEMS)
+        self.DATA_WIDTH = int(u.DATA_WIDTH)
+        self.LVL2_PAGE_TABLE_ITEMS = int(u.LVL2_PAGE_TABLE_ITEMS)
+        self.LVL1_PAGE_TABLE_ITEMS = int(u.LVL1_PAGE_TABLE_ITEMS)
 
     def buildVirtAddr(self, lvl1pgtIndx, lvl2pgtIndx, pageOffset):
         u = self.u
@@ -31,7 +27,7 @@ class MMU_2pageLvl_TC(SimTestCase):
     def test_nop(self):
         u = self.u
 
-        self.doSim(10 * 10 * Time.ns)
+        self.runSim(10 * 10 * Time.ns)
 
         self.assertEmpty(u.rDatapump.req._ag.data)
         self.assertEmpty(u.physOut._ag.data)
@@ -44,7 +40,7 @@ class MMU_2pageLvl_TC(SimTestCase):
 
         u.virtIn._ag.data.extend([NOP for _ in range(self.LVL1_PAGE_TABLE_ITEMS + 5)] + [0, ])
 
-        self.doSim((self.LVL1_PAGE_TABLE_ITEMS + 20) * 10 * Time.ns)
+        self.runSim((self.LVL1_PAGE_TABLE_ITEMS + 20) * 10 * Time.ns)
         self.assertEmpty(u.physOut._ag.data)
         self.assertValEqual(u.segfault._ag.data[-1], 1)
 
@@ -60,9 +56,10 @@ class MMU_2pageLvl_TC(SimTestCase):
         u.lvl1Table._ag.requests.append((WRITE, MAGIC, lvl2pgt))
 
         va = self.buildVirtAddr(MAGIC, 0, 0)
-        u.virtIn._ag.data.append(va)
+        # wait for lvl1Table storage init
+        u.virtIn._ag.data.extend([NOP, NOP, va])
 
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         self.assertEmpty(u.physOut._ag.data)
         self.assertValEqual(u.segfault._ag.data[-1], 1)
@@ -70,7 +67,7 @@ class MMU_2pageLvl_TC(SimTestCase):
     def test_translate10xRandomized(self):
         u = self.u
         N = 10
-        #self.randomize(u.rDatapump.req)
+        # self.randomize(u.rDatapump.req)
         self.randomize(u.rDatapump.r)
         self.randomize(u.virtIn)
         self.randomize(u.physOut)
@@ -83,7 +80,7 @@ class MMU_2pageLvl_TC(SimTestCase):
         for i in range(N):
             lvl2pgtData = [int(2 ** 12) * i2 if i + 1 == i2 else -1
                            for i2 in range(self.LVL2_PAGE_TABLE_ITEMS)]
-            lvl2pgt = m.calloc(self.LVL2_PAGE_TABLE_ITEMS, 
+            lvl2pgt = m.calloc(self.LVL2_PAGE_TABLE_ITEMS,
                                4,
                                initValues=lvl2pgtData)
 
@@ -92,14 +89,14 @@ class MMU_2pageLvl_TC(SimTestCase):
             virt.append(v)
             expected.append(int(2 ** 12) * (i + 1) + i + 1)
 
-        self.doSim(N*300 * Time.ns)
+        self.runSim(N*300 * Time.ns)
 
         self.assertValSequenceEqual(u.physOut._ag.data, expected)
         self.assertValEqual(u.segfault._ag.data[-1], 0)
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(MMU_2pageLvl_TC('test_translate10xRandomized'))
-    # suite.addTest(unittest.makeSuite(MMU_2pageLvl_TC))
+    # suite.addTest(MMU_2pageLvl_TC('test_translate10xRandomized'))
+    suite.addTest(unittest.makeSuite(MMU_2pageLvl_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

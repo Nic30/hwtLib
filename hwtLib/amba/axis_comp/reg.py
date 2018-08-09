@@ -11,8 +11,9 @@ class AxiSReg(AxiSCompBase, HandshakedReg):
     """
     pass
 
+
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import toRtl
     from hwtLib.amba.axis import AxiStream_withoutSTRB
     u = AxiSReg(AxiStream_withoutSTRB)
 

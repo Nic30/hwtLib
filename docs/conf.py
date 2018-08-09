@@ -20,14 +20,23 @@
 import glob
 import os
 import re
-from sphinx.apidoc import main as apidoc
+from sphinx.ext.apidoc import main as apidoc_main
 import sphinx_bootstrap_theme
 import sys
 
-from hwt.pyUtils.fileHelpers import find_files
+try:
+    # normal state, hwt should be installed
+    from hwt.pyUtils.fileHelpers import find_files
+except ImportError:
+    # development state
+    sys.path.insert(0, os.path.abspath('../../hwt'))
+    from hwt.pyUtils.fileHelpers import find_files
 
-
+# add hwtLib to path
 sys.path.insert(0, os.path.abspath('../'))
+# add local sphinx extensions to path 
+sys.path.insert(0, os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "_ext")))
 
 # -- General configuration ------------------------------------------------
 
@@ -42,7 +51,9 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.todo',
               'sphinx.ext.viewcode',
               # 'sphinx.ext.napoleon',
-              'sphinx.ext.graphviz']
+              'sphinx.ext.graphviz',
+              'aafig',
+              'sphinx_hwt']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -167,8 +178,6 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
-
-
 # -- Options for Epub output ----------------------------------------------
 
 # Bibliographic Dublin Core info.
@@ -189,10 +198,17 @@ epub_copyright = copyright
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
 
-autodoc_mock_imports = ['hwtHdlParsers']
+# aafig format, try to get working with pdf
+aafig_format = dict(latex='pdf', html='gif')
 
+aafig_default_options = dict(
+    scale=.75,
+    aspect=0.5,
+    proportional=True,
+)
 
 notskipregex = re.compile("_[^_]+")
+
 
 def skip(app, what, name, obj, skip, options):
     # do not skip hiden methods
@@ -204,12 +220,13 @@ def skip(app, what, name, obj, skip, options):
 def setup(app):
     app.connect("autodoc-skip-member", skip)
 
+
 # update *.rst pages
 for file in glob.glob("*.rst"):
     if file != "index.rst":
+        print("removing: ", file)
         os.remove(file)
-        
-excluded_tests = list(find_files("../", "*_test.py"))
-apidoc(["--force", "-o", "../docs", "../hwtLib"] + excluded_tests)
 
-
+excluded_tests = list(find_files("../", "*_test.py")) + ["../hwtLib/tests"]
+apidoc_main(["--module-first", "--full",
+             "--output-dir", "../docs", "../hwtLib"] + excluded_tests)

@@ -1,5 +1,12 @@
-from hwt.bitmask import mask, selectBitRange
 from itertools import chain
+
+from hwt.bitmask import mask, selectBitRange
+from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.types.array import HArray
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.struct import HStruct
+from hwt.simulator.types.simBits import simBitsT
+from collections import deque
 
 
 class AllocationError(Exception):
@@ -11,8 +18,8 @@ class AllocationError(Exception):
 
 def reshapedInitItems(actualCellSize, requestedCellSize, values):
     """
-    Convert array item size and items cnt while size of array remains unchanged 
-    
+    Convert array item size and items cnt while size of array remains unchanged
+
     :param actualCellSize: actual size of item in array
     :param requestedCellSize: requested size of item in array
     :param values: input array
@@ -31,7 +38,8 @@ def reshapedInitItems(actualCellSize, requestedCellSize, values):
                 item |= _i2
             yield item
     else:
-        raise NotImplementedError("Reshaping of array from cell size %d to %d" % (actualCellSize, requestedCellSize))
+        raise NotImplementedError("Reshaping of array from cell size %d to %d" % (
+                                    actualCellSize, requestedCellSize))
 
 
 class DenseMemory():
@@ -66,7 +74,7 @@ class DenseMemory():
 
         self.arAg = arAg
         self.rAg = rAg
-        self.rPending = []
+        self.rPending = deque()
 
         if wDatapumpIntf is None:
             awAg = wAg = wAckAg = None
@@ -78,14 +86,14 @@ class DenseMemory():
         self.awAg = awAg
         self.wAg = wAg
         self.wAckAg = wAckAg
-        self.wPending = []
+        self.wPending = deque()
 
         self._registerOnClock(clk)
 
     def _registerOnClock(self, clk):
         clk._sigInside.simRisingSensProcs.add(self.checkRequests)
 
-    def checkRequests(self, simulator):
+    def checkRequests(self, simulator, _):
         """
         Check if any request has appeared on interfaces
         """
@@ -102,8 +110,6 @@ class DenseMemory():
 
             if self.wPending and self.wPending[0][2] <= len(self.wAg.data):
                 self.doWrite()
-
-        return set()
 
     def parseReq(self, req):
         for i, v in enumerate(req):
@@ -129,7 +135,7 @@ class DenseMemory():
         self.wPending.append(self.parseReq(writeReq))
 
     def doRead(self):
-        _id, addr, size, lastWordBitmask = self.rPending.pop(0)
+        _id, addr, size, lastWordBitmask = self.rPending.popleft()
 
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
@@ -157,14 +163,14 @@ class DenseMemory():
         self.wAckAg.data.append(_id)
 
     def doWrite(self):
-        _id, addr, size, lastWordBitmask = self.wPending.pop(0)
+        _id, addr, size, lastWordBitmask = self.wPending.popleft()
 
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
             raise NotImplementedError("unaligned transaction not implemented")
 
         for i in range(size):
-            data, strb, last = self.wAg.data.pop(0)
+            data, strb, last = self.wAg.data.popleft()
 
             # assert data._isFullVld()
             assert strb._isFullVld()
@@ -228,10 +234,11 @@ class DenseMemory():
         """
         Allocates a block of memory for an array of num elements, each of them
         size bytes long, and initializes all its bits to zero.
-        
+
         :param num: Number of elements to allocate.
         :param size: Size of each element.
         :param keepOut: optional memory spacing between this memory region and lastly allocated
+        :param initValues: iterable of word values to init memory with
         :return: address of allocated memory
         """
         addr = 0
@@ -287,47 +294,93 @@ class DenseMemory():
             out.append(v)
         return out
 
+    def getBits(self, start, end):
+        """
+        Gets value of bits between selected range from memory
+
+        :param start: bit address of start of bit of bits
+        :param end: bit address of first bit behind bits
+        :return: instance of BitsVal (derived from SimBits type) which contains copy of selected bits
+        """
+        wordWidth = self.cellSize * 8
+
+        inFieldOffset = 0
+        allMask = mask(wordWidth)
+        value = simBitsT(end - start, None).fromPy(None)
+
+        while start != end:
+            assert start < end, (start, end)
+
+            dataWordIndex = start // wordWidth
+            v = self.data.get(dataWordIndex, None)
+
+            endOfWord = (dataWordIndex + 1) * wordWidth
+            width = min(end, endOfWord) - start
+            offset = start % wordWidth
+            if v is None:
+                val = 0
+                vldMask = 0
+                updateTime = -1
+            elif isinstance(v, int):
+                val = selectBitRange(v, offset, width)
+                vldMask = allMask
+                updateTime = -1
+            else:
+                val = selectBitRange(v.val, offset, width)
+                vldMask = selectBitRange(v.vldMask, offset, width)
+                updateTime = v.updateTime
+
+            m = mask(width)
+            value.val |= (val & m) << inFieldOffset
+            value.vldMask |= (vldMask & m) << inFieldOffset
+            value.updateMask = max(value.updateTime, updateTime) 
+
+            inFieldOffset += width
+            start += width
+
+        return value
+
+    def _getStruct(self, offset, transTmpl):
+        """
+        :param offset: global offset of this transTmpl (and struct)
+        :param transTmpl: instance of TransTmpl which specifies items in struct
+        """
+        dataDict = {}
+        for subTmpl in transTmpl.children:
+            t = subTmpl.dtype
+            name = subTmpl.origin.name
+            if isinstance(t, Bits):
+                value = self.getBits(subTmpl.bitAddr + offset, subTmpl.bitAddrEnd + offset)
+            elif isinstance(t, HArray):
+                raise NotImplementedError()
+            elif isinstance(t, HStruct):
+                value = self._getStruct(offset, subTmpl)
+            else:
+                raise NotImplementedError(t)
+
+            dataDict[name] = value    
+        
+        return transTmpl.dtype.fromPy(dataDict)
+         
     def getStruct(self, addr, structT, bitAddr=None):
         """
         Get HStruct from memory
         
         :param addr: address where get struct from
-        :param structT: instance of HStruct or FrameTemplate generated from it to resove structure of data
+        :param structT: instance of HStruct or FrameTmpl generated from it to resove structure of data
+        :param bitAddr: optional bit precisse address is is not None param addr has to be None
         """
-        wordWidth = self.cellSize * 8
         if bitAddr is None:
             assert bitAddr is None
             bitAddr = addr * 8
         else:
             assert addr is not None
-
-        s = structT.getValueCls()
-
-        for f in structT.fields:
-            fieldLen = f.dtype.bit_length()
-
-            # resolve value of field from memory
-            if f.name is not None:
-                fieldOffset = 0
-                field = 0
-                try:
-                    while True:
-                        a = bitAddr + fieldOffset
-                        indx = a // wordWidth
-                        off = a % wordWidth
-                        v = self.data[indx]
-                        if fieldOffset + wordWidth < fieldLen:
-                            bitsLen = wordWidth
-                        else:
-                            bitsLen = fieldLen - fieldOffset
-
-                        field |= selectBitRange(v, off, bitsLen) << fieldOffset
-                        if fieldLen <= fieldOffset + wordWidth:
-                            break
-                except KeyError:
-                    field = None
-                setattr(s, f.name, field)
-
-            bitAddr += fieldLen
-
-        return s
+        
+        if isinstance(structT, TransTmpl):
+            transTmpl = structT
+            structT = transTmpl.origin
+        else:
+            assert isinstance(structT, HStruct)
+            transTmpl = TransTmpl(structT)
+        
+        return self._getStruct(bitAddr, transTmpl)

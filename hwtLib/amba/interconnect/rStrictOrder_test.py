@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.bitmask import mask
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
@@ -29,7 +29,7 @@ class RStrictOrderInterconnectTC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         for d in u.drivers:
             self.assertEqual(len(d.r._ag.data), 0)
@@ -42,7 +42,7 @@ class RStrictOrderInterconnectTC(SimTestCase):
         for i, driver in enumerate(u.drivers):
             driver.req._ag.data.append((i + 1, i + 1, i + 1, 0))
 
-        self.doSim((self.DRIVERS_CNT * 20) * Time.ns)
+        self.runSim((self.DRIVERS_CNT * 20) * Time.ns)
 
         for d in u.drivers:
             self.assertEqual(len(d.r._ag.data), 0)
@@ -60,10 +60,10 @@ class RStrictOrderInterconnectTC(SimTestCase):
             _len = i + 1
             driver.req._ag.data.append((_id, i + 1, _len, 0))
             for i2 in range(_len + 1):
-                d = (_id, i + 1, mask(self.DATA_WIDTH), i2 == _len)
+                d = (_id, i + 1, mask(self.DATA_WIDTH // 8), i2 == _len)
                 u.rDatapump.r._ag.data.append(d)
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         for i, d in enumerate(u.drivers):
             self.assertEqual(len(d.r._ag.data), i + 1 + 1)
@@ -105,7 +105,7 @@ class RStrictOrderInterconnectTC(SimTestCase):
         d0 = prepare(0, 0x1000, 3, 99, _id=0)  # + prepare(0, 0x2000, 1, 100, _id=0) + prepare(0, 0x3000, 16, 101)
         d1 = prepare(1, 0x4000, 3, 200, _id=1) + prepare(1, 0x5000, 1, 201, _id=1)  # + prepare(1, 0x6000, 16, 202) #+ prepare(1, 0x7000, 16, 203)
 
-        self.doSim(1000 * Time.ns)
+        self.runSim(1000 * Time.ns)
 
         check(0, d0)
         check(1, d1)
@@ -136,7 +136,7 @@ class RStrictOrderInterconnectTC(SimTestCase):
                     data = (_id, v, _mask, int(i2 == size - 1))
                     expected[_id].append(data)
 
-        self.doSim(self.DRIVERS_CNT * N * 200 * Time.ns)
+        self.runSim(self.DRIVERS_CNT * N * 200 * Time.ns)
 
         for expect, driver in zip(expected, u.drivers):
             self.assertValSequenceEqual(driver.r._ag.data, expect)

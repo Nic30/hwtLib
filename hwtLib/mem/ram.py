@@ -2,61 +2,70 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, power
-from hwt.hdlObjects.typeShortcuts import vecT
-from hwt.hdlObjects.types.array import Array
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import BramPort, Clk, BramPort_withoutClk
-from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.serializer.mode import serializeParamsUniq
+from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 
+@serializeParamsUniq
 class RamSingleClock(Unit):
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
-
+    """
+    RAM with only one clock signal
+    
+    .. hwt-schematic::
+    """
     def _config(self):
         self.DATA_WIDTH = Param(64)
         self.ADDR_WIDTH = Param(4)
         self.PORT_CNT = Param(1)
 
     def _declr(self):
-        PORTS = evalParam(self.PORT_CNT).val
+        PORTS = int(self.PORT_CNT)
 
         self.clk = Clk()
         with self._paramsShared():
+            # to let IDEs resolve type of port
             self.a = BramPort_withoutClk()
+
             for i in range(PORTS - 1):
-                name = self.genPortName(i + 1)
-                setattr(self, name, BramPort_withoutClk())
+                self._sportPort(i + 1)
+
+    def _sportPort(self, index) -> None:
+        name = self.genPortName(index)
+        setattr(self, name, BramPort_withoutClk())
 
     @staticmethod
-    def genPortName(index):
+    def genPortName(index) -> str:
         return chr(ord('a') + index)
 
-    def getPortByIndx(self, index):
+    def getPortByIndx(self, index) -> BramPort_withoutClk:
         return getattr(self, self.genPortName(index))
 
-    def connectPort(self, port, mem):
+    def connectPort(self, port: BramPort_withoutClk, mem: RtlSignal):
         If(self.clk._onRisingEdge() & port.en,
            If(port.we,
-              mem[port.addr] ** port.din
+              mem[port.addr](port.din)
            ),
-           port.dout ** mem[port.addr]
+           port.dout(mem[port.addr])
         )
 
     def _impl(self):
-        PORTS = evalParam(self.PORT_CNT).val
-        dt = Array(vecT(self.DATA_WIDTH), power(2, self.ADDR_WIDTH))
+        PORTS = int(self.PORT_CNT)
+        dt = Bits(self.DATA_WIDTH)[power(2, self.ADDR_WIDTH)]
         self._mem = self._sig("ram_memory", dt)
 
         for i in range(PORTS):
             self.connectPort(getattr(self, self.genPortName(i)), self._mem)
 
 
+@serializeParamsUniq
 class Ram_sp(Unit):
     """
-    Write first variant
+    Single port RAM, write-first variant
     """
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
 
     def _config(self):
         self.DATA_WIDTH = Param(64)
@@ -69,13 +78,13 @@ class Ram_sp(Unit):
     def connectPort(self, port, mem):
         If(port.clk._onRisingEdge() & port.en,
            If(port.we,
-              mem[port.addr] ** port.din
+              mem[port.addr](port.din)
            ),
-           port.dout ** mem[port.addr]
+           port.dout(mem[port.addr])
         )
 
     def _impl(self):
-        dt = Array(vecT(self.DATA_WIDTH), power(2, self.ADDR_WIDTH))
+        dt = Bits(self.DATA_WIDTH)[power(2, self.ADDR_WIDTH)]
         self._mem = self._sig("ram_memory", dt)
 
         self.connectPort(self.a, self._mem)
@@ -93,5 +102,5 @@ class Ram_dp(Ram_sp):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
-    print(toRtl(Ram_dp()))
+    from hwt.synthesizer.utils import toRtl
+    print(toRtl(Ram_sp()))

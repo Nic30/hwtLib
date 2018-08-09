@@ -2,20 +2,22 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import log2ceil
+from hwt.hdl.constants import Time
 from hwt.interfaces.std import s, VectSignal
-from hwt.serializer.constants import SERI_MODE
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.hdlObjects.constants import Time
+from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.param import Param
 
 
+@serializeParamsUniq
 class BinToOneHot(Unit):
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
-    
+    """
+    Little endian encoded number to number in one-hot encoding
+    """
     def _config(self):
         self.DATA_WIDTH = Param(8)
-    
+
     def _declr(self):
         self.din = VectSignal(log2ceil(self.DATA_WIDTH))
         self.en = s()
@@ -24,31 +26,38 @@ class BinToOneHot(Unit):
     def _impl(self):
         en = self.en
         dIn = self.din
-        
+
         WIDTH = self.DATA_WIDTH
-        if evalParam(WIDTH).val == 1:
+        if int(WIDTH) == 1:
             # empty_gen
-            self.dout[0] ** en
+            self.dout[0](en)
         else:
-            for i in range(evalParam(WIDTH).val):
-                self.dout[i] ** (dIn._eq(i) & en)
+            for i in range(int(WIDTH)):
+                self.dout[i](dIn._eq(i) & en)
 
 
 class BinToOneHotTC(SimTestCase):
     def test_basic(self):
         u = BinToOneHot()
         self.prepareUnit(u)
-        
+
         u.en._ag.data.append(1)
         u.din._ag.data.extend(range(8))
-        
-        self.doSim(90 * Time.ns)
-        
-        self.assertValSequenceEqual(u.dout._ag.data, [1 << i for i in range(8)])
-        
-        
-        
+
+        self.runSim(80 * Time.ns)
+
+        self.assertValSequenceEqual(u.dout._ag.data,
+                                    [1 << i for i in range(8)])
+
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    import unittest
+    from hwt.synthesizer.utils import toRtl
+
     print(toRtl(BinToOneHot()))
+    
+    suite = unittest.TestSuite()
+    # suite.addTest(IndexingTC('test_split'))
+    suite.addTest(unittest.makeSuite(BinToOneHotTC))
+    runner = unittest.TextTestRunner(verbosity=3)
+    runner.run(suite)

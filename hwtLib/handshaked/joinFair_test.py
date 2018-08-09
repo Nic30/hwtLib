@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked
 from hwt.simulator.shortcuts import simPrepare
 from hwt.simulator.simTestCase import SimTestCase
@@ -17,6 +17,7 @@ def dataFn(d):
 
 class HsJoinFair_2inputs_TC(SimTestCase):
     def setUp(self):
+        super(HsJoinFair_2inputs_TC, self).setUp()
         u = self.u = HsJoinFairShare(Handshaked)
         self.INPUTS = 2
         u.INPUTS.set(self.INPUTS)
@@ -27,7 +28,7 @@ class HsJoinFair_2inputs_TC(SimTestCase):
     def addToAllInputs(self, n):
         u = self.u
         for i, d in enumerate(u.dataIn):
-            d._ag.data = [_i + (n * i) for _i in range(n)]
+            d._ag.data.extend([_i + (n * i) for _i in range(n)])
 
         expected = []
         for d in zip(*map(dataFn, u.dataIn)):
@@ -39,7 +40,7 @@ class HsJoinFair_2inputs_TC(SimTestCase):
         u = self.u
         expected = self.addToAllInputs(6)
 
-        self.doSim(self.INPUTS * 6 * 20 * Time.ns)
+        self.runSim(self.INPUTS * 6 * 20 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
 
@@ -59,7 +60,7 @@ class HsJoinFair_2inputs_TC(SimTestCase):
         u.dataIn[self.INPUTS - 1]._ag.data.extend(d)
         expected.extend(d)
 
-        self.doSim(self.INPUTS * 6 * 20 * Time.ns)
+        self.runSim(self.INPUTS * 6 * 20 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
 
@@ -79,7 +80,7 @@ class HsJoinFair_2inputs_TC(SimTestCase):
 
         lowPriority._ag.data.extend(expected)
 
-        self.doSim(120 * Time.ns)
+        self.runSim(120 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
 
@@ -100,7 +101,7 @@ class HsJoinFair_2inputs_TC(SimTestCase):
 
         self.randomize(u.dataOut)
 
-        self.doSim(self.INPUTS * N * 50 * Time.ns)
+        self.runSim(self.INPUTS * N * 50 * Time.ns)
 
         self.assertEqual(set(valuesToInts(u.dataOut._ag.data)),
                          set(expected))
@@ -108,6 +109,7 @@ class HsJoinFair_2inputs_TC(SimTestCase):
 
 class HsJoinFair_3inputs_TC(HsJoinFair_2inputs_TC):
     def setUp(self):
+        SimTestCase.setUp(self)
         u = self.u = HsJoinFairShare(Handshaked)
         self.INPUTS = 3
         u.INPUTS.set(self.INPUTS)
