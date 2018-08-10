@@ -1,9 +1,10 @@
+from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VectSignal, Signal
 from hwt.synthesizer.param import Param
-from hwt.interfaces.agents.handshaked import HandshakedAgent
 
 
 class AvalonST(Handshaked):
+
     def _config(self):
         Handshaked._config(self)
         self.CHANNEL_WIDTH = Param(1)
@@ -28,6 +29,7 @@ class AvalonSTAgent(HandshakedAgent):
     Simulation Agent for AvalonST interface
     Data is stored in .data property and data format is tuple (channel, data, error, endOfPacket, startOfPacket)
     """
+
     def doRead(self, s):
         r = s.read
         intf = self.intf

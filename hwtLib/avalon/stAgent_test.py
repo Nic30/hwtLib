@@ -1,9 +1,11 @@
-from hwt.synthesizer.unit import Unit
-from hwt.interfaces.utils import addClkRstn
-from hwtLib.avalon.st import AvalonST
-from hwt.simulator.simTestCase import SimTestCase
-from hwt.hdl.constants import Time
 import unittest
+
+from hwt.hdl.constants import Time
+from hwt.interfaces.utils import addClkRstn
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.unit import Unit
+
+from hwtLib.avalon.st import AvalonST
 
 
 class AvalonStWire(Unit):
