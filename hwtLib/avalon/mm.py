@@ -1,10 +1,10 @@
 from hwt.code import log2ceil
-from hwt.hdlObjects.constants import DIRECTION, READ, WRITE
+from hwt.hdl.constants import DIRECTION, READ, WRITE
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.agents.rdSynced import RdSyncedAgent
 from hwt.interfaces.std import VectSignal, Signal
 from hwt.simulator.agentBase import SyncAgentBase
-from hwt.synthesizer.interfaceLevel.interface import Interface
+from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 
 
