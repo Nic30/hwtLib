@@ -8,7 +8,8 @@ from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 
 RESP_OKAY = 0b00
-RESP_LAVEERROR = 0b10
+# RESP_RESERVED = 0b01 
+RESP_SLAVEERROR = 0b10
 RESP_DECODEERROR = 0b11
 
 
@@ -34,17 +35,30 @@ class AvalonMM(Interface):
         self.byteEnable = VectSignal(self.DATA_WIDTH // 8)
 
         self.read = Signal()
-        self.readData = VectSignal(self.DATA_WIDTH)
-        self.readValid = Signal(masterDir=IN)  # read data valid
+        self.readData = VectSignal(self.DATA_WIDTH, masterDir=IN)
+        self.readDataValid = Signal(masterDir=IN)  # read data valid
         self.response = VectSignal(2, masterDir=IN)
 
         self.write = Signal()
         self.writeData = VectSignal(self.DATA_WIDTH)
         # self.lock = Signal()
         self.waitRequest = Signal(masterDir=IN)
-        # self.writeResponseValid = Signal(masterDir=IN)
-        self.burstCount = VectSignal(log2ceil(self.MAX_BURST))
+        self.writeResponseValid = Signal(masterDir=IN)
+        # self.burstCount = VectSignal(log2ceil(self.MAX_BURST))
         # self.beginBurstTransfer = Signal()
+
+    def _getWordAddrStep(self):
+        """
+        :return: size of one word in unit of address
+        """
+        return int(self.DATA_WIDTH) // self._getAddrStep()
+
+    def _getAddrStep(self):
+        """
+        :return: how many bits is one unit of address (f.e. 8 bits for  char * pointer,
+             36 for 36 bit bram)
+        """
+        return 8
 
     def _initSimAgent(self):
         self._ag = AvalonMMAgent(self)
