@@ -19,7 +19,9 @@ class IpifEndpoint(BusEndpoint):
     _getAddrStep = Ipif._getAddrStep
 
     def __init__(self, structTemplate, intfCls=Ipif, shouldEnterFn=None):
-        BusEndpoint.__init__(self, structTemplate, intfCls=intfCls, shouldEnterFn=None)
+        BusEndpoint.__init__(self, structTemplate,
+                             intfCls=intfCls,
+                             shouldEnterFn=shouldEnterFn)
 
     def _impl(self):
         self._parseTemplate()
