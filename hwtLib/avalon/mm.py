@@ -1,11 +1,12 @@
 from hwt.code import log2ceil
-from hwt.hdl.constants import DIRECTION, READ, WRITE
+from hwt.hdl.constants import DIRECTION, READ, WRITE, NOP
 from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.agents.rdSynced import RdSyncedAgent
 from hwt.interfaces.std import VectSignal, Signal
 from hwt.simulator.agentBase import SyncAgentBase
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
+from hwt.interfaces.agents.vldSynced import VldSyncedAgent
+from hwt.bitmask import mask
 
 RESP_OKAY = 0b00
 # RESP_RESERVED = 0b01 
@@ -64,17 +65,16 @@ class AvalonMM(Interface):
         self._ag = AvalonMMAgent(self)
 
 
-class AvalonMMDataAgent(RdSyncedAgent):
+class AvalonMmDataRAgent(VldSyncedAgent):
     """
     Simulation/verification agent for data part of AvalomMM interface
-
-    :note: it is 2x hadnshaked
-       (vld0=read, rd0=~waitRequest),
-       (vld1=write, rd0=~waitRequest)
+    
+    * vld signal = readDataValid
+    * data signal = (readData, response)
     """
 
-    def getRd(self, intf):
-        return intf.readValid
+    def doReadVld(self, readFn):
+        return readFn(self.intf.readDataValid)
 
     def doRead(self, s):
         """extract data from interface"""
@@ -95,9 +95,13 @@ class AvalonMMDataAgent(RdSyncedAgent):
             w(response, intf.response)
 
 
-class AvalonAddrAgent(HandshakedAgent):
+class AvalonMmAddrAgent(HandshakedAgent):
     """
     data format is tuple (address, byteEnable, read/write, burstCount)
+
+    * two valid signals "read", "write"
+    * one ready_n signal "waitrequest")
+    * on write set data and byteenamble as well
     """
 
     def getRd(self):
@@ -124,10 +128,22 @@ class AvalonAddrAgent(HandshakedAgent):
         return r
 
     def wrVld(self, wrFn, val):
-        """
-        read/write which are there used as valid signal are written
-        from doWrite funtion
-        """
+        if self.actualData is None or self.actualData is NOP:
+            r = 0
+            w = 0
+        else:
+            mode = self.actualData[0]
+            
+            if mode is READ:
+                r = val
+                w = 0
+            elif mode is WRITE:
+                r = 0
+                w = val
+            else:
+                raise ValueError("Unknown mode", mode)
+        wrFn(r, self._vld[0])
+        wrFn(w, self._vld[1])
 
     def doRead(self, s):
         r = s.read
@@ -137,7 +153,7 @@ class AvalonAddrAgent(HandshakedAgent):
         byteEnable = r(intf.byteEnable)
         read = r(intf.read)
         write = r(intf.write)
-        burstCount = r(intf.burstCount)
+        burstCount = 1  # r(intf.burstCount)
 
         if read.val:
             rw = READ
@@ -155,41 +171,47 @@ class AvalonAddrAgent(HandshakedAgent):
         if data is None:
             w(None, intf.address)
             w(None, intf.byteEnable)
+            # w(None, intf.burstCount)
             w(0, intf.read)
             w(0, intf.write)
-            w(None, intf.burstCount)
 
         else:
-            address, byteEnable, rw, burstCount = data
-            w(address, intf.address)
-            w(byteEnable, intf.byteEnable)
-            w(burstCount, intf.burstCount)
+            rw, address, burstCount = data
             if rw is READ:
-                w(1, intf.read)
-                w(0, intf.write)
+                rd, wr = 1, 0
+                be = mask(intf.readData._dtype.bit_length() // 8)
             elif rw is WRITE:
-                w(0, intf.read)
-                w(1, intf.write)
+                rd, wr = 1, 0
+                rw, address, burstCount = data
+                d, be = self.wData.popleft()
+                w(d, intf.writeData)
             else:
                 raise TypeError("rw is in invalid format %r" % (rw,))
+
+            w(address, intf.address)
+            w(be, intf.byteEnable)
+            assert int(burstCount) >= 1, burstCount
+            # w(burstCount, intf.burstCount)
+            w(rd, intf.read)
+            w(wr, intf.write)
 
 
 class AvalonMMAgent(SyncAgentBase):
 
     def __init__(self, intf, allowNoReset=False):
         SyncAgentBase.__init__(self, intf, allowNoReset=allowNoReset)
-        self.pendingRead = None
-        self.pendingWrite = None
+        # self.pendingRead = None
+        # self.pendingWrite = None
 
-        self.dataAg = AvalonMMDataAgent(intf, allowNoReset=allowNoReset)
-        self.addrAg = AvalonAddrAgent(intf, allowNoReset=allowNoReset)
+        self.rDataAg = AvalonMmDataRAgent(intf, allowNoReset=allowNoReset)
+        self.addrAg = AvalonMmAddrAgent(intf, allowNoReset=allowNoReset)
 
     def getDrivers(self):
         self.setEnable = self.setEnable_asDriver
-        return (self.dataAg.getDrivers()
+        return (self.rDataAg.getMonitors()
                  +self.addrAg.getDrivers())
 
     def getMonitors(self):
         self.setEnable = self.setEnable_asMonitor
-        return (self.dataAg.getMonitors()
+        return (self.rDataAg.getDrivers()
                 +self.addrAg.getMonitors())

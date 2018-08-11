@@ -5,7 +5,7 @@ from hwt.code import If, FsmBuilder, Switch
 from hwt.hdl.types.enum import HEnum
 
 from hwtLib.abstract.busEndpoint import BusEndpoint
-from hwtLib.avalon.mm import AvalonMM, RESP_OKAY
+from hwtLib.avalon.mm import AvalonMM, RESP_OKAY, RESP_SLAVEERROR
 
 
 class AvalonMmEndpoint(BusEndpoint):
@@ -36,12 +36,10 @@ class AvalonMmEndpoint(BusEndpoint):
         addr = bus.address
         addrVld = bus.read | bus.write
 
-        isInMyAddrSpace = self.isInMyAddrRange(addr)
-
         st = FsmBuilder(self, st_t)\
         .Trans(st_t.idle,
-            (addrVld & isInMyAddrSpace & bus.read, st_t.rdData),
-            (addrVld & isInMyAddrSpace & bus.write, st_t.idle)
+            (addrVld & bus.read, st_t.rdData),
+            (addrVld & bus.write, st_t.idle)
         ).Trans(st_t.readDelay,
             st_t.rdData
         ).Trans(st_t.rdData,
@@ -50,7 +48,13 @@ class AvalonMmEndpoint(BusEndpoint):
 
         wAck = True
         wr = bus.write & wAck
-        bus.response(RESP_OKAY)
+        isInAddrRange = (self.isInMyAddrRange(bus.address))
+
+        If(isInAddrRange,
+           bus.response(RESP_OKAY)
+        ).Else(
+           bus.response(RESP_SLAVEERROR)
+        )
         bus.waitRequest(bus.read & ~st._eq(st_t.rdData))
         bus.readDataValid(st._eq(st_t.rdData))
         bus.writeResponseValid(wr)
