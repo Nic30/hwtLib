@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
 from hwt.hdl.types.struct import HStruct
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.types.ctypes import uint32_t, uint16_t
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwt.hdl.types.bits import Bits
-
 
 structHierarchy = HStruct(
                           (HStruct(
@@ -33,7 +31,7 @@ class AxiLiteEndpoint_struct_TC(AxiLiteEndpointTC):
         u = self.mySetUp(32)
 
         self.randomizeAll()
-        self.runSim(100 * Time.ns)
+        self.runSim(10 * self.CLK)
 
         self.assertEmpty(u.bus._ag.r.data)
         self.assertEmpty(u.decoded.a.field0._ag.dout)
@@ -52,7 +50,7 @@ class AxiLiteEndpoint_struct_TC(AxiLiteEndpointTC):
         u.decoded.a.field1._ag.din.extend([MAGIC + 1])
 
         self.randomizeAll()
-        self.runSim(300 * Time.ns)
+        self.runSim(30 * self.CLK)
 
         self.assertValSequenceEqual(u.bus.r._ag.data,
                                     [(MAGIC, RESP_OKAY),
@@ -81,7 +79,7 @@ class AxiLiteEndpoint_struct_TC(AxiLiteEndpointTC):
             r.a.field1.write(MAGIC + i + 2)
 
         self.randomizeAll()
-        self.runSim(500 * Time.ns)
+        self.runSim(50 * self.CLK)
 
         self.assertValSequenceEqual(u.decoded.a.field0._ag.dout,
                                     [MAGIC,
@@ -111,7 +109,7 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
         u = self.mySetUp(32)
 
         self.randomizeAll()
-        self.runSim(100 * Time.ns)
+        self.runSim(10 * self.CLK)
 
         self.assertEmpty(u.bus._ag.r.data)
         for i in range(3):
@@ -151,7 +149,7 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
             u.decoded.a[i].field1._ag.din.append(MAGIC + 32 + i)
 
         self.randomizeAll()
-        self.runSim(800 * Time.ns)
+        self.runSim(80 * self.CLK)
 
         readed = u.bus.r._ag.data
         self.assertEqual(len(readed), len(expected))
@@ -175,7 +173,7 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
             r.a[i % 3].field1.write(d)
 
         self.randomizeAll()
-        self.runSim(1200 * Time.ns)
+        self.runSim(120 * self.CLK)
 
         for i in range(3):
             self.assertValSequenceEqual(u.decoded.a[i].field0._ag.dout,
@@ -189,6 +187,7 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
 
         self.assertValSequenceEqual(u.bus.b._ag.data,
                                     [RESP_OKAY for _ in range(2 * 2 * 3)])
+
 
 if __name__ == "__main__":
     import unittest

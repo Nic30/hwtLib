@@ -13,22 +13,42 @@ from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
 from hwtLib.types.ctypes import uint32_t
 
-
 structTwoFields = HStruct(
     (uint32_t, "field0"),
     (uint32_t, "field1")
 )
+
+structTwoFields_str = """\
+struct {
+    <Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
+    <Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
+}"""
 
 structTwoFieldsDense = HStruct(
     (uint32_t, "field0"),
     (uint32_t, None),
     (uint32_t, "field1")
 )
+
+structTwoFieldsDense_str = """\
+struct {
+    <Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
+    //<Bits, 32bits, unsigned> empty space // start:0x20(bit) 0x4(byte)
+    <Bits, 32bits, unsigned> field1 // start:0x40(bit) 0x8(byte)
+}"""
+
 structTwoFieldsDenseStart = HStruct(
     (uint32_t, None),
     (uint32_t, "field0"),
     (uint32_t, "field1")
 )
+
+structTwoFieldsDenseStart_str = """\
+struct {
+    //<Bits, 32bits, unsigned> empty space // start:0x0(bit) 0x0(byte)
+    <Bits, 32bits, unsigned> field0 // start:0x20(bit) 0x4(byte)
+    <Bits, 32bits, unsigned> field1 // start:0x40(bit) 0x8(byte)
+}"""
 
 
 def addrGetter(intf):
@@ -43,6 +63,7 @@ def addrGetter(intf):
 class AxiLiteEndpointTC(SimTestCase):
     STRUCT_TEMPLATE = structTwoFields
     FIELD_ADDR = [0x0, 0x4]
+    CLK = 10 * Time.ns
 
     def aTrans(self, addr, prot=0):
         return (addr, prot)
@@ -76,7 +97,7 @@ class AxiLiteEndpointTC(SimTestCase):
         u = self.mySetUp(32)
 
         self.randomizeAll()
-        self.runSim(100 * Time.ns)
+        self.runSim(10 * self.CLK)
 
         self.assertEmpty(u.bus._ag.r.data)
         self.assertEmpty(u.decoded.field0._ag.dout)
@@ -94,7 +115,7 @@ class AxiLiteEndpointTC(SimTestCase):
         u.decoded.field1._ag.din.extend([MAGIC + 1])
 
         self.randomizeAll()
-        self.runSim(300 * Time.ns)
+        self.runSim(30 * self.CLK)
 
         self.assertValSequenceEqual(u.bus.r._ag.data,
                                     [(MAGIC, RESP_OKAY),
@@ -121,7 +142,7 @@ class AxiLiteEndpointTC(SimTestCase):
                                  (MAGIC + 4, m)])
 
         self.randomizeAll()
-        self.runSim(500 * Time.ns)
+        self.runSim(50 * self.CLK)
 
         self.assertValSequenceEqual(u.decoded.field0._ag.dout,
                                     [MAGIC,
@@ -137,11 +158,7 @@ class AxiLiteEndpointTC(SimTestCase):
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = """struct {
-    <Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
-    <Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
-}"""
-        self.assertEqual(s, expected)
+        self.assertEqual(s, structTwoFields_str)
 
 
 class AxiLiteEndpointDenseTC(AxiLiteEndpointTC):
@@ -151,12 +168,7 @@ class AxiLiteEndpointDenseTC(AxiLiteEndpointTC):
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = """struct {
-    <Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
-    //<Bits, 32bits, unsigned> empty space // start:0x20(bit) 0x4(byte)
-    <Bits, 32bits, unsigned> field1 // start:0x40(bit) 0x8(byte)
-}"""
-        self.assertEqual(s, expected)
+        self.assertEqual(s, structTwoFieldsDense_str)
 
 
 class AxiLiteEndpointDenseStartTC(AxiLiteEndpointTC):
@@ -166,12 +178,7 @@ class AxiLiteEndpointDenseStartTC(AxiLiteEndpointTC):
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = """struct {
-    //<Bits, 32bits, unsigned> empty space // start:0x0(bit) 0x0(byte)
-    <Bits, 32bits, unsigned> field0 // start:0x20(bit) 0x4(byte)
-    <Bits, 32bits, unsigned> field1 // start:0x40(bit) 0x8(byte)
-}"""
-        self.assertEqual(s, expected)
+        self.assertEqual(s, structTwoFieldsDenseStart_str)
 
 
 if __name__ == "__main__":
