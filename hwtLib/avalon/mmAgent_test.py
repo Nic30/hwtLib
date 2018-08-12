@@ -31,14 +31,10 @@ class AvalonMmAgentTC(SimTestCase):
         u = self.u
         self.runSim(10 * self.CLK)
 
-        self.assertValSequenceEqual(
-            u.dataOut._ag.addrAg.data,
-            []
-        )
-        self.assertValSequenceEqual(
-            u.dataOut._ag.dataAg.data,
-            []
-        )
+        self.assertEmpty(u.dataOut._ag.req)
+        self.assertEmpty(u.dataOut._ag.wData)
+        self.assertEmpty(u.dataIn._ag.rData)
+        self.assertEmpty(u.dataIn._ag.wResp)
 
 
 if __name__ == "__main__":

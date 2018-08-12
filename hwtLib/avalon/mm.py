@@ -77,6 +77,9 @@ class AvalonMmDataRAgent(VldSyncedAgent):
     def doReadVld(self, readFn):
         return readFn(self.intf.readDataValid)
 
+    def doWriteVld(self, writeFn, val):
+        writeFn(val, self.intf.readDataValid)
+
     def doRead(self, s):
         """extract data from interface"""
         r = s.read
@@ -206,8 +209,14 @@ class AvalonMmWRespAgent(VldSyncedAgent):
     def doReadVld(self, readFn):
         return readFn(self.intf.writeResponseValid)
 
+    def doWriteVld(self, writeFn, val):
+        writeFn(val, self.intf.writeResponseValid)
+
     def doRead(self, s):
         return s.read(self.intf.response)
+    
+    def doWrite(self, s, data):
+        s.write(data, self.intf.response)
 
 
 class AvalonMmAgent(SyncAgentBase):

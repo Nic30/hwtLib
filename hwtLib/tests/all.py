@@ -175,6 +175,7 @@ from hwtLib.handshaked.fifoAsync_test import HsFifoAsyncTC
 from hwtLib.avalon.endpoint_test import AvalonMmEndpointTC, \
     AvalonMmEndpointDenseStartTC, AvalonMmEndpointDenseTC
 from hwtLib.avalon.stAgent_test import AvalonStAgentTC
+from hwtLib.avalon.mmAgent_test import AvalonMmAgentTC
 
 
 def runSimWithoutLog(self, until, name=None, config=None):
@@ -318,6 +319,7 @@ suite = testSuiteFromTCs(
     BramPortEndpointArray,
 
     # avalon tests
+    AvalonMmAgentTC,
     AvalonMmEndpointTC,
     AvalonMmEndpointDenseStartTC,
     AvalonMmEndpointDenseTC,
