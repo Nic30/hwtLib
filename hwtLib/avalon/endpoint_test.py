@@ -63,7 +63,8 @@ class AvalonMmEndpointTC(SimTestCase):
         self.randomizeAll()
         self.runSim(10 * self.CLK)
 
-        self.assertEmpty(u.bus._ag.rDataAg.data)
+        self.assertEmpty(u.bus._ag.rData)
+        self.assertEmpty(u.bus._ag.wResp)
         self.assertEmpty(u.decoded.field0._ag.dout)
         self.assertEmpty(u.decoded.field1._ag.dout)
 
@@ -72,7 +73,7 @@ class AvalonMmEndpointTC(SimTestCase):
         MAGIC = 100
         A = self.FIELD_ADDR
     
-        u.bus._ag.addrAg.data.extend(
+        u.bus._ag.req.extend(
             map(self.arTrans,
                 [A[0], A[1], A[0], A[1], A[1] + 0x4]))
     
@@ -82,7 +83,7 @@ class AvalonMmEndpointTC(SimTestCase):
         self.randomizeAll()
         self.runSim(30 * self.CLK)
     
-        self.assertValSequenceEqual(u.bus._ag.rDataAg.data,
+        self.assertValSequenceEqual(u.bus._ag.rData,
                                     [(MAGIC, RESP_OKAY),
                                      (MAGIC + 1, RESP_OKAY),
                                      (MAGIC, RESP_OKAY),
@@ -94,14 +95,14 @@ class AvalonMmEndpointTC(SimTestCase):
         MAGIC = 100
         m = mask(32 // 8)
         A = self.FIELD_ADDR
-        u.bus._ag.addrAg.data.extend(
+        u.bus._ag.req.extend(
             map(self.awTrans,
                 [A[0],
                  A[1],
                  A[0],
                  A[1],
                  A[1] + 0x4]))
-        u.bus._ag.addrAg.wData.extend(
+        u.bus._ag.wData.extend(
             [(MAGIC, m),
              (MAGIC + 1, m),
              (MAGIC + 2, m),
@@ -122,7 +123,7 @@ class AvalonMmEndpointTC(SimTestCase):
              MAGIC + 3
              ])
         self.assertValSequenceEqual(
-            u.bus.b._ag.data,
+            u.bus._ag.wResp,
             [RESP_OKAY for _ in range(4)] + [RESP_SLAVEERROR])
 
     def test_registerMap(self):
@@ -155,7 +156,7 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(AvalonMmEndpointStructsInArray('test_write'))
+    # suite.addTest(AvalonMmEndpointTC('test_write'))
     suite.addTest(unittest.makeSuite(AvalonMmEndpointTC))
     suite.addTest(unittest.makeSuite(AvalonMmEndpointDenseStartTC))
     suite.addTest(unittest.makeSuite(AvalonMmEndpointDenseTC))

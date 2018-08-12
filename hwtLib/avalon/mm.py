@@ -7,6 +7,7 @@ from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwt.interfaces.agents.vldSynced import VldSyncedAgent
 from hwt.bitmask import mask
+from _collections import deque
 
 RESP_OKAY = 0b00
 # RESP_RESERVED = 0b01 
@@ -26,7 +27,7 @@ class AvalonMM(Interface):
     def _config(self):
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(32)
-        self.MAX_BURST = Param(4)
+        # self.MAX_BURST = Param(4)
 
     def _declr(self):
         # self.debugAccess = Signal()
@@ -62,7 +63,7 @@ class AvalonMM(Interface):
         return 8
 
     def _initSimAgent(self):
-        self._ag = AvalonMMAgent(self)
+        self._ag = AvalonMmAgent(self)
 
 
 class AvalonMmDataRAgent(VldSyncedAgent):
@@ -103,6 +104,10 @@ class AvalonMmAddrAgent(HandshakedAgent):
     * one ready_n signal "waitrequest")
     * on write set data and byteenamble as well
     """
+
+    def __init__(self, intf, allowNoReset=False):
+        HandshakedAgent.__init__(self, intf, allowNoReset=allowNoReset)
+        self.wData = deque()
 
     def getRd(self):
         return self.intf.waitRequest
@@ -181,7 +186,7 @@ class AvalonMmAddrAgent(HandshakedAgent):
                 rd, wr = 1, 0
                 be = mask(intf.readData._dtype.bit_length() // 8)
             elif rw is WRITE:
-                rd, wr = 1, 0
+                rd, wr = 0, 1
                 rw, address, burstCount = data
                 d, be = self.wData.popleft()
                 w(d, intf.writeData)
@@ -196,22 +201,70 @@ class AvalonMmAddrAgent(HandshakedAgent):
             w(wr, intf.write)
 
 
-class AvalonMMAgent(SyncAgentBase):
+class AvalonMmWRespAgent(VldSyncedAgent):
+
+    def doReadVld(self, readFn):
+        return readFn(self.intf.writeResponseValid)
+
+    def doRead(self, s):
+        return s.read(self.intf.response)
+
+
+class AvalonMmAgent(SyncAgentBase):
+    """
+    
+    :ivar req: request data, items are tuples (READ/WRITE, address, burstCount)
+    :ivar wData: data to write, items are tuples (data, byteenable)
+    :ivar wResp: write response data
+    :ivar rData: data read from interface, items are typles (data, response)
+    """
 
     def __init__(self, intf, allowNoReset=False):
         SyncAgentBase.__init__(self, intf, allowNoReset=allowNoReset)
-        # self.pendingRead = None
-        # self.pendingWrite = None
-
-        self.rDataAg = AvalonMmDataRAgent(intf, allowNoReset=allowNoReset)
         self.addrAg = AvalonMmAddrAgent(intf, allowNoReset=allowNoReset)
+        self.rDataAg = AvalonMmDataRAgent(intf, allowNoReset=allowNoReset)
+        self.wRespAg = AvalonMmWRespAgent(intf, allowNoReset=allowNoReset)
+    
+    def req_get(self):
+        return self.addrAg.data
+
+    def req_set(self, v):
+        self.addrAg.data = v
+
+    req = property(req_get, req_set)
+    
+    def wData_get(self):
+        return self.addrAg.wData
+
+    def wData_set(self, v):
+        self.addrAg.wData = v
+    
+    wData = property(wData_get, wData_set)
+    
+    def wResp_get(self):
+        return self.wRespAg.data
+    
+    def wResp_set(self, v):
+        self.wRespAg = v
+    
+    wResp = property(wResp_get, wResp_set)
+
+    def rData_get(self):
+        return self.rDataAg.data
+
+    def rData_set(self, v):
+        self.rDataAg.data = v
+
+    rData = property(rData_get, rData_set)
 
     def getDrivers(self):
         self.setEnable = self.setEnable_asDriver
         return (self.rDataAg.getMonitors()
-                 +self.addrAg.getDrivers())
+                 +self.addrAg.getDrivers()
+                 +self.wRespAg.getMonitors())
 
     def getMonitors(self):
         self.setEnable = self.setEnable_asMonitor
         return (self.rDataAg.getDrivers()
-                +self.addrAg.getMonitors())
+                +self.addrAg.getMonitors()
+                +self.wRespAg.getDrivers())
