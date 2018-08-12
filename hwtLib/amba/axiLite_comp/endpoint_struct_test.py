@@ -14,6 +14,13 @@ structHierarchy = HStruct(
                               (uint32_t, "field1")
                           ), "a")
                         )
+structHierarchy_str = """\
+struct {
+    struct {
+        <Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
+        <Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
+    } a // start:0x0(bit) 0x0(byte)
+}"""
 
 structHierarchyArr = HStruct(
                              (HStruct(
@@ -22,6 +29,14 @@ structHierarchyArr = HStruct(
                                  (uint32_t, "field1")
                                  )[3], "a")
                              )
+structHierarchyArr_str = """\
+struct {
+    struct {
+        <Bits, 16bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
+        //<Bits, 16bits, unsigned> empty space // start:0x10(bit) 0x2(byte)
+        <Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
+    }[3] a // start:0x0(bit) 0x0(byte)
+}"""
 
 
 class AxiLiteEndpoint_struct_TC(AxiLiteEndpointTC):
@@ -61,13 +76,7 @@ class AxiLiteEndpoint_struct_TC(AxiLiteEndpointTC):
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = """struct {
-    struct {
-        <Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
-        <Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
-    } a // start:0x0(bit) 0x0(byte)
-}"""
-        self.assertEqual(s, expected)
+        self.assertEqual(s, structHierarchy_str)
 
     def test_write(self):
         u = self.mySetUp(32)
@@ -97,7 +106,7 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
 
     def mySetUp(self, data_width=32):
         u = AxiLiteEndpoint(self.STRUCT_TEMPLATE,
-                            shouldEnterFn=lambda x: (True, isinstance(x.dtype, Bits)))
+                shouldEnterFn=lambda x: (True, isinstance(x.dtype, Bits)))
         self.u = u
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH.set(self.DATA_WIDTH)
@@ -122,14 +131,7 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = """struct {
-    struct {
-        <Bits, 16bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
-        //<Bits, 16bits, unsigned> empty space // start:0x10(bit) 0x2(byte)
-        <Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
-    }[3] a // start:0x0(bit) 0x0(byte)
-}"""
-        self.assertEqual(s, expected)
+        self.assertEqual(s, structHierarchyArr_str)
 
     def test_read(self):
         u = self.mySetUp(32)
