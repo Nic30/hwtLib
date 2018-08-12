@@ -172,6 +172,9 @@ from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
 from hwtLib.amba.axi_comp.tester_test import AxiTesterTC
 from hwtLib.logic.segment7_test import Segment7TC
 from hwtLib.handshaked.fifoAsync_test import HsFifoAsyncTC
+from hwtLib.avalon.endpoint_test import AvalonMmEndpointTC, \
+    AvalonMmEndpointDenseStartTC, AvalonMmEndpointDenseTC
+from hwtLib.avalon.stAgent_test import AvalonStAgentTC
 
 
 def runSimWithoutLog(self, until, name=None, config=None):
@@ -198,6 +201,7 @@ def testSuiteFromTCs(*tcs):
 
 
 suite = testSuiteFromTCs(
+    # basic tests
     FileUtilsTC,
     RtlLvlTC,
     HdlCommentsTC,
@@ -224,7 +228,6 @@ suite = testSuiteFromTCs(
     StaticForLoopCntrlTC,
     SimpleUnitWithParamTC,
     SimpleSubunit2TC,
-    TimerTC,
     HierarchySerializationTC,
     InterfaceArraySample0TC,
     InterfaceArraySample1TC,
@@ -244,29 +247,30 @@ suite = testSuiteFromTCs(
     UnionIntfTC,
     ResourceAnalyzer_TC,
     VhdlSerializer_TC,
+    IfStmTC,
+    SwitchStmTC,
+    RomTC,
+    DRegTC,
+    CntrTC,
 
-    # component verifications
+    # tests of simple units
+    TimerTC,
     ConcatTC,
     VldMaskConflictsResolvingTC,
     ConstDriverTC,
     WidthCastingExampleTC,
     SimpleTC,
     SimpleSubunitTC,
-    IfStmTC,
-    SwitchStmTC,
     LutRamTC,
     FsmSerializationTC,
     FsmExampleTC,
     HadrcodedFsmExampleTC,
     OneHotToBinTC,
-    CntrTC,
     BinToOneHotTC,
     GrayCntrTC,
     TwoCntrsTC,
     SampleRamTC,
     SelfRefCntrTC,
-    DRegTC,
-    RomTC,
     IndexingTC,
     ClkSynchronizerTC,
     RamTC,
@@ -279,10 +283,6 @@ suite = testSuiteFromTCs(
     HsJoinFair_2inputs_TC,
     HsJoinFair_3inputs_TC,
     RamAsHs_TC,
-    BramPortEndpointTC,
-    BramPortEndpointDenseTC,
-    BramPortEndpointDenseStartTC,
-    BramPortEndpointArray,
     LsfrTC,
     ClkDiv3TC,
     BitonicSorterTC,
@@ -309,9 +309,23 @@ suite = testSuiteFromTCs(
     CrcUtilsTC,
     CrcCombTC,
     CrcTC,
+    
+    BusEndpointTC,
+
+    BramPortEndpointTC,
+    BramPortEndpointDenseTC,
+    BramPortEndpointDenseStartTC,
+    BramPortEndpointArray,
+
+    # avalon tests
+    AvalonMmEndpointTC,
+    AvalonMmEndpointDenseStartTC,
+    AvalonMmEndpointDenseTC,
+    AvalonStAgentTC,
+    
+    # axi tests
     SimpleAxiRegsTC,
     AxiTC,
-    BusEndpointTC,
     AxiLiteEndpointTC,
     AxiLiteEndpointDenseStartTC,
     AxiLiteEndpointDenseTC,
@@ -359,12 +373,14 @@ suite = testSuiteFromTCs(
     StructWriter_TC,
     StructReaderTC,
 
+    # ipif tests
     IpifEndpointTC,
     IpifEndpointDenseTC,
     IpifEndpointDenseStartTC,
     IpifEndpointArray,
     IpifRegTC,
 
+    # complex units tests
     IpCoreWrapperTC,
     IpCorePackagerTC,
     CharToBitmapTC,
@@ -373,7 +389,6 @@ suite = testSuiteFromTCs(
     DumpTestbenchTC,
     PingResponderTC,
 )
-
 
 if __name__ == '__main__':
     runner = TextTestRunner(verbosity=2)
