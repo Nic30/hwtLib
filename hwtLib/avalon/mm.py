@@ -19,7 +19,7 @@ class AvalonMM(Interface):
     """
     Avalon Memory Mapped interface
 
-    (with wait signal)
+    :note: handshaked, shared address and response channel
 
     https://www.intel.com/content/dam/altera-www/global/en_US/pdfs/literature/manual/mnl_avalon_spec.pdf
     """
@@ -212,6 +212,7 @@ class AvalonMmWRespAgent(VldSyncedAgent):
 
 class AvalonMmAgent(SyncAgentBase):
     """
+    Simulation agent for AvalonMM bus interface
     
     :ivar req: request data, items are tuples (READ/WRITE, address, burstCount)
     :ivar wData: data to write, items are tuples (data, byteenable)

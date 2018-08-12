@@ -4,6 +4,11 @@ from hwt.synthesizer.param import Param
 
 
 class AvalonST(Handshaked):
+    """
+    Avalon stream interface
+    
+    :note: handshaked stream with cahnnel, error, sof, eof signal
+    """
 
     def _config(self):
         Handshaked._config(self)
@@ -27,13 +32,15 @@ class AvalonST(Handshaked):
 class AvalonSTAgent(HandshakedAgent):
     """
     Simulation Agent for AvalonST interface
-    Data is stored in .data property and data format is tuple (channel, data, error, endOfPacket, startOfPacket)
+    Data is stored in .data property and data format
+    is tuple (channel, data, error, endOfPacket, startOfPacket)
     """
 
     def doRead(self, s):
         r = s.read
         intf = self.intf
-        return (r(intf.channel), r(intf.data), r(intf.error), r(intf.endOfPacket), r(intf.startOfPacket))
+        return (r(intf.channel), r(intf.data), r(intf.error),
+                r(intf.endOfPacket), r(intf.startOfPacket))
     
     def doWrite(self, s, data):
         w = s.write
