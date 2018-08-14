@@ -9,7 +9,8 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.endpoint_test import structTwoFields, \
     structTwoFieldsDense, structTwoFieldsDenseStart, structTwoFieldsDense_str, \
-    structTwoFields_str, structTwoFieldsDenseStart_str
+    structTwoFields_str, structTwoFieldsDenseStart_str, \
+    AxiLiteEndpointMemMasterTC
 from hwtLib.avalon.endpoint import AvalonMmEndpoint
 from hwtLib.avalon.memSpaceMaster import AvalonMmMemSpaceMaster
 from hwtLib.avalon.mm import AvalonMM, RESP_OKAY, RESP_SLAVEERROR
@@ -48,8 +49,10 @@ class AvalonMmEndpointTC(SimTestCase):
 
         self.randomize(u.bus)
 
-    def mySetUp(self, data_width=32):
-        u = self.u = AvalonMmEndpoint(self.STRUCT_TEMPLATE)
+    def mySetUp(self, data_width=32, structT=None):
+        if structT is None:
+            structT = self.STRUCT_TEMPLATE
+        u = self.u = AvalonMmEndpoint(structT)
 
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH.set(self.DATA_WIDTH)
@@ -152,6 +155,65 @@ class AvalonMmEndpointDenseStartTC(AvalonMmEndpointTC):
         self.assertEqual(s, structTwoFieldsDenseStart_str)
 
 
+class AvalonMmMemMasterTC(AxiLiteEndpointMemMasterTC):
+    CLK = AvalonMmEndpointTC.CLK
+
+    def randomizeAll(self):
+        AvalonMmEndpointTC.randomizeAll(self)
+
+    def mkRegisterMap(self, u, modelCls):
+        AvalonMmEndpointTC.mkRegisterMap(self, u, modelCls)
+
+    def _test_read_memMaster(self, structT):
+        u = AvalonMmEndpointTC.mySetUp(self, 32, structT)
+        MAGIC = 100
+        
+        regs = self.regs
+        regs.field0.read()
+        regs.field1.read()
+        regs.field0.read()
+        regs.field1.read()
+        
+        u.decoded.field0._ag.din.extend([MAGIC])
+        u.decoded.field1._ag.din.extend([MAGIC + 1])
+
+        self.randomizeAll()
+        self.runSim(30 * self.CLK)
+
+        self.assertValSequenceEqual(u.bus._ag.rData,
+                                    [(MAGIC, RESP_OKAY),
+                                     (MAGIC + 1, RESP_OKAY),
+                                     (MAGIC, RESP_OKAY),
+                                     (MAGIC + 1, RESP_OKAY)])
+
+    def _test_write_memMaster(self, structT):
+        u = AvalonMmEndpointTC.mySetUp(self, 32, structT)
+        MAGIC = 100
+        regs = self.regs
+        f0, f1 = regs.field0, regs.field1
+        f0.write(MAGIC)
+        f1.write(MAGIC + 1)
+        f0.write(MAGIC + 2)
+        f1.write(MAGIC + 3)
+
+        self.randomizeAll()
+        self.runSim(50 * self.CLK)
+
+        self.assertValSequenceEqual(
+            u.decoded.field0._ag.dout,
+            [MAGIC,
+             MAGIC + 2
+             ])
+        self.assertValSequenceEqual(
+            u.decoded.field1._ag.dout,
+            [MAGIC + 1,
+             MAGIC + 3
+             ])
+        self.assertValSequenceEqual(
+            u.bus._ag.wResp,
+            [RESP_OKAY for _ in range(4)])
+
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
@@ -160,6 +222,7 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(AvalonMmEndpointTC))
     suite.addTest(unittest.makeSuite(AvalonMmEndpointDenseStartTC))
     suite.addTest(unittest.makeSuite(AvalonMmEndpointDenseTC))
+    suite.addTest(unittest.makeSuite(AvalonMmMemMasterTC))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

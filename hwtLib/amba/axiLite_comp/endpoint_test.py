@@ -84,8 +84,10 @@ class AxiLiteEndpointTC(SimTestCase):
         self.randomize(u.bus.w)
         self.randomize(u.bus.b)
 
-    def mySetUp(self, data_width=32):
-        u = self.u = AxiLiteEndpoint(self.STRUCT_TEMPLATE)
+    def mySetUp(self, data_width=32, STRUCT_TEMPLATE=None):
+        if STRUCT_TEMPLATE is None:
+            STRUCT_TEMPLATE = self.STRUCT_TEMPLATE
+        u = self.u = AxiLiteEndpoint(STRUCT_TEMPLATE)
 
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH.set(self.DATA_WIDTH)
@@ -181,6 +183,81 @@ class AxiLiteEndpointDenseStartTC(AxiLiteEndpointTC):
         self.assertEqual(s, structTwoFieldsDenseStart_str)
 
 
+class AxiLiteEndpointMemMasterTC(SimTestCase):
+    CLK = AxiLiteEndpointTC.CLK
+
+    def randomizeAll(self):
+        AxiLiteEndpointTC.randomizeAll(self)
+
+    def mkRegisterMap(self, u, modelCls):
+        AxiLiteEndpointTC.mkRegisterMap(self, u, modelCls)
+
+    def _test_read_memMaster(self, structT):
+        u = AxiLiteEndpointTC.mySetUp(self, 32, structT)
+        MAGIC = 100
+        
+        regs = self.regs
+        regs.field0.read()
+        regs.field1.read()
+        regs.field0.read()
+        regs.field1.read()
+        
+        u.decoded.field0._ag.din.extend([MAGIC])
+        u.decoded.field1._ag.din.extend([MAGIC + 1])
+
+        self.randomizeAll()
+        self.runSim(30 * self.CLK)
+
+        self.assertValSequenceEqual(u.bus.r._ag.data,
+                                    [(MAGIC, RESP_OKAY),
+                                     (MAGIC + 1, RESP_OKAY),
+                                     (MAGIC, RESP_OKAY),
+                                     (MAGIC + 1, RESP_OKAY)
+                                     ])
+
+    def _test_write_memMaster(self, structT):
+        u = AxiLiteEndpointTC.mySetUp(self, 32, structT)
+        MAGIC = 100
+        regs = self.regs
+        f0, f1 = regs.field0, regs.field1
+        f0.write(MAGIC)
+        f1.write(MAGIC + 1)
+        f0.write(MAGIC + 2)
+        f1.write(MAGIC + 3)
+
+        self.randomizeAll()
+        self.runSim(50 * self.CLK)
+
+        self.assertValSequenceEqual(u.decoded.field0._ag.dout,
+                                    [MAGIC,
+                                     MAGIC + 2
+                                     ])
+        self.assertValSequenceEqual(u.decoded.field1._ag.dout,
+                                    [MAGIC + 1,
+                                     MAGIC + 3
+                                     ])
+        self.assertValSequenceEqual(
+            u.bus.b._ag.data, [RESP_OKAY for _ in range(4)])
+
+    def test_read_memMaster(self):
+        self._test_read_memMaster(structTwoFields)
+
+    def test_write_memMaster(self):
+        self._test_write_memMaster(structTwoFields)
+
+    def test_read_holeBefore_memMaster(self):
+        self._test_read_memMaster(structTwoFieldsDenseStart)
+
+    def test_write_holeBefore_memMaster(self):
+        self._test_write_memMaster(structTwoFieldsDenseStart)
+
+    def test_read_holeInside_memMaster(self):
+        self._test_read_memMaster(structTwoFieldsDense)
+
+    def test_write_holeInside_memMaster(self):
+        self._test_write_memMaster(structTwoFieldsDense)
+
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
@@ -189,6 +266,7 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointMemMasterTC))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

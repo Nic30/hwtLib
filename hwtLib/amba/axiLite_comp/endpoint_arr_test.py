@@ -12,12 +12,15 @@ from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC
 from hwt.hdl.types.bits import Bits
 
-
 structTwoArr = HStruct(
                        (uint32_t[4], "field0"),
                        (uint32_t[4], "field1")
                        )
-
+structTwoArr_str = """\
+struct {
+    <Bits, 32bits, unsigned>[4] field0 // start:0x0(bit) 0x0(byte)
+    <Bits, 32bits, unsigned>[4] field1 // start:0x80(bit) 0x10(byte)
+}"""
 structStructsInArray = HStruct(
                         (HStruct(
                                 (uint32_t, "field0"),
@@ -25,6 +28,13 @@ structStructsInArray = HStruct(
                                 )[4],
                          "arr"),
                         )
+structStructsInArray_str = """\
+struct {
+    struct {
+        <Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
+        <Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
+    }[4] arr // start:0x0(bit) 0x0(byte)
+}"""
 
 
 class AxiLiteEndpointArray(AxiLiteEndpointTC):
@@ -94,11 +104,7 @@ class AxiLiteEndpointArray(AxiLiteEndpointTC):
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = """struct {
-    <Bits, 32bits, unsigned>[4] field0 // start:0x0(bit) 0x0(byte)
-    <Bits, 32bits, unsigned>[4] field1 // start:0x80(bit) 0x10(byte)
-}"""
-        self.assertEqual(s, expected)
+        self.assertEqual(s, structTwoArr_str)
 
 
 class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
@@ -116,9 +122,6 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
         self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
-    def aTrans(self, addr, prot=0):
-        return (addr, prot)
-
     def test_nop(self):
         u = self.mySetUp(32)
 
@@ -133,13 +136,7 @@ class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = """struct {
-    struct {
-        <Bits, 32bits, unsigned> field0 // start:0x0(bit) 0x0(byte)
-        <Bits, 32bits, unsigned> field1 // start:0x20(bit) 0x4(byte)
-    }[4] arr // start:0x0(bit) 0x0(byte)
-}"""
-        self.assertEqual(s, expected)
+        self.assertEqual(s, structStructsInArray_str)
 
     def test_read(self):
         u = self.mySetUp(32)
