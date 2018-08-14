@@ -4,6 +4,7 @@ from hwt.hdl.constants import WRITE, READ
 
 
 class TupleWithCallback(tuple):
+
     def __new__(cls, *args):
         return tuple.__new__(cls, args)
 
@@ -25,8 +26,8 @@ class AvalonMmMemSpaceMaster(AbstractMemSpaceMaster):
         :param onDone: callback function(sim) -> None
         """
         bus = self._bus._ag
-        bus._ag.req.append((WRITE, addr, data, mask))
-        self._writeAddr(self._bus._ag.aw, addr, size)
+        burstSize = 1
+        bus.req.append((WRITE, addr, burstSize))
 
         if onDone:
             d = TupleWithCallback(data, mask)
@@ -41,7 +42,8 @@ class AvalonMmMemSpaceMaster(AbstractMemSpaceMaster):
         add read address transaction to agent
         """
         bus = self._bus._ag
-        bus._ag.req.append((READ, addr))
+        burstsize = 1
+        bus.req.append((READ, addr, burstsize))
 
         if onDone:
             raise NotImplementedError()
