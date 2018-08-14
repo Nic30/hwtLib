@@ -37,7 +37,7 @@ struct {
 }"""
 
 
-class AxiLiteEndpointArray(AxiLiteEndpointTC):
+class AxiLiteEndpointArrayTC(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structTwoArr
     FIELD_ADDR = [0x0, 0x10]
 
@@ -107,7 +107,7 @@ class AxiLiteEndpointArray(AxiLiteEndpointTC):
         self.assertEqual(s, structTwoArr_str)
 
 
-class AxiLiteEndpointStructsInArray(AxiLiteEndpointTC):
+class AxiLiteEndpointStructsInArrayTC(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structStructsInArray
 
     def mySetUp(self, data_width=32):
@@ -195,8 +195,8 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointArray))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointStructsInArray))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointArrayTC))
+    suite.addTest(unittest.makeSuite(AxiLiteEndpointStructsInArrayTC))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

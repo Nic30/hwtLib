@@ -12,8 +12,8 @@ from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
 from hwtLib.amba.axi4_streamToMem_test import Axi4_streamToMemTC
 from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
-from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArray, \
-    AxiLiteEndpointStructsInArray
+from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArrayTC, \
+    AxiLiteEndpointStructsInArrayTC
 from hwtLib.amba.axiLite_comp.endpoint_fromInterfaces_test import \
     AxiLiteEndpoint_fromInterfaceTC, AxiLiteEndpoint_fromInterface_arr_TC
 from hwtLib.amba.axiLite_comp.endpoint_struct_test import \
@@ -335,8 +335,8 @@ suite = testSuiteFromTCs(
     AxiLiteEndpointDenseStartTC,
     AxiLiteEndpointDenseTC,
     AxiLiteEndpointMemMasterTC,
-    AxiLiteEndpointArray,
-    AxiLiteEndpointStructsInArray,
+    AxiLiteEndpointArrayTC,
+    AxiLiteEndpointStructsInArrayTC,
     AxiLiteEndpoint_struct_TC,
     AxiLiteEndpoint_arrayStruct_TC,
     AxiLiteEndpoint_fromInterfaceTC,
