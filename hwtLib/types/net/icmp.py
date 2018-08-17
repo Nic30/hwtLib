@@ -3,16 +3,16 @@ from hwt.hdl.types.struct import HStruct
 
 
 ICMP_header_t = HStruct(
-                    (Bits(8), "type"), (Bits(8), "code"), (Bits(16), "checksum"),
-                    (Bits(32), "restOfHeader"),
-                    name="ICMP_header_t"
-                )
+    (Bits(8), "type"), (Bits(8), "code"), (Bits(16), "checksum"),
+    (Bits(32), "restOfHeader"),
+    name="ICMP_header_t"
+)
 
 ICMP_echo_header_t = HStruct(
-                    (Bits(8), "type"), (Bits(8), "code"), (Bits(16), "checksum"),
-                    (Bits(16), "identifier"), (Bits(16), "seqNo"),
-                    name="ICMP_echo_header_t"
-              )
+    (Bits(8), "type"), (Bits(8), "code"), (Bits(16), "checksum"),
+    (Bits(16), "identifier"), (Bits(16), "seqNo"),
+    name="ICMP_echo_header_t"
+)
 
 
 class ICMP_TYPE():

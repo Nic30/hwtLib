@@ -11,7 +11,8 @@ from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, \
 class Axi_datapumpBase(Unit):
     """
     :ivar param MAX_TRANS_OVERLAP: max number of concurrent transactions
-    :ivar driver: interface which is used to drive this datapump (AxiRDatapumpIntf or AxiWDatapumpIntf)
+    :ivar driver: interface which is used to drive this datapump
+        (AxiRDatapumpIntf or AxiWDatapumpIntf)
     """
 
     def __init__(self, axiAddrCls=Axi4_addr):
@@ -44,7 +45,9 @@ class Axi_datapumpBase(Unit):
         return log2ceil(self.DATA_WIDTH // 8).val
 
     def useTransSplitting(self):
-        return self.driver.req.len._dtype.bit_length() > self.a.len._dtype.bit_length()
+        req_len = self.driver.req.len._dtype.bit_length()
+        len_len = self.a.len._dtype.bit_length()
+        return req_len > len_len
 
     def getBurstAddrOffset(self):
         return (self.getAxiLenMax() + 1) << self.getSizeAlignBits()

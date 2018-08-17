@@ -11,6 +11,7 @@ from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
 
 
 class HsJoinWithReference(HsJoinPrioritized):
+
     def _declr(self):
         HsJoinPrioritized._declr(self)
         addClkRstn(self)
@@ -18,6 +19,7 @@ class HsJoinWithReference(HsJoinPrioritized):
 
 class HsJoinPrioritizedTC(SimTestCase):
     randomized = False
+
     def setUp(self):
         super(HsJoinPrioritizedTC, self).setUp()
         self.u = HsJoinWithReference(Handshaked)
@@ -43,14 +45,16 @@ class HsJoinPrioritizedTC(SimTestCase):
 
 class HsJoinPrioritized_randomized_TC(HsJoinPrioritizedTC):
     randomized = True
+
     def setUp(self):
         super(HsJoinPrioritized_randomized_TC, self).setUp()
         self.randomize(self.u.dataOut)
 
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(FifoTC('test_normalOp'))
-    
+
     suite.addTest(unittest.makeSuite(HsJoinPrioritizedTC))
     suite.addTest(unittest.makeSuite(HsJoinPrioritized_randomized_TC))
     runner = unittest.TextTestRunner(verbosity=3)

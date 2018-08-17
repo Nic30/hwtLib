@@ -9,6 +9,12 @@ from hwt.synthesizer.interface import Interface
 
 
 class I2c(Interface):
+    """
+    I2C interface also known as IIC, TWI or Two Wire
+
+    If interface is outside of chip it needs pull-up resistors
+    """
+
     def _declr(self):
         self.scl = TristateClk()  # serial clk
         self.sda = TristateSig()  # serial data
@@ -86,8 +92,8 @@ class I2cAgent(AgentWitReset):
             self.sda._write(b, sim)
 
 
-
 class IP_IIC(IntfConfig):
+
     def __init__(self):
         super().__init__()
         self.name = "iic"

@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import If, log2ceil
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, Signal
@@ -9,7 +12,7 @@ from hwtLib.mem.ram import RamSingleClock
 
 
 def splitOnBytes(sig):
-    return [sig[(i + 1) * 8:i * 8] 
+    return [sig[(i + 1) * 8:i * 8]
             for i in range(sig._dtype.bit_length() // 8)]
 
 
@@ -28,7 +31,7 @@ class ByteCntrs(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(64)
         self.MAX_FRAME_LEN = Param(1530)
-    
+
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
@@ -56,20 +59,20 @@ class ByteCntrs(Unit):
         din = self.dataIn
         # do cleanup of counters logic
         doCleanup = self._reg("do_cleanup", defVal=1)
-        cleanupAddr = self._reg("do_cleanup", Bits(8), defVal=0) 
+        cleanupAddr = self._reg("do_cleanup", Bits(8), defVal=0)
         If(doCleanup,
             If(cleanupAddr._eq(255),
                doCleanup(0)
             )
         )
-        
+
         # counter incrementing logic
         inReady = self._sig("in_ready")
         prev = self._reg("prev", din.data._dtype)
         prevStrb = self._reg("prev_strb", din.strb._dtype, 0)
         dinBytes = splitOnBytes(din.data)
         prevDinBytes = splitOnBytes(prev)
-        
+
         prev(din.data)
 
         for bi in range(B_CNT):
@@ -81,7 +84,7 @@ class ByteCntrs(Unit):
             c.a.en(1)
             c.a.we(0)
             c.a.din(None)
-            
+
             If(prevStrb[bi] & _prevIn._eq(_in),
                # check if previous byte was same and we have to add it to currently loading value
                prevStrb.next[bi](0),
@@ -91,19 +94,19 @@ class ByteCntrs(Unit):
                prevStrb.next[bi](din.valid & inReady & din.strb[bi]),
                c.b.din(c.a.dout + 1)
             )
-            
+
             c.b.addr(_prevIn)
             c.b.en(prevStrb[bi])
             c.b.we(1)
-    
+
 
 class EntropyDetector(Unit):
     """
     Detect the entropy of the frame/packet
-    
+
     Appereance of bytes is counted and at the end the entropy is resolved from this counters
-    
-    
+
+
     :ivar DATA_WIDTH: data width of input interface
     :ivar ENTROPY_WIDTH: data width of entropy output
     :ivar MAX_FRAME_LEN: frame len which is used to resolve widths of byte appereance conters
@@ -117,7 +120,7 @@ class EntropyDetector(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.dataIn = AxiStream()
-        
+
         self.entropy = Handshaked()
         self.entropy._replaceParam("DATA_WIDTH", self.ENTROPY_WIDTH)
         self.byteCntrs = ByteCntrs()
@@ -126,7 +129,7 @@ class EntropyDetector(Unit):
         # log2 http://www.ijsps.com/uploadfile/2014/1210/20141210051242629.pdf
         propagateClkRstn(self)
         self.byteCntrs.dataIn(self.dataIn)
-        
+
         # todo accululate result from self.byteCntrs.res
 
 

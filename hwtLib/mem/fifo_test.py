@@ -65,7 +65,7 @@ class FifoTC(SimTestCase):
     IN_CLK = 10 * Time.ns
     OUT_CLK = 10 * Time.ns
     CLK = max(IN_CLK, OUT_CLK)
- 
+
     def setUp(self):
         super(FifoTC, self).setUp()
         u = self.u = Fifo()
@@ -159,7 +159,7 @@ class FifoTC(SimTestCase):
             yield
 
         self.procs.append(init)
-        
+
         self.runSim(self.ITEMS * 4 * self.CLK)
 
         collected = u.dataOut._ag.data
@@ -171,7 +171,7 @@ class FifoTC(SimTestCase):
     def test_tryMore2(self, capturedOffset=2):
         u = self.u
 
-        ref = [i + 1  for i in range(self.ITEMS * 2)]
+        ref = [i + 1 for i in range(self.ITEMS * 2)]
         u.dataIn._ag.data.extend(ref)
 
         def closeOutput(sim):
@@ -185,9 +185,10 @@ class FifoTC(SimTestCase):
 
         self.assertSetEqual(self.getFifoItems(),
                             set(ref[capturedOffset:self.ITEMS + capturedOffset]))
-        self.assertSequenceEqual(collected, ref[:capturedOffset])
-        self.assertSequenceEqual(self.getUnconsumedInput(), ref[self.ITEMS + capturedOffset:])
-    
+        se = self.assertSequenceEqual
+        se(collected, ref[:capturedOffset])
+        se(self.getUnconsumedInput(), ref[self.ITEMS + capturedOffset:])
+
     def test_randomizedIn(self):
         self._test_randomized(True, False)
 
@@ -196,7 +197,7 @@ class FifoTC(SimTestCase):
 
     def test_randomizedAll(self):
         self._test_randomized(True, True)
-            
+
     def _test_randomized(self, randIn, randOut):
         u = self.u
         LEN = 80
@@ -249,13 +250,14 @@ class FifoTC(SimTestCase):
         u.dataIn._ag.data.extend(ref)
 
         def pause(simulator):
-            yield simulator.wait(3 * self.OUT_CLK)
+            wait = simulator.wait
+            yield wait(3 * self.OUT_CLK)
             u.dataOut._ag.setEnable_asMonitor(False, simulator)
-            yield simulator.wait(3 * self.OUT_CLK)
+            yield wait(3 * self.OUT_CLK)
             u.dataOut._ag.setEnable_asMonitor(True, simulator)
-            yield simulator.wait(3 * self.IN_CLK)
+            yield wait(3 * self.IN_CLK)
             u.dataIn._ag.setEnable_asDriver(False, simulator)
-            yield simulator.wait(3 * self.IN_CLK)
+            yield wait(3 * self.IN_CLK)
             u.dataIn._ag.setEnable_asDriver(True, simulator)
 
         self.procs.append(pause)
@@ -271,13 +273,14 @@ class FifoTC(SimTestCase):
         u.dataIn._ag.data.extend(ref)
 
         def pause(simulator):
-            yield simulator.wait(4 * self.OUT_CLK)
+            wait = simulator.wait
+            yield wait(4 * self.OUT_CLK)
             u.dataOut._ag.setEnable_asMonitor(False, simulator)
-            yield simulator.wait(3 * self.OUT_CLK)
+            yield wait(3 * self.OUT_CLK)
             u.dataOut._ag.setEnable_asMonitor(True, simulator)
-            yield simulator.wait(3 * self.IN_CLK)
+            yield wait(3 * self.IN_CLK)
             u.dataIn._ag.setEnable_asDriver(False, simulator)
-            yield simulator.wait(3 * self.IN_CLK)
+            yield wait(3 * self.IN_CLK)
             u.dataIn._ag.setEnable_asDriver(True, simulator)
 
         self.procs.append(pause)

@@ -9,7 +9,7 @@ from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointDenseTC
 from hwtLib.mem.bramPortEndpoint import BramPortEndpoint
 from hwtLib.mem.bramPortSimMemSpaceMaster import BramPortSimMemSpaceMaster
-from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArray
+from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArrayTC
 
 
 class BramPortEndpointTC(AxiLiteEndpointTC):
@@ -103,7 +103,7 @@ class BramPortEndpointDenseStartTC(BramPortEndpointTC):
         AxiLiteEndpointDenseStartTC.test_registerMap(self)
 
 
-class BramPortEndpointArray(AxiLiteEndpointArray):
+class BramPortEndpointArrayTC(AxiLiteEndpointArrayTC):
     FIELD_ADDR = [0x0, 0x4]
     mkRegisterMap = BramPortEndpointTC.mkRegisterMap
     mySetUp = BramPortEndpointTC.mySetUp
@@ -181,7 +181,7 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(BramPortEndpointTC))
     suite.addTest(unittest.makeSuite(BramPortEndpointDenseTC))
     suite.addTest(unittest.makeSuite(BramPortEndpointDenseStartTC))
-    suite.addTest(unittest.makeSuite(BramPortEndpointArray))
+    suite.addTest(unittest.makeSuite(BramPortEndpointArrayTC))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

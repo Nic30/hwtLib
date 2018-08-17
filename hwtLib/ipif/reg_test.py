@@ -25,7 +25,8 @@ class IpifRegWithEndpoint(Unit):
             self.bus = Ipif()
             self.reg = IpifReg()
             self.ep = IpifEndpoint(self.STRUCT_TEMPLATE)
-            self.decoded = StructIntf(self.STRUCT_TEMPLATE, self.ep._mkFieldInterface)
+            self.decoded = StructIntf(self.STRUCT_TEMPLATE,
+                                      self.ep._mkFieldInterface)
 
     def _impl(self):
         propagateClkRstn(self)

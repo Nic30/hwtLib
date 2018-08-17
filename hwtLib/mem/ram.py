@@ -14,7 +14,7 @@ from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 class RamSingleClock(Unit):
     """
     RAM with only one clock signal
-    
+
     .. hwt-schematic::
     """
     def _config(self):

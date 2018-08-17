@@ -6,7 +6,7 @@ from hwt.synthesizer.param import Param
 class AvalonST(Handshaked):
     """
     Avalon stream interface
-    
+
     :note: handshaked stream with cahnnel, error, sof, eof signal
     """
 
@@ -20,11 +20,11 @@ class AvalonST(Handshaked):
         self.channel = VectSignal(self.CHANNEL_WIDTH)
         self.error = VectSignal(self.ERROR_WIDTH)
         Handshaked._declr(self)
-        
+
         # packet transfer signals
         self.endOfPacket = Signal()
         self.startOfPacket = Signal()
-    
+
     def _getSimAgent(self):
         return AvalonSTAgent
 
@@ -41,7 +41,7 @@ class AvalonSTAgent(HandshakedAgent):
         intf = self.intf
         return (r(intf.channel), r(intf.data), r(intf.error),
                 r(intf.endOfPacket), r(intf.startOfPacket))
-    
+
     def doWrite(self, s, data):
         w = s.write
         intf = self.intf
@@ -58,4 +58,4 @@ class AvalonSTAgent(HandshakedAgent):
             w(error, intf.error)
             w(endOfPacket, intf.endOfPacket)
             w(startOfPacket, intf.startOfPacket)
-            
+

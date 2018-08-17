@@ -69,7 +69,7 @@ class AvalonMM(Interface):
 class AvalonMmDataRAgent(VldSyncedAgent):
     """
     Simulation/verification agent for data part of AvalomMM interface
-    
+
     * vld signal = readDataValid
     * data signal = (readData, response)
     """
@@ -141,7 +141,7 @@ class AvalonMmAddrAgent(HandshakedAgent):
             w = 0
         else:
             mode = self.actualData[0]
-            
+
             if mode is READ:
                 r = val
                 w = 0
@@ -214,7 +214,7 @@ class AvalonMmWRespAgent(VldSyncedAgent):
 
     def doRead(self, s):
         return s.read(self.intf.response)
-    
+
     def doWrite(self, s, data):
         s.write(data, self.intf.response)
 
@@ -222,7 +222,7 @@ class AvalonMmWRespAgent(VldSyncedAgent):
 class AvalonMmAgent(SyncAgentBase):
     """
     Simulation agent for AvalonMM bus interface
-    
+
     :ivar req: request data, items are tuples (READ/WRITE, address, burstCount)
     :ivar wData: data to write, items are tuples (data, byteenable)
     :ivar wResp: write response data
@@ -234,7 +234,7 @@ class AvalonMmAgent(SyncAgentBase):
         self.addrAg = AvalonMmAddrAgent(intf, allowNoReset=allowNoReset)
         self.rDataAg = AvalonMmDataRAgent(intf, allowNoReset=allowNoReset)
         self.wRespAg = AvalonMmWRespAgent(intf, allowNoReset=allowNoReset)
-    
+
     def req_get(self):
         return self.addrAg.data
 
@@ -242,21 +242,21 @@ class AvalonMmAgent(SyncAgentBase):
         self.addrAg.data = v
 
     req = property(req_get, req_set)
-    
+
     def wData_get(self):
         return self.addrAg.wData
 
     def wData_set(self, v):
         self.addrAg.wData = v
-    
+
     wData = property(wData_get, wData_set)
-    
+
     def wResp_get(self):
         return self.wRespAg.data
-    
+
     def wResp_set(self, v):
         self.wRespAg = v
-    
+
     wResp = property(wResp_get, wResp_set)
 
     def rData_get(self):
@@ -270,8 +270,8 @@ class AvalonMmAgent(SyncAgentBase):
     def getDrivers(self):
         self.setEnable = self.setEnable_asDriver
         return (self.rDataAg.getMonitors()
-                 +self.addrAg.getDrivers()
-                 +self.wRespAg.getMonitors())
+                +self.addrAg.getDrivers()
+                +self.wRespAg.getMonitors())
 
     def getMonitors(self):
         self.setEnable = self.setEnable_asMonitor

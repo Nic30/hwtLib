@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import unittest
 
 from hwt.hdl.constants import Time
@@ -14,7 +17,7 @@ class AvalonStWire(Unit):
         addClkRstn(self)
         self.dataIn = AvalonST()
         self.dataOut = AvalonST()
-    
+
     def _impl(self):
         self.dataOut(self.dataIn)
 
@@ -26,7 +29,7 @@ class AvalonStAgentTC(SimTestCase):
         SimTestCase.setUp(self)
         self.u = AvalonStWire()
         self.prepareUnit(self.u)
-    
+
     def test_nop(self):
         u = self.u
         self.runSim(10 * self.CLK)
@@ -35,13 +38,13 @@ class AvalonStAgentTC(SimTestCase):
             u.dataOut._ag.data,
             []
         )
-    
+
     def test_can_pass_data(self):
         u = self.u
         N = 10
-        
+
         u.dataIn._ag.data.extend(range(N))
-        
+
         self.runSim((N + 10) * self.CLK)
 
         self.assertValSequenceEqual(
@@ -52,11 +55,11 @@ class AvalonStAgentTC(SimTestCase):
     def test_can_pass_data_randomized(self):
         u = self.u
         N = 40
-        
+
         u.dataIn._ag.data.extend(range(N))
         self.randomize(u.dataIn)
         self.randomize(u.dataOut)
-        
+
         self.runSim(4 * N * self.CLK)
 
         self.assertValSequenceEqual(

@@ -89,7 +89,7 @@ class I2cMasterBitCtrl(Unit):
      Tsu:sto      4.0us          0.6us   setup time for a stop condition
      Tbuf         4.7us          1.3us   Bus free time between a stop and start condition
     ============ ============== =============================================================
-    
+
     .. hwt-schematic::
     """
     def _config(self):
@@ -212,11 +212,11 @@ class I2cMasterBitCtrl(Unit):
         cmd_ack = self.cntrl.rd
 
         stT = HEnum("stT",
-                   ["idle",
-                    "start_0", "start_1", "start_2", "start_3", "start_4",
-                    "stop_0", "stop_1", "stop_2", "stop_3",
-                    "rd_0", "rd_1", "rd_2", "rd_3",
-                    "wr_0", "wr_1", "wr_2", "wr_3"])
+                    ["idle",
+                     "start_0", "start_1", "start_2", "start_3", "start_4",
+                     "stop_0", "stop_1", "stop_2", "stop_3",
+                     "rd_0", "rd_1", "rd_2", "rd_3",
+                     "wr_0", "wr_1", "wr_2", "wr_3"])
 
         fsm = FsmBuilder(self, stT)
         st = fsm.stateReg

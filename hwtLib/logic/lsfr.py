@@ -18,7 +18,7 @@ class Lsfr(Unit):
     """
     Linear shift feedback register,
     form of hardware pseudorandom generator
-    
+
     .. hwt-schematic::
     """
 

@@ -15,11 +15,14 @@ class HsResizer(HandshakedCompBase):
     """
     def __init__(self, hsIntfCls, scale, inIntfConfigFn, outIntfConfigFn):
         """
-        :param hsIntfCls: class of interface which should be used as interface of this unit
-        :param scale: tuple (in scale, out scale) one of scales has to be 1, f. e. (1,2) means output
-            will be 2x wider
-        :param inIntfConfigFn: function inIntfConfigFn(input interface) which will be applied on dataIn
-        :param outIntfConfigFn: function outIntfConfigFn(input interface) which will be applied on dataOut
+        :param hsIntfCls: class of interface which should be used
+            as interface of this unit
+        :param scale: tuple (in scale, out scale) one of scales has to be 1,
+            f. e. (1,2) means output will be 2x wider
+        :param inIntfConfigFn: function inIntfConfigFn(input interface)
+            which will be applied on dataIn
+        :param outIntfConfigFn: function outIntfConfigFn(input interface)
+            which will be applied on dataOut
         """
         HandshakedCompBase.__init__(self, hsIntfCls)
 
@@ -65,9 +68,10 @@ class HsResizer(HandshakedCompBase):
                                    Bits(log2ceil(factor + 1), False),
                                    defVal=0)
 
-        for din, dout in zip(self.getData(self.dataIn), self.getData(self.dataOut)):
+        for din, dout in zip(self.getData(self.dataIn),
+                             self.getData(self.dataOut)):
             inputRegs = [self._reg("inReg%d_%s" % (i, din._name), din._dtype)
-                            for i in range(factor - 1) ]
+                         for i in range(factor - 1)]
             # last word will be passed directly
 
             for i, r in enumerate(inputRegs):

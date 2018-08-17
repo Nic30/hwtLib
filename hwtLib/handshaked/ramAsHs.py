@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import If
 from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import Handshaked, BramPort_withoutClk
@@ -41,12 +44,12 @@ class RamHsRAgent(AgentBase):
         self.data = intf.data._ag
 
     def getDrivers(self):
-        return (self.addr.getDrivers() + 
+        return (self.addr.getDrivers() +
                 self.data.getMonitors()
                 )
 
     def getMonitors(self):
-        return (self.addr.getMonitors() + 
+        return (self.addr.getMonitors() +
                 self.data.getDrivers()
                 )
 

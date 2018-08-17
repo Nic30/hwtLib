@@ -37,7 +37,8 @@ class HsJoinFairShare(HsJoinPrioritized):
         """
         Generate ack logic for selected input
 
-        :param priorityReg: priority register with one hot encoding, 1 means input of this index should have be prioritized.
+        :param priorityReg: priority register with one hot encoding,
+            1 means input of this index should have be prioritized.
         :param vldSignals: list of vld signals of input
         :param index: index of input for which you wont get ack logic
         :return: ack signal for this input

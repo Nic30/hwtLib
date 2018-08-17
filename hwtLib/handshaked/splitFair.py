@@ -84,7 +84,8 @@ class HsSplitFair(HsSplitCopy):
         rdSignals = self.isSelectedLogic()
 
         for dout in self.dataOut:
-            connect(self.dataIn, dout, exclude={self.getRd(dout), self.getVld(dout)})
+            connect(self.dataIn, dout, exclude={self.getRd(dout),
+                                                self.getVld(dout)})
 
         if self.EXPORT_SELECTED:
             self.getRd(self.dataIn)(Or(*rdSignals) & self.selectedOneHot.rd)

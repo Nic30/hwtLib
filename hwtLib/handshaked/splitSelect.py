@@ -11,8 +11,8 @@ from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 
 class HsSplitSelect(HandshakedCompBase):
     """
-    Split data from input interface to output interface based on explicit output index
-    provided by select interface
+    Split data from input interface to output interface based on explicit
+    output index provided by select interface
 
     .. aafig::
                 *----+ output0

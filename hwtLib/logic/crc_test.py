@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.logic.crcPoly import CRC_32 
@@ -87,7 +90,7 @@ class CrcTC(SimTestCase):
         out = int(u.dataOut._ag.data[-1])
         ref = crc32(inp)
         self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
-    
+
     def test_CRC32_0(self):
         u = self.setUpCrc(CRC_32)
         inp = b"\x00\x00\x00\x00"
@@ -144,7 +147,7 @@ class CrcTC(SimTestCase):
         #
         # for _d in C_240B:
         #    print(" 0x%x" % _d, end='')
-        
+
         self.runSim(40 * Time.ns)
         out = int(u.dataOut._ag.data[-1])
         ref = 0x28A4D370
@@ -159,10 +162,10 @@ class CrcTC(SimTestCase):
             stoi(C_240B[:len(C_240B) // 2]),
             stoi(C_240B[len(C_240B) // 2:]),
         ]
-        
+
         self.runSim(40 * Time.ns)
         out = int(u.dataOut._ag.data[-1])
-        
+
         ref = 0xC7CA64AF
         self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
 
@@ -174,7 +177,7 @@ class CrcTC(SimTestCase):
             stoi(C_240B[:len(C_240B) // 2]),
             stoi(C_240B[len(C_240B) // 2:]),
         ]
-        
+
         self.runSim(40 * Time.ns)
         out = int(u.dataOut._ag.data[-1])
         ref = 0xF52653E3
@@ -188,7 +191,7 @@ class CrcTC(SimTestCase):
             stoi(C_240B[:len(C_240B) // 2]),
             stoi(C_240B[len(C_240B) // 2:]),
         ]
-        
+
         self.runSim(40 * Time.ns)
         out = int(u.dataOut._ag.data[-1])
         ref = 0x0AD9AC1C
@@ -223,7 +226,7 @@ if __name__ == "__main__":
     # suite.addTest(CrcTC('test_wide'))
     # suite.addTest(CrcTC('test_240B_CRC32_init_refout_finxor'))
     # suite.addTest(CrcTC('test_240B'))
-    
+
     suite.addTest(unittest.makeSuite(CrcTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

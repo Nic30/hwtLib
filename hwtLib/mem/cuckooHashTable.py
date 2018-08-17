@@ -109,7 +109,7 @@ class CuckooHashTable(HashTableCore):
                     |                            +----------+   |
                     |                                           |
                     +-------------------------------------------+
-    
+
     .. hwt-schematic::
     """
 
@@ -378,6 +378,5 @@ class CuckooHashTable(HashTableCore):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    from hwtLib.logic.crcPoly import CRC_32
     u = CuckooHashTable([CRC_32, CRC_32])
     print(toRtl(u))
