@@ -12,8 +12,10 @@ class AvalonMmEndpoint(BusEndpoint):
     """
     Delegate request from bus to fields of structure
 
-    :attention: interfaces are dynamically generated from names of fileds in structure template
-    :attention: byte enable and register clock enable signals are ignored
+    :attention: interfaces are dynamically generated
+        from names of fileds in structure template
+    :attention: byte enable and register clock enable signals
+        are ignored
     """
 
     _getWordAddrStep = AvalonMM._getWordAddrStep
@@ -58,21 +60,26 @@ class AvalonMmEndpoint(BusEndpoint):
         bus.waitRequest(bus.read & ~st._eq(st_t.rdData))
         bus.readDataValid(st._eq(st_t.rdData))
         bus.writeResponseValid(wr)
-        
+
         ADDR_STEP = self._getAddrStep()
         dataToBus = bus.readData(None)
         for t in reversed(self._bramPortMapped):
             # map addr for bram ports
             _addr = t.bitAddr // ADDR_STEP
             _isMyAddr = isMyAddr(addr, _addr, t.bitAddrEnd // ADDR_STEP)
+            wasMyAddr = self._reg("wasMyAddr")
+            If(st._eq(st_t.idle),
+                wasMyAddr(_isMyAddr)
+            )
             port = self.getPort(t)
 
-            self.propagateAddr(addr, ADDR_STEP, port.addr, port.dout._dtype.bit_length(), t)
+            self.propagateAddr(addr, ADDR_STEP, port.addr,
+                               port.dout._dtype.bit_length(), t)
 
             port.en(_isMyAddr & addrVld)
             port.we(_isMyAddr & wr)
 
-            dataToBus = If(_isMyAddr,
+            dataToBus = If(wasMyAddr & st._eq(st_t.rdData),
                 bus.readData(port.dout)
             ).Else(
                 dataToBus
