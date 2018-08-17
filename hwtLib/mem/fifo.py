@@ -30,7 +30,7 @@ class Fifo(Unit):
 
     def _declr(self):
         assert int(
-            self.DEPTH) > 0,  "Fifo is disabled in this case, do not use it entirely"
+            self.DEPTH) > 0, "Fifo is disabled in this case, do not use it entirely"
         addClkRstn(self)
         with self._paramsShared():
             self.dataIn = FifoWriter()

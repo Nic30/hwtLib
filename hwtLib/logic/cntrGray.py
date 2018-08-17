@@ -15,7 +15,7 @@ from hwt.synthesizer.unit import Unit
 class GrayCntr(Unit):
     """
     Counter for gray code
-    
+
     .. hwt-schematic::
     """
     def _config(self):

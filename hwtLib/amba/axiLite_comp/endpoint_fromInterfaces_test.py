@@ -21,6 +21,7 @@ class Loop(Unit):
     """
     Simple loop for any interface
     """
+
     def __init__(self, interfaceCls):
         self.interfaceCls = interfaceCls
         super(Loop, self).__init__()
@@ -38,6 +39,7 @@ class Loop(Unit):
 
 
 class SigLoop(Unit):
+
     def _config(self):
         self.DATA_WIDTH = Param(32)
 
@@ -53,6 +55,7 @@ class TestUnittWithChilds(Unit):
     """
     Container of AxiLiteEndpoint constructed by fromInterfaceMap
     """
+
     def _config(self):
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(32)
@@ -86,6 +89,7 @@ class TestUnittWithChilds(Unit):
 
         def configEp(ep):
             ep._updateParamsFrom(self)
+
         rltSig10 = self._sig("sig", Bits(self.DATA_WIDTH), defVal=10)
         interfaceMap = (
             (rltSig10, "rltSig10"),
@@ -107,10 +111,22 @@ class TestUnittWithChilds(Unit):
         propagateClkRstn(self)
 
 
+TestUnittWithChilds_add_space_str = """\
+struct {
+    <Bits, DATA_WIDTH, 32bits> rltSig10 // start:0x0(bit) 0x0(byte)
+    <Bits, DATA_WIDTH, 32bits> signal // start:0x20(bit) 0x4(byte)
+    <Bits, DATA_WIDTH, 32bits> regCntrl // start:0x40(bit) 0x8(byte)
+    <Bits, DATA_WIDTH, 32bits> vldSynced // start:0x60(bit) 0xc(byte)
+    <Bits, 32bits>[4] bram // start:0x80(bit) 0x10(byte)
+    //<Bits, DATA_WIDTH, 32bits> empty space // start:0x100(bit) 0x20(byte)
+}"""
+
+
 class TestUnittWithArr(Unit):
     """
     Container of AxiLiteEndpoint constructed by fromInterfaceMap
     """
+
     def _config(self):
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(32)
@@ -136,6 +152,7 @@ class TestUnittWithArr(Unit):
 
         def configEp(ep):
             ep._updateParamsFrom(self)
+
         interfaceMap = (
             ([self.regCntrlLoop0.din,
               self.regCntrlLoop1.din,
@@ -151,6 +168,12 @@ class TestUnittWithArr(Unit):
         axiLiteConv.bus(self.bus)
 
         propagateClkRstn(self)
+
+
+TestUnittWithArr_addr_space_str = """\
+struct {
+    <Bits, DATA_WIDTH, 32bits>[3] regCntrl // start:0x0(bit) 0x0(byte)
+}"""
 
 
 class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
@@ -218,7 +241,7 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
                                     [(10, RESP_OKAY),
                                      (MAGIC, RESP_OKAY),
                                      (MAGIC + 1, RESP_OKAY),
-                                     (None, RESP_OKAY), ] +
+                                     (None, RESP_OKAY), ] + 
                                     [(MAGIC + 2 + i, RESP_OKAY) for i in range(4)])
 
     def test_write(self):
@@ -243,18 +266,11 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = """struct {
-    <Bits, DATA_WIDTH, 32bits> rltSig10 // start:0x0(bit) 0x0(byte)
-    <Bits, DATA_WIDTH, 32bits> signal // start:0x20(bit) 0x4(byte)
-    <Bits, DATA_WIDTH, 32bits> regCntrl // start:0x40(bit) 0x8(byte)
-    <Bits, DATA_WIDTH, 32bits> vldSynced // start:0x60(bit) 0xc(byte)
-    <Bits, 32bits>[4] bram // start:0x80(bit) 0x10(byte)
-    //<Bits, DATA_WIDTH, 32bits> empty space // start:0x100(bit) 0x20(byte)
-}"""
-        self.assertEqual(s, expected)
+        self.assertEqual(s, TestUnittWithChilds_add_space_str)
 
 
 class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
+
     def mySetUp(self, data_width=32):
         u = self.u = TestUnittWithArr()
 
@@ -319,10 +335,7 @@ class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
     def test_registerMap(self):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
-        expected = """struct {
-    <Bits, DATA_WIDTH, 32bits>[3] regCntrl // start:0x0(bit) 0x0(byte)
-}"""
-        self.assertEqual(s, expected)
+        self.assertEqual(s, TestUnittWithArr_addr_space_str)
 
 
 if __name__ == "__main__":

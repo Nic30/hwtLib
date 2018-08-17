@@ -42,17 +42,17 @@ class Axi4_streamToMemTC(SimTestCase):
         sampleData = [self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]
         m = Axi3DenseMem(u.clk, u.axi)
         blockPtr = m.malloc(self.DATA_WIDTH // 8 * N)
-        
+
         u.dataIn._ag.data.extend(sampleData)
 
         regs.baseAddr.write(blockPtr)
         regs.control.write(1)
-        
-        self.runSim(N * 30 * Time.ns) 
 
-        self.assertValSequenceEqual(m.getArray(blockPtr, self.DATA_WIDTH // 8, N), sampleData)
-        
-        
+        self.runSim(N * 30 * Time.ns)
+
+        self.assertValSequenceEqual(m.getArray(blockPtr, self.DATA_WIDTH // 8, N),
+                                    sampleData)
+
 
 if __name__ == "__main__":
     import unittest

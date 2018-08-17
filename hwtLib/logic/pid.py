@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.synthesizer.param import Param
 from hwt.interfaces.utils import addClkRstn
 from hwt.interfaces.std import VectSignal
@@ -27,7 +30,7 @@ class PidController(Unit):
     a3 = - K_d / T_s
 
     :note: You can obtain coeficiet f.e. by Ziegler-Nichols method.
-    
+
     .. hwt-schematic::
     """
 

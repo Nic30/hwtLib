@@ -15,7 +15,7 @@ from hwt.synthesizer.vectorUtils import iterBits
 class OneHotToBin(Unit):
     """
     Converts one hot signal to binary, bin.vld is high when oneHot != 0
-    
+
     .. hwt-schematic::
     """
 
@@ -44,7 +44,7 @@ def oneHotToBin(parent, signals, resName="oneHotToBin"):
         connections = res(len(signals) - i - 1)
 
         if leadingZeroTop is None:
-            leadingZeroTop = connections 
+            leadingZeroTop = connections
         else:
             leadingZeroTop = If(s,
                                 connections

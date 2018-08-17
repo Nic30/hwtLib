@@ -11,16 +11,16 @@ UDP_header_t = HStruct(
     )
 
 UDP_IPv4PseudoHeader_t = HStruct(
-                        (ipv4_t, "src"),
-                        (ipv4_t, "dst"),
-                        (Bits(8), "zeros"), (uint8_t, "protocol"), (uint16_t, "udpLength")
-                        ) + UDP_header_t
+    (ipv4_t, "src"),
+    (ipv4_t, "dst"),
+    (Bits(8), "zeros"), (uint8_t, "protocol"), (uint16_t, "udpLength")
+) + UDP_header_t
 UDP_IPv4PseudoHeader_t.name = "UDP_IPv4PseudoHeader_t"
 
 UDP_IPv6PseudoHeader_t = HStruct(
-                        (ipv6_t, "src"),
-                        (ipv6_t, "dst"),
-                        (uint32_t, "udpLength"),
-                        (Bits(24), "zeros"), (Bits(8), "nextHeader")
-                        ) + UDP_header_t
+    (ipv6_t, "src"),
+    (ipv6_t, "dst"),
+    (uint32_t, "udpLength"),
+    (Bits(24), "zeros"), (Bits(8), "nextHeader")
+) + UDP_header_t
 UDP_IPv6PseudoHeader_t.name = "UDP_IPv6PseudoHeader_t"

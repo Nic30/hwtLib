@@ -2,6 +2,7 @@ from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.bits import Bits
 from hwtLib.types.ctypes import uint16_t
 
+
 # LSB:MSB
 class TCP_FLAGS():
     FIN = 0
@@ -13,6 +14,7 @@ class TCP_FLAGS():
     ECN = 6  # ECN Echo
     CWR = 7  # reduced
 
+
 tcp_header_t = HStruct(
     (Bits(4), "headerLen"),  # number of 32bit words in TCP header (min=5)
     (Bits(4), "reserved"),
@@ -20,4 +22,4 @@ tcp_header_t = HStruct(
     (uint16_t, "window"),
     (uint16_t, "checksum"),
     (uint16_t, "urgentPtr"),
-    )
+)

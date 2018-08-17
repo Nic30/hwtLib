@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from collections import deque
 from typing import List, Tuple
 
@@ -179,7 +182,7 @@ class CrcComb(Unit):
                 if useBit:
                     v = v ^ b
 
-            assert len(dataMask) == len(inBits), (len(dataMask), len(inBits)) 
+            assert len(dataMask) == len(inBits), (len(dataMask), len(inBits))
             for useBit, b in zip(dataMask, inBits):
                 if useBit:
                     v = v ^ b
@@ -226,7 +229,7 @@ class CrcComb(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    from hwtLib.logic.crcPoly import CRC_32
+    # from hwtLib.logic.crcPoly import CRC_32
 
     u = CrcComb()
     u.DATA_WIDTH.set(8)

@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.bitmask import mask
 from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked
@@ -69,10 +72,11 @@ class HsResizerTC(SimTestCase):
 
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
 
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(HandshakedResizerTC('test_1to3'))
+    # suite.addTest(HandshakedResizerTC('test_1to3'))
     suite.addTest(unittest.makeSuite(HsResizerTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

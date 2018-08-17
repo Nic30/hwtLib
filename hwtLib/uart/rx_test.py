@@ -66,6 +66,7 @@ class UartRxTC(UartRxBasicTC):
 
         self.prepareUnit(u)
 
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()

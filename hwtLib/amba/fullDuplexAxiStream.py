@@ -5,9 +5,10 @@ from hwtLib.amba.axis import AxiStream
 
 
 class FullDuplexAxiStream(Interface):
+
     def _config(self):
         self.DATA_WIDTH = Param(64)
-    
+
     def _declr(self):
         with self._paramsShared():
             self.tx = AxiStream()

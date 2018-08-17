@@ -13,7 +13,7 @@ class IPFISimMaster(AbstractMemSpaceMaster):
         w = self._bus._ag.requests
         # (request type, address, [write data])
         w.append((WRITE, addr, data, mask))
-        
+
     def _read(self, addr, size, onDone=None):
         if onDone:
             raise NotImplementedError()

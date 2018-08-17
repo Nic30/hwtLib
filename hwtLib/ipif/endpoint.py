@@ -11,7 +11,8 @@ class IpifEndpoint(BusEndpoint):
     """
     Delegate request from bus to fields of structure
 
-    :attention: interfaces are dynamically generated from names of fileds in structure template
+    :attention: interfaces are dynamically generated from names of fileds
+        in structure template
     :attention: byte enable and register clock enable signals are ignored
     """
 
@@ -19,7 +20,9 @@ class IpifEndpoint(BusEndpoint):
     _getAddrStep = Ipif._getAddrStep
 
     def __init__(self, structTemplate, intfCls=Ipif, shouldEnterFn=None):
-        BusEndpoint.__init__(self, structTemplate, intfCls=intfCls, shouldEnterFn=None)
+        BusEndpoint.__init__(self, structTemplate,
+                             intfCls=intfCls,
+                             shouldEnterFn=shouldEnterFn)
 
     def _impl(self):
         self._parseTemplate()

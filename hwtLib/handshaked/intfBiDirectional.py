@@ -9,7 +9,8 @@ class HandshakedBiDirectionalAgent(HandshakedAgent):
     """
     Simulation agent for :class:`.HandshakedBiDirectional` interface
 
-    :attention: for monitor number of items in dinData has to match with number of received items
+    :attention: for monitor number of items in dinData
+        has to match with number of received items
     """
     def __init__(self, intf):
         HandshakedAgent.__init__(self, intf)

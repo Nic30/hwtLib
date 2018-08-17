@@ -4,8 +4,9 @@
 from hwt.bitmask import mask
 from hwt.hdl.constants import Time, READ, WRITE, NOP
 from hwt.interfaces.std import BramPort_withoutClk
+
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
-from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArray
+from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArrayTC
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     structTwoFieldsDense, structTwoFieldsDenseStart, AxiLiteEndpointDenseTC, \
     AxiLiteEndpointDenseStartTC
@@ -112,7 +113,7 @@ class IpifEndpointDenseStartTC(IpifEndpointTC):
         AxiLiteEndpointDenseStartTC.test_registerMap(self)
 
 
-class IpifEndpointArray(AxiLiteEndpointArray):
+class IpifEndpointArray(AxiLiteEndpointArrayTC):
     FIELD_ADDR = [0x0, 0x10]
     mkRegisterMap = IpifEndpointTC.mkRegisterMap
     mySetUp = IpifEndpointTC.mySetUp

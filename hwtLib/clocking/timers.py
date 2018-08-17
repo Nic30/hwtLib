@@ -9,6 +9,8 @@ from hwt.hdl.value import Value
 
 class TimerInfo(object):
     """
+    Generator of varius shared timers
+
     :ivar cntrRegister: counter register for this timer
     :ivar tick: signal with tick from this timer
     :ivar parent: parent TimerInfo object from which this timer can be generated

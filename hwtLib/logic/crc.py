@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.bitmask import selectBit
 from hwt.code import If, Concat
 from hwt.hdl.typeShortcuts import hBit
@@ -15,7 +18,7 @@ class Crc(Unit):
     """
     Crc generator for any crc,
     polynome can be string in usual format or integer ("x^3+x+1" or 0b1011)
-    
+
     .. hwt-schematic::
     """
 
@@ -92,7 +95,7 @@ class Crc(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    from hwtLib.logic.crcPoly import CRC_32
+    # from hwtLib.logic.crcPoly import CRC_32
     u = Crc()
     # CrcComb.setConfig(u, CRC_32)
     # u.DATA_WIDTH.set(8)

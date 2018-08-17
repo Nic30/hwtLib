@@ -21,9 +21,9 @@ class FifoAsyncTC(FifoTC):
         u.DEPTH.set(self.ITEMS)
         self.prepareUnit(u)
         u.dataIn_clk._ag.period = self.IN_CLK
-    
+
     def test_tryMore2(self, capturedOffset=1):
-        FifoTC.test_tryMore2(self, capturedOffset=capturedOffset) 
+        FifoTC.test_tryMore2(self, capturedOffset=capturedOffset)
 
 
 if __name__ == "__main__":

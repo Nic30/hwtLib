@@ -11,6 +11,7 @@ from hwtLib.logic.oneHotToBin import OneHotToBin
 
 
 class OneHotToBinSimWrap(OneHotToBin):
+
     def _declr(self):
         OneHotToBin._declr(self)
         addClkRstn(self)
@@ -32,7 +33,7 @@ class OneHotToBinTC(SimTestCase):
 
         self.runSim(4 * 10 * Time.ns)
 
-        self.assertValSequenceEqual(u.bin._ag.data,[])
+        self.assertValSequenceEqual(u.bin._ag.data, [])
 
     def test_basic(self):
         u = self.u

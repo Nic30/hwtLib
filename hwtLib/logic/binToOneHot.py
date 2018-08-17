@@ -55,7 +55,7 @@ if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
 
     print(toRtl(BinToOneHot()))
-    
+
     suite = unittest.TestSuite()
     # suite.addTest(IndexingTC('test_split'))
     suite.addTest(unittest.makeSuite(BinToOneHotTC))
