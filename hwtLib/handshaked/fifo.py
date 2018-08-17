@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
 from hwt.code import If, connect, log2ceil
 from hwt.interfaces.std import VectSignal, Clk
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn, propagateRstn
@@ -41,7 +40,7 @@ class HandshakedFifo(HandshakedCompBase):
         if self.EXPORT_SIZE:
             self.size = VectSignal(log2ceil(self.DEPTH + 1 + 1), signed=False)
 
-    def _impl(self, clks:Optional[Tuple[Clk, Clk]]=None):
+    def _impl(self, clks: Optional[Tuple[Clk, Clk]]=None):
         """
         :clks: optional tuple (inClk, outClk)
         """
@@ -57,7 +56,6 @@ class HandshakedFifo(HandshakedCompBase):
             inClk, outClk = clks
             self.fifo.dataIn_clk(inClk)
             self.fifo.dataOut_clk(outClk)
-            
 
         # to fifo
         fIn = self.fifo.dataIn

@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import If
 from hwt.hdl.constants import Time
 from hwt.interfaces.std import VectSignal
@@ -9,7 +12,7 @@ from hwt.synthesizer.unit import Unit
 class BitonicSorter(Unit):
     """
     Bitonic sorter of arbitrary data
-    
+
     .. hwt-schematic::
     """
     def __init__(self, cmpFn=lambda x, y: x < y):

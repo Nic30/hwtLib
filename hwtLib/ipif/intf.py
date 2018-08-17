@@ -47,8 +47,8 @@ class Ipif(Interface):
 
     def _getAddrStep(self):
         """
-        :return: how many bits is one unit of address (f.e. 8 bits for  char * pointer,
-             36 for 36 bit bram)
+        :return: how many bits is one unit of address
+            (f.e. 8 bits for  char * pointer, 36 for 36 bit bram)
         """
         return 8
 
@@ -72,10 +72,11 @@ class IpifWithCE(Ipif):
 
 class IpifAgent(SyncAgentBase):
     """
-    :ivar requests: list of tuples (request type, address, [write data], [write mask]) - used for driver
+    :ivar requests: list of tuples (request type, address,
+        [write data], [write mask]) used for driver
     :ivar data: list of data in memory, used for monitor
-    :ivar mem: if agent is in monitor mode (= is slave) all reads and writes are performed on
-        mem object
+    :ivar mem: if agent is in monitor mode (= is slave)
+        all reads and writes are performed on mem object
     :ivar actual: actual request which is performed
     """
     def __init__(self, intf, allowNoReset=True):
@@ -89,7 +90,7 @@ class IpifAgent(SyncAgentBase):
 
         self.mem = {}
         self.requireInit = True
-    
+
     def doReq(self, sim, req):
         rw = req[0]
         addr = req[1]

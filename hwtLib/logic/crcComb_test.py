@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from binascii import crc32, crc_hqx
 
 from hwt.bitmask import mask, selectBit
@@ -36,7 +39,7 @@ def crcToBf(crc):
 def naive_crc(dataBits, crcBits, polyBits,
               refin=False, refout=False, endianity="little"):
     crc_mask = CrcComb.buildCrcXorMatrix(len(dataBits), polyBits)
-    
+
     if endianity != "big":
         dataBits = reversedEndianity(dataBits)
     # print("")
@@ -125,16 +128,16 @@ class CrcCombTC(SimTestCase):
         # ! self.assertEqual(crc32(b"abcdefgh"), crc32(b"abcd", crc32(b"efgh")))
         self.assertEqual(crc32(b"abcdefgh"), crc32(b"efgh", crc32(b"abcd")))
         # ! self.assertEqual(crc32(b"abcdefgh"), crc32(b"efgh") ^ crc32(b"abcd"))
-        
+
         self.assertEqual(crc_hqx(b"aa", 0), crc_hqx(b"a", crc_hqx(b"a", 0)))
         # ! self.assertEqual(crc_hqx(b"abcdefgh", 0), crc_hqx(b"abcd", crc_hqx(b"efgh", 0)))
         self.assertEqual(crc_hqx(b"abcdefgh", 0), crc_hqx(b"efgh", crc_hqx(b"abcd", 0)))
         # ! self.assertEqual(crc_hqx(b"abcdefgh", 0), crc_hqx(b"efgh", 0) ^ crc_hqx(b"abcd", 0))
-        
+
         crc8 = crcToBf(CRC_8_CCITT)
         crc8_aes = crcToBf(CRC_8_SAE_J1850)
         cur8 = [0 for _ in range(8)]
-        
+
         c2 = [selectBit(0xC2, i) for i in range(8)]
         self.assertEqual(naive_crc(c2, cur8, crc8_aes), 0xF)
 
@@ -166,11 +169,11 @@ class CrcCombTC(SimTestCase):
         self.assertEqual(naive_crc(s, cur32, _crc32), 0x59F59BE0)
         cur32_1 = [1 for _ in range(32)]
         self.assertEqual(naive_crc(s, cur32_1, _crc32), 0x141026C0)
-        
+
         self.assertEqual(naive_crc(s, cur32, _crc32,
                                    refout=True), 0x07D9AF9A)
         self.assertEqual(naive_crc(s, cur32_1, _crc32,
-                                   refout=True), 0x03640828)     
+                                   refout=True), 0x03640828)
         self.assertEqual(naive_crc(s, cur32, _crc32,
                                    refin=True), 0xAE007AB1)
         self.assertEqual(naive_crc(s, cur32_1, _crc32,
@@ -182,7 +185,7 @@ class CrcCombTC(SimTestCase):
         self.assertEqual(naive_crc(s, cur32_1, _crc32,
                                    refin=True, refout=True) ^ 0xffffffff,
                                    crc32(_s.encode()))
-        
+
     def test_crc32(self):
         for i, inp in enumerate([b"abcd", b"0001"]):
             u = self.setUpCrc(CRC_32,
@@ -197,7 +200,7 @@ class CrcCombTC(SimTestCase):
             out = int(u.dataOut._ag.data[-1])
             ref = crc32(inp) & 0xffffffff
             self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
-    
+
     def test_crc32_64b(self):
         inp = "abcdefgh"
         u = self.setUpCrc(CRC_32, dataWidth=64,
@@ -215,10 +218,10 @@ class CrcCombTC(SimTestCase):
         for i, inp in enumerate([b"aa", b"ab", b"x6"]):
             self.setUpCrc(CRC_16_CCITT)
             u = self.u
-    
+
             u.dataIn._ag.data.append(int.from_bytes(inp, byteorder='little'))
             self.runSim(20 * Time.ns, name="tmp/test_crc16_%d.vcd" % i)
-    
+
             # crc = 0x449C
             ref = crc_hqx(inp, 0)
             self.assertValSequenceEqual(u.dataOut._ag.data, [ref], inp)
@@ -233,4 +236,3 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(CrcCombTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-    

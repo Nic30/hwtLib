@@ -246,7 +246,8 @@ def packAxiSFrame(dataWidth, structVal, withStrb=False):
     if withStrb:
         maskAll = mask(dataWidth // 8)
 
-    words = iterBits(structVal, bitsInOne=dataWidth, skipPadding=False, fillup=True)
+    words = iterBits(structVal, bitsInOne=dataWidth,
+                     skipPadding=False, fillup=True)
     for last, d in iter_with_last(words):
         assert d._dtype.bit_length() == dataWidth, d._dtype.bit_length()
         if withStrb:

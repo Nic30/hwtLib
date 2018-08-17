@@ -23,7 +23,8 @@ stT = HEnum("st_t", ["waitOnInput", "waitOnDataTx", "waitOnAck"])
 @serializeParamsUniq
 class ArrayBuff_writer(Unit):
     """
-    Collect items and send them over wDatapump when buffer is full or on timeout
+    Collect items and send them over wDatapump
+    when buffer is full or on timeout
     Cyclically writes items into array over wDatapump
     Maximum overlap of transactions is 1
 
@@ -80,7 +81,7 @@ class ArrayBuff_writer(Unit):
 
         If(st._eq(stT.waitOnAck) & reqAckHasCome,
            uploadedCntr(uploadedCntr + fitTo(sizeOfitems, uploadedCntr))
-           )
+        )
 
     def _impl(self):
         ALIGN_BITS = log2ceil(self.DATA_WIDTH // 8 - 1).val
@@ -136,7 +137,7 @@ class ArrayBuff_writer(Unit):
         If(endOfLenBlock,
             connect(remainingAsLen, req.len, fit=True),
             connect(remaining, sizeTmp, fit=True)
-           ).Else(
+        ).Else(
             connect(buffSizeAsLen, req.len, fit=True),
             sizeTmp(buff.size)
         )
@@ -148,21 +149,18 @@ class ArrayBuff_writer(Unit):
         # timeout logic
         timeoutCntr = self._reg("timeoutCntr", Bits(log2ceil(self.TIMEOUT), False),
                                 defVal=TIMEOUT_MAX)
-        beginReq = buff.size._eq(self.BUFF_DEPTH) | timeoutCntr._eq(
-            0)  # buffer is full or timeout
+        # buffer is full or timeout
+        beginReq = buff.size._eq(self.BUFF_DEPTH) | timeoutCntr._eq(0)
         reqAckHasCome = self._sig("reqAckHasCome")
         reqAckHasCome(reqAck.vld & reqAck.data._eq(self.ID))
         st = FsmBuilder(self, stT)\
             .Trans(stT.waitOnInput,
-                   (beginReq & req.rd, stT.waitOnDataTx)
-
-                   ).Trans(stT.waitOnDataTx,
-                           (w_last & w_ack, stT.waitOnAck)
-
-                           ).Trans(stT.waitOnAck,
-                                   (reqAckHasCome, stT.waitOnInput)
-
-                                   ).stateReg
+                (beginReq & req.rd, stT.waitOnDataTx)
+            ).Trans(stT.waitOnDataTx,
+                    (w_last & w_ack, stT.waitOnAck)
+            ).Trans(stT.waitOnAck,
+                    (reqAckHasCome, stT.waitOnInput)
+            ).stateReg
 
         If(st._eq(stT.waitOnInput) & beginReq,  # timeout is counting only when there is pending data
             # start new request
@@ -171,18 +169,18 @@ class ArrayBuff_writer(Unit):
                 If(endOfLenBlock,
                    offset(0),
                    remaining(ITEMS)
-                   ).Else(
+                ).Else(
                     offset(offset + fitTo(buff.size, offset)),
                     remaining(remaining - fitTo(buff.size, remaining))
                 ),
                 sizeOfitems(sizeTmp),
                 timeoutCntr(TIMEOUT_MAX)
-               )
-           ).Else(
+            )
+        ).Else(
             req.vld(0),
             If(buff.dataOut.vld & st._eq(stT.waitOnInput) & (timeoutCntr != 0),
                timeoutCntr(timeoutCntr - 1)
-               )
+            )
         )
 
         reqAck.rd(st._eq(stT.waitOnAck))
@@ -194,9 +192,9 @@ class ArrayBuff_writer(Unit):
         startSendingData = st._eq(stT.waitOnInput) & beginReq & req.rd
         If(startSendingData,
             lastWordCntr(sizeTmp)
-           ).Elif((lastWordCntr != 0) & w_ack,
-                  lastWordCntr(lastWordCntr - 1)
-                  )
+        ).Elif((lastWordCntr != 0) & w_ack,
+            lastWordCntr(lastWordCntr - 1)
+        )
 
         buff.dataIn(self.items)
 

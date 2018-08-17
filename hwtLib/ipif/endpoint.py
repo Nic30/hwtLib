@@ -11,7 +11,8 @@ class IpifEndpoint(BusEndpoint):
     """
     Delegate request from bus to fields of structure
 
-    :attention: interfaces are dynamically generated from names of fileds in structure template
+    :attention: interfaces are dynamically generated from names of fileds
+        in structure template
     :attention: byte enable and register clock enable signals are ignored
     """
 

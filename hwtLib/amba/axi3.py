@@ -293,7 +293,7 @@ class IP_Axi3(IP_Axi3Lite):
 
         def param(name, val):
             return self.addSimpleParam(thisIf, name, str(val))
-        # [TODO] width expression
+        # [TODO] width as expression instead of int
         param("ADDR_WIDTH", thisIf.aw.addr._dtype.bit_length())
         param("MAX_BURST_LENGTH", 256)
         param("NUM_READ_OUTSTANDING", 5)

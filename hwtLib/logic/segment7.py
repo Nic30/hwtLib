@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.synthesizer.unit import Unit
 from hwt.interfaces.std import VectSignal
 from hwt.code import Switch
@@ -60,8 +63,9 @@ class Segment7(Unit):
         .addCases(enumerate([self.dataOut(v) for v in dec])) \
         .Default(
            # display off when value is out of range
-           self.dataOut(0b1111111)    
+           self.dataOut(0b1111111)
         )
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl

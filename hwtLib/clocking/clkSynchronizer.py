@@ -10,11 +10,11 @@ from hwt.synthesizer.unit import Unit
 class ClkSynchronizer(Unit):
     """
     Signal synchronization between two clock domains
-    
+
     :attention: multibits signals should not be sychronized using this sychronizer
         instead handshake or req-ack sychronization should be used for controll signals
         and main data should be passed over couble of registers
-    
+
     .. hwt-schematic::
     """
 
@@ -32,11 +32,11 @@ class ClkSynchronizer(Unit):
 
     def _impl(self):
         def reg(name, clk):
-            return self._ctx.sig(name,
-                                  self.DATA_TYP,
-                                  clk=clk,
-                                  syncRst=self.rst,
-                                  defVal=0)
+            return self._reg(name,
+                             self.DATA_TYP,
+                             clk=clk,
+                             rst=self.rst,
+                             defVal=0)
         inReg = reg("inReg", self.inClk)
         outReg0 = reg("outReg0", self.outClk)
         outReg1 = reg("outReg1", self.outClk)

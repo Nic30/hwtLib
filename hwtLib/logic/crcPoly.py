@@ -4,6 +4,7 @@
 Library of common CRC configurations
 """
 
+
 # also known as parity bit
 class CRC_1:
     POLY = 0x1
@@ -241,7 +242,8 @@ class CRC_16_ARINC:
     WIDTH = 16
 
 
-# X.25, V.41, HDLC FCS, XMODEM, Bluetooth, PACTOR, SD, DigRF, many others; known as CRC_CCITT
+# X.25, V.41, HDLC FCS, XMODEM, Bluetooth, PACTOR, SD, DigRF, many others;
+# known as CRC_CCITT
 class CRC_16_CCITT:
     INIT = 0xFFFF
     POLY = 0x1021
@@ -275,7 +277,8 @@ class CRC_16_DNP:
     WIDTH = 16
 
 
-# Bisync, Modbus, USB, ANSI X3.28, SIA DC-07, many others; also known as CRC_16 and CRC_16-ANSI
+# Bisync, Modbus, USB, ANSI X3.28, SIA DC-07, many others;
+# also known as CRC_16 and CRC_16-ANSI
 class CRC_16_IBM:
     INIT = 0000
     POLY = 0x8005
@@ -333,7 +336,8 @@ class CRC_30:
     WIDTH = 30
 
 
-# HDLC, ANSI X3.66, ITU-T V.42, Ethernet, Serial ATA, MPEG-2, PKZIP, Gzip, Bzip2, PNG, many others
+# HDLC, ANSI X3.66, ITU-T V.42, Ethernet, Serial ATA,
+# MPEG-2, PKZIP, Gzip, Bzip2, PNG, many others
 class CRC_32:
     INIT = 0xffffffff
     POLY = 0x04C11DB7

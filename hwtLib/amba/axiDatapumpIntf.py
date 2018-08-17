@@ -98,7 +98,7 @@ class AxiRDatapumpIntfAgent(AgentBase):
     def __init__(self, intf):
         self.__enable = True
         self.intf = intf
-        
+
         intf.req._initSimAgent()
         self.req = intf.req._ag
 
@@ -162,10 +162,10 @@ class AxiWDatapumpIntfAgent(AgentBase):
 
         intf.req._initSimAgent()
         self.req = intf.req._ag
-        
+
         intf.w._initSimAgent()
         self.w = intf.w._ag
-        
+
         intf.ack._initSimAgent()
         self.ack = intf.ack._ag
 

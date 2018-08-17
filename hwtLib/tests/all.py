@@ -12,8 +12,8 @@ from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
 from hwtLib.amba.axi4_streamToMem_test import Axi4_streamToMemTC
 from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
-from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArrayTC, \
-    AxiLiteEndpointStructsInArrayTC
+from hwtLib.amba.axiLite_comp.endpoint_arr_test import \
+    AxiLiteEndpointArrayTC, AxiLiteEndpointStructsInArrayTC
 from hwtLib.amba.axiLite_comp.endpoint_fromInterfaces_test import \
     AxiLiteEndpoint_fromInterfaceTC, AxiLiteEndpoint_fromInterface_arr_TC
 from hwtLib.amba.axiLite_comp.endpoint_struct_test import \
@@ -77,7 +77,7 @@ from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
 from hwtLib.mem.atomic.flipRam_test import FlipRamTC
 from hwtLib.mem.atomic.flipReg_test import FlipRegTC
 from hwtLib.mem.bramEndpoint_test import BramPortEndpointTC, \
-    BramPortEndpointDenseTC, BramPortEndpointArray, \
+    BramPortEndpointDenseTC, BramPortEndpointArrayTC, \
     BramPortEndpointDenseStartTC
 from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.cuckooHashTable_test import CuckooHashTableTC
@@ -165,7 +165,8 @@ from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import \
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import \
     SubunitsSynthesisTC
 from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
-from hwtLib.tests.synthesizer.rtlLevel.synthesis import BasicSynthesisTC, StatementsConsystencyTC
+from hwtLib.tests.synthesizer.rtlLevel.synthesis import BasicSynthesisTC, \
+    StatementsConsystencyTC
 from hwtLib.tests.transTmpl_test import TransTmpl_TC
 from hwtLib.tests.types.bitsSlicing_test import BitsSlicingTC
 from hwtLib.tests.types.hstructVal_test import HStructValTC
@@ -312,13 +313,13 @@ suite = testSuiteFromTCs(
     CrcUtilsTC,
     CrcCombTC,
     CrcTC,
-    
+
     BusEndpointTC,
 
     BramPortEndpointTC,
     BramPortEndpointDenseTC,
     BramPortEndpointDenseStartTC,
-    BramPortEndpointArray,
+    BramPortEndpointArrayTC,
 
     # avalon tests
     AvalonMmAgentTC,
@@ -327,7 +328,7 @@ suite = testSuiteFromTCs(
     AvalonMmEndpointDenseTC,
     AvalonMmMemMasterTC,
     AvalonStAgentTC,
-    
+
     # axi tests
     SimpleAxiRegsTC,
     AxiTC,

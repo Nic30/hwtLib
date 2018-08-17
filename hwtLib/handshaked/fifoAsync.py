@@ -20,7 +20,7 @@ class HsFifoAsync(HandshakedFifo):
         self.dataIn_clk = Clk()
         self.dataOut_clk = Clk()
         self.rst_n = Rst_n()
-        
+
         with self._paramsShared():
             with self._associated(self.dataIn_clk):
                 self.dataIn = self.intfCls()
@@ -36,7 +36,7 @@ class HsFifoAsync(HandshakedFifo):
 
         if self.EXPORT_SIZE:
             self.size = VectSignal(log2ceil(self.DEPTH + 1 + 1), signed=False)
- 
+
     def _impl(self):
         HandshakedFifo._impl(self, clks=(self.dataIn_clk, self.dataOut_clk))
 
