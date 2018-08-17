@@ -32,7 +32,7 @@ class AvalonMmEndpointTC(SimTestCase):
 
     def arTrans(self, addr, burstsize=1):
         return (READ, addr, burstsize)
-    
+
     def awTrans(self, addr, burstsize=1):
         return (WRITE, addr, burstsize)
 
@@ -75,24 +75,24 @@ class AvalonMmEndpointTC(SimTestCase):
         u = self.mySetUp(32)
         MAGIC = 100
         A = self.FIELD_ADDR
-    
+
         u.bus._ag.req.extend(
             map(self.arTrans,
                 [A[0], A[1], A[0], A[1], A[1] + 0x4]))
-    
+
         u.decoded.field0._ag.din.extend([MAGIC])
         u.decoded.field1._ag.din.extend([MAGIC + 1])
-    
+
         self.randomizeAll()
         self.runSim(30 * self.CLK)
-    
+
         self.assertValSequenceEqual(u.bus._ag.rData,
                                     [(MAGIC, RESP_OKAY),
                                      (MAGIC + 1, RESP_OKAY),
                                      (MAGIC, RESP_OKAY),
                                      (MAGIC + 1, RESP_OKAY),
                                      (None, RESP_SLAVEERROR)])
-    
+
     def test_write(self):
         u = self.mySetUp(32)
         MAGIC = 100
@@ -111,10 +111,10 @@ class AvalonMmEndpointTC(SimTestCase):
              (MAGIC + 2, m),
              (MAGIC + 3, m),
              (MAGIC + 4, m)])
-             
+
         self.randomizeAll()
         self.runSim(50 * self.CLK)
-     
+
         self.assertValSequenceEqual(
             u.decoded.field0._ag.dout,
             [MAGIC,
@@ -167,13 +167,13 @@ class AvalonMmMemMasterTC(AxiLiteEndpointMemMasterTC):
     def _test_read_memMaster(self, structT):
         u = AvalonMmEndpointTC.mySetUp(self, 32, structT)
         MAGIC = 100
-        
+
         regs = self.regs
         regs.field0.read()
         regs.field1.read()
         regs.field0.read()
         regs.field1.read()
-        
+
         u.decoded.field0._ag.din.extend([MAGIC])
         u.decoded.field1._ag.din.extend([MAGIC + 1])
 
@@ -227,6 +227,3 @@ if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
-    # u = AvalonMmEndpoint(structStructsInArray, shouldEnterFn=lambda tmpl: True)
-    # u.DATA_WIDTH.set(32)
-    # print(toRtl(u))
