@@ -5,6 +5,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.ipCoreWrapper import IpCoreWrapper
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
+from hwt.synthesizer.hObjList import HObjList
 
 
 class ArrayIntfExample(Unit):
@@ -14,7 +15,7 @@ class ArrayIntfExample(Unit):
 
     def _declr(self):
         addClkRstn(self)
-        self.a = AxiStream(asArraySize=2)
+        self.a = HObjList(AxiStream() for _ in range(2))
 
     def _impl(self):
         for intf in self.a:

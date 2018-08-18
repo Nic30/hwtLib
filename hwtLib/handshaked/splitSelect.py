@@ -7,6 +7,7 @@ from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
+from hwt.synthesizer.hObjList import HObjList
 
 
 class HsSplitSelect(HandshakedCompBase):
@@ -41,7 +42,9 @@ class HsSplitSelect(HandshakedCompBase):
 
         with self._paramsShared():
             self.dataIn = self.intfCls()
-            self.dataOut = self.intfCls(asArraySize=self.OUTPUTS)
+            self.dataOut = HObjList(
+                self.intfCls() for _ in range(int(self.OUTPUTS))
+            )
 
     def _impl(self):
         In = self.dataIn
@@ -77,7 +80,8 @@ class HsSplitSelect(HandshakedCompBase):
             default=[
                      sel.rd(None),
                      rd(In)(None)
-                     ])
+            ]
+        )
 
 
 if __name__ == "__main__":

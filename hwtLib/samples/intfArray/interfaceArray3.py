@@ -9,6 +9,7 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import toRtl
 from hwtLib.amba.axi4Lite import Axi4Lite
+from hwt.synthesizer.hObjList import HObjList
 
 
 class InterfaceArraySample3(Unit):
@@ -23,8 +24,9 @@ class InterfaceArraySample3(Unit):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.a = Axi4Lite(asArraySize=self.SIZE)
-            self.b = Axi4Lite(asArraySize=self.SIZE)
+            S = int(self.SIZE)
+            self.a = HObjList(Axi4Lite() for _ in range(S))
+            self.b = HObjList(Axi4Lite() for _ in range(S))
 
     def _impl(self):
         # directly connect arrays, note that we are not using array items

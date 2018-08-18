@@ -19,6 +19,7 @@ from hwtLib.sim.abstractMemSpaceMaster import PartialField
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
+from hwt.synthesizer.param import Param
 
 
 def inRange(n, lower, end):
@@ -373,9 +374,10 @@ class BusEndpoint(Unit):
         
         if dw == DW:
             # use param instead of value to improve readability
-            dw = self.DATA_WIDTH
-            for i in _p: 
-                i._replaceParam("DATA_WIDTH", dw)
+            DW = self.DATA_WIDTH
+            if isinstance(DW, Param):
+                for i in _p: 
+                    i._replaceParam("DATA_WIDTH", DW)
         else:
             for i in _p: 
                 i.DATA_WIDTH.set(dw)

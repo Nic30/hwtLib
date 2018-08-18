@@ -5,6 +5,7 @@ from hwt.code import And
 from hwt.interfaces.std import Handshaked
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
+from hwt.synthesizer.hObjList import HObjList
 
 
 class HsSplitCopy(HandshakedCompBase):
@@ -34,7 +35,9 @@ class HsSplitCopy(HandshakedCompBase):
     def _declr(self):
         with self._paramsShared():
             self.dataIn = self.intfCls()
-            self.dataOut = self.intfCls(asArraySize=self.OUTPUTS)
+            self.dataOut = HObjList(
+                self.intfCls() for _ in range(int(self.OUTPUTS))
+            )
 
     def _impl(self):
         rd = self.getRd
