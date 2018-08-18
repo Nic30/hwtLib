@@ -6,6 +6,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.interfaces.std import VectSignal
 from hwt.code import Add
 from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.hObjList import HObjList
 
 
 class PidController(Unit):
@@ -44,9 +45,10 @@ class PidController(Unit):
         self.input = VectSignal(self.DATAIN_WIDTH, signed=True)
         self.output = VectSignal(self.DATAIN_WIDTH, signed=True)
         self.target = VectSignal(self.DATAIN_WIDTH, signed=True)
-        self.coefs = [VectSignal(self.COEF_WIDTH, signed=True)
-                      for _ in range(4)]
-        self._registerArray("coefs", self.coefs)
+        self.coefs = HObjList(
+            VectSignal(self.COEF_WIDTH, signed=True)
+                      for _ in range(4)
+        )
 
     def _impl(self):
         u = self._reg("u", dtype=self.output._dtype, defVal=0)

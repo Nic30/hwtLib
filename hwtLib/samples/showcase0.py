@@ -7,6 +7,7 @@ from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.unit import Unit
 from hwtLib.types.ctypes import uint32_t, int32_t, uint8_t, int8_t
+from hwt.synthesizer.hObjList import HObjList
 
 
 def foo(condition0, statements, condition1, fallback0, fallback1):
@@ -63,10 +64,11 @@ class Showcase0(Unit):
         # main purpose is to unify names of clock and reset signals
         addClkRstn(self)
 
-        # Unit will not care for object which are not instance of Interface or Unit,
-        # other object has to be registered manually
-        self.cmp = [Signal() for _ in range(6)]
-        self._registerArray("cmp", self.cmp)
+        # HObjList is just regural list, it is used to tell Unit/Interface
+        # to look insede while searching for nested Interface/Unit instances
+        self.cmp = HObjList(
+            Signal() for _ in range(6)
+        )
 
         self.h = VectSignal(8)
         self.i = VectSignal(2)

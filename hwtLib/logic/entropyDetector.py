@@ -9,6 +9,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
 from hwtLib.mem.ram import RamSingleClock
+from hwt.synthesizer.hObjList import HObjList
 
 
 def splitOnBytes(sig):
@@ -45,12 +46,14 @@ class ByteCntrs(Unit):
 
         # for each byte in data word there is separate table to make
         # counting faster
-        self.counters = [RamSingleClock() for _ in range(DW // 8)]
+        self.counters = HObjList(
+            RamSingleClock() for _ in range(DW // 8)
+        )
+        
         for c in self.counters:
             c.PORT_CNT.set(2)
             c.DATA_WIDTH.set(self.CNTR_WIDTH)
             c.ADDR_WIDTH.set(8)
-        self._registerArray("counters", self.counters)
 
     def _impl(self):
         propagateClkRstn(self)

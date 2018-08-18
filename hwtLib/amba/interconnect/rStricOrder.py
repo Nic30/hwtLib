@@ -6,6 +6,8 @@ from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
+
+from hwt.synthesizer.hObjList import HObjList
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.amba.interconnect.axiInterconnectbase import AxiInterconnectBase
 from hwtLib.handshaked.fifo import HandshakedFifo
@@ -31,7 +33,9 @@ class RStrictOrderInterconnect(AxiInterconnectBase):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.drivers = AxiRDatapumpIntf(asArraySize=self.DRIVER_CNT)
+            self.drivers = HObjList(
+                AxiRDatapumpIntf() for _ in range(int(self.DRIVER_CNT))
+            )
             self.rDatapump = AxiRDatapumpIntf()
 
         self.DRIVER_INDEX_WIDTH = log2ceil(self.DRIVER_CNT).val

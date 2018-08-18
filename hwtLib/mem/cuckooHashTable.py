@@ -15,6 +15,7 @@ from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf
 from hwtLib.logic.crcPoly import CRC_32, CRC_32C 
+from hwt.synthesizer.hObjList import HObjList
 
 
 class ORIGIN_TYPE():
@@ -146,9 +147,8 @@ class CuckooHashTable(HashTableCore):
 
         self.clean = HandshakeSync()
 
-        self.tables = [HashTableCore(p) for p in self.POLYNOMIALS]
         with self._paramsShared():
-            self._registerArray("table", self.tables)
+            self.tables = HObjList(HashTableCore(p) for p in self.POLYNOMIALS)
             for t in self.tables:
                 t.ITEMS_CNT.set(self.TABLE_SIZE)
                 t.LOOKUP_HASH.set(True)

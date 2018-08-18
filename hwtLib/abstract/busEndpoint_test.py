@@ -6,7 +6,7 @@ import unittest
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct, HStructFieldMeta
 from hwt.interfaces.std import RegCntrl, VectSignal, VldSynced
-from hwt.interfaces.structIntf import HTypeFromIntfMap
+from hwt.interfaces.structIntf import HTypeFromIntfMap, IntfMap
 
 
 # example methods for interface construction
@@ -37,12 +37,13 @@ class BusEndpointTC(unittest.TestCase):
     def test_HTypeFromIntfMap_Struct(self):
         DATA_WIDTH = 32
 
-        t = HTypeFromIntfMap([
-                              regCntr("a", DATA_WIDTH),
-                              regCntr("b", DATA_WIDTH),
-                              sig("c", DATA_WIDTH),
-                              vldSynced("d", DATA_WIDTH),
-                              ])
+        t = HTypeFromIntfMap(
+            IntfMap([
+                    regCntr("a", DATA_WIDTH),
+                    regCntr("b", DATA_WIDTH),
+                    sig("c", DATA_WIDTH),
+                    vldSynced("d", DATA_WIDTH),
+            ]))
 
         _t = Bits(DATA_WIDTH)
         self.assertEqual(t, HStruct(
@@ -55,13 +56,14 @@ class BusEndpointTC(unittest.TestCase):
     def test_HTypeFromIntfMap_Padding(self):
         DATA_WIDTH = 32
 
-        t = HTypeFromIntfMap([
-                              regCntr("a", DATA_WIDTH),
-                              regCntr("b", DATA_WIDTH),
-                              sig("c", DATA_WIDTH),
-                              (Bits(4 * DATA_WIDTH), None),
-                              vldSynced("d", DATA_WIDTH),
-                              ])
+        t = HTypeFromIntfMap(
+            IntfMap([
+                regCntr("a", DATA_WIDTH),
+                regCntr("b", DATA_WIDTH),
+                sig("c", DATA_WIDTH),
+                (Bits(4 * DATA_WIDTH), None),
+                vldSynced("d", DATA_WIDTH),
+            ]))
         _t = Bits(DATA_WIDTH)
         t2 = HStruct(
                 (_t, "a"),
@@ -76,11 +78,12 @@ class BusEndpointTC(unittest.TestCase):
     def test_HTypeFromIntfMap_Array(self):
         DATA_WIDTH = 32
 
-        t = HTypeFromIntfMap([
-                              regCntr("a", DATA_WIDTH),
-                              (Bits(4 * DATA_WIDTH), None),
-                              ([vldSynced("d", DATA_WIDTH) for _ in range(4)], "ds")
-                              ])
+        t = HTypeFromIntfMap(
+            IntfMap([
+                regCntr("a", DATA_WIDTH),
+                (Bits(4 * DATA_WIDTH), None),
+                ([vldSynced("d", DATA_WIDTH) for _ in range(4)], "ds")
+            ]))
 
         _t = Bits(DATA_WIDTH)
         t2 = HStruct(
@@ -93,18 +96,22 @@ class BusEndpointTC(unittest.TestCase):
     def test_HTypeFromIntfMap_StructArray(self):
         DATA_WIDTH = 32
 
-        t = HTypeFromIntfMap((
-                              regCntr("a", DATA_WIDTH),
-                              (Bits(4 * DATA_WIDTH), None),
-                              ([(vldSynced("d", DATA_WIDTH),
-                                 sig("e", DATA_WIDTH),
-                                 (Bits(DATA_WIDTH * 2), None),
-                                 sig("f", DATA_WIDTH),
-                                 ) for _ in range(4)], "ds")
-                              ))
-        
+        t = HTypeFromIntfMap(
+            IntfMap([
+                regCntr("a", DATA_WIDTH),
+                (Bits(4 * DATA_WIDTH), None),
+                ([
+                    IntfMap([
+                        vldSynced("d", DATA_WIDTH),
+                        sig("e", DATA_WIDTH),
+                        (Bits(DATA_WIDTH * 2), None),
+                        sig("f", DATA_WIDTH),
+                    ]) for _ in range(4)], "ds")
+            ]))
+    
         _t = Bits(DATA_WIDTH)
-        self.assertEqual(t, HStruct(
+        self.assertEqual(t,
+             HStruct(
                 (_t, "a"),
                 (Bits(4 * DATA_WIDTH), None),
                 (HStruct(
@@ -119,11 +126,12 @@ class BusEndpointTC(unittest.TestCase):
     def test_HTypeFromIntfMap_wrongArray(self):
         DATA_WIDTH = 32
         with self.assertRaises(AssertionError):
-            HTypeFromIntfMap([
-                              ([sig("e", DATA_WIDTH),
-                                sig("e", 2 * DATA_WIDTH),
-                                 ], "ds")
-                              ])
+            HTypeFromIntfMap(
+                IntfMap([
+                    ([sig("e", DATA_WIDTH),
+                      sig("e", 2 * DATA_WIDTH),
+                       ], "ds")
+                ]))
 
 
 if __name__ == "__main__":
