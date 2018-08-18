@@ -7,100 +7,80 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import pprintInterface, pprintAgents
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwtLib.amba.axi3Lite import Axi3Lite
+from hwt.synthesizer.hObjList import HObjList
 
 
-axi_str = """'axi'
-    'axi.aw'
-        'axi.aw.addr'
-        'axi.aw.ready'
-        'axi.aw.valid'
-    'axi.ar'
-        'axi.ar.addr'
-        'axi.ar.ready'
-        'axi.ar.valid'
-    'axi.w'
-        'axi.w.data'
-        'axi.w.strb'
-        'axi.w.ready'
-        'axi.w.valid'
-    'axi.r'
-        'axi.r.data'
-        'axi.r.resp'
-        'axi.r.ready'
-        'axi.r.valid'
-    'axi.b'
-        'axi.b.resp'
-        'axi.b.ready'
-        'axi.b.valid'
-    p0:'axi'
-        'axi.aw'
-            'axi.aw.addr'
-            'axi.aw.ready'
-            'axi.aw.valid'
-        'axi.ar'
-            'axi.ar.addr'
-            'axi.ar.ready'
-            'axi.ar.valid'
-        'axi.w'
-            'axi.w.data'
-            'axi.w.strb'
-            'axi.w.ready'
-            'axi.w.valid'
-        'axi.r'
-            'axi.r.data'
-            'axi.r.resp'
-            'axi.r.ready'
-            'axi.r.valid'
-        'axi.b'
-            'axi.b.resp'
-            'axi.b.ready'
-            'axi.b.valid'
-    p1:'axi'
-        'axi.aw'
-            'axi.aw.addr'
-            'axi.aw.ready'
-            'axi.aw.valid'
-        'axi.ar'
-            'axi.ar.addr'
-            'axi.ar.ready'
-            'axi.ar.valid'
-        'axi.w'
-            'axi.w.data'
-            'axi.w.strb'
-            'axi.w.ready'
-            'axi.w.valid'
-        'axi.r'
-            'axi.r.data'
-            'axi.r.resp'
-            'axi.r.ready'
-            'axi.r.valid'
-        'axi.b'
-            'axi.b.resp'
-            'axi.b.ready'
-            'axi.b.valid'
-    p2:'axi'
-        'axi.aw'
-            'axi.aw.addr'
-            'axi.aw.ready'
-            'axi.aw.valid'
-        'axi.ar'
-            'axi.ar.addr'
-            'axi.ar.ready'
-            'axi.ar.valid'
-        'axi.w'
-            'axi.w.data'
-            'axi.w.strb'
-            'axi.w.ready'
-            'axi.w.valid'
-        'axi.r'
-            'axi.r.data'
-            'axi.r.resp'
-            'axi.r.ready'
-            'axi.r.valid'
-        'axi.b'
-            'axi.b.resp'
-            'axi.b.ready'
-            'axi.b.valid'
+axi_str = """\
+'axi'
+    'axi_0'
+        'axi_0.aw'
+            'axi_0.aw.addr'
+            'axi_0.aw.ready'
+            'axi_0.aw.valid'
+        'axi_0.ar'
+            'axi_0.ar.addr'
+            'axi_0.ar.ready'
+            'axi_0.ar.valid'
+        'axi_0.w'
+            'axi_0.w.data'
+            'axi_0.w.strb'
+            'axi_0.w.ready'
+            'axi_0.w.valid'
+        'axi_0.r'
+            'axi_0.r.data'
+            'axi_0.r.resp'
+            'axi_0.r.ready'
+            'axi_0.r.valid'
+        'axi_0.b'
+            'axi_0.b.resp'
+            'axi_0.b.ready'
+            'axi_0.b.valid'
+    'axi_1'
+        'axi_1.aw'
+            'axi_1.aw.addr'
+            'axi_1.aw.ready'
+            'axi_1.aw.valid'
+        'axi_1.ar'
+            'axi_1.ar.addr'
+            'axi_1.ar.ready'
+            'axi_1.ar.valid'
+        'axi_1.w'
+            'axi_1.w.data'
+            'axi_1.w.strb'
+            'axi_1.w.ready'
+            'axi_1.w.valid'
+        'axi_1.r'
+            'axi_1.r.data'
+            'axi_1.r.resp'
+            'axi_1.r.ready'
+            'axi_1.r.valid'
+        'axi_1.b'
+            'axi_1.b.resp'
+            'axi_1.b.ready'
+            'axi_1.b.valid'
+    'axi_2'
+        'axi_2.aw'
+            'axi_2.aw.addr'
+            'axi_2.aw.ready'
+            'axi_2.aw.valid'
+        'axi_2.ar'
+            'axi_2.ar.addr'
+            'axi_2.ar.ready'
+            'axi_2.ar.valid'
+        'axi_2.w'
+            'axi_2.w.data'
+            'axi_2.w.strb'
+            'axi_2.w.ready'
+            'axi_2.w.valid'
+        'axi_2.r'
+            'axi_2.r.data'
+            'axi_2.r.resp'
+            'axi_2.r.ready'
+            'axi_2.r.valid'
+        'axi_2.b'
+            'axi_2.b.resp'
+            'axi_2.b.ready'
+            'axi_2.b.valid'
 """
 
 
@@ -155,7 +135,7 @@ u_ag_str = """<hwt.interfaces.agents.clk.OscilatorAgent object at 0x7f2c812d4ef0
 class ExampleWithArrayAxi3Lite(EmptyUnit):
     def _declr(self):
         addClkRstn(self)
-        self.axi = Axi3Lite(asArraySize=3)
+        self.axi = HObjList(Axi3Lite() for _ in range(3))
 
 
 class SimulatorUtilsTC(SimTestCase):
@@ -170,23 +150,21 @@ class SimulatorUtilsTC(SimTestCase):
         pprintInterface(u.axi, file=o)
         self.assertEqual(o.getvalue(), axi_str)
 
+    def _test_pprintAgent(self, intf, expectedStr):
+        pointerRe = re.compile("0x[a-f0-9]*")
+        o = StringIO()
+        pprintAgents(intf, file=o)
+        self.assertEqual(pointerRe.sub(o.getvalue(), ""),
+                         pointerRe.sub(expectedStr, ""))
+
     def test_pprintAgents(self):
         u = ExampleWithArrayAxi3Lite()
-        pointerRe = re.compile("0x[a-f0-9]*")
         self.prepareUnit(u)
         self.runSim(1)
-
-        o = StringIO()
-        pprintAgents(u.clk, file=o)
-        self.assertEmpty(pointerRe.sub(o.getvalue(), ""), pointerRe.sub(clk_ag_str, ""))
-
-        o = StringIO()
-        pprintAgents(u.axi, file=o)
-        self.assertEmpty(pointerRe.sub(o.getvalue(), ""), pointerRe.sub(axi_ag_str, ""))
-
-        o = StringIO()
-        pprintAgents(u, file=o)
-        self.assertEmpty(pointerRe.sub(o.getvalue(), ""), pointerRe.sub(u_ag_str, ""))
+        
+        self._test_pprintAgent(u.clk, clk_ag_str)
+        self._test_pprintAgent(u.axi, axi_ag_str)
+        self._test_pprintAgent(u, u_ag_str)
 
 
 if __name__ == "__main__":

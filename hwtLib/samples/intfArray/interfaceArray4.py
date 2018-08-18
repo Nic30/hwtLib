@@ -43,10 +43,10 @@ class InterfaceArraySample4(Unit):
                     p = HObjList(RegCntrl() for _ in range(int(t.size)))
                     dw = t.elmType.bit_length()
                 else:
-                    p = StructIntf(
+                    p = HObjList([StructIntf(
                         t.elmType,
-                        instantiateFieldFn=self._mkFieldInterface,
-                        asArraySize=t.size)
+                        instantiateFieldFn=self._mkFieldInterface)
+                        for _ in range(int(t.size))])
                     return p
             else:
                 p = BramPort_withoutClk()
