@@ -1,20 +1,22 @@
-from hwt.code import log2ceil
 from hwt.hdl.constants import Time
-from hwt.hdl.types.array import HArray
-from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import RegCntrl, BramPort_withoutClk
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.types.ctypes import uint8_t
+from hwtLib.abstract.busEndpoint import BusEndpoint
+from hwt.synthesizer.hObjList import HObjList
+from hwt.hdl.types.bits import Bits
+from hwt.interfaces.std import RegCntrl, BramPort_withoutClk
+from hwt.hdl.types.array import HArray
+from hwt.code import log2ceil
 
 
 struct0 = HStruct(
     (uint8_t, "f0"),
     (HStruct(
-            (uint8_t, "f1"),
+        (uint8_t, "f1"),
         (uint8_t, "f2")
     )[4], "arr0")
 )
@@ -24,9 +26,10 @@ struct0 = HStruct(
 
 
 class InterfaceArraySample4(Unit):
+
     @staticmethod
     def shouldEnterFn(field):
-        return False
+        return False, True
 
     def _mkFieldInterface(self, structIntf, field):
         t = field.dtype
@@ -37,13 +40,13 @@ class InterfaceArraySample4(Unit):
         elif isinstance(t, HArray):
             if self.shouldEnterFn(field):
                 if isinstance(t.elmType, Bits):
-                    p = RegCntrl(asArraySize=t.size)
+                    p = HObjList(RegCntrl() for _ in range(int(t.size)))
                     dw = t.elmType.bit_length()
                 else:
-                    p = StructIntf(
+                    p = HObjList([StructIntf(
                         t.elmType,
-                        instantiateFieldFn=self._mkFieldInterface,
-                        asArraySize=t.size)
+                        instantiateFieldFn=self._mkFieldInterface)
+                        for _ in range(int(t.size))])
                     return p
             else:
                 p = BramPort_withoutClk()
@@ -58,10 +61,10 @@ class InterfaceArraySample4(Unit):
 
     def _declr(self):
         addClkRstn(self)
-        self.a = StructIntf(
-            struct0, instantiateFieldFn=self._mkFieldInterface, asArraySize=3)
-        self.b = StructIntf(
-            struct0, instantiateFieldFn=self._mkFieldInterface, asArraySize=3)
+        self.a = HObjList(StructIntf(
+            struct0, instantiateFieldFn=self._mkFieldInterface) for _ in range(3))
+        self.b = HObjList(StructIntf(
+            struct0, instantiateFieldFn=self._mkFieldInterface)  for _ in range(3))
 
     def _impl(self):
         self.b(self.a)
@@ -70,7 +73,7 @@ class InterfaceArraySample4(Unit):
 class InterfaceArraySample4b(InterfaceArraySample4):
     @staticmethod
     def shouldEnterFn(field):
-        return True
+        return True, True
 
 
 class InterfaceArraySample4c(InterfaceArraySample4b):
@@ -93,9 +96,10 @@ class InterfaceArraySample4TC(SimTestCase):
         self.prepareUnit(u)
 
         i = 0
-        for _ in u.a.arr0:
-            i += 1
-        self.assertValEqual(i, 4)
+        for a in u.a:
+            for _ in a.arr0:
+                i += 1
+        self.assertValEqual(i, 3*4)
 
         i = 0
         for intf in u.a:
@@ -103,7 +107,7 @@ class InterfaceArraySample4TC(SimTestCase):
             a = 0
             for _ in intf.arr0:
                 a += 1
-            self.assertValEqual(a, 4, intf._origIntf)
+            self.assertValEqual(a, 4)
 
         self.assertValEqual(i, 3)
 

@@ -5,6 +5,7 @@ from hwt.code import log2ceil, connect, Or, Switch
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.mode import serializeParamsUniq
+from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
 from hwtLib.amba.interconnect.axiInterconnectbase import AxiInterconnectBase
@@ -31,7 +32,9 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.drivers = AxiWDatapumpIntf(asArraySize=self.DRIVER_CNT)
+            self.drivers = HObjList(
+                AxiWDatapumpIntf()
+                for _ in range(int(self.DRIVER_CNT)))
             self.wDatapump = AxiWDatapumpIntf()
 
         self.DRIVER_INDEX_WIDTH = log2ceil(self.DRIVER_CNT).val

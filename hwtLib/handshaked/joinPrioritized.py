@@ -4,6 +4,7 @@
 from hwt.code import And, Or, SwitchLogic
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
+from hwt.synthesizer.hObjList import HObjList
 
 
 class HsJoinPrioritized(HandshakedCompBase):
@@ -20,7 +21,9 @@ class HsJoinPrioritized(HandshakedCompBase):
 
     def _declr(self):
         with self._paramsShared():
-            self.dataIn = self.intfCls(asArraySize=self.INPUTS)
+            self.dataIn = HObjList(
+                self.intfCls() for _ in range(int(self.INPUTS))
+            )
             self.dataOut = self.intfCls()
 
     def dataConnectionExpr(self, dIn, dOut):

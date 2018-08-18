@@ -2,22 +2,24 @@ from copy import copy
 
 from hwt.code import log2ceil
 from hwt.hdl.constants import INTF_DIRECTION
-from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.transTmpl import TransTmpl, ObjIteratorCtx
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.struct import HStruct, HStructField
 from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
-from hwt.interfaces.structIntf import StructIntf, HTypeFromIntfMap
+from hwt.interfaces.structIntf import StructIntf, HTypeFromIntfMap, IntfMap
 from hwt.interfaces.utils import addClkRstn
-from hwt.pyUtils.arrayQuery import where
-from hwt.synthesizer.interfaceLevel.interfaceUtils.proxy import InterfaceProxy
+from hwt.pyUtils.arrayQuery import where, arr_any
 from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import walkFlatten
 from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.unit import Unit
 from hwtLib.sim.abstractMemSpaceMaster import PartialField
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.synthesizer.hObjList import HObjList
+from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
+from hwt.synthesizer.param import Param
 
 
 def inRange(n, lower, end):
@@ -39,37 +41,69 @@ def isPaddingInIntfMap(item):
     return False
 
 
+def _walkStructIntfAndIntfMap_unpack(structIntf, intfMap):
+    """
+    Try to unpack intfMap and apply the selection on structIntf
+    
+    :return: Optional tuple Interface, intfMap
+    """
+    # items are Interface/RtlSignal or (type/interface/None or list of items, name)
+    if isPaddingInIntfMap(intfMap):
+        return
+    elif isinstance(intfMap, tuple):
+        item, name = intfMap
+    else:
+        assert isinstance(item, (InterfaceBase, RtlSignalBase)), item
+        name = getSignalName(item)
+
+    if isinstance(item, HdlType):
+        # this part of structIntf was generated from type descriptin
+        # and we are re searching only for those parts which were generated
+        # from Interface/RtlSignal 
+        return
+        
+    return getattr(structIntf, name), item
+
+
 def walkStructIntfAndIntfMap(structIntf, intfMap):
+    """
+    Walk StructInterfacece and interface map
+    and yield tuples (Interface in StructInterface, interface in intfMap)
+    which are on same place
+    
+    :param structIntf: HObjList or StructIntf or UnionIntf instance
+    :param intfMap: interface map
+    
+    :note: typical usecase is when there is StructIntf generated from description in intfMap
+        and then you need to connect interface from intfMap to structIntf
+        and there you can use this function to iterate over interfaces which belongs together
+        
+    
+    """
+    
     if isinstance(intfMap, (InterfaceBase, RtlSignalBase)):
         yield structIntf, intfMap
+        return
     elif isinstance(intfMap, tuple):
-        try:
-            item, name = intfMap
-            if isinstance(item, HdlType):
-                return
-        except ValueError:
-            name = None
-
-        if isinstance(name, str):
-            # is named something
+        item = _walkStructIntfAndIntfMap_unpack(structIntf, intfMap)
+        if item is None:
+            # is padding or there is no interface specified for it in intfMap
+            return
+        else:
+            structIntf, item = item
             yield from walkStructIntfAndIntfMap(structIntf, item)
-        else:
-            # is struct described by tuple
-            intfMap = list(where(intfMap, lambda x: not isPaddingInIntfMap(x)))
-            assert len(intfMap) == len(
-                structIntf._interfaces), (intfMap, structIntf)
-            for sItem, item in zip(structIntf._interfaces, intfMap):
-                yield from walkStructIntfAndIntfMap(sItem, item)
-
-    else:
-        if structIntf._isInterfaceArray():
-            a = structIntf
-        else:
-            a = structIntf._interfaces
-
-        assert len(a) == len(intfMap)
-        for sItem, item in zip(a, intfMap):
+    elif isinstance(structIntf, list):
+        structIntf
+        assert len(structIntf) == len(intfMap)
+        for sItem, item in zip(structIntf, intfMap):
             yield from walkStructIntfAndIntfMap(sItem, item)
+    else:
+        assert isinstance(intfMap, IntfMap), intfMap
+        for item in intfMap:
+            _item = _walkStructIntfAndIntfMap_unpack(structIntf, item)
+            if _item is not None:
+                sItem, _item = _item
+                yield from walkStructIntfAndIntfMap(sItem, _item)
 
 
 class BusEndpoint(Unit):
@@ -152,24 +186,6 @@ class BusEndpoint(Unit):
     def isInMyAddrRange(self, addrSig):
         return (addrSig >= self._getMinAddr()) & (addrSig < self._getMaxAddr())
 
-    @staticmethod
-    def _shouldEnterIntf(intf):
-        """
-        :return: tuple (shouldEnter, shouldYield)
-        """
-        if isinstance(intf, InterfaceProxy) and intf._itemsInOne == 1:
-            if isinstance(intf._origIntf, (RegCntrl, BramPort_withoutClk)):
-                return (False, True)
-            else:
-                return (True, False)
-        if isinstance(intf, (RegCntrl, BramPort_withoutClk)):
-            if intf._widthMultiplier is not None:
-                return (False, False)
-            else:
-                return (False, True)
-        else:
-            return (True, False)
-
     def _shouldEnterForTransTmpl(self, tmpl):
         o = tmpl.origin
 
@@ -185,18 +201,22 @@ class BusEndpoint(Unit):
             return (True, False)
 
     def walkFieldsAndIntf(self, transTmpl, structIntf):
+        intfIt = ObjIteratorCtx(structIntf)
         fieldTrans = transTmpl.walkFlatten(
-            shouldEnterFn=self._shouldEnterForTransTmpl)
-        intfs = walkFlatten(structIntf, self._shouldEnterIntf)
+            shouldEnterFn=self._shouldEnterForTransTmpl,
+            otherObjItCtx=intfIt)
 
         hasAnyInterface = False
-        for (((base, end), transTmpl), intf) in zip(fieldTrans, intfs):
-            if isinstance(intf, InterfaceProxy):
+        for ((base, end), transTmpl) in fieldTrans:
+            intf = intfIt.actual
+            isPartOfSomeArray = arr_any(intfIt.onParentNames, lambda x: isinstance(x, int))
+            if isPartOfSomeArray:
                 _tTmpl = copy(transTmpl)
                 _tTmpl.bitAddr = base
                 _tTmpl.bitAddrEnd = end
                 _tTmpl.origin = PartialField(transTmpl.origin)
                 transTmpl = _tTmpl
+                self.decoded._fieldsToInterfaces[transTmpl.origin] = intf
 
             yield transTmpl, intf
             hasAnyInterface = True
@@ -217,11 +237,7 @@ class BusEndpoint(Unit):
         tmpl = TransTmpl(self.STRUCT_TEMPLATE)
 
         for transTmpl, intf in self.walkFieldsAndIntf(tmpl, self.decoded):
-            if isinstance(intf, InterfaceProxy):
-                self.decoded._fieldsToInterfaces[transTmpl.origin] = intf
-                intfClass = intf._origIntf.__class__
-            else:
-                intfClass = intf.__class__
+            intfClass = intf.__class__
 
             if issubclass(intfClass, RegCntrl):
                 self._directlyMapped.append(transTmpl)
@@ -293,7 +309,7 @@ class BusEndpoint(Unit):
 
         if addrIsAligned:
             bitsOfPrefix = IN_ADDR_WIDTH - bitsOfSubAddr - bitsForAlignment
-            prefix = (transTmpl.bitAddr //
+            prefix = (transTmpl.bitAddr // 
                       srcAddrStep) >> (bitsForAlignment + bitsOfSubAddr)
             addrIsInRange = srcAddrSig[IN_ADDR_WIDTH:(
                 IN_ADDR_WIDTH - bitsOfPrefix)]._eq(prefix)
@@ -302,7 +318,7 @@ class BusEndpoint(Unit):
             _addr = transTmpl.bitAddr // srcAddrStep
             _addrEnd = transTmpl.bitAddrEnd // srcAddrStep
             addrIsInRange = inRange(srcAddrSig, _addr, _addrEnd)
-            addr_tmp = self._sig(dstAddrSig._name +
+            addr_tmp = self._sig(dstAddrSig._name + 
                                  "_addr_tmp", Bits(self.ADDR_WIDTH))
             addr_tmp(srcAddrSig - _addr)
 
@@ -336,34 +352,45 @@ class BusEndpoint(Unit):
         elif shouldEnter:
             if isinstance(t, HArray):
                 if isinstance(t.elmType, Bits):
-                    p = RegCntrl(asArraySize=t.size)
+                    p = HObjList(
+                        RegCntrl() for _ in range(int(t.size))
+                    )
                     dw = t.elmType.bit_length()
                 else:
-                    return StructIntf(t.elmType,
-                                      instantiateFieldFn=self._mkFieldInterface,
-                                      asArraySize=t.size)
+                    return HObjList(
+                        StructIntf(t.elmType,
+                                      instantiateFieldFn=self._mkFieldInterface)
+                        for _ in range(int(t.size))
+                    )
             elif isinstance(t, HStruct):
                 return StructIntf(t, instantiateFieldFn=self._mkFieldInterface)
             else:
                 raise TypeError(t)
 
+        if isinstance(p, HObjList):
+            _p = p
+        else:
+            _p = [p]
+        
         if dw == DW:
             # use param instead of value to improve readability
-            dw = self.DATA_WIDTH
-            p._replaceParam("DATA_WIDTH", dw)
+            DW = self.DATA_WIDTH
+            if isinstance(DW, Param):
+                for i in _p: 
+                    i._replaceParam("DATA_WIDTH", DW)
         else:
-            p.DATA_WIDTH.set(dw)
+            for i in _p: 
+                i.DATA_WIDTH.set(dw)
 
         return p
 
-    def connectByInterfaceMap(self, interfaceMap):
+    def connectByInterfaceMap(self, interfaceMap:IntfMap):
         """
         Connect "decoded" struct interface to interfaces specified
         in iterface map
-
-        :param interfaceMap: list of interfaces
-            or tuple (type or interface, name)
         """
+        assert isinstance(interfaceMap, IntfMap), interfaceMap
+                
         # connect interfaces as was specified by register map
         for convIntf, intf in walkStructIntfAndIntfMap(self.decoded,
                                                        interfaceMap):

@@ -7,6 +7,7 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.hObjList import HObjList
 
 
 class SimpleSubunit(Unit):
@@ -38,8 +39,8 @@ class InterfaceArraySample1(Unit):
 
         addClkRstn(self)
         with self._paramsShared():
-            self.a = VldSynced(asArraySize=LEN)
-            self.b = VldSynced(asArraySize=LEN)
+            self.a = HObjList(VldSynced() for _ in range(LEN))
+            self.b = HObjList(VldSynced() for _ in range(LEN))
 
             self.u0 = SimpleSubunit()
             self.u1 = SimpleSubunit()

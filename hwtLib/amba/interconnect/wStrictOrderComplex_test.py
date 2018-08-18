@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+
 import unittest
 
 from hwt.bitmask import mask
@@ -8,6 +9,8 @@ from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
+
+from hwt.synthesizer.hObjList import HObjList
 from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_w, Axi4_b
 from hwtLib.amba.axi4_rDatapump_test import mkReq
@@ -30,7 +33,8 @@ class WStrictOrderInterconnecComplex(Unit):
             self.aw = Axi3_addr()
             self.w = Axi4_w()
             self.b = Axi4_b()
-            self.drivers = AxiWDatapumpIntf(asArraySize=self.DRIVER_CNT)
+            self.drivers = HObjList(AxiWDatapumpIntf() for _ in range(int(self.DRIVER_CNT)))
+            
 
     def _impl(self):
         propagateClkRstn(self)

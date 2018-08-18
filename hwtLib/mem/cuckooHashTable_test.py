@@ -18,12 +18,12 @@ class CuckooHashTableTC(SimTestCase):
         u.TABLE_SIZE.set(self.TABLE_SIZE)
         self.TABLE_CNT = 2
         self.prepareUnit(u)
-        self.TABLE_MEMS = [getattr(self.model, "table%d_inst" % i).table_inst.ram_memory._val.val
+        self.TABLE_MEMS = [getattr(self.model, "tables_%d_inst" % i).table_inst.ram_memory._val.val
                            for i in range(self.TABLE_CNT)]
 
     def cleanupMemory(self):
         for ti in range(self.TABLE_CNT):
-            table = getattr(self.model, "table%d_inst" % ti).table_inst
+            table = getattr(self.model, "tables_%d_inst" % ti).table_inst
             mem = table.ram_memory.defVal
             for i in range(mem._dtype.size):
                 mem.val[i] = mem._dtype.elmType.fromPy(0)

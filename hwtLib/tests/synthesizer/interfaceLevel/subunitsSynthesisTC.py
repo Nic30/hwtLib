@@ -4,7 +4,6 @@
 import unittest
 
 from hwt.hdl.constants import DIRECTION
-from hwt.hdl.typeShortcuts import hInt
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -22,6 +21,7 @@ from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import \
     BaseSynthesizerTC
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.dummyPlatform import DummyPlatform
+from hwt.synthesizer.hObjList import HObjList
 
 
 D = DIRECTION
@@ -44,10 +44,11 @@ class UnitWithArrIntf(EmptyUnit):
     def _declr(self):
         with self._paramsShared():
             self.a = AxiStream()
-            self.b = AxiStream(asArraySize=hInt(2))
+            self.b = HObjList(AxiStream() for _ in range(2))
 
     def _impl(self):
-        setOut(self.b)
+        for b in self.b:
+            setOut(b)
 
 
 class UnitWithArrIntfParent(Unit):
@@ -283,7 +284,7 @@ if __name__ == '__main__':
     # print(toRtl(UnitWithArrIntfParent))
 
     suite = unittest.TestSuite()
-    suite.addTest(SubunitsSynthesisTC('test_used_param_from_other_unit'))
-    # suite.addTest(unittest.makeSuite(SubunitsSynthesisTC))
+    # suite.addTest(SubunitsSynthesisTC('test_used_param_from_other_unit'))
+    suite.addTest(unittest.makeSuite(SubunitsSynthesisTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

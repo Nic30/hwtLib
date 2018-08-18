@@ -8,6 +8,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.hObjList import HObjList
 
 
 class InterfaceArraySample0(Unit):
@@ -23,8 +24,9 @@ class InterfaceArraySample0(Unit):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.a = VldSynced(asArraySize=self.LEN)
-            self.b = VldSynced(asArraySize=self.LEN)
+            L = int(self.LEN)
+            self.a = HObjList(VldSynced() for _ in range(L))
+            self.b = HObjList(VldSynced() for _ in range(L))
 
     def _impl(self):
         # directly connect arrays, note that we are not using array items
@@ -44,7 +46,7 @@ class InterfaceArraySample0SliceOnly(Unit):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.a = VldSynced(asArraySize=self.LEN)
+            self.a = HObjList(VldSynced() for _ in range(int(self.LEN)))
             self.b0 = VldSynced()
             self.b1 = VldSynced()
             self.b2 = VldSynced()
@@ -66,7 +68,7 @@ class InterfaceArraySample0ConcatOnly(Unit):
             self.a0 = VldSynced()
             self.a1 = VldSynced()
             self.a2 = VldSynced()
-            self.b = VldSynced(asArraySize=self.LEN)
+            self.b = HObjList(VldSynced() for _ in range(int(self.LEN)))
 
     def _impl(self):
         self.b[0](self.a0)

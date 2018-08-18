@@ -6,6 +6,8 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
+
+from hwt.synthesizer.hObjList import HObjList
 from hwtLib.amba.axis import AxiStream
 
 
@@ -36,8 +38,8 @@ class InterfaceArraySample2(Unit):
         addClkRstn(self)
         LEN = 2
         with self._paramsShared():
-            self.a = AxiStream(asArraySize=LEN)
-            self.b = AxiStream(asArraySize=LEN)
+            self.a = HObjList(AxiStream() for _ in range(LEN))
+            self.b = HObjList(AxiStream() for _ in range(LEN))
 
             self.u0 = SimpleSubunit()
             self.u1 = SimpleSubunit()

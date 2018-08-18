@@ -15,6 +15,7 @@ from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
 from hwt.hdl.types.bits import Bits
 from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
+from hwt.interfaces.structIntf import IntfMap
 
 
 class Loop(Unit):
@@ -91,14 +92,14 @@ class TestUnittWithChilds(Unit):
             ep._updateParamsFrom(self)
 
         rltSig10 = self._sig("sig", Bits(self.DATA_WIDTH), defVal=10)
-        interfaceMap = (
+        interfaceMap = IntfMap([
             (rltSig10, "rltSig10"),
             (self.signalLoop.dout, "signal"),
             (self.regCntrlLoop.din, "regCntrl"),
             (self.vldSyncedLoop.din, "vldSynced"),
             (self.bramLoop.din, "bram"),
             (Bits(self.DATA_WIDTH), None),
-            )
+        ])
 
         axiLiteConv = AxiLiteEndpoint.fromInterfaceMap(interfaceMap)
         axiLiteConv._updateParamsFrom(self)
@@ -153,12 +154,12 @@ class TestUnittWithArr(Unit):
         def configEp(ep):
             ep._updateParamsFrom(self)
 
-        interfaceMap = (
-            ([self.regCntrlLoop0.din,
-              self.regCntrlLoop1.din,
-              self.regCntrlLoop2.din,
-              ], "regCntrl"),
-            )
+        interfaceMap = IntfMap([
+                ([self.regCntrlLoop0.din,
+                  self.regCntrlLoop1.din,
+                  self.regCntrlLoop2.din,
+                  ], "regCntrl"),
+            ])
 
         axiLiteConv = AxiLiteEndpoint.fromInterfaceMap(interfaceMap)
         axiLiteConv._updateParamsFrom(self)
@@ -347,7 +348,3 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(AxiLiteEndpoint_fromInterface_arr_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-    # from hwt.synthesizer.utils import toRtl
-    # u = TestUnittWithArr()
-    # u.DATA_WIDTH.set(32)
-    # print(toRtl(u))

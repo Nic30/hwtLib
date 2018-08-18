@@ -7,6 +7,7 @@ from hwt.interfaces.std import VectSignal
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.hObjList import HObjList
 
 
 class BitonicSorter(Unit):
@@ -32,10 +33,12 @@ class BitonicSorter(Unit):
         w = self.DATA_WIDTH
         sig = bool(self.SIGNED)
 
-        self.inputs = [VectSignal(w, sig) for _ in range(int(self.ITEMS))]
-        self.outputs = [VectSignal(w, sig) for _ in range(int(self.ITEMS))]
-        self._registerArray("inputs", self.inputs)
-        self._registerArray("outputs", self.outputs)
+        self.inputs = HObjList(
+            VectSignal(w, sig) for _ in range(int(self.ITEMS))
+        )
+        self.outputs = HObjList(
+            VectSignal(w, sig) for _ in range(int(self.ITEMS))
+        )
 
     def bitonic_sort(self, cmpFn, x, layer=0, offset=0):
         if len(x) <= 1:

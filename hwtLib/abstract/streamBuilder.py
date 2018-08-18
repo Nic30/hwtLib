@@ -1,8 +1,8 @@
 from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Rst_n, Handshaked
-from hwt.synthesizer.interfaceLevel.interfaceUtils.proxy import InterfaceProxy
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getClk, getRst
+from hwt.synthesizer.hObjList import HObjList
 
 
 class AbstractStreamBuilder(object):
@@ -79,8 +79,8 @@ class AbstractStreamBuilder(object):
         """
         Get real interface class of interface
         """
-        if isinstance(intf, InterfaceProxy):
-            return intf._origIntf.__class__
+        if isinstance(intf, HObjList):
+            return self._getIntfCls(intf[0])
 
         return intf.__class__
 
