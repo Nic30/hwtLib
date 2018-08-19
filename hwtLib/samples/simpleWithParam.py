@@ -26,7 +26,7 @@ class SimpleUnitWithParam(Unit):
         # it means it is 8bit width we specify data type for every signal
         self.a = Signal(dtype=dt)
         # you can also use shortcut VectorSignal(width)
-        self.b = Signal(dtype=dt)
+        self.b = Signal(dtype=dt)._m()
 
     def _impl(self):
         self.b(self.a)

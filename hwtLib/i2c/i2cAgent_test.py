@@ -12,7 +12,7 @@ from hwtLib.i2c.intf import I2c, I2cAgent
 class I2CSimplePassTrought(Unit):
     def _declr(self):
         self.i = I2c()
-        self.o = I2c()
+        self.o = I2c()._m()
 
     def _impl(self):
         self.o(self.i)

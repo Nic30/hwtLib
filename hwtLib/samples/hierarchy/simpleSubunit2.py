@@ -14,7 +14,7 @@ class SimpleSubunit2(Unit):
         addClkRstn(self)
         self.subunit0 = SimpleUnitAxiStream()
         self.a0 = AxiStream()
-        self.b0 = AxiStream()
+        self.b0 = AxiStream()._m()
 
         self.a0.DATA_WIDTH.set(8)
         self.b0.DATA_WIDTH.set(8)

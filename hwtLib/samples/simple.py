@@ -21,13 +21,13 @@ class SimpleUnit(Unit):
         There you have to declare things which should be visible from outside.
         """
         # interfaces "a" and "b" are accessible from outside when declared
-        # in _declr method, this means they will be interfaces of Entity
-        # and all other units can connect anything to these interfaces
+        # in _declr method, this means they will be interfaces of Entity/Module
+        # and parent unit can connect signals to this interfaces
         # note that interfaces has to be properties of this object
-        # which is kind of registration and without it,
-        # it can not be discovered
+        # which is kind of registration and without it, they can not be discovered
         self.a = Signal()
-        self.b = Signal()
+        # "b" is output and has to be marked as master then
+        self.b = Signal()._m()
 
     def _impl(self):
         """

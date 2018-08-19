@@ -44,7 +44,7 @@ class UnitWithArrIntf(EmptyUnit):
     def _declr(self):
         with self._paramsShared():
             self.a = AxiStream()
-            self.b = HObjList(AxiStream() for _ in range(2))
+            self.b = HObjList(AxiStream() for _ in range(2))._m()
 
     def _impl(self):
         for b in self.b:
@@ -58,8 +58,8 @@ class UnitWithArrIntfParent(Unit):
     def _declr(self):
         with self._paramsShared():
             self.a = AxiStream()
-            self.b0 = AxiStream()
-            self.b1 = AxiStream()
+            self.b0 = AxiStream()._m()
+            self.b1 = AxiStream()._m()
 
             self.u0 = UnitWithArrIntf()
 
@@ -75,7 +75,7 @@ class UnitWithGenericOnPort(Unit):
 
     def _declr(self):
         self.a = VectSignal(self.NESTED_PARAM)
-        self.b = VectSignal(self.NESTED_PARAM)
+        self.b = VectSignal(self.NESTED_PARAM)._m()
 
     def _impl(self):
         tmp = self._sig("tmp", self.a._dtype)
@@ -86,7 +86,7 @@ class UnitWithGenericOnPort(Unit):
 class UnitWithGenericOfChild(Unit):
     def _declr(self):
         self.a = VectSignal(123)
-        self.b = VectSignal(123)
+        self.b = VectSignal(123)._m()
         self.ch = UnitWithGenericOnPort()
 
     def _impl(self):
@@ -166,7 +166,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
             def _declr(self):
                 dt = Bits(64)
                 self.a = Signal(dtype=dt)
-                self.b = Signal(dtype=dt)
+                self.b = Signal(dtype=dt)._m()
 
             def _impl(self):
                 self.b(self.a)
@@ -201,7 +201,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
                 addClkRstn(self)
                 with self._paramsShared():
                     self.a = AxiStream()
-                    self.b = AxiStream()
+                    self.b = AxiStream()._m()
 
                     self.u0 = Simple2withNonDirectIntConnection()
                     self.u1 = Simple2withNonDirectIntConnection()
@@ -236,8 +236,8 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
                 addClkRstn(self)
                 with self._paramsShared():
                     self.a = AxiStream()
-                    self.b0 = AxiStream()
-                    self.b1 = AxiStream()
+                    self.b0 = AxiStream()._m()
+                    self.b1 = AxiStream()._m()
 
                     self.u0 = Simple2withNonDirectIntConnection()
                     self.u1 = UnitWithArrIntf()
@@ -264,7 +264,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
         class FDStreamConnection(Unit):
             def _declr(self):
                 self.dataIn = FullDuplexAxiStream()
-                self.dataOut = FullDuplexAxiStream()
+                self.dataOut = FullDuplexAxiStream()._m()
 
             def _impl(self):
                 self.dataOut.tx(self.dataIn.tx)

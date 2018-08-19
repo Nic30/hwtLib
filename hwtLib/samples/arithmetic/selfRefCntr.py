@@ -14,7 +14,7 @@ class SelfRefCntr(Unit):
 
         addClkRstn(self)
 
-        self.dout = Signal(dtype=self.dt)
+        self.dout = Signal(dtype=self.dt)._m()
 
     def _impl(self):
         cntr = self._reg("cntr", self.dt, defVal=0)

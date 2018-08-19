@@ -24,7 +24,7 @@ class DReg(Unit):
         addClkRst(self)
 
         self.din = Signal()
-        self.dout = Signal()
+        self.dout = Signal()._m()
 
     def _impl(self):
         internReg = self._reg("internReg", BIT, defVal=False)
@@ -69,7 +69,7 @@ class DDR_Reg(Unit):
         addClkRst(self)
 
         self.din = Signal(dtype=BIT)
-        self.dout = VectSignal(2)
+        self.dout = VectSignal(2)._m()
 
     def _impl(self):
         din = self.din
@@ -97,7 +97,7 @@ class Latch(Unit):
     """
     def _declr(self):
         self.din = Signal()
-        self.dout = Signal()
+        self.dout = Signal()._m()
         self.en = Signal()
 
     def _impl(self):

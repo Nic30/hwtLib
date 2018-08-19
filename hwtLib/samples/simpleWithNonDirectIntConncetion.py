@@ -17,7 +17,7 @@ class SimpleWithNonDirectIntConncetion(Unit):
 
     def _declr(self):
         self.a = Signal()
-        self.c = Signal()
+        self.c = Signal()._m()
 
     def _impl(self):
         self.b = Signal()

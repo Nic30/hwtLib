@@ -30,8 +30,8 @@ class WStrictOrderInterconnecComplex(Unit):
             self.dp = Axi_wDatapump(axiAddrCls=Axi3_addr)
             self.ic = WStrictOrderInterconnect()
 
-            self.aw = Axi3_addr()
-            self.w = Axi4_w()
+            self.aw = Axi3_addr()._m()
+            self.w = Axi4_w()._m()
             self.b = Axi4_b()
             self.drivers = HObjList(AxiWDatapumpIntf() for _ in range(int(self.DRIVER_CNT)))
             

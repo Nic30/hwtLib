@@ -26,7 +26,7 @@ class AxisFrameGen(Unit):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.axis_out = AxiStream()
+            self.axis_out = AxiStream()._m()
 
         self.cntrl = Axi4Lite()
         self.cntrl._replaceParam("ADDR_WIDTH", self.CNTRL_AW)

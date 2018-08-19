@@ -5,7 +5,7 @@ from hwt.synthesizer.unit import Unit
 class ExampleChild(Unit):
     def _declr(self):
         self.c = Signal()
-        self.d = Signal()
+        self.d = Signal()._m()
 
     def _impl(self):
         self.d(self.c)
@@ -14,7 +14,7 @@ class ExampleChild(Unit):
 class UnusedSubunit(Unit):
     def _declr(self):
         self.a = Signal()
-        self.b = Signal()
+        self.b = Signal()._m()
 
         self.child = ExampleChild()
 
@@ -26,7 +26,7 @@ class UnusedSubunit(Unit):
 class UnusedSubunit2(Unit):
     def _declr(self):
         self.a = Signal()
-        self.b = Signal()
+        self.b = Signal()._m()
 
         self.child0 = ExampleChild()
         self.child1 = ExampleChild()

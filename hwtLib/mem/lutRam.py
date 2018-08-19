@@ -32,7 +32,7 @@ def mkLutRamCls(DATA_WIDTH):
             self.d = Signal()  # in
 
             self.wclk = Clk()
-            self.o = Signal()  # out
+            self.o = Signal()._m()  # out
             self.we = Signal()
 
         def _impl(self):

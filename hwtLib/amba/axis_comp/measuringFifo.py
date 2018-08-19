@@ -38,9 +38,9 @@ class AxiS_measuringFifo(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.dataIn = self._stream_t()
-            self.dataOut = self._stream_t()
+            self.dataOut = self._stream_t()._m()
 
-        self.sizes = Handshaked()
+        self.sizes = Handshaked()._m()
         self.sizes.DATA_WIDTH.set(log2ceil(self.MAX_LEN)
                                   + 1
                                   + self.getAlignBitsCnt())
@@ -55,7 +55,7 @@ class AxiS_measuringFifo(Unit):
         sb.DATA_WIDTH.set(self.sizes.DATA_WIDTH.get())
 
         if self.EXPORT_ALIGNMENT_ERROR:
-            self.errorAlignment = Signal()
+            self.errorAlignment = Signal()._m()
 
     def _impl(self):
         propagateClkRstn(self)

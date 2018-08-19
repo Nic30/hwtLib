@@ -83,7 +83,7 @@ class HashTableCore(Unit):
 
             self.lookup = LookupKeyIntf()
 
-            self.lookupRes = LookupResultIntf()
+            self.lookupRes = LookupResultIntf()._m()
             self.lookupRes.HASH_WIDTH.set(self.HASH_WITH)
 
         t = self.table = RamSingleClock()

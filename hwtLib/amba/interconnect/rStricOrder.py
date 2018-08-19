@@ -36,7 +36,7 @@ class RStrictOrderInterconnect(AxiInterconnectBase):
             self.drivers = HObjList(
                 AxiRDatapumpIntf() for _ in range(int(self.DRIVER_CNT))
             )
-            self.rDatapump = AxiRDatapumpIntf()
+            self.rDatapump = AxiRDatapumpIntf()._m()
 
         self.DRIVER_INDEX_WIDTH = log2ceil(self.DRIVER_CNT).val
 

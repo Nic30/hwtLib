@@ -39,7 +39,7 @@ class Axi_datapumpBase(Unit):
         addClkRstn(self)
         with self._paramsShared():
             # address channel to axi
-            self.a = self._axiAddrCls()
+            self.a = self._axiAddrCls()._m()
 
     def getSizeAlignBits(self):
         return log2ceil(self.DATA_WIDTH // 8).val

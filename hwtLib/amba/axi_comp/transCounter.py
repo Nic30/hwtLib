@@ -31,7 +31,7 @@ class AxiTransactionCouter(Unit):
         assert self.CNTRL_ADDR_WIDTH >= self.CNTR_WIDTH
         addClkRstn(self)
         with self._paramsShared():
-            self.master = self._axiCls()
+            self.master = self._axiCls()._m()
             self.slave = self._axiCls()
 
         self.cntrl = Axi4Lite()

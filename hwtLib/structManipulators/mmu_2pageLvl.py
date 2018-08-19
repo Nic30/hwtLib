@@ -57,15 +57,15 @@ class MMU_2pageLvl(Unit):
         # public interfaces
         addClkRstn(self)
         with self._paramsShared():
-            self.rDatapump = AxiRDatapumpIntf()
+            self.rDatapump = AxiRDatapumpIntf()._m()
             self.rDatapump.MAX_LEN.set(1)
 
         i = self.virtIn = Handshaked()
         i._replaceParam("DATA_WIDTH", self.VIRT_ADDR_WIDTH)
 
-        i = self.physOut = Handshaked()
+        i = self.physOut = Handshaked()._m()
         i._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
-        self.segfault = Signal()
+        self.segfault = Signal()._m()
 
         self.lvl1Table = BramPort_withoutClk()
 

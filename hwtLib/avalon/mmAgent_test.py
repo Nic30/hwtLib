@@ -16,7 +16,7 @@ class AvalonMmWire(Unit):
     def _declr(self):
         addClkRstn(self)
         self.dataIn = AvalonMM()
-        self.dataOut = AvalonMM()
+        self.dataOut = AvalonMM()._m()
 
     def _impl(self):
         self.dataOut(self.dataIn)

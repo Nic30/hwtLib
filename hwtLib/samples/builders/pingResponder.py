@@ -46,7 +46,7 @@ class PingResponder(Unit):
 
         with self._paramsShared():
             self.rx = AxiStream()
-            self.tx = AxiStream()
+            self.tx = AxiStream()._m()
 
     def req_load(self, parsed, regs, freeze):
         """

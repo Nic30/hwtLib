@@ -46,10 +46,10 @@ class Axi_wDatapump(Axi_datapumpBase):
     def _declr(self):
         super()._declr()  # add clk, rst, axi addr channel and req channel
         with self._paramsShared():
-            self.w = self._axiWCls()
+            self.w = self._axiWCls()._m()
             self.b = Axi4_b()
 
-            self.errorWrite = Signal()
+            self.errorWrite = Signal()._m()
             self.driver = AxiWDatapumpIntf()
 
         with self._paramsShared():

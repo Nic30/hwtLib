@@ -16,7 +16,7 @@ class Cntr(Unit):
     def _declr(self):
         addClkRst(self)
         self.en = Signal()
-        self.val = VectSignal(self.DATA_WIDTH)
+        self.val = VectSignal(self.DATA_WIDTH)._m()
 
     def _impl(self):
         reg = self._reg("counter", Bits(self.DATA_WIDTH), 0)

@@ -63,11 +63,11 @@ class CLinkedListWriter(Unit):
         with self._paramsShared():
             # read interface for datapump
             # interface which sending requests to download addr of next block
-            self.rDatapump = AxiRDatapumpIntf()
+            self.rDatapump = AxiRDatapumpIntf()._m()
             self.rDatapump.MAX_LEN.set(1)  # because we are downloading only addres of next block
 
             # write interface for datapump
-            self.wDatapump = AxiWDatapumpIntf()
+            self.wDatapump = AxiWDatapumpIntf()._m()
             self.wDatapump.MAX_LEN.set(self.BUFFER_CAPACITY // 2)
             assert self.BUFFER_CAPACITY <= self.ITEMS_IN_BLOCK
 

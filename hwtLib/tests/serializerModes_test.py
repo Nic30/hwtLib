@@ -11,7 +11,7 @@ from hwt.synthesizer.utils import toRtl
 
 class SimpeUnit(Unit):
     def _declr(self):
-        self.a = Signal()
+        self.a = Signal()._m()
 
     def _impl(self):
         self.a(1)
@@ -36,7 +36,7 @@ class ParamsUniqUnit(SimpeUnit):
 
 class ExampleA(Unit):
     def _declr(self):
-        self.a = VectSignal(7)
+        self.a = VectSignal(7)._m()
         self.u0 = ExcludedUnit()
         self.u1 = ExcludedUnit()
         self.u2 = OnceUnit()

@@ -29,7 +29,7 @@ class HsJoinFairShare(HsJoinPrioritized):
         HsJoinPrioritized._declr(self)
         addClkRstn(self)
         if self.EXPORT_SELECTED:
-            self.selectedOneHot = VldSynced()
+            self.selectedOneHot = VldSynced()._m()
             self.selectedOneHot._replaceParam("DATA_WIDTH", self.INPUTS)
 
     @staticmethod

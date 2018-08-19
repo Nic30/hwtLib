@@ -19,8 +19,8 @@ class StaticForLoopCntrl(Unit):
         self.cntrl = HandshakeSync()
 
         self.COUNTER_WIDTH = log2ceil(self.ITERATIONS)
-        self.index = VectSignal(self.COUNTER_WIDTH)
-        self.body = HandshakeSync()
+        self.index = VectSignal(self.COUNTER_WIDTH)._m()
+        self.body = HandshakeSync()._m()
         self.bodyBreak = Signal()
 
     def _impl(self):

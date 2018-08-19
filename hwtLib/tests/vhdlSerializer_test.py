@@ -69,7 +69,7 @@ class TernaryInConcatExample(Unit):
     def _declr(self):
         self.a = VectSignal(32)
         self.b = VectSignal(32)
-        self.c = VectSignal(32)
+        self.c = VectSignal(32)._m()
 
     def _impl(self):
         a = self.a

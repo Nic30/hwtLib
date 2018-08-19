@@ -4,7 +4,7 @@ from hwtLib.amba.axis import AxiStream
 
 class InconsistentIntfDirection(Unit):
     def _declr(self):
-        self.a = AxiStream()
+        self.a = AxiStream()._m()
 
     def _impl(self):
         # missing drivers of self.a

@@ -24,7 +24,7 @@ class HsJoinPrioritized(HandshakedCompBase):
             self.dataIn = HObjList(
                 self.intfCls() for _ in range(int(self.INPUTS))
             )
-            self.dataOut = self.intfCls()
+            self.dataOut = self.intfCls()._m()
 
     def dataConnectionExpr(self, dIn, dOut):
         """Create connection between input and output interface"""

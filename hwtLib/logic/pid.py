@@ -43,7 +43,7 @@ class PidController(Unit):
     def _declr(self):
         addClkRstn(self)
         self.input = VectSignal(self.DATAIN_WIDTH, signed=True)
-        self.output = VectSignal(self.DATAIN_WIDTH, signed=True)
+        self.output = VectSignal(self.DATAIN_WIDTH, signed=True)._m()
         self.target = VectSignal(self.DATAIN_WIDTH, signed=True)
         self.coefs = HObjList(
             VectSignal(self.COEF_WIDTH, signed=True)

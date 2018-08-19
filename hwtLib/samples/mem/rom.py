@@ -10,7 +10,7 @@ from hwt.synthesizer.unit import Unit
 class SimpleRom(Unit):
     def _declr(self):
         self.addr = VectSignal(2)
-        self.dout = VectSignal(8)
+        self.dout = VectSignal(8)._m()
 
     def _impl(self):
         rom = self._sig("rom_data", Bits(8)[4], defVal=[1, 2, 3, 4])

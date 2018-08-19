@@ -14,7 +14,7 @@ class SimpleComentedUnit(Unit):
 
     def _declr(self):
         self.a = Signal()
-        self.b = Signal()
+        self.b = Signal()._m()
 
     def _impl(self):
         self.b(self.a)

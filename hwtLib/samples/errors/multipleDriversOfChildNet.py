@@ -5,7 +5,7 @@ from hwt.interfaces.std import Handshaked
 class ExampleChild(Unit):
     def _declr(self):
         self.c = Handshaked()
-        self.d = Handshaked()
+        self.d = Handshaked()._m()
 
     def _impl(self):
         self.d(self.c)
@@ -14,7 +14,7 @@ class ExampleChild(Unit):
 class MultipleDriversOfChildNet(Unit):
     def _declr(self):
         self.a = Handshaked()
-        self.b = Handshaked()
+        self.b = Handshaked()._m()
 
         self.ch = ExampleChild()
 

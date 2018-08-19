@@ -34,7 +34,7 @@ class AxiSToFrameLink(Unit):
         with self._paramsShared():
             addClkRstn(self)
             self.dataIn = AxiStream_withUserAndStrb()
-            self.dataOut = FrameLink()
+            self.dataOut = FrameLink()._m()
 
     def _impl(self):
         assert(int(self.USER_WIDTH) == 2)  # this is how is protocol specified
@@ -112,7 +112,7 @@ class FrameLinkToAxiS(Unit):
         with self._paramsShared():
             addClkRstn(self)
             self.dataIn = FrameLink()
-            self.dataOut = AxiStream_withUserAndStrb()
+            self.dataOut = AxiStream_withUserAndStrb()._m()
 
     def _impl(self):
         In = self.dataIn

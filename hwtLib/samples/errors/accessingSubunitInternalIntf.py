@@ -5,12 +5,16 @@ from hwtLib.samples.simpleWithNonDirectIntConncetion import SimpleWithNonDirectI
 
 
 class AccessingSubunitInternalIntf(Unit):
+    """
+    Example of error from accessing a internal interface of subunit
+    """
+    
     def _declr(self):
         addClkRstn(self)
         self.subunit0 = SimpleWithNonDirectIntConncetion()
         self.a0 = Signal()
-        self.b0 = Signal()
-        self.c0 = Signal()
+        self.b0 = Signal()._m()
+        self.c0 = Signal()._m()
 
     def _impl(self):
         propagateClkRstn(self)

@@ -36,7 +36,7 @@ class HsSplitCopy(HandshakedCompBase):
         with self._paramsShared():
             self.dataIn = self.intfCls()
             self.dataOut = HObjList(
-                self.intfCls() for _ in range(int(self.OUTPUTS))
+                self.intfCls()._m() for _ in range(int(self.OUTPUTS))
             )
 
     def _impl(self):

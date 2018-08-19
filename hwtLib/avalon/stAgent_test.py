@@ -16,7 +16,7 @@ class AvalonStWire(Unit):
     def _declr(self):
         addClkRstn(self)
         self.dataIn = AvalonST()
-        self.dataOut = AvalonST()
+        self.dataOut = AvalonST()._m()
 
     def _impl(self):
         self.dataOut(self.dataIn)

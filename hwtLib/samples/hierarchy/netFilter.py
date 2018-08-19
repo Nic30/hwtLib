@@ -13,8 +13,8 @@ from hwtLib.amba.axis_comp.builder import AxiSBuilder
 class HeadFieldExtractor(EmptyUnit):
     def _declr(self):
         self.din = AxiStream()
-        self.dout = AxiStream()
-        self.headers = AxiStream()
+        self.dout = AxiStream()._m()
+        self.headers = AxiStream()._m()
 
     def _impl(self):
         setOut(self.dout, self.headers)
@@ -23,7 +23,7 @@ class HeadFieldExtractor(EmptyUnit):
 class PatternMatch(EmptyUnit):
     def _declr(self):
         self.din = AxiStream()
-        self.match = AxiStream()
+        self.match = AxiStream()._m()
 
     def _impl(self):
         setOut(self.match)
@@ -35,7 +35,7 @@ class Filter(EmptyUnit):
         self.patternMatch = AxiStream()
 
         self.din = AxiStream()
-        self.dout = AxiStream()
+        self.dout = AxiStream()._m()
         self.cfg = Axi4Lite()
 
     def _impl(self):
@@ -45,7 +45,7 @@ class Filter(EmptyUnit):
 class Exporter(EmptyUnit):
     def _declr(self):
         self.din = AxiStream()
-        self.dout = AxiStream()
+        self.dout = AxiStream()._m()
 
     def _impl(self):
         setOut(self.dout)
@@ -64,7 +64,7 @@ class NetFilter(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.din = AxiStream()
-            self.export = AxiStream()
+            self.export = AxiStream()._m()
             self.cfg = Axi4Lite()
 
             self.hfe = HeadFieldExtractor()

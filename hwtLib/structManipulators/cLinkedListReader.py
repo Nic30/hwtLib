@@ -49,13 +49,13 @@ class CLinkedListReader(Unit):
         with self._paramsShared():
             # interface which sending requests to download data
             # and interface which is collecting all data and only data with specified id are processed
-            self.rDatapump = AxiRDatapumpIntf()
+            self.rDatapump = AxiRDatapumpIntf()._m()
             self.rDatapump.MAX_LEN.set(self.BUFFER_CAPACITY // 2 - 1)
 
-            self.dataOut = Handshaked()
+            self.dataOut = Handshaked()._m()
 
         # (how much of items remains in block)
-        self.inBlockRemain = VectSignal(log2ceil(self.ITEMS_IN_BLOCK + 1))
+        self.inBlockRemain = VectSignal(log2ceil(self.ITEMS_IN_BLOCK + 1))._m()
 
         # interface to control internal register
         self.baseAddr = RegCntrl()

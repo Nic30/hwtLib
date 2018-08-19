@@ -24,7 +24,7 @@ class FrameLinkConvTest(Unit):
             self.dataIn = AxiStream_withUserAndStrb()
             self.conv0 = AxiSToFrameLink()
             self.conv1 = FrameLinkToAxiS()
-            self.dataOut = AxiStream_withUserAndStrb()
+            self.dataOut = AxiStream_withUserAndStrb()._m()
 
     def _impl(self):
         propagateClkRstn(self)

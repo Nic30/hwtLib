@@ -41,7 +41,7 @@ class ByteCntrs(Unit):
         DW = int(self.DATA_WIDTH)
         assert DW % 8 == 0, "Has to be byte aligned"
         self.CNTR_WIDTH = log2ceil(self.MAX_FRAME_LEN // self.DATA_WIDTH // 8)
-        self.res = ByteCntrsRes()
+        self.res = ByteCntrsRes()._m()
         self.res.DATA_WIDTH.set(self.CNTR_WIDTH)
 
         # for each byte in data word there is separate table to make

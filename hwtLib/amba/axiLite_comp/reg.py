@@ -21,7 +21,7 @@ class AxiLiteReg(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.in_s = self._axiCls()
-            self.out_m = self._axiCls()
+            self.out_m = self._axiCls()._m()
 
     def _impl(self):
         m = self.out_m

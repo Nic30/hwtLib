@@ -27,7 +27,7 @@ class ClkSynchronizer(Unit):
         self.inData = Signal(dtype=self.DATA_TYP)
         self.inClk = Clk()
 
-        self.outData = Signal(dtype=self.DATA_TYP)
+        self.outData = Signal(dtype=self.DATA_TYP)._m()
         self.outClk = Clk()
 
     def _impl(self):

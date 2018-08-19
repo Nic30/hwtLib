@@ -19,7 +19,7 @@ class UartRx(Unit):
     def _declr(self):
         addClkRstn(self)
 
-        self.dataOut = VldSynced()
+        self.dataOut = VldSynced()._m()
         self.dataOut.DATA_WIDTH.set(8)
 
         self.rxd = Signal()

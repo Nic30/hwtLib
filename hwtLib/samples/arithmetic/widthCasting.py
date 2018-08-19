@@ -21,8 +21,8 @@ class WidthCastingExample(Unit):
         self.a = VectSignal(8)
         self.b = VectSignal(11)
 
-        self.c = VectSignal(12)
-        self.d = VectSignal(8)
+        self.c = VectSignal(12)._m()
+        self.d = VectSignal(8)._m()
 
     def _impl(self):
         c = self.c

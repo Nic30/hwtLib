@@ -31,7 +31,7 @@ END ARCHITECTURE rtl;"""
 class TmpVarExample(Unit):
     def _declr(self):
         self.a = VectSignal(32)
-        self.b = VectSignal(32)
+        self.b = VectSignal(32)._m()
 
     def _impl(self):
         a = self.a[8:] + 4

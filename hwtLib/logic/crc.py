@@ -29,7 +29,7 @@ class Crc(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.dataIn = VldSynced()
-            self.dataOut = VectSignal(self.POLY_WIDTH)
+            self.dataOut = VectSignal(self.POLY_WIDTH)._m()
 
     def setConfig(self, crcConfigCls):
         """

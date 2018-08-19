@@ -24,7 +24,7 @@ class Simple2withNonDirectIntConnection(Unit):
 
         with self._paramsShared():
             self.a = AxiStream()
-            self.c = AxiStream()
+            self.c = AxiStream()._m()
 
     def _impl(self):
         # we have to register interface on this unit first before use

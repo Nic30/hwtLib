@@ -31,20 +31,20 @@ class IpCoreIntfTest(Unit):
         addClkRst(self)
 
         self.ram0 = BramPort()
-        self.ram1 = BramPort()
-        self.uart = Uart()
+        self.ram1 = BramPort()._m()
+        self.uart = Uart()._m()
         self.hsIn = Handshaked_withIP()
-        self.hsOut = Handshaked_withIP()
+        self.hsOut = Handshaked_withIP()._m()
         self.difIn = DifferentialSig()
         self.axi3s0 = Axi3()
-        self.axi3m0 = Axi3()
+        self.axi3m0 = Axi3()._m()
         self.axi3s1 = Axi3_withAddrUser()
-        self.axi3m1 = Axi3_withAddrUser()
+        self.axi3m1 = Axi3_withAddrUser()._m()
 
     def _impl(self):
         r0 = self._reg("r0", defVal=0)
         self.uart.tx(self.uart.rx)
-        self.ram0(self.ram1)
+        self.ram1(self.ram0)
 
         If(self.hsIn.vld,
            r0(self.difIn.p & ~self.difIn.n)
@@ -56,8 +56,8 @@ class IpCoreIntfTest(Unit):
            self.hsOut.vld(1)
         )
 
-        self.axi3s0(self.axi3m0)
-        self.axi3s1(self.axi3m1)
+        self.axi3m0(self.axi3s0)
+        self.axi3m1(self.axi3s1)
 
 
 class IpCorePackagerTC(unittest.TestCase):

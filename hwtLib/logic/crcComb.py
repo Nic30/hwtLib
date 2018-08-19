@@ -99,7 +99,7 @@ class CrcComb(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.dataIn = VectSignal(self.DATA_WIDTH)
-            self.dataOut = VectSignal(self.POLY_WIDTH)
+            self.dataOut = VectSignal(self.POLY_WIDTH)._m()
 
     @staticmethod
     def parsePoly(POLY, POLY_WIDTH) -> List[int]:

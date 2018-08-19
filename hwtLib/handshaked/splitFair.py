@@ -47,7 +47,7 @@ class HsSplitFair(HsSplitCopy):
         HsSplitCopy._declr(self)
         addClkRstn(self)
         if self.EXPORT_SELECTED:
-            self.selectedOneHot = Handshaked()
+            self.selectedOneHot = Handshaked()._m()
             self.selectedOneHot._replaceParam("DATA_WIDTH", self.OUTPUTS)
 
     def isSelectedLogic(self):

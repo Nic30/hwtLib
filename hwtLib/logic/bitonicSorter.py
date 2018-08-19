@@ -37,7 +37,7 @@ class BitonicSorter(Unit):
             VectSignal(w, sig) for _ in range(int(self.ITEMS))
         )
         self.outputs = HObjList(
-            VectSignal(w, sig) for _ in range(int(self.ITEMS))
+            VectSignal(w, sig)._m() for _ in range(int(self.ITEMS))
         )
 
     def bitonic_sort(self, cmpFn, x, layer=0, offset=0):

@@ -26,7 +26,7 @@ class InterfaceArraySample3(Unit):
         with self._paramsShared():
             S = int(self.SIZE)
             self.a = HObjList(Axi4Lite() for _ in range(S))
-            self.b = HObjList(Axi4Lite() for _ in range(S))
+            self.b = HObjList(Axi4Lite() for _ in range(S))._m()
 
     def _impl(self):
         # directly connect arrays, note that we are not using array items

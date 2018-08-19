@@ -42,7 +42,7 @@ class EthAddrUpdater(Unit):
         addClkRstn(self)
 
         with self._paramsShared():
-            self.axi_m = Axi3()
+            self.axi_m = Axi3()._m()
 
         self.packetAddr = Handshaked()
         self.packetAddr._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)

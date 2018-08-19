@@ -12,7 +12,7 @@ from hwt.hdl.operatorDefs import AllOps
 class LatchInSwitchTest(Unit):
     def _declr(self):
         self.a = VectSignal(4)
-        self.b = VectSignal(4)
+        self.b = VectSignal(4)._m()
 
     def _impl(self):
         Switch(self.a).addCases([(i, self.b(i)) for i in range(6)])
@@ -21,7 +21,7 @@ class LatchInSwitchTest(Unit):
 class DualLatchInSwitchTest(LatchInSwitchTest):
     def _declr(self):
         super(DualLatchInSwitchTest, self)._declr()
-        self.c = VectSignal(4)
+        self.c = VectSignal(4)._m()
 
     def _impl(self):
         super(DualLatchInSwitchTest, self)._impl()
@@ -32,7 +32,7 @@ class BoolToBitTest(Unit):
     def _declr(self):
         self.a = VectSignal(4)
         self.b = VectSignal(4)
-        self.c = Signal()
+        self.c = Signal()._m()
 
     def _impl(self):
         self.c(self.a._eq(self.b))

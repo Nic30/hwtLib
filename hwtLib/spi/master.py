@@ -75,7 +75,7 @@ class SpiMaster(Unit):
     def _declr(self):
         addClkRstn(self)
 
-        self.spi = Spi()
+        self.spi = Spi()._m()
         assert self.HAS_RX or self.HAS_TX 
 
         with self._paramsShared():

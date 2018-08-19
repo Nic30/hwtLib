@@ -138,7 +138,7 @@ class CuckooHashTable(HashTableCore):
 
             self.lookup = LookupKeyIntf()
 
-            self.lookupRes = LookupResultIntf()
+            self.lookupRes = LookupResultIntf()._m()
             self.lookupRes.HASH_WIDTH.set(self.HASH_WITH)
 
         with self._paramsShared(exclude=[self.DATA_WIDTH]):

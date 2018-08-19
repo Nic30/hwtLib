@@ -23,7 +23,7 @@ class TestUnit_uart(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.din = Handshaked()
-            self.dout = VldSynced()
+            self.dout = VldSynced()._m()
 
             self.tx = UartTx()
             self.rx = UartRx()

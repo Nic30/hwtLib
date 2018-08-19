@@ -16,16 +16,16 @@ class HsSplitSelect(HandshakedCompBase):
     output index provided by select interface
 
     .. aafig::
-                *----+ output0
-               *     +-------->
-         input |     |
-        +------>     | output1
-               |     +-------->
-               *     |
-                *-^--+
-                  |
-                  +
-                select
+                 *----+ dataOut_0
+                *     +-------->
+         dataIn |     |
+        +------->     | dataOut_1
+                |     +-------->
+                *     |
+                 *-^--+
+                   |
+                   +
+                 select
     """
     def _config(self):
         self.OUTPUTS = Param(3)
@@ -43,7 +43,7 @@ class HsSplitSelect(HandshakedCompBase):
         with self._paramsShared():
             self.dataIn = self.intfCls()
             self.dataOut = HObjList(
-                self.intfCls() for _ in range(int(self.OUTPUTS))
+                self.intfCls()._m() for _ in range(int(self.OUTPUTS))
             )
 
     def _impl(self):

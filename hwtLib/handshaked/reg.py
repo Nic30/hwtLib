@@ -22,7 +22,7 @@ class HandshakedReg(HandshakedCompBase):
         addClkRstn(self)
         with self._paramsShared():
             self.dataIn = self.intfCls()
-            self.dataOut = self.intfCls()
+            self.dataOut = self.intfCls()._m()
 
     def _impl_latency(self, inVld, inRd, inData, outVld, outRd, prefix):
         isOccupied = self._reg(prefix + "isOccupied", defVal=0)

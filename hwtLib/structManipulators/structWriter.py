@@ -64,11 +64,11 @@ class StructWriter(StructReader):
         self.set = Handshaked()  # data signal is addr of structure to write
         self.set._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
         # write ack from slave
-        self.writeAck = HandshakeSync()
+        self.writeAck = HandshakeSync()._m()
 
         with self._paramsShared():
             # interface for communication with datapump
-            self.wDatapump = AxiWDatapumpIntf()
+            self.wDatapump = AxiWDatapumpIntf()._m()
             self.wDatapump.MAX_LEN.set(self.maxWordIndex() + 1)
 
         self.frameAssember = AxiS_frameForge(AxiStream,

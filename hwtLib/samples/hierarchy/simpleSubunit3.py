@@ -20,7 +20,7 @@ class SimpleSubunit3(Unit):
             self.subunit0 = SimpleUnitAxiStream()
 
             self.a0 = AxiStream()
-            self.b0 = AxiStream()
+            self.b0 = AxiStream()._m()
 
     def _impl(self):
         propagateClkRstn(self)

@@ -154,7 +154,7 @@ class TestComp_AxiS_resizer_downAndUp(AxiS_resizer):
         addClkRstn(self)
         with self._paramsShared():
             self.dataIn = AxiStream()
-            self.dataOut = AxiStream()
+            self.dataOut = AxiStream()._m()
 
     def _impl(self):
         self.dataOut(AxiSBuilder(self, self.dataIn)\

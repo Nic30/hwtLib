@@ -33,7 +33,7 @@ class Segment7(Unit):
 
     def _declr(self):
         self.dataIn = VectSignal(4)
-        self.dataOut = VectSignal(7)
+        self.dataOut = VectSignal(7)._m()
 
     def _impl(self):
         dec = [

@@ -20,7 +20,7 @@ class ClkDiv3(Unit):
     """
     def _declr(self):
         addClkRstn(self)
-        self.clkOut = Clk()
+        self.clkOut = Clk()._m()
 
     def _impl(self):
         clk = self.clk

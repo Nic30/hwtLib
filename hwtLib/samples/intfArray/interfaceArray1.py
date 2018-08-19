@@ -17,7 +17,7 @@ class SimpleSubunit(Unit):
     def _declr(self):
         with self._paramsShared():
             self.c = VldSynced()
-            self.d = VldSynced()
+            self.d = VldSynced()._m()
 
     def _impl(self):
         self.d(self.c)
@@ -40,7 +40,7 @@ class InterfaceArraySample1(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.a = HObjList(VldSynced() for _ in range(LEN))
-            self.b = HObjList(VldSynced() for _ in range(LEN))
+            self.b = HObjList(VldSynced() for _ in range(LEN))._m()
 
             self.u0 = SimpleSubunit()
             self.u1 = SimpleSubunit()

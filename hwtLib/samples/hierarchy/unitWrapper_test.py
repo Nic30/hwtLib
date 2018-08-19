@@ -4,12 +4,27 @@
 import unittest
 
 from hwt.interfaces.std import VldSynced
-from hwt.serializer.ipCoreWrapper import IpCoreWrapper
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import toRtl
-from hwtLib.samples.ipCoreCompatibleWrap import ArrayIntfExample
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.hObjList import HObjList
+from hwtLib.amba.axis import AxiStream
+from hwtLib.samples.hierarchy.unitWrapper import UnitWrapper
+
+class ArrayIntfExample(Unit):
+    """
+    .. hwt-schematic::
+    """
+
+    def _declr(self):
+        addClkRstn(self)
+        self.a = HObjList(AxiStream() for _ in range(2))
+
+    def _impl(self):
+        for intf in self.a:
+            intf.ready(1)
 
 
 UnitWithParams_in_wrap_vhdl = """library IEEE;
@@ -34,12 +49,11 @@ BEGIN
     dout_vld <= din_vld;
 END ARCHITECTURE rtl;
 --
---    Class which creates wrapper which converts all incompatible parts of unit
---    to ipcore compatible this means:
---
---    * convert array interface to multiple interfaces
---
---    original unit will be placed inside as subunit named baseUnit
+--    Class which creates wrapper around original unit instance,
+--    original unit will be sotred inside as subunit named baseUnit
+--    
+--    :note: This is also example of lazy loaded interfaces
+--        and generating of external interfaces based on internal stucture.
 --    
 library IEEE;
 use IEEE.std_logic_1164.all;
@@ -99,21 +113,21 @@ class UnitWithParams(Unit):
 
     def _declr(self):
         self.din = VldSynced()
-        self.dout = VldSynced()
+        self.dout = VldSynced()._m()
 
     def _impl(self):
         self.dout(self.din)
 
 
-class IpCoreWrapperTC(unittest.TestCase):
+class UnitWrapperTC(unittest.TestCase):
     def test_params_of_base_unit(self):
         u = UnitWithParams()
-        w = IpCoreWrapper(u)
+        w = UnitWrapper(u)
         s = toRtl(w, serializer=VhdlSerializer)
         self.assertEqual(s, UnitWithParams_in_wrap_vhdl)
 
     def test_interfaces(self):
-        u = IpCoreWrapper(ArrayIntfExample())
+        u = UnitWrapper(ArrayIntfExample())
         toRtl(u)
         self.assertTrue(hasattr(u, "a_0"))
         self.assertTrue(hasattr(u, "a_1"))
@@ -122,6 +136,6 @@ class IpCoreWrapperTC(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(IpCoreWrapperTC))
+    suite.addTest(unittest.makeSuite(UnitWrapperTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

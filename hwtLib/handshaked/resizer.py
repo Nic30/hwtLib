@@ -44,7 +44,7 @@ class HsResizer(HandshakedCompBase):
         self.dataIn = self.intfCls()
         self._inIntfConfigFn(self.dataIn)
 
-        self.dataOut = self.intfCls()
+        self.dataOut = self.intfCls()._m()
         self._outIntfConfigFn(self.dataOut)
 
     def _upscaleDataPassLogic(self, inputRegs_cntr, ITEMS):

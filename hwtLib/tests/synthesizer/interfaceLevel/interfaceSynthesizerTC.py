@@ -24,10 +24,12 @@ def createTwoAxiDuplexStreams():
     i = FullDuplexAxiStream()
     i._name = 'i'
     i._loadDeclarations()
+    i._setDirectionsLikeIn(INTF_DIRECTION.MASTER)
 
     i2 = FullDuplexAxiStream()
     i2._name = 'i2'
     i2._loadDeclarations()
+    i2._setDirectionsLikeIn(INTF_DIRECTION.SLAVE)
 
     n = RtlNetlist()
     for _i in [i, i2]:
@@ -222,8 +224,6 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
         i2._signalsForInterface(n)
 
         connect(i, i2)
-        i._resolveDirections()
-        i2._resolveDirections()
 
         m(i)
 
@@ -256,8 +256,6 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
 
         connect(i2.rx, i.rx)
         connect(i.tx, i2.tx)
-        i._resolveDirections()
-        i2._resolveDirections()
 
         m(i)
         s(i.rx)

@@ -50,14 +50,14 @@ class ArrayBuff_writer(Unit):
         self.items.DATA_WIDTH.set(self.SIZE_WIDTH)
 
         with self._paramsShared():
-            self.wDatapump = AxiWDatapumpIntf()
+            self.wDatapump = AxiWDatapumpIntf()._m()
 
-        self.uploaded = VectSignal(16)
+        self.uploaded = VectSignal(16)._m()
 
         self.baseAddr = RegCntrl()
         self.baseAddr.DATA_WIDTH.set(self.ADDR_WIDTH)
 
-        self.buff_remain = VectSignal(16)
+        self.buff_remain = VectSignal(16)._m()
 
         b = HandshakedFifo(Handshaked)
         b.DATA_WIDTH.set(self.SIZE_WIDTH)

@@ -97,7 +97,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
         addClkRstn(self)
         with self._paramsShared():
-            self.dataOut = self.intfCls()
+            self.dataOut = self.intfCls()._m()
 
         if isinstance(self._structT, HStruct):
             intfCls = StructIntf

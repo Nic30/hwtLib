@@ -21,7 +21,7 @@ class IpifReg(Unit):
         with self._paramsShared():
             addClkRstn(self)
             self.dataIn = Ipif()
-            self.dataOut = Ipif()
+            self.dataOut = Ipif()._m()
 
     def connectRegistered(self, intfFrom, intfTo):
         r = self._reg(intfFrom._name + "_reg", intfFrom._dtype)

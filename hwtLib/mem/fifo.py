@@ -34,12 +34,12 @@ class Fifo(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.dataIn = FifoWriter()
-            self.dataOut = FifoReader()
+            self.dataOut = FifoReader()._m()
 
         if self.EXPORT_SIZE:
-            self.size = VectSignal(log2ceil(self.DEPTH + 1), signed=False)
+            self.size = VectSignal(log2ceil(self.DEPTH + 1), signed=False)._m()
         if self.EXPORT_SPACE:
-            self.space = VectSignal(log2ceil(self.DEPTH + 1), signed=False)
+            self.space = VectSignal(log2ceil(self.DEPTH + 1), signed=False)._m()
 
     def _impl(self):
         DEPTH = self.DEPTH

@@ -36,14 +36,14 @@ class ArrayItemGetter(Unit):
         self.index.DATA_WIDTH.set(log2ceil(self.ITEMS))
 
         # output item from array
-        self.item = Handshaked()
+        self.item = Handshaked()._m()
         self.item.DATA_WIDTH.set(self.ITEM_WIDTH)
 
         self.ITEMS_IN_DATA_WORD = int(self.DATA_WIDTH) // int(self.ITEM_WIDTH)
 
         with self._paramsShared():
             # interface for communication with datapump
-            self.rDatapump = AxiRDatapumpIntf()
+            self.rDatapump = AxiRDatapumpIntf()._m()
             self.rDatapump.MAX_LEN.set(1)
 
         if self.ITEMS_IN_DATA_WORD > 1:

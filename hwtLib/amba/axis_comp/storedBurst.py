@@ -30,7 +30,7 @@ class AxiSStoredBurst(Unit):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.dataOut = AxiStream()
+            self.dataOut = AxiStream()._m()
 
     def nextWordIndexLogic(self, wordIndex):
         if self.REPEAT:

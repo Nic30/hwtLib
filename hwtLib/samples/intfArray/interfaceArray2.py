@@ -18,7 +18,7 @@ class SimpleSubunit(Unit):
     def _declr(self):
         with self._paramsShared():
             self.c = AxiStream()
-            self.d = AxiStream()
+            self.d = AxiStream()._m()
 
     def _impl(self):
         self.d(self.c)
@@ -39,7 +39,7 @@ class InterfaceArraySample2(Unit):
         LEN = 2
         with self._paramsShared():
             self.a = HObjList(AxiStream() for _ in range(LEN))
-            self.b = HObjList(AxiStream() for _ in range(LEN))
+            self.b = HObjList(AxiStream() for _ in range(LEN))._m()
 
             self.u0 = SimpleSubunit()
             self.u1 = SimpleSubunit()

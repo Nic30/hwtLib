@@ -18,7 +18,7 @@ class UnitToUnitConnection(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.a0 = AxiStream()
-            self.b0 = AxiStream()
+            self.b0 = AxiStream()._m()
 
             self.u0 = Simple2withNonDirectIntConnection()
             self.u1 = Simple2withNonDirectIntConnection()

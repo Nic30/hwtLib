@@ -26,7 +26,7 @@ class InterfaceArraySample0(Unit):
         with self._paramsShared():
             L = int(self.LEN)
             self.a = HObjList(VldSynced() for _ in range(L))
-            self.b = HObjList(VldSynced() for _ in range(L))
+            self.b = HObjList(VldSynced() for _ in range(L))._m()
 
     def _impl(self):
         # directly connect arrays, note that we are not using array items
@@ -47,9 +47,9 @@ class InterfaceArraySample0SliceOnly(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.a = HObjList(VldSynced() for _ in range(int(self.LEN)))
-            self.b0 = VldSynced()
-            self.b1 = VldSynced()
-            self.b2 = VldSynced()
+            self.b0 = VldSynced()._m()
+            self.b1 = VldSynced()._m()
+            self.b2 = VldSynced()._m()
 
     def _impl(self):
         self.b0(self.a[0])
@@ -68,7 +68,7 @@ class InterfaceArraySample0ConcatOnly(Unit):
             self.a0 = VldSynced()
             self.a1 = VldSynced()
             self.a2 = VldSynced()
-            self.b = HObjList(VldSynced() for _ in range(int(self.LEN)))
+            self.b = HObjList(VldSynced() for _ in range(int(self.LEN)))._m()
 
     def _impl(self):
         self.b[0](self.a0)

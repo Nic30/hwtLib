@@ -19,7 +19,7 @@ class AxiS_en(AxiSCompBase):
         addClkRstn(self)
         self.en = Signal()
         self.dataIn = self.intfCls()
-        self.dataOut = self.intfCls()
+        self.dataOut = self.intfCls()._m()
 
     def _impl(self):
         din = self.dataIn

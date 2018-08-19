@@ -28,7 +28,7 @@ class ParametrizationExample(Unit):
         assert int(self.PARAM_10 + 10) == 20
         assert int(self.PARAM_1_sll_512) == 1 << 512
         self.din = VectSignal(self.PARAM_10)
-        self.dout = VectSignal(self.PARAM_10 * 2)
+        self.dout = VectSignal(self.PARAM_10 * 2)._m()
 
     def _impl(self):
         assert int(self.PARAM_0) == 0

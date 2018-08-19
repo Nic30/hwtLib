@@ -29,7 +29,7 @@ class Lsfr(Unit):
 
     def _declr(self):
         addClkRstn(self)
-        self.dataOut = Signal()
+        self.dataOut = Signal()._m()
 
     def _impl(self):
         accumulator = self._reg("accumulator",

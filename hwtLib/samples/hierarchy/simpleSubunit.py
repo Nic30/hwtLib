@@ -9,7 +9,7 @@ from hwtLib.samples.simple import SimpleUnit
 class SimpleSubunit(Unit):
     def _declr(self):
         self.a = Signal()
-        self.b = Signal()
+        self.b = Signal()._m()
 
         # there we instantiate our subunit and register it by assigning
         # to property of self it can be done in done in _impl as well,

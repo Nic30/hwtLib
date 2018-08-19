@@ -15,10 +15,10 @@ class TwoCntrs(Unit):
         self.a_en = Signal()
         self.b_en = Signal()
 
-        self.eq = Signal()
-        self.ne = Signal()
-        self.lt = Signal()
-        self.gt = Signal()
+        self.eq = Signal()._m()
+        self.ne = Signal()._m()
+        self.lt = Signal()._m()
+        self.gt = Signal()._m()
 
     def _impl(self):
         index_t = Bits(8, signed=False)

@@ -62,7 +62,7 @@ class Axi4streamToMem(Unit):
     def _declr(self):
         with self._paramsShared():
             addClkRstn(self)
-            self.axi = Axi4()
+            self.axi = Axi4()._m()
             self.dataIn = Handshaked()
         cntrl = self.cntrlBus = Axi4Lite()
         regs = self.regsConventor = AxiLiteEndpoint(self.REGISTER_MAP)

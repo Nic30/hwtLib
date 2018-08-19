@@ -16,7 +16,7 @@ class FifoReaderPassTrought(Unit):
     def _declr(self):
         addClkRstn(self)
         self.din = FifoReader()
-        self.dout = FifoReader()
+        self.dout = FifoReader()._m()
 
     def _impl(self):
         self.dout(self.din)
@@ -27,7 +27,7 @@ class FifoWriterPassTrought(FifoReaderPassTrought):
     def _declr(self):
         addClkRstn(self)
         self.din = FifoWriter()
-        self.dout = FifoWriter()
+        self.dout = FifoWriter()._m()
 
 
 class FifoAgentsTC(SimTestCase):

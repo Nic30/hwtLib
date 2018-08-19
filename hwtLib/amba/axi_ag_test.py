@@ -17,7 +17,7 @@ class AxiTestJunction(Unit):
     def _declr(self):
         addClkRstn(self)
         self.s = self.axiCls()
-        self.m = self.axiCls()
+        self.m = self.axiCls()._m()
 
     def _impl(self):
         self.m(self.s)
@@ -151,7 +151,7 @@ class Axi_ag_TC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(AxiTC('test_axi_size'))
+    # suite.addTest(Axi_ag_TC('test_axi4_ag'))
     suite.addTest(unittest.makeSuite(Axi_ag_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

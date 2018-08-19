@@ -18,7 +18,7 @@ class HandshakedBuilderSimple(Unit):
         # declare interfaces
         addClkRstn(self)
         self.a = Handshaked()
-        self.b = Handshaked()
+        self.b = Handshaked()._m()
 
     def _impl(self):
         # instanciate builder

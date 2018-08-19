@@ -33,7 +33,7 @@ class Loop(Unit):
     def _declr(self):
         with self._paramsShared():
             self.din = self.interfaceCls()
-            self.dout = self.interfaceCls()
+            self.dout = self.interfaceCls()._m()
 
     def _impl(self):
         self.dout(self.din)
@@ -46,7 +46,7 @@ class SigLoop(Unit):
 
     def _declr(self):
         self.din = VectSignal(self.DATA_WIDTH)
-        self.dout = VectSignal(self.DATA_WIDTH)
+        self.dout = VectSignal(self.DATA_WIDTH)._m()
 
     def _impl(self):
         self.dout(self.din)
@@ -70,16 +70,16 @@ class TestUnittWithChilds(Unit):
             self.signalIn = VectSignal(self.DATA_WIDTH)
 
             self.regCntrlLoop = Loop(RegCntrl)
-            self.regCntrlOut = RegCntrl()
+            self.regCntrlOut = RegCntrl()._m()
 
             self.vldSyncedLoop = Loop(VldSynced)
-            self.vldSyncedOut = VldSynced()
+            self.vldSyncedOut = VldSynced()._m()
 
         with self._paramsShared(exclude={self.ADDR_WIDTH}):
             self.bramLoop = Loop(BramPort_withoutClk)
             self.bramLoop.ADDR_WIDTH.set(2)
 
-            self.bramOut = BramPort_withoutClk()
+            self.bramOut = BramPort_withoutClk()._m()
             self.bramOut.ADDR_WIDTH.set(2)
 
     def _impl(self):
@@ -138,13 +138,13 @@ class TestUnittWithArr(Unit):
             self.bus = Axi4Lite()
 
             self.regCntrlLoop0 = Loop(RegCntrl)
-            self.regCntrlOut0 = RegCntrl()
+            self.regCntrlOut0 = RegCntrl()._m()
 
             self.regCntrlLoop1 = Loop(RegCntrl)
-            self.regCntrlOut1 = RegCntrl()
+            self.regCntrlOut1 = RegCntrl()._m()
 
             self.regCntrlLoop2 = Loop(RegCntrl)
-            self.regCntrlOut2 = RegCntrl()
+            self.regCntrlOut2 = RegCntrl()._m()
 
     def _impl(self):
         self.regCntrlOut0(self.regCntrlLoop0.dout)

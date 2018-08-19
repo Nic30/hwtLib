@@ -15,7 +15,7 @@ class FsmExample(Unit):
         addClkRstn(self)
         self.a = Signal()
         self.b = Signal()
-        self.dout = VectSignal(3)
+        self.dout = VectSignal(3)._m()
 
     def _impl(self):
         stT = HEnum("st_t", ["a", "b", "aAndB"])

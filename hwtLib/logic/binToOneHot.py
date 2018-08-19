@@ -21,7 +21,7 @@ class BinToOneHot(Unit):
     def _declr(self):
         self.din = VectSignal(log2ceil(self.DATA_WIDTH))
         self.en = s()
-        self.dout = VectSignal(self.DATA_WIDTH)
+        self.dout = VectSignal(self.DATA_WIDTH)._m()
 
     def _impl(self):
         en = self.en

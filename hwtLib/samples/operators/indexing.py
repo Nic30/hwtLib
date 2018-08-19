@@ -10,8 +10,8 @@ from hwt.synthesizer.unit import Unit
 class SimpleIndexingSplit(Unit):
     def _declr(self):
         self.a = VectSignal(2)
-        self.b = Signal()
-        self.c = Signal()
+        self.b = Signal()._m()
+        self.c = Signal()._m()
 
     def _impl(self):
         self.b(self.a[0])
@@ -20,7 +20,7 @@ class SimpleIndexingSplit(Unit):
 
 class SimpleIndexingJoin(Unit):
     def _declr(self):
-        self.a = VectSignal(2)
+        self.a = VectSignal(2)._m()
         self.b = Signal()
         self.c = Signal()
 
@@ -31,7 +31,7 @@ class SimpleIndexingJoin(Unit):
 
 class SimpleIndexingRangeJoin(Unit):
     def _declr(self):
-        self.a = VectSignal(4)
+        self.a = VectSignal(4)._m()
         self.b = VectSignal(2)
         self.c = VectSignal(2)
 
@@ -44,7 +44,7 @@ class SimpleIndexingRangeJoin(Unit):
 class IndexingInernRangeSplit(Unit):
     def _declr(self):
         self.a = VectSignal(4)
-        self.b = VectSignal(4)
+        self.b = VectSignal(4)._m()
 
     def _impl(self):
         internA = self._sig("internA", Bits(2))
@@ -60,7 +60,7 @@ class IndexingInernRangeSplit(Unit):
 class IndexingInernSplit(Unit):
     def _declr(self):
         self.a = VectSignal(2)
-        self.b = VectSignal(2)
+        self.b = VectSignal(2)._m()
 
     def _impl(self):
         internA = self._sig("internA")
@@ -77,8 +77,8 @@ class IndexingInernJoin(Unit):
     def _declr(self):
         self.a = Signal()
         self.b = Signal()
-        self.c = Signal()
-        self.d = Signal()
+        self.c = Signal()._m()
+        self.d = Signal()._m()
 
     def _impl(self):
         intern = self._sig("internSig", Bits(2))

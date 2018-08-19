@@ -47,7 +47,7 @@ class Axi_rDatapump(Axi_datapumpBase):
         with self._paramsShared():
             self.r = Axi4_r()
             self.driver = AxiRDatapumpIntf()
-            self.errorRead = Signal()
+            self.errorRead = Signal()._m()
 
             f = self.sizeRmFifo = HandshakedFifo(TransEndInfo)
             f.DEPTH.set(self.MAX_TRANS_OVERLAP)
@@ -60,7 +60,7 @@ class Axi_rDatapump(Axi_datapumpBase):
         If(lastReqDispatched,
             req_idBackup(req.id),
             a.id(req.id)
-           ).Else(
+        ).Else(
             a.id(req_idBackup)
         )
 
@@ -171,7 +171,7 @@ class Axi_rDatapump(Axi_datapumpBase):
 
         If(r.valid & r.last & rmSizeOut.propagateLast,
             self.remSizeToStrb(rmSizeOut.rem, rOut.strb)
-           ).Else(
+        ).Else(
             rOut.strb(mask(2 ** self.getSizeAlignBits()))
         )
         rOut.last(r.last & rmSizeOut.propagateLast)

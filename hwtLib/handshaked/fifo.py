@@ -29,7 +29,7 @@ class HandshakedFifo(HandshakedCompBase):
 
         with self._paramsShared():
             self.dataIn = self.intfCls()
-            self.dataOut = self.intfCls()
+            self.dataOut = self.intfCls()._m()
 
         f = self.fifo = Fifo()
         DW = self.dataIn._bit_length() - 2  # 2 for control (valid, ready)
@@ -38,7 +38,7 @@ class HandshakedFifo(HandshakedCompBase):
         f.EXPORT_SIZE.set(self.EXPORT_SIZE)
 
         if self.EXPORT_SIZE:
-            self.size = VectSignal(log2ceil(self.DEPTH + 1 + 1), signed=False)
+            self.size = VectSignal(log2ceil(self.DEPTH + 1 + 1), signed=False)._m()
 
     def _impl(self, clks: Optional[Tuple[Clk, Clk]]=None):
         """

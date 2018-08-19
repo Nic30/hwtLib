@@ -7,8 +7,8 @@ from hwt.synthesizer.unit import Unit
 
 class ConstDriverUnit(Unit):
     def _declr(self):
-        self.out0 = Signal()
-        self.out1 = Signal()
+        self.out0 = Signal()._m()
+        self.out1 = Signal()._m()
 
     def _impl(self):
         self.out0(0)

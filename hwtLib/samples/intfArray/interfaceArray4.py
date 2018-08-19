@@ -62,9 +62,13 @@ class InterfaceArraySample4(Unit):
     def _declr(self):
         addClkRstn(self)
         self.a = HObjList(StructIntf(
-            struct0, instantiateFieldFn=self._mkFieldInterface) for _ in range(3))
+                struct0,
+                instantiateFieldFn=self._mkFieldInterface)
+            for _ in range(3))
         self.b = HObjList(StructIntf(
-            struct0, instantiateFieldFn=self._mkFieldInterface)  for _ in range(3))
+                struct0,
+                instantiateFieldFn=self._mkFieldInterface)
+            for _ in range(3))._m()
 
     def _impl(self):
         self.b(self.a)

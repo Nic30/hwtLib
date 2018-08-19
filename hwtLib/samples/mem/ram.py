@@ -16,7 +16,7 @@ class SimpleAsyncRam(Unit):
         self.din = VectSignal(8)
 
         self.addr_out = VectSignal(2)
-        self.dout = VectSignal(8)
+        self.dout = VectSignal(8)._m()
 
     def _impl(self):
         self._ram = ram = self._sig("ram_data", Bits(8)[4])

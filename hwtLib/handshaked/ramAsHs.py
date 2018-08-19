@@ -84,7 +84,7 @@ class RamAsHs(Unit):
         with self._paramsShared():
             self.r = RamHsR()
             self.w = AddrDataHs()
-            self.ram = BramPort_withoutClk()
+            self.ram = BramPort_withoutClk()._m()
 
     def _impl(self):
         r = self.r

@@ -13,7 +13,7 @@ class SimpleIfStatement(Unit):
         self.a = Signal()
         self.b = Signal()
         self.c = Signal()
-        self.d = Signal()
+        self.d = Signal()._m()
 
     def _impl(self):
         If(self.a,
@@ -31,7 +31,7 @@ class SimpleIfStatement2(Unit):
         self.a = Signal()
         self.b = Signal()
         self.c = Signal()
-        self.d = Signal()
+        self.d = Signal()._m()
 
     def _impl(self):
         r = self._reg("reg_d", defVal=0)
@@ -52,7 +52,7 @@ class SimpleIfStatement2b(Unit):
         self.a = Signal()
         self.b = Signal()
         self.c = Signal()
-        self.d = Signal()
+        self.d = Signal()._m()
 
     def _impl(self):
         r = self._reg("reg_d", defVal=0)
@@ -73,7 +73,7 @@ class SimpleIfStatement2c(Unit):
         self.a = Signal()
         self.b = Signal()
         self.c = Signal()
-        self.d = VectSignal(2)
+        self.d = VectSignal(2)._m()
 
     def _impl(self):
         r = self._reg("reg_d", Bits(2), defVal=0)
@@ -106,8 +106,8 @@ class SimpleIfStatementMergable(Unit):
         self.a = Signal()
         self.b = Signal()
 
-        self.c = Signal()
-        self.d = Signal()
+        self.c = Signal()._m()
+        self.d = Signal()._m()
 
     def _impl(self):
         If(self.a,
@@ -156,8 +156,8 @@ class SimpleIfStatementMergable1(Unit):
         self.a = Signal()
         self.b = Signal()
 
-        self.c = Signal()
-        self.d = Signal()
+        self.c = Signal()._m()
+        self.d = Signal()._m()
         self.e = Signal()
 
     def _impl(self):
@@ -205,9 +205,9 @@ class SimpleIfStatementMergable2(Unit):
         self.b = Signal()
 
         self.c = Signal()
-        self.d = Signal()
-        self.e = Signal()
-        self.f = Signal()
+        self.d = Signal()._m()
+        self.e = Signal()._m()
+        self.f = Signal()._m()
 
     def _impl(self):
         If(self.a,
@@ -259,8 +259,8 @@ END ARCHITECTURE rtl;"""
 class IfStatementPartiallyEnclosed(Unit):
     def _declr(self):
         self.clk = Clk()
-        self.a = Signal()
-        self.b = Signal()
+        self.a = Signal()._m()
+        self.b = Signal()._m()
 
         self.c = Signal()
         self.d = Signal()

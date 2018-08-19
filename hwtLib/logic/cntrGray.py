@@ -26,7 +26,7 @@ class GrayCntr(Unit):
         addClkRstn(self)
         self.en = Signal()
 
-        self.dataOut = VectSignal(self.DATA_WIDTH)
+        self.dataOut = VectSignal(self.DATA_WIDTH)._m()
 
     def _impl(self):
         binCntr = self._reg("cntr_bin_reg", self.dataOut._dtype, self.INIT_VAL)

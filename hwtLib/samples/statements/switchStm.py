@@ -12,7 +12,7 @@ class SwitchStmUnit(Unit):
     """
     def _declr(self):
         self.sel = VectSignal(3)
-        self.out = Signal()
+        self.out = Signal()._m()
         self.a = Signal()
         self.b = Signal()
         self.c = Signal()

@@ -35,7 +35,7 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
             self.drivers = HObjList(
                 AxiWDatapumpIntf()
                 for _ in range(int(self.DRIVER_CNT)))
-            self.wDatapump = AxiWDatapumpIntf()
+            self.wDatapump = AxiWDatapumpIntf()._m()
 
         self.DRIVER_INDEX_WIDTH = log2ceil(self.DRIVER_CNT).val
 

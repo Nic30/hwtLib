@@ -40,25 +40,25 @@ class Showcase0(Unit):
         on every attribute assignment. Instances of Interface or Unit are recognized
         by Unit instance and are used as public interface of this unit.
 
-        Direction of interfaces is resolved by access from inside of this unit
-        and you do not have to care about it.
+        Master interfaces are marked by "._m()", meaning of master direction
+        is specified in interface class. For simple signal master direction means output.
         """
         self.a = Signal(dtype=uint32_t)
         self.b = Signal(dtype=int32_t)
 
         # behavior same as uint32_t (which is Bits(32, signed=False))
-        self.c = Signal(dtype=Bits(32))
+        self.c = Signal(dtype=Bits(32))._m()
         # VectSignal is just shortcut for Signal(dtype=Bits(...))
-        self.fitted = VectSignal(16)
-        self.contOut = VectSignal(32)
+        self.fitted = VectSignal(16)._m()
+        self.contOut = VectSignal(32)._m()
 
         # this signal will have no driver and it will be considered to be an input
         self.d = VectSignal(32)
 
         # names of public ports can not be same because they need to be accessible from parent
         self.e = Signal()
-        self.f = Signal()
-        self.g = VectSignal(8)
+        self.f = Signal()._m()
+        self.g = VectSignal(8)._m()
 
         # this function just instantiate clk and rstn interface
         # main purpose is to unify names of clock and reset signals
@@ -68,19 +68,19 @@ class Showcase0(Unit):
         # to look insede while searching for nested Interface/Unit instances
         self.cmp = HObjList(
             Signal() for _ in range(6)
-        )
+        )._m()
 
-        self.h = VectSignal(8)
+        self.h = VectSignal(8)._m()
         self.i = VectSignal(2)
-        self.j = VectSignal(8)
+        self.j = VectSignal(8)._m()
 
         # collision with hdl keywords are automatically resolved and fixed
         # as well as case sensitivity care and other collisions in target HDL
-        self.out = Signal()
-        self.output = Signal()
-        self.sc_signal = VectSignal(8)
+        self.out = Signal()._m()
+        self.output = Signal()._m()
+        self.sc_signal = VectSignal(8)._m()
 
-        self.k = VectSignal(32)
+        self.k = VectSignal(32)._m()
 
     def _impl(self):
         """

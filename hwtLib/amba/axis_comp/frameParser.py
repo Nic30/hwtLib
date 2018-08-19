@@ -107,7 +107,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
         else:
             raise TypeError(self._structT)
 
-        self.dataOut = intfCls(self._structT, self._mkFieldIntf)
+        self.dataOut = intfCls(self._structT, self._mkFieldIntf)._m()
 
         with self._paramsShared():
             self.dataIn = self.intfCls()

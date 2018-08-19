@@ -111,7 +111,6 @@ from hwtLib.samples.intfArray.interfaceArray1 import InterfaceArraySample1TC
 from hwtLib.samples.intfArray.interfaceArray2 import InterfaceArraySample2TC
 from hwtLib.samples.intfArray.interfaceArray3 import InterfaceArraySample3TC
 from hwtLib.samples.intfArray.interfaceArray4 import InterfaceArraySample4TC
-from hwtLib.samples.ipCoreCompatibleWrap_test import IpCoreWrapperTC
 from hwtLib.samples.mem.ram_test import RamTC as SampleRamTC
 from hwtLib.samples.mem.reg_test import DRegTC
 from hwtLib.samples.mem.rom_test import RomTC
@@ -179,6 +178,7 @@ from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
+from hwtLib.samples.hierarchy.unitWrapper_test import UnitWrapperTC
 
 
 def runSimWithoutLog(self, until, name=None, config=None):
@@ -388,7 +388,7 @@ suite = testSuiteFromTCs(
     IpifRegTC,
 
     # complex units tests
-    IpCoreWrapperTC,
+    UnitWrapperTC,
     IpCorePackagerTC,
     CharToBitmapTC,
     HashTableCoreTC,

@@ -177,7 +177,7 @@ class BusEndpoint(Unit):
             self.bus = self._intfCls()
 
         self.decoded = StructIntf(
-            self.STRUCT_TEMPLATE, instantiateFieldFn=self._mkFieldInterface)
+            self.STRUCT_TEMPLATE, instantiateFieldFn=self._mkFieldInterface)._m()
 
     def getPort(self, transTmpl):
         o = transTmpl.origin

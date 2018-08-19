@@ -28,10 +28,10 @@ class GroupOfBlockrams(Unit):
             self.in_r_a = extData()
             self.in_r_b = extData()
 
-            self.out_w_a = extData()
-            self.out_w_b = extData()
-            self.out_r_a = extData()
-            self.out_r_b = extData()
+            self.out_w_a = extData()._m()
+            self.out_w_b = extData()._m()
+            self.out_r_a = extData()._m()
+            self.out_r_b = extData()._m()
 
             with self._paramsShared():
                 self.bramR = Ram_dp()

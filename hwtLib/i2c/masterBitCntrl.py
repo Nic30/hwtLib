@@ -98,11 +98,11 @@ class I2cMasterBitCtrl(Unit):
     def _declr(self):
         addClkRstn(self)
         self.clk_cnt_initVal = VectSignal(16)
-        self.i2c = I2c()
+        self.i2c = I2c()._m()
 
         self.cntrl = I2cBitCntrlCmd()
-        self.arbitrationLost = Signal()  # arbitration lost
-        self.dout = Signal()
+        self.arbitrationLost = Signal()._m()  # arbitration lost
+        self.dout = Signal()._m()
 
     def stateClkGen(self, scl_sync, scl_t, scl):
         # whenever the slave is not ready it can delay the cycle by pulling SCL low

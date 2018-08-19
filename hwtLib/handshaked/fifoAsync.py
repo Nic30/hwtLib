@@ -26,7 +26,7 @@ class HsFifoAsync(HandshakedFifo):
                 self.dataIn = self.intfCls()
 
             with self._associated(self.dataOut_clk):
-                self.dataOut = self.intfCls()
+                self.dataOut = self.intfCls()._m()
 
         f = self.fifo = FifoAsync()
         DW = self.dataIn._bit_length() - 2  # 2 for control (valid, ready)

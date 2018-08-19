@@ -13,7 +13,7 @@ class SimpleConcat(Unit):
         self.a2 = Signal()
         self.a3 = Signal()
 
-        self.a_out = VectSignal(4)
+        self.a_out = VectSignal(4)._m()
 
     def _impl(self):
         self.a_out(Concat(self.a3, self.a2, self.a1, self.a0))

@@ -13,7 +13,7 @@ class VldMaskConflictsResolving(Unit):
     def _declr(self):
         self.a = Signal()
         self.b = Signal()
-        self.c = Signal()
+        self.c = Signal()._m()
 
     def _impl(self):
         a = self.a

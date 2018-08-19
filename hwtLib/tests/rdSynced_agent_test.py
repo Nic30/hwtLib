@@ -11,7 +11,7 @@ class RdSyncedPipe(Unit):
     def _declr(self):
         addClkRstn(self)
         self.a = RdSynced()
-        self.b = RdSynced()
+        self.b = RdSynced()._m()
 
     def _impl(self):
         self.b(self.a)

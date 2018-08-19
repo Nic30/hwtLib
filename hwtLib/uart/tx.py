@@ -23,7 +23,7 @@ class UartTx(Unit):
         addClkRstn(self)
         self.dataIn = Handshaked()
         self.dataIn.DATA_WIDTH.set(8)
-        self.txd = Signal()
+        self.txd = Signal()._m()
 
     def _impl(self):
         propagateClkRstn(self)

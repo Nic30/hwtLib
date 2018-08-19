@@ -17,16 +17,16 @@ class TimerInfoTest(Unit):
     def _declr(self):
         addClkRstn(self)
 
-        self.tick1 = Signal()
-        self.tick2 = Signal()
-        self.tick16 = Signal()
+        self.tick1 = Signal()._m()
+        self.tick2 = Signal()._m()
+        self.tick16 = Signal()._m()
 
-        self.tick17 = Signal()
-        self.tick34 = Signal()
+        self.tick17 = Signal()._m()
+        self.tick34 = Signal()._m()
 
-        self.tick256 = Signal()
+        self.tick256 = Signal()._m()
 
-        self.tick384 = Signal()
+        self.tick384 = Signal()._m()
 
     def _impl(self):
         tick1, tick2, tick16, tick17, tick34, tick256, tick384 =\
@@ -51,16 +51,16 @@ class TimerTestUnit(Unit):
     def _declr(self):
         addClkRstn(self)
 
-        self.tick1 = HandshakeSync()
-        self.tick2 = HandshakeSync()
-        self.tick16 = HandshakeSync()
+        self.tick1 = HandshakeSync()._m()
+        self.tick2 = HandshakeSync()._m()
+        self.tick16 = HandshakeSync()._m()
 
-        self.tick17 = HandshakeSync()
-        self.tick34 = HandshakeSync()
+        self.tick17 = HandshakeSync()._m()
+        self.tick34 = HandshakeSync()._m()
 
-        self.tick256 = HandshakeSync()
+        self.tick256 = HandshakeSync()._m()
 
-        self.tick384 = HandshakeSync()
+        self.tick384 = HandshakeSync()._m()
         self.core = TimerInfoTest()
 
     def _impl(self):
@@ -81,8 +81,8 @@ class DynamicCounterInstancesExample(Unit):
         self.en = Signal()
         self.rstCntr = Signal()
 
-        self.cntr0 = Signal()
-        self.cntr1 = Signal()
+        self.cntr0 = Signal()._m()
+        self.cntr1 = Signal()._m()
 
     def _impl(self):
         b = ClkBuilder(self, self.clk)

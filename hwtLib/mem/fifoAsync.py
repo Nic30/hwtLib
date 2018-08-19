@@ -35,7 +35,7 @@ class FifoAsync(Fifo):
                 self.dataIn = FifoWriter()
 
             with self._associated(clk=self.dataOut_clk):
-                self.dataOut = FifoReader()
+                self.dataOut = FifoReader()._m()
 
         self.pWr = GrayCntr()
         self.pRd = GrayCntr()

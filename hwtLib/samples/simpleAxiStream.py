@@ -18,7 +18,7 @@ class SimpleUnitAxiStream(Unit):
     def _declr(self):
         with self._paramsShared():
             self.a = AxiStream()
-            self.b = AxiStream()
+            self.b = AxiStream()._m()
 
     def _impl(self):
         self.b(self.a)

@@ -34,7 +34,7 @@ class Cam(Unit):
             self.match = Handshaked()
             self.write = AddrDataBitMaskHs()
             self.write.ADDR_WIDTH.set(log2ceil(self.ITEMS - 1))
-        self.out = VldSynced()
+        self.out = VldSynced()._m()
         self.out._replaceParam("DATA_WIDTH", self.ITEMS)
 
     def writeHandler(self, mem):

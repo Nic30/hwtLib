@@ -41,7 +41,7 @@ class AxiTester(Unit):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.m_axi = self._axiCls()
+            self.m_axi = self._axiCls()._m()
 
         c = self.cntrl = self._cntrlCls()
         c._replaceParam("DATA_WIDTH", self.CNTRL_DATA_WIDTH)
