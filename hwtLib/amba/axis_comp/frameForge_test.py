@@ -14,17 +14,19 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.types.ctypes import uint64_t, uint32_t, int32_t
+from hwt.hdl.types.stream import HStream
+from hwt.pyUtils.arrayQuery import iter_with_last
 
 
 s1field = HStruct(
     (uint64_t, "item0")
-    )
+)
 
 s3field = HStruct(
     (uint64_t, "item0"),
     (uint64_t, "item1"),
     (uint64_t, "item2")
-    )
+)
 
 s2Pading = HStruct(
     (uint64_t, "item0_0"),
@@ -33,29 +35,48 @@ s2Pading = HStruct(
     (uint64_t, "item1_0"),
     (uint64_t, "item1_1"),
     (uint64_t, None),
-    )
+)
 
 s1field_composit0 = HStruct(
     (uint32_t, "item0"), (uint32_t, "item1"),
-    )
+)
 
 unionOfStructs = HUnion(
-        (HStruct(
-            (uint64_t, "itemA0"),
-            (uint64_t, "itemA1")
-            ), "frameA"),
-        (HStruct(
-            (uint32_t, "itemB0"),
-            (uint32_t, "itemB1"),
-            (uint32_t, "itemB2"),
-            (uint32_t, "itemB3")
-            ), "frameB")
-        )
+    (HStruct(
+        (uint64_t, "itemA0"),
+        (uint64_t, "itemA1")
+        ), "frameA"),
+    (HStruct(
+        (uint32_t, "itemB0"),
+        (uint32_t, "itemB1"),
+        (uint32_t, "itemB2"),
+        (uint32_t, "itemB3")
+        ), "frameB")
+)
 
 unionSimple = HUnion(
-        (uint32_t, "a"),
-        (int32_t, "b")
-        )
+    (uint32_t, "a"),
+    (int32_t, "b")
+)
+
+structStream64 = HStruct(
+    (HStream(uint64_t), "streamIn")
+)
+
+structStream64before = HStruct(
+    (HStream(uint64_t), "streamIn"),
+    (uint64_t, "item0"),
+)
+
+structStream64after = HStruct(
+    (uint64_t, "item0"),
+    (HStream(uint64_t), "streamIn"),
+)
+
+struct2xStream64 = HStruct(
+    (HStream(uint64_t), "streamIn0"),
+    (HStream(uint64_t), "streamIn1")
+)
 
 
 class AxiS_frameForge_TC(SimTestCase):
@@ -84,6 +105,11 @@ class AxiS_frameForge_TC(SimTestCase):
             self.randomize(u.dataOut)
             for intf in u.dataIn._fieldsToInterfaces.values():
                 self.randomize(intf)
+
+    def formatStream(self, data):
+        strb = mask(self.DATA_WIDTH // 8)
+        return [(d, strb, last) 
+                for last, d  in iter_with_last(data)]
 
     def test_nop1Field(self, randomized=False):
         self.instantiateFrameForge(s1field, randomized=randomized)
@@ -321,10 +347,32 @@ class AxiS_frameForge_TC(SimTestCase):
     def test_r_unionOfStructs_simple(self):
         self.test_unionOfStructs_simple(randomized=True)
 
+    def test_stream64(self, randomized=False):
+        self.instantiateFrameForge(structStream64,
+                                   DATA_WIDTH=64,
+                                   randomized=randomized)
+        u = self.u
+        MAGIC = 498
+        t = 50
+        if randomized:
+            t *= 3
+
+        u.dataIn.streamIn._ag.data.extend(
+            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3])
+        )
+
+        self.runSim(t * Time.ns)
+
+        m = mask(self.DATA_WIDTH // 8)
+        self.assertValSequenceEqual(u.dataOut._ag.data,
+                                    [(MAGIC + 1, m, 1),
+                                     (MAGIC + 2, m, 1),
+                                     (MAGIC + 3, m, 1),
+                                     ])
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(AxiS_frameForge_TC('test_unionOfStructs_simple'))
-    suite.addTest(unittest.makeSuite(AxiS_frameForge_TC))
+    suite.addTest(AxiS_frameForge_TC('test_stream64'))
+    # suite.addTest(unittest.makeSuite(AxiS_frameForge_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
