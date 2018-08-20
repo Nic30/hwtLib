@@ -29,6 +29,7 @@ class Showcase0(Unit):
     
     .. hwt-schematic::
     """
+    # note that doc string is also concerted to generated HDL
 
     def __init__(self):
         # constructor can be overloaded but parent one has to be called
