@@ -147,7 +147,7 @@ class Showcase0(Unit):
         cmp[4](b != 4)
         # _eq() is used as ==,
         # overriding == would have many unintended consequences in python
-        # (it would make all signals unhasable)
+        # (it would make all signals unhashable)
         cmp[5](b._eq(4))
 
         h = self.h
