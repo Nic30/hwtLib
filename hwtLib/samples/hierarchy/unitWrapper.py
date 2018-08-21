@@ -7,7 +7,7 @@ class UnitWrapper(Unit):
     """
     Class which creates wrapper around original unit instance,
     original unit will be sotred inside as subunit named baseUnit
-    
+
     :note: This is also example of lazy loaded interfaces
         and generating of external interfaces based on internal stucture.
     """
@@ -28,7 +28,7 @@ class UnitWrapper(Unit):
             # clone interface
             myIntf = intf._clone()
             # subinterfaces are not instanciated yet
-            #myIntf._direction = intf._direction
+            # myIntf._direction = intf._direction
             myIntf._direction = INTF_DIRECTION.opposite(intf._direction)
 
             self._registerInterface(intf._name, myIntf)
@@ -73,4 +73,3 @@ class UnitWrapper(Unit):
         origToWrapInfMap = self._copyParamsAndInterfaces()
         self._lazyLoadParamsAndInterfaces()
         self._connectBaseUnitToThisWrap(origToWrapInfMap)
-
