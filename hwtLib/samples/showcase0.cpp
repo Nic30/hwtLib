@@ -1,7 +1,7 @@
 /*
 
-    Every HW component class has to be derived from Unit class (any kind of inheritance supported)
-    
+    Every HW component class has to be derived from Unit class
+
     .. hwt-schematic::
     
 */
