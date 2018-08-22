@@ -26,7 +26,7 @@ def foo(condition0, statements, condition1, fallback0, fallback1):
 class Showcase0(Unit):
     """
     Every HW component class has to be derived from Unit class (any kind of inheritance supported)
-    
+
     .. hwt-schematic::
     """
 
@@ -107,7 +107,8 @@ class Showcase0(Unit):
 
         # it is possible to create signal explicitly by calling ._sig method
         # result of every operator is signal
-        const_private_signal = self._sig("const_private_signal", dtype=uint32_t, defVal=123)
+        const_private_signal = self._sig("const_private_signal",
+                                         dtype=uint32_t, defVal=123)
         self.contOut(const_private_signal)
 
         # this signal will be optimized out because it has no effect on any output
