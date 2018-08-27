@@ -131,7 +131,7 @@ if __name__ == "__main__":
     print(toRtl(u))
 
     suite = unittest.TestSuite()
-    # suite.addTest(FrameTmplTC('test_frameHeader'))
+    # suite.addTest(BitonicSorterTC('test_sorted'))
     suite.addTest(unittest.makeSuite(BitonicSorterTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
