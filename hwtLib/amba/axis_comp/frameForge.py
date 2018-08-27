@@ -52,16 +52,19 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
                  tmpl: Optional[TransTmpl]=None,
                  frames: Optional[List[FrameTmpl]]=None):
         """
-        :param hsIntfCls: class of interface which should be used as interface of this unit
+        :param hsIntfCls: class of interface which should be used
+            as interface of this unit
         :param structT: instance of HStruct used as template for this frame
-            if name is None no input port is generated and space is filled with invalid values
-            litle-endian encoding,
+            If name is None no input port is generated and space
+            is filled with invalid values, litle-endian encoding,
             supported types of interfaces are: Handshaked, Signal
             can be also instance of FrameTmpl
         :param tmpl: instance of TransTmpl for this structT
         :param frames: list of FrameTmpl instances for this tmpl
-        :note: if tmpl and frames are None they are resolved from structT parseTemplate
-        :note: this unit can parse sequence of frames, if they are specified by "frames"
+        :note: if tmpl and frames are None they are resolved
+            from structT parseTemplate
+        :note: This unit can parse sequence of frames,
+            if they are specified by "frames"
         :note: structT can contain fields with variable size like HStream
         """
         if axiSIntfCls is not AxiStream:
