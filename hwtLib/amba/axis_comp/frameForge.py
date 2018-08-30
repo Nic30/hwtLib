@@ -6,7 +6,7 @@ from typing import List, Optional, Union
 from hwt.bitmask import mask
 from hwt.code import log2ceil, Switch, If, isPow2, In, SwitchLogic
 from hwt.hdl.frameTmpl import FrameTmpl
-from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
+from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts, StreamOfFramePars
 from hwt.hdl.transPart import TransPart
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.bits import Bits
@@ -25,6 +25,7 @@ from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.amba.axis_comp.templateBasedUnit import TemplateBasedUnit
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
+from hwt.hdl.types.stream import HStream
 
 
 class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
@@ -84,6 +85,10 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             return UnionSink(t, parent._instantiateFieldFn)
         elif isinstance(t, HStruct):
             return StructIntf(t, parent._instantiateFieldFn)
+        elif isinstance(t, HStream):
+            p = AxiStream()
+            p.DATA_WIDTH.set(structField.dtype.elmType.bit_length())
+            return p
         else:
             p = Handshaked()
             p.DATA_WIDTH.set(structField.dtype.bit_length())
@@ -167,7 +172,8 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
             inPorts_out.append(inPortGroups)
             lastInPorts_out.append(lastInPortsGroups)
-
+        elif isinstance(tPart, StreamOfFramePars):
+            raise NotImplementedError()
         else:
             # connect parts of fields to output signal
             high, low = tPart.getBusWordBitRange()
