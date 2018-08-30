@@ -98,6 +98,7 @@ class AxiS_frameForge_TC(SimTestCase):
         u = self.u = AxiS_frameForge(AxiStream, structT,
                                      tmpl, frames)
         self.DATA_WIDTH = DATA_WIDTH
+        self.m = mask(self.DATA_WIDTH // 8)
         u.DATA_WIDTH.set(self.DATA_WIDTH)
 
         self.prepareUnit(self.u)
@@ -107,7 +108,7 @@ class AxiS_frameForge_TC(SimTestCase):
                 self.randomize(intf)
 
     def formatStream(self, data):
-        strb = mask(self.DATA_WIDTH // 8)
+        strb = self.m
         return [(d, strb, last) 
                 for last, d  in iter_with_last(data)]
 
@@ -135,7 +136,7 @@ class AxiS_frameForge_TC(SimTestCase):
         self.runSim(t * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
-                                    [(MAGIC, mask(self.DATA_WIDTH // 8), 1)])
+                                    [(MAGIC, self.m, 1)])
 
     def test_1Field_composit0(self, randomized=False):
         self.instantiateFrameForge(s1field_composit0, randomized=randomized)
@@ -151,7 +152,7 @@ class AxiS_frameForge_TC(SimTestCase):
         self.runSim(t * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
-                                    [(((MAGIC + 1) << 32) | MAGIC, mask(self.DATA_WIDTH // 8), 1)])
+                                    [(((MAGIC + 1) << 32) | MAGIC, self.m, 1)])
 
     def test_3Fields(self, randomized=False):
         self.instantiateFrameForge(s3field, randomized=randomized)
@@ -165,7 +166,7 @@ class AxiS_frameForge_TC(SimTestCase):
             t *= 3
         self.runSim(t * Time.ns)
 
-        m = mask(self.DATA_WIDTH // 8)
+        m = self.m
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(MAGIC, m, 0),
                                      (MAGIC + 1, m, 0),
@@ -205,7 +206,7 @@ class AxiS_frameForge_TC(SimTestCase):
         t = 200
         self.runSim(t * Time.ns)
 
-        m = mask(self.DATA_WIDTH // 8)
+        m = self.m
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(MAGIC, m, 0),
                                      (MAGIC + 1, m, 0),
@@ -234,7 +235,7 @@ class AxiS_frameForge_TC(SimTestCase):
         t = 200
         self.runSim(t * Time.ns)
 
-        m = mask(self.DATA_WIDTH // 8)
+        m = self.m
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(MAGIC, m, 0),
                                      (MAGIC + 1, m, 0),
@@ -275,7 +276,7 @@ class AxiS_frameForge_TC(SimTestCase):
         t = 200
         self.runSim(t * Time.ns)
 
-        m = mask(self.DATA_WIDTH // 8)
+        m = self.m
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(MAGIC, m, 0),
                                      (MAGIC + 1, m, 1),
@@ -310,7 +311,7 @@ class AxiS_frameForge_TC(SimTestCase):
 
         self.runSim(t * Time.ns)
 
-        m = mask(self.DATA_WIDTH // 8)
+        m = self.m
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(MAGIC + 1, m, 0),
                                      (MAGIC + 2, m, 1),
@@ -337,7 +338,7 @@ class AxiS_frameForge_TC(SimTestCase):
 
         self.runSim(t * Time.ns)
 
-        m = mask(self.DATA_WIDTH // 8)
+        m = self.m
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(MAGIC + 1, m, 1),
                                      (MAGIC + 2, m, 1),
@@ -353,26 +354,65 @@ class AxiS_frameForge_TC(SimTestCase):
                                    randomized=randomized)
         u = self.u
         MAGIC = 498
-        t = 50
+        t = 80
         if randomized:
             t *= 3
 
         u.dataIn.streamIn._ag.data.extend(
-            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3])
+            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) +
+            self.formatStream([MAGIC + 4, MAGIC + 5, MAGIC + 6])
         )
 
         self.runSim(t * Time.ns)
 
-        m = mask(self.DATA_WIDTH // 8)
+        m = self.m
         self.assertValSequenceEqual(u.dataOut._ag.data,
-                                    [(MAGIC + 1, m, 1),
-                                     (MAGIC + 2, m, 1),
+                                    [(MAGIC + 1, m, 0),
+                                     (MAGIC + 2, m, 0),
                                      (MAGIC + 3, m, 1),
+                                     (MAGIC + 4, m, 0),
+                                     (MAGIC + 5, m, 0),
+                                     (MAGIC + 6, m, 1),
                                      ])
+    def test_r_stream64(self):
+        self.test_stream64(randomized=True)
+
+    def test_structStream64before(self, randomized=False):
+        self.instantiateFrameForge(structStream64before,
+                                   DATA_WIDTH=64,
+                                   randomized=randomized)
+        u = self.u
+        MAGIC = 498
+        t = 100
+        if randomized:
+            t *= 3
+
+        u.dataIn.streamIn._ag.data.extend(
+            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) +
+            self.formatStream([MAGIC + 5, MAGIC + 6, MAGIC + 7])
+        )
+        u.dataIn.item0._ag.data.extend([MAGIC + 4, MAGIC + 8])
+
+        self.runSim(t * Time.ns)
+
+        m = self.m
+        self.assertValSequenceEqual(u.dataOut._ag.data,
+                                    [(MAGIC + 1, m, 0),
+                                     (MAGIC + 2, m, 0),
+                                     (MAGIC + 3, m, 0),
+                                     (MAGIC + 4, m, 1),
+                                     (MAGIC + 5, m, 0),
+                                     (MAGIC + 6, m, 0),
+                                     (MAGIC + 7, m, 0),
+                                     (MAGIC + 8, m, 1),
+                                     ])
+
+    def test_r_structStream64before(self):
+        self.test_structStream64before(randomized=True)
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(AxiS_frameForge_TC('test_stream64'))
+    suite.addTest(AxiS_frameForge_TC('test_structStream64before'))
     # suite.addTest(unittest.makeSuite(AxiS_frameForge_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
