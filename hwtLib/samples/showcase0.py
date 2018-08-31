@@ -29,6 +29,7 @@ class Showcase0(Unit):
 
     .. hwt-schematic::
     """
+    # note that class doc string is also converted to generated HDL
 
     def __init__(self):
         # constructor can be overloaded but parent one has to be called
@@ -148,7 +149,7 @@ class Showcase0(Unit):
         cmp[4](b != 4)
         # _eq() is used as ==,
         # overriding == would have many unintended consequences in python
-        # (it would make all signals unhasable)
+        # (it would make all signals unhashable)
         cmp[5](b._eq(4))
 
         h = self.h

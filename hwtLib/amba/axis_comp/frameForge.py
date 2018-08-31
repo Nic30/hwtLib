@@ -4,9 +4,9 @@
 from typing import List, Optional, Union
 
 from hwt.bitmask import mask
-from hwt.code import log2ceil, Switch, If, isPow2, In, SwitchLogic
+from hwt.code import log2ceil, Switch, If, isPow2, SwitchLogic
 from hwt.hdl.frameTmpl import FrameTmpl
-from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
+from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts, StreamOfFramePars
 from hwt.hdl.transPart import TransPart
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.bits import Bits
@@ -25,6 +25,7 @@ from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.amba.axis_comp.templateBasedUnit import TemplateBasedUnit
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
+from hwt.hdl.types.stream import HStream
 
 
 class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
@@ -87,6 +88,10 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             return UnionSink(t, parent._instantiateFieldFn)
         elif isinstance(t, HStruct):
             return StructIntf(t, parent._instantiateFieldFn)
+        elif isinstance(t, HStream):
+            p = AxiStream()
+            p.DATA_WIDTH.set(structField.dtype.elmType.bit_length())
+            return p
         else:
             p = Handshaked()
             p.DATA_WIDTH.set(structField.dtype.bit_length())
@@ -112,7 +117,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
         self.dataIn = intfCls(self._structT, self._mkFieldIntf)
 
     def connectPartsOfWord(self, wordData_out: RtlSignal,
-                           tPart: Union[TransPart, ChoicesOfFrameParts],
+                           tPart: Union[TransPart, ChoicesOfFrameParts, StreamOfFramePars],
                            inPorts_out: List[Union[Handshaked, StreamNode]],
                            lastInPorts_out: List[Union[Handshaked, StreamNode]]):
         """
@@ -170,6 +175,25 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
             inPorts_out.append(inPortGroups)
             lastInPorts_out.append(lastInPortsGroups)
+        elif isinstance(tPart, StreamOfFramePars):
+            if len(tPart) != 1:
+                raise NotImplementedError("Structuralized streams not implemented yiet")
+
+            p = tPart[0]
+            intf = tToIntf[p.tmpl.origin]
+
+            if int(intf.DATA_WIDTH) != wordData_out._dtype.bit_length():
+                raise NotImplementedError("Dynamic resizing of streams not implemented yiet")
+
+            if len(self._frames) > 1:
+                raise NotImplementedError("Dynamic splitting on frames not implemented yet")
+            wordData_out(self.byteOrderCare(intf.data))
+            inPorts_out.append(intf)
+
+            if tPart.isLastPart():
+                lastInPorts_out.append(intf)
+
+            return intf.strb
 
         else:
             # connect parts of fields to output signal
@@ -204,6 +228,9 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
     def _impl(self):
         """
         Iterate over words in template and create stream output mux and fsm.
+        Frame specifier can contains unions/streams/padding/unaligned items and other
+        features which makes code below complex.
+        Frame specifier can also describe multiple frames.
         """
         if self.IS_BIGENDIAN:
             byteOrderCare = reverseByteOrder
@@ -224,11 +251,15 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
                                           defVal=maxWordIndex)
             wcntrSw = Switch(wordCntr_inversed)
 
+        # inversed indexes of ends of frames
         endsOfFrames = []
+        extra_strbs = []
         for i, transParts, isLast in words:
             inversedIndx = maxWordIndex - i
 
+            # input ports for value of this output word
             inPorts = []
+            # input ports witch value should be consumed on this word
             lastInPorts = []
             if multipleWords:
                 wordData = self._sig("word%d" % i, dout.data._dtype)
@@ -236,9 +267,14 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
                 wordData = self.dataOut.data
 
             for tPart in transParts:
-                self.connectPartsOfWord(wordData, tPart,
-                                        inPorts,
-                                        lastInPorts)
+                extra_strb = self.connectPartsOfWord(
+                    wordData, tPart,
+                    inPorts,
+                    lastInPorts)
+                if extra_strb is not None:
+                    if len(transParts) > 1:
+                        raise NotImplementedError("Construct rest of the strb signal")
+                    extra_strbs.append((inversedIndx, extra_strb))
 
             if multipleWords:
                 en = wordCntr_inversed._eq(inversedIndx)
@@ -247,6 +283,12 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             en = self.dataOut.ready & en
 
             ack = self.handshakeLogicForWord(inPorts, lastInPorts, en)
+
+            inStreamLast = True
+            for p in inPorts:
+                if isinstance(p, AxiStream):
+                    inStreamLast = p.last & inStreamLast
+
             if multipleWords:
                 # word cntr next logic
                 if i == maxWordIndex:
@@ -254,10 +296,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
                 else:
                     nextWordIndex = wordCntr_inversed - 1
 
-                if ack is True:
-                    _ack = dout.ready
-                else:
-                    _ack = dout.ready & ack
+                _ack = dout.ready & ack & inStreamLast
 
                 a = [If(_ack,
                         wordCntr_inversed(nextWordIndex)
@@ -268,13 +307,15 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
             a.append(dout.valid(ack))
 
+            # frame with multiple words (using wordCntr_inversed)
             if multipleWords:
                 # data out logic
                 a.append(dout.data(wordData))
                 wcntrSw.Case(inversedIndx, a)
 
+            # is last word in frame
             if isLast:
-                endsOfFrames.append(inversedIndx)
+                endsOfFrames.append((inversedIndx, inStreamLast))
 
         # to prevent latches
         if not multipleWords:
@@ -287,17 +328,36 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             wcntrSw.Default(default)
 
         if multipleWords:
-            dout.last(In(wordCntr_inversed, endsOfFrames))
-            for r in self._tmpRegsForSelect.values():
-                r.rd(ack & wordCntr_inversed._eq(
-                    endsOfFrames[-1]) & dout.ready)
+            last = False
+            last_last = last
+            for indexOrTuple in endsOfFrames:
+                i, en = indexOrTuple
+                last_last = wordCntr_inversed._eq(i) & en
+                last = (last_last) | last
 
+            selectRegLoad = last_last & dout.ready & ack
         else:
-            dout.last(1)
-            for r in self._tmpRegsForSelect.values():
-                r.rd(ack & dout.ready)
+            last = endsOfFrames[0][1]
+            selectRegLoad = dout.ready & ack
 
-        dout.strb(mask(int(self.DATA_WIDTH // 8)))
+        for r in self._tmpRegsForSelect.values():
+            r.rd(selectRegLoad)
+        dout.last(last)
+
+        strb = dout.strb
+        STRB_ALL = mask(int(self.DATA_WIDTH // 8))
+        if multipleWords:
+
+            Switch(wordCntr_inversed).addCases([
+                (i, strb(v)) for i, v in extra_strbs
+            ]).Default(
+                strb(STRB_ALL)
+            )
+        else:
+            if extra_strbs:
+                strb(extra_strbs[0][1])
+            else:
+                strb(STRB_ALL)
 
 
 if __name__ == "__main__":
