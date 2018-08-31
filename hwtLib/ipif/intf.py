@@ -8,8 +8,17 @@ from hwt.simulator.agentBase import SyncAgentBase
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 
+# https://www.xilinx.com/support/documentation/ip_documentation/axi_lite_ipif/v2_0/pg155-axi-lite-ipif.pdf
+# https://www.xilinx.com/support/documentation/ip_documentation/axi_lite_ipif_ds765.pdf
+
 
 class Ipif(Interface):
+    """
+    IPIF - IP interface is interface which was often used
+    in designs for Xilinx FPGAs around year 2012
+
+    * shared address, validity signals, mask, write ack
+    """
     READ = 1
     WRITE = 0
 
