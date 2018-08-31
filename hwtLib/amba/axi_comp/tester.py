@@ -24,7 +24,7 @@ class AxiTester(Unit):
     of read address/write address/read/write/write response transactions
     Allows to read and specify values of controls signals like cache/lock/burst
     etc...
-    
+
     .. hwt-schematic::
     """
 

@@ -25,10 +25,11 @@ def foo(condition0, statements, condition1, fallback0, fallback1):
 
 class Showcase0(Unit):
     """
-    Every HW component class has to be derived from Unit class (any kind of inheritance supported)
-    
+    Every HW component class has to be derived from Unit class
+
     .. hwt-schematic::
     """
+    # note that class doc string is also converted to generated HDL
 
     def __init__(self):
         # constructor can be overloaded but parent one has to be called
@@ -107,7 +108,8 @@ class Showcase0(Unit):
 
         # it is possible to create signal explicitly by calling ._sig method
         # result of every operator is signal
-        const_private_signal = self._sig("const_private_signal", dtype=uint32_t, defVal=123)
+        const_private_signal = self._sig("const_private_signal",
+                                         dtype=uint32_t, defVal=123)
         self.contOut(const_private_signal)
 
         # this signal will be optimized out because it has no effect on any output
@@ -147,7 +149,7 @@ class Showcase0(Unit):
         cmp[4](b != 4)
         # _eq() is used as ==,
         # overriding == would have many unintended consequences in python
-        # (it would make all signals unhasable)
+        # (it would make all signals unhashable)
         cmp[5](b._eq(4))
 
         h = self.h
