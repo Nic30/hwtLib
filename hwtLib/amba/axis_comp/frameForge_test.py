@@ -17,7 +17,6 @@ from hwtLib.types.ctypes import uint64_t, uint32_t, int32_t
 from hwt.hdl.types.stream import HStream
 from hwt.pyUtils.arrayQuery import iter_with_last
 
-
 s1field = HStruct(
     (uint64_t, "item0")
 )
@@ -189,6 +188,7 @@ class AxiS_frameForge_TC(SimTestCase):
         u = self.u = AxiS_frameForge(AxiStream, s3field)
         self.DATA_WIDTH = 64
         u.DATA_WIDTH.set(self.DATA_WIDTH)
+        m = mask(self.DATA_WIDTH // 8)
 
         self.prepareUnit(self.u)
 
@@ -196,6 +196,7 @@ class AxiS_frameForge_TC(SimTestCase):
             u.dataOut._ag.enable = False
             yield s.wait(50 * Time.ns)
             u.dataOut._ag.enable = True
+
         self.procs.append(enDataOut)
 
         MAGIC = 468
@@ -206,7 +207,6 @@ class AxiS_frameForge_TC(SimTestCase):
         t = 200
         self.runSim(t * Time.ns)
 
-        m = self.m
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(MAGIC, m, 0),
                                      (MAGIC + 1, m, 0),
@@ -217,13 +217,14 @@ class AxiS_frameForge_TC(SimTestCase):
         u = self.u = AxiS_frameForge(AxiStream, s2Pading)
         self.DATA_WIDTH = 64
         u.DATA_WIDTH.set(self.DATA_WIDTH)
-
+        m = mask(self.DATA_WIDTH // 8)
         self.prepareUnit(self.u)
 
         def enDataOut(s):
             u.dataOut._ag.enable = False
             yield s.wait(50 * Time.ns)
             u.dataOut._ag.enable = True
+
         self.procs.append(enDataOut)
 
         MAGIC = 468
@@ -235,7 +236,6 @@ class AxiS_frameForge_TC(SimTestCase):
         t = 200
         self.runSim(t * Time.ns)
 
-        m = self.m
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(MAGIC, m, 0),
                                      (MAGIC + 1, m, 0),
@@ -258,13 +258,14 @@ class AxiS_frameForge_TC(SimTestCase):
         u = self.u = AxiS_frameForge(AxiStream, structT,
                                      tmpl, frames)
         u.DATA_WIDTH.set(self.DATA_WIDTH)
-
+        m = mask(self.DATA_WIDTH // 8)
         self.prepareUnit(self.u)
 
         def enDataOut(s):
             u.dataOut._ag.enable = False
             yield s.wait(50 * Time.ns)
             u.dataOut._ag.enable = True
+
         self.procs.append(enDataOut)
 
         MAGIC = 468
@@ -276,7 +277,6 @@ class AxiS_frameForge_TC(SimTestCase):
         t = 200
         self.runSim(t * Time.ns)
 
-        m = self.m
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(MAGIC, m, 0),
                                      (MAGIC + 1, m, 1),
@@ -354,12 +354,12 @@ class AxiS_frameForge_TC(SimTestCase):
                                    randomized=randomized)
         u = self.u
         MAGIC = 498
-        t = 80
+        t = 100
         if randomized:
             t *= 3
 
         u.dataIn.streamIn._ag.data.extend(
-            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) +
+            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) + 
             self.formatStream([MAGIC + 4, MAGIC + 5, MAGIC + 6])
         )
 
@@ -374,6 +374,7 @@ class AxiS_frameForge_TC(SimTestCase):
                                      (MAGIC + 5, m, 0),
                                      (MAGIC + 6, m, 1),
                                      ])
+
     def test_r_stream64(self):
         self.test_stream64(randomized=True)
 
@@ -383,12 +384,12 @@ class AxiS_frameForge_TC(SimTestCase):
                                    randomized=randomized)
         u = self.u
         MAGIC = 498
-        t = 100
+        t = 120
         if randomized:
             t *= 3
 
         u.dataIn.streamIn._ag.data.extend(
-            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) +
+            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) + 
             self.formatStream([MAGIC + 5, MAGIC + 6, MAGIC + 7])
         )
         u.dataIn.item0._ag.data.extend([MAGIC + 4, MAGIC + 8])
@@ -410,9 +411,75 @@ class AxiS_frameForge_TC(SimTestCase):
     def test_r_structStream64before(self):
         self.test_structStream64before(randomized=True)
 
+    def test_structStream64after(self, randomized=False):
+        self.instantiateFrameForge(structStream64after,
+                                   DATA_WIDTH=64,
+                                   randomized=randomized)
+        u = self.u
+        MAGIC = 498
+        t = 100
+        if randomized:
+            t *= 3
+
+        u.dataIn.streamIn._ag.data.extend(
+            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) + 
+            self.formatStream([MAGIC + 5, MAGIC + 6, MAGIC + 7])
+        )
+        u.dataIn.item0._ag.data.extend([MAGIC + 4, MAGIC + 8])
+
+        self.runSim(t * Time.ns)
+
+        m = self.m
+        self.assertValSequenceEqual(u.dataOut._ag.data,
+                                    [
+                                     (MAGIC + 4, m, 0),
+                                     (MAGIC + 1, m, 0),
+                                     (MAGIC + 2, m, 0),
+                                     (MAGIC + 3, m, 1),
+                                     (MAGIC + 8, m, 0),
+                                     (MAGIC + 5, m, 0),
+                                     (MAGIC + 6, m, 0),
+                                     (MAGIC + 7, m, 1),
+                                     ])
+
+    def test_r_structStream64after(self):
+        self.test_structStream64after(randomized=True)
+
+    def test_struct2xStream64(self, randomized=False):
+        self.instantiateFrameForge(struct2xStream64,
+                                   DATA_WIDTH=64,
+                                   randomized=randomized)
+        u = self.u
+        MAGIC = 400
+        t = 170
+        if randomized:
+            t *= 3
+
+        u.dataIn.streamIn0._ag.data.extend(
+            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) + 
+            self.formatStream([MAGIC + 7, MAGIC + 8, MAGIC + 9])
+        )
+        u.dataIn.streamIn1._ag.data.extend(
+            self.formatStream([MAGIC + 4, MAGIC + 5, MAGIC + 6]) + 
+            self.formatStream([MAGIC + 10, MAGIC + 11, MAGIC + 12])
+        )
+
+        self.runSim(t * Time.ns)
+
+        m = self.m
+        self.assertValSequenceEqual(
+            u.dataOut._ag.data,
+            [
+             (MAGIC + i + 1, m, int(i == 5 or i == 11)) for i in range(12)
+             ])
+
+    def test_r_struct2xStream64(self):
+        self.test_struct2xStream64(randomized=True)
+
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(AxiS_frameForge_TC('test_structStream64before'))
-    # suite.addTest(unittest.makeSuite(AxiS_frameForge_TC))
+    #suite.addTest(AxiS_frameForge_TC('test_struct2xStream64'))
+    suite.addTest(unittest.makeSuite(AxiS_frameForge_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

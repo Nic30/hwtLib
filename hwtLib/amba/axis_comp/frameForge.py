@@ -4,7 +4,7 @@
 from typing import List, Optional, Union
 
 from hwt.bitmask import mask
-from hwt.code import log2ceil, Switch, If, isPow2, In, SwitchLogic
+from hwt.code import log2ceil, Switch, If, isPow2, SwitchLogic
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts, StreamOfFramePars
 from hwt.hdl.transPart import TransPart
@@ -292,7 +292,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
                     nextWordIndex = maxWordIndex
                 else:
                     nextWordIndex = wordCntr_inversed - 1
-                         
+
                 _ack = dout.ready & ack & inStreamLast
 
                 a = [If(_ack,
@@ -303,7 +303,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
                 a = []
 
             a.append(dout.valid(ack))
-            
+
             # frame with multiple words (using wordCntr_inversed)
             if multipleWords:
                 # data out logic
@@ -325,26 +325,26 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             wcntrSw.Default(default)
 
         if multipleWords:
-            last = True
+            last = False
             last_last = last
             for indexOrTuple in endsOfFrames:
                 i, en = indexOrTuple
                 last_last = wordCntr_inversed._eq(i) & en
                 last = (last_last) | last
-                
-            selectRegLoad = ack & wordCntr_inversed._eq(last_last) & dout.ready
+
+            selectRegLoad = last_last & dout.ready & ack
         else:
             last = endsOfFrames[0][1]
-            selectRegLoad = ack & dout.ready
+            selectRegLoad = dout.ready & ack
 
         for r in self._tmpRegsForSelect.values():
             r.rd(selectRegLoad)
         dout.last(last)
-            
+
         strb = dout.strb
         STRB_ALL = mask(int(self.DATA_WIDTH // 8))
         if multipleWords:
-            
+
             Switch(wordCntr_inversed).addCases([
                 (i, strb(v)) for i, v in extra_strbs
             ]).Default(
