@@ -25,8 +25,8 @@ class AvalonST(Handshaked):
         self.endOfPacket = Signal()
         self.startOfPacket = Signal()
 
-    def _getSimAgent(self):
-        return AvalonSTAgent
+    def _initSimAgent(self):
+        self._ag = AvalonSTAgent(self)
 
 
 class AvalonSTAgent(HandshakedAgent):
