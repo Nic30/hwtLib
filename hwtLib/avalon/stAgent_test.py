@@ -43,20 +43,24 @@ class AvalonStAgentTC(SimTestCase):
         u = self.u
         N = 10
 
-        u.dataIn._ag.data.extend(range(N))
+        #channel, data, error, startOfPacket, endOfPacket
+        d = [(1, i, 0, i == 0, i == N - 1) for i in range(N)]
+        u.dataIn._ag.data.extend(d)
 
         self.runSim((N + 10) * self.CLK)
 
         self.assertValSequenceEqual(
             u.dataOut._ag.data,
-            range(N)
+            d
         )
 
     def test_can_pass_data_randomized(self):
         u = self.u
         N = 40
 
-        u.dataIn._ag.data.extend(range(N))
+        #channel, data, error, startOfPacket, endOfPacket
+        d = [(1, i, 0, i == 0, i == N - 1) for i in range(N)]
+        u.dataIn._ag.data.extend(d)
         self.randomize(u.dataIn)
         self.randomize(u.dataOut)
 
@@ -64,7 +68,7 @@ class AvalonStAgentTC(SimTestCase):
 
         self.assertValSequenceEqual(
             u.dataOut._ag.data,
-            range(N)
+            d
         )
 
 

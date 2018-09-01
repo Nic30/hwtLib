@@ -33,14 +33,14 @@ class AvalonSTAgent(HandshakedAgent):
     """
     Simulation Agent for AvalonST interface
     Data is stored in .data property and data format
-    is tuple (channel, data, error, endOfPacket, startOfPacket)
+    is tuple (channel, data, error, startOfPacket, endOfPacket)
     """
 
     def doRead(self, s):
         r = s.read
         intf = self.intf
         return (r(intf.channel), r(intf.data), r(intf.error),
-                r(intf.endOfPacket), r(intf.startOfPacket))
+                r(intf.startOfPacket), r(intf.endOfPacket))
 
     def doWrite(self, s, data):
         w = s.write
@@ -52,7 +52,7 @@ class AvalonSTAgent(HandshakedAgent):
             w(None, intf.endOfPacket)
             w(None, intf.startOfPacket)
         else:
-            channel, data, error, endOfPacket, startOfPacket = data
+            channel, data, error, startOfPacket, endOfPacket  = data
             w(channel, intf.channel)
             w(data, intf.data)
             w(error, intf.error)
