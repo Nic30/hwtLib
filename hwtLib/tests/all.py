@@ -6,7 +6,6 @@ from unittest import TestLoader, TextTestRunner, TestSuite
 from hwt.simulator.hdlSimConfig import HdlSimConfig
 from hwt.simulator.hdlSimulator import HdlSimulator
 from hwt.simulator.simTestCase import SimTestCase
-
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
 from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
 from hwtLib.amba.axi4_streamToMem_test import Axi4_streamToMemTC
@@ -61,6 +60,7 @@ from hwtLib.handshaked.splitCopy_test import HsSplitCopyTC, \
 from hwtLib.i2c.i2cAgent_test import I2cAgent_TC
 from hwtLib.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
 from hwtLib.img.charToBitmap_test import CharToBitmapTC
+from hwtLib.ipif.axiLite2ipif_test import AxiLite2ipifTC
 from hwtLib.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.ipif.reg_test import IpifRegTC
@@ -106,6 +106,7 @@ from hwtLib.samples.hierarchy.simpleSubunit3 import SimpleSubunit3TC
 from hwtLib.samples.hierarchy.simpleSubunit_test import SimpleSubunitTC
 from hwtLib.samples.hierarchy.unitToUnitConnection import \
     UnitToUnitConnectionTC
+from hwtLib.samples.hierarchy.unitWrapper_test import UnitWrapperTC
 from hwtLib.samples.intfArray.interfaceArray0 import InterfaceArraySample0TC
 from hwtLib.samples.intfArray.interfaceArray1 import InterfaceArraySample1TC
 from hwtLib.samples.intfArray.interfaceArray2 import InterfaceArraySample2TC
@@ -178,7 +179,6 @@ from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
 from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.uart.tx_rx_test import UartTxRxTC
 from hwtLib.uart.tx_test import UartTxTC
-from hwtLib.samples.hierarchy.unitWrapper_test import UnitWrapperTC
 
 
 def runSimWithoutLog(self, until, name=None, config=None):
@@ -386,6 +386,7 @@ suite = testSuiteFromTCs(
     IpifEndpointDenseStartTC,
     IpifEndpointArray,
     IpifRegTC,
+    AxiLite2ipifTC,
 
     # complex units tests
     UnitWrapperTC,

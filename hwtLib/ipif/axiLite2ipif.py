@@ -1,10 +1,10 @@
-from hwt.synthesizer.unit import Unit
-from hwtLib.ipif.intf import Ipif
-from hwtLib.amba.axi4Lite import Axi4Lite
-from hwt.code import Switch, If, FsmBuilder, In
-from hwtLib.amba.constants import RESP_SLVERR, RESP_OKAY
-from hwt.interfaces.utils import addClkRstn
+from hwt.code import Switch, If, FsmBuilder
 from hwt.hdl.types.enum import HEnum
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.unit import Unit
+from hwtLib.amba.axi4Lite import Axi4Lite
+from hwtLib.amba.constants import RESP_SLVERR, RESP_OKAY
+from hwtLib.ipif.intf import Ipif
 
 
 class AxiLite2Ipif(Unit):
@@ -23,13 +23,23 @@ class AxiLite2Ipif(Unit):
         ipif = self.m
         axi = self.s
         resp = self._sig("resp", axi.r.resp._dtype)
+        respTmp = self._sig("respTmp", resp._dtype)
+        respReg = self._reg("respReg", resp._dtype)
+
         If(ipif.ip2bus_error,
            resp(RESP_SLVERR)
         ).Else(
            resp(RESP_OKAY)
         )
-        axi.r.resp(resp)
-        axi.b.resp(resp)
+        If(ipif.ip2bus_wrack | ipif.ip2bus_rdack,
+           respReg(resp),
+           respTmp(resp)
+        ).Else(
+           respTmp(respReg)
+        )
+
+        axi.r.resp(respTmp)
+        axi.b.resp(respTmp)
 
     def handleAddr(self, st):
         st_t = st._dtype
@@ -46,13 +56,14 @@ class AxiLite2Ipif(Unit):
         )
         ipif.bus2ip_addr(addr)
 
-    def _impl(self) -> None:
+    def mainFsm(self, dataRegR_vld):
         ipif = self.m
         axi = self.s
-        st_t = HEnum("st_t", ["idle",
-                              "write", "write_wait_data", "write_ack",
-                              "read", "read_ack"
-                              ])
+        st_t = HEnum("st_t", [
+            "idle",
+            "write", "write_wait_data", "write_ack",
+            "read", "read_ack"
+        ])
 
         st = FsmBuilder(self, st_t
         ).Trans(st_t.idle,
@@ -71,42 +82,66 @@ class AxiLite2Ipif(Unit):
                 (axi.b.ready, st_t.idle)
         ).Trans(st_t.read,
                 # has address, reading from ipif
-                (ipif.ip2bus_rdack & axi.r.ready, st_t.idle),
+                ((ipif.ip2bus_rdack | dataRegR_vld) & axi.r.ready, st_t.idle),
                 (ipif.ip2bus_rdack, st_t.read_ack),
         ).Trans(st_t.read_ack,
                 # read from ipif complete, waiting for axi to accept data
                 (axi.r.ready, st_t.idle)
         ).stateReg
 
+        return st
+
+    def _impl(self) -> None:
+        ipif = self.m
+        axi = self.s
+        r = self._reg
+        
+        dataRegR_vld = r("dataRegR_vld", defVal=0)
+        st = self.mainFsm(dataRegR_vld)
+        st_t = st._dtype
         self.handleResp()
         self.handleAddr(st)
 
         idle = st._eq(st_t.idle)
-        axi.aw.ready(idle)
         axi.ar.ready(idle)
+        axi.aw.ready(idle & ~axi.ar.valid)
         axi.w.ready(st._eq(st_t.write_wait_data))
 
-        dataReg = self._reg("data", axi.w.data._dtype)
-        strbReg = self._reg("strb", axi.w.strb._dtype)
-
-        If(((st._eq(st_t.idle) & axi.aw.valid) | st._eq(st_t.write_wait_data)) & axi.w.valid,
-            dataReg(axi.w.data),
-            strbReg(axi.w.strb)
-        ).Elif(ipif.ip2bus_rdack,
-            dataReg(ipif.ip2bus_data),
+        dataRegR = r("dataR", axi.r.data._dtype)
+        dataRegW = r("dataW", axi.w.data._dtype)
+        strbRegW = r("strbW", axi.w.strb._dtype)
+        
+        If(((st._eq(st_t.idle) & axi.aw.valid & ~axi.ar.valid)
+             | st._eq(st_t.write_wait_data)) & axi.w.valid,
+            dataRegW(axi.w.data),
+            strbRegW(axi.w.strb)
         )
+        If(ipif.ip2bus_rdack & (
+            (idle & axi.ar.valid) | st._eq(st_t.read)),
+            dataRegR(ipif.ip2bus_data),
+        )
+
+        If(idle,
+           dataRegR_vld(ipif.ip2bus_rdack),
+        )
+
         If(idle,
            ipif.bus2ip_be(axi.w.strb)
         ).Else(
-           ipif.bus2ip_be(strbReg)
+           ipif.bus2ip_be(strbRegW)
         )
 
         Switch(st)\
         .Case(st_t.read,
-              axi.r.data(ipif.ip2bus_data),
-              axi.r.valid(ipif.ip2bus_rdack))\
-        .Case(st_t.read_ack,
-              axi.r.data(dataReg),
+              If(dataRegR_vld,
+                 axi.r.data(dataRegR),
+                 axi.r.valid(1)
+              ).Else(
+                 axi.r.data(ipif.ip2bus_data),
+                 axi.r.valid(ipif.ip2bus_rdack)
+              )
+        ).Case(st_t.read_ack,
+              axi.r.data(dataRegR),
               axi.r.valid(1),
         ).Default(
             axi.r.data(None),
@@ -122,7 +157,7 @@ class AxiLite2Ipif(Unit):
             axi.b.valid(0)
         )
 
-        ipif.bus2ip_data(dataReg)
+        ipif.bus2ip_data(dataRegW)
         ipif.bus2ip_cs(st._eq(st_t.write) | st._eq(st_t.read))
         ipif.bus2ip_rnw(st._eq(st_t.read))
 
@@ -131,4 +166,3 @@ if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
     u = AxiLite2Ipif()
     print(toRtl(u))
-   
