@@ -152,6 +152,7 @@ class AxiLite2ipifTC(SimTestCase):
     def test_read_readAndWrite_lat1(self, randomize_axi=False):
         self.test_readAndWrite(randomize_axi, read_latency=1, write_latency=1)
 
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
