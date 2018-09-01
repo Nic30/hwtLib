@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.bitmask import mask
 from hwt.hdl.constants import READ, WRITE, Time
 from hwt.simulator.simTestCase import SimTestCase

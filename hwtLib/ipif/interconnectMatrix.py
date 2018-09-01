@@ -1,6 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from typing import List, Union, Set, Tuple
 
-from hwt.bitmask import selectBitRange, mask
+from hwt.bitmask import selectBitRange
 from hwt.code import log2ceil, isPow2, connect, SwitchLogic
 from hwt.hdl.constants import READ, WRITE
 from hwt.hdl.typeShortcuts import hBit

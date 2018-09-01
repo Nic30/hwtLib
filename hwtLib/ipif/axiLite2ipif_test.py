@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.bitmask import mask
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.ipif.axiLite2ipif import AxiLite2Ipif
 from hwtLib.amba.constants import RESP_OKAY, PROT_DEFAULT
+from hwtLib.ipif.axiLite2ipif import AxiLite2Ipif
 
 
 class AxiLite2ipifTC(SimTestCase):
@@ -30,18 +33,19 @@ class AxiLite2ipifTC(SimTestCase):
             self.randomize(axi)
 
         ipif = self.u.m._ag
-        MAGIC = 10 
+        MAGIC = 10
         ipif.mem[0] = MAGIC + 0
         ipif.mem[1] = MAGIC + 1
         ipif.mem[2] = MAGIC + 2
         ipif.mem[4] = MAGIC + 3
-        
+
         axi.ar._ag.data.extend([
-            (0, PROT_DEFAULT), (4, PROT_DEFAULT), (8, PROT_DEFAULT), (16, PROT_DEFAULT)
+            (0, PROT_DEFAULT), (4, PROT_DEFAULT), (8,
+                                                   PROT_DEFAULT), (16, PROT_DEFAULT)
         ])
-        
+
         self.runSim(10 * (read_latency + 1) * self.CLK)
-        
+
         self.assertValSequenceEqual(
             axi.r._ag.data,
             [(MAGIC + i, RESP_OKAY) for i in range(4)]
@@ -53,13 +57,13 @@ class AxiLite2ipifTC(SimTestCase):
         ipif = self.u.m
         if randomize_axi:
             self.randomize(axi)
-        
+
         MAGIC = 10
         N = 4
         axi.aw._ag.data.extend([
             (i * 4, 0) for i in range(N)
         ])
-        
+
         if data_delay > 0:
 
             def late_add_data(sim):
@@ -80,8 +84,8 @@ class AxiLite2ipifTC(SimTestCase):
         })
 
     def test_readAndWrite(self, randomize_axi=False,
-                  read_latency=0, write_latency=0,
-                  data_delay=0):
+                          read_latency=0, write_latency=0,
+                          data_delay=0):
         self.mySetUp(read_latency=read_latency,
                      write_latency=write_latency)
         axi = self.u.s
@@ -91,14 +95,14 @@ class AxiLite2ipifTC(SimTestCase):
         ipif = self.u.m._ag
         MAGIC_R = 10
         MAGIC_W = 100
-         
+
         N = 4
 
         for i in range(N):
             ipif.mem[i] = MAGIC_R + i
             axi.ar._ag.data.append((i * 4, PROT_DEFAULT))
-            axi.aw._ag.data.append(((i + 4) * 4 , PROT_DEFAULT))
-        
+            axi.aw._ag.data.append(((i + 4) * 4, PROT_DEFAULT))
+
         if data_delay > 0:
             def late_add_data(sim):
                 yield sim.wait(data_delay)
@@ -113,7 +117,7 @@ class AxiLite2ipifTC(SimTestCase):
             ])
 
         self.runSim(25 * (max(read_latency, write_latency) + 1) * self.CLK)
-        
+
         self.assertValSequenceEqual(
             axi.r._ag.data,
             [(MAGIC_R + i, RESP_OKAY) for i in range(4)]
@@ -121,7 +125,7 @@ class AxiLite2ipifTC(SimTestCase):
 
         d = {k: int(v) for k, v in ipif.mem.items()}
         d_ref = {i: MAGIC_R + i for i in range(N)}
-        d_ref.update({i+4 : MAGIC_W + i for i in range(N)})
+        d_ref.update({i + 4: MAGIC_W + i for i in range(N)})
 
         self.assertDictEqual(d, d_ref)
 

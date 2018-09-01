@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import Switch, If, FsmBuilder
 from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.utils import addClkRstn
