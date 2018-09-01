@@ -63,6 +63,7 @@ from hwtLib.img.charToBitmap_test import CharToBitmapTC
 from hwtLib.ipif.axiLite2ipif_test import AxiLite2ipifTC
 from hwtLib.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
+from hwtLib.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.ipif.reg_test import IpifRegTC
 from hwtLib.logic.binToOneHot import BinToOneHotTC
 from hwtLib.logic.bitonicSorter import BitonicSorterTC
@@ -387,6 +388,7 @@ suite = testSuiteFromTCs(
     IpifEndpointArray,
     IpifRegTC,
     AxiLite2ipifTC,
+    IpifInterconnectMatrixTC,
 
     # complex units tests
     UnitWrapperTC,
