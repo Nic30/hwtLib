@@ -1,4 +1,5 @@
 from collections import deque
+from enum import Enum
 
 from hwt.bitmask import mask
 from hwt.hdl.constants import READ, WRITE, NOP
@@ -7,12 +8,10 @@ from hwt.interfaces.std import s, D, VectSignal
 from hwt.simulator.agentBase import SyncAgentBase
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
-from enum import Enum
+
 
 # https://www.xilinx.com/support/documentation/ip_documentation/axi_lite_ipif/v2_0/pg155-axi-lite-ipif.pdf
 # https://www.xilinx.com/support/documentation/ip_documentation/axi_lite_ipif_ds765.pdf
-
-
 class Ipif(Interface):
     """
     IPIF - IP interface is interface which was often used

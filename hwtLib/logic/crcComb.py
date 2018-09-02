@@ -55,11 +55,6 @@ class CrcComb(Unit):
     CRC generator,
     polynomial can be string in usual format or integer ("x^3+x+1" or 0b1011)
 
-    :attention: Input not reflected,
-                Result not reflected,
-                Initial Value: 0x0,
-                Final Xor is not applied
-
     :ivar DATA_WIDTH: width of data in signal
     :ivar POLY: specified CRC polynome, str, int or Bits value
     :ivar POLY_WIDTH: width of POLY
@@ -128,9 +123,8 @@ class CrcComb(Unit):
         """
         :param data_width: number of bits in input
             (excluding bits of signal wit current crc state)
-        :param polyBits
-        :note: all bits are in format [LSB:MSB]
-
+        :param polyBits: list of bits in specified polynome
+        :note: all bits are in format LSB downto MSB
         :return: crc_mask contains rows where each row describes which bits
             should be XORed to get bit of resut
             row is [mask_for_state_reg, mask_for_data]

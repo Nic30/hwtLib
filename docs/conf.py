@@ -36,7 +36,8 @@ except ImportError:
 sys.path.insert(0, os.path.abspath('../'))
 # add local sphinx extensions to path 
 sys.path.insert(0, os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "_ext")))
+    os.path.join(os.path.dirname(__file__), "_ext"))
+)
 
 # -- General configuration ------------------------------------------------
 
@@ -69,7 +70,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'hwtLib'
-copyright = '2017, Michal Orsak'
+copyright = '2017-2018, Michal Orsak'
 author = 'Michal Orsak'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -162,7 +163,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'hwtlib', 'hwtLib Documentation',
+    (master_doc, 'hwtLib', 'hwtLib Documentation',
      [author], 1)
 ]
 
@@ -227,6 +228,7 @@ for file in glob.glob("*.rst"):
         print("removing: ", file)
         os.remove(file)
 
-excluded_tests = list(find_files("../", "*_test.py")) + ["../hwtLib/tests"]
-apidoc_main(["--module-first", "--full",
+excluded_tests = list(find_files("../", "*_test.py")) + [
+    "../hwtLib/tests", "../hwtLib/samples/showcase0.hwt.py"]
+apidoc_main(["--module-first", "--full", "--maxdepth", "-1",
              "--output-dir", "../docs", "../hwtLib"] + excluded_tests)
