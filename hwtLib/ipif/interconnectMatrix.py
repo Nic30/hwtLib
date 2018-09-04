@@ -17,7 +17,6 @@ class IpifInterconnectMatrix(Unit):
     """
     Simple matrix interconnect for IPIF interface
     """
-    
     AUTO_ADDR = "AUTO_ADDR"
     FEATURE_READ_ONLY = {READ}
     FEATURE_WRITE_ONLY = {WRITE}
@@ -64,16 +63,16 @@ class IpifInterconnectMatrix(Unit):
 
     def getOptimalAddrSize(self):
         assert self._slaves
-        last =  self._slaves[-1]
+        last = self._slaves[-1]
         maxAddr = last[0] + last[1]
         maxAddr -= int(self.DATA_WIDTH) // 8
         assert maxAddr >= 0
-        return log2ceil(maxAddr)
+        return int(log2ceil(maxAddr))
 
-    def _config(self)->None:
+    def _config(self) -> None:
         Ipif._config(self)
 
-    def _declr(self)->None:
+    def _declr(self) -> None:
         addClkRstn(self)
 
         slavePorts = HObjList()
@@ -97,7 +96,7 @@ class IpifInterconnectMatrix(Unit):
 
         self.m = masterPorts
 
-    def _impl(self)->None:
+    def _impl(self) -> None:
         if len(self._masters) > 1:
             raise NotImplementedError()
 
@@ -113,19 +112,18 @@ class IpifInterconnectMatrix(Unit):
         AW = int(self.ADDR_WIDTH)
         wdata = []
         for i, (s, (s_offset, s_size, _)) in enumerate(zip(self.m, self._slaves)):
-            
             connect(m.bus2ip_addr, s.bus2ip_addr, fit=True)
             s.bus2ip_be(m.bus2ip_be)
             s.bus2ip_rnw(m.bus2ip_rnw)
             s.bus2ip_data(m.bus2ip_data)
-            
+
             bitsOfSubAddr = int(log2ceil(s_size - 1))
             prefix = selectBitRange(
                 s_offset, bitsOfSubAddr, AW - bitsOfSubAddr)
             cs = self._sig("m_cs_%d" % i)
             cs(m.bus2ip_addr[AW:bitsOfSubAddr]._eq(prefix))
             s.bus2ip_cs(m.bus2ip_cs & cs)
-            
+
             err = err | (cs & s.ip2bus_error)
             rdack = rdack | (cs & s.ip2bus_rdack)
             wrack = wrack | (cs & s.ip2bus_wrack)
@@ -148,9 +146,9 @@ if __name__ == "__main__":
     u = IpifInterconnectMatrix(
         masters=[(0x0, RW)],
         slaves=[
-            (0x0000,  0x100, RW),
-            (0x0100,  0x100, RW),
-            (AUTO,    0x100, RW),
+            (0x0000, 0x100, RW),
+            (0x0100, 0x100, RW),
+            (AUTO, 0x100, RW),
             (0x1000, 0x1000, RW),
         ]
     )
