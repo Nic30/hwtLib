@@ -99,8 +99,8 @@ class StructReader(AxiS_frameParser):
         self.dataOut = StructIntf(self._structT,
                                   self._mkFieldIntf)._m()
 
-        self.get = Handshaked()  # data signal is addr of structure to download
-        self.get._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
+        g = self.get = Handshaked()  # data signal is addr of structure to download
+        g._replaceParam(g.DATA_WIDTH, self.ADDR_WIDTH)
         self.parseTemplate()
 
         with self._paramsShared():

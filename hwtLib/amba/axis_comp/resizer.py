@@ -50,8 +50,8 @@ class AxiS_resizer(AxiSCompBase):
             self.dataIn = self.intfCls()
 
         with self._paramsShared(exclude=[self.DATA_WIDTH]):
-            self.dataOut = self.intfCls()._m()
-            self.dataOut._replaceParam("DATA_WIDTH", self.OUT_DATA_WIDTH)
+            o = self.dataOut = self.intfCls()._m()
+            o._replaceParam(o.DATA_WIDTH, self.OUT_DATA_WIDTH)
 
     def nextAreNotValidLogic(self, inStrb, actualItemIndx, ITEMS, ITEM_DW):
         res = None

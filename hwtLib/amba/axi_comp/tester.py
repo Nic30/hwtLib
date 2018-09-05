@@ -42,15 +42,13 @@ class AxiTester(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.m_axi = self._axiCls()._m()
-
-        c = self.cntrl = self._cntrlCls()
-        c._replaceParam("DATA_WIDTH", self.CNTRL_DATA_WIDTH)
-        c._replaceParam("ADDR_WIDTH", self.CNTRL_ADDR_WIDTH)
+        with self._paramsShared(prefix="CNTRL_"):
+            self.cntrl = self._cntrlCls()
+            self._add_ep()
 
         # r = self.ram = Ram_dp()
         # r.ADDR_WIDTH.set(log2ceil(4096))
         # r._replaceParam("DATA_WIDTH", self.DATA_WIDTH)
-        self._add_ep()
 
     def _add_ep(self):
         strb_w = self.DATA_WIDTH // 8

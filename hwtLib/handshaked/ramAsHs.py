@@ -60,8 +60,8 @@ class RamHsR(Interface):
         self.DATA_WIDTH = Param(8)
 
     def _declr(self):
-        self.addr = Handshaked()
-        self.addr._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
+        a = self.addr = Handshaked()
+        a._replaceParam(a.DATA_WIDTH, self.ADDR_WIDTH)
         with self._paramsShared():
             self.data = Handshaked(masterDir=DIRECTION.IN)
 

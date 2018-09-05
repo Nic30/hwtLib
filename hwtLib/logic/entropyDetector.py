@@ -124,8 +124,8 @@ class EntropyDetector(Unit):
         with self._paramsShared():
             self.dataIn = AxiStream()
 
-        self.entropy = Handshaked()
-        self.entropy._replaceParam("DATA_WIDTH", self.ENTROPY_WIDTH)
+        e = self.entropy = Handshaked()
+        e._replaceParam(e.DATA_WIDTH, self.ENTROPY_WIDTH)
         self.byteCntrs = ByteCntrs()
 
     def _impl(self):

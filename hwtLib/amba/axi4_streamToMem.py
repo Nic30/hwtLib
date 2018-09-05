@@ -67,8 +67,8 @@ class Axi4streamToMem(Unit):
         cntrl = self.cntrlBus = Axi4Lite()
         regs = self.regsConventor = AxiLiteEndpoint(self.REGISTER_MAP)
 
-        cntrl._replaceParam("ADDR_WIDTH", self.CNTRL_AW)
-        cntrl._replaceParam("DATA_WIDTH", self.DATA_WIDTH)
+        cntrl._replaceParam(cntrl.ADDR_WIDTH, self.CNTRL_AW)
+        cntrl._replaceParam(cntrl.DATA_WIDTH, self.DATA_WIDTH)
 
         regs.ADDR_WIDTH.set(self.CNTRL_AW)
         regs.DATA_WIDTH.set(self.DATA_WIDTH)

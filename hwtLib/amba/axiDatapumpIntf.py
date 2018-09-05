@@ -62,6 +62,7 @@ class AxiRDatapumpIntf(Interface):
     """
     Interface of read datapump driver
     """
+
     def _config(self):
         AddrSizeHs._config(self)
 
@@ -120,6 +121,7 @@ class AxiWDatapumpIntf(Interface):
     """
     Interface of write datapump driver
     """
+
     def _config(self):
         AddrSizeHs._config(self)
 
@@ -129,8 +131,8 @@ class AxiWDatapumpIntf(Interface):
             self.req = AddrSizeHs()
             self.w = AxiStream()
 
-        self.ack = Handshaked(masterDir=DIRECTION.IN)
-        self.ack._replaceParam("DATA_WIDTH", self.ID_WIDTH)
+        ack = self.ack = Handshaked(masterDir=DIRECTION.IN)
+        ack._replaceParam(ack.DATA_WIDTH, self.ID_WIDTH)
 
     def _initSimAgent(self):
         self._ag = AxiWDatapumpIntfAgent(self)

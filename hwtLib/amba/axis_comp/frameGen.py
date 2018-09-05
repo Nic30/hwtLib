@@ -19,27 +19,25 @@ class AxisFrameGen(Unit):
     """
     def _config(self):
         self.MAX_LEN = Param(511)
-        self.CNTRL_AW = Param(4)
-        self.CNTRL_DW = Param(32)
+        self.CNTRL_ADDR_WIDTH = Param(4)
+        self.CNTRL_DATA_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)
 
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
             self.axis_out = AxiStream()._m()
-
-        self.cntrl = Axi4Lite()
-        self.cntrl._replaceParam("ADDR_WIDTH", self.CNTRL_AW)
-        self.cntrl._replaceParam("DATA_WIDTH", self.CNTRL_DW)
-
-        self.conv = AxiLiteEndpoint(
-                        HStruct((Bits(self.CNTRL_DW), "enable"),
-                                (Bits(self.CNTRL_DW), "len")
-                                )
-                        )
-        self.conv.ADDR_WIDTH.set(self.CNTRL_AW)
-        self.conv.DATA_WIDTH.set(self.CNTRL_DW)
-
+        
+        with self._paramsShared(prefix="CNTRL_"):
+            self.cntrl = Axi4Lite()
+            
+            reg_t = Bits(self.CNTRL_DATA_WIDTH)
+            self.conv = AxiLiteEndpoint(
+                            HStruct((reg_t, "enable"),
+                                    (reg_t, "len")
+                                    )
+                            )
+    
     def _impl(self):
         propagateClkRstn(self)
         cntr = self._reg("wordCntr", Bits(log2ceil(self.MAX_LEN)), defVal=0)

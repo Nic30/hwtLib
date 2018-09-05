@@ -58,12 +58,12 @@ class CLinkedListReader(Unit):
         self.inBlockRemain = VectSignal(log2ceil(self.ITEMS_IN_BLOCK + 1))._m()
 
         # interface to control internal register
-        self.baseAddr = RegCntrl()
-        self.baseAddr._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
+        a = self.baseAddr = RegCntrl()
+        a._replaceParam(a.DATA_WIDTH, self.ADDR_WIDTH)
         self.rdPtr = RegCntrl()
         self.wrPtr = RegCntrl()
         for ptr in [self.rdPtr, self.wrPtr]:
-            ptr._replaceParam("DATA_WIDTH", self.PTR_WIDTH)
+            ptr._replaceParam(ptr.DATA_WIDTH, self.PTR_WIDTH)
 
         f = self.dataFifo = HandshakedFifo(Handshaked)
         f.EXPORT_SIZE.set(True)
