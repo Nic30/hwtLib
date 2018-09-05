@@ -4,6 +4,8 @@ from hwt.hdl.operatorDefs import AllOps, isEventDependentOp
 from hwt.hdl.portItem import PortItem
 from hwt.synthesizer.interfaceLevel.mainBases import UnitBase
 from hwtLib.abstract.busEndpoint import BusEndpoint
+from hwtLib.abstract.busBridge import BusBridge
+from hwtLib.abstract.busInterconnect import BusInterconnect
 
 
 def getEpSignal(sig, op):
@@ -42,6 +44,7 @@ def getParentUnit(sig):
 
 
 class AddressSpaceProbe(object):
+
     def __init__(self, topIntf, getMainSigFn, offset=0):
         """
         :param topIntf: interface on which should discovery start
@@ -67,10 +70,12 @@ class AddressSpaceProbe(object):
                 raise NotImplementedError("Nested address space")
         return t
 
-    def walkToConverter(self, mainSig):
+    def walkToConverter(self, mainSig, offset):
         """
         walk mainSig down to endpoints and search for any bus converter
-        instance
+        instances
+
+        :return: generator of typles (offset, converter instance)
         """
         if mainSig in self.seen:
             return
@@ -79,32 +84,48 @@ class AddressSpaceProbe(object):
 
         parent = getParentUnit(mainSig)
 
-        if isinstance(parent, BusEndpoint) and parent not in self.seen:
+        if parent not in self.seen:
             self.seen.add(parent)
-            yield parent
+            if isinstance(parent, BusEndpoint):
+                yield offset, parent
+                return
+            elif isinstance(parent, BusBridge):
+                i = parent.m
+                yield from self.walkToConverter(self._getMainSigFn(i), offset)
+                return
+            elif isinstance(parent, BusInterconnect):
+                if len(parent._masters) != 1:
+                    raise NotImplementedError()
+                for intf, addrRec in zip(parent.m, parent._slaves):
+                    _offset = addrRec[0]
+                    yield from self.walkToConverter(self._getMainSigFn(intf),
+                                                    offset + _offset)
+                return
 
         for e in mainSig.endpoints:
             if isinstance(e, Operator) and not isEventDependentOp(e):
                 ep = getEpSignal(mainSig, e)
-                yield from self.walkToConverter(ep)
+                yield from self.walkToConverter(ep, offset)
             elif isinstance(e, (Assignment, PortItem)):
-                yield from self.walkToConverter(e.dst)
+                yield from self.walkToConverter(e.dst, offset)
             else:
                 for outp in e._outputs:
-                    yield from self.walkToConverter(outp)
+                    yield from self.walkToConverter(outp, offset)
+
+    def _getMainSigFn(self, intf):
+        _mainSig = self.getMainSigFn(intf)
+        try:
+            return _mainSig._sig
+        except AttributeError:
+            return _mainSig._sigInside
 
     def _discoverAddressSpace(self, topIntf, offset):
-        _mainSig = self.getMainSigFn(topIntf)
-        try:
-            mainSig = _mainSig._sig
-        except AttributeError:
-            mainSig = _mainSig._sigInside
-
+        mainSig = self._getMainSigFn(topIntf)
         t = None
-        for converter in self.walkToConverter(mainSig):
+        for _offset, converter in self.walkToConverter(mainSig, offset):
             # addrMap = self._extractAddressMap(converter, offset)
             if t is not None:
                 raise NotImplementedError("Hierarchical endpoints")
-            t = self._extractStruct(converter, offset)
+            t = self._extractStruct(converter, _offset)
 
         return t
