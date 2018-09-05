@@ -13,7 +13,7 @@ class IpifInterconnectMatrixTC(SimTestCase):
     def mySetUp(self, read_latency=0, write_latency=0):
         SimTestCase.setUp(self)
 
-        RW = IpifInterconnectMatrix.FEATURE_READ_AND_WRITE
+        RW = IpifInterconnectMatrix.ACCESS_RW
         AUTO = IpifInterconnectMatrix.AUTO_ADDR
 
         u = IpifInterconnectMatrix(

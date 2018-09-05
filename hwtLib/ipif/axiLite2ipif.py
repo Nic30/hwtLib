@@ -4,13 +4,17 @@
 from hwt.code import Switch, If, FsmBuilder
 from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.unit import Unit
+
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.constants import RESP_SLVERR, RESP_OKAY
 from hwtLib.ipif.intf import Ipif
+from hwtLib.abstract.busBridge import BusBridge
 
 
-class AxiLite2Ipif(Unit):
+class AxiLite2Ipif(BusBridge):
+    """
+    Bridge from AxiLite interface to IPIF interface
+    """
 
     def _config(self) -> None:
         Ipif._config(self)
@@ -98,7 +102,7 @@ class AxiLite2Ipif(Unit):
         ipif = self.m
         axi = self.s
         r = self._reg
-        
+
         dataRegR_vld = r("dataRegR_vld", defVal=0)
         st = self.mainFsm(dataRegR_vld)
         st_t = st._dtype
@@ -113,7 +117,7 @@ class AxiLite2Ipif(Unit):
         dataRegR = r("dataR", axi.r.data._dtype)
         dataRegW = r("dataW", axi.w.data._dtype)
         strbRegW = r("strbW", axi.w.strb._dtype)
-        
+
         If(((st._eq(st_t.idle) & axi.aw.valid & ~axi.ar.valid)
              | st._eq(st_t.write_wait_data)) & axi.w.valid,
             dataRegW(axi.w.data),
