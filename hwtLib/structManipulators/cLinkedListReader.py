@@ -12,6 +12,7 @@ from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
+from hwt.interfaces.structIntf import IntfMap
 
 
 class CLinkedListReader(Unit):
@@ -69,17 +70,6 @@ class CLinkedListReader(Unit):
         f.EXPORT_SIZE.set(True)
         f.DATA_WIDTH.set(self.DATA_WIDTH)
         f.DEPTH.set(self.BUFFER_CAPACITY)
-
-    def getControlInterfaces(self):
-        return (
-                self.baseAddr,
-                self.rdPtr,
-                (Bits(16), None),  # padding
-                self.wrPtr,
-                (Bits(16), None),  # padding
-                self.inBlockRemain,
-                (Bits(32 - self.inBlockRemain._dtype.bit_length()), None),  # padding
-                )
 
     def addrAlignBits(self):
         return log2ceil(self.DATA_WIDTH // 8).val

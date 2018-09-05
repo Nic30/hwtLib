@@ -15,6 +15,7 @@ from hwtLib.amba.axiDatapumpIntf import AddrSizeHs, AxiWDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 from hwt.synthesizer.vectorUtils import fitTo
+from hwt.interfaces.structIntf import IntfMap
 
 
 stT = HEnum("st_t", ["waitOnInput", "waitOnDataTx", "waitOnAck"])
@@ -64,15 +65,6 @@ class ArrayBuff_writer(Unit):
         b.EXPORT_SIZE.set(True)
         b.DEPTH.set(self.BUFF_DEPTH)
         self.buff = b
-
-    def getControlInterfaces(self):
-        return (
-            self.baseAddr,
-            self.uploaded,
-            (Bits(16), None),  # padding
-            self.buff_remain,
-            (Bits(16), None),  # padding
-        )
 
     def uploadedCntrHandler(self, st, reqAckHasCome, sizeOfitems):
         uploadedCntr = self._reg(

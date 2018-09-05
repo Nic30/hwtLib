@@ -53,6 +53,7 @@ def _walkStructIntfAndIntfMap_unpack(structIntf, intfMap):
     elif isinstance(intfMap, tuple):
         item, name = intfMap
     else:
+        item = intfMap
         assert isinstance(item, (InterfaceBase, RtlSignalBase)), item
         name = getSignalName(item)
 
