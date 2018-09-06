@@ -137,7 +137,7 @@ class BusEndpointTC(unittest.TestCase):
         _t = Bits(DATA_WIDTH)
         _t2 = HStruct(
             (HStruct((_t, "c"),
-                     (_t, "d")), "nested"))
+                     (_t, "d")), "nested", HStructFieldMeta(split=True)))
         t2 = HStruct(
                 (_t, "a"),
                 (Bits(4 * DATA_WIDTH), None),
