@@ -92,7 +92,59 @@ class BusEndpointTC(unittest.TestCase):
                 (_t[4], "ds", HStructFieldMeta(split=True)),
             )
         self.assertEqual(t, t2)
+    
+    def test_HTypeFromIntfMap_ArrayOfStructs(self):
+        DATA_WIDTH = 32
 
+        t = HTypeFromIntfMap(
+            IntfMap([
+                regCntr("a", DATA_WIDTH),
+                (Bits(4 * DATA_WIDTH), None),
+                ([IntfMap([
+                    vldSynced("c", DATA_WIDTH),
+                    vldSynced("d", DATA_WIDTH)
+                ]) for _ in range(4)], "ds")
+            ]))
+
+        _t = Bits(DATA_WIDTH)
+        _t2 = HStruct(
+                (_t, "c"),
+                (_t, "d")
+            )
+        t2 = HStruct(
+                (_t, "a"),
+                (Bits(4 * DATA_WIDTH), None),
+                (_t2[4], "ds", HStructFieldMeta(split=True)),
+            )
+
+        self.assertEqual(t, t2)
+    
+    def test_HTypeFromIntfMap_ArrayOfStructsOfStructs(self):
+        DATA_WIDTH = 32
+        m = IntfMap([
+                regCntr("a", DATA_WIDTH),
+                (Bits(4 * DATA_WIDTH), None),
+                ([IntfMap([
+                    (IntfMap([
+                       vldSynced("c", DATA_WIDTH),
+                       vldSynced("d", DATA_WIDTH)
+                    ]), "nested")
+                ]) for _ in range(4)], "ds")
+            ])
+
+        t = HTypeFromIntfMap(m)
+
+        _t = Bits(DATA_WIDTH)
+        _t2 = HStruct(
+            (HStruct((_t, "c"),
+                     (_t, "d")), "nested"))
+        t2 = HStruct(
+                (_t, "a"),
+                (Bits(4 * DATA_WIDTH), None),
+                (_t2[4], "ds", HStructFieldMeta(split=True)),
+            )
+
+        self.assertEqual(t, t2)
     def test_HTypeFromIntfMap_StructArray(self):
         DATA_WIDTH = 32
 
@@ -136,7 +188,7 @@ class BusEndpointTC(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(BusEndpointTC('test_HTypeFromIntfMap_Struct'))
-    suite.addTest(unittest.makeSuite(BusEndpointTC))
+    suite.addTest(BusEndpointTC('test_HTypeFromIntfMap_ArrayOfStructsOfStructs'))
+    # suite.addTest(unittest.makeSuite(BusEndpointTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
