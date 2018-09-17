@@ -63,6 +63,8 @@ class SpiMaster(Unit):
         and data from slaves are ready on risign edge as well
         and SPI clk is kept high in idle
         (most of them does but there are some exceptions)
+
+    .. hwt-schematic::
     """
     def _config(self):
         self.SPI_FREQ_PESCALER = Param(32)
