@@ -3,14 +3,18 @@ from hwt.hdl.constants import READ, WRITE
 from hwt.synthesizer.unit import Unit
 from typing import List, Tuple, Set, Union
 
+
+class AUTO_ADDR():
+    """constant which means that address should be picked automatically"""
+    pass
+
+
 """
-:var AUTO_ADDR: constant which means that address should be picked automatically
 :note: ACCESS_* belongs into feature set in master/slave specification
 :var ACCESS_R: constant which specifies access to read only
 :var ACCESS_W: constant which specifies access to write only
 :var ACCESS_RW: constant which specifies access to read and write
 """
-AUTO_ADDR = "AUTO_ADDR"
 ACCESS_R = {READ}
 ACCESS_W = {WRITE}
 ACCESS_RW = {READ, WRITE}
