@@ -3,28 +3,30 @@ from hwt.hdl.constants import READ, WRITE
 from hwt.synthesizer.unit import Unit
 from typing import List, Tuple, Set, Union
 
+"""
+:var AUTO_ADDR: constant which means that address should be picked automatically
+:note: ACCESS_* belongs into feature set in master/slave specification
+:var ACCESS_R: constant which specifies access to read only
+:var ACCESS_W: constant which specifies access to write only
+:var ACCESS_RW: constant which specifies access to read and write
+"""
+AUTO_ADDR = "AUTO_ADDR"
+ACCESS_R = {READ}
+ACCESS_W = {WRITE}
+ACCESS_RW = {READ, WRITE}
+
 
 class BusInterconnect(Unit):
     """
     Abstract class of bus interconnects
 
-    :ivar AUTO_ADDR: constant which means that address should be picked automatically
-    :note: ACCESS_* belongs into feature set in master/slave specification
-    :ivar ACCESS_R: constant which specifies access to read only
-    :ivar ACCESS_W: constant which specifies access to write only
-    :ivar ACCESS_RW: constant which specifies access to read and write
     :ivar m: HObjList of master interfaces
     :ivar s: HObjList of slave interfaces
     """
 
-    AUTO_ADDR = "AUTO_ADDR"
-    ACCESS_R = {READ}
-    ACCESS_W = {WRITE}
-    ACCESS_RW = {READ, WRITE}
-
     def __init__(self,
                  masters: List[Tuple[int, Set]],
-                 slaves: List[Tuple[Union[int, "AUTO_ADDR"], int, Set]]):
+                 slaves: List[Tuple[Union[int, AUTO_ADDR], int, Set]]):
         """
         :param masters: list of tuples (offset, features) for each master
         :param slaves: list of tuples (offset, size, features) for each slave
@@ -38,7 +40,7 @@ class BusInterconnect(Unit):
             if not isPow2(size):
                 raise AssertionError(
                     "Size which is not power of 2 is suboptimal for interconnects")
-            if offset == self.AUTO_ADDR:
+            if offset == AUTO_ADDR:
                 offset = maxAddr
                 isAligned = (offset % size) == 0
                 if not isAligned:

@@ -5,6 +5,7 @@ from hwt.bitmask import mask
 from hwt.hdl.constants import READ, WRITE, Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.ipif.interconnectMatrix import IpifInterconnectMatrix
+from hwtLib.abstract.busInterconnect import ACCESS_RW, AUTO_ADDR
 
 
 class IpifInterconnectMatrixTC(SimTestCase):
@@ -13,8 +14,8 @@ class IpifInterconnectMatrixTC(SimTestCase):
     def mySetUp(self, read_latency=0, write_latency=0):
         SimTestCase.setUp(self)
 
-        RW = IpifInterconnectMatrix.ACCESS_RW
-        AUTO = IpifInterconnectMatrix.AUTO_ADDR
+        RW = ACCESS_RW
+        AUTO = AUTO_ADDR
 
         u = IpifInterconnectMatrix(
             masters=[(0x0, RW)],
