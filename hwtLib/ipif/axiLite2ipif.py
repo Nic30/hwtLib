@@ -14,7 +14,7 @@ from hwtLib.abstract.busBridge import BusBridge
 class AxiLite2Ipif(BusBridge):
     """
     Bridge from AxiLite interface to IPIF interface
-    
+
     .. hwt-schematic::
     """
 
