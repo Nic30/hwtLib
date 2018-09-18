@@ -1,4 +1,5 @@
 sphinx_bootstrap_theme
 aafigure
-hwt>=2.6
-sphinx-hwt>=1.1
+git+git://github.com/Nic30/hwt@master#egg=hwt
+git+git://github.com/Nic30/hwtGraph@master#egg=hwtGraph
+git+git://github.com/Nic30/sphinx-hwt@master#egg=sphinx-hwt
