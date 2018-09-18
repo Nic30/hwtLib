@@ -19,6 +19,8 @@ class DReg(Unit):
 
     :attention: using this unit is pointless because HWToolkit can automatically
         generate such a register for any interface and datatype
+
+    .. hwt-schematic::
     """
     def _declr(self):
         addClkRst(self)
@@ -37,6 +39,8 @@ class DoubleDReg(Unit):
     """
     :attention: using DReg unit instance is pointless because it can be instantiated
         by _reg in this unit
+
+    .. hwt-schematic::
     """
     def _declr(self):
         DReg._declr(self)
@@ -53,6 +57,9 @@ class DoubleDReg(Unit):
 
 
 class AsyncResetReg(DReg):
+    """
+    .. hwt-schematic::
+    """
     def _impl(self):
         internReg = self._sig("internReg", BIT, defVal=False)
 
@@ -65,6 +72,11 @@ class AsyncResetReg(DReg):
 
 
 class DDR_Reg(Unit):
+    """
+    Double Data Rate register
+
+    .. hwt-schematic::
+    """
     def _declr(self):
         addClkRst(self)
 
@@ -86,14 +98,19 @@ class DDR_Reg(Unit):
 
 
 class OptimizedOutReg(DReg):
+    """
+    .. hwt-schematic::
+    """
     def _impl(self):
+        # add and conect register as it is in DReg
         DReg._impl(self)
+        # add an extra unconnected register which will be automatically removed
         self._reg("unconnected")
 
 
 class Latch(Unit):
     """
-    Example showing how to implement latch in hwt
+    .. hwt-schematic::
     """
     def _declr(self):
         self.din = Signal()
@@ -101,17 +118,24 @@ class Latch(Unit):
         self.en = Signal()
 
     def _impl(self):
+        # dout is latched because write into it is conditional
+        # and it is not sychronized by any clock
         If(self.en,
            self.dout(self.din)
         )
 
 
 class DReg_asyncRst(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         DReg._declr(self)
 
     def _impl(self):
         r = self._sig("r")
+
+        # "r" has reset which is not dependent on on "clk"
         If(self.rst._isOn(),
            r(0)
         ).Elif(self.clk._onRisingEdge(),
