@@ -8,6 +8,9 @@ from hwt.synthesizer.unit import Unit
 
 
 class SimpleIndexingSplit(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         self.a = VectSignal(2)
         self.b = Signal()._m()
@@ -19,6 +22,9 @@ class SimpleIndexingSplit(Unit):
 
 
 class SimpleIndexingJoin(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         self.a = VectSignal(2)._m()
         self.b = Signal()
@@ -30,6 +36,9 @@ class SimpleIndexingJoin(Unit):
 
 
 class SimpleIndexingRangeJoin(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         self.a = VectSignal(4)._m()
         self.b = VectSignal(2)
@@ -42,6 +51,9 @@ class SimpleIndexingRangeJoin(Unit):
 
 
 class IndexingInernRangeSplit(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         self.a = VectSignal(4)
         self.b = VectSignal(4)._m()
@@ -58,6 +70,9 @@ class IndexingInernRangeSplit(Unit):
 
 
 class IndexingInernSplit(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         self.a = VectSignal(2)
         self.b = VectSignal(2)._m()
@@ -74,6 +89,9 @@ class IndexingInernSplit(Unit):
 
 
 class IndexingInernJoin(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         self.a = Signal()
         self.b = Signal()

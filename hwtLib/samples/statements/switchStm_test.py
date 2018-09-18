@@ -16,6 +16,8 @@ from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 
 switchStm_vhdl = """--
 --    Example which is using switch statement to create multiplexer
+--
+--    .. hwt-schematic::
 --    
 library IEEE;
 use IEEE.std_logic_1164.all;
@@ -51,6 +53,8 @@ END ARCHITECTURE rtl;"""
 switchStm_verilog = """/*
 
     Example which is using switch statement to create multiplexer
+
+    .. hwt-schematic::
     
 */
 module SwitchStmUnit(input a,
@@ -78,6 +82,8 @@ endmodule"""
 switchStm_systemc = """/*
 
     Example which is using switch statement to create multiplexer
+
+    .. hwt-schematic::
     
 */
 

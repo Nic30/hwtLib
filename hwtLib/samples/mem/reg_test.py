@@ -21,6 +21,8 @@ dreg_vhdl = """--
 --
 --    :attention: using this unit is pointless because HWToolkit can automatically
 --        generate such a register for any interface and datatype
+--
+--    .. hwt-schematic::
 --    
 library IEEE;
 use IEEE.std_logic_1164.all;
@@ -59,6 +61,8 @@ dreg_verilog = """/*
 
     :attention: using this unit is pointless because HWToolkit can automatically
         generate such a register for any interface and datatype
+
+    .. hwt-schematic::
     
 */
 module DReg(input clk,
@@ -88,6 +92,8 @@ dreg_systemc = """/*
 
     :attention: using this unit is pointless because HWToolkit can automatically
         generate such a register for any interface and datatype
+
+    .. hwt-schematic::
     
 */
 
@@ -130,7 +136,12 @@ SC_MODULE(DReg) {
     }
 };"""
 
-asyncResetReg_verilog = """module AsyncResetReg(input clk,
+asyncResetReg_verilog = """/*
+
+    .. hwt-schematic::
+    
+*/
+module AsyncResetReg(input clk,
         input din,
         output dout,
         input rst
@@ -148,7 +159,10 @@ asyncResetReg_verilog = """module AsyncResetReg(input clk,
 
 endmodule"""
 
-asyncResetReg_vhdl = """library IEEE;
+asyncResetReg_vhdl = """--
+--    .. hwt-schematic::
+--    
+library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
@@ -176,7 +190,12 @@ BEGIN
 END ARCHITECTURE rtl;"""
 
 
-ddr_reg_vhdl = """library IEEE;
+ddr_reg_vhdl = """--
+--    Double Data Rate register
+--
+--    .. hwt-schematic::
+--    
+library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
@@ -209,7 +228,14 @@ BEGIN
 
 END ARCHITECTURE rtl;"""
 
-ddr_reg_verilog = """module DDR_Reg(input clk,
+ddr_reg_verilog = """/*
+
+    Double Data Rate register
+
+    .. hwt-schematic::
+    
+*/
+module DDR_Reg(input clk,
         input din,
         output [1:0] dout,
         input rst

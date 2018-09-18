@@ -6,6 +6,9 @@ from hwt.synthesizer.unit import Unit
 
 
 class ConstDriverUnit(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         self.out0 = Signal()._m()
         self.out1 = Signal()._m()
