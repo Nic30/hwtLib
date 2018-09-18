@@ -6,15 +6,18 @@ from hwt.hdl.typeShortcuts import hInt
 from hwt.interfaces.std import VldSynced
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.param import Param
 from hwt.synthesizer.hObjList import HObjList
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 
 
-class InterfaceArraySample0(Unit):
+class ListOfInterfacesSample0(Unit):
     """
-    Sample unit with array interface (a and b)
-    which is not using items of these array interfaces
+    Sample unit with HObjList of interfaces (a and b)
+    which is not using items of these HObjList of interfacess
+    and connects list directly to another list
+
+    .. hwt-schematic::
     """
 
     def _config(self):
@@ -34,9 +37,12 @@ class InterfaceArraySample0(Unit):
         self.b(self.a)
 
 
-class InterfaceArraySample0SliceOnly(Unit):
+class ListOfInterfacesSample0SliceOnly(Unit):
     """
-    Sample unit with array interface a and three of output interfaces b
+    Sample unit with HObjList of interfaces a and three of output interfaces b
+    each interface is connected manually
+
+    .. hwt-schematic::
     """
 
     def _config(self):
@@ -57,7 +63,13 @@ class InterfaceArraySample0SliceOnly(Unit):
         self.b2(self.a[2])
 
 
-class InterfaceArraySample0ConcatOnly(Unit):
+class ListOfInterfacesSample0ConcatOnly(Unit):
+    """
+    Same thing as :class:`.ListOfInterfacesSample0SliceOnly`
+    but direction of interfaces is oposite
+
+    .. hwt-schematic::
+    """
     def _config(self):
         self.DATA_WIDTH = Param(8)
         self.LEN = hInt(3)
@@ -76,15 +88,15 @@ class InterfaceArraySample0ConcatOnly(Unit):
         self.b[2](self.a2)
 
 
-class InterfaceArraySample0TC(SimTestCase):
+class ListOfInterfacesSample0TC(SimTestCase):
     def setUpUnit(self, unitCls):
         SimTestCase.setUp(self)
         self.u = unitCls()
         self.prepareUnit(self.u)
         return self.u
 
-    def test_InterfaceArraySample0_simplePass(self):
-        u = self.setUpUnit(InterfaceArraySample0)
+    def test_ListOfInterfacesSample0_simplePass(self):
+        u = self.setUpUnit(ListOfInterfacesSample0)
 
         u.a[0]._ag.data.extend([1, 2, 3])
         u.a[1]._ag.data.extend([9])
@@ -99,8 +111,8 @@ class InterfaceArraySample0TC(SimTestCase):
         self.assertValSequenceEqual(u.b[1]._ag.data, [9])
         self.assertValSequenceEqual(u.b[2]._ag.data, [10, 11, 12, 13])
 
-    def test_InterfaceArraySample0SliceOnly_simplePass(self):
-        u = self.setUpUnit(InterfaceArraySample0SliceOnly)
+    def test_ListOfInterfacesSample0SliceOnly_simplePass(self):
+        u = self.setUpUnit(ListOfInterfacesSample0SliceOnly)
 
         u.a[0]._ag.data.extend([1, 2, 3])
         u.a[1]._ag.data.extend([9])
@@ -115,8 +127,8 @@ class InterfaceArraySample0TC(SimTestCase):
         self.assertValSequenceEqual(u.b1._ag.data, [9])
         self.assertValSequenceEqual(u.b2._ag.data, [10, 11, 12, 13])
 
-    def test_InterfaceArraySample0ConcatOnly_simplePass(self):
-        u = self.setUpUnit(InterfaceArraySample0ConcatOnly)
+    def test_ListOfInterfacesSample0ConcatOnly_simplePass(self):
+        u = self.setUpUnit(ListOfInterfacesSample0ConcatOnly)
 
         u.a0._ag.data.extend([1, 2, 3])
         u.a1._ag.data.extend([9])
@@ -137,9 +149,9 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
     # suite.addTest(Simple2withNonDirectIntConnectionTC('test_passData'))
-    suite.addTest(unittest.makeSuite(InterfaceArraySample0TC))
+    suite.addTest(unittest.makeSuite(ListOfInterfacesSample0TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
     from hwt.synthesizer.utils import toRtl
-    print(toRtl(InterfaceArraySample0()))
+    print(toRtl(ListOfInterfacesSample0()))

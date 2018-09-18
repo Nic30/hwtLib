@@ -4,14 +4,17 @@
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 
-from hwt.synthesizer.hObjList import HObjList
 from hwtLib.amba.axis import AxiStream
 
 
 class SimpleSubunit(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _config(self):
         self.DATA_WIDTH = Param(8)
 
@@ -24,12 +27,14 @@ class SimpleSubunit(Unit):
         self.d(self.c)
 
 
-class InterfaceArraySample2(Unit):
+class ListOfInterfacesSample2(Unit):
     """
     Example unit which contains two subunits (u0 and u1)
-    and two array interfaces (a and b)
+    and two HObjList of interfacess (a and b)
     first items of this interfaces are connected to u0
     second to u1
+
+    .. hwt-schematic::
     """
     def _config(self):
         self.DATA_WIDTH = Param(8)
@@ -55,10 +60,10 @@ class InterfaceArraySample2(Unit):
         # u2out = connect(u2.d, b[2])
 
 
-class InterfaceArraySample2TC(SimTestCase):
+class ListOfInterfacesSample2TC(SimTestCase):
     def setUp(self):
         SimTestCase.setUp(self)
-        self.u = InterfaceArraySample2()
+        self.u = ListOfInterfacesSample2()
         self.prepareUnit(self.u)
 
     def test_simplePass(self):
@@ -86,13 +91,12 @@ class InterfaceArraySample2TC(SimTestCase):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
     print(
-        toRtl(InterfaceArraySample2())
+        toRtl(ListOfInterfacesSample2())
     )
 
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(InterfaceArraySample2TC('test_simplePass'))
-    suite.addTest(unittest.makeSuite(InterfaceArraySample2TC))
+    # suite.addTest(ListOfInterfacesSample2TC('test_simplePass'))
+    suite.addTest(unittest.makeSuite(ListOfInterfacesSample2TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-    
