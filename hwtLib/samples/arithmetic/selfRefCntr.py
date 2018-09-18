@@ -9,6 +9,9 @@ from hwt.synthesizer.unit import Unit
 
 
 class SelfRefCntr(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         self.dt = Bits(8, signed=False)
 

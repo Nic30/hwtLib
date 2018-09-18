@@ -14,6 +14,8 @@ from hwt.bitmask import mask
 class WidthCastingExample(Unit):
     """
     Demonstration of how HWT width conversions are serialized into HDL
+
+    .. hwt-schematic::
     """
     def _declr(self):
         addClkRstn(self)
