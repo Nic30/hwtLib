@@ -18,7 +18,7 @@ class RStrictOrderInterconnect(AxiInterconnectBase):
     """
     Strict order interconnect for AxiRDatapumpIntf
     ensures that response on request is delivered to driver which asked for it while transactions can overlap
-    
+
     .. hwt-schematic::
     """
 
