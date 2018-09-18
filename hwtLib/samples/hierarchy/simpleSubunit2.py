@@ -10,6 +10,9 @@ from hwtLib.samples.simpleAxiStream import SimpleUnitAxiStream
 
 
 class SimpleSubunit2(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         addClkRstn(self)
         self.subunit0 = SimpleUnitAxiStream()

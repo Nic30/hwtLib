@@ -33,7 +33,7 @@ class EthAddrUpdater(Unit):
     This is example unit which reads dst and src addresses(MAC and IPv4)
     from ethernet frame stored in memory and writes this addresses
     in reverse direction into second frame.
-    
+
     .. hwt-schematic::
     """
     def _config(self):
