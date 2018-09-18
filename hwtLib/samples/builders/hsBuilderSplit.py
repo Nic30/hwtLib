@@ -10,6 +10,8 @@ from hwtLib.handshaked.builder import HsBuilder
 class HsBuilderSplit(Unit):
     """
     Example of HsBuilder.split_* functions
+    
+    .. hwt-schematic::
     """
     def _declr(self):
         addClkRstn(self)
