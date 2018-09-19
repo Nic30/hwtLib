@@ -3,15 +3,17 @@
 [![Travis-ci Build Status](https://travis-ci.org/Nic30/hwtLib.png?branch=master)](https://travis-ci.org/Nic30/hwtLib)[![PyPI version](https://badge.fury.io/py/hwtLib.svg)](http://badge.fury.io/py/hwtLib)[![Coverage Status](https://coveralls.io/repos/github/Nic30/hwtLib/badge.svg?branch=master)](https://coveralls.io/github/Nic30/hwtLib?branch=master)[![Documentation Status](https://readthedocs.org/projects/hwtlib/badge/?version=latest)](http://hwtlib.readthedocs.io/en/latest/?badge=latest)
 [![Python version](https://img.shields.io/pypi/pyversions/hwtLib.svg)](https://img.shields.io/pypi/pyversions/hwtLib.svg)
 
-Library can be installed by command: 
-``` bash
-sudo pip3 install hwtLib
-```
 
 hwtLib is the library of hardware components for [hwt framework](https://github.com/Nic30/hwt). Relation of hwt and hwtLib is similar as C and stdlib relation. 
 
 
-Any component can be exported as IPCore using Packager class from hwt or as HDL code by toRtl(). Target language is specified by keyword serializer.
+Any component can be exported as IPCore using Packager class from hwt or as HDL code by toRtl(). Target language is specified by keyword parameter serializer.
+
+
+Library can be installed by command: 
+``` bash
+sudo pip3 install hwtLib
+```
 
 ```python
 #!/usr/bin/env python3
