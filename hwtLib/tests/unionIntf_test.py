@@ -8,9 +8,8 @@ from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.unionIntf import UnionSink, UnionSource
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit, setOut
+from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwtLib.types.ctypes import uint16_t, uint8_t, int16_t
-
 
 union0 = HUnion(
         (uint16_t, "b16"),
@@ -27,6 +26,7 @@ union0 = HUnion(
 
 
 class SimpleUnionSlave(EmptyUnit):
+
     def __init__(self, intfCls, dtype):
         self.dtype = dtype
         self.intfCls = intfCls
@@ -50,11 +50,14 @@ class SimpleUnionSlave(EmptyUnit):
 
 
 class SimpleUnionMaster(SimpleUnionSlave):
-    def _impl(self):
-        setOut(self.a)
+
+    def _declr(self):
+        addClkRstn(self)
+        self.a = UnionSink(self.dtype, self.mkFieldIntf)._m()
 
 
 class UnionIntfTC(SimTestCase):
+
     def checkIntf(self, u):
         d = u.a._fieldsToInterfaces
 
@@ -84,6 +87,7 @@ class UnionIntfTC(SimTestCase):
         u = SimpleUnionMaster(UnionSource, union0)
         self.prepareUnit(u)
         self.checkIntf(u)
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

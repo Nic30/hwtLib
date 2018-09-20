@@ -8,7 +8,7 @@ from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.exceptions import TypeConversionErr
-from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit, setOut
+from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import toRtl
@@ -45,10 +45,6 @@ class UnitWithArrIntf(EmptyUnit):
         with self._paramsShared():
             self.a = AxiStream()
             self.b = HObjList(AxiStream() for _ in range(2))._m()
-
-    def _impl(self):
-        for b in self.b:
-            setOut(b)
 
 
 class UnitWithArrIntfParent(Unit):

@@ -8,7 +8,6 @@ from hwt.hdl.constants import DIRECTION, INTF_DIRECTION
 from hwt.interfaces.std import Signal
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
-from hwt.synthesizer.interfaceLevel.emptyUnit import setOut
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.fullDuplexAxiStream import FullDuplexAxiStream
@@ -149,10 +148,7 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
         class Eu(EmptyUnit):
             def _declr(self):
                 self.a = Signal()
-                self.b = Signal()
-
-            def _impl(self):
-                setOut(self.b)
+                self.b = Signal()._m()
 
         u = Eu()
         u = synthesised(u)
@@ -167,10 +163,8 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
         class Dummy(EmptyUnit):
             def _declr(self):
                 self.a = Axi4()
-                self.b = Axi4()
+                self.b = Axi4()._m()
 
-            def _impl(self):
-                setOut(self.b)
 
         u = Dummy()
 
