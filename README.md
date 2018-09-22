@@ -10,7 +10,7 @@ hwtLib is the library of hardware components for [hwt framework](https://github.
 Any component can be exported as IPCore using Packager class from hwt or as HDL code by toRtl(). Target language is specified by keyword parameter serializer.
 
 
-Library can be installed by command: 
+## Installation 
 ``` bash
 sudo pip3 install hwtLib
 ```
@@ -24,3 +24,4 @@ sudo pip3 install hwtLib
 * [rhea](https://github.com/cfelton/rhea) - MyHDL, SoC level modules
 * [FPGAwars FPGA-peripherals](https://github.com/FPGAwars/FPGA-peripherals) - Verilog, simple peripherals
 * [PoC](https://github.com/VLSI-EDA/PoC) - VHDL, utils
+* [picorv32](https://github.com/cliffordwolf/picorv32) - Verilog, A Size-Optimized RISC-V SoC
