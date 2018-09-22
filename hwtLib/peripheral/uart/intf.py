@@ -23,6 +23,7 @@ class IP_Uart(IntfConfig):
         self.version = "1.0"
         self.vendor = "xilinx.com"
         self.library = "interface"
-        self.map = {'rx': "RxD",
-                    'tx': "TxD"
-                    }
+        self.map = {
+            'rx': "RxD",
+            'tx': "TxD"
+        }

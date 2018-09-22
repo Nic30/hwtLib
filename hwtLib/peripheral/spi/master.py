@@ -2,16 +2,17 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat, sll
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
+
 from hwtLib.clocking.clkBuilder import ClkBuilder
 from hwtLib.handshaked.intfBiDirectional import HandshakedBiDirectional, \
     HandshakedBiDirectionalAgent
 from hwtLib.logic.binToOneHot import BinToOneHot
-from hwtLib.spi.intf import Spi
-from hwt.hdl.types.bits import Bits
+from hwtLib.peripheral.spi.intf import Spi
 
 
 class SpiCntrlDataAgent(HandshakedBiDirectionalAgent):

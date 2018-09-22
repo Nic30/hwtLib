@@ -17,7 +17,7 @@ from hwtLib.samples.statements.ifStm import SimpleIfStatement3
 from hwt.synthesizer.dummyPlatform import DummyPlatform
 from hwtLib.samples.mem.ram import SimpleAsyncRam
 from hwtLib.logic.segment7 import Segment7
-from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl
+from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl
 
 
 class BasicSynthesisTC(unittest.TestCase):

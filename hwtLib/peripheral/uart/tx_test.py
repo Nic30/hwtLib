@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.uart.tx import UartTx
 from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import valToInt
+from hwt.simulator.simTestCase import SimTestCase
+
+from hwtLib.peripheral.uart.tx import UartTx
 
 
 class UartTxTC(SimTestCase):

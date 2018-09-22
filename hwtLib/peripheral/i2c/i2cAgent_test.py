@@ -6,7 +6,7 @@ import unittest
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
-from hwtLib.i2c.intf import I2c, I2cAgent
+from hwtLib.peripheral.i2c.intf import I2c, I2cAgent
 
 
 class I2CSimplePassTrought(Unit):

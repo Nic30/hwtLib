@@ -57,8 +57,8 @@ from hwtLib.handshaked.reg_test import HsRegL1D0TC, HsRegL2D1TC
 from hwtLib.handshaked.resizer_test import HsResizerTC
 from hwtLib.handshaked.splitCopy_test import HsSplitCopyTC, \
     HsSplitCopy_randomized_TC
-from hwtLib.i2c.i2cAgent_test import I2cAgent_TC
-from hwtLib.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
+from hwtLib.peripheral.i2c.i2cAgent_test import I2cAgent_TC
+from hwtLib.peripheral.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
 from hwtLib.img.charToBitmap_test import CharToBitmapTC
 from hwtLib.ipif.axiLite2ipif_test import AxiLite2ipifTC
 from hwtLib.ipif.endpoint_test import IpifEndpointTC, \
@@ -137,7 +137,7 @@ from hwtLib.samples.statements.switchStm_test import SwitchStmTC
 from hwtLib.samples.statements.vldMaskConflictsResolving_test import \
     VldMaskConflictsResolvingTC
 from hwtLib.samples.timers import TimerTC
-from hwtLib.spi.master_test import SpiMasterTC
+from hwtLib.peripheral.spi.master_test import SpiMasterTC
 from hwtLib.structManipulators.arrayBuff_writer_test import ArrayBuff_writer_TC
 from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC, \
     ArrayItemGetter2in1WordTC
@@ -177,9 +177,9 @@ from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
-from hwtLib.uart.rx_test import UartRxTC, UartRxBasicTC
-from hwtLib.uart.tx_rx_test import UartTxRxTC
-from hwtLib.uart.tx_test import UartTxTC
+from hwtLib.peripheral.uart.rx_test import UartRxTC, UartRxBasicTC
+from hwtLib.peripheral.uart.tx_rx_test import UartTxRxTC
+from hwtLib.peripheral.uart.tx_test import UartTxTC
 
 
 def runSimWithoutLog(self, until, name=None, config=None):

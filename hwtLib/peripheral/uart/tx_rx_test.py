@@ -6,10 +6,11 @@ from hwt.interfaces.std import Handshaked, VldSynced
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.agentConnector import valToInt
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.uart.rx import UartRx
-from hwtLib.uart.tx import UartTx
+from hwt.synthesizer.unit import Unit
+
+from hwtLib.peripheral.uart.rx import UartRx
+from hwtLib.peripheral.uart.tx import UartTx
 
 
 class TestUnit_uart(Unit):

@@ -1,8 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.bitmask import selectBit
 from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import valToInt
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.uart.rx import UartRx
+
+from hwtLib.peripheral.uart.rx import UartRx
 
 
 class UartRxBasicTC(SimTestCase):

@@ -5,8 +5,9 @@ from hwt.code import If, Concat
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VldSynced
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
+
 from hwtLib.clocking.clkBuilder import ClkBuilder
 
 

@@ -6,8 +6,8 @@ import unittest
 from hwt.bitmask import selectBit
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.i2c.intf import I2cAgent
-from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl,\
+from hwtLib.peripheral.i2c.intf import I2cAgent
+from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl,\
     NOP, START, READ, WRITE
 from _collections import deque
 

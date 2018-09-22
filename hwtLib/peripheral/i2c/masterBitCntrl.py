@@ -10,7 +10,7 @@ from hwt.interfaces.std import Signal, RdSynced, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.i2c.intf import I2c
+from hwtLib.peripheral.i2c.intf import I2c
 
 
 NOP, START, STOP, READ, WRITE = range(5)
