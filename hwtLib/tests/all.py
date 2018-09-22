@@ -27,7 +27,7 @@ from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
 from hwtLib.amba.axis_comp.frameForge_test import AxiS_frameForge_TC
 from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
-from hwtLib.amba.axis_comp.frameLinkConv_test import AxiS_frameLinkConvTC
+from hwtLib.amba.axis_comp.localLinkConv_test import AxiS_localLinkConvTC
 from hwtLib.amba.axis_comp.frameParser_test import AxiS_frameParserTC
 from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
@@ -360,7 +360,7 @@ suite = testSuiteFromTCs(
     AxiS_resizer_downAndUp_TC,
     AxiS_resizer_upAndDown_TC,
     AxiS_frameForge_TC,
-    AxiS_frameLinkConvTC,
+    AxiS_localLinkConvTC,
     AxiS_frameParserTC,
     HandshakedBuilderSimpleTC,
     EthAddrUpdaterTC,

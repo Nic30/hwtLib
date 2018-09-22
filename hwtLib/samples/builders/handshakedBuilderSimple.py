@@ -33,7 +33,7 @@ class HandshakedBuilderSimple(Unit):
         #    * various stream join/split components
         #    * clock domain crossing
 
-        # for most of stream interfaces like AvalonST, FrameLink ...
+        # for most of stream interfaces like AvalonST, LocalLink ...
         # there is builder with same program interface
 
         # instanciate handshaked register (default buff items=1)

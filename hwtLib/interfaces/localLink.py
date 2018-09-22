@@ -5,7 +5,7 @@ from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 
 
-class FrameLink(Interface):
+class LocalLink(Interface):
     """
     Stream with "byte enable" and "start/end of frame/packet"
     """

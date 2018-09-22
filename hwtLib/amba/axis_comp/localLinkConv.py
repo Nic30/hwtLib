@@ -8,7 +8,7 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream_withUserAndStrb
-from hwtLib.interfaces.frameLink import FrameLink
+from hwtLib.interfaces.localLink import LocalLink
 
 
 def strbToRem(strbBits, remBits):
@@ -18,9 +18,9 @@ def strbToRem(strbBits, remBits):
         yield strb, rem
 
 
-class AxiSToFrameLink(Unit):
+class AxiSToLocalLink(Unit):
     """
-    Axi 4 stream to FrameLink
+    Axi 4 stream to LocalLink
 
     format of user signal:
     user[0]: start of packet
@@ -34,7 +34,7 @@ class AxiSToFrameLink(Unit):
         with self._paramsShared():
             addClkRstn(self)
             self.dataIn = AxiStream_withUserAndStrb()
-            self.dataOut = FrameLink()._m()
+            self.dataOut = LocalLink()._m()
 
     def _impl(self):
         assert(int(self.USER_WIDTH) == 2)  # this is how is protocol specified
@@ -58,7 +58,7 @@ class AxiSToFrameLink(Unit):
 
         # AXI_USER(0) -> FL_SOP_N
         # Always set FL_SOP_N when FL_SOF_N - added for compatibility with xilinx 
-        # axi components. Otherwise FL_SOP_N would never been set and FrameLink
+        # axi components. Otherwise FL_SOP_N would never been set and LocalLink
         # protocol would be broken.
         sop = In.user[0]
         If(sof,
@@ -69,7 +69,7 @@ class AxiSToFrameLink(Unit):
 
         # AXI_USER(1) -> FL_EOP_N
         # Always set FL_EOP_N when FL_EOF_N - added for compatibility with xilinx 
-        # axi components. Otherwise FL_EOP_N would never been set and FrameLink
+        # axi components. Otherwise FL_EOP_N would never been set and LocalLink
         # protocol would be broken.
         eop = In.user[1]
         If(In.last,
@@ -97,7 +97,7 @@ class AxiSToFrameLink(Unit):
         Out.sof_n(~sof)
 
 
-class FrameLinkToAxiS(Unit):
+class LocalLinkToAxiS(Unit):
     """
     Framelink to axi-stream
 
@@ -106,12 +106,12 @@ class FrameLinkToAxiS(Unit):
     user[1]: end of packet
     """
     def _config(self):
-        AxiSToFrameLink._config(self)
+        AxiSToLocalLink._config(self)
 
     def _declr(self):
         with self._paramsShared():
             addClkRstn(self)
-            self.dataIn = FrameLink()
+            self.dataIn = LocalLink()
             self.dataOut = AxiStream_withUserAndStrb()._m()
 
     def _impl(self):
@@ -141,5 +141,5 @@ class FrameLinkToAxiS(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    u = AxiSToFrameLink()
+    u = AxiSToLocalLink()
     print(toRtl(u))

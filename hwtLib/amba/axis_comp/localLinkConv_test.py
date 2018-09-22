@@ -8,12 +8,12 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.bitmask import mask
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream_withUserAndStrb
-from hwtLib.amba.axis_comp.frameLinkConv import FrameLinkToAxiS, AxiSToFrameLink
+from hwtLib.amba.axis_comp.localLinkConv import LocalLinkToAxiS, AxiSToLocalLink
 from hwt.synthesizer.param import Param
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 
 
-class FrameLinkConvTest(Unit):
+class LocalLinkConvTest(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(64)
         self.USER_WIDTH = Param(2)
@@ -22,8 +22,8 @@ class FrameLinkConvTest(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.dataIn = AxiStream_withUserAndStrb()
-            self.conv0 = AxiSToFrameLink()
-            self.conv1 = FrameLinkToAxiS()
+            self.conv0 = AxiSToLocalLink()
+            self.conv1 = LocalLinkToAxiS()
             self.dataOut = AxiStream_withUserAndStrb()._m()
 
     def _impl(self):
@@ -33,10 +33,10 @@ class FrameLinkConvTest(Unit):
         self.dataOut(self.conv1.dataOut)
 
 
-class AxiS_frameLinkConvTC(SimTestCase):
+class AxiS_localLinkConvTC(SimTestCase):
     def setUp(self):
-        super(AxiS_frameLinkConvTC, self).setUp()
-        u = self.u = FrameLinkConvTest()
+        super(AxiS_localLinkConvTC, self).setUp()
+        u = self.u = LocalLinkConvTest()
         self.prepareUnit(u)
 
     def test_nop(self):
@@ -61,6 +61,6 @@ class AxiS_frameLinkConvTC(SimTestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(AxiS_measuringFifoTC('test_withPause'))
-    suite.addTest(unittest.makeSuite(AxiS_frameLinkConvTC))
+    suite.addTest(unittest.makeSuite(AxiS_localLinkConvTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
