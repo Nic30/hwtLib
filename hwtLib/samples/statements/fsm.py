@@ -11,6 +11,9 @@ from hwt.synthesizer.utils import toRtl
 
 
 class FsmExample(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         addClkRstn(self)
         self.a = Signal()
@@ -47,6 +50,9 @@ class FsmExample(Unit):
 
 
 class HadrcodedFsmExample(FsmExample):
+    """
+    .. hwt-schematic::
+    """
     def _impl(self):
         a = self.a
         b = self.b

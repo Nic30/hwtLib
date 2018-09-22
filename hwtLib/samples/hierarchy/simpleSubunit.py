@@ -7,6 +7,9 @@ from hwtLib.samples.simple import SimpleUnit
 
 
 class SimpleSubunit(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         self.a = Signal()
         self.b = Signal()._m()

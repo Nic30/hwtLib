@@ -9,6 +9,9 @@ from hwt.synthesizer.unit import Unit
 
 
 class SimpleIfStatement(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         self.a = Signal()
         self.b = Signal()
@@ -26,6 +29,9 @@ class SimpleIfStatement(Unit):
 
 
 class SimpleIfStatement2(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         addClkRstn(self)
         self.a = Signal()
@@ -47,6 +53,9 @@ class SimpleIfStatement2(Unit):
 
 
 class SimpleIfStatement2b(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         addClkRstn(self)
         self.a = Signal()
@@ -68,6 +77,9 @@ class SimpleIfStatement2b(Unit):
 
 
 class SimpleIfStatement2c(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         addClkRstn(self)
         self.a = Signal()
@@ -91,6 +103,9 @@ class SimpleIfStatement2c(Unit):
 
 
 class SimpleIfStatement3(SimpleIfStatement):
+    """
+    .. hwt-schematic::
+    """
     def _impl(self):
         If(self.a,
            self.d(0),
@@ -102,6 +117,9 @@ class SimpleIfStatement3(SimpleIfStatement):
 
 
 class SimpleIfStatementMergable(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         self.a = Signal()
         self.b = Signal()
@@ -123,7 +141,10 @@ class SimpleIfStatementMergable(Unit):
         )
 
 
-SimpleIfStatementMergable_vhdl = """library IEEE;
+SimpleIfStatementMergable_vhdl = """--
+--    .. hwt-schematic::
+--    
+library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
@@ -152,6 +173,9 @@ END ARCHITECTURE rtl;"""
 
 
 class SimpleIfStatementMergable1(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         self.a = Signal()
         self.b = Signal()
@@ -171,7 +195,10 @@ class SimpleIfStatementMergable1(Unit):
         )
 
 
-SimpleIfStatementMergable1_vhdl = """library IEEE;
+SimpleIfStatementMergable1_vhdl = """--
+--    .. hwt-schematic::
+--    
+library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
@@ -200,6 +227,9 @@ END ARCHITECTURE rtl;"""
 
 
 class SimpleIfStatementMergable2(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         self.a = Signal()
         self.b = Signal()
@@ -224,7 +254,10 @@ class SimpleIfStatementMergable2(Unit):
         )
 
 
-SimpleIfStatementMergable2_vhdl = """library IEEE;
+SimpleIfStatementMergable2_vhdl = """--
+--    .. hwt-schematic::
+--    
+library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
@@ -257,6 +290,9 @@ END ARCHITECTURE rtl;"""
 
 
 class IfStatementPartiallyEnclosed(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         self.clk = Clk()
         self.a = Signal()._m()
@@ -282,7 +318,10 @@ class IfStatementPartiallyEnclosed(Unit):
         self.b(b)
 
 
-IfStatementPartiallyEnclosed_vhdl = """library IEEE;
+IfStatementPartiallyEnclosed_vhdl = """--
+--    .. hwt-schematic::
+--    
+library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 

@@ -6,16 +6,19 @@ from hwt.hdl.typeShortcuts import hInt
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import toRtl
+
 from hwtLib.amba.axi4Lite import Axi4Lite
-from hwt.synthesizer.hObjList import HObjList
 
 
-class InterfaceArraySample3(Unit):
+class ListOfInterfacesSample3(Unit):
     """
-    Sample unit with array interface (a and b)
-    which is not using items of these array interfaces
+    Sample unit with HObjList of interfaces (a and b)
+    which is not using items of these HObjList of interfacess
+
+    .. hwt-schematic::
     """
     def _config(self):
         self.SIZE = hInt(3)
@@ -34,24 +37,26 @@ class InterfaceArraySample3(Unit):
         self.b(self.a)
 
 
-class InterfaceArraySample3b(InterfaceArraySample3):
+class ListOfInterfacesSample3b(ListOfInterfacesSample3):
     """
-    Sample unit with array interface (a and b)
-    which is not using items of these array interfaces
+    Sample unit with HObjList of interfaces (a and b)
+    which is not using items of these HObjList of interfacess
+
+    .. hwt-schematic::
     """
     def _impl(self):
         for i in range(int(self.SIZE)):
             self.b[i](self.a[i])
 
 
-class InterfaceArraySample3TC(SimTestCase):
+class ListOfInterfacesSample3TC(SimTestCase):
 
     def test_simplePass(self):
-        u = InterfaceArraySample3()
+        u = ListOfInterfacesSample3()
         self._test(u)
 
     def test_simplePass_b(self):
-        u = InterfaceArraySample3b()
+        u = ListOfInterfacesSample3b()
         self._test(u)
 
     def _test(self, u):
@@ -60,7 +65,7 @@ class InterfaceArraySample3TC(SimTestCase):
         CH_CNT = 3
 
         def randAddr():
-            prot= 0
+            prot = 0
             return [(r(32), prot) for _ in range(r(2))]
 
         def randAddr3():
@@ -114,7 +119,7 @@ class InterfaceArraySample3TC(SimTestCase):
         checkData(map(lambda ch: ch.b, u.a), B)
 
     def test_resources(self):
-        u = InterfaceArraySample3()
+        u = ListOfInterfacesSample3()
         expected = {}
 
         s = ResourceAnalyzer()
@@ -122,7 +127,7 @@ class InterfaceArraySample3TC(SimTestCase):
         self.assertDictEqual(s.report(), expected)
 
     def test_resources_b(self):
-        u = InterfaceArraySample3b()
+        u = ListOfInterfacesSample3b()
         expected = {}
 
         s = ResourceAnalyzer()
@@ -133,9 +138,9 @@ class InterfaceArraySample3TC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(InterfaceArraySample3TC('test_simplePass'))
-    suite.addTest(unittest.makeSuite(InterfaceArraySample3TC))
+    # suite.addTest(ListOfInterfacesSample3TC('test_simplePass'))
+    suite.addTest(unittest.makeSuite(ListOfInterfacesSample3TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
-    print(toRtl(InterfaceArraySample3b()))
+    print(toRtl(ListOfInterfacesSample3b()))

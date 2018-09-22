@@ -108,11 +108,11 @@ from hwtLib.samples.hierarchy.simpleSubunit_test import SimpleSubunitTC
 from hwtLib.samples.hierarchy.unitToUnitConnection import \
     UnitToUnitConnectionTC
 from hwtLib.samples.hierarchy.unitWrapper_test import UnitWrapperTC
-from hwtLib.samples.intfArray.interfaceArray0 import InterfaceArraySample0TC
-from hwtLib.samples.intfArray.interfaceArray1 import InterfaceArraySample1TC
-from hwtLib.samples.intfArray.interfaceArray2 import InterfaceArraySample2TC
-from hwtLib.samples.intfArray.interfaceArray3 import InterfaceArraySample3TC
-from hwtLib.samples.intfArray.interfaceArray4 import InterfaceArraySample4TC
+from hwtLib.samples.hdlObjLists.listOfInterfaces0 import ListOfInterfacesSample0TC
+from hwtLib.samples.hdlObjLists.listOfInterfaces1 import ListOfInterfacesSample1TC
+from hwtLib.samples.hdlObjLists.listOfInterfaces2 import ListOfInterfacesSample2TC
+from hwtLib.samples.hdlObjLists.listOfInterfaces3 import ListOfInterfacesSample3TC
+from hwtLib.samples.hdlObjLists.listOfInterfaces4 import ListOfInterfacesSample4TC
 from hwtLib.samples.mem.ram_test import RamTC as SampleRamTC
 from hwtLib.samples.mem.reg_test import DRegTC
 from hwtLib.samples.mem.rom_test import RomTC
@@ -234,11 +234,11 @@ suite = testSuiteFromTCs(
     SimpleUnitWithParamTC,
     SimpleSubunit2TC,
     HierarchySerializationTC,
-    InterfaceArraySample0TC,
-    InterfaceArraySample1TC,
-    InterfaceArraySample2TC,
-    InterfaceArraySample3TC,
-    InterfaceArraySample4TC,
+    ListOfInterfacesSample0TC,
+    ListOfInterfacesSample1TC,
+    ListOfInterfacesSample2TC,
+    ListOfInterfacesSample3TC,
+    ListOfInterfacesSample4TC,
     FrameTmplTC,
     Showcase0TC,
     SimEventsTC,

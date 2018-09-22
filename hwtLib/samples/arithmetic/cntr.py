@@ -10,6 +10,9 @@ from hwt.synthesizer.param import Param
 
 
 class Cntr(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _config(self):
         self.DATA_WIDTH = Param(2)
 

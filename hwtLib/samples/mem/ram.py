@@ -10,6 +10,8 @@ from hwt.synthesizer.unit import Unit
 class SimpleAsyncRam(Unit):
     """
     Note that there is no such a thing in hw yet...
+
+    .. hwt-schematic::
     """
     def _declr(self):
         self.addr_in = VectSignal(2)
@@ -25,6 +27,9 @@ class SimpleAsyncRam(Unit):
 
 
 class SimpleSyncRam(SimpleAsyncRam):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         super()._declr()
         self.clk = Clk()

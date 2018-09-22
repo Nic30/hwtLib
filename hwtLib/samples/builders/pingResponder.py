@@ -33,6 +33,8 @@ class PingResponder(Unit):
     :note: incoming checksum is not checked
     :attention: you have to ping "ping -s 0 <ip>" because unit ignores additional data in packet and linux by
         defaults adds it
+
+    .. hwt-schematic::
     """
 
     def _config(self):

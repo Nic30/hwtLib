@@ -7,6 +7,9 @@ from hwt.synthesizer.unit import Unit
 
 
 class SimpleConcat(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         self.a0 = Signal()
         self.a1 = Signal()

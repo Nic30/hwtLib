@@ -14,6 +14,8 @@ from hwt.synthesizer.param import Param
 class BinToOneHot(Unit):
     """
     Little endian encoded number to number in one-hot encoding
+
+    .. hwt-schematic::
     """
     def _config(self):
         self.DATA_WIDTH = Param(8)

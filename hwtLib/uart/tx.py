@@ -13,6 +13,11 @@ from hwtLib.clocking.clkBuilder import ClkBuilder
 
 # http://ece-research.unm.edu/jimp/vhdl_fpgas/slides/UART.pdf
 class UartTx(Unit):
+    """
+    UART Tx channel controller
+
+    .. hwt-schematic::
+    """
     def _config(self):
         self.FREQ = Param(int(100e6))
         # number of bits per second

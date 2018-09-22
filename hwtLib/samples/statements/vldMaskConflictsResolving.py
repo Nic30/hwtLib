@@ -8,7 +8,10 @@ from hwt.synthesizer.unit import Unit
 
 class VldMaskConflictsResolving(Unit):
     """
-    Example how invalid value of condition does not matter when it has no effect on result
+    Example how invalid value of condition does not matter
+    if it has no effect on result
+
+    .. hwt-schematic::
     """
     def _declr(self):
         self.a = Signal()
@@ -33,6 +36,7 @@ class VldMaskConflictsResolving(Unit):
               c(0)
             )
         )
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl

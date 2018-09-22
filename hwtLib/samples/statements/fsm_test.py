@@ -10,7 +10,10 @@ from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.systemC.serializer import SystemCSerializer
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 
-fsmExample_vhdl = """library IEEE;
+fsmExample_vhdl = """--
+--    .. hwt-schematic::
+--    
+library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
@@ -83,7 +86,12 @@ BEGIN
 
 END ARCHITECTURE rtl;"""
 
-fsmExample_verilog = """module FsmExample(input a,
+fsmExample_verilog = """/*
+
+    .. hwt-schematic::
+    
+*/
+module FsmExample(input a,
         input b,
         input clk,
         output reg [2:0] dout,
@@ -142,7 +150,13 @@ fsmExample_verilog = """module FsmExample(input a,
 
 endmodule"""
 
-fsmExample_systemc = """#include <systemc.h>
+fsmExample_systemc = """/*
+
+    .. hwt-schematic::
+    
+*/
+
+#include <systemc.h>
 
 
 SC_MODULE(FsmExample) {

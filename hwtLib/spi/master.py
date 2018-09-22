@@ -63,6 +63,8 @@ class SpiMaster(Unit):
         and data from slaves are ready on risign edge as well
         and SPI clk is kept high in idle
         (most of them does but there are some exceptions)
+
+    .. hwt-schematic::
     """
     def _config(self):
         self.SPI_FREQ_PESCALER = Param(32)
@@ -76,7 +78,7 @@ class SpiMaster(Unit):
         addClkRstn(self)
 
         self.spi = Spi()._m()
-        assert self.HAS_RX or self.HAS_TX 
+        assert self.HAS_RX or self.HAS_TX
 
         with self._paramsShared():
             self.DATA_WIDTH = int(self.SPI_DATA_WIDTH) * 8
@@ -118,7 +120,7 @@ class SpiMaster(Unit):
         writeTick is 1 on falling edge of spi clk
         readTick is 1 on rising edge of spi clk
 
-        :return: tuple of tick signals (if data should be send, if data should be read)  
+        :return: tuple of tick signals (if data should be send, if data should be read)
         """
         builder = ClkBuilder(self, self.clk)
         timersRst = self._sig("timersRst")
@@ -147,7 +149,10 @@ class SpiMaster(Unit):
 
         self.spi.clk(clkOut)  # clk idle value is high
 
-        clkRisign, clkFalling = builder.edgeDetector(clkIntern.next, rise=True, fall=True, initVal=1)
+        clkRisign, clkFalling = builder.edgeDetector(clkIntern.next,
+                                                     rise=True,
+                                                     fall=True,
+                                                     initVal=1)
 
         rdEn = clkRisign & ~requiresInitWait
         wrEn = clkFalling & ~requiresInitWait
@@ -158,8 +163,10 @@ class SpiMaster(Unit):
         d = self.data
         slaveSelectWaitRequired = self._reg("slaveSelectWaitRequired", defVal=1)
         endOfWordDelayed = self._reg("endOfWordDelayed", defVal=0)
-        writeTick, readTick, initWaitDone, endOfWord = self.spiClkGen(slaveSelectWaitRequired,
-                                                                      ~ endOfWordDelayed & self.data.vld)
+        (writeTick, readTick,
+         initWaitDone, endOfWord) = self.spiClkGen(
+              slaveSelectWaitRequired,
+              ~ endOfWordDelayed & self.data.vld)
 
         endOfWordDelayed(endOfWord)
 

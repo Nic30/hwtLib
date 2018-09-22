@@ -8,6 +8,9 @@ from hwt.synthesizer.unit import Unit
 
 
 class SimpleRom(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         self.addr = VectSignal(2)
         self.dout = VectSignal(8)._m()
@@ -18,6 +21,9 @@ class SimpleRom(Unit):
 
 
 class SimpleSyncRom(SimpleRom):
+    """
+    .. hwt-schematic::
+    """
     def _declr(self):
         super()._declr()
         self.clk = Clk()

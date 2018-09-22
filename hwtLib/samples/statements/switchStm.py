@@ -9,6 +9,8 @@ from hwt.synthesizer.unit import Unit
 class SwitchStmUnit(Unit):
     """
     Example which is using switch statement to create multiplexer
+
+    .. hwt-schematic::
     """
     def _declr(self):
         self.sel = VectSignal(3)

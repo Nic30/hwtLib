@@ -9,7 +9,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='hwtLib',
-      version='2.5',
+      version='2.6',
       description='library of hardware components and test for HWToolkit framework (hwt, FPGA devel. tools)',
       long_description=long_description,
       long_description_content_type="text/markdown",
@@ -32,7 +32,7 @@ setup(name='hwtLib',
         "Topic :: Utilities"
       ],
       install_requires=[
-        'hwt>=2.4',
+        'hwt>=2.6',
         'Pillow',  # there are some components which are working with images
       ],
       license='MIT',

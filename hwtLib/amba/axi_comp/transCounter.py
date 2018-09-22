@@ -14,7 +14,7 @@ class AxiTransactionCouter(Unit):
     """
     Counter of beats on axi interface
     write to control register to clear counters
-    
+
     .. hwt-schematic::
     """
     def __init__(self, axiCls=Axi4):

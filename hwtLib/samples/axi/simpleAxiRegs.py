@@ -17,6 +17,8 @@ class SimpleAxiRegs(Unit):
     Axi litle mapped registers example,
     0x0 - reg0
     0x4 - reg1
+
+    .. hwt-schematic::
     """
     def _config(self):
         self.ADDR_WIDTH = Param(8)
@@ -49,7 +51,7 @@ class SimpleAxiRegs(Unit):
             If(convPort.dout.vld,
                 reg(convPort.dout.data)
             )
-            convPort.din(reg) 
+            convPort.din(reg)
 
         connectRegToConveror(conv.decoded.reg0, reg0)
         connectRegToConveror(conv.decoded.reg1, reg1)

@@ -1,16 +1,16 @@
+from hwt.code import log2ceil
 from hwt.hdl.constants import Time
+from hwt.hdl.types.array import HArray
+from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
+from hwt.interfaces.std import RegCntrl, BramPort_withoutClk
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.unit import Unit
-from hwtLib.types.ctypes import uint8_t
-from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwt.synthesizer.hObjList import HObjList
-from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import RegCntrl, BramPort_withoutClk
-from hwt.hdl.types.array import HArray
-from hwt.code import log2ceil
+from hwt.synthesizer.unit import Unit
+
+from hwtLib.types.ctypes import uint8_t
 
 
 struct0 = HStruct(
@@ -25,7 +25,13 @@ struct0 = HStruct(
 #    )
 
 
-class InterfaceArraySample4(Unit):
+class ListOfInterfacesSample4(Unit):
+    """
+    Example with HObjList of interfaces where interfaces are instances of StructIntf
+    which is interface dynamically generated from c-like structure description
+
+    .. hwt-schematic::
+    """
 
     @staticmethod
     def shouldEnterFn(field):
@@ -61,11 +67,13 @@ class InterfaceArraySample4(Unit):
 
     def _declr(self):
         addClkRstn(self)
-        self.a = HObjList(StructIntf(
+        self.a = HObjList(
+            StructIntf(
                 struct0,
                 instantiateFieldFn=self._mkFieldInterface)
             for _ in range(3))
-        self.b = HObjList(StructIntf(
+        self.b = HObjList(
+            StructIntf(
                 struct0,
                 instantiateFieldFn=self._mkFieldInterface)
             for _ in range(3))._m()
@@ -74,19 +82,28 @@ class InterfaceArraySample4(Unit):
         self.b(self.a)
 
 
-class InterfaceArraySample4b(InterfaceArraySample4):
+class ListOfInterfacesSample4b(ListOfInterfacesSample4):
+    """
+    .. hwt-schematic::
+    """
     @staticmethod
     def shouldEnterFn(field):
         return True, True
 
 
-class InterfaceArraySample4c(InterfaceArraySample4b):
+class ListOfInterfacesSample4c(ListOfInterfacesSample4b):
+    """
+    .. hwt-schematic::
+    """
     def _impl(self):
         for a, b in zip(self.a, self.b):
             b(a)
 
 
-class InterfaceArraySample4d(InterfaceArraySample4b):
+class ListOfInterfacesSample4d(ListOfInterfacesSample4b):
+    """
+    .. hwt-schematic::
+    """
     def _impl(self):
         for a, b in zip(self.a, self.b):
             b.f0(a.f0)
@@ -94,9 +111,9 @@ class InterfaceArraySample4d(InterfaceArraySample4b):
                 b_arr(a_arr)
 
 
-class InterfaceArraySample4TC(SimTestCase):
-    def test_InterfaceArraySample4b_intfIterations(self):
-        u = InterfaceArraySample4d()
+class ListOfInterfacesSample4TC(SimTestCase):
+    def test_ListOfInterfacesSample4b_intfIterations(self):
+        u = ListOfInterfacesSample4d()
         self.prepareUnit(u)
 
         i = 0
@@ -215,28 +232,28 @@ class InterfaceArraySample4TC(SimTestCase):
                 emp(b_arr.f2._ag.din, (i, i2))
                 dinEq(a_arr.f2, _f2_in, (i, i2))
 
-    def test_InterfaceArraySample4b(self):
-        u = InterfaceArraySample4b()
+    def test_ListOfInterfacesSample4b(self):
+        u = ListOfInterfacesSample4b()
         self._test(u)
 
-    def test_InterfaceArraySample4c(self):
-        u = InterfaceArraySample4c()
+    def test_ListOfInterfacesSample4c(self):
+        u = ListOfInterfacesSample4c()
         self._test(u)
 
-    def test_InterfaceArraySample4d(self):
-        u = InterfaceArraySample4d()
+    def test_ListOfInterfacesSample4d(self):
+        u = ListOfInterfacesSample4d()
         self._test(u)
 
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(InterfaceArraySample4TC('test_InterfaceArraySample4b_intfIterations'))
-    # suite.addTest(InterfaceArraySample4TC('test_InterfaceArraySample4b'))
+    # suite.addTest(ListOfInterfacesSample4TC('test_ListOfInterfacesSample4b_intfIterations'))
+    # suite.addTest(ListOfInterfacesSample4TC('test_ListOfInterfacesSample4b'))
 
-    suite.addTest(unittest.makeSuite(InterfaceArraySample4TC))
+    suite.addTest(unittest.makeSuite(ListOfInterfacesSample4TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
     from hwt.synthesizer.utils import toRtl
-    print(toRtl(InterfaceArraySample4c()))
+    print(toRtl(ListOfInterfacesSample4c()))

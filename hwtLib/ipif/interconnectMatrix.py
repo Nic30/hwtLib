@@ -7,7 +7,8 @@ from hwt.hdl.typeShortcuts import hBit
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.hObjList import HObjList
 from hwtLib.ipif.intf import Ipif
-from hwtLib.abstract.busInterconnect import BusInterconnect
+from hwtLib.abstract.busInterconnect import BusInterconnect, ACCESS_RW,\
+    AUTO_ADDR
 
 
 class IpifInterconnectMatrix(BusInterconnect):
@@ -23,7 +24,7 @@ class IpifInterconnectMatrix(BusInterconnect):
 
         slavePorts = HObjList()
         for _, features in self._masters:
-            if features is not self.ACCESS_RW:
+            if features is not ACCESS_RW:
                 raise NotImplementedError(features)
             m = Ipif()
             m._updateParamsFrom(self)
@@ -33,7 +34,7 @@ class IpifInterconnectMatrix(BusInterconnect):
 
         masterPorts = HObjList()
         for _, size, features in self._slaves:
-            if features is not self.ACCESS_RW:
+            if features is not ACCESS_RW:
                 raise NotImplementedError(features)
             s = Ipif()._m()
             s.ADDR_WIDTH.set(log2ceil(size - 1))
@@ -87,8 +88,8 @@ class IpifInterconnectMatrix(BusInterconnect):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    RW = IpifInterconnectMatrix.ACCESS_RW
-    AUTO = IpifInterconnectMatrix.AUTO_ADDR
+    RW = ACCESS_RW
+    AUTO = AUTO_ADDR
     u = IpifInterconnectMatrix(
         masters=[(0x0, RW)],
         slaves=[
