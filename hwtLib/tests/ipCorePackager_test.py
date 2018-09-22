@@ -11,7 +11,7 @@ from hwt.serializer.ip_packager.interfaces.std import IP_Handshake
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import serializeAsIpcore
 from hwtLib.amba.axi3 import Axi3, Axi3_withAddrUser
-from hwtLib.amba.axi4_streamToMem import Axi4streamToMem
+from hwtLib.amba.axi_comp.axi4_streamToMem import Axi4streamToMem
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axis import AxiStream_withUserAndStrb, AxiStream_withId
 from hwtLib.amba.axis_comp.en import AxiS_en

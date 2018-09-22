@@ -7,7 +7,7 @@ from hwt.interfaces.std import Handshaked, HandshakeSync
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
+from hwtLib.amba.axi_comp.axi_datapump_intf import AxiWDatapumpIntf
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.handshaked.builder import HsBuilder

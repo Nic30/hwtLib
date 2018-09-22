@@ -6,8 +6,8 @@ from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi3 import Axi3_addr, Axi3_w
 from hwtLib.amba.axi4 import Axi4_addr
-from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, mkReq
-from hwtLib.amba.axi4_wDatapump import Axi_wDatapump
+from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC, mkReq
+from hwtLib.amba.axi_comp.axi4_wDatapump import Axi_wDatapump
 from hwtLib.amba.constants import RESP_OKAY, BYTES_IN_TRANS, BURST_INCR,\
     CACHE_DEFAULT, LOCK_DEFAULT, PROT_DEFAULT, QOS_DEFAULT
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem

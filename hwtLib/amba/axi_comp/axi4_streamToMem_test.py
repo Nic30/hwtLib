@@ -4,7 +4,7 @@
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
-from hwtLib.amba.axi4_streamToMem import Axi4streamToMem
+from hwtLib.amba.axi_comp.axi4_streamToMem import Axi4streamToMem
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
 

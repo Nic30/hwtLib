@@ -7,9 +7,9 @@ from hwt.simulator.hdlSimConfig import HdlSimConfig
 from hwt.simulator.hdlSimulator import HdlSimulator
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
-from hwtLib.amba.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
-from hwtLib.amba.axi4_streamToMem_test import Axi4_streamToMemTC
-from hwtLib.amba.axi4_wDatapump_test import Axi4_wDatapumpTC, \
+from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
+from hwtLib.amba.axi_comp.axi4_streamToMem_test import Axi4_streamToMemTC
+from hwtLib.amba.axi_comp.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import \
     AxiLiteEndpointArrayTC, AxiLiteEndpointStructsInArrayTC

@@ -7,7 +7,7 @@ from hwt.bitmask import mask
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
-from hwtLib.amba.axi4_rDatapump_test import mkReq
+from hwtLib.amba.axi_comp.axi4_rDatapump_test import mkReq
 from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
 
 

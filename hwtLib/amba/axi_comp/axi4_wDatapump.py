@@ -8,8 +8,8 @@ from hwt.interfaces.std import Signal, Handshaked, VectSignal, \
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi4 import Axi4_w, Axi4_b, Axi4_addr
-from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
-from hwtLib.amba.axi_datapump_base import Axi_datapumpBase
+from hwtLib.amba.axi_comp.axi_datapump_intf import AxiWDatapumpIntf
+from hwtLib.amba.axi_comp.axi_datapump_base import AxiDatapumpBase
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
@@ -33,15 +33,15 @@ class BFifoIntf(Handshaked):
         HandshakeSync._declr(self)
 
 
-class Axi_wDatapump(Axi_datapumpBase):
+class Axi_wDatapump(AxiDatapumpBase):
     """
     Axi3/4 to axi write datapump,
     * splits request to correct request size
     * simplifies axi communication without lose of performance
-    \n""" + Axi_datapumpBase.__doc__
+    \n""" + AxiDatapumpBase.__doc__
     def __init__(self, axiAddrCls=Axi4_addr, axiWCls=Axi4_w):
         self._axiWCls = axiWCls
-        Axi_datapumpBase.__init__(self, axiAddrCls=axiAddrCls)
+        AxiDatapumpBase.__init__(self, axiAddrCls=axiAddrCls)
 
     def _declr(self):
         super()._declr()  # add clk, rst, axi addr channel and req channel

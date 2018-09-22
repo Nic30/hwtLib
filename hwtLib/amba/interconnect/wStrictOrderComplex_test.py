@@ -13,9 +13,9 @@ from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.hObjList import HObjList
 from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_w, Axi4_b
-from hwtLib.amba.axi4_rDatapump_test import mkReq
-from hwtLib.amba.axi4_wDatapump import Axi_wDatapump
-from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
+from hwtLib.amba.axi_comp.axi4_rDatapump_test import mkReq
+from hwtLib.amba.axi_comp.axi4_wDatapump import Axi_wDatapump
+from hwtLib.amba.axi_comp.axi_datapump_intf import AxiWDatapumpIntf
 from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 

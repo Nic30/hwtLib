@@ -8,9 +8,9 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi3 import Axi3, Axi3_addr, Axi3_w
-from hwtLib.amba.axi4_rDatapump import Axi_rDatapump
-from hwtLib.amba.axi4_wDatapump import Axi_wDatapump
-from hwtLib.amba.axi_datapump_utils import connectDp
+from hwtLib.amba.axi_comp.axi4_rDatapump import Axi_rDatapump
+from hwtLib.amba.axi_comp.axi4_wDatapump import Axi_wDatapump
+from hwtLib.amba.axi_comp.axi_datapump_utils import connectDp
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.structManipulators.structReader import StructReader
 from hwtLib.structManipulators.structWriter import StructWriter

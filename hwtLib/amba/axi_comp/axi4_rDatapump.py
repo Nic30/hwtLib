@@ -7,8 +7,8 @@ from hwt.interfaces.std import Signal, HandshakeSync, VectSignal
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi4 import Axi4_r
-from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
-from hwtLib.amba.axi_datapump_base import Axi_datapumpBase
+from hwtLib.amba.axi_comp.axi_datapump_intf import AxiRDatapumpIntf
+from hwtLib.amba.axi_comp.axi_datapump_base import AxiDatapumpBase
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
@@ -26,7 +26,7 @@ class TransEndInfo(HandshakeSync):
         HandshakeSync._declr(self)
 
 
-class Axi_rDatapump(Axi_datapumpBase):
+class Axi_rDatapump(AxiDatapumpBase):
     """
     Forward request to axi address read channel
     and collect data to data channel form axi read channel
@@ -40,7 +40,7 @@ class Axi_rDatapump(Axi_datapumpBase):
 
     errorRead stays high when there was error on axi read channel
     it will not affect unit functionality
-    \n""" + Axi_datapumpBase.__doc__
+    \n""" + AxiDatapumpBase.__doc__
 
     def _declr(self):
         super()._declr()  # add clk, rst, axi addr channel and req channel

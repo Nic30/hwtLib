@@ -6,7 +6,7 @@ from hwt.bitmask import mask
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi3 import Axi3_addr_withUser
-from hwtLib.amba.axi4_rDatapump import Axi_rDatapump
+from hwtLib.amba.axi_comp.axi4_rDatapump import Axi_rDatapump
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, BYTES_IN_TRANS, \
     PROT_DEFAULT, LOCK_DEFAULT, QOS_DEFAULT, RESP_OKAY
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem

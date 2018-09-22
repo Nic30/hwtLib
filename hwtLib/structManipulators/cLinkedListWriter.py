@@ -11,7 +11,7 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import fitTo
-from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf, AxiWDatapumpIntf
+from hwtLib.amba.axi_comp.axi_datapump_intf import AxiRDatapumpIntf, AxiWDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 

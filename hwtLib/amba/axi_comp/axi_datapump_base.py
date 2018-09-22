@@ -8,7 +8,7 @@ from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, PROT_DEFAULT, QOS_DEFAULT, BYTES_IN_TRANS
 
 
-class Axi_datapumpBase(Unit):
+class AxiDatapumpBase(Unit):
     """
     :ivar param MAX_TRANS_OVERLAP: max number of concurrent transactions
     :ivar driver: interface which is used to drive this datapump
