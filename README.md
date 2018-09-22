@@ -24,3 +24,4 @@ sudo pip3 install hwtLib
 * [rhea](https://github.com/cfelton/rhea) - MyHDL, SoC level modules
 * [FPGAwars FPGA-peripherals](https://github.com/FPGAwars/FPGA-peripherals) - Verilog, simple peripherals
 * [PoC](https://github.com/VLSI-EDA/PoC) - VHDL, utils
+* [picorv32](https://github.com/cliffordwolf/picorv32) - Verilog, A Size-Optimized RISC-V SoC
