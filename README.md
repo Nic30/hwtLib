@@ -10,7 +10,7 @@ hwtLib is the library of hardware components for [hwt framework](https://github.
 Any component can be exported as IPCore using Packager class from hwt or as HDL code by toRtl(). Target language is specified by keyword parameter serializer.
 
 
-Library can be installed by command: 
+## Installation 
 ``` bash
 sudo pip3 install hwtLib
 ```
