@@ -229,6 +229,6 @@ for file in glob.glob("*.rst"):
         os.remove(file)
 
 excluded_tests = list(find_files("../", "*_test.py")) + [
-    "../hwtLib/tests", "../hwtLib/samples/showcase0.hwt.py"]
+    "../hwtLib/tests", "../hwtLib/examples/showcase0.hwt.py"]
 apidoc_main(["--module-first", "--full", "--maxdepth", "-1",
              "--output-dir", "../docs", "../hwtLib"] + excluded_tests)
