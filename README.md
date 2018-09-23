@@ -7,8 +7,29 @@
 hwtLib is the library of hardware components for [hwt framework](https://github.com/Nic30/hwt). Relation of hwt and hwtLib is similar as C and stdlib relation. 
 
 
-Any component can be exported as IPCore using Packager class from hwt or as HDL code by toRtl(). Target language is specified by keyword parameter serializer.
 
+
+## Content
+
+Majority of components in this library is actually configurable component generator.
+Any component can be exported as IPCore using hwt.Packager or as HDL code by [toRtl()](https://github.com/Nic30/hwt/blob/master/hwt/synthesizer/utils.py#L17) (Verilog, VHDL, ...). Target language is specified by keyword parameter serializer. Note that for most of components there is a schematic in the documentation.
+
+* [abstract](https://github.com/Nic30/hwtLib/tree/master/hwtLib/abstract) - abstract classes for component classes like bus endpoint, etc
+* [amba](https://github.com/Nic30/hwtLib/tree/master/hwtLib/amba) - AXI interfaces and components for them (AXI3/4 DMAs, interconnects, ..., Axi-stream components, ..., Axi4Lite address decoders etc...)
+* [avalon](https://github.com/Nic30/hwtLib/tree/master/hwtLib/avalon) - same thing as amba just for Avalon interfaces (AvalonST, AvalonMM, ... and components for them)
+* [clocking](https://github.com/Nic30/hwtLib/tree/master/hwtLib/clocking) - various PLLs, timer generators etc.
+* [examples](https://github.com/Nic30/hwtLib/tree/master/hwtLib/examples) - demonstrative examples of [hwt](https://github.com/Nic30/hwt/) functionality
+* [handshaked](https://github.com/Nic30/hwtLib/tree/master/hwtLib/handshaked) - components for handshaked interfaces (FIFO, AsyncFifo, Resizer, interconnects, Register, ...)
+* [img](https://github.com/Nic30/hwtLib/tree/master/hwtLib/img) - image preprocessing utils (parse PNG fornt to bits for OLED)
+* [interfaces](https://github.com/Nic30/hwtLib/tree/master/hwtLib/interfaces) - various interfaces which does not have it's package yet
+* [IPIF](https://github.com/Nic30/hwtLib/tree/master/hwtLib/ipif) - IPIF interface and components for it (Interconnect, Register, address decoder, ...)
+* [logic](https://github.com/Nic30/hwtLib/tree/master/hwtLib/logic) - various components like CRC generator, gray counter, decoders-encoders ...
+* [mem](https://github.com/Nic30/hwtLib/tree/master/hwtLib/mem) - various memories (BRAM, ROM, FIFO, Async FIFO, CAM, LUT, ...)
+* [peripheral](https://github.com/Nic30/hwtLib/tree/master/hwtLib/peripheral) - various peripheral interfaces and components for them (I2C, SPI, UART)
+* [sim](https://github.com/Nic30/hwtLib/tree/master/hwtLib/sim) - simulation utils
+* [structManipulators](https://github.com/Nic30/hwtLib/tree/master/hwtLib/structManipulators) - DMAs for specific data structures
+* [tests](https://github.com/Nic30/hwtLib/tree/master/hwtLib/tests) - tests which are not related to another components
+* [types](https://github.com/Nic30/hwtLib/tree/master/hwtLib/types) - deffinitions of common types (uint32_t, ipv6_t, udp_t, ...)
 
 ## Installation 
 ``` bash
