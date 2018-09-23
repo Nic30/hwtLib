@@ -142,6 +142,15 @@ module exporter #(parameter  din_DATA_WIDTH = 64,
     assign dout_strb = 8'bxxxxxxxx;
     assign dout_valid = 1'bx;
 endmodule
+/*
+
+    Stream duplicator for AxiStream interfaces
+    
+    :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
+
+    .. hwt-schematic:: _example_AxiSSplitCopy
+    
+*/
 module gen_dout_splitCopy_0 #(parameter  DATA_WIDTH = 64,
         parameter  IS_BIGENDIAN = 0,
         parameter  OUTPUTS = 2
@@ -176,6 +185,8 @@ endmodule
 
     This unit has actually no functionality it is just example
     of hierarchical design.
+    
+    .. hwt-schematic::
     
 */
 module NetFilter #(parameter  DATA_WIDTH = 64,

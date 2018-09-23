@@ -8,8 +8,7 @@ from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.utils import toRtl
 
-from hwtLib.samples.hierarchy.groupOfBlockrams import GroupOfBlockrams, \
-    groupOfBlockrams_as_vhdl
+from hwtLib.samples.hierarchy.groupOfBlockrams import GroupOfBlockrams
 from hwtLib.samples.hierarchy.netFilter import NetFilter
 from hwtLib.tests.statementTrees import StatementTreesTC
 
@@ -43,6 +42,7 @@ class HierarchySerializationTC(SimTestCase):
     def test_groupOfBlockrams_vhdl(self):
         u = GroupOfBlockrams()
         s = toRtl(u, serializer=VhdlSerializer)
+        groupOfBlockrams_as_vhdl = readContent("GroupOfBlockrams.vhd")
         StatementTreesTC.strStructureCmp(self, s, groupOfBlockrams_as_vhdl)
 
 

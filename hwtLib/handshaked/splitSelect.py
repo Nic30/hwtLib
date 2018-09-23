@@ -51,7 +51,7 @@ class HsSplitSelect(HandshakedCompBase):
             )
     
     def _select_consume_en(self):
-        return 1
+        return True
     
     def _impl(self):
         In = self.dataIn

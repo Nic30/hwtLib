@@ -286,6 +286,16 @@ SC_MODULE(exporter) {
         
     }
 };
+/*
+
+    Stream duplicator for AxiStream interfaces
+    
+    :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
+
+    .. hwt-schematic:: _example_AxiSSplitCopy
+    
+*/
+
 #include <systemc.h>
 
 
@@ -361,6 +371,8 @@ SC_MODULE(gen_dout_splitCopy_0) {
 
     This unit has actually no functionality it is just example
     of hierarchical design.
+    
+    .. hwt-schematic::
     
 */
 

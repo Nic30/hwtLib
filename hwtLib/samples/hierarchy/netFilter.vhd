@@ -178,6 +178,13 @@ BEGIN
     dout_strb <= "XXXXXXXX";
     dout_valid <= 'X';
 END ARCHITECTURE rtl;
+--
+--    Stream duplicator for AxiStream interfaces
+--    
+--    :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
+--
+--    .. hwt-schematic:: _example_AxiSSplitCopy
+--    
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
@@ -220,6 +227,8 @@ END ARCHITECTURE rtl;
 --
 --    This unit has actually no functionality it is just example
 --    of hierarchical design.
+--    
+--    .. hwt-schematic::
 --    
 library IEEE;
 use IEEE.std_logic_1164.all;
