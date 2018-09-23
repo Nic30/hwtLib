@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.synthesizer.utils import toRtl
-from hwtLib.logic.segment7 import Segment7
+from hwtLib.peripheral.segment7 import Segment7
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 
 segment7_vhdl = """--

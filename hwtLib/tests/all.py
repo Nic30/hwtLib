@@ -73,7 +73,7 @@ from hwtLib.logic.crcUtils_test import CrcUtilsTC
 from hwtLib.logic.crc_test import CrcTC
 from hwtLib.logic.lsfr import LsfrTC
 from hwtLib.logic.oneHotToBin_test import OneHotToBinTC
-from hwtLib.logic.segment7_test import Segment7TC
+from hwtLib.peripheral.segment7_test import Segment7TC
 from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
 from hwtLib.mem.atomic.flipRam_test import FlipRamTC
 from hwtLib.mem.atomic.flipReg_test import FlipRegTC

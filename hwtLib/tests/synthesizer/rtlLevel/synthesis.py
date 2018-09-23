@@ -16,7 +16,7 @@ from hwtLib.mem.cuckooHashTable import CuckooHashTable
 from hwtLib.examples.statements.ifStm import SimpleIfStatement3
 from hwt.synthesizer.dummyPlatform import DummyPlatform
 from hwtLib.examples.mem.ram import SimpleAsyncRam
-from hwtLib.logic.segment7 import Segment7
+from hwtLib.peripheral.segment7 import Segment7
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl
 
 
