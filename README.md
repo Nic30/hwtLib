@@ -12,7 +12,7 @@ hwtLib is the library of hardware components for [hwt framework](https://github.
 ## Content
 
 Majority of components in this library is actually configurable component generator.
-Any component can be exported as IPCore using hwt.Packager or as HDL code by [toRtl()](https://github.com/Nic30/hwt/blob/master/hwt/synthesizer/utils.py#L17) (Verilog, VHDL, ...). Target language is specified by keyword parameter serializer.
+Any component can be exported as IPCore using hwt.Packager or as HDL code by [toRtl()](https://github.com/Nic30/hwt/blob/master/hwt/synthesizer/utils.py#L17) (Verilog, VHDL, ...). Target language is specified by keyword parameter serializer. Note that for most of components there is a schematic in the documentation.
 
 * [abstract](https://github.com/Nic30/hwtLib/tree/master/hwtLib/abstract) - abstract classes for component classes like bus endpoint, etc
 * [amba](https://github.com/Nic30/hwtLib/tree/master/hwtLib/amba) - AXI interfaces and components for them (AXI3/4 DMAs, interconnects, ..., Axi-stream components, ..., Axi4Lite address decoders etc...)
