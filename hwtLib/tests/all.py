@@ -87,56 +87,56 @@ from hwtLib.mem.fifo_test import FifoAgentsTC, FifoTC
 from hwtLib.mem.hashTableCore_test import HashTableCoreTC
 from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ram_test import RamTC
-from hwtLib.samples.arithmetic.cntr_test import CntrTC
-from hwtLib.samples.arithmetic.selfRefCntr_test import SelfRefCntrTC
-from hwtLib.samples.arithmetic.twoCntrs_test import TwoCntrsTC
-from hwtLib.samples.arithmetic.widthCasting import WidthCastingExampleTC
-from hwtLib.samples.axi.simpleAxiRegs_test import SimpleAxiRegsTC
-from hwtLib.samples.builders.ethAddrUpdater_test import EthAddrUpdaterTC
-from hwtLib.samples.builders.handshakedBuilderSimple import \
+from hwtLib.examples.arithmetic.cntr_test import CntrTC
+from hwtLib.examples.arithmetic.selfRefCntr_test import SelfRefCntrTC
+from hwtLib.examples.arithmetic.twoCntrs_test import TwoCntrsTC
+from hwtLib.examples.arithmetic.widthCasting import WidthCastingExampleTC
+from hwtLib.examples.axi.simpleAxiRegs_test import SimpleAxiRegsTC
+from hwtLib.examples.builders.ethAddrUpdater_test import EthAddrUpdaterTC
+from hwtLib.examples.builders.handshakedBuilderSimple import \
     HandshakedBuilderSimpleTC
-from hwtLib.samples.builders.hsBuilderSplit_test import HsBuilderSplit_TC
-from hwtLib.samples.builders.pingResponder_test import PingResponderTC
-from hwtLib.samples.emptyUnitWithSpi import EmptyUnitWithSpiTC
-from hwtLib.samples.errors.errorsTestCase import ErrorsTC
-from hwtLib.samples.hdlComments_test import HdlCommentsTC
-from hwtLib.samples.hierarchy.hierarchySerialization_test import \
+from hwtLib.examples.builders.hsBuilderSplit_test import HsBuilderSplit_TC
+from hwtLib.examples.builders.pingResponder_test import PingResponderTC
+from hwtLib.examples.emptyUnitWithSpi import EmptyUnitWithSpiTC
+from hwtLib.examples.errors.errorsTestCase import ErrorsTC
+from hwtLib.examples.hdlComments_test import HdlCommentsTC
+from hwtLib.examples.hierarchy.hierarchySerialization_test import \
     HierarchySerializationTC
-from hwtLib.samples.hierarchy.simpleSubunit2 import SimpleSubunit2TC
-from hwtLib.samples.hierarchy.simpleSubunit3 import SimpleSubunit3TC
-from hwtLib.samples.hierarchy.simpleSubunit_test import SimpleSubunitTC
-from hwtLib.samples.hierarchy.unitToUnitConnection import \
+from hwtLib.examples.hierarchy.simpleSubunit2 import SimpleSubunit2TC
+from hwtLib.examples.hierarchy.simpleSubunit3 import SimpleSubunit3TC
+from hwtLib.examples.hierarchy.simpleSubunit_test import SimpleSubunitTC
+from hwtLib.examples.hierarchy.unitToUnitConnection import \
     UnitToUnitConnectionTC
-from hwtLib.samples.hierarchy.unitWrapper_test import UnitWrapperTC
-from hwtLib.samples.hdlObjLists.listOfInterfaces0 import ListOfInterfacesSample0TC
-from hwtLib.samples.hdlObjLists.listOfInterfaces1 import ListOfInterfacesSample1TC
-from hwtLib.samples.hdlObjLists.listOfInterfaces2 import ListOfInterfacesSample2TC
-from hwtLib.samples.hdlObjLists.listOfInterfaces3 import ListOfInterfacesSample3TC
-from hwtLib.samples.hdlObjLists.listOfInterfaces4 import ListOfInterfacesSample4TC
-from hwtLib.samples.mem.ram_test import RamTC as SampleRamTC
-from hwtLib.samples.mem.reg_test import DRegTC
-from hwtLib.samples.mem.rom_test import RomTC
-from hwtLib.samples.operators.concat_test import ConcatTC
-from hwtLib.samples.operators.indexing_test import IndexingTC
-from hwtLib.samples.parametrization_test import ParametrizationTC
-from hwtLib.samples.rtlLvl.rtlLvl_test import RtlLvlTC
-from hwtLib.samples.showcase0_test import Showcase0TC
-from hwtLib.samples.simple2withNonDirectIntConnection import \
+from hwtLib.examples.hierarchy.unitWrapper_test import UnitWrapperTC
+from hwtLib.examples.hdlObjLists.listOfInterfaces0 import ListOfInterfacesSample0TC
+from hwtLib.examples.hdlObjLists.listOfInterfaces1 import ListOfInterfacesSample1TC
+from hwtLib.examples.hdlObjLists.listOfInterfaces2 import ListOfInterfacesSample2TC
+from hwtLib.examples.hdlObjLists.listOfInterfaces3 import ListOfInterfacesSample3TC
+from hwtLib.examples.hdlObjLists.listOfInterfaces4 import ListOfInterfacesSample4TC
+from hwtLib.examples.mem.ram_test import RamTC as SampleRamTC
+from hwtLib.examples.mem.reg_test import DRegTC
+from hwtLib.examples.mem.rom_test import RomTC
+from hwtLib.examples.operators.concat_test import ConcatTC
+from hwtLib.examples.operators.indexing_test import IndexingTC
+from hwtLib.examples.parametrization_test import ParametrizationTC
+from hwtLib.examples.rtlLvl.rtlLvl_test import RtlLvlTC
+from hwtLib.examples.showcase0_test import Showcase0TC
+from hwtLib.examples.simple2withNonDirectIntConnection import \
     Simple2withNonDirectIntConnectionTC
-from hwtLib.samples.simpleAxiStream_test import SimpleUnitAxiStream_TC
-from hwtLib.samples.simpleWithNonDirectIntConncetion import \
+from hwtLib.examples.simpleAxiStream_test import SimpleUnitAxiStream_TC
+from hwtLib.examples.simpleWithNonDirectIntConncetion import \
     SimpleWithNonDirectIntConncetionTC
-from hwtLib.samples.simpleWithParam import SimpleUnitWithParamTC
-from hwtLib.samples.simple_test import SimpleTC
-from hwtLib.samples.statements.constDriver_test import ConstDriverTC
-from hwtLib.samples.statements.forLoopCntrl_test import StaticForLoopCntrlTC
-from hwtLib.samples.statements.fsm_test import FsmExampleTC, \
+from hwtLib.examples.simpleWithParam import SimpleUnitWithParamTC
+from hwtLib.examples.simple_test import SimpleTC
+from hwtLib.examples.statements.constDriver_test import ConstDriverTC
+from hwtLib.examples.statements.forLoopCntrl_test import StaticForLoopCntrlTC
+from hwtLib.examples.statements.fsm_test import FsmExampleTC, \
     HadrcodedFsmExampleTC, FsmSerializationTC
-from hwtLib.samples.statements.ifStm_test import IfStmTC
-from hwtLib.samples.statements.switchStm_test import SwitchStmTC
-from hwtLib.samples.statements.vldMaskConflictsResolving_test import \
+from hwtLib.examples.statements.ifStm_test import IfStmTC
+from hwtLib.examples.statements.switchStm_test import SwitchStmTC
+from hwtLib.examples.statements.vldMaskConflictsResolving_test import \
     VldMaskConflictsResolvingTC
-from hwtLib.samples.timers import TimerTC
+from hwtLib.examples.timers import TimerTC
 from hwtLib.peripheral.spi.master_test import SpiMasterTC
 from hwtLib.structManipulators.arrayBuff_writer_test import ArrayBuff_writer_TC
 from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC, \

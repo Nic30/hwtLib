@@ -4,8 +4,8 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.samples.mem.rom import SimpleRom, SimpleSyncRom
-from hwtLib.samples.statements.fsm import FsmExample
+from hwtLib.examples.mem.rom import SimpleRom, SimpleSyncRom
+from hwtLib.examples.statements.fsm import FsmExample
 
 
 class ProcCallWrap():
