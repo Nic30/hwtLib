@@ -15,8 +15,8 @@ from hwt.hdl.types.bits import Bits
 class AxiLiteEndpoint(BusEndpoint):
     """
     Delegate request from AxiLite interface to fields of structure
-    write has higher priority
-    
+    write has higher priority.
+
     .. hwt-schematic:: _example_AxiLiteEndpoint
     """
     _getWordAddrStep = Axi4Lite._getWordAddrStep
