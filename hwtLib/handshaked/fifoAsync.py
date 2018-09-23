@@ -14,6 +14,11 @@ class HsFifoAsync(HandshakedFifo):
     """
     Asynchronous fifo using BRAM memory, based on:
     http://www.asic-world.com/examples/vhdl/asyn_fifo.html
+
+    :note: same functionality as :class:`hwtLib.handshaked.fifo.HandshakedFifo`
+        except it has separated clock for input/output
+
+    .. hwt-schematic:: _example_HsFifoAsync
     """
 
     def _declr(self):
@@ -31,7 +36,7 @@ class HsFifoAsync(HandshakedFifo):
         f = self.fifo = FifoAsync()
         DW = self.dataIn._bit_length() - 2  # 2 for control (valid, ready)
         f.DATA_WIDTH.set(DW)
-        f.DEPTH.set(self.DEPTH-1)  # because there is an extra register
+        f.DEPTH.set(self.DEPTH - 1)  # because there is an extra register
         f.EXPORT_SIZE.set(self.EXPORT_SIZE)
 
         if self.EXPORT_SIZE:
@@ -41,9 +46,14 @@ class HsFifoAsync(HandshakedFifo):
         HandshakedFifo._impl(self, clks=(self.dataIn_clk, self.dataOut_clk))
 
 
-if __name__ == "__main__":
+def _example_HsFifoAsync():
     from hwt.interfaces.std import Handshaked
-    from hwt.synthesizer.utils import toRtl
     u = HsFifoAsync(Handshaked)
     u.DEPTH.set(4)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_HsFifoAsync()
     print(toRtl(u))

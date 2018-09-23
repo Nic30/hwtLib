@@ -9,6 +9,9 @@ from hwtLib.mem.ram import Ram_dp
 
 
 class GroupOfBlockrams(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _config(self):
         self.ADDR_WIDTH = Param(8)
         self.DATA_WIDTH = Param(64)

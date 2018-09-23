@@ -11,6 +11,7 @@ from hwt.hdl.transPart import TransPart
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.hdlType import HdlType
+from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct, HStructField
 from hwt.hdl.types.union import HUnion
 from hwt.interfaces.std import Handshaked
@@ -19,18 +20,23 @@ from hwt.interfaces.unionIntf import UnionSink
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.byteOrder import reverseByteOrder
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.amba.axis_comp.templateBasedUnit import TemplateBasedUnit
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
-from hwt.hdl.types.stream import HStream
 
 
 class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
     """
-    Assemble fields into frame on axi stream interface
+    Assemble fields into frame on axi stream interface,
+    frame description can be HType instance (HStruct, HUnion, ...)
+    
+    :note: if special frame format is required,
+        it can be specified by TransTmpl instance and list of FrameTmpl
+        (Input data structure can be splited into multiple frames as required)
 
     :note: names in the picture are just illustrative
 
@@ -46,6 +52,8 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
         +---------+      |
         | field2  +------+
         +---------+
+
+    .. hwt-schematic:: _example_AxiS_frameForge
     """
 
     def __init__(self, axiSIntfCls,
@@ -177,16 +185,19 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             lastInPorts_out.append(lastInPortsGroups)
         elif isinstance(tPart, StreamOfFramePars):
             if len(tPart) != 1:
-                raise NotImplementedError("Structuralized streams not implemented yiet")
+                raise NotImplementedError(
+                    "Structuralized streams not implemented yiet")
 
             p = tPart[0]
             intf = tToIntf[p.tmpl.origin]
 
             if int(intf.DATA_WIDTH) != wordData_out._dtype.bit_length():
-                raise NotImplementedError("Dynamic resizing of streams not implemented yiet")
+                raise NotImplementedError(
+                    "Dynamic resizing of streams not implemented yiet")
 
             if len(self._frames) > 1:
-                raise NotImplementedError("Dynamic splitting on frames not implemented yet")
+                raise NotImplementedError(
+                    "Dynamic splitting on frames not implemented yet")
             wordData_out(self.byteOrderCare(intf.data))
             inPorts_out.append(intf)
 
@@ -273,7 +284,8 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
                     lastInPorts)
                 if extra_strb is not None:
                     if len(transParts) > 1:
-                        raise NotImplementedError("Construct rest of the strb signal")
+                        raise NotImplementedError(
+                            "Construct rest of the strb signal")
                     extra_strbs.append((inversedIndx, extra_strb))
 
             if multipleWords:
@@ -300,8 +312,8 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
                 a = [If(_ack,
                         wordCntr_inversed(nextWordIndex)
-                     ),
-                    ]
+                        ),
+                     ]
             else:
                 a = []
 
@@ -360,8 +372,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
                 strb(STRB_ALL)
 
 
-if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+def _example_AxiS_frameForge():
     from hwtLib.types.ctypes import uint64_t, uint8_t, uint16_t
 
     t = HStruct((uint64_t, "item0"),
@@ -372,5 +383,11 @@ if __name__ == "__main__":
 
     u = AxiS_frameForge(AxiStream, t)
     u.DATA_WIDTH.set(32)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_AxiS_frameForge()
     print(toRtl(u))
     # print(u._frames)

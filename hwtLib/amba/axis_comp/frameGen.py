@@ -6,8 +6,9 @@ from hwt.code import If, connect, log2ceil
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
+
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axis import AxiStream
@@ -16,6 +17,8 @@ from hwtLib.amba.axis import AxiStream
 class AxisFrameGen(Unit):
     """
     Generator of axi stream frames for testing purposes
+    
+    .. hwt-schematic::
     """
     def _config(self):
         self.MAX_LEN = Param(511)

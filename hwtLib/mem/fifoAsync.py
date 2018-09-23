@@ -15,6 +15,7 @@ class FifoAsync(Fifo):
     Asynchronous fifo using BRAM memory, based on:
     http://www.asic-world.com/examples/vhdl/asyn_fifo.html
 
+    .. hwt-schematic:: _example_FifoAsync
     """
 
     def _declr(self):
@@ -123,8 +124,13 @@ class FifoAsync(Fifo):
         Out.wait(empty)
 
 
-if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+def _example_FifoAsync():
     u = FifoAsync()
     u.DEPTH.set(4)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_FifoAsync()
     print(toRtl(u))

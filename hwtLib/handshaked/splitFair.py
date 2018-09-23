@@ -19,7 +19,7 @@ class HsSplitFair(HsSplitCopy):
     If prioritized output is not ready,
     input with lowest index and ready is used
 
-    combinational
+    :note: combinational
 
 
     .. aafig::
@@ -38,6 +38,8 @@ class HsSplitFair(HsSplitCopy):
 
     :ivar selectedOneHot: handshaked interface with one hot encoded
         index of selected output
+    
+    .. hwt-schematic:: _example_HsSplitFair
     """
     def _config(self):
         HsSplitCopy._config(self)
@@ -93,7 +95,10 @@ class HsSplitFair(HsSplitCopy):
             self.getRd(self.dataIn)(Or(*rdSignals))
 
 
+def _example_HsSplitFair():
+    return HsSplitFair(Handshaked)
+
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    u = HsSplitFair(Handshaked)
+    u = _example_HsSplitFair()
     print(toRtl(u))

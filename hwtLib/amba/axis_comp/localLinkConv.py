@@ -25,6 +25,8 @@ class AxiSToLocalLink(Unit):
     format of user signal:
     user[0]: start of packet
     user[1]: end of packet
+    
+    .. hwt-schematic::
     """
     def _config(self):
         self.DATA_WIDTH = Param(32)
@@ -104,6 +106,8 @@ class LocalLinkToAxiS(Unit):
     format of user signal:
     user[0]: start of packet
     user[1]: end of packet
+    
+    .. hwt-schematic::
     """
     def _config(self):
         AxiSToLocalLink._config(self)

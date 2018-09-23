@@ -52,6 +52,8 @@ class HashTableCore(Unit):
         lookup  | HashTable +---------->
         -------->           |
                 +-----------+
+    
+    .. hwt-schematic:: _example_HashTableCore
 
     """
 
@@ -206,7 +208,11 @@ class HashTableCore(Unit):
         self.insertLogic(table.w)
 
 
+def _example_HashTableCore():
+    return HashTableCore(CRC_32)
+
+
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    u = HashTableCore(CRC_32)
+    u = _example_HashTableCore()
     print(toRtl(u))

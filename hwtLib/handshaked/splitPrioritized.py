@@ -7,10 +7,10 @@ from hwtLib.handshaked.splitCopy import HsSplitCopy
 
 class HsSplitPrioritized(HsSplitCopy):
     """
-    Split input stream to n output streams
-    Data is send to output interface which is ready and has lowest index
+    Split input stream to N output streams.
+    Data is send to output interface which is ready and has lowest index.
 
-    combinational
+    :note: combinational
 
     .. aafig::
                                      +-------+
@@ -24,6 +24,9 @@ class HsSplitPrioritized(HsSplitCopy):
                               |      +-------+
                               +------> out2  |
                                      +-------+
+    
+    .. hwt-schematic:: _example_HsSplitPrioritized
+                                
     """
     def _declr(self):
         HsSplitCopy._declr(self)
@@ -41,9 +44,14 @@ class HsSplitPrioritized(HsSplitCopy):
             self.getVld(out)(vld)
 
 
-if __name__ == "__main__":
+def _example_HsSplitPrioritized():
     from hwt.interfaces.std import Handshaked
-    from hwt.synthesizer.utils import toRtl
     u = HsSplitPrioritized(Handshaked)
     u.OUTPUTS.set(4)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_HsSplitPrioritized()
     print(toRtl(u))

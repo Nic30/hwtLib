@@ -16,8 +16,8 @@ from hwt.synthesizer.vectorUtils import iterBits
 
 class Lsfr(Unit):
     """
-    Linear shift feedback register,
-    form of hardware pseudorandom generator
+    Linear shift feedback register generator,
+    form of hardware pseudorandom generator.
 
     .. hwt-schematic::
     """

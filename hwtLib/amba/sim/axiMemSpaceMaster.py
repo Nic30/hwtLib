@@ -1,7 +1,8 @@
-from hwtLib.sim.abstractMemSpaceMaster import AbstractMemSpaceMaster
 from hwt.interfaces.agents.handshaked import HandshakedReadListener
-from hwtLib.amba.axi4Lite import Axi4Lite
+
 from hwtLib.amba.axi3Lite import Axi3Lite
+from hwtLib.amba.axi4Lite import Axi4Lite
+from hwtLib.sim.abstractMemSpaceMaster import AbstractMemSpaceMaster
 
 
 class TupleWithCallback(tuple):
@@ -11,8 +12,8 @@ class TupleWithCallback(tuple):
 
 class AxiLiteMemSpaceMaster(AbstractMemSpaceMaster):
     """
-    Controller of AxiLite simulation agent which keeps track of axi lite transactions
-    and aggregates them to proper register names on target bus
+    Controller of AxiLite simulation agent which keeps track of transactions
+    and allows struct like data access
     """
 
     def __init__(self, bus, registerMap):

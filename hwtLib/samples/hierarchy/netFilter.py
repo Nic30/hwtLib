@@ -55,6 +55,8 @@ class NetFilter(Unit):
     """
     This unit has actually no functionality it is just example
     of hierarchical design.
+    
+    .. hwt-schematic::
     """
 
     def _config(self):

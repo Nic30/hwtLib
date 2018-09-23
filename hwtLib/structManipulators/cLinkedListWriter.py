@@ -41,6 +41,8 @@ class CLinkedListWriter(Unit):
         wrPtr == rdPtr+1 => queue is full
         wrPtr+1 == rdPtr   => there is (2^PTR_WIDTH) - 2 of empty space
         spaceToWrite = rdPtr - wrPtr - 1 (with uint16_t)
+    
+    .. hwt-schematic::
     """
     def _config(self):
         self.ID_WIDTH = Param(4)

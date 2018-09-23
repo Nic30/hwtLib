@@ -55,6 +55,9 @@ class RamHsRAgent(AgentBase):
 
 
 class RamHsR(Interface):
+    """
+    Handshaked RAM port
+    """
     def _config(self):
         self.ADDR_WIDTH = Param(8)
         self.DATA_WIDTH = Param(8)
@@ -73,6 +76,8 @@ class RamHsR(Interface):
 class RamAsHs(Unit):
     """
     Converter from ram port to handshaked interfaces
+    
+    .. hwt-schematic::
     """
 
     def _config(self):

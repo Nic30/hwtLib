@@ -15,11 +15,10 @@ from hwtLib.interfaces.addrDataHs import AddrDataBitMaskHs
 @serializeParamsUniq
 class Cam(Unit):
     """
-    Content addressable memory
-
-    Simple combinational version
-
+    Content addressable memory.
     MATCH_LATENCY = 1
+
+    :note: Simple combinational version
 
     .. hwt-schematic::
     """

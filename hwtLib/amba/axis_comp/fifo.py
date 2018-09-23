@@ -9,22 +9,25 @@ from hwtLib.amba.axis_comp.reg import AxiSReg
 class AxiSFifo(AxiSCompBase, HandshakedFifo):
     """
     Synchronous fifo for axi-stream interface.
-
-    .. aafig::
-                 +-+-+-+-+-+
-         input   | | | | | | output
-       +-stream--> | | | | +-stream->
-                 | | | | | |
-                 +-+-+-+-+-+
+    
+    :see: :class:`hwtLib.handshaked.fifo.HandshakedFifo`
+    :note: interface is configurable and schematic is only example with AxiStream
+    
+    .. hwt-schematic:: _example_AxiSFifo
     """
     _regCls = AxiSReg
 
 
-if __name__ == "__main__":
-    from hwtLib.amba.axis import AxiStream_withoutSTRB
-    from hwt.synthesizer.utils import toRtl
+def _example_AxiSFifo():
+    from hwtLib.amba.axis import AxiStream
 
-    u = AxiSFifo(AxiStream_withoutSTRB)
+    u = AxiSFifo(AxiStream)
     u.DEPTH.set(4)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_AxiSFifo()
 
     print(toRtl(u))

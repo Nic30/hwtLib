@@ -12,15 +12,16 @@ from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
 
 class HsJoinFairShare(HsJoinPrioritized):
     """
-    Join input stream to single output stream
-    inputs with lower number has higher priority
-
-    Priority is changing every clock
+    Join multiple input streams into single output stream.
+    Priority is changing every clock period.
     If prioritized input is not sending valid data,
-    input with lowest index and valid is used
+    input with lowest index and valid is used.
 
-    combinational
+    :note: combinational
+
+    .. hwt-schematic: _example_HsJoinFairShare
     """
+
     def _config(self):
         HsJoinPrioritized._config(self)
         self.EXPORT_SELECTED = Param(True)
@@ -50,8 +51,10 @@ class HsJoinFairShare(HsJoinPrioritized):
             if i > index:
                 priorityOverdrives.append(p & vld)
 
-        # ack when no one with higher priority has vld or this input have the priority
-        ack = ~Or(*priorityOverdrives, *vldWithHigherPriority) | priorityReg[index]
+        # ack when no one with higher priority has vld or this input have the
+        # priority
+        ack = ~Or(*priorityOverdrives, *
+                  vldWithHigherPriority) | priorityReg[index]
         return ack
 
     def isSelectedLogic(self):
@@ -104,9 +107,14 @@ class HsJoinFairShare(HsJoinPrioritized):
         self.inputMuxLogic(isSelectedFlags, vldSignals)
 
 
-if __name__ == "__main__":
+def _example_HsJoinFairShare():
     from hwt.interfaces.std import Handshaked
-    from hwt.synthesizer.utils import toRtl
     u = HsJoinFairShare(Handshaked)
     u.INPUTS.set(3)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_HsJoinFairShare()
     print(toRtl(u))

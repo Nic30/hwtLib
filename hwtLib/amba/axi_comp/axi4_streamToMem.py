@@ -10,15 +10,16 @@ from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.pyUtils.arrayQuery import where
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.vectorUtils import fitTo
+
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, \
     PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
 from hwtLib.types.ctypes import uint32_t
-from hwt.synthesizer.vectorUtils import fitTo
 
 
 class Axi4streamToMem(Unit):
@@ -45,6 +46,8 @@ class Axi4streamToMem(Unit):
     3) then reads the data and back to 1
 
     or unit is enabled and driver disables it only for the time of reading.
+    
+    .. hwt-schematic::
     """
     def _config(self):
         self.ADDR_WIDTH = Param(32)

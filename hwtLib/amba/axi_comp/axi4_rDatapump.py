@@ -28,6 +28,8 @@ class TransEndInfo(HandshakeSync):
 
 class Axi_rDatapump(AxiDatapumpBase):
     """
+    .. hwt-schematic::
+
     Forward request to axi address read channel
     and collect data to data channel form axi read channel
 

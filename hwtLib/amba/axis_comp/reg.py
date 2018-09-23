@@ -7,14 +7,24 @@ from hwtLib.handshaked.reg import HandshakedReg
 
 class AxiSReg(AxiSCompBase, HandshakedReg):
     """
-    Register for axi stream interface
+    Register for AxiStream interfaces
+    
+    :see: :class:`hwtLib.handshaked.reg.HandshakedReg`
+    :note: interface is configurable and schematic is example with AxiStream
+
+    .. hwt-schematic:: _example_AxiSReg
     """
     pass
 
 
+def _example_AxiSReg():
+    from hwtLib.amba.axis import AxiStream
+    u = AxiSReg(AxiStream)
+    return u
+
+
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    from hwtLib.amba.axis import AxiStream_withoutSTRB
-    u = AxiSReg(AxiStream_withoutSTRB)
+    u = _example_AxiSReg()
 
     print(toRtl(u))

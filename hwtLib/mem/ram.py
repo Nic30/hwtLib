@@ -65,6 +65,8 @@ class RamSingleClock(Unit):
 class Ram_sp(Unit):
     """
     Single port RAM, write-first variant
+
+    .. hwt-schematic::
     """
 
     def _config(self):
@@ -91,6 +93,12 @@ class Ram_sp(Unit):
 
 
 class Ram_dp(Ram_sp):
+    """
+    True dual port RAM.
+    :note: write-first variant 
+    
+    .. hwt-schematic::
+    """
     def _declr(self):
         super()._declr()
         with self._paramsShared():

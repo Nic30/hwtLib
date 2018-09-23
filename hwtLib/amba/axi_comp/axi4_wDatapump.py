@@ -35,6 +35,8 @@ class BFifoIntf(Handshaked):
 
 class Axi_wDatapump(AxiDatapumpBase):
     """
+    .. hwt-schematic::
+
     Axi3/4 to axi write datapump,
     * splits request to correct request size
     * simplifies axi communication without lose of performance

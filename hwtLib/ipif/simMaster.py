@@ -4,7 +4,8 @@ from hwtLib.sim.abstractMemSpaceMaster import AbstractMemSpaceMaster
 
 class IPFISimMaster(AbstractMemSpaceMaster):
     """
-    Simulation address space master for IPIF interface
+    Controller of IPIF simulation agent which keeps track of transactions
+    and allows struct like data access
     """
     def _write(self, addr, size, data, mask, onDone=None):
         if onDone:

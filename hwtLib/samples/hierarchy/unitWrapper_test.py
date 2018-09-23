@@ -30,6 +30,9 @@ class ArrayIntfExample(Unit):
 
 
 class UnitWithParams(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _config(self):
         self.DATA_WIDTH = Param(64)
 

@@ -11,6 +11,9 @@ from hwtLib.handshaked.compBase import HandshakedCompBase
 class HandshakedReg(HandshakedCompBase):
     """
     Register for Handshaked interface
+    
+    :note: latency and delay can be specified as well as interface class
+    .. hwt-schematic:: _example_HandshakedReg
     """
 
     def _config(self):
@@ -109,9 +112,13 @@ class HandshakedReg(HandshakedCompBase):
             ds(dm)
 
 
-if __name__ == "__main__":
+def _example_HandshakedReg():
     from hwt.interfaces.std import Handshaked
-    from hwt.synthesizer.utils import toRtl
     u = HandshakedReg(Handshaked)
+    return u
 
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_HandshakedReg()
     print(toRtl(u))

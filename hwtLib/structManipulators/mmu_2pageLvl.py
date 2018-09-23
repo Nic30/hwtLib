@@ -32,6 +32,8 @@ class MMU_2pageLvl(Unit):
     :attention: rootPageTable has write only access
     :attention: use value -1 to mark that page is not mapped, it will result in segfault signal asserted high
                 when this address is accessed
+    
+    .. hwt-schematic::
     """
     def _config(self):
         # width of id signal for bus

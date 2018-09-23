@@ -10,10 +10,12 @@ from hwtLib.abstract.busEndpoint import BusEndpoint
 class BramPortEndpoint(BusEndpoint):
     """
     Delegate transaction from BrapmPort interface to interfaces
-    for fields of specified structure
+    for fields of specified structure.
 
-    :attention: interfaces are dynamically generated from names
-        of fields in structure template
+    :attention: Interfaces are dynamically generated from names
+        of fields in structure template.
+    
+    .. hwt-schematic:: _example_BramPortEndpoint
     """
     _getWordAddrStep = BramPort_withoutClk._getWordAddrStep
     _getAddrStep = BramPort_withoutClk._getAddrStep
@@ -82,9 +84,8 @@ class BramPortEndpoint(BusEndpoint):
             bus.dout(readReg)
 
 
-if __name__ == "__main__":
+def _example_BramPortEndpoint():
     from hwt.hdl.types.struct import HStruct
-    from hwt.synthesizer.utils import toRtl
     from hwtLib.types.ctypes import uint32_t
 
     u = BramPortEndpoint(
@@ -97,4 +98,10 @@ if __name__ == "__main__":
         )
     )
     u.DATA_WIDTH.set(32)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_BramPortEndpoint()
     print(toRtl(u))

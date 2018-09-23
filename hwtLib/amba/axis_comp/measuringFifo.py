@@ -6,8 +6,9 @@ from hwt.code import If, connect, Concat, log2ceil, SwitchLogic
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
+
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axis_comp.fifo import AxiSFifo
@@ -20,6 +21,8 @@ class AxiS_measuringFifo(Unit):
     """
     Fifo which are counting sizes of frames and sends it over
     dedicated handshaked interface "sizes"
+    
+    .. hwt-schematic:: _example_AxiS_measuringFifo
     """
     def __init__(self, stream_t=AxiStream):
         self._stream_t = stream_t
@@ -116,10 +119,15 @@ class AxiS_measuringFifo(Unit):
         connect(db.dataOut, self.dataOut)
 
 
-if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+def _example_AxiS_measuringFifo():
     u = AxiS_measuringFifo()
     #u.EXPORT_ALIGNMENT_ERROR.set(True)
     u.MAX_LEN.set(15)
     u.SIZES_BUFF_DEPTH.set(4)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_AxiS_measuringFifo()
     print(toRtl(u))

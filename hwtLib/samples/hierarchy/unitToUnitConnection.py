@@ -3,14 +3,18 @@
 
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
+
 from hwtLib.amba.axis import AxiStream
 from hwtLib.samples.hierarchy.simpleSubunit2 import SimpleSubunit2TC
 from hwtLib.samples.simple2withNonDirectIntConnection import Simple2withNonDirectIntConnection
 
 
 class UnitToUnitConnection(Unit):
+    """
+    .. hwt-schematic::
+    """
     def _config(self):
         self.DATA_WIDTH = Param(8)
 

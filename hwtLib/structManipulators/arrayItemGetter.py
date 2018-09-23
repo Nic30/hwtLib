@@ -16,6 +16,8 @@ from hwtLib.handshaked.streamNode import StreamNode
 class ArrayItemGetter(Unit):
     """
     Get specific item from array by index
+    
+    .. hwt-schematic::
     """
     def _config(self):
         self.ITEMS = Param(32)

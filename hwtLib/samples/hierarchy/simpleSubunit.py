@@ -3,6 +3,7 @@
 
 from hwt.interfaces.std import Signal
 from hwt.synthesizer.unit import Unit
+
 from hwtLib.samples.simple import SimpleUnit
 
 

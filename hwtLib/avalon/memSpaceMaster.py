@@ -11,7 +11,7 @@ class TupleWithCallback(tuple):
 
 class AvalonMmMemSpaceMaster(AbstractMemSpaceMaster):
     """
-    Controller of AxiLite simulation agent which keeps track of axi lite transactions
+    Controller of AvalonMM simulation agent which keeps track of axi lite transactions
     and aggregates them to proper register names on target bus
     """
 

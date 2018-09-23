@@ -6,9 +6,9 @@ from hwt.synthesizer.param import evalParam, Param
 class UnitWrapper(Unit):
     """
     Class which creates wrapper around original unit instance,
-    original unit will be sotred inside as subunit named baseUnit
+    original unit will be stored inside as subunit named baseUnit
 
-    :note: This is also example of lazy loaded interfaces
+    :note: This is example of lazy loaded interfaces
         and generating of external interfaces based on internal stucture.
     """
 

@@ -14,6 +14,8 @@ from hwtLib.abstract.busInterconnect import BusInterconnect, ACCESS_RW,\
 class IpifInterconnectMatrix(BusInterconnect):
     """
     Simple matrix interconnect for IPIF interface
+    
+    .. hwt-schematic:: _example_IpifInterconnectMatrix
     """
 
     def _config(self) -> None:
@@ -86,8 +88,7 @@ class IpifInterconnectMatrix(BusInterconnect):
         )
 
 
-if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+def _example_IpifInterconnectMatrix():
     RW = ACCESS_RW
     AUTO = AUTO_ADDR
     u = IpifInterconnectMatrix(
@@ -99,5 +100,10 @@ if __name__ == "__main__":
             (0x1000, 0x1000, RW),
         ]
     )
+    return u
 
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_IpifInterconnectMatrix()
     print(toRtl(u))

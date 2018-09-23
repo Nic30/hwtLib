@@ -12,6 +12,9 @@ def getSizeWidth(maxLen, dataWidth):
 
 
 class AxiInterconnectBase(Unit):
+    """
+    Abstract class for axi interconnects
+    """
     def getDpIntf(self, unit):
         raise NotImplementedError("Implement this function in your implementation")
 

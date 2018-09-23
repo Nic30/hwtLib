@@ -30,6 +30,8 @@ class CLinkedListReader(Unit):
     baseAddr is address of actual node
 
     :attention: device reads only chunks of size <= BUFFER_CAPACITY/2,
+    
+    .. hwt-schematic::
     """
     def _config(self):
         self.ID_WIDTH = Param(4)

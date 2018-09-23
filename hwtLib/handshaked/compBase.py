@@ -4,6 +4,9 @@ from hwt.synthesizer.unit import Unit
 
 
 class HandshakedCompBase(Unit):
+    """
+    Abstract class for components which has Handshaked interface as main
+    """
 
     def __init__(self, hsIntfCls):
         """
