@@ -11,8 +11,9 @@ from hwtLib.handshaked.compBase import HandshakedCompBase
 class HandshakedReg(HandshakedCompBase):
     """
     Register for Handshaked interface
-    
+
     :note: latency and delay can be specified as well as interface class
+
     .. hwt-schematic:: _example_HandshakedReg
     """
 

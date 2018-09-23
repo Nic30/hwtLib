@@ -35,12 +35,15 @@ class BFifoIntf(Handshaked):
 
 class Axi_wDatapump(AxiDatapumpBase):
     """
-    .. hwt-schematic::
-
     Axi3/4 to axi write datapump,
     * splits request to correct request size
     * simplifies axi communication without lose of performance
-    \n""" + AxiDatapumpBase.__doc__
+
+    :see: :class:`hwtLib.amba.axi_comp.axi_datapump_base.AxiDatapumpBase`
+
+    .. hwt-schematic::
+    """
+
     def __init__(self, axiAddrCls=Axi4_addr, axiWCls=Axi4_w):
         self._axiWCls = axiWCls
         AxiDatapumpBase.__init__(self, axiAddrCls=axiAddrCls)

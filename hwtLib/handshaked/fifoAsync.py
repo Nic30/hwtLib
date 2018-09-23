@@ -49,7 +49,7 @@ class HsFifoAsync(HandshakedFifo):
 def _example_HsFifoAsync():
     from hwt.interfaces.std import Handshaked
     u = HsFifoAsync(Handshaked)
-    u.DEPTH.set(4)
+    u.DEPTH.set(5)
     return u
 
 

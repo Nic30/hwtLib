@@ -28,8 +28,6 @@ class TransEndInfo(HandshakeSync):
 
 class Axi_rDatapump(AxiDatapumpBase):
     """
-    .. hwt-schematic::
-
     Forward request to axi address read channel
     and collect data to data channel form axi read channel
 
@@ -42,7 +40,11 @@ class Axi_rDatapump(AxiDatapumpBase):
 
     errorRead stays high when there was error on axi read channel
     it will not affect unit functionality
-    \n""" + AxiDatapumpBase.__doc__
+   
+    :see: :class:`hwtLib.amba.axi_comp.axi_datapump_base.AxiDatapumpBase`
+
+    .. hwt-schematic::
+    """
 
     def _declr(self):
         super()._declr()  # add clk, rst, axi addr channel and req channel

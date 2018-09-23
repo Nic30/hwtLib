@@ -49,6 +49,7 @@ class StructReader(AxiS_frameParser):
                                      +---------+
 
     :note: names in the picture are just illustrative
+
     .. hwt-schematic:: _example_StructReader
     """
     def __init__(self, structT, tmpl=None, frames=None):

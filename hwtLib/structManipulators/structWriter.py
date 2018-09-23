@@ -46,6 +46,7 @@ class StructWriter(StructReader):
                                      +---------+
 
     :note: names in the picture are just illustrative
+
     .. hwt-schematic:: _example_StructWriter
     """
     def _config(self):
