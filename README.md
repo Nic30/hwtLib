@@ -46,3 +46,5 @@ sudo pip3 install hwtLib
 * [FPGAwars FPGA-peripherals](https://github.com/FPGAwars/FPGA-peripherals) - Verilog, simple peripherals
 * [PoC](https://github.com/VLSI-EDA/PoC) - VHDL, utils
 * [picorv32](https://github.com/cliffordwolf/picorv32) - Verilog, A Size-Optimized RISC-V SoC
+* [openrisc](https://github.com/openrisc) - OpenRISC, FuseSoC, peripherals and cpu parts
+* [NyuziProcessor](https://github.com/jbush001/NyuziProcessor) - GPGPU
