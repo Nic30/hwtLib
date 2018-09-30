@@ -85,6 +85,6 @@ if __name__ == "__main__":
     print(toRtl(u))
 
     # import os
-    # hwt.serializer.packager import Packager
-    # p = Packager(u)
+    # hwt.serializer.packager import IpPackager
+    # p = IpPackager(u)
     # p.createPackage(os.path.expanduser("~/Documents/test_ip_repo/")) 
