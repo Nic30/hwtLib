@@ -1,21 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Optional, Tuple
+
 from hwt.code import If, connect, log2ceil
 from hwt.interfaces.std import VectSignal, Clk
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn, propagateRstn
 from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import packIntf, \
     connectPacked
 from hwt.synthesizer.param import Param
+
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.mem.fifo import Fifo
-from typing import Optional, Tuple
 
 
 class HandshakedFifo(HandshakedCompBase):
     """
-    Fifo for handshaked interfaces
+    Synchronous FIFO for handshaked interfaces
+
+    .. aafig::
+                 +-+-+-+-+-+
+         input   | | | | | | output
+       +-stream--> | | | | +-stream->
+                 | | | | | |
+                 +-+-+-+-+-+
+
+    .. hwt-schematic:: _example_HandshakedFifo
     """
     _regCls = HandshakedReg
 
@@ -38,7 +49,8 @@ class HandshakedFifo(HandshakedCompBase):
         f.EXPORT_SIZE.set(self.EXPORT_SIZE)
 
         if self.EXPORT_SIZE:
-            self.size = VectSignal(log2ceil(self.DEPTH + 1 + 1), signed=False)._m()
+            self.size = VectSignal(
+                log2ceil(self.DEPTH + 1 + 1), signed=False)._m()
 
     def _impl(self, clks: Optional[Tuple[Clk, Clk]]=None):
         """
@@ -50,7 +62,7 @@ class HandshakedFifo(HandshakedCompBase):
         # connect clock and resets
         if clks is None:
             propagateClkRstn(self)
-            inClk, outClk = (None, None) 
+            inClk, outClk = (None, None)
         else:
             propagateRstn(self)
             inClk, outClk = clks
@@ -85,15 +97,20 @@ class HandshakedFifo(HandshakedCompBase):
             If(out_vld,
                self.size(sizeTmp + 1)
             ).Else(
-               connect(self.fifo.size, self.size, fit=True)
+                connect(self.fifo.size, self.size, fit=True)
             )
 
 
-if __name__ == "__main__":
+def _example_HandshakedFifo():
     from hwt.interfaces.std import Handshaked
-    from hwt.synthesizer.utils import toRtl
     u = HandshakedFifo(Handshaked)
     u.DEPTH.set(8)
     u.DATA_WIDTH.set(4)
     u.EXPORT_SIZE.set(True)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_HandshakedFifo()
     print(toRtl(u))

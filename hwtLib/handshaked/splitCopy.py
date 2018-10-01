@@ -13,7 +13,7 @@ class HsSplitCopy(HandshakedCompBase):
     Clone input stream to n identical output streams
     transaction is made in all interfaces or none of them
 
-    combinational
+    :note: combinational
 
     .. aafig::
                                      +---------+
@@ -27,6 +27,9 @@ class HsSplitCopy(HandshakedCompBase):
                               |      +---------+
                               +------> clone2  |
                                      +---------+
+    
+    .. hwt-schematic:: _example_HsSplitCopy
+    
     """
     def _config(self):
         self.OUTPUTS = Param(2)
@@ -63,7 +66,12 @@ class HsSplitCopy(HandshakedCompBase):
             vld(o)(_vld)
 
 
+def _example_HsSplitCopy():
+    u = HsSplitCopy(Handshaked)
+    return u
+
+
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    u = HsSplitCopy(Handshaked)
+    u = _example_HsSplitCopy()
     print(toRtl(u))

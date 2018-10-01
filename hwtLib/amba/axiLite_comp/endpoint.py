@@ -15,7 +15,9 @@ from hwt.hdl.types.bits import Bits
 class AxiLiteEndpoint(BusEndpoint):
     """
     Delegate request from AxiLite interface to fields of structure
-    write has higher priority
+    write has higher priority.
+
+    .. hwt-schematic:: _example_AxiLiteEndpoint
     """
     _getWordAddrStep = Axi4Lite._getWordAddrStep
     _getAddrStep = Axi4Lite._getAddrStep
@@ -222,9 +224,7 @@ class AxiLiteEndpoint(BusEndpoint):
         self.readPart(awAddr, w_hs)
 
 
-if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
-    from hwt.serializer.vhdl.serializer import VhdlSerializer
+def _example_AxiLiteEndpoint():
     from hwt.hdl.types.struct import HStruct
     from hwtLib.types.ctypes import uint32_t, uint16_t
 
@@ -256,6 +256,12 @@ if __name__ == "__main__":
     # configuration
     u.ADDR_WIDTH.set(8)
     u.DATA_WIDTH.set(32)
+    return u
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    from hwt.serializer.vhdl.serializer import VhdlSerializer
+    u = _example_AxiLiteEndpoint()
 
     print(toRtl(u, serializer=VhdlSerializer))
     print(u.bus)

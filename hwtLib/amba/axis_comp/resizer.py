@@ -12,7 +12,7 @@ from hwtLib.handshaked.streamNode import StreamNode
 
 class AxiS_resizer(AxiSCompBase):
     """
-    Change data with of interface
+    Change data with of AxiStream interface
 
     :attention: start of frame is expected to be aligned on first word
     :attention: strb can be not fully set only in last word
@@ -38,7 +38,16 @@ class AxiS_resizer(AxiSCompBase):
         |             |  +-----------+   +-------------+
         |             |
         +-------------+
+
+
+    :note: interface is configurable and schematic is example with AxiStream
+
+    :note: first schematic is for upsize mode, second one is for downsize mode
+
+    .. hwt-schematic:: _example_AxiS_resizer_upscale
+    .. hwt-schematic:: _example_AxiS_resizer_downscale
     """
+
     def _config(self):
         AxiSCompBase._config(self)
         self.OUT_DATA_WIDTH = Param(64)
@@ -59,7 +68,8 @@ class AxiS_resizer(AxiSCompBase):
         for i in range(ITEMS - 1):  # -1 because if it is last we do not need this
             strbHi = ITEMS * ITEM_W
             strbLo = (i + 1) * ITEM_W
-            othersNotValid = actualItemIndx._eq(i) & inStrb[strbHi:strbLo]._eq(0)
+            othersNotValid = actualItemIndx._eq(
+                i) & inStrb[strbHi:strbLo]._eq(0)
             if res is None:
                 res = othersNotValid
             else:
@@ -93,7 +103,8 @@ class AxiS_resizer(AxiSCompBase):
                 s = self._sig("item_%d_%s" % (wordIndx, inp._name), inp._dtype)
 
                 if wordIndx <= ITEMS - 1:
-                    r = self._reg("reg_" + inp._name + "_%d" % wordIndx, inp._dtype, defVal=0)
+                    r = self._reg("reg_" + inp._name + "_%d" %
+                                  wordIndx, inp._dtype, defVal=0)
 
                     If(hs & isLastItem,
                        r(0)
@@ -102,15 +113,15 @@ class AxiS_resizer(AxiSCompBase):
                     )
 
                     If(itemCntr._eq(wordIndx),
-                       s(inp)
+                        s(inp)
                     ).Else(
-                       s(r)
+                        s(r)
                     )
                 else:  # last item does not need register
                     If(itemCntr._eq(wordIndx),
-                       s(inp)
+                        s(inp)
                     ).Else(
-                       s(0)
+                        s(0)
                     )
 
                 outputs[outp].append(s)
@@ -170,11 +181,11 @@ class AxiS_resizer(AxiSCompBase):
             w = outp._dtype.bit_length()
             Switch(itemCntr)\
             .addCases([
-                (wordIndx, outp(inp[((wordIndx + 1) * w):(w * wordIndx)]))
-                  for wordIndx in range(ITEMS)
-                ])\
+                    (wordIndx, outp(inp[((wordIndx + 1) * w):(w * wordIndx)]))
+                    for wordIndx in range(ITEMS)
+            ])\
             .Default(
-               outp(None)
+                outp(None)
             )
 
         # connect others signals directly
@@ -183,7 +194,8 @@ class AxiS_resizer(AxiSCompBase):
                 outp(inp)
 
         self.dataOut.last(dataIn.last & isLastItem)
-        self.getRd(dataIn)(self.getRd(self.dataOut) & isLastItem & dataIn.valid)
+        self.getRd(dataIn)(self.getRd(self.dataOut)
+                           & isLastItem & dataIn.valid)
         self.getVld(self.dataOut)(self.getVld(dataIn))
 
         If(hs,
@@ -203,13 +215,31 @@ class AxiS_resizer(AxiSCompBase):
         elif IN_DW > OUT_DW:  # DOWNSCALE
             self.downscale(IN_DW, OUT_DW)
         else:  # same
-            raise AssertionError("Input and output width are same, this instance is useless")
+            raise AssertionError(
+                "Input and output width are same, this instance is useless")
 
-if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+
+def _example_AxiS_resizer_upscale():
+    from hwtLib.amba.axis import AxiStream_withId
+
+    u = AxiS_resizer(AxiStream_withId)
+    u.DATA_WIDTH.set(32)
+    u.OUT_DATA_WIDTH.set(64)
+
+    return u
+
+
+def _example_AxiS_resizer_downscale():
     from hwtLib.amba.axis import AxiStream_withId
 
     u = AxiS_resizer(AxiStream_withId)
     u.DATA_WIDTH.set(64)
     u.OUT_DATA_WIDTH.set(32)
+
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_AxiS_resizer_downscale()
     print(toRtl(u))

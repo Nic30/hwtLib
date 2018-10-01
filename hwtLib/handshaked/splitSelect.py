@@ -3,17 +3,18 @@
 
 from hwt.code import SwitchLogic
 from hwt.interfaces.std import Handshaked
-from hwt.synthesizer.param import Param
-from hwtLib.handshaked.compBase import HandshakedCompBase
-from hwtLib.handshaked.reg import HandshakedReg
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.hObjList import HObjList
+from hwt.synthesizer.param import Param
+
+from hwtLib.handshaked.compBase import HandshakedCompBase
+from hwtLib.handshaked.reg import HandshakedReg
 
 
 class HsSplitSelect(HandshakedCompBase):
     """
-    Split data from input interface to output interface based on explicit
-    output index provided by select interface
+    Split data from input interface to N output interfaces based on explicit
+    output index provided by select interface.
 
     .. aafig::
                  *----+ dataOut_0
@@ -26,6 +27,9 @@ class HsSplitSelect(HandshakedCompBase):
                    |
                    +
                  select
+    
+    .. hwt-schematic:: _example_HsSplitSelect
+    
     """
     def _config(self):
         self.OUTPUTS = Param(3)
@@ -45,7 +49,10 @@ class HsSplitSelect(HandshakedCompBase):
             self.dataOut = HObjList(
                 self.intfCls()._m() for _ in range(int(self.OUTPUTS))
             )
-
+    
+    def _select_consume_en(self):
+        return True
+    
     def _impl(self):
         In = self.dataIn
         rd = self.getRd
@@ -75,7 +82,7 @@ class HsSplitSelect(HandshakedCompBase):
                   ] +
                   [(sel.data[index],
                     [rd(In)(rd(out)),
-                     sel.rd(rd(out) & self.getVld(din) & sel.vld)])
+                     sel.rd(rd(out) & self.getVld(din) & sel.vld & self._select_consume_en())])
                    for index, out in enumerate(self.dataOut)],
             default=[
                      sel.rd(None),
@@ -84,7 +91,11 @@ class HsSplitSelect(HandshakedCompBase):
         )
 
 
+def _example_HsSplitSelect():
+    return  HsSplitSelect(Handshaked)
+
+
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    u = HsSplitSelect(Handshaked)
+    u = _example_HsSplitSelect()
     print(toRtl(u))

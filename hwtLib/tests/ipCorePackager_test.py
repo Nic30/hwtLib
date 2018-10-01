@@ -11,14 +11,14 @@ from hwt.serializer.ip_packager.interfaces.std import IP_Handshake
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import serializeAsIpcore
 from hwtLib.amba.axi3 import Axi3, Axi3_withAddrUser
-from hwtLib.amba.axi4_streamToMem import Axi4streamToMem
+from hwtLib.amba.axi_comp.axi4_streamToMem import Axi4streamToMem
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axis import AxiStream_withUserAndStrb, AxiStream_withId
 from hwtLib.amba.axis_comp.en import AxiS_en
-from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl
+from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl
 from hwtLib.mem.fifo import Fifo
 from hwtLib.types.ctypes import uint64_t
-from hwtLib.uart.intf import Uart
+from hwtLib.peripheral.uart.intf import Uart
 
 
 class Handshaked_withIP(Handshaked):

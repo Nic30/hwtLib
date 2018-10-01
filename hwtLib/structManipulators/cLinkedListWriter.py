@@ -11,7 +11,7 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import fitTo
-from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf, AxiWDatapumpIntf
+from hwtLib.amba.axi_comp.axi_datapump_intf import AxiRDatapumpIntf, AxiWDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 
@@ -41,6 +41,8 @@ class CLinkedListWriter(Unit):
         wrPtr == rdPtr+1 => queue is full
         wrPtr+1 == rdPtr   => there is (2^PTR_WIDTH) - 2 of empty space
         spaceToWrite = rdPtr - wrPtr - 1 (with uint16_t)
+    
+    .. hwt-schematic::
     """
     def _config(self):
         self.ID_WIDTH = Param(4)

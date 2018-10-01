@@ -6,11 +6,25 @@ from hwtLib.handshaked.splitCopy import HsSplitCopy
 
 
 class AxiSSplitCopy(AxiSCompBase, HsSplitCopy):
+    """
+    Stream duplicator for AxiStream interfaces
+    
+    :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
+
+    .. hwt-schematic:: _example_AxiSSplitCopy
+    """
     pass
 
 
-if __name__ == "__main__":
+def _example_AxiSSplitCopy():
     from hwtLib.amba.axis import AxiStream
-    from hwt.synthesizer.utils import toRtl
     u = AxiSSplitCopy(AxiStream)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+
+    u = _example_AxiSSplitCopy()
+
     print(toRtl(u))

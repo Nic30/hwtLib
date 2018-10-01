@@ -1,4 +1,3 @@
-from hwt.code import log2ceil
 from hwt.hdl.constants import DIRECTION, READ, WRITE, NOP
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import VectSignal, Signal

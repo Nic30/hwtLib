@@ -20,6 +20,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.byteOrder import reverseByteOrder
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.amba.axis_comp.frameParser_utils import ListOfOutNodeInfos, \
     ExclusieveListOfHsNodes, InNodeInfo, InNodeReadOnlyInfo, OutNodeInfo, \
@@ -30,7 +31,11 @@ from hwtLib.handshaked.builder import HsBuilder
 
 class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
     """
-    Parse frame specified by HStruct into fields
+    Parse frame specified by HType (HStruct, HUnion, ...) into fields
+    
+    :note: if special frame format is required,
+        it can be specified by TransTmpl instance and list of FrameTmpl
+        (Output data structure can be splited into multiple frames as required)
 
     .. aafig::
                                      +---------+
@@ -46,7 +51,10 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
                                      +---------+
 
     :note: names in the picture are just illustrative
+
+    .. hwt-schematic:: _example_AxiS_frameParser
     """
+
     def __init__(self, axiSCls,
                  structT: HdlType,
                  tmpl: Optional[TransTmpl]=None,
@@ -174,9 +182,11 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
 
             # for unions
             for choice in part:
-                # connect data signals of choices and collect info about streams
+                # connect data signals of choices and collect info about
+                # streams
                 intfOfChoice = tToIntf[choice.tmpl.origin]
-                selIndex, isSelected, isSelectValid = self.choiceIsSelected(intfOfChoice)
+                selIndex, isSelected, isSelectValid = self.choiceIsSelected(
+                    intfOfChoice)
                 _exclusiveEn = isSelectValid & isSelected & exclusiveEn
 
                 unionMemberPart = ListOfOutNodeInfos()
@@ -211,10 +221,10 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
             signalsOfParts.append(fPartSig)
             intf = self.dataOut._fieldsToInterfaces[fieldInfo]
             intf.data(self.byteOrderCare(
-                            Concat(
-                                   *reversed(signalsOfParts)
-                                  ))
-                      )
+                Concat(
+                    *reversed(signalsOfParts)
+                ))
+            )
             on = OutNodeInfo(self, intf, en, exclusiveEn)
             hsNondes.append(on)
         else:
@@ -226,7 +236,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
                                  fPartSig._dtype)
             If(dataVld,
                fPartReg(fPartSig)
-            )
+               )
             signalsOfParts.append(fPartReg)
 
     def _impl(self):
@@ -237,7 +247,8 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
         maxWordIndex = words[-1][0]
         hasMultipleWords = maxWordIndex > 0
         if hasMultipleWords:
-            wordIndex = self._reg("wordIndex", Bits(log2ceil(maxWordIndex + 1)), 0)
+            wordIndex = self._reg("wordIndex", Bits(
+                log2ceil(maxWordIndex + 1)), 0)
         else:
             wordIndex = None
 
@@ -266,28 +277,25 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
 
         r.ready(busReady)
 
-
         if hasMultipleWords:
             if self.SYNCHRONIZE_BY_LAST:
                 last = r.last
             else:
                 last = wordIndex._eq(maxWordIndex)
-                
+
             If(busVld & busReady,
                 If(last,
                    wordIndex(0)
-                ).Else(
+                   ).Else(
                     wordIndex(wordIndex + 1)
                 )
-            )
+               )
 
 
-if __name__ == "__main__":
-    from hwtLib.types.ctypes import uint16_t, uint32_t, uint64_t, int32_t
-    from hwt.synthesizer.utils import toRtl
+def _example_AxiS_frameParser():
     from hwtLib.amba.axis import AxiStream
-
-    #t = HStruct(
+    from hwtLib.types.ctypes import uint32_t, uint64_t
+    # t = HStruct(
     #  (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
     #  (uint64_t, None),  # name = None means this field will be ignored
     #  (uint64_t, "item1"),
@@ -309,7 +317,7 @@ if __name__ == "__main__":
     #   ),
     #   "struct0")
     #  )
-    #t = HUnion(
+    # t = HUnion(
     #    (uint32_t, "a"),
     #    (int32_t, "b")
     #    )
@@ -318,16 +326,24 @@ if __name__ == "__main__":
         (HStruct(
             (uint64_t, "itemA0"),
             (uint64_t, "itemA1")
-            ), "frameA"),
+        ), "frameA"),
         (HStruct(
             (uint32_t, "itemB0"),
             (uint32_t, "itemB1"),
             (uint32_t, "itemB2"),
             (uint32_t, "itemB3")
-            ), "frameB")
-        )
+        ), "frameB")
+    )
     u = AxiS_frameParser(AxiStream, t)
     u.DATA_WIDTH.set(64)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+
+    u = _example_AxiS_frameParser()
+
     print(
-    toRtl(u)
-       )
+        toRtl(u)
+    )

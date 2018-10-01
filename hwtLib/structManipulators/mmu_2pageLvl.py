@@ -7,7 +7,7 @@ from hwt.interfaces.std import Handshaked, BramPort_withoutClk, \
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
+from hwtLib.amba.axi_comp.axi_datapump_intf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.ramAsHs import RamAsHs
 from hwtLib.handshaked.streamNode import StreamNode
@@ -32,6 +32,8 @@ class MMU_2pageLvl(Unit):
     :attention: rootPageTable has write only access
     :attention: use value -1 to mark that page is not mapped, it will result in segfault signal asserted high
                 when this address is accessed
+    
+    .. hwt-schematic::
     """
     def _config(self):
         # width of id signal for bus

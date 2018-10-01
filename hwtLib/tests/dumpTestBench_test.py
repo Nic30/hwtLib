@@ -3,7 +3,7 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.samples.builders.handshakedBuilderSimple import \
+from hwtLib.examples.builders.handshakedBuilderSimple import \
     HandshakedBuilderSimple
 
 

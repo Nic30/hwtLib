@@ -8,16 +8,16 @@ from hwt.hdl.assignment import Assignment
 from hwt.hdl.typeShortcuts import hBit
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
-from hwtLib.samples.rtlLvl.indexOps import IndexOps
+from hwtLib.examples.rtlLvl.indexOps import IndexOps
 from hwtLib.mem.atomic.flipReg import FlipRegister
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import synthesised
 from hwt.hdl.statements import HdlStatement
 from hwtLib.mem.cuckooHashTable import CuckooHashTable
-from hwtLib.samples.statements.ifStm import SimpleIfStatement3
+from hwtLib.examples.statements.ifStm import SimpleIfStatement3
 from hwt.synthesizer.dummyPlatform import DummyPlatform
-from hwtLib.samples.mem.ram import SimpleAsyncRam
-from hwtLib.logic.segment7 import Segment7
-from hwtLib.i2c.masterBitCntrl import I2cMasterBitCtrl
+from hwtLib.examples.mem.ram import SimpleAsyncRam
+from hwtLib.peripheral.segment7 import Segment7
+from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl
 
 
 class BasicSynthesisTC(unittest.TestCase):

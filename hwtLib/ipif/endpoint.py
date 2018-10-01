@@ -14,6 +14,8 @@ class IpifEndpoint(BusEndpoint):
     :attention: interfaces are dynamically generated from names of fileds
         in structure template
     :attention: byte enable and register clock enable signals are ignored
+    
+    .. hwt-schematic:: _example_IpifEndpoint
     """
 
     _getWordAddrStep = Ipif._getWordAddrStep
@@ -92,8 +94,7 @@ class IpifEndpoint(BusEndpoint):
         )
 
 
-if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+def _example_IpifEndpoint():
     from hwt.hdl.types.struct import HStruct
     from hwtLib.types.ctypes import uint32_t
     u = IpifEndpoint(
@@ -102,4 +103,10 @@ if __name__ == "__main__":
                 (uint32_t, "field1"),
                 (uint32_t[32], "bramMapped")
                 ))
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_IpifEndpoint()
     print(toRtl(u))

@@ -10,7 +10,7 @@ from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
+from hwtLib.amba.axi_comp.axi_datapump_intf import AxiRDatapumpIntf
 from hwtLib.amba.axis import AxiStream_withoutSTRB
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.handshaked.builder import HsBuilder
@@ -50,6 +50,7 @@ class StructReader(AxiS_frameParser):
 
     :note: names in the picture are just illustrative
 
+    .. hwt-schematic:: _example_StructReader
     """
     def __init__(self, structT, tmpl=None, frames=None):
         """
@@ -153,9 +154,8 @@ class StructReader(AxiS_frameParser):
             myIntf(parserIntf)
 
 
-if __name__ == "__main__":
+def _example_StructReader():
     from hwtLib.types.ctypes import uint16_t, uint32_t, uint64_t
-    from hwt.synthesizer.utils import toRtl
 
     s = HStruct(
         (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
@@ -178,4 +178,10 @@ if __name__ == "__main__":
         )
 
     u = StructReader(s)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_StructReader()
     print(toRtl(u))

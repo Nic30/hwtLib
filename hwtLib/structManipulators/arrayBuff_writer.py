@@ -11,11 +11,10 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axiDatapumpIntf import AddrSizeHs, AxiWDatapumpIntf
+from hwtLib.amba.axi_comp.axi_datapump_intf import AddrSizeHs, AxiWDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 from hwt.synthesizer.vectorUtils import fitTo
-from hwt.interfaces.structIntf import IntfMap
 
 
 stT = HEnum("st_t", ["waitOnInput", "waitOnDataTx", "waitOnAck"])
@@ -33,6 +32,8 @@ class ArrayBuff_writer(Unit):
     [TODO] fully pipeline
 
     items -> buff -> internal logic -> axi datapump
+    
+    .. hwt-schematic::
     """
 
     def _config(self):

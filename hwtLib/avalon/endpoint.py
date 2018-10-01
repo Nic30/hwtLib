@@ -16,6 +16,8 @@ class AvalonMmEndpoint(BusEndpoint):
         from names of fileds in structure template
     :attention: byte enable and register clock enable signals
         are ignored
+
+    .. hwt-schematic:: _example_AvalonMmEndpoint
     """
 
     _getWordAddrStep = AvalonMM._getWordAddrStep
@@ -39,23 +41,23 @@ class AvalonMmEndpoint(BusEndpoint):
         addrVld = bus.read | bus.write
 
         st = FsmBuilder(self, st_t)\
-        .Trans(st_t.idle,
-            (addrVld & bus.read, st_t.rdData),
-            (addrVld & bus.write, st_t.idle)
-        ).Trans(st_t.readDelay,
-            st_t.rdData
-        ).Trans(st_t.rdData,
-            st_t.idle
-        ).stateReg
+            .Trans(st_t.idle,
+                (addrVld & bus.read, st_t.rdData),
+                (addrVld & bus.write, st_t.idle)
+            ).Trans(st_t.readDelay,
+                st_t.rdData
+            ).Trans(st_t.rdData,
+                st_t.idle
+            ).stateReg
 
         wAck = True
         wr = bus.write & wAck
         isInAddrRange = (self.isInMyAddrRange(bus.address))
 
         If(isInAddrRange,
-           bus.response(RESP_OKAY)
+            bus.response(RESP_OKAY)
         ).Else(
-           bus.response(RESP_SLAVEERROR)
+            bus.response(RESP_SLAVEERROR)
         )
         bus.waitRequest(bus.read & ~st._eq(st_t.rdData))
         bus.readDataValid(st._eq(st_t.rdData))
@@ -80,10 +82,10 @@ class AvalonMmEndpoint(BusEndpoint):
             port.we(_isMyAddr & wr)
 
             dataToBus = If(wasMyAddr & st._eq(st_t.rdData),
-                bus.readData(port.dout)
-            ).Else(
-                dataToBus
-            )
+                           bus.readData(port.dout)
+                        ).Else(
+                            dataToBus
+                        )
 
             port.din(bus.writeData)
 
@@ -97,21 +99,26 @@ class AvalonMmEndpoint(BusEndpoint):
         _isInBramFlags = []
         Switch(bus.address)\
         .addCases(
-                [(t.bitAddr // ADDR_STEP, bus.readData(self.getPort(t).din))
-                 for t in self._directlyMapped]
+            [(t.bitAddr // ADDR_STEP, bus.readData(self.getPort(t).din))
+             for t in self._directlyMapped]
         ).Default(
             dataToBus
         )
 
 
-if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+def _example_AvalonMmEndpoint():
     from hwt.hdl.types.struct import HStruct
     from hwtLib.types.ctypes import uint32_t
     u = AvalonMmEndpoint(
-            HStruct(
-                (uint32_t, "field0"),
-                (uint32_t, "field1"),
-                (uint32_t[32], "bramMapped")
-                ))
+        HStruct(
+            (uint32_t, "field0"),
+            (uint32_t, "field1"),
+            (uint32_t[32], "bramMapped")
+        ))
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_AvalonMmEndpoint
     print(toRtl(u))

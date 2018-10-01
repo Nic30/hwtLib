@@ -3,117 +3,48 @@
 [![Travis-ci Build Status](https://travis-ci.org/Nic30/hwtLib.png?branch=master)](https://travis-ci.org/Nic30/hwtLib)[![PyPI version](https://badge.fury.io/py/hwtLib.svg)](http://badge.fury.io/py/hwtLib)[![Coverage Status](https://coveralls.io/repos/github/Nic30/hwtLib/badge.svg?branch=master)](https://coveralls.io/github/Nic30/hwtLib?branch=master)[![Documentation Status](https://readthedocs.org/projects/hwtlib/badge/?version=latest)](http://hwtlib.readthedocs.io/en/latest/?badge=latest)
 [![Python version](https://img.shields.io/pypi/pyversions/hwtLib.svg)](https://img.shields.io/pypi/pyversions/hwtLib.svg)
 
-Library can be installed by command: 
-``` bash
-sudo pip3 install hwtLib
-```
 
 hwtLib is the library of hardware components for [hwt framework](https://github.com/Nic30/hwt). Relation of hwt and hwtLib is similar as C and stdlib relation. 
 
 
-Any component can be exported as IPCore using Packager class from hwt or as HDL code by toRtl(). Target language is specified by keyword serializer.
-
-```python
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-from hwt.hdl.constants import Time
-from hwt.interfaces.std import Handshaked
-from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.unit import Unit
-from hwtLib.handshaked.builder import HsBuilder
-
-class HandshakedBuilderSimple(Unit):
-    """
-    Simple example of HsBuilder which can build components
-    for Handshaked interfaces
-    """
-    def _declr(self):
-        # declare interfaces
-        addClkRstn(self)
-        self.a = Handshaked()
-        self.b = Handshaked()
-
-    def _impl(self):
-        # instanciate builder
-        b = HsBuilder(self, self.a)
-
-        # HsBuilder is derived from AbstractStreamBuilder and implements
-        # it can:
-        # * instantiate and connect:
-        #    * fifos, registers, delays
-        #    * frame builders, frame parsers
-        #    * data width resizers
-        #    * various stream join/split components
-        #    * clock domain crossing
-        # there are other examples in https://github.com/Nic30/hwtLib/tree/master/hwtLib/samples/builders
-
-        # for most of stream interfaces like AvalonST, FrameLink ...
-        # there is builder with same program interface
-
-        # instanciate handshaked register (default buff items=1)
-        # and connect it to end (which is self.a)
-        b.buff()
-
-        # instantiate fifo with 16 items and connect it to output of register
-        # from previous step
-        b.buff(items=16)
-
-        # instantiate register with latency=2 and delay=1 and connect it
-        # to output of fifo from previous step
-        b.buff(latency=2, delay=1)
-
-        # b.end is now output of register from previous step,
-        # connect it to uptput
-        self.b(b.end)
 
 
-# SimTestCase is unittest.TestCase with some extra methods
-class HandshakedBuilderSimpleTC(SimTestCase):
-    def test_passData(self):
-        u = HandshakedBuilderSimple()
-        # instanciate simulation agents and convert unit to simulation model
-        self.prepareUnit(u)
+## Content
 
-        # add data on input of agent for "a" interface
-        u.a._ag.data.extend([1, 2, 3, 4])
+Majority of components in this library is actually configurable component generator.
+Any component can be exported as IPCore using hwt.Packager or as HDL code by [toRtl()](https://github.com/Nic30/hwt/blob/master/hwt/synthesizer/utils.py#L17) (Verilog, VHDL, ...). Target language is specified by keyword parameter serializer. Note that for most of components there is a schematic in the documentation.
 
-        self.runSim(200 * Time.ns)
+* [abstract](https://github.com/Nic30/hwtLib/tree/master/hwtLib/abstract) - abstract classes for component classes like bus endpoint, etc
+* [amba](https://github.com/Nic30/hwtLib/tree/master/hwtLib/amba) - AXI interfaces and components for them (AXI3/4 DMAs, interconnects, ..., Axi-stream components, ..., Axi4Lite address decoders etc...)
+* [avalon](https://github.com/Nic30/hwtLib/tree/master/hwtLib/avalon) - same thing as amba just for Avalon interfaces (AvalonST, AvalonMM, ... and components for them)
+* [clocking](https://github.com/Nic30/hwtLib/tree/master/hwtLib/clocking) - various PLLs, timer generators etc.
+* [examples](https://github.com/Nic30/hwtLib/tree/master/hwtLib/examples) - demonstrative examples of [hwt](https://github.com/Nic30/hwt/) functionality
+* [handshaked](https://github.com/Nic30/hwtLib/tree/master/hwtLib/handshaked) - components for handshaked interfaces (FIFO, AsyncFifo, Resizer, interconnects, Register, ...)
+* [img](https://github.com/Nic30/hwtLib/tree/master/hwtLib/img) - image preprocessing utils (parse PNG fornt to bits for OLED)
+* [interfaces](https://github.com/Nic30/hwtLib/tree/master/hwtLib/interfaces) - various interfaces which does not have it's package yet
+* [IPIF](https://github.com/Nic30/hwtLib/tree/master/hwtLib/ipif) - IPIF interface and components for it (Interconnect, Register, address decoder, ...)
+* [logic](https://github.com/Nic30/hwtLib/tree/master/hwtLib/logic) - various components like CRC generator, gray counter, decoders-encoders ...
+* [mem](https://github.com/Nic30/hwtLib/tree/master/hwtLib/mem) - various memories (BRAM, ROM, FIFO, Async FIFO, CAM, LUT, ...)
+* [peripheral](https://github.com/Nic30/hwtLib/tree/master/hwtLib/peripheral) - various peripheral interfaces and components for them (I2C, SPI, UART)
+* [sim](https://github.com/Nic30/hwtLib/tree/master/hwtLib/sim) - simulation utils
+* [structManipulators](https://github.com/Nic30/hwtLib/tree/master/hwtLib/structManipulators) - DMAs for specific data structures
+* [tests](https://github.com/Nic30/hwtLib/tree/master/hwtLib/tests) - tests which are not related to another components
+* [types](https://github.com/Nic30/hwtLib/tree/master/hwtLib/types) - deffinitions of common types (uint32_t, ipv6_t, udp_t, ...)
 
-        # check if data was recieved on "b" interface 
-        self.assertValSequenceEqual(u.b._ag.data, [1, 2, 3, 4])
-
-
-
-
-if __name__ == "__main__":
-    import unittest
-    from hwt.synthesizer.utils import toRtl
-    from hwt.serializer.ip_packager.packager import Packager
-
-    # run tests (standard unittest framework from python)
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(HandshakedBuilderSimpleTC))
-    runner = unittest.TextTestRunner(verbosity=3)
-    runner.run(suite)
-    
-    # instanciate component
-    u = HandshakedBuilderSimple()
-
-    # export component as IPCore
-    p = Packager(u)
-    p.createPackage(".")
+## Installation 
+``` bash
+sudo pip3 install hwtLib
 ```
 
 
 
-Repositories with opensource HW:
+## Repositories with opensource HW:
 
-https://github.com/enjoy-digital?tab=repositories
-
-https://github.com/cfelton/rhea
-
-https://github.com/FPGAwars/FPGA-peripherals
-
-https://github.com/VLSI-EDA/PoC
+* [enjoy-digital repositories](https://github.com/enjoy-digital?tab=repositories) - Migen, SoC level modules
+* [ZipCPU repositories](https://github.com/ZipCPU?tab=repositories) - Verilog, mostly preipherals, DSP
+* [rhea](https://github.com/cfelton/rhea) - MyHDL, SoC level modules
+* [FPGAwars FPGA-peripherals](https://github.com/FPGAwars/FPGA-peripherals) - Verilog, simple peripherals
+* [PoC](https://github.com/VLSI-EDA/PoC) - VHDL, utils
+* [picorv32](https://github.com/cliffordwolf/picorv32) - Verilog, A Size-Optimized RISC-V SoC
+* [openrisc](https://github.com/openrisc) - OpenRISC, FuseSoC, peripherals and cpu parts
+* [NyuziProcessor](https://github.com/jbush001/NyuziProcessor) - GPGPU

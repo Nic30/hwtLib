@@ -8,7 +8,7 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import fitTo
-from hwtLib.amba.axiDatapumpIntf import AxiRDatapumpIntf
+from hwtLib.amba.axi_comp.axi_datapump_intf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 
@@ -16,6 +16,8 @@ from hwtLib.handshaked.streamNode import StreamNode
 class ArrayItemGetter(Unit):
     """
     Get specific item from array by index
+    
+    .. hwt-schematic::
     """
     def _config(self):
         self.ITEMS = Param(32)

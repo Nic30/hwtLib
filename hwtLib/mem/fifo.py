@@ -14,12 +14,14 @@ from hwt.synthesizer.unit import Unit
 @serializeParamsUniq
 class Fifo(Unit):
     """
-    Generic fifo instance usually mapped to BRAM
+    Generic FIFO usually mapped to BRAM.
 
     :ivar EXPORT_SIZE: parameter, if true "size" signal will be exported
     :ivar size: optional signal with count of items stored in this fifo
     :ivar EXPORT_SPACE: parameter, if true "space" signal is exported
     :ivar space: optional signal with count of items which can be added to this fifo
+    
+    .. hwt-schematic:: _example_Fifo
     """
 
     def _config(self):
@@ -146,10 +148,15 @@ class Fifo(Unit):
             self.space(space)
 
 
-if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+def _example_Fifo():
     u = Fifo()
     u.DATA_WIDTH.set(8)
     # u.EXPORT_SIZE.set(True)
     u.DEPTH.set(16)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_Fifo()
     print(toRtl(u))

@@ -14,6 +14,10 @@ class AxiS_en(AxiSCompBase):
     which does care about frames.
     If en signal is 0 current frame is finished
     and next frame is started only when en is 1
+    
+    :note: interface is configurable and schematic is example with AxiStream
+    
+    .. hwt-schematic:: _example_AxiS_en
     """
     def _declr(self):
         addClkRstn(self)
@@ -38,10 +42,13 @@ class AxiS_en(AxiSCompBase):
 
         connect(din, dout, exclude=[din.ready, din.valid])
 
+def _example_AxiS_en():
+    from hwtLib.amba.axis import AxiStream
+    u = AxiS_en(AxiStream)
+    return u
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    from hwtLib.amba.axis import AxiStream_withoutSTRB
-    u = AxiS_en(AxiStream_withoutSTRB)
+    u = _example_AxiS_en()
 
     print(toRtl(u))

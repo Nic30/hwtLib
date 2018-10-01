@@ -12,7 +12,9 @@ class HsJoinPrioritized(HandshakedCompBase):
     Join input stream to single output stream
     inputs with lower number has higher priority
 
-    combinational
+    :note: combinational
+
+    .. hwt-schematic:: _example_HsJoinPrioritized
     """
 
     def _config(self):
@@ -65,8 +67,13 @@ class HsJoinPrioritized(HandshakedCompBase):
         vld(dout)(Or(*vldSignals))
 
 
-if __name__ == "__main__":
+def _example_HsJoinPrioritized():
     from hwt.interfaces.std import Handshaked
-    from hwt.synthesizer.utils import toRtl
     u = HsJoinPrioritized(Handshaked)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_HsJoinPrioritized()
     print(toRtl(u))

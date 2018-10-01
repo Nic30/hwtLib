@@ -7,7 +7,7 @@ from hwt.interfaces.std import Handshaked, HandshakeSync
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
+from hwtLib.amba.axi_comp.axi_datapump_intf import AxiWDatapumpIntf
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.handshaked.builder import HsBuilder
@@ -46,6 +46,8 @@ class StructWriter(StructReader):
                                      +---------+
 
     :note: names in the picture are just illustrative
+
+    .. hwt-schematic:: _example_StructWriter
     """
     def _config(self):
         StructReader._config(self)
@@ -137,9 +139,8 @@ class StructWriter(StructReader):
             intf(self.dataIn._fieldsToInterfaces[f])
 
 
-if __name__ == "__main__":
+def  _example_StructWriter():
     from hwtLib.types.ctypes import uint16_t, uint32_t, uint64_t
-    from hwt.synthesizer.utils import toRtl
 
     s = HStruct(
             (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
@@ -160,4 +161,10 @@ if __name__ == "__main__":
         )
 
     u = StructWriter(s)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_StructWriter()
     print(toRtl(u))
