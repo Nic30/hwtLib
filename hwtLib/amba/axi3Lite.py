@@ -11,7 +11,7 @@ from hwtLib.amba.axi_intf_common import AxiMap, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 
 from ipCorePackager.component import Component
-from ipCorePackager.intfConfig import IntfConfig
+from ipCorePackager.intfIpMeta import IntfIpMeta
 
 
 #################################################################
@@ -218,7 +218,7 @@ class Axi3LiteAgent(AgentBase):
 
 
 #################################################################
-class IP_Axi3Lite(IntfConfig):
+class IP_Axi3Lite(IntfIpMeta):
     def __init__(self):
         super().__init__()
         self.name = "aximm"
@@ -238,7 +238,7 @@ class IP_Axi3Lite(IntfConfig):
     def get_quartus_map(self):
         if self.quartus_map is None:
             self.quartus_map = self._toLowerCase(self.map)
-        return IntfConfig.get_quartus_map(self)
+        return IntfIpMeta.get_quartus_map(self)
 
     def _toLowerCase(self, d):
         if isinstance(d, dict):
@@ -251,7 +251,7 @@ class IP_Axi3Lite(IntfConfig):
 
     def asQuartusTcl(self, buff: List[str], version: str, component: Component,
                      packager: IpPackager, thisIf: Interface):
-        IntfConfig.asQuartusTcl(self, buff, version,
+        IntfIpMeta.asQuartusTcl(self, buff, version,
                                 component, packager, thisIf)
         name = getSignalName(thisIf)
         if thisIf._direction == INTF_DIRECTION.MASTER:

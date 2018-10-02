@@ -1,5 +1,5 @@
 from hwt.interfaces.std import D, Signal
-from ipCorePackager.intfConfig import IntfConfig
+from ipCorePackager.intfIpMeta import IntfIpMeta
 from hwt.synthesizer.interface import Interface
 
 
@@ -16,7 +16,7 @@ class Uart(Interface):
         return IP_Uart
 
 
-class IP_Uart(IntfConfig):
+class IP_Uart(IntfIpMeta):
     def __init__(self):
         super().__init__()
         self.name = "uart"

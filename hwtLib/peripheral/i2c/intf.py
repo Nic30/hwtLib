@@ -3,7 +3,7 @@ from collections import deque
 from hwt.interfaces.agents.tristate import TristateAgent, \
     TristateClkAgent, toGenerator
 from hwt.interfaces.tristate import TristateClk, TristateSig
-from ipCorePackager.intfConfig import IntfConfig
+from ipCorePackager.intfIpMeta import IntfIpMeta
 from hwt.simulator.agentBase import AgentWitReset
 from hwt.synthesizer.interface import Interface
 
@@ -51,7 +51,7 @@ class I2cAgent(AgentWitReset):
             self.start = False
         return
         yield
-    
+
     def getMonitors(self):
         self.scl = TristateClkAgent(self.intf.scl,
                                     onRisingCallback=self.monitor,
@@ -92,7 +92,7 @@ class I2cAgent(AgentWitReset):
             self.sda._write(b, sim)
 
 
-class IP_IIC(IntfConfig):
+class IP_IIC(IntfIpMeta):
 
     def __init__(self):
         super().__init__()

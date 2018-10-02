@@ -2,7 +2,7 @@ from hwt.bitmask import mask
 from hwt.hdl.types.structUtils import HStruct_unpack
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.pyUtils.arrayQuery import iter_with_last
-from ipCorePackager.intfConfig import IntfConfig
+from ipCorePackager.intfIpMeta import IntfIpMeta
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_strb, Axi_hs
@@ -270,7 +270,7 @@ def unpackAxiSFrame(structT, frameData, getDataFn=None, dataWidth=None):
     return HStruct_unpack(structT, frameData, getDataFn, dataWidth)
 
 
-class IP_AXIStream(IntfConfig):
+class IP_AXIStream(IntfIpMeta):
     """
     Class which specifies how to describe AxiStream interfaces in IP-core
     """
