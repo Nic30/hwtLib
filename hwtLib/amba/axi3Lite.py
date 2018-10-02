@@ -1,15 +1,17 @@
-from typing import List
-
 from hwt.hdl.constants import DIRECTION, INTF_DIRECTION
-from hwt.hdl.entity import Entity
 from hwt.interfaces.std import VectSignal
-from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
-from hwt.simulator.agentBase import AgentBase
-from hwt.synthesizer.interface import Interface
+from hwt.serializer.ip_packager import IpPackager
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import Param
+from typing import List
+
+from hwt.simulator.agentBase import AgentBase
+from hwt.synthesizer.interface import Interface
 from hwtLib.amba.axi_intf_common import AxiMap, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
+
+from ipCorePackager.component import Component
+from ipCorePackager.intfIpMeta import IntfIpMeta
 
 
 #################################################################
@@ -216,7 +218,7 @@ class Axi3LiteAgent(AgentBase):
 
 
 #################################################################
-class IP_Axi3Lite(IntfConfig):
+class IP_Axi3Lite(IntfIpMeta):
     def __init__(self):
         super().__init__()
         self.name = "aximm"
@@ -236,7 +238,7 @@ class IP_Axi3Lite(IntfConfig):
     def get_quartus_map(self):
         if self.quartus_map is None:
             self.quartus_map = self._toLowerCase(self.map)
-        return IntfConfig.get_quartus_map(self)
+        return IntfIpMeta.get_quartus_map(self)
 
     def _toLowerCase(self, d):
         if isinstance(d, dict):
@@ -247,11 +249,10 @@ class IP_Axi3Lite(IntfConfig):
         else:
             return d.lower()
 
-    def asQuartusTcl(self, buff: List[str], version: str, component,
-                     entity: Entity, allInterfaces: List[Interface],
-                     thisIf: Interface):
-        IntfConfig.asQuartusTcl(self, buff, version,
-                                component, entity, allInterfaces, thisIf)
+    def asQuartusTcl(self, buff: List[str], version: str, component: Component,
+                     packager: IpPackager, thisIf: Interface):
+        IntfIpMeta.asQuartusTcl(self, buff, version,
+                                component, packager, thisIf)
         name = getSignalName(thisIf)
         if thisIf._direction == INTF_DIRECTION.MASTER:
             self.quartus_prop(buff, name, "readIssuingCapability", 1)
@@ -264,9 +265,10 @@ class IP_Axi3Lite(IntfConfig):
             self.quartus_prop(buff, name, "readDataReorderingDepth", 1)
             self.quartus_prop(buff, name, "bridgesToMaster", "")
 
-    def postProcess(self, component, entity, allInterfaces, thisIf):
+    def postProcess(self, component: Component, packager: IpPackager, thisIf: Axi3Lite):
         self.endianness = "little"
-        self.addWidthParam(thisIf, "ADDR_WIDTH", thisIf.ADDR_WIDTH)
-        self.addWidthParam(thisIf, "DATA_WIDTH", thisIf.DATA_WIDTH)
-        self.addSimpleParam(thisIf, "PROTOCOL", "AXI4LITE")
-        self.addSimpleParam(thisIf, "READ_WRITE_MODE", "READ_WRITE")
+        thisIntfName = packager.getInterfaceLogicalName(thisIf)
+        self.addWidthParam(thisIntfName, "ADDR_WIDTH", thisIf.ADDR_WIDTH, packager)
+        self.addWidthParam(thisIntfName, "DATA_WIDTH", thisIf.DATA_WIDTH, packager)
+        self.addSimpleParam(thisIntfName, "PROTOCOL", "AXI4LITE")
+        self.addSimpleParam(thisIntfName, "READ_WRITE_MODE", "READ_WRITE")

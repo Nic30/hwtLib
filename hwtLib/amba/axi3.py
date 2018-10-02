@@ -6,6 +6,8 @@ from hwtLib.amba.axi3Lite import Axi3Lite_addr, Axi3Lite, Axi3Lite_r, Axi3Lite_b
 from hwtLib.amba.axi_intf_common import AxiMap, Axi_id
 from hwtLib.amba.axis import AxiStream_withId
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
+from hwt.serializer.ip_packager import IpPackager
+from ipCorePackager.component import Component
 
 
 #####################################################################
@@ -288,11 +290,13 @@ class IP_Axi3(IP_Axi3Lite):
         AxiMap('w', ['id', 'last'], self.map['w'])
         AxiMap('b', ['id'], self.map['b'])
 
-    def postProcess(self, component, entity, allInterfaces, thisIf):
+    def postProcess(self, component: Component, packager: IpPackager, thisIf: Axi3):
         self.endianness = "little"
+        thisIntfName = packager.getInterfaceLogicalName(thisIf)
 
         def param(name, val):
-            return self.addSimpleParam(thisIf, name, str(val))
+            return self.addSimpleParam(thisIntfName, name, str(val))
+
         # [TODO] width as expression instead of int
         param("ADDR_WIDTH", thisIf.aw.addr._dtype.bit_length())
         param("MAX_BURST_LENGTH", 256)
@@ -312,7 +316,9 @@ class IP_Axi3_withAddrUser(IP_Axi3):
         AxiMap('ar', ['user'], self.map['ar'])
         AxiMap('aw', ['user'], self.map['aw'])
 
-    def postProcess(self, component, entity, allInterfaces, thisIf):
-        super().postProcess(component, entity, allInterfaces, thisIf)
-        self.addWidthParam(thisIf, "AWUSER_WIDTH", thisIf.USER_WIDTH)
-        self.addWidthParam(thisIf, "ARUSER_WIDTH", thisIf.USER_WIDTH)
+    def postProcess(self, component: Component,
+                    packager: IpPackager, thisIf: Axi3_addr_withUser):
+        super().postProcess(component, packager, thisIf)
+        thisIfName = packager.getInterfaceLogicalName(thisIf)
+        self.addWidthParam(thisIfName, "AWUSER_WIDTH", thisIf.USER_WIDTH, packager)
+        self.addWidthParam(thisIfName, "ARUSER_WIDTH", thisIf.USER_WIDTH, packager)

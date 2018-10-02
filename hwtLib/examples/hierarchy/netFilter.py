@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
-from hwt.synthesizer.interfaceLevel.emptyUnit import setOut, EmptyUnit
+from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4Lite import Axi4Lite
@@ -16,17 +16,11 @@ class HeadFieldExtractor(EmptyUnit):
         self.dout = AxiStream()._m()
         self.headers = AxiStream()._m()
 
-    def _impl(self):
-        setOut(self.dout, self.headers)
-
 
 class PatternMatch(EmptyUnit):
     def _declr(self):
         self.din = AxiStream()
         self.match = AxiStream()._m()
-
-    def _impl(self):
-        setOut(self.match)
 
 
 class Filter(EmptyUnit):
@@ -38,24 +32,18 @@ class Filter(EmptyUnit):
         self.dout = AxiStream()._m()
         self.cfg = Axi4Lite()
 
-    def _impl(self):
-        setOut(self.dout)
-
 
 class Exporter(EmptyUnit):
     def _declr(self):
         self.din = AxiStream()
         self.dout = AxiStream()._m()
 
-    def _impl(self):
-        setOut(self.dout)
-
 
 class NetFilter(Unit):
     """
     This unit has actually no functionality it is just example
     of hierarchical design.
-    
+
     .. hwt-schematic::
     """
 
@@ -90,7 +78,7 @@ class NetFilter(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    # from hwt.serializer.ip_packager.packager import IpPackager
+    # from hwt.serializer.ip_packager import IpPackager
 
     u = NetFilter()
     print(toRtl(u))

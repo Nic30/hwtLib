@@ -7,18 +7,19 @@ from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.differential import DifferentialSig
 from hwt.interfaces.std import BramPort, Handshaked
 from hwt.interfaces.utils import addClkRst
-from hwt.serializer.ip_packager.interfaces.std import IP_Handshake
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import serializeAsIpcore
+from hwt.interfaces.std_ip_defs import IP_Handshake
+
 from hwtLib.amba.axi3 import Axi3, Axi3_withAddrUser
-from hwtLib.amba.axi_comp.axi4_streamToMem import Axi4streamToMem
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
+from hwtLib.amba.axi_comp.axi4_streamToMem import Axi4streamToMem
 from hwtLib.amba.axis import AxiStream_withUserAndStrb, AxiStream_withId
 from hwtLib.amba.axis_comp.en import AxiS_en
-from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl
 from hwtLib.mem.fifo import Fifo
-from hwtLib.types.ctypes import uint64_t
+from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl
 from hwtLib.peripheral.uart.intf import Uart
+from hwtLib.types.ctypes import uint64_t
 
 
 class Handshaked_withIP(Handshaked):
@@ -69,7 +70,7 @@ class IpCorePackagerTC(unittest.TestCase):
         # Remove the directory after the test
         shutil.rmtree(self.test_dir)
 
-    def test_itispossibleToSerializeIpcores(self):
+    def test_itIsPossibleToSerializeIpcores(self):
         f = Fifo()
         f.DEPTH.set(16)
         testUnits = [AxiS_en(AxiStream_withUserAndStrb),

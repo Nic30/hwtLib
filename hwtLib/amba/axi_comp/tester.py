@@ -246,7 +246,7 @@ class AxiTester(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    #from hwt.serializer.ip_packager.packager import IpPackager
+    #from hwt.serializer.ip_packager import IpPackager
     #from os.path import expanduser
 
     u = AxiTester(Axi3)
