@@ -22,6 +22,7 @@ if __name__ == "__main__":  # alias python main function
     # create instance of Unit (unit is like verilog module)
     u = SimpleUnit()
     # create instace of IpPackager and configure it
+    # if name is not specified name will be name of Unit class
     p = IpPackager(u, serializer=VhdlSerializer)
     # generate IP-core package
     p.createPackage(expanduser("~/ip_repo"))
