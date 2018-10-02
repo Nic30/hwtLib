@@ -3,7 +3,7 @@ from collections import deque
 from hwt.interfaces.agents.tristate import TristateAgent, \
     TristateClkAgent, toGenerator
 from hwt.interfaces.tristate import TristateClk, TristateSig
-from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
+from ipCorePackager.intfConfig import IntfConfig
 from hwt.simulator.agentBase import AgentWitReset
 from hwt.synthesizer.interface import Interface
 

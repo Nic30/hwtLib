@@ -1,5 +1,5 @@
 from hwt.interfaces.std import D, Signal
-from hwt.serializer.ip_packager.interfaces.intfConfig import IntfConfig
+from ipCorePackager.intfConfig import IntfConfig
 from hwt.synthesizer.interface import Interface
 
 
@@ -19,7 +19,7 @@ class Uart(Interface):
 class IP_Uart(IntfConfig):
     def __init__(self):
         super().__init__()
-        self.name = "iic"
+        self.name = "uart"
         self.version = "1.0"
         self.vendor = "xilinx.com"
         self.library = "interface"
