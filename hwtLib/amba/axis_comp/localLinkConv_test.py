@@ -3,28 +3,29 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.bitmask import mask
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream_withUserAndStrb
-from hwtLib.amba.axis_comp.localLinkConv import LocalLinkToAxiS, AxiSToLocalLink
-from hwt.synthesizer.param import Param
+from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
+from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axis_comp.localLinkConv import LocalLinkToAxiS, AxiSToLocalLink
 
 
 class LocalLinkConvTest(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(64)
         self.USER_WIDTH = Param(2)
+        self.USE_STRB = Param(True)
 
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.dataIn = AxiStream_withUserAndStrb()
+            self.dataIn = AxiStream()
             self.conv0 = AxiSToLocalLink()
             self.conv1 = LocalLinkToAxiS()
-            self.dataOut = AxiStream_withUserAndStrb()._m()
+            self.dataOut = AxiStream()._m()
 
     def _impl(self):
         propagateClkRstn(self)

@@ -18,6 +18,7 @@ class Simple2withNonDirectIntConnection(Unit):
 
     def _config(self):
         self.DATA_WIDTH = Param(8)
+        self.USE_STRB = Param(True)
 
     def _declr(self):
         addClkRstn(self)

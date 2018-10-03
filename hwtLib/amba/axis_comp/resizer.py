@@ -8,6 +8,7 @@ from hwt.synthesizer.param import Param
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.amba.axis_comp.reg import AxiSReg
 from hwtLib.handshaked.streamNode import StreamNode
+from hwtLib.amba.axis import AxiStream
 
 
 class AxiS_resizer(AxiSCompBase):
@@ -51,15 +52,17 @@ class AxiS_resizer(AxiSCompBase):
     def _config(self):
         AxiSCompBase._config(self)
         self.OUT_DATA_WIDTH = Param(64)
+        self.USE_STRB.set(True)
 
     def _declr(self):
+        assert self.USE_STRB
         addClkRstn(self)
 
         with self._paramsShared():
-            self.dataIn = self.intfCls()
+            self.dataIn = AxiStream()
 
         with self._paramsShared(exclude=[self.DATA_WIDTH]):
-            o = self.dataOut = self.intfCls()._m()
+            o = self.dataOut = AxiStream()._m()
             o._replaceParam(o.DATA_WIDTH, self.OUT_DATA_WIDTH)
 
     def nextAreNotValidLogic(self, inStrb, actualItemIndx, ITEMS, ITEM_DW):

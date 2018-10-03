@@ -24,6 +24,7 @@ class AxiSStoredBurst(Unit):
 
     def _config(self):
         self.DATA_WIDTH = Param(64)
+        self.USE_STRB = Param(True)
         self.REPEAT = Param(False)
 
     def dataRd(self):

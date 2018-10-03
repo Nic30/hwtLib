@@ -34,12 +34,13 @@ def reshapedInitItems(actualCellSize, requestedCellSize, values):
             item = 0
             for iIndx, i2 in enumerate(itemsInWord):
                 subIndx = itemsInCell - iIndx - 1
-                _i2 = (mask(actualCellSize * 8) & i2) << (subIndx * actualCellSize * 8)
+                _i2 = (mask(actualCellSize * 8) &
+                       i2) << (subIndx * actualCellSize * 8)
                 item |= _i2
             yield item
     else:
         raise NotImplementedError("Reshaping of array from cell size %d to %d" % (
-                                    actualCellSize, requestedCellSize))
+            actualCellSize, requestedCellSize))
 
 
 class DenseMemory():
@@ -48,6 +49,7 @@ class DenseMemory():
 
     :ivar data: memory dict
     """
+
     def __init__(self, cellWidth, clk, rDatapumpIntf=None, wDatapumpIntf=None, parent=None):
         """
         :param cellWidth: width of items in memmory
@@ -64,7 +66,7 @@ class DenseMemory():
         else:
             self.data = parent.data
 
-        assert rDatapumpIntf is not None or wDatapumpIntf is not None
+        assert rDatapumpIntf is not None or wDatapumpIntf is not None, "At least read or write interface has to be present"
 
         if rDatapumpIntf is None:
             arAg = rAg = None
@@ -82,6 +84,11 @@ class DenseMemory():
             awAg = wDatapumpIntf.req._ag
             wAg = wDatapumpIntf.w._ag
             wAckAg = wDatapumpIntf.ack._ag
+
+        self.w_use_strb = wDatapumpIntf is not None and hasattr(
+            wDatapumpIntf.w, "strb")
+        self.r_use_strb = rDatapumpIntf is not None and hasattr(
+            rDatapumpIntf.r, "strb")
 
         self.awAg = awAg
         self.wAg = wAg
@@ -139,7 +146,8 @@ class DenseMemory():
 
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
-            raise NotImplementedError("unaligned transaction not implemented (0x%x)" % addr)
+            raise NotImplementedError(
+                "unaligned transaction not implemented (0x%x)" % addr)
 
         for i in range(size):
             isLast = i == size - 1
@@ -149,15 +157,18 @@ class DenseMemory():
                 data = None
 
             if data is None:
-                raise AssertionError("Invalid read of uninitialized value on addr 0x%x" % 
+                raise AssertionError("Invalid read of uninitialized value on addr 0x%x" %
                                      (addr + i * self.cellSize))
 
-            if isLast:
-                strb = lastWordBitmask
+            if self.r_use_strb:
+                if isLast:
+                    strb = lastWordBitmask
+                else:
+                    strb = self.allMask
+                read_trans = (_id, data, strb, isLast)
             else:
-                strb = self.allMask
-
-            self.rAg.data.append((_id, data, strb, isLast))
+                read_trans = (_id, data, isLast)
+            self.rAg.data.append(read_trans)
 
     def doWriteAck(self, _id):
         self.wAckAg.data.append(_id)
@@ -168,22 +179,25 @@ class DenseMemory():
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
             raise NotImplementedError("unaligned transaction not implemented")
-
         for i in range(size):
-            data, strb, last = self.wAg.data.popleft()
+            if self.w_use_strb:
+                data, strb, last = self.wAg.data.popleft()
+                # assert data._isFullVld()
+                assert strb._isFullVld()
+                strb = strb.val
+            else:
+                data,  last = self.wAg.data.popleft()
 
-            # assert data._isFullVld()
-            assert strb._isFullVld()
             assert last._isFullVld()
-
-            data, strb, last = data.val, strb.val, bool(last.val)
+            data, last = data.val, bool(last.val)
 
             isLast = i == size - 1
 
-            assert last == isLast, "write 0x%x, size %d, expected last:%d in word %d" % (addr, size, isLast, i)
+            assert last == isLast, "write 0x%x, size %d, expected last:%d in word %d" % (
+                addr, size, isLast, i)
 
             if data is None:
-                raise AssertionError("Invalid read of uninitialized value on addr 0x%x" % 
+                raise AssertionError("Invalid read of uninitialized value on addr 0x%x" %
                                      (addr + i * self.cellSize))
 
             if isLast:
@@ -193,7 +207,9 @@ class DenseMemory():
 
             if expectedStrb != self.allMask:
                 raise NotImplementedError()
-            assert strb == expectedStrb
+
+            if self.w_use_strb:
+                assert strb == expectedStrb
 
             self.data[baseIndex + i] = data
 
@@ -217,14 +233,16 @@ class DenseMemory():
 
         indx = addr // self.cellSize
         if indx * self.cellSize != addr:
-            NotImplementedError("unaligned allocations not implemented (0x%x)" % addr)
+            NotImplementedError(
+                "unaligned allocations not implemented (0x%x)" % addr)
 
         d = self.data
         for i in range(size // self.cellSize):
             tmp = indx + i
 
             if tmp in d.keys():
-                raise AllocationError("Address 0x%x is already occupied" % (tmp * self.cellSize))
+                raise AllocationError(
+                    "Address 0x%x is already occupied" % (tmp * self.cellSize))
 
             d[tmp] = None
 
@@ -251,21 +269,24 @@ class DenseMemory():
 
         indx = addr // self.cellSize
         if indx * self.cellSize != addr:
-            NotImplementedError("unaligned allocations not implemented (0x%x)" % addr)
+            NotImplementedError(
+                "unaligned allocations not implemented (0x%x)" % addr)
 
         d = self.data
         wordCnt = (num * size) // self.cellSize
 
         if initValues is not None:
             if size != self.cellSize:
-                initValues = list(reshapedInitItems(size, self.cellSize, initValues))
+                initValues = list(reshapedInitItems(
+                    size, self.cellSize, initValues))
             assert len(initValues) == wordCnt, (len(initValues), wordCnt)
 
         for i in range(wordCnt):
             tmp = indx + i
 
             if tmp in d.keys():
-                raise AllocationError("Address 0x%x is already occupied" % (tmp * self.cellSize))
+                raise AllocationError(
+                    "Address 0x%x is already occupied" % (tmp * self.cellSize))
             if initValues is None:
                 d[tmp] = 0
             else:
@@ -333,7 +354,7 @@ class DenseMemory():
             m = mask(width)
             value.val |= (val & m) << inFieldOffset
             value.vldMask |= (vldMask & m) << inFieldOffset
-            value.updateMask = max(value.updateTime, updateTime) 
+            value.updateMask = max(value.updateTime, updateTime)
 
             inFieldOffset += width
             start += width
@@ -350,7 +371,8 @@ class DenseMemory():
             t = subTmpl.dtype
             name = subTmpl.origin.name
             if isinstance(t, Bits):
-                value = self.getBits(subTmpl.bitAddr + offset, subTmpl.bitAddrEnd + offset)
+                value = self.getBits(
+                    subTmpl.bitAddr + offset, subTmpl.bitAddrEnd + offset)
             elif isinstance(t, HArray):
                 raise NotImplementedError()
             elif isinstance(t, HStruct):
@@ -358,14 +380,14 @@ class DenseMemory():
             else:
                 raise NotImplementedError(t)
 
-            dataDict[name] = value    
-        
+            dataDict[name] = value
+
         return transTmpl.dtype.fromPy(dataDict)
-         
+
     def getStruct(self, addr, structT, bitAddr=None):
         """
         Get HStruct from memory
-        
+
         :param addr: address where get struct from
         :param structT: instance of HStruct or FrameTmpl generated from it to resove structure of data
         :param bitAddr: optional bit precisse address is is not None param addr has to be None
@@ -375,12 +397,12 @@ class DenseMemory():
             bitAddr = addr * 8
         else:
             assert addr is not None
-        
+
         if isinstance(structT, TransTmpl):
             transTmpl = structT
             structT = transTmpl.origin
         else:
             assert isinstance(structT, HStruct)
             transTmpl = TransTmpl(structT)
-        
+
         return self._getStruct(bitAddr, transTmpl)

@@ -40,14 +40,17 @@ class PingResponder(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(32)
         self.IS_BIGENDIAN = Param(True)
+        self.USE_STRB = Param(True)
 
     def _declr(self):
         addClkRstn(self)
 
         self.myIp = Signal(dtype=ipv4_t)
 
-        with self._paramsShared():
+        with self._paramsShared(exclude={self.USE_STRB}):
             self.rx = AxiStream()
+
+        with self._paramsShared():
             self.tx = AxiStream()._m()
 
     def req_load(self, parsed, regs, freeze):

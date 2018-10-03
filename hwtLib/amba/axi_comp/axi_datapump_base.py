@@ -17,8 +17,6 @@ class AxiDatapumpBase(Unit):
 
     def __init__(self, axiAddrCls=Axi4_addr):
         self._axiAddrCls = axiAddrCls
-        a = axiAddrCls()
-        self._addrHasUser = hasattr(a, "USER_WIDTH")
         super().__init__()
 
     def _config(self):
@@ -27,15 +25,18 @@ class AxiDatapumpBase(Unit):
 
         self.ID_WIDTH = Param(4)
         self.ADDR_WIDTH = Param(32)
+        self.USER_WIDTH = Param(0)
+
         self.DATA_WIDTH = Param(64)
         self.CACHE_VAL = Param(CACHE_DEFAULT)
         self.PROT_VAL = Param(PROT_DEFAULT)
         self.QOS_VAL = Param(QOS_DEFAULT)
-
-        if self._addrHasUser:
-            self.ADDR_USER_VAL = Param(0)
+        self.USE_STRB = Param(True)
 
     def _declr(self):
+        if self.USER_WIDTH:
+            raise NotImplementedError(self.USER_WIDTH)
+
         addClkRstn(self)
         with self._paramsShared():
             # address channel to axi
@@ -64,5 +65,4 @@ class AxiDatapumpBase(Unit):
         if hasattr(a, "qos"):
             a.qos(self.QOS_VAL)
         a.size(BYTES_IN_TRANS(self.DATA_WIDTH // 8))
-        if self._addrHasUser:
-            a.user(self.ADDR_USER_VAL)
+

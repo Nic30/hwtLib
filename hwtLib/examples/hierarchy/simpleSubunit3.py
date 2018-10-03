@@ -17,6 +17,7 @@ class SimpleSubunit3(Unit):
     """
     def _config(self):
         self.DATA_WIDTH = Param(128)
+        self.USE_STRB = Param(True)
 
     def _declr(self):
         addClkRstn(self)

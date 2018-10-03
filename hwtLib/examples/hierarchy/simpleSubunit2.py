@@ -8,18 +8,23 @@ from hwt.synthesizer.unit import Unit
 
 from hwtLib.amba.axis import AxiStream
 from hwtLib.examples.simpleAxiStream import SimpleUnitAxiStream
+from hwt.synthesizer.param import Param
 
 
 class SimpleSubunit2(Unit):
     """
     .. hwt-schematic::
     """
+    def _config(self)->None:
+        self.USE_STRB = Param(True)
+
     def _declr(self):
         addClkRstn(self)
-        self.subunit0 = SimpleUnitAxiStream()
-        self.a0 = AxiStream()
-        self.b0 = AxiStream()._m()
-
+        with self._paramsShared():
+            self.subunit0 = SimpleUnitAxiStream()
+            self.a0 = AxiStream()
+            self.b0 = AxiStream()._m()
+    
         self.a0.DATA_WIDTH.set(8)
         self.b0.DATA_WIDTH.set(8)
 

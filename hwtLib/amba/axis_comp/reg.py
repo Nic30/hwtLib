@@ -18,8 +18,7 @@ class AxiSReg(AxiSCompBase, HandshakedReg):
 
 
 def _example_AxiSReg():
-    from hwtLib.amba.axis import AxiStream
-    u = AxiSReg(AxiStream)
+    u = AxiSReg()
     return u
 
 

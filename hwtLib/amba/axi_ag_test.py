@@ -5,19 +5,23 @@ from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axi3 import Axi3_withAddrUser
+from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi4 import Axi4
 
 
 class AxiTestJunction(Unit):
     def __init__(self, axiCls):
-        Unit.__init__(self)
         self.axiCls = axiCls
+        Unit.__init__(self)
+
+    def _config(self)->None:
+        self.axiCls._config(self)
 
     def _declr(self):
         addClkRstn(self)
-        self.s = self.axiCls()
-        self.m = self.axiCls()._m()
+        with self._paramsShared():
+            self.s = self.axiCls()
+            self.m = self.axiCls()._m()
 
     def _impl(self):
         self.m(self.s)
@@ -118,7 +122,8 @@ class Axi_ag_TC(SimTestCase):
 
     def test_axi3_withAddrUser_ag(self):
         """Test if axi3 agent can transmit and receive data on all channels"""
-        u = AxiTestJunction(Axi3_withAddrUser)
+        u = AxiTestJunction(Axi3)
+        u.ADDR_USER_WIDTH.set(10)
         self.prepareUnit(u)
         N = 10
 

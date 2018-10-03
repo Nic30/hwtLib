@@ -151,7 +151,7 @@ class PingResponderTC(SimTestCase):
         u = self.u
         f = self.create_ICMP_echo_frame()
 
-        u.rx._ag.data.extend(packAxiSFrame(self.DATA_WIDTH, f, withStrb=True))
+        u.rx._ag.data.extend(packAxiSFrame(self.DATA_WIDTH, f, withStrb=False))
         u.myIp._ag.data.append(int.from_bytes(socket.inet_aton("192.168.0.2"), byteorder="little"))
         self.runSim(500 * Time.ns)
 

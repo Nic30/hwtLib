@@ -11,7 +11,6 @@ from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi_comp.axi_datapump_intf import AxiRDatapumpIntf
-from hwtLib.amba.axis import AxiStream_withoutSTRB
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode
@@ -76,6 +75,7 @@ class StructReader(AxiS_frameParser):
     def _config(self):
         self.ID = Param(0)
         AxiRDatapumpIntf._config(self)
+        self.USE_STRB.set(False)
         self.READ_ACK = Param(False)
         self.SHARED_READY = Param(False)
 
@@ -108,8 +108,9 @@ class StructReader(AxiS_frameParser):
             # interface for communication with datapump
             self.rDatapump = AxiRDatapumpIntf()._m()
             self.rDatapump.MAX_LEN.set(self.maxWordIndex() + 1)
-            self.parser = AxiS_frameParser(AxiStream_withoutSTRB,
-                                           self._structT,
+
+        with self._paramsShared(exclude={self.ID_WIDTH}):
+            self.parser = AxiS_frameParser(self._structT,
                                            tmpl=self._tmpl,
                                            frames=self._frames)
             self.parser.SYNCHRONIZE_BY_LAST.set(False)
@@ -121,7 +122,7 @@ class StructReader(AxiS_frameParser):
         propagateClkRstn(self)
         req = self.rDatapump.req
 
-        req.id(self.ID)
+        
         req.rem(0)
         if self.READ_ACK:
             get = self.get
@@ -146,7 +147,14 @@ class StructReader(AxiS_frameParser):
         StaticForEach(self, self._frames, f)
 
         r = self.rDatapump.r
-        connect(r, self.parser.dataIn, exclude=[r.id, r.strb])
+        data_sig_to_exclude = []
+        req.id(self.ID)
+        if hasattr(r, "id"):
+            data_sig_to_exclude.append(r.id)
+        if hasattr(r, "strb"):
+            data_sig_to_exclude.append(r.strb)
+
+        connect(r, self.parser.dataIn, exclude=data_sig_to_exclude)
 
         for _, field in self._tmpl.walkFlatten():
             myIntf = self.dataOut._fieldsToInterfaces[field.origin]

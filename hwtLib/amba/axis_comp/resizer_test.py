@@ -8,11 +8,13 @@ from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axis_comp.resizer import AxiS_resizer
+from hwt.doc_markers import internal
+from hwtLib.amba.axis import AxiStream
 
 
+@internal
 def it(dw, *items):
     v = 0
     for item in reversed(items):
@@ -25,7 +27,8 @@ def it(dw, *items):
 class AxiS_resizer_upscale_TC(SimTestCase):
     def setUp(self):
         super(AxiS_resizer_upscale_TC, self).setUp()
-        u = self.u = AxiS_resizer(AxiStream)
+        u = self.u = AxiS_resizer()
+        u.USE_STRB.set(True)
         self.DW_IN = 16
         self.DW_OUT = 64
         u.DATA_WIDTH.set(self.DW_IN)
@@ -92,7 +95,7 @@ class AxiS_resizer_upscale_TC(SimTestCase):
 class AxiS_resizer_downscale_TC(SimTestCase):
     def setUp(self):
         super(AxiS_resizer_downscale_TC, self).setUp()
-        u = self.u = AxiS_resizer(AxiStream)
+        u = self.u = AxiS_resizer()
         self.DW_IN = 64
         self.DW_OUT = 16
         u.DATA_WIDTH.set(self.DW_IN)
@@ -165,7 +168,7 @@ class TestComp_AxiS_resizer_downAndUp(AxiS_resizer):
 class AxiS_resizer_downAndUp_TC(SimTestCase):
     def setUp(self):
         super(AxiS_resizer_downAndUp_TC, self).setUp()
-        u = self.u = TestComp_AxiS_resizer_downAndUp(AxiStream)
+        u = self.u = TestComp_AxiS_resizer_downAndUp()
         self.DW = 64
         u.DATA_WIDTH.set(self.DW)
 
@@ -191,7 +194,7 @@ class AxiS_resizer_downAndUp_TC(SimTestCase):
 class AxiS_resizer_upAndDown_TC(SimTestCase):
     def setUp(self):
         super(AxiS_resizer_upAndDown_TC, self).setUp()
-        u = self.u = TestComp_AxiS_resizer_downAndUp(AxiStream)
+        u = self.u = TestComp_AxiS_resizer_downAndUp()
         self.DW = 32
         u.DATA_WIDTH.set(self.DW)
         u.INTERNAL_SIZE.set(64)

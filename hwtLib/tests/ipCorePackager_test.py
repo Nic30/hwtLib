@@ -11,10 +11,9 @@ from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import serializeAsIpcore
 from hwt.interfaces.std_ip_defs import IP_Handshake
 
-from hwtLib.amba.axi3 import Axi3, Axi3_withAddrUser
+from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axi_comp.axi4_streamToMem import Axi4streamToMem
-from hwtLib.amba.axis import AxiStream_withUserAndStrb, AxiStream_withId
 from hwtLib.amba.axis_comp.en import AxiS_en
 from hwtLib.mem.fifo import Fifo
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl
@@ -39,9 +38,12 @@ class IpCoreIntfTest(Unit):
         self.difIn = DifferentialSig()
         self.axi3s0 = Axi3()
         self.axi3m0 = Axi3()._m()
-        self.axi3s1 = Axi3_withAddrUser()
-        self.axi3m1 = Axi3_withAddrUser()._m()
-
+  
+        self.axi3s1 = Axi3()
+        self.axi3m1 = Axi3()._m()
+        for i in [self.axi3s1, self.axi3m1]:
+            i.ADDR_USER_WIDTH.set(10)
+        
     def _impl(self):
         r0 = self._reg("r0", defVal=0)
         self.uart.tx(self.uart.rx)
@@ -73,8 +75,16 @@ class IpCorePackagerTC(unittest.TestCase):
     def test_itIsPossibleToSerializeIpcores(self):
         f = Fifo()
         f.DEPTH.set(16)
-        testUnits = [AxiS_en(AxiStream_withUserAndStrb),
-                     AxiS_en(AxiStream_withId),
+
+        en0 = AxiS_en()
+        en0.USE_STRB.set(True)
+        en0.USE_KEEP.set(True)
+        en0.ID_WIDTH.set(8)
+        en0.DEST_WIDTH.set(4)
+        en0.USER_WIDTH.set(12)
+        
+        testUnits = [AxiS_en(),
+                     en0,
                      AxiLiteEndpoint(HStruct(
                                          (uint64_t, "f0"),
                                          (uint64_t[10], "arr0")

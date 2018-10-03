@@ -55,6 +55,8 @@ class EthAddrUpdater(Unit):
 
             self.txPacketUpdater = StructWriter(frameHeader)
             self.txDataPump = Axi_wDatapump(Axi3_addr, Axi3_w)
+        for o in (self.txPacketUpdater, self.txDataPump):
+            o.USE_STRB.set(True)
 
     def _impl(self):
         propagateClkRstn(self)

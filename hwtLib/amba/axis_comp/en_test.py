@@ -4,14 +4,14 @@
 from hwt.bitmask import mask
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.en import AxiS_en
 
 
 class AxiS_en_TC(SimTestCase):
     def setUp(self):
         SimTestCase.setUp(self)
-        u = self.u = AxiS_en(AxiStream)
+        u = self.u = AxiS_en()
+        u.USE_STRB.set(True)
         self.prepareUnit(u)
 
     def test_break(self):

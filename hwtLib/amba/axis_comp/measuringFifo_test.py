@@ -14,6 +14,7 @@ class AxiS_measuringFifoTC(SimTestCase):
     def setUp(self):
         super(AxiS_measuringFifoTC, self).setUp()
         u = self.u = AxiS_measuringFifo()
+        u.USE_STRB.set(True)
         self.DATA_WIDTH = 64
         self.MAX_LEN = 15
 

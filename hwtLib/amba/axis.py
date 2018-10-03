@@ -2,144 +2,76 @@ from hwt.bitmask import mask
 from hwt.hdl.types.structUtils import HStruct_unpack
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.pyUtils.arrayQuery import iter_with_last
-from ipCorePackager.intfIpMeta import IntfIpMeta
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import iterBits
-from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_strb, Axi_hs
+from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_hs, Axi_strb
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
+from ipCorePackager.intfIpMeta import IntfIpMeta
 
 
 # http://www.xilinx.com/support/documentation/ip_documentation/ug761_axi_reference_guide.pdf
-class AxiStream_withoutSTRB(Axi_hs):
+class AxiStream(Axi_hs, Axi_id, Axi_user, Axi_strb):
     """
-    Bare AMBA AXI-stream interface
+    AMBA AXI-stream interface
 
     :ivar IS_BIGENDIAN: Param which specifies if interface uses bigendian
         byte order or litleendian byte order
+
+    :ivar HAS_STRB: if set strb signal is present
+    :ivar HAS_KEEP: if set keep signal is present
+    :ivar ID_WIDTH: if > 0 id signal is present and this is it's width
+    :ivar DEST_WIDTH: if > 0 dest signal is present and this is it's width
+
     :attention: no checks are made for endianity, this is just information
     :note: bigendian for interface means that items which are send through
-        this interface has reversed byte endianity that means that most significant
+        this interface have reversed byte endianity. That means that most significant
         byte is is on lower address than les significant ones
         f.e. litle endian value 0x1a2b will be 0x2b1a
         but iterface itselelf is not reversed in any way
 
     :ivar DATA_WIDTH: Param which specifies width of data signal
+    :ivar id: optional signal wich specifies id of transaction
+    :ivar dest: optional signal which specifies destination of transaction
     :ivar data: main data signal
+    :ivar keep: optional signal which signalize which bytes should be keept and which should be discarted
+    :ivar strb: optional signal which signalize which bytes are valid
     :ivar last: signal which if high this data is last in this frame
     """
+
     def _config(self):
         self.IS_BIGENDIAN = Param(False)
+        self.USE_STRB = Param(False)
+        self.USE_KEEP = Param(False)
+
+        Axi_id._config(self)
+        self.DEST_WIDTH = Param(0)
         self.DATA_WIDTH = Param(64)
+        Axi_user._config(self)
 
     def _declr(self):
-        super(AxiStream_withoutSTRB, self)._declr()
+        Axi_id._declr(self)
+
+        if self.DEST_WIDTH:
+            self.dest = VectSignal(self.DEST_WIDTH)
+
         self.data = VectSignal(self.DATA_WIDTH)
+
+        if self.USE_STRB:
+            Axi_strb._declr(self)
+
+        if self.USE_KEEP:
+            self.keep = VectSignal(self.DATA_WIDTH // 8)
+
+        Axi_user._declr(self)
         self.last = Signal()
+
+        super(AxiStream, self)._declr()
 
     def _getIpCoreIntfClass(self):
         return IP_AXIStream
 
     def _initSimAgent(self):
-        self._ag = AxiStream_withoutSTRBAgent(self)
-
-
-class AxiStream_withoutSTRBAgent(BaseAxiAgent):
-    """
-    Simulation agent for :class:`.AxiStream_withoutSTRB` interface
-
-    input/output data stored in list under "data" property
-    data contains tuples (data, strb, last)
-    """
-    def doRead(self, s):
-        intf = self.intf
-        r = s.read
-
-        data = r(intf.data)
-        last = r(intf.last)
-
-        return (data, last)
-
-    def doWrite(self, s, data):
-        intf = self.intf
-        w = s.write
-
-        if data is None:
-            _data, last = None, None
-        else:
-            _data, last = data
-
-        w(_data, intf.data)
-        w(last, intf.last)
-
-
-class AxiStream(AxiStream_withoutSTRB, Axi_strb):
-    """
-    :class:`.AxiStream_withoutSTRB` with strb signal
-
-    :ivar strb: byte strobe signal, has bit for each byte of data,
-        data valid if corresponding bit ins strb signal is high
-    """
-    def _config(self):
-        AxiStream_withoutSTRB._config(self)
-        Axi_strb._config(self)
-
-    def _declr(self):
-        AxiStream_withoutSTRB._declr(self)
-        Axi_strb._declr(self)
-
-    def _initSimAgent(self):
         self._ag = AxiStreamAgent(self)
-
-
-class AxiStream_withUserAndNoStrb(AxiStream_withoutSTRB, Axi_user):
-    """
-    :class:`.AxiStream_withoutSTRB` with user signal
-
-    :ivar user: generic signal with user specified meaning
-    """
-    def _config(self):
-        AxiStream_withoutSTRB._config(self)
-        Axi_user._config(self)
-
-    def _declr(self):
-        AxiStream_withoutSTRB._declr(self)
-        Axi_user._declr(self)
-
-
-class AxiStream_withId(Axi_id, AxiStream):
-    """
-    :class:`.AxiStream` with id signal
-
-    :ivar id: id signal, usually identifies type or destination of frame
-    """
-    def _config(self):
-        Axi_id._config(self)
-        AxiStream._config(self)
-
-    def _declr(self):
-        Axi_id._declr(self)
-        AxiStream._declr(self)
-
-    def _initSimAgent(self):
-        self._ag = AxiStream_withIdAgent(self)
-
-
-class AxiStream_withUserAndStrb(AxiStream, Axi_user):
-    """
-    :class:`.AxiStream` with user signal
-
-    :ivar user: generic signal with user specified meaning
-    """
-    def _config(self):
-        AxiStream._config(self)
-        Axi_user._config(self)
-
-    def _declr(self):
-        AxiStream._declr(self)
-        Axi_user._declr(self)
-
-    def _initSimAgent(self):
-        self._ag = AxiStream_withUserAndStrbAgent(self)
 
 
 class AxiStreamAgent(BaseAxiAgent):
@@ -147,96 +79,43 @@ class AxiStreamAgent(BaseAxiAgent):
     Simulation agent for :class:`.AxiStream` interface
 
     input/output data stored in list under "data" property
-    data contains tuples (data, strb, last)
+    data contains tuples
+
+    Format of data tules is derived from signals on AxiStream interface
+    Order of values coresponds to definition of interface signals.
+    If all signals are present fotmat of tuple will be
+    (id, dest, data, strb, keep, user, last) 
+
+
+    :ivar _signals: tuple of data signals of this interface
+    :ivar _sigCnt: len(_signals)
     """
+
+    def __init__(self, intf: AxiStream, allowNoReset=False):
+        BaseAxiAgent.__init__(self, intf, allowNoReset=allowNoReset)
+
+        signals = []
+        for i in intf._interfaces:
+            if i is not intf.ready and i is not intf.valid:
+                signals.append(i)
+        self._signals = tuple(signals)
+        self._sigCnt = len(signals)
+
     def doRead(self, s):
-        intf = self.intf
         r = s.read
-
-        data = r(intf.data)
-        strb = r(intf.strb)
-        last = r(intf.last)
-
-        return (data, strb, last)
+        return tuple(r(sig) for sig in self._signals)
 
     def doWrite(self, s, data):
-        intf = self.intf
         w = s.write
 
         if data is None:
-            data = [None for _ in range(3)]
-
-        _data, strb, last = data
-
-        w(_data, intf.data)
-        w(strb, intf.strb)
-        w(last, intf.last)
-
-
-class AxiStream_withIdAgent(BaseAxiAgent):
-    """
-    Simulation agent for :class:`.AxiStream_withId` interface
-
-    input/output data stored in list under "data" property
-    data contains tuples (id, data, strb, last)
-    """
-    def doRead(self, s):
-        intf = self.intf
-        r = s.read
-
-        _id = r(intf.id)
-        data = r(intf.data)
-        strb = r(intf.strb)
-        last = r(intf.last)
-
-        return (_id, data, strb, last)
-
-    def doWrite(self, s, data):
-        intf = self.intf
-        w = s.write
-
-        if data is None:
-            data = [None for _ in range(4)]
-
-        _id, data, strb, last = data
-
-        w(_id, intf.id)
-        w(data, intf.data)
-        w(strb, intf.strb)
-        w(last, intf.last)
-
-
-class AxiStream_withUserAndStrbAgent(BaseAxiAgent):
-    """
-    Simulation agent for :class:`.AxiStream_withUserAndStrb` interface
-
-    input/output data stored in list under "data" property
-    data contains tuples (data, strb, user, last)
-    """
-    def doRead(self, s):
-        intf = self.intf
-        r = s.read
-
-        data = r(intf.data)
-        strb = r(intf.strb)
-        user = r(intf.user)
-        last = r(intf.last)
-
-        return (data, strb, user, last)
-
-    def doWrite(self, s, data):
-        intf = self.intf
-        w = s.write
-
-        if data is None:
-            data = [None for _ in range(4)]
-
-        data, strb, user, last = data
-
-        w(data, intf.data)
-        w(strb, intf.strb)
-        w(user, intf.user)
-        w(last, intf.last)
+            for sig in self._signals:
+                w(None, sig)
+        else:
+            assert len(data) == self._sigCnt, (len(data),
+                                               self._signals, self.intf._getFullName())
+            for sig, val in zip(self._signals, data):
+                w(val, sig)
 
 
 def packAxiSFrame(dataWidth, structVal, withStrb=False):
@@ -274,6 +153,7 @@ class IP_AXIStream(IntfIpMeta):
     """
     Class which specifies how to describe AxiStream interfaces in IP-core
     """
+
     def __init__(self):
         super().__init__()
         self.name = "axis"
@@ -283,12 +163,13 @@ class IP_AXIStream(IntfIpMeta):
         self.library = "interface"
         self.map = {
             'id': "TID",
+            'dest': "TDEST",
             'data': "TDATA",
-            'last': "TLAST",
-            'valid': "TVALID",
             'strb': "TSTRB",
             'keep': "TKEEP",
             'user': 'TUSER',
+            'last': "TLAST",
+            'valid': "TVALID",
             'ready': "TREADY"
         }
         self.quartus_map = {

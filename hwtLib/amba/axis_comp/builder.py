@@ -7,6 +7,8 @@ from hwtLib.amba.axis_comp.reg import AxiSReg
 from hwtLib.amba.axis_comp.resizer import AxiS_resizer
 from hwtLib.amba.axis_comp.splitCopy import AxiSSplitCopy
 from hwtLib.amba.axis_comp.splitSelect import AxiSSpliSelect
+from hwt.hdl.types.hdlType import HdlType
+from hwtLib.amba.axis import AxiStream
 
 
 class AxiSBuilder(AbstractStreamBuilder):
@@ -49,9 +51,7 @@ class AxiSBuilder(AbstractStreamBuilder):
         :param typeToParse: structuralized type to parse
         :return: interface with parsed data (StructIntf for HStruct f.e.)
         """
-        u = AxiS_frameParser(self.getInfCls(),
-                             typeToParse
-                             )
+        u = AxiS_frameParser(typeToParse)
         u._updateParamsFrom(self.end)
 
         setattr(self.parent, self._findSuitableName("parser"), u)
@@ -65,7 +65,7 @@ class AxiSBuilder(AbstractStreamBuilder):
         return u.dataOut
 
     @classmethod
-    def forge(cls, parent, typeToForge, intfCls, setupFn=None, name=None):
+    def forge(cls, parent, typeToForge: HdlType, intfCls: AxiStream, setupFn=None, name:str=None):
         """
         generate frame assembler for specified type
         :note: you can set endianity and others in setupFn
@@ -78,9 +78,7 @@ class AxiSBuilder(AbstractStreamBuilder):
         :return: tuple (builder, interface with forged frame)
         """
 
-        u = AxiS_frameForge(intfCls,
-                            typeToForge
-                            )
+        u = AxiS_frameForge(typeToForge)
         if setupFn:
             setupFn(u)
 

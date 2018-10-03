@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.bitmask import mask
-from hwt.code import If, connect, Concat, log2ceil, SwitchLogic
+from hwt.code import If, connect, Concat, log2ceil, SwitchLogic, isPow2
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -14,7 +14,7 @@ from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axis_comp.fifo import AxiSFifo
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
-from hwtLib.mem.fifo import Fifo
+from hwt.hdl.typeShortcuts import vec
 
 
 class AxiS_measuringFifo(Unit):
@@ -24,12 +24,9 @@ class AxiS_measuringFifo(Unit):
     
     .. hwt-schematic:: _example_AxiS_measuringFifo
     """
-    def __init__(self, stream_t=AxiStream):
-        self._stream_t = stream_t
-        super(AxiS_measuringFifo, self).__init__()
 
     def _config(self):
-        Fifo._config(self)
+        AxiStream._config(self)
         self.SIZES_BUFF_DEPTH = Param(16)
         self.MAX_LEN = Param((2048 // 8) - 1)
         self.EXPORT_ALIGNMENT_ERROR = Param(False)
@@ -40,30 +37,31 @@ class AxiS_measuringFifo(Unit):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.dataIn = self._stream_t()
-            self.dataOut = self._stream_t()._m()
+            self.dataIn = AxiStream()
+            self.dataOut = AxiStream()._m()
+            db = self.dataBuff = AxiSFifo()
+            # to place fifo in bram
+            db.DEPTH.set((self.MAX_LEN + 1) * 2)
 
         self.sizes = Handshaked()._m()
         self.sizes.DATA_WIDTH.set(log2ceil(self.MAX_LEN)
                                   + 1
                                   + self.getAlignBitsCnt())
 
-        db = self.dataBuff = AxiSFifo(self._stream_t)
-        # to place fifo in bram
-        db.DATA_WIDTH.set(self.DATA_WIDTH)
-        db.DEPTH.set((self.MAX_LEN + 1) * 2)
-
         sb = self.sizesBuff = HandshakedFifo(Handshaked)
         sb.DEPTH.set(self.SIZES_BUFF_DEPTH)
         sb.DATA_WIDTH.set(self.sizes.DATA_WIDTH.get())
 
         if self.EXPORT_ALIGNMENT_ERROR:
+            assert self.USE_STRB, "Error can not happend when there is no validity mask for alignment"
             self.errorAlignment = Signal()._m()
+           
+        assert isPow2(self.DATA_WIDTH)
 
     def _impl(self):
         propagateClkRstn(self)
         dIn = AxiSBuilder(self, self.dataIn).buff().end
-        STRB_BITS = dIn.strb._dtype.bit_length()
+        
 
         sb = self.sizesBuff
         db = self.dataBuff
@@ -81,30 +79,38 @@ class AxiS_measuringFifo(Unit):
                 wordCntr(wordCntr + 1)
             )
         )
-        rem = self._sig("rem", Bits(log2ceil(STRB_BITS)))
-        SwitchLogic(
-            cases=[
-                (dIn.strb[i], rem(0 if i == STRB_BITS - 1 else i + 1))
-                for i in reversed(range(STRB_BITS))],
-            default=[
-                rem(0),
-
-            ]
-        )
-        if self.EXPORT_ALIGNMENT_ERROR:
-            errorAlignment = self._reg("errorAlignment_reg", defVal=0)
-            self.errorAlignment(errorAlignment)
-            If(dIn.valid & (dIn.strb != mask(STRB_BITS)) & ~dIn.last,
-               errorAlignment(1)
-               )
 
         length = self._sig("length", wordCntr._dtype)
-        If(last & (dIn.strb != mask(STRB_BITS)),
-            length(wordCntr)
-        ).Else(
-            length(wordCntr + 1)
-        )
+        BYTE_CNT = dIn.data._dtype.bit_length() // 8
+        if dIn.USE_STRB:
+            # compress strb mask as binary number
+            rem = self._sig("rem", Bits(log2ceil(BYTE_CNT)))
 
+            SwitchLogic(
+                cases=[
+                    (dIn.strb[i], rem(0 if i == BYTE_CNT - 1 else i + 1))
+                    for i in reversed(range(BYTE_CNT))],
+                default=[
+                    rem(0),
+    
+                ]
+            )
+            if self.EXPORT_ALIGNMENT_ERROR:
+                errorAlignment = self._reg("errorAlignment_reg", defVal=0)
+                self.errorAlignment(errorAlignment)
+                If(dIn.valid & (dIn.strb != mask(BYTE_CNT)) & ~dIn.last,
+                   errorAlignment(1)
+                )
+
+            If(last & (dIn.strb != mask(BYTE_CNT)),
+                length(wordCntr)
+            ).Else(
+                length(wordCntr + 1)
+            )
+        else:
+            length(wordCntr + 1)
+            rem = vec(0, log2ceil(BYTE_CNT))
+            
         sb.dataIn.data(Concat(length, rem))
 
         connect(dIn, db.dataIn, exclude=[dIn.valid, dIn.ready, dIn.last])
@@ -121,6 +127,7 @@ class AxiS_measuringFifo(Unit):
 
 def _example_AxiS_measuringFifo():
     u = AxiS_measuringFifo()
+    u.USE_STRB.set(True)
     #u.EXPORT_ALIGNMENT_ERROR.set(True)
     u.MAX_LEN.set(15)
     u.SIZES_BUFF_DEPTH.set(4)

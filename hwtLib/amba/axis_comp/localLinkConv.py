@@ -7,7 +7,7 @@ from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axis import AxiStream_withUserAndStrb
+from hwtLib.amba.axis import AxiStream
 from hwtLib.interfaces.localLink import LocalLink
 
 
@@ -31,11 +31,12 @@ class AxiSToLocalLink(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(32)
         self.USER_WIDTH = Param(2)
+        self.USE_STRB = Param(True)
 
     def _declr(self):
         with self._paramsShared():
             addClkRstn(self)
-            self.dataIn = AxiStream_withUserAndStrb()
+            self.dataIn = AxiStream()
             self.dataOut = LocalLink()._m()
 
     def _impl(self):
@@ -116,7 +117,7 @@ class LocalLinkToAxiS(Unit):
         with self._paramsShared():
             addClkRstn(self)
             self.dataIn = LocalLink()
-            self.dataOut = AxiStream_withUserAndStrb()._m()
+            self.dataOut = AxiStream()._m()
 
     def _impl(self):
         In = self.dataIn

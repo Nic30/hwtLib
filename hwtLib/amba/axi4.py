@@ -1,10 +1,11 @@
 from hwt.hdl.constants import DIRECTION
-from hwt.interfaces.std import VectSignal
+from hwt.interfaces.std import VectSignal, Signal
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axi4Lite import Axi4Lite
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwtLib.amba.axi3 import Axi3_addr, Axi3_r, Axi3_b, IP_Axi3, Axi3
+from hwtLib.amba.axi4Lite import Axi4Lite
+from hwtLib.amba.axi_intf_common import Axi_strb, Axi_hs
+from hwtLib.amba.axis import AxiStream, AxiStreamAgent
+from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 
 
 #####################################################################
@@ -25,41 +26,25 @@ class Axi4_addr(Axi3_addr):
         self._ag = Axi4_addrAgent(self)
 
 
-class Axi4_addrAgent(BaseAxiAgent):
-    def doRead(self, s):
-        intf = self.intf
-        r = s.read
-
-        addr = r(intf.addr)
-        _id = r(intf.id)
-        burst = r(intf.burst)
-        cache = r(intf.cache)
-        _len = r(intf.len)
-        lock = r(intf.lock)
-        prot = r(intf.prot)
-        size = r(intf.size)
-        qos = r(intf.qos)
-
-        return (_id, addr, burst, cache, _len, lock, prot, size, qos)
-
-    def doWrite(self, s, data):
-        intf = self.intf
-        w = s.write
-
-        if data is None:
-            data = [None for _ in range(9)]
-
-        _id, addr, burst, cache, _len, lock, prot, size, qos = data
-
-        w(_id, intf.id)
-        w(addr, intf.addr)
-        w(burst, intf.burst)
-        w(cache, intf.cache)
-        w(_len, intf.len)
-        w(lock, intf.lock)
-        w(prot, intf.prot)
-        w(size, intf.size)
-        w(qos, intf.qos)
+class Axi4_addrAgent(AxiStreamAgent):
+    def __init__(self, intf: Axi3_addr, allowNoReset=False):
+        BaseAxiAgent.__init__(self, intf, allowNoReset=allowNoReset)
+        
+        signals = [
+            intf.id,
+            intf.addr,
+            intf.burst,
+            intf.cache,
+            intf.len,
+            intf.lock,
+            intf.prot,
+            intf.size,
+            intf.qos
+        ]
+        if hasattr(intf, "user"):
+            signals.append(intf.user)
+        self._signals = tuple(signals)
+        self._sigCnt = len(signals) 
 
 
 #####################################################################
@@ -72,13 +57,22 @@ class Axi4_r(Axi3_r):
 
 
 #####################################################################
-class Axi4_w(AxiStream):
+class Axi4_w(Axi_hs, Axi_strb):
     """
     Axi4 write channel interface
     (Axi3_w without id signal)
     """
-    pass
+    def _config(self):
+        self.DATA_WIDTH = Param(64)
 
+    def _declr(self):
+        self.data = VectSignal(self.DATA_WIDTH)
+        Axi_strb._declr(self)
+        self.last = Signal()
+        Axi_hs._declr(self)
+    
+    def _initSimAgent(self):
+        AxiStream._initSimAgent(self)
 
 #####################################################################
 
@@ -108,6 +102,7 @@ class Axi4(Axi3):
         Axi4Lite._config(self)
         self.ID_WIDTH = Param(6)
         self.LOCK_WIDTH = 1
+        self.ADDR_USER_WIDTH = Param(0)
 
     def _declr(self):
         with self._paramsShared():
@@ -115,6 +110,8 @@ class Axi4(Axi3):
             self.r = Axi4_r(masterDir=DIRECTION.IN)
             self.aw = Axi4_addr()
             self.w = Axi4_w()
+
+        with self._paramsShared():
             self.b = Axi4_b(masterDir=DIRECTION.IN)
 
     def _getIpCoreIntfClass(self):

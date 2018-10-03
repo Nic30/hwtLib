@@ -11,7 +11,6 @@ class AxiSFifo(AxiSCompBase, HandshakedFifo):
     Synchronous fifo for axi-stream interface.
     
     :see: :class:`hwtLib.handshaked.fifo.HandshakedFifo`
-    :note: interface is configurable and schematic is only example with AxiStream
     
     .. hwt-schematic:: _example_AxiSFifo
     """
@@ -19,9 +18,8 @@ class AxiSFifo(AxiSCompBase, HandshakedFifo):
 
 
 def _example_AxiSFifo():
-    from hwtLib.amba.axis import AxiStream
 
-    u = AxiSFifo(AxiStream)
+    u = AxiSFifo()
     u.DEPTH.set(4)
     return u
 

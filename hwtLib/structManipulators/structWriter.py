@@ -8,7 +8,6 @@ from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi_comp.axi_datapump_intf import AxiWDatapumpIntf
-from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
@@ -73,8 +72,7 @@ class StructWriter(StructReader):
             self.wDatapump = AxiWDatapumpIntf()._m()
             self.wDatapump.MAX_LEN.set(self.maxWordIndex() + 1)
 
-        self.frameAssember = AxiS_frameForge(AxiStream,
-                                             self._structT,
+        self.frameAssember = AxiS_frameForge(self._structT,
                                              tmpl=self._tmpl,
                                              frames=self._frames)
 

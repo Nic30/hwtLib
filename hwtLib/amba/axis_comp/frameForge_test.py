@@ -11,7 +11,6 @@ from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.union import HUnion
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.types.ctypes import uint64_t, uint32_t, int32_t
 from hwt.hdl.types.stream import HStream
@@ -94,7 +93,7 @@ class AxiS_frameForge_TC(SimTestCase):
                                      maxPaddingWords=maxPaddingWords,
                                      trimPaddingWordsOnStart=trimPaddingWordsOnStart,
                                      trimPaddingWordsOnEnd=trimPaddingWordsOnEnd))
-        u = self.u = AxiS_frameForge(AxiStream, structT,
+        u = self.u = AxiS_frameForge(structT,
                                      tmpl, frames)
         self.DATA_WIDTH = DATA_WIDTH
         self.m = mask(self.DATA_WIDTH // 8)
@@ -185,7 +184,7 @@ class AxiS_frameForge_TC(SimTestCase):
         self.test_1Field_composit0(randomized=True)
 
     def test_3Fields_outOccupiedAtStart(self):
-        u = self.u = AxiS_frameForge(AxiStream, s3field)
+        u = self.u = AxiS_frameForge(s3field)
         self.DATA_WIDTH = 64
         u.DATA_WIDTH.set(self.DATA_WIDTH)
         m = mask(self.DATA_WIDTH // 8)
@@ -214,7 +213,7 @@ class AxiS_frameForge_TC(SimTestCase):
                                      ])
 
     def test_s2Pading_normal(self):
-        u = self.u = AxiS_frameForge(AxiStream, s2Pading)
+        u = self.u = AxiS_frameForge(s2Pading)
         self.DATA_WIDTH = 64
         u.DATA_WIDTH.set(self.DATA_WIDTH)
         m = mask(self.DATA_WIDTH // 8)
@@ -255,7 +254,7 @@ class AxiS_frameForge_TC(SimTestCase):
                                      maxPaddingWords=0,
                                      trimPaddingWordsOnStart=True,
                                      trimPaddingWordsOnEnd=True))
-        u = self.u = AxiS_frameForge(AxiStream, structT,
+        u = self.u = AxiS_frameForge(structT,
                                      tmpl, frames)
         u.DATA_WIDTH.set(self.DATA_WIDTH)
         m = mask(self.DATA_WIDTH // 8)

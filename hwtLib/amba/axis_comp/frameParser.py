@@ -55,12 +55,10 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
     .. hwt-schematic:: _example_AxiS_frameParser
     """
 
-    def __init__(self, axiSCls,
-                 structT: HdlType,
+    def __init__(self, structT: HdlType,
                  tmpl: Optional[TransTmpl]=None,
                  frames: Optional[List[FrameTmpl]]=None):
         """
-        :param axiSCls: class of input axi stream interface
         :param structT: instance of HStruct which specifies data format to download
         :param tmpl: instance of TransTmpl for this structT
         :param frames: list of FrameTmpl instances for this tmpl
@@ -77,7 +75,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
 
         self._tmpl = tmpl
         self._frames = frames
-        AxiSCompBase.__init__(self, axiSCls)
+        AxiSCompBase.__init__(self)
 
     def _config(self):
         self.intfCls._config(self)
@@ -106,6 +104,15 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
             return i
 
     def _declr(self):
+        if self.USE_STRB:
+            raise NotImplementedError(self.USE_STRB)
+        if self.USE_KEEP:
+            raise NotImplementedError(self.USE_KEEP)
+        if self.ID_WIDTH:
+            raise NotImplementedError(self.ID_WIDTH)
+        if self.DEST_WIDTH:
+            raise NotImplementedError(self.DEST_WIDTH)
+
         addClkRstn(self)
 
         if isinstance(self._structT, HStruct):
@@ -293,7 +300,6 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
 
 
 def _example_AxiS_frameParser():
-    from hwtLib.amba.axis import AxiStream
     from hwtLib.types.ctypes import uint32_t, uint64_t
     # t = HStruct(
     #  (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
@@ -334,7 +340,7 @@ def _example_AxiS_frameParser():
             (uint32_t, "itemB3")
         ), "frameB")
     )
-    u = AxiS_frameParser(AxiStream, t)
+    u = AxiS_frameParser(t)
     u.DATA_WIDTH.set(64)
     return u
 

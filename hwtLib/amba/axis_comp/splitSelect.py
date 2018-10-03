@@ -11,20 +11,15 @@ class AxiSSpliSelect(AxiSCompBase, HsSplitSelect):
 
     :see: :class:`hwtLib.handshaked.splitSelect.HsSplitSelect`
 
-    .. hwt-schematic:: _example_AxiSSpliSelect
+    .. hwt-schematic::
     """
 
     def _select_consume_en(self):
         return self.dataIn.last
 
 
-def _example_AxiSSpliSelect():
-    from hwtLib.amba.axis import AxiStream
-    u = AxiSSpliSelect(AxiStream)
-    return u
-
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    u = _example_AxiSSpliSelect()
+    u = AxiSSpliSelect()
     print(toRtl(u))

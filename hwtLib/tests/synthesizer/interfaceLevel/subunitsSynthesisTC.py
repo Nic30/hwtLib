@@ -40,6 +40,7 @@ def synthesised(u: Unit, targetPlatform=DummyPlatform()):
 class UnitWithArrIntf(EmptyUnit):
     def _config(self):
         self.DATA_WIDTH = Param(64)
+        self.USE_STRB = Param(True)
 
     def _declr(self):
         with self._paramsShared():
@@ -50,6 +51,7 @@ class UnitWithArrIntf(EmptyUnit):
 class UnitWithArrIntfParent(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(64)
+        self.USE_STRB = Param(True)
 
     def _declr(self):
         with self._paramsShared():
@@ -192,6 +194,8 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
 
             def _config(self):
                 self.DATA_WIDTH = Param(64)
+                self.USE_STRB = Param(True)
+
 
             def _declr(self):
                 addClkRstn(self)
@@ -227,6 +231,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
 
             def _config(self):
                 self.DATA_WIDTH = Param(64)
+                self.USE_STRB = Param(True)
 
             def _declr(self):
                 addClkRstn(self)

@@ -25,6 +25,7 @@ class AxisFrameGen(Unit):
         self.CNTRL_ADDR_WIDTH = Param(4)
         self.CNTRL_DATA_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)
+        self.USE_STRB = Param(True)
 
     def _declr(self):
         addClkRstn(self)
@@ -62,7 +63,8 @@ class AxisFrameGen(Unit):
 
         out = self.axis_out
         connect(cntr, out.data, fit=True)
-        out.strb(mask(self.axis_out.strb._dtype.bit_length()))
+        if self.USE_STRB:
+            out.strb(mask(self.axis_out.strb._dtype.bit_length()))
         out.last(cntr._eq(0))
         out.valid(en)
 

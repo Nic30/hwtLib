@@ -5,7 +5,8 @@
 from hwt.bitmask import mask
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi3 import Axi3_addr_withUser
+from hwtLib.amba.axi3 import Axi3_addr
+from hwtLib.amba.axi4 import Axi4_addr
 from hwtLib.amba.axi_comp.axi4_rDatapump import Axi_rDatapump
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, BYTES_IN_TRANS, \
     PROT_DEFAULT, LOCK_DEFAULT, QOS_DEFAULT, RESP_OKAY
@@ -37,7 +38,7 @@ class Axi4_rDatapumpTC(SimTestCase):
 
     def setUp(self):
         super(Axi4_rDatapumpTC, self).setUp()
-        self.u = Axi_rDatapump()
+        self.u = Axi_rDatapump(axiAddrCls=Axi4_addr)
         self.u.DATA_WIDTH.set(self.DATA_WIDTH)
         self.prepareUnit(self.u)
 
@@ -364,13 +365,13 @@ class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
 
     def setUp(self):
         SimTestCase.setUp(self)
-        self.u = Axi_rDatapump(axiAddrCls=Axi3_addr_withUser)
+        self.u = Axi_rDatapump(axiAddrCls=Axi3_addr)
         self.u.DATA_WIDTH.set(self.DATA_WIDTH)
         self.prepareUnit(self.u)
 
     def mkDefaultAddrReq(self, _id, addr, _len):
         return (_id, addr, BURST_INCR, CACHE_DEFAULT, _len,
-                LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS(8), 0)
+                LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS(8))
 
 
 if __name__ == "__main__":

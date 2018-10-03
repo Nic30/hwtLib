@@ -5,7 +5,7 @@ from hwt.interfaces.std import Handshaked, VectSignal, HandshakeSync
 from hwt.simulator.agentBase import AgentBase
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axis import AxiStream_withId, AxiStream
+from hwtLib.amba.axis import AxiStream
 
 
 class AddrSizeHs(Handshaked):
@@ -14,6 +14,7 @@ class AddrSizeHs(Handshaked):
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)
         self.MAX_LEN = Param(4096 // 8 - 1)
+        self.USE_STRB = Param(True)
 
     def _declr(self):
         self.id = VectSignal(self.ID_WIDTH)
@@ -70,7 +71,7 @@ class AxiRDatapumpIntf(Interface):
         with self._paramsShared():
             # user requests
             self.req = AddrSizeHs()
-            self.r = AxiStream_withId(masterDir=DIRECTION.IN)
+            self.r = AxiStream(masterDir=DIRECTION.IN)
 
     def _initSimAgent(self):
         self._ag = AxiRDatapumpIntfAgent(self)
@@ -129,6 +130,8 @@ class AxiWDatapumpIntf(Interface):
         with self._paramsShared():
             # user requests
             self.req = AddrSizeHs()
+
+        with self._paramsShared(exclude={self.ID_WIDTH}):
             self.w = AxiStream()
 
         ack = self.ack = Handshaked(masterDir=DIRECTION.IN)

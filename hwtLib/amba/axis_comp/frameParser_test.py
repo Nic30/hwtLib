@@ -4,7 +4,7 @@ from hwt.hdl.constants import Time
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.structIntf import StructIntf
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axis import AxiStream_withoutSTRB, packAxiSFrame, \
+from hwtLib.amba.axis import packAxiSFrame, \
     unpackAxiSFrame
 from hwtLib.amba.axis_comp.frameForge_test import unionOfStructs, unionSimple
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
@@ -118,7 +118,7 @@ class AxiS_frameParserTC(SimTestCase):
             self.randomize(intf)
 
     def mySetUp(self, dataWidth, structTemplate, randomize=False):
-        u = AxiS_frameParser(AxiStream_withoutSTRB, structTemplate)
+        u = AxiS_frameParser(structTemplate)
         u.DATA_WIDTH.set(dataWidth)
         self.prepareUnit(u)
         if randomize:

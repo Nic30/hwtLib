@@ -56,7 +56,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
     .. hwt-schematic:: _example_AxiS_frameForge
     """
 
-    def __init__(self, axiSIntfCls,
+    def __init__(self,
                  structT: HdlType,
                  tmpl: Optional[TransTmpl]=None,
                  frames: Optional[List[FrameTmpl]]=None):
@@ -76,15 +76,16 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             if they are specified by "frames"
         :note: structT can contain fields with variable size like HStream
         """
-        if axiSIntfCls is not AxiStream:
-            raise NotImplementedError()
-
         self._structT = structT
         self._tmpl = tmpl
         self._frames = frames
         self._tmpRegsForSelect = {}
 
-        AxiSCompBase.__init__(self, axiSIntfCls)
+        AxiSCompBase.__init__(self)
+    
+    def _config(self):
+        AxiSCompBase._config(self)
+        self.USE_STRB.set(True)
 
     @staticmethod
     def _mkFieldIntf(parent: StructIntf, structField: HStructField):
@@ -99,6 +100,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
         elif isinstance(t, HStream):
             p = AxiStream()
             p.DATA_WIDTH.set(structField.dtype.elmType.bit_length())
+            p.USE_STRB.set(True)
             return p
         else:
             p = Handshaked()
