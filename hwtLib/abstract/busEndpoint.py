@@ -156,7 +156,8 @@ class BusEndpoint(Unit):
     @staticmethod
     def _defaultShouldEnterFn(field):
         t = field.dtype
-        shouldEnter = isinstance(t, HStruct)
+        isNonPrimitiveArray = isinstance(t, HArray) and not isinstance(t.elmType, Bits)
+        shouldEnter = isinstance(t, HStruct) or isNonPrimitiveArray
         shouldUse = not shouldEnter
         return shouldEnter, shouldUse
 
@@ -272,11 +273,12 @@ class BusEndpoint(Unit):
         wordAddrStep = self._getWordAddrStep()
         addrStep = self._getAddrStep()
 
-        maxAddr = (bitSize // addrStep)
-
         # align to word size
-        if maxAddr % wordAddrStep != 0:
-            wordAddrStep += wordAddrStep - (maxAddr % wordAddrStep)
+        if bitSize % wordAddrStep != 0:
+            bitSize += wordAddrStep - (bitSize % wordAddrStep)
+
+        maxAddr = (bitSize // addrStep) - 1
+
 
         return maxAddr.bit_length()
 
@@ -344,7 +346,7 @@ class BusEndpoint(Unit):
                 dw = t.bit_length()
             elif isinstance(t, HArray):
                 p = BramPort_withoutClk()
-                assert isinstance(t.elmType, Bits)
+                assert isinstance(t.elmType, Bits), t.elmType
                 dw = t.elmType.bit_length()
                 p.ADDR_WIDTH.set(log2ceil(t.size - 1))
             else:
