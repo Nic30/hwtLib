@@ -145,6 +145,7 @@ class BusEndpointTC(unittest.TestCase):
             )
 
         self.assertEqual(t, t2)
+
     def test_HTypeFromIntfMap_StructArray(self):
         DATA_WIDTH = 32
 

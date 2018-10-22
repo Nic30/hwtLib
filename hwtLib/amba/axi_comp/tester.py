@@ -48,7 +48,7 @@ class AxiTester(Unit):
 
         # r = self.ram = Ram_dp()
         # r.ADDR_WIDTH.set(log2ceil(4096))
-        # r._replaceParam("DATA_WIDTH", self.DATA_WIDTH)
+        # r._replaceParam(r.DATA_WIDTH, self.DATA_WIDTH)
 
     def _add_ep(self):
         strb_w = self.DATA_WIDTH // 8
