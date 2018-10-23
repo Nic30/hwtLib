@@ -40,4 +40,5 @@ setup(name='hwtLib',
       package_data={'hwtLib': ['*.vhd', '*.v', '*.png']},
       include_package_data=True,
       zip_safe=False,
-      test_suite='hwtLib.tests.all.suite',)
+      test_suite='hwtLib.tests.all.suite',
+)
