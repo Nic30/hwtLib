@@ -66,14 +66,18 @@ module SwitchStmUnit(input a,
 
     always @(a or b or c or sel) begin: assig_process_out
         case(sel)
-        3'b000:
-            out <= a;
-        3'b001:
-            out <= b;
-        3'b010:
-            out <= c;
-        default:
-            out <= 1'b0;
+        3'b000: begin
+            out = a;
+        end
+        3'b001: begin
+            out = b;
+        end
+        3'b010: begin
+            out = c;
+        end
+        default: begin
+            out = 1'b0;
+        end
         endcase
     end
 

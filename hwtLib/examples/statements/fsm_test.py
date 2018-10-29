@@ -102,12 +102,15 @@ module FsmExample(input a,
     reg [1:0] st_next;
     always @(st) begin: assig_process_dout
         case(st)
-        0:
-            dout <= 3'b001;
-        1:
-            dout <= 3'b010;
-        default:
-            dout <= 3'b011;
+        0: begin
+            dout = 3'b001;
+        end
+        1: begin
+            dout = 3'b010;
+        end
+        default: begin
+            dout = 3'b011;
+        end
         endcase
     end
 
@@ -121,30 +124,33 @@ module FsmExample(input a,
 
     always @(a or b or st) begin: assig_process_st_next
         case(st)
-        0:
+        0: begin
             if((a & b)==1'b1) begin
-                st_next <= 2;
+                st_next = 2;
             end else if((b)==1'b1) begin
-                st_next <= 1;
+                st_next = 1;
             end else begin
-                st_next <= st;
+                st_next = st;
             end
-        1:
+        end
+        1: begin
             if((a & b)==1'b1) begin
-                st_next <= 2;
+                st_next = 2;
             end else if((a)==1'b1) begin
-                st_next <= 0;
+                st_next = 0;
             end else begin
-                st_next <= st;
+                st_next = st;
             end
-        default:
+        end
+        default: begin
             if((a & (~b))==1'b1) begin
-                st_next <= 0;
+                st_next = 0;
             end else if(((~a) & b)==1'b1) begin
-                st_next <= 1;
+                st_next = 1;
             end else begin
-                st_next <= st;
+                st_next = st;
             end
+        end
         endcase
     end
 

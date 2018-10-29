@@ -59,11 +59,11 @@ module Showcase0(input [31:0] a,
     always @(a or r) begin: assig_process_h
         if((a[2])==1'b1) begin
             if((r)==1'b1) begin
-                h <= 8'h00;
+                h = 8'h00;
             end else if((a[1])==1'b1) begin
-                h <= 8'h01;
+                h = 8'h01;
             end else begin
-                h <= 8'h02;
+                h = 8'h02;
             end
         end
     end
@@ -90,35 +90,43 @@ module Showcase0(input [31:0] a,
     assign r_next_1 = r_0;
     always @(e or r) begin: assig_process_r_next
         if((~r)==1'b1) begin
-            r_next <= e;
+            r_next = e;
         end else begin
-            r_next <= r;
+            r_next = r;
         end
     end
 
     always @(a) begin: assig_process_sc_signal
         case(a)
-        1:
-            sc_signal <= 8'h00;
-        2:
-            sc_signal <= 8'h01;
-        3:
-            sc_signal <= 8'h03;
-        default:
-            sc_signal <= 8'h04;
+        1: begin
+            sc_signal = 8'h00;
+        end
+        2: begin
+            sc_signal = 8'h01;
+        end
+        3: begin
+            sc_signal = 8'h03;
+        end
+        default: begin
+            sc_signal = 8'h04;
+        end
         endcase
     end
 
     always @(r_1) begin: rom_0
         case(r_1)
-        0:
-            rom <= 0;
-        1:
-            rom <= 1;
-        2:
-            rom <= 2;
-        3:
-            rom <= 3;
+        0: begin
+            rom = 0;
+        end
+        1: begin
+            rom = 1;
+        end
+        2: begin
+            rom = 2;
+        end
+        3: begin
+            rom = 3;
+        end
         endcase
     end
 

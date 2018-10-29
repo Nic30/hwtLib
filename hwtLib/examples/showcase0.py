@@ -233,6 +233,6 @@ if __name__ == "__main__":  # alias python main function
     print(toRtl(Showcase0(), serializer=SystemCSerializer))
     #print(toRtl(Showcase0(), serializer=SimModelSerializer))
 
-    #r = ResourceAnalyzer()
-    #print(toRtl(Showcase0(), serializer=r))
-    #pprint(r.report())
+    r = ResourceAnalyzer()
+    print(toRtl(Showcase0(), serializer=r))
+    pprint(r.report())
