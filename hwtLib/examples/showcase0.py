@@ -221,7 +221,6 @@ if __name__ == "__main__":  # alias python main function
     from hwt.serializer.vhdl.serializer import VhdlSerializer
     from hwt.serializer.verilog.serializer import VerilogSerializer
     from hwt.serializer.systemC.serializer import SystemCSerializer
-    # from hwt.serializer.simModel.serializer import SimModelSerializer
     from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 
     # * new instance has to be created every time because toRtl is modifies the unit
@@ -231,7 +230,6 @@ if __name__ == "__main__":  # alias python main function
     print(toRtl(Showcase0(), serializer=VhdlSerializer))
     print(toRtl(Showcase0(), serializer=VerilogSerializer))
     print(toRtl(Showcase0(), serializer=SystemCSerializer))
-    #print(toRtl(Showcase0(), serializer=SimModelSerializer))
 
     r = ResourceAnalyzer()
     print(toRtl(Showcase0(), serializer=r))
