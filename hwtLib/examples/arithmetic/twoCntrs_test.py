@@ -5,7 +5,7 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import agInts
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.examples.arithmetic.twoCntrs import TwoCntrs
 
 
@@ -13,11 +13,8 @@ eightOnes = [1 for _ in range(8)]
 eightZeros = [0 for _ in range(8)]
 
 
-class TwoCntrsTC(SimTestCase):
-    def setUp(self):
-        super(TwoCntrsTC, self).setUp()
-        self.u = TwoCntrs()
-        self.prepareUnit(self.u)
+class TwoCntrsTC(SimpleSimTestCase):
+    UNIT_CLS = TwoCntrs
 
     def test_nothingEnable(self):
         u = self.u
@@ -26,10 +23,10 @@ class TwoCntrsTC(SimTestCase):
 
         self.runSim(90 * Time.ns)
 
-        self.assertSequenceEqual(eightOnes, agInts(u.eq))
-        self.assertSequenceEqual(eightZeros, agInts(u.gt))
-        self.assertSequenceEqual(eightZeros, agInts(u.lt))
-        self.assertSequenceEqual(eightZeros, agInts(u.ne))
+        self.assertSequenceEqual(agInts(u.eq), eightOnes)
+        self.assertSequenceEqual(agInts(u.gt), eightZeros)
+        self.assertSequenceEqual(agInts(u.lt), eightZeros)
+        self.assertSequenceEqual(agInts(u.ne), eightZeros)
 
     def test_allEnable(self):
         u = self.u
@@ -37,10 +34,10 @@ class TwoCntrsTC(SimTestCase):
         u.b_en._ag.data.append(1)
 
         self.runSim(90 * Time.ns)
-        self.assertSequenceEqual(eightOnes, agInts(u.eq))
-        self.assertSequenceEqual(eightZeros, agInts(u.gt))
-        self.assertSequenceEqual(eightZeros, agInts(u.lt))
-        self.assertSequenceEqual(eightZeros, agInts(u.ne))
+        self.assertSequenceEqual(agInts(u.eq), eightOnes)
+        self.assertSequenceEqual(agInts(u.gt), eightZeros)
+        self.assertSequenceEqual(agInts(u.lt), eightZeros)
+        self.assertSequenceEqual(agInts(u.ne), eightZeros)
 
     def test_aEnable(self):
         u = self.u
@@ -48,10 +45,10 @@ class TwoCntrsTC(SimTestCase):
         u.b_en._ag.data.append(0)
 
         self.runSim(90 * Time.ns)
-        self.assertSequenceEqual([1, 0, 0, 0, 0, 0, 0, 0], agInts(u.eq))
-        self.assertSequenceEqual([0, 1, 1, 1, 1, 1, 1, 1], agInts(u.gt))
-        self.assertSequenceEqual(eightZeros, agInts(u.lt))
-        self.assertSequenceEqual([0, 1, 1, 1, 1, 1, 1, 1], agInts(u.ne))
+        self.assertSequenceEqual(agInts(u.eq), [1, 0, 0, 0, 0, 0, 0, 0])
+        self.assertSequenceEqual(agInts(u.gt), [0, 1, 1, 1, 1, 1, 1, 1])
+        self.assertSequenceEqual(agInts(u.lt), eightZeros)
+        self.assertSequenceEqual(agInts(u.ne), [0, 1, 1, 1, 1, 1, 1, 1])
 
     def test_nonValid(self):
         u = self.u
@@ -59,10 +56,10 @@ class TwoCntrsTC(SimTestCase):
         u.b_en._ag.data.append(None)
 
         self.runSim(90 * Time.ns)
-        self.assertSequenceEqual([1, None, None, None, None, None, None, None], agInts(u.eq))
-        self.assertSequenceEqual([0, None, None, None, None, None, None, None], agInts(u.gt))
-        self.assertSequenceEqual([0, None, None, None, None, None, None, None], agInts(u.lt))
-        self.assertSequenceEqual([0, None, None, None, None, None, None, None], agInts(u.ne))
+        self.assertSequenceEqual(agInts(u.eq), [1, None, None, None, None, None, None, None])
+        self.assertSequenceEqual(agInts(u.gt), [0, None, None, None, None, None, None, None])
+        self.assertSequenceEqual(agInts(u.lt), [0, None, None, None, None, None, None, None])
+        self.assertSequenceEqual(agInts(u.ne), [0, None, None, None, None, None, None, None])
 
     def test_withStops(self):
         u = self.u
@@ -70,10 +67,10 @@ class TwoCntrsTC(SimTestCase):
         u.b_en._ag.data.extend([1, 1, 0, 0, 1])
 
         self.runSim(90 * Time.ns)
-        self.assertSequenceEqual([1, 1, 0, 0, 1, 1, 1, 1], agInts(u.eq))
-        self.assertSequenceEqual(eightZeros, agInts(u.gt))
-        self.assertSequenceEqual([0, 0, 1, 1, 0, 0, 0, 0], agInts(u.lt))
-        self.assertSequenceEqual([0, 0, 1, 1, 0, 0, 0, 0], agInts(u.ne))
+        self.assertSequenceEqual(agInts(u.eq), [1, 1, 0, 0, 1, 1, 1, 1])
+        self.assertSequenceEqual(agInts(u.gt), eightZeros)
+        self.assertSequenceEqual(agInts(u.lt), [0, 0, 1, 1, 0, 0, 0, 0])
+        self.assertSequenceEqual(agInts(u.ne), [0, 0, 1, 1, 0, 0, 0, 0])
 
 
 if __name__ == "__main__":

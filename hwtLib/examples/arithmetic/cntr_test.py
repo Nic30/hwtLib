@@ -8,16 +8,13 @@ from hwt.hdl.operatorDefs import AllOps
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
     ResourceFF
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimTestCase, SimpleSimTestCase
 from hwt.synthesizer.utils import toRtl
 from hwtLib.examples.arithmetic.cntr import Cntr
 
 
-class CntrTC(SimTestCase):
-    def setUp(self):
-        super(CntrTC, self).setUp()
-        self.u = Cntr()
-        self.prepareUnit(self.u)
+class CntrTC(SimpleSimTestCase):
+    UNIT_CLS = Cntr
 
     def test_overflow(self):
         u = self.u
@@ -34,6 +31,9 @@ class CntrTC(SimTestCase):
         self.runSim(90 * Time.ns)
         self.assertValSequenceEqual(u.val._ag.data,
                                     [0, 1, 1, 2, 3, 3, 3, 3])
+
+
+class CntrResourceAnalysisTC(SimTestCase):
 
     def test_resources_2b(self):
         u = Cntr()

@@ -3,21 +3,18 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.hdl.constants import CLK_PERIOD
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.examples.arithmetic.selfRefCntr import SelfRefCntr
 
 
-class SelfRefCntrTC(SimTestCase):
-    def setUp(self):
-        super(SelfRefCntrTC, self).setUp()
-        self.u = SelfRefCntr()
-        self.prepareUnit(self.u)
+class SelfRefCntrTC(SimpleSimTestCase):
+    UNIT_CLS = SelfRefCntr
 
     def test_overflow(self):
         u = self.u
 
-        self.runSim(90 * Time.ns)
+        self.runSim(9 * CLK_PERIOD)
         self.assertSequenceEqual(u.dout._ag.data,
                                  [0, 1, 2, 3, 4, 0, 1, 2])
 

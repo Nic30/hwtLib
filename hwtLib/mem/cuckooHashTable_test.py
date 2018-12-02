@@ -1,24 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.cuckooHashTable import CuckooHashTable
 from hwt.hdl.constants import Time
 
 
-class CuckooHashTableTC(SimTestCase):
-    def setUp(self):
-        SimTestCase.setUp(self)
-        self.TABLE_SIZE = 32
-        u = self.u = CuckooHashTable([CRC_32, CRC_32])
+class CuckooHashTableTC(SimpleSimTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.TABLE_SIZE = 32
+        u = CuckooHashTable([CRC_32, CRC_32])
         u.KEY_WIDTH.set(16)
         u.DATA_WIDTH.set(8)
         u.LOOKUP_KEY.set(True)
-        u.TABLE_SIZE.set(self.TABLE_SIZE)
-        self.TABLE_CNT = 2
-        self.prepareUnit(u)
-        self.TABLE_MEMS = [getattr(self.model, "tables_%d_inst" % i).table_inst.ram_memory._val.val
+        u.TABLE_SIZE.set(cls.TABLE_SIZE)
+        cls.TABLE_CNT = 2
+        cls.prepareUnit(u)
+
+    def setUp(self):
+        SimpleSimTestCase.setUp(self)
+        self.TABLE_MEMS = [getattr(self.rtl_simulator, "tables_%d_inst" % i).table_inst.ram_memory
                            for i in range(self.TABLE_CNT)]
 
     def cleanupMemory(self):
