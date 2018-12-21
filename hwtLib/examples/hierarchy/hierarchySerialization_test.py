@@ -13,7 +13,7 @@ from hwtLib.examples.hierarchy.netFilter import NetFilter
 from hwtLib.tests.statementTrees import StatementTreesTC
 
 
-def readContent(file_name:str):
+def readContent(file_name: str):
     THIS_DIR = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(THIS_DIR, file_name)) as f:
         return f.read()
