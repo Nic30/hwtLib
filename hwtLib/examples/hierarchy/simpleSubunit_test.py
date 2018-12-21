@@ -6,6 +6,7 @@ import unittest
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.hierarchy.simpleSubunit import SimpleSubunit
+from hwtLib.clocking.clkSynchronizer_test import CLK_PERIOD
 
 
 # SimTestCase is derived from unittest.TestCase which is class
@@ -23,6 +24,9 @@ class SimpleSubunitTC(SimTestCase):
         # or monitor values on the interface
         self.prepareUnit(u)
 
+        # initialize simulation
+        self.restartSim()
+
         # there we have our test data, because SimpleUnit has only connection inside
         # None represents invalid value (like universal "x" in vhdl)
         inputData = [0, 1, 0, 1, None, 0, None, 1, None, 0]
@@ -36,7 +40,7 @@ class SimpleSubunitTC(SimTestCase):
         # and drivers of interfaces stored in "procs",
         # we save dum of value changes into file "tmp/simple.vcd"
         # (which is default) and we let simulation run for 100 ns
-        self.runSim(100 * Time.ns)
+        self.runSim(10 * CLK_PERIOD)
 
         # now we use part of unittest framework to check results
         # use assertValSequenceEqual which sill automatically convert
