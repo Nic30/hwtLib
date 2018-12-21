@@ -2,14 +2,18 @@
 # -*- coding: utf-8 -*-
 
 from hwt.bitmask import mask
-from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.constants import RESP_OKAY, PROT_DEFAULT
 from hwtLib.ipif.axiLite2ipif import AxiLite2Ipif
+from pycocotb.constants import CLK_PERIOD
+from pycocotb.triggers import Timer
 
 
 class AxiLite2ipifTC(SimTestCase):
-    CLK = 10 * Time.ns
+    CLK = CLK_PERIOD
+
+    def setUp(self):
+        pass
 
     def mySetUp(self, read_latency=0, write_latency=0):
         u = self.u = AxiLite2Ipif()
@@ -18,9 +22,11 @@ class AxiLite2ipifTC(SimTestCase):
         u.ADDR_WIDTH.set(32)
         self.m = mask(DW // 8)
         self.prepareUnit(u)
+        self.restartSim()
         ipif = u.m._ag
         ipif.READ_LATENCY = read_latency
         ipif.WRITE_LATENCY = write_latency
+        SimTestCase.setUp(self)
 
     def test_nop(self):
         self.mySetUp()
@@ -67,7 +73,7 @@ class AxiLite2ipifTC(SimTestCase):
         if data_delay > 0:
 
             def late_add_data(sim):
-                yield sim.wait(data_delay)
+                yield Timer(data_delay)
                 axi.w._ag.data.extend([
                     (MAGIC + i, self.m) for i in range(N)
                 ])
@@ -105,7 +111,7 @@ class AxiLite2ipifTC(SimTestCase):
 
         if data_delay > 0:
             def late_add_data(sim):
-                yield sim.wait(data_delay)
+                yield Timer(data_delay)
                 axi.w._ag.data.extend([
                     (MAGIC_W + i, self.m) for i in range(N)
                 ])

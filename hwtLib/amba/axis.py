@@ -102,20 +102,17 @@ class AxiStreamAgent(BaseAxiAgent):
         self._sigCnt = len(signals)
 
     def doRead(self, s):
-        r = s.read
-        return tuple(r(sig) for sig in self._signals)
+        return tuple(sig.read() for sig in self._signals)
 
     def doWrite(self, s, data):
-        w = s.write
-
         if data is None:
             for sig in self._signals:
-                w(None, sig)
+                sig.write(None)
         else:
             assert len(data) == self._sigCnt, (len(data),
                                                self._signals, self.intf._getFullName())
             for sig, val in zip(self._signals, data):
-                w(val, sig)
+                sig.write(val)
 
 
 def packAxiSFrame(dataWidth, structVal, withStrb=False):

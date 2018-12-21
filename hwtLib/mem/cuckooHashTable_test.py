@@ -4,7 +4,8 @@
 from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.cuckooHashTable import CuckooHashTable
-from hwt.hdl.constants import Time
+from pycocotb.constants import CLK_PERIOD
+from pycocotb.triggers import Timer
 
 
 class CuckooHashTableTC(SimpleSimTestCase):
@@ -60,7 +61,7 @@ class CuckooHashTableTC(SimpleSimTestCase):
     def test_clean(self):
         u = self.u
         u.clean._ag.data.append(1)
-        self.runSim(400 * Time.ns)
+        self.runSim(40 * CLK_PERIOD)
         for t in self.TABLE_MEMS:
             self.assertEqual(len(t), self.TABLE_SIZE)
             for i in range(self.TABLE_SIZE):
@@ -77,13 +78,13 @@ class CuckooHashTableTC(SimpleSimTestCase):
                      16: 90}
 
         def planInsert(sim):
-            yield sim.wait(30 * Time.ns)
+            yield Timer(3 * CLK_PERIOD)
             for k, v in sorted(reference.items(), key=lambda x: x[0]):
                 u.insert._ag.data.append((k, v))
 
         self.procs.append(planInsert)
 
-        self.runSim(650 * Time.ns)
+        self.runSim(65 * CLK_PERIOD)
         self.checkContains(reference)
 
     def test_simpleInsertAndLookup(self):
@@ -102,7 +103,7 @@ class CuckooHashTableTC(SimpleSimTestCase):
             u.lookup._ag.data.append(k)
             expected.append((k, v, found, occupied))
 
-        self.runSim(800 * Time.ns)
+        self.runSim(80 * CLK_PERIOD)
         self.checkContains(reference)
         self.assertValSequenceEqual(u.lookupRes._ag.data, expected)
 
@@ -114,7 +115,7 @@ class CuckooHashTableTC(SimpleSimTestCase):
         for k, v in sorted(reference.items(), key=lambda x: x[0]):
             u.insert._ag.data.append((k, v))
 
-        self.runSim(CNT * 60 * Time.ns)
+        self.runSim(CNT * 6 * CLK_PERIOD)
         self.checkContains(reference)
 
     def test_delete(self):
@@ -131,11 +132,11 @@ class CuckooHashTableTC(SimpleSimTestCase):
             u.insert._ag.data.append((k, v))
 
         def doDelete(sim):
-            yield sim.wait(350 * Time.ns)
+            yield Timer(35 * CLK_PERIOD)
             u.delete._ag.data.extend(toDelete)
         self.procs.append(doDelete)
 
-        self.runSim(500 * Time.ns)
+        self.runSim(50 * CLK_PERIOD)
         for k in toDelete:
             del reference[k]
         self.checkContains(reference)

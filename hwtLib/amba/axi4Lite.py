@@ -20,7 +20,7 @@ class Axi4Lite_addrAgent(Axi3Lite_addrAgent):
     """
 
     def doRead(self, s):
-        return s.read(self.intf.addr), s.read(self.intf.prot)
+        return self.intf.addr.read(), self.intf.prot.read()
 
     def doWrite(self, s, data):
         if data is None:
@@ -28,8 +28,8 @@ class Axi4Lite_addrAgent(Axi3Lite_addrAgent):
         else:
             addr, prot = data
 
-        s.write(addr, self.intf.addr)
-        s.write(prot, self.intf.prot)
+        self.intf.addr.write(addr)
+        self.intf.prot.write(prot)
 
 
 class Axi4Lite_w(Axi3Lite_w):

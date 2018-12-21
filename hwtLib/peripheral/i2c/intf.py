@@ -75,12 +75,12 @@ class I2cAgent(AgentWitReset):
         # wait on all agents to update values and on 
         # simulator to appply them
         if sim.now > 0 and self.notReset(sim):
-            v = sim.read(self.intf.sda.i)
+            v = self.intf.sda.i.read()
             self.bits.append(v)
 
     def driver(self, sim):
         # now intf.sdc is rising
-        # yield sim.wait(1)
+        # yield Timer(1)
         # yield sim.waitOnCombUpdate()
         yield from self.sda.driver(sim)
         # now we are after clk

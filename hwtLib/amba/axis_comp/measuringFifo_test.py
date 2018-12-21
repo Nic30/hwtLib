@@ -8,25 +8,29 @@ from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis_comp.measuringFifo import AxiS_measuringFifo
 from hwt.pyUtils.arrayQuery import take, iter_with_last
+from pycocotb.constants import CLK_PERIOD
+from pycocotb.triggers import Timer
 
 
 class AxiS_measuringFifoTC(SimTestCase):
-    def setUp(self):
-        super(AxiS_measuringFifoTC, self).setUp()
-        u = self.u = AxiS_measuringFifo()
+
+    @classmethod
+    def setUpClass(cls):
+        super(AxiS_measuringFifoTC, cls).setUpClass()
+        u = cls.u = AxiS_measuringFifo()
         u.USE_STRB.set(True)
-        self.DATA_WIDTH = 64
-        self.MAX_LEN = 15
+        cls.DATA_WIDTH = 64
+        cls.MAX_LEN = 15
 
-        u.MAX_LEN.set(self.MAX_LEN)
+        u.MAX_LEN.set(cls.MAX_LEN)
         u.SIZES_BUFF_DEPTH.set(4)
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        u.DATA_WIDTH.set(cls.DATA_WIDTH)
 
-        self.prepareUnit(self.u)
+        cls.prepareUnit(u)
 
     def test_nop(self):
         u = self.u
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         self.assertEqual(len(u.sizes._ag.data), 0)
         self.assertEqual(len(u.dataOut._ag.data), 0)
@@ -38,7 +42,7 @@ class AxiS_measuringFifoTC(SimTestCase):
             (2, mask(8), 1),
         ])
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
         self.assertValSequenceEqual(u.sizes._ag.data, [8, ])
         self.assertValSequenceEqual(u.dataOut._ag.data, [(2, mask(8), 1), ])
 
@@ -49,7 +53,7 @@ class AxiS_measuringFifoTC(SimTestCase):
                                   ])
         u.dataOut._ag._enabled = False
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
         self.assertValSequenceEqual(u.sizes._ag.data, [8, ])
         self.assertEmpty(u.dataOut._ag.data, 0)
         self.assertValEqual(self.model.dataOut_last, 1)
@@ -66,7 +70,7 @@ class AxiS_measuringFifoTC(SimTestCase):
 
         u.dataIn._ag.data.extend(goldenData)
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, [8, 8, 8])
 
@@ -80,7 +84,7 @@ class AxiS_measuringFifoTC(SimTestCase):
                       ]
         u.dataIn._ag.data.extend(goldenData)
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, (16,))
 
@@ -94,15 +98,15 @@ class AxiS_measuringFifoTC(SimTestCase):
         ]
         u.dataIn._ag.data.extend(goldenData)
 
-        def pause(simulator):
-            yield simulator.wait(3 * 10 * Time.ns)
-            u.dataOut._ag.setEnable_asMonitor(False, simulator)
-            yield simulator.wait(3 * 10 * Time.ns)
-            u.dataOut._ag.setEnable_asMonitor(True, simulator)
+        def pause(sim):
+            yield Timer(3 * CLK_PERIOD)
+            u.dataOut._ag.setEnable_asMonitor(False, sim)
+            yield Timer(3 * CLK_PERIOD)
+            u.dataOut._ag.setEnable_asMonitor(True, sim)
 
         self.procs.append(pause)
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, [6 * 8])
@@ -118,7 +122,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         ]
         u.dataIn._ag.data.extend(goldenData)
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, (9,))
@@ -131,7 +135,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         goldenData = [(2, 1, 1), ]
         u.dataIn._ag.data.extend(goldenData)
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, (1,))
@@ -177,7 +181,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         self.randomize(u.dataOut)
         self.randomize(u.sizes)
 
-        self.runSim(len(expectedData) * 30 * Time.ns)
+        self.runSim(len(expectedData) * 3 * CLK_PERIOD)
 
         self.assertEqual(len(sizes), N)
         self.assertEqual(len(data), len(expectedData))
@@ -207,7 +211,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         u.sizes._ag.enable = False
 
         def sizesEn(sim):
-            yield sim.wait((SIZE_BUFF_SIZE + 5) * 10 * Time.ns)
+            yield Timer((SIZE_BUFF_SIZE + 5) * CLK_PERIOD)
             yield from self.simpleRandomizationProcess(u.sizes._ag)(sim)
 
         self.procs.append(sizesEn)
@@ -255,7 +259,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         data = [i for i in range(MAX_LEN + 4)]
         self.sendFrame(data)
 
-        self.runSim((MAX_LEN + 10) * 10 * Time.ns)
+        self.runSim((MAX_LEN + 10) * CLK_PERIOD)
         f = self.getFrames()
         self.assertEqual(f,
                          [[i for i in range(MAX_LEN + 1)],

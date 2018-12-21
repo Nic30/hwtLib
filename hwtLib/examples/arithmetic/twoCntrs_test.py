@@ -3,10 +3,10 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import agInts
 from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.examples.arithmetic.twoCntrs import TwoCntrs
+from pycocotb.constants import CLK_PERIOD
 
 
 eightOnes = [1 for _ in range(8)]
@@ -21,7 +21,7 @@ class TwoCntrsTC(SimpleSimTestCase):
         u.a_en._ag.data.append(0)
         u.b_en._ag.data.append(0)
 
-        self.runSim(90 * Time.ns)
+        self.runSim(9 * CLK_PERIOD)
 
         self.assertSequenceEqual(agInts(u.eq), eightOnes)
         self.assertSequenceEqual(agInts(u.gt), eightZeros)
@@ -33,7 +33,7 @@ class TwoCntrsTC(SimpleSimTestCase):
         u.a_en._ag.data.append(1)
         u.b_en._ag.data.append(1)
 
-        self.runSim(90 * Time.ns)
+        self.runSim(9 * CLK_PERIOD)
         self.assertSequenceEqual(agInts(u.eq), eightOnes)
         self.assertSequenceEqual(agInts(u.gt), eightZeros)
         self.assertSequenceEqual(agInts(u.lt), eightZeros)
@@ -44,7 +44,7 @@ class TwoCntrsTC(SimpleSimTestCase):
         u.a_en._ag.data.append(1)
         u.b_en._ag.data.append(0)
 
-        self.runSim(90 * Time.ns)
+        self.runSim(9 * CLK_PERIOD)
         self.assertSequenceEqual(agInts(u.eq), [1, 0, 0, 0, 0, 0, 0, 0])
         self.assertSequenceEqual(agInts(u.gt), [0, 1, 1, 1, 1, 1, 1, 1])
         self.assertSequenceEqual(agInts(u.lt), eightZeros)
@@ -55,7 +55,7 @@ class TwoCntrsTC(SimpleSimTestCase):
         u.a_en._ag.data.append(None)
         u.b_en._ag.data.append(None)
 
-        self.runSim(90 * Time.ns)
+        self.runSim(9 * CLK_PERIOD)
         self.assertSequenceEqual(agInts(u.eq), [1, None, None, None, None, None, None, None])
         self.assertSequenceEqual(agInts(u.gt), [0, None, None, None, None, None, None, None])
         self.assertSequenceEqual(agInts(u.lt), [0, None, None, None, None, None, None, None])
@@ -66,7 +66,7 @@ class TwoCntrsTC(SimpleSimTestCase):
         u.a_en._ag.data.extend([1, 0, 0, 1])
         u.b_en._ag.data.extend([1, 1, 0, 0, 1])
 
-        self.runSim(90 * Time.ns)
+        self.runSim(9 * CLK_PERIOD)
         self.assertSequenceEqual(agInts(u.eq), [1, 1, 0, 0, 1, 1, 1, 1])
         self.assertSequenceEqual(agInts(u.gt), eightZeros)
         self.assertSequenceEqual(agInts(u.lt), [0, 0, 1, 1, 0, 0, 0, 0])

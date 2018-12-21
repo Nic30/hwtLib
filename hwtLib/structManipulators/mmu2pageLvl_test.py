@@ -3,31 +3,36 @@
 
 import unittest
 
-from hwt.hdl.constants import Time, WRITE, NOP
+from hwt.bitmask import mask
+from hwt.hdl.constants import WRITE, NOP
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.mmu_2pageLvl import MMU_2pageLvl
-from hwt.bitmask import mask
+from pycocotb.constants import CLK_PERIOD
 
 
 class MMU_2pageLvl_TC(SimTestCase):
-    def setUp(self):
-        super(MMU_2pageLvl_TC, self).setUp()
 
-        u = self.u = MMU_2pageLvl()
-        self.prepareUnit(self.u)
-        self.DATA_WIDTH = int(u.DATA_WIDTH)
-        self.LVL2_PAGE_TABLE_ITEMS = int(u.LVL2_PAGE_TABLE_ITEMS)
-        self.LVL1_PAGE_TABLE_ITEMS = int(u.LVL1_PAGE_TABLE_ITEMS)
+    @classmethod
+    def setUpClass(cls):
+        super(SimTestCase, cls).setUpClass()
+        cls.u = u = MMU_2pageLvl()
+        cls.prepareUnit(u)
+        cls.DATA_WIDTH = int(u.DATA_WIDTH)
+        cls.LVL2_PAGE_TABLE_ITEMS = int(u.LVL2_PAGE_TABLE_ITEMS)
+        cls.LVL1_PAGE_TABLE_ITEMS = int(u.LVL1_PAGE_TABLE_ITEMS)
 
     def buildVirtAddr(self, lvl1pgtIndx, lvl2pgtIndx, pageOffset):
         u = self.u
-        return (lvl1pgtIndx << (u.LVL2_PAGE_TABLE_INDX_WIDTH + u.PAGE_OFFSET_WIDTH)) | (lvl2pgtIndx << u.PAGE_OFFSET_WIDTH) | pageOffset
+        return (
+            (lvl1pgtIndx << (u.LVL2_PAGE_TABLE_INDX_WIDTH + u.PAGE_OFFSET_WIDTH))
+            | (lvl2pgtIndx << u.PAGE_OFFSET_WIDTH) | pageOffset
+        )
 
     def test_nop(self):
         u = self.u
 
-        self.runSim(10 * 10 * Time.ns)
+        self.runSim(10 * CLK_PERIOD)
 
         self.assertEmpty(u.rDatapump.req._ag.data)
         self.assertEmpty(u.physOut._ag.data)
@@ -40,7 +45,7 @@ class MMU_2pageLvl_TC(SimTestCase):
 
         u.virtIn._ag.data.extend([NOP for _ in range(self.LVL1_PAGE_TABLE_ITEMS + 5)] + [0, ])
 
-        self.runSim((self.LVL1_PAGE_TABLE_ITEMS + 20) * 10 * Time.ns)
+        self.runSim((self.LVL1_PAGE_TABLE_ITEMS + 20) * CLK_PERIOD)
         self.assertEmpty(u.physOut._ag.data)
         self.assertValEqual(u.segfault._ag.data[-1], 1)
 
@@ -59,7 +64,7 @@ class MMU_2pageLvl_TC(SimTestCase):
         # wait for lvl1Table storage init
         u.virtIn._ag.data.extend([NOP, NOP, va])
 
-        self.runSim(100 * Time.ns)
+        self.runSim(10 * CLK_PERIOD)
 
         self.assertEmpty(u.physOut._ag.data)
         self.assertValEqual(u.segfault._ag.data[-1], 1)
@@ -89,10 +94,11 @@ class MMU_2pageLvl_TC(SimTestCase):
             virt.append(v)
             expected.append(int(2 ** 12) * (i + 1) + i + 1)
 
-        self.runSim(N*300 * Time.ns)
+        self.runSim(N * 30 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.physOut._ag.data, expected)
         self.assertValEqual(u.segfault._ag.data[-1], 0)
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

@@ -3,12 +3,13 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
 from hwt.interfaces.std import FifoReader, FifoWriter
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.mem.fifo import Fifo
+from pycocotb.constants import CLK_PERIOD
+from pycocotb.triggers import Timer
 
 
 class FifoReaderPassTrought(Unit):
@@ -31,12 +32,16 @@ class FifoWriterPassTrought(FifoReaderPassTrought):
 
 
 class FifoAgentsTC(SimTestCase):
-    CLK = 10 * Time.ns
+    CLK = CLK_PERIOD
+
+    def setUp(self):
+        pass
 
     def test_fifoReader(self):
         u = FifoReaderPassTrought()
-
         self.prepareUnit(u)
+        SimTestCase.setUp(self)
+
         self.randomize(u.din)
         self.randomize(u.dout)
 
@@ -48,8 +53,9 @@ class FifoAgentsTC(SimTestCase):
 
     def test_fifoWriter(self):
         u = FifoWriterPassTrought()
-
         self.prepareUnit(u)
+        SimTestCase.setUp(self)
+
         self.randomize(u.din)
         self.randomize(u.dout)
 
@@ -62,17 +68,18 @@ class FifoAgentsTC(SimTestCase):
 
 class FifoTC(SimTestCase):
     ITEMS = 4
-    IN_CLK = 10 * Time.ns
-    OUT_CLK = 10 * Time.ns
+    IN_CLK = CLK_PERIOD
+    OUT_CLK = CLK_PERIOD
     CLK = max(IN_CLK, OUT_CLK)
 
-    def setUp(self):
-        super(FifoTC, self).setUp()
-        u = self.u = Fifo()
+    @classmethod
+    def setUpClass(cls):
+        super(FifoTC, cls).setUpClass()
+        u = cls.u = Fifo()
         u.DATA_WIDTH.set(8)
-        u.DEPTH.set(self.ITEMS)
+        u.DEPTH.set(cls.ITEMS)
         u.EXPORT_SIZE.set(True)
-        self.prepareUnit(u)
+        cls.prepareUnit(u)
 
     def getFifoItems(self):
         v = self.model.memory._val.val.values()
@@ -129,7 +136,7 @@ class FifoTC(SimTestCase):
 
         def openOutputAfterWile(sim):
             u.dataOut._ag.setEnable(False, sim)
-            yield sim.wait(self.CLK * 9)
+            yield Timer(self.CLK * 9)
             u.dataOut._ag.setEnable(True, sim)
 
         self.procs.append(openOutputAfterWile)
@@ -175,7 +182,7 @@ class FifoTC(SimTestCase):
         u.dataIn._ag.data.extend(ref)
 
         def closeOutput(sim):
-            yield sim.wait(self.OUT_CLK * 4)
+            yield Timer(self.OUT_CLK * 4)
             u.dataOut._ag.setEnable(False, sim)
 
         self.procs.append(closeOutput)
@@ -227,7 +234,7 @@ class FifoTC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.runSim(120 * Time.ns)
+        self.runSim(12 * self.CLK)
         self.assertEqual(len(u.dataOut._ag.data), 0)
 
     def test_stuckedData(self):
@@ -250,14 +257,13 @@ class FifoTC(SimTestCase):
         u.dataIn._ag.data.extend(ref)
 
         def pause(simulator):
-            wait = simulator.wait
-            yield wait(3 * self.OUT_CLK)
+            yield Timer(3 * self.OUT_CLK)
             u.dataOut._ag.setEnable_asMonitor(False, simulator)
-            yield wait(3 * self.OUT_CLK)
+            yield Timer(3 * self.OUT_CLK)
             u.dataOut._ag.setEnable_asMonitor(True, simulator)
-            yield wait(3 * self.IN_CLK)
+            yield Timer(3 * self.IN_CLK)
             u.dataIn._ag.setEnable_asDriver(False, simulator)
-            yield wait(3 * self.IN_CLK)
+            yield Timer(3 * self.IN_CLK)
             u.dataIn._ag.setEnable_asDriver(True, simulator)
 
         self.procs.append(pause)
@@ -273,14 +279,13 @@ class FifoTC(SimTestCase):
         u.dataIn._ag.data.extend(ref)
 
         def pause(simulator):
-            wait = simulator.wait
-            yield wait(4 * self.OUT_CLK)
+            yield Timer(4 * self.OUT_CLK)
             u.dataOut._ag.setEnable_asMonitor(False, simulator)
-            yield wait(3 * self.OUT_CLK)
+            yield Timer(3 * self.OUT_CLK)
             u.dataOut._ag.setEnable_asMonitor(True, simulator)
-            yield wait(3 * self.IN_CLK)
+            yield Timer(3 * self.IN_CLK)
             u.dataIn._ag.setEnable_asDriver(False, simulator)
-            yield wait(3 * self.IN_CLK)
+            yield Timer(3 * self.IN_CLK)
             u.dataIn._ag.setEnable_asDriver(True, simulator)
 
         self.procs.append(pause)

@@ -5,7 +5,6 @@ from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
-from hwt.simulator.types.simBits import simBitsT
 from collections import deque
 
 
@@ -98,9 +97,9 @@ class DenseMemory():
         self._registerOnClock(clk)
 
     def _registerOnClock(self, clk):
-        clk._sigInside.simRisingSensProcs.add(self.checkRequests)
+        clk._sigInside.registerOnChangeCallback(self.checkRequests)
 
-    def checkRequests(self, simulator, _):
+    def checkRequests(self, simulator):
         """
         Check if any request has appeared on interfaces
         """
@@ -327,7 +326,7 @@ class DenseMemory():
 
         inFieldOffset = 0
         allMask = mask(wordWidth)
-        value = simBitsT(end - start, None).fromPy(None)
+        value = Bits(end - start, None).fromPy(None)
 
         while start != end:
             assert start < end, (start, end)

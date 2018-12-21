@@ -8,9 +8,10 @@ from hwt.hdl.operatorDefs import AllOps
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
     ResourceFF
-from hwt.simulator.simTestCase import SimTestCase, SimpleSimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwt.synthesizer.utils import toRtl
 from hwtLib.examples.arithmetic.cntr import Cntr
+from pycocotb.constants import CLK_PERIOD
 
 
 class CntrTC(SimpleSimTestCase):
@@ -20,7 +21,7 @@ class CntrTC(SimpleSimTestCase):
         u = self.u
 
         u.en._ag.data.append(1)
-        self.runSim(90 * Time.ns)
+        self.runSim(9 * CLK_PERIOD)
         self.assertValSequenceEqual(u.val._ag.data,
                                     [0, 1, 2, 3, 0, 1, 2, 3])
 
@@ -28,12 +29,12 @@ class CntrTC(SimpleSimTestCase):
         u = self.u
 
         u.en._ag.data.extend([1, 0, 1, 1, 0, 0, 0])
-        self.runSim(90 * Time.ns)
+        self.runSim(9 * CLK_PERIOD)
         self.assertValSequenceEqual(u.val._ag.data,
                                     [0, 1, 1, 2, 3, 3, 3, 3])
 
 
-class CntrResourceAnalysisTC(SimTestCase):
+class CntrResourceAnalysisTC(unittest.TestCase):
 
     def test_resources_2b(self):
         u = Cntr()
@@ -65,7 +66,8 @@ class CntrResourceAnalysisTC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(CntrTC('test_resources_150b'))
+    # suite.addTest(CntrTC('test_overflow'))
     suite.addTest(unittest.makeSuite(CntrTC))
+    suite.addTest(unittest.makeSuite(CntrResourceAnalysisTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
