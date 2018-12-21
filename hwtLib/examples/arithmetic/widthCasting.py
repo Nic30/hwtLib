@@ -33,6 +33,7 @@ class WidthCastingExample(Unit):
 
         connect(a + b, c, self.d, fit=True)
 
+
 class WidthCastingExampleTC(SimTestCase):
     def test_basic(self):
         a = 255
@@ -40,15 +41,14 @@ class WidthCastingExampleTC(SimTestCase):
         c = 1 << 11
         u = WidthCastingExample()
         self.prepareUnit(u)
-        
+
         u.a._ag.data.append(a)
         u.b._ag.data.append(b)
         u.c._ag.data.append(c)
-        
+
         self.runSim(20 * Time.ns)
         d = (a + b + c) & mask(8)
         self.assertValSequenceEqual(u.d._ag.data, [d, ])
-        
 
 
 if __name__ == "__main__":
