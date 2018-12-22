@@ -3,7 +3,6 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
 from hwt.hdl.operatorDefs import AllOps
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
