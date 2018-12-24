@@ -14,7 +14,10 @@ from pycocotb.constants import CLK_PERIOD
 
 
 class CntrTC(SimpleSimTestCase):
-    UNIT_CLS = Cntr
+
+    @classmethod
+    def getUnit(cls):
+        return Cntr()
 
     def test_overflow(self):
         u = self.u
@@ -66,6 +69,7 @@ class CntrResourceAnalysisTC(unittest.TestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(CntrTC('test_overflow'))
+    # suite.addTest(CntrTC('test_contingWithStops'))
     suite.addTest(unittest.makeSuite(CntrTC))
     suite.addTest(unittest.makeSuite(CntrResourceAnalysisTC))
     runner = unittest.TextTestRunner(verbosity=3)

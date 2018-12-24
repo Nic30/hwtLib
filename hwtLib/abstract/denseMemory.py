@@ -116,6 +116,8 @@ class DenseMemory():
 
             if self.wPending and self.wPending[0][2] <= len(self.wAg.data):
                 self.doWrite()
+        return
+        yield
 
     def parseReq(self, req):
         for i, v in enumerate(req):

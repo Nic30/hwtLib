@@ -6,9 +6,9 @@ from hwt.interfaces.std import VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import fitTo
-from hwt.simulator.simTestCase import SimTestCase
-from hwt.hdl.constants import Time
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwt.bitmask import mask
+from pycocotb.constants import CLK_PERIOD
 
 
 class WidthCastingExample(Unit):
@@ -34,19 +34,23 @@ class WidthCastingExample(Unit):
         connect(a + b, c, self.d, fit=True)
 
 
-class WidthCastingExampleTC(SimTestCase):
+class WidthCastingExampleTC(SimpleSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        return WidthCastingExample()
+
     def test_basic(self):
         a = 255
         b = 1 << 10
         c = 1 << 11
-        u = WidthCastingExample()
-        self.prepareUnit(u)
 
+        u = self.u
         u.a._ag.data.append(a)
         u.b._ag.data.append(b)
         u.c._ag.data.append(c)
 
-        self.runSim(20 * Time.ns)
+        self.runSim(2 * CLK_PERIOD)
         d = (a + b + c) & mask(8)
         self.assertValSequenceEqual(u.d._ag.data, [d, ])
 
