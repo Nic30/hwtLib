@@ -113,9 +113,10 @@ from hwtLib.examples.hdlObjLists.listOfInterfaces1 import ListOfInterfacesSample
 from hwtLib.examples.hdlObjLists.listOfInterfaces2 import ListOfInterfacesSample2TC
 from hwtLib.examples.hdlObjLists.listOfInterfaces3 import ListOfInterfacesSample3TC
 from hwtLib.examples.hdlObjLists.listOfInterfaces4 import ListOfInterfacesSample4TC
-from hwtLib.examples.mem.ram_test import RamTC as SampleRamTC
-from hwtLib.examples.mem.reg_test import DRegTC
-from hwtLib.examples.mem.rom_test import RomTC
+from hwtLib.examples.mem.ram_test import RamResourcesTC,\
+    SimpleAsyncRamTC, SimpleSyncRamTC
+from hwtLib.examples.mem.reg_test import DRegTC, RegSerializationTC,\
+    DoubleRRegTC, DReg_asyncRstTC
 from hwtLib.examples.operators.concat_test import ConcatTC
 from hwtLib.examples.operators.indexing_test import IndexingTC
 from hwtLib.examples.parametrization_test import ParametrizationTC
@@ -180,6 +181,8 @@ from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
 from hwtLib.peripheral.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.peripheral.uart.tx_rx_test import UartTxRxTC
 from hwtLib.peripheral.uart.tx_test import UartTxTC
+from hwtLib.examples.mem.rom_test import SimpleRomTC, SimpleSyncRomTC,\
+    RomResourcesTC
 
 
 def runSimWithoutLog(self, until, name=None, config=None):
@@ -254,8 +257,13 @@ suite = testSuiteFromTCs(
     VhdlSerializer_TC,
     IfStmTC,
     SwitchStmTC,
-    RomTC,
+    SimpleRomTC,
+    SimpleSyncRomTC,
+    RomResourcesTC,
     DRegTC,
+    DoubleRRegTC,
+    DReg_asyncRstTC,
+    RegSerializationTC,
     CntrTC,
 
     # tests of simple units
@@ -266,6 +274,7 @@ suite = testSuiteFromTCs(
     WidthCastingExampleTC,
     SimpleTC,
     SimpleSubunitTC,
+    RamTC,
     LutRamTC,
     FsmSerializationTC,
     FsmExampleTC,
@@ -274,11 +283,12 @@ suite = testSuiteFromTCs(
     BinToOneHotTC,
     GrayCntrTC,
     TwoCntrsTC,
-    SampleRamTC,
     SelfRefCntrTC,
     IndexingTC,
     ClkSynchronizerTC,
-    RamTC,
+    RamResourcesTC,
+    SimpleAsyncRamTC,
+    SimpleSyncRamTC,
     SimpleUnitAxiStream_TC,
     FifoAgentsTC,
     FifoTC,

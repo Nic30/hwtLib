@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceLatch
 from hwt.serializer.systemC.serializer import SystemCSerializer
 from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.vhdl.serializer import VhdlSerializer
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwt.synthesizer.utils import toRtl
 import os
 import unittest
@@ -18,11 +17,13 @@ from hwtLib.examples.mem.reg import DReg, DoubleDReg, OptimizedOutReg, \
 from pycocotb.constants import CLK_PERIOD
 
 
-class DRegTC(SimTestCase):
+class DRegTC(SimpleSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        return DReg()
 
     def test_simple(self):
-        self.setUpUnit(DReg())
-
         self.u.din._ag.data.extend(
             [i % 2 for i in range(6)] + [None, None, 0, 1])
         expected = [0, 0, 1, 0, 1, 0, 1, None, None, 0]
@@ -33,28 +34,38 @@ class DRegTC(SimTestCase):
         # check simulation results
         self.assertValSequenceEqual(recieved, expected)
 
-    def test_double(self):
-        self.setUpUnit(DoubleDReg())
 
+class DoubleRRegTC(SimpleSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        return DoubleDReg()
+
+    def test_double(self):
         self.u.din._ag.data.extend(
             [i % 2 for i in range(6)] + [None, None, 0, 1])
         expected = [0, 0, 0, 1, 0, 1, 0, 1, None]
 
-        self.runSim(100 * Time.ns)
+        self.runSim(10 * CLK_PERIOD)
 
         recieved = self.u.dout._ag.data
 
         # check simulation results
         self.assertValSequenceEqual(recieved, expected)
 
-    def test_async_rst(self):
-        u = DReg_asyncRst()
-        self.setUpUnit(u)
 
+class DReg_asyncRstTC(SimpleSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        return DReg_asyncRst()
+
+    def test_async_rst(self):
         self.u.rst._ag.initDelay = 3 * CLK_PERIOD
         self.u.din._ag.data.extend([1, 0, 1, 0, 1])
         self.runSim(10 * CLK_PERIOD)
-        self.assertValSequenceEqual(self.u.dout._ag.data, [0, 1, 0, 1, 0, 1, 1])
+        self.assertValSequenceEqual(self.u.dout._ag.data,
+                                    [0, 1, 0, 1, 0, 1, 1])
 
 
 class RegSerializationTC(TestCase):
@@ -112,6 +123,8 @@ if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(DRegTC('test_optimizedOutReg'))
     suite.addTest(unittest.makeSuite(DRegTC))
+    suite.addTest(unittest.makeSuite(DoubleRRegTC))
+    suite.addTest(unittest.makeSuite(DReg_asyncRstTC))
     suite.addTest(unittest.makeSuite(RegSerializationTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
