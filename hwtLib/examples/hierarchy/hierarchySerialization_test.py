@@ -5,12 +5,12 @@ import os
 from hwt.serializer.systemC.serializer import SystemCSerializer
 from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.vhdl.serializer import VhdlSerializer
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.utils import toRtl
 
 from hwtLib.examples.hierarchy.groupOfBlockrams import GroupOfBlockrams
 from hwtLib.examples.hierarchy.netFilter import NetFilter
 from hwtLib.tests.statementTrees import StatementTreesTC
+from unittest.case import TestCase
 
 
 def readContent(file_name: str):
@@ -19,7 +19,7 @@ def readContent(file_name: str):
         return f.read()
 
 
-class HierarchySerializationTC(SimTestCase):
+class HierarchySerializationTC(TestCase):
 
     def test_NetFilter_vhdl(self):
         u = NetFilter()

@@ -200,25 +200,34 @@ module gen_dout_splitCopy_0 #(parameter  DATA_WIDTH = 64,
         parameter  USE_STRB = 0
     )(input [DATA_WIDTH- 1:0] dataIn_data,
         input dataIn_last,
-        output dataIn_ready,
+        output reg dataIn_ready,
         input dataIn_valid,
         output [DATA_WIDTH- 1:0] dataOut_0_data,
         output dataOut_0_last,
         input dataOut_0_ready,
-        output dataOut_0_valid,
+        output reg dataOut_0_valid,
         output [DATA_WIDTH- 1:0] dataOut_1_data,
         output dataOut_1_last,
         input dataOut_1_ready,
-        output dataOut_1_valid
+        output reg dataOut_1_valid
     );
 
-    assign dataIn_ready = dataOut_0_ready & dataOut_1_ready;
+    always @(dataOut_0_ready or dataOut_1_ready) begin: assig_process_dataIn_ready
+        dataIn_ready = dataOut_0_ready & dataOut_1_ready;
+    end
+
     assign dataOut_0_data = dataIn_data;
     assign dataOut_0_last = dataIn_last;
-    assign dataOut_0_valid = dataIn_valid & dataOut_1_ready;
+    always @(dataIn_valid or dataOut_1_ready) begin: assig_process_dataOut_0_valid
+        dataOut_0_valid = dataIn_valid & dataOut_1_ready;
+    end
+
     assign dataOut_1_data = dataIn_data;
     assign dataOut_1_last = dataIn_last;
-    assign dataOut_1_valid = dataIn_valid & dataOut_0_ready;
+    always @(dataIn_valid or dataOut_0_ready) begin: assig_process_dataOut_1_valid
+        dataOut_1_valid = dataIn_valid & dataOut_0_ready;
+    end
+
 endmodule
 /*
 
