@@ -38,8 +38,8 @@ def mkLutRamCls(DATA_WIDTH):
         def _impl(self):
             s = self._sig
             wclk_in = s("wclk_in")
-            mem = self._ctx.sig("mem", Bits(DATA_WIDTH + 1),
-                                 defVal=hBit(None)._concat(self.INIT))
+            mem = self._ctx.sig("mem", Bits(DATA_WIDTH),
+                                defVal=self.INIT)
             a_in = s("a_in", Bits(6))
             d_in = s("d_in")
             we_in = s("we_in")
