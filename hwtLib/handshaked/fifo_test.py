@@ -6,7 +6,6 @@ import unittest
 
 from hwt.hdl.constants import NOP
 from hwt.interfaces.std import Handshaked
-from hwt.simulator.simTestCase import SimTestCase
 
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.mem.fifo_test import FifoTC
@@ -14,13 +13,13 @@ from hwtLib.mem.fifo_test import FifoTC
 
 class HsFifoTC(FifoTC):
 
-    def setUp(self):
-        SimTestCase.setUp(self)
-        u = self.u = HandshakedFifo(Handshaked)
-        u.DEPTH.set(self.ITEMS)
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = HandshakedFifo(Handshaked)
+        u.DEPTH.set(cls.ITEMS)
         u.DATA_WIDTH.set(8)
         u.EXPORT_SIZE.set(True)
-        self.prepareUnit(u)
+        return u
 
     def getFifoItems(self):
         v = self.model.fifo_inst.memory._val.val.values()

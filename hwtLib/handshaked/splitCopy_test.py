@@ -3,11 +3,11 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.handshaked.splitCopy import HsSplitCopy
+from pycocotb.constants import CLK_PERIOD
 
 
 class HsSplitCopyWithReference(HsSplitCopy):
@@ -16,23 +16,25 @@ class HsSplitCopyWithReference(HsSplitCopy):
         addClkRstn(self)
 
 
-class HsSplitCopyTC(SimTestCase):
-    def setUp(self):
-        super(HsSplitCopyTC, self).setUp()
-        self.u = HsSplitCopyWithReference(Handshaked)
-        self.u.DATA_WIDTH.set(4)
-        self.prepareUnit(self.u)
+class HsSplitCopyTC(SimpleSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = HsSplitCopyWithReference(Handshaked)
+        cls.u.DATA_WIDTH.set(4)
+        return cls.u
 
     def test_passdata(self):
         u = self.u
         u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
 
-        self.runSim(150 * Time.ns)
+        self.runSim(15 * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.dataOut[0]._ag.data, [1, 2, 3, 4, 5, 6])
-        self.assertValSequenceEqual(u.dataOut[1]._ag.data, [1, 2, 3, 4, 5, 6])
+        aeq = self.assertValSequenceEqual
+        aeq(u.dataOut[0]._ag.data, [1, 2, 3, 4, 5, 6])
+        aeq(u.dataOut[1]._ag.data, [1, 2, 3, 4, 5, 6])
 
-        self.assertSequenceEqual([], u.dataIn._ag.data)
+        aeq([], u.dataIn._ag.data)
 
 
 class HsSplitCopy_randomized_TC(HsSplitCopyTC):

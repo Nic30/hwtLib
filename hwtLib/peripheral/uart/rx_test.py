@@ -4,24 +4,25 @@
 from hwt.bitmask import selectBit
 from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import valToInt
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 
 from hwtLib.peripheral.uart.rx import UartRx
+from pycocotb.constants import CLK_PERIOD
 
 
-class UartRxBasicTC(SimTestCase):
-    def setUp(self):
-        SimTestCase.setUp(self)
-        self.OVERSAMPLING = 16
-        self.FREQ = 115200 * self.OVERSAMPLING
-        self.BAUD = 115200
+class UartRxBasicTC(SimpleSimTestCase):
 
-        u = self.u = UartRx()
-        u.BAUD.set(self.BAUD)
-        u.FREQ.set(self.FREQ)
-        u.OVERSAMPLING.set(self.OVERSAMPLING)
+    @classmethod
+    def getUnit(cls):
+        cls.OVERSAMPLING = 16
+        cls.FREQ = 115200 * cls.OVERSAMPLING
+        cls.BAUD = 115200
 
-        self.prepareUnit(u)
+        u = cls.u = UartRx()
+        u.BAUD.set(cls.BAUD)
+        u.FREQ.set(cls.FREQ)
+        u.OVERSAMPLING.set(cls.OVERSAMPLING)
+        return u
 
     def getStr(self):
         s = ""
@@ -52,23 +53,24 @@ class UartRxBasicTC(SimTestCase):
     def test_simple(self):
         t = "simple"
         self.sendStr(t)
-        self.runSim(self.OVERSAMPLING * (self.FREQ // self.BAUD) * 10 * (len(t) + 5) * Time.ns)
+        self.runSim(self.OVERSAMPLING * 
+                    (self.FREQ // self.BAUD) * (len(t) + 5) * CLK_PERIOD)
         self.assertEqual(self.getStr(), t)
 
 
 class UartRxTC(UartRxBasicTC):
-    def setUp(self):
-        SimTestCase.setUp(self)
-        self.OVERSAMPLING = 16
-        self.FREQ = 115200 * self.OVERSAMPLING * 4
-        self.BAUD = 115200
 
-        u = self.u = UartRx()
-        u.BAUD.set(self.BAUD)
-        u.FREQ.set(self.FREQ)
-        u.OVERSAMPLING.set(self.OVERSAMPLING)
+    @classmethod
+    def getUnit(cls):
+        cls.OVERSAMPLING = 16
+        cls.FREQ = 115200 * cls.OVERSAMPLING * 4
+        cls.BAUD = 115200
 
-        self.prepareUnit(u)
+        u = cls.u = UartRx()
+        u.BAUD.set(cls.BAUD)
+        u.FREQ.set(cls.FREQ)
+        u.OVERSAMPLING.set(cls.OVERSAMPLING)
+        return u
 
 
 if __name__ == "__main__":

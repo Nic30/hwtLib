@@ -1,21 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import valToInt
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 
 from hwtLib.peripheral.uart.tx import UartTx
+from pycocotb.constants import CLK_PERIOD
 
 
-class UartTxTC(SimTestCase):
-    def setUp(self):
-        SimTestCase.setUp(self)
-        u = self.u = UartTx()
+class UartTxTC(SimpleSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = UartTx()
         u.BAUD.set(115200)
         u.FREQ.set(115200)
-        self.prepareUnit(u)
-        self.randomize(u.dataIn)
+        return u
+
+    def setUp(self):
+        SimpleSimTestCase.setUp(self)
+        self.randomize(self.u.dataIn)
 
     def getStr(self):
         START_BIT = 0
@@ -46,13 +50,13 @@ class UartTxTC(SimTestCase):
             self.u.dataIn._ag.data.append(ord(ch))
 
     def test_nop(self):
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
         self.assertEqual(self.getStr(), "")
 
     def test_simple(self):
         t = "simple"
         self.sendStr(t)
-        self.runSim(10 * 10 * (len(t) + 10) * Time.ns)
+        self.runSim(10 * (len(t) + 10) * CLK_PERIOD)
         self.assertEqual(self.getStr(), t)
 
 

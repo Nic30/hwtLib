@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
 from hwt.bitmask import selectBit
-from hwt.hdl.constants import WRITE, READ, Time
+from hwt.hdl.constants import WRITE, READ
 from hwt.simulator.agentConnector import valuesToInts
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.mem.lutRam import RAM64X1S
+from pycocotb.constants import CLK_PERIOD
 
 
 def applyRequests(ram, requests):
@@ -34,18 +34,22 @@ def applyRequests(ram, requests):
             addrbit._ag.data.append(addrBitval)
 
 
-class LutRamTC(SimTestCase):
+class LutRamTC(SimpleSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        u = RAM64X1S()
+        return u
 
     def test_writeAndRead(self):
-        u = RAM64X1S()
-        self.prepareUnit(u)
+        u = self.u
 
         requests = [(WRITE, 0, 0), (WRITE, 1, 1),
                     (READ, 0), (READ, 1),
                     (READ, 2), (READ, 3), (READ, 2)]
         applyRequests(u, requests)
 
-        self.runSim(80 * Time.ns)
+        self.runSim(8 * CLK_PERIOD)
         self.assertSequenceEqual(valuesToInts(u.o._ag.data),
                                  [0, 0, 0, 1, 0, 0, 0, 0])
 

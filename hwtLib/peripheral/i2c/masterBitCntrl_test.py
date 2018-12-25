@@ -4,24 +4,26 @@
 import unittest
 
 from hwt.bitmask import selectBit
-from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.peripheral.i2c.intf import I2cAgent
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl,\
     NOP, START, READ, WRITE
 from _collections import deque
+from pycocotb.constants import CLK_PERIOD
 
 
-class I2CMasterBitCntrlTC(SimTestCase):
-    def setUp(self):
-        self.u = I2cMasterBitCtrl()
-        self.prepareUnit(self.u)
+class I2CMasterBitCntrlTC(SimpleSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = I2cMasterBitCtrl()
+        return cls.u
 
     def test_nop(self):
         u = self.u
         u.cntrl._ag.data.append((NOP, 0))
         u.clk_cnt_initVal._ag.data.append(4)
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         self.assertEmpty(u.i2c._ag.bits)
 
@@ -29,7 +31,7 @@ class I2CMasterBitCntrlTC(SimTestCase):
         u = self.u
         u.cntrl._ag.data.extend([(START, 0), (NOP, 0)])
         u.clk_cnt_initVal._ag.data.append(4)
-        self.runSim(600 * Time.ns)
+        self.runSim(60 * CLK_PERIOD)
 
         self.assertEqual(u.i2c._ag.bits, deque([I2cAgent.START]))
 
@@ -45,7 +47,7 @@ class I2CMasterBitCntrlTC(SimTestCase):
              (NOP, 0)
             ])
         u.clk_cnt_initVal._ag.data.append(4)
-        self.runSim(700 * Time.ns)
+        self.runSim(70 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.i2c._ag.bits,
                                     [I2cAgent.START] + 

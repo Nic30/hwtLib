@@ -11,7 +11,7 @@ from pycocotb.triggers import Timer
 class CuckooHashTableTC(SimpleSimTestCase):
 
     @classmethod
-    def setUpClass(cls):
+    def getUnit(cls):
         cls.TABLE_SIZE = 32
         u = CuckooHashTable([CRC_32, CRC_32])
         u.KEY_WIDTH.set(16)
@@ -19,7 +19,7 @@ class CuckooHashTableTC(SimpleSimTestCase):
         u.LOOKUP_KEY.set(True)
         u.TABLE_SIZE.set(cls.TABLE_SIZE)
         cls.TABLE_CNT = 2
-        cls.prepareUnit(u)
+        return u
 
     def setUp(self):
         SimpleSimTestCase.setUp(self)
@@ -27,9 +27,8 @@ class CuckooHashTableTC(SimpleSimTestCase):
                            for i in range(self.TABLE_CNT)]
 
     def cleanupMemory(self):
-        for ti in range(self.TABLE_CNT):
-            table = getattr(self.model, "tables_%d_inst" % ti).table_inst
-            mem = table.ram_memory.defVal
+        for mem in self.TABLE_MEMS:
+            mem = mem.defVal
             for i in range(mem._dtype.size):
                 mem.val[i] = mem._dtype.elmType.fromPy(0)
 

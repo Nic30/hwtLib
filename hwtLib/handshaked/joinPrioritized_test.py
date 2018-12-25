@@ -3,11 +3,11 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
+from pycocotb.constants import CLK_PERIOD
 
 
 class HsJoinWithReference(HsJoinPrioritized):
@@ -17,14 +17,14 @@ class HsJoinWithReference(HsJoinPrioritized):
         addClkRstn(self)
 
 
-class HsJoinPrioritizedTC(SimTestCase):
+class HsJoinPrioritizedTC(SimpleSimTestCase):
     randomized = False
 
-    def setUp(self):
-        super(HsJoinPrioritizedTC, self).setUp()
-        self.u = HsJoinWithReference(Handshaked)
-        self.u.DATA_WIDTH.set(8)
-        self.prepareUnit(self.u)
+    @classmethod
+    def getUnit(cls):
+        cls.u = HsJoinWithReference(Handshaked)
+        cls.u.DATA_WIDTH.set(8)
+        return cls.u
 
     def test_passdata(self):
         u = self.u
@@ -34,7 +34,7 @@ class HsJoinPrioritizedTC(SimTestCase):
         t = 20
         if self.randomized:
             t *= 2
-        self.runSim(t * 10 * Time.ns)
+        self.runSim(t * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])

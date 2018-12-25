@@ -3,32 +3,32 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimTestCase, SimpleSimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.arrayItemGetter import ArrayItemGetter
+from pycocotb.constants import CLK_PERIOD
 
 
-class ArrayItemGetterTC(SimTestCase):
-    def setUp(self):
-        u = self.u = ArrayItemGetter()
-        self.ID = 3
-        u.ID.set(self.ID)
+class ArrayItemGetterTC(SimpleSimTestCase):
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = ArrayItemGetter()
+        cls.ID = 3
+        u.ID.set(cls.ID)
 
-        self.ITEMS = 32
-        u.ITEMS.set(self.ITEMS)
+        cls.ITEMS = 32
+        u.ITEMS.set(cls.ITEMS)
 
-        self.DATA_WIDTH = 64
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        cls.DATA_WIDTH = 64
+        u.DATA_WIDTH.set(cls.DATA_WIDTH)
 
-        self.ITEM_WIDTH = 64
-        u.ITEM_WIDTH.set(self.ITEM_WIDTH)
-
-        self.prepareUnit(u)
+        cls.ITEM_WIDTH = 64
+        u.ITEM_WIDTH.set(cls.ITEM_WIDTH)
+        return u
 
     def test_nop(self):
         u = self.u
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         self.assertEqual(len(u.rDatapump.req._ag.data), 0)
         self.assertEqual(len(u.item._ag.data), 0)
@@ -46,7 +46,7 @@ class ArrayItemGetterTC(SimTestCase):
         m = DenseMemory(self.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
         m.data[BASE // 8 + INDEX] = MAGIC
 
-        self.runSim(t * 10 * Time.ns)
+        self.runSim(t * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.item._ag.data, [MAGIC, ])
 
@@ -70,7 +70,7 @@ class ArrayItemGetter2in1WordTC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         self.assertEqual(len(u.rDatapump.req._ag.data), 0)
         self.assertEqual(len(u.item._ag.data), 0)
@@ -91,7 +91,7 @@ class ArrayItemGetter2in1WordTC(SimTestCase):
         u.base._ag.data.append(base)
         u.index._ag.data.extend([i for i in range(N)])
 
-        self.runSim(t * 10 * Time.ns)
+        self.runSim(t * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.item._ag.data,
                                     [

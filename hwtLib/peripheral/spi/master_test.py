@@ -1,13 +1,19 @@
-from hwt.simulator.simTestCase import SimTestCase
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from hwt.simulator.simTestCase import SimpleSimTestCase
+
 from hwtLib.peripheral.spi.master import SpiMaster
-from hwt.hdl.constants import Time
+from pycocotb.constants import CLK_PERIOD
 
 
-class SpiMasterTC(SimTestCase):
-    def setUp(self):
-        u = self.u = SpiMaster()
+class SpiMasterTC(SimpleSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = SpiMaster()
         u.SPI_FREQ_PESCALER.set(8)
-        self.prepareUnit(u)
+        return u
 
     def test_readAndWrite8bits(self):
         u = self.u
@@ -16,10 +22,11 @@ class SpiMasterTC(SimTestCase):
         u.data._ag.data.append([0, 7, 1])
         u.spi._ag.txData.append(11)
 
-        self.runSim(1500 * Time.ns)
-        self.assertValSequenceEqual(u.data._ag.dinData, [11])
-        self.assertValSequenceEqual(u.spi._ag.rxData, [7])
-        self.assertValSequenceEqual(u.spi._ag.chipSelects, [0])
+        self.runSim(150 * CLK_PERIOD)
+        aeq = self.assertValSequenceEqual
+        aeq(u.data._ag.dinData, [11])
+        aeq(u.spi._ag.rxData, [7])
+        aeq(u.spi._ag.chipSelects, [0])
 
     def test_readAndWrite16bits(self):
         u = self.u
@@ -28,10 +35,11 @@ class SpiMasterTC(SimTestCase):
         u.data._ag.data.extend(([0, 7, 0], [0, 99, 1]))
         u.spi._ag.txData.extend([11, 48])
 
-        self.runSim(2000 * Time.ns)
-        self.assertValSequenceEqual(u.data._ag.dinData, [11, 48])
-        self.assertValSequenceEqual(u.spi._ag.rxData, [7, 99])
-        self.assertValSequenceEqual(u.spi._ag.chipSelects, [0, 0])
+        self.runSim(200 * CLK_PERIOD)
+        aeq = self.assertValSequenceEqual
+        aeq(u.data._ag.dinData, [11, 48])
+        aeq(u.spi._ag.rxData, [7, 99])
+        aeq(u.spi._ag.chipSelects, [0, 0])
 
     def test_readAndWrite2x8bits(self):
         u = self.u
@@ -40,10 +48,12 @@ class SpiMasterTC(SimTestCase):
         u.data._ag.data.extend(([0, 7, 1], [0, 99, 1]))
         u.spi._ag.txData.extend([11, 48])
 
-        self.runSim(2000 * Time.ns)
-        self.assertValSequenceEqual(u.data._ag.dinData, [11, 48])
-        self.assertValSequenceEqual(u.spi._ag.rxData, [7, 99])
-        self.assertValSequenceEqual(u.spi._ag.chipSelects, [0, 0])
+        self.runSim(200 * CLK_PERIOD)
+
+        aeq = self.assertValSequenceEqual
+        aeq(u.data._ag.dinData, [11, 48])
+        aeq(u.spi._ag.rxData, [7, 99])
+        aeq(u.spi._ag.chipSelects, [0, 0])
 
 
 if __name__ == "__main__":
