@@ -82,7 +82,7 @@ class IpCorePackagerTC(unittest.TestCase):
         en0.ID_WIDTH.set(8)
         en0.DEST_WIDTH.set(4)
         en0.USER_WIDTH.set(12)
-        
+
         testUnits = [AxiS_en(),
                      en0,
                      AxiLiteEndpoint(HStruct(
