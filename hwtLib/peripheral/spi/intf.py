@@ -5,10 +5,10 @@ from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import Clk, Signal, VectSignal
 from hwt.interfaces.tristate import TristateSig
 from hwt.simulator.agentBase import SyncAgentBase, AgentBase
-from hwt.simulator.types.simBits import simBitsT
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from pycocotb.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
+from hwt.hdl.types.bits import Bits
 
 
 class SpiAgent(SyncAgentBase):
@@ -65,7 +65,7 @@ class SpiAgent(SyncAgentBase):
         return deque([selectBit(v, i) for i in range(self.BITS_IN_WORD - 1, -1, -1)])
 
     def mergeBits(self, bits):
-        t = simBitsT(self.BITS_IN_WORD, False)
+        t = Bits(self.BITS_IN_WORD, False)
         val = 0
         vldMask = 0
         time = -1

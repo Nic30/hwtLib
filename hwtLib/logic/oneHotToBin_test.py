@@ -3,11 +3,10 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.shortcuts import simPrepare
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.logic.oneHotToBin import OneHotToBin
+from pycocotb.constants import CLK_PERIOD
 
 
 class OneHotToBinSimWrap(OneHotToBin):
@@ -17,21 +16,21 @@ class OneHotToBinSimWrap(OneHotToBin):
         addClkRstn(self)
 
 
-class OneHotToBinTC(SimTestCase):
-    LEN_MAX = 255
+class OneHotToBinTC(SimpleSimTestCase):
 
-    def setUp(self):
+    @classmethod
+    def getUnit(cls):
         u = OneHotToBinSimWrap()
-        self.ONE_HOT_WIDTH = 8
-        u.ONE_HOT_WIDTH.set(self.ONE_HOT_WIDTH)
-        self.u, self.model, self.procs = simPrepare(u)
+        cls.ONE_HOT_WIDTH = 8
+        u.ONE_HOT_WIDTH.set(cls.ONE_HOT_WIDTH)
+        return u
 
     def test_nop(self):
         u = self.u
         oneHot = u.oneHot._ag.data
         oneHot.append(0)
 
-        self.runSim(4 * 10 * Time.ns)
+        self.runSim(4 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.bin._ag.data, [])
 
@@ -43,7 +42,7 @@ class OneHotToBinTC(SimTestCase):
             oneHot.append(1 << i)
         oneHot.append(0)
 
-        self.runSim((self.ONE_HOT_WIDTH + 3) * 10 * Time.ns)
+        self.runSim((self.ONE_HOT_WIDTH + 3) * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.bin._ag.data, range(self.ONE_HOT_WIDTH))
 

@@ -3,9 +3,6 @@
 
 from unittest import TestLoader, TextTestRunner, TestSuite
 
-from hwt.simulator.hdlSimConfig import HdlSimConfig
-from hwt.simulator.hdlSimulator import HdlSimulator
-from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
 from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
 from hwtLib.amba.axi_comp.axi4_streamToMem_test import Axi4_streamToMemTC
@@ -83,7 +80,7 @@ from hwtLib.mem.bramEndpoint_test import BramPortEndpointTC, \
 from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.cuckooHashTable_test import CuckooHashTableTC
 from hwtLib.mem.fifoAsync_test import FifoAsyncTC
-from hwtLib.mem.fifo_test import FifoAgentsTC, FifoTC
+from hwtLib.mem.fifo_test import FifoWriterAgentTC, FifoReaderAgentTC, FifoTC
 from hwtLib.mem.hashTableCore_test import HashTableCoreTC
 from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ram_test import RamTC
@@ -149,7 +146,6 @@ from hwtLib.structManipulators.cLinkedListWriter_test import \
 from hwtLib.structManipulators.mmu2pageLvl_test import MMU_2pageLvl_TC
 from hwtLib.structManipulators.structReader_test import StructReaderTC
 from hwtLib.structManipulators.structWriter_test import StructWriter_TC
-from hwtLib.tests.dumpTestBench_test import DumpTestbenchTC
 from hwtLib.tests.fileUtils_test import FileUtilsTC
 from hwtLib.tests.frameTmpl_test import FrameTmplTC
 from hwtLib.tests.ipCorePackager_test import IpCorePackagerTC
@@ -157,7 +153,6 @@ from hwtLib.tests.rdSynced_agent_test import RdSynced_agent_TC
 from hwtLib.tests.resourceAnalyzer_test import ResourceAnalyzer_TC
 from hwtLib.tests.serializerModes_test import SerializerModes_TC
 from hwtLib.tests.serializer_tmpVar_test import Serializer_tmpVar_TC
-from hwtLib.tests.simEvents_test import SimEventsTC
 from hwtLib.tests.simulatorUtlls_test import SimulatorUtilsTC
 from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.tests.statementTreesInternal import StatementTreesInternalTC
@@ -183,26 +178,14 @@ from hwtLib.peripheral.uart.tx_rx_test import UartTxRxTC
 from hwtLib.peripheral.uart.tx_test import UartTxTC
 from hwtLib.examples.mem.rom_test import SimpleRomTC, SimpleSyncRomTC,\
     RomResourcesTC
-
-
-def runSimWithoutLog(self, until, name=None, config=None):
-    sim = HdlSimulator()
-    # dummy config
-    sim.config = HdlSimConfig()
-    # run simulation, stimul processes are register after initial
-    # initialization
-    sim.simUnit(self.model, until=until, extraProcesses=self.procs)
-    return sim
+from hwt.simulator.simTestCase import SimpleSimTestCase
 
 
 def testSuiteFromTCs(*tcs):
     loader = TestLoader()
     for tc in tcs:
-        # skip AxiLiteEndpointTC because we need one to test original methods
-        # from SimTestCase
-        if issubclass(tc, SimTestCase) and tc is not AxiLiteEndpointTC:
-            tc.runSim = runSimWithoutLog
-        tc._multiprocess_can_split_ = True
+        if not isinstance(tc, SimpleSimTestCase):
+            tc._multiprocess_can_split_ = True
     loadedTcs = [loader.loadTestsFromTestCase(tc) for tc in tcs]
     suite = TestSuite(loadedTcs)
     return suite
@@ -244,7 +227,6 @@ suite = testSuiteFromTCs(
     ListOfInterfacesSample4TC,
     FrameTmplTC,
     Showcase0TC,
-    SimEventsTC,
     SimulatorUtilsTC,
     RdSynced_agent_TC,
     Segment7TC,
@@ -290,7 +272,8 @@ suite = testSuiteFromTCs(
     SimpleAsyncRamTC,
     SimpleSyncRamTC,
     SimpleUnitAxiStream_TC,
-    FifoAgentsTC,
+    FifoWriterAgentTC,
+    FifoReaderAgentTC,
     FifoTC,
     FifoAsyncTC,
     HsJoinPrioritizedTC,
@@ -406,7 +389,6 @@ suite = testSuiteFromTCs(
     CharToBitmapTC,
     HashTableCoreTC,
     CuckooHashTableTC,
-    DumpTestbenchTC,
     PingResponderTC,
 )
 

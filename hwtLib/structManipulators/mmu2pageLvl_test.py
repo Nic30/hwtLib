@@ -5,22 +5,24 @@ import unittest
 
 from hwt.bitmask import mask
 from hwt.hdl.constants import WRITE, NOP
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.mmu_2pageLvl import MMU_2pageLvl
 from pycocotb.constants import CLK_PERIOD
 
 
-class MMU_2pageLvl_TC(SimTestCase):
+class MMU_2pageLvl_TC(SimpleSimTestCase):
 
     @classmethod
-    def setUpClass(cls):
-        super(SimTestCase, cls).setUpClass()
+    def getUnit(cls):
         cls.u = u = MMU_2pageLvl()
-        cls.prepareUnit(u)
         cls.DATA_WIDTH = int(u.DATA_WIDTH)
-        cls.LVL2_PAGE_TABLE_ITEMS = int(u.LVL2_PAGE_TABLE_ITEMS)
-        cls.LVL1_PAGE_TABLE_ITEMS = int(u.LVL1_PAGE_TABLE_ITEMS)
+        return cls.u
+
+    def setUp(self):
+        super(MMU_2pageLvl_TC, self).setUp()
+        self.LVL2_PAGE_TABLE_ITEMS = int(self.u.LVL2_PAGE_TABLE_ITEMS)
+        self.LVL1_PAGE_TABLE_ITEMS = int(self.u.LVL1_PAGE_TABLE_ITEMS)
 
     def buildVirtAddr(self, lvl1pgtIndx, lvl2pgtIndx, pageOffset):
         u = self.u

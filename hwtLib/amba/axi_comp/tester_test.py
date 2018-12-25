@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
+from collections import deque
+from hwt.bitmask import mask
+from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SimTestCase
+from itertools import islice
+
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
 from hwtLib.amba.axi_comp.tester import AxiTester, SEND_AR, RECV_R
+from hwtLib.amba.constants import BYTES_IN_TRANS, PROT_DEFAULT, LOCK_DEFAULT, \
+    CACHE_DEFAULT, BURST_INCR, RESP_OKAY
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
-from hwtLib.amba.constants import BYTES_IN_TRANS, PROT_DEFAULT, LOCK_DEFAULT,\
-    CACHE_DEFAULT, BURST_INCR, RESP_OKAY
-from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.bitmask import mask
-from itertools import islice
-from collections import deque
+from pycocotb.constants import CLK_PERIOD
 
 
 class SimProcessSequence(deque):
@@ -33,19 +34,25 @@ class SimProcessSequence(deque):
 
 
 class AxiTesterTC(SimTestCase):
-    def setUp(self):
-        super(AxiTesterTC, self).setUp()
 
-        self.u = u = AxiTester(Axi3)
+    @classmethod
+    def setUpClass(cls):
+        super(AxiTesterTC, cls).setUpClass()
+        cls.u = u = AxiTester(Axi3)
         u.DATA_WIDTH.set(32)
 
-        self.prepareUnit(u, onAfterToRtl=self.mkRegisterMap)
-        self.m = Axi3DenseMem(u.clk, u.m_axi)
+        cls.prepareUnit(u, onAfterToRtl=cls.mkRegisterMap)
 
-    def mkRegisterMap(self, u, modelCls):
+    @classmethod
+    def mkRegisterMap(cls, u):
         bus = u.cntrl
-        self.addrProbe = AddressSpaceProbe(bus, addrGetter)
-        self.regs = AxiLiteMemSpaceMaster(bus, self.addrProbe.discovered)
+        cls.addrProbe = AddressSpaceProbe(bus, addrGetter)
+        cls.regs = AxiLiteMemSpaceMaster(bus, cls.addrProbe.discovered)
+
+    def setUp(self):
+        super(AxiTesterTC, self).setUp()
+        u = self.u
+        self.m = Axi3DenseMem(u.clk, u.m_axi)
 
     def randomize_all(self):
         axi = self.u.m_axi
@@ -58,7 +65,7 @@ class AxiTesterTC(SimTestCase):
 
     def test_nop(self):
         self.randomize_all()
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
     def poolWhileBussy(self, sim, onReady):
         def repeatWaitIfNotReady(sim):
@@ -162,7 +169,7 @@ class AxiTesterTC(SimTestCase):
                     checkBeat,
                 ])
         self.procs.append(seq.run)
-        self.runSim(4000 * Time.ns)
+        self.runSim(400 * CLK_PERIOD)
         self.assertEmpty(seq)
         self.assertEqual(len(self.u.cntrl.w._ag.data), 0)
         self.assertEqual(self.transactionCompleted, sum([x[1] for x in transactions]))

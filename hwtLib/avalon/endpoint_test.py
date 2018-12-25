@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.bitmask import mask
-from hwt.hdl.constants import Time, READ, WRITE
+from hwt.hdl.constants import READ, WRITE
 from hwt.interfaces.std import BramPort_withoutClk
 from hwt.simulator.simTestCase import SimTestCase
 
@@ -14,6 +14,7 @@ from hwtLib.amba.axiLite_comp.endpoint_test import structTwoFields, \
 from hwtLib.avalon.endpoint import AvalonMmEndpoint
 from hwtLib.avalon.memSpaceMaster import AvalonMmMemSpaceMaster
 from hwtLib.avalon.mm import AvalonMM, RESP_OKAY, RESP_SLAVEERROR
+from pycocotb.constants import CLK_PERIOD
 
 
 def addrGetter(intf):
@@ -28,7 +29,7 @@ def addrGetter(intf):
 class AvalonMmEndpointTC(SimTestCase):
     STRUCT_TEMPLATE = structTwoFields
     FIELD_ADDR = [0x0, 0x4]
-    CLK = 10 * Time.ns
+    CLK = CLK_PERIOD
 
     def arTrans(self, addr, burstsize=1):
         return (READ, addr, burstsize)
