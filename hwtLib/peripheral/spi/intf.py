@@ -5,10 +5,10 @@ from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import Clk, Signal, VectSignal
 from hwt.interfaces.tristate import TristateSig
 from hwt.simulator.agentBase import SyncAgentBase, AgentBase
-from hwt.simulator.shortcuts import OnFallingCallbackLoop, OnRisingCallbackLoop
-from hwt.simulator.types.simBits import simBitsT
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
+from pycocotb.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
+from hwt.hdl.types.bits import Bits
 
 
 class SpiAgent(SyncAgentBase):
@@ -60,12 +60,12 @@ class SpiAgent(SyncAgentBase):
         self.monitorTx.setEnable(en)
         self.driverRx.setEnable(en)
         self.driverTx.setEnable(en)
-        
+
     def splitBits(self, v):
         return deque([selectBit(v, i) for i in range(self.BITS_IN_WORD - 1, -1, -1)])
 
     def mergeBits(self, bits):
-        t = simBitsT(self.BITS_IN_WORD, False)
+        t = Bits(self.BITS_IN_WORD, False)
         val = 0
         vldMask = 0
         time = -1
@@ -79,7 +79,7 @@ class SpiAgent(SyncAgentBase):
         return t.getValueCls()(val, t, vldMask, time)
 
     def readRxSig(self, sim, sig):
-        d = sim.read(sig)
+        d = sig.read()
         bits = self._rxBitBuff
         bits.append(d)
         if len(bits) == self.BITS_IN_WORD:
@@ -94,44 +94,50 @@ class SpiAgent(SyncAgentBase):
             d = self.txData.popleft()
             bits = self._txBitBuff = self.splitBits(d)
 
-        sim.write(bits.popleft(), sig)
+        sig.write(bits.popleft())
 
     def monitorRx(self, sim):
-        yield sim.waitOnCombUpdate()
+        yield sim.waitReadOnly()
         cs = sim.read(self.intf.cs)
+        cs = int(cs)
         if self.notReset(sim):
-            assert cs._isFullVld()
-            if cs.val != self.csMask:  # if any slave is enabled
+            if cs != self.csMask:  # if any slave is enabled
                 self.readRxSig(sim, self.intf.mosi)
                 if not self._rxBitBuff:
                     self.chipSelects.append(cs)
 
     def monitorTx(self, sim):
-        cs = sim.read(self.intf.cs)
+        yield sim.waitReadOnly()
+        cs = self.intf.cs.read()
+        cs = int(cs)
         if self.notReset(sim):
-            assert cs._isFullVld()
-            if cs.val != self.csMask:
+            if cs != self.csMask:
+                yield sim.waitWriteOnly()
                 self.writeTxSig(sim, self.intf.miso)
 
     def driverRx(self, sim):
-        yield sim.waitOnCombUpdate()
+        yield sim.waitReadOnly()
         if self.notReset(sim) and self.slaveEn:
             self.readRxSig(sim, self.intf.miso)
 
-    def driverTx(self, s):
-        if self.notReset(s):
+    def driverTx(self, sim):
+        yield sim.waitReadOnly()
+        if self.notReset(sim):
             if not self._txBitBuff:
                 try:
                     cs = self.chipSelects.popleft()
                 except IndexError:
                     self.slaveEn = False
-                    s.write(self.csMask, self.intf.cs)
+                    yield sim.waitWriteOnly()
+                    self.intf.cs.write(self.csMask)
                     return
 
                 self.slaveEn = True
-                s.write(cs, self.intf.cs)
+                yield sim.waitWriteOnly()
+                self.intf.cs.write(cs)
 
-            self.writeTxSig(s, self.intf.mosi)
+            yield sim.waitWriteOnly()
+            self.writeTxSig(sim, self.intf.mosi)
 
     def getDrivers(self):
         return [self.driverRx, self.driverTx]

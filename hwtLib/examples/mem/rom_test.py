@@ -3,37 +3,52 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceRAM
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwt.synthesizer.utils import toRtl
 from hwtLib.examples.mem.rom import SimpleRom, SimpleSyncRom
+from pycocotb.constants import CLK_PERIOD
+from unittest.case import TestCase
 
 
-class RomTC(SimTestCase):
+class SimpleRomTC(SimpleSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = SimpleRom()
+        return cls.u
 
     def test_async_allData(self):
-        u = SimpleRom()
-        self.prepareUnit(u)
+        u = self.u
 
         u.addr._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
-        self.runSim(80 * Time.ns)
+        self.runSim(8 * CLK_PERIOD)
 
         self.assertValSequenceEqual(
             u.dout._ag.data, [1, 2, 3, 4, None, 4, 3, 2])
 
+
+class SimpleSyncRomTC(SimpleSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = SimpleSyncRom()
+        return cls.u
+
     def test_sync_allData(self):
-        u = SimpleSyncRom()
-        self.prepareUnit(u)
+        u = self.u
 
         u.addr._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
-        self.runSim(90 * Time.ns)
+        self.runSim(9 * CLK_PERIOD)
 
         self.assertValSequenceEqual(
             u.dout._ag.data, [None, 1, 2, 3, 4, None, 4, 3, 2])
+
+
+class RomResourcesTC(TestCase):
 
     def test_sync_resources(self):
         u = SimpleSyncRom()
@@ -64,6 +79,8 @@ class RomTC(SimTestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(RomTC('test_sync_resources'))
-    suite.addTest(unittest.makeSuite(RomTC))
+    suite.addTest(unittest.makeSuite(SimpleRomTC))
+    suite.addTest(unittest.makeSuite(SimpleSyncRomTC))
+    suite.addTest(unittest.makeSuite(RomResourcesTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -36,26 +36,23 @@ class AvalonSTAgent(HandshakedAgent):
     is tuple (channel, data, error, startOfPacket, endOfPacket)
     """
 
-    def doRead(self, s):
-        r = s.read
+    def doRead(self, sim):
         intf = self.intf
-        return (r(intf.channel), r(intf.data), r(intf.error),
-                r(intf.startOfPacket), r(intf.endOfPacket))
+        return (intf.channel.read(), intf.data.read(), intf.error.read(),
+                intf.startOfPacket.read(), intf.endOfPacket.read())
 
-    def doWrite(self, s, data):
-        w = s.write
+    def doWrite(self, sim, data):
         intf = self.intf
         if data is None:
-            w(None, intf.channel)
-            w(None, intf.data)
-            w(None, intf.error)
-            w(None, intf.endOfPacket)
-            w(None, intf.startOfPacket)
+            intf.channel.write(None)
+            intf.data.write(None)
+            intf.error.write(None)
+            intf.endOfPacket.write(None)
+            intf.startOfPacket.write(None)
         else:
-            channel, data, error, startOfPacket, endOfPacket  = data
-            w(channel, intf.channel)
-            w(data, intf.data)
-            w(error, intf.error)
-            w(endOfPacket, intf.endOfPacket)
-            w(startOfPacket, intf.startOfPacket)
-
+            channel, data, error, startOfPacket, endOfPacket = data
+            intf.channel.write(channel)
+            intf.data.write(data)
+            intf.error.write(error)
+            intf.endOfPacket.write(endOfPacket)
+            intf.startOfPacket.write(startOfPacket)

@@ -4,32 +4,32 @@
 import unittest
 
 from hwt.bitmask import mask
-from hwt.hdl.constants import Time, NOP
-from hwt.simulator.shortcuts import simPrepare
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.hdl.constants import NOP
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.structManipulators.cLinkedListReader import CLinkedListReader
 from hwtLib.abstract.denseMemory import DenseMemory
+from pycocotb.constants import CLK_PERIOD
 
 
-class CLinkedListReaderTC(SimTestCase):
-    def setUp(self):
-        super(CLinkedListReaderTC, self).setUp()
-        u = self.u = CLinkedListReader()
-        self.ITEMS_IN_BLOCK = 31
-        self.PTR_WIDTH = 8
-        self.BUFFER_CAPACITY = 8
-        self.DATA_WIDTH = 64
+class CLinkedListReaderTC(SimpleSimTestCase):
 
-        self.ID = int(self.u.ID)
-        self.ID_LAST = int(self.u.ID_LAST)
-        self.MAX_LEN = self.BUFFER_CAPACITY // 2 - 1
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = CLinkedListReader()
+        cls.ITEMS_IN_BLOCK = 31
+        cls.PTR_WIDTH = 8
+        cls.BUFFER_CAPACITY = 8
+        cls.DATA_WIDTH = 64
 
-        u.ITEMS_IN_BLOCK.set(self.ITEMS_IN_BLOCK)
-        u.PTR_WIDTH.set(self.PTR_WIDTH)
-        u.BUFFER_CAPACITY.set(self.BUFFER_CAPACITY)
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        cls.ID = int(cls.u.ID)
+        cls.ID_LAST = int(cls.u.ID_LAST)
+        cls.MAX_LEN = cls.BUFFER_CAPACITY // 2 - 1
 
-        _, self.model, self.procs = simPrepare(self.u)
+        u.ITEMS_IN_BLOCK.set(cls.ITEMS_IN_BLOCK)
+        u.PTR_WIDTH.set(cls.PTR_WIDTH)
+        u.BUFFER_CAPACITY.set(cls.BUFFER_CAPACITY)
+        u.DATA_WIDTH.set(cls.DATA_WIDTH)
+        return u
 
     def test_tailHeadPrincipe(self):
         BITS = 16
@@ -62,7 +62,7 @@ class CLinkedListReaderTC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         self.assertEqual(len(u.rDatapump.req._ag.data), 0)
         self.assertEqual(len(u.dataOut._ag.data), 0)
@@ -74,7 +74,7 @@ class CLinkedListReaderTC(SimTestCase):
         u.baseAddr._ag.dout.append(0x1020)
         u.wrPtr._ag.dout.append(self.MAX_LEN + 1)
 
-        self.runSim(t * 10 * Time.ns)
+        self.runSim(t * CLK_PERIOD)
 
         req = u.rDatapump.req._ag.data
         self.assertEmpty(u.dataOut._ag.data)
@@ -91,7 +91,7 @@ class CLinkedListReaderTC(SimTestCase):
         u.rdPtr._ag.dout.append(mask(self.PTR_WIDTH))
         u.wrPtr._ag.dout.append(self.MAX_LEN)  # space is self.MAX_LEN + 1
 
-        self.runSim(t * 10 * Time.ns)
+        self.runSim(t * CLK_PERIOD)
 
         req = u.rDatapump.req._ag.data
         self.assertEqual(len(u.dataOut._ag.data), 0)
@@ -107,7 +107,7 @@ class CLinkedListReaderTC(SimTestCase):
         u.rdPtr._ag.dout.append(mask(self.PTR_WIDTH))
         u.wrPtr._ag.dout.append(self.MAX_LEN - 1)  # space is self.MAX_LEN
 
-        self.runSim(t * 10 * Time.ns)
+        self.runSim(t * CLK_PERIOD)
 
         req = u.rDatapump.req._ag.data
         self.assertEmpty(u.dataOut._ag.data)
@@ -124,7 +124,7 @@ class CLinkedListReaderTC(SimTestCase):
         u.baseAddr._ag.dout.append(0x1020)
         u.wrPtr._ag.dout.append(N * (self.MAX_LEN + 1))
 
-        self.runSim(t * 10 * Time.ns)
+        self.runSim(t * CLK_PERIOD)
 
         req = u.rDatapump.req._ag.data
         self.assertEqual(len(u.dataOut._ag.data), 0)
@@ -144,7 +144,7 @@ class CLinkedListReaderTC(SimTestCase):
 
         expectedReq, reqData = self.generateRequests(ADDR_BASE, [N])
         u.rDatapump.r._ag.data.extend(reqData)
-        self.runSim(t * 10 * Time.ns)
+        self.runSim(t * CLK_PERIOD)
         self.checkOutputs(expectedReq, N)
 
     def test_downloadFullBlock(self):
@@ -157,7 +157,7 @@ class CLinkedListReaderTC(SimTestCase):
         expectedReq, reqData = self.generateRequests(ADDR_BASE, [N])
         u.rDatapump.r._ag.data.extend(reqData)
 
-        self.runSim((len(reqData) + len(expectedReq) + 50) * 10 * Time.ns)
+        self.runSim((len(reqData) + len(expectedReq) + 50) * CLK_PERIOD)
         self.checkOutputs(expectedReq, N)
 
     def test_downloadFullBlockRandomized(self):
@@ -177,7 +177,7 @@ class CLinkedListReaderTC(SimTestCase):
         u.baseAddr._ag.dout.append(ADDR_BASE)
         u.wrPtr._ag.dout.extend([NOP, N])
 
-        self.runSim(N * 60 * Time.ns)
+        self.runSim(N * 6 * CLK_PERIOD)
         self.assertValSequenceEqual(u.dataOut._ag.data, data)
 
     def createBlock(self, mem, seed):
@@ -217,7 +217,7 @@ class CLinkedListReaderTC(SimTestCase):
         u.baseAddr._ag.dout.append(ADDR_BASE)
         u.wrPtr._ag.dout.extend([NOP, N])
 
-        self.runSim(N * 50 * Time.ns)
+        self.runSim(N * 5 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, data)
 
@@ -236,7 +236,7 @@ class CLinkedListReaderTC(SimTestCase):
         u.wrPtr._ag.dout.extend([NOP, self.MAX_LEN] 
                                 + [NOP for _ in range(self.MAX_LEN + 4)] + [N])
 
-        self.runSim(N * 50 * Time.ns)
+        self.runSim(N * 5 * CLK_PERIOD)
         self.assertValSequenceEqual(u.dataOut._ag.data, data+ [data2[0]])
 
     def checkOutputs(self, expectedReq, itemsCnt):

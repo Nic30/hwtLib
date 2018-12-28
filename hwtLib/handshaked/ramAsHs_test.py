@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time, NOP
+from hwt.hdl.constants import NOP
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.handshaked.ramAsHs import RamAsHs, RamHsR
 from hwtLib.interfaces.addrDataHs import AddrDataHs
 from hwtLib.mem.ram import RamSingleClock
+from pycocotb.constants import CLK_PERIOD
 
 
 class RamWithHs(RamAsHs):
@@ -28,28 +29,28 @@ class RamWithHs(RamAsHs):
         self.ram.a(self.conv.ram)
 
 
-class RamAsHs_TC(SimTestCase):
-    def setUp(self):
-        super(RamAsHs_TC, self).setUp()
-        u = self.u = RamWithHs()
+class RamAsHs_TC(SimpleSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = RamWithHs()
         u.DATA_WIDTH.set(32)
         u.ADDR_WIDTH.set(8)
-
-        self.prepareUnit(u)
+        return cls.u
 
     def test_nop(self):
-        self.runSim(100 * Time.ns)
+        self.runSim(10 * CLK_PERIOD)
         self.assertEmpty(self.u.r.data._ag.data)
 
     def test_writeAndRead(self):
         u = self.u
         MAGIC = 87
 
-        u.w._ag.data.extend([(25, MAGIC), (26, MAGIC+1)])
+        u.w._ag.data.extend([(25, MAGIC), (26, MAGIC + 1)])
         u.r.addr._ag.data.extend([NOP for _ in range(3)] + [25, 26])
-        self.runSim(100 * Time.ns)
+        self.runSim(10 * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.r.data._ag.data, [MAGIC, MAGIC+1])
+        self.assertValSequenceEqual(u.r.data._ag.data, [MAGIC, MAGIC + 1])
 
 
 if __name__ == "__main__":

@@ -1,10 +1,10 @@
 import unittest
 
-from hwt.hdl.constants import Time
 from hwt.interfaces.std import RdSynced
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwt.synthesizer.unit import Unit
+from pycocotb.constants import CLK_PERIOD
 
 
 class RdSyncedPipe(Unit):
@@ -17,18 +17,19 @@ class RdSyncedPipe(Unit):
         self.b(self.a)
 
 
-class RdSynced_agent_TC(SimTestCase):
-    def setUp(self):
-        SimTestCase.setUp(self)
-        self.u = RdSyncedPipe()
-        self.prepareUnit(self.u)
+class RdSynced_agent_TC(SimpleSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = RdSyncedPipe()
+        return cls.u
 
     def test_basic_data_pass(self):
         u = self.u
 
         u.a._ag.data.extend(range(10))
 
-        self.runSim(120 * Time.ns)
+        self.runSim(12 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.b._ag.data, list(range(10)) + [None])
 

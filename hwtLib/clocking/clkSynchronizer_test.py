@@ -20,10 +20,6 @@ class ClkSynchronizerTC(SimTestCase):
         u.DATA_TYP = Bits(32)
         cls.prepareUnit(u)
 
-    def setUp(self):
-        super(SimTestCase, self).setUp()
-        self.restartSim()
-
     def runSim(self, dataInStimul, until=10 * CLK_PERIOD):
         collected = []
         u = self.u
@@ -49,9 +45,10 @@ class ClkSynchronizerTC(SimTestCase):
 
         expected = [0, 0, 0, None, 0, 1, 2, 3, 4]
 
-        def dataInStimul(s):
+        def dataInStimul(sim):
             yield Timer(3 * CLK_PERIOD)
             for i in range(127):
+                yield sim.waitWriteOnly()
                 u.inData.write(i)
                 yield Timer(CLK_PERIOD)
 
@@ -63,10 +60,11 @@ class ClkSynchronizerTC(SimTestCase):
 
         expected = [0, 0, 0, None, None, None, None, None, None]
 
-        def dataInStimul(s):
+        def dataInStimul(sim):
             yield Timer(3 * CLK_PERIOD)
             for _ in range(127):
                 yield Timer(CLK_PERIOD)
+                yield sim.waitWriteOnly()
                 u.inData.write(None)
 
         collected = self.runSim(dataInStimul)

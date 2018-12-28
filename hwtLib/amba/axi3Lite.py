@@ -32,11 +32,11 @@ class Axi3Lite_addrAgent(BaseAxiAgent):
     :ivar data: iterable of addr
     """
 
-    def doRead(self, s):
-        return s.read(self.intf.addr)
+    def doRead(self, sim):
+        return self.intf.addr.read()
 
-    def doWrite(self, s, data):
-        s.write(data, self.intf.addr)
+    def doWrite(self, sim, data):
+        self.intf.addr.write(data)
 
 
 #################################################################
@@ -58,22 +58,20 @@ class AxiLite_rAgent(BaseAxiAgent):
     :ivar data: iterable of tuples (data, resp)
     """
 
-    def doRead(self, s):
-        r = s.read
+    def doRead(self, sim):
         intf = self.intf
 
-        return (r(intf.data), r(intf.resp))
+        return (intf.data.read(), intf.resp.read())
 
-    def doWrite(self, s, data):
+    def doWrite(self, sim, data):
         intf = self.intf
-        w = s.write
         if data is None:
             data = [None for _ in range(2)]
 
         data, resp = data
 
-        w(data, intf.data)
-        w(resp, intf.resp)
+        intf.data.write(data)
+        intf.resp.write(resp)
 
 
 #################################################################
@@ -95,21 +93,19 @@ class Axi3Lite_wAgent(BaseAxiAgent):
     :ivar data: iterable of tuples (data, strb)
     """
 
-    def doRead(self, s):
+    def doRead(self, sim):
         intf = self.intf
-        r = s.read
-        return (r(intf.data), r(intf.strb))
+        return (intf.data.read(), intf.strb.read())
 
-    def doWrite(self, s, data):
+    def doWrite(self, sim, data):
         intf = self.intf
-        w = s.write
         if data is None:
-            w(None, intf.data)
-            w(None, intf.strb)
+            intf.data.write(None)
+            intf.strb.write(None)
         else:
             data, strb = data
-            w(data, intf.data)
-            w(strb, intf.strb)
+            intf.data.write(data)
+            intf.strb.write(strb)
 
 
 #################################################################
@@ -127,11 +123,11 @@ class Axi3Lite_bAgent(BaseAxiAgent):
     :ivar data: iterable of resp
     """
 
-    def doRead(self, s):
-        return s.read(self.intf.resp)
+    def doRead(self, sim):
+        return self.intf.resp.read()
 
-    def doWrite(self, s, data):
-        s.write(data, self.intf.resp)
+    def doWrite(self, sim, data):
+        self.intf.resp.write(data)
 
 
 #################################################################
@@ -162,7 +158,7 @@ class Axi3Lite(Interface):
 
     def _getAddrStep(self):
         """
-        :return: how many bits is one unit of address (f.e. 8 bits for  char * pointer,
+        :return: how many bits is one unit of address (e.g. 8 bits for  char * pointer,
              36 for 36 bit bram)
         """
         return 8

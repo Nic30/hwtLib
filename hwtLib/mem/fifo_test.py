@@ -5,7 +5,7 @@ import unittest
 
 from hwt.interfaces.std import FifoReader, FifoWriter
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.mem.fifo import Fifo
 from pycocotb.constants import CLK_PERIOD
@@ -31,17 +31,16 @@ class FifoWriterPassTrought(FifoReaderPassTrought):
         self.dout = FifoWriter()._m()
 
 
-class FifoAgentsTC(SimTestCase):
+class FifoReaderAgentTC(SimpleSimTestCase):
     CLK = CLK_PERIOD
 
-    def setUp(self):
-        pass
+    @classmethod
+    def getUnit(cls):
+        cls.u = u = FifoReaderPassTrought()
+        return u
 
     def test_fifoReader(self):
-        u = FifoReaderPassTrought()
-        self.prepareUnit(u)
-        SimTestCase.setUp(self)
-
+        u = self.u
         self.randomize(u.din)
         self.randomize(u.dout)
 
@@ -50,11 +49,18 @@ class FifoAgentsTC(SimTestCase):
         self.runSim(120 * self.CLK)
 
         self.assertValSequenceEqual(u.dout._ag.data, ref)
+
+
+class FifoWriterAgentTC(SimpleSimTestCase):
+    CLK = CLK_PERIOD
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = FifoWriterPassTrought()
+        return cls.u
 
     def test_fifoWriter(self):
-        u = FifoWriterPassTrought()
-        self.prepareUnit(u)
-        SimTestCase.setUp(self)
+        u = self.u
 
         self.randomize(u.din)
         self.randomize(u.dout)
@@ -66,20 +72,19 @@ class FifoAgentsTC(SimTestCase):
         self.assertValSequenceEqual(u.dout._ag.data, ref)
 
 
-class FifoTC(SimTestCase):
+class FifoTC(SimpleSimTestCase):
     ITEMS = 4
     IN_CLK = CLK_PERIOD
     OUT_CLK = CLK_PERIOD
     CLK = max(IN_CLK, OUT_CLK)
 
     @classmethod
-    def setUpClass(cls):
-        super(FifoTC, cls).setUpClass()
+    def getUnit(cls):
         u = cls.u = Fifo()
         u.DATA_WIDTH.set(8)
         u.DEPTH.set(cls.ITEMS)
         u.EXPORT_SIZE.set(True)
-        cls.prepareUnit(u)
+        return u
 
     def getFifoItems(self):
         v = self.model.memory._val.val.values()
@@ -308,7 +313,8 @@ class FifoTC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(FifoAgentsTC))
+    suite.addTest(unittest.makeSuite(FifoWriterAgentTC))
+    suite.addTest(unittest.makeSuite(FifoReaderAgentTC))
     suite.addTest(unittest.makeSuite(FifoTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

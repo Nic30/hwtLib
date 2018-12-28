@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.bitmask import mask
-from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.amba.axi3 import Axi3_addr, Axi3_w
 from hwtLib.amba.axi4 import Axi4_addr
 from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC, mkReq
@@ -11,16 +10,17 @@ from hwtLib.amba.axi_comp.axi4_wDatapump import Axi_wDatapump
 from hwtLib.amba.constants import RESP_OKAY, BYTES_IN_TRANS, BURST_INCR,\
     CACHE_DEFAULT, LOCK_DEFAULT, PROT_DEFAULT, QOS_DEFAULT
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
+from pycocotb.constants import CLK_PERIOD
 
 
-class Axi4_wDatapumpTC(SimTestCase):
+class Axi4_wDatapumpTC(SimpleSimTestCase):
     LEN_MAX = Axi4_rDatapumpTC.LEN_MAX
 
-    def setUp(self):
-        super(Axi4_wDatapumpTC, self).setUp()
-        self.u = u = Axi_wDatapump(axiAddrCls=Axi4_addr)
-        u.MAX_LEN.set(self.LEN_MAX)
-        self.prepareUnit(u)
+    @classmethod
+    def getUnit(cls):
+        cls.u = u = Axi_wDatapump(axiAddrCls=Axi4_addr)
+        u.MAX_LEN.set(cls.LEN_MAX)
+        return cls.u
 
     def aTrans(self, id_, addr,  len_, burst=BURST_INCR, cache=CACHE_DEFAULT,
                lock=LOCK_DEFAULT, prot=PROT_DEFAULT, size=BYTES_IN_TRANS(8),
@@ -33,7 +33,7 @@ class Axi4_wDatapumpTC(SimTestCase):
     def test_nop(self):
         u = self.u
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         self.assertEmpty(u.a._ag.data)
         self.assertEmpty(u.w._ag.data)
@@ -47,7 +47,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         # download one word from addr 0xff
         req.data.append(mkReq(0xff, 0))
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         self.assertValSequenceEqual(aw,
                                     [
@@ -70,7 +70,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         wIn.data.append((77, mask(64 // 8), 1))
         b.append((0, RESP_OKAY))
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         self.assertValSequenceEqual(aw, [
             self.aTrans(0, 255, 0)
@@ -95,7 +95,7 @@ class Axi4_wDatapumpTC(SimTestCase):
             wIn.data.append((100 + 1, mask(8), i == self.LEN_MAX))
         b.append((0, RESP_OKAY))
 
-        self.runSim((10 + self.LEN_MAX) * 10 * Time.ns)
+        self.runSim((10 + self.LEN_MAX) * CLK_PERIOD)
 
         self.assertValSequenceEqual(aw,
                                     [
@@ -122,7 +122,7 @@ class Axi4_wDatapumpTC(SimTestCase):
             wIn.data.append((77, mask(64 // 8), 1))
             b.append((0, RESP_OKAY))
 
-        self.runSim(1000 * Time.ns)
+        self.runSim(100 * CLK_PERIOD)
 
         self.assertValSequenceEqual(aw,
                                     [
@@ -158,7 +158,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         ra(u.w)
         ra(u.driver.w)
 
-        self.runSim(N * 8 * 10 * Time.ns)
+        self.runSim(N * 8 * CLK_PERIOD)
 
         self.assertValSequenceEqual(aw,
                                     [
@@ -203,7 +203,7 @@ class Axi4_wDatapumpTC(SimTestCase):
         ra(u.w)
         ra(u.driver.w)
 
-        self.runSim(N * L * 10 * 5 * Time.ns)
+        self.runSim(N * L * 5 * CLK_PERIOD)
 
         self.assertValSequenceEqual(aw,
                                     [
@@ -231,14 +231,14 @@ class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
     def wTrans(self, data, last, strb=mask(64 // 8), id_=0):
         return (id_, data, strb, last)
 
-    def setUp(self):
-        SimTestCase.setUp(self)
+    @classmethod
+    def getUnit(cls):
         u = Axi_wDatapump(axiAddrCls=Axi3_addr, axiWCls=Axi3_w)
         u.MAX_LEN.set(16)
-        self.prepareUnit(u)
+        return u
 
 
-class Axi3_wDatapump_small_splitting_TC(SimTestCase):
+class Axi3_wDatapump_small_splitting_TC(SimpleSimTestCase):
     LEN_MAX = 3
 
     def aTrans(self, id_, addr,  len_, burst=BURST_INCR, cache=CACHE_DEFAULT,
@@ -249,12 +249,15 @@ class Axi3_wDatapump_small_splitting_TC(SimTestCase):
     def wTrans(self, data, last, strb=mask(64 // 8), id_=0):
         return (id_, data, strb, last)
 
-    def setUp(self):
+    @classmethod
+    def getUnit(cls):
         super(Axi3_wDatapump_small_splitting_TC, self).setUp()
-        self.u = Axi_wDatapump(axiAddrCls=Axi3_addr, axiWCls=Axi3_w)
-        self.u.MAX_LEN.set(self.LEN_MAX)
+        u = cls.u = Axi_wDatapump(axiAddrCls=Axi3_addr, axiWCls=Axi3_w)
+        u.MAX_LEN.set(cls.LEN_MAX)
+
+    def setUp(self):
+        SimpleSimTestCase.setUp(self)
         self.DATA_WIDTH = int(self.u.DATA_WIDTH)
-        self.prepareUnit(self.u)
 
     def test_1024random(self):
         u = self.u
@@ -296,7 +299,7 @@ class Axi3_wDatapump_small_splitting_TC(SimTestCase):
         ra(u.w)
         ra(u.driver.w)
 
-        self.runSim(N * 50 * Time.ns)
+        self.runSim(N * 5 * CLK_PERIOD)
 
         inMem = m.getArray(buff, self.DATA_WIDTH // 8, N)
         self.assertValSequenceEqual(inMem, data)

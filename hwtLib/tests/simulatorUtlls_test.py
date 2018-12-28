@@ -161,7 +161,7 @@ class SimulatorUtilsTC(SimTestCase):
         u = ExampleWithArrayAxi3Lite()
         self.prepareUnit(u)
         self.runSim(1)
-        
+
         self._test_pprintAgent(u.clk, clk_ag_str)
         self._test_pprintAgent(u.axi, axi_ag_str)
         self._test_pprintAgent(u, u_ag_str)

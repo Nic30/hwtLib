@@ -3,14 +3,14 @@
 
 
 from hwt.bitmask import mask
-from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimTestCase, SimpleSimTestCase
 from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_addr
 from hwtLib.amba.axi_comp.axi4_rDatapump import Axi_rDatapump
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, BYTES_IN_TRANS, \
     PROT_DEFAULT, LOCK_DEFAULT, QOS_DEFAULT, RESP_OKAY
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
+from pycocotb.constants import CLK_PERIOD
 
 
 def mkReq(addr, _len, rem=0, _id=0):
@@ -32,15 +32,15 @@ def addData(ag, data, _id=0, resp=RESP_OKAY, last=True):
     ag.data.append((_id, data, resp, last))
 
 
-class Axi4_rDatapumpTC(SimTestCase):
+class Axi4_rDatapumpTC(SimpleSimTestCase):
     LEN_MAX = 255
     DATA_WIDTH = 64
 
-    def setUp(self):
-        super(Axi4_rDatapumpTC, self).setUp()
-        self.u = Axi_rDatapump(axiAddrCls=Axi4_addr)
-        self.u.DATA_WIDTH.set(self.DATA_WIDTH)
-        self.prepareUnit(self.u)
+    @classmethod
+    def getUnit(cls):
+        cls.u = Axi_rDatapump(axiAddrCls=Axi4_addr)
+        cls.u.DATA_WIDTH.set(cls.DATA_WIDTH)
+        return cls.u
 
     def mkDefaultAddrReq(self, _id, addr, _len):
         return (_id, addr, BURST_INCR, CACHE_DEFAULT, _len,
@@ -49,7 +49,7 @@ class Axi4_rDatapumpTC(SimTestCase):
 
     def test_nop(self):
         u = self.u
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         self.assertEmpty(u.a._ag.data)
         self.assertEmpty(u.driver.r._ag.data)
@@ -61,7 +61,7 @@ class Axi4_rDatapumpTC(SimTestCase):
 
         # download one word from addr 0xff
         req.data.append(mkReq(0xff, 0))
-        self.runSim((self.LEN_MAX + 3) * Time.ns)
+        self.runSim((self.LEN_MAX + 3) * CLK_PERIOD)
 
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(u.a._ag.data), 1)
@@ -78,7 +78,7 @@ class Axi4_rDatapumpTC(SimTestCase):
         for i in range(3):
             addData(r, i + 77)
 
-        self.runSim((self.LEN_MAX + 3) * 10 * Time.ns)
+        self.runSim((self.LEN_MAX + 3) * CLK_PERIOD)
 
         self.assertEmpty(req.data)
         self.assertEqual(len(u.a._ag.data), 1)
@@ -105,7 +105,7 @@ class Axi4_rDatapumpTC(SimTestCase):
         addData(r, 11)
         addData(r, 12)
 
-        self.runSim(((LEN_MAX + 6) * 10) * Time.ns)
+        self.runSim((LEN_MAX + 6) * CLK_PERIOD)
 
         self.assertEmpty(req.data)
         self.assertEqual(len(u.a._ag.data), 1)
@@ -130,7 +130,7 @@ class Axi4_rDatapumpTC(SimTestCase):
         # download 512 words from addr 0xff
         req.data.append(mkReq(0xff, 2 * LEN_MAX + 1))
 
-        self.runSim(((LEN_MAX + 1) * 10) * Time.ns)
+        self.runSim((LEN_MAX + 1) * CLK_PERIOD)
 
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(rout), 0)
@@ -155,7 +155,7 @@ class Axi4_rDatapumpTC(SimTestCase):
             req.data.append(mkReq(i, 0))
         #    r.addData(i + 77, last=(i == 255))
 
-        self.runSim(((self.LEN_MAX + 6) * 10) * Time.ns)
+        self.runSim((self.LEN_MAX + 6) * CLK_PERIOD)
 
         self.assertEqual(len(req.data), 15)
         self.assertEqual(len(rout), 0)
@@ -181,7 +181,7 @@ class Axi4_rDatapumpTC(SimTestCase):
             rdata = (_id, i + 1, RESP_OKAY, True)
             r.data.append(rdata)
 
-        self.runSim(((64 + 4) * 10) * Time.ns)
+        self.runSim((64 + 4) * CLK_PERIOD)
 
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(rout), 64)
@@ -216,7 +216,7 @@ class Axi4_rDatapumpTC(SimTestCase):
                     m = mask(i)
                 expected.append((_id, i2 + 1, m, isLast))
 
-        self.runSim((len(expected) * 2 * 10) * Time.ns)
+        self.runSim(len(expected) * 2 * CLK_PERIOD)
 
         self.assertEmpty(req.data)
 
@@ -257,7 +257,7 @@ class Axi4_rDatapumpTC(SimTestCase):
 
             expected.append((_id, i2 + 1, m, isLast))
 
-        self.runSim((len(expected) * 2 * 10) * Time.ns)
+        self.runSim(len(expected) * 2 * CLK_PERIOD)
 
         self.assertEmpty(req.data)
 
@@ -290,7 +290,7 @@ class Axi4_rDatapumpTC(SimTestCase):
                 rdata = (_id, i2, RESP_OKAY, isLast)
                 r.data.append(rdata)
 
-        self.runSim(((len(r.data) + 4) * 10) * Time.ns)
+        self.runSim((len(r.data) + 4) * CLK_PERIOD)
 
         self.assertEqual(len(req.data), 0)
         self.assertEqual(len(ar), FRAMES * 2)
@@ -354,7 +354,7 @@ class Axi4_rDatapumpTC(SimTestCase):
             e = prepareRequest(1, a, data)
             expected.extend(e)
 
-        self.runSim(len(expected) * 70 * Time.ns)
+        self.runSim(len(expected) * 7 * CLK_PERIOD)
 
         self.assertEmpty(u.driver.req._ag.data)
         self.assertValSequenceEqual(u.driver.r._ag.data, expected)
@@ -363,11 +363,11 @@ class Axi4_rDatapumpTC(SimTestCase):
 class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
     LEN_MAX = 15
 
-    def setUp(self):
-        SimTestCase.setUp(self)
-        self.u = Axi_rDatapump(axiAddrCls=Axi3_addr)
-        self.u.DATA_WIDTH.set(self.DATA_WIDTH)
-        self.prepareUnit(self.u)
+    @classmethod
+    def getUnit(cls):
+        cls.u = Axi_rDatapump(axiAddrCls=Axi3_addr)
+        cls.u.DATA_WIDTH.set(cls.DATA_WIDTH)
+        return cls.u
 
     def mkDefaultAddrReq(self, _id, addr, _len):
         return (_id, addr, BURST_INCR, CACHE_DEFAULT, _len,

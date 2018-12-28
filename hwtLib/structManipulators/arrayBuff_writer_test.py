@@ -4,24 +4,23 @@
 import unittest
 
 from hwt.hdl.constants import Time, NOP
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.arrayBuff_writer import ArrayBuff_writer
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
 
 
-class ArrayBuff_writer_TC(SimTestCase):
+class ArrayBuff_writer_TC(SimpleSimTestCase):
 
     @classmethod
-    def setUpClass(cls):
-        super(SimTestCase, cls).setUpClass()
+    def getUnit(cls):
         cls.u = u = ArrayBuff_writer()
         u.TIMEOUT.set(32)
         cls.ID = int(u.ID)
         cls.ITEMS = int(u.ITEMS)
         cls.DATA_WIDTH = int(u.DATA_WIDTH)
-        cls.prepareUnit(cls.u)
+        return u
 
     def test_nop(self):
         u = self.u

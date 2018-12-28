@@ -44,12 +44,13 @@ class Axi3_addrAgent(AxiStreamAgent):
     Simulation agent for :class:`.Axi3_addr` interface
 
     input/output data stored in list under "data" property
-    data contains tuples (id, addr, burst, cache, len, lock, prot, size, qos, optionaly user)
+    data contains tuples (id, addr, burst, cache, len, lock,
+    prot, size, qos, optionally user)
     """
 
     def __init__(self, intf: Axi3_addr, allowNoReset=False):
         BaseAxiAgent.__init__(self, intf, allowNoReset=allowNoReset)
-        
+
         signals = [
             intf.id,
             intf.addr,
@@ -82,9 +83,10 @@ class Axi3_w(Axi_hs, Axi_strb):
         Axi_strb._declr(self)
         self.last = Signal()
         Axi_hs._declr(self)
-    
+
     def _initSimAgent(self):
         AxiStream._initSimAgent(self)
+
 
 #####################################################################
 class Axi3_r(Axi3Lite_r, Axi_id):
@@ -112,30 +114,28 @@ class Axi3_rAgent(BaseAxiAgent):
     data contains tuples (id, data, resp, last)
     """
 
-    def doRead(self, s):
+    def doRead(self, sim):
         intf = self.intf
-        r = s.read
 
-        _id = r(intf.id)
-        data = r(intf.data)
-        resp = r(intf.resp)
-        last = r(intf.last)
+        _id = intf.id.read()
+        data = intf.data.read()
+        resp = intf.resp.read()
+        last = intf.last.read()
 
         return (_id, data, resp, last)
 
-    def doWrite(self, s, data):
+    def doWrite(self, sim, data):
         intf = self.intf
-        w = s.write
 
         if data is None:
             data = [None for _ in range(4)]
 
         _id, data, resp, last = data
 
-        w(_id, intf.id)
-        w(data, intf.data)
-        w(resp, intf.resp)
-        w(last, intf.last)
+        intf.id.write(_id)
+        intf.data.write(data)
+        intf.resp.write(resp)
+        intf.last.write(last)
 
 
 #####################################################################
@@ -163,14 +163,12 @@ class Axi3_bAgent(BaseAxiAgent):
     data contains tuples (id, resp)
     """
 
-    def doRead(self, s):
-        r = s.read
+    def doRead(self, sim):
         intf = self.intf
 
-        return r(intf.id), r(intf.resp)
+        return intf.id.read(), intf.resp.read()
 
-    def doWrite(self, s, data):
-        w = s.write
+    def doWrite(self, sim, data):
         intf = self.intf
 
         if data is None:
@@ -178,8 +176,8 @@ class Axi3_bAgent(BaseAxiAgent):
 
         _id, resp = data
 
-        w(_id, intf.id)
-        w(resp, intf.resp)
+        intf.id.write(_id)
+        intf.resp.write(resp)
 
 
 #####################################################################
@@ -202,7 +200,7 @@ class Axi3(Axi3Lite):
             self.ar = Axi3_addr()
             for a in [self.aw, self.ar]:
                 a._replaceParam(a.USER_WIDTH, self.ADDR_USER_WIDTH)
-            
+
             self.w = Axi3_w()
             self.r = Axi3_r(masterDir=DIRECTION.IN)
             self.b = Axi3_b(masterDir=DIRECTION.IN)
@@ -243,7 +241,7 @@ class IP_Axi3(IP_Axi3Lite):
         param("PROTOCOL", self.xilinx_protocol_name)
         param("READ_WRITE_MODE", "READ_WRITE")
         param("SUPPORTS_NARROW_BURST", 0)
-        
+
         A_U_W = int(thisIf.ADDR_USER_WIDTH)
         if A_U_W:
             param("AWUSER_WIDTH", A_U_W)

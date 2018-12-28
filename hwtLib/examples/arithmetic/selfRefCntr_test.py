@@ -9,7 +9,10 @@ from hwtLib.examples.arithmetic.selfRefCntr import SelfRefCntr
 
 
 class SelfRefCntrTC(SimpleSimTestCase):
-    UNIT_CLS = SelfRefCntr
+
+    @classmethod
+    def getUnit(cls):
+        return SelfRefCntr()
 
     def test_overflow(self):
         u = self.u

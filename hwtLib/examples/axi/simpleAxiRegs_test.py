@@ -13,8 +13,10 @@ allMask = mask(32 // 8)
 
 
 class SimpleAxiRegsTC(SimpleSimTestCase):
-    UNIT_CLS = SimpleAxiRegs
-    RECOMPILE = False
+
+    @classmethod
+    def getUnit(cls):
+        return SimpleAxiRegs()
 
     def test_nop(self):
         u = self.u
