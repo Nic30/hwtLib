@@ -48,3 +48,4 @@ sudo pip3 install hwtLib
 * [picorv32](https://github.com/cliffordwolf/picorv32) - Verilog, A Size-Optimized RISC-V SoC
 * [openrisc](https://github.com/openrisc) - OpenRISC, FuseSoC, peripherals and cpu parts
 * [NyuziProcessor](https://github.com/jbush001/NyuziProcessor) - GPGPU
+* [pulp-platform](https://github.com/pulp-platform)
