@@ -85,7 +85,7 @@ axi_str = """\
 
 
 
-clk_ag_str = """clk:<hwt.interfaces.agents.clk.OscilatorAgent object at 0x7f51335e5f60>
+clk_ag_str = """clk:<hwt.interfaces.agents.clk.ClockAgent object at 0x7f51335e5f60>
 """
 axi_ag_str = """axi:
     p0:<hwtLib.amba.axiLite.AxiLiteAgent object at 0x7f5133600208>
@@ -108,7 +108,7 @@ axi_ag_str = """axi:
         <hwtLib.amba.axiLite.AxiLite_bAgent object at 0x7f5133600c18>
 """
 
-u_ag_str = """<hwt.interfaces.agents.clk.OscilatorAgent object at 0x7f2c812d4ef0>
+u_ag_str = """<hwt.interfaces.agents.clk.ClockAgent object at 0x7f2c812d4ef0>
     <hwt.interfaces.agents.rst.PullUpAgent object at 0x7f2c812d4f28>
     axi:
         p0:<hwtLib.amba.axiLite.AxiLiteAgent object at 0x7f2c812f0198>
