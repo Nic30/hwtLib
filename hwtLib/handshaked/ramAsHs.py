@@ -6,11 +6,11 @@ from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import Handshaked, BramPort_withoutClk
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.simulator.agentBase import AgentBase
 from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 from hwtLib.interfaces.addrDataHs import AddrDataHs
+from pycocotb.agents.base import AgentBase
 
 
 class RamHsRAgent(AgentBase):
