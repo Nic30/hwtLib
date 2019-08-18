@@ -2,13 +2,14 @@ from collections import deque
 
 from hwt.bitmask import selectBit, mask
 from hwt.hdl.constants import DIRECTION
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Clk, Signal, VectSignal
 from hwt.interfaces.tristate import TristateSig
-from hwt.simulator.agentBase import SyncAgentBase, AgentBase
+from hwt.simulator.agentBase import SyncAgentBase
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
+from pycocotb.agents.base import AgentBase
 from pycocotb.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
-from hwt.hdl.types.bits import Bits
 
 
 class SpiAgent(SyncAgentBase):

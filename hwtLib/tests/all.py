@@ -84,7 +84,7 @@ from hwtLib.mem.fifo_test import FifoWriterAgentTC, FifoReaderAgentTC, FifoTC
 from hwtLib.mem.hashTableCore_test import HashTableCoreTC
 from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ram_test import RamTC
-from hwtLib.examples.arithmetic.cntr_test import CntrTC
+from hwtLib.examples.arithmetic.cntr_test import CntrTC, CntrResourceAnalysisTC
 from hwtLib.examples.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.examples.arithmetic.twoCntrs_test import TwoCntrsTC
 from hwtLib.examples.arithmetic.widthCasting import WidthCastingExampleTC
@@ -247,6 +247,7 @@ suite = testSuiteFromTCs(
     DReg_asyncRstTC,
     RegSerializationTC,
     CntrTC,
+    CntrResourceAnalysisTC,
 
     # tests of simple units
     TimerTC,

@@ -1,17 +1,16 @@
+from typing import List
+
 from hwt.hdl.constants import DIRECTION, INTF_DIRECTION
 from hwt.interfaces.std import VectSignal
 from hwt.serializer.ip_packager import IpPackager
+from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import Param
-from typing import List
-
-from hwt.simulator.agentBase import AgentBase
-from hwt.synthesizer.interface import Interface
 from hwtLib.amba.axi_intf_common import AxiMap, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
-
 from ipCorePackager.component import Component
 from ipCorePackager.intfIpMeta import IntfIpMeta
+from pycocotb.agents.base import AgentBase
 
 
 #################################################################
