@@ -15,7 +15,7 @@ class SpiAgent(SyncAgentBase):
     """
     Simulation agent for SPI interface
 
-    :ivar txData: data to transceive container
+    :ivar txData: data to transceiver container
     :ivar rxData: received data
     :ivar chipSelects: values of chip select
 
@@ -168,7 +168,7 @@ class Spi(Interface):
 
 class SpiTristate(Spi):
     """
-    SPI interface where mosi and miso signal are merged into one tristate wire
+    SPI interface where mosi and miso signal are merged into one tri-state wire
     """
     def _config(self):
         Spi._config(self)
