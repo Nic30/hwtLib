@@ -50,3 +50,5 @@ sudo pip3 install hwtLib
 * [NyuziProcessor](https://github.com/jbush001/NyuziProcessor) - GPGPU
 * [pulp-platform](https://github.com/pulp-platform)
 * [leon/grlib](https://www.gaisler.com/index.php/downloads/leongrlib) - Library of SoC components
+* [corundum](https://github.com/ucsdsysnet/corundum) - Packet DMA
+
