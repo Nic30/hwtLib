@@ -17,14 +17,15 @@ class HsFifoTC(FifoTC):
     def getUnit(cls):
         u = cls.u = HandshakedFifo(Handshaked)
         u.DEPTH.set(cls.ITEMS)
-        u.DATA_WIDTH.set(8)
+        u.DATA_WIDTH.set(64)
         u.EXPORT_SIZE.set(True)
         return u
 
     def getFifoItems(self):
-        v = self.model.fifo_inst.memory._val.val.values()
-        items = set([int(x) for x in v])
-        items.add(int(self.model.dataOut_data._val))
+        sim = self.rtl_simulator.io 
+        v = sim.fifo_inst.memory
+        items = set([int(v[i].read()) for i in range(self.ITEMS)])
+        items.add(int(sim.dataOut_data.read()))
         return items
 
     def getUnconsumedInput(self):
@@ -36,7 +37,7 @@ class HsFifoTC(FifoTC):
 
     def test_stuckedData(self):
         super(HsFifoTC, self).test_stuckedData()
-        self.assertValEqual(self.model.dataOut_data, 1)
+        self.assertValEqual(self.rtl_simulator.io.dataOut_data, 1)
 
     def test_tryMore2(self, capturedOffset=1):
         # capturedOffset=1 because handshaked aget can act in same clk
