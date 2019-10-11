@@ -272,7 +272,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
             # input ports for value of this output word
             inPorts = []
-            # input ports witch value should be consumed on this word
+            # input ports which value should be consumed on this word
             lastInPorts = []
             if multipleWords:
                 wordData = self._sig("word%d" % i, dout.data._dtype)

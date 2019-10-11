@@ -315,7 +315,7 @@ class AbstractStreamBuilder(object):
 
     def split_prioritized(self, noOfOutputs):
         """
-        data from input is send to output witch is ready and has highest priority from all ready outputs
+        data from input is send to output which is ready and has highest priority from all ready outputs
 
         :param noOfOutputs: number of output interfaces of the fork
         """
