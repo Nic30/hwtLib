@@ -200,7 +200,7 @@ class CuckooHashTable(HashTableCore):
         StreamNode(masters=res).sync(resAck)
 
         insertFinal = self._reg("insertFinal")
-        # select empty space or victim witch which current insert item
+        # select empty space or victim which which current insert item
         # should be swapped with
         lookupResAck = StreamNode(masters=map(
             lambda t: t.lookupRes, tables)).ack()
