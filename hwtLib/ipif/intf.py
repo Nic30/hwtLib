@@ -9,7 +9,7 @@ from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.hdlSimulator import HdlSimulator
-from pycocotb.triggers import WaitCombStable
+from pycocotb.triggers import WaitCombStable, WaitCombRead, WaitWriteOnly
 
 
 # https://www.xilinx.com/support/documentation/ip_documentation/axi_lite_ipif/v2_0/pg155-axi-lite-ipif.pdf
@@ -159,8 +159,10 @@ class IpifAgent(SyncAgentBase):
     def monitor(self):
         intf = self.intf
 
+        yield WaitCombRead()
         en = self.notReset()
         if self._requireInit or not en:
+            yield WaitWriteOnly()
             intf.ip2bus_rdack.write(0)
             intf.ip2bus_wrack.write(0)
             intf.ip2bus_error.write(None)
@@ -171,6 +173,7 @@ class IpifAgent(SyncAgentBase):
         # yield sim.waitOnCombUpdate()
         st = self._monitor_st
         if st == IpifAgentState.IDLE:
+            yield WaitCombRead()
             cs = intf.bus2ip_cs.read()
             cs = int(cs)
             # [TODO] there can be multiple chips
@@ -187,6 +190,7 @@ class IpifAgent(SyncAgentBase):
                     self._wdata = intf.bus2ip_data.read()
                     st = IpifAgentState.WRITE
             else:
+                yield WaitWriteOnly()
                 # print("")
                 # print(sim.now, "not cs")
                 intf.ip2bus_rdack.write(0)
@@ -198,6 +202,7 @@ class IpifAgent(SyncAgentBase):
         else:
             doStabilityCheck = True
 
+        yield WaitWriteOnly()
         if st == IpifAgentState.READ:
             intf.ip2bus_wrack.write(0)
             if self._latencyCntr == self.READ_LATENCY:
@@ -259,6 +264,7 @@ class IpifAgent(SyncAgentBase):
         actual_next = actual
 
         if self._requireInit:
+            yield WaitWriteOnly()
             intf.bus2ip_cs.write(0)
             self._requireInit = False
 
@@ -299,4 +305,6 @@ class IpifAgent(SyncAgentBase):
             else:
                 self.actual = actual_next
                 return
+
+        yield WaitWriteOnly()
         intf.bus2ip_cs.write(0)
