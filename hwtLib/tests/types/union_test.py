@@ -59,7 +59,7 @@ class UnionTC(unittest.TestCase):
         v.struct.upper = 1
         self.assertEqual(v.bits.val, 1 << 8)
         self.assertEqual(v.bits.vld_mask, mask(8) << 8)
-        
+
         v.struct.lower = 1
         self.assertEqual(v.bits.val, (1 << 8) | 1)
         self.assertEqual(v.bits.vld_mask, mask(16))
