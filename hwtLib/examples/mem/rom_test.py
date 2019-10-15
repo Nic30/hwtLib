@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+from unittest.case import TestCase
 
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceRAM
@@ -9,7 +10,6 @@ from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwt.synthesizer.utils import toRtl
 from hwtLib.examples.mem.rom import SimpleRom, SimpleSyncRom
 from pycocotb.constants import CLK_PERIOD
-from unittest.case import TestCase
 
 
 class SimpleRomTC(SimpleSimTestCase):
