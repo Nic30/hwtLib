@@ -62,11 +62,11 @@ class CLinkedListReader(Unit):
 
         # interface to control internal register
         a = self.baseAddr = RegCntrl()
-        a._replaceParam(a.DATA_WIDTH, self.ADDR_WIDTH)
+        a.DATA_WIDTH = self.ADDR_WIDTH
         self.rdPtr = RegCntrl()
         self.wrPtr = RegCntrl()
         for ptr in [self.rdPtr, self.wrPtr]:
-            ptr._replaceParam(ptr.DATA_WIDTH, self.PTR_WIDTH)
+            ptr.DATA_WIDTH = self.PTR_WIDTH
 
         f = self.dataFifo = HandshakedFifo(Handshaked)
         f.EXPORT_SIZE = True

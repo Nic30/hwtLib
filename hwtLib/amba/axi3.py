@@ -200,13 +200,13 @@ class Axi3(Axi3Lite):
             self.aw = Axi3_addr()
             self.ar = Axi3_addr()
             for a in [self.aw, self.ar]:
-                a._replaceParam(a.USER_WIDTH, self.ADDR_USER_WIDTH)
+                a.USER_WIDTH = self.ADDR_USER_WIDTH
 
             self.w = Axi3_w()
             self.r = Axi3_r(masterDir=DIRECTION.IN)
             self.b = Axi3_b(masterDir=DIRECTION.IN)
             # for d in [self.w, self.r, self.b]:
-            #     d._replaceParam(d.USER_WIDTH, self.DATA_USER_WIDTH)
+            #     d.USER_WIDTH = self.DATA_USER_WIDTH
 
     def _getIpCoreIntfClass(self):
         return IP_Axi3

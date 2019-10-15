@@ -380,7 +380,7 @@ class BusEndpoint(Unit):
             DW = self.DATA_WIDTH
             if isinstance(DW, Param):
                 for i in _p:
-                    i._replaceParam(i.DATA_WIDTH, DW)
+                    i.DATA_WIDTH = DW
         else:
             for i in _p:
                 i.DATA_WIDTH = dw

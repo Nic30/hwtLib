@@ -63,7 +63,7 @@ class StructWriter(StructReader):
                                  self._createInterfaceForField)
 
         s = self.set = Handshaked()  # data signal is addr of structure to write
-        s._replaceParam(s.DATA_WIDTH, self.ADDR_WIDTH)
+        s.DATA_WIDTH = self.ADDR_WIDTH
         # write ack from slave
         self.writeAck = HandshakeSync()._m()
 

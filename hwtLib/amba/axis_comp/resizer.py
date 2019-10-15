@@ -63,7 +63,7 @@ class AxiS_resizer(AxiSCompBase):
 
         with self._paramsShared(exclude=({"DATA_WIDTH"}, set())):
             o = self.dataOut = AxiStream()._m()
-            o._replaceParam(o.DATA_WIDTH, self.OUT_DATA_WIDTH)
+            o.DATA_WIDTH = self.OUT_DATA_WIDTH
 
     def nextAreNotValidLogic(self, inStrb, actualItemIndx, ITEMS, ITEM_DW):
         res = None

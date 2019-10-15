@@ -31,7 +31,7 @@ class HsJoinFairShare(HsJoinPrioritized):
         addClkRstn(self)
         if self.EXPORT_SELECTED:
             s = self.selectedOneHot = VldSynced()._m()
-            s._replaceParam(s.DATA_WIDTH, self.INPUTS)
+            s.DATA_WIDTH = self.INPUTS
 
     @staticmethod
     def priorityAck(priorityReg, vldSignals, index):

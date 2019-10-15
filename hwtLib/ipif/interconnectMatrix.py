@@ -40,7 +40,7 @@ class IpifInterconnectMatrix(BusInterconnect):
                 raise NotImplementedError(features)
             s = Ipif()._m()
             s.ADDR_WIDTH = log2ceil(size - 1)
-            s._replaceParam(s.DATA_WIDTH, self.DATA_WIDTH)
+            s.DATA_WIDTH = self.DATA_WIDTH
             masterPorts.append(s)
 
         self.m = masterPorts

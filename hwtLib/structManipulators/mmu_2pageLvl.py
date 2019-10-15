@@ -63,10 +63,10 @@ class MMU_2pageLvl(Unit):
             self.rDatapump.MAX_LEN = 1
 
         i = self.virtIn = Handshaked()
-        i._replaceParam(i.DATA_WIDTH, self.VIRT_ADDR_WIDTH)
+        i.DATA_WIDTH = self.VIRT_ADDR_WIDTH
 
         i = self.physOut = Handshaked()._m()
-        i._replaceParam(i.DATA_WIDTH, self.ADDR_WIDTH)
+        i.DATA_WIDTH = self.ADDR_WIDTH
         self.segfault = Signal()._m()
 
         self.lvl1Table = BramPort_withoutClk()

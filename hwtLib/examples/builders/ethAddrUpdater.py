@@ -47,7 +47,7 @@ class EthAddrUpdater(Unit):
             self.axi_m = Axi3()._m()
 
         a = self.packetAddr = Handshaked()
-        a._replaceParam(a.DATA_WIDTH, self.ADDR_WIDTH)
+        a.DATA_WIDTH = self.ADDR_WIDTH
 
         with self._paramsShared():
             self.rxPacketLoader = StructReader(frameHeader)
