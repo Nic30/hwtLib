@@ -9,7 +9,7 @@ from hwt.hdl.types.defs import INT, STR, BOOL
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from pyMathBitPrecise.bit_utils import mask
-from hwt.hdl.operatorDefs import downtoFn
+from hwt.hdl.operatorDefs import downtoFn, toFn
 
 
 n = RtlNetlist()
@@ -170,10 +170,10 @@ class OperatorTC(unittest.TestCase):
         a = self.n.sig('a', dtype=INT)
         a.defVal = hInt(10)
         b = hInt(0)
-        r = downtoFn(a, b)
+        r = toFn(a, b)
         res = r.staticEval()
-        self.assertEqual(res.val.start, 0)
-        self.assertEqual(res.val.stop, 10)
+        self.assertEqual(res.val.start, 10)
+        self.assertEqual(res.val.stop, 0)
         self.assertEqual(res.val.step, 1)
 
     def test_ADD_InvalidOperands(self):
