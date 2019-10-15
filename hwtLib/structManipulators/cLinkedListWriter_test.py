@@ -14,12 +14,12 @@ class CLinkedListWriterTC(SimpleSimTestCase):
     @classmethod
     def getUnit(cls):
         u = cls.u = CLinkedListWriter()
-        cls.MAX_LEN = cls.BUFFER_CAPACITY // 2 - 1
 
         u.TIMEOUT = cls.TIMEOUT = 40
         u.ITEMS_IN_BLOCK = cls.ITEMS_IN_BLOCK = 31
         u.PTR_WIDTH = cls.PTR_WIDTH = 8
         u.BUFFER_CAPACITY = cls.BUFFER_CAPACITY = 7
+        cls.MAX_LEN = cls.BUFFER_CAPACITY // 2 - 1
         return u
 
     def setUp(self):
