@@ -4,10 +4,10 @@
 from hwt.code import connect
 from hwt.interfaces.std import VectSignal
 from hwt.interfaces.utils import addClkRstn
+from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import fitTo
-from hwt.simulator.simTestCase import SimpleSimTestCase
-from hwt.bitmask import mask
+from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 
 

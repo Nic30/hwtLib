@@ -6,17 +6,25 @@ from hwt.hdl.operatorDefs import AllOps
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
     ResourceFF
-from hwt.simulator.agentConnector import agInts
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.utils import toRtl
 from hwtLib.examples.statements.ifStm import SimpleIfStatement, \
-    SimpleIfStatement2, SimpleIfStatement2b, SimpleIfStatement2c,\
-    SimpleIfStatement3, SimpleIfStatementMergable,\
-    SimpleIfStatementMergable_vhdl, SimpleIfStatementMergable1,\
-    SimpleIfStatementMergable1_vhdl, SimpleIfStatementMergable2,\
-    SimpleIfStatementMergable2_vhdl, IfStatementPartiallyEnclosed,\
+    SimpleIfStatement2, SimpleIfStatement2b, SimpleIfStatement2c, \
+    SimpleIfStatement3, SimpleIfStatementMergable, \
+    SimpleIfStatementMergable_vhdl, SimpleIfStatementMergable1, \
+    SimpleIfStatementMergable1_vhdl, SimpleIfStatementMergable2, \
+    SimpleIfStatementMergable2_vhdl, IfStatementPartiallyEnclosed, \
     IfStatementPartiallyEnclosed_vhdl
 from hwt.serializer.vhdl.serializer import VhdlSerializer
+from hwt.simulator.agentConnector import valuesToInts
+
+
+def agInts(interface):
+    """
+    Convert all values which has agent collected in time >=0 to integer array.
+    Invalid value will be None.
+    """
+    return valuesToInts(interface._ag.data)
 
 
 class IfStmTC(SimTestCase):

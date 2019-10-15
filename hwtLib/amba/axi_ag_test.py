@@ -123,7 +123,7 @@ class Axi_ag_TC(SimTestCase):
     def test_axi3_withAddrUser_ag(self):
         """Test if axi3 agent can transmit and receive data on all channels"""
         u = AxiTestJunction(Axi3)
-        u.ADDR_USER_WIDTH.set(10)
+        u.ADDR_USER_WIDTH = 10
         self.prepareUnit(u)
         N = 10
 

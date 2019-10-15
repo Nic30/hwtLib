@@ -17,7 +17,7 @@ class Expr2CondTC(unittest.TestCase):
         self.c = nl.sig("c")
 
     def test_signalTypes(self):
-        self.assertEqual(self.a.defVal.vldMask, 0)
+        self.assertEqual(self.a.defVal.vld_mask, 0)
 
     def test_bit2BoolConversion(self):
         e = self.a

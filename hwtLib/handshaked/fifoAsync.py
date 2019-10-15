@@ -35,9 +35,9 @@ class HsFifoAsync(HandshakedFifo):
 
         f = self.fifo = FifoAsync()
         DW = self.dataIn._bit_length() - 2  # 2 for control (valid, ready)
-        f.DATA_WIDTH.set(DW)
-        f.DEPTH.set(self.DEPTH - 1)  # because there is an extra register
-        f.EXPORT_SIZE.set(self.EXPORT_SIZE)
+        f.DATA_WIDTH = DW
+        f.DEPTH = self.DEPTH - 1  # because there is an extra register
+        f.EXPORT_SIZE = self.EXPORT_SIZE
 
         if self.EXPORT_SIZE:
             self.size = VectSignal(log2ceil(self.DEPTH + 1 + 1), signed=False)
@@ -49,7 +49,7 @@ class HsFifoAsync(HandshakedFifo):
 def _example_HsFifoAsync():
     from hwt.interfaces.std import Handshaked
     u = HsFifoAsync(Handshaked)
-    u.DEPTH.set(5)
+    u.DEPTH = 5
     return u
 
 

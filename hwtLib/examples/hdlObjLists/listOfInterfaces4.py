@@ -57,11 +57,11 @@ class ListOfInterfacesSample4(Unit):
             else:
                 p = BramPort_withoutClk()
                 dw = t.elmType.bit_length()
-                p.ADDR_WIDTH.set(log2ceil(int(t.size) - 1))
+                p.ADDR_WIDTH = log2ceil(int(t.size) - 1)
         else:
             raise NotImplementedError(t)
 
-        p.DATA_WIDTH.set(dw)
+        p.DATA_WIDTH = dw
 
         return p
 

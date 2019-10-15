@@ -3,17 +3,17 @@
 
 import unittest
 
-from hwt.bitmask import mask
 from hwt.hdl.typeShortcuts import hInt, hBool, hBit, vec
 from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.bool import HBool
 from hwt.hdl.types.defs import INT, STR, BOOL
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
+from pyMathBitPrecise.bit_utils import mask
+from hwt.hdl.operatorDefs import downtoFn
 
 
 n = RtlNetlist()
-s0 = n.sig("s0", HBool())
+s0 = n.sig("s0", BOOL)
 s1 = n.sig("s1")
 
 andTable = [(None, None, None),
@@ -79,16 +79,14 @@ class OperatorTC(unittest.TestCase):
         for v in [True, False]:
             res = ~hBool(v)
             self.assertEqual(res.val, not v)
-            self.assertEqual(res.vldMask, 1)
-            self.assertEqual(res.updateTime, -1)
+            self.assertEqual(res.vld_mask, 1)
 
     def test_BitNot(self):
         for v in [False, True]:
             res = ~hBit(v)
 
             self.assertEqual(res.val, int(not v))
-            self.assertEqual(res.vldMask, 1)
-            self.assertEqual(res.updateTime, -1)
+            self.assertEqual(res.vld_mask, 1)
 
     def _test_And(self, vals):
         for a, b, expected in andTable:
@@ -101,9 +99,9 @@ class OperatorTC(unittest.TestCase):
                 self.assertEqual(expectedRes.val, res.val,
                                  "%r & %r  val=%r (should be %r)"
                                  % (a, b, res.val, expectedRes.val))
-                self.assertEqual(expectedRes.vldMask, res.vldMask,
-                                 "%r & %r  vldMask=%r (should be %r)"
-                                 % (a, b, res.vldMask, expectedRes.vldMask))
+                self.assertEqual(expectedRes.vld_mask, res.vld_mask,
+                                 "%r & %r  vld_mask=%r (should be %r)"
+                                 % (a, b, res.vld_mask, expectedRes.vld_mask))
 
     def _test_Or(self, vals):
         for a, b, expected in orTable:
@@ -116,9 +114,9 @@ class OperatorTC(unittest.TestCase):
                 self.assertEqual(expectedRes.val, res.val,
                                  "%r | %r  val=%r (should be %r)"
                                  % (a, b, res.val, expectedRes.val))
-                self.assertEqual(expectedRes.vldMask, res.vldMask,
-                                 "%r | %r  vldMask=%r (should be %r)"
-                                 % (a, b, res.vldMask, expectedRes.vldMask))
+                self.assertEqual(expectedRes.vld_mask, res.vld_mask,
+                                 "%r | %r  vld_mask=%r (should be %r)"
+                                 % (a, b, res.vld_mask, expectedRes.vld_mask))
 
     def _test_Xor(self, vals):
         for a, b, expected in xorTable:
@@ -128,13 +126,13 @@ class OperatorTC(unittest.TestCase):
             if isinstance(expectedRes, RtlSignalBase):
                 self.assertIs(res, expectedRes)
             else:
-                if expectedRes.vldMask:
+                if expectedRes.vld_mask:
                     self.assertEqual(expectedRes.val, res.val,
                                      "%r ^ %r  val=%r (should be %r)"
                                      % (a, b, res.val, expectedRes.val))
-                self.assertEqual(expectedRes.vldMask, res.vldMask,
-                                 "%r ^ %r  vldMask=%r (should be %r)"
-                                 % (a, b, res.vldMask, expectedRes.vldMask))
+                self.assertEqual(expectedRes.vld_mask, res.vld_mask,
+                                 "%r ^ %r  vld_mask=%r (should be %r)"
+                                 % (a, b, res.vld_mask, expectedRes.vld_mask))
 
     def test_BoolAnd(self):
         self._test_And(boolvals)
@@ -162,10 +160,21 @@ class OperatorTC(unittest.TestCase):
         a = self.n.sig('a', dtype=INT)
         a.defVal = hInt(10)
         b = hInt(0)
-        r = a._downto(b)
+        r = downtoFn(a, b)
         res = r.staticEval()
-        self.assertEqual(res.val[0].val, 10)
-        self.assertEqual(res.val[1].val, 0)
+        self.assertEqual(res.val.start, 10)
+        self.assertEqual(res.val.stop, 0)
+        self.assertEqual(res.val.step, -1)
+
+    def test_to(self):
+        a = self.n.sig('a', dtype=INT)
+        a.defVal = hInt(10)
+        b = hInt(0)
+        r = downtoFn(a, b)
+        res = r.staticEval()
+        self.assertEqual(res.val.start, 0)
+        self.assertEqual(res.val.stop, 10)
+        self.assertEqual(res.val.step, 1)
 
     def test_ADD_InvalidOperands(self):
         a = self.n.sig('a', dtype=STR)
@@ -177,25 +186,25 @@ class OperatorTC(unittest.TestCase):
         b = hInt(1)
         c = a + b
         self.assertEqual(c.val, 8)
-        self.assertEqual(c.vldMask, mask(8))
+        self.assertEqual(c.vld_mask, mask(8))
 
         a = vec(255, 8)
         b = hInt(1)
         c = a + b
         self.assertEqual(c.val, 0)
-        self.assertEqual(c.vldMask, mask(8))
+        self.assertEqual(c.vld_mask, mask(8))
 
         a = vec(7, 8, False)
         b = hInt(1)
         c = a + b
         self.assertEqual(c.val, 8)
-        self.assertEqual(c.vldMask, mask(8))
+        self.assertEqual(c.vld_mask, mask(8))
 
         a = vec(255, 8, False)
         b = hInt(1)
         c = a + b
         self.assertEqual(c.val, 0)
-        self.assertEqual(c.vldMask, mask(8))
+        self.assertEqual(c.vld_mask, mask(8))
 
     def test_AND_eval(self):
         for a_in, b_in, out in [(0, 0, 0),
@@ -203,7 +212,7 @@ class OperatorTC(unittest.TestCase):
                                 (1, 0, 0),
                                 (1, 1, 1)]:
             res = hBit(a_in) & hBit(b_in)
-            self.assertEqual(res.vldMask, 1)
+            self.assertEqual(res.vld_mask, 1)
             self.assertEqual(
                 res.val, out,
                 "a_in %d, b_in %d, out %d"
@@ -218,14 +227,14 @@ class OperatorTC(unittest.TestCase):
 
             b_w = 2
 
-            self.assertTrue(res.vldMask)
+            self.assertTrue(res.vld_mask)
             self.assertEqual(
                 res.val, out,
                 "a_in %d, b_in %d, out %d"
                 % (a_in, b_in, out))
 
             resBit = vec(a_in, b_w) + vec(b_in, b_w)
-            self.assertEqual(resBit.vldMask, 3)
+            self.assertEqual(resBit.vld_mask, 3)
             self.assertEqual(
                 resBit.val, out,
                 "a_in %d, b_in %d, out %d"
@@ -259,9 +268,9 @@ class OperatorTC(unittest.TestCase):
 
     def test_array_eq_neq(self):
         t = Bits(8)[5]
-        v0 = t.fromPy(range(5))
-        v1 = t.fromPy({0: 10, 1: 2})
-        v2 = t.fromPy([1, 2, 3, 4, 5])
+        v0 = t.from_py(range(5))
+        v1 = t.from_py({0: 10, 1: 2})
+        v2 = t.from_py([1, 2, 3, 4, 5])
 
         self.assertTrue(v0._eq(v0))
         with self.assertRaises(ValueError):
@@ -274,21 +283,21 @@ class OperatorTC(unittest.TestCase):
         self.assertTrue(v2, v2)
 
     def test_int_neg(self):
-        self.assertEqual(int(INT.fromPy(-10)), -10)
-        self.assertEqual(int(-INT.fromPy(10)), -10)
-        self.assertEqual(int(-INT.fromPy(10)), -10)
-        v = -INT.fromPy(None)
+        self.assertEqual(int(INT.from_py(-10)), -10)
+        self.assertEqual(int(-INT.from_py(10)), -10)
+        self.assertEqual(int(-INT.from_py(10)), -10)
+        v = -INT.from_py(None)
         self.assertEqual(v.val, 0)
-        self.assertEqual(v.vldMask, 0)
+        self.assertEqual(v.vld_mask, 0)
 
     def test_int_to_bool(self):
-        self.assertFalse(bool(INT.fromPy(0)._auto_cast(BOOL)))
-        self.assertTrue(bool(INT.fromPy(1)._auto_cast(BOOL)))
-        self.assertTrue(bool(INT.fromPy(-11)._auto_cast(BOOL)))
-        self.assertTrue(bool(INT.fromPy(500)._auto_cast(BOOL)))
+        self.assertFalse(bool(INT.from_py(0)._auto_cast(BOOL)))
+        self.assertTrue(bool(INT.from_py(1)._auto_cast(BOOL)))
+        self.assertTrue(bool(INT.from_py(-11)._auto_cast(BOOL)))
+        self.assertTrue(bool(INT.from_py(500)._auto_cast(BOOL)))
 
         with self.assertRaises(ValueError):
-            bool(INT.fromPy(None)._auto_cast(BOOL))
+            bool(INT.from_py(None)._auto_cast(BOOL))
 
 
 if __name__ == '__main__':

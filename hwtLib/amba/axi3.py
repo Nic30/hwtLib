@@ -8,6 +8,7 @@ from hwtLib.amba.axis import AxiStream, AxiStreamAgent
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwt.serializer.ip_packager import IpPackager
 from ipCorePackager.component import Component
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 #####################################################################
@@ -35,8 +36,8 @@ class Axi3_addr(Axi3Lite_addr, Axi_id):
         if self.USER_WIDTH:
             self.user = VectSignal(self.USER_WIDTH)
 
-    def _initSimAgent(self):
-        self._ag = Axi3_addrAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = Axi3_addrAgent(sim, self)
 
 
 class Axi3_addrAgent(AxiStreamAgent):
@@ -48,8 +49,8 @@ class Axi3_addrAgent(AxiStreamAgent):
     prot, size, qos, optionally user)
     """
 
-    def __init__(self, intf: Axi3_addr, allowNoReset=False):
-        BaseAxiAgent.__init__(self, intf, allowNoReset=allowNoReset)
+    def __init__(self, sim: HdlSimulator, intf: Axi3_addr, allowNoReset=False):
+        BaseAxiAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
 
         signals = [
             intf.id,
@@ -64,7 +65,7 @@ class Axi3_addrAgent(AxiStreamAgent):
         if hasattr(intf, "user"):
             signals.append(intf.user)
         self._signals = tuple(signals)
-        self._sigCnt = len(signals) 
+        self._sigCnt = len(signals)
 
 
 #####################################################################
@@ -84,8 +85,8 @@ class Axi3_w(Axi_hs, Axi_strb):
         self.last = Signal()
         Axi_hs._declr(self)
 
-    def _initSimAgent(self):
-        AxiStream._initSimAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        AxiStream._initSimAgent(sim, self)
 
 
 #####################################################################
@@ -102,8 +103,8 @@ class Axi3_r(Axi3Lite_r, Axi_id):
         Axi3Lite_r._declr(self)
         self.last = Signal()
 
-    def _initSimAgent(self):
-        self._ag = Axi3_rAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = Axi3_rAgent(sim, self)
 
 
 class Axi3_rAgent(BaseAxiAgent):
@@ -114,7 +115,7 @@ class Axi3_rAgent(BaseAxiAgent):
     data contains tuples (id, data, resp, last)
     """
 
-    def doRead(self, sim):
+    def doRead(self):
         intf = self.intf
 
         _id = intf.id.read()
@@ -124,7 +125,7 @@ class Axi3_rAgent(BaseAxiAgent):
 
         return (_id, data, resp, last)
 
-    def doWrite(self, sim, data):
+    def doWrite(self, data):
         intf = self.intf
 
         if data is None:
@@ -151,8 +152,8 @@ class Axi3_b(Axi3Lite_b, Axi_id):
         Axi_id._declr(self)
         Axi3Lite_b._declr(self)
 
-    def _initSimAgent(self):
-        self._ag = Axi3_bAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = Axi3_bAgent(sim, self)
 
 
 class Axi3_bAgent(BaseAxiAgent):
@@ -163,12 +164,12 @@ class Axi3_bAgent(BaseAxiAgent):
     data contains tuples (id, resp)
     """
 
-    def doRead(self, sim):
+    def doRead(self):
         intf = self.intf
 
         return intf.id.read(), intf.resp.read()
 
-    def doWrite(self, sim, data):
+    def doWrite(self, data):
         intf = self.intf
 
         if data is None:
@@ -219,14 +220,18 @@ class IP_Axi3(IP_Axi3Lite):
         super(IP_Axi3, self).__init__()
         self.quartus_name = "axi"
         self.xilinx_protocol_name = "AXI3"
-        A_SIGS = ['id', 'burst', 'cache', 'len', 'lock', 'prot', 'size', 'qos', 'user']
+        A_SIGS = ['id', 'burst', 'cache', 'len', 'lock',
+                  'prot', 'size', 'qos', 'user']
         AxiMap('ar', A_SIGS, self.map['ar'])
         AxiMap('r', ['id', 'last'], self.map['r'])
         AxiMap('aw', A_SIGS, self.map['aw'])
         AxiMap('w', ['id', 'last'], self.map['w'])
         AxiMap('b', ['id'], self.map['b'])
 
-    def postProcess(self, component: Component, packager: IpPackager, thisIf: Axi3):
+    def postProcess(self,
+                    component: Component,
+                    packager: IpPackager,
+                    thisIf: Axi3):
         self.endianness = "little"
         thisIntfName = packager.getInterfaceLogicalName(thisIf)
 
@@ -246,4 +251,3 @@ class IP_Axi3(IP_Axi3Lite):
         if A_U_W:
             param("AWUSER_WIDTH", A_U_W)
             param("ARUSER_WIDTH", A_U_W)
-

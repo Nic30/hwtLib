@@ -14,11 +14,11 @@ class HashTableCoreTC(SimpleSimTestCase):
     @classmethod
     def getUnit(cls):
         u = cls.u = HashTableCore(CRC_32)
-        u.KEY_WIDTH.set(16)
-        u.DATA_WIDTH.set(8)
+        u.KEY_WIDTH = 16
+        u.DATA_WIDTH = 8
 
-        u.LOOKUP_HASH.set(True)
-        u.LOOKUP_KEY.set(True)
+        u.LOOKUP_HASH = True
+        u.LOOKUP_KEY = True
         return u
 
     def setUp(self):
@@ -26,7 +26,7 @@ class HashTableCoreTC(SimpleSimTestCase):
         # clean up memory
         mem = self.rtl_simulator.table_inst.ram_memory.defVal
         for i in range(mem._dtype.size):
-            mem.val[i] = mem._dtype.elmType.fromPy(0)
+            mem.val[i] = mem._dtype.elmType.from_py(0)
 
     def test_lookupInEmpty(self):
         u = self.u

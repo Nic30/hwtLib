@@ -3,7 +3,6 @@
 
 import unittest
 
-from hwt.bitmask import mask
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
@@ -11,6 +10,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.localLinkConv import LocalLinkToAxiS, AxiSToLocalLink
+from pyMathBitPrecise.bit_utils import mask
 
 
 class LocalLinkConvTest(Unit):

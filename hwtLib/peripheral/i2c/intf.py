@@ -1,11 +1,11 @@
 from collections import deque
 
-from hwt.interfaces.agents.tristate import TristateAgent, \
-    TristateClkAgent, toGenerator
 from hwt.interfaces.tristate import TristateClk, TristateSig
-from ipCorePackager.intfIpMeta import IntfIpMeta
 from hwt.simulator.agentBase import AgentWitReset
 from hwt.synthesizer.interface import Interface
+from ipCorePackager.intfIpMeta import IntfIpMeta
+from pycocotb.agents.peripheral.i2c import I2cAgent
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 class I2c(Interface):
@@ -22,8 +22,9 @@ class I2c(Interface):
     def _getIpCoreIntfClass(self):
         return IP_IIC
 
-    def _initSimAgent(self):
-        self._ag = I2cAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        # [TODO] this is not correct aggent as it does not have mapped signals correctly
+        self._ag = I2cAgent(sim, self)
 
 
 class IP_IIC(IntfIpMeta):

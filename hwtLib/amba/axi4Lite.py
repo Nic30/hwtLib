@@ -3,6 +3,7 @@ from hwt.interfaces.std import VectSignal
 from hwtLib.amba.axi3Lite import IP_Axi3Lite, Axi3Lite, Axi3Lite_r,\
     Axi3Lite_b, Axi3Lite_w, Axi3Lite_addr, Axi3Lite_addrAgent
 from hwtLib.amba.axi_intf_common import AxiMap
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 class Axi4Lite_addr(Axi3Lite_addr):
@@ -10,8 +11,8 @@ class Axi4Lite_addr(Axi3Lite_addr):
         super(Axi4Lite_addr, self)._declr()
         self.prot = VectSignal(3)
 
-    def _initSimAgent(self):
-        self._ag = Axi4Lite_addrAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = Axi4Lite_addrAgent(sim, self)
 
 
 class Axi4Lite_addrAgent(Axi3Lite_addrAgent):

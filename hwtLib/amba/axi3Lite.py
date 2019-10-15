@@ -11,10 +11,12 @@ from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from ipCorePackager.component import Component
 from ipCorePackager.intfIpMeta import IntfIpMeta
 from pycocotb.agents.base import AgentBase
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 #################################################################
 class Axi3Lite_addr(Axi_hs):
+
     def _config(self):
         self.ADDR_WIDTH = Param(32)
 
@@ -22,8 +24,8 @@ class Axi3Lite_addr(Axi_hs):
         self.addr = VectSignal(self.ADDR_WIDTH)
         Axi_hs._declr(self)
 
-    def _initSimAgent(self):
-        self._ag = Axi3Lite_addrAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = Axi3Lite_addrAgent(sim, self)
 
 
 class Axi3Lite_addrAgent(BaseAxiAgent):
@@ -40,6 +42,7 @@ class Axi3Lite_addrAgent(BaseAxiAgent):
 
 #################################################################
 class Axi3Lite_r(Axi_hs):
+
     def _config(self):
         self.DATA_WIDTH = Param(64)
 
@@ -48,8 +51,8 @@ class Axi3Lite_r(Axi_hs):
         self.resp = VectSignal(2)
         Axi_hs._declr(self)
 
-    def _initSimAgent(self):
-        self._ag = AxiLite_rAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = AxiLite_rAgent(sim, self)
 
 
 class AxiLite_rAgent(BaseAxiAgent):
@@ -75,6 +78,7 @@ class AxiLite_rAgent(BaseAxiAgent):
 
 #################################################################
 class Axi3Lite_w(Axi_hs):
+
     def _config(self):
         self.DATA_WIDTH = Param(64)
 
@@ -83,8 +87,8 @@ class Axi3Lite_w(Axi_hs):
         self.strb = VectSignal(self.DATA_WIDTH // 8)
         Axi_hs._declr(self)
 
-    def _initSimAgent(self):
-        self._ag = Axi3Lite_wAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = Axi3Lite_wAgent(sim, self)
 
 
 class Axi3Lite_wAgent(BaseAxiAgent):
@@ -109,12 +113,13 @@ class Axi3Lite_wAgent(BaseAxiAgent):
 
 #################################################################
 class Axi3Lite_b(Axi_hs):
+
     def _declr(self):
         self.resp = VectSignal(2)
         Axi_hs._declr(self)
 
-    def _initSimAgent(self):
-        self._ag = Axi3Lite_bAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = Axi3Lite_bAgent(sim, self)
 
 
 class Axi3Lite_bAgent(BaseAxiAgent):
@@ -131,6 +136,7 @@ class Axi3Lite_bAgent(BaseAxiAgent):
 
 #################################################################
 class Axi3Lite(Interface):
+
     def _config(self):
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)
@@ -146,8 +152,8 @@ class Axi3Lite(Interface):
     def _getIpCoreIntfClass(self):
         return IP_Axi3Lite
 
-    def _initSimAgent(self):
-        self._ag = Axi3LiteAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = Axi3LiteAgent(sim, self)
 
     def _getWordAddrStep(self):
         """
@@ -171,12 +177,12 @@ class Axi3LiteAgent(AgentBase):
     data for each agent is stored in agent for given channel (ar, aw, r, ... property)
     """
 
-    def __init__(self, intf):
+    def __init__(self, sim: HdlSimulator, intf):
         self.__enable = True
         self.intf = intf
 
         def ag(intf):
-            intf._initSimAgent()
+            intf._initSimAgent(sim)
             agent = intf._ag
             return agent
 
@@ -196,24 +202,27 @@ class Axi3LiteAgent(AgentBase):
                 o.setEnable(en, sim)
 
     def getDrivers(self):
-        return (self.aw.getDrivers() +
-                self.ar.getDrivers() +
-                self.w.getDrivers() +
-                self.r.getMonitors() +
-                self.b.getMonitors()
-                )
+        return (
+            self.aw.getDrivers()
+            + self.ar.getDrivers()
+            + self.w.getDrivers()
+            + self.r.getMonitors()
+            + self.b.getMonitors()
+        )
 
     def getMonitors(self):
-        return (self.aw.getMonitors() +
-                self.ar.getMonitors() +
-                self.w.getMonitors() +
-                self.r.getDrivers() +
-                self.b.getDrivers()
-                )
+        return (
+            self.aw.getMonitors()
+            + self.ar.getMonitors()
+            + self.w.getMonitors()
+            + self.r.getDrivers()
+            + self.b.getDrivers()
+        )
 
 
 #################################################################
 class IP_Axi3Lite(IntfIpMeta):
+
     def __init__(self):
         super().__init__()
         self.name = "aximm"
@@ -223,12 +232,13 @@ class IP_Axi3Lite(IntfIpMeta):
         self.vendor = "xilinx.com"
         self.library = "interface"
         a_sigs = ['addr', 'valid', 'ready']
-        self.map = {'aw': AxiMap('aw', a_sigs),
-                    'w': AxiMap('w', ['data', 'strb', 'valid', 'ready']),
-                    'ar': AxiMap('ar', a_sigs),
-                    'r': AxiMap('r', ['data', 'resp', 'valid', 'ready']),
-                    'b': AxiMap('b', ['valid', 'ready', 'resp'])
-                    }
+        self.map = {
+            'aw': AxiMap('aw', a_sigs),
+            'w': AxiMap('w', ['data', 'strb', 'valid', 'ready']),
+            'ar': AxiMap('ar', a_sigs),
+            'r': AxiMap('r', ['data', 'resp', 'valid', 'ready']),
+            'b': AxiMap('b', ['valid', 'ready', 'resp'])
+        }
 
     def get_quartus_map(self):
         if self.quartus_map is None:
@@ -260,10 +270,14 @@ class IP_Axi3Lite(IntfIpMeta):
             self.quartus_prop(buff, name, "readDataReorderingDepth", 1)
             self.quartus_prop(buff, name, "bridgesToMaster", "")
 
-    def postProcess(self, component: Component, packager: IpPackager, thisIf: Axi3Lite):
+    def postProcess(self, component: Component,
+                    packager: IpPackager,
+                    thisIf: Axi3Lite):
         self.endianness = "little"
         thisIntfName = packager.getInterfaceLogicalName(thisIf)
-        self.addWidthParam(thisIntfName, "ADDR_WIDTH", thisIf.ADDR_WIDTH, packager)
-        self.addWidthParam(thisIntfName, "DATA_WIDTH", thisIf.DATA_WIDTH, packager)
+        self.addWidthParam(thisIntfName, "ADDR_WIDTH",
+                           thisIf.ADDR_WIDTH, packager)
+        self.addWidthParam(thisIntfName, "DATA_WIDTH",
+                           thisIf.DATA_WIDTH, packager)
         self.addSimpleParam(thisIntfName, "PROTOCOL", "AXI4LITE")
         self.addSimpleParam(thisIntfName, "READ_WRITE_MODE", "READ_WRITE")

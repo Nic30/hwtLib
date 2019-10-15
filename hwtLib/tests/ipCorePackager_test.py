@@ -38,12 +38,12 @@ class IpCoreIntfTest(Unit):
         self.difIn = DifferentialSig()
         self.axi3s0 = Axi3()
         self.axi3m0 = Axi3()._m()
-  
+
         self.axi3s1 = Axi3()
         self.axi3m1 = Axi3()._m()
         for i in [self.axi3s1, self.axi3m1]:
-            i.ADDR_USER_WIDTH.set(10)
-        
+            i.ADDR_USER_WIDTH = 10
+
     def _impl(self):
         r0 = self._reg("r0", defVal=0)
         self.uart.tx(self.uart.rx)
@@ -74,14 +74,14 @@ class IpCorePackagerTC(unittest.TestCase):
 
     def test_itIsPossibleToSerializeIpcores(self):
         f = Fifo()
-        f.DEPTH.set(16)
+        f.DEPTH = 16
 
         en0 = AxiS_en()
-        en0.USE_STRB.set(True)
-        en0.USE_KEEP.set(True)
-        en0.ID_WIDTH.set(8)
-        en0.DEST_WIDTH.set(4)
-        en0.USER_WIDTH.set(12)
+        en0.USE_STRB = True
+        en0.USE_KEEP = True
+        en0.ID_WIDTH = 8
+        en0.DEST_WIDTH = 4
+        en0.USER_WIDTH = 12
 
         testUnits = [AxiS_en(),
                      en0,

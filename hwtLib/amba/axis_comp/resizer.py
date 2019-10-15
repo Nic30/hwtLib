@@ -52,7 +52,7 @@ class AxiS_resizer(AxiSCompBase):
     def _config(self):
         AxiSCompBase._config(self)
         self.OUT_DATA_WIDTH = Param(64)
-        self.USE_STRB.set(True)
+        self.USE_STRB = True
 
     def _declr(self):
         assert self.USE_STRB
@@ -61,7 +61,7 @@ class AxiS_resizer(AxiSCompBase):
         with self._paramsShared():
             self.dataIn = AxiStream()
 
-        with self._paramsShared(exclude=[self.DATA_WIDTH]):
+        with self._paramsShared(exclude=({"DATA_WIDTH"}, set())):
             o = self.dataOut = AxiStream()._m()
             o._replaceParam(o.DATA_WIDTH, self.OUT_DATA_WIDTH)
 
@@ -223,21 +223,23 @@ class AxiS_resizer(AxiSCompBase):
 
 
 def _example_AxiS_resizer_upscale():
-    from hwtLib.amba.axis import AxiStream_withId
+    from hwtLib.amba.axis import AxiStream
 
-    u = AxiS_resizer(AxiStream_withId)
-    u.DATA_WIDTH.set(32)
-    u.OUT_DATA_WIDTH.set(64)
+    u = AxiS_resizer(AxiStream)
+    u.ID_WIDTH = 3
+    u.DATA_WIDTH = 32
+    u.OUT_DATA_WIDTH = 64
 
     return u
 
 
 def _example_AxiS_resizer_downscale():
-    from hwtLib.amba.axis import AxiStream_withId
+    from hwtLib.amba.axis import AxiStream
 
-    u = AxiS_resizer(AxiStream_withId)
-    u.DATA_WIDTH.set(64)
-    u.OUT_DATA_WIDTH.set(32)
+    u = AxiS_resizer(AxiStream)
+    u.ID_WIDTH = 3
+    u.DATA_WIDTH = 64
+    u.OUT_DATA_WIDTH = 32
 
     return u
 

@@ -23,20 +23,20 @@ class Showcase0(Unit):
         self.cmp_3 = Signal(dtype=Bits(1))
         self.cmp_4 = Signal(dtype=Bits(1))
         self.cmp_5 = Signal(dtype=Bits(1))
-        self.contOut = Signal(dtype=Bits(32, forceVector=True))
-        self.d = Signal(dtype=Bits(32, forceVector=True))
+        self.contOut = Signal(dtype=Bits(32, force_vector=True))
+        self.d = Signal(dtype=Bits(32, force_vector=True))
         self.e = Signal(dtype=Bits(1))
         self.f = Signal(dtype=Bits(1))
-        self.fitted = Signal(dtype=Bits(16, forceVector=True))
-        self.g = Signal(dtype=Bits(8, forceVector=True))
-        self.h = Signal(dtype=Bits(8, forceVector=True))
-        self.i = Signal(dtype=Bits(2, forceVector=True))
-        self.j = Signal(dtype=Bits(8, forceVector=True))
-        self.k = Signal(dtype=Bits(32, forceVector=True))
+        self.fitted = Signal(dtype=Bits(16, force_vector=True))
+        self.g = Signal(dtype=Bits(8, force_vector=True))
+        self.h = Signal(dtype=Bits(8, force_vector=True))
+        self.i = Signal(dtype=Bits(2, force_vector=True))
+        self.j = Signal(dtype=Bits(8, force_vector=True))
+        self.k = Signal(dtype=Bits(32, force_vector=True))
         self.out = Signal(dtype=Bits(1))
         self.output = Signal(dtype=Bits(1))
         self.rst_n = Signal(dtype=Bits(1, negated=True))
-        self.sc_signal = Signal(dtype=Bits(8, forceVector=True))
+        self.sc_signal = Signal(dtype=Bits(8, force_vector=True))
 
     def _impl(self):
         a, b, c, clk, cmp_0, cmp_1, cmp_2, cmp_3, cmp_4, cmp_5, contOut, d, e, f, fitted, g, h, i, j, k, out, output, rst_n, sc_signal = self.a, self.b, self.c, self.clk, self.cmp_0, self.cmp_1, self.cmp_2, self.cmp_3, self.cmp_4, self.cmp_5, self.contOut, self.d, self.e, self.f, self.fitted, self.g, self.h, self.i, self.j, self.k, self.out, self.output, self.rst_n, self.sc_signal
@@ -58,30 +58,30 @@ class Showcase0(Unit):
         # assig_process_c sensitivity: a, b
         c((a + (b)._reinterpret_cast(Bits(32, signed=False)))._reinterpret_cast(Bits(32)))
         # assig_process_cmp_0 sensitivity: a
-        cmp_0((a < 0x4)._ternary(Bits(1).fromPy(0x1), Bits(1).fromPy(0x0)))
+        cmp_0((a < 0x4)._ternary(Bits(1).from_py(0x1), Bits(1).from_py(0x0)))
         # assig_process_cmp_1 sensitivity: a
-        cmp_1((a > 0x4)._ternary(Bits(1).fromPy(0x1), Bits(1).fromPy(0x0)))
+        cmp_1((a > 0x4)._ternary(Bits(1).from_py(0x1), Bits(1).from_py(0x0)))
         # assig_process_cmp_2 sensitivity: b
-        cmp_2((b <= 0x4)._ternary(Bits(1).fromPy(0x1), Bits(1).fromPy(0x0)))
+        cmp_2((b <= 0x4)._ternary(Bits(1).from_py(0x1), Bits(1).from_py(0x0)))
         # assig_process_cmp_3 sensitivity: b
-        cmp_3((b >= 0x4)._ternary(Bits(1).fromPy(0x1), Bits(1).fromPy(0x0)))
+        cmp_3((b >= 0x4)._ternary(Bits(1).from_py(0x1), Bits(1).from_py(0x0)))
         # assig_process_cmp_4 sensitivity: b
-        cmp_4((b != 0x4)._ternary(Bits(1).fromPy(0x1), Bits(1).fromPy(0x0)))
+        cmp_4((b != 0x4)._ternary(Bits(1).from_py(0x1), Bits(1).from_py(0x0)))
         # assig_process_cmp_5 sensitivity: b
-        cmp_5((b._eq(0x4))._ternary(Bits(1).fromPy(0x1), Bits(1).fromPy(0x0)))
+        cmp_5((b._eq(0x4))._ternary(Bits(1).from_py(0x1), Bits(1).from_py(0x0)))
         # assig_process_contOut sensitivity: 
         contOut((const_private_signal)._reinterpret_cast(Bits(32)))
         # assig_process_f sensitivity: r
         f(r)
         # assig_process_fallingEdgeRam sensitivity: (SENSITIVITY.FALLING, clk)
         If((clk)._onFallingEdge(),
-            fallingEdgeRam[(r_1)._reinterpret_cast(INT)](((a)[8:0])._reinterpret_cast(Bits(8, signed=True, forceVector=True))),
-            k(Concat(Bits(24, forceVector=True).fromPy(0x0), (((fallingEdgeRam)[(r_1)._reinterpret_cast(INT)])._reinterpret_cast(Bits(8, signed=False)))._reinterpret_cast(Bits(8)))),
+            fallingEdgeRam[(r_1)._reinterpret_cast(INT)](((a)[8:0])._reinterpret_cast(Bits(8, signed=True, force_vector=True))),
+            k(Concat(Bits(24, force_vector=True).from_py(0x0), (((fallingEdgeRam)[(r_1)._reinterpret_cast(INT)])._reinterpret_cast(Bits(8, signed=False)))._reinterpret_cast(Bits(8)))),
         )
         # assig_process_fitted sensitivity: a
-        fitted(((a)[16:0])._reinterpret_cast(Bits(16, forceVector=True)))
+        fitted(((a)[16:0])._reinterpret_cast(Bits(16, force_vector=True)))
         # assig_process_g sensitivity: a, b
-        g(Concat(Concat(((a)[1]) & ((b)[1]), (((a)[0]) ^ ((b)[0])) | ((a)[1])), ((a)[6:0])._reinterpret_cast(Bits(6, forceVector=True))))
+        g(Concat(Concat(((a)[1]) & ((b)[1]), (((a)[0]) ^ ((b)[0])) | ((a)[1])), ((a)[6:0])._reinterpret_cast(Bits(6, force_vector=True))))
         # assig_process_h sensitivity: a, r
         If((a)[2],
             If(r,

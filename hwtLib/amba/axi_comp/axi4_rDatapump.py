@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import mask
 from hwt.code import If, Switch, connect, log2ceil
 from hwt.interfaces.std import Signal, HandshakeSync, VectSignal
 from hwt.interfaces.utils import propagateClkRstn
@@ -12,6 +11,7 @@ from hwtLib.amba.axi_comp.axi_datapump_base import AxiDatapumpBase
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
+from pyMathBitPrecise.bit_utils import mask
 
 
 class TransEndInfo(HandshakeSync):
@@ -40,7 +40,7 @@ class Axi_rDatapump(AxiDatapumpBase):
 
     errorRead stays high when there was error on axi read channel
     it will not affect unit functionality
-   
+
     :see: :class:`hwtLib.amba.axi_comp.axi_datapump_base.AxiDatapumpBase`
 
     .. hwt-schematic::
@@ -54,7 +54,7 @@ class Axi_rDatapump(AxiDatapumpBase):
             self.errorRead = Signal()._m()
 
             f = self.sizeRmFifo = HandshakedFifo(TransEndInfo)
-            f.DEPTH.set(self.MAX_TRANS_OVERLAP)
+            f.DEPTH = self.MAX_TRANS_OVERLAP
 
     def arIdHandler(self, lastReqDispatched):
         a = self.a

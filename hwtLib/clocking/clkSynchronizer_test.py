@@ -8,7 +8,7 @@ from hwt.simulator.agentConnector import valuesToInts
 from hwtLib.clocking.clkSynchronizer import ClkSynchronizer
 from hwt.simulator.simTestCase import SimTestCase
 from pycocotb.constants import CLK_PERIOD
-from pycocotb.triggers import Timer
+from pycocotb.triggers import Timer, WaitWriteOnly, WaitCombRead
 
 
 class ClkSynchronizerTC(SimTestCase):
@@ -26,17 +26,18 @@ class ClkSynchronizerTC(SimTestCase):
         self.u.outClk._ag.period = CLK_PERIOD // 4
         self.u.rst._ag.initDelay = CLK_PERIOD * 2
 
-        def dataCollector(s):
+        def dataCollector():
             # random small value to collect data after it is set
             yield Timer(CLK_PERIOD + 0.001)
             while True:
+                yield WaitCombRead()
                 d = u.outData.read()
                 collected.append(d)
                 yield Timer(CLK_PERIOD)
 
         self.procs.extend(
-            [dataCollector,
-             dataInStimul])
+            [dataCollector(),
+             dataInStimul()])
         super(ClkSynchronizerTC, self).runSim(until=until)
         return collected
 
@@ -45,10 +46,10 @@ class ClkSynchronizerTC(SimTestCase):
 
         expected = [0, 0, 0, None, 0, 1, 2, 3, 4]
 
-        def dataInStimul(sim):
+        def dataInStimul():
             yield Timer(3 * CLK_PERIOD)
             for i in range(127):
-                yield sim.waitWriteOnly()
+                yield WaitWriteOnly()
                 u.inData.write(i)
                 yield Timer(CLK_PERIOD)
 
@@ -60,11 +61,11 @@ class ClkSynchronizerTC(SimTestCase):
 
         expected = [0, 0, 0, None, None, None, None, None, None]
 
-        def dataInStimul(sim):
+        def dataInStimul():
             yield Timer(3 * CLK_PERIOD)
             for _ in range(127):
                 yield Timer(CLK_PERIOD)
-                yield sim.waitWriteOnly()
+                yield WaitWriteOnly()
                 u.inData.write(None)
 
         collected = self.runSim(dataInStimul)

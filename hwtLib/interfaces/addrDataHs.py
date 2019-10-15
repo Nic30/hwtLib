@@ -1,24 +1,23 @@
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import VectSignal, HandshakeSync
 from hwt.synthesizer.param import Param
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 class AddrDataHsAgent(HandshakedAgent):
-    def doWrite(self, s, data):
+    def doWrite(self, data):
         i = self.intf
-        w = s.write
         if data is None:
             addr, d = None, None
         else:
             addr, d = data
 
-        w(addr, i.addr)
-        w(d, i.data)
+        i.addr.write(addr)
+        i.data.write(d)
 
-    def doRead(self, s):
+    def doRead(self):
         i = self.intf
-        r = s.read
-        return r(i.addr), r(i.data), r(i.mask)
+        return i.addr.read(), i.data.read(), i.mask.read()
 
 
 class AddrDataHs(HandshakeSync):
@@ -31,27 +30,25 @@ class AddrDataHs(HandshakeSync):
         self.addr = VectSignal(self.ADDR_WIDTH)
         self.data = VectSignal(self.DATA_WIDTH)
 
-    def _initSimAgent(self):
-        self._ag = AddrDataHsAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = AddrDataHsAgent(sim, self)
 
 
 class AddrDataMaskHsAgent(HandshakedAgent):
-    def doWrite(self, s, data):
+    def doWrite(self, data):
         i = self.intf
-        w = s.write
         if data is None:
             addr, d, mask = None, None, None
         else:
             addr, d, mask = data
 
-        w(addr, i.addr)
-        w(d, i.data)
-        w(mask, i.mask)
+        i.addr.write(addr)
+        i.data.write(d)
+        i.mask.write(mask)
 
-    def doRead(self, s):
+    def doRead(self):
         i = self.intf
-        r = s.read
-        return r(i.addr), r(i.data), r(i.mask)
+        return i.addr.read(), i.data.read(), i.mask.read()
 
 
 class AddrDataBitMaskHs(AddrDataHs):
@@ -59,5 +56,5 @@ class AddrDataBitMaskHs(AddrDataHs):
         super(AddrDataBitMaskHs, self)._declr()
         self.mask = VectSignal(self.DATA_WIDTH)
 
-    def _initSimAgent(self):
-        self._ag = AddrDataMaskHsAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = AddrDataMaskHsAgent(sim, self)

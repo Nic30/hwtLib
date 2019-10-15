@@ -75,12 +75,12 @@ class TestUnittWithChilds(Unit):
             self.vldSyncedLoop = Loop(VldSynced)
             self.vldSyncedOut = VldSynced()._m()
 
-        with self._paramsShared(exclude={self.ADDR_WIDTH}):
+        with self._paramsShared(exclude=({"ADDR_WIDTH"}, set())):
             self.bramLoop = Loop(BramPort_withoutClk)
-            self.bramLoop.ADDR_WIDTH.set(2)
+            self.bramLoop.ADDR_WIDTH = 2
 
             self.bramOut = BramPort_withoutClk()._m()
-            self.bramOut.ADDR_WIDTH.set(2)
+            self.bramOut.ADDR_WIDTH = 2
 
     def _impl(self):
         self.signalLoop.din(self.signalIn)
@@ -200,7 +200,7 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
         u = self.u = TestUnittWithChilds()
 
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        u.DATA_WIDTH = self.DATA_WIDTH
 
         self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
@@ -276,7 +276,7 @@ class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
         u = self.u = TestUnittWithArr()
 
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        u.DATA_WIDTH = self.DATA_WIDTH
 
         self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
         return u

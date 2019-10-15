@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import selectBit
 from hwt.code import If, Concat
 from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
@@ -9,7 +8,8 @@ from hwt.interfaces.std import VldSynced, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import iterBits
-from hwtLib.logic.crcComb import CrcComb, reversedEndianity
+from hwtLib.logic.crcComb import CrcComb
+from pyMathBitPrecise.bit_utils import selectBit, bitListReversedEndianity
 
 
 # http://www.rightxlight.co.jp/technical/crc-verilog-hdl
@@ -55,7 +55,7 @@ class Crc(Unit):
         _d = self.wrapWithName(self.dataIn.data, "d")
         inBits = list(iterBits(_d))
         if not self.IN_IS_BIGENDIAN:
-            inBits = reversedEndianity(inBits)
+            inBits = bitListReversedEndianity(inBits)
 
         state = self._reg("c",
                           Bits(self.POLY_WIDTH),
@@ -98,6 +98,6 @@ if __name__ == "__main__":
     # from hwtLib.logic.crcPoly import CRC_32
     u = Crc()
     # CrcComb.setConfig(u, CRC_32)
-    # u.DATA_WIDTH.set(8)
+    # u.DATA_WIDTH = 8
 
     print(toRtl(u))

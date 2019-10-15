@@ -43,7 +43,7 @@ class FifoAsync(Fifo):
         self.addrW = log2ceil(self.DEPTH)
 
         for cntr in [self.pWr, self.pRd]:
-            cntr.DATA_WIDTH.set(self.addrW)
+            cntr.DATA_WIDTH = self.addrW
 
     def _impl(self):
         ST_EMPTY, ST_FULL = 0, 1
@@ -126,7 +126,7 @@ class FifoAsync(Fifo):
 
 def _example_FifoAsync():
     u = FifoAsync()
-    u.DEPTH.set(4)
+    u.DEPTH = 4
     return u
 
 

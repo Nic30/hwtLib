@@ -1,7 +1,7 @@
 from hwt.hdl.transTmpl import TransTmpl
-from hwt.bitmask import mask
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.struct import HStruct
+from pyMathBitPrecise.bit_utils import mask
 
 
 class PartialField(object):
@@ -16,7 +16,8 @@ class PartialField(object):
 
 class MemorySpaceItem(object):
     """
-    Abstraction over place in memory, allows you read and write data to/from this space
+    Abstraction over place in memory, allows you read
+    and write data to/from this space
     """
 
     def __init__(self, memHandler, transTmpl, offset=0):
@@ -52,6 +53,7 @@ class MemorySpaceItem(object):
 
 
 class MemorySpaceItemStruct(object):
+
     def __init__(self, memHandler, transTmpl, offset=0):
         self._offset = offset
         self._decorateWithRegisters(memHandler, transTmpl)

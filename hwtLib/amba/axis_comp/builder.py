@@ -28,9 +28,11 @@ class AxiSBuilder(AbstractStreamBuilder):
         """
         Change datawidth of axi stream
         """
+        def set_OUT_DATA_WIDTH(u):
+            u.OUT_DATA_WIDTH = newDataWidth
         return self._genericInstance(AxiS_resizer,
                                      "resize",
-                                     lambda u: u.OUT_DATA_WIDTH.set(newDataWidth))
+                                     set_OUT_DATA_WIDTH)
 
     def startOfFrame(self):
         """

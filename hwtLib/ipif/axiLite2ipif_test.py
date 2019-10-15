@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import mask
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.constants import RESP_OKAY, PROT_DEFAULT
 from hwtLib.ipif.axiLite2ipif import AxiLite2Ipif
+from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
 
@@ -18,8 +18,8 @@ class AxiLite2ipifTC(SimTestCase):
     def mySetUp(self, read_latency=0, write_latency=0):
         u = self.u = AxiLite2Ipif()
         DW = 32
-        u.DATA_WIDTH.set(DW)
-        u.ADDR_WIDTH.set(32)
+        u.DATA_WIDTH = DW
+        u.ADDR_WIDTH = 32
         self.m = mask(DW // 8)
         self.prepareUnit(u)
         self.restartSim()
@@ -46,8 +46,10 @@ class AxiLite2ipifTC(SimTestCase):
         ipif.mem[4] = MAGIC + 3
 
         axi.ar._ag.data.extend([
-            (0, PROT_DEFAULT), (4, PROT_DEFAULT), (8,
-                                                   PROT_DEFAULT), (16, PROT_DEFAULT)
+            (0, PROT_DEFAULT),
+            (4, PROT_DEFAULT), 
+            (8, PROT_DEFAULT),
+            (16, PROT_DEFAULT)
         ])
 
         self.runSim(10 * (read_latency + 1) * self.CLK)

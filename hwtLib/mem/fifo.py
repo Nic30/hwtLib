@@ -150,9 +150,9 @@ class Fifo(Unit):
 
 def _example_Fifo():
     u = Fifo()
-    u.DATA_WIDTH.set(8)
-    # u.EXPORT_SIZE.set(True)
-    u.DEPTH.set(16)
+    u.DATA_WIDTH = 8
+    # u.EXPORT_SIZE = True
+    u.DEPTH = 16
     return u
 
 

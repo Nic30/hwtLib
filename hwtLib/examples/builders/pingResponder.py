@@ -47,7 +47,7 @@ class PingResponder(Unit):
 
         self.myIp = Signal(dtype=ipv4_t)
 
-        with self._paramsShared(exclude={self.USE_STRB}):
+        with self._paramsShared(exclude=({"USE_STRB"}, set())):
             self.rx = AxiStream()
 
         with self._paramsShared():
@@ -130,8 +130,8 @@ class PingResponder(Unit):
         isEchoReq = self._reg("isEchoReq", defVal=0)
 
         # set fields of reply
-        resp.icmp.type = resp.icmp.type._dtype.fromPy(ICMP_TYPE.ECHO_REPLY)
-        resp.icmp.code = resp.icmp.code._dtype.fromPy(0)
+        resp.icmp.type = resp.icmp.type._dtype.from_py(ICMP_TYPE.ECHO_REPLY)
+        resp.icmp.code = resp.icmp.code._dtype.from_py(0)
         resp.icmp.checksum = self.icmp_checksum(resp.icmp)
 
         # parse input frame
@@ -144,8 +144,8 @@ class PingResponder(Unit):
         )
 
         def setup_frame_forge(out):
-            out.DATA_WIDTH.set(self.DATA_WIDTH)
-            out.IS_BIGENDIAN.set(self.IS_BIGENDIAN)
+            out.DATA_WIDTH = self.DATA_WIDTH
+            out.IS_BIGENDIAN = self.IS_BIGENDIAN
 
         # create output frame
         txBuilder, forgeIn = AxiSBuilder.forge(self,

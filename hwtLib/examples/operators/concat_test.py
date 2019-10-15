@@ -3,10 +3,10 @@
 
 import unittest
 
-from hwt.bitmask import selectBit
 from hwt.hdl.constants import Time
-from hwtLib.examples.operators.concat import SimpleConcat
 from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.examples.operators.concat import SimpleConcat
+from pyMathBitPrecise.bit_utils import selectBit
 
 
 def addValues(unit, data):

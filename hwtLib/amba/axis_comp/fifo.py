@@ -9,9 +9,9 @@ from hwtLib.amba.axis_comp.reg import AxiSReg
 class AxiSFifo(AxiSCompBase, HandshakedFifo):
     """
     Synchronous fifo for axi-stream interface.
-    
+
     :see: :class:`hwtLib.handshaked.fifo.HandshakedFifo`
-    
+
     .. hwt-schematic:: _example_AxiSFifo
     """
     _regCls = AxiSReg
@@ -20,7 +20,7 @@ class AxiSFifo(AxiSCompBase, HandshakedFifo):
 def _example_AxiSFifo():
 
     u = AxiSFifo()
-    u.DEPTH.set(4)
+    u.DEPTH = 4
     return u
 
 

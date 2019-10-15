@@ -82,9 +82,9 @@ class FifoTC(SimpleSimTestCase):
     @classmethod
     def getUnit(cls):
         u = cls.u = Fifo()
-        u.DATA_WIDTH.set(8)
-        u.DEPTH.set(cls.ITEMS)
-        u.EXPORT_SIZE.set(True)
+        u.DATA_WIDTH = 8
+        u.DEPTH = cls.ITEMS
+        u.EXPORT_SIZE = True
         return u
 
     def getFifoItems(self):
@@ -113,7 +113,7 @@ class FifoTC(SimpleSimTestCase):
         u.dataIn._ag.data.extend(ref)
 
         def init(sim: HdlSimulator):
-            yield sim.waitWriteOnly()
+            yield WaitWriteOnly()
             u.dataIn._ag.setEnable(False, sim)
 
         self.procs.append(init)
@@ -140,10 +140,10 @@ class FifoTC(SimpleSimTestCase):
         u = self.u
 
         def openOutputAfterWile(sim: HdlSimulator):
-            yield sim.waitWriteOnly()
+            yield WaitWriteOnly()
             u.dataOut._ag.setEnable(False, sim)
             yield Timer(self.CLK * 9)
-            yield sim.waitWriteOnly()
+            yield WaitWriteOnly()
             u.dataOut._ag.setEnable(True, sim)
 
         self.procs.append(openOutputAfterWile)
@@ -168,7 +168,7 @@ class FifoTC(SimpleSimTestCase):
         u.dataIn._ag.data.extend(ref)
 
         def init(sim: HdlSimulator):
-            yield sim.waitWriteOnly()
+            yield WaitWriteOnly()
             u.dataOut._ag.setEnable(False, sim)
 
         self.procs.append(init)
@@ -189,7 +189,7 @@ class FifoTC(SimpleSimTestCase):
 
         def closeOutput(sim: HdlSimulator):
             yield Timer(self.OUT_CLK * 4)
-            yield sim.waitWriteOnly()
+            yield WaitWriteOnly()
             u.dataOut._ag.setEnable(False, sim)
 
         self.procs.append(closeOutput)
@@ -249,7 +249,7 @@ class FifoTC(SimpleSimTestCase):
         u.dataIn._ag.data.append(1)
 
         def init(sim):
-            yield sim.waitWriteOnly()
+            yield WaitWriteOnly()
             u.dataOut._ag.setEnable(False, sim)
 
         self.procs.append(init)
@@ -264,19 +264,19 @@ class FifoTC(SimpleSimTestCase):
 
         def pause(sim: HdlSimulator):
             yield Timer(3 * self.OUT_CLK)
-            yield sim.waitWriteOnly()
+            yield WaitWriteOnly()
             u.dataOut._ag.setEnable_asMonitor(False, sim)
 
             yield Timer(3 * self.OUT_CLK)
-            yield sim.waitWriteOnly()
+            yield WaitWriteOnly()
             u.dataOut._ag.setEnable_asMonitor(True, sim)
 
             yield Timer(3 * self.IN_CLK)
-            yield sim.waitWriteOnly()
+            yield WaitWriteOnly()
             u.dataIn._ag.setEnable_asDriver(False, sim)
 
             yield Timer(3 * self.IN_CLK)
-            yield sim.waitWriteOnly()
+            yield WaitWriteOnly()
             u.dataIn._ag.setEnable_asDriver(True, sim)
 
         self.procs.append(pause)
@@ -293,16 +293,16 @@ class FifoTC(SimpleSimTestCase):
 
         def pause(sim: HdlSimulator):
             yield Timer(4 * self.OUT_CLK)
-            yield sim.waitWriteOnly()
+            yield WaitWriteOnly()
             u.dataOut._ag.setEnable_asMonitor(False, sim)
             yield Timer(3 * self.OUT_CLK)
-            yield sim.waitWriteOnly()
+            yield WaitWriteOnly()
             u.dataOut._ag.setEnable_asMonitor(True, sim)
             yield Timer(3 * self.IN_CLK)
-            yield sim.waitWriteOnly()
+            yield WaitWriteOnly()
             u.dataIn._ag.setEnable_asDriver(False, sim)
             yield Timer(3 * self.IN_CLK)
-            yield sim.waitWriteOnly()
+            yield WaitWriteOnly()
             u.dataIn._ag.setEnable_asDriver(True, sim)
 
         self.procs.append(pause)

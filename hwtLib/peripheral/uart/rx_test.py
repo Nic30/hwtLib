@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import selectBit
 from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import valToInt
 from hwt.simulator.simTestCase import SimpleSimTestCase
-
 from hwtLib.peripheral.uart.rx import UartRx
+from pyMathBitPrecise.bit_utils import selectBit
 from pycocotb.constants import CLK_PERIOD
 
 
@@ -19,9 +18,9 @@ class UartRxBasicTC(SimpleSimTestCase):
         cls.BAUD = 115200
 
         u = cls.u = UartRx()
-        u.BAUD.set(cls.BAUD)
-        u.FREQ.set(cls.FREQ)
-        u.OVERSAMPLING.set(cls.OVERSAMPLING)
+        u.BAUD = cls.BAUD
+        u.FREQ = cls.FREQ
+        u.OVERSAMPLING = cls.OVERSAMPLING
         return u
 
     def getStr(self):
@@ -53,7 +52,7 @@ class UartRxBasicTC(SimpleSimTestCase):
     def test_simple(self):
         t = "simple"
         self.sendStr(t)
-        self.runSim(self.OVERSAMPLING * 
+        self.runSim(self.OVERSAMPLING *
                     (self.FREQ // self.BAUD) * (len(t) + 5) * CLK_PERIOD)
         self.assertEqual(self.getStr(), t)
 
@@ -67,9 +66,9 @@ class UartRxTC(UartRxBasicTC):
         cls.BAUD = 115200
 
         u = cls.u = UartRx()
-        u.BAUD.set(cls.BAUD)
-        u.FREQ.set(cls.FREQ)
-        u.OVERSAMPLING.set(cls.OVERSAMPLING)
+        u.BAUD = cls.BAUD
+        u.FREQ = cls.FREQ
+        u.OVERSAMPLING = cls.OVERSAMPLING
         return u
 
 

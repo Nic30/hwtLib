@@ -16,13 +16,13 @@ class HsFifoTC(FifoTC):
     @classmethod
     def getUnit(cls):
         u = cls.u = HandshakedFifo(Handshaked)
-        u.DEPTH.set(cls.ITEMS)
-        u.DATA_WIDTH.set(64)
-        u.EXPORT_SIZE.set(True)
+        u.DEPTH = cls.ITEMS
+        u.DATA_WIDTH = 64
+        u.EXPORT_SIZE = True
         return u
 
     def getFifoItems(self):
-        sim = self.rtl_simulator.io 
+        sim = self.rtl_simulator.io
         v = sim.fifo_inst.memory
         items = set([int(v[i].read()) for i in range(self.ITEMS)])
         items.add(int(sim.dataOut_data.read()))

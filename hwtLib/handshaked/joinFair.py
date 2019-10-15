@@ -110,7 +110,7 @@ class HsJoinFairShare(HsJoinPrioritized):
 def _example_HsJoinFairShare():
     from hwt.interfaces.std import Handshaked
     u = HsJoinFairShare(Handshaked)
-    u.INPUTS.set(3)
+    u.INPUTS = 3
     return u
 
 

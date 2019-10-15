@@ -163,7 +163,7 @@ class AbstractStreamBuilder(object):
         if extraConfigFn is not None:
             extraConfigFn(u)
         u._updateParamsFrom(configAs)
-        u.INPUTS.set(len(srcInterfaces))
+        u.INPUTS = len(srcInterfaces)
 
         setattr(self.parent, self._findSuitableName(name + "_join"), u)
         self._propagateClkRstn(u)
@@ -186,7 +186,7 @@ class AbstractStreamBuilder(object):
         :note: other parameters same as in `.AbstractStreamBuilder.join_fair`
         """
         def extraConfig(u):
-            u.EXPORT_SELECTED.set(exportSelected)
+            u.EXPORT_SELECTED = exportSelected
 
         return cls._join(cls.JoinFairCls, parent, srcInterfaces, name, configAs, extraConfig)
 
@@ -220,8 +220,8 @@ class AbstractStreamBuilder(object):
         if latency == 1 or latency >= items:
             # instantiate buffer as register
             def applyParams(u):
-                u.LATENCY.set(latency)
-                u.DELAY.set(delay)
+                u.LATENCY = latency
+                u.DELAY = delay
             return self._genericInstance(self.RegCls, "reg", setParams=applyParams)
         else:
             # instantiate buffer as fifo
@@ -229,7 +229,7 @@ class AbstractStreamBuilder(object):
                 raise NotImplementedError()
 
             def setDepth(u):
-                u.DEPTH.set(items)
+                u.DEPTH = items
             return self._genericInstance(self.FifoCls, "fifo", setDepth)
 
     def split_copy(self, noOfOutputs):
@@ -239,7 +239,7 @@ class AbstractStreamBuilder(object):
         :param noOfOutputs: number of output interfaces of the split
         """
         def setChCnt(u):
-            u.OUTPUTS.set(noOfOutputs)
+            u.OUTPUTS = noOfOutputs
 
         return self._genericInstance(self.SplitCopyCls, 'splitCopy', setChCnt)
 
@@ -269,7 +269,7 @@ class AbstractStreamBuilder(object):
         """
 
         def setChCnt(u):
-            u.OUTPUTS.set(noOfOutputs)
+            u.OUTPUTS = noOfOutputs
 
         self._genericInstance(self.SplitSelectCls, 'select', setChCnt)
         if isinstance(outputSelSignalOrSequence, Handshaked):
@@ -320,7 +320,7 @@ class AbstractStreamBuilder(object):
         :param noOfOutputs: number of output interfaces of the fork
         """
         def setChCnt(u):
-            u.OUTPUTS.set(noOfOutputs)
+            u.OUTPUTS = noOfOutputs
 
         self._genericInstance(self.SplitPrioritizedCls, 'splitPrio', setChCnt)
         return self
@@ -350,7 +350,7 @@ class AbstractStreamBuilder(object):
         """
 
         def setChCnt(u):
-            u.OUTPUTS.set(noOfOutputs)
+            u.OUTPUTS = noOfOutputs
 
         self._genericInstance(self.SplitFairCls, 'splitFair', setChCnt)
         return self

@@ -184,7 +184,7 @@ class Showcase0(Unit):
 
         self.out(0)
         # None is converted to value with zero validity mask
-        # same as self.output._dtype.fromPy(0, vldMask=0)
+        # same as self.output._dtype.from_py(0, vld_mask=0)
         self.output(None)
 
         # statements are code-generator frendly

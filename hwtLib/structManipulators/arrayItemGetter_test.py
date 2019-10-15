@@ -14,16 +14,10 @@ class ArrayItemGetterTC(SimpleSimTestCase):
     def getUnit(cls):
         u = cls.u = ArrayItemGetter()
         cls.ID = 3
-        u.ID.set(cls.ID)
-
-        cls.ITEMS = 32
-        u.ITEMS.set(cls.ITEMS)
-
-        cls.DATA_WIDTH = 64
-        u.DATA_WIDTH.set(cls.DATA_WIDTH)
-
-        cls.ITEM_WIDTH = 64
-        u.ITEM_WIDTH.set(cls.ITEM_WIDTH)
+        u.ID = cls.ID
+        u.ITEMS = cls.ITEMS = 32
+        u.DATA_WIDTH = cls.DATA_WIDTH = 64
+        u.ITEM_WIDTH = cls.ITEM_WIDTH = 64
         return u
 
     def test_nop(self):
@@ -55,16 +49,12 @@ class ArrayItemGetter2in1WordTC(SimTestCase):
     def setUp(self):
         u = self.u = ArrayItemGetter()
         self.ID = 3
-        u.ID.set(self.ID)
+        u.ID = self.ID
 
         self.ITEMS = 32
-        u.ITEMS.set(self.ITEMS)
-
-        self.DATA_WIDTH = 64
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
-
-        self.ITEM_WIDTH = 32
-        u.ITEM_WIDTH.set(self.ITEM_WIDTH)
+        u.ITEMS = self.ITEMS
+        u.DATA_WIDTH = self.DATA_WIDTH = 64
+        u.ITEM_WIDTH = self.ITEM_WIDTH = 32
 
         self.prepareUnit(u)
 

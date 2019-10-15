@@ -4,11 +4,10 @@
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-
 from hwtLib.amba.axis import AxiStream
 from hwtLib.examples.simpleAxiStream import SimpleUnitAxiStream
-from hwt.synthesizer.param import Param
 
 
 class SimpleSubunit2(Unit):
@@ -24,9 +23,9 @@ class SimpleSubunit2(Unit):
             self.subunit0 = SimpleUnitAxiStream()
             self.a0 = AxiStream()
             self.b0 = AxiStream()._m()
-    
-        self.a0.DATA_WIDTH.set(8)
-        self.b0.DATA_WIDTH.set(8)
+
+        self.a0.DATA_WIDTH = 8
+        self.b0.DATA_WIDTH = 8
 
     def _impl(self):
         propagateClkRstn(self)

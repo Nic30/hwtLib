@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import mask
 from hwt.hdl.constants import Time, READ, WRITE, NOP
 from hwt.interfaces.std import BramPort_withoutClk
-
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArrayTC
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
@@ -13,6 +11,7 @@ from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
 from hwtLib.ipif.endpoint import IpifEndpoint
 from hwtLib.ipif.intf import Ipif
 from hwtLib.ipif.simMaster import IPFISimMaster
+from pyMathBitPrecise.bit_utils import mask
 
 
 def addrGetter(intf):
@@ -35,7 +34,7 @@ class IpifEndpointTC(AxiLiteEndpointTC):
         u = self.u = IpifEndpoint(self.STRUCT_TEMPLATE)
 
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        u.DATA_WIDTH = self.DATA_WIDTH
 
         self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
         return u

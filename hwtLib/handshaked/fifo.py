@@ -44,9 +44,9 @@ class HandshakedFifo(HandshakedCompBase):
 
         f = self.fifo = Fifo()
         DW = self.dataIn._bit_length() - 2  # 2 for control (valid, ready)
-        f.DATA_WIDTH.set(DW)
-        f.DEPTH.set(self.DEPTH - 1)  # because there is an extra register
-        f.EXPORT_SIZE.set(self.EXPORT_SIZE)
+        f.DATA_WIDTH = DW
+        f.DEPTH = self.DEPTH - 1  # because there is an extra register
+        f.EXPORT_SIZE = self.EXPORT_SIZE
 
         if self.EXPORT_SIZE:
             self.size = VectSignal(
@@ -104,9 +104,9 @@ class HandshakedFifo(HandshakedCompBase):
 def _example_HandshakedFifo():
     from hwt.interfaces.std import Handshaked
     u = HandshakedFifo(Handshaked)
-    u.DEPTH.set(8)
-    u.DATA_WIDTH.set(4)
-    u.EXPORT_SIZE.set(True)
+    u.DEPTH = 8
+    u.DATA_WIDTH = 4
+    u.EXPORT_SIZE = True
     return u
 
 

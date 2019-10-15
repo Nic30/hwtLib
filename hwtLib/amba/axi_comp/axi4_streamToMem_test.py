@@ -23,7 +23,7 @@ class Axi4_streamToMemTC(SimTestCase):
             cls.regs = AxiLiteMemSpaceMaster(u.cntrlBus, addrProbe.discovered)
 
         cls.DATA_WIDTH = 32
-        u.DATA_WIDTH.set(cls.DATA_WIDTH)
+        u.DATA_WIDTH = cls.DATA_WIDTH
 
         cls.prepareUnit(u, onAfterToRtl=mkRegisterMap)
 

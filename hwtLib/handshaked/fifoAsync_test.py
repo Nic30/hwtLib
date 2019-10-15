@@ -18,8 +18,8 @@ class HsFifoAsyncTC(HsFifoTC):
     @classmethod
     def getUnit(cls):
         u = cls.u = HsFifoAsync(Handshaked)
-        u.DATA_WIDTH.set(8)
-        u.DEPTH.set(cls.ITEMS)
+        u.DATA_WIDTH = 8
+        u.DEPTH = cls.ITEMS
         return u
 
     def setUp(self):

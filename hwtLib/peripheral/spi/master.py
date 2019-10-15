@@ -13,27 +13,26 @@ from hwtLib.handshaked.intfBiDirectional import HandshakedBiDirectional, \
     HandshakedBiDirectionalAgent
 from hwtLib.logic.binToOneHot import BinToOneHot
 from hwtLib.peripheral.spi.intf import Spi
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 class SpiCntrlDataAgent(HandshakedBiDirectionalAgent):
-    def doRead(self, s):
+    def doRead(self):
         """extract data from interface"""
         intf = self.intf
-        r = s.read
 
-        return r(intf.slave), r(intf.dout), r(intf.last)
+        return intf.slave.read(), intf.dout.read(), intf.last.read()
 
-    def doWrite(self, s, data):
+    def doWrite(self, data):
         """write data to interface"""
-        w = s.write
         intf = self.intf
         if data is None:
             slave, d, last = None, None, None
         else:
             slave, d, last = data
-        w(slave, intf.slave)
-        w(d, intf.dout)
-        w(last, intf.last)
+        intf.slave.write(slave)
+        intf.dout.write(d)
+        intf.last.write(last)
 
 
 class SpiCntrlData(HandshakedBiDirectional):
@@ -47,8 +46,8 @@ class SpiCntrlData(HandshakedBiDirectional):
         HandshakedBiDirectional._declr(self)
         self.last = Signal()
 
-    def _initSimAgent(self):
-        self._ag = SpiCntrlDataAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = SpiCntrlDataAgent(sim, self)
 
 
 class SpiMaster(Unit):
@@ -84,10 +83,10 @@ class SpiMaster(Unit):
         with self._paramsShared():
             self.DATA_WIDTH = int(self.SPI_DATA_WIDTH) * 8
             self.data = SpiCntrlData()
-            self.data.DATA_WIDTH.set(self.DATA_WIDTH)
+            self.data.DATA_WIDTH = self.DATA_WIDTH
 
         self.csDecoder = BinToOneHot()
-        self.csDecoder.DATA_WIDTH.set(self.SLAVE_CNT)
+        self.csDecoder.DATA_WIDTH = self.SLAVE_CNT
 
     def writePart(self, writeTick, isLastTick, data):
         txReg = self._reg("txReg", Bits(self.DATA_WIDTH))

@@ -90,14 +90,14 @@ class PingResponderTC(SimpleSimTestCase):
     @classmethod
     def getUnit(cls):
         u = cls.u = PingResponder()
-        u.DATA_WIDTH.set(cls.DATA_WIDTH)
+        u.DATA_WIDTH = cls.DATA_WIDTH
         return u
 
     def create_ICMP_echo_frame(self,
                                ethSrc="00:1:2:3:4:5", ethDst="6:7:8:9:10:11",
                                ipSrc="192.168.0.1", ipDst="192.168.0.2"):
 
-        v = echoFrame_t.fromPy({
+        v = echoFrame_t.from_py({
                 "eth": {
                     "src": parse_eth_addr(ethSrc),
                     "dst": parse_eth_addr(ethDst),

@@ -5,11 +5,12 @@ from hwt.simulator.agentBase import SyncAgentBase
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwt.interfaces.agents.vldSynced import VldSyncedAgent
-from hwt.bitmask import mask
-from _collections import deque
+from collections import deque
+from pyMathBitPrecise.bit_utils import mask
+from pycocotb.hdlSimulator import HdlSimulator
 
 RESP_OKAY = 0b00
-# RESP_RESERVED = 0b01 
+# RESP_RESERVED = 0b01
 RESP_SLAVEERROR = 0b10
 RESP_DECODEERROR = 0b11
 
@@ -56,13 +57,13 @@ class AvalonMM(Interface):
 
     def _getAddrStep(self):
         """
-        :return: how many bits is one unit of address (f.e. 8 bits for  char * pointer,
-             36 for 36 bit bram)
+        :return: how many bits is one unit of address
+                 (f.e. 8 bits for  char * pointer, 36 for 36 bit bram)
         """
         return 8
 
-    def _initSimAgent(self):
-        self._ag = AvalonMmAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = AvalonMmAgent(sim, self)
 
 
 class AvalonMmDataRAgent(VldSyncedAgent):
@@ -130,7 +131,7 @@ class AvalonMmAddrAgent(HandshakedAgent):
         w = readFn(self._vld[1])
 
         r.val = r.val or w.val
-        r.vldMask = r.vldMask and w.vldMask
+        r.vld_mask = r.vld_mask and w.vld_mask
 
         return r
 
@@ -228,8 +229,8 @@ class AvalonMmAgent(SyncAgentBase):
     :ivar rData: data read from interface, items are typles (data, response)
     """
 
-    def __init__(self, intf, allowNoReset=False):
-        SyncAgentBase.__init__(self, intf, allowNoReset=allowNoReset)
+    def __init__(self, sim: HdlSimulator, intf, allowNoReset=False):
+        SyncAgentBase.__init__(self, sim, intf, allowNoReset=allowNoReset)
         self.addrAg = AvalonMmAddrAgent(intf, allowNoReset=allowNoReset)
         self.rDataAg = AvalonMmDataRAgent(intf, allowNoReset=allowNoReset)
         self.wRespAg = AvalonMmWRespAgent(intf, allowNoReset=allowNoReset)
@@ -269,11 +270,11 @@ class AvalonMmAgent(SyncAgentBase):
     def getDrivers(self):
         self.setEnable = self.setEnable_asDriver
         return (self.rDataAg.getMonitors()
-                +self.addrAg.getDrivers()
-                +self.wRespAg.getMonitors())
+                + self.addrAg.getDrivers()
+                + self.wRespAg.getMonitors())
 
     def getMonitors(self):
         self.setEnable = self.setEnable_asMonitor
         return (self.rDataAg.getDrivers()
-                +self.addrAg.getMonitors()
-                +self.wRespAg.getDrivers())
+                + self.addrAg.getMonitors()
+                + self.wRespAg.getDrivers())

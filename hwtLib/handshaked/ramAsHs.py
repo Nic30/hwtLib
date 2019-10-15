@@ -11,6 +11,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.interfaces.addrDataHs import AddrDataHs
 from pycocotb.agents.base import AgentBase
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 class RamHsRAgent(AgentBase):
@@ -33,14 +34,14 @@ class RamHsRAgent(AgentBase):
         for o in [self.req, self.r]:
             o.enable = v
 
-    def __init__(self, intf):
+    def __init__(self, sim: HdlSimulator, intf):
         self.__enable = True
         self.intf = intf
 
-        intf.addr._initSimAgent()
+        intf.addr._initSimAgent(sim)
         self.addr = intf.addr._ag
 
-        intf.data._initSimAgent()
+        intf.data._initSimAgent(sim)
         self.data = intf.data._ag
 
     def getDrivers(self):
@@ -68,15 +69,15 @@ class RamHsR(Interface):
         with self._paramsShared():
             self.data = Handshaked(masterDir=DIRECTION.IN)
 
-    def _initSimAgent(self):
-        self._ag = RamHsRAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = RamHsRAgent(sim, self)
 
 
 @serializeParamsUniq
 class RamAsHs(Unit):
     """
     Converter from ram port to handshaked interfaces
-    
+
     .. hwt-schematic::
     """
 

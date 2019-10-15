@@ -22,8 +22,8 @@ class BitsSlicingTC(unittest.TestCase):
                 else:
                     second = second.staticEval()
 
-            first = (first.val, first.vldMask, first._dtype.bit_length())
-            second = (second.val, second.vldMask, second._dtype.bit_length())
+            first = (first.val, first.vld_mask, first._dtype.bit_length())
+            second = (second.val, second.vld_mask, second._dtype.bit_length())
 
         unittest.TestCase.assertEqual(self, first, second, msg=msg)
 

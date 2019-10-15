@@ -3,13 +3,13 @@
 
 import unittest
 
-from hwt.bitmask import mask
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axis_comp.frameGen import AxisFrameGen
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
+from hwtLib.amba.axis_comp.frameGen import AxisFrameGen
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
+from pyMathBitPrecise.bit_utils import mask
 
 
 class AxisFrameGenTC(SimTestCase):
@@ -46,7 +46,9 @@ class AxisFrameGenTC(SimTestCase):
         # u.dataOut._ag.enable = False
         self.runSim(120 * Time.ns)
         # self.assertValEqual(self.model.dataOut_data, 1)
-        expected = [(L - (i % (L + 1)), mask(8), int((i % (L + 1)) >= L)) for i in range(6)]
+        expected = [(L - (i % (L + 1)),
+                    mask(8),
+                    int((i % (L + 1)) >= L)) for i in range(6)]
         self.assertValSequenceEqual(u.axis_out._ag.data, expected)
 
     def test_len4(self):
@@ -58,7 +60,9 @@ class AxisFrameGenTC(SimTestCase):
         # u.dataOut._ag.enable = False
         self.runSim(120 * Time.ns)
         # self.assertValEqual(self.model.dataOut_data, 1)
-        expected = [(L - (i % (L + 1)), mask(8), int((i % (L + 1)) >= L)) for i in range(6)]
+        expected = [(L - (i % (L + 1)),
+                     mask(8),
+                     int((i % (L + 1)) >= L)) for i in range(6)]
         self.assertValSequenceEqual(u.axis_out._ag.data, expected)
 
 

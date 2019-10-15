@@ -19,8 +19,8 @@ class EthAddrUpdaterTC(SimpleSimTestCase):
     @classmethod
     def getUnit(cls):
         u = EthAddrUpdater()
-        u.DATA_WIDTH.set(cls.DW)
-        u.ADDR_WIDTH.set(cls.AW)
+        u.DATA_WIDTH = cls.DW
+        u.ADDR_WIDTH = cls.AW
         return u
 
     def test_simpleOp(self):

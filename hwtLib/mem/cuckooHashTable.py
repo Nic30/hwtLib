@@ -16,6 +16,7 @@ from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf
 from hwtLib.logic.crcPoly import CRC_32, CRC_32C 
 from hwt.synthesizer.hObjList import HObjList
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 class ORIGIN_TYPE():
@@ -36,8 +37,8 @@ class CInsertIntf(HandshakeSync):
         if self.DATA_WIDTH:
             self.data = VectSignal(self.DATA_WIDTH)
 
-    def _initSimAgent(self):
-        self._ag = CInsertIntfAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = CInsertIntfAgent(sim, self)
 
 
 class CInsertIntfAgent(HandshakedAgent):
@@ -45,20 +46,18 @@ class CInsertIntfAgent(HandshakedAgent):
     Agent for CInsertIntf interface
     """
 
-    def __init__(self, intf):
-        HandshakedAgent.__init__(self, intf)
+    def __init__(self, sim, intf):
+        HandshakedAgent.__init__(self, sim, intf)
         self._hasData = bool(intf.DATA_WIDTH)
 
-    def doRead(self, s):
-        r = s.read
+    def doRead(self):
         intf = self.intf
         if self._hasData:
-            return r(intf.key), r(intf.data)
+            return intf.key.read(), intf.data.read()
         else:
-            return r(intf.key)
+            return intf.key.read()
 
-    def doWrite(self, s, data):
-        w = s.write
+    def doWrite(self, data):
         intf = self.intf
         if self._hasData:
             if data is None:
@@ -66,9 +65,9 @@ class CInsertIntfAgent(HandshakedAgent):
                 d = None
             else:
                 k, d = data
-            return w(k, intf.key), w(d, intf.data)
+            return intf.key.write(k), intf.data.write(d)
         else:
-            return w(data, intf.key)
+            return intf.key.write(data)
 
 
 # https://web.stanford.edu/class/cs166/lectures/13/Small13.pdf
@@ -139,19 +138,19 @@ class CuckooHashTable(HashTableCore):
             self.lookup = LookupKeyIntf()
 
             self.lookupRes = LookupResultIntf()._m()
-            self.lookupRes.HASH_WIDTH.set(self.HASH_WITH)
+            self.lookupRes.HASH_WIDTH = self.HASH_WITH
 
-        with self._paramsShared(exclude=[self.DATA_WIDTH]):
+        with self._paramsShared(exclude=({"DATA_WIDTH"}, set())):
             self.delete = CInsertIntf()
-            self.delete.DATA_WIDTH.set(0)
+            self.delete.DATA_WIDTH = 0
 
         self.clean = HandshakeSync()
 
         with self._paramsShared():
             self.tables = HObjList(HashTableCore(p) for p in self.POLYNOMIALS)
             for t in self.tables:
-                t.ITEMS_CNT.set(self.TABLE_SIZE)
-                t.LOOKUP_HASH.set(True)
+                t.ITEMS_CNT = self.TABLE_SIZE
+                t.LOOKUP_HASH = True
 
     def cleanUpAddrIterator(self, en):
         lastAddr = self.TABLE_SIZE - 1

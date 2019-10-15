@@ -348,7 +348,7 @@ class BusEndpoint(Unit):
                 p = BramPort_withoutClk()
                 assert isinstance(t.elmType, Bits), t.elmType
                 dw = t.elmType.bit_length()
-                p.ADDR_WIDTH.set(log2ceil(t.size - 1))
+                p.ADDR_WIDTH = log2ceil(t.size - 1)
             else:
                 raise NotImplementedError(t)
 
@@ -374,26 +374,26 @@ class BusEndpoint(Unit):
             _p = p
         else:
             _p = [p]
-        
+
         if dw == DW:
             # use param instead of value to improve readability
             DW = self.DATA_WIDTH
             if isinstance(DW, Param):
-                for i in _p: 
+                for i in _p:
                     i._replaceParam(i.DATA_WIDTH, DW)
         else:
-            for i in _p: 
-                i.DATA_WIDTH.set(dw)
+            for i in _p:
+                i.DATA_WIDTH = dw
 
         return p
 
-    def connectByInterfaceMap(self, interfaceMap:IntfMap):
+    def connectByInterfaceMap(self, interfaceMap: IntfMap):
         """
         Connect "decoded" struct interface to interfaces specified
         in iterface map
         """
         assert isinstance(interfaceMap, IntfMap), interfaceMap
-                
+
         # connect interfaces as was specified by register map
         for convIntf, intf in walkStructIntfAndIntfMap(self.decoded,
                                                        interfaceMap):

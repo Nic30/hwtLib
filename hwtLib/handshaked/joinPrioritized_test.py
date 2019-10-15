@@ -23,7 +23,7 @@ class HsJoinPrioritizedTC(SimpleSimTestCase):
     @classmethod
     def getUnit(cls):
         cls.u = HsJoinWithReference(Handshaked)
-        cls.u.DATA_WIDTH.set(8)
+        cls.u.DATA_WIDTH = 8
         return cls.u
 
     def test_passdata(self):

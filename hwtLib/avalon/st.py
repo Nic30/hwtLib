@@ -1,6 +1,7 @@
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VectSignal, Signal
 from hwt.synthesizer.param import Param
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 class AvalonST(Handshaked):
@@ -25,8 +26,8 @@ class AvalonST(Handshaked):
         self.endOfPacket = Signal()
         self.startOfPacket = Signal()
 
-    def _initSimAgent(self):
-        self._ag = AvalonSTAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = AvalonSTAgent(sim, self)
 
 
 class AvalonSTAgent(HandshakedAgent):
@@ -36,12 +37,12 @@ class AvalonSTAgent(HandshakedAgent):
     is tuple (channel, data, error, startOfPacket, endOfPacket)
     """
 
-    def doRead(self, sim):
+    def doRead(self):
         intf = self.intf
         return (intf.channel.read(), intf.data.read(), intf.error.read(),
                 intf.startOfPacket.read(), intf.endOfPacket.read())
 
-    def doWrite(self, sim, data):
+    def doWrite(self, data):
         intf = self.intf
         if data is None:
             intf.channel.write(None)

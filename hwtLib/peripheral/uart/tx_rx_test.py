@@ -41,9 +41,9 @@ class UartTxRxTC(SimpleSimTestCase):
     @classmethod
     def getUnit(cls):
         u = cls.u = TestUnit_uart()
-        u.BAUD.set(115200)
-        u.FREQ.set(115200*16)
-        u.OVERSAMPLING.set(16)
+        u.BAUD = 115200
+        u.FREQ = 115200 * 16
+        u.OVERSAMPLING = 16
         return u
 
     def getStr(self):

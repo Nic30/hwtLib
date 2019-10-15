@@ -14,10 +14,10 @@ class CuckooHashTableTC(SimpleSimTestCase):
     def getUnit(cls):
         cls.TABLE_SIZE = 32
         u = CuckooHashTable([CRC_32, CRC_32])
-        u.KEY_WIDTH.set(16)
-        u.DATA_WIDTH.set(8)
-        u.LOOKUP_KEY.set(True)
-        u.TABLE_SIZE.set(cls.TABLE_SIZE)
+        u.KEY_WIDTH = 16
+        u.DATA_WIDTH = 8
+        u.LOOKUP_KEY = True
+        u.TABLE_SIZE = cls.TABLE_SIZE
         cls.TABLE_CNT = 2
         return u
 
@@ -30,7 +30,7 @@ class CuckooHashTableTC(SimpleSimTestCase):
         for mem in self.TABLE_MEMS:
             mem = mem.defVal
             for i in range(mem._dtype.size):
-                mem.val[i] = mem._dtype.elmType.fromPy(0)
+                mem.val[i] = mem._dtype.elmType.from_py(0)
 
     def checkContains(self, reference):
         d = self.hashTableAsDict()

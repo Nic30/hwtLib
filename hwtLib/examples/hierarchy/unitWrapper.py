@@ -1,6 +1,6 @@
 from hwt.hdl.constants import INTF_DIRECTION
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.param import evalParam, Param
+from hwt.synthesizer.param import Param
 
 
 class UnitWrapper(Unit):
@@ -17,16 +17,16 @@ class UnitWrapper(Unit):
         self._baseUnit = baseUnit
 
     def _copyParamsAndInterfaces(self):
-        for p in self._baseUnit._params:
-            myP = Param(evalParam(p))
-            self._registerParameter(p.name, myP)
+        for p_name in self._baseUnit._params:
+            myP = Param(getattr(self._baseUnit, p_name))
+            self._registerParameter(p_name, myP)
             object.__setattr__(self, myP.name, myP)
 
         origToWrapInfMap = {}
 
         for intf in self.baseUnit._interfaces:
             # clone interface
-            myIntf = intf._clone()
+            myIntf = intf.__copy__()
             # subinterfaces are not instanciated yet
             # myIntf._direction = intf._direction
             myIntf._direction = INTF_DIRECTION.opposite(intf._direction)

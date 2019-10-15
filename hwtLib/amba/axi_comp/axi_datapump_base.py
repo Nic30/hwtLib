@@ -1,4 +1,3 @@
-from hwt.bitmask import mask
 from hwt.code import log2ceil
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.unit import Unit
@@ -6,6 +5,7 @@ from hwt.synthesizer.param import Param
 from hwtLib.amba.axi4 import Axi4_addr
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, PROT_DEFAULT, QOS_DEFAULT, BYTES_IN_TRANS
+from pyMathBitPrecise.bit_utils import mask
 
 
 class AxiDatapumpBase(Unit):
@@ -65,4 +65,3 @@ class AxiDatapumpBase(Unit):
         if hasattr(a, "qos"):
             a.qos(self.QOS_VAL)
         a.size(BYTES_IN_TRANS(self.DATA_WIDTH // 8))
-

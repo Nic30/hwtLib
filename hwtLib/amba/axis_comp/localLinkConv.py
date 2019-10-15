@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import mask
 from hwt.code import Concat, Switch, If
 from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
 from hwtLib.interfaces.localLink import LocalLink
+from pyMathBitPrecise.bit_utils import mask
 
 
 def strbToRem(strbBits, remBits):
@@ -25,7 +25,7 @@ class AxiSToLocalLink(Unit):
     format of user signal:
     user[0]: start of packet
     user[1]: end of packet
-    
+
     .. hwt-schematic::
     """
     def _config(self):
@@ -67,7 +67,7 @@ class AxiSToLocalLink(Unit):
         If(sof,
            Out.sop_n(0)
         ).Else(
-           Out.sop_n( ~sop)
+           Out.sop_n(~sop)
         )
 
         # AXI_USER(1) -> FL_EOP_N
@@ -107,7 +107,7 @@ class LocalLinkToAxiS(Unit):
     format of user signal:
     user[0]: start of packet
     user[1]: end of packet
-    
+
     .. hwt-schematic::
     """
     def _config(self):

@@ -41,7 +41,7 @@ class SimpleUnionSlave(EmptyUnit):
         else:
             p = Handshaked()
 
-        p.DATA_WIDTH.set(frameTmplItem.dtype.bit_length())
+        p.DATA_WIDTH = frameTmplItem.dtype.bit_length()
         return p
 
     def _declr(self):

@@ -119,7 +119,7 @@ class AxiS_frameParserTC(SimTestCase):
 
     def mySetUp(self, dataWidth, structTemplate, randomize=False):
         u = AxiS_frameParser(structTemplate)
-        u.DATA_WIDTH.set(dataWidth)
+        u.DATA_WIDTH = dataWidth
         self.prepareUnit(u)
         if randomize:
             self.randomizeIntf(u.dataIn)
@@ -130,7 +130,7 @@ class AxiS_frameParserTC(SimTestCase):
     def test_packAxiSFrame(self):
         t = structManyInts
         for DW in TEST_DW:
-            d1 = t.fromPy(reference0)
+            d1 = t.from_py(reference0)
             f = list(packAxiSFrame(DW, d1))
             d2 = unpackAxiSFrame(t, f, lambda x: x[0])
 
@@ -154,8 +154,8 @@ class AxiS_frameParserTC(SimTestCase):
         t = structManyInts
         u = self.mySetUp(dataWidth, t, randomize)
 
-        u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, t.fromPy(reference0)))
-        u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, t.fromPy(reference1)))
+        u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, t.from_py(reference0)))
+        u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, t.from_py(reference1)))
 
         t = ((8 * 64) / dataWidth) * 80 * Time.ns
         if randomize:
@@ -194,7 +194,7 @@ class AxiS_frameParserTC(SimTestCase):
         u = self.mySetUp(dataWidth, t, randomize)
 
         for d in [reference_unionOfStructs0, reference_unionOfStructs2]:
-            u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, t.fromPy(d)))
+            u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, t.from_py(d)))
 
         t = 150 * Time.ns
         self.runMatrixSim(t, dataWidth, randomize)
@@ -210,7 +210,7 @@ class AxiS_frameParserTC(SimTestCase):
 
         for d in [reference_unionOfStructs0, reference_unionOfStructs2,
                   reference_unionOfStructs1, reference_unionOfStructs3]:
-            u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, t.fromPy(d)))
+            u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, t.from_py(d)))
         u.dataOut._select._ag.data.extend([0, 1, 0, 1])
 
         t = 500 * Time.ns
@@ -248,7 +248,7 @@ class AxiS_frameParserTC(SimTestCase):
 
         for d in [reference_unionSimple0, reference_unionSimple2,
                   reference_unionSimple1, reference_unionSimple3]:
-            u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, t.fromPy(d)))
+            u.dataIn._ag.data.extend(packAxiSFrame(dataWidth, t.from_py(d)))
         u.dataOut._select._ag.data.extend([0, 1, 0, 1])
 
         t = 300 * Time.ns

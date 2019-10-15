@@ -3,11 +3,11 @@
 
 import unittest
 
-from hwt.bitmask import mask
 from hwt.hdl.constants import Time, NOP
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.simpleAxiStream import SimpleUnitAxiStream
+from pyMathBitPrecise.bit_utils import mask
 
 
 class SynchronizedSimpleUnitAxiStream(SimpleUnitAxiStream):

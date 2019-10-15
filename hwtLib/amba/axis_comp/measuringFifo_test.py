@@ -3,11 +3,11 @@
 
 import unittest
 
-from hwt.bitmask import mask, mask_bytes
 from hwt.hdl.constants import Time
+from hwt.pyUtils.arrayQuery import take, iter_with_last
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis_comp.measuringFifo import AxiS_measuringFifo
-from hwt.pyUtils.arrayQuery import take, iter_with_last
+from pyMathBitPrecise.bit_utils import mask, mask_bytes
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
 
@@ -18,13 +18,13 @@ class AxiS_measuringFifoTC(SimTestCase):
     def setUpClass(cls):
         super(AxiS_measuringFifoTC, cls).setUpClass()
         u = cls.u = AxiS_measuringFifo()
-        u.USE_STRB.set(True)
+        u.USE_STRB = True
         cls.DATA_WIDTH = 64
         cls.MAX_LEN = 15
 
-        u.MAX_LEN.set(cls.MAX_LEN)
-        u.SIZES_BUFF_DEPTH.set(4)
-        u.DATA_WIDTH.set(cls.DATA_WIDTH)
+        u.MAX_LEN = cls.MAX_LEN
+        u.SIZES_BUFF_DEPTH = 4
+        u.DATA_WIDTH = cls.DATA_WIDTH
 
         cls.prepareUnit(u)
 
@@ -248,7 +248,7 @@ class AxiS_measuringFifoTC(SimTestCase):
                 self.assertValEqual(_last, last)
                 _mask = int(_mask)
                 _d.val = mask_bytes(_d.val, _mask, size_of_word)
-                _d.vldMask = mask_bytes(_d.vldMask, _mask, size_of_word)
+                _d.vld_mask = mask_bytes(_d.vld_mask, _mask, size_of_word)
                 frame.append(int(_d))
             frames.append(frame)
 

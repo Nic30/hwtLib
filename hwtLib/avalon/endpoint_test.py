@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import mask
 from hwt.hdl.constants import READ, WRITE
 from hwt.interfaces.std import BramPort_withoutClk
 from hwt.simulator.simTestCase import SimTestCase
@@ -15,6 +14,7 @@ from hwtLib.avalon.endpoint import AvalonMmEndpoint
 from hwtLib.avalon.memSpaceMaster import AvalonMmMemSpaceMaster
 from hwtLib.avalon.mm import AvalonMM, RESP_OKAY, RESP_SLAVEERROR
 from pycocotb.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import mask
 
 
 def addrGetter(intf):
@@ -56,7 +56,7 @@ class AvalonMmEndpointTC(SimTestCase):
         u = self.u = AvalonMmEndpoint(structT)
 
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        u.DATA_WIDTH = self.DATA_WIDTH
 
         self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
@@ -227,4 +227,3 @@ if __name__ == "__main__":
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-

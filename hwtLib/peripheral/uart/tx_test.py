@@ -13,8 +13,8 @@ class UartTxTC(SimpleSimTestCase):
     @classmethod
     def getUnit(cls):
         u = cls.u = UartTx()
-        u.BAUD.set(115200)
-        u.FREQ.set(115200)
+        u.BAUD = 115200
+        u.FREQ = 115200
         return u
 
     def setUp(self):
@@ -27,14 +27,14 @@ class UartTxTC(SimpleSimTestCase):
         s = ""
         d = iter(self.u.txd._ag.data)
         for bit in d:
-            self.assertEqual(bit.vldMask, 0b1)
+            self.assertEqual(bit.vld_mask, 0b1)
             _bit = valToInt(bit)
 
             if _bit == START_BIT:
                 ch = 0
                 for i in range(10 - 1):
                     b = next(d)
-                    self.assertEqual(b.vldMask, 0b1)
+                    self.assertEqual(b.vld_mask, 0b1)
                     _b = valToInt(b)
                     if i == 8:
                         self.assertEqual(_b, STOP_BIT)

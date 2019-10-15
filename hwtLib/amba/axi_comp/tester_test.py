@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from collections import deque
-from hwt.bitmask import mask
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SimTestCase
 from itertools import islice
@@ -16,6 +15,7 @@ from hwtLib.amba.constants import BYTES_IN_TRANS, PROT_DEFAULT, LOCK_DEFAULT, \
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
 from pycocotb.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import mask
 
 
 class SimProcessSequence(deque):
@@ -39,7 +39,7 @@ class AxiTesterTC(SimTestCase):
     def setUpClass(cls):
         super(AxiTesterTC, cls).setUpClass()
         cls.u = u = AxiTester(Axi3)
-        u.DATA_WIDTH.set(32)
+        u.DATA_WIDTH = 32
 
         cls.prepareUnit(u, onAfterToRtl=cls.mkRegisterMap)
 
@@ -172,7 +172,8 @@ class AxiTesterTC(SimTestCase):
         self.runSim(400 * CLK_PERIOD)
         self.assertEmpty(seq)
         self.assertEqual(len(self.u.cntrl.w._ag.data), 0)
-        self.assertEqual(self.transactionCompleted, sum([x[1] for x in transactions]))
+        self.assertEqual(self.transactionCompleted,
+                         sum([x[1] for x in transactions]))
 
 
 if __name__ == "__main__":

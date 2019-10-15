@@ -12,7 +12,7 @@ from hwtLib.handshaked.reg import HandshakedReg
 class HsResizer(HandshakedCompBase):
     """
     Resize width of handshaked interface
-    
+
     .. hwt-schematic:: _example_HsResizer
     """
     def __init__(self, hsIntfCls, scale, inIntfConfigFn, outIntfConfigFn):
@@ -131,10 +131,17 @@ class HsResizer(HandshakedCompBase):
 
 def _example_HsResizer():
     from hwt.interfaces.std import Handshaked
+
+    def set_dw_in(intf):
+        intf.DATA_WIDTH = 32
+
+    def set_dw_out(intf):
+        intf.DATA_WIDTH = 3 * 32
+
     u = HsResizer(Handshaked,
                   [1, 3],
-                  lambda intf: intf.DATA_WIDTH.set(32),
-                  lambda intf: intf.DATA_WIDTH.set(3 * 32))
+                  set_dw_in,
+                  set_dw_out)
     return u
 
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -
 
-from hwt.bitmask import mask
 from hwt.code import If, Concat, connect, FsmBuilder, log2ceil
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
@@ -9,12 +8,13 @@ from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Handshaked, VectSignal, RegCntrl
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.axi_comp.axi_datapump_intf import AddrSizeHs, AxiWDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
-from hwt.synthesizer.vectorUtils import fitTo
+from pyMathBitPrecise.bit_utils import mask
 
 
 stT = HEnum("st_t", ["waitOnInput", "waitOnDataTx", "waitOnAck"])
@@ -32,14 +32,14 @@ class ArrayBuff_writer(Unit):
     [TODO] fully pipeline
 
     items -> buff -> internal logic -> axi datapump
-    
+
     .. hwt-schematic::
     """
 
     def _config(self):
         AddrSizeHs._config(self)
         self.ID = Param(3)
-        self.MAX_LEN.set(16)
+        self.MAX_LEN = 16
         self.SIZE_WIDTH = Param(16)
         self.BUFF_DEPTH = Param(16)
         self.TIMEOUT = Param(1024)
@@ -49,7 +49,7 @@ class ArrayBuff_writer(Unit):
         addClkRstn(self)
 
         self.items = Handshaked()
-        self.items.DATA_WIDTH.set(self.SIZE_WIDTH)
+        self.items.DATA_WIDTH = self.SIZE_WIDTH
 
         with self._paramsShared():
             self.wDatapump = AxiWDatapumpIntf()._m()
@@ -57,14 +57,14 @@ class ArrayBuff_writer(Unit):
         self.uploaded = VectSignal(16)._m()
 
         self.baseAddr = RegCntrl()
-        self.baseAddr.DATA_WIDTH.set(self.ADDR_WIDTH)
+        self.baseAddr.DATA_WIDTH = self.ADDR_WIDTH
 
         self.buff_remain = VectSignal(16)._m()
 
         b = HandshakedFifo(Handshaked)
-        b.DATA_WIDTH.set(self.SIZE_WIDTH)
-        b.EXPORT_SIZE.set(True)
-        b.DEPTH.set(self.BUFF_DEPTH)
+        b.DATA_WIDTH = self.SIZE_WIDTH
+        b.EXPORT_SIZE = True
+        b.DEPTH = self.BUFF_DEPTH
         self.buff = b
 
     def uploadedCntrHandler(self, st, reqAckHasCome, sizeOfitems):
@@ -114,7 +114,8 @@ class ArrayBuff_writer(Unit):
 
         sizeTmp = self._sig("sizeTmp", buff.size._dtype)
 
-        assert req.len._dtype.bit_length() == buff.size._dtype.bit_length() - 1, (
+        assert (req.len._dtype.bit_length()
+                == buff.size._dtype.bit_length() - 1), (
             req.len._dtype.bit_length(), buff.size._dtype.bit_length())
 
         buffSizeAsLen = self._sig("buffSizeAsLen", buff.size._dtype)
@@ -203,5 +204,5 @@ class ArrayBuff_writer(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
     u = ArrayBuff_writer()
-    u.TIMEOUT.set(32)
+    u.TIMEOUT = 32
     print(toRtl(u))

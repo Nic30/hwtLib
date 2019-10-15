@@ -3,13 +3,13 @@
 
 import unittest
 
-from hwt.bitmask import selectBit
 from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.peripheral.i2c.intf import I2cAgent
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl,\
     NOP, START, READ, WRITE
 from _collections import deque
 from pycocotb.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import selectBit
 
 
 class I2CMasterBitCntrlTC(SimpleSimTestCase):
@@ -51,13 +51,14 @@ class I2CMasterBitCntrlTC(SimpleSimTestCase):
 
         self.assertValSequenceEqual(u.i2c._ag.bits,
                                     [I2cAgent.START] + 
-                                    [selectBit(addr, 7 - i - 1) for i in range(7)] + 
+                                    [selectBit(addr, 7 - i - 1)
+                                     for i in range(7)] +
                                     [mode, 1])
 
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(I2CMasterBitCntrlTC('test_nop'))
+    # suite.addTest(I2CMasterBitCntrlTC('test_nop'))
     suite.addTest(unittest.makeSuite(I2CMasterBitCntrlTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

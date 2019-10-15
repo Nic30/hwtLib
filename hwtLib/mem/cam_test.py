@@ -6,7 +6,7 @@ import unittest
 from hwt.hdl.constants import NOP
 from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.mem.cam import Cam
-from hwt.bitmask import mask
+from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 
 

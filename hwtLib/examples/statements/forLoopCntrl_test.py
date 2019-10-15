@@ -13,7 +13,7 @@ class StaticForLoopCntrlTC(SimTestCase):
     def setUp(self):
         super(StaticForLoopCntrlTC, self).setUp()
         self.u = StaticForLoopCntrl()
-        self.u.ITERATIONS.set(self.ITERATIONS)
+        self.u.ITERATIONS = self.ITERATIONS
         self.prepareUnit(self.u)
 
     def test_simple(self):

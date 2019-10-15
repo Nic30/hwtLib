@@ -1,4 +1,3 @@
-from hwt.bitmask import mask
 from hwt.hdl.types.structUtils import HStruct_unpack
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.pyUtils.arrayQuery import iter_with_last
@@ -7,6 +6,8 @@ from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_hs, Axi_strb
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from ipCorePackager.intfIpMeta import IntfIpMeta
+from pyMathBitPrecise.bit_utils import mask
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 # http://www.xilinx.com/support/documentation/ip_documentation/ug761_axi_reference_guide.pdf
@@ -24,8 +25,9 @@ class AxiStream(Axi_hs, Axi_id, Axi_user, Axi_strb):
 
     :attention: no checks are made for endianity, this is just information
     :note: bigendian for interface means that items which are send through
-        this interface have reversed byte endianity. That means that most significant
-        byte is is on lower address than les significant ones
+        this interface have reversed byte endianity.
+        That means that most significant byte is is on lower address
+        than les significant ones
         f.e. litle endian value 0x1a2b will be 0x2b1a
         but iterface itselelf is not reversed in any way
 
@@ -33,7 +35,8 @@ class AxiStream(Axi_hs, Axi_id, Axi_user, Axi_strb):
     :ivar id: optional signal wich specifies id of transaction
     :ivar dest: optional signal which specifies destination of transaction
     :ivar data: main data signal
-    :ivar keep: optional signal which signalize which bytes should be keept and which should be discarted
+    :ivar keep: optional signal which signalize which bytes
+                should be keept and which should be discarted
     :ivar strb: optional signal which signalize which bytes are valid
     :ivar last: signal which if high this data is last in this frame
     """
@@ -70,8 +73,8 @@ class AxiStream(Axi_hs, Axi_id, Axi_user, Axi_strb):
     def _getIpCoreIntfClass(self):
         return IP_AXIStream
 
-    def _initSimAgent(self):
-        self._ag = AxiStreamAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = AxiStreamAgent(sim, self)
 
 
 class AxiStreamAgent(BaseAxiAgent):
@@ -84,7 +87,7 @@ class AxiStreamAgent(BaseAxiAgent):
     Format of data tules is derived from signals on AxiStream interface
     Order of values coresponds to definition of interface signals.
     If all signals are present fotmat of tuple will be
-    (id, dest, data, strb, keep, user, last) 
+    (id, dest, data, strb, keep, user, last)
 
 
     :ivar _signals: tuple of data signals of this interface
@@ -127,7 +130,8 @@ def packAxiSFrame(dataWidth, structVal, withStrb=False):
     for last, d in iter_with_last(words):
         assert d._dtype.bit_length() == dataWidth, d._dtype.bit_length()
         if withStrb:
-            # [TODO] mask in last resolved from size of datatype, mask for padding
+            # [TODO] mask in last resolved from size of datatype,
+            #        mask for padding
             yield (d, maskAll, last)
         else:
             yield (d, last)

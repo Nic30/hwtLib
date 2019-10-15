@@ -20,9 +20,9 @@ class HsJoinFair_2inputs_TC(SimpleSimTestCase):
     def getUnit(cls):
         u = cls.u = HsJoinFairShare(Handshaked)
         cls.INPUTS = 2
-        u.INPUTS.set(cls.INPUTS)
-        u.DATA_WIDTH.set(8)
-        u.EXPORT_SELECTED.set(True)
+        u.INPUTS = cls.INPUTS
+        u.DATA_WIDTH = 8
+        u.EXPORT_SELECTED = True
         return u
 
     def addToAllInputs(self, n):
@@ -113,8 +113,8 @@ class HsJoinFair_3inputs_TC(HsJoinFair_2inputs_TC):
     def getUnit(cls):
         u = cls.u = HsJoinFairShare(Handshaked)
         cls.INPUTS = 3
-        u.INPUTS.set(cls.INPUTS)
-        u.DATA_WIDTH.set(8)
+        u.INPUTS = cls.INPUTS
+        u.DATA_WIDTH = 8
         return u
 
 

@@ -34,8 +34,8 @@ class RamAsHs_TC(SimpleSimTestCase):
     @classmethod
     def getUnit(cls):
         u = cls.u = RamWithHs()
-        u.DATA_WIDTH.set(32)
-        u.ADDR_WIDTH.set(8)
+        u.DATA_WIDTH = 32
+        u.ADDR_WIDTH = 8
         return cls.u
 
     def test_nop(self):

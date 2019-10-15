@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
 import unittest
 
-from hwt.bitmask import mask
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.unit import Unit
-
 from hwt.synthesizer.hObjList import HObjList
+from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_w, Axi4_b
 from hwtLib.amba.axi_comp.axi4_rDatapump_test import mkReq
@@ -18,6 +15,7 @@ from hwtLib.amba.axi_comp.axi4_wDatapump import Axi_wDatapump
 from hwtLib.amba.axi_comp.axi_datapump_intf import AxiWDatapumpIntf
 from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
+from pyMathBitPrecise.bit_utils import mask
 
 
 class WStrictOrderInterconnecComplex(Unit):
@@ -33,8 +31,8 @@ class WStrictOrderInterconnecComplex(Unit):
             self.aw = Axi3_addr()._m()
             self.w = Axi4_w()._m()
             self.b = Axi4_b()
-            self.drivers = HObjList(AxiWDatapumpIntf() for _ in range(int(self.DRIVER_CNT)))
-            
+            self.drivers = HObjList(AxiWDatapumpIntf()
+                                    for _ in range(int(self.DRIVER_CNT)))
 
     def _impl(self):
         propagateClkRstn(self)
@@ -54,11 +52,11 @@ class WStrictOrderInterconnectComplexTC(SimTestCase):
         super(WStrictOrderInterconnectComplexTC, self).setUp()
         self.u = WStrictOrderInterconnecComplex()
         self.MAX_TRANS_OVERLAP = 4
-        self.u.MAX_TRANS_OVERLAP.set(self.MAX_TRANS_OVERLAP)
+        self.u.MAX_TRANS_OVERLAP = self.MAX_TRANS_OVERLAP
         self.DATA_WIDTH = int(self.u.DATA_WIDTH)
 
         self.DRIVER_CNT = 3
-        self.u.DRIVER_CNT.set(self.DRIVER_CNT)
+        self.u.DRIVER_CNT = self.DRIVER_CNT
         self.prepareUnit(self.u)
 
     def test_3x128(self, N=128):
@@ -68,7 +66,8 @@ class WStrictOrderInterconnectComplexTC(SimTestCase):
         data = [[self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]
                 for _ in range(self.DRIVER_CNT)]
 
-        dataAddress = [m.malloc(N * self.DATA_WIDTH // 8) for _ in range(self.DRIVER_CNT)]
+        dataAddress = [m.malloc(N * self.DATA_WIDTH // 8)
+                       for _ in range(self.DRIVER_CNT)]
 
         for di, _data in enumerate(data):
             req = u.drivers[di].req._ag
@@ -108,6 +107,7 @@ class WStrictOrderInterconnectComplexTC(SimTestCase):
         for i, baseAddr in enumerate(dataAddress):
             inMem = m.getArray(baseAddr, self.DATA_WIDTH // 8, N)
             self.assertValSequenceEqual(inMem, data[i], "driver:%d" % i)
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

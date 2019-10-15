@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import mask
 from hwt.code import connect, If
 from hwt.interfaces.std import Signal, Handshaked, VectSignal, \
     HandshakeSync
@@ -13,6 +12,7 @@ from hwtLib.amba.axi_comp.axi_datapump_base import AxiDatapumpBase
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
+from pyMathBitPrecise.bit_utils import mask
 
 
 class WFifoIntf(Handshaked):
@@ -58,14 +58,14 @@ class Axi_wDatapump(AxiDatapumpBase):
             self.driver = AxiWDatapumpIntf()
 
         with self._paramsShared():
-            # fifo for id propagation and frame splitting on axi.w channel 
+            # fifo for id propagation and frame splitting on axi.w channel
             wf = self.writeInfoFifo = HandshakedFifo(WFifoIntf)
-            wf.ID_WIDTH.set(self.ID_WIDTH)
-            wf.DEPTH.set(self.MAX_TRANS_OVERLAP)
+            wf.ID_WIDTH = self.ID_WIDTH
+            wf.DEPTH = self.MAX_TRANS_OVERLAP
 
             # fifo for propagation of end of frame from axi.b channel
             bf = self.bInfoFifo = HandshakedFifo(BFifoIntf)
-            bf.DEPTH.set(self.MAX_TRANS_OVERLAP)
+            bf.DEPTH = self.MAX_TRANS_OVERLAP
 
     def axiAwHandler(self, wErrFlag):
         req = self.driver.req

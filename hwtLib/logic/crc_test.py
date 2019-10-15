@@ -3,17 +3,17 @@
 
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.logic.crcPoly import CRC_32 
+from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.logic.crc import Crc
-
-from binascii import crc32, crc_hqx
+# , crc_hqx
+from binascii import crc32
 # crc32 input reflected, result reflected,
 # poly 0x4C11DB7, init 0xFFFFFFFF, final 0xFFFFFFFF
 
-from hwt.bitmask import mask  # , selectBit
 from hwt.hdl.typeShortcuts import vec
 from hwtLib.logic.crcComb_test import stoi
 from hwt.pyUtils.arrayQuery import grouper
+from pyMathBitPrecise.bit_utils import mask
 
 
 def pr(name, val):
@@ -49,13 +49,13 @@ class CrcTC(SimTestCase):
         self.POLY_WIDTH = poly.WIDTH
 
         u = self.u = Crc()
-        u.INIT.set(vec(initval, poly.WIDTH))
-        u.DATA_WIDTH.set(dataWidth)
-        u.REFIN.set(refin)
-        u.REFOUT.set(refout)
-        u.POLY_WIDTH.set(poly.WIDTH)
-        u.POLY.set(vec(poly.POLY, poly.WIDTH))
-        u.XOROUT.set(vec(finxor, poly.WIDTH))
+        u.INIT = vec(initval, poly.WIDTH)
+        u.DATA_WIDTH = dataWidth
+        u.REFIN = refin
+        u.REFOUT = refout
+        u.POLY_WIDTH = poly.WIDTH
+        u.POLY = vec(poly.POLY, poly.WIDTH)
+        u.XOROUT = vec(finxor, poly.WIDTH)
 
         self.prepareUnit(u)
         return u

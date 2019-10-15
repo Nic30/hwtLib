@@ -53,7 +53,7 @@ class CntrResourceAnalysisTC(unittest.TestCase):
 
     def test_resources_150b(self):
         u = Cntr()
-        u.DATA_WIDTH.set(150)
+        u.DATA_WIDTH = 150
 
         expected = {(AllOps.ADD, 150): 1,
                     # 1 for reset, one for en

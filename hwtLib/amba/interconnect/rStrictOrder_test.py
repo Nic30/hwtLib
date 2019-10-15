@@ -3,10 +3,10 @@
 
 import unittest
 
-from hwt.bitmask import mask
 from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.interconnect.rStricOrder import RStrictOrderInterconnect
+from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 
 
@@ -17,13 +17,13 @@ class RStrictOrderInterconnectTC(SimpleSimTestCase):
         u = cls.u = RStrictOrderInterconnect()
 
         cls.DRIVERS_CNT = 3
-        u.DRIVER_CNT.set(cls.DRIVERS_CNT)
+        u.DRIVER_CNT = cls.DRIVERS_CNT
 
         cls.MAX_TRANS_OVERLAP = 4
-        u.MAX_TRANS_OVERLAP.set(cls.MAX_TRANS_OVERLAP)
+        u.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP
 
         cls.DATA_WIDTH = 64
-        u.DATA_WIDTH.set(cls.DATA_WIDTH)
+        u.DATA_WIDTH = cls.DATA_WIDTH
         return u
 
     def test_nop(self):
@@ -101,8 +101,10 @@ class RStrictOrderInterconnectTC(SimpleSimTestCase):
             for d, e in zip(driverData, expected):
                 self.assertValSequenceEqual(d, e)
 
-        d0 = prepare(0, 0x1000, 3, 99, _id=0)  # + prepare(0, 0x2000, 1, 100, _id=0) + prepare(0, 0x3000, 16, 101)
-        d1 = prepare(1, 0x4000, 3, 200, _id=1) + prepare(1, 0x5000, 1, 201, _id=1)  # + prepare(1, 0x6000, 16, 202) #+ prepare(1, 0x7000, 16, 203)
+        d0 = prepare(0, 0x1000, 3, 99, _id=0)
+        # + prepare(0, 0x2000, 1, 100, _id=0) + prepare(0, 0x3000, 16, 101)
+        d1 = prepare(1, 0x4000, 3, 200, _id=1) + prepare(1, 0x5000, 1, 201, _id=1)
+        # + prepare(1, 0x6000, 16, 202) #+ prepare(1, 0x7000, 16, 203)
 
         self.runSim(100 * CLK_PERIOD)
 

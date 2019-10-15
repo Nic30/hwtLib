@@ -14,7 +14,7 @@ from hwtLib.types.ctypes import uint64_t
 class StructWriter_TC(SimTestCase):
     def buildEnv(self, structT):
         u = self.u = StructWriter(structT)
-        u.DATA_WIDTH.set(64)
+        u.DATA_WIDTH = 64
         self.prepareUnit(u)
         m = DenseMemory(int(u.DATA_WIDTH), u.clk, wDatapumpIntf=u.wDatapump)
         return m

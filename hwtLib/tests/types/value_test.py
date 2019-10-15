@@ -27,9 +27,8 @@ class ValueTC(unittest.TestCase):
         self.assertTrue(vec(0, 2)._eq(vec(0, 2)))
         self.assertTrue(hBool(True)._eq(hBool(True)))
         v0 = vec(2, 2)
-        v1 = v0.clone()
+        v1 = v0.__copy__()
         self.assertTrue(v0._eq(v1))
-        v1.updateTime = 2
         self.assertTrue(v0._eq(v1))
 
     def test_BOOLNeg(self):
@@ -88,19 +87,18 @@ class ValueTC(unittest.TestCase):
 
         t = Bits(2)
 
-        self.assertValEq(t.fromPy(PyEnumCls.A), 1)
-        self.assertValEq(t.fromPy(PyEnumCls.B), 3)
+        self.assertValEq(t.from_py(PyEnumCls.A), 1)
+        self.assertValEq(t.from_py(PyEnumCls.B), 3)
         with self.assertRaises(ValueError):
-            t.fromPy(PyEnumCls.C)
+            t.from_py(PyEnumCls.C)
 
     def test_BitsFromIncompatibleType(self):
         t = Bits(2)
         with self.assertRaises(ValueError):
-            t.fromPy("a1")
+            t.from_py("a1")
 
         with self.assertRaises(TypeError):
-            t.fromPy(object())
-
+            t.from_py(object())
 
 
 if __name__ == '__main__':

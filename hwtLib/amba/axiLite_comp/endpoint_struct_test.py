@@ -109,7 +109,7 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
                 shouldEnterFn=lambda x: (True, isinstance(x.dtype, Bits)))
         self.u = u
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        u.DATA_WIDTH = self.DATA_WIDTH
 
         self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
         return u

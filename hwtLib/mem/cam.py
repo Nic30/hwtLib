@@ -32,7 +32,7 @@ class Cam(Unit):
         with self._paramsShared():
             self.match = Handshaked()
             self.write = AddrDataBitMaskHs()
-            self.write.ADDR_WIDTH.set(log2ceil(self.ITEMS - 1))
+            self.write.ADDR_WIDTH = log2ceil(self.ITEMS - 1)
         o = self.out = VldSynced()._m()
         o._replaceParam(o.DATA_WIDTH, self.ITEMS)
 

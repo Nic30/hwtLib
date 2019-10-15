@@ -53,7 +53,7 @@ class CLinkedListReader(Unit):
             # interface which sending requests to download data
             # and interface which is collecting all data and only data with specified id are processed
             self.rDatapump = AxiRDatapumpIntf()._m()
-            self.rDatapump.MAX_LEN.set(self.BUFFER_CAPACITY // 2 - 1)
+            self.rDatapump.MAX_LEN = self.BUFFER_CAPACITY // 2 - 1
 
             self.dataOut = Handshaked()._m()
 
@@ -69,9 +69,9 @@ class CLinkedListReader(Unit):
             ptr._replaceParam(ptr.DATA_WIDTH, self.PTR_WIDTH)
 
         f = self.dataFifo = HandshakedFifo(Handshaked)
-        f.EXPORT_SIZE.set(True)
-        f.DATA_WIDTH.set(self.DATA_WIDTH)
-        f.DEPTH.set(self.BUFFER_CAPACITY)
+        f.EXPORT_SIZE = True
+        f.DATA_WIDTH = self.DATA_WIDTH
+        f.DEPTH = self.BUFFER_CAPACITY
 
     def addrAlignBits(self):
         return log2ceil(self.DATA_WIDTH // 8).val
@@ -201,13 +201,17 @@ class CLinkedListReader(Unit):
         StreamNode(masters=[dIn],
                    slaves=[dBuffIn],
                    extraConds={dIn: downloadPending,
-                               dBuffIn: (dIn.id._eq(ID) | (dIn.id._eq(ID_LAST) & ~dIn.last)) & downloadPending
+                               dBuffIn: (dIn.id._eq(ID)
+                                         | (dIn.id._eq(ID_LAST)
+                                            & ~dIn.last)
+                                         ) & downloadPending
                                }).sync()
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
     u = CLinkedListReader()
-    u.BUFFER_CAPACITY.set(8)
-    u.ITEMS_IN_BLOCK.set(31)
-    u.PTR_WIDTH.set(8)
+    u.BUFFER_CAPACITY = 8
+    u.ITEMS_IN_BLOCK = 31
+    u.PTR_WIDTH = 8
     print(toRtl(u))

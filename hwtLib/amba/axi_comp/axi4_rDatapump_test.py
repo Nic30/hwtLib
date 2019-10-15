@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 
-from hwt.bitmask import mask
 from hwt.simulator.simTestCase import SimTestCase, SimpleSimTestCase
 from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_addr
@@ -10,6 +9,7 @@ from hwtLib.amba.axi_comp.axi4_rDatapump import Axi_rDatapump
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, BYTES_IN_TRANS, \
     PROT_DEFAULT, LOCK_DEFAULT, QOS_DEFAULT, RESP_OKAY
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
+from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 
 
@@ -39,7 +39,7 @@ class Axi4_rDatapumpTC(SimpleSimTestCase):
     @classmethod
     def getUnit(cls):
         cls.u = Axi_rDatapump(axiAddrCls=Axi4_addr)
-        cls.u.DATA_WIDTH.set(cls.DATA_WIDTH)
+        cls.u.DATA_WIDTH = cls.DATA_WIDTH
         return cls.u
 
     def mkDefaultAddrReq(self, _id, addr, _len):
@@ -366,7 +366,7 @@ class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
     @classmethod
     def getUnit(cls):
         cls.u = Axi_rDatapump(axiAddrCls=Axi3_addr)
-        cls.u.DATA_WIDTH.set(cls.DATA_WIDTH)
+        cls.u.DATA_WIDTH = cls.DATA_WIDTH
         return cls.u
 
     def mkDefaultAddrReq(self, _id, addr, _len):

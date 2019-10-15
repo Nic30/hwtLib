@@ -35,7 +35,7 @@ class SimpleUnitWithParam(Unit):
 class SimpleUnitWithParamTC(SimTestCase):
     def test_simple(self):
         u = SimpleUnitWithParam()
-        u.DATA_WIDTH.set(32)
+        u.DATA_WIDTH = 32
         self.prepareUnit(u)
 
         self.assertEqual(int(u.DATA_WIDTH), 32)
@@ -47,7 +47,7 @@ class SimpleUnitWithParamTC(SimTestCase):
         self.prepareUnit(u)
 
         with self.assertRaises(AssertionError, msg="Can not set after it was synthetized"):
-            u.DATA_WIDTH.set(32)
+            u.DATA_WIDTH = 32
 
 
 if __name__ == "__main__":
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     u = SimpleUnitWithParam()
 
     # we can now optionally set our parameter to any chosen value
-    u.DATA_WIDTH.set(1024)
+    u.DATA_WIDTH = 1024
 
     print(toRtl(u))
 

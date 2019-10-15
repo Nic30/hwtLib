@@ -22,7 +22,7 @@ class OneHotToBinTC(SimpleSimTestCase):
     def getUnit(cls):
         u = OneHotToBinSimWrap()
         cls.ONE_HOT_WIDTH = 8
-        u.ONE_HOT_WIDTH.set(cls.ONE_HOT_WIDTH)
+        u.ONE_HOT_WIDTH = cls.ONE_HOT_WIDTH
         return u
 
     def test_nop(self):

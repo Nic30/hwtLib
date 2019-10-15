@@ -42,24 +42,24 @@ class HsSplitSelect(HandshakedCompBase):
         assert outputs > 1, outputs
 
         self.selectOneHot = Handshaked()
-        self.selectOneHot.DATA_WIDTH.set(outputs)
+        self.selectOneHot.DATA_WIDTH = outputs
 
         with self._paramsShared():
             self.dataIn = self.intfCls()
             self.dataOut = HObjList(
                 self.intfCls()._m() for _ in range(int(self.OUTPUTS))
             )
-    
+
     def _select_consume_en(self):
         return True
-    
+
     def _impl(self):
         In = self.dataIn
         rd = self.getRd
 
         sel = self.selectOneHot
         r = HandshakedReg(Handshaked)
-        r.DATA_WIDTH.set(sel.data._dtype.bit_length())
+        r.DATA_WIDTH = sel.data._dtype.bit_length()
         self.selReg = r
         r.dataIn(sel)
         propagateClkRstn(self)

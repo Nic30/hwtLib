@@ -48,7 +48,7 @@ class StatementsTC(unittest.TestCase):
             newVal = res._val
 
             self.assertEqual(newVal.val, expected)
-            self.assertEqual(newVal.vldMask, 3)
+            self.assertEqual(newVal.vld_mask, 3)
 
 
 if __name__ == '__main__':

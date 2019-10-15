@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
+import unittest
+from unittest.case import TestCase
+
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceLatch
 from hwt.serializer.systemC.serializer import SystemCSerializer
@@ -8,10 +12,6 @@ from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwt.synthesizer.utils import toRtl
-import os
-import unittest
-from unittest.case import TestCase
-
 from hwtLib.examples.mem.reg import DReg, DoubleDReg, OptimizedOutReg, \
     AsyncResetReg, DDR_Reg, Latch, DReg_asyncRst
 from pycocotb.constants import CLK_PERIOD
@@ -122,9 +122,9 @@ class RegSerializationTC(TestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(DRegTC('test_optimizedOutReg'))
-    suite.addTest(unittest.makeSuite(DRegTC))
-    suite.addTest(unittest.makeSuite(DoubleRRegTC))
-    suite.addTest(unittest.makeSuite(DReg_asyncRstTC))
+    # suite.addTest(unittest.makeSuite(DRegTC))
+    # suite.addTest(unittest.makeSuite(DoubleRRegTC))
+    # suite.addTest(unittest.makeSuite(DReg_asyncRstTC))
     suite.addTest(unittest.makeSuite(RegSerializationTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

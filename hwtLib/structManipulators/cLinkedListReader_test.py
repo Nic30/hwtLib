@@ -3,12 +3,12 @@
 
 import unittest
 
-from hwt.bitmask import mask
 from hwt.hdl.constants import NOP
 from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.structManipulators.cLinkedListReader import CLinkedListReader
 from hwtLib.abstract.denseMemory import DenseMemory
 from pycocotb.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import mask
 
 
 class CLinkedListReaderTC(SimpleSimTestCase):
@@ -25,10 +25,10 @@ class CLinkedListReaderTC(SimpleSimTestCase):
         cls.ID_LAST = int(cls.u.ID_LAST)
         cls.MAX_LEN = cls.BUFFER_CAPACITY // 2 - 1
 
-        u.ITEMS_IN_BLOCK.set(cls.ITEMS_IN_BLOCK)
-        u.PTR_WIDTH.set(cls.PTR_WIDTH)
-        u.BUFFER_CAPACITY.set(cls.BUFFER_CAPACITY)
-        u.DATA_WIDTH.set(cls.DATA_WIDTH)
+        u.ITEMS_IN_BLOCK = cls.ITEMS_IN_BLOCK
+        u.PTR_WIDTH = cls.PTR_WIDTH
+        u.BUFFER_CAPACITY = cls.BUFFER_CAPACITY
+        u.DATA_WIDTH = cls.DATA_WIDTH
         return u
 
     def test_tailHeadPrincipe(self):
@@ -189,7 +189,8 @@ class CLinkedListReaderTC(SimpleSimTestCase):
         return addr, data
 
     def updateNextAddr(self, mem, addrOfBlock, addrOfNextBlock):
-        mem.data[addrOfBlock // mem.cellSize + self.ITEMS_IN_BLOCK] = addrOfNextBlock
+        mem.data[addrOfBlock // mem.cellSize + self.ITEMS_IN_BLOCK]\
+            = addrOfNextBlock
 
     def test_downloadFullBlockRandomized5x(self):
         u = self.u
@@ -233,11 +234,11 @@ class CLinkedListReaderTC(SimpleSimTestCase):
         self.updateNextAddr(m, ADDR_BASE, NEXT_BASE)
 
         u.baseAddr._ag.dout.append(ADDR_BASE)
-        u.wrPtr._ag.dout.extend([NOP, self.MAX_LEN] 
+        u.wrPtr._ag.dout.extend([NOP, self.MAX_LEN]
                                 + [NOP for _ in range(self.MAX_LEN + 4)] + [N])
 
         self.runSim(N * 5 * CLK_PERIOD)
-        self.assertValSequenceEqual(u.dataOut._ag.data, data+ [data2[0]])
+        self.assertValSequenceEqual(u.dataOut._ag.data, data + [data2[0]])
 
     def checkOutputs(self, expectedReq, itemsCnt):
         req = self.u.rDatapump.req._ag.data
@@ -251,8 +252,10 @@ class CLinkedListReaderTC(SimpleSimTestCase):
 
     def generateRequests(self, baseAddress, spaceValues):
         """
-        generate reference requests and data
-        data words are containing it's indexes, baseAddresses are multiplies baseAddress
+        Generate reference requests and data
+        data words are containing it's indexes,
+        baseAddresses are multiplies baseAddress
+
         :param spaceValues: is iterable of space values
         """
         requests = []
@@ -270,15 +273,16 @@ class CLinkedListReaderTC(SimpleSimTestCase):
                     reqLen = 0
                     reqId = self.ID_LAST
                 else:
-                    if constraingSpace <= self.MAX_LEN + 1 and inBlockRem < self.MAX_LEN + 1: 
+                    if (constraingSpace <= self.MAX_LEN + 1
+                            and inBlockRem < self.MAX_LEN + 1):
                         # we will download next* as well
                         reqLen = constraingSpace
                         reqId = self.ID_LAST
                     else:
-                    # if constraingSpace == inBlockRem:
-                    #    reqId = self.ID_LAST
-                    #    reqLen = constraingSpace
-                    # else:
+                        # if constraingSpace == inBlockRem:
+                        #    reqId = self.ID_LAST
+                        #    reqLen = constraingSpace
+                        # else:
                         reqLen = constraingSpace - 1
 
                 inBlockIndex = self.ITEMS_IN_BLOCK - inBlockRem
@@ -304,6 +308,7 @@ class CLinkedListReaderTC(SimpleSimTestCase):
                     space -= reqLen + 1
 
         return requests, responses
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

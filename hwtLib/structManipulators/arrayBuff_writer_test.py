@@ -16,7 +16,7 @@ class ArrayBuff_writer_TC(SimpleSimTestCase):
     @classmethod
     def getUnit(cls):
         cls.u = u = ArrayBuff_writer()
-        u.TIMEOUT.set(32)
+        u.TIMEOUT = 32
         cls.ID = int(u.ID)
         cls.ITEMS = int(u.ITEMS)
         cls.DATA_WIDTH = int(u.DATA_WIDTH)

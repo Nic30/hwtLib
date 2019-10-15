@@ -3,11 +3,12 @@
 
 import unittest
 
-from hwt.bitmask import mask
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.examples.axi.simpleAxiRegs import SimpleAxiRegs
+from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
+
 
 allMask = mask(32 // 8)
 
@@ -54,8 +55,9 @@ class SimpleAxiRegsTC(SimpleSimTestCase):
 
         model = self.model
 
-        self.assertEqual(valuesToInts([model.reg0._oldVal, model.reg1._oldVal]),
-                         [11, 37])
+        self.assertEqual(
+            valuesToInts([model.reg0._oldVal, model.reg1._oldVal]),
+            [11, 37])
 
 
 if __name__ == "__main__":

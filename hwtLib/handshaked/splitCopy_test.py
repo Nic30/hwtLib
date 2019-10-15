@@ -21,7 +21,7 @@ class HsSplitCopyTC(SimpleSimTestCase):
     @classmethod
     def getUnit(cls):
         cls.u = HsSplitCopyWithReference(Handshaked)
-        cls.u.DATA_WIDTH.set(4)
+        cls.u.DATA_WIDTH = 4
         return cls.u
 
     def test_passdata(self):

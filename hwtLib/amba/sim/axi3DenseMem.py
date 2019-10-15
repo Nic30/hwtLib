@@ -1,8 +1,8 @@
 from collections import deque
 
-from hwt.bitmask import mask
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.constants import RESP_OKAY
+from pyMathBitPrecise.bit_utils import mask
 
 
 class Axi3DenseMem(DenseMemory):

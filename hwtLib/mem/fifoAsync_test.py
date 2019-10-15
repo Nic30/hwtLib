@@ -4,7 +4,6 @@
 import unittest
 
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
 
 from hwtLib.mem.fifoAsync import FifoAsync
 from hwtLib.mem.fifo_test import FifoTC
@@ -17,8 +16,8 @@ class FifoAsyncTC(FifoTC):
     @classmethod
     def getUnit(cls):
         u = cls.u = FifoAsync()
-        u.DATA_WIDTH.set(8)
-        u.DEPTH.set(cls.ITEMS)
+        u.DATA_WIDTH = 8
+        u.DEPTH = cls.ITEMS
         return u
 
     def setUp(self):

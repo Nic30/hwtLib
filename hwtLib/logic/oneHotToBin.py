@@ -25,7 +25,7 @@ class OneHotToBin(Unit):
     def _declr(self):
         self.oneHot = VectSignal(self.ONE_HOT_WIDTH)
         self.bin = VldSynced()._m()
-        self.bin.DATA_WIDTH.set(log2ceil(self.ONE_HOT_WIDTH))
+        self.bin.DATA_WIDTH = log2ceil(self.ONE_HOT_WIDTH)
 
     def _impl(self):
         self.bin.data(oneHotToBin(self, self.oneHot))

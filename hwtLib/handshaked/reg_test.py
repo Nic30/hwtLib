@@ -14,8 +14,8 @@ class HsRegL1D0TC(SimpleSimTestCase):
     @classmethod
     def getUnit(cls):
         cls.u = HandshakedReg(Handshaked)
-        cls.u.DELAY.set(cls.DELAY)
-        cls.u.LATENCY.set(cls.LATENCY)
+        cls.u.DELAY = cls.DELAY
+        cls.u.LATENCY = cls.LATENCY
         return cls.u
 
     def test_passdata(self):

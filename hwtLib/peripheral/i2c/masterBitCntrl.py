@@ -8,9 +8,10 @@ from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.agents.rdSynced import RdSyncedAgent
 from hwt.interfaces.std import Signal, RdSynced, VectSignal
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 from hwtLib.peripheral.i2c.intf import I2c
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 NOP, START, STOP, READ, WRITE = range(5)
@@ -33,8 +34,8 @@ class I2cBitCntrlCmd(RdSynced):
         self.cmd = VectSignal(log2ceil(5))
         self.rd = Signal(masterDir=DIRECTION.IN)
 
-    def _initSimAgent(self):
-        self._ag = I2cBitCntrlCmdAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = I2cBitCntrlCmdAgent(sim, self)
 
 
 class I2cBitCntrlCmdAgent(RdSyncedAgent):
@@ -110,7 +111,8 @@ class I2cMasterBitCtrl(Unit):
         delayedScl_t = self._reg("delayedScl_t", defVal=1)
         delayedScl_t(scl_t)
 
-        # slave_wait is asserted when master wants to drive SCL high, but the slave pulls it low
+        # slave_wait is asserted when master wants to drive SCL high,
+        # but the slave pulls it low
         # slave_wait remains asserted until the slave releases SCL
         slave_wait = self._reg("slave_wait", defVal=0)
         slave_wait((~scl_t & delayedScl_t & ~scl) | (slave_wait & ~scl))

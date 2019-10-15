@@ -14,8 +14,8 @@ class RamTC(SimpleSimTestCase):
     @classmethod
     def getUnit(cls):
         u = Ram_sp()
-        u.DATA_WIDTH.set(8)
-        u.ADDR_WIDTH.set(3)
+        u.DATA_WIDTH = 8
+        u.ADDR_WIDTH = 3
         cls.u = u
         return u
 

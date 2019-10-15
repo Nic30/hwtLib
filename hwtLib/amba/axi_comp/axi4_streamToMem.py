@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import mask
 from hwt.code import c, Concat, If, Switch, connect
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
@@ -13,13 +12,13 @@ from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import fitTo
-
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, \
     PROT_DEFAULT, BYTES_IN_TRANS, QOS_DEFAULT
 from hwtLib.types.ctypes import uint32_t
+from pyMathBitPrecise.bit_utils import mask
 
 
 class Axi4streamToMem(Unit):
@@ -46,7 +45,7 @@ class Axi4streamToMem(Unit):
     3) then reads the data and back to 1
 
     or unit is enabled and driver disables it only for the time of reading.
-    
+
     .. hwt-schematic::
     """
     def _config(self):
@@ -73,8 +72,8 @@ class Axi4streamToMem(Unit):
         cntrl._replaceParam(cntrl.ADDR_WIDTH, self.CNTRL_AW)
         cntrl._replaceParam(cntrl.DATA_WIDTH, self.DATA_WIDTH)
 
-        regs.ADDR_WIDTH.set(self.CNTRL_AW)
-        regs.DATA_WIDTH.set(self.DATA_WIDTH)
+        regs.ADDR_WIDTH = self.CNTRL_AW
+        regs.DATA_WIDTH = self.DATA_WIDTH
 
     def axiWAddrHandler(self, st, baseAddr, actualAddr, lenRem):
         """

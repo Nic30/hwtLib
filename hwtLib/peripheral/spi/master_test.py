@@ -12,7 +12,7 @@ class SpiMasterTC(SimpleSimTestCase):
     @classmethod
     def getUnit(cls):
         u = cls.u = SpiMaster()
-        u.SPI_FREQ_PESCALER.set(8)
+        u.SPI_FREQ_PESCALER = 8
         return u
 
     def test_readAndWrite8bits(self):

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import selectBit
 from hwt.hdl.constants import WRITE, READ
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.mem.lutRam import RAM64X1S
+from pyMathBitPrecise.bit_utils import selectBit
 from pycocotb.constants import CLK_PERIOD
 
 

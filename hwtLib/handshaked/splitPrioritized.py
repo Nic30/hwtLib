@@ -47,7 +47,7 @@ class HsSplitPrioritized(HsSplitCopy):
 def _example_HsSplitPrioritized():
     from hwt.interfaces.std import Handshaked
     u = HsSplitPrioritized(Handshaked)
-    u.OUTPUTS.set(4)
+    u.OUTPUTS = 4
     return u
 
 

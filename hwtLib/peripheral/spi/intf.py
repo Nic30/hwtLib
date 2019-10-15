@@ -1,6 +1,5 @@
 from collections import deque
 
-from hwt.bitmask import selectBit, mask
 from hwt.hdl.constants import DIRECTION
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Clk, Signal, VectSignal
@@ -10,6 +9,8 @@ from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from pycocotb.agents.base import AgentBase
 from pycocotb.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
+from pyMathBitPrecise.bit_utils import mask, selectBit
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 class SpiAgent(SyncAgentBase):
@@ -24,8 +25,8 @@ class SpiAgent(SyncAgentBase):
     """
     BITS_IN_WORD = 8
 
-    def __init__(self, intf, allowNoReset=False):
-        AgentBase.__init__(self, intf)
+    def __init__(self, sim: HdlSimulator, intf: "Spi", allowNoReset=False):
+        AgentBase.__init__(self, sim, intf)
 
         self.txData = deque()
         self.rxData = deque()
@@ -63,23 +64,22 @@ class SpiAgent(SyncAgentBase):
         self.driverTx.setEnable(en)
 
     def splitBits(self, v):
-        return deque([selectBit(v, i) for i in range(self.BITS_IN_WORD - 1, -1, -1)])
+        return deque([selectBit(v, i)
+                      for i in range(self.BITS_IN_WORD - 1, -1, -1)])
 
     def mergeBits(self, bits):
         t = Bits(self.BITS_IN_WORD, False)
         val = 0
-        vldMask = 0
-        time = -1
+        vld_mask = 0
         for v in bits:
             val <<= 1
             val |= v.val
-            vldMask <<= 1
-            vldMask |= v.vldMask
-            time = max(time, v.updateTime)
+            vld_mask <<= 1
+            vld_mask |= v.vld_mask
 
-        return t.getValueCls()(val, t, vldMask, time)
+        return t.getValueCls()(val, t, vld_mask)
 
-    def readRxSig(self, sim, sig):
+    def readRxSig(self, sig):
         d = sig.read()
         bits = self._rxBitBuff
         bits.append(d)
@@ -87,7 +87,7 @@ class SpiAgent(SyncAgentBase):
             self.rxData.append(self.mergeBits(bits))
             self._rxBitBuff = []
 
-    def writeTxSig(self, sim, sig):
+    def writeTxSig(self, sig):
         bits = self._txBitBuff
         if not bits:
             if not self.txData:
@@ -97,48 +97,48 @@ class SpiAgent(SyncAgentBase):
 
         sig.write(bits.popleft())
 
-    def monitorRx(self, sim):
-        yield sim.waitReadOnly()
-        cs = sim.read(self.intf.cs)
+    def monitorRx(self):
+        yield WaitCombRead()
+        cs = self.intf.cs.read()
         cs = int(cs)
-        if self.notReset(sim):
+        if self.notReset():
             if cs != self.csMask:  # if any slave is enabled
-                self.readRxSig(sim, self.intf.mosi)
+                self.readRxSig(self.intf.mosi)
                 if not self._rxBitBuff:
                     self.chipSelects.append(cs)
 
-    def monitorTx(self, sim):
-        yield sim.waitReadOnly()
+    def monitorTx(self):
+        yield WaitCombRead()
         cs = self.intf.cs.read()
         cs = int(cs)
-        if self.notReset(sim):
+        if self.notReset():
             if cs != self.csMask:
-                yield sim.waitWriteOnly()
-                self.writeTxSig(sim, self.intf.miso)
+                yield WaitWriteOnly()
+                self.writeTxSig(self.intf.miso)
 
-    def driverRx(self, sim):
-        yield sim.waitReadOnly()
-        if self.notReset(sim) and self.slaveEn:
-            self.readRxSig(sim, self.intf.miso)
+    def driverRx(self):
+        yield WaitCombRead()
+        if self.notReset() and self.slaveEn:
+            self.readRxSig(self.intf.miso)
 
-    def driverTx(self, sim):
-        yield sim.waitReadOnly()
-        if self.notReset(sim):
+    def driverTx(self):
+        yield WaitCombRead()
+        if self.notReset():
             if not self._txBitBuff:
                 try:
                     cs = self.chipSelects.popleft()
                 except IndexError:
                     self.slaveEn = False
-                    yield sim.waitWriteOnly()
+                    yield WaitWriteOnly()
                     self.intf.cs.write(self.csMask)
                     return
 
                 self.slaveEn = True
-                yield sim.waitWriteOnly()
+                yield WaitWriteOnly()
                 self.intf.cs.write(cs)
 
-            yield sim.waitWriteOnly()
-            self.writeTxSig(sim, self.intf.mosi)
+            yield WaitWriteOnly()
+            self.writeTxSig(self.intf.mosi)
 
     def getDrivers(self):
         return [self.driverRx, self.driverTx]
@@ -163,8 +163,8 @@ class Spi(Interface):
 
         self._associatedClk = self.clk
 
-    def _initSimAgent(self):
-        self._ag = SpiAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = SpiAgent(sim, self)
 
 
 class SpiTristate(Spi):

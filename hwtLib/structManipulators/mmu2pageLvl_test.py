@@ -3,12 +3,12 @@
 
 import unittest
 
-from hwt.bitmask import mask
 from hwt.hdl.constants import WRITE, NOP
 from hwt.simulator.simTestCase import SimpleSimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.mmu_2pageLvl import MMU_2pageLvl
 from pycocotb.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import mask
 
 
 class MMU_2pageLvl_TC(SimpleSimTestCase):
@@ -45,7 +45,10 @@ class MMU_2pageLvl_TC(SimpleSimTestCase):
         for i in range(self.LVL1_PAGE_TABLE_ITEMS):
             u.lvl1Table._ag.requests.append((WRITE, i, mask(32)))
 
-        u.virtIn._ag.data.extend([NOP for _ in range(self.LVL1_PAGE_TABLE_ITEMS + 5)] + [0, ])
+        u.virtIn._ag.data.extend(
+            [NOP
+             for _ in range(self.LVL1_PAGE_TABLE_ITEMS + 5)]
+            + [0, ])
 
         self.runSim((self.LVL1_PAGE_TABLE_ITEMS + 20) * CLK_PERIOD)
         self.assertEmpty(u.physOut._ag.data)
@@ -57,8 +60,9 @@ class MMU_2pageLvl_TC(SimpleSimTestCase):
 
         m = DenseMemory(self.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
 
-        lvl2pgt = m.calloc(self.LVL2_PAGE_TABLE_ITEMS, 4,
-                           initValues=[-1 for _ in range(self.LVL2_PAGE_TABLE_ITEMS)])
+        lvl2pgt = m.calloc(
+            self.LVL2_PAGE_TABLE_ITEMS, 4,
+            initValues=[-1 for _ in range(self.LVL2_PAGE_TABLE_ITEMS)])
 
         u.lvl1Table._ag.requests.append((WRITE, MAGIC, lvl2pgt))
 

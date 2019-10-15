@@ -45,7 +45,7 @@ class ExampleA(Unit):
         self.u5 = ParamsUniqUnit()
         self.u6 = ParamsUniqUnit()
         self.u7 = ParamsUniqUnit()
-        self.u7.B.set(12)
+        self.u7.B = 12
 
     def _impl(self):
         self.a(Concat(*[getattr(self, "u%d" % i).a for i in range(7)]))

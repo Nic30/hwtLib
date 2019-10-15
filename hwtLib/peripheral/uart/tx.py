@@ -28,7 +28,7 @@ class UartTx(Unit):
     def _declr(self):
         addClkRstn(self)
         self.dataIn = Handshaked()
-        self.dataIn.DATA_WIDTH.set(8)
+        self.dataIn.DATA_WIDTH = 8
         self.txd = Signal()._m()
 
     def _impl(self):

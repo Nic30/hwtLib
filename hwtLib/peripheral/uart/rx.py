@@ -26,7 +26,7 @@ class UartRx(Unit):
         addClkRstn(self)
 
         self.dataOut = VldSynced()._m()
-        self.dataOut.DATA_WIDTH.set(8)
+        self.dataOut.DATA_WIDTH = 8
 
         self.rxd = Signal()
 
