@@ -17,9 +17,9 @@ class UnitWrapper(Unit):
         self._baseUnit = baseUnit
 
     def _copyParamsAndInterfaces(self):
-        for p_name in self._baseUnit._params:
-            myP = Param(getattr(self._baseUnit, p_name))
-            self._registerParameter(p_name, myP)
+        for p in self._baseUnit._params:
+            myP = Param(getattr(self._baseUnit, p.name))
+            self._registerParameter(p.name, myP)
             object.__setattr__(self, myP.name, myP)
 
         origToWrapInfMap = {}
