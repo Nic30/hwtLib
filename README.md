@@ -49,3 +49,4 @@ sudo pip3 install hwtLib
 * [openrisc](https://github.com/openrisc) - OpenRISC, FuseSoC, peripherals and cpu parts
 * [NyuziProcessor](https://github.com/jbush001/NyuziProcessor) - GPGPU
 * [analogdevicesinc/hdl/](https://github.com/analogdevicesinc/hdl/)
+* [tinyfpgax](https://github.com/tinyfpga)
