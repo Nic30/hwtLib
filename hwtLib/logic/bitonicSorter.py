@@ -94,7 +94,7 @@ class BitonicSorterTC(SimTestCase):
 
     def createUnit(self):
         u = BitonicSorter()
-        self.prepareUnit(u)
+        self.compileSim(u)
         return u
 
     def getOutputs(self):

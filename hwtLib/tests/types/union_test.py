@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.union import HUnion
 from hwtLib.types.ctypes import uint8_t, uint16_t, int8_t, uint32_t
-from hwt.hdl.types.struct import HStruct
-from hwt.hdl.types.bits import Bits
 from pyMathBitPrecise.bit_utils import mask
 
 

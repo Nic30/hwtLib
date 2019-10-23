@@ -11,13 +11,14 @@ from pyMathBitPrecise.bit_utils import mask
 
 
 class HsResizerTC(SimTestCase):
+
     def test_1to1(self):
         def set_dw(intf):
             intf.DATA_WIDTH = 32
         u = HsResizer(Handshaked, [1, 1],
                       set_dw,
                       set_dw)
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         # self.randomize(u.dataIn)
         # self.randomize(u.dataOut)
         N = 10
@@ -40,7 +41,7 @@ class HsResizerTC(SimTestCase):
         u = HsResizer(Handshaked, [1, 3],
                       set_dw_in,
                       set_dw_out)
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         # self.randomize(u.dataIn)
         # self.randomize(u.dataOut)
         N = 9
@@ -68,7 +69,7 @@ class HsResizerTC(SimTestCase):
         u = HsResizer(Handshaked, [3, 1],
                       set_dw_in,
                       set_dw_out)
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         # self.randomize(u.dataIn)
         # self.randomize(u.dataOut)
         N = 9

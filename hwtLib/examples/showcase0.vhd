@@ -33,7 +33,7 @@ ENTITY Showcase0 IS
         rst_n: IN STD_LOGIC;
         sc_signal: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
-END Showcase0;
+END ENTITY;
 
 ARCHITECTURE rtl OF Showcase0 IS
     TYPE arrT_0 IS ARRAY ((3) DOWNTO 0) OF SIGNED(7 DOWNTO 0);
@@ -132,4 +132,4 @@ BEGIN
         END CASE;
     END PROCESS;
 
-END ARCHITECTURE rtl;
+END ARCHITECTURE;

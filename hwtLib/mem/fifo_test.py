@@ -5,7 +5,7 @@ import unittest
 
 from hwt.interfaces.std import FifoReader, FifoWriter
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.mem.fifo import Fifo
 from pycocotb.constants import CLK_PERIOD
@@ -32,13 +32,13 @@ class FifoWriterPassTrought(FifoReaderPassTrought):
         self.dout = FifoWriter()._m()
 
 
-class FifoReaderAgentTC(SimpleSimTestCase):
+class FifoReaderAgentTC(SingleUnitSimTestCase):
     CLK = CLK_PERIOD
 
     @classmethod
     def getUnit(cls):
-        cls.u = u = FifoReaderPassTrought()
-        return u
+        cls.u = FifoReaderPassTrought()
+        return cls.u
 
     def test_fifoReader(self):
         u = self.u
@@ -52,7 +52,7 @@ class FifoReaderAgentTC(SimpleSimTestCase):
         self.assertValSequenceEqual(u.dout._ag.data, ref)
 
 
-class FifoWriterAgentTC(SimpleSimTestCase):
+class FifoWriterAgentTC(SingleUnitSimTestCase):
     CLK = CLK_PERIOD
 
     @classmethod
@@ -73,7 +73,7 @@ class FifoWriterAgentTC(SimpleSimTestCase):
         self.assertValSequenceEqual(u.dout._ag.data, ref)
 
 
-class FifoTC(SimpleSimTestCase):
+class FifoTC(SingleUnitSimTestCase):
     ITEMS = 4
     IN_CLK = CLK_PERIOD
     OUT_CLK = CLK_PERIOD

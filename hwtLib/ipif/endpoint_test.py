@@ -36,7 +36,7 @@ class IpifEndpointTC(AxiLiteEndpointTC):
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH = self.DATA_WIDTH
 
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
+        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
     def randomizeAll(self):

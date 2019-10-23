@@ -22,7 +22,7 @@ class SimpleSubunitTC(SimTestCase):
         # convert it to rtl level
         # decorate interface with agents (._ag property) which will drive
         # or monitor values on the interface
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
 
         # initialize simulation
         self.restartSim()

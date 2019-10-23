@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.simulator.agentConnector import valuesToInts
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.examples.axi.simpleAxiRegs import SimpleAxiRegs
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
@@ -13,7 +13,7 @@ from pycocotb.constants import CLK_PERIOD
 allMask = mask(32 // 8)
 
 
-class SimpleAxiRegsTC(SimpleSimTestCase):
+class SimpleAxiRegsTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

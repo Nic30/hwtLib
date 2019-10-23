@@ -5,21 +5,20 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.examples.operators.indexing import (SimpleIndexingSplit,
-                                               SimpleIndexingJoin,
-                                               SimpleIndexingRangeJoin,
-                                               IndexingInernSplit,
-                                               IndexingInernJoin,
-                                               IndexingInernRangeSplit)
+from hwtLib.examples.operators.indexing import (
+    SimpleIndexingSplit,
+    SimpleIndexingJoin,
+    SimpleIndexingRangeJoin,
+    IndexingInernSplit,
+    IndexingInernJoin,
+    IndexingInernRangeSplit)
 
 
 class IndexingTC(SimTestCase):
-    def setUpUnit(self, unit):
-        self.prepareUnit(unit)
 
     def test_split(self):
         u = SimpleIndexingSplit()
-        self.setUpUnit(u)
+        self.compileSim(u)
         u.a._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
         self.runSim(80 * Time.ns)
@@ -31,7 +30,7 @@ class IndexingTC(SimTestCase):
 
     def test_join(self):
         u = SimpleIndexingJoin()
-        self.setUpUnit(u)
+        self.compileSim(u)
 
         u.b._ag.data.extend([0, 1, 0, 1, None, 1, 0, 1])
         u.c._ag.data.extend([0, 0, 1, 1, None, 1, 1, 0])
@@ -43,7 +42,7 @@ class IndexingTC(SimTestCase):
 
     def test_rangeJoin(self):
         u = SimpleIndexingRangeJoin()
-        self.setUpUnit(u)
+        self.compileSim(u)
 
         u.b._ag.data.extend([0, 3, 0, 3, None, 3, 0, 3])
         u.c._ag.data.extend([0, 0, 3, 3, None, 3, 3, 0])
@@ -55,7 +54,7 @@ class IndexingTC(SimTestCase):
 
     def test_internSplit(self):
         u = IndexingInernSplit()
-        self.setUpUnit(u)
+        self.compileSim(u)
 
         u.a._ag.data.extend([0, 1, 2, 3, None, 3, 0, 3])
 
@@ -66,7 +65,7 @@ class IndexingTC(SimTestCase):
 
     def test_internJoin(self):
         u = IndexingInernJoin()
-        self.setUpUnit(u)
+        self.compileSim(u)
 
         u.a._ag.data.extend([0, 1, 0, 1, None, 0, 1, 0])
         u.b._ag.data.extend([0, 0, 1, 1, None, 0, 1, 0])
@@ -80,7 +79,7 @@ class IndexingTC(SimTestCase):
 
     def test_indexingInernRangeSplit(self):
         u = IndexingInernRangeSplit()
-        self.setUpUnit(u)
+        self.compileSim(u)
         reference = list(range(2 ** 4)) + [None, ]
         u.a._ag.data.extend(reference)
 

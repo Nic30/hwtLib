@@ -6,7 +6,7 @@
         generate such a register for any interface and datatype
 
     .. hwt-schematic::
-
+    
 */
 
 #include <systemc.h>

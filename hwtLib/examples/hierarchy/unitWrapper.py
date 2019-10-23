@@ -1,6 +1,6 @@
 from hwt.hdl.constants import INTF_DIRECTION
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 
 
 class UnitWrapper(Unit):
@@ -18,9 +18,9 @@ class UnitWrapper(Unit):
 
     def _copyParamsAndInterfaces(self):
         for p in self._baseUnit._params:
-            myP = Param(getattr(self._baseUnit, p.name))
-            self._registerParameter(p.name, myP)
-            object.__setattr__(self, myP.name, myP)
+            myP = Param(p.get_value())
+            self._registerParameter(p._name, myP)
+            myP.set_value(p.get_value())
 
         origToWrapInfMap = {}
 

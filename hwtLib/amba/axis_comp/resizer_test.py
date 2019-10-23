@@ -6,7 +6,7 @@ import unittest
 from hwt.doc_markers import internal
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimTestCase, SingleUnitSimTestCase
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
@@ -24,20 +24,19 @@ def it(dw, *items):
     return v
 
 
-class AxiS_resizer_upscale_TC(SimTestCase):
-    def setUp(self):
-        super(AxiS_resizer_upscale_TC, self).setUp()
-        u = self.u = AxiS_resizer()
+class AxiS_resizer_upscale_TC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = AxiS_resizer()
         u.USE_STRB = True
-        self.DW_IN = 16
-        self.DW_OUT = 64
-        u.DATA_WIDTH = self.DW_IN
-        u.OUT_DATA_WIDTH = self.DW_OUT
+        u.DATA_WIDTH = cls.DW_IN = 16
+        u.OUT_DATA_WIDTH = cls.DW_OUT = 64
+        return u
 
-        self.prepareUnit(self.u)
-
-        self.randomize(u.dataIn)
-        self.randomize(u.dataOut)
+    def setUp(self):
+        self.randomize(self.u.dataIn)
+        self.randomize(self.u.dataOut)
 
     def test_nop(self):
         u = self.u
@@ -92,19 +91,17 @@ class AxiS_resizer_upscale_TC(SimTestCase):
         self.assertEmpty(u.dataOut._ag.data)
 
 
-class AxiS_resizer_downscale_TC(SimTestCase):
+class AxiS_resizer_downscale_TC(SingleUnitSimTestCase):
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = AxiS_resizer()
+        u.DATA_WIDTH = cls.DW_IN = 64
+        u.OUT_DATA_WIDTH = cls.DW_OUT = 16
+        return cls.u
+
     def setUp(self):
-        super(AxiS_resizer_downscale_TC, self).setUp()
-        u = self.u = AxiS_resizer()
-        self.DW_IN = 64
-        self.DW_OUT = 16
-        u.DATA_WIDTH = self.DW_IN
-        u.OUT_DATA_WIDTH = self.DW_OUT
-
-        self.prepareUnit(self.u)
-
-        self.randomize(u.dataIn)
-        self.randomize(u.dataOut)
+        self.randomize(self.u.dataIn)
+        self.randomize(self.u.dataOut)
 
     def test_nop(self):
         u = self.u
@@ -167,17 +164,17 @@ class TestComp_AxiS_resizer_downAndUp(AxiS_resizer):
             .resize(self.DATA_WIDTH).end)
 
 
-class AxiS_resizer_downAndUp_TC(SimTestCase):
+class AxiS_resizer_downAndUp_TC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = TestComp_AxiS_resizer_downAndUp()
+        u.DATA_WIDTH = cls.DW = 64
+        return u
+
     def setUp(self):
-        super(AxiS_resizer_downAndUp_TC, self).setUp()
-        u = self.u = TestComp_AxiS_resizer_downAndUp()
-        self.DW = 64
-        u.DATA_WIDTH = self.DW
-
-        self.prepareUnit(self.u)
-
-        self.randomize(u.dataIn)
-        self.randomize(u.dataOut)
+        self.randomize(self.u.dataIn)
+        self.randomize(self.u.dataOut)
 
     def test_nop(self):
         u = self.u
@@ -193,18 +190,18 @@ class AxiS_resizer_downAndUp_TC(SimTestCase):
         self.assertValSequenceEqual(u.dataOut._ag.data, data)
 
 
-class AxiS_resizer_upAndDown_TC(SimTestCase):
-    def setUp(self):
-        super(AxiS_resizer_upAndDown_TC, self).setUp()
-        u = self.u = TestComp_AxiS_resizer_downAndUp()
-        self.DW = 32
-        u.DATA_WIDTH = self.DW
+class AxiS_resizer_upAndDown_TC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = TestComp_AxiS_resizer_downAndUp()
+        u.DATA_WIDTH = cls.DW = 32
         u.INTERNAL_SIZE = 64
+        return u
 
-        self.prepareUnit(self.u)
-
-        self.randomize(u.dataIn)
-        self.randomize(u.dataOut)
+    def setUp(self):
+        self.randomize(self.u.dataIn)
+        self.randomize(self.u.dataOut)
 
     def test_nop(self):
         u = self.u

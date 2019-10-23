@@ -52,7 +52,7 @@ class StructReaderTC(SimTestCase):
     def _test_s0(self, u):
         DW = 64
         N = 3
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
 
         m = DenseMemory(DW, u.clk, u.rDatapump)
 

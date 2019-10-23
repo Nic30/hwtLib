@@ -11,7 +11,7 @@ class ConstDriverTC(SimTestCase):
     def setUp(self):
         super(ConstDriverTC, self).setUp()
         self.u = ConstDriverUnit()
-        self.prepareUnit(self.u)
+        self.compileSim(self.u)
 
     def test_simple(self):
         u = self.u

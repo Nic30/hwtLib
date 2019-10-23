@@ -54,7 +54,7 @@ ENTITY IndexOps IS
         s_out3: OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
         s_out4: OUT STD_LOGIC_VECTOR(15 DOWNTO 0)
     );
-END IndexOps;
+END ENTITY;
 
 ARCHITECTURE rtl OF IndexOps IS
 BEGIN
@@ -64,7 +64,7 @@ BEGIN
     s_out3 <= s_in3(7 DOWNTO 0);
     s_out4(7 DOWNTO 0) <= s_in4a;
     s_out4(15 DOWNTO 8) <= s_in4b;
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 if __name__ == "__main__":
     netlist, interfaces = IndexOps()

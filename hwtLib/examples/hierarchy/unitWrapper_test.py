@@ -51,6 +51,7 @@ def readContent(fn):
 
 
 class UnitWrapperTC(TestCase):
+
     def test_params_of_base_unit(self):
         u = UnitWithParams()
         w = UnitWrapper(u)

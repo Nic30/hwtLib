@@ -4,7 +4,7 @@
 from hwt.hdl.constants import Time
 from hwt.interfaces.std import VldSynced
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
@@ -14,6 +14,7 @@ class SimpleSubunit(Unit):
     """
     .. hwt-schematic::
     """
+
     def _config(self):
         self.DATA_WIDTH = Param(8)
 
@@ -62,11 +63,12 @@ class ListOfInterfacesSample1(Unit):
         # u2out = connect(u2.d, b[2])
 
 
-class ListOfInterfacesSample1TC(SimTestCase):
-    def setUp(self):
-        SimTestCase.setUp(self)
-        self.u = ListOfInterfacesSample1()
-        self.prepareUnit(self.u)
+class ListOfInterfacesSample1TC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = ListOfInterfacesSample1()
+        return cls.u
 
     def test_simplePass(self):
         u = self.u

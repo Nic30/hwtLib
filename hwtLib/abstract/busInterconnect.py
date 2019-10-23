@@ -73,6 +73,6 @@ class BusInterconnect(Unit):
         assert self._slaves
         last = self._slaves[-1]
         maxAddr = last[0] + last[1]
-        maxAddr -= int(self.DATA_WIDTH) // 8
+        maxAddr -= self.DATA_WIDTH // 8
         assert maxAddr >= 0
-        return int(log2ceil(maxAddr))
+        return log2ceil(maxAddr)

@@ -186,8 +186,8 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
     def randomizeAll(self):
         u = self.u
         for intf in u._interfaces:
-            if u not in (u.clk, u.rst_n, u.bus) and not isinstance(intf,
-                    (BramPort_withoutClk, VldSynced, Signal)):
+            if u not in (u.clk, u.rst_n, u.bus)\
+                    and not isinstance(intf, (BramPort_withoutClk, VldSynced, Signal)):
                 self.randomize(intf)
 
         self.randomize(u.bus.ar)
@@ -202,7 +202,7 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH = self.DATA_WIDTH
 
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
+        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
     def test_nop(self):
@@ -278,7 +278,7 @@ class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH = self.DATA_WIDTH
 
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
+        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
     def test_nop(self):

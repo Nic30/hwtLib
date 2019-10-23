@@ -7,7 +7,7 @@ from hwt.hdl.constants import Time
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import iterBits
@@ -47,11 +47,14 @@ class Lsfr(Unit):
         self.dataOut(accumulator[0])
 
 
-class LsfrTC(SimTestCase):
-    def test_simple(self):
-        u = Lsfr()
-        self.prepareUnit(u)
+class LsfrTC(SingleUnitSimTestCase):
 
+    @classmethod
+    def getUnit(cls):
+        cls.u = Lsfr()
+        return cls.u
+
+    def test_simple(self):
         self.runSim(300 * Time.ns)
         self.assertValSequenceEqual(
             u.dataOut._ag.data,

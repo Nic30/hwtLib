@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.examples.arithmetic.twoCntrs import TwoCntrs
 from pycocotb.constants import CLK_PERIOD
 
@@ -11,7 +11,7 @@ eightOnes = [1 for _ in range(8)]
 eightZeros = [0 for _ in range(8)]
 
 
-class TwoCntrsTC(SimpleSimTestCase):
+class TwoCntrsTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

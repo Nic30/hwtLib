@@ -35,10 +35,10 @@ class SimpleSubunit3(Unit):
 
 
 class SimpleSubunit3TC(SimpleSubunit2TC):
-    def setUp(self):
-        SimTestCase.setUp(self)
-        self.u = SimpleSubunit3()
-        self.prepareUnit(self.u)
+
+    @classmethod
+    def getUnit(cls) -> Unit:
+        return SimpleSubunit3()
 
 
 if __name__ == "__main__":

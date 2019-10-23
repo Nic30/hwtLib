@@ -4,7 +4,7 @@
 from hwt.interfaces.std import Handshaked, VldSynced
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.agentConnector import valToInt
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 
@@ -36,7 +36,7 @@ class TestUnit_uart(Unit):
         self.dout(self.rx.dataOut)
 
 
-class UartTxRxTC(SimpleSimTestCase):
+class UartTxRxTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

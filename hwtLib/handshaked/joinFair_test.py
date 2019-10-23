@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.interfaces.std import Handshaked
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwt.simulator.agentConnector import valuesToInts
 from pycocotb.constants import CLK_PERIOD
@@ -14,7 +14,7 @@ def dataFn(d):
     return d._ag.data
 
 
-class HsJoinFair_2inputs_TC(SimpleSimTestCase):
+class HsJoinFair_2inputs_TC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

@@ -7,13 +7,13 @@ from hwt.hdl.operatorDefs import AllOps
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
     ResourceFF
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.utils import toRtl
 from hwtLib.examples.arithmetic.cntr import Cntr
 from pycocotb.constants import CLK_PERIOD
 
 
-class CntrTC(SimpleSimTestCase):
+class CntrTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

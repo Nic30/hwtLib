@@ -38,7 +38,7 @@ ENTITY Counter IS
         rst: IN STD_LOGIC;
         s_out: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
-END Counter;
+END ENTITY;
 
 ARCHITECTURE rtl OF Counter IS
     SIGNAL cnt: STD_LOGIC_VECTOR(7 DOWNTO 0) := X"00";
@@ -58,14 +58,14 @@ BEGIN
     assig_process_cnt_next: PROCESS (cnt, en)
     BEGIN
         IF en = '1' THEN
-            cnt_next <= STD_LOGIC_VECTOR(UNSIGNED(cnt) + 1);
+            cnt_next <= STD_LOGIC_VECTOR(UNSIGNED(cnt) + TO_UNSIGNED(1, 8));
         ELSE
             cnt_next <= cnt;
         END IF;
     END PROCESS;
 
     s_out <= cnt;
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 if __name__ == "__main__":
     netlist, interfaces = Counter()

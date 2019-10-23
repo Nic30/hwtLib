@@ -41,7 +41,7 @@ class BinToOneHot(Unit):
 class BinToOneHotTC(SimTestCase):
     def test_basic(self):
         u = BinToOneHot()
-        self.prepareUnit(u)
+        self.compileSim(u)
 
         u.en._ag.data.append(1)
         u.din._ag.data.extend(range(8))

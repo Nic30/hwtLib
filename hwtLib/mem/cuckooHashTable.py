@@ -14,7 +14,7 @@ from hwt.synthesizer.param import Param
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf
-from hwtLib.logic.crcPoly import CRC_32, CRC_32C 
+from hwtLib.logic.crcPoly import CRC_32, CRC_32C
 from hwt.synthesizer.hObjList import HObjList
 from pycocotb.hdlSimulator import HdlSimulator
 
@@ -130,7 +130,7 @@ class CuckooHashTable(HashTableCore):
     def _declr(self):
         addClkRstn(self)
         self.TABLE_CNT = len(self.POLYNOMIALS)
-        self.HASH_WITH = log2ceil(self.TABLE_SIZE).val
+        self.HASH_WITH = log2ceil(self.TABLE_SIZE)
 
         with self._paramsShared():
             self.insert = CInsertIntf()
@@ -159,7 +159,7 @@ class CuckooHashTable(HashTableCore):
                          defVal=0)
         If(en,
            addr(addr + 1)
-           )
+        )
 
         return addr, addr._eq(lastAddr)
 
@@ -183,8 +183,8 @@ class CuckooHashTable(HashTableCore):
             if self.DATA_WIDTH:
                 ins.data(stash.data)
                 ins.vld(Or(state._eq(fsm_t.cleaning),
-                           state._eq(fsm_t.lookupResAck) & 
-                           insertTargetOH[i] & 
+                           state._eq(fsm_t.lookupResAck) &
+                           insertTargetOH[i] &
                            ~isExternLookup))
                 ins.vldFlag(stash.vldFlag)
 
@@ -204,13 +204,13 @@ class CuckooHashTable(HashTableCore):
         lookupResAck = StreamNode(masters=map(
             lambda t: t.lookupRes, tables)).ack()
         insertFoundOH = list(map(lambda t: t.lookupRes.found, tables))
-        isEmptyOH = list(map(lambda t:~t.lookupRes.occupied, tables))
+        isEmptyOH = list(map(lambda t: ~t.lookupRes.occupied, tables))
         _insertFinal = Or(*insertFoundOH, *isEmptyOH)
 
         If(resRead & lookupResAck,
             If(Or(*insertFoundOH),
                 targetOH(Concat(*reversed(insertFoundOH)))
-               ).Else(
+            ).Else(
                 SwitchLogic([(empty, targetOH(1 << i))
                              for i, empty in enumerate(isEmptyOH)
                              ],
@@ -228,7 +228,7 @@ class CuckooHashTable(HashTableCore):
         insertIndex = self._sig("insertIndex", Bits(self.HASH_WITH))
         If(state._eq(state._dtype.cleaning),
             insertIndex(cleanAddr)
-           ).Else(
+        ).Else(
             SwitchLogic([(targetOH[i],
                           insertIndex(t.lookupRes.hash))
                          for i, t in enumerate(self.tables)],
@@ -243,24 +243,24 @@ class CuckooHashTable(HashTableCore):
         If(isIdle,
             If(self.clean.vld,
                stash.vldFlag(0)
-               ).Elif(delete.vld,
-                      stash.key(delete.key),
-                      lookupOrigin_out(ORIGIN_TYPE.DELETE),
-                      stash.vldFlag(0),
-                      ).Elif(insert.vld,
-                             lookupOrigin_out(ORIGIN_TYPE.INSERT),
-                             stash.key(insert.key),
-                             stash.data(insert.data),
-                             stash.vldFlag(1),
-                             ).Elif(lookup.vld,
-                                    lookupOrigin_out(ORIGIN_TYPE.LOOKUP),
-                                    stash.key(lookup.key),
-                                    )
-           )
+            ).Elif(delete.vld,
+                stash.key(delete.key),
+                lookupOrigin_out(ORIGIN_TYPE.DELETE),
+                stash.vldFlag(0),
+            ).Elif(insert.vld,
+                lookupOrigin_out(ORIGIN_TYPE.INSERT),
+                stash.key(insert.key),
+                stash.data(insert.data),
+                stash.vldFlag(1),
+            ).Elif(lookup.vld,
+                lookupOrigin_out(ORIGIN_TYPE.LOOKUP),
+                stash.key(lookup.key),
+            )
+        )
         priority = [self.clean, self.delete, self.insert, lookup]
         for i, intf in enumerate(priority):
             withLowerPrio = priority[:i]
-            intf.rd(And(isIdle, *map(lambda x:~x.vld, withLowerPrio)))
+            intf.rd(And(isIdle, *map(lambda x: ~x.vld, withLowerPrio)))
 
     def lookupOfTablesDriver(self, state, tableKey):
         fsm_t = state._dtype
@@ -332,33 +332,33 @@ class CuckooHashTable(HashTableCore):
                    # before each insert suitable place has to be searched first
                    (self.insert.vld | self.lookup.vld | 
                     self.delete.vld, fsm_t.lookup)
-                   ).Trans(fsm_t.cleaning,
-                           # walk all items and clean it's vldFlags
-                           (cleanLast, fsm_t.idle)
-                           ).Trans(fsm_t.lookup,
-                                   # search and resolve in which table item
-                                   # should be stored
-                                   (lookupAck, fsm_t.lookupResWaitRd)
-                                   ).Trans(fsm_t.lookupResWaitRd,
-                                           # process result of lookup and
-                                           # write data stash to tables if
-                                           # required
-                                           (lookupResAck, fsm_t.lookupResAck)
-                                           ).Trans(fsm_t.lookupResAck,
-                                                   # process lookupRes, if we are going to insert on place where
-                                                   # valid item is, it has to
-                                                   # be stored
-                                                   (lookupOrigin._eq(
-                                                       ORIGIN_TYPE.DELETE), fsm_t.idle),
-                                                   (isExternLookup & 
-                                                    lookupRes.rd, fsm_t.idle),
-                                                   # insert into specified
-                                                   # table
-                                                   (~isExternLookup & insertAck & 
-                                                    insertFinal, fsm_t.idle),
-                                                   (~isExternLookup & insertAck & 
-                                                    ~insertFinal, fsm_t.lookup)
-                                                   ).stateReg
+            ).Trans(fsm_t.cleaning,
+                # walk all items and clean it's vldFlags
+                (cleanLast, fsm_t.idle)
+            ).Trans(fsm_t.lookup,
+                # search and resolve in which table item
+                # should be stored
+                (lookupAck, fsm_t.lookupResWaitRd)
+            ).Trans(fsm_t.lookupResWaitRd,
+                # process result of lookup and
+                # write data stash to tables if
+                # required
+                (lookupResAck, fsm_t.lookupResAck)
+            ).Trans(fsm_t.lookupResAck,
+                # process lookupRes, if we are going to insert on place where
+                # valid item is, it has to
+                # be stored
+                (lookupOrigin._eq(
+                    ORIGIN_TYPE.DELETE), fsm_t.idle),
+                (isExternLookup & 
+                 lookupRes.rd, fsm_t.idle),
+                # insert into specified
+                # table
+                (~isExternLookup & insertAck & 
+                 insertFinal, fsm_t.idle),
+                (~isExternLookup & insertAck & 
+                 ~insertFinal, fsm_t.lookup)
+            ).stateReg
 
         cleanAck(StreamNode(slaves=[t.insert for t in tables]).ack() & 
                  state._eq(fsm_t.cleaning))

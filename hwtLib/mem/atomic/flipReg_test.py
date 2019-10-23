@@ -4,14 +4,16 @@
 import unittest
 
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.mem.atomic.flipReg import FlipRegister
 
 
-class FlipRegTC(SimTestCase):
-    def setUp(self):
-        self.u = FlipRegister()
-        self.prepareUnit(self.u)
+class FlipRegTC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = FlipRegister()
+        return cls.u
 
     def test_simpleWriteAndSwitch(self):
         u = self.u

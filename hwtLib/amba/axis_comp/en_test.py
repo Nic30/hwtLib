@@ -2,18 +2,18 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axis_comp.en import AxiS_en
 from pyMathBitPrecise.bit_utils import mask
 
 
-class AxiS_en_TC(SimTestCase):
+class AxiS_en_TC(SingleUnitSimTestCase):
 
-    def setUp(self):
-        SimTestCase.setUp(self)
-        u = self.u = AxiS_en()
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = AxiS_en()
         u.USE_STRB = True
-        self.prepareUnit(u)
+        return u
 
     def test_break(self):
         m = mask(64 // 8)

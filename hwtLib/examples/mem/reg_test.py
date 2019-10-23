@@ -10,14 +10,14 @@ from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceLatch
 from hwt.serializer.systemC.serializer import SystemCSerializer
 from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.vhdl.serializer import VhdlSerializer
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.utils import toRtl
 from hwtLib.examples.mem.reg import DReg, DoubleDReg, OptimizedOutReg, \
     AsyncResetReg, DDR_Reg, Latch, DReg_asyncRst
 from pycocotb.constants import CLK_PERIOD
 
 
-class DRegTC(SimpleSimTestCase):
+class DRegTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
@@ -35,7 +35,7 @@ class DRegTC(SimpleSimTestCase):
         self.assertValSequenceEqual(recieved, expected)
 
 
-class DoubleRRegTC(SimpleSimTestCase):
+class DoubleRRegTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
@@ -54,7 +54,7 @@ class DoubleRRegTC(SimpleSimTestCase):
         self.assertValSequenceEqual(recieved, expected)
 
 
-class DReg_asyncRstTC(SimpleSimTestCase):
+class DReg_asyncRstTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
@@ -72,7 +72,10 @@ class RegSerializationTC(TestCase):
 
     def assertEqualToFile(self, value, file_name):
         THIS_DIR = os.path.dirname(os.path.realpath(__file__))
-        with open(os.path.join(THIS_DIR, file_name)) as f:
+        fn = os.path.join(THIS_DIR, file_name)
+        # with open(fn, "w") as f:
+        #     f.write(value)
+        with open(fn) as f:
             file_content = f.read()
         self.assertEqual(value, file_content)
 

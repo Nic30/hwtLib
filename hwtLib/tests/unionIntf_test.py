@@ -70,22 +70,22 @@ class UnionIntfTC(SimTestCase):
 
     def test_instantiationSinkSlave(self):
         u = SimpleUnionSlave(UnionSink, union0)
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         self.checkIntf(u)
 
     def test_instantiationSinkMaster(self):
         u = SimpleUnionMaster(UnionSink, union0)
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         self.checkIntf(u)
 
     def test_instantiationSourceSlave(self):
         u = SimpleUnionSlave(UnionSource, union0)
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         self.checkIntf(u)
 
     def test_instantiationSourceMaster(self):
         u = SimpleUnionMaster(UnionSource, union0)
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         self.checkIntf(u)
 
 

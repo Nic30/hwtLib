@@ -60,7 +60,7 @@ class ListOfInterfacesSample3TC(SimTestCase):
         self._test(u)
 
     def _test(self, u):
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         r = self._rand.getrandbits
         CH_CNT = 3
 

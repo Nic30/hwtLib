@@ -15,7 +15,7 @@ class AxiSStoredBurstTC(SimTestCase):
         DATA = [1, 2, 3, 4, 5, 6, 7, 8]
         u = AxiSStoredBurst(DATA)
         u.REPEAT = False
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         self.randomize(u.dataOut)
 
         self.runSim(20 * (len(DATA) + 2) * Time.ns)
@@ -27,7 +27,7 @@ class AxiSStoredBurstTC(SimTestCase):
         DATA = [1, 2, 3, 4, 5, 6, 7, 8]
         u = AxiSStoredBurst(DATA)
         u.REPEAT = True
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         self.randomize(u.dataOut)
 
         self.runSim(20 * (len(DATA) * 2 + 2) * Time.ns)

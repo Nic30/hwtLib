@@ -5,18 +5,17 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.pyUtils.arrayQuery import take, iter_with_last
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axis_comp.measuringFifo import AxiS_measuringFifo
 from pyMathBitPrecise.bit_utils import mask, mask_bytes
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
 
 
-class AxiS_measuringFifoTC(SimTestCase):
+class AxiS_measuringFifoTC(SingleUnitSimTestCase):
 
     @classmethod
-    def setUpClass(cls):
-        super(AxiS_measuringFifoTC, cls).setUpClass()
+    def getUnit(cls):
         u = cls.u = AxiS_measuringFifo()
         u.USE_STRB = True
         cls.DATA_WIDTH = 64
@@ -25,8 +24,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         u.MAX_LEN = cls.MAX_LEN
         u.SIZES_BUFF_DEPTH = 4
         u.DATA_WIDTH = cls.DATA_WIDTH
-
-        cls.prepareUnit(u)
+        return u
 
     def test_nop(self):
         u = self.u

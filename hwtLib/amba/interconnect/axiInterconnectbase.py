@@ -6,8 +6,8 @@ from hwtLib.logic.oneHotToBin import oneHotToBin
 
 
 def getSizeWidth(maxLen, dataWidth):
-    alignBits = log2ceil(dataWidth // 8 - 1).val
-    lenBits = log2ceil(maxLen).val + 1
+    alignBits = log2ceil(dataWidth // 8 - 1)
+    lenBits = log2ceil(maxLen) + 1
     return lenBits + alignBits
 
 

@@ -25,7 +25,7 @@ def addValues(unit, data):
 class ConcatTC(SimTestCase):
     def setUpUnit(self, unit):
         self.u = unit
-        self.prepareUnit(self.u)
+        self.compileSim(self.u)
 
     def test_join(self):
         self.setUpUnit(SimpleConcat())

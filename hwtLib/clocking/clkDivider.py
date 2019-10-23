@@ -60,7 +60,7 @@ class ClkDiv3(Unit):
 class ClkDiv3TC(SimTestCase):
     def test_oscilation(self):
         u = ClkDiv3()
-        self.prepareUnit(u)
+        self.compileSim(u)
 
         self.runSim(10 * 10 * Time.ns)
         expected = [(0, 0),

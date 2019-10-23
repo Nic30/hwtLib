@@ -3,7 +3,7 @@
 
 from hwt.hdl.constants import NOP
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.handshaked.ramAsHs import RamAsHs, RamHsR
 from hwtLib.interfaces.addrDataHs import AddrDataHs
 from hwtLib.mem.ram import RamSingleClock
@@ -29,7 +29,7 @@ class RamWithHs(RamAsHs):
         self.ram.a(self.conv.ram)
 
 
-class RamAsHs_TC(SimpleSimTestCase):
+class RamAsHs_TC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

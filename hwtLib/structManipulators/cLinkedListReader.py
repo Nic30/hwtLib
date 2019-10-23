@@ -74,7 +74,7 @@ class CLinkedListReader(Unit):
         f.DEPTH = self.BUFFER_CAPACITY
 
     def addrAlignBits(self):
-        return log2ceil(self.DATA_WIDTH // 8).val
+        return log2ceil(self.DATA_WIDTH // 8)
 
     def _impl(self):
         propagateClkRstn(self)

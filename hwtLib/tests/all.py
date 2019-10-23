@@ -3,7 +3,7 @@
 
 from unittest import TestLoader, TextTestRunner, TestSuite
 
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import \
     AxiLiteEndpointArrayTC, AxiLiteEndpointStructsInArrayTC
@@ -177,15 +177,18 @@ from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
+from hwt.simulator.simTestCase import SimTestCase
 
 
 # from hwtLib.peripheral.i2c.i2cAgent_test import I2cAgent_TC
 def testSuiteFromTCs(*tcs):
     loader = TestLoader()
     for tc in tcs:
-        if not isinstance(tc, SimpleSimTestCase):
+        if not issubclass(tc, SingleUnitSimTestCase):
             tc._multiprocess_can_split_ = True
-    loadedTcs = [loader.loadTestsFromTestCase(tc) for tc in tcs]
+    loadedTcs = [loader.loadTestsFromTestCase(tc) for tc in tcs
+                 # if not issubclass(tc, SimTestCase)  # [debug] skip simulations
+                 ]
     suite = TestSuite(loadedTcs)
     return suite
 
@@ -301,7 +304,7 @@ suite = testSuiteFromTCs(
     UartRxTC,
     UartTxRxTC,
     SpiMasterTC,
-    #I2cAgent_TC,
+    # I2cAgent_TC,
     I2CMasterBitCntrlTC,
     CrcUtilsTC,
     CrcCombTC,

@@ -77,7 +77,7 @@ class ArrayBuff_writer(Unit):
         )
 
     def _impl(self):
-        ALIGN_BITS = log2ceil(self.DATA_WIDTH // 8 - 1).val
+        ALIGN_BITS = log2ceil(self.DATA_WIDTH // 8 - 1)
         TIMEOUT_MAX = self.TIMEOUT - 1
         ITEMS = self.ITEMS
         buff = self.buff

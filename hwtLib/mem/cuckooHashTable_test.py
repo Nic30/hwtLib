@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.cuckooHashTable import CuckooHashTable
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
 
 
-class CuckooHashTableTC(SimpleSimTestCase):
+class CuckooHashTableTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
@@ -22,7 +22,7 @@ class CuckooHashTableTC(SimpleSimTestCase):
         return u
 
     def setUp(self):
-        SimpleSimTestCase.setUp(self)
+        SingleUnitSimTestCase.setUp(self)
         self.TABLE_MEMS = [getattr(self.rtl_simulator, "tables_%d_inst" % i).table_inst.ram_memory
                            for i in range(self.TABLE_CNT)]
 

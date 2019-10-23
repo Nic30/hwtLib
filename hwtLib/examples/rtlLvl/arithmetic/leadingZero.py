@@ -39,7 +39,7 @@ ENTITY LeadingZero IS
     PORT (s_in: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         s_indexOfFirstZero: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
-END LeadingZero;
+END ENTITY;
 
 ARCHITECTURE rtl OF LeadingZero IS
 BEGIN
@@ -64,7 +64,7 @@ BEGIN
         END IF;
     END PROCESS;
 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 if __name__ == "__main__":
     netlist, interfaces = LeadingZero()

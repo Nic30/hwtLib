@@ -242,7 +242,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
                                  fPartSig._dtype)
             If(dataVld,
                fPartReg(fPartSig)
-               )
+            )
             signalsOfParts.append(fPartReg)
 
     def _impl(self):

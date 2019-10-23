@@ -18,7 +18,7 @@ class ClkSynchronizerTC(SimTestCase):
         super(ClkSynchronizerTC, cls).setUpClass()
         u = ClkSynchronizer()
         u.DATA_TYP = Bits(32)
-        cls.prepareUnit(u)
+        cls.compileSim(u)
 
     def runSim(self, dataInStimul, until=10 * CLK_PERIOD):
         collected = []

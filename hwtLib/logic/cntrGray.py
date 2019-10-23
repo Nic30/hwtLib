@@ -41,7 +41,7 @@ class GrayCntr(Unit):
 class GrayCntrTC(SimTestCase):
     def test_count(self):
         u = GrayCntr()
-        self.prepareUnit(u)
+        self.compileSim(u)
         u.en._ag.data.append(1)
 
         self.runSim(170 * Time.ns)

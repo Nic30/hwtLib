@@ -48,9 +48,9 @@ class MMU_2pageLvl(Unit):
         self.MAX_OVERLAP = Param(16)
 
     def _declr(self):
-        self.PAGE_OFFSET_WIDTH = log2ceil(self.PAGE_SIZE).val
-        self.LVL1_PAGE_TABLE_INDX_WIDTH = log2ceil(self.LVL1_PAGE_TABLE_ITEMS).val
-        self.LVL2_PAGE_TABLE_INDX_WIDTH = int(self.ADDR_WIDTH - self.LVL1_PAGE_TABLE_INDX_WIDTH - self.PAGE_OFFSET_WIDTH)
+        self.PAGE_OFFSET_WIDTH = log2ceil(self.PAGE_SIZE)
+        self.LVL1_PAGE_TABLE_INDX_WIDTH = log2ceil(self.LVL1_PAGE_TABLE_ITEMS)
+        self.LVL2_PAGE_TABLE_INDX_WIDTH = self.ADDR_WIDTH - self.LVL1_PAGE_TABLE_INDX_WIDTH - self.PAGE_OFFSET_WIDTH
         self.LVL2_PAGE_TABLE_ITEMS = 2 ** int(self.LVL2_PAGE_TABLE_INDX_WIDTH)
         assert self.LVL1_PAGE_TABLE_INDX_WIDTH > 0, self.LVL1_PAGE_TABLE_INDX_WIDTH
         assert self.LVL2_PAGE_TABLE_INDX_WIDTH > 0, self.LVL2_PAGE_TABLE_INDX_WIDTH

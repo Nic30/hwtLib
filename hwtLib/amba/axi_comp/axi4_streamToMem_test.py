@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi_comp.axi4_streamToMem import Axi4streamToMem
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
@@ -10,11 +10,11 @@ from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
 from pycocotb.constants import CLK_PERIOD
 
 
-class Axi4_streamToMemTC(SimTestCase):
+class Axi4_streamToMemTC(SingleUnitSimTestCase):
+
     @classmethod
     def setUpClass(cls):
         SimTestCase.setUpClass()
-
         u = cls.u = Axi4streamToMem()
 
         def mkRegisterMap(u):
@@ -25,7 +25,7 @@ class Axi4_streamToMemTC(SimTestCase):
         cls.DATA_WIDTH = 32
         u.DATA_WIDTH = cls.DATA_WIDTH
 
-        cls.prepareUnit(u, onAfterToRtl=mkRegisterMap)
+        cls.compileSim(u, onAfterToRtl=mkRegisterMap)
 
     def test_nop(self):
         u = self.u

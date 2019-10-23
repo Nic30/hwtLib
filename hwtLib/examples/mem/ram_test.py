@@ -3,7 +3,7 @@
 
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceRAM
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.utils import toRtl
 import unittest
 from unittest.case import TestCase
@@ -12,7 +12,7 @@ from hwtLib.examples.mem.ram import SimpleAsyncRam, SimpleSyncRam
 from pycocotb.constants import CLK_PERIOD
 
 
-class SimpleAsyncRamTC(SimpleSimTestCase):
+class SimpleAsyncRamTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
@@ -32,7 +32,7 @@ class SimpleAsyncRamTC(SimpleSimTestCase):
         ae(u.dout._ag.data, [None, 10, 11, 12, None, None, None, 17])
 
 
-class SimpleSyncRamTC(SimpleSimTestCase):
+class SimpleSyncRamTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

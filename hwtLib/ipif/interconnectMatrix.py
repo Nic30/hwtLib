@@ -67,7 +67,7 @@ class IpifInterconnectMatrix(BusInterconnect):
             s.bus2ip_rnw(m.bus2ip_rnw)
             s.bus2ip_data(m.bus2ip_data)
 
-            bitsOfSubAddr = int(log2ceil(s_size - 1))
+            bitsOfSubAddr = log2ceil(s_size - 1)
             prefix = selectBitRange(
                 s_offset, bitsOfSubAddr, AW - bitsOfSubAddr)
             cs = self._sig("m_cs_%d" % i)

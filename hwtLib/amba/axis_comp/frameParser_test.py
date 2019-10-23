@@ -120,7 +120,7 @@ class AxiS_frameParserTC(SimTestCase):
     def mySetUp(self, dataWidth, structTemplate, randomize=False):
         u = AxiS_frameParser(structTemplate)
         u.DATA_WIDTH = dataWidth
-        self.prepareUnit(u)
+        self.compileSim(u)
         if randomize:
             self.randomizeIntf(u.dataIn)
             self.randomizeIntf(u.dataOut)
@@ -168,7 +168,7 @@ class AxiS_frameParserTC(SimTestCase):
                 64: 160,
                 128: 110,
                 512: 90,
-                }
+            }
             t = ts[dataWidth] * 10 * Time.ns
         self.runMatrixSim(t, dataWidth, randomize)
 

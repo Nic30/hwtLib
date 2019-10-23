@@ -58,25 +58,25 @@ class Showcase0(Unit):
         # assig_process_c sensitivity: a, b
         c((a + (b)._reinterpret_cast(Bits(32, signed=False)))._reinterpret_cast(Bits(32)))
         # assig_process_cmp_0 sensitivity: a
-        cmp_0((a < 0x4)._ternary(Bits(1).from_py(0x1), Bits(1).from_py(0x0)))
+        cmp_0(a < 0x4)
         # assig_process_cmp_1 sensitivity: a
-        cmp_1((a > 0x4)._ternary(Bits(1).from_py(0x1), Bits(1).from_py(0x0)))
+        cmp_1(a > 0x4)
         # assig_process_cmp_2 sensitivity: b
-        cmp_2((b <= 0x4)._ternary(Bits(1).from_py(0x1), Bits(1).from_py(0x0)))
+        cmp_2(b <= 0x4)
         # assig_process_cmp_3 sensitivity: b
-        cmp_3((b >= 0x4)._ternary(Bits(1).from_py(0x1), Bits(1).from_py(0x0)))
+        cmp_3(b >= 0x4)
         # assig_process_cmp_4 sensitivity: b
-        cmp_4((b != 0x4)._ternary(Bits(1).from_py(0x1), Bits(1).from_py(0x0)))
+        cmp_4(b != 0x4)
         # assig_process_cmp_5 sensitivity: b
-        cmp_5((b._eq(0x4))._ternary(Bits(1).from_py(0x1), Bits(1).from_py(0x0)))
+        cmp_5(b._eq(0x4))
         # assig_process_contOut sensitivity: 
         contOut((const_private_signal)._reinterpret_cast(Bits(32)))
         # assig_process_f sensitivity: r
         f(r)
         # assig_process_fallingEdgeRam sensitivity: (SENSITIVITY.FALLING, clk)
         If((clk)._onFallingEdge(),
-            fallingEdgeRam[(r_1)._reinterpret_cast(INT)](((a)[8:0])._reinterpret_cast(Bits(8, signed=True, force_vector=True))),
-            k(Concat(Bits(24, force_vector=True).from_py(0x0), (((fallingEdgeRam)[(r_1)._reinterpret_cast(INT)])._reinterpret_cast(Bits(8, signed=False)))._reinterpret_cast(Bits(8)))),
+            fallingEdgeRam[r_1](((a)[8:0])._reinterpret_cast(Bits(8, signed=True, force_vector=True))),
+            k(Concat(Bits(24, force_vector=True).from_py(0x0), (((fallingEdgeRam)[r_1])._reinterpret_cast(Bits(8, signed=False)))._reinterpret_cast(Bits(8)))),
         )
         # assig_process_fitted sensitivity: a
         fitted(((a)[16:0])._reinterpret_cast(Bits(16, force_vector=True)))
@@ -94,7 +94,7 @@ class Showcase0(Unit):
         )
         # assig_process_j sensitivity: (SENSITIVITY.RISING, clk)
         If((clk)._onRisingEdge(),
-            j(((rom)[(r_1)._reinterpret_cast(INT)])._reinterpret_cast(Bits(8))),
+            j(((rom)[r_1])._reinterpret_cast(Bits(8))),
         )
         # assig_process_out sensitivity: 
         out(0x0)

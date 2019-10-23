@@ -4,14 +4,14 @@
 import unittest
 
 from hwt.hdl.constants import Time, NOP
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.arrayBuff_writer import ArrayBuff_writer
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
 
 
-class ArrayBuff_writer_TC(SimpleSimTestCase):
+class ArrayBuff_writer_TC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

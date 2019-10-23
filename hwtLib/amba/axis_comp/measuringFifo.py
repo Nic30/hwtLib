@@ -32,7 +32,7 @@ class AxiS_measuringFifo(Unit):
         self.EXPORT_ALIGNMENT_ERROR = Param(False)
 
     def getAlignBitsCnt(self):
-        return log2ceil(self.DATA_WIDTH // 8).val
+        return log2ceil(self.DATA_WIDTH // 8)
 
     def _declr(self):
         addClkRstn(self)

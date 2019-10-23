@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.constants import WRITE, READ
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 import unittest
 
 from hwtLib.mem.ram import Ram_sp
 from pycocotb.constants import CLK_PERIOD
 
 
-class RamTC(SimpleSimTestCase):
+class RamTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

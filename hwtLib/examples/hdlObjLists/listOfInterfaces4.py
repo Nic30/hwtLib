@@ -114,7 +114,7 @@ class ListOfInterfacesSample4d(ListOfInterfacesSample4b):
 class ListOfInterfacesSample4TC(SimTestCase):
     def test_ListOfInterfacesSample4b_intfIterations(self):
         u = ListOfInterfacesSample4d()
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
 
         i = 0
         for a in u.a:
@@ -133,7 +133,7 @@ class ListOfInterfacesSample4TC(SimTestCase):
         self.assertValEqual(i, 3)
 
     def _test(self, u):
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         r = self._rand.getrandbits
 
         def randInts():

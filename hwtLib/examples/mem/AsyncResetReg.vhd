@@ -11,7 +11,7 @@ ENTITY AsyncResetReg IS
         dout: OUT STD_LOGIC;
         rst: IN STD_LOGIC
     );
-END AsyncResetReg;
+END ENTITY;
 
 ARCHITECTURE rtl OF AsyncResetReg IS
     SIGNAL internReg: STD_LOGIC := '0';
@@ -26,4 +26,4 @@ BEGIN
         END IF;
     END PROCESS;
 
-END ARCHITECTURE rtl;
+END ARCHITECTURE;

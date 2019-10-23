@@ -4,12 +4,12 @@
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.logic.crcPoly import CRC_32
 from hwt.simulator.agentConnector import valuesToInts
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
 
 
-class HashTableCoreTC(SimpleSimTestCase):
+class HashTableCoreTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
@@ -22,7 +22,7 @@ class HashTableCoreTC(SimpleSimTestCase):
         return u
 
     def setUp(self):
-        SimpleSimTestCase.setUp(self)
+        SingleUnitSimTestCase.setUp(self)
         # clean up memory
         mem = self.rtl_simulator.table_inst.ram_memory.defVal
         for i in range(mem._dtype.size):

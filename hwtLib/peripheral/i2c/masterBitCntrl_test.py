@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.peripheral.i2c.intf import I2cAgent
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl,\
     NOP, START, READ, WRITE
@@ -12,7 +12,7 @@ from pycocotb.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import selectBit
 
 
-class I2CMasterBitCntrlTC(SimpleSimTestCase):
+class I2CMasterBitCntrlTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

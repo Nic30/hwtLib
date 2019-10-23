@@ -36,10 +36,10 @@ class UnitToUnitConnection(Unit):
 
 
 class UnitToUnitConnectionTC(SimpleSubunit2TC):
-    def setUp(self):
-        SimTestCase.setUp(self)
-        self.u = UnitToUnitConnection()
-        self.prepareUnit(self.u)
+
+    @classmethod
+    def getUnit(cls) -> Unit:
+        return UnitToUnitConnection()
 
 
 if __name__ == "__main__":

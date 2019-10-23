@@ -29,7 +29,7 @@ ENTITY SwitchStatement IS
     PORT (input: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
         output: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
-END SwitchStatement;
+END ENTITY;
 
 ARCHITECTURE rtl OF SwitchStatement IS
 BEGIN
@@ -56,7 +56,7 @@ BEGIN
         END CASE;
     END PROCESS;
 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 if __name__ == "__main__":
     netlist, interfaces = SwitchStatement()

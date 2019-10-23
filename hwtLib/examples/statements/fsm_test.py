@@ -4,7 +4,7 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwtLib.examples.statements.fsm import FsmExample, HadrcodedFsmExample
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimTestCase, SingleUnitSimTestCase
 from hwt.synthesizer.utils import toRtl
 from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.systemC.serializer import SystemCSerializer
@@ -24,7 +24,7 @@ ENTITY FsmExample IS
         dout: OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
         rst_n: IN STD_LOGIC
     );
-END FsmExample;
+END ENTITY;
 
 ARCHITECTURE rtl OF FsmExample IS
     TYPE ST_T IS (a_0, b_0, aAndB);
@@ -84,7 +84,7 @@ BEGIN
         END CASE;
     END PROCESS;
 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 fsmExample_verilog = """/*
 
@@ -241,11 +241,12 @@ SC_MODULE(FsmExample) {
 };"""
 
 
-class FsmExampleTC(SimTestCase):
-    def setUp(self):
-        super(FsmExampleTC, self).setUp()
-        self.u = FsmExample()
-        self.prepareUnit(self.u)
+class FsmExampleTC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = FsmExample()
+        return cls.u
 
     def test_allCases(self):
         u = self.u
@@ -260,10 +261,11 @@ class FsmExampleTC(SimTestCase):
 
 
 class HadrcodedFsmExampleTC(FsmExampleTC):
-    def setUp(self):
-        SimTestCase.setUp(self)
-        self.u = HadrcodedFsmExample()
-        self.prepareUnit(self.u)
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = HadrcodedFsmExample()
+        return cls.u
 
 
 class FsmSerializationTC(unittest.TestCase):

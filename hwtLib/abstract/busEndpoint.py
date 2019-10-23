@@ -10,16 +10,14 @@ from hwt.hdl.types.struct import HStruct, HStructField
 from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf, HTypeFromIntfMap, IntfMap
 from hwt.interfaces.utils import addClkRstn
-from hwt.pyUtils.arrayQuery import where, arr_any
-from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import walkFlatten
+from hwt.pyUtils.arrayQuery import arr_any
+from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
+from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.sim.abstractMemSpaceMaster import PartialField
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
-from hwt.synthesizer.param import Param
 
 
 def inRange(n, lower, end):
@@ -44,7 +42,7 @@ def isPaddingInIntfMap(item):
 def _walkStructIntfAndIntfMap_unpack(structIntf, intfMap):
     """
     Try to unpack intfMap and apply the selection on structIntf
-    
+
     :return: Optional tuple Interface, intfMap
     """
     # items are Interface/RtlSignal or (type/interface/None or list of items, name)
@@ -60,9 +58,9 @@ def _walkStructIntfAndIntfMap_unpack(structIntf, intfMap):
     if isinstance(item, HdlType):
         # this part of structIntf was generated from type descriptin
         # and we are re searching only for those parts which were generated
-        # from Interface/RtlSignal 
+        # from Interface/RtlSignal
         return
-        
+
     return getattr(structIntf, name), item
 
 
@@ -71,17 +69,15 @@ def walkStructIntfAndIntfMap(structIntf, intfMap):
     Walk StructInterfacece and interface map
     and yield tuples (Interface in StructInterface, interface in intfMap)
     which are on same place
-    
+
     :param structIntf: HObjList or StructIntf or UnionIntf instance
     :param intfMap: interface map
-    
+
     :note: typical usecase is when there is StructIntf generated from description in intfMap
         and then you need to connect interface from intfMap to structIntf
         and there you can use this function to iterate over interfaces which belongs together
-        
-    
     """
-    
+
     if isinstance(intfMap, (InterfaceBase, RtlSignalBase)):
         yield structIntf, intfMap
         return
@@ -211,7 +207,8 @@ class BusEndpoint(Unit):
         hasAnyInterface = False
         for ((base, end), transTmpl) in fieldTrans:
             intf = intfIt.actual
-            isPartOfSomeArray = arr_any(intfIt.onParentNames, lambda x: isinstance(x, int))
+            isPartOfSomeArray = arr_any(intfIt.onParentNames,
+                                        lambda x: isinstance(x, int))
             if isPartOfSomeArray:
                 _tTmpl = copy(transTmpl)
                 _tTmpl.bitAddr = base
@@ -266,7 +263,7 @@ class BusEndpoint(Unit):
 
     def _suggestedAddrWidth(self):
         """
-        Based on strut template resolve how many bits for
+        Based on struct template resolve how many bits for
         address is needed
         """
         bitSize = self.STRUCT_TEMPLATE.bit_length()
@@ -278,7 +275,6 @@ class BusEndpoint(Unit):
             bitSize += wordAddrStep - (bitSize % wordAddrStep)
 
         maxAddr = (bitSize // addrStep) - 1
-
 
         return maxAddr.bit_length()
 
@@ -308,11 +304,13 @@ class BusEndpoint(Unit):
         addrIsAligned = transTmpl.bitAddr % transTmpl.bit_length() == 0
         bitsForAlignment = ((dstAddrStep // srcAddrStep) - 1).bit_length()
         bitsOfSubAddr = (
-            (transTmpl.bitAddrEnd - transTmpl.bitAddr - 1) // dstAddrStep).bit_length()
+            (transTmpl.bitAddrEnd - transTmpl.bitAddr - 1)
+            // dstAddrStep
+        ).bit_length()
 
         if addrIsAligned:
             bitsOfPrefix = IN_ADDR_WIDTH - bitsOfSubAddr - bitsForAlignment
-            prefix = (transTmpl.bitAddr // 
+            prefix = (transTmpl.bitAddr //
                       srcAddrStep) >> (bitsForAlignment + bitsOfSubAddr)
             addrIsInRange = srcAddrSig[IN_ADDR_WIDTH:(
                 IN_ADDR_WIDTH - bitsOfPrefix)]._eq(prefix)
@@ -325,8 +323,10 @@ class BusEndpoint(Unit):
                                  "_addr_tmp", Bits(self.ADDR_WIDTH))
             addr_tmp(srcAddrSig - _addr)
 
-        connectedAddr = (dstAddrSig(
-            addr_tmp[(bitsOfSubAddr + bitsForAlignment):(bitsForAlignment)]))
+        addr_h = bitsOfSubAddr + bitsForAlignment
+        connectedAddr = dstAddrSig(
+            addr_tmp[addr_h:bitsForAlignment]
+        )
 
         return (addrIsInRange, connectedAddr)
 
@@ -362,7 +362,7 @@ class BusEndpoint(Unit):
                 else:
                     return HObjList(
                         StructIntf(t.elmType,
-                                      instantiateFieldFn=self._mkFieldInterface)
+                                   instantiateFieldFn=self._mkFieldInterface)
                         for _ in range(int(t.size))
                     )
             elif isinstance(t, HStruct):
@@ -375,15 +375,8 @@ class BusEndpoint(Unit):
         else:
             _p = [p]
 
-        if dw == DW:
-            # use param instead of value to improve readability
-            DW = self.DATA_WIDTH
-            if isinstance(DW, Param):
-                for i in _p:
-                    i.DATA_WIDTH = DW
-        else:
-            for i in _p:
-                i.DATA_WIDTH = dw
+        for i in _p:
+            i.DATA_WIDTH = dw
 
         return p
 

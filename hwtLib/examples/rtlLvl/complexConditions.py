@@ -70,7 +70,7 @@ ENTITY ComplexConditions IS
         sd0: IN STD_LOGIC;
         sd1: IN STD_LOGIC
     );
-END ComplexConditions;
+END ENTITY;
 
 ARCHITECTURE rtl OF ComplexConditions IS
     TYPE T_STATE IS (idle, tsWait, ts0Wait, ts1Wait, lenExtr);
@@ -135,7 +135,7 @@ BEGIN
         END CASE;
     END PROCESS;
 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 if __name__ == "__main__":
     netlist, interfaces = ComplexConditions()

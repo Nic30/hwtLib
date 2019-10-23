@@ -16,6 +16,7 @@ from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.types.net.eth import Eth2Header_t
 from hwtLib.types.net.icmp import ICMP_echo_header_t, ICMP_TYPE
 from hwtLib.types.net.ip import IPv4Header_t, ipv4_t
+from hwt.serializer.verilog.serializer import VerilogSerializer
 
 
 echoFrame_t = HStruct(
@@ -28,11 +29,12 @@ echoFrame_t = HStruct(
 # https://github.com/hamsternz/FPGA_Webserver/tree/master/hdl/icmp
 class PingResponder(Unit):
     """
-    Listen for echo request on rx axi stream interface and respond with echo response on tx interface
+    Listen for echo request on rx axi stream interface and respond
+    with echo response on tx interface
 
     :note: incoming checksum is not checked
-    :attention: you have to ping "ping -s 0 <ip>" because unit ignores additional data in packet and linux by
-        defaults adds it
+    :attention: you have to ping "ping -s 0 <ip>" because unit ignores
+        additional data in packet and linux by defaults adds it
 
     .. hwt-schematic::
     """
@@ -89,7 +91,8 @@ class PingResponder(Unit):
 
         :param resp: registers with response data
         :param forgeIn: input interface of frame forge
-        :param sendingRepply: flag which signalizes that data should be forged into frame and send
+        :param sendingRepply: flag which signalizes that data
+            should be forged into frame and send
         """
 
         t = resp._dtype

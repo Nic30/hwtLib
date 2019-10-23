@@ -3,14 +3,14 @@
 
 import unittest
 
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.interconnect.rStricOrder import RStrictOrderInterconnect
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 
 
-class RStrictOrderInterconnectTC(SimpleSimTestCase):
+class RStrictOrderInterconnectTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

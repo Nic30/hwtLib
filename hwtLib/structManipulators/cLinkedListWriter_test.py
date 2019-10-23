@@ -3,13 +3,13 @@
 
 import unittest
 
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.cLinkedListWriter import CLinkedListWriter
 from pycocotb.constants import CLK_PERIOD
 
 
-class CLinkedListWriterTC(SimpleSimTestCase):
+class CLinkedListWriterTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

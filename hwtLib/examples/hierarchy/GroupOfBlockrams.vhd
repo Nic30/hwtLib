@@ -1,7 +1,7 @@
 --
 --    True dual port RAM.
 --    :note: write-first variant 
---    
+--
 --    .. hwt-schematic::
 --    
 library IEEE;
@@ -9,26 +9,30 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY bramR IS
-    GENERIC (ADDR_WIDTH: INTEGER := 8;
-        DATA_WIDTH: INTEGER := 64
+    GENERIC (ADDR_WIDTH: string := "8";
+        DATA_WIDTH: string := "64";
+        a_ADDR_WIDTH: string := "8";
+        a_DATA_WIDTH: string := "64";
+        b_ADDR_WIDTH: string := "8";
+        b_DATA_WIDTH: string := "64"
     );
-    PORT (a_addr: IN STD_LOGIC_VECTOR(ADDR_WIDTH - 1 DOWNTO 0);
+    PORT (a_addr: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
         a_clk: IN STD_LOGIC;
-        a_din: IN STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
-        a_dout: OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+        a_din: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+        a_dout: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
         a_en: IN STD_LOGIC;
         a_we: IN STD_LOGIC;
-        b_addr: IN STD_LOGIC_VECTOR(ADDR_WIDTH - 1 DOWNTO 0);
+        b_addr: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
         b_clk: IN STD_LOGIC;
-        b_din: IN STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
-        b_dout: OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+        b_din: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+        b_dout: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
         b_en: IN STD_LOGIC;
         b_we: IN STD_LOGIC
     );
-END bramR;
+END ENTITY;
 
 ARCHITECTURE rtl OF bramR IS
-    TYPE arrT_0 IS ARRAY ((2 ** ADDR_WIDTH - 1) DOWNTO 0) OF STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+    TYPE arrT_0 IS ARRAY ((255) DOWNTO 0) OF STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL ram_memory: arrT_0;
 BEGIN
     assig_process_a_dout: PROCESS (a_clk)
@@ -51,7 +55,7 @@ BEGIN
         END IF;
     END PROCESS;
 
-END ARCHITECTURE rtl;
+END ARCHITECTURE;
 --Object of class Entity, "bramR" was not serialized as specified
 --Object of class Architecture, "rtl" was not serialized as specified
 --
@@ -62,23 +66,23 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY GroupOfBlockrams IS
-    GENERIC (ADDR_WIDTH: INTEGER := 8;
-        DATA_WIDTH: INTEGER := 64
+    GENERIC (ADDR_WIDTH: string := "8";
+        DATA_WIDTH: string := "64"
     );
-    PORT (addr: IN STD_LOGIC_VECTOR(ADDR_WIDTH - 1 DOWNTO 0);
+    PORT (addr: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
         clk: IN STD_LOGIC;
         en: IN STD_LOGIC;
-        in_r_a: IN STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
-        in_r_b: IN STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
-        in_w_a: IN STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
-        in_w_b: IN STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
-        out_r_a: OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
-        out_r_b: OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
-        out_w_a: OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
-        out_w_b: OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+        in_r_a: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+        in_r_b: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+        in_w_a: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+        in_w_b: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+        out_r_a: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+        out_r_b: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+        out_w_a: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
+        out_w_b: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
         we: IN STD_LOGIC
     );
-END GroupOfBlockrams;
+END ENTITY;
 
 ARCHITECTURE rtl OF GroupOfBlockrams IS
     SIGNAL sig_bramR_a_addr: STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -106,19 +110,23 @@ ARCHITECTURE rtl OF GroupOfBlockrams IS
     SIGNAL sig_bramW_b_en: STD_LOGIC;
     SIGNAL sig_bramW_b_we: STD_LOGIC;
     COMPONENT bramR IS
-       GENERIC (ADDR_WIDTH: INTEGER := 8;
-            DATA_WIDTH: INTEGER := 64
+       GENERIC (ADDR_WIDTH: string := "8";
+            DATA_WIDTH: string := "64";
+            a_ADDR_WIDTH: string := "8";
+            a_DATA_WIDTH: string := "64";
+            b_ADDR_WIDTH: string := "8";
+            b_DATA_WIDTH: string := "64"
        );
-       PORT (a_addr: IN STD_LOGIC_VECTOR(ADDR_WIDTH - 1 DOWNTO 0);
+       PORT (a_addr: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
             a_clk: IN STD_LOGIC;
-            a_din: IN STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
-            a_dout: OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+            a_din: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+            a_dout: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
             a_en: IN STD_LOGIC;
             a_we: IN STD_LOGIC;
-            b_addr: IN STD_LOGIC_VECTOR(ADDR_WIDTH - 1 DOWNTO 0);
+            b_addr: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
             b_clk: IN STD_LOGIC;
-            b_din: IN STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
-            b_dout: OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+            b_din: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
+            b_dout: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
             b_en: IN STD_LOGIC;
             b_we: IN STD_LOGIC
        );
@@ -126,8 +134,12 @@ ARCHITECTURE rtl OF GroupOfBlockrams IS
 
 BEGIN
     bramR_inst: COMPONENT bramR
-        GENERIC MAP (ADDR_WIDTH => 8,
-            DATA_WIDTH => 64
+        GENERIC MAP (ADDR_WIDTH => "8",
+            DATA_WIDTH => "64",
+            a_ADDR_WIDTH => "8",
+            a_DATA_WIDTH => "64",
+            b_ADDR_WIDTH => "8",
+            b_DATA_WIDTH => "64"
         )
         PORT MAP (a_addr => sig_bramR_a_addr,
             a_clk => sig_bramR_a_clk,
@@ -144,8 +156,12 @@ BEGIN
         );
 
     bramW_inst: COMPONENT bramR
-        GENERIC MAP (ADDR_WIDTH => 8,
-            DATA_WIDTH => 64
+        GENERIC MAP (ADDR_WIDTH => "8",
+            DATA_WIDTH => "64",
+            a_ADDR_WIDTH => "8",
+            a_DATA_WIDTH => "64",
+            b_ADDR_WIDTH => "8",
+            b_DATA_WIDTH => "64"
         )
         PORT MAP (a_addr => sig_bramW_a_addr,
             a_clk => sig_bramW_a_clk,
@@ -185,4 +201,4 @@ BEGIN
     sig_bramW_b_din <= in_w_b;
     sig_bramW_b_en <= en;
     sig_bramW_b_we <= we;
-END ARCHITECTURE rtl;
+END ARCHITECTURE;

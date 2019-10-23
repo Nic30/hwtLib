@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from hwt.simulator.agentConnector import valToInt
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 
 from hwtLib.peripheral.uart.tx import UartTx
 from pycocotb.constants import CLK_PERIOD
 
 
-class UartTxTC(SimpleSimTestCase):
+class UartTxTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
@@ -18,7 +18,7 @@ class UartTxTC(SimpleSimTestCase):
         return u
 
     def setUp(self):
-        SimpleSimTestCase.setUp(self)
+        SingleUnitSimTestCase.setUp(self)
         self.randomize(self.u.dataIn)
 
     def getStr(self):
