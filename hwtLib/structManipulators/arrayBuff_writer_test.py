@@ -4,7 +4,8 @@
 import unittest
 
 from hwt.hdl.constants import Time, NOP
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase, \
+    simpleRandomizationProcess
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.arrayBuff_writer import ArrayBuff_writer
 from pycocotb.constants import CLK_PERIOD
@@ -222,7 +223,7 @@ class ArrayBuff_writer_TC(SingleUnitSimTestCase):
         def enReq(s):
             u.wDatapump.req._ag.enable = False
             yield s.wait(32 * CLK_PERIOD)
-            yield from self.simpleRandomizationProcess(u.wDatapump.req._ag)(s)
+            yield from simpleRandomizationProcess(self, u.wDatapump.req._ag)(s)
 
         self.procs.append(enReq)
 

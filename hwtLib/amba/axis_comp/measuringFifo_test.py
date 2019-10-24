@@ -5,7 +5,8 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.pyUtils.arrayQuery import take, iter_with_last
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase,\
+    simpleRandomizationProcess
 from hwtLib.amba.axis_comp.measuringFifo import AxiS_measuringFifo
 from pyMathBitPrecise.bit_utils import mask, mask_bytes
 from pycocotb.constants import CLK_PERIOD
@@ -210,7 +211,7 @@ class AxiS_measuringFifoTC(SingleUnitSimTestCase):
 
         def sizesEn(sim):
             yield Timer((SIZE_BUFF_SIZE + 5) * CLK_PERIOD)
-            yield from self.simpleRandomizationProcess(u.sizes._ag)(sim)
+            yield from simpleRandomizationProcess(self, u.sizes._ag)(sim)
 
         self.procs.append(sizesEn)
 
