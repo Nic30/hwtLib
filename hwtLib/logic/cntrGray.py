@@ -6,7 +6,7 @@ from hwt.hdl.constants import Time
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimTestCase, SingleUnitSimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 
@@ -18,6 +18,7 @@ class GrayCntr(Unit):
 
     .. hwt-schematic::
     """
+
     def _config(self):
         self.DATA_WIDTH = Param(4)
         self.INIT_VAL = Param(0)  # binary
@@ -38,10 +39,15 @@ class GrayCntr(Unit):
         )
 
 
-class GrayCntrTC(SimTestCase):
+class GrayCntrTC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls) -> Unit:
+        cls.u = GrayCntr()
+        return cls.u
+
     def test_count(self):
-        u = GrayCntr()
-        self.compileSim(u)
+        u = self.u
         u.en._ag.data.append(1)
 
         self.runSim(170 * Time.ns)

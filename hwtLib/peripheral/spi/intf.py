@@ -42,17 +42,17 @@ class SpiAgent(SyncAgentBase):
         self._discoverReset(allowNoReset=allowNoReset)
 
         # read on rising edge write on falling
-        self.monitorRx = OnRisingCallbackLoop(self.clk,
+        self.monitorRx = OnRisingCallbackLoop(self.sim, self.clk,
                                               self.monitorRx,
                                               self.getEnable)
-        self.monitorTx = OnFallingCallbackLoop(self.clk,
+        self.monitorTx = OnFallingCallbackLoop(self.sim, self.clk,
                                                self.monitorTx,
                                                self.getEnable)
 
-        self.driverRx = OnFallingCallbackLoop(self.clk,
+        self.driverRx = OnFallingCallbackLoop(self.sim, self.clk,
                                               self.driverRx,
                                               self.getEnable)
-        self.driverTx = OnRisingCallbackLoop(self.clk,
+        self.driverTx = OnRisingCallbackLoop(self.sim, self.clk,
                                              self.driverTx,
                                              self.getEnable)
 
