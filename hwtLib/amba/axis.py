@@ -94,8 +94,8 @@ class AxiStreamAgent(BaseAxiAgent):
     :ivar _sigCnt: len(_signals)
     """
 
-    def __init__(self, intf: AxiStream, allowNoReset=False):
-        BaseAxiAgent.__init__(self, intf, allowNoReset=allowNoReset)
+    def __init__(self, sim: HdlSimulator, intf: AxiStream, allowNoReset=False):
+        BaseAxiAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
 
         signals = []
         for i in intf._interfaces:
@@ -104,10 +104,10 @@ class AxiStreamAgent(BaseAxiAgent):
         self._signals = tuple(signals)
         self._sigCnt = len(signals)
 
-    def doRead(self, s):
+    def doRead(self):
         return tuple(sig.read() for sig in self._signals)
 
-    def doWrite(self, s, data):
+    def doWrite(self, data):
         if data is None:
             for sig in self._signals:
                 sig.write(None)
@@ -142,6 +142,7 @@ def unpackAxiSFrame(structT, frameData, getDataFn=None, dataWidth=None):
     opposite of packAxiSFrame
     """
     if getDataFn is None:
+
         def _getDataFn(x):
             return x[0]
 
