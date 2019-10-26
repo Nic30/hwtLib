@@ -6,6 +6,7 @@ from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
 from collections import deque
 from pyMathBitPrecise.bit_utils import mask, selectBitRange
+from pycocotb.triggers import WaitWriteOnly, WaitAllStable
 
 
 class AllocationError(Exception):
@@ -98,16 +99,18 @@ class DenseMemory():
         self.wAg = wAg
         self.wAckAg = wAckAg
         self.wPending = deque()
+        self.clk = clk
 
-        self._registerOnClock(clk)
+        self._registerOnClock()
 
-    def _registerOnClock(self, clk):
-        clk._sigInside.registerOnChangeCallback(self.checkRequests)
+    def _registerOnClock(self):
+        self.clk._sigInside.wait(self.checkRequests())
 
-    def checkRequests(self, simulator):
+    def checkRequests(self):
         """
         Check if any request has appeared on interfaces
         """
+        yield WaitWriteOnly()
         if self.arAg is not None:
             if self.arAg.data:
                 self.onReadReq()
@@ -121,8 +124,7 @@ class DenseMemory():
 
             if self.wPending and self.wPending[0][2] <= len(self.wAg.data):
                 self.doWrite()
-        return
-        yield
+        self._registerOnClock()
 
     def parseReq(self, req):
         for i, v in enumerate(req):

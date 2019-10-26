@@ -99,7 +99,7 @@ class AxiS_frameForge_TC(SimTestCase):
         u.DATA_WIDTH = self.DATA_WIDTH = DATA_WIDTH
         self.m = mask(self.DATA_WIDTH // 8)
 
-        self.compileSim(self.u)
+        self.compileSimAndStart(self.u)
         if randomized:
             self.randomize(u.dataOut)
             for intf in u.dataIn._fieldsToInterfaces.values():
@@ -188,7 +188,7 @@ class AxiS_frameForge_TC(SimTestCase):
         u.DATA_WIDTH = self.DATA_WIDTH = 64
         m = mask(self.DATA_WIDTH // 8)
 
-        self.compileSim(self.u)
+        self.compileSimAndStart(self.u)
 
         def enDataOut(s):
             u.dataOut._ag.enable = False
@@ -216,7 +216,7 @@ class AxiS_frameForge_TC(SimTestCase):
         self.DATA_WIDTH = 64
         u.DATA_WIDTH = self.DATA_WIDTH
         m = mask(self.DATA_WIDTH // 8)
-        self.compileSim(self.u)
+        self.compileSimAndStart(self.u)
 
         def enDataOut(s):
             u.dataOut._ag.enable = False
@@ -257,7 +257,7 @@ class AxiS_frameForge_TC(SimTestCase):
                                      tmpl, frames)
         u.DATA_WIDTH = self.DATA_WIDTH
         m = mask(self.DATA_WIDTH // 8)
-        self.compileSim(self.u)
+        self.compileSimAndStart(self.u)
 
         def enDataOut(s):
             u.dataOut._ag.enable = False

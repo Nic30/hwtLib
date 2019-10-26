@@ -115,8 +115,8 @@ class LookupResultIntfAgent(HandshakedAgent):
     data format is tuple (hash, key, data, found) but some items
     can be missing depending on configuration of interface
     """
-    def __init__(self, intf):
-        HandshakedAgent.__init__(self, intf)
+    def __init__(self, sim, intf):
+        HandshakedAgent.__init__(self, sim, intf)
         self.hasHash = bool(intf.LOOKUP_HASH)
         self.hasKey = bool(intf.LOOKUP_KEY)
         self.hasData = bool(intf.DATA_WIDTH)

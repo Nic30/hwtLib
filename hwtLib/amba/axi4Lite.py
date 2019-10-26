@@ -20,10 +20,10 @@ class Axi4Lite_addrAgent(Axi3Lite_addrAgent):
     :ivar data: iterable of addr
     """
 
-    def doRead(self, s):
+    def doRead(self):
         return self.intf.addr.read(), self.intf.prot.read()
 
-    def doWrite(self, s, data):
+    def doWrite(self, data):
         if data is None:
             addr, prot = None, None
         else:

@@ -92,7 +92,7 @@ class CLinkedListWriter(Unit):
         f.DATA_WIDTH = self.DATA_WIDTH
         f.DEPTH = self.BUFFER_CAPACITY
 
-        self.ALIGN_BITS = log2ceil(self.DATA_WIDTH // 8).val
+        self.ALIGN_BITS = log2ceil(self.DATA_WIDTH // 8)
 
     def addrToIndex(self, addr):
         return addr[:self.ALIGN_BITS]

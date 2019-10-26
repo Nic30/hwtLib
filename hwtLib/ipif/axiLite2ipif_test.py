@@ -21,8 +21,7 @@ class AxiLite2ipifTC(SimTestCase):
         u.DATA_WIDTH = DW
         u.ADDR_WIDTH = 32
         self.m = mask(DW // 8)
-        self.compileSim(u)
-        self.restartSim()
+        self.compileSimAndStart(u)
         ipif = u.m._ag
         ipif.READ_LATENCY = read_latency
         ipif.WRITE_LATENCY = write_latency

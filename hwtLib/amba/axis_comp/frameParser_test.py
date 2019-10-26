@@ -99,12 +99,12 @@ RAND_FLAGS = [False, True]
 def testMatrix(fn):
     def test_wrap(self):
         for dw, randomized in product(TEST_DW, RAND_FLAGS):
-            try:
-                fn(self, dw, randomized)
-            except Exception as e:
-                m = "DW:%d, Randomized:%r " % (dw, randomized)
-                e.args = (m + e.args[0], *e.args[1:])
-                raise
+            #try:
+            fn(self, dw, randomized)
+            #except Exception as e:
+            #    m = "DW:%d, Randomized:%r " % (dw, randomized)
+            #    e.args = (m, e.args[0], *e.args[1:])
+            #    raise
     return test_wrap
 
 
@@ -120,7 +120,7 @@ class AxiS_frameParserTC(SimTestCase):
     def mySetUp(self, dataWidth, structTemplate, randomize=False):
         u = AxiS_frameParser(structTemplate)
         u.DATA_WIDTH = dataWidth
-        self.compileSim(u)
+        self.compileSimAndStart(u)
         if randomize:
             self.randomizeIntf(u.dataIn)
             self.randomizeIntf(u.dataOut)
@@ -139,7 +139,7 @@ class AxiS_frameParserTC(SimTestCase):
 
     def runMatrixSim(self, time, dataWidth, randomize):
         self.runSim(time, name="tmp/" + self.getTestName()
-                         + ("_dw%d_r%d" % (dataWidth, randomize)) + ".vcd")
+                    + ("_dw%d_r%d" % (dataWidth, randomize)) + ".vcd")
 
     @testMatrix
     def test_structManyInts_nop(self, dataWidth, randomize):
@@ -224,7 +224,7 @@ class AxiS_frameParserTC(SimTestCase):
                 64: 100,
                 128: 130,
                 512: 50,
-                }
+            }
             t = ts[dataWidth] * 10 * Time.ns
         self.runMatrixSim(t, dataWidth, randomize)
 

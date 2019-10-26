@@ -86,17 +86,16 @@ class AvalonMmDataRAgent(VldSyncedAgent):
         intf = self.intf
         return (r(intf.readData), r(intf.response))
 
-    def doWrite(self, s, data):
+    def doWrite(self, data):
         """write data to interface"""
-        w = s.write
         intf = self.intf
         if data is None:
-            w(None, intf.readData)
-            w(None, intf.response)
+            intf.readData.write(None)
+            intf.response.write(None)
         else:
             readData, response = data
-            w(readData, intf.readData)
-            w(response, intf.response)
+            intf.readData.write(readData)
+            intf.response.write(response)
 
 
 class AvalonMmAddrAgent(HandshakedAgent):
@@ -153,14 +152,12 @@ class AvalonMmAddrAgent(HandshakedAgent):
         wrFn(r, self._vld[0])
         wrFn(w, self._vld[1])
 
-    def doRead(self, s):
-        r = s.read
-
+    def doRead(self):
         intf = self.intf
-        address = r(intf.address)
-        byteEnable = r(intf.byteEnable)
-        read = r(intf.read)
-        write = r(intf.write)
+        address = intf.address.read()
+        byteEnable = intf.byteEnable.read()
+        read = intf.read.read()
+        write = intf.write.read()
         burstCount = 1  # r(intf.burstCount)
 
         if read.val:
@@ -173,15 +170,14 @@ class AvalonMmAddrAgent(HandshakedAgent):
 
         return (address, byteEnable, rw, burstCount)
 
-    def doWrite(self, s, data):
-        w = s.write
+    def doWrite(self, data):
         intf = self.intf
         if data is None:
-            w(None, intf.address)
-            w(None, intf.byteEnable)
-            # w(None, intf.burstCount)
-            w(0, intf.read)
-            w(0, intf.write)
+            intf.address.write(None)
+            intf.byteEnable.write(None)
+            # intf.burstCount.write(None)
+            intf.read.write(0)
+            intf.write.write(0)
 
         else:
             rw, address, burstCount = data
@@ -192,16 +188,16 @@ class AvalonMmAddrAgent(HandshakedAgent):
                 rd, wr = 0, 1
                 rw, address, burstCount = data
                 d, be = self.wData.popleft()
-                w(d, intf.writeData)
+                intf.writeData.write(d)
             else:
                 raise TypeError("rw is in invalid format %r" % (rw,))
 
-            w(address, intf.address)
-            w(be, intf.byteEnable)
+            intf.address.write(address)
+            intf.byteEnable.write(be)
             assert int(burstCount) >= 1, burstCount
             # w(burstCount, intf.burstCount)
-            w(rd, intf.read)
-            w(wr, intf.write)
+            intf.read.write(rd)
+            intf.write.write(wr)
 
 
 class AvalonMmWRespAgent(VldSyncedAgent):
@@ -212,11 +208,11 @@ class AvalonMmWRespAgent(VldSyncedAgent):
     def doWriteVld(self, writeFn, val):
         writeFn(val, self.intf.writeResponseValid)
 
-    def doRead(self, s):
-        return s.read(self.intf.response)
+    def doRead(self):
+        return self.intf.response.read()
 
-    def doWrite(self, s, data):
-        s.write(data, self.intf.response)
+    def doWrite(self, data):
+        self.intf.response.write(data)
 
 
 class AvalonMmAgent(SyncAgentBase):

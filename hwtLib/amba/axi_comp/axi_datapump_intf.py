@@ -34,30 +34,28 @@ class AddrSizeHs(Handshaked):
 
 
 class AddrSizeHsAgent(HandshakedAgent):
-    def doRead(self, s):
+    def doRead(self):
         intf = self.intf
-        r = s.read
 
-        _id = r(intf.id)
-        addr = r(intf.addr)
-        _len = r(intf.len)
-        rem = r(intf.rem)
+        _id = intf.id.read()
+        addr = intf.addr.read()
+        _len = intf.len.read()
+        rem = intf.rem.read()
 
         return (_id, addr, _len, rem)
 
-    def doWrite(self, s, data):
+    def doWrite(self, data):
         intf = self.intf
-        w = s.write
 
         if data is None:
             data = [None for _ in range(4)]
 
         _id, addr, _len, rem = data
 
-        w(_id, intf.id)
-        w(addr, intf.addr)
-        w(_len, intf.len)
-        w(rem, intf.rem)
+        intf.id.write(_id)
+        intf.addr.write(addr)
+        intf.len.write(_len)
+        intf.rem.write(rem)
 
 
 class AxiRDatapumpIntf(Interface):
