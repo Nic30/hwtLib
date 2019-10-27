@@ -47,7 +47,7 @@ class PidController(Unit):
         self.target = VectSignal(self.DATAIN_WIDTH, signed=True)
         self.coefs = HObjList(
             VectSignal(self.COEF_WIDTH, signed=True)
-                      for _ in range(4)
+            for _ in range(4)
         )
 
     def _impl(self):
