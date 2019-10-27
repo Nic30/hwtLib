@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.constants import Time
-from hwt.hdl.typeShortcuts import hInt
 from hwt.interfaces.std import VldSynced
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
@@ -22,12 +21,12 @@ class ListOfInterfacesSample0(Unit):
 
     def _config(self):
         self.DATA_WIDTH = Param(8)
-        self.LEN = hInt(3)
+        self.LEN = 3
 
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            L = int(self.LEN)
+            L = self.LEN
             self.a = HObjList(VldSynced() for _ in range(L))
             self.b = HObjList(VldSynced() for _ in range(L))._m()
 
@@ -47,12 +46,12 @@ class ListOfInterfacesSample0SliceOnly(Unit):
 
     def _config(self):
         self.DATA_WIDTH = Param(8)
-        self.LEN = hInt(3)
+        self.LEN = 3
 
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.a = HObjList(VldSynced() for _ in range(int(self.LEN)))
+            self.a = HObjList(VldSynced() for _ in range(self.LEN))
             self.b0 = VldSynced()._m()
             self.b1 = VldSynced()._m()
             self.b2 = VldSynced()._m()
@@ -72,7 +71,7 @@ class ListOfInterfacesSample0ConcatOnly(Unit):
     """
     def _config(self):
         self.DATA_WIDTH = Param(8)
-        self.LEN = hInt(3)
+        self.LEN = 3
 
     def _declr(self):
         addClkRstn(self)
@@ -80,7 +79,7 @@ class ListOfInterfacesSample0ConcatOnly(Unit):
             self.a0 = VldSynced()
             self.a1 = VldSynced()
             self.a2 = VldSynced()
-            self.b = HObjList(VldSynced() for _ in range(int(self.LEN)))._m()
+            self.b = HObjList(VldSynced() for _ in range(self.LEN))._m()
 
     def _impl(self):
         self.b[0](self.a0)

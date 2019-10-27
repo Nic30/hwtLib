@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.constants import Time
-from hwt.hdl.typeShortcuts import hInt
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
@@ -21,13 +20,13 @@ class ListOfInterfacesSample3(Unit):
     .. hwt-schematic::
     """
     def _config(self):
-        self.SIZE = hInt(3)
+        self.SIZE = 3
         Axi4Lite._config(self)
 
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            S = int(self.SIZE)
+            S = self.SIZE
             self.a = HObjList(Axi4Lite() for _ in range(S))
             self.b = HObjList(Axi4Lite() for _ in range(S))._m()
 
