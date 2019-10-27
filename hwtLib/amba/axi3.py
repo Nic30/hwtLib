@@ -86,7 +86,7 @@ class Axi3_w(Axi_hs, Axi_strb):
         Axi_hs._declr(self)
 
     def _initSimAgent(self, sim: HdlSimulator):
-        AxiStream._initSimAgent(sim, self)
+        AxiStream._initSimAgent(self, sim)
 
 
 #####################################################################
