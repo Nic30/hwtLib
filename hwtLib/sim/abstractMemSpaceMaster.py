@@ -99,7 +99,7 @@ class MemorySpaceItemArr(object):
         self.transTmpl = transTmpl
         self.mask = -1
         self.items_cache = [None for _ in range(transTmpl.itemCnt)]
-        t = self.transTmpl.dtype.elmType
+        t = self.transTmpl.dtype.element_t
         if isinstance(t, HStruct):
             self.itemCls = MemorySpaceItemStruct
         elif isinstance(t, HArray):
