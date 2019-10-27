@@ -27,7 +27,8 @@ class RamTC(SingleUnitSimTestCase):
 
         self.runSim(11 * CLK_PERIOD)
         aeq = self.assertValSequenceEqual
-        aeq(self.rtl_simulator.model.io.ram_memory, [5, 7, None, None, None, None, None, None])
+        v = [x.read() for x in self.rtl_simulator.model.io.ram_memory]
+        aeq(v, [5, 7, None, None, None, None, None, None])
         aeq(u.a._ag.readed, [5, 7, 5, 7, None])
 
 
