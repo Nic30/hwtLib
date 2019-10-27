@@ -114,12 +114,12 @@ class TestUnittWithChilds(Unit):
 
 TestUnittWithChilds_add_space_str = """\
 struct {
-    <Bits, DATA_WIDTH, 32bits> rltSig10 // start:0x0(bit) 0x0(byte)
-    <Bits, DATA_WIDTH, 32bits> signal // start:0x20(bit) 0x4(byte)
-    <Bits, DATA_WIDTH, 32bits> regCntrl // start:0x40(bit) 0x8(byte)
-    <Bits, DATA_WIDTH, 32bits> vldSynced // start:0x60(bit) 0xc(byte)
+    <Bits, 32bits> rltSig10 // start:0x0(bit) 0x0(byte)
+    <Bits, 32bits, force_vector> signal // start:0x20(bit) 0x4(byte)
+    <Bits, 32bits, force_vector> regCntrl // start:0x40(bit) 0x8(byte)
+    <Bits, 32bits, force_vector> vldSynced // start:0x60(bit) 0xc(byte)
     <Bits, 32bits>[4] bram // start:0x80(bit) 0x10(byte)
-    //<Bits, DATA_WIDTH, 32bits> empty space // start:0x100(bit) 0x20(byte)
+    //<Bits, 32bits> empty space // start:0x100(bit) 0x20(byte)
 }"""
 
 
@@ -173,7 +173,7 @@ class TestUnittWithArr(Unit):
 
 TestUnittWithArr_addr_space_str = """\
 struct {
-    <Bits, DATA_WIDTH, 32bits>[3] regCntrl // start:0x0(bit) 0x0(byte)
+    <Bits, 32bits, force_vector>[3] regCntrl // start:0x0(bit) 0x0(byte)
 }"""
 
 
