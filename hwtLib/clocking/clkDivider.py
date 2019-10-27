@@ -6,7 +6,7 @@ from hwt.hdl.constants import Time
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Clk
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase, SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 
 
@@ -15,7 +15,7 @@ class ClkDiv3(Unit):
     :attention: this clock divider implementation suits well for generating of slow output clock
         inside fpga you should use clocking primitives
         (http://www.xilinx.com/support/documentation/ip_documentation/clk_wiz/v5_1/pg065-clk-wiz.pdf)
-        
+
     .. hwt-schematic::
     """
     def _declr(self):
@@ -58,6 +58,7 @@ class ClkDiv3(Unit):
 
 
 class ClkDiv3TC(SingleUnitSimTestCase):
+
     @classmethod
     def getUnit(cls):
         cls.u = ClkDiv3()

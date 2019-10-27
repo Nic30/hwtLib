@@ -258,7 +258,7 @@ class Axi3_wDatapump_small_splitting_TC(SingleUnitSimTestCase):
         u = cls.u = Axi_wDatapump(axiAddrCls=Axi3_addr, axiWCls=Axi3_w)
         u.MAX_LEN = cls.LEN_MAX
         cls.DATA_WIDTH = int(u.DATA_WIDTH)
-        return u        
+        return u
 
     def test_1024random(self):
         u = self.u

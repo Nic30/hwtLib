@@ -12,6 +12,7 @@ from pyMathBitPrecise.bit_utils import mask
 
 
 class WStrictOrderInterconnectTC(SingleUnitSimTestCase):
+
     @classmethod
     def getUnit(cls):
         cls.u = u = WStrictOrderInterconnect()
