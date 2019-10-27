@@ -98,7 +98,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             return StructIntf(t, parent._instantiateFieldFn)
         elif isinstance(t, HStream):
             p = AxiStream()
-            p.DATA_WIDTH = structField.dtype.elmType.bit_length()
+            p.DATA_WIDTH = structField.dtype.element_t.bit_length()
             p.USE_STRB = True
             return p
         else:

@@ -37,7 +37,7 @@ class AvalonMmEndpointTC(SimTestCase):
     def awTrans(self, addr, burstsize=1):
         return (WRITE, addr, burstsize)
 
-    def mkRegisterMap(self, u, modelCls):
+    def mkRegisterMap(self, u):
         self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
         self.regs = AvalonMmMemSpaceMaster(u.bus, self.addrProbe.discovered)
 
@@ -162,8 +162,8 @@ class AvalonMmMemMasterTC(AxiLiteEndpointMemMasterTC):
     def randomizeAll(self):
         AvalonMmEndpointTC.randomizeAll(self)
 
-    def mkRegisterMap(self, u, modelCls):
-        AvalonMmEndpointTC.mkRegisterMap(self, u, modelCls)
+    def mkRegisterMap(self, u):
+        AvalonMmEndpointTC.mkRegisterMap(self, u)
 
     def _test_read_memMaster(self, structT):
         u = AvalonMmEndpointTC.mySetUp(self, 32, structT)

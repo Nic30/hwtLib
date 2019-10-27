@@ -45,18 +45,18 @@ class ListOfInterfacesSample4(Unit):
             dw = t.bit_length()
         elif isinstance(t, HArray):
             if self.shouldEnterFn(field):
-                if isinstance(t.elmType, Bits):
+                if isinstance(t.element_t, Bits):
                     p = HObjList(RegCntrl() for _ in range(int(t.size)))
-                    dw = t.elmType.bit_length()
+                    dw = t.element_t.bit_length()
                 else:
                     p = HObjList([StructIntf(
-                        t.elmType,
+                        t.element_t,
                         instantiateFieldFn=self._mkFieldInterface)
                         for _ in range(int(t.size))])
                     return p
             else:
                 p = BramPort_withoutClk()
-                dw = t.elmType.bit_length()
+                dw = t.element_t.bit_length()
                 p.ADDR_WIDTH = log2ceil(int(t.size) - 1)
         else:
             raise NotImplementedError(t)

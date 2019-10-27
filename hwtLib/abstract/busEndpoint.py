@@ -152,7 +152,7 @@ class BusEndpoint(Unit):
     @staticmethod
     def _defaultShouldEnterFn(field):
         t = field.dtype
-        isNonPrimitiveArray = isinstance(t, HArray) and not isinstance(t.elmType, Bits)
+        isNonPrimitiveArray = isinstance(t, HArray) and not isinstance(t.element_t, Bits)
         shouldEnter = isinstance(t, HStruct) or isNonPrimitiveArray
         shouldUse = not shouldEnter
         return shouldEnter, shouldUse
@@ -346,22 +346,22 @@ class BusEndpoint(Unit):
                 dw = t.bit_length()
             elif isinstance(t, HArray):
                 p = BramPort_withoutClk()
-                assert isinstance(t.elmType, Bits), t.elmType
-                dw = t.elmType.bit_length()
+                assert isinstance(t.element_t, Bits), t.element_t
+                dw = t.element_t.bit_length()
                 p.ADDR_WIDTH = log2ceil(t.size - 1)
             else:
                 raise NotImplementedError(t)
 
         elif shouldEnter:
             if isinstance(t, HArray):
-                if isinstance(t.elmType, Bits):
+                if isinstance(t.element_t, Bits):
                     p = HObjList(
                         RegCntrl() for _ in range(int(t.size))
                     )
-                    dw = t.elmType.bit_length()
+                    dw = t.element_t.bit_length()
                 else:
                     return HObjList(
-                        StructIntf(t.elmType,
+                        StructIntf(t.element_t,
                                    instantiateFieldFn=self._mkFieldInterface)
                         for _ in range(int(t.size))
                     )

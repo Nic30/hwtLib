@@ -6,7 +6,7 @@ import unittest
 from hwt.doc_markers import internal
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase, SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
@@ -35,6 +35,7 @@ class AxiS_resizer_upscale_TC(SingleUnitSimTestCase):
         return u
 
     def setUp(self):
+        super(AxiS_resizer_upscale_TC, self).setUp()
         self.randomize(self.u.dataIn)
         self.randomize(self.u.dataOut)
 
@@ -100,6 +101,7 @@ class AxiS_resizer_downscale_TC(SingleUnitSimTestCase):
         return cls.u
 
     def setUp(self):
+        super(AxiS_resizer_downscale_TC, self).setUp()
         self.randomize(self.u.dataIn)
         self.randomize(self.u.dataOut)
 
@@ -173,6 +175,7 @@ class AxiS_resizer_downAndUp_TC(SingleUnitSimTestCase):
         return u
 
     def setUp(self):
+        super(AxiS_resizer_downAndUp_TC, self).setUp()
         self.randomize(self.u.dataIn)
         self.randomize(self.u.dataOut)
 
@@ -200,6 +203,7 @@ class AxiS_resizer_upAndDown_TC(SingleUnitSimTestCase):
         return u
 
     def setUp(self):
+        super(AxiS_resizer_upAndDown_TC, self).setUp()
         self.randomize(self.u.dataIn)
         self.randomize(self.u.dataOut)
 

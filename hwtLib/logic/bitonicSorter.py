@@ -105,6 +105,7 @@ class BitonicSorterTC(SingleUnitSimTestCase):
             p._ag.data.append(v)
 
     def test_reversed(self):
+        u = self.u
         ref = [i for i in range(int(u.ITEMS))]
         self.setInputs(reversed(ref))
 
@@ -112,6 +113,7 @@ class BitonicSorterTC(SingleUnitSimTestCase):
         self.assertValSequenceEqual(self.getOutputs(), ref)
 
     def test_sorted(self):
+        u = self.u
         ref = [i for i in range(int(u.ITEMS))]
         self.setInputs(ref)
 

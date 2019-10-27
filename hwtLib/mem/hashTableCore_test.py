@@ -26,7 +26,7 @@ class HashTableCoreTC(SingleUnitSimTestCase):
         # clean up memory
         mem = self.rtl_simulator.model.table_inst.io.ram_memory.def_val
         for i in range(mem._dtype.size):
-            mem.val[i] = mem._dtype.elmType.from_py(0)
+            mem.val[i] = mem._dtype.element_t.from_py(0)
 
     def test_lookupInEmpty(self):
         u = self.u

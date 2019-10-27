@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase, SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
 from hwtLib.amba.axis_comp.frameGen import AxisFrameGen
@@ -16,12 +16,11 @@ class AxisFrameGenTC(SingleUnitSimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        SimTestCase.setUpClass(cls)
         cls.u = AxisFrameGen()
         cls.compileSim(cls.u, onAfterToRtl=cls.mkRegisterMap)
 
     @classmethod
-    def mkRegisterMap(cls, u, modelCls):
+    def mkRegisterMap(cls, u):
         cls.addrProbe = AddressSpaceProbe(u.cntrl, addrGetter)
         cls.regs = AxiLiteMemSpaceMaster(u.cntrl, cls.addrProbe.discovered)
 

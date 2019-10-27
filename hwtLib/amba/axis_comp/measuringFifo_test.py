@@ -55,7 +55,7 @@ class AxiS_measuringFifoTC(SingleUnitSimTestCase):
         self.runSim(20 * CLK_PERIOD)
         self.assertValSequenceEqual(u.sizes._ag.data, [8, ])
         self.assertEmpty(u.dataOut._ag.data, 0)
-        self.assertValEqual(self.model.dataOut_last, 1)
+        self.assertValEqual(self.rtl_simulator.out.dataOut_last.read(), 1)
 
     def test_multiplePackets(self):
         u = self.u
@@ -211,7 +211,7 @@ class AxiS_measuringFifoTC(SingleUnitSimTestCase):
 
         def sizesEn():
             yield Timer((SIZE_BUFF_SIZE + 5) * CLK_PERIOD)
-            yield from simpleRandomizationProcess(self, u.sizes._ag)(sim)
+            yield from simpleRandomizationProcess(self, u.sizes._ag)()
 
         self.procs.append(sizesEn())
 

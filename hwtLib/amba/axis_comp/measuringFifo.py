@@ -50,7 +50,7 @@ class AxiS_measuringFifo(Unit):
 
         sb = self.sizesBuff = HandshakedFifo(Handshaked)
         sb.DEPTH = self.SIZES_BUFF_DEPTH
-        sb.DATA_WIDTH = self.sizes.DATA_WIDTH.get()
+        sb.DATA_WIDTH = self.sizes.DATA_WIDTH
 
         if self.EXPORT_ALIGNMENT_ERROR:
             assert self.USE_STRB, "Error can not happend"\

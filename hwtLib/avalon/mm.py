@@ -74,17 +74,16 @@ class AvalonMmDataRAgent(VldSyncedAgent):
     * data signal = (readData, response)
     """
 
-    def doReadVld(self, readFn):
-        return readFn(self.intf.readDataValid)
+    def doReadVld(self):
+        return self.intf.readDataValid.read()
 
-    def doWriteVld(self, writeFn, val):
-        writeFn(val, self.intf.readDataValid)
+    def doWriteVld(self, val):
+        self.intf.readDataValid.write(val)
 
-    def doRead(self, s):
+    def doRead(self):
         """extract data from interface"""
-        r = s.read
         intf = self.intf
-        return (r(intf.readData), r(intf.response))
+        return (intf.readData.read(), intf.response.read())
 
     def doWrite(self, data):
         """write data to interface"""
@@ -107,34 +106,34 @@ class AvalonMmAddrAgent(HandshakedAgent):
     * on write set data and byteenamble as well
     """
 
-    def __init__(self, intf, allowNoReset=False):
-        HandshakedAgent.__init__(self, intf, allowNoReset=allowNoReset)
+    def __init__(self, sim: HdlSimulator, intf, allowNoReset=False):
+        HandshakedAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
         self.wData = deque()
 
     def getRd(self):
         return self.intf.waitRequest
 
-    def isRd(self, readFn):
-        rd = readFn(self._rd)
+    def isRd(self):
+        rd = self._rd.read()
         rd.val = not rd.val
         return rd
 
-    def wrRd(self, wrFn, val):
-        wrFn(int(not val), self._rd)
+    def wrRd(self, val):
+        self._rd.write(int(not val))
 
     def getVld(self):
         return (self.intf.read, self.intf.write)
 
-    def isVld(self, readFn):
-        r = readFn(self._vld[0])
-        w = readFn(self._vld[1])
+    def isVld(self):
+        r = self._vld[0].read()
+        w = self._vld[1].read()
 
         r.val = r.val or w.val
         r.vld_mask = r.vld_mask and w.vld_mask
 
         return r
 
-    def wrVld(self, wrFn, val):
+    def wrVld(self, val):
         if self.actualData is None or self.actualData is NOP:
             r = 0
             w = 0
@@ -149,8 +148,8 @@ class AvalonMmAddrAgent(HandshakedAgent):
                 w = val
             else:
                 raise ValueError("Unknown mode", mode)
-        wrFn(r, self._vld[0])
-        wrFn(w, self._vld[1])
+        self._vld[0].write(r)
+        self._vld[1].write(w)
 
     def doRead(self):
         intf = self.intf
@@ -202,11 +201,11 @@ class AvalonMmAddrAgent(HandshakedAgent):
 
 class AvalonMmWRespAgent(VldSyncedAgent):
 
-    def doReadVld(self, readFn):
-        return readFn(self.intf.writeResponseValid)
+    def doReadVld(self):
+        return self.intf.writeResponseValid.read()
 
-    def doWriteVld(self, writeFn, val):
-        writeFn(val, self.intf.writeResponseValid)
+    def doWriteVld(self, val):
+        self.intf.writeResponseValid.write(val)
 
     def doRead(self):
         return self.intf.response.read()
@@ -227,9 +226,9 @@ class AvalonMmAgent(SyncAgentBase):
 
     def __init__(self, sim: HdlSimulator, intf, allowNoReset=False):
         SyncAgentBase.__init__(self, sim, intf, allowNoReset=allowNoReset)
-        self.addrAg = AvalonMmAddrAgent(intf, allowNoReset=allowNoReset)
-        self.rDataAg = AvalonMmDataRAgent(intf, allowNoReset=allowNoReset)
-        self.wRespAg = AvalonMmWRespAgent(intf, allowNoReset=allowNoReset)
+        self.addrAg = AvalonMmAddrAgent(sim, intf, allowNoReset=allowNoReset)
+        self.rDataAg = AvalonMmDataRAgent(sim, intf, allowNoReset=allowNoReset)
+        self.wRespAg = AvalonMmWRespAgent(sim, intf, allowNoReset=allowNoReset)
 
     def req_get(self):
         return self.addrAg.data

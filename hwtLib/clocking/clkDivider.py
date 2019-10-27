@@ -6,7 +6,7 @@ from hwt.hdl.constants import Time
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Clk
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimTestCase, SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 
 
@@ -57,11 +57,13 @@ class ClkDiv3(Unit):
         self.clkOut((r_cnt != CNTR_MAX) & (f_cnt != CNTR_MAX))  # fall._eq(rise)
 
 
-class ClkDiv3TC(SimTestCase):
-    def test_oscilation(self):
-        u = ClkDiv3()
-        self.compileSim(u)
+class ClkDiv3TC(SingleUnitSimTestCase):
+    @classmethod
+    def getUnit(cls):
+        cls.u = ClkDiv3()
+        return cls.u
 
+    def test_oscilation(self):
         self.runSim(10 * 10 * Time.ns)
         expected = [(0, 0),
                     (20000.0, 1),
@@ -70,7 +72,7 @@ class ClkDiv3TC(SimTestCase):
                     (65000.0, 0),
                     (80000.0, 1),
                     (95000.0, 0)]
-        self.assertValSequenceEqual(u.clkOut._ag.data,
+        self.assertValSequenceEqual(self.u.clkOut._ag.data,
                                     expected)
 
 

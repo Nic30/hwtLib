@@ -22,10 +22,10 @@ class HsFifoTC(FifoTC):
         return u
 
     def getFifoItems(self):
-        sim = self.rtl_simulator.io
-        v = sim.fifo_inst.memory
-        items = set([int(v[i].read()) for i in range(self.ITEMS)])
-        items.add(int(sim.dataOut_data.read()))
+        m = self.rtl_simulator.model
+        v = m.fifo_inst.io.memory
+        items = set([int(v[i].read()) for i in range(self.ITEMS - 1)])
+        items.add(int(m.io.dataOut_data.read()))
         return items
 
     def getUnconsumedInput(self):

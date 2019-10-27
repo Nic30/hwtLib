@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.examples.statements.constDriver import ConstDriverUnit
 
 
-class ConstDriverTC(SimTestCase):
-    def setUp(self):
-        super(ConstDriverTC, self).setUp()
-        self.u = ConstDriverUnit()
-        self.compileSim(self.u)
+class ConstDriverTC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = ConstDriverUnit()
+        return cls.u
 
     def test_simple(self):
         u = self.u

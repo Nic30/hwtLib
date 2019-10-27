@@ -72,8 +72,8 @@ class Axi3DenseMem(DenseMemory):
         self.rPending = deque()
 
         self.wPending = deque()
-
-        self._registerOnClock(clk)
+        self.clk = clk
+        self._registerOnClock()
 
     def parseReq(self, req):
         try:

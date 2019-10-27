@@ -43,12 +43,15 @@ class FlipRamTC(SingleUnitSimTestCase):
         MAGIC1 = 30
         N = 3
 
-        u.select_sig._ag.data.extend([0 for _ in range(N)]
-                                     +[1 for _ in range(2 * N)])
-        u.firstA._ag.requests.extend([(WRITE, i, MAGIC0 + i) for i in range(N)]
-                                     +[NOP for _ in range(2 * N)])
-        u.secondA._ag.requests.extend([(WRITE, i, MAGIC1 + i) for i in range(N)]
-                                      +[NOP for _ in range(2 * N)])
+        u.select_sig._ag.data.extend(
+            [0 for _ in range(N)]
+            + [1 for _ in range(2 * N)])
+        u.firstA._ag.requests.extend(
+            [(WRITE, i, MAGIC0 + i) for i in range(N)]
+            + [NOP for _ in range(2 * N)])
+        u.secondA._ag.requests.extend(
+            [(WRITE, i, MAGIC1 + i) for i in range(N)]
+            + [NOP for _ in range(2 * N)])
 
         u.firstA._ag.requests.extend([(READ, i % N) for i in range(N)])
         u.secondA._ag.requests.extend([(READ, i % N) for i in range(N)])

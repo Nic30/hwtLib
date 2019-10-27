@@ -179,7 +179,7 @@ struct {
 
 class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
 
-    def mkRegisterMap(self, u, modelCls):
+    def mkRegisterMap(self, u):
         self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
         self.regs = AxiLiteMemSpaceMaster(u.bus, self.addrProbe.discovered)
 

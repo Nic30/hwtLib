@@ -41,6 +41,7 @@ class SimpleUnitWithParamTC(SingleUnitSimTestCase):
         return u
 
     def test_simple(self):
+        u = self.u
         self.assertEqual(u.DATA_WIDTH, 32)
         self.assertEqual(u.a._dtype.bit_length(), 32)
         self.assertEqual(u.b._dtype.bit_length(), 32)

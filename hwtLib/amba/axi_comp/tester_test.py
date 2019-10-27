@@ -37,10 +37,8 @@ class AxiTesterTC(SingleUnitSimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(AxiTesterTC, cls).setUpClass()
         cls.u = u = AxiTester(Axi3)
         u.DATA_WIDTH = 32
-
         cls.compileSim(u, onAfterToRtl=cls.mkRegisterMap)
 
     @classmethod
