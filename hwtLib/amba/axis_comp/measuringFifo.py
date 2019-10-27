@@ -68,7 +68,7 @@ class AxiS_measuringFifo(Unit):
 
         wordCntr = self._reg("wordCntr",
                              Bits(log2ceil(self.MAX_LEN) + 1),
-                             defVal=0)
+                             def_val=0)
 
         overflow = wordCntr._eq(self.MAX_LEN)
         last = dIn.last | overflow
@@ -95,7 +95,7 @@ class AxiS_measuringFifo(Unit):
                 ]
             )
             if self.EXPORT_ALIGNMENT_ERROR:
-                errorAlignment = self._reg("errorAlignment_reg", defVal=0)
+                errorAlignment = self._reg("errorAlignment_reg", def_val=0)
                 self.errorAlignment(errorAlignment)
                 If(dIn.valid & (dIn.strb != mask(BYTE_CNT)) & ~dIn.last,
                    errorAlignment(1)

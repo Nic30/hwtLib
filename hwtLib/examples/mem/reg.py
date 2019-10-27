@@ -29,7 +29,7 @@ class DReg(Unit):
         self.dout = Signal()._m()
 
     def _impl(self):
-        internReg = self._reg("internReg", BIT, defVal=False)
+        internReg = self._reg("internReg", BIT, def_val=False)
 
         internReg(self.din)
         self.dout(internReg)
@@ -61,7 +61,7 @@ class AsyncResetReg(DReg):
     .. hwt-schematic::
     """
     def _impl(self):
-        internReg = self._sig("internReg", BIT, defVal=False)
+        internReg = self._sig("internReg", BIT, def_val=False)
 
         If(self.rst._isOn(),
            internReg(0),
@@ -86,7 +86,7 @@ class DDR_Reg(Unit):
     def _impl(self):
         din = self.din
 
-        internReg = [self._sig("internReg", BIT, defVal=False) for _ in range(2)]
+        internReg = [self._sig("internReg", BIT, def_val=False) for _ in range(2)]
 
         If(self.clk._onRisingEdge(),
            internReg[0](din),

@@ -97,13 +97,13 @@ class AxiS_measuringFifoTC(SingleUnitSimTestCase):
         ]
         u.dataIn._ag.data.extend(goldenData)
 
-        def pause(sim):
+        def pause():
             yield Timer(3 * CLK_PERIOD)
-            u.dataOut._ag.setEnable_asMonitor(False, sim)
+            u.dataOut._ag.setEnable_asMonitor(False)
             yield Timer(3 * CLK_PERIOD)
-            u.dataOut._ag.setEnable_asMonitor(True, sim)
+            u.dataOut._ag.setEnable_asMonitor(True)
 
-        self.procs.append(pause)
+        self.procs.append(pause())
 
         self.runSim(20 * CLK_PERIOD)
 
@@ -209,11 +209,11 @@ class AxiS_measuringFifoTC(SingleUnitSimTestCase):
         self.randomize(u.dataOut)
         u.sizes._ag.enable = False
 
-        def sizesEn(sim):
+        def sizesEn():
             yield Timer((SIZE_BUFF_SIZE + 5) * CLK_PERIOD)
             yield from simpleRandomizationProcess(self, u.sizes._ag)(sim)
 
-        self.procs.append(sizesEn)
+        self.procs.append(sizesEn())
 
         self.runSim(N * 6 * 10 * 3 * Time.ns)
 

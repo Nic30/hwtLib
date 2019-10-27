@@ -47,9 +47,9 @@ class Cam(Unit):
     def matchHandler(self, mem):
         key = self.match
 
-        out = self._reg("out_reg", self.out.data._dtype, defVal=0)
+        out = self._reg("out_reg", self.out.data._dtype, def_val=0)
         outNext = out.next
-        outVld = self._reg("out_vld_reg", defVal=0)
+        outVld = self._reg("out_vld_reg", def_val=0)
 
         key.rd(1)
         outVld(key.vld)

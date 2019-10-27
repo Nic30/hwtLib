@@ -62,7 +62,7 @@ class HsSplitFair(HsSplitCopy):
         din = self.dataIn
         EXPORT_SELECTED = bool(self.EXPORT_SELECTED)
 
-        priority = self._reg("priority", Bits(self.OUTPUTS), defVal=1)
+        priority = self._reg("priority", Bits(self.OUTPUTS), def_val=1)
         priority(rol(priority, 1))
 
         rdSignals = list(map(rd, self.dataOut))

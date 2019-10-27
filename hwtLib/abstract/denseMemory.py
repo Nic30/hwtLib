@@ -1,10 +1,10 @@
+from collections import deque
 from itertools import chain
 
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
-from collections import deque
 from pyMathBitPrecise.bit_utils import mask, selectBitRange
 from pycocotb.triggers import WaitWriteOnly, WaitAllStable
 

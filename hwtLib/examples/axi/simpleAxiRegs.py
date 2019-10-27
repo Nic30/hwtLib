@@ -42,8 +42,8 @@ class SimpleAxiRegs(Unit):
         propagateClkRstn(self)
         connect(self.axi, self.conv.bus, fit=True)
 
-        reg0 = self._reg("reg0", Bits(32), defVal=0)
-        reg1 = self._reg("reg1", Bits(32), defVal=1)
+        reg0 = self._reg("reg0", Bits(32), def_val=0)
+        reg1 = self._reg("reg1", Bits(32), def_val=1)
 
         conv = self.conv
 

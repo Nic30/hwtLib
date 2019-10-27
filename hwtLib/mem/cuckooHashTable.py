@@ -156,7 +156,7 @@ class CuckooHashTable(HashTableCore):
         lastAddr = self.TABLE_SIZE - 1
         addr = self._reg("cleanupAddr",
                          Bits(log2ceil(lastAddr), signed=False),
-                         defVal=0)
+                         def_val=0)
         If(en,
            addr(addr + 1)
         )

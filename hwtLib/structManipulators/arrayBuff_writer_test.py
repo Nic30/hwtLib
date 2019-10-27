@@ -56,7 +56,7 @@ class ArrayBuff_writer_TC(SingleUnitSimTestCase):
 
         u.baseAddr._ag.dout.append(0x1230)
 
-        def itemsWithDelay(sim):
+        def itemsWithDelay():
             addSize = u.items._ag.data.append
             addSize(16)
             yield Timer(40 * CLK_PERIOD)
@@ -64,7 +64,7 @@ class ArrayBuff_writer_TC(SingleUnitSimTestCase):
             addSize(17)
             u.wDatapump.ack._ag.data.append(self.ID)
 
-        self.procs.append(itemsWithDelay)
+        self.procs.append(itemsWithDelay())
 
         self.runSim(80 * CLK_PERIOD)
 
@@ -80,7 +80,7 @@ class ArrayBuff_writer_TC(SingleUnitSimTestCase):
                                      (16 + i, 255, 1) for i in range(N)
                                     ])
 
-        self.assertValEqual(self.model.uploadedCntr, 2)
+        self.assertValEqual(self.rtl_simulator.model.uploadedCntr, 2)
 
     def test_timeoutWithMore(self):
         u = self.u
@@ -220,12 +220,12 @@ class ArrayBuff_writer_TC(SingleUnitSimTestCase):
         for i in range(N):
             u.items._ag.data.append(MAGIC + i)
 
-        def enReq(s):
+        def enReq():
             u.wDatapump.req._ag.enable = False
-            yield s.wait(32 * CLK_PERIOD)
-            yield from simpleRandomizationProcess(self, u.wDatapump.req._ag)(s)
+            yield Timer(32 * CLK_PERIOD)
+            yield from simpleRandomizationProcess(self, u.wDatapump.req._ag)()
 
-        self.procs.append(enReq)
+        self.procs.append(enReq())
 
         self.randomize(u.wDatapump.w)
         self.randomize(u.items)

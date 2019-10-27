@@ -227,7 +227,7 @@ class Axi4streamToMem(Unit):
         st_t = HEnum("state_type", ["fullIdle", "writeAddr", "writeData",
                                     "writeDataLast"])
 
-        onoff = self._reg("on_off_reg", defVal=0)
+        onoff = self._reg("on_off_reg", def_val=0)
         baseAddr = self._reg("baseAddr_reg", Bits(self.ADDR_WIDTH), 0)
         st = self._reg("state_reg", st_t, st_t.fullIdle)
         actualAddr = self._reg("actualAddr_reg", Bits(self.ADDR_WIDTH))

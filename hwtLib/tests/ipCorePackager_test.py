@@ -45,7 +45,7 @@ class IpCoreIntfTest(Unit):
             i.ADDR_USER_WIDTH = 10
 
     def _impl(self):
-        r0 = self._reg("r0", defVal=0)
+        r0 = self._reg("r0", def_val=0)
         self.uart.tx(self.uart.rx)
         self.ram1(self.ram0)
 

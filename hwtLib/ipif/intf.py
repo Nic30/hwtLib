@@ -258,7 +258,7 @@ class IpifAgent(SyncAgentBase):
 
         self._monitor_st = st
 
-    def driver(self, sim):
+    def driver(self):
         intf = self.intf
         actual = self.actual
         actual_next = actual
@@ -280,7 +280,7 @@ class IpifAgent(SyncAgentBase):
                     if self._debugOutput is not None:
                         self._debugOutput.write("%s, on %r read_data: %d\n" % (
                                                 self.intf._getFullName(),
-                                                sim.now, d.val))
+                                                self.sim.now, d.val))
                     self.readed.append(d)
                     actual_next = NOP
             else:
@@ -290,7 +290,7 @@ class IpifAgent(SyncAgentBase):
                     if self._debugOutput is not None:
                         self._debugOutput.write("%s, on %r write_ack\n" % (
                                                 self.intf._getFullName(),
-                                                sim.now))
+                                                self.sim.now))
                     actual_next = NOP
 
         en = self.notReset()

@@ -43,15 +43,15 @@ class Showcase0(Unit):
         # constants 
         const_0_0 = None
         # internal signals
-        const_private_signal = self._sig("const_private_signal", Bits(32, signed=False), defVal=0x7b)
-        fallingEdgeRam = self._sig("fallingEdgeRam", HArray(Bits(8, signed=True), 4), defVal=None)
-        r = self._sig("r", Bits(1), defVal=0x0)
-        r_0 = self._sig("r_0", Bits(2), defVal=0x0)
-        r_1 = self._sig("r_1", Bits(2), defVal=0x0)
-        r_next = self._sig("r_next", Bits(1), defVal=None)
-        r_next_0 = self._sig("r_next_0", Bits(2), defVal=None)
-        r_next_1 = self._sig("r_next_1", Bits(2), defVal=None)
-        rom = self._sig("rom", HArray(Bits(8, signed=False), 4), defVal={0: 0x0,
+        const_private_signal = self._sig("const_private_signal", Bits(32, signed=False), def_val=0x7b)
+        fallingEdgeRam = self._sig("fallingEdgeRam", HArray(Bits(8, signed=True), 4), def_val=None)
+        r = self._sig("r", Bits(1), def_val=0x0)
+        r_0 = self._sig("r_0", Bits(2), def_val=0x0)
+        r_1 = self._sig("r_1", Bits(2), def_val=0x0)
+        r_next = self._sig("r_next", Bits(1), def_val=None)
+        r_next_0 = self._sig("r_next_0", Bits(2), def_val=None)
+        r_next_1 = self._sig("r_next_1", Bits(2), def_val=None)
+        rom = self._sig("rom", HArray(Bits(8, signed=False), 4), def_val={0: 0x0,
             1: 0x1,
             2: 0x2,
             3: 0x3})

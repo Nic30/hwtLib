@@ -34,7 +34,7 @@ class BitsSlicingTC(unittest.TestCase):
 
     def test_slice_bits_sig(self):
         n = RtlNetlist()
-        sig = n.sig("sig", uint8_t, defVal=128)
+        sig = n.sig("sig", uint8_t, def_val=128)
 
         with self.assertRaises(IndexError):
             self.assertEqual(sig[8], hBit(1))

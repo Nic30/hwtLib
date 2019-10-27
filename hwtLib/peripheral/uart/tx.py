@@ -45,7 +45,7 @@ class UartTx(Unit):
         din = self.dataIn
 
         data = r("data", Bits(BITS_TO_SEND))  # data + start bit + stop bit
-        en = r("en", defVal=False)
+        en = r("en", def_val=False)
         tick, last = ClkBuilder(self, self.clk).timers(
                                                        [BIT_RATE, BIT_RATE * BITS_TO_SEND],
                                                        en)
@@ -62,7 +62,7 @@ class UartTx(Unit):
         )
         din.rd(~en)
 
-        txd = r("reg_txd", defVal=1)
+        txd = r("reg_txd", def_val=1)
         If(tick & en,
            txd(data[0])
         )

@@ -158,7 +158,7 @@ class OperatorTC(unittest.TestCase):
 
     def test_downto(self):
         a = self.n.sig('a', dtype=INT)
-        a.defVal = hInt(10)
+        a.def_val = hInt(10)
         b = hInt(0)
         r = downtoFn(a, b)
         res = r.staticEval()
@@ -168,7 +168,7 @@ class OperatorTC(unittest.TestCase):
 
     def test_to(self):
         a = self.n.sig('a', dtype=INT)
-        a.defVal = hInt(10)
+        a.def_val = hInt(10)
         b = hInt(0)
         r = toFn(a, b)
         res = r.staticEval()

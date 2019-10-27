@@ -62,7 +62,7 @@ class PingResponder(Unit):
         :param parsed: input interface with parsed fields of ICPM frame
         :param regs: registers for ICMP frame
         :param freeze: signal to freeze value in registers
-        :param defVal: dictionary item from regs: default value
+        :param def_val: dictionary item from regs: default value
         :attention: dst and src are swapped
         """
         dtype = regs._dtype
@@ -128,9 +128,9 @@ class PingResponder(Unit):
 
     def _impl(self):
         # tmp registers
-        sendingReply = self._reg("sendingReply", defVal=0)
+        sendingReply = self._reg("sendingReply", def_val=0)
         resp = self._reg("resp", echoFrame_t)
-        isEchoReq = self._reg("isEchoReq", defVal=0)
+        isEchoReq = self._reg("isEchoReq", def_val=0)
 
         # set fields of reply
         resp.icmp.type = resp.icmp.type._dtype.from_py(ICMP_TYPE.ECHO_REPLY)

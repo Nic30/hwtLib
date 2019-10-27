@@ -40,7 +40,7 @@ class SimpleIfStatement2(Unit):
         self.d = Signal()._m()
 
     def _impl(self):
-        r = self._reg("reg_d", defVal=0)
+        r = self._reg("reg_d", def_val=0)
 
         If(self.a,
             If(self.b & self.c,
@@ -64,7 +64,7 @@ class SimpleIfStatement2b(Unit):
         self.d = Signal()._m()
 
     def _impl(self):
-        r = self._reg("reg_d", defVal=0)
+        r = self._reg("reg_d", def_val=0)
 
         If(self.a & self.b,
             If(self.c,
@@ -88,7 +88,7 @@ class SimpleIfStatement2c(Unit):
         self.d = VectSignal(2)._m()
 
     def _impl(self):
-        r = self._reg("reg_d", Bits(2), defVal=0)
+        r = self._reg("reg_d", Bits(2), def_val=0)
 
         If(self.a & self.b,
             If(self.c,

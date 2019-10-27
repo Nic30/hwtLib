@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwtLib.mem.hashTableCore import HashTableCore
-from hwtLib.logic.crcPoly import CRC_32
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwtLib.logic.crcPoly import CRC_32
+from hwtLib.mem.hashTableCore import HashTableCore
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
 
@@ -24,7 +24,7 @@ class HashTableCoreTC(SingleUnitSimTestCase):
     def setUp(self):
         SingleUnitSimTestCase.setUp(self)
         # clean up memory
-        mem = self.rtl_simulator.table_inst.ram_memory.defVal
+        mem = self.rtl_simulator.model.table_inst.io.ram_memory.def_val
         for i in range(mem._dtype.size):
             mem.val[i] = mem._dtype.elmType.from_py(0)
 
@@ -45,7 +45,7 @@ class HashTableCoreTC(SingleUnitSimTestCase):
         u = self.u
         u.lookup._ag.data.append(self._rand.getrandbits(8))
 
-        def tryInsertNotFoundAndLookupIt(sim):
+        def tryInsertNotFoundAndLookupIt():
             # wait for lookup
             yield Timer(5 * CLK_PERIOD)
             _hash, key, _, found, occupied = u.lookupRes._ag.data.popleft()
@@ -68,7 +68,7 @@ class HashTableCoreTC(SingleUnitSimTestCase):
             self.assertValSequenceEqual(u.lookupRes._ag.data,
                                         [expected0, expected1])
 
-        self.procs.append(tryInsertNotFoundAndLookupIt)
+        self.procs.append(tryInsertNotFoundAndLookupIt())
 
         self.runSim(30 * CLK_PERIOD)
 

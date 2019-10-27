@@ -11,7 +11,7 @@ def SimpleWhile():
     t = Bits(8)
     n = RtlNetlist()
 
-    boundary = n.sig("boundary", t, defVal=8)
+    boundary = n.sig("boundary", t, def_val=8)
     s_out = n.sig("s_out", t)
 
     start = n.sig("start")

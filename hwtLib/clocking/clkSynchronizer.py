@@ -38,7 +38,7 @@ class ClkSynchronizer(Unit):
                              self.DATA_TYP,
                              clk=clk,
                              rst=self.rst,
-                             defVal=0)
+                             def_val=0)
         inReg = reg("inReg", self.inClk)
         outReg0 = reg("outReg0", self.outClk)
         outReg1 = reg("outReg1", self.outClk)

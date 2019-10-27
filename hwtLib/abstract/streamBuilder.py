@@ -281,7 +281,7 @@ class AbstractStreamBuilder(object):
             ohIndexes = map(lambda x: 1 << x, seq)
             indexes = self.parent._sig(self.name + "split_seq",
                                        t[size],
-                                       defVal=ohIndexes)
+                                       def_val=ohIndexes)
             actual = self.parent._reg(self.name + "split_seq_index",
                                       Bits(size.bit_length()),
                                       0)

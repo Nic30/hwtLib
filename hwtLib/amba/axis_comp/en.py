@@ -29,7 +29,7 @@ class AxiS_en(AxiSCompBase):
         din = self.dataIn
         dout = self.dataOut
 
-        framePending = self._reg("framePending", defVal=False)
+        framePending = self._reg("framePending", def_val=False)
         ack = StreamNode([din], [dout]).ack()
 
         If(framePending & ack,

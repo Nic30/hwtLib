@@ -15,6 +15,7 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.types.ctypes import uint64_t, uint32_t, int32_t
 from pyMathBitPrecise.bit_utils import mask
+from pycocotb.triggers import Timer
 
 
 s1field = HStruct(
@@ -190,12 +191,12 @@ class AxiS_frameForge_TC(SimTestCase):
 
         self.compileSimAndStart(self.u)
 
-        def enDataOut(s):
+        def enDataOut():
             u.dataOut._ag.enable = False
-            yield s.wait(50 * Time.ns)
+            yield Timer(50 * Time.ns)
             u.dataOut._ag.enable = True
 
-        self.procs.append(enDataOut)
+        self.procs.append(enDataOut())
 
         MAGIC = 468
         u.dataIn.item0._ag.data.append(MAGIC)
@@ -218,12 +219,12 @@ class AxiS_frameForge_TC(SimTestCase):
         m = mask(self.DATA_WIDTH // 8)
         self.compileSimAndStart(self.u)
 
-        def enDataOut(s):
+        def enDataOut():
             u.dataOut._ag.enable = False
-            yield s.wait(50 * Time.ns)
+            yield Timer(50 * Time.ns)
             u.dataOut._ag.enable = True
 
-        self.procs.append(enDataOut)
+        self.procs.append(enDataOut())
 
         MAGIC = 468
         u.dataIn.item0_0._ag.data.append(MAGIC)
@@ -259,12 +260,12 @@ class AxiS_frameForge_TC(SimTestCase):
         m = mask(self.DATA_WIDTH // 8)
         self.compileSimAndStart(self.u)
 
-        def enDataOut(s):
+        def enDataOut():
             u.dataOut._ag.enable = False
-            yield s.wait(50 * Time.ns)
+            yield Timer(50 * Time.ns)
             u.dataOut._ag.enable = True
 
-        self.procs.append(enDataOut)
+        self.procs.append(enDataOut())
 
         MAGIC = 468
         u.dataIn.item0_0._ag.data.append(MAGIC)

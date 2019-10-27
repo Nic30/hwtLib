@@ -27,8 +27,8 @@ class StatementsTC(unittest.TestCase):
             def w(val):
                 return res(val)
 
-            a.defVal = hBit(a_in)
-            b.defVal = hBit(b_in)
+            a.def_val = hBit(a_in)
+            b.def_val = hBit(b_in)
 
             stm = IfContainer(a & b,
                               ifTrue=[res(0), ],

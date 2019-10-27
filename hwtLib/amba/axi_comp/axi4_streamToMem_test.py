@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi_comp.axi4_streamToMem import Axi4streamToMem
@@ -14,7 +13,6 @@ class Axi4_streamToMemTC(SingleUnitSimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        SimTestCase.setUpClass()
         u = cls.u = Axi4streamToMem()
 
         def mkRegisterMap(u):

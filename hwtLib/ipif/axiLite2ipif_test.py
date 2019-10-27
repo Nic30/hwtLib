@@ -73,13 +73,13 @@ class AxiLite2ipifTC(SimTestCase):
 
         if data_delay > 0:
 
-            def late_add_data(sim):
+            def late_add_data():
                 yield Timer(data_delay)
                 axi.w._ag.data.extend([
                     (MAGIC + i, self.m) for i in range(N)
                 ])
 
-            self.procs.append(late_add_data)
+            self.procs.append(late_add_data())
         else:
             axi.w._ag.data.extend([
                 (MAGIC + i, self.m) for i in range(N)
@@ -117,7 +117,7 @@ class AxiLite2ipifTC(SimTestCase):
                     (MAGIC_W + i, self.m) for i in range(N)
                 ])
 
-            self.procs.append(late_add_data)
+            self.procs.append(late_add_data())
         else:
             axi.w._ag.data.extend([
                 (MAGIC_W + i, self.m) for i in range(N)

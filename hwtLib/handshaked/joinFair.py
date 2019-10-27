@@ -66,7 +66,7 @@ class HsJoinFairShare(HsJoinPrioritized):
         rd = self.getRd
         dout = self.dataOut
 
-        priority = self._reg("priority", Bits(self.INPUTS), defVal=1)
+        priority = self._reg("priority", Bits(self.INPUTS), def_val=1)
         priority(rol(priority, 1))
 
         vldSignals = list(map(vld, self.dataIn))

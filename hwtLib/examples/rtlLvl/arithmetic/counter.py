@@ -15,7 +15,7 @@ def Counter():
     rst = n.sig("rst")
     clk = n.sig("clk")
     s_out = n.sig("s_out", t)
-    cnt = n.sig("cnt", t, clk=clk, syncRst=rst, defVal=0)
+    cnt = n.sig("cnt", t, clk=clk, syncRst=rst, def_val=0)
 
     If(en,
        cnt(cnt + 1)

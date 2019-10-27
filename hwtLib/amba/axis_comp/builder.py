@@ -38,7 +38,7 @@ class AxiSBuilder(AbstractStreamBuilder):
         """
         generate start of frame signal, high when we expect new frame to start
         """
-        lastseen = self.parent._reg(self.name + "_sof_lastseen", defVal=1)
+        lastseen = self.parent._reg(self.name + "_sof_lastseen", def_val=1)
         intf = self.end
 
         ack = intf.valid & intf.ready

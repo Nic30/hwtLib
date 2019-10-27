@@ -164,7 +164,7 @@ class CLinkedListWriter(Unit):
     def timeoutHandler(self, rst, incr):
         timeoutCntr = self._reg("timeoutCntr",
                                 Bits(log2ceil(self.TIMEOUT) + 1, signed=False),
-                                defVal=self.TIMEOUT)
+                                def_val=self.TIMEOUT)
         If(rst,
            timeoutCntr(self.TIMEOUT)
         ).Elif((timeoutCntr != 0) & incr,
@@ -177,8 +177,8 @@ class CLinkedListWriter(Unit):
         ringSpace_t = Bits(self.PTR_WIDTH)
 
         # Logic of tail/head, 
-        rdPtr = r("rdPtr", ringSpace_t, defVal=0)
-        wrPtr = r("wrPtr", ringSpace_t, defVal=(2 ** self.PTR_WIDTH) - 1)
+        rdPtr = r("rdPtr", ringSpace_t, def_val=0)
+        wrPtr = r("wrPtr", ringSpace_t, def_val=(2 ** self.PTR_WIDTH) - 1)
 
         If(self.wrPtr.dout.vld,
            wrPtr(self.wrPtr.dout.data)
@@ -270,8 +270,8 @@ class CLinkedListWriter(Unit):
 
         dataCntr_t = Bits(log2ceil(BURST_LEN + 1), signed=False)
         # counter of uploading data
-        dataCntr = r("dataCntr", dataCntr_t, defVal=0)
-        reqLen_backup = r("reqLen_backup", w.req.len._dtype, defVal=0)
+        dataCntr = r("dataCntr", dataCntr_t, def_val=0)
+        reqLen_backup = r("reqLen_backup", w.req.len._dtype, def_val=0)
 
         gotWriteAck = w.ack.vld & w.ack.data._eq(self.ID)
         queueHasSpace, lenByPtrs = self.queuePtrLogic(
@@ -304,7 +304,7 @@ class CLinkedListWriter(Unit):
                                     (f.size != 0) & queueHasSpace))
 
         inBlock_t = Bits(log2ceil(self.ITEMS_IN_BLOCK + 1))
-        inBlockRemain = r("inBlockRemain_reg", inBlock_t, defVal=self.ITEMS_IN_BLOCK)
+        inBlockRemain = r("inBlockRemain_reg", inBlock_t, def_val=self.ITEMS_IN_BLOCK)
 
         wReqEn = fsm._eq(fsm_t.reqPending)
         reqLen = self.wReqDriver(wReqEn, baseIndex, lenByPtrs, inBlockRemain)

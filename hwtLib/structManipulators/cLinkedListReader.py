@@ -95,15 +95,15 @@ class CLinkedListReader(Unit):
         inBlock_t = Bits(log2ceil(self.ITEMS_IN_BLOCK + 1))
         ringSpace_t = Bits(self.PTR_WIDTH)
 
-        downloadPending = r("downloadPending", defVal=0)
+        downloadPending = r("downloadPending", def_val=0)
 
         baseIndex = r("baseIndex", Bits(self.ADDR_WIDTH - ALIGN_BITS))
-        inBlockRemain = r("inBlockRemain_reg", inBlock_t, defVal=self.ITEMS_IN_BLOCK)
+        inBlockRemain = r("inBlockRemain_reg", inBlock_t, def_val=self.ITEMS_IN_BLOCK)
         self.inBlockRemain(inBlockRemain)
 
         # Logic of tail/head
-        rdPtr = r("rdPtr", ringSpace_t, defVal=0)
-        wrPtr = r("wrPtr", ringSpace_t, defVal=0)
+        rdPtr = r("rdPtr", ringSpace_t, def_val=0)
+        wrPtr = r("wrPtr", ringSpace_t, def_val=0)
         If(self.wrPtr.dout.vld,
             wrPtr(self.wrPtr.dout.data)
         )

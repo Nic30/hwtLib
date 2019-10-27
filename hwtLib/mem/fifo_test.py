@@ -153,9 +153,8 @@ class FifoTC(SingleUnitSimTestCase):
 
         collected = u.dataOut._ag.data
         if u.EXPORT_SIZE:
-            self.assertValSequenceEqual(u.size._ag.data,
-                [0, 1, 2, 3, 4, 4, 4, 4, 4,
-                 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 1, 0])
+            self.assertValSequenceEqual(
+                u.size._ag.data, sizeValues)
 
         self.assertValSequenceEqual(collected, expected)
 
@@ -192,7 +191,7 @@ class FifoTC(SingleUnitSimTestCase):
         self.procs.append(closeOutput())
         self.runSim(15 * self.CLK)
 
-        collected = u.dataOut._ag.data
+        collected = [int(x) for x in u.dataOut._ag.data]
 
         self.assertSetEqual(self.getFifoItems(),
                             set(ref[capturedOffset:self.ITEMS + capturedOffset]))
@@ -320,9 +319,9 @@ class FifoTC(SingleUnitSimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(unittest.makeSuite(FifoWriterAgentTC))
-    #suite.addTest(unittest.makeSuite(FifoReaderAgentTC))
-    #suite.addTest(unittest.makeSuite(FifoTC))
-    suite.addTest(FifoTC("test_tryMore2"))
+    suite.addTest(unittest.makeSuite(FifoWriterAgentTC))
+    suite.addTest(unittest.makeSuite(FifoReaderAgentTC))
+    suite.addTest(unittest.makeSuite(FifoTC))
+    # suite.addTest(FifoTC("test_tryMore2"))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

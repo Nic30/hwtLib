@@ -265,7 +265,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             wordCntr_inversed = self._reg("wordCntr_inversed",
                                           Bits(log2ceil(maxWordIndex + 1),
                                                False),
-                                          defVal=maxWordIndex)
+                                          def_val=maxWordIndex)
             wcntrSw = Switch(wordCntr_inversed)
 
         # inversed indexes of ends of frames

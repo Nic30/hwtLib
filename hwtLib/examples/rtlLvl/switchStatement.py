@@ -11,7 +11,7 @@ def SwitchStatement():
     t = Bits(8)
     n = RtlNetlist()
 
-    In = n.sig("input", t, defVal=8)
+    In = n.sig("input", t, def_val=8)
     Out = n.sig("output", t)
 
     Switch(In).addCases(

@@ -19,16 +19,16 @@ from pyMathBitPrecise.bit_utils import mask
 
 
 class SimProcessSequence(deque):
-    def onPartDone(self, sim):
+    def onPartDone(self):
         if self:
             self.actual = actual = self.popleft()
-            actual(sim, self.onPartDone)
+            actual(self.onPartDone)
         else:
             self.actual = None
 
-    def run(self, sim):
+    def run(self):
         self.actual = actual = self.popleft()
-        actual(sim, self.onPartDone)
+        actual(self.onPartDone)
         return
         yield
 
@@ -168,7 +168,7 @@ class AxiTesterTC(SingleUnitSimTestCase):
                     data_read_regisers,
                     checkBeat,
                 ])
-        self.procs.append(seq.run)
+        self.procs.append(seq.run())
         self.runSim(400 * CLK_PERIOD)
         self.assertEmpty(seq)
         self.assertEqual(len(self.u.cntrl.w._ag.data), 0)

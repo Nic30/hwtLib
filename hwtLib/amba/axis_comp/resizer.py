@@ -93,7 +93,7 @@ class AxiS_resizer(AxiSCompBase):
         dataOut = self.dataOut
         dOut = self.getDataWidthDependent(dataOut)
 
-        itemCntr = self._reg("itemCntr", Bits(log2ceil(ITEMS + 1)), defVal=0)
+        itemCntr = self._reg("itemCntr", Bits(log2ceil(ITEMS + 1)), def_val=0)
         hs = StreamNode([self.dataIn], [dataOut]).ack()
         isLastItem = (itemCntr._eq(ITEMS - 1) | self.dataIn.last)
 
@@ -107,7 +107,7 @@ class AxiS_resizer(AxiSCompBase):
 
                 if wordIndx <= ITEMS - 1:
                     r = self._reg("reg_" + inp._name + "_%d" %
-                                  wordIndx, inp._dtype, defVal=0)
+                                  wordIndx, inp._dtype, def_val=0)
 
                     If(hs & isLastItem,
                        r(0)
@@ -168,7 +168,7 @@ class AxiS_resizer(AxiSCompBase):
         dIn = self.getDataWidthDependent(dataIn)
 
         ITEMS = IN_DW // OUT_DW
-        itemCntr = self._reg("itemCntr", Bits(log2ceil(ITEMS + 1)), defVal=0)
+        itemCntr = self._reg("itemCntr", Bits(log2ceil(ITEMS + 1)), def_val=0)
 
         hs = StreamNode([dataIn], [self.dataOut]).ack()
         isLastItem = itemCntr._eq(ITEMS - 1)

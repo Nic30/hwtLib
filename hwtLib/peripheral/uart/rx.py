@@ -44,8 +44,8 @@ class UartRx(Unit):
 
         clkBuilder = ClkBuilder(self, self.clk)
 
-        en = self._reg("en", defVal=0)
-        first = self._reg("first", defVal=1)
+        en = self._reg("en", def_val=0)
+        first = self._reg("first", def_val=1)
         RxD_data = self._reg("RxD_data", Bits(1 + 8))
         startBitWasNotStartbit = self._sig("startBitWasNotStartbit")
         # it can happen that there is just glitch on wire and bit was not startbit only begin was resolved wrong
@@ -55,7 +55,7 @@ class UartRx(Unit):
                                       rstSig=~en)
 
         # synchronize RxD to our clk domain
-        RxD_sync = self._reg("RxD_sync", defVal=1)
+        RxD_sync = self._reg("RxD_sync", def_val=1)
         RxD_sync(self.rxd)
 
         rxd, rxd_vld = clkBuilder.oversample(RxD_sync,

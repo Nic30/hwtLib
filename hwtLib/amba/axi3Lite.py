@@ -195,11 +195,11 @@ class Axi3LiteAgent(AgentBase):
     def getEnable(self):
         return self.__enable
 
-    def setEnable(self, en, sim):
+    def setEnable(self, en):
         if self.__enable != en:
             self.__enable = en
             for o in [self.ar, self.aw, self.r, self.w, self.b]:
-                o.setEnable(en, sim)
+                o.setEnable(en)
 
     def getDrivers(self):
         return (

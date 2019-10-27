@@ -48,7 +48,7 @@ class OutNodeInfo():
         self.outInterface = outInterface
         self.en = en
         self.exclusiveEn = exclusiveEn
-        self.pendingReg = parent._reg(outInterface._name + "_pending_", defVal=1)
+        self.pendingReg = parent._reg(outInterface._name + "_pending_", def_val=1)
         ack = self.outInterface.rd
         self._ack = parent._sig(outInterface._name + "_ack")
         self._ack(ack | ~self.pendingReg)

@@ -68,7 +68,7 @@ class HsResizer(HandshakedCompBase):
     def _upscale(self, factor):
         inputRegs_cntr = self._reg("inputRegs_cntr",
                                    Bits(log2ceil(factor + 1), False),
-                                   defVal=0)
+                                   def_val=0)
 
         for din, dout in zip(self.getData(self.dataIn),
                              self.getData(self.dataOut)):
@@ -87,7 +87,7 @@ class HsResizer(HandshakedCompBase):
     def _downscale(self, factor):
         inputRegs_cntr = self._reg("inputRegs_cntr",
                                    Bits(log2ceil(factor + 1), False),
-                                   defVal=0)
+                                   def_val=0)
 
         # instantiate HandshakedReg, handshaked builder is not used to avoid dependencies
         inReg = HandshakedReg(self.intfCls)

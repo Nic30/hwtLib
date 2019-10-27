@@ -34,7 +34,7 @@ class Lsfr(Unit):
     def _impl(self):
         accumulator = self._reg("accumulator",
                                 Bits(self.POLY_WIDTH),
-                                defVal=self.INIT)
+                                def_val=self.INIT)
         POLY = int(self.POLY)
         xorBits = []
         for i, b in enumerate(iterBits(accumulator)):

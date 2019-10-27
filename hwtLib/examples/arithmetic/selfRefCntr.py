@@ -20,7 +20,7 @@ class SelfRefCntr(Unit):
         self.dout = Signal(dtype=self.dt)._m()
 
     def _impl(self):
-        cntr = self._reg("cntr", self.dt, defVal=0)
+        cntr = self._reg("cntr", self.dt, def_val=0)
 
         If(cntr._eq(4),
            cntr(0)

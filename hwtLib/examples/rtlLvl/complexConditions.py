@@ -13,7 +13,7 @@ def ComplexConditions():
     clk = n.sig('clk')
     rst = n.sig("rst")
 
-    st = n.sig('st', stT, clk=clk, syncRst=rst, defVal=stT.idle)
+    st = n.sig('st', stT, clk=clk, syncRst=rst, def_val=stT.idle)
     s_idle = n.sig('s_idle')
     sd0 = n.sig('sd0')
     sd1 = n.sig('sd1')

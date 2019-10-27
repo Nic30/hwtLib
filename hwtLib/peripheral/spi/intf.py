@@ -11,6 +11,7 @@ from pycocotb.agents.base import AgentBase
 from pycocotb.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
 from pyMathBitPrecise.bit_utils import mask, selectBit
 from pycocotb.hdlSimulator import HdlSimulator
+from pycocotb.triggers import WaitCombRead, WaitWriteOnly
 
 
 class SpiAgent(SyncAgentBase):
@@ -141,10 +142,10 @@ class SpiAgent(SyncAgentBase):
             self.writeTxSig(self.intf.mosi)
 
     def getDrivers(self):
-        return [self.driverRx, self.driverTx]
+        return [self.driverRx(), self.driverTx()]
 
     def getMonitors(self):
-        return [self.monitorRx, self.monitorTx]
+        return [self.monitorRx(), self.monitorTx()]
 
 
 # http://www.corelis.com/education/SPI_Tutorial.htm

@@ -79,7 +79,7 @@ class ClkBuilder(object):
 
         r = parentUnit._reg(timer.name + "_delayCntr",
                             periodSig._dtype,
-                            defVal=0
+                            def_val=0
                             )
         timer.cntrRegister = r
         tick = DynamicTimerInfo._instantiateTimerTickLogic(timer,
@@ -113,7 +113,7 @@ class ClkBuilder(object):
                                     rstSig=rstSig)
         oversampleCntr = self.parent._reg(n + "_oversample%d_cntr" % (sCnt),
                                           Bits(log2ceil(sampleCount) + 1, False),
-                                          defVal=0)
+                                          def_val=0)
 
         if rstSig is None:
             rstSig = sampleDoneTick
@@ -143,7 +143,7 @@ class ClkBuilder(object):
         namePrefix = getSignalName(sig)
         assert rise or fall
         if last is None:
-            last = self.parent._reg(namePrefix + "_edgeDetect_last", defVal=initVal)
+            last = self.parent._reg(namePrefix + "_edgeDetect_last", def_val=initVal)
             last(sig)
 
         if rise:

@@ -148,7 +148,7 @@ class MMU_2pageLvl(Unit):
     def segfaultChecker(self):
         lvl1item = self.lvl1Converter.r.data
         lvl2item = self.lvl2get.item
-        segfaultFlag = self._reg("segfaultFlag", defVal=False)
+        segfaultFlag = self._reg("segfaultFlag", def_val=False)
 
         def errVal(intf):
             return intf.vld & intf.data[0]._eq(FLAG_INVALID)

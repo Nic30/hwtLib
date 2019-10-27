@@ -49,9 +49,9 @@ class FifoAsync(Fifo):
         ST_EMPTY, ST_FULL = 0, 1
         memory_t = Bits(self.DATA_WIDTH)[self.DEPTH]
         memory = self._sig("memory", memory_t)
-        full = self._sig("full", defVal=0)
-        empty = self._sig("empty", defVal=1)
-        status = self._sig("status", defVal=ST_EMPTY)
+        full = self._sig("full", def_val=0)
+        empty = self._sig("empty", def_val=1)
+        status = self._sig("status", def_val=ST_EMPTY)
 
         In = self.dataIn
         InClk = self.dataIn_clk._onRisingEdge()

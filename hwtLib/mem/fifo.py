@@ -90,7 +90,7 @@ class Fifo(Unit):
 
         # assert isPow2(int(DEPTH)), DEPTH
 
-        looped = r("looped", defVal=False)
+        looped = r("looped", def_val=False)
 
         fifo_read(dout.en & (looped | (wr_ptr != rd_ptr)))
         If(self.clk._onRisingEdge(),

@@ -45,7 +45,7 @@ class AxiSToLocalLink(Unit):
         Out = self.dataOut
 
         propagateClkRstn(self)
-        lastSeenLast = self._reg("lastSeenLast", defVal=1)
+        lastSeenLast = self._reg("lastSeenLast", def_val=1)
         sof = lastSeenLast
 
         Out.data(In.data)

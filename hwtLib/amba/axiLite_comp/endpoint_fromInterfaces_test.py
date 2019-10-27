@@ -91,7 +91,7 @@ class TestUnittWithChilds(Unit):
         def configEp(ep):
             ep._updateParamsFrom(self)
 
-        rltSig10 = self._sig("sig", Bits(self.DATA_WIDTH), defVal=10)
+        rltSig10 = self._sig("sig", Bits(self.DATA_WIDTH), def_val=10)
         interfaceMap = IntfMap([
             (rltSig10, "rltSig10"),
             (self.signalLoop.dout, "signal"),

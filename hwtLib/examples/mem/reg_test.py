@@ -125,9 +125,9 @@ class RegSerializationTC(TestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(DRegTC('test_optimizedOutReg'))
-    # suite.addTest(unittest.makeSuite(DRegTC))
-    # suite.addTest(unittest.makeSuite(DoubleRRegTC))
-    # suite.addTest(unittest.makeSuite(DReg_asyncRstTC))
-    suite.addTest(unittest.makeSuite(RegSerializationTC))
+    #suite.addTest(unittest.makeSuite(DRegTC))
+    suite.addTest(unittest.makeSuite(DoubleRRegTC))
+    #suite.addTest(unittest.makeSuite(DReg_asyncRstTC))
+    #suite.addTest(unittest.makeSuite(RegSerializationTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
