@@ -53,7 +53,7 @@ class SimpleAxiRegsTC(SingleUnitSimTestCase):
         self.assertEmpty(u.axi._ag.r.data)
         self.assertEqual(len(u.axi._ag.b.data), 2)
 
-        model = self.model
+        model = self.rlt_simulator.model
 
         self.assertEqual(
             valuesToInts([model.reg0._oldVal, model.reg1._oldVal]),

@@ -268,8 +268,8 @@ class IpifAgent(SyncAgentBase):
             intf.bus2ip_cs.write(0)
             self._requireInit = False
 
-        yield WaitCombStable()
-        yield WaitCombStable()
+        yield WaitCombRead()
+        yield WaitCombRead()
         # now we are after clk edge
         if actual is not NOP:
             if actual[0] is READ:
@@ -299,6 +299,7 @@ class IpifAgent(SyncAgentBase):
                 if self.requests:
                     req = self.requests.popleft()
                     if req is not NOP:
+                        yield WaitWriteOnly()
                         self.doReq(req)
                         self.actual = req
                         return
