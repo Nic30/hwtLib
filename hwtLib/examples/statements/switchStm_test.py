@@ -115,7 +115,7 @@ SC_MODULE(SwitchStmUnit) {
             out.write(c.read());
             break;
         default:
-            out.write('0');
+            out.write(0);
             break;
         }
     }

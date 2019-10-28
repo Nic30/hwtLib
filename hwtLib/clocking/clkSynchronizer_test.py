@@ -4,22 +4,20 @@
 import unittest
 
 from hwt.hdl.types.bits import Bits
-from hwt.simulator.agentConnector import valuesToInts
 from hwtLib.clocking.clkSynchronizer import ClkSynchronizer
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer, WaitWriteOnly, WaitCombRead
 
 
-class ClkSynchronizerTC(SimTestCase):
+class ClkSynchronizerTC(SingleUnitSimTestCase):
 
     @classmethod
-    def setUpClass(cls):
-        super(ClkSynchronizerTC, cls).setUpClass()
-        u = ClkSynchronizer()
+    def getUnit(cls):
+        cls.u = u = ClkSynchronizer()
         u.DATA_TYP = Bits(32)
-        cls.compileSim(u)
-
+        return u
+    
     def runSim(self, dataInStimul, until=10 * CLK_PERIOD):
         collected = []
         u = self.u
@@ -54,7 +52,7 @@ class ClkSynchronizerTC(SimTestCase):
                 yield Timer(CLK_PERIOD)
 
         collected = self.runSim(dataInStimul)
-        self.assertSequenceEqual(expected, valuesToInts(collected))
+        self.assertValSequenceEqual(collected, expected)
 
     def test_invalidData(self):
         u = self.u
@@ -69,7 +67,7 @@ class ClkSynchronizerTC(SimTestCase):
                 u.inData.write(None)
 
         collected = self.runSim(dataInStimul)
-        self.assertSequenceEqual(expected, valuesToInts(collected))
+        self.assertValSequenceEqual(collected, expected)
 
 
 if __name__ == "__main__":
