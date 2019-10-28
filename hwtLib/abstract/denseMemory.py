@@ -5,7 +5,7 @@ from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
-from pyMathBitPrecise.bit_utils import mask, selectBitRange
+from pyMathBitPrecise.bit_utils import mask, selectBitRange, ValidityError
 from pycocotb.triggers import WaitWriteOnly, WaitAllStable
 
 
@@ -196,9 +196,11 @@ class DenseMemory():
                 strb = strb.val
             else:
                 data, last = self.wAg.data.popleft()
-
-            assert last._is_full_valid()
-            data, last = data.val, bool(last.val)
+            try:
+                data = int(data)
+            except ValidityError:
+                data = None
+            last = bool(last)
 
             isLast = i == size - 1
 

@@ -80,7 +80,7 @@ class ArrayBuff_writer_TC(SingleUnitSimTestCase):
                                      (16 + i, 255, 1) for i in range(N)
                                     ])
 
-        self.assertValEqual(self.rtl_simulator.model.uploadedCntr, 2)
+        self.assertValEqual(self.rtl_simulator.model.io.uploadedCntr, 2)
 
     def test_timeoutWithMore(self):
         u = self.u

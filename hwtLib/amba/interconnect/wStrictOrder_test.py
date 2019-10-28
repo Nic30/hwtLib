@@ -163,11 +163,12 @@ class WStrictOrderInterconnectTC(SingleUnitSimTestCase):
 
 
 class WStrictOrderInterconnect2TC(SingleUnitSimTestCase):
+
     @classmethod
     def getUnit(cls):
         cls.u = u = cls.u = WStrictOrderInterconnect()
         u.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP = 4
-        cls.DATA_WIDTH = u.DATA_WIDTH
+        cls.DATA_WIDTH = u.DATA_WIDTH = 64
         u.DRIVER_CNT = cls.DRIVER_CNT = 3
         return u
 
@@ -224,7 +225,7 @@ class WStrictOrderInterconnect2TC(SingleUnitSimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(WStrictOrderInterconnect2TC('test_3x128'))
+    # suite.addTest(WStrictOrderInterconnectTC('test_randomized2'))
     suite.addTest(unittest.makeSuite(WStrictOrderInterconnectTC))
     suite.addTest(unittest.makeSuite(WStrictOrderInterconnect2TC))
     runner = unittest.TextTestRunner(verbosity=3)
