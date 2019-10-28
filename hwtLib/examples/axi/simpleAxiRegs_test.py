@@ -3,7 +3,6 @@
 
 import unittest
 
-from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.examples.axi.simpleAxiRegs import SimpleAxiRegs
 from pyMathBitPrecise.bit_utils import mask
@@ -53,10 +52,10 @@ class SimpleAxiRegsTC(SingleUnitSimTestCase):
         self.assertEmpty(u.axi._ag.r.data)
         self.assertEqual(len(u.axi._ag.b.data), 2)
 
-        model = self.rlt_simulator.model
+        model = self.rtl_simulator.model.io
 
-        self.assertEqual(
-            valuesToInts([model.reg0._oldVal, model.reg1._oldVal]),
+        self.assertValSequenceEqual(
+            [model.reg0.val, model.reg1.val],
             [11, 37])
 
 
