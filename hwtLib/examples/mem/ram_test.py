@@ -28,7 +28,8 @@ class SimpleAsyncRamTC(SingleUnitSimTestCase):
         self.runSim(8 * CLK_PERIOD)
 
         ae = self.assertValSequenceEqual
-        ae(self.rtl_simulator.model.io.ram_data, [None, 17, 16, 15])
+        ram = self.rtl_simulator.model.io.ram_data
+        ae([x.read() for x in ram], [None, 17, 16, 15])
         ae(u.dout._ag.data, [None, 10, 11, 12, None, None, None, 17])
 
 
@@ -48,7 +49,8 @@ class SimpleSyncRamTC(SingleUnitSimTestCase):
         self.runSim(8 * CLK_PERIOD)
 
         ae = self.assertValSequenceEqual
-        ae(self.rtl_simulator.model.io.ram_data, [None, 17, 16, 15])
+        ram = self.rtl_simulator.model.io.ram_data
+        ae([x.read() for x in ram], [None, 17, 16, 15])
         ae(u.dout._ag.data, [None, None, 10, 11, 12, 13, None, None])
 
 
