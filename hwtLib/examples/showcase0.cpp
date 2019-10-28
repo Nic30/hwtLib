@@ -39,7 +39,7 @@ SC_MODULE(Showcase0) {
     //internal signals
     sc_uint<32> const_private_signal = sc_biguint<32>(123);
     sc_int<8> fallingEdgeRam [4];
-    sc_uint<1> r = '0';
+    sc_uint<1> r = 0;
     sc_uint<2> r_0 = sc_uint<2>("00");
     sc_uint<2> r_1 = sc_uint<2>("00");
     sc_signal<sc_uint<1>> r_next;
@@ -86,13 +86,13 @@ SC_MODULE(Showcase0) {
         fitted.write(static_cast<sc_uint<16>>(a.read().range(16, 0)));
     }
     void assig_process_g() {
-        g.write((a.read()[1]) & (b.read()[1]) & ((a.read()[0]) ^ (b.read()[0])) | (a.read()[1]) & static_cast<sc_uint<6>>(a.read().range(6, 0)));
+        g.write((a.read()[1] & b.read()[1]) & (a.read()[0] ^ b.read()[0] | a.read()[1]) & static_cast<sc_uint<6>>(a.read().range(6, 0)));
     }
     void assig_process_h() {
-        if((a.read()[2]) == '1') {
-            if(r == '1') {
+        if (a.read()[2] == 1) {
+            if (r == 1) {
                 h.write(sc_uint<8>("0x00"));
-            } else if((a.read()[1]) == '1') {
+            } else if (a.read()[1] == 1) {
                 h.write(sc_uint<8>("0x01"));
             } else {
                 h.write(sc_uint<8>("0x02"));
@@ -103,16 +103,16 @@ SC_MODULE(Showcase0) {
         j = static_cast<sc_uint<8>>(rom[r_1]);
     }
     void assig_process_out() {
-        out.write('0');
+        out.write(0);
     }
     void assig_process_output() {
-        output.write('X');
+        output.write(sc_uint<1>("0xX"));
     }
     void assig_process_r() {
-        if(rst_n.read() == '0') {
+        if (rst_n.read() == 0) {
             r_1 = sc_uint<2>("00");
             r_0 = sc_uint<2>("00");
-            r = '0';
+            r = 0;
         } else {
             r_1 = r_next_1.read();
             r_0 = r_next_0.read();
@@ -126,7 +126,7 @@ SC_MODULE(Showcase0) {
         r_next_1.write(r_0);
     }
     void assig_process_r_next_1() {
-        if((~r) == '1') {
+        if (~r == 1) {
             r_next.write(e.read());
         } else {
             r_next.write(r);

@@ -37,7 +37,7 @@ ARCHITECTURE rtl OF bramR IS
 BEGIN
     assig_process_a_dout: PROCESS (a_clk)
     BEGIN
-        IF (RISING_EDGE(a_clk)) AND (a_en = '1') THEN
+        IF RISING_EDGE(a_clk) AND a_en = '1' THEN
             IF a_we = '1' THEN
                 ram_memory(TO_INTEGER(UNSIGNED(a_addr))) <= a_din;
             END IF;
@@ -47,7 +47,7 @@ BEGIN
 
     assig_process_b_dout: PROCESS (b_clk)
     BEGIN
-        IF (RISING_EDGE(b_clk)) AND (b_en = '1') THEN
+        IF RISING_EDGE(b_clk) AND b_en = '1' THEN
             IF b_we = '1' THEN
                 ram_memory(TO_INTEGER(UNSIGNED(b_addr))) <= b_din;
             END IF;

@@ -74,9 +74,9 @@ BEGIN
                 st_next <= st;
             END IF;
         WHEN OTHERS =>
-            IF (a AND (NOT b)) = '1' THEN
+            IF (a AND NOT b) = '1' THEN
                 st_next <= a_0;
-            ELSIF ((NOT a) AND b) = '1' THEN
+            ELSIF (NOT a AND b) = '1' THEN
                 st_next <= b_0;
             ELSE
                 st_next <= st;
@@ -115,7 +115,7 @@ module FsmExample(input a,
     end
 
     always @(posedge clk) begin: assig_process_st
-        if(rst_n == 1'b0) begin
+        if (rst_n == 1'b0) begin
             st <= 0;
         end else begin
             st <= st_next;
@@ -125,27 +125,27 @@ module FsmExample(input a,
     always @(a or b or st) begin: assig_process_st_next
         case(st)
         0: begin
-            if((a & b)==1'b1) begin
+            if (a & b) begin
                 st_next = 2;
-            end else if((b)==1'b1) begin
+            end else if (b) begin
                 st_next = 1;
             end else begin
                 st_next = st;
             end
         end
         1: begin
-            if((a & b)==1'b1) begin
+            if (a & b) begin
                 st_next = 2;
-            end else if((a)==1'b1) begin
+            end else if (a) begin
                 st_next = 0;
             end else begin
                 st_next = st;
             end
         end
         default: begin
-            if((a & (~b))==1'b1) begin
+            if (a & ~b) begin
                 st_next = 0;
-            end else if(((~a) & b)==1'b1) begin
+            end else if (~a & b) begin
                 st_next = 1;
             end else begin
                 st_next = st;
@@ -192,7 +192,7 @@ SC_MODULE(FsmExample) {
         }
     }
     void assig_process_st() {
-        if(rst_n.read() == '0') {
+        if (rst_n.read() == 0) {
             st = 0;
         } else {
             st = st_next.read();
@@ -201,27 +201,27 @@ SC_MODULE(FsmExample) {
     void assig_process_st_next() {
         switch(st) {
         case 0:
-            if(a.read() & b.read() == '1') {
+            if ((a.read() & b.read()) == 1) {
                 st_next.write(2);
-            } else if(b.read() == '1') {
+            } else if (b.read() == 1) {
                 st_next.write(1);
             } else {
                 st_next.write(st);
             }
             break;
         case 1:
-            if(a.read() & b.read() == '1') {
+            if ((a.read() & b.read()) == 1) {
                 st_next.write(2);
-            } else if(a.read() == '1') {
+            } else if (a.read() == 1) {
                 st_next.write(0);
             } else {
                 st_next.write(st);
             }
             break;
         default:
-            if(a.read() & (~b.read()) == '1') {
+            if ((a.read() & ~b.read()) == 1) {
                 st_next.write(0);
-            } else if((~a.read()) & b.read() == '1') {
+            } else if ((~a.read() & b.read()) == 1) {
                 st_next.write(1);
             } else {
                 st_next.write(st);

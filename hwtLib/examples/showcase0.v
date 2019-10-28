@@ -41,7 +41,7 @@ module Showcase0(input [31:0] a,
     wire [1:0] r_next_1;
     reg [7:0] rom;
     always @(a or b) begin: assig_process_c
-        c = a + $unsigned(b);
+        c = (a + $unsigned(b));
     end
 
     always @(a) begin: assig_process_cmp_0
@@ -84,14 +84,14 @@ module Showcase0(input [31:0] a,
     end
 
     always @(a or b) begin: assig_process_g
-        g = {{(a[1]) & (b[1]), ((a[0]) ^ (b[0])) | (a[1])}, a[5:0]};
+        g = {{a[1] & b[1], a[0] ^ b[0] | a[1]}, a[5:0]};
     end
 
     always @(a or r) begin: assig_process_h
-        if((a[2])==1'b1) begin
-            if((r)==1'b1) begin
+        if (a[2]) begin
+            if (r) begin
                 h = 8'h00;
-            end else if((a[1])==1'b1) begin
+            end else if (a[1]) begin
                 h = 8'h01;
             end else begin
                 h = 8'h02;
@@ -106,7 +106,7 @@ module Showcase0(input [31:0] a,
     assign out = 1'b0;
     assign output_0 = 1'bx;
     always @(posedge clk) begin: assig_process_r
-        if(rst_n == 1'b0) begin
+        if (rst_n == 1'b0) begin
             r_1 <= 2'b00;
             r_0 <= 2'b00;
             r <= 1'b0;
@@ -120,7 +120,7 @@ module Showcase0(input [31:0] a,
     assign r_next_0 = i;
     assign r_next_1 = r_0;
     always @(e or r) begin: assig_process_r_next
-        if((~r)==1'b1) begin
+        if (~r) begin
             r_next = e;
         end else begin
             r_next = r;

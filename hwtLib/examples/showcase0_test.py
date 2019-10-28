@@ -13,6 +13,7 @@ from hwtLib.examples.showcase0 import Showcase0
 
 
 class Showcase0TC(unittest.TestCase):
+
     def assert_same_as_file(self, s, file_name: str):
         THIS_DIR = os.path.dirname(os.path.realpath(__file__))
         fn = os.path.join(THIS_DIR, file_name)
@@ -33,11 +34,11 @@ class Showcase0TC(unittest.TestCase):
     def test_systemc(self):
         s = toRtl(Showcase0(), serializer=SystemCSerializer)
         self.assert_same_as_file(s, "showcase0.cpp")
-
+    
     def test_hwt(self):
         s = toRtl(Showcase0(), serializer=HwtSerializer)
         self.assert_same_as_file(s, "showcase0.hwt.py")
-
+    
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
