@@ -112,6 +112,7 @@ class ListOfInterfacesSample4d(ListOfInterfacesSample4b):
 
 
 class ListOfInterfacesSample4TC(SimTestCase):
+
     def test_ListOfInterfacesSample4b_intfIterations(self):
         u = ListOfInterfacesSample4d()
         self.compileSimAndStart(u)
@@ -199,8 +200,7 @@ class ListOfInterfacesSample4TC(SimTestCase):
             """
             check if data on din signal are as expected
             """
-            for d, ref in zip(regCntrl._ag.din, data):
-                self.assertValEqual(d, ref, *msg)
+            self.assertValSequenceEqual(list(regCntrl._ag.din)[0:len(data)], data, *msg)
 
         for i, (_f0_in, _f0_out, arr_f1_in, arr_f1_out, arr_f2_in,
                 arr_f2_out, a, b) in enumerate(zip(
@@ -248,7 +248,7 @@ class ListOfInterfacesSample4TC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(ListOfInterfacesSample4TC('test_ListOfInterfacesSample4b_intfIterations'))
+    #suite.addTest(ListOfInterfacesSample4TC('test_ListOfInterfacesSample4b_intfIterations'))
     # suite.addTest(ListOfInterfacesSample4TC('test_ListOfInterfacesSample4b'))
 
     suite.addTest(unittest.makeSuite(ListOfInterfacesSample4TC))
