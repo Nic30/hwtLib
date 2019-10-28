@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from collections import deque
-from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from itertools import islice
 
+from hwt.pyUtils.arrayQuery import iter_with_last
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
@@ -14,8 +14,8 @@ from hwtLib.amba.constants import BYTES_IN_TRANS, PROT_DEFAULT, LOCK_DEFAULT, \
     CACHE_DEFAULT, BURST_INCR, RESP_OKAY
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
-from pycocotb.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
+from pycocotb.constants import CLK_PERIOD
 
 
 class SimProcessSequence(deque):
@@ -65,16 +65,16 @@ class AxiTesterTC(SingleUnitSimTestCase):
         self.randomize_all()
         self.runSim(20 * CLK_PERIOD)
 
-    def poolWhileBussy(self, sim, onReady):
-        def repeatWaitIfNotReady(sim):
+    def poolWhileBussy(self, onReady):
+        def repeatWaitIfNotReady():
             d = self.u.cntrl.r._ag.data[-1][0]
             d = int(d)
             if d:
                 # ready, run callback
-                onReady(sim)
+                onReady()
             else:
                 # not ready pool again
-                self.poolWhileBussy(sim, onReady)
+                self.poolWhileBussy(onReady)
 
         self.regs.cmd_and_status.read(onDone=repeatWaitIfNotReady)
 
@@ -94,7 +94,7 @@ class AxiTesterTC(SingleUnitSimTestCase):
         transactions = [(1, 1), (2, 3), (3, 8)]
         tIt = iter(transactions)
 
-        def spotNewTransaction(sim, onDone):
+        def spotNewTransaction(onDone):
             try:
                 id_, words = next(tIt)
             except StopIteration:
@@ -120,21 +120,21 @@ class AxiTesterTC(SingleUnitSimTestCase):
             self.wordIt = iter_with_last(initValues)
             r.cmd_and_status.write(SEND_AR, onDone=onDone)
 
-        def data_read_req(sim, onDone):
+        def data_read_req(onDone):
             try:
                 self.extected_last, self.extected_d = next(self.wordIt)
             except StopIteration:
                 raise Exception("Underflow")
             r.cmd_and_status.write(RECV_R, onDone=onDone)
 
-        def data_read_regisers(sim, onDone):
+        def data_read_regisers(onDone):
             # 3
             r.r_id.read()
             r.r_data.read()
             r.r_resp.read()
             r.r_last.read(onDone=onDone)
 
-        def checkBeat(sim, onDone):
+        def checkBeat(onDone):
             trans_id = cntrl_r[-4][0]
             trans_data = cntrl_r[-3][0]
             trans_resp = cntrl_r[-2][0]
@@ -149,7 +149,7 @@ class AxiTesterTC(SingleUnitSimTestCase):
             self.assertValEqual(trans_resp & 0b11, RESP_OKAY)
             self.assertValEqual(trans_last & 1, last)
             self.transactionCompleted += 1
-            onDone(sim)
+            onDone()
 
         pool = self.poolWhileBussy
         seq = SimProcessSequence()
