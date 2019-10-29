@@ -269,10 +269,10 @@ class IpifAgent(SyncAgentBase):
             self._requireInit = False
 
         yield WaitCombRead()
-        yield WaitCombRead()
         # now we are after clk edge
         if actual is not NOP:
             if actual[0] is READ:
+                yield WaitCombStable()
                 rack = intf.ip2bus_rdack.read()
                 rack = int(rack)
                 if rack:
