@@ -104,10 +104,10 @@ class AxiStreamAgent(BaseAxiAgent):
         self._signals = tuple(signals)
         self._sigCnt = len(signals)
 
-    def doRead(self):
+    def get_data(self):
         return tuple(sig.read() for sig in self._signals)
 
-    def doWrite(self, data):
+    def set_data(self, data):
         if data is None:
             for sig in self._signals:
                 sig.write(None)

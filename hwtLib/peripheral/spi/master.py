@@ -16,13 +16,13 @@ from pycocotb.hdlSimulator import HdlSimulator
 
 
 class SpiCntrlDataAgent(HandshakedBiDirectionalAgent):
-    def doRead(self):
+    def get_data(self):
         """extract data from interface"""
         intf = self.intf
 
         return intf.slave.read(), intf.dout.read(), intf.last.read()
 
-    def doWrite(self, data):
+    def set_data(self, data):
         """write data to interface"""
         intf = self.intf
         if data is None:

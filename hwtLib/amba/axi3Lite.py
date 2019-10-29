@@ -33,10 +33,10 @@ class Axi3Lite_addrAgent(BaseAxiAgent):
     :ivar data: iterable of addr
     """
 
-    def doRead(self):
+    def get_data(self):
         return self.intf.addr.read()
 
-    def doWrite(self, data):
+    def set_data(self, data):
         self.intf.addr.write(data)
 
 
@@ -60,12 +60,12 @@ class AxiLite_rAgent(BaseAxiAgent):
     :ivar data: iterable of tuples (data, resp)
     """
 
-    def doRead(self):
+    def get_data(self):
         intf = self.intf
 
         return (intf.data.read(), intf.resp.read())
 
-    def doWrite(self, data):
+    def set_data(self, data):
         intf = self.intf
         if data is None:
             data = [None for _ in range(2)]
@@ -96,11 +96,11 @@ class Axi3Lite_wAgent(BaseAxiAgent):
     :ivar data: iterable of tuples (data, strb)
     """
 
-    def doRead(self):
+    def get_data(self):
         intf = self.intf
         return (intf.data.read(), intf.strb.read())
 
-    def doWrite(self, data):
+    def set_data(self, data):
         intf = self.intf
         if data is None:
             intf.data.write(None)
@@ -127,10 +127,10 @@ class Axi3Lite_bAgent(BaseAxiAgent):
     :ivar data: iterable of resp
     """
 
-    def doRead(self):
+    def get_data(self):
         return self.intf.resp.read()
 
-    def doWrite(self, data):
+    def set_data(self, data):
         self.intf.resp.write(data)
 
 

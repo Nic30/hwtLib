@@ -57,8 +57,8 @@ class HsSplitFair(HsSplitCopy):
         Resolve isSelected signal flags for each input, when isSelected flag
         signal is 1 it means input has clearance to make transaction
         """
-        vld = self.getVld
-        rd = self.getRd
+        vld = self.get_valid_signal
+        rd = self.get_ready_signal
         din = self.dataIn
         EXPORT_SELECTED = bool(self.EXPORT_SELECTED)
 
@@ -86,13 +86,13 @@ class HsSplitFair(HsSplitCopy):
         rdSignals = self.isSelectedLogic()
 
         for dout in self.dataOut:
-            connect(self.dataIn, dout, exclude={self.getRd(dout),
-                                                self.getVld(dout)})
+            connect(self.dataIn, dout, exclude={self.get_ready_signal(dout),
+                                                self.get_valid_signal(dout)})
 
         if self.EXPORT_SELECTED:
-            self.getRd(self.dataIn)(Or(*rdSignals) & self.selectedOneHot.rd)
+            self.get_ready_signal(self.dataIn)(Or(*rdSignals) & self.selectedOneHot.rd)
         else:
-            self.getRd(self.dataIn)(Or(*rdSignals))
+            self.get_ready_signal(self.dataIn)(Or(*rdSignals))
 
 
 def _example_HsSplitFair():

@@ -43,9 +43,9 @@ class HsSplitCopy(HandshakedCompBase):
             )
 
     def _impl(self):
-        rd = self.getRd
-        vld = self.getVld
-        data = self.getData
+        rd = self.get_ready_signal
+        vld = self.get_valid_signal
+        data = self.get_data
 
         for io in self.dataOut:
             for i, o in zip(data(self.dataIn), data(io)):

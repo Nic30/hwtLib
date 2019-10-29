@@ -73,19 +73,21 @@ class AvalonMmDataRAgent(VldSyncedAgent):
     * vld signal = readDataValid
     * data signal = (readData, response)
     """
+    def get_valid_signal(self, intf):
+        return self.intf.readDataValid
 
-    def doReadVld(self):
-        return self.intf.readDataValid.read()
+    def get_valid(self):
+        return self._vld.read()
 
-    def doWriteVld(self, val):
-        self.intf.readDataValid.write(val)
+    def set_valid(self, val):
+        self._vld.write(val)
 
-    def doRead(self):
+    def get_data(self):
         """extract data from interface"""
         intf = self.intf
         return (intf.readData.read(), intf.response.read())
 
-    def doWrite(self, data):
+    def set_data(self, data):
         """write data to interface"""
         intf = self.intf
         if data is None:
@@ -110,21 +112,21 @@ class AvalonMmAddrAgent(HandshakedAgent):
         HandshakedAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
         self.wData = deque()
 
-    def getRd(self):
+    def get_ready_signal(self):
         return self.intf.waitRequest
 
-    def isRd(self):
+    def get_ready(self):
         rd = self._rd.read()
         rd.val = not rd.val
         return rd
 
-    def wrRd(self, val):
+    def set_ready(self, val):
         self._rd.write(int(not val))
 
-    def getVld(self):
+    def get_valid_signal(self):
         return (self.intf.read, self.intf.write)
 
-    def isVld(self):
+    def get_valid(self):
         r = self._vld[0].read()
         w = self._vld[1].read()
 
@@ -133,7 +135,7 @@ class AvalonMmAddrAgent(HandshakedAgent):
 
         return r
 
-    def wrVld(self, val):
+    def set_valid(self, val):
         if self.actualData is None or self.actualData is NOP:
             r = 0
             w = 0
@@ -151,7 +153,7 @@ class AvalonMmAddrAgent(HandshakedAgent):
         self._vld[0].write(r)
         self._vld[1].write(w)
 
-    def doRead(self):
+    def get_data(self):
         intf = self.intf
         address = intf.address.read()
         byteEnable = intf.byteEnable.read()
@@ -169,7 +171,7 @@ class AvalonMmAddrAgent(HandshakedAgent):
 
         return (address, byteEnable, rw, burstCount)
 
-    def doWrite(self, data):
+    def set_data(self, data):
         intf = self.intf
         if data is None:
             intf.address.write(None)
@@ -201,16 +203,13 @@ class AvalonMmAddrAgent(HandshakedAgent):
 
 class AvalonMmWRespAgent(VldSyncedAgent):
 
-    def doReadVld(self):
-        return self.intf.writeResponseValid.read()
+    def get_valid_signal(self, intf):
+        return self.intf.writeResponseValid
 
-    def doWriteVld(self, val):
-        self.intf.writeResponseValid.write(val)
-
-    def doRead(self):
+    def get_data(self):
         return self.intf.response.read()
 
-    def doWrite(self, data):
+    def set_data(self, data):
         self.intf.response.write(data)
 
 

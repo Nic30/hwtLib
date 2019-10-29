@@ -56,8 +56,8 @@ class HandshakedFifo(HandshakedCompBase):
         """
         :clks: optional tuple (inClk, outClk)
         """
-        rd = self.getRd
-        vld = self.getVld
+        rd = self.get_ready_signal
+        vld = self.get_valid_signal
 
         # connect clock and resets
         if clks is None:

@@ -18,7 +18,7 @@ class InsertIntfAgent(HandshakedAgent):
         HandshakedAgent.__init__(self, sim, intf)
         self.hasData = bool(intf.DATA_WIDTH)
 
-    def doRead(self):
+    def get_data(self):
         i = self.intf
         _hash = i.hash.read()
         key = i.key.read()
@@ -30,7 +30,7 @@ class InsertIntfAgent(HandshakedAgent):
         else:
             return hash, key, vldFlag
 
-    def doWrite(self, data):
+    def set_data(self, data):
         i = self.intf
 
         if data is None:
@@ -78,13 +78,13 @@ class LookupKeyIntfAgent(HandshakedAgent):
         HandshakedAgent.__init__(self, sim, intf)
         self.HAS_LOOKUP_ID = bool(intf.LOOKUP_ID_WIDTH)
 
-    def doRead(self):
+    def get_data(self):
         intf = self.intf
         if self.HAS_LOOKUP_ID:
             return intf.lookup_id.read(), intf.key.read()
         return intf.key.read()
 
-    def doWrite(self, data):
+    def set_data(self, data):
         intf = self.intf
         if self.HAS_LOOKUP_ID:
             _id, _key = data
@@ -121,7 +121,7 @@ class LookupResultIntfAgent(HandshakedAgent):
         self.hasKey = bool(intf.LOOKUP_KEY)
         self.hasData = bool(intf.DATA_WIDTH)
 
-    def doRead(self):
+    def get_data(self):
         d = []
         append = d.append
         intf = self.intf
@@ -140,7 +140,7 @@ class LookupResultIntfAgent(HandshakedAgent):
 
         return tuple(d)
 
-    def doWrite(self, data):
+    def set_data(self, data):
         intf = self.intf
 
         dIt = iter(data)

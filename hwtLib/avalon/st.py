@@ -37,12 +37,12 @@ class AvalonSTAgent(HandshakedAgent):
     is tuple (channel, data, error, startOfPacket, endOfPacket)
     """
 
-    def doRead(self):
+    def get_data(self):
         intf = self.intf
         return (intf.channel.read(), intf.data.read(), intf.error.read(),
                 intf.startOfPacket.read(), intf.endOfPacket.read())
 
-    def doWrite(self, data):
+    def set_data(self, data):
         intf = self.intf
         if data is None:
             intf.channel.write(None)

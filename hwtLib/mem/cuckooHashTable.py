@@ -50,14 +50,14 @@ class CInsertIntfAgent(HandshakedAgent):
         HandshakedAgent.__init__(self, sim, intf)
         self._hasData = bool(intf.DATA_WIDTH)
 
-    def doRead(self):
+    def get_data(self):
         intf = self.intf
         if self._hasData:
             return intf.key.read(), intf.data.read()
         else:
             return intf.key.read()
 
-    def doWrite(self, data):
+    def set_data(self, data):
         intf = self.intf
         if self._hasData:
             if data is None:

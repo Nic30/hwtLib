@@ -15,10 +15,10 @@ class AxiSCompBase(HandshakedCompBase):
         self.intfCls = intfCls
         Unit.__init__(self)
 
-    def getVld(self, intf):
+    def get_valid_signal(self, intf):
         return intf.valid
 
-    def getRd(self, intf):
+    def get_ready_signal(self, intf):
         return intf.ready
 
     def getDataWidthDependent(self, intf):

@@ -34,7 +34,7 @@ class AddrSizeHs(Handshaked):
 
 
 class AddrSizeHsAgent(HandshakedAgent):
-    def doRead(self):
+    def get_data(self):
         intf = self.intf
 
         _id = intf.id.read()
@@ -44,7 +44,7 @@ class AddrSizeHsAgent(HandshakedAgent):
 
         return (_id, addr, _len, rem)
 
-    def doWrite(self, data):
+    def set_data(self, data):
         intf = self.intf
 
         if data is None:

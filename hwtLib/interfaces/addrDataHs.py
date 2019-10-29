@@ -5,7 +5,7 @@ from pycocotb.hdlSimulator import HdlSimulator
 
 
 class AddrDataHsAgent(HandshakedAgent):
-    def doWrite(self, data):
+    def set_data(self, data):
         i = self.intf
         if data is None:
             addr, d = None, None
@@ -15,7 +15,7 @@ class AddrDataHsAgent(HandshakedAgent):
         i.addr.write(addr)
         i.data.write(d)
 
-    def doRead(self):
+    def get_data(self):
         i = self.intf
         return i.addr.read(), i.data.read(), i.mask.read()
 
@@ -35,7 +35,7 @@ class AddrDataHs(HandshakeSync):
 
 
 class AddrDataMaskHsAgent(HandshakedAgent):
-    def doWrite(self, data):
+    def set_data(self, data):
         i = self.intf
         if data is None:
             addr, d, mask = None, None, None
@@ -46,7 +46,7 @@ class AddrDataMaskHsAgent(HandshakedAgent):
         i.data.write(d)
         i.mask.write(mask)
 
-    def doRead(self):
+    def get_data(self):
         i = self.intf
         return i.addr.read(), i.data.read(), i.mask.read()
 

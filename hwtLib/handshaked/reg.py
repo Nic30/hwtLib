@@ -87,9 +87,9 @@ class HandshakedReg(HandshakedCompBase):
         LATENCY = int(self.LATENCY)
         DELAY = int(self.DELAY)
 
-        vld = self.getVld
-        rd = self.getRd
-        data = self.getData
+        vld = self.get_valid_signal
+        rd = self.get_ready_signal
+        data = self.get_data
 
         Out = self.dataOut
         In = self.dataIn
