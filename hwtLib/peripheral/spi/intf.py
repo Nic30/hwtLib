@@ -40,7 +40,7 @@ class SpiAgent(SyncAgentBase):
 
         # resolve clk and rstn
         self.clk = self.intf._getAssociatedClk()._sigInside
-        self._discoverReset(allowNoReset=allowNoReset)
+        self.rst, self.rstOffIn = self._discoverReset(intf, allowNoReset=allowNoReset)
 
         # read on rising edge write on falling
         self.monitorRx = OnRisingCallbackLoop(self.sim, self.clk,
