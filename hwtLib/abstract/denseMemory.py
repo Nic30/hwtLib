@@ -6,7 +6,7 @@ from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
 from pyMathBitPrecise.bit_utils import mask, selectBitRange, ValidityError
-from pycocotb.triggers import WaitWriteOnly, WaitAllStable
+from pycocotb.triggers import WaitWriteOnly
 
 
 class AllocationError(Exception):
