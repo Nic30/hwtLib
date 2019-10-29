@@ -73,8 +73,9 @@ class AvalonMmDataRAgent(VldSyncedAgent):
     * vld signal = readDataValid
     * data signal = (readData, response)
     """
-    def get_valid_signal(self, intf):
-        return self.intf.readDataValid
+    @classmethod
+    def get_valid_signal(cls, intf):
+        return intf.readDataValid
 
     def get_valid(self):
         return self._vld.read()
@@ -112,8 +113,9 @@ class AvalonMmAddrAgent(HandshakedAgent):
         HandshakedAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
         self.wData = deque()
 
-    def get_ready_signal(self):
-        return self.intf.waitRequest
+    @classmethod
+    def get_ready_signal(cls, intf):
+        return intf.waitRequest
 
     def get_ready(self):
         rd = self._rd.read()
@@ -123,8 +125,9 @@ class AvalonMmAddrAgent(HandshakedAgent):
     def set_ready(self, val):
         self._rd.write(int(not val))
 
-    def get_valid_signal(self):
-        return (self.intf.read, self.intf.write)
+    @classmethod
+    def get_valid_signal(cls, intf):
+        return (intf.read, intf.write)
 
     def get_valid(self):
         r = self._vld[0].read()
@@ -203,8 +206,9 @@ class AvalonMmAddrAgent(HandshakedAgent):
 
 class AvalonMmWRespAgent(VldSyncedAgent):
 
-    def get_valid_signal(self, intf):
-        return self.intf.writeResponseValid
+    @classmethod
+    def get_valid_signal(cls, intf):
+        return intf.writeResponseValid
 
     def get_data(self):
         return self.intf.response.read()

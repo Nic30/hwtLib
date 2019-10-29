@@ -3,10 +3,10 @@ from hwt.interfaces.agents.handshaked import HandshakedAgent
 
 class BaseAxiAgent(HandshakedAgent):
 
-    def get_ready_signal(self, intf):
-        """get "ready" signal"""
+    @classmethod
+    def get_ready_signal(cls, intf):
         return intf.ready
 
-    def get_valid_signal(self, intf):
-        """get "valid" signal"""
+    @classmethod
+    def get_valid_signal(cls, intf):
         return intf.valid

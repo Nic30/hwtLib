@@ -20,10 +20,12 @@ class HandshakedCompBase(Unit):
     def _config(self):
         self.intfCls._config(self)
 
-    def get_valid_signal(self, intf):
+    @classmethod
+    def get_valid_signal(cls, intf):
         return intf.vld
 
-    def get_ready_signal(self, intf):
+    @classmethod
+    def get_ready_signal(cls, intf):
         return intf.rd
 
     def get_data(self, intf):
