@@ -178,6 +178,7 @@ from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
 from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.examples.mem.bram_wire import BramWireTC
 
 
 # from hwtLib.peripheral.i2c.i2cAgent_test import I2cAgent_TC
@@ -259,6 +260,7 @@ suite = testSuiteFromTCs(
     SimpleTC,
     SimpleSubunitTC,
     RamTC,
+    BramWireTC,
     LutRamTC,
     FsmSerializationTC,
     FsmExampleTC,
@@ -395,6 +397,7 @@ suite = testSuiteFromTCs(
 )
 
 if __name__ == '__main__':
+    # runner = TextTestRunner(verbosity=2, failfast=True)
     runner = TextTestRunner(verbosity=2)
 
     try:
@@ -403,6 +406,7 @@ if __name__ == '__main__':
     except ImportError:
         # concurrencytest is not installed, use regular test runner
         useParallerlTest = False
+    # useParallerlTest = False
 
     if useParallerlTest:
         # Run same tests across 4 processes
