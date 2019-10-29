@@ -41,7 +41,8 @@ class ClkSynchronizerTC(SingleUnitSimTestCase):
 
     def test_normalOp(self):
         u = self.u
-
+        u.inData._ag = None
+        u.outData._ag = None
         expected = [0, 0, 0, None, 0, 1, 2, 3, 4]
 
         def dataInStimul():
