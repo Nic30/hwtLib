@@ -119,7 +119,7 @@ class AvalonMmAddrAgent(HandshakedAgent):
 
     def get_ready(self):
         rd = self._rd.read()
-        rd.val = not rd.val
+        rd.val = int(not rd.val)
         return rd
 
     def set_ready(self, val):
@@ -133,8 +133,8 @@ class AvalonMmAddrAgent(HandshakedAgent):
         r = self._vld[0].read()
         w = self._vld[1].read()
 
-        r.val = r.val or w.val
-        r.vld_mask = r.vld_mask and w.vld_mask
+        r.val = r.val | w.val
+        r.vld_mask = r.vld_mask & w.vld_mask
 
         return r
 
