@@ -9,6 +9,7 @@ from hwtLib.amba.axis import packAxiSFrame, \
 from hwtLib.amba.axis_comp.frameForge_test import unionOfStructs, unionSimple
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
+import os
 
 
 structManyInts = HStruct(
@@ -92,23 +93,32 @@ reference_unionSimple2 = ("b", MAGIC + 2)
 reference_unionSimple3 = ("b", MAGIC + 20)
 
 
-TEST_DW = [15, 16, 32, 51, 64, 128, 512]
-RAND_FLAGS = [False, True]
+TEST_DW = [
+    15, 16, 32, 51, 64, 128, 512
+]
+RAND_FLAGS = [
+    False,
+    True
+]
 
 
 def testMatrix(fn):
     def test_wrap(self):
         for dw, randomized in product(TEST_DW, RAND_FLAGS):
-            #try:
-            fn(self, dw, randomized)
-            #except Exception as e:
-            #    m = "DW:%d, Randomized:%r " % (dw, randomized)
-            #    e.args = (m, e.args[0], *e.args[1:])
-            #    raise
+            try:
+                fn(self, dw, randomized)
+            except Exception as e:
+                m = "DW:%d, Randomized:%r " % (dw, randomized)
+                e.args = (m + "\n" + e.args[0], *e.args[1:])
+                raise
     return test_wrap
 
 
 class AxiS_frameParserTC(SimTestCase):
+
+    def setDown(self):
+        self.rtl_simulator_cls = None
+        super(AxiS_frameParserTC, self).setDown()
 
     def randomizeIntf(self, intf):
         if isinstance(intf, StructIntf):
@@ -120,11 +130,24 @@ class AxiS_frameParserTC(SimTestCase):
     def mySetUp(self, dataWidth, structTemplate, randomize=False):
         u = AxiS_frameParser(structTemplate)
         u.DATA_WIDTH = dataWidth
-        self.compileSimAndStart(u)
+        if self.DEFAULT_BUILD_DIR is not None:
+            # because otherwise files gets mixed in parralel test execution
+            unique_name = "%s_%s_dw%d_r%d" % (self.getTestName(),
+                                              u._getDefaultName(),
+                                              dataWidth,
+                                              randomize)
+            build_dir = os.path.join(self.DEFAULT_BUILD_DIR,
+                                     self.getTestName() + unique_name)
+        else:
+            unique_name = None
+            build_dir = None
+        self.compileSimAndStart(u, unique_name=unique_name,
+                                build_dir=build_dir)
+        # because we want to prevent resuing of this class in TestCase.setUp()
+        self.__class__.rtl_simulator_cls = None
         if randomize:
             self.randomizeIntf(u.dataIn)
             self.randomizeIntf(u.dataOut)
-
         return u
 
     def test_packAxiSFrame(self):
@@ -280,7 +303,8 @@ class AxiS_frameParserTC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(AxiS_frameParserTC('test_structManyInts_2x'))
+    # suite.addTest(AxiS_frameParserTC('test_simpleUnion'))
+    # suite.addTest(AxiS_frameParserTC('test_structManyInts_2x'))
     suite.addTest(unittest.makeSuite(AxiS_frameParserTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
