@@ -2,7 +2,7 @@ from collections import deque
 
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.constants import RESP_OKAY
-from pyMathBitPrecise.bit_utils import mask, ValidityError
+from pyMathBitPrecise.bit_utils import mask
 
 
 class Axi3DenseMem(DenseMemory):
@@ -101,7 +101,7 @@ class Axi3DenseMem(DenseMemory):
                 data = self.data[baseIndex + i]
             except KeyError:
                 data = None
-
+            print("read", baseIndex + i, data)
             if data is None:
                 raise AssertionError(
                     "Invalid read of uninitialized value on addr 0x%x"
@@ -126,19 +126,9 @@ class Axi3DenseMem(DenseMemory):
 
             strb = int(strb)
             last = int(last)
-            try:
-                data = int(data)
-            except ValidityError:
-                data = None
-
             last = bool(last)
             isLast = i == size - 1
             assert last == isLast, (addr, size, i)
-
-            if data is None:
-                raise AssertionError(
-                    "Invalid read of uninitialized value on addr 0x%x"
-                    % (addr + i * self.cellSize))
 
             if isLast:
                 expectedStrb = lastWordBitmask
