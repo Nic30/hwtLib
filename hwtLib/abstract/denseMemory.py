@@ -208,10 +208,10 @@ class DenseMemory():
                 "write 0x%x, size %d, expected last:%d in word %d" % (
                     addr, size, isLast, i)
 
-            if data is None:
-                raise AssertionError(
-                    "Invalid read of uninitialized value on addr 0x%x" %
-                    (addr + i * self.cellSize))
+            # if data is None:
+            #     raise AssertionError(
+            #         "Invalid write of uninitialized value on addr 0x%x" %
+            #         (addr + i * self.cellSize))
 
             if isLast:
                 expectedStrb = lastWordBitmask
