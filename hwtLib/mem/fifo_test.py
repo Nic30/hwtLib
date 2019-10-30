@@ -76,7 +76,7 @@ class FifoTC(SingleUnitSimTestCase):
     ITEMS = 4
     IN_CLK = CLK_PERIOD
     OUT_CLK = CLK_PERIOD
-    CLK = max(IN_CLK, OUT_CLK)
+    CLK = max(IN_CLK, OUT_CLK)  # clock used for resolving of sim duration
 
     @classmethod
     def getUnit(cls):
@@ -111,8 +111,9 @@ class FifoTC(SingleUnitSimTestCase):
         u.dataIn._ag.data.extend(ref)
 
         def init():
-            yield WaitWriteOnly()
             u.dataIn._ag.setEnable(False)
+            return
+            yield
 
         self.procs.append(init())
 
@@ -138,10 +139,8 @@ class FifoTC(SingleUnitSimTestCase):
         u = self.u
 
         def openOutputAfterWile():
-            yield WaitWriteOnly()
             u.dataOut._ag.setEnable(False)
             yield Timer(self.CLK * 9)
-            yield WaitWriteOnly()
             u.dataOut._ag.setEnable(True)
 
         self.procs.append(openOutputAfterWile())
@@ -185,7 +184,6 @@ class FifoTC(SingleUnitSimTestCase):
 
         def closeOutput():
             yield Timer(self.OUT_CLK * 4)
-            yield WaitWriteOnly()
             u.dataOut._ag.setEnable(False)
 
         self.procs.append(closeOutput())
@@ -258,19 +256,15 @@ class FifoTC(SingleUnitSimTestCase):
 
         def pause():
             yield Timer(3 * self.OUT_CLK)
-            yield WaitWriteOnly()
             u.dataOut._ag.setEnable_asMonitor(False)
 
             yield Timer(3 * self.OUT_CLK)
-            yield WaitWriteOnly()
             u.dataOut._ag.setEnable_asMonitor(True)
 
             yield Timer(3 * self.IN_CLK)
-            yield WaitWriteOnly()
             u.dataIn._ag.setEnable_asDriver(False)
 
             yield Timer(3 * self.IN_CLK)
-            yield WaitWriteOnly()
             u.dataIn._ag.setEnable_asDriver(True)
 
         self.procs.append(pause())
@@ -287,16 +281,12 @@ class FifoTC(SingleUnitSimTestCase):
 
         def pause():
             yield Timer(4 * self.OUT_CLK)
-            yield WaitWriteOnly()
             u.dataOut._ag.setEnable_asMonitor(False)
             yield Timer(3 * self.OUT_CLK)
-            yield WaitWriteOnly()
             u.dataOut._ag.setEnable_asMonitor(True)
             yield Timer(3 * self.IN_CLK)
-            yield WaitWriteOnly()
             u.dataIn._ag.setEnable_asDriver(False)
             yield Timer(3 * self.IN_CLK)
-            yield WaitWriteOnly()
             u.dataIn._ag.setEnable_asDriver(True)
 
         self.procs.append(pause())
