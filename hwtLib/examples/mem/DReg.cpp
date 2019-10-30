@@ -6,7 +6,7 @@
         generate such a register for any interface and datatype
 
     .. hwt-schematic::
-
+    
 */
 
 #include <systemc.h>
@@ -20,7 +20,7 @@ SC_MODULE(DReg) {
     sc_in<sc_uint<1>> rst;
 
     //internal signals
-    sc_uint<1> internReg = '0';
+    sc_uint<1> internReg = 0;
     sc_signal<sc_uint<1>> internReg_next;
 
     //processes inside this component
@@ -28,8 +28,8 @@ SC_MODULE(DReg) {
         dout.write(internReg);
     }
     void assig_process_internReg() {
-        if(rst.read() == '1') {
-            internReg = '0';
+        if (rst.read() == 1) {
+            internReg = 0;
         } else {
             internReg = internReg_next.read();
         }

@@ -3,8 +3,7 @@
 
 import unittest
 
-from hwt.simulator.agentConnector import valuesToInts
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.examples.axi.simpleAxiRegs import SimpleAxiRegs
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
@@ -13,7 +12,7 @@ from pycocotb.constants import CLK_PERIOD
 allMask = mask(32 // 8)
 
 
-class SimpleAxiRegsTC(SimpleSimTestCase):
+class SimpleAxiRegsTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
@@ -53,10 +52,10 @@ class SimpleAxiRegsTC(SimpleSimTestCase):
         self.assertEmpty(u.axi._ag.r.data)
         self.assertEqual(len(u.axi._ag.b.data), 2)
 
-        model = self.model
+        model = self.rtl_simulator.model.io
 
-        self.assertEqual(
-            valuesToInts([model.reg0._oldVal, model.reg1._oldVal]),
+        self.assertValSequenceEqual(
+            [model.reg0.val, model.reg1.val],
             [11, 37])
 
 

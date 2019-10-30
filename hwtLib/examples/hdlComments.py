@@ -34,7 +34,7 @@ ENTITY SimpleComentedUnit IS
     PORT (a: IN STD_LOGIC;
         b: OUT STD_LOGIC
     );
-END SimpleComentedUnit;
+END ENTITY;
 
 ARCHITECTURE rtl OF SimpleComentedUnit IS
 
@@ -42,7 +42,7 @@ BEGIN
 
     b <= a;
 
-END ARCHITECTURE rtl;
+END ARCHITECTURE;
 """
 
 
@@ -61,7 +61,7 @@ ENTITY SimpleComentedUnit2 IS
     PORT (a: IN STD_LOGIC;
         b: OUT STD_LOGIC
     );
-END SimpleComentedUnit2;
+END ENTITY;
 
 ARCHITECTURE rtl OF SimpleComentedUnit2 IS
 
@@ -69,7 +69,7 @@ BEGIN
 
     b <= a;
 
-END ARCHITECTURE rtl;
+END ARCHITECTURE;
 """
 
 
@@ -90,7 +90,7 @@ ENTITY SimpleComentedUnit3 IS
     PORT (a: IN STD_LOGIC;
         b: OUT STD_LOGIC
     );
-END SimpleComentedUnit3;
+END ENTITY;
 
 ARCHITECTURE rtl OF SimpleComentedUnit3 IS
 
@@ -98,7 +98,7 @@ BEGIN
 
     b <= a;
 
-END ARCHITECTURE rtl;
+END ARCHITECTURE;
 """
 
 

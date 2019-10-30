@@ -158,23 +158,23 @@ class OperatorTC(unittest.TestCase):
 
     def test_downto(self):
         a = self.n.sig('a', dtype=INT)
-        a.defVal = hInt(10)
+        a.def_val = hInt(10)
         b = hInt(0)
         r = downtoFn(a, b)
         res = r.staticEval()
-        self.assertEqual(res.val.start, 10)
-        self.assertEqual(res.val.stop, 0)
-        self.assertEqual(res.val.step, -1)
+        self.assertEqual(int(res.val.start), 10)
+        self.assertEqual(int(res.val.stop), 0)
+        self.assertEqual(int(res.val.step), -1)
 
     def test_to(self):
         a = self.n.sig('a', dtype=INT)
-        a.defVal = hInt(10)
+        a.def_val = hInt(10)
         b = hInt(0)
         r = toFn(a, b)
         res = r.staticEval()
-        self.assertEqual(res.val.start, 10)
-        self.assertEqual(res.val.stop, 0)
-        self.assertEqual(res.val.step, 1)
+        self.assertEqual(int(res.val.start), 10)
+        self.assertEqual(int(res.val.stop), 0)
+        self.assertEqual(int(res.val.step), 1)
 
     def test_ADD_InvalidOperands(self):
         a = self.n.sig('a', dtype=STR)

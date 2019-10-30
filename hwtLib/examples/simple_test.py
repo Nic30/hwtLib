@@ -20,7 +20,7 @@ class SimpleTC(SimTestCase):
         # convert it to rtl level
         # decorate interface with agents (._ag property) which will
         # drive or monitor values on the interface
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
 
         # there we have our test data, because SimpleUnit has only connection inside
         # None represents invalid value (like universal "x" in vhdl)

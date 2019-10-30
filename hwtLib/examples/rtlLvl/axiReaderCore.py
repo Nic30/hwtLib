@@ -47,7 +47,7 @@ ENTITY AxiReaderCore IS
         rSt: OUT rSt_t;
         rVld: IN STD_LOGIC
     );
-END AxiReaderCore;
+END ENTITY;
 
 ARCHITECTURE rtl OF AxiReaderCore IS
 BEGIN
@@ -66,7 +66,7 @@ BEGIN
         END IF;
     END PROCESS;
 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 if __name__ == "__main__":
     netlist, interfaces = AxiReaderCore()

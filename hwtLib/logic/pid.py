@@ -47,18 +47,18 @@ class PidController(Unit):
         self.target = VectSignal(self.DATAIN_WIDTH, signed=True)
         self.coefs = HObjList(
             VectSignal(self.COEF_WIDTH, signed=True)
-                      for _ in range(4)
+            for _ in range(4)
         )
 
     def _impl(self):
-        u = self._reg("u", dtype=self.output._dtype, defVal=0)
+        u = self._reg("u", dtype=self.output._dtype, def_val=0)
         err = self._sig("err", dtype=self.input._dtype)
         err(self.input - self.target)
 
         # create y-pipeline
         y = [self.input, ]
         for i in range(2):
-            _y = self._reg("y%d" % i, dtype=self.input._dtype, defVal=0)
+            _y = self._reg("y%d" % i, dtype=self.input._dtype, def_val=0)
             _y(y[-1])
             y.append(_y)
 

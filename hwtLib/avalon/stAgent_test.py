@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 
 from hwtLib.avalon.st import AvalonST
@@ -22,7 +22,7 @@ class AvalonStWire(Unit):
         self.dataOut(self.dataIn)
 
 
-class AvalonStAgentTC(SimpleSimTestCase):
+class AvalonStAgentTC(SingleUnitSimTestCase):
     CLK = CLK_PERIOD
 
     @classmethod

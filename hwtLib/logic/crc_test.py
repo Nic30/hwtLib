@@ -57,7 +57,7 @@ class CrcTC(SimTestCase):
         u.POLY = vec(poly.POLY, poly.WIDTH)
         u.XOROUT = vec(finxor, poly.WIDTH)
 
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         return u
 
     def test_works_with_any_data_width(self):

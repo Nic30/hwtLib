@@ -44,7 +44,7 @@ ENTITY SimpleEnum IS
         s_in1: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
         s_out: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
-END SimpleEnum;
+END ENTITY;
 
 ARCHITECTURE rtl OF SimpleEnum IS
     TYPE FSMT IS (send0, send1);
@@ -73,7 +73,7 @@ BEGIN
         END IF;
     END PROCESS;
 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 
 if __name__ == "__main__":

@@ -56,8 +56,8 @@ class HandshakedFifo(HandshakedCompBase):
         """
         :clks: optional tuple (inClk, outClk)
         """
-        rd = self.getRd
-        vld = self.getVld
+        rd = self.get_ready_signal
+        vld = self.get_valid_signal
 
         # connect clock and resets
         if clks is None:
@@ -80,7 +80,7 @@ class HandshakedFifo(HandshakedCompBase):
         # from fifo
         fOut = self.fifo.dataOut
         dout = self.dataOut
-        out_vld = self._reg("out_vld", defVal=0, clk=outClk)
+        out_vld = self._reg("out_vld", def_val=0, clk=outClk)
         vld(dout)(out_vld)
         connectPacked(fOut.data,
                       dout,

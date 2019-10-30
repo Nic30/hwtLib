@@ -23,8 +23,12 @@ class I2c(Interface):
         return IP_IIC
 
     def _initSimAgent(self, sim: HdlSimulator):
-        # [TODO] this is not correct aggent as it does not have mapped signals correctly
-        self._ag = I2cAgent(sim, self)
+        scl = self.scl
+        sda = self.sda
+        self._ag = I2cAgent(
+            sim,
+            ((scl.i, scl.o, scl.t), (sda.i, sda.o, sda.t)), 
+            AgentWitReset._discoverReset(self, allowNoReset=True))
 
 
 class IP_IIC(IntfIpMeta):

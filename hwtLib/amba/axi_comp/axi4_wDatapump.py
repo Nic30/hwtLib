@@ -78,7 +78,7 @@ class Axi_wDatapump(AxiDatapumpBase):
         if self.useTransSplitting():
             LEN_MAX = mask(aw.len._dtype.bit_length())
 
-            lastReqDispatched = r("lastReqDispatched", defVal=1)
+            lastReqDispatched = r("lastReqDispatched", def_val=1)
             lenDebth = r("lenDebth", req.len._dtype)
             addrBackup = r("addrBackup", req.addr._dtype)
             req_idBackup = r("req_idBackup", req.id._dtype)
@@ -177,7 +177,7 @@ class Axi_wDatapump(AxiDatapumpBase):
                    ).sync()
 
     def axiBHandler(self):
-        wErrFlag = self._reg("wErrFlag", defVal=0)
+        wErrFlag = self._reg("wErrFlag", def_val=0)
         b = self.b
         ack = self.driver.ack
         lastFlags = self.bInfoFifo.dataOut

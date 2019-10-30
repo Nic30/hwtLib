@@ -33,15 +33,16 @@ class HsSplitPrioritized(HsSplitCopy):
 
     def _impl(self):
         dataOut = list(reversed(self.dataOut))
-        self.getRd(self.dataIn)(Or(*map(lambda x: self.getRd(x), dataOut)))
+        self.get_ready_signal(self.dataIn)(Or(*map(lambda x: self.get_ready_signal(x), dataOut)))
         for i, out in enumerate(dataOut):
             allWitLowerPriority = dataOut[i+1:]
-            vld = self.getVld(self.dataIn)
-            for _vld in map(lambda x: ~self.getRd(x), allWitLowerPriority):
+            vld = self.get_valid_signal(self.dataIn)
+            for _vld in map(lambda x: ~self.get_ready_signal(x), allWitLowerPriority):
                 vld = vld & _vld
 
-            connect(self.dataIn, out, exclude={self.getRd(out), self.getVld(out)})
-            self.getVld(out)(vld)
+            connect(self.dataIn, out, 
+                    exclude={self.get_ready_signal(out), self.get_valid_signal(out)})
+            self.get_valid_signal(out)(vld)
 
 
 def _example_HsSplitPrioritized():

@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from hwt.interfaces.std import Handshaked
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.handshaked.reg import HandshakedReg
 from pycocotb.constants import CLK_PERIOD
 
 
-class HsRegL1D0TC(SimpleSimTestCase):
+class HsRegL1D0TC(SingleUnitSimTestCase):
     LATENCY = 1
     DELAY = 0
 

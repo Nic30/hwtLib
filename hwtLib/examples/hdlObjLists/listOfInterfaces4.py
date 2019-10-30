@@ -45,18 +45,18 @@ class ListOfInterfacesSample4(Unit):
             dw = t.bit_length()
         elif isinstance(t, HArray):
             if self.shouldEnterFn(field):
-                if isinstance(t.elmType, Bits):
+                if isinstance(t.element_t, Bits):
                     p = HObjList(RegCntrl() for _ in range(int(t.size)))
-                    dw = t.elmType.bit_length()
+                    dw = t.element_t.bit_length()
                 else:
                     p = HObjList([StructIntf(
-                        t.elmType,
+                        t.element_t,
                         instantiateFieldFn=self._mkFieldInterface)
                         for _ in range(int(t.size))])
                     return p
             else:
                 p = BramPort_withoutClk()
-                dw = t.elmType.bit_length()
+                dw = t.element_t.bit_length()
                 p.ADDR_WIDTH = log2ceil(int(t.size) - 1)
         else:
             raise NotImplementedError(t)
@@ -112,9 +112,10 @@ class ListOfInterfacesSample4d(ListOfInterfacesSample4b):
 
 
 class ListOfInterfacesSample4TC(SimTestCase):
+
     def test_ListOfInterfacesSample4b_intfIterations(self):
         u = ListOfInterfacesSample4d()
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
 
         i = 0
         for a in u.a:
@@ -133,7 +134,7 @@ class ListOfInterfacesSample4TC(SimTestCase):
         self.assertValEqual(i, 3)
 
     def _test(self, u):
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         r = self._rand.getrandbits
 
         def randInts():
@@ -199,8 +200,7 @@ class ListOfInterfacesSample4TC(SimTestCase):
             """
             check if data on din signal are as expected
             """
-            for d, ref in zip(regCntrl._ag.din, data):
-                self.assertValEqual(d, ref, *msg)
+            self.assertValSequenceEqual(list(regCntrl._ag.din)[0:len(data)], data, *msg)
 
         for i, (_f0_in, _f0_out, arr_f1_in, arr_f1_out, arr_f2_in,
                 arr_f2_out, a, b) in enumerate(zip(
@@ -248,7 +248,7 @@ class ListOfInterfacesSample4TC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(ListOfInterfacesSample4TC('test_ListOfInterfacesSample4b_intfIterations'))
+    #suite.addTest(ListOfInterfacesSample4TC('test_ListOfInterfacesSample4b_intfIterations'))
     # suite.addTest(ListOfInterfacesSample4TC('test_ListOfInterfacesSample4b'))
 
     suite.addTest(unittest.makeSuite(ListOfInterfacesSample4TC))

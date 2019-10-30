@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.simulator.simTestCase import SimpleSimTestCase
-
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.peripheral.spi.master import SpiMaster
 from pycocotb.constants import CLK_PERIOD
 
 
-class SpiMasterTC(SimpleSimTestCase):
+class SpiMasterTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

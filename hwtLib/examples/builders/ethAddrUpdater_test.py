@@ -3,7 +3,7 @@
 
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from math import ceil
 
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
@@ -12,7 +12,7 @@ from hwtLib.examples.builders.ethAddrUpdater import EthAddrUpdater, \
 from pycocotb.constants import CLK_PERIOD
 
 
-class EthAddrUpdaterTC(SimpleSimTestCase):
+class EthAddrUpdaterTC(SingleUnitSimTestCase):
     DW = 64
     AW = 32
 

@@ -105,7 +105,7 @@ class AxiLite2Ipif(BusBridge):
         axi = self.s
         r = self._reg
 
-        dataRegR_vld = r("dataRegR_vld", defVal=0)
+        dataRegR_vld = r("dataRegR_vld", def_val=0)
         st = self.mainFsm(dataRegR_vld)
         st_t = st._dtype
         self.handleResp()

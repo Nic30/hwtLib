@@ -4,7 +4,7 @@
 from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimTestCase, SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.handshaked.builder import HsBuilder
 
@@ -56,12 +56,21 @@ class HandshakedBuilderSimple(Unit):
 
 
 # SimTestCase is unittest.TestCase with some extra methods
-class HandshakedBuilderSimpleTC(SimTestCase):
-    def test_passData(self):
-        u = HandshakedBuilderSimple()
-        # instanciate simulation agents and convert unit to simulation model
-        self.prepareUnit(u)
+class HandshakedBuilderSimpleTC(SingleUnitSimTestCase):
 
+    @classmethod
+    def getUnit(cls):
+        # SingleUnitSimTestCase.setUpClass calls this method
+        # and will build a simulator of this component
+        cls.u = HandshakedBuilderSimple()
+        return cls.u
+
+    def test_passData(self):
+        # now in setUpClass call the simulator was build
+        #     in setU       call the simulator was initialized
+        #                   and signals in .u are replaced
+        #                   with proxies for simulator 
+        u = self.u
         # add data on input of agent for "a" interface
         u.a._ag.data.extend([1, 2, 3, 4])
 

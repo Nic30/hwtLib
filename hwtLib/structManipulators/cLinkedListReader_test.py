@@ -4,14 +4,14 @@
 import unittest
 
 from hwt.hdl.constants import NOP
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.structManipulators.cLinkedListReader import CLinkedListReader
 from hwtLib.abstract.denseMemory import DenseMemory
 from pycocotb.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
 
 
-class CLinkedListReaderTC(SimpleSimTestCase):
+class CLinkedListReaderTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

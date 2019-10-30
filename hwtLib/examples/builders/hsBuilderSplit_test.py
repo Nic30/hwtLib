@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.examples.builders.hsBuilderSplit import HsBuilderSplit
 from pycocotb.constants import CLK_PERIOD
 
 
-class HsBuilderSplit_TC(SimpleSimTestCase):
+class HsBuilderSplit_TC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

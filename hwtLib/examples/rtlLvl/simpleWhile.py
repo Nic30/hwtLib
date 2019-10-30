@@ -11,7 +11,7 @@ def SimpleWhile():
     t = Bits(8)
     n = RtlNetlist()
 
-    boundary = n.sig("boundary", t, defVal=8)
+    boundary = n.sig("boundary", t, def_val=8)
     s_out = n.sig("s_out", t)
 
     start = n.sig("start")
@@ -44,7 +44,7 @@ ENTITY SimpleWhile IS
         s_out: OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
         start: IN STD_LOGIC
     );
-END SimpleWhile;
+END ENTITY;
 
 ARCHITECTURE rtl OF SimpleWhile IS
     CONSTANT boundary: STD_LOGIC_VECTOR(7 DOWNTO 0) := X"08";
@@ -67,14 +67,14 @@ BEGIN
         IF start = '1' THEN
             counter_next <= boundary;
         ELSIF en = '1' THEN
-            counter_next <= STD_LOGIC_VECTOR(UNSIGNED(counter) - 1);
+            counter_next <= STD_LOGIC_VECTOR(UNSIGNED(counter) - TO_UNSIGNED(1, 8));
         ELSE
             counter_next <= counter;
         END IF;
     END PROCESS;
 
     s_out <= counter;
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 if __name__ == "__main__":
     netlist, interfaces = SimpleWhile()

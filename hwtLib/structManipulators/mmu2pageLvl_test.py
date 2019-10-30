@@ -4,14 +4,14 @@
 import unittest
 
 from hwt.hdl.constants import WRITE, NOP
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.mmu_2pageLvl import MMU_2pageLvl
 from pycocotb.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
 
 
-class MMU_2pageLvl_TC(SimpleSimTestCase):
+class MMU_2pageLvl_TC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

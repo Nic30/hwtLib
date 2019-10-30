@@ -3,13 +3,13 @@
 
 import unittest
 
-from hwt.simulator.simTestCase import SimTestCase, SimpleSimTestCase
+from hwt.simulator.simTestCase import SimTestCase, SingleUnitSimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.arrayItemGetter import ArrayItemGetter
 from pycocotb.constants import CLK_PERIOD
 
 
-class ArrayItemGetterTC(SimpleSimTestCase):
+class ArrayItemGetterTC(SingleUnitSimTestCase):
     @classmethod
     def getUnit(cls):
         u = cls.u = ArrayItemGetter()
@@ -45,18 +45,15 @@ class ArrayItemGetterTC(SimpleSimTestCase):
         self.assertValSequenceEqual(u.item._ag.data, [MAGIC, ])
 
 
-class ArrayItemGetter2in1WordTC(SimTestCase):
-    def setUp(self):
-        u = self.u = ArrayItemGetter()
-        self.ID = 3
-        u.ID = self.ID
-
-        self.ITEMS = 32
-        u.ITEMS = self.ITEMS
-        u.DATA_WIDTH = self.DATA_WIDTH = 64
-        u.ITEM_WIDTH = self.ITEM_WIDTH = 32
-
-        self.prepareUnit(u)
+class ArrayItemGetter2in1WordTC(SingleUnitSimTestCase):
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = ArrayItemGetter()
+        cls.ID = u.ID = 3
+        u.ITEMS = cls.ITEMS = 32
+        u.DATA_WIDTH = cls.DATA_WIDTH = 64
+        u.ITEM_WIDTH = cls.ITEM_WIDTH = 32
+        return u
 
     def test_nop(self):
         u = self.u

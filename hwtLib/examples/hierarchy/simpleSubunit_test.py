@@ -3,7 +3,6 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.hierarchy.simpleSubunit import SimpleSubunit
 from hwtLib.clocking.clkSynchronizer_test import CLK_PERIOD
@@ -22,10 +21,7 @@ class SimpleSubunitTC(SimTestCase):
         # convert it to rtl level
         # decorate interface with agents (._ag property) which will drive
         # or monitor values on the interface
-        self.prepareUnit(u)
-
-        # initialize simulation
-        self.restartSim()
+        self.compileSimAndStart(u)
 
         # there we have our test data, because SimpleUnit has only connection inside
         # None represents invalid value (like universal "x" in vhdl)
@@ -50,7 +46,7 @@ class SimpleSubunitTC(SimTestCase):
         # you can also access signals inside model by it's signal names
         # this names can differ in order to avoid name collision
         # (suffix is usually used, or invalid character is replaced)
-        self.assertValEqual(self.model.subunit0_inst.a._val, 0)
+        self.assertValEqual(self.rtl_simulator.model.subunit0_inst.io.a.read(), 0)
 
 
 if __name__ == "__main__":

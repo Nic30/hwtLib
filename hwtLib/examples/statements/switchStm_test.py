@@ -30,7 +30,7 @@ ENTITY SwitchStmUnit IS
         out_0: OUT STD_LOGIC;
         sel: IN STD_LOGIC_VECTOR(2 DOWNTO 0)
     );
-END SwitchStmUnit;
+END ENTITY;
 
 ARCHITECTURE rtl OF SwitchStmUnit IS
 BEGIN
@@ -48,7 +48,7 @@ BEGIN
         END CASE;
     END PROCESS;
 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 switchStm_verilog = """/*
 
@@ -115,7 +115,7 @@ SC_MODULE(SwitchStmUnit) {
             out.write(c.read());
             break;
         default:
-            out.write('0');
+            out.write(0);
             break;
         }
     }
@@ -130,7 +130,7 @@ SC_MODULE(SwitchStmUnit) {
 class SwitchStmTC(SimTestCase):
     def test_allCases(self):
         self.u = SwitchStmUnit()
-        self.prepareUnit(self.u)
+        self.compileSimAndStart(self.u)
 
         u = self.u
         u.sel._ag.data.extend([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 1])

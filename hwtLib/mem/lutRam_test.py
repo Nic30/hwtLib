@@ -3,7 +3,7 @@
 
 from hwt.hdl.constants import WRITE, READ
 from hwt.simulator.agentConnector import valuesToInts
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.mem.lutRam import RAM64X1S
 from pyMathBitPrecise.bit_utils import selectBit
 from pycocotb.constants import CLK_PERIOD
@@ -34,7 +34,7 @@ def applyRequests(ram, requests):
             addrbit._ag.data.append(addrBitval)
 
 
-class LutRamTC(SimpleSimTestCase):
+class LutRamTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

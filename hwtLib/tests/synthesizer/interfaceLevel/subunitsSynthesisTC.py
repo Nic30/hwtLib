@@ -7,7 +7,10 @@ from hwt.hdl.constants import DIRECTION
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.serializer.vhdl.serializer import VhdlSerializer
+from hwt.synthesizer.dummyPlatform import DummyPlatform
 from hwt.synthesizer.exceptions import TypeConversionErr
+from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
@@ -19,9 +22,7 @@ from hwtLib.examples.simple2withNonDirectIntConnection import \
     Simple2withNonDirectIntConnection
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import \
     BaseSynthesizerTC
-from hwt.serializer.vhdl.serializer import VhdlSerializer
-from hwt.synthesizer.dummyPlatform import DummyPlatform
-from hwt.synthesizer.hObjList import HObjList
+from hwtLib.examples.hierarchy.groupOfBlockrams import GroupOfBlockrams
 
 
 D = DIRECTION
@@ -99,19 +100,19 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY ch IS
-    GENERIC (NESTED_PARAM: INTEGER := 123
+    GENERIC (NESTED_PARAM: string := "123"
     );
-    PORT (a: IN STD_LOGIC_VECTOR(NESTED_PARAM - 1 DOWNTO 0);
-        b: OUT STD_LOGIC_VECTOR(NESTED_PARAM - 1 DOWNTO 0)
+    PORT (a: IN STD_LOGIC_VECTOR(122 DOWNTO 0);
+        b: OUT STD_LOGIC_VECTOR(122 DOWNTO 0)
     );
-END ch;
+END ENTITY;
 
 ARCHITECTURE rtl OF ch IS
-    SIGNAL tmp: STD_LOGIC_VECTOR(NESTED_PARAM - 1 DOWNTO 0);
+    SIGNAL tmp: STD_LOGIC_VECTOR(122 DOWNTO 0);
 BEGIN
     b <= tmp;
     tmp <= a;
-END ARCHITECTURE rtl;
+END ARCHITECTURE;
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
@@ -120,23 +121,23 @@ ENTITY UnitWithGenericOfChild IS
     PORT (a: IN STD_LOGIC_VECTOR(122 DOWNTO 0);
         b: OUT STD_LOGIC_VECTOR(122 DOWNTO 0)
     );
-END UnitWithGenericOfChild;
+END ENTITY;
 
 ARCHITECTURE rtl OF UnitWithGenericOfChild IS
     SIGNAL sig_ch_a: STD_LOGIC_VECTOR(122 DOWNTO 0);
     SIGNAL sig_ch_b: STD_LOGIC_VECTOR(122 DOWNTO 0);
-    SIGNAL tmp: STD_LOGIC_VECTOR(123 - 1 DOWNTO 0);
+    SIGNAL tmp: STD_LOGIC_VECTOR(122 DOWNTO 0);
     COMPONENT ch IS
-       GENERIC (NESTED_PARAM: INTEGER := 123
+       GENERIC (NESTED_PARAM: string := "123"
        );
-       PORT (a: IN STD_LOGIC_VECTOR(NESTED_PARAM - 1 DOWNTO 0);
-            b: OUT STD_LOGIC_VECTOR(NESTED_PARAM - 1 DOWNTO 0)
+       PORT (a: IN STD_LOGIC_VECTOR(122 DOWNTO 0);
+            b: OUT STD_LOGIC_VECTOR(122 DOWNTO 0)
        );
     END COMPONENT;
 
 BEGIN
     ch_inst: COMPONENT ch
-        GENERIC MAP (NESTED_PARAM => 123
+        GENERIC MAP (NESTED_PARAM => "123"
         )
         PORT MAP (a => sig_ch_a,
             b => sig_ch_b
@@ -145,7 +146,7 @@ BEGIN
     b <= tmp;
     sig_ch_a <= a;
     tmp <= b;
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 
 class SubunitsSynthesisTC(BaseSynthesizerTC):
@@ -153,7 +154,6 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
         """
         Check interface directions pre and after synthesis
         """
-        from hwtLib.examples.hierarchy.groupOfBlockrams import GroupOfBlockrams
         u = GroupOfBlockrams()
         u._loadDeclarations()
         u = synthesised(u)
@@ -195,7 +195,6 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
             def _config(self):
                 self.DATA_WIDTH = Param(64)
                 self.USE_STRB = Param(True)
-
 
             def _declr(self):
                 addClkRstn(self)
@@ -277,8 +276,8 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
 
     def test_used_param_from_other_unit(self):
         u = UnitWithGenericOfChild()
-        self.assertEqual(toRtl(u, serializer=VhdlSerializer),
-                         UnitWithGenericOfChild_vhdl)
+        s = toRtl(u, serializer=VhdlSerializer)
+        self.assertEqual(s, UnitWithGenericOfChild_vhdl)
 
 
 if __name__ == '__main__':

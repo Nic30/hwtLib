@@ -5,7 +5,7 @@ import unittest
 
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.handshaked.splitCopy import HsSplitCopy
 from pycocotb.constants import CLK_PERIOD
 
@@ -16,7 +16,7 @@ class HsSplitCopyWithReference(HsSplitCopy):
         addClkRstn(self)
 
 
-class HsSplitCopyTC(SimpleSimTestCase):
+class HsSplitCopyTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

@@ -62,12 +62,12 @@ use IEEE.numeric_std.all;
 ENTITY OnceUnit IS
     PORT (a: OUT STD_LOGIC
     );
-END OnceUnit;
+END ENTITY;
 
 ARCHITECTURE rtl OF OnceUnit IS
 BEGIN
     a <= '1';
-END ARCHITECTURE rtl;
+END ARCHITECTURE;
 --Object of class Entity, "OnceUnit" was not serialized as specified
 --Object of class Architecture, "rtl" was not serialized as specified
 --Object of class Entity, "OnceUnit" was not serialized as specified
@@ -77,17 +77,17 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY u5 IS
-    GENERIC (A: INTEGER := 0;
-        B: INTEGER := 1
+    GENERIC (A: string := "0";
+        B: string := "1"
     );
     PORT (a_0: OUT STD_LOGIC
     );
-END u5;
+END ENTITY;
 
 ARCHITECTURE rtl OF u5 IS
 BEGIN
     a_0 <= '1';
-END ARCHITECTURE rtl;
+END ARCHITECTURE;
 --Object of class Entity, "u5" was not serialized as specified
 --Object of class Architecture, "rtl" was not serialized as specified
 library IEEE;
@@ -95,17 +95,17 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY u7 IS
-    GENERIC (A: INTEGER := 0;
-        B: INTEGER := 12
+    GENERIC (A: string := "0";
+        B: string := "12"
     );
     PORT (a_0: OUT STD_LOGIC
     );
-END u7;
+END ENTITY;
 
 ARCHITECTURE rtl OF u7 IS
 BEGIN
     a_0 <= '1';
-END ARCHITECTURE rtl;
+END ARCHITECTURE;
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
@@ -113,7 +113,7 @@ use IEEE.numeric_std.all;
 ENTITY ExampleA IS
     PORT (a: OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
     );
-END ExampleA;
+END ENTITY;
 
 ARCHITECTURE rtl OF ExampleA IS
     SIGNAL sig_u0_a: STD_LOGIC;
@@ -135,16 +135,16 @@ ARCHITECTURE rtl OF ExampleA IS
     END COMPONENT;
 
     COMPONENT u5 IS
-       GENERIC (A: INTEGER := 0;
-            B: INTEGER := 1
+       GENERIC (A: string := "0";
+            B: string := "1"
        );
        PORT (a_0: OUT STD_LOGIC
        );
     END COMPONENT;
 
     COMPONENT u7 IS
-       GENERIC (A: INTEGER := 0;
-            B: INTEGER := 12
+       GENERIC (A: string := "0";
+            B: string := "12"
        );
        PORT (a_0: OUT STD_LOGIC
        );
@@ -172,28 +172,28 @@ BEGIN
         );
 
     u5_inst: COMPONENT u5
-        GENERIC MAP (A => 0,
-            B => 1
+        GENERIC MAP (A => "0",
+            B => "1"
         )
         PORT MAP (a_0 => sig_u5_a_0
         );
 
     u6_inst: COMPONENT u5
-        GENERIC MAP (A => 0,
-            B => 1
+        GENERIC MAP (A => "0",
+            B => "1"
         )
         PORT MAP (a_0 => sig_u6_a_0
         );
 
     u7_inst: COMPONENT u7
-        GENERIC MAP (A => 0,
-            B => 12
+        GENERIC MAP (A => "0",
+            B => "12"
         )
         PORT MAP (a_0 => sig_u7_a_0
         );
 
     a <= sig_u0_a & sig_u1_a & sig_u2_a & sig_u3_a & sig_u4_a & sig_u5_a_0 & sig_u6_a_0;
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 
 class SerializerModes_TC(unittest.TestCase):

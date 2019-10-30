@@ -40,7 +40,7 @@ class SimpleIfStatement2(Unit):
         self.d = Signal()._m()
 
     def _impl(self):
-        r = self._reg("reg_d", defVal=0)
+        r = self._reg("reg_d", def_val=0)
 
         If(self.a,
             If(self.b & self.c,
@@ -64,7 +64,7 @@ class SimpleIfStatement2b(Unit):
         self.d = Signal()._m()
 
     def _impl(self):
-        r = self._reg("reg_d", defVal=0)
+        r = self._reg("reg_d", def_val=0)
 
         If(self.a & self.b,
             If(self.c,
@@ -88,7 +88,7 @@ class SimpleIfStatement2c(Unit):
         self.d = VectSignal(2)._m()
 
     def _impl(self):
-        r = self._reg("reg_d", Bits(2), defVal=0)
+        r = self._reg("reg_d", Bits(2), def_val=0)
 
         If(self.a & self.b,
             If(self.c,
@@ -154,7 +154,7 @@ ENTITY SimpleIfStatementMergable IS
         c: OUT STD_LOGIC;
         d: OUT STD_LOGIC
     );
-END SimpleIfStatementMergable;
+END ENTITY;
 
 ARCHITECTURE rtl OF SimpleIfStatementMergable IS
 BEGIN
@@ -169,7 +169,7 @@ BEGIN
         END IF;
     END PROCESS;
 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 
 class SimpleIfStatementMergable1(Unit):
@@ -209,7 +209,7 @@ ENTITY SimpleIfStatementMergable1 IS
         d: OUT STD_LOGIC;
         e: IN STD_LOGIC
     );
-END SimpleIfStatementMergable1;
+END ENTITY;
 
 ARCHITECTURE rtl OF SimpleIfStatementMergable1 IS
 BEGIN
@@ -223,7 +223,7 @@ BEGIN
         END IF;
     END PROCESS;
 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 
 class SimpleIfStatementMergable2(Unit):
@@ -269,7 +269,7 @@ ENTITY SimpleIfStatementMergable2 IS
         e: OUT STD_LOGIC;
         f: OUT STD_LOGIC
     );
-END SimpleIfStatementMergable2;
+END ENTITY;
 
 ARCHITECTURE rtl OF SimpleIfStatementMergable2 IS
 BEGIN
@@ -286,7 +286,7 @@ BEGIN
         END IF;
     END PROCESS;
 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 
 class IfStatementPartiallyEnclosed(Unit):
@@ -332,7 +332,7 @@ ENTITY IfStatementPartiallyEnclosed IS
         clk: IN STD_LOGIC;
         d: IN STD_LOGIC
     );
-END IfStatementPartiallyEnclosed;
+END ENTITY;
 
 ARCHITECTURE rtl OF IfStatementPartiallyEnclosed IS
     SIGNAL a_reg: STD_LOGIC;
@@ -364,7 +364,7 @@ BEGIN
         END IF;
     END PROCESS;
 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 
 if __name__ == "__main__":  # alias python main function

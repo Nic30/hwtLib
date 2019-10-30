@@ -11,6 +11,7 @@ from pycocotb.agents.base import AgentBase
 from pycocotb.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
 from pyMathBitPrecise.bit_utils import mask, selectBit
 from pycocotb.hdlSimulator import HdlSimulator
+from pycocotb.triggers import WaitCombRead, WaitWriteOnly
 
 
 class SpiAgent(SyncAgentBase):
@@ -39,20 +40,20 @@ class SpiAgent(SyncAgentBase):
 
         # resolve clk and rstn
         self.clk = self.intf._getAssociatedClk()._sigInside
-        self._discoverReset(allowNoReset=allowNoReset)
+        self.rst, self.rstOffIn = self._discoverReset(intf, allowNoReset=allowNoReset)
 
         # read on rising edge write on falling
-        self.monitorRx = OnRisingCallbackLoop(self.clk,
+        self.monitorRx = OnRisingCallbackLoop(self.sim, self.clk,
                                               self.monitorRx,
                                               self.getEnable)
-        self.monitorTx = OnFallingCallbackLoop(self.clk,
+        self.monitorTx = OnFallingCallbackLoop(self.sim, self.clk,
                                                self.monitorTx,
                                                self.getEnable)
 
-        self.driverRx = OnFallingCallbackLoop(self.clk,
+        self.driverRx = OnFallingCallbackLoop(self.sim, self.clk,
                                               self.driverRx,
                                               self.getEnable)
-        self.driverTx = OnRisingCallbackLoop(self.clk,
+        self.driverTx = OnRisingCallbackLoop(self.sim, self.clk,
                                              self.driverTx,
                                              self.getEnable)
 
@@ -141,10 +142,10 @@ class SpiAgent(SyncAgentBase):
             self.writeTxSig(self.intf.mosi)
 
     def getDrivers(self):
-        return [self.driverRx, self.driverTx]
+        return [self.driverRx(), self.driverTx()]
 
     def getMonitors(self):
-        return [self.monitorRx, self.monitorTx]
+        return [self.monitorRx(), self.monitorTx()]
 
 
 # http://www.corelis.com/education/SPI_Tutorial.htm

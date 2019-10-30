@@ -6,7 +6,7 @@ import socket
 from hwt.code import sizeof
 from hwt.hdl.types.structUtils import HStruct_unpack
 from hwt.simulator.agentConnector import valToInt
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.amba.axis import unpackAxiSFrame
 from hwtLib.amba.axis_comp.frameParser_test import packAxiSFrame
@@ -84,7 +84,7 @@ def pingResponder_model(packetStructVal):
     return bytes(packet)
 
 
-class PingResponderTC(SimpleSimTestCase):
+class PingResponderTC(SingleUnitSimTestCase):
     DATA_WIDTH = 32
 
     @classmethod

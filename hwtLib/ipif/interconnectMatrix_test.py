@@ -32,7 +32,7 @@ class IpifInterconnectMatrixTC(SimTestCase):
         u.ADDR_WIDTH = u.getOptimalAddrSize()
         self.m = mask(self.wordSize)
         self.u = u
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         for s in u.m:
             s._ag.READ_LATENCY = read_latency
             s._ag.WRITE_LATENCY = write_latency

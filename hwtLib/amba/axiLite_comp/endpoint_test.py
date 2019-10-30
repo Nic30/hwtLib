@@ -69,7 +69,7 @@ class AxiLiteEndpointTC(SimTestCase):
     def aTrans(self, addr, prot=0):
         return (addr, prot)
 
-    def mkRegisterMap(self, u, modelCls):
+    def mkRegisterMap(self, u):
         self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
         self.regs = AxiLiteMemSpaceMaster(u.bus, self.addrProbe.discovered)
 
@@ -94,7 +94,7 @@ class AxiLiteEndpointTC(SimTestCase):
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH = self.DATA_WIDTH
 
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
+        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
     def test_nop(self):
@@ -191,8 +191,8 @@ class AxiLiteEndpointMemMasterTC(SimTestCase):
     def randomizeAll(self):
         AxiLiteEndpointTC.randomizeAll(self)
 
-    def mkRegisterMap(self, u, modelCls):
-        AxiLiteEndpointTC.mkRegisterMap(self, u, modelCls)
+    def mkRegisterMap(self, u):
+        AxiLiteEndpointTC.mkRegisterMap(self, u)
 
     def _test_read_memMaster(self, structT):
         u = AxiLiteEndpointTC.mySetUp(self, 32, structT)
@@ -266,9 +266,9 @@ if __name__ == "__main__":
 
     # suite.addTest(AxiLiteEndpointStructsInArray('test_write'))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointMemMasterTC))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointMemMasterTC))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

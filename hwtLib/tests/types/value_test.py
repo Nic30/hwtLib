@@ -6,6 +6,7 @@ import unittest
 
 from hwt.hdl.typeShortcuts import hBool, hInt, vec, hStr
 from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.defs import INT
 
 
 class ValueTC(unittest.TestCase):
@@ -99,6 +100,16 @@ class ValueTC(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             t.from_py(object())
+
+    def test_Bits_int_autocast(self):
+        uint2_t = Bits(2)
+        v0 = INT.from_py(3)
+        v1 = v0._auto_cast(uint2_t)
+        self.assertEqual(v1._dtype, uint2_t)
+
+        v2 = INT.from_py(10)
+        with self.assertRaises(ValueError):
+            v2._auto_cast(uint2_t)
 
 
 if __name__ == '__main__':

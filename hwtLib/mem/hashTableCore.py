@@ -75,9 +75,11 @@ class HashTableCore(Unit):
         assert int(self.DATA_WIDTH) >= 0
         assert int(self.ITEMS_CNT) > 1
 
-        self.HASH_WIDTH = log2ceil(self.ITEMS_CNT).val
+        self.HASH_WIDTH = log2ceil(self.ITEMS_CNT)
 
-        assert self.HASH_WIDTH < int(self.KEY_WIDTH), ("It makes no sense to use hash table when you can use key directly as index", self.HASH_WIDTH, self.KEY_WIDTH)
+        assert self.HASH_WIDTH < int(self.KEY_WIDTH), (
+            "It makes no sense to use hash table when you can use key directly as index",
+            self.HASH_WIDTH, self.KEY_WIDTH)
 
         with self._paramsShared():
             self.insert = InsertIntf()
@@ -107,8 +109,8 @@ class HashTableCore(Unit):
         """
         Parse data stored in hash table
         """
-        DW = int(self.DATA_WIDTH)
-        KW = int(self.KEY_WIDTH)
+        DW = self.DATA_WIDTH
+        KW = self.KEY_WIDTH
 
         vldFlag = sig[0]
 

@@ -98,7 +98,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             return StructIntf(t, parent._instantiateFieldFn)
         elif isinstance(t, HStream):
             p = AxiStream()
-            p.DATA_WIDTH = structField.dtype.elmType.bit_length()
+            p.DATA_WIDTH = structField.dtype.element_t.bit_length()
             p.USE_STRB = True
             return p
         else:
@@ -265,7 +265,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             wordCntr_inversed = self._reg("wordCntr_inversed",
                                           Bits(log2ceil(maxWordIndex + 1),
                                                False),
-                                          defVal=maxWordIndex)
+                                          def_val=maxWordIndex)
             wcntrSw = Switch(wordCntr_inversed)
 
         # inversed indexes of ends of frames

@@ -54,7 +54,7 @@ class AxiSStoredBurst(Unit):
         DATA_LEN = len(self.DATA)
 
         wordIndex_w = int(math.log2(DATA_LEN) + 1)
-        wordIndex = self._reg("wordIndex", Bits(wordIndex_w), defVal=0)
+        wordIndex = self._reg("wordIndex", Bits(wordIndex_w), def_val=0)
 
         Switch(wordIndex)\
             .addCases([(i, dout.data(d))

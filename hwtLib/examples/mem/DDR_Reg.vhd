@@ -13,7 +13,7 @@ ENTITY DDR_Reg IS
         dout: OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
         rst: IN STD_LOGIC
     );
-END DDR_Reg;
+END ENTITY;
 
 ARCHITECTURE rtl OF DDR_Reg IS
     SIGNAL internReg: STD_LOGIC := '0';
@@ -34,4 +34,4 @@ BEGIN
         END IF;
     END PROCESS;
 
-END ARCHITECTURE rtl;
+END ARCHITECTURE;

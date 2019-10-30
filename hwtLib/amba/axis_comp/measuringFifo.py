@@ -32,7 +32,7 @@ class AxiS_measuringFifo(Unit):
         self.EXPORT_ALIGNMENT_ERROR = Param(False)
 
     def getAlignBitsCnt(self):
-        return log2ceil(self.DATA_WIDTH // 8).val
+        return log2ceil(self.DATA_WIDTH // 8)
 
     def _declr(self):
         addClkRstn(self)
@@ -50,7 +50,7 @@ class AxiS_measuringFifo(Unit):
 
         sb = self.sizesBuff = HandshakedFifo(Handshaked)
         sb.DEPTH = self.SIZES_BUFF_DEPTH
-        sb.DATA_WIDTH = self.sizes.DATA_WIDTH.get()
+        sb.DATA_WIDTH = self.sizes.DATA_WIDTH
 
         if self.EXPORT_ALIGNMENT_ERROR:
             assert self.USE_STRB, "Error can not happend"\
@@ -68,7 +68,7 @@ class AxiS_measuringFifo(Unit):
 
         wordCntr = self._reg("wordCntr",
                              Bits(log2ceil(self.MAX_LEN) + 1),
-                             defVal=0)
+                             def_val=0)
 
         overflow = wordCntr._eq(self.MAX_LEN)
         last = dIn.last | overflow
@@ -95,7 +95,7 @@ class AxiS_measuringFifo(Unit):
                 ]
             )
             if self.EXPORT_ALIGNMENT_ERROR:
-                errorAlignment = self._reg("errorAlignment_reg", defVal=0)
+                errorAlignment = self._reg("errorAlignment_reg", def_val=0)
                 self.errorAlignment(errorAlignment)
                 If(dIn.valid & (dIn.strb != mask(BYTE_CNT)) & ~dIn.last,
                    errorAlignment(1)

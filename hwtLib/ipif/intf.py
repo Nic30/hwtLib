@@ -161,16 +161,15 @@ class IpifAgent(SyncAgentBase):
 
         yield WaitCombRead()
         en = self.notReset()
+        yield WaitWriteOnly()
         if self._requireInit or not en:
-            yield WaitWriteOnly()
             intf.ip2bus_rdack.write(0)
             intf.ip2bus_wrack.write(0)
             intf.ip2bus_error.write(None)
             self._requireInit = False
             if not en:
                 return
-
-        # yield sim.waitOnCombUpdate()
+        yield WaitCombRead()
         st = self._monitor_st
         if st == IpifAgentState.IDLE:
             yield WaitCombRead()
@@ -258,21 +257,20 @@ class IpifAgent(SyncAgentBase):
 
         self._monitor_st = st
 
-    def driver(self, sim):
+    def driver(self):
         intf = self.intf
         actual = self.actual
         actual_next = actual
-
         if self._requireInit:
             yield WaitWriteOnly()
             intf.bus2ip_cs.write(0)
             self._requireInit = False
 
-        yield WaitCombStable()
-        yield WaitCombStable()
+        yield WaitCombRead()
         # now we are after clk edge
         if actual is not NOP:
             if actual[0] is READ:
+                yield WaitCombRead()
                 rack = intf.ip2bus_rdack.read()
                 rack = int(rack)
                 if rack:
@@ -280,7 +278,7 @@ class IpifAgent(SyncAgentBase):
                     if self._debugOutput is not None:
                         self._debugOutput.write("%s, on %r read_data: %d\n" % (
                                                 self.intf._getFullName(),
-                                                sim.now, d.val))
+                                                self.sim.now, d.val))
                     self.readed.append(d)
                     actual_next = NOP
             else:
@@ -290,7 +288,7 @@ class IpifAgent(SyncAgentBase):
                     if self._debugOutput is not None:
                         self._debugOutput.write("%s, on %r write_ack\n" % (
                                                 self.intf._getFullName(),
-                                                sim.now))
+                                                self.sim.now))
                     actual_next = NOP
 
         en = self.notReset()
@@ -299,12 +297,13 @@ class IpifAgent(SyncAgentBase):
                 if self.requests:
                     req = self.requests.popleft()
                     if req is not NOP:
+                        yield WaitWriteOnly()
                         self.doReq(req)
                         self.actual = req
                         return
             else:
                 self.actual = actual_next
                 return
-
+        
         yield WaitWriteOnly()
         intf.bus2ip_cs.write(0)

@@ -80,7 +80,7 @@ class Axi_rDatapump(AxiDatapumpBase):
             LEN_MAX = mask(ar.len._dtype.bit_length())
             ADDR_STEP = self.getBurstAddrOffset()
 
-            lastReqDispatched = r("lastReqDispatched", defVal=1)
+            lastReqDispatched = r("lastReqDispatched", def_val=1)
             lenDebth = r("lenDebth", req.len._dtype)
             remBackup = r("remBackup", req.rem._dtype)
             rAddr = r("r_addr", req.addr._dtype)
@@ -164,7 +164,7 @@ class Axi_rDatapump(AxiDatapumpBase):
         r = self.r
         rOut = self.driver.r
 
-        rErrFlag = self._reg("rErrFlag", defVal=0)
+        rErrFlag = self._reg("rErrFlag", def_val=0)
         If(r.valid & rOut.ready & (r.resp != RESP_OKAY),
            rErrFlag(1)
         )

@@ -46,7 +46,7 @@ class IpifReg(Unit):
 
             self.connectRegistered(_din, _dout)
 
-        cs = self._reg("bus2ip_cs_reg", defVal=0)
+        cs = self._reg("bus2ip_cs_reg", def_val=0)
 
         # now bus2ip_cs has to be set after addr etc are valid
         # but we must not let start another transaction directly after one ended

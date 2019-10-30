@@ -6,13 +6,13 @@ from unittest.case import TestCase
 
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceRAM
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.utils import toRtl
 from hwtLib.examples.mem.rom import SimpleRom, SimpleSyncRom
 from pycocotb.constants import CLK_PERIOD
 
 
-class SimpleRomTC(SimpleSimTestCase):
+class SimpleRomTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
@@ -30,7 +30,7 @@ class SimpleRomTC(SimpleSimTestCase):
             u.dout._ag.data, [1, 2, 3, 4, None, 4, 3, 2])
 
 
-class SimpleSyncRomTC(SimpleSimTestCase):
+class SimpleSyncRomTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):

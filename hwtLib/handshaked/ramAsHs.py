@@ -97,8 +97,8 @@ class RamAsHs(Unit):
         w = self.w
         ram = self.ram
 
-        readRegEmpty = self._reg("readRegEmpty", defVal=1)
-        readDataPending = self._reg("readDataPending", defVal=0)
+        readRegEmpty = self._reg("readRegEmpty", def_val=1)
+        readDataPending = self._reg("readDataPending", def_val=0)
         readData = self._reg("readData", r.data.data._dtype)
 
         rEn = readRegEmpty | r.data.rd

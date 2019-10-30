@@ -2,7 +2,7 @@ from collections import deque
 
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.constants import RESP_OKAY
-from pyMathBitPrecise.bit_utils import mask
+from pyMathBitPrecise.bit_utils import mask, ValidityError
 
 
 class Axi3DenseMem(DenseMemory):
@@ -72,8 +72,8 @@ class Axi3DenseMem(DenseMemory):
         self.rPending = deque()
 
         self.wPending = deque()
-
-        self._registerOnClock(clk)
+        self.clk = clk
+        self._registerOnClock()
 
     def parseReq(self, req):
         try:
@@ -126,11 +126,13 @@ class Axi3DenseMem(DenseMemory):
 
             strb = int(strb)
             last = int(last)
+            try:
+                data = int(data)
+            except ValidityError:
+                data = None
 
-            data, strb, last = data.val, strb.val, bool(last.val)
-
+            last = bool(last)
             isLast = i == size - 1
-
             assert last == isLast, (addr, size, i)
 
             if data is None:

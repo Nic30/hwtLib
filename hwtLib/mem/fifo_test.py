@@ -5,12 +5,11 @@ import unittest
 
 from hwt.interfaces.std import FifoReader, FifoWriter
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.mem.fifo import Fifo
 from pycocotb.constants import CLK_PERIOD
-from pycocotb.triggers import Timer
-from pycocotb.hdlSimulator import HdlSimulator
+from pycocotb.triggers import Timer, WaitWriteOnly
 
 
 class FifoReaderPassTrought(Unit):
@@ -32,13 +31,13 @@ class FifoWriterPassTrought(FifoReaderPassTrought):
         self.dout = FifoWriter()._m()
 
 
-class FifoReaderAgentTC(SimpleSimTestCase):
+class FifoReaderAgentTC(SingleUnitSimTestCase):
     CLK = CLK_PERIOD
 
     @classmethod
     def getUnit(cls):
-        cls.u = u = FifoReaderPassTrought()
-        return u
+        cls.u = FifoReaderPassTrought()
+        return cls.u
 
     def test_fifoReader(self):
         u = self.u
@@ -52,7 +51,7 @@ class FifoReaderAgentTC(SimpleSimTestCase):
         self.assertValSequenceEqual(u.dout._ag.data, ref)
 
 
-class FifoWriterAgentTC(SimpleSimTestCase):
+class FifoWriterAgentTC(SingleUnitSimTestCase):
     CLK = CLK_PERIOD
 
     @classmethod
@@ -73,7 +72,7 @@ class FifoWriterAgentTC(SimpleSimTestCase):
         self.assertValSequenceEqual(u.dout._ag.data, ref)
 
 
-class FifoTC(SimpleSimTestCase):
+class FifoTC(SingleUnitSimTestCase):
     ITEMS = 4
     IN_CLK = CLK_PERIOD
     OUT_CLK = CLK_PERIOD
@@ -103,7 +102,6 @@ class FifoTC(SimpleSimTestCase):
         self.runSim(9 * self.CLK)
 
         collected = u.dataOut._ag.data
-
         self.assertValSequenceEqual(collected, expected)
 
     def test_fifoWriterDisable(self):
@@ -112,11 +110,11 @@ class FifoTC(SimpleSimTestCase):
         ref = [i + 1 for i in range(self.ITEMS)]
         u.dataIn._ag.data.extend(ref)
 
-        def init(sim: HdlSimulator):
+        def init():
             yield WaitWriteOnly()
-            u.dataIn._ag.setEnable(False, sim)
+            u.dataIn._ag.setEnable(False)
 
-        self.procs.append(init)
+        self.procs.append(init())
 
         self.runSim(8 * self.CLK)
 
@@ -139,14 +137,14 @@ class FifoTC(SimpleSimTestCase):
             3, 3, 3, 3, 2, 1, 0]):
         u = self.u
 
-        def openOutputAfterWile(sim: HdlSimulator):
+        def openOutputAfterWile():
             yield WaitWriteOnly()
-            u.dataOut._ag.setEnable(False, sim)
+            u.dataOut._ag.setEnable(False)
             yield Timer(self.CLK * 9)
             yield WaitWriteOnly()
-            u.dataOut._ag.setEnable(True, sim)
+            u.dataOut._ag.setEnable(True)
 
-        self.procs.append(openOutputAfterWile)
+        self.procs.append(openOutputAfterWile())
 
         expected = list(range(2 * 8))
         u.dataIn._ag.data.extend(expected)
@@ -155,9 +153,8 @@ class FifoTC(SimpleSimTestCase):
 
         collected = u.dataOut._ag.data
         if u.EXPORT_SIZE:
-            self.assertValSequenceEqual(u.size._ag.data,
-                [0, 1, 2, 3, 4, 4, 4, 4, 4,
-                 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 1, 0])
+            self.assertValSequenceEqual(
+                u.size._ag.data, sizeValues)
 
         self.assertValSequenceEqual(collected, expected)
 
@@ -167,16 +164,15 @@ class FifoTC(SimpleSimTestCase):
         ref = [i + 1 for i in range(self.ITEMS * 3)]
         u.dataIn._ag.data.extend(ref)
 
-        def init(sim: HdlSimulator):
+        def init():
             yield WaitWriteOnly()
-            u.dataOut._ag.setEnable(False, sim)
+            u.dataOut._ag.setEnable(False)
 
-        self.procs.append(init)
+        self.procs.append(init())
 
         self.runSim(self.ITEMS * 4 * self.CLK)
 
         collected = u.dataOut._ag.data
-
         self.assertSetEqual(self.getFifoItems(), set(ref[:self.ITEMS]))
         self.assertValSequenceEqual(collected, [])
         self.assertValSequenceEqual(self.getUnconsumedInput(), ref[self.ITEMS:])
@@ -187,15 +183,15 @@ class FifoTC(SimpleSimTestCase):
         ref = [i + 1 for i in range(self.ITEMS * 2)]
         u.dataIn._ag.data.extend(ref)
 
-        def closeOutput(sim: HdlSimulator):
+        def closeOutput():
             yield Timer(self.OUT_CLK * 4)
             yield WaitWriteOnly()
-            u.dataOut._ag.setEnable(False, sim)
+            u.dataOut._ag.setEnable(False)
 
-        self.procs.append(closeOutput)
+        self.procs.append(closeOutput())
         self.runSim(15 * self.CLK)
 
-        collected = u.dataOut._ag.data
+        collected = [int(x) for x in u.dataOut._ag.data]
 
         self.assertSetEqual(self.getFifoItems(),
                             set(ref[capturedOffset:self.ITEMS + capturedOffset]))
@@ -225,7 +221,6 @@ class FifoTC(SimpleSimTestCase):
         self.runSim(2.5 * LEN * self.CLK)
 
         collected = u.dataOut._ag.data
-
         self.assertSequenceEqual(collected, ref)
 
     def test_doloop(self):
@@ -235,7 +230,6 @@ class FifoTC(SimpleSimTestCase):
         self.runSim(12 * self.CLK)
 
         collected = u.dataOut._ag.data
-
         self.assertSequenceEqual([1, 2, 3, 4, 5, 6], collected)
         self.assertSequenceEqual([], u.dataIn._ag.data)
 
@@ -248,11 +242,11 @@ class FifoTC(SimpleSimTestCase):
         u = self.u
         u.dataIn._ag.data.append(1)
 
-        def init(sim):
+        def init():
             yield WaitWriteOnly()
-            u.dataOut._ag.setEnable(False, sim)
+            u.dataOut._ag.setEnable(False)
 
-        self.procs.append(init)
+        self.procs.append(init())
 
         self.runSim(12 * self.CLK)
         self.assertEqual(len(u.dataOut._ag.data), 0)
@@ -262,24 +256,24 @@ class FifoTC(SimpleSimTestCase):
         ref = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         u.dataIn._ag.data.extend(ref)
 
-        def pause(sim: HdlSimulator):
+        def pause():
             yield Timer(3 * self.OUT_CLK)
             yield WaitWriteOnly()
-            u.dataOut._ag.setEnable_asMonitor(False, sim)
+            u.dataOut._ag.setEnable_asMonitor(False)
 
             yield Timer(3 * self.OUT_CLK)
             yield WaitWriteOnly()
-            u.dataOut._ag.setEnable_asMonitor(True, sim)
+            u.dataOut._ag.setEnable_asMonitor(True)
 
             yield Timer(3 * self.IN_CLK)
             yield WaitWriteOnly()
-            u.dataIn._ag.setEnable_asDriver(False, sim)
+            u.dataIn._ag.setEnable_asDriver(False)
 
             yield Timer(3 * self.IN_CLK)
             yield WaitWriteOnly()
-            u.dataIn._ag.setEnable_asDriver(True, sim)
+            u.dataIn._ag.setEnable_asDriver(True)
 
-        self.procs.append(pause)
+        self.procs.append(pause())
 
         self.runSim(20 * self.CLK)
 
@@ -291,21 +285,21 @@ class FifoTC(SimpleSimTestCase):
         ref = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         u.dataIn._ag.data.extend(ref)
 
-        def pause(sim: HdlSimulator):
+        def pause():
             yield Timer(4 * self.OUT_CLK)
             yield WaitWriteOnly()
-            u.dataOut._ag.setEnable_asMonitor(False, sim)
+            u.dataOut._ag.setEnable_asMonitor(False)
             yield Timer(3 * self.OUT_CLK)
             yield WaitWriteOnly()
-            u.dataOut._ag.setEnable_asMonitor(True, sim)
+            u.dataOut._ag.setEnable_asMonitor(True)
             yield Timer(3 * self.IN_CLK)
             yield WaitWriteOnly()
-            u.dataIn._ag.setEnable_asDriver(False, sim)
+            u.dataIn._ag.setEnable_asDriver(False)
             yield Timer(3 * self.IN_CLK)
             yield WaitWriteOnly()
-            u.dataIn._ag.setEnable_asDriver(True, sim)
+            u.dataIn._ag.setEnable_asDriver(True)
 
-        self.procs.append(pause)
+        self.procs.append(pause())
 
         self.runSim(20 * self.CLK)
 
@@ -325,9 +319,9 @@ class FifoTC(SimpleSimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(unittest.makeSuite(FifoWriterAgentTC))
-    #suite.addTest(unittest.makeSuite(FifoReaderAgentTC))
-    #suite.addTest(unittest.makeSuite(FifoTC))
-    suite.addTest(FifoTC("test_tryMore2"))
+    suite.addTest(unittest.makeSuite(FifoWriterAgentTC))
+    suite.addTest(unittest.makeSuite(FifoReaderAgentTC))
+    suite.addTest(unittest.makeSuite(FifoTC))
+    # suite.addTest(FifoTC("test_tryMore2"))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

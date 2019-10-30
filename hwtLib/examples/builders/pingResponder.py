@@ -16,6 +16,7 @@ from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.types.net.eth import Eth2Header_t
 from hwtLib.types.net.icmp import ICMP_echo_header_t, ICMP_TYPE
 from hwtLib.types.net.ip import IPv4Header_t, ipv4_t
+from hwt.serializer.verilog.serializer import VerilogSerializer
 
 
 echoFrame_t = HStruct(
@@ -28,11 +29,12 @@ echoFrame_t = HStruct(
 # https://github.com/hamsternz/FPGA_Webserver/tree/master/hdl/icmp
 class PingResponder(Unit):
     """
-    Listen for echo request on rx axi stream interface and respond with echo response on tx interface
+    Listen for echo request on rx axi stream interface and respond
+    with echo response on tx interface
 
     :note: incoming checksum is not checked
-    :attention: you have to ping "ping -s 0 <ip>" because unit ignores additional data in packet and linux by
-        defaults adds it
+    :attention: you have to ping "ping -s 0 <ip>" because unit ignores
+        additional data in packet and linux by defaults adds it
 
     .. hwt-schematic::
     """
@@ -60,7 +62,7 @@ class PingResponder(Unit):
         :param parsed: input interface with parsed fields of ICPM frame
         :param regs: registers for ICMP frame
         :param freeze: signal to freeze value in registers
-        :param defVal: dictionary item from regs: default value
+        :param def_val: dictionary item from regs: default value
         :attention: dst and src are swapped
         """
         dtype = regs._dtype
@@ -89,7 +91,8 @@ class PingResponder(Unit):
 
         :param resp: registers with response data
         :param forgeIn: input interface of frame forge
-        :param sendingRepply: flag which signalizes that data should be forged into frame and send
+        :param sendingRepply: flag which signalizes that data
+            should be forged into frame and send
         """
 
         t = resp._dtype
@@ -125,9 +128,9 @@ class PingResponder(Unit):
 
     def _impl(self):
         # tmp registers
-        sendingReply = self._reg("sendingReply", defVal=0)
+        sendingReply = self._reg("sendingReply", def_val=0)
         resp = self._reg("resp", echoFrame_t)
-        isEchoReq = self._reg("isEchoReq", defVal=0)
+        isEchoReq = self._reg("isEchoReq", def_val=0)
 
         # set fields of reply
         resp.icmp.type = resp.icmp.type._dtype.from_py(ICMP_TYPE.ECHO_REPLY)

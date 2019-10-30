@@ -3,24 +3,21 @@
 
 from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import valToInt
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.peripheral.uart.rx import UartRx
 from pyMathBitPrecise.bit_utils import selectBit
 from pycocotb.constants import CLK_PERIOD
 
 
-class UartRxBasicTC(SimpleSimTestCase):
+class UartRxBasicTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
-        cls.OVERSAMPLING = 16
-        cls.FREQ = 115200 * cls.OVERSAMPLING
-        cls.BAUD = 115200
-
         u = cls.u = UartRx()
-        u.BAUD = cls.BAUD
-        u.FREQ = cls.FREQ
-        u.OVERSAMPLING = cls.OVERSAMPLING
+        u.OVERSAMPLING = cls.OVERSAMPLING = 16
+        u.FREQ = cls.FREQ = 115200 * cls.OVERSAMPLING
+        u.BAUD =cls.BAUD = 115200
+
         return u
 
     def getStr(self):

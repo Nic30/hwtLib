@@ -62,11 +62,11 @@ class HsJoinFairShare(HsJoinPrioritized):
         Resolve isSelected signal flags for each input, when isSelected flag signal is 1 it means
         input has clearance to make transaction
         """
-        vld = self.getVld
-        rd = self.getRd
+        vld = self.get_valid_signal
+        rd = self.get_ready_signal
         dout = self.dataOut
 
-        priority = self._reg("priority", Bits(self.INPUTS), defVal=1)
+        priority = self._reg("priority", Bits(self.INPUTS), def_val=1)
         priority(rol(priority, 1))
 
         vldSignals = list(map(vld, self.dataIn))
@@ -88,7 +88,7 @@ class HsJoinFairShare(HsJoinPrioritized):
         return isSelectedFlags, vldSignals
 
     def inputMuxLogic(self, isSelectedFlags, vldSignals):
-        vld = self.getVld
+        vld = self.get_valid_signal
         dout = self.dataOut
 
         # data out mux

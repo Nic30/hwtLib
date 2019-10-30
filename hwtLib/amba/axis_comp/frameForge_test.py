@@ -15,6 +15,7 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.types.ctypes import uint64_t, uint32_t, int32_t
 from pyMathBitPrecise.bit_utils import mask
+from pycocotb.triggers import Timer
 
 
 s1field = HStruct(
@@ -99,7 +100,7 @@ class AxiS_frameForge_TC(SimTestCase):
         u.DATA_WIDTH = self.DATA_WIDTH = DATA_WIDTH
         self.m = mask(self.DATA_WIDTH // 8)
 
-        self.prepareUnit(self.u)
+        self.compileSimAndStart(self.u)
         if randomized:
             self.randomize(u.dataOut)
             for intf in u.dataIn._fieldsToInterfaces.values():
@@ -188,14 +189,14 @@ class AxiS_frameForge_TC(SimTestCase):
         u.DATA_WIDTH = self.DATA_WIDTH = 64
         m = mask(self.DATA_WIDTH // 8)
 
-        self.prepareUnit(self.u)
+        self.compileSimAndStart(self.u)
 
-        def enDataOut(s):
+        def enDataOut():
             u.dataOut._ag.enable = False
-            yield s.wait(50 * Time.ns)
+            yield Timer(50 * Time.ns)
             u.dataOut._ag.enable = True
 
-        self.procs.append(enDataOut)
+        self.procs.append(enDataOut())
 
         MAGIC = 468
         u.dataIn.item0._ag.data.append(MAGIC)
@@ -216,14 +217,14 @@ class AxiS_frameForge_TC(SimTestCase):
         self.DATA_WIDTH = 64
         u.DATA_WIDTH = self.DATA_WIDTH
         m = mask(self.DATA_WIDTH // 8)
-        self.prepareUnit(self.u)
+        self.compileSimAndStart(self.u)
 
-        def enDataOut(s):
+        def enDataOut():
             u.dataOut._ag.enable = False
-            yield s.wait(50 * Time.ns)
+            yield Timer(50 * Time.ns)
             u.dataOut._ag.enable = True
 
-        self.procs.append(enDataOut)
+        self.procs.append(enDataOut())
 
         MAGIC = 468
         u.dataIn.item0_0._ag.data.append(MAGIC)
@@ -257,14 +258,14 @@ class AxiS_frameForge_TC(SimTestCase):
                                      tmpl, frames)
         u.DATA_WIDTH = self.DATA_WIDTH
         m = mask(self.DATA_WIDTH // 8)
-        self.prepareUnit(self.u)
+        self.compileSimAndStart(self.u)
 
-        def enDataOut(s):
+        def enDataOut():
             u.dataOut._ag.enable = False
-            yield s.wait(50 * Time.ns)
+            yield Timer(50 * Time.ns)
             u.dataOut._ag.enable = True
 
-        self.procs.append(enDataOut)
+        self.procs.append(enDataOut())
 
         MAGIC = 468
         u.dataIn.item0_0._ag.data.append(MAGIC)

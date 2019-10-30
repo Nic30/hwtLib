@@ -21,8 +21,7 @@ class AxiLite2ipifTC(SimTestCase):
         u.DATA_WIDTH = DW
         u.ADDR_WIDTH = 32
         self.m = mask(DW // 8)
-        self.prepareUnit(u)
-        self.restartSim()
+        self.compileSimAndStart(u)
         ipif = u.m._ag
         ipif.READ_LATENCY = read_latency
         ipif.WRITE_LATENCY = write_latency
@@ -74,13 +73,13 @@ class AxiLite2ipifTC(SimTestCase):
 
         if data_delay > 0:
 
-            def late_add_data(sim):
+            def late_add_data():
                 yield Timer(data_delay)
                 axi.w._ag.data.extend([
                     (MAGIC + i, self.m) for i in range(N)
                 ])
 
-            self.procs.append(late_add_data)
+            self.procs.append(late_add_data())
         else:
             axi.w._ag.data.extend([
                 (MAGIC + i, self.m) for i in range(N)
@@ -118,7 +117,7 @@ class AxiLite2ipifTC(SimTestCase):
                     (MAGIC_W + i, self.m) for i in range(N)
                 ])
 
-            self.procs.append(late_add_data)
+            self.procs.append(late_add_data())
         else:
             axi.w._ag.data.extend([
                 (MAGIC_W + i, self.m) for i in range(N)

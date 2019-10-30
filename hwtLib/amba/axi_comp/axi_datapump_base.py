@@ -43,7 +43,7 @@ class AxiDatapumpBase(Unit):
             self.a = self._axiAddrCls()._m()
 
     def getSizeAlignBits(self):
-        return log2ceil(self.DATA_WIDTH // 8).val
+        return log2ceil(self.DATA_WIDTH // 8)
 
     def useTransSplitting(self):
         req_len = self.driver.req.len._dtype.bit_length()

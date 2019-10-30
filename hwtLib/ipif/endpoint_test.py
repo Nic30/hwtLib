@@ -26,7 +26,7 @@ def addrGetter(intf):
 class IpifEndpointTC(AxiLiteEndpointTC):
     FIELD_ADDR = [0x0, 0x4]
 
-    def mkRegisterMap(self, u, modelCls):
+    def mkRegisterMap(self, u):
         self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
         self.regs = IPFISimMaster(u.bus, self.addrProbe.discovered)
 
@@ -36,7 +36,7 @@ class IpifEndpointTC(AxiLiteEndpointTC):
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH = self.DATA_WIDTH
 
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
+        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
     def randomizeAll(self):

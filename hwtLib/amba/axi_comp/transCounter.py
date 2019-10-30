@@ -68,7 +68,7 @@ class AxiTransactionCouter(Unit):
             cntrl = getattr(ep, name)
 
             ack = StreamNode(masters={sCh}, slaves={mCh}).ack()
-            cntr = self._reg("cntr_" + name, Bits(self.CNTR_WIDTH), defVal=0)
+            cntr = self._reg("cntr_" + name, Bits(self.CNTR_WIDTH), def_val=0)
             If(doClr,
                cntr(0)
             ).Elif(ack,

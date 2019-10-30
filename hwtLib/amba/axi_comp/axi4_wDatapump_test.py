@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi3 import Axi3_addr, Axi3_w
 from hwtLib.amba.axi4 import Axi4_addr
 from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC, mkReq
@@ -13,7 +13,7 @@ from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 
 
-class Axi4_wDatapumpTC(SimpleSimTestCase):
+class Axi4_wDatapumpTC(SingleUnitSimTestCase):
     LEN_MAX = Axi4_rDatapumpTC.LEN_MAX
 
     @classmethod
@@ -242,7 +242,7 @@ class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
         return u
 
 
-class Axi3_wDatapump_small_splitting_TC(SimpleSimTestCase):
+class Axi3_wDatapump_small_splitting_TC(SingleUnitSimTestCase):
     LEN_MAX = 3
 
     def aTrans(self, id_, addr, len_, burst=BURST_INCR, cache=CACHE_DEFAULT,
@@ -255,13 +255,10 @@ class Axi3_wDatapump_small_splitting_TC(SimpleSimTestCase):
 
     @classmethod
     def getUnit(cls):
-        super(Axi3_wDatapump_small_splitting_TC, self).setUp()
         u = cls.u = Axi_wDatapump(axiAddrCls=Axi3_addr, axiWCls=Axi3_w)
         u.MAX_LEN = cls.LEN_MAX
-
-    def setUp(self):
-        SimpleSimTestCase.setUp(self)
-        self.DATA_WIDTH = int(self.u.DATA_WIDTH)
+        cls.DATA_WIDTH = int(u.DATA_WIDTH)
+        return u
 
     def test_1024random(self):
         u = self.u

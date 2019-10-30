@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-from hwt.simulator.simTestCase import SimTestCase, SimpleSimTestCase
+from hwt.simulator.simTestCase import SimTestCase, SingleUnitSimTestCase
 from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_addr
 from hwtLib.amba.axi_comp.axi4_rDatapump import Axi_rDatapump
@@ -32,7 +32,7 @@ def addData(ag, data, _id=0, resp=RESP_OKAY, last=True):
     ag.data.append((_id, data, resp, last))
 
 
-class Axi4_rDatapumpTC(SimpleSimTestCase):
+class Axi4_rDatapumpTC(SingleUnitSimTestCase):
     LEN_MAX = 255
     DATA_WIDTH = 64
 

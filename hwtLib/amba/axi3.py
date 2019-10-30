@@ -86,7 +86,7 @@ class Axi3_w(Axi_hs, Axi_strb):
         Axi_hs._declr(self)
 
     def _initSimAgent(self, sim: HdlSimulator):
-        AxiStream._initSimAgent(sim, self)
+        AxiStream._initSimAgent(self, sim)
 
 
 #####################################################################
@@ -115,7 +115,7 @@ class Axi3_rAgent(BaseAxiAgent):
     data contains tuples (id, data, resp, last)
     """
 
-    def doRead(self):
+    def get_data(self):
         intf = self.intf
 
         _id = intf.id.read()
@@ -125,7 +125,7 @@ class Axi3_rAgent(BaseAxiAgent):
 
         return (_id, data, resp, last)
 
-    def doWrite(self, data):
+    def set_data(self, data):
         intf = self.intf
 
         if data is None:
@@ -164,12 +164,12 @@ class Axi3_bAgent(BaseAxiAgent):
     data contains tuples (id, resp)
     """
 
-    def doRead(self):
+    def get_data(self):
         intf = self.intf
 
         return intf.id.read(), intf.resp.read()
 
-    def doWrite(self, data):
+    def set_data(self, data):
         intf = self.intf
 
         if data is None:

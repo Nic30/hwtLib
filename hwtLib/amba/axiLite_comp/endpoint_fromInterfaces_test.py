@@ -91,7 +91,7 @@ class TestUnittWithChilds(Unit):
         def configEp(ep):
             ep._updateParamsFrom(self)
 
-        rltSig10 = self._sig("sig", Bits(self.DATA_WIDTH), defVal=10)
+        rltSig10 = self._sig("sig", Bits(self.DATA_WIDTH), def_val=10)
         interfaceMap = IntfMap([
             (rltSig10, "rltSig10"),
             (self.signalLoop.dout, "signal"),
@@ -114,12 +114,12 @@ class TestUnittWithChilds(Unit):
 
 TestUnittWithChilds_add_space_str = """\
 struct {
-    <Bits, DATA_WIDTH, 32bits> rltSig10 // start:0x0(bit) 0x0(byte)
-    <Bits, DATA_WIDTH, 32bits> signal // start:0x20(bit) 0x4(byte)
-    <Bits, DATA_WIDTH, 32bits> regCntrl // start:0x40(bit) 0x8(byte)
-    <Bits, DATA_WIDTH, 32bits> vldSynced // start:0x60(bit) 0xc(byte)
+    <Bits, 32bits> rltSig10 // start:0x0(bit) 0x0(byte)
+    <Bits, 32bits, force_vector> signal // start:0x20(bit) 0x4(byte)
+    <Bits, 32bits, force_vector> regCntrl // start:0x40(bit) 0x8(byte)
+    <Bits, 32bits, force_vector> vldSynced // start:0x60(bit) 0xc(byte)
     <Bits, 32bits>[4] bram // start:0x80(bit) 0x10(byte)
-    //<Bits, DATA_WIDTH, 32bits> empty space // start:0x100(bit) 0x20(byte)
+    //<Bits, 32bits> empty space // start:0x100(bit) 0x20(byte)
 }"""
 
 
@@ -173,21 +173,21 @@ class TestUnittWithArr(Unit):
 
 TestUnittWithArr_addr_space_str = """\
 struct {
-    <Bits, DATA_WIDTH, 32bits>[3] regCntrl // start:0x0(bit) 0x0(byte)
+    <Bits, 32bits, force_vector>[3] regCntrl // start:0x0(bit) 0x0(byte)
 }"""
 
 
 class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
 
-    def mkRegisterMap(self, u, modelCls):
+    def mkRegisterMap(self, u):
         self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
         self.regs = AxiLiteMemSpaceMaster(u.bus, self.addrProbe.discovered)
 
     def randomizeAll(self):
         u = self.u
         for intf in u._interfaces:
-            if u not in (u.clk, u.rst_n, u.bus) and not isinstance(intf,
-                    (BramPort_withoutClk, VldSynced, Signal)):
+            if u not in (u.clk, u.rst_n, u.bus)\
+                    and not isinstance(intf, (BramPort_withoutClk, VldSynced, Signal)):
                 self.randomize(intf)
 
         self.randomize(u.bus.ar)
@@ -202,7 +202,7 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH = self.DATA_WIDTH
 
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
+        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
     def test_nop(self):
@@ -278,7 +278,7 @@ class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH = self.DATA_WIDTH
 
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
+        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
     def test_nop(self):

@@ -84,7 +84,7 @@ class CrcCombTC(SimTestCase):
         u.REFIN = refin
         u.REFOUT = refout
         u.XOROUT = vec(finxor, poly.WIDTH)
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         return u
 
     def test_crc1(self):

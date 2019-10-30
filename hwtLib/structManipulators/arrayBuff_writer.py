@@ -69,7 +69,7 @@ class ArrayBuff_writer(Unit):
 
     def uploadedCntrHandler(self, st, reqAckHasCome, sizeOfitems):
         uploadedCntr = self._reg(
-            "uploadedCntr", self.uploaded._dtype, defVal=0)
+            "uploadedCntr", self.uploaded._dtype, def_val=0)
         self.uploaded(uploadedCntr)
 
         If(st._eq(stT.waitOnAck) & reqAckHasCome,
@@ -77,7 +77,7 @@ class ArrayBuff_writer(Unit):
         )
 
     def _impl(self):
-        ALIGN_BITS = log2ceil(self.DATA_WIDTH // 8 - 1).val
+        ALIGN_BITS = log2ceil(self.DATA_WIDTH // 8 - 1)
         TIMEOUT_MAX = self.TIMEOUT - 1
         ITEMS = self.ITEMS
         buff = self.buff
@@ -99,9 +99,9 @@ class ArrayBuff_writer(Unit):
 
         # offset in buffer and its complement
         offset_t = Bits(log2ceil(ITEMS + 1), signed=False)
-        offset = self._reg("offset", offset_t, defVal=0)
+        offset = self._reg("offset", offset_t, def_val=0)
         remaining = self._reg("remaining", Bits(
-            log2ceil(ITEMS + 1), signed=False), defVal=ITEMS)
+            log2ceil(ITEMS + 1), signed=False), def_val=ITEMS)
         connect(remaining, self.buff_remain, fit=True)
 
         addrTmp = self._sig("baseAddrTmp", baseAddr._dtype)
@@ -142,7 +142,7 @@ class ArrayBuff_writer(Unit):
 
         # timeout logic
         timeoutCntr = self._reg("timeoutCntr", Bits(log2ceil(self.TIMEOUT), False),
-                                defVal=TIMEOUT_MAX)
+                                def_val=TIMEOUT_MAX)
         # buffer is full or timeout
         beginReq = buff.size._eq(self.BUFF_DEPTH) | timeoutCntr._eq(0)
         reqAckHasCome = self._sig("reqAckHasCome")

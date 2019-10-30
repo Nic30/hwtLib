@@ -7,7 +7,6 @@ from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-
 from hwtLib.clocking.clkBuilder import ClkBuilder
 from hwtLib.handshaked.intfBiDirectional import HandshakedBiDirectional, \
     HandshakedBiDirectionalAgent
@@ -17,13 +16,13 @@ from pycocotb.hdlSimulator import HdlSimulator
 
 
 class SpiCntrlDataAgent(HandshakedBiDirectionalAgent):
-    def doRead(self):
+    def get_data(self):
         """extract data from interface"""
         intf = self.intf
 
         return intf.slave.read(), intf.dout.read(), intf.last.read()
 
-    def doWrite(self, data):
+    def set_data(self, data):
         """write data to interface"""
         intf = self.intf
         if data is None:
@@ -90,7 +89,7 @@ class SpiMaster(Unit):
 
     def writePart(self, writeTick, isLastTick, data):
         txReg = self._reg("txReg", Bits(self.DATA_WIDTH))
-        txInitialized = self._reg("txInitialized", defVal=0)
+        txInitialized = self._reg("txInitialized", def_val=0)
         If(writeTick,
             If(txInitialized,
                 txReg(sll(txReg, 1)),
@@ -137,8 +136,8 @@ class SpiMaster(Unit):
 
         timersRst(~en | (requiresInitWait & initWaitDone))
 
-        clkIntern = self._reg("clkIntern", defVal=1)
-        clkOut = self._reg("clkOut", defVal=1)
+        clkIntern = self._reg("clkIntern", def_val=1)
+        clkOut = self._reg("clkOut", def_val=1)
         If(spiClkHalfTick,
            clkIntern(~clkIntern)
         )
@@ -161,8 +160,8 @@ class SpiMaster(Unit):
 
     def _impl(self):
         d = self.data
-        slaveSelectWaitRequired = self._reg("slaveSelectWaitRequired", defVal=1)
-        endOfWordDelayed = self._reg("endOfWordDelayed", defVal=0)
+        slaveSelectWaitRequired = self._reg("slaveSelectWaitRequired", def_val=1)
+        endOfWordDelayed = self._reg("endOfWordDelayed", def_val=0)
         (writeTick, readTick,
          initWaitDone, endOfWord) = self.spiClkGen(
               slaveSelectWaitRequired,

@@ -4,24 +4,22 @@
 import unittest
 
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.axi_comp.axi4_rDatapump_test import mkReq
 from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
 from pyMathBitPrecise.bit_utils import mask
 
 
-class WStrictOrderInterconnectTC(SimTestCase):
-    def setUp(self):
-        super(WStrictOrderInterconnectTC, self).setUp()
-        self.u = WStrictOrderInterconnect()
-        self.MAX_TRANS_OVERLAP = 4
-        self.u.MAX_TRANS_OVERLAP = self.MAX_TRANS_OVERLAP
-        self.DATA_WIDTH = int(self.u.DATA_WIDTH)
+class WStrictOrderInterconnectTC(SingleUnitSimTestCase):
 
-        self.DRIVER_CNT = 2
-        self.u.DRIVER_CNT = self.DRIVER_CNT
-        self.prepareUnit(self.u)
+    @classmethod
+    def getUnit(cls):
+        cls.u = u = WStrictOrderInterconnect()
+        u.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP = 4
+        cls.DATA_WIDTH = u.DATA_WIDTH
+        u.DRIVER_CNT = cls.DRIVER_CNT = 2
+        return u
 
     def test_nop(self):
         u = self.u
@@ -164,17 +162,15 @@ class WStrictOrderInterconnectTC(SimTestCase):
             self.assertSequenceEqual(v, expected)
 
 
-class WStrictOrderInterconnect2TC(SimTestCase):
-    def setUp(self):
-        super(WStrictOrderInterconnect2TC, self).setUp()
-        self.u = WStrictOrderInterconnect()
-        self.MAX_TRANS_OVERLAP = 4
-        self.u.MAX_TRANS_OVERLAP = self.MAX_TRANS_OVERLAP
-        self.DATA_WIDTH = int(self.u.DATA_WIDTH)
+class WStrictOrderInterconnect2TC(SingleUnitSimTestCase):
 
-        self.DRIVER_CNT = 3
-        self.u.DRIVER_CNT = self.DRIVER_CNT
-        self.prepareUnit(self.u)
+    @classmethod
+    def getUnit(cls):
+        cls.u = u = cls.u = WStrictOrderInterconnect()
+        u.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP = 4
+        cls.DATA_WIDTH = u.DATA_WIDTH = 64
+        u.DRIVER_CNT = cls.DRIVER_CNT = 3
+        return u
 
     def test_3x128(self):
         u = self.u
@@ -229,7 +225,7 @@ class WStrictOrderInterconnect2TC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(WStrictOrderInterconnect2TC('test_3x128'))
+    # suite.addTest(WStrictOrderInterconnectTC('test_randomized2'))
     suite.addTest(unittest.makeSuite(WStrictOrderInterconnectTC))
     suite.addTest(unittest.makeSuite(WStrictOrderInterconnect2TC))
     runner = unittest.TextTestRunner(verbosity=3)

@@ -36,7 +36,7 @@ class FlipCntr(Unit):
     def flipHandler(self):
         self.doFlip.rd(1)
 
-        flipSt = self._reg("flipState", defVal=0)
+        flipSt = self._reg("flipState", def_val=0)
         If(self.doFlip.vld,
             flipSt(~flipSt)
         )

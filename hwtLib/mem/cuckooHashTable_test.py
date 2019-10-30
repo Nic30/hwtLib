@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.cuckooHashTable import CuckooHashTable
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
 
 
-class CuckooHashTableTC(SimpleSimTestCase):
+class CuckooHashTableTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
@@ -22,15 +22,16 @@ class CuckooHashTableTC(SimpleSimTestCase):
         return u
 
     def setUp(self):
-        SimpleSimTestCase.setUp(self)
-        self.TABLE_MEMS = [getattr(self.rtl_simulator, "tables_%d_inst" % i).table_inst.ram_memory
+        SingleUnitSimTestCase.setUp(self)
+        m = self.rtl_simulator.model
+        self.TABLE_MEMS = [getattr(m, "tables_%d_inst" % i).table_inst.io.ram_memory
                            for i in range(self.TABLE_CNT)]
 
     def cleanupMemory(self):
         for mem in self.TABLE_MEMS:
-            mem = mem.defVal
+            mem = mem.def_val
             for i in range(mem._dtype.size):
-                mem.val[i] = mem._dtype.elmType.from_py(0)
+                mem.val[i] = mem._dtype.element_t.from_py(0)
 
     def checkContains(self, reference):
         d = self.hashTableAsDict()
@@ -45,7 +46,7 @@ class CuckooHashTableTC(SimpleSimTestCase):
         for t in self.TABLE_MEMS:
             self.assertEqual(len(t), self.TABLE_SIZE)
             for i in range(self.TABLE_SIZE):
-                key, data, vldFlag = self.parseItem(t[i])
+                key, data, vldFlag = self.parseItem(t[i].read())
                 if vldFlag:
                     key = int(key)
                     d[key] = data
@@ -64,7 +65,7 @@ class CuckooHashTableTC(SimpleSimTestCase):
         for t in self.TABLE_MEMS:
             self.assertEqual(len(t), self.TABLE_SIZE)
             for i in range(self.TABLE_SIZE):
-                _, _, vldFlag = self.parseItem(t[i])
+                _, _, vldFlag = self.parseItem(t[i].read())
                 self.assertValEqual(vldFlag, 0, i)
 
     def test_simpleInsert(self):
@@ -76,12 +77,12 @@ class CuckooHashTableTC(SimpleSimTestCase):
                      15: 79,
                      16: 90}
 
-        def planInsert(sim):
+        def planInsert():
             yield Timer(3 * CLK_PERIOD)
             for k, v in sorted(reference.items(), key=lambda x: x[0]):
                 u.insert._ag.data.append((k, v))
 
-        self.procs.append(planInsert)
+        self.procs.append(planInsert())
 
         self.runSim(65 * CLK_PERIOD)
         self.checkContains(reference)
@@ -130,10 +131,10 @@ class CuckooHashTableTC(SimpleSimTestCase):
         for k, v in sorted(reference.items(), key=lambda x: x[0]):
             u.insert._ag.data.append((k, v))
 
-        def doDelete(sim):
+        def doDelete():
             yield Timer(35 * CLK_PERIOD)
             u.delete._ag.data.extend(toDelete)
-        self.procs.append(doDelete)
+        self.procs.append(doDelete())
 
         self.runSim(50 * CLK_PERIOD)
         for k in toDelete:

@@ -55,7 +55,7 @@ class HsSplitSelect(HandshakedCompBase):
 
     def _impl(self):
         In = self.dataIn
-        rd = self.getRd
+        rd = self.get_ready_signal
 
         sel = self.selectOneHot
         r = HandshakedReg(Handshaked)
@@ -67,7 +67,7 @@ class HsSplitSelect(HandshakedCompBase):
 
         for index, outIntf in enumerate(self.dataOut):
             for ini, outi in zip(In._interfaces, outIntf._interfaces):
-                if ini == self.getVld(In):
+                if ini == self.get_valid_signal(In):
                     # out.vld
                     outi(sel.vld & ini & sel.data[index])
                 elif ini == rd(In):
@@ -82,7 +82,7 @@ class HsSplitSelect(HandshakedCompBase):
                   ] +
                   [(sel.data[index],
                     [rd(In)(rd(out)),
-                     sel.rd(rd(out) & self.getVld(din) & sel.vld & self._select_consume_en())])
+                     sel.rd(rd(out) & self.get_valid_signal(din) & sel.vld & self._select_consume_en())])
                    for index, out in enumerate(self.dataOut)],
             default=[
                      sel.rd(None),

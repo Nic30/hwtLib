@@ -1,11 +1,12 @@
+from collections import deque
 from itertools import chain
 
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
-from collections import deque
-from pyMathBitPrecise.bit_utils import mask, selectBitRange
+from pyMathBitPrecise.bit_utils import mask, selectBitRange, ValidityError
+from pycocotb.triggers import WaitWriteOnly
 
 
 class AllocationError(Exception):
@@ -98,16 +99,18 @@ class DenseMemory():
         self.wAg = wAg
         self.wAckAg = wAckAg
         self.wPending = deque()
+        self.clk = clk
 
-        self._registerOnClock(clk)
+        self._registerOnClock()
 
-    def _registerOnClock(self, clk):
-        clk._sigInside.registerOnChangeCallback(self.checkRequests)
+    def _registerOnClock(self):
+        self.clk._sigInside.wait(self.checkRequests())
 
-    def checkRequests(self, simulator):
+    def checkRequests(self):
         """
         Check if any request has appeared on interfaces
         """
+        yield WaitWriteOnly()
         if self.arAg is not None:
             if self.arAg.data:
                 self.onReadReq()
@@ -121,8 +124,7 @@ class DenseMemory():
 
             if self.wPending and self.wPending[0][2] <= len(self.wAg.data):
                 self.doWrite()
-        return
-        yield
+        self._registerOnClock()
 
     def parseReq(self, req):
         for i, v in enumerate(req):
@@ -194,9 +196,11 @@ class DenseMemory():
                 strb = strb.val
             else:
                 data, last = self.wAg.data.popleft()
-
-            assert last._is_full_valid()
-            data, last = data.val, bool(last.val)
+            try:
+                data = int(data)
+            except ValidityError:
+                data = None
+            last = bool(last)
 
             isLast = i == size - 1
 
@@ -204,10 +208,10 @@ class DenseMemory():
                 "write 0x%x, size %d, expected last:%d in word %d" % (
                     addr, size, isLast, i)
 
-            if data is None:
-                raise AssertionError(
-                    "Invalid read of uninitialized value on addr 0x%x" %
-                    (addr + i * self.cellSize))
+            # if data is None:
+            #     raise AssertionError(
+            #         "Invalid write of uninitialized value on addr 0x%x" %
+            #         (addr + i * self.cellSize))
 
             if isLast:
                 expectedStrb = lastWordBitmask

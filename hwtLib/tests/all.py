@@ -3,7 +3,7 @@
 
 from unittest import TestLoader, TextTestRunner, TestSuite
 
-from hwt.simulator.simTestCase import SimpleSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import \
     AxiLiteEndpointArrayTC, AxiLiteEndpointStructsInArrayTC
@@ -177,15 +177,19 @@ from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
+from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.examples.mem.bram_wire import BramWireTC
 
 
 # from hwtLib.peripheral.i2c.i2cAgent_test import I2cAgent_TC
 def testSuiteFromTCs(*tcs):
     loader = TestLoader()
     for tc in tcs:
-        if not isinstance(tc, SimpleSimTestCase):
+        if not issubclass(tc, SingleUnitSimTestCase):
             tc._multiprocess_can_split_ = True
-    loadedTcs = [loader.loadTestsFromTestCase(tc) for tc in tcs]
+    loadedTcs = [loader.loadTestsFromTestCase(tc) for tc in tcs
+                 # if not issubclass(tc, SimTestCase)  # [debug] skip simulations
+                 ]
     suite = TestSuite(loadedTcs)
     return suite
 
@@ -256,6 +260,7 @@ suite = testSuiteFromTCs(
     SimpleTC,
     SimpleSubunitTC,
     RamTC,
+    BramWireTC,
     LutRamTC,
     FsmSerializationTC,
     FsmExampleTC,
@@ -301,7 +306,7 @@ suite = testSuiteFromTCs(
     UartRxTC,
     UartTxRxTC,
     SpiMasterTC,
-    #I2cAgent_TC,
+    # I2cAgent_TC,
     I2CMasterBitCntrlTC,
     CrcUtilsTC,
     CrcCombTC,
@@ -392,6 +397,7 @@ suite = testSuiteFromTCs(
 )
 
 if __name__ == '__main__':
+    # runner = TextTestRunner(verbosity=2, failfast=True)
     runner = TextTestRunner(verbosity=2)
 
     try:
@@ -400,6 +406,7 @@ if __name__ == '__main__':
     except ImportError:
         # concurrencytest is not installed, use regular test runner
         useParallerlTest = False
+    # useParallerlTest = False
 
     if useParallerlTest:
         # Run same tests across 4 processes

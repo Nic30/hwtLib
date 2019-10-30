@@ -16,7 +16,7 @@ class SimpleRom(Unit):
         self.dout = VectSignal(8)._m()
 
     def _impl(self):
-        rom = self._sig("rom_data", Bits(8)[4], defVal=[1, 2, 3, 4])
+        rom = self._sig("rom_data", Bits(8)[4], def_val=[1, 2, 3, 4])
         self.dout(rom[self.addr])
 
 
@@ -29,7 +29,7 @@ class SimpleSyncRom(SimpleRom):
         self.clk = Clk()
 
     def _impl(self):
-        rom = self._sig("rom_data", Bits(8)[4], defVal=[1, 2, 3, 4])
+        rom = self._sig("rom_data", Bits(8)[4], def_val=[1, 2, 3, 4])
 
         If(self.clk._onRisingEdge(),
            self.dout(rom[self.addr])

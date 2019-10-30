@@ -28,11 +28,11 @@ class HandshakedBiDirectionalAgent(HandshakedAgent):
         d = self.intf.din.read()
         self.dinData.append(d)
 
-    def doRead(self):
+    def get_data(self):
         """extract data from interface"""
         return self.intf.dout.read()
 
-    def doWrite(self, data):
+    def set_data(self, data):
         """write data to interface"""
         self.intf.dout.write(data)
 

@@ -43,9 +43,9 @@ class AxisFrameGen(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
-        cntr = self._reg("wordCntr", Bits(log2ceil(self.MAX_LEN)), defVal=0)
-        en = self._reg("enable", defVal=0)
-        _len = self._reg("wordCntr", Bits(log2ceil(self.MAX_LEN)), defVal=0)
+        cntr = self._reg("wordCntr", Bits(log2ceil(self.MAX_LEN)), def_val=0)
+        en = self._reg("enable", def_val=0)
+        _len = self._reg("wordCntr", Bits(log2ceil(self.MAX_LEN)), def_val=0)
 
         self.conv.bus(self.cntrl)
         cEn = self.conv.decoded.enable

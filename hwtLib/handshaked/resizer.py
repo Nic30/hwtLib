@@ -52,15 +52,17 @@ class HsResizer(HandshakedCompBase):
     def _upscaleDataPassLogic(self, inputRegs_cntr, ITEMS):
 
         # valid when all registers are loaded and input with last datapart is valid 
-        self.getVld(self.dataOut)(inputRegs_cntr._eq(ITEMS - 1) & self.getVld(self.dataIn))
+        vld = self.get_valid_signal
+        rd = self.get_ready_signal
+        vld(self.dataOut)(inputRegs_cntr._eq(ITEMS - 1) & vld(self.dataIn))
 
-        self.getRd(self.dataIn)((inputRegs_cntr != ITEMS) | self.getRd(self.dataOut))
+        rd(self.dataIn)((inputRegs_cntr != ITEMS) | rd(self.dataOut))
         If(inputRegs_cntr._eq(ITEMS - 1),
-            If(self.getVld(self.dataIn) & self.getRd(self.dataOut),
+            If(vld(self.dataIn) & rd(self.dataOut),
                inputRegs_cntr(0)
             )
         ).Else(
-            If(self.getVld(self.dataIn),
+            If(vld(self.dataIn),
                inputRegs_cntr(inputRegs_cntr + 1)
             )
         )
@@ -68,16 +70,16 @@ class HsResizer(HandshakedCompBase):
     def _upscale(self, factor):
         inputRegs_cntr = self._reg("inputRegs_cntr",
                                    Bits(log2ceil(factor + 1), False),
-                                   defVal=0)
+                                   def_val=0)
 
-        for din, dout in zip(self.getData(self.dataIn),
-                             self.getData(self.dataOut)):
+        for din, dout in zip(self.get_data(self.dataIn),
+                             self.get_data(self.dataOut)):
             inputRegs = [self._reg("inReg%d_%s" % (i, din._name), din._dtype)
                          for i in range(factor - 1)]
             # last word will be passed directly
 
             for i, r in enumerate(inputRegs):
-                If(inputRegs_cntr._eq(i) & self.getVld(self.dataIn),
+                If(inputRegs_cntr._eq(i) & self.get_valid_signal(self.dataIn),
                    r(din)
                 )
             dout(Concat(din, *reversed(inputRegs)))
@@ -87,7 +89,7 @@ class HsResizer(HandshakedCompBase):
     def _downscale(self, factor):
         inputRegs_cntr = self._reg("inputRegs_cntr",
                                    Bits(log2ceil(factor + 1), False),
-                                   defVal=0)
+                                   def_val=0)
 
         # instantiate HandshakedReg, handshaked builder is not used to avoid dependencies
         inReg = HandshakedReg(self.intfCls)
@@ -100,17 +102,18 @@ class HsResizer(HandshakedCompBase):
         dataOut = self.dataOut
 
         # create output mux
-        for din, dout in zip(self.getData(dataIn), self.getData(dataOut)):
+        for din, dout in zip(self.get_data(dataIn), self.get_data(dataOut)):
             widthOfPart = din._dtype.bit_length() // factor
             inParts = iterBits(din, bitsInOne=widthOfPart)
             Switch(inputRegs_cntr).addCases(
                 [(i, dout(inPart)) for i, inPart in enumerate(inParts)]
                 )
+        vld = self.get_valid_signal
+        rd = self.get_ready_signal
+        vld(dataOut)(vld(dataIn))
+        self.get_ready_signal(dataIn)(inputRegs_cntr._eq(factor - 1) & rd(dataOut))
 
-        self.getVld(dataOut)(self.getVld(dataIn))
-        self.getRd(dataIn)(inputRegs_cntr._eq(factor - 1) & self.getRd(dataOut))
-
-        If(self.getVld(dataIn) & self.getRd(dataOut),
+        If(vld(dataIn) & rd(dataOut),
             If(inputRegs_cntr._eq(factor - 1),
                inputRegs_cntr(0)
             ).Else(
