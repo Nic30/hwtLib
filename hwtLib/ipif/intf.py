@@ -161,16 +161,15 @@ class IpifAgent(SyncAgentBase):
 
         yield WaitCombRead()
         en = self.notReset()
+        yield WaitWriteOnly()
         if self._requireInit or not en:
-            yield WaitWriteOnly()
             intf.ip2bus_rdack.write(0)
             intf.ip2bus_wrack.write(0)
             intf.ip2bus_error.write(None)
             self._requireInit = False
             if not en:
                 return
-
-        # yield sim.waitOnCombUpdate()
+        yield WaitCombRead()
         st = self._monitor_st
         if st == IpifAgentState.IDLE:
             yield WaitCombRead()
@@ -262,7 +261,6 @@ class IpifAgent(SyncAgentBase):
         intf = self.intf
         actual = self.actual
         actual_next = actual
-
         if self._requireInit:
             yield WaitWriteOnly()
             intf.bus2ip_cs.write(0)
@@ -272,7 +270,7 @@ class IpifAgent(SyncAgentBase):
         # now we are after clk edge
         if actual is not NOP:
             if actual[0] is READ:
-                yield WaitCombStable()
+                yield WaitCombRead()
                 rack = intf.ip2bus_rdack.read()
                 rack = int(rack)
                 if rack:
@@ -306,6 +304,6 @@ class IpifAgent(SyncAgentBase):
             else:
                 self.actual = actual_next
                 return
-
+        
         yield WaitWriteOnly()
         intf.bus2ip_cs.write(0)
