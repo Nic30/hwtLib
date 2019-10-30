@@ -7,10 +7,10 @@ from hwt.interfaces.tristate import TristateSig
 from hwt.simulator.agentBase import SyncAgentBase
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
-from pycocotb.agents.base import AgentBase
-from pycocotb.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
 from pyMathBitPrecise.bit_utils import mask, selectBit
+from pycocotb.agents.base import AgentBase
 from pycocotb.hdlSimulator import HdlSimulator
+from pycocotb.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
 from pycocotb.triggers import WaitCombRead, WaitWriteOnly
 
 
@@ -100,9 +100,10 @@ class SpiAgent(SyncAgentBase):
 
     def monitorRx(self):
         yield WaitCombRead()
-        cs = self.intf.cs.read()
-        cs = int(cs)
         if self.notReset():
+            cs = self.intf.cs.read()
+            cs = int(cs)
+
             if cs != self.csMask:  # if any slave is enabled
                 self.readRxSig(self.intf.mosi)
                 if not self._rxBitBuff:
@@ -110,9 +111,9 @@ class SpiAgent(SyncAgentBase):
 
     def monitorTx(self):
         yield WaitCombRead()
-        cs = self.intf.cs.read()
-        cs = int(cs)
         if self.notReset():
+            cs = self.intf.cs.read()
+            cs = int(cs)
             if cs != self.csMask:
                 yield WaitWriteOnly()
                 self.writeTxSig(self.intf.miso)
