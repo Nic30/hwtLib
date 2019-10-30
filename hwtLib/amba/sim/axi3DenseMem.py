@@ -101,7 +101,7 @@ class Axi3DenseMem(DenseMemory):
                 data = self.data[baseIndex + i]
             except KeyError:
                 data = None
-            print("read", baseIndex + i, data)
+
             if data is None:
                 raise AssertionError(
                     "Invalid read of uninitialized value on addr 0x%x"
