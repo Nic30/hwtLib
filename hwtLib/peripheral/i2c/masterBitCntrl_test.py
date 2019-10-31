@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from _collections import deque
 import unittest
 
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.peripheral.i2c.intf import I2cAgent
-from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl,\
+from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl, \
     NOP, START, READ, WRITE
-from _collections import deque
-from pycocotb.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import selectBit
+from pycocotb.constants import CLK_PERIOD
 
 
 class I2CMasterBitCntrlTC(SingleUnitSimTestCase):
@@ -25,7 +25,7 @@ class I2CMasterBitCntrlTC(SingleUnitSimTestCase):
         u.clk_cnt_initVal._ag.data.append(4)
         self.runSim(20 * CLK_PERIOD)
 
-        self.assertEmpty(u.i2c._ag.bits)
+        self.assertFalse(u.i2c._ag.hasTransactionPending())
 
     def test_startbit(self):
         u = self.u

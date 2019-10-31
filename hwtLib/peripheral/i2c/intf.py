@@ -1,5 +1,3 @@
-from collections import deque
-
 from hwt.interfaces.tristate import TristateClk, TristateSig
 from hwt.simulator.agentBase import AgentWitReset
 from hwt.synthesizer.interface import Interface
@@ -25,10 +23,9 @@ class I2c(Interface):
     def _initSimAgent(self, sim: HdlSimulator):
         scl = self.scl
         sda = self.sda
+        rst = AgentWitReset._discoverReset(self, allowNoReset=True)
         self._ag = I2cAgent(
-            sim,
-            ((scl.i, scl.o, scl.t), (sda.i, sda.o, sda.t)), 
-            AgentWitReset._discoverReset(self, allowNoReset=True))
+            sim, (scl, sda), rst)
 
 
 class IP_IIC(IntfIpMeta):
