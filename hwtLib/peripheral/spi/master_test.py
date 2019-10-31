@@ -14,6 +14,10 @@ class SpiMasterTC(SingleUnitSimTestCase):
         u.SPI_FREQ_PESCALER = 8
         return u
 
+    @classmethod
+    def compileSim(cls, unit):
+        super(SpiMasterTC, cls).compileSim(unit, build_dir="tmp")
+
     def test_readAndWrite8bits(self):
         u = self.u
 
@@ -58,7 +62,7 @@ class SpiMasterTC(SingleUnitSimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(ArrayBuff_writer_TC('test_fullFill_withoutAck'))
+    # suite.addTest(SpiMasterTC('test_readAndWrite8bits'))
     suite.addTest(unittest.makeSuite(SpiMasterTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

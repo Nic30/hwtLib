@@ -11,7 +11,8 @@ from pyMathBitPrecise.bit_utils import mask, selectBit
 from pycocotb.agents.base import AgentBase
 from pycocotb.hdlSimulator import HdlSimulator
 from pycocotb.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
-from pycocotb.triggers import WaitCombRead, WaitWriteOnly
+from pycocotb.triggers import WaitCombRead, WaitWriteOnly, Timer
+from pycocotb.constants import Time
 
 
 class SpiAgent(SyncAgentBase):
@@ -78,7 +79,7 @@ class SpiAgent(SyncAgentBase):
             vld_mask <<= 1
             vld_mask |= v.vld_mask
 
-        return t.getValueCls()(val, t, vld_mask)
+        return t.getValueCls()(t, val, vld_mask)
 
     def readRxSig(self, sig):
         d = sig.read()
@@ -103,11 +104,14 @@ class SpiAgent(SyncAgentBase):
         if self.notReset():
             cs = self.intf.cs.read()
             cs = int(cs)
-
             if cs != self.csMask:  # if any slave is enabled
-                self.readRxSig(self.intf.mosi)
                 if not self._rxBitBuff:
                     self.chipSelects.append(cs)
+                self.readRxSig(self.intf.mosi)
+
+    # def monitorTx_pre_set(self):
+    #     yield WaitWriteOnly()
+    #     self.writeTxSig(self.intf.miso)
 
     def monitorTx(self):
         yield WaitCombRead()
@@ -115,6 +119,7 @@ class SpiAgent(SyncAgentBase):
             cs = self.intf.cs.read()
             cs = int(cs)
             if cs != self.csMask:
+                yield Timer(1)
                 yield WaitWriteOnly()
                 self.writeTxSig(self.intf.miso)
 
@@ -146,7 +151,9 @@ class SpiAgent(SyncAgentBase):
         return [self.driverRx(), self.driverTx()]
 
     def getMonitors(self):
-        return [self.monitorRx(), self.monitorTx()]
+        return [self.monitorRx(),
+                #self.monitorTx_pre_set(),
+                self.monitorTx()]
 
 
 # http://www.corelis.com/education/SPI_Tutorial.htm
