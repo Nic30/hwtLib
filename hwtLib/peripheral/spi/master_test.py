@@ -14,10 +14,6 @@ class SpiMasterTC(SingleUnitSimTestCase):
         u.SPI_FREQ_PESCALER = 8
         return u
 
-    @classmethod
-    def compileSim(cls, unit):
-        super(SpiMasterTC, cls).compileSim(unit, build_dir="tmp")
-
     def test_readAndWrite8bits(self):
         u = self.u
 
