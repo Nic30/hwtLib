@@ -44,5 +44,7 @@ target/
 # coveralls cache
 .cache/
 
-# ignore eclipse preferences for each file
-.settings/org.eclipse.core.resources.prefs
+# ignore eclipse project
+.project
+.pydevproject
+.settings/
