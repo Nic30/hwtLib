@@ -33,12 +33,12 @@ class I2CMasterBitCntrlTC(SingleUnitSimTestCase):
         u.clk_cnt_initVal._ag.data.append(4)
         self.runSim(60 * CLK_PERIOD)
 
-        self.assertEqual(u.i2c._ag.bits, deque([I2cAgent.START]))
+        self.assertEqual(u.i2c._ag.bit_cntrl_rx, deque([I2cAgent.START]))
 
     def test_7bitAddr(self):
         u = self.u
         addr = 13
-        mode = 1
+        mode = I2cAgent.READ
         u.cntrl._ag.data.extend(
             [(START, 0), ] +
             [(WRITE, selectBit(addr, 7 - i - 1)) for i in range(7)] +
@@ -49,11 +49,12 @@ class I2CMasterBitCntrlTC(SingleUnitSimTestCase):
         u.clk_cnt_initVal._ag.data.append(4)
         self.runSim(70 * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.i2c._ag.bits,
-                                    [I2cAgent.START] + 
-                                    [selectBit(addr, 7 - i - 1)
-                                     for i in range(7)] +
-                                    [mode, 1])
+        self.assertValSequenceEqual(
+            u.i2c._ag.bit_cntrl_rx,
+            [I2cAgent.START] + 
+            [selectBit(addr, 7 - i - 1)
+             for i in range(7)] +
+            [mode])
 
 
 if __name__ == "__main__":
