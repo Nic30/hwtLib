@@ -39,6 +39,7 @@ class I2cBitCntrlCmd(RdSynced):
 
 
 class I2cBitCntrlCmdAgent(RdSyncedAgent):
+
     def get_data(self):
         """extract data from interface"""
         return (self.intf.cmd.read(), self.intf.din.read())
