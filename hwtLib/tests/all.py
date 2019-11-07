@@ -179,6 +179,7 @@ from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.mem.bram_wire import BramWireTC
+from hwtLib.examples.statements.constCondition import ConstConditionTC
 
 
 # from hwtLib.peripheral.i2c.i2cAgent_test import I2cAgent_TC
@@ -250,6 +251,7 @@ suite = testSuiteFromTCs(
     RegSerializationTC,
     CntrTC,
     CntrResourceAnalysisTC,
+    ConstConditionTC,
 
     # tests of simple units
     TimerTC,
