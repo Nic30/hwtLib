@@ -94,7 +94,8 @@ reference_unionSimple3 = ("b", MAGIC + 20)
 
 
 TEST_DW = [
-    15, 16, 32, 51, 64, 128, 512
+    15, 16, 32, 51, 64, 
+    128, 512
 ]
 RAND_FLAGS = [
     False,
@@ -108,8 +109,11 @@ def testMatrix(fn):
             try:
                 fn(self, dw, randomized)
             except Exception as e:
-                m = "DW:%d, Randomized:%r " % (dw, randomized)
-                e.args = (m + "\n" + e.args[0], *e.args[1:])
+                m = "DW:%d, Randomized:%r \n" % (dw, randomized)
+                if isinstance(e.args[0], str):
+                    e.args = (m + e.args[0], *e.args[1:])
+                else:
+                    e.args = (*e.args, m)
                 raise
     return test_wrap
 
@@ -161,8 +165,8 @@ class AxiS_frameParserTC(SimTestCase):
                 self.assertEqual(getattr(d1, k), getattr(d2, k), (DW, k))
 
     def runMatrixSim(self, time, dataWidth, randomize):
-        self.runSim(time, name="tmp/" + self.getTestName()
-                    + ("_dw%d_r%d" % (dataWidth, randomize)) + ".vcd")
+        unique_name = self.getTestName() + ("_dw%d_r%d" % (dataWidth, randomize))
+        self.runSim(time, name="tmp/" + unique_name + ".vcd")
 
     @testMatrix
     def test_structManyInts_nop(self, dataWidth, randomize):
@@ -285,8 +289,8 @@ class AxiS_frameParserTC(SimTestCase):
                 64: 70,
                 128: 20,
                 512: 65,
-                }
-            t = ts[dataWidth] * 10 * Time.ns
+            }
+            t = ts[dataWidth] * 20 * Time.ns
         self.runMatrixSim(t, dataWidth, randomize)
 
         for i in [u.dataOut.a, u.dataOut.b]:
