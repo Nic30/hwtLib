@@ -4,7 +4,7 @@ from hwt.interfaces.std import Signal, VectSignal, Clk
 from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.synthesizer.unit import Unit
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from build.lib.pycocotb.agents.clk import DEFAULT_CLOCK
+from pycocotb.agents.clk import DEFAULT_CLOCK
 
 
 class ConstCondition(Unit):
