@@ -31,7 +31,7 @@ class HsJoinFairShare(HsJoinPrioritized):
         addClkRstn(self)
         if self.EXPORT_SELECTED:
             s = self.selectedOneHot = VldSynced()._m()
-            s._replaceParam(s.DATA_WIDTH, self.INPUTS)
+            s.DATA_WIDTH = self.INPUTS
 
     @staticmethod
     def priorityAck(priorityReg, vldSignals, index):
@@ -62,11 +62,11 @@ class HsJoinFairShare(HsJoinPrioritized):
         Resolve isSelected signal flags for each input, when isSelected flag signal is 1 it means
         input has clearance to make transaction
         """
-        vld = self.getVld
-        rd = self.getRd
+        vld = self.get_valid_signal
+        rd = self.get_ready_signal
         dout = self.dataOut
 
-        priority = self._reg("priority", Bits(self.INPUTS), defVal=1)
+        priority = self._reg("priority", Bits(self.INPUTS), def_val=1)
         priority(rol(priority, 1))
 
         vldSignals = list(map(vld, self.dataIn))
@@ -88,7 +88,7 @@ class HsJoinFairShare(HsJoinPrioritized):
         return isSelectedFlags, vldSignals
 
     def inputMuxLogic(self, isSelectedFlags, vldSignals):
-        vld = self.getVld
+        vld = self.get_valid_signal
         dout = self.dataOut
 
         # data out mux
@@ -110,7 +110,7 @@ class HsJoinFairShare(HsJoinPrioritized):
 def _example_HsJoinFairShare():
     from hwt.interfaces.std import Handshaked
     u = HsJoinFairShare(Handshaked)
-    u.INPUTS.set(3)
+    u.INPUTS = 3
     return u
 
 

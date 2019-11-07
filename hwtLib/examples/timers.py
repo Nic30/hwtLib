@@ -93,7 +93,7 @@ class DynamicCounterInstancesExample(Unit):
 class TimerTC(SimTestCase):
     def test_basic(self):
         u = TimerTestUnit()
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         CLK = 2 * 390
         RST = 5
 
@@ -124,7 +124,7 @@ class TimerTC(SimTestCase):
     def test_dynamic_simple(self):
         u = DynamicCounterInstancesExample()
 
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
 
         u.en._ag.data.append(1)
         u.rstCntr._ag.data.extend([0, 0, 0, 0, 1, 1, 1, 0])

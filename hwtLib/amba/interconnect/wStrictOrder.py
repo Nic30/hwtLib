@@ -37,13 +37,13 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
                 for _ in range(int(self.DRIVER_CNT)))
             self.wDatapump = AxiWDatapumpIntf()._m()
 
-        self.DRIVER_INDEX_WIDTH = log2ceil(self.DRIVER_CNT).val
+        self.DRIVER_INDEX_WIDTH = log2ceil(self.DRIVER_CNT)
 
         fW = self.orderInfoFifoW = HandshakedFifo(Handshaked)
         fAck = self.orderInfoFifoAck = HandshakedFifo(Handshaked)
         for f in [fW, fAck]:
-            f.DEPTH.set(self.MAX_TRANS_OVERLAP)
-            f.DATA_WIDTH.set(self.DRIVER_INDEX_WIDTH)
+            f.DEPTH = self.MAX_TRANS_OVERLAP
+            f.DATA_WIDTH = self.DRIVER_INDEX_WIDTH
 
     def wHandler(self):
         w = self.wDatapump.w

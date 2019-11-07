@@ -1,11 +1,9 @@
-from collections import deque
-
-from hwt.interfaces.agents.tristate import TristateAgent, \
-    TristateClkAgent, toGenerator
 from hwt.interfaces.tristate import TristateClk, TristateSig
-from ipCorePackager.intfIpMeta import IntfIpMeta
 from hwt.simulator.agentBase import AgentWitReset
 from hwt.synthesizer.interface import Interface
+from ipCorePackager.intfIpMeta import IntfIpMeta
+from pycocotb.agents.peripheral.i2c import I2cAgent
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 class I2c(Interface):
@@ -22,74 +20,12 @@ class I2c(Interface):
     def _getIpCoreIntfClass(self):
         return IP_IIC
 
-    def _initSimAgent(self):
-        self._ag = I2cAgent(self)
-
-
-class I2cAgent(AgentWitReset):
-    START = "start"
-
-    def __init__(self, intf, allowNoReset=True):
-        AgentWitReset.__init__(self, intf, allowNoReset=allowNoReset)
-        self.bits = deque()
-        self.start = True
-        self.sda = TristateAgent(intf.sda)
-        self.sda.collectData = False
-        self.sda.selfSynchronization = False
-
-    def startListener(self, sim):
-        if self.start:
-            self.bits.append(self.START)
-            self.start = False
-
-        return
-        yield
-
-    def startSender(self, sim):
-        if self.start:
-            self.sda._write(0, sim)
-            self.start = False
-        return
-        yield
-
-    def getMonitors(self):
-        self.scl = TristateClkAgent(self.intf.scl,
-                                    onRisingCallback=self.monitor,
-                                    onFallingCallback=self.startListener)
-        return (self.sda.getMonitors() + 
-                self.scl.getMonitors()
-                )
-
-    def getDrivers(self):
-        self.scl = TristateClkAgent(self.intf.scl,
-                                    onRisingCallback=self.driver,
-                                    onFallingCallback=self.startSender)
-        return ([toGenerator(self.driver)] +  # initial initialization
-                self.sda.getDrivers() + 
-                self.scl.getDrivers()
-                )
-
-    def monitor(self, sim):
-        # now intf.sdc is rising
-        yield sim.waitOnCombUpdate()
-        # wait on all agents to update values and on 
-        # simulator to appply them
-        if sim.now > 0 and self.notReset(sim):
-            v = sim.read(self.intf.sda.i)
-            self.bits.append(v)
-
-    def driver(self, sim):
-        # now intf.sdc is rising
-        # yield sim.wait(1)
-        # yield sim.waitOnCombUpdate()
-        yield from self.sda.driver(sim)
-        # now we are after clk
-        # prepare data for next clk
-        if self.bits:
-            b = self.bits.popleft()
-            if b == self.START:
-                return
-            self.sda._write(b, sim)
+    def _initSimAgent(self, sim: HdlSimulator):
+        scl = self.scl
+        sda = self.sda
+        rst = AgentWitReset._discoverReset(self, allowNoReset=True)
+        self._ag = I2cAgent(
+            sim, (scl, sda), rst)
 
 
 class IP_IIC(IntfIpMeta):

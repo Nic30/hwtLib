@@ -121,7 +121,7 @@ class AxiLiteEndpoint(BusEndpoint):
                 if b > lastBit:
                     # add padding
                     pad_w = b - lastBit
-                    pad = Bits(pad_w).fromPy(None)
+                    pad = Bits(pad_w).from_py(None)
                     res.append(pad)
                     lastBit += pad_w
                 din = self.getPort(t).din
@@ -130,7 +130,7 @@ class AxiLiteEndpoint(BusEndpoint):
 
             if lastBit != DW:
                 # add at end padding
-                pad = Bits(DW - lastBit).fromPy(None)
+                pad = Bits(DW - lastBit).from_py(None)
                 res.append(pad)
 
             directlyMappedWors.append((w, Concat(*reversed(res))))
@@ -254,9 +254,10 @@ def _example_AxiLiteEndpoint():
     u = AxiLiteEndpoint(t)
 
     # configuration
-    u.ADDR_WIDTH.set(8)
-    u.DATA_WIDTH.set(32)
+    u.ADDR_WIDTH = 8
+    u.DATA_WIDTH = 32
     return u
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl

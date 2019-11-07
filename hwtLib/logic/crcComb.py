@@ -4,7 +4,6 @@
 from collections import deque
 from typing import List, Tuple
 
-from hwt.bitmask import selectBit
 from hwt.hdl.typeShortcuts import hBit, vec
 from hwt.interfaces.std import VectSignal
 from hwt.interfaces.utils import addClkRstn
@@ -13,38 +12,8 @@ from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.logic.crcPoly import CRC_5_USB
 from hwtLib.logic.crcUtils import parsePolyStr
-from hwt.pyUtils.arrayQuery import grouper
-
-
-def extendToSize(data, items, pad=0):
-    toAdd = items - len(data)
-    assert toAdd >= 0
-    for _ in range(toAdd):
-        data.append(pad)
-
-
-def reversedEndianity(bitArray):
-    w = len(bitArray)
-    i = w
-
-    items = []
-    while i > 0:
-        # take last 8 bytes or rest
-        lower = max(i - 8, 0)
-        b = bitArray[lower:i]
-        extendToSize(b, 8)
-        items.extend(b)
-        i -= 8
-
-    return items
-
-
-def reversedBitsInBytes(bitArray):
-    assert len(bitArray) % 8 == 0
-    tmp = []
-    for db in grouper(8, bitArray):
-        tmp.extend(reversed(db))
-    return tmp
+from pyMathBitPrecise.bit_utils import selectBit, bitListReversedBitsInBytes, \
+    bitListReversedEndianity
 
 
 # http://www.sunshine2k.de/coding/javascript/crc/crc_js.html
@@ -83,12 +52,12 @@ class CrcComb(Unit):
         """
         Apply configuration from CRC configuration class
         """
-        self.POLY.set(vec(crcConfigCls.POLY, crcConfigCls.WIDTH))
-        self.POLY_WIDTH.set(crcConfigCls.WIDTH)
-        self.REFIN.set(crcConfigCls.REFIN)
-        self.REFOUT.set(crcConfigCls.REFOUT)
-        self.XOROUT.set(vec(crcConfigCls.XOROUT, crcConfigCls.WIDTH))
-        self.INIT.set(vec(crcConfigCls.INIT, crcConfigCls.WIDTH))
+        self.POLY = vec(crcConfigCls.POLY, crcConfigCls.WIDTH)
+        self.POLY_WIDTH = crcConfigCls.WIDTH
+        self.REFIN = crcConfigCls.REFIN
+        self.REFOUT = crcConfigCls.REFOUT
+        self.XOROUT = vec(crcConfigCls.XOROUT, crcConfigCls.WIDTH)
+        self.INIT = vec(crcConfigCls.INIT, crcConfigCls.WIDTH)
 
     def _declr(self):
         addClkRstn(self)
@@ -119,7 +88,8 @@ class CrcComb(Unit):
     # hhttps://github.com/alexforencich/fpga-utils/blob/master/crcgen.py
     @staticmethod
     def buildCrcXorMatrix(data_width: int,
-                          polyBits: List[bool]) -> List[Tuple[List[bool], List[bool]]]:
+                          polyBits: List[bool]) -> List[Tuple[List[bool],
+                                                              List[bool]]]:
         """
         :param data_width: number of bits in input
             (excluding bits of signal wit current crc state)
@@ -165,8 +135,8 @@ class CrcComb(Unit):
                           inBits: List, stateBits: List,
                           refin: bool) -> List:
         if refin:
-            inBits = reversedBitsInBytes(inBits)
-            #stateBits = list(reversed(stateBits))
+            inBits = bitListReversedBitsInBytes(inBits)
+            # stateBits = list(reversed(stateBits))
 
         outBits = []
         for (stateMask, dataMask) in crcMatrix:
@@ -204,7 +174,7 @@ class CrcComb(Unit):
         inBits = list(iterBits(_inD))
 
         if not self.IN_IS_BIGENDIAN:
-            inBits = reversedEndianity(inBits)
+            inBits = bitListReversedEndianity(inBits)
 
         outBits = iterBits(self.dataOut)
 
@@ -215,7 +185,7 @@ class CrcComb(Unit):
 
         if self.REFOUT:
             res = list(reversed(res))
-            finBits = reversedBitsInBytes(finBits)
+            finBits = bitListReversedBitsInBytes(finBits)
 
         for ob, b, fb in zip(outBits, res, finBits):
             ob(b ^ fb)
@@ -226,7 +196,7 @@ if __name__ == "__main__":
     # from hwtLib.logic.crcPoly import CRC_32
 
     u = CrcComb()
-    u.DATA_WIDTH.set(8)
+    u.DATA_WIDTH = 8
     u.setConfig(CRC_5_USB)
 
     print(toRtl(u))

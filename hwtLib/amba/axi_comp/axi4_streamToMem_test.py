@@ -1,34 +1,34 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi_comp.axi4_streamToMem import Axi4streamToMem
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
+from pycocotb.constants import CLK_PERIOD
 
 
-class Axi4_streamToMemTC(SimTestCase):
-    def setUp(self):
-        SimTestCase.setUp(self)
+class Axi4_streamToMemTC(SingleUnitSimTestCase):
 
-        u = self.u = Axi4streamToMem()
+    @classmethod
+    def setUpClass(cls):
+        u = cls.u = Axi4streamToMem()
 
-        def mkRegisterMap(u, modelCls):
+        def mkRegisterMap(u):
             addrProbe = AddressSpaceProbe(u.cntrlBus,
                                           lambda intf: intf.ar.addr)
-            self.regs = AxiLiteMemSpaceMaster(u.cntrlBus, addrProbe.discovered)
+            cls.regs = AxiLiteMemSpaceMaster(u.cntrlBus, addrProbe.discovered)
 
-        self.DATA_WIDTH = 32
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        cls.DATA_WIDTH = 32
+        u.DATA_WIDTH = cls.DATA_WIDTH
 
-        self.prepareUnit(self.u, onAfterToRtl=mkRegisterMap)
+        cls.compileSim(u, onAfterToRtl=mkRegisterMap)
 
     def test_nop(self):
         u = self.u
 
-        self.runSim(100 * Time.ns)
+        self.runSim(10 * CLK_PERIOD)
 
         self.assertEmpty(u.axi.ar._ag.data)
         self.assertEmpty(u.axi.aw._ag.data)
@@ -48,7 +48,7 @@ class Axi4_streamToMemTC(SimTestCase):
         regs.baseAddr.write(blockPtr)
         regs.control.write(1)
 
-        self.runSim(N * 30 * Time.ns)
+        self.runSim(N * 3 * CLK_PERIOD)
 
         self.assertValSequenceEqual(m.getArray(blockPtr, self.DATA_WIDTH // 8, N),
                                     sampleData)

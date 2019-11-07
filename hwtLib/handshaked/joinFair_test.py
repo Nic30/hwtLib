@@ -3,27 +3,27 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked
-from hwt.simulator.shortcuts import simPrepare
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwt.simulator.agentConnector import valuesToInts
+from pycocotb.constants import CLK_PERIOD
 
 
 def dataFn(d):
     return d._ag.data
 
 
-class HsJoinFair_2inputs_TC(SimTestCase):
-    def setUp(self):
-        super(HsJoinFair_2inputs_TC, self).setUp()
-        u = self.u = HsJoinFairShare(Handshaked)
-        self.INPUTS = 2
-        u.INPUTS.set(self.INPUTS)
-        u.DATA_WIDTH.set(8)
-        u.EXPORT_SELECTED.set(True)
-        self.prepareUnit(u)
+class HsJoinFair_2inputs_TC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = HsJoinFairShare(Handshaked)
+        cls.INPUTS = 2
+        u.INPUTS = cls.INPUTS
+        u.DATA_WIDTH = 8
+        u.EXPORT_SELECTED = True
+        return u
 
     def addToAllInputs(self, n):
         u = self.u
@@ -40,7 +40,7 @@ class HsJoinFair_2inputs_TC(SimTestCase):
         u = self.u
         expected = self.addToAllInputs(6)
 
-        self.runSim(self.INPUTS * 6 * 20 * Time.ns)
+        self.runSim(self.INPUTS * 6 * 2 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
 
@@ -60,7 +60,7 @@ class HsJoinFair_2inputs_TC(SimTestCase):
         u.dataIn[self.INPUTS - 1]._ag.data.extend(d)
         expected.extend(d)
 
-        self.runSim(self.INPUTS * 6 * 20 * Time.ns)
+        self.runSim(self.INPUTS * 6 * 2 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
 
@@ -80,7 +80,7 @@ class HsJoinFair_2inputs_TC(SimTestCase):
 
         lowPriority._ag.data.extend(expected)
 
-        self.runSim(120 * Time.ns)
+        self.runSim(12 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
 
@@ -101,20 +101,21 @@ class HsJoinFair_2inputs_TC(SimTestCase):
 
         self.randomize(u.dataOut)
 
-        self.runSim(self.INPUTS * N * 50 * Time.ns)
+        self.runSim(self.INPUTS * N * 5 * CLK_PERIOD)
 
         self.assertEqual(set(valuesToInts(u.dataOut._ag.data)),
                          set(expected))
 
 
 class HsJoinFair_3inputs_TC(HsJoinFair_2inputs_TC):
-    def setUp(self):
-        SimTestCase.setUp(self)
-        u = self.u = HsJoinFairShare(Handshaked)
-        self.INPUTS = 3
-        u.INPUTS.set(self.INPUTS)
-        u.DATA_WIDTH.set(8)
-        _, self.model, self.procs = simPrepare(self.u)
+
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = HsJoinFairShare(Handshaked)
+        cls.INPUTS = 3
+        u.INPUTS = cls.INPUTS
+        u.DATA_WIDTH = 8
+        return u
 
 
 if __name__ == "__main__":

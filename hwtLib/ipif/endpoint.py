@@ -14,7 +14,7 @@ class IpifEndpoint(BusEndpoint):
     :attention: interfaces are dynamically generated from names of fileds
         in structure template
     :attention: byte enable and register clock enable signals are ignored
-    
+
     .. hwt-schematic:: _example_IpifEndpoint
     """
 
@@ -64,7 +64,8 @@ class IpifEndpoint(BusEndpoint):
             _isMyAddr = isMyAddr(addr, _addr, t.bitAddrEnd // ADDR_STEP)
             port = self.getPort(t)
 
-            self.propagateAddr(addr, ADDR_STEP, port.addr, port.dout._dtype.bit_length(), t)
+            self.propagateAddr(addr, ADDR_STEP, port.addr,
+                               port.dout._dtype.bit_length(), t)
 
             port.en(_isMyAddr & ipif.bus2ip_cs)
             port.we(_isMyAddr & wAck)

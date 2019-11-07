@@ -38,11 +38,11 @@ class RStrictOrderInterconnect(AxiInterconnectBase):
             )
             self.rDatapump = AxiRDatapumpIntf()._m()
 
-        self.DRIVER_INDEX_WIDTH = log2ceil(self.DRIVER_CNT).val
+        self.DRIVER_INDEX_WIDTH = log2ceil(self.DRIVER_CNT)
 
         f = self.orderInfoFifo = HandshakedFifo(Handshaked)
-        f.DEPTH.set(self.MAX_TRANS_OVERLAP)
-        f.DATA_WIDTH.set(self.DRIVER_INDEX_WIDTH)
+        f.DEPTH = self.MAX_TRANS_OVERLAP
+        f.DATA_WIDTH = self.DRIVER_INDEX_WIDTH
 
     def _impl(self):
         assert int(self.DRIVER_CNT) > 1, "It makes no sense to use interconnect in this case"

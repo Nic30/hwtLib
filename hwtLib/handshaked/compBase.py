@@ -20,13 +20,15 @@ class HandshakedCompBase(Unit):
     def _config(self):
         self.intfCls._config(self)
 
-    def getVld(self, intf):
+    @classmethod
+    def get_valid_signal(cls, intf):
         return intf.vld
 
-    def getRd(self, intf):
+    @classmethod
+    def get_ready_signal(cls, intf):
         return intf.rd
 
-    def getData(self, intf):
-        rd = self.getRd(intf)
-        vld = self.getVld(intf)
+    def get_data(self, intf):
+        rd = self.get_ready_signal(intf)
+        vld = self.get_valid_signal(intf)
         return list(where(intf._interfaces, lambda x: (x is not rd) and (x is not vld)))

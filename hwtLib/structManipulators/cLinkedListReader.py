@@ -53,7 +53,7 @@ class CLinkedListReader(Unit):
             # interface which sending requests to download data
             # and interface which is collecting all data and only data with specified id are processed
             self.rDatapump = AxiRDatapumpIntf()._m()
-            self.rDatapump.MAX_LEN.set(self.BUFFER_CAPACITY // 2 - 1)
+            self.rDatapump.MAX_LEN = self.BUFFER_CAPACITY // 2 - 1
 
             self.dataOut = Handshaked()._m()
 
@@ -62,19 +62,19 @@ class CLinkedListReader(Unit):
 
         # interface to control internal register
         a = self.baseAddr = RegCntrl()
-        a._replaceParam(a.DATA_WIDTH, self.ADDR_WIDTH)
+        a.DATA_WIDTH = self.ADDR_WIDTH
         self.rdPtr = RegCntrl()
         self.wrPtr = RegCntrl()
         for ptr in [self.rdPtr, self.wrPtr]:
-            ptr._replaceParam(ptr.DATA_WIDTH, self.PTR_WIDTH)
+            ptr.DATA_WIDTH = self.PTR_WIDTH
 
         f = self.dataFifo = HandshakedFifo(Handshaked)
-        f.EXPORT_SIZE.set(True)
-        f.DATA_WIDTH.set(self.DATA_WIDTH)
-        f.DEPTH.set(self.BUFFER_CAPACITY)
+        f.EXPORT_SIZE = True
+        f.DATA_WIDTH = self.DATA_WIDTH
+        f.DEPTH = self.BUFFER_CAPACITY
 
     def addrAlignBits(self):
-        return log2ceil(self.DATA_WIDTH // 8).val
+        return log2ceil(self.DATA_WIDTH // 8)
 
     def _impl(self):
         propagateClkRstn(self)
@@ -95,15 +95,15 @@ class CLinkedListReader(Unit):
         inBlock_t = Bits(log2ceil(self.ITEMS_IN_BLOCK + 1))
         ringSpace_t = Bits(self.PTR_WIDTH)
 
-        downloadPending = r("downloadPending", defVal=0)
+        downloadPending = r("downloadPending", def_val=0)
 
         baseIndex = r("baseIndex", Bits(self.ADDR_WIDTH - ALIGN_BITS))
-        inBlockRemain = r("inBlockRemain_reg", inBlock_t, defVal=self.ITEMS_IN_BLOCK)
+        inBlockRemain = r("inBlockRemain_reg", inBlock_t, def_val=self.ITEMS_IN_BLOCK)
         self.inBlockRemain(inBlockRemain)
 
         # Logic of tail/head
-        rdPtr = r("rdPtr", ringSpace_t, defVal=0)
-        wrPtr = r("wrPtr", ringSpace_t, defVal=0)
+        rdPtr = r("rdPtr", ringSpace_t, def_val=0)
+        wrPtr = r("wrPtr", ringSpace_t, def_val=0)
         If(self.wrPtr.dout.vld,
             wrPtr(self.wrPtr.dout.data)
         )
@@ -201,13 +201,17 @@ class CLinkedListReader(Unit):
         StreamNode(masters=[dIn],
                    slaves=[dBuffIn],
                    extraConds={dIn: downloadPending,
-                               dBuffIn: (dIn.id._eq(ID) | (dIn.id._eq(ID_LAST) & ~dIn.last)) & downloadPending
+                               dBuffIn: (dIn.id._eq(ID)
+                                         | (dIn.id._eq(ID_LAST)
+                                            & ~dIn.last)
+                                         ) & downloadPending
                                }).sync()
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
     u = CLinkedListReader()
-    u.BUFFER_CAPACITY.set(8)
-    u.ITEMS_IN_BLOCK.set(31)
-    u.PTR_WIDTH.set(8)
+    u.BUFFER_CAPACITY = 8
+    u.ITEMS_IN_BLOCK = 31
+    u.PTR_WIDTH = 8
     print(toRtl(u))

@@ -6,7 +6,6 @@ import unittest
 
 from hwt.hdl.constants import NOP
 from hwt.interfaces.std import Handshaked
-from hwt.simulator.simTestCase import SimTestCase
 
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.mem.fifo_test import FifoTC
@@ -14,18 +13,19 @@ from hwtLib.mem.fifo_test import FifoTC
 
 class HsFifoTC(FifoTC):
 
-    def setUp(self):
-        SimTestCase.setUp(self)
-        u = self.u = HandshakedFifo(Handshaked)
-        u.DEPTH.set(self.ITEMS)
-        u.DATA_WIDTH.set(8)
-        u.EXPORT_SIZE.set(True)
-        self.prepareUnit(u)
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = HandshakedFifo(Handshaked)
+        u.DEPTH = cls.ITEMS
+        u.DATA_WIDTH = 64
+        u.EXPORT_SIZE = True
+        return u
 
     def getFifoItems(self):
-        v = self.model.fifo_inst.memory._val.val.values()
-        items = set([int(x) for x in v])
-        items.add(int(self.model.dataOut_data._val))
+        m = self.rtl_simulator.model
+        v = m.fifo_inst.io.memory
+        items = set([int(x.read()) for x in v])
+        items.add(int(m.io.dataOut_data.read()))
         return items
 
     def getUnconsumedInput(self):
@@ -37,7 +37,7 @@ class HsFifoTC(FifoTC):
 
     def test_stuckedData(self):
         super(HsFifoTC, self).test_stuckedData()
-        self.assertValEqual(self.model.dataOut_data, 1)
+        self.assertValEqual(self.rtl_simulator.io.dataOut_data, 1)
 
     def test_tryMore2(self, capturedOffset=1):
         # capturedOffset=1 because handshaked aget can act in same clk

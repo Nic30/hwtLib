@@ -1,21 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import valToInt
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 
 from hwtLib.peripheral.uart.tx import UartTx
+from pycocotb.constants import CLK_PERIOD
 
 
-class UartTxTC(SimTestCase):
+class UartTxTC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = UartTx()
+        u.BAUD = 115200
+        u.FREQ = 115200
+        return u
+
     def setUp(self):
-        SimTestCase.setUp(self)
-        u = self.u = UartTx()
-        u.BAUD.set(115200)
-        u.FREQ.set(115200)
-        self.prepareUnit(u)
-        self.randomize(u.dataIn)
+        SingleUnitSimTestCase.setUp(self)
+        self.randomize(self.u.dataIn)
 
     def getStr(self):
         START_BIT = 0
@@ -23,14 +27,14 @@ class UartTxTC(SimTestCase):
         s = ""
         d = iter(self.u.txd._ag.data)
         for bit in d:
-            self.assertEqual(bit.vldMask, 0b1)
+            self.assertEqual(bit.vld_mask, 0b1)
             _bit = valToInt(bit)
 
             if _bit == START_BIT:
                 ch = 0
                 for i in range(10 - 1):
                     b = next(d)
-                    self.assertEqual(b.vldMask, 0b1)
+                    self.assertEqual(b.vld_mask, 0b1)
                     _b = valToInt(b)
                     if i == 8:
                         self.assertEqual(_b, STOP_BIT)
@@ -46,13 +50,13 @@ class UartTxTC(SimTestCase):
             self.u.dataIn._ag.data.append(ord(ch))
 
     def test_nop(self):
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
         self.assertEqual(self.getStr(), "")
 
     def test_simple(self):
         t = "simple"
         self.sendStr(t)
-        self.runSim(10 * 10 * (len(t) + 10) * Time.ns)
+        self.runSim(10 * (len(t) + 10) * CLK_PERIOD)
         self.assertEqual(self.getStr(), t)
 
 

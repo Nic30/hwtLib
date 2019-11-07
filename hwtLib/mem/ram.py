@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, power
+from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import BramPort, Clk, BramPort_withoutClk
 from hwt.serializer.mode import serializeParamsUniq
@@ -54,7 +54,7 @@ class RamSingleClock(Unit):
 
     def _impl(self):
         PORTS = int(self.PORT_CNT)
-        dt = Bits(self.DATA_WIDTH)[power(2, self.ADDR_WIDTH)]
+        dt = Bits(self.DATA_WIDTH)[2 ** self.ADDR_WIDTH]
         self._mem = self._sig("ram_memory", dt)
 
         for i in range(PORTS):
@@ -86,7 +86,7 @@ class Ram_sp(Unit):
         )
 
     def _impl(self):
-        dt = Bits(self.DATA_WIDTH)[power(2, self.ADDR_WIDTH)]
+        dt = Bits(self.DATA_WIDTH)[2 ** self.ADDR_WIDTH]
         self._mem = self._sig("ram_memory", dt)
 
         self.connectPort(self.a, self._mem)
@@ -96,7 +96,7 @@ class Ram_dp(Ram_sp):
     """
     True dual port RAM.
     :note: write-first variant 
-    
+
     .. hwt-schematic::
     """
     def _declr(self):

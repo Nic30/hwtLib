@@ -35,24 +35,24 @@ class ArrayItemGetter(Unit):
 
         # input index of item to get
         self.index = Handshaked()
-        self.index.DATA_WIDTH.set(log2ceil(self.ITEMS))
+        self.index.DATA_WIDTH = log2ceil(self.ITEMS)
 
         # output item from array
         self.item = Handshaked()._m()
-        self.item.DATA_WIDTH.set(self.ITEM_WIDTH)
+        self.item.DATA_WIDTH = self.ITEM_WIDTH
 
         self.ITEMS_IN_DATA_WORD = int(self.DATA_WIDTH) // int(self.ITEM_WIDTH)
 
         with self._paramsShared():
             # interface for communication with datapump
             self.rDatapump = AxiRDatapumpIntf()._m()
-            self.rDatapump.MAX_LEN.set(1)
+            self.rDatapump.MAX_LEN = 1
 
         if self.ITEMS_IN_DATA_WORD > 1:
             assert isPow2(self.ITEMS_IN_DATA_WORD)
             f = self.itemSubIndexFifo = HandshakedFifo(Handshaked)
-            f.DATA_WIDTH.set(log2ceil(self.ITEMS_IN_DATA_WORD))
-            f.DEPTH.set(self.MAX_TRANS_OVERLAP)
+            f.DATA_WIDTH = log2ceil(self.ITEMS_IN_DATA_WORD)
+            f.DEPTH = self.MAX_TRANS_OVERLAP
 
     def _impl(self):
         propagateClkRstn(self)

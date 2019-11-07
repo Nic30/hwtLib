@@ -32,9 +32,9 @@ class Cam(Unit):
         with self._paramsShared():
             self.match = Handshaked()
             self.write = AddrDataBitMaskHs()
-            self.write.ADDR_WIDTH.set(log2ceil(self.ITEMS - 1))
+            self.write.ADDR_WIDTH = log2ceil(self.ITEMS - 1)
         o = self.out = VldSynced()._m()
-        o._replaceParam(o.DATA_WIDTH, self.ITEMS)
+        o.DATA_WIDTH = self.ITEMS
 
     def writeHandler(self, mem):
         w = self.write
@@ -47,9 +47,9 @@ class Cam(Unit):
     def matchHandler(self, mem):
         key = self.match
 
-        out = self._reg("out_reg", self.out.data._dtype, defVal=0)
+        out = self._reg("out_reg", self.out.data._dtype, def_val=0)
         outNext = out.next
-        outVld = self._reg("out_vld_reg", defVal=0)
+        outVld = self._reg("out_vld_reg", def_val=0)
 
         key.rd(1)
         outVld(key.vld)

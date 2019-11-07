@@ -41,7 +41,7 @@ class SimpleUnionSlave(EmptyUnit):
         else:
             p = Handshaked()
 
-        p.DATA_WIDTH.set(frameTmplItem.dtype.bit_length())
+        p.DATA_WIDTH = frameTmplItem.dtype.bit_length()
         return p
 
     def _declr(self):
@@ -70,22 +70,22 @@ class UnionIntfTC(SimTestCase):
 
     def test_instantiationSinkSlave(self):
         u = SimpleUnionSlave(UnionSink, union0)
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         self.checkIntf(u)
 
     def test_instantiationSinkMaster(self):
         u = SimpleUnionMaster(UnionSink, union0)
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         self.checkIntf(u)
 
     def test_instantiationSourceSlave(self):
         u = SimpleUnionSlave(UnionSource, union0)
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         self.checkIntf(u)
 
     def test_instantiationSourceMaster(self):
         u = SimpleUnionMaster(UnionSource, union0)
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         self.checkIntf(u)
 
 

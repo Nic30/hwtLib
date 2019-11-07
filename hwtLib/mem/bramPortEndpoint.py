@@ -97,7 +97,7 @@ def _example_BramPortEndpoint():
             (uint32_t[1024 + 4], "nonAligned0")
         )
     )
-    u.DATA_WIDTH.set(32)
+    u.DATA_WIDTH = 32
     return u
 
 

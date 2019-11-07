@@ -4,8 +4,7 @@
 [![Python version](https://img.shields.io/pypi/pyversions/hwtLib.svg)](https://img.shields.io/pypi/pyversions/hwtLib.svg)
 
 
-hwtLib is the library of hardware components for [hwt framework](https://github.com/Nic30/hwt). Relation of hwt and hwtLib is similar as C and stdlib relation. 
-
+hwtLib is the library of hardware components for [hwt framework](https://github.com/Nic30/hwt) (= IPcore repository).
 
 
 
@@ -31,7 +30,7 @@ Any component can be exported as IPCore using hwt.Packager or as HDL code by [to
 * [tests](https://github.com/Nic30/hwtLib/tree/master/hwtLib/tests) - tests which are not related to another components
 * [types](https://github.com/Nic30/hwtLib/tree/master/hwtLib/types) - deffinitions of common types (uint32_t, ipv6_t, udp_t, ...)
 
-## Installation 
+## Installation
 ``` bash
 sudo pip3 install hwtLib
 ```
@@ -40,15 +39,16 @@ sudo pip3 install hwtLib
 
 ## Repositories with opensource HW:
 
-* [enjoy-digital repositories](https://github.com/enjoy-digital?tab=repositories) - Migen, SoC level modules
-* [ZipCPU repositories](https://github.com/ZipCPU?tab=repositories) - Verilog, mostly preipherals, DSP
-* [rhea](https://github.com/cfelton/rhea) - MyHDL, SoC level modules
-* [FPGAwars FPGA-peripherals](https://github.com/FPGAwars/FPGA-peripherals) - Verilog, simple peripherals
-* [PoC](https://github.com/VLSI-EDA/PoC) - VHDL, utils
-* [picorv32](https://github.com/cliffordwolf/picorv32) - Verilog, A Size-Optimized RISC-V SoC
-* [openrisc](https://github.com/openrisc) - OpenRISC, FuseSoC, peripherals and cpu parts
-* [NyuziProcessor](https://github.com/jbush001/NyuziProcessor) - GPGPU
-* [pulp-platform](https://github.com/pulp-platform)
-* [leon/grlib](https://www.gaisler.com/index.php/downloads/leongrlib) - Library of SoC components
+* [analogdevicesinc/hdl/](https://github.com/analogdevicesinc/hdl/)
 * [corundum](https://github.com/ucsdsysnet/corundum) - Packet DMA
-
+* [enjoy-digital repositories](https://github.com/enjoy-digital?tab=repositories) - Migen, SoC level modules
+* [FPGAwars FPGA-peripherals](https://github.com/FPGAwars/FPGA-peripherals) - Verilog, simple peripherals
+* [leon/grlib](https://www.gaisler.com/index.php/downloads/leongrlib) - Library of SoC components
+* [NyuziProcessor](https://github.com/jbush001/NyuziProcessor) - GPGPU
+* [openrisc](https://github.com/openrisc) - OpenRISC, FuseSoC, peripherals and cpu parts
+* [picorv32](https://github.com/cliffordwolf/picorv32) - Verilog, A Size-Optimized RISC-V SoC
+* [PoC](https://github.com/VLSI-EDA/PoC) - VHDL, utils
+* [pulp-platform](https://github.com/pulp-platform)
+* [rhea](https://github.com/cfelton/rhea) - MyHDL, SoC level modules
+* [tinyfpgax](https://github.com/tinyfpga)
+* [ZipCPU repositories](https://github.com/ZipCPU?tab=repositories) - Verilog, mostly preipherals, DSP

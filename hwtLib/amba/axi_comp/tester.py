@@ -47,8 +47,8 @@ class AxiTester(Unit):
             self._add_ep()
 
         # r = self.ram = Ram_dp()
-        # r.ADDR_WIDTH.set(log2ceil(4096))
-        # r._replaceParam(r.DATA_WIDTH, self.DATA_WIDTH)
+        # r.ADDR_WIDTH = log2ceil(4096)
+        # r.DATA_WIDTH = self.DATA_WIDTH
 
     def _add_ep(self):
         strb_w = self.DATA_WIDTH // 8
@@ -104,8 +104,8 @@ class AxiTester(Unit):
         )
 
         ep = self.axi_ep = AxiLiteEndpoint(mem_space, intfCls=self._cntrlCls)
-        ep.DATA_WIDTH.set(self.CNTRL_DATA_WIDTH)
-        ep.ADDR_WIDTH.set(self.CNTRL_ADDR_WIDTH)
+        ep.DATA_WIDTH = self.CNTRL_DATA_WIDTH
+        ep.ADDR_WIDTH = self.CNTRL_ADDR_WIDTH
 
     def _impl(self):
         propagateClkRstn(self)
@@ -132,8 +132,8 @@ class AxiTester(Unit):
             return reg
 
         cmdIn = ep.cmd_and_status.dout
-        cmd = self._reg("reg_cmd", cmdIn.data._dtype, defVal=0)
-        cmdVld = self._reg("reg_cmd_vld", defVal=0)
+        cmd = self._reg("reg_cmd", cmdIn.data._dtype, def_val=0)
+        cmdVld = self._reg("reg_cmd_vld", def_val=0)
         If(cmdIn.vld,
            connect(cmdIn.data, cmd, fit=True)
         )

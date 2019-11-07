@@ -55,8 +55,8 @@ class FlipRegister(Unit):
         ]
 
     def _impl(self):
-        first = self._reg("first_reg", Bits(self.DATA_WIDTH), defVal=self.DEFAULT_VAL)
-        second = self._reg("second_reg", Bits(self.DATA_WIDTH), defVal=self.DEFAULT_VAL)
+        first = self._reg("first_reg", Bits(self.DATA_WIDTH), def_val=self.DEFAULT_VAL)
+        second = self._reg("second_reg", Bits(self.DATA_WIDTH), def_val=self.DEFAULT_VAL)
 
         If(self.select_sig,
            self.connectReadIntf(second, first),

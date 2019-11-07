@@ -3,7 +3,6 @@
 
 from typing import List, Optional, Union
 
-from hwt.bitmask import mask
 from hwt.code import log2ceil, Switch, If, isPow2, SwitchLogic
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts, StreamOfFramePars
@@ -20,20 +19,20 @@ from hwt.interfaces.unionIntf import UnionSink
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.byteOrder import reverseByteOrder
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.amba.axis_comp.templateBasedUnit import TemplateBasedUnit
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
+from pyMathBitPrecise.bit_utils import mask
 
 
 class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
     """
     Assemble fields into frame on axi stream interface,
     frame description can be HType instance (HStruct, HUnion, ...)
-    
+
     :note: if special frame format is required,
         it can be specified by TransTmpl instance and list of FrameTmpl
         (Input data structure can be splited into multiple frames as required)
@@ -82,10 +81,10 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
         self._tmpRegsForSelect = {}
 
         AxiSCompBase.__init__(self)
-    
+
     def _config(self):
         AxiSCompBase._config(self)
-        self.USE_STRB.set(True)
+        self.USE_STRB = True
 
     @staticmethod
     def _mkFieldIntf(parent: StructIntf, structField: HStructField):
@@ -99,12 +98,12 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             return StructIntf(t, parent._instantiateFieldFn)
         elif isinstance(t, HStream):
             p = AxiStream()
-            p.DATA_WIDTH.set(structField.dtype.elmType.bit_length())
-            p.USE_STRB.set(True)
+            p.DATA_WIDTH = structField.dtype.element_t.bit_length()
+            p.USE_STRB = True
             return p
         else:
             p = Handshaked()
-            p.DATA_WIDTH.set(structField.dtype.bit_length())
+            p.DATA_WIDTH = structField.dtype.bit_length()
             return p
 
     def _declr(self):
@@ -127,9 +126,13 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
         self.dataIn = intfCls(self._structT, self._mkFieldIntf)
 
     def connectPartsOfWord(self, wordData_out: RtlSignal,
-                           tPart: Union[TransPart, ChoicesOfFrameParts, StreamOfFramePars],
-                           inPorts_out: List[Union[Handshaked, StreamNode]],
-                           lastInPorts_out: List[Union[Handshaked, StreamNode]]):
+                           tPart: Union[TransPart,
+                                        ChoicesOfFrameParts,
+                                        StreamOfFramePars],
+                           inPorts_out: List[Union[Handshaked,
+                                                   StreamNode]],
+                           lastInPorts_out: List[Union[Handshaked,
+                                                       StreamNode]]):
         """
         Connect transactions parts to signal for word of output stream
 
@@ -161,8 +164,8 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             for choice in tPart:
                 tmp = self._sig("union_tmp_", Bits(w))
                 intfOfChoice = tToIntf[choice.tmpl.origin]
-                _, isSelected, isSelectValid = AxiS_frameParser.choiceIsSelected(
-                    self, intfOfChoice)
+                _, isSelected, isSelectValid = \
+                    AxiS_frameParser.choiceIsSelected(self, intfOfChoice)
                 unionChoices.append((isSelected, wordData_out[high:low](tmp)))
 
                 isSelected = isSelected & isSelectValid
@@ -241,8 +244,8 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
     def _impl(self):
         """
         Iterate over words in template and create stream output mux and fsm.
-        Frame specifier can contains unions/streams/padding/unaligned items and other
-        features which makes code below complex.
+        Frame specifier can contains unions/streams/padding/unaligned items
+        and other features which makes code below complex.
         Frame specifier can also describe multiple frames.
         """
         if self.IS_BIGENDIAN:
@@ -260,8 +263,9 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
         if multipleWords:
             # multiple word frame
             wordCntr_inversed = self._reg("wordCntr_inversed",
-                                          Bits(log2ceil(maxWordIndex + 1), False),
-                                          defVal=maxWordIndex)
+                                          Bits(log2ceil(maxWordIndex + 1),
+                                               False),
+                                          def_val=maxWordIndex)
             wcntrSw = Switch(wordCntr_inversed)
 
         # inversed indexes of ends of frames
@@ -272,7 +276,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
             # input ports for value of this output word
             inPorts = []
-            # input ports witch value should be consumed on this word
+            # input ports which value should be consumed on this word
             lastInPorts = []
             if multipleWords:
                 wordData = self._sig("word%d" % i, dout.data._dtype)
@@ -384,7 +388,7 @@ def _example_AxiS_frameForge():
                 )
 
     u = AxiS_frameForge(AxiStream, t)
-    u.DATA_WIDTH.set(32)
+    u.DATA_WIDTH = 32
     return u
 
 

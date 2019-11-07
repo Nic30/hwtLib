@@ -15,7 +15,7 @@ from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArrayTC
 class BramPortEndpointTC(AxiLiteEndpointTC):
     FIELD_ADDR = [0x0, 0x1]
 
-    def mkRegisterMap(self, u, modelCls):
+    def mkRegisterMap(self, u):
         self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
         self.regs = BramPortSimMemSpaceMaster(u.bus, self.addrProbe.discovered)
 
@@ -23,9 +23,9 @@ class BramPortEndpointTC(AxiLiteEndpointTC):
         u = self.u = BramPortEndpoint(self.STRUCT_TEMPLATE)
 
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        u.DATA_WIDTH = self.DATA_WIDTH
 
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
+        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
     def randomizeAll(self):

@@ -1,8 +1,8 @@
 from collections import deque
 
-from hwt.bitmask import mask
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.constants import RESP_OKAY
+from pyMathBitPrecise.bit_utils import mask
 
 
 class Axi3DenseMem(DenseMemory):
@@ -72,16 +72,18 @@ class Axi3DenseMem(DenseMemory):
         self.rPending = deque()
 
         self.wPending = deque()
-
-        self._registerOnClock(clk)
+        self.clk = clk
+        self._registerOnClock()
 
     def parseReq(self, req):
-        for i, v in enumerate(req):
-            assert v._isFullVld(), ("Invalid AXI request", i, v)
+        try:
+            req = [int(v) for v in req]
+        except ValueError:
+            raise AssertionError("Invalid AXI request", req)
 
-        _id = req[0].val
-        addr = req[1].val
-        size = req[4].val + 1
+        _id = req[0]
+        addr = req[1]
+        size = req[4] + 1
 
         return (_id, addr, size, self.allMask)
 
@@ -117,25 +119,16 @@ class Axi3DenseMem(DenseMemory):
         for i in range(size):
             if self.HAS_W_ID:
                 _id2, data, strb, last = self.wAg.data.popleft()
-                assert _id2._isFullVld()
-                assert _id == _id2.val
+                _id2 = int(_id2)
+                assert _id == _id2
             else:
                 data, strb, last = self.wAg.data.popleft()
 
-            # assert data._isFullVld()
-            assert strb._isFullVld()
-            assert last._isFullVld()
-
-            data, strb, last = data.val, strb.val, bool(last.val)
-
+            strb = int(strb)
+            last = int(last)
+            last = bool(last)
             isLast = i == size - 1
-
             assert last == isLast, (addr, size, i)
-
-            if data is None:
-                raise AssertionError(
-                    "Invalid read of uninitialized value on addr 0x%x"
-                    % (addr + i * self.cellSize))
 
             if isLast:
                 expectedStrb = lastWordBitmask

@@ -3,7 +3,7 @@ from hwt.hdl.typeShortcuts import hBit
 from hwt.pyUtils.arrayQuery import where
 
 
-def _getRd(intf):
+def _get_ready_signal(intf):
     try:
         return intf.rd
     except AttributeError:
@@ -11,7 +11,7 @@ def _getRd(intf):
     return intf.ready
 
 
-def _getVld(intf):
+def _get_valid_signal(intf):
     try:
         return intf.vld
     except AttributeError:
@@ -127,7 +127,7 @@ class StreamNode():
             if isinstance(m, ExclusiveStreamGroups):
                 a = m.sync(r)
             else:
-                a = [_getRd(m)(r), ]
+                a = [_get_ready_signal(m)(r), ]
 
             expression.extend(a)
 
@@ -140,7 +140,7 @@ class StreamNode():
             if isinstance(s, ExclusiveStreamGroups):
                 a = s.sync(v)
             else:
-                a = [_getVld(s)(v), ]
+                a = [_get_valid_signal(s)(v), ]
 
             expression.extend(a)
 
@@ -158,7 +158,7 @@ class StreamNode():
             if isinstance(m, ExclusiveStreamGroups):
                 a = m.ack()
             else:
-                a = _getVld(m)
+                a = _get_valid_signal(m)
 
             if extra:
                 a = And(a, *extra)
@@ -173,7 +173,7 @@ class StreamNode():
             if isinstance(s, ExclusiveStreamGroups):
                 a = s.ack()
             else:
-                a = _getRd(s)
+                a = _get_ready_signal(s)
 
             if extra:
                 a = And(a, *extra)
@@ -217,7 +217,7 @@ class StreamNode():
         if isinstance(intf, ExclusiveStreamGroups):
             v = intf.ack()
         else:
-            v = _getVld(intf)
+            v = _get_valid_signal(intf)
 
         if s is None:
             return v
@@ -237,7 +237,7 @@ class StreamNode():
         if isinstance(intf, ExclusiveStreamGroups):
             r = intf.ack()
         else:
-            r = _getRd(intf)
+            r = _get_ready_signal(intf)
 
         if s is None:
             return r

@@ -68,7 +68,7 @@ if __name__ == "__main__":  # alias python main function
 #     PORT (a : IN STD_LOGIC;
 #         b : OUT STD_LOGIC
 #     );
-# END SimpleUnit;
+# END ENTITY;
 #
 # ARCHITECTURE rtl OF SimpleUnit IS
 #
@@ -76,4 +76,4 @@ if __name__ == "__main__":  # alias python main function
 #
 #     b <= a;
 #
-# END ARCHITECTURE rtl;
+# END ARCHITECTURE;

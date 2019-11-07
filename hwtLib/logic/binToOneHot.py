@@ -5,7 +5,7 @@ from hwt.code import log2ceil
 from hwt.hdl.constants import Time
 from hwt.interfaces.std import s, VectSignal
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 
@@ -17,6 +17,7 @@ class BinToOneHot(Unit):
 
     .. hwt-schematic::
     """
+
     def _config(self):
         self.DATA_WIDTH = Param(8)
 
@@ -38,11 +39,15 @@ class BinToOneHot(Unit):
                 self.dout[i](dIn._eq(i) & en)
 
 
-class BinToOneHotTC(SimTestCase):
-    def test_basic(self):
-        u = BinToOneHot()
-        self.prepareUnit(u)
+class BinToOneHotTC(SingleUnitSimTestCase):
 
+    @classmethod
+    def getUnit(cls) -> Unit:
+        cls.u = BinToOneHot()
+        return cls.u
+
+    def test_basic(self):
+        u = self.u
         u.en._ag.data.append(1)
         u.din._ag.data.extend(range(8))
 

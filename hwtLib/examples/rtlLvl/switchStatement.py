@@ -11,7 +11,7 @@ def SwitchStatement():
     t = Bits(8)
     n = RtlNetlist()
 
-    In = n.sig("input", t, defVal=8)
+    In = n.sig("input", t, def_val=8)
     Out = n.sig("output", t)
 
     Switch(In).addCases(
@@ -29,7 +29,7 @@ ENTITY SwitchStatement IS
     PORT (input: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
         output: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
-END SwitchStatement;
+END ENTITY;
 
 ARCHITECTURE rtl OF SwitchStatement IS
 BEGIN
@@ -56,7 +56,7 @@ BEGIN
         END CASE;
     END PROCESS;
 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 if __name__ == "__main__":
     netlist, interfaces = SwitchStatement()

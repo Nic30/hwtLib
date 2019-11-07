@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import unittest
-
 from hwt.interfaces.std import VldSynced
+from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.vhdl.serializer import VhdlSerializer
+from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import toRtl
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.hObjList import HObjList
+import os
+import unittest
+from unittest import TestCase
+
 from hwtLib.amba.axis import AxiStream
 from hwtLib.examples.hierarchy.unitWrapper import UnitWrapper
-import os
 
 
 class ArrayIntfExample(Unit):
@@ -49,7 +50,8 @@ def readContent(fn):
         return f.read()
 
 
-class UnitWrapperTC(unittest.TestCase):
+class UnitWrapperTC(TestCase):
+
     def test_params_of_base_unit(self):
         u = UnitWithParams()
         w = UnitWrapper(u)

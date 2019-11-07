@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.union import HUnion
 from hwtLib.types.ctypes import uint8_t, uint16_t, int8_t, uint32_t
-from hwt.bitmask import mask
-from hwt.hdl.types.struct import HStruct
-from hwt.hdl.types.bits import Bits
+from pyMathBitPrecise.bit_utils import mask
 
 
 class UnionTC(unittest.TestCase):
@@ -37,7 +38,7 @@ class UnionTC(unittest.TestCase):
                 (uint8_t, "unsigned"),
                 (int8_t, "signed"),
             )
-        v = t.fromPy(None)
+        v = t.from_py(None)
 
         v.unsigned = mask(8)
         self.assertEqual(int(v.signed), -1)
@@ -54,38 +55,36 @@ class UnionTC(unittest.TestCase):
                  ), "struct"),
             )
 
-        v = t.fromPy(None)
+        v = t.from_py(None)
 
         v.struct.upper = 1
         self.assertEqual(v.bits.val, 1 << 8)
-        self.assertEqual(v.bits.vldMask, mask(8) << 8)
-        
+        self.assertEqual(v.bits.vld_mask, mask(8) << 8)
+
         v.struct.lower = 1
         self.assertEqual(v.bits.val, (1 << 8) | 1)
-        self.assertEqual(v.bits.vldMask, mask(16))
+        self.assertEqual(v.bits.vld_mask, mask(16))
 
         v.bits = 2
 
         self.assertEqual(int(v.struct.lower), 2)
         self.assertEqual(int(v.struct.upper), 0)
 
-    
     def test_value_array_and_bits(self):
         t = HUnion(
                 (uint32_t, "bits"),
                 (uint8_t[4], "arr"),
             )
 
-        v = t.fromPy(None)
+        v = t.from_py(None)
 
         b = (4 << (3 * 8)) | (3 << (2 * 8)) | (2 << 8) | 1
         v.bits = b
 
         for i, item in enumerate(v.arr):
             self.assertEqual(int(item), i + 1)
-        
-        self.assertEqual(int(v.bits), b)
 
+        self.assertEqual(int(v.bits), b)
 
     def test_value_array_toArray(self):
         t = HUnion(
@@ -93,7 +92,7 @@ class UnionTC(unittest.TestCase):
                 (int8_t[4], "arr8b"),
             )
 
-        v = t.fromPy(None)
+        v = t.from_py(None)
 
         for i in range(len(v.arr16b)):
             v.arr16b[i] = i + 1
@@ -113,12 +112,20 @@ class UnionTC(unittest.TestCase):
                     )[3], "arr"),
                 (Bits(24 * 3), "bits")
             )
-        
-        v = t.fromPy(None)
+
+        v = t.from_py(None)
         for i in range(len(v.arr)):
-            v.arr[i] = {"a":i + 1, "b": (i + 1) * 3}
-        
-        self.assertEqual(int(v.bits), 1 | 3 << 16 | 2 << 24 | 6 << (24 + 16) | 3 << (2 * 24) | 9 << (2 * 24 + 16))
+            v.arr[i] = {"a": i + 1,
+                        "b": (i + 1) * 3
+                        }
+
+        self.assertEqual(int(v.bits),
+                         1
+                         | 3 << 16
+                         | 2 << 24
+                         | 6 << (24 + 16)
+                         | 3 << (2 * 24)
+                         | 9 << (2 * 24 + 16))
 
     def test_hunion_type_eq(self):
         t0 = HUnion(
@@ -137,7 +144,7 @@ class UnionTC(unittest.TestCase):
             )
         self.assertEqual(t0, t1)
         self.assertEqual(t1, t0)
-        
+
         t1 = HUnion(
                 (Bits(24 * 3), "bits"),
                 (HStruct(
@@ -145,17 +152,17 @@ class UnionTC(unittest.TestCase):
                     (uint8_t, "b"),
                     )[3], "arr")
             )
-        
+
         self.assertEqual(t0, t1)
         self.assertEqual(t1, t0)
-        
+
         t1 = HUnion(
                 (uint32_t, "bits"),
                 (uint8_t[4], "arr"),
             )
         self.assertNotEqual(t0, t1)
         self.assertNotEqual(t1, t0)
-        
+
         t1 = HUnion(
                 (Bits(24 * 3), "bbits"),
                 (HStruct(
@@ -165,11 +172,11 @@ class UnionTC(unittest.TestCase):
             )
         self.assertNotEqual(t0, t1)
         self.assertNotEqual(t1, t0)
-        
+
         t1 = Bits(24 * 3)
         self.assertNotEqual(t0, t1)
         self.assertNotEqual(t1, t0)
-        
+
         t1 = HUnion(
                 (Bits(24 * 3, signed=False), "bits"),
                 (HStruct(
@@ -179,7 +186,8 @@ class UnionTC(unittest.TestCase):
             )
         self.assertNotEqual(t0, t1)
         self.assertNotEqual(t1, t0)
-        
+
+
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     # suite.addTest(ValueTC('testValue'))

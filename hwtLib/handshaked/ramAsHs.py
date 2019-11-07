@@ -6,11 +6,12 @@ from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import Handshaked, BramPort_withoutClk
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.simulator.agentBase import AgentBase
 from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 from hwtLib.interfaces.addrDataHs import AddrDataHs
+from pycocotb.agents.base import AgentBase
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 class RamHsRAgent(AgentBase):
@@ -33,14 +34,14 @@ class RamHsRAgent(AgentBase):
         for o in [self.req, self.r]:
             o.enable = v
 
-    def __init__(self, intf):
+    def __init__(self, sim: HdlSimulator, intf):
         self.__enable = True
         self.intf = intf
 
-        intf.addr._initSimAgent()
+        intf.addr._initSimAgent(sim)
         self.addr = intf.addr._ag
 
-        intf.data._initSimAgent()
+        intf.data._initSimAgent(sim)
         self.data = intf.data._ag
 
     def getDrivers(self):
@@ -64,19 +65,19 @@ class RamHsR(Interface):
 
     def _declr(self):
         a = self.addr = Handshaked()
-        a._replaceParam(a.DATA_WIDTH, self.ADDR_WIDTH)
+        a.DATA_WIDTH = self.ADDR_WIDTH
         with self._paramsShared():
             self.data = Handshaked(masterDir=DIRECTION.IN)
 
-    def _initSimAgent(self):
-        self._ag = RamHsRAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = RamHsRAgent(sim, self)
 
 
 @serializeParamsUniq
 class RamAsHs(Unit):
     """
     Converter from ram port to handshaked interfaces
-    
+
     .. hwt-schematic::
     """
 
@@ -96,8 +97,8 @@ class RamAsHs(Unit):
         w = self.w
         ram = self.ram
 
-        readRegEmpty = self._reg("readRegEmpty", defVal=1)
-        readDataPending = self._reg("readDataPending", defVal=0)
+        readRegEmpty = self._reg("readRegEmpty", def_val=1)
+        readDataPending = self._reg("readDataPending", def_val=0)
         readData = self._reg("readData", r.data.data._dtype)
 
         rEn = readRegEmpty | r.data.rd

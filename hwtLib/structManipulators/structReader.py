@@ -75,7 +75,7 @@ class StructReader(AxiS_frameParser):
     def _config(self):
         self.ID = Param(0)
         AxiRDatapumpIntf._config(self)
-        self.USE_STRB.set(False)
+        self.USE_STRB = False
         self.READ_ACK = Param(False)
         self.SHARED_READY = Param(False)
 
@@ -101,19 +101,19 @@ class StructReader(AxiS_frameParser):
                                   self._mkFieldIntf)._m()
 
         g = self.get = Handshaked()  # data signal is addr of structure to download
-        g._replaceParam(g.DATA_WIDTH, self.ADDR_WIDTH)
+        g.DATA_WIDTH = self.ADDR_WIDTH
         self.parseTemplate()
 
         with self._paramsShared():
             # interface for communication with datapump
             self.rDatapump = AxiRDatapumpIntf()._m()
-            self.rDatapump.MAX_LEN.set(self.maxWordIndex() + 1)
+            self.rDatapump.MAX_LEN = self.maxWordIndex() + 1
 
-        with self._paramsShared(exclude={self.ID_WIDTH}):
+        with self._paramsShared(exclude=({"ID_WIDTH"}, set())):
             self.parser = AxiS_frameParser(self._structT,
                                            tmpl=self._tmpl,
                                            frames=self._frames)
-            self.parser.SYNCHRONIZE_BY_LAST.set(False)
+            self.parser.SYNCHRONIZE_BY_LAST = False
 
         if self.SHARED_READY:
             self.ready = Signal()
@@ -122,7 +122,6 @@ class StructReader(AxiS_frameParser):
         propagateClkRstn(self)
         req = self.rDatapump.req
 
-        
         req.rem(0)
         if self.READ_ACK:
             get = self.get

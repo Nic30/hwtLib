@@ -1,28 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from math import ceil
-
-from hwt.hdl.constants import Time
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from math import ceil
+
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 from hwtLib.examples.builders.ethAddrUpdater import EthAddrUpdater, \
     frameHeader
+from pycocotb.constants import CLK_PERIOD
 
 
-class EthAddrUpdaterTC(SimTestCase):
-    def test_simpleOp(self):
-        DW = 64
-        AW = 32
+class EthAddrUpdaterTC(SingleUnitSimTestCase):
+    DW = 64
+    AW = 32
 
+    @classmethod
+    def getUnit(cls):
         u = EthAddrUpdater()
-        u.DATA_WIDTH.set(DW)
-        u.ADDR_WIDTH.set(AW)
+        u.DATA_WIDTH = cls.DW
+        u.ADDR_WIDTH = cls.AW
+        return u
 
-        self.prepareUnit(u)
-
+    def test_simpleOp(self):
+        DW = self.DW
+        u = self.u
         r = self.randomize
         r(u.axi_m.ar)
         r(u.axi_m.r)
@@ -53,7 +56,7 @@ class EthAddrUpdaterTC(SimTestCase):
 
         u.packetAddr._ag.data.append(framePtr)
 
-        self.runSim(1000 * Time.ns)
+        self.runSim(100 * CLK_PERIOD)
         updatedFrame = m.getStruct(framePtr, tmpl)
         self.assertValEqual(updatedFrame.eth.src, frameData["eth"]['dst'])
         self.assertValEqual(updatedFrame.eth.dst, frameData["eth"]['src'])

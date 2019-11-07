@@ -3,7 +3,7 @@ import re
 import unittest
 
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.simulator.utils import pprintInterface, pprintAgents
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwtLib.amba.axi3Lite import Axi3Lite
@@ -85,7 +85,7 @@ axi_str = """\
 
 
 
-clk_ag_str = """clk:<hwt.interfaces.agents.clk.OscilatorAgent object at 0x7f51335e5f60>
+clk_ag_str = """clk:<hwt.interfaces.agents.clk.ClockAgent object at 0x7f51335e5f60>
 """
 axi_ag_str = """axi:
     p0:<hwtLib.amba.axiLite.AxiLiteAgent object at 0x7f5133600208>
@@ -108,7 +108,7 @@ axi_ag_str = """axi:
         <hwtLib.amba.axiLite.AxiLite_bAgent object at 0x7f5133600c18>
 """
 
-u_ag_str = """<hwt.interfaces.agents.clk.OscilatorAgent object at 0x7f2c812d4ef0>
+u_ag_str = """<hwt.interfaces.agents.clk.ClockAgent object at 0x7f2c812d4ef0>
     <hwt.interfaces.agents.rst.PullUpAgent object at 0x7f2c812d4f28>
     axi:
         p0:<hwtLib.amba.axiLite.AxiLiteAgent object at 0x7f2c812f0198>
@@ -138,11 +138,15 @@ class ExampleWithArrayAxi3Lite(EmptyUnit):
         self.axi = HObjList(Axi3Lite() for _ in range(3))
 
 
-class SimulatorUtilsTC(SimTestCase):
+class SimulatorUtilsTC(SingleUnitSimTestCase):
+    @classmethod
+    def getUnit(cls):
+        cls.u = ExampleWithArrayAxi3Lite()
+        return cls.u
+
     def test_pprintInterface(self):
-        u = ExampleWithArrayAxi3Lite()
+        u = self.u
         o = StringIO()
-        self.prepareUnit(u)
         pprintInterface(u.clk, file=o)
         self.assertEqual(o.getvalue(), "'clk'\n")
 
@@ -158,10 +162,9 @@ class SimulatorUtilsTC(SimTestCase):
                          pointerRe.sub(expectedStr, ""))
 
     def test_pprintAgents(self):
-        u = ExampleWithArrayAxi3Lite()
-        self.prepareUnit(u)
+        u = self.u
         self.runSim(1)
-        
+
         self._test_pprintAgent(u.clk, clk_ag_str)
         self._test_pprintAgent(u.axi, axi_ag_str)
         self._test_pprintAgent(u, u_ag_str)

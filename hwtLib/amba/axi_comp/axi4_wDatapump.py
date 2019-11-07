@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import mask
 from hwt.code import connect, If
 from hwt.interfaces.std import Signal, Handshaked, VectSignal, \
     HandshakeSync
@@ -13,6 +12,7 @@ from hwtLib.amba.axi_comp.axi_datapump_base import AxiDatapumpBase
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
+from pyMathBitPrecise.bit_utils import mask
 
 
 class WFifoIntf(Handshaked):
@@ -58,14 +58,14 @@ class Axi_wDatapump(AxiDatapumpBase):
             self.driver = AxiWDatapumpIntf()
 
         with self._paramsShared():
-            # fifo for id propagation and frame splitting on axi.w channel 
+            # fifo for id propagation and frame splitting on axi.w channel
             wf = self.writeInfoFifo = HandshakedFifo(WFifoIntf)
-            wf.ID_WIDTH.set(self.ID_WIDTH)
-            wf.DEPTH.set(self.MAX_TRANS_OVERLAP)
+            wf.ID_WIDTH = self.ID_WIDTH
+            wf.DEPTH = self.MAX_TRANS_OVERLAP
 
             # fifo for propagation of end of frame from axi.b channel
             bf = self.bInfoFifo = HandshakedFifo(BFifoIntf)
-            bf.DEPTH.set(self.MAX_TRANS_OVERLAP)
+            bf.DEPTH = self.MAX_TRANS_OVERLAP
 
     def axiAwHandler(self, wErrFlag):
         req = self.driver.req
@@ -78,7 +78,7 @@ class Axi_wDatapump(AxiDatapumpBase):
         if self.useTransSplitting():
             LEN_MAX = mask(aw.len._dtype.bit_length())
 
-            lastReqDispatched = r("lastReqDispatched", defVal=1)
+            lastReqDispatched = r("lastReqDispatched", def_val=1)
             lenDebth = r("lenDebth", req.len._dtype)
             addrBackup = r("addrBackup", req.addr._dtype)
             req_idBackup = r("req_idBackup", req.id._dtype)
@@ -177,7 +177,7 @@ class Axi_wDatapump(AxiDatapumpBase):
                    ).sync()
 
     def axiBHandler(self):
-        wErrFlag = self._reg("wErrFlag", defVal=0)
+        wErrFlag = self._reg("wErrFlag", def_val=0)
         b = self.b
         ack = self.driver.ack
         lastFlags = self.bInfoFifo.dataOut

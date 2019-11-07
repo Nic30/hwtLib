@@ -20,7 +20,6 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.byteOrder import reverseByteOrder
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.amba.axis_comp.frameParser_utils import ListOfOutNodeInfos, \
     ExclusieveListOfHsNodes, InNodeInfo, InNodeReadOnlyInfo, OutNodeInfo, \
@@ -100,7 +99,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
                 i = VldSynced()
             else:
                 i = Handshaked()
-            i.DATA_WIDTH.set(structField.dtype.bit_length())
+            i.DATA_WIDTH = structField.dtype.bit_length()
             return i
 
     def _declr(self):
@@ -243,7 +242,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
                                  fPartSig._dtype)
             If(dataVld,
                fPartReg(fPartSig)
-               )
+            )
             signalsOfParts.append(fPartReg)
 
     def _impl(self):
@@ -341,7 +340,7 @@ def _example_AxiS_frameParser():
         ), "frameB")
     )
     u = AxiS_frameParser(t)
-    u.DATA_WIDTH.set(64)
+    u.DATA_WIDTH = 64
     return u
 
 

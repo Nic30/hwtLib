@@ -16,7 +16,7 @@ class SimpleSubunit(Unit):
         self.b = Signal()._m()
 
         # there we instantiate our subunit and register it by assigning
-        # to property of self it can be done in done in _impl as well,
+        # to property of self it can be done in _impl as well,
         # but if you do it there it offers more possibilities for parallelization
         # and any configuration for unit has to be made before registering
         # in _impl

@@ -6,8 +6,8 @@ from hwtLib.logic.oneHotToBin import oneHotToBin
 
 
 def getSizeWidth(maxLen, dataWidth):
-    alignBits = log2ceil(dataWidth // 8 - 1).val
-    lenBits = log2ceil(maxLen).val + 1
+    alignBits = log2ceil(dataWidth // 8 - 1)
+    lenBits = log2ceil(maxLen) + 1
     return lenBits + alignBits
 
 
@@ -44,14 +44,14 @@ class AxiInterconnectBase(Unit):
             dpMaxLen = int(datapump.MAX_LEN)
             assert dpMaxLen == MAX_LEN, (dpMaxLen, MAX_LEN)
         else:
-            datapump.MAX_LEN.set(MAX_LEN)
+            datapump.MAX_LEN = MAX_LEN
 
-        self.ID_WIDTH.set(ID_WIDTH)
-        self.ADDR_WIDTH.set(ADDR_WIDTH)
-        self.DATA_WIDTH.set(DATA_WIDTH)
-        self.MAX_LEN.set(MAX_LEN)
-        self.MAX_TRANS_OVERLAP.set(int(datapump.MAX_TRANS_OVERLAP))
-        self.DRIVER_CNT.set(len(drivers))
+        self.ID_WIDTH = ID_WIDTH
+        self.ADDR_WIDTH = ADDR_WIDTH
+        self.DATA_WIDTH = DATA_WIDTH
+        self.MAX_LEN = MAX_LEN
+        self.MAX_TRANS_OVERLAP = int(datapump.MAX_TRANS_OVERLAP)
+        self.DRIVER_CNT = len(drivers)
 
     def connectDrivers(self, drivers, datapump):
         """

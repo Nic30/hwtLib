@@ -3,30 +3,33 @@
 
 import unittest
 
-from hwt.bitmask import mask, mask_bytes
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axis_comp.measuringFifo import AxiS_measuringFifo
 from hwt.pyUtils.arrayQuery import take, iter_with_last
+from hwt.simulator.simTestCase import SingleUnitSimTestCase,\
+    simpleRandomizationProcess
+from hwtLib.amba.axis_comp.measuringFifo import AxiS_measuringFifo
+from pyMathBitPrecise.bit_utils import mask, mask_bytes
+from pycocotb.constants import CLK_PERIOD
+from pycocotb.triggers import Timer
 
 
-class AxiS_measuringFifoTC(SimTestCase):
-    def setUp(self):
-        super(AxiS_measuringFifoTC, self).setUp()
-        u = self.u = AxiS_measuringFifo()
-        u.USE_STRB.set(True)
-        self.DATA_WIDTH = 64
-        self.MAX_LEN = 15
+class AxiS_measuringFifoTC(SingleUnitSimTestCase):
 
-        u.MAX_LEN.set(self.MAX_LEN)
-        u.SIZES_BUFF_DEPTH.set(4)
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = AxiS_measuringFifo()
+        u.USE_STRB = True
+        cls.DATA_WIDTH = 64
+        cls.MAX_LEN = 15
 
-        self.prepareUnit(self.u)
+        u.MAX_LEN = cls.MAX_LEN
+        u.SIZES_BUFF_DEPTH = 4
+        u.DATA_WIDTH = cls.DATA_WIDTH
+        return u
 
     def test_nop(self):
         u = self.u
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         self.assertEqual(len(u.sizes._ag.data), 0)
         self.assertEqual(len(u.dataOut._ag.data), 0)
@@ -38,7 +41,7 @@ class AxiS_measuringFifoTC(SimTestCase):
             (2, mask(8), 1),
         ])
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
         self.assertValSequenceEqual(u.sizes._ag.data, [8, ])
         self.assertValSequenceEqual(u.dataOut._ag.data, [(2, mask(8), 1), ])
 
@@ -49,10 +52,10 @@ class AxiS_measuringFifoTC(SimTestCase):
                                   ])
         u.dataOut._ag._enabled = False
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
         self.assertValSequenceEqual(u.sizes._ag.data, [8, ])
         self.assertEmpty(u.dataOut._ag.data, 0)
-        self.assertValEqual(self.model.dataOut_last, 1)
+        self.assertValEqual(self.rtl_simulator.model.io.dataOut_last.read(), 1)
 
     def test_multiplePackets(self):
         u = self.u
@@ -66,7 +69,7 @@ class AxiS_measuringFifoTC(SimTestCase):
 
         u.dataIn._ag.data.extend(goldenData)
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, [8, 8, 8])
 
@@ -80,7 +83,7 @@ class AxiS_measuringFifoTC(SimTestCase):
                       ]
         u.dataIn._ag.data.extend(goldenData)
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, (16,))
 
@@ -94,15 +97,15 @@ class AxiS_measuringFifoTC(SimTestCase):
         ]
         u.dataIn._ag.data.extend(goldenData)
 
-        def pause(simulator):
-            yield simulator.wait(3 * 10 * Time.ns)
-            u.dataOut._ag.setEnable_asMonitor(False, simulator)
-            yield simulator.wait(3 * 10 * Time.ns)
-            u.dataOut._ag.setEnable_asMonitor(True, simulator)
+        def pause():
+            yield Timer(3 * CLK_PERIOD)
+            u.dataOut._ag.setEnable_asMonitor(False)
+            yield Timer(3 * CLK_PERIOD)
+            u.dataOut._ag.setEnable_asMonitor(True)
 
-        self.procs.append(pause)
+        self.procs.append(pause())
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, [6 * 8])
@@ -118,7 +121,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         ]
         u.dataIn._ag.data.extend(goldenData)
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, (9,))
@@ -131,7 +134,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         goldenData = [(2, 1, 1), ]
         u.dataIn._ag.data.extend(goldenData)
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         self.assertValSequenceEqual(data, goldenData)
         self.assertValSequenceEqual(sizes, (1,))
@@ -177,7 +180,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         self.randomize(u.dataOut)
         self.randomize(u.sizes)
 
-        self.runSim(len(expectedData) * 30 * Time.ns)
+        self.runSim(len(expectedData) * 3 * CLK_PERIOD)
 
         self.assertEqual(len(sizes), N)
         self.assertEqual(len(data), len(expectedData))
@@ -206,11 +209,11 @@ class AxiS_measuringFifoTC(SimTestCase):
         self.randomize(u.dataOut)
         u.sizes._ag.enable = False
 
-        def sizesEn(sim):
-            yield sim.wait((SIZE_BUFF_SIZE + 5) * 10 * Time.ns)
-            yield from self.simpleRandomizationProcess(u.sizes._ag)(sim)
+        def sizesEn():
+            yield Timer((SIZE_BUFF_SIZE + 5) * CLK_PERIOD)
+            yield from simpleRandomizationProcess(self, u.sizes._ag)()
 
-        self.procs.append(sizesEn)
+        self.procs.append(sizesEn())
 
         self.runSim(N * 6 * 10 * 3 * Time.ns)
 
@@ -244,7 +247,7 @@ class AxiS_measuringFifoTC(SimTestCase):
                 self.assertValEqual(_last, last)
                 _mask = int(_mask)
                 _d.val = mask_bytes(_d.val, _mask, size_of_word)
-                _d.vldMask = mask_bytes(_d.vldMask, _mask, size_of_word)
+                _d.vld_mask = mask_bytes(_d.vld_mask, _mask, size_of_word)
                 frame.append(int(_d))
             frames.append(frame)
 
@@ -255,7 +258,7 @@ class AxiS_measuringFifoTC(SimTestCase):
         data = [i for i in range(MAX_LEN + 4)]
         self.sendFrame(data)
 
-        self.runSim((MAX_LEN + 10) * 10 * Time.ns)
+        self.runSim((MAX_LEN + 10) * CLK_PERIOD)
         f = self.getFrames()
         self.assertEqual(f,
                          [[i for i in range(MAX_LEN + 1)],

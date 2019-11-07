@@ -38,7 +38,7 @@ ENTITY Segment7 IS
     PORT (dataIn: IN STD_LOGIC_VECTOR(3 DOWNTO 0);
         dataOut: OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
     );
-END Segment7;
+END ENTITY;
 
 ARCHITECTURE rtl OF Segment7 IS
 BEGIN
@@ -70,7 +70,7 @@ BEGIN
         END CASE;
     END PROCESS;
 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 
 class Segment7TC(unittest.TestCase):

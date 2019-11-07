@@ -6,6 +6,7 @@ from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axi_intf_common import Axi_strb, Axi_hs
 from hwtLib.amba.axis import AxiStream, AxiStreamAgent
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 #####################################################################
@@ -22,14 +23,14 @@ class Axi4_addr(Axi3_addr):
         Axi3_addr._declr(self)
         self.qos = VectSignal(4)
 
-    def _initSimAgent(self):
-        self._ag = Axi4_addrAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = Axi4_addrAgent(sim, self)
 
 
 class Axi4_addrAgent(AxiStreamAgent):
-    def __init__(self, intf: Axi3_addr, allowNoReset=False):
-        BaseAxiAgent.__init__(self, intf, allowNoReset=allowNoReset)
-        
+    def __init__(self, sim: HdlSimulator, intf: Axi3_addr, allowNoReset=False):
+        BaseAxiAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
+
         signals = [
             intf.id,
             intf.addr,
@@ -44,7 +45,7 @@ class Axi4_addrAgent(AxiStreamAgent):
         if hasattr(intf, "user"):
             signals.append(intf.user)
         self._signals = tuple(signals)
-        self._sigCnt = len(signals) 
+        self._sigCnt = len(signals)
 
 
 #####################################################################
@@ -70,12 +71,12 @@ class Axi4_w(Axi_hs, Axi_strb):
         Axi_strb._declr(self)
         self.last = Signal()
         Axi_hs._declr(self)
-    
-    def _initSimAgent(self):
-        AxiStream._initSimAgent(self)
+
+    def _initSimAgent(self, sim: HdlSimulator):
+        AxiStream._initSimAgent(self, sim)
+
 
 #####################################################################
-
 class Axi4_b(Axi3_b):
     """
     Axi4 write response channel interface

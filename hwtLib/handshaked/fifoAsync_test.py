@@ -4,7 +4,6 @@
 import unittest
 
 from hwt.interfaces.std import Handshaked
-from hwt.simulator.simTestCase import SimTestCase
 
 from hwtLib.handshaked.fifoAsync import HsFifoAsync
 from hwtLib.handshaked.fifo_test import HsFifoTC
@@ -16,12 +15,16 @@ class HsFifoAsyncTC(HsFifoTC):
     CLK = max(IN_CLK, HsFifoTC.OUT_CLK)
     ITEMS = 5
 
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = HsFifoAsync(Handshaked)
+        u.DATA_WIDTH = 8
+        u.DEPTH = cls.ITEMS
+        return u
+
     def setUp(self):
-        SimTestCase.setUp(self)
-        u = self.u = HsFifoAsync(Handshaked)
-        u.DATA_WIDTH.set(8)
-        u.DEPTH.set(self.ITEMS)
-        self.prepareUnit(u)
+        HsFifoTC.setUp(self)
+        u = self.u
         u.dataIn_clk._ag.period = self.IN_CLK
         u.rst_n._ag.initDelay += self.IN_CLK
 

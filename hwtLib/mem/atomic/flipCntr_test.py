@@ -4,14 +4,16 @@
 import unittest
 
 from hwt.hdl.constants import Time, NOP
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.mem.atomic.flipCntr import FlipCntr
 
 
-class FlipCntrTC(SimTestCase):
-    def setUp(self):
-        self.u = FlipCntr()
-        self.prepareUnit(self.u)
+class FlipCntrTC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = FlipCntr()
+        return cls.u
 
     def test_nop(self):
         u = self.u

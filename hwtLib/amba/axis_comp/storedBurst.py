@@ -3,19 +3,19 @@
 
 import math
 
-from hwt.bitmask import mask
 from hwt.code import If, Switch
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.param import Param
-from hwtLib.amba.axis import AxiStream
 from hwt.hdl.types.bits import Bits
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
+from hwtLib.amba.axis import AxiStream
+from pyMathBitPrecise.bit_utils import mask
 
 
 class AxiSStoredBurst(Unit):
     """
     This units send data stored in property DATA over axi-stream interface
-    
+
     .. hwt-schematic::
     """
     def __init__(self, data=[ord(c) for c in "Hello world"]):
@@ -54,12 +54,12 @@ class AxiSStoredBurst(Unit):
         DATA_LEN = len(self.DATA)
 
         wordIndex_w = int(math.log2(DATA_LEN) + 1)
-        wordIndex = self._reg("wordIndex", Bits(wordIndex_w), defVal=0)
+        wordIndex = self._reg("wordIndex", Bits(wordIndex_w), def_val=0)
 
         Switch(wordIndex)\
-        .addCases([(i, dout.data(d))
-                    for i, d in enumerate(self.DATA)])\
-        .Default(dout.data(None))
+            .addCases([(i, dout.data(d))
+                       for i, d in enumerate(self.DATA)])\
+            .Default(dout.data(None))
 
         dout.last(wordIndex._eq(DATA_LEN - 1))
         If(wordIndex < DATA_LEN,

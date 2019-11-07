@@ -3,6 +3,7 @@ from hwt.interfaces.std import VectSignal
 from hwtLib.amba.axi3Lite import IP_Axi3Lite, Axi3Lite, Axi3Lite_r,\
     Axi3Lite_b, Axi3Lite_w, Axi3Lite_addr, Axi3Lite_addrAgent
 from hwtLib.amba.axi_intf_common import AxiMap
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 class Axi4Lite_addr(Axi3Lite_addr):
@@ -10,8 +11,8 @@ class Axi4Lite_addr(Axi3Lite_addr):
         super(Axi4Lite_addr, self)._declr()
         self.prot = VectSignal(3)
 
-    def _initSimAgent(self):
-        self._ag = Axi4Lite_addrAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = Axi4Lite_addrAgent(sim, self)
 
 
 class Axi4Lite_addrAgent(Axi3Lite_addrAgent):
@@ -19,17 +20,17 @@ class Axi4Lite_addrAgent(Axi3Lite_addrAgent):
     :ivar data: iterable of addr
     """
 
-    def doRead(self, s):
-        return s.read(self.intf.addr), s.read(self.intf.prot)
+    def get_data(self):
+        return self.intf.addr.read(), self.intf.prot.read()
 
-    def doWrite(self, s, data):
+    def set_data(self, data):
         if data is None:
             addr, prot = None, None
         else:
             addr, prot = data
 
-        s.write(addr, self.intf.addr)
-        s.write(prot, self.intf.prot)
+        self.intf.addr.write(addr)
+        self.intf.prot.write(prot)
 
 
 class Axi4Lite_w(Axi3Lite_w):

@@ -29,7 +29,7 @@ class HandshakedReg(HandshakedCompBase):
             self.dataOut = self.intfCls()._m()
 
     def _impl_latency(self, inVld, inRd, inData, outVld, outRd, prefix):
-        isOccupied = self._reg(prefix + "isOccupied", defVal=0)
+        isOccupied = self._reg(prefix + "isOccupied", def_val=0)
         regs_we = self._sig(prefix + 'reg_we')
 
         outData = []
@@ -63,7 +63,7 @@ class HandshakedReg(HandshakedCompBase):
         return outData
 
     def _implLatencyAndDelay(self, inVld, inRd, inData, outVld, outRd, prefix):
-        wordLoaded = self._reg(prefix + "wordLoaded", defVal=0)
+        wordLoaded = self._reg(prefix + "wordLoaded", def_val=0)
         If(wordLoaded,
            wordLoaded(~outRd)
         ).Else(
@@ -87,9 +87,9 @@ class HandshakedReg(HandshakedCompBase):
         LATENCY = int(self.LATENCY)
         DELAY = int(self.DELAY)
 
-        vld = self.getVld
-        rd = self.getRd
-        data = self.getData
+        vld = self.get_valid_signal
+        rd = self.get_ready_signal
+        data = self.get_data
 
         Out = self.dataOut
         In = self.dataIn

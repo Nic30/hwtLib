@@ -3,33 +3,20 @@
 
 from binascii import crc32, crc_hqx
 
-from hwt.bitmask import mask, selectBit
 from hwt.hdl.constants import Time
 from hwt.hdl.typeShortcuts import vec
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.logic.crcComb import CrcComb, reversedEndianity, reversedBitsInBytes
+from hwtLib.logic.crcComb import CrcComb
 from hwtLib.logic.crcPoly import CRC_1, CRC_8_CCITT, CRC_16_CCITT, CRC_32, \
     CRC_8_SAE_J1850
-
-
-def reverseBits(val, width):
-    v = 0
-    for i in range(width):
-        v |= (selectBit(val, width - i - 1) << i)
-    return v
+from pyMathBitPrecise.bit_utils import selectBit, bitListToInt, mask, \
+    bitListReversedEndianity, bitListReversedBitsInBytes
 
 
 def stoi(s):
     if isinstance(s, str):
         s = s.encode()
     return int.from_bytes(s, byteorder='little')
-
-
-def bfToInt(bitField):
-    res = 0
-    for i, r in enumerate(bitField): 
-        res |= r << i
-    return res
 
 
 def crcToBf(crc):
@@ -41,7 +28,7 @@ def naive_crc(dataBits, crcBits, polyBits,
     crc_mask = CrcComb.buildCrcXorMatrix(len(dataBits), polyBits)
 
     if endianity != "big":
-        dataBits = reversedEndianity(dataBits)
+        dataBits = bitListReversedEndianity(dataBits)
     # print("")
     # for r in crc_mask:
     #    print(r)
@@ -49,7 +36,7 @@ def naive_crc(dataBits, crcBits, polyBits,
         # reflect bytes in input data signal
         # whole signal should not be reflected if DW > PW
         # polyBits = list(reversed(polyBits))
-        dataBits = reversedBitsInBytes(dataBits)
+        dataBits = bitListReversedBitsInBytes(dataBits)
         # crcBits = reversedBitsInBytes(crcBits)
 
     res = []
@@ -72,7 +59,7 @@ def naive_crc(dataBits, crcBits, polyBits,
     assert len(res) == len(polyBits)
     if refout:
         res = reversed(res)
-    return bfToInt(res)
+    return bitListToInt(res)
 
 
 # http://www.sunshine2k.de/coding/javascript/crc/crc_js.html
@@ -90,14 +77,14 @@ class CrcCombTC(SimTestCase):
         self.DATA_WIDTH = dataWidth
         self.POLY_WIDTH = poly.WIDTH
 
-        u.DATA_WIDTH.set(dataWidth)
-        u.POLY_WIDTH.set(poly.WIDTH)
-        u.POLY.set(vec(poly.POLY, poly.WIDTH))
-        u.INIT.set(vec(initval, poly.WIDTH))
-        u.REFIN.set(refin)
-        u.REFOUT.set(refout)
-        u.XOROUT.set(vec(finxor, poly.WIDTH))
-        self.prepareUnit(u)
+        u.DATA_WIDTH = dataWidth
+        u.POLY_WIDTH = poly.WIDTH
+        u.POLY = vec(poly.POLY, poly.WIDTH)
+        u.INIT = vec(initval, poly.WIDTH)
+        u.REFIN = refin
+        u.REFOUT = refout
+        u.XOROUT = vec(finxor, poly.WIDTH)
+        self.compileSimAndStart(u)
         return u
 
     def test_crc1(self):
@@ -125,14 +112,19 @@ class CrcCombTC(SimTestCase):
 
     def test_crc32_py(self):
         self.assertEqual(crc32(b"aa"), crc32(b"a", crc32(b"a")))
-        # ! self.assertEqual(crc32(b"abcdefgh"), crc32(b"abcd", crc32(b"efgh")))
+        # ! self.assertEqual(crc32(b"abcdefgh"),
+        #                    crc32(b"abcd", crc32(b"efgh")))
         self.assertEqual(crc32(b"abcdefgh"), crc32(b"efgh", crc32(b"abcd")))
-        # ! self.assertEqual(crc32(b"abcdefgh"), crc32(b"efgh") ^ crc32(b"abcd"))
+        # ! self.assertEqual(crc32(b"abcdefgh"),
+        #                    crc32(b"efgh") ^ crc32(b"abcd"))
 
         self.assertEqual(crc_hqx(b"aa", 0), crc_hqx(b"a", crc_hqx(b"a", 0)))
-        # ! self.assertEqual(crc_hqx(b"abcdefgh", 0), crc_hqx(b"abcd", crc_hqx(b"efgh", 0)))
-        self.assertEqual(crc_hqx(b"abcdefgh", 0), crc_hqx(b"efgh", crc_hqx(b"abcd", 0)))
-        # ! self.assertEqual(crc_hqx(b"abcdefgh", 0), crc_hqx(b"efgh", 0) ^ crc_hqx(b"abcd", 0))
+        # ! self.assertEqual(crc_hqx(b"abcdefgh", 0),
+        #                    crc_hqx(b"abcd", crc_hqx(b"efgh", 0)))
+        self.assertEqual(crc_hqx(b"abcdefgh", 0),
+                         crc_hqx(b"efgh", crc_hqx(b"abcd", 0)))
+        # ! self.assertEqual(crc_hqx(b"abcdefgh", 0),
+        #                    crc_hqx(b"efgh", 0) ^ crc_hqx(b"abcd", 0))
 
         crc8 = crcToBf(CRC_8_CCITT)
         crc8_aes = crcToBf(CRC_8_SAE_J1850)
@@ -156,7 +148,8 @@ class CrcCombTC(SimTestCase):
         self.assertEqual(naive_crc(_12, cur8, crc8_aes), 0x85)
         self.assertEqual(naive_crc(_12, cur8_half_1, crc8_aes), 0x26)
 
-        self.assertEqual(naive_crc(_12, cur8_half_1, crc8_aes, refin=True), 0x6F)
+        self.assertEqual(naive_crc(_12, cur8_half_1, crc8_aes, refin=True),
+                         0x6F)
 
         cur32 = [0 for _ in range(32)]
         _crc32 = crcToBf(CRC_32)
@@ -184,7 +177,7 @@ class CrcCombTC(SimTestCase):
                                    refin=True, refout=True), 0x89E3A7C7)
         self.assertEqual(naive_crc(s, cur32_1, _crc32,
                                    refin=True, refout=True) ^ 0xffffffff,
-                                   crc32(_s.encode()))
+                         crc32(_s.encode()))
 
     def test_crc32(self):
         for i, inp in enumerate([b"abcd", b"0001"]):

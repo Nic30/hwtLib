@@ -7,20 +7,20 @@
 */
 module Showcase0(input [31:0] a,
         input signed [31:0] b,
-        output [31:0] c,
+        output reg [31:0] c,
         input clk,
-        output cmp_0,
-        output cmp_1,
-        output cmp_2,
-        output cmp_3,
-        output cmp_4,
-        output cmp_5,
-        output [31:0] contOut,
+        output reg cmp_0,
+        output reg cmp_1,
+        output reg cmp_2,
+        output reg cmp_3,
+        output reg cmp_4,
+        output reg cmp_5,
+        output reg [31:0] contOut,
         input [31:0] d,
         input e,
         output f,
-        output [15:0] fitted,
-        output [7:0] g,
+        output reg [15:0] fitted,
+        output reg [7:0] g,
         output reg [7:0] h,
         input [1:0] i,
         output reg [7:0] j,
@@ -40,27 +40,58 @@ module Showcase0(input [31:0] a,
     wire [1:0] r_next_0;
     wire [1:0] r_next_1;
     reg [7:0] rom;
-    assign c = a + $unsigned(b);
-    assign cmp_0 = a < 4;
-    assign cmp_1 = a > 4;
-    assign cmp_2 = b <= $signed(4);
-    assign cmp_3 = b >= $signed(4);
-    assign cmp_4 = b != $signed(4);
-    assign cmp_5 = b == $signed(4);
-    assign contOut = const_private_signal;
+    always @(a or b) begin: assig_process_c
+        c = (a + $unsigned(b));
+    end
+
+    always @(a) begin: assig_process_cmp_0
+        cmp_0 = a < 4;
+    end
+
+    always @(a) begin: assig_process_cmp_1
+        cmp_1 = a > 4;
+    end
+
+    always @(b) begin: assig_process_cmp_2
+        cmp_2 = b <= $signed(4);
+    end
+
+    always @(b) begin: assig_process_cmp_3
+        cmp_3 = b >= $signed(4);
+    end
+
+    always @(b) begin: assig_process_cmp_4
+        cmp_4 = b != $signed(4);
+    end
+
+    always @(b) begin: assig_process_cmp_5
+        cmp_5 = b == $signed(4);
+    end
+
+    always_comb
+ begin: assig_process_contOut
+        contOut = const_private_signal;
+    end
+
     assign f = r;
     always @(negedge clk) begin: assig_process_fallingEdgeRam
         fallingEdgeRam[r_1] <= $signed(a[7:0]);
         k <= {24'h000000, $unsigned(fallingEdgeRam[r_1])};
     end
 
-    assign fitted = a[15:0];
-    assign g = {{(a[1]) & (b[1]), ((a[0]) ^ (b[0])) | (a[1])}, a[5:0]};
+    always @(a) begin: assig_process_fitted
+        fitted = a[15:0];
+    end
+
+    always @(a or b) begin: assig_process_g
+        g = {{a[1] & b[1], a[0] ^ b[0] | a[1]}, a[5:0]};
+    end
+
     always @(a or r) begin: assig_process_h
-        if((a[2])==1'b1) begin
-            if((r)==1'b1) begin
+        if (a[2]) begin
+            if (r) begin
                 h = 8'h00;
-            end else if((a[1])==1'b1) begin
+            end else if (a[1]) begin
                 h = 8'h01;
             end else begin
                 h = 8'h02;
@@ -75,7 +106,7 @@ module Showcase0(input [31:0] a,
     assign out = 1'b0;
     assign output_0 = 1'bx;
     always @(posedge clk) begin: assig_process_r
-        if(rst_n == 1'b0) begin
+        if (rst_n == 1'b0) begin
             r_1 <= 2'b00;
             r_0 <= 2'b00;
             r <= 1'b0;
@@ -89,7 +120,7 @@ module Showcase0(input [31:0] a,
     assign r_next_0 = i;
     assign r_next_1 = r_0;
     always @(e or r) begin: assig_process_r_next
-        if((~r)==1'b1) begin
+        if (~r) begin
             r_next = e;
         end else begin
             r_next = r;

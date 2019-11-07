@@ -33,7 +33,7 @@ ENTITY Showcase0 IS
         rst_n: IN STD_LOGIC;
         sc_signal: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
-END Showcase0;
+END ENTITY;
 
 ARCHITECTURE rtl OF Showcase0 IS
     TYPE arrT_0 IS ARRAY ((3) DOWNTO 0) OF SIGNED(7 DOWNTO 0);
@@ -69,13 +69,13 @@ BEGIN
     END PROCESS;
 
     fitted <= STD_LOGIC_VECTOR(a(15 DOWNTO 0));
-    g <= ((a(1)) AND (b(1))) & (((a(0)) XOR (b(0))) OR (a(1))) & STD_LOGIC_VECTOR(a(5 DOWNTO 0));
+    g <= (a(1) AND b(1)) & (a(0) XOR b(0) OR a(1)) & STD_LOGIC_VECTOR(a(5 DOWNTO 0));
     assig_process_h: PROCESS (a, r)
     BEGIN
-        IF (a(2)) = '1' THEN
+        IF a(2) = '1' THEN
             IF r = '1' THEN
                 h <= X"00";
-            ELSIF (a(1)) = '1' THEN
+            ELSIF a(1) = '1' THEN
                 h <= X"01";
             ELSE
                 h <= X"02";
@@ -111,7 +111,7 @@ BEGIN
     r_next_1 <= r_0;
     assig_process_r_next_1: PROCESS (e, r)
     BEGIN
-        IF (NOT r) = '1' THEN
+        IF NOT r = '1' THEN
             r_next <= e;
         ELSE
             r_next <= r;
@@ -132,4 +132,4 @@ BEGIN
         END CASE;
     END PROCESS;
 
-END ARCHITECTURE rtl;
+END ARCHITECTURE;

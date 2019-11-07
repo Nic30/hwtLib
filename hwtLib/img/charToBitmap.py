@@ -4,11 +4,12 @@
 from PIL import Image
 import os
 
-from hwt.bitmask import selectBit
 from hwt.hdl.types.bits import Bits
+from pyMathBitPrecise.bit_utils import selectBit
 
 
-im = Image.open(os.path.dirname(__file__) + "/charToBitmap_font.png")  # Can be many different formats.
+# Can be many different formats.
+im = Image.open(os.path.dirname(__file__) + "/charToBitmap_font.png")
 pixels = im.load()
 
 
@@ -60,15 +61,16 @@ def addCharToBitmap():
     Add rom to translate ascii to 8x8 char bitmap,
     first row is placed on lower address,
     font is taken from png image
-    
-    :return: Bits(8)[128 * 8] where are stored bitmaps of chars, up is first lower char is first
+
+    :return: Bits(8)[128 * 8] where are stored bitmaps of chars,
+             up is first lower char is first
     """
     rom = []
     for ch in range(128):
         for row in range(8):
             rom.append(getCharRow(ch, row))
 
-    return Bits(8)[128 * 8].fromPy(rom)
+    return Bits(8)[128 * 8].from_py(rom)
 
 
 if __name__ == "__main__":

@@ -3,33 +3,32 @@
 
 import unittest
 
-from hwt.bitmask import mask
-from hwt.hdl.constants import Time
-from hwt.simulator.shortcuts import simPrepare
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.interconnect.rStricOrder import RStrictOrderInterconnect
+from pyMathBitPrecise.bit_utils import mask
+from pycocotb.constants import CLK_PERIOD
 
 
-class RStrictOrderInterconnectTC(SimTestCase):
-    def setUp(self):
-        super(RStrictOrderInterconnectTC, self).setUp()
-        u = self.u = RStrictOrderInterconnect()
+class RStrictOrderInterconnectTC(SingleUnitSimTestCase):
 
-        self.DRIVERS_CNT = 3
-        u.DRIVER_CNT.set(self.DRIVERS_CNT)
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = RStrictOrderInterconnect()
 
-        self.MAX_TRANS_OVERLAP = 4
-        u.MAX_TRANS_OVERLAP.set(self.MAX_TRANS_OVERLAP)
+        cls.DRIVERS_CNT = 3
+        u.DRIVER_CNT = cls.DRIVERS_CNT
 
-        self.DATA_WIDTH = 64
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        cls.MAX_TRANS_OVERLAP = 4
+        u.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP
 
-        _, self.model, self.procs = simPrepare(self.u)
+        cls.DATA_WIDTH = 64
+        u.DATA_WIDTH = cls.DATA_WIDTH
+        return u
 
     def test_nop(self):
         u = self.u
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         for d in u.drivers:
             self.assertEqual(len(d.r._ag.data), 0)
@@ -42,7 +41,7 @@ class RStrictOrderInterconnectTC(SimTestCase):
         for i, driver in enumerate(u.drivers):
             driver.req._ag.data.append((i + 1, i + 1, i + 1, 0))
 
-        self.runSim((self.DRIVERS_CNT * 20) * Time.ns)
+        self.runSim((self.DRIVERS_CNT * 2) * CLK_PERIOD)
 
         for d in u.drivers:
             self.assertEqual(len(d.r._ag.data), 0)
@@ -63,7 +62,7 @@ class RStrictOrderInterconnectTC(SimTestCase):
                 d = (_id, i + 1, mask(self.DATA_WIDTH // 8), i2 == _len)
                 u.rDatapump.r._ag.data.append(d)
 
-        self.runSim(200 * Time.ns)
+        self.runSim(20 * CLK_PERIOD)
 
         for i, d in enumerate(u.drivers):
             self.assertEqual(len(d.r._ag.data), i + 1 + 1)
@@ -102,10 +101,12 @@ class RStrictOrderInterconnectTC(SimTestCase):
             for d, e in zip(driverData, expected):
                 self.assertValSequenceEqual(d, e)
 
-        d0 = prepare(0, 0x1000, 3, 99, _id=0)  # + prepare(0, 0x2000, 1, 100, _id=0) + prepare(0, 0x3000, 16, 101)
-        d1 = prepare(1, 0x4000, 3, 200, _id=1) + prepare(1, 0x5000, 1, 201, _id=1)  # + prepare(1, 0x6000, 16, 202) #+ prepare(1, 0x7000, 16, 203)
+        d0 = prepare(0, 0x1000, 3, 99, _id=0)
+        # + prepare(0, 0x2000, 1, 100, _id=0) + prepare(0, 0x3000, 16, 101)
+        d1 = prepare(1, 0x4000, 3, 200, _id=1) + prepare(1, 0x5000, 1, 201, _id=1)
+        # + prepare(1, 0x6000, 16, 202) #+ prepare(1, 0x7000, 16, 203)
 
-        self.runSim(1000 * Time.ns)
+        self.runSim(100 * CLK_PERIOD)
 
         check(0, d0)
         check(1, d1)
@@ -136,7 +137,7 @@ class RStrictOrderInterconnectTC(SimTestCase):
                     data = (_id, v, _mask, int(i2 == size - 1))
                     expected[_id].append(data)
 
-        self.runSim(self.DRIVERS_CNT * N * 200 * Time.ns)
+        self.runSim(self.DRIVERS_CNT * N * 20 * CLK_PERIOD)
 
         for expect, driver in zip(expected, u.drivers):
             self.assertValSequenceEqual(driver.r._ag.data, expect)
