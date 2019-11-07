@@ -14,6 +14,7 @@ from hwt.hdl.typeShortcuts import vec
 from hwtLib.logic.crcComb_test import stoi
 from hwt.pyUtils.arrayQuery import grouper
 from pyMathBitPrecise.bit_utils import mask
+import sys
 
 
 def pr(name, val):
@@ -114,7 +115,13 @@ class CrcTC(SimTestCase):
         self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
 
     def test_CRC32_wide_dual_0(self):
-        u = self.setUpCrc(CRC_32, dataWidth=32 * 8)
+        rec_limit = sys.getrecursionlimit()
+        # because there is too much of nested operators in this very large xor tree
+        sys.setrecursionlimit(1500)
+        try:
+            u = self.setUpCrc(CRC_32, dataWidth=32 * 8)
+        finally:
+            sys.setrecursionlimit(rec_limit)
         u.dataIn._ag.data.extend([0, 0])
         self.runSim(50 * Time.ns)
         out = int(u.dataOut._ag.data[-1])
