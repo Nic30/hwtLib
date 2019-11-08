@@ -79,7 +79,7 @@ class Axi3DenseMem(DenseMemory):
         try:
             req = [int(v) for v in req]
         except ValueError:
-            raise AssertionError("Invalid AXI request", req)
+            raise AssertionError("Invalid AXI request", req) from None
 
         _id = req[0]
         addr = req[1]
