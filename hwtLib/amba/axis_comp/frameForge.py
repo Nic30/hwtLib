@@ -387,7 +387,7 @@ def _example_AxiS_frameForge():
                 (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
                 )
 
-    u = AxiS_frameForge(AxiStream, t)
+    u = AxiS_frameForge(t)
     u.DATA_WIDTH = 32
     return u
 
