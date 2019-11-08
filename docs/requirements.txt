@@ -1,6 +1,6 @@
 sphinx>=1.8.1
 sphinx_bootstrap_theme
 aafigure
-hwt>=2.6
+git+git://github.com/Nic30/hwt@master#egg=hwt
 hwtGraph>=0.8
 sphinx-hwt>=1.6
