@@ -90,7 +90,7 @@ from hwtLib.examples.simpleWithNonDirectIntConncetion import \
     SimpleWithNonDirectIntConncetionTC
 from hwtLib.examples.simpleWithParam import SimpleUnitWithParamTC
 from hwtLib.examples.simple_test import SimpleTC
-from hwtLib.examples.special_intf_types.intfWithArray import InterfaceWithArrayTypesTC
+from hwtLib.examples.specialIntfTypes.intfWithArray import InterfaceWithArrayTypesTC
 from hwtLib.examples.statements.constCondition import ConstConditionTC
 from hwtLib.examples.statements.constDriver_test import ConstDriverTC
 from hwtLib.examples.statements.forLoopCntrl_test import StaticForLoopCntrlTC
