@@ -2,6 +2,8 @@ recursive-include hwtLib *.png
 include README.md
 include MANIFEST.in
 
+include hwtLib/examples/specialIntfTypes/InterfaceWithVHDLUnonstrainedArrayImportedType.vhd
+
 include hwtLib/samples/hierarchy/netFilter.vhd
 include hwtLib/samples/hierarchy/netFilter.v
 include hwtLib/samples/hierarchy/netFilter.cpp

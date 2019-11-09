@@ -3,6 +3,7 @@
 
 from unittest import TestLoader, TextTestRunner, TestSuite
 
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import \
@@ -70,6 +71,7 @@ from hwtLib.examples.hierarchy.simpleSubunit_test import SimpleSubunitTC
 from hwtLib.examples.hierarchy.unitToUnitConnection import \
     UnitToUnitConnectionTC
 from hwtLib.examples.hierarchy.unitWrapper_test import UnitWrapperTC
+from hwtLib.examples.mem.bram_wire import BramWireTC
 from hwtLib.examples.mem.ram_test import RamResourcesTC, \
     SimpleAsyncRamTC, SimpleSyncRamTC
 from hwtLib.examples.mem.reg_test import DRegTC, RegSerializationTC, \
@@ -88,6 +90,8 @@ from hwtLib.examples.simpleWithNonDirectIntConncetion import \
     SimpleWithNonDirectIntConncetionTC
 from hwtLib.examples.simpleWithParam import SimpleUnitWithParamTC
 from hwtLib.examples.simple_test import SimpleTC
+from hwtLib.examples.special_intf_types.intfWithArray import InterfaceWithArrayTypesTC
+from hwtLib.examples.statements.constCondition import ConstConditionTC
 from hwtLib.examples.statements.constDriver_test import ConstDriverTC
 from hwtLib.examples.statements.forLoopCntrl_test import StaticForLoopCntrlTC
 from hwtLib.examples.statements.fsm_test import FsmExampleTC, \
@@ -177,9 +181,6 @@ from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
-from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.examples.mem.bram_wire import BramWireTC
-from hwtLib.examples.statements.constCondition import ConstConditionTC
 
 
 # from hwtLib.peripheral.i2c.i2cAgent_test import I2cAgent_TC
@@ -290,6 +291,7 @@ suite = testSuiteFromTCs(
     LsfrTC,
     ClkDiv3TC,
     BitonicSorterTC,
+    InterfaceWithArrayTypesTC,
 
     FlipRegTC,
     FlipCntrTC,
