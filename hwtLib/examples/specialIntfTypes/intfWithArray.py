@@ -54,7 +54,6 @@ class InterfaceWithVHDLUnonstrainedArrayImportedType(Unit):
     """
     .. hwt-schematic::
     """
-    """
 
     def _config(self):
         self.SIZE_X = Param(3)
