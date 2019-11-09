@@ -1,14 +1,16 @@
+import os
+from unittest.case import TestCase
+
+from hwt.hdl.types.array import HArray
 from hwt.interfaces.std import Signal
+from hwt.serializer.generic.context import SerializerCtx
+from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwtLib.types.ctypes import uint8_t
 from hwt.synthesizer.utils import toRtl
-from hwt.hdl.types.array import HArray
-from hwt.serializer.generic.context import SerializerCtx
-from unittest.case import TestCase
-from hwt.serializer.vhdl.serializer import VhdlSerializer
-import os
+from hwtLib.types.ctypes import uint8_t
+
 
 # class Interface1d(Unit):
 #
@@ -24,8 +26,6 @@ import os
 #         for i in range(self.SIZE):
 #             o = self.din[i]
 #             self.dout[i](o)
-#
-#
 # class Interface2d(Unit):
 #
 #     def _config(self):
@@ -42,22 +42,14 @@ import os
 #         ])
 #
 #     def _impl(self):
-#         # :note: you would like to use iterators, rather than indexing
-#         for x in range(self.SIZE_X):
-#             for y in range(self.SIZE_Y):
-#                 o = self.din[x][y]
-#                 self.dout[x][y](o)
+#         # for x in range(self.SIZE_X):
+#         #     for y in range(self.SIZE_Y):
+#         #         o = self.din[x][y]
+#         #         self.dout[x][y](o)
 #
-#
-# class Interface2d_b(Interface2d):
-#
-#     def _impl(self):
 #         for x_in, x_out in zip(self.din, self.dout):
 #             for d_in, d_out in zip(x_in, x_out):
 #                 d_out(d_in)
-#
-
-
 class InterfaceWithVHDLUnonstrainedArrayImportedType(Unit):
 
     def _config(self):
@@ -120,6 +112,5 @@ if __name__ == "__main__":
     runner.run(suite)
     # print(toRtl(Interface1d()))
     # print(toRtl(Interface2d()))
-    # print(toRtl(Interface2d_b()))
     print(toRtl(InterfaceWithVHDLUnonstrainedArrayImportedType()))
 
