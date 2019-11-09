@@ -51,6 +51,10 @@ from hwtLib.types.ctypes import uint8_t
 #             for d_in, d_out in zip(x_in, x_out):
 #                 d_out(d_in)
 class InterfaceWithVHDLUnonstrainedArrayImportedType(Unit):
+    """
+    .. hwt-schematic::
+    """
+    """
 
     def _config(self):
         self.SIZE_X = Param(3)
