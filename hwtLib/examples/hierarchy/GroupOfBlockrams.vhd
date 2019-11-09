@@ -9,12 +9,12 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY bramR IS
-    GENERIC (ADDR_WIDTH: string := "8";
-        DATA_WIDTH: string := "64";
-        a_ADDR_WIDTH: string := "8";
-        a_DATA_WIDTH: string := "64";
-        b_ADDR_WIDTH: string := "8";
-        b_DATA_WIDTH: string := "64"
+    GENERIC (ADDR_WIDTH: INTEGER := 8;
+        DATA_WIDTH: INTEGER := 64;
+        a_ADDR_WIDTH: INTEGER := 8;
+        a_DATA_WIDTH: INTEGER := 64;
+        b_ADDR_WIDTH: INTEGER := 8;
+        b_DATA_WIDTH: INTEGER := 64
     );
     PORT (a_addr: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
         a_clk: IN STD_LOGIC;
@@ -66,8 +66,8 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY GroupOfBlockrams IS
-    GENERIC (ADDR_WIDTH: string := "8";
-        DATA_WIDTH: string := "64"
+    GENERIC (ADDR_WIDTH: INTEGER := 8;
+        DATA_WIDTH: INTEGER := 64
     );
     PORT (addr: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
         clk: IN STD_LOGIC;
@@ -110,12 +110,12 @@ ARCHITECTURE rtl OF GroupOfBlockrams IS
     SIGNAL sig_bramW_b_en: STD_LOGIC;
     SIGNAL sig_bramW_b_we: STD_LOGIC;
     COMPONENT bramR IS
-       GENERIC (ADDR_WIDTH: string := "8";
-            DATA_WIDTH: string := "64";
-            a_ADDR_WIDTH: string := "8";
-            a_DATA_WIDTH: string := "64";
-            b_ADDR_WIDTH: string := "8";
-            b_DATA_WIDTH: string := "64"
+       GENERIC (ADDR_WIDTH: INTEGER := 8;
+            DATA_WIDTH: INTEGER := 64;
+            a_ADDR_WIDTH: INTEGER := 8;
+            a_DATA_WIDTH: INTEGER := 64;
+            b_ADDR_WIDTH: INTEGER := 8;
+            b_DATA_WIDTH: INTEGER := 64
        );
        PORT (a_addr: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
             a_clk: IN STD_LOGIC;
@@ -134,12 +134,12 @@ ARCHITECTURE rtl OF GroupOfBlockrams IS
 
 BEGIN
     bramR_inst: COMPONENT bramR
-        GENERIC MAP (ADDR_WIDTH => "8",
-            DATA_WIDTH => "64",
-            a_ADDR_WIDTH => "8",
-            a_DATA_WIDTH => "64",
-            b_ADDR_WIDTH => "8",
-            b_DATA_WIDTH => "64"
+        GENERIC MAP (ADDR_WIDTH => 8,
+            DATA_WIDTH => 64,
+            a_ADDR_WIDTH => 8,
+            a_DATA_WIDTH => 64,
+            b_ADDR_WIDTH => 8,
+            b_DATA_WIDTH => 64
         )
         PORT MAP (a_addr => sig_bramR_a_addr,
             a_clk => sig_bramR_a_clk,
@@ -156,12 +156,12 @@ BEGIN
         );
 
     bramW_inst: COMPONENT bramR
-        GENERIC MAP (ADDR_WIDTH => "8",
-            DATA_WIDTH => "64",
-            a_ADDR_WIDTH => "8",
-            a_DATA_WIDTH => "64",
-            b_ADDR_WIDTH => "8",
-            b_DATA_WIDTH => "64"
+        GENERIC MAP (ADDR_WIDTH => 8,
+            DATA_WIDTH => 64,
+            a_ADDR_WIDTH => 8,
+            a_DATA_WIDTH => 64,
+            b_ADDR_WIDTH => 8,
+            b_DATA_WIDTH => 64
         )
         PORT MAP (a_addr => sig_bramW_a_addr,
             a_clk => sig_bramW_a_clk,

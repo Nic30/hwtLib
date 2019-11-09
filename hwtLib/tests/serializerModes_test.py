@@ -77,8 +77,8 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY u5 IS
-    GENERIC (A: string := "0";
-        B: string := "1"
+    GENERIC (A: INTEGER := 0;
+        B: INTEGER := 1
     );
     PORT (a_0: OUT STD_LOGIC
     );
@@ -95,8 +95,8 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY u7 IS
-    GENERIC (A: string := "0";
-        B: string := "12"
+    GENERIC (A: INTEGER := 0;
+        B: INTEGER := 12
     );
     PORT (a_0: OUT STD_LOGIC
     );
@@ -135,16 +135,16 @@ ARCHITECTURE rtl OF ExampleA IS
     END COMPONENT;
 
     COMPONENT u5 IS
-       GENERIC (A: string := "0";
-            B: string := "1"
+       GENERIC (A: INTEGER := 0;
+            B: INTEGER := 1
        );
        PORT (a_0: OUT STD_LOGIC
        );
     END COMPONENT;
 
     COMPONENT u7 IS
-       GENERIC (A: string := "0";
-            B: string := "12"
+       GENERIC (A: INTEGER := 0;
+            B: INTEGER := 12
        );
        PORT (a_0: OUT STD_LOGIC
        );
@@ -172,22 +172,22 @@ BEGIN
         );
 
     u5_inst: COMPONENT u5
-        GENERIC MAP (A => "0",
-            B => "1"
+        GENERIC MAP (A => 0,
+            B => 1
         )
         PORT MAP (a_0 => sig_u5_a_0
         );
 
     u6_inst: COMPONENT u5
-        GENERIC MAP (A => "0",
-            B => "1"
+        GENERIC MAP (A => 0,
+            B => 1
         )
         PORT MAP (a_0 => sig_u6_a_0
         );
 
     u7_inst: COMPONENT u7
-        GENERIC MAP (A => "0",
-            B => "12"
+        GENERIC MAP (A => 0,
+            B => 12
         )
         PORT MAP (a_0 => sig_u7_a_0
         );

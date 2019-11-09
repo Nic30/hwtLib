@@ -100,7 +100,7 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY ch IS
-    GENERIC (NESTED_PARAM: string := "123"
+    GENERIC (NESTED_PARAM: INTEGER := 123
     );
     PORT (a: IN STD_LOGIC_VECTOR(122 DOWNTO 0);
         b: OUT STD_LOGIC_VECTOR(122 DOWNTO 0)
@@ -128,7 +128,7 @@ ARCHITECTURE rtl OF UnitWithGenericOfChild IS
     SIGNAL sig_ch_b: STD_LOGIC_VECTOR(122 DOWNTO 0);
     SIGNAL tmp: STD_LOGIC_VECTOR(122 DOWNTO 0);
     COMPONENT ch IS
-       GENERIC (NESTED_PARAM: string := "123"
+       GENERIC (NESTED_PARAM: INTEGER := 123
        );
        PORT (a: IN STD_LOGIC_VECTOR(122 DOWNTO 0);
             b: OUT STD_LOGIC_VECTOR(122 DOWNTO 0)
@@ -137,7 +137,7 @@ ARCHITECTURE rtl OF UnitWithGenericOfChild IS
 
 BEGIN
     ch_inst: COMPONENT ch
-        GENERIC MAP (NESTED_PARAM => "123"
+        GENERIC MAP (NESTED_PARAM => 123
         )
         PORT MAP (a => sig_ch_a,
             b => sig_ch_b

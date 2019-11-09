@@ -6,9 +6,9 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY baseUnit IS
-    GENERIC (DATA_WIDTH: string := "64";
-        din_DATA_WIDTH: string := "64";
-        dout_DATA_WIDTH: string := "64"
+    GENERIC (DATA_WIDTH: INTEGER := 64;
+        din_DATA_WIDTH: INTEGER := 64;
+        dout_DATA_WIDTH: INTEGER := 64
     );
     PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         din_vld: IN STD_LOGIC;
@@ -34,9 +34,9 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY UnitWithParams IS
-    GENERIC (DATA_WIDTH: string := "64";
-        din_DATA_WIDTH: string := "64";
-        dout_DATA_WIDTH: string := "64"
+    GENERIC (DATA_WIDTH: INTEGER := 64;
+        din_DATA_WIDTH: INTEGER := 64;
+        dout_DATA_WIDTH: INTEGER := 64
     );
     PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         din_vld: IN STD_LOGIC;
@@ -51,9 +51,9 @@ ARCHITECTURE rtl OF UnitWithParams IS
     SIGNAL sig_baseUnit_dout_data: STD_LOGIC_VECTOR(63 DOWNTO 0);
     SIGNAL sig_baseUnit_dout_vld: STD_LOGIC;
     COMPONENT baseUnit IS
-       GENERIC (DATA_WIDTH: string := "64";
-            din_DATA_WIDTH: string := "64";
-            dout_DATA_WIDTH: string := "64"
+       GENERIC (DATA_WIDTH: INTEGER := 64;
+            din_DATA_WIDTH: INTEGER := 64;
+            dout_DATA_WIDTH: INTEGER := 64
        );
        PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
             din_vld: IN STD_LOGIC;
@@ -64,9 +64,9 @@ ARCHITECTURE rtl OF UnitWithParams IS
 
 BEGIN
     baseUnit_inst: COMPONENT baseUnit
-        GENERIC MAP (DATA_WIDTH => "64",
-            din_DATA_WIDTH => "64",
-            dout_DATA_WIDTH => "64"
+        GENERIC MAP (DATA_WIDTH => 64,
+            din_DATA_WIDTH => 64,
+            dout_DATA_WIDTH => 64
         )
         PORT MAP (din_data => sig_baseUnit_din_data,
             din_vld => sig_baseUnit_din_vld,
