@@ -63,12 +63,14 @@ class StreamNode():
 
     :ivar masters: interfaces which are inputs into this node
     :ivar slaves: interfaces which are outputs of this node
-    :ivar extraConds: dict interface : extraConditionSignal
-        where extra conditions will be added to expression for channel enable
-        for master it means it will get ready only when extraConditionSignal
-        is 1 for slave it means it will not get valid only
-        when extraConditionSignal is 1 but all interfaces have to wait
-        on each other
+    :ivar extraConds: {dict interface : extraConditionSignal}
+        where extra conditions will be added to expression for channel enable.
+        For master it means it will obtain ready=1 only if extraConditionSignal
+        is 1.
+        For slave it means it will obtain valid=1 only
+        if extraConditionSignal is 1.
+        All interfaces have to wait on each other so if an extraCond!=1 it causes
+        blocking on all interfaces if not overriden by skipWhen.
     :ivar skipWhen: dict interface : skipSignal
         where if skipSignal is high interface is disconnected from stream
         sync node and others does not have to wait on it
