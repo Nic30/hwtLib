@@ -312,8 +312,11 @@ class BusEndpoint(Unit):
             bitsOfPrefix = IN_ADDR_WIDTH - bitsOfSubAddr - bitsForAlignment
             prefix = (transTmpl.bitAddr //
                       srcAddrStep) >> (bitsForAlignment + bitsOfSubAddr)
-            addrIsInRange = srcAddrSig[IN_ADDR_WIDTH:(
-                IN_ADDR_WIDTH - bitsOfPrefix)]._eq(prefix)
+            if bitsOfPrefix == 0:
+                addrIsInRange = True
+            else:
+                addrIsInRange = srcAddrSig[IN_ADDR_WIDTH:(
+                    IN_ADDR_WIDTH - bitsOfPrefix)]._eq(prefix)
             addr_tmp = srcAddrSig
         else:
             _addr = transTmpl.bitAddr // srcAddrStep

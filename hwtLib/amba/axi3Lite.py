@@ -136,18 +136,28 @@ class Axi3Lite_bAgent(BaseAxiAgent):
 
 #################################################################
 class Axi3Lite(Interface):
+    AW_CLS = Axi3Lite_addr
+    AR_CLS = Axi3Lite_addr
+    W_CLS = Axi3Lite_w
+    R_CLS = Axi3Lite_r
+    B_CLS = Axi3Lite_b
 
     def _config(self):
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)
+        self.HAS_R = True
+        self.HAS_W = True
 
     def _declr(self):
         with self._paramsShared():
-            self.aw = Axi3Lite_addr()
-            self.ar = Axi3Lite_addr()
-            self.w = Axi3Lite_w()
-            self.r = Axi3Lite_r(masterDir=DIRECTION.IN)
-            self.b = Axi3Lite_b(masterDir=DIRECTION.IN)
+            if self.HAS_R:
+                self.ar = self.AR_CLS()
+                self.r = self.R_CLS(masterDir=DIRECTION.IN)
+
+            if self.HAS_W:
+                self.aw = self.AW_CLS()
+                self.w = self.W_CLS()
+                self.b = self.B_CLS(masterDir=DIRECTION.IN)
 
     def _getIpCoreIntfClass(self):
         return IP_Axi3Lite
@@ -186,11 +196,14 @@ class Axi3LiteAgent(AgentBase):
             agent = intf._ag
             return agent
 
-        self.ar = ag(intf.ar)
-        self.aw = ag(intf.aw)
-        self.r = ag(intf.r)
-        self.w = ag(intf.w)
-        self.b = ag(intf.b)
+        if intf.HAS_R:
+            self.ar = ag(intf.ar)
+            self.r = ag(intf.r)
+
+        if intf.HAS_W:
+            self.aw = ag(intf.aw)
+            self.w = ag(intf.w)
+            self.b = ag(intf.b)
 
     def getEnable(self):
         return self.__enable
@@ -198,26 +211,44 @@ class Axi3LiteAgent(AgentBase):
     def setEnable(self, en):
         if self.__enable != en:
             self.__enable = en
-            for o in [self.ar, self.aw, self.r, self.w, self.b]:
-                o.setEnable(en)
+            if self.intf.HAS_R:
+                self.ar.setEnable(en)
+                self.r.setEnable(en)
+            if self.intf.HAS_W:
+                self.aw.setEnable(en)
+                self.w.setEnable(en)
+                self.b.setEnable(en)
 
     def getDrivers(self):
-        return (
-            self.aw.getDrivers()
-            + self.ar.getDrivers()
-            + self.w.getDrivers()
-            + self.r.getMonitors()
-            + self.b.getMonitors()
-        )
+        drvs = []
+        if self.intf.HAS_W:
+            drvs.extend(
+                self.aw.getDrivers()
+                +self.w.getDrivers()
+                +self.b.getMonitors()
+            )
+
+        if self.intf.HAS_R:
+            drvs.extend(
+                self.ar.getDrivers()
+                +self.r.getMonitors()
+            )
+        return drvs
 
     def getMonitors(self):
-        return (
-            self.aw.getMonitors()
-            + self.ar.getMonitors()
-            + self.w.getMonitors()
-            + self.r.getDrivers()
-            + self.b.getDrivers()
-        )
+        mons = []
+        if self.intf.HAS_W:
+            mons.extend(
+                self.aw.getMonitors()
+                +self.w.getMonitors()
+                +self.b.getDrivers()
+            )
+        if self.intf.HAS_R:
+            mons.extend(
+                self.ar.getMonitors()
+                +self.r.getDrivers()
+            )
+        return mons
 
 
 #################################################################

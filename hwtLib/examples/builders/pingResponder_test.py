@@ -37,7 +37,7 @@ def hstruct_checksum(structVal):
     Checksum of values in StructValue instance
     """
     valAsBytes = iterBits(structVal, bitsInOne=8)
-    valAsBytes = list(map(lambda x: x.val, valAsBytes))
+    valAsBytes = [x.val for x in valAsBytes]
     return checksum(valAsBytes)
 
 
@@ -48,7 +48,7 @@ def pingResponder_model(packetStructVal):
     :param packet: struct val of packet
     """
     packet = iterBits(packetStructVal, bitsInOne=8, skipPadding=False)
-    packet = list(map(valToInt, packet))
+    packet = [valToInt(p) for p in packet]
     eth = 0
     # swap eht addr
     (packet[(eth + 0):(eth + 6)],
@@ -135,7 +135,7 @@ class PingResponderTC(SingleUnitSimTestCase):
     def test_struct_packUnpack(self):
         f = self.create_ICMP_echo_frame()
         asBytes = iterBits(f, bitsInOne=8, skipPadding=False)
-        asBytes = list(map(valToInt, asBytes))
+        asBytes = [valToInt(x) for x in asBytes]
 
         f_out = HStruct_unpack(echoFrame_t, asBytes, dataWidth=8)
 
@@ -144,7 +144,7 @@ class PingResponderTC(SingleUnitSimTestCase):
         _f = f
         f = f_out
         asBytes = iterBits(f, bitsInOne=8, skipPadding=False)
-        asBytes = list(map(valToInt, asBytes))
+        asBytes = [valToInt(x) for x in asBytes]
 
         f_out = HStruct_unpack(echoFrame_t, asBytes, dataWidth=8)
 

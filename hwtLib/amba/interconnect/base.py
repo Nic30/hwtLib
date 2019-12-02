@@ -68,7 +68,7 @@ class AxiInterconnectBase(Unit):
         # join with roundrobin on requests form drivers and selected index is stored into orderFifo
 
         # because it is just proxy
-        driversReq = list(map(lambda d: d.req, self.drivers))
+        driversReq = [d.req for d in self.drivers]
         b = HsBuilder.join_fair(self, driversReq, exportSelected=True)
         req = b.end
         reqJoin = b.lastComp

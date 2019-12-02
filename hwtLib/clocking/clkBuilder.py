@@ -1,10 +1,11 @@
+from typing import Tuple
+
 from hwt.code import If, log2ceil
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
-from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from typing import Tuple
+from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
 
 
 class ClkBuilder(object):
@@ -54,7 +55,7 @@ class ClkBuilder(object):
         TimerInfo.resolveSharing(timers)
         TimerInfo.instantiate(self.parent, timers, enableSig=enableSig, rstSig=rstSig)
 
-        return list(map(lambda timer: timer.tick, timers))
+        return [timer.tick for timer in timers]
 
     def timer(self, period, enableSig=None, rstSig=None):
         """

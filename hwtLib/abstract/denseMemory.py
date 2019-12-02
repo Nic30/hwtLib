@@ -233,7 +233,7 @@ class DenseMemory():
         Allocates a block of memory of size and initialize it
         with None (invalid value)
 
-        :param size: Size of each element.
+        :param size: Size of memory block to allocate.
         :param keepOut: optional memory spacing between this memory region
                         and lastly allocated
         :return: address of allocated memory

@@ -21,7 +21,7 @@ class Axi3_addr(Axi3Lite_addr, Axi_id):
 
     def _config(self):
         Axi3Lite_addr._config(self)
-        Axi_id._config(self)
+        Axi_id._config(self, default_id_width=6)
         self.USER_WIDTH = Param(0)
 
     def _declr(self):
@@ -95,7 +95,7 @@ class Axi3_r(Axi3Lite_r, Axi_id):
     Axi 3 read channel interface
     """
     def _config(self):
-        Axi_id._config(self)
+        Axi_id._config(self, default_id_width=6)
         Axi3Lite_r._config(self)
 
     def _declr(self):
@@ -188,23 +188,30 @@ class Axi3(Axi3Lite):
     """
     LOCK_WIDTH = 2
     LEN_WIDTH = 4
+    AW_CLS = Axi3_addr
+    AR_CLS = Axi3_addr
+    W_CLS = Axi3_w
+    R_CLS = Axi3_r
+    B_CLS = Axi3_b
 
     def _config(self):
         Axi3Lite._config(self)
-        self.ID_WIDTH = Param(6)
+        Axi_id._config(self, default_id_width=6)
         self.ADDR_USER_WIDTH = Param(0)
         # self.DATA_USER_WIDTH = Param(0)
 
     def _declr(self):
         with self._paramsShared():
-            self.aw = Axi3_addr()
-            self.ar = Axi3_addr()
-            for a in [self.aw, self.ar]:
-                a.USER_WIDTH = self.ADDR_USER_WIDTH
+            if self.HAS_R:
+                self.ar = self.AR_CLS()
+                self.ar.USER_WIDTH = self.ADDR_USER_WIDTH
+                self.r = self.R_CLS(masterDir=DIRECTION.IN)
 
-            self.w = Axi3_w()
-            self.r = Axi3_r(masterDir=DIRECTION.IN)
-            self.b = Axi3_b(masterDir=DIRECTION.IN)
+            if self.HAS_W:
+                self.aw = self.AW_CLS()
+                self.aw.USER_WIDTH = self.ADDR_USER_WIDTH
+                self.w = self.W_CLS()
+                self.b = self.B_CLS(masterDir=DIRECTION.IN)
             # for d in [self.w, self.r, self.b]:
             #     d.USER_WIDTH = self.DATA_USER_WIDTH
 

@@ -17,7 +17,8 @@ from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointMemMasterTC
 from hwtLib.amba.axiLite_comp.reg_test import AxiRegTC
 from hwtLib.amba.axi_ag_test import Axi_ag_TC
-from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
+from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC,\
+    Axi3_rDatapumpTC
 from hwtLib.amba.axi_comp.axi4_streamToMem_test import Axi4_streamToMemTC
 from hwtLib.amba.axi_comp.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
@@ -33,6 +34,18 @@ from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
     AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC, \
     AxiS_resizer_upAndDown_TC
 from hwtLib.amba.axis_comp.storedBurst_test import AxiSStoredBurstTC
+from hwtLib.amba.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC,\
+    AxiInterconnectMatrixAddrCrossbar_1to3TC, AxiInterconnectMatrixAddrCrossbar_3to1TC,\
+    AxiInterconnectMatrixAddrCrossbar_3to3TC
+from hwtLib.amba.interconnect.matrixCrossbar_test import AxiInterconnectMatrixCrossbar_1to1TC,\
+    AxiInterconnectMatrixCrossbar_1to3TC, AxiInterconnectMatrixCrossbar_3to1TC,\
+    AxiInterconnectMatrixCrossbar_3to3TC
+from hwtLib.amba.interconnect.matrixR_test import AxiInterconnectMatrixR_1to1TC,\
+    AxiInterconnectMatrixR_1to3TC, AxiInterconnectMatrixR_3to1TC,\
+    AxiInterconnectMatrixR_3to3TC
+from hwtLib.amba.interconnect.matrixW_test import AxiInterconnectMatrixW_3to3TC,\
+    AxiInterconnectMatrixW_3to1TC, AxiInterconnectMatrixW_1to3TC,\
+    AxiInterconnectMatrixW_1to1TC
 from hwtLib.amba.interconnect.rStrictOrder_test import \
     RStrictOrderInterconnectTC
 from hwtLib.amba.interconnect.wStrictOrderComplex_test import \
@@ -370,6 +383,26 @@ suite = testSuiteFromTCs(
     WStrictOrderInterconnectTC,
     WStrictOrderInterconnect2TC,
     WStrictOrderInterconnectComplexTC,
+
+    AxiInterconnectMatrixAddrCrossbar_1to1TC,
+    AxiInterconnectMatrixAddrCrossbar_1to3TC,
+    AxiInterconnectMatrixAddrCrossbar_3to1TC,
+    AxiInterconnectMatrixAddrCrossbar_3to3TC,
+
+    AxiInterconnectMatrixCrossbar_1to1TC,
+    AxiInterconnectMatrixCrossbar_1to3TC,
+    AxiInterconnectMatrixCrossbar_3to1TC,
+    AxiInterconnectMatrixCrossbar_3to3TC,
+
+    AxiInterconnectMatrixR_1to1TC,
+    AxiInterconnectMatrixR_1to3TC,
+    AxiInterconnectMatrixR_3to1TC,
+    AxiInterconnectMatrixR_3to3TC,
+
+    AxiInterconnectMatrixW_1to1TC,
+    AxiInterconnectMatrixW_1to3TC,
+    AxiInterconnectMatrixW_3to1TC,
+    AxiInterconnectMatrixW_3to3TC,
 
     Axi_ag_TC,
     Axi4_streamToMemTC,

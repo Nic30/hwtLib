@@ -1,4 +1,3 @@
-from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import VectSignal, Signal
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi3 import Axi3_addr, Axi3_r, Axi3_b, IP_Axi3, Axi3
@@ -98,22 +97,17 @@ class Axi4(Axi3):
     """
     LEN_WIDTH = 8
     LOCK_WIDTH = 1
+    AW_CLS = Axi4_addr
+    AR_CLS = Axi4_addr
+    W_CLS = Axi4_w
+    R_CLS = Axi4_r
+    B_CLS = Axi4_b
 
     def _config(self):
         Axi4Lite._config(self)
         self.ID_WIDTH = Param(6)
         self.LOCK_WIDTH = 1
         self.ADDR_USER_WIDTH = Param(0)
-
-    def _declr(self):
-        with self._paramsShared():
-            self.ar = Axi4_addr()
-            self.r = Axi4_r(masterDir=DIRECTION.IN)
-            self.aw = Axi4_addr()
-            self.w = Axi4_w()
-
-        with self._paramsShared():
-            self.b = Axi4_b(masterDir=DIRECTION.IN)
 
     def _getIpCoreIntfClass(self):
         return IP_Axi4
