@@ -1,12 +1,13 @@
 from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import VectSignal
-from hwtLib.amba.axi3Lite import IP_Axi3Lite, Axi3Lite, Axi3Lite_r,\
+from hwtLib.amba.axi3Lite import IP_Axi3Lite, Axi3Lite, Axi3Lite_r, \
     Axi3Lite_b, Axi3Lite_w, Axi3Lite_addr, Axi3Lite_addrAgent
 from hwtLib.amba.axi_intf_common import AxiMap
 from pycocotb.hdlSimulator import HdlSimulator
 
 
 class Axi4Lite_addr(Axi3Lite_addr):
+
     def _declr(self):
         super(Axi4Lite_addr, self)._declr()
         self.prot = VectSignal(3)
@@ -49,14 +50,11 @@ class Axi4Lite(Axi3Lite):
     """
     Axi4-lite bus interface
     """
-
-    def _declr(self):
-        with self._paramsShared():
-            self.aw = Axi4Lite_addr()
-            self.ar = Axi4Lite_addr()
-            self.w = Axi4Lite_w()
-            self.r = Axi4Lite_r(masterDir=DIRECTION.IN)
-            self.b = Axi4Lite_b(masterDir=DIRECTION.IN)
+    AW_CLS = Axi4Lite_addr
+    AR_CLS = Axi4Lite_addr
+    W_CLS = Axi4Lite_w
+    R_CLS = Axi4Lite_r
+    B_CLS = Axi4Lite_b
 
     def _getIpCoreIntfClass(self):
         return IP_Axi4Lite

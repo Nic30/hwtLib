@@ -6,8 +6,8 @@ from pycocotb.hdlSimulator import HdlSimulator
 
 
 class Axi_id(Interface):
-    def _config(self):
-        self.ID_WIDTH = Param(0)
+    def _config(self, default_id_width=0):
+        self.ID_WIDTH = Param(default_id_width)
 
     def _declr(self):
         if self.ID_WIDTH:
