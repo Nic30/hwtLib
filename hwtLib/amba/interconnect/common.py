@@ -1,0 +1,141 @@
+from typing import Set, List
+
+from hwt.code import log2ceil
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.hObjList import HObjList
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
+from hwtLib.amba.axi4 import Axi4
+from itertools import chain
+
+ALL = "ALL"
+
+
+class AxiInterconnectUtils():
+
+    @classmethod
+    def _normalize_master_configs(cls, MASTERS, SLAVES):
+        slave_cnt = len(SLAVES)
+        masters = []
+        for m in MASTERS:
+            if m is ALL:
+                _m = {i for i in range(slave_cnt)}
+            else:
+                _m = set()
+                for si, s in enumerate(m):
+                    if s:
+                        _m.add(si)
+            masters.append(_m)
+        return masters
+
+    @classmethod
+    def _assert_non_overlapping(cls, slaves):
+        offset = 0
+        slaves = sorted(slaves, key=lambda x: x[0])
+        for addr, size in slaves:
+            assert addr >= offset, (addr, size)
+            offset = addr + offset
+
+    @classmethod
+    def _extract_separable_group(cls, mi: int, seen_m: Set[int],
+                                 masters_connected_to: List[Set[int]],
+                                 slaves_connected_to: List[Set[int]]):
+        """
+        Transitive enclosure of master/stalave ports on connected relation
+        (Extract a group of all ports which are somehow connected
+         to each other)
+        """
+        m_to_search = [mi, ]
+        g_m = set()
+        g_s = set()
+        while m_to_search:
+            mi = m_to_search.pop()
+            if mi in seen_m:
+                continue
+            g_m.add(mi)
+            seen_m.add(mi)
+            slvs = masters_connected_to[mi]
+            g_s.update(slvs)
+            for s in slvs:
+                m_to_search.extend(slaves_connected_to[s])
+
+        if len(g_m) == 0 and len(g_s) == 0:
+            return None
+        else:
+            return (g_m, g_s)
+
+    @classmethod
+    def _extract_separable_groups(cls, MASTERS, SLAVES):
+        """
+        Extract the groups of slaves/master with special properties
+
+        special cases (M:S):
+        1:1, 1:N, N:1, N:M
+        """
+        masters_connected_to = MASTERS
+        slaves_connected_to = [set() for _ in SLAVES]
+        for mi, slvs in enumerate(masters_connected_to):
+            for si in slvs:
+                slaves_connected_to[si].add(mi)
+
+        for si, mstrs in enumerate(slaves_connected_to):
+            if not mstrs:
+                raise AssertionError(
+                    "Slave %d can not communcate with any master" % si)
+        for mi, slvs in enumerate(slaves_connected_to):
+            if not slvs:
+                raise AssertionError(
+                    "Maser %d can not communcate with any master" % mi)
+
+        seen_m = set()
+        groups = []
+        for mi in range(len(masters_connected_to)):
+            g = cls._extract_separable_group(mi, seen_m,
+                                             masters_connected_to,
+                                             slaves_connected_to)
+            if g is not None:
+                groups.append(g)
+
+        return groups
+
+
+def apply_name(unit_instance, sig, name):
+    s = unit_instance._sig(name, sig._dtype)
+    s(sig)
+    return s
+
+
+class AxiInterconnectCommon(Unit):
+
+    def __init__(self, axi_cls):
+        self.AXI_CLS = axi_cls
+        super(AxiInterconnectCommon, self).__init__()
+
+    def _config(self):
+        self.MAX_TRANS_OVERLAP = Param(16)
+        self.SLAVES = Param([])
+        self.MASTERS = Param([])
+        self.AXI_CLS._config(self)
+
+    def _init_config_flags(self):
+        # flag that tells if each master should track the order of request so it
+        # can collect the data in same order
+        self.REQUIRED_ORDER_SYNC_S_FOR_M = len(self.SLAVES) > 1
+        # flag which tells if each slave should track the origin of the request
+        # so it later knows where to send the data
+        self.REQUIRED_ORDER_SYNC_M_FOR_S = len(self.MASTERS) > 1
+
+    def _declr(self, has_r=True, has_w=True):
+        addClkRstn(self)
+        with self._paramsShared():
+            self.master = HObjList([self.AXI_CLS() for _ in self.MASTERS])
+
+        with self._paramsShared(exclude=({}, {"ADDR_WIDTH"})):
+            self.slave = HObjList([self.AXI_CLS()._m() for _ in self.SLAVES])
+
+        for i in chain(self.master, self.slave):
+            i.HAS_W = has_w
+            i.HAS_R = has_r
+
+        for s, (_, size) in zip(self.slave, self.SLAVES):
+            s.ADDR_WIDTH = log2ceil(size - 1)

@@ -3,6 +3,7 @@
 
 from unittest import TestLoader, TextTestRunner, TestSuite
 
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import \
@@ -16,7 +17,8 @@ from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointMemMasterTC
 from hwtLib.amba.axiLite_comp.reg_test import AxiRegTC
 from hwtLib.amba.axi_ag_test import Axi_ag_TC
-from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC, Axi3_rDatapumpTC
+from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC,\
+    Axi3_rDatapumpTC
 from hwtLib.amba.axi_comp.axi4_streamToMem_test import Axi4_streamToMemTC
 from hwtLib.amba.axi_comp.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
@@ -32,6 +34,15 @@ from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
     AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC, \
     AxiS_resizer_upAndDown_TC
 from hwtLib.amba.axis_comp.storedBurst_test import AxiSStoredBurstTC
+from hwtLib.amba.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC,\
+    AxiInterconnectMatrixAddrCrossbar_1to3TC, AxiInterconnectMatrixAddrCrossbar_3to1TC,\
+    AxiInterconnectMatrixAddrCrossbar_3to3TC
+from hwtLib.amba.interconnect.matrixCrossbar_test import AxiInterconnectMatrixCrossbar_1to1TC,\
+    AxiInterconnectMatrixCrossbar_1to3TC, AxiInterconnectMatrixCrossbar_3to1TC,\
+    AxiInterconnectMatrixCrossbar_3to3TC
+from hwtLib.amba.interconnect.matrixR_test import AxiInterconnectMatrixR_1to1TC,\
+    AxiInterconnectMatrixR_1to3TC, AxiInterconnectMatrixR_3to1TC,\
+    AxiInterconnectMatrixR_3to3TC
 from hwtLib.amba.interconnect.rStrictOrder_test import \
     RStrictOrderInterconnectTC
 from hwtLib.amba.interconnect.wStrictOrderComplex_test import \
@@ -70,6 +81,7 @@ from hwtLib.examples.hierarchy.simpleSubunit_test import SimpleSubunitTC
 from hwtLib.examples.hierarchy.unitToUnitConnection import \
     UnitToUnitConnectionTC
 from hwtLib.examples.hierarchy.unitWrapper_test import UnitWrapperTC
+from hwtLib.examples.mem.bram_wire import BramWireTC
 from hwtLib.examples.mem.ram_test import RamResourcesTC, \
     SimpleAsyncRamTC, SimpleSyncRamTC
 from hwtLib.examples.mem.reg_test import DRegTC, RegSerializationTC, \
@@ -177,8 +189,9 @@ from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
-from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.examples.mem.bram_wire import BramWireTC
+from hwtLib.amba.interconnect.matrixW_test import AxiInterconnectMatrixW_3to3TC,\
+    AxiInterconnectMatrixW_3to1TC, AxiInterconnectMatrixW_1to3TC,\
+    AxiInterconnectMatrixW_1to1TC
 
 
 # from hwtLib.peripheral.i2c.i2cAgent_test import I2cAgent_TC
@@ -366,6 +379,26 @@ suite = testSuiteFromTCs(
     WStrictOrderInterconnectTC,
     WStrictOrderInterconnect2TC,
     WStrictOrderInterconnectComplexTC,
+
+    AxiInterconnectMatrixAddrCrossbar_1to1TC,
+    AxiInterconnectMatrixAddrCrossbar_1to3TC,
+    AxiInterconnectMatrixAddrCrossbar_3to1TC,
+    AxiInterconnectMatrixAddrCrossbar_3to3TC,
+
+    AxiInterconnectMatrixCrossbar_1to1TC,
+    AxiInterconnectMatrixCrossbar_1to3TC,
+    AxiInterconnectMatrixCrossbar_3to1TC,
+    AxiInterconnectMatrixCrossbar_3to3TC,
+
+    AxiInterconnectMatrixR_1to1TC,
+    AxiInterconnectMatrixR_1to3TC,
+    AxiInterconnectMatrixR_3to1TC,
+    AxiInterconnectMatrixR_3to3TC,
+
+    AxiInterconnectMatrixW_1to1TC,
+    AxiInterconnectMatrixW_1to3TC,
+    AxiInterconnectMatrixW_3to1TC,
+    AxiInterconnectMatrixW_3to3TC,
 
     Axi_ag_TC,
     Axi4_streamToMemTC,
