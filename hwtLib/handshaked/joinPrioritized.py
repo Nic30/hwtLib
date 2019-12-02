@@ -49,7 +49,7 @@ class HsJoinPrioritized(HandshakedCompBase):
         vld = self.get_valid_signal
         dout = self.dataOut
 
-        vldSignals = list(map(vld, self.dataIn))
+        vldSignals = [vld(d) for d in self.dataIn]
 
         # data out mux
         dataCases = []

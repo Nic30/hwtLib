@@ -8,16 +8,17 @@ from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi_comp.axi_datapump_intf import AxiWDatapumpIntf
-from hwtLib.amba.interconnect.axiInterconnectbase import AxiInterconnectBase
+from hwtLib.amba.interconnect.base import AxiInterconnectBase
 from hwtLib.handshaked.fifo import HandshakedFifo
 
 
 @serializeParamsUniq
 class WStrictOrderInterconnect(AxiInterconnectBase):
     """
-    Strict order interconnect for AxiWDatapumpIntf
-    ensures that response on request is delivered to driver which asked for it while transactions can overlap
-    
+    Strict order interconnect for AxiWDatapumpIntf (N-to-1)
+    ensures that response on request is delivered to driver which asked for it
+    while transactions can overlap
+
     .. hwt-schematic::
     """
 
@@ -50,8 +51,7 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
         fWOut = self.orderInfoFifoW.dataOut
         fAckIn = self.orderInfoFifoAck.dataIn
 
-        driversW = list(map(lambda d: d.w,
-                            self.drivers))
+        driversW = [d.w for d in self.drivers]
 
         selectedDriverVld = self._sig("selectedDriverWVld")
         selectedDriverVld(Or(*map(lambda d: fWOut.data._eq(d[0]) & d[1].valid,
@@ -94,8 +94,7 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
     def ackHandler(self):
         ack = self.wDatapump.ack
         fAckOut = self.orderInfoFifoAck.dataOut
-        driversAck = list(map(lambda d: d.ack,
-                              self.drivers))
+        driversAck = [d.ack for d in self.drivers]
 
         selectedDriverAckReady = self._sig("selectedDriverAckReady")
         selectedDriverAckReady(Or(*map(lambda d: fAckOut.data._eq(d[0]) & d[1].rd,

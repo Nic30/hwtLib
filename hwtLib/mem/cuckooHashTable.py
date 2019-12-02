@@ -10,12 +10,12 @@ from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import VectSignal, HandshakeSync
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
+from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.streamNode import StreamNode
+from hwtLib.logic.crcPoly import CRC_32, CRC_32C
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf
-from hwtLib.logic.crcPoly import CRC_32, CRC_32C
-from hwt.synthesizer.hObjList import HObjList
 from pycocotb.hdlSimulator import HdlSimulator
 
 
@@ -194,7 +194,7 @@ class CuckooHashTable(HashTableCore):
         # or where is place)
         targetOH = self._reg("targetOH", Bits(self.TABLE_CNT))
 
-        res = list(map(lambda t: t.lookupRes, tables))
+        res = [t.lookupRes for t in tables]
         # synchronize all lookupRes from all tables
         StreamNode(masters=res).sync(resAck)
 
@@ -203,8 +203,8 @@ class CuckooHashTable(HashTableCore):
         # should be swapped with
         lookupResAck = StreamNode(masters=map(
             lambda t: t.lookupRes, tables)).ack()
-        insertFoundOH = list(map(lambda t: t.lookupRes.found, tables))
-        isEmptyOH = list(map(lambda t: ~t.lookupRes.occupied, tables))
+        insertFoundOH = [t.lookupRes.found for t in tables]
+        isEmptyOH = [~t.lookupRes.occupied for t in tables]
         _insertFinal = Or(*insertFoundOH, *isEmptyOH)
 
         If(resRead & lookupResAck,
