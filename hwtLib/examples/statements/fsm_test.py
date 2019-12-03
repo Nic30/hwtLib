@@ -74,9 +74,9 @@ BEGIN
                 st_next <= st;
             END IF;
         WHEN OTHERS =>
-            IF (a AND NOT b) = '1' THEN
+            IF (a AND (NOT b)) = '1' THEN
                 st_next <= a_0;
-            ELSIF (NOT a AND b) = '1' THEN
+            ELSIF ((NOT a) AND b) = '1' THEN
                 st_next <= b_0;
             ELSE
                 st_next <= st;

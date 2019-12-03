@@ -69,7 +69,7 @@ BEGIN
     END PROCESS;
 
     fitted <= STD_LOGIC_VECTOR(a(15 DOWNTO 0));
-    g <= (a(1) AND b(1)) & (a(0) XOR b(0) OR a(1)) & STD_LOGIC_VECTOR(a(5 DOWNTO 0));
+    g <= (a(1) AND b(1)) & ((a(0) XOR b(0)) OR a(1)) & STD_LOGIC_VECTOR(a(5 DOWNTO 0));
     assig_process_h: PROCESS (a, r)
     BEGIN
         IF a(2) = '1' THEN
@@ -111,7 +111,7 @@ BEGIN
     r_next_1 <= r_0;
     assig_process_r_next_1: PROCESS (e, r)
     BEGIN
-        IF NOT r = '1' THEN
+        IF (NOT r) = '1' THEN
             r_next <= e;
         ELSE
             r_next <= r;
