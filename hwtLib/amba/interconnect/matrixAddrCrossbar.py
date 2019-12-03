@@ -27,6 +27,8 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
         data is send on start of the transaction
     :ivar order_m_index_for_s_data_out: handshaked interface with index of master for each slave,
         data is send on start of the transaction
+
+    .. hwt-schematic:: example_AxiInterconnectMatrixAddrCrossbar
     """
 
     @staticmethod
@@ -290,5 +292,5 @@ def example_AxiInterconnectMatrixAddrCrossbar():
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    u = example_AxiInterconnectMatrixAddrMux()
+    u = example_AxiInterconnectMatrixAddrCrossbar()
     print(toRtl(u))
