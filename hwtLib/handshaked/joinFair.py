@@ -104,9 +104,9 @@ class HsJoinFairShare(HsJoinPrioritized):
 
     def _impl(self):
         if self.EXPORT_SELECTED:
-            selectedOneHot = None
-        else:
             selectedOneHot = self.selectedOneHot
+        else:
+            selectedOneHot = None
         
         rd = self.get_ready_signal
         vld = self.get_valid_signal
