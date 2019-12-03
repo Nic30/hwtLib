@@ -42,8 +42,7 @@ class AxiInterconnectUtils():
                                  slaves_connected_to: List[Set[int]]):
         """
         Transitive enclosure of master/stalave ports on connected relation
-        (Extract a group of all ports which are somehow connected
-         to each other)
+        (Extract a group of all ports which are somehow connected to each other)
         """
         m_to_search = [mi, ]
         g_m = set()
