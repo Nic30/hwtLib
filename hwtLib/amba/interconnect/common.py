@@ -1,12 +1,13 @@
+from itertools import chain
 from typing import Set, List
 
 from hwt.code import log2ceil
+from hwt.hdl.constants import READ_WRITE, READ, WRITE
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axi4 import Axi4
-from itertools import chain
+
 
 ALL = "ALL"
 
@@ -19,13 +20,25 @@ class AxiInterconnectUtils():
         masters = []
         for m in MASTERS:
             if m is ALL:
-                _m = {i for i in range(slave_cnt)}
+                new_master_config = {
+                    (i, READ_WRITE)
+                    for i in range(slave_cnt)
+                }
             else:
-                _m = set()
-                for si, s in enumerate(m):
-                    if s:
-                        _m.add(si)
-            masters.append(_m)
+                new_master_config = set()
+                for s in m:
+                    if isinstance(s, int):
+                        access = READ_WRITE
+                    else:
+                        s, access = s
+
+                    assert s >= 0 and s < slave_cnt
+                    assert access in [READ_WRITE, READ, WRITE], access
+
+                    new_master_config.add((s, access))
+
+            masters.append(new_master_config)
+
         return masters
 
     @classmethod
@@ -64,27 +77,29 @@ class AxiInterconnectUtils():
             return (g_m, g_s)
 
     @classmethod
-    def _extract_separable_groups(cls, MASTERS, SLAVES):
+    def _extract_separable_groups(cls, MASTERS, SLAVES, access_type):
         """
-        Extract the groups of slaves/master with special properties
-
-        special cases (M:S):
-        1:1, 1:N, N:1, N:M
+        Try to find independent subgraphs in conected master-slave ports
+        on R/W channel separately
+        
+        :param access_type: READ or WRITE
         """
-        masters_connected_to = MASTERS
+        masters_connected_to = [{_m[0] for _m in m
+                                 if _m[1] == access_type or _m[1] == READ_WRITE}
+                                 for m in MASTERS]
         slaves_connected_to = [set() for _ in SLAVES]
         for mi, slvs in enumerate(masters_connected_to):
             for si in slvs:
                 slaves_connected_to[si].add(mi)
 
-        for si, mstrs in enumerate(slaves_connected_to):
-            if not mstrs:
-                raise AssertionError(
-                    "Slave %d can not communcate with any master" % si)
-        for mi, slvs in enumerate(slaves_connected_to):
-            if not slvs:
-                raise AssertionError(
-                    "Maser %d can not communcate with any master" % mi)
+        #for si, mstrs in enumerate(slaves_connected_to):
+        #    if not mstrs:
+        #        raise AssertionError(
+        #            "Slave %d can not communcate with any master" % si)
+        #for mi, slvs in enumerate(slaves_connected_to):
+        #    if not slvs:
+        #        raise AssertionError(
+        #            "Maser %d can not communcate with any master" % mi)
 
         seen_m = set()
         groups = []
