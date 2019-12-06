@@ -25,7 +25,13 @@ class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):
     def setUp(self):
         SingleUnitSimTestCase.setUp(self)
         u = self.u
-        self.memory = [Axi3DenseMem(u.clk, axiAR=s.ar, axiR=s.r)
+        self.memory = [Axi3DenseMem(u.clk,
+                                    axiAR=getattr(s, "ar", None),
+                                    axiR=getattr(s, "r", None),
+                                    axiAW=getattr(s, "aw", None),
+                                    axiW=getattr(s, "w", None),
+                                    axiB=getattr(s, "b", None),
+                                    )
                        for s in u.slave]
 
     def randomize_all(self):

@@ -1,16 +1,17 @@
 from itertools import chain
 
 from hwt.code import log2ceil
+from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi4 import Axi4
+from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC
 from hwtLib.amba.interconnect.matrixCrossbar_test import AxiInterconnectMatrixCrossbar_1to1TC
 from hwtLib.amba.interconnect.matrixW import AxiInterconnectMatrixW
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
-from pycocotb.agents.clk import DEFAULT_CLOCK
-from hwt.pyUtils.arrayQuery import iter_with_last
 from pyMathBitPrecise.bit_utils import mask
-from hwtLib.amba.constants import RESP_OKAY
+from pycocotb.agents.clk import DEFAULT_CLOCK
+from hwtLib.amba.interconnect.matrixR_test import AxiInterconnectMatrixR_1to1TC
 
 
 class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):
@@ -27,10 +28,7 @@ class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):
         return u
 
     def setUp(self):
-        SingleUnitSimTestCase.setUp(self)
-        u = self.u
-        self.memory = [Axi3DenseMem(u.clk, axiAW=s.aw, axiW=s.w, axiB=s.b)
-                       for s in u.slave]
+        AxiInterconnectMatrixR_1to1TC.setUp(self)
 
     def randomize_all(self):
         u = self.u
@@ -42,6 +40,7 @@ class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):
         self.randomize_all()
 
         self.runSim(10 * DEFAULT_CLOCK)
+
         for i in chain(u.master, u.slave):
             self.assertEmpty(i.aw._ag.data)
             self.assertEmpty(i.w._ag.data)
@@ -163,18 +162,18 @@ class AxiInterconnectMatrixW_3to3TC(AxiInterconnectMatrixW_1to1TC):
     @classmethod
     def getUnit(cls):
         cls.u = u = AxiInterconnectMatrixW(Axi4)
-        u.MASTERS = [{0, 1}, {0, 1}]
+        # u.MASTERS = [{0, 1}, {0, 1}]
+        # u.SLAVES = [
+        #     (0x0000, 0x1000),
+        #     (0x1000, 0x1000),
+        # ]
+
+        u.MASTERS = [{0, 1, 2}, {0, 1, 2}, {0, 1, 2}]
         u.SLAVES = [
             (0x0000, 0x1000),
             (0x1000, 0x1000),
+            (0x2000, 0x1000),
         ]
-
-        #u.MASTERS = [{0, 1, 2}, {0, 1, 2}, {0, 1, 2}]
-        # u.SLAVES = [
-        #    (0x0000, 0x1000),
-        #    (0x1000, 0x1000),
-        #    (0x2000, 0x1000),
-        #]
         u.ADDR_WIDTH = log2ceil(0x4000 - 1)
         return u
 
