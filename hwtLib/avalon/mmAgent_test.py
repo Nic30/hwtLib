@@ -5,10 +5,11 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 
 from hwtLib.avalon.mm import AvalonMM
+from pycocotb.constants import CLK_PERIOD
 
 
 class AvalonMmWire(Unit):
@@ -22,13 +23,13 @@ class AvalonMmWire(Unit):
         self.dataOut(self.dataIn)
 
 
-class AvalonMmAgentTC(SimTestCase):
-    CLK = 10 * Time.ns
+class AvalonMmAgentTC(SingleUnitSimTestCase):
+    CLK = CLK_PERIOD
 
-    def setUp(self):
-        SimTestCase.setUp(self)
-        self.u = AvalonMmWire()
-        self.prepareUnit(self.u)
+    @classmethod
+    def getUnit(cls):
+        cls.u = AvalonMmWire()
+        return cls.u
 
     def test_nop(self):
         u = self.u

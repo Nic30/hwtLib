@@ -3,17 +3,18 @@
 
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.logic.crcPoly import CRC_32 
+from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.logic.crc import Crc
-
-from binascii import crc32, crc_hqx
+# , crc_hqx
+from binascii import crc32
 # crc32 input reflected, result reflected,
 # poly 0x4C11DB7, init 0xFFFFFFFF, final 0xFFFFFFFF
 
-from hwt.bitmask import mask  # , selectBit
 from hwt.hdl.typeShortcuts import vec
 from hwtLib.logic.crcComb_test import stoi
 from hwt.pyUtils.arrayQuery import grouper
+from pyMathBitPrecise.bit_utils import mask
+import sys
 
 
 def pr(name, val):
@@ -49,15 +50,15 @@ class CrcTC(SimTestCase):
         self.POLY_WIDTH = poly.WIDTH
 
         u = self.u = Crc()
-        u.INIT.set(vec(initval, poly.WIDTH))
-        u.DATA_WIDTH.set(dataWidth)
-        u.REFIN.set(refin)
-        u.REFOUT.set(refout)
-        u.POLY_WIDTH.set(poly.WIDTH)
-        u.POLY.set(vec(poly.POLY, poly.WIDTH))
-        u.XOROUT.set(vec(finxor, poly.WIDTH))
+        u.INIT = vec(initval, poly.WIDTH)
+        u.DATA_WIDTH = dataWidth
+        u.REFIN = refin
+        u.REFOUT = refout
+        u.POLY_WIDTH = poly.WIDTH
+        u.POLY = vec(poly.POLY, poly.WIDTH)
+        u.XOROUT = vec(finxor, poly.WIDTH)
 
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         return u
 
     def test_works_with_any_data_width(self):
@@ -114,7 +115,13 @@ class CrcTC(SimTestCase):
         self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
 
     def test_CRC32_wide_dual_0(self):
-        u = self.setUpCrc(CRC_32, dataWidth=32 * 8)
+        rec_limit = sys.getrecursionlimit()
+        # because there is too much of nested operators in this very large xor tree
+        sys.setrecursionlimit(1500)
+        try:
+            u = self.setUpCrc(CRC_32, dataWidth=32 * 8)
+        finally:
+            sys.setrecursionlimit(rec_limit)
         u.dataIn._ag.data.extend([0, 0])
         self.runSim(50 * Time.ns)
         out = int(u.dataOut._ag.data[-1])

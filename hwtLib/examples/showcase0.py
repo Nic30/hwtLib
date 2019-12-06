@@ -109,18 +109,18 @@ class Showcase0(Unit):
         # it is possible to create signal explicitly by calling ._sig method
         # result of every operator is signal
         const_private_signal = self._sig("const_private_signal",
-                                         dtype=uint32_t, defVal=123)
+                                         dtype=uint32_t, def_val=123)
         self.contOut(const_private_signal)
 
         # this signal will be optimized out because it has no effect on any output
         # self.d will remain because it is part of interface
-        self._sig("optimizedOut", dtype=uint32_t, defVal=123)
+        self._sig("optimizedOut", dtype=uint32_t, def_val=123)
 
         # by _reg function usual d-register can be instantiated
         # to be able to use this this unit has to have clock defined 
         # (you can force any signal as clock if you call self._ctx._reg directly)
         # default type is BIT
-        r = self._reg("r", defVal=0)
+        r = self._reg("r", def_val=0)
 
         # HDL If statement is object
         # ~ is negation operator
@@ -168,15 +168,15 @@ class Showcase0(Unit):
         # all statements like If, Switch, For and others are in hwt.code
 
         # names of generated signals are patched to avoid collisions automatically
-        r0 = self._reg("r", Bits(2), defVal=0)
-        r1 = self._reg("r", Bits(2), defVal=0)
+        r0 = self._reg("r", Bits(2), def_val=0)
+        r1 = self._reg("r", Bits(2), def_val=0)
 
         r0(self.i)
         r1(r0)
 
         # type of signal can be array as well, this allow to create memories like BRAM...
         # rom will be synchronous ROM in this case
-        rom = self._sig("rom", uint8_t[4], defVal=[i for i in range(4)])
+        rom = self._sig("rom", uint8_t[4], def_val=[i for i in range(4)])
 
         If(self.clk._onRisingEdge(),
            self.j(rom[r1])
@@ -184,7 +184,7 @@ class Showcase0(Unit):
 
         self.out(0)
         # None is converted to value with zero validity mask
-        # same as self.output._dtype.fromPy(0, vldMask=0)
+        # same as self.output._dtype.from_py(0, vld_mask=0)
         self.output(None)
 
         # statements are code-generator frendly

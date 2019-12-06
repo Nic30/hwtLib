@@ -8,9 +8,10 @@ from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.agents.rdSynced import RdSyncedAgent
 from hwt.interfaces.std import Signal, RdSynced, VectSignal
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 from hwtLib.peripheral.i2c.intf import I2c
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 NOP, START, STOP, READ, WRITE = range(5)
@@ -33,24 +34,24 @@ class I2cBitCntrlCmd(RdSynced):
         self.cmd = VectSignal(log2ceil(5))
         self.rd = Signal(masterDir=DIRECTION.IN)
 
-    def _initSimAgent(self):
-        self._ag = I2cBitCntrlCmdAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = I2cBitCntrlCmdAgent(sim, self)
 
 
 class I2cBitCntrlCmdAgent(RdSyncedAgent):
-    def doRead(self, s):
-        """extract data from interface"""
-        return (s.read(self.intf.cmd), s.read(self.intf.din))
 
-    def doWrite(self, s, data):
+    def get_data(self):
+        """extract data from interface"""
+        return (self.intf.cmd.read(), self.intf.din.read())
+
+    def set_data(self, data):
         """write data to interface"""
-        w = s.write
         if data is None:
             cmd, d = None, None
         else:
             cmd, d = data
-        w(d, self.intf.din)
-        w(cmd, self.intf.cmd)
+        self.intf.din.write(d)
+        self.intf.cmd.write(cmd)
 
 
 class I2cMasterBitCtrl(Unit):
@@ -107,18 +108,19 @@ class I2cMasterBitCtrl(Unit):
     def stateClkGen(self, scl_sync, scl_t, scl):
         # whenever the slave is not ready it can delay the cycle by pulling SCL low
         # delay scl_oen
-        delayedScl_t = self._reg("delayedScl_t", defVal=1)
+        delayedScl_t = self._reg("delayedScl_t", def_val=1)
         delayedScl_t(scl_t)
 
-        # slave_wait is asserted when master wants to drive SCL high, but the slave pulls it low
+        # slave_wait is asserted when master wants to drive SCL high,
+        # but the slave pulls it low
         # slave_wait remains asserted until the slave releases SCL
-        slave_wait = self._reg("slave_wait", defVal=0)
+        slave_wait = self._reg("slave_wait", def_val=0)
         slave_wait((~scl_t & delayedScl_t & ~scl) | (slave_wait & ~scl))
 
         clkCntr = self._reg("clkCntr",
                             Bits(self.CLK_CNTR_WIDTH, False),
-                            defVal=self.clk_cnt_initVal)
-        stateClkEn = self._reg("stateClkEn", defVal=1)
+                            def_val=self.clk_cnt_initVal)
+        stateClkEn = self._reg("stateClkEn", def_val=1)
 
         If(clkCntr._eq(0) | scl_sync,
            clkCntr(self.clk_cnt_initVal),
@@ -134,7 +136,7 @@ class I2cMasterBitCtrl(Unit):
 
     def filter(self, name, sig):
         """attempt to remove glitches"""
-        filter0 = self._reg(name + "_filter0", dtype=Bits(2), defVal=0)
+        filter0 = self._reg(name + "_filter0", dtype=Bits(2), def_val=0)
         filter0(filter0[0]._concat(sig))
 
         # let filter_cnt to be shared between filters
@@ -143,14 +145,14 @@ class I2cMasterBitCtrl(Unit):
         except AttributeError:
             filter_clk_cntr = self.filter_clk_cntr = self._reg("filter_clk_cntr",
                                                                Bits(self.CLK_CNTR_WIDTH),
-                                                               defVal=self.clk_cnt_initVal)
+                                                               def_val=self.clk_cnt_initVal)
             If(filter_clk_cntr._eq(0),
                filter_clk_cntr(self.clk_cnt_initVal)
             ).Else(
                filter_clk_cntr(filter_clk_cntr - 1)
             )
 
-        filter1 = self._reg(name + "_filter1", dtype=Bits(3), defVal=0b111)
+        filter1 = self._reg(name + "_filter1", dtype=Bits(3), def_val=0b111)
         If(filter_clk_cntr._eq(0),
            filter1(Concat(filter1[2:], filter0[1]))
         )
@@ -164,8 +166,8 @@ class I2cMasterBitCtrl(Unit):
         """
         :attention: also dout driver
         """
-        lastScl = self._reg("lastScl", defVal=1)
-        lastSda = self._reg("lastSda", defVal=1)
+        lastScl = self._reg("lastScl", def_val=1)
+        lastSda = self._reg("lastSda", def_val=1)
 
         startCond = hasFallen(lastSda, sda) & scl
         stopCond = hasRisen(lastSda, sda) & scl
@@ -173,7 +175,7 @@ class I2cMasterBitCtrl(Unit):
         lastScl(scl)
         lastSda(sda)
 
-        dout = self._reg("doutReg", defVal=0)
+        dout = self._reg("doutReg", def_val=0)
         dout(hasRisen(lastScl, scl))
         self.dout(dout)
 
@@ -191,8 +193,8 @@ class I2cMasterBitCtrl(Unit):
         2) stop detected while not requested (detect during 'idle' state)
         """
 
-        al = self._reg("al", defVal=0)
-        cmd_stop = self._reg("cmd_stop", defVal=0)
+        al = self._reg("al", def_val=0)
+        cmd_stop = self._reg("cmd_stop", def_val=0)
         If(stateClkEn,
            cmd_stop(self.cntrl.cmd._eq(STOP))
         )
@@ -222,9 +224,9 @@ class I2cMasterBitCtrl(Unit):
         st = fsm.stateReg
 
         # check SDA status (multi-master arbitration)
-        sda_chk = self._reg("sda_chk", defVal=0)
-        scl_t = self._reg("scl_t", defVal=0)
-        sda_t = self._reg("sda_t", defVal=0)
+        sda_chk = self._reg("sda_chk", def_val=0)
+        scl_t = self._reg("scl_t", def_val=0)
+        sda_t = self._reg("sda_t", def_val=0)
 
         scl = self.filter("scl", self.i2c.scl.i)
         sda = self.filter("sda", self.i2c.sda.i)

@@ -25,12 +25,12 @@ class AxiLite2Ipif(BusBridge):
         addClkRstn(self)
 
         with self._paramsShared():
-            self.s = Axi4Lite()
-            self.m = Ipif()._m()
+            self.m = Axi4Lite()
+            self.s = Ipif()._m()
 
     def handleResp(self):
-        ipif = self.m
-        axi = self.s
+        ipif = self.s
+        axi = self.m
         resp = self._sig("resp", axi.r.resp._dtype)
         respTmp = self._sig("respTmp", resp._dtype)
         respReg = self._reg("respReg", resp._dtype)
@@ -52,8 +52,8 @@ class AxiLite2Ipif(BusBridge):
 
     def handleAddr(self, st):
         st_t = st._dtype
-        ipif = self.m
-        axi = self.s
+        ipif = self.s
+        axi = self.m
 
         addr = self._reg("addr", axi.aw.addr._dtype)
         If(st._eq(st_t.idle),
@@ -66,8 +66,8 @@ class AxiLite2Ipif(BusBridge):
         ipif.bus2ip_addr(addr)
 
     def mainFsm(self, dataRegR_vld):
-        ipif = self.m
-        axi = self.s
+        ipif = self.s
+        axi = self.m
         st_t = HEnum("st_t", [
             "idle",
             "write", "write_wait_data", "write_ack",
@@ -101,11 +101,11 @@ class AxiLite2Ipif(BusBridge):
         return st
 
     def _impl(self) -> None:
-        ipif = self.m
-        axi = self.s
+        ipif = self.s
+        axi = self.m
         r = self._reg
 
-        dataRegR_vld = r("dataRegR_vld", defVal=0)
+        dataRegR_vld = r("dataRegR_vld", def_val=0)
         st = self.mainFsm(dataRegR_vld)
         st_t = st._dtype
         self.handleResp()

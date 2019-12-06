@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import unittest
-
 from hwt.interfaces.std import VldSynced
+from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.vhdl.serializer import VhdlSerializer
+from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import toRtl
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.hObjList import HObjList
+import os
+import unittest
+from unittest import TestCase
+
 from hwtLib.amba.axis import AxiStream
 from hwtLib.examples.hierarchy.unitWrapper import UnitWrapper
-import os
+from hwtLib.tests.statementTrees import StatementTreesTC
 
 
 class ArrayIntfExample(Unit):
@@ -44,18 +46,24 @@ class UnitWithParams(Unit):
         self.dout(self.din)
 
 
-def readContent(fn):
-    with open(os.path.join(os.path.dirname(__file__), fn)) as f:
-        return f.read()
+
+class UnitWrapperTC(TestCase):
+
+    def assert_same_as_file(self, s, file_name: str):
+        THIS_DIR = os.path.dirname(os.path.realpath(__file__))
+        fn = os.path.join(THIS_DIR, file_name)
+        # with open(fn, "w") as f:
+        #     f.write(s)
+        with open(fn) as f:
+            ref_s = f.read()
+        StatementTreesTC.strStructureCmp(self, s, ref_s)
 
 
-class UnitWrapperTC(unittest.TestCase):
     def test_params_of_base_unit(self):
         u = UnitWithParams()
         w = UnitWrapper(u)
         s = toRtl(w, serializer=VhdlSerializer)
-        UnitWithParams_in_wrap_vhdl = readContent("UnitWithParams_in_wrap.vhd")
-        self.assertEqual(s, UnitWithParams_in_wrap_vhdl)
+        self.assert_same_as_file(s, "UnitWithParams_in_wrap.vhd")
 
     def test_interfaces(self):
         u = UnitWrapper(ArrayIntfExample())

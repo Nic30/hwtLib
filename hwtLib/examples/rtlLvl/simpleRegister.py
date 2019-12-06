@@ -34,7 +34,7 @@ ENTITY SimpleRegister IS
         s_in: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
         s_out: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
-END SimpleRegister;
+END ENTITY;
 
 ARCHITECTURE rtl OF SimpleRegister IS
     SIGNAL val: STD_LOGIC_VECTOR(7 DOWNTO 0) := X"00";
@@ -53,7 +53,7 @@ BEGIN
     END PROCESS;
 
     val_next <= s_in;
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 if __name__ == "__main__":
     netlist, interfaces = SimpleRegister()

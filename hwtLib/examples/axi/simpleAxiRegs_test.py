@@ -3,26 +3,25 @@
 
 import unittest
 
-from hwt.bitmask import mask
-from hwt.hdl.constants import Time
-from hwt.simulator.agentConnector import valuesToInts
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.examples.axi.simpleAxiRegs import SimpleAxiRegs
+from pyMathBitPrecise.bit_utils import mask
+from pycocotb.constants import CLK_PERIOD
 
 
 allMask = mask(32 // 8)
 
 
-class SimpleAxiRegsTC(SimTestCase):
-    def setUp(self):
-        super(SimpleAxiRegsTC, self).setUp()
-        self.u = SimpleAxiRegs()
-        self.prepareUnit(self.u)
+class SimpleAxiRegsTC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        return SimpleAxiRegs()
 
     def test_nop(self):
         u = self.u
 
-        self.runSim(250 * Time.ns)
+        self.runSim(25 * CLK_PERIOD)
 
         self.assertEmpty(u.axi._ag.r.data)
         self.assertEmpty(u.axi._ag.b.data)
@@ -33,7 +32,7 @@ class SimpleAxiRegsTC(SimTestCase):
 
         axi.w.data += [(11, allMask), (37, allMask)]
 
-        self.runSim(250 * Time.ns)
+        self.runSim(25 * CLK_PERIOD)
 
         self.assertEqual(len(axi.w.data), 2 - 1)
         self.assertEmpty(u.axi._ag.r.data)
@@ -46,17 +45,18 @@ class SimpleAxiRegsTC(SimTestCase):
         axi.aw.data += [(0, 0), (4, 0)]
         axi.w.data += [(11, allMask), (37, allMask)]
 
-        self.runSim(250 * Time.ns)
+        self.runSim(25 * CLK_PERIOD)
 
         self.assertEmpty(axi.aw.data)
         self.assertEmpty(axi.w.data)
         self.assertEmpty(u.axi._ag.r.data)
         self.assertEqual(len(u.axi._ag.b.data), 2)
 
-        model = self.model
+        model = self.rtl_simulator.model.io
 
-        self.assertEqual(valuesToInts([model.reg0._oldVal, model.reg1._oldVal]),
-                         [11, 37])
+        self.assertValSequenceEqual(
+            [model.reg0.val, model.reg1.val],
+            [11, 37])
 
 
 if __name__ == "__main__":

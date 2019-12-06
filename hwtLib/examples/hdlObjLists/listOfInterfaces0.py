@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.constants import Time
-from hwt.hdl.typeShortcuts import hInt
 from hwt.interfaces.std import VldSynced
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
@@ -22,12 +21,12 @@ class ListOfInterfacesSample0(Unit):
 
     def _config(self):
         self.DATA_WIDTH = Param(8)
-        self.LEN = hInt(3)
+        self.LEN = 3
 
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            L = int(self.LEN)
+            L = self.LEN
             self.a = HObjList(VldSynced() for _ in range(L))
             self.b = HObjList(VldSynced() for _ in range(L))._m()
 
@@ -47,12 +46,12 @@ class ListOfInterfacesSample0SliceOnly(Unit):
 
     def _config(self):
         self.DATA_WIDTH = Param(8)
-        self.LEN = hInt(3)
+        self.LEN = 3
 
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.a = HObjList(VldSynced() for _ in range(int(self.LEN)))
+            self.a = HObjList(VldSynced() for _ in range(self.LEN))
             self.b0 = VldSynced()._m()
             self.b1 = VldSynced()._m()
             self.b2 = VldSynced()._m()
@@ -72,7 +71,7 @@ class ListOfInterfacesSample0ConcatOnly(Unit):
     """
     def _config(self):
         self.DATA_WIDTH = Param(8)
-        self.LEN = hInt(3)
+        self.LEN = 3
 
     def _declr(self):
         addClkRstn(self)
@@ -80,7 +79,7 @@ class ListOfInterfacesSample0ConcatOnly(Unit):
             self.a0 = VldSynced()
             self.a1 = VldSynced()
             self.a2 = VldSynced()
-            self.b = HObjList(VldSynced() for _ in range(int(self.LEN)))._m()
+            self.b = HObjList(VldSynced() for _ in range(self.LEN))._m()
 
     def _impl(self):
         self.b[0](self.a0)
@@ -89,14 +88,9 @@ class ListOfInterfacesSample0ConcatOnly(Unit):
 
 
 class ListOfInterfacesSample0TC(SimTestCase):
-    def setUpUnit(self, unitCls):
-        SimTestCase.setUp(self)
-        self.u = unitCls()
-        self.prepareUnit(self.u)
-        return self.u
 
     def test_ListOfInterfacesSample0_simplePass(self):
-        u = self.setUpUnit(ListOfInterfacesSample0)
+        u = self.compileSimAndStart(ListOfInterfacesSample0())
 
         u.a[0]._ag.data.extend([1, 2, 3])
         u.a[1]._ag.data.extend([9])
@@ -112,7 +106,7 @@ class ListOfInterfacesSample0TC(SimTestCase):
         self.assertValSequenceEqual(u.b[2]._ag.data, [10, 11, 12, 13])
 
     def test_ListOfInterfacesSample0SliceOnly_simplePass(self):
-        u = self.setUpUnit(ListOfInterfacesSample0SliceOnly)
+        u = self.compileSimAndStart(ListOfInterfacesSample0SliceOnly())
 
         u.a[0]._ag.data.extend([1, 2, 3])
         u.a[1]._ag.data.extend([9])
@@ -128,7 +122,7 @@ class ListOfInterfacesSample0TC(SimTestCase):
         self.assertValSequenceEqual(u.b2._ag.data, [10, 11, 12, 13])
 
     def test_ListOfInterfacesSample0ConcatOnly_simplePass(self):
-        u = self.setUpUnit(ListOfInterfacesSample0ConcatOnly)
+        u = self.compileSimAndStart(ListOfInterfacesSample0ConcatOnly())
 
         u.a0._ag.data.extend([1, 2, 3])
         u.a1._ag.data.extend([9])

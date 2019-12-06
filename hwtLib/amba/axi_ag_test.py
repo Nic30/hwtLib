@@ -92,7 +92,7 @@ class Axi_ag_TC(SimTestCase):
     def test_axi4_ag(self):
         """Test if axi4 agent can transmit and receive data on all channels"""
         u = AxiTestJunction(Axi4)
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         N = 10
 
         aw = [self.randAxi4A() for _ in range(N)]
@@ -123,8 +123,8 @@ class Axi_ag_TC(SimTestCase):
     def test_axi3_withAddrUser_ag(self):
         """Test if axi3 agent can transmit and receive data on all channels"""
         u = AxiTestJunction(Axi3)
-        u.ADDR_USER_WIDTH.set(10)
-        self.prepareUnit(u)
+        u.ADDR_USER_WIDTH = 10
+        self.compileSimAndStart(u)
         N = 10
 
         aw = [self.randAxi3Au() for _ in range(N)]

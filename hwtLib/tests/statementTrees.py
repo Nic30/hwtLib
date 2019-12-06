@@ -81,7 +81,7 @@ class StatementTreesTC(unittest.TestCase):
         clk = n.sig('clk')
         rst = n.sig("rst")
 
-        st = n.sig('st', stT, clk=clk, syncRst=rst, defVal=stT.idle)
+        st = n.sig('st', stT, clk=clk, syncRst=rst, def_val=stT.idle)
         sd0 = n.sig('sd0')
         sd1 = n.sig('sd1')
         cntrlFifoVld = n.sig('ctrlFifoVld')
@@ -166,7 +166,7 @@ class StatementTreesTC(unittest.TestCase):
         clk = n.sig('clk')
         rst = n.sig("rst")
 
-        st = n.sig('st', stT, clk=clk, syncRst=rst, defVal=stT.idle)
+        st = n.sig('st', stT, clk=clk, syncRst=rst, def_val=stT.idle)
         sd0 = n.sig('sd0')
         sd1 = n.sig('sd1')
         cntrlFifoVld = n.sig('ctrlFifoVld')
@@ -259,7 +259,7 @@ class StatementTreesTC(unittest.TestCase):
         clk = n.sig('clk')
         rst = n.sig("rst")
 
-        st = n.sig('st', stT, clk=clk, syncRst=rst, defVal=stT.idle)
+        st = n.sig('st', stT, clk=clk, syncRst=rst, def_val=stT.idle)
         sd0 = n.sig('sd0')
         sd1 = n.sig('sd1')
         cntrlFifoVld = n.sig('ctrlFifoVld')

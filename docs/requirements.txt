@@ -1,6 +1,3 @@
-sphinx>=1.8.1
 sphinx_bootstrap_theme
 aafigure
-hwt>=2.6
-hwtGraph>=0.8
-sphinx-hwt>=1.6
+sphinx-hwt>=2.0

@@ -63,14 +63,14 @@ class StructWriter(StructReader):
                                  self._createInterfaceForField)
 
         s = self.set = Handshaked()  # data signal is addr of structure to write
-        s._replaceParam(s.DATA_WIDTH, self.ADDR_WIDTH)
+        s.DATA_WIDTH = self.ADDR_WIDTH
         # write ack from slave
         self.writeAck = HandshakeSync()._m()
 
         with self._paramsShared():
             # interface for communication with datapump
             self.wDatapump = AxiWDatapumpIntf()._m()
-            self.wDatapump.MAX_LEN.set(self.maxWordIndex() + 1)
+            self.wDatapump.MAX_LEN = self.maxWordIndex() + 1
 
         self.frameAssember = AxiS_frameForge(self._structT,
                                              tmpl=self._tmpl,
@@ -83,8 +83,8 @@ class StructWriter(StructReader):
 
         # multi frame
         ackPropageteInfo = HandshakedFifo(Handshaked)
-        ackPropageteInfo.DATA_WIDTH.set(1)
-        ackPropageteInfo.DEPTH.set(self.MAX_OVERLAP)
+        ackPropageteInfo.DATA_WIDTH = 1
+        ackPropageteInfo.DEPTH = self.MAX_OVERLAP
         self.ackPropageteInfo = ackPropageteInfo
         propagateClkRstn(self)
 

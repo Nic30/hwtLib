@@ -1,6 +1,7 @@
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VectSignal, Signal, HandshakeSync
 from hwt.synthesizer.param import Param
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 class InsertIntfAgent(HandshakedAgent):
@@ -8,46 +9,46 @@ class InsertIntfAgent(HandshakedAgent):
     Simulation agent for `.InsertIntf` interface
 
     data format:
-        * if interface has data signal, data format is tuple (hash, key, data, vldFlag)
-        * if interface does not have data signal, data format is tuple (hash, key, vldFlag)
+        * if interface has data signal,
+          data format is tuple (hash, key, data, vldFlag)
+        * if interface does not have data signal,
+          data format is tuple (hash, key, vldFlag)
     """
-    def __init__(self, intf):
-        HandshakedAgent.__init__(self, intf)
+    def __init__(self, sim: HdlSimulator, intf: "InsertIntf"):
+        HandshakedAgent.__init__(self, sim, intf)
         self.hasData = bool(intf.DATA_WIDTH)
 
-    def doRead(self, s):
-        r = s.read
+    def get_data(self):
         i = self.intf
-        _hash = r(i.hash)
-        key = r(i.key)
-        vldFlag = r(i.vldFlag)
+        _hash = i.hash.read()
+        key = i.key.read()
+        vldFlag = i.vldFlag.read()
 
         if self.hasData:
-            data = r(i.data)
+            data = i.data.read()
             return hash, key, data, vldFlag
         else:
             return hash, key, vldFlag
 
-    def doWrite(self, s, data):
-        w = s.write
+    def set_data(self, data):
         i = self.intf
 
         if data is None:
-            w(None, i.hash)
-            w(None, i.key)
+            i.hash.write(None)
+            i.key.write(None)
             if self.hasData:
-                w(None, i.data)
-            w(None, i.vldFlag)
+                i.data.write(None)
+            i.vldFlag.write(None)
         else:
             if self.hasData:
                 _hash, key, _data, vldFlag = data
-                w(_data, i.data)
+                i.data.write(_data)
             else:
                 _hash, key, vldFlag = data
 
-            w(_hash, i.hash)
-            w(key, i.key)
-            w(vldFlag, i.vldFlag)
+            i.hash.write(_hash)
+            i.key.write(key)
+            i.vldFlag.write(vldFlag)
 
 
 class InsertIntf(HandshakeSync):
@@ -65,34 +66,31 @@ class InsertIntf(HandshakeSync):
 
         self.vldFlag = Signal()
 
-    def _initSimAgent(self):
-        self._ag = InsertIntfAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = InsertIntfAgent(sim, self)
 
 
 class LookupKeyIntfAgent(HandshakedAgent):
     """
     Simulation agent for LookupKeyIntf interface
     """
-    def __init__(self, intf):
-        HandshakedAgent.__init__(self, intf)
+    def __init__(self, sim: HdlSimulator, intf: "LookupKeyIntf"):
+        HandshakedAgent.__init__(self, sim, intf)
         self.HAS_LOOKUP_ID = bool(intf.LOOKUP_ID_WIDTH)
 
-    def doRead(self, s):
+    def get_data(self):
         intf = self.intf
-        r = s.read
         if self.HAS_LOOKUP_ID:
-            return r(intf.lookup_id), r(intf.key)
-        return r(intf.key)
+            return intf.lookup_id.read(), intf.key.read()
+        return intf.key.read()
 
-    def doWrite(self, s, data):
+    def set_data(self, data):
         intf = self.intf
-        w = s.write
-
         if self.HAS_LOOKUP_ID:
             _id, _key = data
-            return w(_id, intf.lookup_id), w(_key, intf.key)
+            return intf.lookup_id.write(_id), intf.key.write(_key)
 
-        w(data, self.intf.key)
+        self.intf.key.write(data)
 
 
 class LookupKeyIntf(HandshakeSync):
@@ -106,8 +104,8 @@ class LookupKeyIntf(HandshakeSync):
             self.lookupId = VectSignal(self.LOOKUP_ID_WIDTH)
         self.key = VectSignal(self.KEY_WIDTH)
 
-    def _initSimAgent(self):
-        self._ag = LookupKeyIntfAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = LookupKeyIntfAgent(sim, self)
 
 
 class LookupResultIntfAgent(HandshakedAgent):
@@ -117,49 +115,47 @@ class LookupResultIntfAgent(HandshakedAgent):
     data format is tuple (hash, key, data, found) but some items
     can be missing depending on configuration of interface
     """
-    def __init__(self, intf):
-        HandshakedAgent.__init__(self, intf)
+    def __init__(self, sim, intf):
+        HandshakedAgent.__init__(self, sim, intf)
         self.hasHash = bool(intf.LOOKUP_HASH)
         self.hasKey = bool(intf.LOOKUP_KEY)
         self.hasData = bool(intf.DATA_WIDTH)
 
-    def doRead(self, s):
-        r = s.read
+    def get_data(self):
         d = []
         append = d.append
         intf = self.intf
 
         if self.hasHash:
-            append(r(intf.hash))
+            append(intf.hash.read())
 
         if self.hasKey:
-            append(r(intf.key))
+            append(intf.key.read())
 
         if self.hasData:
-            append(r(intf.data))
+            append(intf.data.read())
 
-        append(r(intf.found))
-        append(r(intf.occupied))
+        append(intf.found.read())
+        append(intf.occupied.read())
 
         return tuple(d)
 
-    def doWrite(self, s, data):
-        w = s.write
+    def set_data(self, data):
         intf = self.intf
 
         dIt = iter(data)
 
         if self.hasHash:
-            w(next(dIt), intf.hash)
+            intf.hash.write(next(dIt))
 
         if self.hasKey:
-            w(next(dIt), intf.key)
+            intf.key.write(next(dIt))
 
         if self.hasData:
-            w(next(dIt), intf.data)
+            intf.data.write(next(dIt))
 
-        w(next(dIt), intf.found)
-        w(next(dIt), intf.occupied)
+        intf.found.write(next(dIt))
+        intf.occupied.write(next(dIt))
 
         try:
             next(dIt)
@@ -207,6 +203,5 @@ class LookupResultIntf(Handshaked):
         self.found = Signal()
         self.occupied = Signal()
 
-    def _initSimAgent(self):
-        self._ag = LookupResultIntfAgent(self)
-
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = LookupResultIntfAgent(sim, self)

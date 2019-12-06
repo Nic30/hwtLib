@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -
 
-from hwt.bitmask import mask
 from hwt.code import If, Concat, connect, FsmBuilder, log2ceil
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
@@ -9,12 +8,13 @@ from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Handshaked, VectSignal, RegCntrl
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.axi_comp.axi_datapump_intf import AddrSizeHs, AxiWDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
-from hwt.synthesizer.vectorUtils import fitTo
+from pyMathBitPrecise.bit_utils import mask
 
 
 stT = HEnum("st_t", ["waitOnInput", "waitOnDataTx", "waitOnAck"])
@@ -32,14 +32,14 @@ class ArrayBuff_writer(Unit):
     [TODO] fully pipeline
 
     items -> buff -> internal logic -> axi datapump
-    
+
     .. hwt-schematic::
     """
 
     def _config(self):
         AddrSizeHs._config(self)
         self.ID = Param(3)
-        self.MAX_LEN.set(16)
+        self.MAX_LEN = 16
         self.SIZE_WIDTH = Param(16)
         self.BUFF_DEPTH = Param(16)
         self.TIMEOUT = Param(1024)
@@ -49,7 +49,7 @@ class ArrayBuff_writer(Unit):
         addClkRstn(self)
 
         self.items = Handshaked()
-        self.items.DATA_WIDTH.set(self.SIZE_WIDTH)
+        self.items.DATA_WIDTH = self.SIZE_WIDTH
 
         with self._paramsShared():
             self.wDatapump = AxiWDatapumpIntf()._m()
@@ -57,19 +57,19 @@ class ArrayBuff_writer(Unit):
         self.uploaded = VectSignal(16)._m()
 
         self.baseAddr = RegCntrl()
-        self.baseAddr.DATA_WIDTH.set(self.ADDR_WIDTH)
+        self.baseAddr.DATA_WIDTH = self.ADDR_WIDTH
 
         self.buff_remain = VectSignal(16)._m()
 
         b = HandshakedFifo(Handshaked)
-        b.DATA_WIDTH.set(self.SIZE_WIDTH)
-        b.EXPORT_SIZE.set(True)
-        b.DEPTH.set(self.BUFF_DEPTH)
+        b.DATA_WIDTH = self.SIZE_WIDTH
+        b.EXPORT_SIZE = True
+        b.DEPTH = self.BUFF_DEPTH
         self.buff = b
 
     def uploadedCntrHandler(self, st, reqAckHasCome, sizeOfitems):
         uploadedCntr = self._reg(
-            "uploadedCntr", self.uploaded._dtype, defVal=0)
+            "uploadedCntr", self.uploaded._dtype, def_val=0)
         self.uploaded(uploadedCntr)
 
         If(st._eq(stT.waitOnAck) & reqAckHasCome,
@@ -77,7 +77,7 @@ class ArrayBuff_writer(Unit):
         )
 
     def _impl(self):
-        ALIGN_BITS = log2ceil(self.DATA_WIDTH // 8 - 1).val
+        ALIGN_BITS = log2ceil(self.DATA_WIDTH // 8 - 1)
         TIMEOUT_MAX = self.TIMEOUT - 1
         ITEMS = self.ITEMS
         buff = self.buff
@@ -99,9 +99,9 @@ class ArrayBuff_writer(Unit):
 
         # offset in buffer and its complement
         offset_t = Bits(log2ceil(ITEMS + 1), signed=False)
-        offset = self._reg("offset", offset_t, defVal=0)
+        offset = self._reg("offset", offset_t, def_val=0)
         remaining = self._reg("remaining", Bits(
-            log2ceil(ITEMS + 1), signed=False), defVal=ITEMS)
+            log2ceil(ITEMS + 1), signed=False), def_val=ITEMS)
         connect(remaining, self.buff_remain, fit=True)
 
         addrTmp = self._sig("baseAddrTmp", baseAddr._dtype)
@@ -114,7 +114,8 @@ class ArrayBuff_writer(Unit):
 
         sizeTmp = self._sig("sizeTmp", buff.size._dtype)
 
-        assert req.len._dtype.bit_length() == buff.size._dtype.bit_length() - 1, (
+        assert (req.len._dtype.bit_length()
+                == buff.size._dtype.bit_length() - 1), (
             req.len._dtype.bit_length(), buff.size._dtype.bit_length())
 
         buffSizeAsLen = self._sig("buffSizeAsLen", buff.size._dtype)
@@ -141,7 +142,7 @@ class ArrayBuff_writer(Unit):
 
         # timeout logic
         timeoutCntr = self._reg("timeoutCntr", Bits(log2ceil(self.TIMEOUT), False),
-                                defVal=TIMEOUT_MAX)
+                                def_val=TIMEOUT_MAX)
         # buffer is full or timeout
         beginReq = buff.size._eq(self.BUFF_DEPTH) | timeoutCntr._eq(0)
         reqAckHasCome = self._sig("reqAckHasCome")
@@ -203,5 +204,5 @@ class ArrayBuff_writer(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
     u = ArrayBuff_writer()
-    u.TIMEOUT.set(32)
+    u.TIMEOUT = 32
     print(toRtl(u))

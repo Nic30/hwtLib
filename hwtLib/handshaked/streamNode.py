@@ -3,7 +3,7 @@ from hwt.hdl.typeShortcuts import hBit
 from hwt.pyUtils.arrayQuery import where
 
 
-def _getRd(intf):
+def _get_ready_signal(intf):
     try:
         return intf.rd
     except AttributeError:
@@ -11,7 +11,7 @@ def _getRd(intf):
     return intf.ready
 
 
-def _getVld(intf):
+def _get_valid_signal(intf):
     try:
         return intf.vld
     except AttributeError:
@@ -63,12 +63,14 @@ class StreamNode():
 
     :ivar masters: interfaces which are inputs into this node
     :ivar slaves: interfaces which are outputs of this node
-    :ivar extraConds: dict interface : extraConditionSignal
-        where extra conditions will be added to expression for channel enable
-        for master it means it will get ready only when extraConditionSignal
-        is 1 for slave it means it will not get valid only
-        when extraConditionSignal is 1 but all interfaces have to wait
-        on each other
+    :ivar extraConds: {dict interface : extraConditionSignal}
+        where extra conditions will be added to expression for channel enable.
+        For master it means it will obtain ready=1 only if extraConditionSignal
+        is 1.
+        For slave it means it will obtain valid=1 only
+        if extraConditionSignal is 1.
+        All interfaces have to wait on each other so if an extraCond!=1 it causes
+        blocking on all interfaces if not overriden by skipWhen.
     :ivar skipWhen: dict interface : skipSignal
         where if skipSignal is high interface is disconnected from stream
         sync node and others does not have to wait on it
@@ -127,7 +129,7 @@ class StreamNode():
             if isinstance(m, ExclusiveStreamGroups):
                 a = m.sync(r)
             else:
-                a = [_getRd(m)(r), ]
+                a = [_get_ready_signal(m)(r), ]
 
             expression.extend(a)
 
@@ -140,7 +142,7 @@ class StreamNode():
             if isinstance(s, ExclusiveStreamGroups):
                 a = s.sync(v)
             else:
-                a = [_getVld(s)(v), ]
+                a = [_get_valid_signal(s)(v), ]
 
             expression.extend(a)
 
@@ -158,7 +160,7 @@ class StreamNode():
             if isinstance(m, ExclusiveStreamGroups):
                 a = m.ack()
             else:
-                a = _getVld(m)
+                a = _get_valid_signal(m)
 
             if extra:
                 a = And(a, *extra)
@@ -173,7 +175,7 @@ class StreamNode():
             if isinstance(s, ExclusiveStreamGroups):
                 a = s.ack()
             else:
-                a = _getRd(s)
+                a = _get_ready_signal(s)
 
             if extra:
                 a = And(a, *extra)
@@ -217,7 +219,7 @@ class StreamNode():
         if isinstance(intf, ExclusiveStreamGroups):
             v = intf.ack()
         else:
-            v = _getVld(intf)
+            v = _get_valid_signal(intf)
 
         if s is None:
             return v
@@ -237,7 +239,7 @@ class StreamNode():
         if isinstance(intf, ExclusiveStreamGroups):
             r = intf.ack()
         else:
-            r = _getRd(intf)
+            r = _get_ready_signal(intf)
 
         if s is None:
             return r

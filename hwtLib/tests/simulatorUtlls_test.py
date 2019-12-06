@@ -3,7 +3,7 @@ import re
 import unittest
 
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.simulator.utils import pprintInterface, pprintAgents
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwtLib.amba.axi3Lite import Axi3Lite
@@ -13,70 +13,70 @@ from hwt.synthesizer.hObjList import HObjList
 axi_str = """\
 'axi'
     'axi_0'
-        'axi_0.aw'
-            'axi_0.aw.addr'
-            'axi_0.aw.ready'
-            'axi_0.aw.valid'
         'axi_0.ar'
             'axi_0.ar.addr'
             'axi_0.ar.ready'
             'axi_0.ar.valid'
-        'axi_0.w'
-            'axi_0.w.data'
-            'axi_0.w.strb'
-            'axi_0.w.ready'
-            'axi_0.w.valid'
         'axi_0.r'
             'axi_0.r.data'
             'axi_0.r.resp'
             'axi_0.r.ready'
             'axi_0.r.valid'
+        'axi_0.aw'
+            'axi_0.aw.addr'
+            'axi_0.aw.ready'
+            'axi_0.aw.valid'
+        'axi_0.w'
+            'axi_0.w.data'
+            'axi_0.w.strb'
+            'axi_0.w.ready'
+            'axi_0.w.valid'
         'axi_0.b'
             'axi_0.b.resp'
             'axi_0.b.ready'
             'axi_0.b.valid'
     'axi_1'
-        'axi_1.aw'
-            'axi_1.aw.addr'
-            'axi_1.aw.ready'
-            'axi_1.aw.valid'
         'axi_1.ar'
             'axi_1.ar.addr'
             'axi_1.ar.ready'
             'axi_1.ar.valid'
-        'axi_1.w'
-            'axi_1.w.data'
-            'axi_1.w.strb'
-            'axi_1.w.ready'
-            'axi_1.w.valid'
         'axi_1.r'
             'axi_1.r.data'
             'axi_1.r.resp'
             'axi_1.r.ready'
             'axi_1.r.valid'
+        'axi_1.aw'
+            'axi_1.aw.addr'
+            'axi_1.aw.ready'
+            'axi_1.aw.valid'
+        'axi_1.w'
+            'axi_1.w.data'
+            'axi_1.w.strb'
+            'axi_1.w.ready'
+            'axi_1.w.valid'
         'axi_1.b'
             'axi_1.b.resp'
             'axi_1.b.ready'
             'axi_1.b.valid'
     'axi_2'
-        'axi_2.aw'
-            'axi_2.aw.addr'
-            'axi_2.aw.ready'
-            'axi_2.aw.valid'
         'axi_2.ar'
             'axi_2.ar.addr'
             'axi_2.ar.ready'
             'axi_2.ar.valid'
-        'axi_2.w'
-            'axi_2.w.data'
-            'axi_2.w.strb'
-            'axi_2.w.ready'
-            'axi_2.w.valid'
         'axi_2.r'
             'axi_2.r.data'
             'axi_2.r.resp'
             'axi_2.r.ready'
             'axi_2.r.valid'
+        'axi_2.aw'
+            'axi_2.aw.addr'
+            'axi_2.aw.ready'
+            'axi_2.aw.valid'
+        'axi_2.w'
+            'axi_2.w.data'
+            'axi_2.w.strb'
+            'axi_2.w.ready'
+            'axi_2.w.valid'
         'axi_2.b'
             'axi_2.b.resp'
             'axi_2.b.ready'
@@ -85,7 +85,7 @@ axi_str = """\
 
 
 
-clk_ag_str = """clk:<hwt.interfaces.agents.clk.OscilatorAgent object at 0x7f51335e5f60>
+clk_ag_str = """clk:<hwt.interfaces.agents.clk.ClockAgent object at 0x7f51335e5f60>
 """
 axi_ag_str = """axi:
     p0:<hwtLib.amba.axiLite.AxiLiteAgent object at 0x7f5133600208>
@@ -108,7 +108,7 @@ axi_ag_str = """axi:
         <hwtLib.amba.axiLite.AxiLite_bAgent object at 0x7f5133600c18>
 """
 
-u_ag_str = """<hwt.interfaces.agents.clk.OscilatorAgent object at 0x7f2c812d4ef0>
+u_ag_str = """<hwt.interfaces.agents.clk.ClockAgent object at 0x7f2c812d4ef0>
     <hwt.interfaces.agents.rst.PullUpAgent object at 0x7f2c812d4f28>
     axi:
         p0:<hwtLib.amba.axiLite.AxiLiteAgent object at 0x7f2c812f0198>
@@ -138,11 +138,15 @@ class ExampleWithArrayAxi3Lite(EmptyUnit):
         self.axi = HObjList(Axi3Lite() for _ in range(3))
 
 
-class SimulatorUtilsTC(SimTestCase):
+class SimulatorUtilsTC(SingleUnitSimTestCase):
+    @classmethod
+    def getUnit(cls):
+        cls.u = ExampleWithArrayAxi3Lite()
+        return cls.u
+
     def test_pprintInterface(self):
-        u = ExampleWithArrayAxi3Lite()
+        u = self.u
         o = StringIO()
-        self.prepareUnit(u)
         pprintInterface(u.clk, file=o)
         self.assertEqual(o.getvalue(), "'clk'\n")
 
@@ -158,10 +162,9 @@ class SimulatorUtilsTC(SimTestCase):
                          pointerRe.sub(expectedStr, ""))
 
     def test_pprintAgents(self):
-        u = ExampleWithArrayAxi3Lite()
-        self.prepareUnit(u)
+        u = self.u
         self.runSim(1)
-        
+
         self._test_pprintAgent(u.clk, clk_ag_str)
         self._test_pprintAgent(u.axi, axi_ag_str)
         self._test_pprintAgent(u, u_ag_str)

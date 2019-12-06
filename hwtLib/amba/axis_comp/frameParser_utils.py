@@ -4,8 +4,8 @@ from hwt.code import If, And, Or
 from hwt.hdl.typeShortcuts import hBit
 from hwt.interfaces.std import Handshaked, VldSynced
 from hwt.pyUtils.arrayQuery import where
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.synthesizer.unit import Unit
 
 
 class InNodeInfo():
@@ -48,7 +48,7 @@ class OutNodeInfo():
         self.outInterface = outInterface
         self.en = en
         self.exclusiveEn = exclusiveEn
-        self.pendingReg = parent._reg(outInterface._name + "_pending_", defVal=1)
+        self.pendingReg = parent._reg(outInterface._name + "_pending_", def_val=1)
         ack = self.outInterface.rd
         self._ack = parent._sig(outInterface._name + "_ack")
         self._ack(ack | ~self.pendingReg)
@@ -118,7 +118,8 @@ class ExclusieveListOfHsNodes(list):
     def ack(self) -> RtlSignal:
         ack = hBit(1)
         if self:
-            acks = list(map(lambda x: x[1].ack() & self.selectorIntf.data._eq(x[0]), self))
+            acks = [x[1].ack() & self.selectorIntf.data._eq(x[0])
+                    for x in self]
             ack = Or(*acks)
 
         return ack & self.selectorIntf.vld
@@ -146,7 +147,7 @@ class WordFactory():
             def getAck(x):
                 return self.wordIndexReg._eq(x[0]) & x[1].ack()
 
-        acks = list(map(getAck, self.words))
+        acks = [getAck(w) for w in self.words]
         
         if acks:
             return Or(*acks)

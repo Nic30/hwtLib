@@ -23,6 +23,8 @@ import re
 from sphinx.ext.apidoc import main as apidoc_main
 import sphinx_bootstrap_theme
 import sys
+from datetime import datetime
+
 
 try:
     # normal state, hwt should be installed
@@ -70,7 +72,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'hwtLib'
-copyright = '2017-2018, Michal Orsak'
+copyright = '2017-%d, Michal Orsak' % datetime.now().year
 author = 'Michal Orsak'
 
 # The version info for the project you're documenting, acts as replacement for

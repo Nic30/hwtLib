@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.interfaces.std import Signal
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.hdl.types.bits import Bits
@@ -32,22 +32,26 @@ class SimpleUnitWithParam(Unit):
         self.b(self.a)
 
 
-class SimpleUnitWithParamTC(SimTestCase):
-    def test_simple(self):
-        u = SimpleUnitWithParam()
-        u.DATA_WIDTH.set(32)
-        self.prepareUnit(u)
+class SimpleUnitWithParamTC(SingleUnitSimTestCase):
 
-        self.assertEqual(int(u.DATA_WIDTH), 32)
+    @classmethod
+    def getUnit(cls) -> Unit:
+        u = SimpleUnitWithParam()
+        u.DATA_WIDTH = 32
+        return u
+
+    def test_simple(self):
+        u = self.u
+        self.assertEqual(u.DATA_WIDTH, 32)
         self.assertEqual(u.a._dtype.bit_length(), 32)
         self.assertEqual(u.b._dtype.bit_length(), 32)
 
-    def test_canNotSetAfterSynth(self):
-        u = SimpleUnitWithParam()
-        self.prepareUnit(u)
-
-        with self.assertRaises(AssertionError, msg="Can not set after it was synthetized"):
-            u.DATA_WIDTH.set(32)
+    # def test_canNotSetAfterSynth(self):
+    #     u = SimpleUnitWithParam()
+    #     self.compileSim(u)
+    # 
+    #     # with self.assertRaises(AssertionError, msg="Can not set after it was synthetized"):
+    #     #     u.DATA_WIDTH = 32
 
 
 if __name__ == "__main__":
@@ -55,7 +59,7 @@ if __name__ == "__main__":
     u = SimpleUnitWithParam()
 
     # we can now optionally set our parameter to any chosen value
-    u.DATA_WIDTH.set(1024)
+    u.DATA_WIDTH = 1024
 
     print(toRtl(u))
 
@@ -81,7 +85,7 @@ if __name__ == "__main__":
 #     PORT (a : IN STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
 #         b : OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0)
 #     );
-# END SimpleUnitWithParam;
+# END ENTITY;
 #
 # ARCHITECTURE rtl OF SimpleUnitWithParam IS
 #
@@ -91,6 +95,6 @@ if __name__ == "__main__":
 #
 #     b <= a;
 #
-# END ARCHITECTURE rtl;
+# END ARCHITECTURE;
 
 # ...

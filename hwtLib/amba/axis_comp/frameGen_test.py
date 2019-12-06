@@ -3,23 +3,26 @@
 
 import unittest
 
-from hwt.bitmask import mask
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axis_comp.frameGen import AxisFrameGen
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
+from hwtLib.amba.axis_comp.frameGen import AxisFrameGen
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
+from pyMathBitPrecise.bit_utils import mask
 
 
-class AxisFrameGenTC(SimTestCase):
-    def setUp(self):
-        self.u = AxisFrameGen()
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
+class AxisFrameGenTC(SingleUnitSimTestCase):
 
-    def mkRegisterMap(self, u, modelCls):
-        self.addrProbe = AddressSpaceProbe(u.cntrl, addrGetter)
-        self.regs = AxiLiteMemSpaceMaster(u.cntrl, self.addrProbe.discovered)
+    @classmethod
+    def setUpClass(cls):
+        cls.u = AxisFrameGen()
+        cls.compileSim(cls.u, onAfterToRtl=cls.mkRegisterMap)
+
+    @classmethod
+    def mkRegisterMap(cls, u):
+        cls.addrProbe = AddressSpaceProbe(u.cntrl, addrGetter)
+        cls.regs = AxiLiteMemSpaceMaster(u.cntrl, cls.addrProbe.discovered)
 
     def wReg(self, addr, val):
         aw = self.u.cntrl._ag.aw.data
@@ -46,7 +49,9 @@ class AxisFrameGenTC(SimTestCase):
         # u.dataOut._ag.enable = False
         self.runSim(120 * Time.ns)
         # self.assertValEqual(self.model.dataOut_data, 1)
-        expected = [(L - (i % (L + 1)), mask(8), int((i % (L + 1)) >= L)) for i in range(6)]
+        expected = [(L - (i % (L + 1)),
+                    mask(8),
+                    int((i % (L + 1)) >= L)) for i in range(6)]
         self.assertValSequenceEqual(u.axis_out._ag.data, expected)
 
     def test_len4(self):
@@ -58,7 +63,9 @@ class AxisFrameGenTC(SimTestCase):
         # u.dataOut._ag.enable = False
         self.runSim(120 * Time.ns)
         # self.assertValEqual(self.model.dataOut_data, 1)
-        expected = [(L - (i % (L + 1)), mask(8), int((i % (L + 1)) >= L)) for i in range(6)]
+        expected = [(L - (i % (L + 1)),
+                     mask(8),
+                     int((i % (L + 1)) >= L)) for i in range(6)]
         self.assertValSequenceEqual(u.axis_out._ag.data, expected)
 
 

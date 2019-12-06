@@ -41,6 +41,7 @@ class HsSplitFair(HsSplitCopy):
     
     .. hwt-schematic:: _example_HsSplitFair
     """
+
     def _config(self):
         HsSplitCopy._config(self)
         self.EXPORT_SELECTED = Param(True)
@@ -50,22 +51,21 @@ class HsSplitFair(HsSplitCopy):
         addClkRstn(self)
         if self.EXPORT_SELECTED:
             s = self.selectedOneHot = Handshaked()._m()
-            s._replaceParam(s.DATA_WIDTH, self.OUTPUTS)
+            s.DATA_WIDTH = self.OUTPUTS
 
-    def isSelectedLogic(self):
+    def isSelectedLogic(self, din):
         """
         Resolve isSelected signal flags for each input, when isSelected flag
         signal is 1 it means input has clearance to make transaction
         """
-        vld = self.getVld
-        rd = self.getRd
-        din = self.dataIn
+        vld = self.get_valid_signal
+        rd = self.get_ready_signal
         EXPORT_SELECTED = bool(self.EXPORT_SELECTED)
 
-        priority = self._reg("priority", Bits(self.OUTPUTS), defVal=1)
+        priority = self._reg("priority", Bits(self.OUTPUTS), def_val=1)
         priority(rol(priority, 1))
 
-        rdSignals = list(map(rd, self.dataOut))
+        rdSignals = [rd(d) for d in self.dataOut]
 
         for i, dout in enumerate(self.dataOut):
             isSelected = self._sig("isSelected_%d" % i)
@@ -83,20 +83,22 @@ class HsSplitFair(HsSplitCopy):
         return rdSignals
 
     def _impl(self):
-        rdSignals = self.isSelectedLogic()
+        din = self.dataIn
+        rdSignals = self.isSelectedLogic(din)
 
         for dout in self.dataOut:
-            connect(self.dataIn, dout, exclude={self.getRd(dout),
-                                                self.getVld(dout)})
+            connect(din, dout, exclude={self.get_ready_signal(dout),
+                                        self.get_valid_signal(dout)})
 
         if self.EXPORT_SELECTED:
-            self.getRd(self.dataIn)(Or(*rdSignals) & self.selectedOneHot.rd)
+            self.get_ready_signal(din)(Or(*rdSignals) & self.selectedOneHot.rd)
         else:
-            self.getRd(self.dataIn)(Or(*rdSignals))
+            self.get_ready_signal(din)(Or(*rdSignals))
 
 
 def _example_HsSplitFair():
     return HsSplitFair(Handshaked)
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl

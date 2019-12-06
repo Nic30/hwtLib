@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import mask
 from hwt.hdl.constants import Time
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import BramPort_withoutClk
@@ -12,6 +11,8 @@ from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
 from hwtLib.types.ctypes import uint32_t
+from pyMathBitPrecise.bit_utils import mask
+
 
 structTwoFields = HStruct(
     (uint32_t, "field0"),
@@ -68,14 +69,15 @@ class AxiLiteEndpointTC(SimTestCase):
     def aTrans(self, addr, prot=0):
         return (addr, prot)
 
-    def mkRegisterMap(self, u, modelCls):
+    def mkRegisterMap(self, u):
         self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
         self.regs = AxiLiteMemSpaceMaster(u.bus, self.addrProbe.discovered)
 
     def randomizeAll(self):
         u = self.u
         for intf in u._interfaces:
-            if intf not in (u.clk, u.rst_n, u.bus) and not isinstance(intf, BramPort_withoutClk):
+            if (intf not in (u.clk, u.rst_n, u.bus)
+                    and not isinstance(intf, BramPort_withoutClk)):
                 self.randomize(intf)
 
         self.randomize(u.bus.ar)
@@ -90,9 +92,9 @@ class AxiLiteEndpointTC(SimTestCase):
         u = self.u = AxiLiteEndpoint(STRUCT_TEMPLATE)
 
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        u.DATA_WIDTH = self.DATA_WIDTH
 
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
+        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
     def test_nop(self):
@@ -189,19 +191,19 @@ class AxiLiteEndpointMemMasterTC(SimTestCase):
     def randomizeAll(self):
         AxiLiteEndpointTC.randomizeAll(self)
 
-    def mkRegisterMap(self, u, modelCls):
-        AxiLiteEndpointTC.mkRegisterMap(self, u, modelCls)
+    def mkRegisterMap(self, u):
+        AxiLiteEndpointTC.mkRegisterMap(self, u)
 
     def _test_read_memMaster(self, structT):
         u = AxiLiteEndpointTC.mySetUp(self, 32, structT)
         MAGIC = 100
-        
+
         regs = self.regs
         regs.field0.read()
         regs.field1.read()
         regs.field0.read()
         regs.field1.read()
-        
+
         u.decoded.field0._ag.din.extend([MAGIC])
         u.decoded.field1._ag.din.extend([MAGIC + 1])
 
@@ -264,13 +266,14 @@ if __name__ == "__main__":
 
     # suite.addTest(AxiLiteEndpointStructsInArray('test_write'))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointMemMasterTC))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
+    # suite.addTest(unittest.makeSuite(AxiLiteEndpointMemMasterTC))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
-    # u = AxiLiteEndpoint(structStructsInArray, shouldEnterFn=lambda tmpl: True)
-    # u.DATA_WIDTH.set(32)
+    # u = AxiLiteEndpoint(structStructsInArray,
+    #                     shouldEnterFn=lambda tmpl: True)
+    # u.DATA_WIDTH = 32
     # print(toRtl(u))

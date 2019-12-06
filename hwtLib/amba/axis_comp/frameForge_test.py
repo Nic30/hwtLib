@@ -4,17 +4,19 @@
 from math import inf
 import unittest
 
-from hwt.bitmask import mask
 from hwt.hdl.constants import Time
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.union import HUnion
+from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.types.ctypes import uint64_t, uint32_t, int32_t
-from hwt.hdl.types.stream import HStream
-from hwt.pyUtils.arrayQuery import iter_with_last
+from pyMathBitPrecise.bit_utils import mask
+from pycocotb.triggers import Timer
+
 
 s1field = HStruct(
     (uint64_t, "item0")
@@ -87,19 +89,18 @@ class AxiS_frameForge_TC(SimTestCase):
                               randomized=True):
         tmpl = TransTmpl(structT)
         frames = list(FrameTmpl.framesFromTransTmpl(
-                                     tmpl,
-                                     DATA_WIDTH,
-                                     maxFrameLen=maxFrameLen,
-                                     maxPaddingWords=maxPaddingWords,
-                                     trimPaddingWordsOnStart=trimPaddingWordsOnStart,
-                                     trimPaddingWordsOnEnd=trimPaddingWordsOnEnd))
+            tmpl,
+            DATA_WIDTH,
+            maxFrameLen=maxFrameLen,
+            maxPaddingWords=maxPaddingWords,
+            trimPaddingWordsOnStart=trimPaddingWordsOnStart,
+            trimPaddingWordsOnEnd=trimPaddingWordsOnEnd))
         u = self.u = AxiS_frameForge(structT,
                                      tmpl, frames)
-        self.DATA_WIDTH = DATA_WIDTH
+        u.DATA_WIDTH = self.DATA_WIDTH = DATA_WIDTH
         self.m = mask(self.DATA_WIDTH // 8)
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
 
-        self.prepareUnit(self.u)
+        self.compileSimAndStart(self.u)
         if randomized:
             self.randomize(u.dataOut)
             for intf in u.dataIn._fieldsToInterfaces.values():
@@ -107,8 +108,8 @@ class AxiS_frameForge_TC(SimTestCase):
 
     def formatStream(self, data):
         strb = self.m
-        return [(d, strb, last) 
-                for last, d  in iter_with_last(data)]
+        return [(d, strb, last)
+                for last, d in iter_with_last(data)]
 
     def test_nop1Field(self, randomized=False):
         self.instantiateFrameForge(s1field, randomized=randomized)
@@ -185,18 +186,17 @@ class AxiS_frameForge_TC(SimTestCase):
 
     def test_3Fields_outOccupiedAtStart(self):
         u = self.u = AxiS_frameForge(s3field)
-        self.DATA_WIDTH = 64
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        u.DATA_WIDTH = self.DATA_WIDTH = 64
         m = mask(self.DATA_WIDTH // 8)
 
-        self.prepareUnit(self.u)
+        self.compileSimAndStart(self.u)
 
-        def enDataOut(s):
+        def enDataOut():
             u.dataOut._ag.enable = False
-            yield s.wait(50 * Time.ns)
+            yield Timer(50 * Time.ns)
             u.dataOut._ag.enable = True
 
-        self.procs.append(enDataOut)
+        self.procs.append(enDataOut())
 
         MAGIC = 468
         u.dataIn.item0._ag.data.append(MAGIC)
@@ -215,16 +215,16 @@ class AxiS_frameForge_TC(SimTestCase):
     def test_s2Pading_normal(self):
         u = self.u = AxiS_frameForge(s2Pading)
         self.DATA_WIDTH = 64
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        u.DATA_WIDTH = self.DATA_WIDTH
         m = mask(self.DATA_WIDTH // 8)
-        self.prepareUnit(self.u)
+        self.compileSimAndStart(self.u)
 
-        def enDataOut(s):
+        def enDataOut():
             u.dataOut._ag.enable = False
-            yield s.wait(50 * Time.ns)
+            yield Timer(50 * Time.ns)
             u.dataOut._ag.enable = True
 
-        self.procs.append(enDataOut)
+        self.procs.append(enDataOut())
 
         MAGIC = 468
         u.dataIn.item0_0._ag.data.append(MAGIC)
@@ -256,16 +256,16 @@ class AxiS_frameForge_TC(SimTestCase):
                                      trimPaddingWordsOnEnd=True))
         u = self.u = AxiS_frameForge(structT,
                                      tmpl, frames)
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        u.DATA_WIDTH = self.DATA_WIDTH
         m = mask(self.DATA_WIDTH // 8)
-        self.prepareUnit(self.u)
+        self.compileSimAndStart(self.u)
 
-        def enDataOut(s):
+        def enDataOut():
             u.dataOut._ag.enable = False
-            yield s.wait(50 * Time.ns)
+            yield Timer(50 * Time.ns)
             u.dataOut._ag.enable = True
 
-        self.procs.append(enDataOut)
+        self.procs.append(enDataOut())
 
         MAGIC = 468
         u.dataIn.item0_0._ag.data.append(MAGIC)
@@ -358,7 +358,7 @@ class AxiS_frameForge_TC(SimTestCase):
             t *= 3
 
         u.dataIn.streamIn._ag.data.extend(
-            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) + 
+            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) +
             self.formatStream([MAGIC + 4, MAGIC + 5, MAGIC + 6])
         )
 
@@ -388,7 +388,7 @@ class AxiS_frameForge_TC(SimTestCase):
             t *= 3
 
         u.dataIn.streamIn._ag.data.extend(
-            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) + 
+            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) +
             self.formatStream([MAGIC + 5, MAGIC + 6, MAGIC + 7])
         )
         u.dataIn.item0._ag.data.extend([MAGIC + 4, MAGIC + 8])
@@ -421,7 +421,7 @@ class AxiS_frameForge_TC(SimTestCase):
             t *= 3
 
         u.dataIn.streamIn._ag.data.extend(
-            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) + 
+            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) +
             self.formatStream([MAGIC + 5, MAGIC + 6, MAGIC + 7])
         )
         u.dataIn.item0._ag.data.extend([MAGIC + 4, MAGIC + 8])
@@ -455,11 +455,11 @@ class AxiS_frameForge_TC(SimTestCase):
             t *= 3
 
         u.dataIn.streamIn0._ag.data.extend(
-            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) + 
+            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) +
             self.formatStream([MAGIC + 7, MAGIC + 8, MAGIC + 9])
         )
         u.dataIn.streamIn1._ag.data.extend(
-            self.formatStream([MAGIC + 4, MAGIC + 5, MAGIC + 6]) + 
+            self.formatStream([MAGIC + 4, MAGIC + 5, MAGIC + 6]) +
             self.formatStream([MAGIC + 10, MAGIC + 11, MAGIC + 12])
         )
 
@@ -478,7 +478,7 @@ class AxiS_frameForge_TC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(AxiS_frameForge_TC('test_struct2xStream64'))
+    # suite.addTest(AxiS_frameForge_TC('test_struct2xStream64'))
     suite.addTest(unittest.makeSuite(AxiS_frameForge_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

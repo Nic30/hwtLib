@@ -3,7 +3,7 @@
 
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
@@ -62,11 +62,12 @@ class ListOfInterfacesSample2(Unit):
         # u2out = connect(u2.d, b[2])
 
 
-class ListOfInterfacesSample2TC(SimTestCase):
-    def setUp(self):
-        SimTestCase.setUp(self)
-        self.u = ListOfInterfacesSample2()
-        self.prepareUnit(self.u)
+class ListOfInterfacesSample2TC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls) -> Unit:
+        cls.u = ListOfInterfacesSample2()
+        return cls.u
 
     def test_simplePass(self):
         u = self.u

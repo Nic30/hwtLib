@@ -25,20 +25,20 @@ ENTITY hfe IS
         headers_USE_KEEP: BOOLEAN := False;
         headers_USE_STRB: BOOLEAN := False
     );
-    PORT (din_data: IN STD_LOGIC_VECTOR(din_DATA_WIDTH - 1 DOWNTO 0);
+    PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         din_last: IN STD_LOGIC;
         din_ready: OUT STD_LOGIC;
         din_valid: IN STD_LOGIC;
-        dout_data: OUT STD_LOGIC_VECTOR(dout_DATA_WIDTH - 1 DOWNTO 0);
+        dout_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
         dout_last: OUT STD_LOGIC;
         dout_ready: IN STD_LOGIC;
         dout_valid: OUT STD_LOGIC;
-        headers_data: OUT STD_LOGIC_VECTOR(headers_DATA_WIDTH - 1 DOWNTO 0);
+        headers_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
         headers_last: OUT STD_LOGIC;
         headers_ready: IN STD_LOGIC;
         headers_valid: OUT STD_LOGIC
     );
-END hfe;
+END ENTITY;
 
 ARCHITECTURE rtl OF hfe IS
 BEGIN
@@ -49,7 +49,7 @@ BEGIN
     headers_data <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
     headers_last <= 'X';
     headers_valid <= 'X';
-END ARCHITECTURE rtl;
+END ARCHITECTURE;
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
@@ -70,16 +70,16 @@ ENTITY patternMatch IS
         match_USE_KEEP: BOOLEAN := False;
         match_USE_STRB: BOOLEAN := False
     );
-    PORT (din_data: IN STD_LOGIC_VECTOR(din_DATA_WIDTH - 1 DOWNTO 0);
+    PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         din_last: IN STD_LOGIC;
         din_ready: OUT STD_LOGIC;
         din_valid: IN STD_LOGIC;
-        match_data: OUT STD_LOGIC_VECTOR(match_DATA_WIDTH - 1 DOWNTO 0);
+        match_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
         match_last: OUT STD_LOGIC;
         match_ready: IN STD_LOGIC;
         match_valid: OUT STD_LOGIC
     );
-END patternMatch;
+END ENTITY;
 
 ARCHITECTURE rtl OF patternMatch IS
 BEGIN
@@ -87,7 +87,7 @@ BEGIN
     match_data <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
     match_last <= 'X';
     match_valid <= 'X';
-END ARCHITECTURE rtl;
+END ARCHITECTURE;
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
@@ -95,6 +95,10 @@ use IEEE.numeric_std.all;
 ENTITY filter IS
     GENERIC (cfg_ADDR_WIDTH: INTEGER := 32;
         cfg_DATA_WIDTH: INTEGER := 64;
+        cfg_ar_ADDR_WIDTH: INTEGER := 32;
+        cfg_aw_ADDR_WIDTH: INTEGER := 32;
+        cfg_r_DATA_WIDTH: INTEGER := 64;
+        cfg_w_DATA_WIDTH: INTEGER := 64;
         din_DATA_WIDTH: INTEGER := 64;
         din_DEST_WIDTH: INTEGER := 0;
         din_ID_WIDTH: INTEGER := 0;
@@ -124,43 +128,43 @@ ENTITY filter IS
         patternMatch_USE_KEEP: BOOLEAN := False;
         patternMatch_USE_STRB: BOOLEAN := False
     );
-    PORT (cfg_ar_addr: IN STD_LOGIC_VECTOR(cfg_ADDR_WIDTH - 1 DOWNTO 0);
+    PORT (cfg_ar_addr: IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         cfg_ar_prot: IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         cfg_ar_ready: OUT STD_LOGIC;
         cfg_ar_valid: IN STD_LOGIC;
-        cfg_aw_addr: IN STD_LOGIC_VECTOR(cfg_ADDR_WIDTH - 1 DOWNTO 0);
+        cfg_aw_addr: IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         cfg_aw_prot: IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         cfg_aw_ready: OUT STD_LOGIC;
         cfg_aw_valid: IN STD_LOGIC;
         cfg_b_ready: IN STD_LOGIC;
         cfg_b_resp: OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
         cfg_b_valid: OUT STD_LOGIC;
-        cfg_r_data: OUT STD_LOGIC_VECTOR(cfg_DATA_WIDTH - 1 DOWNTO 0);
+        cfg_r_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
         cfg_r_ready: IN STD_LOGIC;
         cfg_r_resp: OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
         cfg_r_valid: OUT STD_LOGIC;
-        cfg_w_data: IN STD_LOGIC_VECTOR(cfg_DATA_WIDTH - 1 DOWNTO 0);
+        cfg_w_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         cfg_w_ready: OUT STD_LOGIC;
-        cfg_w_strb: IN STD_LOGIC_VECTOR((cfg_DATA_WIDTH / 8) - 1 DOWNTO 0);
+        cfg_w_strb: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
         cfg_w_valid: IN STD_LOGIC;
-        din_data: IN STD_LOGIC_VECTOR(din_DATA_WIDTH - 1 DOWNTO 0);
+        din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         din_last: IN STD_LOGIC;
         din_ready: OUT STD_LOGIC;
         din_valid: IN STD_LOGIC;
-        dout_data: OUT STD_LOGIC_VECTOR(dout_DATA_WIDTH - 1 DOWNTO 0);
+        dout_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
         dout_last: OUT STD_LOGIC;
         dout_ready: IN STD_LOGIC;
         dout_valid: OUT STD_LOGIC;
-        headers_data: IN STD_LOGIC_VECTOR(headers_DATA_WIDTH - 1 DOWNTO 0);
+        headers_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         headers_last: IN STD_LOGIC;
         headers_ready: OUT STD_LOGIC;
         headers_valid: IN STD_LOGIC;
-        patternMatch_data: IN STD_LOGIC_VECTOR(patternMatch_DATA_WIDTH - 1 DOWNTO 0);
+        patternMatch_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         patternMatch_last: IN STD_LOGIC;
         patternMatch_ready: OUT STD_LOGIC;
         patternMatch_valid: IN STD_LOGIC
     );
-END filter;
+END ENTITY;
 
 ARCHITECTURE rtl OF filter IS
 BEGIN
@@ -178,7 +182,7 @@ BEGIN
     dout_valid <= 'X';
     headers_ready <= 'X';
     patternMatch_ready <= 'X';
-END ARCHITECTURE rtl;
+END ARCHITECTURE;
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
@@ -199,16 +203,16 @@ ENTITY exporter IS
         dout_USE_KEEP: BOOLEAN := False;
         dout_USE_STRB: BOOLEAN := False
     );
-    PORT (din_data: IN STD_LOGIC_VECTOR(din_DATA_WIDTH - 1 DOWNTO 0);
+    PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         din_last: IN STD_LOGIC;
         din_ready: OUT STD_LOGIC;
         din_valid: IN STD_LOGIC;
-        dout_data: OUT STD_LOGIC_VECTOR(dout_DATA_WIDTH - 1 DOWNTO 0);
+        dout_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
         dout_last: OUT STD_LOGIC;
         dout_ready: IN STD_LOGIC;
         dout_valid: OUT STD_LOGIC
     );
-END exporter;
+END ENTITY;
 
 ARCHITECTURE rtl OF exporter IS
 BEGIN
@@ -216,7 +220,7 @@ BEGIN
     dout_data <= "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
     dout_last <= 'X';
     dout_valid <= 'X';
-END ARCHITECTURE rtl;
+END ARCHITECTURE;
 --
 --    Stream duplicator for AxiStream interfaces
 --    
@@ -236,22 +240,43 @@ ENTITY gen_dout_splitCopy_0 IS
         OUTPUTS: INTEGER := 2;
         USER_WIDTH: INTEGER := 0;
         USE_KEEP: BOOLEAN := False;
-        USE_STRB: BOOLEAN := False
+        USE_STRB: BOOLEAN := False;
+        dataIn_DATA_WIDTH: INTEGER := 64;
+        dataIn_DEST_WIDTH: INTEGER := 0;
+        dataIn_ID_WIDTH: INTEGER := 0;
+        dataIn_IS_BIGENDIAN: BOOLEAN := False;
+        dataIn_USER_WIDTH: INTEGER := 0;
+        dataIn_USE_KEEP: BOOLEAN := False;
+        dataIn_USE_STRB: BOOLEAN := False;
+        dataOut_0_DATA_WIDTH: INTEGER := 64;
+        dataOut_0_DEST_WIDTH: INTEGER := 0;
+        dataOut_0_ID_WIDTH: INTEGER := 0;
+        dataOut_0_IS_BIGENDIAN: BOOLEAN := False;
+        dataOut_0_USER_WIDTH: INTEGER := 0;
+        dataOut_0_USE_KEEP: BOOLEAN := False;
+        dataOut_0_USE_STRB: BOOLEAN := False;
+        dataOut_1_DATA_WIDTH: INTEGER := 64;
+        dataOut_1_DEST_WIDTH: INTEGER := 0;
+        dataOut_1_ID_WIDTH: INTEGER := 0;
+        dataOut_1_IS_BIGENDIAN: BOOLEAN := False;
+        dataOut_1_USER_WIDTH: INTEGER := 0;
+        dataOut_1_USE_KEEP: BOOLEAN := False;
+        dataOut_1_USE_STRB: BOOLEAN := False
     );
-    PORT (dataIn_data: IN STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+    PORT (dataIn_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         dataIn_last: IN STD_LOGIC;
         dataIn_ready: OUT STD_LOGIC;
         dataIn_valid: IN STD_LOGIC;
-        dataOut_0_data: OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+        dataOut_0_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
         dataOut_0_last: OUT STD_LOGIC;
         dataOut_0_ready: IN STD_LOGIC;
         dataOut_0_valid: OUT STD_LOGIC;
-        dataOut_1_data: OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+        dataOut_1_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
         dataOut_1_last: OUT STD_LOGIC;
         dataOut_1_ready: IN STD_LOGIC;
         dataOut_1_valid: OUT STD_LOGIC
     );
-END gen_dout_splitCopy_0;
+END ENTITY;
 
 ARCHITECTURE rtl OF gen_dout_splitCopy_0 IS
 BEGIN
@@ -262,7 +287,7 @@ BEGIN
     dataOut_1_data <= dataIn_data;
     dataOut_1_last <= dataIn_last;
     dataOut_1_valid <= dataIn_valid AND dataOut_0_ready;
-END ARCHITECTURE rtl;
+END ARCHITECTURE;
 --
 --    This unit has actually no functionality it is just example
 --    of hierarchical design.
@@ -276,12 +301,19 @@ use IEEE.numeric_std.all;
 ENTITY NetFilter IS
     GENERIC (DATA_WIDTH: INTEGER := 64;
         cfg_ADDR_WIDTH: INTEGER := 32;
+        cfg_DATA_WIDTH: INTEGER := 64;
+        cfg_ar_ADDR_WIDTH: INTEGER := 32;
+        cfg_aw_ADDR_WIDTH: INTEGER := 32;
+        cfg_r_DATA_WIDTH: INTEGER := 64;
+        cfg_w_DATA_WIDTH: INTEGER := 64;
+        din_DATA_WIDTH: INTEGER := 64;
         din_DEST_WIDTH: INTEGER := 0;
         din_ID_WIDTH: INTEGER := 0;
         din_IS_BIGENDIAN: BOOLEAN := False;
         din_USER_WIDTH: INTEGER := 0;
         din_USE_KEEP: BOOLEAN := False;
         din_USE_STRB: BOOLEAN := False;
+        export_DATA_WIDTH: INTEGER := 64;
         export_DEST_WIDTH: INTEGER := 0;
         export_ID_WIDTH: INTEGER := 0;
         export_IS_BIGENDIAN: BOOLEAN := False;
@@ -289,37 +321,37 @@ ENTITY NetFilter IS
         export_USE_KEEP: BOOLEAN := False;
         export_USE_STRB: BOOLEAN := False
     );
-    PORT (cfg_ar_addr: IN STD_LOGIC_VECTOR(cfg_ADDR_WIDTH - 1 DOWNTO 0);
+    PORT (cfg_ar_addr: IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         cfg_ar_prot: IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         cfg_ar_ready: OUT STD_LOGIC;
         cfg_ar_valid: IN STD_LOGIC;
-        cfg_aw_addr: IN STD_LOGIC_VECTOR(cfg_ADDR_WIDTH - 1 DOWNTO 0);
+        cfg_aw_addr: IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         cfg_aw_prot: IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         cfg_aw_ready: OUT STD_LOGIC;
         cfg_aw_valid: IN STD_LOGIC;
         cfg_b_ready: IN STD_LOGIC;
         cfg_b_resp: OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
         cfg_b_valid: OUT STD_LOGIC;
-        cfg_r_data: OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+        cfg_r_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
         cfg_r_ready: IN STD_LOGIC;
         cfg_r_resp: OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
         cfg_r_valid: OUT STD_LOGIC;
-        cfg_w_data: IN STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+        cfg_w_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         cfg_w_ready: OUT STD_LOGIC;
-        cfg_w_strb: IN STD_LOGIC_VECTOR((DATA_WIDTH / 8) - 1 DOWNTO 0);
+        cfg_w_strb: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
         cfg_w_valid: IN STD_LOGIC;
         clk: IN STD_LOGIC;
-        din_data: IN STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+        din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         din_last: IN STD_LOGIC;
         din_ready: OUT STD_LOGIC;
         din_valid: IN STD_LOGIC;
-        export_data: OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+        export_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
         export_last: OUT STD_LOGIC;
         export_ready: IN STD_LOGIC;
         export_valid: OUT STD_LOGIC;
         rst_n: IN STD_LOGIC
     );
-END NetFilter;
+END ENTITY;
 
 ARCHITECTURE rtl OF NetFilter IS
     SIGNAL sig_exporter_din_data: STD_LOGIC_VECTOR(63 DOWNTO 0);
@@ -413,11 +445,11 @@ ARCHITECTURE rtl OF NetFilter IS
             dout_USE_KEEP: BOOLEAN := False;
             dout_USE_STRB: BOOLEAN := False
        );
-       PORT (din_data: IN STD_LOGIC_VECTOR(din_DATA_WIDTH - 1 DOWNTO 0);
+       PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
             din_last: IN STD_LOGIC;
             din_ready: OUT STD_LOGIC;
             din_valid: IN STD_LOGIC;
-            dout_data: OUT STD_LOGIC_VECTOR(dout_DATA_WIDTH - 1 DOWNTO 0);
+            dout_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
             dout_last: OUT STD_LOGIC;
             dout_ready: IN STD_LOGIC;
             dout_valid: OUT STD_LOGIC
@@ -427,6 +459,10 @@ ARCHITECTURE rtl OF NetFilter IS
     COMPONENT filter IS
        GENERIC (cfg_ADDR_WIDTH: INTEGER := 32;
             cfg_DATA_WIDTH: INTEGER := 64;
+            cfg_ar_ADDR_WIDTH: INTEGER := 32;
+            cfg_aw_ADDR_WIDTH: INTEGER := 32;
+            cfg_r_DATA_WIDTH: INTEGER := 64;
+            cfg_w_DATA_WIDTH: INTEGER := 64;
             din_DATA_WIDTH: INTEGER := 64;
             din_DEST_WIDTH: INTEGER := 0;
             din_ID_WIDTH: INTEGER := 0;
@@ -456,38 +492,38 @@ ARCHITECTURE rtl OF NetFilter IS
             patternMatch_USE_KEEP: BOOLEAN := False;
             patternMatch_USE_STRB: BOOLEAN := False
        );
-       PORT (cfg_ar_addr: IN STD_LOGIC_VECTOR(cfg_ADDR_WIDTH - 1 DOWNTO 0);
+       PORT (cfg_ar_addr: IN STD_LOGIC_VECTOR(31 DOWNTO 0);
             cfg_ar_prot: IN STD_LOGIC_VECTOR(2 DOWNTO 0);
             cfg_ar_ready: OUT STD_LOGIC;
             cfg_ar_valid: IN STD_LOGIC;
-            cfg_aw_addr: IN STD_LOGIC_VECTOR(cfg_ADDR_WIDTH - 1 DOWNTO 0);
+            cfg_aw_addr: IN STD_LOGIC_VECTOR(31 DOWNTO 0);
             cfg_aw_prot: IN STD_LOGIC_VECTOR(2 DOWNTO 0);
             cfg_aw_ready: OUT STD_LOGIC;
             cfg_aw_valid: IN STD_LOGIC;
             cfg_b_ready: IN STD_LOGIC;
             cfg_b_resp: OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
             cfg_b_valid: OUT STD_LOGIC;
-            cfg_r_data: OUT STD_LOGIC_VECTOR(cfg_DATA_WIDTH - 1 DOWNTO 0);
+            cfg_r_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
             cfg_r_ready: IN STD_LOGIC;
             cfg_r_resp: OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
             cfg_r_valid: OUT STD_LOGIC;
-            cfg_w_data: IN STD_LOGIC_VECTOR(cfg_DATA_WIDTH - 1 DOWNTO 0);
+            cfg_w_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
             cfg_w_ready: OUT STD_LOGIC;
-            cfg_w_strb: IN STD_LOGIC_VECTOR((cfg_DATA_WIDTH / 8) - 1 DOWNTO 0);
+            cfg_w_strb: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
             cfg_w_valid: IN STD_LOGIC;
-            din_data: IN STD_LOGIC_VECTOR(din_DATA_WIDTH - 1 DOWNTO 0);
+            din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
             din_last: IN STD_LOGIC;
             din_ready: OUT STD_LOGIC;
             din_valid: IN STD_LOGIC;
-            dout_data: OUT STD_LOGIC_VECTOR(dout_DATA_WIDTH - 1 DOWNTO 0);
+            dout_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
             dout_last: OUT STD_LOGIC;
             dout_ready: IN STD_LOGIC;
             dout_valid: OUT STD_LOGIC;
-            headers_data: IN STD_LOGIC_VECTOR(headers_DATA_WIDTH - 1 DOWNTO 0);
+            headers_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
             headers_last: IN STD_LOGIC;
             headers_ready: OUT STD_LOGIC;
             headers_valid: IN STD_LOGIC;
-            patternMatch_data: IN STD_LOGIC_VECTOR(patternMatch_DATA_WIDTH - 1 DOWNTO 0);
+            patternMatch_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
             patternMatch_last: IN STD_LOGIC;
             patternMatch_ready: OUT STD_LOGIC;
             patternMatch_valid: IN STD_LOGIC
@@ -502,17 +538,38 @@ ARCHITECTURE rtl OF NetFilter IS
             OUTPUTS: INTEGER := 2;
             USER_WIDTH: INTEGER := 0;
             USE_KEEP: BOOLEAN := False;
-            USE_STRB: BOOLEAN := False
+            USE_STRB: BOOLEAN := False;
+            dataIn_DATA_WIDTH: INTEGER := 64;
+            dataIn_DEST_WIDTH: INTEGER := 0;
+            dataIn_ID_WIDTH: INTEGER := 0;
+            dataIn_IS_BIGENDIAN: BOOLEAN := False;
+            dataIn_USER_WIDTH: INTEGER := 0;
+            dataIn_USE_KEEP: BOOLEAN := False;
+            dataIn_USE_STRB: BOOLEAN := False;
+            dataOut_0_DATA_WIDTH: INTEGER := 64;
+            dataOut_0_DEST_WIDTH: INTEGER := 0;
+            dataOut_0_ID_WIDTH: INTEGER := 0;
+            dataOut_0_IS_BIGENDIAN: BOOLEAN := False;
+            dataOut_0_USER_WIDTH: INTEGER := 0;
+            dataOut_0_USE_KEEP: BOOLEAN := False;
+            dataOut_0_USE_STRB: BOOLEAN := False;
+            dataOut_1_DATA_WIDTH: INTEGER := 64;
+            dataOut_1_DEST_WIDTH: INTEGER := 0;
+            dataOut_1_ID_WIDTH: INTEGER := 0;
+            dataOut_1_IS_BIGENDIAN: BOOLEAN := False;
+            dataOut_1_USER_WIDTH: INTEGER := 0;
+            dataOut_1_USE_KEEP: BOOLEAN := False;
+            dataOut_1_USE_STRB: BOOLEAN := False
        );
-       PORT (dataIn_data: IN STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+       PORT (dataIn_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
             dataIn_last: IN STD_LOGIC;
             dataIn_ready: OUT STD_LOGIC;
             dataIn_valid: IN STD_LOGIC;
-            dataOut_0_data: OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+            dataOut_0_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
             dataOut_0_last: OUT STD_LOGIC;
             dataOut_0_ready: IN STD_LOGIC;
             dataOut_0_valid: OUT STD_LOGIC;
-            dataOut_1_data: OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+            dataOut_1_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
             dataOut_1_last: OUT STD_LOGIC;
             dataOut_1_ready: IN STD_LOGIC;
             dataOut_1_valid: OUT STD_LOGIC
@@ -542,15 +599,15 @@ ARCHITECTURE rtl OF NetFilter IS
             headers_USE_KEEP: BOOLEAN := False;
             headers_USE_STRB: BOOLEAN := False
        );
-       PORT (din_data: IN STD_LOGIC_VECTOR(din_DATA_WIDTH - 1 DOWNTO 0);
+       PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
             din_last: IN STD_LOGIC;
             din_ready: OUT STD_LOGIC;
             din_valid: IN STD_LOGIC;
-            dout_data: OUT STD_LOGIC_VECTOR(dout_DATA_WIDTH - 1 DOWNTO 0);
+            dout_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
             dout_last: OUT STD_LOGIC;
             dout_ready: IN STD_LOGIC;
             dout_valid: OUT STD_LOGIC;
-            headers_data: OUT STD_LOGIC_VECTOR(headers_DATA_WIDTH - 1 DOWNTO 0);
+            headers_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
             headers_last: OUT STD_LOGIC;
             headers_ready: IN STD_LOGIC;
             headers_valid: OUT STD_LOGIC
@@ -573,11 +630,11 @@ ARCHITECTURE rtl OF NetFilter IS
             match_USE_KEEP: BOOLEAN := False;
             match_USE_STRB: BOOLEAN := False
        );
-       PORT (din_data: IN STD_LOGIC_VECTOR(din_DATA_WIDTH - 1 DOWNTO 0);
+       PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
             din_last: IN STD_LOGIC;
             din_ready: OUT STD_LOGIC;
             din_valid: IN STD_LOGIC;
-            match_data: OUT STD_LOGIC_VECTOR(match_DATA_WIDTH - 1 DOWNTO 0);
+            match_data: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
             match_last: OUT STD_LOGIC;
             match_ready: IN STD_LOGIC;
             match_valid: OUT STD_LOGIC
@@ -614,6 +671,10 @@ BEGIN
     filter_inst: COMPONENT filter
         GENERIC MAP (cfg_ADDR_WIDTH => 32,
             cfg_DATA_WIDTH => 64,
+            cfg_ar_ADDR_WIDTH => 32,
+            cfg_aw_ADDR_WIDTH => 32,
+            cfg_r_DATA_WIDTH => 64,
+            cfg_w_DATA_WIDTH => 64,
             din_DATA_WIDTH => 64,
             din_DEST_WIDTH => 0,
             din_ID_WIDTH => 0,
@@ -688,7 +749,28 @@ BEGIN
             OUTPUTS => 2,
             USER_WIDTH => 0,
             USE_KEEP => False,
-            USE_STRB => False
+            USE_STRB => False,
+            dataIn_DATA_WIDTH => 64,
+            dataIn_DEST_WIDTH => 0,
+            dataIn_ID_WIDTH => 0,
+            dataIn_IS_BIGENDIAN => False,
+            dataIn_USER_WIDTH => 0,
+            dataIn_USE_KEEP => False,
+            dataIn_USE_STRB => False,
+            dataOut_0_DATA_WIDTH => 64,
+            dataOut_0_DEST_WIDTH => 0,
+            dataOut_0_ID_WIDTH => 0,
+            dataOut_0_IS_BIGENDIAN => False,
+            dataOut_0_USER_WIDTH => 0,
+            dataOut_0_USE_KEEP => False,
+            dataOut_0_USE_STRB => False,
+            dataOut_1_DATA_WIDTH => 64,
+            dataOut_1_DEST_WIDTH => 0,
+            dataOut_1_ID_WIDTH => 0,
+            dataOut_1_IS_BIGENDIAN => False,
+            dataOut_1_USER_WIDTH => 0,
+            dataOut_1_USE_KEEP => False,
+            dataOut_1_USE_STRB => False
         )
         PORT MAP (dataIn_data => sig_gen_dout_splitCopy_0_dataIn_data,
             dataIn_last => sig_gen_dout_splitCopy_0_dataIn_last,
@@ -818,4 +900,4 @@ BEGIN
     sig_patternMatch_din_last <= sig_gen_dout_splitCopy_0_dataOut_0_last;
     sig_patternMatch_din_valid <= sig_gen_dout_splitCopy_0_dataOut_0_valid;
     sig_patternMatch_match_ready <= sig_filter_patternMatch_ready;
-END ARCHITECTURE rtl;
+END ARCHITECTURE;

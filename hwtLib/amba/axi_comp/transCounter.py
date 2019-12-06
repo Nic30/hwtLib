@@ -45,10 +45,10 @@ class AxiTransactionCouter(Unit):
             (Bits(32), "b")
         )
         ep = self.axi_ep = AxiLiteEndpoint(mem_space)
-        ep.ADDR_WIDTH.set(self.CNTRL_ADDR_WIDTH)
-        ep.DATA_WIDTH.set(self.CNTRL_DATA_WIDTH)
-        self.cntrl.ADDR_WIDTH.set(self.CNTRL_ADDR_WIDTH)
-        self.cntrl.DATA_WIDTH.set(self.CNTRL_DATA_WIDTH)
+        ep.ADDR_WIDTH = self.CNTRL_ADDR_WIDTH
+        ep.DATA_WIDTH = self.CNTRL_DATA_WIDTH
+        self.cntrl.ADDR_WIDTH = self.CNTRL_ADDR_WIDTH
+        self.cntrl.DATA_WIDTH = self.CNTRL_DATA_WIDTH
 
     def _impl(self):
         propagateClkRstn(self)
@@ -68,7 +68,7 @@ class AxiTransactionCouter(Unit):
             cntrl = getattr(ep, name)
 
             ack = StreamNode(masters={sCh}, slaves={mCh}).ack()
-            cntr = self._reg("cntr_" + name, Bits(self.CNTR_WIDTH), defVal=0)
+            cntr = self._reg("cntr_" + name, Bits(self.CNTR_WIDTH), def_val=0)
             If(doClr,
                cntr(0)
             ).Elif(ack,

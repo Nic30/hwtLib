@@ -3,37 +3,36 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
-from hwt.simulator.shortcuts import simPrepare
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.structManipulators.cLinkedListWriter import CLinkedListWriter
+from pycocotb.constants import CLK_PERIOD
 
 
-class CLinkedListWriterTC(SimTestCase):
+class CLinkedListWriterTC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = CLinkedListWriter()
+
+        u.TIMEOUT = cls.TIMEOUT = 40
+        u.ITEMS_IN_BLOCK = cls.ITEMS_IN_BLOCK = 31
+        u.PTR_WIDTH = cls.PTR_WIDTH = 8
+        u.BUFFER_CAPACITY = cls.BUFFER_CAPACITY = 7
+        cls.MAX_LEN = cls.BUFFER_CAPACITY // 2 - 1
+        return u
+
     def setUp(self):
-        self.u = CLinkedListWriter()
-        self.ITEMS_IN_BLOCK = 31
-        self.PTR_WIDTH = 8
-        self.BUFFER_CAPACITY = 7
-        self.TIMEOUT = 40
+        super(CLinkedListWriterTC, self).setUp()
         self.ID = int(self.u.ID)
-        self.MAX_LEN = self.BUFFER_CAPACITY // 2 - 1
         self.DATA_WIDTH = int(self.u.DATA_WIDTH)
-
-        self.u.TIMEOUT.set(self.TIMEOUT)
-        self.u.ITEMS_IN_BLOCK.set(self.ITEMS_IN_BLOCK)
-        self.u.PTR_WIDTH.set(self.PTR_WIDTH)
-        self.u.BUFFER_CAPACITY.set(self.BUFFER_CAPACITY)
-
-        _, self.model, self.procs = simPrepare(self.u)
 
     def test_nop(self):
         u = self.u
         for i in range(self.MAX_LEN + 1):
             self.u.dataIn._ag.data.append(i)
 
-        self.runSim((self.TIMEOUT + 10) * 10 * Time.ns)
+        self.runSim((self.TIMEOUT + 10) * CLK_PERIOD)
 
         self.assertEqual(len(u.rDatapump.req._ag.data), 0)
         self.assertEqual(len(u.wDatapump.req._ag.data), 0)
@@ -46,7 +45,7 @@ class CLinkedListWriterTC(SimTestCase):
         u.baseAddr._ag.dout.append(0x1020)
         u.rdPtr._ag.dout.append(self.MAX_LEN + 1)
 
-        self.runSim(t * 10 * Time.ns)
+        self.runSim(t * CLK_PERIOD)
 
         req = u.wDatapump.req._ag.data
         self.assertEqual(len(req), 0)
@@ -62,7 +61,7 @@ class CLinkedListWriterTC(SimTestCase):
         for i in range(self.MAX_LEN + 1):
             self.u.dataIn._ag.data.append(i)
 
-        self.runSim(t * 10 * Time.ns)
+        self.runSim(t * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.wDatapump.req._ag.data,
                                     [(self.ID, 0x1020, self.MAX_LEN, 0)])
@@ -79,7 +78,7 @@ class CLinkedListWriterTC(SimTestCase):
         for i in range(2 * (self.MAX_LEN + 1)):
             self.u.dataIn._ag.data.append(i)
 
-        self.runSim(t * 10 * Time.ns)
+        self.runSim(t * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.wDatapump.req._ag.data,
                                     [(self.ID, 0x1020, self.MAX_LEN, 0)])
@@ -96,7 +95,7 @@ class CLinkedListWriterTC(SimTestCase):
         for i in range(self.MAX_LEN + 1):
             self.u.dataIn._ag.data.append(i)
 
-        self.runSim(t * 10 * Time.ns)
+        self.runSim(t * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.wDatapump.req._ag.data,
                                     [(self.ID, 0x1020, self.MAX_LEN - 1, 0)])
@@ -124,7 +123,7 @@ class CLinkedListWriterTC(SimTestCase):
         for i in range(ITEMS):
             self.u.dataIn._ag.data.append(i + MAGIC)
 
-        self.runSim(t * 10 * Time.ns)
+        self.runSim(t * CLK_PERIOD)
 
         baseIndex = BASE // (self.DATA_WIDTH // 8)
         # print()
@@ -173,7 +172,7 @@ class CLinkedListWriterTC(SimTestCase):
         for i in range(ITEMS):
             self.u.dataIn._ag.data.append(i + MAGIC)
 
-        self.runSim(t * 10 * Time.ns)
+        self.runSim(t * CLK_PERIOD)
 
         baseIndex = BASE // (self.DATA_WIDTH // 8)
 

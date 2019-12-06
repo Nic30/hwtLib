@@ -52,7 +52,7 @@ class HashTableCore(Unit):
         lookup  | HashTable +---------->
         -------->           |
                 +-----------+
-    
+
     .. hwt-schematic:: _example_HashTableCore
 
     """
@@ -75,40 +75,42 @@ class HashTableCore(Unit):
         assert int(self.DATA_WIDTH) >= 0
         assert int(self.ITEMS_CNT) > 1
 
-        self.HASH_WITH = log2ceil(self.ITEMS_CNT).val
+        self.HASH_WIDTH = log2ceil(self.ITEMS_CNT)
 
-        assert self.HASH_WITH < int(self.KEY_WIDTH), ("It makes no sense to use hash table when you can use key directly as index", self.HASH_WITH, self.KEY_WIDTH)
+        assert self.HASH_WIDTH < int(self.KEY_WIDTH), (
+            "It makes no sense to use hash table when you can use key directly as index",
+            self.HASH_WIDTH, self.KEY_WIDTH)
 
         with self._paramsShared():
             self.insert = InsertIntf()
-            self.insert.HASH_WIDTH.set(self.HASH_WITH)
+            self.insert.HASH_WIDTH = self.HASH_WIDTH
 
             self.lookup = LookupKeyIntf()
 
             self.lookupRes = LookupResultIntf()._m()
-            self.lookupRes.HASH_WIDTH.set(self.HASH_WITH)
+            self.lookupRes.HASH_WIDTH = self.HASH_WIDTH
 
         t = self.table = RamSingleClock()
-        t.PORT_CNT.set(1)
-        t.ADDR_WIDTH.set(log2ceil(self.ITEMS_CNT))
-        t.DATA_WIDTH.set(self.KEY_WIDTH + self.DATA_WIDTH + 1)  # +1 for vldFlag
+        t.PORT_CNT = 1
+        t.ADDR_WIDTH = log2ceil(self.ITEMS_CNT)
+        t.DATA_WIDTH = self.KEY_WIDTH + self.DATA_WIDTH + 1  # +1 for vldFlag
 
         tc = self.tableConnector = RamAsHs()
-        tc.ADDR_WIDTH.set(t.ADDR_WIDTH.get())
-        tc.DATA_WIDTH.set(t.DATA_WIDTH.get())
+        tc.ADDR_WIDTH = t.ADDR_WIDTH
+        tc.DATA_WIDTH = t.DATA_WIDTH
 
-        hashWidth = max(int(self.KEY_WIDTH), int(self.HASH_WITH))
+        hashWidth = max(int(self.KEY_WIDTH), int(self.HASH_WIDTH))
         h = self.hash = CrcComb()
-        h.DATA_WIDTH.set(hashWidth)
+        h.DATA_WIDTH = hashWidth
         h.setConfig(self.POLYNOME)
-        h.POLY_WIDTH.set(hashWidth)
+        h.POLY_WIDTH = hashWidth
 
     def parseItem(self, sig):
         """
         Parse data stored in hash table
         """
-        DW = int(self.DATA_WIDTH)
-        KW = int(self.KEY_WIDTH)
+        DW = self.DATA_WIDTH
+        KW = self.KEY_WIDTH
 
         vldFlag = sig[0]
 
@@ -134,7 +136,7 @@ class HashTableCore(Unit):
 
         # tmp storage for original key and hash for later check
         origKeyReg = HandshakedReg(LookupKeyIntf)
-        origKeyReg.KEY_WIDTH.set(self.KEY_WIDTH)
+        origKeyReg.KEY_WIDTH = self.KEY_WIDTH
         self.origKeyReg = origKeyReg
         origKeyReg.dataIn.key(lookup.key)
         if lookup.LOOKUP_ID_WIDTH:
@@ -154,7 +156,7 @@ class HashTableCore(Unit):
 
         if self.LOOKUP_HASH:
             origHashReg = HandshakedReg(Handshaked)
-            origHashReg.DATA_WIDTH.set(self.HASH_WITH)
+            origHashReg.DATA_WIDTH = self.HASH_WIDTH
 
             self.origHashReg = origHashReg
             origHashReg.clk(self.clk)

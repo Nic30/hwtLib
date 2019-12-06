@@ -53,7 +53,7 @@ class BasicSynthesisTC(unittest.TestCase):
         c = self.n
         clk = c.sig("ap_clk")
         rst = c.sig("ap_rst")
-        a = c.sig("a", clk=clk, syncRst=rst, defVal=0)
+        a = c.sig("a", clk=clk, syncRst=rst, def_val=0)
 
         self.assertEqual(len(a.drivers), 1)
 

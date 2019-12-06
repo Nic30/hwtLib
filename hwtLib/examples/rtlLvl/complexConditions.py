@@ -13,7 +13,7 @@ def ComplexConditions():
     clk = n.sig('clk')
     rst = n.sig("rst")
 
-    st = n.sig('st', stT, clk=clk, syncRst=rst, defVal=stT.idle)
+    st = n.sig('st', stT, clk=clk, syncRst=rst, def_val=stT.idle)
     s_idle = n.sig('s_idle')
     sd0 = n.sig('sd0')
     sd1 = n.sig('sd1')
@@ -70,7 +70,7 @@ ENTITY ComplexConditions IS
         sd0: IN STD_LOGIC;
         sd1: IN STD_LOGIC
     );
-END ComplexConditions;
+END ENTITY;
 
 ARCHITECTURE rtl OF ComplexConditions IS
     TYPE T_STATE IS (idle, tsWait, ts0Wait, ts1Wait, lenExtr);
@@ -135,7 +135,7 @@ BEGIN
         END CASE;
     END PROCESS;
 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 if __name__ == "__main__":
     netlist, interfaces = ComplexConditions()

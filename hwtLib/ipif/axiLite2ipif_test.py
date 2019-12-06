@@ -1,26 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import mask
-from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.constants import RESP_OKAY, PROT_DEFAULT
 from hwtLib.ipif.axiLite2ipif import AxiLite2Ipif
+from pyMathBitPrecise.bit_utils import mask
+from pycocotb.constants import CLK_PERIOD
+from pycocotb.triggers import Timer
 
 
 class AxiLite2ipifTC(SimTestCase):
-    CLK = 10 * Time.ns
+    CLK = CLK_PERIOD
+
+    def setUp(self):
+        pass
 
     def mySetUp(self, read_latency=0, write_latency=0):
         u = self.u = AxiLite2Ipif()
         DW = 32
-        u.DATA_WIDTH.set(DW)
-        u.ADDR_WIDTH.set(32)
+        u.DATA_WIDTH = DW
+        u.ADDR_WIDTH = 32
         self.m = mask(DW // 8)
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         ipif = u.m._ag
         ipif.READ_LATENCY = read_latency
         ipif.WRITE_LATENCY = write_latency
+        SimTestCase.setUp(self)
 
     def test_nop(self):
         self.mySetUp()
@@ -28,11 +33,11 @@ class AxiLite2ipifTC(SimTestCase):
 
     def test_read(self, randomize_axi=False, read_latency=0):
         self.mySetUp(read_latency=read_latency)
-        axi = self.u.s
+        axi = self.u.m
         if randomize_axi:
             self.randomize(axi)
 
-        ipif = self.u.m._ag
+        ipif = self.u.s._ag
         MAGIC = 10
         ipif.mem[0] = MAGIC + 0
         ipif.mem[1] = MAGIC + 1
@@ -40,8 +45,10 @@ class AxiLite2ipifTC(SimTestCase):
         ipif.mem[4] = MAGIC + 3
 
         axi.ar._ag.data.extend([
-            (0, PROT_DEFAULT), (4, PROT_DEFAULT), (8,
-                                                   PROT_DEFAULT), (16, PROT_DEFAULT)
+            (0, PROT_DEFAULT),
+            (4, PROT_DEFAULT), 
+            (8, PROT_DEFAULT),
+            (16, PROT_DEFAULT)
         ])
 
         self.runSim(10 * (read_latency + 1) * self.CLK)
@@ -53,8 +60,8 @@ class AxiLite2ipifTC(SimTestCase):
 
     def test_write(self, randomize_axi=False, write_latency=0, data_delay=0):
         self.mySetUp(write_latency=write_latency)
-        axi = self.u.s
-        ipif = self.u.m
+        axi = self.u.m
+        ipif = self.u.s
         if randomize_axi:
             self.randomize(axi)
 
@@ -66,13 +73,13 @@ class AxiLite2ipifTC(SimTestCase):
 
         if data_delay > 0:
 
-            def late_add_data(sim):
-                yield sim.wait(data_delay)
+            def late_add_data():
+                yield Timer(data_delay)
                 axi.w._ag.data.extend([
                     (MAGIC + i, self.m) for i in range(N)
                 ])
 
-            self.procs.append(late_add_data)
+            self.procs.append(late_add_data())
         else:
             axi.w._ag.data.extend([
                 (MAGIC + i, self.m) for i in range(N)
@@ -88,11 +95,11 @@ class AxiLite2ipifTC(SimTestCase):
                           data_delay=0):
         self.mySetUp(read_latency=read_latency,
                      write_latency=write_latency)
-        axi = self.u.s
+        axi = self.u.m
         if randomize_axi:
             self.randomize(axi)
 
-        ipif = self.u.m._ag
+        ipif = self.u.s._ag
         MAGIC_R = 10
         MAGIC_W = 100
 
@@ -105,12 +112,12 @@ class AxiLite2ipifTC(SimTestCase):
 
         if data_delay > 0:
             def late_add_data(sim):
-                yield sim.wait(data_delay)
+                yield Timer(data_delay)
                 axi.w._ag.data.extend([
                     (MAGIC_W + i, self.m) for i in range(N)
                 ])
 
-            self.procs.append(late_add_data)
+            self.procs.append(late_add_data())
         else:
             axi.w._ag.data.extend([
                 (MAGIC_W + i, self.m) for i in range(N)

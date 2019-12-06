@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.handshaked.reg import HandshakedReg
+from pycocotb.constants import CLK_PERIOD
 
 
-class HsRegL1D0TC(SimTestCase):
+class HsRegL1D0TC(SingleUnitSimTestCase):
     LATENCY = 1
     DELAY = 0
 
-    def setUp(self):
-        SimTestCase.setUp(self)
-        self.u = HandshakedReg(Handshaked)
-        self.u.DELAY.set(self.DELAY)
-        self.u.LATENCY.set(self.LATENCY)
-        self.prepareUnit(self.u)
+    @classmethod
+    def getUnit(cls):
+        cls.u = HandshakedReg(Handshaked)
+        cls.u.DELAY = cls.DELAY
+        cls.u.LATENCY = cls.LATENCY
+        return cls.u
 
     def test_passdata(self):
         u = self.u
         u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
 
-        self.runSim((self.DELAY + self.LATENCY) * 120 * Time.ns)
+        self.runSim((self.DELAY + self.LATENCY) * 12 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, [1, 2, 3, 4, 5, 6])
         self.assertValSequenceEqual([], u.dataIn._ag.data)
@@ -33,7 +33,7 @@ class HsRegL1D0TC(SimTestCase):
         self.randomize(u.dataIn)
         self.randomize(u.dataOut)
 
-        self.runSim((self.DELAY + self.LATENCY) * 600 * Time.ns)
+        self.runSim((self.DELAY + self.LATENCY) * 60 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.dataOut._ag.data, [1, 2, 3, 4, 5, 6])
         self.assertValSequenceEqual([], u.dataIn._ag.data)
@@ -47,7 +47,7 @@ class HsRegL2D1TC(HsRegL1D0TC):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(HsRegL1D0TC('test_r_passdata'))
+    # suite.addTest(HsRegL1D0TC('test_r_passdata'))
     suite.addTest(unittest.makeSuite(HsRegL1D0TC))
     suite.addTest(unittest.makeSuite(HsRegL2D1TC))
     runner = unittest.TextTestRunner(verbosity=3)

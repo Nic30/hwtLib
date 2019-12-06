@@ -28,15 +28,17 @@ class AxiSBuilder(AbstractStreamBuilder):
         """
         Change datawidth of axi stream
         """
+        def set_OUT_DATA_WIDTH(u):
+            u.OUT_DATA_WIDTH = newDataWidth
         return self._genericInstance(AxiS_resizer,
                                      "resize",
-                                     lambda u: u.OUT_DATA_WIDTH.set(newDataWidth))
+                                     set_OUT_DATA_WIDTH)
 
     def startOfFrame(self):
         """
         generate start of frame signal, high when we expect new frame to start
         """
-        lastseen = self.parent._reg(self.name + "_sof_lastseen", defVal=1)
+        lastseen = self.parent._reg(self.name + "_sof_lastseen", def_val=1)
         intf = self.end
 
         ack = intf.valid & intf.ready

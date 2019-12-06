@@ -1,8 +1,8 @@
 from collections import deque
 
-from hwt.bitmask import mask
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.constants import RESP_OKAY
+from pyMathBitPrecise.bit_utils import mask
 
 
 class Axi3DenseMem(DenseMemory):
@@ -72,18 +72,23 @@ class Axi3DenseMem(DenseMemory):
         self.rPending = deque()
 
         self.wPending = deque()
-
-        self._registerOnClock(clk)
+        self.clk = clk
+        self._registerOnClock()
 
     def parseReq(self, req):
-        for i, v in enumerate(req):
-            assert v._isFullVld(), ("Invalid AXI request", i, v)
+        try:
+            req = [int(v) for v in req]
+        except ValueError:
+            raise AssertionError("Invalid AXI request", req) from None
 
-        _id = req[0].val
-        addr = req[1].val
-        size = req[4].val + 1
+        _id = req[0]
+        addr = req[1]
+        size = req[4] + 1
 
         return (_id, addr, size, self.allMask)
+
+    def add_r_ag_data(self, _id, data, isLast):
+        self.rAg.data.append((_id, data, RESP_OKAY, isLast))
 
     def doRead(self):
         _id, addr, size, lastWordBitmask = self.rPending.popleft()
@@ -105,7 +110,17 @@ class Axi3DenseMem(DenseMemory):
                     "Invalid read of uninitialized value on addr 0x%x"
                     % (addr + i * self.cellSize))
 
-            self.rAg.data.append((_id, data, RESP_OKAY, isLast))
+            self.add_r_ag_data(_id, data, isLast)
+
+
+    def pop_w_ag_data(self, _id):
+        if self.HAS_W_ID:
+            _id2, data, strb, last = self.wAg.data.popleft()
+            _id2 = int(_id2)
+            assert _id == _id2
+        else:
+            data, strb, last = self.wAg.data.popleft()
+        return (data, strb, last)
 
     def doWrite(self):
         _id, addr, size, lastWordBitmask = self.wPending.popleft()
@@ -115,27 +130,12 @@ class Axi3DenseMem(DenseMemory):
             raise NotImplementedError("unaligned transaction not implemented")
 
         for i in range(size):
-            if self.HAS_W_ID:
-                _id2, data, strb, last = self.wAg.data.popleft()
-                assert _id2._isFullVld()
-                assert _id == _id2.val
-            else:
-                data, strb, last = self.wAg.data.popleft()
-
-            # assert data._isFullVld()
-            assert strb._isFullVld()
-            assert last._isFullVld()
-
-            data, strb, last = data.val, strb.val, bool(last.val)
-
+            data, strb, last = self.pop_w_ag_data(_id)
+            strb = int(strb)
+            last = int(last)
+            last = bool(last)
             isLast = i == size - 1
-
             assert last == isLast, (addr, size, i)
-
-            if data is None:
-                raise AssertionError(
-                    "Invalid read of uninitialized value on addr 0x%x"
-                    % (addr + i * self.cellSize))
 
             if isLast:
                 expectedStrb = lastWordBitmask
@@ -144,7 +144,7 @@ class Axi3DenseMem(DenseMemory):
 
             if expectedStrb != self.allMask:
                 raise NotImplementedError()
-            assert strb == expectedStrb
+            assert strb == expectedStrb, (strb, expectedStrb)
 
             self.data[baseIndex + i] = data
 

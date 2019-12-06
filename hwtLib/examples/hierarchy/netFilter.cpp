@@ -18,25 +18,25 @@ SC_MODULE(hfe) {
 
     //processes inside this component
     void assig_process_din_ready() {
-        din_ready.write('X');
+        din_ready.write(sc_uint<1>("0xX"));
     }
     void assig_process_dout_data() {
         dout_data.write(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
     }
     void assig_process_dout_last() {
-        dout_last.write('X');
+        dout_last.write(sc_uint<1>("0xX"));
     }
     void assig_process_dout_valid() {
-        dout_valid.write('X');
+        dout_valid.write(sc_uint<1>("0xX"));
     }
     void assig_process_headers_data() {
         headers_data.write(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
     }
     void assig_process_headers_last() {
-        headers_last.write('X');
+        headers_last.write(sc_uint<1>("0xX"));
     }
     void assig_process_headers_valid() {
-        headers_valid.write('X');
+        headers_valid.write(sc_uint<1>("0xX"));
     }
 
     SC_CTOR(hfe) {
@@ -72,16 +72,16 @@ SC_MODULE(patternMatch) {
 
     //processes inside this component
     void assig_process_din_ready() {
-        din_ready.write('X');
+        din_ready.write(sc_uint<1>("0xX"));
     }
     void assig_process_match_data() {
         match_data.write(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
     }
     void assig_process_match_last() {
-        match_last.write('X');
+        match_last.write(sc_uint<1>("0xX"));
     }
     void assig_process_match_valid() {
-        match_valid.write('X');
+        match_valid.write(sc_uint<1>("0xX"));
     }
 
     SC_CTOR(patternMatch) {
@@ -138,16 +138,16 @@ SC_MODULE(filter) {
 
     //processes inside this component
     void assig_process_cfg_ar_ready() {
-        cfg_ar_ready.write('X');
+        cfg_ar_ready.write(sc_uint<1>("0xX"));
     }
     void assig_process_cfg_aw_ready() {
-        cfg_aw_ready.write('X');
+        cfg_aw_ready.write(sc_uint<1>("0xX"));
     }
     void assig_process_cfg_b_resp() {
         cfg_b_resp.write(sc_uint<2>("XX"));
     }
     void assig_process_cfg_b_valid() {
-        cfg_b_valid.write('X');
+        cfg_b_valid.write(sc_uint<1>("0xX"));
     }
     void assig_process_cfg_r_data() {
         cfg_r_data.write(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
@@ -156,28 +156,28 @@ SC_MODULE(filter) {
         cfg_r_resp.write(sc_uint<2>("XX"));
     }
     void assig_process_cfg_r_valid() {
-        cfg_r_valid.write('X');
+        cfg_r_valid.write(sc_uint<1>("0xX"));
     }
     void assig_process_cfg_w_ready() {
-        cfg_w_ready.write('X');
+        cfg_w_ready.write(sc_uint<1>("0xX"));
     }
     void assig_process_din_ready() {
-        din_ready.write('X');
+        din_ready.write(sc_uint<1>("0xX"));
     }
     void assig_process_dout_data() {
         dout_data.write(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
     }
     void assig_process_dout_last() {
-        dout_last.write('X');
+        dout_last.write(sc_uint<1>("0xX"));
     }
     void assig_process_dout_valid() {
-        dout_valid.write('X');
+        dout_valid.write(sc_uint<1>("0xX"));
     }
     void assig_process_headers_ready() {
-        headers_ready.write('X');
+        headers_ready.write(sc_uint<1>("0xX"));
     }
     void assig_process_patternMatch_ready() {
-        patternMatch_ready.write('X');
+        patternMatch_ready.write(sc_uint<1>("0xX"));
     }
 
     SC_CTOR(filter) {
@@ -227,16 +227,16 @@ SC_MODULE(exporter) {
 
     //processes inside this component
     void assig_process_din_ready() {
-        din_ready.write('X');
+        din_ready.write(sc_uint<1>("0xX"));
     }
     void assig_process_dout_data() {
         dout_data.write(sc_uint<64>("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
     }
     void assig_process_dout_last() {
-        dout_last.write('X');
+        dout_last.write(sc_uint<1>("0xX"));
     }
     void assig_process_dout_valid() {
-        dout_valid.write('X');
+        dout_valid.write(sc_uint<1>("0xX"));
     }
 
     SC_CTOR(exporter) {

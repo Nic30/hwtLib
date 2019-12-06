@@ -90,7 +90,7 @@ class AddressSpaceProbe(object):
                 yield offset, parent
                 return
             elif isinstance(parent, BusBridge):
-                i = parent.m
+                i = parent.s
                 yield from self.walkToConverter(self._getMainSigFn(i), offset)
                 return
             elif isinstance(parent, BusInterconnect):

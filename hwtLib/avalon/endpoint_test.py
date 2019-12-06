@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import mask
-from hwt.hdl.constants import Time, READ, WRITE
+from hwt.hdl.constants import READ, WRITE
 from hwt.interfaces.std import BramPort_withoutClk
 from hwt.simulator.simTestCase import SimTestCase
 
@@ -14,6 +13,8 @@ from hwtLib.amba.axiLite_comp.endpoint_test import structTwoFields, \
 from hwtLib.avalon.endpoint import AvalonMmEndpoint
 from hwtLib.avalon.memSpaceMaster import AvalonMmMemSpaceMaster
 from hwtLib.avalon.mm import AvalonMM, RESP_OKAY, RESP_SLAVEERROR
+from pycocotb.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import mask
 
 
 def addrGetter(intf):
@@ -28,7 +29,7 @@ def addrGetter(intf):
 class AvalonMmEndpointTC(SimTestCase):
     STRUCT_TEMPLATE = structTwoFields
     FIELD_ADDR = [0x0, 0x4]
-    CLK = 10 * Time.ns
+    CLK = CLK_PERIOD
 
     def arTrans(self, addr, burstsize=1):
         return (READ, addr, burstsize)
@@ -36,7 +37,7 @@ class AvalonMmEndpointTC(SimTestCase):
     def awTrans(self, addr, burstsize=1):
         return (WRITE, addr, burstsize)
 
-    def mkRegisterMap(self, u, modelCls):
+    def mkRegisterMap(self, u):
         self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
         self.regs = AvalonMmMemSpaceMaster(u.bus, self.addrProbe.discovered)
 
@@ -55,9 +56,9 @@ class AvalonMmEndpointTC(SimTestCase):
         u = self.u = AvalonMmEndpoint(structT)
 
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        u.DATA_WIDTH = self.DATA_WIDTH
 
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
+        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
     def test_nop(self):
@@ -161,8 +162,8 @@ class AvalonMmMemMasterTC(AxiLiteEndpointMemMasterTC):
     def randomizeAll(self):
         AvalonMmEndpointTC.randomizeAll(self)
 
-    def mkRegisterMap(self, u, modelCls):
-        AvalonMmEndpointTC.mkRegisterMap(self, u, modelCls)
+    def mkRegisterMap(self, u):
+        AvalonMmEndpointTC.mkRegisterMap(self, u)
 
     def _test_read_memMaster(self, structT):
         u = AvalonMmEndpointTC.mySetUp(self, 32, structT)
@@ -226,4 +227,3 @@ if __name__ == "__main__":
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-

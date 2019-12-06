@@ -24,11 +24,13 @@ class ClkSynchronizer(Unit):
     def _declr(self):
         self.rst = Rst()
 
-        self.inData = Signal(dtype=self.DATA_TYP)
         self.inClk = Clk()
+        with self._associated(clk=self.inClk):
+            self.inData = Signal(dtype=self.DATA_TYP)
 
-        self.outData = Signal(dtype=self.DATA_TYP)._m()
         self.outClk = Clk()
+        with self._associated(clk=self.outClk):
+            self.outData = Signal(dtype=self.DATA_TYP)._m()
 
     def _impl(self):
         def reg(name, clk):
@@ -36,7 +38,7 @@ class ClkSynchronizer(Unit):
                              self.DATA_TYP,
                              clk=clk,
                              rst=self.rst,
-                             defVal=0)
+                             def_val=0)
         inReg = reg("inReg", self.inClk)
         outReg0 = reg("outReg0", self.outClk)
         outReg1 = reg("outReg1", self.outClk)

@@ -42,24 +42,24 @@ class HsSplitSelect(HandshakedCompBase):
         assert outputs > 1, outputs
 
         self.selectOneHot = Handshaked()
-        self.selectOneHot.DATA_WIDTH.set(outputs)
+        self.selectOneHot.DATA_WIDTH = outputs
 
         with self._paramsShared():
             self.dataIn = self.intfCls()
             self.dataOut = HObjList(
                 self.intfCls()._m() for _ in range(int(self.OUTPUTS))
             )
-    
+
     def _select_consume_en(self):
         return True
-    
+
     def _impl(self):
         In = self.dataIn
-        rd = self.getRd
+        rd = self.get_ready_signal
 
         sel = self.selectOneHot
         r = HandshakedReg(Handshaked)
-        r.DATA_WIDTH.set(sel.data._dtype.bit_length())
+        r.DATA_WIDTH = sel.data._dtype.bit_length()
         self.selReg = r
         r.dataIn(sel)
         propagateClkRstn(self)
@@ -67,7 +67,7 @@ class HsSplitSelect(HandshakedCompBase):
 
         for index, outIntf in enumerate(self.dataOut):
             for ini, outi in zip(In._interfaces, outIntf._interfaces):
-                if ini == self.getVld(In):
+                if ini == self.get_valid_signal(In):
                     # out.vld
                     outi(sel.vld & ini & sel.data[index])
                 elif ini == rd(In):
@@ -82,7 +82,7 @@ class HsSplitSelect(HandshakedCompBase):
                   ] +
                   [(sel.data[index],
                     [rd(In)(rd(out)),
-                     sel.rd(rd(out) & self.getVld(din) & sel.vld & self._select_consume_en())])
+                     sel.rd(rd(out) & self.get_valid_signal(din) & sel.vld & self._select_consume_en())])
                    for index, out in enumerate(self.dataOut)],
             default=[
                      sel.rd(None),

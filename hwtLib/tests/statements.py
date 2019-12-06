@@ -27,8 +27,8 @@ class StatementsTC(unittest.TestCase):
             def w(val):
                 return res(val)
 
-            a.defVal = hBit(a_in)
-            b.defVal = hBit(b_in)
+            a.def_val = hBit(a_in)
+            b.def_val = hBit(b_in)
 
             stm = IfContainer(a & b,
                               ifTrue=[res(0), ],
@@ -48,7 +48,7 @@ class StatementsTC(unittest.TestCase):
             newVal = res._val
 
             self.assertEqual(newVal.val, expected)
-            self.assertEqual(newVal.vldMask, 3)
+            self.assertEqual(newVal.vld_mask, 3)
 
 
 if __name__ == '__main__':

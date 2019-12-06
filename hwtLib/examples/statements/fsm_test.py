@@ -4,7 +4,7 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwtLib.examples.statements.fsm import FsmExample, HadrcodedFsmExample
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SimTestCase, SingleUnitSimTestCase
 from hwt.synthesizer.utils import toRtl
 from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.systemC.serializer import SystemCSerializer
@@ -24,7 +24,7 @@ ENTITY FsmExample IS
         dout: OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
         rst_n: IN STD_LOGIC
     );
-END FsmExample;
+END ENTITY;
 
 ARCHITECTURE rtl OF FsmExample IS
     TYPE ST_T IS (a_0, b_0, aAndB);
@@ -84,7 +84,7 @@ BEGIN
         END CASE;
     END PROCESS;
 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 fsmExample_verilog = """/*
 
@@ -115,7 +115,7 @@ module FsmExample(input a,
     end
 
     always @(posedge clk) begin: assig_process_st
-        if(rst_n == 1'b0) begin
+        if (rst_n == 1'b0) begin
             st <= 0;
         end else begin
             st <= st_next;
@@ -125,27 +125,27 @@ module FsmExample(input a,
     always @(a or b or st) begin: assig_process_st_next
         case(st)
         0: begin
-            if((a & b)==1'b1) begin
+            if (a & b) begin
                 st_next = 2;
-            end else if((b)==1'b1) begin
+            end else if (b) begin
                 st_next = 1;
             end else begin
                 st_next = st;
             end
         end
         1: begin
-            if((a & b)==1'b1) begin
+            if (a & b) begin
                 st_next = 2;
-            end else if((a)==1'b1) begin
+            end else if (a) begin
                 st_next = 0;
             end else begin
                 st_next = st;
             end
         end
         default: begin
-            if((a & (~b))==1'b1) begin
+            if (a & ~b) begin
                 st_next = 0;
-            end else if(((~a) & b)==1'b1) begin
+            end else if (~a & b) begin
                 st_next = 1;
             end else begin
                 st_next = st;
@@ -192,7 +192,7 @@ SC_MODULE(FsmExample) {
         }
     }
     void assig_process_st() {
-        if(rst_n.read() == '0') {
+        if (rst_n.read() == 0) {
             st = 0;
         } else {
             st = st_next.read();
@@ -201,27 +201,27 @@ SC_MODULE(FsmExample) {
     void assig_process_st_next() {
         switch(st) {
         case 0:
-            if(a.read() & b.read() == '1') {
+            if ((a.read() & b.read()) == 1) {
                 st_next.write(2);
-            } else if(b.read() == '1') {
+            } else if (b.read() == 1) {
                 st_next.write(1);
             } else {
                 st_next.write(st);
             }
             break;
         case 1:
-            if(a.read() & b.read() == '1') {
+            if ((a.read() & b.read()) == 1) {
                 st_next.write(2);
-            } else if(a.read() == '1') {
+            } else if (a.read() == 1) {
                 st_next.write(0);
             } else {
                 st_next.write(st);
             }
             break;
         default:
-            if(a.read() & (~b.read()) == '1') {
+            if ((a.read() & ~b.read()) == 1) {
                 st_next.write(0);
-            } else if((~a.read()) & b.read() == '1') {
+            } else if ((~a.read() & b.read()) == 1) {
                 st_next.write(1);
             } else {
                 st_next.write(st);
@@ -241,11 +241,12 @@ SC_MODULE(FsmExample) {
 };"""
 
 
-class FsmExampleTC(SimTestCase):
-    def setUp(self):
-        super(FsmExampleTC, self).setUp()
-        self.u = FsmExample()
-        self.prepareUnit(self.u)
+class FsmExampleTC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = FsmExample()
+        return cls.u
 
     def test_allCases(self):
         u = self.u
@@ -260,10 +261,11 @@ class FsmExampleTC(SimTestCase):
 
 
 class HadrcodedFsmExampleTC(FsmExampleTC):
-    def setUp(self):
-        SimTestCase.setUp(self)
-        self.u = HadrcodedFsmExample()
-        self.prepareUnit(self.u)
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = HadrcodedFsmExample()
+        return cls.u
 
 
 class FsmSerializationTC(unittest.TestCase):

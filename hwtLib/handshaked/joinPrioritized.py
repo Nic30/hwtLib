@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import And, Or, SwitchLogic
+from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
-from hwt.synthesizer.hObjList import HObjList
 
 
 class HsJoinPrioritized(HandshakedCompBase):
@@ -30,7 +30,7 @@ class HsJoinPrioritized(HandshakedCompBase):
 
     def dataConnectionExpr(self, dIn, dOut):
         """Create connection between input and output interface"""
-        data = self.getData
+        data = self.get_data
         dataConnectExpr = []
         outDataSignals = list(data(dOut))
 
@@ -45,11 +45,11 @@ class HsJoinPrioritized(HandshakedCompBase):
         return dataConnectExpr
 
     def _impl(self):
-        rd = self.getRd
-        vld = self.getVld
+        rd = self.get_ready_signal
+        vld = self.get_valid_signal
         dout = self.dataOut
 
-        vldSignals = list(map(vld, self.dataIn))
+        vldSignals = [vld(d) for d in self.dataIn]
 
         # data out mux
         dataCases = []

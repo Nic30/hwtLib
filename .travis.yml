@@ -14,6 +14,22 @@ python:
 install:
   - cd ..
   - pip install pytest coveralls
+  - git clone --depth=1 https://github.com/Nic30/pyDigitalWaveTools.git
+  - pushd pyDigitalWaveTools
+  - python3 setup.py install
+  - popd
+  - git clone --depth=1 https://github.com/Nic30/ipCorePackager.git
+  - pushd ipCorePackager
+  - python3 setup.py install
+  - popd
+  - git clone --depth=1 https://github.com/Nic30/pyMathBitPrecise.git
+  - pushd pyMathBitPrecise
+  - python3 setup.py install
+  - popd
+  - git clone --depth=1 https://github.com/Nic30/pycocotb.git
+  - pushd pycocotb
+  - python3 setup.py install
+  - popd
   - git clone --depth=1 https://github.com/Nic30/hwt.git
   - cd hwt
   - python setup.py install

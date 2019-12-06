@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from copy import copy
+
 from hwt.code import Or, rol, SwitchLogic
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import VldSynced
@@ -8,6 +10,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 class HsJoinFairShare(HsJoinPrioritized):
@@ -31,7 +34,7 @@ class HsJoinFairShare(HsJoinPrioritized):
         addClkRstn(self)
         if self.EXPORT_SELECTED:
             s = self.selectedOneHot = VldSynced()._m()
-            s._replaceParam(s.DATA_WIDTH, self.INPUTS)
+            s.DATA_WIDTH = self.INPUTS
 
     @staticmethod
     def priorityAck(priorityReg, vldSignals, index):
@@ -57,38 +60,36 @@ class HsJoinFairShare(HsJoinPrioritized):
                   vldWithHigherPriority) | priorityReg[index]
         return ack
 
-    def isSelectedLogic(self):
+    def isSelectedLogic(self, din_vlds, dout_rd, selectedOneHot):
         """
         Resolve isSelected signal flags for each input, when isSelected flag signal is 1 it means
         input has clearance to make transaction
         """
-        vld = self.getVld
-        rd = self.getRd
-        dout = self.dataOut
+        assert din_vlds
+        if len(din_vlds) == 1:
+            isSelectedFlags = copy(din_vlds)
+            if selectedOneHot is not None:
+                selectedOneHot.data(1)
+        else:
+            priority = self._reg("priority", Bits(len(din_vlds)), def_val=1)
+            priority(rol(priority, 1))
+    
+            isSelectedFlags = []
+            for i, din_vld in enumerate(din_vlds):
+                isSelected = self._sig("isSelected_%d" % i)
+                isSelected(self.priorityAck(priority, din_vlds, i))
+                isSelectedFlags.append(isSelected)
+    
+                if selectedOneHot is not None:
+                    selectedOneHot.data[i](isSelected & din_vld)
+    
+        if selectedOneHot is not None:
+            selectedOneHot.vld(Or(*din_vlds) & dout_rd)
 
-        priority = self._reg("priority", Bits(self.INPUTS), defVal=1)
-        priority(rol(priority, 1))
+        return isSelectedFlags
 
-        vldSignals = list(map(vld, self.dataIn))
-
-        isSelectedFlags = []
-        for i, din in enumerate(self.dataIn):
-            isSelected = self._sig("isSelected_%d" % i)
-            isSelected(self.priorityAck(priority, vldSignals, i))
-            isSelectedFlags.append(isSelected)
-
-            rd(din)(isSelected & rd(dout))
-
-            if self.EXPORT_SELECTED:
-                self.selectedOneHot.data[i](isSelected & vld(din))
-
-        if self.EXPORT_SELECTED:
-            self.selectedOneHot.vld(Or(*vldSignals) & rd(dout))
-
-        return isSelectedFlags, vldSignals
-
-    def inputMuxLogic(self, isSelectedFlags, vldSignals):
-        vld = self.getVld
+    def inputMuxLogic(self, isSelectedFlags):
+        vld = self.get_valid_signal
         dout = self.dataOut
 
         # data out mux
@@ -100,17 +101,32 @@ class HsJoinFairShare(HsJoinPrioritized):
 
         dataDefault = self.dataConnectionExpr(None, dout)
         SwitchLogic(dataCases, dataDefault)
-        vld(dout)(Or(*vldSignals))
 
     def _impl(self):
-        isSelectedFlags, vldSignals = self.isSelectedLogic()
-        self.inputMuxLogic(isSelectedFlags, vldSignals)
+        if self.EXPORT_SELECTED:
+            selectedOneHot = self.selectedOneHot
+        else:
+            selectedOneHot = None
+        
+        rd = self.get_ready_signal
+        vld = self.get_valid_signal
+        dout = self.dataOut
+        din_vlds = [vld(d) for d in self.dataIn]
+        # round-robin
+        isSelectedFlags = self.isSelectedLogic(
+            din_vlds, rd(dout), selectedOneHot)
 
+        self.inputMuxLogic(isSelectedFlags)
+
+        # handshake logic with injected round-robin
+        for din, isSelected in zip(self.dataIn, isSelectedFlags):
+            rd(din)(isSelected & rd(dout))
+        vld(dout)(Or(*din_vlds))
 
 def _example_HsJoinFairShare():
     from hwt.interfaces.std import Handshaked
     u = HsJoinFairShare(Handshaked)
-    u.INPUTS.set(3)
+    u.INPUTS = 3
     return u
 
 

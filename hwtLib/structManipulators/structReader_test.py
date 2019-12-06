@@ -52,7 +52,7 @@ class StructReaderTC(SimTestCase):
     def _test_s0(self, u):
         DW = 64
         N = 3
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
 
         m = DenseMemory(DW, u.clk, u.rDatapump)
 
@@ -67,7 +67,7 @@ class StructReaderTC(SimTestCase):
             for name, val in d.items():
                 expectedFieldValues[name].append(val)
 
-            asFrame = list(iterBits(s0.fromPy(d),
+            asFrame = list(iterBits(s0.from_py(d),
                                     bitsInOne=DW,
                                     skipPadding=False,
                                     fillup=True))

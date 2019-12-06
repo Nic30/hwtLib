@@ -8,6 +8,7 @@ from hwtLib.amba.axis import AxiStream, AxiStreamAgent
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwt.serializer.ip_packager import IpPackager
 from ipCorePackager.component import Component
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 #####################################################################
@@ -20,7 +21,7 @@ class Axi3_addr(Axi3Lite_addr, Axi_id):
 
     def _config(self):
         Axi3Lite_addr._config(self)
-        Axi_id._config(self)
+        Axi_id._config(self, default_id_width=6)
         self.USER_WIDTH = Param(0)
 
     def _declr(self):
@@ -35,8 +36,8 @@ class Axi3_addr(Axi3Lite_addr, Axi_id):
         if self.USER_WIDTH:
             self.user = VectSignal(self.USER_WIDTH)
 
-    def _initSimAgent(self):
-        self._ag = Axi3_addrAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = Axi3_addrAgent(sim, self)
 
 
 class Axi3_addrAgent(AxiStreamAgent):
@@ -44,12 +45,13 @@ class Axi3_addrAgent(AxiStreamAgent):
     Simulation agent for :class:`.Axi3_addr` interface
 
     input/output data stored in list under "data" property
-    data contains tuples (id, addr, burst, cache, len, lock, prot, size, qos, optionaly user)
+    data contains tuples (id, addr, burst, cache, len, lock,
+    prot, size, qos, optionally user)
     """
 
-    def __init__(self, intf: Axi3_addr, allowNoReset=False):
-        BaseAxiAgent.__init__(self, intf, allowNoReset=allowNoReset)
-        
+    def __init__(self, sim: HdlSimulator, intf: Axi3_addr, allowNoReset=False):
+        BaseAxiAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
+
         signals = [
             intf.id,
             intf.addr,
@@ -63,7 +65,7 @@ class Axi3_addrAgent(AxiStreamAgent):
         if hasattr(intf, "user"):
             signals.append(intf.user)
         self._signals = tuple(signals)
-        self._sigCnt = len(signals) 
+        self._sigCnt = len(signals)
 
 
 #####################################################################
@@ -82,9 +84,10 @@ class Axi3_w(Axi_hs, Axi_strb):
         Axi_strb._declr(self)
         self.last = Signal()
         Axi_hs._declr(self)
-    
-    def _initSimAgent(self):
-        AxiStream._initSimAgent(self)
+
+    def _initSimAgent(self, sim: HdlSimulator):
+        AxiStream._initSimAgent(self, sim)
+
 
 #####################################################################
 class Axi3_r(Axi3Lite_r, Axi_id):
@@ -92,7 +95,7 @@ class Axi3_r(Axi3Lite_r, Axi_id):
     Axi 3 read channel interface
     """
     def _config(self):
-        Axi_id._config(self)
+        Axi_id._config(self, default_id_width=6)
         Axi3Lite_r._config(self)
 
     def _declr(self):
@@ -100,8 +103,8 @@ class Axi3_r(Axi3Lite_r, Axi_id):
         Axi3Lite_r._declr(self)
         self.last = Signal()
 
-    def _initSimAgent(self):
-        self._ag = Axi3_rAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = Axi3_rAgent(sim, self)
 
 
 class Axi3_rAgent(BaseAxiAgent):
@@ -112,30 +115,28 @@ class Axi3_rAgent(BaseAxiAgent):
     data contains tuples (id, data, resp, last)
     """
 
-    def doRead(self, s):
+    def get_data(self):
         intf = self.intf
-        r = s.read
 
-        _id = r(intf.id)
-        data = r(intf.data)
-        resp = r(intf.resp)
-        last = r(intf.last)
+        _id = intf.id.read()
+        data = intf.data.read()
+        resp = intf.resp.read()
+        last = intf.last.read()
 
         return (_id, data, resp, last)
 
-    def doWrite(self, s, data):
+    def set_data(self, data):
         intf = self.intf
-        w = s.write
 
         if data is None:
             data = [None for _ in range(4)]
 
         _id, data, resp, last = data
 
-        w(_id, intf.id)
-        w(data, intf.data)
-        w(resp, intf.resp)
-        w(last, intf.last)
+        intf.id.write(_id)
+        intf.data.write(data)
+        intf.resp.write(resp)
+        intf.last.write(last)
 
 
 #####################################################################
@@ -151,8 +152,8 @@ class Axi3_b(Axi3Lite_b, Axi_id):
         Axi_id._declr(self)
         Axi3Lite_b._declr(self)
 
-    def _initSimAgent(self):
-        self._ag = Axi3_bAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = Axi3_bAgent(sim, self)
 
 
 class Axi3_bAgent(BaseAxiAgent):
@@ -163,14 +164,12 @@ class Axi3_bAgent(BaseAxiAgent):
     data contains tuples (id, resp)
     """
 
-    def doRead(self, s):
-        r = s.read
+    def get_data(self):
         intf = self.intf
 
-        return r(intf.id), r(intf.resp)
+        return intf.id.read(), intf.resp.read()
 
-    def doWrite(self, s, data):
-        w = s.write
+    def set_data(self, data):
         intf = self.intf
 
         if data is None:
@@ -178,8 +177,8 @@ class Axi3_bAgent(BaseAxiAgent):
 
         _id, resp = data
 
-        w(_id, intf.id)
-        w(resp, intf.resp)
+        intf.id.write(_id)
+        intf.resp.write(resp)
 
 
 #####################################################################
@@ -189,25 +188,32 @@ class Axi3(Axi3Lite):
     """
     LOCK_WIDTH = 2
     LEN_WIDTH = 4
+    AW_CLS = Axi3_addr
+    AR_CLS = Axi3_addr
+    W_CLS = Axi3_w
+    R_CLS = Axi3_r
+    B_CLS = Axi3_b
 
     def _config(self):
         Axi3Lite._config(self)
-        self.ID_WIDTH = Param(6)
+        Axi_id._config(self, default_id_width=6)
         self.ADDR_USER_WIDTH = Param(0)
         # self.DATA_USER_WIDTH = Param(0)
 
     def _declr(self):
         with self._paramsShared():
-            self.aw = Axi3_addr()
-            self.ar = Axi3_addr()
-            for a in [self.aw, self.ar]:
-                a._replaceParam(a.USER_WIDTH, self.ADDR_USER_WIDTH)
-            
-            self.w = Axi3_w()
-            self.r = Axi3_r(masterDir=DIRECTION.IN)
-            self.b = Axi3_b(masterDir=DIRECTION.IN)
+            if self.HAS_R:
+                self.ar = self.AR_CLS()
+                self.ar.USER_WIDTH = self.ADDR_USER_WIDTH
+                self.r = self.R_CLS(masterDir=DIRECTION.IN)
+
+            if self.HAS_W:
+                self.aw = self.AW_CLS()
+                self.aw.USER_WIDTH = self.ADDR_USER_WIDTH
+                self.w = self.W_CLS()
+                self.b = self.B_CLS(masterDir=DIRECTION.IN)
             # for d in [self.w, self.r, self.b]:
-            #     d._replaceParam(d.USER_WIDTH, self.DATA_USER_WIDTH)
+            #     d.USER_WIDTH = self.DATA_USER_WIDTH
 
     def _getIpCoreIntfClass(self):
         return IP_Axi3
@@ -221,14 +227,18 @@ class IP_Axi3(IP_Axi3Lite):
         super(IP_Axi3, self).__init__()
         self.quartus_name = "axi"
         self.xilinx_protocol_name = "AXI3"
-        A_SIGS = ['id', 'burst', 'cache', 'len', 'lock', 'prot', 'size', 'qos', 'user']
+        A_SIGS = ['id', 'burst', 'cache', 'len', 'lock',
+                  'prot', 'size', 'qos', 'user']
         AxiMap('ar', A_SIGS, self.map['ar'])
         AxiMap('r', ['id', 'last'], self.map['r'])
         AxiMap('aw', A_SIGS, self.map['aw'])
         AxiMap('w', ['id', 'last'], self.map['w'])
         AxiMap('b', ['id'], self.map['b'])
 
-    def postProcess(self, component: Component, packager: IpPackager, thisIf: Axi3):
+    def postProcess(self,
+                    component: Component,
+                    packager: IpPackager,
+                    thisIf: Axi3):
         self.endianness = "little"
         thisIntfName = packager.getInterfaceLogicalName(thisIf)
 
@@ -243,9 +253,8 @@ class IP_Axi3(IP_Axi3Lite):
         param("PROTOCOL", self.xilinx_protocol_name)
         param("READ_WRITE_MODE", "READ_WRITE")
         param("SUPPORTS_NARROW_BURST", 0)
-        
+
         A_U_W = int(thisIf.ADDR_USER_WIDTH)
         if A_U_W:
             param("AWUSER_WIDTH", A_U_W)
             param("ARUSER_WIDTH", A_U_W)
-

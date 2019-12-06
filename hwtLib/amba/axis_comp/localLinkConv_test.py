@@ -3,17 +3,18 @@
 
 import unittest
 
-from hwt.bitmask import mask
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.localLinkConv import LocalLinkToAxiS, AxiSToLocalLink
+from pyMathBitPrecise.bit_utils import mask
 
 
 class LocalLinkConvTest(Unit):
+
     def _config(self):
         self.DATA_WIDTH = Param(64)
         self.USER_WIDTH = Param(2)
@@ -34,11 +35,12 @@ class LocalLinkConvTest(Unit):
         self.dataOut(self.conv1.dataOut)
 
 
-class AxiS_localLinkConvTC(SimTestCase):
-    def setUp(self):
-        super(AxiS_localLinkConvTC, self).setUp()
-        u = self.u = LocalLinkConvTest()
-        self.prepareUnit(u)
+class AxiS_localLinkConvTC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = LocalLinkConvTest()
+        return cls.u
 
     def test_nop(self):
         u = self.u

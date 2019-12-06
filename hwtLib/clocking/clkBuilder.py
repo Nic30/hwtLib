@@ -1,10 +1,11 @@
+from typing import Tuple
+
 from hwt.code import If, log2ceil
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
-from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from typing import Tuple
+from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
 
 
 class ClkBuilder(object):
@@ -54,7 +55,7 @@ class ClkBuilder(object):
         TimerInfo.resolveSharing(timers)
         TimerInfo.instantiate(self.parent, timers, enableSig=enableSig, rstSig=rstSig)
 
-        return list(map(lambda timer: timer.tick, timers))
+        return [timer.tick for timer in timers]
 
     def timer(self, period, enableSig=None, rstSig=None):
         """
@@ -79,7 +80,7 @@ class ClkBuilder(object):
 
         r = parentUnit._reg(timer.name + "_delayCntr",
                             periodSig._dtype,
-                            defVal=0
+                            def_val=0
                             )
         timer.cntrRegister = r
         tick = DynamicTimerInfo._instantiateTimerTickLogic(timer,
@@ -113,7 +114,7 @@ class ClkBuilder(object):
                                     rstSig=rstSig)
         oversampleCntr = self.parent._reg(n + "_oversample%d_cntr" % (sCnt),
                                           Bits(log2ceil(sampleCount) + 1, False),
-                                          defVal=0)
+                                          def_val=0)
 
         if rstSig is None:
             rstSig = sampleDoneTick
@@ -143,7 +144,7 @@ class ClkBuilder(object):
         namePrefix = getSignalName(sig)
         assert rise or fall
         if last is None:
-            last = self.parent._reg(namePrefix + "_edgeDetect_last", defVal=initVal)
+            last = self.parent._reg(namePrefix + "_edgeDetect_last", def_val=initVal)
             last(sig)
 
         if rise:

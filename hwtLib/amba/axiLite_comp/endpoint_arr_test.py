@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import mask
 from hwt.hdl.constants import Time
+from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
-from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
-from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
-from hwtLib.types.ctypes import uint32_t
 from hwt.pyUtils.arrayQuery import flatten
+from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC
-from hwt.hdl.types.bits import Bits
+from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
+from hwtLib.types.ctypes import uint32_t
+from pyMathBitPrecise.bit_utils import mask
+
 
 structTwoArr = HStruct(
                        (uint32_t[4], "field0"),
@@ -98,8 +99,10 @@ class AxiLiteEndpointArrayTC(AxiLiteEndpointTC):
 
         self.assertEmpty(u.bus._ag.r.data)
         for i in range(4):
-            self.assertValEqual(u.decoded.field0._ag.mem[i], MAGIC + i + 1, "index=%d" % i)
-            self.assertValEqual(u.decoded.field1._ag.mem[i], 2 * MAGIC + i + 1, "index=%d" % i)
+            self.assertValEqual(u.decoded.field0._ag.mem[i],
+                                MAGIC + i + 1, "index=%d" % i)
+            self.assertValEqual(u.decoded.field1._ag.mem[i],
+                                2 * MAGIC + i + 1, "index=%d" % i)
 
     def test_registerMap(self):
         self.mySetUp(32)
@@ -111,15 +114,18 @@ class AxiLiteEndpointStructsInArrayTC(AxiLiteEndpointTC):
     STRUCT_TEMPLATE = structStructsInArray
 
     def mySetUp(self, data_width=32):
+
+        def shouldEnterFn(x):
+            return (True, isinstance(x.dtype, Bits))
+
         u = AxiLiteEndpoint(self.STRUCT_TEMPLATE,
-                            shouldEnterFn=lambda x: (True,
-                                                     isinstance(x.dtype, Bits)))
+                            shouldEnterFn=shouldEnterFn)
         self.u = u
 
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        u.DATA_WIDTH = self.DATA_WIDTH
 
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
+        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
     def test_nop(self):
@@ -152,7 +158,8 @@ class AxiLiteEndpointStructsInArrayTC(AxiLiteEndpointTC):
 
         self.randomizeAll()
         self.runSim(500 * Time.ns)
-        expected = list(flatten([[(MAGIC + i, RESP_OKAY), (MAGIC2 + i, RESP_OKAY)]
+        expected = list(flatten([[(MAGIC + i, RESP_OKAY),
+                                  (MAGIC2 + i, RESP_OKAY)]
                                  for i in range(4)], level=1)
                         ) + [(None, RESP_SLVERR)]
         self.assertValSequenceEqual(u.bus.r._ag.data, expected)
@@ -170,9 +177,10 @@ class AxiLiteEndpointStructsInArrayTC(AxiLiteEndpointTC):
         expected = [
             [(MAGIC + i + 1, m) for i in range(N)],
             [(MAGIC2 + i + 1, m) for i in range(N)]
-            ]
+        ]
 
-        u.bus.w._ag.data.extend(flatten(zip(expected[0], expected[1]), level=1))
+        u.bus.w._ag.data.extend(flatten(zip(expected[0], expected[1]),
+                                        level=1))
         u.bus.w._ag.data.append((123, m))
 
         self.randomizeAll()
@@ -184,7 +192,8 @@ class AxiLiteEndpointStructsInArrayTC(AxiLiteEndpointTC):
             self.assertValSequenceEqual(a.field1._ag.dout, [expected[1][i][0]])
 
         self.assertValSequenceEqual(u.bus.b._ag.data,
-                                    [RESP_OKAY for _ in range(2 * N)] + [RESP_SLVERR])
+                                    [RESP_OKAY for _ in range(2 * N)]
+                                    + [RESP_SLVERR])
 
 
 if __name__ == "__main__":
@@ -201,6 +210,7 @@ if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
-    # u = AxiLiteEndpoint(structStructsInArray, shouldEnterFn=lambda tmpl: True)
-    # u.DATA_WIDTH.set(32)
+    # u = AxiLiteEndpoint(structStructsInArray,
+    #                     shouldEnterFn=lambda tmpl: True)
+    # u.DATA_WIDTH = 32
     # print(toRtl(u))

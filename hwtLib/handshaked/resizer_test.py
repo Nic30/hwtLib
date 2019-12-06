@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import mask
 from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked
 from hwt.pyUtils.arrayQuery import grouper
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis_comp.resizer_test import it
 from hwtLib.handshaked.resizer import HsResizer
+from pyMathBitPrecise.bit_utils import mask
 
 
 class HsResizerTC(SimTestCase):
+
     def test_1to1(self):
+        def set_dw(intf):
+            intf.DATA_WIDTH = 32
         u = HsResizer(Handshaked, [1, 1],
-                      lambda intf: intf.DATA_WIDTH.set(32),
-                      lambda intf: intf.DATA_WIDTH.set(32))
-        self.prepareUnit(u)
+                      set_dw,
+                      set_dw)
+        self.compileSimAndStart(u)
         # self.randomize(u.dataIn)
         # self.randomize(u.dataOut)
         N = 10
@@ -29,10 +32,16 @@ class HsResizerTC(SimTestCase):
         self.assertValSequenceEqual(u.dataOut._ag.data, d)
 
     def test_1to3(self):
+        def set_dw_in(intf):
+            intf.DATA_WIDTH = 32
+
+        def set_dw_out(intf):
+            intf.DATA_WIDTH = 3*32
+
         u = HsResizer(Handshaked, [1, 3],
-                      lambda intf: intf.DATA_WIDTH.set(32),
-                      lambda intf: intf.DATA_WIDTH.set(3 * 32))
-        self.prepareUnit(u)
+                      set_dw_in,
+                      set_dw_out)
+        self.compileSimAndStart(u)
         # self.randomize(u.dataIn)
         # self.randomize(u.dataOut)
         N = 9
@@ -51,10 +60,16 @@ class HsResizerTC(SimTestCase):
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
 
     def test_3to1(self):
+        def set_dw_in(intf):
+            intf.DATA_WIDTH = 3 * 32
+
+        def set_dw_out(intf):
+            intf.DATA_WIDTH = 32
+
         u = HsResizer(Handshaked, [3, 1],
-                      lambda intf: intf.DATA_WIDTH.set(3 * 32),
-                      lambda intf: intf.DATA_WIDTH.set(32))
-        self.prepareUnit(u)
+                      set_dw_in,
+                      set_dw_out)
+        self.compileSimAndStart(u)
         # self.randomize(u.dataIn)
         # self.randomize(u.dataOut)
         N = 9

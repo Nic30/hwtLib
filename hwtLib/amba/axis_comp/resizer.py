@@ -52,7 +52,7 @@ class AxiS_resizer(AxiSCompBase):
     def _config(self):
         AxiSCompBase._config(self)
         self.OUT_DATA_WIDTH = Param(64)
-        self.USE_STRB.set(True)
+        self.USE_STRB = True
 
     def _declr(self):
         assert self.USE_STRB
@@ -61,9 +61,9 @@ class AxiS_resizer(AxiSCompBase):
         with self._paramsShared():
             self.dataIn = AxiStream()
 
-        with self._paramsShared(exclude=[self.DATA_WIDTH]):
+        with self._paramsShared(exclude=({"DATA_WIDTH"}, set())):
             o = self.dataOut = AxiStream()._m()
-            o._replaceParam(o.DATA_WIDTH, self.OUT_DATA_WIDTH)
+            o.DATA_WIDTH = self.OUT_DATA_WIDTH
 
     def nextAreNotValidLogic(self, inStrb, actualItemIndx, ITEMS, ITEM_DW):
         res = None
@@ -93,11 +93,11 @@ class AxiS_resizer(AxiSCompBase):
         dataOut = self.dataOut
         dOut = self.getDataWidthDependent(dataOut)
 
-        itemCntr = self._reg("itemCntr", Bits(log2ceil(ITEMS + 1)), defVal=0)
+        itemCntr = self._reg("itemCntr", Bits(log2ceil(ITEMS + 1)), def_val=0)
         hs = StreamNode([self.dataIn], [dataOut]).ack()
         isLastItem = (itemCntr._eq(ITEMS - 1) | self.dataIn.last)
 
-        vld = self.getVld(self.dataIn)
+        vld = self.get_valid_signal(self.dataIn)
 
         outputs = {outp: [] for outp in dOut}
         for wordIndx in range(ITEMS):
@@ -107,7 +107,7 @@ class AxiS_resizer(AxiSCompBase):
 
                 if wordIndx <= ITEMS - 1:
                     r = self._reg("reg_" + inp._name + "_%d" %
-                                  wordIndx, inp._dtype, defVal=0)
+                                  wordIndx, inp._dtype, def_val=0)
 
                     If(hs & isLastItem,
                        r(0)
@@ -130,11 +130,11 @@ class AxiS_resizer(AxiSCompBase):
                 outputs[outp].append(s)
 
         # dataIn/dataOut hs
-        self.getRd(self.dataIn)(self.getRd(dataOut))
-        self.getVld(dataOut)(vld & (isLastItem))
+        self.get_ready_signal(self.dataIn)(self.get_ready_signal(dataOut))
+        self.get_valid_signal(dataOut)(vld & (isLastItem))
 
         # connect others signals directly
-        for inp, outp in zip(self.getData(self.dataIn), self.getData(dataOut)):
+        for inp, outp in zip(self.get_data(self.dataIn), self.get_data(dataOut)):
             if inp not in dIn:
                 outp(inp)
 
@@ -168,7 +168,7 @@ class AxiS_resizer(AxiSCompBase):
         dIn = self.getDataWidthDependent(dataIn)
 
         ITEMS = IN_DW // OUT_DW
-        itemCntr = self._reg("itemCntr", Bits(log2ceil(ITEMS + 1)), defVal=0)
+        itemCntr = self._reg("itemCntr", Bits(log2ceil(ITEMS + 1)), def_val=0)
 
         hs = StreamNode([dataIn], [self.dataOut]).ack()
         isLastItem = itemCntr._eq(ITEMS - 1)
@@ -192,14 +192,14 @@ class AxiS_resizer(AxiSCompBase):
             )
 
         # connect others signals directly
-        for inp, outp in zip(self.getData(dataIn), self.getData(self.dataOut)):
+        for inp, outp in zip(self.get_data(dataIn), self.get_data(self.dataOut)):
             if inp not in dIn and inp is not dataIn.last:
                 outp(inp)
 
         self.dataOut.last(dataIn.last & isLastItem)
-        self.getRd(dataIn)(self.getRd(self.dataOut)
+        self.get_ready_signal(dataIn)(self.get_ready_signal(self.dataOut)
                            & isLastItem & dataIn.valid)
-        self.getVld(self.dataOut)(self.getVld(dataIn))
+        self.get_valid_signal(self.dataOut)(self.get_valid_signal(dataIn))
 
         If(hs,
            If(isLastItem,
@@ -223,21 +223,23 @@ class AxiS_resizer(AxiSCompBase):
 
 
 def _example_AxiS_resizer_upscale():
-    from hwtLib.amba.axis import AxiStream_withId
+    from hwtLib.amba.axis import AxiStream
 
-    u = AxiS_resizer(AxiStream_withId)
-    u.DATA_WIDTH.set(32)
-    u.OUT_DATA_WIDTH.set(64)
+    u = AxiS_resizer(AxiStream)
+    u.ID_WIDTH = 3
+    u.DATA_WIDTH = 32
+    u.OUT_DATA_WIDTH = 64
 
     return u
 
 
 def _example_AxiS_resizer_downscale():
-    from hwtLib.amba.axis import AxiStream_withId
+    from hwtLib.amba.axis import AxiStream
 
-    u = AxiS_resizer(AxiStream_withId)
-    u.DATA_WIDTH.set(64)
-    u.OUT_DATA_WIDTH.set(32)
+    u = AxiS_resizer(AxiStream)
+    u.ID_WIDTH = 3
+    u.DATA_WIDTH = 64
+    u.OUT_DATA_WIDTH = 32
 
     return u
 

@@ -26,8 +26,8 @@ class TwoCntrs(Unit):
     def _impl(self):
         index_t = Bits(8, signed=False)
 
-        a = self._reg("reg_a", index_t, defVal=0)
-        b = self._reg("reg_b", index_t, defVal=0)
+        a = self._reg("reg_a", index_t, def_val=0)
+        b = self._reg("reg_b", index_t, def_val=0)
 
         If(self.a_en,
            a(a + 1)

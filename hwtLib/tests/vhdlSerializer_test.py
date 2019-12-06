@@ -17,52 +17,52 @@ ENTITY TernaryInConcatExample IS
         b: IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         c: OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
     );
-END TernaryInConcatExample;
+END ENTITY;
 
 ARCHITECTURE rtl OF TernaryInConcatExample IS
 BEGIN
     assig_process_c: PROCESS (a, b)
-    VARIABLE tmpTernary: STD_LOGIC;
-    VARIABLE tmpTernary_0: STD_LOGIC;
-    VARIABLE tmpTernary_1: STD_LOGIC;
-    VARIABLE tmpTernary_2: STD_LOGIC;
-    VARIABLE tmpTernary_3: STD_LOGIC;
-    VARIABLE tmpTernary_4: STD_LOGIC;
+    VARIABLE tmpBool2std_logic: STD_LOGIC;
+    VARIABLE tmpBool2std_logic_0: STD_LOGIC;
+    VARIABLE tmpBool2std_logic_1: STD_LOGIC;
+    VARIABLE tmpBool2std_logic_2: STD_LOGIC;
+    VARIABLE tmpBool2std_logic_3: STD_LOGIC;
+    VARIABLE tmpBool2std_logic_4: STD_LOGIC;
     BEGIN
-    IF a /= b THEN
-        tmpTernary := '1';
+    IF a > b THEN
+        tmpBool2std_logic := '1';
     ELSE
-        tmpTernary := '0';
-    END IF;
-    IF a < b THEN
-        tmpTernary_0 := '1';
-    ELSE
-        tmpTernary_0 := '0';
-    END IF;
-    IF a <= b THEN
-        tmpTernary_1 := '1';
-    ELSE
-        tmpTernary_1 := '0';
-    END IF;
-    IF a = b THEN
-        tmpTernary_2 := '1';
-    ELSE
-        tmpTernary_2 := '0';
+        tmpBool2std_logic := '0';
     END IF;
     IF a >= b THEN
-        tmpTernary_3 := '1';
+        tmpBool2std_logic_0 := '1';
     ELSE
-        tmpTernary_3 := '0';
+        tmpBool2std_logic_0 := '0';
     END IF;
-    IF a > b THEN
-        tmpTernary_4 := '1';
+    IF a = b THEN
+        tmpBool2std_logic_1 := '1';
     ELSE
-        tmpTernary_4 := '0';
+        tmpBool2std_logic_1 := '0';
     END IF;
-        c <= X"f" & tmpTernary & tmpTernary_0 & tmpTernary_1 & tmpTernary_2 & tmpTernary_3 & tmpTernary_4 & "0000000000000000000000";
+    IF a <= b THEN
+        tmpBool2std_logic_2 := '1';
+    ELSE
+        tmpBool2std_logic_2 := '0';
+    END IF;
+    IF a < b THEN
+        tmpBool2std_logic_3 := '1';
+    ELSE
+        tmpBool2std_logic_3 := '0';
+    END IF;
+    IF a /= b THEN
+        tmpBool2std_logic_4 := '1';
+    ELSE
+        tmpBool2std_logic_4 := '0';
+    END IF;
+        c <= X"f" & tmpBool2std_logic_4 & tmpBool2std_logic_3 & tmpBool2std_logic_2 & tmpBool2std_logic_1 & tmpBool2std_logic_0 & tmpBool2std_logic & "0000000000000000000000";
     END PROCESS;
 
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 
 class TernaryInConcatExample(Unit):

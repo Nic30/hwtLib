@@ -9,13 +9,13 @@ from hwtLib.amba.axis import AxiStream
 class SimpleUnitAxiStream(Unit):
     """
     Example of unit with axi stream interface
-    
+
     .. hwt-schematic::
     """
     def _config(self):
         self.DATA_WIDTH = Param(8)
         self.USE_STRB = Param(True)
-        
+
     def _declr(self):
         with self._paramsShared():
             self.a = AxiStream()

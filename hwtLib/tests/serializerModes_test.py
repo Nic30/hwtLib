@@ -45,7 +45,7 @@ class ExampleA(Unit):
         self.u5 = ParamsUniqUnit()
         self.u6 = ParamsUniqUnit()
         self.u7 = ParamsUniqUnit()
-        self.u7.B.set(12)
+        self.u7.B = 12
 
     def _impl(self):
         self.a(Concat(*[getattr(self, "u%d" % i).a for i in range(7)]))
@@ -62,12 +62,12 @@ use IEEE.numeric_std.all;
 ENTITY OnceUnit IS
     PORT (a: OUT STD_LOGIC
     );
-END OnceUnit;
+END ENTITY;
 
 ARCHITECTURE rtl OF OnceUnit IS
 BEGIN
     a <= '1';
-END ARCHITECTURE rtl;
+END ARCHITECTURE;
 --Object of class Entity, "OnceUnit" was not serialized as specified
 --Object of class Architecture, "rtl" was not serialized as specified
 --Object of class Entity, "OnceUnit" was not serialized as specified
@@ -82,12 +82,12 @@ ENTITY u5 IS
     );
     PORT (a_0: OUT STD_LOGIC
     );
-END u5;
+END ENTITY;
 
 ARCHITECTURE rtl OF u5 IS
 BEGIN
     a_0 <= '1';
-END ARCHITECTURE rtl;
+END ARCHITECTURE;
 --Object of class Entity, "u5" was not serialized as specified
 --Object of class Architecture, "rtl" was not serialized as specified
 library IEEE;
@@ -100,12 +100,12 @@ ENTITY u7 IS
     );
     PORT (a_0: OUT STD_LOGIC
     );
-END u7;
+END ENTITY;
 
 ARCHITECTURE rtl OF u7 IS
 BEGIN
     a_0 <= '1';
-END ARCHITECTURE rtl;
+END ARCHITECTURE;
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
@@ -113,7 +113,7 @@ use IEEE.numeric_std.all;
 ENTITY ExampleA IS
     PORT (a: OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
     );
-END ExampleA;
+END ENTITY;
 
 ARCHITECTURE rtl OF ExampleA IS
     SIGNAL sig_u0_a: STD_LOGIC;
@@ -193,7 +193,7 @@ BEGIN
         );
 
     a <= sig_u0_a & sig_u1_a & sig_u2_a & sig_u3_a & sig_u4_a & sig_u5_a_0 & sig_u6_a_0;
-END ARCHITECTURE rtl;"""
+END ARCHITECTURE;"""
 
 
 class SerializerModes_TC(unittest.TestCase):

@@ -1,12 +1,12 @@
+from collections import deque
 from itertools import chain
 
-from hwt.bitmask import mask, selectBitRange
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
-from hwt.simulator.types.simBits import simBitsT
-from collections import deque
+from pyMathBitPrecise.bit_utils import mask, selectBitRange, ValidityError
+from pycocotb.triggers import WaitWriteOnly
 
 
 class AllocationError(Exception):
@@ -25,7 +25,8 @@ def reshapedInitItems(actualCellSize, requestedCellSize, values):
     :param values: input array
     :return: generator of new items of specified characteristik
     """
-    if actualCellSize < requestedCellSize and requestedCellSize % actualCellSize == 0:
+    if (actualCellSize < requestedCellSize
+            and requestedCellSize % actualCellSize == 0):
         itemsInCell = requestedCellSize // actualCellSize
         itemAlign = len(values) % itemsInCell
         if itemAlign != 0:
@@ -34,13 +35,14 @@ def reshapedInitItems(actualCellSize, requestedCellSize, values):
             item = 0
             for iIndx, i2 in enumerate(itemsInWord):
                 subIndx = itemsInCell - iIndx - 1
-                _i2 = (mask(actualCellSize * 8) &
-                       i2) << (subIndx * actualCellSize * 8)
+                _i2 = (mask(actualCellSize * 8) & i2
+                       ) << (subIndx * actualCellSize * 8)
                 item |= _i2
             yield item
     else:
-        raise NotImplementedError("Reshaping of array from cell size %d to %d" % (
-            actualCellSize, requestedCellSize))
+        raise NotImplementedError(
+            "Reshaping of array from cell size %d to %d" % (
+                actualCellSize, requestedCellSize))
 
 
 class DenseMemory():
@@ -50,11 +52,13 @@ class DenseMemory():
     :ivar data: memory dict
     """
 
-    def __init__(self, cellWidth, clk, rDatapumpIntf=None, wDatapumpIntf=None, parent=None):
+    def __init__(self, cellWidth, clk, rDatapumpIntf=None,
+                 wDatapumpIntf=None, parent=None):
         """
         :param cellWidth: width of items in memmory
         :param clk: clk signal for synchronization
-        :param parent: parent instance of DenseMemory (memory will be shared with this instance)
+        :param parent: parent instance of DenseMemory
+                       (memory will be shared with this instance)
         """
         assert cellWidth % 8 == 0
         self.cellSize = cellWidth // 8
@@ -66,7 +70,8 @@ class DenseMemory():
         else:
             self.data = parent.data
 
-        assert rDatapumpIntf is not None or wDatapumpIntf is not None, "At least read or write interface has to be present"
+        assert rDatapumpIntf is not None or wDatapumpIntf is not None, \
+            "At least read or write interface has to be present"
 
         if rDatapumpIntf is None:
             arAg = rAg = None
@@ -94,16 +99,18 @@ class DenseMemory():
         self.wAg = wAg
         self.wAckAg = wAckAg
         self.wPending = deque()
+        self.clk = clk
 
-        self._registerOnClock(clk)
+        self._registerOnClock()
 
-    def _registerOnClock(self, clk):
-        clk._sigInside.simRisingSensProcs.add(self.checkRequests)
+    def _registerOnClock(self):
+        self.clk._sigInside.wait(self.checkRequests())
 
-    def checkRequests(self, simulator, _):
+    def checkRequests(self):
         """
         Check if any request has appeared on interfaces
         """
+        yield WaitWriteOnly()
         if self.arAg is not None:
             if self.arAg.data:
                 self.onReadReq()
@@ -117,10 +124,11 @@ class DenseMemory():
 
             if self.wPending and self.wPending[0][2] <= len(self.wAg.data):
                 self.doWrite()
+        self._registerOnClock()
 
     def parseReq(self, req):
         for i, v in enumerate(req):
-            assert v._isFullVld(), (i, v)
+            assert v._is_full_valid(), (i, v)
         assert len(req) == 4
 
         _id = req[0].val
@@ -157,8 +165,9 @@ class DenseMemory():
                 data = None
 
             if data is None:
-                raise AssertionError("Invalid read of uninitialized value on addr 0x%x" %
-                                     (addr + i * self.cellSize))
+                raise AssertionError(
+                    "Invalid read of uninitialized value on addr 0x%x" %
+                    (addr + i * self.cellSize))
 
             if self.r_use_strb:
                 if isLast:
@@ -182,23 +191,27 @@ class DenseMemory():
         for i in range(size):
             if self.w_use_strb:
                 data, strb, last = self.wAg.data.popleft()
-                # assert data._isFullVld()
-                assert strb._isFullVld()
+                # assert data._is_full_valid()
+                assert strb._is_full_valid()
                 strb = strb.val
             else:
-                data,  last = self.wAg.data.popleft()
-
-            assert last._isFullVld()
-            data, last = data.val, bool(last.val)
+                data, last = self.wAg.data.popleft()
+            try:
+                data = int(data)
+            except ValidityError:
+                data = None
+            last = bool(last)
 
             isLast = i == size - 1
 
-            assert last == isLast, "write 0x%x, size %d, expected last:%d in word %d" % (
-                addr, size, isLast, i)
+            assert last == isLast, \
+                "write 0x%x, size %d, expected last:%d in word %d" % (
+                    addr, size, isLast, i)
 
-            if data is None:
-                raise AssertionError("Invalid read of uninitialized value on addr 0x%x" %
-                                     (addr + i * self.cellSize))
+            # if data is None:
+            #     raise AssertionError(
+            #         "Invalid write of uninitialized value on addr 0x%x" %
+            #         (addr + i * self.cellSize))
 
             if isLast:
                 expectedStrb = lastWordBitmask
@@ -217,10 +230,12 @@ class DenseMemory():
 
     def malloc(self, size, keepOut=None):
         """
-        Allocates a block of memory of size and initialize it with None (invalid value)
+        Allocates a block of memory of size and initialize it
+        with None (invalid value)
 
-        :param size: Size of each element.
-        :param keepOut: optional memory spacing between this memory region and lastly allocated
+        :param size: Size of memory block to allocate.
+        :param keepOut: optional memory spacing between this memory region
+                        and lastly allocated
         :return: address of allocated memory
         """
         addr = 0
@@ -255,7 +270,8 @@ class DenseMemory():
 
         :param num: Number of elements to allocate.
         :param size: Size of each element.
-        :param keepOut: optional memory spacing between this memory region and lastly allocated
+        :param keepOut: optional memory spacing between this memory region
+                        and lastly allocated
         :param initValues: iterable of word values to init memory with
         :return: address of allocated memory
         """
@@ -321,13 +337,14 @@ class DenseMemory():
 
         :param start: bit address of start of bit of bits
         :param end: bit address of first bit behind bits
-        :return: instance of BitsVal (derived from SimBits type) which contains copy of selected bits
+        :return: instance of BitsVal (derived from SimBits type)
+                 which contains copy of selected bits
         """
         wordWidth = self.cellSize * 8
 
         inFieldOffset = 0
         allMask = mask(wordWidth)
-        value = simBitsT(end - start, None).fromPy(None)
+        value = Bits(end - start, None).from_py(None)
 
         while start != end:
             assert start < end, (start, end)
@@ -340,21 +357,17 @@ class DenseMemory():
             offset = start % wordWidth
             if v is None:
                 val = 0
-                vldMask = 0
-                updateTime = -1
+                vld_mask = 0
             elif isinstance(v, int):
                 val = selectBitRange(v, offset, width)
-                vldMask = allMask
-                updateTime = -1
+                vld_mask = allMask
             else:
                 val = selectBitRange(v.val, offset, width)
-                vldMask = selectBitRange(v.vldMask, offset, width)
-                updateTime = v.updateTime
+                vld_mask = selectBitRange(v.vld_mask, offset, width)
 
             m = mask(width)
             value.val |= (val & m) << inFieldOffset
-            value.vldMask |= (vldMask & m) << inFieldOffset
-            value.updateMask = max(value.updateTime, updateTime)
+            value.vld_mask |= (vld_mask & m) << inFieldOffset
 
             inFieldOffset += width
             start += width
@@ -382,15 +395,17 @@ class DenseMemory():
 
             dataDict[name] = value
 
-        return transTmpl.dtype.fromPy(dataDict)
+        return transTmpl.dtype.from_py(dataDict)
 
     def getStruct(self, addr, structT, bitAddr=None):
         """
         Get HStruct from memory
 
         :param addr: address where get struct from
-        :param structT: instance of HStruct or FrameTmpl generated from it to resove structure of data
-        :param bitAddr: optional bit precisse address is is not None param addr has to be None
+        :param structT: instance of HStruct or FrameTmpl generated
+                        from it to resove structure of data
+        :param bitAddr: optional bit precisse address is is not None
+                        param addr has to be None
         """
         if bitAddr is None:
             assert bitAddr is None

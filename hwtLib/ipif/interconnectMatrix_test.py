@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.bitmask import mask
 from hwt.hdl.constants import READ, WRITE, Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.ipif.interconnectMatrix import IpifInterconnectMatrix
 from hwtLib.abstract.busInterconnect import ACCESS_RW, AUTO_ADDR
+from hwtLib.ipif.interconnectMatrix import IpifInterconnectMatrix
+from pyMathBitPrecise.bit_utils import mask
 
 
 class IpifInterconnectMatrixTC(SimTestCase):
@@ -28,11 +28,11 @@ class IpifInterconnectMatrixTC(SimTestCase):
         )
         self.DW = 32
         self.wordSize = self.DW // 8
-        u.DATA_WIDTH.set(self.DW)
-        u.ADDR_WIDTH.set(u.getOptimalAddrSize())
+        u.DATA_WIDTH = self.DW
+        u.ADDR_WIDTH = u.getOptimalAddrSize()
         self.m = mask(self.wordSize)
         self.u = u
-        self.prepareUnit(u)
+        self.compileSimAndStart(u)
         for s in u.m:
             s._ag.READ_LATENCY = read_latency
             s._ag.WRITE_LATENCY = write_latency

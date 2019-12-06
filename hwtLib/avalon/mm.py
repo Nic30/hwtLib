@@ -5,11 +5,12 @@ from hwt.simulator.agentBase import SyncAgentBase
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwt.interfaces.agents.vldSynced import VldSyncedAgent
-from hwt.bitmask import mask
-from _collections import deque
+from collections import deque
+from pyMathBitPrecise.bit_utils import mask
+from pycocotb.hdlSimulator import HdlSimulator
 
 RESP_OKAY = 0b00
-# RESP_RESERVED = 0b01 
+# RESP_RESERVED = 0b01
 RESP_SLAVEERROR = 0b10
 RESP_DECODEERROR = 0b11
 
@@ -56,13 +57,13 @@ class AvalonMM(Interface):
 
     def _getAddrStep(self):
         """
-        :return: how many bits is one unit of address (f.e. 8 bits for  char * pointer,
-             36 for 36 bit bram)
+        :return: how many bits is one unit of address
+                 (f.e. 8 bits for  char * pointer, 36 for 36 bit bram)
         """
         return 8
 
-    def _initSimAgent(self):
-        self._ag = AvalonMmAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = AvalonMmAgent(sim, self)
 
 
 class AvalonMmDataRAgent(VldSyncedAgent):
@@ -72,30 +73,31 @@ class AvalonMmDataRAgent(VldSyncedAgent):
     * vld signal = readDataValid
     * data signal = (readData, response)
     """
+    @classmethod
+    def get_valid_signal(cls, intf):
+        return intf.readDataValid
 
-    def doReadVld(self, readFn):
-        return readFn(self.intf.readDataValid)
+    def get_valid(self):
+        return self._vld.read()
 
-    def doWriteVld(self, writeFn, val):
-        writeFn(val, self.intf.readDataValid)
+    def set_valid(self, val):
+        self._vld.write(val)
 
-    def doRead(self, s):
+    def get_data(self):
         """extract data from interface"""
-        r = s.read
         intf = self.intf
-        return (r(intf.readData), r(intf.response))
+        return (intf.readData.read(), intf.response.read())
 
-    def doWrite(self, s, data):
+    def set_data(self, data):
         """write data to interface"""
-        w = s.write
         intf = self.intf
         if data is None:
-            w(None, intf.readData)
-            w(None, intf.response)
+            intf.readData.write(None)
+            intf.response.write(None)
         else:
             readData, response = data
-            w(readData, intf.readData)
-            w(response, intf.response)
+            intf.readData.write(readData)
+            intf.response.write(response)
 
 
 class AvalonMmAddrAgent(HandshakedAgent):
@@ -107,34 +109,36 @@ class AvalonMmAddrAgent(HandshakedAgent):
     * on write set data and byteenamble as well
     """
 
-    def __init__(self, intf, allowNoReset=False):
-        HandshakedAgent.__init__(self, intf, allowNoReset=allowNoReset)
+    def __init__(self, sim: HdlSimulator, intf, allowNoReset=False):
+        HandshakedAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
         self.wData = deque()
 
-    def getRd(self):
-        return self.intf.waitRequest
+    @classmethod
+    def get_ready_signal(cls, intf):
+        return intf.waitRequest
 
-    def isRd(self, readFn):
-        rd = readFn(self._rd)
-        rd.val = not rd.val
+    def get_ready(self):
+        rd = self._rd.read()
+        rd.val = int(not rd.val)
         return rd
 
-    def wrRd(self, wrFn, val):
-        wrFn(int(not val), self._rd)
+    def set_ready(self, val):
+        self._rd.write(int(not val))
 
-    def getVld(self):
-        return (self.intf.read, self.intf.write)
+    @classmethod
+    def get_valid_signal(cls, intf):
+        return (intf.read, intf.write)
 
-    def isVld(self, readFn):
-        r = readFn(self._vld[0])
-        w = readFn(self._vld[1])
+    def get_valid(self):
+        r = self._vld[0].read()
+        w = self._vld[1].read()
 
-        r.val = r.val or w.val
-        r.vldMask = r.vldMask and w.vldMask
+        r.val = r.val | w.val
+        r.vld_mask = r.vld_mask & w.vld_mask
 
         return r
 
-    def wrVld(self, wrFn, val):
+    def set_valid(self, val):
         if self.actualData is None or self.actualData is NOP:
             r = 0
             w = 0
@@ -149,17 +153,15 @@ class AvalonMmAddrAgent(HandshakedAgent):
                 w = val
             else:
                 raise ValueError("Unknown mode", mode)
-        wrFn(r, self._vld[0])
-        wrFn(w, self._vld[1])
+        self._vld[0].write(r)
+        self._vld[1].write(w)
 
-    def doRead(self, s):
-        r = s.read
-
+    def get_data(self):
         intf = self.intf
-        address = r(intf.address)
-        byteEnable = r(intf.byteEnable)
-        read = r(intf.read)
-        write = r(intf.write)
+        address = intf.address.read()
+        byteEnable = intf.byteEnable.read()
+        read = intf.read.read()
+        write = intf.write.read()
         burstCount = 1  # r(intf.burstCount)
 
         if read.val:
@@ -172,15 +174,14 @@ class AvalonMmAddrAgent(HandshakedAgent):
 
         return (address, byteEnable, rw, burstCount)
 
-    def doWrite(self, s, data):
-        w = s.write
+    def set_data(self, data):
         intf = self.intf
         if data is None:
-            w(None, intf.address)
-            w(None, intf.byteEnable)
-            # w(None, intf.burstCount)
-            w(0, intf.read)
-            w(0, intf.write)
+            intf.address.write(None)
+            intf.byteEnable.write(None)
+            # intf.burstCount.write(None)
+            intf.read.write(0)
+            intf.write.write(0)
 
         else:
             rw, address, burstCount = data
@@ -191,31 +192,29 @@ class AvalonMmAddrAgent(HandshakedAgent):
                 rd, wr = 0, 1
                 rw, address, burstCount = data
                 d, be = self.wData.popleft()
-                w(d, intf.writeData)
+                intf.writeData.write(d)
             else:
                 raise TypeError("rw is in invalid format %r" % (rw,))
 
-            w(address, intf.address)
-            w(be, intf.byteEnable)
+            intf.address.write(address)
+            intf.byteEnable.write(be)
             assert int(burstCount) >= 1, burstCount
             # w(burstCount, intf.burstCount)
-            w(rd, intf.read)
-            w(wr, intf.write)
+            intf.read.write(rd)
+            intf.write.write(wr)
 
 
 class AvalonMmWRespAgent(VldSyncedAgent):
 
-    def doReadVld(self, readFn):
-        return readFn(self.intf.writeResponseValid)
+    @classmethod
+    def get_valid_signal(cls, intf):
+        return intf.writeResponseValid
 
-    def doWriteVld(self, writeFn, val):
-        writeFn(val, self.intf.writeResponseValid)
+    def get_data(self):
+        return self.intf.response.read()
 
-    def doRead(self, s):
-        return s.read(self.intf.response)
-
-    def doWrite(self, s, data):
-        s.write(data, self.intf.response)
+    def set_data(self, data):
+        self.intf.response.write(data)
 
 
 class AvalonMmAgent(SyncAgentBase):
@@ -228,11 +227,11 @@ class AvalonMmAgent(SyncAgentBase):
     :ivar rData: data read from interface, items are typles (data, response)
     """
 
-    def __init__(self, intf, allowNoReset=False):
-        SyncAgentBase.__init__(self, intf, allowNoReset=allowNoReset)
-        self.addrAg = AvalonMmAddrAgent(intf, allowNoReset=allowNoReset)
-        self.rDataAg = AvalonMmDataRAgent(intf, allowNoReset=allowNoReset)
-        self.wRespAg = AvalonMmWRespAgent(intf, allowNoReset=allowNoReset)
+    def __init__(self, sim: HdlSimulator, intf, allowNoReset=False):
+        SyncAgentBase.__init__(self, sim, intf, allowNoReset=allowNoReset)
+        self.addrAg = AvalonMmAddrAgent(sim, intf, allowNoReset=allowNoReset)
+        self.rDataAg = AvalonMmDataRAgent(sim, intf, allowNoReset=allowNoReset)
+        self.wRespAg = AvalonMmWRespAgent(sim, intf, allowNoReset=allowNoReset)
 
     def req_get(self):
         return self.addrAg.data
@@ -269,11 +268,11 @@ class AvalonMmAgent(SyncAgentBase):
     def getDrivers(self):
         self.setEnable = self.setEnable_asDriver
         return (self.rDataAg.getMonitors()
-                +self.addrAg.getDrivers()
-                +self.wRespAg.getMonitors())
+                + self.addrAg.getDrivers()
+                + self.wRespAg.getMonitors())
 
     def getMonitors(self):
         self.setEnable = self.setEnable_asMonitor
         return (self.rDataAg.getDrivers()
-                +self.addrAg.getMonitors()
-                +self.wRespAg.getDrivers())
+                + self.addrAg.getMonitors()
+                + self.wRespAg.getDrivers())

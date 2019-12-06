@@ -10,7 +10,7 @@ from hwtLib.handshaked.builder import HsBuilder
 class HsBuilderSplit(Unit):
     """
     Example of HsBuilder.split_* functions
-    
+
     .. hwt-schematic::
     """
     def _declr(self):
@@ -26,7 +26,7 @@ class HsBuilderSplit(Unit):
         self.b_1 = Handshaked()._m()
         self.b_2 = Handshaked()._m()
         self.b_selected = Handshaked()._m()
-        self.b_selected.DATA_WIDTH.set(3)
+        self.b_selected.DATA_WIDTH = 3
 
         self.c = Handshaked()
         self.c_0 = Handshaked()._m()
@@ -42,7 +42,7 @@ class HsBuilderSplit(Unit):
         self.e_1 = Handshaked()._m()
         self.e_2 = Handshaked()._m()
         self.e_select = Handshaked()
-        self.e_select.DATA_WIDTH.set(3)
+        self.e_select.DATA_WIDTH = 3
 
     def _impl(self):
         # Builder is class which simplifies building of datapaths

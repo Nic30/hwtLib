@@ -48,9 +48,9 @@ class MMU_2pageLvl(Unit):
         self.MAX_OVERLAP = Param(16)
 
     def _declr(self):
-        self.PAGE_OFFSET_WIDTH = log2ceil(self.PAGE_SIZE).val
-        self.LVL1_PAGE_TABLE_INDX_WIDTH = log2ceil(self.LVL1_PAGE_TABLE_ITEMS).val
-        self.LVL2_PAGE_TABLE_INDX_WIDTH = int(self.ADDR_WIDTH - self.LVL1_PAGE_TABLE_INDX_WIDTH - self.PAGE_OFFSET_WIDTH)
+        self.PAGE_OFFSET_WIDTH = log2ceil(self.PAGE_SIZE)
+        self.LVL1_PAGE_TABLE_INDX_WIDTH = log2ceil(self.LVL1_PAGE_TABLE_ITEMS)
+        self.LVL2_PAGE_TABLE_INDX_WIDTH = self.ADDR_WIDTH - self.LVL1_PAGE_TABLE_INDX_WIDTH - self.PAGE_OFFSET_WIDTH
         self.LVL2_PAGE_TABLE_ITEMS = 2 ** int(self.LVL2_PAGE_TABLE_INDX_WIDTH)
         assert self.LVL1_PAGE_TABLE_INDX_WIDTH > 0, self.LVL1_PAGE_TABLE_INDX_WIDTH
         assert self.LVL2_PAGE_TABLE_INDX_WIDTH > 0, self.LVL2_PAGE_TABLE_INDX_WIDTH
@@ -60,37 +60,37 @@ class MMU_2pageLvl(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.rDatapump = AxiRDatapumpIntf()._m()
-            self.rDatapump.MAX_LEN.set(1)
+            self.rDatapump.MAX_LEN = 1
 
         i = self.virtIn = Handshaked()
-        i._replaceParam(i.DATA_WIDTH, self.VIRT_ADDR_WIDTH)
+        i.DATA_WIDTH = self.VIRT_ADDR_WIDTH
 
         i = self.physOut = Handshaked()._m()
-        i._replaceParam(i.DATA_WIDTH, self.ADDR_WIDTH)
+        i.DATA_WIDTH = self.ADDR_WIDTH
         self.segfault = Signal()._m()
 
         self.lvl1Table = BramPort_withoutClk()
 
         # internal components
         self.lvl1Storage = RamSingleClock()
-        self.lvl1Storage.PORT_CNT.set(1)
+        self.lvl1Storage.PORT_CNT = 1
         self.lvl1Converter = RamAsHs()
         for u in [self.lvl1Table, self.lvl1Converter, self.lvl1Storage]:
-            u.DATA_WIDTH.set(self.ADDR_WIDTH)
-            u.ADDR_WIDTH.set(self.LVL1_PAGE_TABLE_INDX_WIDTH)
+            u.DATA_WIDTH = self.ADDR_WIDTH
+            u.ADDR_WIDTH = self.LVL1_PAGE_TABLE_INDX_WIDTH
 
         with self._paramsShared():
             self.lvl2get = ArrayItemGetter()
-        self.lvl2get.ITEM_WIDTH.set(self.ADDR_WIDTH)
-        self.lvl2get.ITEMS.set(self.LVL2_PAGE_TABLE_ITEMS)
+        self.lvl2get.ITEM_WIDTH = self.ADDR_WIDTH
+        self.lvl2get.ITEMS = self.LVL2_PAGE_TABLE_ITEMS
 
         self.lvl2indxFifo = HandshakedFifo(Handshaked)
-        self.lvl2indxFifo.DEPTH.set(self.MAX_OVERLAP // 2)
-        self.lvl2indxFifo.DATA_WIDTH.set(self.LVL2_PAGE_TABLE_INDX_WIDTH)
+        self.lvl2indxFifo.DEPTH = self.MAX_OVERLAP // 2
+        self.lvl2indxFifo.DATA_WIDTH = self.LVL2_PAGE_TABLE_INDX_WIDTH
 
         self.pageOffsetFifo = HandshakedFifo(Handshaked)
-        self.pageOffsetFifo.DEPTH.set(self.MAX_OVERLAP)
-        self.pageOffsetFifo.DATA_WIDTH.set(self.PAGE_OFFSET_WIDTH)
+        self.pageOffsetFifo.DEPTH = self.MAX_OVERLAP
+        self.pageOffsetFifo.DATA_WIDTH = self.PAGE_OFFSET_WIDTH
 
     def connectLvl1PageTable(self):
         rpgt = self.lvl1Table
@@ -148,7 +148,7 @@ class MMU_2pageLvl(Unit):
     def segfaultChecker(self):
         lvl1item = self.lvl1Converter.r.data
         lvl2item = self.lvl2get.item
-        segfaultFlag = self._reg("segfaultFlag", defVal=False)
+        segfaultFlag = self._reg("segfaultFlag", def_val=False)
 
         def errVal(intf):
             return intf.vld & intf.data[0]._eq(FLAG_INVALID)

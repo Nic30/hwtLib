@@ -2,10 +2,11 @@ from hwt.code import log2ceil
 from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VectSignal, HandshakeSync
-from hwt.simulator.agentBase import AgentBase
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream
+from pycocotb.agents.base import AgentBase
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 class AddrSizeHs(Handshaked):
@@ -28,35 +29,33 @@ class AddrSizeHs(Handshaked):
 
         HandshakeSync._declr(self)
 
-    def _initSimAgent(self):
-        self._ag = AddrSizeHsAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = AddrSizeHsAgent(sim, self)
 
 
 class AddrSizeHsAgent(HandshakedAgent):
-    def doRead(self, s):
+    def get_data(self):
         intf = self.intf
-        r = s.read
 
-        _id = r(intf.id)
-        addr = r(intf.addr)
-        _len = r(intf.len)
-        rem = r(intf.rem)
+        _id = intf.id.read()
+        addr = intf.addr.read()
+        _len = intf.len.read()
+        rem = intf.rem.read()
 
         return (_id, addr, _len, rem)
 
-    def doWrite(self, s, data):
+    def set_data(self, data):
         intf = self.intf
-        w = s.write
 
         if data is None:
             data = [None for _ in range(4)]
 
         _id, addr, _len, rem = data
 
-        w(_id, intf.id)
-        w(addr, intf.addr)
-        w(_len, intf.len)
-        w(rem, intf.rem)
+        intf.id.write(_id)
+        intf.addr.write(addr)
+        intf.len.write(_len)
+        intf.rem.write(rem)
 
 
 class AxiRDatapumpIntf(Interface):
@@ -73,8 +72,8 @@ class AxiRDatapumpIntf(Interface):
             self.req = AddrSizeHs()
             self.r = AxiStream(masterDir=DIRECTION.IN)
 
-    def _initSimAgent(self):
-        self._ag = AxiRDatapumpIntfAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = AxiRDatapumpIntfAgent(sim, self)
 
 
 class AxiRDatapumpIntfAgent(AgentBase):
@@ -97,14 +96,14 @@ class AxiRDatapumpIntfAgent(AgentBase):
         for o in [self.req, self.r]:
             o.enable = v
 
-    def __init__(self, intf):
+    def __init__(self, sim: HdlSimulator, intf):
         self.__enable = True
         self.intf = intf
 
-        intf.req._initSimAgent()
+        intf.req._initSimAgent(sim)
         self.req = intf.req._ag
 
-        intf.r._initSimAgent()
+        intf.r._initSimAgent(sim)
         self.r = intf.r._ag
 
     def getDrivers(self):
@@ -131,14 +130,14 @@ class AxiWDatapumpIntf(Interface):
             # user requests
             self.req = AddrSizeHs()
 
-        with self._paramsShared(exclude={self.ID_WIDTH}):
+        with self._paramsShared(exclude=({"ID_WIDTH"}, set())):
             self.w = AxiStream()
 
         ack = self.ack = Handshaked(masterDir=DIRECTION.IN)
-        ack._replaceParam(ack.DATA_WIDTH, self.ID_WIDTH)
+        ack.DATA_WIDTH = self.ID_WIDTH
 
-    def _initSimAgent(self):
-        self._ag = AxiWDatapumpIntfAgent(self)
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = AxiWDatapumpIntfAgent(sim, self)
 
 
 class AxiWDatapumpIntfAgent(AgentBase):
@@ -161,17 +160,17 @@ class AxiWDatapumpIntfAgent(AgentBase):
         for o in [self.req, self.w, self.ack]:
             o.enable = v
 
-    def __init__(self, intf):
+    def __init__(self, sim: HdlSimulator, intf):
         self.__enable = True
         self.intf = intf
 
-        intf.req._initSimAgent()
+        intf.req._initSimAgent(sim)
         self.req = intf.req._ag
 
-        intf.w._initSimAgent()
+        intf.w._initSimAgent(sim)
         self.w = intf.w._ag
 
-        intf.ack._initSimAgent()
+        intf.ack._initSimAgent(sim)
         self.ack = intf.ack._ag
 
     def getDrivers(self):

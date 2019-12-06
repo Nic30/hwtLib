@@ -7,7 +7,7 @@ from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC
 from hwtLib.amba.axiLite_comp.reg import AxiLiteReg
 
 
-class EpWithReg(Unit):
+class AxiLiteEpWithReg(Unit):
     """
     Unit with AxiLiteEndpoint and AxiLiteReg together
     """
@@ -42,12 +42,12 @@ class EpWithReg(Unit):
 
 class AxiRegTC(AxiLiteEndpointTC):
     def mySetUp(self, data_width=32):
-        u = self.u = EpWithReg(self.STRUCT_TEMPLATE)
+        u = self.u = AxiLiteEpWithReg(self.STRUCT_TEMPLATE)
 
         self.DATA_WIDTH = data_width
-        u.DATA_WIDTH.set(self.DATA_WIDTH)
+        u.DATA_WIDTH = self.DATA_WIDTH
 
-        self.prepareUnit(self.u, onAfterToRtl=self.mkRegisterMap)
+        self.compileSimAndStart(self.u, onAfterToRtl=self.mkRegisterMap)
         return u
 
 
