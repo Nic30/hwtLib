@@ -194,6 +194,9 @@ from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
+from hwtLib.mi32.axiLite_bridges_test import Mi32AxiLiteBrigesTC
+from hwtLib.mi32.mi32agent_test import Mi32AgentTC
+from hwtLib.mi32.mi32_2AxiLite_test import Mi32_2AxiLiteTC
 
 
 # from hwtLib.peripheral.i2c.i2cAgent_test import I2cAgent_TC
@@ -423,6 +426,10 @@ suite = testSuiteFromTCs(
     IpifRegTC,
     AxiLite2ipifTC,
     IpifInterconnectMatrixTC,
+
+    Mi32AgentTC,
+    Mi32_2AxiLiteTC,
+    # Mi32AxiLiteBrigesTC,
 
     # complex units tests
     UnitWrapperTC,
