@@ -2,6 +2,7 @@ from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.struct import HStruct
 from pyMathBitPrecise.bit_utils import mask
+from hwt.hdl.types.hdlType import HdlType
 
 
 class PartialField(object):
@@ -69,6 +70,7 @@ class MemorySpaceItemStruct(object):
         if isinstance(structT, TransTmpl):
             tmpl = structT
         else:
+            assert isinstance(structT, HdlType), structT
             tmpl = TransTmpl(structT)
 
         for trans in tmpl.children:
