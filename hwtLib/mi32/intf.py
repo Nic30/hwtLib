@@ -1,7 +1,6 @@
-from pycocotb.hdlSimulator import HdlSimulator
-
 from hwt.hdl.constants import READ, WRITE, READ_WRITE
 from hwt.interfaces.agents.handshaked import HandshakedAgent
+from hwt.interfaces.agents.vldSynced import VldSyncedAgent
 from hwt.interfaces.std import VectSignal, Signal
 from hwt.simulator.agentBase import SyncAgentBase
 from hwt.synthesizer.interface import Interface
@@ -9,7 +8,7 @@ from hwt.synthesizer.param import Param
 from hwtLib.avalon.mm import AvalonMmAddrAgent
 from ipCorePackager.constants import DIRECTION
 from pyMathBitPrecise.bit_utils import mask
-from hwt.interfaces.agents.vldSynced import VldSyncedAgent
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 class Mi32(Interface):
@@ -37,7 +36,7 @@ class Mi32(Interface):
         self.ardy = Signal(masterDir=DIRECTION.IN)
         self.be = VectSignal(self.DATA_WIDTH // 8)
         self.dwr = VectSignal(self.DATA_WIDTH)
-        self.drd = Signal(self.DATA_WIDTH, masterDir=DIRECTION.IN)
+        self.drd = VectSignal(self.DATA_WIDTH, masterDir=DIRECTION.IN)
         self.drdy = Signal(masterDir=DIRECTION.IN)
 
     def _getWordAddrStep(self):
@@ -80,10 +79,10 @@ class Mi32Agent(SyncAgentBase):
     req = property(req_get, req_set)
 
     def rData_get(self):
-        return self.rDataAg.rData
+        return self.dataAg.data
 
     def rData_set(self, v):
-        self.rDataAg.data = v
+        self.dataAg.data = v
 
     rData = property(rData_get, rData_set)
 
@@ -145,7 +144,7 @@ class Mi32AddrAgent(HandshakedAgent):
             raise AssertionError("This funtion should not be called when data"
                                  "is not ready on interface")
 
-        return (address, byteEnable, rw, wdata)
+        return (rw, address, wdata, byteEnable)
 
     def set_data(self, data):
         intf = self.intf
@@ -163,10 +162,10 @@ class Mi32AddrAgent(HandshakedAgent):
                 wdata = None
             elif rw is WRITE:
                 rd, wr = 0, 1
-                _, address, be, wdata = data
+                _, address, wdata, be = data
             elif wr is READ_WRITE:
                 rd, wr = 1, 1
-                _, address, be, wdata = data
+                _, address, wdata, be = data
             else:
                 raise TypeError("rw is in invalid format %r" % (rw,))
 
