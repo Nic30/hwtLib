@@ -1,4 +1,3 @@
-from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import VectSignal
 from hwtLib.amba.axi3Lite import IP_Axi3Lite, Axi3Lite, Axi3Lite_r, \
     Axi3Lite_b, Axi3Lite_w, Axi3Lite_addr, Axi3Lite_addrAgent
