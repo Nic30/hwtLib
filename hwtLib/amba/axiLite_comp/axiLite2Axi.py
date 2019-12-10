@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from hwt.code import connect
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.param import Param
+from hwtLib.abstract.busBridge import BusBridge
+from hwtLib.amba.axi4 import Axi4, Axi4_addr
+from hwtLib.amba.axi4Lite import Axi4Lite
+from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT,\
+    BYTES_IN_TRANS, QOS_DEFAULT
+
+
+def interface_not_present_on_other(a, b):
+    """
+    :return: set of interfaces which does not have an equivalent on "b"
+    """
+    missing_on_b = []
+    for a in a._interfaces:
+        on_b = getattr(b, a._name, None)
+        if on_b is None:
+            missing_on_b.append(a)
+
+    return set(missing_on_b)
+
+
+class AxiLite_2Axi(BusBridge):
+    """
+    Bridge from AxiLite interface to Axi3/4 interface
+
+    .. hwt-schematic::
+    """
+
+    def __init__(self, axi_cls=Axi4):
+        self.axi_cls = axi_cls
+        super(AxiLite_2Axi, self).__init__()
+
+    def _config(self) -> None:
+        Axi4._config(self)
+        self.DEFAULT_ID = Param(0)
+
+    def _declr(self) -> None:
+        addClkRstn(self)
+
+        with self._paramsShared():
+            self.m = Axi4Lite()
+            self.s = Axi4()._m()
+
+    def _impl(self) -> None:
+        axiFull = self.s
+        axiLite = self.m
+
+        def connect_what_is_same_lite_to_full(src, dst):
+            connect(src, dst, exclude=interface_not_present_on_other(dst, src))
+
+        def connect_what_is_same_full_to_lite(src, dst):
+            connect(src, dst, exclude=interface_not_present_on_other(src, dst))
+
+        def a_defaults(a: Axi4_addr):
+            a.id(self.DEFAULT_ID)
+            a.burst(BURST_INCR)
+            a.cache(CACHE_DEFAULT)
+            a.len(0)
+            a.lock(LOCK_DEFAULT)
+            a.size(BYTES_IN_TRANS(self.DATA_WIDTH // 8))
+            a.qos(QOS_DEFAULT)
+
+        connect_what_is_same_lite_to_full(axiLite.ar, axiFull.ar)
+        a_defaults(axiFull.ar)
+        connect_what_is_same_lite_to_full(axiLite.aw, axiFull.aw)
+        a_defaults(axiFull.aw)
+        connect_what_is_same_lite_to_full(axiLite.w, axiFull.w)
+        axiFull.w.last(1)
+        connect_what_is_same_full_to_lite(axiFull.r, axiLite.r)
+        connect_what_is_same_full_to_lite(axiFull.b, axiLite.b)
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = AxiLite_2Axi()
+    print(toRtl(u))
