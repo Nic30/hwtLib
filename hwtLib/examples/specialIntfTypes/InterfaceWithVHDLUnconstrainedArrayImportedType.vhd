@@ -5,7 +5,7 @@ library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
-ENTITY InterfaceWithVHDLUnonstrainedArrayImportedType IS
+ENTITY InterfaceWithVHDLUnconstrainedArrayImportedType IS
     GENERIC (SIZE_X: INTEGER := 3
     );
     PORT (din: IN mem(0 to 3)(8 downto 0);
@@ -15,7 +15,7 @@ ENTITY InterfaceWithVHDLUnonstrainedArrayImportedType IS
     );
 END ENTITY;
 
-ARCHITECTURE rtl OF InterfaceWithVHDLUnonstrainedArrayImportedType IS
+ARCHITECTURE rtl OF InterfaceWithVHDLUnconstrainedArrayImportedType IS
 BEGIN
     dout_0 <= din(0);
     dout_1 <= din(1);
