@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from itertools import chain
 
 from hwt.code import log2ceil
@@ -57,13 +60,14 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
                 f.DATA_WIDTH = log2ceil(
                     len(self.SLAVES))
 
+        AXI = self.intfCls
         with self._paramsShared():
             self.addr_crossbar = AxiInterconnectMatrixAddrCrossbar(
-                self.AXI_CLS.AW_CLS)
+                AXI.AW_CLS)
 
         with self._paramsShared():
             c = self.data_crossbar = AxiInterconnectMatrixCrossbar(
-                self.AXI_CLS.W_CLS)
+                AXI.W_CLS)
             c.INPUT_CNT = len(self.MASTERS)
             W_OUTPUTS = [set() for _ in self.SLAVES]
             for m_i, accessible_slaves in enumerate(self.MASTERS):
@@ -73,7 +77,7 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
 
         with self._paramsShared():
             c = self.b_crossbar = AxiInterconnectMatrixCrossbarB(
-                self.AXI_CLS.B_CLS)
+                AXI.B_CLS)
             c.INPUT_CNT = len(self.SLAVES)
             c.OUTPUTS = self.MASTERS
 

@@ -9,9 +9,10 @@ from hwtLib.amba.axi4 import Axi4, Axi4_addr
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT,\
     BYTES_IN_TRANS, QOS_DEFAULT
+from hwt.synthesizer.interface import Interface
 
 
-def interface_not_present_on_other(a, b):
+def interface_not_present_on_other(a: Interface, b: Interface):
     """
     :return: set of interfaces which does not have an equivalent on "b"
     """
@@ -31,15 +32,15 @@ class AxiLite_2Axi(BusBridge):
     .. hwt-schematic::
     """
 
-    def __init__(self, axi_cls=Axi4):
-        self.axi_cls = axi_cls
+    def __init__(self, intfCls=Axi4):
+        self.intfCls = intfCls
         super(AxiLite_2Axi, self).__init__()
 
-    def _config(self) -> None:
-        Axi4._config(self)
+    def _config(self):
+        self.intfCls._config(self)
         self.DEFAULT_ID = Param(0)
 
-    def _declr(self) -> None:
+    def _declr(self):
         addClkRstn(self)
 
         with self._paramsShared():

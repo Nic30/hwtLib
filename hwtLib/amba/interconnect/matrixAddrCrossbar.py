@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from typing import List, Tuple
 
 from hwt.code import log2ceil, connect, Concat, SwitchLogic, Or
@@ -36,13 +39,13 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
         return HsJoinFairShare.priorityAck(priorityReg, vldSignals, index)
 
     def __init__(self, axi_addr_cls):
-        self.AXI_CLS = axi_addr_cls
+        self.intfCls = axi_addr_cls
         super(AxiInterconnectMatrixAddrCrossbar, self).__init__()
 
     def _config(self):
         self.SLAVES = Param([])
         self.MASTERS = Param([])
-        self.AXI_CLS._config(self)
+        self.intfCls._config(self)
 
     def _declr(self):
         AxiInterconnectCommon._declr(self, has_r=False, has_w=False)

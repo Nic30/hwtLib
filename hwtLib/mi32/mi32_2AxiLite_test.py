@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.hdl.constants import READ, WRITE
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axiLite_comp.denseMem import Axi4LiteDenseMem

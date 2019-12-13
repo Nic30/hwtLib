@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import log2ceil, Or, connect, Switch, Concat
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -5,7 +8,7 @@ from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4 import Axi4
-from hwtLib.amba.interconnect.common import AxiInterconnectCommon, apply_name
+from hwtLib.amba.interconnect.common import apply_name
 from hwtLib.handshaked.streamNode import StreamNode
 
 
@@ -17,15 +20,15 @@ class AxiInterconnectMatrixCrossbar(Unit):
     .. hwt-schematic:: example_AxiInterconnectMatrixCrossbar
     """
 
-    def __init__(self, axi_cls):
-        self.AXI_CLS = axi_cls
+    def __init__(self, intfCls):
+        self.intfCls = intfCls
         super(AxiInterconnectMatrixCrossbar, self).__init__()
 
     def _config(self):
         self.INPUT_CNT = Param(1)
         # set of input indexes for each output
         self.OUTPUTS = Param([{0}])
-        self.AXI_CLS._config(self)
+        self.intfCls._config(self)
 
     def _declr(self):
         # flag that tells if each master should track the order of request so it
@@ -36,17 +39,17 @@ class AxiInterconnectMatrixCrossbar(Unit):
         self.REQUIRED_ORDER_SYNC_DOUT_FOR_DIN = len(self.OUTPUTS) > 1
 
         addClkRstn(self)
-        AXI_CLS = self.AXI_CLS
+        AXI = self.intfCls
         INPUT_CNT = self.INPUT_CNT
         OUTPUT_CNT = len(self.OUTPUTS)
         with self._paramsShared():
             self.dataIn = HObjList([
-                AXI_CLS()
+                AXI()
                 for _ in range(INPUT_CNT)])
 
         with self._paramsShared():
             self.dataOut = HObjList([
-                AXI_CLS()._m()
+                AXI()._m()
                 for _ in range(OUTPUT_CNT)])
 
         if self.REQUIRED_ORDER_SYNC_DOUT_FOR_DIN:

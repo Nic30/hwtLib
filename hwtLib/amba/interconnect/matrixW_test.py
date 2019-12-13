@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from itertools import chain
 
 from hwt.code import log2ceil
@@ -6,9 +9,7 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC
-from hwtLib.amba.interconnect.matrixCrossbar_test import AxiInterconnectMatrixCrossbar_1to1TC
 from hwtLib.amba.interconnect.matrixW import AxiInterconnectMatrixW
-from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.agents.clk import DEFAULT_CLOCK
 from hwtLib.amba.interconnect.matrixR_test import AxiInterconnectMatrixR_1to1TC

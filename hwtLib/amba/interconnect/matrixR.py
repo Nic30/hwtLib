@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import log2ceil
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import propagateClkRstn
@@ -49,11 +52,11 @@ class AxiInterconnectMatrixR(AxiInterconnectCommon):
 
         with self._paramsShared():
             self.addr_crossbar = AxiInterconnectMatrixAddrCrossbar(
-                self.AXI_CLS.AR_CLS)
+                self.intfCls.AR_CLS)
 
         with self._paramsShared():
             c = self.data_crossbar = AxiInterconnectMatrixCrossbar(
-                self.AXI_CLS.R_CLS)
+                self.intfCls.R_CLS)
             c.INPUT_CNT = len(self.SLAVES)
             c.OUTPUTS = self.MASTERS
 

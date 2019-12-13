@@ -1,4 +1,6 @@
-from collections import deque
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from itertools import chain
 
 from hwt.code import log2ceil

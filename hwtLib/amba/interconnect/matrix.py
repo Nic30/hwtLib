@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from typing import Union, Set, List, Tuple
 
 from hwt.hdl.constants import READ, READ_WRITE, WRITE
@@ -95,13 +98,11 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
             masters_with_read_ch.update(master_indexes)
             slaves_with_read_ch.update(slave_indexes)
 
-            inter = AxiInterconnectMatrixR(self.AXI_CLS)
+            inter = AxiInterconnectMatrixR(self.intfCls)
             con = self.configure_sub_interconnect(
                 master_indexes, slave_indexes, inter)
             r_interconnects.append(inter)
             self.sub_interconnect_connections.extend(con)
-
-        self.r_interconnects = r_interconnects
 
         masters_with_write_ch = set()
         slaves_with_write_ch = set()
@@ -111,12 +112,15 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
             masters_with_write_ch.update(master_indexes)
             slaves_with_write_ch.update(slave_indexes)
 
-            inter = AxiInterconnectMatrixW(self.AXI_CLS)
+            inter = AxiInterconnectMatrixW(self.intfCls)
             con = self.configure_sub_interconnect(
                 master_indexes, slave_indexes, inter)
             w_interconnects.append(inter)
             self.sub_interconnect_connections.extend(con)
-        self.w_interconnects = w_interconnects
+        
+        with self._paramsShared(exclude=({"SLAVES", "MASTERS"}, set())):
+            self.r_interconnects = r_interconnects
+            self.w_interconnects = w_interconnects
 
         # dissable read/write unused channels on master/slave interfaces
         for m_i, m in enumerate(self.master):

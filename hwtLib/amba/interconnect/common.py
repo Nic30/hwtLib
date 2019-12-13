@@ -7,6 +7,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
+from hwt.hdl.types.defs import BIT
 
 
 ALL = "ALL"
@@ -114,22 +115,26 @@ class AxiInterconnectUtils():
 
 
 def apply_name(unit_instance, sig, name):
-    s = unit_instance._sig(name, sig._dtype)
+    if isinstance(sig, bool):
+        t = BIT
+    else:
+        t = sig._dtype
+    s = unit_instance._sig(name, t)
     s(sig)
     return s
 
 
 class AxiInterconnectCommon(Unit):
 
-    def __init__(self, axi_cls):
-        self.AXI_CLS = axi_cls
+    def __init__(self, intfCls):
+        self.intfCls = intfCls
         super(AxiInterconnectCommon, self).__init__()
 
     def _config(self):
         self.MAX_TRANS_OVERLAP = Param(16)
         self.SLAVES = Param([])
         self.MASTERS = Param([])
-        self.AXI_CLS._config(self)
+        self.intfCls._config(self)
 
     def _init_config_flags(self):
         # flag that tells if each master should track the order of request so it
@@ -141,11 +146,12 @@ class AxiInterconnectCommon(Unit):
 
     def _declr(self, has_r=True, has_w=True):
         addClkRstn(self)
+        AXI = self.intfCls
         with self._paramsShared():
-            self.master = HObjList([self.AXI_CLS() for _ in self.MASTERS])
+            self.master = HObjList([AXI() for _ in self.MASTERS])
 
         with self._paramsShared(exclude=({}, {"ADDR_WIDTH"})):
-            self.slave = HObjList([self.AXI_CLS()._m() for _ in self.SLAVES])
+            self.slave = HObjList([AXI()._m() for _ in self.SLAVES])
 
         for i in chain(self.master, self.slave):
             i.HAS_W = has_w
