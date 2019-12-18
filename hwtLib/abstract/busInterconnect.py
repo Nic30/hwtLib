@@ -1,7 +1,8 @@
+from typing import List, Tuple, Set, Union
+
 from hwt.code import log2ceil, isPow2
 from hwt.hdl.constants import READ, WRITE
 from hwt.synthesizer.unit import Unit
-from typing import List, Tuple, Set, Union
 
 
 class AUTO_ADDR():
@@ -34,7 +35,7 @@ class BusInterconnect(Unit):
         """
         :param masters: list of tuples (offset, features) for each master
         :param slaves: list of tuples (offset, size, features) for each slave
-        :note: features can be found on definition of this class
+        :note: features are ACCESS_R/W/RW defined in this file
         """
         self._masters = masters
 
