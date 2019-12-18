@@ -192,7 +192,7 @@ class AbstractStreamBuilder(object):
 
     def buff(self, items=1, latency=None, delay=None):
         """
-        Use registers and fifos to create buffer of specified paramters
+        Use registers and FIFOs to create buffer of specified paramters
         :note: if items <= latency registers are used else fifo is used
 
         :param items: number of items in buffer
@@ -231,6 +231,9 @@ class AbstractStreamBuilder(object):
             def setDepth(u):
                 u.DEPTH = items
             return self._genericInstance(self.FifoCls, "fifo", setDepth)
+
+    def buff_cdc(self, items=1, clk=None, rst=None):
+        pass
 
     def split_copy(self, noOfOutputs):
         """
