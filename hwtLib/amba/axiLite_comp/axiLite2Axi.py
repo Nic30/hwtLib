@@ -3,13 +3,13 @@
 
 from hwt.code import connect
 from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4 import Axi4, Axi4_addr
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT,\
     BYTES_IN_TRANS, QOS_DEFAULT
-from hwt.synthesizer.interface import Interface
 
 
 def interface_not_present_on_other(a: Interface, b: Interface):
@@ -45,7 +45,7 @@ class AxiLite_2Axi(BusBridge):
 
         with self._paramsShared():
             self.m = Axi4Lite()
-            self.s = Axi4()._m()
+            self.s = self.intfCls()._m()
 
     def _impl(self) -> None:
         axiFull = self.s
@@ -64,13 +64,18 @@ class AxiLite_2Axi(BusBridge):
             a.len(0)
             a.lock(LOCK_DEFAULT)
             a.size(BYTES_IN_TRANS(self.DATA_WIDTH // 8))
-            a.qos(QOS_DEFAULT)
+            if hasattr(a, "qos"):
+                # axi3/4 difference
+                a.qos(QOS_DEFAULT)
 
         connect_what_is_same_lite_to_full(axiLite.ar, axiFull.ar)
         a_defaults(axiFull.ar)
         connect_what_is_same_lite_to_full(axiLite.aw, axiFull.aw)
         a_defaults(axiFull.aw)
         connect_what_is_same_lite_to_full(axiLite.w, axiFull.w)
+        if hasattr(axiFull.w, "id"):
+            # axi3/4 difference
+            axiFull.w.id(self.DEFAULT_ID)
         axiFull.w.last(1)
         connect_what_is_same_full_to_lite(axiFull.r, axiLite.r)
         connect_what_is_same_full_to_lite(axiFull.b, axiLite.b)
