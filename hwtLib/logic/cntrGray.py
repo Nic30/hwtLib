@@ -6,7 +6,7 @@ from hwt.hdl.constants import Time
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.simulator.simTestCase import SimTestCase, SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 
