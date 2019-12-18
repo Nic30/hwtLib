@@ -186,8 +186,8 @@ class Axi3(Axi3Lite):
     """
     Axi3 bus interface
     """
-    LOCK_WIDTH = 2
-    LEN_WIDTH = 4
+    LOCK_WIDTH = Axi3_addr.LOCK_WIDTH
+    LEN_WIDTH = Axi3_addr.LEN_WIDTH
     AW_CLS = Axi3_addr
     AR_CLS = Axi3_addr
     W_CLS = Axi3_w
