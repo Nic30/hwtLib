@@ -9,6 +9,7 @@ from hwtLib.amba.axis_comp.splitCopy import AxiSSplitCopy
 from hwtLib.amba.axis_comp.splitSelect import AxiSSpliSelect
 from hwt.hdl.types.hdlType import HdlType
 from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axis_comp.fifo_async import AxiSFifoAsync
 
 
 class AxiSBuilder(AbstractStreamBuilder):
@@ -19,6 +20,7 @@ class AxiSBuilder(AbstractStreamBuilder):
 
     """
     FifoCls = AxiSFifo
+    FifoAsyncCls = AxiSFifoAsync
     RegCls = AxiSReg
     SplitCopyCls = AxiSSplitCopy
     SplitSelectCls = AxiSSpliSelect

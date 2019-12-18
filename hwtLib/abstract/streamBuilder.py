@@ -11,6 +11,7 @@ class AbstractStreamBuilder(object):
         in concrete implementation
 
     :cvar FifoCls: fifo unit class
+    :cvar FifoAsyncCls: asyncronous fifo (fifo with separate clock per port) unit class
     :cvar JoinSelectCls: select order based join unit class
     :cvar JoinFairCls: round robin based join unit class
     :cvar JoinPrioritizedCls: priority based join unit class
@@ -28,6 +29,7 @@ class AbstractStreamBuilder(object):
     :attention: input port is taken from self.end
     """
     FifoCls = NotImplemented
+    FifoAsync = NotImplemented
     JoinSelectCls = NotImplemented
     JoinPrioritizedCls = NotImplemented
     JoinFairCls = NotImplemented
@@ -232,8 +234,17 @@ class AbstractStreamBuilder(object):
                 u.DEPTH = items
             return self._genericInstance(self.FifoCls, "fifo", setDepth)
 
-    def buff_cdc(self, items=1, clk=None, rst=None):
-        pass
+    def buff_cdc(self,  clk, rst=None, items=1):
+        def setDepth(u):
+            u.DEPTH = items
+        f = self._genericInstance(self.FifoAsyncCls, "fifoAsync", setDepth)
+        f.lastComp.dataIn_clk(self.getClk())
+        f.lastComp.dataOut_clk(clk)
+
+        if rst is not None:
+            raise NotImplementedError()
+
+        return f
 
     def split_copy(self, noOfOutputs):
         """
@@ -294,10 +305,10 @@ class AbstractStreamBuilder(object):
             If(iin.rd,
                If(actual._eq(size - 1),
                   actual(0)
-               ).Else(
-                  actual(actual + 1)
+                  ).Else(
+                   actual(actual + 1)
                )
-            )
+               )
 
         return self
 
