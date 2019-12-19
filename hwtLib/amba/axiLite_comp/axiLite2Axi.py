@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import connect
-from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwtLib.abstract.busBridge import BusBridge
