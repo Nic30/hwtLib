@@ -41,8 +41,6 @@ class AxiLite_2Axi(BusBridge):
         self.DEFAULT_ID = Param(0)
 
     def _declr(self):
-        addClkRstn(self)
-
         with self._paramsShared():
             self.m = Axi4Lite()
             self.s = self.intfCls()._m()
