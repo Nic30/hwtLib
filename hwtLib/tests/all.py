@@ -196,6 +196,7 @@ from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
 from hwtLib.mi32.mi32agent_test import Mi32AgentTC
 from hwtLib.mi32.mi32_2AxiLite_test import Mi32_2AxiLiteTC
+from hwtLib.mi32.axiLite_bridges_test import Mi32AxiLiteBrigesTC
 
 
 # from hwtLib.peripheral.i2c.i2cAgent_test import I2cAgent_TC
@@ -428,7 +429,7 @@ suite = testSuiteFromTCs(
 
     Mi32AgentTC,
     Mi32_2AxiLiteTC,
-    # Mi32AxiLiteBrigesTC,
+    Mi32AxiLiteBrigesTC,
 
     # complex units tests
     UnitWrapperTC,
