@@ -115,7 +115,10 @@ class AxiInterconnectUtils():
 
 
 def apply_name(unit_instance, sig, name):
-    if isinstance(sig, bool):
+    """
+    Wrap signal or value in signal of specified name
+    """
+    if isinstance(sig, (int, bool)):
         t = BIT
     else:
         t = sig._dtype
