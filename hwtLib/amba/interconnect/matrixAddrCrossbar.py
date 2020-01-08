@@ -19,6 +19,7 @@ from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.types.ctypes import uint8_t
+from hwt.hdl.types.defs import BIT
 
 
 class AxiInterconnectMatrixAddrCrossbar(Unit):
@@ -85,7 +86,7 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
                 dstAddrSig = slave_addr_channels[si].addr
                 if si not in slvs:
                     # case where slave is not mapped to master address space
-                    en = 0
+                    en = BIT.from_py(0)
                     addr_drive = dstAddrSig(None)
                 else:
                     tmpl = TransTmpl(uint8_t[size], bitAddr=addr * 8)
