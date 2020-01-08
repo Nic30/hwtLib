@@ -27,7 +27,7 @@ class ErrorsTC(unittest.TestCase):
 
     def test_multipleDriversOfChildNet(self):
         u = MultipleDriversOfChildNet()
-        with self.assertRaises((MultipleDriversErr, NoDriverErr)):
+        with self.assertRaises((MultipleDriversErr, NoDriverErr, AssertionError)):
             toRtl(u)
 
     def test_multipleDriversOfChildNet2(self):
