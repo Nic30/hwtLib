@@ -18,10 +18,10 @@ class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):
     @classmethod
     def getUnit(cls):
         cls.u = u = AxiInterconnectMatrixR(Axi4)
-        u.MASTERS = [{0}]
-        u.SLAVES = [
+        u.MASTERS = ({0}, )
+        u.SLAVES = (
             (0x0000, 0x1000),
-        ]
+        )
         u.ADDR_WIDTH = log2ceil(0x1000 - 1)
         return u
 
@@ -121,12 +121,12 @@ class AxiInterconnectMatrixR_1to3TC(AxiInterconnectMatrixR_1to1TC):
     @classmethod
     def getUnit(cls):
         cls.u = u = AxiInterconnectMatrixR(Axi4)
-        u.MASTERS = [{0, 1, 2}]
-        u.SLAVES = [
+        u.MASTERS = ({0, 1, 2}, )
+        u.SLAVES = (
             (0x0000, 0x1000),
             (0x1000, 0x1000),
             (0x2000, 0x1000),
-        ]
+        )
         u.ADDR_WIDTH = log2ceil(0x4000 - 1)
         return u
 
@@ -136,10 +136,10 @@ class AxiInterconnectMatrixR_3to1TC(AxiInterconnectMatrixR_1to1TC):
     @classmethod
     def getUnit(cls):
         cls.u = u = AxiInterconnectMatrixR(Axi4)
-        u.MASTERS = [{0}, {0}, {0}]
-        u.SLAVES = [
+        u.MASTERS = ({0}, {0}, {0})
+        u.SLAVES = (
             (0x0000, 0x1000),
-        ]
+        )
         u.ADDR_WIDTH = log2ceil(0x2000 - 1)
         return u
 
@@ -149,18 +149,18 @@ class AxiInterconnectMatrixR_3to3TC(AxiInterconnectMatrixR_1to1TC):
     @classmethod
     def getUnit(cls):
         cls.u = u = AxiInterconnectMatrixR(Axi4)
-        u.MASTERS = [{0, 1}, {0, 1}]
-        u.SLAVES = [
+        u.MASTERS = ({0, 1}, {0, 1})
+        u.SLAVES = (
             (0x0000, 0x1000),
             (0x1000, 0x1000),
-        ]
+        )
 
-        #u.MASTERS = [{0, 1, 2}, {0, 1, 2}, {0, 1, 2}]
-        # u.SLAVES = [
+        #u.MASTERS = ({0, 1, 2}, {0, 1, 2}, {0, 1, 2})
+        # u.SLAVES = (
         #    (0x0000, 0x1000),
         #    (0x1000, 0x1000),
         #    (0x2000, 0x1000),
-        #]
+        #)
         u.ADDR_WIDTH = log2ceil(0x4000 - 1)
         return u
 

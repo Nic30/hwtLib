@@ -14,10 +14,12 @@ from hwtLib.amba.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossba
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.builder import HsBuilder
 
+
 class AxiInterconnectMatrixCrossbarB(AxiInterconnectMatrixCrossbar):
 
     def get_last(self, intf):
         return 1
+
 
 class AxiInterconnectMatrixW(AxiInterconnectCommon):
     """
@@ -26,6 +28,7 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
 
     .. hwt-schematic:: example_AxiInterconnectMatrixW
     """
+
     def _declr(self):
         AxiInterconnectCommon._declr(self, has_r=False, has_w=True)
         AxiInterconnectCommon._init_config_flags(self)
@@ -108,11 +111,11 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
                     self.order_s_index_for_m_data,
                     self.order_s_index_for_m_b):
                 HsBuilder(self, addr_crossbar_s_index_out)\
-                .split_copy_to(f_w.dataIn, f_b.dataIn)
+                    .split_copy_to(f_w.dataIn, f_b.dataIn)
 
             for f_w, f_b, data_dout_for_din, b_din_for_dout in zip(
                     self.order_s_index_for_m_data,
-                    self.order_s_index_for_m_b, 
+                    self.order_s_index_for_m_b,
                     data_crossbar.order_dout_index_for_din_in,
                     b_crossbar.order_din_index_for_dout_in):
                 data_dout_for_din(f_w.dataOut)
@@ -124,11 +127,11 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
                     self.order_m_index_for_s_data,
                     self.order_m_index_for_s_b):
                 HsBuilder(self, addr_crossbar_m_index_out)\
-                .split_copy_to(f_w.dataIn, f_b.dataIn)
-            
+                    .split_copy_to(f_w.dataIn, f_b.dataIn)
+
             for f_w, f_b, data_din_for_dout, b_dout_for_din in zip(
                     self.order_m_index_for_s_data,
-                    self.order_m_index_for_s_b, 
+                    self.order_m_index_for_s_b,
                     data_crossbar.order_din_index_for_dout_in,
                     b_crossbar.order_dout_index_for_din_in):
                 data_din_for_dout(f_w.dataOut)
@@ -137,23 +140,24 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
 
 def example_AxiInterconnectMatrixW():
     u = AxiInterconnectMatrixW(Axi4)
-    #u.MASTERS = [{0}]
-    #u.MASTERS = [{0, 1}]
-    u.MASTERS = [{0, 1}, {0, 1}]
-    #u.MASTERS = [{0, 1, 2}]
-    #u.MASTERS = [{0}, {0}, {0}]
-    # u.SLAVES = [(0x1000, 0x1000),
+    #u.MASTERS = ({0}, )
+    #u.MASTERS = ({0, 1}, )
+    u.MASTERS = ({0, 1}, {0, 1})
+    #u.MASTERS = ({0, 1, 2}, )
+    # u.MASTERS = ({0}, {0}, {0}]
+    # u.SLAVES = ((0x1000, 0x1000),
     #            (0x2000, 0x1000),
     #            (0x3000, 0x1000),
-    #          ]
-    #u.SLAVES = [(0x1000, 0x1000)]
+    #          )
+    #u.SLAVES = ((0x1000, 0x1000), )
 
-    #u.MASTERS = [{0, 1}, {0, 1}]
-    u.SLAVES = [(0x1000, 0x1000),
+    #u.MASTERS = ({0, 1}, {0, 1})
+    u.SLAVES = ((0x1000, 0x1000),
                 (0x2000, 0x1000),
-                ]
+                )
 
     return u
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl

@@ -41,7 +41,7 @@ class AxiInterconnectUtils():
 
             masters.append(new_master_config)
 
-        return masters
+        return tuple(masters)
 
     @classmethod
     def _assert_non_overlapping(cls, slaves):
@@ -128,7 +128,6 @@ def apply_name(unit_instance, sig, name):
     return s
 
 
-@serializeParamsUniq
 class AxiInterconnectCommon(Unit):
 
     def __init__(self, intfCls):
@@ -138,8 +137,8 @@ class AxiInterconnectCommon(Unit):
     def _config(self):
         self.INTF_CLS = Param(self.intfCls)
         self.MAX_TRANS_OVERLAP = Param(16)
-        self.SLAVES = Param([])
-        self.MASTERS = Param([])
+        self.SLAVES = Param(tuple())
+        self.MASTERS = Param(tuple())
         self.intfCls._config(self)
 
     def _init_config_flags(self):

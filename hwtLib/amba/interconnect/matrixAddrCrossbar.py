@@ -8,7 +8,6 @@ from hwt.hdl.assignment import Assignment
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.defs import BIT
 from hwt.interfaces.std import Handshaked
-from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
@@ -23,7 +22,6 @@ from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.types.ctypes import uint8_t
 
 
-@serializeParamsUniq
 class AxiInterconnectMatrixAddrCrossbar(Unit):
     """
     Component which implements N to M crossbar for AXI address channel.
@@ -47,8 +45,8 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
 
     def _config(self):
         self.INTF_CLS = Param(self.intfCls)
-        self.SLAVES = Param([])
-        self.MASTERS = Param([])
+        self.SLAVES = Param(tuple())
+        self.MASTERS = Param(tuple())
         self.intfCls._config(self)
 
     def _declr(self):
@@ -280,19 +278,19 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
 def example_AxiInterconnectMatrixAddrCrossbar():
     from hwtLib.amba.axi4 import Axi4
     u = AxiInterconnectMatrixAddrCrossbar(Axi4.AR_CLS)
-    #u.MASTERS = [{0, 1}]
-    #u.MASTERS = [{0, 1, 2}]
-    #u.MASTERS = [{0}, {0}, {0}]
-    # u.SLAVES = [(0x1000, 0x1000),
+    #u.MASTERS = ({0, 1},)
+    #u.MASTERS = ({0, 1, 2},)
+    #u.MASTERS = ({0}, {0}, {0})
+    # u.SLAVES = ((0x1000, 0x1000),
     #            (0x2000, 0x1000),
     #            (0x3000, 0x1000),
-    #          ]
-    #u.SLAVES = [(0x1000, 0x1000)]
+    #          )
+    #u.SLAVES = ((0x1000, 0x1000))
 
-    u.MASTERS = [{0, 1}, {0, 1}]
-    u.SLAVES = [(0x1000, 0x1000),
+    u.MASTERS = ({0, 1}, {0, 1})
+    u.SLAVES = ((0x1000, 0x1000),
                 (0x2000, 0x1000),
-                ]
+                )
 
     return u
 

@@ -98,19 +98,19 @@ class AxiInterconnectMatrixR(AxiInterconnectCommon):
 
 def example_AxiInterconnectMatrixR():
     u = AxiInterconnectMatrixR(Axi4)
-    #u.MASTERS = [{0, 1}]
-    #u.MASTERS = [{0, 1, 2}]
-    #u.MASTERS = [{0}, {0}, {0}]
-    # u.SLAVES = [(0x1000, 0x1000),
+    #u.MASTERS = ({0, 1}, )
+    #u.MASTERS = ({0, 1, 2}, )
+    #u.MASTERS = ({0}, {0}, {0}, )
+    # u.SLAVES = ((0x1000, 0x1000),
     #            (0x2000, 0x1000),
     #            (0x3000, 0x1000),
-    #          ]
-    #u.SLAVES = [(0x1000, 0x1000)]
+    #          )
+    #u.SLAVES = ((0x1000, 0x1000))
 
-    u.MASTERS = [{0, 1}, {0, 1}]
-    u.SLAVES = [(0x1000, 0x1000),
+    u.MASTERS = ({0, 1}, {0, 1})
+    u.SLAVES = ((0x1000, 0x1000),
                 (0x2000, 0x1000),
-                ]
+                )
 
     return u
 

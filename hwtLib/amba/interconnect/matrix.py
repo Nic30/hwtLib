@@ -62,8 +62,8 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
                 for slvs in connected_slaves_per_master
             ]
 
-        sub_interconnect.MASTERS = connected_slaves_per_master
-        sub_interconnect.SLAVES = [self.SLAVES[s_i] for s_i in slave_indexes]
+        sub_interconnect.MASTERS = tuple(connected_slaves_per_master)
+        sub_interconnect.SLAVES = tuple(self.SLAVES[s_i] for s_i in slave_indexes)
         sub_interconnect_connetions = []
 
         for sub_m_i, m_i in enumerate(sorted(list(master_indexes))):
@@ -159,10 +159,10 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
 
 def example_AxiInterconnectMatrix():
     u = AxiInterconnectMatrix(Axi4)
-    u.MASTERS = [{(0, READ), (1, READ_WRITE)},
-                 ]
-    u.SLAVES = [(0x1000, 0x1000),
-                (0x2000, 0x1000)]
+    u.MASTERS = ({(0, READ), (1, READ_WRITE)},
+                 )
+    u.SLAVES = ((0x1000, 0x1000),
+                (0x2000, 0x1000))
     return u
 
 

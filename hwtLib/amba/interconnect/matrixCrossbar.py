@@ -4,7 +4,6 @@
 from hwt.code import log2ceil, Or, connect, Switch, Concat
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
@@ -13,7 +12,6 @@ from hwtLib.amba.interconnect.common import apply_name
 from hwtLib.handshaked.streamNode import StreamNode
 
 
-@serializeParamsUniq
 class AxiInterconnectMatrixCrossbar(Unit):
     """
     Crossbar for AXI-Stream like interfaces where internall switch box
