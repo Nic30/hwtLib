@@ -1,6 +1,7 @@
 from hwt.code import connect
 from hwtLib.abstract.busStaticRemap import BusStaticRemap
 from hwtLib.amba.axi4 import Axi4
+from hwt.synthesizer.param import Param
 
 
 class AxiStaticRemap(BusStaticRemap):
@@ -14,6 +15,7 @@ class AxiStaticRemap(BusStaticRemap):
         super(AxiStaticRemap, self).__init__()
 
     def _config(self):
+        self.INTF_CLS = Param(self.intfCls)
         BusStaticRemap._config(self)
         self.intfCls._config(self)
 

@@ -9,6 +9,7 @@ from hwtLib.amba.axi4 import Axi4, Axi4_addr
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT,\
     BYTES_IN_TRANS, QOS_DEFAULT
+from hwt.serializer.mode import serializeParamsUniq
 
 
 def interface_not_present_on_other(a: Interface, b: Interface):
@@ -24,6 +25,7 @@ def interface_not_present_on_other(a: Interface, b: Interface):
     return set(missing_on_b)
 
 
+@serializeParamsUniq
 class AxiLite_2Axi(BusBridge):
     """
     Bridge from AxiLite interface to Axi3/4 interface
@@ -36,6 +38,7 @@ class AxiLite_2Axi(BusBridge):
         super(AxiLite_2Axi, self).__init__()
 
     def _config(self):
+        self.INTF_CLS = Param(self.intfCls)
         self.intfCls._config(self)
         self.DEFAULT_ID = Param(0)
 

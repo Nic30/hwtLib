@@ -6,15 +6,16 @@ from typing import Optional, Tuple
 from hwt.code import If, connect, log2ceil
 from hwt.interfaces.std import VectSignal, Clk
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn, propagateRstn
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import packIntf, \
     connectPacked
 from hwt.synthesizer.param import Param
-
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.mem.fifo import Fifo
 
 
+@serializeParamsUniq
 class HandshakedFifo(HandshakedCompBase):
     """
     Synchronous FIFO for handshaked interfaces

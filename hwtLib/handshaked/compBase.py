@@ -1,6 +1,7 @@
 from hwt.interfaces.std import Handshaked, HandshakeSync
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.param import Param
 
 
 class HandshakedCompBase(Unit):
@@ -18,6 +19,7 @@ class HandshakedCompBase(Unit):
         Unit.__init__(self)
 
     def _config(self):
+        self.INTF_CLS = Param(self.intfCls)
         self.intfCls._config(self)
 
     @classmethod

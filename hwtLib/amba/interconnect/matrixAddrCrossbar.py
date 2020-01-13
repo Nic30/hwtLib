@@ -6,7 +6,9 @@ from typing import List, Tuple
 from hwt.code import log2ceil, connect, Concat, SwitchLogic, Or
 from hwt.hdl.assignment import Assignment
 from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.types.defs import BIT
 from hwt.interfaces.std import Handshaked
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
@@ -19,9 +21,9 @@ from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.types.ctypes import uint8_t
-from hwt.hdl.types.defs import BIT
 
 
+@serializeParamsUniq
 class AxiInterconnectMatrixAddrCrossbar(Unit):
     """
     Component which implements N to M crossbar for AXI address channel.
@@ -44,6 +46,7 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
         super(AxiInterconnectMatrixAddrCrossbar, self).__init__()
 
     def _config(self):
+        self.INTF_CLS = Param(self.intfCls)
         self.SLAVES = Param([])
         self.MASTERS = Param([])
         self.intfCls._config(self)

@@ -4,6 +4,7 @@
 from hwt.code import log2ceil, Or, connect, Switch, Concat
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
@@ -12,6 +13,7 @@ from hwtLib.amba.interconnect.common import apply_name
 from hwtLib.handshaked.streamNode import StreamNode
 
 
+@serializeParamsUniq
 class AxiInterconnectMatrixCrossbar(Unit):
     """
     Crossbar for AXI-Stream like interfaces where internall switch box
@@ -25,6 +27,7 @@ class AxiInterconnectMatrixCrossbar(Unit):
         super(AxiInterconnectMatrixCrossbar, self).__init__()
 
     def _config(self):
+        self.INTF_CLS = Param(self.intfCls)
         self.INPUT_CNT = Param(1)
         # set of input indexes for each output
         self.OUTPUTS = Param([{0}])
@@ -88,7 +91,7 @@ class AxiInterconnectMatrixCrossbar(Unit):
                 for di, (d, order_s_for_m) in enumerate(zip(dataOut_channels, order_din_index_for_dout))
             ])
             selected_dataOut_ready = apply_name(self, selected_dataOut_ready,
-                                               "dataIn_%d_selected_dataOut_ready" % din_i)
+                                                "dataIn_%d_selected_dataOut_ready" % din_i)
 
             dataIn.ready(order_m_for_s.vld & selected_dataOut_ready)
             order_m_for_s.rd(dataIn.valid & self.get_last(dataIn) &

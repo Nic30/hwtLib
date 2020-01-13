@@ -236,6 +236,7 @@ ENTITY gen_dout_splitCopy_0 IS
     GENERIC (DATA_WIDTH: INTEGER := 64;
         DEST_WIDTH: INTEGER := 0;
         ID_WIDTH: INTEGER := 0;
+        INTF_CLS: STRING := "<class 'hwtLib.amba.axis.AxiStream'>";
         IS_BIGENDIAN: BOOLEAN := False;
         OUTPUTS: INTEGER := 2;
         USER_WIDTH: INTEGER := 0;
@@ -534,6 +535,7 @@ ARCHITECTURE rtl OF NetFilter IS
        GENERIC (DATA_WIDTH: INTEGER := 64;
             DEST_WIDTH: INTEGER := 0;
             ID_WIDTH: INTEGER := 0;
+            INTF_CLS: STRING := "<class 'hwtLib.amba.axis.AxiStream'>";
             IS_BIGENDIAN: BOOLEAN := False;
             OUTPUTS: INTEGER := 2;
             USER_WIDTH: INTEGER := 0;
@@ -745,6 +747,7 @@ BEGIN
         GENERIC MAP (DATA_WIDTH => 64,
             DEST_WIDTH => 0,
             ID_WIDTH => 0,
+            INTF_CLS => "<class 'hwtLib.amba.axis.AxiStream'>",
             IS_BIGENDIAN => False,
             OUTPUTS => 2,
             USER_WIDTH => 0,

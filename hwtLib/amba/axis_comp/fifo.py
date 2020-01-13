@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.amba.axis_comp.base import AxiSCompBase
-from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.amba.axis_comp.reg import AxiSReg
+from hwtLib.handshaked.fifo import HandshakedFifo
 
 
+@serializeParamsUniq
 class AxiSFifo(AxiSCompBase, HandshakedFifo):
     """
     Synchronous fifo for axi-stream interface.

@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.interfaces.utils import addClkRstn
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
-from hwt.interfaces.utils import addClkRstn
-from hwt.code import isPow2
 
 
+@serializeParamsUniq
 class AxiBuff(BusBridge):
     """
     Transaction buffer for AXI3/4/Lite and others
@@ -18,6 +19,7 @@ class AxiBuff(BusBridge):
         super(AxiBuff, self).__init__()
 
     def _config(self):
+        self.INTF_CLS = Param(self.intfCls)
         self.intfCls._config(self)
         self.ADDR_BUFF_DEPTH = Param(16)
         self.DATA_BUFF_DEPTH = Param(16)

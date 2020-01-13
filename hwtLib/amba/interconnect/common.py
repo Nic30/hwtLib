@@ -8,6 +8,7 @@ from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.hdl.types.defs import BIT
+from hwt.serializer.mode import serializeParamsUniq
 
 
 ALL = "ALL"
@@ -127,6 +128,7 @@ def apply_name(unit_instance, sig, name):
     return s
 
 
+@serializeParamsUniq
 class AxiInterconnectCommon(Unit):
 
     def __init__(self, intfCls):
@@ -134,6 +136,7 @@ class AxiInterconnectCommon(Unit):
         super(AxiInterconnectCommon, self).__init__()
 
     def _config(self):
+        self.INTF_CLS = Param(self.intfCls)
         self.MAX_TRANS_OVERLAP = Param(16)
         self.SLAVES = Param([])
         self.MASTERS = Param([])
