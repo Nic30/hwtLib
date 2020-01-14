@@ -55,11 +55,11 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
         for i in u.master:
             self.randomize(i)
 
-        if u.REQUIRED_ORDER_SYNC_M_FOR_S:
-            for i in u.order_m_index_for_s_data_out:
+        for i in u.order_m_index_for_s_data_out:
+            if i is not None:
                 self.randomize(i)
-        if u.REQUIRED_ORDER_SYNC_S_FOR_M:
-            for i in u.order_s_index_for_m_data_out:
+        for i in u.order_s_index_for_m_data_out:
+            if i is not None:
                 self.randomize(i)
 
     def test_nop(self):
@@ -70,11 +70,11 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
         for i in chain(u.master, u.slave):
             self.assertEmpty(i._ag.data)
 
-        if u.REQUIRED_ORDER_SYNC_M_FOR_S:
-            for i in u.order_m_index_for_s_data_out:
+        for i in u.order_m_index_for_s_data_out:
+            if i is not None:
                 self.assertEmpty(i._ag.data)
-        if u.REQUIRED_ORDER_SYNC_S_FOR_M:
-            for i in u.order_s_index_for_m_data_out:
+        for i in u.order_s_index_for_m_data_out:
+            if i is not None:
                 self.assertEmpty(i._ag.data)
 
     def test_all(self, transaction_cnt=10, magic=0):
@@ -115,44 +115,37 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
         for m_i, m in enumerate(u.master):
             self.assertEmpty(m._ag.data, "master: %d" % m_i)
 
-        if u.REQUIRED_ORDER_SYNC_S_FOR_M:
-            # assert order_s_index_for_m_data_out contains the slave indexes as expected by address
-            for m_i, s_for_m in enumerate(u.order_s_index_for_m_data_out):
-                ref_s_for_m = []
-                for slave_i, slave_a in enumerate(slave_a_transactions):
-                    if slave_i not in accesible_slaves:
-                        continue
+        for m_i, (s_for_m, accesible_slaves) in enumerate(zip(u.order_s_index_for_m_data_out, u.MASTERS)):
+            if s_for_m is None:
+                continue
+            ref_s_for_m = []
+            for slave_i, slave_a in enumerate(slave_a_transactions):
+                if slave_i not in accesible_slaves:
+                    continue
 
-                    slave_addr_offset = self.u.SLAVES[slave_i][0]
-                    for _ in range(transaction_cnt):
-                        ref_s_for_m.append(slave_i)
-                self.assertValSequenceEqual(
-                    s_for_m._ag.data, ref_s_for_m, "master: %d" % m_i)
+                slave_addr_offset = self.u.SLAVES[slave_i][0]
+                for _ in range(transaction_cnt):
+                    ref_s_for_m.append(slave_i)
+            self.assertValSequenceEqual(
+                s_for_m._ag.data, ref_s_for_m, "master: %d" % m_i)
 
-        if u.REQUIRED_ORDER_SYNC_M_FOR_S:
-            # use order from u.order_m_index_for_s_data_out to rebuild original
-            # order of transactions
-            for s_i, (s, m_for_s, s_all_ref) in enumerate(zip(
-                    u.slave, u.order_m_index_for_s_data_out, slave_a_transactions)):
-                s = s._ag.data
-                m_for_s = [int(m) for m in m_for_s._ag.data]
-                trans_cnt = sum([len(r) for r in s_all_ref])
-                self.assertEqual(len(m_for_s), trans_cnt, "slave: %d" % s_i)
-                self.assertEqual(len(s), trans_cnt, "slave: %d" % s_i)
-                s_ref = []
-                for m_i in m_for_s:
-                    t = s_all_ref[m_i].popleft()
-                    s_ref.append(t)
+        # use order from u.order_m_index_for_s_data_out to rebuild original
+        # order of transactions
+        for s_i, (s, m_for_s, s_all_ref) in enumerate(zip(
+                u.slave, u.order_m_index_for_s_data_out, slave_a_transactions)):
+            if m_for_s is None:
+                continue
+            s = s._ag.data
+            m_for_s = [int(m) for m in m_for_s._ag.data]
+            trans_cnt = sum([len(r) for r in s_all_ref])
+            self.assertEqual(len(m_for_s), trans_cnt, "slave: %d" % s_i)
+            self.assertEqual(len(s), trans_cnt, "slave: %d" % s_i)
+            s_ref = []
+            for m_i in m_for_s:
+                t = s_all_ref[m_i].popleft()
+                s_ref.append(t)
 
-                self.assertValSequenceEqual(s, s_ref, "slave: %d" % s_i)
-        else:
-            # check the address transactions arrived correctly on slave
-            for s_i, (s, s_all_ref) in enumerate(zip(
-                    u.slave, slave_a_transactions)):
-                s = s._ag.data
-                assert len(s_all_ref) == 1
-                s_ref = s_all_ref[0]
-                self.assertValSequenceEqual(s, s_ref, "slave: %d" % s_i)
+            self.assertValSequenceEqual(s, s_ref, "slave: %d" % s_i)
 
 
 class AxiInterconnectMatrixAddrCrossbar_1to3TC(AxiInterconnectMatrixAddrCrossbar_1to1TC):
@@ -203,6 +196,23 @@ class AxiInterconnectMatrixAddrCrossbar_3to3TC(AxiInterconnectMatrixAddrCrossbar
         u.ADDR_WIDTH = log2ceil(0x4000 - 1)
         return u
 
+class AxiInterconnectMatrixAddrCrossbar_2to1_2to1_1toAllTC(AxiInterconnectMatrixAddrCrossbar_1to1TC):
+    """
+    M0,M1 -> S0
+    M2,M3 -> S1
+    M4    -> S0,S1 
+    """
+    @classmethod
+    def getUnit(cls):
+        cls.u = u = AxiInterconnectMatrixAddrCrossbar(Axi4.AR_CLS)
+        u.MASTERS = ({0}, {0}, {1}, {1}, {0, 1})
+        u.SLAVES = (
+            (0x0000, 0x1000),
+            (0x1000, 0x1000),
+        )
+        u.ADDR_WIDTH = log2ceil(0x2000 - 1)
+        return u
+
 
 if __name__ == "__main__":
     import unittest
@@ -212,6 +222,7 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(AxiInterconnectMatrixAddrCrossbar_1to3TC))
     suite.addTest(unittest.makeSuite(AxiInterconnectMatrixAddrCrossbar_3to1TC))
     suite.addTest(unittest.makeSuite(AxiInterconnectMatrixAddrCrossbar_3to3TC))
+    suite.addTest(unittest.makeSuite(AxiInterconnectMatrixAddrCrossbar_2to1_2to1_1toAllTC))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

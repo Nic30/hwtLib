@@ -36,12 +36,14 @@ class AxiInterconnectMatrixCrossbar_1to1TC(SingleUnitSimTestCase):
         data = [magic + i for i in range(word_cnt)]
         data = self.data_transaction(input_i, data)
         u.dataIn[input_i]._ag.data.extend(data)
+        
+        intf = u.order_dout_index_for_din_in[input_i]
+        if intf is not None:
+            intf._ag.data.append(output_i)
 
-        if u.REQUIRED_ORDER_SYNC_DOUT_FOR_DIN:
-            u.order_dout_index_for_din_in[input_i]._ag.data.append(output_i)
-
-        if u.REQUIRED_ORDER_SYNC_DIN_FOR_DOUT:
-            u.order_din_index_for_dout_in[output_i]._ag.data.append(input_i)
+        intf = u.order_din_index_for_dout_in[output_i]
+        if intf is not None:
+            intf._ag.data.append(input_i)
 
         expected_outputs[output_i].extend(data)
         return magic + word_cnt
@@ -54,11 +56,11 @@ class AxiInterconnectMatrixCrossbar_1to1TC(SingleUnitSimTestCase):
         for i in u.dataIn:
             self.randomize(i)
 
-        if u.REQUIRED_ORDER_SYNC_DOUT_FOR_DIN:
-            for i in u.order_dout_index_for_din_in:
+        for i in u.order_dout_index_for_din_in:
+            if i is not None:
                 self.randomize(i)
-        if u.REQUIRED_ORDER_SYNC_DIN_FOR_DOUT:
-            for i in u.order_din_index_for_dout_in:
+        for i in u.order_din_index_for_dout_in:
+            if i is not None:
                 self.randomize(i)
 
     def test_nop(self):
@@ -69,12 +71,12 @@ class AxiInterconnectMatrixCrossbar_1to1TC(SingleUnitSimTestCase):
         for i in chain(u.dataIn, u.dataOut):
             self.assertEmpty(i._ag.data)
 
-        if u.REQUIRED_ORDER_SYNC_DOUT_FOR_DIN:
-            for i in u.order_dout_index_for_din_in:
+        for i in u.order_dout_index_for_din_in:
+            if i is not None:
                 self.assertEmpty(i._ag.data)
 
-        if u.REQUIRED_ORDER_SYNC_DIN_FOR_DOUT:
-            for i in u.order_din_index_for_dout_in:
+        for i in u.order_din_index_for_dout_in:
+            if i is not None:
                 self.assertEmpty(i._ag.data)
 
     def test_all(self, transaction_cnt=10, magic=0):

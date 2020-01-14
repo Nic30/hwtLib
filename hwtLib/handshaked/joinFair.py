@@ -11,6 +11,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
 from hwtLib.handshaked.streamNode import StreamNode
+from hwt.hdl.types.defs import BIT
 
 
 class HsJoinFairShare(HsJoinPrioritized):
@@ -67,7 +68,7 @@ class HsJoinFairShare(HsJoinPrioritized):
         """
         assert din_vlds
         if len(din_vlds) == 1:
-            isSelectedFlags = copy(din_vlds)
+            isSelectedFlags = [BIT.from_py(1), ]
             if selectedOneHot is not None:
                 selectedOneHot.data(1)
         else:

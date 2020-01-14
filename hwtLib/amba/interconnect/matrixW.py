@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from itertools import chain
-
 from hwt.code import log2ceil
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import propagateClkRstn
@@ -11,8 +9,8 @@ from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.interconnect.common import AxiInterconnectCommon
 from hwtLib.amba.interconnect.matrixAddrCrossbar import AxiInterconnectMatrixAddrCrossbar
 from hwtLib.amba.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
-from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.builder import HsBuilder
+from hwtLib.handshaked.fifo import HandshakedFifo
 
 
 class AxiInterconnectMatrixCrossbarB(AxiInterconnectMatrixCrossbar):
@@ -31,37 +29,44 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
 
     def _declr(self):
         AxiInterconnectCommon._declr(self, has_r=False, has_w=True)
-        AxiInterconnectCommon._init_config_flags(self)
+        masters_for_slave = AxiInterconnectMatrixCrossbar._masters_for_slave(
+            self.MASTERS, len(self.SLAVES))
 
-        if self.REQUIRED_ORDER_SYNC_M_FOR_S:
-            # fifo for master index for each slave so slave knows
-            # which master did read and where is should send it
-            self.order_m_index_for_s_data = HObjList([
-                HandshakedFifo(Handshaked) for _ in self.SLAVES])
+        # fifo for master index for each slave so slave knows
+        # which master did read and where is should send it
+        order_m_index_for_s_data = HObjList()
+        order_m_index_for_s_b = HObjList()
+        for connected_masters in masters_for_slave:
+            if len(connected_masters) > 1:
+                f_w = HandshakedFifo(Handshaked)
+                f_b = HandshakedFifo(Handshaked)
+                for _f in [f_w, f_b]:
+                    _f.DEPTH = self.MAX_TRANS_OVERLAP
+                    _f.DATA_WIDTH = log2ceil(len(self.MASTERS))
+            else:
+                f_w, f_b = None, None
+            order_m_index_for_s_data.append(f_w)
+            order_m_index_for_s_b.append(f_b)
+        self.order_m_index_for_s_data = order_m_index_for_s_data
+        self.order_m_index_for_s_b = order_m_index_for_s_b
+        # fifo for slave index for each master
+        # so master knows where it should expect the data
+        order_s_index_for_m_data = HObjList()
+        order_s_index_for_m_b = HObjList()
+        for connected_slaves in self.MASTERS:
+            if len(connected_slaves) > 1:
+                f_w = HandshakedFifo(Handshaked)
+                f_b = HandshakedFifo(Handshaked)
 
-            self.order_m_index_for_s_b = HObjList([
-                HandshakedFifo(Handshaked) for _ in self.SLAVES])
-
-            for f in chain(self.order_m_index_for_s_data,
-                           self.order_m_index_for_s_b):
-                f.DEPTH = self.MAX_TRANS_OVERLAP
-                f.DATA_WIDTH = log2ceil(
-                    len(self.MASTERS))
-
-        if self.REQUIRED_ORDER_SYNC_S_FOR_M:
-            # fifo for slave index for each master
-            # so master knows where it should expect the data
-            self.order_s_index_for_m_data = HObjList([
-                HandshakedFifo(Handshaked) for _ in self.MASTERS])
-
-            self.order_s_index_for_m_b = HObjList([
-                HandshakedFifo(Handshaked) for _ in self.MASTERS])
-
-            for f in chain(self.order_s_index_for_m_data,
-                           self.order_s_index_for_m_b):
-                f.DEPTH = self.MAX_TRANS_OVERLAP
-                f.DATA_WIDTH = log2ceil(
-                    len(self.SLAVES))
+                for f in [f_w, f_b]:
+                    f.DEPTH = self.MAX_TRANS_OVERLAP
+                    f.DATA_WIDTH = log2ceil(len(self.SLAVES))
+            else:
+                f_w, f_b = None, None
+            order_s_index_for_m_data.append(f_w)
+            order_s_index_for_m_b.append(f_b)
+        self.order_s_index_for_m_data = order_s_index_for_m_data
+        self.order_s_index_for_m_b = order_s_index_for_m_b
 
         AXI = self.intfCls
         with self._paramsShared():
@@ -105,37 +110,49 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
         slave_b_channels = HObjList([s.b for s in self.slave])
         b_crossbar.dataIn(slave_b_channels)
 
-        if self.REQUIRED_ORDER_SYNC_S_FOR_M:
-            for addr_crossbar_s_index_out, f_w, f_b in zip(
-                    addr_crossbar.order_s_index_for_m_data_out,
-                    self.order_s_index_for_m_data,
-                    self.order_s_index_for_m_b):
-                HsBuilder(self, addr_crossbar_s_index_out)\
-                    .split_copy_to(f_w.dataIn, f_b.dataIn)
+        for addr_crossbar_s_index_out, f_w, f_b in zip(
+                addr_crossbar.order_s_index_for_m_data_out,
+                self.order_s_index_for_m_data,
+                self.order_s_index_for_m_b):
+            if f_w is None:
+                assert f_b is None
+                continue
+            HsBuilder(self, addr_crossbar_s_index_out)\
+                .split_copy_to(f_w.dataIn, f_b.dataIn)
 
-            for f_w, f_b, data_dout_for_din, b_din_for_dout in zip(
-                    self.order_s_index_for_m_data,
-                    self.order_s_index_for_m_b,
-                    data_crossbar.order_dout_index_for_din_in,
-                    b_crossbar.order_din_index_for_dout_in):
-                data_dout_for_din(f_w.dataOut)
-                b_din_for_dout(f_b.dataOut)
+        for f_w, f_b, data_dout_for_din, b_din_for_dout in zip(
+                self.order_s_index_for_m_data,
+                self.order_s_index_for_m_b,
+                data_crossbar.order_dout_index_for_din_in,
+                b_crossbar.order_din_index_for_dout_in):
+            if f_w is None:
+                assert f_b is None
+                continue
+            data_dout_for_din(f_w.dataOut)
+            b_din_for_dout(f_b.dataOut)
 
-        if self.REQUIRED_ORDER_SYNC_M_FOR_S:
-            for addr_crossbar_m_index_out, f_w, f_b in zip(
-                    addr_crossbar.order_m_index_for_s_data_out,
-                    self.order_m_index_for_s_data,
-                    self.order_m_index_for_s_b):
-                HsBuilder(self, addr_crossbar_m_index_out)\
-                    .split_copy_to(f_w.dataIn, f_b.dataIn)
+        for addr_crossbar_m_index_out, f_w, f_b in zip(
+                addr_crossbar.order_m_index_for_s_data_out,
+                self.order_m_index_for_s_data,
+                self.order_m_index_for_s_b):
+            if f_w is None:
+                assert f_b is None
+                assert addr_crossbar_m_index_out is None
+                continue
+            HsBuilder(self, addr_crossbar_m_index_out)\
+                .split_copy_to(f_w.dataIn, f_b.dataIn)
 
-            for f_w, f_b, data_din_for_dout, b_dout_for_din in zip(
-                    self.order_m_index_for_s_data,
-                    self.order_m_index_for_s_b,
-                    data_crossbar.order_din_index_for_dout_in,
-                    b_crossbar.order_dout_index_for_din_in):
-                data_din_for_dout(f_w.dataOut)
-                b_dout_for_din(f_b.dataOut)
+        for f_w, f_b, data_din_for_dout, b_dout_for_din in zip(
+                self.order_m_index_for_s_data,
+                self.order_m_index_for_s_b,
+                data_crossbar.order_din_index_for_dout_in,
+                b_crossbar.order_dout_index_for_din_in):
+            if f_w is None:
+                assert f_b is None
+                assert data_din_for_dout is None
+                continue
+            data_din_for_dout(f_w.dataOut)
+            b_dout_for_din(f_b.dataOut)
 
 
 def example_AxiInterconnectMatrixW():

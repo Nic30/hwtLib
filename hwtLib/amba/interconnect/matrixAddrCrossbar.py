@@ -16,6 +16,7 @@ from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.interconnect.common import AxiInterconnectCommon,\
     apply_name
+from hwtLib.amba.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
 from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.oneHotToBin import oneHotToBin
@@ -51,44 +52,52 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
 
     def _declr(self):
         AxiInterconnectCommon._declr(self, has_r=False, has_w=False)
-        AxiInterconnectCommon._init_config_flags(self)
+        self.MASTERS_FOR_SLAVE = AxiInterconnectMatrixCrossbar._masters_for_slave(
+            self.MASTERS, len(self.SLAVES))
+        MASTER_INDEX_WIDTH = log2ceil(len(self.MASTERS))
+        SLAVE_INDEX_WIDTH = log2ceil(len(self.SLAVES))
 
-        if self.REQUIRED_ORDER_SYNC_M_FOR_S:
-            # fifo for master index for each slave so slave knows
-            # which master did read and where is should send it
-            self.order_m_index_for_s_data_out = HObjList([
-                Handshaked()._m() for _ in self.SLAVES])
+        # fifo for master index for each slave so slave knows
+        # which master did read and where is should send it
+        order_m_index_for_s_data_out = HObjList()
+        for connected_masters in self.MASTERS_FOR_SLAVE:
+            if len(connected_masters) > 1:
+                f = Handshaked()._m() 
+                f.DATA_WIDTH = MASTER_INDEX_WIDTH
+            else:
+                f = None
+            order_m_index_for_s_data_out.append(f)    
+        self.order_m_index_for_s_data_out = order_m_index_for_s_data_out
 
-            for f in self.order_m_index_for_s_data_out:
-                f.DATA_WIDTH = self.MASTER_INDEX_WIDTH = log2ceil(
-                    len(self.MASTERS))
-
-        if self.REQUIRED_ORDER_SYNC_S_FOR_M:
+        order_s_index_for_m_data_out = HObjList()
+        for slaves in self.MASTERS:
             # fifo for slave index for each master
             # so master knows where it should expect the data
-            self.order_s_index_for_m_data_out = HObjList([
-                Handshaked()._m() for _ in self.MASTERS])
-
-            for f in self.order_s_index_for_m_data_out:
-                f.DATA_WIDTH = log2ceil(len(self.SLAVES))
+            if len(slaves) > 1:
+                f = Handshaked()._m()
+                f.DATA_WIDTH = SLAVE_INDEX_WIDTH
+            else:
+                f = None
+            order_s_index_for_m_data_out.append(f)
+        self.order_s_index_for_m_data_out = order_s_index_for_m_data_out
 
     def propagate_addr(self, master_addr_channels, slave_addr_channels)\
             ->List[List[Tuple[RtlSignal, Assignment]]]:
         """
-        :return: matrix of addr select, addr assignment for all masters and slaves
+        :return: matrix of tuple(addr select, addr assignment) for all masters and slaves
                 (master X slave)
         """
         slv_en = []
-        for mi, slvs in enumerate(self.MASTERS):
+        for mi, connected_slaves in enumerate(self.MASTERS):
             _slv_en = []
             slv_en.append(_slv_en)
             srcAddrSig = master_addr_channels[mi].addr
-            for si, (addr, size) in enumerate(self.SLAVES):
-                dstAddrSig = slave_addr_channels[si].addr
-                if si not in slvs:
+            for s_i, (addr, size) in enumerate(self.SLAVES):
+                dstAddrSig = slave_addr_channels[s_i].addr
+                if s_i not in connected_slaves:
                     # case where slave is not mapped to master address space
                     en = BIT.from_py(0)
-                    addr_drive = dstAddrSig(None)
+                    addr_drive = None
                 else:
                     tmpl = TransTmpl(uint8_t[size], bitAddr=addr * 8)
                     # generate optimized address comparator and handle potentialy
@@ -98,16 +107,6 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
                 _slv_en.append((en, addr_drive))
 
         return slv_en
-
-    def addr_handler_1_to_1(self, master_addr_channels, slave_addr_channels):
-        # 1:1, just connect the rest of the signals
-        m = master_addr_channels[0]
-        s = slave_addr_channels[0]
-        slv_en = self.propagate_addr(master_addr_channels, slave_addr_channels)
-        addr_en = slv_en[0][0][0]
-        # addr already connected, valid, ready need an extra sync
-        connect(m, s, exclude={m.valid, m.ready, m.addr})
-        StreamNode([m], [s]).sync(addr_en)
 
     def addr_handler_build_addr_mux(self,
                                     slv_addr_tmp, master_addr_channels,
@@ -120,7 +119,8 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
         for isSelected, m_addr, addr_assig in zip(isSelectedFlags,
                                                   master_addr_channels,
                                                   addr_assignments):
-
+            if addr_assig is None:
+                continue
             data_connect_exprs = connect(m_addr, slv_addr_tmp,
                                          exclude={m_addr.valid,
                                                   m_addr.ready,
@@ -133,7 +133,7 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
             if sig not in {slv_addr_tmp.valid, slv_addr_tmp.ready}:
                 dataDefault.append(sig(None))
 
-        SwitchLogic(dataCases, dataDefault)
+        return SwitchLogic(dataCases, dataDefault)
 
     def addr_handler_N_to_M(self, master_addr_channels, slave_addr_channels,
                             order_m_index_for_s_data_in,
@@ -149,87 +149,89 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
         ready_for_master = [0 for _ in master_addr_channels]
 
         # for each slave
-        for slv_i, (slv_addr, order_m_for_s) in enumerate(zip(
+        for slv_i, (slv_addr, order_m_for_s, connected_masters) in enumerate(zip(
                 slave_addr_channels,
-                order_m_index_for_s_data_in)):
+                order_m_index_for_s_data_in,
+                self.MASTERS_FOR_SLAVE)):
 
             # master.ar has valid transaction for this slave flag list
             master_vld_slave = []
             master_targets_slave = []
             for m_i, (_slv_en, m_addr) in enumerate(zip(master_to_slave_en, master_addr_channels)):
-                m_addr_en_s = _slv_en[slv_i][0]
-                m_targets_slave = apply_name(
-                    self, m_addr_en_s, "master_%d_targets_slave_%d" % (m_i, slv_i))
-                master_targets_slave.append(m_targets_slave)
-                en = m_addr.valid & m_targets_slave
+                if m_i in connected_masters:
+                    m_addr_en_s = _slv_en[slv_i][0]
+                    m_targets_slave = apply_name(
+                        self, m_addr_en_s, "master_%d_targets_slave_%d" % (m_i, slv_i))
+                    master_targets_slave.append(m_targets_slave)
+                    en = m_addr.valid & m_targets_slave
+                else:
+                    en = BIT.from_py(0)
                 master_vld_slave.append(en)
 
-            if self.REQUIRED_ORDER_SYNC_S_FOR_M:
-                # 1+ masters to 1(+) slaves
-                # inject the order_s_for_m stream to a master-slv_addr_tmp
-                # stream sync
-                master_vld_slave = [
-                    v & s_for_m.rd
-                    for v, s_for_m in zip(master_vld_slave, order_s_index_for_m_data_in)
-                ]
+            # 1+ masters to 1(+) slaves
+            # inject the order_s_for_m stream to a master-slv_addr_tmp
+            # stream sync
+            master_vld_slave = [
+                v if s_for_m is None else v & s_for_m.rd
+                for v, s_for_m in zip(master_vld_slave, order_s_index_for_m_data_in)
+            ]
 
-            if self.REQUIRED_ORDER_SYNC_M_FOR_S:
-                # multiple masters can access the slave
-                # instantiate round-robin arbiter to select master
-                isSelectedFlags = HsJoinFairShare.isSelectedLogic(
-                    self, master_vld_slave, slv_addr.ready, None)
-                # connect handshake sync to a
-                #slv_valid = Or(*isSelectedFlags) & order_m_for_s.rd
-                slv_valid = Or(*[en & vld for en, vld in zip(isSelectedFlags, master_vld_slave)])\
-                    & order_m_for_s.rd
+            # multiple masters can access the slave
+            # instantiate round-robin arbiter to select master
+            isSelectedFlags = HsJoinFairShare.isSelectedLogic(
+                self, master_vld_slave, slv_addr.ready, None)
 
-                for m_i, m_ar in enumerate(master_addr_channels):
+            slv_valid = []
+            for m_i, (en, vld) in enumerate(zip(isSelectedFlags, master_vld_slave)):
+                if m_i in connected_masters:
+                    _en = en & vld
+                    slv_valid.append(_en)
+            slv_valid = Or(*slv_valid)
+            if order_m_for_s is not None:
+                slv_valid = slv_valid & order_m_for_s.rd
+            slv_addr.valid(slv_valid)
+
+            for m_i, slaves_for_master in enumerate(self.MASTERS):
+                if slv_i in slaves_for_master:
                     m_rd = ready_for_master[m_i]
                     # note: isSelectedFlags has a combinational path to a
                     # master_addr_channel.valid
-                    m_rd = (
+                    m_rd_from_this_s = (
                         isSelectedFlags[m_i]
                         & master_vld_slave[m_i]
                         & slv_addr.ready
-                        & order_m_for_s.rd
-                    ) | m_rd
-                    ready_for_master[m_i] = m_rd
+                    )
+                    if order_m_for_s is not None:
+                        m_rd_from_this_s = m_rd_from_this_s & order_m_for_s.rd
+                    ready_for_master[m_i] = m_rd_from_this_s | m_rd
 
-                # collect info about arbitration win for slave
-                slv_master_arbitration_res = [
-                    isSel & vld
-                    for isSel, vld in zip(isSelectedFlags, master_vld_slave)
-                ]
+            # collect info about arbitration win for slave
+            slv_master_arbitration_res = []
+            for m_i, (isSel, vld) in enumerate(zip(isSelectedFlags, master_vld_slave)):
+                if m_i in connected_masters:
+                    ar = isSel & vld
+                else:
+                    assert not vld, vld
+                    ar = BIT.from_py(0)
+                slv_master_arbitration_res.append(ar)
 
-                slv_master_arbitration_res = apply_name(
-                    self, Concat(*reversed(slv_master_arbitration_res)),
-                    "slave_%d_master_arbitration_res" % slv_i
-                )
+            slv_master_arbitration_res = apply_name(
+                self, Concat(*reversed(slv_master_arbitration_res)),
+                "slave_%d_master_arbitration_res" % slv_i
+            )
+            if order_m_for_s is not None:
                 order_m_for_s.vld(
                     (slv_master_arbitration_res != 0) & slv_addr.ready)
                 order_m_for_s.data(oneHotToBin(
                     self, slv_master_arbitration_res))
-            else:
-                # valid if any master with address of this slave has valid=1
-                slv_valid = Or(*master_vld_slave)
 
-                assert order_m_for_s is None
-                # only a single master can access the slave
-                # if len(master_addr_channels) > 1:
-
-                for m_i, m_en in enumerate(master_vld_slave):
-                    m_rd = ready_for_master[m_i]
-                    ready_for_master[m_i] = (m_en & slv_addr.ready) | m_rd
-                isSelectedFlags = [1]
-
-            slv_addr.valid(slv_valid)
-            addr_assignments = [
-                _slv_en[slv_i][1]
-                for _slv_en in master_to_slave_en
-            ]
             slv_master_arbitration_res = [
                 vld & isSel & slv_addr.ready
                 for isSel, vld in zip(isSelectedFlags, master_vld_slave)
+            ]
+            addr_assignments = [
+                _slv_en[slv_i][1]
+                for _slv_en in master_to_slave_en
             ]
             self.addr_handler_build_addr_mux(
                 slv_addr,
@@ -237,10 +239,13 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
                 addr_assignments,
                 slv_master_arbitration_res)
 
-        for m_i, (master_addr, order_s_for_m, m_rd) in enumerate(zip(
-                master_addr_channels, order_s_index_for_m_data_in, ready_for_master)):
+        for m_i, (master_addr, order_s_for_m, m_rd, connected_slaves) in enumerate(zip(
+                master_addr_channels,
+                order_s_index_for_m_data_in,
+                ready_for_master,
+                self.MASTERS)):
             # collect the info about arbitration win for master
-            if self.REQUIRED_ORDER_SYNC_S_FOR_M:
+            if len(connected_slaves) > 1:
                 slv_ens = [m[0] for m in master_to_slave_en[m_i]]
                 slv_ens = oneHotToBin(self, Concat(
                     *reversed(slv_ens)), "master_%d_slv_ens" % m_i)
@@ -251,28 +256,20 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
 
             master_addr.ready(m_rd)
 
-    def _impl(self)->None:
-        master_addr_channels = [AxiSBuilder(
-            self, m).buff(1).end for m in self.master]
+    def _impl(self):
+        master_addr_channels = [
+            AxiSBuilder(self, m).buff(1).end
+            for m in self.master]
         slave_addr_channels = self.slave
 
-        if self.REQUIRED_ORDER_SYNC_S_FOR_M or self.REQUIRED_ORDER_SYNC_M_FOR_S:
-            if self.REQUIRED_ORDER_SYNC_S_FOR_M:
-                order_s_index_for_m_data_out = self.order_s_index_for_m_data_out
-            else:
-                order_s_index_for_m_data_out = [None for _ in self.master]
-            if self.REQUIRED_ORDER_SYNC_M_FOR_S:
-                order_m_index_for_s_data_out = self.order_m_index_for_s_data_out
-            else:
-                order_m_index_for_s_data_out = [None for _ in self.slave]
+        order_s_index_for_m_data_out = self.order_s_index_for_m_data_out
+        order_m_index_for_s_data_out = self.order_m_index_for_s_data_out
 
-            self.addr_handler_N_to_M(
-                master_addr_channels,
-                slave_addr_channels,
-                order_m_index_for_s_data_out,
-                order_s_index_for_m_data_out)
-        else:
-            self.addr_handler_1_to_1(master_addr_channels, slave_addr_channels)
+        self.addr_handler_N_to_M(
+            master_addr_channels,
+            slave_addr_channels,
+            order_m_index_for_s_data_out,
+            order_s_index_for_m_data_out)
 
 
 def example_AxiInterconnectMatrixAddrCrossbar():

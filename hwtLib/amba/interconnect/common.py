@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import Set, List
+from typing import Set, List, Dict
 
 from hwt.code import log2ceil
 from hwt.hdl.constants import READ_WRITE, READ, WRITE
@@ -8,7 +8,6 @@ from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.hdl.types.defs import BIT
-from hwt.serializer.mode import serializeParamsUniq
 
 
 ALL = "ALL"
@@ -140,14 +139,6 @@ class AxiInterconnectCommon(Unit):
         self.SLAVES = Param(tuple())
         self.MASTERS = Param(tuple())
         self.intfCls._config(self)
-
-    def _init_config_flags(self):
-        # flag that tells if each master should track the order of request so it
-        # can collect the data in same order
-        self.REQUIRED_ORDER_SYNC_S_FOR_M = len(self.SLAVES) > 1
-        # flag which tells if each slave should track the origin of the request
-        # so it later knows where to send the data
-        self.REQUIRED_ORDER_SYNC_M_FOR_S = len(self.MASTERS) > 1
 
     def _declr(self, has_r=True, has_w=True):
         addClkRstn(self)

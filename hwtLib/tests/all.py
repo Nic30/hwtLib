@@ -36,7 +36,8 @@ from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
 from hwtLib.amba.axis_comp.storedBurst_test import AxiSStoredBurstTC
 from hwtLib.amba.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC,\
     AxiInterconnectMatrixAddrCrossbar_1to3TC, AxiInterconnectMatrixAddrCrossbar_3to1TC,\
-    AxiInterconnectMatrixAddrCrossbar_3to3TC
+    AxiInterconnectMatrixAddrCrossbar_3to3TC,\
+    AxiInterconnectMatrixAddrCrossbar_2to1_2to1_1toAllTC
 from hwtLib.amba.interconnect.matrixCrossbar_test import AxiInterconnectMatrixCrossbar_1to1TC,\
     AxiInterconnectMatrixCrossbar_1to3TC, AxiInterconnectMatrixCrossbar_3to1TC,\
     AxiInterconnectMatrixCrossbar_3to3TC
@@ -152,6 +153,9 @@ from hwtLib.mem.fifo_test import FifoWriterAgentTC, FifoReaderAgentTC, FifoTC
 from hwtLib.mem.hashTableCore_test import HashTableCoreTC
 from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ram_test import RamTC
+from hwtLib.mi32.axiLite_bridges_test import Mi32AxiLiteBrigesTC
+from hwtLib.mi32.mi32_2AxiLite_test import Mi32_2AxiLiteTC
+from hwtLib.mi32.mi32agent_test import Mi32AgentTC
 from hwtLib.peripheral.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
 from hwtLib.peripheral.segment7_test import Segment7TC
 from hwtLib.peripheral.spi.master_test import SpiMasterTC
@@ -194,9 +198,6 @@ from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
-from hwtLib.mi32.mi32agent_test import Mi32AgentTC
-from hwtLib.mi32.mi32_2AxiLite_test import Mi32_2AxiLiteTC
-from hwtLib.mi32.axiLite_bridges_test import Mi32AxiLiteBrigesTC
 
 
 # from hwtLib.peripheral.i2c.i2cAgent_test import I2cAgent_TC
@@ -391,6 +392,7 @@ suite = testSuiteFromTCs(
     AxiInterconnectMatrixAddrCrossbar_1to3TC,
     AxiInterconnectMatrixAddrCrossbar_3to1TC,
     AxiInterconnectMatrixAddrCrossbar_3to3TC,
+    AxiInterconnectMatrixAddrCrossbar_2to1_2to1_1toAllTC,
 
     AxiInterconnectMatrixCrossbar_1to1TC,
     AxiInterconnectMatrixCrossbar_1to3TC,
