@@ -3,28 +3,6 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY hfe IS
-    GENERIC (din_DATA_WIDTH: INTEGER := 64;
-        din_DEST_WIDTH: INTEGER := 0;
-        din_ID_WIDTH: INTEGER := 0;
-        din_IS_BIGENDIAN: BOOLEAN := False;
-        din_USER_WIDTH: INTEGER := 0;
-        din_USE_KEEP: BOOLEAN := False;
-        din_USE_STRB: BOOLEAN := False;
-        dout_DATA_WIDTH: INTEGER := 64;
-        dout_DEST_WIDTH: INTEGER := 0;
-        dout_ID_WIDTH: INTEGER := 0;
-        dout_IS_BIGENDIAN: BOOLEAN := False;
-        dout_USER_WIDTH: INTEGER := 0;
-        dout_USE_KEEP: BOOLEAN := False;
-        dout_USE_STRB: BOOLEAN := False;
-        headers_DATA_WIDTH: INTEGER := 64;
-        headers_DEST_WIDTH: INTEGER := 0;
-        headers_ID_WIDTH: INTEGER := 0;
-        headers_IS_BIGENDIAN: BOOLEAN := False;
-        headers_USER_WIDTH: INTEGER := 0;
-        headers_USE_KEEP: BOOLEAN := False;
-        headers_USE_STRB: BOOLEAN := False
-    );
     PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         din_last: IN STD_LOGIC;
         din_ready: OUT STD_LOGIC;
@@ -55,21 +33,6 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY patternMatch IS
-    GENERIC (din_DATA_WIDTH: INTEGER := 64;
-        din_DEST_WIDTH: INTEGER := 0;
-        din_ID_WIDTH: INTEGER := 0;
-        din_IS_BIGENDIAN: BOOLEAN := False;
-        din_USER_WIDTH: INTEGER := 0;
-        din_USE_KEEP: BOOLEAN := False;
-        din_USE_STRB: BOOLEAN := False;
-        match_DATA_WIDTH: INTEGER := 64;
-        match_DEST_WIDTH: INTEGER := 0;
-        match_ID_WIDTH: INTEGER := 0;
-        match_IS_BIGENDIAN: BOOLEAN := False;
-        match_USER_WIDTH: INTEGER := 0;
-        match_USE_KEEP: BOOLEAN := False;
-        match_USE_STRB: BOOLEAN := False
-    );
     PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         din_last: IN STD_LOGIC;
         din_ready: OUT STD_LOGIC;
@@ -93,41 +56,6 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY filter IS
-    GENERIC (cfg_ADDR_WIDTH: INTEGER := 32;
-        cfg_DATA_WIDTH: INTEGER := 64;
-        cfg_ar_ADDR_WIDTH: INTEGER := 32;
-        cfg_aw_ADDR_WIDTH: INTEGER := 32;
-        cfg_r_DATA_WIDTH: INTEGER := 64;
-        cfg_w_DATA_WIDTH: INTEGER := 64;
-        din_DATA_WIDTH: INTEGER := 64;
-        din_DEST_WIDTH: INTEGER := 0;
-        din_ID_WIDTH: INTEGER := 0;
-        din_IS_BIGENDIAN: BOOLEAN := False;
-        din_USER_WIDTH: INTEGER := 0;
-        din_USE_KEEP: BOOLEAN := False;
-        din_USE_STRB: BOOLEAN := False;
-        dout_DATA_WIDTH: INTEGER := 64;
-        dout_DEST_WIDTH: INTEGER := 0;
-        dout_ID_WIDTH: INTEGER := 0;
-        dout_IS_BIGENDIAN: BOOLEAN := False;
-        dout_USER_WIDTH: INTEGER := 0;
-        dout_USE_KEEP: BOOLEAN := False;
-        dout_USE_STRB: BOOLEAN := False;
-        headers_DATA_WIDTH: INTEGER := 64;
-        headers_DEST_WIDTH: INTEGER := 0;
-        headers_ID_WIDTH: INTEGER := 0;
-        headers_IS_BIGENDIAN: BOOLEAN := False;
-        headers_USER_WIDTH: INTEGER := 0;
-        headers_USE_KEEP: BOOLEAN := False;
-        headers_USE_STRB: BOOLEAN := False;
-        patternMatch_DATA_WIDTH: INTEGER := 64;
-        patternMatch_DEST_WIDTH: INTEGER := 0;
-        patternMatch_ID_WIDTH: INTEGER := 0;
-        patternMatch_IS_BIGENDIAN: BOOLEAN := False;
-        patternMatch_USER_WIDTH: INTEGER := 0;
-        patternMatch_USE_KEEP: BOOLEAN := False;
-        patternMatch_USE_STRB: BOOLEAN := False
-    );
     PORT (cfg_ar_addr: IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         cfg_ar_prot: IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         cfg_ar_ready: OUT STD_LOGIC;
@@ -188,21 +116,6 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY exporter IS
-    GENERIC (din_DATA_WIDTH: INTEGER := 64;
-        din_DEST_WIDTH: INTEGER := 0;
-        din_ID_WIDTH: INTEGER := 0;
-        din_IS_BIGENDIAN: BOOLEAN := False;
-        din_USER_WIDTH: INTEGER := 0;
-        din_USE_KEEP: BOOLEAN := False;
-        din_USE_STRB: BOOLEAN := False;
-        dout_DATA_WIDTH: INTEGER := 64;
-        dout_DEST_WIDTH: INTEGER := 0;
-        dout_ID_WIDTH: INTEGER := 0;
-        dout_IS_BIGENDIAN: BOOLEAN := False;
-        dout_USER_WIDTH: INTEGER := 0;
-        dout_USE_KEEP: BOOLEAN := False;
-        dout_USE_STRB: BOOLEAN := False
-    );
     PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         din_last: IN STD_LOGIC;
         din_ready: OUT STD_LOGIC;
@@ -241,28 +154,7 @@ ENTITY gen_dout_splitCopy_0 IS
         OUTPUTS: INTEGER := 2;
         USER_WIDTH: INTEGER := 0;
         USE_KEEP: BOOLEAN := False;
-        USE_STRB: BOOLEAN := False;
-        dataIn_DATA_WIDTH: INTEGER := 64;
-        dataIn_DEST_WIDTH: INTEGER := 0;
-        dataIn_ID_WIDTH: INTEGER := 0;
-        dataIn_IS_BIGENDIAN: BOOLEAN := False;
-        dataIn_USER_WIDTH: INTEGER := 0;
-        dataIn_USE_KEEP: BOOLEAN := False;
-        dataIn_USE_STRB: BOOLEAN := False;
-        dataOut_0_DATA_WIDTH: INTEGER := 64;
-        dataOut_0_DEST_WIDTH: INTEGER := 0;
-        dataOut_0_ID_WIDTH: INTEGER := 0;
-        dataOut_0_IS_BIGENDIAN: BOOLEAN := False;
-        dataOut_0_USER_WIDTH: INTEGER := 0;
-        dataOut_0_USE_KEEP: BOOLEAN := False;
-        dataOut_0_USE_STRB: BOOLEAN := False;
-        dataOut_1_DATA_WIDTH: INTEGER := 64;
-        dataOut_1_DEST_WIDTH: INTEGER := 0;
-        dataOut_1_ID_WIDTH: INTEGER := 0;
-        dataOut_1_IS_BIGENDIAN: BOOLEAN := False;
-        dataOut_1_USER_WIDTH: INTEGER := 0;
-        dataOut_1_USE_KEEP: BOOLEAN := False;
-        dataOut_1_USE_STRB: BOOLEAN := False
+        USE_STRB: BOOLEAN := False
     );
     PORT (dataIn_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
         dataIn_last: IN STD_LOGIC;
@@ -300,27 +192,7 @@ use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 ENTITY NetFilter IS
-    GENERIC (DATA_WIDTH: INTEGER := 64;
-        cfg_ADDR_WIDTH: INTEGER := 32;
-        cfg_DATA_WIDTH: INTEGER := 64;
-        cfg_ar_ADDR_WIDTH: INTEGER := 32;
-        cfg_aw_ADDR_WIDTH: INTEGER := 32;
-        cfg_r_DATA_WIDTH: INTEGER := 64;
-        cfg_w_DATA_WIDTH: INTEGER := 64;
-        din_DATA_WIDTH: INTEGER := 64;
-        din_DEST_WIDTH: INTEGER := 0;
-        din_ID_WIDTH: INTEGER := 0;
-        din_IS_BIGENDIAN: BOOLEAN := False;
-        din_USER_WIDTH: INTEGER := 0;
-        din_USE_KEEP: BOOLEAN := False;
-        din_USE_STRB: BOOLEAN := False;
-        export_DATA_WIDTH: INTEGER := 64;
-        export_DEST_WIDTH: INTEGER := 0;
-        export_ID_WIDTH: INTEGER := 0;
-        export_IS_BIGENDIAN: BOOLEAN := False;
-        export_USER_WIDTH: INTEGER := 0;
-        export_USE_KEEP: BOOLEAN := False;
-        export_USE_STRB: BOOLEAN := False
+    GENERIC (DATA_WIDTH: INTEGER := 64
     );
     PORT (cfg_ar_addr: IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         cfg_ar_prot: IN STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -431,21 +303,6 @@ ARCHITECTURE rtl OF NetFilter IS
     SIGNAL sig_patternMatch_match_ready: STD_LOGIC;
     SIGNAL sig_patternMatch_match_valid: STD_LOGIC;
     COMPONENT exporter IS
-       GENERIC (din_DATA_WIDTH: INTEGER := 64;
-            din_DEST_WIDTH: INTEGER := 0;
-            din_ID_WIDTH: INTEGER := 0;
-            din_IS_BIGENDIAN: BOOLEAN := False;
-            din_USER_WIDTH: INTEGER := 0;
-            din_USE_KEEP: BOOLEAN := False;
-            din_USE_STRB: BOOLEAN := False;
-            dout_DATA_WIDTH: INTEGER := 64;
-            dout_DEST_WIDTH: INTEGER := 0;
-            dout_ID_WIDTH: INTEGER := 0;
-            dout_IS_BIGENDIAN: BOOLEAN := False;
-            dout_USER_WIDTH: INTEGER := 0;
-            dout_USE_KEEP: BOOLEAN := False;
-            dout_USE_STRB: BOOLEAN := False
-       );
        PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
             din_last: IN STD_LOGIC;
             din_ready: OUT STD_LOGIC;
@@ -458,41 +315,6 @@ ARCHITECTURE rtl OF NetFilter IS
     END COMPONENT;
 
     COMPONENT filter IS
-       GENERIC (cfg_ADDR_WIDTH: INTEGER := 32;
-            cfg_DATA_WIDTH: INTEGER := 64;
-            cfg_ar_ADDR_WIDTH: INTEGER := 32;
-            cfg_aw_ADDR_WIDTH: INTEGER := 32;
-            cfg_r_DATA_WIDTH: INTEGER := 64;
-            cfg_w_DATA_WIDTH: INTEGER := 64;
-            din_DATA_WIDTH: INTEGER := 64;
-            din_DEST_WIDTH: INTEGER := 0;
-            din_ID_WIDTH: INTEGER := 0;
-            din_IS_BIGENDIAN: BOOLEAN := False;
-            din_USER_WIDTH: INTEGER := 0;
-            din_USE_KEEP: BOOLEAN := False;
-            din_USE_STRB: BOOLEAN := False;
-            dout_DATA_WIDTH: INTEGER := 64;
-            dout_DEST_WIDTH: INTEGER := 0;
-            dout_ID_WIDTH: INTEGER := 0;
-            dout_IS_BIGENDIAN: BOOLEAN := False;
-            dout_USER_WIDTH: INTEGER := 0;
-            dout_USE_KEEP: BOOLEAN := False;
-            dout_USE_STRB: BOOLEAN := False;
-            headers_DATA_WIDTH: INTEGER := 64;
-            headers_DEST_WIDTH: INTEGER := 0;
-            headers_ID_WIDTH: INTEGER := 0;
-            headers_IS_BIGENDIAN: BOOLEAN := False;
-            headers_USER_WIDTH: INTEGER := 0;
-            headers_USE_KEEP: BOOLEAN := False;
-            headers_USE_STRB: BOOLEAN := False;
-            patternMatch_DATA_WIDTH: INTEGER := 64;
-            patternMatch_DEST_WIDTH: INTEGER := 0;
-            patternMatch_ID_WIDTH: INTEGER := 0;
-            patternMatch_IS_BIGENDIAN: BOOLEAN := False;
-            patternMatch_USER_WIDTH: INTEGER := 0;
-            patternMatch_USE_KEEP: BOOLEAN := False;
-            patternMatch_USE_STRB: BOOLEAN := False
-       );
        PORT (cfg_ar_addr: IN STD_LOGIC_VECTOR(31 DOWNTO 0);
             cfg_ar_prot: IN STD_LOGIC_VECTOR(2 DOWNTO 0);
             cfg_ar_ready: OUT STD_LOGIC;
@@ -540,28 +362,7 @@ ARCHITECTURE rtl OF NetFilter IS
             OUTPUTS: INTEGER := 2;
             USER_WIDTH: INTEGER := 0;
             USE_KEEP: BOOLEAN := False;
-            USE_STRB: BOOLEAN := False;
-            dataIn_DATA_WIDTH: INTEGER := 64;
-            dataIn_DEST_WIDTH: INTEGER := 0;
-            dataIn_ID_WIDTH: INTEGER := 0;
-            dataIn_IS_BIGENDIAN: BOOLEAN := False;
-            dataIn_USER_WIDTH: INTEGER := 0;
-            dataIn_USE_KEEP: BOOLEAN := False;
-            dataIn_USE_STRB: BOOLEAN := False;
-            dataOut_0_DATA_WIDTH: INTEGER := 64;
-            dataOut_0_DEST_WIDTH: INTEGER := 0;
-            dataOut_0_ID_WIDTH: INTEGER := 0;
-            dataOut_0_IS_BIGENDIAN: BOOLEAN := False;
-            dataOut_0_USER_WIDTH: INTEGER := 0;
-            dataOut_0_USE_KEEP: BOOLEAN := False;
-            dataOut_0_USE_STRB: BOOLEAN := False;
-            dataOut_1_DATA_WIDTH: INTEGER := 64;
-            dataOut_1_DEST_WIDTH: INTEGER := 0;
-            dataOut_1_ID_WIDTH: INTEGER := 0;
-            dataOut_1_IS_BIGENDIAN: BOOLEAN := False;
-            dataOut_1_USER_WIDTH: INTEGER := 0;
-            dataOut_1_USE_KEEP: BOOLEAN := False;
-            dataOut_1_USE_STRB: BOOLEAN := False
+            USE_STRB: BOOLEAN := False
        );
        PORT (dataIn_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
             dataIn_last: IN STD_LOGIC;
@@ -579,28 +380,6 @@ ARCHITECTURE rtl OF NetFilter IS
     END COMPONENT;
 
     COMPONENT hfe IS
-       GENERIC (din_DATA_WIDTH: INTEGER := 64;
-            din_DEST_WIDTH: INTEGER := 0;
-            din_ID_WIDTH: INTEGER := 0;
-            din_IS_BIGENDIAN: BOOLEAN := False;
-            din_USER_WIDTH: INTEGER := 0;
-            din_USE_KEEP: BOOLEAN := False;
-            din_USE_STRB: BOOLEAN := False;
-            dout_DATA_WIDTH: INTEGER := 64;
-            dout_DEST_WIDTH: INTEGER := 0;
-            dout_ID_WIDTH: INTEGER := 0;
-            dout_IS_BIGENDIAN: BOOLEAN := False;
-            dout_USER_WIDTH: INTEGER := 0;
-            dout_USE_KEEP: BOOLEAN := False;
-            dout_USE_STRB: BOOLEAN := False;
-            headers_DATA_WIDTH: INTEGER := 64;
-            headers_DEST_WIDTH: INTEGER := 0;
-            headers_ID_WIDTH: INTEGER := 0;
-            headers_IS_BIGENDIAN: BOOLEAN := False;
-            headers_USER_WIDTH: INTEGER := 0;
-            headers_USE_KEEP: BOOLEAN := False;
-            headers_USE_STRB: BOOLEAN := False
-       );
        PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
             din_last: IN STD_LOGIC;
             din_ready: OUT STD_LOGIC;
@@ -617,21 +396,6 @@ ARCHITECTURE rtl OF NetFilter IS
     END COMPONENT;
 
     COMPONENT patternMatch IS
-       GENERIC (din_DATA_WIDTH: INTEGER := 64;
-            din_DEST_WIDTH: INTEGER := 0;
-            din_ID_WIDTH: INTEGER := 0;
-            din_IS_BIGENDIAN: BOOLEAN := False;
-            din_USER_WIDTH: INTEGER := 0;
-            din_USE_KEEP: BOOLEAN := False;
-            din_USE_STRB: BOOLEAN := False;
-            match_DATA_WIDTH: INTEGER := 64;
-            match_DEST_WIDTH: INTEGER := 0;
-            match_ID_WIDTH: INTEGER := 0;
-            match_IS_BIGENDIAN: BOOLEAN := False;
-            match_USER_WIDTH: INTEGER := 0;
-            match_USE_KEEP: BOOLEAN := False;
-            match_USE_STRB: BOOLEAN := False
-       );
        PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
             din_last: IN STD_LOGIC;
             din_ready: OUT STD_LOGIC;
@@ -645,21 +409,6 @@ ARCHITECTURE rtl OF NetFilter IS
 
 BEGIN
     exporter_inst: COMPONENT exporter
-        GENERIC MAP (din_DATA_WIDTH => 64,
-            din_DEST_WIDTH => 0,
-            din_ID_WIDTH => 0,
-            din_IS_BIGENDIAN => False,
-            din_USER_WIDTH => 0,
-            din_USE_KEEP => False,
-            din_USE_STRB => False,
-            dout_DATA_WIDTH => 64,
-            dout_DEST_WIDTH => 0,
-            dout_ID_WIDTH => 0,
-            dout_IS_BIGENDIAN => False,
-            dout_USER_WIDTH => 0,
-            dout_USE_KEEP => False,
-            dout_USE_STRB => False
-        )
         PORT MAP (din_data => sig_exporter_din_data,
             din_last => sig_exporter_din_last,
             din_ready => sig_exporter_din_ready,
@@ -671,41 +420,6 @@ BEGIN
         );
 
     filter_inst: COMPONENT filter
-        GENERIC MAP (cfg_ADDR_WIDTH => 32,
-            cfg_DATA_WIDTH => 64,
-            cfg_ar_ADDR_WIDTH => 32,
-            cfg_aw_ADDR_WIDTH => 32,
-            cfg_r_DATA_WIDTH => 64,
-            cfg_w_DATA_WIDTH => 64,
-            din_DATA_WIDTH => 64,
-            din_DEST_WIDTH => 0,
-            din_ID_WIDTH => 0,
-            din_IS_BIGENDIAN => False,
-            din_USER_WIDTH => 0,
-            din_USE_KEEP => False,
-            din_USE_STRB => False,
-            dout_DATA_WIDTH => 64,
-            dout_DEST_WIDTH => 0,
-            dout_ID_WIDTH => 0,
-            dout_IS_BIGENDIAN => False,
-            dout_USER_WIDTH => 0,
-            dout_USE_KEEP => False,
-            dout_USE_STRB => False,
-            headers_DATA_WIDTH => 64,
-            headers_DEST_WIDTH => 0,
-            headers_ID_WIDTH => 0,
-            headers_IS_BIGENDIAN => False,
-            headers_USER_WIDTH => 0,
-            headers_USE_KEEP => False,
-            headers_USE_STRB => False,
-            patternMatch_DATA_WIDTH => 64,
-            patternMatch_DEST_WIDTH => 0,
-            patternMatch_ID_WIDTH => 0,
-            patternMatch_IS_BIGENDIAN => False,
-            patternMatch_USER_WIDTH => 0,
-            patternMatch_USE_KEEP => False,
-            patternMatch_USE_STRB => False
-        )
         PORT MAP (cfg_ar_addr => sig_filter_cfg_ar_addr,
             cfg_ar_prot => sig_filter_cfg_ar_prot,
             cfg_ar_ready => sig_filter_cfg_ar_ready,
@@ -752,28 +466,7 @@ BEGIN
             OUTPUTS => 2,
             USER_WIDTH => 0,
             USE_KEEP => False,
-            USE_STRB => False,
-            dataIn_DATA_WIDTH => 64,
-            dataIn_DEST_WIDTH => 0,
-            dataIn_ID_WIDTH => 0,
-            dataIn_IS_BIGENDIAN => False,
-            dataIn_USER_WIDTH => 0,
-            dataIn_USE_KEEP => False,
-            dataIn_USE_STRB => False,
-            dataOut_0_DATA_WIDTH => 64,
-            dataOut_0_DEST_WIDTH => 0,
-            dataOut_0_ID_WIDTH => 0,
-            dataOut_0_IS_BIGENDIAN => False,
-            dataOut_0_USER_WIDTH => 0,
-            dataOut_0_USE_KEEP => False,
-            dataOut_0_USE_STRB => False,
-            dataOut_1_DATA_WIDTH => 64,
-            dataOut_1_DEST_WIDTH => 0,
-            dataOut_1_ID_WIDTH => 0,
-            dataOut_1_IS_BIGENDIAN => False,
-            dataOut_1_USER_WIDTH => 0,
-            dataOut_1_USE_KEEP => False,
-            dataOut_1_USE_STRB => False
+            USE_STRB => False
         )
         PORT MAP (dataIn_data => sig_gen_dout_splitCopy_0_dataIn_data,
             dataIn_last => sig_gen_dout_splitCopy_0_dataIn_last,
@@ -790,28 +483,6 @@ BEGIN
         );
 
     hfe_inst: COMPONENT hfe
-        GENERIC MAP (din_DATA_WIDTH => 64,
-            din_DEST_WIDTH => 0,
-            din_ID_WIDTH => 0,
-            din_IS_BIGENDIAN => False,
-            din_USER_WIDTH => 0,
-            din_USE_KEEP => False,
-            din_USE_STRB => False,
-            dout_DATA_WIDTH => 64,
-            dout_DEST_WIDTH => 0,
-            dout_ID_WIDTH => 0,
-            dout_IS_BIGENDIAN => False,
-            dout_USER_WIDTH => 0,
-            dout_USE_KEEP => False,
-            dout_USE_STRB => False,
-            headers_DATA_WIDTH => 64,
-            headers_DEST_WIDTH => 0,
-            headers_ID_WIDTH => 0,
-            headers_IS_BIGENDIAN => False,
-            headers_USER_WIDTH => 0,
-            headers_USE_KEEP => False,
-            headers_USE_STRB => False
-        )
         PORT MAP (din_data => sig_hfe_din_data,
             din_last => sig_hfe_din_last,
             din_ready => sig_hfe_din_ready,
@@ -827,21 +498,6 @@ BEGIN
         );
 
     patternMatch_inst: COMPONENT patternMatch
-        GENERIC MAP (din_DATA_WIDTH => 64,
-            din_DEST_WIDTH => 0,
-            din_ID_WIDTH => 0,
-            din_IS_BIGENDIAN => False,
-            din_USER_WIDTH => 0,
-            din_USE_KEEP => False,
-            din_USE_STRB => False,
-            match_DATA_WIDTH => 64,
-            match_DEST_WIDTH => 0,
-            match_ID_WIDTH => 0,
-            match_IS_BIGENDIAN => False,
-            match_USER_WIDTH => 0,
-            match_USE_KEEP => False,
-            match_USE_STRB => False
-        )
         PORT MAP (din_data => sig_patternMatch_din_data,
             din_last => sig_patternMatch_din_last,
             din_ready => sig_patternMatch_din_ready,
