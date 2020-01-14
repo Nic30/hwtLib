@@ -18,7 +18,7 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
     @classmethod
     def getUnit(cls):
         cls.u = u = AxiInterconnectMatrixAddrCrossbar(Axi4.AR_CLS)
-        u.MASTERS = ({0})
+        u.MASTERS = ({0},)
         u.SLAVES = (
             (0x0000, 0x1000),
         )
