@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import Clk, Rst_n
+from hwt.interfaces.std import Clk
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axi_comp.axi_buff import AxiBuff
 from hwt.code import isPow2
@@ -10,6 +10,8 @@ from hwt.code import isPow2
 class AxiClockDomainCrossing(AxiBuff):
     """
     Clock domain crossing with buffers for AXI3/4/Lite and others
+    
+    .. hwt-schematic:: _example_AxiClockDomainCrossing
     """
 
     def _config(self):
@@ -24,7 +26,7 @@ class AxiClockDomainCrossing(AxiBuff):
         assert isPow2(self.ADDR_BUFF_DEPTH - 1), self.ADDR_BUFF_DEPTH
         assert isPow2(self.DATA_BUFF_DEPTH - 1), self.DATA_BUFF_DEPTH
 
-    def _impl(self)->None:
+    def _impl(self):
         ADDR_DEPTH = self.ADDR_BUFF_DEPTH
         DATA_DEPTH = self.DATA_BUFF_DEPTH
         for name, m, s, depth in [("ar", self.m.ar, self.s.ar, ADDR_DEPTH),
@@ -45,8 +47,13 @@ class AxiClockDomainCrossing(AxiBuff):
             s(i)
 
 
-if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+def _example_AxiClockDomainCrossing():
     from hwtLib.amba.axi4 import Axi4
     u = AxiClockDomainCrossing(Axi4)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_AxiClockDomainCrossing()
     print(toRtl(u))

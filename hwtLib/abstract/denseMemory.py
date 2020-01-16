@@ -271,7 +271,7 @@ class DenseMemory():
         :param num: Number of elements to allocate.
         :param size: Size of each element.
         :param keepOut: optional memory spacing between this memory region
-                        and lastly allocated
+                        and lastly allocated (number of bit between last allocated segment to avoid)
         :param initValues: iterable of word values to init memory with
         :return: address of allocated memory
         """

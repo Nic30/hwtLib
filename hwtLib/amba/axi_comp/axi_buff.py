@@ -12,6 +12,8 @@ from hwtLib.amba.axis_comp.builder import AxiSBuilder
 class AxiBuff(BusBridge):
     """
     Transaction buffer for AXI3/4/Lite and others
+
+    .. hwt-schematic:: _example_AxiBuff
     """
 
     def __init__(self, intfCls):
@@ -52,8 +54,13 @@ class AxiBuff(BusBridge):
             s(i)
 
 
-if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+def _example_AxiBuff():
     from hwtLib.amba.axi4 import Axi4
     u = AxiBuff(Axi4)
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import toRtl
+    u = _example_AxiBuff()
     print(toRtl(u))
