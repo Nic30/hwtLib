@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from itertools import chain
+from random import shuffle
+
+from hwt.interfaces.utils import addClkRstn
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwtLib.amba.axiLite_comp.axiLite_to_Axi import AxiLite_to_Axi
+from hwtLib.amba.constants import PROT_DEFAULT, RESP_OKAY
+from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
+from pyMathBitPrecise.bit_utils import mask
+from pycocotb.constants import CLK_PERIOD
+
+
+class AxiLite_to_Axi_withClk(AxiLite_to_Axi):
+    def _declr(self):
+        AxiLite_to_Axi._declr(self)
+        addClkRstn(self)
+
+
+class AxiLite_to_Axi_TC(SingleUnitSimTestCase):
+    TRANSACTION_CNT = 32
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = AxiLite_to_Axi_withClk()
+        return cls.u
+
+    def randomize_all(self):
+        for ch in chain(self.u.m._interfaces, self.u.s._interfaces):
+            self.randomize(ch)
+
+    def test_nop(self):
+        self.randomize_all()
+        self.runSim(10 * CLK_PERIOD)
+        m, s = self.u.m, self.u.s
+        self.assertEmpty(m.r._ag.data)
+        self.assertEmpty(m.b._ag.data)
+        self.assertEmpty(s.ar._ag.data)
+        self.assertEmpty(s.aw._ag.data)
+        self.assertEmpty(s.w._ag.data)
+
+    def addr_trans(self, word_i):
+        u = self.u
+        addr = word_i * u.DATA_WIDTH // 8
+        return (addr, PROT_DEFAULT)
+
+    def w_trans(self, data):
+        strb = mask(self.u.DATA_WIDTH // 8)
+        return (data, strb)
+
+    def test_read(self):
+        N = self.TRANSACTION_CNT
+        u = self.u
+
+        m = Axi3DenseMem(u.clk, u.s)
+
+        expected_data = []
+        allocated_wods = list(range(N))
+        shuffle(allocated_wods, random=self._rand.random)
+        for word_i in allocated_wods:
+            rand_data = self._rand.getrandbits(u.DATA_WIDTH)
+            a_t = self.addr_trans(word_i)
+            m.data[word_i] = rand_data
+            u.m.ar._ag.data.append(a_t)
+            expected_data.append((rand_data, RESP_OKAY))
+
+        self.runSim(N * 3 * CLK_PERIOD)
+
+        self.assertValSequenceEqual(
+            u.m.r._ag.data,
+            expected_data
+        )
+
+    def test_write(self):
+        N = self.TRANSACTION_CNT
+        u = self.u
+
+        m = Axi3DenseMem(u.clk, u.s)
+
+        expected_data = []
+        allocated_wods = list(range(N))
+        shuffle(allocated_wods, random=self._rand.random)
+        for word_i in allocated_wods:
+            rand_data = self._rand.getrandbits(u.DATA_WIDTH)
+            
+            a_t = self.addr_trans(word_i)
+            u.m.aw._ag.data.append(a_t)
+
+            w_t = self.w_trans(rand_data)
+            u.m.w._ag.data.append(w_t)
+
+            expected_data.append((word_i, rand_data))
+
+        self.runSim(N * 3 * CLK_PERIOD)
+
+        for word_i, expected in expected_data:
+            d = m.data.get(word_i, None)
+            self.assertValEqual(d, expected)
+
+
+if __name__ == "__main__":
+    import unittest
+    suite = unittest.TestSuite()
+
+    # suite.addTest(AxiLite_to_Axi_TC('test_read'))
+    suite.addTest(unittest.makeSuite(AxiLite_to_Axi_TC))
+    runner = unittest.TextTestRunner(verbosity=3)
+    runner.run(suite)

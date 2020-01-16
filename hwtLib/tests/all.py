@@ -198,6 +198,8 @@ from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
+from hwtLib.amba.axiLite_comp.axiLite_to_axi_test import AxiLite_to_Axi_TC
+from hwtLib.amba.axi_comp.axi_to_axiLite_test import Axi_to_AxiLite_TC
 
 
 # from hwtLib.peripheral.i2c.i2cAgent_test import I2cAgent_TC
@@ -361,6 +363,8 @@ suite = testSuiteFromTCs(
     AxiLiteEndpoint_arrayStruct_TC,
     AxiLiteEndpoint_fromInterfaceTC,
     AxiLiteEndpoint_fromInterface_arr_TC,
+    AxiLite_to_Axi_TC,
+    Axi_to_AxiLite_TC,
     AxiRegTC,
     AxiTesterTC,
 

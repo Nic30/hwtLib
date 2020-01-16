@@ -26,7 +26,7 @@ def interface_not_present_on_other(a: Interface, b: Interface):
 
 
 @serializeParamsUniq
-class AxiLite_2Axi(BusBridge):
+class AxiLite_to_Axi(BusBridge):
     """
     Bridge from AxiLite interface to Axi3/4 interface
 
@@ -35,7 +35,7 @@ class AxiLite_2Axi(BusBridge):
 
     def __init__(self, intfCls=Axi4):
         self.intfCls = intfCls
-        super(AxiLite_2Axi, self).__init__()
+        super(AxiLite_to_Axi, self).__init__()
 
     def _config(self):
         self.INTF_CLS = Param(self.intfCls)
@@ -83,5 +83,5 @@ class AxiLite_2Axi(BusBridge):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    u = AxiLite_2Axi()
+    u = AxiLite_to_Axi()
     print(toRtl(u))
