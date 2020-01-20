@@ -247,7 +247,7 @@ class IP_Axi3(IP_Axi3Lite):
 
         # [TODO] width as expression instead of int
         param("ADDR_WIDTH", thisIf.aw.addr._dtype.bit_length())
-        param("MAX_BURST_LENGTH", 256)
+        param("MAX_BURST_LENGTH", int(2 ** thisIf.aw.len._dtype.bit_length()))
         param("NUM_READ_OUTSTANDING", 5)
         param("NUM_WRITE_OUTSTANDING", 5)
         param("PROTOCOL", self.xilinx_protocol_name)
