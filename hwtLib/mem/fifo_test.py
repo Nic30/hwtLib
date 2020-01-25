@@ -135,7 +135,7 @@ class FifoTC(SingleUnitSimTestCase):
     def test_multiple(self, sizeValues=[
             0, 1, 2, 3, 4, 4, 4, 4, 4,
             3, 3, 3, 3, 3, 3, 3, 3, 3,
-            3, 3, 3, 3, 2, 1, 0]):
+            3, 3, 3, 3, 2, 1, 0, 0]):
         u = self.u
 
         def openOutputAfterWile():
@@ -148,7 +148,7 @@ class FifoTC(SingleUnitSimTestCase):
         expected = list(range(2 * 8))
         u.dataIn._ag.data.extend(expected)
 
-        self.runSim(26 * self.CLK)
+        self.runSim(27 * self.CLK)
 
         collected = u.dataOut._ag.data
         if u.EXPORT_SIZE:
