@@ -220,6 +220,8 @@ class TimerInfo(object):
 class DynamicTimerInfo(TimerInfo):
     """
     Meta informations about timer with dynamic period
+
+    :note: See :class:`.TimerInfo`
     """
 
     def __init__(self, maxVal, name=None):

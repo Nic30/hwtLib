@@ -61,7 +61,7 @@ class Mi32Agent(SyncAgentBase):
     Simulation agent for Mi32 bus interface
 
     :ivar req: request data, items are tuples (READ, address)
-               or (WRITE, address, data, be_mask)
+        or (WRITE, address, data, be_mask)
     :ivar rData: data read from interface
     """
 
@@ -100,10 +100,11 @@ class Mi32Agent(SyncAgentBase):
 class Mi32AddrAgent(HandshakedAgent):
     """
     :ivar req: request data, items are tuples (READ, address)
-               or (WRITE, address, data, be_mask)
-    * two valid signals "read", "write"
-    * one ready_n signal "waitrequest")
-    * on write set data and byteenamble as well
+        or (WRITE, address, data, be_mask)
+
+    :note: two valid signals "read", "write"
+    :note: one ready_n signal "waitrequest"
+    :note: on write set data and byteenamble as well
     """
 
     @classmethod

@@ -19,6 +19,8 @@ class Crc(Unit):
     Crc generator for any crc,
     polynome can be string in usual format or integer ("x^3+x+1" or 0b1011)
 
+    :note: See :class:`hwtLib.logic.crcComb.CrcComb`
+
     .. hwt-schematic::
     """
 
