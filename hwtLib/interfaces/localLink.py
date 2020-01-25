@@ -1,6 +1,6 @@
 from hwt.code import log2ceil
 from hwt.hdl.constants import DIRECTION
-from hwt.interfaces.std import s, VectSignal
+from hwt.interfaces.std import Signal, VectSignal
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 
@@ -15,9 +15,9 @@ class LocalLink(Interface):
     def _declr(self):
         self.data = VectSignal(self.DATA_WIDTH)
         self.rem = VectSignal(log2ceil(self.DATA_WIDTH // 8))
-        self.src_rdy_n = s()
-        self.dst_rdy_n = s(masterDir=DIRECTION.IN)
-        self.sof_n = s()
-        self.eof_n = s()
-        self.eop_n = s()
-        self.sop_n = s()
+        self.src_rdy_n = Signal()
+        self.dst_rdy_n = Signal(masterDir=DIRECTION.IN)
+        self.sof_n = Signal()
+        self.eof_n = Signal()
+        self.eop_n = Signal()
+        self.sop_n = Signal()

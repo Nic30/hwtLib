@@ -3,7 +3,7 @@ from enum import Enum
 
 from hwt.hdl.constants import READ, WRITE, NOP
 from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import s, D, VectSignal
+from hwt.interfaces.std import D, Signal, VectSignal
 from hwt.simulator.agentBase import SyncAgentBase
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
@@ -30,11 +30,11 @@ class Ipif(Interface):
 
     def _declr(self):
         # chip select
-        self.bus2ip_cs = s()
+        self.bus2ip_cs = Signal()
 
         # A High level indicates the transfer request is a user IP read.
         # A Low level indicates the transfer request is a user IP write.
-        self.bus2ip_rnw = s()
+        self.bus2ip_rnw = Signal()
 
         # read /write addr
         self.bus2ip_addr = VectSignal(self.ADDR_WIDTH)
@@ -45,10 +45,10 @@ class Ipif(Interface):
 
         self.ip2bus_data = VectSignal(self.DATA_WIDTH, masterDir=D.IN)
         # write ack
-        self.ip2bus_wrack = s(masterDir=D.IN)
+        self.ip2bus_wrack = Signal(masterDir=D.IN)
         # read ack
-        self.ip2bus_rdack = s(masterDir=D.IN)
-        self.ip2bus_error = s(masterDir=D.IN)
+        self.ip2bus_rdack = Signal(masterDir=D.IN)
+        self.ip2bus_error = Signal(masterDir=D.IN)
 
     def _getWordAddrStep(self):
         """
@@ -77,9 +77,9 @@ class IpifWithCE(Ipif):
         super()._declr()
         ce_t = Bits(self.REG_COUNT)
         # read chip enable bus
-        self.bus2ip_rdce = s(dtype=ce_t)
+        self.bus2ip_rdce = Signal(dtype=ce_t)
         # Write chip enable bus
-        self.bus2ip_wrce = s(dtype=ce_t)
+        self.bus2ip_wrce = Signal(dtype=ce_t)
 
 
 class IpifAgentState(Enum):
