@@ -1,15 +1,16 @@
 from hwt.code import If
+from hwt.hdl.types.hdlType import HdlType
 from hwtLib.abstract.streamBuilder import AbstractStreamBuilder
+from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axis_comp.cdc import AxiSCdc
 from hwtLib.amba.axis_comp.fifo import AxiSFifo
+from hwtLib.amba.axis_comp.fifo_async import AxiSFifoAsync
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.amba.axis_comp.reg import AxiSReg
 from hwtLib.amba.axis_comp.resizer import AxiS_resizer
 from hwtLib.amba.axis_comp.splitCopy import AxiSSplitCopy
 from hwtLib.amba.axis_comp.splitSelect import AxiSSpliSelect
-from hwt.hdl.types.hdlType import HdlType
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.fifo_async import AxiSFifoAsync
 
 
 class AxiSBuilder(AbstractStreamBuilder):
@@ -21,6 +22,7 @@ class AxiSBuilder(AbstractStreamBuilder):
     """
     FifoCls = AxiSFifo
     FifoAsyncCls = AxiSFifoAsync
+    RegCdcCls = AxiSCdc
     RegCls = AxiSReg
     SplitCopyCls = AxiSSplitCopy
     SplitSelectCls = AxiSSpliSelect
@@ -69,7 +71,8 @@ class AxiSBuilder(AbstractStreamBuilder):
         return u.dataOut
 
     @classmethod
-    def forge(cls, parent, typeToForge: HdlType, intfCls: AxiStream, setupFn=None, name:str=None):
+    def forge(cls, parent, typeToForge: HdlType, intfCls: AxiStream,
+              setupFn=None, name:str=None):
         """
         generate frame assembler for specified type
         :note: you can set endianity and others in setupFn
