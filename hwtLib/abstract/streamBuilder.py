@@ -6,6 +6,7 @@ from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
 
 class AbstractStreamBuilder(AbstractComponentBuilder):
     """
+
     :attention: this is just abstract class unit classes has to be specified
         in concrete implementation
 
@@ -22,6 +23,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
     :cvar SplitFairCls: round robin based split unit class
     :cvar SplitPrioritizedCls: priority based split unit class
 
+    :note: see :class:`AbstractComponentBuilder`
     """
     FifoCls = NotImplemented
     FifoAsync = NotImplemented
@@ -34,6 +36,37 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
     SplitSelectCls = NotImplemented
     SplitFairCls = NotImplemented
     SplitPrioritizedCls = NotImplemented
+
+    def _genericInstance(self, 
+                         unit_cls,
+                         name,
+                         set_params=lambda u: u,
+                         update_params=True,
+                         propagate_clk_rst=True):
+        """
+        Instantiate generic component and connect basics
+
+        :param unit_cls: class of unit which is being created
+        :param name: name for unit_cls instance
+        :param set_params: function which updates parameters as is required
+            (parameters are already shared with self.end interface)
+        """
+
+        u = unit_cls(self.getInfCls())
+        if update_params:
+            u._updateParamsFrom(self.end)
+        set_params(u)
+
+        setattr(self.parent, self._findSuitableName(name), u)
+        if propagate_clk_rst:
+            self._propagateClkRstn(u)
+
+        u.dataIn(self.end)
+
+        self.lastComp = u
+        self.end = u.dataOut
+
+        return self
 
     @classmethod
     def _join(cls, joinCls, parent, srcInterfaces, name, configAs, extraConfigFn):
@@ -107,8 +140,12 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
             because it will split valid signal path
         :note: if latency or delay is None the most optimal value is used
         """
+        if items == 0:
+            assert latency is None or latency == 0
+            assert delay is None or delay == 0
+            return self
 
-        if items == 1:
+        elif items == 1:
             if latency is None:
                 latency = 1
             if delay is None:
@@ -135,6 +172,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
 
             def setDepth(u):
                 u.DEPTH = items
+
             return self._genericInstance(self.FifoCls, "fifo", setDepth)
 
     def buff_cdc(self, clk, rst, items=1):

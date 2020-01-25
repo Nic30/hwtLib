@@ -6,6 +6,9 @@ from hwt.synthesizer.interfaceLevel.unitImplHelpers import getClk, getRst,\
 
 class AbstractComponentBuilder(object):
     """
+    Helper class which simplifies instanciation of commonly used components
+    with configuration based on input/output interface
+
     :ivar compId: used for sequential number of components
     :ivar lastComp: last builded component
     :ivar end: last interface of data-path
@@ -95,35 +98,3 @@ class AbstractComponentBuilder(object):
 
         if hasattr(u, "rst"):
             u.rst(~self.getRstn())
-
-    def _genericInstance(self, 
-                         unit_cls,
-                         name, 
-                         set_params=lambda u: u, 
-                         create_unit= lambda self, unit_cls: unit_cls(self.getInfCls()),
-                         update_params=True,
-                         propagate_clk_rst=True):
-        """
-        Instantiate generic component and connect basics
-
-        :param unit_cls: class of unit which is being created
-        :param name: name for unit_cls instance
-        :param set_params: function which updates parameters as is required
-            (parameters are already shared with self.end interface)
-        """
-
-        u = create_unit(self, unit_cls)
-        if update_params:
-            u._updateParamsFrom(self.end)
-        set_params(u)
-
-        setattr(self.parent, self._findSuitableName(name), u)
-        if propagate_clk_rst:
-            self._propagateClkRstn(u)
-
-        u.dataIn(self.end)
-
-        self.lastComp = u
-        self.end = u.dataOut
-
-        return self
