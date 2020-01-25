@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Union, Dict, Optional
 
 from hwt.code import If, log2ceil
 from hwt.hdl.types.bits import Bits
@@ -6,28 +6,22 @@ from hwt.hdl.types.defs import BIT
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
+from hwt.synthesizer.interface import Interface
+from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
+
+AnySig = Union[RtlSignal, Interface]
 
 
-class ClkBuilder(object):
+class ClkBuilder(AbstractComponentBuilder):
     """
+    Helper object which simplifies construction
+    of the oversampling, shared timers, edge detector, ... logic
+
     :ivar compId: last component id used to avoid name collisions
     :ivar parent: unit in which will be all units created by this builder instantiated
     :ivar name: prefix for all instantiated units
     :ivar end: interface where builder ended
     """
-    def __init__(self, parent, srcInterface, name=None):
-        """
-        :param parent: unit in which will be all units created by this builder instantiated
-        :param name: prefix for all instantiated units
-        :param srcInterface: input clock
-        """
-        self.parent = parent
-        self.end = srcInterface
-        if name is None:
-            name = "gen_" + getSignalName(srcInterface)
-
-        self.name = name
-        self.compId = 0
 
     def timers(self, periods, enableSig=None, rstSig=None):
         """
