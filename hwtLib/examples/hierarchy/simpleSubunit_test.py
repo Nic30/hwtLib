@@ -5,7 +5,7 @@ import unittest
 
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.hierarchy.simpleSubunit import SimpleSubunit
-from hwtLib.clocking.clkSynchronizer_test import CLK_PERIOD
+from pycocotb.constants import CLK_PERIOD
 
 
 # SimTestCase is derived from unittest.TestCase which is class
