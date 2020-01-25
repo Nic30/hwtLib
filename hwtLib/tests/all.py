@@ -58,7 +58,7 @@ from hwtLib.avalon.endpoint_test import AvalonMmEndpointTC, \
 from hwtLib.avalon.mmAgent_test import AvalonMmAgentTC
 from hwtLib.avalon.stAgent_test import AvalonStAgentTC
 from hwtLib.clocking.clkDivider import ClkDiv3TC
-from hwtLib.clocking.clkSynchronizer_test import ClkSynchronizerTC
+from hwtLib.clocking.cdc_test import CdcTC
 from hwtLib.examples.arithmetic.cntr_test import CntrTC, CntrResourceAnalysisTC
 from hwtLib.examples.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.examples.arithmetic.twoCntrs_test import TwoCntrsTC
@@ -200,6 +200,8 @@ from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
 from hwtLib.amba.axiLite_comp.axiLite_to_axi_test import AxiLite_to_Axi_TC
 from hwtLib.amba.axi_comp.axi_to_axiLite_test import Axi_to_AxiLite_TC
+from hwtLib.handshaked.cdc_test import HandshakedCdc_slow_to_fast_TC,\
+    HandshakedCdc_fast_to_slow_TC
 
 
 # from hwtLib.peripheral.i2c.i2cAgent_test import I2cAgent_TC
@@ -293,7 +295,7 @@ suite = testSuiteFromTCs(
     TwoCntrsTC,
     SelfRefCntrTC,
     IndexingTC,
-    ClkSynchronizerTC,
+    CdcTC,
     RamResourcesTC,
     SimpleAsyncRamTC,
     SimpleSyncRamTC,
@@ -306,6 +308,8 @@ suite = testSuiteFromTCs(
     HsJoinPrioritized_randomized_TC,
     HsJoinFair_2inputs_TC,
     HsJoinFair_3inputs_TC,
+    HandshakedCdc_slow_to_fast_TC,
+    HandshakedCdc_fast_to_slow_TC,
     RamAsHs_TC,
     LsfrTC,
     ClkDiv3TC,
