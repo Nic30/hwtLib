@@ -46,7 +46,8 @@ class AxiLite2Mi32(BusBridge):
         w_transaction_pending = self._reg("w_transaction_pending", def_val=0)
         #backpressure = self._sig("backpressure")
         r_trans_ack = axi.r.ready & r_data_vld
-        w_trans_ack = addr_vld & addr_w & mi32.ardy & axi.w.ready
+        axi_w_ready_tmp = self._sig("axi_w_ready_tmp")
+        w_trans_ack = addr_vld & addr_w & mi32.ardy & axi_w_ready_tmp
         no_transaction = (
             ~r_transaction_pending | r_trans_ack
         ) & (
@@ -76,7 +77,6 @@ class AxiLite2Mi32(BusBridge):
             If(w_trans_ack,
                 w_transaction_pending(~axi.ar.valid & axi.aw.valid)
             )
-            
         else:
             If(idle & axi.aw.valid,
                 addr(axi.aw.addr),
@@ -89,7 +89,7 @@ class AxiLite2Mi32(BusBridge):
             ).Elif(addr_ack,
                 addr(None),
                 addr_vld(0),
-                addr_w(None),   
+                addr_w(None),
             )
             axi.aw.ready(idle & ready_for_addr)
             axi.ar.ready(idle & ~axi.aw.valid & ready_for_addr)
@@ -106,10 +106,10 @@ class AxiLite2Mi32(BusBridge):
         addr_ack(mi32.ardy)
         mi32.dwr(axi.w.data)
         mi32.be(axi.w.strb)
-        axi.w.ready(addr_vld & addr_w & mi32.ardy)
+        axi_w_ready_tmp(addr_vld & addr_w & mi32.ardy)
+        axi.w.ready(axi_w_ready_tmp)
         axi.b.resp(RESP_OKAY)
-        axi.b.valid(addr_vld & addr_w & mi32.ardy & axi.w.ready)
-
+        axi.b.valid(addr_vld & addr_w & mi32.ardy & axi_w_ready_tmp)
 
         If(mi32.drdy,
            r_data(mi32.drd),
@@ -121,13 +121,12 @@ class AxiLite2Mi32(BusBridge):
         axi.r.data(r_data)
         axi.r.resp(RESP_OKAY)
         axi.r.valid(r_data_vld)
-        
+
         #backpressure(
         #    (r_data_vld & ~axi.r.ready)
         #    | (addr_vld & addr_w & ~axi.b.ready)
         #)
- 
-        
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
