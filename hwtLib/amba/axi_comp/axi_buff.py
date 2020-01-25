@@ -23,8 +23,8 @@ class AxiBuff(BusBridge):
     def _config(self):
         self.INTF_CLS = Param(self.intfCls)
         self.intfCls._config(self)
-        self.ADDR_BUFF_DEPTH = Param(16)
-        self.DATA_BUFF_DEPTH = Param(16)
+        self.ADDR_BUFF_DEPTH = Param(4)
+        self.DATA_BUFF_DEPTH = Param(4)
 
     def _declr(self):
         addClkRstn(self)
@@ -35,7 +35,7 @@ class AxiBuff(BusBridge):
         with self._paramsShared():
             self.s = self.intfCls()._m()
 
-    def _impl(self)->None:
+    def _impl(self):
         ADDR_DEPTH = self.ADDR_BUFF_DEPTH
         DATA_DEPTH = self.DATA_BUFF_DEPTH
         for name, m, s, depth in [("ar", self.m.ar, self.s.ar, ADDR_DEPTH),
