@@ -1,15 +1,17 @@
+from typing import Optional, Union
+
 from hwt.code import log2ceil, If, isPow2
 from hwt.hdl.types.bits import Bits
+from hwt.hdl.value import Value
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from typing import Optional, Union
 from hwt.synthesizer.unit import Unit
-from hwt.hdl.value import Value
 
 
 class TimerInfo(object):
     """
-    Generator of varius shared timers
+    Generator of varius shared timers.
+    Use this from :class:`hwtLib.clocking.clkBuilder.ClkBuilder`
 
     :ivar cntrRegister: counter register for this timer
     :ivar tick: signal with tick from this timer
