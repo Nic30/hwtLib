@@ -1,14 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, binToGray
+from hwt.code import If, Concat
 from hwt.hdl.constants import Time
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.unit import Unit
+
+
+def binToGray(sigOrVal) -> RtlSignalBase:
+    """
+    Convert value or signal from binary encoding to gray encoding
+    """
+    return (sigOrVal >> 1) ^ sigOrVal
+    #width = sigOrVal._dtype.bit_length()
+    #return Concat(sigOrVal[width - 1],
+    #              sigOrVal[width - 1:0] ^ sigOrVal[width:1])
 
 
 @serializeParamsUniq
