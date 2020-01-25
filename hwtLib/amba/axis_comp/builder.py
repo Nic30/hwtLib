@@ -16,9 +16,6 @@ from hwtLib.amba.axis_comp.splitSelect import AxiSSpliSelect
 class AxiSBuilder(AbstractStreamBuilder):
     """
     Helper class which simplifies building of large stream paths
-
-    :ivar end: actual endpoint where building process will continue
-
     """
     FifoCls = AxiSFifo
     FifoAsyncCls = AxiSFifoAsync
