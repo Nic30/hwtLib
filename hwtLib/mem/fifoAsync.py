@@ -16,8 +16,10 @@ from hwtLib.mem.fifo import Fifo
 class FifoAsync(Fifo):
     """
     Asynchronous fifo using BRAM/LUT memory, based on:
-    https://github.com/ZipCPU/website/blob/master/examples/afifo.v
-    https://github.com/alexforencich/verilog-axis/blob/master/rtl/axis_async_fifo.v
+    * https://github.com/ZipCPU/website/blob/master/examples/afifo.v
+    * https://github.com/alexforencich/verilog-axis/blob/master/rtl/axis_async_fifo.v
+
+    .. hwt-schematic:: _example_FifoAsync
     """
     def _config(self):
         Fifo._config(self)
