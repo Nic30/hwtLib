@@ -3,7 +3,6 @@
 
 from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.amba.axis_comp.base import AxiSCompBase
-from hwtLib.amba.axis_comp.reg import AxiSReg
 from hwtLib.handshaked.fifo import HandshakedFifo
 
 
@@ -16,7 +15,6 @@ class AxiSFifo(AxiSCompBase, HandshakedFifo):
 
     .. hwt-schematic:: _example_AxiSFifo
     """
-    _regCls = AxiSReg
 
 
 def _example_AxiSFifo():

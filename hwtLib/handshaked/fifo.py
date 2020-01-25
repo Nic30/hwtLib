@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 from hwt.code import If, connect, log2ceil
-from hwt.interfaces.std import VectSignal, Clk
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn, propagateRstn
+from hwt.interfaces.std import VectSignal, Clk, Rst_n, Rst
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import packIntf, \
     connectPacked
@@ -29,7 +29,6 @@ class HandshakedFifo(HandshakedCompBase):
 
     .. hwt-schematic:: _example_HandshakedFifo
     """
-    _regCls = HandshakedReg
 
     def _config(self):
         self.DEPTH = Param(0)
@@ -53,22 +52,26 @@ class HandshakedFifo(HandshakedCompBase):
             self.size = VectSignal(
                 log2ceil(self.DEPTH + 1 + 1), signed=False)._m()
 
-    def _impl(self, clks: Optional[Tuple[Clk, Clk]]=None):
+    def _impl(self,
+              clk_rst: Optional[Tuple[Tuple[Clk, Union[Rst, Rst_n]], Tuple[Clk, Union[Rst, Rst_n]]]]=None):
         """
-        :clks: optional tuple (inClk, outClk)
+        :param clk_rst: optional tuple ((inClk, inRst), (outClk, outRst))
         """
         rd = self.get_ready_signal
         vld = self.get_valid_signal
 
         # connect clock and resets
-        if clks is None:
+        if clk_rst is None:
             propagateClkRstn(self)
-            inClk, outClk = (None, None)
+            outClk = None
+            outRst = None
         else:
-            propagateRstn(self)
-            inClk, outClk = clks
-            self.fifo.dataIn_clk(inClk)
-            self.fifo.dataOut_clk(outClk)
+            (inClk, inRst), (outClk, outRst) = clk_rst
+            f = self.fifo
+            f.dataIn_clk(inClk)
+            f.dataIn_rst_n(inRst)
+            f.dataOut_clk(outClk)
+            f.dataOut_rst_n(outRst)
 
         # to fifo
         fIn = self.fifo.dataIn
@@ -81,7 +84,7 @@ class HandshakedFifo(HandshakedCompBase):
         # from fifo
         fOut = self.fifo.dataOut
         dout = self.dataOut
-        out_vld = self._reg("out_vld", def_val=0, clk=outClk)
+        out_vld = self._reg("out_vld", def_val=0, clk=outClk, rst=outRst)
         vld(dout)(out_vld)
         connectPacked(fOut.data,
                       dout,
