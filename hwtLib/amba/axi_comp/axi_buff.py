@@ -35,9 +35,15 @@ class AxiBuff(BusBridge):
         with self._paramsShared():
             self.s = self.intfCls()._m()
 
+        assert self.ADDR_BUFF_DEPTH > 0 or self.DATA_BUFF_DEPTH > 0, (
+            "This buffer is completly dissabled,"
+            " it should not be instanciated at all",
+            self.ADDR_BUFF_DEPTH, self.DATA_BUFF_DEPTH)
+
     def _impl(self):
         ADDR_DEPTH = self.ADDR_BUFF_DEPTH
         DATA_DEPTH = self.DATA_BUFF_DEPTH
+
         for name, m, s, depth in [("ar", self.m.ar, self.s.ar, ADDR_DEPTH),
                                   ("aw", self.m.aw, self.s.aw, ADDR_DEPTH),
                                   ("w", self.m.w, self.s.w, DATA_DEPTH)]:
