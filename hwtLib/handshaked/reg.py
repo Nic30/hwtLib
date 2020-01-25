@@ -3,11 +3,13 @@
 
 from hwt.code import If, c
 from hwt.interfaces.utils import addClkRstn
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
+@serializeParamsUniq
 class HandshakedReg(HandshakedCompBase):
     """
     Register for Handshaked interface
