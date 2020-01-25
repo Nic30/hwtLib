@@ -25,10 +25,9 @@ class Axi4streamToMem(Unit):
     """
     Most simple DMA for AXI4 interface.
 
-    0x0 control reg.
-
-       rw bit 0 - on/off (1 means on)
-       r  bit 1 - idle
+    * 0x0 control reg.
+        * bit 0, rw - on/off (1 means on)
+        * bit 1, r  - idle (1 if no transaction in progress)
 
     0x4 baseAddr
 
