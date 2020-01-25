@@ -130,7 +130,7 @@ class FifoAsync(Fifo):
 
 def _example_FifoAsync():
     u = FifoAsync()
-    u.DEPTH = 3
+    u.DEPTH = 4
     return u
 
 
