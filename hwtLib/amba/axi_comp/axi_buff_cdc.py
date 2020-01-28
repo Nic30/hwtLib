@@ -24,8 +24,7 @@ class AxiBuffCdc(AxiBuff):
         self.M_FREQ = Param(int(102e6))
         self.S_FREQ = Param(int(102e6))
 
-    def _declr(self):
-        super(AxiBuffCdc, self)._declr()
+    def _setup_clk_rst_n(self):
         self.clk.FREQ = self.M_FREQ
         self.rst_n._make_association(clk=self.clk)
 
@@ -43,6 +42,9 @@ class AxiBuffCdc(AxiBuff):
         assert self.DATA_BUFF_DEPTH == 1 or isPow2(self.DATA_BUFF_DEPTH - 1), (
             self.DATA_BUFF_DEPTH, "size 2**n + 1 for output reg")
 
+    def _declr(self):
+        super(AxiBuffCdc, self)._declr()
+        self._setup_clk()
     def _impl(self):
         ADDR_DEPTH = self.ADDR_BUFF_DEPTH
         DATA_DEPTH = self.DATA_BUFF_DEPTH
