@@ -44,7 +44,8 @@ class AxiBuffCdc(AxiBuff):
 
     def _declr(self):
         super(AxiBuffCdc, self)._declr()
-        self._setup_clk()
+        self._setup_clk_rst_n()
+
     def _impl(self):
         ADDR_DEPTH = self.ADDR_BUFF_DEPTH
         DATA_DEPTH = self.DATA_BUFF_DEPTH
