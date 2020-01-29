@@ -166,7 +166,8 @@ class ClkBuilder(AbstractComponentBuilder):
         if name is None:
             name = "reg_path"
         for i in range(number_of_regs):
-            reg = self._reg("%s_%d" % (name, i), dtype=din._dtype, def_val=def_val)
+            reg = self.parent._reg("%s_%d" % (name, i),
+                                   dtype=din._dtype, def_val=def_val)
             reg(din)
             din = reg
 

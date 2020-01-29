@@ -154,7 +154,7 @@ class I2cMasterBitCtrl(Unit):
 
         filter1 = self._reg(name + "_filter1", dtype=Bits(3), def_val=0b111)
         If(filter_clk_cntr._eq(0),
-           filter1(Concat(filter1[2:], filter0[1]))
+           filter1(Concat(filter1[2:], filter0))
         )
 
         filtered = ((filter1[2] & filter1[1]) | 
