@@ -202,9 +202,8 @@ from hwtLib.amba.axiLite_comp.axiLite_to_axi_test import AxiLite_to_Axi_TC
 from hwtLib.amba.axi_comp.axi_to_axiLite_test import Axi_to_AxiLite_TC
 from hwtLib.handshaked.cdc_test import HandshakedCdc_slow_to_fast_TC,\
     HandshakedCdc_fast_to_slow_TC
+from hwtLib.peripheral.mdio.master_test import MdioMasterTC
 
-
-# from hwtLib.peripheral.i2c.i2cAgent_test import I2cAgent_TC
 def testSuiteFromTCs(*tcs):
     loader = TestLoader()
     for tc in tcs:
@@ -333,8 +332,8 @@ suite = testSuiteFromTCs(
     UartRxTC,
     UartTxRxTC,
     SpiMasterTC,
-    # I2cAgent_TC,
     I2CMasterBitCntrlTC,
+    MdioMasterTC,
     CrcUtilsTC,
     CrcCombTC,
     CrcTC,
