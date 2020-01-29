@@ -5,7 +5,7 @@ from pycocotb.constants import Time
 
 
 class MdioMasterTC(SingleUnitSimTestCase):
-    
+
     @classmethod
     def getUnit(cls):
         u = cls.u = MdioMaster()
@@ -26,10 +26,10 @@ class MdioMasterTC(SingleUnitSimTestCase):
         u.md._ag.data[addr] = MAGIC
         u.req._ag.data.append((Mdio.OP.READ, addr, None))
         self.runSim(MDIO_CLK * 100)
-        
+
         self.assertValSequenceEqual(u.rdata._ag.data, [MAGIC, ])
-    
-    def test_write(self):  
+
+    def test_write(self):
         MDIO_CLK = self.MDIO_CLK
         u = self.u
         # opcode, (phyaddr, regaddr), wdata
@@ -45,7 +45,7 @@ class MdioMasterTC(SingleUnitSimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(MdioMasterTC('test_write'))
+    # suite.addTest(MdioMasterTC('test_write'))
     suite.addTest(unittest.makeSuite(MdioMasterTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

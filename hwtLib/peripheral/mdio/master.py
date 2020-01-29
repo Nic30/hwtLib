@@ -22,6 +22,9 @@ class MdioAddr(Interface):
 
 
 class MdioReq(HandshakeSync):
+    """
+    MDIO transaction request interface
+    """
     def _declr(self):
         self.opcode = VectSignal(Mdio.OP_W)  # R/W
         self.addr = MdioAddr()
@@ -33,7 +36,9 @@ class MdioReq(HandshakeSync):
 
 
 class MdioReqAgent(HandshakedAgent):
-
+    """
+    Simulation agent for :class:`.MdioReq` interface
+    """
     def set_data(self, data):
         i = self.intf
         if data is None:
@@ -54,16 +59,28 @@ class MdioReqAgent(HandshakedAgent):
                 (i.addr.phy.read(), i.addr.reg.read()),
                 i.wdata.read())
 
-# https://opencores.org/websvn/filedetails?repname=ethmac10g&path=%2Fethmac10g%2Ftrunk%2Frtl%2Fverilog%2Fmgmt%2Fmdio.v
-# https://github.com/NetFPGA/netfpga/blob/master/lib/verilog/core/io/mdio/src/nf2_mdio.v
 
 def shift_in_msb_first(reg, sig_in):
+    """
+    Shift data in to register, MSB first
+    """
     w = reg._dtype.bit_length()
     w_in = sig_in._dtype.bit_length()
     return reg(Concat(reg[w-w_in:], sig_in))
 
 
 class MdioMaster(Unit):
+    """
+    Master for MDIO interface.
+
+    :ivar FREQ: frequency of input clock
+    :ivar MDIO_FREQ: frequency of output MDIO clock
+
+    * based on:
+        * https://opencores.org/websvn/filedetails?repname=ethmac10g&path=%2Fethmac10g%2Ftrunk%2Frtl%2Fverilog%2Fmgmt%2Fmdio.v
+        * https://github.com/NetFPGA/netfpga/blob/master/lib/verilog/core/io/mdio/src/nf2_mdio.v
+
+    """
 
     def _config(self):
         self.FREQ = Param(int(100e6))
@@ -76,15 +93,18 @@ class MdioMaster(Unit):
         self.rdata.DATA_WIDTH = Mdio.D_W
         self.req = MdioReq()
 
-    def _packet_sequence_timer(self, 
+    def _packet_sequence_timer(self,
                                mdio_clk_rising,
                                mdio_clk_falling, rst_n):
+        """
+        Create timers for all important events in protocol main FSM
+        """
         PRE_W = Mdio.PRE_W
         ADDR_BLOCK_W = Mdio.ADDR_BLOCK_W
-        TA_W= Mdio.TA_W
+        TA_W = Mdio.TA_W
         preambule_last = self._sig("preambule_last")
         addr_block_last = self._sig("addr_block_last")
-        turnarround_last_en  = self._sig("turnarround_last_en")
+        turnarround_last_en = self._sig("turnarround_last_en")
         data_last = self._sig("data_last")
 
         CNTR_MAX = PRE_W + ADDR_BLOCK_W + TA_W + Mdio.D_W - 1
@@ -96,12 +116,13 @@ class MdioMaster(Unit):
         )
         preambule_last(mdio_clk_falling & timer._eq(PRE_W - 1))
         addr_block_last(mdio_clk_falling & timer._eq(PRE_W + ADDR_BLOCK_W - 1))
-        turnarround_last_en(timer._eq(PRE_W + ADDR_BLOCK_W + TA_W -1))
+        turnarround_last_en(timer._eq(PRE_W + ADDR_BLOCK_W + TA_W - 1))
         data_last(mdio_clk_rising & timer._eq(CNTR_MAX))
 
         return preambule_last, addr_block_last, turnarround_last_en, data_last
 
     def _impl(self):
+        # timers and other registers
         CLK_HALF_PERIOD_DIV = ceil(self.clk.FREQ / (self.MDIO_FREQ * 2))
         mdio_clk = self._reg("mdio_clk", def_val=0)
         r_data_vld = self._reg("r_data_vld", def_val=0)
@@ -114,17 +135,20 @@ class MdioMaster(Unit):
         mdio_clk_rising = clk_half_period_en & ~mdio_clk
         mdio_clk_falling = clk_half_period_en & mdio_clk
         idle = self._sig("idle")
-        preambule_last, addr_block_last, turnarround_last_en, data_last = self._packet_sequence_timer(
-            mdio_clk_rising, mdio_clk_falling, ~idle)
+        preambule_last, addr_block_last, turnarround_last_en, data_last =\
+            self._packet_sequence_timer(
+                mdio_clk_rising, mdio_clk_falling, ~idle)
         is_rx = self._reg("is_rx", def_val=0)
-       
+
+        # protocol FSM
         st_t = HEnum("st_t", ["idle", "pre", "addr_block", "ta", "data"])
         st = FsmBuilder(self, st_t)\
             .Trans(st_t.idle, (req.vld & ~r_data_vld, st_t.pre))\
             .Trans(st_t.pre, (preambule_last, st_t.addr_block))\
             .Trans(st_t.addr_block, (addr_block_last, st_t.ta))\
-            .Trans(st_t.ta, (turnarround_last_en & ((is_rx & mdio_clk_falling)
-                                                    | (~is_rx & mdio_clk_rising)), st_t.data))\
+            .Trans(st_t.ta, (turnarround_last_en & (
+                                (is_rx & mdio_clk_falling)
+                                | (~is_rx & mdio_clk_rising)), st_t.data))\
             .Trans(st_t.data, (data_last, st_t.idle)).stateReg
 
         idle(st._eq(st_t.idle))
@@ -132,8 +156,11 @@ class MdioMaster(Unit):
         If(idle,
            is_rx(req.opcode._eq(Mdio.OP.READ))
         )
+
+        # TX logic
         md = self.md
-        tx_reg = self._reg("tx_reg", Bits(md.ST_W + md.OP_W + md.PA_W + md.RA_W + md.TA_W + md.D_W))
+        TX_W = md.ST_W + md.OP_W + md.PA_W + md.RA_W + md.TA_W + md.D_W
+        tx_reg = self._reg("tx_reg", Bits(TX_W))
         If(idle & req.vld,
             tx_reg(Concat(Mdio.ST, req.opcode, req.addr.phy,
                           req.addr.reg, Mdio.TA, req.wdata))
@@ -141,11 +168,15 @@ class MdioMaster(Unit):
             tx_reg(tx_reg << 1)
         )
         md.c(mdio_clk)
+
         # because MDIO uses open-drain, this means that if t=0 the value of the signal is 1
         md.io.o(0)
         tx_bit = tx_reg[tx_reg._dtype.bit_length() - 1]
-        md.io.t(~idle & (~tx_bit & (st._eq(st_t.addr_block) | (In(st, [st_t.data, st_t.ta]) & ~is_rx))))
+        md.io.t(~idle & ~tx_bit & (st._eq(st_t.addr_block)
+                                   | (In(st, [st_t.data, st_t.ta]) & ~is_rx))
+        )
 
+        # RX logic
         rx_reg = self._reg("rx_reg", Bits(md.D_W))
         If(st._eq(st_t.data) & is_rx & mdio_clk_rising,
            shift_in_msb_first(rx_reg, self.md.io.i)
