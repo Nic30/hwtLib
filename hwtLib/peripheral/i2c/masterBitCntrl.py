@@ -12,6 +12,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.peripheral.i2c.intf import I2c
 from pycocotb.hdlSimulator import HdlSimulator
+from hwtLib.clocking.clkBuilder import ClkBuilder
 
 
 NOP, START, STOP, READ, WRITE = range(5)
@@ -136,8 +137,7 @@ class I2cMasterBitCtrl(Unit):
 
     def filter(self, name, sig):
         """attempt to remove glitches"""
-        filter0 = self._reg(name + "_filter0", dtype=Bits(2), def_val=0)
-        filter0(filter0[0]._concat(sig))
+        filter0 = ClkBuilder(self, self.clk, "filter").reg_path(sig, 2, "filter", def_val=0)
 
         # let filter_cnt to be shared between filters
         try:

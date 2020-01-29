@@ -11,25 +11,25 @@ from hwtLib.mi32.intf import Mi32
 class Mi32_2AxiLite(BusBridge):
     """
     Bridge from MI32 interface to AxiLite interface
-    
+
     :attention: requires ar.valid & aw.valid & w.ready to be 1 in order to perform a transation
         (This may require an extra AXI4Lite register to avoid deadlock for components which are waiting
-        for end of transaction on oter channel r/w)
+        for end of transaction on other channel r/w)
 
     .. hwt-schematic::
     """
 
-    def _config(self) -> None:
+    def _config(self):
         Axi4Lite._config(self)
 
-    def _declr(self) -> None:
+    def _declr(self):
         addClkRstn(self)
 
         with self._paramsShared():
             self.s = Axi4Lite()._m()
             self.m = Mi32()
 
-    def _impl(self) -> None:
+    def _impl(self):
         mi32 = self.m
         axi = self.s
 
