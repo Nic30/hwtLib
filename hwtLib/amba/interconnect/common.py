@@ -48,7 +48,7 @@ class AxiInterconnectUtils():
         slaves = sorted(slaves, key=lambda x: x[0])
         for addr, size in slaves:
             assert addr >= offset, (addr, size)
-            offset = addr + offset
+            offset = addr + size
 
     @classmethod
     def _extract_separable_group(cls, mi: int, seen_m: Set[int],
