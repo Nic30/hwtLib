@@ -26,7 +26,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
     :note: see :class:`AbstractComponentBuilder`
     """
     FifoCls = NotImplemented
-    FifoAsync = NotImplemented
+    FifoAsyncCls = NotImplemented
     JoinSelectCls = NotImplemented
     JoinPrioritizedCls = NotImplemented
     JoinFairCls = NotImplemented
