@@ -11,7 +11,6 @@ from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import packIntf, \
     connectPacked
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
-from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.mem.fifo import Fifo
 
 
@@ -53,7 +52,9 @@ class HandshakedFifo(HandshakedCompBase):
                 log2ceil(self.DEPTH + 1 + 1), signed=False)._m()
 
     def _impl(self,
-              clk_rst: Optional[Tuple[Tuple[Clk, Union[Rst, Rst_n]], Tuple[Clk, Union[Rst, Rst_n]]]]=None):
+              clk_rst: Optional[Tuple[
+                  Tuple[Clk, Union[Rst, Rst_n]],
+                  Tuple[Clk, Union[Rst, Rst_n]]]]=None):
         """
         :param clk_rst: optional tuple ((inClk, inRst), (outClk, outRst))
         """
