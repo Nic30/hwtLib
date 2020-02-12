@@ -9,11 +9,11 @@ from pycocotb.hdlSimulator import HdlSimulator
 from pycocotb.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
 from collections import deque
 from typing import Deque, Tuple
-from pycocotb.triggers import WaitCombRead, WaitWriteOnly, WaitCombStable,\
-    WaitTimeslotEnd, Edge, Timer
+from pycocotb.triggers import WaitWriteOnly, WaitCombStable,\
+    Edge, Timer
 from pycocotb.constants import Time
 from pycocotb.simCalendar import DONE
-from pycocotb.agents.base import NOP
+from ipCorePackager.intfIpMeta import IntfIpMeta
 
 
 class Mdio(Interface):
@@ -25,7 +25,7 @@ class Mdio(Interface):
     :note: Typical clock frequency is 2.5 MHz
 
     * MDIO packet format: <PRE><ST><OP><PA><RA><TA><D>
-        * PRE: 32b preambule
+        * PRE: 32b preamble
         * ST: 2b start field
         * OP: 2b operation code
         * PA: 5b PHY address
@@ -68,6 +68,9 @@ class Mdio(Interface):
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = MdioAgent(sim, self)
 
+    def _getIpCoreIntfClass(self):
+        return IP_mdio
+
 
 def pop_int(bits: Deque[int], bit_cnt: int):
     res = 0
@@ -97,7 +100,7 @@ class MdioAgent(SyncAgentBase):
         self.data = {}
 
     def reset_state(self):
-        self.preambule_detected = False
+        self.preamble_detected = False
         self.start_detected = False
         self.turn_arround_check = False
         self.rx_w_data = False
@@ -157,18 +160,18 @@ class MdioAgent(SyncAgentBase):
         b = mdio.io._ag._read()
         b = int(b)
         # print(self.sim.now/ Time.ns, b)
-        if not self.preambule_detected:
+        if not self.preamble_detected:
             rx_bits.append(b)
             if len(rx_bits) == Mdio.PRE_W:
-                self.preambule_detected = True
+                self.preamble_detected = True
                 rx_bits.clear()
-                #print(self.sim.now / Time.ns, "preambule_detected")
+                #print(self.sim.now / Time.ns, "preamble_detected")
 
         elif not self.start_detected:
             if not rx_bits:
                 if not b:
                     rx_bits.append(b)
-                # else skip an extra 1 from potentiall idle or preambule
+                # else skip an extra 1 from potentiall idle or preamble
             else:
                 # because start condition is 0b01
                 assert b == 1, (self.sim.now / Time.ns, b)
@@ -225,3 +228,18 @@ class MdioAgent(SyncAgentBase):
             self.rx_bits(),
             self.tx_bits(),
         ]
+
+
+class IP_mdio(IntfIpMeta):
+
+    def __init__(self):
+        super().__init__()
+        self.name = "mdio"
+        self.version = "1.0"
+        self.vendor = "xilinx.com"
+        self.library = "interface"
+        self.map = {"c": "MDC",
+                    "io": {"t": "MDIO_T",
+                           "i": "MDIO_I",
+                           "o": "MDIO_O"}
+                    }

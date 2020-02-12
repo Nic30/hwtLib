@@ -102,7 +102,7 @@ class MdioMaster(Unit):
         PRE_W = Mdio.PRE_W
         ADDR_BLOCK_W = Mdio.ADDR_BLOCK_W
         TA_W = Mdio.TA_W
-        preambule_last = self._sig("preambule_last")
+        preamble_last = self._sig("preamble_last")
         addr_block_last = self._sig("addr_block_last")
         turnarround_last_en = self._sig("turnarround_last_en")
         data_last = self._sig("data_last")
@@ -114,12 +114,12 @@ class MdioMaster(Unit):
         If(mdio_clk_falling,
            timer(timer + 1)
         )
-        preambule_last(mdio_clk_falling & timer._eq(PRE_W - 1))
+        preamble_last(mdio_clk_falling & timer._eq(PRE_W - 1))
         addr_block_last(mdio_clk_falling & timer._eq(PRE_W + ADDR_BLOCK_W - 1))
         turnarround_last_en(timer._eq(PRE_W + ADDR_BLOCK_W + TA_W - 1))
         data_last(mdio_clk_rising & timer._eq(CNTR_MAX))
 
-        return preambule_last, addr_block_last, turnarround_last_en, data_last
+        return preamble_last, addr_block_last, turnarround_last_en, data_last
 
     def _impl(self):
         # timers and other registers
@@ -135,7 +135,7 @@ class MdioMaster(Unit):
         mdio_clk_rising = clk_half_period_en & ~mdio_clk
         mdio_clk_falling = clk_half_period_en & mdio_clk
         idle = self._sig("idle")
-        preambule_last, addr_block_last, turnarround_last_en, data_last =\
+        preamble_last, addr_block_last, turnarround_last_en, data_last =\
             self._packet_sequence_timer(
                 mdio_clk_rising, mdio_clk_falling, ~idle)
         is_rx = self._reg("is_rx", def_val=0)
@@ -144,7 +144,7 @@ class MdioMaster(Unit):
         st_t = HEnum("st_t", ["idle", "pre", "addr_block", "ta", "data"])
         st = FsmBuilder(self, st_t)\
             .Trans(st_t.idle, (req.vld & ~r_data_vld, st_t.pre))\
-            .Trans(st_t.pre, (preambule_last, st_t.addr_block))\
+            .Trans(st_t.pre, (preamble_last, st_t.addr_block))\
             .Trans(st_t.addr_block, (addr_block_last, st_t.ta))\
             .Trans(st_t.ta, (turnarround_last_en & (
                                 (is_rx & mdio_clk_falling)
