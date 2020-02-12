@@ -24,7 +24,7 @@ Any component can be exported as IPCore using hwt.Packager or as HDL code by [to
 * [IPIF](https://github.com/Nic30/hwtLib/tree/master/hwtLib/ipif) - IPIF interface and components for it (Interconnect, Register, address decoder, ...)
 * [logic](https://github.com/Nic30/hwtLib/tree/master/hwtLib/logic) - various components like CRC generator, gray counter, decoders-encoders ...
 * [mem](https://github.com/Nic30/hwtLib/tree/master/hwtLib/mem) - various memories (BRAM, ROM, FIFO, Async FIFO, CAM, LUT, ...)
-* [peripheral](https://github.com/Nic30/hwtLib/tree/master/hwtLib/peripheral) - various peripheral interfaces and components for them (I2C, SPI, UART)
+* [peripheral](https://github.com/Nic30/hwtLib/tree/master/hwtLib/peripheral) - various peripheral interfaces and components for them (I2C, MDIO, SPI, UART, ...)
 * [sim](https://github.com/Nic30/hwtLib/tree/master/hwtLib/sim) - simulation utils
 * [structManipulators](https://github.com/Nic30/hwtLib/tree/master/hwtLib/structManipulators) - DMAs for specific data structures
 * [tests](https://github.com/Nic30/hwtLib/tree/master/hwtLib/tests) - tests which are not related to another components
@@ -50,5 +50,6 @@ sudo pip3 install hwtLib
 * [PoC](https://github.com/VLSI-EDA/PoC) - VHDL, utils
 * [pulp-platform](https://github.com/pulp-platform)
 * [rhea](https://github.com/cfelton/rhea) - MyHDL, SoC level modules
+* [surf](https://github.com/slaclab/surf) - VHDL, SoC/DSP/IO/Ethernet focusend components
 * [tinyfpgax](https://github.com/tinyfpga)
 * [ZipCPU repositories](https://github.com/ZipCPU?tab=repositories) - Verilog, mostly preipherals, DSP
