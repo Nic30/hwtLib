@@ -7,10 +7,10 @@ mac_t = Bits(6 * 8)
 
 syncword = 0b1010101010101010101010101010101010101010101010101010101010101011
 
-EthPreambule_t = HStruct(
+EthPreamble_t = HStruct(
     (Bits(7 * 8), "preambule"),
     (Bits(8), "startOfFrameDelimiter"),
-    name="EthPreambule_t"
+    name="EthPreamble_t"
 )
 
 Eth2Header_t = HStruct(
