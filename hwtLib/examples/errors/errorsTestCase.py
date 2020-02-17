@@ -1,8 +1,8 @@
 import unittest
 
-from hwt.synthesizer.exceptions import TypeConversionErr, IntfLvlConfErr
+from hwt.synthesizer.exceptions import TypeConversionErr
 from hwt.synthesizer.rtlLevel.signalUtils.exceptions import \
-    MultipleDriversErr, NoDriverErr
+    SignalDriverErr
 from hwt.synthesizer.utils import toRtl
 from hwtLib.examples.errors.accessingSubunitInternalIntf import \
     AccessingSubunitInternalIntf
@@ -22,27 +22,27 @@ class ErrorsTC(unittest.TestCase):
 
     def test_inconsistentIntfDirection(self):
         u = InconsistentIntfDirection()
-        with self.assertRaises(IntfLvlConfErr):
+        with self.assertRaises(SignalDriverErr):
             toRtl(u)
 
     def test_multipleDriversOfChildNet(self):
         u = MultipleDriversOfChildNet()
-        with self.assertRaises((MultipleDriversErr, NoDriverErr, AssertionError)):
+        with self.assertRaises((SignalDriverErr, AssertionError)):
             toRtl(u)
 
     def test_multipleDriversOfChildNet2(self):
         u = MultipleDriversOfChildNet2()
-        with self.assertRaises(MultipleDriversErr):
+        with self.assertRaises(SignalDriverErr):
             toRtl(u)
 
     def test_unusedSubunit(self):
         u = UnusedSubunit()
-        with self.assertRaises(NoDriverErr):
+        with self.assertRaises(SignalDriverErr):
             toRtl(u)
 
     def test_unusedSubunit2(self):
         u = UnusedSubunit2()
-        with self.assertRaises(NoDriverErr):
+        with self.assertRaises(SignalDriverErr):
             toRtl(u)
 
     def test_accessingSubunitInternalIntf(self):

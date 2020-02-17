@@ -32,7 +32,7 @@ def createTwoAxiDuplexStreams():
 
     n = RtlNetlist()
     for _i in [i, i2]:
-        _i._signalsForInterface(n)
+        _i._signalsForInterface(n, None)
     return i, i2
 
 
@@ -214,8 +214,8 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
         i, i2 = createTwoAxiDuplexStreams()
         n = RtlNetlist()
 
-        i._signalsForInterface(n)
-        i2._signalsForInterface(n)
+        i._signalsForInterface(n, None)
+        i2._signalsForInterface(n, None)
 
         connect(i, i2)
 

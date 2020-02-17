@@ -114,10 +114,11 @@ class AddressSpaceProbe(object):
 
     def _getMainSigFn(self, intf):
         _mainSig = self.getMainSigFn(intf)
-        try:
-            return _mainSig._sig
-        except AttributeError:
+        s = _mainSig._sig
+        if s is None:
             return _mainSig._sigInside
+        else:
+            return s
 
     def _discoverAddressSpace(self, topIntf, offset):
         mainSig = self._getMainSigFn(topIntf)
