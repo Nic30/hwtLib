@@ -6,6 +6,7 @@ from unittest import TestLoader, TextTestRunner, TestSuite
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
+from hwtLib.amba.axiLite_comp.axiLite_to_axi_test import AxiLite_to_Axi_TC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import \
     AxiLiteEndpointArrayTC, AxiLiteEndpointStructsInArrayTC
 from hwtLib.amba.axiLite_comp.endpoint_fromInterfaces_test import \
@@ -22,6 +23,7 @@ from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC,\
 from hwtLib.amba.axi_comp.axi4_streamToMem_test import Axi4_streamToMemTC
 from hwtLib.amba.axi_comp.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
+from hwtLib.amba.axi_comp.axi_to_axiLite_test import Axi_to_AxiLite_TC
 from hwtLib.amba.axi_comp.tester_test import AxiTesterTC
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
@@ -57,8 +59,9 @@ from hwtLib.avalon.endpoint_test import AvalonMmEndpointTC, \
     AvalonMmEndpointDenseStartTC, AvalonMmEndpointDenseTC, AvalonMmMemMasterTC
 from hwtLib.avalon.mmAgent_test import AvalonMmAgentTC
 from hwtLib.avalon.stAgent_test import AvalonStAgentTC
-from hwtLib.clocking.clkDivider import ClkDiv3TC
 from hwtLib.clocking.cdc_test import CdcTC
+from hwtLib.clocking.clkDivider import ClkDiv3TC
+from hwtLib.eth.rmii_adapter_test import RmiiAdapterTC
 from hwtLib.examples.arithmetic.cntr_test import CntrTC, CntrResourceAnalysisTC
 from hwtLib.examples.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.examples.arithmetic.twoCntrs_test import TwoCntrsTC
@@ -115,6 +118,8 @@ from hwtLib.examples.statements.switchStm_test import SwitchStmTC
 from hwtLib.examples.statements.vldMaskConflictsResolving_test import \
     VldMaskConflictsResolvingTC
 from hwtLib.examples.timers import TimerTC
+from hwtLib.handshaked.cdc_test import HandshakedCdc_slow_to_fast_TC,\
+    HandshakedCdc_fast_to_slow_TC
 from hwtLib.handshaked.fifoAsync_test import HsFifoAsyncTC
 from hwtLib.handshaked.fifo_test import HsFifoTC
 from hwtLib.handshaked.joinFair_test import HsJoinFair_2inputs_TC, \
@@ -157,6 +162,7 @@ from hwtLib.mi32.axiLite_bridges_test import Mi32AxiLiteBrigesTC
 from hwtLib.mi32.mi32_2AxiLite_test import Mi32_2AxiLiteTC
 from hwtLib.mi32.mi32agent_test import Mi32AgentTC
 from hwtLib.peripheral.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
+from hwtLib.peripheral.mdio.master_test import MdioMasterTC
 from hwtLib.peripheral.segment7_test import Segment7TC
 from hwtLib.peripheral.spi.master_test import SpiMasterTC
 from hwtLib.peripheral.uart.rx_test import UartRxTC, UartRxBasicTC
@@ -198,11 +204,7 @@ from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
-from hwtLib.amba.axiLite_comp.axiLite_to_axi_test import AxiLite_to_Axi_TC
-from hwtLib.amba.axi_comp.axi_to_axiLite_test import Axi_to_AxiLite_TC
-from hwtLib.handshaked.cdc_test import HandshakedCdc_slow_to_fast_TC,\
-    HandshakedCdc_fast_to_slow_TC
-from hwtLib.peripheral.mdio.master_test import MdioMasterTC
+
 
 def testSuiteFromTCs(*tcs):
     loader = TestLoader()
@@ -447,6 +449,8 @@ suite = testSuiteFromTCs(
     HashTableCoreTC,
     CuckooHashTableTC,
     PingResponderTC,
+
+    RmiiAdapterTC,
 )
 
 if __name__ == '__main__':
