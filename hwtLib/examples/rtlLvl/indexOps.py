@@ -5,6 +5,7 @@ from hwt.hdl.typeShortcuts import vec
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
 from hwt.hdl.types.bits import Bits
+from ipCorePackager.constants import DIRECTION
 
 
 def IndexOps():
@@ -35,7 +36,17 @@ def IndexOps():
     s_out4[8:](s_in4a)
     s_out4[(8 + 8):8](s_in4b)
 
-    interf = [s_in, s_out, s_in2, s_out2, s_in3, s_out3, s_in4a, s_in4b, s_out4]
+    interf = {
+        s_in: DIRECTION.IN,
+        s_out: DIRECTION.OUT,
+        s_in2: DIRECTION.IN,
+        s_out2: DIRECTION.OUT,
+        s_in3: DIRECTION.IN,
+        s_out3: DIRECTION.OUT,
+        s_in4a: DIRECTION.IN,
+        s_in4b: DIRECTION.IN,
+        s_out4: DIRECTION.OUT
+    }
 
     return n, interf
 

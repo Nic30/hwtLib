@@ -5,6 +5,7 @@ from hwt.code import Switch
 from hwt.hdl.types.bits import Bits
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
+from ipCorePackager.constants import DIRECTION
 
 
 def SwitchStatement():
@@ -18,7 +19,7 @@ def SwitchStatement():
         [(i, Out(i + 1)) for i in range(8)]
     )
 
-    interf = [In, Out]
+    interf = {In: DIRECTION.IN, Out: DIRECTION.OUT}
     return n, interf
 
 switchStatementExpected = """library IEEE;

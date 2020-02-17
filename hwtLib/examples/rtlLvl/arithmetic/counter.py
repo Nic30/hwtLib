@@ -5,6 +5,7 @@ from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
+from ipCorePackager.constants import DIRECTION
 
 
 def Counter():
@@ -23,7 +24,8 @@ def Counter():
 
     s_out(cnt)
 
-    interf = [rst, clk, s_out, en]
+    interf = {rst: DIRECTION.IN, clk: DIRECTION.IN,
+              s_out: DIRECTION.OUT, en: DIRECTION.IN}
 
     return n, interf
 

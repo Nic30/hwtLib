@@ -6,6 +6,7 @@ from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
+from ipCorePackager.constants import DIRECTION
 
 
 def SimpleEnum():
@@ -29,7 +30,9 @@ def SimpleEnum():
         fsmSt(fsmT.send0)
     )
 
-    interf = [clk, syncRst, s_in0, s_in1, s_out]
+    interf = {clk: DIRECTION.IN, syncRst: DIRECTION.IN,
+              s_in0: DIRECTION.IN, s_in1: DIRECTION.IN,
+              s_out: DIRECTION.OUT}
     return n, interf
 
 

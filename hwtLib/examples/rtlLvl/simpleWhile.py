@@ -5,6 +5,7 @@ from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
+from ipCorePackager.constants import DIRECTION
 
 
 def SimpleWhile():
@@ -29,7 +30,9 @@ def SimpleWhile():
 
     s_out(counter)
 
-    interf = [clk, syncRst, start, en, s_out]
+    interf = {clk: DIRECTION.IN, syncRst: DIRECTION.IN,
+              start: DIRECTION.IN, en: DIRECTION.IN,
+              s_out: DIRECTION.OUT}
     return n, interf
 
 

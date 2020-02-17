@@ -5,6 +5,7 @@ from hwt.code import If, Switch
 from hwt.hdl.types.enum import HEnum
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
+from ipCorePackager.constants import DIRECTION
 
 
 def ComplexConditions():
@@ -54,7 +55,15 @@ def ComplexConditions():
     )
     s_idle(st._eq(stT.idle))
 
-    return n, [rst, clk, sd0, sd1, cntrlFifoVld, cntrlFifoLast, s_idle]
+    return n, {
+        rst: DIRECTION.IN,
+        clk: DIRECTION.IN,
+        sd0: DIRECTION.IN,
+        sd1: DIRECTION.IN,
+        cntrlFifoVld: DIRECTION.IN,
+        cntrlFifoLast: DIRECTION.IN,
+        s_idle: DIRECTION.OUT
+    }
 
 
 complexConditionsExpected = """library IEEE;
