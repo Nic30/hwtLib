@@ -22,7 +22,7 @@ from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
-from hwtLib.amba.axis_comp.templateBasedUnit import TemplateBasedUnit
+from hwtLib.abstract.templateBasedUnit import TemplateBasedUnit
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
 from pyMathBitPrecise.bit_utils import mask

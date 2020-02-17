@@ -24,7 +24,7 @@ from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.amba.axis_comp.frameParser_utils import ListOfOutNodeInfos, \
     ExclusieveListOfHsNodes, InNodeInfo, InNodeReadOnlyInfo, OutNodeInfo, \
     WordFactory
-from hwtLib.amba.axis_comp.templateBasedUnit import TemplateBasedUnit
+from hwtLib.abstract.templateBasedUnit import TemplateBasedUnit
 from hwtLib.handshaked.builder import HsBuilder
 
 

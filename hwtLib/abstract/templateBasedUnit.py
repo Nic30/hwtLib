@@ -21,6 +21,7 @@ class TemplateBasedUnit(Unit):
     def chainFrameWords(self):
         offset = 0
         for f in self._frames:
+            wi = 0
             for last, (wi, w) in iter_with_last(f.walkWords(showPadding=True)):
                 yield (offset + wi, w, last)
             offset += wi + 1
