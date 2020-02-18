@@ -1,6 +1,8 @@
 from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
 from hwtLib.amba.axi_comp.axi_buff import AxiBuff
 from hwtLib.amba.axi_comp.axi_buff_cdc import AxiBuffCdc
+from hwtLib.amba.axi_comp.resize import AxiResize
+from hwtLib.amba.axiLite_comp.axiLite_to_Axi import AxiLite_to_Axi
 
 
 class AxiBuilder(AbstractComponentBuilder):
@@ -85,3 +87,28 @@ class AxiBuilder(AbstractComponentBuilder):
         b.s_rst_n(rst)
 
         return res
+
+    def resize(self, addr_width=None, data_width=None):
+        if data_width is None:
+            data_width = self.end.DATA_WIDTH
+
+        if addr_width is None:
+            addr_width = self.end.ADDR_WIDTH
+
+        def set_params(u):
+            u.OUT_DATA_WIDTH = data_width
+            u.OUT_ADDR_WIDTH = addr_width
+
+        return self._genericInstance(
+            AxiResize, "resizer", set_params)
+
+    def to_axi(self, axi_cls, id_width):
+        def applyParams(u):
+            u.ID_WIDTH = id_width
+        get_intf_cls = self.getInfCls
+        try:
+            self.getInfCls = lambda: axi_cls
+            return self._genericInstance(AxiLite_to_Axi, "axiLite_to_Axi",
+                                         set_params=applyParams)
+        finally:
+            self.getInfCls = get_intf_cls
