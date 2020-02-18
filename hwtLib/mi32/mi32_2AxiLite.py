@@ -46,23 +46,23 @@ class Mi32_2AxiLite(BusBridge):
         axi.ar.valid(mi32.rd & axi.aw.ready)
         axi.ar.prot(PROT_DEFAULT)
         axi.aw.addr(mi32.addr)
-        w_en = mi32.wr & axi.ar.ready 
+        w_en = mi32.wr & axi.ar.ready
         axi.aw.valid(w_en & w_data_clean)
         axi.aw.prot(PROT_DEFAULT)
 
         If(w_data.pending,
             If(axi.w.ready,
-                If(w_en,
-                   w_data.data(mi32.dwr),
-                   w_data.strb(mi32.be),
+                If(w_en & axi.aw.ready,
+                    w_data.data(mi32.dwr),
+                    w_data.strb(mi32.be),
                 ).Else(
-                   w_data.data(None),
-                   w_data.strb(None),
-                   w_data.pending(0)
+                    w_data.data(None),
+                    w_data.strb(None),
+                    w_data.pending(0),
                 )
             )
         ).Else(
-            w_data.pending(w_en),
+            w_data.pending(w_en & axi.aw.ready),
             w_data.data(mi32.dwr),
             w_data.strb(mi32.be),
         )
