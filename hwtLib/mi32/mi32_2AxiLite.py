@@ -6,6 +6,9 @@ from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.constants import PROT_DEFAULT
 from hwtLib.mi32.intf import Mi32
+from hwt.hdl.types.struct import HStruct
+from hwt.hdl.types.defs import BIT
+from hwt.code import If
 
 
 class Mi32_2AxiLite(BusBridge):
@@ -32,18 +35,40 @@ class Mi32_2AxiLite(BusBridge):
     def _impl(self):
         mi32 = self.m
         axi = self.s
-
-        mi32.ardy(axi.ar.ready & axi.aw.ready & axi.w.ready)
+        w_data = self._reg("w_data", HStruct(
+            (axi.w.data._dtype, "data"),
+            (axi.w.strb._dtype, "strb"),
+            (BIT, "pending"),
+        ), def_val={"pending": 0})
+        w_data_clean = (~w_data.pending | axi.w.ready)
+        mi32.ardy(axi.ar.ready & axi.aw.ready & w_data_clean)
         axi.ar.addr(mi32.addr)
-        axi.ar.valid(mi32.rd & axi.aw.ready & axi.w.ready)
+        axi.ar.valid(mi32.rd & axi.aw.ready)
         axi.ar.prot(PROT_DEFAULT)
         axi.aw.addr(mi32.addr)
-        axi.aw.valid(mi32.wr & axi.ar.ready & axi.w.ready)
+        w_en = mi32.wr & axi.ar.ready 
+        axi.aw.valid(w_en & w_data_clean)
         axi.aw.prot(PROT_DEFAULT)
 
-        axi.w.data(mi32.dwr)
-        axi.w.strb(mi32.be)
-        axi.w.valid(mi32.wr & axi.ar.ready & axi.aw.ready)
+        If(w_data.pending,
+            If(axi.w.ready,
+                If(w_en,
+                   w_data.data(mi32.dwr),
+                   w_data.strb(mi32.be),
+                ).Else(
+                   w_data.data(None),
+                   w_data.strb(None),
+                   w_data.pending(0)
+                )
+            )
+        ).Else(
+            w_data.pending(w_en),
+            w_data.data(mi32.dwr),
+            w_data.strb(mi32.be),
+        )
+        axi.w.data(w_data.data)
+        axi.w.strb(w_data.strb)
+        axi.w.valid(w_data.pending)
         axi.b.ready(1)
 
         mi32.drdy(axi.r.valid)
