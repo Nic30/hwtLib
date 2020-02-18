@@ -2,13 +2,17 @@ from collections import deque
 
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.constants import RESP_OKAY
-from pyMathBitPrecise.bit_utils import mask
+from pyMathBitPrecise.bit_utils import mask, setBitRange, selectBit,\
+    selectBitRange, bitSetTo
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.value import Value
 
 
 class Axi3DenseMem(DenseMemory):
     """
     Simulation memory for Axi3/4 interfaces (slave component)
     """
+
     def __init__(self, clk, axi=None, axiAR=None, axiR=None, axiAW=None,
                  axiW=None, axiB=None, parent=None):
         """
@@ -69,8 +73,9 @@ class Axi3DenseMem(DenseMemory):
 
         self.cellSize = DW // 8
         self.allMask = mask(self.cellSize)
-        self.rPending = deque()
+        self.word_t = Bits(self.cellSize * 8)
 
+        self.rPending = deque()
         self.wPending = deque()
         self.clk = clk
         self._registerOnClock()
@@ -91,19 +96,39 @@ class Axi3DenseMem(DenseMemory):
         self.rAg.data.append((_id, data, RESP_OKAY, isLast))
 
     def doRead(self):
-        _id, addr, size, lastWordBitmask = self.rPending.popleft()
+        _id, addr, size, _ = self.rPending.popleft()
 
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
-            raise NotImplementedError(
-                "unaligned transaction not implemented (0x%x)" % addr)
+            offset = addr % self.cellSize
+            word_t = self.word_t
+            word_mask0 = mask(8 * self.cellSize)
+            word_mask1 = mask((self.cellSize - offset) * 8)
+        else:
+            offset = 0
 
+        mem = self.data
         for i in range(size):
             isLast = i == size - 1
-            try:
-                data = self.data[baseIndex + i]
-            except KeyError:
-                data = None
+            data = mem.get(baseIndex + i, None)
+            if offset != 0:
+                data1 = mem.get(baseIndex + i + 1, None)
+                if data is None:
+                    if data1 is None:
+                        # data = None
+                        pass
+                    else:
+                        data = data1 << ((self.cellSize - offset) * 8)
+                        data = data & word_mask1
+                else:
+                    if data1 is None:
+                        if isinstance(data, int):
+                            data = word_t.from_py(
+                                data >> (offset * 8),
+                                word_mask0)
+                    else:
+                        data = ((data >> (offset * 8)) & word_mask0) \
+                            | ((data1 << ((self.cellSize - offset) * 8)) & word_mask1)
 
             if data is None:
                 raise AssertionError(
@@ -121,13 +146,39 @@ class Axi3DenseMem(DenseMemory):
             data, strb, last = self.wAg.data.popleft()
         return (data, strb, last)
 
+    def _write_single_word(self, data: Value, strb: int, word_i: int):
+        if strb == 0:
+            return
+        if strb != self.allMask:
+            cur = self.data.get(word_i, None)
+            if cur is None:
+                cur_val = 0
+                cur_mask = 0
+            elif isinstance(cur, int):
+                cur_val = cur
+                cur_mask = self.allMask
+            else:
+                cur_val = cur.val
+                cur_mask = cur.vld_mask
+
+            for i in range(self.cellSize):
+                if selectBit(strb, i):
+                    cur_val = setBitRange(
+                        cur_val, i * 8, 8, selectBitRange(data.val, i * 8, 8))
+                    cur_mask = setBitRange(
+                        cur_mask, i * 8, 8, selectBitRange(data.vld_mask, i * 8, 8))
+            if cur_mask == self.allMask:
+                data = cur_val
+            else:
+                data = self.word_t.from_py(cur_val, cur_mask)
+        # print("data[%d] = %r" % (word_i, data))
+        self.data[word_i] = data
+
     def doWrite(self):
-        _id, addr, size, lastWordBitmask = self.wPending.popleft()
+        _id, addr, size, _ = self.wPending.popleft()
 
         baseIndex = addr // self.cellSize
-        if baseIndex * self.cellSize != addr:
-            raise NotImplementedError("unaligned transaction not implemented", addr)
-
+        offset = addr % self.cellSize
         for i in range(size):
             data, strb, last = self.pop_w_ag_data(_id)
             strb = int(strb)
@@ -135,18 +186,18 @@ class Axi3DenseMem(DenseMemory):
             last = bool(last)
             isLast = i == size - 1
             assert last == isLast, (addr, size, i)
-
-            if isLast:
-                expectedStrb = lastWordBitmask
+            if offset == 0:
+                # print("alig", data, strb)
+                self._write_single_word(data, strb, baseIndex + i)
             else:
-                expectedStrb = self.allMask
-
-            if expectedStrb != self.allMask:
-                raise NotImplementedError()
-            assert strb == expectedStrb, (strb, expectedStrb)
-            # print("data[%d] = %r" % (baseIndex + i, data))
-            self.data[baseIndex + i] = data
-
+                # print("init", data, strb)
+                d0 = data << (offset * 8)
+                strb0 = strb << offset
+                d1 = (data >> (offset * 8)) & self.allMask
+                strb1 = (strb >> offset) & mask(self.cellSize)
+                # print("split", d0, d1, strb0, strb1)
+                self._write_single_word(d0, strb0, baseIndex + i)
+                self._write_single_word(d1, strb1, baseIndex + i + 1)
         self.doWriteAck(_id)
 
     def doWriteAck(self, _id):
