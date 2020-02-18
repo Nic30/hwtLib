@@ -1,11 +1,13 @@
 from hwt.interfaces.std import VectSignal, Signal
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axi3 import Axi3_addr, Axi3_r, Axi3_b, IP_Axi3, Axi3
+from hwtLib.amba.axi3 import Axi3_addr, Axi3_r, Axi3_b, IP_Axi3, Axi3, _DEFAULT
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axi_intf_common import Axi_strb, Axi_hs
 from hwtLib.amba.axis import AxiStream, AxiStreamAgent
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from pycocotb.hdlSimulator import HdlSimulator
+from hwtLib.amba.constants import BURST_INCR, LOCK_DEFAULT, PROT_DEFAULT,\
+    BYTES_IN_TRANS, QOS_DEFAULT, CACHE_DEFAULT
 
 
 #####################################################################
@@ -45,6 +47,23 @@ class Axi4_addrAgent(AxiStreamAgent):
             signals.append(intf.user)
         self._signals = tuple(signals)
         self._sigCnt = len(signals)
+
+    def create_addr_req(self, addr, _len,
+                        _id=0,
+                        burst=BURST_INCR,
+                        cache=CACHE_DEFAULT,
+                        lock=LOCK_DEFAULT,
+                        prot=PROT_DEFAULT,
+                        size=_DEFAULT,
+                        qos=QOS_DEFAULT):
+        """
+        Create a default AXI address transaction 
+        :note: transaction is created and returned but it is not added to a agent data
+        """
+        if size is _DEFAULT:
+            D_B = self.intf._parent.DATA_WIDTH // 8
+            size = BYTES_IN_TRANS(D_B)
+        return (_id, addr, burst, cache, _len, lock, prot, size, qos)
 
 
 #####################################################################

@@ -2,37 +2,31 @@
 # -*- coding: utf-8 -*-
 
 
-from hwt.simulator.simTestCase import SimTestCase, SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_addr
 from hwtLib.amba.axi_comp.axi4_rDatapump import Axi_rDatapump
-from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, BYTES_IN_TRANS, \
-    PROT_DEFAULT, LOCK_DEFAULT, QOS_DEFAULT, RESP_OKAY
+from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
+
+
+class Axi_datapumpTC(SingleUnitSimTestCase):
+
+    def aTrans(self, id_, addr, len_):
+        return self.u.a._ag.create_addr_req(addr, len_, _id=id_)
 
 
 def mkReq(addr, _len, rem=0, _id=0):
     return (_id, addr, _len, rem)
 
 
-def mkReqAxi(addr, _len, _id=0,
-             burst=BURST_INCR,
-             cache=CACHE_DEFAULT,
-             lock=LOCK_DEFAULT,
-             prot=PROT_DEFAULT,
-             size=BYTES_IN_TRANS(8),
-             qos=QOS_DEFAULT):
-
-    return (_id, addr, burst, cache, _len, lock, prot, size, qos)
-
-
 def addData(ag, data, _id=0, resp=RESP_OKAY, last=True):
     ag.data.append((_id, data, resp, last))
 
 
-class Axi4_rDatapumpTC(SingleUnitSimTestCase):
+class Axi4_rDatapumpTC(Axi_datapumpTC):
     LEN_MAX = 255
     DATA_WIDTH = 64
 
@@ -41,11 +35,6 @@ class Axi4_rDatapumpTC(SingleUnitSimTestCase):
         cls.u = Axi_rDatapump(axiAddrCls=Axi4_addr)
         cls.u.DATA_WIDTH = cls.DATA_WIDTH
         return cls.u
-
-    def mkDefaultAddrReq(self, _id, addr, _len):
-        return (_id, addr, BURST_INCR, CACHE_DEFAULT, _len,
-                LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS(8),
-                QOS_DEFAULT)
 
     def test_nop(self):
         u = self.u
@@ -138,7 +127,7 @@ class Axi4_rDatapumpTC(SingleUnitSimTestCase):
         _id = 0
         self.assertValSequenceEqual(ar,
                                     [
-                                        self.mkDefaultAddrReq(
+                                        self.aTrans(
                                             _id, 0xff +
                                             (i * (LEN_MAX + 1) * 8),
                                             LEN_MAX)
@@ -163,7 +152,7 @@ class Axi4_rDatapumpTC(SingleUnitSimTestCase):
         _id = 0
         _len = 0
         self.assertValSequenceEqual(ar,
-                                    [self.mkDefaultAddrReq(_id, addr, _len)
+                                    [self.aTrans(_id, addr, _len)
                                         for addr in range(16)
                                      ])
 
@@ -189,7 +178,7 @@ class Axi4_rDatapumpTC(SingleUnitSimTestCase):
         _id = 0
         _len = 0
         self.assertValSequenceEqual(ar,
-                                    [self.mkDefaultAddrReq(_id, addr, _len)
+                                    [self.aTrans(_id, addr, _len)
                                         for addr in range(64)
                                      ])
 
@@ -223,7 +212,7 @@ class Axi4_rDatapumpTC(SingleUnitSimTestCase):
         _id = 0
         _len = 0
         self.assertValSequenceEqual(ar,
-                                    [self.mkDefaultAddrReq(
+                                    [self.aTrans(
                                         _id,
                                         i * (self.DATA_WIDTH // 8),
                                         0)
@@ -262,7 +251,7 @@ class Axi4_rDatapumpTC(SingleUnitSimTestCase):
         self.assertEmpty(req.data)
 
         _id = 0
-        _mkReq = self.mkDefaultAddrReq
+        _mkReq = self.aTrans
         self.assertValSequenceEqual(ar,
                                     [_mkReq(_id, 0, self.LEN_MAX),
                                      _mkReq(_id, (self.LEN_MAX + 1) *
@@ -305,7 +294,7 @@ class Axi4_rDatapumpTC(SingleUnitSimTestCase):
                 len_tmp = 0
 
             self.assertValSequenceEqual(arreq,
-                                        self.mkDefaultAddrReq(_id,
+                                        self.aTrans(_id,
                                                               addr,
                                                               len_tmp))
 
@@ -368,10 +357,6 @@ class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
         cls.u = Axi_rDatapump(axiAddrCls=Axi3_addr)
         cls.u.DATA_WIDTH = cls.DATA_WIDTH
         return cls.u
-
-    def mkDefaultAddrReq(self, _id, addr, _len):
-        return (_id, addr, BURST_INCR, CACHE_DEFAULT, _len,
-                LOCK_DEFAULT, PROT_DEFAULT, BYTES_IN_TRANS(8))
 
 
 if __name__ == "__main__":

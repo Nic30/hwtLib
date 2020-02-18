@@ -4,7 +4,8 @@
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi3 import Axi3_addr, Axi3_w
 from hwtLib.amba.axi4 import Axi4_addr
-from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC, mkReq
+from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC, mkReq,\
+    Axi_datapumpTC
 from hwtLib.amba.axi_comp.axi4_wDatapump import Axi_wDatapump
 from hwtLib.amba.constants import RESP_OKAY, BYTES_IN_TRANS, BURST_INCR, \
     CACHE_DEFAULT, LOCK_DEFAULT, PROT_DEFAULT, QOS_DEFAULT
@@ -13,7 +14,7 @@ from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 
 
-class Axi4_wDatapumpTC(SingleUnitSimTestCase):
+class Axi4_wDatapumpTC(Axi_datapumpTC):
     LEN_MAX = Axi4_rDatapumpTC.LEN_MAX
 
     @classmethod
@@ -21,11 +22,6 @@ class Axi4_wDatapumpTC(SingleUnitSimTestCase):
         cls.u = u = Axi_wDatapump(axiAddrCls=Axi4_addr)
         u.MAX_LEN = cls.LEN_MAX
         return cls.u
-
-    def aTrans(self, id_, addr, len_, burst=BURST_INCR, cache=CACHE_DEFAULT,
-               lock=LOCK_DEFAULT, prot=PROT_DEFAULT, size=BYTES_IN_TRANS(8),
-               qos=QOS_DEFAULT):
-        return (id_, addr, burst, cache, len_, lock, prot, size, qos)
 
     def wTrans(self, data, last, strb=mask(64 // 8), id_=0):
         return (data, strb, last)
@@ -227,11 +223,6 @@ class Axi4_wDatapumpTC(SingleUnitSimTestCase):
 class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
     LEN_MAX = 15
 
-    def aTrans(self, id_, addr, len_, burst=BURST_INCR, cache=CACHE_DEFAULT,
-               lock=LOCK_DEFAULT, prot=PROT_DEFAULT, size=BYTES_IN_TRANS(8),
-               qos=QOS_DEFAULT):
-        return (id_, addr, burst, cache, len_, lock, prot, size)
-
     def wTrans(self, data, last, strb=mask(64 // 8), id_=0):
         return (id_, data, strb, last)
 
@@ -244,11 +235,6 @@ class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
 
 class Axi3_wDatapump_small_splitting_TC(SingleUnitSimTestCase):
     LEN_MAX = 3
-
-    def aTrans(self, id_, addr, len_, burst=BURST_INCR, cache=CACHE_DEFAULT,
-               lock=LOCK_DEFAULT, prot=PROT_DEFAULT, size=BYTES_IN_TRANS(8),
-               qos=QOS_DEFAULT):
-        return (id_, addr, burst, cache, len_, lock, prot, size)
 
     def wTrans(self, data, last, strb=mask(64 // 8), id_=0):
         return (id_, data, strb, last)

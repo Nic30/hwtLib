@@ -7,8 +7,6 @@ from itertools import chain
 from hwt.code import log2ceil
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi4 import Axi4
-from hwtLib.amba.constants import PROT_DEFAULT, BYTES_IN_TRANS,\
-    QOS_DEFAULT, CACHE_DEFAULT, LOCK_DEFAULT, BURST_INCR
 from hwtLib.amba.interconnect.matrixAddrCrossbar import AxiInterconnectMatrixAddrCrossbar
 from pycocotb.agents.clk import DEFAULT_CLOCK
 
@@ -26,26 +24,8 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
         return u
 
     def addr_transaction(self, id_, addr, len_):
-        axi = self.u.master[0]
-
-        burst = BURST_INCR
-        cache = CACHE_DEFAULT
-        lock = LOCK_DEFAULT
-        prot = PROT_DEFAULT
-        size = BYTES_IN_TRANS(axi.DATA_WIDTH // 8)
-        qos = QOS_DEFAULT
-
-        return (
-            id_,
-            addr,
-            burst,
-            cache,
-            len_,
-            lock,
-            prot,
-            size,
-            qos,
-        )
+        axi_addr = self.u.master[0]
+        return axi_addr._ag.create_addr_req(addr, len_, _id=id_)
 
     def randomize_all(self):
         u = self.u
@@ -82,9 +62,8 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
         :param transaction_cnt: transactions per master per connected slave 
         """
         u = self.u
-        for m in u.master:
-            # to automatically set addr.size
-            m.DATA_WIDTH = 64
+        # to automatically set default addr.size
+        u.DATA_WIDTH = 64
         self.randomize_all()
 
         slave_a_transactions = [
@@ -196,11 +175,12 @@ class AxiInterconnectMatrixAddrCrossbar_3to3TC(AxiInterconnectMatrixAddrCrossbar
         u.ADDR_WIDTH = log2ceil(0x4000 - 1)
         return u
 
+
 class AxiInterconnectMatrixAddrCrossbar_2to1_2to1_1toAllTC(AxiInterconnectMatrixAddrCrossbar_1to1TC):
     """
     M0,M1 -> S0
     M2,M3 -> S1
-    M4    -> S0,S1 
+    M4    -> S0,S1
     """
     @classmethod
     def getUnit(cls):

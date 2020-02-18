@@ -9,6 +9,10 @@ from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwt.serializer.ip_packager import IpPackager
 from ipCorePackager.component import Component
 from pycocotb.hdlSimulator import HdlSimulator
+from hwtLib.amba.constants import BYTES_IN_TRANS, BURST_INCR, CACHE_DEFAULT,\
+    LOCK_DEFAULT, PROT_DEFAULT
+
+_DEFAULT = object()
 
 
 #####################################################################
@@ -66,6 +70,22 @@ class Axi3_addrAgent(AxiStreamAgent):
             signals.append(intf.user)
         self._signals = tuple(signals)
         self._sigCnt = len(signals)
+
+    def create_addr_req(self, addr, _len,
+                        _id=0,
+                        burst=BURST_INCR,
+                        cache=CACHE_DEFAULT,
+                        lock=LOCK_DEFAULT,
+                        prot=PROT_DEFAULT,
+                        size=_DEFAULT):
+        """
+        Create a default AXI address transaction 
+        :note: transaction is created and returned but it is not added to a agent data
+        """
+        if size is _DEFAULT:
+            D_B = self.intf._parent.DATA_WIDTH // 8
+            size = BYTES_IN_TRANS(D_B)
+        return (_id, addr, burst, cache, _len, lock, prot, size)
 
 
 #####################################################################
