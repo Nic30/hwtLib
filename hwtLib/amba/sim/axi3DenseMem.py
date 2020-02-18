@@ -112,7 +112,6 @@ class Axi3DenseMem(DenseMemory):
 
             self.add_r_ag_data(_id, data, isLast)
 
-
     def pop_w_ag_data(self, _id):
         if self.HAS_W_ID:
             _id2, data, strb, last = self.wAg.data.popleft()
@@ -127,7 +126,7 @@ class Axi3DenseMem(DenseMemory):
 
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
-            raise NotImplementedError("unaligned transaction not implemented")
+            raise NotImplementedError("unaligned transaction not implemented", addr)
 
         for i in range(size):
             data, strb, last = self.pop_w_ag_data(_id)
@@ -145,7 +144,7 @@ class Axi3DenseMem(DenseMemory):
             if expectedStrb != self.allMask:
                 raise NotImplementedError()
             assert strb == expectedStrb, (strb, expectedStrb)
-
+            # print("data[%d] = %r" % (baseIndex + i, data))
             self.data[baseIndex + i] = data
 
         self.doWriteAck(_id)
