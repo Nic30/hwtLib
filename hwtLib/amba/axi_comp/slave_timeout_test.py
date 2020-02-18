@@ -1,0 +1,112 @@
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwtLib.amba.axi4 import Axi4
+from hwtLib.amba.axi_comp.slave_timeout import AxiSlaveTimeout
+from hwtLib.amba.constants import RESP_SLVERR, RESP_OKAY
+from pyMathBitPrecise.bit_utils import mask
+from pycocotb.constants import CLK_PERIOD
+
+
+class AxiSlaveTimeoutTC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        u = AxiSlaveTimeout(Axi4)
+        u.TIMEOUT = 4
+        cls.u = u
+        return u
+
+    def randomize_axi(self, axi):
+        ra = self.randomize
+        ra(axi.aw)
+        ra(axi.b)
+        ra(axi.w)
+        ra(axi.ar)
+        ra(axi.r)
+
+    def randomize_all(self):
+        u = self.u
+        for axi in [u.m, u.s]:
+            self.randomize_axi(axi)
+
+    def test_nop(self):
+        u = self.u
+        self.runSim(10 * CLK_PERIOD)
+        ae = self.assertEmpty
+        ae(u.s.aw._ag.data)
+        ae(u.s.w._ag.data)
+        ae(u.s.ar._ag.data)
+
+        ae(u.m.r._ag.data)
+        ae(u.m.b._ag.data)
+
+    def test_read(self):
+        u = self.u
+        ar_req = u.m.ar._ag.create_addr_req(0x8, 0, _id=1)
+        u.m.ar._ag.data.append(ar_req)
+        r_trans = (1, 0x123, RESP_OKAY, 1)
+        u.s.r._ag.data.append(r_trans)
+
+        self.runSim(10 * CLK_PERIOD)
+        ae = self.assertEmpty
+        ae(u.s.aw._ag.data)
+        ae(u.s.w._ag.data)
+        self.assertValSequenceEqual(u.s.ar._ag.data, [ar_req, ])
+
+        self.assertValSequenceEqual(u.m.r._ag.data, [r_trans, ])
+        ae(u.m.b._ag.data)
+
+    def test_read_timeout(self):
+        u = self.u
+        ar_req = u.m.ar._ag.create_addr_req(0x8, 0, _id=1)
+        u.m.ar._ag.data.append(ar_req)
+        self.runSim(10 * CLK_PERIOD)
+        ae = self.assertEmpty
+        ae(u.s.aw._ag.data)
+        ae(u.s.w._ag.data)
+        self.assertValSequenceEqual(u.s.ar._ag.data, [ar_req, ])
+
+        self.assertValSequenceEqual(u.m.r._ag.data, [(1, None, RESP_SLVERR, None), ])
+        ae(u.m.b._ag.data)
+
+    def test_b_timeout(self):
+        u = self.u
+        aw_req = u.m.ar._ag.create_addr_req(0x8, 0, _id=1)
+        u.m.aw._ag.data.append(aw_req)
+        w_trans = (0x123, mask(u.m.DATA_WIDTH // 8), 1)
+        u.m.w._ag.data.append(w_trans)
+
+        self.runSim(10 * CLK_PERIOD)
+        ae = self.assertEmpty
+        self.assertValSequenceEqual(u.s.aw._ag.data, [aw_req, ])
+        self.assertValSequenceEqual(u.s.w._ag.data, [w_trans, ])
+        ae(u.s.ar._ag.data)
+
+        ae(u.m.r._ag.data)
+        self.assertValSequenceEqual(u.m.b._ag.data, [((1, RESP_SLVERR))])
+
+    def test_write(self):
+        u = self.u
+        aw_req = u.m.ar._ag.create_addr_req(0x8, 0, _id=1)
+        u.m.aw._ag.data.append(aw_req)
+        w_trans = (0x123, mask(u.m.DATA_WIDTH // 8), 1)
+        u.m.w._ag.data.append(w_trans)
+        b_trans = (1, RESP_OKAY)
+        u.s.b._ag.data.append(b_trans)
+
+        self.runSim(10 * CLK_PERIOD)
+        ae = self.assertEmpty
+        self.assertValSequenceEqual(u.s.aw._ag.data, [aw_req, ])
+        self.assertValSequenceEqual(u.s.w._ag.data, [w_trans, ])
+        ae(u.s.ar._ag.data)
+
+        ae(u.m.r._ag.data)
+        self.assertValSequenceEqual(u.m.b._ag.data, [b_trans, ])
+
+
+if __name__ == "__main__":
+    import unittest
+    suite = unittest.TestSuite()
+    # suite.addTest(AxiSlaveTimeoutTC('test_singleLong'))
+    suite.addTest(unittest.makeSuite(AxiSlaveTimeoutTC))
+    runner = unittest.TextTestRunner(verbosity=3)
+    runner.run(suite)
