@@ -35,7 +35,7 @@ class Axi_to_AxiLite(BusBridge):
         That means if the error appears somewhere in middle beat of the transaction the eror is ignored
     :ivar MAX_TRANS_OVERLAP: dept of internal fifo which is used to allow the transactions
         to overlapp each other in order to pipeline the execution of transactions
-    
+
     .. hwt-schematic::
     """
 
@@ -68,7 +68,7 @@ class Axi_to_AxiLite(BusBridge):
                 self.in_reg.ADDR_BUFF_DEPTH = \
                 self.out_reg.DATA_BUFF_DEPTH = \
                 self.out_reg.ADDR_BUFF_DEPTH = 1 
-    
+
     def gen_addr_logic(self, addr_ch_in: Axi4_addr,
                        addr_ch_out: Axi4Lite_addr,
                        req_fifo_inp: HandshakedIdAndLen):
