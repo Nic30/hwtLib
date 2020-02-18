@@ -164,7 +164,7 @@ class Mi32AddrAgent(HandshakedAgent):
             elif rw is WRITE:
                 rd, wr = 0, 1
                 _, address, wdata, be = data
-            elif wr is READ_WRITE:
+            elif rw is READ_WRITE:
                 rd, wr = 1, 1
                 _, address, wdata, be = data
             else:
