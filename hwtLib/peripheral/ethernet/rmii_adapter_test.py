@@ -4,9 +4,9 @@ from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
-from hwtLib.eth.constants import ETH
-from hwtLib.eth.rmii import Rmii
-from hwtLib.eth.rmii_adapter import RmiiAdapter, VldSyncedDataErrLast
+from hwtLib.peripheral.ethernet.constants import ETH
+from hwtLib.peripheral.ethernet.rmii import Rmii
+from hwtLib.peripheral.ethernet.rmii_adapter import RmiiAdapter, VldSyncedDataErrLast
 from pycocotb.constants import Time
 
 

@@ -6,6 +6,7 @@ from unittest import TestLoader, TextTestRunner, TestSuite
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
+# from hwtLib.abstract.streamAlignmentUtils_test import StreamJoiningUtilsTC
 from hwtLib.amba.axiLite_comp.axiLite_to_axi_test import AxiLite_to_Axi_TC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import \
     AxiLiteEndpointArrayTC, AxiLiteEndpointStructsInArrayTC
@@ -24,6 +25,7 @@ from hwtLib.amba.axi_comp.axi4_streamToMem_test import Axi4_streamToMemTC
 from hwtLib.amba.axi_comp.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
 from hwtLib.amba.axi_comp.axi_to_axiLite_test import Axi_to_AxiLite_TC
+from hwtLib.amba.axi_comp.slave_timeout_test import AxiSlaveTimeoutTC
 from hwtLib.amba.axi_comp.tester_test import AxiTesterTC
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
@@ -61,7 +63,7 @@ from hwtLib.avalon.mmAgent_test import AvalonMmAgentTC
 from hwtLib.avalon.stAgent_test import AvalonStAgentTC
 from hwtLib.clocking.cdc_test import CdcTC
 from hwtLib.clocking.clkDivider import ClkDiv3TC
-from hwtLib.eth.rmii_adapter_test import RmiiAdapterTC
+from hwtLib.peripheral.ethernet.rmii_adapter_test import RmiiAdapterTC
 from hwtLib.examples.arithmetic.cntr_test import CntrTC, CntrResourceAnalysisTC
 from hwtLib.examples.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.examples.arithmetic.twoCntrs_test import TwoCntrsTC
@@ -379,6 +381,7 @@ suite = testSuiteFromTCs(
     Axi4_wDatapumpTC,
     Axi3_wDatapump_direct_TC,
     Axi3_wDatapump_small_splitting_TC,
+    AxiSlaveTimeoutTC,
     AxiSStoredBurstTC,
     AxiS_en_TC,
     AxiS_measuringFifoTC,
@@ -451,6 +454,7 @@ suite = testSuiteFromTCs(
     PingResponderTC,
 
     RmiiAdapterTC,
+#    StreamJoiningUtilsTC,
 )
 
 if __name__ == '__main__':

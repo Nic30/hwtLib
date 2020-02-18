@@ -6,7 +6,7 @@ from pycocotb.agents.base import AgentBase
 from pycocotb.hdlSimulator import HdlSimulator
 from typing import List
 from pyMathBitPrecise.bit_utils import selectBitRange
-from hwtLib.eth.constants import ETH
+from hwtLib.peripheral.ethernet.constants import ETH
 from itertools import chain
 
 
@@ -31,7 +31,7 @@ class RmiiAgent(AgentBase):
 
 class RmiiTxChannelAgent(VldSyncedAgent):
     """
-    Simulation agent for :class:`hwtLib.eth.rmii.RmiiTxChannel` interface
+    Simulation agent for :class:`hwtLib.peripheral.ethernet.rmii.RmiiTxChannel` interface
 
     :type intf: RmiiTxChannel
     """
@@ -80,7 +80,7 @@ class RmiiTxChannelAgent(VldSyncedAgent):
 
 class RmiiRxChannelAgent(VldSyncedAgent):
     """
-    Simulation agent for :class:`hwtLib.eth.rmii.RmiiRxChannel` interface
+    Simulation agent for :class:`hwtLib.peripheral.ethernet.rmii.RmiiRxChannel` interface
 
     :type intf: RmiiRxChannel
     """

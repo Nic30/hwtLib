@@ -10,9 +10,9 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
-from hwtLib.eth.constants import ETH
-from hwtLib.eth.rmii import Rmii
-from hwtLib.eth.vldsynced_data_err_last import VldSyncedDataErrLast
+from hwtLib.peripheral.ethernet.constants import ETH
+from hwtLib.peripheral.ethernet.rmii import Rmii
+from hwtLib.peripheral.ethernet.vldsynced_data_err_last import VldSyncedDataErrLast
 from pyMathBitPrecise.bit_utils import mask
 
 
