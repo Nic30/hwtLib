@@ -109,8 +109,10 @@ class AxiBuilder(AbstractComponentBuilder):
     def to_axi(self, axi_cls, id_width):
         if self.end.__class__ is axi_cls:
             return self
+
         def applyParams(u):
             u.ID_WIDTH = id_width
+
         get_intf_cls = self.getInfCls
         try:
             self.getInfCls = lambda: axi_cls
