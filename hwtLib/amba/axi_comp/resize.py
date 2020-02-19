@@ -39,7 +39,7 @@ class AxiResize(BusBridge):
         has_len = hasattr(s.ar, "len")
         DW = self.DATA_WIDTH
         OUT_DW = self.OUT_DATA_WIDTH
-        if DW == OUT_DW:
+        if DW == OUT_DW and self.ADDR_WIDTH == self.OUT_ADDR_WIDTH:
             raise AssertionError("It is useless to use this convertor"
                                  " if the interface is of same size")
 
@@ -66,7 +66,7 @@ class AxiResize(BusBridge):
                 m.b(s.b)
             else:
                 # requires split to multiple transactions on output
-                raise NotImplementedError()
+                raise NotImplementedError(DW, OUT_DW)
 
 
 def _example_AxiResize():

@@ -89,11 +89,15 @@ class AxiBuilder(AbstractComponentBuilder):
         return res
 
     def resize(self, addr_width=None, data_width=None):
+        end = self.end
         if data_width is None:
-            data_width = self.end.DATA_WIDTH
+            data_width = end.DATA_WIDTH
 
         if addr_width is None:
-            addr_width = self.end.ADDR_WIDTH
+            addr_width = end.ADDR_WIDTH
+
+        if data_width == end.DATA_WIDTH and addr_width == end.ADDR_WIDTH:
+            return self
 
         def set_params(u):
             u.OUT_DATA_WIDTH = data_width
@@ -103,6 +107,8 @@ class AxiBuilder(AbstractComponentBuilder):
             AxiResize, "resizer", set_params)
 
     def to_axi(self, axi_cls, id_width):
+        if self.end.__class__ is axi_cls:
+            return self
         def applyParams(u):
             u.ID_WIDTH = id_width
         get_intf_cls = self.getInfCls
