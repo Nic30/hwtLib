@@ -1,13 +1,13 @@
-from hwtLib.abstract.busBridge import BusBridge
-from hwt.synthesizer.param import Param
-from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwtLib.amba.axi4Lite import Axi4Lite
-from hwt.code import connect, log2ceil, If, Concat, Switch
-from hwtLib.handshaked.streamNode import StreamNode
-from hwtLib.handshaked.fifo import HandshakedFifo
-from hwt.interfaces.std import Handshaked
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
+from hwt.code import connect, log2ceil, Concat, Switch
 from hwt.hdl.typeShortcuts import vec
+from hwt.interfaces.std import Handshaked
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.synthesizer.param import Param
+from hwtLib.abstract.busBridge import BusBridge
+from hwtLib.amba.axi4Lite import Axi4Lite
+from hwtLib.amba.axis_comp.builder import AxiSBuilder
+from hwtLib.handshaked.fifo import HandshakedFifo
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 class AxiResize(BusBridge):
@@ -36,12 +36,12 @@ class AxiResize(BusBridge):
         assert self.ALIGN_BITS_OUT <= self.OUT_ADDR_WIDTH, (self.ALIGN_BITS_OUT, self.OUT_ADDR_WIDTH)
 
         with self._paramsShared():
-            self.m = self.intfCls()
+            self.s = self.intfCls()
 
         with self._paramsShared():
-            self.s = self.intfCls()._m()
-            self.s.ADDR_WIDTH = self.OUT_ADDR_WIDTH
-            self.s.DATA_WIDTH = self.OUT_DATA_WIDTH
+            self.m = self.intfCls()._m()
+            self.m.ADDR_WIDTH = self.OUT_ADDR_WIDTH
+            self.m.DATA_WIDTH = self.OUT_DATA_WIDTH
 
     def propagate_addr(self, m_a, s_a):
         name_prefix = m_a._name + "_"
@@ -177,17 +177,17 @@ class AxiResize(BusBridge):
             if DW == OUT_DW:
                 # always reading/writing less data than is max of output
                 if self.ADDR_WIDTH != self.OUT_ADDR_WIDTH:
-                    connect(m.aw, s.aw, fit=True)
-                    connect(m.ar, s.ar, fit=True)
+                    connect(s.aw, m.aw, fit=True)
+                    connect(s.ar, m.ar, fit=True)
                 else:
-                    s.aw(m.aw)
-                    s.ar(m.ar)
-                connect(m.w, s.w, fit=True)
-                connect(s.r, m.r, fit=True)
-                m.b(s.b)
+                    m.aw(s.aw)
+                    m.ar(s.ar)
+                connect(s.w, m.w, fit=True)
+                connect(m.r, s.r, fit=True)
+                s.b(m.b)
             elif DW < OUT_DW:
                 assert OUT_DW % DW == 0, (OUT_DW, DW)
-                self.select_data_word_from_ouput_word(m, s)
+                self.select_data_word_from_ouput_word(s, m)
             else:
                 # requires split to multiple transactions on output
                 raise NotImplementedError(DW, OUT_DW)
