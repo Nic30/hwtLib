@@ -71,13 +71,13 @@ class AxiInterconnectMatrixR(AxiInterconnectCommon):
         addr_crossbar = self.addr_crossbar
         data_crossbar = self.data_crossbar
 
-        master_addr_channels = HObjList([m.ar for m in self.m])
-        slave_addr_channels = HObjList([s.ar for s in self.s])
-        addr_crossbar.m(master_addr_channels)
-        slave_addr_channels(addr_crossbar.s)
-        master_r_channels = HObjList([m.r for m in self.m])
+        master_addr_channels = HObjList([m.ar for m in self.s])
+        slave_addr_channels = HObjList([s.ar for s in self.m])
+        addr_crossbar.s(master_addr_channels)
+        slave_addr_channels(addr_crossbar.m)
+        master_r_channels = HObjList([m.r for m in self.s])
         master_r_channels(data_crossbar.dataOut)
-        slave_r_channels = HObjList([s.r for s in self.s])
+        slave_r_channels = HObjList([s.r for s in self.m])
         data_crossbar.dataIn(slave_r_channels)
 
         for m_i, f in enumerate(self.order_s_index_for_m_data):

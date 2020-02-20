@@ -27,18 +27,18 @@ class IpifInterconnectMatrix(BusInterconnect):
 
         slavePorts = HObjList()
         for _ in self.MASTERS:
-            m = Ipif()
-            m._updateParamsFrom(self)
-            slavePorts.append(m)
+            s = Ipif()
+            s._updateParamsFrom(self)
+            slavePorts.append(s)
 
         self.s = slavePorts
 
         masterPorts = HObjList()
         for _, size in self.SLAVES:
-            s = Ipif()._m()
-            s.ADDR_WIDTH = log2ceil(size - 1)
-            s.DATA_WIDTH = self.DATA_WIDTH
-            masterPorts.append(s)
+            m = Ipif()._m()
+            m.ADDR_WIDTH = log2ceil(size - 1)
+            m.DATA_WIDTH = self.DATA_WIDTH
+            masterPorts.append(m)
 
         self.m = masterPorts
 

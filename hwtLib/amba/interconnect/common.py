@@ -36,14 +36,14 @@ class AxiInterconnectCommon(BusInterconnect):
         addClkRstn(self)
         AXI = self.intfCls
         with self._paramsShared():
-            self.m = HObjList([AXI() for _ in self.MASTERS])
+            self.s = HObjList([AXI() for _ in self.MASTERS])
 
         with self._paramsShared(exclude=({}, {"ADDR_WIDTH"})):
-            self.s = HObjList([AXI()._m() for _ in self.SLAVES])
+            self.m = HObjList([AXI()._m() for _ in self.SLAVES])
 
         for i in chain(self.m, self.s):
             i.HAS_W = has_w
             i.HAS_R = has_r
 
-        for s, (_, size) in zip(self.s, self.SLAVES):
+        for s, (_, size) in zip(self.m, self.SLAVES):
             s.ADDR_WIDTH = log2ceil(size - 1)

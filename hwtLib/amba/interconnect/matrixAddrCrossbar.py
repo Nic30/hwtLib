@@ -259,8 +259,8 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
     def _impl(self):
         master_addr_channels = [
             AxiSBuilder(self, m).buff(1).end
-            for m in self.m]
-        slave_addr_channels = self.s
+            for m in self.s]
+        slave_addr_channels = self.m
 
         order_s_index_for_m_data_out = self.order_s_index_for_m_data_out
         order_m_index_for_s_data_out = self.order_m_index_for_s_data_out

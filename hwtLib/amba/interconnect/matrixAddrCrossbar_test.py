@@ -67,10 +67,10 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
         self.randomize_all()
 
         slave_a_transactions = [
-            [deque() for _ in u.m]
-            for _ in u.s
+            [deque() for _ in u.s]
+            for _ in u.m
         ]
-        for master_i, (accesible_slaves, m) in enumerate(zip(u.MASTERS, u.m)):
+        for master_i, (accesible_slaves, m) in enumerate(zip(u.MASTERS, u.s)):
             for slave_i, _slave_a_transacions in enumerate(slave_a_transactions):
                 if slave_i not in accesible_slaves:
                     continue
@@ -87,11 +87,11 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
                     trans[1] &= slave_addr_mask
                     slave_a.append(tuple(trans))
 
-        max_trans_duration = max(len(m._ag.data) for m in u.m)
+        max_trans_duration = max(len(m._ag.data) for m in u.s)
         self.runSim((40 + 4 * max_trans_duration *
                      transaction_cnt) * DEFAULT_CLOCK)
         # assert all data was send
-        for m_i, m in enumerate(u.m):
+        for m_i, m in enumerate(u.s):
             self.assertEmpty(m._ag.data, "master: %d" % m_i)
 
         for m_i, (s_for_m, accesible_slaves) in enumerate(zip(
@@ -103,7 +103,7 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
                 if slave_i not in accesible_slaves:
                     continue
 
-                slave_addr_offset = self.u.SLAVES[slave_i][0]
+                slave_addr_offset = u.SLAVES[slave_i][0]
                 for _ in range(transaction_cnt):
                     ref_s_for_m.append(slave_i)
             self.assertValSequenceEqual(
@@ -112,7 +112,7 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
         # use order from u.order_m_index_for_s_data_out to rebuild original
         # order of transactions
         for s_i, (s, m_for_s, s_all_ref) in enumerate(zip(
-                u.s, u.order_m_index_for_s_data_out, slave_a_transactions)):
+                u.m, u.order_m_index_for_s_data_out, slave_a_transactions)):
             if m_for_s is None:
                 continue
             s = s._ag.data

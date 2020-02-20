@@ -95,19 +95,19 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
         data_crossbar = self.data_crossbar
         b_crossbar = self.b_crossbar
 
-        master_addr_channels = HObjList([m.aw for m in self.m])
-        slave_addr_channels = HObjList([s.aw for s in self.s])
-        addr_crossbar.m(master_addr_channels)
-        slave_addr_channels(addr_crossbar.s)
+        master_addr_channels = HObjList([m.aw for m in self.s])
+        slave_addr_channels = HObjList([s.aw for s in self.m])
+        addr_crossbar.s(master_addr_channels)
+        slave_addr_channels(addr_crossbar.m)
 
-        master_w_channels = HObjList([m.w for m in self.m])
+        master_w_channels = HObjList([m.w for m in self.s])
         data_crossbar.dataIn(master_w_channels)
-        slave_w_channels = HObjList([s.w for s in self.s])
+        slave_w_channels = HObjList([s.w for s in self.m])
         slave_w_channels(data_crossbar.dataOut)
 
-        master_b_channels = HObjList([m.b for m in self.m])
+        master_b_channels = HObjList([m.b for m in self.s])
         master_b_channels(b_crossbar.dataOut)
-        slave_b_channels = HObjList([s.b for s in self.s])
+        slave_b_channels = HObjList([s.b for s in self.m])
         b_crossbar.dataIn(slave_b_channels)
 
         for addr_crossbar_s_index_out, f_w, f_b in zip(
