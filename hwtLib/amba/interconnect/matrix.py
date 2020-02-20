@@ -78,16 +78,13 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
 
     def _config(self):
         AxiInterconnectCommon._config(self)
-        BusInterconnect._config(self)
 
     def _declr(self):
         BusInterconnect._normalize_config(self)
-        super(AxiInterconnectMatrix, self)._declr()
         self.connection_groups_r = BusInterconnectUtils._extract_separable_groups(
             self.MASTERS, self.SLAVES, READ)
         self.connection_groups_w = BusInterconnectUtils._extract_separable_groups(
             self.MASTERS, self.SLAVES, WRITE)
-
         super(AxiInterconnectMatrix, self)._declr()
 
         # instanciate sub interconnects for each independent master-slave connection
@@ -126,12 +123,12 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
             self.w_interconnects = w_interconnects
 
         # dissable read/write unused channels on master/slave interfaces
-        for m_i, m in enumerate(self.master):
+        for m_i, m in enumerate(self.s):
             m.HAS_R = m_i in masters_with_read_ch
             m.HAS_W = m_i in masters_with_write_ch
             assert m.HAS_R or m.HAS_W, m_i
 
-        for s_i, s in enumerate(self.slave):
+        for s_i, s in enumerate(self.m):
             s.HAS_R = s_i in slaves_with_read_ch
             s.HAS_W = s_i in slaves_with_write_ch
             assert s.HAS_R or s.HAS_W, s_i
@@ -144,12 +141,12 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
                 assert isinstance(sub_interconnect, AxiInterconnectMatrixW)
 
             if m_or_s == INTF_DIRECTION.MASTER:
-                m_axi = self.master[i]
-                s_axi = sub_interconnect.master[sub_i]
+                m_axi = self.s[i]
+                s_axi = sub_interconnect.s[sub_i]
             else:
                 assert m_or_s == INTF_DIRECTION.SLAVE, m_or_s
-                s_axi = self.slave[i]
-                m_axi = sub_interconnect.slave[sub_i]
+                s_axi = self.m[i]
+                m_axi = sub_interconnect.m[sub_i]
 
             if is_r:
                 s_axi.ar(m_axi.ar)
