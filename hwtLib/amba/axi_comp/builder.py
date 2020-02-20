@@ -37,10 +37,10 @@ class AxiBuilder(AbstractComponentBuilder):
         if propagate_clk_rst:
             self._propagateClkRstn(u)
 
-        u.m(self.end)
+        u.s(self.end)
 
         self.lastComp = u
-        self.end = u.s
+        self.end = u.m
 
         return self
 
@@ -81,10 +81,10 @@ class AxiBuilder(AbstractComponentBuilder):
         b.clk(current_clk)
         b.rst_n(current_rst_n)
 
-        b.s_clk(clk)
+        b.m_clk(clk)
         if not rst._dtype.negated:
             rst = ~rst
-        b.s_rst_n(rst)
+        b.m_rst_n(rst)
 
         return res
 
