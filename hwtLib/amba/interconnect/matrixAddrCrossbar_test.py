@@ -24,15 +24,15 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
         return u
 
     def addr_transaction(self, id_, addr, len_):
-        axi_addr = self.u.master[0]
+        axi_addr = self.u.m[0]
         return axi_addr._ag.create_addr_req(addr, len_, _id=id_)
 
     def randomize_all(self):
         u = self.u
-        for i in u.slave:
+        for i in u.s:
             self.randomize(i)
 
-        for i in u.master:
+        for i in u.m:
             self.randomize(i)
 
         for i in u.order_m_index_for_s_data_out:
@@ -47,7 +47,7 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
         self.randomize_all()
 
         self.runSim(10 * DEFAULT_CLOCK)
-        for i in chain(u.master, u.slave):
+        for i in chain(u.m, u.s):
             self.assertEmpty(i._ag.data)
 
         for i in u.order_m_index_for_s_data_out:
@@ -67,10 +67,10 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
         self.randomize_all()
 
         slave_a_transactions = [
-            [deque() for _ in u.master]
-            for _ in u.slave
+            [deque() for _ in u.m]
+            for _ in u.s
         ]
-        for master_i, (accesible_slaves, m) in enumerate(zip(u.MASTERS, u.master)):
+        for master_i, (accesible_slaves, m) in enumerate(zip(u.MASTERS, u.m)):
             for slave_i, _slave_a_transacions in enumerate(slave_a_transactions):
                 if slave_i not in accesible_slaves:
                     continue
@@ -87,14 +87,15 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
                     trans[1] &= slave_addr_mask
                     slave_a.append(tuple(trans))
 
-        max_trans_duration = max(len(m._ag.data) for m in u.master)
+        max_trans_duration = max(len(m._ag.data) for m in u.m)
         self.runSim((40 + 4 * max_trans_duration *
                      transaction_cnt) * DEFAULT_CLOCK)
         # assert all data was send
-        for m_i, m in enumerate(u.master):
+        for m_i, m in enumerate(u.m):
             self.assertEmpty(m._ag.data, "master: %d" % m_i)
 
-        for m_i, (s_for_m, accesible_slaves) in enumerate(zip(u.order_s_index_for_m_data_out, u.MASTERS)):
+        for m_i, (s_for_m, accesible_slaves) in enumerate(zip(
+                u.order_s_index_for_m_data_out, u.MASTERS)):
             if s_for_m is None:
                 continue
             ref_s_for_m = []
@@ -111,7 +112,7 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
         # use order from u.order_m_index_for_s_data_out to rebuild original
         # order of transactions
         for s_i, (s, m_for_s, s_all_ref) in enumerate(zip(
-                u.slave, u.order_m_index_for_s_data_out, slave_a_transactions)):
+                u.s, u.order_m_index_for_s_data_out, slave_a_transactions)):
             if m_for_s is None:
                 continue
             s = s._ag.data

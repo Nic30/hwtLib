@@ -16,7 +16,7 @@ from hwtLib.amba.interconnect.common import apply_name
 class AxiInterconnectMatrixCrossbar(Unit):
     """
     Crossbar for AXI-Stream like interfaces where internal switch box
-    can be driven by 
+    can be driven by
 
     .. hwt-schematic:: example_AxiInterconnectMatrixCrossbar
     """
@@ -46,7 +46,7 @@ class AxiInterconnectMatrixCrossbar(Unit):
         INPUT_CNT = self.INPUT_CNT
         OUTPUT_CNT = len(self.OUTPUTS)
         self.OUTS_FOR_IN = self._masters_for_slave(self.OUTPUTS, self.INPUT_CNT)
-        
+
         with self._paramsShared():
             self.dataIn = HObjList([
                 INTF_CLS()
@@ -67,8 +67,8 @@ class AxiInterconnectMatrixCrossbar(Unit):
             else:
                 f = None
             order_dout_index_for_din_in.append(f)
-        self.order_dout_index_for_din_in  = order_dout_index_for_din_in 
-        
+        self.order_dout_index_for_din_in = order_dout_index_for_din_in
+
         order_din_index_for_dout_in = HObjList()
         # slave index for each master
         # so master knows where it should expect the data
@@ -83,15 +83,16 @@ class AxiInterconnectMatrixCrossbar(Unit):
 
     def get_last(self, intf):
         return intf.last
-    
+
     def handler_din_rd(self, dataOut_channels,
-                         dataIn_channels,
-                         order_dout_index_for_din,
-                         order_din_index_for_dout):
+                       dataIn_channels,
+                       order_dout_index_for_din,
+                       order_din_index_for_dout):
         for din_i, (order_m_for_s, dataIn, connected_outputs) in enumerate(zip(
                 order_dout_index_for_din, dataIn_channels, self.OUTS_FOR_IN)):
             selected_dataOut_ready = []
-            for dout_i, (d, order_s_for_m) in enumerate(zip(dataOut_channels, order_din_index_for_dout)):
+            for dout_i, (d, order_s_for_m) in enumerate(zip(dataOut_channels,
+                                                            order_din_index_for_dout)):
                 if dout_i not in connected_outputs:
                     continue
                 rd = d.ready
@@ -111,7 +112,7 @@ class AxiInterconnectMatrixCrossbar(Unit):
             else:
                 dataIn.ready(selected_dataOut_ready)
 
-    def handler_dout_vld(self,dataOut_channels,
+    def handler_dout_vld(self, dataOut_channels,
                          dataIn_channels,
                          order_dout_index_for_din,
                          order_din_index_for_dout):
@@ -130,7 +131,7 @@ class AxiInterconnectMatrixCrossbar(Unit):
                               & order_m_for_s.data._eq(dout_i)
                 selected_dataIn_valid.append(vld)
             assert selected_dataIn_valid, (dataOut, "entirely disconnected from crossbar, this should have been handled before")
-            
+
             selected_dataIn_valid = apply_name(
                 self, Or(*selected_dataIn_valid),
                 "dataOut_%d_selected_dataIn_valid" % dout_i)
@@ -164,18 +165,20 @@ class AxiInterconnectMatrixCrossbar(Unit):
     def handler_data_mux(self, dataOut_channels,
                          dataIn_channels,
                          order_din_index_for_dout):
-        for out_i, (dataOut, order_s_for_m) in enumerate(zip(dataOut_channels, order_din_index_for_dout)):
+        for out_i, (dataOut, order_s_for_m) in enumerate(zip(dataOut_channels,
+                                                             order_din_index_for_dout)):
             if order_s_for_m is None:
                 connected_in = self.OUTPUTS[out_i]
                 assert len(connected_in) == 1, connected_in
                 connected_in = list(connected_in)[0]
-                connect(dataIn_channels[connected_in], dataOut, exclude={dataOut.valid, dataOut.ready})
+                connect(dataIn_channels[connected_in], dataOut,
+                        exclude={dataOut.valid, dataOut.ready})
             else:
                 cases = []
                 for si, s in enumerate(dataIn_channels):
                     cases.append(
                         (si, connect(s, dataOut, exclude={s.valid, s.ready})))
-                
+
                 Switch(order_s_for_m.data)\
                     .addCases(cases)\
                     .Default(
@@ -184,11 +187,12 @@ class AxiInterconnectMatrixCrossbar(Unit):
                     if s not in {dataOut.valid, dataOut.ready}
                 )
 
-    def connection_handler_N_to_M(self,
-                         dataOut_channels,
-                         dataIn_channels,
-                         order_dout_index_for_din,
-                         order_din_index_for_dout):
+    def connection_handler_N_to_M(
+            self,
+            dataOut_channels,
+            dataIn_channels,
+            order_dout_index_for_din,
+            order_din_index_for_dout):
         self.handler_din_rd(dataOut_channels, dataIn_channels,
                             order_dout_index_for_din, order_din_index_for_dout)
         self.handler_dout_vld(dataOut_channels, dataIn_channels,

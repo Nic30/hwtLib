@@ -33,7 +33,7 @@ class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):
 
     def randomize_all(self):
         u = self.u
-        for i in chain(u.master, u.slave):
+        for i in chain(u.m, u.s):
             self.randomize(i)
 
     def test_nop(self):
@@ -42,14 +42,14 @@ class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):
 
         self.runSim(10 * DEFAULT_CLOCK)
 
-        for i in chain(u.master, u.slave):
+        for i in chain(u.m, u.s):
             self.assertEmpty(i.aw._ag.data)
             self.assertEmpty(i.w._ag.data)
             self.assertEmpty(i.b._ag.data)
 
     def data_transaction(self, id_, data):
         transactions = []
-        DW = self.u.master[0].w.DATA_WIDTH
+        DW = self.u.m[0].w.DATA_WIDTH
         for is_last, d in iter_with_last(data):
             transactions.append(
                 (d, mask(DW // 8), int(is_last))
@@ -62,12 +62,12 @@ class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):
         """
         m = self.memory[slave_i]
         slave_addr_offset = self.u.SLAVES[slave_i][0]
-        aw = self.u.master[master_i].aw
-        w = self.u.master[master_i].w
+        aw = self.u.m[master_i].aw
+        w = self.u.m[master_i].w
 
         word_cnt = int(self._rand.random() * self.LEN_MAX) + 1
         in_slave_addr = m.malloc(
-            word_cnt * self.u.master[master_i].DATA_WIDTH // 8)
+            word_cnt * self.u.m[master_i].DATA_WIDTH // 8)
 
         data = []
         for i2 in range(word_cnt):
@@ -111,7 +111,7 @@ class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):
                     m_b_data.append(b_transaction)
 
         max_trans_duration = 2 * max(len(m.aw._ag.data)
-                                     for m in u.master)\
+                                     for m in u.m)\
             + max(sum(len(wt[1]) for wt in wd) for wd in slave_w_data)
         self.runSim(4 * max_trans_duration * transaction_cnt * DEFAULT_CLOCK)
 
@@ -125,7 +125,7 @@ class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):
                     data.append(d)
                 self.assertValSequenceEqual(data, ref_data)
 
-        for m_i, (m, m_b_data) in enumerate(zip(u.master, master_b_data)):
+        for m_i, (m, m_b_data) in enumerate(zip(u.m, master_b_data)):
             self.assertValSequenceEqual(
                 m.b._ag.data, m_b_data, "master:%d" % m_i)
 

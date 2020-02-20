@@ -15,6 +15,7 @@ from pycocotb.agents.clk import DEFAULT_CLOCK
 
 class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):
     LEN_MAX = 4
+
     @classmethod
     def getUnit(cls):
         cls.u = u = AxiInterconnectMatrixR(Axi4)
@@ -35,11 +36,11 @@ class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):
                                     axiW=getattr(s, "w", None),
                                     axiB=getattr(s, "b", None),
                                     )
-                       for s in u.slave]
+                       for s in u.s]
 
     def randomize_all(self):
         u = self.u
-        for i in chain(u.master, u.slave):
+        for i in chain(u.m, u.s):
             self.randomize(i)
 
     def test_nop(self):
@@ -47,7 +48,7 @@ class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):
         self.randomize_all()
 
         self.runSim(10 * DEFAULT_CLOCK)
-        for i in chain(u.master, u.slave):
+        for i in chain(u.m, u.s):
             self.assertEmpty(i.ar._ag.data)
             self.assertEmpty(i.r._ag.data)
 
@@ -57,11 +58,11 @@ class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):
         """
         m = self.memory[slave_i]
         slave_addr_offset = self.u.SLAVES[slave_i][0]
-        ar = self.u.master[master_i].ar
+        ar = self.u.m[master_i].ar
 
         word_cnt = int(self._rand.random() * self.LEN_MAX) + 1
         in_slave_addr = m.malloc(
-            word_cnt * self.u.master[master_i].DATA_WIDTH // 8)
+            word_cnt * self.u.m[master_i].DATA_WIDTH // 8)
         indx = in_slave_addr // m.cellSize
         data = []
 
@@ -102,7 +103,7 @@ class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):
                     m_r_data.extend(data)
 
         max_trans_duration = max(len(m.ar._ag.data)
-                                 for m in u.master) + max(len(d) for d in master_r_data)
+                                 for m in u.m) + max(len(d) for d in master_r_data)
         self.runSim(4 * max_trans_duration * transaction_cnt * DEFAULT_CLOCK)
 
         #for m_i, (m, m_r_data) in enumerate(zip(u.master, master_r_data)):
@@ -111,7 +112,7 @@ class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):
         #        print(valuesToInts(_m), _m_ref)
         #    print("#############################")
 
-        for m_i, (m, m_r_data) in enumerate(zip(u.master, master_r_data)):
+        for m_i, (m, m_r_data) in enumerate(zip(u.m, master_r_data)):
             self.assertValSequenceEqual(
                 m.r._ag.data, m_r_data, "master:%d" % m_i)
 

@@ -3,7 +3,7 @@
 
 from hwt.hdl.constants import READ, WRITE, Time
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.abstract.busInterconnect import ACCESS_RW, AUTO_ADDR
+from hwtLib.abstract.busInterconnect import AUTO_ADDR, ALL
 from hwtLib.ipif.interconnectMatrix import IpifInterconnectMatrix
 from pyMathBitPrecise.bit_utils import mask
 
@@ -14,17 +14,15 @@ class IpifInterconnectMatrixTC(SimTestCase):
     def mySetUp(self, read_latency=0, write_latency=0):
         SimTestCase.setUp(self)
 
-        RW = ACCESS_RW
         AUTO = AUTO_ADDR
 
-        u = IpifInterconnectMatrix(
-            masters=[(0x0, RW)],
-            slaves=[
-                (0x0000, 0x0100, RW),
-                (0x0100, 0x0100, RW),
-                (AUTO,   0x0100, RW),
-                (AUTO,   0x1000, RW),
-            ]
+        u = IpifInterconnectMatrix()
+        u.MASTERS = (ALL, )
+        u.SLAVES = (
+            (0x0000, 0x0100),
+            (0x0100, 0x0100),
+            (AUTO,   0x0100),
+            (AUTO,   0x1000),
         )
         self.DW = 32
         self.wordSize = self.DW // 8

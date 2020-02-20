@@ -18,7 +18,6 @@ from hwtLib.amba.interconnect.common import AxiInterconnectCommon,\
     apply_name
 from hwtLib.amba.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
 from hwtLib.handshaked.joinFair import HsJoinFairShare
-from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.types.ctypes import uint8_t
 
@@ -100,7 +99,7 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
                     addr_drive = None
                 else:
                     tmpl = TransTmpl(uint8_t[size], bitAddr=addr * 8)
-                    # generate optimized address comparator and handle potentialy
+                    # generate optimized address comparator and handle potentially
                     # different bus address granularity
                     en, addr_drive = BusEndpoint.propagateAddr(
                         self, srcAddrSig, 8, dstAddrSig, 8, tmpl)
@@ -207,7 +206,8 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
 
             # collect info about arbitration win for slave
             slv_master_arbitration_res = []
-            for m_i, (isSel, vld) in enumerate(zip(isSelectedFlags, master_vld_slave)):
+            for m_i, (isSel, vld) in enumerate(zip(isSelectedFlags,
+                                                   master_vld_slave)):
                 if m_i in connected_masters:
                     ar = isSel & vld
                 else:
@@ -259,8 +259,8 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
     def _impl(self):
         master_addr_channels = [
             AxiSBuilder(self, m).buff(1).end
-            for m in self.master]
-        slave_addr_channels = self.slave
+            for m in self.m]
+        slave_addr_channels = self.s
 
         order_s_index_for_m_data_out = self.order_s_index_for_m_data_out
         order_m_index_for_s_data_out = self.order_m_index_for_s_data_out
@@ -275,14 +275,14 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
 def example_AxiInterconnectMatrixAddrCrossbar():
     from hwtLib.amba.axi4 import Axi4
     u = AxiInterconnectMatrixAddrCrossbar(Axi4.AR_CLS)
-    #u.MASTERS = ({0, 1},)
-    #u.MASTERS = ({0, 1, 2},)
-    #u.MASTERS = ({0}, {0}, {0})
+    # u.MASTERS = ({0, 1},)
+    # u.MASTERS = ({0, 1, 2},)
+    # u.MASTERS = ({0}, {0}, {0})
     # u.SLAVES = ((0x1000, 0x1000),
     #            (0x2000, 0x1000),
     #            (0x3000, 0x1000),
     #          )
-    #u.SLAVES = ((0x1000, 0x1000))
+    # u.SLAVES = ((0x1000, 0x1000))
 
     u.MASTERS = ({0, 1}, {0, 1})
     u.SLAVES = ((0x1000, 0x1000),

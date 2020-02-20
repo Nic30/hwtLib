@@ -71,13 +71,13 @@ class AxiInterconnectMatrixR(AxiInterconnectCommon):
         addr_crossbar = self.addr_crossbar
         data_crossbar = self.data_crossbar
 
-        master_addr_channels = HObjList([m.ar for m in self.master])
-        slave_addr_channels = HObjList([s.ar for s in self.slave])
-        addr_crossbar.master(master_addr_channels)
-        slave_addr_channels(addr_crossbar.slave)
-        master_r_channels = HObjList([m.r for m in self.master])
+        master_addr_channels = HObjList([m.ar for m in self.m])
+        slave_addr_channels = HObjList([s.ar for s in self.s])
+        addr_crossbar.m(master_addr_channels)
+        slave_addr_channels(addr_crossbar.s)
+        master_r_channels = HObjList([m.r for m in self.m])
         master_r_channels(data_crossbar.dataOut)
-        slave_r_channels = HObjList([s.r for s in self.slave])
+        slave_r_channels = HObjList([s.r for s in self.s])
         data_crossbar.dataIn(slave_r_channels)
 
         for m_i, f in enumerate(self.order_s_index_for_m_data):
@@ -90,19 +90,19 @@ class AxiInterconnectMatrixR(AxiInterconnectCommon):
             if f is None:
                 continue
             f.dataIn(addr_crossbar.order_m_index_for_s_data_out[s_i])
-            data_crossbar.order_dout_index_for_din_in[s_i](f.dataOut) 
+            data_crossbar.order_dout_index_for_din_in[s_i](f.dataOut)
 
 
 def example_AxiInterconnectMatrixR():
     u = AxiInterconnectMatrixR(Axi4)
-    #u.MASTERS = ({0, 1}, )
-    #u.MASTERS = ({0, 1, 2}, )
-    #u.MASTERS = ({0}, {0}, {0}, )
+    # u.MASTERS = ({0, 1}, )
+    # u.MASTERS = ({0, 1, 2}, )
+    # u.MASTERS = ({0}, {0}, {0}, )
     # u.SLAVES = ((0x1000, 0x1000),
     #            (0x2000, 0x1000),
     #            (0x3000, 0x1000),
     #          )
-    #u.SLAVES = ((0x1000, 0x1000))
+    # u.SLAVES = ((0x1000, 0x1000))
 
     u.MASTERS = ({0, 1}, {0, 1})
     u.SLAVES = ((0x1000, 0x1000),

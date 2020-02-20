@@ -6,9 +6,10 @@ from typing import Union, Set, List, Tuple
 from hwt.hdl.constants import READ, READ_WRITE, WRITE
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.synthesizer.hObjList import HObjList
+from hwtLib.abstract.busInterconnect import BusInterconnectUtils,\
+    BusInterconnect
 from hwtLib.amba.axi4 import Axi4
-from hwtLib.amba.interconnect.common import AxiInterconnectCommon,\
-    AxiInterconnectUtils
+from hwtLib.amba.interconnect.common import AxiInterconnectCommon
 from hwtLib.amba.interconnect.matrixR import AxiInterconnectMatrixR
 from hwtLib.amba.interconnect.matrixW import AxiInterconnectMatrixW
 from ipCorePackager.constants import INTF_DIRECTION
@@ -75,14 +76,16 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
 
         return sub_interconnect_connetions
 
-    def _declr(self):
-        AxiInterconnectUtils._assert_non_overlapping(self.SLAVES)
-        self.MASTERS = AxiInterconnectUtils._normalize_master_configs(
-            self.MASTERS, self.SLAVES)
+    def _config(self):
+        AxiInterconnectCommon._config(self)
+        BusInterconnect._config(self)
 
-        self.connection_groups_r = AxiInterconnectUtils._extract_separable_groups(
+    def _declr(self):
+        BusInterconnect._normalize_config(self)
+        super(AxiInterconnectMatrix, self)._declr()
+        self.connection_groups_r = BusInterconnectUtils._extract_separable_groups(
             self.MASTERS, self.SLAVES, READ)
-        self.connection_groups_w = AxiInterconnectUtils._extract_separable_groups(
+        self.connection_groups_w = BusInterconnectUtils._extract_separable_groups(
             self.MASTERS, self.SLAVES, WRITE)
 
         super(AxiInterconnectMatrix, self)._declr()
@@ -117,7 +120,7 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
                 master_indexes, slave_indexes, inter)
             w_interconnects.append(inter)
             self.sub_interconnect_connections.extend(con)
-        
+
         with self._paramsShared(exclude=({"SLAVES", "MASTERS"}, set())):
             self.r_interconnects = r_interconnects
             self.w_interconnects = w_interconnects

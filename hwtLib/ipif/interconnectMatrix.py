@@ -5,8 +5,7 @@ from hwt.code import log2ceil, connect, SwitchLogic
 from hwt.hdl.typeShortcuts import hBit
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.hObjList import HObjList
-from hwtLib.abstract.busInterconnect import BusInterconnect, ACCESS_RW, \
-    AUTO_ADDR
+from hwtLib.abstract.busInterconnect import BusInterconnect, AUTO_ADDR
 from hwtLib.ipif.intf import Ipif
 from pyMathBitPrecise.bit_utils import selectBitRange
 
@@ -19,15 +18,15 @@ class IpifInterconnectMatrix(BusInterconnect):
     """
 
     def _config(self) -> None:
+        super(IpifInterconnectMatrix, self)._config()
         Ipif._config(self)
 
     def _declr(self) -> None:
+        self._normalize_config()
         addClkRstn(self)
 
         slavePorts = HObjList()
-        for _, features in self._masters:
-            if features is not ACCESS_RW:
-                raise NotImplementedError(features)
+        for _ in self.MASTERS:
             m = Ipif()
             m._updateParamsFrom(self)
             slavePorts.append(m)
@@ -35,9 +34,7 @@ class IpifInterconnectMatrix(BusInterconnect):
         self.s = slavePorts
 
         masterPorts = HObjList()
-        for _, size, features in self._slaves:
-            if features is not ACCESS_RW:
-                raise NotImplementedError(features)
+        for _, size in self.SLAVES:
             s = Ipif()._m()
             s.ADDR_WIDTH = log2ceil(size - 1)
             s.DATA_WIDTH = self.DATA_WIDTH
@@ -46,11 +43,7 @@ class IpifInterconnectMatrix(BusInterconnect):
         self.m = masterPorts
 
     def _impl(self) -> None:
-        if len(self._masters) > 1:
-            raise NotImplementedError()
-
-        m_offset, _ = self._masters[0]
-        if m_offset != 0:
+        if len(self.MASTERS) > 1:
             raise NotImplementedError()
 
         m = self.s[0]
@@ -60,8 +53,8 @@ class IpifInterconnectMatrix(BusInterconnect):
         wrack = hBit(0)
         AW = int(self.ADDR_WIDTH)
         wdata = []
-        for i, (s, (s_offset, s_size, _)) in\
-                enumerate(zip(self.m, self._slaves)):
+        for i, (s, (s_offset, s_size)) in\
+                enumerate(zip(self.m, self.SLAVES)):
             connect(m.bus2ip_addr, s.bus2ip_addr, fit=True)
             s.bus2ip_be(m.bus2ip_be)
             s.bus2ip_rnw(m.bus2ip_rnw)
@@ -90,16 +83,14 @@ class IpifInterconnectMatrix(BusInterconnect):
 
 
 def _example_IpifInterconnectMatrix():
-    RW = ACCESS_RW
     AUTO = AUTO_ADDR
-    u = IpifInterconnectMatrix(
-        masters=[(0x0, RW)],
-        slaves=[
-            (0x0000, 0x100, RW),
-            (0x0100, 0x100, RW),
-            (AUTO, 0x100, RW),
-            (0x1000, 0x1000, RW),
-        ]
+    u = IpifInterconnectMatrix()
+    u.MASTERS = (({0, 1, 2, 3}), )
+    u.SLAVES = (
+        (0x0000, 0x100),
+        (0x0100, 0x100),
+        (AUTO,   0x100),
+        (0x1000, 0x1000),
     )
     return u
 
