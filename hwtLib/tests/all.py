@@ -17,7 +17,7 @@ from hwtLib.amba.axiLite_comp.endpoint_struct_test import \
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC, \
     AxiLiteEndpointMemMasterTC
-from hwtLib.amba.axiLite_comp.reg_test import AxiRegTC
+from hwtLib.amba.axiLite_comp.buff_test import AxiRegTC
 from hwtLib.amba.axi_ag_test import Axi_ag_TC
 from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC,\
     Axi3_rDatapumpTC
