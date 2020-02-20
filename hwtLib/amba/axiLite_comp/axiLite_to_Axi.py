@@ -44,12 +44,12 @@ class AxiLite_to_Axi(BusBridge):
 
     def _declr(self):
         with self._paramsShared():
-            self.m = Axi4Lite()
-            self.s = self.intfCls()._m()
+            self.s = Axi4Lite()
+            self.m = self.intfCls()._m()
 
     def _impl(self) -> None:
-        axiFull = self.s
-        axiLite = self.m
+        axiFull = self.m
+        axiLite = self.s
 
         def connect_what_is_same_lite_to_full(src, dst):
             connect(src, dst, exclude=interface_not_present_on_other(dst, src))

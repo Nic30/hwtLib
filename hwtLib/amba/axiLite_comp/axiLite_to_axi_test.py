@@ -34,7 +34,7 @@ class AxiLite_to_Axi_TC(SingleUnitSimTestCase):
     def test_nop(self):
         self.randomize_all()
         self.runSim(10 * CLK_PERIOD)
-        m, s = self.u.m, self.u.s
+        m, s = self.u.s, self.u.m
         self.assertEmpty(m.r._ag.data)
         self.assertEmpty(m.b._ag.data)
         self.assertEmpty(s.ar._ag.data)
@@ -54,7 +54,7 @@ class AxiLite_to_Axi_TC(SingleUnitSimTestCase):
         N = self.TRANSACTION_CNT
         u = self.u
 
-        m = Axi3DenseMem(u.clk, u.s)
+        m = Axi3DenseMem(u.clk, u.m)
 
         expected_data = []
         allocated_wods = list(range(N))
@@ -63,13 +63,13 @@ class AxiLite_to_Axi_TC(SingleUnitSimTestCase):
             rand_data = self._rand.getrandbits(u.DATA_WIDTH)
             a_t = self.addr_trans(word_i)
             m.data[word_i] = rand_data
-            u.m.ar._ag.data.append(a_t)
+            u.s.ar._ag.data.append(a_t)
             expected_data.append((rand_data, RESP_OKAY))
 
         self.runSim(N * 3 * CLK_PERIOD)
 
         self.assertValSequenceEqual(
-            u.m.r._ag.data,
+            u.s.r._ag.data,
             expected_data
         )
 
@@ -77,19 +77,19 @@ class AxiLite_to_Axi_TC(SingleUnitSimTestCase):
         N = self.TRANSACTION_CNT
         u = self.u
 
-        m = Axi3DenseMem(u.clk, u.s)
+        m = Axi3DenseMem(u.clk, u.m)
 
         expected_data = []
         allocated_wods = list(range(N))
         shuffle(allocated_wods, random=self._rand.random)
         for word_i in allocated_wods:
             rand_data = self._rand.getrandbits(u.DATA_WIDTH)
-            
+
             a_t = self.addr_trans(word_i)
-            u.m.aw._ag.data.append(a_t)
+            u.s.aw._ag.data.append(a_t)
 
             w_t = self.w_trans(rand_data)
-            u.m.w._ag.data.append(w_t)
+            u.s.w._ag.data.append(w_t)
 
             expected_data.append((word_i, rand_data))
 
