@@ -28,6 +28,7 @@ class AxiInterconnectCommon(BusInterconnect):
         super(AxiInterconnectCommon, self).__init__()
 
     def _config(self):
+        super(AxiInterconnectCommon, self)._config()
         self.INTF_CLS = Param(self.intfCls)
         self.MAX_TRANS_OVERLAP = Param(16)
         self.intfCls._config(self)
