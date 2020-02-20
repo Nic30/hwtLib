@@ -4,7 +4,7 @@ from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC
-from hwtLib.amba.axiLite_comp.reg import AxiLiteReg
+from hwtLib.amba.axi_comp.builder import AxiBuilder
 
 
 class AxiLiteEpWithReg(Unit):
@@ -31,13 +31,12 @@ class AxiLiteEpWithReg(Unit):
         BusEndpoint._declr(self)
         with self._paramsShared():
             self.ep = AxiLiteEndpoint(self.STRUCT_TEMPLATE)
-            self.reg = AxiLiteReg(self._intfCls)
 
     def _impl(self):
         propagateClkRstn(self)
         self.decoded(self.ep.decoded)
-        self.reg.in_s(self.bus)
-        self.ep.bus(self.reg.out_m)
+        m = AxiBuilder(self, self.bus).buff(addr_items=1, data_items=1).end
+        self.ep.bus(m)
 
 
 class AxiRegTC(AxiLiteEndpointTC):
