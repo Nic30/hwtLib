@@ -6,7 +6,7 @@ from unittest import TestLoader, TextTestRunner, TestSuite
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
-# from hwtLib.abstract.streamAlignmentUtils_test import StreamJoiningUtilsTC
+from hwtLib.abstract.streamAlignmentUtils_test import StreamJoiningUtilsTC
 from hwtLib.amba.axiLite_comp.axiLite_to_axi_test import AxiLite_to_Axi_TC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import \
     AxiLiteEndpointArrayTC, AxiLiteEndpointStructsInArrayTC
@@ -63,7 +63,6 @@ from hwtLib.avalon.mmAgent_test import AvalonMmAgentTC
 from hwtLib.avalon.stAgent_test import AvalonStAgentTC
 from hwtLib.clocking.cdc_test import CdcTC
 from hwtLib.clocking.clkDivider import ClkDiv3TC
-from hwtLib.peripheral.ethernet.rmii_adapter_test import RmiiAdapterTC
 from hwtLib.examples.arithmetic.cntr_test import CntrTC, CntrResourceAnalysisTC
 from hwtLib.examples.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.examples.arithmetic.twoCntrs_test import TwoCntrsTC
@@ -163,6 +162,7 @@ from hwtLib.mem.ram_test import RamTC
 from hwtLib.mi32.axiLite_bridges_test import Mi32AxiLiteBrigesTC
 from hwtLib.mi32.mi32_2AxiLite_test import Mi32_2AxiLiteTC
 from hwtLib.mi32.mi32agent_test import Mi32AgentTC
+from hwtLib.peripheral.ethernet.rmii_adapter_test import RmiiAdapterTC
 from hwtLib.peripheral.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
 from hwtLib.peripheral.mdio.master_test import MdioMasterTC
 from hwtLib.peripheral.segment7_test import Segment7TC
@@ -454,7 +454,7 @@ suite = testSuiteFromTCs(
     PingResponderTC,
 
     RmiiAdapterTC,
-#    StreamJoiningUtilsTC,
+    StreamJoiningUtilsTC,
 )
 
 if __name__ == '__main__':
