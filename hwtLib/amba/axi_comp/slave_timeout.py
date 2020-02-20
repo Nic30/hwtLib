@@ -27,13 +27,13 @@ class AxiSlaveTimeout(BusBridge):
         addClkRstn(self)
         self.INTF_CLS = Param(self.intfCls)
         with self._paramsShared():
-            self.m = self.intfCls()
-            self.s = self.intfCls()._m()
+            self.s = self.intfCls()
+            self.m = self.intfCls()._m()
 
     def _impl(self):
         timer_t = Bits(log2ceil(self.TIMEOUT - 1))
         TIMER_MAX = self.TIMEOUT - 1
-        m, s = self.m, self.s
+        m, s = self.s, self.m
         s.aw(m.aw)
         s.ar(m.ar)
         s.w(m.w)
