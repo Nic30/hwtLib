@@ -71,8 +71,8 @@ class AxiBuilder(AbstractComponentBuilder):
         def applyParams(u: AxiBuffCdc):
             u.ADDR_BUFF_DEPTH = addr_items
             u.DATA_BUFF_DEPTH = data_items
-            u.M_FREQ = current_clk.FREQ
-            u.S_FREQ = clk.FREQ
+            u.S_FREQ = current_clk.FREQ
+            u.M_FREQ = clk.FREQ
 
         res = self._genericInstance(self.BuffCdcCls, "buffCdc",
                                     set_params=applyParams,
