@@ -22,7 +22,7 @@ class AxiLite2ipifTC(SimTestCase):
         u.ADDR_WIDTH = 32
         self.m = mask(DW // 8)
         self.compileSimAndStart(u)
-        ipif = u.m._ag
+        ipif = u.s._ag
         ipif.READ_LATENCY = read_latency
         ipif.WRITE_LATENCY = write_latency
         SimTestCase.setUp(self)
@@ -33,11 +33,11 @@ class AxiLite2ipifTC(SimTestCase):
 
     def test_read(self, randomize_axi=False, read_latency=0):
         self.mySetUp(read_latency=read_latency)
-        axi = self.u.m
+        axi = self.u.s
         if randomize_axi:
             self.randomize(axi)
 
-        ipif = self.u.s._ag
+        ipif = self.u.m._ag
         MAGIC = 10
         ipif.mem[0] = MAGIC + 0
         ipif.mem[1] = MAGIC + 1
@@ -60,8 +60,8 @@ class AxiLite2ipifTC(SimTestCase):
 
     def test_write(self, randomize_axi=False, write_latency=0, data_delay=0):
         self.mySetUp(write_latency=write_latency)
-        axi = self.u.m
-        ipif = self.u.s
+        axi = self.u.s
+        ipif = self.u.m
         if randomize_axi:
             self.randomize(axi)
 
@@ -95,11 +95,11 @@ class AxiLite2ipifTC(SimTestCase):
                           data_delay=0):
         self.mySetUp(read_latency=read_latency,
                      write_latency=write_latency)
-        axi = self.u.m
+        axi = self.u.s
         if randomize_axi:
             self.randomize(axi)
 
-        ipif = self.u.s._ag
+        ipif = self.u.m._ag
         MAGIC_R = 10
         MAGIC_W = 100
 
