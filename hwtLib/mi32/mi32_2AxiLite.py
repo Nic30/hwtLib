@@ -29,12 +29,12 @@ class Mi32_2AxiLite(BusBridge):
         addClkRstn(self)
 
         with self._paramsShared():
-            self.s = Axi4Lite()._m()
-            self.m = Mi32()
+            self.m = Axi4Lite()._m()
+            self.s = Mi32()
 
     def _impl(self):
-        mi32 = self.m
-        axi = self.s
+        mi32 = self.s
+        axi = self.m
         w_data = self._reg("w_data", HStruct(
             (axi.w.data._dtype, "data"),
             (axi.w.strb._dtype, "strb"),
