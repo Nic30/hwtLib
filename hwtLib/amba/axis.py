@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 from hwt.hdl.types.structUtils import HStruct_unpack
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.pyUtils.arrayQuery import iter_with_last
@@ -5,8 +7,10 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_hs, Axi_strb
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
+from hwtLib.types.ctypes import uint8_t
 from ipCorePackager.intfIpMeta import IntfIpMeta
-from pyMathBitPrecise.bit_utils import mask
+from pyMathBitPrecise.bit_utils import mask, setBitRange, selectBit,\
+    selectBitRange
 from pycocotb.hdlSimulator import HdlSimulator
 
 
@@ -149,6 +153,68 @@ def unpackAxiSFrame(structT, frameData, getDataFn=None, dataWidth=None):
         getDataFn = _getDataFn
 
     return HStruct_unpack(structT, frameData, getDataFn, dataWidth)
+
+
+def axis_recieve_bytes(axis: AxiStream) -> Tuple[int, List[int]]:
+    """
+    Read data from AXI Stream agent in simulation
+    and use keep signal to mask out unused bytes
+    """
+    offset = None
+    data_B = []
+    ag_data = axis._ag.data
+    D_B = axis.DATA_WIDTH // 8
+    last = False
+    while ag_data:
+        _d = ag_data.popleft()
+        data, keep, last = _d
+        keep = int(keep)
+        last = int(last)
+        assert keep > 0
+        if offset is None:
+            # first iteration
+            # expecting potential 0s in keep and the rest 1
+            for i in range(D_B):
+                # i represents number of 0 from te beginning of of the keep
+                # value
+                _k = setBitRange(mask(D_B), i, i, 0)
+                if keep == _k:
+                    offset = i
+                    break
+            assert offset is not None, keep
+        for i in range(D_B):
+            if selectBit(keep, i):
+                d = selectBitRange(data.val, i * 8, 8)
+                assert selectBitRange(
+                    data.vld_mask, i * 8, 8) == 0xff, data.vld_mask
+                data_B.append(d)
+
+        if last:
+            break
+        else:
+            assert keep == mask(D_B), keep
+
+    if not last:
+        if data_B:
+            raise ValueError("Unfinished frame", data_B)
+        else:
+            raise ValueError("No frame available")
+    return offset, data_B
+
+
+def axis_send_bytes(axis: AxiStream, data_B: List[int], offset=0) -> None:
+    """
+    :param axis: AxiStream master which is driver from the simulation
+    :param data_B: bytes to send
+    :param offset: number of empty bytes which should be added before data
+        in frame (and use keep signal to mark such a bytes)
+    """
+    t = uint8_t[len(data_B) + offset]
+    # :attention: strb signal is reinterpreted as a keep signal
+    f = packAxiSFrame(axis.DATA_WIDTH, t.from_py(
+        [None for _ in range(offset)] + data_B),
+        withStrb=True)
+    axis._ag.data.extend(f)
 
 
 class IP_AXIStream(IntfIpMeta):
