@@ -30,10 +30,10 @@ class AxiBuff(BusBridge):
         addClkRstn(self)
 
         with self._paramsShared():
-            self.m = self.intfCls()
+            self.s = self.intfCls()
 
         with self._paramsShared():
-            self.s = self.intfCls()._m()
+            self.m = self.intfCls()._m()
 
         assert self.ADDR_BUFF_DEPTH > 0 or self.DATA_BUFF_DEPTH > 0, (
             "This buffer is completly dissabled,"
@@ -44,16 +44,16 @@ class AxiBuff(BusBridge):
         ADDR_DEPTH = self.ADDR_BUFF_DEPTH
         DATA_DEPTH = self.DATA_BUFF_DEPTH
 
-        for name, m, s, depth in [("ar", self.m.ar, self.s.ar, ADDR_DEPTH),
-                                  ("aw", self.m.aw, self.s.aw, ADDR_DEPTH),
-                                  ("w", self.m.w, self.s.w, DATA_DEPTH)]:
+        for name, m, s, depth in [("ar", self.s.ar, self.m.ar, ADDR_DEPTH),
+                                  ("aw", self.s.aw, self.m.aw, ADDR_DEPTH),
+                                  ("w", self.s.w, self.m.w, DATA_DEPTH)]:
             i = AxiSBuilder(self, m, name).buff(
                 items=depth
             ).end
             s(i)
 
-        for name, m, s, depth in [("r", self.s.r, self.m.r, DATA_DEPTH),
-                                  ("b", self.s.b, self.m.b, ADDR_DEPTH)]:
+        for name, m, s, depth in [("r", self.m.r, self.s.r, DATA_DEPTH),
+                                  ("b", self.m.b, self.s.b, ADDR_DEPTH)]:
             i = AxiSBuilder(self, m, name).buff(
                 items=depth,
             ).end

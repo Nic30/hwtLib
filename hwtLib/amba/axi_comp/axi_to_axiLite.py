@@ -50,8 +50,8 @@ class Axi_to_AxiLite(BusBridge):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.m = self.intfCLs()
-            self.s = Axi4Lite()._m()
+            self.s = self.intfCLs()
+            self.m = Axi4Lite()._m()
 
         # *_req_fifo are used to aviod blocking during addr/data/confirmation waiting on axi channels
         r_f = self.r_req_fifo = HandshakedFifo(HandshakedIdAndLen)
@@ -67,7 +67,7 @@ class Axi_to_AxiLite(BusBridge):
             self.in_reg.DATA_BUFF_DEPTH =\
                 self.in_reg.ADDR_BUFF_DEPTH = \
                 self.out_reg.DATA_BUFF_DEPTH = \
-                self.out_reg.ADDR_BUFF_DEPTH = 1 
+                self.out_reg.ADDR_BUFF_DEPTH = 1
 
     def gen_addr_logic(self, addr_ch_in: Axi4_addr,
                        addr_ch_out: Axi4Lite_addr,
@@ -128,7 +128,7 @@ class Axi_to_AxiLite(BusBridge):
         and pass only confirmation from last beat of the orignal transaction
         """
         name_prefix = outp._name
-        rem = self._reg(name_prefix + "rem", self.m.aw.len._dtype)
+        rem = self._reg(name_prefix + "rem", self.s.aw.len._dtype)
         id_tmp = self._reg(name_prefix + "id_tmp", outp.id._dtype)
         rem_vld = self._reg(name_prefix + "rem_vld", def_val=0)
 
@@ -173,20 +173,19 @@ class Axi_to_AxiLite(BusBridge):
         connect(inp, outp, exclude=already_connected)
 
     def _impl(self):
-        m, s = self.in_reg.s, self.out_reg.m
+        m, s = self.in_reg.m, self.out_reg.s
         w_fifo, r_fifo = self.w_req_fifo, self.r_req_fifo
         propagateClkRstn(self)
-        
-        self.in_reg.m(self.m)
+
+        self.in_reg.s(self.s)
 
         self.gen_addr_logic(m.ar, s.ar, r_fifo.dataIn)
         self.gen_addr_logic(m.aw, s.aw, w_fifo.dataIn)
         self.gen_w_logic(m.w, s.w)
         self.gen_b_or_r_logic(s.r, m.r, r_fifo.dataOut, False)
         self.gen_b_or_r_logic(s.b, m.b, w_fifo.dataOut, True)
-        
-        
-        self.s(self.out_reg.s)
+
+        self.m(self.out_reg.m)
 
 
 if __name__ == "__main__":

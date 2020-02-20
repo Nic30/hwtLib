@@ -30,13 +30,13 @@ class AxiBuffCdc(AxiBuff):
 
         self.m._make_association(clk=self.clk, rst=self.rst_n)
 
-        self.s_clk = Clk()
-        self.s_clk.FREQ = self.S_FREQ
+        self.m_clk = Clk()
+        self.m_clk.FREQ = self.S_FREQ
 
         self.s_rst_n = Rst_n()
-        self.s_rst_n._make_association(clk=self.s_clk)
+        self.s_rst_n._make_association(clk=self.m_clk)
 
-        self.s._make_association(clk=self.s_clk, rst=self.s_rst_n)
+        self.s._make_association(clk=self.m_clk, rst=self.s_rst_n)
         assert self.ADDR_BUFF_DEPTH == 1 or isPow2(self.ADDR_BUFF_DEPTH - 1), (
             self.ADDR_BUFF_DEPTH, "size 2**n + 1 for output reg")
         assert self.DATA_BUFF_DEPTH == 1 or isPow2(self.DATA_BUFF_DEPTH - 1), (
@@ -49,18 +49,18 @@ class AxiBuffCdc(AxiBuff):
     def _impl(self):
         ADDR_DEPTH = self.ADDR_BUFF_DEPTH
         DATA_DEPTH = self.DATA_BUFF_DEPTH
-        for name, m, s, depth in [("ar", self.m.ar, self.s.ar, ADDR_DEPTH),
-                                  ("aw", self.m.aw, self.s.aw, ADDR_DEPTH),
-                                  ("w", self.m.w, self.s.w, DATA_DEPTH)]:
+        for name, m, s, depth in [("ar", self.s.ar, self.m.ar, ADDR_DEPTH),
+                                  ("aw", self.s.aw, self.m.aw, ADDR_DEPTH),
+                                  ("w",  self.s.w,  self.m.w, DATA_DEPTH)]:
             i = AxiSBuilder(self, m, name).buff_cdc(
                 items=depth,
-                clk=self.s_clk,
+                clk=self.m_clk,
                 rst=self.s_rst_n,
             ).end
             s(i)
 
-        for name, m, s, depth in [("r", self.s.r, self.m.r, DATA_DEPTH),
-                                  ("b", self.s.b, self.m.b, ADDR_DEPTH)]:
+        for name, m, s, depth in [("r", self.m.r, self.s.r, DATA_DEPTH),
+                                  ("b", self.m.b, self.s.b, ADDR_DEPTH)]:
             i = AxiSBuilder(self, m, name).buff_cdc(
                 items=depth,
                 clk=self.clk,
