@@ -79,7 +79,7 @@ class Cdc(Unit):
 
     :attention: regular multibits signals should not be sychronized using
         this sychronizer instead handshake or req-ack sychronization
-        should be used for controll signals and main data should be
+        should be used for control signals and main data should be
         passed over couple of registers
 
     :ivar DATA_WIDTH: width of data-signal

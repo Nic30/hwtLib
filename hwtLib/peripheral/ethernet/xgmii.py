@@ -10,7 +10,7 @@ class XgmiiChannel(Interface):
     """
     :ivar clk: clock signal
     :ivar d: data signal
-    :ivar c: controll signal
+    :ivar c: control signal
     """
 
     def _config(self):

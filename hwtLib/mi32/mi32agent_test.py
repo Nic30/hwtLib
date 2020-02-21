@@ -23,7 +23,7 @@ class Mi32Wire(Unit):
 
 class Mi32AgentTC(SingleUnitSimTestCase):
     @classmethod
-    def getUnit(cls)->Unit:
+    def getUnit(cls) -> Unit:
         u = cls.u = Mi32Wire()
         return u
 
@@ -45,7 +45,7 @@ class Mi32AgentTC(SingleUnitSimTestCase):
         self.runSim(10 * DEFAULT_CLOCK)
         self.assertValSequenceEqual([x[:2] for x in u.s._ag.req], addr_req)
         self.assertValSequenceEqual(u.m._ag.rData, data)
-    
+
     def test_write(self):
         u = self.u
         m = mask(32//8)
@@ -54,7 +54,7 @@ class Mi32AgentTC(SingleUnitSimTestCase):
 
         self.runSim(10 * DEFAULT_CLOCK)
         self.assertValSequenceEqual(u.s._ag.req, ref)
-            
+
 
 if __name__ == "__main__":
     import unittest
