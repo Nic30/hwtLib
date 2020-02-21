@@ -3,11 +3,11 @@
 
 from unittest import TestLoader, TextTestRunner, TestSuite
 
-from hwt.simulator.simTestCase import SimTestCase
+# from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
 from hwtLib.abstract.streamAlignmentUtils_test import StreamJoiningUtilsTC
-from hwtLib.amba.axiLite_comp.axiLite_to_axi_test import AxiLite_to_Axi_TC
+from hwtLib.amba.axiLite_comp.to_axi_test import AxiLite_to_Axi_TC
 from hwtLib.amba.axiLite_comp.buff_test import AxiRegTC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import \
     AxiLiteEndpointArrayTC, AxiLiteEndpointStructsInArrayTC
