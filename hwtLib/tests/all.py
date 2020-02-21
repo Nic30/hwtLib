@@ -8,6 +8,7 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
 from hwtLib.abstract.streamAlignmentUtils_test import StreamJoiningUtilsTC
 from hwtLib.amba.axiLite_comp.axiLite_to_axi_test import AxiLite_to_Axi_TC
+from hwtLib.amba.axiLite_comp.buff_test import AxiRegTC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import \
     AxiLiteEndpointArrayTC, AxiLiteEndpointStructsInArrayTC
 from hwtLib.amba.axiLite_comp.endpoint_fromInterfaces_test import \
@@ -17,14 +18,13 @@ from hwtLib.amba.axiLite_comp.endpoint_struct_test import \
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC, \
     AxiLiteEndpointMemMasterTC
-from hwtLib.amba.axiLite_comp.buff_test import AxiRegTC
-from hwtLib.amba.axi_ag_test import Axi_ag_TC
 from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC,\
     Axi3_rDatapumpTC
 from hwtLib.amba.axi_comp.axi4_streamToMem_test import Axi4_streamToMemTC
 from hwtLib.amba.axi_comp.axi4_wDatapump_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
 from hwtLib.amba.axi_comp.axi_to_axiLite_test import Axi_to_AxiLite_TC
+from hwtLib.amba.axi_comp.sim.ag_test import Axi_ag_TC
 from hwtLib.amba.axi_comp.slave_timeout_test import AxiSlaveTimeoutTC
 from hwtLib.amba.axi_comp.tester_test import AxiTesterTC
 from hwtLib.amba.axi_test import AxiTC

@@ -3,7 +3,7 @@ from hwt.synthesizer.interface import Interface
 from hwtLib.amba.axis import AxiStream
 
 
-class FullDuplexAxiStream(Interface):
+class AxiStreamFullDuplex(Interface):
 
     def _config(self):
         AxiStream._config(self)

@@ -10,7 +10,7 @@ from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.amba.axi4 import Axi4
-from hwtLib.amba.fullDuplexAxiStream import FullDuplexAxiStream
+from hwtLib.amba.axis_fullduplex import AxiStreamFullDuplex
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import \
     BaseSynthesizerTC
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import synthesised
@@ -20,12 +20,12 @@ D = DIRECTION
 
 
 def createTwoAxiDuplexStreams():
-    i = FullDuplexAxiStream()
+    i = AxiStreamFullDuplex()
     i._name = 'i'
     i._loadDeclarations()
     i._setDirectionsLikeIn(INTF_DIRECTION.MASTER)
 
-    i2 = FullDuplexAxiStream()
+    i2 = AxiStreamFullDuplex()
     i2._name = 'i2'
     i2._loadDeclarations()
     i2._setDirectionsLikeIn(INTF_DIRECTION.SLAVE)
@@ -189,7 +189,7 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
 
         def m(i): return self.assertEqual(i._direction, INTF_DIRECTION.MASTER)
 
-        i = FullDuplexAxiStream()
+        i = AxiStreamFullDuplex()
         i._loadDeclarations()
         self.assertRaises(Exception, i._reverseDirection)
         i._setDirectionsLikeIn(INTF_DIRECTION.MASTER)

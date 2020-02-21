@@ -16,7 +16,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import toRtl
 from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.fullDuplexAxiStream import FullDuplexAxiStream
+from hwtLib.amba.axis_fullduplex import AxiStreamFullDuplex
 from hwtLib.examples.hierarchy.unitToUnitConnection import UnitToUnitConnection
 from hwtLib.examples.simple2withNonDirectIntConnection import \
     Simple2withNonDirectIntConnection
@@ -263,8 +263,8 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
     def test_unitWithIntfPartsConnectedSeparately(self):
         class FDStreamConnection(Unit):
             def _declr(self):
-                self.dataIn = FullDuplexAxiStream()
-                self.dataOut = FullDuplexAxiStream()._m()
+                self.dataIn = AxiStreamFullDuplex()
+                self.dataOut = AxiStreamFullDuplex()._m()
 
             def _impl(self):
                 self.dataOut.tx(self.dataIn.tx)
