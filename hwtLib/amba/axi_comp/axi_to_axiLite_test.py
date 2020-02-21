@@ -1,3 +1,6 @@
+from typing import List
+
+from hwt.pyUtils.arrayQuery import iter_with_last
 from hwtLib.amba.axiLite_comp.axiLite_to_axi_test import AxiLite_to_Axi_TC
 from hwtLib.amba.axiLite_comp.sim.dense_mem import Axi4LiteDenseMem
 from hwtLib.amba.axi_comp.axi_to_axiLite import Axi_to_AxiLite
@@ -5,8 +8,6 @@ from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT,\
     PROT_DEFAULT, QOS_DEFAULT, BYTES_IN_TRANS, RESP_OKAY
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
-from typing import List
-from hwt.pyUtils.arrayQuery import iter_with_last
 
 
 def split_frames(raw_agent_data):
