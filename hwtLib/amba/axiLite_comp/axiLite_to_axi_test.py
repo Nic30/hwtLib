@@ -7,8 +7,8 @@ from random import shuffle
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axiLite_comp.axiLite_to_Axi import AxiLite_to_Axi
+from hwtLib.amba.axi_comp.sim.dense_mem import Axi3DenseMem
 from hwtLib.amba.constants import PROT_DEFAULT, RESP_OKAY
-from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 

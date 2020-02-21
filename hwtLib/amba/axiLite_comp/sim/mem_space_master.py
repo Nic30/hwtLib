@@ -1,5 +1,4 @@
 from hwt.interfaces.agents.handshaked import HandshakedReadListener
-
 from hwtLib.amba.axi3Lite import Axi3Lite
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.sim.abstractMemSpaceMaster import AbstractMemSpaceMaster

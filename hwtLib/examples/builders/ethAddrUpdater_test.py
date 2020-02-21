@@ -6,7 +6,7 @@ from hwt.hdl.transTmpl import TransTmpl
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from math import ceil
 
-from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
+from hwtLib.amba.axi_comp.sim.dense_mem import Axi3DenseMem
 from hwtLib.examples.builders.ethAddrUpdater import EthAddrUpdater, \
     frameHeader
 from pycocotb.constants import CLK_PERIOD

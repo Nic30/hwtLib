@@ -5,7 +5,7 @@ from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4Lite import Axi4Lite
-from hwtLib.amba.axiLite_comp.denseMem import Axi4LiteDenseMem
+from hwtLib.amba.axiLite_comp.sim.dense_mem import Axi4LiteDenseMem
 from hwtLib.amba.constants import PROT_DEFAULT, RESP_OKAY
 from hwtLib.mi32.axiLite2Mi32 import AxiLite2Mi32
 from hwtLib.mi32.intf import Mi32

@@ -4,8 +4,8 @@
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi_comp.axi4_streamToMem import Axi4streamToMem
-from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
-from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
+from hwtLib.amba.axi_comp.sim.dense_mem import Axi3DenseMem
+from hwtLib.amba.axiLite_comp.sim.mem_space_master import AxiLiteMemSpaceMaster
 from pycocotb.constants import CLK_PERIOD
 
 

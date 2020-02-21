@@ -12,8 +12,8 @@ from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
 from hwtLib.amba.axi_comp.tester import AxiTester, SEND_AR, RECV_R
 from hwtLib.amba.constants import BYTES_IN_TRANS, PROT_DEFAULT, LOCK_DEFAULT, \
     CACHE_DEFAULT, BURST_INCR, RESP_OKAY
-from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
-from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
+from hwtLib.amba.axi_comp.sim.dense_mem import Axi3DenseMem
+from hwtLib.amba.axiLite_comp.sim.mem_space_master import AxiLiteMemSpaceMaster
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 

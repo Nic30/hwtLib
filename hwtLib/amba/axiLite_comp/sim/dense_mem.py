@@ -1,5 +1,5 @@
+from hwtLib.amba.axi_comp.sim.dense_mem import Axi3DenseMem
 from hwtLib.amba.constants import RESP_OKAY
-from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
 
 
 class Axi4LiteDenseMem(Axi3DenseMem):

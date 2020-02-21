@@ -1,11 +1,11 @@
 from collections import deque
 
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.value import Value
 from hwtLib.abstract.denseMemory import DenseMemory
 from hwtLib.amba.constants import RESP_OKAY
 from pyMathBitPrecise.bit_utils import mask, setBitRange, selectBit,\
-    selectBitRange, bitSetTo
-from hwt.hdl.types.bits import Bits
-from hwt.hdl.value import Value
+    selectBitRange
 
 
 class Axi3DenseMem(DenseMemory):

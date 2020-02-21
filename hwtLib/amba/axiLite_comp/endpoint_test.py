@@ -9,7 +9,7 @@ from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
-from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
+from hwtLib.amba.axiLite_comp.sim.mem_space_master import AxiLiteMemSpaceMaster
 from hwtLib.types.ctypes import uint32_t
 from pyMathBitPrecise.bit_utils import mask
 

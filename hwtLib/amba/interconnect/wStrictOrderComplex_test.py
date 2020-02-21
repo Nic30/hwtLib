@@ -14,7 +14,7 @@ from hwtLib.amba.axi_comp.axi4_rDatapump_test import mkReq
 from hwtLib.amba.axi_comp.axi4_wDatapump import Axi_wDatapump
 from hwtLib.amba.axi_comp.axi_datapump_intf import AxiWDatapumpIntf
 from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
-from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
+from hwtLib.amba.axi_comp.sim.dense_mem import Axi3DenseMem
 from pyMathBitPrecise.bit_utils import mask
 
 

@@ -3,7 +3,7 @@
 
 from hwt.hdl.constants import READ, WRITE
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwtLib.amba.axiLite_comp.denseMem import Axi4LiteDenseMem
+from hwtLib.amba.axiLite_comp.sim.dense_mem import Axi4LiteDenseMem
 from hwtLib.mi32.mi32_2AxiLite import Mi32_2AxiLite
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.agents.clk import DEFAULT_CLOCK
