@@ -1,8 +1,8 @@
 from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
+from hwtLib.amba.axiLite_comp.to_axi import AxiLite_to_Axi
 from hwtLib.amba.axi_comp.buff import AxiBuff
 from hwtLib.amba.axi_comp.buff_cdc import AxiBuffCdc
 from hwtLib.amba.axi_comp.resize import AxiResize
-from hwtLib.amba.axiLite_comp.to_axi import AxiLite_to_Axi
 
 
 class AxiBuilder(AbstractComponentBuilder):
