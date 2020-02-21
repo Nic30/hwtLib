@@ -52,7 +52,7 @@ class IpifInterconnectMatrix(BusInterconnect):
         rdack = hBit(0)
         wrack = hBit(0)
         AW = int(self.ADDR_WIDTH)
-        wdata = []
+        rdata = []
         for i, (s, (s_offset, s_size)) in\
                 enumerate(zip(self.m, self.SLAVES)):
             connect(m.bus2ip_addr, s.bus2ip_addr, fit=True)
@@ -70,14 +70,14 @@ class IpifInterconnectMatrix(BusInterconnect):
             err = err | (cs & s.ip2bus_error)
             rdack = rdack | (cs & s.ip2bus_rdack)
             wrack = wrack | (cs & s.ip2bus_wrack)
-            wdata.append((cs, s.ip2bus_data))
+            rdata.append((cs, s.ip2bus_data))
 
         m.ip2bus_error(err)
         m.ip2bus_rdack(rdack)
         m.ip2bus_wrack(wrack)
 
         SwitchLogic(
-            [(sel, m.ip2bus_data(data)) for sel, data in wdata],
+            [(sel, m.ip2bus_data(data)) for sel, data in rdata],
             default=m.ip2bus_data(None)
         )
 
