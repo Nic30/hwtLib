@@ -4,24 +4,31 @@
 from hwt.code import If
 from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.param import Param
+from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.ipif.intf import Ipif
 
 
-class IpifReg(Unit):
+class IpifBuff(BusBridge):
     """
-    Register for IPIF interface, used to break critical paths
+    Register or fifo for IPIF interface, used to break critical paths
+    and buffer transactions
 
     .. hwt-schematic::
     """
     def _config(self):
         Ipif._config(self)
+        self.ADDR_BUFF_DEPTH = Param(1)
+        self.DATA_BUFF_DEPTH = Param(1)
 
     def _declr(self):
+        if self.ADDR_BUFF_DEPTH != 1 or self.DATA_BUFF_DEPTH != 1:
+            raise NotImplementedError()
+
         with self._paramsShared():
             addClkRstn(self)
-            self.dataIn = Ipif()
-            self.dataOut = Ipif()._m()
+            self.s = Ipif()
+            self.m = Ipif()._m()
 
     def connectRegistered(self, intfFrom, intfTo):
         r = self._reg(intfFrom._name + "_reg", intfFrom._dtype)
@@ -30,8 +37,8 @@ class IpifReg(Unit):
         intfTo(r)
 
     def _impl(self):
-        din = self.dataIn
-        dout = self.dataOut
+        din = self.s
+        dout = self.m
         for i in din._interfaces:
             # exclude bus2ip_cs because it needs special care
             if i is din.bus2ip_cs:
@@ -61,6 +68,6 @@ class IpifReg(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    u = IpifReg()
+    u = IpifBuff()
 
     print(toRtl(u))

@@ -3,20 +3,20 @@
 
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.constants import RESP_OKAY, PROT_DEFAULT
-from hwtLib.ipif.axiLite2ipif import AxiLite2Ipif
+from hwtLib.ipif.axi4Lite_to_ipif import Axi4Lite_to_Ipif
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
 
 
-class AxiLite2ipifTC(SimTestCase):
+class Axi4Lite_to_IpifTC(SimTestCase):
     CLK = CLK_PERIOD
 
     def setUp(self):
         pass
 
     def mySetUp(self, read_latency=0, write_latency=0):
-        u = self.u = AxiLite2Ipif()
+        u = self.u = Axi4Lite_to_Ipif()
         DW = 32
         u.DATA_WIDTH = DW
         u.ADDR_WIDTH = 32
@@ -168,8 +168,8 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(AxiLite2ipifTC('test_read_lat1'))
-    suite.addTest(unittest.makeSuite(AxiLite2ipifTC))
+    # suite.addTest(Axi4Lite_to_IpifTC('test_read_lat1'))
+    suite.addTest(unittest.makeSuite(Axi4Lite_to_IpifTC))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

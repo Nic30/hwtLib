@@ -11,7 +11,7 @@ from hwt.hdl.types.defs import BIT
 from hwt.code import If
 
 
-class Mi32_2AxiLite(BusBridge):
+class Mi32_to_Axi4Lite(BusBridge):
     """
     Bridge from MI32 interface to AxiLite interface
 
@@ -78,5 +78,5 @@ class Mi32_2AxiLite(BusBridge):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    u = Mi32_2AxiLite()
+    u = Mi32_to_Axi4Lite()
     print(toRtl(u))

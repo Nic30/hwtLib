@@ -4,12 +4,12 @@
 from hwt.hdl.constants import READ, WRITE
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axiLite_comp.sim.dense_mem import Axi4LiteDenseMem
-from hwtLib.mi32.mi32_2AxiLite import Mi32_2AxiLite
+from hwtLib.mi32.to_axi4Lite import Mi32_to_Axi4Lite
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.agents.clk import DEFAULT_CLOCK
 
 
-class Mi32_2AxiLiteTC(SingleUnitSimTestCase):
+class Mi32_to_Axi4LiteTC(SingleUnitSimTestCase):
     def randomize_all(self):
         u = self.u
         self.randomize(u.m.ar)
@@ -20,7 +20,7 @@ class Mi32_2AxiLiteTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
-        u = cls.u = Mi32_2AxiLite()
+        u = cls.u = Mi32_to_Axi4Lite()
         u.ADDR_WIDTH = u.DATA_WIDTH = 32
         return u
 
@@ -61,8 +61,8 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(Mi32_2AxiLiteTC('test_write'))
-    suite.addTest(unittest.makeSuite(Mi32_2AxiLiteTC))
+    # suite.addTest(Mi32_to_Axi4LiteTC('test_write'))
+    suite.addTest(unittest.makeSuite(Mi32_to_Axi4LiteTC))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

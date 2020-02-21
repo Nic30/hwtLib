@@ -11,7 +11,7 @@ from hwtLib.ipif.intf import Ipif
 from hwtLib.abstract.busBridge import BusBridge
 
 
-class AxiLite2Ipif(BusBridge):
+class Axi4Lite_to_Ipif(BusBridge):
     """
     Bridge from AxiLite interface to IPIF interface
 
@@ -174,5 +174,5 @@ class AxiLite2Ipif(BusBridge):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    u = AxiLite2Ipif()
+    u = Axi4Lite_to_Ipif()
     print(toRtl(u))

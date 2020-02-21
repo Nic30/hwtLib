@@ -11,7 +11,7 @@ from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.mi32.intf import Mi32
 
 
-class AxiLite2Mi32(BusBridge):
+class Axi4Lite_to_Mi32(BusBridge):
     """
     Bridge from AxiLite interface to MI32 interface
 
@@ -130,5 +130,5 @@ class AxiLite2Mi32(BusBridge):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    u = AxiLite2Mi32()
+    u = Axi4Lite_to_Mi32()
     print(toRtl(u))

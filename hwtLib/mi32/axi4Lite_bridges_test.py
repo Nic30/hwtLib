@@ -6,15 +6,15 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.sim.dense_mem import Axi4LiteDenseMem
-from hwtLib.amba.constants import PROT_DEFAULT, RESP_OKAY
-from hwtLib.mi32.axiLite2Mi32 import AxiLite2Mi32
-from hwtLib.mi32.intf import Mi32
-from hwtLib.mi32.mi32_2AxiLite import Mi32_2AxiLite
-from pycocotb.agents.clk import DEFAULT_CLOCK
 from hwtLib.amba.axi_comp.builder import AxiBuilder
+from hwtLib.amba.constants import PROT_DEFAULT, RESP_OKAY
+from hwtLib.mi32.axi4Lite_to_mi32 import Axi4Lite_to_Mi32
+from hwtLib.mi32.intf import Mi32
+from hwtLib.mi32.to_axi4Lite import Mi32_to_Axi4Lite
+from pycocotb.agents.clk import DEFAULT_CLOCK
 
 
-class AxiLiteMi32Bridges(Unit):
+class Axi4LiteMi32Bridges(Unit):
     """
     Unit with AxiLiteEndpoint + AxiLiteReg + AxiLite2Mi32 + Mi32_2AxiLite
     """
@@ -26,8 +26,8 @@ class AxiLiteMi32Bridges(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.s = Axi4Lite()
-            self.toMi32 = AxiLite2Mi32()
-            self.toAxi = Mi32_2AxiLite()
+            self.toMi32 = Axi4Lite_to_Mi32()
+            self.toAxi = Mi32_to_Axi4Lite()
             self.m = Axi4Lite()._m()
 
     def _impl(self):
@@ -41,10 +41,10 @@ class AxiLiteMi32Bridges(Unit):
         self.m(AxiBuilder(self, toAxi.m).buff().end)
 
 
-class Mi32AxiLiteBrigesTC(SingleUnitSimTestCase):
+class Mi32Axi4LiteBrigesTC(SingleUnitSimTestCase):
     @classmethod
     def getUnit(cls):
-        u = cls.u = AxiLiteMi32Bridges()
+        u = cls.u = Axi4LiteMi32Bridges()
         return u
 
     def randomize_all(self):
@@ -94,7 +94,7 @@ class Mi32AxiLiteBrigesTC(SingleUnitSimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(Axi4_wDatapumpTC('test_singleLong'))
-    suite.addTest(unittest.makeSuite(Mi32AxiLiteBrigesTC))
+    # suite.addTest(Mi32Axi4LiteBrigesTC('test_singleLong'))
+    suite.addTest(unittest.makeSuite(Mi32Axi4LiteBrigesTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
