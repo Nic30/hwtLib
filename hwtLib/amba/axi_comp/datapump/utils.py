@@ -1,10 +1,10 @@
 from inspect import isgenerator
 
 from hwt.code import connect
-from hwtLib.amba.axi_comp.axi4_rDatapump import Axi_rDatapump
-from hwtLib.amba.axi_comp.axi4_wDatapump import Axi_wDatapump
-from hwtLib.amba.interconnect.rStricOrder import RStrictOrderInterconnect
-from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
+from hwtLib.amba.axi_comp.datapump.r import Axi_rDatapump
+from hwtLib.amba.axi_comp.datapump.w import Axi_wDatapump
+from hwtLib.amba.axi_comp.datapump.interconnect.rStricOrder import RStrictOrderInterconnect
+from hwtLib.amba.axi_comp.datapump.interconnect.wStrictOrder import WStrictOrderInterconnect
 
 
 def connectDp(parent, controller, datapump, axi, exclude=None):

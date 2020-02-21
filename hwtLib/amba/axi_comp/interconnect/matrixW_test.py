@@ -8,11 +8,11 @@ from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.constants import RESP_OKAY
-from hwtLib.amba.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC
-from hwtLib.amba.interconnect.matrixW import AxiInterconnectMatrixW
+from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC
+from hwtLib.amba.axi_comp.interconnect.matrixW import AxiInterconnectMatrixW
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.agents.clk import DEFAULT_CLOCK
-from hwtLib.amba.interconnect.matrixR_test import AxiInterconnectMatrixR_1to1TC
+from hwtLib.amba.axi_comp.interconnect.matrixR_test import AxiInterconnectMatrixR_1to1TC
 
 
 class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):

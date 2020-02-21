@@ -10,7 +10,7 @@ from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4 import Axi4
-from hwtLib.amba.interconnect.common import apply_name
+from hwtLib.amba.axi_comp.interconnect.common import apply_name
 
 
 class AxiInterconnectMatrixCrossbar(Unit):

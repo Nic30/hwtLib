@@ -6,8 +6,8 @@ import unittest
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.denseMemory import DenseMemory
-from hwtLib.amba.axi_comp.axi4_rDatapump_test import mkReq
-from hwtLib.amba.interconnect.wStrictOrder import WStrictOrderInterconnect
+from hwtLib.amba.axi_comp.datapump.r_test import mkReq
+from hwtLib.amba.axi_comp.datapump.interconnect.wStrictOrder import WStrictOrderInterconnect
 from pyMathBitPrecise.bit_utils import mask
 
 

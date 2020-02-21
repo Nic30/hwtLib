@@ -7,8 +7,8 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axi_comp.axi_datapump_intf import AxiRDatapumpIntf
-from hwtLib.amba.interconnect.base import AxiInterconnectBase
+from hwtLib.amba.axi_comp.datapump.intf import AxiRDatapumpIntf
+from hwtLib.amba.axi_comp.interconnect.base import AxiInterconnectBase
 from hwtLib.handshaked.fifo import HandshakedFifo
 
 

@@ -14,9 +14,9 @@ from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
-from hwtLib.amba.interconnect.common import AxiInterconnectCommon,\
+from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon,\
     apply_name
-from hwtLib.amba.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
+from hwtLib.amba.axi_comp.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
 from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.types.ctypes import uint8_t

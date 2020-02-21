@@ -4,11 +4,10 @@
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi3 import Axi3_addr, Axi3_w
 from hwtLib.amba.axi4 import Axi4_addr
-from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC, mkReq,\
+from hwtLib.amba.axi_comp.datapump.r_test import Axi4_rDatapumpTC, mkReq,\
     Axi_datapumpTC
-from hwtLib.amba.axi_comp.axi4_wDatapump import Axi_wDatapump
-from hwtLib.amba.constants import RESP_OKAY, BYTES_IN_TRANS, BURST_INCR, \
-    CACHE_DEFAULT, LOCK_DEFAULT, PROT_DEFAULT, QOS_DEFAULT
+from hwtLib.amba.axi_comp.datapump.w import Axi_wDatapump
+from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.axi_comp.sim.dense_mem import Axi3DenseMem
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD

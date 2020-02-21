@@ -4,7 +4,7 @@
 from hwt.code import isPow2
 from hwt.interfaces.std import Clk, Rst_n
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axi_comp.axi_buff import AxiBuff
+from hwtLib.amba.axi_comp.buff import AxiBuff
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 
 

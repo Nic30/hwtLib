@@ -11,7 +11,7 @@ from hwtLib.amba.axi4Lite import Axi4Lite, Axi4Lite_addr
 from hwtLib.amba.constants import PROT_DEFAULT
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
-from hwtLib.amba.axi_comp.axi_buff import AxiBuff
+from hwtLib.amba.axi_comp.buff import AxiBuff
 
 
 class HandshakedIdAndLen(HandshakeSync):

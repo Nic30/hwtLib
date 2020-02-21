@@ -18,12 +18,12 @@ from hwtLib.amba.axiLite_comp.endpoint_struct_test import \
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC, \
     AxiLiteEndpointMemMasterTC
-from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC,\
+from hwtLib.amba.axi_comp.datapump.r_test import Axi4_rDatapumpTC,\
     Axi3_rDatapumpTC
-from hwtLib.amba.axi_comp.axi4_streamToMem_test import Axi4_streamToMemTC
-from hwtLib.amba.axi_comp.axi4_wDatapump_test import Axi4_wDatapumpTC, \
+from hwtLib.amba.axi_comp.stream_to_mem_test import Axi4_streamToMemTC
+from hwtLib.amba.axi_comp.datapump.w_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
-from hwtLib.amba.axi_comp.axi_to_axiLite_test import Axi_to_AxiLite_TC
+from hwtLib.amba.axi_comp.to_axiLite_test import Axi_to_AxiLite_TC
 from hwtLib.amba.axi_comp.sim.ag_test import Axi_ag_TC
 from hwtLib.amba.axi_comp.slave_timeout_test import AxiSlaveTimeoutTC
 from hwtLib.amba.axi_comp.tester_test import AxiTesterTC
@@ -38,24 +38,24 @@ from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
     AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC, \
     AxiS_resizer_upAndDown_TC
 from hwtLib.amba.axis_comp.storedBurst_test import AxiSStoredBurstTC
-from hwtLib.amba.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC,\
+from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC,\
     AxiInterconnectMatrixAddrCrossbar_1to3TC, AxiInterconnectMatrixAddrCrossbar_3to1TC,\
     AxiInterconnectMatrixAddrCrossbar_3to3TC,\
     AxiInterconnectMatrixAddrCrossbar_2to1_2to1_1toAllTC
-from hwtLib.amba.interconnect.matrixCrossbar_test import AxiInterconnectMatrixCrossbar_1to1TC,\
+from hwtLib.amba.axi_comp.interconnect.matrixCrossbar_test import AxiInterconnectMatrixCrossbar_1to1TC,\
     AxiInterconnectMatrixCrossbar_1to3TC, AxiInterconnectMatrixCrossbar_3to1TC,\
     AxiInterconnectMatrixCrossbar_3to3TC
-from hwtLib.amba.interconnect.matrixR_test import AxiInterconnectMatrixR_1to1TC,\
+from hwtLib.amba.axi_comp.interconnect.matrixR_test import AxiInterconnectMatrixR_1to1TC,\
     AxiInterconnectMatrixR_1to3TC, AxiInterconnectMatrixR_3to1TC,\
     AxiInterconnectMatrixR_3to3TC
-from hwtLib.amba.interconnect.matrixW_test import AxiInterconnectMatrixW_3to3TC,\
+from hwtLib.amba.axi_comp.interconnect.matrixW_test import AxiInterconnectMatrixW_3to3TC,\
     AxiInterconnectMatrixW_3to1TC, AxiInterconnectMatrixW_1to3TC,\
     AxiInterconnectMatrixW_1to1TC
-from hwtLib.amba.interconnect.rStrictOrder_test import \
+from hwtLib.amba.axi_comp.datapump.interconnect.rStrictOrder_test import \
     RStrictOrderInterconnectTC
-from hwtLib.amba.interconnect.wStrictOrderComplex_test import \
+from hwtLib.amba.axi_comp.datapump.interconnect.wStrictOrderComplex_test import \
     WStrictOrderInterconnectComplexTC
-from hwtLib.amba.interconnect.wStrictOrder_test import \
+from hwtLib.amba.axi_comp.datapump.interconnect.wStrictOrder_test import \
     WStrictOrderInterconnectTC, WStrictOrderInterconnect2TC
 from hwtLib.avalon.endpoint_test import AvalonMmEndpointTC, \
     AvalonMmEndpointDenseStartTC, AvalonMmEndpointDenseTC, AvalonMmMemMasterTC

@@ -6,9 +6,9 @@ from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.synthesizer.hObjList import HObjList
 from hwtLib.amba.axi4 import Axi4
-from hwtLib.amba.interconnect.common import AxiInterconnectCommon
-from hwtLib.amba.interconnect.matrixAddrCrossbar import AxiInterconnectMatrixAddrCrossbar
-from hwtLib.amba.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
+from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon
+from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar import AxiInterconnectMatrixAddrCrossbar
+from hwtLib.amba.axi_comp.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 

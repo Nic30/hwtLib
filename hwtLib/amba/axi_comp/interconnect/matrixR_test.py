@@ -6,9 +6,9 @@ from itertools import chain
 from hwt.code import log2ceil
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi4 import Axi4
-from hwtLib.amba.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC
-from hwtLib.amba.interconnect.matrixCrossbar_test import AxiInterconnectMatrixCrossbar_1to1TC
-from hwtLib.amba.interconnect.matrixR import AxiInterconnectMatrixR
+from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC
+from hwtLib.amba.axi_comp.interconnect.matrixCrossbar_test import AxiInterconnectMatrixCrossbar_1to1TC
+from hwtLib.amba.axi_comp.interconnect.matrixR import AxiInterconnectMatrixR
 from hwtLib.amba.axi_comp.sim.dense_mem import Axi3DenseMem
 from pycocotb.agents.clk import DEFAULT_CLOCK
 

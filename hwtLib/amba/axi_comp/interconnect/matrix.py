@@ -9,9 +9,9 @@ from hwt.synthesizer.hObjList import HObjList
 from hwtLib.abstract.busInterconnect import BusInterconnectUtils,\
     BusInterconnect
 from hwtLib.amba.axi4 import Axi4
-from hwtLib.amba.interconnect.common import AxiInterconnectCommon
-from hwtLib.amba.interconnect.matrixR import AxiInterconnectMatrixR
-from hwtLib.amba.interconnect.matrixW import AxiInterconnectMatrixW
+from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon
+from hwtLib.amba.axi_comp.interconnect.matrixR import AxiInterconnectMatrixR
+from hwtLib.amba.axi_comp.interconnect.matrixW import AxiInterconnectMatrixW
 from ipCorePackager.constants import INTF_DIRECTION
 
 

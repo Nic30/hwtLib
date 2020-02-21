@@ -5,9 +5,9 @@
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_addr
-from hwtLib.amba.axi_comp.axi4_rDatapump import Axi_rDatapump
-from hwtLib.amba.constants import RESP_OKAY
+from hwtLib.amba.axi_comp.datapump.r import Axi_rDatapump
 from hwtLib.amba.axi_comp.sim.dense_mem import Axi3DenseMem
+from hwtLib.amba.constants import RESP_OKAY
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 

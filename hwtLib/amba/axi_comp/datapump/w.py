@@ -7,8 +7,8 @@ from hwt.interfaces.std import Signal, Handshaked, VectSignal, \
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi4 import Axi4_w, Axi4_b, Axi4_addr
-from hwtLib.amba.axi_comp.axi_datapump_intf import AxiWDatapumpIntf
-from hwtLib.amba.axi_comp.axi_datapump_base import AxiDatapumpBase
+from hwtLib.amba.axi_comp.datapump.intf import AxiWDatapumpIntf
+from hwtLib.amba.axi_comp.datapump.base import AxiDatapumpBase
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
@@ -39,7 +39,7 @@ class Axi_wDatapump(AxiDatapumpBase):
     * splits request to correct request size
     * simplifies axi communication without lose of performance
 
-    :see: :class:`hwtLib.amba.axi_comp.axi_datapump_base.AxiDatapumpBase`
+    :see: :class:`hwtLib.amba.axi_comp.datapump.base.AxiDatapumpBase`
 
     .. hwt-schematic::
     """
