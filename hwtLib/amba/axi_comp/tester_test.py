@@ -12,7 +12,7 @@ from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
 from hwtLib.amba.axi_comp.tester import AxiTester, SEND_AR, RECV_R
 from hwtLib.amba.constants import BYTES_IN_TRANS, PROT_DEFAULT, LOCK_DEFAULT, \
     CACHE_DEFAULT, BURST_INCR, RESP_OKAY
-from hwtLib.amba.axi_comp.sim.dense_mem import Axi3DenseMem
+from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.amba.axiLite_comp.sim.mem_space_master import AxiLiteMemSpaceMaster
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
@@ -50,7 +50,7 @@ class AxiTesterTC(SingleUnitSimTestCase):
     def setUp(self):
         super(AxiTesterTC, self).setUp()
         u = self.u
-        self.m = Axi3DenseMem(u.clk, u.m_axi)
+        self.m = AxiSimRam(u.clk, u.m_axi)
 
     def randomize_all(self):
         axi = self.u.m_axi

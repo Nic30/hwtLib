@@ -4,7 +4,7 @@
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi_comp.stream_to_mem import Axi4streamToMem
-from hwtLib.amba.axi_comp.sim.dense_mem import Axi3DenseMem
+from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.amba.axiLite_comp.sim.mem_space_master import AxiLiteMemSpaceMaster
 from pycocotb.constants import CLK_PERIOD
 
@@ -40,7 +40,7 @@ class Axi4_streamToMemTC(SingleUnitSimTestCase):
         N = 33
 
         sampleData = [self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]
-        m = Axi3DenseMem(u.clk, u.axi)
+        m = AxiSimRam(u.clk, u.axi)
         blockPtr = m.malloc(self.DATA_WIDTH // 8 * N)
 
         u.dataIn._ag.data.extend(sampleData)

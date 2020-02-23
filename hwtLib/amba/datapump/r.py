@@ -6,8 +6,8 @@ from hwt.interfaces.std import Signal, HandshakeSync, VectSignal
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi4 import Axi4_r
-from hwtLib.amba.axi_comp.datapump.base import AxiDatapumpBase
-from hwtLib.amba.axi_comp.datapump.intf import AxiRDatapumpIntf
+from hwtLib.amba.datapump.base import AxiDatapumpBase
+from hwtLib.amba.datapump.intf import AxiRDatapumpIntf
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
@@ -41,7 +41,7 @@ class Axi_rDatapump(AxiDatapumpBase):
     errorRead stays high when there was error on axi read channel
     it will not affect unit functionality
 
-    :see: :class:`hwtLib.amba.axi_comp.datapump.base.AxiDatapumpBase`
+    :see: :class:`hwtLib.amba.datapump.base.AxiDatapumpBase`
 
     .. hwt-schematic::
     """

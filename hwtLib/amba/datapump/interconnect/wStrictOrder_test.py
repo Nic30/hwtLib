@@ -5,9 +5,9 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwtLib.abstract.denseMemory import DenseMemory
-from hwtLib.amba.axi_comp.datapump.r_test import mkReq
-from hwtLib.amba.axi_comp.datapump.interconnect.wStrictOrder import WStrictOrderInterconnect
+from hwtLib.amba.datapump.interconnect.wStrictOrder import WStrictOrderInterconnect
+from hwtLib.amba.datapump.r_test import mkReq
+from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from pyMathBitPrecise.bit_utils import mask
 
 
@@ -77,7 +77,7 @@ class WStrictOrderInterconnectTC(SingleUnitSimTestCase):
 
     def test_randomized(self):
         u = self.u
-        m = DenseMemory(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
+        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
 
         for d in u.drivers:
             self.randomize(d.req)
@@ -118,7 +118,7 @@ class WStrictOrderInterconnectTC(SingleUnitSimTestCase):
 
     def test_randomized2(self):
         u = self.u
-        m = DenseMemory(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
+        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
         N = 25
         _mask = mask(self.DATA_WIDTH // 8)
 
@@ -174,7 +174,7 @@ class WStrictOrderInterconnect2TC(SingleUnitSimTestCase):
 
     def test_3x128(self):
         u = self.u
-        m = DenseMemory(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
+        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
         N = 128
         _mask = mask(self.DATA_WIDTH // 8)
         data = [[self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]

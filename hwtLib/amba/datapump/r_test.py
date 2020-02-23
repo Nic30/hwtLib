@@ -5,8 +5,8 @@
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_addr
-from hwtLib.amba.axi_comp.datapump.r import Axi_rDatapump
-from hwtLib.amba.axi_comp.sim.dense_mem import Axi3DenseMem
+from hwtLib.amba.datapump.r import Axi_rDatapump
+from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.amba.constants import RESP_OKAY
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
@@ -310,7 +310,7 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
     def test_randomized(self):
         u = self.u
 
-        m = Axi3DenseMem(u.clk, axiAR=u.a, axiR=u.r)
+        m = AxiSimRam(u.clk, axiAR=u.a, axiR=u.r)
         MAGIC = 99
         req = u.driver.req._ag
 

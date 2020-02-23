@@ -6,9 +6,9 @@ import unittest
 from hwt.hdl.constants import NOP
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.structManipulators.cLinkedListReader import CLinkedListReader
-from hwtLib.abstract.denseMemory import DenseMemory
 from pycocotb.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
+from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 
 
 class CLinkedListReaderTC(SingleUnitSimTestCase):
@@ -165,7 +165,7 @@ class CLinkedListReaderTC(SingleUnitSimTestCase):
         N = self.ITEMS_IN_BLOCK
         MAGIC = 6413
 
-        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rDatapump)
+        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, u.rDatapump)
 
         ADDR_BASE, data = self.createBlock(m, MAGIC)
         self.updateNextAddr(m, ADDR_BASE, ADDR_BASE)
@@ -196,7 +196,7 @@ class CLinkedListReaderTC(SingleUnitSimTestCase):
         u = self.u
         N = self.ITEMS_IN_BLOCK * 5
         MAGIC = 456
-        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rDatapump)
+        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, u.rDatapump)
 
         data = []
         ADDR_BASE = None
@@ -227,7 +227,7 @@ class CLinkedListReaderTC(SingleUnitSimTestCase):
         N = self.ITEMS_IN_BLOCK + 1
         MAGIC = 5896
 
-        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rDatapump)
+        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, u.rDatapump)
 
         ADDR_BASE, data = self.createBlock(m, MAGIC)
         NEXT_BASE, data2 = self.createBlock(m, MAGIC*2)

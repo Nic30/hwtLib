@@ -9,7 +9,7 @@ from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar_test import AxiInterconnectMatrixCrossbar_1to1TC
 from hwtLib.amba.axi_comp.interconnect.matrixR import AxiInterconnectMatrixR
-from hwtLib.amba.axi_comp.sim.dense_mem import Axi3DenseMem
+from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from pycocotb.agents.clk import DEFAULT_CLOCK
 
 
@@ -29,7 +29,7 @@ class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):
     def setUp(self):
         SingleUnitSimTestCase.setUp(self)
         u = self.u
-        self.memory = [Axi3DenseMem(u.clk,
+        self.memory = [AxiSimRam(u.clk,
                                     axiAR=getattr(s, "ar", None),
                                     axiR=getattr(s, "r", None),
                                     axiAW=getattr(s, "aw", None),

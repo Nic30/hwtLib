@@ -10,11 +10,11 @@ from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_w, Axi4_b
-from hwtLib.amba.axi_comp.datapump.r_test import mkReq
-from hwtLib.amba.axi_comp.datapump.w import Axi_wDatapump
-from hwtLib.amba.axi_comp.datapump.intf import AxiWDatapumpIntf
-from hwtLib.amba.axi_comp.datapump.interconnect.wStrictOrder import WStrictOrderInterconnect
-from hwtLib.amba.axi_comp.sim.dense_mem import Axi3DenseMem
+from hwtLib.amba.datapump.r_test import mkReq
+from hwtLib.amba.datapump.w import Axi_wDatapump
+from hwtLib.amba.datapump.intf import AxiWDatapumpIntf
+from hwtLib.amba.datapump.interconnect.wStrictOrder import WStrictOrderInterconnect
+from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from pyMathBitPrecise.bit_utils import mask
 
 
@@ -60,7 +60,7 @@ class WStrictOrderInterconnectComplexTC(SingleUnitSimTestCase):
 
     def test_3x128(self, N=128):
         u = self.u
-        m = Axi3DenseMem(u.clk, axiAW=u.aw, axiW=u.w, axiB=u.b)
+        m = AxiSimRam(u.clk, axiAW=u.aw, axiW=u.w, axiB=u.b)
         _mask = mask(self.DATA_WIDTH // 8)
         data = [[self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]
                 for _ in range(self.DRIVER_CNT)]

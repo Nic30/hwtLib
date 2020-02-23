@@ -2,7 +2,7 @@ from typing import List
 
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwtLib.amba.axiLite_comp.to_axi_test import AxiLite_to_Axi_TC
-from hwtLib.amba.axiLite_comp.sim.dense_mem import Axi4LiteDenseMem
+from hwtLib.amba.axiLite_comp.sim.ram import Axi4LiteSimRam
 from hwtLib.amba.axi_comp.to_axiLite import Axi_to_AxiLite
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT,\
     PROT_DEFAULT, QOS_DEFAULT, BYTES_IN_TRANS, RESP_OKAY
@@ -82,7 +82,7 @@ class Axi_to_AxiLite_TC(AxiLite_to_Axi_TC):
         # u.m.ar._ag._debugOutput = sys.stdout
         # u.s.ar._ag._debugOutput = sys.stdout
 
-        m = Axi4LiteDenseMem(u.clk, u.m)
+        m = Axi4LiteSimRam(u.clk, u.m)
 
         expected_frames = []
         for _ in range(self.TRANSACTION_CNT):
@@ -116,7 +116,7 @@ class Axi_to_AxiLite_TC(AxiLite_to_Axi_TC):
         N = self.TRANSACTION_CNT
         u = self.u
 
-        m = Axi4LiteDenseMem(u.clk, u.m)
+        m = Axi4LiteSimRam(u.clk, u.m)
 
         expected_data = []
         for _ in range(self.TRANSACTION_CNT):

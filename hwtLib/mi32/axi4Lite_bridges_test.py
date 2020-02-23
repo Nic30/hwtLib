@@ -5,7 +5,7 @@ from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4Lite import Axi4Lite
-from hwtLib.amba.axiLite_comp.sim.dense_mem import Axi4LiteDenseMem
+from hwtLib.amba.axiLite_comp.sim.ram import Axi4LiteSimRam
 from hwtLib.amba.axi_comp.builder import AxiBuilder
 from hwtLib.amba.constants import PROT_DEFAULT, RESP_OKAY
 from hwtLib.mi32.axi4Lite_to_mi32 import Axi4Lite_to_Mi32
@@ -59,7 +59,7 @@ class Mi32Axi4LiteBrigesTC(SingleUnitSimTestCase):
     def setUp(self):
         SingleUnitSimTestCase.setUp(self)
         u = self.u
-        self.memory = Axi4LiteDenseMem(u.clk, axi=u.m)
+        self.memory = Axi4LiteSimRam(u.clk, axi=u.m)
 
     def test_nop(self):
         self.randomize_all()

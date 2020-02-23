@@ -3,7 +3,7 @@
 
 from hwt.hdl.constants import READ, WRITE
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwtLib.amba.axiLite_comp.sim.dense_mem import Axi4LiteDenseMem
+from hwtLib.amba.axiLite_comp.sim.ram import Axi4LiteSimRam
 from hwtLib.mi32.to_axi4Lite import Mi32_to_Axi4Lite
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.agents.clk import DEFAULT_CLOCK
@@ -27,7 +27,7 @@ class Mi32_to_Axi4LiteTC(SingleUnitSimTestCase):
     def setUp(self):
         SingleUnitSimTestCase.setUp(self)
         u = self.u
-        self.memory = Axi4LiteDenseMem(u.clk, axi=u.m)
+        self.memory = Axi4LiteSimRam(u.clk, axi=u.m)
         self.randomize_all()
 
     def test_read(self):

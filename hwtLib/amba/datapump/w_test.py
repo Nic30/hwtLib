@@ -4,11 +4,11 @@
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi3 import Axi3_addr, Axi3_w
 from hwtLib.amba.axi4 import Axi4_addr
-from hwtLib.amba.axi_comp.datapump.r_test import Axi4_rDatapumpTC, mkReq,\
+from hwtLib.amba.datapump.r_test import Axi4_rDatapumpTC, mkReq,\
     Axi_datapumpTC
-from hwtLib.amba.axi_comp.datapump.w import Axi_wDatapump
+from hwtLib.amba.datapump.w import Axi_wDatapump
 from hwtLib.amba.constants import RESP_OKAY
-from hwtLib.amba.axi_comp.sim.dense_mem import Axi3DenseMem
+from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 
@@ -251,7 +251,7 @@ class Axi3_wDatapump_small_splitting_TC(SingleUnitSimTestCase):
         wIn = u.driver.w._ag
         dataMask = mask(self.DATA_WIDTH // 8)
 
-        m = Axi3DenseMem(u.clk, axiAW=u.a, axiW=u.w, axiB=u.b)
+        m = AxiSimRam(u.clk, axiAW=u.a, axiW=u.w, axiB=u.b)
         N = 1024
         data = [self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]
 

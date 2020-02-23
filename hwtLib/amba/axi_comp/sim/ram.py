@@ -2,13 +2,14 @@ from collections import deque
 
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.value import Value
-from hwtLib.abstract.denseMemory import DenseMemory
+from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.amba.constants import RESP_OKAY
 from pyMathBitPrecise.bit_utils import mask, setBitRange, selectBit,\
     selectBitRange
+from hwtLib.abstract.sim_ram import SimRam
 
 
-class Axi3DenseMem(DenseMemory):
+class AxiSimRam(AxiDpSimRam):
     """
     Simulation memory for Axi3/4 interfaces (slave component)
     """
@@ -26,11 +27,7 @@ class Axi3DenseMem(DenseMemory):
         :attention: memories are commiting into memory in "data" property
             after transaction is complete
         """
-        self.parent = parent
-        if parent is None:
-            self.data = {}
-        else:
-            self.data = parent.data
+        SimRam.__init__(self, parent=parent)
 
         if axi is not None:
             assert axiAR is None

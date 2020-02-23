@@ -6,7 +6,7 @@ import unittest
 from hwt.hdl.constants import Time
 from hwt.hdl.types.struct import HStruct
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.abstract.denseMemory import DenseMemory
+from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.structManipulators.structWriter import StructWriter
 from hwtLib.types.ctypes import uint64_t
 
@@ -16,7 +16,7 @@ class StructWriter_TC(SimTestCase):
         u = self.u = StructWriter(structT)
         u.DATA_WIDTH = 64
         self.compileSimAndStart(u)
-        m = DenseMemory(int(u.DATA_WIDTH), u.clk, wDatapumpIntf=u.wDatapump)
+        m = AxiDpSimRam(int(u.DATA_WIDTH), u.clk, wDatapumpIntf=u.wDatapump)
         return m
 
     def test_singleField(self):

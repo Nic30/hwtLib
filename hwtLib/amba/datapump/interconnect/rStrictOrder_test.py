@@ -4,8 +4,8 @@
 import unittest
 
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwtLib.abstract.denseMemory import DenseMemory
-from hwtLib.amba.axi_comp.datapump.interconnect.rStricOrder import RStrictOrderInterconnect
+from hwtLib.amba.datapump.interconnect.rStricOrder import RStrictOrderInterconnect
+from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 
@@ -74,7 +74,7 @@ class RStrictOrderInterconnectTC(SingleUnitSimTestCase):
 
     def test_randomized(self):
         u = self.u
-        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rDatapump)
+        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, u.rDatapump)
 
         for d in u.drivers:
             self.randomize(d.req)
@@ -113,7 +113,7 @@ class RStrictOrderInterconnectTC(SingleUnitSimTestCase):
 
     def test_randomized2(self):
         u = self.u
-        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rDatapump)
+        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, u.rDatapump)
         N = 17
 
         for d in u.drivers:

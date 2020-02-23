@@ -17,15 +17,15 @@ from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC, \
     AxiLiteEndpointMemMasterTC
 from hwtLib.amba.axiLite_comp.to_axi_test import AxiLite_to_Axi_TC
-from hwtLib.amba.axi_comp.datapump.interconnect.rStrictOrder_test import \
+from hwtLib.amba.datapump.interconnect.rStrictOrder_test import \
     RStrictOrderInterconnectTC
-from hwtLib.amba.axi_comp.datapump.interconnect.wStrictOrderComplex_test import \
+from hwtLib.amba.datapump.interconnect.wStrictOrderComplex_test import \
     WStrictOrderInterconnectComplexTC
-from hwtLib.amba.axi_comp.datapump.interconnect.wStrictOrder_test import \
+from hwtLib.amba.datapump.interconnect.wStrictOrder_test import \
     WStrictOrderInterconnectTC, WStrictOrderInterconnect2TC
-from hwtLib.amba.axi_comp.datapump.r_test import Axi4_rDatapumpTC,\
+from hwtLib.amba.datapump.r_test import Axi4_rDatapumpTC,\
     Axi3_rDatapumpTC
-from hwtLib.amba.axi_comp.datapump.w_test import Axi4_wDatapumpTC, \
+from hwtLib.amba.datapump.w_test import Axi4_wDatapumpTC, \
     Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC,\
     AxiInterconnectMatrixAddrCrossbar_1to3TC, AxiInterconnectMatrixAddrCrossbar_3to1TC,\
