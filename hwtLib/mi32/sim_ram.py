@@ -1,11 +1,12 @@
 from hwt.hdl.constants import READ, WRITE
 from hwtLib.abstract.sim_ram import SimRam
 from hwtLib.mi32.intf import Mi32
-from pycocotb.triggers import WaitWriteOnly
 from pyMathBitPrecise.bit_utils import mask
+from pycocotb.triggers import WaitWriteOnly
 
 
 class Mi32SimRam(SimRam):
+
     def __init__(self, mi32: Mi32, parent=None):
         super(Mi32SimRam, self).__init__(parent=parent)
         self.intf = mi32
