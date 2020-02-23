@@ -13,7 +13,8 @@ from hwtLib.handshaked.streamNode import StreamNode
 class AxiTransactionCouter(Unit):
     """
     Counter of beats on axi interface
-    write to control register to clear counters
+
+    :note: write to control register to clear counters
 
     .. hwt-schematic::
     """
