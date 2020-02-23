@@ -49,11 +49,14 @@ class IpifInterconnectMatrixTC(SimTestCase):
         MAGIC_W = 100
 
         expected = []
+        expected_r = []
         for si, (_s, offset) in enumerate(zip(s, offsets)):
             d = {}
             for i in range(N):
                 d[i] = _s.mem[i] = MAGIC_R + i + si * N
+                expected_r.append(d[i])
                 m.requests.append((READ, i * 4 + offset))
+
                 w_a = (i + N) * 4 + offset
                 w_d = MAGIC_W + i + si * N
                 m.requests.append((WRITE, w_a, w_d, self.m))
@@ -66,6 +69,7 @@ class IpifInterconnectMatrixTC(SimTestCase):
         for i, (e, s) in enumerate(zip(expected, s)):
             d = {k: int(v) for k, v in s.mem.items()}
             self.assertDictEqual(d, e, i)
+        self.assertValSequenceEqual(m.readed, expected_r)
 
 
 if __name__ == "__main__":
