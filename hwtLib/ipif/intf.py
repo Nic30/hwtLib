@@ -115,22 +115,22 @@ class IpifAgent(SyncAgentBase):
         self._addr = self._rnw = self._be = self._wdata = None
         self._latencyCntr = 0
 
-        self._word_bytest = intf.bus2ip_data._dtype.bit_length() // 8
-        self.wmaskAll = mask(self._word_bytest)
+        self._word_bytes = intf.bus2ip_data._dtype.bit_length() // 8
+        self.wmaskAll = mask(self._word_bytes)
         self._requireInit = True
 
     def onRead(self, addr):
-        if addr % self._word_bytest != 0:
+        if addr % self._word_bytes != 0:
             raise NotImplementedError("Unaligned read")
 
-        return self.mem[int(addr) // self._word_bytest]
+        return self.mem[int(addr) // self._word_bytes]
 
     def onWrite(self, addr, val, byteen):
-        if addr % self._word_bytest != 0:
+        if addr % self._word_bytes != 0:
             raise NotImplementedError("Unaligned write")
 
         if int(byteen) == self.wmaskAll:
-            self.mem[addr//self._word_bytest] = val
+            self.mem[addr//self._word_bytes] = val
         else:
             raise NotImplementedError("Masked write")
 
@@ -304,6 +304,6 @@ class IpifAgent(SyncAgentBase):
             else:
                 self.actual = actual_next
                 return
-        
+
         yield WaitWriteOnly()
         intf.bus2ip_cs.write(0)
