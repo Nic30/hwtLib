@@ -12,6 +12,7 @@ from hwtLib.abstract.busInterconnect import BusInterconnect, AUTO_ADDR
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.mi32.intf import Mi32
 from pyMathBitPrecise.bit_utils import selectBitRange
+from hwtLib.mi32.buff import Mi32Buff
 
 
 class Mi32InterconnectMatrix(BusInterconnect):
@@ -57,8 +58,17 @@ class Mi32InterconnectMatrix(BusInterconnect):
     def _impl(self) -> None:
         if len(self.MASTERS) > 1:
             raise NotImplementedError()
-        propagateClkRstn(self)
         m = self.s[0]
+        # :note: theoretically not required
+        b = Mi32Buff()
+        b.ADDR_BUFF_DEPTH = 1
+        b.DATA_BUFF_DEPTH = 1
+        b._updateParamsFrom(self)
+        self.s_0_buff = b
+        b.s(m)
+        m = b.m
+
+        propagateClkRstn(self)
 
         r_order = self.r_data_order.dataIn
         AW = int(self.ADDR_WIDTH)
@@ -104,7 +114,7 @@ class Mi32InterconnectMatrix(BusInterconnect):
         r_order = self.r_data_order.dataOut
         If(r_order.vld,
             Switch(r_order.data).addCases(
-                [(slave_i, m.drd(data.data)) for slave_i, _, data in rdata],
+                [(slave_i, [m.drd(data.data), m.drdy(1)]) for slave_i, _, data in rdata],
             ).Default(
                 # this case can not happen unless bug in code
                 m.drd(None),
