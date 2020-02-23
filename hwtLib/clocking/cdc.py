@@ -6,19 +6,19 @@ from typing import Tuple, Optional
 from hwt.constraints import set_max_delay, set_async_reg
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Rst, Signal, Clk
+from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 
 
 class SignalCdcBuilder():
     """
-    Object which can build CDCs fro simple Signal interfaces
-    It automatically adding constrains and check correnctne of CDC path
-    But main purpose of this class is to allow building
-    of CDCs without requirement of component instantiation
+    Object which can build CDCs for simple Signal interfaces.
+    It automatically adding constrains and check correnctnes of CDC path.
+    Main purpose of this class is to allow building
+    of CDCs without requirement of component instantiation.
     """
     def __init__(self, sig,
                  in_clk_rst: Tuple[RtlSignal, RtlSignal],
