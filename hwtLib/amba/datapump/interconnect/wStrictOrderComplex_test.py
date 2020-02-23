@@ -60,7 +60,7 @@ class WStrictOrderInterconnectComplexTC(SingleUnitSimTestCase):
 
     def test_3x128(self, N=128):
         u = self.u
-        m = AxiSimRam(u.clk, axiAW=u.aw, axiW=u.w, axiB=u.b)
+        m = AxiSimRam(axiAW=u.aw, axiW=u.w, axiB=u.b)
         _mask = mask(self.DATA_WIDTH // 8)
         data = [[self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]
                 for _ in range(self.DRIVER_CNT)]

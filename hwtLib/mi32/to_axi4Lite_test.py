@@ -27,7 +27,7 @@ class Mi32_to_Axi4LiteTC(SingleUnitSimTestCase):
     def setUp(self):
         SingleUnitSimTestCase.setUp(self)
         u = self.u
-        self.memory = Axi4LiteSimRam(u.clk, axi=u.m)
+        self.memory = Axi4LiteSimRam(axi=u.m)
         self.randomize_all()
 
     def test_read(self):

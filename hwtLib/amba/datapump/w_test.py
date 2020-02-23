@@ -251,7 +251,7 @@ class Axi3_wDatapump_small_splitting_TC(SingleUnitSimTestCase):
         wIn = u.driver.w._ag
         dataMask = mask(self.DATA_WIDTH // 8)
 
-        m = AxiSimRam(u.clk, axiAW=u.a, axiW=u.w, axiB=u.b)
+        m = AxiSimRam(axiAW=u.a, axiW=u.w, axiB=u.b)
         N = 1024
         data = [self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]
 

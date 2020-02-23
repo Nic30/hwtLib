@@ -29,13 +29,13 @@ class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):
     def setUp(self):
         SingleUnitSimTestCase.setUp(self)
         u = self.u
-        self.memory = [AxiSimRam(u.clk,
-                                    axiAR=getattr(s, "ar", None),
-                                    axiR=getattr(s, "r", None),
-                                    axiAW=getattr(s, "aw", None),
-                                    axiW=getattr(s, "w", None),
-                                    axiB=getattr(s, "b", None),
-                                    )
+        self.memory = [AxiSimRam(
+                            axiAR=getattr(s, "ar", None),
+                            axiR=getattr(s, "r", None),
+                            axiAW=getattr(s, "aw", None),
+                            axiW=getattr(s, "w", None),
+                            axiB=getattr(s, "b", None),
+                        )
                        for s in u.m]
 
     def randomize_all(self):

@@ -310,7 +310,7 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
     def test_randomized(self):
         u = self.u
 
-        m = AxiSimRam(u.clk, axiAR=u.a, axiR=u.r)
+        m = AxiSimRam(axiAR=u.a, axiR=u.r)
         MAGIC = 99
         req = u.driver.req._ag
 

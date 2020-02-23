@@ -33,7 +33,7 @@ class EthAddrUpdaterTC(SingleUnitSimTestCase):
         r(u.axi_m.w)
         r(u.axi_m.b)
 
-        m = AxiSimRam(u.clk, u.axi_m)
+        m = AxiSimRam(u.axi_m)
         tmpl = TransTmpl(frameHeader)
         frameTmpl = list(FrameTmpl.framesFromTransTmpl(tmpl, DW))[0]
 

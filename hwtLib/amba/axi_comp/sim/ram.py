@@ -14,7 +14,7 @@ class AxiSimRam(AxiDpSimRam):
     Simulation memory for Axi3/4 interfaces (slave component)
     """
 
-    def __init__(self, clk, axi=None, axiAR=None, axiR=None, axiAW=None,
+    def __init__(self, axi=None, axiAR=None, axiR=None, axiAW=None,
                  axiW=None, axiB=None, parent=None):
         """
         :param clk: clk which should this memory use in simulation
@@ -38,12 +38,14 @@ class AxiSimRam(AxiDpSimRam):
             self.awAg = axi._ag.aw
             self.wAg = axi._ag.w
             self.wAckAg = axi._ag.b
+            clk = axi._getAssociatedClk()
         else:
             assert axi is None
             if axiAR is not None:
                 self.arAg = axiAR._ag
                 self.rAg = axiR._ag
                 DW = int(axiR.DATA_WIDTH)
+                clk = axiAR._getAssociatedClk()
             else:
                 assert axiR is None
                 self.arAg = None
@@ -54,6 +56,7 @@ class AxiSimRam(AxiDpSimRam):
                 self.wAg = axiW._ag
                 self.wAckAg = axiB._ag
                 DW = int(axiW.DATA_WIDTH)
+                clk = axiAW._getAssociatedClk()
             else:
                 assert axiW is None
                 assert axiB is None

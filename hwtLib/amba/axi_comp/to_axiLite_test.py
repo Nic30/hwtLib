@@ -82,7 +82,7 @@ class Axi_to_AxiLite_TC(AxiLite_to_Axi_TC):
         # u.m.ar._ag._debugOutput = sys.stdout
         # u.s.ar._ag._debugOutput = sys.stdout
 
-        m = Axi4LiteSimRam(u.clk, u.m)
+        m = Axi4LiteSimRam(u.m)
 
         expected_frames = []
         for _ in range(self.TRANSACTION_CNT):
@@ -116,7 +116,7 @@ class Axi_to_AxiLite_TC(AxiLite_to_Axi_TC):
         N = self.TRANSACTION_CNT
         u = self.u
 
-        m = Axi4LiteSimRam(u.clk, u.m)
+        m = Axi4LiteSimRam(u.m)
 
         expected_data = []
         for _ in range(self.TRANSACTION_CNT):

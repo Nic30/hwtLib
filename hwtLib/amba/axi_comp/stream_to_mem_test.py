@@ -40,7 +40,7 @@ class Axi4_streamToMemTC(SingleUnitSimTestCase):
         N = 33
 
         sampleData = [self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]
-        m = AxiSimRam(u.clk, u.axi)
+        m = AxiSimRam(u.axi)
         blockPtr = m.malloc(self.DATA_WIDTH // 8 * N)
 
         u.dataIn._ag.data.extend(sampleData)

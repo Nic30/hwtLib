@@ -59,7 +59,7 @@ class Mi32Axi4LiteBrigesTC(SingleUnitSimTestCase):
     def setUp(self):
         SingleUnitSimTestCase.setUp(self)
         u = self.u
-        self.memory = Axi4LiteSimRam(u.clk, axi=u.m)
+        self.memory = Axi4LiteSimRam(axi=u.m)
 
     def test_nop(self):
         self.randomize_all()

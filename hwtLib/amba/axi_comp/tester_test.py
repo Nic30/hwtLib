@@ -50,7 +50,7 @@ class AxiTesterTC(SingleUnitSimTestCase):
     def setUp(self):
         super(AxiTesterTC, self).setUp()
         u = self.u
-        self.m = AxiSimRam(u.clk, u.m_axi)
+        self.m = AxiSimRam(u.m_axi)
 
     def randomize_all(self):
         axi = self.u.m_axi

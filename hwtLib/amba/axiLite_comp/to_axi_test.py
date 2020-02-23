@@ -54,7 +54,7 @@ class AxiLite_to_Axi_TC(SingleUnitSimTestCase):
         N = self.TRANSACTION_CNT
         u = self.u
 
-        m = AxiSimRam(u.clk, u.m)
+        m = AxiSimRam(u.m)
 
         expected_data = []
         allocated_wods = list(range(N))
@@ -77,7 +77,7 @@ class AxiLite_to_Axi_TC(SingleUnitSimTestCase):
         N = self.TRANSACTION_CNT
         u = self.u
 
-        m = AxiSimRam(u.clk, u.m)
+        m = AxiSimRam(u.m)
 
         expected_data = []
         allocated_wods = list(range(N))
