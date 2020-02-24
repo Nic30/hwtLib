@@ -112,6 +112,17 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         return self
 
     @classmethod
+    def join_prioritized(cls, parent,  srcInterfaces, name=None,
+                         configAs=None, extraConfigFn=None):
+        """
+        create builder from fairly joined interfaces (round robin for input select)
+
+        :note: other parameters same as in `.AbstractStreamBuilder._join`
+        """
+        return cls._join(cls.JoinPrioritizedCls, parent, srcInterfaces, name,
+                         configAs, extraConfigFn)
+
+    @classmethod
     def join_fair(cls, parent, srcInterfaces, name=None,
                   configAs=None, exportSelected=False):
         """
