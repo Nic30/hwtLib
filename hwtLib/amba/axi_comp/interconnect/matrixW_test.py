@@ -7,12 +7,12 @@ from hwt.code import log2ceil
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi4 import Axi4
-from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC
-from hwtLib.amba.axi_comp.interconnect.matrixW import AxiInterconnectMatrixW
-from pyMathBitPrecise.bit_utils import mask
-from pycocotb.agents.clk import DEFAULT_CLOCK
 from hwtLib.amba.axi_comp.interconnect.matrixR_test import AxiInterconnectMatrixR_1to1TC
+from hwtLib.amba.axi_comp.interconnect.matrixW import AxiInterconnectMatrixW
+from hwtLib.amba.constants import RESP_OKAY
+from pyMathBitPrecise.bit_utils import mask
+from pycocotb.constants import CLK_PERIOD
 
 
 class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):
@@ -40,7 +40,7 @@ class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):
         u = self.u
         self.randomize_all()
 
-        self.runSim(10 * DEFAULT_CLOCK)
+        self.runSim(10 * CLK_PERIOD)
 
         for i in chain(u.s, u.m):
             self.assertEmpty(i.aw._ag.data)
@@ -114,7 +114,7 @@ class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):
         max_trans_duration = 2 * max(len(m.aw._ag.data)
                                      for m in u.s)\
             + max(sum(len(wt[1]) for wt in wd) for wd in slave_w_data)
-        self.runSim(4 * max_trans_duration * transaction_cnt * DEFAULT_CLOCK)
+        self.runSim(4 * max_trans_duration * transaction_cnt * CLK_PERIOD)
 
         for s_i, _w_data in enumerate(slave_w_data):
             mem = self.memory[s_i]

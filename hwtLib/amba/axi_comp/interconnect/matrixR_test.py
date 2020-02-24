@@ -10,7 +10,7 @@ from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import AxiInterco
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar_test import AxiInterconnectMatrixCrossbar_1to1TC
 from hwtLib.amba.axi_comp.interconnect.matrixR import AxiInterconnectMatrixR
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
-from pycocotb.agents.clk import DEFAULT_CLOCK
+from pycocotb.constants import CLK_PERIOD
 
 
 class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):
@@ -47,7 +47,7 @@ class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):
         u = self.u
         self.randomize_all()
 
-        self.runSim(10 * DEFAULT_CLOCK)
+        self.runSim(10 * CLK_PERIOD)
         for i in chain(u.s, u.m):
             self.assertEmpty(i.ar._ag.data)
             self.assertEmpty(i.r._ag.data)
@@ -104,7 +104,7 @@ class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):
 
         max_trans_duration = max(len(m.ar._ag.data)
                                  for m in u.s) + max(len(d) for d in master_r_data)
-        self.runSim(4 * max_trans_duration * transaction_cnt * DEFAULT_CLOCK)
+        self.runSim(4 * max_trans_duration * transaction_cnt * CLK_PERIOD)
 
         #for m_i, (m, m_r_data) in enumerate(zip(u.saster, master_r_data)):
         #    print(len(m.r._ag.data), len(m_r_data))

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.synthesizer.unit import Unit
-from hwt.interfaces.utils import addClkRstn
-from hwtLib.mi32.intf import Mi32
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from pycocotb.agents.clk import DEFAULT_CLOCK
 from hwt.hdl.constants import READ, WRITE
+from hwt.interfaces.utils import addClkRstn
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.synthesizer.unit import Unit
+from hwtLib.mi32.intf import Mi32
 from pyMathBitPrecise.bit_utils import mask
+from pycocotb.constants import CLK_PERIOD
 
 
 class Mi32Wire(Unit):
@@ -28,7 +28,7 @@ class Mi32AgentTC(SingleUnitSimTestCase):
         return u
 
     def test_nop(self):
-        self.runSim(10 * DEFAULT_CLOCK)
+        self.runSim(10 * CLK_PERIOD)
         u = self.u
         self.assertEmpty(u.m._ag.addrAg.data)
         self.assertEmpty(u.m._ag.dataAg.data)
@@ -42,7 +42,7 @@ class Mi32AgentTC(SingleUnitSimTestCase):
         data = [1, 2, 3]
         u.s._ag.rData.extend(data)
 
-        self.runSim(10 * DEFAULT_CLOCK)
+        self.runSim(10 * CLK_PERIOD)
         self.assertValSequenceEqual([x[:2] for x in u.s._ag.req], addr_req)
         self.assertValSequenceEqual(u.m._ag.rData, data)
 
@@ -52,7 +52,7 @@ class Mi32AgentTC(SingleUnitSimTestCase):
         ref = [(WRITE, i * 0x4, i+1, m) for i in range(4)]
         u.m._ag.req.extend(ref)
 
-        self.runSim(10 * DEFAULT_CLOCK)
+        self.runSim(10 * CLK_PERIOD)
         self.assertValSequenceEqual(u.s._ag.req, ref)
 
 

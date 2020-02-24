@@ -8,8 +8,8 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
-from pycocotb.agents.clk import DEFAULT_CLOCK
 from hwt.pyUtils.arrayQuery import iter_with_last
+from pycocotb.constants import CLK_PERIOD
 
 
 class AxiInterconnectMatrixCrossbar_1to1TC(SingleUnitSimTestCase):
@@ -67,7 +67,7 @@ class AxiInterconnectMatrixCrossbar_1to1TC(SingleUnitSimTestCase):
         u = self.u
         self.randomize_all()
 
-        self.runSim(10 * DEFAULT_CLOCK)
+        self.runSim(10 * CLK_PERIOD)
         for i in chain(u.dataIn, u.dataOut):
             self.assertEmpty(i._ag.data)
 
@@ -97,7 +97,7 @@ class AxiInterconnectMatrixCrossbar_1to1TC(SingleUnitSimTestCase):
 
         max_trans_duration = max(len(dout) for dout in expected_transactions)
         self.runSim((500 + 5 * max_trans_duration *
-                     transaction_cnt) * DEFAULT_CLOCK)
+                     transaction_cnt) * CLK_PERIOD)
         # assert all data was send
         for m_i, din in enumerate(u.dataIn):
             self.assertEmpty(din._ag.data, "dataIn: %d" % m_i)

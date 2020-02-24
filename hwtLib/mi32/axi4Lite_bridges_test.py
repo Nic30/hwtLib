@@ -11,7 +11,7 @@ from hwtLib.amba.constants import PROT_DEFAULT, RESP_OKAY
 from hwtLib.mi32.axi4Lite_to_mi32 import Axi4Lite_to_Mi32
 from hwtLib.mi32.intf import Mi32
 from hwtLib.mi32.to_axi4Lite import Mi32_to_Axi4Lite
-from pycocotb.agents.clk import DEFAULT_CLOCK
+from pycocotb.constants import CLK_PERIOD
 
 
 class Axi4LiteMi32Bridges(Unit):
@@ -63,7 +63,7 @@ class Mi32Axi4LiteBrigesTC(SingleUnitSimTestCase):
 
     def test_nop(self):
         self.randomize_all()
-        self.runSim(10 * DEFAULT_CLOCK)
+        self.runSim(10 * CLK_PERIOD)
         u = self.u
         for i in [u.m, u.s]:
             self.assertEmpty(i.ar._ag.data)
@@ -80,7 +80,7 @@ class Mi32Axi4LiteBrigesTC(SingleUnitSimTestCase):
             self.memory.data[i] = i + 1
         u.s.ar._ag.data.extend(a_trans)
         #self.randomize_all()
-        self.runSim(N * 10 * DEFAULT_CLOCK)
+        self.runSim(N * 10 * CLK_PERIOD)
         u = self.u
         for i in [u.s, u.m]:
             self.assertEmpty(i.aw._ag.data)

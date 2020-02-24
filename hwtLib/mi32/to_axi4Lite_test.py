@@ -6,7 +6,7 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axiLite_comp.sim.ram import Axi4LiteSimRam
 from hwtLib.mi32.to_axi4Lite import Mi32_to_Axi4Lite
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.agents.clk import DEFAULT_CLOCK
+from pycocotb.constants import CLK_PERIOD
 
 
 class Mi32_to_Axi4LiteTC(SingleUnitSimTestCase):
@@ -38,7 +38,7 @@ class Mi32_to_Axi4LiteTC(SingleUnitSimTestCase):
             self.memory.data[i] = i + 1
         u.s._ag.req.extend(addr_req)
 
-        self.runSim(12 * N * DEFAULT_CLOCK)
+        self.runSim(12 * N * CLK_PERIOD)
 
         data = [i + 1 for i in range(N)]
         self.assertValSequenceEqual(u.s._ag.rData, data)
@@ -50,7 +50,7 @@ class Mi32_to_Axi4LiteTC(SingleUnitSimTestCase):
         addr_req = [(WRITE, i * 0x4, 1 + i, m) for i in range(N)]
         u.s._ag.req.extend(addr_req)
 
-        self.runSim(12 * N * DEFAULT_CLOCK)
+        self.runSim(12 * N * CLK_PERIOD)
         self.assertEmpty(u.s._ag.rData)
         ref_data = [i + 1 for i in range(N)]
         data = [self.memory.data[i] for i in range(N)]

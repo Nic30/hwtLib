@@ -8,7 +8,7 @@ from hwt.code import log2ceil
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar import AxiInterconnectMatrixAddrCrossbar
-from pycocotb.agents.clk import DEFAULT_CLOCK
+from pycocotb.constants import CLK_PERIOD
 
 
 class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
@@ -46,7 +46,7 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
         u = self.u
         self.randomize_all()
 
-        self.runSim(10 * DEFAULT_CLOCK)
+        self.runSim(10 * CLK_PERIOD)
         for i in chain(u.m, u.s):
             self.assertEmpty(i._ag.data)
 
@@ -89,7 +89,7 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
 
         max_trans_duration = max(len(m._ag.data) for m in u.s)
         self.runSim((40 + 4 * max_trans_duration *
-                     transaction_cnt) * DEFAULT_CLOCK)
+                     transaction_cnt) * CLK_PERIOD)
         # assert all data was send
         for m_i, m in enumerate(u.s):
             self.assertEmpty(m._ag.data, "master: %d" % m_i)

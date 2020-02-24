@@ -33,7 +33,7 @@ class RmiiAdapaterSingleClk(Unit):
 
 
 class RmiiAdapterTC(SingleUnitSimTestCase):
-    CLK = (1e9 / 50e6) * Time.ns
+    CLK = int(Time.s / 50e6)
 
     @classmethod
     def getUnit(cls):
@@ -66,7 +66,7 @@ class RmiiAdapterTC(SingleUnitSimTestCase):
         ]
         u = self.u
         u.tx._ag.data.extend([(d, last) for last, d in iter_with_last(data)])
-        self.runSim(self.CLK * 100)
+        self.runSim(self.CLK * 200)
         self.assertEmpty(u.eth.tx._ag.data)
         self.assertEqual(len(u.eth.tx._ag.frames), 1)
         self.assertValSequenceEqual(u.eth.tx._ag.frames[0], expected)

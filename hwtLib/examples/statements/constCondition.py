@@ -2,9 +2,9 @@ from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal, Clk
 from hwt.serializer.verilog.serializer import VerilogSerializer
-from hwt.synthesizer.unit import Unit
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from pycocotb.agents.clk import DEFAULT_CLOCK
+from hwt.synthesizer.unit import Unit
+from pycocotb.constants import CLK_PERIOD
 
 
 class ConstCondition(Unit):
@@ -44,7 +44,7 @@ class ConstConditionTC(SingleUnitSimTestCase):
         u = self.u
         u.a._ag.data.extend([0, 1, 0, 0, 0])
         u.b._ag.data.extend([0, 0, 1, 2, 1])
-        self.runSim(10 * DEFAULT_CLOCK)
+        self.runSim(10 * CLK_PERIOD)
         self.assertValSequenceEqual(u.c._ag.data, [None, None, 1, 0, 1, 0, 0, 0, 0, 0])
 
 
