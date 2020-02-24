@@ -18,14 +18,11 @@ class AxiSStoredBurst(Unit):
 
     .. hwt-schematic::
     """
-    def __init__(self, data=[ord(c) for c in "Hello world"]):
-        super(AxiSStoredBurst, self).__init__()
-        self.DATA = data
-
     def _config(self):
-        self.DATA_WIDTH = Param(64)
-        self.USE_STRB = Param(True)
+        AxiStream._config(self)
+        self.USE_STRB = True
         self.REPEAT = Param(False)
+        self.DATA = Param(tuple(ord(c) for c in "Hello world"))
 
     def dataRd(self):
         return self.dataOut.ready
@@ -77,4 +74,4 @@ class AxiSStoredBurst(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    print(toRtl(AxiSStoredBurst))
+    print(toRtl(AxiSStoredBurst()))
