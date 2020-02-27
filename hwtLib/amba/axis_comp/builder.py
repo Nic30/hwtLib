@@ -5,6 +5,7 @@ from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.cdc import AxiSCdc
 from hwtLib.amba.axis_comp.fifo import AxiSFifo
 from hwtLib.amba.axis_comp.fifo_async import AxiSFifoAsync
+from hwtLib.amba.axis_comp.fifo_drop import AxiSFifoDrop
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.amba.axis_comp.reg import AxiSReg
@@ -19,6 +20,7 @@ class AxiSBuilder(AbstractStreamBuilder):
     """
     FifoCls = AxiSFifo
     FifoAsyncCls = AxiSFifoAsync
+    FifoDropCls = AxiSFifoDrop
     RegCdcCls = AxiSCdc
     RegCls = AxiSReg
     SplitCopyCls = AxiSSplitCopy
@@ -98,3 +100,15 @@ class AxiSBuilder(AbstractStreamBuilder):
         self.lastComp = u
         self.end = u.dataOut
         return self, u.dataIn
+
+    def buff_drop(self, items, export_size=False, export_space=False):
+        """
+        Instanciate a FIFO buffer with externally controlled frame drop functionality
+        (use "dataIn_discard" signal)
+        """
+        def set_params(u: AxiSFifoDrop):
+            u.DEPTH = items
+            u.EXPORT_SIZE = export_size
+            u.EXPORT_SPACE = export_space
+
+        return self._genericInstance(self.FifoDropCls, "buff_drop", set_params)

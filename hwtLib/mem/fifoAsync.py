@@ -31,7 +31,7 @@ class FifoAsync(Fifo):
         assert isPow2(self.DEPTH), "DEPTH has to be power of 2, is %d" % self.DEPTH 
         # pow 2 because of gray conter counters
 
-        if int(self.EXPORT_SIZE) or int(self.EXPORT_SPACE):
+        if self.EXPORT_SIZE or self.EXPORT_SPACE:
             raise NotImplementedError()
 
         self.dataIn_clk = Clk()

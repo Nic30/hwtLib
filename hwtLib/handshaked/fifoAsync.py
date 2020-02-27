@@ -29,7 +29,7 @@ class HsFifoAsync(HandshakedFifo):
         assert isPow2(self.DEPTH - 1), (
             "DEPTH has to be 2**n + 1"
             " because fifo has have DEPTH 2**n"
-            " and 1 item is sotored on output reg", self.DEPTH)
+            " and 1 item is stored on output reg", self.DEPTH)
         self.dataIn_clk = Clk()
         self.dataOut_clk = Clk()
         with self._paramsShared():
@@ -51,9 +51,13 @@ class HsFifoAsync(HandshakedFifo):
         # because the output register is used as another item storage
         f.DEPTH = self.DEPTH - 1
         f.EXPORT_SIZE = self.EXPORT_SIZE
+        f.EXPORT_SPACE = self.EXPORT_SPACE
 
+        SIZE_W = log2ceil(self.DEPTH + 1 + 1)
         if self.EXPORT_SIZE:
-            self.size = VectSignal(log2ceil(self.DEPTH + 1 + 1), signed=False)
+            self.size = VectSignal(SIZE_W, signed=False)
+        if self.EXPORT_SPACE:
+            self.space = VectSignal(SIZE_W, signed=False)
 
     def _impl(self):
         HandshakedFifo._impl(
