@@ -9,11 +9,11 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.localLinkConv import LocalLinkToAxiS, AxiSToLocalLink
+from hwtLib.xilinx.locallink.axis_conv import LocalLinkToAxiS, AxiSToLocalLink
 from pyMathBitPrecise.bit_utils import mask
 
 
-class LocalLinkConvTest(Unit):
+class LocalLink_AxiSConvTest(Unit):
 
     def _config(self):
         self.DATA_WIDTH = Param(64)
@@ -39,7 +39,7 @@ class AxiS_localLinkConvTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
-        cls.u = LocalLinkConvTest()
+        cls.u = LocalLink_AxiSConvTest()
         return cls.u
 
     def test_nop(self):
@@ -63,7 +63,7 @@ class AxiS_localLinkConvTC(SingleUnitSimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(AxiS_measuringFifoTC('test_withPause'))
-    suite.addTest(unittest.makeSuite(AxiS_localLinkConvTC))
+    # suite.addTest(LocalLink_AxiSConvTest('test_withPause'))
+    suite.addTest(unittest.makeSuite(LocalLink_AxiSConvTest))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

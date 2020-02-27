@@ -7,7 +7,7 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
-from hwtLib.interfaces.localLink import LocalLink
+from hwtLib.xilinx.locallink.intf import LocalLink
 from pyMathBitPrecise.bit_utils import mask
 
 

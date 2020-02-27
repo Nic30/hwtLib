@@ -40,7 +40,6 @@ from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
 from hwtLib.amba.axis_comp.frameForge_test import AxiS_frameForge_TC
 from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
 from hwtLib.amba.axis_comp.frameParser_test import AxiS_frameParserTC
-from hwtLib.amba.axis_comp.localLinkConv_test import AxiS_localLinkConvTC
 from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
     AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC, \
@@ -206,6 +205,7 @@ from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
+from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
