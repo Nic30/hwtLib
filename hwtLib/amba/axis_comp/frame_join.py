@@ -160,6 +160,7 @@ class AxiS_FrameJoin(Unit):
         | 2 | X |      | X | X |        | 3 | 4 |
         +---+---+      +---+---+        +---+---+
 
+    .. hwt-schematic:
     """
 
     def _config(self):
