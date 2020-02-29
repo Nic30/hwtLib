@@ -206,6 +206,7 @@ from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
+from hwtLib.amba.axis_comp.frame_join_test import AxiS_FrameJoin_TCs
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -378,9 +379,9 @@ suite = testSuiteFromTCs(
     AxiTesterTC,
 
     AxisFrameGenTC,
-    Axi4_rDatapumpTC,
+    #Axi4_rDatapumpTC,
     Axi3_rDatapumpTC,
-    Axi4_wDatapumpTC,
+    #Axi4_wDatapumpTC,
     Axi3_wDatapump_direct_TC,
     Axi3_wDatapump_small_splitting_TC,
     AxiSlaveTimeoutTC,
@@ -394,6 +395,7 @@ suite = testSuiteFromTCs(
     AxiS_frameForge_TC,
     AxiS_localLinkConvTC,
     AxiS_frameParserTC,
+    *AxiS_FrameJoin_TCs,
     HandshakedBuilderSimpleTC,
     EthAddrUpdaterTC,
 
