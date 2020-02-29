@@ -26,7 +26,7 @@ class HandshakedFifoDrop(HandshakedFifo):
             Tuple[Clk, Union[Rst, Rst_n]]]]=None):
         super(HandshakedFifoDrop, self)._impl(clk_rst=clk_rst)
         f = self.fifo
-        f.dataIn_commit(self.dataIn_commit)
+        f.dataIn.commit(self.dataIn_commit)
         f.dataIn.discard(self.dataIn_discard)
 
 
