@@ -10,7 +10,7 @@ from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwtLib.types.ctypes import uint8_t
 from ipCorePackager.intfIpMeta import IntfIpMeta
 from pyMathBitPrecise.bit_utils import mask, setBitRange, selectBit,\
-    selectBitRange
+    selectBitRange, setBit
 from pycocotb.hdlSimulator import HdlSimulator
 
 
@@ -127,16 +127,21 @@ def packAxiSFrame(dataWidth, structVal, withStrb=False):
     pack data of structure into words on axis interface
     """
     if withStrb:
-        maskAll = mask(dataWidth // 8)
+        byte_cnt = dataWidth // 8
 
     words = iterBits(structVal, bitsInOne=dataWidth,
                      skipPadding=False, fillup=True)
     for last, d in iter_with_last(words):
         assert d._dtype.bit_length() == dataWidth, d._dtype.bit_length()
         if withStrb:
-            # [TODO] mask in last resolved from size of datatype,
-            #        mask for padding
-            yield (d, maskAll, last)
+            word_mask = 0
+            for B_i in range(byte_cnt):
+                m = selectBitRange(d.vld_mask, B_i * 8, 8)
+                if m == 0xff:
+                    word_mask = setBit(word_mask, B_i)
+                else:
+                    assert m == 0, ("Each byte has to be entirely valid or entirely invalid, because of mask granularity", m)
+            yield (d, word_mask, last)
         else:
             yield (d, last)
 
