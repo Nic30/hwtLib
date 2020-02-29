@@ -1,17 +1,19 @@
 from hwtLib.amba.axi_comp.builder import AxiBuilder
 from hwtLib.mi32.axi4Lite_to_mi32 import Axi4Lite_to_Mi32
-from hwtLib.mi32.buff import Mi32Buff
 from hwtLib.mi32.sliding_window import Mi32SlidingWindow
 from hwtLib.mi32.to_axi4Lite import Mi32_to_Axi4Lite
 from hwtLib.amba.axi4Lite import Axi4Lite
 
 
+class _Mi32Buff():
+    """Mi32Buff constructor which ignores interface in constructor"""
+    def __init__(self, intfCls):
+        super(_Mi32Buff, self).__init__()
+
+
 class Mi32Builder(AxiBuilder):
 
-    @staticmethod
-    def BuffCls(cls):
-        return Mi32Buff()
-
+    BuffCls = _Mi32Buff
     BuffCdcCls = NotImplemented
 
     def sliding_window(self, window_size: int, new_addr_width: int):

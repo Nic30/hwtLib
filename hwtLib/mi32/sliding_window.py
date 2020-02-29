@@ -11,8 +11,8 @@ class Mi32SlidingWindow(BusBridge):
     address space than available on input interface due size of its address signal
 
     :note: address_space = HStruct(
-            (Bits(8)[WINDOW_SIZE], "window"),
-            (Bits(DATA_WIDTH),     "offset"),
+        (Bits(8)[WINDOW_SIZE], "window"),
+        (Bits(DATA_WIDTH),     "offset"),
         )
     :note: offset is write only
     """

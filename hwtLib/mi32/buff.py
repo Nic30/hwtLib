@@ -30,6 +30,11 @@ class Mi32AddrHs(HandshakeSync):
 
 
 class Mi32Buff(BusBridge):
+    """
+    Buffer for Mi32 interface
+
+    .. hwt-schematic:
+    """
 
     def _config(self):
         Mi32._config(self)
