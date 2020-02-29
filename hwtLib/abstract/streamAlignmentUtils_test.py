@@ -19,7 +19,7 @@ class StreamJoiningUtilsTC(unittest.TestCase):
         chunk_cnt_max = 2
         res = get_important_byte_cnts(
             0, 0, word_bytes, chunk_size, chunk_cnt_min, chunk_cnt_max)
-        res_ref = [2]
+        res_ref = [2, 4]  # 4 for case where last=0
         self.assertSequenceEqual(res, res_ref)
 
         chunk_cnt_max = 3
@@ -30,21 +30,29 @@ class StreamJoiningUtilsTC(unittest.TestCase):
         chunk_cnt_max = 2
         res = get_important_byte_cnts(
             1, 0, word_bytes, chunk_size, chunk_cnt_min, chunk_cnt_max)
-        res_ref = [2, 4]
+        self.assertSequenceEqual(res, res_ref)
+
+        res = get_important_byte_cnts(
+            0, 1, word_bytes, chunk_size, chunk_cnt_min, chunk_cnt_max)
+        self.assertSequenceEqual(res, res_ref)
+
+        res = get_important_byte_cnts(
+            1, 1, word_bytes, chunk_size, chunk_cnt_min, chunk_cnt_max)
         self.assertSequenceEqual(res, res_ref)
 
         chunk_cnt_max = 3
         res = get_important_byte_cnts(
             0, 0, word_bytes, chunk_size, chunk_cnt_min, chunk_cnt_max)
-        res_ref = [2]
         self.assertSequenceEqual(res, res_ref)
 
+    def test_get_important_chunk_cnts_2(self):
+        word_bytes = 2
         chunk_size = 1
         chunk_cnt_min = 1
         chunk_cnt_max = inf
         res = get_important_byte_cnts(
             0, 0, word_bytes, chunk_size, chunk_cnt_min, chunk_cnt_max)
-        res_ref = [1, 2, 3]
+        res_ref = [1, 2, 3]  # 3 for case where last=0 for byte 0, 1
         self.assertSequenceEqual(res, res_ref)
 
         res = get_important_byte_cnts(
@@ -56,10 +64,10 @@ class StreamJoiningUtilsTC(unittest.TestCase):
         word_bytes = 1
         res = get_important_byte_cnts(
             0, 0, word_bytes, chunk_size, chunk_cnt_min, chunk_cnt_max)
-        res_ref = [1]
+        res_ref = [1, 2]
         self.assertSequenceEqual(res, res_ref)
 
-    def test_get_important_chunk_cnts_2(self):
+    def test_get_important_chunk_cnts_3(self):
         word_bytes = 2
         chunk_size = 2
         chunk_cnt_min = 1
@@ -74,6 +82,7 @@ class StreamJoiningUtilsTC(unittest.TestCase):
             0, 1, word_bytes, chunk_size, chunk_cnt_min, chunk_cnt_max)
         res_ref = [2, 4]
         self.assertSequenceEqual(res, res_ref)
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

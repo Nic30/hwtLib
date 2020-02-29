@@ -141,7 +141,8 @@ def create_frame(word_bytes, stream_i, byte_cnt, offset_out, offset_in):
     return freeze_frame(frame)
 
 
-def get_bytes_in_frame_info(offset_out, offset_in, word_bytes, chunk_size, chunk_cnt):
+def get_bytes_in_frame_info(offset_out, offset_in, word_bytes,
+                            chunk_size, chunk_cnt, already_has_body_words):
     assert chunk_cnt > 0, chunk_cnt
     assert chunk_size > 0, chunk_size
 
@@ -156,11 +157,16 @@ def get_bytes_in_frame_info(offset_out, offset_in, word_bytes, chunk_size, chunk
     first_word_is_last_word = (offset + chunk_cnt * chunk_size) <= word_bytes
 
     min_representative_frame_size = first_word_bytes
-    if has_body_words and offset != 0:
+    if has_body_words and (offset != 0 or not already_has_body_words):
         min_representative_frame_size += word_bytes
-    if not first_word_is_last_word and not (
-            has_body_words and offset != 0 and last_word_bytes == word_bytes):
+    if not first_word_is_last_word\
+            and not (
+                has_body_words
+                and last_word_bytes == word_bytes
+            ):
         min_representative_frame_size += last_word_bytes
+    if first_word_bytes == word_bytes and min_representative_frame_size > word_bytes:
+        has_body_words = True
     return first_word_bytes, has_body_words, last_word_bytes, min_representative_frame_size
 
 
@@ -175,7 +181,7 @@ def get_important_byte_cnts(offset_out, offset_in, word_bytes, chunk_size,
     if isinstance(chunk_cnt_min, int) and isinstance(chunk_cnt_max, int)\
             and chunk_cnt_min == chunk_cnt_max:
         _, _, _, min_representative_frame_size = get_bytes_in_frame_info(
-            offset_out, offset_in, word_bytes, chunk_size, chunk_cnt_min)
+            offset_out, offset_in, word_bytes, chunk_size, chunk_cnt_min, False)
         return [min_representative_frame_size, ]
 
     _chunk_cnt_min = chunk_cnt_min % (2 * word_bytes)
@@ -183,10 +189,16 @@ def get_important_byte_cnts(offset_out, offset_in, word_bytes, chunk_size,
         min((2 * word_bytes), chunk_cnt_max - chunk_cnt_min)
     chunk_cnt_min = _chunk_cnt_min
     sizes = set()
-    for x in range(chunk_cnt_min, chunk_cnt_max + 1):
-        _, _, _, min_representative_frame_size = get_bytes_in_frame_info(
-            offset_out, offset_in, word_bytes, chunk_size, x)
+    already_has_body_words = False
+    for chunk_cnt in range(chunk_cnt_min, chunk_cnt_max + 1):
+        (_,
+         has_body_words,
+         _,
+         min_representative_frame_size) = get_bytes_in_frame_info(
+            offset_out, offset_in, word_bytes, chunk_size, chunk_cnt,
+            already_has_body_words)
         sizes.add(min_representative_frame_size)
+        already_has_body_words |= has_body_words
 
     return sorted(sizes)
 
@@ -225,7 +237,7 @@ def streams_to_all_possible_frame_formats(t: HStruct, word_bytes: int, offset: i
             f_frames.update(f_frames_tmp)
 
         f_frames = list(f_frames)
-        #pprint(f_frames)
+        # pprint(f_frames)
         frames_per_stream.append(f_frames)
         _prev_end_offsets = prev_end_offsets
         prev_end_offsets = set()
