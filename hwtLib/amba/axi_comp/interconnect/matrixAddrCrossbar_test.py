@@ -195,15 +195,20 @@ class AxiInterconnectMatrixAddrCrossbar_2to1_2to1_1toAllTC(AxiInterconnectMatrix
         return u
 
 
+AxiInterconnectMatrixAddrCrossbar_TCs = [
+    AxiInterconnectMatrixAddrCrossbar_1to1TC,
+    AxiInterconnectMatrixAddrCrossbar_1to3TC,
+    AxiInterconnectMatrixAddrCrossbar_3to1TC,
+    AxiInterconnectMatrixAddrCrossbar_3to3TC,
+    AxiInterconnectMatrixAddrCrossbar_2to1_2to1_1toAllTC
+]
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
     # suite.addTest(AxiInterconnectMatrixAddrCrossbar_3to3TC(''))
-    suite.addTest(unittest.makeSuite(AxiInterconnectMatrixAddrCrossbar_1to1TC))
-    suite.addTest(unittest.makeSuite(AxiInterconnectMatrixAddrCrossbar_1to3TC))
-    suite.addTest(unittest.makeSuite(AxiInterconnectMatrixAddrCrossbar_3to1TC))
-    suite.addTest(unittest.makeSuite(AxiInterconnectMatrixAddrCrossbar_3to3TC))
-    suite.addTest(unittest.makeSuite(AxiInterconnectMatrixAddrCrossbar_2to1_2to1_1toAllTC))
+    for tc in AxiInterconnectMatrixAddrCrossbar_TCs:
+        suite.addTest(unittest.makeSuite(tc))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

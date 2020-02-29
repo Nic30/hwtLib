@@ -260,15 +260,20 @@ class AxiLiteEndpointMemMasterTC(SimTestCase):
         self._test_write_memMaster(structTwoFieldsDense)
 
 
+AxiLiteEndpointTCs = [
+    AxiLiteEndpointTC,
+    AxiLiteEndpointDenseStartTC,
+    AxiLiteEndpointDenseTC,
+    AxiLiteEndpointMemMasterTC
+]
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
     # suite.addTest(AxiLiteEndpointStructsInArray('test_write'))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointMemMasterTC))
+    for tc in AxiLiteEndpointTCs:
+        suite.addTest(unittest.makeSuite(tc))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

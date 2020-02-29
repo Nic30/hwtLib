@@ -180,14 +180,19 @@ class AxiInterconnectMatrixW_3to3TC(AxiInterconnectMatrixW_1to1TC):
         return u
 
 
+AxiInterconnectMatrixW_TCs = [
+    AxiInterconnectMatrixW_1to1TC,
+    AxiInterconnectMatrixW_1to3TC,
+    AxiInterconnectMatrixW_3to1TC,
+    AxiInterconnectMatrixW_3to3TC,
+]
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
     # suite.addTest(Axi3_rDatapumpTC('test_endstrbMultiFrame'))
-    suite.addTest(unittest.makeSuite(AxiInterconnectMatrixW_1to1TC))
-    suite.addTest(unittest.makeSuite(AxiInterconnectMatrixW_1to3TC))
-    suite.addTest(unittest.makeSuite(AxiInterconnectMatrixW_3to1TC))
-    suite.addTest(unittest.makeSuite(AxiInterconnectMatrixW_3to3TC))
+    for tc in AxiInterconnectMatrixW_TCs:
+        suite.addTest(unittest.makeSuite(tc))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
