@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from math import inf
 from typing import Optional, List, Callable, Tuple
 
@@ -154,11 +157,11 @@ class AxiS_FrameJoin(Unit):
 
     .. aafig::
 
-        +---+---+      +---+---+        +---+---+
-        | X | 1 |      | 3 | 4 |        | 1 | 2 |
-        +---+---+   +  +---+---+  ->    +---+---+
-        | 2 | X |      | X | X |        | 3 | 4 |
-        +---+---+      +---+---+        +---+---+
+        +---+---+       +---+---+       +---+---+
+        | X | 1 |       | 3 | 4 |       | 1 | 2 |
+        +---+---+   +   +---+---+  ->   +---+---+
+        | 2 | X |       | X | X |       | 3 | 4 |
+        +---+---+       +---+---+       +---+---+
 
     .. hwt-schematic:
     """

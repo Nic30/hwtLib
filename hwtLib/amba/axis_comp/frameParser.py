@@ -31,7 +31,7 @@ from hwtLib.handshaked.builder import HsBuilder
 class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
     """
     Parse frame specified by HType (HStruct, HUnion, ...) into fields
-    
+
     :note: if special frame format is required,
         it can be specified by TransTmpl instance and list of FrameTmpl
         (Output data structure can be splited into multiple frames as required)
@@ -58,17 +58,22 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
                  tmpl: Optional[TransTmpl]=None,
                  frames: Optional[List[FrameTmpl]]=None):
         """
-        :param structT: instance of HStruct which specifies data format to download
+        :param structT: instance of HStruct which specifies
+            data format to download
         :param tmpl: instance of TransTmpl for this structT
         :param frames: list of FrameTmpl instances for this tmpl
-        :note: if tmpl and frames are None they are resolved from structT parseTemplate
-        :note: this unit can parse sequence of frames, if they are specified by "frames"
-        :attention: structT can not contain fields with variable size like HStream
+        :note: if tmpl and frames are None they are resolved
+            from structT parseTemplate
+        :note: this unit can parse sequence of frames,
+            if they are specified by "frames"
+        :attention: structT can not contain fields with variable size
+            like HStream
         """
         self._structT = structT
 
         if tmpl is not None:
-            assert frames is not None, "tmpl and frames can be used only together"
+            assert frames is not None, \
+                "tmpl and frames can be used only together"
         else:
             assert frames is None, "tmpl and frames can be used only together"
 
@@ -133,9 +138,11 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
         high, low = transPart.getBusWordBitRange()
         return busDataSignal[high:low]
 
-    def choiceIsSelected(self, interfaceOfChoice: Union[UnionSource, UnionSink]):
+    def choiceIsSelected(self,
+                         interfaceOfChoice: Union[UnionSource, UnionSink]):
         """
-        Check if union member is selected by _select interface in union interface
+        Check if union member is selected by _select interface
+        in union interface
         """
         parent = interfaceOfChoice._parent
         r = self._tmpRegsForSelect[parent]
@@ -235,8 +242,8 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
             hsNondes.append(on)
         else:
             dataVld = busVld & en & exclusiveEn
-            # part is in some word as last part, we have to store its value to register
-            # until the last part arrive
+            # part is in some word as last part, we have to store its value
+            # to register until the last part arrive
             fPartReg = self._reg("%s_part_%d" % (fieldInfo.name,
                                                  len(signalsOfParts)),
                                  fPartSig._dtype)
@@ -346,9 +353,6 @@ def _example_AxiS_frameParser():
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-
     u = _example_AxiS_frameParser()
 
-    print(
-        toRtl(u)
-    )
+    print(toRtl(u))

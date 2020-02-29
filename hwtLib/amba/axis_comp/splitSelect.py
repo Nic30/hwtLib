@@ -7,7 +7,8 @@ from hwtLib.handshaked.splitSelect import HsSplitSelect
 
 class AxiSSpliSelect(AxiSCompBase, HsSplitSelect):
     """
-    Send input frame to one of N output streams as specified by selectOneHot interface
+    Send input frame to one of N output streams as specified
+    by selectOneHot interface
 
     :see: :class:`hwtLib.handshaked.splitSelect.HsSplitSelect`
 
@@ -16,7 +17,6 @@ class AxiSSpliSelect(AxiSCompBase, HsSplitSelect):
 
     def _select_consume_en(self):
         return self.dataIn.last
-
 
 
 if __name__ == "__main__":

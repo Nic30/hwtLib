@@ -123,11 +123,10 @@ class ExclusieveListOfHsNodes(list):
             ack = Or(*acks)
 
         return ack & self.selectorIntf.vld
-        
 
     def sync(self, allNodes: List[OutNodeInfo], en: RtlSignal) -> None:
         nodesWithoutMe = list(where(allNodes, lambda x: x is not self))
-        for index, item in self:
+        for _, item in self:
             item.sync(nodesWithoutMe, en)
 
 
@@ -148,7 +147,7 @@ class WordFactory():
                 return self.wordIndexReg._eq(x[0]) & x[1].ack()
 
         acks = [getAck(w) for w in self.words]
-        
+
         if acks:
             return Or(*acks)
         else:
@@ -158,4 +157,3 @@ class WordFactory():
         for _wordIndex, nodes in self.words:
             for node in nodes:
                 node.sync(nodes, en)
-

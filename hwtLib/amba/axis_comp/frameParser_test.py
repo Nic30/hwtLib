@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from itertools import product
 
 from hwt.hdl.constants import Time
@@ -13,24 +16,25 @@ import os
 
 
 structManyInts = HStruct(
-                    (uint64_t, "i0"),
-                    (uint64_t, None),  # dummy word
-                    (uint64_t, "i1"),
-                    (uint64_t, None),
-                    (uint16_t, "i2"),
-                    (uint16_t, "i3"),
-                    (uint32_t, "i4"),  # 3 items in one word
+    (uint64_t, "i0"),
+    (uint64_t, None),  # dummy word
+    (uint64_t, "i1"),
+    (uint64_t, None),
+    (uint16_t, "i2"),
+    (uint16_t, "i3"),
+    (uint32_t, "i4"),  # 3 items in one word
 
-                    (uint32_t, None),
-                    (uint64_t, "i5"),  # this word is split on two bus words
-                    (uint32_t, None),
+    (uint32_t, None),
+    (uint64_t, "i5"),  # this word is split on two bus words
+    (uint32_t, None),
 
-                    (uint64_t, None),
-                    (uint64_t, None),
-                    (uint64_t, None),
-                    (uint64_t, "i6"),
-                    (uint64_t, "i7"),
-                    )
+    (uint64_t, None),
+    (uint64_t, None),
+    (uint64_t, None),
+    (uint64_t, "i6"),
+    (uint64_t, "i7"),
+)
+
 MAGIC = 14
 reference0 = {
     "i0": MAGIC + 1,
@@ -94,7 +98,7 @@ reference_unionSimple3 = ("b", MAGIC + 20)
 
 
 TEST_DW = [
-    15, 16, 32, 51, 64, 
+    15, 16, 32, 51, 64,
     128, 512
 ]
 RAND_FLAGS = [

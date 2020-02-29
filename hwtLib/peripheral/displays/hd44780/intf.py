@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from math import ceil
 
 from hwt.interfaces.std import Signal, VectSignal
@@ -19,8 +21,10 @@ class Hd44780Intf(Interface):
         whould be connected to bits 7-4 on physical device
     """
     # for f_osc = 270KHz, which is deaut clock used by most of the LCDs
-    DELAY_CMD = 10  # 37 us, dealy or rest of the commands
-    DELAY_RETURN_HOME = 41 * DELAY_CMD  # 1.52 ms, also for clear display command
+    # 37 us, dealy or rest of the commands
+    DELAY_CMD = 10
+    # 1.52 ms, also for clear display command
+    DELAY_RETURN_HOME = 41 * DELAY_CMD
     # ROM code: A00
     CHAR_MAP = {
         **{chr(c): c for c in range(ord(' '), ord('}') + 1)},
@@ -89,7 +93,8 @@ class Hd44780Intf(Interface):
 
     @staticmethod
     def CMD_DISPLAY_CONTROL(display_on_off, cursor_on_off, cursor_blink):
-        return 0b00001000 | (display_on_off << 2) | (cursor_on_off << 1) | cursor_blink
+        return 0b00001000 | (display_on_off << 2)\
+             | (cursor_on_off << 1) | cursor_blink
 
     @staticmethod
     def CMD_CURSOR_OR_DISPLAY_SHIFT(shift_or_cursor, right_left):
