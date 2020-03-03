@@ -13,9 +13,10 @@ from hwt.hdl.types.union import HUnion
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
-from hwtLib.types.ctypes import uint64_t, uint32_t, int32_t
+from hwtLib.types.ctypes import uint64_t, uint32_t, int32_t, uint8_t
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.triggers import Timer
+from hwtLib.amba.axis import axis_send_bytes, axis_recieve_bytes
 
 
 s1field = HStruct(
@@ -78,6 +79,11 @@ struct2xStream64 = HStruct(
     (HStream(uint64_t), "streamIn1")
 )
 
+structStreamAndFooter = HStruct(
+    (HStream(uint8_t), "data"),
+    (uint32_t, "footer"),
+)
+
 
 class AxiS_frameForge_TC(SimTestCase):
     def instantiateFrameForge(self, structT,
@@ -87,16 +93,23 @@ class AxiS_frameForge_TC(SimTestCase):
                               trimPaddingWordsOnStart=False,
                               trimPaddingWordsOnEnd=False,
                               randomized=True):
-        tmpl = TransTmpl(structT)
-        frames = list(FrameTmpl.framesFromTransTmpl(
-            tmpl,
-            DATA_WIDTH,
-            maxFrameLen=maxFrameLen,
-            maxPaddingWords=maxPaddingWords,
-            trimPaddingWordsOnStart=trimPaddingWordsOnStart,
-            trimPaddingWordsOnEnd=trimPaddingWordsOnEnd))
-        u = self.u = AxiS_frameForge(structT,
-                                     tmpl, frames)
+        if maxFrameLen is not inf\
+                or maxPaddingWords is not inf\
+                or trimPaddingWordsOnStart is not False\
+                or trimPaddingWordsOnEnd is not False:
+            tmpl = TransTmpl(structT)
+            frames = list(FrameTmpl.framesFromTransTmpl(
+                tmpl,
+                DATA_WIDTH,
+                maxFrameLen=maxFrameLen,
+                maxPaddingWords=maxPaddingWords,
+                trimPaddingWordsOnStart=trimPaddingWordsOnStart,
+                trimPaddingWordsOnEnd=trimPaddingWordsOnEnd))
+        else:
+            tmpl = None
+            frames = None
+
+        u = self.u = AxiS_frameForge(structT, tmpl, frames)
         u.DATA_WIDTH = self.DATA_WIDTH = DATA_WIDTH
         self.m = mask(self.DATA_WIDTH // 8)
 
@@ -474,6 +487,38 @@ class AxiS_frameForge_TC(SimTestCase):
 
     def test_r_struct2xStream64(self):
         self.test_struct2xStream64(randomized=True)
+
+    def test_footer(self, randomized=False):
+        self.instantiateFrameForge(structStreamAndFooter,
+                                   DATA_WIDTH=16,
+                                   randomized=randomized)
+        u = self.u
+        axis_send_bytes
+
+        def mk_footer(d):
+            v = 0
+            for i in range(4):
+                v |= (d + i) << (8 * i)
+            return v
+
+        axis_send_bytes(u.dataIn.data, [1, 2])
+        u.dataIn.footer._ag.data.append(mk_footer(3))
+        axis_send_bytes(u.dataIn.data, [8, 9, 10, 11])
+        u.dataIn.footer._ag.data.append(mk_footer(12))
+        t = 170
+        if randomized:
+            t *= 3
+        self.runSim(t * Time.ns)
+        offset, f = axis_recieve_bytes(u.dataOut)
+        self.assertEqual(offset, 0)
+        self.assertValSequenceEqual(f, list(range(1, 3 + 4)))
+        offset, f = axis_recieve_bytes(u.dataOut)
+        self.assertEqual(offset, 0)
+        self.assertValSequenceEqual(f, list(range(8, 12 + 4)))
+        self.assertEmpty(u.dataOut._ag.data)
+
+    def test_footer_randomized(self):
+        self.test_footer(randomized=True)
 
 
 if __name__ == "__main__":

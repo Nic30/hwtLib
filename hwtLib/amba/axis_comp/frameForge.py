@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict
 
-from hwt.code import log2ceil, Switch, If, isPow2, SwitchLogic
+from hwt.code import log2ceil, Switch, If, isPow2, SwitchLogic, connect
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts, StreamOfFramePars
 from hwt.hdl.transPart import TransPart
@@ -16,19 +16,61 @@ from hwt.hdl.types.union import HUnion
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.unionIntf import UnionSink
-from hwt.interfaces.utils import addClkRstn
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.byteOrder import reverseByteOrder
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
-from hwtLib.abstract.templateBasedUnit import TemplateBasedUnit
+from hwtLib.abstract.template_configured import TemplateConfigured,\
+    separate_footers, to_primitive_stream_t
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
 from pyMathBitPrecise.bit_utils import mask
+from hwtLib.amba.axis_comp.frame_join import AxiS_FrameJoin
+from hwt.synthesizer.hObjList import HObjList
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.interface import Interface
+from ipCorePackager.constants import DIRECTION
 
 
-class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
+def _get_only_stream(t: HdlType):
+    """
+    Return HStream if base datatype is HStream.
+    (HStream field may be nested in HStruct)
+    """
+    if isinstance(t, HStream):
+        return t
+    elif isinstance(t, HStruct) and len(t.fields) == 1:
+        return _get_only_stream(t.fields[0].dtype)
+    return None
+
+
+def _connect_if_present_on_dst(src: Interface, dst: Interface, dir_reverse=False, connect_keep_to_strb=False):
+    if not src._interfaces:
+        assert not dst._interfaces, (src, dst)
+        if dir_reverse:
+            src(dst)
+        else:
+            dst(src)
+    for _s in src._interfaces:
+        _d = getattr(dst, _s._name, None)
+        if _d is None:
+            continue
+        if _d._masterDir == DIRECTION.IN:
+            rev = not dir_reverse
+        else:
+            rev = dir_reverse
+
+        _connect_if_present_on_dst(_s, _d, dir_reverse=rev,
+                                   connect_keep_to_strb=connect_keep_to_strb)
+        if _s._name == "strb" and connect_keep_to_strb:
+            _connect_if_present_on_dst(_s, dst.keep, dir_reverse=rev,
+                                       connect_keep_to_strb=connect_keep_to_strb)
+
+
+
+class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
     """
     Assemble fields into frame on axi stream interface,
     frame description can be HType instance (HStruct, HUnion, ...)
@@ -60,34 +102,20 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
                  tmpl: Optional[TransTmpl]=None,
                  frames: Optional[List[FrameTmpl]]=None):
         """
-        :param hsIntfCls: class of interface which should be used
-            as interface of this unit
-        :param structT: instance of HStruct used as template for this frame
-            If name is None no input port is generated and space
-            is filled with invalid values, litle-endian encoding,
-            supported types of interfaces are: Handshaked, Signal
-            can be also instance of FrameTmpl
-        :param tmpl: instance of TransTmpl for this structT
-        :param frames: list of FrameTmpl instances for this tmpl
-        :note: if tmpl and frames are None they are resolved
-            from structT parseTemplate
         :note: This unit can parse sequence of frames,
             if they are specified by "frames"
         :note: structT can contain fields with variable size like HStream
         """
-        self._structT = structT
-        self._tmpl = tmpl
-        self._frames = frames
         self._tmpRegsForSelect = {}
-
+        TemplateConfigured.__init__(self, structT, tmpl, frames)
         AxiSCompBase.__init__(self)
 
     def _config(self):
         AxiSCompBase._config(self)
         self.USE_STRB = True
+        self.OUT_OFFSET = Param(0)
 
-    @staticmethod
-    def _mkFieldIntf(parent: StructIntf, structField: HStructField):
+    def _mkFieldIntf(self, parent: StructIntf, structField: HStructField):
         """
         Instantiate interface for all members of input type
         """
@@ -98,7 +126,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
             return StructIntf(t, parent._instantiateFieldFn)
         elif isinstance(t, HStream):
             p = AxiStream()
-            p.DATA_WIDTH = structField.dtype.element_t.bit_length()
+            p._updateParamsFrom(self)
             p.USE_STRB = True
             return p
         else:
@@ -110,7 +138,17 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
         """"
         Parse template and decorate with interfaces
         """
-        self.parseTemplate()
+        t = self._structT
+        s_t = _get_only_stream(t)
+        if s_t is None:
+            self.sub_t = [_t for _, _t in separate_footers(t, {})]
+            if len(self.sub_t) == 1:
+                self.parseTemplate()
+                # else each child will parse it's own part
+        else:
+            # only instanciate a compoment which aligns the sream
+            # to correct output format
+            self.sub_t = [s_t, ]
 
         addClkRstn(self)
         with self._paramsShared():
@@ -241,13 +279,38 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
 
         return ack
 
-    def _impl(self):
-        """
-        Iterate over words in template and create stream output mux and fsm.
-        Frame specifier can contains unions/streams/padding/unaligned items
-        and other features which makes code below complex.
-        Frame specifier can also describe multiple frames.
-        """
+    def _delegate_to_children(self):
+        Cls = self.__class__
+        assert len(self.sub_t) > 1, "We need to delegate to children only " \
+            "if there is something which we can do in this comp. directly"
+        children = HObjList([Cls(t) for t in self.sub_t])
+        for c in children:
+            c.USE_KEEP = True
+
+        with self._paramsShared(exclude=({"USE_KEEP"}, {})):
+            self.children = children
+
+        frame_join = AxiS_FrameJoin()
+        sub_t_flatten = [to_primitive_stream_t(s_t) for s_t in self.sub_t]
+        frame_join.T = HStruct(
+            *((s_t, "frame%d" % i)
+              for i, s_t in enumerate(sub_t_flatten))
+        )
+        frame_join._updateParamsFrom(self, exclude=({"USE_KEEP", }, {}))
+        self.frame_join = frame_join
+        connect(frame_join.dataOut, self.dataOut, exclude=frame_join.dataOut.keep)
+
+        propagateClkRstn(self)
+        for i, c in enumerate(children):
+            # connect children inputs
+            _connect_if_present_on_dst(self.dataIn, c.dataIn, connect_keep_to_strb=True)
+            # join children output streams to output
+            frame_join.dataIn[i](c.dataOut)
+
+    def _create_frame_build_logic(self):
+        if self.OUT_OFFSET != 0:
+            raise NotImplementedError()
+
         if self.IS_BIGENDIAN:
             byteOrderCare = reverseByteOrder
         else:
@@ -365,27 +428,67 @@ class AxiS_frameForge(AxiSCompBase, TemplateBasedUnit):
         strb = dout.strb
         STRB_ALL = mask(int(self.DATA_WIDTH // 8))
         if multipleWords:
-
             Switch(wordCntr_inversed).addCases([
                 (i, strb(v)) for i, v in extra_strbs
             ]).Default(
                 strb(STRB_ALL)
             )
+            if self.USE_KEEP:
+                if not extra_strbs:
+                    dout.keep(STRB_ALL)
+                else:
+                    raise NotImplementedError()
         else:
             if extra_strbs:
-                strb(extra_strbs[0][1])
+                m = extra_strbs[0][1]
             else:
-                strb(STRB_ALL)
+                m = STRB_ALL
+            strb(m)
+            if self.USE_KEEP:
+                # [fixme] derive keep from size of data, rather than strb, because
+                # there may be some padding in original type
+                dout.keep(m)
+
+    def _impl(self):
+        """
+        Iterate over words in template and create stream output mux and fsm.
+        Frame specifier can contains unions/streams/padding/unaligned items
+        and other features which makes code below complex.
+        Frame specifier can also describe multiple frames.
+        """
+        if len(self.sub_t) > 1:
+            self._delegate_to_children()
+            return
+        else:
+            s_t = _get_only_stream(self._structT)
+            if s_t is not None:
+                if not isinstance(s_t.element_t, Bits):
+                    raise NotImplementedError(s_t)
+                if s_t.start_offsets == [self.OUT_OFFSET]:
+                    # no special care required because the stream
+                    # is already in correct format
+                    din = self.dataIn
+                    while not isinstance(din, AxiStream):
+                        # dril down in HdlType to find a stream
+                        assert len(din._interfaces) == 1
+                        din = din._interfaces[0]
+                    self.dataOut(din)
+                else:
+                    raise NotImplementedError("delegate to AxiS_FrameJoin")
+                return
+
+        self._create_frame_build_logic()
 
 
 def _example_AxiS_frameForge():
     from hwtLib.types.ctypes import uint64_t, uint8_t, uint16_t
 
-    t = HStruct((uint64_t, "item0"),
-                (uint64_t, None),  # name = None means field is padding
-                (uint64_t, "item1"),
-                (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
-                )
+    t = HStruct(
+        (uint64_t, "item0"),
+        (uint64_t, None),  # name = None means field is padding
+        (uint64_t, "item1"),
+        (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
+    )
 
     u = AxiS_frameForge(t)
     u.DATA_WIDTH = 32

@@ -44,6 +44,8 @@ class UnalignedJoinRegIntf(Interface):
     def _declr(self):
         self.data = VectSignal(self.DATA_WIDTH)
         self.keep = VectSignal(self.DATA_WIDTH // 8)
+        if self.USE_STRB:
+            self.strb = VectSignal(self.DATA_WIDTH // 8)
         self.last = Signal()
 
 
@@ -69,13 +71,20 @@ class FrameJoinInputReg(Unit):
             for _ in range(self.REG_CNT)
         )
         self.ready = Signal()
+        if self.ID_WIDTH or self.USER_WIDTH or self.DEST_WIDTH:
+            raise NotImplementedError("It is not clear how id/user/dest"
+                                      " should be managed between the frames")
 
     def _impl(self):
-        data_t = HStruct(
+        data_fieds = [
             (Bits(self.DATA_WIDTH), "data"),
             (Bits(self.DATA_WIDTH//8, force_vector=True), "keep"),  # valid= keep != 0
             (BIT, "last"),
-        )
+        ]
+        if self.USE_STRB:
+            data_fieds.append((Bits(self.DATA_WIDTH//8, force_vector=True), "strb"),
+)
+        data_t = HStruct(*data_fieds)
         # regs[0] connected to output as first, regs[-1] connected to input
         regs = [
             self._reg("r%d" % (r_i), data_t, def_val={"keep": 0,
@@ -117,11 +126,15 @@ class FrameJoinInputReg(Unit):
                    prev_keep_mask(keep_masks[i + 1]),
                 )
 
+            data_drive = [r.data(r_prev.data), ]
+            if self.USE_STRB:
+                data_drive.append(r.strb(r_prev.strb))
+
             if i == 0:
                 # last register in path
                 fully_consumed = (r.keep & keep_masks[i])._eq(0)
                 If((ready & fully_consumed) | r.keep._eq(0),
-                   r.data(r_prev.data),
+                   *data_drive,
                    r.keep(r_prev.keep & prev_keep_mask),
                    r.last(r_prev.last & prev_last_mask),
                 ).Elif(ready,
@@ -131,12 +144,15 @@ class FrameJoinInputReg(Unit):
                 next_fully_consumed = self._sig("r%d_prev_fully_consumed" % i)
                 next_fully_consumed((regs[i - 1].keep & keep_masks[i - 1])._eq(0))
                 If((ready & next_fully_consumed) | r.keep._eq(0) | regs[i - 1].keep._eq(0),
-                   r.data(r_prev.data),
+                   *data_drive,
                    r.keep(r_prev.keep & prev_keep_mask),
                    r.last(r_prev.last & prev_last_mask),
                 )
+
         for rout, rin in zip(self.regs, regs):
             rout.data(rin.data)
+            if self.USE_STRB:
+                rout.strb(rin.strb)
             rout.keep(rin.keep)
             rout.last(rin.last)
 
@@ -217,6 +233,16 @@ class AxiS_FrameJoin(Unit):
         def get_in_byte(input_i, time_offset, byte_i):
             return index_byte(regs[input_i][time_offset].data, byte_i)
 
+        def data_drive(out_B, out_strb_b, input_i, time_offset, byte_i):
+            res = [
+                out_B(get_in_byte(input_i, time_offset, byte_i))
+            ]
+            if self.USE_STRB:
+                res.append(
+                   out_strb_b(regs[input_i][time_offset].strb[byte_i])
+                )
+            return res
+
         out_byte_sel = []
         for out_B_i, out_byte_mux_vals in enumerate(out_mux_values):
             sel_w = log2ceil(len(out_byte_mux_vals))
@@ -224,8 +250,13 @@ class AxiS_FrameJoin(Unit):
             out_byte_sel.append(sel)
 
             out_B = index_byte(self.dataOut.data, out_B_i)
+            if self.USE_STRB:
+                out_strb_b = self.dataOut.strb[out_B_i]
+            else:
+                out_strb_b = None
+
             Switch(sel).addCases(
-                (i, out_B(get_in_byte(*val)))
+                (i, data_drive(out_B, out_strb_b, *val))
                 for i, val in enumerate(out_byte_mux_vals))
 
         return out_byte_sel, out_mux_values

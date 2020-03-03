@@ -54,7 +54,7 @@ class StructWriter(StructReader):
         self.WRITE_ACK = Param(False)
 
     def _createInterfaceForField(self, parent, structField):
-        return AxiS_frameForge._mkFieldIntf(parent, structField)
+        return AxiS_frameForge._mkFieldIntf(self, parent, structField)
 
     def _declr(self):
         addClkRstn(self)

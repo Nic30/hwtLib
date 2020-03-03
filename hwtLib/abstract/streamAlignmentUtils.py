@@ -177,6 +177,7 @@ def get_important_byte_cnts(offset_out, offset_in, word_bytes, chunk_size,
     which affect the number of valid bytes
     in first/last word of frame and presence of words in body frame
     """
+    assert chunk_cnt_min > 0
     assert chunk_cnt_min <= chunk_cnt_max, (chunk_cnt_min, chunk_cnt_max)
     if isinstance(chunk_cnt_min, int) and isinstance(chunk_cnt_max, int)\
             and chunk_cnt_min == chunk_cnt_max:

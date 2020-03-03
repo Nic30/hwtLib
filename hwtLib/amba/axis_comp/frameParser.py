@@ -20,15 +20,15 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.byteOrder import reverseByteOrder
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwtLib.abstract.template_configured import TemplateConfigured
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.amba.axis_comp.frameParser_utils import ListOfOutNodeInfos, \
     ExclusieveListOfHsNodes, InNodeInfo, InNodeReadOnlyInfo, OutNodeInfo, \
     WordFactory
-from hwtLib.abstract.templateBasedUnit import TemplateBasedUnit
 from hwtLib.handshaked.builder import HsBuilder
 
 
-class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
+class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
     """
     Parse frame specified by HType (HStruct, HUnion, ...) into fields
 
@@ -69,16 +69,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateBasedUnit):
         :attention: structT can not contain fields with variable size
             like HStream
         """
-        self._structT = structT
-
-        if tmpl is not None:
-            assert frames is not None, \
-                "tmpl and frames can be used only together"
-        else:
-            assert frames is None, "tmpl and frames can be used only together"
-
-        self._tmpl = tmpl
-        self._frames = frames
+        TemplateConfigured.__init__(self, structT, tmpl, frames)
         AxiSCompBase.__init__(self)
 
     def _config(self):
