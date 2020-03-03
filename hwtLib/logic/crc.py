@@ -3,7 +3,7 @@
 
 from typing import List
 
-from hwt.code import If, Concat, SwitchLogic, Switch
+from hwt.code import If, Concat, Switch
 from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import VldSynced, VectSignal
@@ -12,9 +12,10 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import iterBits
-from hwtLib.interfaces.data_mask_vld import DataMaskVld
+from hwtLib.interfaces.data_mask_last_hs import DataMaskLastHs
 from hwtLib.logic.crcComb import CrcComb
-from pyMathBitPrecise.bit_utils import selectBit, bitListReversedEndianity, mask
+from pyMathBitPrecise.bit_utils import selectBit, bitListReversedEndianity,\
+    mask
 
 
 # http://www.rightxlight.co.jp/technical/crc-verilog-hdl
@@ -41,7 +42,7 @@ class Crc(Unit):
             if self.MASK_GRANULARITY is None:
                 self.dataIn = VldSynced()
             else:
-                self.dataIn = DataMaskVld()
+                self.dataIn = DataMaskLastHs()
             self.dataOut = VectSignal(self.POLY_WIDTH)._m()
 
     def setConfig(self, crcConfigCls):
@@ -76,20 +77,26 @@ class Crc(Unit):
     def _impl(self):
         # prepare constants and bit arrays for inputs
         poly_bits, PW = CrcComb.parsePoly(self.POLY, self.POLY_WIDTH)
-
+        din = self.dataIn
         # rename "dataIn_data" to "d" to make code shorter
-        _d = self.wrapWithName(self.dataIn.data, "d")
+        _d = self.wrapWithName(din.data, "d")
         data_in_bits = list(iterBits(_d))
         if not self.IN_IS_BIGENDIAN:
             data_in_bits = bitListReversedEndianity(data_in_bits)
-
+        if self.MASK_GRANULARITY:
+            din.rd(1)
+            rst = self.rst_n._isOn() | (din.vld & din.last)
+        else:
+            rst = self.rst_n
         state = self._reg("c",
                           Bits(self.POLY_WIDTH),
-                          self.INIT)
+                          self.INIT,
+                          rst=rst)
         state_in_bits = list(iterBits(state))
 
         if self.MASK_GRANULARITY is None:
-            state_next = self.build_crc_xor_matrix(state_in_bits, poly_bits, data_in_bits)
+            state_next = self.build_crc_xor_matrix(
+                state_in_bits, poly_bits, data_in_bits)
 
             If(self.dataIn.vld,
                # state_next is in format 0 ... N,
@@ -103,18 +110,28 @@ class Crc(Unit):
             for vld_byte_cnt in range(1, mask_width + 1):
                 m = mask(vld_byte_cnt)
                 # because of MSB..LSB
-                _data_in_bits = data_in_bits[(mask_width - vld_byte_cnt)*self.MASK_GRANULARITY:]
+                _data_in_bits = data_in_bits[
+                    (mask_width - vld_byte_cnt)*self.MASK_GRANULARITY:
+                ]
                 state_next = self.build_crc_xor_matrix(
                     state_in_bits, poly_bits, _data_in_bits)
-                state_next_cases.append((m, state(Concat(*reversed(state_next)))))
+                state_next_cases.append((
+                    m, state(Concat(*reversed(state_next)))
+                ))
             If(self.dataIn.vld,
-               Switch(mask_in).addCases(state_next_cases).Default(state(None))
+                Switch(mask_in).addCases(
+                   state_next_cases
+                ).Default(state(None))
             )
         # output connection
         if self.LATENCY == 0:
             state = state.next
         elif self.LATENCY == 1:
-            pass
+            if self.MASK_GRANULARITY is not None:
+                # to avoid the case where the state is restarted by dataIn.last
+                state_tmp = self._reg("state_tmp", state._dtype)
+                state_tmp(state.next)
+                state = state_tmp
         else:
             raise NotImplementedError(self.LATENCY)
 
@@ -124,7 +141,8 @@ class Crc(Unit):
         fin_bits = self.wrapWithName(Concat(*fin_bits), "fin_bits")
 
         if self.REFOUT:
-            state_reversed = self.wrapWithName(Concat(*iterBits(state)), "state_revered")
+            state_reversed = self.wrapWithName(
+                Concat(*iterBits(state)), "state_revered")
             state = state_reversed
         self.dataOut(state ^ fin_bits)
 
@@ -133,6 +151,7 @@ if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
     # from hwtLib.logic.crcPoly import CRC_32
     u = Crc()
+    u.MASK_GRANULARITY = 8
     # CrcComb.setConfig(u, CRC_32)
     # u.DATA_WIDTH = 8
 
