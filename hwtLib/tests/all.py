@@ -193,6 +193,7 @@ from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
+from hwtLib.abstract.template_configured_test import TemplateConfigured_TC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -265,6 +266,7 @@ suite = testSuiteFromTCs(
     CntrTC,
     CntrResourceAnalysisTC,
     ConstConditionTC,
+    TemplateConfigured_TC,
 
     # tests of simple units
     TimerTC,
