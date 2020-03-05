@@ -16,7 +16,9 @@ class DataMaskLastHs(Handshaked):
         super(DataMaskLastHs, self)._declr()
         assert self.DATA_WIDTH % self.MASK_GRANULARITY == 0, (
             self.DATA_WIDTH, self.MASK_GRANULARITY)
-        self.mask = VectSignal(self.DATA_WIDTH // self.MASK_GRANULARITY)
+        self.USE_MASK = self.MASK_GRANULARITY != self.DATA_WIDTH
+        if self.USE_MASK:
+            self.mask = VectSignal(self.DATA_WIDTH // self.MASK_GRANULARITY)
         self.last = Signal()
 
     def _initSimAgent(self, sim: HdlSimulator):
