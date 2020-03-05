@@ -12,11 +12,13 @@ from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.union import HUnion
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.amba.axis import axis_send_bytes, axis_recieve_bytes
 from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
 from hwtLib.types.ctypes import uint64_t, uint32_t, int32_t, uint8_t
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.triggers import Timer
-from hwtLib.amba.axis import axis_send_bytes, axis_recieve_bytes
+from pycocotb.constants import CLK_PERIOD
+from itertools import chain
 
 
 s1field = HStruct(
@@ -82,6 +84,11 @@ struct2xStream64 = HStruct(
 structStreamAndFooter = HStruct(
     (HStream(uint8_t), "data"),
     (uint32_t, "footer"),
+)
+
+struct2xStream8 = HStruct(
+    (HStream(uint8_t), "streamIn0"),
+    (HStream(uint8_t), "streamIn1")
 )
 
 
@@ -457,33 +464,34 @@ class AxiS_frameForge_TC(SimTestCase):
     def test_r_structStream64after(self):
         self.test_structStream64after(randomized=True)
 
-    def test_struct2xStream64(self, randomized=False):
+    def test_struct2xStream64(self, N=5, randomized=False):
         self.instantiateFrameForge(struct2xStream64,
                                    DATA_WIDTH=64,
                                    randomized=randomized)
         u = self.u
         MAGIC = 400
-        t = 170
+        t = 10 + (2 * N * 3)
         if randomized:
             t *= 3
 
-        u.dataIn.streamIn0._ag.data.extend(
-            self.formatStream([MAGIC + 1, MAGIC + 2, MAGIC + 3]) +
-            self.formatStream([MAGIC + 7, MAGIC + 8, MAGIC + 9])
-        )
-        u.dataIn.streamIn1._ag.data.extend(
-            self.formatStream([MAGIC + 4, MAGIC + 5, MAGIC + 6]) +
-            self.formatStream([MAGIC + 10, MAGIC + 11, MAGIC + 12])
-        )
+        for i in range(N):
+            o = MAGIC + i * 6
+            u.dataIn.streamIn0._ag.data.extend(
+                self.formatStream([o + 1, o + 2, o + 3])
+            )
+            u.dataIn.streamIn1._ag.data.extend(
+                self.formatStream([o + 4, o + 5, o + 6])
+            )
 
-        self.runSim(t * Time.ns)
+        self.runSim(t * CLK_PERIOD)
 
         m = self.m
+        ref = [
+            (MAGIC + i, m, int(i % 6 == 0))
+            for i in range(1, N * 6 + 1)
+        ]
         self.assertValSequenceEqual(
-            u.dataOut._ag.data,
-            [
-             (MAGIC + i + 1, m, int(i == 5 or i == 11)) for i in range(12)
-             ])
+            u.dataOut._ag.data, ref)
 
     def test_r_struct2xStream64(self):
         self.test_struct2xStream64(randomized=True)
@@ -519,6 +527,34 @@ class AxiS_frameForge_TC(SimTestCase):
 
     def test_footer_randomized(self):
         self.test_footer(randomized=True)
+
+    def test_struct2xStream8(self, randomized=False,
+                             sizes=[(2, 2), (1, 2), 
+                                    (1, 3), (2, 1),
+                                    (2, 2)]):
+        self.instantiateFrameForge(struct2xStream8,
+                                   DATA_WIDTH=16,
+                                   randomized=randomized)
+        u = self.u
+        MAGIC = 0  #13
+        t = 10 + (2 * sum(sum(x) for x in sizes) * 3)
+        if randomized:
+            t *= 3
+
+        ref = []
+        m = self.m
+        for i, size in enumerate(sizes):
+            o = MAGIC + i * 6 + 1
+            d0 = [o + i for i in range(size[0])]
+            axis_send_bytes(u.dataIn.streamIn0, d0)
+            d1 = [o + i + size[0] for i in range(size[1])]
+            axis_send_bytes(u.dataIn.streamIn1, d1)
+            ref.append(list(chain(d0, d1)))
+        self.runSim(t * CLK_PERIOD)
+        for i, ref_f in enumerate(ref):
+            f_offset, f = axis_recieve_bytes(u.dataOut)
+            self.assertValEqual(f_offset, 0)
+            self.assertValSequenceEqual(f, ref_f, i)
 
 
 if __name__ == "__main__":

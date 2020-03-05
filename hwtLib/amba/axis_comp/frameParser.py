@@ -3,14 +3,15 @@
 
 from typing import Optional, List, Union
 
-from hwt.code import log2ceil, If, Concat
+from hwt.code import log2ceil, If, Concat, connect
 from hwt.hdl.frameTmpl import FrameTmpl
-from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
+from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts, StreamOfFrameParts
 from hwt.hdl.transPart import TransPart
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.hdlType import HdlType
+from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct, HStructField
 from hwt.hdl.types.union import HUnion
 from hwt.interfaces.std import Handshaked, Signal, VldSynced
@@ -21,10 +22,11 @@ from hwt.synthesizer.byteOrder import reverseByteOrder
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.abstract.template_configured import TemplateConfigured
+from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.amba.axis_comp.frameParser_utils import ListOfOutNodeInfos, \
     ExclusieveListOfHsNodes, InNodeInfo, InNodeReadOnlyInfo, OutNodeInfo, \
-    WordFactory
+    WordFactory, OutStreamNodeInfo
 from hwtLib.handshaked.builder import HsBuilder
 
 
@@ -90,6 +92,13 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
             return UnionSource(t, parent._instantiateFieldFn)
         elif isinstance(t, HStruct):
             return StructIntf(t, parent._instantiateFieldFn)
+        elif isinstance(t, HStream):
+            if self.SHARED_READY:
+                raise NotImplementedError(t)
+            else:
+                i = AxiStream()
+                i.DATA_WIDTH = self.DATA_WIDTH
+                return i
         else:
             if self.SHARED_READY:
                 i = VldSynced()
@@ -100,7 +109,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
 
     def _declr(self):
         if self.USE_STRB:
-            raise NotImplementedError(self.USE_STRB)
+            raise NotImplementedError()
         if self.USE_KEEP:
             raise NotImplementedError(self.USE_KEEP)
         if self.ID_WIDTH:
@@ -207,8 +216,32 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                 selNode = InNodeReadOnlyInfo(sel, en)
             hsNondes.append(selNode)
             return
+        elif isinstance(part, StreamOfFrameParts):
+            orig = part.origin.parent.origin
+            intf = tToIntf[orig]
+            if isinstance(orig, HStructField):
+                orig = orig.dtype
 
-        if part.isPadding:
+            if not part.isLastPart():
+                raise NotImplementedError()
+
+            if not len(orig.start_offsets) == 1:
+                raise NotImplementedError()
+
+            din = self.dataIn
+            if orig.start_offsets == [part.startOfPart, ]:
+                # output stream is aligned as it should be, just connect it to output
+                # and mask first word strb/keep if required
+                if orig.start_offsets == [0, ]:
+                    connect(din, intf, exclude=[din.valid, din.ready])
+                else:
+                    connect(din, intf, exclude=[din.valid, din.ready])
+                on = OutStreamNodeInfo(self, intf, en, exclusiveEn)
+                hsNondes.append(on)
+            else:
+                raise NotImplementedError("align output stream")
+            return
+        elif part.isPadding:
             return
 
         fPartSig = self.getInDataSignal(part)
@@ -235,9 +268,10 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
             dataVld = busVld & en & exclusiveEn
             # part is in some word as last part, we have to store its value
             # to register until the last part arrive
-            fPartReg = self._reg("%s_part_%d" % (fieldInfo.name,
-                                                 len(signalsOfParts)),
-                                 fPartSig._dtype)
+            fPartReg = self._reg("%s_part_%d" % (
+                    fieldInfo.name,
+                    len(signalsOfParts)),
+                fPartSig._dtype)
             If(dataVld,
                fPartReg(fPartSig)
             )

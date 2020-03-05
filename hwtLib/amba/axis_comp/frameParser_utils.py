@@ -49,10 +49,11 @@ class OutNodeInfo():
         self.en = en
         self.exclusiveEn = exclusiveEn
         self.pendingReg = parent._reg(outInterface._name + "_pending_", def_val=1)
-        ack = self.outInterface.rd
-        self._ack = parent._sig(outInterface._name + "_ack")
-        self._ack(ack | ~self.pendingReg)
 
+        self._ready = self.outInterface.rd
+        self._ack = parent._sig(outInterface._name + "_ack")
+        self._ack(self._ready | ~self.pendingReg)
+        self._valid = self.outInterface.vld
     def ack(self) -> RtlSignal:
         # if output is not selected in union we do not need to care
         # about it's ready
@@ -70,16 +71,32 @@ class OutNodeInfo():
         If(en,
            If(ackOfOthers & self.ack(),
               self.pendingReg(1),
-           ).Elif(self.pendingReg & self.outInterface.rd,
+           ).Elif(self.pendingReg & self._ready,
               self.pendingReg(0)
            )
         )
 
         # value of this node was not consumed and it is enabled
-        self.outInterface.vld(self.pendingReg & en)
+        self._valid(self.pendingReg & en)
 
     def __repr__(self):
-        return "<OutNodeInfo for %s>" % self.outInterface._name
+        return "<%s for %s>" % (self.__class__.__name__, self.outInterface._name)
+
+
+class OutStreamNodeInfo(OutNodeInfo):
+    def __init__(self, parent: Unit,
+                 outInterface: Union[Handshaked, VldSynced],
+                 en: RtlSignal,
+                 exclusiveEn: Optional[RtlSignal]=None):
+        self.outInterface = outInterface
+        self.en = en
+        self.exclusiveEn = exclusiveEn
+        self.pendingReg = parent._reg(outInterface._name + "_pending_", def_val=1)
+
+        self._ready = self.outInterface.ready
+        self._ack = parent._sig(outInterface._name + "_ack")
+        self._ack(self._ready | ~self.pendingReg)
+        self._valid = self.outInterface.valid
 
 
 def getAckOfOthers(self: OutNodeInfo, others: List[OutNodeInfo]):
@@ -91,6 +108,7 @@ def getAckOfOthers(self: OutNodeInfo, others: List[OutNodeInfo]):
 
 
 class ListOfOutNodeInfos(list):
+
     def ack(self) -> RtlSignal:
         if self:
             return And(*map(lambda x: x.ack(), self))

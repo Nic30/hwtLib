@@ -5,7 +5,7 @@ from typing import List, Optional, Union, Dict
 
 from hwt.code import log2ceil, Switch, If, isPow2, SwitchLogic, connect
 from hwt.hdl.frameTmpl import FrameTmpl
-from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts, StreamOfFramePars
+from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts, StreamOfFrameParts
 from hwt.hdl.transPart import TransPart
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.bits import Bits
@@ -46,7 +46,22 @@ def _get_only_stream(t: HdlType):
     return None
 
 
-def _connect_if_present_on_dst(src: Interface, dst: Interface, dir_reverse=False, connect_keep_to_strb=False):
+def axis_mask_propagate_best_effort(src: AxiStream, dst: AxiStream):
+    if src.USE_STRB:
+        if not src.USE_KEEP and not dst.USE_STRB and dst.USE_KEEP:
+            dst.keep(src.strb)
+    if src.USE_KEEP:
+        if not src.USE_STRB and not dst.USE_KEEP and dst.USE_STRB:
+            dst.strb(src.keep)
+    if not src.USE_KEEP and not src.USE_STRB:
+        if dst.USE_KEEP:
+            dst.keep(mask(dst.keep._dtype.bit_length()))
+        if dst.USE_STRB:
+            dst.strb(mask(dst.strb._dtype.bit_length()))
+
+
+def _connect_if_present_on_dst(src: Interface, dst: Interface,
+                               dir_reverse=False, connect_keep_to_strb=False):
     if not src._interfaces:
         assert not dst._interfaces, (src, dst)
         if dir_reverse:
@@ -67,7 +82,8 @@ def _connect_if_present_on_dst(src: Interface, dst: Interface, dir_reverse=False
         if _s._name == "strb" and connect_keep_to_strb:
             _connect_if_present_on_dst(_s, dst.keep, dir_reverse=rev,
                                        connect_keep_to_strb=connect_keep_to_strb)
-
+    if isinstance(src, AxiStream):
+        axis_mask_propagate_best_effort(src, dst)
 
 
 class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
@@ -127,7 +143,10 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
         elif isinstance(t, HStream):
             p = AxiStream()
             p._updateParamsFrom(self)
-            p.USE_STRB = True
+            if not self.USE_STRB and self.DATA_WIDTH == 8:
+                p.USE_STRB = False
+            else:
+                p.USE_STRB = True
             return p
         else:
             p = Handshaked()
@@ -166,7 +185,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
     def connectPartsOfWord(self, wordData_out: RtlSignal,
                            tPart: Union[TransPart,
                                         ChoicesOfFrameParts,
-                                        StreamOfFramePars],
+                                        StreamOfFrameParts],
                            inPorts_out: List[Union[Handshaked,
                                                    StreamNode]],
                            lastInPorts_out: List[Union[Handshaked,
@@ -226,7 +245,8 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
 
             inPorts_out.append(inPortGroups)
             lastInPorts_out.append(lastInPortsGroups)
-        elif isinstance(tPart, StreamOfFramePars):
+
+        elif isinstance(tPart, StreamOfFrameParts):
             if len(tPart) != 1:
                 raise NotImplementedError(
                     "Structuralized streams not implemented yiet")
@@ -246,8 +266,10 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
 
             if tPart.isLastPart():
                 lastInPorts_out.append(intf)
-
-            return intf.strb
+            if intf.USE_STRB:
+                return intf.strb
+            if intf.USE_KEEP:
+                return intf.keep
 
         else:
             # connect parts of fields to output signal
@@ -282,12 +304,20 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
     def _delegate_to_children(self):
         Cls = self.__class__
         assert len(self.sub_t) > 1, "We need to delegate to children only " \
-            "if there is something which we can do in this comp. directly"
-        children = HObjList([Cls(t) for t in self.sub_t])
-        for c in children:
-            c.USE_KEEP = True
+            "if there is something which we can't do in this comp. directly"
+        children = HObjList()
+        for t in self.sub_t:
+            _t = _get_only_stream(t)
+            if _t is None:
+                # we need a child to build a sub frame
+                c = Cls(t)
+                c.USE_KEEP = self.USE_STRB | self.DATA_WIDTH != 8
+            else:
+                # we will connect stream directly
+                c = None
+            children.append(c)
 
-        with self._paramsShared(exclude=({"USE_KEEP"}, {})):
+        with self._paramsShared(exclude=({"USE_KEEP", "USE_STRB"}, {})):
             self.children = children
 
         frame_join = AxiS_FrameJoin()
@@ -297,15 +327,39 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
               for i, s_t in enumerate(sub_t_flatten))
         )
         frame_join._updateParamsFrom(self, exclude=({"USE_KEEP", }, {}))
+        frame_join.USE_KEEP = True
         self.frame_join = frame_join
-        connect(frame_join.dataOut, self.dataOut, exclude=frame_join.dataOut.keep)
+
+        dout = self.dataOut
+        connect(frame_join.dataOut, dout, exclude=frame_join.dataOut.keep)
 
         propagateClkRstn(self)
         for i, c in enumerate(children):
-            # connect children inputs
-            _connect_if_present_on_dst(self.dataIn, c.dataIn, connect_keep_to_strb=True)
+            if c is None:
+                # find the input stream
+                _t = self.sub_t[i]
+                child_out = self.dataIn
+                while not isinstance(_t, HStream):
+                    if isinstance(_t, HStruct):
+                        assert len(_t.fields) == 1, _t
+                        f = _t.fields[0]
+                        child_out = getattr(child_out, f.name)
+                        _t = f.dtype
+                    else:
+                        raise NotImplementedError(_t)
+            else:
+                # connect children inputs
+                _connect_if_present_on_dst(self.dataIn, c.dataIn, connect_keep_to_strb=True)
+                child_out = c.dataOut
             # join children output streams to output
-            frame_join.dataIn[i](c.dataOut)
+            fj_in = frame_join.dataIn[i]
+            if fj_in.USE_KEEP and not child_out.USE_KEEP:
+                connect(child_out, fj_in, exclude={child_out.strb, fj_in.keep})
+                fj_in.keep(child_out.strb)
+                if fj_in.USE_STRB:
+                    fj_in.strb(child_out.strb)
+            else:
+                fj_in(c.dataOut)
 
     def _create_frame_build_logic(self):
         if self.OUT_OFFSET != 0:
@@ -425,14 +479,15 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
             r.rd(selectRegLoad)
         dout.last(last)
 
-        strb = dout.strb
         STRB_ALL = mask(int(self.DATA_WIDTH // 8))
         if multipleWords:
-            Switch(wordCntr_inversed).addCases([
-                (i, strb(v)) for i, v in extra_strbs
-            ]).Default(
-                strb(STRB_ALL)
-            )
+            if self.USE_STRB:
+                strb = dout.strb
+                Switch(wordCntr_inversed).addCases([
+                    (i, strb(v)) for i, v in extra_strbs
+                ]).Default(
+                    strb(STRB_ALL)
+                )
             if self.USE_KEEP:
                 if not extra_strbs:
                     dout.keep(STRB_ALL)
@@ -443,7 +498,8 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
                 m = extra_strbs[0][1]
             else:
                 m = STRB_ALL
-            strb(m)
+            if self.USE_STRB:
+                dout.strb(m)
             if self.USE_KEEP:
                 # [fixme] derive keep from size of data, rather than strb, because
                 # there may be some padding in original type

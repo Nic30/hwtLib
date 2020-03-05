@@ -46,7 +46,7 @@ class AxiS_FrameJoin_1x_2B_TC(SingleUnitSimTestCase):
         self.runSim(CLK_PERIOD * 20)
         self.assertEmpty(self.u.dataOut._ag.data)
 
-    def _test_pass_data(self, IN_FRAMES, repeat=3):
+    def _test_pass_data(self, IN_FRAMES, repeat=5):
         OUT_FRAMES = []
         for f_i in range(len(IN_FRAMES[0])):
             offset = self.u.OUT_OFFSET
@@ -112,6 +112,35 @@ class AxiS_FrameJoin_1x_2B_TC(SingleUnitSimTestCase):
 
         self._test_pass_data(IN_FRAMES)
 
+    def test_pass_data_min_len_plus1_for_non_first(self):
+        if len(self.u.dataIn) == 1:
+            # test tested by test_pass_data_min_len
+            return
+        self.randomize_all()
+        # [offset, [data]]
+        IN_FRAMES = [[] for _ in self.u.dataIn]
+
+        data_cntr = 0
+        for i, (f, frames) in enumerate(zip(self.T.fields, IN_FRAMES)):
+            data_B = f.dtype.element_t.bit_length() // 8
+            lmax = f.dtype.len_max
+            lmin = f.dtype.len_min
+            if i > 0:
+                lmin += 1
+
+            if lmin > lmax:
+                lmin = lmax
+
+            if len(f.dtype.start_offsets) != 1:
+                raise NotImplementedError()
+            for offset in f.dtype.start_offsets:
+                size = data_B * lmin
+                data = self.gen_data(data_cntr, size)
+                frames.append((offset, data))
+                data_cntr += size
+
+        self._test_pass_data(IN_FRAMES)
+
     # @classmethod
     # def setUpClass(cls):
     #     super(SingleUnitSimTestCase, cls).setUpClass()
@@ -121,9 +150,16 @@ class AxiS_FrameJoin_1x_2B_TC(SingleUnitSimTestCase):
 
 class AxiS_FrameJoin_1x_2B_len1_TC(AxiS_FrameJoin_1x_2B_TC):
     D_B = 2
-    FRAME_CNT = 1
     T = HStruct(
         (HStream(Bits(8 * D_B), (1, 1), [0]), "frame0"),
+    )
+
+
+class AxiS_FrameJoin_2x_1B_len1_TC(AxiS_FrameJoin_1x_2B_TC):
+    D_B = 1
+    T = HStruct(
+        (HStream(Bits(8 * D_B), (1, 1), [0]), "frame0"),
+        (HStream(Bits(8 * D_B), (1, 1), [0]), "frame1"),
     )
 
 
@@ -140,6 +176,38 @@ class AxiS_FrameJoin_2x_1B_TC(AxiS_FrameJoin_1x_2B_TC):
     T = HStruct(
         (HStream(Bits(8 * D_B), (1, inf), [0]), "frame0"),
         (HStream(Bits(8 * D_B), (1, inf), [0]), "frame1"),
+    )
+
+
+class AxiS_FrameJoin_2x_1B_on_2B_TC(AxiS_FrameJoin_1x_2B_TC):
+    D_B = 2
+    T = HStruct(
+        (HStream(Bits(8 * 1), (1, inf), [0]), "frame0"),
+        (HStream(Bits(8 * 1), (1, inf), [0]), "frame1"),
+    )
+
+
+class AxiS_FrameJoin_2x_1B_on_2B_offset_0_1_TC(AxiS_FrameJoin_1x_2B_TC):
+    D_B = 2
+    T = HStruct(
+        (HStream(Bits(8 * 1), (1, inf), [1]), "frame0"),
+        (HStream(Bits(8 * 1), (1, inf), [0]), "frame1"),
+    )
+
+
+class AxiS_FrameJoin_2x_1B_on_2B_offset_1_0_TC(AxiS_FrameJoin_1x_2B_TC):
+    D_B = 2
+    T = HStruct(
+        (HStream(Bits(8 * 1), (1, inf), [1]), "frame0"),
+        (HStream(Bits(8 * 1), (1, inf), [0]), "frame1"),
+    )
+
+
+class AxiS_FrameJoin_2x_1B_on_2B_offset_1_1_TC(AxiS_FrameJoin_1x_2B_TC):
+    D_B = 2
+    T = HStruct(
+        (HStream(Bits(8 * 1), (1, inf), [1]), "frame0"),
+        (HStream(Bits(8 * 1), (1, inf), [1]), "frame1"),
     )
 
 
@@ -183,9 +251,32 @@ class AxiS_FrameJoin_3x_in_2B_TC(AxiS_FrameJoin_1x_2B_TC):
     )
 
 
+class AxiS_FrameJoin_3x_in_1B_on_2B_TC(AxiS_FrameJoin_1x_2B_TC):
+    D_B = 2
+    T = HStruct(
+        (HStream(Bits(8 * 1), (1, inf), [0]), "frame0"),
+        (HStream(Bits(8 * 1), (1, inf), [0]), "frame1"),
+        (HStream(Bits(8 * 1), (1, inf), [0]), "frame2"),
+    )
+
+
+class AxiS_FrameJoin_3x_in_1B_on_5B_TC(AxiS_FrameJoin_1x_2B_TC):
+    D_B = 5
+    T = HStruct(
+        (HStream(Bits(8 * 1), (1, inf), [0]), "frame0"),
+        (HStream(Bits(8 * 1), (1, inf), [0]), "frame1"),
+        (HStream(Bits(8 * 1), (1, inf), [0]), "frame2"),
+    )
+
+
 AxiS_FrameJoin_TCs = [
     AxiS_FrameJoin_2x_1B_TC,
     AxiS_FrameJoin_1x_2B_len1_TC,
+    AxiS_FrameJoin_2x_1B_len1_TC,
+    AxiS_FrameJoin_2x_1B_on_2B_TC,
+    AxiS_FrameJoin_2x_1B_on_2B_offset_0_1_TC,
+    AxiS_FrameJoin_2x_1B_on_2B_offset_1_0_TC,
+    AxiS_FrameJoin_2x_1B_on_2B_offset_1_1_TC,
     AxiS_FrameJoin_1x_2B_TC,
     AxiS_FrameJoin_1x_2B_offset_1_TC,
     AxiS_FrameJoin_1x_in_2B_offset_0__1_TC,
@@ -193,11 +284,13 @@ AxiS_FrameJoin_TCs = [
     AxiS_FrameJoin_1x_in_2B_offset_1__1_TC,
     AxiS_FrameJoin_2x_2B_TC,
     AxiS_FrameJoin_3x_in_2B_TC,
+    AxiS_FrameJoin_3x_in_1B_on_2B_TC,
+    AxiS_FrameJoin_3x_in_1B_on_5B_TC,
 ]
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(AxiS_frameForge_TC('test_struct2xStream64'))
+    #suite.addTest(AxiS_FrameJoin_2x_1B_on_2B_offset_1_1_TC('test_pass_data_min_len_plus1_for_non_first'))
     for tc in AxiS_FrameJoin_TCs:
         suite.addTest(unittest.makeSuite(tc))
 

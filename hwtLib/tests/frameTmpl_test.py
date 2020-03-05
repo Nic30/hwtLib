@@ -6,7 +6,7 @@ from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.structUtils import HStruct_selectFields
 from hwt.hdl.types.union import HUnion
 from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t, uint8_t
-from hwtLib.types.net.eth import Eth2Header_t
+from hwtLib.peripheral.ethernet.types import Eth2Header_t
 from hwtLib.types.net.ip import IPv4Header_t
 
 

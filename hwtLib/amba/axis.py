@@ -160,20 +160,21 @@ def unpackAxiSFrame(structT, frameData, getDataFn=None, dataWidth=None):
     return HStruct_unpack(structT, frameData, getDataFn, dataWidth)
 
 
-def axis_recieve_bytes(axis: AxiStream) -> Tuple[int, List[int]]:
-    """
-    Read data from AXI Stream agent in simulation
-    and use keep signal to mask out unused bytes
-    """
+def _axis_recieve_bytes(ag_data, D_B, use_keep, offset=0) -> Tuple[int, List[int]]:
     offset = None
     data_B = []
-    ag_data = axis._ag.data
-    D_B = axis.DATA_WIDTH // 8
     last = False
+    first = False
+    mask_all = mask(D_B)
     while ag_data:
         _d = ag_data.popleft()
-        data, keep, last = _d
-        keep = int(keep)
+        if use_keep:
+            data, keep, last = _d
+            keep = int(keep)
+        else:
+            data, last = _d
+            keep = mask_all
+
         last = int(last)
         assert keep > 0
         if offset is None:
@@ -182,8 +183,7 @@ def axis_recieve_bytes(axis: AxiStream) -> Tuple[int, List[int]]:
             for i in range(D_B):
                 # i represents number of 0 from te beginning of of the keep
                 # value
-                _k = setBitRange(mask(D_B), i, i, 0)
-                if keep == _k:
+                if keep & (mask(D_B - i) << i):
                     offset = i
                     break
             assert offset is not None, keep
@@ -194,17 +194,49 @@ def axis_recieve_bytes(axis: AxiStream) -> Tuple[int, List[int]]:
                     data.vld_mask, i * 8, 8) == 0xff, data.vld_mask
                 data_B.append(d)
 
+        if first:
+            offset_mask = mask(offset)
+            assert offset_mask & keep == 0 (offset_mask, keep)
+            first = False
+        elif not last:
+            assert keep == mask_all, keep
+
         if last:
             break
-        else:
-            assert keep == mask(D_B), keep
 
     if not last:
         if data_B:
             raise ValueError("Unfinished frame", data_B)
         else:
             raise ValueError("No frame available")
+
     return offset, data_B
+
+
+def axis_recieve_bytes(axis: AxiStream) -> Tuple[int, List[int]]:
+    """
+    Read data from AXI Stream agent in simulation
+    and use keep signal to mask out unused bytes
+    """
+    ag_data = axis._ag.data
+    D_B = axis.DATA_WIDTH // 8
+    if axis.ID_WIDTH:
+        raise NotImplementedError()
+    if axis.USER_WIDTH:
+        raise NotImplementedError()
+    if axis.USE_KEEP and axis.USE_STRB:
+        raise NotImplementedError()
+    use_keep = axis.USE_KEEP | axis.USE_STRB
+    return _axis_recieve_bytes(ag_data, D_B, use_keep)
+
+
+def _axis_send_bytes(axis: AxiStream, data_B: List[int], withStrb, offset)\
+        -> List[Tuple[int, int, int]]:
+    t = uint8_t[len(data_B) + offset]
+    # :attention: strb signal is reinterpreted as a keep signal
+    return packAxiSFrame(axis.DATA_WIDTH, t.from_py(
+        [None for _ in range(offset)] + data_B),
+        withStrb=withStrb)
 
 
 def axis_send_bytes(axis: AxiStream, data_B: List[int], offset=0) -> None:
@@ -214,11 +246,14 @@ def axis_send_bytes(axis: AxiStream, data_B: List[int], offset=0) -> None:
     :param offset: number of empty bytes which should be added before data
         in frame (and use keep signal to mark such a bytes)
     """
-    t = uint8_t[len(data_B) + offset]
-    # :attention: strb signal is reinterpreted as a keep signal
-    f = packAxiSFrame(axis.DATA_WIDTH, t.from_py(
-        [None for _ in range(offset)] + data_B),
-        withStrb=True)
+    if axis.ID_WIDTH:
+        raise NotImplementedError()
+    if axis.USER_WIDTH:
+        raise NotImplementedError()
+    if axis.USE_KEEP and axis.USE_STRB:
+        raise NotImplementedError()
+    withStrb = axis.USE_KEEP | axis.USE_STRB
+    f = _axis_send_bytes(axis, data_B, withStrb, offset)
     axis._ag.data.extend(f)
 
 

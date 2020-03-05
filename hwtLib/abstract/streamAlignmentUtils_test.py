@@ -1,7 +1,16 @@
 from math import inf
+from typing import Union
 import unittest
 
-from hwtLib.abstract.streamAlignmentUtils import get_important_byte_cnts
+from hwtLib.abstract.streamAlignmentUtils import FrameJoinUtils
+
+
+def get_important_byte_cnts(
+        offset_out: int, offset_in: int, word_bytes: int, chunk_size: int,
+        chunk_cnt_min: Union[int, float], chunk_cnt_max: Union[int, float]):
+    fju = FrameJoinUtils(word_bytes)
+    return fju.get_important_byte_cnts(offset_out, offset_in,
+                                       chunk_size, chunk_cnt_min, chunk_cnt_max)
 
 
 class StreamJoiningUtilsTC(unittest.TestCase):

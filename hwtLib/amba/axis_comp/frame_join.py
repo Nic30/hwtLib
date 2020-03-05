@@ -6,24 +6,20 @@ from typing import Optional, List, Callable, Tuple
 
 from hwt.code import If, Switch, log2ceil, SwitchLogic, Or, And
 from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
+from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.synthesizer.hObjList import HObjList
+from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from hwtLib.abstract.streamAlignmentUtils import resolve_input_bytes_destinations,\
-    streams_to_all_possible_frame_formats
+from hwtLib.abstract.frame_join_utils.fsm import input_B_dst_to_fsm
+from hwtLib.abstract.frame_join_utils.state_trans_item import StateTransItem
+from hwtLib.abstract.streamAlignmentUtils import FrameJoinUtils
 from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.frame_join_utils import input_B_dst_to_fsm,\
-    StateTransItem
-from hwt.interfaces.std import Signal, VectSignal
-from hwt.synthesizer.interface import Interface
-from hwt.serializer.mode import serializeParamsUniq
-from pyMathBitPrecise.bit_utils import mask
+from hwtLib.amba.axis_comp._frame_join_input_reg import FrameJoinInputReg
 
 
 def bit_list_to_int(bl):
@@ -34,127 +30,6 @@ def bit_list_to_int(bl):
     for i, b in enumerate(bl):
         v |= b << i
     return v
-
-
-class UnalignedJoinRegIntf(Interface):
-
-    def _config(self):
-        AxiStream._config(self)
-
-    def _declr(self):
-        self.data = VectSignal(self.DATA_WIDTH)
-        self.keep = VectSignal(self.DATA_WIDTH // 8)
-        if self.USE_STRB:
-            self.strb = VectSignal(self.DATA_WIDTH // 8)
-        self.last = Signal()
-
-
-@serializeParamsUniq
-class FrameJoinInputReg(Unit):
-    """
-    Pipeline of registers for AxiStream with keep mask and flushing
-    """
-
-    def _config(self):
-        self.REG_CNT = Param(2)
-        AxiStream._config(self)
-
-    def _declr(self):
-        addClkRstn(self)
-        with self._paramsShared():
-            self.dataIn = AxiStream()
-            self.regs = HObjList(
-                UnalignedJoinRegIntf()._m()
-                for _ in range(self.REG_CNT))
-        self.keep_masks = HObjList(
-            VectSignal(self.DATA_WIDTH // 8)
-            for _ in range(self.REG_CNT)
-        )
-        self.ready = Signal()
-        if self.ID_WIDTH or self.USER_WIDTH or self.DEST_WIDTH:
-            raise NotImplementedError("It is not clear how id/user/dest"
-                                      " should be managed between the frames")
-
-    def _impl(self):
-        data_fieds = [
-            (Bits(self.DATA_WIDTH), "data"),
-            (Bits(self.DATA_WIDTH//8, force_vector=True), "keep"),  # valid= keep != 0
-            (BIT, "last"),
-        ]
-        if self.USE_STRB:
-            data_fieds.append((Bits(self.DATA_WIDTH//8, force_vector=True), "strb"),
-)
-        data_t = HStruct(*data_fieds)
-        # regs[0] connected to output as first, regs[-1] connected to input
-        regs = [
-            self._reg("r%d" % (r_i), data_t, def_val={"keep": 0,
-                                                      "last": 0})
-            for r_i in range(self.REG_CNT)
-        ]
-        ready = self.ready
-        keep_masks = self.keep_masks
-        for i, (is_last_r, r) in enumerate(iter_with_last(regs)):
-            keep_mask_all = mask(r.keep._dtype.bit_length())
-            prev_keep_mask = self._sig("prev_keep_mask_%d_tmp" % i, r.keep._dtype)
-            prev_last_mask = self._sig("prev_last_mask_%d_tmp" % i)
-
-            if is_last_r:
-                # is register connected directly to dataIn
-                r_prev = self.dataIn
-                If(r_prev.valid,
-                   prev_keep_mask(keep_mask_all),
-                   prev_last_mask(1)
-                ).Else(
-                   # flush (invalid input but the data can be dispersed
-                   # in registers so we need to collapse it)
-                   prev_keep_mask(0),
-                   prev_last_mask(0),
-                )
-                if self.REG_CNT > 1:
-                    next_empty = regs[i - 1].keep._eq(0)
-                else:
-                    next_empty = 0
-
-                r_prev.ready(r.keep._eq(0) | ready | next_empty)
-            else:
-                r_prev = regs[i + 1]
-                prev_last_mask(1)
-                If(r.keep._eq(0),
-                    # flush
-                   prev_keep_mask(keep_mask_all),
-                ).Else(
-                   prev_keep_mask(keep_masks[i + 1]),
-                )
-
-            data_drive = [r.data(r_prev.data), ]
-            if self.USE_STRB:
-                data_drive.append(r.strb(r_prev.strb))
-
-            if i == 0:
-                # last register in path
-                fully_consumed = (r.keep & keep_masks[i])._eq(0)
-                If((ready & fully_consumed) | r.keep._eq(0),
-                   *data_drive,
-                   r.keep(r_prev.keep & prev_keep_mask),
-                   r.last(r_prev.last & prev_last_mask),
-                ).Elif(ready,
-                   r.keep(r.keep & keep_masks[i]),
-                )
-            else:
-                next_fully_consumed = self._sig("r%d_prev_fully_consumed" % i)
-                next_fully_consumed((regs[i - 1].keep & keep_masks[i - 1])._eq(0))
-                If((ready & next_fully_consumed) | r.keep._eq(0) | regs[i - 1].keep._eq(0),
-                   *data_drive,
-                   r.keep(r_prev.keep & prev_keep_mask),
-                   r.last(r_prev.last & prev_last_mask),
-                )
-
-        for rout, rin in zip(self.regs, regs):
-            rout.data(rin.data)
-            if self.USE_STRB:
-                rout.strb(rin.strb)
-            rout.keep(rin.keep)
-            rout.last(rin.last)
 
 
 class AxiS_FrameJoin(Unit):
@@ -197,13 +72,12 @@ class AxiS_FrameJoin(Unit):
         t = self.T
         word_bytes = self.word_bytes = self.DATA_WIDTH // 8
         input_cnt = self.input_cnt = len(t.fields)
-        frames = streams_to_all_possible_frame_formats(
-            t, word_bytes, self.OUT_OFFSET)
-        input_B_dst = resolve_input_bytes_destinations(
-            frames, len(t.fields), word_bytes)
+        streams = [f.dtype for f in t.fields]
+        fju = FrameJoinUtils(word_bytes, self.OUT_OFFSET)
+        input_B_dst = fju.resolve_input_bytes_destinations(
+            streams)
         self.state_trans_table = input_B_dst_to_fsm(
             word_bytes, input_cnt, input_B_dst)
-
         addClkRstn(self)
         with self._paramsShared():
             self.dataOut = AxiStream()._m()
@@ -249,16 +123,23 @@ class AxiS_FrameJoin(Unit):
             sel = self._sig("out_byte%d_sel" % out_B_i, Bits(sel_w))
             out_byte_sel.append(sel)
 
-            out_B = index_byte(self.dataOut.data, out_B_i)
+            out_B = self._sig("out_byte", Bits(8))
+            _out_B = index_byte(self.dataOut.data, out_B_i)
+            _out_B(out_B)
+
             if self.USE_STRB:
                 out_strb_b = self.dataOut.strb[out_B_i]
             else:
                 out_strb_b = None
 
-            Switch(sel).addCases(
+            sw = Switch(sel).addCases(
                 (i, data_drive(out_B, out_strb_b, *val))
                 for i, val in enumerate(out_byte_mux_vals))
-
+            # :note: default case is threre for the case of faulire where
+            #     sel has non predicted value
+            sw.Default(out_B(None))
+            if self.USE_STRB:
+                sw.Default(out_strb_b(None))
         return out_byte_sel, out_mux_values
 
     @staticmethod
@@ -432,7 +313,7 @@ if __name__ == "__main__":
     D_B = 2
     u.DATA_WIDTH = 8 * D_B
     u.T = HStruct(
-        (HStream(Bits(8*D_B), (1, inf), [1]), "frame0"),
-        #(HStream(Bits(8*D_B), (1, inf), [0]), "frame1"),
+        (HStream(Bits(8*1), (1, inf), [1]), "frame0"),
+        (HStream(Bits(8*1), (1, inf), [1]), "frame1"),
     )
     print(toRtl(u))
