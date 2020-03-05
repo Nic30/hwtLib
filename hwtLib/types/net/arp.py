@@ -1,6 +1,6 @@
 from hwt.hdl.types.struct import HStruct
 from hwtLib.types.ctypes import uint16_t, uint8_t
-from hwtLib.types.net.eth import mac_t
+from hwtLib.peripheral.ethernet.types import mac_t
 from hwtLib.types.net.ip import ipv4_t
 
 

@@ -13,7 +13,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.mainBases import RtlMemoryBase
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
-from hwtLib.types.net.eth import Eth2Header_t
+from hwtLib.peripheral.ethernet.types import Eth2Header_t
 from hwtLib.types.net.icmp import ICMP_echo_header_t, ICMP_TYPE
 from hwtLib.types.net.ip import IPv4Header_t, ipv4_t
 from hwt.serializer.verilog.serializer import VerilogSerializer

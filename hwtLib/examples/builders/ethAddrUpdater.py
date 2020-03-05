@@ -14,7 +14,7 @@ from hwtLib.amba.datapump.utils import connectDp
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.structManipulators.structReader import StructReader
 from hwtLib.structManipulators.structWriter import StructWriter
-from hwtLib.types.net.eth import Eth2Header_t
+from hwtLib.peripheral.ethernet.types import Eth2Header_t
 from hwtLib.types.net.ip import IPv4Header_t
 
 

@@ -23,7 +23,7 @@ Eth2Header_t = HStruct(
 Tag802_1q = HStruct(
     (Bits(16), "tpid"),
     (Bits(16), "tci")
-    )
+)
 
 Eth802_1qHeader_t = HStruct(
     (mac_t, "dst"),
