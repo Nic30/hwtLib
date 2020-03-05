@@ -11,11 +11,14 @@ class XgmiiChannel(Interface):
     :ivar clk: clock signal
     :ivar d: data signal
     :ivar c: control signal
+    :ivar IS_DDR: if True, the clock is used as double-data-rate clock
+        (read/write data on rising and falling edge of clk)
     """
 
     def _config(self):
         self.DATA_WIDTH = Param(64)
         self.FREQ = Param(int(156.25e6))
+        self.IS_DDR = Param(True)
 
     def _declr(self):
         self.clk = Clk()
@@ -36,7 +39,8 @@ class Xgmii(Interface):
     """
     10G Media Independent Interface
 
-    :note: usually 64b@156.25MHz or 32b@312.5MHz
+    :note: usually 64b@156.25MHz DDR or 32b@312.5MHz DDR
+        or twice wider and SDR
     """
 
     def _config(self):
