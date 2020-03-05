@@ -94,7 +94,7 @@ class Crc(Unit):
                           rst=rst)
         state_in_bits = list(iterBits(state))
 
-        if self.MASK_GRANULARITY is None:
+        if self.MASK_GRANULARITY is None or self.MASK_GRANULARITY == self.DATA_WIDTH:
             state_next = self.build_crc_xor_matrix(
                 state_in_bits, poly_bits, data_in_bits)
 
