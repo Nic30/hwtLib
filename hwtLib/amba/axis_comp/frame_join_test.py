@@ -46,7 +46,7 @@ class AxiS_FrameJoin_1x_2B_TC(SingleUnitSimTestCase):
         self.runSim(CLK_PERIOD * 20)
         self.assertEmpty(self.u.dataOut._ag.data)
 
-    def _test_pass_data(self, IN_FRAMES, repeat=5):
+    def _test_pass_data(self, IN_FRAMES, repeat=10):
         OUT_FRAMES = []
         for f_i in range(len(IN_FRAMES[0])):
             offset = self.u.OUT_OFFSET
