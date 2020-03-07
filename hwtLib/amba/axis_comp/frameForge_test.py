@@ -118,6 +118,8 @@ class AxiS_frameForge_TC(SimTestCase):
 
         u = self.u = AxiS_frameForge(structT, tmpl, frames)
         u.DATA_WIDTH = self.DATA_WIDTH = DATA_WIDTH
+        u.USE_STRB = False
+        u.USE_KEEP = True
         self.m = mask(self.DATA_WIDTH // 8)
 
         self.compileSimAndStart(self.u)
@@ -156,6 +158,22 @@ class AxiS_frameForge_TC(SimTestCase):
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(MAGIC, self.m, 1)])
+
+    def test_1Field_halfvalid(self, randomized=False):
+        self.instantiateFrameForge(s1field, DATA_WIDTH=128, randomized=randomized)
+        u = self.u
+        MAGIC = 3
+        u.dataIn.item0._ag.data.append(MAGIC)
+
+        t = 100
+        if randomized:
+            t *= 2
+
+        self.runSim(t * Time.ns)
+        offset, f = axis_recieve_bytes(u.dataOut)
+        self.assertEqual(offset, 0)
+        self.assertSequenceEqual(f, [MAGIC, 0, 0, 0,
+                                     0, 0, 0, 0])
 
     def test_1Field_composit0(self, randomized=False):
         self.instantiateFrameForge(s1field_composit0, randomized=randomized)
@@ -206,6 +224,7 @@ class AxiS_frameForge_TC(SimTestCase):
 
     def test_3Fields_outOccupiedAtStart(self):
         u = self.u = AxiS_frameForge(s3field)
+        u.USE_STRB = u.USE_KEEP = True
         u.DATA_WIDTH = self.DATA_WIDTH = 64
         m = mask(self.DATA_WIDTH // 8)
 
@@ -227,14 +246,15 @@ class AxiS_frameForge_TC(SimTestCase):
         self.runSim(t * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
-                                    [(MAGIC, m, 0),
-                                     (MAGIC + 1, m, 0),
-                                     (MAGIC + 2, m, 1),
+                                    [(MAGIC, m, m, 0),
+                                     (MAGIC + 1, m, m, 0),
+                                     (MAGIC + 2, m, m, 1),
                                      ])
 
     def test_s2Pading_normal(self):
         u = self.u = AxiS_frameForge(s2Pading)
         self.DATA_WIDTH = 64
+        u.USE_STRB = u.USE_KEEP = True
         u.DATA_WIDTH = self.DATA_WIDTH
         m = mask(self.DATA_WIDTH // 8)
         self.compileSimAndStart(self.u)
@@ -256,12 +276,12 @@ class AxiS_frameForge_TC(SimTestCase):
         self.runSim(t * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
-                                    [(MAGIC, m, 0),
-                                     (MAGIC + 1, m, 0),
-                                     (None, m, 0),
-                                     (MAGIC + 2, m, 0),
-                                     (MAGIC + 3, m, 0),
-                                     (None, m, 1),
+                                    [(MAGIC,     m, m, 0),
+                                     (MAGIC + 1, m, m, 0),
+                                     (None,      0, m, 0),
+                                     (MAGIC + 2, m, m, 0),
+                                     (MAGIC + 3, m, m, 0),
+                                     (None,      0, m, 1),
                                      ])
 
     def test_s2Pading_spliting(self):
@@ -501,7 +521,6 @@ class AxiS_frameForge_TC(SimTestCase):
                                    DATA_WIDTH=16,
                                    randomized=randomized)
         u = self.u
-        axis_send_bytes
 
         def mk_footer(d):
             v = 0
@@ -559,7 +578,7 @@ class AxiS_frameForge_TC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(AxiS_frameForge_TC('test_struct2xStream64'))
+    #suite.addTest(AxiS_frameForge_TC('test_s2Pading_normal'))
     suite.addTest(unittest.makeSuite(AxiS_frameForge_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

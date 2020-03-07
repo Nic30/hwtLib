@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import List, Optional, Union, Dict
+from typing import List, Optional, Union, Dict, Tuple
 
 from hwt.code import log2ceil, Switch, If, isPow2, SwitchLogic, connect
 from hwt.hdl.frameTmpl import FrameTmpl
@@ -30,60 +30,8 @@ from pyMathBitPrecise.bit_utils import mask
 from hwtLib.amba.axis_comp.frame_join import AxiS_FrameJoin
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
-from hwt.synthesizer.interface import Interface
-from ipCorePackager.constants import DIRECTION
-
-
-def _get_only_stream(t: HdlType):
-    """
-    Return HStream if base datatype is HStream.
-    (HStream field may be nested in HStruct)
-    """
-    if isinstance(t, HStream):
-        return t
-    elif isinstance(t, HStruct) and len(t.fields) == 1:
-        return _get_only_stream(t.fields[0].dtype)
-    return None
-
-
-def axis_mask_propagate_best_effort(src: AxiStream, dst: AxiStream):
-    if src.USE_STRB:
-        if not src.USE_KEEP and not dst.USE_STRB and dst.USE_KEEP:
-            dst.keep(src.strb)
-    if src.USE_KEEP:
-        if not src.USE_STRB and not dst.USE_KEEP and dst.USE_STRB:
-            dst.strb(src.keep)
-    if not src.USE_KEEP and not src.USE_STRB:
-        if dst.USE_KEEP:
-            dst.keep(mask(dst.keep._dtype.bit_length()))
-        if dst.USE_STRB:
-            dst.strb(mask(dst.strb._dtype.bit_length()))
-
-
-def _connect_if_present_on_dst(src: Interface, dst: Interface,
-                               dir_reverse=False, connect_keep_to_strb=False):
-    if not src._interfaces:
-        assert not dst._interfaces, (src, dst)
-        if dir_reverse:
-            src(dst)
-        else:
-            dst(src)
-    for _s in src._interfaces:
-        _d = getattr(dst, _s._name, None)
-        if _d is None:
-            continue
-        if _d._masterDir == DIRECTION.IN:
-            rev = not dir_reverse
-        else:
-            rev = dir_reverse
-
-        _connect_if_present_on_dst(_s, _d, dir_reverse=rev,
-                                   connect_keep_to_strb=connect_keep_to_strb)
-        if _s._name == "strb" and connect_keep_to_strb:
-            _connect_if_present_on_dst(_s, dst.keep, dir_reverse=rev,
-                                       connect_keep_to_strb=connect_keep_to_strb)
-    if isinstance(src, AxiStream):
-        axis_mask_propagate_best_effort(src, dst)
+from hwtLib.amba.axis_comp.frameForge_utils import _get_only_stream,\
+    _connect_if_present_on_dst, StrbKeepStash, reduce_conditional_StrbKeepStashes
 
 
 class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
@@ -143,10 +91,6 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
         elif isinstance(t, HStream):
             p = AxiStream()
             p._updateParamsFrom(self)
-            if not self.USE_STRB and self.DATA_WIDTH == 8:
-                p.USE_STRB = False
-            else:
-                p.USE_STRB = True
             return p
         else:
             p = Handshaked()
@@ -189,7 +133,8 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
                            inPorts_out: List[Union[Handshaked,
                                                    StreamNode]],
                            lastInPorts_out: List[Union[Handshaked,
-                                                       StreamNode]]):
+                                                       StreamNode]])\
+            -> Tuple[Optional[RtlSignal], Optional[RtlSignal]]:
         """
         Connect transactions parts to signal for word of output stream
 
@@ -197,13 +142,13 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
         :param tPart: instance of TransPart or ChoicesOfFrameParts to connect
         :param inPorts_out: input interfaces to this transaction part
         :param lastInPorts_out: input interfaces for last parts of transactions
+        :return: tule (strb, keep) if strb/keep driven by input stream, else (None, None)
         """
 
         tToIntf = self.dataIn._fieldsToInterfaces
 
         if isinstance(tPart, ChoicesOfFrameParts):
             # connnect parts of union to output signal
-            w = tPart.bit_length()
             high, low = tPart.getBusWordBitRange()
             parentIntf = tToIntf[tPart.origin.parent.origin]
 
@@ -213,31 +158,38 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
 
             inPortGroups = ExclusiveStreamGroups()
             lastInPortsGroups = ExclusiveStreamGroups()
+            w = tPart.bit_length()
 
             # tuples (cond, part of data mux for dataOut)
             unionChoices = []
-
+            sk_stashes = []
             # for all union choices
             for choice in tPart:
                 tmp = self._sig("union_tmp_", Bits(w))
                 intfOfChoice = tToIntf[choice.tmpl.origin]
-                _, isSelected, isSelectValid = \
+                _, _isSelected, isSelectValid = \
                     AxiS_frameParser.choiceIsSelected(self, intfOfChoice)
-                unionChoices.append((isSelected, wordData_out[high:low](tmp)))
+                unionChoices.append((_isSelected, wordData_out[high:low](tmp)))
 
-                isSelected = isSelected & isSelectValid
+                isSelected = _isSelected & isSelectValid
 
+                # build meta for handshake logic sync
                 inPortsNode = StreamNode()
-                lastPortsNode = StreamNode()
-
                 inPortGroups.append((isSelected, inPortsNode))
+
+                lastPortsNode = StreamNode()
                 lastInPortsGroups.append((isSelected, lastPortsNode))
 
+                sk_stash = StrbKeepStash()
                 # walk all parts in union choice
                 for _tPart in choice:
-                    self.connectPartsOfWord(tmp, _tPart,
-                                            inPortsNode.masters,
-                                            lastPortsNode.masters)
+                    _strb, _keep = self.connectPartsOfWord(
+                        tmp, _tPart,
+                        inPortsNode.masters,
+                        lastPortsNode.masters)
+                    sk_stash.push(_strb, _keep)
+                # store isSelected sig and strb/keep value for later strb/keep resolving
+                sk_stashes.append((isSelected, sk_stash))
 
             # generate data out mux
             SwitchLogic(unionChoices,
@@ -245,18 +197,23 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
 
             inPorts_out.append(inPortGroups)
             lastInPorts_out.append(lastInPortsGroups)
+            # resolve strb/keep from strb/keep and isSelected of union members
+            if w % 8 != 0:
+                raise NotImplementedError()
+            STRB_ALL = mask(int(w // 8))
+            strb, keep = reduce_conditional_StrbKeepStashes(self, sk_stashes, STRB_ALL)
 
         elif isinstance(tPart, StreamOfFrameParts):
             if len(tPart) != 1:
                 raise NotImplementedError(
-                    "Structuralized streams not implemented yiet")
+                    "Structuralized streams not implemented yet")
 
             p = tPart[0]
             intf = tToIntf[p.tmpl.origin]
 
-            if int(intf.DATA_WIDTH) != wordData_out._dtype.bit_length():
+            if intf.DATA_WIDTH != wordData_out._dtype.bit_length():
                 raise NotImplementedError(
-                    "Dynamic resizing of streams not implemented yiet")
+                    "Dynamic resizing of streams not implemented yet")
 
             if len(self._frames) > 1:
                 raise NotImplementedError(
@@ -266,11 +223,16 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
 
             if tPart.isLastPart():
                 lastInPorts_out.append(intf)
-            if intf.USE_STRB:
-                return intf.strb
-            if intf.USE_KEEP:
-                return intf.keep
 
+            strb = 1
+            if intf.USE_STRB:
+                strb = intf.strb
+
+            keep = 1
+            if intf.USE_KEEP:
+                keep = intf.keep
+
+            w = tPart.bit_length()
         else:
             # connect parts of fields to output signal
             high, low = tPart.getBusWordBitRange()
@@ -285,6 +247,11 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
 
                 if tPart.isLastPart():
                     lastInPorts_out.append(intf)
+
+            w = tPart.bit_length()
+            strb = int(not tPart.isPadding)
+            keep = int(not tPart.canBeRemoved)
+        return ((w, strb), (w, keep))
 
     def handshakeLogicForWord(self,
                               inPorts: List[Union[Handshaked, StreamNode]],
@@ -302,6 +269,12 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
         return ack
 
     def _delegate_to_children(self):
+        """
+        For the cases where output frames contains the streams which does
+        not have start aligned to a frame word boundary, we have to build
+        rest of the frame in child FrameForge and then instanciate
+        AxiS_FrameJoin which will join such a unaligned frames together.
+        """
         Cls = self.__class__
         assert len(self.sub_t) > 1, "We need to delegate to children only " \
             "if there is something which we can't do in this comp. directly"
@@ -315,23 +288,27 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
             else:
                 # we will connect stream directly
                 c = None
+
             children.append(c)
 
         with self._paramsShared(exclude=({"USE_KEEP", "USE_STRB"}, {})):
             self.children = children
 
-        frame_join = AxiS_FrameJoin()
+        fjoin = AxiS_FrameJoin()
         sub_t_flatten = [to_primitive_stream_t(s_t) for s_t in self.sub_t]
-        frame_join.T = HStruct(
+        fjoin.T = HStruct(
             *((s_t, "frame%d" % i)
               for i, s_t in enumerate(sub_t_flatten))
         )
-        frame_join._updateParamsFrom(self, exclude=({"USE_KEEP", }, {}))
-        frame_join.USE_KEEP = True
-        self.frame_join = frame_join
+        fjoin._updateParamsFrom(self, exclude=({"USE_KEEP", }, {}))
+        # has to have keep, because we know that atleast one output will
+        # have unaligned start
+        fjoin.USE_KEEP = True
+        self.frame_join = fjoin
 
         dout = self.dataOut
-        connect(frame_join.dataOut, dout, exclude=frame_join.dataOut.keep)
+        connect(fjoin.dataOut, dout,
+                exclude=fjoin.dataOut.keep)
 
         propagateClkRstn(self)
         for i, c in enumerate(children):
@@ -349,17 +326,25 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
                         raise NotImplementedError(_t)
             else:
                 # connect children inputs
-                _connect_if_present_on_dst(self.dataIn, c.dataIn, connect_keep_to_strb=True)
+                _connect_if_present_on_dst(self.dataIn, c.dataIn,
+                                           connect_keep_to_strb=True)
                 child_out = c.dataOut
             # join children output streams to output
-            fj_in = frame_join.dataIn[i]
+            fj_in = fjoin.dataIn[i]
             if fj_in.USE_KEEP and not child_out.USE_KEEP:
-                connect(child_out, fj_in, exclude={child_out.strb, fj_in.keep})
-                fj_in.keep(child_out.strb)
-                if fj_in.USE_STRB:
-                    fj_in.strb(child_out.strb)
+                if child_out.USE_STRB:
+                    connect(child_out, fj_in, exclude={child_out.strb, fj_in.keep})
+                    fj_in.keep(child_out.strb)
+                    if fj_in.USE_STRB:
+                        fj_in.strb(child_out.strb)
+                else:
+                    connect(child_out, fj_in, exclude={fj_in.keep})
+                    keep_all = mask(fj_in.keep._dtype.bit_length())
+                    fj_in.keep(keep_all)
+                    if fj_in.USE_STRB:
+                        fj_in.strb(keep_all)
             else:
-                fj_in(c.dataOut)
+                fj_in(child_out)
 
     def _create_frame_build_logic(self):
         if self.OUT_OFFSET != 0:
@@ -372,9 +357,9 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
                 return sig
         self.byteOrderCare = byteOrderCare
 
+        STRB_ALL = mask(int(self.DATA_WIDTH // 8))
         words = list(self.chainFrameWords())
         dout = self.dataOut
-        self.parseTemplate()
         maxWordIndex = words[-1][0]
         multipleWords = maxWordIndex > 0
         if multipleWords:
@@ -388,6 +373,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
         # inversed indexes of ends of frames
         endsOfFrames = []
         extra_strbs = []
+        extra_keeps = []
         for i, transParts, isLast in words:
             inversedIndx = maxWordIndex - i
 
@@ -400,16 +386,14 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
             else:
                 wordData = self.dataOut.data
 
+            sk_stash = StrbKeepStash()
             for tPart in transParts:
-                extra_strb = self.connectPartsOfWord(
+                strb, keep = self.connectPartsOfWord(
                     wordData, tPart,
                     inPorts,
                     lastInPorts)
-                if extra_strb is not None:
-                    if len(transParts) > 1:
-                        raise NotImplementedError(
-                            "Construct rest of the strb signal")
-                    extra_strbs.append((inversedIndx, extra_strb))
+                sk_stash.push(strb, keep)
+            sk_stash.pop(inversedIndx, extra_strbs, extra_keeps, STRB_ALL)
 
             if multipleWords:
                 en = wordCntr_inversed._eq(inversedIndx)
@@ -479,7 +463,6 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
             r.rd(selectRegLoad)
         dout.last(last)
 
-        STRB_ALL = mask(int(self.DATA_WIDTH // 8))
         if multipleWords:
             if self.USE_STRB:
                 strb = dout.strb
@@ -489,10 +472,12 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
                     strb(STRB_ALL)
                 )
             if self.USE_KEEP:
-                if not extra_strbs:
-                    dout.keep(STRB_ALL)
-                else:
-                    raise NotImplementedError()
+                keep = dout.keep
+                Switch(wordCntr_inversed).addCases([
+                    (i, keep(v)) for i, v in extra_keeps
+                ]).Default(
+                    keep(STRB_ALL)
+                )
         else:
             if extra_strbs:
                 m = extra_strbs[0][1]
@@ -500,9 +485,13 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
                 m = STRB_ALL
             if self.USE_STRB:
                 dout.strb(m)
+
+            if extra_keeps:
+                m = extra_keeps[0][1]
+            else:
+                m = STRB_ALL
+
             if self.USE_KEEP:
-                # [fixme] derive keep from size of data, rather than strb, because
-                # there may be some padding in original type
                 dout.keep(m)
 
     def _impl(self):
