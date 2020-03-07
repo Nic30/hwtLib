@@ -119,16 +119,17 @@ class AxiS_FrameJoin(Unit):
 
         out_byte_sel = []
         for out_B_i, out_byte_mux_vals in enumerate(out_mux_values):
-            sel_w = log2ceil(len(out_byte_mux_vals))
+            # +1 because last value is used to invalidate data
+            sel_w = log2ceil(len(out_byte_mux_vals) + 1)
             sel = self._sig("out_byte%d_sel" % out_B_i, Bits(sel_w))
             out_byte_sel.append(sel)
 
-            out_B = self._sig("out_byte", Bits(8))
-            _out_B = index_byte(self.dataOut.data, out_B_i)
-            _out_B(out_B)
+            out_B = self._sig("out_byte%d" % out_B_i, Bits(8))
+            index_byte(self.dataOut.data, out_B_i)(out_B)
 
             if self.USE_STRB:
-                out_strb_b = self.dataOut.strb[out_B_i]
+                out_strb_b = self._sig("out_strb%d" % out_B_i)
+                self.dataOut.strb[out_B_i](out_strb_b)
             else:
                 out_strb_b = None
 
@@ -137,9 +138,10 @@ class AxiS_FrameJoin(Unit):
                 for i, val in enumerate(out_byte_mux_vals))
             # :note: default case is threre for the case of faulire where
             #     sel has non predicted value
-            sw.Default(out_B(None))
+            default_case = [out_B(None)]
             if self.USE_STRB:
-                sw.Default(out_strb_b(None))
+                default_case.append(out_strb_b(0))
+            sw.Default(*default_case)
         return out_byte_sel, out_mux_values
 
     @staticmethod
@@ -244,7 +246,9 @@ class AxiS_FrameJoin(Unit):
         # out_sel driver
         for out_B_i, (_out_mux_values, _out_sel) in enumerate(zip(out_mux_values, out_sel)):
             def connect_out_sel(v):
-                if v is not None:
+                if v is None:
+                    v = len(_out_mux_values)
+                else:
                     v = _out_mux_values.index(v)
                 return _out_sel(v)
             self.generate_driver_for_state_trans_dependent_out(
@@ -310,10 +314,11 @@ class AxiS_FrameJoin(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
     u = AxiS_FrameJoin()
-    D_B = 2
+    D_B = 4
     u.DATA_WIDTH = 8 * D_B
+    u.USE_STRB = True
     u.T = HStruct(
-        (HStream(Bits(8*1), (1, inf), [1]), "frame0"),
-        (HStream(Bits(8*1), (1, inf), [1]), "frame1"),
+        (HStream(Bits(8*1), (1, inf), [0, 1, 2, 3]), "frame0"),
+        (HStream(Bits(8*4), (1, 1), [0]), "frame1"),
     )
     print(toRtl(u))
