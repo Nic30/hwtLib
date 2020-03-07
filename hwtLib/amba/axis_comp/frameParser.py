@@ -176,8 +176,9 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                     en: Union[RtlSignal, bool],
                     exclusiveEn: Optional[RtlSignal]=hBit(1)):
         """
-        Create datamux for one word in main fsm
+        Create datamux for a single output word in main fsm
         and colect metainformations for handshake logic
+        and strb/keep
 
         :param hsNondes: list of nodes of handshaked logic
         """
