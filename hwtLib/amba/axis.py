@@ -9,7 +9,7 @@ from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_hs, Axi_strb
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwtLib.types.ctypes import uint8_t
 from ipCorePackager.intfIpMeta import IntfIpMeta
-from pyMathBitPrecise.bit_utils import mask, setBitRange, selectBit,\
+from pyMathBitPrecise.bit_utils import mask, selectBit,\
     selectBitRange, setBit
 from pycocotb.hdlSimulator import HdlSimulator
 
@@ -117,7 +117,8 @@ class AxiStreamAgent(BaseAxiAgent):
                 sig.write(None)
         else:
             assert len(data) == self._sigCnt, (len(data),
-                                               self._signals, self.intf._getFullName())
+                                               self._signals,
+                                               self.intf._getFullName())
             for sig, val in zip(self._signals, data):
                 sig.write(val)
 
@@ -140,7 +141,9 @@ def packAxiSFrame(dataWidth, structVal, withStrb=False):
                 if m == 0xff:
                     word_mask = setBit(word_mask, B_i)
                 else:
-                    assert m == 0, ("Each byte has to be entirely valid or entirely invalid, because of mask granularity", m)
+                    assert m == 0, ("Each byte has to be entirely valid"
+                                    " or entirely invalid,"
+                                    " because of mask granularity", m)
             yield (d, word_mask, last)
         else:
             yield (d, last)
@@ -190,8 +193,10 @@ def _axis_recieve_bytes(ag_data, D_B, use_keep, offset=0) -> Tuple[int, List[int
         for i in range(D_B):
             if selectBit(keep, i):
                 d = selectBitRange(data.val, i * 8, 8)
-                assert selectBitRange(
-                    data.vld_mask, i * 8, 8) == 0xff, data.vld_mask
+                if selectBitRange(data.vld_mask, i * 8, 8) != 0xff:
+                    raise AssertionError(
+                        "Data not valid but should be"
+                        " based on strb/keep B_i:%d, 0x%x, 0x%x" % (i, keep, data.vld_mask))
                 data_B.append(d)
 
         if first:
