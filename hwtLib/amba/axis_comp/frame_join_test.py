@@ -61,8 +61,8 @@ class AxiS_FrameJoin_1x_2B_TC(SingleUnitSimTestCase):
                 for f_offset, frame in frames:
                     self.send(i, frame, offset=f_offset)
 
-        self.runSim(CLK_PERIOD * len(IN_FRAMES) *
-                    len(OUT_FRAMES[0]) * 8 * repeat)
+        self.runSim(CLK_PERIOD * (len(IN_FRAMES) *
+                    len(OUT_FRAMES[0]) * 3 * repeat + 20))
         for (ref_offset, ref_frame) in OUT_FRAMES * repeat:
             offset, frame = axis_recieve_bytes(self.u.dataOut)
 
@@ -190,8 +190,8 @@ class AxiS_FrameJoin_2x_1B_on_2B_TC(AxiS_FrameJoin_1x_2B_TC):
 class AxiS_FrameJoin_2x_1B_on_2B_offset_0_1_TC(AxiS_FrameJoin_1x_2B_TC):
     D_B = 2
     T = HStruct(
-        (HStream(Bits(8 * 1), (1, inf), [1]), "frame0"),
-        (HStream(Bits(8 * 1), (1, inf), [0]), "frame1"),
+        (HStream(Bits(8 * 1), (1, inf), [0]), "frame0"),
+        (HStream(Bits(8 * 1), (1, inf), [1]), "frame1"),
     )
 
 
@@ -290,7 +290,7 @@ AxiS_FrameJoin_TCs = [
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(AxiS_FrameJoin_2x_1B_on_2B_offset_1_1_TC('test_pass_data_min_len_plus1_for_non_first'))
+    # suite.addTest(AxiS_FrameJoin_2x_1B_on_2B_TC('test_pass_data_min_len_plus1_for_non_first'))
     for tc in AxiS_FrameJoin_TCs:
         suite.addTest(unittest.makeSuite(tc))
 

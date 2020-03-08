@@ -1,4 +1,5 @@
 from hwtLib.abstract.frame_join_utils.input_reg_val import InputRegInputVal
+from typing import Dict
 
 
 class StateTransItem():
@@ -15,6 +16,7 @@ class StateTransItem():
                 _input.append(InputRegInputVal(self))
             self.input.append(_input)
 
+        # outputs
         # mask which will be applied to keep signal on input to the register
         # :note: self.input_keep_mask[0][0] = [1, 0] means reg0.in.keep = reg0.out.keep & 0b01
         self.input_keep_mask = [[] for _ in range(parent_table.input_cnt)]
@@ -24,7 +26,6 @@ class StateTransItem():
             for _ in range(in_reg_max + 1):
                 input_keep_mask.append(
                     [1 for _ in range(parent_table.word_bytes)])
-
         self.input_rd = [0 for _ in range(parent_table.input_cnt)]
         self.output_keep = [0 for _ in range(parent_table.word_bytes)]
         self.out_byte_mux_sel = [None for _ in range(parent_table.word_bytes)]
@@ -34,8 +35,12 @@ class StateTransItem():
     def as_tuple(self):
         t = (
             self.state,
-            tuple(tuple(i2.as_tuple() for i2 in i) for i in self.input),
-            tuple(tuple(tuple(i2) for i2 in i) for i in self.input_keep_mask),
+            tuple(tuple(i2.as_tuple()
+                        for i2 in i)
+                  for i in self.input),
+            tuple(tuple(tuple(i2)
+                        for i2 in i)
+                  for i in self.input_keep_mask),
             tuple(self.input_rd),
             tuple(self.output_keep),
             tuple(self.out_byte_mux_sel),
@@ -44,14 +49,45 @@ class StateTransItem():
         )
         return t
 
+    def __lt__(self, other):
+        return (self.state, self.state_next) < (other.state, other.state_next)
+
     def __eq__(self, other):
         return self.as_tuple() == other.as_tuple()
+ 
+    def inputs_exactly_different(self, other: "StateTransItem") -> bool:
+        assert len(self.input) == len(other.input), (self, other)
+        for in_regs0, in_regs1 in zip(self.input, other.input):
+            assert len(in_regs0) == len(in_regs1), (self, other)
+            for in0, in1 in zip(in_regs0, in_regs1):
+                if in0.is_exactly_different(in1):
+                    return True
+        return False
 
     def __hash__(self):
         return hash(self.as_tuple())
 
+    @classmethod
+    def from_dict(cls, parent, d: Dict):
+        st, st_next = d["st"].split("->")
+        self = cls(parent)
+        self.state = int(st)
+        self.state_next = int(st_next)
+        self.input = [
+            [InputRegInputVal.from_dict(self, iriv) for iriv in _in]
+            for _in in d["in"]
+        ]
+        self.input_keep_mask = d["in.keep_mask"]
+        self.input_rd = d["in.rd"]
+        self.output_keep = d["out.keep"]
+        self.out_byte_mux_sel = d["out.mux"]
+        self.last = d["out.last"]
+        return self
+
     def __repr__(self):
-        return "<%s %r->%r, in:%r, in.keep_mask:%r, in.rd:%r, out.keep:%r, out.mux:%r, out.last:%r>" % (
+        return ("<%s 'st':'%r->%r', 'in':%r, \n"
+                "    'in.keep_mask':%r, 'in.rd':%r,\n"
+                "    'out.keep':%r, 'out.mux':%r, 'out.last':%r>") % (
             self.__class__.__name__,
             self.state, self.state_next, self.input, self.input_keep_mask,
             self.input_rd, self.output_keep, self.out_byte_mux_sel, self.last

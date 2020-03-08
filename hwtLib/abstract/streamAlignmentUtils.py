@@ -254,11 +254,10 @@ class FrameJoinUtils():
                 is_last_word_from_this_input))
 
         for f_i, f in enumerate(frames):
-            # print("frame %d" % f_i)
             for output_word_i, w in enumerate(f):
-                # print("%d: %r" % (output_word_i, w))
                 state_label = (f_i, output_word_i)
 
+                # resolve min_word_i_per_input_in_this_out_word
                 min_word_i_per_input_in_this_out_word = [
                     inf for _ in range(input_cnt)
                 ]
@@ -269,6 +268,7 @@ class FrameJoinUtils():
                     min_word_i_per_input_in_this_out_word[i] =\
                         min(min_word_i_per_input_in_this_out_word[i],
                             byte_info.word_i)
+                # resolve byte destinations
                 for output_B_i, byte_info in enumerate(w):
                     if byte_info is None:
                         continue

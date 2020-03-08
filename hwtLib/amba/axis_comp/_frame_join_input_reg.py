@@ -24,6 +24,7 @@ class UnalignedJoinRegIntf(Interface):
         self.keep = VectSignal(self.DATA_WIDTH // 8)
         if self.USE_STRB:
             self.strb = VectSignal(self.DATA_WIDTH // 8)
+        self.relict = Signal()
         self.last = Signal()
 
 
@@ -60,7 +61,8 @@ class FrameJoinInputReg(Unit):
         data_fieds = [
             (Bits(self.DATA_WIDTH), "data"),
             (mask_t, "keep"),  # valid= keep != 0
-            (BIT, "last"),
+            (BIT, "relict"),  # flag for partially consumed word
+            (BIT, "last"),  # flag for end of frame
         ]
         if self.USE_STRB:
             data_fieds.append((mask_t, "strb"),
@@ -69,11 +71,18 @@ class FrameJoinInputReg(Unit):
         # regs[0] connected to output as first, regs[-1] connected to input
         regs = [
             self._reg("r%d" % (r_i), data_t, def_val={"keep": 0,
-                                                      "last": 0})
+                                                      "last": 0,
+                                                      "relict": 0})
             for r_i in range(self.REG_CNT)
         ]
         ready = self.ready
         keep_masks = self.keep_masks
+        fully_consummed_flags = []
+        for i, r in enumerate(regs):
+            _fully_consumed = self._sig("r%d_fully_consummed" % i)
+            _fully_consumed((r.keep & keep_masks[i])._eq(0))
+            fully_consummed_flags.append(_fully_consumed)
+
         for i, (is_last_r, r) in enumerate(iter_with_last(regs)):
             keep_mask_all = mask(r.keep._dtype.bit_length())
             prev_keep_mask = self._sig("prev_keep_mask_%d_tmp" % i, r.keep._dtype)
@@ -100,6 +109,7 @@ class FrameJoinInputReg(Unit):
                 r_prev.ready(r.keep._eq(0)  # last input reg empty
                              | whole_pipeline_shift
                              | next_empty)
+                is_relict = 0
             else:
                 r_prev = regs[i + 1]
                 prev_last_mask(1)
@@ -114,23 +124,31 @@ class FrameJoinInputReg(Unit):
             if self.USE_STRB:
                 data_drive.append(r.strb(r_prev.strb))
 
+            is_empty = r.keep._eq(0)
+            fully_consumed = fully_consummed_flags[i]
             if i == 0:
                 # last register in path
-                fully_consumed = (r.keep & keep_masks[i])._eq(0)
-                If((ready & fully_consumed) | r.keep._eq(0),
+                If((ready & fully_consumed) | is_empty,
                    *data_drive,
                    r.keep(r_prev.keep & prev_keep_mask),
                    r.last(r_prev.last & prev_last_mask),
+                   r.relict(0 if is_last_r else r_prev.relict)
                 ).Elif(ready,
                    r.keep(r.keep & keep_masks[i]),
+                   r.relict(1),  # became relict if there is some 1 in keep
                 )
             else:
-                next_fully_consumed = self._sig("r%d_next_fully_consumed" % i)
-                next_fully_consumed((regs[i - 1].keep & keep_masks[i - 1])._eq(0))
-                If((ready & next_fully_consumed) | r.keep._eq(0) | regs[i - 1].keep._eq(0),
+                next_fully_consumed = fully_consummed_flags[i - 1]
+                next_is_empty = regs[i - 1].keep._eq(0)
+                if is_last_r:
+                    is_relict = 0
+                else:
+                    is_relict = r_prev.relict | ~fully_consummed_flags[i + 1]
+                If((ready & next_fully_consumed) | is_empty | next_is_empty,
                    *data_drive,
                    r.keep(r_prev.keep & prev_keep_mask),
                    r.last(r_prev.last & prev_last_mask),
+                   r.relict(is_relict)
                 )
 
         for rout, rin in zip(self.regs, regs):
@@ -138,5 +156,6 @@ class FrameJoinInputReg(Unit):
             if self.USE_STRB:
                 rout.strb(rin.strb)
             rout.keep(rin.keep)
+            rout.relict(rin.relict)
             rout.last(rin.last)
 

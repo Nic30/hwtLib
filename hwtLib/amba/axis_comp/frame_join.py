@@ -8,10 +8,8 @@ from hwt.code import If, Switch, log2ceil, SwitchLogic, Or, And
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
@@ -39,12 +37,12 @@ class AxiS_FrameJoin(Unit):
     Can be also used to translate alignment of data.
 
     :note: delay=0
-    :note: This component generates differen frame joining logic
-        for each specific case of data alignment which can happen based on configuration.
-        This means that the implementation can be just straight wire or very complicated
-        pipelined shift logic.
+    :note: This component generates different frame joining logic
+        for each specific case of data alignment, cunk size, frame lens, etc.
+        which can happen based on configuration. This means that the implementation
+        can be just straight wire or very complicated pipelined shift logic.
 
-    :note: The schematic is ilustrative
+    :note: The figure is ilustrative
 
     .. aafig::
 
@@ -160,6 +158,7 @@ class AxiS_FrameJoin(Unit):
             for in_meta, in_reg in zip(in_metas, in_regs):
                 for k_i, k in enumerate(in_meta.keep):
                     self.add_cond_bit(cond, in_reg.keep[k_i], k)
+                self.add_cond_bit(cond, in_reg.relict, in_meta.relict)
                 self.add_cond_bit(cond, in_reg.last, in_meta.last)
 
         return And(*cond)

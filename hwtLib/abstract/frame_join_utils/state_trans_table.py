@@ -1,5 +1,6 @@
 from typing import List
 from hwt.code import log2ceil
+from itertools import islice
 
 
 class StateTransTable():
@@ -18,6 +19,15 @@ class StateTransTable():
         self.state_cnt = state_cnt
         # number of bytes to store state
         self.state_width = log2ceil(state_cnt)
+
+    def assert_transitions_deterministic(self):
+        for st_trans in self.state_trans:
+            for i, t0 in enumerate(st_trans):
+                # assert each other transition difers at least in a single value for any input
+                # :note: None notes undefined value
+                for t1 in islice(st_trans, i + 1, None):
+                    if not t0.inputs_exactly_different(t1):
+                        raise AssertionError("non-deterministic state transition", t0, t1)
 
     def filter_unique_state_trans(self):
         self.state_trans = [list(set(t)) for t in self.state_trans]

@@ -6,6 +6,7 @@ from unittest import TestLoader, TextTestRunner, TestSuite
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
 from hwtLib.abstract.streamAlignmentUtils_test import StreamJoiningUtilsTC
+from hwtLib.abstract.template_configured_test import TemplateConfigured_TC
 from hwtLib.amba.axiLite_comp.buff_test import AxiRegTC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import \
     AxiLiteEndpointArrayTC, AxiLiteEndpointStructsInArrayTC
@@ -32,6 +33,7 @@ from hwtLib.amba.axis_comp.frameForge_test import AxiS_frameForge_TC
 from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
 from hwtLib.amba.axis_comp.frameParser_test import AxiS_frameParserTC
 from hwtLib.amba.axis_comp.frame_join_test import AxiS_FrameJoin_TCs
+from hwtLib.amba.axis_comp.frame_join_utils_test import FrameJoinUtilsTC
 from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_TCs
 from hwtLib.amba.axis_comp.storedBurst_test import AxiSStoredBurstTC
@@ -193,7 +195,6 @@ from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
-from hwtLib.abstract.template_configured_test import TemplateConfigured_TC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -267,6 +268,7 @@ suite = testSuiteFromTCs(
     CntrResourceAnalysisTC,
     ConstConditionTC,
     TemplateConfigured_TC,
+    FrameJoinUtilsTC,
 
     # tests of simple units
     TimerTC,
