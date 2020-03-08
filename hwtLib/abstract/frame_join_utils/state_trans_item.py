@@ -2,6 +2,30 @@ from hwtLib.abstract.frame_join_utils.input_reg_val import InputRegInputVal
 from typing import Dict
 
 
+def _cmp_with_None_as_2(o0, o1):
+    """
+    :return: 0 if o0 == o1, -1 if o0 < o1, 1 if o0 > o1
+    """
+    if isinstance(o1, tuple):
+        for _o0, _o1 in zip(o0, o1):
+            cmp = _cmp_with_None_as_2(_o0, _o1)
+            if cmp != 0:
+                return cmp
+
+        return 0
+    else:
+        if o0 is None:
+            o0 = 2
+        if o1 is None:
+            o1 = 2
+
+        if o0 < o1:
+            return -1
+        elif o0 > o1:
+            return 1
+        return 0
+
+
 class StateTransItem():
 
     def __init__(self, parent_table):
@@ -35,6 +59,7 @@ class StateTransItem():
     def as_tuple(self):
         t = (
             self.state,
+            self.state_next,
             tuple(tuple(i2.as_tuple()
                         for i2 in i)
                   for i in self.input),
@@ -45,15 +70,14 @@ class StateTransItem():
             tuple(self.output_keep),
             tuple(self.out_byte_mux_sel),
             self.last,
-            self.state_next,
         )
         return t
 
     def __lt__(self, other):
-        return (self.state, self.state_next) < (other.state, other.state_next)
+        return _cmp_with_None_as_2(self.as_tuple(), other.as_tuple()) < 0
 
     def __eq__(self, other):
-        return self.as_tuple() == other.as_tuple()
+        return self is other or self.as_tuple() == other.as_tuple()
  
     def inputs_exactly_different(self, other: "StateTransItem") -> bool:
         assert len(self.input) == len(other.input), (self, other)
