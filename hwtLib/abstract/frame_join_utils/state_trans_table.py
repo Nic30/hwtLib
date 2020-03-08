@@ -30,4 +30,4 @@ class StateTransTable():
                         raise AssertionError("non-deterministic state transition", t0, t1)
 
     def filter_unique_state_trans(self):
-        self.state_trans = [list(set(t)) for t in self.state_trans]
+        self.state_trans = [sorted(set(t)) for t in self.state_trans]
