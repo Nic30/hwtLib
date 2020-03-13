@@ -59,7 +59,7 @@ class TemplateConfigured():
             offset += wi + 1
 
 
-def separate_footers(t: HdlType, field_map: Dict[HStructField, HStructField]):
+def separate_streams(t: HdlType, field_map: Dict[HStructField, HStructField]):
     """
     In this context the footer means the data behind the data of non constant size.
     The type is splited to a multiple types where variable size data may appear only
@@ -75,17 +75,22 @@ def separate_footers(t: HdlType, field_map: Dict[HStructField, HStructField]):
         leftovers = []
         any_split = False
         for f in t.fields:
-            for is_const_size, _t in separate_footers(f.dtype, field_map):
+            for is_const_size, _t in separate_streams(f.dtype, field_map):
                 if t is f.dtype:
                     leftovers.append(f)
                 else:
                     # the type was spltited somewhere
                     _f = copy(f)
                     _f.dtype = _t
-                    leftovers.append(_f)
-                    if not is_const_size:
+                    if is_const_size:
+                        leftovers.append(_f)
+                    else:
+                        if leftovers:
+                            new_t = HStruct(*leftovers, name=t.name)
+                            yield (True, new_t)
+                            leftovers.clear()
                         # create a new HStruct from previous fields
-                        new_t = HStruct(*leftovers, name=t.name)
+                        new_t = HStruct(_f, name=t.name)
                         leftovers.clear()
                         yield (False, new_t)
                         any_split = True
@@ -97,11 +102,7 @@ def separate_footers(t: HdlType, field_map: Dict[HStructField, HStructField]):
             yield (True, t)
 
     elif isinstance(t, HStream):
-        try:
-            t.bit_length()
-            yield (True, t)
-        except TypeError:
-            yield (False, t)
+        yield (False, t)
     else:
         yield (True, t)
 

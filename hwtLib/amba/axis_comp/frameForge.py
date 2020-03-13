@@ -5,7 +5,7 @@ from typing import List, Optional, Union, Dict, Tuple
 
 from hwt.code import log2ceil, Switch, If, isPow2, SwitchLogic, connect
 from hwt.hdl.frameTmpl import FrameTmpl
-from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts, StreamOfFrameParts
+from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
 from hwt.hdl.transPart import TransPart
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.bits import Bits
@@ -23,7 +23,7 @@ from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
 from hwtLib.abstract.template_configured import TemplateConfigured,\
-    separate_footers, to_primitive_stream_t
+    separate_streams, to_primitive_stream_t
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
 from pyMathBitPrecise.bit_utils import mask
@@ -104,7 +104,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
         t = self._structT
         s_t = _get_only_stream(t)
         if s_t is None:
-            self.sub_t = [_t for _, _t in separate_footers(t, {})]
+            self.sub_t = [_t for _, _t in separate_streams(t, {})]
             if len(self.sub_t) == 1:
                 self.parseTemplate()
                 # else each child will parse it's own part
@@ -128,8 +128,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
 
     def connectPartsOfWord(self, wordData_out: RtlSignal,
                            tPart: Union[TransPart,
-                                        ChoicesOfFrameParts,
-                                        StreamOfFrameParts],
+                                        ChoicesOfFrameParts],
                            inPorts_out: List[Union[Handshaked,
                                                    StreamNode]],
                            lastInPorts_out: List[Union[Handshaked,
@@ -202,37 +201,6 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
                 raise NotImplementedError()
             STRB_ALL = mask(int(w // 8))
             strb, keep = reduce_conditional_StrbKeepStashes(self, sk_stashes, STRB_ALL)
-
-        elif isinstance(tPart, StreamOfFrameParts):
-            if len(tPart) != 1:
-                raise NotImplementedError(
-                    "Structuralized streams not implemented yet")
-
-            p = tPart[0]
-            intf = tToIntf[p.tmpl.origin]
-
-            if intf.DATA_WIDTH != wordData_out._dtype.bit_length():
-                raise NotImplementedError(
-                    "Dynamic resizing of streams not implemented yet")
-
-            if len(self._frames) > 1:
-                raise NotImplementedError(
-                    "Dynamic splitting on frames not implemented yet")
-            wordData_out(self.byteOrderCare(intf.data))
-            inPorts_out.append(intf)
-
-            if tPart.isLastPart():
-                lastInPorts_out.append(intf)
-
-            strb = 1
-            if intf.USE_STRB:
-                strb = intf.strb
-
-            keep = 1
-            if intf.USE_KEEP:
-                keep = intf.keep
-
-            w = tPart.bit_length()
         else:
             # connect parts of fields to output signal
             high, low = tPart.getBusWordBitRange()

@@ -3,6 +3,7 @@ from hwt.hdl.types.struct import HStruct
 from hwtLib.types.ctypes import uint8_t, uint16_t
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.union import HUnion
+from hwt.hdl.types.stream import HStream
 
 union0 = HUnion(
             (HStruct(
@@ -11,13 +12,43 @@ union0 = HUnion(
              ), "a"),
             (uint16_t, "b"),
             )
-union0_str = """<TransTmpl start:0, end:16
+union0_str = """\
+<TransTmpl start:0, end:16
     <TransTmpl name:a, start:0, end:16
         <TransTmpl name:a0, start:0, end:8>
         <TransTmpl name:a1, start:8, end:16>
     >
     <OR>
     <TransTmpl name:b, start:0, end:16>
+>"""
+
+stream_const_len = HStruct(
+    (uint8_t, "a0"),
+    (HStream(uint8_t, frame_len=(1, 1)), "f0"),
+    (uint8_t, "a1"),
+)
+
+stream_const_len_str = """\
+<TransTmpl start:0, end:24
+    <TransTmpl name:a0, start:0, end:8>
+    <TransTmpl name:f0, start:8, end:16, itemCnt:1
+        <TransTmpl name:f0, start:0, end:8>
+    >
+    <TransTmpl name:a1, start:16, end:24>
+>"""
+
+stream_const_len2 = HStruct(
+    (uint8_t, "a0"),
+    (HStream(uint8_t, frame_len=(2, 2)), "f0"),
+    (uint8_t, "a1"),
+)
+stream_const_len2_str = """\
+<TransTmpl start:0, end:32
+    <TransTmpl name:a0, start:0, end:8>
+    <TransTmpl name:f0, start:8, end:24, itemCnt:2
+        <TransTmpl name:f0, start:0, end:8>
+    >
+    <TransTmpl name:a1, start:24, end:32>
 >"""
 
 
@@ -28,6 +59,24 @@ class TransTmpl_TC(unittest.TestCase):
                     (uint8_t, "c"))
         trans = TransTmpl(t)
         self.assertEqual(len(list(trans.walkFlatten())), 3)
+
+    def test_walkFlatten_stream_const_len(self):
+        trans = TransTmpl(stream_const_len)
+        self.assertEqual(len(list(trans.walkFlatten())), 3)
+
+    def test__repr__stream_const_len(self):
+        trans = TransTmpl(stream_const_len)
+        s = repr(trans)
+        self.assertEqual(s, stream_const_len_str)
+
+    def test_walkFlatten_stream_const_len2(self):
+        trans = TransTmpl(stream_const_len2)
+        self.assertEqual(len(list(trans.walkFlatten())), 4)
+
+    def test__repr__stream_const_len2(self):
+        trans = TransTmpl(stream_const_len2)
+        s = repr(trans)
+        self.assertEqual(s, stream_const_len2_str)
 
     def test_walkFlatten_arr(self):
         t = HStruct((uint8_t[4], "a"))

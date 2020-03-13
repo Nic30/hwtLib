@@ -548,7 +548,7 @@ class AxiS_frameForge_TC(SimTestCase):
         self.test_footer(randomized=True)
 
     def test_struct2xStream8(self, randomized=False,
-                             sizes=[(2, 2), (1, 2), 
+                             sizes=[(2, 2), (1, 2),
                                     (1, 3), (2, 1),
                                     (2, 2)]):
         self.instantiateFrameForge(struct2xStream8,
