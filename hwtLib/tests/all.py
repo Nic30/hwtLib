@@ -29,11 +29,11 @@ from hwtLib.amba.axi_comp.tester_test import AxiTesterTC
 from hwtLib.amba.axi_comp.to_axiLite_test import Axi_to_AxiLite_TC
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
-from hwtLib.amba.axis_comp.frameForge_test import AxiS_frameForge_TC
+from hwtLib.amba.axis_comp.frame_deparser.test import AxiS_frameDeparser_TC
 from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
-from hwtLib.amba.axis_comp.frameParser_test import AxiS_frameParserTC
-from hwtLib.amba.axis_comp.frame_join_test import AxiS_FrameJoin_TCs
-from hwtLib.amba.axis_comp.frame_join_utils_test import FrameJoinUtilsTC
+from hwtLib.amba.axis_comp.frame_parser.test import AxiS_frameParserTC
+from hwtLib.amba.axis_comp.frame_join.test import AxiS_FrameJoin_TCs
+from hwtLib.abstract.frame_join_utils.test import FrameJoinUtilsTC
 from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_TCs
 from hwtLib.amba.axis_comp.storedBurst_test import AxiSStoredBurstTC
@@ -370,7 +370,7 @@ suite = testSuiteFromTCs(
     AxiS_en_TC,
     AxiS_measuringFifoTC,
     *AxiS_resizer_TCs,
-    AxiS_frameForge_TC,
+    AxiS_frameDeparser_TC,
     AxiS_localLinkConvTC,
     AxiS_frameParserTC,
     *AxiS_FrameJoin_TCs,

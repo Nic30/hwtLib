@@ -17,7 +17,7 @@ from hwtLib.abstract.frame_join_utils.fsm import input_B_dst_to_fsm
 from hwtLib.abstract.frame_join_utils.state_trans_item import StateTransItem
 from hwtLib.abstract.streamAlignmentUtils import FrameJoinUtils
 from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp._frame_join_input_reg import FrameJoinInputReg
+from hwtLib.amba.axis_comp.frame_join.input_reg import FrameJoinInputReg
 
 
 def bit_list_to_int(bl):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import List, Optional, Union, Dict, Tuple
+from typing import List, Optional, Union, Tuple
 
 from hwt.code import log2ceil, Switch, If, isPow2, SwitchLogic, connect
 from hwt.hdl.frameTmpl import FrameTmpl
@@ -21,7 +21,7 @@ from hwt.synthesizer.byteOrder import reverseByteOrder
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
-from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
+from hwtLib.amba.axis_comp.frame_parser import AxiS_frameParser
 from hwtLib.abstract.template_configured import TemplateConfigured,\
     separate_streams, to_primitive_stream_t
 from hwtLib.handshaked.builder import HsBuilder
@@ -30,11 +30,13 @@ from pyMathBitPrecise.bit_utils import mask
 from hwtLib.amba.axis_comp.frame_join import AxiS_FrameJoin
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axis_comp.frameForge_utils import _get_only_stream,\
-    _connect_if_present_on_dst, StrbKeepStash, reduce_conditional_StrbKeepStashes
+from hwtLib.amba.axis_comp.frame_deparser.utils import _get_only_stream,\
+    _connect_if_present_on_dst
+from hwtLib.amba.axis_comp.frame_deparser.strb_keep_stash import StrbKeepStash,\
+    reduce_conditional_StrbKeepStashes
 
 
-class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
+class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
     """
     Assemble fields into frame on axi stream interface,
     frame description can be HType instance (HStruct, HUnion, ...)
@@ -58,7 +60,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
         | field2  +------+
         +---------+
 
-    .. hwt-schematic:: _example_AxiS_frameForge
+    .. hwt-schematic:: _example_AxiS_frameDeparser
     """
 
     def __init__(self,
@@ -493,7 +495,7 @@ class AxiS_frameForge(AxiSCompBase, TemplateConfigured):
         self._create_frame_build_logic()
 
 
-def _example_AxiS_frameForge():
+def _example_AxiS_frameDeparser():
     from hwtLib.types.ctypes import uint64_t, uint8_t, uint16_t
 
     t = HStruct(
@@ -503,13 +505,13 @@ def _example_AxiS_frameForge():
         (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
     )
 
-    u = AxiS_frameForge(t)
+    u = AxiS_frameDeparser(t)
     u.DATA_WIDTH = 32
     return u
 
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    u = _example_AxiS_frameForge()
+    u = _example_AxiS_frameDeparser()
     print(toRtl(u))
     # print(u._frames)

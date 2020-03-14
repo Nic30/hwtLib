@@ -7,92 +7,21 @@ import unittest
 from hwt.hdl.constants import Time
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
-from hwt.hdl.types.stream import HStream
-from hwt.hdl.types.struct import HStruct
-from hwt.hdl.types.union import HUnion
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis import axis_send_bytes, axis_recieve_bytes
-from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
-from hwtLib.types.ctypes import uint64_t, uint32_t, int32_t, uint8_t
+from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.triggers import Timer
 from pycocotb.constants import CLK_PERIOD
 from itertools import chain
+from hwtLib.amba.axis_comp.frame_deparser.test_types import s1field,\
+    s1field_composit0, s3field, s2Pading, unionOfStructs, unionSimple,\
+    structStream64, structStream64before, structStream64after, struct2xStream64,\
+    structStreamAndFooter, struct2xStream8
 
 
-s1field = HStruct(
-    (uint64_t, "item0")
-)
-
-s3field = HStruct(
-    (uint64_t, "item0"),
-    (uint64_t, "item1"),
-    (uint64_t, "item2")
-)
-
-s2Pading = HStruct(
-    (uint64_t, "item0_0"),
-    (uint64_t, "item0_1"),
-    (uint64_t, None),
-    (uint64_t, "item1_0"),
-    (uint64_t, "item1_1"),
-    (uint64_t, None),
-)
-
-s1field_composit0 = HStruct(
-    (uint32_t, "item0"), (uint32_t, "item1"),
-)
-
-unionOfStructs = HUnion(
-    (HStruct(
-        (uint64_t, "itemA0"),
-        (uint64_t, "itemA1")
-        ), "frameA"),
-    (HStruct(
-        (uint32_t, "itemB0"),
-        (uint32_t, "itemB1"),
-        (uint32_t, "itemB2"),
-        (uint32_t, "itemB3")
-        ), "frameB")
-)
-
-unionSimple = HUnion(
-    (uint32_t, "a"),
-    (int32_t, "b")
-)
-
-structStream64 = HStruct(
-    (HStream(uint64_t), "streamIn")
-)
-
-structStream64before = HStruct(
-    (HStream(uint64_t), "streamIn"),
-    (uint64_t, "item0"),
-)
-
-structStream64after = HStruct(
-    (uint64_t, "item0"),
-    (HStream(uint64_t), "streamIn"),
-)
-
-struct2xStream64 = HStruct(
-    (HStream(uint64_t), "streamIn0"),
-    (HStream(uint64_t), "streamIn1")
-)
-
-structStreamAndFooter = HStruct(
-    (HStream(uint8_t), "data"),
-    (uint32_t, "footer"),
-)
-
-struct2xStream8 = HStruct(
-    (HStream(uint8_t), "streamIn0"),
-    (HStream(uint8_t), "streamIn1")
-)
-
-
-class AxiS_frameForge_TC(SimTestCase):
+class AxiS_frameDeparser_TC(SimTestCase):
     def instantiateFrameForge(self, structT,
                               DATA_WIDTH=64,
                               maxFrameLen=inf,
@@ -116,7 +45,7 @@ class AxiS_frameForge_TC(SimTestCase):
             tmpl = None
             frames = None
 
-        u = self.u = AxiS_frameForge(structT, tmpl, frames)
+        u = self.u = AxiS_frameDeparser(structT, tmpl, frames)
         u.DATA_WIDTH = self.DATA_WIDTH = DATA_WIDTH
         u.USE_STRB = False
         u.USE_KEEP = True
@@ -160,7 +89,8 @@ class AxiS_frameForge_TC(SimTestCase):
                                     [(MAGIC, self.m, 1)])
 
     def test_1Field_halfvalid(self, randomized=False):
-        self.instantiateFrameForge(s1field, DATA_WIDTH=128, randomized=randomized)
+        self.instantiateFrameForge(s1field, DATA_WIDTH=128,
+                                   randomized=randomized)
         u = self.u
         MAGIC = 3
         u.dataIn.item0._ag.data.append(MAGIC)
@@ -223,7 +153,7 @@ class AxiS_frameForge_TC(SimTestCase):
         self.test_1Field_composit0(randomized=True)
 
     def test_3Fields_outOccupiedAtStart(self):
-        u = self.u = AxiS_frameForge(s3field)
+        u = self.u = AxiS_frameDeparser(s3field)
         u.USE_STRB = u.USE_KEEP = True
         u.DATA_WIDTH = self.DATA_WIDTH = 64
         m = mask(self.DATA_WIDTH // 8)
@@ -252,7 +182,7 @@ class AxiS_frameForge_TC(SimTestCase):
                                      ])
 
     def test_s2Pading_normal(self):
-        u = self.u = AxiS_frameForge(s2Pading)
+        u = self.u = AxiS_frameDeparser(s2Pading)
         self.DATA_WIDTH = 64
         u.USE_STRB = u.USE_KEEP = True
         u.DATA_WIDTH = self.DATA_WIDTH
@@ -294,7 +224,7 @@ class AxiS_frameForge_TC(SimTestCase):
                                      maxPaddingWords=0,
                                      trimPaddingWordsOnStart=True,
                                      trimPaddingWordsOnEnd=True))
-        u = self.u = AxiS_frameForge(structT,
+        u = self.u = AxiS_frameDeparser(structT,
                                      tmpl, frames)
         u.DATA_WIDTH = self.DATA_WIDTH
         m = mask(self.DATA_WIDTH // 8)
@@ -555,13 +485,12 @@ class AxiS_frameForge_TC(SimTestCase):
                                    DATA_WIDTH=16,
                                    randomized=randomized)
         u = self.u
-        MAGIC = 0  #13
+        MAGIC = 0  # 13
         t = 10 + (2 * sum(sum(x) for x in sizes) * 3)
         if randomized:
             t *= 3
 
         ref = []
-        m = self.m
         for i, size in enumerate(sizes):
             o = MAGIC + i * 6 + 1
             d0 = [o + i for i in range(size[0])]
@@ -578,7 +507,7 @@ class AxiS_frameForge_TC(SimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(AxiS_frameForge_TC('test_s2Pading_normal'))
-    suite.addTest(unittest.makeSuite(AxiS_frameForge_TC))
+    # suite.addTest(AxiS_frameDeparser_TC('test_s2Pading_normal'))
+    suite.addTest(unittest.makeSuite(AxiS_frameDeparser_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

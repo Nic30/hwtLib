@@ -2,28 +2,12 @@ from typing import Union, Tuple, List
 
 from hwt.code import Concat
 from hwt.hdl.typeShortcuts import vec
-from hwt.hdl.types.hdlType import HdlType
-from hwt.hdl.types.stream import HStream
-from hwt.hdl.types.struct import HStruct
 from hwt.hdl.value import Value
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwtLib.amba.axis import AxiStream
-from ipCorePackager.constants import DIRECTION
-from pyMathBitPrecise.bit_utils import mask
 from hwt.synthesizer.unit import Unit
-
-
-def _get_only_stream(t: HdlType):
-    """
-    Return HStream if base datatype is HStream.
-    (HStream field may be nested in HStruct)
-    """
-    if isinstance(t, HStream):
-        return t
-    elif isinstance(t, HStruct) and len(t.fields) == 1:
-        return _get_only_stream(t.fields[0].dtype)
-    return None
+from hwtLib.amba.axis import AxiStream
+from pyMathBitPrecise.bit_utils import mask
 
 
 def axis_mask_propagate_best_effort(src: AxiStream, dst: AxiStream):
@@ -38,32 +22,6 @@ def axis_mask_propagate_best_effort(src: AxiStream, dst: AxiStream):
             dst.keep(mask(dst.keep._dtype.bit_length()))
         if dst.USE_STRB:
             dst.strb(mask(dst.strb._dtype.bit_length()))
-
-
-def _connect_if_present_on_dst(src: Interface, dst: Interface,
-                               dir_reverse=False, connect_keep_to_strb=False):
-    if not src._interfaces:
-        assert not dst._interfaces, (src, dst)
-        if dir_reverse:
-            src(dst)
-        else:
-            dst(src)
-    for _s in src._interfaces:
-        _d = getattr(dst, _s._name, None)
-        if _d is None:
-            continue
-        if _d._masterDir == DIRECTION.IN:
-            rev = not dir_reverse
-        else:
-            rev = dir_reverse
-
-        _connect_if_present_on_dst(_s, _d, dir_reverse=rev,
-                                   connect_keep_to_strb=connect_keep_to_strb)
-        if _s._name == "strb" and connect_keep_to_strb:
-            _connect_if_present_on_dst(_s, dst.keep, dir_reverse=rev,
-                                       connect_keep_to_strb=connect_keep_to_strb)
-    if isinstance(src, AxiStream):
-        axis_mask_propagate_best_effort(src, dst)
 
 
 class StrbKeepStash():
@@ -122,7 +80,9 @@ class StrbKeepStash():
             extra_keeps.append((inversedWordIndex, keep))
 
 
-def reduce_conditional_StrbKeepStashes(parent: Unit, sk_stashes: List[StrbKeepStash], STRB_ALL: int):
+def reduce_conditional_StrbKeepStashes(parent: Unit,
+                                       sk_stashes: List[StrbKeepStash],
+                                       STRB_ALL: int):
     strb_val_to_en = {}
     keep_val_to_en = {}
     for (en, sk) in sk_stashes:
@@ -142,4 +102,3 @@ def reduce_conditional_StrbKeepStashes(parent: Unit, sk_stashes: List[StrbKeepSt
         raise NotImplementedError()
 
     return strb, keep
-

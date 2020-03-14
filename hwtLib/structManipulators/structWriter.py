@@ -8,7 +8,7 @@ from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwtLib.amba.datapump.intf import AxiWDatapumpIntf
-from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
+from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
@@ -54,7 +54,7 @@ class StructWriter(StructReader):
         self.WRITE_ACK = Param(False)
 
     def _createInterfaceForField(self, parent, structField):
-        return AxiS_frameForge._mkFieldIntf(self, parent, structField)
+        return AxiS_frameDeparser._mkFieldIntf(self, parent, structField)
 
     def _declr(self):
         addClkRstn(self)
@@ -72,7 +72,7 @@ class StructWriter(StructReader):
             self.wDatapump = AxiWDatapumpIntf()._m()
             self.wDatapump.MAX_LEN = self.maxWordIndex() + 1
 
-        self.frameAssember = AxiS_frameForge(self._structT,
+        self.frameAssember = AxiS_frameDeparser(self._structT,
                                              tmpl=self._tmpl,
                                              frames=self._frames)
 

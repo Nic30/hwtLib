@@ -11,7 +11,7 @@ from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwtLib.amba.datapump.intf import AxiRDatapumpIntf
-from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
+from hwtLib.amba.axis_comp.frame_parser import AxiS_frameParser
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode
 

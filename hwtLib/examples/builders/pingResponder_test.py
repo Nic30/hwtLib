@@ -8,8 +8,7 @@ from hwt.hdl.types.structUtils import HStruct_unpack
 from hwt.simulator.agentConnector import valToInt
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.vectorUtils import iterBits
-from hwtLib.amba.axis import unpackAxiSFrame
-from hwtLib.amba.axis_comp.frameParser_test import packAxiSFrame
+from hwtLib.amba.axis import unpackAxiSFrame, packAxiSFrame
 from hwtLib.examples.builders.pingResponder import PingResponder, \
     echoFrame_t
 from hwtLib.peripheral.ethernet.types import parse_eth_addr, ETHER_TYPE

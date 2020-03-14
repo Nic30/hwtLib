@@ -6,8 +6,8 @@ from hwtLib.amba.axis_comp.cdc import AxiSCdc
 from hwtLib.amba.axis_comp.fifo import AxiSFifo
 from hwtLib.amba.axis_comp.fifo_async import AxiSFifoAsync
 from hwtLib.amba.axis_comp.fifo_drop import AxiSFifoDrop
-from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
-from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
+from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
+from hwtLib.amba.axis_comp.frame_parser import AxiS_frameParser
 from hwtLib.amba.axis_comp.reg import AxiSReg
 from hwtLib.amba.axis_comp.resizer import AxiS_resizer
 from hwtLib.amba.axis_comp.splitCopy import AxiSSplitCopy
@@ -84,7 +84,7 @@ class AxiSBuilder(AbstractStreamBuilder):
         :return: tuple (builder, interface with forged frame)
         """
 
-        u = AxiS_frameForge(typeToForge)
+        u = AxiS_frameDeparser(typeToForge)
         if setupFn:
             setupFn(u)
 
