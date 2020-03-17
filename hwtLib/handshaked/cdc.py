@@ -39,7 +39,7 @@ class HandshakeFSM(Unit):
 class HandshakedCdc(HandshakedCompBase):
     """
     CDC (Clock Domain Crossing) for handshaked interface
-    
+
     :note: This component uses syncrhorization by pulse CDCs which means it's throughput is significantly limited
         (eta slowest clk / 3)
 
@@ -53,17 +53,17 @@ class HandshakedCdc(HandshakedCompBase):
 
     def _declr(self):
         I_CLS = self.intfCls
-        
+
         self.dataIn_clk = Clk()
         self.dataIn_clk.FREQ = self.IN_FREQ
         with self._associated(self.dataIn_clk):
             self.dataIn_rst_n = Rst_n()
-        
+
         self.dataOut_clk = Clk()
         self.dataOut_clk.FREQ = self.OUT_FREQ
         with self._associated(self.dataOut_clk):
             self.dataOut_rst_n = Rst_n()
-        
+
         with self._paramsShared():
             with self._associated(self.dataIn_clk, self.dataIn_rst_n):
                 self.dataIn = I_CLS()
@@ -73,11 +73,11 @@ class HandshakedCdc(HandshakedCompBase):
         ipg = self.in_ack_pulse_gen = CdcPulseGen()
         ipg.IN_FREQ = self.OUT_FREQ
         ipg.OUT_FREQ = self.IN_FREQ
-        
+
         opg = self.out_en_pulse_gen = CdcPulseGen()
         opg.IN_FREQ = self.IN_FREQ
         opg.OUT_FREQ = self.OUT_FREQ
-        
+
         self.tx_fsm = HandshakeFSM()
         self.rx_fsm = HandshakeFSM()
 
@@ -103,7 +103,8 @@ class HandshakedCdc(HandshakedCompBase):
 
     def create_data_reg(self, name_prefix, clk=None, rst=None):
         """
-        Create a registers for data signals with default values from Unit parameters and with specified clk/rst
+        Create a registers for data signals with default values
+        from Unit parameters and with specified clk/rst
         """
         regs = HObjList()
         def_vals = self.DATA_RESET_VAL
@@ -166,15 +167,15 @@ class HandshakedCdc(HandshakedCompBase):
         FAST_CLK_PERIOD_NS = 1e9 / max(self.dataIn_clk.FREQ, self.dataOut_clk.FREQ)
         for d_in, d_out in zip(din_data, dout_data):
             set_max_delay(d_in, d_out, FAST_CLK_PERIOD_NS)
-        
+
         HObjList(self.get_data(dout))(dout_data)
-        
+
         dout_vld = ~dout_vld_n
         dout_vld_delayed = self._reg("dout_vld_delayed", def_val=0, **dout_clk)
         dout_vld_delayed(dout_vld)
         dout_vld = dout_vld_delayed
         vld(dout)(dout_vld)
-        
+
         dout_ack(dout_ack ^ dout_load_data)
 
         in_ack_gen = self.in_ack_pulse_gen
@@ -182,8 +183,8 @@ class HandshakedCdc(HandshakedCompBase):
         in_ack_gen.dataIn(dout_ack)
         din_ack = in_ack_gen.dataOut_en
         tx_fsm.ack(din_ack)
-        
-        
+
+
 def example_HandshakedCdc():
     u = HandshakedCdc(Handshaked)
     u.IN_FREQ = int(100e6)
@@ -196,5 +197,3 @@ if __name__ == "__main__":
     u = example_HandshakedCdc()
 
     print(toRtl(u))
-        
-        
