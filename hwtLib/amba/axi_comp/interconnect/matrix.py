@@ -26,8 +26,8 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
         or tuple of flags, where True means the master has visibility to slave
         on this index
 
-    :note: master[x] port should be connected to a AXI master (the port is slave),
-           slave[x] port should be connected to outside AXI slave (the port is master)
+    :note: s[x] port should be connected to a AXI master,
+           m[x] port should be connected to outside AXI slave
 
     .. hwt-schematic:: example_AxiInterconnectMatrix
     """
@@ -39,6 +39,8 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
                                                            AxiInterconnectMatrixW]
                                    ) -> List[Tuple[AxiInterconnectCommon, INTF_DIRECTION, int, int]]:
         """
+        :note: sub interconnect are used if there are distinct group of masters and slaves in order
+            to avoid unnecessary logic
         :return: tuples (sub_interconnect, SLAVE/MASTER,
             index of interface on this component, index of interface on sub_interconnect)
         """
@@ -65,8 +67,9 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
 
         sub_interconnect.MASTERS = tuple(connected_slaves_per_master)
         sub_interconnect.SLAVES = tuple(self.SLAVES[s_i] for s_i in slave_indexes)
-        sub_interconnect_connetions = []
 
+        # build connection informations for later use
+        sub_interconnect_connetions = []
         for sub_m_i, m_i in enumerate(sorted(list(master_indexes))):
             c = (sub_interconnect, INTF_DIRECTION.MASTER, m_i, sub_m_i)
             sub_interconnect_connetions.append(c)
@@ -88,7 +91,7 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
         super(AxiInterconnectMatrix, self)._declr()
 
         # instanciate sub interconnects for each independent master-slave connection
-        # subgraph
+        # subgraph (r, w separately)
         self.sub_interconnect_connections = []
         r_interconnects = HObjList()
         masters_with_read_ch = set()

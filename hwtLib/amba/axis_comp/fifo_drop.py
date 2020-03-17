@@ -14,7 +14,8 @@ from hwtLib.handshaked.fifo_drop import HandshakedFifoDrop
 @serializeParamsUniq
 class AxiSFifoDrop(AxiSCompBase, HandshakedFifoDrop):
     """
-    Synchronous fifo for axi-stream interface with frame drop functionality.
+    Synchronous fifo for axi-stream interface with frame drop functionality
+    and speculative buffering. Also known as a speculative fifo.
 
     :note: DEPTH > axis.MAX_FRAME_LEN
 
