@@ -28,7 +28,7 @@ class AxiBuffCdc(AxiBuff):
         self.clk.FREQ = self.M_FREQ
         self.rst_n._make_association(clk=self.clk)
 
-        self.m._make_association(clk=self.clk, rst=self.rst_n)
+        self.s._make_association(clk=self.clk, rst=self.rst_n)
 
         self.m_clk = Clk()
         self.m_clk.FREQ = self.S_FREQ
@@ -36,7 +36,7 @@ class AxiBuffCdc(AxiBuff):
         self.m_rst_n = Rst_n()
         self.m_rst_n._make_association(clk=self.m_clk)
 
-        self.s._make_association(clk=self.m_clk, rst=self.m_rst_n)
+        self.m._make_association(clk=self.m_clk, rst=self.m_rst_n)
         assert self.ADDR_BUFF_DEPTH == 1 or isPow2(self.ADDR_BUFF_DEPTH - 1), (
             self.ADDR_BUFF_DEPTH, "size 2**n + 1 for output reg")
         assert self.DATA_BUFF_DEPTH == 1 or isPow2(self.DATA_BUFF_DEPTH - 1), (
