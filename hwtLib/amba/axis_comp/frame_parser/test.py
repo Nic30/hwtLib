@@ -18,7 +18,7 @@ from hwtLib.amba.axis_comp.frame_parser.test_types import structManyInts,\
     ref0_structManyInts, ref1_structManyInts, ref_unionOfStructs0,\
     ref_unionOfStructs2, ref_unionOfStructs1, ref_unionOfStructs3,\
     ref_unionSimple0, ref_unionSimple1, ref_unionSimple2, ref_unionSimple3
-from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
+from hwtLib.types.ctypes import uint16_t
 from pycocotb.constants import CLK_PERIOD
 
 
@@ -86,7 +86,7 @@ class AxiS_frameParserTC(SimTestCase):
 
     def runMatrixSim(self, time, dataWidth, randomize):
         unique_name = self.getTestName() + ("_dw%d_r%d" % (dataWidth, randomize))
-        self.runSim(time, name="tmp/" + unique_name + ".vcd")
+        self.runSim(time, name=os.path.join(self.DEFAULT_LOG_DIR, unique_name + ".vcd"))
 
     @testMatrix
     def test_structManyInts_nop(self, dataWidth, randomize):
@@ -230,7 +230,7 @@ class AxiS_frameParserTC(SimTestCase):
     def runMatrixSim2(self, t, dataWidth, frame_len, randomize):
         unique_name = self.getTestName() + (
             "_dw%d_len%d_r%d" % (dataWidth, frame_len, randomize))
-        self.runSim(t * CLK_PERIOD, name="tmp/" + unique_name + ".vcd")
+        self.runSim(t * CLK_PERIOD, name=os.path.join(self.DEFAULT_LOG_DIR, unique_name + ".vcd"))
 
     @TestMatrix([8, 16, 32], [1, 2, 5], [False, True])
     def test_const_size_stream(self, dataWidth, frame_len, randomize):
