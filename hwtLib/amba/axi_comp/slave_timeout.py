@@ -52,11 +52,17 @@ class AxiSlaveTimeout(BusBridge):
             r_id(m.ar.id),
         )
 
+        r_timeout_case = []
+        if hasattr(m.r, "last"):
+            r_timeout_case.append(m.r.last(1))
+
         If(r_pending & r_timer._eq(0),
            m.r.valid(1),
            m.r.id(r_id),
+           m.r.data(None),
            m.r.resp(RESP_SLVERR),
            s.r.ready(1),
+           *r_timeout_case,
         ).Else(
             m.r(s.r)
         )
@@ -85,6 +91,7 @@ class AxiSlaveTimeout(BusBridge):
         ).Else(
             m.b(s.b)
         )
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
