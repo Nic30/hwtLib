@@ -195,7 +195,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
             if items>1 asynchronous FIFO is used
         """
         in_clk = self.getClk()
-        rst_n = self.getRstn()
+        in_rst_n = self.getRstn()
 
         def set_clk_freq(u):
             u.IN_FREQ = in_clk.FREQ
@@ -216,7 +216,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
 
         b = res.lastComp
         b.dataIn_clk(in_clk)
-        b.dataIn_rst_n(rst_n)
+        b.dataIn_rst_n(in_rst_n)
         b.dataOut_clk(clk)
         b.dataOut_rst_n(rst)
 
