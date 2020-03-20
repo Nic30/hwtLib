@@ -19,7 +19,7 @@ class Mi32SlidingWindow(BusBridge):
 
     def _config(self):
         Mi32._config(self)
-        self.OUT_ADDR_WIDTH = Param(self.ADDR_WIDTH)
+        self.M_ADDR_WIDTH = Param(self.ADDR_WIDTH)
         self.WINDOW_SIZE = Param(4096)
 
     def _declr(self):
@@ -27,9 +27,9 @@ class Mi32SlidingWindow(BusBridge):
         addClkRstn(self)
         with self._paramsShared(exclude=({"ADDR_WIDTH"}, {})):
             self.m = Mi32()._m()
-            self.m.ADDR_WIDTH = self.ADDR_WIDTH
+            self.m.ADDR_WIDTH = self.M_ADDR_WIDTH
             self.s = Mi32()
-            self.s.ADDR_WIDTH = self.OUT_ADDR_WIDTH
+            self.s.ADDR_WIDTH = self.ADDR_WIDTH
 
     def _impl(self):
         OFFSET_REG_ADDR = self.WINDOW_SIZE
@@ -50,5 +50,5 @@ if __name__ == "__main__":
 
     u = Mi32SlidingWindow()
     u.ADDR_WIDTH = 16
-    u.OUT_ADDR_WIDTH = 32
+    u.M_ADDR_WIDTH = 32
     print(toRtl(u))
