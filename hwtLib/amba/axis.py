@@ -167,7 +167,7 @@ def _axis_recieve_bytes(ag_data, D_B, use_keep, offset=0) -> Tuple[int, List[int
     offset = None
     data_B = []
     last = False
-    first = False
+    first = True
     mask_all = mask(D_B)
     while ag_data:
         _d = ag_data.popleft()
@@ -186,7 +186,7 @@ def _axis_recieve_bytes(ag_data, D_B, use_keep, offset=0) -> Tuple[int, List[int
             for i in range(D_B):
                 # i represents number of 0 from te beginning of of the keep
                 # value
-                if keep & (mask(D_B - i) << i):
+                if keep & (1 << i):
                     offset = i
                     break
             assert offset is not None, keep
@@ -201,11 +201,10 @@ def _axis_recieve_bytes(ag_data, D_B, use_keep, offset=0) -> Tuple[int, List[int
 
         if first:
             offset_mask = mask(offset)
-            assert offset_mask & keep == 0 (offset_mask, keep)
+            assert offset_mask & keep == 0, (offset_mask, keep)
             first = False
         elif not last:
             assert keep == mask_all, keep
-
         if last:
             break
 
