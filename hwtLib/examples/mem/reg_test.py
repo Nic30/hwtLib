@@ -11,11 +11,11 @@ from hwt.serializer.systemC.serializer import SystemCSerializer
 from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.synthesizer.rtlLevel.signalUtils.exceptions import SignalDriverErr
 from hwt.synthesizer.utils import toRtl
 from hwtLib.examples.mem.reg import DReg, DoubleDReg, OptimizedOutReg, \
     AsyncResetReg, DDR_Reg, Latch, DReg_asyncRst, RegWhereNextIsOnlyOutput
 from pycocotb.constants import CLK_PERIOD
-from hwt.synthesizer.rtlLevel.signalUtils.exceptions import SignalDriverErr
 
 
 class DRegTC(SingleUnitSimTestCase):
