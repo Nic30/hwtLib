@@ -110,7 +110,7 @@ class OptimizedOutReg(DReg):
 
 class RegWhereNextIsOnlyOutput(DReg):
     """
-    .. hwt-schematic::
+    (This is an error example)
     """
     def _impl(self):
         r = self._reg("r")
