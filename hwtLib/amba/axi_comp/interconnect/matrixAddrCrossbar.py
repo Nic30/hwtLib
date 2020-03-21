@@ -14,12 +14,12 @@ from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
-from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon,\
-    apply_name
+from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
 from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.types.ctypes import uint8_t
+from hwt.code_utils import rename_signal
 
 
 class AxiInterconnectMatrixAddrCrossbar(Unit):
@@ -159,7 +159,7 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
             for m_i, (_slv_en, m_addr) in enumerate(zip(master_to_slave_en, master_addr_channels)):
                 if m_i in connected_masters:
                     m_addr_en_s = _slv_en[slv_i][0]
-                    m_targets_slave = apply_name(
+                    m_targets_slave = rename_signal(
                         self, m_addr_en_s, "master_%d_targets_slave_%d" % (m_i, slv_i))
                     master_targets_slave.append(m_targets_slave)
                     en = m_addr.valid & m_targets_slave
@@ -215,7 +215,7 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
                     ar = BIT.from_py(0)
                 slv_master_arbitration_res.append(ar)
 
-            slv_master_arbitration_res = apply_name(
+            slv_master_arbitration_res = rename_signal(
                 self, Concat(*reversed(slv_master_arbitration_res)),
                 "slave_%d_master_arbitration_res" % slv_i
             )

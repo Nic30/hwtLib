@@ -1,24 +1,10 @@
 from itertools import chain
 
 from hwt.code import log2ceil
-from hwt.hdl.types.defs import BIT
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwtLib.abstract.busInterconnect import BusInterconnect
-
-
-def apply_name(unit_instance, sig, name):
-    """
-    Wrap signal or value in signal of specified name
-    """
-    if isinstance(sig, (int, bool)):
-        t = BIT
-    else:
-        t = sig._dtype
-    s = unit_instance._sig(name, t)
-    s(sig)
-    return s
 
 
 class AxiInterconnectCommon(BusInterconnect):

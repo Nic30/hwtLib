@@ -4,13 +4,13 @@
 from typing import Dict, Set
 
 from hwt.code import log2ceil, Or, connect, Switch
+from hwt.code_utils import rename_signal
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4 import Axi4
-from hwtLib.amba.axi_comp.interconnect.common import apply_name
 
 
 class AxiInterconnectMatrixCrossbar(Unit):
@@ -102,9 +102,13 @@ class AxiInterconnectMatrixCrossbar(Unit):
                     rd = rd & order_s_for_m.data._eq(din_i)\
                             & order_s_for_m.vld
                 selected_dataOut_ready.append(rd)
-            assert selected_dataOut_ready, (dataIn, "entirely disconnected from crossbar, this should have been handled before")
-            selected_dataOut_ready = apply_name(self, Or(*selected_dataOut_ready),
-                                                "dataIn_%d_selected_dataOut_ready" % din_i)
+            assert selected_dataOut_ready, (
+                dataIn,
+                "entirely disconnected from crossbar,"
+                " this should have been handled before")
+            selected_dataOut_ready = rename_signal(
+                self, Or(*selected_dataOut_ready),
+                "dataIn_%d_selected_dataOut_ready" % din_i)
             if order_m_for_s is not None:
                 dataIn.ready(order_m_for_s.vld & selected_dataOut_ready)
                 order_m_for_s.rd(dataIn.valid & self.get_last(dataIn) &
@@ -132,7 +136,7 @@ class AxiInterconnectMatrixCrossbar(Unit):
                 selected_dataIn_valid.append(vld)
             assert selected_dataIn_valid, (dataOut, "entirely disconnected from crossbar, this should have been handled before")
 
-            selected_dataIn_valid = apply_name(
+            selected_dataIn_valid = rename_signal(
                 self, Or(*selected_dataIn_valid),
                 "dataOut_%d_selected_dataIn_valid" % dout_i)
 
@@ -152,7 +156,7 @@ class AxiInterconnectMatrixCrossbar(Unit):
                                 & order_s_for_m.data._eq(din_i)
                 selected_dataIn_last.append(last)
 
-            selected_dataIn_last = apply_name(
+            selected_dataIn_last = rename_signal(
                 self, Or(*selected_dataIn_last),
                 "dataOut_%d_selected_dataIn_last" % dout_i)
 
