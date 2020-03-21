@@ -177,7 +177,7 @@ AxiInterconnectMatrixR_TCs = [
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(Axi3_rDatapumpTC('test_endstrbMultiFrame'))
+    # suite.addTest(AxiInterconnectMatrixR_1to1TC('test_read'))
     for tc in AxiInterconnectMatrixR_TCs:
         suite.addTest(unittest.makeSuite(tc))
 

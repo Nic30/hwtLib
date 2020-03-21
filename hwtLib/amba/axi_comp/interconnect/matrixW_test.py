@@ -190,7 +190,7 @@ AxiInterconnectMatrixW_TCs = [
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(Axi3_rDatapumpTC('test_endstrbMultiFrame'))
+    # suite.addTest(AxiInterconnectMatrixW_1to1TC('test_write'))
     for tc in AxiInterconnectMatrixW_TCs:
         suite.addTest(unittest.makeSuite(tc))
 
