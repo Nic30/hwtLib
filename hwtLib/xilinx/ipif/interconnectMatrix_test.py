@@ -4,7 +4,7 @@
 from hwt.hdl.constants import READ, WRITE, Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.busInterconnect import AUTO_ADDR, ALL
-from hwtLib.ipif.interconnectMatrix import IpifInterconnectMatrix
+from hwtLib.xilinx.ipif.interconnectMatrix import IpifInterconnectMatrix
 from pyMathBitPrecise.bit_utils import mask
 
 

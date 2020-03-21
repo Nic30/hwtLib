@@ -8,9 +8,9 @@ from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArrayTC
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     structTwoFieldsDense, structTwoFieldsDenseStart, AxiLiteEndpointDenseTC, \
     AxiLiteEndpointDenseStartTC
-from hwtLib.ipif.endpoint import IpifEndpoint
-from hwtLib.ipif.intf import Ipif
-from hwtLib.ipif.simMaster import IPFISimMaster
+from hwtLib.xilinx.ipif.endpoint import IpifEndpoint
+from hwtLib.xilinx.ipif.intf import Ipif
+from hwtLib.xilinx.ipif.simMaster import IPFISimMaster
 from pyMathBitPrecise.bit_utils import mask
 
 

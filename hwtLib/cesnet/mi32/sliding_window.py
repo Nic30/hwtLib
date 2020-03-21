@@ -1,5 +1,5 @@
 from hwtLib.abstract.busBridge import BusBridge
-from hwtLib.mi32.intf import Mi32
+from hwtLib.cesnet.mi32.intf import Mi32
 from hwt.synthesizer.param import Param
 from hwt.interfaces.utils import addClkRstn
 from hwt.code import isPow2, connect, If

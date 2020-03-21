@@ -7,7 +7,7 @@ from hwt.interfaces.utils import addClkRstn
 
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.constants import RESP_SLVERR, RESP_OKAY
-from hwtLib.ipif.intf import Ipif
+from hwtLib.xilinx.ipif.intf import Ipif
 from hwtLib.abstract.busBridge import BusBridge
 
 

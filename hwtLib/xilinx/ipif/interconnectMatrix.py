@@ -6,7 +6,7 @@ from hwt.hdl.typeShortcuts import hBit
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.hObjList import HObjList
 from hwtLib.abstract.busInterconnect import BusInterconnect, AUTO_ADDR
-from hwtLib.ipif.intf import Ipif
+from hwtLib.xilinx.ipif.intf import Ipif
 from pyMathBitPrecise.bit_utils import selectBitRange
 
 

@@ -123,11 +123,11 @@ from hwtLib.handshaked.resizer_test import HsResizerTC
 from hwtLib.handshaked.splitCopy_test import HsSplitCopyTC, \
     HsSplitCopy_randomized_TC
 from hwtLib.img.charToBitmap_test import CharToBitmapTC
-from hwtLib.ipif.axi4Lite_to_ipif_test import Axi4Lite_to_IpifTC
-from hwtLib.ipif.buff_test import IpifBuffTC
-from hwtLib.ipif.endpoint_test import IpifEndpointTC, \
+from hwtLib.xilinx.ipif.axi4Lite_to_ipif_test import Axi4Lite_to_IpifTC
+from hwtLib.xilinx.ipif.buff_test import IpifBuffTC
+from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
-from hwtLib.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
+from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.logic.binToOneHot import BinToOneHotTC
 from hwtLib.logic.bitonicSorter import BitonicSorterTC
 from hwtLib.logic.cntrGray import GrayCntrTC
@@ -147,9 +147,9 @@ from hwtLib.mem.fifo_test import FifoWriterAgentTC, FifoReaderAgentTC, FifoTC
 from hwtLib.mem.hashTableCore_test import HashTableCoreTC
 from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ram_test import RamTC
-from hwtLib.mi32.axi4Lite_bridges_test import Mi32Axi4LiteBrigesTC
-from hwtLib.mi32.mi32agent_test import Mi32AgentTC
-from hwtLib.mi32.to_axi4Lite_test import Mi32_to_Axi4LiteTC
+from hwtLib.cesnet.mi32.axi4Lite_bridges_test import Mi32Axi4LiteBrigesTC
+from hwtLib.cesnet.mi32.mi32agent_test import Mi32AgentTC
+from hwtLib.cesnet.mi32.to_axi4Lite_test import Mi32_to_Axi4LiteTC
 from hwtLib.peripheral.displays.hd44780.driver_test import Hd44780Driver8bTC
 from hwtLib.peripheral.ethernet.rmii_adapter_test import RmiiAdapterTC
 from hwtLib.peripheral.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC

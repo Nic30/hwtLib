@@ -6,7 +6,7 @@ from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
 from hwtLib.abstract.busBridge import BusBridge
-from hwtLib.ipif.intf import Ipif
+from hwtLib.xilinx.ipif.intf import Ipif
 
 
 class IpifBuff(BusBridge):

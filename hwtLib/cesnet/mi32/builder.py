@@ -1,9 +1,9 @@
 from hwtLib.amba.axi_comp.builder import AxiBuilder
-from hwtLib.mi32.axi4Lite_to_mi32 import Axi4Lite_to_Mi32
-from hwtLib.mi32.sliding_window import Mi32SlidingWindow
-from hwtLib.mi32.to_axi4Lite import Mi32_to_Axi4Lite
+from hwtLib.cesnet.mi32.axi4Lite_to_mi32 import Axi4Lite_to_Mi32
+from hwtLib.cesnet.mi32.sliding_window import Mi32SlidingWindow
+from hwtLib.cesnet.mi32.to_axi4Lite import Mi32_to_Axi4Lite
 from hwtLib.amba.axi4Lite import Axi4Lite
-from hwtLib.mi32.buff import Mi32Buff
+from hwtLib.cesnet.mi32.buff import Mi32Buff
 
 
 class _Mi32Buff(Mi32Buff):

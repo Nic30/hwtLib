@@ -3,7 +3,7 @@
 
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.constants import RESP_OKAY, PROT_DEFAULT
-from hwtLib.ipif.axi4Lite_to_ipif import Axi4Lite_to_Ipif
+from hwtLib.xilinx.ipif.axi4Lite_to_ipif import Axi4Lite_to_Ipif
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer

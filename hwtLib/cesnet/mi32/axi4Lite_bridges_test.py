@@ -8,9 +8,9 @@ from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.sim.ram import Axi4LiteSimRam
 from hwtLib.amba.axi_comp.builder import AxiBuilder
 from hwtLib.amba.constants import PROT_DEFAULT, RESP_OKAY
-from hwtLib.mi32.axi4Lite_to_mi32 import Axi4Lite_to_Mi32
-from hwtLib.mi32.intf import Mi32
-from hwtLib.mi32.to_axi4Lite import Mi32_to_Axi4Lite
+from hwtLib.cesnet.mi32.axi4Lite_to_mi32 import Axi4Lite_to_Mi32
+from hwtLib.cesnet.mi32.intf import Mi32
+from hwtLib.cesnet.mi32.to_axi4Lite import Mi32_to_Axi4Lite
 from pycocotb.constants import CLK_PERIOD
 
 

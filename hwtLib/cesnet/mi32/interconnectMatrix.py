@@ -10,9 +10,9 @@ from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwtLib.abstract.busInterconnect import BusInterconnect, AUTO_ADDR
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.mi32.intf import Mi32
+from hwtLib.cesnet.mi32.intf import Mi32
 from pyMathBitPrecise.bit_utils import selectBitRange
-from hwtLib.mi32.buff import Mi32Buff
+from hwtLib.cesnet.mi32.buff import Mi32Buff
 
 
 class Mi32InterconnectMatrix(BusInterconnect):

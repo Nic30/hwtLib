@@ -5,7 +5,7 @@ from hwt.hdl.constants import READ, WRITE
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
-from hwtLib.mi32.intf import Mi32
+from hwtLib.cesnet.mi32.intf import Mi32
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 

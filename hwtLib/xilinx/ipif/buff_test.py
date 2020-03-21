@@ -5,10 +5,10 @@ from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwtLib.ipif.buff import IpifBuff
-from hwtLib.ipif.endpoint import IpifEndpoint
-from hwtLib.ipif.endpoint_test import IpifEndpointTC
-from hwtLib.ipif.intf import Ipif
+from hwtLib.xilinx.ipif.buff import IpifBuff
+from hwtLib.xilinx.ipif.endpoint import IpifEndpoint
+from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC
+from hwtLib.xilinx.ipif.intf import Ipif
 
 
 class IpifBuffWithEndpoint(Unit):

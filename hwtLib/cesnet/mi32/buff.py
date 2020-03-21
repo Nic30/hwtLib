@@ -9,7 +9,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.handshaked.builder import HsBuilder
-from hwtLib.mi32.intf import Mi32
+from hwtLib.cesnet.mi32.intf import Mi32
 
 
 class Mi32AddrHs(HandshakeSync):

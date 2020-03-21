@@ -5,7 +5,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.constants import PROT_DEFAULT
-from hwtLib.mi32.intf import Mi32
+from hwtLib.cesnet.mi32.intf import Mi32
 from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.defs import BIT
 from hwt.code import If

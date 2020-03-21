@@ -4,9 +4,9 @@
 from hwt.hdl.constants import READ, WRITE, Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.busInterconnect import AUTO_ADDR, ALL
-from hwtLib.mi32.interconnectMatrix import Mi32InterconnectMatrix
+from hwtLib.cesnet.mi32.interconnectMatrix import Mi32InterconnectMatrix
 from pyMathBitPrecise.bit_utils import mask
-from hwtLib.mi32.sim_ram import Mi32SimRam
+from hwtLib.cesnet.mi32.sim_ram import Mi32SimRam
 
 
 class Mi32InterconnectMatrixTC(SimTestCase):

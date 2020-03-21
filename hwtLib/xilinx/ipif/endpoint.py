@@ -4,7 +4,7 @@
 from hwt.code import If, FsmBuilder, Switch
 from hwt.hdl.types.enum import HEnum
 from hwtLib.abstract.busEndpoint import BusEndpoint
-from hwtLib.ipif.intf import Ipif
+from hwtLib.xilinx.ipif.intf import Ipif
 
 
 class IpifEndpoint(BusEndpoint):

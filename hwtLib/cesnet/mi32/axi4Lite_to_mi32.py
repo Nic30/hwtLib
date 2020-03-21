@@ -8,7 +8,7 @@ from hwt.synthesizer.param import Param
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.constants import RESP_OKAY
-from hwtLib.mi32.intf import Mi32
+from hwtLib.cesnet.mi32.intf import Mi32
 
 
 class Axi4Lite_to_Mi32(BusBridge):
