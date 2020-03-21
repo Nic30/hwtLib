@@ -341,7 +341,7 @@ ARCHITECTURE rtl OF IfStatementPartiallyEnclosed IS
     SIGNAL b_reg_next: STD_LOGIC;
 BEGIN
     a <= a_reg;
-    assig_process_a_reg_next: PROCESS (c, d)
+    assig_process_a_reg_next: PROCESS (b_reg, c, d)
     BEGIN
         IF c = '1' THEN
             a_reg_next <= '1';
