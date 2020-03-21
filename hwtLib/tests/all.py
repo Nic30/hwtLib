@@ -5,6 +5,7 @@ from unittest import TestLoader, TextTestRunner, TestSuite
 
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
+from hwtLib.abstract.frame_join_utils.test import FrameJoinUtilsTC
 from hwtLib.abstract.streamAlignmentUtils_test import StreamJoiningUtilsTC
 from hwtLib.abstract.template_configured_test import TemplateConfigured_TC
 from hwtLib.amba.axiLite_comp.buff_test import AxiRegTC
@@ -29,11 +30,11 @@ from hwtLib.amba.axi_comp.tester_test import AxiTesterTC
 from hwtLib.amba.axi_comp.to_axiLite_test import Axi_to_AxiLite_TC
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
-from hwtLib.amba.axis_comp.frame_deparser.test import AxiS_frameDeparser_TC
 from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
-from hwtLib.amba.axis_comp.frame_parser.test import AxiS_frameParserTC
+from hwtLib.amba.axis_comp.frame_deparser.test import AxiS_frameDeparser_TC
 from hwtLib.amba.axis_comp.frame_join.test import AxiS_FrameJoin_TCs
-from hwtLib.abstract.frame_join_utils.test import FrameJoinUtilsTC
+from hwtLib.amba.axis_comp.frame_parser.footer_split_test import AxiS_footerSplitTC
+from hwtLib.amba.axis_comp.frame_parser.test import AxiS_frameParserTC
 from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_TCs
 from hwtLib.amba.axis_comp.storedBurst_test import AxiSStoredBurstTC
@@ -372,6 +373,7 @@ suite = testSuiteFromTCs(
     *AxiS_resizer_TCs,
     AxiS_frameDeparser_TC,
     AxiS_localLinkConvTC,
+    AxiS_footerSplitTC,
     AxiS_frameParserTC,
     *AxiS_FrameJoin_TCs,
     HandshakedBuilderSimpleTC,
