@@ -63,7 +63,7 @@ class AxiSlaveTimeoutTC(SingleUnitSimTestCase):
         ae(u.m.aw._ag.data)
         ae(u.m.w._ag.data)
         self.assertValSequenceEqual(u.m.ar._ag.data, [ar_req, ])
-        self.assertValSequenceEqual(u.s.r._ag.data, [(1, None, RESP_SLVERR, None), ])
+        self.assertValSequenceEqual(u.s.r._ag.data, [(1, None, RESP_SLVERR, 1), ])
         ae(u.s.b._ag.data)
 
     def test_b_timeout(self):
