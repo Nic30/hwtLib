@@ -17,6 +17,7 @@ Any component can be exported as IPCore using hwt.Packager or as HDL code by [to
 * [amba](https://github.com/Nic30/hwtLib/tree/master/hwtLib/amba) - AXI interfaces and components for them (AXI3/4 DMAs, interconnects, Axi-stream components, Axi4Lite address decoders etc...)
 * [avalon](https://github.com/Nic30/hwtLib/tree/master/hwtLib/avalon) - same thing as amba just for Avalon interfaces (AvalonST, AvalonMM, ... and components for them)
 * [clocking](https://github.com/Nic30/hwtLib/tree/master/hwtLib/clocking) - various PLLs, timer generators etc.
+* [connectal](https://github.com/cambridgehackers/connectal) - framework for software-driven hardware development
 * [examples](https://github.com/Nic30/hwtLib/tree/master/hwtLib/examples) - demonstrative examples of [hwt](https://github.com/Nic30/hwt/) functionality
 * [handshaked](https://github.com/Nic30/hwtLib/tree/master/hwtLib/handshaked) - components for handshaked interfaces (FIFO, AsyncFifo, Resizer, interconnects, Register, ...)
 * [img](https://github.com/Nic30/hwtLib/tree/master/hwtLib/img) - image preprocessing utils (parse PNG font to bits for OLED, ...)
@@ -24,6 +25,7 @@ Any component can be exported as IPCore using hwt.Packager or as HDL code by [to
 * [IPIF](https://github.com/Nic30/hwtLib/tree/master/hwtLib/ipif) - IPIF interface and components for it (Interconnect, Register, address decoder, ...)
 * [logic](https://github.com/Nic30/hwtLib/tree/master/hwtLib/logic) - various components like CRC generator, gray counter, decoders-encoders ...
 * [mem](https://github.com/Nic30/hwtLib/tree/master/hwtLib/mem) - various memories (BRAM, ROM, FIFO, Async FIFO, CAM, LUT, ...)
+* [opencores](https://opencores.org/)
 * [peripheral](https://github.com/Nic30/hwtLib/tree/master/hwtLib/peripheral) - various peripheral interfaces and components for them (I2C, MDIO, SPI, UART, USB, Ethernet, ...)
 * [sim](https://github.com/Nic30/hwtLib/tree/master/hwtLib/sim) - simulation utils
 * [structManipulators](https://github.com/Nic30/hwtLib/tree/master/hwtLib/structManipulators) - DMAs for specific data structures
