@@ -14,31 +14,28 @@ class TemplateConfigured_TC(unittest.TestCase):
             (HStream(Bits(8)), "data"),
             (Bits(32), "footer"),
         )
-        m = {}
-        sep = list(separate_streams(t, m))
+        sep = list(separate_streams(t))
         self.assertSequenceEqual(sep, [
-            (False, HStruct((HStream(Bits(8)), "data"),)),
-            (True, HStruct((Bits(32), "footer"),))
+            (True, HStruct((HStream(Bits(8)), "data"),)),
+            (False, HStruct((Bits(32), "footer"),))
         ])
 
     def test_separate_streams_no_fotter(self):
         t = HStruct(
             (HStream(Bits(8)), "data"),
         )
-        m = {}
-        sep = list(separate_streams(t, m))
+        sep = list(separate_streams(t))
         self.assertSequenceEqual(sep, [
-            (False, t),
+            (True, t),
         ])
 
     def test_separate_streams_no_fotter2(self):
         t = HStruct(
             (Bits(8), "data"),
         )
-        m = {}
-        sep = list(separate_streams(t, m))
+        sep = list(separate_streams(t))
         self.assertSequenceEqual(sep, [
-            (True, t),
+            (False, t),
         ])
 
     def test_separate_streams_nested(self):
@@ -49,14 +46,13 @@ class TemplateConfigured_TC(unittest.TestCase):
                 ), "struct"),
             (Bits(32), "footer1"),
         )
-        m = {}
-        sep = list(separate_streams(t, m))
+        sep = list(separate_streams(t))
         self.assertSequenceEqual(sep, [
-            (False, HStruct(
+            (True, HStruct(
                         (HStruct(
                             (HStream(Bits(8)), "data"),
                             ), "struct"))),
-            (True, HStruct(
+            (False, HStruct(
                     (HStruct(
                         (Bits(32), "footer0"),
                         ), "struct"),
@@ -70,11 +66,10 @@ class TemplateConfigured_TC(unittest.TestCase):
             (Bits(32), "footer0"),
             (Bits(32), "footer1"),
         )
-        m = {}
-        sep = list(separate_streams(t, m))
+        sep = list(separate_streams(t))
         self.assertSequenceEqual(sep, [
-            (False, HStruct((HStream(Bits(8)), "data"),)),
-            (True, HStruct((Bits(32), "footer0"), (Bits(32), "footer1"),))
+            (True, HStruct((HStream(Bits(8)), "data"),)),
+            (False, HStruct((Bits(32), "footer0"), (Bits(32), "footer1"),))
         ])
 
     def test_separate_streams_simple_header(self):
@@ -83,12 +78,11 @@ class TemplateConfigured_TC(unittest.TestCase):
             (HStream(Bits(8)), "data"),
             (Bits(32), "footer"),
         )
-        m = {}
-        sep = list(separate_streams(t, m))
+        sep = list(separate_streams(t))
         self.assertSequenceEqual(sep, [
-            (True, HStruct((Bits(32), "header"),)),
-            (False, HStruct((HStream(Bits(8)), "data"))),
-            (True, HStruct((Bits(32), "footer"),))
+            (False, HStruct((Bits(32), "header"),)),
+            (True, HStruct((HStream(Bits(8)), "data"))),
+            (False, HStruct((Bits(32), "footer"),))
         ])
 
 
