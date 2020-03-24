@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import c, Concat, If, Switch, connect
+from hwt.code import Concat, If, Switch, connect
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
@@ -64,6 +64,7 @@ class Axi4streamToMem(Unit):
         with self._paramsShared():
             addClkRstn(self)
             self.axi = Axi4()._m()
+            self.axi.HAS_R = False
             self.dataIn = Handshaked()
         cntrl = self.cntrlBus = Axi4Lite()
         regs = self.regsConventor = AxiLiteEndpoint(self.REGISTER_MAP)
@@ -127,7 +128,7 @@ class Axi4streamToMem(Unit):
            onoff(regs.control.dout.data[0])
         )
 
-        c(baseAddr, regs.baseAddr.din)
+        regs.baseAddr.din(baseAddr)
         If(regs.baseAddr.dout.vld,
            baseAddr(regs.baseAddr.dout.data)
         )
@@ -216,10 +217,6 @@ class Axi4streamToMem(Unit):
         propagateClkRstn(self)
         self.regsConventor.bus(self.cntrlBus)
         axi = self.axi
-
-        # disable read channel
-        c(0, *where(axi.ar._interfaces, lambda x: x is not axi.ar.ready))
-        axi.r.ready(0)
 
         axi.b.ready(1)  # we do ignore write confirmations
 

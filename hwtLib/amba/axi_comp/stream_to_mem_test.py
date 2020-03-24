@@ -30,7 +30,6 @@ class Axi4_streamToMemTC(SingleUnitSimTestCase):
 
         self.runSim(10 * CLK_PERIOD)
 
-        self.assertEmpty(u.axi.ar._ag.data)
         self.assertEmpty(u.axi.aw._ag.data)
         self.assertEmpty(u.axi.w._ag.data)
 
