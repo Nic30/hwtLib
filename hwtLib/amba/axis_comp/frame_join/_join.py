@@ -18,16 +18,7 @@ from hwtLib.abstract.frame_join_utils.state_trans_item import StateTransItem
 from hwtLib.abstract.streamAlignmentUtils import FrameJoinUtils
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.frame_join.input_reg import FrameJoinInputReg
-
-
-def bit_list_to_int(bl):
-    """
-    in list LSB first, in result little endian ([1, 0] -> 0b01)
-    """
-    v = 0
-    for i, b in enumerate(bl):
-        v |= b << i
-    return v
+from pyMathBitPrecise.bit_utils import bit_list_to_int
 
 
 class AxiS_FrameJoin(Unit):
