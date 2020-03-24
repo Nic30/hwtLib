@@ -2,18 +2,18 @@ from math import inf
 from typing import Union
 import unittest
 
-from hwtLib.abstract.streamAlignmentUtils import FrameJoinUtils
+from hwtLib.abstract.frame_utils.alignment_utils import FrameAlignmentUtils
 
 
 def get_important_byte_cnts(
         offset_out: int, offset_in: int, word_bytes: int, chunk_size: int,
         chunk_cnt_min: Union[int, float], chunk_cnt_max: Union[int, float]):
-    fju = FrameJoinUtils(word_bytes)
+    fju = FrameAlignmentUtils(word_bytes)
     return fju.get_important_byte_cnts(offset_out, offset_in,
                                        chunk_size, chunk_cnt_min, chunk_cnt_max)
 
 
-class StreamJoiningUtilsTC(unittest.TestCase):
+class FrameAlignmentUtilsTC(unittest.TestCase):
 
     def test_get_important_chunk_cnts_1(self):
         word_bytes = 2
@@ -96,7 +96,7 @@ class StreamJoiningUtilsTC(unittest.TestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(StreamJoiningUtilsTC('test_struct2xStream64'))
-    suite.addTest(unittest.makeSuite(StreamJoiningUtilsTC))
+    suite.addTest(unittest.makeSuite(FrameAlignmentUtilsTC))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

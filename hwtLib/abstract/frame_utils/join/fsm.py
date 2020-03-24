@@ -5,10 +5,9 @@ from typing import Tuple, Dict, Set, List
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.stream import HStream
 from hwt.pyUtils.arrayQuery import iter_with_last
-from hwtLib.abstract.frame_join_utils.state_trans_info import StateTransInfo
-from hwtLib.abstract.frame_join_utils.state_trans_item import StateTransItem
-from hwtLib.abstract.frame_join_utils.state_trans_table import StateTransTable
-from hwtLib.abstract.streamAlignmentUtils import FrameJoinUtils
+from hwtLib.abstract.frame_utils.join.state_trans_info import StateTransInfo
+from hwtLib.abstract.frame_utils.join.state_trans_item import StateTransItem
+from hwtLib.abstract.frame_utils.join.state_trans_table import StateTransTable
 
 
 def get_state_i(sub_state: StateTransInfo):
@@ -52,7 +51,7 @@ def input_B_dst_to_fsm(word_bytes: int,
                     byte destination is a tuple:
                         state label, input index, time index, output byte index, input last flag
     :note: input_B_dst is produced by
-        :func:`hwtLib.amba.axis_comp.frame_join_utils.FrameJoinUtils.resolve_input_bytes_destinations`
+        :func:`hwtLib.amba.axis_comp.frame_utils.join.FrameJoinUtils.resolve_input_bytes_destinations`
     """
     # label: StateTransInfo
     sub_states = {}
@@ -196,6 +195,8 @@ def input_B_dst_to_fsm(word_bytes: int,
 
 
 def example_main():
+    from hwtLib.abstract.frame_utils.alignment_utils_test import FrameAlignementUtilsTC
+
     word_bytes = 2
     f_len = (1, inf)
     streams = [
@@ -203,7 +204,7 @@ def example_main():
         HStream(Bits(8), frame_len=f_len, start_offsets=[1]),
     ]
     out_offset = 0
-    sju = FrameJoinUtils(word_bytes, out_offset)
+    sju = FrameAlignementUtilsTC(word_bytes, out_offset)
     input_B_dst = sju.resolve_input_bytes_destinations(streams)
     tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst)
     pprint(tt.state_trans)

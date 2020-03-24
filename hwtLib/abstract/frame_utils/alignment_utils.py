@@ -1,9 +1,9 @@
-from itertools import product, chain
+from itertools import product
 from math import inf
 from typing import List, Tuple, Union, Optional
 
 from hwt.hdl.types.stream import HStream
-from hwtLib.abstract.byte_src_info import ByteSrcInfo
+from hwtLib.abstract.frame_utils.byte_src_info import ByteSrcInfo
 
 
 def freeze_frame(f: List[List[ByteSrcInfo]])\
@@ -18,7 +18,22 @@ def count_not_none(items: List[Optional[ByteSrcInfo]]):
     return 0
 
 
-class FrameJoinUtils():
+def next_frame_offsets(f0_t: HStream, data_width: int):
+    f0_B_width = f0_t.element_t.bit_length()
+
+    f1_start_offsets = set()
+    i, len_max = f0_t.len_min, f0_t.len_max
+    while i <= len_max:
+        offset = (i * f0_B_width) % data_width
+        if offset in f1_start_offsets:
+            break
+        f1_start_offsets.add(offset)
+        i += 1
+
+    return sorted(f1_start_offsets)
+
+
+class FrameAlignmentUtils():
     """
     :ivar word_bytes: number of bytes in 1 output word
     """
@@ -73,9 +88,9 @@ class FrameJoinUtils():
         :param offset_in: how many bytes skip from imput stream
         """
         assert byte_cnt > 0, byte_cnt
-        assert offset_out >= 0, offset_out
-        assert offset_in >= 0, offset_in
         word_bytes = self.word_bytes
+        assert offset_out >= 0 and offset_out < word_bytes, (offset_out, word_bytes)
+        assert offset_in >= 0 and offset_in < word_bytes, (offset_in, word_bytes)
 
         frame = []
         if offset_out:
@@ -96,7 +111,7 @@ class FrameJoinUtils():
             if in_word_i == last_in_word_i:
                 frame[-1].append(B_info)
             else:
-                assert last_in_word_i == in_word_i - 1
+                assert last_in_word_i == in_word_i - 1, (last_in_word_i, in_word_i)
                 last_in_word_i = in_word_i
                 frame.append([B_info, ])
 

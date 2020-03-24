@@ -13,9 +13,9 @@ from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from hwtLib.abstract.frame_join_utils.fsm import input_B_dst_to_fsm
-from hwtLib.abstract.frame_join_utils.state_trans_item import StateTransItem
-from hwtLib.abstract.streamAlignmentUtils import FrameJoinUtils
+from hwtLib.abstract.frame_utils.alignment_utils import FrameAlignmentUtils
+from hwtLib.abstract.frame_utils.join.fsm import input_B_dst_to_fsm
+from hwtLib.abstract.frame_utils.join.state_trans_item import StateTransItem
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.frame_join.input_reg import FrameJoinInputReg
 from pyMathBitPrecise.bit_utils import bit_list_to_int
@@ -62,7 +62,7 @@ class AxiS_FrameJoin(Unit):
         word_bytes = self.word_bytes = self.DATA_WIDTH // 8
         input_cnt = self.input_cnt = len(t.fields)
         streams = [f.dtype for f in t.fields]
-        fju = FrameJoinUtils(word_bytes, self.OUT_OFFSET)
+        fju = FrameAlignmentUtils(word_bytes, self.OUT_OFFSET)
         input_B_dst = fju.resolve_input_bytes_destinations(
             streams)
         self.state_trans_table = input_B_dst_to_fsm(

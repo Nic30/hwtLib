@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import c, SwitchLogic, log2ceil, Switch
+from hwt.code import SwitchLogic, log2ceil, Switch
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.abstract.busEndpoint import BusEndpoint
@@ -14,7 +14,7 @@ class BramPortEndpoint(BusEndpoint):
 
     :attention: Interfaces are dynamically generated from names
         of fields in structure template.
-    
+
     .. hwt-schematic:: _example_BramPortEndpoint
     """
     _getWordAddrStep = BramPort_withoutClk._getWordAddrStep
@@ -31,8 +31,8 @@ class BramPortEndpoint(BusEndpoint):
 
         def connectRegIntfAlways(regIntf, _addr):
             return (
-                c(bus.din, regIntf.dout.data) +
-                c(bus.we & bus.en & bus.addr._eq(_addr), regIntf.dout.vld)
+                regIntf.dout.data(bus.din),
+                regIntf.dout.vld(bus.we & bus.en & bus.addr._eq(_addr))
             )
 
         ADDR_STEP = self._getAddrStep()

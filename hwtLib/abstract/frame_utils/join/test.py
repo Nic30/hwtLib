@@ -3,9 +3,9 @@ import unittest
 
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.stream import HStream
-from hwtLib.abstract.frame_join_utils.fsm import input_B_dst_to_fsm
-from hwtLib.abstract.frame_join_utils.state_trans_item import StateTransItem
-from hwtLib.abstract.streamAlignmentUtils import FrameJoinUtils
+from hwtLib.abstract.frame_utils.join.fsm import input_B_dst_to_fsm
+from hwtLib.abstract.frame_utils.join.state_trans_item import StateTransItem
+from hwtLib.abstract.frame_utils.alignment_utils import FrameAlignmentUtils
 
 
 class FrameJoinUtilsTC(unittest.TestCase):
@@ -16,7 +16,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
             HStream(Bits(8), frame_len=f_len, start_offsets=[1]),
         ]
         out_offset = 0
-        sju = FrameJoinUtils(word_bytes, out_offset)
+        sju = FrameAlignmentUtils(word_bytes, out_offset)
         input_B_dst = sju.resolve_input_bytes_destinations(streams)
         tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst)
 
@@ -39,7 +39,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
             HStream(Bits(8), frame_len=f_len),
         ]
         out_offset = 0
-        sju = FrameJoinUtils(word_bytes, out_offset)
+        sju = FrameAlignmentUtils(word_bytes, out_offset)
         input_B_dst = sju.resolve_input_bytes_destinations(streams)
         tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst)
 
@@ -67,7 +67,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
             HStream(Bits(8), frame_len=f_len, start_offsets=[1]),
         ]
         out_offset = 0
-        sju = FrameJoinUtils(word_bytes, out_offset)
+        sju = FrameAlignmentUtils(word_bytes, out_offset)
         input_B_dst = sju.resolve_input_bytes_destinations(streams)
         tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst)
 
@@ -105,7 +105,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
             HStream(Bits(8), frame_len=f_len, start_offsets=[1]),
         ]
         out_offset = 0
-        sju = FrameJoinUtils(word_bytes, out_offset)
+        sju = FrameAlignmentUtils(word_bytes, out_offset)
         input_B_dst = sju.resolve_input_bytes_destinations(streams)
         tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst)
 
@@ -129,7 +129,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
             HStream(Bits(8 * 1), (1, 2), [0]),
         ]
         out_offset = 0
-        sju = FrameJoinUtils(word_bytes, out_offset)
+        sju = FrameAlignmentUtils(word_bytes, out_offset)
         input_B_dst = sju.resolve_input_bytes_destinations(streams)
         tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst)
 
@@ -172,7 +172,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
             HStream(Bits(8 * 1), (1, 3), [0]),
         ]
         out_offset = 0
-        sju = FrameJoinUtils(word_bytes, out_offset)
+        sju = FrameAlignmentUtils(word_bytes, out_offset)
         input_B_dst = sju.resolve_input_bytes_destinations(streams)
         tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst)
 
@@ -231,7 +231,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(FrameJoinUtilsTC('test_fsm_2x1B_on_2B'))
+    # suite.addTest(FrameAlignmentUtilsTC('test_fsm_2x1B_on_2B'))
     for tc in [FrameJoinUtilsTC, ]:
         suite.addTest(unittest.makeSuite(tc))
 

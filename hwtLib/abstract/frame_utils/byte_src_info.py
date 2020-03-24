@@ -1,3 +1,4 @@
+
 class ByteSrcInfo():
     """
     Container for informations about byte in stream data
