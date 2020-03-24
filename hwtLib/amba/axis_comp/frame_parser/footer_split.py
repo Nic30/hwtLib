@@ -251,7 +251,8 @@ class AxiS_footerSplit(AxiSCompBase):
         if FOOTER_WIDTH % 8 != 0:
             raise NotImplementedError()
         if not (self.USE_KEEP or self.USE_STRB):
-            assert D_W == 8, ("missing mask to resolve frame end", D_W)
+            assert D_W == 8, ("AxiStream is configured not to use KEEP/STRB"
+                              " but is required to resolve frame end", D_W)
         dout = self.dataOut
         regs = self.generate_regs(LOOK_AHEAD)
         self.flush_en_logic(regs)
