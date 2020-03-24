@@ -6,22 +6,7 @@ from hwt.hdl.value import Value
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
 from pyMathBitPrecise.bit_utils import mask
-
-
-def axis_mask_propagate_best_effort(src: AxiStream, dst: AxiStream):
-    if src.USE_STRB:
-        if not src.USE_KEEP and not dst.USE_STRB and dst.USE_KEEP:
-            dst.keep(src.strb)
-    if src.USE_KEEP:
-        if not src.USE_STRB and not dst.USE_KEEP and dst.USE_STRB:
-            dst.strb(src.keep)
-    if not src.USE_KEEP and not src.USE_STRB:
-        if dst.USE_KEEP:
-            dst.keep(mask(dst.keep._dtype.bit_length()))
-        if dst.USE_STRB:
-            dst.strb(mask(dst.strb._dtype.bit_length()))
 
 
 class StrbKeepStash():
