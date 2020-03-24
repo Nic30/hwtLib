@@ -108,8 +108,10 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         if s_t is None:
             self.sub_t = [_t for _, _t in separate_streams(t, {})]
             if len(self.sub_t) == 1:
+                # we process all the fields in this component
                 self.parseTemplate()
-                # else each child will parse it's own part
+            # else each child will parse it's own part
+            # and we join output frames together
         else:
             # only instanciate a compoment which aligns the sream
             # to correct output format
