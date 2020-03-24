@@ -3,10 +3,8 @@
 
 from typing import Optional, List, Union
 
-from hwt.code import log2ceil, If, Concat, connect, Switch
+from hwt.code import log2ceil, If, connect
 from hwt.hdl.frameTmpl import FrameTmpl
-from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
-from hwt.hdl.transPart import TransPart
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
@@ -16,20 +14,32 @@ from hwt.hdl.types.struct import HStruct, HStructField
 from hwt.hdl.types.union import HUnion
 from hwt.interfaces.std import Handshaked, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
-from hwt.interfaces.unionIntf import UnionSource, UnionSink
-from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.byteOrder import reverseByteOrder
+from hwt.interfaces.unionIntf import UnionSource
+from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwtLib.abstract.template_configured import TemplateConfigured
+from hwtLib.abstract.template_configured import TemplateConfigured,\
+    HdlType_separate
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
-from hwtLib.amba.axis_comp.frame_parser.out_containers import ListOfOutNodeInfos, \
-    ExclusieveListOfHsNodes, InNodeInfo, InNodeReadOnlyInfo, OutNodeInfo, \
-    OutStreamNodeInfo, OutStreamNodeGroup
 from hwtLib.amba.axis_comp.frame_parser.word_factory import WordFactory
-from hwtLib.handshaked.builder import HsBuilder
-from pyMathBitPrecise.bit_utils import mask
+from hwt.synthesizer.hObjList import HObjList
+from hwtLib.amba.axis_comp.frame_parser.field_connector import AxiS_frameParserFieldConnector
+from hwtLib.amba.axis_comp.frame_parser.footer_split import AxiS_footerSplit
+from hwtLib.amba.axis_comp.frame_deparser.utils import drill_down_in_HStruct_fields
+from hwt.code_utils import connect_optional
+from hwtLib.amba.axis_comp.frame_join._join import AxiS_FrameJoin
+from hwtLib.abstract.frame_utils.alignment_utils import FrameAlignmentUtils,\
+    next_frame_offsets
+
+
+def is_non_const_stream(t: HdlType):
+    if isinstance(t, HStream):
+        try:
+            t.bit_length()
+        except TypeError:
+            return True
+
+    return False
 
 
 class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
@@ -117,268 +127,52 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
 
         addClkRstn(self)
 
-        if isinstance(self._structT, HStruct):
+        t = self._structT
+        if isinstance(t, HStruct):
             intfCls = StructIntf
-        elif isinstance(self._structT, HUnion):
+        elif isinstance(t, HUnion):
             intfCls = UnionSource
         else:
-            raise TypeError(self._structT)
+            raise TypeError(t)
 
-        self.dataOut = intfCls(self._structT, self._mkFieldIntf)._m()
+        self.dataOut = intfCls(t, self._mkFieldIntf)._m()
 
         with self._paramsShared():
             self.dataIn = self.intfCls()
             if self.SHARED_READY:
                 self.dataOut_ready = Signal()
+        self.parseTemplate()
 
-    def getInDataSignal(self, transPart: TransPart):
-        busDataSignal = self.dataIn.data
-        high, low = transPart.getBusWordBitRange()
-        return busDataSignal[high:low]
-
-    def choiceIsSelected(self,
-                         interfaceOfChoice: Union[UnionSource, UnionSink]):
-        """
-        Check if union member is selected by _select interface
-        in union interface
-        """
-        parent = interfaceOfChoice._parent
-        r = self._tmpRegsForSelect[parent]
-        i = parent._interfaces.index(interfaceOfChoice)
-        return i, r.data._eq(i), r.vld
-
-    def connectParts(self,
-                     allOutNodes: ListOfOutNodeInfos,
-                     words,
-                     wordIndex: Optional[RtlSignal]):
-        """
-        Create main datamux from dataIn to dataOut
-        """
-        for currentWordIndex, transParts, _ in words:
-            # each word index is used and there may be TransParts which are
-            # representation of padding
-            outNondes = ListOfOutNodeInfos()
-            for part in transParts:
-                self.connectPart(outNondes, part, hBit(1), hBit(1),
-                                 wordIndex, currentWordIndex)
-
-            allOutNodes.addWord(currentWordIndex, outNondes)
-
-    def connectChoicesOfFrameParts(
-            self,
-            hsNondes: ListOfOutNodeInfos,
-            part: ChoicesOfFrameParts,
-            en: Union[RtlSignal, bool],
-            exclusiveEn: Optional[RtlSignal],
-            wordIndex: Optional[RtlSignal],
-            currentWordIndex: int):
-        tToIntf = self.dataOut._fieldsToInterfaces
-        parentIntf = tToIntf[part.origin.parent.origin]
+    def parseTemplate(self):
+        t = self._structT
         try:
-            sel = self._tmpRegsForSelect[parentIntf]
-        except KeyError:
-            sel = HsBuilder(self, parentIntf._select).buff().end
-            self._tmpRegsForSelect[parentIntf] = sel
-        unionGroup = ExclusieveListOfHsNodes(sel)
+            t.bit_length()
+            is_const_size_frame = True
+        except TypeError:
+            is_const_size_frame = False
 
-        # for unions
-        for choice in part:
-            # connect data signals of choices and collect info about
-            # streams
-            intfOfChoice = tToIntf[choice.tmpl.origin]
-            selIndex, isSelected, isSelectValid = self.choiceIsSelected(
-                intfOfChoice)
-            _exclusiveEn = isSelectValid & isSelected & exclusiveEn
-
-            unionMemberPart = ListOfOutNodeInfos()
-            for p in choice:
-                self.connectPart(unionMemberPart, p, en, _exclusiveEn,
-                                 wordIndex, currentWordIndex)
-            unionGroup.append(selIndex, unionMemberPart)
-        hsNondes.append(unionGroup)
-
-        if wordIndex is not None:
-            en = en & wordIndex._eq(currentWordIndex)
-        if part.isLastPart():
-            # synchronization of reading from _select register for unions
-            selNode = InNodeInfo(sel, en)
+        if is_const_size_frame:
+            self.sub_t = []
+            self.children = []
+            super(AxiS_frameParser, self).parseTemplate()
         else:
-            selNode = InNodeReadOnlyInfo(sel, en)
-        hsNondes.append(selNode)
-
-    def connectStreamOfFrameParts(
-            self,
-            hsNondes: ListOfOutNodeInfos,
-            part: Union[TransPart, ChoicesOfFrameParts],
-            en: Union[RtlSignal, bool],
-            exclusiveEn: Optional[RtlSignal],
-            wordIndex: Optional[RtlSignal],
-            currentWordIndex: int):
-        orig = part.tmpl.origin
-        dout = self.dataOut._fieldsToInterfaces[orig]
-        if isinstance(orig, HStructField):
-            orig = orig.dtype
-        assert isinstance(orig, HStream), orig
-
-        #if not part.isLastPart():
-        #    raise NotImplementedError()
-
-        if not len(orig.start_offsets) == 1:
-            raise NotImplementedError()
-
-        din = self.dataIn
-        is_first_part_in_stream = part.tmpl.parent.bitAddr == part.startOfPart
-        if is_first_part_in_stream:
-            frame_range = part.tmpl.parent.bitAddr, part.tmpl.parent.bitAddrEnd
-            DW = self.DATA_WIDTH
-            start_offset = frame_range[0] % DW
-            end_rem = frame_range[1] % DW
-            if orig.start_offsets != [0, ]:
+            if self._tmpl or self._frames:
                 raise NotImplementedError()
 
-            # this is a first part of stream
-            # now connect all data for each part
-            non_data_signals = [din.valid, din.ready, din.last]
-            if start_offset == 0 and end_rem == 0:
-                pass
-            else:
-                if dout.USE_STRB:
-                    non_data_signals.append(din.strb)
-                if dout.USE_KEEP:
-                    non_data_signals.append(din.keep)
-
-                assert start_offset % 8 == 0, start_offset
-                assert end_rem % 8 == 0, end_rem
-                first_word_i = frame_range[0] // DW
-                last_word_i = (frame_range[1] - 1) // DW
-                first_word_mask = mask((DW - start_offset) // 8) << start_offset // 8
-                body_word_mask = mask(DW//8)
-                def set_mask(m):
-                    res = []
-                    if dout.USE_STRB:
-                        res.append(dout.strb(m))
-                    if dout.USE_KEEP:
-                        res.append(dout.keep(m))
-                    return res
-
-                if end_rem == 0:
-                    last_word_mask = body_word_mask
-                else:
-                    last_word_mask = mask(end_rem//8)
-                if first_word_i == last_word_i:
-                    # only single word, mask is constant
-                    m = first_word_mask & last_word_mask
-                    set_mask(m)
-                elif first_word_i == last_word_i + 1:
-                    # only two words, mask is differnt between word 0 and 1
-                    raise NotImplementedError()
-                else:
-                    # 2+ words, first and body or last and body may be same
-                    if first_word_mask == body_word_mask:
-                        # last is only word with a special mask
-                        If(wordIndex._eq(last_word_i),
-                            *set_mask(last_word_mask)
-                        ).Else(
-                            *set_mask(body_word_mask)
-                        )
-                    elif last_word_mask == body_word_mask:
-                        # first is only word with special mask
-                        If(wordIndex._eq(first_word_i),
-                            *set_mask(first_word_mask)
-                        ).Else(
-                            *set_mask(body_word_mask)
-                        )
+            children = HObjList()
+            self.sub_t = sub_t = []
+            separated = list(HdlType_separate(t, is_non_const_stream))
+            if len(separated) > 1 or separated[0][0]:
+                # it may be required to delegate this on children
+                for is_stream, s_t in separated:
+                    if is_stream:
+                        c = None
                     else:
-                        # first, last, body word have all unique masks
-                        Switch(wordIndex)\
-                        .Case(first_word_i, set_mask(first_word_mask))\
-                        .Case(last_word_i, set_mask(last_word_mask))\
-                        .Default(set_mask(body_word_mask))
-
-            connect(din, dout, exclude=non_data_signals)
-        is_last_part_in_stream = part.tmpl.parent.bitAddrEnd == part.endOfPart
-        if is_last_part_in_stream:
-            if wordIndex is None:
-                last = 1
-            else:
-                last = wordIndex._eq(currentWordIndex)
-            dout.last(last)
-
-        if is_first_part_in_stream or part.startOfPart % self.DATA_WIDTH == 0:
-            # first part in current word
-            streamGroup = self._streamNodes.setdefault(dout, OutStreamNodeGroup(wordIndex, currentWordIndex))
-            streamGroup.word_range_max = currentWordIndex
-            on = OutStreamNodeInfo(self, dout, en, exclusiveEn, streamGroup)
-            hsNondes.append(on)
-
-    def connectPart(self,
-                    hsNondes: ListOfOutNodeInfos,
-                    part: Union[TransPart, ChoicesOfFrameParts],
-                    en: Union[RtlSignal, bool],
-                    exclusiveEn: Union[RtlSignal, bool],
-                    wordIndex: Optional[RtlSignal],
-                    currentWordIndex: int):
-        """
-        Create datamux for a single output word in main fsm
-        and colect metainformations for handshake logic
-        and strb/keep
-
-        :param hsNondes: list of nodes of handshaked logic
-        """
-        if isinstance(part, ChoicesOfFrameParts):
-            # connect union field
-            return self.connectChoicesOfFrameParts(
-                hsNondes, part, en, exclusiveEn, wordIndex, currentWordIndex)
-        # elif isinstance(part, StreamOfFrameParts):
-        #     return self.connectStreamOfFrameParts(
-        #                hsNondes, part, en, exclusiveEn, wordIndex)
-        elif part.isPadding:
-            return
-
-        fieldInfo = part.tmpl.origin
-        if isinstance(fieldInfo, HStream) or (
-                isinstance(fieldInfo, HStructField) and
-                isinstance(fieldInfo.dtype, HStream)):
-            return self.connectStreamOfFrameParts(
-                hsNondes, part, en, exclusiveEn, wordIndex, currentWordIndex)
-
-        # connect regular scalar field
-        fPartSig = self.getInDataSignal(part)
-        assert isinstance(fieldInfo, HStructField), fieldInfo
-
-        try:
-            signalsOfParts = self._signalsOfParts[part.tmpl]
-        except KeyError:
-            signalsOfParts = []
-            self._signalsOfParts[part.tmpl] = signalsOfParts
-
-        if wordIndex is not None:
-            en = en & wordIndex._eq(currentWordIndex)
-
-        if part.isLastPart():
-            # connect all parts in this group to output stream
-            signalsOfParts.append(fPartSig)
-            tToIntf = self.dataOut._fieldsToInterfaces
-            intf = tToIntf[fieldInfo]
-            intf.data(self.byteOrderCare(
-                Concat(
-                    *reversed(signalsOfParts)
-                ))
-            )
-            on = OutNodeInfo(self, intf, en, exclusiveEn)
-            hsNondes.append(on)
-        else:
-            # part is not in same word as last part, we have to store it's value
-            # to register until the last part arrive
-            fPartReg = self._reg("%s_part_%d" % (
-                    fieldInfo.name,
-                    len(signalsOfParts)),
-                fPartSig._dtype)
-            dataVld = self.dataIn.valid & en & exclusiveEn
-            If(dataVld,
-               fPartReg(fPartSig)
-            )
-            signalsOfParts.append(fPartReg)
+                        c = self.__class__(s_t)
+                    sub_t.append(s_t)
+                    children.append(c)
+                with self._paramsShared():
+                    self.children = children
 
     def parser_fsm(self, words):
         din = self.dataIn
@@ -390,21 +184,9 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         else:
             wordIndex = None
 
-        if self.IS_BIGENDIAN:
-            byteOrderCare = reverseByteOrder
-        else:
-            def byteOrderCare(sig):
-                return sig
-
-        self.byteOrderCare = byteOrderCare
-        self._tmpRegsForSelect = {}
-        # TransTmpl: List[RtlSignal]
-        self._signalsOfParts = {}
-        # AxiStream: OutStreamNodeInfo
-        self._streamNodes = {}
-
+        fc = AxiS_frameParserFieldConnector(self, self.dataIn, self.dataOut)
         allOutNodes = WordFactory(wordIndex)
-        self.connectParts(allOutNodes, words, wordIndex)
+        fc.connectParts(allOutNodes, words, wordIndex)
 
         in_vld = din.valid
         if self.SHARED_READY:
@@ -428,6 +210,52 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                 )
             )
 
+    def delegate_to_children(self):
+        if self.SHARED_READY:
+            raise NotImplementedError()
+        assert len(self.sub_t) == len(self.children),\
+            (self.sub_t, self.children)
+
+        if len(self.children) == 2:
+            c0, c1 = self.children
+            t0, t1 = self.sub_t
+            if c0 is None and isinstance(c1, self.__class__):
+                fs = AxiS_footerSplit()
+                fs._updateParamsFrom(self)
+                fs.FOOTER_WIDTH = t1.bit_length()
+                self.footer_split = fs
+                fs.dataIn(self.dataIn)
+
+                prefix_t, prefix = drill_down_in_HStruct_fields(t0, self.dataOut)
+                assert isinstance(prefix_t, HStream), prefix_t
+                prefix(fs.dataOut[0])
+                footer_offsets = next_frame_offsets(prefix_t, self.DATA_WIDTH)
+                footer = fs.dataOut[1]
+                if footer_offsets != [0, ]:
+                    # add aligment logic
+                    align = AxiS_FrameJoin()
+                    align._updateParamsFrom(self)
+                    align.USE_KEEP = True
+                    align.USE_STRB = False
+                    align.OUT_OFFSET = 0
+                    align.T = HStruct(
+                        (HStream(t1, frame_len=1,
+                                 start_offsets=[x // 8 for x in footer_offsets]), "f0"))
+                    self.footer_align = align
+                    connect(footer, align.dataIn[0], exclude=[footer.strb, align.dataIn[0].keep])
+                    align.dataIn[0].keep(footer.strb)
+                    footer = align.dataOut
+                    connect(footer, c1.dataIn, exclude=[footer.keep, c1.dataIn.strb])
+                    c1.dataIn.strb(footer.keep)
+                else:
+                    c1.dataIn(footer)
+                connect_optional(c1.dataOut, self.dataOut)
+            elif isinstance(c0, self.__class__) and c1 is None:
+                raise NotImplementedError("prefix parser")
+        else:
+            raise NotImplementedError("multiple con-constant size segments")
+        propagateClkRstn(self)
+
     def _impl(self):
         """
         Output data signals are directly connected to input in most of the cases,
@@ -436,9 +264,12 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
           for fields wich are crossing input word boundaries
         * Streams may have alignment logic if required
         """
-        self.parseTemplate()
-        words = list(self.chainFrameWords())
-        self.parser_fsm(words)
+
+        if self.sub_t:
+            self.delegate_to_children()
+        else:
+            words = list(self.chainFrameWords())
+            self.parser_fsm(words)
 
 
 def _example_AxiS_frameParser():
@@ -454,6 +285,7 @@ def _example_AxiS_frameParser():
     #  (uint32_t, None),
     #  (uint64_t, "item5"),  # this word is split on two bus words
     #  (uint32_t, None),
+
     #  (uint64_t, None),
     #  (uint64_t, None),
     #  (uint64_t, None),
@@ -470,25 +302,26 @@ def _example_AxiS_frameParser():
     #   (uint32_t, "b")
     #   )
 
-    t = HUnion(
-        (HStruct(
-            (uint64_t, "itemA0"),
-            (uint64_t, "itemA1")
-        ), "frameA"),
-        (HStruct(
-            (uint32_t, "itemB0"),
-            (uint32_t, "itemB1"),
-            (uint32_t, "itemB2"),
-            (uint32_t, "itemB3")
-        ), "frameB")
+    # t = HUnion(
+    #     (HStruct(
+    #         (uint64_t, "itemA0"),
+    #         (uint64_t, "itemA1")
+    #     ), "frameA"),
+    #     (HStruct(
+    #         (uint32_t, "itemB0"),
+    #         (uint32_t, "itemB1"),
+    #         (uint32_t, "itemB2"),
+    #         (uint32_t, "itemB3")
+    #     ), "frameB")
+    # )
+    t = HStruct(
+        (HStream(uint8_t), "frame0"),
+        (uint16_t, "footer")
     )
-    #t = HStruct(
-    #    (HStream(uint8_t, frame_len=5), "frame0"),
-    #    (uint16_t, "footer")
-    #)
 
     u = AxiS_frameParser(t)
-    u.DATA_WIDTH = 64
+    u.USE_STRB = True
+    u.DATA_WIDTH = 32
     return u
 
 

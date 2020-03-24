@@ -256,36 +256,39 @@ class AxiS_frameParserTC(SimTestCase):
         self.assertValSequenceEqual(f, [i + 1 for i in range(frame_len)])
         self.assertValSequenceEqual(u.dataOut.footer._ag.data, [2])
 
-    # @TestMatrix([8, 16, 32], [1, 2, 5], [False, True])
-    # def test_stream_and_footer(self, dataWidth, frame_len, randomize):
-    #     T = HStruct(
-    #         (HStream(Bits(8)), "frame0"),
-    #         (uint16_t, "footer"),
-    #     )
-    #     u = self.mySetUp(dataWidth, T, randomize, use_strb=True)
-    #     u.dataIn._ag.data.extend(
-    #         packAxiSFrame(dataWidth,
-    #                       T.from_py({"frame0": [i + 1 for i in range(frame_len)],
-    #                                  "footer": 2}),
-    #                       withStrb=True,
-    #                       )
-    #         )
-    #     t = 20
-    #     if randomize:
-    #         t *= 3
-    # 
-    #     self.runMatrixSim2(t, dataWidth, frame_len, randomize)
-    # 
-    #     off, f = axis_recieve_bytes(u.dataOut.frame0)
-    #     self.assertEqual(off, 0)
-    #     self.assertValSequenceEqual(f, [i + 1 for i in range(frame_len)])
-    #     self.assertValSequenceEqual(u.dataOut.footer._ag.data, [2])
+    @TestMatrix([32], [1, 2, 5], [False, True])
+    def test_stream_and_footer(self, dataWidth, frame_len, randomize):
+        """
+        :note: Footer separation is tested in AxiS_footerSplitTC
+            and this test only check that the AxiS_frameParser can connect
+            wires correctly
+        """
+        T = HStruct(
+            (HStream(Bits(8)), "frame0"),
+            (uint16_t, "footer"),
+        )
+        u = self.mySetUp(dataWidth, T, randomize, use_strb=True)
+        v = T.from_py({"frame0": [i + 1 for i in range(frame_len)],
+                       "footer": frame_len + 1})
+        u.dataIn._ag.data.extend(
+            packAxiSFrame(dataWidth, v, withStrb=True)
+        )
+        t = 20
+        if randomize:
+            t *= 3
+
+        self.runMatrixSim2(t, dataWidth, frame_len, randomize)
+
+        off, f = axis_recieve_bytes(u.dataOut.frame0)
+        self.assertEqual(off, 0)
+        self.assertValSequenceEqual(f, [i + 1 for i in range(frame_len)])
+        self.assertValSequenceEqual(u.dataOut.footer._ag.data, [frame_len + 1])
 
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(AxiS_frameParserTC('test_simpleUnion'))
-    suite.addTest(unittest.makeSuite(AxiS_frameParserTC))
+    suite.addTest(AxiS_frameParserTC('test_stream_and_footer'))
+    # suite.addTest(unittest.makeSuite(AxiS_frameParserTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

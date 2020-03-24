@@ -6,6 +6,10 @@ from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 
 class WordFactory():
+    """
+    An object which sotres information about synchronization of input words for FrameParser instances
+    """
+
     def __init__(self, wordIndexReg: Optional[RtlSignal]):
         self.words = []
         self.wordIndexReg = wordIndexReg
