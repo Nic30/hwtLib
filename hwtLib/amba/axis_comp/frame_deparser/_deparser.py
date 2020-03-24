@@ -19,9 +19,8 @@ from hwt.interfaces.unionIntf import UnionSink
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.byteOrder import reverseByteOrder
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axis import AxiStream, axis_mask_propagate_best_effort
 from hwtLib.amba.axis_comp.base import AxiSCompBase
-from hwtLib.amba.axis_comp.frame_parser import AxiS_frameParser
 from hwtLib.abstract.template_configured import TemplateConfigured,\
     separate_streams, to_primitive_stream_t
 from hwtLib.handshaked.builder import HsBuilder
@@ -31,9 +30,13 @@ from hwtLib.amba.axis_comp.frame_join import AxiS_FrameJoin
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axis_comp.frame_deparser.utils import _get_only_stream,\
-    _connect_if_present_on_dst
+    connect_optional_with_best_effort_axis_mask_propagation,\
+    drill_down_in_HStruct_fields
 from hwtLib.amba.axis_comp.frame_deparser.strb_keep_stash import StrbKeepStash,\
     reduce_conditional_StrbKeepStashes
+from hwt.code_utils import connect_optional
+from hwtLib.amba.axis_comp.frame_parser.field_connector import AxiS_frameParserFieldConnector,\
+    get_byte_order_modifier
 
 
 class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
@@ -79,7 +82,6 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
     def _config(self):
         AxiSCompBase._config(self)
         self.USE_STRB = True
-        self.OUT_OFFSET = Param(0)
 
     def _mkFieldIntf(self, parent: StructIntf, structField: HStructField):
         """
@@ -106,7 +108,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         t = self._structT
         s_t = _get_only_stream(t)
         if s_t is None:
-            self.sub_t = [_t for _, _t in separate_streams(t, {})]
+            self.sub_t = [_t for _, _t in separate_streams(t)]
             if len(self.sub_t) == 1:
                 # we process all the fields in this component
                 self.parseTemplate()
@@ -171,7 +173,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
                 tmp = self._sig("union_tmp_", Bits(w))
                 intfOfChoice = tToIntf[choice.tmpl.origin]
                 _, _isSelected, isSelectValid = \
-                    AxiS_frameParser.choiceIsSelected(self, intfOfChoice)
+                    AxiS_frameParserFieldConnector.choiceIsSelected(self, intfOfChoice)
                 unionChoices.append((_isSelected, wordData_out[high:low](tmp)))
 
                 isSelected = _isSelected & isSelectValid
@@ -286,21 +288,15 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         for i, c in enumerate(children):
             if c is None:
                 # find the input stream
-                _t = self.sub_t[i]
-                child_out = self.dataIn
-                while not isinstance(_t, HStream):
-                    if isinstance(_t, HStruct):
-                        assert len(_t.fields) == 1, _t
-                        f = _t.fields[0]
-                        child_out = getattr(child_out, f.name)
-                        _t = f.dtype
-                    else:
-                        raise NotImplementedError(_t)
+                _t, child_out = drill_down_in_HStruct_fields(
+                    self.sub_t[i], self.dataIn)
+                assert isinstance(_t, HStream)
             else:
                 # connect children inputs
-                _connect_if_present_on_dst(self.dataIn, c.dataIn,
-                                           connect_keep_to_strb=True)
+                connect_optional_with_best_effort_axis_mask_propagation(
+                    self.dataIn, c.dataIn)
                 child_out = c.dataOut
+
             # join children output streams to output
             fj_in = fjoin.dataIn[i]
             if fj_in.USE_KEEP and not child_out.USE_KEEP:
@@ -319,15 +315,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
                 fj_in(child_out)
 
     def _create_frame_build_logic(self):
-        if self.OUT_OFFSET != 0:
-            raise NotImplementedError()
-
-        if self.IS_BIGENDIAN:
-            byteOrderCare = reverseByteOrder
-        else:
-            def byteOrderCare(sig):
-                return sig
-        self.byteOrderCare = byteOrderCare
+        self.byteOrderCare = get_byte_order_modifier(self.dataOut)
 
         STRB_ALL = mask(int(self.DATA_WIDTH // 8))
         words = list(self.chainFrameWords())
@@ -475,26 +463,21 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         """
         if len(self.sub_t) > 1:
             self._delegate_to_children()
-            return
         else:
             s_t = _get_only_stream(self._structT)
-            if s_t is not None:
+            if s_t is None:
+                self._create_frame_build_logic()
+            else:
                 if not isinstance(s_t.element_t, Bits):
                     raise NotImplementedError(s_t)
-                if s_t.start_offsets == [self.OUT_OFFSET]:
-                    # no special care required because the stream
-                    # is already in correct format
-                    din = self.dataIn
-                    while not isinstance(din, AxiStream):
-                        # dril down in HdlType to find a stream
-                        assert len(din._interfaces) == 1
-                        din = din._interfaces[0]
-                    self.dataOut(din)
-                else:
-                    raise NotImplementedError("delegate to AxiS_FrameJoin")
-                return
-
-        self._create_frame_build_logic()
+                # no special care required because the stream
+                # is already in correct format
+                din = self.dataIn
+                while not isinstance(din, AxiStream):
+                    # dril down in HdlType to find a stream
+                    assert len(din._interfaces) == 1
+                    din = din._interfaces[0]
+                self.dataOut(din)
 
 
 def _example_AxiS_frameDeparser():
