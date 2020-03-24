@@ -261,6 +261,22 @@ def axis_send_bytes(axis: AxiStream, data_B: List[int], offset=0) -> None:
     axis._ag.data.extend(f)
 
 
+def axis_mask_propagate_best_effort(src: AxiStream, dst: AxiStream):
+    res = []
+    if src.USE_STRB:
+        if not src.USE_KEEP and not dst.USE_STRB and dst.USE_KEEP:
+            res.append(dst.keep(src.strb))
+    if src.USE_KEEP:
+        if not src.USE_STRB and not dst.USE_KEEP and dst.USE_STRB:
+            res.append(dst.strb(src.keep))
+    if not src.USE_KEEP and not src.USE_STRB:
+        if dst.USE_KEEP:
+            res.append(dst.keep(mask(dst.keep._dtype.bit_length())))
+        if dst.USE_STRB:
+            res.append(dst.strb(mask(dst.strb._dtype.bit_length())))
+    return res
+
+
 class IP_AXIStream(IntfIpMeta):
     """
     Class which specifies how to describe AxiStream interfaces in IP-core
