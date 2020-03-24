@@ -32,39 +32,42 @@ class AxiSimRam(AxiDpSimRam):
         if axi is not None:
             assert axiAR is None
             assert axiR is None
-            self.arAg = axi._ag.ar
-            self.rAg = axi._ag.r
-            DW = int(axi.DATA_WIDTH)
-            self.awAg = axi._ag.aw
-            self.wAg = axi._ag.w
-            self.wAckAg = axi._ag.b
-            clk = axi._getAssociatedClk()
+            assert axiAW is None
+            assert axiW is None
+            assert axiB is None
+
+            if axi.HAS_R:
+                axiAR = axi.ar
+                axiR = axi.r
+            if axi.HAS_W:
+                axiAW = axi.aw
+                axiW = axi.w
+                axiB = axi.b
+
+        if axiAR is not None:
+            self.arAg = axiAR._ag
+            self.rAg = axiR._ag
+            DW = int(axiR.DATA_WIDTH)
+            clk = axiAR._getAssociatedClk()
         else:
-            assert axi is None
-            if axiAR is not None:
-                self.arAg = axiAR._ag
-                self.rAg = axiR._ag
-                DW = int(axiR.DATA_WIDTH)
-                clk = axiAR._getAssociatedClk()
-            else:
-                assert axiR is None
-                self.arAg = None
-                self.rAg = None
+            assert axiR is None
+            self.arAg = None
+            self.rAg = None
 
-            if axiAW is not None:
-                self.awAg = axiAW._ag
-                self.wAg = axiW._ag
-                self.wAckAg = axiB._ag
-                DW = int(axiW.DATA_WIDTH)
-                clk = axiAW._getAssociatedClk()
-            else:
-                assert axiW is None
-                assert axiB is None
-                self.awAg = None
-                self.wAg = None
-                self.wAckAg = None
+        if axiAW is not None:
+            self.awAg = axiAW._ag
+            self.wAg = axiW._ag
+            self.wAckAg = axiB._ag
+            DW = int(axiW.DATA_WIDTH)
+            clk = axiAW._getAssociatedClk()
+        else:
+            assert axiW is None
+            assert axiB is None
+            self.awAg = None
+            self.wAg = None
+            self.wAckAg = None
 
-            assert axiAR is not None or axiAW is not None
+        assert axiAR is not None or axiAW is not None
 
         if self.wAg is not None:
             self.HAS_W_ID = hasattr(self.wAg.intf, "id")
