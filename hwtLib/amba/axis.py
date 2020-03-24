@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from hwt.hdl.types.structUtils import HStruct_unpack
+from hwt.hdl.types.utils import HdlValue_unpack
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.synthesizer.param import Param
@@ -160,7 +160,7 @@ def unpackAxiSFrame(structT, frameData, getDataFn=None, dataWidth=None):
 
         getDataFn = _getDataFn
 
-    return HStruct_unpack(structT, frameData, getDataFn, dataWidth)
+    return HdlValue_unpack(structT, frameData, getDataFn, dataWidth)
 
 
 def _axis_recieve_bytes(ag_data, D_B, use_keep, offset=0) -> Tuple[int, List[int]]:

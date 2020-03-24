@@ -3,11 +3,11 @@ from typing import Optional, List, Dict
 
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStructField, HStruct
 from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.hdl.types.bits import Bits
 
 
 class TemplateConfigured():
