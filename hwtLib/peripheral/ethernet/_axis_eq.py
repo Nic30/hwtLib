@@ -39,6 +39,7 @@ class AxiS_eq(Unit):
         if VAL_W <= D_W:
             # do comparison in single word
             dout.data(din.data[VAL_W:]._eq(V))
+            StreamNode([din], [dout]).sync()
         else:
             # build fsm for comparing
             word_cnt = ceil(VAL_W / D_W)

@@ -146,7 +146,10 @@ class EthernetMac(Unit):
                     crc.dataIn):
             inp.data(din.data)
             if self.USE_STRB:
-                inp.mask(din.mask)
+                if inp is crc.dataIn:
+                    inp.mask(din.mask)
+                else:
+                    inp.strb(din.mask)
             inp.last(din.last)
         crc.dataIn.vld(din.vld)
         # drop fcs, was checked on original stream
@@ -255,7 +258,7 @@ class EthernetMac(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
     u = EthernetMac()
-    # u.DATA_WIDTH = 16
+    u.DATA_WIDTH = 16
     u.HAS_TX = False
     # u.HAS_RX = False
     print(toRtl(u))
