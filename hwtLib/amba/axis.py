@@ -116,9 +116,11 @@ class AxiStreamAgent(BaseAxiAgent):
             for sig in self._signals:
                 sig.write(None)
         else:
-            assert len(data) == self._sigCnt, (len(data),
-                                               self._signals,
-                                               self.intf._getFullName())
+            assert len(data) == self._sigCnt, (
+                "invalid number of data for an interface",
+                len(data),
+                self._signals,
+                self.intf._getFullName())
             for sig, val in zip(self._signals, data):
                 sig.write(val)
 
