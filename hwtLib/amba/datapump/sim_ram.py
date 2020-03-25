@@ -21,9 +21,8 @@ class AxiDpSimRam(SimRam):
                        (memory will be shared with this instance)
         """
         assert cellWidth % 8 == 0
-        self.cellSize = cellWidth // 8
+        super(AxiDpSimRam, self).__init__(cellWidth // 8, parent=parent)
         self.allMask = mask(self.cellSize)
-        super(AxiDpSimRam, self).__init__(parent=parent)
 
         assert rDatapumpIntf is not None or wDatapumpIntf is not None, \
             "At least read or write interface has to be present"

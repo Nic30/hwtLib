@@ -8,7 +8,7 @@ from pycocotb.triggers import WaitWriteOnly
 class Mi32SimRam(SimRam):
 
     def __init__(self, mi32: Mi32, parent=None):
-        super(Mi32SimRam, self).__init__(parent=parent)
+        super(Mi32SimRam, self).__init__(mi32.DATA_WIDTH // 8, parent=parent)
         self.intf = mi32
         self.clk = mi32._getAssociatedClk()
         self._word_bytes = mi32.DATA_WIDTH // 8
@@ -40,7 +40,7 @@ class Mi32SimRam(SimRam):
     def on_write(self, addr, val, byteen):
         addr = int(addr)
         if addr % self._word_bytes != 0:
-            raise NotImplementedError("Unaligned write")
+            raise NotImplementedError("Unaligned write", addr)
 
         if int(byteen) == self._word_mask:
             self.data[addr // self._word_bytes] = val
@@ -54,4 +54,3 @@ class Mi32SimRam(SimRam):
         else:
             assert mode == WRITE
             self.on_write(addr, val, byteen)
-            

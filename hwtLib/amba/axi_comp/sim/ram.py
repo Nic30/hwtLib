@@ -27,8 +27,6 @@ class AxiSimRam(AxiDpSimRam):
         :attention: memories are commiting into memory in "data" property
             after transaction is complete
         """
-        SimRam.__init__(self, parent=parent)
-
         if axi is not None:
             assert axiAR is None
             assert axiR is None
@@ -74,7 +72,8 @@ class AxiSimRam(AxiDpSimRam):
         else:
             self.HAS_W_ID = False
 
-        self.cellSize = DW // 8
+        SimRam.__init__(self, DW // 8, parent=parent)
+
         self.allMask = mask(self.cellSize)
         self.word_t = Bits(self.cellSize * 8)
 

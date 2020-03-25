@@ -50,7 +50,7 @@ class SimRam():
     :ivar data: memory dict
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, cellSize, parent=None):
         """
         :param cellWidth: width of items in memmory
         :param clk: clk signal for synchronization
@@ -63,6 +63,7 @@ class SimRam():
             self.data = {}
         else:
             self.data = parent.data
+        self.cellSize = cellSize
 
     def malloc(self, size, keepOut=None):
         """
@@ -151,7 +152,7 @@ class SimRam():
         Get array stored in memory
         """
         if itemSize != self.cellSize:
-            raise NotImplementedError()
+            raise NotImplementedError(itemSize, self.cellSize)
 
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
