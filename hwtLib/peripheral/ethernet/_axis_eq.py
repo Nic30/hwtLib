@@ -1,4 +1,4 @@
-from future.backports.misc import ceil
+from math import ceil
 
 from hwt.code import If, Switch, log2ceil
 from hwt.hdl.typeShortcuts import vec
