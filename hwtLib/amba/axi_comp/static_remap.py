@@ -6,9 +6,9 @@ from hwt.synthesizer.param import Param
 
 class AxiStaticRemap(BusStaticRemap):
     """
-    :class:`.BusStaticRemap` implementation for AXI3/4 interfaces
+    :class:`.BusStaticRemap` implementation for AXI3/4 full/lite interfaces
     :note: this component only remaps some memory regions, but it does not preform the address checking
-    
+
     .. hwt-schematic:: _example_AxiStaticRemap
     """
 
@@ -29,6 +29,7 @@ class AxiStaticRemap(BusStaticRemap):
             MM, self.m.ar.addr, self.s.ar.addr)
         self.translate_addr_signal(
             MM, self.m.aw.addr, self.s.aw.addr)
+
 
 def _example_AxiStaticRemap():
     u = AxiStaticRemap()
