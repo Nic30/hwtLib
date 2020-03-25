@@ -146,7 +146,10 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                 self.dataOut_ready = Signal()
 
         # parsed data
-        self.dataOut = intfCls(t, self._mkFieldIntf)._m()
+        if is_only_padding(t):
+            self.dataOut = None
+        else:
+            self.dataOut = intfCls(t, self._mkFieldIntf)._m()
 
         self.parseTemplate()
         if self.OVERFLOW_SUPPORT:
@@ -173,19 +176,27 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
 
             children = HObjList()
             self.sub_t = sub_t = []
+            is_const_sized = self.sub_t_is_const_sized = []
+            is_padding = self.sub_t_is_padding = []
             separated = list(HdlType_separate(t, is_non_const_stream))
             if len(separated) > 1 or separated[0][0]:
                 # it may be required to delegate this on children
-                for is_stream, s_t in separated:
-                    if is_stream:
+                first = True
+                for is_non_const_sized, s_t in separated:
+                    _is_padding = is_only_padding(s_t)
+                    if is_non_const_sized or (not first and _is_padding):
                         c = None
                     else:
                         c = self.__class__(s_t)
                     sub_t.append(s_t)
                     children.append(c)
-                if len(children) >= 2 and \
-                        children[0] is not None and\
-                        children[1] is None:
+                    first = False
+                    is_padding.append(_is_padding)
+                    is_const_sized.append(not is_non_const_sized)
+
+                if len(is_const_sized) >= 2 and \
+                        is_const_sized[0] and\
+                        not is_const_sized[1]:
                     # we will parse const-size prefix and
                     # then there will be a variable size suffix
                     children[0].OVERFLOW_SUPPORT = True
@@ -207,9 +218,10 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         else:
             wordIndex = None
 
-        fc = AxiS_frameParserFieldConnector(self, self.dataIn, self.dataOut)
         allOutNodes = WordFactory(wordIndex)
-        fc.connectParts(allOutNodes, words, wordIndex)
+        if not is_only_padding(self._structT):
+            fc = AxiS_frameParserFieldConnector(self, self.dataIn, self.dataOut)
+            fc.connectParts(allOutNodes, words, wordIndex)
 
         in_vld = din.valid
         if self.SHARED_READY:
@@ -255,10 +267,10 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         if len(self.children) == 2:
             c0, c1 = self.children
             t0, t1 = self.sub_t
-            t0_is_padding = is_only_padding(t0)
-            t1_is_padding = is_only_padding(t1)
+            t0_is_padding, t1_is_padding = self.sub_t_is_padding
+            t0_const_sized, t1_const_sized = self.sub_t_is_const_sized
 
-            if c0 is None and isinstance(c1, self.__class__):
+            if not t0_const_sized and t1_const_sized:
                 # suffix parser, split suffix and parse it in child sub component
                 fs = AxiS_footerSplit()
                 fs._updateParamsFrom(self)
@@ -266,18 +278,20 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                 self.footer_split = fs
                 fs.dataIn(din)
 
+                prefix_t, prefix = drill_down_in_HStruct_fields(t0, self.dataOut)
                 if t0_is_padding:
                     # padding
                     fs.dataOut[0].ready(1)
                 else:
-                    prefix_t, prefix = drill_down_in_HStruct_fields(t0, self.dataOut)
                     assert isinstance(prefix_t, HStream), prefix_t
                     prefix(fs.dataOut[0])
 
                 suffix = fs.dataOut[1]
                 if t1_is_padding:
+                    # ignore suffix entirely
                     suffix.ready(1)
                 else:
+                    # parse suffix in child component
                     suffix_offsets = next_frame_offsets(prefix_t, self.DATA_WIDTH)
                     if suffix_offsets != [0, ]:
                         # add aligment logic
@@ -299,9 +313,10 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                         c1.dataIn.strb(suffix.keep)
                     else:
                         c1.dataIn(suffix)
+
                 if not t1_is_padding:
                     connect_optional(c1.dataOut, self.dataOut)
-            elif isinstance(c0, self.__class__) and c1 is None:
+            elif t0_const_sized and not t1_const_sized:
                 # prefix parser, parser prefix in subcomponent
                 # and let rest to a suffix
                 if not t0_is_padding:

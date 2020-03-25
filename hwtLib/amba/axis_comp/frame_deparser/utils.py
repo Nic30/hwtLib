@@ -43,6 +43,9 @@ def drill_down_in_HStruct_fields(t: HdlType, intf: Interface):
     while isinstance(t, HStruct):
         assert len(t.fields) == 1, t
         f = t.fields[0]
-        intf = getattr(intf, f.name)
+        if f.name is None:
+            intf = None
+        elif intf is not None:
+            intf = getattr(intf, f.name)
         t = f.dtype
     return t, intf
