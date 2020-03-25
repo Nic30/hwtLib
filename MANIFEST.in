@@ -2,15 +2,26 @@ recursive-include hwtLib *.png
 include README.md
 include MANIFEST.in
 
-include hwtLib/examples/specialIntfTypes/InterfaceWithVHDLUnonstrainedArrayImportedType.vhd
+include hwtLib/examples/mem/AsyncResetReg.v
+include hwtLib/examples/mem/AsyncResetReg.vhd
+include hwtLib/examples/mem/DDR_Reg.v
+include hwtLib/examples/mem/DDR_Reg.vhd
+include hwtLib/examples/mem/DReg.cpp
+include hwtLib/examples/mem/DReg.v
+include hwtLib/examples/mem/DReg.vhd
 
-include hwtLib/samples/hierarchy/netFilter.vhd
-include hwtLib/samples/hierarchy/netFilter.v
-include hwtLib/samples/hierarchy/netFilter.cpp
-include hwtLib/samples/hierarchy/UnitWithParams_in_wrap.vhd
+include hwtLib/examples/specialIntfTypes/InterfaceWithVHDLUnconstrainedArrayImportedType.vhd
+include hwtLib/examples/specialIntfTypes/InterfaceWithVHDLUnconstrainedArrayImportedType2.vhd
 
-include hwtLib/samples/showcase0.vhd
-include hwtLib/samples/showcase0.v
-include hwtLib/samples/showcase0.cpp
-include hwtLib/samples/showcase0.hwt.py
+
+include hwtLib/examples/hierarchy/GroupOfBlockrams.vhd
+include hwtLib/examples/hierarchy/netFilter.vhd
+include hwtLib/examples/hierarchy/netFilter.v
+include hwtLib/examples/hierarchy/netFilter.cpp
+include hwtLib/examples/hierarchy/UnitWithParams_in_wrap.vhd
+
+include hwtLib/examples/showcase0.vhd
+include hwtLib/examples/showcase0.v
+include hwtLib/examples/showcase0.cpp
+include hwtLib/examples/showcase0.hwt.py
 
