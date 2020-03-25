@@ -5,7 +5,7 @@ from math import ceil
 from typing import Tuple, List
 
 from hwt.code import If, SwitchLogic
-from hwt.hdl.typeShortcuts import hBit
+from hwt.hdl.typeShortcuts import hBit, vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
@@ -188,7 +188,17 @@ class AxiS_footerSplit(AxiSCompBase):
         BYTE_CNT = D_W // 8
         FOOTER_WIDTH = self.FOOTER_WIDTH
         din = self.dataIn
-        in_mask = din.strb
+
+        if self.USE_KEEP:
+            in_mask = din.keep
+        elif self.USE_STRB:
+            in_mask = din.strb
+        elif self.DATA_WIDTH == 8:
+            in_mask = vec(1, 1)
+        else:
+            raise NotImplementedError(
+                "keep/strb can be ignored only for DATA_WIDTH=8")
+
         set_is_footer = self._sig("set_is_footer")
         set_is_footer(din.valid & din.last)
         mask_cases = []
@@ -257,10 +267,7 @@ class AxiS_footerSplit(AxiSCompBase):
         regs = self.generate_regs(LOOK_AHEAD)
         self.flush_en_logic(regs)
         # resolve footer flags
-        if USE_KEEP or USE_STRB:
-            set_is_footer = self.is_footer_mask_set_values(LOOK_AHEAD, regs)
-        else:
-            raise NotImplementedError()
+        set_is_footer = self.is_footer_mask_set_values(LOOK_AHEAD, regs)
         din = self.dataIn
         # connect inputs/outputs of registers, dataIn, dataOut
         for is_last, (i, (r, is_footer, is_footer_set_val, can_flush, ready)) in\

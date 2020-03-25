@@ -30,6 +30,8 @@ from hwt.code_utils import connect_optional
 from hwtLib.amba.axis_comp.frame_join._join import AxiS_FrameJoin
 from hwtLib.abstract.frame_utils.alignment_utils import FrameAlignmentUtils,\
     next_frame_offsets
+from hwt.hdl.types.utils import is_only_padding
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 def is_non_const_stream(t: HdlType):
@@ -96,6 +98,8 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         # else every interface will be instance of Handshaked and it will
         # have it's own ready(rd) signal
         self.SHARED_READY = Param(False)
+        # if true, a new state for overflow will be created in FSM
+        self.OVERFLOW_SUPPORT = Param(False)
 
     def _mkFieldIntf(self, parent: Union[StructIntf, UnionSource],
                      structField: HStructField):
@@ -135,13 +139,22 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         else:
             raise TypeError(t)
 
-        self.dataOut = intfCls(t, self._mkFieldIntf)._m()
-
+        # input stream
         with self._paramsShared():
             self.dataIn = self.intfCls()
             if self.SHARED_READY:
                 self.dataOut_ready = Signal()
+
+        # parsed data
+        self.dataOut = intfCls(t, self._mkFieldIntf)._m()
+
         self.parseTemplate()
+        if self.OVERFLOW_SUPPORT:
+            # flag which is 1 if we are behind the data which
+            # we described by type in configuration
+            # :note: if the data is unaligned this may be 1 in last parsed word
+            #        as well
+            self.parsing_overflow = Signal()._m()
 
     def parseTemplate(self):
         t = self._structT
@@ -150,7 +163,6 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
             is_const_size_frame = True
         except TypeError:
             is_const_size_frame = False
-
         if is_const_size_frame:
             self.sub_t = []
             self.children = []
@@ -171,16 +183,27 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                         c = self.__class__(s_t)
                     sub_t.append(s_t)
                     children.append(c)
-                with self._paramsShared():
+                if len(children) >= 2 and \
+                        children[0] is not None and\
+                        children[1] is None:
+                    # we will parse const-size prefix and
+                    # then there will be a variable size suffix
+                    children[0].OVERFLOW_SUPPORT = True
+
+                with self._paramsShared(exclude=({"OVERFLOW_SUPPORT"}, {})):
                     self.children = children
 
     def parser_fsm(self, words):
         din = self.dataIn
         maxWordIndex = words[-1][0]
-        hasMultipleWords = maxWordIndex > 0
+
+        word_index_max_val = maxWordIndex
+        if self.OVERFLOW_SUPPORT:
+            word_index_max_val += 1
+        hasMultipleWords = word_index_max_val > 0
         if hasMultipleWords:
             wordIndex = self._reg("wordIndex", Bits(
-                log2ceil(maxWordIndex + 1)), 0)
+                log2ceil(word_index_max_val + 1)), 0)
         else:
             wordIndex = None
 
@@ -201,12 +224,23 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
 
         if hasMultipleWords:
             last = wordIndex._eq(maxWordIndex)
+            incr = wordIndex(wordIndex + 1)
+            if self.OVERFLOW_SUPPORT:
+                incr = If(wordIndex != word_index_max_val,
+                   incr
+                )
+                aligned = self._structT.bit_length() % self.DATA_WIDTH == 0
+                if aligned:
+                    overflow = wordIndex._eq(word_index_max_val)
+                else:
+                    overflow = wordIndex >= maxWordIndex
+                self.parsing_overflow(overflow)
 
             If(in_vld & out_ready,
                 If(last,
                    wordIndex(0)
                 ).Else(
-                    wordIndex(wordIndex + 1)
+                   incr
                 )
             )
 
@@ -215,43 +249,97 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
             raise NotImplementedError()
         assert len(self.sub_t) == len(self.children),\
             (self.sub_t, self.children)
-
+        if self.OVERFLOW_SUPPORT:
+            raise NotImplementedError()
+        din = self.dataIn
         if len(self.children) == 2:
             c0, c1 = self.children
             t0, t1 = self.sub_t
+            t0_is_padding = is_only_padding(t0)
+            t1_is_padding = is_only_padding(t1)
+
             if c0 is None and isinstance(c1, self.__class__):
+                # suffix parser, split suffix and parse it in child sub component
                 fs = AxiS_footerSplit()
                 fs._updateParamsFrom(self)
                 fs.FOOTER_WIDTH = t1.bit_length()
                 self.footer_split = fs
-                fs.dataIn(self.dataIn)
+                fs.dataIn(din)
 
-                prefix_t, prefix = drill_down_in_HStruct_fields(t0, self.dataOut)
-                assert isinstance(prefix_t, HStream), prefix_t
-                prefix(fs.dataOut[0])
-                footer_offsets = next_frame_offsets(prefix_t, self.DATA_WIDTH)
-                footer = fs.dataOut[1]
-                if footer_offsets != [0, ]:
-                    # add aligment logic
-                    align = AxiS_FrameJoin()
-                    align._updateParamsFrom(self)
-                    align.USE_KEEP = True
-                    align.USE_STRB = False
-                    align.OUT_OFFSET = 0
-                    align.T = HStruct(
-                        (HStream(t1, frame_len=1,
-                                 start_offsets=[x // 8 for x in footer_offsets]), "f0"))
-                    self.footer_align = align
-                    connect(footer, align.dataIn[0], exclude=[footer.strb, align.dataIn[0].keep])
-                    align.dataIn[0].keep(footer.strb)
-                    footer = align.dataOut
-                    connect(footer, c1.dataIn, exclude=[footer.keep, c1.dataIn.strb])
-                    c1.dataIn.strb(footer.keep)
+                if t0_is_padding:
+                    # padding
+                    fs.dataOut[0].ready(1)
                 else:
-                    c1.dataIn(footer)
-                connect_optional(c1.dataOut, self.dataOut)
+                    prefix_t, prefix = drill_down_in_HStruct_fields(t0, self.dataOut)
+                    assert isinstance(prefix_t, HStream), prefix_t
+                    prefix(fs.dataOut[0])
+
+                suffix = fs.dataOut[1]
+                if t1_is_padding:
+                    suffix.ready(1)
+                else:
+                    suffix_offsets = next_frame_offsets(prefix_t, self.DATA_WIDTH)
+                    if suffix_offsets != [0, ]:
+                        # add aligment logic
+                        align = AxiS_FrameJoin()
+                        align._updateParamsFrom(self)
+                        align.USE_KEEP = True
+                        align.USE_STRB = False
+                        align.OUT_OFFSET = 0
+                        align.T = HStruct(
+                            (HStream(t1, frame_len=1,
+                                     start_offsets=[x // 8 for x in suffix_offsets]),
+                             "f0"))
+                        self.suffix_align = align
+                        connect(suffix, align.dataIn[0], exclude=[suffix.strb, align.dataIn[0].keep])
+                        align.dataIn[0].keep(suffix.strb)
+                        suffix = align.dataOut
+                        connect(suffix, c1.dataIn, exclude=[suffix.keep,
+                                                            c1.dataIn.strb])
+                        c1.dataIn.strb(suffix.keep)
+                    else:
+                        c1.dataIn(suffix)
+                if not t1_is_padding:
+                    connect_optional(c1.dataOut, self.dataOut)
             elif isinstance(c0, self.__class__) and c1 is None:
-                raise NotImplementedError("prefix parser")
+                # prefix parser, parser prefix in subcomponent
+                # and let rest to a suffix
+                if not t0_is_padding:
+                    connect_optional(c0.dataOut, self.dataOut)
+                masters = [din]
+                if t1_is_padding:
+                    slaves = [c0.dataIn, ]
+                    extraConds = {
+                       c0.dataIn: ~c0.parsing_overflow,
+                    }
+                    skipWhen = {
+                       c0.dataIn: ~c0.parsing_overflow,
+                    }
+                else:
+                    suffix_t, suffix = drill_down_in_HStruct_fields(t1, self.dataOut)
+                    assert isinstance(suffix_t, HStream), suffix_t
+                    t1_offset = c0._structT.bit_length() % self.DATA_WIDTH
+                    if t1_offset == 0:
+                        # t1 is aligned on word boundary
+                        # and does not require any first word mask modification
+                        slaves = [c0.dataIn, suffix]
+                        extraConds = {
+                           c0.dataIn: ~c0.parsing_overflow,
+                           suffix: c0.parsing_overflow,
+                        }
+                        skipWhen = {
+                           c0.dataIn: ~c0.parsing_overflow,
+                           suffix: c0.parsing_overflow,
+                        }
+                    else:
+                        raise NotImplementedError("prefix parser- modify mask for suffix")
+
+                StreamNode(masters, slaves,
+                           extraConds=extraConds,
+                           skipWhen=skipWhen).sync()
+                connect(din, c0.dataIn, exclude=[din.valid, din.ready])
+            else:
+                raise NotImplementedError("multiple con-constant size segments")
         else:
             raise NotImplementedError("multiple con-constant size segments")
         propagateClkRstn(self)
