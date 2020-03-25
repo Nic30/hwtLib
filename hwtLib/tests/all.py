@@ -199,6 +199,7 @@ from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
 from hwtLib.peripheral.ethernet.mac_tx_test import EthernetMac_tx_TCs
 from hwtLib.peripheral.ethernet.mac_rx_test import EthernetMac_rx_TCs
+from hwtLib.cesnet.mi32.interconnectMatrix_test import Mi32InterconnectMatrixTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -417,6 +418,7 @@ suite = testSuiteFromTCs(
     IpifInterconnectMatrixTC,
 
     Mi32AgentTC,
+    Mi32InterconnectMatrixTC,
     Mi32_to_Axi4LiteTC,
     Mi32Axi4LiteBrigesTC,
 
