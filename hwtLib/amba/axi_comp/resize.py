@@ -162,7 +162,7 @@ class AxiResize(BusBridge):
         OUT_DW = self.OUT_DATA_WIDTH
         if DW == OUT_DW and self.ADDR_WIDTH == self.OUT_ADDR_WIDTH:
             raise AssertionError("It is useless to use this convertor"
-                                 " if the interface is of same size")
+                                 " if the interface is of same parameters")
 
         if has_len:
             # Axi3/4, etc

@@ -23,6 +23,7 @@ from hwtLib.amba.axi_comp.interconnect.matrixCrossbar_test import \
     AxiInterconnectMatrixCrossbar_TCs
 from hwtLib.amba.axi_comp.interconnect.matrixR_test import AxiInterconnectMatrixR_TCs
 from hwtLib.amba.axi_comp.interconnect.matrixW_test import AxiInterconnectMatrixW_TCs
+from hwtLib.amba.axi_comp.resize_test import AxiResizeTC
 from hwtLib.amba.axi_comp.sim.ag_test import Axi_ag_TC
 from hwtLib.amba.axi_comp.slave_timeout_test import AxiSlaveTimeoutTC
 from hwtLib.amba.axi_comp.static_remap_test import AxiStaticRemapTCs
@@ -56,6 +57,7 @@ from hwtLib.avalon.stAgent_test import AvalonStAgentTC
 from hwtLib.cesnet.mi32.axi4Lite_bridges_test import Mi32Axi4LiteBrigesTC
 from hwtLib.cesnet.mi32.interconnectMatrix_test import Mi32InterconnectMatrixTC
 from hwtLib.cesnet.mi32.mi32agent_test import Mi32AgentTC
+from hwtLib.cesnet.mi32.sliding_window_test import Mi32SlidingWindowTC
 from hwtLib.cesnet.mi32.to_axi4Lite_test import Mi32_to_Axi4LiteTC
 from hwtLib.clocking.cdc_test import CdcTC
 from hwtLib.clocking.clkDivider import ClkDiv3TC
@@ -201,7 +203,6 @@ from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
-from hwtLib.cesnet.mi32.sliding_window_test import Mi32SlidingWindowTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -369,6 +370,7 @@ suite = testSuiteFromTCs(
     AxiRegTC,
     AxiTesterTC,
     *AxiStaticRemapTCs,
+    AxiResizeTC,
 
     AxisFrameGenTC,
     Axi4_rDatapumpTC,
