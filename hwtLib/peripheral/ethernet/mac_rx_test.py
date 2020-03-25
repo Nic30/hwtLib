@@ -1,13 +1,12 @@
 from itertools import chain
 
-from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwtLib.amba.axis import axis_recieve_bytes, _axis_send_bytes, packAxiSFrame
+from hwtLib.amba.axis import axis_recieve_bytes, packAxiSFrame
 from hwtLib.peripheral.ethernet.mac import EthernetMac
 from hwtLib.peripheral.ethernet.mac_tx_test import REF_FRAME, REF_CRC
 from hwtLib.peripheral.ethernet.types import format_eth_addr
-from pycocotb.constants import CLK_PERIOD
 from hwtLib.types.ctypes import uint8_t
+from pycocotb.constants import CLK_PERIOD
 
 
 class EthernetMacRx_8b_TC(SingleUnitSimTestCase):
@@ -33,7 +32,7 @@ class EthernetMacRx_8b_TC(SingleUnitSimTestCase):
         u = self.u
         rx_frame_bytes = list(chain(REF_FRAME, REF_CRC))
         t = uint8_t[len(rx_frame_bytes)]
-            # :attention: strb signal is reinterpreted as a keep signal
+        # :attention: strb signal is reinterpreted as a keep signal
         rx_data = packAxiSFrame(self.DW, t.from_py(rx_frame_bytes),
                                 withStrb=True)
         if u.USE_STRB:
