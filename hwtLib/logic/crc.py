@@ -98,13 +98,13 @@ class Crc(Unit):
             state_next = self.build_crc_xor_matrix(
                 state_in_bits, poly_bits, data_in_bits)
 
-            If(self.dataIn.vld,
+            If(din.vld,
                # state_next is in format 0 ... N,
                # we need to reverse it to litle-endian
                state(Concat(*reversed(state_next)))
             )
         else:
-            mask_in = self.dataIn.mask
+            mask_in = din.mask
             mask_width = mask_in._dtype.bit_length()
             state_next_cases = []
             for vld_byte_cnt in range(1, mask_width + 1):
@@ -118,7 +118,7 @@ class Crc(Unit):
                 state_next_cases.append((
                     m, state(Concat(*reversed(state_next)))
                 ))
-            If(self.dataIn.vld,
+            If(din.vld,
                 Switch(mask_in).addCases(
                    state_next_cases
                 ).Default(state(None))
