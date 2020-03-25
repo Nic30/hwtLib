@@ -1,5 +1,6 @@
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
+from typing import Union, List
 
 
 vlan_t = Bits(12)
@@ -47,8 +48,11 @@ class ETHER_TYPE():
     MPLS_multicast = 0x8848
 
 
-def pprint_eth_addr(mac):
-    macStr = "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x" % (ord(mac[i]) for i in range(6))
+def format_eth_addr(mac: List[Union[int, str]]):
+    assert len(mac) == 6
+    macStr = "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x" % tuple(
+        ord(x) if isinstance(x, str) else int(x)
+        for x in mac)
     return macStr
 
 
