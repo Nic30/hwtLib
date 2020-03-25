@@ -201,6 +201,7 @@ from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
+from hwtLib.cesnet.mi32.sliding_window_test import Mi32SlidingWindowTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -423,6 +424,7 @@ suite = testSuiteFromTCs(
     Mi32InterconnectMatrixTC,
     Mi32_to_Axi4LiteTC,
     Mi32Axi4LiteBrigesTC,
+    Mi32SlidingWindowTC,
 
     # complex units tests
     UnitWrapperTC,

@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from hwt.code import isPow2, connect, If
+from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.param import Param
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.cesnet.mi32.intf import Mi32
-from hwt.synthesizer.param import Param
-from hwt.interfaces.utils import addClkRstn
-from hwt.code import isPow2, connect, If
 
 
 class Mi32SlidingWindow(BusBridge):
@@ -23,7 +26,12 @@ class Mi32SlidingWindow(BusBridge):
         self.WINDOW_SIZE = Param(4096)
 
     def _declr(self):
-        assert isPow2(self.WINDOW_SIZE)
+        assert isPow2(self.WINDOW_SIZE), self.WINDOW_SIZE
+        assert self.M_ADDR_WIDTH > self.ADDR_WIDTH, (self.M_ADDR_WIDTH, self.ADDR_WIDTH)
+        assert (2 ** self.M_ADDR_WIDTH) >= self.WINDOW_SIZE, (
+            "has to be large enough in order to address whole window",
+            self.M_ADDR_WIDTH, self.WINDOW_SIZE
+        )
         addClkRstn(self)
         with self._paramsShared(exclude=({"ADDR_WIDTH"}, {})):
             self.m = Mi32()._m()
@@ -33,16 +41,17 @@ class Mi32SlidingWindow(BusBridge):
 
     def _impl(self):
         OFFSET_REG_ADDR = self.WINDOW_SIZE
-        m, s = self.s, self.m
-        offset_en = m.addr._eq(OFFSET_REG_ADDR)
-        offset = self._reg("offset", s.addr._dtype, def_val=0)
-        connect(m, s, exclude={m.addr, m.wr, m.ardy})
-        s.addr(offset + m.addr._reinterpret_cast(offset._dtype))
-        s.wr(m.wr & ~offset_en)
-        If(offset_en & m.wr,
-           connect(m.dwr, offset, fit=True)
+
+        s, m = self.s, self.m
+        offset_en = s.addr._eq(OFFSET_REG_ADDR)
+        offset = self._reg("offset", m.addr._dtype, def_val=0)
+        connect(s, m, exclude={m.addr, m.wr, m.ardy})
+        m.addr(offset + s.addr._reinterpret_cast(m.addr._dtype))
+        m.wr(s.wr & ~offset_en)
+        If(offset_en & s.wr,
+           connect(s.dwr, offset, fit=True)
         )
-        m.ardy(s.ardy | (m.wr & offset_en))
+        s.ardy(m.ardy | (s.wr & offset_en))
 
 
 if __name__ == "__main__":
