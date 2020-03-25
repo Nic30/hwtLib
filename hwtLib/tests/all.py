@@ -30,6 +30,7 @@ from hwtLib.amba.axi_comp.tester_test import AxiTesterTC
 from hwtLib.amba.axi_comp.to_axiLite_test import Axi_to_AxiLite_TC
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
+from hwtLib.amba.axis_comp.fifo_drop_test import AxiSFifoDropTC
 from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
 from hwtLib.amba.axis_comp.frame_deparser.test import AxiS_frameDeparser_TC
 from hwtLib.amba.axis_comp.frame_join.test import AxiS_FrameJoin_TCs
@@ -196,6 +197,8 @@ from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
+from hwtLib.peripheral.ethernet.mac_tx_test import EthernetMac_tx_TCs
+from hwtLib.peripheral.ethernet.mac_rx_test import EthernetMac_rx_TCs
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -331,6 +334,8 @@ suite = testSuiteFromTCs(
     UartTxRxTC,
     SpiMasterTC,
     I2CMasterBitCntrlTC,
+    *EthernetMac_rx_TCs,
+    *EthernetMac_tx_TCs,
     MdioMasterTC,
     Hd44780Driver8bTC,
     CrcUtilsTC,
@@ -371,6 +376,7 @@ suite = testSuiteFromTCs(
     AxiSStoredBurstTC,
     AxiS_en_TC,
     AxiS_measuringFifoTC,
+    AxiSFifoDropTC,
     *AxiS_resizer_TCs,
     AxiS_frameDeparser_TC,
     AxiS_localLinkConvTC,
