@@ -127,7 +127,7 @@ class FifoDrop(Fifo):
                 wr_ptr_tmp(wr_ptr_tmp + 1)
             ),
             If(din.commit,
-               wr_ptr(wr_ptr_tmp)
+               wr_ptr(wr_ptr_tmp.next)
             )
         )
 

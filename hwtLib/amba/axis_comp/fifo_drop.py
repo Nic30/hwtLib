@@ -41,13 +41,12 @@ class AxiSFifoDrop(AxiSCompBase, HandshakedFifoDrop):
         wr_en = ~fIn.wait
         rd(din)(wr_en)
         fIn.discard(self.dataIn_discard)
-        fIn.commit(din.last)
+        fIn.commit(din.valid & din.last)
         fIn.data(packIntf(din, exclude=[vld(din), rd(din)]))
         fIn.en(vld(din) & wr_en)
 
 
 def _example_AxiSFifoDrop():
-
     u = AxiSFifoDrop()
     u.DEPTH = 4
     u.EXPORT_SIZE = True
