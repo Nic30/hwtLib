@@ -14,14 +14,15 @@ class Mi32Wire(Unit):
 
     def _declr(self):
         addClkRstn(self)
-        self.m = Mi32()
-        self.s = Mi32()._m()
+        self.m = Mi32()._m()
+        self.s = Mi32()
 
     def _impl(self):
-        self.s(self.m)
+        self.m(self.s)
 
 
 class Mi32AgentTC(SingleUnitSimTestCase):
+
     @classmethod
     def getUnit(cls) -> Unit:
         u = cls.u = Mi32Wire()
@@ -30,30 +31,30 @@ class Mi32AgentTC(SingleUnitSimTestCase):
     def test_nop(self):
         self.runSim(10 * CLK_PERIOD)
         u = self.u
-        self.assertEmpty(u.m._ag.addrAg.data)
-        self.assertEmpty(u.m._ag.dataAg.data)
         self.assertEmpty(u.s._ag.addrAg.data)
         self.assertEmpty(u.s._ag.dataAg.data)
+        self.assertEmpty(u.m._ag.addrAg.data)
+        self.assertEmpty(u.m._ag.dataAg.data)
 
     def test_read(self):
         u = self.u
         addr_req = [(READ, 0x0), (READ, 0x4), (READ, 0x8)]
-        u.m._ag.req.extend(addr_req)
+        u.s._ag.req.extend(addr_req)
         data = [1, 2, 3]
-        u.s._ag.rData.extend(data)
+        u.m._ag.rData.extend(data)
 
         self.runSim(10 * CLK_PERIOD)
-        self.assertValSequenceEqual([x[:2] for x in u.s._ag.req], addr_req)
-        self.assertValSequenceEqual(u.m._ag.rData, data)
+        self.assertValSequenceEqual([x[:2] for x in u.m._ag.req], addr_req)
+        self.assertValSequenceEqual(u.s._ag.rData, data)
 
     def test_write(self):
         u = self.u
-        m = mask(32//8)
-        ref = [(WRITE, i * 0x4, i+1, m) for i in range(4)]
-        u.m._ag.req.extend(ref)
+        m = mask(32 // 8)
+        ref = [(WRITE, i * 0x4, i + 1, m) for i in range(4)]
+        u.s._ag.req.extend(ref)
 
         self.runSim(10 * CLK_PERIOD)
-        self.assertValSequenceEqual(u.s._ag.req, ref)
+        self.assertValSequenceEqual(u.m._ag.req, ref)
 
 
 if __name__ == "__main__":
