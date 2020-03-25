@@ -173,15 +173,20 @@ class BramPortEndpointArrayTC(AxiLiteEndpointArrayTC):
             self.assertValEqual(u.decoded.field1._ag.mem[i], 2 * MAGIC + i + 1)
 
 
+BramPortEndpointTCs = [
+    BramPortEndpointTC,
+    BramPortEndpointDenseTC,
+    BramPortEndpointArrayTC,
+    BramPortEndpointDenseStartTC
+]
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
     #suite.addTest(BramPortEndpointTC('test_read'))
-    suite.addTest(unittest.makeSuite(BramPortEndpointTC))
-    suite.addTest(unittest.makeSuite(BramPortEndpointDenseTC))
-    suite.addTest(unittest.makeSuite(BramPortEndpointDenseStartTC))
-    suite.addTest(unittest.makeSuite(BramPortEndpointArrayTC))
+    for tc in BramPortEndpointTCs:
+        suite.addTest(unittest.makeSuite(tc))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

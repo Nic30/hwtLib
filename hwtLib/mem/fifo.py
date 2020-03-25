@@ -20,7 +20,7 @@ class Fifo(Unit):
     :ivar size: optional signal with count of items stored in this fifo
     :ivar EXPORT_SPACE: parameter, if true "space" signal is exported
     :ivar space: optional signal with count of items which can be added to this fifo
-    
+
     .. hwt-schematic:: _example_Fifo
     """
 
@@ -58,10 +58,8 @@ class Fifo(Unit):
         dout = self.dataOut
         din = self.dataIn
 
-        # we are storing signals to properties because someone else may use
-        # them
-        self.__fifo_write = fifo_write = s("fifo_write")
-        self.__fifo_read = fifo_read = s("fifo_read")
+        fifo_write = s("fifo_write")
+        fifo_read = s("fifo_read")
 
         # Update Tail pointer as needed
         If(fifo_read,
@@ -135,14 +133,14 @@ class Fifo(Unit):
             )
             self.size(size)
         if self.EXPORT_SPACE:
-            space = r("space_reg", self.size._dtype, DEPTH)
+            space = r("space_reg", self.space._dtype, DEPTH)
             If(fifo_read,
                 If(~fifo_write,
-                   size(space + 1)
+                   space(space + 1)
                 )
             ).Else(
                 If(fifo_write,
-                   size(space - 1)
+                   space(space - 1)
                 )
             )
             self.space(space)

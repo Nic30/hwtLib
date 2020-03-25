@@ -5,10 +5,10 @@ import unittest
 
 from hwt.hdl.constants import WRITE, NOP
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwtLib.abstract.denseMemory import DenseMemory
+from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.structManipulators.mmu_2pageLvl import MMU_2pageLvl
-from pycocotb.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
+from pycocotb.constants import CLK_PERIOD
 
 
 class MMU_2pageLvl_TC(SingleUnitSimTestCase):
@@ -58,7 +58,7 @@ class MMU_2pageLvl_TC(SingleUnitSimTestCase):
         u = self.u
         MAGIC = 45
 
-        m = DenseMemory(self.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
+        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
 
         lvl2pgt = m.calloc(
             self.LVL2_PAGE_TABLE_ITEMS, 4,
@@ -83,7 +83,7 @@ class MMU_2pageLvl_TC(SingleUnitSimTestCase):
         self.randomize(u.virtIn)
         self.randomize(u.physOut)
 
-        m = DenseMemory(self.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
+        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
         virt = u.virtIn._ag.data
         virt.extend([NOP for _ in range(N)])
 

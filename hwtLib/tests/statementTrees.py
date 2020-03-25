@@ -4,7 +4,7 @@
 import re
 import unittest
 
-from hwt.code import c, If, Switch
+from hwt.code import If, Switch
 from hwt.hdl.ifContainter import IfContainer
 from hwt.hdl.switchContainer import SwitchContainer
 from hwt.hdl.types.defs import INT
@@ -46,8 +46,8 @@ class StatementTreesTC(unittest.TestCase):
         b = self.n.sig('b')
 
         obj = If(a,
-                 b(1)
-                 ).Else(
+            b(1)
+        ).Else(
             b(0)
         )
 
@@ -64,14 +64,14 @@ class StatementTreesTC(unittest.TestCase):
         a = self.n.sig('a', dtype=INT)
         b = self.n.sig('b', dtype=INT)
 
-        obj = Switch(a).addCases([(i, c(i, b)) for i in range(4)])
+        obj = Switch(a).addCases([(i, b(i)) for i in range(4)])
         cont, io_change = obj._try_reduce()
         self.assertFalse(io_change)
         self.assertEqual(len(cont), 1)
         cont = cont[0]
 
-        tmpl = SwitchContainer(a, [(i, c(i, b)) for i in range(3)]
-                               + [(None, c(3, b))])
+        tmpl = SwitchContainer(a, [(i, b(i)) for i in range(3)]
+                               + [(None, b(3))])
         self.compareStructure(tmpl, cont)
 
     def test_ifsInSwitch(self):
@@ -89,34 +89,34 @@ class StatementTreesTC(unittest.TestCase):
 
         def tsWaitLogic():
             return If(sd0 & sd1,
-                      c(stT.lenExtr, st)
-                      ).Else(
-                c(stT.ts1Wait, st)
+                      st(stT.lenExtr)
+            ).Else(
+                st(stT.ts1Wait)
             )
         obj = Switch(st)\
             .Case(stT.idle,
-                  tsWaitLogic()
-                  ).Case(stT.tsWait,
-                         tsWaitLogic()
-                         ).Case(stT.ts0Wait,
-                                If(sd0,
-                                   c(stT.lenExtr, st)
-                                   ).Else(
-                                    c(st, st)
-                                )
-                                ).Case(stT.ts1Wait,
-                                       If(sd1,
-                                          c(stT.lenExtr, st)
-                                          ).Else(
-                                           c(st, st)
-                                       )
-                                       ).Case(stT.lenExtr,
-                                              If(cntrlFifoVld & cntrlFifoLast,
-                                                 c(stT.idle, st)
-                                                 ).Else(
-                                                  c(st, st)
-                                              )
-                                              )
+                  tsWaitLogic())\
+            .Case(stT.tsWait,
+                  tsWaitLogic())\
+            .Case(stT.ts0Wait,
+                  If(sd0,
+                     st(stT.lenExtr)
+                  ).Else(
+                      st(st)
+                  ))\
+            .Case(stT.ts1Wait,
+                  If(sd1,
+                        st(stT.lenExtr)
+                  ).Else(
+                        st(st)
+                  ))\
+            .Case(stT.lenExtr,
+                  If(cntrlFifoVld & cntrlFifoLast,
+                     st(stT.idle)
+                  ).Else(
+                      st(st)
+                  )
+            )
 
         cont, io_change = obj._try_reduce()
         self.assertFalse(io_change)
@@ -174,7 +174,7 @@ class StatementTreesTC(unittest.TestCase):
 
         def tsWaitLogic(ifNoTsRd):
             return If(sd0 & sd1,
-                      c(stT.lenExtr, st)
+                      st(stT.lenExtr)
                       ).Else(
                 ifNoTsRd
             )
@@ -182,32 +182,32 @@ class StatementTreesTC(unittest.TestCase):
             .Case(stT.idle,
                   tsWaitLogic(
                       If(cntrlFifoVld,
-                         c(stT.tsWait, st)
+                         st(stT.tsWait)
                          ).Else(
-                          c(st, st)
+                          st(st)
                       )
+                  ))\
+            .Case(stT.tsWait,
+                  tsWaitLogic(st(st)))\
+            .Case(stT.ts0Wait,
+                  If(sd0,
+                     st(stT.lenExtr)
+                  ).Else(
+                      st(st)
+                  ))\
+            .Case(stT.ts1Wait,
+                  If(sd1,
+                     st(stT.lenExtr)
+                  ).Else(
+                      st(st)
+                  ))\
+            .Case(stT.lenExtr,
+                  If(cntrlFifoVld & cntrlFifoLast,
+                     st(stT.idle)
+                  ).Else(
+                      st(st)
                   )
-                  ).Case(stT.tsWait,
-                         tsWaitLogic(c(st, st))
-                         ).Case(stT.ts0Wait,
-                                If(sd0,
-                                   c(stT.lenExtr, st)
-                                   ).Else(
-                                    c(st, st)
-                                )
-                                ).Case(stT.ts1Wait,
-                                       If(sd1,
-                                          c(stT.lenExtr, st)
-                                          ).Else(
-                                           c(st, st)
-                                       )
-                                       ).Case(stT.lenExtr,
-                                              If(cntrlFifoVld & cntrlFifoLast,
-                                                 c(stT.idle, st)
-                                                 ).Else(
-                                                  c(st, st)
-                                              )
-                                              )
+            )
 
         cont, io_change = obj._try_reduce()
         self.assertFalse(io_change)
@@ -267,41 +267,41 @@ class StatementTreesTC(unittest.TestCase):
 
         def tsWaitLogic(ifNoTsRd):
             return If(sd0 & sd1,
-                      c(stT.lenExtr, st)
-                      ).Elif(sd0,
-                             c(stT.ts1Wait, st)
-                             ).Else(
-                ifNoTsRd
+                st(stT.lenExtr)
+            ).Elif(sd0,
+               st(stT.ts1Wait)
+            ).Else(
+               ifNoTsRd
             )
         obj = Switch(st)\
             .Case(stT.idle,
                   tsWaitLogic(
                       If(cntrlFifoVld,
-                         c(stT.tsWait, st)
-                         ).Else(
-                          c(st, st)
+                         st(stT.tsWait)
+                      ).Else(
+                          st(st)
                       )
+                  ))\
+            .Case(stT.tsWait,
+                  tsWaitLogic(st(st)))\
+            .Case(stT.ts0Wait,
+                  If(sd0,
+                     st(stT.lenExtr)
+                  ).Else(
+                      st(st)
+                  ))\
+            .Case(stT.ts1Wait,
+                  If(sd1,
+                     st(stT.lenExtr)
+                  ).Else(
+                     st(st)
+                  ))\
+            .Case(stT.lenExtr,
+                  If(cntrlFifoVld & cntrlFifoLast,
+                     st(stT.idle)
+                  ).Else(
+                     st(st)
                   )
-                  ).Case(stT.tsWait,
-                         tsWaitLogic(c(st, st))
-                         ).Case(stT.ts0Wait,
-                                If(sd0,
-                                   c(stT.lenExtr, st)
-                                   ).Else(
-                                    c(st, st)
-                                )
-                                ).Case(stT.ts1Wait,
-                                       If(sd1,
-                                          c(stT.lenExtr, st)
-                                          ).Else(
-                                           c(st, st)
-                                       )
-                                       ).Case(stT.lenExtr,
-                                              If(cntrlFifoVld & cntrlFifoLast,
-                                                 c(stT.idle, st)
-                                                 ).Else(
-                                                  c(st, st)
-                                              )
                                               )
 
         cont, io_change = obj._try_reduce()

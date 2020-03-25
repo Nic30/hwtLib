@@ -1,12 +1,16 @@
-from hwt.hdl.types.structUtils import HStruct_unpack
+from typing import List, Tuple
+
+from hwt.hdl.types.utils import HdlValue_unpack
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_hs, Axi_strb
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
+from hwtLib.types.ctypes import uint8_t
 from ipCorePackager.intfIpMeta import IntfIpMeta
-from pyMathBitPrecise.bit_utils import mask
+from pyMathBitPrecise.bit_utils import mask, selectBit,\
+    selectBitRange, setBit
 from pycocotb.hdlSimulator import HdlSimulator
 
 
@@ -112,8 +116,11 @@ class AxiStreamAgent(BaseAxiAgent):
             for sig in self._signals:
                 sig.write(None)
         else:
-            assert len(data) == self._sigCnt, (len(data),
-                                               self._signals, self.intf._getFullName())
+            assert len(data) == self._sigCnt, (
+                "invalid number of data for an interface",
+                len(data),
+                self._signals,
+                self.intf._getFullName())
             for sig, val in zip(self._signals, data):
                 sig.write(val)
 
@@ -123,16 +130,23 @@ def packAxiSFrame(dataWidth, structVal, withStrb=False):
     pack data of structure into words on axis interface
     """
     if withStrb:
-        maskAll = mask(dataWidth // 8)
+        byte_cnt = dataWidth // 8
 
     words = iterBits(structVal, bitsInOne=dataWidth,
                      skipPadding=False, fillup=True)
     for last, d in iter_with_last(words):
         assert d._dtype.bit_length() == dataWidth, d._dtype.bit_length()
         if withStrb:
-            # [TODO] mask in last resolved from size of datatype,
-            #        mask for padding
-            yield (d, maskAll, last)
+            word_mask = 0
+            for B_i in range(byte_cnt):
+                m = selectBitRange(d.vld_mask, B_i * 8, 8)
+                if m == 0xff:
+                    word_mask = setBit(word_mask, B_i)
+                else:
+                    assert m == 0, ("Each byte has to be entirely valid"
+                                    " or entirely invalid,"
+                                    " because of mask granularity", m)
+            yield (d, word_mask, last)
         else:
             yield (d, last)
 
@@ -148,7 +162,121 @@ def unpackAxiSFrame(structT, frameData, getDataFn=None, dataWidth=None):
 
         getDataFn = _getDataFn
 
-    return HStruct_unpack(structT, frameData, getDataFn, dataWidth)
+    return HdlValue_unpack(structT, frameData, getDataFn, dataWidth)
+
+
+def _axis_recieve_bytes(ag_data, D_B, use_keep, offset=0) -> Tuple[int, List[int]]:
+    offset = None
+    data_B = []
+    last = False
+    first = True
+    mask_all = mask(D_B)
+    while ag_data:
+        _d = ag_data.popleft()
+        if use_keep:
+            data, keep, last = _d
+            keep = int(keep)
+        else:
+            data, last = _d
+            keep = mask_all
+
+        last = int(last)
+        assert keep > 0
+        if offset is None:
+            # first iteration
+            # expecting potential 0s in keep and the rest 1
+            for i in range(D_B):
+                # i represents number of 0 from te beginning of of the keep
+                # value
+                if keep & (1 << i):
+                    offset = i
+                    break
+            assert offset is not None, keep
+        for i in range(D_B):
+            if selectBit(keep, i):
+                d = selectBitRange(data.val, i * 8, 8)
+                if selectBitRange(data.vld_mask, i * 8, 8) != 0xff:
+                    raise AssertionError(
+                        "Data not valid but should be"
+                        " based on strb/keep B_i:%d, 0x%x, 0x%x" % (i, keep, data.vld_mask))
+                data_B.append(d)
+
+        if first:
+            offset_mask = mask(offset)
+            assert offset_mask & keep == 0, (offset_mask, keep)
+            first = False
+        elif not last:
+            assert keep == mask_all, keep
+        if last:
+            break
+
+    if not last:
+        if data_B:
+            raise ValueError("Unfinished frame", data_B)
+        else:
+            raise ValueError("No frame available")
+
+    return offset, data_B
+
+
+def axis_recieve_bytes(axis: AxiStream) -> Tuple[int, List[int]]:
+    """
+    Read data from AXI Stream agent in simulation
+    and use keep signal to mask out unused bytes
+    """
+    ag_data = axis._ag.data
+    D_B = axis.DATA_WIDTH // 8
+    if axis.ID_WIDTH:
+        raise NotImplementedError()
+    if axis.USER_WIDTH:
+        raise NotImplementedError()
+    if axis.USE_KEEP and axis.USE_STRB:
+        raise NotImplementedError()
+    use_keep = axis.USE_KEEP | axis.USE_STRB
+    return _axis_recieve_bytes(ag_data, D_B, use_keep)
+
+
+def _axis_send_bytes(axis: AxiStream, data_B: List[int], withStrb, offset)\
+        -> List[Tuple[int, int, int]]:
+    t = uint8_t[len(data_B) + offset]
+    # :attention: strb signal is reinterpreted as a keep signal
+    return packAxiSFrame(axis.DATA_WIDTH, t.from_py(
+        [None for _ in range(offset)] + data_B),
+        withStrb=withStrb)
+
+
+def axis_send_bytes(axis: AxiStream, data_B: List[int], offset=0) -> None:
+    """
+    :param axis: AxiStream master which is driver from the simulation
+    :param data_B: bytes to send
+    :param offset: number of empty bytes which should be added before data
+        in frame (and use keep signal to mark such a bytes)
+    """
+    if axis.ID_WIDTH:
+        raise NotImplementedError()
+    if axis.USER_WIDTH:
+        raise NotImplementedError()
+    if axis.USE_KEEP and axis.USE_STRB:
+        raise NotImplementedError()
+    withStrb = axis.USE_KEEP | axis.USE_STRB
+    f = _axis_send_bytes(axis, data_B, withStrb, offset)
+    axis._ag.data.extend(f)
+
+
+def axis_mask_propagate_best_effort(src: AxiStream, dst: AxiStream):
+    res = []
+    if src.USE_STRB:
+        if not src.USE_KEEP and not dst.USE_STRB and dst.USE_KEEP:
+            res.append(dst.keep(src.strb))
+    if src.USE_KEEP:
+        if not src.USE_STRB and not dst.USE_KEEP and dst.USE_STRB:
+            res.append(dst.strb(src.keep))
+    if not src.USE_KEEP and not src.USE_STRB:
+        if dst.USE_KEEP:
+            res.append(dst.keep(mask(dst.keep._dtype.bit_length())))
+        if dst.USE_STRB:
+            res.append(dst.strb(mask(dst.strb._dtype.bit_length())))
+    return res
 
 
 class IP_AXIStream(IntfIpMeta):

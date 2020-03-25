@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
+from unittest import TestCase
+import unittest
+
 from hwt.interfaces.std import VldSynced
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.vhdl.serializer import VhdlSerializer
@@ -8,10 +12,6 @@ from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import toRtl
-import os
-import unittest
-from unittest import TestCase
-
 from hwtLib.amba.axis import AxiStream
 from hwtLib.examples.hierarchy.unitWrapper import UnitWrapper
 from hwtLib.tests.statementTrees import StatementTreesTC
@@ -46,7 +46,6 @@ class UnitWithParams(Unit):
         self.dout(self.din)
 
 
-
 class UnitWrapperTC(TestCase):
 
     def assert_same_as_file(self, s, file_name: str):
@@ -57,7 +56,6 @@ class UnitWrapperTC(TestCase):
         with open(fn) as f:
             ref_s = f.read()
         StatementTreesTC.strStructureCmp(self, s, ref_s)
-
 
     def test_params_of_base_unit(self):
         u = UnitWithParams()

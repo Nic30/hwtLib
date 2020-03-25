@@ -3,6 +3,7 @@
 
 from hwtLib.abstract.streamBuilder import AbstractStreamBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
+from hwtLib.handshaked.fifoAsync import HsFifoAsync
 from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
 from hwtLib.handshaked.reg import HandshakedReg
@@ -18,6 +19,7 @@ class HsBuilder(AbstractStreamBuilder):
     Helper class which simplifies building of large stream paths
     """
     FifoCls = HandshakedFifo
+    FifoAsyncCls = HsFifoAsync
     JoinExplicitCls = NotImplemented
     JoinPrioritizedCls = HsJoinPrioritized
     JoinFairCls = HsJoinFairShare

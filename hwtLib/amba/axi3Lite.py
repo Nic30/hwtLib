@@ -250,6 +250,13 @@ class Axi3LiteAgent(AgentBase):
             )
         return mons
 
+    def create_addr_req(self, *args, **kwargs):
+        if self.intf.HAS_R:
+            ch = self.ar
+        else:
+            ch = self.aw
+        return ch.create_addr_req(*args, **kwargs)
+
 
 #################################################################
 class IP_Axi3Lite(IntfIpMeta):

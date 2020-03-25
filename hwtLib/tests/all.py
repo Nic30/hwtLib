@@ -3,61 +3,60 @@
 
 from unittest import TestLoader, TextTestRunner, TestSuite
 
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
+from hwtLib.abstract.frame_utils.alignment_utils_test import FrameAlignmentUtilsTC
+from hwtLib.abstract.frame_utils.join.test import FrameJoinUtilsTC
+from hwtLib.abstract.template_configured_test import TemplateConfigured_TC
+from hwtLib.amba.axiLite_comp.buff_test import AxiRegTC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import \
     AxiLiteEndpointArrayTC, AxiLiteEndpointStructsInArrayTC
 from hwtLib.amba.axiLite_comp.endpoint_fromInterfaces_test import \
     AxiLiteEndpoint_fromInterfaceTC, AxiLiteEndpoint_fromInterface_arr_TC
 from hwtLib.amba.axiLite_comp.endpoint_struct_test import \
     AxiLiteEndpoint_arrayStruct_TC, AxiLiteEndpoint_struct_TC
-from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
-    AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC, \
-    AxiLiteEndpointMemMasterTC
-from hwtLib.amba.axiLite_comp.reg_test import AxiRegTC
-from hwtLib.amba.axi_ag_test import Axi_ag_TC
-from hwtLib.amba.axi_comp.axi4_rDatapump_test import Axi4_rDatapumpTC,\
-    Axi3_rDatapumpTC
-from hwtLib.amba.axi_comp.axi4_streamToMem_test import Axi4_streamToMemTC
-from hwtLib.amba.axi_comp.axi4_wDatapump_test import Axi4_wDatapumpTC, \
-    Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
+from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTCs
+from hwtLib.amba.axiLite_comp.to_axi_test import AxiLite_to_Axi_TC
+from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import\
+    AxiInterconnectMatrixAddrCrossbar_TCs
+from hwtLib.amba.axi_comp.interconnect.matrixCrossbar_test import \
+    AxiInterconnectMatrixCrossbar_TCs
+from hwtLib.amba.axi_comp.interconnect.matrixR_test import AxiInterconnectMatrixR_TCs
+from hwtLib.amba.axi_comp.interconnect.matrixW_test import AxiInterconnectMatrixW_TCs
+from hwtLib.amba.axi_comp.sim.ag_test import Axi_ag_TC
+from hwtLib.amba.axi_comp.slave_timeout_test import AxiSlaveTimeoutTC
+from hwtLib.amba.axi_comp.stream_to_mem_test import Axi4_streamToMemTC
 from hwtLib.amba.axi_comp.tester_test import AxiTesterTC
+from hwtLib.amba.axi_comp.to_axiLite_test import Axi_to_AxiLite_TC
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
-from hwtLib.amba.axis_comp.frameForge_test import AxiS_frameForge_TC
+from hwtLib.amba.axis_comp.fifo_drop_test import AxiSFifoDropTC
 from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
-from hwtLib.amba.axis_comp.frameParser_test import AxiS_frameParserTC
-from hwtLib.amba.axis_comp.localLinkConv_test import AxiS_localLinkConvTC
+from hwtLib.amba.axis_comp.frame_deparser.test import AxiS_frameDeparser_TC
+from hwtLib.amba.axis_comp.frame_join.test import AxiS_FrameJoin_TCs
+from hwtLib.amba.axis_comp.frame_parser.footer_split_test import AxiS_footerSplitTC
+from hwtLib.amba.axis_comp.frame_parser.test import AxiS_frameParserTC
 from hwtLib.amba.axis_comp.measuringFifo_test import AxiS_measuringFifoTC
-from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_upscale_TC, \
-    AxiS_resizer_downscale_TC, AxiS_resizer_downAndUp_TC, \
-    AxiS_resizer_upAndDown_TC
+from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_TCs
 from hwtLib.amba.axis_comp.storedBurst_test import AxiSStoredBurstTC
-from hwtLib.amba.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC,\
-    AxiInterconnectMatrixAddrCrossbar_1to3TC, AxiInterconnectMatrixAddrCrossbar_3to1TC,\
-    AxiInterconnectMatrixAddrCrossbar_3to3TC
-from hwtLib.amba.interconnect.matrixCrossbar_test import AxiInterconnectMatrixCrossbar_1to1TC,\
-    AxiInterconnectMatrixCrossbar_1to3TC, AxiInterconnectMatrixCrossbar_3to1TC,\
-    AxiInterconnectMatrixCrossbar_3to3TC
-from hwtLib.amba.interconnect.matrixR_test import AxiInterconnectMatrixR_1to1TC,\
-    AxiInterconnectMatrixR_1to3TC, AxiInterconnectMatrixR_3to1TC,\
-    AxiInterconnectMatrixR_3to3TC
-from hwtLib.amba.interconnect.matrixW_test import AxiInterconnectMatrixW_3to3TC,\
-    AxiInterconnectMatrixW_3to1TC, AxiInterconnectMatrixW_1to3TC,\
-    AxiInterconnectMatrixW_1to1TC
-from hwtLib.amba.interconnect.rStrictOrder_test import \
+from hwtLib.amba.datapump.interconnect.rStrictOrder_test import \
     RStrictOrderInterconnectTC
-from hwtLib.amba.interconnect.wStrictOrderComplex_test import \
+from hwtLib.amba.datapump.interconnect.wStrictOrderComplex_test import \
     WStrictOrderInterconnectComplexTC
-from hwtLib.amba.interconnect.wStrictOrder_test import \
+from hwtLib.amba.datapump.interconnect.wStrictOrder_test import \
     WStrictOrderInterconnectTC, WStrictOrderInterconnect2TC
-from hwtLib.avalon.endpoint_test import AvalonMmEndpointTC, \
-    AvalonMmEndpointDenseStartTC, AvalonMmEndpointDenseTC, AvalonMmMemMasterTC
+from hwtLib.amba.datapump.r_test import Axi4_rDatapumpTC,\
+    Axi3_rDatapumpTC
+from hwtLib.amba.datapump.w_test import Axi4_wDatapumpTC, \
+    Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
+from hwtLib.avalon.endpoint_test import AvalonMmEndpointTCs
 from hwtLib.avalon.mmAgent_test import AvalonMmAgentTC
 from hwtLib.avalon.stAgent_test import AvalonStAgentTC
+from hwtLib.cesnet.mi32.axi4Lite_bridges_test import Mi32Axi4LiteBrigesTC
+from hwtLib.cesnet.mi32.mi32agent_test import Mi32AgentTC
+from hwtLib.cesnet.mi32.to_axi4Lite_test import Mi32_to_Axi4LiteTC
+from hwtLib.clocking.cdc_test import CdcTC
 from hwtLib.clocking.clkDivider import ClkDiv3TC
-from hwtLib.clocking.clkSynchronizer_test import ClkSynchronizerTC
 from hwtLib.examples.arithmetic.cntr_test import CntrTC, CntrResourceAnalysisTC
 from hwtLib.examples.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.examples.arithmetic.twoCntrs_test import TwoCntrsTC
@@ -114,6 +113,8 @@ from hwtLib.examples.statements.switchStm_test import SwitchStmTC
 from hwtLib.examples.statements.vldMaskConflictsResolving_test import \
     VldMaskConflictsResolvingTC
 from hwtLib.examples.timers import TimerTC
+from hwtLib.handshaked.cdc_test import HandshakedCdc_slow_to_fast_TC,\
+    HandshakedCdc_fast_to_slow_TC
 from hwtLib.handshaked.fifoAsync_test import HsFifoAsyncTC
 from hwtLib.handshaked.fifo_test import HsFifoTC
 from hwtLib.handshaked.joinFair_test import HsJoinFair_2inputs_TC, \
@@ -126,11 +127,6 @@ from hwtLib.handshaked.resizer_test import HsResizerTC
 from hwtLib.handshaked.splitCopy_test import HsSplitCopyTC, \
     HsSplitCopy_randomized_TC
 from hwtLib.img.charToBitmap_test import CharToBitmapTC
-from hwtLib.ipif.axiLite2ipif_test import AxiLite2ipifTC
-from hwtLib.ipif.endpoint_test import IpifEndpointTC, \
-    IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
-from hwtLib.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
-from hwtLib.ipif.reg_test import IpifRegTC
 from hwtLib.logic.binToOneHot import BinToOneHotTC
 from hwtLib.logic.bitonicSorter import BitonicSorterTC
 from hwtLib.logic.cntrGray import GrayCntrTC
@@ -142,9 +138,7 @@ from hwtLib.logic.oneHotToBin_test import OneHotToBinTC
 from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
 from hwtLib.mem.atomic.flipRam_test import FlipRamTC
 from hwtLib.mem.atomic.flipReg_test import FlipRegTC
-from hwtLib.mem.bramEndpoint_test import BramPortEndpointTC, \
-    BramPortEndpointDenseTC, BramPortEndpointArrayTC, \
-    BramPortEndpointDenseStartTC
+from hwtLib.mem.bramEndpoint_test import BramPortEndpointTCs
 from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.cuckooHashTable_test import CuckooHashTableTC
 from hwtLib.mem.fifoAsync_test import FifoAsyncTC
@@ -152,7 +146,10 @@ from hwtLib.mem.fifo_test import FifoWriterAgentTC, FifoReaderAgentTC, FifoTC
 from hwtLib.mem.hashTableCore_test import HashTableCoreTC
 from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ram_test import RamTC
+from hwtLib.peripheral.displays.hd44780.driver_test import Hd44780Driver8bTC
+from hwtLib.peripheral.ethernet.rmii_adapter_test import RmiiAdapterTC
 from hwtLib.peripheral.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
+from hwtLib.peripheral.mdio.master_test import MdioMasterTC
 from hwtLib.peripheral.segment7_test import Segment7TC
 from hwtLib.peripheral.spi.master_test import SpiMasterTC
 from hwtLib.peripheral.uart.rx_test import UartRxTC, UartRxBasicTC
@@ -194,11 +191,18 @@ from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
-from hwtLib.mi32.mi32agent_test import Mi32AgentTC
-from hwtLib.mi32.mi32_2AxiLite_test import Mi32_2AxiLiteTC
+from hwtLib.xilinx.ipif.axi4Lite_to_ipif_test import Axi4Lite_to_IpifTC
+from hwtLib.xilinx.ipif.buff_test import IpifBuffTC
+from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
+    IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
+from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
+from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
+from hwtLib.peripheral.ethernet.mac_tx_test import EthernetMac_tx_TCs
+from hwtLib.peripheral.ethernet.mac_rx_test import EthernetMac_rx_TCs
+from hwtLib.cesnet.mi32.interconnectMatrix_test import Mi32InterconnectMatrixTC
 
 
-# from hwtLib.peripheral.i2c.i2cAgent_test import I2cAgent_TC
+# from hwt.simulator.simTestCase import SimTestCase
 def testSuiteFromTCs(*tcs):
     loader = TestLoader()
     for tc in tcs:
@@ -268,6 +272,9 @@ suite = testSuiteFromTCs(
     CntrTC,
     CntrResourceAnalysisTC,
     ConstConditionTC,
+    TemplateConfigured_TC,
+    FrameAlignmentUtilsTC,
+    FrameJoinUtilsTC,
 
     # tests of simple units
     TimerTC,
@@ -289,7 +296,7 @@ suite = testSuiteFromTCs(
     TwoCntrsTC,
     SelfRefCntrTC,
     IndexingTC,
-    ClkSynchronizerTC,
+    CdcTC,
     RamResourcesTC,
     SimpleAsyncRamTC,
     SimpleSyncRamTC,
@@ -302,6 +309,8 @@ suite = testSuiteFromTCs(
     HsJoinPrioritized_randomized_TC,
     HsJoinFair_2inputs_TC,
     HsJoinFair_3inputs_TC,
+    HandshakedCdc_slow_to_fast_TC,
+    HandshakedCdc_fast_to_slow_TC,
     RamAsHs_TC,
     LsfrTC,
     ClkDiv3TC,
@@ -325,40 +334,36 @@ suite = testSuiteFromTCs(
     UartRxTC,
     UartTxRxTC,
     SpiMasterTC,
-    # I2cAgent_TC,
     I2CMasterBitCntrlTC,
+    *EthernetMac_rx_TCs,
+    *EthernetMac_tx_TCs,
+    MdioMasterTC,
+    Hd44780Driver8bTC,
     CrcUtilsTC,
     CrcCombTC,
     CrcTC,
 
     BusEndpointTC,
 
-    BramPortEndpointTC,
-    BramPortEndpointDenseTC,
-    BramPortEndpointDenseStartTC,
-    BramPortEndpointArrayTC,
+    *BramPortEndpointTCs,
 
     # avalon tests
     AvalonMmAgentTC,
-    AvalonMmEndpointTC,
-    AvalonMmEndpointDenseStartTC,
-    AvalonMmEndpointDenseTC,
-    AvalonMmMemMasterTC,
+    *AvalonMmEndpointTCs,
     AvalonStAgentTC,
 
     # axi tests
     SimpleAxiRegsTC,
     AxiTC,
-    AxiLiteEndpointTC,
-    AxiLiteEndpointDenseStartTC,
-    AxiLiteEndpointDenseTC,
-    AxiLiteEndpointMemMasterTC,
+    *AxiLiteEndpointTCs,
     AxiLiteEndpointArrayTC,
     AxiLiteEndpointStructsInArrayTC,
     AxiLiteEndpoint_struct_TC,
     AxiLiteEndpoint_arrayStruct_TC,
     AxiLiteEndpoint_fromInterfaceTC,
     AxiLiteEndpoint_fromInterface_arr_TC,
+    AxiLite_to_Axi_TC,
+    Axi_to_AxiLite_TC,
     AxiRegTC,
     AxiTesterTC,
 
@@ -368,16 +373,17 @@ suite = testSuiteFromTCs(
     Axi4_wDatapumpTC,
     Axi3_wDatapump_direct_TC,
     Axi3_wDatapump_small_splitting_TC,
+    AxiSlaveTimeoutTC,
     AxiSStoredBurstTC,
     AxiS_en_TC,
     AxiS_measuringFifoTC,
-    AxiS_resizer_upscale_TC,
-    AxiS_resizer_downscale_TC,
-    AxiS_resizer_downAndUp_TC,
-    AxiS_resizer_upAndDown_TC,
-    AxiS_frameForge_TC,
+    AxiSFifoDropTC,
+    *AxiS_resizer_TCs,
+    AxiS_frameDeparser_TC,
     AxiS_localLinkConvTC,
+    AxiS_footerSplitTC,
     AxiS_frameParserTC,
+    *AxiS_FrameJoin_TCs,
     HandshakedBuilderSimpleTC,
     EthAddrUpdaterTC,
 
@@ -386,25 +392,10 @@ suite = testSuiteFromTCs(
     WStrictOrderInterconnect2TC,
     WStrictOrderInterconnectComplexTC,
 
-    AxiInterconnectMatrixAddrCrossbar_1to1TC,
-    AxiInterconnectMatrixAddrCrossbar_1to3TC,
-    AxiInterconnectMatrixAddrCrossbar_3to1TC,
-    AxiInterconnectMatrixAddrCrossbar_3to3TC,
-
-    AxiInterconnectMatrixCrossbar_1to1TC,
-    AxiInterconnectMatrixCrossbar_1to3TC,
-    AxiInterconnectMatrixCrossbar_3to1TC,
-    AxiInterconnectMatrixCrossbar_3to3TC,
-
-    AxiInterconnectMatrixR_1to1TC,
-    AxiInterconnectMatrixR_1to3TC,
-    AxiInterconnectMatrixR_3to1TC,
-    AxiInterconnectMatrixR_3to3TC,
-
-    AxiInterconnectMatrixW_1to1TC,
-    AxiInterconnectMatrixW_1to3TC,
-    AxiInterconnectMatrixW_3to1TC,
-    AxiInterconnectMatrixW_3to3TC,
+    *AxiInterconnectMatrixAddrCrossbar_TCs,
+    *AxiInterconnectMatrixCrossbar_TCs,
+    *AxiInterconnectMatrixR_TCs,
+    *AxiInterconnectMatrixW_TCs,
 
     Axi_ag_TC,
     Axi4_streamToMemTC,
@@ -422,13 +413,14 @@ suite = testSuiteFromTCs(
     IpifEndpointDenseTC,
     IpifEndpointDenseStartTC,
     IpifEndpointArray,
-    IpifRegTC,
-    AxiLite2ipifTC,
+    IpifBuffTC,
+    Axi4Lite_to_IpifTC,
     IpifInterconnectMatrixTC,
 
     Mi32AgentTC,
-    Mi32_2AxiLiteTC,
-    # Mi32AxiLiteBrigesTC,
+    Mi32InterconnectMatrixTC,
+    Mi32_to_Axi4LiteTC,
+    Mi32Axi4LiteBrigesTC,
 
     # complex units tests
     UnitWrapperTC,
@@ -437,6 +429,8 @@ suite = testSuiteFromTCs(
     HashTableCoreTC,
     CuckooHashTableTC,
     PingResponderTC,
+
+    RmiiAdapterTC,
 )
 
 if __name__ == '__main__':

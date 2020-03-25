@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwtLib.abstract.denseMemory import DenseMemory
+from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.structManipulators.cLinkedListWriter import CLinkedListWriter
 from pycocotb.constants import CLK_PERIOD
 
@@ -116,7 +116,7 @@ class CLinkedListWriterTC(SingleUnitSimTestCase):
         u.baseAddr._ag.dout.append(BASE)
         u.rdPtr._ag.dout.append(ITEMS)
 
-        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rDatapump, u.wDatapump)
+        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, u.rDatapump, u.wDatapump)
 
         self.spotNextBaseAddr(m, BASE, 0x2020)
 
@@ -163,7 +163,7 @@ class CLinkedListWriterTC(SingleUnitSimTestCase):
         u.baseAddr._ag.dout.append(BASE)
         u.rdPtr._ag.dout.append(ITEMS)
 
-        m = DenseMemory(self.DATA_WIDTH, u.clk, u.rDatapump, u.wDatapump)
+        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, u.rDatapump, u.wDatapump)
 
         self.spotNextBaseAddr(m, BASE, BASE2)
         self.spotNextBaseAddr(m, BASE2, BASE + BASE2)

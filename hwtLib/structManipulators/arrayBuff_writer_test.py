@@ -6,7 +6,7 @@ import unittest
 from hwt.hdl.constants import Time, NOP
 from hwt.simulator.simTestCase import SingleUnitSimTestCase, \
     simpleRandomizationProcess
-from hwtLib.abstract.denseMemory import DenseMemory
+from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.structManipulators.arrayBuff_writer import ArrayBuff_writer
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
@@ -137,7 +137,7 @@ class ArrayBuff_writer_TC(SingleUnitSimTestCase):
     def test_fullFill_randomized(self):
         u = self.u
         N = 2 * 16 - 1
-        m = DenseMemory(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
+        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
         ITEM_SIZE = self.DATA_WIDTH // 8
         MAGIC = 88
 
@@ -214,7 +214,7 @@ class ArrayBuff_writer_TC(SingleUnitSimTestCase):
         if N is None:
             N = self.ITEMS + 10
 
-        m = DenseMemory(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
+        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
 
         u.baseAddr._ag.dout.append(BASE)
         for i in range(N):

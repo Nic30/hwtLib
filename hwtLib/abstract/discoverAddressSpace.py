@@ -90,7 +90,7 @@ class AddressSpaceProbe(object):
                 yield offset, parent
                 return
             elif isinstance(parent, BusBridge):
-                i = parent.s
+                i = parent.m
                 yield from self.walkToConverter(self._getMainSigFn(i), offset)
                 return
             elif isinstance(parent, BusInterconnect):
@@ -114,10 +114,11 @@ class AddressSpaceProbe(object):
 
     def _getMainSigFn(self, intf):
         _mainSig = self.getMainSigFn(intf)
-        try:
-            return _mainSig._sig
-        except AttributeError:
+        s = _mainSig._sig
+        if s is None:
             return _mainSig._sigInside
+        else:
+            return s
 
     def _discoverAddressSpace(self, topIntf, offset):
         mainSig = self._getMainSigFn(topIntf)

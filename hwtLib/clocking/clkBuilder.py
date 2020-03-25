@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Union, Dict, Optional, List
 
 from hwt.code import If, log2ceil
 from hwt.hdl.types.bits import Bits
@@ -6,35 +6,30 @@ from hwt.hdl.types.defs import BIT
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
+from hwt.synthesizer.interface import Interface
+from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
+
+AnySig = Union[RtlSignal, Interface]
 
 
-class ClkBuilder(object):
+class ClkBuilder(AbstractComponentBuilder):
     """
+    Helper object which simplifies construction
+    of the oversampling, shared timers, edge detector, ... logic
+
     :ivar compId: last component id used to avoid name collisions
     :ivar parent: unit in which will be all units created by this builder instantiated
     :ivar name: prefix for all instantiated units
     :ivar end: interface where builder ended
     """
-    def __init__(self, parent, srcInterface, name=None):
-        """
-        :param parent: unit in which will be all units created by this builder instantiated
-        :param name: prefix for all instantiated units
-        :param srcInterface: input clock
-        """
-        self.parent = parent
-        self.end = srcInterface
-        if name is None:
-            name = "gen_" + getSignalName(srcInterface)
 
-        self.name = name
-        self.compId = 0
-
-    def timers(self, periods, enableSig=None, rstSig=None):
+    def timers(self, periods: List[Union[int, Tuple[str, int]]],
+               enableSig=None, rstSig=None):
         """
         generate counters specified by count of iterations
 
-        :param periods: list of integers/params which specifies periods of timers
-            or tuple (name, integer/param)
+        :param periods: list tick period or tuple (name, period) for timer,
+            period is sepecified in the number of clk ticks
         :param enableSig: enable signal for all counters
         :param rstSig: reset signal for all counters
         :attention: if tick of timer his high and enableSig falls low tick will stay high
@@ -53,13 +48,15 @@ class ClkBuilder(object):
             timers.append(t)
 
         TimerInfo.resolveSharing(timers)
-        TimerInfo.instantiate(self.parent, timers, enableSig=enableSig, rstSig=rstSig)
+        TimerInfo.instantiate(
+            self.parent, timers,
+            enableSig=enableSig, rstSig=rstSig)
 
         return [timer.tick for timer in timers]
 
     def timer(self, period, enableSig=None, rstSig=None):
         """
-        Same as timers, just for one
+        Same as :func:`.ClkBuilder.timers`, just for single timer intance
         """
         return self.timers([period, ], enableSig=enableSig, rstSig=rstSig)[0]
 
@@ -159,3 +156,19 @@ class ClkBuilder(object):
             return fallSig
         else:
             return (riseSig, fallSig)
+
+    def reg_path(self, din, number_of_regs, name=None, def_val=None):
+        """
+        Instanciate path of registers used to delay the signal or to filter IO
+
+        :return: the last register in path
+        """
+        if name is None:
+            name = "reg_path"
+        for i in range(number_of_regs):
+            reg = self.parent._reg("%s_%d" % (name, i),
+                                   dtype=din._dtype, def_val=def_val)
+            reg(din)
+            din = reg
+
+        return din

@@ -68,8 +68,7 @@ module Showcase0(input [31:0] a,
         cmp_5 = b == $signed(4);
     end
 
-    always_comb
- begin: assig_process_contOut
+    always @(*) begin: assig_process_contOut
         contOut = const_private_signal;
     end
 

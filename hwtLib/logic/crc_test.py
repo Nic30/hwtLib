@@ -42,7 +42,7 @@ class CrcTC(SimTestCase):
 
     def setUpCrc(self, poly, dataWidth=None,
                  refin=True, refout=True,
-                 initval=mask(32), finxor=mask(32)):
+                 initval=mask(32), finxor=mask(32), use_mask=False):
         if dataWidth is None:
             dataWidth = poly.WIDTH
 
@@ -57,6 +57,7 @@ class CrcTC(SimTestCase):
         u.POLY_WIDTH = poly.WIDTH
         u.POLY = vec(poly.POLY, poly.WIDTH)
         u.XOROUT = vec(finxor, poly.WIDTH)
+        u.MASK_GRANULARITY = 8 if use_mask else None
 
         self.compileSimAndStart(u)
         return u
@@ -88,6 +89,42 @@ class CrcTC(SimTestCase):
         u.dataIn._ag.data.append(stoi(inp))
         # u.dataIn._ag.data.extend([ord("a") for _ in range(4)])
         self.runSim(30 * Time.ns)
+        out = int(u.dataOut._ag.data[-1])
+        ref = crc32(inp)
+        self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
+
+    def test_simple_mask_4_outof_4(self):
+        u = self.setUpCrc(CRC_32, use_mask=True)
+        inp = b"abcd"
+
+        u.dataIn._ag.data.append((stoi(inp), mask(32//8), 1))
+        # u.dataIn._ag.data.extend([ord("a") for _ in range(4)])
+        self.runSim(30 * Time.ns)
+        out = int(u.dataOut._ag.data[-1])
+        ref = crc32(inp)
+        self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
+
+    def test_simple_mask_3_outof_4(self):
+        u = self.setUpCrc(CRC_32, use_mask=True)
+        inp = b"abc"
+
+        u.dataIn._ag.data.append((stoi(inp), mask(24//8), 1))
+        # u.dataIn._ag.data.extend([ord("a") for _ in range(4)])
+        self.runSim(30 * Time.ns)
+        out = int(u.dataOut._ag.data[-1])
+        ref = crc32(inp)
+        self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
+
+    def test_simple_mask_7_outof_8(self):
+        u = self.setUpCrc(CRC_32, use_mask=True)
+        inp = b"abcdefg"
+
+        u.dataIn._ag.data.extend([
+            (stoi(inp[0:4]), mask(32//8), 0),
+            (stoi(inp[4:]), mask(24//8), 1)
+        ])
+        # u.dataIn._ag.data.extend([ord("a") for _ in range(4)])
+        self.runSim(40 * Time.ns)
         out = int(u.dataOut._ag.data[-1])
         ref = crc32(inp)
         self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))

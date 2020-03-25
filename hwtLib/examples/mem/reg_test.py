@@ -11,9 +11,10 @@ from hwt.serializer.systemC.serializer import SystemCSerializer
 from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.synthesizer.rtlLevel.signalUtils.exceptions import SignalDriverErr
 from hwt.synthesizer.utils import toRtl
 from hwtLib.examples.mem.reg import DReg, DoubleDReg, OptimizedOutReg, \
-    AsyncResetReg, DDR_Reg, Latch, DReg_asyncRst
+    AsyncResetReg, DDR_Reg, Latch, DReg_asyncRst, RegWhereNextIsOnlyOutput
 from pycocotb.constants import CLK_PERIOD
 
 
@@ -82,6 +83,11 @@ class RegSerializationTC(TestCase):
     def test_optimizedOutReg(self):
         u = OptimizedOutReg()
         self.assertNotIn("unconnected", toRtl(u))
+
+    def test_regWhereNextIsOnlyOutput(self):
+        u = RegWhereNextIsOnlyOutput()
+        with self.assertRaises(SignalDriverErr):
+            toRtl(u)
 
     def test_dreg_vhdl(self):
         s = toRtl(DReg(), serializer=VhdlSerializer)

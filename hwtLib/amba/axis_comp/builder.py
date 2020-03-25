@@ -1,24 +1,27 @@
 from hwt.code import If
+from hwt.hdl.types.hdlType import HdlType
 from hwtLib.abstract.streamBuilder import AbstractStreamBuilder
+from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axis_comp.cdc import AxiSCdc
 from hwtLib.amba.axis_comp.fifo import AxiSFifo
-from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
-from hwtLib.amba.axis_comp.frameParser import AxiS_frameParser
+from hwtLib.amba.axis_comp.fifo_async import AxiSFifoAsync
+from hwtLib.amba.axis_comp.fifo_drop import AxiSFifoDrop
+from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
+from hwtLib.amba.axis_comp.frame_parser import AxiS_frameParser
 from hwtLib.amba.axis_comp.reg import AxiSReg
 from hwtLib.amba.axis_comp.resizer import AxiS_resizer
 from hwtLib.amba.axis_comp.splitCopy import AxiSSplitCopy
 from hwtLib.amba.axis_comp.splitSelect import AxiSSpliSelect
-from hwt.hdl.types.hdlType import HdlType
-from hwtLib.amba.axis import AxiStream
 
 
 class AxiSBuilder(AbstractStreamBuilder):
     """
     Helper class which simplifies building of large stream paths
-
-    :ivar end: actual endpoint where building process will continue
-
     """
     FifoCls = AxiSFifo
+    FifoAsyncCls = AxiSFifoAsync
+    FifoDropCls = AxiSFifoDrop
+    RegCdcCls = AxiSCdc
     RegCls = AxiSReg
     SplitCopyCls = AxiSSplitCopy
     SplitSelectCls = AxiSSpliSelect
@@ -67,7 +70,8 @@ class AxiSBuilder(AbstractStreamBuilder):
         return u.dataOut
 
     @classmethod
-    def forge(cls, parent, typeToForge: HdlType, intfCls: AxiStream, setupFn=None, name:str=None):
+    def forge(cls, parent, typeToForge: HdlType, intfCls: AxiStream,
+              setupFn=None, name:str=None):
         """
         generate frame assembler for specified type
         :note: you can set endianity and others in setupFn
@@ -80,7 +84,7 @@ class AxiSBuilder(AbstractStreamBuilder):
         :return: tuple (builder, interface with forged frame)
         """
 
-        u = AxiS_frameForge(typeToForge)
+        u = AxiS_frameDeparser(typeToForge)
         if setupFn:
             setupFn(u)
 
@@ -96,3 +100,15 @@ class AxiSBuilder(AbstractStreamBuilder):
         self.lastComp = u
         self.end = u.dataOut
         return self, u.dataIn
+
+    def buff_drop(self, items, export_size=False, export_space=False):
+        """
+        Instanciate a FIFO buffer with externally controlled frame drop functionality
+        (use "dataIn_discard" signal)
+        """
+        def set_params(u: AxiSFifoDrop):
+            u.DEPTH = items
+            u.EXPORT_SIZE = export_size
+            u.EXPORT_SPACE = export_space
+
+        return self._genericInstance(self.FifoDropCls, "buff_drop", set_params)

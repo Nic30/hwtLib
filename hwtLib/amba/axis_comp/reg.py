@@ -8,7 +8,7 @@ from hwtLib.handshaked.reg import HandshakedReg
 class AxiSReg(AxiSCompBase, HandshakedReg):
     """
     Register for AxiStream interfaces
-    
+
     :see: :class:`hwtLib.handshaked.reg.HandshakedReg`
     :note: interface is configurable and schematic is example with AxiStream
 

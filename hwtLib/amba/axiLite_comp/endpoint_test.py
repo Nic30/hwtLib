@@ -9,7 +9,7 @@ from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
-from hwtLib.amba.sim.axiMemSpaceMaster import AxiLiteMemSpaceMaster
+from hwtLib.amba.axiLite_comp.sim.mem_space_master import AxiLiteMemSpaceMaster
 from hwtLib.types.ctypes import uint32_t
 from pyMathBitPrecise.bit_utils import mask
 
@@ -260,15 +260,20 @@ class AxiLiteEndpointMemMasterTC(SimTestCase):
         self._test_write_memMaster(structTwoFieldsDense)
 
 
+AxiLiteEndpointTCs = [
+    AxiLiteEndpointTC,
+    AxiLiteEndpointDenseStartTC,
+    AxiLiteEndpointDenseTC,
+    AxiLiteEndpointMemMasterTC
+]
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
     # suite.addTest(AxiLiteEndpointStructsInArray('test_write'))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
-    # suite.addTest(unittest.makeSuite(AxiLiteEndpointMemMasterTC))
+    for tc in AxiLiteEndpointTCs:
+        suite.addTest(unittest.makeSuite(tc))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

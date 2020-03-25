@@ -50,23 +50,14 @@ class UnitWrapper(Unit):
         # prepare signals for interfaces
         for i in self._interfaces:
             assert i._isExtern
-            signals = i._signalsForInterface(self._ctx)
-            self._externInterf.extend(signals)
+            i._signalsForInterface(self._ctx, self._externInterf, reverse_dir=True)
 
     def _connectBaseUnitToThisWrap(self, origToWrapInfMap):
         for baseIntf, wrapIntf in origToWrapInfMap.items():
             if baseIntf._direction is INTF_DIRECTION.MASTER:
-                if isinstance(wrapIntf, list):
-                    for i, _wrapIntf in enumerate(wrapIntf):
-                        _wrapIntf(baseIntf[i])
-                else:
-                    wrapIntf(baseIntf)
+                wrapIntf(baseIntf)
             else:
-                if isinstance(wrapIntf, list):
-                    for i, _wrapIntf in enumerate(wrapIntf):
-                        baseIntf[i](_wrapIntf)
-                else:
-                    baseIntf(wrapIntf)
+                baseIntf(wrapIntf)
 
     def _impl(self):
         self.baseUnit = self._baseUnit

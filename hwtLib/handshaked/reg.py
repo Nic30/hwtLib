@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, c
+from hwt.code import If
 from hwt.interfaces.utils import addClkRstn
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
+@serializeParamsUniq
 class HandshakedReg(HandshakedCompBase):
     """
     Register for Handshaked interface
@@ -52,7 +54,7 @@ class HandshakedReg(HandshakedCompBase):
         )
 
         If(isOccupied,
-           c(outRd, inRd),
+           inRd(outRd),
            outVld(1),
            regs_we(inVld & outRd)
         ).Else(

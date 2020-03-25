@@ -9,7 +9,7 @@ from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwtLib.interfaces.addrDataHs import AddrDataHs
+from hwtLib.interfaces.addr_data_hs import AddrDataHs
 from pycocotb.agents.base import AgentBase
 from pycocotb.hdlSimulator import HdlSimulator
 

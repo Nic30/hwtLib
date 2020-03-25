@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from binascii import crc32, crc_hqx
+import os
 
 from hwt.hdl.constants import Time
 from hwt.hdl.typeShortcuts import vec
@@ -189,7 +190,8 @@ class CrcCombTC(SimTestCase):
             u.dataIn._ag.data.append(
                stoi(inp),
             )
-            self.runSim(20 * Time.ns, name="tmp/test_crc32_%i.vcd" % i)
+            self.runSim(20 * Time.ns, name=os.path.join(self.DEFAULT_LOG_DIR,
+                                                        "test_crc32_%i.vcd" % i))
             out = int(u.dataOut._ag.data[-1])
             ref = crc32(inp) & 0xffffffff
             self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
@@ -213,7 +215,8 @@ class CrcCombTC(SimTestCase):
             u = self.u
 
             u.dataIn._ag.data.append(int.from_bytes(inp, byteorder='little'))
-            self.runSim(20 * Time.ns, name="tmp/test_crc16_%d.vcd" % i)
+            self.runSim(20 * Time.ns, name=os.path.join(self.DEFAULT_LOG_DIR,
+                                                        "test_crc16_%d.vcd" % i))
 
             # crc = 0x449C
             ref = crc_hqx(inp, 0)

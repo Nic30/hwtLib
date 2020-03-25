@@ -13,7 +13,8 @@ class AxiSStoredBurstTC(SimTestCase):
 
     def test_simple(self):
         DATA = [1, 2, 3, 4, 5, 6, 7, 8]
-        u = AxiSStoredBurst(DATA)
+        u = AxiSStoredBurst()
+        u.DATA = DATA
         u.REPEAT = False
         self.compileSimAndStart(u)
         self.randomize(u.dataOut)
@@ -25,7 +26,8 @@ class AxiSStoredBurstTC(SimTestCase):
 
     def test_repeated(self):
         DATA = [1, 2, 3, 4, 5, 6, 7, 8]
-        u = AxiSStoredBurst(DATA)
+        u = AxiSStoredBurst()
+        u.DATA = DATA
         u.REPEAT = True
         self.compileSimAndStart(u)
         self.randomize(u.dataOut)

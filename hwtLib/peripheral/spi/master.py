@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, Concat, sll
+from hwt.code import If, Concat
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
@@ -92,7 +92,7 @@ class SpiMaster(Unit):
         txInitialized = self._reg("txInitialized", def_val=0)
         If(writeTick,
             If(txInitialized,
-                txReg(sll(txReg, 1)),
+                txReg(txReg << 1),
                 If(isLastTick,
                    txInitialized(0),
                 )

@@ -8,14 +8,12 @@ from hwtLib.handshaked.splitCopy import HsSplitCopy
 class AxiSSplitCopy(AxiSCompBase, HsSplitCopy):
     """
     Stream duplicator for AxiStream interfaces
-    
+
     :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
 
     .. hwt-schematic::
     """
     pass
-
-
 
 
 if __name__ == "__main__":

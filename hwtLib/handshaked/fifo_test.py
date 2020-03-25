@@ -23,8 +23,8 @@ class HsFifoTC(FifoTC):
 
     def getFifoItems(self):
         m = self.rtl_simulator.model
-        v = m.fifo_inst.io.memory
-        items = set([int(x.read()) for x in v])
+        mem = m.fifo_inst.io.memory
+        items = set([int(x.read()) for x in mem])
         items.add(int(m.io.dataOut_data.read()))
         return items
 

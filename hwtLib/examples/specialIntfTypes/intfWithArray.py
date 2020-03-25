@@ -50,10 +50,8 @@ from hwtLib.types.ctypes import uint8_t
 #         for x_in, x_out in zip(self.din, self.dout):
 #             for d_in, d_out in zip(x_in, x_out):
 #                 d_out(d_in)
-class InterfaceWithVHDLUnonstrainedArrayImportedType(Unit):
-    """
-    .. hwt-schematic::
-    """
+
+class InterfaceWithVHDLUnconstrainedArrayImportedType(Unit):
 
     def _config(self):
         self.SIZE_X = Param(3)
@@ -89,6 +87,29 @@ class InterfaceWithVHDLUnonstrainedArrayImportedType(Unit):
         for d_in, d_out in zip(self.din, self.dout):
             d_out(d_in)
 
+class InterfaceWithVHDLUnconstrainedArrayImportedType2(Unit):
+
+    def _config(self):
+        self.SIZE_X = Param(3)
+
+    def _declr(self):
+        array1d_t = uint8_t[self.SIZE_X]
+
+        def array1d_t_to_vhdl(serializer, t: HArray, ctx: SerializerCtx, declaration=False):
+            if declaration:
+                return ""
+            return "mem(0 to %d)(%d downto 0)" % (t.size, t.element_t.bit_length())
+
+        array1d_t._to_vhdl = array1d_t_to_vhdl
+        self.dout = Signal(dtype=array1d_t)._m()
+        self.din = HObjList([
+            Signal(dtype=uint8_t)
+            for _ in range(self.SIZE_X)
+        ])
+
+    def _impl(self):
+        for d_in, d_out in zip(self.din, self.dout):
+            d_out(d_in)
 
 class InterfaceWithArrayTypesTC(TestCase):
 
@@ -101,10 +122,15 @@ class InterfaceWithArrayTypesTC(TestCase):
             ref_s = f.read()
         self.assertEqual(s, ref_s)
 
-    def test_InterfaceWithVHDLUnonstrainedArrayImportedType(self):
-        u = InterfaceWithVHDLUnonstrainedArrayImportedType()
+    def test_InterfaceWithVHDLUnconstrainedArrayImportedType(self):
+        u = InterfaceWithVHDLUnconstrainedArrayImportedType()
         s = toRtl(u, serializer=VhdlSerializer)
-        self.assert_same_as_file(s, "InterfaceWithVHDLUnonstrainedArrayImportedType.vhd")
+        self.assert_same_as_file(s, "InterfaceWithVHDLUnconstrainedArrayImportedType.vhd")
+
+    def test_InterfaceWithVHDLUnconstrainedArrayImportedType2(self):
+        u = InterfaceWithVHDLUnconstrainedArrayImportedType2()
+        s = toRtl(u, serializer=VhdlSerializer)
+        self.assert_same_as_file(s, "InterfaceWithVHDLUnconstrainedArrayImportedType2.vhd")
 
 
 if __name__ == "__main__":
@@ -115,5 +141,6 @@ if __name__ == "__main__":
     runner.run(suite)
     # print(toRtl(Interface1d()))
     # print(toRtl(Interface2d()))
-    print(toRtl(InterfaceWithVHDLUnonstrainedArrayImportedType()))
+    #print(toRtl(InterfaceWithVHDLUnconstrainedArrayImportedType()))
+    #print(toRtl(InterfaceWithVHDLUnconstrainedArrayImportedType2()))
 

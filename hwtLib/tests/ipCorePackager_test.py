@@ -13,7 +13,7 @@ from hwt.interfaces.std_ip_defs import IP_Handshake
 
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
-from hwtLib.amba.axi_comp.axi4_streamToMem import Axi4streamToMem
+from hwtLib.amba.axi_comp.stream_to_mem import Axi4streamToMem
 from hwtLib.amba.axis_comp.en import AxiS_en
 from hwtLib.mem.fifo import Fifo
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl

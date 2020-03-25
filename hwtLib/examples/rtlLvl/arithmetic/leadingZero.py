@@ -5,6 +5,7 @@ from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
+from ipCorePackager.constants import DIRECTION
 
 
 def LeadingZero():
@@ -27,7 +28,7 @@ def LeadingZero():
                leadingZeroTop
             )
 
-    interf = [s_in, index]
+    interf = {s_in: DIRECTION.IN, index: DIRECTION.OUT}
 
     return n, interf
 

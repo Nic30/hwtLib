@@ -3,11 +3,10 @@
 
 import unittest
 
+from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked
-
 from hwtLib.handshaked.fifoAsync import HsFifoAsync
 from hwtLib.handshaked.fifo_test import HsFifoTC
-from hwt.hdl.constants import Time
 
 
 class HsFifoAsyncTC(HsFifoTC):
@@ -26,7 +25,8 @@ class HsFifoAsyncTC(HsFifoTC):
         HsFifoTC.setUp(self)
         u = self.u
         u.dataIn_clk._ag.period = self.IN_CLK
-        u.rst_n._ag.initDelay += self.IN_CLK
+        for rst in [u.dataIn_rst_n, u.dataOut_rst_n]:
+            rst._ag.initDelay += self.IN_CLK
 
     def test_tryMore2(self, capturedOffset=0):
         # capturedOffset=1 because handshaked aget can act in same clk
@@ -35,9 +35,7 @@ class HsFifoAsyncTC(HsFifoTC):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(HandshakedFifoAsyncTC('test_fifoWriterDisable'))
-    # suite.addTest(HandshakedFifoAsyncTC('test_fifoSingleWord'))
-    # suite.addTest(HandshakedFifoAsyncTC('test_normalOp'))
+    # suite.addTest(HsFifoAsyncTC('test_stuckedData'))
     suite.addTest(unittest.makeSuite(HsFifoAsyncTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

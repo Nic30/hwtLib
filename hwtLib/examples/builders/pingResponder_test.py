@@ -4,18 +4,17 @@
 import socket
 
 from hwt.code import sizeof
-from hwt.hdl.types.structUtils import HStruct_unpack
 from hwt.simulator.agentConnector import valToInt
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.vectorUtils import iterBits
-from hwtLib.amba.axis import unpackAxiSFrame
-from hwtLib.amba.axis_comp.frameParser_test import packAxiSFrame
+from hwtLib.amba.axis import unpackAxiSFrame, packAxiSFrame
 from hwtLib.examples.builders.pingResponder import PingResponder, \
     echoFrame_t
-from hwtLib.types.net.eth import parse_eth_addr, ETHER_TYPE
+from hwtLib.peripheral.ethernet.types import parse_eth_addr, ETHER_TYPE
 from hwtLib.types.net.icmp import ICMP_TYPE, ICMP_echo_header_t
 from hwtLib.types.net.ip import IPv4, IHL_DEFAULT, IPv4Header_t, IP_PROTOCOL
 from pycocotb.constants import CLK_PERIOD
+from hwt.hdl.types.utils import HdlValue_unpack
 
 
 def carry_around_add(a, b):
@@ -137,7 +136,7 @@ class PingResponderTC(SingleUnitSimTestCase):
         asBytes = iterBits(f, bitsInOne=8, skipPadding=False)
         asBytes = [valToInt(x) for x in asBytes]
 
-        f_out = HStruct_unpack(echoFrame_t, asBytes, dataWidth=8)
+        f_out = HdlValue_unpack(echoFrame_t, asBytes, dataWidth=8)
 
         self.assertEqual(f, f_out)
 
@@ -146,7 +145,7 @@ class PingResponderTC(SingleUnitSimTestCase):
         asBytes = iterBits(f, bitsInOne=8, skipPadding=False)
         asBytes = [valToInt(x) for x in asBytes]
 
-        f_out = HStruct_unpack(echoFrame_t, asBytes, dataWidth=8)
+        f_out = HdlValue_unpack(echoFrame_t, asBytes, dataWidth=8)
 
         self.assertEqual(_f, f_out)
 
@@ -168,7 +167,7 @@ class PingResponderTC(SingleUnitSimTestCase):
         # print("")
         # print("f", f)
         # print("res", res)
-        # print("model_res", HStruct_unpack(echoFrame_t, model_res, dataWidth=8))
+        # print("model_res", HdlValue_unpack(echoFrame_t, model_res, dataWidth=8))
 
         self.assertEqual(_res, model_res)
 

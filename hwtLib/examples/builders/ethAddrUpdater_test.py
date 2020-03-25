@@ -6,7 +6,7 @@ from hwt.hdl.transTmpl import TransTmpl
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from math import ceil
 
-from hwtLib.amba.sim.axi3DenseMem import Axi3DenseMem
+from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.examples.builders.ethAddrUpdater import EthAddrUpdater, \
     frameHeader
 from pycocotb.constants import CLK_PERIOD
@@ -33,7 +33,7 @@ class EthAddrUpdaterTC(SingleUnitSimTestCase):
         r(u.axi_m.w)
         r(u.axi_m.b)
 
-        m = Axi3DenseMem(u.clk, u.axi_m)
+        m = AxiSimRam(u.axi_m)
         tmpl = TransTmpl(frameHeader)
         frameTmpl = list(FrameTmpl.framesFromTransTmpl(tmpl, DW))[0]
 

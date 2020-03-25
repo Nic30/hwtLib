@@ -3,7 +3,7 @@
 
 from hwt.code import log2ceil
 from hwt.hdl.constants import Time
-from hwt.interfaces.std import s, VectSignal
+from hwt.interfaces.std import Signal, VectSignal
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
@@ -23,7 +23,7 @@ class BinToOneHot(Unit):
 
     def _declr(self):
         self.din = VectSignal(log2ceil(self.DATA_WIDTH))
-        self.en = s()
+        self.en = Signal()
         self.dout = VectSignal(self.DATA_WIDTH)._m()
 
     def _impl(self):

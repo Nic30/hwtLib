@@ -4,7 +4,7 @@
 import unittest
 
 from hwtLib.amba.constants import BYTES_IN_TRANS
-from hwtLib.amba.interconnect.base import getSizeWidth
+from hwtLib.amba.axi_comp.interconnect.base import getSizeWidth
 
 
 class AxiTC(unittest.TestCase):

@@ -215,15 +215,20 @@ class AvalonMmMemMasterTC(AxiLiteEndpointMemMasterTC):
             [RESP_OKAY for _ in range(4)])
 
 
+AvalonMmEndpointTCs = [
+    AvalonMmEndpointTC,
+    AvalonMmEndpointDenseStartTC,
+    AvalonMmEndpointDenseTC,
+    AvalonMmMemMasterTC
+]
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
     # suite.addTest(AvalonMmEndpointTC('test_write'))
-    suite.addTest(unittest.makeSuite(AvalonMmEndpointTC))
-    suite.addTest(unittest.makeSuite(AvalonMmEndpointDenseStartTC))
-    suite.addTest(unittest.makeSuite(AvalonMmEndpointDenseTC))
-    suite.addTest(unittest.makeSuite(AvalonMmMemMasterTC))
+    for tc in AvalonMmEndpointTCs:
+        suite.addTest(unittest.makeSuite(tc))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

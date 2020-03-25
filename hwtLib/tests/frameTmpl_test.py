@@ -2,11 +2,12 @@ import unittest
 
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.structUtils import HStruct_selectFields
 from hwt.hdl.types.union import HUnion
+from hwtLib.peripheral.ethernet.types import Eth2Header_t
 from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t, uint8_t
-from hwtLib.types.net.eth import Eth2Header_t
 from hwtLib.types.net.ip import IPv4Header_t
 
 
@@ -138,15 +139,15 @@ sWithPadding_str = """<FrameTmpl start:0, end:384
      -----------------------------------------------------------------
 >"""
 
-sWithPaddingMultiframe_str = [
-"""<FrameTmpl start:0, end:128
+sWithPaddingMultiframe_str = ["""\
+<FrameTmpl start:0, end:128
      63                                                             0
      -----------------------------------------------------------------
 0    |                            item0_0                            |
 1    |                            item0_1                            |
      -----------------------------------------------------------------
->""",
-"""<FrameTmpl start:192, end:320
+>""", """\
+<FrameTmpl start:192, end:320
      63                                                             0
      -----------------------------------------------------------------
 0    |                            item1_0                            |
@@ -199,15 +200,15 @@ frameHeader_str = """<FrameTmpl start:0, end:320
      -----------------------------------------------------------------
 >"""
 
-frameHeader_split_str = [
-"""<FrameTmpl start:0, end:128
+frameHeader_split_str = ["""\
+<FrameTmpl start:0, end:128
      63                                                             0
      -----------------------------------------------------------------
 0    |    eth.src    |                    eth.dst                    |
 1    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|            eth.src            |
      -----------------------------------------------------------------
->""",
-"""<FrameTmpl start:192, end:320
+>""", """\
+<FrameTmpl start:192, end:320
      63                                                             0
      -----------------------------------------------------------------
 0    |   ipv4.dst    |           ipv4.src            |XXXXXXXXXXXXXXX|
@@ -278,7 +279,72 @@ union0_16b_str = """<FrameTmpl start:0, end:16
 >"""
 
 
+stream0 = HStream(uint8_t, frame_len=2)
+
+stream0_8bit_str = """\
+<FrameTmpl start:0, end:16
+     7      0
+     ---------
+0    |       |
+1    |       |
+     ---------
+>"""
+
+stream0_16bit_str = """<FrameTmpl start:0, end:16
+     15             0
+     -----------------
+0    |       |       |
+     -----------------
+>"""
+
+stream0_64bit_str = """<FrameTmpl start:0, end:64
+     63                                                             0
+     -----------------------------------------------------------------
+0    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|       |       |
+     -----------------------------------------------------------------
+>"""
+
+stream1 = HStream(uint8_t, frame_len=2)
+stream1_32bit_str = """<FrameTmpl start:0, end:32
+     31                             0
+     ---------------------------------
+0    |XXXXXXXXXXXXXXX|       |       |
+     ---------------------------------
+>"""
+
+
 class FrameTmplTC(unittest.TestCase):
+    def test_stream0(self):
+        DW = 8
+        tmpl = TransTmpl(stream0)
+        frames = list(FrameTmpl.framesFromTransTmpl(tmpl, DW))
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(stream0_8bit_str, frames[0].__repr__())
+
+    def test_stream0_16(self):
+        DW = 16
+        tmpl = TransTmpl(stream0)
+        frames = list(FrameTmpl.framesFromTransTmpl(tmpl, DW))
+        self.assertEqual(len(frames), 1)
+        s = frames[0].__repr__()
+        self.assertEqual(stream0_16bit_str, s)
+
+    def test_stream0_64(self):
+        DW = 64
+        tmpl = TransTmpl(stream0)
+        frames = list(FrameTmpl.framesFromTransTmpl(tmpl, DW))
+        self.assertEqual(len(frames), 1)
+        s = frames[0].__repr__()
+        self.assertEqual(stream0_64bit_str, s)
+
+    def test_stream1_32(self):
+        DW = 32
+        tmpl = TransTmpl(stream0)
+        frames = list(FrameTmpl.framesFromTransTmpl(tmpl, DW))
+        self.assertEqual(len(frames), 1)
+        s = frames[0].__repr__()
+        self.assertEqual(stream1_32bit_str, s)
+
     def test_s0at64bit(self):
         DW = 64
         tmpl = TransTmpl(s0)
@@ -370,7 +436,8 @@ class FrameTmplTC(unittest.TestCase):
         frames = list(frames)
         self.assertEqual(len(frames), 2)
         for frame, s, end in zip(frames, frameHeader_split_str, [2 * DW, 5 * DW]):
-            self.assertEqual(s, frame.__repr__())
+            _s = frame.__repr__()
+            self.assertEqual(s, _s)
             self.assertEqual(frame.endBitAddr, end)
 
     def test_s2_oneFrame(self):
@@ -434,7 +501,7 @@ class FrameTmplTC(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(FrameTmplTC('test_frameHeader'))
+    # suite.addTest(FrameTmplTC('test_stream1_32'))
     suite.addTest(unittest.makeSuite(FrameTmplTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

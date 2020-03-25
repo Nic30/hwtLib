@@ -106,11 +106,15 @@ def walkStructIntfAndIntfMap(structIntf, intfMap):
 class BusEndpoint(Unit):
     """
     Abstract unit
+
     Delegate request from bus to fields of structure
     (fields are represented by various interfaces)
     write has higher priority
 
+    :note: implementation is usually address decoder
+
     .. aafig::
+
         +------+    +----------+     +---------+
         | bus  +--->|          +---->| field0  |
         |      |<---+          |<----+         |

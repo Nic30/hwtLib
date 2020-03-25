@@ -221,13 +221,18 @@ class AxiS_resizer_upAndDown_TC(SingleUnitSimTestCase):
         self.assertValSequenceEqual(u.dataOut._ag.data, data)
 
 
+AxiS_resizer_TCs = [
+    AxiS_resizer_upscale_TC,
+    AxiS_resizer_downscale_TC,
+    AxiS_resizer_downAndUp_TC,
+    AxiS_resizer_upAndDown_TC
+]
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     # suite.addTest(AxiS_resizer_downscale_TC('test_noLast'))
-    suite.addTest(unittest.makeSuite(AxiS_resizer_upscale_TC))
-    suite.addTest(unittest.makeSuite(AxiS_resizer_downscale_TC))
-    suite.addTest(unittest.makeSuite(AxiS_resizer_downAndUp_TC))
-    suite.addTest(unittest.makeSuite(AxiS_resizer_upAndDown_TC))
+    for tc in AxiS_resizer_TCs:
+        suite.addTest(unittest.makeSuite(tc))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

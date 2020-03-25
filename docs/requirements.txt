@@ -1,3 +1,11 @@
 sphinx_bootstrap_theme
 aafigure
-sphinx-hwt>=2.0
+
+# all hwt deps from repositories, equivalent to just sphinx-hwt
+git+git://github.com/Nic30/pyMathBitPrecise#egg=pyMathBitPrecise
+git+git://github.com/Nic30/pyDigitalWaveTools#egg=pyDigitalWaveTools
+git+git://github.com/Nic30/ipCorePackager#egg=ipCorePackager
+git+git://github.com/Nic30/pycocotb#egg=pycocotb
+git+git://github.com/Nic30/hwt#egg=hwt
+git+git://github.com/Nic30/hwtGraph#egg=hwt
+git+git://github.com/Nic30/sphinx-hwt#egg=hwtLib

@@ -5,6 +5,7 @@ from hwt.code import If
 from hwt.hdl.types.enum import HEnum
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
+from ipCorePackager.constants import DIRECTION
 
 
 def AxiReaderCore():
@@ -34,7 +35,13 @@ def AxiReaderCore():
         )
     )
 
-    return n, [rSt, arRd, arVld, rVld, rRd]
+    return n, {
+        rSt: DIRECTION.OUT,
+        arRd: DIRECTION.IN,
+        arVld: DIRECTION.IN,
+        rVld: DIRECTION.IN,
+        rRd: DIRECTION.IN
+    }
 
 axiReaderCoreExpected = """library IEEE;
 use IEEE.std_logic_1164.all;

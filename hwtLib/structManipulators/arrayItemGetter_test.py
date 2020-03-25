@@ -3,8 +3,8 @@
 
 import unittest
 
-from hwt.simulator.simTestCase import SimTestCase, SingleUnitSimTestCase
-from hwtLib.abstract.denseMemory import DenseMemory
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.structManipulators.arrayItemGetter import ArrayItemGetter
 from pycocotb.constants import CLK_PERIOD
 
@@ -37,7 +37,7 @@ class ArrayItemGetterTC(SingleUnitSimTestCase):
         u.base._ag.data.append(BASE)
         u.index._ag.data.append(INDEX)
 
-        m = DenseMemory(self.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
+        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
         m.data[BASE // 8 + INDEX] = MAGIC
 
         self.runSim(t * CLK_PERIOD)
@@ -68,7 +68,7 @@ class ArrayItemGetter2in1WordTC(SingleUnitSimTestCase):
         N = self.ITEMS
         t = 10 + N
 
-        m = DenseMemory(self.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
+        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
         base = m.calloc(self.ITEMS,
                         self.ITEM_WIDTH // 8,
                         initValues=[

@@ -108,6 +108,18 @@ class OptimizedOutReg(DReg):
         self._reg("unconnected")
 
 
+class RegWhereNextIsOnlyOutput(DReg):
+    """
+    (This is an error example)
+    """
+    def _impl(self):
+        r = self._reg("r")
+        # if clk._risingEdge():
+        #    r = r.next
+        # r.next = r
+        self.dout(r.next)
+
+
 class Latch(Unit):
     """
     .. hwt-schematic::
@@ -147,5 +159,5 @@ class DReg_asyncRst(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import toRtl
-    u = DDR_Reg()
+    u = OptimizedOutReg()
     print(toRtl(u))

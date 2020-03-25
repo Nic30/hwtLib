@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
-from hwt.hdl.types.struct import HStruct
-from hwtLib.structManipulators.structReader import StructReader
-from hwtLib.abstract.denseMemory import DenseMemory
 from hwt.hdl.constants import Time
-from hwt.synthesizer.vectorUtils import iterBits
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.types.struct import HStruct
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.vectorUtils import iterBits
+from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
+from hwtLib.structManipulators.structReader import StructReader
+from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
 
 
 s0 = HStruct(
@@ -54,7 +54,7 @@ class StructReaderTC(SimTestCase):
         N = 3
         self.compileSimAndStart(u)
 
-        m = DenseMemory(DW, u.clk, u.rDatapump)
+        m = AxiDpSimRam(DW, u.clk, u.rDatapump)
 
         # init expectedFieldValues
         expectedFieldValues = {}
