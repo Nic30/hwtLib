@@ -5,8 +5,8 @@ from unittest import TestLoader, TextTestRunner, TestSuite
 
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
-from hwtLib.abstract.frame_join_utils.test import FrameJoinUtilsTC
-from hwtLib.abstract.streamAlignmentUtils_test import StreamJoiningUtilsTC
+from hwtLib.abstract.frame_utils.alignment_utils_test import FrameAlignmentUtilsTC
+from hwtLib.abstract.frame_utils.join.test import FrameJoinUtilsTC
 from hwtLib.abstract.template_configured_test import TemplateConfigured_TC
 from hwtLib.amba.axiLite_comp.buff_test import AxiRegTC
 from hwtLib.amba.axiLite_comp.endpoint_arr_test import \
@@ -51,6 +51,9 @@ from hwtLib.amba.datapump.w_test import Axi4_wDatapumpTC, \
 from hwtLib.avalon.endpoint_test import AvalonMmEndpointTCs
 from hwtLib.avalon.mmAgent_test import AvalonMmAgentTC
 from hwtLib.avalon.stAgent_test import AvalonStAgentTC
+from hwtLib.cesnet.mi32.axi4Lite_bridges_test import Mi32Axi4LiteBrigesTC
+from hwtLib.cesnet.mi32.mi32agent_test import Mi32AgentTC
+from hwtLib.cesnet.mi32.to_axi4Lite_test import Mi32_to_Axi4LiteTC
 from hwtLib.clocking.cdc_test import CdcTC
 from hwtLib.clocking.clkDivider import ClkDiv3TC
 from hwtLib.examples.arithmetic.cntr_test import CntrTC, CntrResourceAnalysisTC
@@ -123,11 +126,6 @@ from hwtLib.handshaked.resizer_test import HsResizerTC
 from hwtLib.handshaked.splitCopy_test import HsSplitCopyTC, \
     HsSplitCopy_randomized_TC
 from hwtLib.img.charToBitmap_test import CharToBitmapTC
-from hwtLib.xilinx.ipif.axi4Lite_to_ipif_test import Axi4Lite_to_IpifTC
-from hwtLib.xilinx.ipif.buff_test import IpifBuffTC
-from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
-    IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
-from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.logic.binToOneHot import BinToOneHotTC
 from hwtLib.logic.bitonicSorter import BitonicSorterTC
 from hwtLib.logic.cntrGray import GrayCntrTC
@@ -147,9 +145,6 @@ from hwtLib.mem.fifo_test import FifoWriterAgentTC, FifoReaderAgentTC, FifoTC
 from hwtLib.mem.hashTableCore_test import HashTableCoreTC
 from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ram_test import RamTC
-from hwtLib.cesnet.mi32.axi4Lite_bridges_test import Mi32Axi4LiteBrigesTC
-from hwtLib.cesnet.mi32.mi32agent_test import Mi32AgentTC
-from hwtLib.cesnet.mi32.to_axi4Lite_test import Mi32_to_Axi4LiteTC
 from hwtLib.peripheral.displays.hd44780.driver_test import Hd44780Driver8bTC
 from hwtLib.peripheral.ethernet.rmii_adapter_test import RmiiAdapterTC
 from hwtLib.peripheral.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
@@ -195,6 +190,11 @@ from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
+from hwtLib.xilinx.ipif.axi4Lite_to_ipif_test import Axi4Lite_to_IpifTC
+from hwtLib.xilinx.ipif.buff_test import IpifBuffTC
+from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
+    IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
+from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
 
 
@@ -269,6 +269,7 @@ suite = testSuiteFromTCs(
     CntrResourceAnalysisTC,
     ConstConditionTC,
     TemplateConfigured_TC,
+    FrameAlignmentUtilsTC,
     FrameJoinUtilsTC,
 
     # tests of simple units
@@ -422,7 +423,6 @@ suite = testSuiteFromTCs(
     PingResponderTC,
 
     RmiiAdapterTC,
-    StreamJoiningUtilsTC,
 )
 
 if __name__ == '__main__':
