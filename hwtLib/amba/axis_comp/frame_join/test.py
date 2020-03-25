@@ -141,12 +141,6 @@ class AxiS_FrameJoin_1x_2B_TC(SingleUnitSimTestCase):
 
         self._test_pass_data(IN_FRAMES)
 
-    # @classmethod
-    # def setUpClass(cls):
-    #     super(SingleUnitSimTestCase, cls).setUpClass()
-    #     u = cls.getUnit()
-    #     cls.compileSim(u, build_dir="tmp")
-
 
 class AxiS_FrameJoin_1x_2B_len1_TC(AxiS_FrameJoin_1x_2B_TC):
     D_B = 2

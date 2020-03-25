@@ -14,12 +14,6 @@ class EthernetMacRx_8b_TC(SingleUnitSimTestCase):
     DW = 8
 
     @classmethod
-    def setUpClass(cls):
-        super(SingleUnitSimTestCase, cls).setUpClass()
-        u = cls.getUnit()
-        cls.compileSim(u, build_dir="tmp/")
-
-    @classmethod
     def getUnit(cls):
         u = cls.u = EthernetMac()
         u.DEFAULT_MAC_ADDR = format_eth_addr(REF_FRAME[0:6])
