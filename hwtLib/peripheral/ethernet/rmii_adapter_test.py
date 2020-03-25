@@ -2,34 +2,9 @@ import unittest
 
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
 from hwtLib.peripheral.ethernet.constants import ETH
-from hwtLib.peripheral.ethernet.rmii import Rmii
-from hwtLib.peripheral.ethernet.rmii_adapter import RmiiAdapter, VldSyncedDataErrLast
+from hwtLib.peripheral.ethernet.rmii_adapter import RmiiAdapter
 from pycocotb.constants import Time
-
-
-class RmiiAdapaterSingleClk(Unit):
-    """
-    RmiiAdapater variant with just a single clock (eth.ref_clk)
-    """
-
-    def _declr(self):
-        self.eth = Rmii()._m()
-        self.tx = AxiStream()
-        self.rx = VldSyncedDataErrLast()._m()
-        for ch in [self.rx, self.tx]:
-            ch.DATA_WIDTH = 8
-
-        self.core = RmiiAdapter()
-
-    def _impl(self):
-        c = self.core
-        c.clk(self.eth.ref_clk)
-        self.eth(c.eth)
-        c.tx(self.tx)
-        self.rx(c.rx)
 
 
 class RmiiAdapterTC(SingleUnitSimTestCase):
