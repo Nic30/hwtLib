@@ -17,7 +17,7 @@ and generates a address decoders and convertors to other intefaces if requested.
 Another example is AxiS_frameParser, which takes a hdl type description of output data and can be also used to change alignment of a frame or split/cut frame
 as the type description can also contains unions, struct, streams, padding and other hdl data types.
 
-Same applies to simulation. Instead of hardcoding a address values in to testbench you should use a AddressSpaceProbe to discover
+Same applies to simulation. Instead of hardcoding address values in to testbench you should use a AddressSpaceProbe to discover
 a addresses of mapped memory cells and use this object to communicate through the bus interface, because you want to write a verification
 which does not depends on interface used nor manually compute addresses for each component variant.
 
