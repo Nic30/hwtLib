@@ -4,19 +4,16 @@
 from hwt.hdl.constants import READ, WRITE
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axiLite_comp.sim.ram import Axi4LiteSimRam
+from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.cesnet.mi32.to_axi4Lite import Mi32_to_Axi4Lite
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 
 
 class Mi32_to_Axi4LiteTC(SingleUnitSimTestCase):
+
     def randomize_all(self):
-        u = self.u
-        self.randomize(u.m.ar)
-        self.randomize(u.m.aw)
-        self.randomize(u.m.r)
-        self.randomize(u.m.w)
-        self.randomize(u.m.b)
+        axi_randomize_per_channel(self, self.u.m)
 
     @classmethod
     def getUnit(cls):

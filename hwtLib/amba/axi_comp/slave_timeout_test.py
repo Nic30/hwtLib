@@ -1,5 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi4 import Axi4
+from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.slave_timeout import AxiSlaveTimeout
 from hwtLib.amba.constants import RESP_SLVERR, RESP_OKAY
 from pyMathBitPrecise.bit_utils import mask
@@ -15,18 +19,10 @@ class AxiSlaveTimeoutTC(SingleUnitSimTestCase):
         cls.u = u
         return u
 
-    def randomize_axi(self, axi):
-        ra = self.randomize
-        ra(axi.aw)
-        ra(axi.b)
-        ra(axi.w)
-        ra(axi.ar)
-        ra(axi.r)
-
     def randomize_all(self):
         u = self.u
         for axi in [u.m, u.s]:
-            self.randomize_axi(axi)
+            axi_randomize_per_channel(self, axi)
 
     def test_nop(self):
         u = self.u

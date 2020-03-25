@@ -12,6 +12,7 @@ from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 from hwtLib.amba.axiLite_comp.sim.mem_space_master import AxiLiteMemSpaceMaster
 from hwtLib.types.ctypes import uint32_t
 from pyMathBitPrecise.bit_utils import mask
+from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 
 
 structTwoFields = HStruct(
@@ -79,12 +80,7 @@ class AxiLiteEndpointTC(SimTestCase):
             if (intf not in (u.clk, u.rst_n, u.bus)
                     and not isinstance(intf, BramPort_withoutClk)):
                 self.randomize(intf)
-
-        self.randomize(u.bus.ar)
-        self.randomize(u.bus.aw)
-        self.randomize(u.bus.r)
-        self.randomize(u.bus.w)
-        self.randomize(u.bus.b)
+        axi_randomize_per_channel(self, u.bus)
 
     def mySetUp(self, data_width=32, STRUCT_TEMPLATE=None):
         if STRUCT_TEMPLATE is None:

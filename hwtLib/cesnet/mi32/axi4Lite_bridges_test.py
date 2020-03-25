@@ -12,6 +12,7 @@ from hwtLib.cesnet.mi32.axi4Lite_to_mi32 import Axi4Lite_to_Mi32
 from hwtLib.cesnet.mi32.intf import Mi32
 from hwtLib.cesnet.mi32.to_axi4Lite import Mi32_to_Axi4Lite
 from pycocotb.constants import CLK_PERIOD
+from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 
 
 class Axi4LiteMi32Bridges(Unit):
@@ -50,11 +51,7 @@ class Mi32Axi4LiteBrigesTC(SingleUnitSimTestCase):
     def randomize_all(self):
         u = self.u
         for i in [u.m, u.s]:
-            self.randomize(i.ar)
-            self.randomize(i.aw)
-            self.randomize(i.r)
-            self.randomize(i.w)
-            self.randomize(i.b)
+            axi_randomize_per_channel(self, i)
 
     def setUp(self):
         SingleUnitSimTestCase.setUp(self)

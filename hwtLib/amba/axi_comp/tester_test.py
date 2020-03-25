@@ -16,6 +16,7 @@ from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.amba.axiLite_comp.sim.mem_space_master import AxiLiteMemSpaceMaster
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
+from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 
 
 class SimProcessSequence(deque):
@@ -53,13 +54,7 @@ class AxiTesterTC(SingleUnitSimTestCase):
         self.m = AxiSimRam(u.m_axi)
 
     def randomize_all(self):
-        axi = self.u.m_axi
-
-        self.randomize(axi.aw)
-        self.randomize(axi.ar)
-        self.randomize(axi.w)
-        self.randomize(axi.r)
-        self.randomize(axi.b)
+        axi_randomize_per_channel(self, self.u.m_axi)
 
     def test_nop(self):
         self.randomize_all()
