@@ -6,6 +6,7 @@ from hwt.synthesizer.interfaceLevel.mainBases import UnitBase
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.abstract.busInterconnect import BusInterconnect
+from hwtLib.abstract.busStaticRemap import BusStaticRemap
 
 
 def getEpSignal(sig, op):
@@ -93,6 +94,10 @@ class AddressSpaceProbe(object):
                 i = parent.m
                 yield from self.walkToConverter(self._getMainSigFn(i), offset)
                 return
+            elif isinstance(parent, BusStaticRemap):
+                i = parent.m
+                for _offset, _parent in self.walkToConverter(self._getMainSigFn(i), 0):
+                    yield parent.translate_addr_val(parent.MEM_MAP, _offset) + offset, _parent
             elif isinstance(parent, BusInterconnect):
                 if len(parent._masters) != 1:
                     raise NotImplementedError()

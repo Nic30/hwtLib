@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import connect
 from hwtLib.abstract.busStaticRemap import BusStaticRemap
 from hwtLib.amba.axi4 import Axi4
@@ -23,12 +26,12 @@ class AxiStaticRemap(BusStaticRemap):
 
     def _impl(self):
         # for each remaped region substitute the address offset
-        connect(self.m, self.s, exclude={self.m.ar.addr, self.m.aw.addr})
+        connect(self.s, self.m, exclude={self.s.ar.addr, self.s.aw.addr})
         MM = self.MEM_MAP
         self.translate_addr_signal(
-            MM, self.m.ar.addr, self.s.ar.addr)
+            MM, self.s.ar.addr, self.m.ar.addr)
         self.translate_addr_signal(
-            MM, self.m.aw.addr, self.s.aw.addr)
+            MM, self.s.aw.addr, self.m.aw.addr)
 
 
 def _example_AxiStaticRemap():
