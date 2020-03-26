@@ -29,7 +29,7 @@ class Mi32Builder(AxiBuilder):
         u.WINDOW_SIZE = window_size
         u.M_ADDR_WIDTH = new_addr_width
 
-        setattr(self.parent, self._findSuitableName("mi32_2_axi"), u)
+        setattr(self.parent, self._findSuitableName("mi32SlidingWindow"), u)
         self._propagateClkRstn(u)
 
         u.s(self.end)
