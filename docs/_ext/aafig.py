@@ -133,10 +133,8 @@ def render_aafig_images(app, doctree):
         # FIXME: find some way to avoid this hack in aafigure
         if extra:
             (width, height) = [x.split('"')[1] for x in extra.split()]
-            if not img.has_key('width'):
-                img['width'] = width
-            if not img.has_key('height'):
-                img['height'] = height
+            img.setdefault('width', width)
+            img.setdefault('height', height)
 
 
 def render_aafigure(app, text, options):
