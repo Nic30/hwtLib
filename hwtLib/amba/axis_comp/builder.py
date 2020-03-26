@@ -70,8 +70,8 @@ class AxiSBuilder(AbstractStreamBuilder):
         return u.dataOut
 
     @classmethod
-    def forge(cls, parent, typeToForge: HdlType, intfCls: AxiStream,
-              setupFn=None, name:str=None):
+    def deparse(cls, parent, typeToForge: HdlType, intfCls: AxiStream,
+                setupFn=None, name:str=None):
         """
         generate frame assembler for specified type
         :note: you can set endianity and others in setupFn
@@ -81,7 +81,7 @@ class AxiSBuilder(AbstractStreamBuilder):
         :param intfCls: class for output interface
         :param setupFn: setup function for output interface
         :param name: name prefix for generated units
-        :return: tuple (builder, interface with forged frame)
+        :return: tuple (builder, interface with deparsed frame)
         """
 
         u = AxiS_frameDeparser(typeToForge)
@@ -90,10 +90,10 @@ class AxiSBuilder(AbstractStreamBuilder):
 
         if name is None:
             # name can not be empty due AxiSBuilder initialization without interface
-            name = "forged"
+            name = "deparsed"
 
         self = AxiSBuilder(parent, None, name)
-        setattr(parent, self._findSuitableName("forge"), u)
+        setattr(parent, self._findSuitableName("deparser"), u)
         self._propagateClkRstn(u)
         self.end = u.dataOut
 
