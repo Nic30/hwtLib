@@ -212,7 +212,7 @@ class FrameAlignmentUtils():
         frames_per_stream = []
         prev_end_offsets = [offset, ]
         for i, t in enumerate(streams):
-            assert isinstance(t, HStream)
+            assert isinstance(t, HStream), t
             f_frames = set()
             for offset_out in prev_end_offsets:
                 f_frames_tmp = self.stream_to_all_possible_frame_formats(
