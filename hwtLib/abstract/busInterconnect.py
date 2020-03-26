@@ -158,8 +158,8 @@ class BusInterconnect(Unit):
     """
     Abstract class of bus interconnects
 
-    :ivar m: HObjList of master interfaces
-    :ivar s: HObjList of slave interfaces
+    :ivar ~.m: HObjList of master interfaces
+    :ivar ~.s: HObjList of slave interfaces
     """
 
     def _config(self):

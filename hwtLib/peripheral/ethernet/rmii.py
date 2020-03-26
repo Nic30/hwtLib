@@ -38,8 +38,8 @@ class Rmii(Interface):
 
     off-chip PHY-MAC interface for <=100BASE Ethernet
 
-    :ivar crs_dc: carrier sense/ rx data valid
-    :ivar md: interface for configuration and identification of PHY
+    :ivar ~.crs_dc: carrier sense/ rx data valid
+    :ivar ~.md: interface for configuration and identification of PHY
 
     :note: 50Mhz reference clock may be an input on both devices from an external
         clock source, or may be driven from the MAC to the PHY

@@ -82,11 +82,11 @@ class Cdc(Unit):
         should be used for control signals and main data should be
         passed over couple of registers
 
-    :ivar DATA_WIDTH: width of data-signal
-    :ivar INIT_VAL: initialization value for registers
-    :ivar IN_FREQ: frequency of clock signal for input data [Hz]
-    :ivar OUT_FREQ: frequency of clock signal for output data [Hz]
-    :ivar OUT_REG_CNT: number of registers for synchronization in dataOut clock domain
+    :ivar ~.DATA_WIDTH: width of data-signal
+    :ivar ~.INIT_VAL: initialization value for registers
+    :ivar ~.IN_FREQ: frequency of clock signal for input data [Hz]
+    :ivar ~.OUT_FREQ: frequency of clock signal for output data [Hz]
+    :ivar ~.OUT_REG_CNT: number of registers for synchronization in dataOut clock domain
 
     .. hwt-schematic::
     """

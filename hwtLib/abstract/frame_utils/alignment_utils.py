@@ -35,7 +35,7 @@ def next_frame_offsets(f0_t: HStream, data_width: int):
 
 class FrameAlignmentUtils():
     """
-    :ivar word_bytes: number of bytes in 1 output word
+    :ivar ~.word_bytes: number of bytes in 1 output word
     """
     def __init__(self, word_bytes: int, out_offset=0):
         self.word_bytes = word_bytes

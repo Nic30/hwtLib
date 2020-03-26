@@ -221,10 +221,10 @@ class AvalonMmAgent(SyncAgentBase):
     """
     Simulation agent for AvalonMM bus interface
 
-    :ivar req: request data, items are tuples (READ/WRITE, address, burstCount)
-    :ivar wData: data to write, items are tuples (data, byteenable)
-    :ivar wResp: write response data
-    :ivar rData: data read from interface, items are typles (data, response)
+    :ivar ~.req: request data, items are tuples (READ/WRITE, address, burstCount)
+    :ivar ~.wData: data to write, items are tuples (data, byteenable)
+    :ivar ~.wResp: write response data
+    :ivar ~.rData: data read from interface, items are typles (data, response)
     """
 
     def __init__(self, sim: HdlSimulator, intf, allowNoReset=False):

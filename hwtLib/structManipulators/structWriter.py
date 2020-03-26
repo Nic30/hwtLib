@@ -24,12 +24,13 @@ class StructWriter(StructReader):
     Write struct specified in constructor over wDatapump interface on address
     specified over set interface
 
-    :ivar MAX_OVERLAP: parameter which specifies the maximum number of concurrent transaction
-    :ivar WRITE_ACK: Param, if true ready on "set" will be set only
+    :ivar ~.MAX_OVERLAP: parameter which specifies the maximum number of concurrent transaction
+    :ivar ~.WRITE_ACK: Param, if true ready on "set" will be set only
         when component is in idle (if false "set"
         is regular handshaked interface)
 
     .. aafig::
+
             set (base addr)          +---------+
          +----------------    +------> field0  |
                          |    |      +---------+
@@ -137,7 +138,7 @@ class StructWriter(StructReader):
             intf(self.dataIn._fieldsToInterfaces[f])
 
 
-def  _example_StructWriter():
+def _example_StructWriter():
     from hwtLib.types.ctypes import uint16_t, uint32_t, uint64_t
 
     s = HStruct(

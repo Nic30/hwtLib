@@ -19,9 +19,9 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
     """
     Matrix style interconnect for AXI-3/4/Lite interfaces
 
-    :ivar SLAVES: list of configuration of slave interfaces,
+    :ivar ~.SLAVES: list of configuration of slave interfaces,
         configuration is tuple (address, size)
-    :ivar MASTERS: list of configuration of master interfaces,
+    :ivar ~.MASTERS: list of configuration of master interfaces,
         configuration is ALL if the master has visibility to all slaves
         or tuple of flags, where True means the master has visibility to slave
         on this index

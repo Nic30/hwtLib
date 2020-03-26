@@ -20,9 +20,9 @@ class FifoWriterDropable(FifoWriter):
     :note: commit and discard behaves as another data signal
         it is valid if en=1
     :note: only one from "commit", "discard" can be 1 at the same time
-    :ivar commit: if 1 all the written data are made available to reader,
+    :ivar ~.commit: if 1 all the written data are made available to reader,
         including current data word
-    :ivar discard: if 1 all written data which were not commited are discarded
+    :ivar ~.discard: if 1 all written data which were not commited are discarded
         includeing current data word
     """
     def _declr(self):

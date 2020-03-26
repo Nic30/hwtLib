@@ -9,7 +9,7 @@ class AxiDpSimRam(SimRam):
     """
     Dense RAM for simulation purposes with axi datapump interfaces
 
-    :ivar data: memory dict
+    :ivar ~.data: memory dict
     """
 
     def __init__(self, cellWidth, clk, rDatapumpIntf=None,

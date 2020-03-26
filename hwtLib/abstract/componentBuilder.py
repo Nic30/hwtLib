@@ -9,9 +9,9 @@ class AbstractComponentBuilder(object):
     Helper class which simplifies instanciation of commonly used components
     with configuration based on input/output interface
 
-    :ivar compId: used for sequential number of components
-    :ivar lastComp: last builded component
-    :ivar end: last interface of data-path
+    :ivar ~.compId: used for sequential number of components
+    :ivar ~.lastComp: last builded component
+    :ivar ~.end: last interface of data-path
 
     :attention: input port is taken from self.end
     """

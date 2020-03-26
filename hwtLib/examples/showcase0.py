@@ -1,5 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+The class :class:`~.Showcase0` can be converted to various target formats as
+can be seen in "main" of this file.
+
+There are several examples:
+
+.. literalinclude:: /../hwtLib/examples/showcase0.v
+   :language: verilog
+   :caption: Verilog Std IEEE 1364-2001
+   :linenos:
+
+.. literalinclude:: /../hwtLib/examples/showcase0.vhd
+   :language: vhdl
+   :caption: VHDL IEEE Std 1076-2002
+   :linenos:
+
+.. literalinclude:: /../hwtLib/examples/showcase0.cpp
+   :language: cpp
+   :caption: SystemC IEEE Std 1666-2011
+   :linenos:
+
+.. literalinclude:: /../hwtLib/examples/showcase0.hwt.py
+   :language: python
+   :caption: HWT Unit class definition
+   :linenos:
+"""
 
 from hwt.code import connect, If, Concat, Switch
 from hwt.hdl.types.bits import Bits
@@ -8,6 +34,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.unit import Unit
 from hwtLib.types.ctypes import uint32_t, int32_t, uint8_t, int8_t
 from hwt.synthesizer.hObjList import HObjList
+
 
 
 def foo(condition0, statements, condition1, fallback0, fallback1):

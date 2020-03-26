@@ -168,15 +168,15 @@ class LookupResultIntf(Handshaked):
     """
     Interface for result of lookup in hash table
 
-    :ivar HASH_WIDTH: width of the hash used by hash table
-    :ivar KEY_WIDTH: width of the key used by hash table
-    :ivar LOOKUP_HASH: flag if this interface should have hash signal
-    :ivar LOOKUP_KEY: flag if this interface should have hash signal
+    :ivar ~.HASH_WIDTH: width of the hash used by hash table
+    :ivar ~.KEY_WIDTH: width of the key used by hash table
+    :ivar ~.LOOKUP_HASH: flag if this interface should have hash signal
+    :ivar ~.LOOKUP_KEY: flag if this interface should have hash signal
 
-    :ivar hash: hash for this key (= index in this table)
-    :ivar key: original key which was searched for
-    :ivar data: data under this key
-    :ivar occupied: flag which tells if there is an valid item under this key
+    :ivar ~.hash: hash for this key (= index in this table)
+    :ivar ~.key: original key which was searched for
+    :ivar ~.data: data under this key
+    :ivar ~.occupied: flag which tells if there is an valid item under this key
     """
     def _config(self):
         self.HASH_WIDTH = Param(8)

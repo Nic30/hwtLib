@@ -90,13 +90,13 @@ class IpifAgentState(Enum):
 
 class IpifAgent(SyncAgentBase):
     """
-    :ivar requests: list of tuples (READ, address) or
+    :ivar ~.requests: list of tuples (READ, address) or
         (WRITE, address, data, mask) used for driver
-    :ivar readed: list of readed data for driver
-    :ivar mem: if agent is in monitor mode (= is slave)
+    :ivar ~.readed: list of readed data for driver
+    :ivar ~.mem: if agent is in monitor mode (= is slave)
         all reads and writes are performed on mem object, index is word index
     :note: this behavior can be overriden by onRead/onWrite methods
-    :ivar actual: actual request which is performed (in driver mode)
+    :ivar ~.actual: actual request which is performed (in driver mode)
     """
 
     def __init__(self, sim: HdlSimulator, intf, allowNoReset=True):

@@ -27,9 +27,9 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
     Component which implements N to M crossbar for AXI address channel.
     If there are multiple masters connected to any slave the access is mannaged by round-robin.
 
-    :ivar order_s_index_for_m_data_out: handshaked interface with index of slave for each master,
+    :ivar ~.order_s_index_for_m_data_out: handshaked interface with index of slave for each master,
         data is send on start of the transaction
-    :ivar order_m_index_for_s_data_out: handshaked interface with index of master for each slave,
+    :ivar ~.order_m_index_for_s_data_out: handshaked interface with index of master for each slave,
         data is send on start of the transaction
 
     .. hwt-schematic:: example_AxiInterconnectMatrixAddrCrossbar

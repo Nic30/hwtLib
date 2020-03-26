@@ -8,10 +8,10 @@ from ipCorePackager.intfIpMeta import IntfIpMeta
 
 class XgmiiChannel(Interface):
     """
-    :ivar clk: clock signal
-    :ivar d: data signal
-    :ivar c: control signal
-    :ivar IS_DDR: if True, the clock is used as double-data-rate clock
+    :ivar ~.clk: clock signal
+    :ivar ~.d: data signal
+    :ivar ~.c: control signal
+    :ivar ~.IS_DDR: if True, the clock is used as double-data-rate clock
         (read/write data on rising and falling edge of clk)
     """
 

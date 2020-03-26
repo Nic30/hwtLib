@@ -19,13 +19,13 @@ class AxiStream(Axi_hs, Axi_id, Axi_user, Axi_strb):
     """
     AMBA AXI-stream interface
 
-    :ivar IS_BIGENDIAN: Param which specifies if interface uses bigendian
+    :ivar ~.IS_BIGENDIAN: Param which specifies if interface uses bigendian
         byte order or litleendian byte order
 
-    :ivar HAS_STRB: if set strb signal is present
-    :ivar HAS_KEEP: if set keep signal is present
-    :ivar ID_WIDTH: if > 0 id signal is present and this is it's width
-    :ivar DEST_WIDTH: if > 0 dest signal is present and this is it's width
+    :ivar ~.HAS_STRB: if set strb signal is present
+    :ivar ~.HAS_KEEP: if set keep signal is present
+    :ivar ~.ID_WIDTH: if > 0 id signal is present and this is it's width
+    :ivar ~.DEST_WIDTH: if > 0 dest signal is present and this is it's width
 
     :attention: no checks are made for endianity, this is just information
     :note: bigendian for interface means that items which are send through
@@ -35,14 +35,14 @@ class AxiStream(Axi_hs, Axi_id, Axi_user, Axi_strb):
         f.e. litle endian value 0x1a2b will be 0x2b1a
         but iterface itselelf is not reversed in any way
 
-    :ivar DATA_WIDTH: Param which specifies width of data signal
-    :ivar id: optional signal wich specifies id of transaction
-    :ivar dest: optional signal which specifies destination of transaction
-    :ivar data: main data signal
-    :ivar keep: optional signal which signalize which bytes
+    :ivar ~.DATA_WIDTH: Param which specifies width of data signal
+    :ivar ~.id: optional signal wich specifies id of transaction
+    :ivar ~.dest: optional signal which specifies destination of transaction
+    :ivar ~.data: main data signal
+    :ivar ~.keep: optional signal which signalize which bytes
                 should be keept and which should be discarted
-    :ivar strb: optional signal which signalize which bytes are valid
-    :ivar last: signal which if high this data is last in this frame
+    :ivar ~.strb: optional signal which signalize which bytes are valid
+    :ivar ~.last: signal which if high this data is last in this frame
     """
 
     def _config(self):
@@ -94,8 +94,8 @@ class AxiStreamAgent(BaseAxiAgent):
     (id, dest, data, strb, keep, user, last)
 
 
-    :ivar _signals: tuple of data signals of this interface
-    :ivar _sigCnt: len(_signals)
+    :ivar ~._signals: tuple of data signals of this interface
+    :ivar ~._sigCnt: len(_signals)
     """
 
     def __init__(self, sim: HdlSimulator, intf: AxiStream, allowNoReset=False):

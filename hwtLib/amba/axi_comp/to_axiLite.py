@@ -33,7 +33,7 @@ class Axi_to_AxiLite(BusBridge):
         are not checked to endup in proper r/w order
     :attention: only last response code on AxiLite for transaction is used as a reponse code for Axi4
         That means if the error appears somewhere in middle beat of the transaction the eror is ignored
-    :ivar MAX_TRANS_OVERLAP: dept of internal fifo which is used to allow the transactions
+    :ivar ~.MAX_TRANS_OVERLAP: dept of internal fifo which is used to allow the transactions
         to overlapp each other in order to pipeline the execution of transactions
 
     .. hwt-schematic::

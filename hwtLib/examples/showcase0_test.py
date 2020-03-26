@@ -34,11 +34,11 @@ class Showcase0TC(unittest.TestCase):
     def test_systemc(self):
         s = toRtl(Showcase0(), serializer=SystemCSerializer)
         self.assert_same_as_file(s, "showcase0.cpp")
-    
+
     def test_hwt(self):
         s = toRtl(Showcase0(), serializer=HwtSerializer)
         self.assert_same_as_file(s, "showcase0.hwt.py")
-    
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

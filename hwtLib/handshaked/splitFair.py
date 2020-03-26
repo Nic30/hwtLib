@@ -36,7 +36,7 @@ class HsSplitFair(HsSplitCopy):
                                      +-------+
 
 
-    :ivar selectedOneHot: handshaked interface with one hot encoded
+    :ivar ~.selectedOneHot: handshaked interface with one hot encoded
         index of selected output
     
     .. hwt-schematic:: _example_HsSplitFair

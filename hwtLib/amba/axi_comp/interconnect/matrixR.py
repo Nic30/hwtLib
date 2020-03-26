@@ -17,10 +17,10 @@ class AxiInterconnectMatrixR(AxiInterconnectCommon):
     Read only AXI3/4/Lite interconnect with supports transaction overlapping
     and guarantees the order order of transactions on the bus 
 
-    :ivar order_m_index_for_s_data: list, FIFOs for each slave which keeps the information
+    :ivar ~.order_m_index_for_s_data: list, FIFOs for each slave which keeps the information
         about which master accessed slave on this index,
         to keep the order of transactions coherent
-    :ivar order_s_index_for_m_data: list, FIFOs for each master which keeps the information
+    :ivar ~.order_s_index_for_m_data: list, FIFOs for each master which keeps the information
         about where master should expect data
 
     .. hwt-schematic:: example_AxiInterconnectMatrixR

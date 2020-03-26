@@ -53,6 +53,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         (Output data structure can be splited into multiple frames as required)
 
     .. aafig::
+
                                       +---------+
                               +------>| field0  |
                               |       +---------+
@@ -67,8 +68,8 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
 
     :note: names in the figure are just illustrative
 
-    :ivar dataIn: the AxiStream interface for input frame
-    :ivar dataOut: output field interface generated from input type description
+    :ivar ~.dataIn: the AxiStream interface for input frame
+    :ivar ~.dataOut: output field interface generated from input type description
 
     .. hwt-schematic:: _example_AxiS_frameParser
     """
@@ -363,6 +364,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         """
         Output data signals are directly connected to input in most of the cases,
         exceptions are:
+
         * Delayed parts of fields which were parsed in some previous input word
           for fields wich are crossing input word boundaries
         * Streams may have alignment logic if required

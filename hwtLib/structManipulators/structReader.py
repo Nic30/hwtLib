@@ -21,13 +21,13 @@ class StructReader(AxiS_frameParser):
     This unit downloads required structure fields over rDatapump
     interface from address specified by get interface
 
-    :ivar MAX_DUMMY_WORDS: Param, specifies maximum dummy bus words between fields
+    :ivar ~.MAX_DUMMY_WORDS: Param, specifies maximum dummy bus words between fields
         if there is more of ignored space transaction will be split to
-    :ivar ID: Param, id for transactions on bus
-    :ivar READ_ACK: Param, if true ready on "get" will be set only
+    :ivar ~.ID: Param, id for transactions on bus
+    :ivar ~.READ_ACK: Param, if true ready on "get" will be set only
         when component is in idle (if false "get"
         is regular handshaked interface)
-    :ivar SHARED_READY: Param, if this is true field interfaces
+    :ivar ~.SHARED_READY: Param, if this is true field interfaces
         will be of type VldSynced and single ready signal
         will be used for all else every interface
         will be instance of Handshaked and it
@@ -35,16 +35,18 @@ class StructReader(AxiS_frameParser):
     :attention: interfaces of field will not send data in same time
 
     .. aafig::
+
             get (base addr)          +---------+
-         +----------------    +------> field0  |
-                         |    |      +---------+
-            bus req   +--v---+-+
+         +----------------   +------>| field0  |
+                         |   |       +---------+
+                         v   |
+            bus req   +------+--+
          <------------+         |    +---------+
-                      | reader  +----> field1  |
-         +------------>         |    +---------+
+                      | reader  +--->| field1  |
+         +----------->|         |    +---------+
             bus data  +-------+-+
                               |      +---------+
-                              +------> field2  |
+                              +----->| field2  |
                                      +---------+
 
     :note: names in the picture are just illustrative

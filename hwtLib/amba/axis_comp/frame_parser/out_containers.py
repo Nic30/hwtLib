@@ -39,9 +39,9 @@ class OutNodeInfo():
     """
     Container for informations about output for handshake logic
 
-    :ivar outInterface: output parsed interface
-    :ivar en: enable signal of word
-    :ivar exvlusiveEn: enable signal of union member
+    :ivar ~.outInterface: output parsed interface
+    :ivar ~.en: enable signal of word
+    :ivar ~.exvlusiveEn: enable signal of union member
     """
 
     def __init__(self, parent: Unit,

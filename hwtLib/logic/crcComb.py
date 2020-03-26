@@ -24,16 +24,16 @@ class CrcComb(Unit):
     CRC generator,
     polynomial can be string in usual format or integer ("x^3+x+1" or 0b1011)
 
-    :ivar DATA_WIDTH: width of data in signal
-    :ivar POLY: specified CRC polynome, str, int or Bits value
-    :ivar POLY_WIDTH: width of POLY
-    :ivar REFIN: This is a boolean parameter. If it is FALSE,
+    :ivar ~.DATA_WIDTH: width of data in signal
+    :ivar ~.POLY: specified CRC polynome, str, int or Bits value
+    :ivar ~.POLY_WIDTH: width of POLY
+    :ivar ~.REFIN: This is a boolean parameter. If it is FALSE,
         input bytes are processed with bit 7 being treated
         as the most significant bit (MSB) and bit 0 being treated
         as the least significant bit. If this parameter is FALSE,
         each byte is reflected before being processed.
-    :ivar REFOUT: Same as REFIN except for output
-    :ivar XOROUT: value to xor result with
+    :ivar ~.REFOUT: Same as REFIN except for output
+    :ivar ~.XOROUT: value to xor result with
 
     .. hwt-schematic::
     """

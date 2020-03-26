@@ -54,7 +54,7 @@ class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):
 
     def rand_read(self, master_i, slave_i, magic):
         """
-        :ivar magic: random value used to distinguis the data
+        :ivar ~.magic: random value used to distinguis the data
         """
         m = self.memory[slave_i]
         slave_addr_offset = self.u.SLAVES[slave_i][0]

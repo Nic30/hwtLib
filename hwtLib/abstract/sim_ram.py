@@ -47,7 +47,7 @@ class SimRam():
     """
     Dense memory for simulation purposes with datapump interfaces
 
-    :ivar data: memory dict
+    :ivar ~.data: memory dict
     """
 
     def __init__(self, cellSize, parent=None):
