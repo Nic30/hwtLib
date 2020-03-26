@@ -11,10 +11,8 @@ python:
 #  - "nightly"
 
 install:
-  - cd ..
   - pip install pytest coveralls codecov
   - pip install -r docs/requirements.hwt.txt
-  - cd ../hwtLib
   - python setup.py install
 
 script:
