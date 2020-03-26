@@ -47,11 +47,11 @@ class HashTableCore(Unit):
 
     .. aafig::
 
-        insert  +-----------+
-        -------->           | lookupRes
-        lookup  | HashTable +---------->
-        -------->           |
-                +-----------+
+        insert   +-----------+
+        -------->|           | lookupRes
+        lookup   | HashTable +---------->
+        -------->|           |
+                 +-----------+
 
     .. hwt-schematic:: _example_HashTableCore
 
