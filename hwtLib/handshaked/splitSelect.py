@@ -17,19 +17,18 @@ class HsSplitSelect(HandshakedCompBase):
     output index provided by select interface.
 
     .. aafig::
-                 *----+ dataOut_0
+                 *----+ dataOut[0]
                 *     +-------->
          dataIn |     |
-        +------->     | dataOut_1
+        +------->     | dataOut[1]
                 |     +-------->
                 *     |
                  *-^--+
                    |
                    +
                  select
-    
+
     .. hwt-schematic:: _example_HsSplitSelect
-    
     """
     def _config(self):
         self.OUTPUTS = Param(3)

@@ -16,10 +16,10 @@ class Fifo(Unit):
     """
     Generic FIFO usually mapped to BRAM.
 
-    :ivar EXPORT_SIZE: parameter, if true "size" signal will be exported
-    :ivar size: optional signal with count of items stored in this fifo
-    :ivar EXPORT_SPACE: parameter, if true "space" signal is exported
-    :ivar space: optional signal with count of items which can be added to this fifo
+    :ivar ~.EXPORT_SIZE: parameter, if true "size" signal will be exported
+    :ivar ~.size: optional signal with count of items stored in this fifo
+    :ivar ~.EXPORT_SPACE: parameter, if true "space" signal is exported
+    :ivar ~.space: optional signal with count of items which can be added to this fifo
 
     .. hwt-schematic:: _example_Fifo
     """

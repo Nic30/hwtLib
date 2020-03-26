@@ -25,10 +25,10 @@ class RmiiAdapter(Unit):
     :attention: inside of packet the tx.vld has to stay 1
         otherwise the underflow error will appear and frame data will
         be corrupted
-    :ivar FREQ: specifies the clk.FREQ for this core,
+    :ivar ~.FREQ: specifies the clk.FREQ for this core,
         f None it means that clk and eth.ref_clk is the same signal
         and synchronisation is not required
-    :ivar ASYNC_BUFF_DEPTH: depth of asynchronous buffers
+    :ivar ~.ASYNC_BUFF_DEPTH: depth of asynchronous buffers
         between eth.ref_clk clock domain and clk domain
         (if set to None the clock domain has to be the same)
 

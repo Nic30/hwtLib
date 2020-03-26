@@ -15,14 +15,14 @@ class Mi32(Interface):
     """
     Simple memory interface similar to AvalonMM
 
-    :ivar addr: r/w address
-    :ivar rd: read enable
-    :ivar wr: write enable
-    :ivar ardy: slave address channel ready
-    :ivar be: data byte mask for write
-    :ivar dwr: write data
-    :ivar drd: readed data
-    :ivar drdy: read data valid
+    :ivar ~.addr: r/w address
+    :ivar ~.rd: read enable
+    :ivar ~.wr: write enable
+    :ivar ~.ardy: slave address channel ready
+    :ivar ~.be: data byte mask for write
+    :ivar ~.dwr: write data
+    :ivar ~.drd: readed data
+    :ivar ~.drdy: read data valid
     """
 
     def _config(self):
@@ -60,9 +60,9 @@ class Mi32Agent(SyncAgentBase):
     """
     Simulation agent for Mi32 bus interface
 
-    :ivar req: request data, items are tuples (READ, address)
+    :ivar ~.req: request data, items are tuples (READ, address)
         or (WRITE, address, data, be_mask)
-    :ivar rData: data read from interface
+    :ivar ~.rData: data read from interface
     """
 
     def __init__(self, sim: HdlSimulator, intf: Mi32, allowNoReset=False):
@@ -99,7 +99,7 @@ class Mi32Agent(SyncAgentBase):
 
 class Mi32AddrAgent(HandshakedAgent):
     """
-    :ivar req: request data, items are tuples (READ, address)
+    :ivar ~.req: request data, items are tuples (READ, address)
         or (WRITE, address, data, be_mask)
 
     :note: two valid signals "read", "write"

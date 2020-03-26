@@ -45,13 +45,16 @@ def input_B_dst_to_fsm(word_bytes: int,
     :param word_bytes: number of bytes in output word
     :param input_cnt: number of input streams
     :param input_B_dst: list with mapping of input bytes to a output bytes in each state
-        Format is: List for each input
+
+    .. code-block::
+
+        Format of input_B_dst is: List for each input
             in this list there are lists for each input byte
                 in this list there are sets of byte destinations for each input byte
                     byte destination is a tuple:
                         state label, input index, time index, output byte index, input last flag
-    :note: input_B_dst is produced by
-        :func:`hwtLib.amba.axis_comp.frame_utils.join.FrameJoinUtils.resolve_input_bytes_destinations`
+
+    :note: input_B_dst is produced by :func:`hwtLib.amba.axis_comp.frame_utils.join.FrameJoinUtils.resolve_input_bytes_destinations`
     """
     # label: StateTransInfo
     sub_states = {}

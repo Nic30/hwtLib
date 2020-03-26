@@ -35,7 +35,7 @@ def next_frame_offsets(f0_t: HStream, data_width: int):
 
 class FrameAlignmentUtils():
     """
-    :ivar word_bytes: number of bytes in 1 output word
+    :ivar ~.word_bytes: number of bytes in 1 output word
     """
     def __init__(self, word_bytes: int, out_offset=0):
         self.word_bytes = word_bytes
@@ -212,7 +212,7 @@ class FrameAlignmentUtils():
         frames_per_stream = []
         prev_end_offsets = [offset, ]
         for i, t in enumerate(streams):
-            assert isinstance(t, HStream)
+            assert isinstance(t, HStream), t
             f_frames = set()
             for offset_out in prev_end_offsets:
                 f_frames_tmp = self.stream_to_all_possible_frame_formats(

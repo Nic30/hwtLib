@@ -13,12 +13,12 @@ class TimerInfo(object):
     Generator of varius shared timers.
     Use this from :class:`hwtLib.clocking.clkBuilder.ClkBuilder`
 
-    :ivar cntrRegister: counter register for this timer
-    :ivar tick: signal with tick from this timer
-    :ivar parent: parent TimerInfo object from which this timer can be generated
-    :ivar maxValOriginal: original value of maxVal
-    :ivar maxVal: evaluated value of maxVal
-    :ivar name: name prefix which is used for registers and signals for this timer
+    :ivar ~.cntrRegister: counter register for this timer
+    :ivar ~.tick: signal with tick from this timer
+    :ivar ~.parent: parent TimerInfo object from which this timer can be generated
+    :ivar ~.maxValOriginal: original value of maxVal
+    :ivar ~.maxVal: evaluated value of maxVal
+    :ivar ~.name: name prefix which is used for registers and signals for this timer
     """
     __slots__ = ['maxVal', 'maxValOriginal',
                  'parent', 'cntrRegister', 'tick', 'name']

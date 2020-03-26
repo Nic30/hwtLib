@@ -34,8 +34,8 @@ class Axi_hs(HandshakeSync):
     (same as HandshakeSync just vld is valid and rd is ready)
     transaction happens when both ready and valid are high
 
-    :ivar ready: when high slave is ready to receive data
-    :ivar valid: when high master is sending data to slave
+    :ivar ~.ready: when high slave is ready to receive data
+    :ivar ~.valid: when high master is sending data to slave
     """
 
     def _declr(self):

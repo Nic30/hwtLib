@@ -9,9 +9,9 @@ class BusStaticRemap(Unit):
     """
     Abstract class for component which remaps memory regions on bus interfaces
 
-    :ivar MEM_MAP: list of tuples (addr_from, size, addr_to) for each memory region on second interface
-    :ivar m: slave interface of first interface class where master should be connected
-    :ivar s: slave interface of second interface class where master slave be connected
+    :ivar ~.MEM_MAP: list of tuples (addr_from, size, addr_to) for each memory region on second interface
+    :ivar ~.m: slave interface of first interface class where master should be connected
+    :ivar ~.s: slave interface of second interface class where master slave be connected
     """
 
     def _config(self):

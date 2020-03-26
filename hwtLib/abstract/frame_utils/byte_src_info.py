@@ -3,10 +3,10 @@ class ByteSrcInfo():
     """
     Container for informations about byte in stream data
 
-    :ivar stream_i: index of stream
-    :ivar word_i: index of word in frame
-    :ivar byte_i: index of byte in word
-    :ivar is_from_last_input_word: true if this byte comes from
+    :ivar ~.stream_i: index of stream
+    :ivar ~.word_i: index of word in frame
+    :ivar ~.byte_i: index of byte in word
+    :ivar ~.is_from_last_input_word: true if this byte comes from
         last word in input frame
     """
 

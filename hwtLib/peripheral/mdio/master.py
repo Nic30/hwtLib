@@ -73,8 +73,8 @@ class MdioMaster(Unit):
     """
     Master for MDIO interface.
 
-    :ivar FREQ: frequency of input clock
-    :ivar MDIO_FREQ: frequency of output MDIO clock
+    :ivar ~.FREQ: frequency of input clock
+    :ivar ~.MDIO_FREQ: frequency of output MDIO clock
 
     * based on:
         * https://opencores.org/websvn/filedetails?repname=ethmac10g&path=%2Fethmac10g%2Ftrunk%2Frtl%2Fverilog%2Fmgmt%2Fmdio.v

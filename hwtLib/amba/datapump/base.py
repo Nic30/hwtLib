@@ -10,8 +10,8 @@ from pyMathBitPrecise.bit_utils import mask
 
 class AxiDatapumpBase(Unit):
     """
-    :ivar param MAX_TRANS_OVERLAP: max number of concurrent transactions
-    :ivar driver: interface which is used to drive this datapump
+    :ivar ~.param MAX_TRANS_OVERLAP: max number of concurrent transactions
+    :ivar ~.driver: interface which is used to drive this datapump
         (AxiRDatapumpIntf or AxiWDatapumpIntf)
     """
 

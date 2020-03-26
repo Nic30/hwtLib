@@ -10,18 +10,18 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
     :attention: this is just abstract class unit classes has to be specified
         in concrete implementation
 
-    :cvar FifoCls: fifo unit class
-    :cvar FifoAsyncCls: asyncronous fifo (fifo with separate clock per port) unit class
-    :cvar JoinSelectCls: select order based join unit class
-    :cvar JoinFairCls: round robin based join unit class
-    :cvar JoinPrioritizedCls: priority based join unit class
-    :cvar RegCls: register unit class
-    :cvar RegCdcCls: Clock domain crossing register unit class
-    :cvar ResizerCls: resizer unit class
-    :cvar SplitCopyCls: copy based split unit class
-    :cvar SplitSelectCls: select order based split unit class (demultiplexer)
-    :cvar SplitFairCls: round robin based split unit class
-    :cvar SplitPrioritizedCls: priority based split unit class
+    :cvar ~.FifoCls: fifo unit class
+    :cvar ~.FifoAsyncCls: asyncronous fifo (fifo with separate clock per port) unit class
+    :cvar ~.JoinSelectCls: select order based join unit class
+    :cvar ~.JoinFairCls: round robin based join unit class
+    :cvar ~.JoinPrioritizedCls: priority based join unit class
+    :cvar ~.RegCls: register unit class
+    :cvar ~.RegCdcCls: Clock domain crossing register unit class
+    :cvar ~.ResizerCls: resizer unit class
+    :cvar ~.SplitCopyCls: copy based split unit class
+    :cvar ~.SplitSelectCls: select order based split unit class (demultiplexer)
+    :cvar ~.SplitFairCls: round robin based split unit class
+    :cvar ~.SplitPrioritizedCls: priority based split unit class
 
     :note: see :class:`AbstractComponentBuilder`
     """

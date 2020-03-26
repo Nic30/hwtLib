@@ -19,9 +19,9 @@ class SpiAgent(SyncAgentBase):
     """
     Simulation agent for SPI interface
 
-    :ivar txData: data to transceiver container
-    :ivar rxData: received data
-    :ivar chipSelects: values of chip select
+    :ivar ~.txData: data to transceiver container
+    :ivar ~.rxData: received data
+    :ivar ~.chipSelects: values of chip select
 
     chipSelects, rxData and txData are lists of integers
     """

@@ -108,11 +108,11 @@ class Axi4(Axi3):
     """
     Basic AMBA AXI4 bus interface
 
-    :ivar ar: read address channel
-    :ivar r:  read data channel
-    :ivar aw: write address channel
-    :ivar w: write data channel
-    :ivar b: write acknowledge channel
+    :ivar ~.ar: read address channel
+    :ivar ~.r:  read data channel
+    :ivar ~.aw: write address channel
+    :ivar ~.w: write data channel
+    :ivar ~.b: write acknowledge channel
     """
     LEN_WIDTH = 8
     LOCK_WIDTH = 1

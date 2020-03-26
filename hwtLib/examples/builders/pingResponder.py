@@ -84,21 +84,21 @@ class PingResponder(Unit):
                 )
                 In.rd(~freeze)
 
-    def connect_resp(self, resp, forgeIn, sendingReply):
+    def connect_resp(self, resp, deparserIn, sendingReply):
         """
-        Connect response data on inputs of frame forge
+        Connect response data on inputs of frame deparser
 
         :param resp: registers with response data
-        :param forgeIn: input interface of frame forge
+        :param deparserIn: input interface of frame deparser
         :param sendingRepply: flag which signalizes that data
-            should be forged into frame and send
+            should be deparsed into frame and send
         """
 
         t = resp._dtype
 
         if isinstance(t, Bits):
-            forgeIn.data(resp)
-            forgeIn.vld(sendingReply)
+            deparserIn.data(resp)
+            deparserIn.vld(sendingReply)
         else:
             for f in t.fields:
                 name = f.name
@@ -110,13 +110,13 @@ class PingResponder(Unit):
                 elif name == "dst":
                     name = "src"
 
-                Out = getattr(forgeIn, name)
+                Out = getattr(deparserIn, name)
                 self.connect_resp(In, Out, sendingReply)
 
     def icmp_checksum(self, header):
         """
-        :note: we do not need to care about endianity because parser/forge will swap it for us
-            and we can work with little endians only
+        :note: we do not need to care about endianity because parser/deparser
+            will swap it for us and we can work with little endians only
         :return: checksum for icmp header
         """
 
@@ -145,17 +145,17 @@ class PingResponder(Unit):
            isEchoReq(t.data._eq(ICMP_TYPE.ECHO_REQUEST))
         )
 
-        def setup_frame_forge(out):
+        def setup_frame_deparser(out):
             out.DATA_WIDTH = self.DATA_WIDTH
             out.IS_BIGENDIAN = self.IS_BIGENDIAN
 
         # create output frame
-        txBuilder, forgeIn = AxiSBuilder.forge(self,
+        txBuilder, deparserIn = AxiSBuilder.deparse(self,
                                                echoFrame_t,
                                                AxiStream,
-                                               setup_frame_forge)
+                                               setup_frame_deparser)
 
-        self.connect_resp(resp, forgeIn, sendingReply)
+        self.connect_resp(resp, deparserIn, sendingReply)
         tx = txBuilder.end
         self.tx(tx)
 

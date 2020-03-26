@@ -1,10 +1,10 @@
 
 class StateTransInfo():
     """
-    :ivar label: tuple(frame id, word id)
-    :ivar outputs: list of tuples (input index, input time, input byte index)
+    :ivar ~.label: tuple(frame id, word id)
+    :ivar ~.outputs: list of tuples (input index, input time, input byte index)
     :type outputs: List[Optional[Tuple[int, int, int]]]
-    :ivar last_per_input: last flags for each input if last=1
+    :ivar ~.last_per_input: last flags for each input if last=1
         the the input word is end of the actual frame
         (None = don't care value)
     :type last_per_input: List[Optional[int]]

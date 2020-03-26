@@ -17,7 +17,7 @@ class Axi4Lite_addr(Axi3Lite_addr):
 
 class Axi4Lite_addrAgent(Axi3Lite_addrAgent):
     """
-    :ivar data: iterable of addr
+    :ivar ~.data: iterable of addr
     """
 
     def get_data(self):

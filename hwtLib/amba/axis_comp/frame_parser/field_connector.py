@@ -10,13 +10,13 @@ from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.unionIntf import UnionSource, UnionSink
 from hwt.synthesizer.byteOrder import reverseByteOrder
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.frame_parser.out_containers import ListOfOutNodeInfos,\
     ExclusieveListOfHsNodes, InNodeInfo, InNodeReadOnlyInfo, OutStreamNodeGroup,\
     OutStreamNodeInfo, OutNodeInfo
 from hwtLib.handshaked.builder import HsBuilder
 from pyMathBitPrecise.bit_utils import mask
-from hwt.synthesizer.unit import Unit
 
 
 def get_byte_order_modifier(axis: AxiStream):
@@ -143,7 +143,7 @@ class AxiS_frameParserFieldConnector():
             DW = din.DATA_WIDTH
             start_offset = frame_range[0] % DW
             end_rem = frame_range[1] % DW
-            if orig.start_offsets != [0, ]:
+            if orig.start_offsets != (0, ):
                 raise NotImplementedError()
 
             # this is a first part of stream

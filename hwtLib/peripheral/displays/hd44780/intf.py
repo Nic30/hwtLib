@@ -142,7 +142,7 @@ class HD44780InterfaceAgent(AgentBase):
     """
     Agent which emulates HD44780 LCD
 
-    :ivar screen: character present on screen
+    :ivar ~.screen: character present on screen
     """
     REV_CHAR_MAP = {v: k for k, v in Hd44780Intf.CHAR_MAP.items()}
 

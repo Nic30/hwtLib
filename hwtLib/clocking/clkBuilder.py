@@ -17,10 +17,10 @@ class ClkBuilder(AbstractComponentBuilder):
     Helper object which simplifies construction
     of the oversampling, shared timers, edge detector, ... logic
 
-    :ivar compId: last component id used to avoid name collisions
-    :ivar parent: unit in which will be all units created by this builder instantiated
-    :ivar name: prefix for all instantiated units
-    :ivar end: interface where builder ended
+    :ivar ~.compId: last component id used to avoid name collisions
+    :ivar ~.parent: unit in which will be all units created by this builder instantiated
+    :ivar ~.name: prefix for all instantiated units
+    :ivar ~.end: interface where builder ended
     """
 
     def timers(self, periods: List[Union[int, Tuple[str, int]]],

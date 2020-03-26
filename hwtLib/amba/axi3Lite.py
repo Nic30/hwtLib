@@ -30,7 +30,7 @@ class Axi3Lite_addr(Axi_hs):
 
 class Axi3Lite_addrAgent(BaseAxiAgent):
     """
-    :ivar data: iterable of addr
+    :ivar ~.data: iterable of addr
     """
 
     def get_data(self):
@@ -57,7 +57,7 @@ class Axi3Lite_r(Axi_hs):
 
 class AxiLite_rAgent(BaseAxiAgent):
     """
-    :ivar data: iterable of tuples (data, resp)
+    :ivar ~.data: iterable of tuples (data, resp)
     """
 
     def get_data(self):
@@ -93,7 +93,7 @@ class Axi3Lite_w(Axi_hs):
 
 class Axi3Lite_wAgent(BaseAxiAgent):
     """
-    :ivar data: iterable of tuples (data, strb)
+    :ivar ~.data: iterable of tuples (data, strb)
     """
 
     def get_data(self):
@@ -124,7 +124,7 @@ class Axi3Lite_b(Axi_hs):
 
 class Axi3Lite_bAgent(BaseAxiAgent):
     """
-    :ivar data: iterable of resp
+    :ivar ~.data: iterable of resp
     """
 
     def get_data(self):
