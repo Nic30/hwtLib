@@ -17,28 +17,31 @@ from hwt.interfaces.std import Handshaked
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.unionIntf import UnionSink
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.byteOrder import reverseByteOrder
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwtLib.amba.axis import AxiStream, axis_mask_propagate_best_effort
-from hwtLib.amba.axis_comp.base import AxiSCompBase
-from hwtLib.abstract.template_configured import TemplateConfigured,\
-    separate_streams, to_primitive_stream_t
-from hwtLib.handshaked.builder import HsBuilder
-from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
-from pyMathBitPrecise.bit_utils import mask
-from hwtLib.amba.axis_comp.frame_join import AxiS_FrameJoin
+from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwtLib.abstract.template_configured import TemplateConfigured,\
+    separate_streams, to_primitive_stream_t
+from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axis_comp.base import AxiSCompBase
+from hwtLib.amba.axis_comp.frame_deparser.strb_keep_stash import StrbKeepStash,\
+    reduce_conditional_StrbKeepStashes
 from hwtLib.amba.axis_comp.frame_deparser.utils import _get_only_stream,\
     connect_optional_with_best_effort_axis_mask_propagation,\
     drill_down_in_HStruct_fields
-from hwtLib.amba.axis_comp.frame_deparser.strb_keep_stash import StrbKeepStash,\
-    reduce_conditional_StrbKeepStashes
-from hwt.code_utils import connect_optional
+from hwtLib.amba.axis_comp.frame_join import AxiS_FrameJoin
 from hwtLib.amba.axis_comp.frame_parser.field_connector import AxiS_frameParserFieldConnector,\
     get_byte_order_modifier
+from hwtLib.handshaked.builder import HsBuilder
+from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
+from pyMathBitPrecise.bit_utils import mask
+
+TYPE_CONFIG_PARAMS_NAMES = [
+    "T", "TRANSACTION_TEMPLATE", "FRAME_TEMPLATES"]
 
 
+@serializeParamsUniq
 class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
     """
     Assemble fields into frame on axi stream interface,
@@ -54,11 +57,11 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         +---------+
         | field0  +------+
         +---------+      |
-                       +-v-------+
-        +---------+    |         | output stream
-        | field1  +---->  forge  +--------------->
-        +---------+    |         |
-                       +-^-------+
+                       +-v----------+
+        +---------+    |            | output stream
+        | field1  +---->  deparser  +--------------->
+        +---------+    |            |
+                       +-^----------+
         +---------+      |
         | field2  +------+
         +---------+
@@ -82,6 +85,11 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
     def _config(self):
         AxiSCompBase._config(self)
         self.USE_STRB = True
+        self.T = Param(self._structT)
+        self.TRANSACTION_TEMPLATE = Param(self._tmpl)
+        self.FRAME_TEMPLATES = Param(None
+                                     if self._frames is None
+                                     else tuple(self._frames))
 
     def _mkFieldIntf(self, parent: StructIntf, structField: HStructField):
         """
@@ -242,7 +250,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
 
         return ack
 
-    def _delegate_to_children(self):
+    def delegate_to_children(self):
         """
         For the cases where output frames contains the streams which does
         not have start aligned to a frame word boundary, we have to build
@@ -265,7 +273,8 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
 
             children.append(c)
 
-        with self._paramsShared(exclude=({"USE_KEEP", "USE_STRB"}, {})):
+        with self._paramsShared(
+                exclude=({"USE_KEEP", "USE_STRB", *TYPE_CONFIG_PARAMS_NAMES}, {})):
             self.children = children
 
         fjoin = AxiS_FrameJoin()
@@ -274,7 +283,8 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
             *((s_t, "frame%d" % i)
               for i, s_t in enumerate(sub_t_flatten))
         )
-        fjoin._updateParamsFrom(self, exclude=({"USE_KEEP", }, {}))
+        fjoin._updateParamsFrom(
+            self, exclude=({"USE_KEEP", "T"}, {}))
         # has to have keep, because we know that atleast one output will
         # have unaligned start
         fjoin.USE_KEEP = True
@@ -462,7 +472,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         Frame specifier can also describe multiple frames.
         """
         if len(self.sub_t) > 1:
-            self._delegate_to_children()
+            self.delegate_to_children()
         else:
             s_t = _get_only_stream(self._structT)
             if s_t is None:

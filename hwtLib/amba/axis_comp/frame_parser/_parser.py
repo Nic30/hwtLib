@@ -4,6 +4,7 @@
 from typing import Optional, List, Union
 
 from hwt.code import log2ceil, If, connect
+from hwt.code_utils import connect_optional
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.typeShortcuts import hBit
@@ -12,25 +13,24 @@ from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct, HStructField
 from hwt.hdl.types.union import HUnion
+from hwt.hdl.types.utils import is_only_padding
 from hwt.interfaces.std import Handshaked, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.unionIntf import UnionSource
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.serializer.mode import serializeParamsUniq
+from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
+from hwtLib.abstract.frame_utils.alignment_utils import next_frame_offsets
 from hwtLib.abstract.template_configured import TemplateConfigured,\
     HdlType_separate
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
-from hwtLib.amba.axis_comp.frame_parser.word_factory import WordFactory
-from hwt.synthesizer.hObjList import HObjList
+from hwtLib.amba.axis_comp.frame_deparser.utils import drill_down_in_HStruct_fields
+from hwtLib.amba.axis_comp.frame_join._join import AxiS_FrameJoin
 from hwtLib.amba.axis_comp.frame_parser.field_connector import AxiS_frameParserFieldConnector
 from hwtLib.amba.axis_comp.frame_parser.footer_split import AxiS_footerSplit
-from hwtLib.amba.axis_comp.frame_deparser.utils import drill_down_in_HStruct_fields
-from hwt.code_utils import connect_optional
-from hwtLib.amba.axis_comp.frame_join._join import AxiS_FrameJoin
-from hwtLib.abstract.frame_utils.alignment_utils import FrameAlignmentUtils,\
-    next_frame_offsets
-from hwt.hdl.types.utils import is_only_padding
+from hwtLib.amba.axis_comp.frame_parser.word_factory import WordFactory
 from hwtLib.handshaked.streamNode import StreamNode
 
 
@@ -44,6 +44,7 @@ def is_non_const_stream(t: HdlType):
     return False
 
 
+@serializeParamsUniq
 class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
     """
     Parse frame specified by HType (HStruct, HUnion, ...) into fields
@@ -94,6 +95,9 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
 
     def _config(self):
         self.intfCls._config(self)
+        self.T = Param(self._structT)
+        self.TRANSACTION_TEMPLATE = Param(self._tmpl)
+        self.FRAME_TEMPLATES = Param(None if self._frames is None else tuple(self._frames))
         # if this is true field interfaces will be of type VldSynced
         # and single ready signal will be used for all
         # else every interface will be instance of Handshaked and it will
@@ -297,7 +301,9 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                     if suffix_offsets != [0, ]:
                         # add aligment logic
                         align = AxiS_FrameJoin()
-                        align._updateParamsFrom(self)
+                        align._updateParamsFrom(
+                            self,
+                            exclude=({"T"}, {}))
                         align.USE_KEEP = True
                         align.USE_STRB = False
                         align.OUT_OFFSET = 0
