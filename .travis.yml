@@ -7,32 +7,13 @@ cache:
   apt: true
 
 python:
-#  - '3.5'
   - '3.7'
 #  - "nightly"
 
 install:
   - cd ..
   - pip install pytest coveralls codecov
-  - git clone --depth=1 https://github.com/Nic30/pyDigitalWaveTools.git
-  - pushd pyDigitalWaveTools
-  - python3 setup.py install
-  - popd
-  - git clone --depth=1 https://github.com/Nic30/ipCorePackager.git
-  - pushd ipCorePackager
-  - python3 setup.py install
-  - popd
-  - git clone --depth=1 https://github.com/Nic30/pyMathBitPrecise.git
-  - pushd pyMathBitPrecise
-  - python3 setup.py install
-  - popd
-  - git clone --depth=1 https://github.com/Nic30/pycocotb.git
-  - pushd pycocotb
-  - python3 setup.py install
-  - popd
-  - git clone --depth=1 https://github.com/Nic30/hwt.git
-  - cd hwt
-  - python setup.py install
+  - pip install -r docs/requirements.hwt.txt
   - cd ../hwtLib
   - python setup.py install
 
