@@ -18,6 +18,8 @@ class Mi32SlidingWindow(BusBridge):
         (Bits(DATA_WIDTH),     "offset"),
         )
     :note: offset is write only
+    :ivar ~.WINDOW_SIZE: size of window to "m" interface
+        also the address of offset register
     """
 
     def _config(self):
