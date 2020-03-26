@@ -20,8 +20,7 @@ class SimpleComentedUnit(Unit):
         self.b(self.a)
 
 
-simpleComentedUnitExpected =\
-"""
+simpleComentedUnitExpected = """
 --
 --    This is comment for SimpleComentedUnit entity, it will be rendered before entity as comment.
 --    Do not forget that class inheritance does apply for docstring as well.
@@ -79,8 +78,7 @@ class SimpleComentedUnit3(SimpleComentedUnit2):
 
 SimpleComentedUnit3.__doc__ = "dynamically generated, for example loaded from file or builded from unit content"
 
-simpleComentedUnit3Expected = \
-"""
+simpleComentedUnit3Expected = """
 --dynamically generated, for example loaded from file or builded from unit content
 library IEEE;
 use IEEE.std_logic_1164.all;
