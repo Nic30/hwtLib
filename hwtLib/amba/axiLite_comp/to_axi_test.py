@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from itertools import chain
 from random import shuffle
 
 from hwt.interfaces.utils import addClkRstn
