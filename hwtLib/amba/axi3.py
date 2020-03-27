@@ -77,7 +77,8 @@ class Axi3_addrAgent(AxiStreamAgent):
                         cache=CACHE_DEFAULT,
                         lock=LOCK_DEFAULT,
                         prot=PROT_DEFAULT,
-                        size=_DEFAULT):
+                        size=_DEFAULT,
+                        user=None):
         """
         Create a default AXI address transaction 
         :note: transaction is created and returned but it is not added to a agent data
@@ -85,7 +86,11 @@ class Axi3_addrAgent(AxiStreamAgent):
         if size is _DEFAULT:
             D_B = self.intf._parent.DATA_WIDTH // 8
             size = BYTES_IN_TRANS(D_B)
-        return (_id, addr, burst, cache, _len, lock, prot, size)
+        if self.intf.USER_WIDTH:
+            return (_id, addr, burst, cache, _len, lock, prot, size, user)
+        else:
+            assert user is None
+            return (_id, addr, burst, cache, _len, lock, prot, size)
 
 
 #####################################################################
