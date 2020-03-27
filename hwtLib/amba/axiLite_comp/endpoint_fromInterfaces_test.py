@@ -2,20 +2,20 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.constants import Time
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import BramPort_withoutClk, VldSynced, RegCntrl, \
     VectSignal, Signal
+from hwt.interfaces.structIntf import IntfMap
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
-from hwtLib.amba.constants import RESP_OKAY
-from hwtLib.amba.axiLite_comp.sim.mem_space_master import AxiLiteMemSpaceMaster
-from hwt.hdl.types.bits import Bits
 from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
-from hwt.interfaces.structIntf import IntfMap
+from hwtLib.amba.axiLite_comp.sim.mem_space_master import AxiLiteMemSpaceMaster
+from hwtLib.amba.constants import RESP_OKAY
 
 
 class Loop(Unit):
@@ -238,12 +238,15 @@ class AxiLiteEndpoint_fromInterfaceTC(SimTestCase):
         self.randomizeAll()
         self.runSim(600 * Time.ns)
 
-        self.assertValSequenceEqual(u.bus.r._ag.data,
-                                    [(10, RESP_OKAY),
-                                     (MAGIC, RESP_OKAY),
-                                     (MAGIC + 1, RESP_OKAY),
-                                     (None, RESP_OKAY), ] + 
-                                    [(MAGIC + 2 + i, RESP_OKAY) for i in range(4)])
+        self.assertValSequenceEqual(
+            u.bus.r._ag.data, [
+                (10, RESP_OKAY),
+                (MAGIC, RESP_OKAY),
+                (MAGIC + 1, RESP_OKAY),
+                (None, RESP_OKAY), ] + [
+                (MAGIC + 2 + i, RESP_OKAY)
+                for i in range(4)
+            ])
 
     def test_write(self):
         u = self.mySetUp(32)
@@ -310,11 +313,12 @@ class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
         self.randomizeAll()
         self.runSim(600 * Time.ns)
 
-        self.assertValSequenceEqual(u.bus.r._ag.data,
-                                    [(MAGIC, RESP_OKAY),
-                                     (MAGIC + 1, RESP_OKAY),
-                                     (MAGIC + 2, RESP_OKAY)
-                                     ])
+        self.assertValSequenceEqual(
+            u.bus.r._ag.data, [
+                (MAGIC, RESP_OKAY),
+                (MAGIC + 1, RESP_OKAY),
+                (MAGIC + 2, RESP_OKAY)
+            ])
 
     def test_write(self):
         u = self.mySetUp(32)
@@ -331,7 +335,9 @@ class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
             intf = getattr(u, "regCntrlOut%d" % i)
         self.assertValSequenceEqual(intf._ag.dout,
                                     [MAGIC + i, ])
-        self.assertValSequenceEqual(u.bus.b._ag.data, [RESP_OKAY for _ in range(3)])
+        self.assertValSequenceEqual(
+            u.bus.b._ag.data,
+            [RESP_OKAY for _ in range(3)])
 
     def test_registerMap(self):
         self.mySetUp(32)
@@ -343,7 +349,7 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(AxiLiteEndpoint_fromInterfaceTC('test_read'))
+    # suite.addTest(AxiLiteEndpoint_fromInterface_arr_TC('test_read'))
     suite.addTest(unittest.makeSuite(AxiLiteEndpoint_fromInterfaceTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpoint_fromInterface_arr_TC))
     runner = unittest.TextTestRunner(verbosity=3)

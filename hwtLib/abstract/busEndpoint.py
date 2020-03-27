@@ -17,7 +17,10 @@ from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from hwtLib.sim.abstractMemSpaceMaster import PartialField
+from hwtLib.sim.abstractMemSpaceMaster import PartialField,\
+    get_type_of_actual_field
+from builtins import isinstance
+from typing import Tuple, Union
 
 
 def inRange(n, lower, end):
@@ -103,6 +106,17 @@ def walkStructIntfAndIntfMap(structIntf, intfMap):
                 yield from walkStructIntfAndIntfMap(sItem, _item)
 
 
+def get_shouldEnterForTransTmpl(shouldEnterFn_for_HdlType):
+    def shouldEnterForTransTmpl(tmpl: TransTmpl):
+        """
+        This method drives the iterator over TransTmpl instance
+        generated from input data type. It 
+        """
+        shouldEnter, shoulUse = shouldEnterFn_for_HdlType(tmpl.origin)
+        return shouldEnter, shoulUse
+    return shouldEnterForTransTmpl
+
+
 class BusEndpoint(Unit):
     """
     Abstract unit
@@ -137,7 +151,7 @@ class BusEndpoint(Unit):
         :param structTemplate: instance of HStruct which describes
             address space of this endpoint
         :param intfCls: class of bus interface which should be used
-        :param shouldEnterFn: function(structField) return (shouldEnter, shouldUse)
+        :param shouldEnterFn: function(structFieldPath) return (shouldEnter, shouldUse)
             where shouldEnter is flag that means iterator over this interface
             should look inside of this actual object
             and shouldUse flag means that this field should be used
@@ -154,18 +168,29 @@ class BusEndpoint(Unit):
         Unit.__init__(self)
 
     @staticmethod
-    def _defaultShouldEnterFn(field):
-        t = field.dtype
-        isNonPrimitiveArray = isinstance(t, HArray) and not isinstance(t.element_t, Bits)
+    def _defaultShouldEnterFn(field_path):
+        """
+        Default method which resolves how the parts of input data type
+        should be represented on interface level.
+        """
+        t = get_type_of_actual_field(field_path)
+        isNonPrimitiveArray = isinstance(t, HArray) and\
+            not isinstance(t.element_t, Bits)
         shouldEnter = isinstance(t, HStruct) or isNonPrimitiveArray
         shouldUse = not shouldEnter
         return shouldEnter, shouldUse
 
-    def _getWordAddrStep(self):
+    def _getWordAddrStep(self) -> int:
+        """
+        :return: how many address units is one word on bus (e.g. 32b AXI -> 4)
+        """
         raise NotImplementedError(
             "Should be overridden in concrete implementation, this is abstract class")
 
-    def _getAddrStep(self):
+    def _getAddrStep(self) -> int:
+        """
+        :return: how many bits does 1 address unit addresses, (e.g. AXI -> 8b, index to uint32_t[N] -> 32)
+        """
         raise NotImplementedError(
             "Should be overridden in concrete implementation, this is abstract class")
 
@@ -179,33 +204,20 @@ class BusEndpoint(Unit):
             self.bus = self._intfCls()
 
         self.decoded = StructIntf(
-            self.STRUCT_TEMPLATE, instantiateFieldFn=self._mkFieldInterface)._m()
+            self.STRUCT_TEMPLATE, tuple(),
+            instantiateFieldFn=self._mkFieldInterface)._m()
 
-    def getPort(self, transTmpl):
+    def getPort(self, transTmpl: TransTmpl):
         o = transTmpl.origin
         return self.decoded._fieldsToInterfaces[o]
 
     def isInMyAddrRange(self, addrSig):
         return (addrSig >= self._getMinAddr()) & (addrSig < self._getMaxAddr())
 
-    def _shouldEnterForTransTmpl(self, tmpl):
-        o = tmpl.origin
-
-        if isinstance(o, HStructField):
-            w = tmpl.bitAddrEnd - tmpl.bitAddr
-            shouldEnter, shoulUse = self.shouldEnterFn(o)
-            origW = tmpl.origin.dtype.bit_length()
-            if not shoulUse and origW > w and isinstance(tmpl.dtype, Bits):
-                return (False, True)
-            else:
-                return shouldEnter, shoulUse
-        else:
-            return (True, False)
-
     def walkFieldsAndIntf(self, transTmpl, structIntf):
         intfIt = ObjIteratorCtx(structIntf)
         fieldTrans = transTmpl.walkFlatten(
-            shouldEnterFn=self._shouldEnterForTransTmpl,
+            shouldEnterFn=get_shouldEnterForTransTmpl(self.shouldEnterFn),
             otherObjItCtx=intfIt)
 
         hasAnyInterface = False
@@ -217,14 +229,14 @@ class BusEndpoint(Unit):
                 _tTmpl = copy(transTmpl)
                 _tTmpl.bitAddr = base
                 _tTmpl.bitAddrEnd = end
-                _tTmpl.origin = PartialField(transTmpl.origin)
+                _tTmpl.origin = (*transTmpl.origin[:-1], PartialField(transTmpl.origin))
                 transTmpl = _tTmpl
                 self.decoded._fieldsToInterfaces[transTmpl.origin] = intf
 
             yield transTmpl, intf
             hasAnyInterface = True
 
-        assert hasAnyInterface
+        assert hasAnyInterface, (transTmpl, structIntf)
 
     def _parseTemplate(self):
         self._directlyMapped = []
@@ -236,7 +248,7 @@ class BusEndpoint(Unit):
 
         AW = int(self.ADDR_WIDTH)
         SUGGESTED_AW = self._suggestedAddrWidth()
-        assert SUGGESTED_AW <= AW, (SUGGESTED_AW, AW)
+        assert SUGGESTED_AW <= AW, ("Address width too small", SUGGESTED_AW, AW)
         tmpl = TransTmpl(self.STRUCT_TEMPLATE)
 
         for transTmpl, intf in self.walkFieldsAndIntf(tmpl, self.decoded):
@@ -337,16 +349,16 @@ class BusEndpoint(Unit):
 
         return (addrIsInRange, connectedAddr)
 
-    def _mkFieldInterface(self, structIntf, field):
+    def _mkFieldInterface(self, structIntf: StructIntf, field):
         """
         Instantiate field interface for fields in structure template of this endpoint
 
         :return: interface for specified field
         """
         t = field.dtype
-        DW = int(self.DATA_WIDTH)
-
-        shouldEnter, shouldUse = self.shouldEnterFn(field)
+        dw = None
+        path = (*structIntf._field_path, field)
+        shouldEnter, shouldUse = self.shouldEnterFn(path)
         if shouldUse:
             if isinstance(t, Bits):
                 p = RegCntrl()
@@ -361,19 +373,24 @@ class BusEndpoint(Unit):
 
         elif shouldEnter:
             if isinstance(t, HArray):
-                if isinstance(t.element_t, Bits):
+                e_t = t.element_t
+                if isinstance(e_t, Bits):
                     p = HObjList(
                         RegCntrl() for _ in range(int(t.size))
                     )
                     dw = t.element_t.bit_length()
-                else:
+                elif isinstance(e_t, HStruct):
                     return HObjList(
                         StructIntf(t.element_t,
+                                   (*path, i),
                                    instantiateFieldFn=self._mkFieldInterface)
-                        for _ in range(int(t.size))
+                        for i in range(int(t.size))
                     )
+                else:
+                    raise NotImplementedError()
             elif isinstance(t, HStruct):
-                return StructIntf(t, instantiateFieldFn=self._mkFieldInterface)
+                return StructIntf(t, path,
+                                  instantiateFieldFn=self._mkFieldInterface)
             else:
                 raise TypeError(t)
 
@@ -382,8 +399,9 @@ class BusEndpoint(Unit):
         else:
             _p = [p]
 
-        for i in _p:
-            i.DATA_WIDTH = dw
+        if dw is not None:
+            for i in _p:
+                i.DATA_WIDTH = dw
 
         return p
 
@@ -427,12 +445,36 @@ class BusEndpoint(Unit):
         """
         t = HTypeFromIntfMap(interfaceMap)
 
-        def shouldEnter(field):
-            if field.meta is None:
-                shouldEnter = False
-            else:
-                shouldEnter = field.meta.split
+        def find_by_name(intf_map_item, name):
+            assert isinstance(intf_map_item, IntfMap), intf_map_item
+            for x in intf_map_item:
+                if isinstance(x, InterfaceBase):
+                    if x._name == name:
+                        return x
+                elif isinstance(x, RtlSignalBase):
+                    if x.name == name:
+                        return x
+                else:
+                    v, n = x
+                    if n == name:
+                        return v
+            raise KeyError("Not in map", name)
 
+        def shouldEnter(field_path):
+            actual = interfaceMap
+            # find in interfaceMap, skip first because it is the type itself
+            for rec in field_path[1:]:
+                if isinstance(rec, (InterfaceBase, RtlSignalBase)):
+                    shouldEnter, shouldYield = False, True
+                    return shouldEnter, shouldYield
+                elif isinstance(rec, int):
+                    actual = actual[rec]
+                elif isinstance(rec, HStructField):
+                    actual = find_by_name(actual, rec.name)
+                else:
+                    raise NotImplementedError(rec)
+
+            shouldEnter = isinstance(actual, (list, tuple))
             shouldYield = not shouldEnter
             return shouldEnter, shouldYield
 

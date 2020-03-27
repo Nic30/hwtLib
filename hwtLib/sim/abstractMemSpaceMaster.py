@@ -1,8 +1,27 @@
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.array import HArray
-from hwt.hdl.types.struct import HStruct
+from hwt.hdl.types.struct import HStruct, HStructField
 from pyMathBitPrecise.bit_utils import mask
 from hwt.hdl.types.hdlType import HdlType
+from typing import Tuple, Union
+
+
+def get_type_of_actual_field(field_path: Tuple[Union[HdlType, HStructField, int]]):
+    array_depth = 0
+    # resolve type for array/stream elements
+    for x in reversed(field_path):
+        if isinstance(x, int):
+            array_depth += 1
+            continue
+
+        if isinstance(x, HStructField):
+            res = x.dtype
+        else:
+            res = x
+
+        for _ in range(array_depth):
+            res = res.element_t
+        return res
 
 
 class PartialField(object):
@@ -10,9 +29,11 @@ class PartialField(object):
     HStruct field made from proxy interface
     """
 
-    def __init__(self, originalField):
+    def __init__(
+            self,
+            originalField: Tuple[Union[HStructField, "PartialField", int, HdlType], ...]):
         self._originalField = originalField
-        self.name = originalField.name
+        self.name = get_type_of_actual_field(originalField).name
 
 
 class MemorySpaceItem(object):
@@ -84,7 +105,7 @@ class MemorySpaceItemStruct(object):
             else:
                 msi = MemorySpaceItem(memHandler, trans, offset=self._offset)
 
-            name = trans.origin.name
+            name = trans.origin[-1].name
             assert not hasattr(self, name), name
             setattr(self, name, msi)
 

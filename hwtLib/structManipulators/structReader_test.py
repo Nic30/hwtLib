@@ -79,7 +79,7 @@ class StructReaderTC(SimTestCase):
         for f in s0.fields:
             if f.name is not None:
                 expected = expectedFieldValues[f.name]
-                got = u.dataOut._fieldsToInterfaces[f]._ag.data
+                got = u.dataOut._fieldsToInterfaces[(s0, f)]._ag.data
                 self.assertValSequenceEqual(got, expected)
 
     def test_simpleFields(self):

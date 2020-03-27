@@ -12,7 +12,6 @@ from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.datapump.intf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
-from hwt.interfaces.structIntf import IntfMap
 
 
 class CLinkedListReader(Unit):
@@ -30,7 +29,7 @@ class CLinkedListReader(Unit):
     baseAddr is address of actual node
 
     :attention: device reads only chunks of size <= BUFFER_CAPACITY/2,
-    
+
     .. hwt-schematic::
     """
     def _config(self):

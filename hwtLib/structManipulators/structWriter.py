@@ -60,7 +60,7 @@ class StructWriter(StructReader):
     def _declr(self):
         addClkRstn(self)
         self.parseTemplate()
-        self.dataIn = StructIntf(self._structT,
+        self.dataIn = StructIntf(self._structT, tuple(),
                                  self._createInterfaceForField)
 
         s = self.set = Handshaked()  # data signal is addr of structure to write

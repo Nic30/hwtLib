@@ -26,6 +26,7 @@ class IpifBuffWithEndpoint(Unit):
             self.reg = IpifBuff()
             self.ep = IpifEndpoint(self.STRUCT_TEMPLATE)
             self.decoded = StructIntf(self.STRUCT_TEMPLATE,
+                                      tuple(),
                                       self.ep._mkFieldInterface)._m()
 
     def _impl(self):

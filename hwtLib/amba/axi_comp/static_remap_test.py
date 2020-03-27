@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC
-from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
-from hwtLib.amba.axi_comp.static_remap import AxiStaticRemap
-from hwtLib.amba.axi4Lite import Axi4Lite
+from hwt.hdl.types.struct import HStructField
+from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.abstract.busEndpoint import BusEndpoint
+from hwtLib.amba.axi4Lite import Axi4Lite
+from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
+from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC
+from hwtLib.amba.axi_comp.static_remap import AxiStaticRemap
 
 
 class AxiLiteEndpointBehindStaticRemap(Unit):
@@ -20,7 +22,7 @@ class AxiLiteEndpointBehindStaticRemap(Unit):
                              intfCls=intfCls,
                              shouldEnterFn=shouldEnterFn)
 
-    def _mkFieldInterface(self, structIntf, field):
+    def _mkFieldInterface(self, structIntf: StructIntf, field: HStructField):
         return BusEndpoint._mkFieldInterface(self, structIntf, field)
 
     def _declr(self):

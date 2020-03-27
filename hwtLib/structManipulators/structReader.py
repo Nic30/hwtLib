@@ -100,6 +100,7 @@ class StructReader(AxiS_frameParser):
     def _declr(self):
         addClkRstn(self)
         self.dataOut = StructIntf(self._structT,
+                                  tuple(),
                                   self._mkFieldIntf)._m()
 
         g = self.get = Handshaked()  # data signal is addr of structure to download

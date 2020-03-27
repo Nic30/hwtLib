@@ -2,14 +2,13 @@ from hwt.code import log2ceil
 from hwt.hdl.constants import Time
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.struct import HStruct
+from hwt.hdl.types.struct import HStruct, HStructField
 from hwt.interfaces.std import RegCntrl, BramPort_withoutClk
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.unit import Unit
-
 from hwtLib.types.ctypes import uint8_t
 
 
@@ -34,23 +33,25 @@ class ListOfInterfacesSample4(Unit):
     """
 
     @staticmethod
-    def shouldEnterFn(field):
+    def shouldEnterFn(field_path):
         return False, True
 
-    def _mkFieldInterface(self, structIntf, field):
+    def _mkFieldInterface(self, structIntf: HStruct, field: HStructField):
         t = field.dtype
 
         if isinstance(t, Bits):
             p = RegCntrl()
             dw = t.bit_length()
         elif isinstance(t, HArray):
-            if self.shouldEnterFn(field):
+            field_path = (*structIntf._field_path, field)
+            if self.shouldEnterFn(field_path)[0]:
                 if isinstance(t.element_t, Bits):
                     p = HObjList(RegCntrl() for _ in range(int(t.size)))
                     dw = t.element_t.bit_length()
                 else:
                     p = HObjList([StructIntf(
                         t.element_t,
+                        field_path,
                         instantiateFieldFn=self._mkFieldInterface)
                         for _ in range(int(t.size))])
                     return p
@@ -70,11 +71,13 @@ class ListOfInterfacesSample4(Unit):
         self.a = HObjList(
             StructIntf(
                 struct0,
+                tuple(),
                 instantiateFieldFn=self._mkFieldInterface)
             for _ in range(3))
         self.b = HObjList(
             StructIntf(
                 struct0,
+                tuple(),
                 instantiateFieldFn=self._mkFieldInterface)
             for _ in range(3))._m()
 
@@ -87,7 +90,7 @@ class ListOfInterfacesSample4b(ListOfInterfacesSample4):
     .. hwt-schematic::
     """
     @staticmethod
-    def shouldEnterFn(field):
+    def shouldEnterFn(field_path):
         return True, True
 
 
@@ -248,7 +251,7 @@ class ListOfInterfacesSample4TC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(ListOfInterfacesSample4TC('test_ListOfInterfacesSample4b_intfIterations'))
+    # suite.addTest(ListOfInterfacesSample4TC('test_ListOfInterfacesSample4b_intfIterations'))
     # suite.addTest(ListOfInterfacesSample4TC('test_ListOfInterfacesSample4b'))
 
     suite.addTest(unittest.makeSuite(ListOfInterfacesSample4TC))

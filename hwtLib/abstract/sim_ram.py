@@ -219,7 +219,7 @@ class SimRam():
         dataDict = {}
         for subTmpl in transTmpl.children:
             t = subTmpl.dtype
-            name = subTmpl.origin.name
+            name = subTmpl.origin[-1].name
             if isinstance(t, Bits):
                 value = self.getBits(
                     subTmpl.bitAddr + offset, subTmpl.bitAddrEnd + offset)

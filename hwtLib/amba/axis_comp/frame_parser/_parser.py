@@ -112,7 +112,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         if isinstance(t, HUnion):
             return UnionSource(t, parent._instantiateFieldFn)
         elif isinstance(t, HStruct):
-            return StructIntf(t, parent._instantiateFieldFn)
+            return StructIntf(t, (*parent._field_path, structField), parent._instantiateFieldFn)
         elif isinstance(t, HStream):
             if self.SHARED_READY:
                 raise NotImplementedError(t)
@@ -154,7 +154,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         if is_only_padding(t):
             self.dataOut = None
         else:
-            self.dataOut = intfCls(t, self._mkFieldIntf)._m()
+            self.dataOut = intfCls(t, tuple(), self._mkFieldIntf)._m()
 
         self.parseTemplate()
         if self.OVERFLOW_SUPPORT:

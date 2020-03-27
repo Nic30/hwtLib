@@ -124,8 +124,8 @@ class AxiS_frameParserFieldConnector():
             exclusiveEn: Optional[RtlSignal],
             wordIndex: Optional[RtlSignal],
             currentWordIndex: int):
-        orig = part.tmpl.origin
-        dout = self.dataOut._fieldsToInterfaces[orig]
+        orig = part.tmpl.origin[-1]
+        dout = self.dataOut._fieldsToInterfaces[part.tmpl.origin]
         if isinstance(orig, HStructField):
             orig = orig.dtype
         assert isinstance(orig, HStream), orig
@@ -246,7 +246,7 @@ class AxiS_frameParserFieldConnector():
         elif part.isPadding:
             return
 
-        fieldInfo = part.tmpl.origin
+        fieldInfo = part.tmpl.origin[-1]
         if isinstance(fieldInfo, HStream) or (
                 isinstance(fieldInfo, HStructField) and
                 isinstance(fieldInfo.dtype, HStream)):
@@ -270,7 +270,7 @@ class AxiS_frameParserFieldConnector():
             # connect all parts in this group to output stream
             signalsOfParts.append(fPartSig)
             tToIntf = self.dataOut._fieldsToInterfaces
-            intf = tToIntf[fieldInfo]
+            intf = tToIntf[part.tmpl.origin]
             intf.data(self.byteOrderCare(
                 Concat(
                     *reversed(signalsOfParts)

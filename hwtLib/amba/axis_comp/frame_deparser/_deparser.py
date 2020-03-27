@@ -99,7 +99,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         if isinstance(t, HUnion):
             return UnionSink(t, parent._instantiateFieldFn)
         elif isinstance(t, HStruct):
-            return StructIntf(t, parent._instantiateFieldFn)
+            return StructIntf(t, (*parent._field_path, structField), parent._instantiateFieldFn)
         elif isinstance(t, HStream):
             p = AxiStream()
             p._updateParamsFrom(self)
@@ -138,7 +138,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         else:
             raise TypeError(self._structT)
 
-        self.dataIn = intfCls(self._structT, self._mkFieldIntf)
+        self.dataIn = intfCls(self._structT, tuple(), self._mkFieldIntf)
 
     def connectPartsOfWord(self, wordData_out: RtlSignal,
                            tPart: Union[TransPart,
@@ -164,7 +164,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
             # connnect parts of union to output signal
             high, low = tPart.getBusWordBitRange()
             parentIntf = tToIntf[tPart.origin.parent.origin]
-
+ 
             if parentIntf not in self._tmpRegsForSelect.keys():
                 sel = HsBuilder(self, parentIntf._select).buff().end
                 self._tmpRegsForSelect[parentIntf] = sel

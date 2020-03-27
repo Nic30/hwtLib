@@ -11,6 +11,7 @@ from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 from hwtLib.types.ctypes import uint32_t
 from pyMathBitPrecise.bit_utils import mask
+from hwtLib.sim.abstractMemSpaceMaster import get_type_of_actual_field
 
 
 structTwoArr = HStruct(
@@ -115,8 +116,8 @@ class AxiLiteEndpointStructsInArrayTC(AxiLiteEndpointTC):
 
     def mySetUp(self, data_width=32):
 
-        def shouldEnterFn(x):
-            return (True, isinstance(x.dtype, Bits))
+        def shouldEnterFn(field_path):
+            return (True, isinstance(get_type_of_actual_field(field_path), Bits))
 
         u = AxiLiteEndpoint(self.STRUCT_TEMPLATE,
                             shouldEnterFn=shouldEnterFn)

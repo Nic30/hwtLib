@@ -1,3 +1,4 @@
+from typing import Union
 import unittest
 
 from hwt.hdl.types.bits import Bits
@@ -10,6 +11,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwtLib.types.ctypes import uint16_t, uint8_t, int16_t
+
 
 union0 = HUnion(
         (uint16_t, "b16"),
@@ -32,28 +34,30 @@ class SimpleUnionSlave(EmptyUnit):
         self.intfCls = intfCls
         super(SimpleUnionSlave, self).__init__()
 
-    def mkFieldIntf(self, structIntf, frameTmplItem):
-        t = frameTmplItem.dtype
+    def mkFieldIntf(self, structIntf: Union[StructIntf, UnionSink, UnionSource], field):
+        t = field.dtype
         if isinstance(t, HUnion):
-            return self.intfCls(t, structIntf._instantiateFieldFn)
+            return self.intfCls(t, (*structIntf._field_path, field),
+                                structIntf._instantiateFieldFn)
         elif isinstance(t, HStruct):
-            return StructIntf(t, structIntf._instantiateFieldFn)
+            return StructIntf(t, (*structIntf._field_path, field),
+                              structIntf._instantiateFieldFn)
         else:
             p = Handshaked()
 
-        p.DATA_WIDTH = frameTmplItem.dtype.bit_length()
+        p.DATA_WIDTH = field.dtype.bit_length()
         return p
 
     def _declr(self):
         addClkRstn(self)
-        self.a = UnionSink(self.dtype, self.mkFieldIntf)
+        self.a = UnionSink(self.dtype, tuple(), self.mkFieldIntf)
 
 
 class SimpleUnionMaster(SimpleUnionSlave):
 
     def _declr(self):
         addClkRstn(self)
-        self.a = UnionSink(self.dtype, self.mkFieldIntf)._m()
+        self.a = UnionSink(self.dtype, tuple(), self.mkFieldIntf)._m()
 
 
 class UnionIntfTC(SimTestCase):
@@ -61,11 +65,13 @@ class UnionIntfTC(SimTestCase):
     def checkIntf(self, u):
         d = u.a._fieldsToInterfaces
 
-        self.assertIs(d[union0.fields["b16"]], u.a.b16)
-        self.assertIs(d[union0.fields["struct16"]], u.a.struct16)
-        self.assertIs(d[union0.fields["struct16"].dtype.fields[0]],
+        self.assertIs(d[(union0, union0.fields["b16"])], u.a.b16)
+        s16 = union0.fields["struct16"]
+        self.assertIs(d[(union0, s16)], u.a.struct16)
+        self.assertIs(d[(union0, s16, s16.dtype.fields[0])],
                       u.a.struct16.b16to8)
-        self.assertIs(d[union0.fields["union"].dtype.fields["b16"]],
+        un = union0.fields["union"]
+        self.assertIs(d[(union0, un, un.dtype.fields["b16"])],
                       u.a.union.b16)
 
     def test_instantiationSinkSlave(self):

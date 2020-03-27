@@ -1,3 +1,5 @@
+from hwt.hdl.types.struct import HStructField
+from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.synthesizer.unit import Unit
 from hwtLib.abstract.busEndpoint import BusEndpoint
@@ -20,12 +22,12 @@ class AxiLiteEpWithReg(Unit):
     def _config(self):
         BusEndpoint._config(self)
 
-    def _mkFieldInterface(self, structIntf, field):
+    def _mkFieldInterface(self, structIntf: StructIntf, field: HStructField):
         return BusEndpoint._mkFieldInterface(self, structIntf, field)
 
     @staticmethod
-    def _defaultShouldEnterFn(field):
-        return BusEndpoint._defaultShouldEnterFn(field)
+    def _defaultShouldEnterFn(field_path):
+        return BusEndpoint._defaultShouldEnterFn(field_path)
 
     def _declr(self):
         BusEndpoint._declr(self)
