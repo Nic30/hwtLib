@@ -3,6 +3,7 @@ from hwtLib.amba.axi3Lite import IP_Axi3Lite, Axi3Lite, Axi3Lite_r, \
     Axi3Lite_b, Axi3Lite_w, Axi3Lite_addr, Axi3Lite_addrAgent
 from hwtLib.amba.axi_intf_common import AxiMap
 from pycocotb.hdlSimulator import HdlSimulator
+from hwtLib.amba.constants import PROT_DEFAULT
 
 
 class Axi4Lite_addr(Axi3Lite_addr):
@@ -31,6 +32,9 @@ class Axi4Lite_addrAgent(Axi3Lite_addrAgent):
 
         self.intf.addr.write(addr)
         self.intf.prot.write(prot)
+
+    def create_addr_req(self, addr, prot=PROT_DEFAULT):
+        return (addr, prot)
 
 
 class Axi4Lite_w(Axi3Lite_w):

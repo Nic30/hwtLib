@@ -149,7 +149,7 @@ class AxiLiteEndpointStructsInArrayTC(AxiLiteEndpointTC):
         MAGIC = 100
         MAGIC2 = 300
 
-        a = self.aTrans
+        a = u.bus.ar._ag.create_addr_req
         u.bus.ar._ag.data.extend([a(i * 0x4) for i in range(4 * 2 + 1)])
 
         for i, a in enumerate(u.decoded.arr):
@@ -171,7 +171,7 @@ class AxiLiteEndpointStructsInArrayTC(AxiLiteEndpointTC):
         m = mask(32 // 8)
         N = 4
 
-        a = self.aTrans
+        a = u.bus.ar._ag.create_addr_req
         u.bus.aw._ag.data.extend([a(i * 0x4) for i in range(N * 2 + 1)])
 
         expected = [

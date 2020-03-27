@@ -67,9 +67,6 @@ class AxiLiteEndpointTC(SimTestCase):
     FIELD_ADDR = [0x0, 0x4]
     CLK = 10 * Time.ns
 
-    def aTrans(self, addr, prot=0):
-        return (addr, prot)
-
     def mkRegisterMap(self, u):
         self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
         self.regs = AxiLiteMemSpaceMaster(u.bus, self.addrProbe.discovered)
@@ -108,7 +105,8 @@ class AxiLiteEndpointTC(SimTestCase):
         MAGIC = 100
         A = self.FIELD_ADDR
 
-        u.bus.ar._ag.data.extend(map(self.aTrans,
+        a = u.bus.ar._ag.create_addr_req
+        u.bus.ar._ag.data.extend(map(a,
                                      [A[0], A[1], A[0], A[1], A[1] + 0x4]))
 
         u.decoded.field0._ag.din.extend([MAGIC])
@@ -129,7 +127,9 @@ class AxiLiteEndpointTC(SimTestCase):
         MAGIC = 100
         m = mask(32 // 8)
         A = self.FIELD_ADDR
-        u.bus.aw._ag.data.extend(map(self.aTrans,
+
+        a = u.bus.ar._ag.create_addr_req
+        u.bus.aw._ag.data.extend(map(a,
                                      [A[0],
                                       A[1],
                                       A[0],

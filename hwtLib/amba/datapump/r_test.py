@@ -5,17 +5,17 @@
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi3 import Axi3_addr
 from hwtLib.amba.axi4 import Axi4_addr
-from hwtLib.amba.datapump.r import Axi_rDatapump
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.amba.constants import RESP_OKAY
+from hwtLib.amba.datapump.r import Axi_rDatapump
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 
 
 class Axi_datapumpTC(SingleUnitSimTestCase):
 
-    def aTrans(self, id_, addr, len_):
-        return self.u.a._ag.create_addr_req(addr, len_, _id=id_)
+    def aTrans(self, addr, _len, _id):
+        return self.u.a._ag.create_addr_req(addr, _len, _id=_id)
 
 
 def mkReq(addr, _len, rem=0, _id=0):
@@ -23,7 +23,7 @@ def mkReq(addr, _len, rem=0, _id=0):
 
 
 def addData(ag, data, _id=0, resp=RESP_OKAY, last=True):
-    ag.data.append((_id, data, resp, last))
+    ag.data.append((_id, data, resp, int(last)))
 
 
 class Axi4_rDatapumpTC(Axi_datapumpTC):
@@ -128,9 +128,8 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
         self.assertValSequenceEqual(ar,
                                     [
                                         self.aTrans(
-                                            _id, 0xff +
-                                            (i * (LEN_MAX + 1) * 8),
-                                            LEN_MAX)
+                                            0xff + (i * (LEN_MAX + 1) * 8),
+                                            LEN_MAX, _id)
                                         for i in range(2)
                                     ])
 
@@ -152,7 +151,7 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
         _id = 0
         _len = 0
         self.assertValSequenceEqual(ar,
-                                    [self.aTrans(_id, addr, _len)
+                                    [self.aTrans(addr, _len, _id)
                                         for addr in range(16)
                                      ])
 
@@ -178,7 +177,7 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
         _id = 0
         _len = 0
         self.assertValSequenceEqual(ar,
-                                    [self.aTrans(_id, addr, _len)
+                                    [self.aTrans(addr, _len, _id)
                                         for addr in range(64)
                                      ])
 
@@ -211,13 +210,11 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
 
         _id = 0
         _len = 0
-        self.assertValSequenceEqual(ar,
-                                    [self.aTrans(
-                                        _id,
-                                        i * (self.DATA_WIDTH // 8),
-                                        0)
-                                        for i in range(self.DATA_WIDTH // 8)
-                                     ])
+        a = self.aTrans
+        self.assertValSequenceEqual(ar, [
+            a(i * (self.DATA_WIDTH // 8), 0, _id)
+            for i in range(self.DATA_WIDTH // 8)
+        ])
         self.assertValSequenceEqual(rout, expected)
 
     def test_endstrbMultiFrame(self):
@@ -252,11 +249,11 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
 
         _id = 0
         _mkReq = self.aTrans
-        self.assertValSequenceEqual(ar,
-                                    [_mkReq(_id, 0, self.LEN_MAX),
-                                     _mkReq(_id, (self.LEN_MAX + 1) *
-                                            (self.DATA_WIDTH // 8), 1)
-                                     ])
+        self.assertValSequenceEqual(ar, [
+            _mkReq(0, self.LEN_MAX, _id),
+            _mkReq((self.LEN_MAX + 1) *
+                   (self.DATA_WIDTH // 8), 1, _id)
+        ])
         self.assertValSequenceEqual(rout, expected)
 
     def test_multipleSplited(self):
@@ -293,10 +290,9 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
                 addr = (i // 2) + 8 * (self.LEN_MAX + 1)
                 len_tmp = 0
 
-            self.assertValSequenceEqual(arreq,
-                                        self.aTrans(_id,
-                                                              addr,
-                                                              len_tmp))
+            self.assertValSequenceEqual(
+                arreq,
+                self.aTrans(addr, len_tmp, _id))
 
         _rout = iter(rout)
 

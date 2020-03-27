@@ -211,9 +211,10 @@ def testSuiteFromTCs(*tcs):
     for tc in tcs:
         if not issubclass(tc, SingleUnitSimTestCase):
             tc._multiprocess_can_split_ = True
-    loadedTcs = [loader.loadTestsFromTestCase(tc) for tc in tcs
-                 # if not issubclass(tc, SimTestCase)  # [debug] skip simulations
-                 ]
+    loadedTcs = [
+        loader.loadTestsFromTestCase(tc) for tc in tcs
+        # if not issubclass(tc, SimTestCase)  # [debug] skip simulations
+    ]
     suite = TestSuite(loadedTcs)
     return suite
 

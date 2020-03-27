@@ -39,6 +39,10 @@ class Axi3Lite_addrAgent(BaseAxiAgent):
     def set_data(self, data):
         self.intf.addr.write(data)
 
+    def create_addr_req(self, addr, prot=None):
+        assert prot is None, "Axi3Lite_addr does not have a prot signal"
+        return addr
+
 
 #################################################################
 class Axi3Lite_r(Axi_hs):

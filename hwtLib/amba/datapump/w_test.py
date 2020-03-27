@@ -22,7 +22,7 @@ class Axi4_wDatapumpTC(Axi_datapumpTC):
         u.MAX_LEN = cls.LEN_MAX
         return cls.u
 
-    def wTrans(self, data, last, strb=mask(64 // 8), id_=0):
+    def wTrans(self, data, last, strb=mask(64 // 8), _id=0):
         return (data, strb, last)
 
     def test_nop(self):
@@ -46,7 +46,7 @@ class Axi4_wDatapumpTC(Axi_datapumpTC):
 
         self.assertValSequenceEqual(aw,
                                     [
-                                        self.aTrans(0, 255, 0)
+                                        self.aTrans(255, 0, 0)
                                     ])
 
         self.assertEmpty(u.w._ag.data)
@@ -68,11 +68,11 @@ class Axi4_wDatapumpTC(Axi_datapumpTC):
         self.runSim(20 * CLK_PERIOD)
 
         self.assertValSequenceEqual(aw, [
-            self.aTrans(0, 255, 0)
+            self.aTrans(255, 0, 0)
         ])
 
         self.assertValSequenceEqual(
-            w, [self.wTrans(77, 1, strb=mask(64 // 8), id_=0)])
+            w, [self.wTrans(77, 1, strb=mask(64 // 8), _id=0)])
         self.assertEmpty(b)
 
     def test_singleLong(self):
@@ -95,9 +95,9 @@ class Axi4_wDatapumpTC(Axi_datapumpTC):
         self.assertValSequenceEqual(aw,
                                     [
                                         self.aTrans(
-                                            id_=0,
-                                            addr=0xff,
-                                            len_=self.LEN_MAX)
+                                            0xff,
+                                            self.LEN_MAX,
+                                            0)
                                     ])
 
         self.assertEqual(len(w), self.LEN_MAX + 1)
@@ -124,7 +124,7 @@ class Axi4_wDatapumpTC(Axi_datapumpTC):
         self.assertValSequenceEqual(aw,
                                     [
                                         self.aTrans(
-                                            id_=0, addr=0xff + (8 * i), len_=0)
+                                            0xff + (8 * i), 0, 0)
                                         for i in range(N)
                                     ])
 
@@ -160,7 +160,7 @@ class Axi4_wDatapumpTC(Axi_datapumpTC):
         self.assertValSequenceEqual(aw,
                                     [
                                         self.aTrans(
-                                            id_=0, addr=0xff + (8 * i), len_=0)
+                                            0xff + (8 * i), 0, 0)
                                         for i in range(N)
                                     ])
 
@@ -187,7 +187,7 @@ class Axi4_wDatapumpTC(Axi_datapumpTC):
                 m = mask(64 // 8 - 1)
                 last = int(i == (L - 1))
                 wIn.data.append((d, m, last))
-                beat = self.wTrans(d, last, strb=m, id_=0)
+                beat = self.wTrans(d, last, strb=m, _id=0)
 
                 expectedWData.append(beat)
             b.append((0, RESP_OKAY))
@@ -205,9 +205,8 @@ class Axi4_wDatapumpTC(Axi_datapumpTC):
         self.assertValSequenceEqual(aw,
                                     [
                                         self.aTrans(
-                                            id_=0,
-                                            addr=0xff + (8 * i),
-                                            len_=L - 1)
+                                            0xff + (8 * i),
+                                            L - 1, 0)
                                         for i in range(N)
                                     ])
 
@@ -222,8 +221,8 @@ class Axi4_wDatapumpTC(Axi_datapumpTC):
 class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
     LEN_MAX = 15
 
-    def wTrans(self, data, last, strb=mask(64 // 8), id_=0):
-        return (id_, data, strb, last)
+    def wTrans(self, data, last, strb=mask(64 // 8), _id=0):
+        return (_id, data, strb, last)
 
     @classmethod
     def getUnit(cls):
@@ -235,8 +234,8 @@ class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
 class Axi3_wDatapump_small_splitting_TC(SingleUnitSimTestCase):
     LEN_MAX = 3
 
-    def wTrans(self, data, last, strb=mask(64 // 8), id_=0):
-        return (id_, data, strb, last)
+    def wTrans(self, data, last, strb=mask(64 // 8), _id=0):
+        return (_id, data, strb, last)
 
     @classmethod
     def getUnit(cls):
