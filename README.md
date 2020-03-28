@@ -5,7 +5,7 @@
 
 
 hwtLib is the library of hardware components for [hwt framework](https://github.com/Nic30/hwt)
-Any component can be exported as IP-exact IPcore using hwt.Packager or as Verilog/VHDL/SystemC code by [toRtl()](https://github.com/Nic30/hwt/blob/master/hwt/synthesizer/utils.py#L17) (Verilog, VHDL, ...). Target language is specified by keyword parameter serializer. Note that for most of components there is a schematic in the documentation.
+Any component can be exported as IP-exact IPcore using [IpPackager](https://github.com/Nic30/hwtLib/blob/master/hwtLib/examples/simple_ip.py#L26) or as Verilog/VHDL/SystemC code by [toRtl()](https://github.com/Nic30/hwtLib/blob/master/hwtLib/examples/showcase0.py#L256) (Verilog, VHDL, ...). Target language is specified by keyword parameter serializer. Note that for most of components there is a schematic in the documentation.
 
 
 ## Content
