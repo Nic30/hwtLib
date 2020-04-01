@@ -36,7 +36,6 @@ from hwtLib.types.ctypes import uint32_t, int32_t, uint8_t, int8_t
 from hwt.synthesizer.hObjList import HObjList
 
 
-
 def foo(condition0, statements, condition1, fallback0, fallback1):
     """
     Python functions used as macro
