@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, FsmBuilder, Switch
+from hwt.code import If, FsmBuilder
 from hwt.hdl.types.enum import HEnum
-from hwtLib.abstract.busEndpoint import BusEndpoint
+from hwtLib.abstract.busEndpoint import BusEndpoint, inRange
 from hwtLib.xilinx.ipif.intf import Ipif
 
 
@@ -29,9 +29,6 @@ class IpifEndpoint(BusEndpoint):
     def _impl(self):
         self._parseTemplate()
         # build read data output mux
-
-        def isMyAddr(addrSig, addr, end):
-            return (addrSig >= addr) & (addrSig < end)
 
         st_t = HEnum('st_t', ['idle', "writeAck", 'readDelay', 'rdData'])
         ipif = self.bus
@@ -61,7 +58,7 @@ class IpifEndpoint(BusEndpoint):
         for (_, _), t in reversed(self._bramPortMapped):
             # map addr for bram ports
             _addr = t.bitAddr // ADDR_STEP
-            _isMyAddr = isMyAddr(addr, _addr, t.bitAddrEnd // ADDR_STEP)
+            _isMyAddr = inRange(addr, _addr, t.bitAddrEnd // ADDR_STEP)
             port = self.getPort(t)
 
             self.propagateAddr(addr, ADDR_STEP, port.addr,

@@ -4,7 +4,7 @@
 from hwt.code import If, FsmBuilder
 from hwt.hdl.types.enum import HEnum
 
-from hwtLib.abstract.busEndpoint import BusEndpoint
+from hwtLib.abstract.busEndpoint import BusEndpoint, inRange
 from hwtLib.avalon.mm import AvalonMM, RESP_OKAY, RESP_SLAVEERROR
 
 
@@ -31,9 +31,6 @@ class AvalonMmEndpoint(BusEndpoint):
     def _impl(self):
         self._parseTemplate()
         # build read data output mux
-
-        def isMyAddr(addrSig, addr, end):
-            return (addrSig >= addr) & (addrSig < end)
 
         st_t = HEnum('st_t', ['idle', 'readDelay', 'rdData'])
         bus = self.bus
@@ -68,7 +65,7 @@ class AvalonMmEndpoint(BusEndpoint):
         for (_, _), t in reversed(self._bramPortMapped):
             # map addr for bram ports
             _addr = t.bitAddr // ADDR_STEP
-            _isMyAddr = isMyAddr(addr, _addr, t.bitAddrEnd // ADDR_STEP)
+            _isMyAddr = inRange(addr, _addr, t.bitAddrEnd // ADDR_STEP)
             wasMyAddr = self._reg("wasMyAddr")
             If(st._eq(st_t.idle),
                 wasMyAddr(_isMyAddr)

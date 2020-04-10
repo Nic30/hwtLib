@@ -29,12 +29,6 @@ class BramPortEndpoint(BusEndpoint):
         self._parseTemplate()
         bus = self.bus
 
-        def connectRegIntfAlways(regIntf, _addr):
-            return (
-                regIntf.dout.data(bus.din),
-                regIntf.dout.vld(bus.we & bus.en & bus.addr._eq(_addr))
-            )
-
         ADDR_STEP = self._getAddrStep()
         if self._directly_mapped_words:
             readReg = self._reg("readReg", dtype=bus.dout._dtype)
@@ -65,8 +59,8 @@ class BramPortEndpoint(BusEndpoint):
                                                  port.dout._dtype.bit_length(),
                                                  t)
 
-                port.we(bus.we & _addrVld & bus.en)
-                port.en(bus.en & _addrVld & bus.en)
+                port.we(bus.en & bus.we & _addrVld)
+                port.en(bus.en & _addrVld)
                 port.din(bus.din)
 
                 bramIndxCases.append((_addrVld, readBramIndx(i)))
