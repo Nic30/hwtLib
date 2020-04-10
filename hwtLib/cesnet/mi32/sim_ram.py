@@ -35,7 +35,7 @@ class Mi32SimRam(SimRam):
             raise NotImplementedError("Unaligned read")
 
         d = self.data[int(addr) // self._word_bytes]
-        self.intf._ag.readed.append(d)
+        self.intf._ag.r_data.append(d)
 
     def on_write(self, addr, val, byteen):
         addr = int(addr)

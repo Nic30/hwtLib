@@ -67,7 +67,7 @@ class Mi32InterconnectMatrixTC(SimTestCase):
         for i, (e, mem) in enumerate(zip(expected, mems)):
             d = {k: int(v) for k, v in mem.data.items()}
             self.assertDictEqual(d, e, i)
-        self.assertValSequenceEqual(m.readed, expected_r)
+        self.assertValSequenceEqual(m.r_data, expected_r)
 
 
 if __name__ == "__main__":

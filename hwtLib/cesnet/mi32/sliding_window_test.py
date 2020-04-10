@@ -30,7 +30,7 @@ class Mi32SlidingWindowTC(SingleUnitSimTestCase):
             expected.append(d)
 
         self.runSim((10 + N) * CLK_PERIOD)
-        self.assertValSequenceEqual(u.s._ag.readed, expected)
+        self.assertValSequenceEqual(u.s._ag.r_data, expected)
 
     def test_write_offset_default(self, MAGIC=99, N=3):
         u = self.u

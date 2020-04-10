@@ -38,7 +38,7 @@ class Mi32_to_Axi4LiteTC(SingleUnitSimTestCase):
         self.runSim(12 * N * CLK_PERIOD)
 
         data = [i + 1 for i in range(N)]
-        self.assertValSequenceEqual(u.s._ag.readed, data)
+        self.assertValSequenceEqual(u.s._ag.r_data, data)
 
     def test_write(self):
         u = self.u
@@ -48,7 +48,7 @@ class Mi32_to_Axi4LiteTC(SingleUnitSimTestCase):
         u.s._ag.requests.extend(addr_req)
 
         self.runSim(12 * N * CLK_PERIOD)
-        self.assertEmpty(u.s._ag.readed)
+        self.assertEmpty(u.s._ag.r_data)
         ref_data = [i + 1 for i in range(N)]
         data = [self.memory.data[i] for i in range(N)]
         self.assertValSequenceEqual(data, ref_data)

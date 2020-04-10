@@ -155,9 +155,9 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
         self.randomizeAll()
         self.runSim(80 * self.CLK)
 
-        readed = u.bus.r._ag.data
-        self.assertEqual(len(readed), len(expected))
-        for d, ed in zip(readed, expected):
+        r_data = u.bus.r._ag.data
+        self.assertEqual(len(r_data), len(expected))
+        for d, ed in zip(r_data, expected):
             edata, eresp, ebits = ed
             data, resp = d
             self.assertValEqual(resp, eresp)

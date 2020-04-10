@@ -45,7 +45,7 @@ class Mi32EndpointTC(BramPortEndpointTC):
         self.randomizeAll()
         self.runSim(100 * Time.ns)
 
-        self.assertEmpty(u.bus._ag.readed)
+        self.assertEmpty(u.bus._ag.r_data)
         self.assertEmpty(u.decoded.field0._ag.dout)
         self.assertEmpty(u.decoded.field1._ag.dout)
 
@@ -109,7 +109,7 @@ class Mi32EndpointArrayTC(BramPortEndpointArrayTC):
         self.randomizeAll()
         self.runSim(200 * Time.ns)
 
-        self.assertEmpty(u.bus._ag.readed)
+        self.assertEmpty(u.bus._ag.r_data)
         for i in range(4):
             self.assertValEqual(u.decoded.field0._ag.mem[i], MAGIC + i + 1)
             self.assertValEqual(u.decoded.field1._ag.mem[i], 2 * MAGIC + i + 1)

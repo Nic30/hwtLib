@@ -31,7 +31,7 @@ class BramWireTC(SingleUnitSimTestCase):
 
         u.din._ag.requests.extend([(READ, 1), (READ, 2), (READ, 3)])
         self.runSim(10 * CLK_PERIOD)
-        self.assertValSequenceEqual(u.din._ag.readed, [1, 2, None])
+        self.assertValSequenceEqual(u.din._ag.r_data, [1, 2, None])
 
 
 if __name__ == "__main__":

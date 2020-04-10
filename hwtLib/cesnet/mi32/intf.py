@@ -21,7 +21,7 @@ class Mi32(Interface):
     :ivar ~.ardy: slave address channel ready
     :ivar ~.be: data byte mask for write
     :ivar ~.dwr: write data
-    :ivar ~.drd: readed data
+    :ivar ~.drd: read data
     :ivar ~.drdy: read data valid
     """
 
@@ -78,13 +78,13 @@ class Mi32Agent(SyncAgentBase):
 
     requests = property(requests_get, requests_set)
 
-    def readed_get(self):
+    def r_data_get(self):
         return self.dataAg.data
 
-    def readed_set(self, v):
+    def r_data_set(self, v):
         self.dataAg.data = v
 
-    readed = property(readed_get, readed_set)
+    r_data = property(r_data_get, r_data_set)
 
     def getDrivers(self):
         self.setEnable = self.setEnable_asDriver
