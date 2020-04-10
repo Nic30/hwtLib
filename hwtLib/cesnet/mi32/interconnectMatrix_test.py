@@ -53,11 +53,11 @@ class Mi32InterconnectMatrixTC(SimTestCase):
             for i in range(N):
                 d[i] = mem.data[i] = MAGIC_R + i + si * N
                 expected_r.append(d[i])
-                m.req.append((READ, i * 4 + offset))
+                m.requests.append((READ, i * 4 + offset))
 
                 w_a = (i + N) * 4 + offset
                 w_d = MAGIC_W + i + si * N
-                m.req.append((WRITE, w_a, w_d, _mask))
+                m.requests.append((WRITE, w_a, w_d, _mask))
                 d[(w_a - offset) // self.wordSize] = w_d
 
             expected.append(d)
@@ -67,7 +67,7 @@ class Mi32InterconnectMatrixTC(SimTestCase):
         for i, (e, mem) in enumerate(zip(expected, mems)):
             d = {k: int(v) for k, v in mem.data.items()}
             self.assertDictEqual(d, e, i)
-        self.assertValSequenceEqual(m.rData, expected_r)
+        self.assertValSequenceEqual(m.readed, expected_r)
 
 
 if __name__ == "__main__":
