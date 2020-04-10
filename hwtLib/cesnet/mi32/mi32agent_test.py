@@ -39,22 +39,22 @@ class Mi32AgentTC(SingleUnitSimTestCase):
     def test_read(self):
         u = self.u
         addr_req = [(READ, 0x0), (READ, 0x4), (READ, 0x8)]
-        u.s._ag.req.extend(addr_req)
+        u.s._ag.requests.extend(addr_req)
         data = [1, 2, 3]
-        u.m._ag.rData.extend(data)
+        u.m._ag.readed.extend(data)
 
         self.runSim(10 * CLK_PERIOD)
-        self.assertValSequenceEqual([x[:2] for x in u.m._ag.req], addr_req)
-        self.assertValSequenceEqual(u.s._ag.rData, data)
+        self.assertValSequenceEqual([x[:2] for x in u.m._ag.requests], addr_req)
+        self.assertValSequenceEqual(u.s._ag.readed, data)
 
     def test_write(self):
         u = self.u
         m = mask(32 // 8)
         ref = [(WRITE, i * 0x4, i + 1, m) for i in range(4)]
-        u.s._ag.req.extend(ref)
+        u.s._ag.requests.extend(ref)
 
         self.runSim(10 * CLK_PERIOD)
-        self.assertValSequenceEqual(u.m._ag.req, ref)
+        self.assertValSequenceEqual(u.m._ag.requests, ref)
 
 
 if __name__ == "__main__":

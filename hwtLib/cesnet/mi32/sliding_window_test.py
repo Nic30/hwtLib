@@ -22,7 +22,7 @@ class Mi32SlidingWindowTC(SingleUnitSimTestCase):
     def test_read_offset_default(self, MAGIC=99, N=3):
         u = self.u
         addr_req = [(READ, 0x4 * i) for i in range(N)]
-        u.s._ag.req.extend(addr_req)
+        u.s._ag.requests.extend(addr_req)
         m = Mi32SimRam(u.m)
         expected = []
         for i in range(N):
@@ -30,14 +30,14 @@ class Mi32SlidingWindowTC(SingleUnitSimTestCase):
             expected.append(d)
 
         self.runSim((10 + N) * CLK_PERIOD)
-        self.assertValSequenceEqual(u.s._ag.rData, expected)
+        self.assertValSequenceEqual(u.s._ag.readed, expected)
 
     def test_write_offset_default(self, MAGIC=99, N=3):
         u = self.u
         m = mask(u.DATA_WIDTH // 8)
         addr_req = [(WRITE, 0x4 * i, MAGIC + i + 1, m) for i in range(N)]
         expected = [x[2] for x in addr_req]
-        u.s._ag.req.extend(addr_req)
+        u.s._ag.requests.extend(addr_req)
         m = Mi32SimRam(u.m)
 
         self.runSim((10 + N) * CLK_PERIOD)
@@ -50,7 +50,7 @@ class Mi32SlidingWindowTC(SingleUnitSimTestCase):
         addr_req = [(WRITE, u.WINDOW_SIZE, offset, m),
                     *((WRITE, 0x4 * i, MAGIC + i + 1, m) for i in range(N))]
         expected = [x[2] for x in addr_req[1:]]
-        u.s._ag.req.extend(addr_req)
+        u.s._ag.requests.extend(addr_req)
         m = Mi32SimRam(u.m)
 
         self.runSim((10 + N) * CLK_PERIOD)
@@ -62,7 +62,7 @@ class Mi32SlidingWindowTC(SingleUnitSimTestCase):
         m = mask(u.DATA_WIDTH // 8)
         addr_req = [(WRITE, u.WINDOW_SIZE, offset, m),
                     *((READ, 0x4 * i) for i in range(N))]
-        u.s._ag.req.extend(addr_req)
+        u.s._ag.requests.extend(addr_req)
         m = Mi32SimRam(u.m)
 
         expected = []

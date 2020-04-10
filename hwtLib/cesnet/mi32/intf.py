@@ -60,7 +60,7 @@ class Mi32Agent(SyncAgentBase):
     """
     Simulation agent for Mi32 bus interface
 
-    :ivar ~.req: request data, items are tuples (READ, address)
+    :ivar ~.requests: request data, items are tuples (READ, address)
         or (WRITE, address, data, be_mask)
     :ivar ~.rData: data read from interface
     """
@@ -70,21 +70,21 @@ class Mi32Agent(SyncAgentBase):
         self.addrAg = Mi32AddrAgent(sim, intf, allowNoReset=allowNoReset)
         self.dataAg = Mi32DataAgent(sim, intf, allowNoReset=allowNoReset)
 
-    def req_get(self):
+    def requests_get(self):
         return self.addrAg.data
 
-    def req_set(self, v):
+    def requests_set(self, v):
         self.addrAg.data = v
 
-    req = property(req_get, req_set)
+    requests = property(requests_get, requests_set)
 
-    def rData_get(self):
+    def readed_get(self):
         return self.dataAg.data
 
-    def rData_set(self, v):
+    def readed_set(self, v):
         self.dataAg.data = v
 
-    rData = property(rData_get, rData_set)
+    readed = property(readed_get, readed_set)
 
     def getDrivers(self):
         self.setEnable = self.setEnable_asDriver
@@ -99,7 +99,7 @@ class Mi32Agent(SyncAgentBase):
 
 class Mi32AddrAgent(HandshakedAgent):
     """
-    :ivar ~.req: request data, items are tuples (READ, address)
+    :ivar ~.requests: request data, items are tuples (READ, address)
         or (WRITE, address, data, be_mask)
 
     :note: two valid signals "read", "write"
