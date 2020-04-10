@@ -22,6 +22,8 @@ from hwt.hdl.frameTmpl import FrameTmpl
 from math import ceil
 from hwt.interfaces.unionIntf import UnionSink, UnionSource
 from hwt.hdl.typeShortcuts import vec
+from ipCorePackager.constants import DIRECTION
+from copy import copy
 
 
 def inRange(n, lower, end):
@@ -149,6 +151,17 @@ class BusEndpoint(Unit):
             self.STRUCT_TEMPLATE, tuple(),
             instantiateFieldFn=self._mkFieldInterface)._m()
 
+    @staticmethod
+    def intf_for_Bits(t):
+        if t.const:
+            t = copy(t)
+            t.const = False
+            p = Signal(dtype=t, masterDir=DIRECTION.IN)
+        else:
+            p = RegCntrl()
+        p.DATA_WIDTH = t.bit_length()
+        return p
+
     def _mkFieldInterface(self, structIntf: StructIntf, field: HStructField):
         """
         Instantiate field interface for fields in structure template of this endpoint
@@ -156,18 +169,17 @@ class BusEndpoint(Unit):
         :return: interface for specified field
         """
         t = field.dtype
-        dw = None
         path = (*structIntf._field_path, field.name)
         shouldEnter, shouldUse = self.shouldEnterFn(self.STRUCT_TEMPLATE, path)
+
+
         if shouldUse:
             if isinstance(t, Bits):
-                p = RegCntrl()
-                p.USE_OUT = not t.const
-                dw = t.bit_length()
+                p = BusEndpoint.intf_for_Bits(t)
             elif isinstance(t, HArray):
                 p = BramPort_withoutClk()
                 assert isinstance(t.element_t, Bits), t.element_t
-                dw = t.element_t.bit_length()
+                p.DATA_WIDTH = t.element_t.bit_length()
                 p.ADDR_WIDTH = log2ceil(t.size - 1)
             else:
                 raise NotImplementedError(t)
@@ -176,40 +188,28 @@ class BusEndpoint(Unit):
             if isinstance(t, HArray):
                 e_t = t.element_t
                 if isinstance(e_t, Bits):
-                    p = HObjList(
-                        RegCntrl() for _ in range(int(t.size))
-                    )
-                    for i_i, i in enumerate(p):
+                    p = HObjList()
+                    for i_i in range(int(t.size)):
+                        i = BusEndpoint.intf_for_Bits(e_t)
                         structIntf._fieldsToInterfaces[(*path, i_i)] = i
-                    dw = t.element_t.bit_length()
+                        p.append(i)
                 elif isinstance(e_t, HStruct):
-                    res = HObjList(
+                    p = HObjList(
                         StructIntf(t.element_t,
                                    (*path, i),
                                    instantiateFieldFn=self._mkFieldInterface)
                         for i in range(int(t.size))
                     )
-                    for i in res:
+                    for i in p:
                         i._fieldsToInterfaces = structIntf._fieldsToInterfaces
-                    return res
                 else:
                     raise NotImplementedError()
             elif isinstance(t, HStruct):
-                res = StructIntf(t, path,
+                p = StructIntf(t, path,
                                   instantiateFieldFn=self._mkFieldInterface)
-                res._fieldsToInterfaces = structIntf._fieldsToInterfaces
-                return res
+                p._fieldsToInterfaces = structIntf._fieldsToInterfaces
             else:
                 raise TypeError(t)
-
-        if isinstance(p, HObjList):
-            _p = p
-        else:
-            _p = [p]
-
-        if dw is not None:
-            for i in _p:
-                i.DATA_WIDTH = dw
 
         return p
 
@@ -255,7 +255,7 @@ class BusEndpoint(Unit):
         # resolve exact addresses for directly mapped field parts
         directly_mapped_fields = {}
         for p, out in self.decoded._fieldsToInterfaces.items():
-            if not isinstance(out, RegCntrl):
+            if not isinstance(out, (RegCntrl, Signal)):
                 continue
             a = directly_mapped_fields
             for _p in p:
@@ -370,10 +370,13 @@ class BusEndpoint(Unit):
                 if tpart.tmpl is None:
                     # padding
                     din = vec(None, tpart.bit_length())
+                else:
+                    din = self.getPort(tpart.tmpl)
+                    if isinstance(din, RegCntrl):
+                        din = din.din
+                if tpart.bit_length() > 1:
                     fr = tpart.getFieldBitRange()
                     din = din[fr[0]:fr[1]]
-                else:
-                    din = self.getPort(tpart.tmpl).din
                 w_data.append(din)
                 last_end = tpart.endOfPart
     
@@ -405,10 +408,10 @@ class BusEndpoint(Unit):
                     # padding
                     continue
                 out = self.getPort(tpart.tmpl)
-                if not isinstance(out, RegCntrl) or not out.USE_OUT:
-                    # read only
+                if not isinstance(out, RegCntrl):
                     continue
-                out = out.dout
+                else:
+                    out = out.dout
             
                 field_range = tpart.getFieldBitRange()
                 if field_range != (out.DATA_WIDTH, 0):
@@ -431,7 +434,10 @@ class BusEndpoint(Unit):
                                                        interfaceMap):
             if isinstance(intf, Signal):
                 assert intf._direction == INTF_DIRECTION.MASTER
-                convIntf.din(intf)
+                if isinstance(convIntf, Signal):
+                    convIntf(intf)
+                else:
+                    convIntf.din(intf)
 
             elif isinstance(intf, RtlSignalBase):
                 convIntf.din(intf)
@@ -452,10 +458,9 @@ class BusEndpoint(Unit):
     @classmethod
     def fromInterfaceMap(cls, interfaceMap):
         """
-        Generate converter by specified struct
+        Generate converter by struct datatype specified by interface map
 
-        :param interfaceMap: take a look at HTypeFromIntfMap
-            if interface is specified it will be automatically connected
+        :param interfaceMap: :func:`hwt.interfaces.intf_map.HTypeFromIntfMap`
         """
         t = HTypeFromIntfMap(interfaceMap)
 
