@@ -1,120 +1,62 @@
-from copy import copy
+from builtins import isinstance
+from typing import Union, Tuple
 
-from hwt.code import log2ceil
+from hwt.code import log2ceil, Switch, Concat
 from hwt.hdl.constants import INTF_DIRECTION
-from hwt.hdl.transTmpl import TransTmpl, ObjIteratorCtx
+from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.struct import HStruct, HStructField
+from hwt.hdl.types.structUtils import field_path_get_type, HdlType_select
+from hwt.interfaces.intf_map import IntfMap_get_by_field_path, IntfMap, \
+    walkStructIntfAndIntfMap, HTypeFromIntfMap
 from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
-from hwt.interfaces.structIntf import StructIntf, HTypeFromIntfMap, IntfMap
+from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
-from hwt.pyUtils.arrayQuery import arr_any
 from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from hwtLib.sim.abstractMemSpaceMaster import PartialField,\
-    get_type_of_actual_field
-from builtins import isinstance
-from typing import Tuple, Union
+from hwt.hdl.frameTmpl import FrameTmpl
+from math import ceil
+from hwt.interfaces.unionIntf import UnionSink, UnionSource
+from hwt.hdl.typeShortcuts import vec
 
 
 def inRange(n, lower, end):
     return (n >= lower) & (n < end)
 
 
-def isPaddingInIntfMap(item):
-    if isinstance(item, HdlType):
-        return True
+def TransTmpl_get_min_addr(t: TransTmpl):
+    if not t.children:
+        return t.bitAddr
+    elif isinstance(t.children, list) and t.children:
+        for c in t.children:
+            r = TransTmpl_get_min_addr(c)
+            if r is not None:
+                return r
+        return None
     else:
-        try:
-            if isinstance(item, tuple):
-                _item, name = item
-                if name is None:
-                    return True
-        except ValueError:
-            pass
+        return TransTmpl_get_min_addr(t.children) 
 
-    return False
-
-
-def _walkStructIntfAndIntfMap_unpack(structIntf, intfMap):
-    """
-    Try to unpack intfMap and apply the selection on structIntf
-
-    :return: Optional tuple Interface, intfMap
-    """
-    # items are Interface/RtlSignal or (type/interface/None or list of items, name)
-    if isPaddingInIntfMap(intfMap):
-        return
-    elif isinstance(intfMap, tuple):
-        item, name = intfMap
+def TransTmpl_get_max_addr(t: TransTmpl):
+    if t.itemCnt is None:
+        offset = 0
     else:
-        item = intfMap
-        assert isinstance(item, (InterfaceBase, RtlSignalBase)), item
-        name = getSignalName(item)
+        item_size = t.bit_length() // t.itemCnt
+        offset = t.bitAddr + (t.itemCnt - 1) * item_size
 
-    if isinstance(item, HdlType):
-        # this part of structIntf was generated from type descriptin
-        # and we are re searching only for those parts which were generated
-        # from Interface/RtlSignal
-        return
-
-    return getattr(structIntf, name), item
-
-
-def walkStructIntfAndIntfMap(structIntf, intfMap):
-    """
-    Walk StructInterfacece and interface map
-    and yield tuples (Interface in StructInterface, interface in intfMap)
-    which are on same place
-
-    :param structIntf: HObjList or StructIntf or UnionIntf instance
-    :param intfMap: interface map
-
-    :note: typical usecase is when there is StructIntf generated from description in intfMap
-        and then you need to connect interface from intfMap to structIntf
-        and there you can use this function to iterate over interfaces which belongs together
-    """
-
-    if isinstance(intfMap, (InterfaceBase, RtlSignalBase)):
-        yield structIntf, intfMap
-        return
-    elif isinstance(intfMap, tuple):
-        item = _walkStructIntfAndIntfMap_unpack(structIntf, intfMap)
-        if item is None:
-            # is padding or there is no interface specified for it in intfMap
-            return
-        else:
-            structIntf, item = item
-            yield from walkStructIntfAndIntfMap(structIntf, item)
-    elif isinstance(structIntf, list):
-        structIntf
-        assert len(structIntf) == len(intfMap)
-        for sItem, item in zip(structIntf, intfMap):
-            yield from walkStructIntfAndIntfMap(sItem, item)
+    if not t.children:
+        return t.bitAddrEnd
+    elif isinstance(t.children, list) and t.children:
+        for c in reversed(t.children):
+            r = TransTmpl_get_max_addr(c)
+            if r is not None:
+                return offset + r
+        return None
     else:
-        assert isinstance(intfMap, IntfMap), intfMap
-        for item in intfMap:
-            _item = _walkStructIntfAndIntfMap_unpack(structIntf, item)
-            if _item is not None:
-                sItem, _item = _item
-                yield from walkStructIntfAndIntfMap(sItem, _item)
-
-
-def get_shouldEnterForTransTmpl(shouldEnterFn_for_HdlType):
-    def shouldEnterForTransTmpl(tmpl: TransTmpl):
-        """
-        This method drives the iterator over TransTmpl instance
-        generated from input data type. It 
-        """
-        shouldEnter, shoulUse = shouldEnterFn_for_HdlType(tmpl.origin)
-        return shouldEnter, shoulUse
-    return shouldEnterForTransTmpl
+        return offset + TransTmpl_get_max_addr(t.children)
 
 
 class BusEndpoint(Unit):
@@ -151,7 +93,7 @@ class BusEndpoint(Unit):
         :param structTemplate: instance of HStruct which describes
             address space of this endpoint
         :param intfCls: class of bus interface which should be used
-        :param shouldEnterFn: function(structFieldPath) return (shouldEnter, shouldUse)
+        :param shouldEnterFn: function(root_t, structFieldPath) return (shouldEnter, shouldUse)
             where shouldEnter is flag that means iterator over this interface
             should look inside of this actual object
             and shouldUse flag means that this field should be used
@@ -168,12 +110,12 @@ class BusEndpoint(Unit):
         Unit.__init__(self)
 
     @staticmethod
-    def _defaultShouldEnterFn(field_path):
+    def _defaultShouldEnterFn(root: HdlType, field_path: Tuple[Union[str, int]]):
         """
         Default method which resolves how the parts of input data type
         should be represented on interface level.
         """
-        t = get_type_of_actual_field(field_path)
+        t = field_path_get_type(root, field_path)
         isNonPrimitiveArray = isinstance(t, HArray) and\
             not isinstance(t.element_t, Bits)
         shouldEnter = isinstance(t, HStruct) or isNonPrimitiveArray
@@ -202,47 +144,83 @@ class BusEndpoint(Unit):
 
         with self._paramsShared():
             self.bus = self._intfCls()
-
+        
         self.decoded = StructIntf(
             self.STRUCT_TEMPLATE, tuple(),
             instantiateFieldFn=self._mkFieldInterface)._m()
 
+    def _mkFieldInterface(self, structIntf: StructIntf, field: HStructField):
+        """
+        Instantiate field interface for fields in structure template of this endpoint
+
+        :return: interface for specified field
+        """
+        t = field.dtype
+        dw = None
+        path = (*structIntf._field_path, field.name)
+        shouldEnter, shouldUse = self.shouldEnterFn(self.STRUCT_TEMPLATE, path)
+        if shouldUse:
+            if isinstance(t, Bits):
+                p = RegCntrl()
+                p.USE_OUT = not t.const
+                dw = t.bit_length()
+            elif isinstance(t, HArray):
+                p = BramPort_withoutClk()
+                assert isinstance(t.element_t, Bits), t.element_t
+                dw = t.element_t.bit_length()
+                p.ADDR_WIDTH = log2ceil(t.size - 1)
+            else:
+                raise NotImplementedError(t)
+
+        elif shouldEnter:
+            if isinstance(t, HArray):
+                e_t = t.element_t
+                if isinstance(e_t, Bits):
+                    p = HObjList(
+                        RegCntrl() for _ in range(int(t.size))
+                    )
+                    for i_i, i in enumerate(p):
+                        structIntf._fieldsToInterfaces[(*path, i_i)] = i
+                    dw = t.element_t.bit_length()
+                elif isinstance(e_t, HStruct):
+                    res = HObjList(
+                        StructIntf(t.element_t,
+                                   (*path, i),
+                                   instantiateFieldFn=self._mkFieldInterface)
+                        for i in range(int(t.size))
+                    )
+                    for i in res:
+                        i._fieldsToInterfaces = structIntf._fieldsToInterfaces
+                    return res
+                else:
+                    raise NotImplementedError()
+            elif isinstance(t, HStruct):
+                res = StructIntf(t, path,
+                                  instantiateFieldFn=self._mkFieldInterface)
+                res._fieldsToInterfaces = structIntf._fieldsToInterfaces
+                return res
+            else:
+                raise TypeError(t)
+
+        if isinstance(p, HObjList):
+            _p = p
+        else:
+            _p = [p]
+
+        if dw is not None:
+            for i in _p:
+                i.DATA_WIDTH = dw
+
+        return p
+
     def getPort(self, transTmpl: TransTmpl):
-        o = transTmpl.origin
-        return self.decoded._fieldsToInterfaces[o]
+        p = tuple(transTmpl.getFieldPath())
+        return self.decoded._fieldsToInterfaces[p]
 
     def isInMyAddrRange(self, addrSig):
-        return (addrSig >= self._getMinAddr()) & (addrSig < self._getMaxAddr())
-
-    def walkFieldsAndIntf(self, transTmpl, structIntf):
-        intfIt = ObjIteratorCtx(structIntf)
-        fieldTrans = transTmpl.walkFlatten(
-            shouldEnterFn=get_shouldEnterForTransTmpl(self.shouldEnterFn),
-            otherObjItCtx=intfIt)
-
-        hasAnyInterface = False
-        for ((base, end), transTmpl) in fieldTrans:
-            intf = intfIt.actual
-            isPartOfSomeArray = arr_any(intfIt.onParentNames,
-                                        lambda x: isinstance(x, int))
-            if isPartOfSomeArray:
-                _tTmpl = copy(transTmpl)
-                _tTmpl.bitAddr = base
-                _tTmpl.bitAddrEnd = end
-                _tTmpl.origin = (*transTmpl.origin[:-1], PartialField(transTmpl.origin))
-                transTmpl = _tTmpl
-                self.decoded._fieldsToInterfaces[transTmpl.origin] = intf
-
-            yield transTmpl, intf
-            hasAnyInterface = True
-
-        assert hasAnyInterface, (transTmpl, structIntf)
+        return inRange(addrSig, self._ADDR_MIN, self._ADDR_MAX)
 
     def _parseTemplate(self):
-        self._directlyMapped = []
-        self._bramPortMapped = []
-        self.ADRESS_MAP = []
-
         self.WORD_ADDR_STEP = self._getWordAddrStep()
         self.ADDR_STEP = self._getAddrStep()
 
@@ -251,31 +229,59 @@ class BusEndpoint(Unit):
         assert SUGGESTED_AW <= AW, ("Address width too small", SUGGESTED_AW, AW)
         tmpl = TransTmpl(self.STRUCT_TEMPLATE)
 
-        for transTmpl, intf in self.walkFieldsAndIntf(tmpl, self.decoded):
-            intfClass = intf.__class__
+        self._ADDR_MIN = TransTmpl_get_min_addr(tmpl) // self.ADDR_STEP
+        self._ADDR_MAX = ceil(TransTmpl_get_max_addr(tmpl) / self.ADDR_STEP)
 
-            if issubclass(intfClass, RegCntrl):
-                self._directlyMapped.append(transTmpl)
-
-            elif issubclass(intfClass, BramPort_withoutClk):
-                self._bramPortMapped.append(transTmpl)
+        # resolve addresses for bram port mapped fields
+        self._bramPortMapped = []
+        def shouldEnterFn(trans_tmpl: TransTmpl):
+            p = trans_tmpl.getFieldPath()
+            intf = self.decoded._fieldsToInterfaces[p]
+            if isinstance(intf, (StructIntf, UnionSink, UnionSource, HObjList)):
+                shouldEnter = True
+                shouldUse = False
+            elif isinstance(intf, BramPort_withoutClk):
+                shouldEnter = False
+                shouldUse = True
             else:
-                raise NotImplementedError(intf)
+                shouldEnter = False
+                shouldUse = False
 
-            self.ADRESS_MAP.append(transTmpl)
+            return shouldEnter, shouldUse
 
-    def _getMaxAddr(self):
-        """"
-        Get maximum address value for this endpoint
-        """
-        lastItem = self.ADRESS_MAP[-1]
-        return lastItem.bitAddrEnd // self._getAddrStep()
+        for ((base, end), t) in tmpl.walkFlatten(shouldEnterFn=shouldEnterFn):
+            self._bramPortMapped.append(((base, end), t))
 
-    def _getMinAddr(self):
-        """"
-        Get minimum address value for this endpoint
-        """
-        return self.ADRESS_MAP[0].bitAddr // self._getAddrStep()
+        # resolve exact addresses for directly mapped field parts
+        directly_mapped_fields = {}
+        for p, out in self.decoded._fieldsToInterfaces.items():
+            if not isinstance(out, RegCntrl):
+                continue
+            a = directly_mapped_fields
+            for _p in p:
+                if isinstance(_p, int) and _p != 0:
+                    # we need spec only for first array item
+                    break
+                a = a.setdefault(_p, {})
+
+        dmw = self._directly_mapped_words = []
+        if directly_mapped_fields:
+            DW = self.DATA_WIDTH
+            directly_mapped_t = HdlType_select(
+                self.STRUCT_TEMPLATE,
+                directly_mapped_fields)
+            tmpl = TransTmpl(directly_mapped_t)
+    
+            frames = list(FrameTmpl.framesFromTransTmpl(
+                tmpl, DW, maxPaddingWords=0,
+                trimPaddingWordsOnStart=True,
+                trimPaddingWordsOnEnd=True,))
+    
+            for f in frames:
+                f_word_offset = f.startBitAddr // DW
+                for (w_i, items) in f.walkWords(showPadding=True):
+                    dmw.append((w_i+ f_word_offset, items))
+    
 
     def _suggestedAddrWidth(self):
         """
@@ -326,7 +332,7 @@ class BusEndpoint(Unit):
 
         if addrIsAligned:
             bitsOfPrefix = IN_ADDR_WIDTH - bitsOfSubAddr - bitsForAlignment
-            prefix = (transTmpl.bitAddr //
+            prefix = (transTmpl.bitAddr // 
                       srcAddrStep) >> (bitsForAlignment + bitsOfSubAddr)
             if bitsOfPrefix == 0:
                 addrIsInRange = True
@@ -349,61 +355,69 @@ class BusEndpoint(Unit):
 
         return (addrIsInRange, connectedAddr)
 
-    def _mkFieldInterface(self, structIntf: StructIntf, field):
+    def connect_directly_mapped_read(self, ar_addr: RtlSignal, r_data: RtlSignal, default_r_data_drive):
         """
-        Instantiate field interface for fields in structure template of this endpoint
-
-        :return: interface for specified field
+        Connect the RegCntrl.din interfaces to a bus
         """
-        t = field.dtype
-        dw = None
-        path = (*structIntf._field_path, field)
-        shouldEnter, shouldUse = self.shouldEnterFn(path)
-        if shouldUse:
-            if isinstance(t, Bits):
-                p = RegCntrl()
-                dw = t.bit_length()
-            elif isinstance(t, HArray):
-                p = BramPort_withoutClk()
-                assert isinstance(t.element_t, Bits), t.element_t
-                dw = t.element_t.bit_length()
-                p.ADDR_WIDTH = log2ceil(t.size - 1)
-            else:
-                raise NotImplementedError(t)
-
-        elif shouldEnter:
-            if isinstance(t, HArray):
-                e_t = t.element_t
-                if isinstance(e_t, Bits):
-                    p = HObjList(
-                        RegCntrl() for _ in range(int(t.size))
-                    )
-                    dw = t.element_t.bit_length()
-                elif isinstance(e_t, HStruct):
-                    return HObjList(
-                        StructIntf(t.element_t,
-                                   (*path, i),
-                                   instantiateFieldFn=self._mkFieldInterface)
-                        for i in range(int(t.size))
-                    )
+        DW = int(self.DATA_WIDTH)
+        ADDR_STEP = self._getAddrStep()
+        directlyMappedWords = []
+        for (w_i, items) in self._directly_mapped_words:
+            w_data = []
+            last_end = w_i * DW
+            for tpart in items: 
+                assert last_end == tpart.startOfPart, (last_end, tpart.startOfPart)
+                if tpart.tmpl is None:
+                    # padding
+                    din = vec(None, tpart.bit_length())
+                    fr = tpart.getFieldBitRange()
+                    din = din[fr[0]:fr[1]]
                 else:
-                    raise NotImplementedError()
-            elif isinstance(t, HStruct):
-                return StructIntf(t, path,
-                                  instantiateFieldFn=self._mkFieldInterface)
-            else:
-                raise TypeError(t)
+                    din = self.getPort(tpart.tmpl).din
+                w_data.append(din)
+                last_end = tpart.endOfPart
+    
+            end_of_word = (w_i + 1) * DW
+            assert last_end == end_of_word, (last_end, end_of_word)
+    
+            directlyMappedWords.append((w_i * (DW // ADDR_STEP), Concat(*reversed(w_data))))
 
-        if isinstance(p, HObjList):
-            _p = p
-        else:
-            _p = [p]
+        mux = Switch(ar_addr).addCases(
+            [(word_i, r_data(val))
+             for (word_i, val) in directlyMappedWords]
+        )
+        if default_r_data_drive:
+            mux.Default(
+                default_r_data_drive
+            )
+        return mux
 
-        if dw is not None:
-            for i in _p:
-                i.DATA_WIDTH = dw
+    def connect_directly_mapped_write(self, aw_addr:RtlSignal, w_data: RtlSignal, en: RtlSignal):
+        """
+        Connect the RegCntrl.dout interfaces to a bus
+        """
+        DW = int(self.DATA_WIDTH)
+        addrWidth = int(self.ADDR_WIDTH)
+        ADDR_STEP = self._getAddrStep()
+        for w_i, items in self._directly_mapped_words:
+            for tpart in items:
+                if tpart.tmpl is None:
+                    # padding
+                    continue
+                out = self.getPort(tpart.tmpl)
+                if not isinstance(out, RegCntrl) or not out.USE_OUT:
+                    # read only
+                    continue
+                out = out.dout
+            
+                field_range = tpart.getFieldBitRange()
+                if field_range != (out.DATA_WIDTH, 0):
+                    raise NotImplementedError("Write on field not aligned to a word boundary", tpart)
+                bus_range = tpart.getBusWordBitRange()
+                out.data(w_data[bus_range[0]: bus_range[1]])
+                addr = w_i * (DW // ADDR_STEP)
+                out.vld(en & (aw_addr._eq(vec(addr, addrWidth))))
 
-        return p
 
     def connectByInterfaceMap(self, interfaceMap: IntfMap):
         """
@@ -445,38 +459,15 @@ class BusEndpoint(Unit):
         """
         t = HTypeFromIntfMap(interfaceMap)
 
-        def find_by_name(intf_map_item, name):
-            assert isinstance(intf_map_item, IntfMap), intf_map_item
-            for x in intf_map_item:
-                if isinstance(x, InterfaceBase):
-                    if x._name == name:
-                        return x
-                elif isinstance(x, RtlSignalBase):
-                    if x.name == name:
-                        return x
-                else:
-                    v, n = x
-                    if n == name:
-                        return v
-            raise KeyError("Not in map", name)
 
-        def shouldEnter(field_path):
-            actual = interfaceMap
-            # find in interfaceMap, skip first because it is the type itself
-            for rec in field_path[1:]:
-                if isinstance(rec, (InterfaceBase, RtlSignalBase)):
-                    shouldEnter, shouldYield = False, True
-                    return shouldEnter, shouldYield
-                elif isinstance(rec, int):
-                    actual = actual[rec]
-                elif isinstance(rec, HStructField):
-                    actual = find_by_name(actual, rec.name)
-                else:
-                    raise NotImplementedError(rec)
-
-            shouldEnter = isinstance(actual, (list, tuple))
-            shouldYield = not shouldEnter
-            return shouldEnter, shouldYield
+        def shouldEnter(root: HdlType, field_path: Tuple[Union[str, int], ...]):
+            actual = IntfMap_get_by_field_path(interfaceMap, field_path)
+        
+            shouldEnter = isinstance(actual, (list, tuple, HStruct)) or (
+                isinstance(actual, HStructField) and isinstance(actual.dtype, HStruct))
+            shouldUse = not shouldEnter
+            return shouldEnter, shouldUse
+        
 
         # instantiate converter
         return cls(t, shouldEnterFn=shouldEnter)

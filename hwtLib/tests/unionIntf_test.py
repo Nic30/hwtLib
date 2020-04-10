@@ -36,12 +36,15 @@ class SimpleUnionSlave(EmptyUnit):
 
     def mkFieldIntf(self, structIntf: Union[StructIntf, UnionSink, UnionSource], field):
         t = field.dtype
+        path = (*structIntf._field_path, field.name)
         if isinstance(t, HUnion):
-            return self.intfCls(t, (*structIntf._field_path, field),
-                                structIntf._instantiateFieldFn)
+            p = self.intfCls(t, path, structIntf._instantiateFieldFn)
+            p._fieldsToInterfaces = structIntf._fieldsToInterfaces
+            return p
         elif isinstance(t, HStruct):
-            return StructIntf(t, (*structIntf._field_path, field),
-                              structIntf._instantiateFieldFn)
+            p = StructIntf(t, path, structIntf._instantiateFieldFn)
+            p._fieldsToInterfaces = structIntf._fieldsToInterfaces
+            return p
         else:
             p = Handshaked()
 
@@ -65,13 +68,11 @@ class UnionIntfTC(SimTestCase):
     def checkIntf(self, u):
         d = u.a._fieldsToInterfaces
 
-        self.assertIs(d[(union0, union0.fields["b16"])], u.a.b16)
-        s16 = union0.fields["struct16"]
-        self.assertIs(d[(union0, s16)], u.a.struct16)
-        self.assertIs(d[(union0, s16, s16.dtype.fields[0])],
+        self.assertIs(d[("b16", )], u.a.b16)
+        self.assertIs(d[("struct16",)], u.a.struct16)
+        self.assertIs(d[("struct16", "b16to8")],
                       u.a.struct16.b16to8)
-        un = union0.fields["union"]
-        self.assertIs(d[(union0, un, un.dtype.fields["b16"])],
+        self.assertIs(d[("union", "b16")],
                       u.a.union.b16)
 
     def test_instantiationSinkSlave(self):

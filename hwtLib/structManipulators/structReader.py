@@ -159,8 +159,9 @@ class StructReader(AxiS_frameParser):
         connect(r, self.parser.dataIn, exclude=data_sig_to_exclude)
 
         for _, field in self._tmpl.walkFlatten():
-            myIntf = self.dataOut._fieldsToInterfaces[field.origin]
-            parserIntf = self.parser.dataOut._fieldsToInterfaces[field.origin]
+            p = field.getFieldPath()
+            myIntf = self.dataOut._fieldsToInterfaces[p]
+            parserIntf = self.parser.dataOut._fieldsToInterfaces[p]
             myIntf(parserIntf)
 
 

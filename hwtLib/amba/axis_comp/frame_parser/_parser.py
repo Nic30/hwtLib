@@ -109,10 +109,15 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
     def _mkFieldIntf(self, parent: Union[StructIntf, UnionSource],
                      structField: HStructField):
         t = structField.dtype
+        path = (*parent._field_path, structField.name)
         if isinstance(t, HUnion):
-            return UnionSource(t, parent._instantiateFieldFn)
+            i = UnionSource(t, path, parent._instantiateFieldFn)
+            i._fieldsToInterfaces = parent._fieldsToInterfaces
+            return i
         elif isinstance(t, HStruct):
-            return StructIntf(t, (*parent._field_path, structField), parent._instantiateFieldFn)
+            i = StructIntf(t, path, parent._instantiateFieldFn)
+            i._fieldsToInterfaces = parent._fieldsToInterfaces
+            return i
         elif isinstance(t, HStream):
             if self.SHARED_READY:
                 raise NotImplementedError(t)

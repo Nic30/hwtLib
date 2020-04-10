@@ -45,6 +45,10 @@ def getParentUnit(sig):
 
 
 class AddressSpaceProbe(object):
+    """
+    An object which can be used to discover an address space of an interface.
+    Discovery is made by walking on address signal.
+    """
 
     def __init__(self, topIntf, getMainSigFn, offset=0):
         """
@@ -63,7 +67,7 @@ class AddressSpaceProbe(object):
     def _extractStruct(self, converter, offset):
         t = converter.STRUCT_TEMPLATE
 
-        for transTmpl in converter._bramPortMapped:
+        for ( _, _), transTmpl in converter._bramPortMapped:
             # some arrays can have items with internal structure
             memberT = self._discoverAddressSpace(
                 converter.getPort(transTmpl), offset)

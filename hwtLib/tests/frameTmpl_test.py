@@ -4,7 +4,7 @@ from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
-from hwt.hdl.types.structUtils import HStruct_selectFields
+from hwt.hdl.types.structUtils import HdlType_select
 from hwt.hdl.types.union import HUnion
 from hwtLib.peripheral.ethernet.types import Eth2Header_t
 from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t, uint8_t
@@ -185,7 +185,7 @@ _frameHeader = HStruct(
     (IPv4Header_t, "ipv4"),
     name="FrameHeader"
     )
-frameHeader = HStruct_selectFields(_frameHeader,
+frameHeader = HdlType_select(_frameHeader,
                                    {"eth": {"src", "dst"},
                                     "ipv4": {"src", "dst"},
                                     })
@@ -285,22 +285,22 @@ stream0_8bit_str = """\
 <FrameTmpl start:0, end:16
      7      0
      ---------
-0    |       |
-1    |       |
+0    |  [0]  |
+1    |  [1]  |
      ---------
 >"""
 
 stream0_16bit_str = """<FrameTmpl start:0, end:16
      15             0
      -----------------
-0    |       |       |
+0    |  [1]  |  [0]  |
      -----------------
 >"""
 
 stream0_64bit_str = """<FrameTmpl start:0, end:64
      63                                                             0
      -----------------------------------------------------------------
-0    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|       |       |
+0    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|  [1]  |  [0]  |
      -----------------------------------------------------------------
 >"""
 
@@ -308,10 +308,57 @@ stream1 = HStream(uint8_t, frame_len=2)
 stream1_32bit_str = """<FrameTmpl start:0, end:32
      31                             0
      ---------------------------------
-0    |XXXXXXXXXXXXXXX|       |       |
+0    |XXXXXXXXXXXXXXX|  [1]  |  [0]  |
      ---------------------------------
 >"""
 
+structWithArrOfStruct = HStruct(
+    (HStruct(
+        (uint16_t, "field0"),
+        (uint16_t, None),
+        (uint32_t, "field1")
+        )[3], "a")
+)
+structWithArrOfStruct_32bit_str = ["""\
+<FrameTmpl start:0, end:192
+     31                             0
+     ---------------------------------
+0    |XXXXXXXXXXXXXXX|  a[0].field0  |
+1    |          a[0].field1          |
+2    |XXXXXXXXXXXXXXX|  a[1].field0  |
+3    |          a[1].field1          |
+4    |XXXXXXXXXXXXXXX|  a[2].field0  |
+5    |          a[2].field1          |
+     ---------------------------------
+>"""
+]
+
+structWithArr2dOfStruct = HStruct(
+    (HStruct(
+        (uint16_t, "field0"),
+        (uint16_t, None),
+        (uint32_t, "field1")
+        )[3][2], "a")
+)
+structWithArr2dOfStruct_32bit_str = ["""\
+<FrameTmpl start:0, end:384
+     31                             0
+     ---------------------------------
+0    |XXXXXXXXXXXXXXX|a[0][0].field0 |
+1    |        a[0][0].field1         |
+2    |XXXXXXXXXXXXXXX|a[0][1].field0 |
+3    |        a[0][1].field1         |
+4    |XXXXXXXXXXXXXXX|a[0][2].field0 |
+5    |        a[0][2].field1         |
+6    |XXXXXXXXXXXXXXX|a[1][0].field0 |
+7    |        a[1][0].field1         |
+8    |XXXXXXXXXXXXXXX|a[1][1].field0 |
+9    |        a[1][1].field1         |
+10   |XXXXXXXXXXXXXXX|a[1][2].field0 |
+11   |        a[1][2].field1         |
+     ---------------------------------
+>"""
+]
 
 class FrameTmplTC(unittest.TestCase):
     def test_stream0(self):
@@ -498,10 +545,30 @@ class FrameTmplTC(unittest.TestCase):
         for f, ref in zip(frames, s_basic_3frame_srt):
             self.assertEqual(repr(f), ref)
 
+    def _test(self, DW, t, ref_str):
+        tmpl = TransTmpl(t)
+        frames = FrameTmpl.framesFromTransTmpl(tmpl, DW)
+        frames = list(frames)
+        self.assertEqual(len(frames), len(ref_str))
+        for f, ref in zip(frames, ref_str):
+            self.assertEqual(repr(f), ref)
+
+    def test_structWithArrOfStruct(self):
+        DW = 32
+        ref_str = structWithArrOfStruct_32bit_str
+        t = structWithArrOfStruct
+        self._test(DW, t, ref_str)
+
+    def test_structWithArr2dOfStruct(self):
+        DW = 32
+        ref_str = structWithArr2dOfStruct_32bit_str
+        t = structWithArr2dOfStruct
+        self._test(DW, t, ref_str)
+            
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(FrameTmplTC('test_stream1_32'))
+    # suite.addTest(FrameTmplTC('test_structWithArr2dOfStruct'))
     suite.addTest(unittest.makeSuite(FrameTmplTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

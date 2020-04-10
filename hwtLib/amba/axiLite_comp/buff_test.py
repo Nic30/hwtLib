@@ -26,8 +26,8 @@ class AxiLiteEpWithReg(Unit):
         return BusEndpoint._mkFieldInterface(self, structIntf, field)
 
     @staticmethod
-    def _defaultShouldEnterFn(field_path):
-        return BusEndpoint._defaultShouldEnterFn(field_path)
+    def _defaultShouldEnterFn(root, field_path):
+        return BusEndpoint._defaultShouldEnterFn(root, field_path)
 
     def _declr(self):
         BusEndpoint._declr(self)

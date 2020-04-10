@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, FsmBuilder, Switch
+from hwt.code import If, FsmBuilder
 from hwt.hdl.types.enum import HEnum
 
 from hwtLib.abstract.busEndpoint import BusEndpoint
@@ -65,7 +65,7 @@ class AvalonMmEndpoint(BusEndpoint):
 
         ADDR_STEP = self._getAddrStep()
         dataToBus = bus.readData(None)
-        for t in reversed(self._bramPortMapped):
+        for (_, _), t in reversed(self._bramPortMapped):
             # map addr for bram ports
             _addr = t.bitAddr // ADDR_STEP
             _isMyAddr = isMyAddr(addr, _addr, t.bitAddrEnd // ADDR_STEP)
@@ -89,21 +89,8 @@ class AvalonMmEndpoint(BusEndpoint):
 
             port.din(bus.writeData)
 
-        for t in self._directlyMapped:
-            _addr = t.bitAddr // ADDR_STEP
-            port = self.getPort(t)
-
-            port.dout.vld(addr._eq(_addr) & wr)
-            port.dout.data(bus.writeData)
-
-        _isInBramFlags = []
-        Switch(bus.address)\
-        .addCases(
-            [(t.bitAddr // ADDR_STEP, bus.readData(self.getPort(t).din))
-             for t in self._directlyMapped]
-        ).Default(
-            dataToBus
-        )
+        self.connect_directly_mapped_write(addr, bus.writeData, wr)
+        self.connect_directly_mapped_read(bus.address, bus.readData, dataToBus)
 
 
 def _example_AvalonMmEndpoint():

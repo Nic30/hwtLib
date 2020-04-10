@@ -58,7 +58,7 @@ class IpifEndpoint(BusEndpoint):
         ipif.ip2bus_wrack(wAck)
         ADDR_STEP = self._getAddrStep()
         dataToBus = ipif.ip2bus_data(None)
-        for t in reversed(self._bramPortMapped):
+        for (_, _), t in reversed(self._bramPortMapped):
             # map addr for bram ports
             _addr = t.bitAddr // ADDR_STEP
             _isMyAddr = isMyAddr(addr, _addr, t.bitAddrEnd // ADDR_STEP)
@@ -78,21 +78,8 @@ class IpifEndpoint(BusEndpoint):
 
             port.din(ipif.bus2ip_data)
 
-        for t in self._directlyMapped:
-            _addr = t.bitAddr // ADDR_STEP
-            port = self.getPort(t)
-
-            port.dout.vld(addr._eq(_addr) & ~ipif.bus2ip_rnw & wAck)
-            port.dout.data(ipif.bus2ip_data)
-
-        _isInBramFlags = []
-        Switch(ipif.bus2ip_addr)\
-        .addCases(
-                [(t.bitAddr // ADDR_STEP, ipif.ip2bus_data(self.getPort(t).din))
-                 for t in self._directlyMapped]
-        ).Default(
-            dataToBus
-        )
+        self.connect_directly_mapped_write(ipif.bus2ip_addr, ipif.bus2ip_data, ~ipif.bus2ip_rnw & wAck)
+        self.connect_directly_mapped_read(ipif.bus2ip_addr, ipif.ip2bus_data, dataToBus)
 
 
 def _example_IpifEndpoint():
