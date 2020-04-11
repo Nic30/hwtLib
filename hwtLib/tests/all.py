@@ -457,7 +457,6 @@ if __name__ == '__main__':
     # useParallerlTest = False
 
     if useParallerlTest:
-        # Run same tests across 4 processes
         concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests())
         runner.run(concurrent_suite)
     else:
