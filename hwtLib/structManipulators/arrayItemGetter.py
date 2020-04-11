@@ -91,7 +91,7 @@ class ArrayItemGetter(Unit):
                        slaves=[req, f.dataIn]).sync()
 
             Switch(f.dataOut.data).addCases([
-                (ITEMS_IN_DATA_WORD - i - 1, self.item.data(r[(ITEM_WIDTH * (i + 1)): (ITEM_WIDTH * i)]))
+                (i, self.item.data(r[(ITEM_WIDTH * (i + 1)):(ITEM_WIDTH * i)]))
                 for i in range(ITEMS_IN_DATA_WORD)
                 ])
             StreamNode(masters=[self.rDatapump.r, f.dataOut],
