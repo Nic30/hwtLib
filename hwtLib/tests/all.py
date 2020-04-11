@@ -204,6 +204,7 @@ from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
 from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
 from hwtLib.cesnet.mi32.endpoint_test import Mi32EndpointTCs
+from hwtLib.examples.axi.debugbusmonitor_test import DebugBusMonitorExampleAxiTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -438,6 +439,7 @@ suite = testSuiteFromTCs(
     HashTableCoreTC,
     CuckooHashTableTC,
     PingResponderTC,
+    DebugBusMonitorExampleAxiTC,
 
     RmiiAdapterTC,
 )

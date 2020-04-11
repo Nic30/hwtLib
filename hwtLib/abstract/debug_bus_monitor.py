@@ -50,10 +50,10 @@ def monitor_of(intf: Interface):
         return Signal(dtype=intf._dtype)
 
 
-def interface_to_HdlType(intf: Interface, const=False):
+def Interface_to_HdlType(intf: Interface, const=False):
     if intf._interfaces:
         return HStruct(
-            *((interface_to_HdlType(i, const=const), i._name)
+            *((Interface_to_HdlType(i, const=const), i._name)
               for i in intf._interfaces)
         )
     else:
@@ -158,13 +158,13 @@ class DebugBusMonitor(Unit):
 
         # declare an interface with same signalls but all inputs for each monitored interface
     def _impl(self):
-        name_memory, name_memory_size = self.build_name_memory(self.monitored_data)
+        name_memory, name_memory_size, name_content_size = self.build_name_memory(self.monitored_data)
         const_uint32_t = Bits(32, signed=False, const=True)
         addr_space = IntfMap([
             (const_uint32_t, "name_memory_size"),
             (const_uint32_t, "name_memory_offset"),
             (IntfMap(
-                (interface_to_HdlType(i, const=True), name)
+                (Interface_to_HdlType(i, const=True), name)
                 for i, name in self.monitored_data
             ), "data_memory"),
         ])
@@ -186,7 +186,7 @@ class DebugBusMonitor(Unit):
             self.ep = ep
         ep.bus(self.s)
 
-        ep.decoded.name_memory_size(name_memory_size)
+        ep.decoded.name_memory_size(name_content_size)
         ep.decoded.name_memory_offset(name_memory_offset)
         for intf, (_, name) in zip(self.monitor, self.monitored_data):
             to_bus_intf = getattr(ep.decoded.data_memory, name)
@@ -221,12 +221,13 @@ class DebugBusMonitor(Unit):
         for i, name in monitored_data:
             offset, _i = self._build_name_memory(i, offset)
             res[name] = _i
-        res = json.dumps(res).encode("utf-8")
+        res_bytes = json.dumps(res).encode("utf-8")
         DW = self.DATA_WIDTH
-        nam_data_width = ceil(((len(res) + 1) * 8) / DW) * DW
-        res = Bits(nam_data_width).from_py(int.from_bytes(res, "little"))
-        res = res._reinterpret_cast(Bits(DW)[nam_data_width//DW])
-        return res, nam_data_width // 8
+        name_data_width = ceil((len(res_bytes) * 8) / DW) * DW
+        res = Bits(name_data_width).from_py(int.from_bytes(res_bytes, "little"))
+        res = res._reinterpret_cast(Bits(DW)[name_data_width//DW])
+        
+        return res, name_data_width // 8, len(res_bytes)
 
     def apply_connections(self):
         """

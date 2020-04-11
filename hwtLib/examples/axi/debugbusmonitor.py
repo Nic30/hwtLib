@@ -8,10 +8,10 @@ from hwtLib.amba.axis_comp.reg import AxiSReg
 
 
 class DebugBusMonitorExampleAxi(Unit):
-
+    """
+    """
     def _config(self):
         Axi4Lite._config(self)
-        
 
     def _declr(self):
         addClkRstn(self)
@@ -31,9 +31,11 @@ class DebugBusMonitorExampleAxi(Unit):
         db = DebugBusMonitor(Axi4Lite, AxiLiteEndpoint)
         for i in [self.din0,
                   self.dout0, self.din1,
-                  self.reg.dataIn, self.reg.dataOut, self.dout1,
-                  self.s]:
+                  self.reg.dataIn, self.reg.dataOut,
+                  self.dout1,
+                  ]:
             db.register(i)
+    
         with self._paramsShared():
             self.db = db
         db.s(self.s)
