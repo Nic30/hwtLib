@@ -40,13 +40,13 @@ class DebugBusMonitorCtlSim(DebugBusMonitorCtl):
                 d = int(d)
             except ValidityError:
                 d = d.val & d.vld_mask
-                
+
             words.append(d)
             addr += word_size
 
         return words_to_int(words, word_size, size).to_bytes(size, "little")
 
-        
+
 def run_DebugBusMonitorCtlSim(tc, out):
     db = DebugBusMonitorCtlSim(tc)
     db.dump_txt(out)
@@ -84,7 +84,7 @@ class DebugBusMonitorExampleAxiTC(SingleUnitSimTestCase):
                 super(SpyDeque, self).append(x)
 
         u.s.r._ag.data = SpyDeque(self)
-        
+
         def time_sync():
             while True:
                 if u.s.r._ag.data and self.r_data_available.locked():
@@ -94,50 +94,84 @@ class DebugBusMonitorExampleAxiTC(SingleUnitSimTestCase):
                     raise StopSimumulation()
 
         self.procs.append(time_sync())
-        ctl_thread = threading.Thread(target=run_DebugBusMonitorCtlSim, args=(self, buff,))
+        ctl_thread = threading.Thread(target=run_DebugBusMonitorCtlSim,
+                                      args=(self, buff,))
         ctl_thread.start()
         # actually takes less time as the simulation is stopped after ctl_thread end
-        self.runSim(4000 * CLK_PERIOD)
+        self.runSim(8000 * CLK_PERIOD)
         # handle the case where something went wrong and ctl thread is still running
         self.sim_done = True
         if self.r_data_available.locked():
             self.r_data_available.release()
         ctl_thread.join()
-        
+
         d = buff.getvalue()
         self.assertEqual(d, """\
 din0:
   data: 0x0
-  last: 0
-  ready: 1
-  valid: 0
+  vld: 0
+  rd: 1
+din0_snapshot:
+  data: 0x0
+  vld: 0
+  rd: 0
 dout0:
   data: 0x0
-  last: 0
-  ready: 1
-  valid: 0
+  vld: 0
+  rd: 1
+dout0_snapshot:
+  data: 0x0
+  vld: 0
+  rd: 0
 din1:
   data: 0x0
-  last: 0
-  ready: 1
-  valid: 0
+  vld: 0
+  rd: 1
+din1_snapshot:
+  data: 0x0
+  vld: 0
+  rd: 0
 dataIn:
   data: 0x0
-  last: 0
-  ready: 1
-  valid: 0
+  vld: 0
+  rd: 1
+dataIn_snapshot:
+  data: 0x0
+  vld: 0
+  rd: 0
 dataOut:
   data: 0x0
-  last: 0
-  ready: 1
-  valid: 0
+  vld: 0
+  rd: 1
+dataOut_snapshot:
+  data: 0x0
+  vld: 0
+  rd: 0
 dout1:
   data: 0x0
-  last: 0
-  ready: 1
-  valid: 0
-"""
-)
+  vld: 0
+  rd: 1
+dout1_snapshot:
+  data: 0x0
+  vld: 0
+  rd: 0
+din2:
+  data: 0x0
+  vld: 0
+  rd: 1
+din2_snapshot:
+  data: 0x0
+  vld: 0
+  rd: 0
+dout2:
+  data: 0x0
+  vld: 0
+  rd: 1
+dout2_snapshot:
+  data: 0x0
+  vld: 0
+  rd: 0
+""")
 
 
 if __name__ == "__main__":

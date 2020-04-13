@@ -1,34 +1,47 @@
 from copy import copy
 import json
 from math import ceil
-from typing import List, Tuple
+from typing import List, Tuple, Optional, Type
 
 from hwt.code import If
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.intf_map import IntfMap, HTypeFromIntfMap
-from hwt.interfaces.std import Signal
+from hwt.interfaces.std import Signal, VldSynced
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.hdl.types.structValBase import StructValBase
+from hwtLib.clocking.vldSynced_cdc import VldSyncedCdc
 
 
-class MonitorOf(Interface):
+class MonitorIntf(Interface):
     """
     Interfaces same as template interface, but with all signals as an input
     """
 
     def __init__(self, template_interface):
-        self.__template_interface = template_interface
-        super(MonitorOf, self).__init__()
+        self._template_interface = template_interface
+        super(MonitorIntf, self).__init__()
+
+    @staticmethod
+    def _bound_intf(template_interface, cls=None):
+        if cls is None:
+            cls = MonitorIntf
+
+        class BoundedMonitorIntf(cls):
+            def __init__(self):
+                super(BoundedMonitorIntf, self).__init__(template_interface)
+        return BoundedMonitorIntf
 
     def _config(self):
         """
         Copy config from template interface
         """
-        tmpl = self.__template_interface
+        tmpl = self._template_interface
         for p in tmpl._params:
             setattr(self, p._name, p.get_value())
 
@@ -36,14 +49,35 @@ class MonitorOf(Interface):
         """
         Create interfaces same as on template interface, but make them always input
         """
-        tmpl = self.__template_interface
+        tmpl = self._template_interface
         for i in tmpl._interfaces:
             setattr(self, i._name, monitor_of(i))
 
 
+class MonitorIntfVldSynced(VldSynced):
+
+    def __init__(self, template_interface):
+        self._template_interface = template_interface
+        super(MonitorIntfVldSynced, self).__init__()
+
+    def _config(self):
+        MonitorIntf._config(self)
+
+    def _declr(self):
+        self.data = MonitorIntf(self._template_interface)
+        self.vld = Signal()
+
+
+class MonitorIntfVldSyncedCdc(VldSyncedCdc):
+    def __init__(self, template_interface):
+        intf_cls = MonitorIntf._bound_intf(template_interface, cls=MonitorIntfVldSynced)
+        self._template_interface = template_interface
+        super(MonitorIntfVldSyncedCdc, self).__init__(intf_cls)
+
+
 def monitor_of(intf: Interface):
     if intf._interfaces:
-        return MonitorOf(intf)
+        return MonitorIntf(intf)
     else:
         if not isinstance(intf, Signal):
             raise NotImplementedError()
@@ -64,30 +98,55 @@ def Interface_to_HdlType(intf: Interface, const=False):
         return t
 
 
-def connect_MonitorOf(dst, src: MonitorOf):
-    """
-    Connect signal by signal and ignore the directions of struct interface
-    (check only direction of low level signals)
-    """
+def _connect_MonitorIntf(src: MonitorIntf, dst):
     if src._interfaces:
         for _src in src._interfaces:
             _dst = getattr(dst, _src._name)
-            connect_MonitorOf(_dst, _src)
+            yield from _connect_MonitorIntf(_src, _dst)
     else:
         src = src._reinterpret_cast(dst._dtype)
-        dst(src)
+        yield dst(src)
 
-def connect_to_MonitorOf(dst: MonitorOf, src):
+
+def connect_MonitorIntf(src: MonitorIntf, dst):
     """
     Connect signal by signal and ignore the directions of struct interface
     (check only direction of low level signals)
     """
-    if dst._interfaces:
-        for _dst in dst._interfaces:
-            _src = getattr(src, _dst._name)
-            connect_to_MonitorOf(_dst, _src)
+    return list(_connect_MonitorIntf(src, dst))
+
+
+def _connect_to_MonitorIntf(src, dst: MonitorIntf):
+    if isinstance(dst, (StructValBase, RtlSignal)):
+        if src._interfaces:
+            for _src in src._interfaces:
+                _dst = getattr(dst, _src._name)
+                yield from _connect_to_MonitorIntf(_src, _dst)
+            return
     else:
-        dst(src)
+        if dst._interfaces:
+            for _dst in dst._interfaces:
+                _src = getattr(src, _dst._name)
+                yield from _connect_to_MonitorIntf(_src, _dst)
+            return
+    yield dst(src)
+
+
+def connect_to_MonitorIntf(src, dst: MonitorIntf):
+    """
+    Connect signal by signal and ignore the directions of struct interface
+    (check only direction of low level signals)
+    """
+    return list(_connect_to_MonitorIntf(src, dst))
+
+
+class MonitorIntfReg(Unit):
+    def __init__(self, intfCls: Type[MonitorIntf]):
+        self.intfCls = intfCls
+        Unit.__init__(self)
+
+    def _config(self):
+        Unit._config(self)
 
 
 class DebugBusMonitor(Unit):
@@ -141,31 +200,43 @@ class DebugBusMonitor(Unit):
         self._bus_cls._config(self)
         self.monitored_data = []
 
-    def register(self, intf: Interface, name=None):
+    def register(self, intf: Interface,
+                 name:Optional[str]=None,
+                 cdc:bool=False,
+                 trigger:Optional[RtlSignal]=None):
+        """
+        :param intf: an interface to monitor
+        :param name: name override
+        :param cdc: if True instanciate Clock domain crossing to synchronize input
+            data to clock domain of this component
+        :param trigger: an optional signal which triggers the snapshot of this interface
+        :note: if cdc is set to True the trigger has to be synchonezed to a clock clock domain of intf
+        """
         assert not self.io_instanciated
         if name is None:
             name = intf._getPhysicalName()
-        self.monitored_data.append((intf, name))
+        self.monitored_data.append((intf, name, cdc, trigger))
 
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
             self.s = self._bus_cls()
+        # declare an interface with same signals but all inputs for each monitored interface
         self.monitor = HObjList([
-            monitor_of(intf) for (intf, _) in self.monitored_data
+            monitor_of(intf) for (intf, _, _, _) in self.monitored_data
         ])
         self.io_instanciated = True
 
-        # declare an interface with same signalls but all inputs for each monitored interface
     def _impl(self):
-        name_memory, name_memory_size, name_content_size = self.build_name_memory(self.monitored_data)
+        name_memory, name_memory_size, name_content_size =\
+            self.build_name_memory(self.monitored_data)
         const_uint32_t = Bits(32, signed=False, const=True)
         addr_space = IntfMap([
             (const_uint32_t, "name_memory_size"),
             (const_uint32_t, "name_memory_offset"),
             (IntfMap(
                 (Interface_to_HdlType(i, const=True), name)
-                for i, name in self.monitored_data
+                for i, name, _, _ in self.monitored_data
             ), "data_memory"),
         ])
         data_part_t = HTypeFromIntfMap(addr_space)
@@ -173,13 +244,14 @@ class DebugBusMonitor(Unit):
         closest_pow2 = 2**data_part_width.bit_length()
         if data_part_width != closest_pow2:
             # padding between data_memory and name_memory
-            addr_space.append((Bits(closest_pow2 - data_part_width), None))    
+            addr_space.append((Bits(closest_pow2 - data_part_width), None))
         name_memory_offset = closest_pow2 // 8
 
+        name_mem_words = name_memory_size // (self.DATA_WIDTH // 8)
         addr_space.append(
-            (Bits(self.DATA_WIDTH, const=True)[name_memory_size // (self.DATA_WIDTH // 8)], "name_memory")
+            (Bits(self.DATA_WIDTH, const=True)[name_mem_words], "name_memory")
         )
-        
+
         ep = self._bus_endpoint_cls.fromInterfaceMap(addr_space)
 
         with self._paramsShared():
@@ -188,9 +260,9 @@ class DebugBusMonitor(Unit):
 
         ep.decoded.name_memory_size(name_content_size)
         ep.decoded.name_memory_offset(name_memory_offset)
-        for intf, (_, name) in zip(self.monitor, self.monitored_data):
+        for intf, (_, name, _, _) in zip(self.monitor, self.monitored_data):
             to_bus_intf = getattr(ep.decoded.data_memory, name)
-            connect_MonitorOf(to_bus_intf, intf)
+            connect_MonitorIntf(intf, to_bus_intf)
 
         name_memory = rename_signal(self, name_memory, "name_memory")
         name_memory_reader = ep.decoded.name_memory
@@ -201,7 +273,7 @@ class DebugBusMonitor(Unit):
         )
 
         propagateClkRstn(self)
-    
+
     @classmethod
     def _build_name_memory(cls, intf: Interface, offset: int):
         if intf._interfaces:
@@ -218,7 +290,7 @@ class DebugBusMonitor(Unit):
     def build_name_memory(self, monitored_data: List[Tuple[Interface, str]]):
         res = {}
         offset = 0
-        for i, name in monitored_data:
+        for i, name, _, _ in monitored_data:
             offset, _i = self._build_name_memory(i, offset)
             res[name] = _i
         res_bytes = json.dumps(res).encode("utf-8")
@@ -226,12 +298,51 @@ class DebugBusMonitor(Unit):
         name_data_width = ceil((len(res_bytes) * 8) / DW) * DW
         res = Bits(name_data_width).from_py(int.from_bytes(res_bytes, "little"))
         res = res._reinterpret_cast(Bits(DW)[name_data_width//DW])
-        
+
         return res, name_data_width // 8, len(res_bytes)
 
     def apply_connections(self):
         """
         Connect a monitored interface to monitor ports of this component
         """
-        for intf, (orig_intf, _) in zip(self.monitor, self.monitored_data):
-            connect_to_MonitorOf(intf, orig_intf)
+        parent = self._parent
+        for intf, (orig_intf, name, cdc, trigger) in zip(self.monitor, self.monitored_data):
+            if trigger is not None or cdc:
+                intf_t = Interface_to_HdlType(intf)
+            else:
+                intf_t = None
+
+            in_clk, in_rst = orig_intf._getAssociatedClk(), orig_intf._getAssociatedRst()
+            if not cdc and trigger is not None:
+                # regiter where trigger is en
+                reg = parent._reg(name, intf_t, clk=in_clk, rst=in_rst)
+                If(trigger,
+                   *connect_to_MonitorIntf(orig_intf, reg)
+                )
+                orig_intf = reg
+
+            if cdc:
+                # synchronize input signals to clock domain of this component
+                cdc_inst = MonitorIntfVldSyncedCdc(orig_intf)
+                out_clk, out_rst = self.s._getAssociatedClk(), self.s._getAssociatedRst()
+                cdc_inst.IN_FREQ = in_clk.FREQ
+                cdc_inst.OUT_FREQ = out_clk.FREQ
+                # ignore because we can do anything about
+                cdc_inst.IGNORE_DATA_LOSE = True
+
+                setattr(parent, "cdc_" + name, cdc_inst)
+                cdc_inst.dataIn_clk(in_clk)
+                cdc_inst.dataIn_rst_n(in_rst)
+                if trigger is not None:
+                    cdc_inst.dataIn.vld(trigger)
+                else:
+                    cdc_inst.dataIn.vld(1)
+                connect_to_MonitorIntf(orig_intf, cdc_inst.dataIn.data)
+
+                cdc_inst.dataOut_clk(out_clk)
+                cdc_inst.dataOut_rst_n(out_rst)
+
+                orig_intf = cdc_inst.dataOut.data
+
+            # connect to this component
+            connect_to_MonitorIntf(orig_intf, intf)
