@@ -40,7 +40,8 @@ def TransTmpl_get_min_addr(t: TransTmpl):
                 return r
         return None
     else:
-        return TransTmpl_get_min_addr(t.children) 
+        return TransTmpl_get_min_addr(t.children)
+
 
 def TransTmpl_get_max_addr(t: TransTmpl):
     if t.itemCnt is None:
@@ -146,7 +147,7 @@ class BusEndpoint(Unit):
 
         with self._paramsShared():
             self.bus = self._intfCls()
-        
+
         self.decoded = StructIntf(
             self.STRUCT_TEMPLATE, tuple(),
             instantiateFieldFn=self._mkFieldInterface)._m()
@@ -171,7 +172,6 @@ class BusEndpoint(Unit):
         t = field.dtype
         path = (*structIntf._field_path, field.name)
         shouldEnter, shouldUse = self.shouldEnterFn(self.STRUCT_TEMPLATE, path)
-
 
         if shouldUse:
             if isinstance(t, Bits):
@@ -206,7 +206,7 @@ class BusEndpoint(Unit):
                     raise NotImplementedError()
             elif isinstance(t, HStruct):
                 p = StructIntf(t, path,
-                                  instantiateFieldFn=self._mkFieldInterface)
+                               instantiateFieldFn=self._mkFieldInterface)
                 p._fieldsToInterfaces = structIntf._fieldsToInterfaces
             else:
                 raise TypeError(t)
@@ -234,6 +234,7 @@ class BusEndpoint(Unit):
 
         # resolve addresses for bram port mapped fields
         self._bramPortMapped = []
+
         def shouldEnterFn(trans_tmpl: TransTmpl):
             p = trans_tmpl.getFieldPath()
             intf = self.decoded._fieldsToInterfaces[p]
@@ -271,17 +272,16 @@ class BusEndpoint(Unit):
                 self.STRUCT_TEMPLATE,
                 directly_mapped_fields)
             tmpl = TransTmpl(directly_mapped_t)
-    
+
             frames = list(FrameTmpl.framesFromTransTmpl(
                 tmpl, DW, maxPaddingWords=0,
                 trimPaddingWordsOnStart=True,
                 trimPaddingWordsOnEnd=True,))
-    
+
             for f in frames:
                 f_word_offset = f.startBitAddr // DW
                 for (w_i, items) in f.walkWords(showPadding=True):
                     dmw.append((w_i+ f_word_offset, items))
-    
 
     def _suggestedAddrWidth(self):
         """
@@ -332,7 +332,7 @@ class BusEndpoint(Unit):
 
         if addrIsAligned:
             bitsOfPrefix = IN_ADDR_WIDTH - bitsOfSubAddr - bitsForAlignment
-            prefix = (transTmpl.bitAddr // 
+            prefix = (transTmpl.bitAddr //
                       srcAddrStep) >> (bitsForAlignment + bitsOfSubAddr)
             if bitsOfPrefix == 0:
                 addrIsInRange = True
@@ -344,7 +344,7 @@ class BusEndpoint(Unit):
             _addr = transTmpl.bitAddr // srcAddrStep
             _addrEnd = transTmpl.bitAddrEnd // srcAddrStep
             addrIsInRange = inRange(srcAddrSig, _addr, _addrEnd)
-            addr_tmp = self._sig(dstAddrSig._name + 
+            addr_tmp = self._sig(dstAddrSig._name +
                                  "_addr_tmp", Bits(self.ADDR_WIDTH))
             addr_tmp(srcAddrSig - _addr)
 
@@ -355,7 +355,8 @@ class BusEndpoint(Unit):
 
         return (addrIsInRange, connectedAddr)
 
-    def connect_directly_mapped_read(self, ar_addr: RtlSignal, r_data: RtlSignal, default_r_data_drive):
+    def connect_directly_mapped_read(self, ar_addr: RtlSignal,
+                                     r_data: RtlSignal, default_r_data_drive):
         """
         Connect the RegCntrl.din interfaces to a bus
         """
@@ -365,7 +366,7 @@ class BusEndpoint(Unit):
         for (w_i, items) in self._directly_mapped_words:
             w_data = []
             last_end = w_i * DW
-            for tpart in items: 
+            for tpart in items:
                 assert last_end == tpart.startOfPart, (last_end, tpart.startOfPart)
                 if tpart.tmpl is None:
                     # padding
@@ -374,16 +375,17 @@ class BusEndpoint(Unit):
                     din = self.getPort(tpart.tmpl)
                     if isinstance(din, RegCntrl):
                         din = din.din
-                if tpart.bit_length() > 1:
+                if din._dtype.bit_length() > 1:
                     fr = tpart.getFieldBitRange()
                     din = din[fr[0]:fr[1]]
                 w_data.append(din)
                 last_end = tpart.endOfPart
-    
+
             end_of_word = (w_i + 1) * DW
             assert last_end == end_of_word, (last_end, end_of_word)
-    
-            directlyMappedWords.append((w_i * (DW // ADDR_STEP), Concat(*reversed(w_data))))
+            word_val = Concat(*reversed(w_data))
+            assert word_val._dtype.bit_length() == DW, (items, word_val)
+            directlyMappedWords.append((w_i * (DW // ADDR_STEP), word_val))
 
         mux = Switch(ar_addr).addCases(
             [(word_i, r_data(val))
@@ -395,7 +397,8 @@ class BusEndpoint(Unit):
             )
         return mux
 
-    def connect_directly_mapped_write(self, aw_addr:RtlSignal, w_data: RtlSignal, en: RtlSignal):
+    def connect_directly_mapped_write(self, aw_addr: RtlSignal,
+                                      w_data: RtlSignal, en: RtlSignal):
         """
         Connect the RegCntrl.dout interfaces to a bus
         """
@@ -412,7 +415,7 @@ class BusEndpoint(Unit):
                     continue
                 else:
                     out = out.dout
-            
+
                 field_range = tpart.getFieldBitRange()
                 if field_range != (out.DATA_WIDTH, 0):
                     raise NotImplementedError("Write on field not aligned to a word boundary", tpart)
@@ -420,7 +423,6 @@ class BusEndpoint(Unit):
                 out.data(w_data[bus_range[0]: bus_range[1]])
                 addr = w_i * (DW // ADDR_STEP)
                 out.vld(en & (aw_addr._eq(vec(addr, addrWidth))))
-
 
     def connectByInterfaceMap(self, interfaceMap: IntfMap):
         """
@@ -464,15 +466,13 @@ class BusEndpoint(Unit):
         """
         t = HTypeFromIntfMap(interfaceMap)
 
-
         def shouldEnter(root: HdlType, field_path: Tuple[Union[str, int], ...]):
             actual = IntfMap_get_by_field_path(interfaceMap, field_path)
-        
+
             shouldEnter = isinstance(actual, (list, tuple, HStruct)) or (
                 isinstance(actual, HStructField) and isinstance(actual.dtype, HStruct))
             shouldUse = not shouldEnter
             return shouldEnter, shouldUse
-        
 
         # instantiate converter
         return cls(t, shouldEnterFn=shouldEnter)

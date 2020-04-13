@@ -105,9 +105,9 @@ class AxiLiteEndpoint(BusEndpoint):
         else:
             rdataReg = None
             isBramAddr(0)
-        
+
         self.connect_directly_mapped_read(arAddr, r.data, r.data(rdataReg))
-        
+
     def writeRespPart(self, wAddr, respVld):
         b = self.bus.b
 
@@ -123,7 +123,6 @@ class AxiLiteEndpoint(BusEndpoint):
     def writePart(self):
         sig = self._sig
         reg = self._reg
-
 
         wSt_t = HEnum('wSt_t', ['wrIdle', 'wrData', 'wrResp'])
         aw = self.bus.aw

@@ -1,7 +1,8 @@
+from typing import Type, Union
+
 from hwt.interfaces.std import Handshaked, HandshakeSync
-from hwt.pyUtils.arrayQuery import where
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 
 
 class HandshakedCompBase(Unit):
@@ -9,7 +10,7 @@ class HandshakedCompBase(Unit):
     Abstract class for components which has Handshaked interface as main
     """
 
-    def __init__(self, hsIntfCls):
+    def __init__(self, hsIntfCls: Type[Union[Handshaked, HandshakeSync]]):
         """
         :param hsIntfCls: class of interface which should be used
             as interface of this unit
@@ -33,4 +34,5 @@ class HandshakedCompBase(Unit):
     def get_data(self, intf):
         rd = self.get_ready_signal(intf)
         vld = self.get_valid_signal(intf)
-        return list(where(intf._interfaces, lambda x: (x is not rd) and (x is not vld)))
+        return [x for x in intf._interfaces
+                if (x is not rd) and (x is not vld)]
