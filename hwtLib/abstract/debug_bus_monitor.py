@@ -303,12 +303,16 @@ class DebugBusMonitor(Unit):
             return offset + w, [offset, w]
         return offset
 
-    def build_name_memory(self, monitored_data: List[Tuple[Interface, str]]):
+    def build_name_memory_json(self, monitored_data: List[Tuple[Interface, str]]):
         res = {}
         offset = 0
         for i, name, _, _, _ in monitored_data:
             offset, _i = self._build_name_memory(i, offset)
             res[name] = _i
+        return res
+
+    def build_name_memory(self, monitored_data: List[Tuple[Interface, str]]):
+        res = self.build_name_memory_json(monitored_data)
         res_bytes = json.dumps(res).encode("utf-8")
         DW = self.DATA_WIDTH
         name_data_width = ceil((len(res_bytes) * 8) / DW) * DW

@@ -25,7 +25,7 @@ def words_to_int(words, word_size, size):
     end_bytes = size % word_size
     if end_bytes != 0:
         words[-1] &= bit_mask(8 * end_bytes)
-    
+
     res = 0
     for w in reversed(words):
         res <<= 8 * word_size
@@ -45,7 +45,7 @@ class DebugBusMonitorCtl():
         self.addr = addr
         self.name_memory = None
         self.data_memory_size = None
-    
+
     def load_name_memory(self):
         size = self.read_int(self.REG_NAME_MEMORY_SIZE, 4)
         offset = self.read_int(self.REG_NAME_MEMORY_OFFSET, 4)
@@ -74,7 +74,7 @@ class DebugBusMonitorCtl():
     def read(self, addr, size):
         addr += self.addr 
         raise NotImplementedError("Implement this in your implementation of this abstract class")
-    
+
     def _dump_txt_indent(self, out, indent):
         for _ in range(indent):
             out.write("  ")
@@ -97,11 +97,11 @@ class DebugBusMonitorCtl():
                 out.write(k)
                 out.write(":\n")
                 self._dump_txt(out, v, data, indent + 1)
-            
+
     def dump_txt(self, out=sys.stdout):
         if self.name_memory is None:
             self.load_name_memory()
-        
+
         data = self.read_int(self.REG_DATA_MEMORY, self.data_memory_size)
         self._dump_txt(out, self.name_memory, data, 0)
 
@@ -133,7 +133,18 @@ if __name__ == "__main__":
     parser.add_argument('--devmem', dest='devmem', action='store_const',
                         const="devmem", default="devmem",
                         help='the devmem tool to use')
+    parser.add_argument('--memory-desc', dest='mem_desc', action='store_const',
+                        const=None, default=None,
+                        help='path to a file with a json specification of memory space of the signals')
+
     args = parser.parse_args()
     db = DebugBusMonitorCtlDevmem(args.address)
     db.devmem = args.devmem
+    if args.mem_desc:
+        with open(db.mem_desc) as fp:
+            name_memory = json.load(fp)
+        data_width = db.get_data_memory_width(name_memory)
+        db.name_memory = name_memory
+        db.data_memory_size = ceil(data_width / 8)
+
     db.dump_txt(sys.stdout)
