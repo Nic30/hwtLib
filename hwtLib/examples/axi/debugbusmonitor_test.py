@@ -171,6 +171,55 @@ dout2_snapshot:
   data: 0x0
   vld: 0
   rd: 0
+s:
+  ar:
+    addr: 0x8c
+    ready: 1
+    valid: 1
+    prot: 0x0
+  r:
+    data: 0x0
+    resp: 0x0
+    ready: 1
+    valid: 0
+  aw:
+    addr: 0x0
+    ready: 1
+    valid: 0
+    prot: 0x0
+  w:
+    data: 0x0
+    strb: 0x0
+    ready: 0
+    valid: 0
+  b:
+    resp: 0x0
+    ready: 1
+    valid: 0
+s_ar_snapshot:
+  addr: 0x9c
+  ready: 1
+  valid: 1
+  prot: 0x0
+s_r_snapshot:
+  data: 0x3000000
+  resp: 0x0
+  ready: 1
+  valid: 1
+s_aw_snapshot:
+  addr: 0x0
+  ready: 0
+  valid: 0
+  prot: 0x0
+s_w_snapshot:
+  data: 0x0
+  strb: 0x0
+  ready: 0
+  valid: 0
+s_b_snapshot:
+  resp: 0x0
+  ready: 0
+  valid: 0
 """)
 
 
