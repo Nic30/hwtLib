@@ -1,7 +1,7 @@
 from hwt.hdl.assignment import Assignment
 from hwt.hdl.operator import Operator
 from hwt.hdl.operatorDefs import AllOps, isEventDependentOp
-from hwt.hdl.portItem import PortItem
+from hwt.hdl.portItem import HdlPortItem
 from hwt.synthesizer.interfaceLevel.mainBases import UnitBase
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.abstract.busBridge import BusBridge
@@ -111,7 +111,7 @@ class AddressSpaceProbe(object):
             if isinstance(e, Operator) and not isEventDependentOp(e):
                 ep = getEpSignal(mainSig, e)
                 yield from self.walkToConverter(ep, offset)
-            elif isinstance(e, (Assignment, PortItem)):
+            elif isinstance(e, (Assignment, HdlPortItem)):
                 yield from self.walkToConverter(e.dst, offset)
             else:
                 for outp in e._outputs:
