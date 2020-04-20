@@ -6,17 +6,17 @@ import unittest
 from hwt.code import If
 from hwt.hdl.assignment import Assignment
 from hwt.hdl.typeShortcuts import hBit
-from hwt.serializer.vhdl.serializer import VhdlSerializer
+from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.examples.rtlLvl.indexOps import IndexOps
 from hwtLib.mem.atomic.flipReg import FlipRegister
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import synthesised
-from hwt.hdl.statements import HdlStatement
+from hwt.hdl.statement import HdlStatement
 from hwtLib.mem.cuckooHashTable import CuckooHashTable
 from hwtLib.examples.statements.ifStm import SimpleIfStatement3
 from hwt.synthesizer.dummyPlatform import DummyPlatform
 from hwtLib.examples.mem.ram import SimpleAsyncRam
-from hwtLib.peripheral.segment7 import Segment7
+from hwtLib.peripheral.displays.segment7 import Segment7
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl
 
 
@@ -84,7 +84,7 @@ class BasicSynthesisTC(unittest.TestCase):
         c, interf = IndexOps()
         _, arch = list(c.synthesize("indexOps", interf, DummyPlatform()))
 
-        s = VhdlSerializer.Architecture(arch, VhdlSerializer.getBaseContext())
+        s = Vhdl2008Serializer.Architecture(arch, Vhdl2008Serializer.getBaseContext())
 
         self.assertNotIn("sig_", s)
 
