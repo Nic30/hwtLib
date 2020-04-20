@@ -3,8 +3,6 @@
 
 from hwt.hdl.constants import WRITE, READ
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-import unittest
-
 from hwtLib.mem.ram import Ram_sp
 from pycocotb.constants import CLK_PERIOD
 
@@ -33,6 +31,7 @@ class RamTC(SingleUnitSimTestCase):
 
 
 if __name__ == "__main__":
+    import unittest
     suite = unittest.TestSuite()
     # suite.addTest(TwoCntrsTC('test_withStops'))
     suite.addTest(unittest.makeSuite(RamTC))

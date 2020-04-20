@@ -1,39 +1,52 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import unittest
-
+from hdlConvertor.hdlAst._structural import HdlComponentInst
 from hwt.hdl.constants import DIRECTION
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.serializer.vhdl.serializer import VhdlSerializer
+from hwt.serializer.generic.to_hdl_ast import ToHdlAst
+from hwt.serializer.store_manager import StoreManager
 from hwt.synthesizer.dummyPlatform import DummyPlatform
 from hwt.synthesizer.exceptions import TypeConversionErr
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.utils import toRtl
+from hwt.synthesizer.utils import to_rtl_str
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_fullduplex import AxiStreamFullDuplex
+from hwtLib.examples.base_serialization_TC import BaseSerializationTC
+from hwtLib.examples.hierarchy.groupOfBlockrams import GroupOfBlockrams
 from hwtLib.examples.hierarchy.unitToUnitConnection import UnitToUnitConnection
 from hwtLib.examples.simple2withNonDirectIntConnection import \
     Simple2withNonDirectIntConnection
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import \
     BaseSynthesizerTC
-from hwtLib.examples.hierarchy.groupOfBlockrams import GroupOfBlockrams
 
 
 D = DIRECTION
 
 
-def synthesised(u: Unit, targetPlatform=DummyPlatform()):
-    assert not u._wasSynthetised()
+class DummySerializerCls():
+    """
+    The serializer which does not do any additional code transformations
+    and does not produce any output. It is used to generate just internal representation
+    of RTL code.
+    """
+    TO_HDL_AST = ToHdlAst
+
+
+def synthesised(u: Unit, target_platform=DummyPlatform()):
+    """
+    Elaborate design withou producing any hdl
+    """
+    sm = StoreManager(DummySerializerCls)
     if not hasattr(u, "_interfaces"):
         u._loadDeclarations()
 
-    for _ in u._toRtl(targetPlatform):
+    for _ in u._toRtl(target_platform, sm):
         pass
     return u
 
@@ -95,61 +108,13 @@ class UnitWithGenericOfChild(Unit):
         self.b(tmp)
 
 
-UnitWithGenericOfChild_vhdl = """library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
-
-ENTITY ch IS
-    GENERIC (NESTED_PARAM: INTEGER := 123
-    );
-    PORT (a: IN STD_LOGIC_VECTOR(122 DOWNTO 0);
-        b: OUT STD_LOGIC_VECTOR(122 DOWNTO 0)
-    );
-END ENTITY;
-
-ARCHITECTURE rtl OF ch IS
-    SIGNAL tmp: STD_LOGIC_VECTOR(122 DOWNTO 0);
-BEGIN
-    b <= tmp;
-    tmp <= a;
-END ARCHITECTURE;
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
-
-ENTITY UnitWithGenericOfChild IS
-    PORT (a: IN STD_LOGIC_VECTOR(122 DOWNTO 0);
-        b: OUT STD_LOGIC_VECTOR(122 DOWNTO 0)
-    );
-END ENTITY;
-
-ARCHITECTURE rtl OF UnitWithGenericOfChild IS
-    SIGNAL sig_ch_a: STD_LOGIC_VECTOR(122 DOWNTO 0);
-    SIGNAL sig_ch_b: STD_LOGIC_VECTOR(122 DOWNTO 0);
-    SIGNAL tmp: STD_LOGIC_VECTOR(122 DOWNTO 0);
-    COMPONENT ch IS
-       GENERIC (NESTED_PARAM: INTEGER := 123
-       );
-       PORT (a: IN STD_LOGIC_VECTOR(122 DOWNTO 0);
-            b: OUT STD_LOGIC_VECTOR(122 DOWNTO 0)
-       );
-    END COMPONENT;
-
-BEGIN
-    ch_inst: COMPONENT ch
-        GENERIC MAP (NESTED_PARAM => 123
-        )
-        PORT MAP (a => sig_ch_a,
-            b => sig_ch_b
-        );
-
-    b <= tmp;
-    sig_ch_a <= a;
-    tmp <= b;
-END ARCHITECTURE;"""
+def count_components(u):
+    return len([o for o in u._ctx.arch.objs if isinstance(o, HdlComponentInst)])
 
 
-class SubunitsSynthesisTC(BaseSynthesizerTC):
+class SubunitsSynthesisTC(BaseSynthesizerTC, BaseSerializationTC):
+    __FILE__ = __file__
+
     def test_GroupOfBlockrams(self):
         """
         Check interface directions pre and after synthesis
@@ -157,7 +122,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
         u = GroupOfBlockrams()
         u._loadDeclarations()
         u = synthesised(u)
-        self.assertEqual(len(u._architecture.componentInstances), 2)
+        self.assertEqual(count_components(u), 2)
 
     def test_SubunitWithWrongDataT(self):
         class InternUnit(Unit):
@@ -180,13 +145,13 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
                 self.iu.a(self.a)
                 self.b(self.iu.b)
 
-        self.assertRaises(TypeConversionErr, lambda: toRtl(OuterUnit))
+        self.assertRaises(TypeConversionErr, lambda: to_rtl_str(OuterUnit))
 
     def test_twoSubUnits(self):
         u = UnitToUnitConnection()
         u._loadDeclarations()
         u = synthesised(u)
-        self.assertEqual(len(u._architecture.componentInstances), 2)
+        self.assertEqual(count_components(u), 2)
 
     def test_threeSubUnits(self):
         class ThreeSubunits(Unit):
@@ -216,13 +181,13 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
         u = ThreeSubunits()
         u._loadDeclarations()
         u = synthesised(u)
-        self.assertEqual(len(u._architecture.componentInstances), 3)
+        self.assertEqual(count_components(u), 3)
 
     def test_subUnitWithArrIntf(self):
         u = UnitWithArrIntfParent()
         u._loadDeclarations()
         u = synthesised(u)
-        self.assertEqual(len(u._architecture.componentInstances), 1)
+        self.assertEqual(count_components(u), 1)
 
     def test_threeLvlSubUnitsArrIntf(self):
         class ThreeSubunits(Unit):
@@ -258,7 +223,7 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
         u = ThreeSubunits()
         u._loadDeclarations()
         u = synthesised(u)
-        self.assertEqual(len(u._architecture.componentInstances), 4)
+        self.assertEqual(count_components(u), 4)
 
     def test_unitWithIntfPartsConnectedSeparately(self):
         class FDStreamConnection(Unit):
@@ -276,12 +241,12 @@ class SubunitsSynthesisTC(BaseSynthesizerTC):
 
     def test_used_param_from_other_unit(self):
         u = UnitWithGenericOfChild()
-        s = toRtl(u, serializer=VhdlSerializer)
-        self.assertEqual(s, UnitWithGenericOfChild_vhdl)
+        self.assert_serializes_as_file(u, "UnitWithGenericOfChild.vhd")
 
 
 if __name__ == '__main__':
-    # print(toRtl(UnitWithArrIntfParent))
+    import unittest
+    # print(to_rtl_str(UnitWithArrIntfParent()))
 
     suite = unittest.TestSuite()
     # suite.addTest(SubunitsSynthesisTC('test_used_param_from_other_unit'))
