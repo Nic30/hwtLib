@@ -156,7 +156,7 @@ from hwtLib.peripheral.ethernet.mac_tx_test import EthernetMac_tx_TCs
 from hwtLib.peripheral.ethernet.rmii_adapter_test import RmiiAdapterTC
 from hwtLib.peripheral.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
 from hwtLib.peripheral.mdio.master_test import MdioMasterTC
-from hwtLib.peripheral.segment7_test import Segment7TC
+from hwtLib.peripheral.displays.segment7_test import Segment7TC
 from hwtLib.peripheral.spi.master_test import SpiMasterTC
 from hwtLib.peripheral.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.peripheral.uart.tx_rx_test import UartTxRxTC
@@ -196,13 +196,15 @@ from hwtLib.tests.types.operators_test import OperatorTC
 from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
-from hwtLib.tests.vhdlSerializer_test import VhdlSerializer_TC
+from hwtLib.tests.vhdlSerializer_test import Vhdl2008Serializer_TC
 from hwtLib.xilinx.ipif.axi4Lite_to_ipif_test import Axi4Lite_to_IpifTC
 from hwtLib.xilinx.ipif.buff_test import IpifBuffTC
 from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
+from hwtLib.tests.repr_of_hdlObjs_test import ReprOfHdlObjsTC
+from hwtLib.examples.arithmetic.vhdl_vector_auto_casts import VhdlVectorAutoCastExampleTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -223,6 +225,7 @@ suite = testSuiteFromTCs(
     # basic tests
     FileUtilsTC,
     RtlLvlTC,
+    ReprOfHdlObjsTC,
     HdlCommentsTC,
     InterfaceSynthesizerTC,
     SubunitsSynthesisTC,
@@ -259,11 +262,12 @@ suite = testSuiteFromTCs(
     Segment7TC,
     SerializerModes_TC,
     Serializer_tmpVar_TC,
+    VhdlVectorAutoCastExampleTC,
     TransTmpl_TC,
     UnionTC,
     UnionIntfTC,
     ResourceAnalyzer_TC,
-    VhdlSerializer_TC,
+    Vhdl2008Serializer_TC,
     IfStmTC,
     SwitchStmTC,
     SimpleRomTC,
