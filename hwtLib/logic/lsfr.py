@@ -63,5 +63,5 @@ class LsfrTC(SingleUnitSimTestCase):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
-    print(toRtl(Lsfr()))
+    from hwt.synthesizer.utils import to_rtl_str
+    print(to_rtl_str(Lsfr()))

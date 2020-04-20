@@ -437,7 +437,7 @@ def _example_AxiS_frameParser():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = _example_AxiS_frameParser()
 
-    print(toRtl(u))
+    print(to_rtl_str(u))

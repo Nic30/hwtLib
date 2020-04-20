@@ -147,5 +147,5 @@ if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
-    from hwt.synthesizer.utils import toRtl
-    print(toRtl(ListOfInterfacesSample0()))
+    from hwt.synthesizer.utils import to_rtl_str
+    print(to_rtl_str(ListOfInterfacesSample0()))

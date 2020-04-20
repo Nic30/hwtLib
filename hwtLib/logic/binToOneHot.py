@@ -59,9 +59,9 @@ class BinToOneHotTC(SingleUnitSimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
 
-    print(toRtl(BinToOneHot()))
+    print(to_rtl_str(BinToOneHot()))
 
     suite = unittest.TestSuite()
     # suite.addTest(IndexingTC('test_split'))

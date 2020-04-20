@@ -351,9 +351,9 @@ class AxiS_footerSplit(AxiSCompBase):
 
 
 if __name__ == '__main__':
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = AxiS_footerSplit()
     u.DATA_WIDTH = 8
     u.FOOTER_WIDTH = 8
     u.USE_STRB = True
-    print(toRtl(u))
+    print(to_rtl_str(u))

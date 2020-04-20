@@ -46,13 +46,17 @@ class SimpleUnit(Unit):
 if __name__ == "__main__":  # alias python main function
     # toRtl can be imported anywhere but we prefer to import it only
     # when this script is running as main
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
     # there are other serializers ...
-    from hwt.serializer.vhdl.serializer import VhdlSerializer
+    # from hwt.serializer.hwt.serializer import HwtSerializer
+    # from hwt.serializer.simModel.serializer import SimModelSerializer
+    # from hwt.serializer.verilog.serializer import VerilogSerializer
+
     # we create instance of our unit
     u = SimpleUnit()
-    # there is more of synthesis methods. toRtl() returns formated hdl string
-    print(toRtl(u, serializer=VhdlSerializer()))
+    # to_rtl_str() returns hdl string, you can also generate files with toRtl, IP-xact packages with IpPackager
+    print(to_rtl_str(u, serializer_cls=Vhdl2008Serializer))
 
 # expected Output (without # ofcourse)
 # --   In order to create a new unit you have to make new class derived from Unit.

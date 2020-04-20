@@ -132,6 +132,6 @@ def _example_HsJoinFairShare():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = _example_HsJoinFairShare()
-    print(toRtl(u))
+    print(to_rtl_str(u))

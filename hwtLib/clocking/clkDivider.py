@@ -78,8 +78,8 @@ class ClkDiv3TC(SingleUnitSimTestCase):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
-    print(toRtl(ClkDiv3()))
+    from hwt.synthesizer.utils import to_rtl_str
+    print(to_rtl_str(ClkDiv3()))
 
     import unittest
     suite = unittest.TestSuite()

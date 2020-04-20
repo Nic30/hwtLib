@@ -9,8 +9,8 @@ from hwt.hdl.ifContainter import IfContainer
 from hwt.hdl.switchContainer import SwitchContainer
 from hwt.hdl.types.defs import INT
 from hwt.hdl.types.enum import HEnum
-from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
+from hwt.serializer.vhdl.serializer import _to_Vhdl2008_str
 
 
 rmWhitespaces = re.compile(r'\s+', re.MULTILINE)
@@ -35,7 +35,7 @@ class StatementTreesTC(unittest.TestCase):
 
     def strStructureCmp(self, cont, tmpl):
         if not isinstance(cont, str):
-            cont = VhdlSerializer.asHdl(cont, VhdlSerializer.getBaseContext())
+            cont = _to_Vhdl2008_str(cont)
         _tmpl = rmWhitespaces.sub(" ", tmpl).strip()
         _cont = rmWhitespaces.sub(" ", cont).strip()
 

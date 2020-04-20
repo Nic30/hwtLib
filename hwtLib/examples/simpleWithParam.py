@@ -55,13 +55,13 @@ class SimpleUnitWithParamTC(SingleUnitSimTestCase):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = SimpleUnitWithParam()
 
     # we can now optionally set our parameter to any chosen value
     u.DATA_WIDTH = 1024
 
-    print(toRtl(u))
+    print(to_rtl_str(u))
 
     import unittest
     suite = unittest.TestSuite()

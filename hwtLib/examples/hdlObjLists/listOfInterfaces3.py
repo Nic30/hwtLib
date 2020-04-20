@@ -8,7 +8,6 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import toRtl
-
 from hwtLib.amba.axi4Lite import Axi4Lite
 
 
@@ -142,4 +141,5 @@ if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
-    print(toRtl(ListOfInterfacesSample3b()))
+    from hwt.synthesizer.utils import to_rtl_str
+    print(to_rtl_str(ListOfInterfacesSample3b()))

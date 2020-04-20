@@ -3,7 +3,6 @@
 
 from hwt.interfaces.std import Signal
 from hwt.synthesizer.unit import Unit
-
 from hwtLib.examples.simple import SimpleUnit
 
 
@@ -15,9 +14,9 @@ class SimpleSubunit(Unit):
         self.a = Signal()
         self.b = Signal()._m()
 
-        # there we instantiate our subunit and register it by assigning
+        # Here we instantiate our subunit and register it by assigning
         # to property of self it can be done in _impl as well,
-        # but if you do it there it offers more possibilities for parallelization
+        # but if you do it here, it offers more possibilities for parallelization
         self.subunit0 = SimpleUnit()
 
     def _impl(self):
@@ -30,6 +29,8 @@ class SimpleSubunit(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = SimpleSubunit()
-    print(toRtl(u))
+    from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
+
+    print(to_rtl_str(u, serializer_cls=Vhdl2008Serializer))

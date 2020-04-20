@@ -77,10 +77,10 @@ class NetFilter(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     # from hwt.serializer.ip_packager import IpPackager
 
     u = NetFilter()
-    print(toRtl(u))
+    print(to_rtl_str(u))
     # p = IpPackager(u)
     # p.createPackage("project/ip/")

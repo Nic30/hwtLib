@@ -192,6 +192,6 @@ def _example_StructReader():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = _example_StructReader()
-    print(toRtl(u))
+    print(to_rtl_str(u))

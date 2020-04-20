@@ -44,7 +44,7 @@ class SimpleSyncRam(SimpleAsyncRam):
 
 
 if __name__ == "__main__":  # alias python "main" function
-    from hwt.synthesizer.utils import toRtl
-    # there is more of synthesis methods. toRtl() returns formated vhdl string
+    from hwt.synthesizer.utils import to_rtl_str
+    # there is more of synthesis methods. to_rtl_str() returns formated vhdl string
     u = SimpleAsyncRam()
-    print(toRtl(u))
+    print(to_rtl_str(u))

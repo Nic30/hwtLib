@@ -79,5 +79,5 @@ class HandshakedStoredBurst(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
-    print(toRtl(HandshakedStoredBurst()))
+    from hwt.synthesizer.utils import to_rtl_str
+    print(to_rtl_str(HandshakedStoredBurst()))

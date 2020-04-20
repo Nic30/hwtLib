@@ -148,11 +148,11 @@ class Crc(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     # from hwtLib.logic.crcPoly import CRC_32
     u = Crc()
     u.MASK_GRANULARITY = 8
     # CrcComb.setConfig(u, CRC_32)
     # u.DATA_WIDTH = 8
 
-    print(toRtl(u))
+    print(to_rtl_str(u))

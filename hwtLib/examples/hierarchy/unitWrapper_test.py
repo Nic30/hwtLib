@@ -7,11 +7,10 @@ import unittest
 
 from hwt.interfaces.std import VldSynced
 from hwt.interfaces.utils import addClkRstn
-from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.utils import toRtl
+from hwt.synthesizer.utils import to_rtl_str
 from hwtLib.amba.axis import AxiStream
 from hwtLib.examples.hierarchy.unitWrapper import UnitWrapper
 from hwtLib.tests.statementTrees import StatementTreesTC
@@ -35,6 +34,7 @@ class UnitWithParams(Unit):
     """
     .. hwt-schematic::
     """
+
     def _config(self):
         self.DATA_WIDTH = Param(64)
 
@@ -60,12 +60,12 @@ class UnitWrapperTC(TestCase):
     def test_params_of_base_unit(self):
         u = UnitWithParams()
         w = UnitWrapper(u)
-        s = toRtl(w, serializer=VhdlSerializer)
+        s = to_rtl_str(w)
         self.assert_same_as_file(s, "UnitWithParams_in_wrap.vhd")
 
     def test_interfaces(self):
         u = UnitWrapper(ArrayIntfExample())
-        toRtl(u)
+        to_rtl_str(u)
         self.assertTrue(hasattr(u, "a_0"))
         self.assertTrue(hasattr(u, "a_1"))
         self.assertFalse(hasattr(u, "a"))

@@ -7,7 +7,6 @@ from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.utils import toRtl
 
 
 class FsmExample(Unit):
@@ -95,5 +94,6 @@ class HadrcodedFsmExample(FsmExample):
 
 
 if __name__ == "__main__":
+    from hwt.synthesizer.utils import to_rtl_str
     u = FsmExample()
-    print(toRtl(u))
+    print(to_rtl_str(u))

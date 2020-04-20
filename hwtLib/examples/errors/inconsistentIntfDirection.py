@@ -12,7 +12,7 @@ class InconsistentIntfDirection(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = InconsistentIntfDirection()
     # expecting hwt.synthesizer.exceptions.IntfLvlConfErr
-    print(toRtl(u))
+    print(to_rtl_str(u))

@@ -77,6 +77,6 @@ class Mi32_to_Axi4Lite(BusBridge):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = Mi32_to_Axi4Lite()
-    print(toRtl(u))
+    print(to_rtl_str(u))

@@ -81,9 +81,9 @@ class AxisFrameGen(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = AxisFrameGen()
-    print(toRtl(u))
+    print(to_rtl_str(u))
 
     # import os
     # hwt.serializer.ip_packager import IpPackager

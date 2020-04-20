@@ -1,7 +1,6 @@
 from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal, Clk
-from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 from pycocotb.constants import CLK_PERIOD
@@ -50,9 +49,9 @@ class ConstConditionTC(SingleUnitSimTestCase):
 
 def main():
     import unittest
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = ConstCondition()
-    print(toRtl(u, serializer=VerilogSerializer))
+    print(to_rtl_str(u))
 
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(ConstConditionTC))

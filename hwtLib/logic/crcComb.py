@@ -192,11 +192,11 @@ class CrcComb(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     # from hwtLib.logic.crcPoly import CRC_32
 
     u = CrcComb()
     u.DATA_WIDTH = 8
     u.setConfig(CRC_5_USB)
 
-    print(toRtl(u))
+    print(to_rtl_str(u))

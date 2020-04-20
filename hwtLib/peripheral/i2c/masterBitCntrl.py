@@ -137,15 +137,18 @@ class I2cMasterBitCtrl(Unit):
 
     def filter(self, name, sig):
         """attempt to remove glitches"""
-        filter0 = ClkBuilder(self, self.clk, "filter").reg_path(sig, 2, "filter", def_val=0)
+        filter0 = ClkBuilder(self, self.clk, "filter")\
+            .reg_path(sig, 2, "filter", def_val=0)
 
         # let filter_cnt to be shared between filters
         try:
             filter_clk_cntr = self.filter_clk_cntr
         except AttributeError:
-            filter_clk_cntr = self.filter_clk_cntr = self._reg("filter_clk_cntr",
-                                                               Bits(self.CLK_CNTR_WIDTH),
-                                                               def_val=self.clk_cnt_initVal)
+            filter_clk_cntr = self.filter_clk_cntr = self._reg(
+                "filter_clk_cntr",
+                Bits(self.CLK_CNTR_WIDTH),
+                def_val=self.clk_cnt_initVal)
+
             If(filter_clk_cntr._eq(0),
                filter_clk_cntr(self.clk_cnt_initVal)
             ).Else(
@@ -298,6 +301,6 @@ class I2cMasterBitCtrl(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = I2cMasterBitCtrl()
-    print(toRtl(u))
+    print(to_rtl_str(u))
