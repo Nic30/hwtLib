@@ -40,6 +40,8 @@ class Vhdl2008Serializer_TC(BaseSerializationTC):
 
 
 if __name__ == '__main__':
+    from hwt.synthesizer.utils import to_rtl_str
+    print(to_rtl_str(TernaryInConcatExample()))
     suite = unittest.TestSuite()
     # suite.addTest(RdSyncedPipe('test_basic_data_pass'))
     suite.addTest(unittest.makeSuite(Vhdl2008Serializer_TC))
