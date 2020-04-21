@@ -1,8 +1,8 @@
 
 --dynamically generated, for example loaded from file or builded from unit content
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY SimpleComentedUnit3 IS
     PORT (a: IN STD_LOGIC;

@@ -2,9 +2,9 @@
 --Object of class Architecture, "rtl" was not serialized as specified
 --Object of class Entity, "ExcludedUnit" was not serialized as specified
 --Object of class Architecture, "rtl" was not serialized as specified
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY OnceUnit IS
     PORT (a: OUT STD_LOGIC
@@ -19,9 +19,9 @@ END ARCHITECTURE;
 --Object of class Architecture, "rtl" was not serialized as specified
 --Object of class Entity, "OnceUnit" was not serialized as specified
 --Object of class Architecture, "rtl" was not serialized as specified
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY u5 IS
     GENERIC (A: INTEGER := 0;
@@ -37,9 +37,9 @@ BEGIN
 END ARCHITECTURE;
 --Object of class Entity, "u5" was not serialized as specified
 --Object of class Architecture, "rtl" was not serialized as specified
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY u7 IS
     GENERIC (A: INTEGER := 0;
@@ -53,9 +53,9 @@ ARCHITECTURE rtl OF u7 IS
 BEGIN
     a_0 <= '1';
 END ARCHITECTURE;
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY ExampleA IS
     PORT (a: OUT STD_LOGIC_VECTOR(6 DOWNTO 0)

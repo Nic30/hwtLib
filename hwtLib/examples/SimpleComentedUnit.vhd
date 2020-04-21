@@ -2,9 +2,9 @@
 --    This is comment for SimpleComentedUnit entity, it will be rendered before entity as comment.
 --    Do not forget that class inheritance does apply for docstring as well.
 --
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY SimpleComentedUnit IS
     PORT (a: IN STD_LOGIC;

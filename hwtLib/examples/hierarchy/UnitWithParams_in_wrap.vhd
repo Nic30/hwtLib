@@ -1,9 +1,9 @@
 --
 --    .. hwt-schematic::
 --    
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY baseUnit IS
     GENERIC (DATA_WIDTH: INTEGER := 64
@@ -27,9 +27,9 @@ END ARCHITECTURE;
 --    :note: This is example of lazy loaded interfaces
 --        and generating of external interfaces based on internal stucture.
 --    
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY UnitWithParams IS
     GENERIC (DATA_WIDTH: INTEGER := 64

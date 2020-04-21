@@ -3,9 +3,9 @@
 --
 --    .. hwt-schematic::
 --    
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY Showcase0 IS
     PORT (a: IN UNSIGNED(31 DOWNTO 0);

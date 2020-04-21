@@ -1,9 +1,9 @@
 --
 --    .. hwt-schematic::
 --    
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY FsmExample IS
     PORT (a: IN STD_LOGIC;

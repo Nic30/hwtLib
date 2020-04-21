@@ -1,6 +1,6 @@
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY ch IS
     GENERIC (NESTED_PARAM: INTEGER := 123
@@ -16,9 +16,9 @@ BEGIN
     b <= tmp;
     tmp <= a;
 END ARCHITECTURE;
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY UnitWithGenericOfChild IS
     PORT (a: IN STD_LOGIC_VECTOR(122 DOWNTO 0);

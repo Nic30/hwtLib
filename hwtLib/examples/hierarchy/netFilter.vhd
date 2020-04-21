@@ -1,6 +1,6 @@
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY hfe IS
     PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
@@ -28,9 +28,9 @@ BEGIN
     headers_last <= 'X';
     headers_valid <= 'X';
 END ARCHITECTURE;
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY patternMatch IS
     PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
@@ -51,9 +51,9 @@ BEGIN
     match_last <= 'X';
     match_valid <= 'X';
 END ARCHITECTURE;
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY filter IS
     PORT (cfg_ar_addr: IN STD_LOGIC_VECTOR(31 DOWNTO 0);
@@ -111,9 +111,9 @@ BEGIN
     headers_ready <= 'X';
     patternMatch_ready <= 'X';
 END ARCHITECTURE;
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY exporter IS
     PORT (din_data: IN STD_LOGIC_VECTOR(63 DOWNTO 0);
@@ -141,9 +141,9 @@ END ARCHITECTURE;
 --
 --    .. hwt-schematic::
 --    
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY gen_dout_splitCopy_0 IS
     GENERIC (DATA_WIDTH: INTEGER := 64;
@@ -187,9 +187,9 @@ END ARCHITECTURE;
 --
 --    .. hwt-schematic::
 --    
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
 
 ENTITY NetFilter IS
     GENERIC (DATA_WIDTH: INTEGER := 64
