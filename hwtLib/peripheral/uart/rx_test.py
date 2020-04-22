@@ -16,7 +16,7 @@ class UartRxBasicTC(SingleUnitSimTestCase):
         u = cls.u = UartRx()
         u.OVERSAMPLING = cls.OVERSAMPLING = 16
         u.FREQ = cls.FREQ = 115200 * cls.OVERSAMPLING
-        u.BAUD =cls.BAUD = 115200
+        u.BAUD = cls.BAUD = 115200
 
         return u
 
