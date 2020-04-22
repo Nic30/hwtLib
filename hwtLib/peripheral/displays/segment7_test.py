@@ -6,6 +6,8 @@ from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 
 
 class Segment7TC(BaseSerializationTC):
+    __FILE__ = __file__
+
     def test_toVhdl(self):
         self.assert_serializes_as_file(Segment7(), "Segment7.vhd")
 
