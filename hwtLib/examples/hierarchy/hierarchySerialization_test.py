@@ -6,6 +6,7 @@ from hwtLib.examples.hierarchy.netFilter import NetFilter
 
 
 class HierarchySerializationTC(BaseSerializationTC):
+    __FILE__ = __file__
 
     def test_NetFilter_vhdl(self):
         u = NetFilter()
