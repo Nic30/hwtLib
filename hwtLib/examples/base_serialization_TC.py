@@ -27,7 +27,7 @@ class BaseSerializationTC(unittest.TestCase):
         self.assert_same_as_file(s, file_name)
 
     def assert_same_as_file(self, s, file_name: str):
-        assert self.__FILE__ is not None
+        assert self.__FILE__ is not None, "This should be set on child class"
         THIS_DIR = os.path.dirname(os.path.realpath(self.__FILE__))
         fn = os.path.join(THIS_DIR, file_name)
         # with open(fn, "w") as f:
