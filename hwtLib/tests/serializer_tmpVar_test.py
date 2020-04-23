@@ -17,6 +17,8 @@ class TmpVarExample(Unit):
 
 
 class Serializer_tmpVar_TC(BaseSerializationTC):
+    __FILE__ = __file__
+
     def test_add_to_slice_vhdl(self):
         self.assert_serializes_as_file(TmpVarExample(), "TmpVarExample.vhd")
 

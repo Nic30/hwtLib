@@ -6,16 +6,15 @@ from hwt.hdl.operatorDefs import AllOps
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
     ResourceFF
-from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.utils import toRtl, to_rtl_str
+from hwt.synthesizer.utils import toRtl
+from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.statements.ifStm import SimpleIfStatement, \
     SimpleIfStatement2, SimpleIfStatement2b, SimpleIfStatement2c, \
     SimpleIfStatement3, SimpleIfStatementMergable, \
     SimpleIfStatementMergable1, SimpleIfStatementMergable2, \
     IfStatementPartiallyEnclosed
-from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 
 
 def agInts(interface):
@@ -27,6 +26,7 @@ def agInts(interface):
 
 
 class IfStmTC(SimTestCase, BaseSerializationTC):
+    __FILE__ = __file__
 
     def test_SimpleIfStatement(self):
         u = SimpleIfStatement()

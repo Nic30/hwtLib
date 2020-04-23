@@ -11,6 +11,8 @@ from hwtLib.examples.statements.switchStm import SwitchStmUnit
 
 
 class SwitchStmTC(SimTestCase, BaseSerializationTC):
+    __FILE__ = __file__
+
     def test_allCases(self):
         self.u = SwitchStmUnit()
         self.compileSimAndStart(self.u)

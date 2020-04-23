@@ -14,6 +14,7 @@ from hwtLib.examples.rtlLvl.switchStatement import SwitchStatement
 
 
 class RtlLvlTC(BaseSerializationTC):
+    __FILE__ = __file__
 
     def cmp(self, getNetlistFn, file_name):
         netlist, interfaces = getNetlistFn()
@@ -51,7 +52,7 @@ class RtlLvlTC(BaseSerializationTC):
 if __name__ == '__main__':
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(OperatorTC('testBitAnd'))
+    # suite.addTest(RtlLvlTC('test_axiReaderCore'))
     suite.addTest(unittest.makeSuite(RtlLvlTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

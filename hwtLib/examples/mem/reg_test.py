@@ -64,6 +64,7 @@ class DReg_asyncRstTC(SingleUnitSimTestCase):
 
 
 class RegSerializationTC(BaseSerializationTC):
+    __FILE__ = __file__
 
     def test_optimizedOutReg(self):
         u = OptimizedOutReg()
