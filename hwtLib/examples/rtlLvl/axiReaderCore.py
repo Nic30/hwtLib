@@ -13,6 +13,7 @@ def AxiReaderCore():
     rSt_t = HEnum('rSt_t', ['rdIdle', 'rdData'])
 
     rSt = n.sig('rSt', rSt_t)
+    r_idle = n.sig("r_idle")
     arRd = n.sig('arRd')
     arVld = n.sig('arVld')
     rVld = n.sig('rVld')
@@ -34,9 +35,9 @@ def AxiReaderCore():
            rSt(rSt_t.rdData)
         )
     )
-
+    r_idle(rSt._eq(rSt_t.rdIdle))
     return n, {
-        rSt: DIRECTION.OUT,
+        r_idle: DIRECTION.OUT,
         arRd: DIRECTION.IN,
         arVld: DIRECTION.IN,
         rVld: DIRECTION.IN,
