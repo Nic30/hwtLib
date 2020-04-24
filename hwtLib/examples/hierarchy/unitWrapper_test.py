@@ -14,6 +14,7 @@ from hwt.synthesizer.utils import to_rtl_str
 from hwtLib.amba.axis import AxiStream
 from hwtLib.examples.hierarchy.unitWrapper import UnitWrapper
 from hwtLib.tests.statementTrees import StatementTreesTC
+from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 
 
 class ArrayIntfExample(Unit):
@@ -46,22 +47,13 @@ class UnitWithParams(Unit):
         self.dout(self.din)
 
 
-class UnitWrapperTC(TestCase):
-
-    def assert_same_as_file(self, s, file_name: str):
-        THIS_DIR = os.path.dirname(os.path.realpath(__file__))
-        fn = os.path.join(THIS_DIR, file_name)
-        # with open(fn, "w") as f:
-        #     f.write(s)
-        with open(fn) as f:
-            ref_s = f.read()
-        StatementTreesTC.strStructureCmp(self, s, ref_s)
+class UnitWrapperTC(BaseSerializationTC):
+    __FILE__ = __file__
 
     def test_params_of_base_unit(self):
         u = UnitWithParams()
         w = UnitWrapper(u)
-        s = to_rtl_str(w)
-        self.assert_same_as_file(s, "UnitWithParams_in_wrap.vhd")
+        self.assert_serializes_as_file(w, "UnitWithParams_in_wrap.vhd")
 
     def test_interfaces(self):
         u = UnitWrapper(ArrayIntfExample())
