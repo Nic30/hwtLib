@@ -29,10 +29,10 @@ class BitsSlicingTC(unittest.TestCase):
         unittest.TestCase.assertEqual(self, first, second, msg=msg)
 
     def assertStrEq(self, first, second, msg=None):
-        ns = Vhdl2008Serializer.getBaseNameScope()
+        to_hdl = Vhdl2008Serializer.TO_HDL_AST()
+        hdl = to_hdl.as_hdl(first)
         buff = StringIO()
-        ser = Vhdl2008Serializer(buff, ns)
-        hdl = ser.as_hdl(first)
+        ser = Vhdl2008Serializer.TO_HDL(buff)
         ser.visit_iHdlObj(hdl)
         first = buff.getvalue().replace(" ", "")
         unittest.TestCase.assertEqual(self, first, second, msg=msg)
