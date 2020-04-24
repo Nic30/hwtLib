@@ -8,7 +8,7 @@ from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
     ResourceFF
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.utils import toRtl
+from hwt.synthesizer.utils import synthesised
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.statements.ifStm import SimpleIfStatement, \
     SimpleIfStatement2, SimpleIfStatement2b, SimpleIfStatement2c, \
@@ -117,7 +117,8 @@ class IfStmTC(SimTestCase, BaseSerializationTC):
         }
 
         s = ResourceAnalyzer()
-        toRtl(u, serializer=s)
+        synthesised(u)
+        s.visit_Unit(u)
         r = s.report()
         self.assertDictEqual(r, expected)
 
@@ -141,7 +142,8 @@ class IfStmTC(SimTestCase, BaseSerializationTC):
         }
 
         s = ResourceAnalyzer()
-        toRtl(u, serializer=s)
+        synthesised(u)
+        s.visit_Unit(u)
         r = s.report()
         self.assertDictEqual(r, expected)
 

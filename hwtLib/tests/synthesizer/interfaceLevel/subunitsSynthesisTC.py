@@ -6,15 +6,12 @@ from hwt.hdl.constants import DIRECTION
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.serializer.generic.to_hdl_ast import ToHdlAst
-from hwt.serializer.store_manager import StoreManager
-from hwt.synthesizer.dummyPlatform import DummyPlatform
 from hwt.synthesizer.exceptions import TypeConversionErr
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.utils import to_rtl_str
+from hwt.synthesizer.utils import to_rtl_str, synthesised
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_fullduplex import AxiStreamFullDuplex
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
@@ -27,28 +24,6 @@ from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import \
 
 
 D = DIRECTION
-
-
-class DummySerializerCls():
-    """
-    The serializer which does not do any additional code transformations
-    and does not produce any output. It is used to generate just internal representation
-    of RTL code.
-    """
-    TO_HDL_AST = ToHdlAst
-
-
-def synthesised(u: Unit, target_platform=DummyPlatform()):
-    """
-    Elaborate design withou producing any hdl
-    """
-    sm = StoreManager(DummySerializerCls)
-    if not hasattr(u, "_interfaces"):
-        u._loadDeclarations()
-
-    for _ in u._toRtl(target_platform, sm):
-        pass
-    return u
 
 
 class UnitWithArrIntf(EmptyUnit):

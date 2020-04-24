@@ -5,7 +5,7 @@ from hwt.hdl.constants import Time
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.utils import toRtl
+from hwt.synthesizer.utils import synthesised
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.statements.switchStm import SwitchStmUnit
 
@@ -43,7 +43,8 @@ class SwitchStmTC(SimTestCase, BaseSerializationTC):
         expected = {(ResourceMUX, 1, 4): 1}
 
         s = ResourceAnalyzer()
-        toRtl(u, serializer=s)
+        synthesised(u)
+        s.visit_Unit(u)
         r = s.report()
         self.assertDictEqual(r, expected)
 

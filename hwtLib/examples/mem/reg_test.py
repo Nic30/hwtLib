@@ -5,7 +5,7 @@ from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceLatch
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.rtlLevel.signalUtils.exceptions import SignalDriverErr
-from hwt.synthesizer.utils import toRtl, to_rtl_str
+from hwt.synthesizer.utils import to_rtl_str, synthesised
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.mem.reg import DReg, DoubleDReg, OptimizedOutReg, \
     AsyncResetReg, DDR_Reg, Latch, DReg_asyncRst, RegWhereNextIsOnlyOutput
@@ -103,7 +103,8 @@ class RegSerializationTC(BaseSerializationTC):
         }
 
         s = ResourceAnalyzer()
-        toRtl(u, serializer=s)
+        synthesised(u)
+        s.visit_Unit(u)
         self.assertDictEqual(s.report(), expected)
 
 
