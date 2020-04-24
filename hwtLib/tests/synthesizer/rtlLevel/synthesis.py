@@ -18,6 +18,7 @@ from hwt.synthesizer.dummyPlatform import DummyPlatform
 from hwtLib.examples.mem.ram import SimpleAsyncRam
 from hwtLib.peripheral.displays.segment7 import Segment7
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl
+from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
 
 
 class BasicSynthesisTC(unittest.TestCase):
@@ -82,9 +83,7 @@ class BasicSynthesisTC(unittest.TestCase):
 
     def test_indexOps(self):
         c, interf = IndexOps()
-        _, arch = list(c.synthesize("indexOps", interf, DummyPlatform()))
-
-        s = Vhdl2008Serializer.Architecture(arch, Vhdl2008Serializer.getBaseContext())
+        s = netlistToVhdlStr("IndexOps", c, interf)
 
         self.assertNotIn("sig_", s)
 
