@@ -64,6 +64,7 @@ from hwtLib.clocking.clkDivider import ClkDiv3TC
 from hwtLib.examples.arithmetic.cntr_test import CntrTC, CntrResourceAnalysisTC
 from hwtLib.examples.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.examples.arithmetic.twoCntrs_test import TwoCntrsTC
+from hwtLib.examples.arithmetic.vhdl_vector_auto_casts import VhdlVectorAutoCastExampleTC
 from hwtLib.examples.arithmetic.widthCasting import WidthCastingExampleTC
 from hwtLib.examples.axi.simpleAxiRegs_test import SimpleAxiRegsTC
 from hwtLib.examples.builders.ethAddrUpdater_test import EthAddrUpdaterTC
@@ -151,12 +152,12 @@ from hwtLib.mem.hashTableCore_test import HashTableCoreTC
 from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ram_test import RamTC
 from hwtLib.peripheral.displays.hd44780.driver_test import Hd44780Driver8bTC
+from hwtLib.peripheral.displays.segment7_test import Segment7TC
 from hwtLib.peripheral.ethernet.mac_rx_test import EthernetMac_rx_TCs
 from hwtLib.peripheral.ethernet.mac_tx_test import EthernetMac_tx_TCs
 from hwtLib.peripheral.ethernet.rmii_adapter_test import RmiiAdapterTC
 from hwtLib.peripheral.i2c.masterBitCntrl_test import I2CMasterBitCntrlTC
 from hwtLib.peripheral.mdio.master_test import MdioMasterTC
-from hwtLib.peripheral.displays.segment7_test import Segment7TC
 from hwtLib.peripheral.spi.master_test import SpiMasterTC
 from hwtLib.peripheral.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.peripheral.uart.tx_rx_test import UartTxRxTC
@@ -175,6 +176,7 @@ from hwtLib.tests.fileUtils_test import FileUtilsTC
 from hwtLib.tests.frameTmpl_test import FrameTmplTC
 from hwtLib.tests.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.rdSynced_agent_test import RdSynced_agent_TC
+from hwtLib.tests.repr_of_hdlObjs_test import ReprOfHdlObjsTC
 from hwtLib.tests.resourceAnalyzer_test import ResourceAnalyzer_TC
 from hwtLib.tests.serializerModes_test import SerializerModes_TC
 from hwtLib.tests.serializer_tmpVar_test import Serializer_tmpVar_TC
@@ -203,8 +205,6 @@ from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
-from hwtLib.tests.repr_of_hdlObjs_test import ReprOfHdlObjsTC
-from hwtLib.examples.arithmetic.vhdl_vector_auto_casts import VhdlVectorAutoCastExampleTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
