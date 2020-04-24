@@ -112,7 +112,7 @@ if __name__ == "__main__":
     import unittest
 
     suite = unittest.TestSuite()
-    # suite.addTest(DRegTC('test_optimizedOutReg'))
+    # suite.addTest(RegSerializationTC('test_dreg_systemc'))
     suite.addTest(unittest.makeSuite(DRegTC))
     suite.addTest(unittest.makeSuite(DoubleRRegTC))
     suite.addTest(unittest.makeSuite(DReg_asyncRstTC))
