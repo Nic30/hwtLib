@@ -212,10 +212,6 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
         def s(i): return self.assertEqual(i._direction, INTF_DIRECTION.SLAVE)
 
         i, i2 = createTwoAxiDuplexStreams()
-        n = RtlNetlist()
-
-        i._signalsForInterface(n, None)
-        i2._signalsForInterface(n, None)
 
         connect(i, i2)
 
