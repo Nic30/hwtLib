@@ -154,8 +154,7 @@ class StatementTreesTC(unittest.TestCase):
                 ELSE
                     st_next <= st;
                 END IF;
-        END CASE
-
+        END CASE;
         """
         self.strStructureCmp(cont, tmpl)
 
@@ -247,8 +246,7 @@ class StatementTreesTC(unittest.TestCase):
                 ELSE
                     st_next <= st;
                 END IF;
-        END CASE
-
+        END CASE;
         """
         self.strStructureCmp(cont, tmpl)
 
@@ -346,8 +344,7 @@ class StatementTreesTC(unittest.TestCase):
                 ELSE
                     st_next <= st;
                 END IF;
-        END CASE
-
+        END CASE;
         """
         self.strStructureCmp(cont, tmpl)
 

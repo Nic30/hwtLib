@@ -5,20 +5,18 @@ import unittest
 
 from hwt.code import If
 from hwt.hdl.assignment import Assignment
-from hwt.hdl.typeShortcuts import hBit
-from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
-from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
-from hwtLib.examples.rtlLvl.indexOps import IndexOps
-from hwtLib.mem.atomic.flipReg import FlipRegister
-from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import synthesised
 from hwt.hdl.statement import HdlStatement
-from hwtLib.mem.cuckooHashTable import CuckooHashTable
-from hwtLib.examples.statements.ifStm import SimpleIfStatement3
-from hwt.synthesizer.dummyPlatform import DummyPlatform
+from hwt.hdl.typeShortcuts import hBit
+from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.examples.mem.ram import SimpleAsyncRam
+from hwtLib.examples.rtlLvl.indexOps import IndexOps
+from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
+from hwtLib.examples.statements.ifStm import SimpleIfStatement3
+from hwtLib.mem.atomic.flipReg import FlipRegister
+from hwtLib.mem.cuckooHashTable import CuckooHashTable
 from hwtLib.peripheral.displays.segment7 import Segment7
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl
-from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
+from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import synthesised
 
 
 class BasicSynthesisTC(unittest.TestCase):

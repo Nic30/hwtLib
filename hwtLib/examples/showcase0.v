@@ -1,71 +1,69 @@
-/*
-
-    Every HW component class has to be derived from Unit class
-
-    .. hwt-schematic::
-    
-*/
-module Showcase0(input [31:0] a,
-        input signed [31:0] b,
-        output reg [31:0] c,
-        input clk,
-        output reg cmp_0,
-        output reg cmp_1,
-        output reg cmp_2,
-        output reg cmp_3,
-        output reg cmp_4,
-        output reg cmp_5,
-        output reg [31:0] contOut,
-        input [31:0] d,
-        input e,
-        output f,
-        output reg [15:0] fitted,
-        output reg [7:0] g,
-        output reg [7:0] h,
-        input [1:0] i,
-        output reg [7:0] j,
-        output reg [31:0] k,
-        output out,
-        output output_0,
-        input rst_n,
-        output reg [7:0] sc_signal
-    );
-
-    reg [31:0] const_private_signal = 123;
-    reg signed [7:0] fallingEdgeRam [4-1:0];
+//
+//    Every HW component class has to be derived from Unit class
+//
+//    .. hwt-schematic::
+//    
+module Showcase0 (
+    input  unsigned[31:0] a,
+    input  signed[31:0] b,
+    output reg[31:0] c,
+    input  clk,
+    output reg cmp_0,
+    output reg cmp_1,
+    output reg cmp_2,
+    output reg cmp_3,
+    output reg cmp_4,
+    output reg cmp_5,
+    output reg[31:0] contOut,
+    input [31:0] d,
+    input  e,
+    output  f,
+    output reg[15:0] fitted,
+    output reg[7:0] g,
+    output reg[7:0] h,
+    input [1:0] i,
+    output reg[7:0] j,
+    output reg[31:0] k,
+    output  out,
+    output  output_0,
+    input  rst_n,
+    output reg[7:0] sc_signal
+);
+    localparam reg unsigned[31:0] const_private_signal = 32'h0000007b;
+    reg signed[7:0] fallingEdgeRam[0:4];
     reg r = 1'b0;
-    reg [1:0] r_0 = 2'b00;
-    reg [1:0] r_1 = 2'b00;
-    reg r_next;
-    wire [1:0] r_next_0;
-    wire [1:0] r_next_1;
-    reg [7:0] rom;
-    always @(a or b) begin: assig_process_c
-        c = (a + $unsigned(b));
+    reg[1:0] r_0 = 2'b00;
+    reg[1:0] r_1 = 2'b00;
+    reg r_next = 1'bx;
+    wire[1:0] r_next_0 = 2'bxx;
+    wire[1:0] r_next_1 = 2'bxx;
+    reg unsigned[7:0] rom[0:4];
+    always @(a, b) begin: assig_process_c
+        c = a + $signed(b);
     end
 
     always @(a) begin: assig_process_cmp_0
-        cmp_0 = a < 4;
+        cmp_0 = a < 32'h00000004;
     end
 
     always @(a) begin: assig_process_cmp_1
-        cmp_1 = a > 4;
+        cmp_1 = a > 32'h00000004;
     end
 
     always @(b) begin: assig_process_cmp_2
-        cmp_2 = b <= $signed(4);
+        cmp_2 = b <= $signed(32'h00000004);
     end
 
     always @(b) begin: assig_process_cmp_3
-        cmp_3 = b >= $signed(4);
+        cmp_3 = b >= $signed(32'h00000004);
     end
 
     always @(b) begin: assig_process_cmp_4
-        cmp_4 = b != $signed(4);
+        cmp_4 = b != $signed(32'h00000004);
     end
 
     always @(b) begin: assig_process_cmp_5
-        cmp_5 = b == $signed(4);
+        cmp_5 = b == $signed(32'h00000004);
     end
 
     always @(*) begin: assig_process_contOut
@@ -74,32 +72,30 @@ module Showcase0(input [31:0] a,
 
     assign f = r;
     always @(negedge clk) begin: assig_process_fallingEdgeRam
-        fallingEdgeRam[r_1] <= $signed(a[7:0]);
-        k <= {24'h000000, $unsigned(fallingEdgeRam[r_1])};
+        fallingEdgeRam[r_1] <= $unsigned(a[7:0]);
+        k <= {24'h000000, $signed(fallingEdgeRam[r_1])};
     end
 
     always @(a) begin: assig_process_fitted
         fitted = a[15:0];
     end
 
-    always @(a or b) begin: assig_process_g
+    always @(a, b) begin: assig_process_g
         g = {{a[1] & b[1], a[0] ^ b[0] | a[1]}, a[5:0]};
     end
 
-    always @(a or r) begin: assig_process_h
-        if (a[2]) begin
-            if (r) begin
+    always @(a, r) begin: assig_process_h
+        if (a[2])
+            if (r)
                 h = 8'h00;
-            end else if (a[1]) begin
+            else if (a[1])
                 h = 8'h01;
-            end else begin
+            else
                 h = 8'h02;
-            end
-        end
     end
 
     always @(posedge clk) begin: assig_process_j
-        j <= rom;
+        j <= rom[r_1];
     end
 
     assign out = 1'b0;
@@ -118,46 +114,31 @@ module Showcase0(input [31:0] a,
 
     assign r_next_0 = i;
     assign r_next_1 = r_0;
-    always @(e or r) begin: assig_process_r_next
-        if (~r) begin
+    always @(e, r) begin: assig_process_r_next_1
+        if (~r)
             r_next = e;
-        end else begin
+        else
             r_next = r;
-        end
     end
 
     always @(a) begin: assig_process_sc_signal
         case(a)
-        1: begin
-            sc_signal = 8'h00;
-        end
-        2: begin
-            sc_signal = 8'h01;
-        end
-        3: begin
-            sc_signal = 8'h03;
-        end
-        default: begin
-            sc_signal = 8'h04;
-        end
+            32'h00000001:
+                sc_signal = 8'h00;
+            32'h00000002:
+                sc_signal = 8'h01;
+            32'h00000003:
+                sc_signal = 8'h03;
+            default:
+                sc_signal = 8'h04;
         endcase
     end
 
-    always @(r_1) begin: rom_0
-        case(r_1)
-        0: begin
-            rom = 0;
-        end
-        1: begin
-            rom = 1;
-        end
-        2: begin
-            rom = 2;
-        end
-        3: begin
-            rom = 3;
-        end
-        endcase
+    initial begin
+        rom[0] = 0;
+        rom[1] = 1;
+        rom[2] = 2;
+        rom[3] = 3;
     end
 
 endmodule

@@ -38,7 +38,7 @@ END ENTITY;
 ARCHITECTURE rtl OF Showcase0 IS
     TYPE arr_t_0 IS ARRAY (3 DOWNTO 0) OF SIGNED(7 DOWNTO 0);
     TYPE arr_t_1 IS ARRAY (3 DOWNTO 0) OF UNSIGNED(7 DOWNTO 0);
-    CONSTANT const_private_signal : UNSIGNED(31 DOWNTO 0) := TO_UNSIGNED(123, 32);
+    CONSTANT const_private_signal : UNSIGNED(31 DOWNTO 0) := UNSIGNED'(X"0000007B");
     SIGNAL fallingEdgeRam : arr_t_0;
     SIGNAL r : STD_LOGIC := '0';
     SIGNAL r_0 : STD_LOGIC_VECTOR(1 DOWNTO 0) := "00";
@@ -47,10 +47,10 @@ ARCHITECTURE rtl OF Showcase0 IS
     SIGNAL r_next_0 : STD_LOGIC_VECTOR(1 DOWNTO 0);
     SIGNAL r_next_1 : STD_LOGIC_VECTOR(1 DOWNTO 0);
     CONSTANT rom : arr_t_1 := (
-        TO_UNSIGNED(0, 8),
-        TO_UNSIGNED(1, 8),
-        TO_UNSIGNED(2, 8),
-        TO_UNSIGNED(3, 8));
+        UNSIGNED'(X"00"),
+        UNSIGNED'(X"01"),
+        UNSIGNED'(X"02"),
+        UNSIGNED'(X"03"));
 BEGIN
     assig_process_c: PROCESS(a, b)
         VARIABLE tmpTypeConv : UNSIGNED(31 DOWNTO 0);
@@ -58,12 +58,12 @@ BEGIN
         tmpTypeConv := a + UNSIGNED(b);
         c <= STD_LOGIC_VECTOR(tmpTypeConv);
     END PROCESS;
-    cmp_0 <= '1' WHEN (a < TO_UNSIGNED(4, 32)) ELSE '0';
-    cmp_1 <= '1' WHEN (a > TO_UNSIGNED(4, 32)) ELSE '0';
-    cmp_2 <= '1' WHEN (b <= TO_SIGNED(4, 32)) ELSE '0';
-    cmp_3 <= '1' WHEN (b >= TO_SIGNED(4, 32)) ELSE '0';
-    cmp_4 <= '1' WHEN (b /= TO_SIGNED(4, 32)) ELSE '0';
-    cmp_5 <= '1' WHEN (b = TO_SIGNED(4, 32)) ELSE '0';
+    cmp_0 <= '1' WHEN (a < UNSIGNED'(X"00000004")) ELSE '0';
+    cmp_1 <= '1' WHEN (a > UNSIGNED'(X"00000004")) ELSE '0';
+    cmp_2 <= '1' WHEN (b <= SIGNED'(X"00000004")) ELSE '0';
+    cmp_3 <= '1' WHEN (b >= SIGNED'(X"00000004")) ELSE '0';
+    cmp_4 <= '1' WHEN (b /= SIGNED'(X"00000004")) ELSE '0';
+    cmp_5 <= '1' WHEN (b = SIGNED'(X"00000004")) ELSE '0';
     contOut <= STD_LOGIC_VECTOR(const_private_signal);
     f <= r;
     assig_process_fallingEdgeRam: PROCESS(clk)
@@ -127,7 +127,9 @@ BEGIN
             END IF;
         END IF;
     END PROCESS;
-    assig_process_r_next: PROCESS(e, r)
+    r_next_0 <= i;
+    r_next_1 <= r_0;
+    assig_process_r_next_1: PROCESS(e, r)
     BEGIN
         IF NOT r = '1' THEN
             r_next <= e;
@@ -135,21 +137,17 @@ BEGIN
             r_next <= r;
         END IF;
     END PROCESS;
-    r_next_1 <= r_0;
-    r_next_0 <= i;
     assig_process_sc_signal: PROCESS(a)
     BEGIN
         CASE a IS
-            WHEN TO_UNSIGNED(1, 32) => 
+            WHEN UNSIGNED'(X"00000001") =>
                 sc_signal <= X"00";
-            WHEN TO_UNSIGNED(2, 32) => 
+            WHEN UNSIGNED'(X"00000002") =>
                 sc_signal <= X"01";
-            WHEN TO_UNSIGNED(3, 32) => 
+            WHEN UNSIGNED'(X"00000003") =>
                 sc_signal <= X"03";
-            WHEN OTHERS => 
+            WHEN OTHERS =>
                 sc_signal <= X"04";
         END CASE;
     END PROCESS;
 END ARCHITECTURE;
-
-

@@ -189,4 +189,3 @@ BEGIN
     sig_bramW_b_en <= en;
     sig_bramW_b_we <= we;
 END ARCHITECTURE;
-

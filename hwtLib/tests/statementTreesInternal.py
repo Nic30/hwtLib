@@ -35,7 +35,7 @@ class StatementTreesInternalTC(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    #suite.addTest(StatementTreesInternalTC('test_basicSwitch'))
+    # suite.addTest(StatementTreesInternalTC('test_basicSwitch'))
     suite.addTest(unittest.makeSuite(StatementTreesInternalTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

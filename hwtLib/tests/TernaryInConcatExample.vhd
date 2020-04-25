@@ -49,6 +49,6 @@ BEGIN
         ELSE
             tmpBool2std_logic_4 := '0';
         END IF;
-        c <= X"F" & tmpBool2std_logic_4 & tmpBool2std_logic_3 & tmpBool2std_logic_2 & tmpBool2std_logic_1 & tmpBool2std_logic_0 & tmpBool2std_logic & B"0000000000000000000000";
+        c <= X"F" & tmpBool2std_logic_4 & tmpBool2std_logic_3 & tmpBool2std_logic_2 & tmpBool2std_logic_1 & tmpBool2std_logic_0 & tmpBool2std_logic & "0000000000000000000000";
     END PROCESS;
 END ARCHITECTURE;
