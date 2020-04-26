@@ -20,6 +20,8 @@ class FsmExample(Unit):
         self.dout = VectSignal(3)._m()
 
     def _impl(self):
+        # :note: stT member names are colliding with port names and thus
+        #     they will be renamed in HDL
         stT = HEnum("st_t", ["a", "b", "aAndB"])
 
         a = self.a
