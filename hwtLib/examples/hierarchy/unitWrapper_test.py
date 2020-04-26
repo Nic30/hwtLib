@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
-from unittest import TestCase
-import unittest
-
 from hwt.interfaces.std import VldSynced
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.hObjList import HObjList
@@ -13,7 +9,6 @@ from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import to_rtl_str
 from hwtLib.amba.axis import AxiStream
 from hwtLib.examples.hierarchy.unitWrapper import UnitWrapper
-from hwtLib.tests.statementTrees import StatementTreesTC
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 
 
@@ -64,6 +59,8 @@ class UnitWrapperTC(BaseSerializationTC):
 
 
 if __name__ == "__main__":
+    import unittest
+
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(UnitWrapperTC))
     runner = unittest.TextTestRunner(verbosity=3)
