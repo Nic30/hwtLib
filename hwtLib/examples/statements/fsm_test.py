@@ -3,13 +3,9 @@
 import unittest
 
 from hwt.hdl.constants import Time
-from hwtLib.examples.statements.fsm import FsmExample, HadrcodedFsmExample
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwt.synthesizer.utils import to_rtl_str
-from hwt.serializer.verilog.serializer import VerilogSerializer
-from hwt.serializer.systemC.serializer import ToHdlAstSystemC
-from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
+from hwtLib.examples.statements.fsm import FsmExample, HadrcodedFsmExample
 
 
 class FsmExampleTC(SingleUnitSimTestCase):
