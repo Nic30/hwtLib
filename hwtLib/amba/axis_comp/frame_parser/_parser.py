@@ -206,7 +206,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                     # then there will be a variable size suffix
                     children[0].OVERFLOW_SUPPORT = True
 
-                with self._paramsShared(exclude=({"OVERFLOW_SUPPORT"}, {})):
+                with self._paramsShared(exclude=({"OVERFLOW_SUPPORT", "T"}, {})):
                     self.children = children
 
     def parser_fsm(self, words):
