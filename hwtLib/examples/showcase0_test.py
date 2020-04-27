@@ -3,8 +3,8 @@
 
 import unittest
 
-from hwtLib.examples.showcase0 import Showcase0
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
+from hwtLib.examples.showcase0 import Showcase0
 
 
 class Showcase0TC(BaseSerializationTC):
@@ -25,6 +25,7 @@ class Showcase0TC(BaseSerializationTC):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
+    # suite.addTest(Showcase0TC("test_systemc"))
     suite.addTest(unittest.makeSuite(Showcase0TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

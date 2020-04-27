@@ -34,35 +34,35 @@ BEGIN
         CASE st IS
             WHEN idle =>
                 IF (sd0 AND sd1) = '1' THEN
-                    st_next <= lenExtr;
+                    st_next <= lenextr;
                 ELSIF sd0 = '1' THEN
-                    st_next <= ts1Wait;
+                    st_next <= ts1wait;
                 ELSIF sd1 = '1' THEN
-                    st_next <= ts0Wait;
+                    st_next <= ts0wait;
                 ELSIF ctrlFifoVld = '1' THEN
-                    st_next <= tsWait;
+                    st_next <= tswait;
                 ELSE
                     st_next <= st;
                 END IF;
-            WHEN tsWait =>
+            WHEN tswait =>
                 IF (sd0 AND sd1) = '1' THEN
-                    st_next <= lenExtr;
+                    st_next <= lenextr;
                 ELSIF sd0 = '1' THEN
-                    st_next <= ts1Wait;
+                    st_next <= ts1wait;
                 ELSIF sd1 = '1' THEN
-                    st_next <= ts0Wait;
+                    st_next <= ts0wait;
                 ELSE
                     st_next <= st;
                 END IF;
-            WHEN ts0Wait =>
+            WHEN ts0wait =>
                 IF sd0 = '1' THEN
-                    st_next <= lenExtr;
+                    st_next <= lenextr;
                 ELSE
                     st_next <= st;
                 END IF;
-            WHEN ts1Wait =>
+            WHEN ts1wait =>
                 IF sd1 = '1' THEN
-                    st_next <= lenExtr;
+                    st_next <= lenextr;
                 ELSE
                     st_next <= st;
                 END IF;

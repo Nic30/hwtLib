@@ -16,25 +16,26 @@ SC_MODULE(SwitchStmUnit) {
     // internal signals
     void assig_process_out() {
         switch(sel.read()) {
-            sc_uint<3>(0b000): {
+        case sc_uint<3>("0b000"): {
                 out.write(a.read());
                 break;
             }
-            sc_uint<3>(0b001): {
+        case sc_uint<3>("0b001"): {
                 out.write(b.read());
                 break;
             }
-            sc_uint<3>(0b010): {
+        case sc_uint<3>("0b010"): {
                 out.write(c.read());
                 break;
             }
-            default:
-                out.write(sc_uint<1>(0b0));
+        default:
+                out.write(sc_uint<1>("0b0"));
         }
     }
 
     SC_CTOR(SwitchStmUnit) {
         SC_METHOD(assig_process_out);
         sensitive << a << b << c << sel;
+        // connect ports
     }
 };

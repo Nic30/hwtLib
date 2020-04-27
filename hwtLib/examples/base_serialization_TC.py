@@ -1,4 +1,5 @@
 import os
+import re
 import unittest
 
 from hwt.serializer.hwt.serializer import HwtSerializer
@@ -7,7 +8,9 @@ from hwt.serializer.verilog.serializer import VerilogSerializer
 from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import to_rtl_str
-from hwtLib.tests.statementTrees import StatementTreesTC
+
+
+rmWhitespaces = re.compile(r'\s+', re.MULTILINE)
 
 
 class BaseSerializationTC(unittest.TestCase):
@@ -20,6 +23,15 @@ class BaseSerializationTC(unittest.TestCase):
         "cpp": SystemCSerializer,
         "py": HwtSerializer,
     }
+
+    def strStructureCmp(self, cont, tmpl):
+        if not isinstance(cont, str):
+            cont = repr(cont)
+
+        _tmpl = rmWhitespaces.sub(" ", tmpl).strip()
+        _cont = rmWhitespaces.sub(" ", cont).strip()
+
+        self.assertEqual(_tmpl, _cont)
 
     def assert_serializes_as_file(self, u: Unit, file_name: str):
         ser = self.SERIALIZER_BY_EXT[file_name.split(".")[-1]]
@@ -34,4 +46,4 @@ class BaseSerializationTC(unittest.TestCase):
         #     f.write(s)
         with open(fn) as f:
             ref_s = f.read()
-        StatementTreesTC.strStructureCmp(self, s, ref_s)
+        self.strStructureCmp(s, ref_s)

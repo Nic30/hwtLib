@@ -52,7 +52,7 @@ class SwitchStmTC(SimTestCase, BaseSerializationTC):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(TwoCntrsTC('test_nothingEnable'))
+    # suite.addTest(SwitchStmTC('test_vhdlSerialization'))
     suite.addTest(unittest.makeSuite(SwitchStmTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -53,10 +53,10 @@ ARCHITECTURE rtl OF Showcase0 IS
         UNSIGNED'(X"03"));
 BEGIN
     assig_process_c: PROCESS(a, b)
-        VARIABLE tmpTypeConv : UNSIGNED(31 DOWNTO 0);
+        VARIABLE tmpTypeConv_0 : UNSIGNED(31 DOWNTO 0);
     BEGIN
-        tmpTypeConv := a + UNSIGNED(b);
-        c <= STD_LOGIC_VECTOR(tmpTypeConv);
+        tmpTypeConv_0 := a + UNSIGNED(b);
+        c <= STD_LOGIC_VECTOR(tmpTypeConv_0);
     END PROCESS;
     cmp_0 <= '1' WHEN (a < UNSIGNED'(X"00000004")) ELSE '0';
     cmp_1 <= '1' WHEN (a > UNSIGNED'(X"00000004")) ELSE '0';
@@ -80,16 +80,16 @@ BEGIN
         END IF;
     END PROCESS;
     assig_process_fitted: PROCESS(a)
-        VARIABLE tmpTypeConv_3 : UNSIGNED(15 DOWNTO 0);
+        VARIABLE tmpTypeConv_0 : UNSIGNED(15 DOWNTO 0);
     BEGIN
-        tmpTypeConv_3 := a(15 DOWNTO 0);
-        fitted <= STD_LOGIC_VECTOR(tmpTypeConv_3);
+        tmpTypeConv_0 := a(15 DOWNTO 0);
+        fitted <= STD_LOGIC_VECTOR(tmpTypeConv_0);
     END PROCESS;
     assig_process_g: PROCESS(a, b)
-        VARIABLE tmpTypeConv_4 : UNSIGNED(5 DOWNTO 0);
+        VARIABLE tmpTypeConv_0 : UNSIGNED(5 DOWNTO 0);
     BEGIN
-        tmpTypeConv_4 := a(5 DOWNTO 0);
-        g <= (a(1) AND b(1)) & ((a(0) XOR b(0)) OR a(1)) & STD_LOGIC_VECTOR(tmpTypeConv_4);
+        tmpTypeConv_0 := a(5 DOWNTO 0);
+        g <= (a(1) AND b(1)) & ((a(0) XOR b(0)) OR a(1)) & STD_LOGIC_VECTOR(tmpTypeConv_0);
     END PROCESS;
     assig_process_h: PROCESS(a, r)
     BEGIN
@@ -104,11 +104,11 @@ BEGIN
         END IF;
     END PROCESS;
     assig_process_j: PROCESS(clk)
-        VARIABLE tmpTypeConv_5 : UNSIGNED(7 DOWNTO 0);
+        VARIABLE tmpTypeConv_0 : UNSIGNED(7 DOWNTO 0);
     BEGIN
-        tmpTypeConv_5 := rom(TO_INTEGER(UNSIGNED(r_1)));
+        tmpTypeConv_0 := rom(TO_INTEGER(UNSIGNED(r_1)));
         IF RISING_EDGE(clk) THEN
-            j <= STD_LOGIC_VECTOR(tmpTypeConv_5);
+            j <= STD_LOGIC_VECTOR(tmpTypeConv_0);
         END IF;
     END PROCESS;
     out_0 <= '0';

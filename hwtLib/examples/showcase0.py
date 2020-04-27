@@ -243,7 +243,7 @@ if __name__ == "__main__":  # alias python main function
     from pprint import pprint
 
     from hwt.synthesizer.utils import to_rtl_str
-    from hwt.serializer.hwt.serializer import ToHdlAstHwt
+    from hwt.serializer.hwt.serializer import HwtSerializer
     from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
     from hwt.serializer.verilog.serializer import VerilogSerializer
     from hwt.serializer.systemC.serializer import ToHdlAstSystemC
@@ -252,11 +252,12 @@ if __name__ == "__main__":  # alias python main function
     # * new instance has to be created every time because toRtl is modifies the unit
     # * serializers are using templates which can be customized
     # serialized code is trying to be human and git friednly
-    print(to_rtl_str(Showcase0(), serializer_cls=ToHdlAstHwt))
+    print(to_rtl_str(Showcase0(), serializer_cls=HwtSerializer))
     print(to_rtl_str(Showcase0(), serializer_cls=Vhdl2008Serializer))
     print(to_rtl_str(Showcase0(), serializer_cls=VerilogSerializer))
     print(to_rtl_str(Showcase0(), serializer_cls=ToHdlAstSystemC))
 
     r = ResourceAnalyzer()
-    print(to_rtl_str(Showcase0(), serializer_cls=r))
+    synthesised(u)
+    s.visit_Unit(u)
     pprint(r.report())

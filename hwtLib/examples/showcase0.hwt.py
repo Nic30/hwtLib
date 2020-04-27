@@ -45,14 +45,14 @@ class Showcase0(Unit):
         a, b, c, clk, cmp_0, cmp_1, cmp_2, cmp_3, cmp_4, cmp_5, contOut, d, e, f, fitted, g, h, i, j, k, out, output, rst_n, sc_signal = \
         self.a, self.b, self.c, self.clk, self.cmp_0, self.cmp_1, self.cmp_2, self.cmp_3, self.cmp_4, self.cmp_5, self.contOut, self.d, self.e, self.f, self.fitted, self.g, self.h, self.i, self.j, self.k, self.out, self.output, self.rst_n, self.sc_signal
         const_private_signal = self._sig("const_private_signal", Bits(32, signed=False), def_val=123)
-        fallingEdgeRam = self._sig("fallingEdgeRam", (Bits(8, signed=True))[4], def_val=None)
+        fallingEdgeRam = self._sig("fallingEdgeRam", Bits(8, signed=True)[4], def_val=None)
         r = self._sig("r", Bits(1), def_val=0)
         r_0 = self._sig("r_0", Bits(2), def_val=0)
         r_1 = self._sig("r_1", Bits(2), def_val=0)
         r_next = self._sig("r_next", Bits(1), def_val=None)
         r_next_0 = self._sig("r_next_0", Bits(2), def_val=None)
         r_next_1 = self._sig("r_next_1", Bits(2), def_val=None)
-        rom = self._sig("rom", (Bits(8, signed=False))[4], def_val={0: 0,
+        rom = self._sig("rom", Bits(8, signed=False)[4], def_val={0: 0,
             1: 1,
             2: 2,
             3: 3
@@ -77,18 +77,18 @@ class Showcase0(Unit):
         f(r)
         # assig_process_fallingEdgeRam
         If(clk._onFallingEdge(),
-            fallingEdgeRam[r_1]((a[8:0])._reinterpret_cast(Bits(8, signed=True))),
-            k(Concat((Bits(24)).from_py(0), ((fallingEdgeRam[r_1])._reinterpret_cast(Bits(8, signed=False)))._reinterpret_cast(Bits(8))))
+            fallingEdgeRam[r_1](a[8:0]._reinterpret_cast(Bits(8, signed=True))),
+            k(Concat(Bits(24).from_py(0), fallingEdgeRam[r_1]._reinterpret_cast(Bits(8, signed=False))._reinterpret_cast(Bits(8))))
         )
         # assig_process_fitted
-        fitted((a[16:0])._reinterpret_cast(Bits(16)))
+        fitted(a[16:0]._reinterpret_cast(Bits(16)))
         # assig_process_g
-        g(Concat(Concat(a[1] & b[1], a[0] ^ b[0] | a[1]), (a[6:0])._reinterpret_cast(Bits(6))))
+        g(Concat(Concat(a[1] & b[1], a[0] ^ b[0] | a[1]), a[6:0]._reinterpret_cast(Bits(6))))
         # assig_process_h
-        If((a[2])._eq(1),
+        If(a[2]._eq(1),
             If(r._eq(1),
                 h(0)
-            ).Elif((a[1])._eq(1),
+            ).Elif(a[1]._eq(1),
                 h(1)
             ).Else(
                 h(2)
@@ -96,7 +96,7 @@ class Showcase0(Unit):
         )
         # assig_process_j
         If(clk._onRisingEdge(),
-            j((rom[r_1])._reinterpret_cast(Bits(8)))
+            j(rom[r_1]._reinterpret_cast(Bits(8)))
         )
         # assig_process_out
         out(0)

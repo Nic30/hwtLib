@@ -27,13 +27,13 @@ BEGIN
         END IF;
     END PROCESS;
     assig_process_counter_next: PROCESS(counter, en, start)
-        VARIABLE tmpTypeConv : UNSIGNED(7 DOWNTO 0);
+        VARIABLE tmpTypeConv_0 : UNSIGNED(7 DOWNTO 0);
     BEGIN
-        tmpTypeConv := UNSIGNED(counter) - TO_UNSIGNED(1, 8);
+        tmpTypeConv_0 := UNSIGNED(counter) - UNSIGNED'(X"01");
         IF start = '1' THEN
             counter_next <= boundary;
         ELSIF en = '1' THEN
-            counter_next <= STD_LOGIC_VECTOR(tmpTypeConv);
+            counter_next <= STD_LOGIC_VECTOR(tmpTypeConv_0);
         ELSE
             counter_next <= counter;
         END IF;

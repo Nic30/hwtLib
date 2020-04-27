@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import re
 import unittest
 
 from hwt.code import If, Switch
@@ -10,10 +9,7 @@ from hwt.hdl.switchContainer import SwitchContainer
 from hwt.hdl.types.defs import INT
 from hwt.hdl.types.enum import HEnum
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
-from hwt.serializer.vhdl.serializer import _to_Vhdl2008_str
-
-
-rmWhitespaces = re.compile(r'\s+', re.MULTILINE)
+from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 
 
 class StatementTreesTC(unittest.TestCase):
@@ -32,14 +28,6 @@ class StatementTreesTC(unittest.TestCase):
         elif isinstance(template, SwitchContainer):
             self.assertEqual(template.switchOn, template.switchOn)
             self.assertEqual(len(template.cases), len(template.cases))
-
-    def strStructureCmp(self, cont, tmpl):
-        if not isinstance(cont, str):
-            cont = _to_Vhdl2008_str(cont)
-        _tmpl = rmWhitespaces.sub(" ", tmpl).strip()
-        _cont = rmWhitespaces.sub(" ", cont).strip()
-
-        self.assertEqual(_tmpl, _cont)
 
     def test_baicIf(self):
         a = self.n.sig('a')
@@ -123,40 +111,39 @@ class StatementTreesTC(unittest.TestCase):
         self.assertEqual(len(cont), 1)
         cont = cont[0]
         tmpl = """
-        CASE st IS
-            WHEN idle =>
-                IF (sd0 AND sd1) = '1' THEN
-                    st_next <= lenExtr;
-                ELSE
-                    st_next <= ts1Wait;
-                END IF;
-            WHEN tsWait =>
-                IF (sd0 AND sd1) = '1' THEN
-                    st_next <= lenExtr;
-                ELSE
-                    st_next <= ts1Wait;
-                END IF;
-            WHEN ts0Wait =>
-                IF sd0 = '1' THEN
-                    st_next <= lenExtr;
-                ELSE
-                    st_next <= st;
-                END IF;
-            WHEN ts1Wait =>
-                IF sd1 = '1' THEN
-                    st_next <= lenExtr;
-                ELSE
-                    st_next <= st;
-                END IF;
-            WHEN OTHERS =>
-                IF (ctrlFifoVld AND ctrlFifoLast) = '1' THEN
-                    st_next <= idle;
-                ELSE
-                    st_next <= st;
-                END IF;
-        END CASE;
+        Switch(st)\\
+        .Case(t_state.idle,
+            If((sd0 & sd1)._eq(1),
+                st_next(t_state.lenExtr)
+            ).Else(
+                st_next(t_state.ts1Wait)
+            ))\\
+        .Case(t_state.tsWait,
+            If((sd0 & sd1)._eq(1),
+                st_next(t_state.lenExtr)
+            ).Else(
+                st_next(t_state.ts1Wait)
+            ))\\
+        .Case(t_state.ts0Wait,
+            If(sd0._eq(1),
+                st_next(t_state.lenExtr)
+            ).Else(
+                st_next(st)
+            ))\\
+        .Case(t_state.ts1Wait,
+            If(sd1._eq(1),
+                st_next(t_state.lenExtr)
+            ).Else(
+                st_next(st)
+            ))\\
+        .Default(
+            If((ctrlFifoVld & ctrlFifoLast)._eq(1),
+                st_next(t_state.idle)
+            ).Else(
+                st_next(st)
+            ))
         """
-        self.strStructureCmp(cont, tmpl)
+        BaseSerializationTC.strStructureCmp(self, cont, tmpl)
 
     def test_ifs2LvlInSwitch(self):
         n = self.n
@@ -213,42 +200,41 @@ class StatementTreesTC(unittest.TestCase):
         self.assertEqual(len(cont), 1)
         cont = cont[0]
         tmpl = """
-        CASE st IS
-            WHEN idle =>
-                IF (sd0 AND sd1) = '1' THEN
-                    st_next <= lenExtr;
-                ELSIF ctrlFifoVld = '1' THEN
-                    st_next <= tsWait;
-                ELSE
-                    st_next <= st;
-                END IF;
-            WHEN tsWait =>
-                IF (sd0 AND sd1) = '1' THEN
-                    st_next <= lenExtr;
-                ELSE
-                    st_next <= st;
-                END IF;
-            WHEN ts0Wait =>
-                IF sd0 = '1' THEN
-                    st_next <= lenExtr;
-                ELSE
-                    st_next <= st;
-                END IF;
-            WHEN ts1Wait =>
-                IF sd1 = '1' THEN
-                    st_next <= lenExtr;
-                ELSE
-                    st_next <= st;
-                END IF;
-            WHEN OTHERS =>
-                IF (ctrlFifoVld AND ctrlFifoLast) = '1' THEN
-                    st_next <= idle;
-                ELSE
-                    st_next <= st;
-                END IF;
-        END CASE;
+        Switch(st)\\
+        .Case(t_state.idle,
+            If((sd0 & sd1)._eq(1),
+                st_next(t_state.lenExtr)
+            ).Elif(ctrlFifoVld._eq(1),
+                st_next(t_state.tsWait)
+            ).Else(
+                st_next(st)
+            ))\\
+        .Case(t_state.tsWait,
+            If((sd0 & sd1)._eq(1),
+                st_next(t_state.lenExtr)
+            ).Else(
+                st_next(st)
+            ))\\
+        .Case(t_state.ts0Wait,
+            If(sd0._eq(1),
+                st_next(t_state.lenExtr)
+            ).Else(
+                st_next(st)
+            ))\\
+        .Case(t_state.ts1Wait,
+            If(sd1._eq(1),
+                st_next(t_state.lenExtr)
+            ).Else(
+                st_next(st)
+            ))\\
+        .Default(
+            If((ctrlFifoVld & ctrlFifoLast)._eq(1),
+                st_next(t_state.idle)
+            ).Else(
+                st_next(st)
+            ))
         """
-        self.strStructureCmp(cont, tmpl)
+        BaseSerializationTC.strStructureCmp(self, cont, tmpl)
 
     def test_ifs3LvlInSwitch(self):
         n = self.n
@@ -307,51 +293,50 @@ class StatementTreesTC(unittest.TestCase):
         self.assertEqual(len(cont), 1)
         cont = cont[0]
         tmpl = """
-        CASE st IS
-            WHEN idle =>
-                IF (sd0 AND sd1) = '1' THEN
-                    st_next <= lenExtr;
-                ELSIF sd0 = '1' THEN
-                    st_next <= ts1Wait;
-                ELSIF ctrlFifoVld = '1' THEN
-                    st_next <= tsWait;
-                ELSE
-                    st_next <= st;
-                END IF;
-            WHEN tsWait =>
-                IF (sd0 AND sd1) = '1' THEN
-                    st_next <= lenExtr;
-                ELSIF sd0 = '1' THEN
-                    st_next <= ts1Wait;
-                ELSE
-                    st_next <= st;
-                END IF;
-            WHEN ts0Wait =>
-                IF sd0 = '1' THEN
-                    st_next <= lenExtr;
-                ELSE
-                    st_next <= st;
-                END IF;
-            WHEN ts1Wait =>
-                IF sd1 = '1' THEN
-                    st_next <= lenExtr;
-                ELSE
-                    st_next <= st;
-                END IF;
-            WHEN OTHERS =>
-                IF (ctrlFifoVld AND ctrlFifoLast) = '1' THEN
-                    st_next <= idle;
-                ELSE
-                    st_next <= st;
-                END IF;
-        END CASE;
+        Switch(st)\\
+        .Case(t_state.idle,
+            If((sd0 & sd1)._eq(1),
+                st_next(t_state.lenExtr)
+            ).Elif(sd0._eq(1),
+                st_next(t_state.ts1Wait)
+            ).Elif(ctrlFifoVld._eq(1),
+                st_next(t_state.tsWait)
+            ).Else(
+                st_next(st)
+            ))\\
+        .Case(t_state.tsWait,
+            If((sd0 & sd1)._eq(1),
+                st_next(t_state.lenExtr)
+            ).Elif(sd0._eq(1),
+                st_next(t_state.ts1Wait)
+            ).Else(
+                st_next(st)
+            ))\\
+        .Case(t_state.ts0Wait,
+            If(sd0._eq(1),
+                st_next(t_state.lenExtr)
+            ).Else(
+                st_next(st)
+            ))\\
+        .Case(t_state.ts1Wait,
+            If(sd1._eq(1),
+                st_next(t_state.lenExtr)
+            ).Else(
+                st_next(st)
+            ))\\
+        .Default(
+            If((ctrlFifoVld & ctrlFifoLast)._eq(1),
+                st_next(t_state.idle)
+            ).Else(
+                st_next(st)
+            ))
         """
-        self.strStructureCmp(cont, tmpl)
+        BaseSerializationTC.strStructureCmp(self, cont, tmpl)
 
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    # suite.addTest(StatementTreesTC('test_ifs2LvlInSwitch'))
+    # suite.addTest(StatementTreesTC('test_ifs3LvlInSwitch'))
     suite.addTest(unittest.makeSuite(StatementTreesTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

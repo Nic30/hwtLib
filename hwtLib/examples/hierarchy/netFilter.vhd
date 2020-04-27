@@ -565,5 +565,3 @@ BEGIN
     sig_patternMatch_din_valid <= sig_gen_dout_splitCopy_0_dataOut_0_valid;
     sig_patternMatch_match_ready <= sig_filter_patternMatch_ready;
 END ARCHITECTURE;
-
-

@@ -18,7 +18,7 @@ END ENTITY;
 
 ARCHITECTURE rtl OF SwitchStmUnit IS
 BEGIN
-    assig_process_out: PROCESS(a, b, c, sel)
+    assig_process_out_0: PROCESS(a, b, c, sel)
     BEGIN
         CASE sel IS
             WHEN "000" =>

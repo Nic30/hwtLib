@@ -13,8 +13,8 @@ END ENTITY;
 
 ARCHITECTURE rtl OF SimpleEnum IS
     TYPE fsmT IS (send0, send1);
-    SIGNAL fsmSt : fsmT := send0;
-    SIGNAL fsmSt_next : fsmT;
+    SIGNAL fsmSt : fsmt := send0;
+    SIGNAL fsmSt_next : fsmt;
 BEGIN
     assig_process_fsmSt: PROCESS(clk)
     BEGIN

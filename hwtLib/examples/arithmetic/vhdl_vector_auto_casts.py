@@ -55,3 +55,10 @@ if __name__ == '__main__':
 
     u = VhdlVectorAutoCastExample()
     print(to_rtl_str(u, Vhdl2008Serializer))
+
+    import unittest
+    suite = unittest.TestSuite()
+    # suite.addTest(VhdlVectorAutoCastExampleTC('test_vhdl'))
+    suite.addTest(unittest.makeSuite(VhdlVectorAutoCastExampleTC))
+    runner = unittest.TextTestRunner(verbosity=3)
+    runner.run(suite)

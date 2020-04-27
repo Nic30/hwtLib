@@ -3,7 +3,7 @@ from unittest.case import TestCase
 
 from hwt.hdl.types.array import HArray
 from hwt.interfaces.std import Signal
-from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
+from hwt.serializer.vhdl.serializer import Vhdl2008Serializer, ToHdlAstVhdl2008
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
@@ -12,6 +12,7 @@ from hwtLib.types.ctypes import uint8_t
 from hdlConvertor.hdlAst._expr import HdlName, HdlCall, HdlBuiltinFn
 from hdlConvertor.translate._verilog_to_basic_hdl_sim_model.utils import hdl_index,\
     hdl_downto
+from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 
 
 # class Interface1d(Unit):
@@ -56,16 +57,26 @@ from hdlConvertor.translate._verilog_to_basic_hdl_sim_model.utils import hdl_ind
 def example_use_vhdl_declared_array1d(SIZE_X):
     array1d_t = uint8_t[SIZE_X]
 
-    def array1d_t_to_vhdl(serializer, t: HArray, declaration=False):
+    def array1d_t_to_vhdl(to_hdl: ToHdlAstVhdl2008, declaration=False):
+        if not isinstance(to_hdl, ToHdlAstVhdl2008):
+            raise NotImplementedError()
+
         if declaration:
-            return None
+            raise ValueError(
+                "_as_hdl_requires_def specifies that this should not be required")
         # "mem(0 to %d)(%d downto 0)" % (t.size, t.element_t.bit_length() - 1)
-        _int = serializer.as_hdl_int
-        size = HdlCall(HdlBuiltinFn.TO, [_int(0), _int(int(t.size))])
-        e_width = hdl_downto(_int(t.element_t.bit_length() - 1), _int(0))
+        _int = to_hdl.as_hdl_int
+        size = HdlCall(HdlBuiltinFn.TO, [_int(0), _int(int(array1d_t.size))])
+        e_width = hdl_downto(
+            _int(array1d_t.element_t.bit_length() - 1), _int(0))
         return hdl_index(hdl_index(HdlName("mem"), size), e_width)
 
-    array1d_t._to_vhdl = array1d_t_to_vhdl
+    def array1d_t_as_hdl_requires_def(to_hdl: ToHdlAstVhdl2008, other_types: list):
+        return False
+
+    array1d_t._as_hdl = array1d_t_to_vhdl
+    array1d_t._as_hdl_requires_def = array1d_t_as_hdl_requires_def
+
     return array1d_t
 
 
@@ -118,28 +129,18 @@ class InterfaceWithVHDLUnconstrainedArrayImportedType2(Unit):
             d_out(d_in)
 
 
-class InterfaceWithArrayTypesTC(TestCase):
-
-    def assert_same_as_file(self, s, file_name: str):
-        THIS_DIR = os.path.dirname(os.path.realpath(__file__))
-        fn = os.path.join(THIS_DIR, file_name)
-        # with open(fn, "w") as f:
-        #     f.write(s)
-        with open(fn) as f:
-            ref_s = f.read()
-        self.assertEqual(s, ref_s)
+class InterfaceWithArrayTypesTC(BaseSerializationTC):
+    __FILE__ = __file__
 
     def test_InterfaceWithVHDLUnconstrainedArrayImportedType(self):
         u = InterfaceWithVHDLUnconstrainedArrayImportedType()
-        s = to_rtl_str(u, Vhdl2008Serializer)
-        self.assert_same_as_file(
-            s, "InterfaceWithVHDLUnconstrainedArrayImportedType.vhd")
+        self.assert_serializes_as_file(
+            u, "InterfaceWithVHDLUnconstrainedArrayImportedType.vhd")
 
     def test_InterfaceWithVHDLUnconstrainedArrayImportedType2(self):
         u = InterfaceWithVHDLUnconstrainedArrayImportedType2()
-        s = to_rtl_str(u, Vhdl2008Serializer)
-        self.assert_same_as_file(
-            s, "InterfaceWithVHDLUnconstrainedArrayImportedType2.vhd")
+        self.assert_serializes_as_file(
+            u, "InterfaceWithVHDLUnconstrainedArrayImportedType2.vhd")
 
 
 if __name__ == "__main__":

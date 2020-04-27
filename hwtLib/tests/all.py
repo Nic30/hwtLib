@@ -73,7 +73,7 @@ from hwtLib.examples.builders.handshakedBuilderSimple import \
 from hwtLib.examples.builders.hsBuilderSplit_test import HsBuilderSplit_TC
 from hwtLib.examples.builders.pingResponder_test import PingResponderTC
 from hwtLib.examples.emptyUnitWithSpi import EmptyUnitWithSpiTC
-from hwtLib.examples.errors.errorsTestCase import ErrorsTC
+from hwtLib.examples.errors.errors_test import ErrorsTC
 from hwtLib.examples.hdlComments_test import HdlCommentsTC
 from hwtLib.examples.hdlObjLists.listOfInterfaces0 import ListOfInterfacesSample0TC
 from hwtLib.examples.hdlObjLists.listOfInterfaces1 import ListOfInterfacesSample1TC
@@ -181,7 +181,7 @@ from hwtLib.tests.resourceAnalyzer_test import ResourceAnalyzer_TC
 from hwtLib.tests.serializerModes_test import SerializerModes_TC
 from hwtLib.tests.serializer_tmpVar_test import Serializer_tmpVar_TC
 from hwtLib.tests.simulatorUtlls_test import SimulatorUtilsTC
-from hwtLib.tests.statementTrees import StatementTreesTC
+from hwtLib.tests.statementTrees_test import StatementTreesTC
 from hwtLib.tests.statementTreesInternal import StatementTreesInternalTC
 from hwtLib.tests.statements import StatementsTC
 from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import \

@@ -16,15 +16,15 @@ SC_MODULE(DReg) {
     sc_in<sc_uint<1>> rst;
     // component instances
     // internal signals
-    sc_uint<1> internReg(sc_uint<1>(0b0));
-    sc_uint<1> internReg_next;
+    sc_uint<1> internReg = sc_uint<1>("0b0");
+    sc_signal<sc_uint<1>> internReg_next;
     void assig_process_dout() {
         dout.write(internReg);
     }
 
     void assig_process_internReg() {
-        if (rst.read() == sc_uint<1>(0b1))
-            internReg = sc_uint<1>(0b0);
+        if (rst.read() == sc_uint<1>("0b1"))
+            internReg = sc_uint<1>("0b0");
         else
             internReg = internReg_next.read();
     }
@@ -40,5 +40,6 @@ SC_MODULE(DReg) {
         sensitive << clk.pos();
         SC_METHOD(assig_process_internReg_next);
         sensitive << din;
+        // connect ports
     }
 };

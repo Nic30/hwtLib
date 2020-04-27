@@ -13,21 +13,21 @@ END ENTITY;
 
 ARCHITECTURE rtl OF AxiReaderCore IS
     TYPE rSt_t IS (rdIdle, rdData);
-    SIGNAL rSt : rSt_t;
+    SIGNAL rSt : rst_t;
 BEGIN
     assig_process_rSt: PROCESS(arRd, arVld, rRd, rVld)
     BEGIN
         IF arRd = '1' THEN
             IF arVld = '1' THEN
-                rSt <= rdData;
+                rSt <= rddata;
             ELSE
-                rSt <= rdIdle;
+                rSt <= rdidle;
             END IF;
         ELSIF (rRd AND rVld) = '1' THEN
-            rSt <= rdIdle;
+            rSt <= rdidle;
         ELSE
-            rSt <= rdData;
+            rSt <= rddata;
         END IF;
     END PROCESS;
-    r_idle <= '1' WHEN (rSt = rdIdle) ELSE '0';
+    r_idle <= '1' WHEN (rSt = rdidle) ELSE '0';
 END ARCHITECTURE;
