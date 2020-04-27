@@ -22,7 +22,7 @@ def netlistToVhdlStr(name: str, netlist: RtlNetlist,
         s._interface = True
         pi = portItemfromSignal(s, netlist, d)
         # port of current top component
-        s.name = name_scope.checkedName(s.name, s)
+        s.name = name_scope.checked_name(s.name, s)
         pi.connectInternSig(s)
         netlist.ent.ports.append(pi)
     netlist.ent.ports.sort(key=lambda x: x.name)
