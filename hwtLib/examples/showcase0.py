@@ -36,6 +36,7 @@ from hwtLib.types.ctypes import uint32_t, int32_t, uint8_t, int8_t
 from hwt.synthesizer.hObjList import HObjList
 
 
+
 def foo(condition0, statements, condition1, fallback0, fallback1):
     """
     Python functions used as macro
@@ -246,8 +247,10 @@ if __name__ == "__main__":  # alias python main function
     from hwt.serializer.hwt.serializer import HwtSerializer
     from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
     from hwt.serializer.verilog.serializer import VerilogSerializer
-    from hwt.serializer.systemC.serializer import ToHdlAstSystemC
+    from hwt.serializer.systemC.serializer import SystemCSerializer
+
     from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
+    from hwt.synthesizer.utils import synthesised
 
     # * new instance has to be created every time because toRtl is modifies the unit
     # * serializers are using templates which can be customized
@@ -255,9 +258,10 @@ if __name__ == "__main__":  # alias python main function
     print(to_rtl_str(Showcase0(), serializer_cls=HwtSerializer))
     print(to_rtl_str(Showcase0(), serializer_cls=Vhdl2008Serializer))
     print(to_rtl_str(Showcase0(), serializer_cls=VerilogSerializer))
-    print(to_rtl_str(Showcase0(), serializer_cls=ToHdlAstSystemC))
+    print(to_rtl_str(Showcase0(), serializer_cls=SystemCSerializer))
 
-    r = ResourceAnalyzer()
+    u = Showcase0()
+    ra = ResourceAnalyzer()
     synthesised(u)
-    s.visit_Unit(u)
-    pprint(r.report())
+    ra.visit_Unit(u)
+    pprint(ra.report())
