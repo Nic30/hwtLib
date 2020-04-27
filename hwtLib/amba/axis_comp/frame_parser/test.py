@@ -302,7 +302,7 @@ class AxiS_frameParserTC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    suite.addTest(AxiS_frameParserTC('test_stream_and_footer'))
-    # suite.addTest(unittest.makeSuite(AxiS_frameParserTC))
+    # suite.addTest(AxiS_frameParserTC('test_stream_and_footer'))
+    suite.addTest(unittest.makeSuite(AxiS_frameParserTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
