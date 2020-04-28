@@ -7,7 +7,7 @@ from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.types.ctypes import uint32_t, uint16_t
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwt.hdl.types.bits import Bits
-from hwtLib.sim.abstractMemSpaceMaster import get_type_of_actual_field
+from hwt.hdl.types.structUtils import field_path_get_type
 
 structHierarchy = HStruct(
                           (HStruct(
@@ -107,7 +107,8 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
 
     def mySetUp(self, data_width=32):
         u = AxiLiteEndpoint(self.STRUCT_TEMPLATE,
-                shouldEnterFn=lambda field_path: (True, isinstance(get_type_of_actual_field(field_path), Bits)))
+                shouldEnterFn=lambda root, field_path:\
+                    (True, isinstance(field_path_get_type(root, field_path), Bits)))
         self.u = u
         self.DATA_WIDTH = data_width
         u.DATA_WIDTH = self.DATA_WIDTH
@@ -154,9 +155,9 @@ class AxiLiteEndpoint_arrayStruct_TC(AxiLiteEndpointTC):
         self.randomizeAll()
         self.runSim(80 * self.CLK)
 
-        readed = u.bus.r._ag.data
-        self.assertEqual(len(readed), len(expected))
-        for d, ed in zip(readed, expected):
+        r_data = u.bus.r._ag.data
+        self.assertEqual(len(r_data), len(expected))
+        for d, ed in zip(r_data, expected):
             edata, eresp, ebits = ed
             data, resp = d
             self.assertValEqual(resp, eresp)

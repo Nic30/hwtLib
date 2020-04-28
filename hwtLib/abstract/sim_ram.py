@@ -4,7 +4,9 @@ from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
-from pyMathBitPrecise.bit_utils import mask, selectBitRange
+from pyMathBitPrecise.bit_utils import mask, selectBitRange, int_list_to_int
+from math import ceil
+from hwt.pyUtils.arrayQuery import grouper
 
 
 class AllocationError(Exception):
@@ -26,17 +28,8 @@ def reshapedInitItems(actualCellSize, requestedCellSize, values):
     if (actualCellSize < requestedCellSize
             and requestedCellSize % actualCellSize == 0):
         itemsInCell = requestedCellSize // actualCellSize
-        itemAlign = len(values) % itemsInCell
-        if itemAlign != 0:
-            values = chain(values, [0 for _ in range(itemsInCell - itemAlign)])
-        for itemsInWord in zip(*[iter(values)] * itemsInCell):
-            item = 0
-            for iIndx, i2 in enumerate(itemsInWord):
-                subIndx = itemsInCell - iIndx - 1
-                _i2 = (mask(actualCellSize * 8) & i2
-                       ) << (subIndx * actualCellSize * 8)
-                item |= _i2
-            yield item
+        for itemsInWord in grouper(itemsInCell, values, padvalue=0):
+            yield int_list_to_int(itemsInWord, actualCellSize*8)
     else:
         raise NotImplementedError(
             "Reshaping of array from cell size %d to %d" % (
@@ -126,7 +119,7 @@ class SimRam():
                 "unaligned allocations not implemented (0x%x)" % addr)
 
         d = self.data
-        wordCnt = (num * size) // self.cellSize
+        wordCnt = ceil((num * size) / self.cellSize)
 
         if initValues is not None:
             if size != self.cellSize:

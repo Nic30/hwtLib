@@ -133,7 +133,7 @@ class StructWriter(StructReader):
 
         # connect fields to assembler
         for _, transTmpl in self._tmpl.walkFlatten():
-            f = transTmpl.origin
+            f = transTmpl.getFieldPath()
             intf = self.frameAssember.dataIn._fieldsToInterfaces[f]
             intf(self.dataIn._fieldsToInterfaces[f])
 

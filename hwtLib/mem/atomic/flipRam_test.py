@@ -32,9 +32,9 @@ class FlipRamTC(SingleUnitSimTestCase):
 
         self.runSim(N * 40 * Time.ns)
 
-        self.assertValSequenceEqual(u.firstA._ag.readed, [MAGIC0 + i
+        self.assertValSequenceEqual(u.firstA._ag.r_data, [MAGIC0 + i
                                                           for i in range(N)])
-        self.assertValSequenceEqual(u.secondA._ag.readed, [MAGIC1 + i
+        self.assertValSequenceEqual(u.secondA._ag.r_data, [MAGIC1 + i
                                                            for i in range(N)])
 
     def test_flip(self):
@@ -58,9 +58,9 @@ class FlipRamTC(SingleUnitSimTestCase):
 
         self.runSim(3 * N * 40 * Time.ns)
 
-        self.assertValSequenceEqual(u.firstA._ag.readed, [MAGIC1 + i
+        self.assertValSequenceEqual(u.firstA._ag.r_data, [MAGIC1 + i
                                                           for i in range(N)])
-        self.assertValSequenceEqual(u.secondA._ag.readed, [MAGIC0 + i
+        self.assertValSequenceEqual(u.secondA._ag.r_data, [MAGIC0 + i
                                                            for i in range(N)])
 
 

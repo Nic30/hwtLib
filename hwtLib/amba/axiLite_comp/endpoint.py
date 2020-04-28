@@ -2,11 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, FsmBuilder, Or, log2ceil, connect, Switch, \
-    SwitchLogic, Concat
-from hwt.hdl.typeShortcuts import vec
+    SwitchLogic
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
-from hwt.pyUtils.arrayQuery import groupedby
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
@@ -29,7 +27,6 @@ class AxiLiteEndpoint(BusEndpoint):
 
     def readPart(self, awAddr, w_hs):
         ADDR_STEP = self._getAddrStep()
-        DW = int(self.DATA_WIDTH)
         # build read data output mux
         r = self.bus.r
         ar = self.bus.ar
@@ -71,7 +68,7 @@ class AxiLiteEndpoint(BusEndpoint):
             bramRdIndx = self._reg("bramRdIndx", Bits(
                 log2ceil(len(self._bramPortMapped))))
             bramRdIndxSwitch = Switch(bramRdIndx)
-            for bramIndex, t in enumerate(self._bramPortMapped):
+            for bramIndex, ((base, end), t) in enumerate(self._bramPortMapped):
                 port = self.getPort(t)
 
                 # map addr for bram ports
@@ -109,43 +106,12 @@ class AxiLiteEndpoint(BusEndpoint):
             rdataReg = None
             isBramAddr(0)
 
-        directlyMappedWors = []
-        for w, items in sorted(groupedby(self._directlyMapped,
-                                         lambda t: t.bitAddr // DW * (DW // ADDR_STEP)),
-                               key=lambda x: x[0]):
-            lastBit = 0
-            res = []
-            items.sort(key=lambda t: t.bitAddr)
-            for t in items:
-                b = t.bitAddr % DW
-                if b > lastBit:
-                    # add padding
-                    pad_w = b - lastBit
-                    pad = Bits(pad_w).from_py(None)
-                    res.append(pad)
-                    lastBit += pad_w
-                din = self.getPort(t).din
-                res.append(din)
-                lastBit += din._dtype.bit_length()
-
-            if lastBit != DW:
-                # add at end padding
-                pad = Bits(DW - lastBit).from_py(None)
-                res.append(pad)
-
-            directlyMappedWors.append((w, Concat(*reversed(res))))
-
-        Switch(arAddr).addCases(
-            [(w[0], r.data(w[1]))
-             for w in directlyMappedWors]
-        ).Default(
-            r.data(rdataReg)
-        )
+        self.connect_directly_mapped_read(arAddr, r.data, r.data(rdataReg))
 
     def writeRespPart(self, wAddr, respVld):
         b = self.bus.b
 
-        isInAddrRange = (self.isInMyAddrRange(wAddr))
+        isInAddrRange = self.isInMyAddrRange(wAddr)
 
         If(isInAddrRange,
            b.resp(RESP_OKAY)
@@ -155,11 +121,8 @@ class AxiLiteEndpoint(BusEndpoint):
         b.valid(respVld)
 
     def writePart(self):
-        DW = int(self.DATA_WIDTH)
         sig = self._sig
         reg = self._reg
-        addrWidth = int(self.ADDR_WIDTH)
-        ADDR_STEP = self._getAddrStep()
 
         wSt_t = HEnum('wSt_t', ['wrIdle', 'wrData', 'wrResp'])
         aw = self.bus.aw
@@ -194,23 +157,9 @@ class AxiLiteEndpoint(BusEndpoint):
         ).Else(
             awAddr(awAddr)
         )
-
-        # output vld
-        for t in self._directlyMapped:
-            out = self.getPort(t).dout
-            try:
-                width = t.getItemWidth()
-            except TypeError:
-                width = t.bitAddrEnd - t.bitAddr
-
-            if width > DW:
-                raise NotImplementedError("Fields wider than DATA_WIDTH not supported yet", t)
-            offset = t.bitAddr % DW
-            out.data(w.data[(offset + width): offset])
-            out.vld(w_hs & (awAddr._eq(vec(t.bitAddr // DW * (DW // ADDR_STEP),
-                                           addrWidth))))
-
-        for t in self._bramPortMapped:
+        self.connect_directly_mapped_write(awAddr, w.data, w_hs)
+        for (_, _), t in self._bramPortMapped:
+            # en, we handled in readPart
             din = self.getPort(t).din
             connect(w.data, din, fit=True)
 
@@ -243,14 +192,6 @@ def _example_AxiLiteEndpoint():
             (uint32_t, "data4c")
         ), "data4"),
     )
-
-    # type flattening can be specified by shouldEnterFn parameter
-    # target interface can be overriden by _mkFieldInterface function
-
-    # There are other bus endpoints, for example:
-    # IpifEndpoint, I2cEndpoint, AvalonMmEndpoint and others
-    # decoded interfaces for data type will be same just bus interface
-    # will difer
     u = AxiLiteEndpoint(t)
 
     # configuration

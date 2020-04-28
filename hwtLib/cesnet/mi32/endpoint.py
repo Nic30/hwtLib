@@ -1,45 +1,48 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import SwitchLogic, log2ceil, Switch, If
+from hwt.code import If, log2ceil, Switch, SwitchLogic
 from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.abstract.busEndpoint import BusEndpoint
+from hwtLib.cesnet.mi32.intf import Mi32
 
 
-class BramPortEndpoint(BusEndpoint):
+class Mi32Endpoint(BusEndpoint):
     """
-    Delegate transaction from BrapmPort interface to interfaces
-    for fields of specified structure.
+    Delegate request from bus to fields of structure
 
-    :attention: Interfaces are dynamically generated from names
-        of fields in structure template.
+    :attention: interfaces are dynamically generated from names of fileds
+        in structure template
+    :attention: byte enable and register clock enable signals are ignored
 
-    .. hwt-schematic:: _example_BramPortEndpoint
+    .. hwt-schematic:: _example_Mi32Endpoint
     """
-    _getWordAddrStep = BramPort_withoutClk._getWordAddrStep
-    _getAddrStep = BramPort_withoutClk._getAddrStep
 
-    def __init__(self, structTemplate, intfCls=BramPort_withoutClk,
-                 shouldEnterFn=None):
+    _getWordAddrStep = Mi32._getWordAddrStep
+    _getAddrStep = Mi32._getAddrStep
+
+    def __init__(self, structTemplate, intfCls=Mi32, shouldEnterFn=None):
         BusEndpoint.__init__(self, structTemplate,
-                             intfCls=intfCls, shouldEnterFn=shouldEnterFn)
+                             intfCls=intfCls,
+                             shouldEnterFn=shouldEnterFn)
 
     def _impl(self):
         self._parseTemplate()
         bus = self.bus
+        bus.ardy(1)
 
         ADDR_STEP = self._getAddrStep()
         if self._directly_mapped_words:
-            readReg = self._reg("readReg", dtype=bus.dout._dtype)
+            readReg = self._reg("readReg", dtype=bus.drd._dtype)
             # tuples (condition, assign statements)
-            If(bus.en,
+            If(bus.rd,
                self.connect_directly_mapped_read(bus.addr, readReg, [])
             )
-            self.connect_directly_mapped_write(bus.addr, bus.din, bus.en & bus.we)
+            self.connect_directly_mapped_write(bus.addr, bus.dwr, bus.wr)
         else:
             readReg = None
-
+        rd_delayed = self._reg("rd_delayed", def_val=0)
+        rd_delayed(bus.rd & self.isInMyAddrRange(bus.addr))
         if self._bramPortMapped:
             BRAMS_CNT = len(self._bramPortMapped)
             bramIndxCases = []
@@ -59,38 +62,34 @@ class BramPortEndpoint(BusEndpoint):
                                                  port.dout._dtype.bit_length(),
                                                  t)
 
-                port.we(bus.en & bus.we & _addrVld)
-                port.en(bus.en & _addrVld)
-                port.din(bus.din)
+                port.we(bus.wr & _addrVld)
+                port.en((bus.rd | bus.wr) & _addrVld)
+                port.din(bus.dwr)
 
                 bramIndxCases.append((_addrVld, readBramIndx(i)))
-                outputSwitch.Case(i, bus.dout(port.dout))
+                outputSwitch.Case(i, bus.drd(port.dout))
 
-            outputSwitch.Default(bus.dout(readReg))
+            outputSwitch.Default(bus.drd(readReg))
             SwitchLogic(bramIndxCases,
                         default=readBramIndx(BRAMS_CNT))
         else:
-            bus.dout(readReg)
+            bus.drd(readReg)
+        bus.drdy(rd_delayed)
 
 
-def _example_BramPortEndpoint():
+def _example_Mi32Endpoint():
     from hwt.hdl.types.struct import HStruct
     from hwtLib.types.ctypes import uint32_t
-
-    u = BramPortEndpoint(
-        HStruct(
-            (uint32_t, "reg0"),
-            (uint32_t, "reg1"),
-            (uint32_t[1024], "segment0"),
-            (uint32_t[1024], "segment1"),
-            (uint32_t[1024 + 4], "nonAligned0")
-        )
-    )
-    u.DATA_WIDTH = 32
+    u = Mi32Endpoint(
+            HStruct(
+                (uint32_t, "field0"),
+                (uint32_t, "field1"),
+                #(uint32_t[32], "bramMapped")
+                ))
     return u
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    u = _example_BramPortEndpoint()
-    print(to_rtl_str(u))
+    from hwt.synthesizer.utils import toRtl
+    u = _example_Mi32Endpoint()
+    print(toRtl(u))

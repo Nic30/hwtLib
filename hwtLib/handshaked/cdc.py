@@ -11,6 +11,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.clocking.cdc import CdcPulseGen
 from hwtLib.handshaked.compBase import HandshakedCompBase
+from hwtLib.clocking.vldSynced_cdc import VldSyncedCdc
 
 
 @serializeParamsUniq
@@ -52,23 +53,7 @@ class HandshakedCdc(HandshakedCompBase):
         self.OUT_FREQ = Param(int(100e6))
 
     def _declr(self):
-        I_CLS = self.intfCls
-
-        self.dataIn_clk = Clk()
-        self.dataIn_clk.FREQ = self.IN_FREQ
-        with self._associated(self.dataIn_clk):
-            self.dataIn_rst_n = Rst_n()
-
-        self.dataOut_clk = Clk()
-        self.dataOut_clk.FREQ = self.OUT_FREQ
-        with self._associated(self.dataOut_clk):
-            self.dataOut_rst_n = Rst_n()
-
-        with self._paramsShared():
-            with self._associated(self.dataIn_clk, self.dataIn_rst_n):
-                self.dataIn = I_CLS()
-            with self._associated(self.dataOut_clk, self.dataOut_rst_n):
-                self.dataOut = I_CLS()._m()
+        VldSyncedCdc._declr(self)
 
         ipg = self.in_ack_pulse_gen = CdcPulseGen()
         ipg.IN_FREQ = self.OUT_FREQ

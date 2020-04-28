@@ -49,7 +49,7 @@ class Mi32InterconnectMatrix(BusInterconnect):
         self.m = masterPorts
 
         # fifo which keeps index of slave for master read transaction
-        # so the interconnect can delivery the readed data to master
+        # so the interconnect can delivery the read data to master
         # which asked for it
         f = self.r_data_order = HandshakedFifo(Handshaked)
         f.DEPTH = self.MAX_TRANS_OVERLAP

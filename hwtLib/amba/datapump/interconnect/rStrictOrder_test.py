@@ -22,8 +22,7 @@ class RStrictOrderInterconnectTC(SingleUnitSimTestCase):
         cls.MAX_TRANS_OVERLAP = 4
         u.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP
 
-        cls.DATA_WIDTH = 64
-        u.DATA_WIDTH = cls.DATA_WIDTH
+        u.DATA_WIDTH = 64
         return u
 
     def test_nop(self):
@@ -59,7 +58,7 @@ class RStrictOrderInterconnectTC(SingleUnitSimTestCase):
             _len = i + 1
             driver.req._ag.data.append((_id, i + 1, _len, 0))
             for i2 in range(_len + 1):
-                d = (_id, i + 1, mask(self.DATA_WIDTH // 8), i2 == _len)
+                d = (_id, i + 1, mask(u.DATA_WIDTH // 8), i2 == _len)
                 u.rDatapump.r._ag.data.append(d)
 
         self.runSim(20 * CLK_PERIOD)
@@ -74,7 +73,7 @@ class RStrictOrderInterconnectTC(SingleUnitSimTestCase):
 
     def test_randomized(self):
         u = self.u
-        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, u.rDatapump)
+        m = AxiDpSimRam(u.DATA_WIDTH, u.clk, u.rDatapump)
 
         for d in u.drivers:
             self.randomize(d.req)
@@ -86,8 +85,8 @@ class RStrictOrderInterconnectTC(SingleUnitSimTestCase):
             driver = u.drivers[driverIndex]
             driver.req._ag.data.append((_id, addr, size - 1, 0))
             expected = []
-            _mask = mask(self.DATA_WIDTH // 8)
-            index = addr // (self.DATA_WIDTH // 8)
+            _mask = mask(u.DATA_WIDTH // 8)
+            index = addr // (u.DATA_WIDTH // 8)
             for i in range(size):
                 v = valBase + i
                 m.data[index + i] = v
@@ -113,7 +112,7 @@ class RStrictOrderInterconnectTC(SingleUnitSimTestCase):
 
     def test_randomized2(self):
         u = self.u
-        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, u.rDatapump)
+        m = AxiDpSimRam(u.DATA_WIDTH, u.clk, u.rDatapump)
         N = 17
 
         for d in u.drivers:
@@ -121,7 +120,7 @@ class RStrictOrderInterconnectTC(SingleUnitSimTestCase):
             self.randomize(d.r)
         self.randomize(u.rDatapump.req)
         self.randomize(u.rDatapump.r)
-        _mask = mask(self.DATA_WIDTH // 8)
+        _mask = mask(u.DATA_WIDTH // 8)
 
         expected = [[] for _ in u.drivers]
         for _id, d in enumerate(u.drivers):
@@ -129,7 +128,7 @@ class RStrictOrderInterconnectTC(SingleUnitSimTestCase):
                 size = self._rand.getrandbits(3) + 1
                 magic = self._rand.getrandbits(16)
                 values = [i + magic for i in range(size)]
-                addr = m.calloc(size, 8, initValues=values)
+                addr = m.calloc(size, u.DATA_WIDTH // 8, initValues=values)
 
                 d.req._ag.data.append((_id, addr, size - 1, 0))
 

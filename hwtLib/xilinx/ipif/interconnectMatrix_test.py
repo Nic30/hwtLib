@@ -69,7 +69,7 @@ class IpifInterconnectMatrixTC(SimTestCase):
         for i, (e, s) in enumerate(zip(expected, s)):
             d = {k: int(v) for k, v in s.mem.items()}
             self.assertDictEqual(d, e, i)
-        self.assertValSequenceEqual(m.readed, expected_r)
+        self.assertValSequenceEqual(m.r_data, expected_r)
 
 
 if __name__ == "__main__":

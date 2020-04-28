@@ -83,7 +83,7 @@ class AxiS_frameParserFieldConnector():
             wordIndex: Optional[RtlSignal],
             currentWordIndex: int):
         tToIntf = self.dataOut._fieldsToInterfaces
-        parentIntf = tToIntf[part.origin.parent.origin]
+        parentIntf = tToIntf[part.origin.parent.getFieldPath()]
         try:
             sel = self._tmpRegsForSelect[parentIntf]
         except KeyError:
@@ -95,7 +95,7 @@ class AxiS_frameParserFieldConnector():
         for choice in part:
             # connect data signals of choices and collect info about
             # streams
-            intfOfChoice = tToIntf[choice.tmpl.origin]
+            intfOfChoice = tToIntf[choice.tmpl.getFieldPath()]
             selIndex, isSelected, isSelectValid = self.choiceIsSelected(
                 intfOfChoice)
             _exclusiveEn = isSelectValid & isSelected & exclusiveEn
@@ -125,7 +125,10 @@ class AxiS_frameParserFieldConnector():
             wordIndex: Optional[RtlSignal],
             currentWordIndex: int):
         orig = part.tmpl.origin[-1]
-        dout = self.dataOut._fieldsToInterfaces[part.tmpl.origin]
+        # use tmpl.parent because part is actually a chunk of data
+        # in the stream
+        path_to_stream_port = part.tmpl.parent.getFieldPath()
+        dout = self.dataOut._fieldsToInterfaces[path_to_stream_port]
         if isinstance(orig, HStructField):
             orig = orig.dtype
         assert isinstance(orig, HStream), orig
@@ -270,7 +273,7 @@ class AxiS_frameParserFieldConnector():
             # connect all parts in this group to output stream
             signalsOfParts.append(fPartSig)
             tToIntf = self.dataOut._fieldsToInterfaces
-            intf = tToIntf[part.tmpl.origin]
+            intf = tToIntf[part.tmpl.getFieldPath()]
             intf.data(self.byteOrderCare(
                 Concat(
                     *reversed(signalsOfParts)

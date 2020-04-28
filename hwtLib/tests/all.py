@@ -205,6 +205,8 @@ from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
+from hwtLib.cesnet.mi32.endpoint_test import Mi32EndpointTCs
+from hwtLib.examples.axi.debugbusmonitor_test import DebugBusMonitorExampleAxiTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -432,6 +434,7 @@ suite = testSuiteFromTCs(
     Mi32_to_Axi4LiteTC,
     Mi32Axi4LiteBrigesTC,
     Mi32SlidingWindowTC,
+    *Mi32EndpointTCs,
 
     # complex units tests
     UnitWrapperTC,
@@ -440,6 +443,7 @@ suite = testSuiteFromTCs(
     HashTableCoreTC,
     CuckooHashTableTC,
     PingResponderTC,
+    DebugBusMonitorExampleAxiTC,
 
     RmiiAdapterTC,
 )
@@ -457,7 +461,6 @@ if __name__ == '__main__':
     # useParallerlTest = False
 
     if useParallerlTest:
-        # Run same tests across 4 processes
         concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests())
         runner.run(concurrent_suite)
     else:

@@ -23,7 +23,7 @@ class Mi32SimRam(SimRam):
         Check if any request has appeared on interfaces
         """
         yield WaitWriteOnly()
-        req = self.intf._ag.req
+        req = self.intf._ag.requests
         if req:
             self.on_req(req)
 
@@ -35,7 +35,7 @@ class Mi32SimRam(SimRam):
             raise NotImplementedError("Unaligned read")
 
         d = self.data[int(addr) // self._word_bytes]
-        self.intf._ag.rData.append(d)
+        self.intf._ag.r_data.append(d)
 
     def on_write(self, addr, val, byteen):
         addr = int(addr)

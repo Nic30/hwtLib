@@ -53,7 +53,7 @@ class WStrictOrderInterconnectTC(SingleUnitSimTestCase):
             _id = i + 1
             _len = i + 1
             driver.req._ag.data.append((_id, i + 1, _len, 0))
-            strb = mask(self.DATA_WIDTH // 8)
+            strb = mask(u.DATA_WIDTH // 8)
             for i2 in range(_len + 1):
                 _data = i + i2 + 1
                 last = int(i2 == _len)
@@ -77,7 +77,7 @@ class WStrictOrderInterconnectTC(SingleUnitSimTestCase):
 
     def test_randomized(self):
         u = self.u
-        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
+        m = AxiDpSimRam(u.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
 
         for d in u.drivers:
             self.randomize(d.req)
@@ -93,7 +93,7 @@ class WStrictOrderInterconnectTC(SingleUnitSimTestCase):
         def prepare(driverIndex, addr, size, valBase=1, _id=1):
             driver = u.drivers[driverIndex]
             driver.req._ag.data.append((_id, addr, size - 1, 0))
-            _mask = mask(self.DATA_WIDTH // 8)
+            _mask = mask(u.DATA_WIDTH // 8)
 
             for i in range(size):
                 d = (valBase + i, _mask, int(i == size - 1))
@@ -114,13 +114,13 @@ class WStrictOrderInterconnectTC(SingleUnitSimTestCase):
 
         for addr, seed, size in sectors:
             expected = [seed + i for i in range(size)]
-            self.assertValSequenceEqual(m.getArray(addr, 8, size), expected)
+            self.assertValSequenceEqual(m.getArray(addr, u.DATA_WIDTH // 8, size), expected)
 
     def test_randomized2(self):
         u = self.u
-        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
+        m = AxiDpSimRam(u.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
         N = 25
-        _mask = mask(self.DATA_WIDTH // 8)
+        _mask = mask(u.DATA_WIDTH // 8)
 
         for d in u.drivers:
             self.randomize(d.req)
@@ -137,7 +137,7 @@ class WStrictOrderInterconnectTC(SingleUnitSimTestCase):
             for _id, d in enumerate(u.drivers):
                 size = self._rand.getrandbits(3) + 1
                 magic = self._rand.getrandbits(16)
-                addr = m.calloc(size, 8,
+                addr = m.calloc(size, u.DATA_WIDTH // 8,
                                 initValues=[None for _ in range(size)])
 
                 d.req._ag.data.append((_id, addr, size - 1, 0))
@@ -158,7 +158,7 @@ class WStrictOrderInterconnectTC(SingleUnitSimTestCase):
                              framesCnt[_id])
 
         for _id, addr, expected in sectors:
-            v = m.getArray(addr, 8, len(expected))
+            v = m.getArray(addr, u.DATA_WIDTH // 8, len(expected))
             self.assertSequenceEqual(v, expected)
 
 
@@ -174,13 +174,13 @@ class WStrictOrderInterconnect2TC(SingleUnitSimTestCase):
 
     def test_3x128(self):
         u = self.u
-        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
+        m = AxiDpSimRam(u.DATA_WIDTH, u.clk, wDatapumpIntf=u.wDatapump)
         N = 128
-        _mask = mask(self.DATA_WIDTH // 8)
-        data = [[self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]
+        _mask = mask(u.DATA_WIDTH // 8)
+        data = [[self._rand.getrandbits(u.DATA_WIDTH) for _ in range(N)]
                 for _ in range(self.DRIVER_CNT)]
 
-        dataAddress = [m.malloc(N * self.DATA_WIDTH // 8)
+        dataAddress = [m.malloc(N * u.DATA_WIDTH // 8)
                        for _ in range(self.DRIVER_CNT)]
 
         for di, _data in enumerate(data):
@@ -203,7 +203,7 @@ class WStrictOrderInterconnect2TC(SingleUnitSimTestCase):
                     req.data.append(mkReq(addr, len(frame) - 1))
                     wIn.data.extend([(d, _mask, i == len(frame) - 1)
                                      for i, d in enumerate(frame)])
-                    addr += len(frame) * self.DATA_WIDTH // 8
+                    addr += len(frame) * u.DATA_WIDTH // 8
                 if end:
                     break
 
@@ -219,7 +219,7 @@ class WStrictOrderInterconnect2TC(SingleUnitSimTestCase):
 
         self.runSim(self.DRIVER_CNT * N * 50 * Time.ns)
         for i, baseAddr in enumerate(dataAddress):
-            inMem = m.getArray(baseAddr, self.DATA_WIDTH // 8, N)
+            inMem = m.getArray(baseAddr, u.DATA_WIDTH // 8, N)
             self.assertValSequenceEqual(inMem, data[i], "driver:%d" % i)
 
 
