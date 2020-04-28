@@ -55,6 +55,7 @@ from hwtLib.avalon.endpoint_test import AvalonMmEndpointTCs
 from hwtLib.avalon.mmAgent_test import AvalonMmAgentTC
 from hwtLib.avalon.stAgent_test import AvalonStAgentTC
 from hwtLib.cesnet.mi32.axi4Lite_bridges_test import Mi32Axi4LiteBrigesTC
+from hwtLib.cesnet.mi32.endpoint_test import Mi32EndpointTCs
 from hwtLib.cesnet.mi32.interconnectMatrix_test import Mi32InterconnectMatrixTC
 from hwtLib.cesnet.mi32.mi32agent_test import Mi32AgentTC
 from hwtLib.cesnet.mi32.sliding_window_test import Mi32SlidingWindowTC
@@ -66,6 +67,7 @@ from hwtLib.examples.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.examples.arithmetic.twoCntrs_test import TwoCntrsTC
 from hwtLib.examples.arithmetic.vhdl_vector_auto_casts import VhdlVectorAutoCastExampleTC
 from hwtLib.examples.arithmetic.widthCasting import WidthCastingExampleTC
+from hwtLib.examples.axi.debugbusmonitor_test import DebugBusMonitorExampleAxiTC
 from hwtLib.examples.axi.simpleAxiRegs_test import SimpleAxiRegsTC
 from hwtLib.examples.builders.ethAddrUpdater_test import EthAddrUpdaterTC
 from hwtLib.examples.builders.handshakedBuilderSimple import \
@@ -174,23 +176,23 @@ from hwtLib.structManipulators.structReader_test import StructReaderTC
 from hwtLib.structManipulators.structWriter_test import StructWriter_TC
 from hwtLib.tests.fileUtils_test import FileUtilsTC
 from hwtLib.tests.frameTmpl_test import FrameTmplTC
-from hwtLib.tests.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.rdSynced_agent_test import RdSynced_agent_TC
 from hwtLib.tests.repr_of_hdlObjs_test import ReprOfHdlObjsTC
 from hwtLib.tests.resourceAnalyzer_test import ResourceAnalyzer_TC
-from hwtLib.tests.serializerModes_test import SerializerModes_TC
-from hwtLib.tests.serializer_tmpVar_test import Serializer_tmpVar_TC
+from hwtLib.tests.sertialization.ipCorePackager_test import IpCorePackagerTC
+from hwtLib.tests.sertialization.modes_test import SerializerModes_TC
+from hwtLib.tests.sertialization.tmpVar_test import Serializer_tmpVar_TC
+from hwtLib.tests.sertialization.vhdl_test import Vhdl2008Serializer_TC
 from hwtLib.tests.simulatorUtlls_test import SimulatorUtilsTC
-from hwtLib.tests.statementTrees_test import StatementTreesTC
-from hwtLib.tests.statementTreesInternal import StatementTreesInternalTC
-from hwtLib.tests.statements import StatementsTC
 from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import \
     InterfaceSynthesizerTC
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import \
     SubunitsSynthesisTC
-from hwtLib.tests.synthesizer.rtlLevel.optimalizator import Expr2CondTC
-from hwtLib.tests.synthesizer.rtlLevel.synthesis import BasicSynthesisTC, \
-    StatementsConsystencyTC
+from hwtLib.tests.synthesizer.rtlLevel.basic_signal_methods_test import BasicSignalMethodsTC
+from hwtLib.tests.synthesizer.rtlLevel.statements_consystency_test import StatementsConsystencyTC
+from hwtLib.tests.synthesizer.statementTreesInternal_test import StatementTreesInternalTC
+from hwtLib.tests.synthesizer.statementTrees_test import StatementTreesTC
+from hwtLib.tests.synthesizer.statements_test import StatementsTC
 from hwtLib.tests.transTmpl_test import TransTmpl_TC
 from hwtLib.tests.types.bitsSlicing_test import BitsSlicingTC
 from hwtLib.tests.types.hstructVal_test import HStructValTC
@@ -198,15 +200,12 @@ from hwtLib.tests.types.operators_test import OperatorTC
 from hwtLib.tests.types.union_test import UnionTC
 from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
-from hwtLib.tests.vhdlSerializer_test import Vhdl2008Serializer_TC
 from hwtLib.xilinx.ipif.axi4Lite_to_ipif_test import Axi4Lite_to_IpifTC
 from hwtLib.xilinx.ipif.buff_test import IpifBuffTC
 from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
-from hwtLib.cesnet.mi32.endpoint_test import Mi32EndpointTCs
-from hwtLib.examples.axi.debugbusmonitor_test import DebugBusMonitorExampleAxiTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -236,12 +235,11 @@ suite = testSuiteFromTCs(
     SimpleWithNonDirectIntConncetionTC,
     SimpleSubunit3TC,
     UnitToUnitConnectionTC,
-    Expr2CondTC,
     OperatorTC,
     BitsSlicingTC,
     HStructValTC,
     ParametrizationTC,
-    BasicSynthesisTC,
+    BasicSignalMethodsTC,
     StatementsConsystencyTC,
     ValueTC,
     StatementTreesInternalTC,

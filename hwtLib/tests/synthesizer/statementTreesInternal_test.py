@@ -8,6 +8,7 @@ from hwt.synthesizer.termUsageResolver import getBaseCond
 
 
 class StatementTreesInternalTC(unittest.TestCase):
+
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.n = RtlNetlist("test")

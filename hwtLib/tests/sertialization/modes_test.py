@@ -4,10 +4,8 @@ from hwt.code import Concat
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.serializer.mode import serializeExclude, serializeOnce, \
     serializeParamsUniq
-from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.utils import to_rtl_str
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 
 

@@ -9,7 +9,7 @@ from hwt.hdl.types.defs import INT, STR, BOOL
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from pyMathBitPrecise.bit_utils import mask
-from hwt.hdl.operatorDefs import downtoFn, toFn
+from hwt.hdl.operatorDefs import downtoFn, toFn, AllOps
 
 
 n = RtlNetlist()
@@ -298,6 +298,33 @@ class OperatorTC(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             bool(INT.from_py(None)._auto_cast(BOOL))
+
+    def test_bit2BoolConversion(self):
+        e = self.n.sig("e")
+        cond = e._auto_cast(BOOL)
+        self.assertTrue(cond.origin.operator == AllOps.EQ)
+        self.assertEqual(cond.origin.operands[0], e, 1)
+
+    def test_NotAnd(self):
+        n = self.n
+        a = n.sig("a")
+        b = n.sig("b")
+        e = ~(a & b)
+        self.assertEqual(e.origin.operator, AllOps.NOT)
+        cond = e._auto_cast(BOOL)
+
+        self.assertEqual(cond.origin.operator, AllOps.EQ)
+        _e = cond.origin.operands[0]
+        self.assertEqual(e, _e)
+
+        andOp = e.origin.operands[0].origin
+        self.assertEqual(andOp.operator, AllOps.AND)
+
+        op0 = andOp.operands[0]
+        op1 = andOp.operands[1]
+
+        self.assertEqual(op0, a)
+        self.assertEqual(op1, b)
 
 
 if __name__ == '__main__':
