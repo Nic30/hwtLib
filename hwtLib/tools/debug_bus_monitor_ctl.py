@@ -113,6 +113,7 @@ class DebugBusMonitorCtlDevmem(DebugBusMonitorCtl):
         self.devmem = "devmem"
 
     def read(self, addr, size):
+        addr += self.addr 
         word_size = 0x4
         words = []
         for _ in range(ceil(size / word_size)):
@@ -122,26 +123,24 @@ class DebugBusMonitorCtlDevmem(DebugBusMonitorCtl):
             words.append(d)
             addr += word_size
 
-        return words_to_int(words, word_size, size)
+        return words_to_int(words, word_size, size).to_bytes(size, "little")
 
 
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='Dump a values from DebugBusMonitor instance.')
-    parser.add_argument('address', metavar='ADDR', type=int,
+    parser.add_argument('address', metavar='ADDR', type=lambda x: int(x,0),
                         help='base address of component')
-    parser.add_argument('--devmem', dest='devmem', action='store_const',
-                        const="devmem", default="devmem",
+    parser.add_argument('--devmem', default="devmem", type=str,
                         help='the devmem tool to use')
-    parser.add_argument('--memory-desc', dest='mem_desc', action='store_const',
-                        const=None, default=None,
+    parser.add_argument('--memory-desc', dest='mem_desc', default=None, type=str,
                         help='path to a file with a json specification of memory space of the signals')
 
     args = parser.parse_args()
     db = DebugBusMonitorCtlDevmem(args.address)
     db.devmem = args.devmem
     if args.mem_desc:
-        with open(db.mem_desc) as fp:
+        with open(args.mem_desc) as fp:
             name_memory = json.load(fp)
         data_width = db.get_data_memory_width(name_memory)
         db.name_memory = name_memory
