@@ -244,10 +244,10 @@ if __name__ == "__main__":  # alias python main function
     from pprint import pprint
 
     from hwt.synthesizer.utils import to_rtl_str
-    from hwt.serializer.hwt.serializer import HwtSerializer
-    from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
-    from hwt.serializer.verilog.serializer import VerilogSerializer
-    from hwt.serializer.systemC.serializer import SystemCSerializer
+    from hwt.serializer.hwt import HwtSerializer
+    from hwt.serializer.vhdl import Vhdl2008Serializer
+    from hwt.serializer.verilog import VerilogSerializer
+    from hwt.serializer.systemC import SystemCSerializer
 
     from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
     from hwt.synthesizer.utils import synthesised

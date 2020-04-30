@@ -3,7 +3,7 @@ import unittest
 
 from hwt.hdl.typeShortcuts import vec, hBit
 from hwt.hdl.value import Value
-from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
+from hwt.serializer.vhdl import Vhdl2008Serializer
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.types.ctypes import uint8_t
 

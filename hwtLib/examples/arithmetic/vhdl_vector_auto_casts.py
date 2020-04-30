@@ -51,7 +51,7 @@ class VhdlVectorAutoCastExampleTC(BaseSerializationTC):
 
 if __name__ == '__main__':
     from hwt.synthesizer.utils import to_rtl_str
-    from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
+    from hwt.serializer.vhdl import Vhdl2008Serializer
 
     u = VhdlVectorAutoCastExample()
     print(to_rtl_str(u, Vhdl2008Serializer))

@@ -2,10 +2,10 @@ import os
 import re
 import unittest
 
-from hwt.serializer.hwt.serializer import HwtSerializer
-from hwt.serializer.systemC.serializer import SystemCSerializer
-from hwt.serializer.verilog.serializer import VerilogSerializer
-from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
+from hwt.serializer.hwt import HwtSerializer
+from hwt.serializer.systemC import SystemCSerializer
+from hwt.serializer.verilog import VerilogSerializer
+from hwt.serializer.vhdl import Vhdl2008Serializer
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import to_rtl_str
 

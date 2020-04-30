@@ -1,13 +1,8 @@
-import os
-from unittest.case import TestCase
-
-from hwt.hdl.types.array import HArray
 from hwt.interfaces.std import Signal
-from hwt.serializer.vhdl.serializer import Vhdl2008Serializer, ToHdlAstVhdl2008
+from hwt.serializer.vhdl import ToHdlAstVhdl2008
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.utils import to_rtl_str
 from hwtLib.types.ctypes import uint8_t
 from hdlConvertor.hdlAst._expr import HdlName, HdlCall, HdlBuiltinFn
 from hdlConvertor.translate._verilog_to_basic_hdl_sim_model.utils import hdl_index,\

@@ -3,7 +3,7 @@ from typing import Dict
 
 from hdlConvertor.translate.common.name_scope import NameScope
 from hwt.serializer.store_manager import SaveToStream
-from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
+from hwt.serializer.vhdl import Vhdl2008Serializer
 from hwt.synthesizer.dummyPlatform import DummyPlatform
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal

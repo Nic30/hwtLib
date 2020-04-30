@@ -47,11 +47,11 @@ if __name__ == "__main__":  # alias python main function
     # toRtl can be imported anywhere but we prefer to import it only
     # when this script is running as main
     from hwt.synthesizer.utils import to_rtl_str
-    from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
+    from hwt.serializer.vhdl import Vhdl2008Serializer
     # there are other serializers ...
-    # from hwt.serializer.hwt.serializer import HwtSerializer
-    # from hwt.serializer.simModel.serializer import SimModelSerializer
-    # from hwt.serializer.verilog.serializer import VerilogSerializer
+    # from hwt.serializer.hwt import HwtSerializer
+    # from hwt.serializer.simModel import SimModelSerializer
+    # from hwt.serializer.verilog import VerilogSerializer
 
     # we create instance of our unit
     u = SimpleUnit()

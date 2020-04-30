@@ -31,6 +31,6 @@ class SimpleSubunit(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     u = SimpleSubunit()
-    from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
+    from hwt.serializer.vhdl import Vhdl2008Serializer
 
     print(to_rtl_str(u, serializer_cls=Vhdl2008Serializer))

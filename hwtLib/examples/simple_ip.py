@@ -15,7 +15,7 @@ class SimpleUnit(Unit):
 
 
 if __name__ == "__main__":  # alias python main function
-    from hwt.serializer.vhdl.serializer import Vhdl2008Serializer
+    from hwt.serializer.vhdl import Vhdl2008Serializer
     from hwt.serializer.ip_packager import IpPackager
     from os.path import expanduser
 
