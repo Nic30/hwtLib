@@ -4,7 +4,7 @@ from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.types.ctypes import uint8_t
-from hdlConvertor.hdlAst._expr import HdlName, HdlCall, HdlBuiltinFn
+from hdlConvertor.hdlAst._expr import HdlValueId, HdlOp, HdlOpType
 from hdlConvertor.translate._verilog_to_basic_hdl_sim_model.utils import hdl_index,\
     hdl_downto
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
@@ -61,10 +61,10 @@ def example_use_vhdl_declared_array1d(SIZE_X):
                 "_as_hdl_requires_def specifies that this should not be required")
         # "mem(0 to %d)(%d downto 0)" % (t.size, t.element_t.bit_length() - 1)
         _int = to_hdl.as_hdl_int
-        size = HdlCall(HdlBuiltinFn.TO, [_int(0), _int(int(array1d_t.size))])
+        size = HdlOp(HdlOpType.TO, [_int(0), _int(int(array1d_t.size))])
         e_width = hdl_downto(
             _int(array1d_t.element_t.bit_length() - 1), _int(0))
-        return hdl_index(hdl_index(HdlName("mem"), size), e_width)
+        return hdl_index(hdl_index(HdlValueId("mem"), size), e_width)
 
     def array1d_t_as_hdl_requires_def(to_hdl: ToHdlAstVhdl2008, other_types: list):
         return False

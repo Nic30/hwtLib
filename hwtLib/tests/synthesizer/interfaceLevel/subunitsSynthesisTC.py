@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdlConvertor.hdlAst._structural import HdlComponentInst
+from hdlConvertor.hdlAst._structural import HdlCompInst
 from hwt.hdl.constants import DIRECTION
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
@@ -84,7 +84,7 @@ class UnitWithGenericOfChild(Unit):
 
 
 def count_components(u):
-    return len([o for o in u._ctx.arch.objs if isinstance(o, HdlComponentInst)])
+    return len([o for o in u._ctx.arch.objs if isinstance(o, HdlCompInst)])
 
 
 class SubunitsSynthesisTC(BaseSynthesizerTC, BaseSerializationTC):
