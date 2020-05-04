@@ -66,7 +66,7 @@ class AxiS_eq(Unit):
                 ).Else(
                    word_index(word_index + 1),
                    Switch(word_index)\
-                   .addCases(word_cases)
+                   .add_cases(word_cases)
                 )
             )
 

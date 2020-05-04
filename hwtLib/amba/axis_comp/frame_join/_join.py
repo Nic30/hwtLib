@@ -122,7 +122,7 @@ class AxiS_FrameJoin(Unit):
             else:
                 out_strb_b = None
 
-            sw = Switch(sel).addCases(
+            sw = Switch(sel).add_cases(
                 (i, data_drive(out_B, out_strb_b, *val))
                 for i, val in enumerate(out_byte_mux_vals))
             # :note: default case is threre for the case of faulire where
@@ -208,7 +208,7 @@ class AxiS_FrameJoin(Unit):
                 return case
             cases.append((st_i, case))
 
-        mux = Switch(st_reg).addCases(cases)
+        mux = Switch(st_reg).add_cases(cases)
         if make_defult_case is not None:
             mux.Default(make_defult_case())
 

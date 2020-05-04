@@ -52,7 +52,7 @@ class StatementTreesTC(unittest.TestCase):
         a = self.n.sig('a', dtype=INT)
         b = self.n.sig('b', dtype=INT)
 
-        obj = Switch(a).addCases([(i, b(i)) for i in range(4)])
+        obj = Switch(a).add_cases([(i, b(i)) for i in range(4)])
         cont, io_change = obj._try_reduce()
         self.assertFalse(io_change)
         self.assertEqual(len(cont), 1)

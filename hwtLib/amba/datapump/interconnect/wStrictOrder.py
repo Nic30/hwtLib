@@ -62,7 +62,7 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
                                    enumerate(driversW))
                              ))
 
-        Switch(fWOut.data).addCases(
+        Switch(fWOut.data).add_cases(
             [(i, connect(d, w, exclude=[d.valid, d.ready]))
                for i, d in enumerate(driversW)]
 

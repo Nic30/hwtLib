@@ -183,7 +183,7 @@ class AxiS_resizer(AxiSCompBase):
         for inp, outp in zip(dIn, dOut):
             w = outp._dtype.bit_length()
             Switch(itemCntr)\
-            .addCases([
+            .add_cases([
                     (wordIndx, outp(inp[((wordIndx + 1) * w):(w * wordIndx)]))
                     for wordIndx in range(ITEMS)
             ])\

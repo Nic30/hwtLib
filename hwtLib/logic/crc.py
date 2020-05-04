@@ -119,7 +119,7 @@ class Crc(Unit):
                     m, state(Concat(*reversed(state_next)))
                 ))
             If(din.vld,
-                Switch(mask_in).addCases(
+                Switch(mask_in).add_cases(
                    state_next_cases
                 ).Default(state(None))
             )

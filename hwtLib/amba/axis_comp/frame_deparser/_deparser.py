@@ -438,14 +438,14 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         if multipleWords:
             if self.USE_STRB:
                 strb = dout.strb
-                Switch(wordCntr_inversed).addCases([
+                Switch(wordCntr_inversed).add_cases([
                     (i, strb(v)) for i, v in extra_strbs
                 ]).Default(
                     strb(STRB_ALL)
                 )
             if self.USE_KEEP:
                 keep = dout.keep
-                Switch(wordCntr_inversed).addCases([
+                Switch(wordCntr_inversed).add_cases([
                     (i, keep(v)) for i, v in extra_keeps
                 ]).Default(
                     keep(STRB_ALL)

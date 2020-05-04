@@ -60,7 +60,7 @@ class Segment7(Unit):
 
         ]
         Switch(self.dataIn) \
-        .addCases(enumerate([self.dataOut(v) for v in dec])) \
+        .add_cases(enumerate([self.dataOut(v) for v in dec])) \
         .Default(
            # display off when value is out of range
            self.dataOut(0b1111111)

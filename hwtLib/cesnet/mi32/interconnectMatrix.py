@@ -113,7 +113,7 @@ class Mi32InterconnectMatrix(BusInterconnect):
 
         r_order = self.r_data_order.dataOut
         If(r_order.vld,
-            Switch(r_order.data).addCases(
+            Switch(r_order.data).add_cases(
                 [(slave_i, [m.drd(data.data), m.drdy(1)]) for slave_i, _, data in rdata],
             ).Default(
                 # this case can not happen unless bug in code

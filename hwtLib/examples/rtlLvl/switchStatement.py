@@ -15,7 +15,7 @@ def SwitchStatement():
     In = n.sig("input", t, def_val=8)
     Out = n.sig("output", t)
 
-    Switch(In).addCases(
+    Switch(In).add_cases(
         [(i, Out(i + 1)) for i in range(8)]
     )
 

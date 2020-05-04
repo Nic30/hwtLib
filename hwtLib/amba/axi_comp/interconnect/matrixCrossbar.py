@@ -184,7 +184,7 @@ class AxiInterconnectMatrixCrossbar(Unit):
                         (si, connect(s, dataOut, exclude={s.valid, s.ready})))
 
                 Switch(order_s_for_m.data)\
-                    .addCases(cases)\
+                    .add_cases(cases)\
                     .Default(
                     s(None)
                     for s in dataOut._interfaces

@@ -155,7 +155,7 @@ class Axi_rDatapump(AxiDatapumpBase):
         return Switch(remSize)\
             .Case(0,
                   strb(mask(strbBytes))
-                  ).addCases(
+                  ).add_cases(
             [(i + 1, strb(mask(i + 1)))
              for i in range(strbBytes - 1)]
         )

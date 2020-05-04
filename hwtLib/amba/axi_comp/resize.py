@@ -138,7 +138,7 @@ class AxiResize(BusBridge):
 
         connect(m.w, s.w, exclude={m.w.data, m.w.strb, m.w.ready, m.w.valid})
         StreamNode(masters=[m.w, w_align_fifo.dataOut], slaves=[s.w]).sync()
-        Switch(w_align_fifo.dataOut.data).addCases(w_align_cases)\
+        Switch(w_align_fifo.dataOut.data).add_cases(w_align_cases)\
             .Default(
                 # case which was unexpected or was filtered out by IN_ADDR_GRANULARITY
                 s.w.data(None),
@@ -147,7 +147,7 @@ class AxiResize(BusBridge):
 
         connect(s.r, m.r, exclude={s.r.data, s.r.ready, s.r.valid})
         StreamNode(masters=[s.r, r_align_fifo.dataOut], slaves=[m.r]).sync()
-        Switch(r_align_fifo.dataOut.data).addCases(r_align_cases)\
+        Switch(r_align_fifo.dataOut.data).add_cases(r_align_cases)\
             .Default(
                 # case which was unexpected or was filtered out by IN_ADDR_GRANULARITY
                 m.r.data(None),

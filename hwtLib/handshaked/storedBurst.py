@@ -63,7 +63,7 @@ class HandshakedStoredBurst(Unit):
             return self.set_data(dout, d)
 
         Switch(wordIndex)\
-            .addCases([(i, set_data(d))
+            .add_cases([(i, set_data(d))
                        for i, d in enumerate(self.DATA)])\
             .Default(*set_data(None))
 
