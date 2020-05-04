@@ -9,7 +9,7 @@ from hwt.hdl.types.defs import INT, STR, BOOL
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from pyMathBitPrecise.bit_utils import mask
-from hwt.hdl.operatorDefs import downtoFn, toFn, AllOps
+from hwt.hdl.operatorDefs import downtoFn, toFn, AllOps, OpDefinition
 
 
 n = RtlNetlist()
@@ -325,6 +325,34 @@ class OperatorTC(unittest.TestCase):
 
         self.assertEqual(op0, a)
         self.assertEqual(op1, b)
+
+    def test_BitsSignalTypeErrors(self):
+        n = self.n
+        a = n.sig("a")
+        for op in [
+            AllOps.DIV,
+            AllOps.ADD,
+            AllOps.SUB,
+            AllOps.POW,
+            AllOps.MOD,
+            AllOps.MUL,
+            AllOps.XOR,
+            AllOps.AND,
+            AllOps.OR,
+            AllOps.DOWNTO,
+            AllOps.TO,
+            AllOps.CONCAT,
+            AllOps.EQ,
+            AllOps.NEQ,
+            AllOps.GT,
+            AllOps.GE,
+            AllOps.LT,
+            AllOps.LE,
+            AllOps.INDEX,
+            AllOps.CALL,
+        ]:
+            with self.assertRaises((TypeError, ValueError), msg=op):
+                op._evalFn(a, "xyz")
 
 
 if __name__ == '__main__':
