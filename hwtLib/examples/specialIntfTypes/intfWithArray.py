@@ -4,8 +4,8 @@ from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.types.ctypes import uint8_t
-from hdlConvertor.hdlAst._expr import HdlValueId, HdlOp, HdlOpType
-from hdlConvertor.translate._verilog_to_basic_hdl_sim_model.utils import hdl_index,\
+from hdlConvertorAst.hdlAst._expr import HdlValueId, HdlOp, HdlOpType
+from hdlConvertorAst.translate._verilog_to_basic_hdl_sim_model.utils import hdl_index,\
     hdl_downto
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdlConvertor.hdlAst._structural import HdlCompInst
+from hdlConvertorAst.hdlAst._structural import HdlCompInst
 from hwt.hdl.constants import DIRECTION
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal

@@ -14,7 +14,7 @@ from hwtLib.amba.axis_fullduplex import AxiStreamFullDuplex
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import \
     BaseSynthesizerTC
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import synthesised
-from hdlConvertor.translate.common.name_scope import NameScope
+from hdlConvertorAst.translate.common.name_scope import NameScope
 
 
 D = DIRECTION

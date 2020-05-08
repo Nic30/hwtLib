@@ -1,7 +1,7 @@
 from io import StringIO
 from typing import Dict
 
-from hdlConvertor.translate.common.name_scope import NameScope
+from hdlConvertorAst.translate.common.name_scope import NameScope
 from hwt.serializer.store_manager import SaveToStream
 from hwt.serializer.vhdl import Vhdl2008Serializer
 from hwt.synthesizer.dummyPlatform import DummyPlatform
