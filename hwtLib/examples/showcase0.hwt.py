@@ -7,39 +7,41 @@ from hwt.interfaces.std import Signal
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 
-#
-#    Every HW component class has to be derived from Unit class
-#
-#    .. hwt-schematic::
-#    
 class Showcase0(Unit):
+    """
+        Every HW component class has to be derived from Unit class
+    
+        .. hwt-schematic::
+        
+    """
     def _declr(self):
         # ports
-        self.a = Signal(Bits(32, signed=False))
-        self.b = Signal(Bits(32, signed=True))
-        self.c = Signal(Bits(32))._m()
-        self.clk = Signal(Bits(1))
-        self.cmp_0 = Signal(Bits(1))._m()
-        self.cmp_1 = Signal(Bits(1))._m()
-        self.cmp_2 = Signal(Bits(1))._m()
-        self.cmp_3 = Signal(Bits(1))._m()
-        self.cmp_4 = Signal(Bits(1))._m()
-        self.cmp_5 = Signal(Bits(1))._m()
-        self.contOut = Signal(Bits(32))._m()
-        self.d = Signal(Bits(32))
-        self.e = Signal(Bits(1))
-        self.f = Signal(Bits(1))._m()
-        self.fitted = Signal(Bits(16))._m()
-        self.g = Signal(Bits(8))._m()
-        self.h = Signal(Bits(8))._m()
-        self.i = Signal(Bits(2))
-        self.j = Signal(Bits(8))._m()
-        self.k = Signal(Bits(32))._m()
-        self.out = Signal(Bits(1))._m()
-        self.output = Signal(Bits(1))._m()
-        self.rst_n = Signal(Bits(1, negated=True))
-        self.sc_signal = Signal(Bits(8))._m()
+        self.a = Signal(dtype=Bits(32, signed=False))
+        self.b = Signal(dtype=Bits(32, signed=True))
+        self.c = Signal(dtype=Bits(32))._m()
+        self.clk = Signal(dtype=Bits(1))
+        self.cmp_0 = Signal(dtype=Bits(1))._m()
+        self.cmp_1 = Signal(dtype=Bits(1))._m()
+        self.cmp_2 = Signal(dtype=Bits(1))._m()
+        self.cmp_3 = Signal(dtype=Bits(1))._m()
+        self.cmp_4 = Signal(dtype=Bits(1))._m()
+        self.cmp_5 = Signal(dtype=Bits(1))._m()
+        self.contOut = Signal(dtype=Bits(32))._m()
+        self.d = Signal(dtype=Bits(32))
+        self.e = Signal(dtype=Bits(1))
+        self.f = Signal(dtype=Bits(1))._m()
+        self.fitted = Signal(dtype=Bits(16))._m()
+        self.g = Signal(dtype=Bits(8))._m()
+        self.h = Signal(dtype=Bits(8))._m()
+        self.i = Signal(dtype=Bits(2))
+        self.j = Signal(dtype=Bits(8))._m()
+        self.k = Signal(dtype=Bits(32))._m()
+        self.out = Signal(dtype=Bits(1))._m()
+        self.output = Signal(dtype=Bits(1))._m()
+        self.rst_n = Signal(dtype=Bits(1, negated=True))
+        self.sc_signal = Signal(dtype=Bits(8))._m()
         # component instances
+
     def _impl(self):
         # internal signals
         a, b, c, clk, cmp_0, cmp_1, cmp_2, cmp_3, cmp_4, cmp_5, contOut, d, e, f, fitted, g, h, i, j, k, out, output, rst_n, sc_signal = \
