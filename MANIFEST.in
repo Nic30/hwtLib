@@ -46,6 +46,7 @@ include hwtLib/examples/SimpleComentedUnit.vhd
 include hwtLib/examples/SimpleComentedUnit2.vhd
 include hwtLib/examples/showcase0.vhd
 include hwtLib/examples/showcase0.v
+include hwtLib/tests/constraints/AxiStreamFullDuplexCdc.xdc
 include hwtLib/tests/constraints/FifoAsync.xdc
 include hwtLib/tests/synthesizer/interfaceLevel/UnitWithGenericOfChild.vhd
 include hwtLib/tests/sertialization/TernaryInConcatExample.vhd
