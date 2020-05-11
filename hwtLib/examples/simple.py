@@ -44,7 +44,7 @@ class SimpleUnit(Unit):
 
 
 if __name__ == "__main__":  # alias python main function
-    # toRtl can be imported anywhere but we prefer to import it only
+    # to_rtl_str can be imported anywhere but we prefer to import it only
     # when this script is running as main
     from hwt.synthesizer.utils import to_rtl_str
     from hwt.serializer.vhdl import Vhdl2008Serializer
@@ -55,7 +55,7 @@ if __name__ == "__main__":  # alias python main function
 
     # we create instance of our unit
     u = SimpleUnit()
-    # to_rtl_str() returns hdl string, you can also generate files with toRtl, IP-xact packages with IpPackager
+    # to_rtl_str() returns hdl string, you can also generate files with to_rtl, IP-xact packages with IpPackager
     print(to_rtl_str(u, serializer_cls=Vhdl2008Serializer))
 
 # expected Output (without # ofcourse)

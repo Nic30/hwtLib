@@ -252,9 +252,9 @@ if __name__ == "__main__":  # alias python main function
     from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
     from hwt.synthesizer.utils import synthesised
 
-    # * new instance has to be created every time because toRtl is modifies the unit
+    # * new instance has to be created every time because to_rtl_str modifies the unit
     # * serializers are using templates which can be customized
-    # serialized code is trying to be human and git friednly
+    # serialized code is trying to be human and git friendly
     print(to_rtl_str(Showcase0(), serializer_cls=HwtSerializer))
     print(to_rtl_str(Showcase0(), serializer_cls=Vhdl2008Serializer))
     print(to_rtl_str(Showcase0(), serializer_cls=VerilogSerializer))

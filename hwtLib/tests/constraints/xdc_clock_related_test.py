@@ -10,7 +10,7 @@ from hwt.serializer.vhdl import Vhdl2008Serializer
 from hwt.serializer.xdc.serializer import XdcSerializer
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.utils import toRtl
+from hwt.synthesizer.utils import to_rtl
 from hwtLib.amba.axis_fullduplex import AxiStreamFullDuplex
 from hwtLib.mem.fifoAsync import FifoAsync
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
@@ -67,7 +67,7 @@ class ConstraintsXdcClockRelatedTC(unittest.TestCase):
         ref_f_name = os.path.join(THIS_DIR, file_name)
         with TemporaryDirectory() as build_root:
             saver = SaveToFilesFlat(Vhdl2008Serializer, build_root)
-            toRtl(u, saver)
+            to_rtl(u, saver)
 
             f_name = os.path.join(
                 build_root, "constraints" + XdcSerializer.fileExtension)
