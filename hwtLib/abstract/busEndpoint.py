@@ -387,7 +387,7 @@ class BusEndpoint(Unit):
             assert word_val._dtype.bit_length() == DW, (items, word_val)
             directlyMappedWords.append((w_i * (DW // ADDR_STEP), word_val))
 
-        mux = Switch(ar_addr).addCases(
+        mux = Switch(ar_addr).add_cases(
             [(word_i, r_data(val))
              for (word_i, val) in directlyMappedWords]
         )

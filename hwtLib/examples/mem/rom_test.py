@@ -7,7 +7,7 @@ from unittest.case import TestCase
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceRAM
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwt.synthesizer.utils import toRtl
+from hwt.synthesizer.utils import synthesised
 from hwtLib.examples.mem.rom import SimpleRom, SimpleSyncRom
 from pycocotb.constants import CLK_PERIOD
 
@@ -59,7 +59,8 @@ class RomResourcesTC(TestCase):
         }
 
         s = ResourceAnalyzer()
-        toRtl(u, serializer=s)
+        synthesised(u)
+        s.visit_Unit(u)
         self.assertDictEqual(s.report(), expected)
 
     def test_async_resources(self):
@@ -71,7 +72,8 @@ class RomResourcesTC(TestCase):
         }
 
         s = ResourceAnalyzer()
-        toRtl(u, serializer=s)
+        synthesised(u)
+        s.visit_Unit(u)
         r = s.report()
         self.assertDictEqual(r, expected)
 

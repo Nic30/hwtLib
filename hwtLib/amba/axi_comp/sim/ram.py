@@ -4,8 +4,8 @@ from hwt.hdl.types.bits import Bits
 from hwt.hdl.value import Value
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.amba.constants import RESP_OKAY
-from pyMathBitPrecise.bit_utils import mask, setBitRange, selectBit,\
-    selectBitRange
+from pyMathBitPrecise.bit_utils import mask, set_bit_range, get_bit,\
+    get_bit_range
 from hwtLib.abstract.sim_ram import SimRam
 
 
@@ -166,11 +166,11 @@ class AxiSimRam(AxiDpSimRam):
                 cur_mask = cur.vld_mask
 
             for i in range(self.cellSize):
-                if selectBit(strb, i):
-                    cur_val = setBitRange(
-                        cur_val, i * 8, 8, selectBitRange(data.val, i * 8, 8))
-                    cur_mask = setBitRange(
-                        cur_mask, i * 8, 8, selectBitRange(data.vld_mask, i * 8, 8))
+                if get_bit(strb, i):
+                    cur_val = set_bit_range(
+                        cur_val, i * 8, 8, get_bit_range(data.val, i * 8, 8))
+                    cur_mask = set_bit_range(
+                        cur_mask, i * 8, 8, get_bit_range(data.vld_mask, i * 8, 8))
             if cur_mask == self.allMask:
                 data = cur_val
             else:

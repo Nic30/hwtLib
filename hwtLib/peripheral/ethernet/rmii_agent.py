@@ -5,7 +5,7 @@ from hwt.pyUtils.arrayQuery import grouper
 from pycocotb.agents.base import AgentBase
 from pycocotb.hdlSimulator import HdlSimulator
 from typing import List
-from pyMathBitPrecise.bit_utils import selectBitRange
+from pyMathBitPrecise.bit_utils import get_bit_range
 from hwtLib.peripheral.ethernet.constants import ETH
 from itertools import chain
 
@@ -97,9 +97,9 @@ class RmiiRxChannelAgent(VldSyncedAgent):
 
         for b in frame:
             b01 = b & 0b11
-            b23 = selectBitRange(b, 2, 2)
-            b45 = selectBitRange(b, 4, 2)
-            b67 = selectBitRange(b, 6, 2)
+            b23 = get_bit_range(b, 2, 2)
+            b45 = get_bit_range(b, 4, 2)
+            b67 = get_bit_range(b, 6, 2)
             data.extend([b01, b23, b45, b67])
 
     def get_data(self):

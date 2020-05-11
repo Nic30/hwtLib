@@ -62,7 +62,7 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
                                    enumerate(driversW))
                              ))
 
-        Switch(fWOut.data).addCases(
+        Switch(fWOut.data).add_cases(
             [(i, connect(d, w, exclude=[d.valid, d.ready]))
                for i, d in enumerate(driversW)]
 
@@ -117,6 +117,6 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = WStrictOrderInterconnect()
-    print(toRtl(u))
+    print(to_rtl_str(u))

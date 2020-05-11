@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
-import unittest
-from unittest.case import TestCase
-
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceLatch
-from hwt.serializer.systemC.serializer import SystemCSerializer
-from hwt.serializer.verilog.serializer import VerilogSerializer
-from hwt.serializer.vhdl.serializer import VhdlSerializer
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.rtlLevel.signalUtils.exceptions import SignalDriverErr
-from hwt.synthesizer.utils import toRtl
+from hwt.synthesizer.utils import to_rtl_str, synthesised
+from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.mem.reg import DReg, DoubleDReg, OptimizedOutReg, \
     AsyncResetReg, DDR_Reg, Latch, DReg_asyncRst, RegWhereNextIsOnlyOutput
 from pycocotb.constants import CLK_PERIOD
@@ -69,53 +63,38 @@ class DReg_asyncRstTC(SingleUnitSimTestCase):
                                     [0, 1, 0, 1, 0, 1, 1])
 
 
-class RegSerializationTC(TestCase):
-
-    def assertEqualToFile(self, value, file_name):
-        THIS_DIR = os.path.dirname(os.path.realpath(__file__))
-        fn = os.path.join(THIS_DIR, file_name)
-        # with open(fn, "w") as f:
-        #     f.write(value)
-        with open(fn) as f:
-            file_content = f.read()
-        self.assertEqual(value, file_content)
+class RegSerializationTC(BaseSerializationTC):
+    __FILE__ = __file__
 
     def test_optimizedOutReg(self):
         u = OptimizedOutReg()
-        self.assertNotIn("unconnected", toRtl(u))
+        self.assertNotIn("unconnected", to_rtl_str(u))
 
     def test_regWhereNextIsOnlyOutput(self):
         u = RegWhereNextIsOnlyOutput()
         with self.assertRaises(SignalDriverErr):
-            toRtl(u)
+            to_rtl_str(u)
 
     def test_dreg_vhdl(self):
-        s = toRtl(DReg(), serializer=VhdlSerializer)
-        self.assertEqualToFile(s, "DReg.vhd")
+        self.assert_serializes_as_file(DReg(), "DReg.vhd")
 
     def test_dreg_verilog(self):
-        s = toRtl(DReg(), serializer=VerilogSerializer)
-        self.assertEqualToFile(s, "DReg.v")
+        self.assert_serializes_as_file(DReg(), "DReg.v")
 
     def test_dreg_systemc(self):
-        s = toRtl(DReg(), serializer=SystemCSerializer)
-        self.assertEqualToFile(s, "DReg.cpp")
+        self.assert_serializes_as_file(DReg(), "DReg.cpp")
 
     def test_AsyncResetReg_vhdl(self):
-        s = toRtl(AsyncResetReg(), serializer=VhdlSerializer)
-        self.assertEqualToFile(s, "AsyncResetReg.vhd")
+        self.assert_serializes_as_file(AsyncResetReg(), "AsyncResetReg.vhd")
 
     def test_AsyncResetReg_verilog(self):
-        s = toRtl(AsyncResetReg(), serializer=VerilogSerializer)
-        self.assertEqualToFile(s, "AsyncResetReg.v")
+        self.assert_serializes_as_file(AsyncResetReg(), "AsyncResetReg.v")
 
     def test_DDR_Reg_vhdl(self):
-        s = toRtl(DDR_Reg(), serializer=VhdlSerializer)
-        self.assertEqualToFile(s, "DDR_Reg.vhd")
+        self.assert_serializes_as_file(DDR_Reg(), "DDR_Reg.vhd")
 
     def test_DDR_Reg_verilog(self):
-        s = toRtl(DDR_Reg(), serializer=VerilogSerializer)
-        self.assertEqualToFile(s, "DDR_Reg.v")
+        self.assert_serializes_as_file(DDR_Reg(), "DDR_Reg.v")
 
     def test_latch_resources(self):
         u = Latch()
@@ -124,13 +103,16 @@ class RegSerializationTC(TestCase):
         }
 
         s = ResourceAnalyzer()
-        toRtl(u, serializer=s)
+        synthesised(u)
+        s.visit_Unit(u)
         self.assertDictEqual(s.report(), expected)
 
 
 if __name__ == "__main__":
+    import unittest
+
     suite = unittest.TestSuite()
-    # suite.addTest(DRegTC('test_optimizedOutReg'))
+    # suite.addTest(RegSerializationTC('test_dreg_systemc'))
     suite.addTest(unittest.makeSuite(DRegTC))
     suite.addTest(unittest.makeSuite(DoubleRRegTC))
     suite.addTest(unittest.makeSuite(DReg_asyncRstTC))

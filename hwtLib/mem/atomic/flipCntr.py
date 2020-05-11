@@ -18,7 +18,7 @@ class FlipCntr(Unit):
 
     interface doFilip drives switching of memories in flip register
     dataIn has higher priority than doIncr
-    
+
     .. hwt-schematic::
     """
 
@@ -56,6 +56,6 @@ class FlipCntr(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = FlipCntr()
-    print(toRtl(u))
+    print(to_rtl_str(u))

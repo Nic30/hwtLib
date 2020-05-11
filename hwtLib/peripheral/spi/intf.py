@@ -7,7 +7,7 @@ from hwt.interfaces.tristate import TristateSig
 from hwt.simulator.agentBase import SyncAgentBase
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
-from pyMathBitPrecise.bit_utils import mask, selectBit
+from pyMathBitPrecise.bit_utils import mask, get_bit
 from pycocotb.agents.base import AgentBase
 from pycocotb.hdlSimulator import HdlSimulator
 from pycocotb.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
@@ -66,7 +66,7 @@ class SpiAgent(SyncAgentBase):
         self.driverTx.setEnable(en)
 
     def splitBits(self, v):
-        return deque([selectBit(v, i)
+        return deque([get_bit(v, i)
                       for i in range(self.BITS_IN_WORD - 1, -1, -1)])
 
     def mergeBits(self, bits):

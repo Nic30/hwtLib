@@ -6,8 +6,8 @@ from hwt.hdl.typeShortcuts import hBit, vec
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, Clk
 from hwt.serializer.mode import serializeExclude
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 
 
 def mkLutRamCls(DATA_WIDTH):
@@ -66,6 +66,8 @@ RAM64X1S = serializeExclude(mkLutRamCls(64))
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = RAM64X1S()
-    print(toRtl(u))
+    # note that this will not produce any code as the serialization
+    # is dissabled using serializeExclude
+    print(to_rtl_str(u))

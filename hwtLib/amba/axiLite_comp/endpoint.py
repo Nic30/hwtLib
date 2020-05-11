@@ -201,11 +201,10 @@ def _example_AxiLiteEndpoint():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
-    from hwt.serializer.vhdl.serializer import VhdlSerializer
+    from hwt.synthesizer.utils import to_rtl_str
     u = _example_AxiLiteEndpoint()
 
-    print(toRtl(u, serializer=VhdlSerializer))
+    print(to_rtl_str(u))
     print(u.bus)
     print(u.decoded.data3)
     print(u.decoded.data4)

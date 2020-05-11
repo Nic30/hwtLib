@@ -277,4 +277,4 @@ if __name__ == "__main__":
     # u = AxiLiteEndpoint(structStructsInArray,
     #                     shouldEnterFn=lambda tmpl: True)
     # u.DATA_WIDTH = 32
-    # print(toRtl(u))
+    # print(to_rtl_str(u))

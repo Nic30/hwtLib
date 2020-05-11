@@ -11,7 +11,7 @@ from hwt.synthesizer.param import Param
 from hwtLib.abstract.busInterconnect import BusInterconnect, AUTO_ADDR
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.cesnet.mi32.intf import Mi32
-from pyMathBitPrecise.bit_utils import selectBitRange
+from pyMathBitPrecise.bit_utils import get_bit_range
 from hwtLib.cesnet.mi32.buff import Mi32Buff
 
 
@@ -86,7 +86,7 @@ class Mi32InterconnectMatrix(BusInterconnect):
             s.dwr(m.dwr)
 
             bitsOfSubAddr = log2ceil(s_size - 1)
-            prefix = selectBitRange(
+            prefix = get_bit_range(
                 s_offset, bitsOfSubAddr, AW - bitsOfSubAddr)
             cs = self._sig("m_cs_%d" % i)
             cs(m.addr[AW:bitsOfSubAddr]._eq(prefix))
@@ -113,7 +113,7 @@ class Mi32InterconnectMatrix(BusInterconnect):
 
         r_order = self.r_data_order.dataOut
         If(r_order.vld,
-            Switch(r_order.data).addCases(
+            Switch(r_order.data).add_cases(
                 [(slave_i, [m.drd(data.data), m.drdy(1)]) for slave_i, _, data in rdata],
             ).Default(
                 # this case can not happen unless bug in code
@@ -141,6 +141,6 @@ def _example_Mi32InterconnectMatrix():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = _example_Mi32InterconnectMatrix()
-    print(toRtl(u))
+    print(to_rtl_str(u))

@@ -211,7 +211,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                     # then there will be a variable size suffix
                     children[0].OVERFLOW_SUPPORT = True
 
-                with self._paramsShared(exclude=({"OVERFLOW_SUPPORT"}, {})):
+                with self._paramsShared(exclude=({"OVERFLOW_SUPPORT", "T"}, {})):
                     self.children = children
 
     def parser_fsm(self, words):
@@ -442,7 +442,7 @@ def _example_AxiS_frameParser():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = _example_AxiS_frameParser()
 
-    print(toRtl(u))
+    print(to_rtl_str(u))

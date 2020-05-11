@@ -184,7 +184,7 @@ class AxiInterconnectMatrixCrossbar(Unit):
                         (si, connect(s, dataOut, exclude={s.valid, s.ready})))
 
                 Switch(order_s_for_m.data)\
-                    .addCases(cases)\
+                    .add_cases(cases)\
                     .Default(
                     s(None)
                     for s in dataOut._interfaces
@@ -234,6 +234,6 @@ def example_AxiInterconnectMatrixCrossbar():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = example_AxiInterconnectMatrixCrossbar()
-    print(toRtl(u))
+    print(to_rtl_str(u))

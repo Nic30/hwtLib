@@ -5,9 +5,9 @@ from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import BramPort, Clk, BramPort_withoutClk
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.synthesizer.unit import Unit
 
 
 @serializeParamsUniq
@@ -110,5 +110,5 @@ class Ram_dp(Ram_sp):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
-    print(toRtl(Ram_sp()))
+    from hwt.synthesizer.utils import to_rtl_str
+    print(to_rtl_str(Ram_sp()))

@@ -267,6 +267,6 @@ class Hd44780Driver(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = Hd44780Driver()
-    print(toRtl(u))
+    print(to_rtl_str(u))

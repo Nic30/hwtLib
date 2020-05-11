@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from copy import copy
-
 from hwt.code import Or, rol, SwitchLogic
 from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.defs import BIT
 from hwt.interfaces.std import VldSynced
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
-from hwtLib.handshaked.streamNode import StreamNode
-from hwt.hdl.types.defs import BIT
 
 
 class HsJoinFairShare(HsJoinPrioritized):
@@ -63,8 +60,8 @@ class HsJoinFairShare(HsJoinPrioritized):
 
     def isSelectedLogic(self, din_vlds, dout_rd, selectedOneHot):
         """
-        Resolve isSelected signal flags for each input, when isSelected flag signal is 1 it means
-        input has clearance to make transaction
+        Resolve isSelected signal flags for each input, when isSelected flag
+        signal is 1 it means input has clearance to make transaction
         """
         assert din_vlds
         if len(din_vlds) == 1:
@@ -74,16 +71,16 @@ class HsJoinFairShare(HsJoinPrioritized):
         else:
             priority = self._reg("priority", Bits(len(din_vlds)), def_val=1)
             priority(rol(priority, 1))
-    
+
             isSelectedFlags = []
             for i, din_vld in enumerate(din_vlds):
                 isSelected = self._sig("isSelected_%d" % i)
                 isSelected(self.priorityAck(priority, din_vlds, i))
                 isSelectedFlags.append(isSelected)
-    
+
                 if selectedOneHot is not None:
                     selectedOneHot.data[i](isSelected & din_vld)
-    
+
         if selectedOneHot is not None:
             selectedOneHot.vld(Or(*din_vlds) & dout_rd)
 
@@ -108,7 +105,7 @@ class HsJoinFairShare(HsJoinPrioritized):
             selectedOneHot = self.selectedOneHot
         else:
             selectedOneHot = None
-        
+
         rd = self.get_ready_signal
         vld = self.get_valid_signal
         dout = self.dataOut
@@ -124,6 +121,7 @@ class HsJoinFairShare(HsJoinPrioritized):
             rd(din)(isSelected & rd(dout))
         vld(dout)(Or(*din_vlds))
 
+
 def _example_HsJoinFairShare():
     from hwt.interfaces.std import Handshaked
     u = HsJoinFairShare(Handshaked)
@@ -132,6 +130,6 @@ def _example_HsJoinFairShare():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = _example_HsJoinFairShare()
-    print(toRtl(u))
+    print(to_rtl_str(u))

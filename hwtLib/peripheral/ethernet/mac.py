@@ -256,9 +256,9 @@ class EthernetMac(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = EthernetMac()
     u.DATA_WIDTH = 16
     u.HAS_TX = False
     # u.HAS_RX = False
-    print(toRtl(u))
+    print(to_rtl_str(u))

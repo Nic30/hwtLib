@@ -90,7 +90,7 @@ class ArrayItemGetter(Unit):
             StreamNode(masters=[self.index],
                        slaves=[req, f.dataIn]).sync()
 
-            Switch(f.dataOut.data).addCases([
+            Switch(f.dataOut.data).add_cases([
                 (i, self.item.data(r[(ITEM_WIDTH * (i + 1)):(ITEM_WIDTH * i)]))
                 for i in range(ITEMS_IN_DATA_WORD)
                 ])
@@ -99,6 +99,6 @@ class ArrayItemGetter(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = ArrayItemGetter()
-    print(toRtl(u))
+    print(to_rtl_str(u))

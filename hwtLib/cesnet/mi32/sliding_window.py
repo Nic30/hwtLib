@@ -57,9 +57,9 @@ class Mi32SlidingWindow(BusBridge):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
 
     u = Mi32SlidingWindow()
     u.ADDR_WIDTH = 16
     u.M_ADDR_WIDTH = 32
-    print(toRtl(u))
+    print(to_rtl_str(u))

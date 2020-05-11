@@ -15,7 +15,7 @@ from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axis_comp.base import AxiSCompBase
-from pyMathBitPrecise.bit_utils import mask, setBitRange, selectBitRange
+from pyMathBitPrecise.bit_utils import mask, set_bit_range, get_bit_range
 from hwt.code_utils import rename_signal
 
 # Examples of configurations and states which may apperar
@@ -214,7 +214,7 @@ class AxiS_footerSplit(AxiSCompBase):
                 "footer start can appear only in last-1 or last-2 regster,"
                 " last register is output register",
                 footer_start, D_W)
-            _is_footer = setBitRange(
+            _is_footer = set_bit_range(
                 0,
                 footer_start // 8,
                 FOOTER_WIDTH // 8,
@@ -223,7 +223,7 @@ class AxiS_footerSplit(AxiSCompBase):
             for i, (_, _, is_footer_set_val, _, _) in enumerate(regs):
                 if i == 0:
                     is_footer_val = 0
-                    is_footer_val_last_word = selectBitRange(
+                    is_footer_val_last_word = get_bit_range(
                         _is_footer,
                         (LOOK_AHEAD - i) * BYTE_CNT,
                         BYTE_CNT)
@@ -235,7 +235,7 @@ class AxiS_footerSplit(AxiSCompBase):
                         )
                     )
                 else:
-                    is_footer_val = selectBitRange(_is_footer,
+                    is_footer_val = get_bit_range(_is_footer,
                                                    (LOOK_AHEAD - i + 1) * BYTE_CNT,
                                                    BYTE_CNT)
                     set_flags.append(is_footer_set_val(is_footer_val))
@@ -351,9 +351,9 @@ class AxiS_footerSplit(AxiSCompBase):
 
 
 if __name__ == '__main__':
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = AxiS_footerSplit()
     u.DATA_WIDTH = 8
     u.FOOTER_WIDTH = 8
     u.USE_STRB = True
-    print(toRtl(u))
+    print(to_rtl_str(u))

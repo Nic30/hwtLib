@@ -4,7 +4,7 @@ from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
-from pyMathBitPrecise.bit_utils import mask, selectBitRange, int_list_to_int
+from pyMathBitPrecise.bit_utils import mask, get_bit_range, int_list_to_int
 from math import ceil
 from hwt.pyUtils.arrayQuery import grouper
 
@@ -189,11 +189,11 @@ class SimRam():
                 val = 0
                 vld_mask = 0
             elif isinstance(v, int):
-                val = selectBitRange(v, offset, width)
+                val = get_bit_range(v, offset, width)
                 vld_mask = allMask
             else:
-                val = selectBitRange(v.val, offset, width)
-                vld_mask = selectBitRange(v.vld_mask, offset, width)
+                val = get_bit_range(v.val, offset, width)
+                vld_mask = get_bit_range(v.vld_mask, offset, width)
 
             m = mask(width)
             value.val |= (val & m) << inFieldOffset

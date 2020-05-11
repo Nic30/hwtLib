@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 
@@ -42,5 +41,5 @@ class SimpleSubunit3TC(SimpleSubunit2TC):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
-    print(toRtl(SimpleSubunit3()))
+    from hwt.synthesizer.utils import to_rtl_str
+    print(to_rtl_str(SimpleSubunit3()))

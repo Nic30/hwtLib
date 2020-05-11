@@ -66,6 +66,6 @@ if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = Simple2withNonDirectIntConnection()
-    print(toRtl(u))
+    print(to_rtl_str(u))

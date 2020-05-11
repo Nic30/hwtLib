@@ -122,7 +122,7 @@ class AxiS_FrameJoin(Unit):
             else:
                 out_strb_b = None
 
-            sw = Switch(sel).addCases(
+            sw = Switch(sel).add_cases(
                 (i, data_drive(out_B, out_strb_b, *val))
                 for i, val in enumerate(out_byte_mux_vals))
             # :note: default case is threre for the case of faulire where
@@ -208,7 +208,7 @@ class AxiS_FrameJoin(Unit):
                 return case
             cases.append((st_i, case))
 
-        mux = Switch(st_reg).addCases(cases)
+        mux = Switch(st_reg).add_cases(cases)
         if make_defult_case is not None:
             mux.Default(make_defult_case())
 
@@ -302,7 +302,7 @@ class AxiS_FrameJoin(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = AxiS_FrameJoin()
     D_B = 4
     u.DATA_WIDTH = 8 * D_B
@@ -311,4 +311,4 @@ if __name__ == "__main__":
         (HStream(Bits(8*1), (1, inf), [0, 1, 2, 3]), "frame0"),
         (HStream(Bits(8*4), (1, 1), [0]), "frame1"),
     )
-    print(toRtl(u))
+    print(to_rtl_str(u))

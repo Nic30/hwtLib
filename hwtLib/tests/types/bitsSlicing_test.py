@@ -1,8 +1,9 @@
+from io import StringIO
 import unittest
 
 from hwt.hdl.typeShortcuts import vec, hBit
 from hwt.hdl.value import Value
-from hwt.serializer.vhdl.serializer import VhdlSerializer
+from hwt.serializer.vhdl import Vhdl2008Serializer
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.types.ctypes import uint8_t
 
@@ -28,8 +29,12 @@ class BitsSlicingTC(unittest.TestCase):
         unittest.TestCase.assertEqual(self, first, second, msg=msg)
 
     def assertStrEq(self, first, second, msg=None):
-        ctx = VhdlSerializer.getBaseContext()
-        first = VhdlSerializer.asHdl(first, ctx).replace(" ", "")
+        to_hdl = Vhdl2008Serializer.TO_HDL_AST()
+        hdl = to_hdl.as_hdl(first)
+        buff = StringIO()
+        ser = Vhdl2008Serializer.TO_HDL(buff)
+        ser.visit_iHdlObj(hdl)
+        first = buff.getvalue().replace(" ", "")
         unittest.TestCase.assertEqual(self, first, second, msg=msg)
 
     def test_slice_bits_sig(self):

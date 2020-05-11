@@ -4,7 +4,7 @@
 from hwt.code import If
 from hwt.hdl.constants import Time
 from hwt.interfaces.std import VectSignal
-from hwt.simulator.simTestCase import SimTestCase, SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.hObjList import HObjList
@@ -123,10 +123,10 @@ class BitonicSorterTC(SingleUnitSimTestCase):
 
 if __name__ == "__main__":
     import unittest
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
 
     u = BitonicSorter()
-    print(toRtl(u))
+    print(to_rtl_str(u))
 
     suite = unittest.TestSuite()
     # suite.addTest(BitonicSorterTC('test_sorted'))

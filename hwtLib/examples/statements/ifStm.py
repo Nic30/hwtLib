@@ -141,37 +141,6 @@ class SimpleIfStatementMergable(Unit):
         )
 
 
-SimpleIfStatementMergable_vhdl = """--
---    .. hwt-schematic::
---    
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
-
-ENTITY SimpleIfStatementMergable IS
-    PORT (a: IN STD_LOGIC;
-        b: IN STD_LOGIC;
-        c: OUT STD_LOGIC;
-        d: OUT STD_LOGIC
-    );
-END ENTITY;
-
-ARCHITECTURE rtl OF SimpleIfStatementMergable IS
-BEGIN
-    assig_process_d: PROCESS (a, b)
-    BEGIN
-        IF a = '1' THEN
-            d <= b;
-            c <= b;
-        ELSE
-            d <= '0';
-            c <= '0';
-        END IF;
-    END PROCESS;
-
-END ARCHITECTURE;"""
-
-
 class SimpleIfStatementMergable1(Unit):
     """
     .. hwt-schematic::
@@ -193,37 +162,6 @@ class SimpleIfStatementMergable1(Unit):
                 self.c(self.b),
             )
         )
-
-
-SimpleIfStatementMergable1_vhdl = """--
---    .. hwt-schematic::
---    
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
-
-ENTITY SimpleIfStatementMergable1 IS
-    PORT (a: IN STD_LOGIC;
-        b: IN STD_LOGIC;
-        c: OUT STD_LOGIC;
-        d: OUT STD_LOGIC;
-        e: IN STD_LOGIC
-    );
-END ENTITY;
-
-ARCHITECTURE rtl OF SimpleIfStatementMergable1 IS
-BEGIN
-    assig_process_c: PROCESS (a, b, e)
-    BEGIN
-        IF e = '1' THEN
-            IF a = '1' THEN
-                d <= b;
-                c <= b;
-            END IF;
-        END IF;
-    END PROCESS;
-
-END ARCHITECTURE;"""
 
 
 class SimpleIfStatementMergable2(Unit):
@@ -252,41 +190,6 @@ class SimpleIfStatementMergable2(Unit):
         ).Else(
            self.d(0)
         )
-
-
-SimpleIfStatementMergable2_vhdl = """--
---    .. hwt-schematic::
---    
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
-
-ENTITY SimpleIfStatementMergable2 IS
-    PORT (a: IN STD_LOGIC;
-        b: IN STD_LOGIC;
-        c: IN STD_LOGIC;
-        d: OUT STD_LOGIC;
-        e: OUT STD_LOGIC;
-        f: OUT STD_LOGIC
-    );
-END ENTITY;
-
-ARCHITECTURE rtl OF SimpleIfStatementMergable2 IS
-BEGIN
-    assig_process_d: PROCESS (a, b, c)
-    BEGIN
-        IF a = '1' THEN
-            d <= b;
-            IF b = '1' THEN
-                e <= c;
-                f <= '0';
-            END IF;
-        ELSE
-            d <= '0';
-        END IF;
-    END PROCESS;
-
-END ARCHITECTURE;"""
 
 
 class IfStatementPartiallyEnclosed(Unit):
@@ -318,57 +221,7 @@ class IfStatementPartiallyEnclosed(Unit):
         self.b(b)
 
 
-IfStatementPartiallyEnclosed_vhdl = """--
---    .. hwt-schematic::
---    
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
-
-ENTITY IfStatementPartiallyEnclosed IS
-    PORT (a: OUT STD_LOGIC;
-        b: OUT STD_LOGIC;
-        c: IN STD_LOGIC;
-        clk: IN STD_LOGIC;
-        d: IN STD_LOGIC
-    );
-END ENTITY;
-
-ARCHITECTURE rtl OF IfStatementPartiallyEnclosed IS
-    SIGNAL a_reg: STD_LOGIC;
-    SIGNAL a_reg_next: STD_LOGIC;
-    SIGNAL b_reg: STD_LOGIC;
-    SIGNAL b_reg_next: STD_LOGIC;
-BEGIN
-    a <= a_reg;
-    assig_process_a_reg_next: PROCESS (b_reg, c, d)
-    BEGIN
-        IF c = '1' THEN
-            a_reg_next <= '1';
-            b_reg_next <= '1';
-        ELSIF d = '1' THEN
-            a_reg_next <= '0';
-            b_reg_next <= b_reg;
-        ELSE
-            a_reg_next <= '1';
-            b_reg_next <= '1';
-        END IF;
-    END PROCESS;
-
-    b <= b_reg;
-    assig_process_b_reg: PROCESS (clk)
-    BEGIN
-        IF RISING_EDGE(clk) THEN
-            b_reg <= b_reg_next;
-            a_reg <= a_reg_next;
-        END IF;
-    END PROCESS;
-
-END ARCHITECTURE;"""
-
-
-if __name__ == "__main__":  # alias python main function
-    from hwt.synthesizer.utils import toRtl
-    # there is more of synthesis methods. toRtl() returns formated vhdl string
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import to_rtl_str
     u = IfStatementPartiallyEnclosed()
-    print(toRtl(u))
+    print(to_rtl_str(u))

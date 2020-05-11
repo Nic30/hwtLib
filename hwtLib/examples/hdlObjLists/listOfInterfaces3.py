@@ -7,8 +7,7 @@ from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.utils import toRtl
-
+from hwt.synthesizer.utils import synthesised
 from hwtLib.amba.axi4Lite import Axi4Lite
 
 
@@ -122,7 +121,8 @@ class ListOfInterfacesSample3TC(SimTestCase):
         expected = {}
 
         s = ResourceAnalyzer()
-        toRtl(u, serializer=s)
+        synthesised(u)
+        s.visit_Unit(u)
         self.assertDictEqual(s.report(), expected)
 
     def test_resources_b(self):
@@ -130,7 +130,8 @@ class ListOfInterfacesSample3TC(SimTestCase):
         expected = {}
 
         s = ResourceAnalyzer()
-        toRtl(u, serializer=s)
+        synthesised(u)
+        s.visit_Unit(u)
         self.assertDictEqual(s.report(), expected)
 
 
@@ -142,4 +143,5 @@ if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 
-    print(toRtl(ListOfInterfacesSample3b()))
+    from hwt.synthesizer.utils import to_rtl_str
+    print(to_rtl_str(ListOfInterfacesSample3b()))

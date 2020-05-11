@@ -63,6 +63,7 @@ sudo pip3 install hwtLib
 * [PoC](https://github.com/VLSI-EDA/PoC) - VHDL, utils
 * [pulp-platform](https://github.com/pulp-platform)
 * [rhea](https://github.com/cfelton/rhea) - MyHDL, SoC level modules
-* [surf](https://github.com/slaclab/surf) - VHDL, SoC/DSP/IO/Ethernet focusend components
+* [surf](https://github.com/slaclab/surf) - VHDL, SoC/DSP/IO/Ethernet focused components
 * [tinyfpgax](https://github.com/tinyfpga)
-* [ZipCPU repositories](https://github.com/ZipCPU?tab=repositories) - Verilog, mostly preipherals, DSP
+* [ultraembedded/cores](https://github.com/ultraembedded/cores) - mostly Verilog, mostly peripherals
+* [ZipCPU repositories](https://github.com/ZipCPU?tab=repositories) - Verilog, mostly peripherals, DSP

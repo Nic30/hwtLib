@@ -5,8 +5,8 @@ from hwt.hdl.constants import Time
 from hwt.interfaces.std import Signal, HandshakeSync, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
+from hwt.synthesizer.unit import Unit
 from hwtLib.clocking.clkBuilder import ClkBuilder
 
 
@@ -140,10 +140,10 @@ class TimerTC(SimTestCase):
 
 
 if __name__ == "__main__":
-    # from hwt.synthesizer.utils import toRtl
+    # from hwt.synthesizer.utils import to_rtl_str
     # u = TimerInfoTest()
     # u = DynamicCounterInstancesExample()
-    # print(toRtl(u))
+    # print(to_rtl_str(u))
 
     import unittest
     suite = unittest.TestSuite()

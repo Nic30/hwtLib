@@ -168,10 +168,7 @@ class PingResponder(Unit):
 
 
 if __name__ == "__main__":  # alias python main function
-    # toRtl can be imported anywhere but we prefer to import it only when this script is running as main
-    from hwt.synthesizer.utils import toRtl
-    # we create instance of our unit
+    from hwt.synthesizer.utils import to_rtl_str
     u = PingResponder()
-    # there is more of synthesis methods. toRtl() returns formated hdl string
-    print(toRtl(u))
+    print(to_rtl_str(u))
 

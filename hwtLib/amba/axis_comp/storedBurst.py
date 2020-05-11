@@ -54,7 +54,7 @@ class AxiSStoredBurst(Unit):
         wordIndex = self._reg("wordIndex", Bits(wordIndex_w), def_val=0)
 
         Switch(wordIndex)\
-            .addCases([(i, dout.data(d))
+            .add_cases([(i, dout.data(d))
                        for i, d in enumerate(self.DATA)])\
             .Default(dout.data(None))
 
@@ -73,5 +73,5 @@ class AxiSStoredBurst(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
-    print(toRtl(AxiSStoredBurst()))
+    from hwt.synthesizer.utils import to_rtl_str
+    print(to_rtl_str(AxiSStoredBurst()))

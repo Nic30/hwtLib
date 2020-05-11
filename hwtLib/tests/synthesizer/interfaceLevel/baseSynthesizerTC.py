@@ -12,7 +12,7 @@ class BaseSynthesizerTC(unittest.TestCase):
 
     def assertDir(self, u, portName, direction):
         try:
-            p = self.getPort(u._entity, portName)
+            p = self.getPort(u._ctx.ent, portName)
         except NoValueExc:  # pragma: no cover
             self.assertTrue(False, "port %s exists" % portName)
         self.assertEqual(p.direction, direction, "port %s should have direction %s" % (

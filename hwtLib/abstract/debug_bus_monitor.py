@@ -50,7 +50,8 @@ class MonitorIntf(Interface):
 
     def _declr(self):
         """
-        Create interfaces same as on template interface, but make them always input
+        Create interfaces same as on template interface,
+        but make them always input
         """
         tmpl = self._template_interface
         for i in tmpl._interfaces:
@@ -72,13 +73,23 @@ class MonitorIntfVldSynced(VldSynced):
 
 
 class MonitorIntfVldSyncedCdc(VldSyncedCdc):
+
     def __init__(self, template_interface):
-        intf_cls = MonitorIntf._bound_intf(template_interface, cls=MonitorIntfVldSynced)
+        """
+        :param template_interface: an Interface instance which will be monitored,
+            used as template for this interface
+        """
+        intf_cls = MonitorIntf._bound_intf(
+            template_interface, cls=MonitorIntfVldSynced)
         self._template_interface = template_interface
         super(MonitorIntfVldSyncedCdc, self).__init__(intf_cls)
 
 
 def monitor_of(intf: Union[Interface, RtlSignal]):
+    """
+    Create a monitor interface for specified interface
+    (monitor interface is an interface which reads all signals of choosen interface)
+    """
     if isinstance(intf, Interface) and intf._interfaces:
         return MonitorIntf(intf)
     else:
@@ -166,7 +177,6 @@ class DebugBusMonitor(Unit):
         But it has fixed structure.
 
     .. code-block: c
-
         struct address_space {
             // value 0 means the name memory is explicitly dissabled
             uint32_t name_memory_size;
@@ -181,7 +191,6 @@ class DebugBusMonitor(Unit):
     Example of name_memory JSON format:
 
     .. code-block: javascript
-
         {
             "p0": {
                "c0": [0, 16], // signal p0.c0 is stored in data_memory[0:2]
@@ -230,7 +239,8 @@ class DebugBusMonitor(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.s = self._bus_cls()
-        # declare an interface with same signals but all inputs for each monitored interface
+        # declare an interface with same signals but all inputs for each
+        # monitored interface
         self.monitor = HObjList([
             monitor_of(intf) for (intf, _, _, _, _) in self.monitored_data
         ])
@@ -262,7 +272,8 @@ class DebugBusMonitor(Unit):
 
             name_mem_words = name_memory_size // (self.DATA_WIDTH // 8)
             addr_space.append(
-                (Bits(self.DATA_WIDTH, const=True)[name_mem_words], "name_memory")
+                (Bits(self.DATA_WIDTH, const=True)
+                 [name_mem_words], "name_memory")
             )
         else:
             name_memory_offset = 0
@@ -284,9 +295,10 @@ class DebugBusMonitor(Unit):
             name_memory_reader = ep.decoded.name_memory
             If(self.clk._onRisingEdge(),
                 If(name_memory_reader.en,
-                   name_memory_reader.dout(name_memory[name_memory_reader.addr])
-                )
-            )
+                   name_memory_reader.dout(
+                       name_memory[name_memory_reader.addr])
+                   )
+               )
 
         propagateClkRstn(self)
 
@@ -316,8 +328,9 @@ class DebugBusMonitor(Unit):
         res_bytes = json.dumps(res).encode("utf-8")
         DW = self.DATA_WIDTH
         name_data_width = ceil((len(res_bytes) * 8) / DW) * DW
-        res = Bits(name_data_width).from_py(int.from_bytes(res_bytes, "little"))
-        res = res._reinterpret_cast(Bits(DW)[name_data_width//DW])
+        res = Bits(name_data_width).from_py(
+            int.from_bytes(res_bytes, "little"))
+        res = res._reinterpret_cast(Bits(DW)[name_data_width // DW])
 
         return res, name_data_width // 8, len(res_bytes)
 
@@ -339,7 +352,7 @@ class DebugBusMonitor(Unit):
                 reg = parent._reg(name, intf_t, clk=in_clk, rst=in_rst)
                 If(trigger,
                    *connect_to_MonitorIntf(orig_intf, reg)
-                )
+                   )
                 orig_intf = reg
 
             if cdc:
@@ -365,7 +378,8 @@ class DebugBusMonitor(Unit):
                 orig_intf = cdc_inst.dataOut.data
 
             if add_reg:
-                reg = parent._reg(name + "_reg", intf_t, clk=out_clk, rst=out_rst)
+                reg = parent._reg(name + "_reg", intf_t,
+                                  clk=out_clk, rst=out_rst)
                 connect_to_MonitorIntf(orig_intf, reg)
                 orig_intf = reg
             # connect to this component

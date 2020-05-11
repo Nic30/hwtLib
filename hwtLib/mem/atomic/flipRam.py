@@ -21,7 +21,7 @@ class FlipRam(Unit):
     and reader reads data from second ram by second set of ports.
 
     Then select is set and access is flipped. Reader now has access to RAM 0 and writer to RAM 1.
-    
+
     .. hwt-schematic::
     """
 
@@ -37,7 +37,7 @@ class FlipRam(Unit):
             # to let IDEs resolve type of port
             self.firstA = BramPort_withoutClk()
             self.secondA = BramPort_withoutClk()
-            
+
             if PORT_CNT == 2:
                 self.firstB = BramPort_withoutClk()
                 self.secondB = BramPort_withoutClk()
@@ -78,5 +78,5 @@ class FlipRam(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
-    print(toRtl(FlipRam))
+    from hwt.synthesizer.utils import to_rtl_str
+    print(to_rtl_str(FlipRam()))

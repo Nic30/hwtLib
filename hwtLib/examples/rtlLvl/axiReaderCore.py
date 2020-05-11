@@ -13,6 +13,7 @@ def AxiReaderCore():
     rSt_t = HEnum('rSt_t', ['rdIdle', 'rdData'])
 
     rSt = n.sig('rSt', rSt_t)
+    r_idle = n.sig("r_idle")
     arRd = n.sig('arRd')
     arVld = n.sig('arVld')
     rVld = n.sig('rVld')
@@ -34,46 +35,15 @@ def AxiReaderCore():
            rSt(rSt_t.rdData)
         )
     )
-
+    r_idle(rSt._eq(rSt_t.rdIdle))
     return n, {
-        rSt: DIRECTION.OUT,
+        r_idle: DIRECTION.OUT,
         arRd: DIRECTION.IN,
         arVld: DIRECTION.IN,
         rVld: DIRECTION.IN,
         rRd: DIRECTION.IN
     }
 
-axiReaderCoreExpected = """library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
-
-ENTITY AxiReaderCore IS
-    PORT (arRd: IN STD_LOGIC;
-        arVld: IN STD_LOGIC;
-        rRd: IN STD_LOGIC;
-        rSt: OUT rSt_t;
-        rVld: IN STD_LOGIC
-    );
-END ENTITY;
-
-ARCHITECTURE rtl OF AxiReaderCore IS
-BEGIN
-    assig_process_rSt: PROCESS (arRd, arVld, rRd, rVld)
-    BEGIN
-        IF arRd = '1' THEN
-            IF arVld = '1' THEN
-                rSt <= rdData;
-            ELSE
-                rSt <= rdIdle;
-            END IF;
-        ELSIF (rRd AND rVld) = '1' THEN
-            rSt <= rdIdle;
-        ELSE
-            rSt <= rdData;
-        END IF;
-    END PROCESS;
-
-END ARCHITECTURE;"""
 
 if __name__ == "__main__":
     netlist, interfaces = AxiReaderCore()

@@ -5,7 +5,7 @@ from PIL import Image
 import os
 
 from hwt.hdl.types.bits import Bits
-from pyMathBitPrecise.bit_utils import selectBit
+from pyMathBitPrecise.bit_utils import get_bit
 
 
 # Can be many different formats.
@@ -22,7 +22,7 @@ def asciiArtOfChar(ch, inverted=True):
         row = getCharRow(ch, y)
         lineBuf = []
         for x in range(8):
-            pix = selectBit(row, 8 - x - 1)
+            pix = get_bit(row, 8 - x - 1)
             if inverted:
                 pix = not pix
 

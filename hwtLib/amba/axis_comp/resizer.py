@@ -183,7 +183,7 @@ class AxiS_resizer(AxiSCompBase):
         for inp, outp in zip(dIn, dOut):
             w = outp._dtype.bit_length()
             Switch(itemCntr)\
-            .addCases([
+            .add_cases([
                     (wordIndx, outp(inp[((wordIndx + 1) * w):(w * wordIndx)]))
                     for wordIndx in range(ITEMS)
             ])\
@@ -245,6 +245,6 @@ def _example_AxiS_resizer_downscale():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = _example_AxiS_resizer_downscale()
-    print(toRtl(u))
+    print(to_rtl_str(u))

@@ -1,19 +1,17 @@
-/*
-
-    Double Data Rate register
-
-    .. hwt-schematic::
-    
-*/
-module DDR_Reg(input clk,
-        input din,
-        output reg [1:0] dout,
-        input rst
-    );
-
+//
+//    Double Data Rate register
+//
+//    .. hwt-schematic::
+//    
+module DDR_Reg (
+    input  clk,
+    input  din,
+    output reg[1:0] dout,
+    input  rst
+);
     reg internReg = 1'b0;
     reg internReg_0 = 1'b0;
-    always @(internReg or internReg_0) begin: assig_process_dout
+    always @(internReg, internReg_0) begin: assig_process_dout
         dout = {internReg, internReg_0};
     end
 
