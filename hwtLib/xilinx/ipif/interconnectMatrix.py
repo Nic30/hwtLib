@@ -7,7 +7,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.hObjList import HObjList
 from hwtLib.abstract.busInterconnect import BusInterconnect, AUTO_ADDR
 from hwtLib.xilinx.ipif.intf import Ipif
-from pyMathBitPrecise.bit_utils import selectBitRange
+from pyMathBitPrecise.bit_utils import get_bit_range
 
 
 class IpifInterconnectMatrix(BusInterconnect):
@@ -61,7 +61,7 @@ class IpifInterconnectMatrix(BusInterconnect):
             s.bus2ip_data(m.bus2ip_data)
 
             bitsOfSubAddr = log2ceil(s_size - 1)
-            prefix = selectBitRange(
+            prefix = get_bit_range(
                 s_offset, bitsOfSubAddr, AW - bitsOfSubAddr)
             cs = self._sig("m_cs_%d" % i)
             cs(m.bus2ip_addr[AW:bitsOfSubAddr]._eq(prefix))

@@ -14,7 +14,7 @@ from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.interfaces.data_mask_last_hs import DataMaskLastHs
 from hwtLib.logic.crcComb import CrcComb
-from pyMathBitPrecise.bit_utils import selectBit, bitListReversedEndianity,\
+from pyMathBitPrecise.bit_utils import get_bit, bit_list_reversed_endianity,\
     mask
 
 
@@ -82,7 +82,7 @@ class Crc(Unit):
         _d = self.wrapWithName(din.data, "d")
         data_in_bits = list(iterBits(_d))
         if not self.IN_IS_BIGENDIAN:
-            data_in_bits = bitListReversedEndianity(data_in_bits)
+            data_in_bits = bit_list_reversed_endianity(data_in_bits)
         if self.MASK_GRANULARITY:
             din.rd(1)
             rst = self.rst_n._isOn() | (din.vld & din.last)
@@ -136,7 +136,7 @@ class Crc(Unit):
             raise NotImplementedError(self.LATENCY)
 
         XOROUT = int(self.XOROUT)
-        fin_bits = [hBit(selectBit(XOROUT, i))
+        fin_bits = [hBit(get_bit(XOROUT, i))
                     for i in range(PW)]
         fin_bits = self.wrapWithName(Concat(*fin_bits), "fin_bits")
 

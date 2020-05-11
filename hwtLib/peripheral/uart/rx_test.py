@@ -5,7 +5,7 @@ from hwt.hdl.constants import Time
 from hwt.simulator.agentConnector import valToInt
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.peripheral.uart.rx import UartRx
-from pyMathBitPrecise.bit_utils import selectBit
+from pyMathBitPrecise.bit_utils import get_bit
 from pycocotb.constants import CLK_PERIOD
 
 
@@ -37,7 +37,7 @@ class UartRxBasicTC(SingleUnitSimTestCase):
         for ch in string:
             rx.extend([START_BIT for _ in range(os)])
             for i in range(8):
-                d = selectBit(ord(ch), i)
+                d = get_bit(ord(ch), i)
                 rx.extend([d for _ in range(os)])
             rx.extend([STOP_BIT for _ in range(os)])
 

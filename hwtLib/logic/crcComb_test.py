@@ -10,8 +10,8 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.logic.crcComb import CrcComb
 from hwtLib.logic.crcPoly import CRC_1, CRC_8_CCITT, CRC_16_CCITT, CRC_32, \
     CRC_8_SAE_J1850
-from pyMathBitPrecise.bit_utils import selectBit, bitListToInt, mask, \
-    bitListReversedEndianity, bitListReversedBitsInBytes
+from pyMathBitPrecise.bit_utils import get_bit, bit_list_to_int, mask, \
+    bit_list_reversed_endianity, bit_list_reversed_bits_in_bytes
 
 
 def stoi(s):
@@ -21,7 +21,7 @@ def stoi(s):
 
 
 def crcToBf(crc):
-    return [selectBit(crc.POLY, i) for i in range(crc.WIDTH)]
+    return [get_bit(crc.POLY, i) for i in range(crc.WIDTH)]
 
 
 def naive_crc(dataBits, crcBits, polyBits,
@@ -29,7 +29,7 @@ def naive_crc(dataBits, crcBits, polyBits,
     crc_mask = CrcComb.buildCrcXorMatrix(len(dataBits), polyBits)
 
     if endianity != "big":
-        dataBits = bitListReversedEndianity(dataBits)
+        dataBits = bit_list_reversed_endianity(dataBits)
     # print("")
     # for r in crc_mask:
     #    print(r)
@@ -37,7 +37,7 @@ def naive_crc(dataBits, crcBits, polyBits,
         # reflect bytes in input data signal
         # whole signal should not be reflected if DW > PW
         # polyBits = list(reversed(polyBits))
-        dataBits = bitListReversedBitsInBytes(dataBits)
+        dataBits = bit_list_reversed_bits_in_bytes(dataBits)
         # crcBits = reversedBitsInBytes(crcBits)
 
     res = []
@@ -60,7 +60,7 @@ def naive_crc(dataBits, crcBits, polyBits,
     assert len(res) == len(polyBits)
     if refout:
         res = reversed(res)
-    return bitListToInt(res)
+    return bit_list_to_int(res)
 
 
 # http://www.sunshine2k.de/coding/javascript/crc/crc_js.html
@@ -131,21 +131,21 @@ class CrcCombTC(SimTestCase):
         crc8_aes = crcToBf(CRC_8_SAE_J1850)
         cur8 = [0 for _ in range(8)]
 
-        c2 = [selectBit(0xC2, i) for i in range(8)]
+        c2 = [get_bit(0xC2, i) for i in range(8)]
         self.assertEqual(naive_crc(c2, cur8, crc8_aes), 0xF)
 
-        c = [selectBit(ord("c"), i) for i in range(8)]
+        c = [get_bit(ord("c"), i) for i in range(8)]
         self.assertEqual(naive_crc(c, cur8, crc8), 0x2E)
 
-        cur8_half_1 = [selectBit(0x0f, i) for i in range(8)]
+        cur8_half_1 = [get_bit(0x0f, i) for i in range(8)]
         self.assertEqual(naive_crc(c2, cur8_half_1, crc8_aes), 0xB4)
         self.assertEqual(naive_crc(c, cur8_half_1, crc8_aes), 0x8)
 
-        ab = [selectBit(stoi("ab"), i) for i in range(16)]
+        ab = [get_bit(stoi("ab"), i) for i in range(16)]
         self.assertEqual(naive_crc(ab, cur8, crc8_aes), 0x7D)
         self.assertEqual(naive_crc(ab, cur8_half_1, crc8_aes), 0xDE)
 
-        _12 = [selectBit(0x0102, i) for i in range(16)]
+        _12 = [get_bit(0x0102, i) for i in range(16)]
         self.assertEqual(naive_crc(_12, cur8, crc8_aes), 0x85)
         self.assertEqual(naive_crc(_12, cur8_half_1, crc8_aes), 0x26)
 
@@ -159,7 +159,7 @@ class CrcCombTC(SimTestCase):
               "0x130476DC 0x17C56B6B 0x1A864DB2 0x1E475005\n")
         assert len(_s) % 4 == 0
         s = stoi(_s)
-        s = [selectBit(s, i) for i in range(len(_s) * 8)]
+        s = [get_bit(s, i) for i in range(len(_s) * 8)]
         self.assertEqual(naive_crc(s, cur32, _crc32), 0x59F59BE0)
         cur32_1 = [1 for _ in range(32)]
         self.assertEqual(naive_crc(s, cur32_1, _crc32), 0x141026C0)

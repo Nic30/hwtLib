@@ -9,8 +9,8 @@ from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_hs, Axi_strb
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwtLib.types.ctypes import uint8_t
 from ipCorePackager.intfIpMeta import IntfIpMeta
-from pyMathBitPrecise.bit_utils import mask, selectBit,\
-    selectBitRange, setBit
+from pyMathBitPrecise.bit_utils import mask, get_bit,\
+    get_bit_range, set_bit
 from pycocotb.hdlSimulator import HdlSimulator
 
 
@@ -139,9 +139,9 @@ def packAxiSFrame(dataWidth, structVal, withStrb=False):
         if withStrb:
             word_mask = 0
             for B_i in range(byte_cnt):
-                m = selectBitRange(d.vld_mask, B_i * 8, 8)
+                m = get_bit_range(d.vld_mask, B_i * 8, 8)
                 if m == 0xff:
-                    word_mask = setBit(word_mask, B_i)
+                    word_mask = set_bit(word_mask, B_i)
                 else:
                     assert m == 0, ("Each byte has to be entirely valid"
                                     " or entirely invalid,"
@@ -193,9 +193,9 @@ def _axis_recieve_bytes(ag_data, D_B, use_keep, offset=0) -> Tuple[int, List[int
                     break
             assert offset is not None, keep
         for i in range(D_B):
-            if selectBit(keep, i):
-                d = selectBitRange(data.val, i * 8, 8)
-                if selectBitRange(data.vld_mask, i * 8, 8) != 0xff:
+            if get_bit(keep, i):
+                d = get_bit_range(data.val, i * 8, 8)
+                if get_bit_range(data.vld_mask, i * 8, 8) != 0xff:
                     raise AssertionError(
                         "Data not valid but should be"
                         " based on strb/keep B_i:%d, 0x%x, 0x%x" % (i, keep, data.vld_mask))

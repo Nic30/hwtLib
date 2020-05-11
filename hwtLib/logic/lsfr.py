@@ -11,7 +11,7 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import iterBits
-from pyMathBitPrecise.bit_utils import selectBit
+from pyMathBitPrecise.bit_utils import get_bit
 
 
 class Lsfr(Unit):
@@ -38,7 +38,7 @@ class Lsfr(Unit):
         POLY = int(self.POLY)
         xorBits = []
         for i, b in enumerate(iterBits(accumulator)):
-            if selectBit(POLY, i):
+            if get_bit(POLY, i):
                 xorBits.append(b)
         assert xorBits
 

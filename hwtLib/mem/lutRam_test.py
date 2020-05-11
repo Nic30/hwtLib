@@ -5,7 +5,7 @@ from hwt.hdl.constants import WRITE, READ
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.mem.lutRam import RAM64X1S
-from pyMathBitPrecise.bit_utils import selectBit
+from pyMathBitPrecise.bit_utils import get_bit
 from pycocotb.constants import CLK_PERIOD
 
 
@@ -30,7 +30,7 @@ def applyRequests(ram, requests):
         # ram addr has 6 bits
         for i in range(6):
             addrbit = getattr(ram, "a%d" % i)
-            addrBitval = selectBit(addr, i)
+            addrBitval = get_bit(addr, i)
             addrbit._ag.data.append(addrBitval)
 
 

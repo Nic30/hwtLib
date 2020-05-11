@@ -12,8 +12,8 @@ from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.logic.crcPoly import CRC_5_USB
 from hwtLib.logic.crcUtils import parsePolyStr
-from pyMathBitPrecise.bit_utils import selectBit, bitListReversedBitsInBytes, \
-    bitListReversedEndianity
+from pyMathBitPrecise.bit_utils import get_bit, bit_list_reversed_bits_in_bytes, \
+    bit_list_reversed_endianity
 
 
 # http://www.sunshine2k.de/coding/javascript/crc/crc_js.html
@@ -76,7 +76,7 @@ class CrcComb(Unit):
         if isinstance(poly, str):
             polyCoefs = parsePolyStr(poly, PW)
         elif isinstance(poly, int):
-            polyCoefs = [selectBit(poly, i)
+            polyCoefs = [get_bit(poly, i)
                          for i in range(PW)]
         else:
             raise NotImplementedError()
@@ -135,7 +135,7 @@ class CrcComb(Unit):
                           inBits: List, stateBits: List,
                           refin: bool) -> List:
         if refin:
-            inBits = bitListReversedBitsInBytes(inBits)
+            inBits = bit_list_reversed_bits_in_bytes(inBits)
             # stateBits = list(reversed(stateBits))
 
         outBits = []
@@ -163,9 +163,9 @@ class CrcComb(Unit):
         # initXorMatrix = buildCrcMatrix_reg0Matrix(polyCoefs, PW, DW)
         XOROUT = int(self.XOROUT)
         _INIT = int(self.INIT)
-        initBits = [hBit(selectBit(_INIT, i))
+        initBits = [hBit(get_bit(_INIT, i))
                     for i in range(PW)]
-        finBits = [hBit(selectBit(XOROUT, i))
+        finBits = [hBit(get_bit(XOROUT, i))
                    for i in range(PW)]
 
         # rename to have shorter code
@@ -174,7 +174,7 @@ class CrcComb(Unit):
         inBits = list(iterBits(_inD))
 
         if not self.IN_IS_BIGENDIAN:
-            inBits = bitListReversedEndianity(inBits)
+            inBits = bit_list_reversed_endianity(inBits)
 
         outBits = iterBits(self.dataOut)
 
@@ -185,7 +185,7 @@ class CrcComb(Unit):
 
         if self.REFOUT:
             res = list(reversed(res))
-            finBits = bitListReversedBitsInBytes(finBits)
+            finBits = bit_list_reversed_bits_in_bytes(finBits)
 
         for ob, b, fb in zip(outBits, res, finBits):
             ob(b ^ fb)
