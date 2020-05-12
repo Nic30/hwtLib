@@ -196,22 +196,3 @@ def input_B_dst_to_fsm(word_bytes: int,
     tt.assert_transitions_deterministic()
     return tt
 
-
-def example_main():
-    from hwtLib.abstract.frame_utils.alignment_utils_test import FrameAlignementUtilsTC
-
-    word_bytes = 2
-    f_len = (1, inf)
-    streams = [
-        HStream(Bits(8), frame_len=f_len, start_offsets=[1]),
-        HStream(Bits(8), frame_len=f_len, start_offsets=[1]),
-    ]
-    out_offset = 0
-    sju = FrameAlignementUtilsTC(word_bytes, out_offset)
-    input_B_dst = sju.resolve_input_bytes_destinations(streams)
-    tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst)
-    pprint(tt.state_trans)
-
-
-if __name__ == "__main__":
-    example_main()

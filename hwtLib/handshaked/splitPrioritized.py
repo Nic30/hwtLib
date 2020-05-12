@@ -24,10 +24,10 @@ class HsSplitPrioritized(HsSplitCopy):
                               |      +-------+
                               +------> out2  |
                                      +-------+
-    
+
     .. hwt-schematic:: _example_HsSplitPrioritized
-                                
     """
+
     def _declr(self):
         HsSplitCopy._declr(self)
 

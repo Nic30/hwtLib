@@ -36,7 +36,7 @@ class AxiInterconnectMatrixCrossbar_1to1TC(SingleUnitSimTestCase):
         data = [magic + i for i in range(word_cnt)]
         data = self.data_transaction(input_i, data)
         u.dataIn[input_i]._ag.data.extend(data)
-        
+
         intf = u.order_dout_index_for_din_in[input_i]
         if intf is not None:
             intf._ag.data.append(output_i)
