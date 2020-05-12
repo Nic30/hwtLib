@@ -2,26 +2,54 @@ recursive-include hwtLib *.png
 include README.md
 include MANIFEST.in
 
-include hwtLib/examples/mem/AsyncResetReg.v
-include hwtLib/examples/mem/AsyncResetReg.vhd
+# find . -name "*.vhd" -o -name "*.v" -o -name "*.cpp" -o -name "*.xdc"
+
+include hwtLib/examples/ParametrizationExample.vhd
+include hwtLib/examples/mem/DReg.vhd
 include hwtLib/examples/mem/DDR_Reg.v
 include hwtLib/examples/mem/DDR_Reg.vhd
-include hwtLib/examples/mem/DReg.cpp
+include hwtLib/examples/mem/AsyncResetReg.vhd
+include hwtLib/examples/mem/AsyncResetReg.v
 include hwtLib/examples/mem/DReg.v
-include hwtLib/examples/mem/DReg.vhd
-
-include hwtLib/examples/specialIntfTypes/InterfaceWithVHDLUnconstrainedArrayImportedType.vhd
+include hwtLib/examples/mem/DReg.cpp
+include hwtLib/examples/showcase0.cpp
+include hwtLib/examples/statements/IfStatementPartiallyEnclosed.vhd
+include hwtLib/examples/statements/SwitchStmUnit.v
+include hwtLib/examples/statements/SwitchStmUnit.vhd
+include hwtLib/examples/statements/FsmExample.vhd
+include hwtLib/examples/statements/SimpleIfStatementMergable1.vhd
+include hwtLib/examples/statements/SwitchStmUnit.cpp
+include hwtLib/examples/statements/FsmExample.cpp
+include hwtLib/examples/statements/SimpleIfStatementMergable2.vhd
+include hwtLib/examples/statements/SimpleIfStatementMergable.vhd
+include hwtLib/examples/statements/FsmExample.v
+include hwtLib/examples/EmptyUnitWithSpi.vhd
 include hwtLib/examples/specialIntfTypes/InterfaceWithVHDLUnconstrainedArrayImportedType2.vhd
-
-
-include hwtLib/examples/hierarchy/GroupOfBlockrams.vhd
+include hwtLib/examples/specialIntfTypes/InterfaceWithVHDLUnconstrainedArrayImportedType.vhd
+include hwtLib/examples/hierarchy/UnitWithParams_in_wrap.vhd
 include hwtLib/examples/hierarchy/netFilter.vhd
+include hwtLib/examples/hierarchy/GroupOfBlockrams.vhd
 include hwtLib/examples/hierarchy/netFilter.v
 include hwtLib/examples/hierarchy/netFilter.cpp
-include hwtLib/examples/hierarchy/UnitWithParams_in_wrap.vhd
-
+include hwtLib/examples/arithmetic/VhdlVectorAutoCastExample.vhd
+include hwtLib/examples/rtlLvl/IndexOps.vhd
+include hwtLib/examples/rtlLvl/SimpleRegister.vhd
+include hwtLib/examples/rtlLvl/SimpleWhile.vhd
+include hwtLib/examples/rtlLvl/AxiReaderCore.vhd
+include hwtLib/examples/rtlLvl/ComplexConditions.vhd
+include hwtLib/examples/rtlLvl/arithmetic/Counter.vhd
+include hwtLib/examples/rtlLvl/arithmetic/LeadingZero.vhd
+include hwtLib/examples/rtlLvl/SwitchStatement.vhd
+include hwtLib/examples/rtlLvl/SimpleEnum.vhd
+include hwtLib/examples/SimpleComentedUnit3.vhd
+include hwtLib/examples/SimpleComentedUnit.vhd
+include hwtLib/examples/SimpleComentedUnit2.vhd
 include hwtLib/examples/showcase0.vhd
 include hwtLib/examples/showcase0.v
-include hwtLib/examples/showcase0.cpp
-include hwtLib/examples/showcase0.hwt.py
-
+include hwtLib/tests/constraints/AxiStreamFullDuplexCdc.xdc
+include hwtLib/tests/constraints/FifoAsync.xdc
+include hwtLib/tests/synthesizer/interfaceLevel/UnitWithGenericOfChild.vhd
+include hwtLib/tests/sertialization/TernaryInConcatExample.vhd
+include hwtLib/tests/sertialization/TmpVarExample.vhd
+include hwtLib/tests/sertialization/ExampleA.vhd
+include hwtLib/peripheral/displays/Segment7.vhd

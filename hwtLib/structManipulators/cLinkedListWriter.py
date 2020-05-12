@@ -338,9 +338,9 @@ class CLinkedListWriter(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = CLinkedListWriter()
     u.BUFFER_CAPACITY = 8
     u.ITEMS_IN_BLOCK = 31
     u.PTR_WIDTH = 8
-    print(toRtl(u))
+    print(to_rtl_str(u))

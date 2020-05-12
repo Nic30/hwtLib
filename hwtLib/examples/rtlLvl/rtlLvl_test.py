@@ -1,63 +1,58 @@
-import unittest
+import os
 
-from hwtLib.examples.rtlLvl.arithmetic.counter import Counter, counterExpected
-from hwtLib.examples.rtlLvl.arithmetic.leadingZero import LeadingZero, \
-    leadingZeroExpected
-from hwtLib.examples.rtlLvl.axiReaderCore import AxiReaderCore, \
-    axiReaderCoreExpected
-from hwtLib.examples.rtlLvl.complexConditions import ComplexConditions, \
-    complexConditionsExpected
-from hwtLib.examples.rtlLvl.indexOps import IndexOps, indexOpsExpected
+from hwtLib.examples.base_serialization_TC import BaseSerializationTC
+from hwtLib.examples.rtlLvl.arithmetic.counter import Counter
+from hwtLib.examples.rtlLvl.arithmetic.leadingZero import LeadingZero
+from hwtLib.examples.rtlLvl.axiReaderCore import AxiReaderCore
+from hwtLib.examples.rtlLvl.complexConditions import ComplexConditions
+from hwtLib.examples.rtlLvl.indexOps import IndexOps
 from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
-from hwtLib.examples.rtlLvl.simpleEnum import SimpleEnum, simpleEnumExpected
-from hwtLib.examples.rtlLvl.simpleRegister import SimpleRegister, \
-    simpleRegisterExpected
-from hwtLib.examples.rtlLvl.simpleWhile import SimpleWhile, simpleWhileExpected
-from hwtLib.examples.rtlLvl.switchStatement import SwitchStatement, \
-    switchStatementExpected
-from hwtLib.tests.statementTrees import StatementTreesTC
+from hwtLib.examples.rtlLvl.simpleEnum import SimpleEnum
+from hwtLib.examples.rtlLvl.simpleRegister import SimpleRegister
+from hwtLib.examples.rtlLvl.simpleWhile import SimpleWhile
+from hwtLib.examples.rtlLvl.switchStatement import SwitchStatement
 
 
-class RtlLvlTC(unittest.TestCase):
-    def strStructureCmp(self, cont, tmpl):
-        return StatementTreesTC.strStructureCmp(self, cont, tmpl)
+class RtlLvlTC(BaseSerializationTC):
+    __FILE__ = __file__
 
-    def cmp(self, getNetlistFn, expected):
+    def cmp(self, getNetlistFn, file_name):
         netlist, interfaces = getNetlistFn()
-        self.strStructureCmp(netlistToVhdlStr(
-            getNetlistFn.__name__, netlist, interfaces), expected)
+        vhdl = netlistToVhdlStr(getNetlistFn.__name__, netlist, interfaces)
+        self.assert_same_as_file(vhdl, file_name)
 
     def test_arithmetic_counter(self):
-        self.cmp(Counter, counterExpected)
+        self.cmp(Counter, os.path.join("arithmetic", "Counter.vhd"))
 
     def test_arithmetic_leadingZero(self):
-        self.cmp(LeadingZero, leadingZeroExpected)
+        self.cmp(LeadingZero, os.path.join("arithmetic", "LeadingZero.vhd"))
 
     def test_axiReaderCore(self):
-        self.cmp(AxiReaderCore, axiReaderCoreExpected)
+        self.cmp(AxiReaderCore, "AxiReaderCore.vhd")
 
     def test_complexConditions(self):
-        self.cmp(ComplexConditions, complexConditionsExpected)
+        self.cmp(ComplexConditions, "ComplexConditions.vhd")
 
     def test_indexOps(self):
-        self.cmp(IndexOps, indexOpsExpected)
+        self.cmp(IndexOps, "IndexOps.vhd")
 
     def test_simpleEnum(self):
-        self.cmp(SimpleEnum, simpleEnumExpected)
+        self.cmp(SimpleEnum, "SimpleEnum.vhd")
 
     def test_simpleRegister(self):
-        self.cmp(SimpleRegister, simpleRegisterExpected)
+        self.cmp(SimpleRegister, "SimpleRegister.vhd")
 
     def test_simpleWhile(self):
-        self.cmp(SimpleWhile, simpleWhileExpected)
+        self.cmp(SimpleWhile, "SimpleWhile.vhd")
 
     def test_switchStatement(self):
-        self.cmp(SwitchStatement, switchStatementExpected)
+        self.cmp(SwitchStatement, "SwitchStatement.vhd")
 
 
 if __name__ == '__main__':
+    import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(OperatorTC('testBitAnd'))
+    # suite.addTest(RtlLvlTC('test_axiReaderCore'))
     suite.addTest(unittest.makeSuite(RtlLvlTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

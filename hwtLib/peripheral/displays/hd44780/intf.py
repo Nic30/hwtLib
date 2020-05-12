@@ -5,7 +5,7 @@ from math import ceil
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
-from pyMathBitPrecise.bit_utils import selectBit, mask, selectBitRange
+from pyMathBitPrecise.bit_utils import get_bit, mask, get_bit_range
 from pycocotb.agents.base import AgentBase
 from pycocotb.hdlSimulator import HdlSimulator
 from pycocotb.triggers import WaitTimeslotEnd, Edge
@@ -181,7 +181,7 @@ class HD44780InterfaceAgent(AgentBase):
                     if rw == Hd44780Intf.RW_WRITE:
                         if d & 0b10000000:
                             # cursor position set (DDRAM addr)
-                            d = selectBitRange(d, 0, 7)
+                            d = get_bit_range(d, 0, 7)
                             self.cursor[0] = ceil(d / i.COLS)
                             assert self.cursor[0] < i.ROWS, self.cursor[0]
                             self.cursor[1] = d % i.ROWS
@@ -189,13 +189,13 @@ class HD44780InterfaceAgent(AgentBase):
                             raise NotImplementedError()
                         elif d & 0b00100000:
                             # CMD_FUNCTION_SET
-                            self.data_len = selectBit(d, 4)
-                            self.lines = selectBit(d, 3)
-                            self.font = selectBit(d, 2)
+                            self.data_len = get_bit(d, 4)
+                            self.lines = get_bit(d, 3)
+                            self.font = get_bit(d, 2)
                         elif d & 0b00010000:
                             # CMD_CURSOR_OR_DISPLAY_SHIFT
-                            shift_or_cursor = selectBit(d, 3)
-                            right_left = selectBit(d, 2)
+                            shift_or_cursor = get_bit(d, 3)
+                            right_left = get_bit(d, 2)
                             if shift_or_cursor == Hd44780Intf.SC_CURSOR_MOVE:
                                 c = self.cursor
                                 if right_left == Hd44780Intf.SHIFT_RIGHT:
@@ -209,13 +209,13 @@ class HD44780InterfaceAgent(AgentBase):
                                 raise NotImplementedError()
                         elif d & 0b00001000:
                             # CMD_DISPLAY_CONTROL
-                            self.display_on = selectBit(d, 2)
-                            self.cursor_on = selectBit(d, 1)
-                            self.cursor_blink = selectBit(d, 0)
+                            self.display_on = get_bit(d, 2)
+                            self.cursor_on = get_bit(d, 1)
+                            self.cursor_blink = get_bit(d, 0)
                         elif d & 0b00000100:
                             # CMD_ENTRY_MODE_SET
-                            shift_en = selectBit(d, 0)
-                            incr_decr = selectBit(d, 1)
+                            shift_en = get_bit(d, 0)
+                            incr_decr = get_bit(d, 1)
                             if shift_en:
                                 self.shift = 1 if incr_decr == Hd44780Intf.INCR else -1
                             else:

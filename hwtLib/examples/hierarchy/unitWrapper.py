@@ -36,21 +36,21 @@ class UnitWrapper(Unit):
 
             origToWrapInfMap[intf] = myIntf
 
+        ei = self._ctx.interfaces
         for i in self._interfaces:
             self._loadInterface(i, True)
+            assert i._isExtern
+            i._signalsForInterface(self._ctx, ei,
+                                   self._store_manager.name_scope,
+                                   reverse_dir=True)
 
         return origToWrapInfMap
 
     def _getDefaultName(self):
-        return self._baseUnit.__class__.__name__
+        return self._baseUnit._getDefaultName()
 
-    def _lazyLoadParamsAndInterfaces(self):
-        self._ctx.params = self._buildParams()
-
-        # prepare signals for interfaces
-        for i in self._interfaces:
-            assert i._isExtern
-            i._signalsForInterface(self._ctx, self._externInterf, reverse_dir=True)
+    def _get_hdl_doc(self):
+        return self._baseUnit._get_hdl_doc()
 
     def _connectBaseUnitToThisWrap(self, origToWrapInfMap):
         for baseIntf, wrapIntf in origToWrapInfMap.items():
@@ -62,5 +62,4 @@ class UnitWrapper(Unit):
     def _impl(self):
         self.baseUnit = self._baseUnit
         origToWrapInfMap = self._copyParamsAndInterfaces()
-        self._lazyLoadParamsAndInterfaces()
         self._connectBaseUnitToThisWrap(origToWrapInfMap)

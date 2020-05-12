@@ -105,7 +105,7 @@ class HsResizer(HandshakedCompBase):
         for din, dout in zip(self.get_data(dataIn), self.get_data(dataOut)):
             widthOfPart = din._dtype.bit_length() // factor
             inParts = iterBits(din, bitsInOne=widthOfPart)
-            Switch(inputRegs_cntr).addCases(
+            Switch(inputRegs_cntr).add_cases(
                 [(i, dout(inPart)) for i, inPart in enumerate(inParts)]
                 )
         vld = self.get_valid_signal
@@ -149,6 +149,6 @@ def _example_HsResizer():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = _example_HsResizer()
-    print(toRtl(u))
+    print(to_rtl_str(u))

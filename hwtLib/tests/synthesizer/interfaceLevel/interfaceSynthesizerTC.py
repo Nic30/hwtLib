@@ -14,6 +14,7 @@ from hwtLib.amba.axis_fullduplex import AxiStreamFullDuplex
 from hwtLib.tests.synthesizer.interfaceLevel.baseSynthesizerTC import \
     BaseSynthesizerTC
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import synthesised
+from hdlConvertorAst.translate.common.name_scope import NameScope
 
 
 D = DIRECTION
@@ -29,10 +30,10 @@ def createTwoAxiDuplexStreams():
     i2._name = 'i2'
     i2._loadDeclarations()
     i2._setDirectionsLikeIn(INTF_DIRECTION.SLAVE)
-
+    ns = NameScope(None, "", False)
     n = RtlNetlist()
     for _i in [i, i2]:
-        _i._signalsForInterface(n, None)
+        _i._signalsForInterface(n, None, ns)
     return i, i2
 
 
@@ -128,15 +129,15 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
 
         self.assertIsNot(bram.a, bram.b, 'instances are properly instantiated')
 
-        port_a = list(where(bram._entity.ports, lambda x: x.name == "a"))
-        port_b = list(where(bram._entity.ports, lambda x: x.name == "b"))
+        port_a = list(where(bram._ctx.ent.ports, lambda x: x.name == "a"))
+        port_b = list(where(bram._ctx.ent.ports, lambda x: x.name == "b"))
 
         self.assertEqual(len(port_a), 1, 'entity has single port a')
         port_a = port_a[0]
         self.assertEqual(len(port_b), 1, 'entity has single port b')
         port_b = port_b[0]
 
-        self.assertEqual(len(bram._entity.ports), 2,
+        self.assertEqual(len(bram._ctx.ent.ports), 2,
                          'entity has right number of ports')
 
         self.assertEqual(port_a.direction, D.IN,
@@ -153,7 +154,7 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
         u = Eu()
         u = synthesised(u)
 
-        e = u._entity
+        e = u._ctx.ent
         a = self.getPort(e, 'a')
         b = self.getPort(e, 'b')
         self.assertEqual(a.direction, D.IN)
@@ -165,12 +166,11 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
                 self.a = Axi4()
                 self.b = Axi4()._m()
 
-
         u = Dummy()
 
         u = synthesised(u)
         self.assertTrue(u.a.ar.addr._isExtern)
-        e = u._entity
+        e = u._ctx.ent
 
         a_ar_addr = self.getPort(e, 'a_ar_addr')
         self.assertEqual(a_ar_addr.direction, D.IN)
@@ -212,10 +212,6 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
         def s(i): return self.assertEqual(i._direction, INTF_DIRECTION.SLAVE)
 
         i, i2 = createTwoAxiDuplexStreams()
-        n = RtlNetlist()
-
-        i._signalsForInterface(n, None)
-        i2._signalsForInterface(n, None)
 
         connect(i, i2)
 

@@ -15,14 +15,8 @@ class MMU_2pageLvl_TC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
-        cls.u = u = MMU_2pageLvl()
-        cls.DATA_WIDTH = int(u.DATA_WIDTH)
+        cls.u = MMU_2pageLvl()
         return cls.u
-
-    def setUp(self):
-        super(MMU_2pageLvl_TC, self).setUp()
-        self.LVL2_PAGE_TABLE_ITEMS = int(self.u.LVL2_PAGE_TABLE_ITEMS)
-        self.LVL1_PAGE_TABLE_ITEMS = int(self.u.LVL1_PAGE_TABLE_ITEMS)
 
     def buildVirtAddr(self, lvl1pgtIndx, lvl2pgtIndx, pageOffset):
         u = self.u
@@ -42,15 +36,15 @@ class MMU_2pageLvl_TC(SingleUnitSimTestCase):
 
     def test_lvl1_fault(self):
         u = self.u
-        for i in range(self.LVL1_PAGE_TABLE_ITEMS):
+        for i in range(u.LVL1_PAGE_TABLE_ITEMS):
             u.lvl1Table._ag.requests.append((WRITE, i, mask(32)))
 
         u.virtIn._ag.data.extend(
             [NOP
-             for _ in range(self.LVL1_PAGE_TABLE_ITEMS + 5)]
+             for _ in range(u.LVL1_PAGE_TABLE_ITEMS + 5)]
             + [0, ])
 
-        self.runSim((self.LVL1_PAGE_TABLE_ITEMS + 20) * CLK_PERIOD)
+        self.runSim((u.LVL1_PAGE_TABLE_ITEMS + 20) * CLK_PERIOD)
         self.assertEmpty(u.physOut._ag.data)
         self.assertValEqual(u.segfault._ag.data[-1], 1)
 
@@ -58,11 +52,13 @@ class MMU_2pageLvl_TC(SingleUnitSimTestCase):
         u = self.u
         MAGIC = 45
 
-        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
+        m = AxiDpSimRam(u.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
 
+        addr_bytes = u.ADDR_WIDTH // 8
+        ADDR_INVALID = mask(u.ADDR_WIDTH)
         lvl2pgt = m.calloc(
-            self.LVL2_PAGE_TABLE_ITEMS, 4,
-            initValues=[-1 for _ in range(self.LVL2_PAGE_TABLE_ITEMS)])
+            u.LVL2_PAGE_TABLE_ITEMS, addr_bytes,
+            initValues=[ADDR_INVALID for _ in range(u.LVL2_PAGE_TABLE_ITEMS)])
 
         u.lvl1Table._ag.requests.append((WRITE, MAGIC, lvl2pgt))
 
@@ -83,16 +79,17 @@ class MMU_2pageLvl_TC(SingleUnitSimTestCase):
         self.randomize(u.virtIn)
         self.randomize(u.physOut)
 
-        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
+        m = AxiDpSimRam(u.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
         virt = u.virtIn._ag.data
         virt.extend([NOP for _ in range(N)])
 
         expected = []
+        ADDR_INVALID = mask(u.ADDR_WIDTH)
         for i in range(N):
-            lvl2pgtData = [int(2 ** 12) * i2 if i + 1 == i2 else -1
-                           for i2 in range(self.LVL2_PAGE_TABLE_ITEMS)]
-            lvl2pgt = m.calloc(self.LVL2_PAGE_TABLE_ITEMS,
-                               4,
+            lvl2pgtData = [int(2 ** 12) * i2 if i + 1 == i2 else ADDR_INVALID
+                           for i2 in range(u.LVL2_PAGE_TABLE_ITEMS)]
+            lvl2pgt = m.calloc(u.LVL2_PAGE_TABLE_ITEMS,
+                               u.ADDR_WIDTH // 8,
                                initValues=lvl2pgtData)
 
             u.lvl1Table._ag.requests.append((WRITE, i, lvl2pgt))

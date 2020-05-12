@@ -20,7 +20,7 @@ from hwtLib.amba.axis_comp.frame_parser.test_types import structManyInts,\
     ref_unionSimple0, ref_unionSimple1, ref_unionSimple2, ref_unionSimple3
 from hwtLib.types.ctypes import uint16_t
 from pycocotb.constants import CLK_PERIOD
-from hwt.hdl.types.structUtils import HStruct_selectFields
+from hwt.hdl.types.structUtils import HdlType_select
 
 
 TEST_DW = [
@@ -276,7 +276,7 @@ class AxiS_frameParserTC(SimTestCase):
             fieldsToUse.add("frame0")
         if not suffix_padding:
             fieldsToUse.add("footer")
-        _T = HStruct_selectFields(T, fieldsToUse)
+        _T = HdlType_select(T, fieldsToUse)
         u = self.mySetUp(dataWidth, _T, randomize, use_strb=True)
         v = T.from_py({
             "frame0": [i + 1 for i in range(frame_len)],
@@ -302,7 +302,7 @@ class AxiS_frameParserTC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    suite.addTest(AxiS_frameParserTC('test_stream_and_footer'))
-    # suite.addTest(unittest.makeSuite(AxiS_frameParserTC))
+    # suite.addTest(AxiS_frameParserTC('test_stream_and_footer'))
+    suite.addTest(unittest.makeSuite(AxiS_frameParserTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

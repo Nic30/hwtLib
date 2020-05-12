@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, FsmBuilder, Switch
+from hwt.code import If, FsmBuilder
 from hwt.hdl.types.enum import HEnum
-from hwtLib.abstract.busEndpoint import BusEndpoint
+from hwtLib.abstract.busEndpoint import BusEndpoint, inRange
 from hwtLib.xilinx.ipif.intf import Ipif
 
 
@@ -30,9 +30,6 @@ class IpifEndpoint(BusEndpoint):
         self._parseTemplate()
         # build read data output mux
 
-        def isMyAddr(addrSig, addr, end):
-            return (addrSig >= addr) & (addrSig < end)
-
         st_t = HEnum('st_t', ['idle', "writeAck", 'readDelay', 'rdData'])
         ipif = self.bus
         addr = ipif.bus2ip_addr
@@ -58,10 +55,10 @@ class IpifEndpoint(BusEndpoint):
         ipif.ip2bus_wrack(wAck)
         ADDR_STEP = self._getAddrStep()
         dataToBus = ipif.ip2bus_data(None)
-        for t in reversed(self._bramPortMapped):
+        for (_, _), t in reversed(self._bramPortMapped):
             # map addr for bram ports
             _addr = t.bitAddr // ADDR_STEP
-            _isMyAddr = isMyAddr(addr, _addr, t.bitAddrEnd // ADDR_STEP)
+            _isMyAddr = inRange(addr, _addr, t.bitAddrEnd // ADDR_STEP)
             port = self.getPort(t)
 
             self.propagateAddr(addr, ADDR_STEP, port.addr,
@@ -78,21 +75,8 @@ class IpifEndpoint(BusEndpoint):
 
             port.din(ipif.bus2ip_data)
 
-        for t in self._directlyMapped:
-            _addr = t.bitAddr // ADDR_STEP
-            port = self.getPort(t)
-
-            port.dout.vld(addr._eq(_addr) & ~ipif.bus2ip_rnw & wAck)
-            port.dout.data(ipif.bus2ip_data)
-
-        _isInBramFlags = []
-        Switch(ipif.bus2ip_addr)\
-        .addCases(
-                [(t.bitAddr // ADDR_STEP, ipif.ip2bus_data(self.getPort(t).din))
-                 for t in self._directlyMapped]
-        ).Default(
-            dataToBus
-        )
+        self.connect_directly_mapped_write(ipif.bus2ip_addr, ipif.bus2ip_data, ~ipif.bus2ip_rnw & wAck)
+        self.connect_directly_mapped_read(ipif.bus2ip_addr, ipif.ip2bus_data, dataToBus)
 
 
 def _example_IpifEndpoint():
@@ -108,6 +92,6 @@ def _example_IpifEndpoint():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = _example_IpifEndpoint()
-    print(toRtl(u))
+    print(to_rtl_str(u))

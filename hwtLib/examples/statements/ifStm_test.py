@@ -6,17 +6,15 @@ from hwt.hdl.operatorDefs import AllOps
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
     ResourceFF
+from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.utils import toRtl
+from hwt.synthesizer.utils import synthesised
+from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.statements.ifStm import SimpleIfStatement, \
     SimpleIfStatement2, SimpleIfStatement2b, SimpleIfStatement2c, \
     SimpleIfStatement3, SimpleIfStatementMergable, \
-    SimpleIfStatementMergable_vhdl, SimpleIfStatementMergable1, \
-    SimpleIfStatementMergable1_vhdl, SimpleIfStatementMergable2, \
-    SimpleIfStatementMergable2_vhdl, IfStatementPartiallyEnclosed, \
-    IfStatementPartiallyEnclosed_vhdl
-from hwt.serializer.vhdl.serializer import VhdlSerializer
-from hwt.simulator.agentConnector import valuesToInts
+    SimpleIfStatementMergable1, SimpleIfStatementMergable2, \
+    IfStatementPartiallyEnclosed
 
 
 def agInts(interface):
@@ -27,7 +25,8 @@ def agInts(interface):
     return valuesToInts(interface._ag.data)
 
 
-class IfStmTC(SimTestCase):
+class IfStmTC(SimTestCase, BaseSerializationTC):
+    __FILE__ = __file__
 
     def test_SimpleIfStatement(self):
         u = SimpleIfStatement()
@@ -118,7 +117,8 @@ class IfStmTC(SimTestCase):
         }
 
         s = ResourceAnalyzer()
-        toRtl(u, serializer=s)
+        synthesised(u)
+        s.visit_Unit(u)
         r = s.report()
         self.assertDictEqual(r, expected)
 
@@ -142,25 +142,26 @@ class IfStmTC(SimTestCase):
         }
 
         s = ResourceAnalyzer()
-        toRtl(u, serializer=s)
+        synthesised(u)
+        s.visit_Unit(u)
         r = s.report()
         self.assertDictEqual(r, expected)
 
     def test_SimpleIfStatementMergable_vhdl(self):
-        s = toRtl(SimpleIfStatementMergable(), serializer=VhdlSerializer)
-        self.assertEqual(s, SimpleIfStatementMergable_vhdl)
+        self.assert_serializes_as_file(SimpleIfStatementMergable,
+                                       "SimpleIfStatementMergable.vhd")
 
     def test_SimpleIfStatementMergable1_vhdl(self):
-        s = toRtl(SimpleIfStatementMergable1(), serializer=VhdlSerializer)
-        self.assertEqual(s, SimpleIfStatementMergable1_vhdl)
+        self.assert_serializes_as_file(SimpleIfStatementMergable1,
+                                       "SimpleIfStatementMergable1.vhd")
 
     def test_SimpleIfStatementMergable2_vhdl(self):
-        s = toRtl(SimpleIfStatementMergable2(), serializer=VhdlSerializer)
-        self.assertEqual(s, SimpleIfStatementMergable2_vhdl)
+        self.assert_serializes_as_file(SimpleIfStatementMergable2,
+                                       "SimpleIfStatementMergable2.vhd")
 
     def test_IfStatementPartiallyEnclosed_vhdl(self):
-        s = toRtl(IfStatementPartiallyEnclosed(), serializer=VhdlSerializer)
-        self.assertEqual(s, IfStatementPartiallyEnclosed_vhdl)
+        self.assert_serializes_as_file(IfStatementPartiallyEnclosed,
+                                       "IfStatementPartiallyEnclosed.vhd")
 
 
 if __name__ == "__main__":

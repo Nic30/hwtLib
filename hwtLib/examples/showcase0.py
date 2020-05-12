@@ -36,6 +36,7 @@ from hwtLib.types.ctypes import uint32_t, int32_t, uint8_t, int8_t
 from hwt.synthesizer.hObjList import HObjList
 
 
+
 def foo(condition0, statements, condition1, fallback0, fallback1):
     """
     Python functions used as macro
@@ -242,21 +243,25 @@ class Showcase0(Unit):
 if __name__ == "__main__":  # alias python main function
     from pprint import pprint
 
-    from hwt.synthesizer.utils import toRtl
-    from hwt.serializer.hwt.serializer import HwtSerializer
-    from hwt.serializer.vhdl.serializer import VhdlSerializer
-    from hwt.serializer.verilog.serializer import VerilogSerializer
-    from hwt.serializer.systemC.serializer import SystemCSerializer
+    from hwt.synthesizer.utils import to_rtl_str
+    from hwt.serializer.hwt import HwtSerializer
+    from hwt.serializer.vhdl import Vhdl2008Serializer
+    from hwt.serializer.verilog import VerilogSerializer
+    from hwt.serializer.systemC import SystemCSerializer
+
     from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
+    from hwt.synthesizer.utils import synthesised
 
-    # * new instance has to be created every time because toRtl is modifies the unit
+    # * new instance has to be created every time because to_rtl_str modifies the unit
     # * serializers are using templates which can be customized
-    # serialized code is trying to be human and git friednly
-    print(toRtl(Showcase0(), serializer=HwtSerializer))
-    print(toRtl(Showcase0(), serializer=VhdlSerializer))
-    print(toRtl(Showcase0(), serializer=VerilogSerializer))
-    print(toRtl(Showcase0(), serializer=SystemCSerializer))
+    # serialized code is trying to be human and git friendly
+    print(to_rtl_str(Showcase0(), serializer_cls=HwtSerializer))
+    print(to_rtl_str(Showcase0(), serializer_cls=Vhdl2008Serializer))
+    print(to_rtl_str(Showcase0(), serializer_cls=VerilogSerializer))
+    print(to_rtl_str(Showcase0(), serializer_cls=SystemCSerializer))
 
-    r = ResourceAnalyzer()
-    print(toRtl(Showcase0(), serializer=r))
-    pprint(r.report())
+    u = Showcase0()
+    ra = ResourceAnalyzer()
+    synthesised(u)
+    ra.visit_Unit(u)
+    pprint(ra.report())

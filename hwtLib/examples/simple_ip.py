@@ -15,7 +15,7 @@ class SimpleUnit(Unit):
 
 
 if __name__ == "__main__":  # alias python main function
-    from hwt.serializer.vhdl.serializer import VhdlSerializer
+    from hwt.serializer.vhdl import Vhdl2008Serializer
     from hwt.serializer.ip_packager import IpPackager
     from os.path import expanduser
 
@@ -23,6 +23,6 @@ if __name__ == "__main__":  # alias python main function
     u = SimpleUnit()
     # create instace of IpPackager and configure it
     # if name is not specified name will be name of Unit class
-    p = IpPackager(u, serializer=VhdlSerializer)
+    p = IpPackager(u, serializer_cls=Vhdl2008Serializer)
     # generate IP-core package
     p.createPackage(expanduser("~/Documents/ip_repo"))

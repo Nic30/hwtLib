@@ -2,7 +2,7 @@ from hwt.synthesizer.interface import Interface
 from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.std import Clk
 from hwt.interfaces.tristate import TristateSig
-from pyMathBitPrecise.bit_utils import mask, selectBit
+from pyMathBitPrecise.bit_utils import mask, get_bit
 from hwt.synthesizer.param import Param
 from hwt.simulator.agentBase import SyncAgentBase
 from pycocotb.hdlSimulator import HdlSimulator
@@ -116,7 +116,7 @@ class MdioAgent(SyncAgentBase):
         tx_bits.append(0)
         for i in range(D_W):
             # MSB first
-            tx_bits.append(selectBit(data, D_W - i - 1))
+            tx_bits.append(get_bit(data, D_W - i - 1))
         #print(tx_bits)
 
     def on_write(self, phyaddr, regaddr, data):

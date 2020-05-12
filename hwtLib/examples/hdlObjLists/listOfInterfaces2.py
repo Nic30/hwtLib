@@ -92,10 +92,9 @@ class ListOfInterfacesSample2TC(SingleUnitSimTestCase):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
-    print(
-        toRtl(ListOfInterfacesSample2())
-    )
+    from hwt.synthesizer.utils import to_rtl_str
+    u = ListOfInterfacesSample2()
+    print(to_rtl_str(u))
 
     import unittest
     suite = unittest.TestSuite()

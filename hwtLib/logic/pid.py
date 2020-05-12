@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.synthesizer.param import Param
-from hwt.interfaces.utils import addClkRstn
-from hwt.interfaces.std import VectSignal
 from hwt.code import Add
-from hwt.synthesizer.unit import Unit
+from hwt.interfaces.std import VectSignal
+from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.hObjList import HObjList
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 
 
 class PidController(Unit):
@@ -72,5 +72,5 @@ class PidController(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
-    print(toRtl(PidController()))
+    from hwt.synthesizer.utils import to_rtl_str
+    print(to_rtl_str(PidController()))

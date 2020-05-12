@@ -1,7 +1,7 @@
 from hwt.hdl.assignment import Assignment
 from hwt.hdl.operator import Operator
 from hwt.hdl.operatorDefs import AllOps, isEventDependentOp
-from hwt.hdl.portItem import PortItem
+from hwt.hdl.portItem import HdlPortItem
 from hwt.synthesizer.interfaceLevel.mainBases import UnitBase
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.abstract.busBridge import BusBridge
@@ -45,6 +45,10 @@ def getParentUnit(sig):
 
 
 class AddressSpaceProbe(object):
+    """
+    An object which can be used to discover an address space of an interface.
+    Discovery is made by walking on address signal.
+    """
 
     def __init__(self, topIntf, getMainSigFn, offset=0):
         """
@@ -63,7 +67,7 @@ class AddressSpaceProbe(object):
     def _extractStruct(self, converter, offset):
         t = converter.STRUCT_TEMPLATE
 
-        for transTmpl in converter._bramPortMapped:
+        for ( _, _), transTmpl in converter._bramPortMapped:
             # some arrays can have items with internal structure
             memberT = self._discoverAddressSpace(
                 converter.getPort(transTmpl), offset)
@@ -111,7 +115,7 @@ class AddressSpaceProbe(object):
             if isinstance(e, Operator) and not isEventDependentOp(e):
                 ep = getEpSignal(mainSig, e)
                 yield from self.walkToConverter(ep, offset)
-            elif isinstance(e, (Assignment, PortItem)):
+            elif isinstance(e, (Assignment, HdlPortItem)):
                 yield from self.walkToConverter(e.dst, offset)
             else:
                 for outp in e._outputs:

@@ -109,10 +109,15 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
     def _mkFieldIntf(self, parent: Union[StructIntf, UnionSource],
                      structField: HStructField):
         t = structField.dtype
+        path = (*parent._field_path, structField.name)
         if isinstance(t, HUnion):
-            return UnionSource(t, parent._instantiateFieldFn)
+            i = UnionSource(t, path, parent._instantiateFieldFn)
+            i._fieldsToInterfaces = parent._fieldsToInterfaces
+            return i
         elif isinstance(t, HStruct):
-            return StructIntf(t, (*parent._field_path, structField), parent._instantiateFieldFn)
+            i = StructIntf(t, path, parent._instantiateFieldFn)
+            i._fieldsToInterfaces = parent._fieldsToInterfaces
+            return i
         elif isinstance(t, HStream):
             if self.SHARED_READY:
                 raise NotImplementedError(t)
@@ -206,7 +211,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                     # then there will be a variable size suffix
                     children[0].OVERFLOW_SUPPORT = True
 
-                with self._paramsShared(exclude=({"OVERFLOW_SUPPORT"}, {})):
+                with self._paramsShared(exclude=({"OVERFLOW_SUPPORT", "T"}, {})):
                     self.children = children
 
     def parser_fsm(self, words):
@@ -437,7 +442,7 @@ def _example_AxiS_frameParser():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = _example_AxiS_frameParser()
 
-    print(toRtl(u))
+    print(to_rtl_str(u))

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import Signal
 from hwt.code import If
+from hwt.interfaces.std import Signal
 from hwt.synthesizer.unit import Unit
 
 
@@ -39,6 +39,6 @@ class VldMaskConflictsResolving(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = VldMaskConflictsResolving()
-    print(toRtl(u))
+    print(to_rtl_str(u))

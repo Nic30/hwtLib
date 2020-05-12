@@ -13,11 +13,10 @@ class ArrayItemGetterTC(SingleUnitSimTestCase):
     @classmethod
     def getUnit(cls):
         u = cls.u = ArrayItemGetter()
-        cls.ID = 3
-        u.ID = cls.ID
-        u.ITEMS = cls.ITEMS = 32
-        u.DATA_WIDTH = cls.DATA_WIDTH = 64
-        u.ITEM_WIDTH = cls.ITEM_WIDTH = 64
+        u.ID = 3
+        u.ITEMS = 32
+        u.DATA_WIDTH = 64
+        u.ITEM_WIDTH = 64
         return u
 
     def test_nop(self):
@@ -30,14 +29,14 @@ class ArrayItemGetterTC(SingleUnitSimTestCase):
     def test_singleGet(self):
         u = self.u
         t = 5
-        BASE = 8 * (self.DATA_WIDTH // 8)
+        BASE = 8 * (u.DATA_WIDTH // 8)
         MAGIC = 99
-        INDEX = self.ITEMS - 1
+        INDEX = u.ITEMS - 1
 
         u.base._ag.data.append(BASE)
         u.index._ag.data.append(INDEX)
 
-        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
+        m = AxiDpSimRam(u.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
         m.data[BASE // 8 + INDEX] = MAGIC
 
         self.runSim(t * CLK_PERIOD)
@@ -49,10 +48,10 @@ class ArrayItemGetter2in1WordTC(SingleUnitSimTestCase):
     @classmethod
     def getUnit(cls):
         u = cls.u = ArrayItemGetter()
-        cls.ID = u.ID = 3
-        u.ITEMS = cls.ITEMS = 32
-        u.DATA_WIDTH = cls.DATA_WIDTH = 64
-        u.ITEM_WIDTH = cls.ITEM_WIDTH = 32
+        u.ID = 3
+        u.ITEMS =  32
+        u.DATA_WIDTH = 64
+        u.ITEM_WIDTH = 32
         return u
 
     def test_nop(self):
@@ -65,12 +64,12 @@ class ArrayItemGetter2in1WordTC(SingleUnitSimTestCase):
     def test_get(self):
         u = self.u
         MAGIC = 99
-        N = self.ITEMS
+        N = u.ITEMS
         t = 10 + N
 
-        m = AxiDpSimRam(self.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
-        base = m.calloc(self.ITEMS,
-                        self.ITEM_WIDTH // 8,
+        m = AxiDpSimRam(u.DATA_WIDTH, u.clk, rDatapumpIntf=u.rDatapump)
+        base = m.calloc(u.ITEMS,
+                        u.ITEM_WIDTH // 8,
                         initValues=[
                                       MAGIC + i
                                       for i in range(N)

@@ -108,7 +108,6 @@ class IndexingInernJoin(Unit):
         connect(intern[1], self.d)
 
 
-if __name__ == "__main__":  # alias python main function
-    from hwt.synthesizer.utils import toRtl
-    # there is more of synthesis methods. toRtl() returns formated vhdl string
-    print(toRtl(IndexingInernSplit()))
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import to_rtl_str
+    print(to_rtl_str(IndexingInernSplit()))

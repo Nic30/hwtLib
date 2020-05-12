@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import SwitchLogic, log2ceil, Switch
+from hwt.code import SwitchLogic, log2ceil, Switch, If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import BramPort_withoutClk
 from hwtLib.abstract.busEndpoint import BusEndpoint
@@ -29,25 +29,14 @@ class BramPortEndpoint(BusEndpoint):
         self._parseTemplate()
         bus = self.bus
 
-        def connectRegIntfAlways(regIntf, _addr):
-            return (
-                regIntf.dout.data(bus.din),
-                regIntf.dout.vld(bus.we & bus.en & bus.addr._eq(_addr))
-            )
-
         ADDR_STEP = self._getAddrStep()
-        if self._directlyMapped:
+        if self._directly_mapped_words:
             readReg = self._reg("readReg", dtype=bus.dout._dtype)
             # tuples (condition, assign statements)
-            readRegInputs = []
-            for t in self._directlyMapped:
-                port = self.getPort(t)
-                _addr = t.bitAddr // ADDR_STEP
-                connectRegIntfAlways(port, _addr)
-                readRegInputs.append((bus.addr._eq(_addr),
-                                      readReg(port.din)
-                                      ))
-            SwitchLogic(readRegInputs)
+            If(bus.en,
+               self.connect_directly_mapped_read(bus.addr, readReg, [])
+            )
+            self.connect_directly_mapped_write(bus.addr, bus.din, bus.en & bus.we)
         else:
             readReg = None
 
@@ -58,7 +47,7 @@ class BramPortEndpoint(BusEndpoint):
                 log2ceil(BRAMS_CNT + 1), False))
             outputSwitch = Switch(readBramIndx)
 
-            for i, t in enumerate(self._bramPortMapped):
+            for i, ((_, _), t) in enumerate(self._bramPortMapped):
                 # if we can use prefix instead of addr comparing do it
                 _addr = t.bitAddr // ADDR_STEP
                 _addrEnd = t.bitAddrEnd // ADDR_STEP
@@ -70,8 +59,8 @@ class BramPortEndpoint(BusEndpoint):
                                                  port.dout._dtype.bit_length(),
                                                  t)
 
-                port.we(bus.we & _addrVld & bus.en)
-                port.en(bus.en & _addrVld & bus.en)
+                port.we(bus.en & bus.we & _addrVld)
+                port.en(bus.en & _addrVld)
                 port.din(bus.din)
 
                 bramIndxCases.append((_addrVld, readBramIndx(i)))
@@ -102,6 +91,6 @@ def _example_BramPortEndpoint():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = _example_BramPortEndpoint()
-    print(toRtl(u))
+    print(to_rtl_str(u))

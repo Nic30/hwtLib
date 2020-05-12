@@ -1,34 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import unittest
 
-from hwt.synthesizer.utils import toRtl
+from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.hdlComments import SimpleComentedUnit, \
-    simpleComentedUnit2Expected, SimpleComentedUnit3, \
-    simpleComentedUnit3Expected, SimpleComentedUnit2, \
-    simpleComentedUnitExpected
-from hwtLib.tests.statementTrees import StatementTreesTC
+    SimpleComentedUnit3, SimpleComentedUnit2
 
 
-class HdlCommentsTC(unittest.TestCase):
-    def strStructureCmp(self, tmpl, cont):
-        return StatementTreesTC.strStructureCmp(self, tmpl, cont)
-
-    def cmp(self, compCls, expected):
-        self.strStructureCmp(expected, toRtl(compCls))
+class HdlCommentsTC(BaseSerializationTC):
+    __FILE__ = __file__
 
     def test_SimpleComentedUnit(self):
-        self.cmp(SimpleComentedUnit, simpleComentedUnitExpected)
+        self.assert_serializes_as_file(
+            SimpleComentedUnit(), "SimpleComentedUnit.vhd")
 
     def test_SimpleComentedUnit2(self):
-        self.cmp(SimpleComentedUnit2, simpleComentedUnit2Expected)
+        self.assert_serializes_as_file(
+            SimpleComentedUnit2(), "SimpleComentedUnit2.vhd")
 
     def test_SimpleComentedUnit3(self):
-        self.cmp(SimpleComentedUnit3, simpleComentedUnit3Expected)
+        self.assert_serializes_as_file(
+            SimpleComentedUnit3(), "SimpleComentedUnit3.vhd")
 
 
 if __name__ == '__main__':
+    import unittest
+
     suite = unittest.TestSuite()
     # suite.addTest(OperatorTC('testBitAnd'))
     suite.addTest(unittest.makeSuite(HdlCommentsTC))

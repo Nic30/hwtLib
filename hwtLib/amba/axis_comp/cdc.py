@@ -23,7 +23,7 @@ def example_AxiSCdc():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = example_AxiSCdc()
 
-    print(toRtl(u))
+    print(to_rtl_str(u))

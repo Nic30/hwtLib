@@ -213,13 +213,13 @@ class CuckooHashTable(HashTableCore):
                 targetOH(Concat(*reversed(insertFoundOH)))
             ).Else(
                 SwitchLogic([(empty, targetOH(1 << i))
-                             for i, empty in enumerate(isEmptyOH)
-                             ],
-                            default=If(targetOH,
-                                       targetOH(ror(targetOH, 1))
-                                       ).Else(
-                    targetOH(1 << (self.TABLE_CNT - 1))
-                ))
+                             for i, empty in enumerate(isEmptyOH)],
+                            default=If(targetOH != 0,
+                                        targetOH(ror(targetOH, 1))
+                                    ).Else(
+                                        targetOH(1 << (self.TABLE_CNT - 1))
+                                    )
+                )
             ),
             insertFinal(_insertFinal)
            )
@@ -377,6 +377,6 @@ class CuckooHashTable(HashTableCore):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = CuckooHashTable([CRC_32, CRC_32])
-    print(toRtl(u))
+    print(to_rtl_str(u))

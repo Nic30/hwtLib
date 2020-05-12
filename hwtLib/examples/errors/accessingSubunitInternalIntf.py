@@ -8,7 +8,7 @@ class AccessingSubunitInternalIntf(Unit):
     """
     Example of error from accessing a internal interface of subunit
     """
-    
+
     def _declr(self):
         addClkRstn(self)
         self.subunit0 = SimpleWithNonDirectIntConncetion()
@@ -25,6 +25,6 @@ class AccessingSubunitInternalIntf(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = AccessingSubunitInternalIntf()
-    print(toRtl(u))
+    print(to_rtl_str(u))

@@ -6,7 +6,7 @@ import unittest
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.examples.operators.concat import SimpleConcat
-from pyMathBitPrecise.bit_utils import selectBit
+from pyMathBitPrecise.bit_utils import get_bit
 
 
 def addValues(unit, data):
@@ -17,7 +17,7 @@ def addValues(unit, data):
             if d is None:
                 dataBitval = None
             else:
-                dataBitval = selectBit(d, i)
+                dataBitval = get_bit(d, i)
 
             databit._ag.data.append(dataBitval)
 

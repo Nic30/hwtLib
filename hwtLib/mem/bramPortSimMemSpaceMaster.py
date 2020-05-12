@@ -7,8 +7,6 @@ class BramPortSimMemSpaceMaster(AbstractMemSpaceMaster):
     Controller of BramPort simulation agent which keeps track of transactions
     and allows struct like data access
     """
-    def _writeAddr(self, addrChannel, addr, size):
-        addrChannel.data.append(addr)
 
     def _write(self, addr, size, data, mask, onDone=None):
         if onDone:

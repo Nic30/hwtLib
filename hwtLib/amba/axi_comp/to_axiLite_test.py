@@ -99,13 +99,13 @@ class Axi_to_AxiLite_TC(AxiLite_to_Axi_TC):
             expected_frames.append((addr, id_, rand_data))
 
         self.runSim(N * 3 * CLK_PERIOD)
-        readed = split_frames(u.s.r._ag.data)
-        self.assertEqual(len(expected_frames), len(readed), msg=[
+        r_data = split_frames(u.s.r._ag.data)
+        self.assertEqual(len(expected_frames), len(r_data), msg=[
             # expected id, len, seen id, len
             ((d0[1], len(d0[2])), (int(d1[0][0]), len(d1[0])))
-            for d0, d1 in zip(expected_frames, readed)])
+            for d0, d1 in zip(expected_frames, r_data)])
 
-        for (_, id_, expected), data in zip(expected_frames, readed):
+        for (_, id_, expected), data in zip(expected_frames, r_data):
             expected_data = [(id_, d, RESP_OKAY) for d in expected]
             self.assertValSequenceEqual(
                 data,

@@ -133,7 +133,7 @@ class StructWriter(StructReader):
 
         # connect fields to assembler
         for _, transTmpl in self._tmpl.walkFlatten():
-            f = transTmpl.origin
+            f = transTmpl.getFieldPath()
             intf = self.frameAssember.dataIn._fieldsToInterfaces[f]
             intf(self.dataIn._fieldsToInterfaces[f])
 
@@ -164,6 +164,6 @@ def _example_StructWriter():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = _example_StructWriter()
-    print(toRtl(u))
+    print(to_rtl_str(u))

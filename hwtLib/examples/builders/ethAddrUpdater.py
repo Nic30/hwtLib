@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.types.struct import HStruct
-from hwt.hdl.types.structUtils import HStruct_selectFields
+from hwt.hdl.types.structUtils import HdlType_select
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.unit import Unit
@@ -22,7 +22,7 @@ frameHeader = HStruct(
     (Eth2Header_t, "eth"),
     (IPv4Header_t, "ipv4")
     )
-frameHeader = HStruct_selectFields(frameHeader,
+frameHeader = HdlType_select(frameHeader,
                                    {"eth": {"src", "dst"},
                                     "ipv4": {"src", "dst"}
                                     })
@@ -85,6 +85,6 @@ class EthAddrUpdater(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = EthAddrUpdater()
-    print(toRtl(u))
+    print(to_rtl_str(u))

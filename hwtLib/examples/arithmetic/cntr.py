@@ -33,6 +33,6 @@ class Cntr(Unit):
 
 
 if __name__ == "__main__":  # "python main function"
-    from hwt.synthesizer.utils import toRtl
-    # there is more of synthesis methods. toRtl() returns formated vhdl string
-    print(toRtl(Cntr()))
+    from hwt.synthesizer.utils import to_rtl_str
+    # there is more of synthesis methods. to_rtl_str() returns formated vhdl string
+    print(to_rtl_str(Cntr()))

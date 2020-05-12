@@ -7,7 +7,6 @@ from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.utils import toRtl
 
 
 class FsmExample(Unit):
@@ -21,6 +20,8 @@ class FsmExample(Unit):
         self.dout = VectSignal(3)._m()
 
     def _impl(self):
+        # :note: stT member names are colliding with port names and thus
+        #     they will be renamed in HDL
         stT = HEnum("st_t", ["a", "b", "aAndB"])
 
         a = self.a
@@ -95,5 +96,6 @@ class HadrcodedFsmExample(FsmExample):
 
 
 if __name__ == "__main__":
+    from hwt.synthesizer.utils import to_rtl_str
     u = FsmExample()
-    print(toRtl(u))
+    print(to_rtl_str(u))

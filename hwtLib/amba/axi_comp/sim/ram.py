@@ -4,8 +4,8 @@ from hwt.hdl.types.bits import Bits
 from hwt.hdl.value import Value
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.amba.constants import RESP_OKAY
-from pyMathBitPrecise.bit_utils import mask, setBitRange, selectBit,\
-    selectBitRange
+from pyMathBitPrecise.bit_utils import mask, set_bit_range, get_bit,\
+    get_bit_range
 from hwtLib.abstract.sim_ram import SimRam
 
 
@@ -15,7 +15,7 @@ class AxiSimRam(AxiDpSimRam):
     """
 
     def __init__(self, axi=None, axiAR=None, axiR=None, axiAW=None,
-                 axiW=None, axiB=None, parent=None):
+                 axiW=None, axiB=None, parent=None, allow_unaligned_addr=False):
         """
         :param clk: clk which should this memory use in simulation
         :param axi: axi (Axi3/4 master) interface to listen on
@@ -71,7 +71,7 @@ class AxiSimRam(AxiDpSimRam):
             self.HAS_W_ID = hasattr(self.wAg.intf, "id")
         else:
             self.HAS_W_ID = False
-
+        self.allow_unaligned_addr = allow_unaligned_addr
         SimRam.__init__(self, DW // 8, parent=parent)
 
         self.allMask = mask(self.cellSize)
@@ -102,6 +102,8 @@ class AxiSimRam(AxiDpSimRam):
 
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
+            if not self.allow_unaligned_addr:
+                raise ValueError("not aligned", addr)
             offset = addr % self.cellSize
             word_t = self.word_t
             word_mask0 = mask(8 * self.cellSize)
@@ -164,11 +166,11 @@ class AxiSimRam(AxiDpSimRam):
                 cur_mask = cur.vld_mask
 
             for i in range(self.cellSize):
-                if selectBit(strb, i):
-                    cur_val = setBitRange(
-                        cur_val, i * 8, 8, selectBitRange(data.val, i * 8, 8))
-                    cur_mask = setBitRange(
-                        cur_mask, i * 8, 8, selectBitRange(data.vld_mask, i * 8, 8))
+                if get_bit(strb, i):
+                    cur_val = set_bit_range(
+                        cur_val, i * 8, 8, get_bit_range(data.val, i * 8, 8))
+                    cur_mask = set_bit_range(
+                        cur_mask, i * 8, 8, get_bit_range(data.vld_mask, i * 8, 8))
             if cur_mask == self.allMask:
                 data = cur_val
             else:
@@ -181,6 +183,8 @@ class AxiSimRam(AxiDpSimRam):
 
         baseIndex = addr // self.cellSize
         offset = addr % self.cellSize
+        if offset and not self.allow_unaligned_addr:
+            raise ValueError("not aligned", addr)
         for i in range(size):
             data, strb, last = self.pop_w_ag_data(_id)
             strb = int(strb)

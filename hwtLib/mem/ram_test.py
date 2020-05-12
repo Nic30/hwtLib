@@ -3,8 +3,6 @@
 
 from hwt.hdl.constants import WRITE, READ
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-import unittest
-
 from hwtLib.mem.ram import Ram_sp
 from pycocotb.constants import CLK_PERIOD
 
@@ -29,10 +27,11 @@ class RamTC(SingleUnitSimTestCase):
         aeq = self.assertValSequenceEqual
         v = [x.read() for x in self.rtl_simulator.model.io.ram_memory]
         aeq(v, [5, 7, None, None, None, None, None, None])
-        aeq(u.a._ag.readed, [5, 7, 5, 7, None])
+        aeq(u.a._ag.r_data, [5, 7, 5, 7, None])
 
 
 if __name__ == "__main__":
+    import unittest
     suite = unittest.TestSuite()
     # suite.addTest(TwoCntrsTC('test_withStops'))
     suite.addTest(unittest.makeSuite(RamTC))

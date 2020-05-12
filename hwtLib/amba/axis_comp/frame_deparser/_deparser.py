@@ -96,18 +96,20 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         Instantiate interface for all members of input type
         """
         t = structField.dtype
+        path = (*parent._field_path, structField.name)
         if isinstance(t, HUnion):
-            return UnionSink(t, parent._instantiateFieldFn)
+            p = UnionSink(t, path, parent._instantiateFieldFn)
+            p._fieldsToInterfaces = parent._fieldsToInterfaces
         elif isinstance(t, HStruct):
-            return StructIntf(t, (*parent._field_path, structField), parent._instantiateFieldFn)
+            p = StructIntf(t, path, parent._instantiateFieldFn)
+            p._fieldsToInterfaces = parent._fieldsToInterfaces
         elif isinstance(t, HStream):
             p = AxiStream()
             p._updateParamsFrom(self)
-            return p
         else:
             p = Handshaked()
             p.DATA_WIDTH = structField.dtype.bit_length()
-            return p
+        return p
 
     def _declr(self):
         """"
@@ -163,7 +165,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         if isinstance(tPart, ChoicesOfFrameParts):
             # connnect parts of union to output signal
             high, low = tPart.getBusWordBitRange()
-            parentIntf = tToIntf[tPart.origin.parent.origin]
+            parentIntf = tToIntf[tPart.origin.parent.getFieldPath()]
  
             if parentIntf not in self._tmpRegsForSelect.keys():
                 sel = HsBuilder(self, parentIntf._select).buff().end
@@ -179,7 +181,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
             # for all union choices
             for choice in tPart:
                 tmp = self._sig("union_tmp_", Bits(w))
-                intfOfChoice = tToIntf[choice.tmpl.origin]
+                intfOfChoice = tToIntf[choice.tmpl.getFieldPath()]
                 _, _isSelected, isSelectValid = \
                     AxiS_frameParserFieldConnector.choiceIsSelected(self, intfOfChoice)
                 unionChoices.append((_isSelected, wordData_out[high:low](tmp)))
@@ -221,7 +223,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
             if tPart.isPadding:
                 wordData_out[high:low](None)
             else:
-                intf = tToIntf[tPart.tmpl.origin]
+                intf = tToIntf[tPart.tmpl.getFieldPath()]
                 fhigh, flow = tPart.getFieldBitRange()
                 wordData_out[high:low](
                     self.byteOrderCare(intf.data)[fhigh:flow])
@@ -436,14 +438,14 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         if multipleWords:
             if self.USE_STRB:
                 strb = dout.strb
-                Switch(wordCntr_inversed).addCases([
+                Switch(wordCntr_inversed).add_cases([
                     (i, strb(v)) for i, v in extra_strbs
                 ]).Default(
                     strb(STRB_ALL)
                 )
             if self.USE_KEEP:
                 keep = dout.keep
-                Switch(wordCntr_inversed).addCases([
+                Switch(wordCntr_inversed).add_cases([
                     (i, keep(v)) for i, v in extra_keeps
                 ]).Default(
                     keep(STRB_ALL)
@@ -506,7 +508,7 @@ def _example_AxiS_frameDeparser():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = _example_AxiS_frameDeparser()
-    print(toRtl(u))
+    print(to_rtl_str(u))
     # print(u._frames)

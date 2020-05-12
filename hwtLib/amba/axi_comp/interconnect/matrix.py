@@ -170,6 +170,6 @@ def example_AxiInterconnectMatrix():
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = example_AxiInterconnectMatrix()
-    print(toRtl(u))
+    print(to_rtl_str(u))

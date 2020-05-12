@@ -202,7 +202,7 @@ class ArrayBuff_writer(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = ArrayBuff_writer()
     u.TIMEOUT = 32
-    print(toRtl(u))
+    print(to_rtl_str(u))

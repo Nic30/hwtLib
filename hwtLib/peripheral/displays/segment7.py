@@ -60,7 +60,7 @@ class Segment7(Unit):
 
         ]
         Switch(self.dataIn) \
-        .addCases(enumerate([self.dataOut(v) for v in dec])) \
+        .add_cases(enumerate([self.dataOut(v) for v in dec])) \
         .Default(
            # display off when value is out of range
            self.dataOut(0b1111111)
@@ -68,5 +68,5 @@ class Segment7(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
-    print(toRtl(Segment7()))
+    from hwt.synthesizer.utils import to_rtl_str
+    print(to_rtl_str(Segment7()))

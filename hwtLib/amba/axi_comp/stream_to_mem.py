@@ -239,7 +239,7 @@ class Axi4streamToMem(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = Axi4streamToMem()
     # u = AxiLiteRegs(Axi4streamToMem().REGISTER_MAP)
-    print(toRtl(u))
+    print(to_rtl_str(u))

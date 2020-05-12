@@ -92,7 +92,7 @@ class IpifAgent(SyncAgentBase):
     """
     :ivar ~.requests: list of tuples (READ, address) or
         (WRITE, address, data, mask) used for driver
-    :ivar ~.readed: list of readed data for driver
+    :ivar ~.r_data: list of read data for driver
     :ivar ~.mem: if agent is in monitor mode (= is slave)
         all reads and writes are performed on mem object, index is word index
     :note: this behavior can be overriden by onRead/onWrite methods
@@ -105,7 +105,7 @@ class IpifAgent(SyncAgentBase):
         # for driver only
         self.requests = deque()
         self.actual = NOP
-        self.readed = deque()
+        self.r_data = deque()
 
         # for monitor only
         self.READ_LATENCY = 0
@@ -279,7 +279,7 @@ class IpifAgent(SyncAgentBase):
                         self._debugOutput.write("%s, on %r read_data: %d\n" % (
                                                 self.intf._getFullName(),
                                                 self.sim.now, d.val))
-                    self.readed.append(d)
+                    self.r_data.append(d)
                     actual_next = NOP
             else:
                 # write in progress

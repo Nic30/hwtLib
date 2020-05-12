@@ -3,6 +3,7 @@
 
 from typing import Tuple, Optional
 
+from hwt.code import If
 from hwt.constraints import set_max_delay, set_async_reg
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Rst, Signal, Clk
@@ -24,6 +25,13 @@ class SignalCdcBuilder():
                  in_clk_rst: Tuple[RtlSignal, RtlSignal],
                  out_clk_rst: Tuple[RtlSignal, RtlSignal],
                  reg_init_val, name_prefix: Optional[str]=None):
+        """
+        :param sig: data in signal
+        :param in_clk_rst: tuple source clk signal, rst signal
+        :param out_clk_rst: tuple destination clk signal, rst signal
+        :note: rst/rst_n is automatically resolved from reset type
+        :param reg_init_val: register reset value
+        """
         self.path = [sig, ]
         if name_prefix is None:
             name_prefix = getSignalName(sig) + "_"
@@ -41,7 +49,11 @@ class SignalCdcBuilder():
         if isinstance(i, RtlSignalBase):
             return i.ctx.parent
         else:
-            return i._parent
+            # interface
+            i = i._parent
+            while not isinstance(i, Unit):
+                i = i._parent
+            return i
 
     def _reg(self, name, clk_rst):
         clk, rst = clk_rst
@@ -61,12 +73,19 @@ class SignalCdcBuilder():
         self.path.append(inReg)
         self.in_reg_cnt += 1
 
-    def add_out_reg(self):
+    def add_out_reg(self, en: Optional[RtlSignal]=None):
         path = self.path
         outReg = self._reg(self.name_prefix + "out_reg%d" % self.out_reg_cnt,
                            self.OUT_CLK_RST)
-        outReg(path[-1])
-        set_max_delay(path[-1], outReg, self.META_PERIOD_NS)
+        end = path[-1]
+        if en is not None:
+            If(en,
+               outReg(end)
+            )
+        else:
+            outReg(end)
+
+        set_max_delay(end, outReg, self.META_PERIOD_NS)
         set_async_reg(outReg)
         path.append(outReg)
         self.out_reg_cnt += 1
@@ -154,5 +173,5 @@ class CdcPulseGen(Cdc):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
-    print(toRtl(Cdc()))
+    from hwt.synthesizer.utils import to_rtl_str
+    print(to_rtl_str(Cdc()))

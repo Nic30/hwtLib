@@ -6,8 +6,8 @@ from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, RegCntrl
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeOnce
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 
 
 @serializeOnce
@@ -22,7 +22,7 @@ class FlipRegister(Unit):
     on first reg and reader reads data from second ram by second set of ports.
 
     Then select is set and access is flipped. Reader now has access to reg 0 and writer to reg 1.
-    
+
     .. hwt-schematic::
     """
 
@@ -67,8 +67,7 @@ class FlipRegister(Unit):
         )
 
 
-if __name__ == "__main__":  # alias python main function
-    from hwt.synthesizer.utils import toRtl
-    # there is more of synthesis methods. toRtl() returns formated vhdl string
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import to_rtl_str
     u = FlipRegister()
-    print(toRtl(u))
+    print(to_rtl_str(u))

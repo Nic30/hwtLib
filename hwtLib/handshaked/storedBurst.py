@@ -63,7 +63,7 @@ class HandshakedStoredBurst(Unit):
             return self.set_data(dout, d)
 
         Switch(wordIndex)\
-            .addCases([(i, set_data(d))
+            .add_cases([(i, set_data(d))
                        for i, d in enumerate(self.DATA)])\
             .Default(*set_data(None))
 
@@ -79,5 +79,5 @@ class HandshakedStoredBurst(Unit):
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.utils import toRtl
-    print(toRtl(HandshakedStoredBurst()))
+    from hwt.synthesizer.utils import to_rtl_str
+    print(to_rtl_str(HandshakedStoredBurst()))
