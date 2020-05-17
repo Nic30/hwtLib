@@ -1,55 +1,60 @@
-from hwt.bitmask import mask
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import If, connect, log2ceil
-from hwt.hdlObjects.typeShortcuts import vecT
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.interfaceLevel.unit import Unit
-from hwt.synthesizer.param import Param, evalParam
-from hwtLib.amba.axiLite import AxiLite
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
+from hwtLib.amba.axi4Lite import Axi4Lite
+from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axiLite_comp.structEndpoint import AxiLiteStructEndpoint
-from hwt.hdlObjects.types.struct import HStruct
+from pyMathBitPrecise.bit_utils import mask
 
 
 class AxisFrameGen(Unit):
     """
     Generator of axi stream frames for testing purposes
+
+    .. hwt-schematic::
     """
     def _config(self):
         self.MAX_LEN = Param(511)
-        self.CNTRL_AW = Param(4)
-        self.CNTRL_DW = Param(32)
+        self.CNTRL_ADDR_WIDTH = Param(4)
+        self.CNTRL_DATA_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)
+        self.USE_STRB = Param(True)
 
     def _declr(self):
         addClkRstn(self)
-        self.axis_out = AxiStream()
-        self.axis_out.DATA_WIDTH.replace(self.DATA_WIDTH)
+        with self._paramsShared():
+            self.axis_out = AxiStream()._m()
 
-        self.cntrl = AxiLite()
-        self.cntrl.ADDR_WIDTH.set(evalParam(self.CNTRL_AW))
-        self.cntrl.DATA_WIDTH.set(evalParam(self.CNTRL_DW))
+        with self._paramsShared(prefix="CNTRL_"):
+            self.cntrl = Axi4Lite()
 
-        self.conv = AxiLiteStructEndpoint(
-                        HStruct((vecT(self.CNTRL_DW), "enable"),
-                                (vecT(self.CNTRL_DW), "len")
-                                ))
-        self.conv.ADDR_WIDTH.set(self.CNTRL_AW)
-        self.conv.DATA_WIDTH.set(self.CNTRL_DW)
+            reg_t = Bits(self.CNTRL_DATA_WIDTH)
+            self.conv = AxiLiteEndpoint(
+                            HStruct((reg_t, "enable"),
+                                    (reg_t, "len")
+                                    )
+                            )
 
     def _impl(self):
         propagateClkRstn(self)
-        cntr = self._reg("wordCntr", vecT(log2ceil(self.MAX_LEN)), defVal=0)
-        en = self._reg("enable", defVal=0)
-        _len = self._reg("wordCntr", vecT(log2ceil(self.MAX_LEN)), defVal=0)
+        cntr = self._reg("wordCntr", Bits(log2ceil(self.MAX_LEN)), def_val=0)
+        en = self._reg("enable", def_val=0)
+        _len = self._reg("wordCntr", Bits(log2ceil(self.MAX_LEN)), def_val=0)
 
-        self.conv.bus ** self.cntrl 
-        cEn = self.conv.enable 
+        self.conv.bus(self.cntrl)
+        cEn = self.conv.decoded.enable
         If(cEn.dout.vld,
            connect(cEn.dout.data, en, fit=True)
         )
         connect(en, cEn.din, fit=True)
 
-        cLen = self.conv.len
+        cLen = self.conv.decoded.len
         If(cLen.dout.vld,
            connect(cLen.dout.data, _len, fit=True)
         )
@@ -57,29 +62,30 @@ class AxisFrameGen(Unit):
 
         out = self.axis_out
         connect(cntr, out.data, fit=True)
-        out.strb ** mask(self.axis_out.strb._dtype.bit_length())
-        out.last ** cntr._eq(0)
-        out.valid ** en
+        if self.USE_STRB:
+            out.strb(mask(self.axis_out.strb._dtype.bit_length()))
+        out.last(cntr._eq(0))
+        out.valid(en)
 
         If(cLen.dout.vld,
            connect(cLen.dout.data, cntr, fit=True)
         ).Else(
             If(out.ready & en,
                If(cntr._eq(0),
-                  cntr ** _len
+                  cntr(_len)
                ).Else(
-                  cntr ** (cntr - 1) 
+                  cntr(cntr - 1)
                )
             )
         )
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = AxisFrameGen()
-    print(toRtl(u))
+    print(to_rtl_str(u))
 
     # import os
-    # hwt.serializer.packager import Packager
-    # p = Packager(u)
-    # p.createPackage(os.path.expanduser("~/Documents/test_ip_repo/")) 
+    # hwt.serializer.ip_packager import IpPackager
+    # p = IpPackager(u)
+    # p.createPackage(os.path.expanduser("~/Documents/test_ip_repo/"))

@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import unittest
-
-from hwt.hdlObjects.constants import Time, NOP
-from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.handshaked.ramAsHs import RamAsHs, RamHsR
+from hwt.hdl.constants import NOP
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwtLib.handshaked.ramAsHs import RamAsHs, RamHsR
+from hwtLib.interfaces.addr_data_hs import AddrDataHs
 from hwtLib.mem.ram import RamSingleClock
-from hwtLib.interfaces.addrDataHs import AddrDataHs
+from pycocotb.constants import CLK_PERIOD
 
 
 class RamWithHs(RamAsHs):
@@ -25,36 +24,37 @@ class RamWithHs(RamAsHs):
 
     def _impl(self):
         propagateClkRstn(self)
-        self.conv.r ** self.r
-        self.conv.w ** self.w
-        self.ram.a ** self.conv.ram
+        self.conv.r(self.r)
+        self.conv.w(self.w)
+        self.ram.a(self.conv.ram)
 
 
-class RamAsHs_TC(SimTestCase):
-    def setUp(self):
-        super(RamAsHs_TC, self).setUp()
-        u = self.u = RamWithHs()
-        u.DATA_WIDTH.set(32)
-        u.ADDR_WIDTH.set(8)
+class RamAsHs_TC(SingleUnitSimTestCase):
 
-        self.prepareUnit(u)
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = RamWithHs()
+        u.DATA_WIDTH = 32
+        u.ADDR_WIDTH = 8
+        return cls.u
 
     def test_nop(self):
-        self.doSim(100 * Time.ns)
+        self.runSim(10 * CLK_PERIOD)
         self.assertEmpty(self.u.r.data._ag.data)
 
     def test_writeAndRead(self):
         u = self.u
         MAGIC = 87
 
-        u.w._ag.data.extend([(25, MAGIC), (26, MAGIC+1)])
+        u.w._ag.data.extend([(25, MAGIC), (26, MAGIC + 1)])
         u.r.addr._ag.data.extend([NOP for _ in range(3)] + [25, 26])
-        self.doSim(100 * Time.ns)
+        self.runSim(10 * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.r.data._ag.data, [MAGIC, MAGIC+1])
+        self.assertValSequenceEqual(u.r.data._ag.data, [MAGIC, MAGIC + 1])
 
 
 if __name__ == "__main__":
+    import unittest
     suite = unittest.TestSuite()
     # suite.addTest(HsJoinFair_2inputs_TC('test_passdata'))
     suite.addTest(unittest.makeSuite(RamAsHs_TC))

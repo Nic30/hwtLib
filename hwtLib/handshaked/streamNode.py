@@ -1,8 +1,9 @@
-from hwt.code import And
+from hwt.code import And, Or
+from hwt.hdl.typeShortcuts import hBit
 from hwt.pyUtils.arrayQuery import where
 
 
-def _getRd(intf):
+def _get_ready_signal(intf):
     try:
         return intf.rd
     except AttributeError:
@@ -10,7 +11,7 @@ def _getRd(intf):
     return intf.ready
 
 
-def _getVld(intf):
+def _get_valid_signal(intf):
     try:
         return intf.vld
     except AttributeError:
@@ -18,116 +19,269 @@ def _getVld(intf):
     return intf.valid
 
 
-def streamAck(masters=[], slaves=[]):
+def _exStreamMemberAck(m):
+    c, n = m
+    return c & n.ack()
+
+
+class ExclusiveStreamGroups(list):
     """
-    :param masters: interfaces which are inputs into this node
-    :param slaves: interfaces which are outputs of this node
-
-    returns expression which's value is high when transaction is made over interfaces
+    list of tuples (cond, StreamNode instance)
+    Only one stream from this group can be activated at the time
     """
-    return And(*map(_getVld, masters), *map(_getRd, slaves))
+
+    def __hash__(self):
+        return id(self)
+
+    def sync(self, enSig=None):
+        """
+        Create synchronization logic between streams
+        (generate valid/ready synchronization logic for interfaces)
+
+        :param enSig: optional signal to enable this group of nodes
+        :return: list of assignements which are responsible for synchronization
+            of streams
+        """
+        expression = []
+        for cond, node in self:
+            if enSig is not None:
+                cond = cond & enSig
+            expression.extend(node.sync(cond))
+        return expression
+
+    def ack(self):
+        """
+        :return: expression which's value is high when transaction can be made
+            over at least on child streaming node
+        """
+        return Or(*map(_exStreamMemberAck, self))
 
 
-def streamSync(masters=[], slaves=[], extraConds={}, skipWhen={}):
+class StreamNode():
     """
-    Synchronization of stream node
-    generate valid/ready synchronization for interfaces
+    Group of stream master and slave interfaces to synchronize them to each other
 
-    :param masters: interfaces which are inputs into this node
-
-    :param slaves: interfaces which are outputs of this node
-
-    :param extraConds: dict interface : extraConditionSignal
-        where extra conditions will be added to expression for channel enable
-        for master it means it will get ready only when extraConditionSignal is 1
-        for slave it means it will not get valid only when extraConditionSignal is 1
-        but all interfaces have to wait on each other
-
-    :param skipWhen: dict interface : skipSignal
-        where if skipSignal is high interface is disconnected from stream sync node
-        and others does not have to wait on it (master does not need to have valid and slave ready)
-
+    :ivar ~.masters: interfaces which are inputs into this node
+    :ivar ~.slaves: interfaces which are outputs of this node
+    :ivar ~.extraConds: {dict interface : extraConditionSignal}
+        where extra conditions will be added to expression for channel enable.
+        For master it means it will obtain ready=1 only if extraConditionSignal
+        is 1.
+        For slave it means it will obtain valid=1 only
+        if extraConditionSignal is 1.
+        All interfaces have to wait on each other so if an extraCond!=1 it causes
+        blocking on all interfaces if not overriden by skipWhen.
+    :ivar ~.skipWhen: dict interface : skipSignal
+        where if skipSignal is high interface is disconnected from stream
+        sync node and others does not have to wait on it
+        (master does not need to have valid and slave ready)
     :attention: skipWhen has higher priority
-
     """
-    # also note that only slaves or only masters, means you are always generating/receiving
-    # data from/to node
-    assert masters or slaves
-    for i in extraConds.keys():
-        assert i in masters or i in slaves, i
-    for i in skipWhen.keys():
-        assert i in masters or i in slaves, i
-    # this expression container is there to allow usage of this function
-    # in usual hdl containers like If, Switch etc...
-    expression = []
 
-    def vld(intf):
+    def __init__(self, masters=None, slaves=None,
+                 extraConds=None, skipWhen=None):
+        if masters is None:
+            masters = []
+        if slaves is None:
+            slaves = []
+        if extraConds is None:
+            extraConds = {}
+        if skipWhen is None:
+            skipWhen = {}
+
+        self.masters = masters
+        self.slaves = slaves
+        self.extraConds = extraConds
+        self.skipWhen = skipWhen
+
+    def sync(self, enSig=None):
+        """
+        Create synchronization logic between streams
+        (generate valid/ready synchronization logic for interfaces)
+
+        :param enSig: optional signal to enable this node
+        :return: list of assignements which are responsible for synchronization of streams
+        """
+        masters = self.masters
+        slaves = self.slaves
+
+        if not masters and not slaves:
+            # node is empty
+            assert not self.extraConds
+            assert not self.skipWhen
+            return []
+
+        # check if there is not not any mess in extraConds/skipWhen
+        for i in self.extraConds.keys():
+            assert i in masters or i in slaves, i
+
+        for i in self.skipWhen.keys():
+            assert i in masters or i in slaves, i
+
+        # this expression container is there to allow usage of this function
+        # in usual hdl containers like If, Switch etc...
+        expression = []
+        for m in masters:
+            r = self.ackForMaster(m)
+            if enSig is not None:
+                r = r & enSig
+
+            if isinstance(m, ExclusiveStreamGroups):
+                a = m.sync(r)
+            else:
+                a = [_get_ready_signal(m)(r), ]
+
+            expression.extend(a)
+
+        for s in slaves:
+            v = self.ackForSlave(s)
+
+            if enSig is not None:
+                v = v & enSig
+
+            if isinstance(s, ExclusiveStreamGroups):
+                a = s.sync(v)
+            else:
+                a = [_get_valid_signal(s)(v), ]
+
+            expression.extend(a)
+
+        return expression
+
+    def ack(self):
+        """
+        :return: expression which's value is high when transaction can be made over interfaces
+        """
+        # every interface has to have skip flag or it has to be ready/valid
+        # and extraCond has to be True if present
+        acks = []
+        for m in self.masters:
+            extra, skip = self.getExtraAndSkip(m)
+            if isinstance(m, ExclusiveStreamGroups):
+                a = m.ack()
+            else:
+                a = _get_valid_signal(m)
+
+            if extra:
+                a = And(a, *extra)
+
+            if skip is not None:
+                a = Or(a, skip)
+
+            acks.append(a)
+
+        for s in self.slaves:
+            extra, skip = self.getExtraAndSkip(s)
+            if isinstance(s, ExclusiveStreamGroups):
+                a = s.ack()
+            else:
+                a = _get_ready_signal(s)
+
+            if extra:
+                a = And(a, *extra)
+
+            if skip is not None:
+                a = Or(a, skip)
+
+            acks.append(a)
+
+        if not acks:
+            return True
+
+        return And(*acks)
+
+    def getExtraAndSkip(self, intf):
+        """
+        :return: optional extraCond and skip flags for interface
+        """
         try:
-            s = skipWhen[intf]
+            extra = [self.extraConds[intf], ]
+        except KeyError:
+            extra = []
+
+        try:
+            skip = self.skipWhen[intf]
+        except KeyError:
+            skip = None
+
+        return extra, skip
+
+    def vld(self, intf):
+        """
+        :return: valid signal of master interface for synchronization of othres
+        """
+        try:
+            s = self.skipWhen[intf]
             assert s is not None
         except KeyError:
             s = None
 
-        v = _getVld(intf)
+        if isinstance(intf, ExclusiveStreamGroups):
+            v = intf.ack()
+        else:
+            v = _get_valid_signal(intf)
+
         if s is None:
             return v
         else:
             return v | s
 
-    def rd(intf):
+    def rd(self, intf):
+        """
+        :return: ready signal of slave interface for synchronization of othres
+        """
         try:
-            s = skipWhen[intf]
+            s = self.skipWhen[intf]
             assert s is not None
         except KeyError:
             s = None
 
-        r = _getRd(intf)
+        if isinstance(intf, ExclusiveStreamGroups):
+            r = intf.ack()
+        else:
+            r = _get_ready_signal(intf)
+
         if s is None:
             return r
         else:
             return r | s
 
-    for m in masters:
-        otherMasters = where(masters, lambda x: x is not m)
-        try:
-            extra = [extraConds[m], ]
-        except KeyError:
-            extra = []
+    def ackForMaster(self, master):
+        """
+        :return: driver of ready signal for master
+        """
+        otherMasters = where(self.masters, lambda x: x is not master)
+        extra, skip = self.getExtraAndSkip(master)
 
-        try:
-            skip = skipWhen[m]
-        except KeyError:
-            skip = None
+        conds = [*map(self.vld, otherMasters),
+                 *map(self.rd, self.slaves),
+                 *extra]
+        if conds:
+            r = And(*conds)
+        else:
+            r = hBit(1)
 
-        r = And(*map(vld, otherMasters),
-                *map(rd, slaves),
-                *extra)
         if skip is not None:
             r = r & ~skip
 
-        expression.extend(
-            _getRd(m) ** r
-        )
-    for s in slaves:
-        otherSlaves = where(slaves, lambda x: x is not s)
-        try:
-            extra = [extraConds[s], ]
-        except KeyError:
-            extra = []
+        return r
 
-        try:
-            skip = skipWhen[s]
-        except KeyError:
-            skip = None
+    def ackForSlave(self, slave):
+        """
+        :return: driver of valid signal for slave
+        """
+        otherSlaves = where(self.slaves, lambda x: x is not slave)
+        extra, skip = self.getExtraAndSkip(slave)
 
-        v = And(*map(vld, masters),
-                *map(rd, otherSlaves),
-                *extra)
+        conds = [*map(self.vld, self.masters),
+                 *map(self.rd, otherSlaves),
+                 *extra]
+        if conds:
+            v = And(*conds)
+        else:
+            v = hBit(1)
 
         if skip is not None:
             v = v & ~skip
-        expression.extend(
-            _getVld(s) ** v
-        )
 
-    return expression
+        return v

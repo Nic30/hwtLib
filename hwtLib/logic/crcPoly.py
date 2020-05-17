@@ -1,173 +1,443 @@
-# also known as parity bit
-CRC_1 = 0x1
+# http://reveng.sourceforge.net/crc-catalogue/all.htm
+"""
+Library of common CRC configurations
 
-# mobile networks
-CRC_3_GSM = 0x3
-
-# G.704
-CRC_4_ITU = 0x3
-
-# Gen 2 RFID
-CRC_5_EPC = 0x09
-
-# G.704
-CRC_5_ITU = 0x15
-
-# USB token packets
-CRC_5_USB = 0x05
-
-# mobile networks
-CRC_6_CDMA2000_A = 0x27
-
-# mobile networks
-CRC_6_CDMA2000_B = 0x07
-
-# Data Radio Channel
-CRC_6_DARC = 0x19
-
-# mobile networks
-CRC_6_GSM = 0x2F
-
-# G.704
-CRC_6_ITU = 0x03
-
-# telecom systems, G.707,G.832, MMC, SD
-CRC_7 = 0x09
-
-# Train Communication Network, IEC 60870-5
-CRC_7_MVB = 0x65
-
-# DVB-S2
-CRC_8 = 0xD5
-
-# automotive integration,OpenSafety
-CRC_8_AUTOSAR = 0x2F
-
-# wireless connectivity
-CRC_8_Bluetooth = 0xA7
-
-# I.432.1; ATM HEC, ISDN HEC and cell delineation
-CRC_8_CCITT = 0x07
-
-# 1-Wire bus
-CRC_8_Dallas_Maxim = 0x31
-
-# Data Radio Channel
-CRC_8_DARC = 0x39
-
-# mobile networks
-CRC_8_GSM_B = 0x49
-
-# AES3
-CRC_8_SAE_J1850 = 0x1D
-
-# mobile networks
-CRC_8_WCDMA = 0x9B
-
-# ATM; I.610
-CRC_10 = 0x233
-
-# mobile networks
-CRC_10_CDMA2000 = 0x3D9
-
-# mobile networks
-CRC_10_GSM = 0x175
-
-# FlexRay
-CRC_11 = 0x385
-
-# telecom systems
-CRC_12 = 0x80F
-
-# mobile networks
-CRC_12_CDMA2000 = 0xF13
-
-# mobile networks
-CRC_12_GSM = 0xD31
-
-# Time signal, Radio teleswitch
-CRC_13_BBC = 0x1CF5
+:note: POLY is the polynome of CRC and specifies which bits
+    should be xored together.
+:note: WIDTH - specifies the width of CRC state/value
+:note: REFIN - If it is True the bits in each byte are reversed before processing.
+:note: REFOUT If it is set to FALSE, the
+    final value in the register is fed into the XOROUT stage directly,
+    otherwise, if this parameter is TRUE, the final register value is
+    reflected first.
+:note: XOROUT This is an WIDTH-bit value. It is XORed to the final register value
+    (after the REFOUT) stage before the value is returned as the official
+    checksum.
+    
+:note: http://reveng.sourceforge.net/crc-catalogue/all.htm
+"""
 
 
-# Data Radio Channel[19]
-CRC_14_DARC = 0x0805
-
-# mobile networks
-CRC_14_GSM = 0x202D
-
-CRC_15_CAN = 0x4599
-
-CRC_15_MPT1327 = 0x6815
-
-# Optimal for payloads ≤64 bits
-CRC_16_Chakravarty = 0x2F15
-
-# ACARS applications
-CRC_16_ARINC = 0xA02B
-
-# X.25, V.41, HDLC FCS, XMODEM, Bluetooth, PACTOR, SD, DigRF, many others; known as CRC_CCITT
-CRC_16_CCITT = 0x1021
+class CRC_POLY:
+    """
+    Base class for crc configuration specifications
+    """
+    POLY = None
+    WIDTH = None
+    INIT = 0
+    REFIN = False
+    REFOUT = False
+    XOROUT = 0
 
 
-# mobile networks
-CRC_16_CDMA2000 = 0xC867
+class CRC_1(CRC_POLY):
+    """
+    also known as parity bit
+    """
+    POLY = 0x1
+    WIDTH = 1
 
-# cordless telephones
-CRC_16_DECT = 0x0589
 
-# SCSI DIF
-CRC_16_T10_DIF = 0x8BB7
+class CRC_3_GSM(CRC_POLY):
+    """
+    Used in mobile networks
+    """
+    INIT = 0x0
+    POLY = 0x3
+    XOROUT = 0x07
+    WIDTH = 3
 
-# DNP, IEC 870, M-Bus
-CRC_16_DNP = 0x3D65
 
-# Bisync, Modbus, USB, ANSI X3.28, SIA DC-07, many others; also known as CRC_16 and CRC_16-ANSI
-CRC_16_IBM = 0x8005
+class CRC3_ROHC(CRC_POLY):
+    "CRC-3/ROHC (Robust header compression rfc3095)"
+    WIDTH = 3
+    POLY = 0x03
+    INIT = 0x07
+    REFIN = True
+    REFOUT = True
+    CHECK = 0x6
+    RESIDUE = 0x0
 
-# safety fieldbus
-CRC_16_OpenSafety_A = 0x5935
 
-# safety fieldbus
-CRC_16_OpenSafety_B = 0x755B
+class CRC_4_ITU(CRC_POLY):
+    """
+    G.704
+    """
+    POLY = 0x3
+    WIDTH = 4
+    REFIN = True
+    REFOUT = True
+    CHECK = 0x7
+    RESIDUE = 0x0
 
-# fieldbus networks
-CRC_16_Profibus = 0x1DCF
 
-# CAN FD
-CRC_17_CAN = 0x1685B
+class CRC_5_EPC(CRC_POLY):
+    """
+    Gen 2 RFID EPC-C1G2
+    """
+    POLY = 0x09
+    WIDTH = 5
+    CHECK = 0x00
+    RESIDUE = 0x00
 
-# CAN FD
-CRC_21_CAN = 0x102899
 
-# FlexRay
-CRC_24 = 0x5D6DCB
+class CRC_5_ITU(CRC_POLY):
+    """
+    G.704
+    """
+    POLY = 0x15
+    WIDTH = 5
 
-# OpenPGP, RTCM104v3
-CRC_24_Radix_64 = 0x864CFB
 
-# CDMA
-CRC_30 = 0x2030B9C7
+class CRC_5_USB(CRC_POLY):
+    """
+    USB token packets
+    """
+    CHECK = 0x19
+    INIT = 0b11111
+    REFIN = True
+    REFOUT = True
+    RESIDUE = 0b01100
+    POLY = 0x05
+    WIDTH = 5
+    XOROUT = 0x1f
 
-# HDLC, ANSI X3.66, ITU-T V.42, Ethernet, Serial ATA, MPEG-2, PKZIP, Gzip, Bzip2, PNG, many others
-CRC_32 = 0x04C11DB7
 
-# (Castagnoli), iSCSI, SCTP, G.hn payload, SSE4.2, Btrfs, ext4, Ceph
-CRC_32C = 0x1EDC6F41
+class CRC_6_CDMA2000_A(CRC_POLY):
+    "Used in mobile networks"
+    POLY = 0x27
+    WIDTH = 6
 
-# Koopman {1,3,28}
-CRC_32K = 0x741B8CD7
 
-# Koopman {1,1,30}
-CRC_32K_2 = 0x32583499
+class CRC_6_CDMA2000_B(CRC_POLY):
+    "Used in mobile networks"
+    POLY = 0x07
+    WIDTH = 6
 
-# aviation; AIXM
-CRC_32Q = 0x814141AB
 
-# GSM control channel[40][41]
-CRC_40_GSM = 0x0004820009
+class CRC_6_DARC(CRC_POLY):
+    "Data Radio Channel"
+    POLY = 0x19
+    WIDTH = 6
 
-# ECMA-182, XZ Utils
-CRC_64_ECMA = 0x42F0E1EBA9EA3693
 
-# HDLC, Swiss-Prot/TrEMBL; considered weak for hashing
-CRC_64_ISO = 0x000000000000001B
+class CRC_6_GSM(CRC_POLY):
+    "Used in mobile networks"
+    POLY = 0x2F
+    WIDTH = 6
+
+
+class CRC_6_ITU(CRC_POLY):
+    "Used in G.704"
+    POLY = 0x03
+    WIDTH = 6
+
+
+class CRC_7(CRC_POLY):
+    "Used in telecom systems, G.707,G.832, MMC, SD"
+    POLY = 0x09
+    WIDTH = 7
+
+
+class CRC_7_MVB(CRC_POLY):
+    "Used in Train Communication Network, IEC 60870-5"
+    POLY = 0x65
+    WIDTH = 7
+
+
+class CRC_8(CRC_POLY):
+    "Used in DVB-S2"
+    POLY = 0xD5
+    WIDTH = 8
+
+
+class CRC_8_AUTOSAR(CRC_POLY):
+    "Used in automotive integration, OpenSafety"
+    POLY = 0x2F
+    WIDTH = 8
+
+
+class CRC_8_Bluetooth(CRC_POLY):
+    "Used in wireless connectivity"
+    POLY = 0xA7
+    WIDTH = 8
+
+
+class CRC_8_CCITT(CRC_POLY):
+    "Used in I.432.1; ATM HEC, ISDN HEC and cell delineation"
+    CHECK = 0xf4
+    POLY = 0x07
+    WIDTH = 8
+    RESIDUE = 0x00
+
+
+class CRC_8_Dallas_Maxim(CRC_POLY):
+    "Used in 1-Wire bus"
+    POLY = 0x31
+    WIDTH = 8
+
+
+class CRC_8_DARC(CRC_POLY):
+    "Used in Data Radio Channel"
+    POLY = 0x39
+    WIDTH = 8
+
+
+class CRC_8_GSM_B(CRC_POLY):
+    "Used in mobile networks"
+    POLY = 0x49
+    WIDTH = 8
+
+
+class CRC_8_SAE_J1850(CRC_POLY):
+    "Used in AES3"
+    POLY = 0x1D
+    WIDTH = 8
+
+
+class CRC_8_WCDMA(CRC_POLY):
+    "Used in mobile networks"
+    CHECK = 0x25
+    INIT = 0X00
+    POLY = 0x9B
+    REFIN = True
+    REFOUT = True
+    RESIDUE = 0x00
+    WIDTH = 8
+
+
+class CRC_10(CRC_POLY):
+    "Used in ATM; I.610"
+    POLY = 0x233
+    WIDTH = 10
+
+
+class CRC_10_CDMA2000(CRC_POLY):
+    "Used in mobile networks"
+    POLY = 0x3D9
+    WIDTH = 10
+
+
+class CRC_10_GSM(CRC_POLY):
+    "Used in mobile networks"
+    POLY = 0x175
+    WIDTH = 10
+
+
+class CRC_11(CRC_POLY):
+    "Used in FlexRay"
+    POLY = 0x385
+    WIDTH = 11
+
+
+class CRC_12(CRC_POLY):
+    "Used in telecom systems"
+    POLY = 0x80F
+    WIDTH = 12
+
+
+class CRC_12_CDMA2000(CRC_POLY):
+    "Used in mobile networks"
+    POLY = 0xF13
+    WIDTH = 12
+
+
+class CRC_12_GSM(CRC_POLY):
+    "Used in mobile networks"
+    POLY = 0xD31
+    WIDTH = 12
+
+
+class CRC_13_BBC(CRC_POLY):
+    "Used in Time signal, Radio teleswitch"
+    POLY = 0x1CF5
+    WIDTH = 13
+
+
+class CRC_14_DARC(CRC_POLY):
+    "Used in Data Radio Channel[19]"
+    POLY = 0x0805
+    WIDTH = 14
+
+
+class CRC_14_GSM(CRC_POLY):
+    "Used in mobile networks"
+    POLY = 0x202D
+    WIDTH = 14
+
+
+class CRC_15_CAN(CRC_POLY):
+    POLY = 0x4599
+    WIDTH = 15
+
+
+class CRC_15_MPT1327(CRC_POLY):
+    POLY = 0x6815
+    WIDTH = 15
+
+
+class CRC_16_Chakravarty(CRC_POLY):
+    "Used in Optimal for payloads ≤64 bits"
+    POLY = 0x2F15
+    WIDTH = 16
+
+
+class CRC_16_ARINC(CRC_POLY):
+    "Used in ACARS applications"
+    POLY = 0xA02B
+    WIDTH = 16
+
+
+class CRC_16_CCITT(CRC_POLY):
+    """
+    Used in X.25, V.41, HDLC FCS, XMODEM, Bluetooth, PACTOR, SD, DigRF, many others;
+    Also known as CRC_CCITT
+    """
+    INIT = 0xFFFF
+    POLY = 0x1021
+    WIDTH = 16
+
+
+class CRC_16_CDMA2000(CRC_POLY):
+    "Used in mobile networks"
+    POLY = 0xC867
+    WIDTH = 16
+
+
+class CRC_16_DECT(CRC_POLY):
+    "Used in cordless telephones"
+    POLY = 0x0589
+    WIDTH = 16
+
+
+class CRC_16_T10_DIF(CRC_POLY):
+    "Used in SCSI DIF"
+    POLY = 0x8BB7
+    WIDTH = 16
+
+
+class CRC_16_DNP(CRC_POLY):
+    "Used in DNP, IEC 870, M-Bus"
+    POLY = 0x3D65
+    WIDTH = 16
+
+
+class CRC_16_IBM(CRC_POLY):
+    """
+    Used in Bisync, Modbus, USB, ANSI X3.28, SIA DC-07, many others;
+    Also known as CRC_16 and CRC_16-ANSI
+    """
+    POLY = 0x8005
+    REFIN = True
+    REFOUT = True
+    WIDTH = 16
+
+
+class CRC_16_OpenSafety_A(CRC_POLY):
+    "Used in safety fieldbus"
+    POLY = 0x5935
+    WIDTH = 16
+
+
+class CRC_16_OpenSafety_B(CRC_POLY):
+    "Used in safety fieldbus"
+    POLY = 0x755B
+    WIDTH = 16
+
+
+class CRC_16_Profibus(CRC_POLY):
+    "Used in fieldbus networks"
+    POLY = 0x1DCF
+    WIDTH = 16
+
+
+class CRC_17_CAN(CRC_POLY):
+    "Used in CAN FD"
+    POLY = 0x1685B
+    WIDTH = 17
+
+
+class CRC_21_CAN(CRC_POLY):
+    "Used in CAN FD"
+    POLY = 0x102899
+    WIDTH = 21
+
+
+class CRC_24(CRC_POLY):
+    "Used in FlexRay"
+    POLY = 0x5D6DCB
+    WIDTH = 24
+
+
+class CRC_24_Radix_64(CRC_POLY):
+    "Used in OpenPGP, RTCM104v3"
+    POLY = 0x864CFB
+    WIDTH = 24
+
+
+class CRC_30(CRC_POLY):
+    "Used in CDMA"
+    POLY = 0x2030B9C7
+    WIDTH = 30
+
+
+class CRC_32(CRC_POLY):
+    """
+    Used in  HDLC, ANSI X3.66, ITU-T V.42, Ethernet, Serial ATA,
+    MPEG-2, PKZIP, Gzip, Bzip2, PNG, many others
+    """
+    INIT = 0xffffffff
+    POLY = 0x04C11DB7
+    RESIDUE = 0xC704DD7B  # CBF43926
+    REFIN = True
+    REFOUT = True
+    WIDTH = 32
+    XOROUT = 0xffffffff
+
+
+class CRC_32C(CRC_POLY):
+    "Used in (Castagnoli), iSCSI, SCTP, G.hn payload, SSE4.2, Btrfs, ext4, Ceph"
+    INIT = 0Xffffffff
+    CHECK = 0xe3069283
+    POLY = 0x1EDC6F41
+    WIDTH = 32
+    REFIN = True
+    REFOUT = True
+    RESIDUE = 0xb798b438
+    XOROUT = 0xffffffff
+
+
+class CRC_32K(CRC_POLY):
+    "Koopman {1,3,28}"
+    POLY = 0x741B8CD7
+    WIDTH = 32
+
+
+class CRC_32K_2(CRC_POLY):
+    "Koopman {1,1,30}"
+    POLY = 0x32583499
+    WIDTH = 32
+
+
+class CRC_32Q(CRC_POLY):
+    "Used in aviation; AIXM"
+    POLY = 0x814141AB
+    WIDTH = 32
+
+
+class CRC_40_GSM(CRC_POLY):
+    "Used in GSM control channel[40][41]"
+    POLY = 0x0004820009
+    WIDTH = 40
+
+
+class CRC_64_ECMA(CRC_POLY):
+    "Used in ECMA-182, XZ Utils"
+    POLY = 0x42F0E1EBA9EA3693
+    WIDTH = 64
+
+
+class CRC_64_ISO(CRC_POLY):
+    "Used in HDLC, Swiss-Prot/TrEMBL; considered weak for hashing"
+    POLY = 0x000000000000001B
+    WIDTH = 64

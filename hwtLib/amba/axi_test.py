@@ -4,7 +4,7 @@
 import unittest
 
 from hwtLib.amba.constants import BYTES_IN_TRANS
-from hwtLib.amba.interconnect.axiInterconnectbase import getSizeWidth
+from hwtLib.amba.axi_comp.interconnect.base import getSizeWidth
 
 
 class AxiTC(unittest.TestCase):
@@ -24,6 +24,7 @@ class AxiTC(unittest.TestCase):
 
     def test_getSizeWidth(self):
         self.assertEqual(getSizeWidth(255, 64), 12)
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

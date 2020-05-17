@@ -1,238 +1,147 @@
-from hwt.hdlObjects.constants import DIRECTION
 from hwt.interfaces.std import VectSignal, Signal
-from hwt.synthesizer.param import Param, evalParam
-from hwtLib.amba.axiLite import AxiLite, AxiLite_b, AxiLite_w, AxiLite_r, \
-    AxiLite_addr, IP_AXILite
-from hwtLib.amba.axi_intf_common import AxiMap, Axi_id
-from hwtLib.amba.axis import AxiStream_withIdAgent
+from hwt.synthesizer.param import Param
+from hwtLib.amba.axi3 import Axi3_addr, Axi3_r, Axi3_b, IP_Axi3, Axi3, _DEFAULT
+from hwtLib.amba.axi4Lite import Axi4Lite
+from hwtLib.amba.axi_intf_common import Axi_strb, Axi_hs
+from hwtLib.amba.axis import AxiStream, AxiStreamAgent
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
+from pycocotb.hdlSimulator import HdlSimulator
+from hwtLib.amba.constants import BURST_INCR, LOCK_DEFAULT, PROT_DEFAULT,\
+    BYTES_IN_TRANS, QOS_DEFAULT, CACHE_DEFAULT
 
 
 #####################################################################
-class Axi4_addr(AxiLite_addr, Axi_id):
-    def _config(self):
-        AxiLite_addr._config(self)
-        Axi_id._config(self)
-        self.LEN_WIDTH = 8
-        self.LOCK_WIDTH = Param(1)
+class Axi4_addr(Axi3_addr):
+    """
+    Axi4 address channel interface
+    (axi3 address channel with different size of len and lock signals
+    and additional qos signal)
+    """
+    LEN_WIDTH = 8
+    LOCK_WIDTH = 1
 
     def _declr(self):
-        AxiLite_addr._declr(self)
-        Axi_id._declr(self)
-        self.burst = VectSignal(2)
-        self.cache = VectSignal(4)
-        self.len = VectSignal(self.LEN_WIDTH)
-        self.lock = VectSignal(evalParam(self.LOCK_WIDTH).val)
-        self.prot = VectSignal(3)
-        self.size = VectSignal(3)
+        Axi3_addr._declr(self)
         self.qos = VectSignal(4)
 
-    def _getSimAgent(self):
-        return Axi4_addrAgent
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = Axi4_addrAgent(sim, self)
 
 
-class Axi4_addrAgent(BaseAxiAgent):
-    def doRead(self, s):
-        intf = self.intf
-        r = s.read
+class Axi4_addrAgent(AxiStreamAgent):
+    def __init__(self, sim: HdlSimulator, intf: Axi3_addr, allowNoReset=False):
+        BaseAxiAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
 
-        addr = r(intf.addr)
-        _id = r(intf.id)
-        burst = r(intf.burst)
-        cache = r(intf.cache)
-        _len = r(intf.len)
-        lock = r(intf.lock)
-        prot = r(intf.prot)
-        size = r(intf.size)
-        qos = r(intf.qos)
+        signals = [
+            intf.id,
+            intf.addr,
+            intf.burst,
+            intf.cache,
+            intf.len,
+            intf.lock,
+            intf.prot,
+            intf.size,
+            intf.qos
+        ]
+        if hasattr(intf, "user"):
+            signals.append(intf.user)
+        self._signals = tuple(signals)
+        self._sigCnt = len(signals)
 
-        return (_id, addr, burst, cache, _len, lock, prot, size, qos)
-
-    def doWrite(self, s, data):
-        intf = self.intf
-        w = s.w
-
-        if data is None:
-            data = [None for _ in range(9)]
-
-        _id, addr, burst, cache, _len, lock, prot, size, qos = data
-
-        w(_id, intf.id)
-        w(addr, intf.intf)
-        w(burst, intf.burst)
-        w(cache, intf.cache)
-        w(_len, intf.len)
-        w(lock, intf.lock)
-        w(prot, intf.prot)
-        w(size, intf.size)
-        w(qos, intf.qos)
-
-
-class Axi4_addr_withUserAgent(BaseAxiAgent):
-    def doRead(self, s):
-        intf = self.intf
-        r = s.read
-
-        addr = r(intf.addr)
-        _id = r(intf.id)
-        burst = r(intf.burst)
-        cache = r(intf.cache)
-        _len = r(intf.len)
-        lock = r(intf.lock)
-        prot = r(intf.prot)
-        size = r(intf.size)
-        qos = r(intf.qos)
-        user = r(intf.user)
-        return (_id, addr, burst, cache, _len, lock, prot, size, qos, user)
-
-    def doWrite(self, s, data):
-        intf = self.intf
-        w = s.w
-
-        if data is None:
-            data = [None for _ in range(10)]
-
-        _id, addr, burst, cache, _len, lock, prot, size, qos, user = data
-
-        w(_id, intf.id)
-        w(addr, intf.intf)
-        w(burst, intf.burst)
-        w(cache, intf.cache)
-        w(_len, intf.len)
-        w(lock, intf.lock)
-        w(prot, intf.prot)
-        w(size, intf.size)
-        w(qos, intf.qos)
-        w(user, intf.user)
+    def create_addr_req(self, addr, _len,
+                        _id=0,
+                        burst=BURST_INCR,
+                        cache=CACHE_DEFAULT,
+                        lock=LOCK_DEFAULT,
+                        prot=PROT_DEFAULT,
+                        size=_DEFAULT,
+                        qos=QOS_DEFAULT,
+                        user=None):
+        """
+        Create a default AXI address transaction 
+        :note: transaction is created and returned but it is not added to a agent data
+        """
+        if size is _DEFAULT:
+            D_B = self.intf._parent.DATA_WIDTH // 8
+            size = BYTES_IN_TRANS(D_B)
+        if self.intf.USER_WIDTH:
+            return (_id, addr, burst, cache, _len, lock, prot, size, qos, user)
+        else:
+            assert user is None
+            return (_id, addr, burst, cache, _len, lock, prot, size, qos)
 
 
 #####################################################################
-class Axi4_r(AxiLite_r, Axi_id):
+class Axi4_r(Axi3_r):
+    """
+    Axi4 read channel interface
+    (same as axi3)
+    """
+    pass
+
+
+#####################################################################
+class Axi4_w(Axi_hs, Axi_strb):
+    """
+    Axi4 write channel interface
+    (Axi3_w without id signal)
+    """
     def _config(self):
-        AxiLite_r._config(self)
-        Axi_id._config(self)
+        self.DATA_WIDTH = Param(64)
 
     def _declr(self):
-        Axi_id._declr(self)
-        AxiLite_r._declr(self)
+        self.data = VectSignal(self.DATA_WIDTH)
+        Axi_strb._declr(self)
         self.last = Signal()
+        Axi_hs._declr(self)
 
-    def _getSimAgent(self):
-        return Axi4_rAgent
-
-
-class Axi4_rAgent(BaseAxiAgent):
-    def doRead(self, s):
-        intf = self.intf
-        r = s.read
-
-        _id = r(intf.valid)
-        data = r(intf.data)
-        resp = r(intf.resp)
-        last = r(intf.last)
-
-        return (_id, data, resp, last)
-
-    def doWrite(self, s, data):
-        intf = self.intf
-        w = s.w
-
-        if data is None:
-            data = [None for _ in range(4)]
-
-        _id, data, resp, last = data
-
-        w(_id, intf.id)
-        w(data, intf.data)
-        w(resp, intf.resp)
-        w(last, intf.last)
+    def _initSimAgent(self, sim: HdlSimulator):
+        AxiStream._initSimAgent(self, sim)
 
 
 #####################################################################
-class Axi4_w(AxiLite_w, Axi_id):
-    def _config(self):
-        AxiLite_w._config(self)
-        Axi_id._config(self)
-
-    def _declr(self):
-        Axi_id._declr(self)
-        AxiLite_w._declr(self)
-        self.last = Signal()
-
-    def _getSimAgent(self):
-        return AxiStream_withIdAgent
+class Axi4_b(Axi3_b):
+    """
+    Axi4 write response channel interface
+    (same as axi3)
+    """
+    pass
 
 
 #####################################################################
-class Axi4_b(AxiLite_b, Axi_id):
+class Axi4(Axi3):
+    """
+    Basic AMBA AXI4 bus interface
+
+    :ivar ~.ar: read address channel
+    :ivar ~.r:  read data channel
+    :ivar ~.aw: write address channel
+    :ivar ~.w: write data channel
+    :ivar ~.b: write acknowledge channel
+    """
+    LEN_WIDTH = 8
+    LOCK_WIDTH = 1
+    AW_CLS = Axi4_addr
+    AR_CLS = Axi4_addr
+    W_CLS = Axi4_w
+    R_CLS = Axi4_r
+    B_CLS = Axi4_b
+
     def _config(self):
-        AxiLite_b._config(self)
-        Axi_id._config(self)
-
-    def _declr(self):
-        Axi_id._declr(self)
-        AxiLite_b._declr(self)
-
-    def _getSimAgent(self):
-        return Axi4_bAgent
-
-
-class Axi4_bAgent(BaseAxiAgent):
-    def doRead(self, s):
-        r = s.r
-        intf = self.intf
-
-        return r(intf.id), r(intf.resp)
-
-    def doWrite(self, s, data):
-        w = s.write
-        intf = self.intf
-
-        if data is None:
-            data = [None for _ in range(2)]
-
-        _id, resp = data
-
-        w(_id, intf.id)
-        w(resp, intf.resp)
-
-
-#####################################################################
-class Axi4(AxiLite):
-    def _config(self):
-        AxiLite._config(self)
+        Axi4Lite._config(self)
         self.ID_WIDTH = Param(6)
-        self.LOCK_WIDTH = Param(1)
-
-    def _declr(self):
-        with self._paramsShared():
-            self.aw = Axi4_addr()
-            self.ar = Axi4_addr()
-            self.w = Axi4_w()
-            self.r = Axi4_r(masterDir=DIRECTION.IN)
-            self.b = Axi4_b(masterDir=DIRECTION.IN)
+        self.LOCK_WIDTH = 1
+        self.ADDR_USER_WIDTH = Param(0)
 
     def _getIpCoreIntfClass(self):
         return IP_Axi4
 
 
-class IP_Axi4(IP_AXILite):
-    def __init__(self,):
-        super().__init__()
-        A_SIGS = ['id', 'burst', 'cache', 'len', 'lock', 'prot', 'size', 'qos']
-        AxiMap('ar', A_SIGS, self.map['ar'])
-        AxiMap('aw', A_SIGS, self.map['aw'])
-        AxiMap('b', ['id'], self.map['b'])
-        AxiMap('r', ['id', 'last'], self.map['r'])
-        AxiMap('w', ['id', 'last'], self.map['w'])
-
-    def postProcess(self, component, entity, allInterfaces, thisIf):
-        self.endianness = "little"
-        param = lambda name, val: self.addSimpleParam(thisIf, name, str(val))
-        param("ADDR_WIDTH", thisIf.aw.addr._dtype.bit_length())  # [TODO] width expression
-        param("MAX_BURST_LENGTH", 256)
-        param("NUM_READ_OUTSTANDING", 5)
-        param("NUM_WRITE_OUTSTANDING", 5)
-        param("PROTOCOL", "AXI4")
-        param("READ_WRITE_MODE", "READ_WRITE")
-        param("SUPPORTS_NARROW_BURST", 0)
+class IP_Axi4(IP_Axi3):
+    """
+    IP core interface meta for Axi4 interface
+    """
+    def __init__(self):
+        super(IP_Axi4, self).__init__()
+        self.quartus_name = "axi4"
+        self.xilinx_protocol_name = "AXI4"

@@ -1,24 +1,26 @@
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.synthesizer.unit import Unit
 from hwtLib.handshaked.compBase import HandshakedCompBase
-from hwtLib.amba.axis import AxiStream_withoutSTRB
+from hwtLib.amba.axis import AxiStream
 
 
 class AxiSCompBase(HandshakedCompBase):
     """
     Abstract base for axis components
     """
-    def __init__(self, hsIntfCls):
+
+    def __init__(self, intfCls=AxiStream):
         """
         :param hsIntfCls: class of interface which should be used as interface of this unit
         """
-        assert(issubclass(hsIntfCls, AxiStream_withoutSTRB)), hsIntfCls
-        self.intfCls = hsIntfCls
+        self.intfCls = intfCls
         Unit.__init__(self)
 
-    def getVld(self, intf):
+    @classmethod
+    def get_valid_signal(cls, intf):
         return intf.valid
 
-    def getRd(self, intf):
+    @classmethod
+    def get_ready_signal(cls, intf):
         return intf.ready
 
     def getDataWidthDependent(self, intf):

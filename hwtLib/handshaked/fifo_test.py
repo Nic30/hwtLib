@@ -4,85 +4,49 @@
 from copy import copy
 import unittest
 
-from hwt.hdlObjects.constants import Time
+from hwt.hdl.constants import NOP
 from hwt.interfaces.std import Handshaked
-from hwt.simulator.simTestCase import SimTestCase
+
 from hwtLib.handshaked.fifo import HandshakedFifo
+from hwtLib.mem.fifo_test import FifoTC
 
 
-class HsFifoTC(SimTestCase):
-    def setUp(self):
-        u = self.u = HandshakedFifo(Handshaked)
-        u.DEPTH.set(8)
-        u.DATA_WIDTH.set(4)
-        u.EXPORT_SIZE.set(True)
-        self.prepareUnit(u)
+class HsFifoTC(FifoTC):
+
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = HandshakedFifo(Handshaked)
+        u.DEPTH = cls.ITEMS
+        u.DATA_WIDTH = 64
+        u.EXPORT_SIZE = True
+        return u
+
+    def getFifoItems(self):
+        m = self.rtl_simulator.model
+        mem = m.fifo_inst.io.memory
+        items = set([int(x.read()) for x in mem])
+        items.add(int(m.io.dataOut_data.read()))
+        return items
+
+    def getUnconsumedInput(self):
+        d = copy(self.u.dataIn._ag.data)
+        ad = self.u.dataIn._ag.actualData
+        if ad != NOP:
+            d.appendleft(ad)
+        return d
 
     def test_stuckedData(self):
-        u = self.u
-        u.dataIn._ag.data = [1]
+        super(HsFifoTC, self).test_stuckedData()
+        self.assertValEqual(self.rtl_simulator.io.dataOut_data, 1)
 
-        u.dataOut._ag.enable = False
-        self.doSim(120 * Time.ns)
-        self.assertValEqual(self.model.dataOut_data, 1)
+    def test_tryMore2(self, capturedOffset=1):
+        # capturedOffset=1 because handshaked aget can act in same clk
+        super(HsFifoTC, self).test_tryMore2(capturedOffset=capturedOffset)
 
-    def test_withPause(self):
-        u = self.u
-        golden = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        u.dataIn._ag.data = copy(golden)
-
-        def pause(simulator):
-            yield simulator.wait(3 * 10 * Time.ns)
-            u.dataOut._ag.enable = False
-            yield simulator.wait(3 * 10 * Time.ns)
-            u.dataOut._ag.enable = True
-            yield simulator.wait(3 * 10 * Time.ns)
-            u.dataIn._ag.enable = False
-            yield simulator.wait(3 * 10 * Time.ns)
-            u.dataIn._ag.enable = True
-
-        self.procs.append(pause)
-
-        self.doSim(200 * Time.ns)
-
-        self.assertValSequenceEqual(u.dataOut._ag.data, golden)
-        self.assertSequenceEqual(u.dataIn._ag.data, [])
-
-    def test_withPause2(self):
-        u = self.u
-        golden = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        u.dataIn._ag.data = copy(golden)
-
-        def pause(simulator):
-            yield simulator.wait(4 * 10 * Time.ns)
-            u.dataOut._ag.enable = False
-            yield simulator.wait(3 * 10 * Time.ns)
-            u.dataOut._ag.enable = True
-            yield simulator.wait(3 * 10 * Time.ns)
-            u.dataIn._ag.enable = False
-            yield simulator.wait(3 * 10 * Time.ns)
-            u.dataIn._ag.enable = True
-
-        self.procs.append(pause)
-
-        self.doSim(200 * Time.ns)
-
-        self.assertValSequenceEqual(u.dataOut._ag.data, golden)
-        self.assertSequenceEqual(u.dataIn._ag.data, [])
-
-    def test_passdata(self):
-        u = self.u
-        golden = [1, 2, 3, 4, 5, 6]
-        u.dataIn._ag.data = copy(golden)
-
-        self.doSim(120 * Time.ns)
-
-        self.assertValSequenceEqual(u.dataOut._ag.data, golden)
-        self.assertValSequenceEqual(u.dataIn._ag.data, [])
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(HsFifoTC('test_passdata'))
+    # suite.addTest(HsFifoTC('test_passdata'))
     suite.addTest(unittest.makeSuite(HsFifoTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

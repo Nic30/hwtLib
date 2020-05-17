@@ -3,16 +3,18 @@
 
 import unittest
 
-from hwt.bitmask import mask
-from hwt.hdlObjects.constants import Time
+from hwt.doc_markers import internal
+from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SimTestCase
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axis_comp.resizer import AxiS_resizer
+from pyMathBitPrecise.bit_utils import mask
 
 
+@internal
 def it(dw, *items):
     v = 0
     for item in reversed(items):
@@ -22,57 +24,61 @@ def it(dw, *items):
     return v
 
 
-class AxiS_resizer_upscale_TC(SimTestCase):
+class AxiS_resizer_upscale_TC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = AxiS_resizer()
+        u.USE_STRB = True
+        u.DATA_WIDTH = cls.DW_IN = 16
+        u.OUT_DATA_WIDTH = cls.DW_OUT = 64
+        return u
+
     def setUp(self):
         super(AxiS_resizer_upscale_TC, self).setUp()
-        u = self.u = AxiS_resizer(AxiStream)
-        self.DW_IN = 16
-        self.DW_OUT = 64
-        u.DATA_WIDTH.set(self.DW_IN)
-        u.OUT_DATA_WIDTH.set(self.DW_OUT)
-
-        self.prepareUnit(self.u)
-
-        self.randomize(u.dataIn)
-        self.randomize(u.dataOut)
+        self.randomize(self.u.dataIn)
+        self.randomize(self.u.dataOut)
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEmpty(u.dataOut._ag.data)
 
     def test_simple(self):
         u = self.u
 
-        u.dataIn._ag.data.extend([(1, mask(2), i == 3) for i in range(4)])
-        self.doSim(200 * Time.ns)
+        m = mask(2)
+        u.dataIn._ag.data.extend([(1, m, i == 3) for i in range(4)])
+        self.runSim(300 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
-                                    [(it(16, 1, 1, 1, 1), it(2, mask(2), mask(2), mask(2), mask(2)), 1)])
+                                    [(it(16, 1, 1, 1, 1), it(2, m, m, m, m), 1)])
 
     def test_noLast(self):
         u = self.u
 
-        u.dataIn._ag.data.extend([(1, mask(2), 0) for _ in range(4)])
-        self.doSim(200 * Time.ns)
+        m = mask(2)
+        u.dataIn._ag.data.extend([(1, m, 0) for _ in range(4)])
+        self.runSim(300 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
-                                    [(it(16, 1, 1, 1, 1), it(2, mask(2), mask(2), mask(2), mask(2)), 0)])
+                                    [(it(16, 1, 1, 1, 1), it(2, m, m, m, m), 0)])
 
     def test_multiLast(self):
         u = self.u
 
         expected = []
+        m = mask(2)
         for i in range(4):
-            u.dataIn._ag.data.extend([(1, mask(2), i2 == i) for i2 in range(i + 1)])
+            u.dataIn._ag.data.extend([(1, m, i2 == i) for i2 in range(i + 1)])
 
             expected.append((it(16, *[1 if i2 <= i else 0 for i2 in range(4)]),
-                             it(2, *[mask(2) if i2 <= i else 0 for i2 in range(4)]),
+                             it(2, *[m if i2 <= i else 0 for i2 in range(4)]),
                              1
                              ))
 
-        self.doSim(700 * Time.ns)
+        self.runSim(700 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     expected)
@@ -81,28 +87,27 @@ class AxiS_resizer_upscale_TC(SimTestCase):
         u = self.u
         u.dataIn._ag.data.extend([(1, mask(2), 0) for _ in range(2)])
 
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEmpty(u.dataOut._ag.data)
 
 
-class AxiS_resizer_downscale_TC(SimTestCase):
+class AxiS_resizer_downscale_TC(SingleUnitSimTestCase):
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = AxiS_resizer()
+        u.DATA_WIDTH = cls.DW_IN = 64
+        u.OUT_DATA_WIDTH = cls.DW_OUT = 16
+        return cls.u
+
     def setUp(self):
         super(AxiS_resizer_downscale_TC, self).setUp()
-        u = self.u = AxiS_resizer(AxiStream)
-        self.DW_IN = 64
-        self.DW_OUT = 16
-        u.DATA_WIDTH.set(self.DW_IN)
-        u.OUT_DATA_WIDTH.set(self.DW_OUT)
-
-        self.prepareUnit(self.u)
-
-        self.randomize(u.dataIn)
-        self.randomize(u.dataOut)
+        self.randomize(self.u.dataIn)
+        self.randomize(self.u.dataOut)
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEmpty(u.dataOut._ag.data)
 
@@ -112,7 +117,7 @@ class AxiS_resizer_downscale_TC(SimTestCase):
         u.dataIn._ag.data.append((it(16, 1, 2, 3, 4),
                                   it(2, mask(2), mask(2), mask(2), mask(2)),
                                   0))
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(i + 1, mask(2), 0) for i in range(4)])
@@ -123,19 +128,20 @@ class AxiS_resizer_downscale_TC(SimTestCase):
         u.dataIn._ag.data.append((it(16, 1, 2, 3, 4),
                                   it(2, mask(2), mask(2), mask(2), mask(2)),
                                   1))
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
-                                    [(i + 1, mask(2), i == 3) for i in range(4)])
+                                    [(i + 1, mask(2), i == 3)
+                                     for i in range(4)])
 
     def test_onlyPartOfMask(self):
         u = self.u
-        u.dataIn._ag.data.append((
-                                  it(16, 1, 2, 3, 4),
-                                  it(2, mask(2), 0, 0, 0),
-                                  1)
-                                )
-        self.doSim(200 * Time.ns)
+        u.dataIn._ag.data.append(
+            (it(16, 1, 2, 3, 4),
+             it(2, mask(2), 0, 0, 0),
+             1)
+        )
+        self.runSim(200 * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
                                     [(1, mask(2), 1),
@@ -151,29 +157,31 @@ class TestComp_AxiS_resizer_downAndUp(AxiS_resizer):
         addClkRstn(self)
         with self._paramsShared():
             self.dataIn = AxiStream()
-            self.dataOut = AxiStream()
+            self.dataOut = AxiStream()._m()
 
     def _impl(self):
-        self.dataOut ** AxiSBuilder(self, self.dataIn)\
-                            .resize(self.INTERNAL_SIZE)\
-                            .resize(self.DATA_WIDTH).end
+        self.dataOut(
+            AxiSBuilder(self, self.dataIn)
+            .resize(self.INTERNAL_SIZE)
+            .resize(self.DATA_WIDTH).end)
 
 
-class AxiS_resizer_downAndUp_TC(SimTestCase):
+class AxiS_resizer_downAndUp_TC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = TestComp_AxiS_resizer_downAndUp()
+        u.DATA_WIDTH = cls.DW = 64
+        return u
+
     def setUp(self):
         super(AxiS_resizer_downAndUp_TC, self).setUp()
-        u = self.u = TestComp_AxiS_resizer_downAndUp(AxiStream)
-        self.DW = 64
-        u.DATA_WIDTH.set(self.DW)
-
-        self.prepareUnit(self.u)
-
-        self.randomize(u.dataIn)
-        self.randomize(u.dataOut)
+        self.randomize(self.u.dataIn)
+        self.randomize(self.u.dataOut)
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEmpty(u.dataOut._ag.data)
 
@@ -181,26 +189,27 @@ class AxiS_resizer_downAndUp_TC(SimTestCase):
         u = self.u
         data = [(311 * i, mask(self.DW // 8), i == 2) for i in range(3)]
         u.dataIn._ag.data.extend(data)
-        self.doSim(1300 * Time.ns)
+        self.runSim(1300 * Time.ns)
         self.assertValSequenceEqual(u.dataOut._ag.data, data)
 
 
-class AxiS_resizer_upAndDown_TC(SimTestCase):
+class AxiS_resizer_upAndDown_TC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = TestComp_AxiS_resizer_downAndUp()
+        u.DATA_WIDTH = cls.DW = 32
+        u.INTERNAL_SIZE = 64
+        return u
+
     def setUp(self):
         super(AxiS_resizer_upAndDown_TC, self).setUp()
-        u = self.u = TestComp_AxiS_resizer_downAndUp(AxiStream)
-        self.DW = 32
-        u.DATA_WIDTH.set(self.DW)
-        u.INTERNAL_SIZE.set(64)
-
-        self.prepareUnit(self.u)
-
-        self.randomize(u.dataIn)
-        self.randomize(u.dataOut)
+        self.randomize(self.u.dataIn)
+        self.randomize(self.u.dataOut)
 
     def test_nop(self):
         u = self.u
-        self.doSim(200 * Time.ns)
+        self.runSim(200 * Time.ns)
 
         self.assertEmpty(u.dataOut._ag.data)
 
@@ -208,17 +217,22 @@ class AxiS_resizer_upAndDown_TC(SimTestCase):
         u = self.u
         data = [(311 * i, mask(self.DW // 8), int(i == 2)) for i in range(3)]
         u.dataIn._ag.data.extend(data)
-        self.doSim(1000 * Time.ns)
+        self.runSim(1000 * Time.ns)
         self.assertValSequenceEqual(u.dataOut._ag.data, data)
 
 
+AxiS_resizer_TCs = [
+    AxiS_resizer_upscale_TC,
+    AxiS_resizer_downscale_TC,
+    AxiS_resizer_downAndUp_TC,
+    AxiS_resizer_upAndDown_TC
+]
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(AxiS_resizer_downscale_TC('test_onlyPartOfMask'))
-    suite.addTest(unittest.makeSuite(AxiS_resizer_upscale_TC))
-    suite.addTest(unittest.makeSuite(AxiS_resizer_downscale_TC))
-    suite.addTest(unittest.makeSuite(AxiS_resizer_downAndUp_TC))
-    suite.addTest(unittest.makeSuite(AxiS_resizer_upAndDown_TC))
+    # suite.addTest(AxiS_resizer_downscale_TC('test_noLast'))
+    for tc in AxiS_resizer_TCs:
+        suite.addTest(unittest.makeSuite(tc))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

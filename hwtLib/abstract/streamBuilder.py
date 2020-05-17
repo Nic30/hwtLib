@@ -1,92 +1,67 @@
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getClk, getRst
-from hwt.interfaces.std import Rst_n
-getClk
+from hwt.code import If
+from hwt.hdl.types.bits import Bits
+from hwt.interfaces.std import Handshaked
+from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
 
 
-class AbstractStreamBuilder(object):
-    """
-    :attention: this is just abstract class unit classes has to be specified in concrete implementation
-
-    :cvar JoinCls: join unit class
-    :cvar ForkCls: fork unit class
-    :cvar FifoCls: fifo unit class
-    :cvar RegCls: register unit class
-    :cvar MuxCls: multiplexer unit class
-
-    :ivar compId: used for sequential number of components
-    :ivar lastComp: last builded component
-    :ivar end: last interface of data-path
-
-    :attention: input port is taken from self.end
+class AbstractStreamBuilder(AbstractComponentBuilder):
     """
 
-    def __init__(self, parent, srcInterface, name=None):
+    :attention: this is just abstract class unit classes has to be specified
+        in concrete implementation
+
+    :cvar ~.FifoCls: fifo unit class
+    :cvar ~.FifoAsyncCls: asyncronous fifo (fifo with separate clock per port) unit class
+    :cvar ~.JoinSelectCls: select order based join unit class
+    :cvar ~.JoinFairCls: round robin based join unit class
+    :cvar ~.JoinPrioritizedCls: priority based join unit class
+    :cvar ~.RegCls: register unit class
+    :cvar ~.RegCdcCls: Clock domain crossing register unit class
+    :cvar ~.ResizerCls: resizer unit class
+    :cvar ~.SplitCopyCls: copy based split unit class
+    :cvar ~.SplitSelectCls: select order based split unit class (demultiplexer)
+    :cvar ~.SplitFairCls: round robin based split unit class
+    :cvar ~.SplitPrioritizedCls: priority based split unit class
+
+    :note: see :class:`AbstractComponentBuilder`
+    """
+    FifoCls = NotImplemented
+    FifoAsyncCls = NotImplemented
+    JoinSelectCls = NotImplemented
+    JoinPrioritizedCls = NotImplemented
+    JoinFairCls = NotImplemented
+    RegCls = NotImplemented
+    ResizerCls = NotImplemented
+    SplitCopyCls = NotImplemented
+    SplitSelectCls = NotImplemented
+    SplitFairCls = NotImplemented
+    SplitPrioritizedCls = NotImplemented
+
+    def _genericInstance(self, 
+                         unit_cls,
+                         name,
+                         set_params=lambda u: u,
+                         update_params=True,
+                         propagate_clk_rst=True):
         """
-        :param parent: unit in which will be all units created by this builder instanciated
-        :param name: prefix for all instantiated units
-        :param srcInterface: start of data-path
-        """
-        self.parent = parent
-        self.lastComp = None
-        self.end = srcInterface
-        if name is None:
-            name = "gen_" + srcInterface._name
+        Instantiate generic component and connect basics
 
-        self.name = name
-        self.compId = 0
-
-    def getClk(self):
-        return getClk(self.parent)
-
-    def getRstn(self):
-        rst = getRst(self.parent)
-        if isinstance(rst, Rst_n):
-            return rst
-        else:
-            return ~rst
-
-    def getInfCls(self):
-        return self.end.__class__
-
-    def _findSuitableName(self, unitName):
-        # find suitable name for component
-        while True:
-            name = "%s_%s_%d" % (self.name, unitName, self.compId)
-            try:
-                getattr(self.parent, name)
-            except AttributeError:
-                return name
-                break
-            self.compId += 1
-
-        self.compId += 1
-
-    def _propagateClkRstn(self, u):
-        if hasattr(u, "clk"):
-            u.clk ** self.getClk()
-
-        if hasattr(u, 'rst_n'):
-            u.rst_n ** self.getRstn()
-
-        if hasattr(u, "rst"):
-            u.rst ** ~self.getRstn()
-
-    def _genericInstance(self, unitCls, unitName, setParams=lambda u: u):
-        """
-        :param unitCls: class of unit which is being created
-        :param unitName: name for unitCls
-        :param setParams: function which updates parameters as is required
+        :param unit_cls: class of unit which is being created
+        :param name: name for unit_cls instance
+        :param set_params: function which updates parameters as is required
             (parameters are already shared with self.end interface)
         """
 
-        u = unitCls(self.getInfCls())
-        u._updateParamsFrom(self.end)
-        setParams(u)
+        u = unit_cls(self.getInfCls())
+        if update_params:
+            u._updateParamsFrom(self.end)
+        set_params(u)
 
-        setattr(self.parent, self._findSuitableName(unitName), u)
-        self._propagateClkRstn(u)
+        setattr(self.parent, self._findSuitableName(name), u)
+        if propagate_clk_rst:
+            self._propagateClkRstn(u)
 
-        u.dataIn ** self.end
+        u.dataIn(self.end)
 
         self.lastComp = u
         self.end = u.dataOut
@@ -94,88 +69,298 @@ class AbstractStreamBuilder(object):
         return self
 
     @classmethod
-    def join(cls, parent, srcInterfaces, name=None, configAs=None):
+    def _join(cls, joinCls, parent, srcInterfaces, name, configAs, extraConfigFn):
         """
-        create builder from joined interfaces
+        Create builder from many interfaces by joining them together
 
+        :param joinCls: join component class which should be used
         :param parent: unit where builder should place components
-        :param srcInterfacecs: iterable of interfaces which should be joined together (lower index = higher priority)
-        :param configureAs: interface or another object which configuration should be applied
+        :param srcInterfacecs: sequence of interfaces which should be joined
+            together (lower index = higher priority)
+        :param configureAs: interface or another object which configuration
+            should be applied
+        :param extraConfigFn: function which is applied on join unit
+            in configuration phase (can be None)
         """
         srcInterfaces = list(srcInterfaces)
+        if name is None:
+            if configAs is None:
+                name = "gen_join"
+            else:
+                name = "gen_" + configAs._name
+
         if configAs is None:
             configAs = srcInterfaces[0]
 
-        if name is None:
-            name = "gen_" + configAs._name
-
         self = cls(parent, None, name=name)
 
-        u = self.JoinCls(configAs.__class__)
+        u = joinCls(self._getIntfCls(configAs))
+        if extraConfigFn is not None:
+            extraConfigFn(u)
         u._updateParamsFrom(configAs)
-        u.INPUTS.set(len(srcInterfaces))
+        u.INPUTS = len(srcInterfaces)
 
         setattr(self.parent, self._findSuitableName(name + "_join"), u)
         self._propagateClkRstn(u)
 
         for joinIn, inputIntf in zip(u.dataIn, srcInterfaces):
-            joinIn ** inputIntf
+            joinIn(inputIntf)
 
         self.lastComp = u
         self.end = u.dataOut
 
         return self
 
-    def fork(self, noOfOutputs):
+    @classmethod
+    def join_prioritized(cls, parent,  srcInterfaces, name=None,
+                         configAs=None, extraConfigFn=None):
         """
-        creates fork - split one interface to many
+        create builder from fairly joined interfaces (round robin for input select)
 
-        :param noOfOutputs: number of output interfaces of the fork
+        :note: other parameters same as in `.AbstractStreamBuilder._join`
+        """
+        return cls._join(cls.JoinPrioritizedCls, parent, srcInterfaces, name,
+                         configAs, extraConfigFn)
+
+    @classmethod
+    def join_fair(cls, parent, srcInterfaces, name=None,
+                  configAs=None, exportSelected=False):
+        """
+        create builder from fairly joined interfaces (round robin for input select)
+
+        :param exportSelected: if True join component will have handshaked interface
+            with index of selected input
+        :note: other parameters same as in `.AbstractStreamBuilder._join`
+        """
+        def extraConfig(u):
+            u.EXPORT_SELECTED = exportSelected
+
+        return cls._join(cls.JoinFairCls, parent, srcInterfaces, name,
+                         configAs, extraConfig)
+
+    def buff(self, items=1, latency=None, delay=None):
+        """
+        Use registers and FIFOs to create buffer of specified paramters
+        :note: if items <= latency registers are used else fifo is used
+
+        :param items: number of items in buffer
+        :param latency: latency of buffer (number of clk ticks required to get data
+            from input to input)
+        :param delay: delay of buffer (number of clk ticks required to get data to buffer)
+        :note: delay can be used as synchronization method or to solve timing related problems
+            because it will split valid signal path
+        :note: if latency or delay is None the most optimal value is used
+        """
+        if items == 0:
+            assert latency is None or latency == 0
+            assert delay is None or delay == 0
+            return self
+
+        elif items == 1:
+            if latency is None:
+                latency = 1
+            if delay is None:
+                delay = 0
+        else:
+            if latency is None:
+                latency = 2
+            if delay is None:
+                delay = 0
+
+        assert latency >= 1 and delay >= 0, (latency, delay)
+
+        if latency == 1 or latency >= items:
+            # instantiate buffer as register
+            def applyParams(u):
+                u.LATENCY = latency
+                u.DELAY = delay
+            return self._genericInstance(self.RegCls, "reg",
+                                         set_params=applyParams)
+        else:
+            # instantiate buffer as fifo
+            if latency != 2 or delay != 0:
+                raise NotImplementedError()
+
+            def setDepth(u):
+                u.DEPTH = items
+
+            return self._genericInstance(self.FifoCls, "fifo", setDepth)
+
+    def buff_cdc(self, clk, rst, items=1):
+        """
+        Instanciate a CDC (Clock Domain Crossing) buffer or AsyncFifo
+        on selected interface
+
+        :note: if items==1 CDC clock synchronization register is used
+            if items>1 asynchronous FIFO is used
+        """
+        in_clk = self.getClk()
+        in_rst_n = self.getRstn()
+
+        def set_clk_freq(u):
+            u.IN_FREQ = in_clk.FREQ
+            u.OUT_FREQ = clk.FREQ
+
+        if items > 1:
+            def configure(u):
+                u.DEPTH = items
+                set_clk_freq(u)
+            res = self._genericInstance(
+                self.FifoAsyncCls, "cdcAFifo", configure,
+                propagate_clk_rst=False)
+        else:
+            assert items == 1, items
+            res = self._genericInstance(
+                self.RegCdcCls, "cdcReg", set_clk_freq,
+                propagate_clk_rst=False)
+
+        b = res.lastComp
+        b.dataIn_clk(in_clk)
+        b.dataIn_rst_n(in_rst_n)
+        b.dataOut_clk(clk)
+        b.dataOut_rst_n(rst)
+
+        return res
+
+    def split_copy(self, noOfOutputs):
+        """
+        Clone input data to all outputs
+
+        :param noOfOutputs: number of output interfaces of the split
         """
         def setChCnt(u):
-            u.OUTPUTS.set(noOfOutputs)
+            u.OUTPUTS = noOfOutputs
 
-        return self._genericInstance(self.ForkCls, 'fork', setChCnt)
+        return self._genericInstance(self.SplitCopyCls, 'splitCopy', setChCnt)
 
-    def forkTo(self, *outPorts):
+    def split_copy_to(self, *outputs):
         """
-        Same like fork, but outputs ports are automatically connected
+        Same like split_copy, but outputs are automatically connected
 
-        :param outPorts: ports on which should be outputs of fork connected
+        :param outputs: ports on which should be outputs
+            of split component connected to
         """
-        noOfOutputs = len(outPorts)
-        s = self.fork(noOfOutputs)
+        noOfOutputs = len(outputs)
+        s = self.split_copy(noOfOutputs)
 
-        for toComponent, fromFork in zip(outPorts, self.end):
-            toComponent ** fromFork
+        for toComponent, fromFork in zip(outputs, self.end):
+            toComponent(fromFork)
 
         self.end = None  # invalidate None because port was fully connected
         return s
 
-    def reg(self, latency=1, delay=0):
+    def split_select(self, outputSelSignalOrSequence, noOfOutputs):
         """
-        Create register on interface
-        """
-        def applyParams(u):
-            u.LATENCY.set(latency)
-            u.DELAY.set(delay)
-        return self._genericInstance(self.RegCls, "reg", setParams=applyParams)
-
-    def fifo(self, depth):
-        """
-        Create synchronous fifo of the size of depth
-        """
-        def setDepth(u):
-            u.DEPTH.set(depth)
-        return self._genericInstance(self.FifoCls, "fifo", setDepth)
-
-    def mux(self, noOfOutputs):
-        """
-        Create a multiplexer with outputs specified by noOfOutputs
+        Create a demultiplexer with number of outputs specified by noOfOutputs
 
         :param noOfOutputs: number of outputs of multiplexer
+        :param outputSelSignalOrSequence: handshaked interface (onehot encoded)
+            to control selected output or sequence of output indexes
+            which should be used (will be repeated)
+        """
+
+        def setChCnt(u):
+            u.OUTPUTS = noOfOutputs
+
+        self._genericInstance(self.SplitSelectCls, 'select', setChCnt)
+        if isinstance(outputSelSignalOrSequence, Handshaked):
+            self.lastComp.selectOneHot(outputSelSignalOrSequence)
+        else:
+            seq = outputSelSignalOrSequence
+            t = Bits(self.lastComp.selectOneHot.data._dtype.bit_length())
+            size = len(seq)
+            ohIndexes = map(lambda x: 1 << x, seq)
+            indexes = self.parent._sig(self.name + "split_seq",
+                                       t[size],
+                                       def_val=ohIndexes)
+            actual = self.parent._reg(self.name + "split_seq_index",
+                                      Bits(size.bit_length()),
+                                      0)
+            iin = self.lastComp.selectOneHot
+            iin.data(indexes[actual])
+            iin.vld(1)
+            If(iin.rd,
+               If(actual._eq(size - 1),
+                  actual(0)
+                  ).Else(
+                   actual(actual + 1)
+               )
+               )
+
+        return self
+
+    def split_select_to(self, outputSelSignalOrSequence, *outputs):
+        """
+        Same like split_select, but outputs are automatically connected
+
+        :param outputs: ports on which should be outputs of split component connected to
+        """
+        noOfOutputs = len(outputs)
+        s = self.split_select(outputSelSignalOrSequence, noOfOutputs)
+
+        for toComponent, fromFork in zip(outputs, self.end):
+            toComponent(fromFork)
+
+        self.end = None  # invalidate None because port was fully connected
+        return s
+
+    def split_prioritized(self, noOfOutputs):
+        """
+        data from input is send to output which is ready and has highest priority from all ready outputs
+
+        :param noOfOutputs: number of output interfaces of the fork
         """
         def setChCnt(u):
-            u.OUTPUTS.set(noOfOutputs)
+            u.OUTPUTS = noOfOutputs
 
-        return self._genericInstance(self.MuxCls, 'mux', setChCnt)
+        self._genericInstance(self.SplitPrioritizedCls, 'splitPrio', setChCnt)
+        return self
+
+    def split_prioritized_to(self, *outputs):
+        """
+        Same like split_prioritized, but outputs are automatically connected
+
+        :param outputs: ports on which should be outputs of split component connected to
+        """
+        noOfOutputs = len(outputs)
+
+        s = self.split_prioritized(noOfOutputs)
+        for toComponent, fromFork in zip(outputs, self.end):
+            toComponent(fromFork)
+
+        self.end = None  # invalidate None because port was fully connected
+        return s
+
+    def split_fair(self, noOfOutputs, exportSelected=False):
+        """
+        Create a rund robin selector with number of outputs specified by noOfOutputs
+
+        :param noOfOutputs: number of outputs of multiplexer
+        :param exportSelected: if is True split component will have interface "selectedOneHot"
+            of type VldSynced wich will have one hot index of selected item
+        """
+
+        def setChCnt(u):
+            u.OUTPUTS = noOfOutputs
+
+        self._genericInstance(self.SplitFairCls, 'splitFair', setChCnt)
+        return self
+
+    def split_fair_to(self, *outputs, exportSelected=False):
+        """
+        Same like split_fair, but outputs are automatically connected
+
+        :param outputs: ports on which should be outputs
+            of split component connected to
+        :param exportSelected: if is True split component will
+            have interface "selectedOneHot" of type VldSynced
+            wich will have one hot index of selected item
+        """
+        noOfOutputs = len(outputs)
+
+        s = self.split_fair(noOfOutputs, exportSelected=exportSelected)
+        for toComponent, fromFork in zip(outputs, self.end):
+            toComponent(fromFork)
+
+        self.end = None  # invalidate None because port was fully connected
+        return s

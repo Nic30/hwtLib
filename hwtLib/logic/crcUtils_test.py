@@ -1,43 +1,21 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import unittest
 
-from hwt.bitmask import selectBit
-from hwtLib.logic.crcUtils import buildCrcMatrix_dataMatrix, parsePolyStr
-from hwtLib.logic.crcPoly import CRC_16_CCITT, CRC_32
+from hwtLib.logic.crcPoly import CRC_32
+from hwtLib.logic.crcUtils import parsePolyStr
+from pyMathBitPrecise.bit_utils import get_bit
 
 
 class CrcUtilsTC(unittest.TestCase):
 
     def test_parsePolyStr(self):
-        crc32_str = "x^26 + x^23 + x^22 + x^16 + x^12 + x^11 + x^10 + x^8 + x^7 + x^5 + x^4 + x^2 + x^1 + 1"
+        crc32_str = ("x^26 + x^23 + x^22 + x^16 + x^12 + x^11 + x^10 + x^8"
+                     " + x^7 + x^5 + x^4 + x^2 + x^1 + 1")
         poly = parsePolyStr(crc32_str, 32)
-        expected = [selectBit(CRC_32, i) for i in range(32)]
+        expected = [get_bit(CRC_32.POLY, i) for i in range(CRC_32.WIDTH)]
         self.assertEqual(poly, expected)
-
-    def test_buildCrcMatrix_dataMatrix(self):
-        polyWidth = 16
-        polyCoefs = [selectBit(CRC_16_CCITT, i) for i in range(polyWidth)]
-        matrix = buildCrcMatrix_dataMatrix(polyCoefs, polyWidth, polyWidth)
-        expected = [
-                    [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0],
-                    [0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0],
-                    [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0],
-                    [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1],
-                    [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1],
-                    [1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0],
-                    [0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0],
-                    [0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1],
-                    [0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1],
-                    [0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1],
-                    [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0],
-                    [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1],
-                    [1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-                    [0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0],
-                    ]
-        self.assertEqual(len(matrix), len(expected))
-        for m, e in zip(matrix, expected):
-            self.assertSequenceEqual(m, e)
 
 
 if __name__ == "__main__":

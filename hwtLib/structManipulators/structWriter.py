@@ -1,163 +1,169 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import ForEach
-from hwt.hdlObjects.types.struct import HStruct
-from hwt.hdlObjects.types.structUtils import StructBusBurstInfo
+from hwt.code import StaticForEach
+from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, HandshakeSync
+from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.param import evalParam, Param
-from hwtLib.amba.axiDatapumpIntf import AxiWDatapumpIntf
-from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
-from hwtLib.amba.axis_comp.frameForge import AxiS_frameForge
+from hwt.synthesizer.param import Param
+from hwtLib.amba.datapump.intf import AxiWDatapumpIntf
+from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
+from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.handshaked.streamNode import streamSync, streamAck
+from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.structManipulators.structReader import StructReader
+
+
+SKIP = 1
+PROPAGATE = 0
 
 
 class StructWriter(StructReader):
     """
     Write struct specified in constructor over wDatapump interface on address
     specified over set interface
+
+    :ivar ~.MAX_OVERLAP: parameter which specifies the maximum number of concurrent transaction
+    :ivar ~.WRITE_ACK: Param, if true ready on "set" will be set only
+        when component is in idle (if false "set"
+        is regular handshaked interface)
+
+    .. aafig::
+
+            set (base addr)          +---------+
+         +----------------    +------> field0  |
+                         |    |      +---------+
+           bus w req  +--v---+-+
+         <------------+         |    +---------+
+           bus w data |         +----> field1  |
+         <------------+ reader  |    +---------+
+           bus w ack  |         |
+         +------------>         |
+                      +-------+-+
+                              |      +---------+
+                              +------> field2  |
+                                     +---------+
+
+    :note: names in the picture are just illustrative
+
+    .. hwt-schematic:: _example_StructWriter
     """
     def _config(self):
         StructReader._config(self)
         self.MAX_OVERLAP = Param(2)
+        self.WRITE_ACK = Param(False)
 
-    def _createInterfaceForField(self, fInfo):
-        i = Handshaked()
-        i.DATA_WIDTH.set(fInfo.type.bit_length())
-        fInfo.interface = i
-        return i
+    def _createInterfaceForField(self, parent, structField):
+        return AxiS_frameDeparser._mkFieldIntf(self, parent, structField)
 
     def _declr(self):
         addClkRstn(self)
+        self.parseTemplate()
+        self.dataIn = StructIntf(self._structT, tuple(),
+                                 self._createInterfaceForField)
 
-        structInfo = self._declareFieldInterfaces()
-        self._busBurstInfo = StructBusBurstInfo.packFieldInfosToBusBurst(
-                                    structInfo,
-                                    evalParam(self.MAX_DUMMY_WORDS).val,
-                                    evalParam(self.DATA_WIDTH).val // 8)
-
-        self.set = Handshaked()  # data signal is addr of structure to write
-        self.set._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
+        s = self.set = Handshaked()  # data signal is addr of structure to write
+        s.DATA_WIDTH = self.ADDR_WIDTH
         # write ack from slave
-        self.writeAck = HandshakeSync()
+        self.writeAck = HandshakeSync()._m()
 
         with self._paramsShared():
             # interface for communication with datapump
-            self.wDatapump = AxiWDatapumpIntf()
-            self.wDatapump.MAX_LEN.set(StructBusBurstInfo.sumOfWords(self._busBurstInfo))
+            self.wDatapump = AxiWDatapumpIntf()._m()
+            self.wDatapump.MAX_LEN = self.maxWordIndex() + 1
 
-        self.frameAssember = []
-        for burstInfo in self._busBurstInfo:
-            frameTemplate = [(f.type, f.name) for f in burstInfo.fieldInfos]
-            f = AxiS_frameForge(AxiStream, HStruct(*frameTemplate))
-            self.frameAssember.append(f)
-        self._registerArray("frameAssember", self.frameAssember)
+        self.frameAssember = AxiS_frameDeparser(self._structT,
+                                             tmpl=self._tmpl,
+                                             frames=self._frames)
 
     def _impl(self):
-        propagateClkRstn(self)
-
         req = self.wDatapump.req
         w = self.wDatapump.w
         ack = self.wDatapump.ack
 
-        req.id ** self.ID
-        req.rem ** 0
+        # multi frame
+        ackPropageteInfo = HandshakedFifo(Handshaked)
+        ackPropageteInfo.DATA_WIDTH = 1
+        ackPropageteInfo.DEPTH = self.MAX_OVERLAP
+        self.ackPropageteInfo = ackPropageteInfo
+        propagateClkRstn(self)
 
-        if len(self._busBurstInfo) > 1:
-            # multi frame
-            ackPropageteInfo = HandshakedFifo(Handshaked)
-            ackPropageteInfo.DATA_WIDTH.set(1)
-            ackPropageteInfo.DEPTH.set(self.MAX_OVERLAP)
-            self.ackPropageteInfo = ackPropageteInfo
-            ackPropageteInfo.clk ** self.clk
-            ackPropageteInfo.rst_n ** self.rst_n
-
-            def propagateRequests(burst, indx):
-                ack = streamAck(slaves=[req, ackPropageteInfo.dataIn])
-                statements = [req.addr ** (self.set.data + burst.addrOffset),
-                              req.len ** (burst.wordCnt() - 1),
-                              ackPropageteInfo.dataIn.data ** int(indx != 0),
-                              streamSync(slaves=[req, ackPropageteInfo.dataIn],
-                                         extraConds={req: self.set.vld,
-                                                     ackPropageteInfo.dataIn: self.set.vld})
-                              ]
-
-                isLast = indx == len(self._busBurstInfo) - 1
-                if isLast:
-                    statements.append(self.set.rd ** ack)
-                else:
-                    statements.append(self.set.rd ** 0)
-
-                return statements, ack & self.set.vld
-
-            ForEach(self, self._busBurstInfo, propagateRequests)
-
-            # connect write channel
-            fa = self.frameAssember
-            w ** AxiSBuilder(self, fa[0].dataOut)\
-                            .extend(map(lambda a: a.dataOut, fa[1:]))\
-                            .end
-
-            # propagate ack
-            streamSync(masters=[ack, ackPropageteInfo.dataOut],
-                       slaves=[self.writeAck],
-                       skipWhen={
-                                 self.writeAck: ackPropageteInfo.dataOut.data._eq(0)
-                                })
+        if self.WRITE_ACK:
+            _set = self.set
         else:
-            # single frame
-            fa = self.frameAssember[0]
+            _set = HsBuilder(self, self.set).buff().end
 
-            def propagateRequests(burst):
-                ack = streamAck(masters=[self.set],
-                                slaves=[req])
-                return [req.addr ** (self.set.data + burst.addrOffset),
-                        req.len ** (burst.wordCnt() - 1),
-                        ], ack
-            ForEach(self, self._busBurstInfo, propagateRequests)
+        req.id(self.ID)
+        req.rem(0)
 
-            streamSync(masters=[self.set], slaves=[req])
+        def propagateRequests(frame, indx):
+            ack = StreamNode(slaves=[req, ackPropageteInfo.dataIn]).ack()
+            statements = [req.addr(_set.data + frame.startBitAddr // 8),
+                          req.len(frame.getWordCnt() - 1),
+                          StreamNode(slaves=[req, ackPropageteInfo.dataIn],
+                                     ).sync(_set.vld)
+                          ]
+            if indx != 0:
+                prop = SKIP
+            else:
+                prop = PROPAGATE
 
-            w ** fa.dataOut
+            statements.append(ackPropageteInfo.dataIn.data(prop))
 
-            # propagate ack
-            streamSync(masters=[ack],
-                       slaves=[self.writeAck])
+            isLastFrame = indx == len(self._frames) - 1
+            if isLastFrame:
+                statements.append(_set.rd(ack))
+            else:
+                statements.append(_set.rd(0))
 
-        # connect fields to assembers by its name
-        for burstInfo, frameAssembler in zip(self._busBurstInfo, self.frameAssember):
-            for fieldInfo in burstInfo.fieldInfos:
-                intf = getattr(frameAssembler, fieldInfo.name)
-                intf ** fieldInfo.interface
+            return statements, ack & _set.vld
+
+        StaticForEach(self, self._frames, propagateRequests)
+
+        # connect write channel
+        w(self.frameAssember.dataOut)
+
+        # propagate ack
+        StreamNode(masters=[ack, ackPropageteInfo.dataOut],
+                   slaves=[self.writeAck],
+                   skipWhen={
+                             self.writeAck: ackPropageteInfo.dataOut.data._eq(PROPAGATE)
+                            }).sync()
+
+        # connect fields to assembler
+        for _, transTmpl in self._tmpl.walkFlatten():
+            f = transTmpl.getFieldPath()
+            intf = self.frameAssember.dataIn._fieldsToInterfaces[f]
+            intf(self.dataIn._fieldsToInterfaces[f])
 
 
-if __name__ == "__main__":
+def _example_StructWriter():
     from hwtLib.types.ctypes import uint16_t, uint32_t, uint64_t
-    from hwt.synthesizer.shortcuts import toRtl
 
     s = HStruct(
-        (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
-        (uint64_t, None),  # name = None means this field will be ignored
-        (uint64_t, "item1"),
-        (uint64_t, None),
-        (uint16_t, "item2"),
-        (uint16_t, "item3"),
-        (uint32_t, "item4"),
-
-        (uint32_t, None),
-        (uint64_t, "item5"),  # this word is split on two bus words
-        (uint32_t, None),
-
-        (uint64_t, None),
-        (uint64_t, None),
-        (uint64_t, None),
-        (uint64_t, "item6"),
-        (uint64_t, "item7"),
+            (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
+            (uint64_t, None),  # name = None means this field will be ignored
+            (uint64_t, "item1"),
+            (uint64_t, None),
+            (uint16_t, "item2"),
+            (uint16_t, "item3"),
+            (uint32_t, "item4"),
+            (uint32_t, None),
+            (uint64_t, "item5"),  # this word is split on two bus words
+            (uint32_t, None),
+            (uint64_t, None),
+            (uint64_t, None),
+            (uint64_t, None),
+            (uint64_t, "item6"),
+            (uint64_t, "item7"),
         )
 
     u = StructWriter(s)
-    print(toRtl(u))
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import to_rtl_str
+    u = _example_StructWriter()
+    print(to_rtl_str(u))

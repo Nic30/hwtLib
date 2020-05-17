@@ -3,20 +3,29 @@
 
 from hwtLib.abstract.streamBuilder import AbstractStreamBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
+from hwtLib.handshaked.fifoAsync import HsFifoAsync
+from hwtLib.handshaked.joinFair import HsJoinFairShare
+from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
 from hwtLib.handshaked.reg import HandshakedReg
+from hwtLib.handshaked.resizer import HsResizer
+from hwtLib.handshaked.splitCopy import HsSplitCopy
+from hwtLib.handshaked.splitFair import HsSplitFair
+from hwtLib.handshaked.splitPrioritized import HsSplitPrioritized
+from hwtLib.handshaked.splitSelect import HsSplitSelect
 
-from hwtLib.handshaked.fork import HandshakedFork
-#from hwtLib.handshaked.forkRegistered import HandshakedRegisteredFork
-
-from hwtLib.handshaked.mux import HandshakedMux
-from hwtLib.handshaked.join import HandshakedJoin
 
 class HsBuilder(AbstractStreamBuilder):
     """
-    Helper class which simplifies building of large stream paths 
+    Helper class which simplifies building of large stream paths
     """
-    JoinCls = HandshakedJoin
     FifoCls = HandshakedFifo
-    ForkCls = HandshakedFork
-    RegCls  = HandshakedReg
-    MuxCls  = HandshakedMux 
+    FifoAsyncCls = HsFifoAsync
+    JoinExplicitCls = NotImplemented
+    JoinPrioritizedCls = HsJoinPrioritized
+    JoinFairCls = HsJoinFairShare
+    ResizerCls = HsResizer
+    RegCls = HandshakedReg
+    SplitCopyCls = HsSplitCopy
+    SplitFairCls = HsSplitFair
+    SplitPrioritizedCls = HsSplitPrioritized
+    SplitSelectCls = HsSplitSelect

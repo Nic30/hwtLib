@@ -1,11 +1,12 @@
-from hwt.hdlObjects.operator import Operator
+from hwt.hdl.assignment import Assignment
+from hwt.hdl.operator import Operator
+from hwt.hdl.operatorDefs import AllOps, isEventDependentOp
+from hwt.hdl.portItem import HdlPortItem
 from hwt.synthesizer.interfaceLevel.mainBases import UnitBase
-from hwtLib.abstract.busConverter import BusConverter
-from hwt.hdlObjects.assignment import Assignment
-from hwt.hdlObjects.portItem import PortItem
-from hwt.hdlObjects.operatorDefs import AllOps
-from copy import copy
-from hwt.synthesizer.param import evalParam
+from hwtLib.abstract.busEndpoint import BusEndpoint
+from hwtLib.abstract.busBridge import BusBridge
+from hwtLib.abstract.busInterconnect import BusInterconnect
+from hwtLib.abstract.busStaticRemap import BusStaticRemap
 
 
 def getEpSignal(sig, op):
@@ -13,11 +14,12 @@ def getEpSignal(sig, op):
     :param sig: main signal
     :param op: operator on this signal
 
-    :return: signal modified by this operator or none if this operator is creating new datapath
+    :return: signal modified by this operator or none if this operator
+        is creating new datapath
     """
     # we do not follow results of indexing like something[sig]
     if op.operator == AllOps.INDEX:
-        if op.ops[0] is not sig:
+        if op.operands[0] is not sig:
             return
     if op.operator not in [AllOps.INDEX,
                            AllOps.ADD,
@@ -27,7 +29,7 @@ def getEpSignal(sig, op):
                            AllOps.CONCAT]:
         return
 
-    if sig in op.ops:
+    if sig in op.operands:
         return op.result
 
 
@@ -43,6 +45,11 @@ def getParentUnit(sig):
 
 
 class AddressSpaceProbe(object):
+    """
+    An object which can be used to discover an address space of an interface.
+    Discovery is made by walking on address signal.
+    """
+
     def __init__(self, topIntf, getMainSigFn, offset=0):
         """
         :param topIntf: interface on which should discovery start
@@ -53,106 +60,82 @@ class AddressSpaceProbe(object):
         self.topIntf = topIntf
         self.getMainSigFn = getMainSigFn
         self.offset = offset
+        self.seen = set([None, ])
+        self.discovered = self._discoverAddressSpace(self.topIntf,
+                                                     self.offset)
 
-    def discover(self):
-        return self._discoverAddressSpace(self.topIntf, self.offset, ignoreMyParent=False)
+    def _extractStruct(self, converter, offset):
+        t = converter.STRUCT_TEMPLATE
 
-    @staticmethod
-    def pprint(addrSpaceDict, indent=0, doPrint=True):
-        "pretty print for addrSpaceDict (result of discover())"
-        buff = []
+        for ( _, _), transTmpl in converter._bramPortMapped:
+            # some arrays can have items with internal structure
+            memberT = self._discoverAddressSpace(
+                converter.getPort(transTmpl), offset)
+            if memberT is not None:
+                raise NotImplementedError("Nested address space")
+        return t
 
-        for addr in sorted(addrSpaceDict.keys()):
-            item = addrSpaceDict[addr]
-            if item.size is not None and item.size > 1:
-                size = "(size=%d)" % item.size
-            else:
-                size = ""
-            _indent = "".join(["    " for _ in range(indent)])
-            tmp = "%s0x%x:%s%s" % (_indent, addr, item.name, size)
-            if doPrint:
-                print(tmp)
-            else:
-                buff.append(tmp)
-
-            subTmp = AddressSpaceProbe.pprint(item.children, indent + 1)
-            if not doPrint and subTmp:
-                buff.append(subTmp)
-
-        return "\n".join(buff)
-
-    def _extractAddressMap(self, converter, offset, addrModifier, sizeModifier):
+    def walkToConverter(self, mainSig, offset):
         """
-        coppy address space map from converter
+        walk mainSig down to endpoints and search for any bus converter
+        instances
+
+        :return: generator of typles (offset, converter instance)
         """
-        m = {}
-        for item in converter.ADRESS_MAP:
-            item = copy(item)
-
-            item.addr = offset + addrModifier(evalParam(item.addr).val)
-
-            m[item.addr] = item
-            _size = item.size
-
-            if item.size is not None and item.size > 1:
-                port = getattr(converter, item.name)
-                if item.alignOffsetBits is not None:
-                    def _addrModifier(childAddr):
-                        return childAddr << item.alignOffsetBits
-
-                    def _sizeModifier(x):
-                        return sizeModifier(x) << item.alignOffsetBits
-                else:
-                    _addrModifier = addrModifier
-                    _sizeModifier = sizeModifier
-
-                item.children = self._discoverAddressSpace(port, item.addr, _addrModifier, _sizeModifier)
-            item.size = sizeModifier(item.size)
-        return m
-
-    def walkToConverter(self, mainSig, ignoreMyParent=False):
-        """
-        we walk mainSig down to endpoints and we are searching for any bus converter instance
-        """
-        if mainSig is None:
+        if mainSig in self.seen:
             return
 
+        self.seen.add(mainSig)
+
         parent = getParentUnit(mainSig)
-        if isinstance(parent, BusConverter) and not ignoreMyParent:
-            yield parent
+
+        if parent not in self.seen:
+            self.seen.add(parent)
+            if isinstance(parent, BusEndpoint):
+                yield offset, parent
+                return
+            elif isinstance(parent, BusBridge):
+                i = parent.m
+                yield from self.walkToConverter(self._getMainSigFn(i), offset)
+                return
+            elif isinstance(parent, BusStaticRemap):
+                i = parent.m
+                for _offset, _parent in self.walkToConverter(self._getMainSigFn(i), 0):
+                    yield parent.translate_addr_val(parent.MEM_MAP, _offset) + offset, _parent
+            elif isinstance(parent, BusInterconnect):
+                if len(parent._masters) != 1:
+                    raise NotImplementedError()
+                for intf, addrRec in zip(parent.m, parent._slaves):
+                    _offset = addrRec[0]
+                    yield from self.walkToConverter(self._getMainSigFn(intf),
+                                                    offset + _offset)
+                return
 
         for e in mainSig.endpoints:
-            if isinstance(e, Operator):
+            if isinstance(e, Operator) and not isEventDependentOp(e):
                 ep = getEpSignal(mainSig, e)
-                if ep is not None:
-                    yield from self.walkToConverter(ep)
-            elif isinstance(e, (Assignment, PortItem)):
-                if e.src is mainSig:
-                    yield from self.walkToConverter(e.dst)
+                yield from self.walkToConverter(ep, offset)
+            elif isinstance(e, (Assignment, HdlPortItem)):
+                yield from self.walkToConverter(e.dst, offset)
             else:
-                raise NotImplementedError(e.__class__)
+                for outp in e._outputs:
+                    yield from self.walkToConverter(outp, offset)
 
-    def _discoverAddressSpace(self, topIntf, offset,
-                              addrModifier=lambda x: x,
-                              sizeModifier=lambda x: x,
-                              ignoreMyParent=True):
-        _mainSig = self.getMainSigFn(topIntf)
-        try:
-            mainSig = _mainSig._sig
-        except AttributeError:
-            mainSig = _mainSig._sigInside
+    def _getMainSigFn(self, intf):
+        _mainSig = self.getMainSigFn(intf)
+        s = _mainSig._sig
+        if s is None:
+            return _mainSig._sigInside
+        else:
+            return s
 
-        addrMap = {}
-        for converter in self.walkToConverter(mainSig, ignoreMyParent=ignoreMyParent):
-            addrMap = self._extractAddressMap(converter, offset, addrModifier, sizeModifier)
+    def _discoverAddressSpace(self, topIntf, offset):
+        mainSig = self._getMainSigFn(topIntf)
+        t = None
+        for _offset, converter in self.walkToConverter(mainSig, offset):
+            # addrMap = self._extractAddressMap(converter, offset)
+            if t is not None:
+                raise NotImplementedError("Hierarchical endpoints")
+            t = self._extractStruct(converter, _offset)
 
-        return addrMap
-
-
-def regSpace_formatAsCDefines(bus, getMainSigFn, offset=0, prefix=""):
-    addrSpace = AddressSpaceProbe(bus, getMainSigFn, offset=offset).discover()
-    buff = []
-    for addr, asi in sorted(addrSpace.items(), key=lambda x: x[0]):
-        buff.append("#define %s 0x%x" % (prefix + asi.name.upper(), addr))
-
-    return "\n".join(buff)
+        return t

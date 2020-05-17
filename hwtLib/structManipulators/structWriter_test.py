@@ -1,10 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import unittest
 
-from hwt.hdlObjects.constants import Time
-from hwt.hdlObjects.types.struct import HStruct
+from hwt.hdl.constants import Time
+from hwt.hdl.types.struct import HStruct
 from hwt.simulator.simTestCase import SimTestCase
-from hwt.synthesizer.param import evalParam
-from hwtLib.abstract.denseMemory import DenseMemory
+from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.structManipulators.structWriter import StructWriter
 from hwtLib.types.ctypes import uint64_t
 
@@ -12,9 +14,9 @@ from hwtLib.types.ctypes import uint64_t
 class StructWriter_TC(SimTestCase):
     def buildEnv(self, structT):
         u = self.u = StructWriter(structT)
-        u.DATA_WIDTH.set(64)
-        self.prepareUnit(u)
-        m = DenseMemory(evalParam(u.DATA_WIDTH).val, u.clk, wDatapumpIntf=u.wDatapump)
+        u.DATA_WIDTH = 64
+        self.compileSimAndStart(u)
+        m = AxiDpSimRam(int(u.DATA_WIDTH), u.clk, wDatapumpIntf=u.wDatapump)
         return m
 
     def test_singleField(self):
@@ -25,9 +27,9 @@ class StructWriter_TC(SimTestCase):
                    )
 
         m = self.buildEnv(s)
-        self.u.field0._ag.data.append(MAGIC)
+        self.u.dataIn.field0._ag.data.append(MAGIC)
         self.u.set._ag.data.append(MAGIC2)
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
         s_got = m.getStruct(MAGIC2, s)
         self.assertValEqual(s_got.field0, MAGIC)
@@ -41,19 +43,20 @@ class StructWriter_TC(SimTestCase):
                    )
 
         m = self.buildEnv(s)
-        self.u.field0._ag.data.append(MAGIC)
-        self.u.field1._ag.data.append(MAGIC+1)
-        self.u.set._ag.data.append(MAGIC2)
+        u = self.u
+        u.dataIn.field0._ag.data.append(MAGIC)
+        u.dataIn.field1._ag.data.append(MAGIC + 1)
+        u.set._ag.data.append(MAGIC2)
 
-        self.doSim(100 * Time.ns)
+        self.runSim(100 * Time.ns)
 
-        self.assertEmpty(self.u.field0._ag.data)
-        self.assertEmpty(self.u.field1._ag.data)
-        self.assertEmpty(self.u.set._ag.data)
+        self.assertEmpty(u.dataIn.field0._ag.data)
+        self.assertEmpty(u.dataIn.field1._ag.data)
+        self.assertEmpty(u.set._ag.data)
 
         s_got = m.getStruct(MAGIC2, s)
         self.assertValEqual(s_got.field0, MAGIC)
-        self.assertValEqual(s_got.field1, MAGIC+1)
+        self.assertValEqual(s_got.field1, MAGIC + 1)
 
     def test_tripleField(self):
         MAGIC = 54
@@ -65,22 +68,25 @@ class StructWriter_TC(SimTestCase):
                      )
 
         m = self.buildEnv(s)
-        self.u.field0._ag.data.append(MAGIC)
-        self.u.field1._ag.data.append(MAGIC+1)
-        self.u.field2._ag.data.append(MAGIC+2)
-        self.u.set._ag.data.append(MAGIC2)
+        u = self.u
+        dIn = u.dataIn
 
-        self.doSim(100 * Time.ns)
+        dIn.field0._ag.data.append(MAGIC)
+        dIn.field1._ag.data.append(MAGIC + 1)
+        dIn.field2._ag.data.append(MAGIC + 2)
+        u.set._ag.data.append(MAGIC2)
 
-        self.assertEmpty(self.u.field0._ag.data)
-        self.assertEmpty(self.u.field1._ag.data)
-        self.assertEmpty(self.u.field2._ag.data)
-        self.assertEmpty(self.u.set._ag.data)
+        self.runSim(100 * Time.ns)
+
+        self.assertEmpty(dIn.field0._ag.data)
+        self.assertEmpty(dIn.field1._ag.data)
+        self.assertEmpty(dIn.field2._ag.data)
+        self.assertEmpty(u.set._ag.data)
 
         s_got = m.getStruct(MAGIC2, s)
         self.assertValEqual(s_got.field0, MAGIC)
-        self.assertValEqual(s_got.field1, MAGIC+1)
-        self.assertValEqual(s_got.field2, MAGIC+2)
+        self.assertValEqual(s_got.field1, MAGIC + 1)
+        self.assertValEqual(s_got.field2, MAGIC + 2)
 
     def test_holeOnStart(self):
         MAGIC = 54
@@ -96,23 +102,25 @@ class StructWriter_TC(SimTestCase):
                    )
 
         m = self.buildEnv(s)
-        self.u.field0._ag.data.append(MAGIC)
-        self.u.field1._ag.data.append(MAGIC+1)
-        self.u.field2._ag.data.append(MAGIC+2)
-        self.u.set._ag.data.append(MAGIC2)
+        u = self.u
+        dIn = u.dataIn
 
-        self.doSim(100 * Time.ns)
+        dIn.field0._ag.data.append(MAGIC)
+        dIn.field1._ag.data.append(MAGIC + 1)
+        dIn.field2._ag.data.append(MAGIC + 2)
+        u.set._ag.data.append(MAGIC2)
 
-        self.assertEmpty(self.u.field0._ag.data)
-        self.assertEmpty(self.u.field1._ag.data)
-        self.assertEmpty(self.u.field2._ag.data)
-        self.assertEmpty(self.u.set._ag.data)
+        self.runSim(100 * Time.ns)
+
+        self.assertEmpty(dIn.field0._ag.data)
+        self.assertEmpty(dIn.field1._ag.data)
+        self.assertEmpty(dIn.field2._ag.data)
+        self.assertEmpty(u.set._ag.data)
 
         s_got = m.getStruct(MAGIC2, s)
         self.assertValEqual(s_got.field0, MAGIC)
-        self.assertValEqual(s_got.field1, MAGIC+1)
-        self.assertValEqual(s_got.field2, MAGIC+2)
-
+        self.assertValEqual(s_got.field1, MAGIC + 1)
+        self.assertValEqual(s_got.field2, MAGIC + 2)
 
     def test_holeInMiddle(self):
         MAGIC = 54
@@ -128,22 +136,25 @@ class StructWriter_TC(SimTestCase):
                    )
 
         m = self.buildEnv(s)
-        self.u.field0._ag.data.append(MAGIC)
-        self.u.field1._ag.data.append(MAGIC+1)
-        self.u.field2._ag.data.append(MAGIC+2)
-        self.u.set._ag.data.append(MAGIC2)
-        
-        self.doSim(100 * Time.ns)
+        u = self.u
+        dIn = u.dataIn
 
-        self.assertEmpty(self.u.field0._ag.data)
-        self.assertEmpty(self.u.field1._ag.data)
-        self.assertEmpty(self.u.field2._ag.data)
-        self.assertEmpty(self.u.set._ag.data)
+        dIn.field0._ag.data.append(MAGIC)
+        dIn.field1._ag.data.append(MAGIC + 1)
+        dIn.field2._ag.data.append(MAGIC + 2)
+        u.set._ag.data.append(MAGIC2)
+
+        self.runSim(100 * Time.ns)
+
+        self.assertEmpty(dIn.field0._ag.data)
+        self.assertEmpty(dIn.field1._ag.data)
+        self.assertEmpty(dIn.field2._ag.data)
+        self.assertEmpty(u.set._ag.data)
 
         s_got = m.getStruct(MAGIC2, s)
         self.assertValEqual(s_got.field0, MAGIC)
-        self.assertValEqual(s_got.field1, MAGIC+1)
-        self.assertValEqual(s_got.field2, MAGIC+2)
+        self.assertValEqual(s_got.field1, MAGIC + 1)
+        self.assertValEqual(s_got.field2, MAGIC + 2)
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

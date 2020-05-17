@@ -1,0 +1,1 @@
+from hwtLib.amba.axis_comp.frame_deparser._deparser import AxiS_frameDeparser

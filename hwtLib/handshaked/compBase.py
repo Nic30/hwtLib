@@ -1,28 +1,38 @@
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from typing import Type, Union
+
 from hwt.interfaces.std import Handshaked, HandshakeSync
-from hwt.pyUtils.arrayQuery import where
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 
 
 class HandshakedCompBase(Unit):
+    """
+    Abstract class for components which has Handshaked interface as main
+    """
 
-    def __init__(self, hsIntfCls):
+    def __init__(self, hsIntfCls: Type[Union[Handshaked, HandshakeSync]]):
         """
-        :param hsIntfCls: class of interface which should be used as interface of this unit
+        :param hsIntfCls: class of interface which should be used
+            as interface of this unit
         """
-        assert(issubclass(hsIntfCls, (Handshaked, HandshakeSync)))
+        assert(issubclass(hsIntfCls, (Handshaked, HandshakeSync))), hsIntfCls
         self.intfCls = hsIntfCls
         Unit.__init__(self)
 
     def _config(self):
+        self.INTF_CLS = Param(self.intfCls)
         self.intfCls._config(self)
 
-    def getVld(self, intf):
+    @classmethod
+    def get_valid_signal(cls, intf):
         return intf.vld
 
-    def getRd(self, intf):
+    @classmethod
+    def get_ready_signal(cls, intf):
         return intf.rd
 
-    def getData(self, intf):
-        rd = self.getRd(intf)
-        vld = self.getVld(intf)
-        return list(where(intf._interfaces, lambda x: (x is not rd) and (x is not vld)))
+    def get_data(self, intf):
+        rd = self.get_ready_signal(intf)
+        vld = self.get_valid_signal(intf)
+        return [x for x in intf._interfaces
+                if (x is not rd) and (x is not vld)]

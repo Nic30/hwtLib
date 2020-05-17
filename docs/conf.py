@@ -17,15 +17,29 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import glob
 import os
 import re
-from sphinx.apidoc import main
-import sys
-
+from sphinx.ext.apidoc import main as apidoc_main
 import sphinx_bootstrap_theme
+import sys
+from datetime import datetime
 
 
-sys.path.insert(0,  os.path.abspath('../'))
+try:
+    # normal state, hwt should be installed
+    from hwt.pyUtils.fileHelpers import find_files
+except ImportError:
+    # development state
+    sys.path.insert(0, os.path.abspath('../../hwt'))
+    from hwt.pyUtils.fileHelpers import find_files
+
+# add hwtLib to path
+sys.path.insert(0, os.path.abspath('../'))
+# add local sphinx extensions to path 
+sys.path.insert(0, os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "_ext"))
+)
 
 # -- General configuration ------------------------------------------------
 
@@ -39,8 +53,10 @@ sys.path.insert(0,  os.path.abspath('../'))
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.todo',
               'sphinx.ext.viewcode',
-              #'sphinx.ext.napoleon',
-              'sphinx.ext.graphviz']
+              # 'sphinx.ext.napoleon',
+              'sphinx.ext.graphviz',
+              'aafig',
+              'sphinx_hwt']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -56,7 +72,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'hwtLib'
-copyright = '2017, Michal Orsak'
+copyright = '2017-%d, Michal Orsak' % datetime.now().year
 author = 'Michal Orsak'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -78,7 +94,7 @@ language = 'en'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**test**']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -92,7 +108,7 @@ todo_include_todos = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-#html_theme = 'alabaster'
+# html_theme = 'alabaster'
 
 html_theme = 'bootstrap'
 html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
@@ -149,7 +165,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'hwtlib', 'hwtLib Documentation',
+    (master_doc, 'hwtLib', 'hwtLib Documentation',
      [author], 1)
 ]
 
@@ -164,8 +180,6 @@ texinfo_documents = [
      author, 'hwtLib', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
 
 # -- Options for Epub output ----------------------------------------------
 
@@ -187,21 +201,38 @@ epub_copyright = copyright
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
 
-autodoc_mock_imports = ['hwtHdlParsers']
+# aafig format, try to get working with pdf
+aafig_format = dict(latex='pdf', html='gif')
 
+aafig_default_options = dict(
+    scale=.75,
+    aspect=0.5,
+    proportional=True,
+)
 
 notskipregex = re.compile("_[^_]+")
 
+
 def skip(app, what, name, obj, skip, options):
+    # do not skip hiden methods
     if name == "__init__" or notskipregex.match(name):
         return False
-    return skip
+    return None
 
 
 def setup(app):
     app.connect("autodoc-skip-member", skip)
 
+
 # update *.rst pages
-main(["-F", "-o", "../docs", "../hwtLib"])
+for file in glob.glob("*.rst"):
+    if file != "index.rst":
+        print("removing: ", file)
+        os.remove(file)
 
-
+excluded_tests = list(find_files("../", "*_test.py")) +\
+                 list(find_files("../", "test.py")) +\
+                 list(find_files("../", "*.hwt.py")) +\
+                 ["../hwtLib/tests"]
+apidoc_main(["--module-first", "--full", "--maxdepth", "-1",
+             "--output-dir", "../docs", "../hwtLib"] + excluded_tests)

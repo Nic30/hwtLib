@@ -1,17 +1,17 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import If
-from hwt.hdlObjects.constants import DIRECTION
+from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import Handshaked, BramPort_withoutClk
 from hwt.interfaces.utils import addClkRstn
-from hwt.serializer.constants import SERI_MODE
-from hwt.simulator.agentBase import AgentBase
-from hwt.synthesizer.interfaceLevel.interface import Interface
-from hwt.synthesizer.interfaceLevel.unit import Unit
+from hwt.serializer.mode import serializeParamsUniq
+from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
-from hwtLib.interfaces.addrDataHs import AddrDataHs
-
-
-def ag(i):
-    return i._getSimAgent()(i)
+from hwt.synthesizer.unit import Unit
+from hwtLib.interfaces.addr_data_hs import AddrDataHs
+from pycocotb.agents.base import AgentBase
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 class RamHsRAgent(AgentBase):
@@ -34,44 +34,52 @@ class RamHsRAgent(AgentBase):
         for o in [self.req, self.r]:
             o.enable = v
 
-    def __init__(self, intf):
+    def __init__(self, sim: HdlSimulator, intf):
         self.__enable = True
         self.intf = intf
 
-        self.addr = intf.addr._ag = ag(intf.addr)
-        self.data = intf.data._ag = ag(intf.data)
+        intf.addr._initSimAgent(sim)
+        self.addr = intf.addr._ag
+
+        intf.data._initSimAgent(sim)
+        self.data = intf.data._ag
 
     def getDrivers(self):
-        return (self.addr.getDrivers() + 
+        return (self.addr.getDrivers() +
                 self.data.getMonitors()
                 )
 
     def getMonitors(self):
-        return (self.addr.getMonitors() + 
+        return (self.addr.getMonitors() +
                 self.data.getDrivers()
                 )
 
 
 class RamHsR(Interface):
+    """
+    Handshaked RAM port
+    """
     def _config(self):
         self.ADDR_WIDTH = Param(8)
         self.DATA_WIDTH = Param(8)
 
     def _declr(self):
-        self.addr = Handshaked()
-        self.addr._replaceParam("DATA_WIDTH", self.ADDR_WIDTH)
+        a = self.addr = Handshaked()
+        a.DATA_WIDTH = self.ADDR_WIDTH
         with self._paramsShared():
             self.data = Handshaked(masterDir=DIRECTION.IN)
 
-    def _getSimAgent(self):
-        return RamHsRAgent
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = RamHsRAgent(sim, self)
 
 
+@serializeParamsUniq
 class RamAsHs(Unit):
     """
     Converter from ram port to handshaked interfaces
+
+    .. hwt-schematic::
     """
-    _serializerMode = SERI_MODE.PARAMS_UNIQ
 
     def _config(self):
         self.ADDR_WIDTH = Param(32)
@@ -82,49 +90,49 @@ class RamAsHs(Unit):
         with self._paramsShared():
             self.r = RamHsR()
             self.w = AddrDataHs()
-            self.ram = BramPort_withoutClk()
+            self.ram = BramPort_withoutClk()._m()
 
     def _impl(self):
         r = self.r
         w = self.w
         ram = self.ram
 
-        readRegEmpty = self._reg("readRegEmpty", defVal=1)
-        readDataPending = self._reg("readDataPending", defVal=0)
+        readRegEmpty = self._reg("readRegEmpty", def_val=1)
+        readDataPending = self._reg("readDataPending", def_val=0)
         readData = self._reg("readData", r.data.data._dtype)
 
         rEn = readRegEmpty | r.data.rd
-        readDataPending ** (r.addr.vld & rEn)
+        readDataPending(r.addr.vld & rEn)
         If(readDataPending,
-           readData ** ram.dout
+           readData(ram.dout)
         )
 
         If(r.data.rd,
-            readRegEmpty ** ~readDataPending
+            readRegEmpty(~readDataPending)
         ).Else(
-            readRegEmpty ** ~(readDataPending | ~readRegEmpty)
+            readRegEmpty(~(readDataPending | ~readRegEmpty))
 
         )
 
-        r.addr.rd ** rEn
+        r.addr.rd(rEn)
 
         If(rEn & r.addr.vld,
-           ram.we ** 0,
-           ram.addr ** r.addr.data 
+           ram.we(0),
+           ram.addr(r.addr.data) 
         ).Else(
-           ram.we ** 1,
-           ram.addr ** w.addr
+           ram.we(1),
+           ram.addr(w.addr)
         )
         wEn = ~rEn | ~r.addr.vld
-        w.rd ** wEn
+        w.rd(wEn)
 
-        ram.din ** w.data
-        ram.en ** ((rEn & r.addr.vld) | w.vld)
-        r.data.data ** readData
-        r.data.vld ** ~readRegEmpty
+        ram.din(w.data)
+        ram.en((rEn & r.addr.vld) | w.vld)
+        r.data.data(readData)
+        r.data.vld(~readRegEmpty)
 
 
 if __name__ == "__main__":
-    from hwt.synthesizer.shortcuts import toRtl
+    from hwt.synthesizer.utils import to_rtl_str
     u = RamAsHs()
-    print(toRtl(u))
+    print(to_rtl_str(u))
