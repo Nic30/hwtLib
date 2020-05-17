@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.logic.crcPoly import CRC_32
-from hwtLib.logic.crc import Crc
-# , crc_hqx
 from binascii import crc32
-# crc32 input reflected, result reflected,
-# poly 0x4C11DB7, init 0xFFFFFFFF, final 0xFFFFFFFF
-
-from hwt.hdl.typeShortcuts import vec
-from hwtLib.logic.crcComb_test import stoi
-from hwt.pyUtils.arrayQuery import grouper
-from pyMathBitPrecise.bit_utils import mask
 import sys
 
+from hwt.hdl.constants import Time
+from hwt.hdl.typeShortcuts import vec
+from hwt.pyUtils.arrayQuery import grouper
+from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.logic.crc import Crc
+from hwtLib.logic.crcComb_test import stoi
+from hwtLib.logic.crcPoly import CRC_32
+from pyMathBitPrecise.bit_utils import mask
 
+
+# , crc_hqx
+# crc32 input reflected, result reflected,
+# poly 0x4C11DB7, init 0xFFFFFFFF, final 0xFFFFFFFF
 def pr(name, val):
     print("{:10s}:  0x{:08X} {:032b}".format(name, val, val))
 
@@ -41,23 +41,26 @@ C_240B = (b"\x00\x00\x00\x00"
 class CrcTC(SimTestCase):
 
     def setUpCrc(self, poly, dataWidth=None,
-                 refin=True, refout=True,
-                 initval=mask(32), finxor=mask(32), use_mask=False):
+                 refin=None, refout=None,
+                 initval=None, finxor=None,
+                 use_mask=False,
+                 is_bigendian=False):
         if dataWidth is None:
             dataWidth = poly.WIDTH
 
-        self.DATA_WIDTH = dataWidth
-        self.POLY_WIDTH = poly.WIDTH
-
         u = self.u = Crc()
-        u.INIT = vec(initval, poly.WIDTH)
+        u.setConfig(poly)
+        if initval is not None:
+            u.INIT = vec(initval, poly.WIDTH)
         u.DATA_WIDTH = dataWidth
-        u.REFIN = refin
-        u.REFOUT = refout
-        u.POLY_WIDTH = poly.WIDTH
-        u.POLY = vec(poly.POLY, poly.WIDTH)
-        u.XOROUT = vec(finxor, poly.WIDTH)
+        if refin is not None:
+            u.REFIN = refin
+        if refout is not None:
+            u.REFOUT = refout
+        if finxor is not None:
+            u.XOROUT = vec(finxor, poly.WIDTH)
         u.MASK_GRANULARITY = 8 if use_mask else None
+        u.IN_IS_BIGENDIAN = is_bigendian
 
         self.compileSimAndStart(u)
         return u
@@ -97,7 +100,7 @@ class CrcTC(SimTestCase):
         u = self.setUpCrc(CRC_32, use_mask=True)
         inp = b"abcd"
 
-        u.dataIn._ag.data.append((stoi(inp), mask(32//8), 1))
+        u.dataIn._ag.data.append((stoi(inp), mask(32 // 8), 1))
         # u.dataIn._ag.data.extend([ord("a") for _ in range(4)])
         self.runSim(30 * Time.ns)
         out = int(u.dataOut._ag.data[-1])
@@ -108,7 +111,7 @@ class CrcTC(SimTestCase):
         u = self.setUpCrc(CRC_32, use_mask=True)
         inp = b"abc"
 
-        u.dataIn._ag.data.append((stoi(inp), mask(24//8), 1))
+        u.dataIn._ag.data.append((stoi(inp), mask(24 // 8), 1))
         # u.dataIn._ag.data.extend([ord("a") for _ in range(4)])
         self.runSim(30 * Time.ns)
         out = int(u.dataOut._ag.data[-1])
@@ -120,8 +123,8 @@ class CrcTC(SimTestCase):
         inp = b"abcdefg"
 
         u.dataIn._ag.data.extend([
-            (stoi(inp[0:4]), mask(32//8), 0),
-            (stoi(inp[4:]), mask(24//8), 1)
+            (stoi(inp[0:4]), mask(32 // 8), 0),
+            (stoi(inp[4:]), mask(24 // 8), 1)
         ])
         # u.dataIn._ag.data.extend([ord("a") for _ in range(4)])
         self.runSim(40 * Time.ns)
@@ -162,7 +165,7 @@ class CrcTC(SimTestCase):
         u.dataIn._ag.data.extend([0, 0])
         self.runSim(50 * Time.ns)
         out = int(u.dataOut._ag.data[-1])
-        inp = (0).to_bytes(2*32, byteorder="little")
+        inp = (0).to_bytes(2 * 32, byteorder="little")
         ref = crc32(inp)
         self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
 
@@ -200,7 +203,7 @@ class CrcTC(SimTestCase):
     def test_240B_CRC32_init(self):
         u = self.setUpCrc(CRC_32, dataWidth=240,
                           refin=False, refout=False,
-                          initval=mask(32), finxor=0)
+                          finxor=0)
 
         u.dataIn._ag.data += [
             stoi(C_240B[:len(C_240B) // 2]),
@@ -270,7 +273,7 @@ if __name__ == "__main__":
     # suite.addTest(CrcTC('test_wide'))
     # suite.addTest(CrcTC('test_240B_CRC32_init_refout_finxor'))
     # suite.addTest(CrcTC('test_240B'))
-
+    # suite.addTest(CrcTC("test_simple_mask_3_outof_4"))
     suite.addTest(unittest.makeSuite(CrcTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

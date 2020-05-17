@@ -9,9 +9,9 @@ from hwt.hdl.typeShortcuts import vec
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.logic.crcComb import CrcComb
 from hwtLib.logic.crcPoly import CRC_1, CRC_8_CCITT, CRC_16_CCITT, CRC_32, \
-    CRC_8_SAE_J1850
+    CRC_8_SAE_J1850, CRC_5_USB
 from pyMathBitPrecise.bit_utils import get_bit, bit_list_to_int, mask, \
-    bit_list_reversed_endianity, bit_list_reversed_bits_in_bytes
+    bit_list_reversed_endianity, bit_list_reversed_bits_in_bytes, reverse_bits
 
 
 def stoi(s):
@@ -25,11 +25,10 @@ def crcToBf(crc):
 
 
 def naive_crc(dataBits, crcBits, polyBits,
-              refin=False, refout=False, endianity="little"):
+              refin=False, refout=False):
     crc_mask = CrcComb.buildCrcXorMatrix(len(dataBits), polyBits)
 
-    if endianity != "big":
-        dataBits = bit_list_reversed_endianity(dataBits)
+    dataBits = bit_list_reversed_endianity(dataBits)
     # print("")
     # for r in crc_mask:
     #    print(r)
@@ -67,24 +66,26 @@ def naive_crc(dataBits, crcBits, polyBits,
 class CrcCombTC(SimTestCase):
 
     def setUpCrc(self, poly, dataWidth=None,
-                 refin=False,
-                 refout=False,
-                 initval=0,
-                 finxor=0):
+                 refin=None,
+                 refout=None,
+                 initval=None,
+                 finxor=None,
+                 bigendian=False):
         if dataWidth is None:
             dataWidth = poly.WIDTH
 
         u = self.u = CrcComb()
-        self.DATA_WIDTH = dataWidth
-        self.POLY_WIDTH = poly.WIDTH
-
+        u.setConfig(poly)
         u.DATA_WIDTH = dataWidth
-        u.POLY_WIDTH = poly.WIDTH
-        u.POLY = vec(poly.POLY, poly.WIDTH)
-        u.INIT = vec(initval, poly.WIDTH)
-        u.REFIN = refin
-        u.REFOUT = refout
-        u.XOROUT = vec(finxor, poly.WIDTH)
+        if initval is not None:
+            u.INIT = vec(initval, poly.WIDTH)
+        if refin is not None:
+            u.REFIN = refin
+        if refout is not None:
+            u.REFOUT = refout
+        if finxor is not None:
+            u.XOROUT = vec(finxor, poly.WIDTH)
+        u.IN_IS_BIGENDIAN = bigendian
         self.compileSimAndStart(u)
         return u
 
@@ -93,7 +94,7 @@ class CrcCombTC(SimTestCase):
         u = self.u
         inp = b"a"
 
-        u.dataIn._ag.data.append(int.from_bytes(inp, byteorder='little'))
+        u.dataIn._ag.data.append(stoi(inp))
         self.runSim(20 * Time.ns)
 
         crc = 1
@@ -105,7 +106,7 @@ class CrcCombTC(SimTestCase):
         u = self.u
         inp = b"a"
 
-        u.dataIn._ag.data.append(int.from_bytes(inp, byteorder='little'))
+        u.dataIn._ag.data.append(stoi(inp))
         self.runSim(20 * Time.ns)
 
         crc = 0x20
@@ -119,13 +120,14 @@ class CrcCombTC(SimTestCase):
         # ! self.assertEqual(crc32(b"abcdefgh"),
         #                    crc32(b"efgh") ^ crc32(b"abcd"))
 
-        self.assertEqual(crc_hqx(b"aa", 0), crc_hqx(b"a", crc_hqx(b"a", 0)))
+        self.assertEqual(crc_hqx(b"aa", CRC_16_CCITT.INIT),
+                         crc_hqx(b"a", crc_hqx(b"a", CRC_16_CCITT.INIT)))
         # ! self.assertEqual(crc_hqx(b"abcdefgh", 0),
         #                    crc_hqx(b"abcd", crc_hqx(b"efgh", 0)))
-        self.assertEqual(crc_hqx(b"abcdefgh", 0),
-                         crc_hqx(b"efgh", crc_hqx(b"abcd", 0)))
-        # ! self.assertEqual(crc_hqx(b"abcdefgh", 0),
-        #                    crc_hqx(b"efgh", 0) ^ crc_hqx(b"abcd", 0))
+        self.assertEqual(crc_hqx(b"abcdefgh", CRC_16_CCITT.INIT),
+                         crc_hqx(b"efgh", crc_hqx(b"abcd", CRC_16_CCITT.INIT)))
+        # ! self.assertEqual(crc_hqx(b"abcdefgh", CRC_16_CCITT.INIT),
+        #                    crc_hqx(b"efgh", CRC_16_CCITT.INIT) ^ crc_hqx(b"abcd", CRC_16_CCITT.INIT))
 
         crc8 = crcToBf(CRC_8_CCITT)
         crc8_aes = crcToBf(CRC_8_SAE_J1850)
@@ -182,31 +184,23 @@ class CrcCombTC(SimTestCase):
 
     def test_crc32(self):
         for i, inp in enumerate([b"abcd", b"0001"]):
-            u = self.setUpCrc(CRC_32,
-                              refin=True,
-                              refout=True,
-                              initval=mask(32),
-                              finxor=mask(32))
+            u = self.setUpCrc(CRC_32)
             u.dataIn._ag.data.append(
                stoi(inp),
             )
             self.runSim(20 * Time.ns, name=os.path.join(self.DEFAULT_LOG_DIR,
                                                         "test_crc32_%i.vcd" % i))
             out = int(u.dataOut._ag.data[-1])
-            ref = crc32(inp) & 0xffffffff
+            ref = crc32(inp) & mask(32)
             self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
 
     def test_crc32_64b(self):
-        inp = "abcdefgh"
-        u = self.setUpCrc(CRC_32, dataWidth=64,
-                          refin=True,
-                          refout=True,
-                          initval=mask(32),
-                          finxor=mask(32))
+        inp = b"abcdefgh"
+        u = self.setUpCrc(CRC_32, dataWidth=64)
         u.dataIn._ag.data.append(stoi(inp))
         self.runSim(20 * Time.ns)
         out = int(u.dataOut._ag.data[-1])
-        ref = crc32(inp.encode()) & 0xffffffff
+        ref = crc32(inp) & 0xffffffff
         self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
 
     def test_crc16(self):
@@ -214,21 +208,49 @@ class CrcCombTC(SimTestCase):
             self.setUpCrc(CRC_16_CCITT)
             u = self.u
 
-            u.dataIn._ag.data.append(int.from_bytes(inp, byteorder='little'))
+            u.dataIn._ag.data.append(stoi(inp))
             self.runSim(20 * Time.ns, name=os.path.join(self.DEFAULT_LOG_DIR,
                                                         "test_crc16_%d.vcd" % i))
 
             # crc = 0x449C
-            ref = crc_hqx(inp, 0)
-            self.assertValSequenceEqual(u.dataOut._ag.data, [ref], inp)
+            ref = crc_hqx(inp, CRC_16_CCITT.INIT)
+            d = u.dataOut._ag.data[0]
+            self.assertValEqual(d, ref, (inp, "0x{:x} 0x{:x}".format(int(d), ref)))
+
+    def test_crc5_usb(self):
+        def lsb_first_to_msb_first(val):
+            v = reverse_bits(val & 0b111, 3)
+            v |= reverse_bits(val >> 3, 7) << 3
+            return v
+
+        for i, (inp, ref) in enumerate([
+                # addr=3a, endp=a
+                (0b10101000_111, 0b10111),
+                # addr=3a, endp=a
+                (0b01011100_101, 0b11100),
+                # addr=70, endp=4
+                (0b00001110_010, 0b01110),
+                                        ]):
+            ref = reverse_bits(ref, 5)
+
+            self.setUpCrc(CRC_5_USB, dataWidth=7 + 4,
+                          refin=False,  # because bits are already reflected in data
+                          bigendian=True,
+                          )
+            u = self.u
+            u.dataIn._ag.data.append(inp)
+            trace_file = os.path.join(self.DEFAULT_LOG_DIR,
+                                      "test_crc5_usb_%d.vcd" % i)
+            self.runSim(20 * Time.ns, name=trace_file)
+
+            d = u.dataOut._ag.data[0]
+            self.assertValEqual(d, ref, (i, "{0:05b} {1:05b}".format(int(d), ref)))
 
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(CrcCombTC('test_crc16'))
-    # suite.addTest(CrcCombTC('test_crc32_py'))
-    # suite.addTest(CrcCombTC('test_crc32'))
+    #suite.addTest(CrcCombTC('test_crc5_usb'))
     suite.addTest(unittest.makeSuite(CrcCombTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

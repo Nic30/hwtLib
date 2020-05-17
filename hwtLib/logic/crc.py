@@ -4,6 +4,7 @@
 from typing import List
 
 from hwt.code import If, Concat, Switch
+from hwt.code_utils import rename_signal
 from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import VldSynced, VectSignal
@@ -14,7 +15,8 @@ from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.interfaces.data_mask_last_hs import DataMaskLastHs
 from hwtLib.logic.crcComb import CrcComb
-from pyMathBitPrecise.bit_utils import get_bit, bit_list_reversed_endianity,\
+from hwtLib.logic.crcPoly import CRC_32
+from pyMathBitPrecise.bit_utils import get_bit, bit_list_reversed_endianity, \
     mask
 
 
@@ -33,7 +35,9 @@ class Crc(Unit):
 
     def _config(self):
         CrcComb._config(self)
+        self.setConfig(CRC_32)
         self.LATENCY = Param(1)
+        self.DATA_WIDTH = 32
         self.MASK_GRANULARITY = Param(None)
 
     def _declr(self):
@@ -51,13 +55,8 @@ class Crc(Unit):
         """
         CrcComb.setConfig(self, crcConfigCls)
 
-    def wrapWithName(self, sig, name):
-        _sig = self._sig(name, sig._dtype)
-        _sig(sig)
-        return _sig
-
     def build_crc_xor_matrix(self, state_in_bits, poly_bits, data_in_bits)\
-            -> List[RtlSignal]:
+            ->List[RtlSignal]:
         """
         build xor tree for CRC computation
         """
@@ -70,7 +69,7 @@ class Crc(Unit):
         # wrap crc next signals to separate signal to have nice code
         stateNext = []
         for i, crcbit in enumerate(res):
-            b = self.wrapWithName(crcbit, "crc_%d" % i)
+            b = rename_signal(self, crcbit, "crc_%d" % i)
             stateNext.append(b)
         return stateNext
 
@@ -79,15 +78,18 @@ class Crc(Unit):
         poly_bits, PW = CrcComb.parsePoly(self.POLY, self.POLY_WIDTH)
         din = self.dataIn
         # rename "dataIn_data" to "d" to make code shorter
-        _d = self.wrapWithName(din.data, "d")
+        _d = rename_signal(self, din.data, "d")
         data_in_bits = list(iterBits(_d))
+
         if not self.IN_IS_BIGENDIAN:
             data_in_bits = bit_list_reversed_endianity(data_in_bits)
+
         if self.MASK_GRANULARITY:
             din.rd(1)
             rst = self.rst_n._isOn() | (din.vld & din.last)
         else:
             rst = self.rst_n
+
         state = self._reg("c",
                           Bits(self.POLY_WIDTH),
                           self.INIT,
@@ -108,15 +110,15 @@ class Crc(Unit):
             mask_width = mask_in._dtype.bit_length()
             state_next_cases = []
             for vld_byte_cnt in range(1, mask_width + 1):
-                m = mask(vld_byte_cnt)
-                # because of MSB..LSB
+                # because bytes are already reversed in bit vector of input bits
                 _data_in_bits = data_in_bits[
-                    (mask_width - vld_byte_cnt)*self.MASK_GRANULARITY:
+                     (mask_width - vld_byte_cnt)*self.MASK_GRANULARITY:
                 ]
                 state_next = self.build_crc_xor_matrix(
                     state_in_bits, poly_bits, _data_in_bits)
+                # reversed because of because of MSB..LSB
                 state_next_cases.append((
-                    m, state(Concat(*reversed(state_next)))
+                    mask(vld_byte_cnt), state(Concat(*reversed(state_next)))
                 ))
             If(din.vld,
                 Switch(mask_in).add_cases(
@@ -138,21 +140,23 @@ class Crc(Unit):
         XOROUT = int(self.XOROUT)
         fin_bits = [hBit(get_bit(XOROUT, i))
                     for i in range(PW)]
-        fin_bits = self.wrapWithName(Concat(*fin_bits), "fin_bits")
+        fin_bits = rename_signal(self, Concat(*fin_bits), "fin_bits")
 
         if self.REFOUT:
-            state_reversed = self.wrapWithName(
-                Concat(*iterBits(state)), "state_revered")
+            state_reversed = rename_signal(
+                self,
+                Concat(*iterBits(state)),
+                "state_revered")
             state = state_reversed
         self.dataOut(state ^ fin_bits)
 
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
-    # from hwtLib.logic.crcPoly import CRC_32
+
     u = Crc()
     u.MASK_GRANULARITY = 8
-    # CrcComb.setConfig(u, CRC_32)
-    # u.DATA_WIDTH = 8
+    CrcComb.setConfig(u, CRC_32)
+    u.DATA_WIDTH = 16
 
     print(to_rtl_str(u))

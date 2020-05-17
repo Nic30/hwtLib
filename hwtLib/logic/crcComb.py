@@ -39,14 +39,9 @@ class CrcComb(Unit):
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(8)
-        self.INIT = Param(0)
+        self.DATA_WIDTH = Param(7 + 4)
         self.IN_IS_BIGENDIAN = Param(False)
-        self.POLY = Param(CRC_5_USB.POLY)
-        self.POLY_WIDTH = Param(CRC_5_USB.WIDTH)
-        self.REFIN = Param(False)
-        self.REFOUT = Param(False)
-        self.XOROUT = Param(0)
+        self.setConfig(CRC_5_USB)
 
     def setConfig(self, crcConfigCls):
         """
@@ -135,9 +130,7 @@ class CrcComb(Unit):
                           inBits: List, stateBits: List,
                           refin: bool) -> List:
         if refin:
-            inBits = bit_list_reversed_bits_in_bytes(inBits)
-            # stateBits = list(reversed(stateBits))
-
+            inBits = bit_list_reversed_bits_in_bytes(inBits, extend=False)
         outBits = []
         for (stateMask, dataMask) in crcMatrix:
             v = hBit(0)  # neutral value for XOR
@@ -159,8 +152,6 @@ class CrcComb(Unit):
     def _impl(self):
         DW = int(self.DATA_WIDTH)
         polyBits, PW = self.parsePoly(self.POLY, self.POLY_WIDTH)
-        # xorMatrix = buildCrcMatrix_dataMatrix(polyCoefs, PW, DW)
-        # initXorMatrix = buildCrcMatrix_reg0Matrix(polyCoefs, PW, DW)
         XOROUT = int(self.XOROUT)
         _INIT = int(self.INIT)
         initBits = [hBit(get_bit(_INIT, i))
@@ -174,9 +165,8 @@ class CrcComb(Unit):
         inBits = list(iterBits(_inD))
 
         if not self.IN_IS_BIGENDIAN:
-            inBits = bit_list_reversed_endianity(inBits)
-
-        outBits = iterBits(self.dataOut)
+            # we need to process lower byte first
+            inBits = bit_list_reversed_endianity(inBits, extend=False)
 
         crcMatrix = self.buildCrcXorMatrix(DW, polyBits)
         res = self.applyCrcXorMatrix(
@@ -185,8 +175,9 @@ class CrcComb(Unit):
 
         if self.REFOUT:
             res = list(reversed(res))
-            finBits = bit_list_reversed_bits_in_bytes(finBits)
+            finBits = bit_list_reversed_bits_in_bytes(finBits, extend=False)
 
+        outBits = iterBits(self.dataOut)
         for ob, b, fb in zip(outBits, res, finBits):
             ob(b ^ fb)
 
@@ -194,9 +185,21 @@ class CrcComb(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     # from hwtLib.logic.crcPoly import CRC_32
-
+    # https://github.com/hdl4fpga/hdl4fpga/blob/2a18e546cfcd1f1c38e19705842243e776e019d1/library/usb/usbhost/usbh_crc5.v
+    # https://superjameszou.wordpress.com/2010/09/06/a-real-example-for-usb-packets-transferring/
+    # https://www.usb.org/sites/default/files/crcdes.pdf
+    # http://www.rayslogic.com/Propeller/USB.htm
+    # http://outputlogic.com/?page_id=321
+    # https://github.com/boostorg/crc/blob/develop/include/boost/crc.hpp
     u = CrcComb()
-    u.DATA_WIDTH = 8
+    # https://github.com/hdl4fpga/hdl4fpga/blob/2a18e546cfcd1f1c38e19705842243e776e019d1/library/usb/usbhost/usbh_crc5.v
     u.setConfig(CRC_5_USB)
+    u.DATA_WIDTH = 7 + 4
+    # u.REFIN = u.REFOUT = False
+    # u.IN_IS_BIGENDIAN = True
+    # https://github.com/nandland/nandland/blob/master/CRC/Verilog/source/CRC_16_CCITT_Parallel.v
+    #from hwtLib.logic.crcPoly import CRC_16_CCITT
+    #u.setConfig(CRC_16_CCITT)
+    #u.DATA_WIDTH = 16
 
     print(to_rtl_str(u))
