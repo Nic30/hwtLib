@@ -1,31 +1,27 @@
-from hwt.hdlObjects.constants import DIRECTION
 from hwt.interfaces.std import VectSignal
-from hwtLib.amba.axiLite import AxiLite_addr, AxiLite, AxiLite_w, AxiLite_r, \
-    AxiLite_b
+from hwtLib.amba.axi4Lite import Axi4Lite, Axi4Lite_addr
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 #################################################################
-class AceLite_addr(AxiLite_addr):
+class AceLite_addr(Axi4Lite_addr):
+
     def _declr(self):
-        AxiLite_addr._declr(self)
+        Axi4Lite_addr._declr(self)
         self.domain = VectSignal(2)
         self.snoop = VectSignal(3)
         self.bar = VectSignal(2)
 
-    def _getSimAgent(self):
+    def _initSimAgent(self, sim: HdlSimulator):
         raise NotImplementedError()
-    
-class AceLite(AxiLite):
-    def _declr(self):
-        with self._paramsShared():
-            self.aw = AceLite_addr()
-            self.ar = AceLite_addr()
-            self.w = AxiLite_w()
-            self.r = AxiLite_r(masterDir=DIRECTION.IN)
-            self.b = AxiLite_b(masterDir=DIRECTION.IN)
-            
+
+
+class AceLite(Axi4Lite):
+    AR_CLS = AceLite_addr
+    AW_CLS = AceLite_addr
+
     def _getIpCoreIntfClass(self):
         raise NotImplementedError()
-    
-    def _getSimAgent(self):
+
+    def _initSimAgent(self, sim: HdlSimulator):
         raise NotImplementedError()
