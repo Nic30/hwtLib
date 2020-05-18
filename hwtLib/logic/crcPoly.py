@@ -13,7 +13,7 @@ Library of common CRC configurations
 :note: XOROUT This is an WIDTH-bit value. It is XORed to the final register value
     (after the REFOUT) stage before the value is returned as the official
     checksum.
-    
+
 :note: http://reveng.sourceforge.net/crc-catalogue/all.htm
 """
 

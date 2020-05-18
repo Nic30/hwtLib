@@ -151,6 +151,14 @@ class AceSnoop_data(Axi_hs):
 
 
 class Ace(Axi4):
+    """
+    :ivar ac: Coherent address channel.
+        snoop address input to the master
+    :ivar cr: Coherent response channel.
+        used by the master to signal the response to snoops to the interconnect
+    :ivar cd: Coherent data channel.
+        output from the master to transfer snoop data
+    """
     AW_CLS = Ace_addr
     AR_CLS = Ace_addr
 
