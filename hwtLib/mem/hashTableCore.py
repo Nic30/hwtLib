@@ -14,6 +14,7 @@ from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.hashTable_intf import InsertIntf, LookupKeyIntf, \
     LookupResultIntf
 from hwtLib.mem.ram import RamSingleClock
+from hwtLib.handshaked.builder import HsBuilder
 
 
 # https://web.stanford.edu/class/cs166/lectures/13/Small13.pdf
@@ -133,36 +134,33 @@ class HashTableCore(Unit):
         res = self.lookupRes
 
         # tmp storage for original key and hash for later check
-        origKeyReg = HandshakedReg(LookupKeyIntf)
-        origKeyReg.KEY_WIDTH = self.KEY_WIDTH
-        self.origKeyReg = origKeyReg
-        origKeyReg.dataIn.key(lookup.key)
-        if lookup.LOOKUP_ID_WIDTH:
-            origKeyReg.dataIn.lookupId(lookup.lookupId)
-        origKeyReg.clk(self.clk)
-        origKeyReg.rst_n(self.rst_n)
+        origKeyIn = LookupKeyIntf()
+        origKeyIn.KEY_WIDTH = self.KEY_WIDTH
+        self.origKeyIn = origKeyIn
 
-        origKey = origKeyReg.dataOut
+        origKeyIn.key(lookup.key)
+        if lookup.LOOKUP_ID_WIDTH:
+            origKeyIn.lookupId(lookup.lookupId)
+        origKey = HsBuilder(self, origKeyIn).buff(2).end
 
         # hash key and address with has in table
         h.dataIn(lookup.key)
         # hash can be wider
         connect(h.dataOut, ramR.addr.data, fit=True)
 
-        inputSlaves = [ramR.addr, origKeyReg.dataIn]
+        inputSlaves = [ramR.addr, origKeyIn]
         outputMasters = [origKey, ramR.data, ]
 
         if self.LOOKUP_HASH:
-            origHashReg = HandshakedReg(Handshaked)
-            origHashReg.DATA_WIDTH = self.HASH_WIDTH
+            origHashIn = Handshaked()
+            origHashIn.DATA_WIDTH = self.HASH_WIDTH
+            self.origHashIn = origHashIn
+            origHashOut = HsBuilder(self, origHashIn).buff(2).end
 
-            self.origHashReg = origHashReg
-            origHashReg.clk(self.clk)
-            origHashReg.rst_n(self.rst_n)
-            connect(h.dataOut, origHashReg.dataIn.data, fit=True)
+            connect(h.dataOut, origHashIn.data, fit=True)
 
-            inputSlaves.append(origHashReg.dataIn)
-            outputMasters.append(origHashReg.dataOut)
+            inputSlaves.append(origHashIn)
+            outputMasters.append(origHashOut)
 
         StreamNode(masters=[lookup],
                    slaves=inputSlaves).sync()
@@ -174,7 +172,7 @@ class HashTableCore(Unit):
         key, data, item_vld = self.parseItem(ramR.data.data)
 
         if self.LOOKUP_HASH:
-            res.hash(origHashReg.dataOut.data)
+            res.hash(origHashOut.data)
 
         if self.LOOKUP_KEY:
             res.key(origKey.key)

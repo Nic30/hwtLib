@@ -263,7 +263,7 @@ class CuckooHashTable(HashTableCore):
                 stash.key(insert.key),
                 stash.data(insert.data),
                 stash.item_vld(1),
-            ).Elif(~lookup_in_progress & lookup.vld,
+            ).Elif(table_lookup_ack & lookup.vld,
                 stash.origin_op(ORIGIN_TYPE.LOOKUP),
                 stash.key(lookup.key),
             ).Elif(table_lookup_ack,
@@ -276,9 +276,8 @@ class CuckooHashTable(HashTableCore):
             withLowerPrio = cmd_priority[:i]
             rd = And(isIdle, *[~x.vld for x in withLowerPrio])
             if intf is lookup:
-                rd = rd & (lookup_in_progress
-                    # |  # the stash not loaded yet
-                    #table_lookup_ack  # stash will be consummed
+                rd = rd & (~lookup_in_progress |  # the stash not loaded yet
+                    table_lookup_ack  # stash will be consummed
                 )
             intf.rd(rd)
 

@@ -7,6 +7,7 @@ from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
+from hdlConvertorAst.to.hdlUtils import iter_with_last
 
 
 @serializeParamsUniq
@@ -36,7 +37,7 @@ class HandshakedReg(HandshakedCompBase):
 
         outData = []
         for iin in inData:
-            r = self._reg(prefix + 'reg_' + iin._name, iin._dtype)
+            r = self._reg(prefix + 'reg_' + getSignalName(iin), iin._dtype)
 
             If(regs_we,
                 r(iin)
@@ -95,10 +96,20 @@ class HandshakedReg(HandshakedCompBase):
 
         Out = self.dataOut
         In = self.dataIn
-        if LATENCY == 1 and DELAY == 0:
-            outData = self._impl_latency(vld(In), rd(In),
-                                         data(In), vld(Out),
-                                         rd(Out), "latency1_")
+        if DELAY == 0:
+            in_vld, in_rd, in_data = vld(In), rd(In), data(In)
+            for last, i in iter_with_last(range(LATENCY)):
+                if last:
+                    out_vld, out_rd = vld(Out), rd(Out)
+                else:
+                    out_vld = self._sig("latency%d_vld" % (i+1))
+                    out_rd = self._sig("latency%d_rd" % (i+1))
+
+                outData = self._impl_latency(in_vld, in_rd, in_data,
+                                             out_vld, out_rd,
+                                             "latency%d_" % i)
+                in_vld, in_rd, in_data = out_vld, out_rd, outData
+
         elif LATENCY == 2 and DELAY == 1:
             latency1_vld = self._sig("latency1_vld")
             latency1_rd = self._sig("latency1_rd")
