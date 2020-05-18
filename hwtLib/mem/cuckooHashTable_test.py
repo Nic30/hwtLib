@@ -12,13 +12,12 @@ class CuckooHashTableTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
-        cls.TABLE_SIZE = 32
         u = CuckooHashTable([CRC_32, CRC_32])
         u.KEY_WIDTH = 16
         u.DATA_WIDTH = 8
         u.LOOKUP_KEY = True
-        u.TABLE_SIZE = cls.TABLE_SIZE
-        cls.TABLE_CNT = 2
+        u.TABLE_SIZE = 32
+        cls.TABLE_CNT = len(u.POLYNOMIALS)
         return u
 
     def setUp(self):
@@ -42,17 +41,17 @@ class CuckooHashTableTC(SingleUnitSimTestCase):
     def hashTableAsDict(self):
         d = {}
         for t in self.TABLE_MEMS:
-            self.assertEqual(len(t), self.TABLE_SIZE)
-            for i in range(self.TABLE_SIZE):
-                key, data, vldFlag = self.parseItem(t[i].read())
-                if vldFlag:
+            self.assertEqual(len(t), self.u.TABLE_SIZE)
+            for i in range(self.u.TABLE_SIZE):
+                key, data, item_vld = self.parseItem(t[i].read())
+                if item_vld:
                     key = int(key)
                     d[key] = data
         return d
 
     def parseItem(self, item):
         """
-        :return: tuple (key, data, vldFlag)
+        :return: tuple (key, data, item_vld)
         """
         return self.u.tables[0].parseItem(item)
 
@@ -61,10 +60,10 @@ class CuckooHashTableTC(SingleUnitSimTestCase):
         u.clean._ag.data.append(1)
         self.runSim(40 * CLK_PERIOD)
         for t in self.TABLE_MEMS:
-            self.assertEqual(len(t), self.TABLE_SIZE)
-            for i in range(self.TABLE_SIZE):
-                _, _, vldFlag = self.parseItem(t[i].read())
-                self.assertValEqual(vldFlag, 0, i)
+            self.assertEqual(len(t), self.u.TABLE_SIZE)
+            for i in range(self.u.TABLE_SIZE):
+                _, _, item_vld = self.parseItem(t[i].read())
+                self.assertValEqual(item_vld, 0, i)
 
     def test_simpleInsert(self):
         u = self.u
@@ -97,6 +96,7 @@ class CuckooHashTableTC(SingleUnitSimTestCase):
         found = 1
         occupied = 1
         for k, v in sorted(reference.items(), key=lambda x: x[0]):
+            # insert should have higher priority
             u.insert._ag.data.append((k, v))
             u.lookup._ag.data.append(k)
             expected.append((k, v, found, occupied))
@@ -108,7 +108,7 @@ class CuckooHashTableTC(SingleUnitSimTestCase):
     def test_80p_fill(self):
         u = self.u
         self.cleanupMemory()
-        CNT = int(self.TABLE_SIZE * self.TABLE_CNT * 0.8)
+        CNT = int(self.u.TABLE_SIZE * self.TABLE_CNT * 0.8)
         reference = {i + 1: i + 2 for i in range(CNT)}
         for k, v in sorted(reference.items(), key=lambda x: x[0]):
             u.insert._ag.data.append((k, v))

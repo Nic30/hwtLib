@@ -29,7 +29,7 @@ class HashTableCore(Unit):
     .. code-block:: c
 
         struct item {
-            bool vldFlag;
+            bool item_vld;
             data_t data;
             key_t key;
         };
@@ -93,17 +93,15 @@ class HashTableCore(Unit):
         t = self.table = RamSingleClock()
         t.PORT_CNT = 1
         t.ADDR_WIDTH = log2ceil(self.ITEMS_CNT)
-        t.DATA_WIDTH = self.KEY_WIDTH + self.DATA_WIDTH + 1  # +1 for vldFlag
+        t.DATA_WIDTH = self.KEY_WIDTH + self.DATA_WIDTH + 1  # +1 for item_vld
 
         tc = self.tableConnector = RamAsHs()
         tc.ADDR_WIDTH = t.ADDR_WIDTH
         tc.DATA_WIDTH = t.DATA_WIDTH
 
-        hashWidth = max(int(self.KEY_WIDTH), int(self.HASH_WIDTH))
         h = self.hash = CrcComb()
-        h.DATA_WIDTH = hashWidth
+        h.DATA_WIDTH = self.KEY_WIDTH
         h.setConfig(self.POLYNOME)
-        h.POLY_WIDTH = hashWidth
 
     def parseItem(self, sig):
         """
@@ -112,7 +110,7 @@ class HashTableCore(Unit):
         DW = self.DATA_WIDTH
         KW = self.KEY_WIDTH
 
-        vldFlag = sig[0]
+        item_vld = sig[0]
 
         dataLow = 1
         dataHi = dataLow + DW
@@ -127,7 +125,7 @@ class HashTableCore(Unit):
 
         key = sig[keyHi:keyLow]
 
-        return (key, data, vldFlag)
+        return (key, data, item_vld)
 
     def lookupLogic(self, ramR):
         h = self.hash
@@ -148,7 +146,7 @@ class HashTableCore(Unit):
 
         # hash key and address with has in table
         h.dataIn(lookup.key)
-        # has can be wider
+        # hash can be wider
         connect(h.dataOut, ramR.addr.data, fit=True)
 
         inputSlaves = [ramR.addr, origKeyReg.dataIn]
@@ -173,7 +171,7 @@ class HashTableCore(Unit):
         StreamNode(masters=outputMasters,
                    slaves=[res]).sync()
 
-        key, data, vldFlag = self.parseItem(ramR.data.data)
+        key, data, item_vld = self.parseItem(ramR.data.data)
 
         if self.LOOKUP_HASH:
             res.hash(origHashReg.dataOut.data)
@@ -186,16 +184,16 @@ class HashTableCore(Unit):
 
         if self.DATA_WIDTH:
             res.data(data)
-        res.occupied(vldFlag)
-        res.found(origKey.key._eq(key) & vldFlag)
+        res.occupied(item_vld)
+        res.found(origKey.key._eq(key) & item_vld)
 
     def insertLogic(self, ramW):
         In = self.insert
 
         if self.DATA_WIDTH:
-            rec = Concat(In.key, In.data, In.vldFlag)
+            rec = Concat(In.key, In.data, In.item_vld)
         else:
-            rec = Concat(In.key, In.vldFlag)
+            rec = Concat(In.key, In.item_vld)
 
         ramW.data(rec)
         ramW.addr(In.hash)

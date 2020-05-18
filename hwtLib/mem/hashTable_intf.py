@@ -10,9 +10,9 @@ class InsertIntfAgent(HandshakedAgent):
 
     data format:
         * if interface has data signal,
-          data format is tuple (hash, key, data, vldFlag)
+          data format is tuple (hash, key, data, item_vld)
         * if interface does not have data signal,
-          data format is tuple (hash, key, vldFlag)
+          data format is tuple (hash, key, item_vld)
     """
     def __init__(self, sim: HdlSimulator, intf: "InsertIntf"):
         HandshakedAgent.__init__(self, sim, intf)
@@ -22,13 +22,13 @@ class InsertIntfAgent(HandshakedAgent):
         i = self.intf
         _hash = i.hash.read()
         key = i.key.read()
-        vldFlag = i.vldFlag.read()
+        item_vld = i.item_vld.read()
 
         if self.hasData:
             data = i.data.read()
-            return hash, key, data, vldFlag
+            return hash, key, data, item_vld
         else:
-            return hash, key, vldFlag
+            return hash, key, item_vld
 
     def set_data(self, data):
         i = self.intf
@@ -38,17 +38,17 @@ class InsertIntfAgent(HandshakedAgent):
             i.key.write(None)
             if self.hasData:
                 i.data.write(None)
-            i.vldFlag.write(None)
+            i.item_vld.write(None)
         else:
             if self.hasData:
-                _hash, key, _data, vldFlag = data
+                _hash, key, _data, item_vld = data
                 i.data.write(_data)
             else:
-                _hash, key, vldFlag = data
+                _hash, key, item_vld = data
 
             i.hash.write(_hash)
             i.key.write(key)
-            i.vldFlag.write(vldFlag)
+            i.item_vld.write(item_vld)
 
 
 class InsertIntf(HandshakeSync):
@@ -64,7 +64,7 @@ class InsertIntf(HandshakeSync):
         if self.DATA_WIDTH:
             self.data = VectSignal(self.DATA_WIDTH)
 
-        self.vldFlag = Signal()
+        self.item_vld = Signal()
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = InsertIntfAgent(sim, self)
