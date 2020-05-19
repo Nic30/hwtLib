@@ -37,7 +37,7 @@ class BusInterconnectUtils():
                     else:
                         s, access = s
 
-                    assert s >= 0 and s < slave_cnt
+                    assert s >= 0 and s < slave_cnt, (s, slave_cnt)
                     assert access in [READ_WRITE, READ, WRITE], access
 
                     new_master_config.add((s, access))
