@@ -67,3 +67,4 @@ sudo pip3 install hwtLib
 * [tinyfpgax](https://github.com/tinyfpga)
 * [ultraembedded/cores](https://github.com/ultraembedded/cores) - mostly Verilog, mostly peripherals
 * [ZipCPU repositories](https://github.com/ZipCPU?tab=repositories) - Verilog, mostly peripherals, DSP
+* [hls-fpga-machine-learning](https://github.com/hls-fpga-machine-learning) - Python -> HSL C++, mostyl ML and video processing
