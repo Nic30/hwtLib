@@ -25,15 +25,20 @@ class Cam(Unit):
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(36)
-        self.ITEMS = Param(16)
+        self.KEY_WIDTH = Param(15)
+        self.ITEMS = Param(32)
+        self.USE_VLD_BIT = Param(True)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.match = Handshaked()
-            self.write = w = AddrDataVldHs()
-            w.ADDR_WIDTH = log2ceil(self.ITEMS - 1)
+        self.match = m = Handshaked()
+        m.DATA_WIDTH = self.KEY_WIDTH
+
+        # address is index of CAM cell, data is key to store
+        self.write = w = AddrDataVldHs()
+        w.DATA_WIDTH = self.KEY_WIDTH
+        w.ADDR_WIDTH = log2ceil(self.ITEMS - 1)
+
         # one hot encoded
         o = self.out = VldSynced()._m()
         o.DATA_WIDTH = self.ITEMS
@@ -42,31 +47,42 @@ class Cam(Unit):
         w = self.write
         w.rd(1)
 
+        key_data = w.data
+        if self.USE_VLD_BIT:
+            key_data = Concat(w.data, w.vld_flag)
+
         If(self.clk._onRisingEdge() & w.vld,
-           mem[w.addr](Concat(w.data, w.vld_flag))
+           mem[w.addr](key_data)
         )
 
     def matchHandler(self, mem):
         key = self.match
 
         out = self._reg("out_reg", self.out.data._dtype, def_val=0)
-        outNext = out.next
         outVld = self._reg("out_vld_reg", def_val=0)
 
         key.rd(1)
         outVld(key.vld)
 
-        for i in range(int(self.ITEMS)):
-            outNext[i](mem[i]._eq(Concat(key.data, hBit(1))))
+        key_data = key.data
+        if self.USE_VLD_BIT:
+            key_data = Concat(key.data, hBit(1))
+
+        for i in range(self.ITEMS):
+            out.next[i](mem[i]._eq(key_data))
 
         self.out.data(out)
         self.out.vld(outVld)
 
     def _impl(self):
-        # +1 bit to validity check
+        KEY_WIDTH = self.KEY_WIDTH
+        if self.USE_VLD_BIT:
+            # +1 bit to validity check
+            KEY_WIDTH += 1
+
         self._mem = self._sig("cam_mem",
-                              Bits(self.DATA_WIDTH + 1)[self.ITEMS],
-                              [0 for _ in range(int(self.ITEMS))]
+                              Bits(KEY_WIDTH)[self.ITEMS],
+                              [0 for _ in range(self.ITEMS)]
                               )
         self.writeHandler(self._mem)
         self.matchHandler(self._mem)
