@@ -26,7 +26,7 @@ class RamWithHs(RamAsHs):
         propagateClkRstn(self)
         self.conv.r(self.r)
         self.conv.w(self.w)
-        self.ram.a(self.conv.ram)
+        self.ram.port[self.conv.ram]
 
 
 class RamAsHs_TC(SingleUnitSimTestCase):

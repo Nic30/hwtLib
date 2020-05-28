@@ -29,7 +29,7 @@ class FlipRam(Unit):
         RamSingleClock._config(self)
 
     def _declr(self):
-        PORT_CNT = int(self.PORT_CNT)
+        PORT_CNT = self.PORT_CNT
 
         with self._paramsShared():
             self.clk = Clk()
@@ -51,27 +51,27 @@ class FlipRam(Unit):
 
     def _impl(self):
         propagateClk(self)
-        PORT_CNT = int(self.PORT_CNT)
+        PORT_CNT = self.PORT_CNT
 
         fa = self.firstA
         sa = self.secondA
 
         If(self.select_sig,
-           self.ram0.a(fa),
-           self.ram1.a(sa)
+           self.ram0.port[0](fa),
+           self.ram1.port[0](sa)
         ).Else(
-           self.ram0.a(sa),
-           self.ram1.a(fa) 
+           self.ram0.port[0](sa),
+           self.ram1.port[0](fa) 
         )
         if PORT_CNT == 2:
             fb = self.firstB
             sb = self.secondB
             If(self.select_sig,
-               self.ram0.b(fb),
-               self.ram1.b(sb),
+               self.ram0.port[1](fb),
+               self.ram1.port[1](sb),
             ).Else(
-               self.ram0.b(sb),
-               self.ram1.b(fb)
+               self.ram0.port[1](sb),
+               self.ram1.port[1](fb)
             )
         elif PORT_CNT > 2:
             raise NotImplementedError()

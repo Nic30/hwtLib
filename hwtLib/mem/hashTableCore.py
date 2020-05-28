@@ -201,7 +201,7 @@ class HashTableCore(Unit):
         propagateClkRstn(self)
 
         table = self.tableConnector
-        self.table.a(table.ram)
+        self.table.port[0](table.ram)
         self.lookupLogic(table.r)
         self.insertLogic(table.w)
 

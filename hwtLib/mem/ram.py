@@ -8,6 +8,7 @@ from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.hObjList import HObjList
 
 
 @serializeParamsUniq
@@ -21,44 +22,61 @@ class RamSingleClock(Unit):
         self.DATA_WIDTH = Param(64)
         self.ADDR_WIDTH = Param(4)
         self.PORT_CNT = Param(1)
+        self.R_PORT_CNT = Param(None)
+        self.W_PORT_CNT = Param(None)
 
     def _declr(self):
-        PORTS = int(self.PORT_CNT)
+        PORTS = self.PORT_CNT
+        R_PORTS = self.R_PORT_CNT 
+        W_PORTS = self.W_PORT_CNT 
+        if PORTS is not None:
+            assert R_PORTS is None, "Do not spefify PORT_CNT if you want to use R/W_PORT_CNT"
+            assert W_PORTS is None, "Do not spefify PORT_CNT if you want to use R/W_PORT_CNT"
+            R_PORTS = W_PORTS = PORTS
+        else:
+            if R_PORTS is None:
+                R_PORTS = 0
+            if W_PORTS is None:
+                W_PORTS = 0
+            PORTS = max(R_PORTS, W_PORTS)
 
         self.clk = Clk()
         with self._paramsShared():
-            # to let IDEs resolve type of port
-            self.a = BramPort_withoutClk()
+            ports = HObjList()
+            for i in range(PORTS):
+                p = BramPort_withoutClk()
+                p.HAS_R = i < R_PORTS
+                p.HAS_W = i < W_PORTS
+                ports.append(p)
 
-            for i in range(PORTS - 1):
-                self._sportPort(i + 1)
-
-    def _sportPort(self, index) -> None:
-        name = self.genPortName(index)
-        setattr(self, name, BramPort_withoutClk())
+            self.port = ports
 
     @staticmethod
-    def genPortName(index) -> str:
-        return chr(ord('a') + index)
-
-    def getPortByIndx(self, index) -> BramPort_withoutClk:
-        return getattr(self, self.genPortName(index))
-
-    def connectPort(self, port: BramPort_withoutClk, mem: RtlSignal):
-        If(self.clk._onRisingEdge() & port.en,
-           If(port.we,
-              mem[port.addr](port.din)
-           ),
-           port.dout(mem[port.addr])
-        )
+    def connectPort(clk: RtlSignal, port: BramPort_withoutClk, mem: RtlSignal):
+        if port.HAS_R and port.HAS_W:
+            If(clk._onRisingEdge() & port.en,
+               If(port.we,
+                  mem[port.addr](port.din)
+               ),
+               port.dout(mem[port.addr])
+            )
+        elif port.HAS_R:
+            If(clk._onRisingEdge() & port.en,
+               port.dout(mem[port.addr])
+            )
+        elif port.HAS_W:
+            If(clk._onRisingEdge() & port.en,
+                mem[port.addr](port.din)
+            )
+        else:
+            raise AssertionError("Bram port has to have at least write or read part")
 
     def _impl(self):
-        PORTS = int(self.PORT_CNT)
         dt = Bits(self.DATA_WIDTH)[2 ** self.ADDR_WIDTH]
         self._mem = self._sig("ram_memory", dt)
 
-        for i in range(PORTS):
-            self.connectPort(getattr(self, self.genPortName(i)), self._mem)
+        for p in self.port:
+            self.connectPort(self.clk, p, self._mem)
 
 
 @serializeParamsUniq
@@ -77,19 +95,11 @@ class Ram_sp(Unit):
         with self._paramsShared():
             self.a = BramPort()
 
-    def connectPort(self, port, mem):
-        If(port.clk._onRisingEdge() & port.en,
-           If(port.we,
-              mem[port.addr](port.din)
-           ),
-           port.dout(mem[port.addr])
-        )
-
     def _impl(self):
         dt = Bits(self.DATA_WIDTH)[2 ** self.ADDR_WIDTH]
         self._mem = self._sig("ram_memory", dt)
 
-        self.connectPort(self.a, self._mem)
+        RamSingleClock.connectPort(self.a.clk, self.a, self._mem)
 
 
 class Ram_dp(Ram_sp):
@@ -106,7 +116,7 @@ class Ram_dp(Ram_sp):
 
     def _impl(self):
         super()._impl()
-        self.connectPort(self.b, self._mem)
+        RamSingleClock.connectPort(self.b.clk, self.b, self._mem)
 
 
 if __name__ == "__main__":
