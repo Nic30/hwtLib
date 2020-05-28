@@ -19,11 +19,12 @@ class CamTC(SingleUnitSimTestCase):
 
     def test_writeAndMatchTest(self):
         u = self.u
-        m = mask(36)
-        u.write._ag.data.extend([(0, 1, m),
-                                 (1, 3, m),
-                                 (7, 11, m)])
+        u.write._ag.data.extend([(0, 1, 1),
+                                 (1, 3, 1),
+                                 (7, 11, 1),
+                                 ])
 
+        # NOPs to wait until data is inserted
         u.match._ag.data.extend([NOP, NOP, NOP, 1, 2, 3, 5, 11, 12])
 
         self.runSim(16 * CLK_PERIOD)

@@ -9,7 +9,8 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwtLib.interfaces.addr_data_hs import AddrDataBitMaskHs
+
+from hwtLib.interfaces.addr_data_hs import AddrDataVldHs
 
 
 @serializeParamsUniq
@@ -31,8 +32,9 @@ class Cam(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.match = Handshaked()
-            self.write = AddrDataBitMaskHs()
-            self.write.ADDR_WIDTH = log2ceil(self.ITEMS - 1)
+            self.write = w = AddrDataVldHs()
+            w.ADDR_WIDTH = log2ceil(self.ITEMS - 1)
+        # one hot encoded
         o = self.out = VldSynced()._m()
         o.DATA_WIDTH = self.ITEMS
 
@@ -41,7 +43,7 @@ class Cam(Unit):
         w.rd(1)
 
         If(self.clk._onRisingEdge() & w.vld,
-           mem[w.addr](Concat(w.data, w.mask[0]))
+           mem[w.addr](Concat(w.data, w.vld_flag))
         )
 
     def matchHandler(self, mem):

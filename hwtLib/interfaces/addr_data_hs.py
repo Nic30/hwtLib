@@ -1,5 +1,5 @@
 from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.std import VectSignal, HandshakeSync
+from hwt.interfaces.std import VectSignal, HandshakeSync, Signal
 from hwt.synthesizer.param import Param
 from pycocotb.hdlSimulator import HdlSimulator
 
@@ -8,6 +8,7 @@ class AddrDataHs(HandshakeSync):
     """
     Simple handshaked interface with address and data signal
     """
+
     def _config(self):
         self.ADDR_WIDTH = Param(8)
         self.DATA_WIDTH = Param(8)
@@ -21,11 +22,25 @@ class AddrDataHs(HandshakeSync):
         self._ag = AddrDataHsAgent(sim, self)
 
 
+class AddrDataVldHs(AddrDataHs):
+    """
+    :see: :class:`.AddrDataHs` with a vld_flag signal
+    """
+
+    def _declr(self):
+        super(AddrDataVldHs, self)._declr()
+        self.vld_flag = Signal()
+
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = AddrDataVldAgent(sim, self)
+
+
 class AddrDataBitMaskHs(AddrDataHs):
     """
     :see: :class:`.AddrDataHs` with a mask signal
     :note: mask has 1b granularity
     """
+
     def _declr(self):
         super(AddrDataBitMaskHs, self)._declr()
         self.mask = VectSignal(self.DATA_WIDTH)
@@ -35,6 +50,7 @@ class AddrDataBitMaskHs(AddrDataHs):
 
 
 class AddrDataHsAgent(HandshakedAgent):
+
     def set_data(self, data):
         i = self.intf
         if data is None:
@@ -51,6 +67,7 @@ class AddrDataHsAgent(HandshakedAgent):
 
 
 class AddrDataMaskHsAgent(HandshakedAgent):
+
     def set_data(self, data):
         i = self.intf
         if data is None:
@@ -65,3 +82,21 @@ class AddrDataMaskHsAgent(HandshakedAgent):
     def get_data(self):
         i = self.intf
         return i.addr.read(), i.data.read(), i.mask.read()
+
+
+class AddrDataVldAgent(HandshakedAgent):
+
+    def set_data(self, data):
+        i = self.intf
+        if data is None:
+            addr, d, vld = None, None, None
+        else:
+            addr, d, vld = data
+
+        i.addr.write(addr)
+        i.data.write(d)
+        i.vld_flag.write(vld)
+
+    def get_data(self):
+        i = self.intf
+        return i.addr.read(), i.data.read(), i.vld_flag.read()
