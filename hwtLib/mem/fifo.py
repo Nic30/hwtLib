@@ -8,6 +8,8 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from typing import Tuple, List
 
 
 # https://eewiki.net/pages/viewpage.action?pageId=20939499
@@ -43,41 +45,83 @@ class Fifo(Unit):
         if self.EXPORT_SPACE:
             self.space = VectSignal(log2ceil(self.DEPTH + 1), signed=False)._m()
 
-    def _impl(self):
-        DEPTH = self.DEPTH
+    def fifo_pointers(self, DEPTH: int,
+                      write_en_wait: Tuple[RtlSignal, RtlSignal],
+                      read_en_wait_list: List[Tuple[RtlSignal, RtlSignal]])\
+                      -> List[Tuple[RtlSignal, RtlSignal]]:
+        """
+        Create fifo writer and reader pointers and enable/wait logic
+        This functions supports multiple reader pointers
 
+        :attention: writer pointer next logic check only last reader pointer
+        :return: list, tule(en, ptr) for writer and each reader 
+        """
         index_t = Bits(log2ceil(DEPTH), signed=False)
+        # assert isPow2(DEPTH), DEPTH
+        MAX_DEPTH = DEPTH - 1
         s = self._sig
         r = self._reg
+        fifo_write = s("fifo_write")
+        write_ptr = _write_ptr = r("write_ptr", index_t, 0)
+        ack_ptr_list = [(fifo_write, write_ptr), ]
+        # update writer (head) pointer as needed
+        If(fifo_write,
+            If(write_ptr._eq(MAX_DEPTH),
+                write_ptr(0)
+            ).Else(
+                write_ptr(write_ptr + 1)
+            )
+        )
 
-        mem = self.mem = s("memory", Bits(self.DATA_WIDTH)[self.DEPTH])
-        wr_ptr = r("wr_ptr", index_t, 0)
-        rd_ptr = r("rd_ptr", index_t, 0)
-        MAX_DEPTH = DEPTH - 1
+        write_en, _ = write_en_wait
+        # instanciate all read pointers
+        for i, (read_en, read_wait) in enumerate(read_en_wait_list):
+            read_ptr = r("read_ptr%d" % i, index_t, 0)
+            fifo_read = s("fifo_read%d" % i)
+            ack_ptr_list.append((fifo_read, read_ptr))
+            # update reader (tail) pointer as needed
+            If(fifo_read,
+                If(read_ptr._eq(MAX_DEPTH),
+                    read_ptr(0)
+                ).Else(
+                    read_ptr(read_ptr + 1)
+                )
+            )
+
+            looped = r("looped%d" % i, def_val=False)
+            # looped logic
+            If(write_en & write_ptr._eq(MAX_DEPTH),
+                looped(True)
+            ).Elif(read_en & read_ptr._eq(MAX_DEPTH),
+                looped(False)
+            )
+
+            # Update Empty and Full flags
+            read_wait(write_ptr._eq(read_ptr) & ~looped)
+            fifo_read(read_en & (looped | (write_ptr != read_ptr)))
+            # previous reader is next port writer (producer) as it next reader can continue only if previous reader did consume the item
+            write_en, _ = read_en, read_wait
+            write_ptr = read_ptr
+
+        write_en, write_wait = write_en_wait
+        write_ptr = _write_ptr
+        # Update Empty and Full flags
+        write_wait(write_ptr._eq(read_ptr) & looped)
+        fifo_write(write_en & (~looped | (write_ptr != read_ptr)))
+
+        return ack_ptr_list
+
+    def _impl(self):
+        DEPTH = self.DEPTH
 
         dout = self.dataOut
         din = self.dataIn
 
-        fifo_write = s("fifo_write")
-        fifo_read = s("fifo_read")
-
-        # Update Tail pointer as needed
-        If(fifo_read,
-            If(rd_ptr._eq(MAX_DEPTH),
-               rd_ptr(0)
-            ).Else(
-                rd_ptr(rd_ptr + 1)
-            )
-        )
-
-        # Increment Head pointer as needed
-        If(fifo_write,
-            If(wr_ptr._eq(MAX_DEPTH),
-                wr_ptr(0)
-               ).Else(
-                wr_ptr(wr_ptr + 1)
-            )
-           )
+        s = self._sig
+        r = self._reg
+        mem = self.mem = s("memory", Bits(self.DATA_WIDTH)[DEPTH])
+        ((fifo_write, wr_ptr), (fifo_read, rd_ptr), ) = self.fifo_pointers(
+            DEPTH, (din.en, din.wait), [(dout.en, dout.wait), ])
 
         If(self.clk._onRisingEdge(),
             If(fifo_write,
@@ -86,11 +130,6 @@ class Fifo(Unit):
             )
         )
 
-        # assert isPow2(int(DEPTH)), DEPTH
-
-        looped = r("looped", def_val=False)
-
-        fifo_read(dout.en & (looped | (wr_ptr != rd_ptr)))
         If(self.clk._onRisingEdge(),
             If(fifo_read,
                 # Update data output
@@ -98,28 +137,6 @@ class Fifo(Unit):
             )
         )
 
-        fifo_write(din.en & (~looped | (wr_ptr != rd_ptr)))
-
-        # looped logic
-        If(din.en & wr_ptr._eq(MAX_DEPTH),
-            looped(True)
-        ).Elif(dout.en & rd_ptr._eq(MAX_DEPTH),
-            looped(False)
-        )
-
-        # Update Empty and Full flags
-        If(wr_ptr._eq(rd_ptr),
-            If(looped,
-                din.wait(1),
-                dout.wait(0)
-            ).Else(
-                dout.wait(1),
-                din.wait(0)
-            )
-        ).Else(
-            din.wait(0),
-            dout.wait(0)
-        )
         if self.EXPORT_SIZE:
             size = r("size_reg", self.size._dtype, 0)
             If(fifo_read,
