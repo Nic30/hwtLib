@@ -10,7 +10,7 @@ from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 
-from hwtLib.interfaces.addr_data_hs import AddrDataVldHs
+from hwtLib.interfaces.addr_data_hs import AddrDataVldHs, AddrDataHs
 
 
 @serializeParamsUniq
@@ -35,7 +35,11 @@ class Cam(Unit):
         m.DATA_WIDTH = self.KEY_WIDTH
 
         # address is index of CAM cell, data is key to store
-        self.write = w = AddrDataVldHs()
+        if self.USE_VLD_BIT:
+            w = AddrDataVldHs()
+        else:
+            w = AddrDataHs()
+        self.write = w
         w.DATA_WIDTH = self.KEY_WIDTH
         w.ADDR_WIDTH = log2ceil(self.ITEMS - 1)
 
