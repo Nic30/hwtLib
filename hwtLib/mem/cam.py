@@ -40,7 +40,7 @@ class Cam(Unit):
         w.ADDR_WIDTH = log2ceil(self.ITEMS - 1)
 
         # one hot encoded
-        o = self.out = VldSynced()._m()
+        self.out = o = Handshaked()._m()
         o.DATA_WIDTH = self.ITEMS
 
     def writeHandler(self, mem):
@@ -58,21 +58,19 @@ class Cam(Unit):
     def matchHandler(self, mem):
         key = self.match
 
-        out = self._reg("out_reg", self.out.data._dtype, def_val=0)
-        outVld = self._reg("out_vld_reg", def_val=0)
-
-        key.rd(1)
-        outVld(key.vld)
+        key.rd(self.out.rd)
 
         key_data = key.data
         if self.USE_VLD_BIT:
             key_data = Concat(key.data, hBit(1))
 
+        out_one_hot = []
         for i in range(self.ITEMS):
-            out.next[i](mem[i]._eq(key_data))
+            b = mem[i]._eq(key_data)
+            out_one_hot.append(b)
 
-        self.out.data(out)
-        self.out.vld(outVld)
+        self.out.data(Concat(*reversed(out_one_hot)))
+        self.out.vld(key.vld)
 
     def _impl(self):
         KEY_WIDTH = self.KEY_WIDTH
