@@ -5,7 +5,7 @@ from hwt.code import connect
 from hwt.interfaces.std import Signal, Clk, VectSignal
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwtLib.mem.ram import Ram_dp
+from hwtLib.mem.ram import RamMultiClock
 
 
 class GroupOfBlockrams(Unit):
@@ -37,8 +37,9 @@ class GroupOfBlockrams(Unit):
             self.out_r_b = extData()._m()
 
             with self._paramsShared():
-                self.bramR = Ram_dp()
-                self.bramW = Ram_dp()
+                r = self.bramR = RamMultiClock()
+                w = self.bramW = RamMultiClock()
+                r.PORT_CNT = w.PORT_CNT = 2
 
     def _impl(self):
         s = self
