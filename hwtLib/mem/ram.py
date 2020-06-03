@@ -41,9 +41,8 @@ class RamSingleClock(Unit):
         self.HAS_BE = Param(False)
         self.MAX_BLOCK_DATA_WIDTH = Param(None)
 
-    def _declr(self):
+    def _declr_ports(self):
         PORTS = self.PORT_CNT
-        self.clk = Clk()
         with self._paramsShared():
             ports = HObjList()
             if isinstance(PORTS, int):
@@ -77,6 +76,10 @@ class RamSingleClock(Unit):
                 children.append(c)
                 DW -= MAX_DW
         self.children = children
+
+    def _declr(self):
+        self.clk = Clk()
+        self._declr_ports()
 
     @staticmethod
     def mem_write(mem, port: BramPort_withoutClk):
@@ -183,7 +186,7 @@ class RamMultiClock(Unit):
         self.PORT_CNT = 2
 
     def _declr(self):
-        RamSingleClock._declr(self)
+        RamSingleClock._declr_ports(self)
 
     def _impl(self):
         if self.children:
