@@ -66,7 +66,7 @@ class BusInterconnectUtils():
                 isAligned = (address % size) == 0
                 if not isAligned:
                     raise AssertionError(
-                        "Offset which is not aligned to size is suboptimal")
+                        "Offset which is not aligned to size is suboptimal 0x%x 0x%x" % (address, size))
 
             maxAddr = max(maxAddr, address + size)
             _slaves.append((address, size))
