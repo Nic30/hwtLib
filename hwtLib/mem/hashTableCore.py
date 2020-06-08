@@ -4,17 +4,16 @@
 from hwt.code import log2ceil, connect, Concat
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
+from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.ramAsHs import RamAsHs
-from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.crcComb import CrcComb
 from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.hashTable_intf import InsertIntf, LookupKeyIntf, \
     LookupResultIntf
 from hwtLib.mem.ram import RamSingleClock
-from hwtLib.handshaked.builder import HsBuilder
 
 
 # https://web.stanford.edu/class/cs166/lectures/13/Small13.pdf
@@ -42,8 +41,8 @@ class HashTableCore(Unit):
     :ivar ~.LOOKUP_ID_WIDTH: width of id signal for lookup (tag used only
         by parent component to mark this lookup for later result processing,
         can be 0)
-    :ivar ~.LOOKUP_HASH: flag if this interface should have hash signal
-    :ivar ~.LOOKUP_KEY: flag if this interface should have key signal
+    :ivar ~.LOOKUP_HASH: flag if lookup interface should have hash signal
+    :ivar ~.LOOKUP_KEY: flag if lookup interface should have key signal
     :ivar ~.POLYNOME: polynome for crc hash used in this table
 
     .. aafig::

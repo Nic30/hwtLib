@@ -16,9 +16,8 @@ from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.crcPoly import CRC_32, CRC_32C
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf
-from pycocotb.hdlSimulator import HdlSimulator
-from hwt.serializer.simModel import SimModelSerializer
 from pyMathBitPrecise.bit_utils import mask
+from pycocotb.hdlSimulator import HdlSimulator
 
 
 class ORIGIN_TYPE():
@@ -133,7 +132,8 @@ class CuckooHashTable(HashTableCore):
     def _declr(self):
         addClkRstn(self)
         self.TABLE_CNT = len(self.POLYNOMIALS)
-        self.HASH_WITH = log2ceil(self.TABLE_SIZE)
+        assert self.TABLE_SIZE % self.TABLE_CNT == 0
+        self.HASH_WITH = log2ceil(self.TABLE_SIZE // self.TABLE_CNT)
 
         with self._paramsShared():
             self.insert = CInsertIntf()
@@ -152,11 +152,11 @@ class CuckooHashTable(HashTableCore):
         with self._paramsShared():
             self.tables = HObjList(HashTableCore(p) for p in self.POLYNOMIALS)
             for t in self.tables:
-                t.ITEMS_CNT = self.TABLE_SIZE
+                t.ITEMS_CNT = self.TABLE_SIZE // self.TABLE_CNT
                 t.LOOKUP_HASH = True
 
     def cleanUpAddrIterator(self, en):
-        lastAddr = self.TABLE_SIZE - 1
+        lastAddr = self.TABLE_SIZE // self.TABLE_CNT - 1
         addr = self._reg("cleanupAddr",
                          Bits(log2ceil(lastAddr), signed=False),
                          def_val=0)
