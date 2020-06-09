@@ -9,7 +9,8 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwtLib.interfaces.addr_data_hs import AddrDataBitMaskHs
+
+from hwtLib.interfaces.addr_data_hs import AddrDataVldHs, AddrDataHs
 
 
 @serializeParamsUniq
@@ -24,47 +25,66 @@ class Cam(Unit):
     """
 
     def _config(self):
-        self.DATA_WIDTH = Param(36)
-        self.ITEMS = Param(16)
+        self.KEY_WIDTH = Param(15)
+        self.ITEMS = Param(32)
+        self.USE_VLD_BIT = Param(True)
 
     def _declr(self):
         addClkRstn(self)
-        with self._paramsShared():
-            self.match = Handshaked()
-            self.write = AddrDataBitMaskHs()
-            self.write.ADDR_WIDTH = log2ceil(self.ITEMS - 1)
-        o = self.out = VldSynced()._m()
+        self.match = m = Handshaked()
+        m.DATA_WIDTH = self.KEY_WIDTH
+
+        # address is index of CAM cell, data is key to store
+        if self.USE_VLD_BIT:
+            w = AddrDataVldHs()
+        else:
+            w = AddrDataHs()
+        self.write = w
+        w.DATA_WIDTH = self.KEY_WIDTH
+        w.ADDR_WIDTH = log2ceil(self.ITEMS - 1)
+
+        # one hot encoded
+        self.out = o = Handshaked()._m()
         o.DATA_WIDTH = self.ITEMS
 
     def writeHandler(self, mem):
         w = self.write
         w.rd(1)
 
+        key_data = w.data
+        if self.USE_VLD_BIT:
+            key_data = Concat(w.data, w.vld_flag)
+
         If(self.clk._onRisingEdge() & w.vld,
-           mem[w.addr](Concat(w.data, w.mask[0]))
+           mem[w.addr](key_data)
         )
 
     def matchHandler(self, mem):
         key = self.match
 
-        out = self._reg("out_reg", self.out.data._dtype, def_val=0)
-        outNext = out.next
-        outVld = self._reg("out_vld_reg", def_val=0)
+        key.rd(self.out.rd)
 
-        key.rd(1)
-        outVld(key.vld)
+        key_data = key.data
+        if self.USE_VLD_BIT:
+            key_data = Concat(key.data, hBit(1))
 
-        for i in range(int(self.ITEMS)):
-            outNext[i](mem[i]._eq(Concat(key.data, hBit(1))))
+        out_one_hot = []
+        for i in range(self.ITEMS):
+            b = mem[i]._eq(key_data)
+            out_one_hot.append(b)
 
-        self.out.data(out)
-        self.out.vld(outVld)
+        self.out.data(Concat(*reversed(out_one_hot)))
+        self.out.vld(key.vld)
 
     def _impl(self):
-        # +1 bit to validity check
+        KEY_WIDTH = self.KEY_WIDTH
+        if self.USE_VLD_BIT:
+            # +1 bit to validity check
+            KEY_WIDTH += 1
+
         self._mem = self._sig("cam_mem",
-                              Bits(self.DATA_WIDTH + 1)[self.ITEMS],
-                              [0 for _ in range(int(self.ITEMS))]
+                              Bits(KEY_WIDTH)[self.ITEMS],
+                              [0 for _ in range(self.ITEMS)]
                               )
         self.writeHandler(self._mem)
         self.matchHandler(self._mem)

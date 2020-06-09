@@ -46,10 +46,6 @@ class AxiTester(Unit):
             self.cntrl = self._cntrlCls()
             self._add_ep()
 
-        # r = self.ram = Ram_dp()
-        # r.ADDR_WIDTH = log2ceil(4096)
-        # r.DATA_WIDTH = self.DATA_WIDTH
-
     def _add_ep(self):
         strb_w = self.DATA_WIDTH // 8
         # [TODO] hotfix, should be self.DATA_WIDTH

@@ -101,7 +101,7 @@ class MMU_2pageLvl(Unit):
         rootW.vld(wEn)
         rootW.data(rpgt.din)
 
-        self.lvl1Storage.a(self.lvl1Converter.ram)
+        self.lvl1Storage.port[0](self.lvl1Converter.ram)
 
         lvl1read = self.lvl1Converter.r
         return lvl1read
