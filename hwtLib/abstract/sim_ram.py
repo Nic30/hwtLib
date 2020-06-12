@@ -29,7 +29,7 @@ def reshapedInitItems(actualCellSize, requestedCellSize, values):
             and requestedCellSize % actualCellSize == 0):
         itemsInCell = requestedCellSize // actualCellSize
         for itemsInWord in grouper(itemsInCell, values, padvalue=0):
-            yield int_list_to_int(itemsInWord, actualCellSize*8)
+            yield int_list_to_int(itemsInWord, actualCellSize * 8)
     else:
         raise NotImplementedError(
             "Reshaping of array from cell size %d to %d" % (
@@ -140,25 +140,22 @@ class SimRam():
 
         return addr
 
-    def getArray(self, addr, itemSize, itemCnt):
+    def getArray(self, addr: int, item_size: int, item_cnt: int):
         """
         Get array stored in memory
         """
-        if itemSize != self.cellSize:
-            raise NotImplementedError(itemSize, self.cellSize)
-
         baseIndex = addr // self.cellSize
-        if baseIndex * self.cellSize != addr:
-            raise NotImplementedError("unaligned not implemented")
+        if item_size != self.cellSize or baseIndex * self.cellSize != addr:
+            return self._getArray(addr * 8, TransTmpl(Bits(item_size * 8)[item_cnt]))
+        else:
+            out = []
+            for i in range(baseIndex, baseIndex + item_cnt):
+                try:
+                    v = self.data[i]
+                except KeyError:
+                    v = None
 
-        out = []
-        for i in range(baseIndex, baseIndex + itemCnt):
-            try:
-                v = self.data[i]
-            except KeyError:
-                v = None
-
-            out.append(v)
+                out.append(v)
         return out
 
     def getBits(self, start, end):
@@ -204,6 +201,25 @@ class SimRam():
 
         return value
 
+    def _getArray(self, offset, transTmpl):
+        """
+        :param offset: global offset of this transTmpl (and struct)
+        :param transTmpl: instance of TransTmpl which specifies items in array
+        """
+        t = transTmpl.dtype
+        c = transTmpl.children
+        arr_offset = offset
+        item_width = c.bitAddrEnd - c.bitAddr
+        value = []
+        if not isinstance(t.element_t, Bits):
+            raise NotImplementedError(t.element_t)
+
+        for _ in range(t.size):
+            v = self.getBits(arr_offset, arr_offset + item_width)
+            value.append(v)
+            arr_offset += item_width
+        return value
+
     def _getStruct(self, offset, transTmpl):
         """
         :param offset: global offset of this transTmpl (and struct)
@@ -217,7 +233,8 @@ class SimRam():
                 value = self.getBits(
                     subTmpl.bitAddr + offset, subTmpl.bitAddrEnd + offset)
             elif isinstance(t, HArray):
-                raise NotImplementedError()
+                value = self._getArray(subTmpl.bitAddr + offset, subTmpl)
+
             elif isinstance(t, HStruct):
                 value = self._getStruct(offset, subTmpl)
             else:
