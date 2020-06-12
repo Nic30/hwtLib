@@ -1,4 +1,5 @@
 from hwt.code import If, log2ceil, Concat, Switch
+from hwt.code_utils import rename_signal
 from hwt.hdl.constants import READ, WRITE
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
@@ -10,27 +11,22 @@ from hwt.synthesizer.unit import Unit
 from math import ceil
 from pyMathBitPrecise.bit_utils import mask
 
-from hwtLib.amba.axi4 import Axi4
+from hwtLib.amba.axi4 import Axi4, Axi4_w
 from hwtLib.amba.axi_comp.cache.interfaces import AddrDataIntf, \
     AxiStoreBufferWriteIntf, AxiStoreBufferWriteTmpIntf
+from hwtLib.amba.axi_comp.cache.ram_cumulative_mask import BramPort_withReadMask_withoutClk,\
+    RamCumulativeMask, is_mask_byte_unaligned
 from hwtLib.amba.axi_comp.cache.utils import CamWithReadPort, \
     apply_write_with_mask
 from hwtLib.amba.constants import BYTES_IN_TRANS, LOCK_DEFAULT, CACHE_DEFAULT, \
     QOS_DEFAULT, BURST_INCR, PROT_DEFAULT
 from hwtLib.handshaked.reg import HandshakedReg
+from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.mem.fifo import Fifo
-from hwtLib.mem.ram import RamSingleClock, XILINX_VIVADO_MAX_DATA_WIDTH
-from hwtLib.handshaked.streamNode import StreamNode
-from hwt.code_utils import rename_signal
-
-
-def add_padding(padding_bits, sig):
-    w = sig._dtype.bit_length()
-    if padding_bits:
-        return Concat(vec(0, padding_bits), sig)
-    else:
-        return sig
+from hwtLib.mem.ram import XILINX_VIVADO_MAX_DATA_WIDTH
+from hwt.hdl.types.defs import BIT
+from hwt.hdl.types.struct import HStruct
 
 
 class AxiStoreBuffer(Unit):
@@ -74,12 +70,11 @@ class AxiStoreBuffer(Unit):
         ac.USE_VLD_BIT = False
 
         self.BUS_WORDS_IN_CACHELINE = ceil(self.CACHE_LINE_SIZE * 8 / self.DATA_WIDTH)
-        self.data_ram = dr = RamSingleClock()
+        self.data_ram = dr = RamCumulativeMask()
         dr.MAX_BLOCK_DATA_WIDTH = self.MAX_BLOCK_DATA_WIDTH
         # data bits and mask bits extended so the total DW % 8 == 0
-        self.MASK_W = self.DATA_WIDTH // 8
-        self.MASK_PADDING_W = ceil(self.MASK_W / 8) * 8 - self.MASK_W 
-        dr.DATA_WIDTH = self.DATA_WIDTH + self.MASK_PADDING_W + self.MASK_W 
+
+        dr.DATA_WIDTH = self.DATA_WIDTH
         dr.ADDR_WIDTH = log2ceil(self.BUS_WORDS_IN_CACHELINE * ac.ITEMS)
         dr.PORT_CNT = (WRITE, READ)
         dr.HAS_BE = True
@@ -91,7 +86,7 @@ class AxiStoreBuffer(Unit):
 
     def data_insert(self, item_valid, item_in_progress,
                     push_en, push_ptr, push_req, push_wait,
-                    items: BramPort_withoutClk):
+                    items: BramPort_withReadMask_withoutClk):
         """
         * check if this address is already present in cam
         * if it is possible to update data in this buffer merge data
@@ -125,19 +120,22 @@ class AxiStoreBuffer(Unit):
         item_insert_first = self._sig("item_insert_first")
 
         # if true it means that the current input write data should be merged with 
-        # a content ot he w_tmp register
+        # a content of the w_tmp register
         found_in_tmp_reg = rename_signal(
             self,
             w_in.vld & w_tmp_out.vld & w_in.addr._eq(w_tmp_out.addr) & item_insert_last,
             "found_in_tmp_reg"
         )
+        accumulated_mask = rename_signal(self, w_in.mask | w_tmp_out.mask, "accumulated_mask")
         If(found_in_tmp_reg,
             # update only bytes selected by w_in mask in tmp reg 
             w_tmp_in.data(apply_write_with_mask(w_tmp_out.data, w_in.data, w_in.mask)),
             w_tmp_in.mask(w_in.mask | w_tmp_out.mask),
+            w_tmp_in.mask_byte_unaligned(is_mask_byte_unaligned(accumulated_mask))
         ).Else(
             w_tmp_in.data(w_in.data),
             w_tmp_in.mask(w_in.mask),
+            w_tmp_in.mask_byte_unaligned(is_mask_byte_unaligned(w_in.mask))
         )
         w_tmp_in.addr(w_in.addr),
         w_tmp_in.cam_lookup(ac.out.data)
@@ -164,74 +162,65 @@ class AxiStoreBuffer(Unit):
             current_empty &
             ~push_wait,
             "will_insert_new_item")
-        item_write_start = rename_signal(
-            self, will_insert_new_item | cam_found,
-            "item_write_start")
 
+        items.en.vld((will_insert_new_item | ~item_insert_first) &
+                     (~push_wait | cam_found))
+        # push data to items RAM
         if self.BUS_WORDS_IN_CACHELINE == 1:
             item_insert_last(1)
             item_insert_first(1)
+            items.din(w_tmp_out.data)
+            items.we(w_tmp_out.mask)
+
         else:
-            insert_offset = self._reg("insert_offset", self.word_index_t, def_val=0)
-            If(item_write_start | (insert_offset != 0),
-                If(insert_offset != self.WORD_OFFSET_MAX,
-                   insert_offset(insert_offset + 1)
+            push_offset = self._reg("push_offset", self.word_index_t, def_val=0)
+            item_write_start = rename_signal(
+                self, will_insert_new_item | cam_found,
+                "item_write_start")
+            If(items.en.rd & item_write_start | (push_offset != 0),
+                If(push_offset != self.WORD_OFFSET_MAX,
+                   push_offset(push_offset + 1)
                 ).Else(
-                   insert_offset(0)
+                   push_offset(0)
                 )
             )
-            item_insert_last(insert_offset._eq(self.WORD_OFFSET_MAX))
-            item_insert_first(insert_offset._eq(0))
-            cam_found_index = Concat(cam_found_index, insert_offset)
-            push_ptr = Concat(push_ptr, insert_offset)
+            item_insert_last(push_offset._eq(self.WORD_OFFSET_MAX))
+            item_insert_first(push_offset._eq(0))
+            cam_found_index = Concat(cam_found_index, push_offset)
+            push_ptr = Concat(push_ptr, push_offset)
 
-        If(cam_found,
-            items.addr(cam_found_index)
-        ).Else(
-            items.addr(push_ptr)
-        )
-        MASK_W = self.DATA_WIDTH // 8
-        TOTAL_MASK_W = self.CACHE_LINE_SIZE
-        WE_FOR_WE_W = ceil(MASK_W / 8)
-        we_for_mask = vec(mask(WE_FOR_WE_W), WE_FOR_WE_W)
-        we_for_data = rename_signal(
-            self,
-            Concat(*(~push_wait | (cam_found & w_tmp_out.mask[i])
-                     for i in reversed(range(TOTAL_MASK_W)))),
-            "we_for_data")
-        items.en(will_insert_new_item | ~item_insert_first)
-        # push data to items RAM
-        if self.BUS_WORDS_IN_CACHELINE == 1:
-            din = Concat(w_tmp_out.data, add_padding(self.MASK_PADDING_W, w_tmp_out.mask))
-            items.din(din)
-            items.we(Concat(we_for_data, we_for_mask))
-
-        else:
             DIN_W = self.DATA_WIDTH
             WE_W = DIN_W // 8
-            Switch(insert_offset).add_cases([
+            Switch(push_offset).add_cases([
                 (i, [
-                    items.din(Concat(
+                    items.din(
                         w_tmp_out.data[(i + 1) * DIN_W:i * DIN_W],
-                        add_padding(self.MASK_PADDING_W, w_tmp_out.mask[(i + 1) * WE_W:i * WE_W]),
-                    )),
-                    items.we(Concat(
-                        we_for_data[(i + 1) * WE_W:i * WE_W],
-                        we_for_mask,
-                    ))
+                    ),
+                    items.we(
+                        w_tmp_out.mask[(i + 1) * WE_W:i * WE_W],
+                    )
                 ]) for i in range(self.WORD_OFFSET_MAX + 1)]
             ).Default(
                 items.din(None),
                 items.we(None),
             )
+        If(cam_found,
+            items.addr(cam_found_index)
+        ).Else(
+            items.addr(push_ptr)
+        )
+        items.do_accumulate(w_tmp_out.vld & w_tmp_out.mask_byte_unaligned)
+        items.do_overwrite(w_tmp_out.vld & ~cam_found)
 
-        w_tmp_out.rd(((~push_wait & current_empty) | cam_found) & item_insert_last)
-        push_req(will_insert_new_item & item_insert_last)
+        w_tmp_out.rd(((~push_wait & current_empty) | cam_found) &
+                     item_insert_last &
+                     items.en.rd)
+        push_req(will_insert_new_item & item_insert_last & items.en.rd)
 
     def data_dispatch(self, addr_cam_read: AddrDataIntf,
                       pop_en: RtlSignal, pop_ptr: RtlSignal,
                       pop_req: RtlSignal, pop_wait: RtlSignal,
-                      items: BramPort_withoutClk):
+                      items: BramPort_withReadMask_withoutClk):
         """
         * if there is a valid item in buffer dispath write request and write data
         * handshaked fifo read logic
@@ -244,9 +233,13 @@ class AxiStoreBuffer(Unit):
 
         aw_id_tmp = self._reg("aw_id_tmp", aw.id._dtype)
         aw_addr_tmp = self._reg("aw_addr_tmp", aw.addr._dtype)
+        aw_vld_tmp = self._reg("aw_vld_tmp", BIT, def_val=0)
         If(aw_ld,
             aw_addr_tmp(Concat(addr_cam_read.data, vec(0, log2ceil(self.CACHE_LINE_SIZE - 1)))),
             aw_id_tmp(pop_ptr),
+            aw_vld_tmp(1)
+        ).Else(
+            aw_vld_tmp(aw_vld_tmp & ~aw.ready)
         )
         addr_cam_read.addr(pop_ptr)
         aw.id(aw_id_tmp)
@@ -259,32 +252,24 @@ class AxiStoreBuffer(Unit):
         aw.lock(LOCK_DEFAULT)
         aw.cache(CACHE_DEFAULT)
         aw.qos(QOS_DEFAULT)
+        aw.valid(aw_vld_tmp)
 
-        bus_w_vld = self._reg("bus_w_vld", def_val=0)
         bus_w_first = self._sig("bus_w_first_tmp")
         bus_w_last = self._sig("bus_w_last_tmp")
-        bus_ack = rename_signal(self, w_out.ready & (aw.ready | ~bus_w_first), "bus_ack")
-        If(bus_ack | ~bus_w_vld,
-           bus_w_vld(~pop_wait)
-        )
-        bus_ack_or_empty_reg = rename_signal(self, (bus_ack | ~bus_w_vld) & ~pop_wait, "bus_ack_or_empty_reg")
-        aw_ld(bus_ack_or_empty_reg & bus_w_first)
-        pop_req((bus_ack | ~bus_w_vld) & ~pop_wait & bus_w_last)
-        aw.valid(bus_w_vld & w_out.ready & bus_w_first)
-        items.en(bus_ack_or_empty_reg)
-        w_out.valid(bus_w_vld & (aw.ready | ~bus_w_first))
+        w_out_ready = self._sig("w_out_ready")
+        bus_ack = rename_signal(self, w_out_ready & (aw.ready | ~bus_w_first), "bus_ack")
+        aw_ld(bus_ack & bus_w_first & items.en.rd & ~pop_wait)
+        pop_req((bus_ack & items.en.rd) & ~pop_wait & bus_w_last)
+        items.en.vld(bus_ack & ~pop_wait)
 
         if BUS_WORDS_IN_CACHELINE == 1:
             bus_w_first(1)
             bus_w_last(1)
             items.addr(pop_ptr)
-            w_out.data(items.dout[:self.MASK_PADDING_W + self.MASK_W])
-            w_out.strb(items.dout[self.MASK_W:])
-            w_out.last(bus_w_last)
         else:
             # instanciate counter
             pop_offset = self._reg("pop_offset", self.word_index_t, def_val=0)
-            If(bus_ack_or_empty_reg & ~pop_wait,
+            If(bus_ack & items.en.rd & ~pop_wait,
                 If(pop_offset != self.WORD_OFFSET_MAX,
                    pop_offset(pop_offset + 1)
                 ).Else(
@@ -293,16 +278,45 @@ class AxiStoreBuffer(Unit):
             )
             bus_w_first(pop_offset._eq(0))
             bus_w_last(pop_offset._eq(self.WORD_OFFSET_MAX))
-
-            bus_w_last_delayed = self._reg("bus_w_last_delayed")
-            bus_w_last_delayed(bus_w_last)
-            w_out.last(bus_w_last_delayed)
-
             items.addr(Concat(pop_ptr, pop_offset))
-            w_out.data(items.dout[:self.MASK_PADDING_W + self.MASK_W])
-            w_out.strb(items.dout[self.MASK_W:])
 
+        w_ack = self.data_ram_read_to_bus_w(items, bus_w_last, w_out)
+        w_out_ready(w_ack)
         return aw_ld
+
+    def data_ram_read_to_bus_w(self, items: BramPort_withReadMask_withoutClk,
+                               item_last: RtlSignal, w_out: Axi4_w):
+        """
+        Read write data from data_ram
+        """
+        read_vld = self._reg("read_vld", def_val=0)
+        read_pending = self._reg("read_pending", def_val=0)
+        read_data = self._reg("read_data", HStruct(
+            (w_out.data._dtype, "data"),
+            (w_out.strb._dtype, "strb"),
+            (BIT, "last"),
+        ))
+
+        r_ack = ~read_vld | w_out.ready
+        read_pending(items.en.vld & r_ack & items.en.rd)
+        If(read_pending,
+           read_data.data(items.dout),
+           read_data.strb(items.dout_mask),
+           read_data.last(item_last),
+        )
+
+        If(w_out.ready,
+            read_vld(read_pending)
+        ).Else(
+            read_vld(read_vld | read_pending)
+        )
+
+        w_out.data(read_data.data)
+        w_out.strb(read_data.strb)
+        w_out.last(read_data.last)
+        w_out.valid(read_vld)
+
+        return r_ack
 
     def _impl(self):
         ITEMS = self.addr_cam.ITEMS
@@ -362,14 +376,22 @@ class AxiStoreBuffer(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
+    from hwt.serializer.simModel import SimModelSerializer
     u = AxiStoreBuffer()
-    u.ID_WIDTH = 6
-    u.CACHE_LINE_SIZE = 64
-    u.DATA_WIDTH = 256
-    u.MAX_BLOCK_DATA_WIDTH = XILINX_VIVADO_MAX_DATA_WIDTH
+    # u.ID_WIDTH = 6
+    # u.CACHE_LINE_SIZE = 64
+    # u.DATA_WIDTH = 256
+    # u.MAX_BLOCK_DATA_WIDTH = XILINX_VIVADO_MAX_DATA_WIDTH
     
     # u.ID_WIDTH = 2
     # u.CACHE_LINE_SIZE = 4
     # u.DATA_WIDTH = (u.CACHE_LINE_SIZE // 2) * 8
-    print(to_rtl_str(u))
+    
+    u.ADDR_WIDTH = 16
+    u.ID_WIDTH = 2
+    u.CACHE_LINE_SIZE = 8
+    u.DATA_WIDTH = 32
+    u.MAX_BLOCK_DATA_WIDTH = 8
+    
+    print(to_rtl_str(u, SimModelSerializer))
 

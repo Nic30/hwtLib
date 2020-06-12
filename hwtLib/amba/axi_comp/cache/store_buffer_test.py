@@ -9,8 +9,8 @@ from hwt.pyUtils.arrayQuery import iter_with_last
 
 
 class AxiStoreBuffer_1word_per_cachelineTC(SingleUnitSimTestCase):
-    # DEFAULT_BUILD_DIR = "."
-    # RECOMPILE = False
+    #DEFAULT_BUILD_DIR = "."
+    #RECOMPILE = False
 
     @classmethod
     def getUnit(cls):
@@ -55,7 +55,7 @@ class AxiStoreBuffer_1word_per_cachelineTC(SingleUnitSimTestCase):
             aw.create_addr_req(addr=u.CACHE_LINE_SIZE * i,
                                _len=u.BUS_WORDS_IN_CACHELINE - 1,
                                _id=i)
-            for i in range(N)
+            for i in range(min(SIZE, N))
         ])
 
         w_ref = []
@@ -63,8 +63,8 @@ class AxiStoreBuffer_1word_per_cachelineTC(SingleUnitSimTestCase):
             for last, w_i in iter_with_last(range(u.BUS_WORDS_IN_CACHELINE)):
                 d = (10 + i if w_i == 0 else 0, mask(u.DATA_WIDTH // 8), int(last))
                 w_ref.append(d)
-        for i, (x0, x1) in enumerate(zip(u.bus.w._ag.data, w_ref)):
-            print(i, allValuesToInts(x0), x1)
+        # for i, (x0, x1) in enumerate(zip(u.bus.w._ag.data, w_ref)):
+        #    print(i, allValuesToInts(x0), x1)
 
         self.assertValSequenceEqual(u.bus.w._ag.data, w_ref)
 
@@ -93,12 +93,12 @@ class AxiStoreBuffer_1word_per_cachelineTC(SingleUnitSimTestCase):
     def test_with_mem(self, N=10, randomized=False):
         u = self.u
         mem = AxiSimRam(u.bus)
-        u.w._ag.data.extend((i, 10 + i, mask(4)) for i in range(N))
+        u.w._ag.data.extend((i, 10 + i, mask(u.CACHE_LINE_SIZE)) for i in range(N))
         if randomized:
             self.randomize_all()
 
-        self.runSim((N + 10) * 3 * CLK_PERIOD)
-        mem_val = mem.getArray(0, u.DATA_WIDTH // 8, N)
+        self.runSim((N + 10) * 3 * CLK_PERIOD * u.BUS_WORDS_IN_CACHELINE)
+        mem_val = mem.getArray(0, u.CACHE_LINE_SIZE, N)
         self.assertValSequenceEqual(mem_val, [10 + i for i in range(N)])
 
     def test_with_mem_randomized(self, N=10):
@@ -110,7 +110,7 @@ class AxiStoreBuffer_1word_per_cachelineTC(SingleUnitSimTestCase):
         expected = {}
         for a in ADDRESSES:
             for i in range(N):
-                B_i = (i % 4)
+                B_i = i % (u.CACHE_LINE_SIZE)
                 d = i << (B_i * 8)
                 m = 1 << B_i
                 u.w._ag.data.append((a, d, m))
@@ -121,9 +121,12 @@ class AxiStoreBuffer_1word_per_cachelineTC(SingleUnitSimTestCase):
         if randomized:
             self.randomize_all()
 
-        self.runSim((N * len(ADDRESSES) + 10) * 3 * CLK_PERIOD)
+        self.runSim((N * len(ADDRESSES) + 10) * 3 * u.BUS_WORDS_IN_CACHELINE * CLK_PERIOD)
+        data = mem.getArray(0, u.CACHE_LINE_SIZE, max(ADDRESSES) + 1)
+        print(mem.data)
+        print(data)
         for a in ADDRESSES:
-            self.assertValEqual(mem.data[a], expected[a], "%d: 0x%08x" % (a, expected[a]))
+            self.assertValEqual(data[a], expected[a], "%d: 0x%08x" % (a, expected[a]))
 
     def test_mergable2(self, N=10, ADDRESSES=[0, ], randomized=False):
         """
@@ -145,7 +148,7 @@ class AxiStoreBuffer_1word_per_cachelineTC(SingleUnitSimTestCase):
         if randomized:
             self.randomize_all()
 
-        self.runSim((N * len(ADDRESSES) + 10) * 3 * CLK_PERIOD)
+        self.runSim((N * len(ADDRESSES) + 10) * 3 * u.BUS_WORDS_IN_CACHELINE * CLK_PERIOD)
         for a in ADDRESSES:
             self.assertValEqual(mem.data[a], expected[a], "%d: 0x%08x" % (a, expected[a]))
 
@@ -176,9 +179,11 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    suite.addTest(AxiStoreBuffer_2words_per_cachelineTC('test_non_mergable_no_ack_randomized'))
-    # suite.addTest(unittest.makeSuite(AxiStoreBuffer_1word_per_cachelineTC))
-    # suite.addTest(unittest.makeSuite(AxiStoreBuffer_2words_per_cachelineTC))
+    #suite.addTest(AxiStoreBuffer_2words_per_cachelineTC('test_mergable_randomized'))
+    suite.addTest(AxiStoreBuffer_1word_per_cachelineTC('test_non_mergable_no_ack_randomized'))
+    
+    #suite.addTest(unittest.makeSuite(AxiStoreBuffer_1word_per_cachelineTC))
+    #suite.addTest(unittest.makeSuite(AxiStoreBuffer_2words_per_cachelineTC))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

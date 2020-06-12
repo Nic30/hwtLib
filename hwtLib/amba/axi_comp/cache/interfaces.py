@@ -46,6 +46,10 @@ class AxiStoreBufferWriteIntfAgent(HandshakedAgent):
 class AxiStoreBufferWriteTmpIntf(AxiStoreBufferWriteIntf):
     """
     Interface for tmp input register on store buffer write input
+
+    :ivar cam_lookup: VectSignal with value of lookup from item cam
+        (1 if cacheline present in store buffer)
+    :ivar mask_byte_unaligned: Signal 1 if any byte of mask is 0 or all 1
     """
 
     def _config(self):
@@ -55,6 +59,7 @@ class AxiStoreBufferWriteTmpIntf(AxiStoreBufferWriteIntf):
     def _declr(self):
         AxiStoreBufferWriteIntf._declr(self)
         self.cam_lookup = VectSignal(self.ITEMS)
+        self.mask_byte_unaligned = Signal()
 
     def _initSimAgent(self, sim: HdlSimulator):
         raise NotImplementedError()
