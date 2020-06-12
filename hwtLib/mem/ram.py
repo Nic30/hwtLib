@@ -189,7 +189,7 @@ class RamMultiClock(Unit):
 
     def _declr(self):
         RamSingleClock._declr_ports(self)
-        RamSingleClock._declr_children()
+        RamSingleClock._declr_children(self)
 
     def _impl(self):
         if self.children:
