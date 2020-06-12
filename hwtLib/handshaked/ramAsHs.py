@@ -9,9 +9,10 @@ from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwtLib.interfaces.addr_data_hs import AddrDataHs
 from pycocotb.agents.base import AgentBase
 from pycocotb.hdlSimulator import HdlSimulator
+
+from hwtLib.interfaces.addr_data_hs import AddrDataHs
 
 
 class RamHsRAgent(AgentBase):
@@ -20,19 +21,17 @@ class RamHsRAgent(AgentBase):
     enable is shared
     """
 
-    @property
-    def enable(self):
+    def getEnable(self):
         return self.__enable
 
-    @enable.setter
-    def enable(self, v):
+    def setEnable(self, v):
         """
         Distribute change of enable on child agents
         """
         self.__enable = v
 
         for o in [self.req, self.r]:
-            o.enable = v
+            o.setEnable(v)
 
     def __init__(self, sim: HdlSimulator, intf):
         self.__enable = True
@@ -45,12 +44,12 @@ class RamHsRAgent(AgentBase):
         self.data = intf.data._ag
 
     def getDrivers(self):
-        return (self.addr.getDrivers() +
+        return (self.addr.getDrivers() + 
                 self.data.getMonitors()
                 )
 
     def getMonitors(self):
-        return (self.addr.getMonitors() +
+        return (self.addr.getMonitors() + 
                 self.data.getDrivers()
                 )
 
@@ -59,6 +58,7 @@ class RamHsR(Interface):
     """
     Handshaked RAM port
     """
+
     def _config(self):
         self.ADDR_WIDTH = Param(8)
         self.DATA_WIDTH = Param(8)
@@ -111,7 +111,6 @@ class RamAsHs(Unit):
             readRegEmpty(~readDataPending)
         ).Else(
             readRegEmpty(~(readDataPending | ~readRegEmpty))
-
         )
 
         r.addr.rd(rEn)
