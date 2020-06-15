@@ -4,6 +4,7 @@
 from unittest import TestLoader, TextTestRunner, TestSuite
 
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
+
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
 from hwtLib.abstract.frame_utils.alignment_utils_test import FrameAlignmentUtilsTC
 from hwtLib.abstract.frame_utils.join.test import FrameJoinUtilsTC
@@ -17,6 +18,7 @@ from hwtLib.amba.axiLite_comp.endpoint_struct_test import \
     AxiLiteEndpoint_arrayStruct_TC, AxiLiteEndpoint_struct_TC
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTCs
 from hwtLib.amba.axiLite_comp.to_axi_test import AxiLite_to_Axi_TC
+from hwtLib.amba.axi_comp.cache.store_buffer_test import AxiStoreBuffer_TCs
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import\
     AxiInterconnectMatrixAddrCrossbar_TCs
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar_test import \
@@ -174,6 +176,7 @@ from hwtLib.structManipulators.cLinkedListWriter_test import \
 from hwtLib.structManipulators.mmu2pageLvl_test import MMU_2pageLvl_TC
 from hwtLib.structManipulators.structReader_test import StructReaderTC
 from hwtLib.structManipulators.structWriter_test import StructWriter_TC
+from hwtLib.tests.constraints.xdc_clock_related_test import ConstraintsXdcClockRelatedTC
 from hwtLib.tests.fileUtils_test import FileUtilsTC
 from hwtLib.tests.frameTmpl_test import FrameTmplTC
 from hwtLib.tests.rdSynced_agent_test import RdSynced_agent_TC
@@ -206,7 +209,6 @@ from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
-from hwtLib.tests.constraints.xdc_clock_related_test import ConstraintsXdcClockRelatedTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -407,6 +409,8 @@ suite = testSuiteFromTCs(
     *AxiInterconnectMatrixCrossbar_TCs,
     *AxiInterconnectMatrixR_TCs,
     *AxiInterconnectMatrixW_TCs,
+
+    *AxiStoreBuffer_TCs,
 
     Axi_ag_TC,
     Axi4_streamToMemTC,
