@@ -44,6 +44,9 @@ class AxiStoreBuffer(Unit):
     :ivar MAX_BLOCK_DATA_WIDTH: specifies maximum data width of RAM
         (used to prevent synthesis problems for tools which can not handle
         too wide memories with byte enable)
+
+
+    .. hwt-schematic::
     """
 
     def _config(self):
@@ -274,7 +277,7 @@ class AxiStoreBuffer(Unit):
             bus_w_last(1)
             items.addr(pop_ptr)
         else:
-            # instanciate counter
+            # instantiate counter
             pop_offset = self._reg("pop_offset", self.word_index_t, def_val=0)
             If(bus_ack & items.en.rd & ~pop_wait,
                 If(pop_offset != self.WORD_OFFSET_MAX,
@@ -410,23 +413,23 @@ class AxiStoreBuffer(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     from hwt.serializer.simModel import SimModelSerializer
-    from hwtLib.mem.ram import XILINX_VIVADO_MAX_DATA_WIDTH
+    #from hwtLib.mem.ram import XILINX_VIVADO_MAX_DATA_WIDTH
 
     u = AxiStoreBuffer()
     # u.ID_WIDTH = 6
     # u.CACHE_LINE_SIZE = 64
     # u.DATA_WIDTH = 256
     # u.MAX_BLOCK_DATA_WIDTH = XILINX_VIVADO_MAX_DATA_WIDTH
-    
+
     # u.ID_WIDTH = 2
     # u.CACHE_LINE_SIZE = 4
     # u.DATA_WIDTH = (u.CACHE_LINE_SIZE // 2) * 8
-    
-    u.ADDR_WIDTH = 16
-    u.ID_WIDTH = 2
-    u.CACHE_LINE_SIZE = 8
-    u.DATA_WIDTH = 32
-    u.MAX_BLOCK_DATA_WIDTH = 8
-    
+
+    # u.ADDR_WIDTH = 16
+    # u.ID_WIDTH = 2
+    # u.CACHE_LINE_SIZE = 8
+    # u.DATA_WIDTH = 32
+    # u.MAX_BLOCK_DATA_WIDTH = 8
+
     print(to_rtl_str(u))
 

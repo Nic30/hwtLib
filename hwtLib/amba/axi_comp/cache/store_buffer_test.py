@@ -1,5 +1,5 @@
 from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.simulator.simTestCase import SingleUnitSimTestCase, allValuesToInts
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from pyMathBitPrecise.bit_utils import mask, set_bit_range, int_list_to_int
 from pycocotb.constants import CLK_PERIOD
 
@@ -10,8 +10,6 @@ from hwtLib.tools.debug_bus_monitor_ctl import select_bit_range
 
 
 class AxiStoreBuffer_1word_per_cachelineTC(SingleUnitSimTestCase):
-    #DEFAULT_BUILD_DIR = "."
-    #RECOMPILE = False
 
     @classmethod
     def getUnit(cls):
@@ -189,12 +187,17 @@ class AxiStoreBuffer_2words_per_cachelineTC(AxiStoreBuffer_1word_per_cachelineTC
         return u
 
 
+AxiStoreBuffer_TCs = [
+    AxiStoreBuffer_1word_per_cachelineTC,
+    AxiStoreBuffer_2words_per_cachelineTC,
+]
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    #suite.addTest(AxiStoreBuffer_2words_per_cachelineTC('test_mergable'))
-    #suite.addTest(AxiStoreBuffer_1word_per_cachelineTC('test_mergable'))
+    # suite.addTest(AxiStoreBuffer_2words_per_cachelineTC('test_mergable'))
+    # suite.addTest(AxiStoreBuffer_1word_per_cachelineTC('test_mergable'))
 
     suite.addTest(unittest.makeSuite(AxiStoreBuffer_1word_per_cachelineTC))
     suite.addTest(unittest.makeSuite(AxiStoreBuffer_2words_per_cachelineTC))
