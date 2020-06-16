@@ -1,14 +1,19 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from math import ceil
+
 from hwt.code import If, log2ceil, Concat, Switch
 from hwt.code_utils import rename_signal
 from hwt.hdl.constants import READ, WRITE
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import BramPort_withoutClk
+from hwt.hdl.types.defs import BIT
+from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from math import ceil
 from pyMathBitPrecise.bit_utils import mask
 
 from hwtLib.amba.axi4 import Axi4, Axi4_w
@@ -24,9 +29,6 @@ from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.mem.fifo import Fifo
-from hwtLib.mem.ram import XILINX_VIVADO_MAX_DATA_WIDTH
-from hwt.hdl.types.defs import BIT
-from hwt.hdl.types.struct import HStruct
 
 
 class AxiStoreBuffer(Unit):
@@ -42,6 +44,9 @@ class AxiStoreBuffer(Unit):
     :ivar MAX_BLOCK_DATA_WIDTH: specifies maximum data width of RAM
         (used to prevent synthesis problems for tools which can not handle
         too wide memories with byte enable)
+
+
+    .. hwt-schematic::
     """
 
     def _config(self):
@@ -55,17 +60,17 @@ class AxiStoreBuffer(Unit):
         addClkRstn(self)
         self.OFFSET_WIDTH = log2ceil(self.CACHE_LINE_SIZE - 1)
         with self._paramsShared():
-            self.w = AxiStoreBufferWriteIntf()
-            self.w_in_reg = HandshakedReg(AxiStoreBufferWriteTmpIntf)
-            self.w.ADDR_WIDTH = self.w_in_reg.ADDR_WIDTH = self.ADDR_WIDTH - self.OFFSET_WIDTH
-            self.w.DATA_WIDTH = self.w_in_reg.DATA_WIDTH = self.CACHE_LINE_SIZE * 8
+            self.w = w = AxiStoreBufferWriteIntf()
+            self.w_in_reg = w_in_reg = HandshakedReg(AxiStoreBufferWriteTmpIntf)
+            w.ADDR_WIDTH = w_in_reg.ADDR_WIDTH = self.ADDR_WIDTH - self.OFFSET_WIDTH
+            w.DATA_WIDTH = w_in_reg.DATA_WIDTH = self.CACHE_LINE_SIZE * 8
 
             # self.r = AxiStoreBufferReadIntf()
             self.bus = axi = Axi4()._m()
             axi.HAS_R = False
 
         self.addr_cam = ac = CamWithReadPort()
-        ac.ITEMS = self.w_in_reg.ITEMS = 2 ** self.ID_WIDTH
+        ac.ITEMS = w_in_reg.ITEMS = 2 ** self.ID_WIDTH
         ac.KEY_WIDTH = self.ADDR_WIDTH - self.OFFSET_WIDTH
         ac.USE_VLD_BIT = False
 
@@ -114,8 +119,6 @@ class AxiStoreBuffer(Unit):
         w_tmp_out = w_tmp.dataOut
 
         # store to tmp register (and accumulate if possible)
-        StreamNode([w_in], [w_tmp_in]).sync()
-
         item_insert_last = self._sig("item_insert_last")
         item_insert_first = self._sig("item_insert_first")
 
@@ -123,11 +126,11 @@ class AxiStoreBuffer(Unit):
         # a content of the w_tmp register
         found_in_tmp_reg = rename_signal(
             self,
-            w_in.vld & w_tmp_out.vld & w_in.addr._eq(w_tmp_out.addr) & item_insert_last,
+            w_tmp_in.vld & w_in.addr._eq(w_tmp_out.addr),
             "found_in_tmp_reg"
         )
         accumulated_mask = rename_signal(self, w_in.mask | w_tmp_out.mask, "accumulated_mask")
-        If(found_in_tmp_reg,
+        If(w_tmp_out.vld & found_in_tmp_reg,
             # update only bytes selected by w_in mask in tmp reg 
             w_tmp_in.data(apply_write_with_mask(w_tmp_out.data, w_in.data, w_in.mask)),
             w_tmp_in.mask(w_in.mask | w_tmp_out.mask),
@@ -140,31 +143,22 @@ class AxiStoreBuffer(Unit):
         w_tmp_in.addr(w_in.addr),
         w_tmp_in.cam_lookup(ac.out.data)
 
+        StreamNode([w_in], [w_tmp_in, ac.match]).sync()
+        ac.out.rd(1)
+
         # cam insert
         cam_index_onehot = rename_signal(self, w_tmp_out.cam_lookup & item_valid & ~item_in_progress, "cam_index_onehot")
-        cam_found = rename_signal(self, w_tmp_out.vld & (cam_index_onehot != 0), "cam_found")
+        cam_found = rename_signal(self, cam_index_onehot != 0, "cam_found")
         cam_found_index = oneHotToBin(self, cam_index_onehot, "cam_found_index")
         ac.write.addr(push_ptr)
         ac.write.data(w_tmp_out.addr)
-        ac.write.vld(w_tmp_out.vld & ~cam_found &
-                     ~found_in_tmp_reg & current_empty &
-                     item_insert_last)
-        ac.match.vld(w_in.vld)
-        ac.out.rd(1)
-
-        # insert word iteration
 
         will_insert_new_item = rename_signal(
             self,
-            w_tmp_out.vld &
-            ~cam_found &
-            ~found_in_tmp_reg &
-            current_empty &
-            ~push_wait,
+            ~cam_found & ~found_in_tmp_reg & current_empty & ~push_wait,
             "will_insert_new_item")
 
-        items.en.vld((will_insert_new_item | ~item_insert_first) &
-                     (~push_wait | cam_found))
+        # insert word iteration,
         # push data to items RAM
         if self.BUS_WORDS_IN_CACHELINE == 1:
             item_insert_last(1)
@@ -175,9 +169,11 @@ class AxiStoreBuffer(Unit):
         else:
             push_offset = self._reg("push_offset", self.word_index_t, def_val=0)
             item_write_start = rename_signal(
-                self, will_insert_new_item | cam_found,
+                self, will_insert_new_item | (cam_found & w_tmp_out.vld),
                 "item_write_start")
-            If(items.en.rd & item_write_start | (push_offset != 0),
+            If(w_tmp_out.vld & found_in_tmp_reg,
+               push_offset(0),
+            ).Elif(items.en.vld & items.en.rd & (item_write_start | (push_offset != 0)),
                 If(push_offset != self.WORD_OFFSET_MAX,
                    push_offset(push_offset + 1)
                 ).Else(
@@ -204,7 +200,7 @@ class AxiStoreBuffer(Unit):
                 items.din(None),
                 items.we(None),
             )
-        If(cam_found,
+        If(w_tmp_out.vld & cam_found,
             items.addr(cam_found_index)
         ).Else(
             items.addr(push_ptr)
@@ -212,10 +208,24 @@ class AxiStoreBuffer(Unit):
         items.do_accumulate(w_tmp_out.vld & w_tmp_out.mask_byte_unaligned)
         items.do_overwrite(w_tmp_out.vld & ~cam_found)
 
-        w_tmp_out.rd(((~push_wait & current_empty) | cam_found) &
-                     item_insert_last &
-                     items.en.rd)
-        push_req(will_insert_new_item & item_insert_last & items.en.rd)
+        StreamNode(
+            masters=[w_tmp_out],
+            slaves=[ac.write, items.en],
+            extraConds={
+                ac.write: rename_signal(self, will_insert_new_item & item_insert_last, "ac_write_en"),
+                items.en: rename_signal(self, (~w_in.vld | will_insert_new_item | ~item_insert_first) &
+                    (~push_wait | cam_found), "items_en_en"),
+                w_tmp_out: rename_signal(self, found_in_tmp_reg |
+                                         (((~push_wait & current_empty) | cam_found) & item_insert_last),
+                                         "w_tmp_out_en")
+            },
+            skipWhen={
+                ac.write: found_in_tmp_reg,
+                items.en: found_in_tmp_reg,
+            }
+        ).sync()
+
+        push_req(w_tmp_out.vld & will_insert_new_item & item_insert_last & items.en.rd)
 
     def data_dispatch(self, addr_cam_read: AddrDataIntf,
                       pop_en: RtlSignal, pop_ptr: RtlSignal,
@@ -267,7 +277,7 @@ class AxiStoreBuffer(Unit):
             bus_w_last(1)
             items.addr(pop_ptr)
         else:
-            # instanciate counter
+            # instantiate counter
             pop_offset = self._reg("pop_offset", self.word_index_t, def_val=0)
             If(bus_ack & items.en.rd & ~pop_wait,
                 If(pop_offset != self.WORD_OFFSET_MAX,
@@ -288,33 +298,59 @@ class AxiStoreBuffer(Unit):
                                item_last: RtlSignal, w_out: Axi4_w):
         """
         Read write data from data_ram
+
+        :param item_last: the signal with last flag for data (notes a last beat in burst)
+            sampled in the same time as an read address
         """
-        read_vld = self._reg("read_vld", def_val=0)
         read_pending = self._reg("read_pending", def_val=0)
-        read_data = self._reg("read_data", HStruct(
+        item_last_delayed = self._reg("item_last_delayed0")
+        tmp_reg_t = HStruct(
             (w_out.data._dtype, "data"),
             (w_out.strb._dtype, "strb"),
             (BIT, "last"),
-        ))
+            (BIT, "valid"),
+        )
+        read_data = self._reg("read_data", tmp_reg_t, def_val={"valid": 0})
+        # register used to store data which were speculatively read from ram
+        # and the data from read_data register was not consumed
+        read_data_backup = self._reg("read_data_backup", tmp_reg_t, def_val={"valid": 0})
 
-        r_ack = ~read_vld | w_out.ready
+        r_ack = ~read_data.valid | w_out.ready
         read_pending(items.en.vld & r_ack & items.en.rd)
-        If(read_pending,
-           read_data.data(items.dout),
-           read_data.strb(items.dout_mask),
-           read_data.last(item_last),
+        If(items.en.vld & items.en.rd,
+           item_last_delayed(item_last)
         )
 
-        If(w_out.ready,
-            read_vld(read_pending)
-        ).Else(
-            read_vld(read_vld | read_pending)
+        If(read_pending,
+           read_data_backup.data(items.dout),
+           read_data_backup.strb(items.dout_mask),
+           read_data_backup.last(item_last_delayed),
+        )
+
+        If(r_ack,
+            If(read_pending,
+               read_data.data(items.dout),
+               read_data.strb(items.dout_mask),
+               read_data.last(item_last_delayed),
+               read_data.valid(1),
+            ).Else(
+               read_data.data(read_data_backup.data),
+               read_data.strb(read_data_backup.strb),
+               read_data.last(read_data_backup.last),
+               read_data.valid(read_data_backup.valid),
+            )
+        )
+
+        If(w_out.ready | ~read_data.valid,
+            read_data_backup.valid(0), # always moved to read_data
+        ).Elif(read_pending,
+            read_data_backup.valid(read_data.valid),
         )
 
         w_out.data(read_data.data)
         w_out.strb(read_data.strb)
         w_out.last(read_data.last)
-        w_out.valid(read_vld)
+        w_out.valid(read_data.valid)
 
         return r_ack
 
@@ -377,21 +413,23 @@ class AxiStoreBuffer(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     from hwt.serializer.simModel import SimModelSerializer
+    #from hwtLib.mem.ram import XILINX_VIVADO_MAX_DATA_WIDTH
+
     u = AxiStoreBuffer()
     # u.ID_WIDTH = 6
     # u.CACHE_LINE_SIZE = 64
     # u.DATA_WIDTH = 256
     # u.MAX_BLOCK_DATA_WIDTH = XILINX_VIVADO_MAX_DATA_WIDTH
-    
+
     # u.ID_WIDTH = 2
     # u.CACHE_LINE_SIZE = 4
     # u.DATA_WIDTH = (u.CACHE_LINE_SIZE // 2) * 8
-    
-    u.ADDR_WIDTH = 16
-    u.ID_WIDTH = 2
-    u.CACHE_LINE_SIZE = 8
-    u.DATA_WIDTH = 32
-    u.MAX_BLOCK_DATA_WIDTH = 8
-    
-    print(to_rtl_str(u, SimModelSerializer))
+
+    # u.ADDR_WIDTH = 16
+    # u.ID_WIDTH = 2
+    # u.CACHE_LINE_SIZE = 8
+    # u.DATA_WIDTH = 32
+    # u.MAX_BLOCK_DATA_WIDTH = 8
+
+    print(to_rtl_str(u))
 

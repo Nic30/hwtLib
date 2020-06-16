@@ -70,7 +70,7 @@ class StreamNode():
         For slave it means it will obtain valid=1 only
         if extraConditionSignal is 1.
         All interfaces have to wait on each other so if an extraCond!=1 it causes
-        blocking on all interfaces if not overriden by skipWhen.
+        blocking on all interfaces if not overridden by skipWhen.
     :ivar ~.skipWhen: dict interface : skipSignal
         where if skipSignal is high interface is disconnected from stream
         sync node and others does not have to wait on it

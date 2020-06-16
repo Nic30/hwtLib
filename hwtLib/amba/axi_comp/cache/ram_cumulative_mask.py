@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import Concat, Or, If
 from hwt.code_utils import rename_signal
 from hwt.hdl.constants import WRITE, READ
@@ -126,7 +129,7 @@ class RamCumulativeMask(RamSingleClock):
         If(w.en.vld,
            preload(~preload & w.do_accumulate & ~w.do_overwrite)
         )
-        w.en.rd(~w.do_accumulate | preload)
+        w.en.rd(~w.do_accumulate | w.do_overwrite | preload)
         ram_w.addr(w.addr)
         ram_w.en(w.en.vld & (w.do_overwrite | ~w.do_accumulate | preload))
         ram_w.we(Concat(w.we, we_for_we_bytes))
@@ -150,11 +153,11 @@ class RamCumulativeMask(RamSingleClock):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
-    from hwtLib.mem.ram import XILINX_VIVADO_MAX_DATA_WIDTH
+    # from hwtLib.mem.ram import XILINX_VIVADO_MAX_DATA_WIDTH
 
     u = RamCumulativeMask()
-    u.ADDR_WIDTH = 5
-    u.DATA_WIDTH = 512
-    u.MAX_BLOCK_DATA_WIDTH = XILINX_VIVADO_MAX_DATA_WIDTH
+    # u.ADDR_WIDTH = 5
+    # u.DATA_WIDTH = 512
+    # u.MAX_BLOCK_DATA_WIDTH = XILINX_VIVADO_MAX_DATA_WIDTH
 
     print(to_rtl_str(u))
