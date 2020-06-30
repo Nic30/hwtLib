@@ -44,9 +44,6 @@ class AxiStoreBuffer(Unit):
     :ivar MAX_BLOCK_DATA_WIDTH: specifies maximum data width of RAM
         (used to prevent synthesis problems for tools which can not handle
         too wide memories with byte enable)
-
-
-    .. hwt-schematic::
     """
 
     def _config(self):
