@@ -31,8 +31,6 @@ class BramPort_withReadMask_withoutClk(BramPort_withoutClk):
         the cumulative validity mask for the data.
     :note: en is related to a address, and write data, the read data
         may be available in nect clock cycle depending on read latency of the RAM
-
-    .. hwt-schematic::
     """
 
     def _declr(self):
