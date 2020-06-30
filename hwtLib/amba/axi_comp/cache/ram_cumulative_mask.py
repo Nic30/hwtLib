@@ -20,12 +20,12 @@ from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 class BramPort_withReadMask_withoutClk(BramPort_withoutClk):
     """
-    Block RAM port with a `~.en` handshaked interface for arbitration
+    Block RAM port with a :py:obj:`~en` handshaked interface for arbitration
 
     :ivar do_accumulate: Signal if 1 the mask bits are or-ed together with the value in stored in ram
     :ivar do_overwrite: Signal if 1 the the data mask in ram is set to current we value
-    :note: `do_overwrite` has higher priority than `do_accumulate`
-    :note:`do_accumulate` affect only the bytes in memory
+    :note: :py:obj:`~do_overwrite` has higher priority than `do_accumulate`
+    :note: :py:obj:`~do_accumulate` affect only the bytes in memory
         where data validity mask is stored.
     :ivar dout_mask: Read port contains this signal which contains
         the cumulative validity mask for the data.
