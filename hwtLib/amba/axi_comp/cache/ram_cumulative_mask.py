@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from math import ceil
+
+from pyMathBitPrecise.bit_utils import mask
+
 from hwt.code import Concat, Or, If
 from hwt.code_utils import rename_signal
 from hwt.hdl.constants import WRITE, READ
@@ -9,13 +13,10 @@ from hwt.interfaces.std import BramPort_withoutClk, HandshakeSync, VectSignal, \
     Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.synthesizer.vectorUtils import iterBits
-from ipCorePackager.constants import DIRECTION
-from math import ceil
-from pyMathBitPrecise.bit_utils import mask
-
-from hwtLib.mem.ram import RamSingleClock
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.synthesizer.vectorUtils import iterBits
+from hwtLib.mem.ram import RamSingleClock
+from ipCorePackager.constants import DIRECTION
 
 
 class BramPort_withReadMask_withoutClk(BramPort_withoutClk):
@@ -68,7 +69,7 @@ def is_mask_byte_unaligned(mask_signal: RtlSignal) -> RtlSignal:
     write_mask_not_aligned = []
     for last, b in iter_with_last(we_bytes):
         if last:
-            # cut off padding if reauiered
+            # cut off padding if required
             mask_rem_w = mask_signal._dtype.bit_length() % 8
             if mask_rem_w:
                 b = b[mask_rem_w:]
@@ -81,7 +82,7 @@ class RamCumulativeMask(RamSingleClock):
     RAM which stores also byte enable value for each data word (to keep track of which bytes were updated).
 
     :note: :class:`~.BramPort_withReadMask_withoutClk` contains the informations
-        about how to controll this component.
+        about how to control this component.
     """
     PORT_CLS = BramPort_withReadMask_withoutClk
 
