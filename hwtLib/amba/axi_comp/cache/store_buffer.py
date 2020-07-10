@@ -409,7 +409,6 @@ class AxiStoreBuffer(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
-    from hwt.serializer.simModel import SimModelSerializer
     #from hwtLib.mem.ram import XILINX_VIVADO_MAX_DATA_WIDTH
 
     u = AxiStoreBuffer()
