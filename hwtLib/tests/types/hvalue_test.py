@@ -9,7 +9,7 @@ from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import INT
 
 
-class ValueTC(unittest.TestCase):
+class HValueTC(unittest.TestCase):
 
     def assertValEq(self, first, second, msg=None):
         try:
@@ -114,7 +114,7 @@ class ValueTC(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    # suite.addTest(ValueTC('testValue'))
-    suite.addTest(unittest.makeSuite(ValueTC))
+    # suite.addTest(HValueTC('testValue'))
+    suite.addTest(unittest.makeSuite(HValueTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

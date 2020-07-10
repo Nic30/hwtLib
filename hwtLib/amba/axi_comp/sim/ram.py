@@ -1,7 +1,7 @@
 from collections import deque
 
 from hwt.hdl.types.bits import Bits
-from hwt.hdl.value import Value
+from hwt.hdl.value import HValue
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.amba.constants import RESP_OKAY
 from pyMathBitPrecise.bit_utils import mask, set_bit_range, get_bit,\
@@ -150,7 +150,7 @@ class AxiSimRam(AxiDpSimRam):
             data, strb, last = self.wAg.data.popleft()
         return (data, strb, last)
 
-    def _write_single_word(self, data: Value, strb: int, word_i: int):
+    def _write_single_word(self, data: HValue, strb: int, word_i: int):
         if strb == 0:
             return
         if strb != self.allMask:

@@ -2,7 +2,7 @@ from typing import Union, Tuple, List
 
 from hwt.code import Concat
 from hwt.hdl.typeShortcuts import vec
-from hwt.hdl.value import Value
+from hwt.hdl.value import HValue
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
@@ -57,11 +57,11 @@ class StrbKeepStash():
 
     def pop(self, inversedWordIndex, extra_strbs, extra_keeps, STRB_ALL):
         strb = self._vec_to_signal(self.strb)
-        if not isinstance(strb, Value) or strb != STRB_ALL:
+        if not isinstance(strb, HValue) or strb != STRB_ALL:
             extra_strbs.append((inversedWordIndex, strb))
 
         keep = self._vec_to_signal(self.keep)
-        if not isinstance(keep, Value) or keep != STRB_ALL:
+        if not isinstance(keep, HValue) or keep != STRB_ALL:
             extra_keeps.append((inversedWordIndex, keep))
 
 

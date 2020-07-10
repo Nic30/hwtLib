@@ -4,7 +4,6 @@
 from unittest import TestLoader, TextTestRunner, TestSuite
 
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
 from hwtLib.abstract.frame_utils.alignment_utils_test import FrameAlignmentUtilsTC
 from hwtLib.abstract.frame_utils.join.test import FrameJoinUtilsTC
@@ -199,9 +198,9 @@ from hwtLib.tests.synthesizer.statements_test import StatementsTC
 from hwtLib.tests.transTmpl_test import TransTmpl_TC
 from hwtLib.tests.types.bitsSlicing_test import BitsSlicingTC
 from hwtLib.tests.types.hstructVal_test import HStructValTC
+from hwtLib.tests.types.hvalue_test import HValueTC
 from hwtLib.tests.types.operators_test import OperatorTC
 from hwtLib.tests.types.union_test import UnionTC
-from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.xilinx.ipif.axi4Lite_to_ipif_test import Axi4Lite_to_IpifTC
 from hwtLib.xilinx.ipif.buff_test import IpifBuffTC
@@ -244,7 +243,7 @@ suite = testSuiteFromTCs(
     ParametrizationTC,
     BasicSignalMethodsTC,
     StatementsConsystencyTC,
-    ValueTC,
+    HValueTC,
     StatementTreesInternalTC,
     StatementTreesTC,
     StatementsTC,
