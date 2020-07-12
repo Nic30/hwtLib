@@ -208,6 +208,7 @@ from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
+from hwtLib.examples.operators.cast_test import CastTc
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -238,6 +239,7 @@ suite = testSuiteFromTCs(
     SimpleSubunit3TC,
     UnitToUnitConnectionTC,
     OperatorTC,
+    CastTc,
     BitsSlicingTC,
     HStructValTC,
     ParametrizationTC,
