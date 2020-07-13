@@ -20,7 +20,10 @@ class PseudoLru():
         used in pseudo LRU. It uses a common binary tree in array node representation
         index of left is 2x parent index; index of right is 2x parent index + 1
     """
-
+    @staticmethod
+    def lru_reg_width(items):
+        return int(2 ** items  - 1)
+ 
     def __init__(self, lru_reg: RtlSignal):
         assert isPow2(lru_reg._dtype.bit_length() - 1), lru_reg._dtype.bit_length()
         self.lru_regs = lru_reg
