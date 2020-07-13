@@ -98,6 +98,7 @@ from hwtLib.examples.mem.reg_test import DRegTC, RegSerializationTC, \
     DoubleRRegTC, DReg_asyncRstTC
 from hwtLib.examples.mem.rom_test import SimpleRomTC, SimpleSyncRomTC, \
     RomResourcesTC
+from hwtLib.examples.operators.cast_test import CastTc
 from hwtLib.examples.operators.concat_test import ConcatTC
 from hwtLib.examples.operators.indexing_test import IndexingTC
 from hwtLib.examples.parametrization_test import ParametrizationTC
@@ -185,7 +186,8 @@ from hwtLib.tests.sertialization.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.sertialization.modes_test import SerializerModes_TC
 from hwtLib.tests.sertialization.tmpVar_test import Serializer_tmpVar_TC
 from hwtLib.tests.sertialization.vhdl_test import Vhdl2008Serializer_TC
-from hwtLib.tests.simulatorUtlls_test import SimulatorUtilsTC
+from hwtLib.tests.simulator.json_log_test import HsFifoJsonLogTC
+from hwtLib.tests.simulator.utils_test import SimulatorUtilsTC
 from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import \
     InterfaceSynthesizerTC
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import \
@@ -208,7 +210,6 @@ from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
-from hwtLib.examples.operators.cast_test import CastTc
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -262,6 +263,7 @@ suite = testSuiteFromTCs(
     FrameTmplTC,
     Showcase0TC,
     SimulatorUtilsTC,
+    HsFifoJsonLogTC,
     RdSynced_agent_TC,
     Segment7TC,
     SerializerModes_TC,
