@@ -1,23 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import List
+
+from pyMathBitPrecise.bit_utils import mask
+
 from hwt.code import log2ceil, FsmBuilder, And, Or, If, ror, SwitchLogic, \
     connect, Concat
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.enum import HEnum
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.std import VectSignal, HandshakeSync
+from hwt.interfaces.std import HandshakeSync
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 from hwtLib.handshaked.streamNode import StreamNode
-from hwtLib.logic.crcPoly import CRC_32, CRC_32C
+from hwtLib.mem.cuckooHashTable_intf import CInsertIntf
 from hwtLib.mem.hashTableCore import HashTableCore
-from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf
-from pyMathBitPrecise.bit_utils import mask
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf, \
+    HashTableIntf
 
 
 class ORIGIN_TYPE():
@@ -26,112 +29,63 @@ class ORIGIN_TYPE():
     DELETE = 2
 
 
-class CInsertIntf(HandshakeSync):
-
-    def _config(self):
-        self.KEY_WIDTH = Param(8)
-        self.DATA_WIDTH = Param(0)
-
-    def _declr(self):
-        super(CInsertIntf, self)._declr()
-        self.key = VectSignal(self.KEY_WIDTH)
-        if self.DATA_WIDTH:
-            self.data = VectSignal(self.DATA_WIDTH)
-
-    def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = CInsertIntfAgent(sim, self)
-
-
-class CInsertIntfAgent(HandshakedAgent):
-    """
-    Agent for CInsertIntf interface
-    """
-
-    def __init__(self, sim, intf):
-        HandshakedAgent.__init__(self, sim, intf)
-        self._hasData = bool(intf.DATA_WIDTH)
-
-    def get_data(self):
-        intf = self.intf
-        if self._hasData:
-            return intf.key.read(), intf.data.read()
-        else:
-            return intf.key.read()
-
-    def set_data(self, data):
-        intf = self.intf
-        if self._hasData:
-            if data is None:
-                k = None
-                d = None
-            else:
-                k, d = data
-            return intf.key.write(k), intf.data.write(d)
-        else:
-            return intf.key.write(data)
-
-
 # https://web.stanford.edu/class/cs166/lectures/13/Small13.pdf
 class CuckooHashTable(HashTableCore):
     """
     Cuckoo hash uses more tables with different hash functions
 
     Lookup is performed in all tables at once and if item is found in any
-    table item is found otherwise item is not in tables.
+    table. The item is found. Otherwise item is not in tables.
     lookup time: O(1)
 
-    Insert has to first lookup if item is in any table. If there is such a item
-    it is replaced. If there is any empty element item is stored there.
-    If there is a valid item under this key in all tables. One is selected
-    and it is replaced by current item. Insert process then repeats with this item.
+    Insert has to first lookup if item is in any table. If any table contains invalid item.
+    The item is stored there and insert operation is complete.
+    If there was a valid item under this key in all tables. One is selected
+    and it is swapped with current item. Insert process then repeats with this item.
+    Until some invalid item (empty slot) is found.
 
     Inserting into table does not have to be successful and in this case,
-    fsm ends up in infinite loop and it will be reinserting items.
+    fsm ends up in infinite loop and it will be reinserting items for ever.
+    insert time: O(inf)
 
     .. aafig::
                     +-------------------------------------------+
                     |                                           |
                     |    CuckooHashTable                        |
-        insert      |                                           |
-        +--------------------------------------+  +---------+   |
-                    |                          |  |         |   |
-                    |                          v  v         |   | lookupRes
-        lookup      |                        +-------+      +----------->
-        +----------------------------------->|       |      |   |
-                    |  +-------------------->| stash |      |   |
-                    |  |                +----+       |      |   |
-         delete     |  |                v    +------++      |   |
-        +--------------+            +-------+       |       |   |
-                    |               | insert|     lookup    |   |
-                    |               +----+--+       v       |   |
-                    |                 ^  |       +--------+ |   |
-                    |                 |  +------>| tables | |   |
-         clean      |   +--------+    |          +----+---+ |   |
-        +-------------->|cleanFSM+ ---+               |     |   |
-                    |   +--------+          lookupRes |     |   |
-                    |                                 +-----+   |
+        insert      |                                lookupRes  |
+        +--------------------------------------+  +------+      |
+                    |                          |  |      |      |
+                    |                          v  v      |      | lookupRes
+        lookup      |                        +-------+   +----------->
+        +----------------------------------->|       |   |      |
+                    |  +-------------------->| stash |   |      |
+                    |  |                +----+       |   |      |
+         delete     |  |                v    +------++   |      |
+        +--------------+            +-------+       |    |      |
+                    |               | insert|     lookup |      |  insert, 
+                    |               +----+--+       v    |      |  lookup,
+                    |                 ^  |       +--------+     |  lookupRes
+                    |                 |  +------>| tables +------------->
+         clean      |   +--------+    |          +--------+     |
+        +-------------->|cleanFSM+ ---+                         |
+                    |   +--------+                              |
+                    |                                           |
                     +-------------------------------------------+
 
     .. hwt-schematic::
     """
-
-    def __init__(self, polynomials=[CRC_32, CRC_32C]):
-        """
-        :param polynomials: list of polynomials for crc hashers used in tables
-            for each item in this list table will be instantiated
-        """
-        super(HashTableCore, self).__init__()
-        self.POLYNOMIALS = polynomials
+    def __init__(self):
+        Unit.__init__(self)
 
     def _config(self):
         self.TABLE_SIZE = Param(32)
         self.DATA_WIDTH = Param(32)
         self.KEY_WIDTH = Param(8)
         self.LOOKUP_KEY = Param(False)
+        self.TABLE_CNT = Param(2)
 
-    def _declr(self):
+    def _declr_outer_io(self):
         addClkRstn(self)
-        self.TABLE_CNT = len(self.POLYNOMIALS)
         assert self.TABLE_SIZE % self.TABLE_CNT == 0
         self.HASH_WITH = log2ceil(self.TABLE_SIZE // self.TABLE_CNT)
 
@@ -149,13 +103,28 @@ class CuckooHashTable(HashTableCore):
 
         self.clean = HandshakeSync()
 
+    def _declr(self):
+        self._declr_outer_io()
+
         with self._paramsShared():
-            self.tables = HObjList(HashTableCore(p) for p in self.POLYNOMIALS)
+            self.tables = HObjList(
+                HashTableIntf()._m()
+                for _ in range(self.TABLE_CNT))
+
             for t in self.tables:
                 t.ITEMS_CNT = self.TABLE_SIZE // self.TABLE_CNT
                 t.LOOKUP_HASH = True
 
-    def cleanUpAddrIterator(self, en):
+    def configure_tables(self, tables: List[HashTableCore]):
+        """
+        share the configuration with the table engines
+        """
+        for t in tables:
+            t._updateParamsFrom(self)
+            t.ITEMS_CNT = self.TABLE_SIZE // self.TABLE_CNT
+            t.LOOKUP_HASH = True
+        
+    def clean_addr_iterator(self, en):
         lastAddr = self.TABLE_SIZE // self.TABLE_CNT - 1
         addr = self._reg("cleanupAddr",
                          Bits(log2ceil(lastAddr), signed=False),
@@ -166,7 +135,7 @@ class CuckooHashTable(HashTableCore):
 
         return addr, addr._eq(lastAddr)
 
-    def insetOfTablesDriver(self, state, insertTargetOH, insertIndex,
+    def tables_insert_driver(self, state, insertTargetOH, insertIndex,
                             stash):
         """
         :param state: state register of main fsm
@@ -188,9 +157,9 @@ class CuckooHashTable(HashTableCore):
                            insertTargetOH[i]))
                 ins.item_vld(stash.item_vld)
 
-    def lookupResOfTablesDriver(self, resRead, resAck):
+    def tables_lookupRes_driver(self, resRead, resAck):
         """
-        Controll lookupRes interface for each table
+        Control lookupRes interface for each table
         """
         tables = self.tables
         # one hot encoded index where item should be stored (where was found
@@ -227,9 +196,9 @@ class CuckooHashTable(HashTableCore):
         )
         return lookupResAck, insertFinal, lookupFoundOH, targetOH
 
-    def insertAddrSelect(self, targetOH, state, cleanAddr):
+    def insert_addr_select(self, targetOH, state, cleanAddr):
         """
-        Select a driver for insert address
+        Select a insert address
         """
         insertIndex = self._sig("insertIndex", Bits(self.HASH_WITH))
         If(state._eq(state._dtype.cleaning),
@@ -242,7 +211,7 @@ class CuckooHashTable(HashTableCore):
         )
         return insertIndex
 
-    def stashLoad(self, isIdle, stash):
+    def stash_load(self, isIdle, stash):
         """
         load a stash register from lookup/insert/delete interface
         """
@@ -281,7 +250,10 @@ class CuckooHashTable(HashTableCore):
                 )
             intf.rd(rd)
 
-    def lookupOfTablesDriver(self, state, tableKey, lookop_en):
+    def tables_lookup_driver(self, state, tableKey, lookop_en):
+        """
+        Connect a lookup ports of all tables
+        """
         for t in self.tables:
             t.lookup.key(tableKey)
 
@@ -290,7 +262,7 @@ class CuckooHashTable(HashTableCore):
         en = state._eq(fsm_t.lookup) | (state._eq(fsm_t.idle) & lookop_en)
         StreamNode(slaves=[t.lookup for t in self.tables]).sync(en)
 
-    def lookupResDriver(self, state, lookupFoundOH):
+    def lookupRes_driver(self, state, lookupFoundOH):
         """
         If lookup request comes from external interface "lookup" propagate results
         from tables to "lookupRes".
@@ -314,7 +286,9 @@ class CuckooHashTable(HashTableCore):
                     )
 
     def lookup_trans_cntr(self):
-        # counter of pure lookup operations in progress
+        """
+        create a counter of pure lookup operations in progress
+        """
         lookup = self.lookup
         lookupRes = self.lookupRes
         lookup_in_progress = self._reg("lookup_in_progress", Bits(4), def_val=0)
@@ -341,13 +315,13 @@ class CuckooHashTable(HashTableCore):
         stash = self._reg("stash", stash_t, def_val={"origin_op": ORIGIN_TYPE.DELETE})
 
         cleanAck = self._sig("cleanAck")
-        cleanAddr, cleanLast = self.cleanUpAddrIterator(cleanAck)
+        cleanAddr, cleanLast = self.clean_addr_iterator(cleanAck)
         lookupResRead = self._sig("lookupResRead")
         lookupResNext = self._sig("lookupResNext")
         (lookupResAck,
          insertFinal,
          lookupFound,
-         targetOH) = self.lookupResOfTablesDriver(lookupResRead,
+         targetOH) = self.tables_lookupRes_driver(lookupResRead,
                                                   lookupResNext)
         tables = self.tables
         lookupAck = StreamNode(slaves=[t.lookup for t in tables]).ack()
@@ -399,14 +373,14 @@ class CuckooHashTable(HashTableCore):
         lookupResNext(state._eq(fsm_t.lookupResAck) | (state._eq(fsm_t.idle) & self.lookupRes.rd))
 
         isIdle = state._eq(fsm_t.idle)
-        self.stashLoad(isIdle, stash)
-        insertIndex = self.insertAddrSelect(targetOH, state, cleanAddr)
-        self.insetOfTablesDriver(state, targetOH, insertIndex, stash)
-        self.lookupResDriver(state, lookupFound)
-        self.lookupOfTablesDriver(state, stash.key, stash.origin_op._eq(ORIGIN_TYPE.LOOKUP))
+        self.stash_load(isIdle, stash)
+        insertIndex = self.insert_addr_select(targetOH, state, cleanAddr)
+        self.tables_insert_driver(state, targetOH, insertIndex, stash)
+        self.lookupRes_driver(state, lookupFound)
+        self.tables_lookup_driver(state, stash.key, stash.origin_op._eq(ORIGIN_TYPE.LOOKUP))
 
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
-    u = CuckooHashTable([CRC_32, CRC_32])
+    u = CuckooHashTable()
     print(to_rtl_str(u))

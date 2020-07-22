@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Optional
+
 from hwt.code import log2ceil, connect, Concat
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
-from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.handshaked.builder import HsBuilder
-from hwtLib.handshaked.ramAsHs import RamAsHs
+from hwtLib.handshaked.ramAsHs import RamHsR
 from hwtLib.handshaked.streamNode import StreamNode
+from hwtLib.interfaces.addr_data_hs import AddrDataHs
 from hwtLib.logic.crcComb import CrcComb
 from hwtLib.logic.crcPoly import CRC_32
-from hwtLib.mem.hashTable_intf import InsertIntf, LookupKeyIntf, \
-    LookupResultIntf
-from hwtLib.mem.ram import RamSingleClock
+from hwtLib.mem.hashTable_intf import LookupKeyIntf, HashTableIntf
 
 
 # https://web.stanford.edu/class/cs166/lectures/13/Small13.pdf
@@ -46,15 +46,15 @@ class HashTableCore(Unit):
     :ivar ~.POLYNOME: polynome for crc hash used in this table
 
     .. aafig::
-
-        insert   +-----------+
-        -------->|           | lookupRes
-        lookup   | HashTable +---------->
-        -------->|           |
-                 +-----------+
+                          ^
+                          | mem
+        io.insert   +-----+-----+
+        ----------->|           | io.lookupRes
+        io.lookup   | HashTable +------------->
+        ----------->|           |
+                    +-----------+
 
     .. hwt-schematic:: _example_HashTableCore
-
     """
 
     def __init__(self, polynome):
@@ -62,46 +62,24 @@ class HashTableCore(Unit):
         self.POLYNOME = polynome
 
     def _config(self):
-        self.ITEMS_CNT = Param(32)
-        self.KEY_WIDTH = Param(16)
-        self.DATA_WIDTH = Param(8)
-        self.LOOKUP_ID_WIDTH = Param(0)
-        self.LOOKUP_HASH = Param(False)
-        self.LOOKUP_KEY = Param(False)
+        HashTableIntf._config(self)
 
-    def _declr(self):
+    def _declr_common(self):
         addClkRstn(self)
-        assert int(self.KEY_WIDTH) > 0
-        assert int(self.DATA_WIDTH) >= 0
-        assert int(self.ITEMS_CNT) > 1
-
-        self.HASH_WIDTH = log2ceil(self.ITEMS_CNT)
-
-        assert self.HASH_WIDTH < int(self.KEY_WIDTH), (
-            "It makes no sense to use hash table when you can use key directly as index",
-            self.HASH_WIDTH, self.KEY_WIDTH)
-
         with self._paramsShared():
-            self.insert = InsertIntf()
-            self.insert.HASH_WIDTH = self.HASH_WIDTH
-
-            self.lookup = LookupKeyIntf()
-
-            self.lookupRes = LookupResultIntf()._m()
-            self.lookupRes.HASH_WIDTH = self.HASH_WIDTH
-
-        t = self.table = RamSingleClock()
-        t.PORT_CNT = 1
-        t.ADDR_WIDTH = log2ceil(self.ITEMS_CNT)
-        t.DATA_WIDTH = self.KEY_WIDTH + self.DATA_WIDTH + 1  # +1 for item_vld
-
-        tc = self.tableConnector = RamAsHs()
-        tc.ADDR_WIDTH = t.ADDR_WIDTH
-        tc.DATA_WIDTH = t.DATA_WIDTH
+            self.io = HashTableIntf()
 
         h = self.hash = CrcComb()
         h.DATA_WIDTH = self.KEY_WIDTH
         h.setConfig(self.POLYNOME)
+
+    def _declr(self):
+        self._declr_common()
+        self.r = RamHsR()._m()
+        self.w = AddrDataHs()._m()
+        for i in [self.r, self.w]:
+            i.ADDR_WIDTH = log2ceil(self.ITEMS_CNT)                                 
+            i.DATA_WIDTH = self.KEY_WIDTH + self.DATA_WIDTH + 1  # +1 for item_vld  
 
     def parseItem(self, sig):
         """
@@ -127,10 +105,10 @@ class HashTableCore(Unit):
 
         return (key, data, item_vld)
 
-    def lookupLogic(self, ramR):
+    def lookupLogic(self, ramR: RamHsR):
         h = self.hash
-        lookup = self.lookup
-        res = self.lookupRes
+        lookup = self.io.lookup
+        res = self.io.lookupRes
 
         # tmp storage for original key and hash for later check
         origKeyIn = LookupKeyIntf()
@@ -152,7 +130,7 @@ class HashTableCore(Unit):
 
         if self.LOOKUP_HASH:
             origHashIn = Handshaked()
-            origHashIn.DATA_WIDTH = self.HASH_WIDTH
+            origHashIn.DATA_WIDTH = self.io.HASH_WIDTH
             self.origHashIn = origHashIn
             origHashOut = HsBuilder(self, origHashIn).buff(2).end
 
@@ -184,8 +162,8 @@ class HashTableCore(Unit):
         res.occupied(item_vld)
         res.found(origKey.key._eq(key) & item_vld)
 
-    def insertLogic(self, ramW):
-        In = self.insert
+    def insertLogic(self, ramW: AddrDataHs):
+        In = self.io.insert
 
         if self.DATA_WIDTH:
             rec = Concat(In.key, In.data, In.item_vld)
@@ -196,13 +174,15 @@ class HashTableCore(Unit):
         ramW.addr(In.hash)
         StreamNode(masters=[In], slaves=[ramW]).sync()
 
-    def _impl(self):
-        propagateClkRstn(self)
+    def _impl(self, r: Optional[RamHsR]=None, w: Optional[AddrDataHs]=None):
+        if r is None:
+            r = self.r
+        if w is None:
+            w = self.w
 
-        table = self.tableConnector
-        self.table.port[0](table.ram)
-        self.lookupLogic(table.r)
-        self.insertLogic(table.w)
+        self.lookupLogic(r)
+        self.insertLogic(w)
+        propagateClkRstn(self)
 
 
 def _example_HashTableCore():

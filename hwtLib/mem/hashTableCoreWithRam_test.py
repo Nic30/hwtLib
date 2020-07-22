@@ -1,21 +1,23 @@
 #!/usr/bin/env python3)
 # -*- coding: utf-8 -*-
 
+from binascii import crc_hqx
+
+from pyMathBitPrecise.bit_utils import mask
+
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.logic.crcPoly import CRC_16_CCITT
-from hwtLib.mem.hashTableCore import HashTableCore
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
-from binascii import crc_hqx
-from pyMathBitPrecise.bit_utils import mask
+from hwtLib.mem.hashTableCoreWithRam import HashTableCoreWithRam
 
 
-class HashTableCoreTC(SingleUnitSimTestCase):
+class HashTableCoreWithRamTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
-        u = cls.u = HashTableCore(CRC_16_CCITT)
+        u = cls.u = HashTableCoreWithRam(CRC_16_CCITT)
         u.KEY_WIDTH = 16
         u.DATA_WIDTH = 8
 
@@ -32,25 +34,25 @@ class HashTableCoreTC(SingleUnitSimTestCase):
     def test_lookupInEmpty(self):
         u = self.u
 
-        u.lookup._ag.data.extend([0,
+        u.io.lookup._ag.data.extend([0,
                                   self._rand.getrandbits(8),
                                   self._rand.getrandbits(8)])
 
         self.runSim(15 * CLK_PERIOD)
 
-        for d in u.lookupRes._ag.data:
+        for d in u.io.lookupRes._ag.data:
             found = d[-1]
             self.assertValEqual(found, 0)
 
     def test_lookupInsertLookup(self, N=16):
         u = self.u
-        lookup = u.lookup._ag.data
-        lookupRes = u.lookupRes._ag.data
+        lookup = u.io.lookup._ag.data
+        lookupRes = u.io.lookupRes._ag.data
         getrandbits = self._rand.getrandbits
 
         def get_hash(k: int):
             return crc_hqx(k.to_bytes(u.KEY_WIDTH // 8, "little"),
-                           CRC_16_CCITT.INIT) & mask(u.HASH_WIDTH)
+                           CRC_16_CCITT.INIT) & mask(u.io.HASH_WIDTH)
 
         # {hash: (key, data)}
         expected_content = {}
@@ -75,7 +77,7 @@ class HashTableCoreTC(SingleUnitSimTestCase):
 
             data = getrandbits(8)
             # insert previous lookup with new data
-            u.insert._ag.data.append((_hash, key, data, 1))
+            u.io.insert._ag.data.append((_hash, key, data, 1))
 
             yield Timer(5 * CLK_PERIOD)
             expected_content[int(_hash)] = (int(key), int(data))
@@ -117,13 +119,13 @@ class HashTableCoreTC(SingleUnitSimTestCase):
         self.procs.append(tryInsertNotFoundAndLookupIt())
 
         self.runSim(N * 30 * CLK_PERIOD)
-        self.assertEmpty(u.lookupRes._ag.data)
+        self.assertEmpty(u.io.lookupRes._ag.data)
 
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(HashTableCoreTC('test_lookupInEmpty'))
-    suite.addTest(unittest.makeSuite(HashTableCoreTC))
+    # suite.addTest(HashTableCoreWithRamTC('test_lookupInEmpty'))
+    suite.addTest(unittest.makeSuite(HashTableCoreWithRamTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

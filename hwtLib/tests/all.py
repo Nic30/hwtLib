@@ -149,10 +149,10 @@ from hwtLib.mem.atomic.flipRam_test import FlipRamTC
 from hwtLib.mem.atomic.flipReg_test import FlipRegTC
 from hwtLib.mem.bramEndpoint_test import BramPortEndpointTCs
 from hwtLib.mem.cam_test import CamTC
-from hwtLib.mem.cuckooHashTable_test import CuckooHashTableTC
+from hwtLib.mem.cuckooHashTableWithRam_test import CuckooHashTableWithRamTC
 from hwtLib.mem.fifoAsync_test import FifoAsyncTC
 from hwtLib.mem.fifo_test import FifoWriterAgentTC, FifoReaderAgentTC, FifoTC
-from hwtLib.mem.hashTableCore_test import HashTableCoreTC
+from hwtLib.mem.hashTableCoreWithRam_test import HashTableCoreWithRamTC
 from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ram_test import RamTC
 from hwtLib.peripheral.displays.hd44780.driver_test import Hd44780Driver8bTC
@@ -446,8 +446,8 @@ suite = testSuiteFromTCs(
     UnitWrapperTC,
     IpCorePackagerTC,
     CharToBitmapTC,
-    HashTableCoreTC,
-    CuckooHashTableTC,
+    HashTableCoreWithRamTC,
+    CuckooHashTableWithRamTC,
     PingResponderTC,
     DebugBusMonitorExampleAxiTC,
 
@@ -466,9 +466,10 @@ if __name__ == '__main__':
         # concurrencytest is not installed, use regular test runner
         useParallerlTest = False
     # useParallerlTest = False
-
+   
     if useParallerlTest:
         concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests())
         runner.run(concurrent_suite)
     else:
         runner.run(suite)
+

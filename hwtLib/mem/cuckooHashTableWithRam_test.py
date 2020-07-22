@@ -3,16 +3,16 @@
 
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.logic.crcPoly import CRC_32
-from hwtLib.mem.cuckooHashTable import CuckooHashTable
+from hwtLib.mem.cuckooHashTablWithRam import CuckooHashTableWithRam
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
 
 
-class CuckooHashTableTC(SingleUnitSimTestCase):
+class CuckooHashTableWithRamTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
-        u = CuckooHashTable([CRC_32, CRC_32])
+        u = CuckooHashTableWithRam([CRC_32, CRC_32])
         u.KEY_WIDTH = 16
         u.DATA_WIDTH = 8
         u.LOOKUP_KEY = True
@@ -23,7 +23,7 @@ class CuckooHashTableTC(SingleUnitSimTestCase):
     def setUp(self):
         SingleUnitSimTestCase.setUp(self)
         m = self.rtl_simulator.model
-        self.TABLE_MEMS = [getattr(m, "tables_%d_inst" % i).table_inst.io.ram_memory
+        self.TABLE_MEMS = [getattr(m, "table_cores_%d_inst" % i).table_inst.io.ram_memory
                            for i in range(self.TABLE_CNT)]
 
     def cleanupMemory(self):
@@ -54,7 +54,7 @@ class CuckooHashTableTC(SingleUnitSimTestCase):
         """
         :return: tuple (key, data, item_vld)
         """
-        return self.u.tables[0].parseItem(item)
+        return self.u.table_cores[0].parseItem(item)
 
     def test_clean(self):
         u = self.u
@@ -145,7 +145,7 @@ class CuckooHashTableTC(SingleUnitSimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(CuckooHashTableTC('test_lookupInEmpty'))
-    suite.addTest(unittest.makeSuite(CuckooHashTableTC))
+    # suite.addTest(CuckooHashTableWithRamTC('test_lookupInEmpty'))
+    suite.addTest(unittest.makeSuite(CuckooHashTableWithRamTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -1,6 +1,10 @@
+from hwt.code import log2ceil
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VectSignal, Signal, HandshakeSync
+from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
+from ipCorePackager.constants import DIRECTION
+from pycocotb.agents.base import AgentBase
 from pycocotb.hdlSimulator import HdlSimulator
 
 
@@ -14,6 +18,7 @@ class InsertIntfAgent(HandshakedAgent):
         * if interface does not have data signal,
           data format is tuple (hash, key, item_vld)
     """
+
     def __init__(self, sim: HdlSimulator, intf: "InsertIntf"):
         HandshakedAgent.__init__(self, sim, intf)
         self.hasData = bool(intf.DATA_WIDTH)
@@ -52,6 +57,7 @@ class InsertIntfAgent(HandshakedAgent):
 
 
 class InsertIntf(HandshakeSync):
+
     def _config(self):
         self.HASH_WIDTH = Param(8)
         self.KEY_WIDTH = Param(8)
@@ -74,6 +80,7 @@ class LookupKeyIntfAgent(HandshakedAgent):
     """
     Simulation agent for LookupKeyIntf interface
     """
+
     def __init__(self, sim: HdlSimulator, intf: "LookupKeyIntf"):
         HandshakedAgent.__init__(self, sim, intf)
         self.HAS_LOOKUP_ID = bool(intf.LOOKUP_ID_WIDTH)
@@ -94,6 +101,7 @@ class LookupKeyIntfAgent(HandshakedAgent):
 
 
 class LookupKeyIntf(HandshakeSync):
+
     def _config(self):
         self.LOOKUP_ID_WIDTH = Param(0)
         self.KEY_WIDTH = Param(8)
@@ -115,6 +123,7 @@ class LookupResultIntfAgent(HandshakedAgent):
     data format is tuple (hash, key, data, found) but some items
     can be missing depending on configuration of interface
     """
+
     def __init__(self, sim, intf):
         HandshakedAgent.__init__(self, sim, intf)
         self.hasHash = bool(intf.LOOKUP_HASH)
@@ -178,6 +187,7 @@ class LookupResultIntf(Handshaked):
     :ivar ~.data: data under this key
     :ivar ~.occupied: flag which tells if there is an valid item under this key
     """
+
     def _config(self):
         self.HASH_WIDTH = Param(8)
         self.KEY_WIDTH = Param(8)
@@ -205,3 +215,63 @@ class LookupResultIntf(Handshaked):
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = LookupResultIntfAgent(sim, self)
+
+
+class HashTableIntf(Interface):
+
+    def _config(self):
+        self.ITEMS_CNT = Param(32)
+        self.KEY_WIDTH = Param(16)
+        self.DATA_WIDTH = Param(8)
+        self.LOOKUP_ID_WIDTH = Param(0)
+        self.LOOKUP_HASH = Param(False)
+        self.LOOKUP_KEY = Param(False)
+
+    def _declr(self):
+        assert int(self.KEY_WIDTH) > 0
+        assert int(self.DATA_WIDTH) >= 0
+        assert int(self.ITEMS_CNT) > 1
+
+        self.HASH_WIDTH = log2ceil(self.ITEMS_CNT)
+
+        assert self.HASH_WIDTH < int(self.KEY_WIDTH), (
+            "It makes no sense to use hash table when you can use key directly as index",
+            self.HASH_WIDTH, self.KEY_WIDTH)
+
+        with self._paramsShared():
+            self.insert = InsertIntf()
+            self.insert.HASH_WIDTH = self.HASH_WIDTH
+
+            self.lookup = LookupKeyIntf()
+
+            self.lookupRes = LookupResultIntf(masterDir=DIRECTION.IN)
+            self.lookupRes.HASH_WIDTH = self.HASH_WIDTH
+
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = HashTableIntfAgent(sim, self)
+
+
+class HashTableIntfAgent(AgentBase):
+
+    def __init__(self, sim:HdlSimulator, intf: HashTableIntf):
+        AgentBase.__init__(self, sim, intf)
+        intf.insert._initSimAgent(sim)
+        intf.lookup._initSimAgent(sim)
+        intf.lookupRes._initSimAgent(sim)
+
+    def getDrivers(self):
+        intf = self.intf
+        return [
+            *intf.insert._ag.getDrivers(),
+            *intf.lookup._ag.getDrivers(),
+            *intf.lookupRes._ag.getMonitors(),
+        ]
+
+    def getMonitors(self):
+        intf = self.intf
+        return [
+            *intf.insert._ag.getMonitors(),
+            *intf.lookup._ag.getMonitors(),
+            *intf.lookupRes._ag.getDrivers(),
+        ]
+
