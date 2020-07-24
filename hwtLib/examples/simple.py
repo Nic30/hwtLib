@@ -39,8 +39,6 @@ class SimpleUnit(Unit):
         # call operator creates assignment. First parameter is source rest
         # are destinations.
         self.b(self.a)  # a drives b, "()" because "=" can not be overriden
-        # directions of a and b interfaces are derived automatically,
-        # if signal has driver it is output
 
 
 if __name__ == "__main__":  # alias python main function
