@@ -17,13 +17,13 @@ from hwtLib.amba.axis_comp.builder import AxiSBuilder
 
 
 # note: not in main library as typical usecase differs to much
-#     and it is more simple to instanciate 2 independent CDCs
+#     and it is more simple to instantiate 2 independent CDCs
 #     rather than using complex configuration
 #     (separate clk, rsts for rx/tx, different buff sizes, ...)
 class AxiStreamFullDuplexCdc(Unit):
     """
     CDC for AxiStreamFullDuplex interface
-    (2x async fifo with same params, hdl component shared)
+    (2x async FIFO with same params, hdl component shared)
     """
 
     def _config(self):

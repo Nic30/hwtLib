@@ -125,7 +125,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
             # else each child will parse it's own part
             # and we join output frames together
         else:
-            # only instanciate a compoment which aligns the sream
+            # only instantiate a component which aligns the stream
             # to correct output format
             self.sub_t = [s_t, ]
 
@@ -157,7 +157,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         :param tPart: instance of TransPart or ChoicesOfFrameParts to connect
         :param inPorts_out: input interfaces to this transaction part
         :param lastInPorts_out: input interfaces for last parts of transactions
-        :return: tule (strb, keep) if strb/keep driven by input stream, else (None, None)
+        :return: tuple (strb, keep) if strb/keep driven by input stream, else (None, None)
         """
 
         tToIntf = self.dataIn._fieldsToInterfaces
@@ -256,7 +256,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         """
         For the cases where output frames contains the streams which does
         not have start aligned to a frame word boundary, we have to build
-        rest of the frame in child FrameForge and then instanciate
+        rest of the frame in child FrameForge and then instantiate
         AxiS_FrameJoin which will join such a unaligned frames together.
         """
         Cls = self.__class__

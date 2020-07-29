@@ -140,8 +140,8 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
 
     def buff(self, items=1, latency=None, delay=None):
         """
-        Use registers and FIFOs to create buffer of specified paramters
-        :note: if items <= latency registers are used else fifo is used
+        Use registers and FIFOs to create buffer of specified parameters
+        :note: if items <= latency registers are used else FIFO is used
 
         :param items: number of items in buffer
         :param latency: latency of buffer (number of clk ticks required to get data
@@ -188,7 +188,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
 
     def buff_cdc(self, clk, rst, items=1):
         """
-        Instanciate a CDC (Clock Domain Crossing) buffer or AsyncFifo
+        Instantiate a CDC (Clock Domain Crossing) buffer or AsyncFifo
         on selected interface
 
         :note: if items==1 CDC clock synchronization register is used
