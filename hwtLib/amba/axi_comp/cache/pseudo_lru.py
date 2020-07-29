@@ -1,8 +1,9 @@
+from operator import ne
+from typing import List, Dict
+
 from hwt.code import isPow2, Concat, log2ceil, And, Or
 from hwt.code_utils import _mkOp
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from operator import ne
-from typing import List, Dict
 
 
 def parity(bit_vector):
