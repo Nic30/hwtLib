@@ -41,7 +41,6 @@ class AddrDataHs_to_Axi(BusBridge):
     :ivar ~.M_ID_WIDTH: id width for AXI interface
     :ivar ~.M_ADDR_OFFSET: address offset value for axi interface
 
-    .. hwt-schematic:: example_AddrDataHs_to_Axi
     """
 
     def __init__(self, intfCls=Axi4):
