@@ -197,7 +197,7 @@ def _axis_recieve_bytes(ag_data, D_B, use_keep, offset=0) -> Tuple[int, List[int
                 d = get_bit_range(data.val, i * 8, 8)
                 if get_bit_range(data.vld_mask, i * 8, 8) != 0xff:
                     raise AssertionError(
-                        "Data not valid but should be"
+                        "Data not valid but it should be"
                         " based on strb/keep B_i:%d, 0x%x, 0x%x" % (i, keep, data.vld_mask))
                 data_B.append(d)
 
