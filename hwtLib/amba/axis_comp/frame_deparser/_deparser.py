@@ -36,6 +36,7 @@ from hwtLib.amba.axis_comp.frame_parser.field_connector import AxiS_frameParserF
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
 from pyMathBitPrecise.bit_utils import mask
+from hwt.pyUtils.arrayQuery import iter_with_last
 
 TYPE_CONFIG_PARAMS_NAMES = [
     "T", "TRANSACTION_TEMPLATE", "FRAME_TEMPLATES"]
@@ -163,7 +164,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         tToIntf = self.dataIn._fieldsToInterfaces
 
         if isinstance(tPart, ChoicesOfFrameParts):
-            # connnect parts of union to output signal
+            # connect parts of union to output signal
             high, low = tPart.getBusWordBitRange()
             parentIntf = tToIntf[tPart.origin.parent.getFieldPath()]
  
@@ -178,7 +179,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
             # tuples (cond, part of data mux for dataOut)
             unionChoices = []
             sk_stashes = []
-            # for all union choices
+            # for all choices in union
             for choice in tPart:
                 tmp = self._sig("union_tmp_", Bits(w))
                 intfOfChoice = tToIntf[choice.tmpl.getFieldPath()]
@@ -197,12 +198,27 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
 
                 sk_stash = StrbKeepStash()
                 # walk all parts in union choice
-                for _tPart in choice:
+                start = tPart.startOfPart
+                for choicePart in choice:
+                    if start != choicePart.startOfPart:
+                        # add padding because there is a hole in data
+                        _w = choicePart.startOfPart - start
+                        assert _w > 0, _w
+                        sk_stash.push((_w, 0), (_w, 0))
+
                     _strb, _keep = self.connectPartsOfWord(
-                        tmp, _tPart,
+                        tmp, choicePart,
                         inPortsNode.masters,
                         lastPortsNode.masters)
                     sk_stash.push(_strb, _keep)
+                    start = choicePart.endOfPart
+                    
+                if start != tPart.endOfPart:
+                    # add padding because there is a hole after
+                    _w = tPart.endOfPart - start
+                    assert _w > 0, _w
+                    sk_stash.push((_w, 0), (_w, 0))
+
                 # store isSelected sig and strb/keep value for later strb/keep resolving
                 sk_stashes.append((isSelected, sk_stash))
 
@@ -214,9 +230,8 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
             lastInPorts_out.append(lastInPortsGroups)
             # resolve strb/keep from strb/keep and isSelected of union members
             if w % 8 != 0:
-                raise NotImplementedError()
-            STRB_ALL = mask(int(w // 8))
-            strb, keep = reduce_conditional_StrbKeepStashes(self, sk_stashes, STRB_ALL)
+                raise NotImplementedError(w)
+            strb, keep = reduce_conditional_StrbKeepStashes(sk_stashes)
         else:
             # connect parts of fields to output signal
             high, low = tPart.getBusWordBitRange()
@@ -493,17 +508,34 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
 
 
 def _example_AxiS_frameDeparser():
-    from hwtLib.types.ctypes import uint64_t, uint8_t, uint16_t
+    from hwtLib.types.ctypes import uint64_t, uint8_t, uint16_t, uint32_t
 
-    t = HStruct(
-        (uint64_t, "item0"),
-        (uint64_t, None),  # name = None means field is padding
-        (uint64_t, "item1"),
-        (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
+    #t = HStruct(
+    #    (uint64_t, "item0"),
+    #    (uint64_t, None),  # name = None means field is padding
+    #    (uint64_t, "item1"),
+    #    (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
+    #)
+    # t = HUnion(
+    #     (HStruct(
+    #         (uint64_t, "itemA0"),
+    #         (uint64_t, "itemA1")
+    #         ), "frameA"),
+    #     (HStruct(
+    #         (uint32_t, "itemB0"),
+    #         (uint32_t, "itemB1"),
+    #         (uint32_t, "itemB2"),
+    #         (uint32_t, "itemB3")
+    #         ), "frameB")
+    # )
+    t = HUnion(
+        (HStruct((uint8_t, "data"), (uint8_t, None)), "u0"),
+        (HStruct((uint8_t, None), (uint8_t, "data")), "u1"),
     )
 
+
     u = AxiS_frameDeparser(t)
-    u.DATA_WIDTH = 32
+    u.DATA_WIDTH = 16
     return u
 
 
