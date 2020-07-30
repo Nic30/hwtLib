@@ -1,12 +1,12 @@
 from hwt.hdl.types.bits import Bits
 from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getClk, getRst,\
+from hwt.synthesizer.interfaceLevel.unitImplHelpers import getClk, getRst, \
     getSignalName
 
 
 class AbstractComponentBuilder(object):
     """
-    Helper class which simplifies instanciation of commonly used components
+    Helper class which simplifies instantiation of commonly used components
     with configuration based on input/output interface
 
     :ivar ~.compId: used for sequential number of components
@@ -16,11 +16,13 @@ class AbstractComponentBuilder(object):
     :attention: input port is taken from self.end
     """
 
-    def __init__(self, parent, srcInterface, name=None):
+    def __init__(self, parent, srcInterface, name=None, master_to_slave=True):
         """
         :param parent: unit in which will be all units created by this builder instantiated
         :param name: prefix for all instantiated units
         :param srcInterface: start of data-path
+        :param master_to_slave: if True the circuit is build in natural direction
+            (master to slave, input to output) othervise it is build in reverse direction
         """
         self.parent = parent
         self.lastComp = None
@@ -29,6 +31,7 @@ class AbstractComponentBuilder(object):
             name = "gen_" + getSignalName(srcInterface)
 
         self.name = name
+        self.master_to_slave = master_to_slave
         self.compId = 0
 
     def getClk(self):

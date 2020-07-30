@@ -6,24 +6,22 @@ from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
 
 class AbstractStreamBuilder(AbstractComponentBuilder):
     """
-
+    :note: see :class:`AbstractComponentBuilder`
     :attention: this is just abstract class unit classes has to be specified
         in concrete implementation
 
-    :cvar ~.FifoCls: fifo unit class
-    :cvar ~.FifoAsyncCls: asyncronous fifo (fifo with separate clock per port) unit class
+    :cvar ~.FifoCls: FIFO unit class
+    :cvar ~.FifoAsyncCls: asyncronous FIFO (FIFO with separate clock per port) unit class
     :cvar ~.JoinSelectCls: select order based join unit class
     :cvar ~.JoinFairCls: round robin based join unit class
     :cvar ~.JoinPrioritizedCls: priority based join unit class
     :cvar ~.RegCls: register unit class
     :cvar ~.RegCdcCls: Clock domain crossing register unit class
-    :cvar ~.ResizerCls: resizer unit class
+    :cvar ~.ResizerCls: resizer unit class (used to change data width of an interface)
     :cvar ~.SplitCopyCls: copy based split unit class
     :cvar ~.SplitSelectCls: select order based split unit class (demultiplexer)
     :cvar ~.SplitFairCls: round robin based split unit class
     :cvar ~.SplitPrioritizedCls: priority based split unit class
-
-    :note: see :class:`AbstractComponentBuilder`
     """
     FifoCls = NotImplemented
     FifoAsyncCls = NotImplemented
@@ -37,7 +35,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
     SplitFairCls = NotImplemented
     SplitPrioritizedCls = NotImplemented
 
-    def _genericInstance(self, 
+    def _genericInstance(self,
                          unit_cls,
                          name,
                          set_params=lambda u: u,
@@ -61,10 +59,14 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         if propagate_clk_rst:
             self._propagateClkRstn(u)
 
-        u.dataIn(self.end)
-
         self.lastComp = u
-        self.end = u.dataOut
+
+        if self.master_to_slave:
+            u.dataIn(self.end)
+            self.end = u.dataOut
+        else:
+            self.end(u.dataOut)
+            self.end = u.dataIn
 
         return self
 
@@ -112,7 +114,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         return self
 
     @classmethod
-    def join_prioritized(cls, parent,  srcInterfaces, name=None,
+    def join_prioritized(cls, parent, srcInterfaces, name=None,
                          configAs=None, extraConfigFn=None):
         """
         create builder from fairly joined interfaces (round robin for input select)
@@ -132,6 +134,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
             with index of selected input
         :note: other parameters same as in `.AbstractStreamBuilder._join`
         """
+
         def extraConfig(u):
             u.EXPORT_SELECTED = exportSelected
 
@@ -170,10 +173,12 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         assert latency >= 1 and delay >= 0, (latency, delay)
 
         if latency == 1 or latency >= items:
+
             # instantiate buffer as register
             def applyParams(u):
                 u.LATENCY = latency
                 u.DELAY = delay
+
             return self._genericInstance(self.RegCls, "reg",
                                          set_params=applyParams)
         else:
@@ -196,15 +201,20 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         """
         in_clk = self.getClk()
         in_rst_n = self.getRstn()
+        if not self.master_to_slave:
+            in_clk, clk = clk, in_clk
+            in_rst_n, rst = rst, in_rst_n
 
         def set_clk_freq(u):
             u.IN_FREQ = in_clk.FREQ
             u.OUT_FREQ = clk.FREQ
 
         if items > 1:
+
             def configure(u):
                 u.DEPTH = items
                 set_clk_freq(u)
+
             res = self._genericInstance(
                 self.FifoAsyncCls, "cdcAFifo", configure,
                 propagate_clk_rst=False)
@@ -228,6 +238,9 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
 
         :param noOfOutputs: number of output interfaces of the split
         """
+        if not self.master_to_slave:
+            assert len(self.end) == noOfOutputs, self.end
+
         def setChCnt(u):
             u.OUTPUTS = noOfOutputs
 
@@ -240,6 +253,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         :param outputs: ports on which should be outputs
             of split component connected to
         """
+        assert self.master_to_slave, "This function does not make sense if building in reverse order"
         noOfOutputs = len(outputs)
         s = self.split_copy(noOfOutputs)
 
@@ -258,6 +272,8 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
             to control selected output or sequence of output indexes
             which should be used (will be repeated)
         """
+        if not self.master_to_slave:
+            assert len(self.end) == noOfOutputs, self.end
 
         def setChCnt(u):
             u.OUTPUTS = noOfOutputs
@@ -280,12 +296,12 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
             iin.data(indexes[actual])
             iin.vld(1)
             If(iin.rd,
-               If(actual._eq(size - 1),
-                  actual(0)
-                  ).Else(
+                If(actual._eq(size - 1),
+                   actual(0)
+                ).Else(
                    actual(actual + 1)
-               )
-               )
+                )
+            )
 
         return self
 
@@ -295,6 +311,8 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
 
         :param outputs: ports on which should be outputs of split component connected to
         """
+        assert self.master_to_slave, "This function does not make sense if building in reverse order"
+
         noOfOutputs = len(outputs)
         s = self.split_select(outputSelSignalOrSequence, noOfOutputs)
 
@@ -310,6 +328,9 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
 
         :param noOfOutputs: number of output interfaces of the fork
         """
+        if not self.master_to_slave:
+            assert len(self.end) == noOfOutputs, self.end
+
         def setChCnt(u):
             u.OUTPUTS = noOfOutputs
 
@@ -322,6 +343,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
 
         :param outputs: ports on which should be outputs of split component connected to
         """
+        assert self.master_to_slave, "This function does not make sense if building in reverse order"
         noOfOutputs = len(outputs)
 
         s = self.split_prioritized(noOfOutputs)
@@ -333,12 +355,14 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
 
     def split_fair(self, noOfOutputs, exportSelected=False):
         """
-        Create a rund robin selector with number of outputs specified by noOfOutputs
+        Create a round robin selector with number of outputs specified by noOfOutputs
 
         :param noOfOutputs: number of outputs of multiplexer
         :param exportSelected: if is True split component will have interface "selectedOneHot"
             of type VldSynced wich will have one hot index of selected item
         """
+        if not self.master_to_slave:
+            assert len(self.end) == noOfOutputs, self.end
 
         def setChCnt(u):
             u.OUTPUTS = noOfOutputs
@@ -354,8 +378,10 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
             of split component connected to
         :param exportSelected: if is True split component will
             have interface "selectedOneHot" of type VldSynced
-            wich will have one hot index of selected item
+            which will have one hot index of selected item
         """
+        assert self.master_to_slave, "This function does not make sense if building in reverse order"
+
         noOfOutputs = len(outputs)
 
         s = self.split_fair(noOfOutputs, exportSelected=exportSelected)
