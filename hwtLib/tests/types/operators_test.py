@@ -3,13 +3,14 @@
 
 import unittest
 
+from pyMathBitPrecise.bit_utils import mask
+
+from hwt.hdl.operatorDefs import downtoFn, toFn, AllOps
 from hwt.hdl.typeShortcuts import hInt, hBool, hBit, vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import INT, STR, BOOL
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
-from pyMathBitPrecise.bit_utils import mask
-from hwt.hdl.operatorDefs import downtoFn, toFn, AllOps, OpDefinition
 
 
 n = RtlNetlist()
