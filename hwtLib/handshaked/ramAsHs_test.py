@@ -8,6 +8,7 @@ from hwtLib.handshaked.ramAsHs import RamAsHs, RamHsR
 from hwtLib.interfaces.addr_data_hs import AddrDataHs
 from hwtLib.mem.ram import RamSingleClock
 from pycocotb.constants import CLK_PERIOD
+from pycocotb.triggers import Timer
 
 
 class RamWithHs(RamAsHs):
@@ -42,21 +43,41 @@ class RamAsHs_TC(SingleUnitSimTestCase):
         self.runSim(10 * CLK_PERIOD)
         self.assertEmpty(self.u.r.data._ag.data)
 
-    def test_writeAndRead(self):
+    def test_writeAndRead(self, N=10):
         u = self.u
         MAGIC = 87
 
-        u.w._ag.data.extend([(25, MAGIC), (26, MAGIC + 1)])
-        u.r.addr._ag.data.extend([NOP for _ in range(3)] + [25, 26])
-        self.runSim(10 * CLK_PERIOD)
+        u.w._ag.data.extend([(25 + i, MAGIC + i)
+                             for i in range(N)])
+        u.r.addr._ag.data.extend([NOP for _ in range(N+2)] + [25 + i for i in range(N)])
+        self.runSim((10 + 2*N) * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.r.data._ag.data, [MAGIC, MAGIC + 1])
+        self.assertValSequenceEqual(u.r.data._ag.data, [ MAGIC + i for i in range(N)])
+
+    def test_writeAndRead_randomized(self, N=10):
+        u = self.u
+        MAGIC = 87
+        self.randomize(u.w)
+        self.randomize(u.r)
+        
+        u.w._ag.data.extend([(25 + i, MAGIC + i)
+                             for i in range(N)])
+        
+        def read():
+            while u.w._ag.data:
+                yield Timer(3 * CLK_PERIOD)
+            yield Timer(5 * CLK_PERIOD)
+            u.r.addr._ag.data.extend([25 + i for i in range(N)])
+        self.procs.append(read())
+        self.runSim((8 + N) * 3 * CLK_PERIOD)
+
+        self.assertValSequenceEqual(u.r.data._ag.data, [ MAGIC + i for i in range(N)])
 
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(HsJoinFair_2inputs_TC('test_passdata'))
+    #suite.addTest(RamAsHs_TC('test_writeAndRead_randomized'))
     suite.addTest(unittest.makeSuite(RamAsHs_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
