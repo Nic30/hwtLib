@@ -98,7 +98,7 @@ class RamCumulativeMask(RamSingleClock):
         RamSingleClock._declr_ports(self)
 
         self.MASK_W = self.DATA_WIDTH // 8
-        # pading tu make mask width % 8 == 0
+        # padding to make mask width % 8 == 0
         self.MASK_PADDING_W = ceil(self.MASK_W / 8) * 8 - self.MASK_W 
         with self._paramsShared(exclude=({"DATA_WIDTH"}, {})):
             ram = self.ram = RamSingleClock()

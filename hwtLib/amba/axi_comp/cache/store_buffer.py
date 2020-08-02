@@ -90,16 +90,16 @@ class AxiStoreBuffer(Unit):
                     push_en, push_ptr, push_req, push_wait,
                     items: BramPort_withReadMask_withoutClk):
         """
-        * check if this address is already present in cam
+        * check if this address is already present in CAM
         * if it is possible to update data in this buffer merge data
-        * else alocate new data (insert to cam on push_ptr)
-        * handshaked fifo write logic
+        * else allocate new data (insert to CAM on push_ptr)
+        * handshaked FIFO write logic
 
         .. aafig::
 
             +---+  +----------------+  +---------+  +-----------------------------------+
-            | w |->| cam lookup     |->| tmp reg |->| optional item update              |
-            +---+  | tmp reg lookup |  +---------+  | optional cam update and item push |
+            | w |->| CAM lookup     |->| tmp reg |->| optional item update              |
+            +---+  | tmp reg lookup |  +---------+  | optional CAM update and item push |
                    +----------------+               | optional update of tmp reg        |
                                                     +-----------------------------------+ 
 
@@ -144,7 +144,10 @@ class AxiStoreBuffer(Unit):
         ac.out.rd(1)
 
         # cam insert
-        cam_index_onehot = rename_signal(self, w_tmp_out.cam_lookup & item_valid & ~item_in_progress, "cam_index_onehot")
+        cam_index_onehot = rename_signal(
+            self,
+            w_tmp_out.cam_lookup & item_valid & ~item_in_progress,
+            "cam_index_onehot")
         cam_found = rename_signal(self, cam_index_onehot != 0, "cam_found")
         cam_found_index = oneHotToBin(self, cam_index_onehot, "cam_found_index")
         ac.write.addr(push_ptr)
@@ -229,8 +232,8 @@ class AxiStoreBuffer(Unit):
                       pop_req: RtlSignal, pop_wait: RtlSignal,
                       items: BramPort_withReadMask_withoutClk):
         """
-        * if there is a valid item in buffer dispath write request and write data
-        * handshaked fifo read logic
+        * if there is a valid item in buffer dispatch write request and write data
+        * handshaked FIFO read logic
         """
         w_out = self.bus.w
         aw = self.bus.aw
