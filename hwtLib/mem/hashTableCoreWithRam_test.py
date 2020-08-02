@@ -44,8 +44,15 @@ class HashTableCoreWithRamTC(SingleUnitSimTestCase):
             found = d[-1]
             self.assertValEqual(found, 0)
 
-    def test_lookupInsertLookup(self, N=16):
+    def test_lookupInsertLookup(self, N=16, randomized=False):
         u = self.u
+        t_factor = CLK_PERIOD 
+        if randomized:
+            self.randomize(u.io.lookup)
+            self.randomize(u.io.lookupRes)
+            self.randomize(u.io.insert)
+            t_factor *= 3
+
         lookup = u.io.lookup._ag.data
         lookupRes = u.io.lookupRes._ag.data
         getrandbits = self._rand.getrandbits
@@ -62,7 +69,8 @@ class HashTableCoreWithRamTC(SingleUnitSimTestCase):
             # wait for lookup
             _key = getrandbits(8)
             lookup.append(_key)
-            yield Timer(5 * CLK_PERIOD)
+            while not lookupRes:
+                yield Timer(t_factor)
             _hash, key, _, found, occupied = lookupRes.popleft()
             h = get_hash(int(key))
             ae(key, _key, i)
@@ -79,7 +87,7 @@ class HashTableCoreWithRamTC(SingleUnitSimTestCase):
             # insert previous lookup with new data
             u.io.insert._ag.data.append((_hash, key, data, 1))
 
-            yield Timer(5 * CLK_PERIOD)
+            yield Timer(3 * t_factor)
             expected_content[int(_hash)] = (int(key), int(data))
 
             # create another key lookup probably not related to prev insert
@@ -92,10 +100,10 @@ class HashTableCoreWithRamTC(SingleUnitSimTestCase):
                 expected1 = (h, key1, 0, 0, 0)
 
             lookup.extend([key, key1])
-            yield Timer(5 * CLK_PERIOD)
             # hash, key, data, found, occupied
             expected0 = tuple(valuesToInts((_hash, key, data, 1, 1)))
-
+            while len(lookupRes) < 2:
+                yield Timer(t_factor)
             d0, d1 = [lookupRes.popleft() for _ in range(2)]
             self.assertValSequenceEqual([d0, d1],
                                         [expected0, expected1])
@@ -108,7 +116,7 @@ class HashTableCoreWithRamTC(SingleUnitSimTestCase):
                 lookup.append(k)
                 expected.append((h, k, v))
 
-            yield Timer(len(expected_content) * 3 * CLK_PERIOD)
+            yield Timer(len(expected_content) * 3 * t_factor)
             for (h, k, v) in expected:
                 _hash, key, _, found, occupied = lookupRes.popleft()
                 self.assertValEqual(key, k)
@@ -118,14 +126,17 @@ class HashTableCoreWithRamTC(SingleUnitSimTestCase):
 
         self.procs.append(tryInsertNotFoundAndLookupIt())
 
-        self.runSim(N * 30 * CLK_PERIOD)
-        self.assertEmpty(u.io.lookupRes._ag.data)
+        self.runSim(N * 20 * t_factor)
+        self.assertValSequenceEqual(u.io.lookupRes._ag.data, [])
+
+    def test_lookupInsertLookup_randomized(self, N=16):
+        self.test_lookupInsertLookup(N, randomized=True)
 
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(HashTableCoreWithRamTC('test_lookupInEmpty'))
+    #suite.addTest(HashTableCoreWithRamTC('test_lookupInsertLookup_randomized'))
     suite.addTest(unittest.makeSuite(HashTableCoreWithRamTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
