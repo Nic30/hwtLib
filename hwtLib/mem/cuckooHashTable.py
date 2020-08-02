@@ -21,6 +21,7 @@ from hwtLib.mem.cuckooHashTable_intf import CInsertIntf
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf, \
     HashTableIntf
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 
 class ORIGIN_TYPE():
@@ -129,16 +130,21 @@ class CuckooHashTable(HashTableCore):
         addr = self._reg("cleanupAddr",
                          Bits(log2ceil(lastAddr), signed=False),
                          def_val=0)
+        last = addr._eq(lastAddr)
         If(en,
-           addr(addr + 1)
+            If(last,
+                addr(0)
+            ).Else(
+                addr(addr + 1)
+           )
         )
 
-        return addr, addr._eq(lastAddr)
+        return addr, last
 
-    def tables_insert_driver(self, state, insertTargetOH, insertIndex,
-                            stash):
+    def tables_insert_driver(self, state: RtlSignal, insertTargetOH: RtlSignal,
+                             insertIndex: RtlSignal, stash: RtlSignal):
         """
-        :param state: state register of main fsm
+        :param state: state register of main FSM
         :param insertTargetOH: index of table where insert should be performed,
             one hot encoding
         :param insertIndex: address for table where item should be placed
@@ -157,7 +163,7 @@ class CuckooHashTable(HashTableCore):
                            insertTargetOH[i]))
                 ins.item_vld(stash.item_vld)
 
-    def tables_lookupRes_driver(self, resRead, resAck):
+    def tables_lookupRes_driver(self, resRead: RtlSignal, resAck: RtlSignal):
         """
         Control lookupRes interface for each table
         """
@@ -222,7 +228,7 @@ class CuckooHashTable(HashTableCore):
         lookup_in_progress = stash.origin_op._eq(ORIGIN_TYPE.LOOKUP)
         If(isIdle,
             If(self.clean.vld,
-               stash.item_vld(0)
+                stash.item_vld(0)
             ).Elif(delete.vld,
                 stash.key(delete.key),
                 stash.origin_op(ORIGIN_TYPE.DELETE),
@@ -246,11 +252,11 @@ class CuckooHashTable(HashTableCore):
             rd = And(isIdle, *[~x.vld for x in withLowerPrio])
             if intf is lookup:
                 rd = rd & (~lookup_in_progress |  # the stash not loaded yet
-                    table_lookup_ack  # stash will be consummed
+                    table_lookup_ack  # stash will be consumed
                 )
             intf.rd(rd)
 
-    def tables_lookup_driver(self, state, tableKey, lookop_en):
+    def tables_lookup_driver(self, state: RtlSignal, tableKey: RtlSignal, lookop_en: RtlSignal):
         """
         Connect a lookup ports of all tables
         """
@@ -262,7 +268,7 @@ class CuckooHashTable(HashTableCore):
         en = state._eq(fsm_t.lookup) | (state._eq(fsm_t.idle) & lookop_en)
         StreamNode(slaves=[t.lookup for t in self.tables]).sync(en)
 
-    def lookupRes_driver(self, state, lookupFoundOH):
+    def lookupRes_driver(self, state: RtlSignal, lookupFoundOH: RtlSignal):
         """
         If lookup request comes from external interface "lookup" propagate results
         from tables to "lookupRes".
@@ -328,8 +334,8 @@ class CuckooHashTable(HashTableCore):
         insertAck = StreamNode(slaves=[t.insert for t in tables]).ack()
 
         lookup_en, lookup_in_progress = self.lookup_trans_cntr()
-        # lookup is not blocking and does not use fsm bellow
-        # this fsm nadles only lookup for insert/delete
+        # lookup is not blocking and does not use FSM bellow
+        # this FSM handles only lookup for insert/delete
         fsm_t = HEnum("insertFsm_t", ["idle", "cleaning",
                                       "lookup", "lookupResWaitRd",
                                       "lookupResAck"])
@@ -343,7 +349,7 @@ class CuckooHashTable(HashTableCore):
                    (lookup_in_progress._eq(0) & self.insert.vld | self.delete.vld, fsm_t.lookup)
             ).Trans(fsm_t.cleaning,
                 # walk all items and clean it's item_vlds
-                (cleanLast, fsm_t.idle)
+                (cleanAck & cleanLast, fsm_t.idle)
             ).Trans(fsm_t.lookup,
                 # search and resolve in which table item
                 # should be stored
