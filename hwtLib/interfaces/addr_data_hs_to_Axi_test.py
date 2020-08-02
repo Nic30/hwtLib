@@ -8,6 +8,7 @@ from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.interfaces.addr_data_hs_to_Axi import AddrDataHs_to_Axi
 from hwtLib.tools.debug_bus_monitor_ctl import select_bit_range
 from pycocotb.constants import CLK_PERIOD
+from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 
 
 class AddrDataHs_to_Axi_1_to_1_TC(SingleUnitSimTestCase):
@@ -22,14 +23,6 @@ class AddrDataHs_to_Axi_1_to_1_TC(SingleUnitSimTestCase):
         u.M_ADDR_OFFSET = 0
         cls.u = u
         return u
-
-    def randomize_axi(self, axi):
-        ra = self.randomize
-        ra(axi.aw)
-        ra(axi.b)
-        ra(axi.w)
-        ra(axi.ar)
-        ra(axi.r)
 
     def pack_words(self, words, word_width, new_word_width):
         if word_width < new_word_width:
@@ -86,7 +79,7 @@ class AddrDataHs_to_Axi_1_to_1_TC(SingleUnitSimTestCase):
             s_w._ag.data.append((addr, frame))
         
         if randomize:
-            self.randomize_axi(axi)
+            axi_randomize_per_channel(self, axi)
 
         self.runSim(N * FRAME_WORD_CNT * 10 * CLK_PERIOD)
 
@@ -119,7 +112,7 @@ class AddrDataHs_to_Axi_1_to_1_TC(SingleUnitSimTestCase):
             s_r.addr._ag.data.append(addr)
 
         if randomize:
-            self.randomize_axi(axi)
+            axi_randomize_per_channel(self, axi)
 
         self.runSim(N * FRAME_WORD_CNT * 12 * CLK_PERIOD)
 
