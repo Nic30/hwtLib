@@ -6,6 +6,7 @@ from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.cuckooHashTablWithRam import CuckooHashTableWithRam
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
+from hwt.hdl.constants import NOP
 
 
 class CuckooHashTableWithRamTC(SingleUnitSimTestCase):
@@ -47,6 +48,7 @@ class CuckooHashTableWithRamTC(SingleUnitSimTestCase):
                 key, data, item_vld = self.parseItem(t[i].read())
                 if item_vld:
                     key = int(key)
+                    assert key not in d.keys(), key
                     d[key] = data
         return d
 
@@ -86,26 +88,40 @@ class CuckooHashTableWithRamTC(SingleUnitSimTestCase):
         self.runSim(65 * CLK_PERIOD)
         self.checkContains(reference)
 
-    def test_simpleInsertAndLookup(self):
+    def test_simpleInsertAndLookup(self, randomize=False):
         u = self.u
         self.cleanupMemory()
-        reference = {56: 11,
-                     99: 55,
-                     104: 78,
-                     15: 79,
-                     16: 90}
+        reference = {
+            15: 79,
+            16: 90,
+            56: 11,
+            99: 55,
+            104: 78,
+        }
         expected = []
         found = 1
         occupied = 1
+        u.lookup._ag.data.extend([NOP for _ in range(2*len(reference))])
         for k, v in sorted(reference.items(), key=lambda x: x[0]):
             # insert should have higher priority
             u.insert._ag.data.append((k, v))
             u.lookup._ag.data.append(k)
             expected.append((k, v, found, occupied))
-
-        self.runSim(80 * CLK_PERIOD)
+        t = 80
+        if randomize:
+            self.randomize(u.insert)
+            self.randomize(u.lookup)
+            self.randomize(u.lookupRes)
+            self.randomize(u.delete)
+            self.randomize(u.clean)
+            t *= 3
+            
+        self.runSim(t * CLK_PERIOD)
         self.checkContains(reference)
         self.assertValSequenceEqual(u.lookupRes._ag.data, expected)
+
+    def test_simpleInsertAndLookup_randomized(self):
+        self.test_simpleInsertAndLookup(randomize=True)
 
     def test_80p_fill(self):
         u = self.u
