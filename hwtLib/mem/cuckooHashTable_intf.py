@@ -1,10 +1,13 @@
 from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.std import VectSignal, HandshakeSync
+from hwt.interfaces.std import VectSignal, HandshakeSync, Signal
 from hwt.synthesizer.param import Param
 from pycocotb.hdlSimulator import HdlSimulator
 
 
 class CInsertIntf(HandshakeSync):
+    """
+    Cuckoo hash insert interface
+    """
 
     def _config(self):
         self.KEY_WIDTH = Param(8)
@@ -18,6 +21,23 @@ class CInsertIntf(HandshakeSync):
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = CInsertIntfAgent(sim, self)
+
+
+class CInsertResIntf(CInsertIntf):
+    """
+    An interface with an result of insert operation.
+    
+    :ivar pop: signal if 1 the key and data on this interface contains
+        the item which had to be removed during insert because the insertion
+        limit was exceeded
+    """
+
+    def _declr(self):
+        self.pop = Signal()
+        CInsertIntf._declr(self)
+
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = CInsertResIntfAgent(sim, self)
 
 
 class CInsertIntfAgent(HandshakedAgent):
@@ -44,6 +64,38 @@ class CInsertIntfAgent(HandshakedAgent):
                 d = None
             else:
                 k, d = data
-            return intf.key.write(k), intf.data.write(d)
+            intf.key.write(k)
+            intf.data.write(d)
         else:
-            return intf.key.write(data)
+            intf.key.write(data)
+
+
+class CInsertResIntfAgent(CInsertIntfAgent):
+    """
+    Agent for CInsertResIntf interface
+    """
+
+    def get_data(self):
+        intf = self.intf
+        if self._hasData:
+            return intf.pop.read(), intf.key.read(), intf.data.read()
+        else:
+            return intf.pop.read(), intf.key.read()
+
+    def set_data(self, data):
+        intf = self.intf
+        if self._hasData:
+            if data is None:
+                p = None
+                k = None
+                d = None
+            else:
+                p, k, d = data
+            intf.pop.write(p)
+            intf.key.write(k)
+            intf.data.write(d)
+        else:
+            intf.pop.write(p)
+            intf.key.write(data)
+    
+    

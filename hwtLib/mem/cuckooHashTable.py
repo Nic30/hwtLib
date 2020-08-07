@@ -17,7 +17,7 @@ from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.handshaked.streamNode import StreamNode
-from hwtLib.mem.cuckooHashTable_intf import CInsertIntf
+from hwtLib.mem.cuckooHashTable_intf import CInsertIntf, CInsertResIntf
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf, \
     HashTableIntf
@@ -47,14 +47,14 @@ class CuckooHashTable(HashTableCore):
     insert time: O(inf)
 
     .. aafig::
-                    +-------------------------------------------+
-                    |                                           |
-                    |    CuckooHashTable                        |
-        insert      |                                lookupRes  |
-        +--------------------------------------+  +------+      |
-                    |                          |  |      |      |
-                    |                          v  v      |      | lookupRes
-        lookup      |                        +-------+   +----------->
+                    +-------------------------------------------+ insertRes
+                    |                            +-------------------->
+                    |    CuckooHashTable         |              |
+        insert      |                            |   lookupRes  |
+        +--------------------------------------+ |  +----+      |
+                    |                          | |  |    |      |
+                    |                          v |  v    |      | lookupRes
+        lookup      |                        +---+---+   +----------->
         +----------------------------------->|       |   |      |
                     |  +-------------------->| stash |   |      |
                     |  |                +----+       |   |      |
@@ -83,6 +83,7 @@ class CuckooHashTable(HashTableCore):
         self.LOOKUP_KEY = Param(False)
         self.TABLE_CNT = Param(2)
         self.MAX_LOOKUP_OVERLAP = Param(16)
+        self.MAX_REINSERT = Param(16)
 
     def _declr_outer_io(self):
         addClkRstn(self)
@@ -91,6 +92,7 @@ class CuckooHashTable(HashTableCore):
 
         with self._paramsShared():
             self.insert = CInsertIntf()
+            self.insertRes = CInsertResIntf()._m()
             self.lookup = LookupKeyIntf()
             self.lookupRes = LookupResultIntf()._m()
             self.lookupRes.HASH_WIDTH = self.HASH_WIDTH
@@ -145,7 +147,7 @@ class CuckooHashTable(HashTableCore):
         :param insertTargetOH: index of table where insert should be performed,
             one hot encoding
         :param insertIndex: address for table where item should be placed
-        :param stash: stash register
+        :param stash: stash register with data for insert/lookup/delete from table
         """
         fsm_t = state._dtype
         for i, t in enumerate(self.tables):
@@ -160,46 +162,49 @@ class CuckooHashTable(HashTableCore):
                        insertTargetOH[i]))
             ins.item_vld(stash.item_vld)
 
-    def tables_lookupRes_driver(self, resRead: RtlSignal, resAck: RtlSignal):
+    def tables_lookupRes_resolver(self, insertResRead: RtlSignal):
         """
         Control lookupRes interface for each table
         """
         tables = self.tables
         # one hot encoded index where item should be stored (where was found
         # or where is place)
-        targetOH = self._reg("targetOH", Bits(self.TABLE_CNT, force_vector=True))
+        insertTargetOH = self._reg("insertTargetOH", Bits(self.TABLE_CNT, force_vector=True))
 
         res = [t.lookupRes for t in tables]
-        # synchronize all lookupRes from all tables
-        StreamNode(masters=res).sync(resAck)
-
         insertFinal = self._reg("insertFinal")
         # select empty space or victim which which current insert item
         # should be swapped with
-        lookupResAck = StreamNode(masters=[t.lookupRes for t in tables]).ack()
+        lookupResVld = StreamNode(masters=res).ack()
         lookupFoundOH = [t.lookupRes.found for t in tables]
         isEmptyOH = [~t.lookupRes.occupied for t in tables]
-        _insertFinal = Or(*lookupFoundOH, *isEmptyOH)
 
-        If(resRead & lookupResAck,
+        If(insertResRead & lookupResVld,
+            # resolve in which table the item should be stored
             If(Or(*lookupFoundOH),
-                targetOH(Concat(*reversed(lookupFoundOH)))
+                # an item found in some table, set target to this table
+                insertTargetOH(Concat(*reversed(lookupFoundOH)))
             ).Else(
+                # set target to first table with an empty item
                 SwitchLogic(
-                    [(isEmpty, targetOH(1 << i))
+                    [(isEmpty, insertTargetOH(1 << i))
                      for i, isEmpty in enumerate(isEmptyOH)],
-                    default=If(targetOH != 0,
-                                targetOH(ror(targetOH, 1))
+                    # if there is no empty place in any table, swap
+                    # item with an item from next table or last table
+                    # if this is a first insert
+                    default=If(insertTargetOH != 0,
+                                insertTargetOH(ror(insertTargetOH, 1))
                             ).Else(
-                                targetOH(1 << (self.TABLE_CNT - 1))
+                                insertTargetOH(1 << (self.TABLE_CNT - 1))
                             )
                 )
             ),
-            insertFinal(_insertFinal)
+            # final if the item was already somewhere or there is an empty place in some table 
+            insertFinal(Or(*lookupFoundOH, *isEmptyOH))
         )
-        return lookupResAck, insertFinal, lookupFoundOH, targetOH
+        return lookupResVld, insertFinal, lookupFoundOH, insertTargetOH
 
-    def insert_addr_select(self, targetOH, state, cleanAddr):
+    def insert_addr_select(self, insertTargetOH, state, cleanAddr):
         """
         Select a insert address
         """
@@ -207,14 +212,14 @@ class CuckooHashTable(HashTableCore):
         If(state._eq(state._dtype.cleaning),
             insertIndex(cleanAddr)
         ).Else(
-            SwitchLogic([(targetOH[i],
+            SwitchLogic([(insertTargetOH[i],
                           insertIndex(t.lookupRes.hash))
                          for i, t in enumerate(self.tables)],
                         default=insertIndex(None))
         )
         return insertIndex
 
-    def stash_load(self, isIdle, stash, lookup_not_in_progress, another_lookup_possible):
+    def stash_load(self, isIdle, lookupResNext, insertTargetOH, stash, lookup_not_in_progress, another_lookup_possible):
         """
         load a stash register from lookup/insert/delete interface
         """
@@ -223,6 +228,7 @@ class CuckooHashTable(HashTableCore):
         delete = self.delete
         table_lookup_ack = StreamNode(slaves=[t.lookup for t in self.tables]).ack()
         lookup_currently_executed = stash.origin_op._eq(ORIGIN_TYPE.LOOKUP)
+        assert self.MAX_REINSERT > 0, self.MAX_REINSERT
         If(isIdle,
             If(lookup_not_in_progress & self.clean.vld,
                 stash.item_vld(0)
@@ -234,6 +240,7 @@ class CuckooHashTable(HashTableCore):
                 stash.origin_op(ORIGIN_TYPE.INSERT),
                 stash.key(insert.key),
                 stash.data(insert.data),
+                stash.reinsert_cntr(self.MAX_REINSERT - 1),
                 stash.item_vld(1),
             ).Elif(lookup.vld & lookup.rd,
                 stash.origin_op(ORIGIN_TYPE.LOOKUP),
@@ -242,6 +249,28 @@ class CuckooHashTable(HashTableCore):
                 stash.origin_op(ORIGIN_TYPE.DELETE),  # need to set something else than lookup
                 stash.key(None),
             )
+        ).Elif(lookupResNext,
+            SwitchLogic([
+                (insertTargetOH[i],
+                    [
+                        # load stash from item found previously
+                        # :note: happens in same time as write to table
+                        #     so the stash and item in table is swapped
+                        stash.key(t.lookupRes.key),
+                        stash.data(t.lookupRes.data),
+                        stash.reinsert_cntr(stash.reinsert_cntr - 1),
+                        stash.item_vld(t.lookupRes.occupied),
+                    ]
+                  )
+                  for i, t in enumerate(self.tables)
+                ],
+                default=[
+                    stash.origin_op(None),
+                    stash.key(None),
+                    stash.data(None),
+                    stash.reinsert_cntr(None),
+                    stash.item_vld(None),
+                ])
         )
         cmd_priority = [self.clean, self.delete, self.insert, lookup]
         for i, intf in enumerate(cmd_priority):
@@ -256,7 +285,7 @@ class CuckooHashTable(HashTableCore):
 
             intf.rd(rd)
 
-    def tables_lookup_driver(self, state: RtlSignal, tableKey: RtlSignal, lookop_en: RtlSignal):
+    def tables_lookup_driver(self, state: RtlSignal, tableKey: RtlSignal, lookup_en: RtlSignal):
         """
         Connect a lookup ports of all tables
         """
@@ -264,9 +293,7 @@ class CuckooHashTable(HashTableCore):
             t.lookup.key(tableKey)
 
         # activate lookup only in lookup state (for insert/delete) or if idle and processing lookups
-        fsm_t = state._dtype
-        en = state._eq(fsm_t.lookup) | (state._eq(fsm_t.idle) & lookop_en)
-        StreamNode(slaves=[t.lookup for t in self.tables]).sync(en)
+        StreamNode(slaves=[t.lookup for t in self.tables]).sync(lookup_en)
 
     def lookupRes_driver(self, state: RtlSignal, lookupFoundOH: RtlSignal):
         """
@@ -275,8 +302,8 @@ class CuckooHashTable(HashTableCore):
         """
         fsm_t = state._dtype
         lookupRes = self.lookupRes
-        lookupResAck = StreamNode(masters=[t.lookupRes for t in self.tables]).ack()
-        lookupRes.vld(state._eq(fsm_t.idle) & lookupResAck)
+        lookupResVld = StreamNode(masters=[t.lookupRes for t in self.tables]).ack()
+        lookupRes.vld(state._eq(fsm_t.idle) & lookupResVld)
 
         SwitchLogic([(lookupFoundOH[i],
                       connect(t.lookupRes,
@@ -308,6 +335,19 @@ class CuckooHashTable(HashTableCore):
         )
         return lookup_in_progress
 
+    def insertRes_driver(self, state, stash, insertAck, insertFinal, isDelete):
+        fsm_t = state._dtype
+        res = self.insertRes
+        res.vld(
+            (state._eq(fsm_t.lookup) & stash.reinsert_cntr._eq(0)) | 
+            (state._eq(fsm_t.lookupResAck) & insertAck & insertFinal & ~isDelete)
+        )
+        If(state._eq(fsm_t.lookup),
+           res.key(stash.key),
+           res.data(stash.data),
+           res.pop(stash.reinsert_cntr._eq(0)),
+        )
+
     def _impl(self):
         propagateClkRstn(self)
 
@@ -315,6 +355,7 @@ class CuckooHashTable(HashTableCore):
         stash_t = HStruct(
             (Bits(self.KEY_WIDTH), "key"),
             (Bits(self.DATA_WIDTH), "data"),
+            (Bits(log2ceil(self.MAX_REINSERT)), "reinsert_cntr"),
             (BIT, "item_vld"),
             (ORIGIN_TYPE, "origin_op"),
         )
@@ -323,12 +364,10 @@ class CuckooHashTable(HashTableCore):
         cleanAck = self._sig("cleanAck")
         cleanAddr, cleanLast = self.clean_addr_iterator(cleanAck)
         lookupResRead = self._sig("lookupResRead")
-        lookupResNext = self._sig("lookupResNext")
-        (lookupResAck,
+        (lookupResVld,
          insertFinal,
-         lookupFound,
-         targetOH) = self.tables_lookupRes_driver(lookupResRead,
-                                                  lookupResNext)
+         lookupFoundOH,
+         insertTargetOH) = self.tables_lookupRes_resolver(lookupResRead)
         tables = self.tables
         lookupAck = StreamNode(slaves=[t.lookup for t in tables]).ack()
         insertAck = StreamNode(slaves=[t.insert for t in tables]).ack()
@@ -337,13 +376,12 @@ class CuckooHashTable(HashTableCore):
         lookup_not_in_progress = rename_signal(self,
             lookup_in_progress._eq(0) & (stash.origin_op != ORIGIN_TYPE.LOOKUP),
             "lookup_not_in_progress")
-        
+        isDelete = stash.origin_op._eq(ORIGIN_TYPE.DELETE)
         # lookup is not blocking and does not use FSM bellow
         # this FSM handles only lookup for insert/delete
         fsm_t = HEnum("insertFsm_t", ["idle", "cleaning",
                                       "lookup", "lookupResWaitRd",
                                       "lookupResAck"])
-
         state = FsmBuilder(self, fsm_t, "insertFsm")\
             .Trans(fsm_t.idle,
                    # wait before lookup_in_progress reaches 0
@@ -353,43 +391,59 @@ class CuckooHashTable(HashTableCore):
                    (lookup_not_in_progress & (self.insert.vld | self.delete.vld), fsm_t.lookup)
             ).Trans(fsm_t.cleaning,
                 # walk all items and clean it's item_vlds
-                (cleanAck & cleanLast, fsm_t.idle)
+                (insertAck & cleanLast, fsm_t.idle),
             ).Trans(fsm_t.lookup,
+                # insert timeout
+                (stash.reinsert_cntr._eq(0) & self.insertRes.rd, fsm_t.idle),
                 # search and resolve in which table item
                 # should be stored
-                (lookupAck, fsm_t.lookupResWaitRd)
+                ((stash.reinsert_cntr != 0) & lookupAck, fsm_t.lookupResWaitRd)
             ).Trans(fsm_t.lookupResWaitRd,
                 # process result of lookup and
-                # write data stash to tables if
-                # required
-                (lookupResAck, fsm_t.lookupResAck)
+                (lookupResVld, fsm_t.lookupResAck)
             ).Trans(fsm_t.lookupResAck,
                 # process lookupRes, if we are going to insert on place where
-                # valid item is, it has to
-                # be stored
-                (stash.origin_op._eq(ORIGIN_TYPE.DELETE), fsm_t.idle),
+                # valid item is, this item has to be stored to stash
+                (isDelete, fsm_t.idle),
                 # insert into specified table
-                (insertAck & insertFinal, fsm_t.idle),
+                (insertAck & insertFinal & (isDelete | self.insertRes.rd), fsm_t.idle),
+                # insert and swap with some valid item from the table
+                # which we need to store somewhere as well
                 (insertAck & ~insertFinal, fsm_t.lookup)
             ).stateReg
-
-        cleanAck(StreamNode(slaves=[t.insert for t in tables]).ack() & 
-                 state._eq(fsm_t.cleaning))
+        
+        cleanAck(insertAck & state._eq(fsm_t.cleaning))
         lookupResRead(state._eq(fsm_t.lookupResWaitRd))
-        lookupResNext(state._eq(fsm_t.lookupResAck) | (state._eq(fsm_t.idle) & self.lookupRes.rd))
+        lookupResNext = rename_signal(
+            self,
+            (state._eq(fsm_t.idle) & self.lookupRes.rd) | (state._eq(fsm_t.lookupResAck) & (state.next != fsm_t.lookupResAck)),
+            "lookupResNext")
+        # synchronize all lookupRes from all tables
+        StreamNode(masters=[t.lookupRes for t in tables]).sync(lookupResNext)
 
-        isIdle = state._eq(fsm_t.idle)
         self.stash_load(
-            isIdle, stash,
+            state._eq(fsm_t.idle),
+            lookupResNext,
+            insertTargetOH,
+            stash,
             lookup_not_in_progress,
             lookup_in_progress != self.MAX_LOOKUP_OVERLAP - 1)
-        insertIndex = self.insert_addr_select(targetOH, state, cleanAddr)
-        self.tables_insert_driver(state, targetOH, insertIndex, stash)
-        self.lookupRes_driver(state, lookupFound)
-        self.tables_lookup_driver(state, stash.key, stash.origin_op._eq(ORIGIN_TYPE.LOOKUP))
+        insertIndex = self.insert_addr_select(insertTargetOH, state, cleanAddr)
+        self.insertRes_driver(state, stash, insertAck, insertFinal, isDelete)
+        self.tables_insert_driver(state, insertTargetOH, insertIndex, stash)
+        self.lookupRes_driver(state, lookupFoundOH)
+        
+        lookup_en =rename_signal(
+            self, 
+            (state._eq(fsm_t.lookup) & (stash.reinsert_cntr != 0)) |
+            (state._eq(fsm_t.idle) & stash.origin_op._eq(ORIGIN_TYPE.LOOKUP)),
+            "lookup_en"
+        )
+        self.tables_lookup_driver(state, stash.key, lookup_en)
 
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     u = CuckooHashTable()
+    u.TABLE_CNT = 1
     print(to_rtl_str(u))
