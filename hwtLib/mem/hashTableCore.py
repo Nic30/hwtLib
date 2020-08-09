@@ -152,7 +152,7 @@ class HashTableCore(Unit):
             res.hash(origHashOut.data)
 
         if self.LOOKUP_KEY:
-            res.key(origKey.key)
+            res.key(key)
 
         if self.LOOKUP_ID_WIDTH:
             res.lookupId(origKey.lookupId)

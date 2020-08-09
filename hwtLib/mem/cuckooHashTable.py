@@ -3,8 +3,6 @@
 
 from typing import List
 
-from pyMathBitPrecise.bit_utils import mask
-
 from hwt.code import log2ceil, FsmBuilder, And, Or, If, ror, SwitchLogic, \
     connect, Concat
 from hwt.hdl.types.bits import Bits
@@ -48,13 +46,13 @@ class CuckooHashTable(HashTableCore):
 
     .. aafig::
                     +-------------------------------------------+ insertRes
-                    |                            +-------------------->
+                    |                            +---------------------->
                     |    CuckooHashTable         |              |
         insert      |                            |   lookupRes  |
         +--------------------------------------+ |  +----+      |
                     |                          | |  |    |      |
                     |                          v |  v    |      | lookupRes
-        lookup      |                        +---+---+   +----------->
+        lookup      |                        +---+---+   +-------------->
         +----------------------------------->|       |   |      |
                     |  +-------------------->| stash |   |      |
                     |  |                +----+       |   |      |
@@ -83,7 +81,7 @@ class CuckooHashTable(HashTableCore):
         self.LOOKUP_KEY = Param(False)
         self.TABLE_CNT = Param(2)
         self.MAX_LOOKUP_OVERLAP = Param(16)
-        self.MAX_REINSERT = Param(16)
+        self.MAX_REINSERT = Param(15)
 
     def _declr_outer_io(self):
         addClkRstn(self)
@@ -110,6 +108,8 @@ class CuckooHashTable(HashTableCore):
             self.tables = HObjList(
                 HashTableIntf()._m()
                 for _ in range(self.TABLE_CNT))
+            for t in self.tables:
+                t.LOOKUP_KEY = True
 
             for t in self.tables:
                 t.ITEMS_CNT = self.TABLE_SIZE // self.TABLE_CNT
@@ -231,16 +231,17 @@ class CuckooHashTable(HashTableCore):
         assert self.MAX_REINSERT > 0, self.MAX_REINSERT
         If(isIdle,
             If(lookup_not_in_progress & self.clean.vld,
+                stash.origin_op(ORIGIN_TYPE.DELETE),
                 stash.item_vld(0)
             ).Elif(lookup_not_in_progress & delete.vld,
-                stash.key(delete.key),
                 stash.origin_op(ORIGIN_TYPE.DELETE),
+                stash.key(delete.key),
                 stash.item_vld(0),
             ).Elif(lookup_not_in_progress & insert.vld,
                 stash.origin_op(ORIGIN_TYPE.INSERT),
                 stash.key(insert.key),
                 stash.data(insert.data),
-                stash.reinsert_cntr(self.MAX_REINSERT - 1),
+                stash.reinsert_cntr(self.MAX_REINSERT),
                 stash.item_vld(1),
             ).Elif(lookup.vld & lookup.rd,
                 stash.origin_op(ORIGIN_TYPE.LOOKUP),
@@ -265,7 +266,7 @@ class CuckooHashTable(HashTableCore):
                   for i, t in enumerate(self.tables)
                 ],
                 default=[
-                    stash.origin_op(None),
+                    stash.origin_op(ORIGIN_TYPE.DELETE),
                     stash.key(None),
                     stash.data(None),
                     stash.reinsert_cntr(None),
@@ -339,14 +340,18 @@ class CuckooHashTable(HashTableCore):
         fsm_t = state._dtype
         res = self.insertRes
         res.vld(
-            (state._eq(fsm_t.lookup) & stash.reinsert_cntr._eq(0)) | 
+            (state._eq(fsm_t.lookup) & stash.origin_op._eq(ORIGIN_TYPE.INSERT) & stash.reinsert_cntr._eq(0)) | 
             (state._eq(fsm_t.lookupResAck) & insertAck & insertFinal & ~isDelete)
         )
-        If(state._eq(fsm_t.lookup),
-           res.key(stash.key),
-           res.data(stash.data),
-           res.pop(stash.reinsert_cntr._eq(0)),
-        )
+        #If(state._eq(fsm_t.lookup),
+        res.key(stash.key)
+        res.data(stash.data)
+        res.pop(stash.reinsert_cntr._eq(0))
+        #).Else(
+        #   res.key(None),
+        #   res.data(None),
+        #   res.pop(None),
+        #)
 
     def _impl(self):
         propagateClkRstn(self)
@@ -355,7 +360,7 @@ class CuckooHashTable(HashTableCore):
         stash_t = HStruct(
             (Bits(self.KEY_WIDTH), "key"),
             (Bits(self.DATA_WIDTH), "data"),
-            (Bits(log2ceil(self.MAX_REINSERT)), "reinsert_cntr"),
+            (Bits(log2ceil(self.MAX_REINSERT + 1)), "reinsert_cntr"),
             (BIT, "item_vld"),
             (ORIGIN_TYPE, "origin_op"),
         )
@@ -377,6 +382,7 @@ class CuckooHashTable(HashTableCore):
             lookup_in_progress._eq(0) & (stash.origin_op != ORIGIN_TYPE.LOOKUP),
             "lookup_not_in_progress")
         isDelete = stash.origin_op._eq(ORIGIN_TYPE.DELETE)
+        isInsert = stash.origin_op._eq(ORIGIN_TYPE.INSERT)
         # lookup is not blocking and does not use FSM bellow
         # this FSM handles only lookup for insert/delete
         fsm_t = HEnum("insertFsm_t", ["idle", "cleaning",
@@ -394,10 +400,10 @@ class CuckooHashTable(HashTableCore):
                 (insertAck & cleanLast, fsm_t.idle),
             ).Trans(fsm_t.lookup,
                 # insert timeout
-                (stash.reinsert_cntr._eq(0) & self.insertRes.rd, fsm_t.idle),
+                (stash.reinsert_cntr._eq(0) & isInsert & self.insertRes.rd, fsm_t.idle),
                 # search and resolve in which table item
                 # should be stored
-                ((stash.reinsert_cntr != 0) & lookupAck, fsm_t.lookupResWaitRd)
+                (((stash.reinsert_cntr != 0) | ~isInsert) & lookupAck, fsm_t.lookupResWaitRd)
             ).Trans(fsm_t.lookupResWaitRd,
                 # process result of lookup and
                 (lookupResVld, fsm_t.lookupResAck)
@@ -435,7 +441,7 @@ class CuckooHashTable(HashTableCore):
         
         lookup_en =rename_signal(
             self, 
-            (state._eq(fsm_t.lookup) & (stash.reinsert_cntr != 0)) |
+            (state._eq(fsm_t.lookup) & ((stash.reinsert_cntr != 0) | isDelete)) |
             (state._eq(fsm_t.idle) & stash.origin_op._eq(ORIGIN_TYPE.LOOKUP)),
             "lookup_en"
         )
@@ -445,5 +451,5 @@ class CuckooHashTable(HashTableCore):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     u = CuckooHashTable()
-    u.TABLE_CNT = 1
+    u.TABLE_CNT = 2
     print(to_rtl_str(u))

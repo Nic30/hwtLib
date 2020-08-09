@@ -38,6 +38,5 @@ def _example_CuckooHashTableWithRam():
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
-    # u = CuckooHashTable()
     u = _example_CuckooHashTableWithRam()
     print(to_rtl_str(u))

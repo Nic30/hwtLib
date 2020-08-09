@@ -67,41 +67,45 @@ class HashTableCoreWithRamTC(SingleUnitSimTestCase):
         def insertAndCheck(i):
             ae = self.assertValEqual
             # wait for lookup
-            _key = getrandbits(8)
-            lookup.append(_key)
+            key0 = getrandbits(8)
+            lookup.append(key0)
             while not lookupRes:
                 yield Timer(t_factor)
-            _hash, key, _, found, occupied = lookupRes.popleft()
-            h = get_hash(int(key))
-            ae(key, _key, i)
-            ae(_hash, h, i)
+            hash0, key, _, found, occupied = lookupRes.popleft()
+            hash0 = int(hash0)
+            h =  get_hash(key0)
+            if occupied:
+                h2 = get_hash(int(key))
+                ae(h2, h, (i, key0, key))
+                ae(hash0, h, (i, key0, key))
+
             v = expected_content.get(h, None)
             if v is None:
                 ae(found, 0, i)
                 ae(occupied, 0, i)
             else:
-                ae(found, v[0] == _key, i)
+                ae(found, v[0] == key0, i)
                 ae(occupied, 1, i)
 
             data = getrandbits(8)
             # insert previous lookup with new data
-            u.io.insert._ag.data.append((_hash, key, data, 1))
+            u.io.insert._ag.data.append((hash0, key0, data, 1))
 
             yield Timer(3 * t_factor)
-            expected_content[int(_hash)] = (int(key), int(data))
+            expected_content[hash0] = (key0, data)
 
             # create another key lookup probably not related to prev insert
             key1 = getrandbits(16)
             h = get_hash(key1)
             v = expected_content.get(h, None)
             if v is not None:
-                expected1 = (h, key1, v[1], int(v[0] == key1), 1)
+                expected1 = (h, v[0], v[1], int(v[0] == key1), 1)
             else:
-                expected1 = (h, key1, 0, 0, 0)
+                expected1 = (h, 0, 0, 0, 0)
 
-            lookup.extend([key, key1])
+            lookup.extend([key0, key1])
             # hash, key, data, found, occupied
-            expected0 = tuple(valuesToInts((_hash, key, data, 1, 1)))
+            expected0 = tuple(valuesToInts((hash0, key0, data, 1, 1)))
             while len(lookupRes) < 2:
                 yield Timer(t_factor)
             d0, d1 = [lookupRes.popleft() for _ in range(2)]

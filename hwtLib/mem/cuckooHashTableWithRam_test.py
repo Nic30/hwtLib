@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from copy import copy
+
+from hwt.hdl.constants import NOP
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwtLib.logic.crcPoly import CRC_32, CRC_32C
-from hwtLib.mem.cuckooHashTablWithRam import CuckooHashTableWithRam
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
-from hwt.hdl.constants import NOP
-from copy import copy
+
+from hwtLib.logic.crcPoly import CRC_32, CRC_32C
+from hwtLib.mem.cuckooHashTablWithRam import CuckooHashTableWithRam
 
 
 class CuckooHashTableWithRam_common_TC(SingleUnitSimTestCase):
@@ -39,12 +41,12 @@ class CuckooHashTableWithRam_common_TC(SingleUnitSimTestCase):
         reference = copy(reference)
         if data is None:
             data = self.hashTableAsDict()
-
-        for key, d in data.items():
-            self.assertIn(key, reference)
-            self.assertValEqual(d, reference[key])
-            del reference[key]
-        self.assertEqual(reference, {})
+        self.assertDictEqual({int(k): int(v) for k, v in data.items() }, reference)
+        #for key, d in data.items():
+        #    self.assertIn(key, reference)
+        #    self.assertValEqual(d, reference[key])
+        #    del reference[key]
+        #self.assertEqual(reference, {})
 
     def parseItem(self, item):
         """
@@ -89,7 +91,7 @@ class CuckooHashTableWithRamTC(CuckooHashTableWithRam_common_TC):
         reference = {
             56: 11,
             99: 55,
-            104: 78,
+            105: 78,
             15: 79,
             16: 90
         }
@@ -104,8 +106,9 @@ class CuckooHashTableWithRamTC(CuckooHashTableWithRam_common_TC):
         self.procs.append(planInsert())
 
         self.runSim(65 * CLK_PERIOD)
-        self.assertValSequenceEqual([d[0] for d in u.insertRes._ag.data],
-                            [0 for _ in range(len(reference))])
+        self.assertValSequenceEqual(
+            [d[0] for d in u.insertRes._ag.data],
+            [0 for _ in range(len(reference))])
         self.checkContains(reference)
 
     def test_simpleInsertAndLookup(self, randomize=False):
@@ -116,7 +119,7 @@ class CuckooHashTableWithRamTC(CuckooHashTableWithRam_common_TC):
             16: 90,
             56: 11,
             99: 55,
-            104: 78,
+            105: 78,
         }
         expected = []
         found = 1
@@ -167,7 +170,7 @@ class CuckooHashTableWithRamTC(CuckooHashTableWithRam_common_TC):
             16: 90,
             56: 11,
             99: 55,
-            104: 78,
+            105: 78,
         }
         toDelete = [15, 99]
 
@@ -195,6 +198,7 @@ class CuckooHashTableWithRam_1TableTC(CuckooHashTableWithRamTC):
         u.DATA_WIDTH = 8
         u.LOOKUP_KEY = True
         u.TABLE_SIZE = 32
+        u.MAX_REINSERT = 1
         return u
 
 
@@ -215,7 +219,6 @@ class CuckooHashTableWithRam_2Table_collisionTC(CuckooHashTableWithRam_common_TC
         self.runSim(50 * CLK_PERIOD)
         self.assertEmpty(self.u.lookupRes._ag.data)
 
-    #def pop_
     def test_insert_coliding(self, N=10, randomized=False):
         if randomized:
             self.randomize_all()
@@ -230,24 +233,35 @@ class CuckooHashTableWithRam_2Table_collisionTC(CuckooHashTableWithRam_common_TC
         if randomized:
             t *= 3
 
-        self.runSim((7 * t + 10) * CLK_PERIOD)
+        self.runSim((12 * t + 10) * CLK_PERIOD)
         self.assertEmpty(u.lookupRes._ag.data)
 
-        print(self.hashTableAsDict())
-        print(u.insertRes._ag.data)
-        self.checkContains(reference)
+        table = self.hashTableAsDict()
+        self.assertGreater(len(table), 0)
+        self.assertEqual(len(u.insertRes._ag.data), N)
+        for pop, key, data in u.insertRes._ag.data:
+            if pop:
+                key = int(key)
+                self.assertNotIn(key, table)
+                table[key] = data
+
+        self.checkContains(reference, table)
+
+    def test_insert_coliding_randomized(self, N=10):
+        self.test_insert_coliding(N=N, randomized=True)
 
 
 CuckooHashTableWithRamTCs = [
     CuckooHashTableWithRamTC,
     CuckooHashTableWithRam_1TableTC,
-    #CuckooHashTableWithRam_2Table_collisionTC,
+    CuckooHashTableWithRam_2Table_collisionTC,
 ]
+
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(CuckooHashTableWithRam_2Table_collisionTC('test_insert_coliding'))
+    # suite.addTest(CuckooHashTableWithRam_2Table_collisionTC('test_insert_coliding'))
     for tc in CuckooHashTableWithRamTCs:
         suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)
