@@ -103,17 +103,10 @@ class CuckooHashTable(HashTableCore):
 
     def _declr(self):
         self._declr_outer_io()
-
-        with self._paramsShared():
-            self.tables = HObjList(
-                HashTableIntf()._m()
-                for _ in range(self.TABLE_CNT))
-            for t in self.tables:
-                t.LOOKUP_KEY = True
-
-            for t in self.tables:
-                t.ITEMS_CNT = self.TABLE_SIZE // self.TABLE_CNT
-                t.LOOKUP_HASH = True
+        self.tables = HObjList(
+            HashTableIntf()._m()
+            for _ in range(self.TABLE_CNT))
+        self.configure_tables(self.tables)
 
     def configure_tables(self, tables: List[HashTableCore]):
         """
@@ -123,6 +116,7 @@ class CuckooHashTable(HashTableCore):
             t._updateParamsFrom(self)
             t.ITEMS_CNT = self.TABLE_SIZE // self.TABLE_CNT
             t.LOOKUP_HASH = True
+            t.LOOKUP_KEY = True
         
     def clean_addr_iterator(self, en):
         lastAddr = self.TABLE_SIZE // self.TABLE_CNT - 1
