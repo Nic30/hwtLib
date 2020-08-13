@@ -29,10 +29,14 @@ class AxiSBuilder(AbstractStreamBuilder):
 
     def resize(self, newDataWidth):
         """
-        Change datawidth of axi stream
+        Change data width of axi stream
         """
         def set_OUT_DATA_WIDTH(u):
-            u.OUT_DATA_WIDTH = newDataWidth
+            if self.master_to_slave:
+                u.OUT_DATA_WIDTH = newDataWidth
+            else:
+                u.DATA_WIDTH = newDataWidth
+                u.OUT_DATA_WIDTH = self.end.DATA_WIDTH
         return self._genericInstance(AxiS_resizer,
                                      "resize",
                                      set_OUT_DATA_WIDTH)
@@ -56,6 +60,7 @@ class AxiSBuilder(AbstractStreamBuilder):
         :param typeToParse: structuralized type to parse
         :return: interface with parsed data (StructIntf for HStruct f.e.)
         """
+        assert self.master_to_slave
         u = AxiS_frameParser(typeToParse)
         u._updateParamsFrom(self.end)
 
@@ -77,13 +82,12 @@ class AxiSBuilder(AbstractStreamBuilder):
         :note: you can set endianity and others in setupFn
 
         :param parent: unit where generated units should be instantiated
-        :param typeToForge: instance of htype used as template for frame to assembly
+        :param typeToForge: instance of HType used as template for frame to assembly
         :param intfCls: class for output interface
         :param setupFn: setup function for output interface
         :param name: name prefix for generated units
         :return: tuple (builder, interface with deparsed frame)
         """
-
         u = AxiS_frameDeparser(typeToForge)
         if setupFn:
             setupFn(u)
@@ -103,7 +107,7 @@ class AxiSBuilder(AbstractStreamBuilder):
 
     def buff_drop(self, items, export_size=False, export_space=False):
         """
-        Instanciate a FIFO buffer with externally controlled frame drop functionality
+        Instantiate a FIFO buffer with externally controlled frame drop functionality
         (use "dataIn_discard" signal)
         """
         def set_params(u: AxiSFifoDrop):

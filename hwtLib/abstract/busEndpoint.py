@@ -1,9 +1,13 @@
 from builtins import isinstance
+from copy import copy
+from math import ceil
 from typing import Union, Tuple
 
 from hwt.code import log2ceil, Switch, Concat
 from hwt.hdl.constants import INTF_DIRECTION
+from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
+from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.hdlType import HdlType
@@ -13,17 +17,14 @@ from hwt.interfaces.intf_map import IntfMap_get_by_field_path, IntfMap, \
     walkStructIntfAndIntfMap, HTypeFromIntfMap
 from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
+from hwt.interfaces.unionIntf import UnionSink, UnionSource
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from hwt.hdl.frameTmpl import FrameTmpl
-from math import ceil
-from hwt.interfaces.unionIntf import UnionSink, UnionSource
-from hwt.hdl.typeShortcuts import vec
 from ipCorePackager.constants import DIRECTION
-from copy import copy
+from hwtLib.abstract.addressStepTranslation import AddressStepTranslation
 
 
 def inRange(n, lower, end):
@@ -217,8 +218,8 @@ class BusEndpoint(Unit):
         p = tuple(transTmpl.getFieldPath())
         return self.decoded._fieldsToInterfaces[p]
 
-    def isInMyAddrRange(self, addrSig):
-        return inRange(addrSig, self._ADDR_MIN, self._ADDR_MAX)
+    def isInMyAddrRange(self, addr_sig):
+        return inRange(addr_sig, self._ADDR_MIN, self._ADDR_MAX)
 
     def _parseTemplate(self):
         self.WORD_ADDR_STEP = self._getWordAddrStep()
@@ -300,56 +301,55 @@ class BusEndpoint(Unit):
 
         return maxAddr.bit_length()
 
-    def propagateAddr(self, srcAddrSig: RtlSignal,
-                      srcAddrStep: int,
-                      dstAddrSig: RtlSignal,
-                      dstAddrStep: int,
+    def propagateAddr(self, src_addr_sig: RtlSignal,
+                      src_addr_step: int,
+                      dst_addr_sig: RtlSignal,
+                      dst_addr_step: int,
                       transTmpl: TransTmpl):
         """
-        :param srcAddrSig: input signal with address
-        :param srcAddrStep: how many bits is addressing one unit of srcAddrSig
-        :param dstAddrSig: output signal for address
-        :param dstAddrStep: how many bits is addressing one unit of dstAddrSig
+        :param src_addr_sig: input signal with address
+        :param src_addr_step: how many bits is addressing one unit of src_addr_sig
+        :param dst_addr_sig: output signal for address
+        :param dst_addr_step: how many bits is addressing one unit of dst_addr_sig
         :param transTmpl: TransTmpl which has meta-informations
             about this address space transition
         """
-        IN_ADDR_WIDTH = srcAddrSig._dtype.bit_length()
+        IN_W = src_addr_sig._dtype.bit_length()
 
-        # _prefix = transTmpl.getMyAddrPrefix(srcAddrStep)
-        assert dstAddrStep % srcAddrStep == 0
+        # _prefix = transTmpl.getMyAddrPrefix(src_addr_step)
+        assert dst_addr_step % src_addr_step == 0
         if not isinstance(transTmpl.dtype, HArray):
             raise TypeError(transTmpl.dtype)
-        assert transTmpl.bitAddr % dstAddrStep == 0, (
+        assert transTmpl.bitAddr % dst_addr_step == 0, (
             "Has to be addressable by address with this step (%r)" % (
                 transTmpl))
 
         addrIsAligned = transTmpl.bitAddr % transTmpl.bit_length() == 0
-        bitsForAlignment = ((dstAddrStep // srcAddrStep) - 1).bit_length()
+        bitsForAlignment = AddressStepTranslation(src_addr_step, dst_addr_step).align_bits
         bitsOfSubAddr = (
             (transTmpl.bitAddrEnd - transTmpl.bitAddr - 1)
-            // dstAddrStep
+            // dst_addr_step
         ).bit_length()
 
         if addrIsAligned:
-            bitsOfPrefix = IN_ADDR_WIDTH - bitsOfSubAddr - bitsForAlignment
-            prefix = (transTmpl.bitAddr //
-                      srcAddrStep) >> (bitsForAlignment + bitsOfSubAddr)
+            bitsOfAddr = bitsOfSubAddr + bitsForAlignment
+            bitsOfPrefix = IN_W - bitsOfAddr
+            prefix = (transTmpl.bitAddr // src_addr_step) >> bitsOfAddr
             if bitsOfPrefix == 0:
                 addrIsInRange = True
             else:
-                addrIsInRange = srcAddrSig[IN_ADDR_WIDTH:(
-                    IN_ADDR_WIDTH - bitsOfPrefix)]._eq(prefix)
-            addr_tmp = srcAddrSig
+                addrIsInRange = src_addr_sig[:(IN_W - bitsOfPrefix)]._eq(prefix)
+            addr_tmp = src_addr_sig
         else:
-            _addr = transTmpl.bitAddr // srcAddrStep
-            _addrEnd = transTmpl.bitAddrEnd // srcAddrStep
-            addrIsInRange = inRange(srcAddrSig, _addr, _addrEnd)
-            addr_tmp = self._sig(dstAddrSig._name +
+            _addr = transTmpl.bitAddr // src_addr_step
+            _addrEnd = transTmpl.bitAddrEnd // src_addr_step
+            addrIsInRange = inRange(src_addr_sig, _addr, _addrEnd)
+            addr_tmp = self._sig(dst_addr_sig._name + 
                                  "_addr_tmp", Bits(self.ADDR_WIDTH))
-            addr_tmp(srcAddrSig - _addr)
+            addr_tmp(src_addr_sig - _addr)
 
         addr_h = bitsOfSubAddr + bitsForAlignment
-        connectedAddr = dstAddrSig(
+        connectedAddr = dst_addr_sig(
             addr_tmp[addr_h:bitsForAlignment]
         )
 
@@ -427,7 +427,7 @@ class BusEndpoint(Unit):
     def connectByInterfaceMap(self, interfaceMap: IntfMap):
         """
         Connect "decoded" struct interface to interfaces specified
-        in iterface map
+        in interface map
         """
         assert isinstance(interfaceMap, IntfMap), interfaceMap
 
@@ -460,7 +460,7 @@ class BusEndpoint(Unit):
     @classmethod
     def fromInterfaceMap(cls, interfaceMap):
         """
-        Generate converter by struct datatype specified by interface map
+        Generate converter by struct data type specified by interface map
 
         :param interfaceMap: :func:`hwt.interfaces.intf_map.HTypeFromIntfMap`
         """

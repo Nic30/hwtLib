@@ -74,7 +74,7 @@ class Fifo(Unit):
         )
 
         write_en, _ = write_en_wait
-        # instanciate all read pointers
+        # instantiate all read pointers
         for i, (read_en, read_wait) in enumerate(read_en_wait_list):
             read_ptr = r("read_ptr%d" % i, index_t, 0)
             fifo_read = s("fifo_read%d" % i)

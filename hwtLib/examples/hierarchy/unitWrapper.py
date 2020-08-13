@@ -9,7 +9,7 @@ class UnitWrapper(Unit):
     original unit will be stored inside as subunit named baseUnit
 
     :note: This is example of lazy loaded interfaces
-        and generating of external interfaces based on internal stucture.
+        and generating of external interfaces based on internal structure.
     """
 
     def __init__(self, baseUnit):
@@ -27,7 +27,7 @@ class UnitWrapper(Unit):
         for intf in self.baseUnit._interfaces:
             # clone interface
             myIntf = intf.__copy__()
-            # subinterfaces are not instanciated yet
+            # sub-interfaces are not instantiated yet
             # myIntf._direction = intf._direction
             myIntf._direction = INTF_DIRECTION.opposite(intf._direction)
 

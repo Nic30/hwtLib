@@ -90,7 +90,7 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
             self.MASTERS, self.SLAVES, WRITE)
         super(AxiInterconnectMatrix, self)._declr()
 
-        # instanciate sub interconnects for each independent master-slave connection
+        # instantiate sub interconnects for each independent master-slave connection
         # subgraph (r, w separately)
         self.sub_interconnect_connections = []
         r_interconnects = HObjList()

@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from math import ceil
+
+from pyMathBitPrecise.bit_utils import mask
+
 from hwt.code import Concat, Or, If
 from hwt.code_utils import rename_signal
 from hwt.hdl.constants import WRITE, READ
@@ -9,30 +13,25 @@ from hwt.interfaces.std import BramPort_withoutClk, HandshakeSync, VectSignal, \
     Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.synthesizer.vectorUtils import iterBits
-from ipCorePackager.constants import DIRECTION
-from math import ceil
-from pyMathBitPrecise.bit_utils import mask
-
-from hwtLib.mem.ram import RamSingleClock
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.synthesizer.vectorUtils import iterBits
+from hwtLib.mem.ram import RamSingleClock
+from ipCorePackager.constants import DIRECTION
 
 
 class BramPort_withReadMask_withoutClk(BramPort_withoutClk):
     """
-    Block RAM port with a `~.en` handshaked interface for arbitration
+    Block RAM port with a :py:obj:`~en` handshaked interface for arbitration
 
     :ivar do_accumulate: Signal if 1 the mask bits are or-ed together with the value in stored in ram
     :ivar do_overwrite: Signal if 1 the the data mask in ram is set to current we value
-    :note: `do_overwrite` has higher priority than `do_accumulate`
-    :note:`do_accumulate` affect only the bytes in memory
+    :note: :py:obj:`~do_overwrite` has higher priority than `do_accumulate`
+    :note: :py:obj:`~do_accumulate` affect only the bytes in memory
         where data validity mask is stored.
     :ivar dout_mask: Read port contains this signal which contains
         the cumulative validity mask for the data.
     :note: en is related to a address, and write data, the read data
         may be available in nect clock cycle depending on read latency of the RAM
-
-    .. hwt-schematic::
     """
 
     def _declr(self):
@@ -70,7 +69,7 @@ def is_mask_byte_unaligned(mask_signal: RtlSignal) -> RtlSignal:
     write_mask_not_aligned = []
     for last, b in iter_with_last(we_bytes):
         if last:
-            # cut off padding if reauiered
+            # cut off padding if required
             mask_rem_w = mask_signal._dtype.bit_length() % 8
             if mask_rem_w:
                 b = b[mask_rem_w:]
@@ -83,7 +82,7 @@ class RamCumulativeMask(RamSingleClock):
     RAM which stores also byte enable value for each data word (to keep track of which bytes were updated).
 
     :note: :class:`~.BramPort_withReadMask_withoutClk` contains the informations
-        about how to controll this component.
+        about how to control this component.
     """
     PORT_CLS = BramPort_withReadMask_withoutClk
 
@@ -99,7 +98,7 @@ class RamCumulativeMask(RamSingleClock):
         RamSingleClock._declr_ports(self)
 
         self.MASK_W = self.DATA_WIDTH // 8
-        # pading tu make mask width % 8 == 0
+        # padding to make mask width % 8 == 0
         self.MASK_PADDING_W = ceil(self.MASK_W / 8) * 8 - self.MASK_W 
         with self._paramsShared(exclude=({"DATA_WIDTH"}, {})):
             ram = self.ram = RamSingleClock()

@@ -4,7 +4,7 @@
 from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
-from hwt.hdl.value import Value
+from hwt.hdl.value import HValue
 from hwt.interfaces.std import Signal
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
@@ -74,7 +74,7 @@ class PingResponder(Unit):
             if isinstance(In, StructIntf):
                 self.req_load(In, reg, freeze)
             else:
-                if isinstance(reg, Value) or not isinstance(reg, RtlMemoryBase):
+                if isinstance(reg, HValue) or not isinstance(reg, RtlMemoryBase):
                     # we have an exact value to use, ignore this intput
                     In.rd(1)
                     continue

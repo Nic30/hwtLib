@@ -205,7 +205,7 @@ class DebugBusMonitor(Unit):
     def __init__(self, bus_cls, bus_endpoint_cls):
         self._bus_cls = bus_cls
         self._bus_endpoint_cls = bus_endpoint_cls
-        self.io_instanciated = False
+        self.io_instantiated = False
         super(DebugBusMonitor, self).__init__()
 
     def _config(self):
@@ -221,13 +221,13 @@ class DebugBusMonitor(Unit):
         """
         :param intf: an interface to monitor
         :param name: name override
-        :param cdc: if True instanciate Clock domain crossing to synchronize input
+        :param cdc: if True instantiate Clock domain crossing to synchronize input
             data to clock domain of this component
         :param trigger: an optional signal which triggers the snapshot of this interface
         :note: if cdc is set to True the trigger has to be synchonezed to a clock clock domain of intf
         :param add_reg: if True an register is added between input and bus interface
         """
-        assert not self.io_instanciated
+        assert not self.io_instantiated
         if name is None:
             if isinstance(intf, InterfaceBase):
                 name = intf._getPhysicalName()
@@ -244,7 +244,7 @@ class DebugBusMonitor(Unit):
         self.monitor = HObjList([
             monitor_of(intf) for (intf, _, _, _, _) in self.monitored_data
         ])
-        self.io_instanciated = True
+        self.io_instantiated = True
 
     def _impl(self):
         if self.ADD_NAME_MEMORY:

@@ -13,6 +13,8 @@ from pycocotb.agents.base import AgentBase
 from pycocotb.hdlSimulator import HdlSimulator
 
 from hwtLib.interfaces.addr_data_hs import AddrDataHs
+from hwt.hdl.types.struct import HStruct
+from hwt.hdl.types.defs import BIT
 
 
 class RamHsRAgent(AgentBase):
@@ -29,8 +31,7 @@ class RamHsRAgent(AgentBase):
         Distribute change of enable on child agents
         """
         self.__enable = v
-
-        for o in [self.req, self.r]:
+        for o in (self.addr, self.data):
             o.setEnable(v)
 
     def __init__(self, sim: HdlSimulator, intf):
@@ -97,20 +98,34 @@ class RamAsHs(Unit):
         w = self.w
         ram = self.ram
 
-        readRegEmpty = self._reg("readRegEmpty", def_val=1)
         readDataPending = self._reg("readDataPending", def_val=0)
-        readData = self._reg("readData", r.data.data._dtype)
+        readData = self._reg("readData",
+                             HStruct((r.data.data._dtype, "data"),
+                                     (BIT, "vld")),
+                             def_val={"vld": 0}
+                             )
+        readDataOverflow = self._reg("readDataOverflow",
+                                     readData._dtype, def_val={"vld": 0})
 
-        rEn = readRegEmpty | r.data.rd
+        rEn = ~readDataOverflow.vld & (~readData.vld | r.data.rd)
         readDataPending(r.addr.vld & rEn)
         If(readDataPending,
-           readData(ram.dout)
-        )
-
-        If(r.data.rd,
-            readRegEmpty(~readDataPending)
+            If(~readData.vld | r.data.rd,
+                # can store directly to readData register
+                readData.data(ram.dout),
+                readData.vld(1),
+                readDataOverflow.vld(0),
+            ).Else(
+                # need to store to overflow register
+                readDataOverflow.data(ram.dout),
+                readDataOverflow.vld(1),
+            ),
         ).Else(
-            readRegEmpty(~(readDataPending | ~readRegEmpty))
+            If(r.data.rd,
+               readData.data(readDataOverflow.data),
+               readData.vld(readDataOverflow.vld),
+               readDataOverflow.vld(0)
+            )
         )
 
         r.addr.rd(rEn)
@@ -127,8 +142,8 @@ class RamAsHs(Unit):
 
         ram.din(w.data)
         ram.en((rEn & r.addr.vld) | w.vld)
-        r.data.data(readData)
-        r.data.vld(~readRegEmpty)
+        r.data.data(readData.data)
+        r.data.vld(readData.vld)
 
 
 if __name__ == "__main__":

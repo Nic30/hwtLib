@@ -36,8 +36,8 @@ class AxiBuff(BusBridge):
             self.m = self.intfCls()._m()
 
         assert self.ADDR_BUFF_DEPTH > 0 or self.DATA_BUFF_DEPTH > 0, (
-            "This buffer is completly dissabled,"
-            " it should not be instanciated at all",
+            "This buffer is completely disabled,"
+            " it should not be instantiated at all",
             self.ADDR_BUFF_DEPTH, self.DATA_BUFF_DEPTH)
 
     def _impl(self):

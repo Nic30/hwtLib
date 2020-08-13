@@ -4,7 +4,6 @@
 from unittest import TestLoader, TextTestRunner, TestSuite
 
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
 from hwtLib.abstract.frame_utils.alignment_utils_test import FrameAlignmentUtilsTC
 from hwtLib.abstract.frame_utils.join.test import FrameJoinUtilsTC
@@ -99,6 +98,7 @@ from hwtLib.examples.mem.reg_test import DRegTC, RegSerializationTC, \
     DoubleRRegTC, DReg_asyncRstTC
 from hwtLib.examples.mem.rom_test import SimpleRomTC, SimpleSyncRomTC, \
     RomResourcesTC
+from hwtLib.examples.operators.cast_test import CastTc
 from hwtLib.examples.operators.concat_test import ConcatTC
 from hwtLib.examples.operators.indexing_test import IndexingTC
 from hwtLib.examples.parametrization_test import ParametrizationTC
@@ -136,6 +136,7 @@ from hwtLib.handshaked.resizer_test import HsResizerTC
 from hwtLib.handshaked.splitCopy_test import HsSplitCopyTC, \
     HsSplitCopy_randomized_TC
 from hwtLib.img.charToBitmap_test import CharToBitmapTC
+from hwtLib.interfaces.addr_data_hs_to_Axi_test import AddrDataHs_to_Axi_TCs
 from hwtLib.logic.binToOneHot import BinToOneHotTC
 from hwtLib.logic.bitonicSorter import BitonicSorterTC
 from hwtLib.logic.cntrGray import GrayCntrTC
@@ -149,10 +150,10 @@ from hwtLib.mem.atomic.flipRam_test import FlipRamTC
 from hwtLib.mem.atomic.flipReg_test import FlipRegTC
 from hwtLib.mem.bramEndpoint_test import BramPortEndpointTCs
 from hwtLib.mem.cam_test import CamTC
-from hwtLib.mem.cuckooHashTable_test import CuckooHashTableTC
+from hwtLib.mem.cuckooHashTableWithRam_test import CuckooHashTableWithRamTC
 from hwtLib.mem.fifoAsync_test import FifoAsyncTC
 from hwtLib.mem.fifo_test import FifoWriterAgentTC, FifoReaderAgentTC, FifoTC
-from hwtLib.mem.hashTableCore_test import HashTableCoreTC
+from hwtLib.mem.hashTableCoreWithRam_test import HashTableCoreWithRamTC
 from hwtLib.mem.lutRam_test import LutRamTC
 from hwtLib.mem.ram_test import RamTC
 from hwtLib.peripheral.displays.hd44780.driver_test import Hd44780Driver8bTC
@@ -186,7 +187,8 @@ from hwtLib.tests.sertialization.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.sertialization.modes_test import SerializerModes_TC
 from hwtLib.tests.sertialization.tmpVar_test import Serializer_tmpVar_TC
 from hwtLib.tests.sertialization.vhdl_test import Vhdl2008Serializer_TC
-from hwtLib.tests.simulatorUtlls_test import SimulatorUtilsTC
+from hwtLib.tests.simulator.json_log_test import HsFifoJsonLogTC
+from hwtLib.tests.simulator.utils_test import SimulatorUtilsTC
 from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import \
     InterfaceSynthesizerTC
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import \
@@ -199,9 +201,9 @@ from hwtLib.tests.synthesizer.statements_test import StatementsTC
 from hwtLib.tests.transTmpl_test import TransTmpl_TC
 from hwtLib.tests.types.bitsSlicing_test import BitsSlicingTC
 from hwtLib.tests.types.hstructVal_test import HStructValTC
+from hwtLib.tests.types.hvalue_test import HValueTC
 from hwtLib.tests.types.operators_test import OperatorTC
 from hwtLib.tests.types.union_test import UnionTC
-from hwtLib.tests.types.value_test import ValueTC
 from hwtLib.tests.unionIntf_test import UnionIntfTC
 from hwtLib.xilinx.ipif.axi4Lite_to_ipif_test import Axi4Lite_to_IpifTC
 from hwtLib.xilinx.ipif.buff_test import IpifBuffTC
@@ -239,12 +241,13 @@ suite = testSuiteFromTCs(
     SimpleSubunit3TC,
     UnitToUnitConnectionTC,
     OperatorTC,
+    CastTc,
     BitsSlicingTC,
     HStructValTC,
     ParametrizationTC,
     BasicSignalMethodsTC,
     StatementsConsystencyTC,
-    ValueTC,
+    HValueTC,
     StatementTreesInternalTC,
     StatementTreesTC,
     StatementsTC,
@@ -261,6 +264,7 @@ suite = testSuiteFromTCs(
     FrameTmplTC,
     Showcase0TC,
     SimulatorUtilsTC,
+    HsFifoJsonLogTC,
     RdSynced_agent_TC,
     Segment7TC,
     SerializerModes_TC,
@@ -381,6 +385,7 @@ suite = testSuiteFromTCs(
     AxiResizeTC,
 
     AxisFrameGenTC,
+    *AddrDataHs_to_Axi_TCs,
     Axi4_rDatapumpTC,
     Axi3_rDatapumpTC,
     Axi4_wDatapumpTC,
@@ -443,8 +448,8 @@ suite = testSuiteFromTCs(
     UnitWrapperTC,
     IpCorePackagerTC,
     CharToBitmapTC,
-    HashTableCoreTC,
-    CuckooHashTableTC,
+    HashTableCoreWithRamTC,
+    CuckooHashTableWithRamTC,
     PingResponderTC,
     DebugBusMonitorExampleAxiTC,
 
@@ -463,9 +468,10 @@ if __name__ == '__main__':
         # concurrencytest is not installed, use regular test runner
         useParallerlTest = False
     # useParallerlTest = False
-
+   
     if useParallerlTest:
         concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests())
         runner.run(concurrent_suite)
     else:
         runner.run(suite)
+

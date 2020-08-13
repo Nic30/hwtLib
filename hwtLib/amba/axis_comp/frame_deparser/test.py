@@ -18,7 +18,7 @@ from itertools import chain
 from hwtLib.amba.axis_comp.frame_deparser.test_types import s1field,\
     s1field_composit0, s3field, s2Pading, unionOfStructs, unionSimple,\
     structStream64, structStream64before, structStream64after, struct2xStream64,\
-    structStreamAndFooter, struct2xStream8
+    structStreamAndFooter, struct2xStream8, unionDifferentMask
 
 
 class AxiS_frameDeparser_TC(SimTestCase):
@@ -28,7 +28,9 @@ class AxiS_frameDeparser_TC(SimTestCase):
                               maxPaddingWords=inf,
                               trimPaddingWordsOnStart=False,
                               trimPaddingWordsOnEnd=False,
-                              randomized=True):
+                              randomized=True,
+                              use_strb=False,
+                              use_keep=True):
         if maxFrameLen is not inf\
                 or maxPaddingWords is not inf\
                 or trimPaddingWordsOnStart is not False\
@@ -47,8 +49,8 @@ class AxiS_frameDeparser_TC(SimTestCase):
 
         u = self.u = AxiS_frameDeparser(structT, tmpl, frames)
         u.DATA_WIDTH = self.DATA_WIDTH = DATA_WIDTH
-        u.USE_STRB = False
-        u.USE_KEEP = True
+        u.USE_STRB = use_strb
+        u.USE_KEEP = use_keep
         self.m = mask(self.DATA_WIDTH // 8)
 
         self.compileSimAndStart(self.u)
@@ -504,10 +506,43 @@ class AxiS_frameDeparser_TC(SimTestCase):
             self.assertValEqual(f_offset, 0)
             self.assertValSequenceEqual(f, ref_f, i)
 
+    def test_unionDifferentMask(self, N=10, randomized=False):
+        self.instantiateFrameForge(unionDifferentMask,
+                                   DATA_WIDTH=16,
+                                   randomized=randomized,
+                                   use_keep=False,
+                                   use_strb=True)
+        u = self.u
+        MAGIC = 0  # 13
+        t = 10 + N
+        if randomized:
+            t *= 3
+        ref = []
+        for i in range(N):
+            i += MAGIC
+            if self._rand.getrandbits(1):
+                d = (1, [i, ])
+                u.dataIn.u1.data._ag.data.append(i)
+                u.dataIn._select._ag.data.append(1)
+            else:
+                d = (0, [i, ])
+                u.dataIn.u0.data._ag.data.append(i)
+                u.dataIn._select._ag.data.append(0)
+            ref.append(d)
+        self.runSim(t * CLK_PERIOD)
+        for i, ref_f in enumerate(ref):
+            ref_offset, ref_data = ref_f
+            f_offset, f = axis_recieve_bytes(u.dataOut)
+            self.assertEqual(f_offset, ref_offset)
+            self.assertValSequenceEqual(f, ref_data)
+
+    def test_unionDifferentMask_randomized(self, N=10):
+        self.test_unionDifferentMask(N, randomized=True)
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(AxiS_frameDeparser_TC('test_s2Pading_normal'))
+    # suite.addTest(AxiS_frameDeparser_TC('test_unionDifferentMask'))
     suite.addTest(unittest.makeSuite(AxiS_frameDeparser_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

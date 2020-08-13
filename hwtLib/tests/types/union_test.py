@@ -190,7 +190,7 @@ class UnionTC(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    # suite.addTest(ValueTC('testValue'))
+    # suite.addTest(UnionTC('testValue'))
     suite.addTest(unittest.makeSuite(UnionTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -2,7 +2,7 @@ from io import StringIO
 import unittest
 
 from hwt.hdl.typeShortcuts import vec, hBit
-from hwt.hdl.value import Value
+from hwt.hdl.value import HValue
 from hwt.serializer.vhdl import Vhdl2008Serializer
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.types.ctypes import uint8_t
@@ -12,10 +12,10 @@ class BitsSlicingTC(unittest.TestCase):
 
     def assertEqual(self, first, second, msg=None):
         if not (isinstance(first, int) and isinstance(second, int)):
-            if not isinstance(first, Value):
+            if not isinstance(first, HValue):
                 first = first.staticEval()
 
-            if not isinstance(second, Value):
+            if not isinstance(second, HValue):
                 if isinstance(second, int):
                     first = int(first)
                     return unittest.TestCase.assertEqual(self, first,

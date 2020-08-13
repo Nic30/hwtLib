@@ -73,3 +73,9 @@ struct2xStream8 = HStruct(
     (HStream(uint8_t), "streamIn0"),
     (HStream(uint8_t), "streamIn1")
 )
+
+unionDifferentMask = HUnion(
+    (HStruct((uint8_t, "data"), (uint8_t, None)), "u0"),
+    (HStruct((uint8_t, None), (uint8_t, "data")), "u1"),
+)
+

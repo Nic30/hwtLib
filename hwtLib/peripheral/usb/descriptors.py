@@ -6,7 +6,7 @@ from hwtLib.types.ctypes import uint8_t, uint16_t
 
 # https://www.beyondlogic.org/usbnutshell/usb5.shtml#EndpointDescriptors
 descriptor_header_t = HStruct(
-    (uint8_t, "bLength")
+    (uint8_t, "bLength"),
     (uint8_t, "bDescriptorType")
 )
 

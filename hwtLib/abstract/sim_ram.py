@@ -93,7 +93,7 @@ class SimRam():
 
         return addr
 
-    def calloc(self, num, size, keepOut=None, initValues=None):
+    def calloc(self, num, size, keepOut=None, initValues=None) -> int:
         """
         Allocates a block of memory for an array of num elements, each of them
         size bytes long, and initializes all its bits to zero.
@@ -103,7 +103,7 @@ class SimRam():
         :param keepOut: optional memory spacing between this memory region
                         and lastly allocated (number of bit between last allocated segment to avoid)
         :param initValues: iterable of word values to init memory with
-        :return: address of allocated memory
+        :return: address (byte step) of allocated memory
         """
         addr = 0
         k = self.data.keys()

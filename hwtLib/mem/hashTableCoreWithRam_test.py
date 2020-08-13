@@ -1,21 +1,23 @@
 #!/usr/bin/env python3)
 # -*- coding: utf-8 -*-
 
+from binascii import crc_hqx
+
+from pyMathBitPrecise.bit_utils import mask
+
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.logic.crcPoly import CRC_16_CCITT
-from hwtLib.mem.hashTableCore import HashTableCore
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
-from binascii import crc_hqx
-from pyMathBitPrecise.bit_utils import mask
+from hwtLib.mem.hashTableCoreWithRam import HashTableCoreWithRam
 
 
-class HashTableCoreTC(SingleUnitSimTestCase):
+class HashTableCoreWithRamTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
-        u = cls.u = HashTableCore(CRC_16_CCITT)
+        u = cls.u = HashTableCoreWithRam(CRC_16_CCITT)
         u.KEY_WIDTH = 16
         u.DATA_WIDTH = 8
 
@@ -32,25 +34,32 @@ class HashTableCoreTC(SingleUnitSimTestCase):
     def test_lookupInEmpty(self):
         u = self.u
 
-        u.lookup._ag.data.extend([0,
+        u.io.lookup._ag.data.extend([0,
                                   self._rand.getrandbits(8),
                                   self._rand.getrandbits(8)])
 
         self.runSim(15 * CLK_PERIOD)
 
-        for d in u.lookupRes._ag.data:
+        for d in u.io.lookupRes._ag.data:
             found = d[-1]
             self.assertValEqual(found, 0)
 
-    def test_lookupInsertLookup(self, N=16):
+    def test_lookupInsertLookup(self, N=16, randomized=False):
         u = self.u
-        lookup = u.lookup._ag.data
-        lookupRes = u.lookupRes._ag.data
+        t_factor = CLK_PERIOD 
+        if randomized:
+            self.randomize(u.io.lookup)
+            self.randomize(u.io.lookupRes)
+            self.randomize(u.io.insert)
+            t_factor *= 3
+
+        lookup = u.io.lookup._ag.data
+        lookupRes = u.io.lookupRes._ag.data
         getrandbits = self._rand.getrandbits
 
         def get_hash(k: int):
             return crc_hqx(k.to_bytes(u.KEY_WIDTH // 8, "little"),
-                           CRC_16_CCITT.INIT) & mask(u.HASH_WIDTH)
+                           CRC_16_CCITT.INIT) & mask(u.io.HASH_WIDTH)
 
         # {hash: (key, data)}
         expected_content = {}
@@ -58,42 +67,47 @@ class HashTableCoreTC(SingleUnitSimTestCase):
         def insertAndCheck(i):
             ae = self.assertValEqual
             # wait for lookup
-            _key = getrandbits(8)
-            lookup.append(_key)
-            yield Timer(5 * CLK_PERIOD)
-            _hash, key, _, found, occupied = lookupRes.popleft()
-            h = get_hash(int(key))
-            ae(key, _key, i)
-            ae(_hash, h, i)
+            key0 = getrandbits(8)
+            lookup.append(key0)
+            while not lookupRes:
+                yield Timer(t_factor)
+            hash0, key, _, found, occupied = lookupRes.popleft()
+            hash0 = int(hash0)
+            h =  get_hash(key0)
+            if occupied:
+                h2 = get_hash(int(key))
+                ae(h2, h, (i, key0, key))
+                ae(hash0, h, (i, key0, key))
+
             v = expected_content.get(h, None)
             if v is None:
                 ae(found, 0, i)
                 ae(occupied, 0, i)
             else:
-                ae(found, v[0] == _key, i)
+                ae(found, v[0] == key0, i)
                 ae(occupied, 1, i)
 
             data = getrandbits(8)
             # insert previous lookup with new data
-            u.insert._ag.data.append((_hash, key, data, 1))
+            u.io.insert._ag.data.append((hash0, key0, data, 1))
 
-            yield Timer(5 * CLK_PERIOD)
-            expected_content[int(_hash)] = (int(key), int(data))
+            yield Timer(3 * t_factor)
+            expected_content[hash0] = (key0, data)
 
             # create another key lookup probably not related to prev insert
             key1 = getrandbits(16)
             h = get_hash(key1)
             v = expected_content.get(h, None)
             if v is not None:
-                expected1 = (h, key1, v[1], int(v[0] == key1), 1)
+                expected1 = (h, v[0], v[1], int(v[0] == key1), 1)
             else:
-                expected1 = (h, key1, 0, 0, 0)
+                expected1 = (h, 0, 0, 0, 0)
 
-            lookup.extend([key, key1])
-            yield Timer(5 * CLK_PERIOD)
+            lookup.extend([key0, key1])
             # hash, key, data, found, occupied
-            expected0 = tuple(valuesToInts((_hash, key, data, 1, 1)))
-
+            expected0 = tuple(valuesToInts((hash0, key0, data, 1, 1)))
+            while len(lookupRes) < 2:
+                yield Timer(t_factor)
             d0, d1 = [lookupRes.popleft() for _ in range(2)]
             self.assertValSequenceEqual([d0, d1],
                                         [expected0, expected1])
@@ -106,7 +120,7 @@ class HashTableCoreTC(SingleUnitSimTestCase):
                 lookup.append(k)
                 expected.append((h, k, v))
 
-            yield Timer(len(expected_content) * 3 * CLK_PERIOD)
+            yield Timer(len(expected_content) * 3 * t_factor)
             for (h, k, v) in expected:
                 _hash, key, _, found, occupied = lookupRes.popleft()
                 self.assertValEqual(key, k)
@@ -116,14 +130,17 @@ class HashTableCoreTC(SingleUnitSimTestCase):
 
         self.procs.append(tryInsertNotFoundAndLookupIt())
 
-        self.runSim(N * 30 * CLK_PERIOD)
-        self.assertEmpty(u.lookupRes._ag.data)
+        self.runSim(N * 20 * t_factor)
+        self.assertValSequenceEqual(u.io.lookupRes._ag.data, [])
+
+    def test_lookupInsertLookup_randomized(self, N=16):
+        self.test_lookupInsertLookup(N, randomized=True)
 
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(HashTableCoreTC('test_lookupInEmpty'))
-    suite.addTest(unittest.makeSuite(HashTableCoreTC))
+    #suite.addTest(HashTableCoreWithRamTC('test_lookupInsertLookup_randomized'))
+    suite.addTest(unittest.makeSuite(HashTableCoreWithRamTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -2,7 +2,7 @@ from typing import Optional, Union
 
 from hwt.code import log2ceil, If, isPow2
 from hwt.hdl.types.bits import Bits
-from hwt.hdl.value import Value
+from hwt.hdl.value import HValue
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
@@ -109,7 +109,7 @@ class TimerInfo(object):
 
     @staticmethod
     def _instantiateTimerTickLogic(parentUnit: Unit, timer: RtlSignal,
-                                   origMaxVal: Union[int, RtlSignal, Value],
+                                   origMaxVal: Union[int, RtlSignal, HValue],
                                    enableSig: Optional[RtlSignal],
                                    rstSig: Optional[RtlSignal]) -> RtlSignal:
         """
