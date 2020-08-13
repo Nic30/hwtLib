@@ -344,7 +344,7 @@ class OperatorTC(unittest.TestCase):
             AllOps.TO,
             AllOps.CONCAT,
             AllOps.EQ,
-            AllOps.NEQ,
+            AllOps.NE,
             AllOps.GT,
             AllOps.GE,
             AllOps.LT,
