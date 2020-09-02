@@ -32,7 +32,7 @@ setup(name='hwtLib',
         "Topic :: Utilities"
       ],
       install_requires=[
-        'hwt>=3.1',
+        'hwt>=3.4',
         'Pillow',  # there are some components which are working with images
       ],
       license='MIT',

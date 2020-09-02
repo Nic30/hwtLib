@@ -38,12 +38,14 @@ class AddressStepTranslation():
             if src_addr_step > dst_addr_step:
                 # extend src address
                 assert src_w + self.align_bits <= dst_w, (
+                    "Destination address space is smaller than required",
                     src_addr_sig, dst_addr_sig, src_w, self.align_bits, dst_w)
                 padding = Bits(self.align_bits).from_py(0)
                 src_addr_sig = Concat(src_addr_sig, padding)
             else:
                 # cut src address
                 assert src_w - self.align_bits <= dst_w, (
+                    "Destination address space is smaller than required",
                     src_addr_sig, dst_addr_sig, src_w, self.align_bits, dst_w)
                 src_addr_sig = src_addr_sig[:self.align_bits]
     

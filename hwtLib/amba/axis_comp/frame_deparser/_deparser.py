@@ -36,7 +36,7 @@ from hwtLib.amba.axis_comp.frame_parser.field_connector import AxiS_frameParserF
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
 from pyMathBitPrecise.bit_utils import mask
-from hwt.pyUtils.arrayQuery import iter_with_last
+
 
 TYPE_CONFIG_PARAMS_NAMES = [
     "T", "TRANSACTION_TEMPLATE", "FRAME_TEMPLATES"]

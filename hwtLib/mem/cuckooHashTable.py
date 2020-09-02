@@ -367,9 +367,8 @@ class CuckooHashTable(HashTableCore):
          insertFinal,
          lookupFoundOH,
          insertTargetOH) = self.tables_lookupRes_resolver(lookupResRead)
-        tables = self.tables
-        lookupAck = StreamNode(slaves=[t.lookup for t in tables]).ack()
-        insertAck = StreamNode(slaves=[t.insert for t in tables]).ack()
+        lookupAck = StreamNode(slaves=[t.lookup for t in self.tables]).ack()
+        insertAck = StreamNode(slaves=[t.insert for t in self.tables]).ack()
 
         lookup_in_progress = self.lookup_trans_cntr()
         lookup_not_in_progress = rename_signal(self,
@@ -416,10 +415,11 @@ class CuckooHashTable(HashTableCore):
         lookupResRead(state._eq(fsm_t.lookupResWaitRd))
         lookupResNext = rename_signal(
             self,
-            (state._eq(fsm_t.idle) & self.lookupRes.rd) | (state._eq(fsm_t.lookupResAck) & (state.next != fsm_t.lookupResAck)),
+            (state._eq(fsm_t.idle) & self.lookupRes.rd) | 
+            (state._eq(fsm_t.lookupResAck) & (state.next != fsm_t.lookupResAck)),
             "lookupResNext")
         # synchronize all lookupRes from all tables
-        StreamNode(masters=[t.lookupRes for t in tables]).sync(lookupResNext)
+        StreamNode(masters=[t.lookupRes for t in self.tables]).sync(lookupResNext)
 
         self.stash_load(
             state._eq(fsm_t.idle),
