@@ -4,7 +4,7 @@
 from hwt.code import If, Concat, log2ceil
 from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Handshaked, VldSynced
+from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
