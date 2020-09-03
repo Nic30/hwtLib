@@ -136,7 +136,7 @@ from hwtLib.handshaked.resizer_test import HsResizerTC
 from hwtLib.handshaked.splitCopy_test import HsSplitCopyTC, \
     HsSplitCopy_randomized_TC
 from hwtLib.img.charToBitmap_test import CharToBitmapTC
-from hwtLib.interfaces.addr_data_hs_to_Axi_test import AddrDataHs_to_Axi_TCs
+from hwtLib.common_nonstd_interfaces.addr_data_hs_to_Axi_test import AddrDataHs_to_Axi_TCs
 from hwtLib.logic.binToOneHot import BinToOneHotTC
 from hwtLib.logic.bitonicSorter import BitonicSorterTC
 from hwtLib.logic.cntrGray import GrayCntrTC

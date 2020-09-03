@@ -5,7 +5,7 @@ from pyMathBitPrecise.bit_utils import mask
 from hwt.pyUtils.arrayQuery import grouper
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
-from hwtLib.interfaces.addr_data_hs_to_Axi import AddrDataHs_to_Axi
+from hwtLib.common_nonstd_interfaces.addr_data_hs_to_Axi import AddrDataHs_to_Axi
 from hwtLib.tools.debug_bus_monitor_ctl import select_bit_range
 from pycocotb.constants import CLK_PERIOD
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel

@@ -13,7 +13,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import iterBits
-from hwtLib.interfaces.data_mask_last_hs import DataMaskLastHs
+from hwtLib.common_nonstd_interfaces.data_mask_last_hs import DataMaskLastHs
 from hwtLib.logic.crcComb import CrcComb
 from hwtLib.logic.crcPoly import CRC_32
 from pyMathBitPrecise.bit_utils import get_bit, bit_list_reversed_endianity, \

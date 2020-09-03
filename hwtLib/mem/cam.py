@@ -10,7 +10,7 @@ from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 
-from hwtLib.interfaces.addr_data_hs import AddrDataVldHs, AddrDataHs
+from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataVldHs, AddrDataHs
 
 
 @serializeParamsUniq
