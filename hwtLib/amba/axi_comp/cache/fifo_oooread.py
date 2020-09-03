@@ -6,9 +6,9 @@ from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi_comp.cache.utils import CamWithReadPort
+from hwtLib.common_nonstd_interfaces.index_key_hs import IndexKeyHs
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.fifo import Fifo
-from hwtLib.common_nonstd_interfaces.index_key_hs import IndexKeyHs
 
 
 @serializeParamsUniq
