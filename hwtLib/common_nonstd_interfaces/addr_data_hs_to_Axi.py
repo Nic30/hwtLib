@@ -25,7 +25,7 @@ from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.ramAsHs import RamHsR
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
-from hwtLib.interfaces.addr_data_hs import AddrDataHs
+from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
 
 
 @serializeParamsUniq

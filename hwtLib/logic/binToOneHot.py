@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import log2ceil
+from hwt.code import log2ceil, Concat
 from hwt.hdl.constants import Time
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.serializer.mode import serializeParamsUniq
@@ -10,6 +10,10 @@ from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 
 
+def binToOneHot(sig, en=1):
+    return Concat(*reversed(list(sig._eq(i) & en for i in range(2 ** sig._dtype.bit_length()))))
+    
+    
 @serializeParamsUniq
 class BinToOneHot(Unit):
     """
@@ -31,12 +35,11 @@ class BinToOneHot(Unit):
         dIn = self.din
 
         WIDTH = self.DATA_WIDTH
-        if int(WIDTH) == 1:
+        if WIDTH == 1:
             # empty_gen
             self.dout[0](en)
         else:
-            for i in range(int(WIDTH)):
-                self.dout[i](dIn._eq(i) & en)
+            self.dout(binToOneHot(dIn, en))
 
 
 class BinToOneHotTC(SingleUnitSimTestCase):

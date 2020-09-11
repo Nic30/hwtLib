@@ -108,16 +108,10 @@ class AxiStoreBuffer(Unit):
         w_in = self.w
         w_tmp = self.w_in_reg
         ac = self.addr_cam
-
-        current_empty = rename_signal(self, ~item_valid[push_ptr], "current_empty")
-
+        
         ac.match.data(w_in.addr)
         w_tmp_in = w_tmp.dataIn
         w_tmp_out = w_tmp.dataOut
-
-        # store to tmp register (and accumulate if possible)
-        item_insert_last = self._sig("item_insert_last")
-        item_insert_first = self._sig("item_insert_first")
 
         # if true it means that the current input write data should be merged with 
         # a content of the w_tmp register
@@ -143,7 +137,7 @@ class AxiStoreBuffer(Unit):
         StreamNode([w_in], [w_tmp_in, ac.match]).sync()
         ac.out.rd(1)
 
-        # cam insert
+        # CAM insert
         cam_index_onehot = rename_signal(
             self,
             w_tmp_out.cam_lookup & item_valid & ~item_in_progress,
@@ -153,10 +147,15 @@ class AxiStoreBuffer(Unit):
         ac.write.addr(push_ptr)
         ac.write.data(w_tmp_out.addr)
 
+        current_empty = rename_signal(self, ~item_valid[push_ptr], "current_empty")
         will_insert_new_item = rename_signal(
             self,
             ~cam_found & ~found_in_tmp_reg & current_empty & ~push_wait,
             "will_insert_new_item")
+
+        # store to tmp register (and accumulate if possible)
+        item_insert_last = self._sig("item_insert_last")
+        item_insert_first = self._sig("item_insert_first")
 
         # insert word iteration,
         # push data to items RAM

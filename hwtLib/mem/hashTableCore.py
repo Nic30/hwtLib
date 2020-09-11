@@ -10,7 +10,7 @@ from hwt.synthesizer.unit import Unit
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.ramAsHs import RamHsR
 from hwtLib.handshaked.streamNode import StreamNode
-from hwtLib.interfaces.addr_data_hs import AddrDataHs
+from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
 from hwtLib.logic.crcComb import CrcComb
 from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, HashTableIntf

@@ -12,7 +12,7 @@ from hwt.synthesizer.unit import Unit
 from pycocotb.agents.base import AgentBase
 from pycocotb.hdlSimulator import HdlSimulator
 
-from hwtLib.interfaces.addr_data_hs import AddrDataHs
+from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
 from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.defs import BIT
 

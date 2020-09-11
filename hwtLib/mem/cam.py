@@ -4,13 +4,13 @@
 from hwt.code import If, Concat, log2ceil
 from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Handshaked, VldSynced
+from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 
-from hwtLib.interfaces.addr_data_hs import AddrDataVldHs, AddrDataHs
+from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataVldHs, AddrDataHs
 
 
 @serializeParamsUniq
