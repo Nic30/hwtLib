@@ -1,9 +1,7 @@
-recursive-include hwtLib *.png
 include README.md
 include MANIFEST.in
 
-# find . -name "*.vhd" -o -name "*.v" -o -name "*.cpp" -o -name "*.xdc" | sort
-
+# find . -name "*.vhd" -o -name "*.v" -o -name "*.cpp" -o -name "*.xdc" -o -name "*.png" | sort | sed 's|\./|include |g'
 include hwtLib/examples/arithmetic/VhdlVectorAutoCastExample.vhd
 include hwtLib/examples/EmptyUnitWithSpi.vhd
 include hwtLib/examples/hierarchy/GroupOfBlockrams.vhd
@@ -51,6 +49,7 @@ include hwtLib/examples/statements/SimpleIfStatementMergable.vhd
 include hwtLib/examples/statements/SwitchStmUnit.cpp
 include hwtLib/examples/statements/SwitchStmUnit.v
 include hwtLib/examples/statements/SwitchStmUnit.vhd
+include hwtLib/img/charToBitmap_font.png
 include hwtLib/peripheral/displays/Segment7.vhd
 include hwtLib/tests/constraints/AxiStreamFullDuplexCdc.xdc
 include hwtLib/tests/constraints/FifoAsync.xdc
