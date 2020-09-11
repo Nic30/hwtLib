@@ -57,9 +57,9 @@ SC_MODULE(FsmExample) {
                 break;
             }
         default:
-                if ((a.read() & ~(b.read())) == sc_uint<1>("0b1"))
+                if ((a.read() & ~b.read()) == sc_uint<1>("0b1"))
                     st_next.write(0);
-                else if ((~(a.read()) & b.read()) == sc_uint<1>("0b1"))
+                else if ((~a.read() & b.read()) == sc_uint<1>("0b1"))
                     st_next.write(1);
                 else
                     st_next.write(st);
