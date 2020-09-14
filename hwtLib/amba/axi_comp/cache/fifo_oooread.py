@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import log2ceil, Concat, If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, HandshakeSync
@@ -52,7 +55,7 @@ class FifoOutOfOrderRead(Unit):
         pc = self.pop_confirm = Handshaked()
         pc.DATA_WIDTH = ITEM_INDEX_WIDTH
 
-        c = self.cam = CamWithReadPort()
+        c = self.tag_cam = CamWithReadPort()
         c.ITEMS = self.ITEMS
         c.KEY_WIDTH = self.KEY_WIDTH
         c.USE_VLD_BIT = False  # we maintaining vld flag separately
@@ -84,8 +87,8 @@ class FifoOutOfOrderRead(Unit):
         pop_req(pop.rd & ~pop_wait)
         pop.vld(~pop_wait)
         pop.index(pop_ptr)
-        self.cam.read.addr(pop_ptr)
-        pop.key(self.cam.read.data)
+        self.tag_cam.read.addr(pop_ptr)
+        pop.key(self.tag_cam.read.data)
 
         # out of order pop confirmation
         pc = self.pop_confirm
@@ -94,7 +97,7 @@ class FifoOutOfOrderRead(Unit):
         _item_write_lock_next = []
         for i in range(ITEMS):
             vld_next = self._sig("valid_%d_next" % (i))
-            item_write_lock_next = self._sig("in_progress_%d_next" % (i))
+            item_write_lock_next = self._sig("item_write_lock_%d_next" % (i))
             If(pc.vld & pc.data._eq(i),
                # this is an item which we are discarding
                vld_next(0),
@@ -117,16 +120,16 @@ class FifoOutOfOrderRead(Unit):
         item_valid(Concat(*reversed(_vld_next)))
         item_write_lock(Concat(*reversed(_item_write_lock_next)))
 
-        ac = self.cam
+        tc = self.tag_cam
 
-        ac.match(self.pre_lookup)
+        tc.match(self.pre_lookup)
 
-        self.pre_lookup_res.data(ac.out.data & item_valid & item_write_lock)
-        StreamNode([ac.out], [self.pre_lookup_res]).sync()
+        self.pre_lookup_res.data(tc.out.data & item_valid & item_write_lock)
+        StreamNode([tc.out], [self.pre_lookup_res]).sync()
 
-        ac.write.addr(self.insert.index)
-        ac.write.data(self.insert.key)
-        StreamNode([self.insert], [ac.write]).sync()
+        tc.write.addr(self.insert.index)
+        tc.write.data(self.insert.key)
+        StreamNode([self.insert], [tc.write]).sync()
 
 
 if __name__ == "__main__":
