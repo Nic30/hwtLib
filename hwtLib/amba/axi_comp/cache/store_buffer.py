@@ -39,6 +39,30 @@ class AxiStoreBuffer(Unit):
     * write to read bypass (reading of value which is not yet written in AXI slave)
     * write transaction merging
 
+    .. aafig:
+    
+                                       +-------------------+   
+        +------+                       | speculative read  |
+        | s.b  |<----------------+     +---------------+---+
+        +------+                 |                     |
+                                 |           ----------+
+        +------+                 |           V         |
+        | s.aw |    AW+W      +--+---------------+     |
+        | s.w  +---------+--->| cumulative write |     |
+        +------+         |    |   tmp register   |     |
+                         |    +----------+-------+     |
+                                         |             |
+                         |   data update |             |                +------------------+
+              CAM lookup |    CAM update V             v            +-->| AW dispatch      +--+      +------+
+                         |     +-------------------------+          |   +------------------+  +----->| m.aw |
+                         +---->|  FIFO Out of Order read |<-------  +   +------------------+      +->| m.w  |
+                               |                         |<------------>| W data dispatch  +------+  +------+
+                               +-------------------------+              +------------------+
+                                                  ^                   
+                                                  |                    OoO confirm                   +------+
+                                                  +------------------------------------------------->| m.b  |
+                                                                                                     +------+
+
     :ivar ID_WIDTH: a parameter which specifies width of axi id signal,
         it also specifies the number of items in this buffer (2**ID_WIDTH)
     :ivar MAX_BLOCK_DATA_WIDTH: specifies maximum data width of RAM

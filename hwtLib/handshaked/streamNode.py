@@ -39,7 +39,7 @@ class ExclusiveStreamGroups(list):
         (generate valid/ready synchronization logic for interfaces)
 
         :param enSig: optional signal to enable this group of nodes
-        :return: list of assignements which are responsible for synchronization
+        :return: list of assignments which are responsible for synchronization
             of streams
         """
         expression = []
