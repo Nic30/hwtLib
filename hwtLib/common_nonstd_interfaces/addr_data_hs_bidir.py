@@ -54,7 +54,7 @@ class AddrInOutDataInHs(HandshakedBiDirectional):
         HandshakeSync._declr(self)
 
     def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = AddrOutDataInHsAgent(sim, self)
+        self._ag = AddrInOutDataInHsAgent(sim, self)
 
 
 class AddrInOutDataInHsAgent(HandshakedBiDirectionalAgent):
