@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Union, List
+
 from hwt.code import If, Or, log2ceil
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VldSynced, VectSignal
@@ -32,7 +34,7 @@ class OneHotToBin(Unit):
         self.bin.vld(Or(*[bit for bit in iterBits(self.oneHot)]))
 
 
-def oneHotToBin(parent, signals, resName="oneHotToBin"):
+def oneHotToBin(parent, signals: Union[RtlSignal, Signal, List[Union[RtlSignal, Signal]]], resName="oneHotToBin"):
     if isinstance(signals, (RtlSignal, Signal)):
         signals = [signals[i] for i in range(signals._dtype.bit_length())]
     else:
