@@ -63,6 +63,7 @@ from hwtLib.cesnet.mi32.sliding_window_test import Mi32SlidingWindowTC
 from hwtLib.cesnet.mi32.to_axi4Lite_test import Mi32_to_Axi4LiteTC
 from hwtLib.clocking.cdc_test import CdcTC
 from hwtLib.clocking.clkDivider import ClkDiv3TC
+from hwtLib.common_nonstd_interfaces.addr_data_hs_to_Axi_test import AddrDataHs_to_Axi_TCs
 from hwtLib.examples.arithmetic.cntr_test import CntrTC, CntrResourceAnalysisTC
 from hwtLib.examples.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.examples.arithmetic.twoCntrs_test import TwoCntrsTC
@@ -136,7 +137,6 @@ from hwtLib.handshaked.resizer_test import HsResizerTC
 from hwtLib.handshaked.splitCopy_test import HsSplitCopyTC, \
     HsSplitCopy_randomized_TC
 from hwtLib.img.charToBitmap_test import CharToBitmapTC
-from hwtLib.common_nonstd_interfaces.addr_data_hs_to_Axi_test import AddrDataHs_to_Axi_TCs
 from hwtLib.logic.binToOneHot import BinToOneHotTC
 from hwtLib.logic.bitonicSorter import BitonicSorterTC
 from hwtLib.logic.cntrGray import GrayCntrTC
@@ -151,6 +151,7 @@ from hwtLib.mem.atomic.flipReg_test import FlipRegTC
 from hwtLib.mem.bramEndpoint_test import BramPortEndpointTCs
 from hwtLib.mem.cam_test import CamTC
 from hwtLib.mem.cuckooHashTableWithRam_test import CuckooHashTableWithRamTC
+from hwtLib.mem.fifoArray_test import FifoArrayTC
 from hwtLib.mem.fifoAsync_test import FifoAsyncTC
 from hwtLib.mem.fifo_test import FifoWriterAgentTC, FifoReaderAgentTC, FifoTC
 from hwtLib.mem.hashTableCoreWithRam_test import HashTableCoreWithRamTC
@@ -320,6 +321,7 @@ suite = testSuiteFromTCs(
     FifoReaderAgentTC,
     FifoTC,
     FifoAsyncTC,
+    FifoArrayTC,
     HsJoinPrioritizedTC,
     HsJoinPrioritized_randomized_TC,
     HsJoinFair_2inputs_TC,
