@@ -17,6 +17,18 @@ class HandshakedBiDirectionalAgent(HandshakedAgent):
     def __init__(self, sim, intf):
         HandshakedAgent.__init__(self, sim, intf)
         self.dinData = deque()
+        self._isMonitor = False
+
+    def getMonitors(self):
+        self._isMonitor = True
+        return HandshakedAgent.getMonitors(self)
+
+    def notReset(self):
+        nr = HandshakedAgent.notReset(self)
+        if self._isMonitor:
+            return nr and self.dinData
+        else:
+            return nr
 
     def onMonitorReady(self):
         "write din"
