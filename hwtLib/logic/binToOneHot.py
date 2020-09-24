@@ -11,8 +11,16 @@ from hwt.synthesizer.param import Param
 
 
 def binToOneHot(sig, en=1):
-    return Concat(*reversed(list(sig._eq(i) & en for i in range(2 ** sig._dtype.bit_length()))))
+    try:
+        _en = int(en)
+    except:
+        _en = None
     
+    res = Concat(*reversed(list(sig._eq(i) for i in range(2 ** sig._dtype.bit_length()))))
+    if _en == 1:
+        return res
+    else:
+        return en._ternary(res, res._dtype.from_py(0))
     
 @serializeParamsUniq
 class BinToOneHot(Unit):
