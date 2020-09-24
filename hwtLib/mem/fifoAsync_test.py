@@ -25,7 +25,7 @@ class FifoAsyncTC(FifoTC):
         FifoTC.setUp(self)
         self.u.dataIn_clk._ag.period = self.IN_CLK
         OUT_CLK = self.u.dataOut_clk._ag.period
-        RST_DELAY = max(self.IN_CLK, OUT_CLK) * 1.6
+        RST_DELAY = int(max(self.IN_CLK, OUT_CLK) * 1.6)
         self.u.dataIn_rst_n._ag.initDelay = \
             self.u.dataOut_rst_n._ag.initDelay = RST_DELAY
 

@@ -26,7 +26,7 @@ class CdcTC(SingleUnitSimTestCase):
 
         def dataCollector():
             # random small value to collect data after it is set
-            yield Timer(CLK_PERIOD + 0.001)
+            yield Timer(CLK_PERIOD + 1)
             while True:
                 yield WaitCombRead()
                 d = u.dataOut.read()

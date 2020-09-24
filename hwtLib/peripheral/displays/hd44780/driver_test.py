@@ -16,7 +16,7 @@ class Hd44780Driver8bTC(SingleUnitSimTestCase):
         cls.u = u = Hd44780Driver()
         u.LCD_FREQ = int(1e6)
         u.FREQ = u.LCD_FREQ * 4
-        cls.CLK = freq_to_period(u.LCD_FREQ)
+        cls.CLK = int(freq_to_period(u.LCD_FREQ))
         return u
 
     def write_text(self, t):

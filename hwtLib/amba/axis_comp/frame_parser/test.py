@@ -120,7 +120,7 @@ class AxiS_frameParserTC(SimTestCase):
             }
             t = ts[dataWidth] * CLK_PERIOD
         else:
-            t = ((8 * 64) / dataWidth) * 8 * CLK_PERIOD
+            t = int(((8 * 64) / dataWidth) * 8 * CLK_PERIOD)
         self.runMatrixSim(t, dataWidth, randomize)
 
         for intf in u.dataOut._interfaces:

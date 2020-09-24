@@ -216,7 +216,7 @@ class FifoTC(SingleUnitSimTestCase):
         if randOut:
             self.randomize(u.dataOut)
 
-        self.runSim(2.5 * LEN * self.CLK)
+        self.runSim(int(2.5 * LEN * self.CLK))
 
         collected = u.dataOut._ag.data
         self.assertSequenceEqual(collected, ref)

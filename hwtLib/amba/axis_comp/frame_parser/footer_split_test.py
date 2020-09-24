@@ -90,7 +90,7 @@ class AxiS_footerSplitTC(SimTestCase):
                 ))
         t = len(u.dataIn._ag.data)
         if randomize:
-            t *= 3.5
+            t = int(t * 3.5)
         t += 20
         self.runSim(t * CLK_PERIOD, name=unique_name)
         for (ref_off0, ref_data0), (ref_off1, ref_data1) in zip(expected0, expected1):

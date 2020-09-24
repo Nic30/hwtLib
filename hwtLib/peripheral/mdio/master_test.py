@@ -10,7 +10,7 @@ class MdioMasterTC(SingleUnitSimTestCase):
     def getUnit(cls):
         u = cls.u = MdioMaster()
         u.FREQ = int(10e6)
-        cls.MDIO_CLK = (1e9 / u.MDIO_FREQ) * Time.ns
+        cls.MDIO_CLK = int((1e9 / u.MDIO_FREQ) * Time.ns)
         return u
 
     def test_nop(self):
