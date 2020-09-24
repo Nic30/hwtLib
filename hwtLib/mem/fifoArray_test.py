@@ -73,6 +73,19 @@ class FifoArrayTC(SingleUnitSimTestCase):
         self.assertValEqual(m.io.item_last.read(), (1 << 3) | (1 << 1))
         self.assertValSequenceEqual(m.io.values.read(), [10, 11, 12, 13])
 
+    def test_insert1pop1(self):
+        u = self.u
+        u.insert._ag.data.extend([
+            (0, 0, 10),
+        ])
+        u.pop._ag.dinData.extend([0])
+
+        self.runSim(16 * CLK_PERIOD)
+        m = self.rtl_simulator.model
+        self.assertValEqual(m.io.item_valid.read(), 0)
+        self.assertValEqual(m.io.item_last.read(), 0)
+        self.assertValSequenceEqual(u.pop._ag.data, [(10, 1, None), ])
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

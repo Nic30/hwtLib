@@ -76,11 +76,13 @@ class FifoArrayPopInterface(AddrInDataOutHs):
     :ivar ~.data: the return data which was read
     :ivar ~.last: flag which tell if this node was last in this list
         and thus this list is now empty and deallocated
+    :ivar ~.addr_next: address on a next item in this FIFO
     """
 
     def _declr(self):
         super(FifoArrayPopInterface, self)._declr()
         self.last = Signal()
+        self.addr_next = VectSignal(self.ADDR_WIDTH)
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = FifoArrayPopInterfaceAgent(sim, self)
@@ -94,16 +96,17 @@ class FifoArrayPopInterfaceAgent(AddrInDataOutHsAgent):
     def set_data(self, data):
         i = self.intf
         if data is None:
-            d, last = (None, None)
+            d, last, an = (None, None, None)
         else:
-            d, last = data
+            d, last, an = data
 
         i.data.write(d)
         i.last.write(last)
+        i.addr_next.write(an)
 
     def get_data(self):
         i = self.intf
-        return (i.data.read(), i.last.read())
+        return (i.data.read(), i.last.read(), i.addr_next)
     
 
 class FifoArray(Unit):
@@ -133,7 +136,7 @@ class FifoArray(Unit):
     """
 
     def _config(self):
-        self.ITEMS = Param(64)
+        self.ITEMS = Param(4)
         self.DATA_WIDTH = Param(8)
 
     def _declr(self):
@@ -183,7 +186,6 @@ class FifoArray(Unit):
         item_valid((item_valid & ~pop_one_hot) | insert_one_hot)
         item_last((item_last & ~insert_parent_one_hot) | insert_one_hot)
         
-
         values = self._sig("values", value_t[self.ITEMS])
         next_ptrs = self._sig("next_ptrs", addr_t[self.ITEMS])
 
@@ -194,6 +196,7 @@ class FifoArray(Unit):
             )
         )
         pop.data(values[pop.addr])
+        pop.addr_next(next_ptrs[pop.addr])
         pop.last(item_last[pop.addr] & item_valid[pop.addr])
         pop.vld(item_valid != 0)
 
