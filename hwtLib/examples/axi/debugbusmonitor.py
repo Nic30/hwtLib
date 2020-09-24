@@ -58,10 +58,10 @@ class DebugBusMonitorExampleAxi(Unit):
 
         # we need to add register for ".s" because otherwise there would be
         # a combinational loop
-        db.register(self.s, add_reg=True)
-        for i in self.s._interfaces:
-            db.register(i, name="s_" + i._name + "_snapshot",
-                        trigger=i.valid & i.ready)
+        #db.register(self.s, add_reg=True)
+        #for i in self.s._interfaces:
+        #    db.register(i, name="s_" + i._name + "_snapshot",
+        #                trigger=i.valid & i.ready)
 
         with self._paramsShared():
             self.db = db
