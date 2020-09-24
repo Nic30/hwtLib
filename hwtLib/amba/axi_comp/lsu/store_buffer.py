@@ -17,7 +17,7 @@ from hwt.synthesizer.unit import Unit
 from pyMathBitPrecise.bit_utils import mask
 
 from hwtLib.amba.axi4 import Axi4, Axi4_w
-from hwtLib.amba.axi_comp.cache.interfaces import AddrDataIntf, \
+from hwtLib.amba.axi_comp.lsu.interfaces import AddrDataIntf, \
     AxiStoreBufferWriteIntf, AxiStoreBufferWriteTmpIntf
 from hwtLib.amba.axi_comp.cache.ram_cumulative_mask import BramPort_withReadMask_withoutClk,\
     RamCumulativeMask, is_mask_byte_unaligned

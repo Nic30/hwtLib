@@ -1,12 +1,11 @@
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from pyMathBitPrecise.bit_utils import mask, set_bit_range, int_list_to_int
-from pycocotb.constants import CLK_PERIOD
-
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
-from hwtLib.amba.axi_comp.cache.store_buffer import AxiStoreBuffer
+from hwtLib.amba.axi_comp.lsu.store_buffer import AxiStoreBuffer
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
-from hwtLib.tools.debug_bus_monitor_ctl import select_bit_range
+from pyMathBitPrecise.bit_utils import mask, set_bit_range, int_list_to_int, \
+    get_bit_range
+from pycocotb.constants import CLK_PERIOD
 
 
 class AxiStoreBuffer_1word_per_cachelineTC(SingleUnitSimTestCase):
@@ -88,7 +87,7 @@ class AxiStoreBuffer_1word_per_cachelineTC(SingleUnitSimTestCase):
                                _id=0),
         ])
         self.assertValSequenceEqual(u.bus.w._ag.data, [
-            (select_bit_range(d, u.DATA_WIDTH * i, u.DATA_WIDTH),
+            (get_bit_range(d, u.DATA_WIDTH * i, u.DATA_WIDTH),
              mask(u.DATA_WIDTH // 8), int(last))
             for last, i in iter_with_last(range(u.BUS_WORDS_IN_CACHELINE))
         ])

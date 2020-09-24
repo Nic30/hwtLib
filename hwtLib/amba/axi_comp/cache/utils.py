@@ -1,8 +1,8 @@
-from hwt.code import Concat, log2ceil
-from hwt.hdl.typeShortcuts import vec
 from math import ceil
 
-from hwtLib.amba.axi_comp.cache.interfaces import AddrDataIntf
+from hwt.code import Concat, log2ceil
+from hwt.hdl.typeShortcuts import vec
+from hwtLib.amba.axi_comp.lsu.interfaces import AddrDataIntf
 from hwtLib.mem.cam import Cam
 
 
