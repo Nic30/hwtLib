@@ -18,7 +18,7 @@ from pyMathBitPrecise.bit_utils import mask
 
 from hwtLib.amba.axi4 import Axi4, Axi4_w
 from hwtLib.amba.axi_comp.lsu.interfaces import AddrDataIntf, \
-    AxiStoreBufferWriteIntf, AxiStoreBufferWriteTmpIntf
+    AxiStoreQueueWriteIntf, AxiStoreQueueWriteTmpIntf
 from hwtLib.amba.axi_comp.cache.ram_cumulative_mask import BramPort_withReadMask_withoutClk,\
     RamCumulativeMask, is_mask_byte_unaligned
 from hwtLib.amba.axi_comp.cache.utils import CamWithReadPort, \
@@ -31,7 +31,7 @@ from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.mem.fifo import Fifo
 
 
-class AxiStoreBuffer(Unit):
+class AxiStoreQueue(Unit):
     """
     A buffer which is used for write data from cache.
     It manages:
@@ -81,12 +81,12 @@ class AxiStoreBuffer(Unit):
         addClkRstn(self)
         self.OFFSET_WIDTH = log2ceil(self.CACHE_LINE_SIZE - 1)
         with self._paramsShared():
-            self.w = w = AxiStoreBufferWriteIntf()
-            self.w_in_reg = w_in_reg = HandshakedReg(AxiStoreBufferWriteTmpIntf)
+            self.w = w = AxiStoreQueueWriteIntf()
+            self.w_in_reg = w_in_reg = HandshakedReg(AxiStoreQueueWriteTmpIntf)
             w.ADDR_WIDTH = w_in_reg.ADDR_WIDTH = self.ADDR_WIDTH - self.OFFSET_WIDTH
             w.DATA_WIDTH = w_in_reg.DATA_WIDTH = self.CACHE_LINE_SIZE * 8
 
-            # self.r = AxiStoreBufferReadIntf()
+            # self.r = AxiStoreQueueReadIntf()
             self.bus = axi = Axi4()._m()
             axi.HAS_R = False
 
@@ -437,7 +437,7 @@ if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     #from hwtLib.mem.ram import XILINX_VIVADO_MAX_DATA_WIDTH
 
-    u = AxiStoreBuffer()
+    u = AxiStoreQueue()
     # u.ID_WIDTH = 6
     # u.CACHE_LINE_SIZE = 64
     # u.DATA_WIDTH = 256
