@@ -73,6 +73,7 @@ class FifoArrayTC(SingleUnitSimTestCase):
         self.assertValEqual(m.io.item_last.read(), (1 << 3) | (1 << 1))
         self.assertValSequenceEqual(m.io.values.read(), [10, 11, 12, 13])
 
+    @unittest.expectedFailure
     def test_insert1pop1(self):
         u = self.u
         u.insert._ag.data.extend([
