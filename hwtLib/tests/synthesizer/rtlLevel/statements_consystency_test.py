@@ -61,9 +61,9 @@ class StatementsConsystencyTC(unittest.TestCase):
         u = I2cMasterBitCtrl()
         self.check_consystency(u)
 
-        # test there is not a latch
+        # test if there is not a latch
         for stm in u._ctx.statements:
-            if not stm._is_completly_event_dependent:
+            if stm._event_dependent_from_branch != 0:
                 diff = stm._enclosed_for.symmetric_difference(stm._outputs)
                 self.assertEqual(diff, set(), "\n%r" % stm)
 
