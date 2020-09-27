@@ -212,6 +212,7 @@ from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
+from hwtLib.examples.errors.combLoops import CombLoopAnalysisTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -275,6 +276,7 @@ suite = testSuiteFromTCs(
     UnionTC,
     UnionIntfTC,
     ResourceAnalyzer_TC,
+    CombLoopAnalysisTC,
     Vhdl2008Serializer_TC,
     IfStmTC,
     SwitchStmTC,
