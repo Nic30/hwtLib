@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hdlConvertorAst.to.hdlUtils import iter_with_last
 from hwt.code import If
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.compBase import HandshakedCompBase
-from hdlConvertorAst.to.hdlUtils import iter_with_last
 
 
 @serializeParamsUniq
 class HandshakedReg(HandshakedCompBase):
     """
-    Register for Handshaked interface
+    Register for Handshaked interfaces
 
     :note: latency and delay can be specified as well as interface class
 
