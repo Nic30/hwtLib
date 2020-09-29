@@ -3,8 +3,8 @@ from hwt.hdl.operator import Operator
 from hwt.hdl.operatorDefs import AllOps, isEventDependentOp
 from hwt.hdl.portItem import HdlPortItem
 from hwt.synthesizer.interfaceLevel.mainBases import UnitBase
-from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.abstract.busBridge import BusBridge
+from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.abstract.busInterconnect import BusInterconnect
 from hwtLib.abstract.busStaticRemap import BusStaticRemap
 
@@ -37,7 +37,7 @@ def getParentUnit(sig):
     try:
         intf = sig._interface
     except AttributeError:
-        return  # if there is no interface it cant have parent unit
+        return  # if there is no interface it cant be a signal in IO of Unit instance
 
     while not isinstance(intf._parent, UnitBase):
         intf = intf._parent
@@ -90,6 +90,8 @@ class AddressSpaceProbe(object):
         parent = getParentUnit(mainSig)
 
         if parent not in self.seen:
+            # check if the parent Unit instance is some specific component
+            # which handles bus protocol
             self.seen.add(parent)
             if isinstance(parent, BusEndpoint):
                 yield offset, parent
@@ -111,6 +113,7 @@ class AddressSpaceProbe(object):
                                                     offset + _offset)
                 return
 
+        # walk endpoints where this signal is connected
         for e in mainSig.endpoints:
             if isinstance(e, Operator) and not isEventDependentOp(e):
                 ep = getEpSignal(mainSig, e)

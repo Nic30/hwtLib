@@ -8,10 +8,10 @@ from hwt.synthesizer.param import Param
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4 import Axi4, Axi4_addr
 from hwtLib.amba.axi4Lite import Axi4Lite, Axi4Lite_addr
+from hwtLib.amba.axi_comp.buff import AxiBuff
 from hwtLib.amba.constants import PROT_DEFAULT
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
-from hwtLib.amba.axi_comp.buff import AxiBuff
 
 
 class HandshakedIdAndLen(HandshakeSync):
@@ -30,11 +30,11 @@ class Axi_to_AxiLite(BusBridge):
     AXI3/4 -> Axi4Lite bridge
 
     :attention: AXI interfaces works in read first mode, overlapping transactions
-        are not checked to endup in proper r/w order
-    :attention: only last response code on AxiLite for transaction is used as a reponse code for Axi4
-        That means if the error appears somewhere in middle beat of the transaction the eror is ignored
-    :ivar ~.MAX_TRANS_OVERLAP: dept of internal fifo which is used to allow the transactions
-        to overlapp each other in order to pipeline the execution of transactions
+        are not checked to end up in proper r/w order
+    :attention: only last response code on AxiLite for transaction is used as a response code for Axi4
+        That means if the error appears somewhere in middle beat of the transaction the error is ignored
+    :ivar ~.MAX_TRANS_OVERLAP: depth of internal FIFO which is used to allow the transactions
+        to overlap each other in order to pipeline the execution of transactions
 
     .. hwt-schematic::
     """
@@ -115,7 +115,7 @@ class Axi_to_AxiLite(BusBridge):
     def gen_w_logic(self, w_in, w_out):
         """
         Directly connect the w channels with ignore of extra signals
-        (The data should be already sychronized by order of beats on channel)
+        (The data should be already synchronized by order of beats on channel)
         """
         ignored = {w_in.last}
         if hasattr(w_in, "id"):
@@ -125,7 +125,7 @@ class Axi_to_AxiLite(BusBridge):
     def gen_b_or_r_logic(self, inp, outp, fifo_out, propagete_only_on_last):
         """
         Use counter to skip intermediate generated transactions
-        and pass only confirmation from last beat of the orignal transaction
+        and pass only confirmation from last beat of the original transaction
         """
         name_prefix = outp._name
         rem = self._reg(name_prefix + "rem", self.s.aw.len._dtype)

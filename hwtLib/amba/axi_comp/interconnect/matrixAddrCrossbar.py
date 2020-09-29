@@ -4,6 +4,7 @@
 from typing import List, Tuple
 
 from hwt.code import log2ceil, connect, Concat, SwitchLogic, Or
+from hwt.code_utils import rename_signal
 from hwt.hdl.assignment import Assignment
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.defs import BIT
@@ -13,13 +14,12 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.abstract.busEndpoint import BusEndpoint
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
+from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.types.ctypes import uint8_t
-from hwt.code_utils import rename_signal
 
 
 class AxiInterconnectMatrixAddrCrossbar(Unit):

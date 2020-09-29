@@ -3,6 +3,7 @@
 
 from hwt.hdl.constants import Time
 from hwt.hdl.types.bits import Bits
+from hwt.interfaces.intf_map import IntfMap
 from hwt.interfaces.std import BramPort_withoutClk, VldSynced, RegCntrl, \
     VectSignal, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -15,7 +16,6 @@ from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
 from hwtLib.amba.axiLite_comp.sim.mem_space_master import AxiLiteMemSpaceMaster
 from hwtLib.amba.constants import RESP_OKAY
-from hwt.interfaces.intf_map import IntfMap
 
 
 class Loop(Unit):

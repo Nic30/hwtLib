@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import FsmBuilder, If, connect, Concat
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
@@ -8,7 +11,6 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi4 import Axi4
-from hwtLib.amba.axi3Lite import Axi3Lite
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 

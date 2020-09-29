@@ -9,14 +9,14 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
+from hwtLib.amba.axiLite_comp.sim.mem_space_master import AxiLiteMemSpaceMaster
+from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
+from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.amba.axi_comp.tester import AxiTester, SEND_AR, RECV_R
 from hwtLib.amba.constants import BYTES_IN_TRANS, PROT_DEFAULT, LOCK_DEFAULT, \
     CACHE_DEFAULT, BURST_INCR, RESP_OKAY
-from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
-from hwtLib.amba.axiLite_comp.sim.mem_space_master import AxiLiteMemSpaceMaster
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
-from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 
 
 class SimProcessSequence(deque):

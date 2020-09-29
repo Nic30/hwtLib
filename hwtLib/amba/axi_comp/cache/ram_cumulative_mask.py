@@ -3,8 +3,6 @@
 
 from math import ceil
 
-from pyMathBitPrecise.bit_utils import mask
-
 from hwt.code import Concat, Or, If
 from hwt.code_utils import rename_signal
 from hwt.hdl.constants import WRITE, READ
@@ -17,6 +15,7 @@ from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.mem.ram import RamSingleClock
 from ipCorePackager.constants import DIRECTION
+from pyMathBitPrecise.bit_utils import mask
 
 
 class BramPort_withReadMask_withoutClk(BramPort_withoutClk):

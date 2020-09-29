@@ -11,7 +11,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         in concrete implementation
 
     :cvar ~.FifoCls: FIFO unit class
-    :cvar ~.FifoAsyncCls: asyncronous FIFO (FIFO with separate clock per port) unit class
+    :cvar ~.FifoAsyncCls: asynchronous FIFO (FIFO with separate clock per port) unit class
     :cvar ~.JoinSelectCls: select order based join unit class
     :cvar ~.JoinFairCls: round robin based join unit class
     :cvar ~.JoinPrioritizedCls: priority based join unit class

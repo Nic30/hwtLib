@@ -10,7 +10,7 @@ from hwt.synthesizer.param import Param
 class AxiStaticRemap(BusStaticRemap):
     """
     :class:`.BusStaticRemap` implementation for AXI3/4 full/lite interfaces
-    :note: this component only remaps some memory regions, but it does not preform the address checking
+    :note: this component only remaps some memory regions, but it does not perform the address checking
 
     .. hwt-schematic:: _example_AxiStaticRemap
     """

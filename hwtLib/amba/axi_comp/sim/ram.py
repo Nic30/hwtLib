@@ -2,11 +2,11 @@ from collections import deque
 
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.value import HValue
-from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
-from hwtLib.amba.constants import RESP_OKAY
-from pyMathBitPrecise.bit_utils import mask, set_bit_range, get_bit,\
-    get_bit_range
 from hwtLib.abstract.sim_ram import SimRam
+from hwtLib.amba.constants import RESP_OKAY
+from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
+from pyMathBitPrecise.bit_utils import mask, set_bit_range, get_bit, \
+    get_bit_range
 
 
 class AxiSimRam(AxiDpSimRam):

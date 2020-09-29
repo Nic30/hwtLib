@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.hdl.types.struct import HStructField
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import propagateClkRstn

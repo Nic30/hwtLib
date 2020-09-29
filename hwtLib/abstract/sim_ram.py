@@ -1,12 +1,11 @@
-from itertools import chain
+from math import ceil
 
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
-from pyMathBitPrecise.bit_utils import mask, get_bit_range, int_list_to_int
-from math import ceil
 from hwt.pyUtils.arrayQuery import grouper
+from pyMathBitPrecise.bit_utils import mask, get_bit_range, int_list_to_int
 
 
 class AllocationError(Exception):
@@ -23,7 +22,7 @@ def reshapedInitItems(actualCellSize, requestedCellSize, values):
     :param actualCellSize: actual size of item in array
     :param requestedCellSize: requested size of item in array
     :param values: input array
-    :return: generator of new items of specified characteristik
+    :return: generator of new items of specified characteristic
     """
     if (actualCellSize < requestedCellSize
             and requestedCellSize % actualCellSize == 0):
@@ -38,14 +37,14 @@ def reshapedInitItems(actualCellSize, requestedCellSize, values):
 
 class SimRam():
     """
-    Dense memory for simulation purposes with datapump interfaces
+    Dense memory for simulation purposes with data pump interfaces
 
     :ivar ~.data: memory dict
     """
 
     def __init__(self, cellSize, parent=None):
         """
-        :param cellWidth: width of items in memmory
+        :param cellWidth: width of items in memory
         :param clk: clk signal for synchronization
         :param parent: parent instance of SimRam
                        (memory will be shared with this instance)
@@ -250,8 +249,8 @@ class SimRam():
 
         :param addr: address where get struct from
         :param structT: instance of HStruct or FrameTmpl generated
-                        from it to resove structure of data
-        :param bitAddr: optional bit precisse address is is not None
+                        from it to resolve structure of data
+        :param bitAddr: optional bit precise address is is not None
                         param addr has to be None
         """
         if bitAddr is None:

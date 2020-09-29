@@ -5,12 +5,12 @@ from random import shuffle
 
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axiLite_comp.to_axi import AxiLite_to_Axi
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.amba.constants import PROT_DEFAULT, RESP_OKAY
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
-from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 
 
 class AxiLite_to_Axi_withClk(AxiLite_to_Axi):

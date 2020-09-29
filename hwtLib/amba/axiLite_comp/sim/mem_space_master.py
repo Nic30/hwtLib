@@ -29,14 +29,14 @@ class AxiLiteMemSpaceMaster(AbstractMemSpaceMaster):
 
     def _axi4lite_writeAddr(self, addrChannel, addr, size):
         """
-        add address transaction to addr channel of agent
+        add address transaction to address channel of agent
         """
         prot = 0 
         addrChannel.data.append((addr, prot))
 
     def _axi3lite_writeAddr(self, addrChannel, addr, size):
         """
-        add address transaction to addr channel of agent
+        add address transaction to address channel of agent
         """
         addrChannel.data.append(addr)
 

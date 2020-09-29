@@ -1,8 +1,8 @@
-from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.param import Param
 from hwt.code import SwitchLogic, Concat, isPow2
-from hwtLib.abstract.busEndpoint import inRange
 from hwt.hdl.typeShortcuts import vec
+from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
+from hwt.code_utils import inRange
 
 
 class BusStaticRemap(Unit):

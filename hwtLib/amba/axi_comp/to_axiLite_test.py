@@ -1,10 +1,10 @@
 from typing import List
 
 from hwt.pyUtils.arrayQuery import iter_with_last
-from hwtLib.amba.axiLite_comp.to_axi_test import AxiLite_to_Axi_TC
 from hwtLib.amba.axiLite_comp.sim.ram import Axi4LiteSimRam
+from hwtLib.amba.axiLite_comp.to_axi_test import AxiLite_to_Axi_TC
 from hwtLib.amba.axi_comp.to_axiLite import Axi_to_AxiLite
-from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT,\
+from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, \
     PROT_DEFAULT, QOS_DEFAULT, BYTES_IN_TRANS, RESP_OKAY
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD

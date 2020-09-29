@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.code import log2ceil, If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.utils import addClkRstn
@@ -12,7 +15,7 @@ class AxiSlaveTimeout(BusBridge):
     with the error code if the slave does not respond in specified time
 
     :note: blocks the overlapping transactions, it allows only
-        a single pedning transaction per type
+        a single pending transaction per type
     """
 
     def __init__(self, intfCls):

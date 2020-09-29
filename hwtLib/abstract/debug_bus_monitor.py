@@ -7,18 +7,18 @@ from hwt.code import If
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
+from hwt.hdl.types.structValBase import StructValBase
 from hwt.interfaces.intf_map import IntfMap, HTypeFromIntfMap
 from hwt.interfaces.std import Signal, VldSynced
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.interface import Interface
-from hwt.synthesizer.unit import Unit
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.hdl.types.structValBase import StructValBase
-from hwtLib.clocking.vldSynced_cdc import VldSyncedCdc
 from hwt.synthesizer.interfaceLevel.mainBases import InterfaceBase
-from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.synthesizer.unit import Unit
+from hwtLib.clocking.vldSynced_cdc import VldSyncedCdc
 
 
 class MonitorIntf(Interface):

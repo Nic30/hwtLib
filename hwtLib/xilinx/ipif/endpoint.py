@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, FsmBuilder
+from hwt.code_utils import inRange
 from hwt.hdl.types.enum import HEnum
-from hwtLib.abstract.busEndpoint import BusEndpoint, inRange
+from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.xilinx.ipif.intf import Ipif
 
 

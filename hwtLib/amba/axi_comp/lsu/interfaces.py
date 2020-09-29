@@ -2,10 +2,9 @@ from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VectSignal, Signal
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
+from hwtLib.amba.axi3Lite import Axi3Lite_addr, Axi3Lite_r
 from ipCorePackager.constants import DIRECTION
 from pycocotb.hdlSimulator import HdlSimulator
-
-from hwtLib.amba.axi3Lite import Axi3Lite_addr, Axi3Lite_r
 
 
 class AxiStoreQueueWriteIntf(Handshaked):

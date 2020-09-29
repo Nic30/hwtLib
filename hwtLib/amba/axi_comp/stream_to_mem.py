@@ -8,7 +8,6 @@ from hwt.hdl.types.enum import HEnum
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import fitTo
@@ -36,7 +35,7 @@ class Axi4streamToMem(Unit):
 
     If there is transaction pending idle flag is 0,
     if on/off is set to 0 in this state
-    unit continues until all data are send and then stayes off.
+    unit continues until all data are send and then stays off.
     This could be use as synchronization with the software.
 
     1) driver enables this unit, then tests while not idle.
@@ -117,7 +116,7 @@ class Axi4streamToMem(Unit):
 
     def connectRegisters(self, st, onoff, baseAddr):
         """
-        connection of axilite registers
+        connection of AXI-lite registers
         """
         idle = st._eq(st._dtype.fullIdle)
         regs = self.regsConventor.decoded

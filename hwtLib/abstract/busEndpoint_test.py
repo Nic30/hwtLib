@@ -5,8 +5,8 @@ import unittest
 
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct, HStructFieldMeta
-from hwt.interfaces.std import RegCntrl, VectSignal, VldSynced
 from hwt.interfaces.intf_map import HTypeFromIntfMap, IntfMap
+from hwt.interfaces.std import RegCntrl, VectSignal, VldSynced
 
 
 # example methods for interface construction

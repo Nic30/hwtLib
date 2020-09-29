@@ -22,7 +22,7 @@ class TemplateConfigured():
         """
         :param structT: instance of HStruct used as template for this frame
             If name is None no input port is generated and space
-            is filled with invalid values, litle-endian encoding,
+            is filled with invalid values, little-endian encoding,
             supported types of interfaces are: Handshaked, Signal
             can be also instance of FrameTmpl
         :param tmpl: instance of TransTmpl for this structT
@@ -105,7 +105,7 @@ def HdlType_separate(t: HdlType, do_separate_query: Callable[[HdlType], bool])\
 
 def separate_streams(t: HdlType):
     """
-    Split HStruct type hierachy on the fields of HStream type.
+    Split HStruct type hierarchy on the fields of HStream type.
 
     :note: e.g. in HStruct(
         (HStream(Bits(8)), "data"),
@@ -118,8 +118,8 @@ def separate_streams(t: HdlType):
 
 def to_primitive_stream_t(t: HdlType):
     """
-    Converty type to a HStream of Bits
-    With propper frame len, offset etc.
+    Convert type to a HStream of Bits
+    With proper frame len, offset etc.
     """
     if isinstance(t, HStruct) and len(t.fields) == 1:
         return to_primitive_stream_t(t.fields[0].dtype)

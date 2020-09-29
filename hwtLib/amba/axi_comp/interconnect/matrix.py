@@ -6,7 +6,7 @@ from typing import Union, Set, List, Tuple
 from hwt.hdl.constants import READ, READ_WRITE, WRITE
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.synthesizer.hObjList import HObjList
-from hwtLib.abstract.busInterconnect import BusInterconnectUtils,\
+from hwtLib.abstract.busInterconnect import BusInterconnectUtils, \
     BusInterconnect
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon

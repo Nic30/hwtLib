@@ -14,21 +14,20 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from pyMathBitPrecise.bit_utils import mask
-
 from hwtLib.amba.axi4 import Axi4, Axi4_w
-from hwtLib.amba.axi_comp.lsu.interfaces import AddrDataIntf, \
-    AxiStoreQueueWriteIntf, AxiStoreQueueWriteTmpIntf
-from hwtLib.amba.axi_comp.cache.ram_cumulative_mask import BramPort_withReadMask_withoutClk,\
+from hwtLib.amba.axi_comp.cache.ram_cumulative_mask import BramPort_withReadMask_withoutClk, \
     RamCumulativeMask, is_mask_byte_unaligned
 from hwtLib.amba.axi_comp.cache.utils import CamWithReadPort, \
     apply_write_with_mask
+from hwtLib.amba.axi_comp.lsu.interfaces import AddrDataIntf, \
+    AxiStoreQueueWriteIntf, AxiStoreQueueWriteTmpIntf
 from hwtLib.amba.constants import BYTES_IN_TRANS, LOCK_DEFAULT, CACHE_DEFAULT, \
     QOS_DEFAULT, BURST_INCR, PROT_DEFAULT
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.mem.fifo import Fifo
+from pyMathBitPrecise.bit_utils import mask
 
 
 class AxiStoreQueue(Unit):
