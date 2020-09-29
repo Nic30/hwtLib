@@ -4,6 +4,7 @@ from math import ceil
 from typing import Union, Tuple
 
 from hwt.code import log2ceil, Switch, Concat
+from hwt.code_utils import inRange
 from hwt.hdl.constants import INTF_DIRECTION
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
@@ -22,13 +23,10 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.synthesizer.typePath import TypePath
 from hwt.synthesizer.unit import Unit
-from ipCorePackager.constants import DIRECTION
 from hwtLib.abstract.addressStepTranslation import AddressStepTranslation
-
-
-def inRange(n, lower, end):
-    return (n >= lower) & (n < end)
+from ipCorePackager.constants import DIRECTION
 
 
 def TransTmpl_get_min_addr(t: TransTmpl):
@@ -171,7 +169,7 @@ class BusEndpoint(Unit):
         :return: interface for specified field
         """
         t = field.dtype
-        path = (*structIntf._field_path, field.name)
+        path = structIntf._field_path / field.name
         shouldEnter, shouldUse = self.shouldEnterFn(self.STRUCT_TEMPLATE, path)
 
         if shouldUse:
@@ -192,12 +190,12 @@ class BusEndpoint(Unit):
                     p = HObjList()
                     for i_i in range(int(t.size)):
                         i = BusEndpoint.intf_for_Bits(e_t)
-                        structIntf._fieldsToInterfaces[(*path, i_i)] = i
+                        structIntf._fieldsToInterfaces[path / i_i] = i
                         p.append(i)
                 elif isinstance(e_t, HStruct):
                     p = HObjList(
                         StructIntf(t.element_t,
-                                   (*path, i),
+                                   path / i,
                                    instantiateFieldFn=self._mkFieldInterface)
                         for i in range(int(t.size))
                     )
@@ -466,7 +464,7 @@ class BusEndpoint(Unit):
         """
         t = HTypeFromIntfMap(interfaceMap)
 
-        def shouldEnter(root: HdlType, field_path: Tuple[Union[str, int], ...]):
+        def shouldEnter(root: HdlType, field_path: TypePath):
             actual = IntfMap_get_by_field_path(interfaceMap, field_path)
 
             shouldEnter = isinstance(actual, (list, tuple, HStruct)) or (

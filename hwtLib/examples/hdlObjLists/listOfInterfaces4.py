@@ -8,6 +8,7 @@ from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.hObjList import HObjList
+from hwt.synthesizer.typePath import TypePath
 from hwt.synthesizer.unit import Unit
 from hwtLib.types.ctypes import uint8_t
 
@@ -33,7 +34,7 @@ class ListOfInterfacesSample4(Unit):
     """
 
     @staticmethod
-    def shouldEnterFn(field_path):
+    def shouldEnterFn(field_path: TypePath):
         return False, True
 
     def _mkFieldInterface(self, structIntf: HStruct, field: HStructField):
@@ -43,7 +44,7 @@ class ListOfInterfacesSample4(Unit):
             p = RegCntrl()
             dw = t.bit_length()
         elif isinstance(t, HArray):
-            field_path = (*structIntf._field_path, field)
+            field_path = structIntf._field_path / field.name
             if self.shouldEnterFn(field_path)[0]:
                 if isinstance(t.element_t, Bits):
                     p = HObjList(RegCntrl() for _ in range(int(t.size)))

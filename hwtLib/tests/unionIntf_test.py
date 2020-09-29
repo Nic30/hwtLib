@@ -36,7 +36,7 @@ class SimpleUnionSlave(EmptyUnit):
 
     def mkFieldIntf(self, structIntf: Union[StructIntf, UnionSink, UnionSource], field):
         t = field.dtype
-        path = (*structIntf._field_path, field.name)
+        path = structIntf._field_path / field.name
         if isinstance(t, HUnion):
             p = self.intfCls(t, path, structIntf._instantiateFieldFn)
             p._fieldsToInterfaces = structIntf._fieldsToInterfaces

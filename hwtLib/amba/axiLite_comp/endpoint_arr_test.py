@@ -3,17 +3,17 @@
 
 from hwt.hdl.constants import Time
 from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.struct import HStruct
+from hwt.hdl.types.structUtils import field_path_get_type
 from hwt.pyUtils.arrayQuery import flatten
+from hwt.synthesizer.typePath import TypePath
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTC, \
     AxiLiteEndpointDenseStartTC, AxiLiteEndpointDenseTC
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 from hwtLib.types.ctypes import uint32_t
 from pyMathBitPrecise.bit_utils import mask
-from hwt.hdl.types.structUtils import field_path_get_type
-from hwt.hdl.types.hdlType import HdlType
-from typing import Tuple, Union
 
 
 structTwoArr = HStruct(
@@ -118,7 +118,7 @@ class AxiLiteEndpointStructsInArrayTC(AxiLiteEndpointTC):
 
     def mySetUp(self, data_width=32):
 
-        def shouldEnterFn(root: HdlType, field_path: Tuple[Union[str, int], ...]):
+        def shouldEnterFn(root: HdlType, field_path: TypePath):
             return (True, isinstance(field_path_get_type(root, field_path), Bits))
 
         u = AxiLiteEndpoint(self.STRUCT_TEMPLATE,

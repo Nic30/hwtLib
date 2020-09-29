@@ -21,17 +21,17 @@ from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwtLib.abstract.template_configured import TemplateConfigured,\
+from hwtLib.abstract.template_configured import TemplateConfigured, \
     separate_streams, to_primitive_stream_t
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
-from hwtLib.amba.axis_comp.frame_deparser.strb_keep_stash import StrbKeepStash,\
+from hwtLib.amba.axis_comp.frame_deparser.strb_keep_stash import StrbKeepStash, \
     reduce_conditional_StrbKeepStashes
-from hwtLib.amba.axis_comp.frame_deparser.utils import _get_only_stream,\
-    connect_optional_with_best_effort_axis_mask_propagation,\
+from hwtLib.amba.axis_comp.frame_deparser.utils import _get_only_stream, \
+    connect_optional_with_best_effort_axis_mask_propagation, \
     drill_down_in_HStruct_fields
 from hwtLib.amba.axis_comp.frame_join import AxiS_FrameJoin
-from hwtLib.amba.axis_comp.frame_parser.field_connector import AxiS_frameParserFieldConnector,\
+from hwtLib.amba.axis_comp.frame_parser.field_connector import AxiS_frameParserFieldConnector, \
     get_byte_order_modifier
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
@@ -97,7 +97,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         Instantiate interface for all members of input type
         """
         t = structField.dtype
-        path = (*parent._field_path, structField.name)
+        path = parent._field_path / structField.name
         if isinstance(t, HUnion):
             p = UnionSink(t, path, parent._instantiateFieldFn)
             p._fieldsToInterfaces = parent._fieldsToInterfaces

@@ -109,7 +109,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
     def _mkFieldIntf(self, parent: Union[StructIntf, UnionSource],
                      structField: HStructField):
         t = structField.dtype
-        path = (*parent._field_path, structField.name)
+        path = parent._field_path / structField.name
         if isinstance(t, HUnion):
             i = UnionSource(t, path, parent._instantiateFieldFn)
             i._fieldsToInterfaces = parent._fieldsToInterfaces
