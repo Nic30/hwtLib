@@ -56,7 +56,7 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
 
         assert all_used_slaves
         # remove the empty intervals in slave indexing
-        all_used_slaves = sorted(list(all_used_slaves))
+        all_used_slaves = sorted(all_used_slaves)
         slv_index_map = {s_i: new_s_i for new_s_i,
                          s_i in enumerate(all_used_slaves)}
         if len(all_used_slaves) - 1 != all_used_slaves[-1]:
@@ -70,7 +70,7 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
 
         # build connection informations for later use
         sub_interconnect_connetions = []
-        for sub_m_i, m_i in enumerate(sorted(list(master_indexes))):
+        for sub_m_i, m_i in enumerate(sorted(master_indexes)):
             c = (sub_interconnect, INTF_DIRECTION.MASTER, m_i, sub_m_i)
             sub_interconnect_connetions.append(c)
         for sub_s_i, s_i in enumerate(all_used_slaves):

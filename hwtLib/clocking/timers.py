@@ -3,7 +3,6 @@ from typing import Optional, Union
 from hwt.code import log2ceil, If, isPow2
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.value import HValue
-from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 
@@ -37,8 +36,7 @@ class TimerInfo(object):
     @staticmethod
     def resolveSharing(timers):
         # filter out timers with maxVal == 1 because they are only clock
-        timers = sorted(where(timers,
-                              lambda t: t.maxVal != 1),
+        timers = sorted((t for t  in timers if t.maxVal != 1),
                         key=lambda t: t.maxVal, reverse=True)
         for i, t in enumerate(timers):
             if isPow2(t.maxVal):

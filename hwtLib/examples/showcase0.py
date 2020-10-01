@@ -92,8 +92,8 @@ class Showcase0(Unit):
         # main purpose is to unify names of clock and reset signals
         addClkRstn(self)
 
-        # HObjList is just regural list, it is used to tell Unit/Interface
-        # to look insede while searching for nested Interface/Unit instances
+        # HObjList is just regular list, it is used to tell Unit/Interface
+        # to look inside while searching for nested Interface/Unit instances
         self.cmp = HObjList(
             Signal() for _ in range(6)
         )._m()
@@ -202,7 +202,7 @@ class Showcase0(Unit):
         r1(r0)
 
         # type of signal can be array as well, this allow to create memories like BRAM...
-        # rom will be synchronous ROM in this case
+        # ROM will be synchronous ROM in this case
         rom = self._sig("rom", uint8_t[4], def_val=[i for i in range(4)])
 
         If(self.clk._onRisingEdge(),
