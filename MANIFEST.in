@@ -54,6 +54,7 @@ include hwtLib/peripheral/displays/Segment7.vhd
 include hwtLib/tests/constraints/AxiStreamFullDuplexCdc.xdc
 include hwtLib/tests/constraints/FifoAsync.xdc
 include hwtLib/tests/sertialization/ExampleA.vhd
+include hwtLib/tests/sertialization/SpiMaster.vhd
 include hwtLib/tests/sertialization/TernaryInConcatExample.vhd
 include hwtLib/tests/sertialization/TmpVarExample.vhd
 include hwtLib/tests/synthesizer/interfaceLevel/UnitWithGenericOfChild.vhd
