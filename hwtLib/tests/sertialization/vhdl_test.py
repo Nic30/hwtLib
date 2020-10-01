@@ -5,6 +5,7 @@ from hwt.hdl.typeShortcuts import hBit, vec
 from hwt.interfaces.std import VectSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
+from hwtLib.peripheral.spi.master import SpiMaster
 
 
 class TernaryInConcatExample(Unit):
@@ -37,6 +38,11 @@ class Vhdl2008Serializer_TC(BaseSerializationTC):
     def test_add_to_slice_vhdl(self):
         u = TernaryInConcatExample()
         self.assert_serializes_as_file(u, "TernaryInConcatExample.vhd")
+    
+    def test_SpiMaster_vhdl(self):
+        u = SpiMaster()
+        self.assert_serializes_as_file(u, "SpiMaster.vhd")
+        
 
 
 if __name__ == '__main__':
