@@ -6,17 +6,12 @@ from hwt.interfaces.std import VectSignal, HandshakeSync, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.serializer.combLoopAnalyzer.tarjan import StronglyConnectedComponentSearchTarjan
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import synthesised, to_rtl_str
 from hwtLib.handshaked.reg import HandshakedReg
-from hwt.synthesizer.hObjList import HObjList
 
 
-def to_tuple_of_names(objs):
-    return tuple(o.name if isinstance(o, RtlSignal) else o._name for o in objs)
-
- 
 def freeze_set_of_sets(obj):
     return frozenset(map(frozenset, obj))
        
@@ -140,7 +135,7 @@ class CombLoopAnalysisTC(unittest.TestCase):
         synthesised(u)
         s.visit_Unit(u)
         return freeze_set_of_sets(
-            set(to_tuple_of_names(member) for member in loop)
+            set(str(member.resolve()[1:]) for member in loop)
             for loop in s.report()
         )
 
@@ -160,14 +155,14 @@ class CombLoopAnalysisTC(unittest.TestCase):
         self.assertEqual(comb_loops,
             freeze_set_of_sets([
                [
-                    ('sig_con_dataIn_rd',),
-                    ('reg', 'dataOut_rd'),
-                    ('sig_con_dataOut_rd',),
-                    ('sig_reg_dataOut_rd',),
-                    ('con', 'dataOut_rd'),
-                    ('con', 'dataIn_rd'),
-                    ('reg', 'dataIn_rd'),
-                    ('sig_reg_dataIn_rd',)
+                    'sig_con_dataIn_rd',
+                    'reg/dataOut_rd',
+                    'sig_con_dataOut_rd',
+                    'sig_reg_dataOut_rd',
+                    'con/dataOut_rd',
+                    'con/dataIn_rd',
+                    'reg/dataIn_rd',
+                    'sig_reg_dataIn_rd',
                 ],
             ]))
 
@@ -187,14 +182,14 @@ class CombLoopAnalysisTC(unittest.TestCase):
         self.assertEqual(comb_loops,
             freeze_set_of_sets([
                [
-                    ('sig_con_dataIn_rd',),
-                    ('reg', 'dataOut_rd'),
-                    ('sig_con_dataOut_rd',),
-                    ('sig_reg_dataOut_rd',),
-                    ('con', 'dataOut_rd'),
-                    ('con', 'dataIn_rd'),
-                    ('reg', 'dataIn_rd'),
-                    ('sig_reg_dataIn_rd',)
+                    'sig_con_dataIn_rd',
+                    'reg/dataOut_rd',
+                    'sig_con_dataOut_rd',
+                    'sig_reg_dataOut_rd',
+                    'con/dataOut_rd',
+                    'con/dataIn_rd',
+                    'reg/dataIn_rd',
+                    'sig_reg_dataIn_rd',
                 ],
             ]))
 
