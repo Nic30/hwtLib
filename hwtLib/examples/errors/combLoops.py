@@ -179,8 +179,7 @@ class CombLoopAnalysisTC(unittest.TestCase):
     def test_shared_component_instance_with_comb_loops(self):
         u = HandshakeRegLoop(HandshakedReg)
         comb_loops = self.get_comb_loops(u)
-        self.assertEqual(comb_loops,
-            freeze_set_of_sets([
+        ref = [
                [
                     'sig_con_dataIn_rd',
                     'reg/dataOut_rd',
@@ -191,7 +190,14 @@ class CombLoopAnalysisTC(unittest.TestCase):
                     'reg/dataIn_rd',
                     'sig_reg_dataIn_rd',
                 ],
-            ]))
+            ]
+        #    print([m for m in loop if m not in ref[0]])
+        #    print([m for m in ref[0] if m not in loop])
+        #for loop in comb_loops:
+            
+        self.assertSetEqual(comb_loops,
+            freeze_set_of_sets(ref))
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
