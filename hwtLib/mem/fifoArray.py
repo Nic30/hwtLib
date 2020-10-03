@@ -115,6 +115,7 @@ class FifoArray(Unit):
     The memory is shared and the number of lists stored in this array is limited only by memory.
     
     Corresponds to data structure:
+
     .. code-block:: cpp
 
         // note that in implementation each part of struct item is stored in separate array
@@ -124,14 +125,14 @@ class FifoArray(Unit):
           bool valid;
           bool last;
         };
-
+        
         item items[ITEMS];
     
     :note: The insert_addr is used to pop from specific list.
         The list can be read only from it's head in FIFO order manner.
         Item is last if it's next pointer points on this item.
     :note: DistRAM implementation.
-    :note  The pop address is not checked
+    :note: The pop address is not checked
         it is possible to pop from wrong list if address is specified incorrectly
     """
 
