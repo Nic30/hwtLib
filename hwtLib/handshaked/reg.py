@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hdlConvertorAst.to.hdlUtils import iter_with_last
+from typing import List
+
 from hwt.code import If
 from hwt.interfaces.utils import addClkRstn
+from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
@@ -32,6 +35,9 @@ class HandshakedReg(HandshakedCompBase):
             self.dataOut = self.intfCls()._m()
 
     def _impl_latency(self, inVld, inRd, inData, outVld, outRd, prefix):
+        """
+        Create a normal handshaked register
+        """
         isOccupied = self._reg(prefix + "isOccupied", def_val=0)
         regs_we = self._sig(prefix + 'reg_we')
 
@@ -65,7 +71,11 @@ class HandshakedReg(HandshakedCompBase):
         )
         return outData
 
-    def _implLatencyAndDelay(self, inVld, inRd, inData, outVld, outRd, prefix):
+    def _implLatencyAndDelay(self, inVld: RtlSignal, inRd: RtlSignal, inData: List[RtlSignal],
+                             outVld: RtlSignal, outRd: RtlSignal, prefix: str):
+        """
+        Create a register pipe
+        """
         wordLoaded = self._reg(prefix + "wordLoaded", def_val=0)
         If(wordLoaded,
            wordLoaded(~outRd)
@@ -86,9 +96,68 @@ class HandshakedReg(HandshakedCompBase):
 
         return outData
 
+    def _implReadyChainBreak(self, in_vld: RtlSignal, in_rd: RtlSignal, in_data: List[RtlSignal],
+                             out_vld: RtlSignal, out_rd: RtlSignal, prefix: str):
+        """
+        Two sets of registers 0. is prioritized 1. is used as a backup
+        The in_rd is not combinationally connected to out_rd
+        The out_vld is not combinationally connected to in_vld
+        """
+        
+        occupied = [self._reg(prefix + "occupied_%d" % i, def_val=0) for i in range(2)]
+        reader_prio = self._reg(prefix + "reader_prio", def_val=0)
+        
+        consume_0 = (reader_prio._eq(0) & occupied[0]) | ~occupied[1]
+        consume_1 = (reader_prio._eq(1) & occupied[1]) | ~occupied[0]
+        
+        outData = []
+        for iin in in_data:
+            r0 = self._reg(prefix + 'reg0_' + getSignalName(iin), iin._dtype)
+            If(in_vld & ~occupied[0],
+               r0(iin)
+            )
+        
+            r1 = self._reg(prefix + 'reg1_' + getSignalName(iin), iin._dtype)
+            If(in_vld & ~occupied[1],
+               r1(iin)
+            )
+
+            o = self._sig(prefix + 'out_tmp_' + getSignalName(iin), iin._dtype)
+            
+            If(consume_0,
+               o(r0)
+            ).Elif(consume_1,
+               o(r1)
+            ).Else(
+               o(None)
+            )
+            outData.append(o)
+
+        If(in_vld,
+            If(occupied[0],
+               reader_prio(0),
+            ).Elif(occupied[1],
+               reader_prio(1),
+            )
+        )
+
+        oc0_set = in_vld & ~occupied[0]
+        oc0_clr = out_rd & occupied[0] & consume_0
+        
+        oc1_set = in_vld & occupied[0] & ~occupied[1] 
+        oc1_clr = out_rd & occupied[1] & consume_1
+        
+        occupied[0]((occupied[0] | oc0_set) & ~oc0_clr)
+        occupied[1]((occupied[1] | oc1_set) & ~oc1_clr)
+        
+        in_rd(~occupied[0] | ~occupied[1])
+        out_vld(occupied[0] | occupied[1])
+        
+        return outData
+        
     def _impl(self):
-        LATENCY = int(self.LATENCY)
-        DELAY = int(self.DELAY)
+        LATENCY = self.LATENCY
+        DELAY = self.DELAY
 
         vld = self.get_valid_signal
         rd = self.get_ready_signal
@@ -96,7 +165,16 @@ class HandshakedReg(HandshakedCompBase):
 
         Out = self.dataOut
         In = self.dataIn
-        if DELAY == 0:
+
+        if LATENCY == (1, 2):
+            if DELAY != 0:
+                raise NotImplementedError()
+
+            in_vld, in_rd, in_data = vld(In), rd(In), data(In)
+            out_vld, out_rd = vld(Out), rd(Out)
+            outData = self._implReadyChainBreak(in_vld, in_rd, in_data, out_vld, out_rd, "ready_chain_break_")
+
+        elif DELAY == 0:
             in_vld, in_rd, in_data = vld(In), rd(In), data(In)
             for last, i in iter_with_last(range(LATENCY)):
                 if last:
