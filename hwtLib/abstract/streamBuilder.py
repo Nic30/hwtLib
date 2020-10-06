@@ -170,9 +170,9 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
             if delay is None:
                 delay = 0
 
-        assert latency >= 1 and delay >= 0, (latency, delay)
+        assert isinstance(latency, tuple) or latency >= 1 and delay >= 0, (latency, delay)
 
-        if latency == 1 or latency >= items:
+        if isinstance(latency, tuple) or latency == 1 or latency >= items:
 
             # instantiate buffer as register
             def applyParams(u):
