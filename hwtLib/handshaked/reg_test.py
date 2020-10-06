@@ -19,24 +19,24 @@ class HsRegL1D0TC(SingleUnitSimTestCase):
         cls.MAX_LATENCY = cls.LATENCY if isinstance(cls.LATENCY, int) else max(cls.LATENCY)
         return cls.u
 
-    def test_passdata(self):
+    def test_passdata(self, N=20):
         u = self.u
-        u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
+        u.dataIn._ag.data.extend(range(N))
 
-        self.runSim((self.DELAY + self.MAX_LATENCY) * 12 * CLK_PERIOD)
+        self.runSim((self.DELAY + self.MAX_LATENCY) * 2 * N * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.dataOut._ag.data, [1, 2, 3, 4, 5, 6])
+        self.assertValSequenceEqual(u.dataOut._ag.data, list(range(N)))
         self.assertValSequenceEqual([], u.dataIn._ag.data)
 
-    def test_r_passdata(self):
+    def test_r_passdata(self, N=20):
         u = self.u
-        u.dataIn._ag.data.extend([1, 2, 3, 4, 5, 6])
+        u.dataIn._ag.data.extend(range(N))
         self.randomize(u.dataIn)
         self.randomize(u.dataOut)
 
-        self.runSim((self.DELAY + self.MAX_LATENCY) * 60 * CLK_PERIOD)
+        self.runSim((self.DELAY + self.MAX_LATENCY) * 4 * N * CLK_PERIOD)
 
-        self.assertValSequenceEqual(u.dataOut._ag.data, [1, 2, 3, 4, 5, 6])
+        self.assertValSequenceEqual(u.dataOut._ag.data, list(range(N)))
         self.assertValSequenceEqual([], u.dataIn._ag.data)
 
 
@@ -51,10 +51,11 @@ class HsRegL1_2D0TC(HsRegL1D0TC):
 
 
 HsRegTCs = [
-    HsRegL1D0TC, 
+    HsRegL1D0TC,
     HsRegL2D1TC,
     HsRegL1_2D0TC,
 ]
+
 
 if __name__ == "__main__":
     import unittest

@@ -124,16 +124,16 @@ class HandshakedReg(HandshakedCompBase):
 
             o = self._sig(prefix + 'out_tmp_' + getSignalName(iin), iin._dtype)
             
-            If(consume_0,
+            If(consume_0 & occupied[0],
                o(r0)
-            ).Elif(consume_1,
+            ).Elif(consume_1 & occupied[1],
                o(r1)
             ).Else(
                o(None)
             )
             outData.append(o)
 
-        If(in_vld,
+        If(in_vld & (~occupied[0] | ~occupied[1]),
             If(occupied[0],
                reader_prio(0),
             ).Elif(occupied[1],
