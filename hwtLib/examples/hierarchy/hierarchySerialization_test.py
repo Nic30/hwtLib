@@ -3,9 +3,11 @@
 
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.hierarchy.groupOfBlockrams import GroupOfBlockrams
+from hwtLib.examples.hierarchy.multiConfigUnit import MultiConfigUnitWrapper
 from hwtLib.examples.hierarchy.netFilter import NetFilter
 from hwtLib.examples.hierarchy.rippleadder import RippleAdder0, \
     RippleAdder1, RippleAdder2, RippleAdder3
+from hwtLib.examples.simpleWithParam import SimpleUnitWithParam
 
 
 class HierarchySerializationTC(BaseSerializationTC):
@@ -46,6 +48,15 @@ class HierarchySerializationTC(BaseSerializationTC):
     def test_RippleAdder3_verilog(self):
         u = RippleAdder3()
         self.assert_serializes_as_file(u, "RippleAdder3.v")
+
+    def test_MultiConfigUnitWrapper_same_io_type_different_int_param_vhdl(self):
+        u0 = SimpleUnitWithParam()
+        u0.DATA_WIDTH = 2
+        u1 = SimpleUnitWithParam()
+        u1.DATA_WIDTH = 3
+        
+        u = MultiConfigUnitWrapper([u0, u1])
+        self.assert_serializes_as_file(u, "MultiConfigUnitWrapper_same_io_type_different_int_param.vhd")
 
 
 if __name__ == "__main__":
