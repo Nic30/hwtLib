@@ -12,7 +12,6 @@ from hwt.hdl.types.defs import INT, STR, BOOL
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 
-
 n = RtlNetlist()
 s0 = n.sig("s0", BOOL)
 s1 = n.sig("s1")
@@ -59,7 +58,7 @@ bitvals = {
     0: hBit(0),
     None: hBit(None),
     s0: s1,
-    ~ s0: ~s1
+    ~s0:~s1
 }
 
 boolvals = {
@@ -67,11 +66,12 @@ boolvals = {
     0: hBool(0),
     None: hBool(None),
     s0: s0,
-    ~ s0: ~s0
+    ~s0:~s0
 }
 
 
 class OperatorTC(unittest.TestCase):
+
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.n = RtlNetlist()
@@ -266,6 +266,7 @@ class OperatorTC(unittest.TestCase):
         s = n.sig("s", Bits(16))
         s * 10
         s * s
+        self.assertEqual(int(INT.from_py(10) * INT.from_py(11)), 10 * 11)
 
     def test_array_eq_neq(self):
         t = Bits(8)[5]
