@@ -247,7 +247,7 @@ class CuckooHashTableWithRam_2Table_collisionTC(CuckooHashTableWithRam_common_TC
         if randomized:
             t *= 3
 
-        self.runSim((12 * t + 10) * CLK_PERIOD)
+        self.runSim((15 * t + 10) * CLK_PERIOD)
         self.assertEmpty(u.lookupRes._ag.data)
 
         table = self.hashTableAsDict()
@@ -266,9 +266,9 @@ class CuckooHashTableWithRam_2Table_collisionTC(CuckooHashTableWithRam_common_TC
 
 
 CuckooHashTableWithRamTCs = [
-    #CuckooHashTableWithRamTC,
+    CuckooHashTableWithRamTC,
     CuckooHashTableWithRam_1TableTC,
-    #CuckooHashTableWithRam_2Table_collisionTC,
+    CuckooHashTableWithRam_2Table_collisionTC,
 ]
 
 if __name__ == "__main__":
