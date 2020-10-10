@@ -55,8 +55,8 @@ ENTITY SimpleUnitWithParam IS
         DATA_WIDTH : INTEGER := 2
     );
     PORT(
-        a : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
-        b : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
+        a : IN STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+        b : OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0)
     );
 END ENTITY;
 
@@ -71,8 +71,8 @@ ARCHITECTURE rtl OF SimpleUnitWithParam IS
             DATA_WIDTH : INTEGER := 2
         );
         PORT(
-            a : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
-            b : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
+            a : IN STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
+            b : OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0)
         );
     END COMPONENT;
     --

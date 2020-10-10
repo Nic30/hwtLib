@@ -1,15 +1,21 @@
-from typing import List
+from typing import List, Dict, Tuple
 
 from hdlConvertorAst.hdlAst._defs import HdlIdDef
 from hdlConvertorAst.hdlAst._expr import HdlValueId
 from hdlConvertorAst.hdlAst._statements import HdlStmIf, HdlStmBlock
 from hdlConvertorAst.hdlAst._structural import HdlModuleDef, HdlCompInst
-from hwt.hdl.types.defs import BIT
+from hwt.hdl.types.defs import BIT, INT
 from hwt.synthesizer.dummyPlatform import DummyPlatform
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from ipCorePackager.constants import INTF_DIRECTION
+from hwt.serializer.mode import paramsToValTuple
+from hwt.pyUtils.uniqList import UniqList
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.hdl.portItem import HdlPortItem
+from hwt.hdl.value import HValue
+from hwt.hdl.types.hdlType import HdlType
 
 
 class MultiConfigUnitWrapper(Unit):
@@ -45,7 +51,6 @@ class MultiConfigUnitWrapper(Unit):
             v.value = hdl_val
             self._ctx.ent.params.append(v)
 
-
         for intf in self.possible_variants[0]._interfaces:
             # clone interface
             myIntf = intf.__copy__()
@@ -56,7 +61,6 @@ class MultiConfigUnitWrapper(Unit):
             self._registerInterface(intf._name, myIntf)
             object.__setattr__(self, intf._name, myIntf)
 
-
         ei = self._ctx.interfaces
         for i in self._interfaces:
             self._loadInterface(i, True)
@@ -64,7 +68,6 @@ class MultiConfigUnitWrapper(Unit):
             i._signalsForInterface(self._ctx, ei,
                                    self._store_manager.name_scope,
                                    reverse_dir=True)
-
 
     def _getDefaultName(self):
         return self._possible_variants[0]._getDefaultName()
@@ -74,6 +77,96 @@ class MultiConfigUnitWrapper(Unit):
 
     def _checkCompInstances(self):
         pass
+    
+    def _collectPortTypeVariants(self) -> List[Tuple[HdlPortItem, Dict[Tuple[Param, HValue], List[HdlType]]]]:
+        res = []
+        param_variants = [paramsToValTuple(u) for u in self._units]
+        for parent_port, port_variants in zip(self._ctx.ent.ports, zip(*(u._ctx.ent.ports for u in self._units))):
+            param_val_to_t = {}
+            for port_variant, params in zip(port_variants, param_variants):
+                assert port_variant.name == parent_port.name, (port_variant.name, parent_port.name)
+                t = port_variant._dtype
+                for p_val, p in zip(params, self._params):
+                    types = param_val_to_t.setdefault((p, p_val), UniqList())
+                    types.append(t)
+            
+            # print(parent_port.name, param_val_to_t)
+            # [todo] filter out params which does not affect port type
+            
+            res.append((parent_port, param_val_to_t))
+
+        return res
+
+    def _injectParametersIntoPortTypes(self,
+                                       port_type_variants: List[Tuple[HdlPortItem, Dict[Tuple[Param, HValue], List[HdlType]]]],
+                                       param_signals: List[RtlSignal]):
+        updated_types = []
+        param_sig_by_name = {p.name: p for p in param_signals}
+        for parent_port, param_val_to_t in port_type_variants:
+            if parent_port._dtype in updated_types:
+                continue
+            # check which unique parameter values affects the type of the port
+            # if the type changes with any parameter value integrate it in to type of the port
+            #print(parent_port, param_val_to_t)
+            type_to_param_values = {}
+            for (param, param_value), port_types in param_val_to_t.items():
+                for pt in port_types:
+                    cond = type_to_param_values.setdefault(pt, UniqList())
+                    cond.append((param, param_value))
+            
+            assert type_to_param_values, parent_port
+            if len(type_to_param_values) == 1:
+                continue # type does not change
+
+            params_used = set()
+            for t, param_values in type_to_param_values.items():
+                for (param, param_val) in param_values:
+                    params_used.add(param)
+            if not params_used:
+                raise AssertionError(parent_port, "Type changes between the variants but it does not depend on parameter", param_val_to_t)
+
+            if len(params_used) == 1 and list(params_used)[0].get_hdl_type() == INT:
+                # try to extract param * x + y
+                p_val_to_port_w = {}
+                for t, param_values in type_to_param_values.items():
+                    for (param, param_val) in param_values:
+                        if param not in params_used:
+                            continue
+                        assert param_val not in p_val_to_port_w or p_val_to_port_w[param_val] == t.bit_length(), parent_port
+                        p_val_to_port_w[param_val] = t.bit_length()
+                # t_width = n*p + c
+                _p_val_to_port_w = sorted(p_val_to_port_w.items())
+                t_width0, p0 = _p_val_to_port_w[0]
+                t_width1, p1 = _p_val_to_port_w[1]
+                # 0 == t_width0 - n*p0 + c
+                # 0 == t_width1 - n*p1 + c
+
+                # 0 == t_width0 - n*p0 - c + t_width1 - n*p1 - c
+                # 0 == t_width0 + t_width1 - n*(p0 + p1) - 2c
+                # c == (t_width0 + t_width1 - n*(p0 + p1) ) //2
+                # n has to be int, 0 < n <= t_width0/p0
+                # n is something like base size of port which is multipled by parameter
+                # we searching n for which we can resolve c
+                found_nc = None
+                for n in range(1, t_width0//p0 + 1):
+                    c = (t_width0 + t_width1 - n*(p0 + p1) ) // 2
+                    if t_width0 - n*p0 + c == 0 and t_width1 - n*p1 + c == 0:
+                        found_nc = (n, c)
+                        break
+
+                if found_nc is None:
+                    raise NotImplementedError()
+                else:
+                    p = list(params_used)[0]
+                    p = param_sig_by_name[p._name]
+                    (n, c) = found_nc
+                    t = parent_port._dtype
+                    t._bit_length = INT.from_py(n)*p + c
+                    t._bit_length._const = True
+                    updated_types.append(t)
+            else:
+                raise NotImplementedError("Depends on multiple parameters")
+                raise NotImplementedError("use ternay operators to select width")
 
     def create_HdlModuleDef(self,
                             target_platform: DummyPlatform,
@@ -83,16 +176,23 @@ class MultiConfigUnitWrapper(Unit):
         mdef.dec = ctx.ent
         mdef.module_name = HdlValueId(ctx.ent.name, obj=ctx.ent)
         mdef.name = "rtl"
-        # mdef.objs.extend(processes)
-        
+
         # constant signals which represents the param/generic values
-        param_signals = [ctx.sig(p.hdl_name, p.get_hdl_type(), def_val=p.get_hdl_value()) for p in sorted(self._params, key=lambda x: x.hdl_name)]
-        
-        # instantiate subUnits in architecture
+        param_signals = [
+            ctx.sig(p.hdl_name, p.get_hdl_type(), def_val=p.get_hdl_value())
+            for p in sorted(self._params, key=lambda x: x.hdl_name)
+        ]
+        # rewrite ports to use generic/params of this entity/module
+        port_type_variants = self._collectPortTypeVariants()
+        self._injectParametersIntoPortTypes(port_type_variants, param_signals)
+        for p in param_signals:
+            p._const = True
+        # instanciate component variants in if generate statement
         ns = store_manager.name_scope
         as_hdl_ast = self._store_manager.as_hdl_ast
         if_generate_cases = []
         for u in self._units:
+            # create instance
             ci = HdlCompInst()
             ci.origin = u
             ci.module_name = HdlValueId(u._ctx.ent.name, obj=u._ctx.ent)
@@ -100,6 +200,7 @@ class MultiConfigUnitWrapper(Unit):
             e = u._ctx.ent
 
             ci.param_map.extend(e.params)
+            # connect ports
             assert len(e.ports) == len(ctx.ent.ports)
             for p, parent_port in zip(e.ports, ctx.ent.ports):
                 i = p.getInternSig()
@@ -117,11 +218,14 @@ class MultiConfigUnitWrapper(Unit):
 
                 ci.port_map.append(p)
 
+            # create if generate instanciation condition
             param_cmp_expr = BIT.from_py(1)
             assert len(u._params) == len(param_signals)
             for p, p_sig in zip(sorted(u._params, key=lambda x: x.hdl_name), param_signals):
                 assert p.hdl_name == p_sig.name, (p.hdl_name, p_sig.name)
                 param_cmp_expr = param_cmp_expr & p_sig._eq(p.get_hdl_value())
+
+            # add case if generate statement
             _param_cmp_expr = as_hdl_ast.as_hdl(param_cmp_expr)
             ci = as_hdl_ast.as_hdl_HdlCompInst(ci)
             b = HdlStmBlock()
@@ -131,16 +235,17 @@ class MultiConfigUnitWrapper(Unit):
 
         if_generate = HdlStmIf()
         if_generate.in_preproc = True
+        if_generate.labels.append(ns.checked_name("implementation_select", if_generate))
         for c, ci in if_generate_cases:
             if if_generate.cond is None:
                 if_generate.cond = c
                 if_generate.if_true = ci
             else:
                 if_generate.elifs.append((c, ci))
-        if_generate.labels.append(ns.checked_name("implementation_select", if_generate))
-        mdef.objs.append(if_generate)
-        ctx.arch = mdef
 
+        mdef.objs.append(if_generate)
+
+        ctx.arch = mdef
         return mdef
 
     def _impl(self):
