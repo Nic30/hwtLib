@@ -5,6 +5,9 @@ include MANIFEST.in
 include hwtLib/examples/arithmetic/VhdlVectorAutoCastExample.vhd
 include hwtLib/examples/EmptyUnitWithSpi.vhd
 include hwtLib/examples/hierarchy/GroupOfBlockrams.vhd
+include hwtLib/examples/hierarchy/MultiConfigUnitWrapper_3x_same_io_type_different_int_param.vhd
+include hwtLib/examples/hierarchy/MultiConfigUnitWrapper_same_io_type_different_int_param_irrelevant_param_and_second_param.vhd
+include hwtLib/examples/hierarchy/MultiConfigUnitWrapper_same_io_type_different_int_param_irrelevant_param.vhd
 include hwtLib/examples/hierarchy/MultiConfigUnitWrapper_same_io_type_different_int_param.vhd
 include hwtLib/examples/hierarchy/netFilter.cpp
 include hwtLib/examples/hierarchy/netFilter.v
@@ -59,3 +62,4 @@ include hwtLib/tests/sertialization/SpiMaster.vhd
 include hwtLib/tests/sertialization/TernaryInConcatExample.vhd
 include hwtLib/tests/sertialization/TmpVarExample.vhd
 include hwtLib/tests/synthesizer/interfaceLevel/UnitWithGenericOfChild.vhd
+

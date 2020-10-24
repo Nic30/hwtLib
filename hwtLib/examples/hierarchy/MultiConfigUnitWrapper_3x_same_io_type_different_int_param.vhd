@@ -50,6 +50,28 @@ USE IEEE.numeric_std.ALL;
 --
 --    .. hwt-schematic::
 --    
+ENTITY SimpleUnitWithParam_2 IS
+    GENERIC(
+        DATA_WIDTH : INTEGER := 4
+    );
+    PORT(
+        a : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+        b : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+    );
+END ENTITY;
+
+ARCHITECTURE rtl OF SimpleUnitWithParam_2 IS
+BEGIN
+    b <= a;
+END ARCHITECTURE;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE IEEE.numeric_std.ALL;
+--
+--    Simple parametrized unit.
+--
+--    .. hwt-schematic::
+--    
 ENTITY SimpleUnitWithParam IS
     GENERIC(
         DATA_WIDTH : INTEGER := 2
@@ -89,6 +111,20 @@ ARCHITECTURE rtl OF SimpleUnitWithParam IS
             b : OUT STD_LOGIC_VECTOR(2 DOWNTO 0)
         );
     END COMPONENT;
+    --
+    --    Simple parametrized unit.
+    --
+    --    .. hwt-schematic::
+    --    
+    COMPONENT SimpleUnitWithParam_2 IS
+        GENERIC(
+            DATA_WIDTH : INTEGER := 4
+        );
+        PORT(
+            a : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+            b : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
+        );
+    END COMPONENT;
 BEGIN
     implementation_select: IF DATA_WIDTH = 2 GENERATE
         possible_variants_0_inst: SimpleUnitWithParam_0 GENERIC MAP(
@@ -100,6 +136,13 @@ BEGIN
     ELSIF DATA_WIDTH = 3 GENERATE
         possible_variants_1_inst: SimpleUnitWithParam_1 GENERIC MAP(
             DATA_WIDTH => 3
+        ) PORT MAP(
+            a => a,
+            b => b
+        );
+    ELSIF DATA_WIDTH = 4 GENERATE
+        possible_variants_2_inst: SimpleUnitWithParam_2 GENERIC MAP(
+            DATA_WIDTH => 4
         ) PORT MAP(
             a => a,
             b => b
