@@ -7,6 +7,7 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.mem.fifoArray import FifoArray
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
+from pycocotb.triggers import WaitWriteOnly, Timer
 
 
 class FifoArrayTC(SingleUnitSimTestCase):
@@ -73,19 +74,27 @@ class FifoArrayTC(SingleUnitSimTestCase):
         self.assertValEqual(m.io.item_last.read(), (1 << 3) | (1 << 1))
         self.assertValSequenceEqual(m.io.values.read(), [10, 11, 12, 13])
 
-    @unittest.expectedFailure
     def test_insert1pop1(self):
         u = self.u
         u.insert._ag.data.extend([
             (0, 0, 10),
         ])
-        u.pop._ag.dinData.extend([0])
+        def pop_control():
+            pop = u.pop._ag
+            yield WaitWriteOnly()
+            pop.setEnable(False)
+            yield Timer(4*CLK_PERIOD)
+            yield WaitWriteOnly()
+            pop.dinData.extend([0])
+            pop.setEnable(True)
+
+        self.procs.append(pop_control())
 
         self.runSim(16 * CLK_PERIOD)
         m = self.rtl_simulator.model
         self.assertValEqual(m.io.item_valid.read(), 0)
-        self.assertValEqual(m.io.item_last.read(), 0)
-        self.assertValSequenceEqual(u.pop._ag.data, [(10, 1, None), ])
+        self.assertValEqual(m.io.item_last.read(), 1)
+        self.assertValSequenceEqual(u.pop._ag.data, [(10, 1, 0), ])
 
 
 if __name__ == "__main__":

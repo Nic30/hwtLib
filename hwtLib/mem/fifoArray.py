@@ -106,7 +106,7 @@ class FifoArrayPopInterfaceAgent(AddrInDataOutHsAgent):
 
     def get_data(self):
         i = self.intf
-        return (i.data.read(), i.last.read(), i.addr_next)
+        return (i.data.read(), i.last.read(), i.addr_next.read())
     
 
 class FifoArray(Unit):
