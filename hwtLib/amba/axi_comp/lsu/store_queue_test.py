@@ -25,10 +25,10 @@ class AxiStoreQueue_1word_per_cachelineTC(SingleUnitSimTestCase):
 
     def randomize_all(self):
         self.randomize(self.u.w)
-        axi_randomize_per_channel(self, self.u.bus)
-        # self.randomize(self.u.bus.aw)
-        # self.randomize(self.u.bus.w)
-        # self.randomize(self.u.bus.b)
+        axi_randomize_per_channel(self, self.u.m)
+        # self.randomize(self.u.m.aw)
+        # self.randomize(self.u.m.w)
+        # self.randomize(self.u.m.b)
 
     def test_nop(self, randomized=False):
         if randomized:
@@ -36,8 +36,8 @@ class AxiStoreQueue_1word_per_cachelineTC(SingleUnitSimTestCase):
 
         self.runSim(10 * CLK_PERIOD)
         u = self.u
-        self.assertEmpty(u.bus.aw._ag.data)
-        self.assertEmpty(u.bus.w._ag.data)
+        self.assertEmpty(u.m.aw._ag.data)
+        self.assertEmpty(u.m.w._ag.data)
 
     def test_nop_randomized(self):
         self.test_nop(randomized=True)
@@ -52,7 +52,7 @@ class AxiStoreQueue_1word_per_cachelineTC(SingleUnitSimTestCase):
         self.runSim((N + 10) * 2 * CLK_PERIOD * u.BUS_WORDS_IN_CACHELINE)
 
         SIZE = 2 ** u.ID_WIDTH
-        aw = u.bus.aw._ag
+        aw = u.m.aw._ag
         self.assertValSequenceEqual(aw.data, [
             aw.create_addr_req(addr=u.CACHE_LINE_SIZE * i,
                                _len=u.BUS_WORDS_IN_CACHELINE - 1,
@@ -66,10 +66,10 @@ class AxiStoreQueue_1word_per_cachelineTC(SingleUnitSimTestCase):
                 d = (10 + i if w_i == 0 else 0,
                      mask(u.DATA_WIDTH // 8), int(last))
                 w_ref.append(d)
-        # for i, (x0, x1) in enumerate(zip(u.bus.w._ag.data, w_ref)):
+        # for i, (x0, x1) in enumerate(zip(u.m.w._ag.data, w_ref)):
         #    print(i, allValuesToInts(x0), x1)
 
-        self.assertValSequenceEqual(u.bus.w._ag.data, w_ref)
+        self.assertValSequenceEqual(u.m.w._ag.data, w_ref)
 
         # 1 item is currently handled by agent, 1 item in tmp reg
         self.assertEqual(len(u.w._ag.data), N - SIZE - 1 - 1)
@@ -83,13 +83,13 @@ class AxiStoreQueue_1word_per_cachelineTC(SingleUnitSimTestCase):
         u.w._ag.data.append((1, d, mask(u.CACHE_LINE_SIZE)))
         self.runSim(10 * CLK_PERIOD)
 
-        aw = u.bus.aw._ag
+        aw = u.m.aw._ag
         self.assertValSequenceEqual(aw.data, [
             aw.create_addr_req(addr=1 * u.CACHE_LINE_SIZE,
                                _len=u.BUS_WORDS_IN_CACHELINE - 1,
                                _id=0),
         ])
-        self.assertValSequenceEqual(u.bus.w._ag.data, [
+        self.assertValSequenceEqual(u.m.w._ag.data, [
             (get_bit_range(d, u.DATA_WIDTH * i, u.DATA_WIDTH),
              mask(u.DATA_WIDTH // 8), int(last))
             for last, i in iter_with_last(range(u.BUS_WORDS_IN_CACHELINE))
@@ -97,7 +97,7 @@ class AxiStoreQueue_1word_per_cachelineTC(SingleUnitSimTestCase):
 
     def test_with_mem(self, N=10, randomized=False):
         u = self.u
-        mem = AxiSimRam(u.bus)
+        mem = AxiSimRam(u.m)
         u.w._ag.data.extend((i, 10 + i, mask(u.CACHE_LINE_SIZE))
                             for i in range(N))
         if randomized:
@@ -112,7 +112,7 @@ class AxiStoreQueue_1word_per_cachelineTC(SingleUnitSimTestCase):
 
     def test_mergable(self, N=10, ADDRESSES=[0, ], randomized=False):
         u = self.u
-        mem = AxiSimRam(u.bus)
+        mem = AxiSimRam(u.m)
         expected = {}
         for a in ADDRESSES:
             for i in range(N):
@@ -143,7 +143,7 @@ class AxiStoreQueue_1word_per_cachelineTC(SingleUnitSimTestCase):
         same as test_mergable just the inner cycle is reversed
         """
         u = self.u
-        mem = AxiSimRam(u.bus)
+        mem = AxiSimRam(u.m)
         expected = {}
         for i in range(N):
             offset = i * N
