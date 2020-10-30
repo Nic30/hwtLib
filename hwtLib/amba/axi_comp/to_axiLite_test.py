@@ -4,8 +4,7 @@ from hwt.pyUtils.arrayQuery import iter_with_last
 from hwtLib.amba.axiLite_comp.sim.ram import Axi4LiteSimRam
 from hwtLib.amba.axiLite_comp.to_axi_test import AxiLite_to_Axi_TC
 from hwtLib.amba.axi_comp.to_axiLite import Axi_to_AxiLite
-from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, \
-    PROT_DEFAULT, QOS_DEFAULT, BYTES_IN_TRANS, RESP_OKAY
+from hwtLib.amba.constants import RESP_OKAY
 from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 
@@ -54,19 +53,6 @@ class Axi_to_AxiLite_TC(AxiLite_to_Axi_TC):
             axis_data.append((w, strb, int(last)))
         return axis_data
 
-    def addr_trans(self, addr, len_, id_):
-        return (
-            id_,
-            addr,
-            BURST_INCR,
-            CACHE_DEFAULT,
-            len_,
-            LOCK_DEFAULT,
-            PROT_DEFAULT,
-            BYTES_IN_TRANS(self.u.DATA_WIDTH // 8),
-            QOS_DEFAULT
-        )
-
     def get_rand_in_range(self, n):
         k = n.bit_length()  # don't use (n-1) here because n can be 1
         getrandbits = self._rand.getrandbits
@@ -94,7 +80,7 @@ class Axi_to_AxiLite_TC(AxiLite_to_Axi_TC):
             # rand_data = [i + 1 for i in range(len_ + 1)]
             addr = m.calloc(len_ + 1, u.DATA_WIDTH // 8, initValues=rand_data)
             # print("%d, 0x%x, %d" % (id_, addr, len_), rand_data)
-            a_t = self.addr_trans(addr, len_, id_)
+            a_t = u.s.ar._ag.create_addr_req(addr, len_, id_)
             u.s.ar._ag.data.append(a_t)
             expected_frames.append((addr, id_, rand_data))
 
@@ -128,7 +114,7 @@ class Axi_to_AxiLite_TC(AxiLite_to_Axi_TC):
             # rand_data = [i + 1 for i in range(len_ + 1)]
             addr = m.malloc((len_ + 1) * u.DATA_WIDTH // 8)
             # print("%d, 0x%x, %d" % (id_, addr, len_), rand_data)
-            a_t = self.addr_trans(addr, len_, id_)
+            a_t = u.s.aw._ag.create_addr_req(addr, len_, id_)
             u.s.aw._ag.data.append(a_t)
 
             w_frame = self.create_w_frame(rand_data)
