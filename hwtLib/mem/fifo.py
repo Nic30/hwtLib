@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Tuple, List
+
 from hwt.code import If, log2ceil
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import FifoWriter, FifoReader, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from typing import Tuple, List
+from hwt.synthesizer.unit import Unit
 
 
 # https://eewiki.net/pages/viewpage.action?pageId=20939499
@@ -32,6 +33,12 @@ class Fifo(Unit):
         self.EXPORT_SIZE = Param(False)
         self.EXPORT_SPACE = Param(False)
 
+    def _declr_size_and_space(self):
+        if self.EXPORT_SIZE:
+            self.size = VectSignal(log2ceil(self.DEPTH + 1), signed=False)._m()
+        if self.EXPORT_SPACE:
+            self.space = VectSignal(log2ceil(self.DEPTH + 1), signed=False)._m()
+
     def _declr(self):
         assert int(
             self.DEPTH) > 0, "Fifo is disabled in this case, do not use it entirely"
@@ -39,11 +46,7 @@ class Fifo(Unit):
         with self._paramsShared():
             self.dataIn = FifoWriter()
             self.dataOut = FifoReader()._m()
-
-        if self.EXPORT_SIZE:
-            self.size = VectSignal(log2ceil(self.DEPTH + 1), signed=False)._m()
-        if self.EXPORT_SPACE:
-            self.space = VectSignal(log2ceil(self.DEPTH + 1), signed=False)._m()
+        self._declr_size_and_space()
 
     def fifo_pointers(self, DEPTH: int,
                       write_en_wait: Tuple[RtlSignal, RtlSignal],
