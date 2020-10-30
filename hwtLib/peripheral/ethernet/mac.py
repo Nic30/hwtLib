@@ -9,7 +9,7 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.fifo_drop import AxiSFifoDrop
+from hwtLib.amba.axis_comp.fifoDrop import AxiSFifoDrop
 from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
 from hwtLib.amba.axis_comp.frame_parser import AxiS_frameParser
 from hwtLib.amba.axis_fullduplex import AxiStreamFullDuplex
