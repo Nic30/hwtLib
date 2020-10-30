@@ -8,7 +8,7 @@ from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import packIntf
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.handshaked.fifo_drop import HandshakedFifoDrop
+from hwtLib.handshaked.fifoDrop import HandshakedFifoDrop
 
 
 @serializeParamsUniq

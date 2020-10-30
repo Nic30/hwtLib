@@ -81,10 +81,7 @@ class FifoDrop(Fifo):
             self.dataIn = FifoWriterDropable()
             self.dataOut = FifoReader()._m()
 
-        if self.EXPORT_SIZE:
-            self.size = VectSignal(log2ceil(self.DEPTH + 1), signed=False)._m()
-        if self.EXPORT_SPACE:
-            self.space = VectSignal(log2ceil(self.DEPTH + 1), signed=False)._m()
+        self._declr_size_and_space()
 
     def _impl(self):
         DEPTH = self.DEPTH

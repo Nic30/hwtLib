@@ -2,7 +2,7 @@ from typing import Optional, Tuple, Union
 
 from hwt.interfaces.std import Signal, Rst, Rst_n, Clk
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.mem.fifo_drop import FifoDrop
+from hwtLib.mem.fifoDrop import FifoDrop
 
 
 class HandshakedFifoDrop(HandshakedFifo):
@@ -10,7 +10,7 @@ class HandshakedFifoDrop(HandshakedFifo):
     Fifo for handsahaked interface which allows to discard/commit written data
 
     :see: :class:`hwtLib.handshaked.fifo.HandshakedFifo`
-        and :class:`hwtLib.mem.fifo_drop.FifoDrop`
+        and :class:`hwtLib.mem.fifoDrop.FifoDrop`
 
     .. hwt-schematic:: _example_HandshakedFifoDrop
     """

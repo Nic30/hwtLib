@@ -17,12 +17,12 @@ from hwt.hdl.typeShortcuts import vec
 from pyMathBitPrecise.bit_utils import mask
 
 
-class AxiS_measuringFifo(Unit):
+class AxiS_fifoMeasuring(Unit):
     """
     Fifo which are counting sizes of frames and sends it over
     dedicated handshaked interface "sizes"
 
-    .. hwt-schematic:: _example_AxiS_measuringFifo
+    .. hwt-schematic:: _example_AxiS_fifoMeasuring
     """
 
     def _config(self):
@@ -124,8 +124,8 @@ class AxiS_measuringFifo(Unit):
         connect(db.dataOut, self.dataOut)
 
 
-def _example_AxiS_measuringFifo():
-    u = AxiS_measuringFifo()
+def _example_AxiS_fifoMeasuring():
+    u = AxiS_fifoMeasuring()
     u.USE_STRB = True
     # u.EXPORT_ALIGNMENT_ERROR = True
     u.MAX_LEN = 15
@@ -135,5 +135,5 @@ def _example_AxiS_measuringFifo():
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
-    u = _example_AxiS_measuringFifo()
+    u = _example_AxiS_fifoMeasuring()
     print(to_rtl_str(u))

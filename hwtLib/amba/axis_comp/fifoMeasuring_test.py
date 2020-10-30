@@ -7,17 +7,17 @@ from hwt.hdl.constants import Time
 from hwt.pyUtils.arrayQuery import take, iter_with_last
 from hwt.simulator.simTestCase import SingleUnitSimTestCase,\
     simpleRandomizationProcess
-from hwtLib.amba.axis_comp.measuringFifo import AxiS_measuringFifo
+from hwtLib.amba.axis_comp.fifoMeasuring import AxiS_fifoMeasuring
 from pyMathBitPrecise.bit_utils import mask, mask_bytes
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
 
 
-class AxiS_measuringFifoTC(SingleUnitSimTestCase):
+class AxiS_fifoMeasuringTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
-        u = cls.u = AxiS_measuringFifo()
+        u = cls.u = AxiS_fifoMeasuring()
         u.USE_STRB = True
         cls.DATA_WIDTH = 64
         cls.MAX_LEN = 15
@@ -267,7 +267,7 @@ class AxiS_measuringFifoTC(SingleUnitSimTestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(AxiS_measuringFifoTC('test_singleWordPacket'))
-    suite.addTest(unittest.makeSuite(AxiS_measuringFifoTC))
+    # suite.addTest(AxiS_fifoMeasuringTC('test_singleWordPacket'))
+    suite.addTest(unittest.makeSuite(AxiS_fifoMeasuringTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -1,6 +1,6 @@
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwtLib.amba.axis_comp.fifo_drop import AxiSFifoDrop
+from hwtLib.amba.axis_comp.fifoDrop import AxiSFifoDrop
 from pycocotb.constants import CLK_PERIOD
 
 
@@ -68,7 +68,7 @@ class AxiSFifoDropTC(SingleUnitSimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(AxiS_measuringFifoTC('test_singleWordPacket'))
+    # suite.addTest(AxiSFifoDropTC('test_singleWordPacket'))
     suite.addTest(unittest.makeSuite(AxiSFifoDropTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
