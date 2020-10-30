@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Union
+
 from hwt.code import If, FsmBuilder, Or, log2ceil, connect, Switch, \
     SwitchLogic
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
+from hwt.hdl.value import HValue
+from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
@@ -24,6 +28,17 @@ class AxiLiteEndpoint(BusEndpoint):
         BusEndpoint.__init__(self, structTemplate,
                              intfCls=intfCls,
                              shouldEnterFn=shouldEnterFn)
+
+    def driveResp(self, isInAddrRange: Union[RtlSignalBase, HValue], resp: RtlSignalBase):
+        if isinstance(isInAddrRange, RtlSignalBase):
+            return If(isInAddrRange,
+               resp(RESP_OKAY)
+            ).Else(
+               resp(RESP_SLVERR)
+            )
+        else:
+            assert isInAddrRange
+            return resp(RESP_OKAY)
 
     def readPart(self, awAddr, w_hs):
         ADDR_STEP = self._getAddrStep()
@@ -54,11 +69,7 @@ class AxiLiteEndpoint(BusEndpoint):
 
         isInAddrRange = self.isInMyAddrRange(arAddr)
         r.valid(rSt._eq(rSt_t.rdData))
-        If(isInAddrRange,
-            r.resp(RESP_OKAY)
-        ).Else(
-            r.resp(RESP_SLVERR)
-        )
+        self.driveResp(isInAddrRange, r.resp)
         if self._bramPortMapped:
             rdataReg = self._reg("rdataReg", r.data._dtype)
             _isInBramFlags = []
@@ -79,7 +90,7 @@ class AxiLiteEndpoint(BusEndpoint):
                     arAddr, ADDR_STEP, port.addr, dstAddrStep, t)
                 (_isMyAwAddr, awAddrConnect) = self.propagateAddr(
                     awAddr, ADDR_STEP, port.addr, dstAddrStep, t)
-                prioritizeWrite = _isMyAwAddr & w_hs
+                prioritizeWrite = w_hs & _isMyAwAddr
 
                 If(prioritizeWrite,
                     awAddrConnect
@@ -90,7 +101,7 @@ class AxiLiteEndpoint(BusEndpoint):
                 )
                 _isInBramFlags.append(_isMyArAddr)
 
-                port.en((_isMyArAddr & ar.valid) | prioritizeWrite)
+                port.en((ar.valid & _isMyArAddr) | prioritizeWrite)
                 port.we(prioritizeWrite)
 
                 rregCases.append((_isMyArAddr, bramRdIndx(bramIndex)))
@@ -110,14 +121,8 @@ class AxiLiteEndpoint(BusEndpoint):
 
     def writeRespPart(self, wAddr, respVld):
         b = self.bus.b
-
         isInAddrRange = self.isInMyAddrRange(wAddr)
-
-        If(isInAddrRange,
-           b.resp(RESP_OKAY)
-        ).Else(
-           b.resp(RESP_SLVERR)
-        )
+        self.driveResp(isInAddrRange, b.resp)
         b.valid(respVld)
 
     def writePart(self):
