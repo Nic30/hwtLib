@@ -17,13 +17,13 @@ from hwtLib.amba.axiLite_comp.endpoint_struct_test import \
     AxiLiteEndpoint_arrayStruct_TC, AxiLiteEndpoint_struct_TC
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTCs
 from hwtLib.amba.axiLite_comp.to_axi_test import AxiLite_to_Axi_TC
-from hwtLib.amba.axi_comp.lsu.store_queue_test import AxiStoreQueue_TCs
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import\
     AxiInterconnectMatrixAddrCrossbar_TCs
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar_test import \
     AxiInterconnectMatrixCrossbar_TCs
 from hwtLib.amba.axi_comp.interconnect.matrixR_test import AxiInterconnectMatrixR_TCs
 from hwtLib.amba.axi_comp.interconnect.matrixW_test import AxiInterconnectMatrixW_TCs
+from hwtLib.amba.axi_comp.lsu.store_queue_test import AxiStoreQueue_TCs
 from hwtLib.amba.axi_comp.resize_test import AxiResizeTC
 from hwtLib.amba.axi_comp.sim.ag_test import Axi_ag_TC
 from hwtLib.amba.axi_comp.slave_timeout_test import AxiSlaveTimeoutTC
@@ -34,12 +34,12 @@ from hwtLib.amba.axi_comp.to_axiLite_test import Axi_to_AxiLite_TC
 from hwtLib.amba.axi_test import AxiTC
 from hwtLib.amba.axis_comp.en_test import AxiS_en_TC
 from hwtLib.amba.axis_comp.fifoDrop_test import AxiSFifoDropTC
+from hwtLib.amba.axis_comp.fifoMeasuring_test import AxiS_fifoMeasuringTC
 from hwtLib.amba.axis_comp.frameGen_test import AxisFrameGenTC
 from hwtLib.amba.axis_comp.frame_deparser.test import AxiS_frameDeparser_TC
 from hwtLib.amba.axis_comp.frame_join.test import AxiS_FrameJoin_TCs
 from hwtLib.amba.axis_comp.frame_parser.footer_split_test import AxiS_footerSplitTC
 from hwtLib.amba.axis_comp.frame_parser.test import AxiS_frameParserTC
-from hwtLib.amba.axis_comp.fifoMeasuring_test import AxiS_fifoMeasuringTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_TCs
 from hwtLib.amba.axis_comp.storedBurst_test import AxiSStoredBurstTC
 from hwtLib.amba.datapump.interconnect.rStrictOrder_test import \
@@ -77,6 +77,7 @@ from hwtLib.examples.builders.handshakedBuilderSimple import \
 from hwtLib.examples.builders.hsBuilderSplit_test import HsBuilderSplit_TC
 from hwtLib.examples.builders.pingResponder_test import PingResponderTC
 from hwtLib.examples.emptyUnitWithSpi import EmptyUnitWithSpiTC
+from hwtLib.examples.errors.combLoops import CombLoopAnalysisTC
 from hwtLib.examples.errors.errors_test import ErrorsTC
 from hwtLib.examples.hdlComments_test import HdlCommentsTC
 from hwtLib.examples.hdlObjLists.listOfInterfaces0 import ListOfInterfacesSample0TC
@@ -92,6 +93,7 @@ from hwtLib.examples.hierarchy.simpleSubunit_test import SimpleSubunitTC
 from hwtLib.examples.hierarchy.unitToUnitConnection import \
     UnitToUnitConnectionTC
 from hwtLib.examples.hierarchy.unitWrapper_test import UnitWrapperTC
+from hwtLib.examples.mem.axi_ram_test import Axi4BRam_TC
 from hwtLib.examples.mem.bram_wire import BramWireTC
 from hwtLib.examples.mem.ram_test import RamResourcesTC, \
     SimpleAsyncRamTC, SimpleSyncRamTC
@@ -212,7 +214,6 @@ from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
-from hwtLib.examples.errors.combLoops import CombLoopAnalysisTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -389,6 +390,7 @@ suite = testSuiteFromTCs(
 
     AxisFrameGenTC,
     *AddrDataHs_to_Axi_TCs,
+    Axi4BRam_TC,
     Axi4_rDatapumpTC,
     Axi3_rDatapumpTC,
     Axi4_wDatapumpTC,
