@@ -4,8 +4,8 @@ from hwtLib.abstract.streamBuilder import AbstractStreamBuilder
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.cdc import AxiSCdc
 from hwtLib.amba.axis_comp.fifo import AxiSFifo
+from hwtLib.amba.axis_comp.fifoDrop import AxiSFifoDrop
 from hwtLib.amba.axis_comp.fifo_async import AxiSFifoAsync
-from hwtLib.amba.axis_comp.fifo_drop import AxiSFifoDrop
 from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
 from hwtLib.amba.axis_comp.frame_parser import AxiS_frameParser
 from hwtLib.amba.axis_comp.reg import AxiSReg
