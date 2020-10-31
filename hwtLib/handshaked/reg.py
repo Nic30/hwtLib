@@ -61,9 +61,9 @@ class HandshakedReg(HandshakedCompBase):
         )
 
         If(isOccupied,
-           inRd(outRd),
-           outVld(1),
-           regs_we(inVld & outRd)
+            inRd(outRd),
+            outVld(1),
+            regs_we(inVld & outRd)
         ).Else(
             inRd(1),
             outVld(0),
