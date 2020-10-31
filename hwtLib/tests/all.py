@@ -134,7 +134,7 @@ from hwtLib.handshaked.joinFair_test import HsJoinFair_2inputs_TC, \
 from hwtLib.handshaked.joinPrioritized_test import HsJoinPrioritizedTC, \
     HsJoinPrioritized_randomized_TC
 from hwtLib.handshaked.ramAsHs_test import RamAsHs_TC
-from hwtLib.handshaked.reg_test import HsRegTCs
+from hwtLib.handshaked.reg_test import HandshakedRegTCs
 from hwtLib.handshaked.resizer_test import HsResizerTC
 from hwtLib.handshaked.splitCopy_test import HsSplitCopyTC, \
     HsSplitCopy_randomized_TC
@@ -344,7 +344,7 @@ suite = testSuiteFromTCs(
     HsSplitCopy_randomized_TC,
     HsFifoTC,
     HsFifoAsyncTC,
-    *HsRegTCs,
+    *HandshakedRegTCs,
     HsResizerTC,
     HsBuilderSplit_TC,
     CamTC,
