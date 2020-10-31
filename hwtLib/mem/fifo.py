@@ -40,8 +40,9 @@ class Fifo(Unit):
             self.space = VectSignal(log2ceil(self.DEPTH + 1), signed=False)._m()
 
     def _declr(self):
-        assert int(
-            self.DEPTH) > 0, "Fifo is disabled in this case, do not use it entirely"
+        assert self.DEPTH > 0,\
+            "Fifo is disabled in this case, do not use it entirely"
+
         addClkRstn(self)
         with self._paramsShared():
             self.dataIn = FifoWriter()

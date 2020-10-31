@@ -7,10 +7,11 @@ from hwt.interfaces.std import Handshaked, HandshakeSync
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
-from hwtLib.amba.datapump.intf import AxiWDatapumpIntf
 from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
+from hwtLib.amba.datapump.intf import AxiWDatapumpIntf
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
+from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.structManipulators.structReader import StructReader
 
@@ -83,9 +84,12 @@ class StructWriter(StructReader):
         ack = self.wDatapump.ack
 
         # multi frame
-        ackPropageteInfo = HandshakedFifo(Handshaked)
+        if self.MAX_OVERLAP > 1:
+            ackPropageteInfo = HandshakedFifo(Handshaked)
+            ackPropageteInfo.DEPTH = self.MAX_OVERLAP
+        else:
+            ackPropageteInfo = HandshakedReg(Handshaked)
         ackPropageteInfo.DATA_WIDTH = 1
-        ackPropageteInfo.DEPTH = self.MAX_OVERLAP
         self.ackPropageteInfo = ackPropageteInfo
         propagateClkRstn(self)
 

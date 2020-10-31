@@ -29,6 +29,7 @@ class HandshakedFifo(HandshakedCompBase):
     .. hwt-schematic:: _example_HandshakedFifo
     """
     FIFO_CLS = Fifo
+    NON_DATA_BITS_CNT = 2 # 2 for control (valid, ready)
 
     def _config(self):
         self.DEPTH = Param(0)
@@ -36,25 +37,34 @@ class HandshakedFifo(HandshakedCompBase):
         self.EXPORT_SPACE = Param(False)
         super()._config()
 
-    def _declr(self):
+    def _declr_io(self):
         addClkRstn(self)
 
         with self._paramsShared():
             self.dataIn = self.intfCls()
             self.dataOut = self.intfCls()._m()
 
-        f = self.fifo = self.FIFO_CLS()
-        DW = self.dataIn._bit_length() - 2  # 2 for control (valid, ready)
-        f.DATA_WIDTH = DW
-        f.DEPTH = self.DEPTH - 1  # because there is an extra register
-        f.EXPORT_SIZE = self.EXPORT_SIZE
-        f.EXPORT_SPACE = self.EXPORT_SPACE
-
         SIZE_W = log2ceil(self.DEPTH + 1 + 1)
         if self.EXPORT_SIZE:
             self.size = VectSignal(SIZE_W, signed=False)._m()
         if self.EXPORT_SPACE:
             self.space = VectSignal(SIZE_W, signed=False)._m()
+
+    def _declr(self):
+        assert self.DEPTH > 0,\
+            "Fifo is disabled in this case, do not use it entirely"
+        assert self.DEPTH > 1 ,\
+            "Fifo is too small, fifo pointers would not work correctly, use register(s) instead"
+        
+        self._declr_io()
+
+        f = self.fifo = self.FIFO_CLS()
+        DW = self.dataIn._bit_length() - self.NON_DATA_BITS_CNT  
+        f.DATA_WIDTH = DW
+        f.DEPTH = self.DEPTH - 1  # because there is an extra register
+        f.EXPORT_SIZE = self.EXPORT_SIZE
+        f.EXPORT_SPACE = self.EXPORT_SPACE
+
 
     def _connect_size_and_space(self, out_vld, fifo):
         if self.EXPORT_SIZE:
