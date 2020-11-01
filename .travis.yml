@@ -6,18 +6,34 @@ git:
 cache:
   apt: true
 
-python:
-  - '3.8'
-#  - "nightly"
+jobs:
+  include:
+#   - name: "Python 3.8 from pip (check if actual package in pip works)" 
+#     python: '3.8'
+#     env: FROM_PIP=1 CODE_COVERAGE=0
+   - name: "Python 3.8, coverage, deploy" 
+     python: '3.8'
+     env: FROM_PIP=0 CODE_COVERAGE=1 DO_DELPLOY=1
+
 
 install:
-  - pip install coveralls codecov
-  - pip install -r docs/requirements.hwt.txt
-  - python setup.py install
+  - if [ "$CODE_COVERAGE" == "1" ]; then
+       pip install coveralls codecov;
+    fi
+  - if [ "$CODE_COVERAGE" == "1" ]; then
+      pip install -r docs/requirements.hwt.txt;
+      python setup.py install;
+    else
+      pip install hwtLib
+    fi
 
 script:
   #- python3 -m pytest hwtLib/tests/all.py --doctest-modules
-  - coverage run --source=hwtLib setup.py test
+  - if [ "$CODE_COVERAGE" == "1" ]; then
+      coverage run --source=hwtLib setup.py test;
+    else
+      python -c "from hwtLib.tests.all import main; main()";
+    fi
 
 deploy:
   provider: pypi
@@ -27,8 +43,11 @@ deploy:
   on:
     tags: true
     branch: master
+    condition: $DO_DELPLOY = 1
 
 after_success:
-- coveralls
-- codecov
+  - if [ "$CODE_COVERAGE" == "1" ]; then
+      coveralls;
+      codecov;
+    fi
 
