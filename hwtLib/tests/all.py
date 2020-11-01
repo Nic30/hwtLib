@@ -23,6 +23,7 @@ from hwtLib.amba.axi_comp.interconnect.matrixCrossbar_test import \
     AxiInterconnectMatrixCrossbar_TCs
 from hwtLib.amba.axi_comp.interconnect.matrixR_test import AxiInterconnectMatrixR_TCs
 from hwtLib.amba.axi_comp.interconnect.matrixW_test import AxiInterconnectMatrixW_TCs
+from hwtLib.amba.axi_comp.lsu.read_aggregator_test import AxiReadAggregator_TCs
 from hwtLib.amba.axi_comp.lsu.store_queue_test import AxiStoreQueue_TCs
 from hwtLib.amba.axi_comp.resize_test import AxiResizeTC
 from hwtLib.amba.axi_comp.sim.ag_test import Axi_ag_TC
@@ -421,6 +422,7 @@ suite = testSuiteFromTCs(
     *AxiInterconnectMatrixW_TCs,
 
     *AxiStoreQueue_TCs,
+    *AxiReadAggregator_TCs,
 
     Axi_ag_TC,
     Axi4_streamToMemTC,
