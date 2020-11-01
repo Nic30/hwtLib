@@ -29,7 +29,7 @@ def apply_set_and_clear_on_flag(flag: RtlSignal, set_flag: RtlSignal, clear_flag
 @serializeParamsUniq
 class AxiReadAggregator(Unit):
     """
-    This is a component which reduces reads to same address.
+    This is a component which reduces reads from same address.
 
     This component has several slots for read transactions, Each slot has it's own address record in CAM which is used
     to detect reads from same address, if the read is from same address which is currently being loaded. The read thread
