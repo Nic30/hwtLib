@@ -2,24 +2,23 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat, connect
+from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
+from hwt.interfaces.std import VldSynced
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4 import Axi4, Axi4_r
 from hwtLib.amba.axi_comp.lsu.store_queue_write_dispatcher import AxiStoreQueueWriteDispatcher
 from hwtLib.amba.axis_comp.fifoCopy import AxiSFifoCopy, AxiSRegCopy
+from hwtLib.amba.axis_comp.reg import AxiSReg
+from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
+from hwtLib.logic.binToOneHot import binToOneHot
 from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.mem.cam import Cam
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.code_utils import rename_signal
-from hwtLib.handshaked.builder import HsBuilder
-from hwtLib.amba.axis_comp.reg import AxiSReg
-from hwt.interfaces.std import VldSynced
-from hwtLib.logic.binToOneHot import binToOneHot
-from hwtLib.handshaked.reg import HandshakedReg
 
 
 def apply_set_and_clear_on_flag(flag: RtlSignal, set_flag: RtlSignal, clear_flag: RtlSignal):
@@ -141,8 +140,10 @@ class AxiReadAggregator(Unit):
         blocking_access = rename_signal(
             self,
             s.ar.valid & 
-            item_vld[s.ar.id] &
-            (~s_ar_tmp.dataOut.valid | (s.ar.id != s_ar_tmp.dataOut.id)),
+            (
+                item_vld[s.ar.id] |
+                (s_ar_tmp.dataOut.valid & (s.ar.id._eq(s_ar_tmp.dataOut.id)))
+            ),
             "blocking_access")
         s_ar_node = StreamNode(
             [s.ar],

@@ -53,7 +53,7 @@ class AxiReadAggregator_1word_burst_TC(SingleUnitSimTestCase):
     def test_nop_randomized(self):
         self.test_nop(randomized=True)
 
-    def _test_read(self, id_addr_tuples, randomize=False, REF_DATA=0x1000):
+    def _test_read(self, id_addr_tuples, randomize=False, REF_DATA=0x1000, time_multiplier=2):
         u = self.u
         mem = AxiSimRam(u.m)
         WORD_SIZE = self.WORD_SIZE
@@ -65,7 +65,7 @@ class AxiReadAggregator_1word_burst_TC(SingleUnitSimTestCase):
             trans = u.s._ag.create_addr_req(addr, trans_len - 1, _id=trans_id)
             u.s.ar._ag.data.append(trans)
 
-        t = ceil((len(id_addr_tuples) * trans_len + 10) * CLK_PERIOD * 2)
+        t = ceil((len(id_addr_tuples) * trans_len + 10) * time_multiplier * CLK_PERIOD )
         if randomize:
             self.randomize_all()
             t *= 3
@@ -89,13 +89,13 @@ class AxiReadAggregator_1word_burst_TC(SingleUnitSimTestCase):
         d_addr_tuples = [(x % self.ID_CNT, rand.choice(available_addresses)) for x in range(N)]
         self._test_read(d_addr_tuples, randomize)
 
-    def _test_read_from_random_addr_and_id(self, id_cnt: int, address_cnt: int, N: int, randomize=False):
+    def _test_read_from_random_addr_and_id(self, id_cnt: int, address_cnt: int, N: int, randomize=False, time_multiplier=1):
         assert id_cnt <= self.ID_CNT
         available_addresses = [i * self.u.CACHE_LINE_SIZE for i in range(address_cnt)]
         available_ids = [i for i in range(id_cnt)]
         rand = self._rand
         d_addr_tuples = [(rand.choice(available_ids), rand.choice(available_addresses)) for _ in range(N)]
-        self._test_read(d_addr_tuples, randomize)
+        self._test_read(d_addr_tuples, randomize=randomize, time_multiplier=time_multiplier)
     
     def test_read_from_same_addr_32x(self, randomize=False):
         d_addr_tuples = [(x % self.ID_CNT, 0x0) for x in range(32)]
@@ -131,16 +131,16 @@ class AxiReadAggregator_1word_burst_TC(SingleUnitSimTestCase):
         self.test_read_from_random_addr_100x_from_10addresses(randomize)
 
     def test_read_from_random_addr_100x_from_10addresses_4ids(self, randomize=False):
-        self._test_read_from_random_addr_and_id(4, 10, 100, randomize)
+        self._test_read_from_random_addr_and_id(4, 10, 100, randomize, time_multiplier=3)
 
     def test_r_read_from_random_addr_100x_from_10addresses_4ids(self, randomize=True):
         self.test_read_from_random_addr_100x_from_10addresses_4ids(randomize)
 
-    def test_read_from_random_addr_100x_from_10addresses_2ids(self, randomize=False):
-        self._test_read_from_random_addr_and_id(2, 10, 100, randomize)
+    def test_read_from_random_addr_100x_from_5addresses_1id(self, randomize=False):
+        self._test_read_from_random_addr_and_id(1, 5, 100, randomize, time_multiplier=4)
 
-    def test_r_read_from_random_addr_100x_from_10addresses_2ids(self, randomize=True):
-        self.test_read_from_random_addr_100x_from_10addresses_2ids(randomize)
+    def test_r_read_from_random_addr_100x_from_5addresses_1id(self, randomize=True):
+        self.test_read_from_random_addr_100x_from_5addresses_1id(randomize)
 
 
 class AxiReadAggregator_2word_burst_TC(AxiReadAggregator_1word_burst_TC):
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(AxiReadAggregator_2word_burst_TC('test_read_from_random_addr_10x_from_2addresses'))
+    #suite.addTest(AxiReadAggregator_1word_burst_TC('test_read_from_random_addr_100x_from_5addresses_1id'))
     for tc in AxiReadAggregator_TCs:
         suite.addTest(unittest.makeSuite(tc))
 
