@@ -43,13 +43,13 @@ class AxiStoreQueueWriteDispatcher(Unit):
         # number of bits for an address withou cacheline offset
         self.CACHE_LINE_ADDR_WIDTH = self.ADDR_WIDTH - self.CACHE_LINE_OFFSET_BITS
         # number of AXI4 words in a single cacheline
-        self.BUS_WORDS_IN_CACHELINE = ceil(self.CACHE_LINE_SIZE * 8 / self.DATA_WIDTH)
+        self.BUS_WORDS_IN_CACHE_LINE = ceil(self.CACHE_LINE_SIZE * 8 / self.DATA_WIDTH)
         # number of bits for an index for memory wihich stores all buts words for all transactions
-        self.DATA_RAM_INDEX_WIDTH = log2ceil(2**self.ID_WIDTH * self.BUS_WORDS_IN_CACHELINE - 1)
+        self.DATA_RAM_INDEX_WIDTH = log2ceil(2**self.ID_WIDTH * self.BUS_WORDS_IN_CACHE_LINE - 1)
 
-        if self.BUS_WORDS_IN_CACHELINE > 1:
+        if self.BUS_WORDS_IN_CACHE_LINE > 1:
             # we need also one value to know that we send all data and we are waiting on something else
-            WORD_OFFSET_W = log2ceil(self.BUS_WORDS_IN_CACHELINE)
+            WORD_OFFSET_W = log2ceil(self.BUS_WORDS_IN_CACHE_LINE)
             self.WORD_OFFSET_MAX = mask(WORD_OFFSET_W)
             # type for a counter of bus words in a single transactions
             self.word_index_t = Bits(WORD_OFFSET_W, signed=False, force_vector=True)
@@ -117,7 +117,7 @@ class AxiStoreQueueWriteDispatcher(Unit):
         a.id(a_tmp.id)
         a.addr(Concat(a_tmp.addr, vec(0, self.CACHE_LINE_OFFSET_BITS)))
 
-        a.len(self.BUS_WORDS_IN_CACHELINE - 1)
+        a.len(self.BUS_WORDS_IN_CACHE_LINE - 1)
         a.burst(BURST_INCR)
         a.prot(PROT_DEFAULT)
         a.size(BYTES_IN_TRANS(self.DATA_WIDTH // 8))
@@ -136,7 +136,7 @@ class AxiStoreQueueWriteDispatcher(Unit):
         * if there is a valid item in buffer dispatch write request and write data
         * handshaked FIFO read logic
         """
-        BUS_WORDS_IN_CACHELINE = self.BUS_WORDS_IN_CACHELINE 
+        BUS_WORDS_IN_CACHE_LINE = self.BUS_WORDS_IN_CACHE_LINE 
 
         bus_w_first = self._sig("bus_w_first_tmp")
         bus_w_last = self._sig("bus_w_last_tmp")
@@ -146,7 +146,7 @@ class AxiStoreQueueWriteDispatcher(Unit):
         pop_req((bus_ack & items.en.rd) & ~pop_wait & bus_w_last)
         items.en.vld(bus_ack & ~pop_wait)
 
-        if BUS_WORDS_IN_CACHELINE == 1:
+        if BUS_WORDS_IN_CACHE_LINE == 1:
             bus_w_first(1)
             bus_w_last(1)
             items.addr(pop_ptr)

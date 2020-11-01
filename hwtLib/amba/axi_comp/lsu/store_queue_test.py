@@ -49,20 +49,20 @@ class AxiStoreQueue_1word_per_cachelineTC(SingleUnitSimTestCase):
         if randomized:
             self.randomize_all()
 
-        self.runSim((N + 10) * 2 * CLK_PERIOD * u.BUS_WORDS_IN_CACHELINE)
+        self.runSim((N + 10) * 2 * CLK_PERIOD * u.BUS_WORDS_IN_CACHE_LINE)
 
         SIZE = 2 ** u.ID_WIDTH
         aw = u.m.aw._ag
         self.assertValSequenceEqual(aw.data, [
             aw.create_addr_req(addr=u.CACHE_LINE_SIZE * i,
-                               _len=u.BUS_WORDS_IN_CACHELINE - 1,
+                               _len=u.BUS_WORDS_IN_CACHE_LINE - 1,
                                _id=i)
             for i in range(min(SIZE, N))
         ])
 
         w_ref = []
         for i in range(min(SIZE, N)):
-            for last, w_i in iter_with_last(range(u.BUS_WORDS_IN_CACHELINE)):
+            for last, w_i in iter_with_last(range(u.BUS_WORDS_IN_CACHE_LINE)):
                 d = (10 + i if w_i == 0 else 0,
                      mask(u.DATA_WIDTH // 8), int(last))
                 w_ref.append(d)
@@ -86,13 +86,13 @@ class AxiStoreQueue_1word_per_cachelineTC(SingleUnitSimTestCase):
         aw = u.m.aw._ag
         self.assertValSequenceEqual(aw.data, [
             aw.create_addr_req(addr=1 * u.CACHE_LINE_SIZE,
-                               _len=u.BUS_WORDS_IN_CACHELINE - 1,
+                               _len=u.BUS_WORDS_IN_CACHE_LINE - 1,
                                _id=0),
         ])
         self.assertValSequenceEqual(u.m.w._ag.data, [
             (get_bit_range(d, u.DATA_WIDTH * i, u.DATA_WIDTH),
              mask(u.DATA_WIDTH // 8), int(last))
-            for last, i in iter_with_last(range(u.BUS_WORDS_IN_CACHELINE))
+            for last, i in iter_with_last(range(u.BUS_WORDS_IN_CACHE_LINE))
         ])
 
     def test_with_mem(self, N=10, randomized=False):
@@ -103,7 +103,7 @@ class AxiStoreQueue_1word_per_cachelineTC(SingleUnitSimTestCase):
         if randomized:
             self.randomize_all()
 
-        self.runSim((N + 10) * 3 * CLK_PERIOD * u.BUS_WORDS_IN_CACHELINE)
+        self.runSim((N + 10) * 3 * CLK_PERIOD * u.BUS_WORDS_IN_CACHE_LINE)
         mem_val = mem.getArray(0, u.CACHE_LINE_SIZE, N)
         self.assertValSequenceEqual(mem_val, [10 + i for i in range(N)])
 
@@ -125,7 +125,7 @@ class AxiStoreQueue_1word_per_cachelineTC(SingleUnitSimTestCase):
                 expected[a] = v
 
         t = (N * len(ADDRESSES) + 10) * 3 * \
-            u.BUS_WORDS_IN_CACHELINE * CLK_PERIOD
+            u.BUS_WORDS_IN_CACHE_LINE * CLK_PERIOD
         if randomized:
             #t *= 2
             self.randomize_all()
@@ -161,7 +161,7 @@ class AxiStoreQueue_1word_per_cachelineTC(SingleUnitSimTestCase):
             self.randomize_all()
 
         self.runSim((N * len(ADDRESSES) + 10) * 3 *
-                    u.BUS_WORDS_IN_CACHELINE * CLK_PERIOD)
+                    u.BUS_WORDS_IN_CACHE_LINE * CLK_PERIOD)
         for a in ADDRESSES:
             self.assertValEqual(
                 mem.data[a], expected[a], "%d: 0x%08x" % (a, expected[a]))

@@ -166,7 +166,7 @@ class AxiStoreQueue(Unit):
 
         # insert word iteration,
         # push data to items RAM
-        if self.BUS_WORDS_IN_CACHELINE == 1:
+        if self.BUS_WORDS_IN_CACHE_LINE == 1:
             # a cacheline fits in to a single busword, no extracarerequired
             item_insert_last(1)
             item_insert_first(1)
