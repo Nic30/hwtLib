@@ -11,7 +11,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4 import Axi4, Axi4_r
-from hwtLib.amba.axi_comp.lsu.store_queue_write_dispatcher import AxiStoreQueueWriteDispatcher
+from hwtLib.amba.axi_comp.lsu.write_aggregator_write_dispatcher import AxiWriteAggregatorWriteDispatcher
 from hwtLib.amba.axis_comp.fifoCopy import AxiSFifoCopy, AxiSRegCopy
 from hwtLib.amba.axis_comp.reg import AxiSReg
 from hwtLib.handshaked.reg import HandshakedReg
@@ -19,10 +19,7 @@ from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.binToOneHot import binToOneHot
 from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.mem.cam import Cam
-
-
-def apply_set_and_clear_on_flag(flag: RtlSignal, set_flag: RtlSignal, clear_flag: RtlSignal):
-    return (flag & ~clear_flag) | set_flag
+from pyMathBitPrecise.bit_utils import apply_set_and_clear
 
 
 @serializeParamsUniq
@@ -54,7 +51,7 @@ class AxiReadAggregator(Unit):
         self.CACHE_LINE_SIZE = Param(64)  # [B]
 
     def _declr(self):
-        AxiStoreQueueWriteDispatcher.precompute_constants(self)
+        AxiWriteAggregatorWriteDispatcher.precompute_constants(self)
         addClkRstn(self)
         with self._paramsShared():
             self.s = Axi4()
@@ -190,7 +187,7 @@ class AxiReadAggregator(Unit):
             # item becomes invalid if we read last data word
             this_trans_end = read_ack & s.r.id._eq(trans_id) & s.r.last
             this_trans_end = rename_signal(self, this_trans_end, "this_trans_end%d" % trans_id)
-            this_transaction_vld = apply_set_and_clear_on_flag(item_vld[trans_id], this_trans_start, this_trans_end)
+            this_transaction_vld = apply_set_and_clear(item_vld[trans_id], this_trans_start, this_trans_end)
             item_vld_next.append(this_transaction_vld)
 
             waiting_transaction_start = (
@@ -199,13 +196,10 @@ class AxiReadAggregator(Unit):
                 parent_transaction_id._eq(trans_id) &
                 ~this_trans_end
             )
-            # waiting_transaction_for_parent_end = (
-            #     read_ack & waiting_transaction_id[trans_id]._eq(s.r.id) & s.r.last
-            # )
             # note: this_trans_end in this context is for parent transactio
-            # which was not started just now, so it may be inding just now 
+            # which was not started just now, so it may be ending just now 
             waiting_transaction_start = rename_signal(self,  waiting_transaction_start, "waiting_transaction_start%d" % trans_id)
-            _waiting_transaction_vld = apply_set_and_clear_on_flag(
+            _waiting_transaction_vld = apply_set_and_clear(
                 waiting_transaction_vld[trans_id],
                 waiting_transaction_start,
                 this_trans_end)

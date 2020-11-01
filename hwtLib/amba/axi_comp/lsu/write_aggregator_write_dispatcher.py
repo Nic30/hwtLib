@@ -25,7 +25,7 @@ from pyMathBitPrecise.bit_utils import mask
 
 
 @serializeParamsUniq
-class AxiStoreQueueWriteDispatcher(Unit):
+class AxiWriteAggregatorWriteDispatcher(Unit):
     """
     Use :class:`hwtLib.amba.axi_comp.lsu.fifo_oooread.FifoOutOfOrderReadFiltered` read ports
     to qury an AXI transaction info and copy paste this transaction from BRAM to AXI
@@ -235,5 +235,5 @@ class AxiStoreQueueWriteDispatcher(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
 
-    u = AxiStoreQueueWriteDispatcher()
+    u = AxiWriteAggregatorWriteDispatcher()
     print(to_rtl_str(u))

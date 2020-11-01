@@ -13,15 +13,15 @@ from hwtLib.amba.axi_comp.cache.ram_cumulative_mask import BramPort_withReadMask
     RamCumulativeMask, is_mask_byte_unaligned
 from hwtLib.amba.axi_comp.cache.utils import apply_write_with_mask
 from hwtLib.amba.axi_comp.lsu.fifo_oooread import FifoOutOfOrderReadFiltered
-from hwtLib.amba.axi_comp.lsu.interfaces import AxiStoreQueueWriteIntf, AxiStoreQueueWriteTmpIntf
-from hwtLib.amba.axi_comp.lsu.store_queue_write_dispatcher import AxiStoreQueueWriteDispatcher
+from hwtLib.amba.axi_comp.lsu.interfaces import AxiWriteAggregatorWriteIntf, AxiWriteAggregatorWriteTmpIntf
+from hwtLib.amba.axi_comp.lsu.write_aggregator_write_dispatcher import AxiWriteAggregatorWriteDispatcher
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.oneHotToBin import oneHotToBin
 
 
 @serializeParamsUniq
-class AxiStoreQueue(Unit):
+class AxiWriteAggregator(Unit):
     """
     A buffer which is used for write data from cache.
     It manages:
@@ -61,23 +61,23 @@ class AxiStoreQueue(Unit):
     """
 
     def _config(self):
-        AxiStoreQueueWriteDispatcher._config(self)
+        AxiWriteAggregatorWriteDispatcher._config(self)
         self.MAX_BLOCK_DATA_WIDTH = Param(None)
 
     def _declr(self):
         addClkRstn(self)
-        AxiStoreQueueWriteDispatcher.precompute_constants(self)
+        AxiWriteAggregatorWriteDispatcher.precompute_constants(self)
         with self._paramsShared():
-            self.w = w = AxiStoreQueueWriteIntf()
-            self.w_in_reg = w_in_reg = HandshakedReg(AxiStoreQueueWriteTmpIntf)
+            self.w = w = AxiWriteAggregatorWriteIntf()
+            self.w_in_reg = w_in_reg = HandshakedReg(AxiWriteAggregatorWriteTmpIntf)
             w.ADDR_WIDTH = w_in_reg.ADDR_WIDTH = self.CACHE_LINE_ADDR_WIDTH
             w.DATA_WIDTH = w_in_reg.DATA_WIDTH = self.CACHE_LINE_SIZE * 8
 
-            # self.r = AxiStoreQueueReadIntf()
+            # self.r = AxiWriteAggregatorReadIntf()
             self.m = axi = Axi4()._m()
             axi.HAS_R = False
             
-            self.write_dispatch = AxiStoreQueueWriteDispatcher()
+            self.write_dispatch = AxiWriteAggregatorWriteDispatcher()
 
         self.ooo_fifo = of = FifoOutOfOrderReadFiltered()
         of.ITEMS = w_in_reg.ITEMS = 2 ** self.ID_WIDTH
@@ -256,7 +256,7 @@ if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     # from hwtLib.mem.ram import XILINX_VIVADO_MAX_DATA_WIDTH
 
-    u = AxiStoreQueue()
+    u = AxiWriteAggregator()
     # u.ID_WIDTH = 6
     # u.CACHE_LINE_SIZE = 64
     # u.DATA_WIDTH = 256

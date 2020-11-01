@@ -4,18 +4,18 @@
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
-from hwtLib.amba.axi_comp.lsu.store_queue import AxiStoreQueue
+from hwtLib.amba.axi_comp.lsu.write_aggregator import AxiWriteAggregator
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from pyMathBitPrecise.bit_utils import mask, set_bit_range, int_list_to_int, \
     get_bit_range
 from pycocotb.constants import CLK_PERIOD
 
 
-class AxiStoreQueue_1word_per_cachelineTC(SingleUnitSimTestCase):
+class AxiWriteAggregator_1word_per_cachelineTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
-        cls.u = u = AxiStoreQueue()
+        cls.u = u = AxiWriteAggregator()
         u.ADDR_WIDTH = 16
         u.ID_WIDTH = 2
         u.CACHE_LINE_SIZE = 4
@@ -176,11 +176,11 @@ class AxiStoreQueue_1word_per_cachelineTC(SingleUnitSimTestCase):
         self.test_mergable(N, ADDRESSES, randomized=True)
 
 
-class AxiStoreQueue_2words_per_cachelineTC(AxiStoreQueue_1word_per_cachelineTC):
+class AxiWriteAggregator_2words_per_cachelineTC(AxiWriteAggregator_1word_per_cachelineTC):
 
     @classmethod
     def getUnit(cls):
-        cls.u = u = AxiStoreQueue()
+        cls.u = u = AxiWriteAggregator()
         u.ADDR_WIDTH = 16
         u.ID_WIDTH = 2
         u.CACHE_LINE_SIZE = 8
@@ -189,20 +189,20 @@ class AxiStoreQueue_2words_per_cachelineTC(AxiStoreQueue_1word_per_cachelineTC):
         return u
 
 
-AxiStoreQueue_TCs = [
-    AxiStoreQueue_1word_per_cachelineTC,
-    AxiStoreQueue_2words_per_cachelineTC,
+AxiWriteAggregator_TCs = [
+    AxiWriteAggregator_1word_per_cachelineTC,
+    AxiWriteAggregator_2words_per_cachelineTC,
 ]
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(AxiStoreQueue_2words_per_cachelineTC('test_mergable'))
-    # suite.addTest(AxiStoreQueue_1word_per_cachelineTC('test_mergable'))
+    # suite.addTest(AxiWriteAggregator_2words_per_cachelineTC('test_mergable'))
+    # suite.addTest(AxiWriteAggregator_1word_per_cachelineTC('test_mergable'))
 
-    suite.addTest(unittest.makeSuite(AxiStoreQueue_1word_per_cachelineTC))
-    suite.addTest(unittest.makeSuite(AxiStoreQueue_2words_per_cachelineTC))
+    suite.addTest(unittest.makeSuite(AxiWriteAggregator_1word_per_cachelineTC))
+    suite.addTest(unittest.makeSuite(AxiWriteAggregator_2words_per_cachelineTC))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

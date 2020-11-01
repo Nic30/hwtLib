@@ -24,7 +24,7 @@ from hwtLib.amba.axi_comp.interconnect.matrixCrossbar_test import \
 from hwtLib.amba.axi_comp.interconnect.matrixR_test import AxiInterconnectMatrixR_TCs
 from hwtLib.amba.axi_comp.interconnect.matrixW_test import AxiInterconnectMatrixW_TCs
 from hwtLib.amba.axi_comp.lsu.read_aggregator_test import AxiReadAggregator_TCs
-from hwtLib.amba.axi_comp.lsu.store_queue_test import AxiStoreQueue_TCs
+from hwtLib.amba.axi_comp.lsu.write_aggregator_test import AxiWriteAggregator_TCs
 from hwtLib.amba.axi_comp.resize_test import AxiResizeTC
 from hwtLib.amba.axi_comp.sim.ag_test import Axi_ag_TC
 from hwtLib.amba.axi_comp.slave_timeout_test import AxiSlaveTimeoutTC
@@ -421,7 +421,7 @@ suite = testSuiteFromTCs(
     *AxiInterconnectMatrixR_TCs,
     *AxiInterconnectMatrixW_TCs,
 
-    *AxiStoreQueue_TCs,
+    *AxiWriteAggregator_TCs,
     *AxiReadAggregator_TCs,
 
     Axi_ag_TC,
@@ -464,7 +464,8 @@ suite = testSuiteFromTCs(
     ConstraintsXdcClockRelatedTC,
 )
 
-if __name__ == '__main__':
+
+def main():
     # runner = TextTestRunner(verbosity=2, failfast=True)
     runner = TextTestRunner(verbosity=2)
 
@@ -481,4 +482,7 @@ if __name__ == '__main__':
         runner.run(concurrent_suite)
     else:
         runner.run(suite)
+   
 
+if __name__ == '__main__':
+    main()

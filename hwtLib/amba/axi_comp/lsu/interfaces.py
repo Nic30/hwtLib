@@ -7,9 +7,9 @@ from ipCorePackager.constants import DIRECTION
 from pycocotb.hdlSimulator import HdlSimulator
 
 
-class AxiStoreQueueWriteIntf(Handshaked):
+class AxiWriteAggregatorWriteIntf(Handshaked):
     """
-    An interface which is used to push write data to a AxiStoreQueue
+    An interface which is used to push write data to a AxiWriteAggregator
     """
 
     def _config(self):
@@ -22,10 +22,10 @@ class AxiStoreQueueWriteIntf(Handshaked):
         self.mask = VectSignal(self.DATA_WIDTH // 8)
 
     def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = AxiStoreQueueWriteIntfAgent(sim, self)
+        self._ag = AxiWriteAggregatorWriteIntfAgent(sim, self)
 
 
-class AxiStoreQueueWriteIntfAgent(HandshakedAgent):
+class AxiWriteAggregatorWriteIntfAgent(HandshakedAgent):
 
     def get_data(self):
         i = self.intf
@@ -42,7 +42,7 @@ class AxiStoreQueueWriteIntfAgent(HandshakedAgent):
         i.mask.write(m)
 
 
-class AxiStoreQueueWriteTmpIntf(AxiStoreQueueWriteIntf):
+class AxiWriteAggregatorWriteTmpIntf(AxiWriteAggregatorWriteIntf):
     """
     Interface for tmp input register on store buffer write input
 
@@ -52,11 +52,11 @@ class AxiStoreQueueWriteTmpIntf(AxiStoreQueueWriteIntf):
     """
 
     def _config(self):
-        AxiStoreQueueWriteIntf._config(self)
+        AxiWriteAggregatorWriteIntf._config(self)
         self.ITEMS = Param(64)
 
     def _declr(self):
-        AxiStoreQueueWriteIntf._declr(self)
+        AxiWriteAggregatorWriteIntf._declr(self)
         self.cam_lookup = VectSignal(self.ITEMS)
         self.mask_byte_unaligned = Signal()
 
@@ -64,9 +64,9 @@ class AxiStoreQueueWriteTmpIntf(AxiStoreQueueWriteIntf):
         raise NotImplementedError()
 
 
-class AxiStoreQueueReadIntf(Interface):
+class AxiWriteAggregatorReadIntf(Interface):
     """
-    An interface which is used to speculatively read data from AxiStoreQueue
+    An interface which is used to speculatively read data from AxiWriteAggregator
     """
 
     def _config(self):
