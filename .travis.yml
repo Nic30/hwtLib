@@ -21,8 +21,8 @@ install:
        pip install coveralls codecov;
     fi
   - if [ "$FROM_PIP" == "1" ]; then
-      pip install hwtLib
-    else;
+      pip install hwtLib;
+    else
       pip install -r docs/requirements.hwt.txt;
       python setup.py install;
     fi
@@ -30,7 +30,7 @@ install:
 script:
    - if [ "$CODE_COVERAGE" == "1" ]; then
       coverage run --source=hwtLib setup.py test;
-    else;
+    else
       python -c "from hwtLib.tests.all import main; main()";
     fi
 
