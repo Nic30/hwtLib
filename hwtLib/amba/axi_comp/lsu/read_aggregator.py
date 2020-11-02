@@ -43,7 +43,7 @@ class AxiReadAggregator(Unit):
     which is usually 2. If these write transactions are used to update the read data, the read data are asserted to be a last written value
     on that specified address. 
 
-    .. hwt-schematic::
+    .. hwt-schematic:: _example_AxiReadAggregator
     """
 
     def _config(self):
@@ -246,8 +246,12 @@ class AxiReadAggregator(Unit):
         propagateClkRstn(self)
 
 
+def _example_AxiReadAggregator():
+    u = AxiReadAggregator()
+    u.ID_WIDTH = 2
+    return u
+
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
-    u = AxiReadAggregator()
-
+    u = _example_AxiReadAggregator()
     print(to_rtl_str(u))

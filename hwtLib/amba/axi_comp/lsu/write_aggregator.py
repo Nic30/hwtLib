@@ -58,6 +58,8 @@ class AxiWriteAggregator(Unit):
     :ivar MAX_BLOCK_DATA_WIDTH: specifies maximum data width of RAM
         (used to prevent synthesis problems for tools which can not handle
         too wide memories with byte enable)
+    
+    .. hwt-schematic:: _example_AxiWriteAggregator
     """
 
     def _config(self):
@@ -250,6 +252,17 @@ class AxiWriteAggregator(Unit):
         wd.read_execute(of.read_execute)
 
         propagateClkRstn(self)
+
+
+def _example_AxiWriteAggregator():
+    from hwtLib.mem.ram import XILINX_VIVADO_MAX_DATA_WIDTH
+    u = AxiWriteAggregator()
+    u.ID_WIDTH = 2
+    u.CACHE_LINE_SIZE = 4
+    u.DATA_WIDTH = 32
+    u.MAX_BLOCK_DATA_WIDTH = XILINX_VIVADO_MAX_DATA_WIDTH
+
+    return u
 
 
 if __name__ == "__main__":
