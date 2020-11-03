@@ -255,12 +255,11 @@ class AxiWriteAggregator(Unit):
 
 
 def _example_AxiWriteAggregator():
-    from hwtLib.mem.ram import XILINX_VIVADO_MAX_DATA_WIDTH
     u = AxiWriteAggregator()
     u.ID_WIDTH = 2
     u.CACHE_LINE_SIZE = 4
     u.DATA_WIDTH = 32
-    u.MAX_BLOCK_DATA_WIDTH = XILINX_VIVADO_MAX_DATA_WIDTH
+    u.MAX_BLOCK_DATA_WIDTH = 8
 
     return u
 
@@ -269,7 +268,7 @@ if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     # from hwtLib.mem.ram import XILINX_VIVADO_MAX_DATA_WIDTH
 
-    u = AxiWriteAggregator()
+    u = _example_AxiWriteAggregator()
     # u.ID_WIDTH = 6
     # u.CACHE_LINE_SIZE = 64
     # u.DATA_WIDTH = 256
