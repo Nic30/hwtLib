@@ -9,7 +9,7 @@ from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi_comp.cache.utils import CamWithReadPort
-from hwtLib.common_nonstd_interfaces.index_key_hs import IndexKeyHs,\
+from hwtLib.common_nonstd_interfaces.index_key_hs import IndexKeyHs, \
     IndexKeyInHs
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.fifo import Fifo
@@ -26,7 +26,7 @@ class FifoOutOfOrderRead(Unit):
     """
 
     def _config(self):
-        self.ITEMS = Param(64)
+        self.ITEMS = Param(4)
         self.KEY_WIDTH = Param(0)
 
     def _declr(self):
@@ -122,11 +122,22 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
     def _config(self):
         super(FifoOutOfOrderReadFiltered, self)._config()
         self.KEY_WIDTH = 8
+        self.HAS_READ_LOOKUP = Param(False)
 
     def _declr(self) -> None:
         assert self.KEY_WIDTH > 0
         super(FifoOutOfOrderReadFiltered, self)._declr()
 
+        if self.HAS_READ_LOOKUP:
+            # check if item is stored in CAM
+            pl = self.read_lookup = Handshaked()
+            pl.DATA_WIDTH = self.KEY_WIDTH
+            
+            # return one-hot encoded index of the previously searched key
+            plr = self.read_lookup_res = Handshaked()._m()
+            plr.DATA_WIDTH = self.ITEMS
+
+            
         # check if item is stored in CAM
         pl = self.write_pre_lookup = Handshaked()
         pl.DATA_WIDTH = self.KEY_WIDTH
@@ -148,6 +159,8 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
         c.ITEMS = self.ITEMS
         c.KEY_WIDTH = self.KEY_WIDTH
         c.USE_VLD_BIT = False  # we maintaining vld flag separately
+        if self.HAS_READ_LOOKUP:
+            c.MATCH_PORT_CNT = 2
 
     def _impl(self):
         item_valid, item_write_lock, (_, write_ptr), (_, read_ptr) = super(FifoOutOfOrderReadFiltered, self)._impl()
@@ -156,21 +169,35 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
         
         tc = self.tag_cam
 
-        tc.match(self.write_pre_lookup)
+        if self.HAS_READ_LOOKUP:
+            tc.match[0](self.write_pre_lookup)
+    
+            self.write_pre_lookup_res.data(tc.out[0].data & item_valid & item_write_lock)
+            StreamNode([tc.out[0]], [self.write_pre_lookup_res]).sync()
 
-        self.write_pre_lookup_res.data(tc.out.data & item_valid & item_write_lock)
-        StreamNode([tc.out], [self.write_pre_lookup_res]).sync()
+            tc.match[1](self.read_lookup)
+            
+            self.read_lookup_res.data(tc.out[1].data & item_valid)
+            StreamNode([tc.out[1]], [self.read_lookup_res]).sync()
+    
+        else:
+            tc.match(self.write_pre_lookup)
+    
+            self.write_pre_lookup_res.data(tc.out.data & item_valid & item_write_lock)
+            StreamNode([tc.out], [self.write_pre_lookup_res]).sync()
 
         write_execute = self.write_execute
-        self.tag_cam.read.addr(read_ptr)
+        tc.read.addr(read_ptr)
         connect(write_ptr, write_execute.index, tc.write.addr)
         tc.write.data(write_execute.key)
         StreamNode([], [tc.write, write_execute]).sync()
-        self.read_execute.key(self.tag_cam.read.data)
+        self.read_execute.key(tc.read.data)
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
 
     # u = FifoOutOfOrderRead()
     u = FifoOutOfOrderReadFiltered()
+    u.HAS_READ_LOOKUP = True
     print(to_rtl_str(u))
