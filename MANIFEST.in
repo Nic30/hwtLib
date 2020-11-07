@@ -2,12 +2,14 @@ include README.md
 include MANIFEST.in
 
 # find . -name "*.vhd" -o -name "*.v" -o -name "*.cpp" -o -name "*.xdc" -o -name "*.png" | sort | sed 's|\./|include |g'
+include hwtLib/examples/arithmetic/multiplier_booth.png
 include hwtLib/examples/arithmetic/VhdlVectorAutoCastExample.vhd
 include hwtLib/examples/EmptyUnitWithSpi.vhd
 include hwtLib/examples/hierarchy/GroupOfBlockrams.vhd
 include hwtLib/examples/hierarchy/MultiConfigUnitWrapper_3x_same_io_type_different_int_param.vhd
 include hwtLib/examples/hierarchy/MultiConfigUnitWrapper_same_io_type_different_int_param_irrelevant_param_and_second_param.vhd
 include hwtLib/examples/hierarchy/MultiConfigUnitWrapper_same_io_type_different_int_param_irrelevant_param.vhd
+include hwtLib/examples/hierarchy/MultiConfigUnitWrapper_same_io_type_different_int_param.v
 include hwtLib/examples/hierarchy/MultiConfigUnitWrapper_same_io_type_different_int_param.vhd
 include hwtLib/examples/hierarchy/netFilter.cpp
 include hwtLib/examples/hierarchy/netFilter.v

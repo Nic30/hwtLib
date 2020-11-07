@@ -74,6 +74,15 @@ class HierarchySerializationTC(BaseSerializationTC):
         u = MultiConfigUnitWrapper([u0, u1])
         self.assert_serializes_as_file(u, "MultiConfigUnitWrapper_same_io_type_different_int_param.vhd")
 
+    def test_MultiConfigUnitWrapper_same_io_type_different_int_param_verilog(self):
+        u0 = SimpleUnitWithParam()
+        u0.DATA_WIDTH = 2
+        u1 = SimpleUnitWithParam()
+        u1.DATA_WIDTH = 3
+        
+        u = MultiConfigUnitWrapper([u0, u1])
+        self.assert_serializes_as_file(u, "MultiConfigUnitWrapper_same_io_type_different_int_param.v")
+
     def test_MultiConfigUnitWrapper_3x_same_io_type_different_int_param_vhdl(self):
         u0 = SimpleUnitWithParam()
         u0.DATA_WIDTH = 2
@@ -124,7 +133,7 @@ class HierarchySerializationTC(BaseSerializationTC):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(HierarchySerializationTC("test_MultiConfigUnitWrapper_same_io_type_different_int_param_irrelevant_param_and_second_param_vhdl"))
-    suite.addTest(unittest.makeSuite(HierarchySerializationTC))
+    suite.addTest(HierarchySerializationTC("test_MultiConfigUnitWrapper_same_io_type_different_int_param_verilog"))
+    # suite.addTest(unittest.makeSuite(HierarchySerializationTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

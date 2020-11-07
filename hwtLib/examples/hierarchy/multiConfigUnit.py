@@ -15,7 +15,7 @@ from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from ipCorePackager.constants import INTF_DIRECTION
+from ipCorePackager.constants import INTF_DIRECTION, DIRECTION
 
 
 def reduce_ternary(cond_val_pairs: List[Tuple[Union[HValue, RtlSignal], Union[HValue, RtlSignal]]], default: Union[HValue, RtlSignal]):
@@ -289,6 +289,12 @@ class MultiConfigUnitWrapper(Unit):
                 if_generate.elifs.append((c, ci))
 
         mdef.objs.append(if_generate)
+        for p in ctx.ent.ports:
+            s = p.getInternSig()
+            if p.direction != DIRECTION.IN:
+                s.drivers.append(if_generate)
+            else:
+                s.endpoints.append(if_generate)
 
         ctx.arch = mdef
         return mdef
