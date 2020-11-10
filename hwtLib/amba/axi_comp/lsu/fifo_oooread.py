@@ -22,6 +22,11 @@ class FifoOutOfOrderRead(Unit):
     
     :attention: this component does not contains the item storage, it is just container of such a FIFO logic
 
+    Item state control scheme:
+    * write_confirm: the item is now allocated in the fifo and ready to be read
+    * read_execute: the item is locked for updates and is currently being read
+    * read_confirm: the item is entirely readed and it is ready to be deallocated
+
     .. hwt-schematic::
     """
 
@@ -32,10 +37,6 @@ class FifoOutOfOrderRead(Unit):
     def _declr(self):
         addClkRstn(self)
         ITEM_INDEX_WIDTH = log2ceil(self.ITEMS - 1)
-
-        # reserve an item in fifo
-        # wa = self.write_allocate = Handshaked()._m()
-        # wa.DATA_WIDTH = ITEM_INDEX_WIDTH
 
         # mark item as complete and ready to be read out
         self.write_confirm = HandshakeSync()
@@ -70,8 +71,8 @@ class FifoOutOfOrderRead(Unit):
 
         write_confirm = self.write_confirm
        
-        write_req(write_confirm.vld & ~write_wait)
-        write_confirm.rd(~write_wait)
+        write_req(write_confirm.vld & ~write_wait & ~item_valid[write_ptr])
+        write_confirm.rd(~write_wait & ~item_valid[write_ptr])
 
         read_execute = self.read_execute
         read_req(read_execute.rd & ~read_wait)
@@ -116,6 +117,13 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
     """
     :class:`~.FifoOutOfOrderRead` with an additional cam to filter transactions by same key
     :attention: this component does not contains the item storage, it is just container of such a FIFO logic
+
+    Item state control scheme:
+    * write_execute: preallocate the item for writing (and add key to CAM for filtering) 
+    * write_confirm: the item is now allocated in the fifo and ready to be read
+    * read_execute: the item is locked for updates and is currently being read
+    * read_confirm: the item is entirely readed and it is ready to be deallocated
+
 
     .. hwt-schematic::
     """
