@@ -87,7 +87,7 @@ class AxiWriteAggregatorWriteDispatcher(Unit):
         self.dispatch_data(
             aw_ld, read_execute.index, read_execute.rd, ~read_execute.vld,
             self.data,
-            m.aw, m.w
+            m.aw.ready, m.w
         )
         self.receive_write_confirm(self.m.b, self.read_confirm)
 
@@ -131,7 +131,7 @@ class AxiWriteAggregatorWriteDispatcher(Unit):
     def dispatch_data(self, aw_ld: RtlSignal, pop_ptr: RtlSignal,
                       pop_req: RtlSignal, pop_wait: RtlSignal,
                       items: BramPort_withReadMask_withoutClk,
-                      aw_out: Axi4_addr, w_out: Axi4_w):
+                      aw_out_ready: RtlSignal, w_out: Axi4_w):
         """
         * if there is a valid item in buffer dispatch write request and write data
         * handshaked FIFO read logic
@@ -141,7 +141,7 @@ class AxiWriteAggregatorWriteDispatcher(Unit):
         bus_w_first = self._sig("bus_w_first_tmp")
         bus_w_last = self._sig("bus_w_last_tmp")
         w_out_ready = self._sig("w_out_ready")
-        bus_ack = rename_signal(self, w_out_ready & (aw_out.ready | ~bus_w_first), "bus_ack")
+        bus_ack = rename_signal(self, w_out_ready & (aw_out_ready | ~bus_w_first), "bus_ack")
         aw_ld(bus_ack & bus_w_first & items.en.rd & ~pop_wait)
         pop_req((bus_ack & items.en.rd) & ~pop_wait & bus_w_last)
         items.en.vld(bus_ack & ~pop_wait)
