@@ -3,7 +3,6 @@
 
 import unittest
 
-from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.operators.indexing import (
     SimpleIndexingSplit,
@@ -11,7 +10,8 @@ from hwtLib.examples.operators.indexing import (
     SimpleIndexingRangeJoin,
     IndexingInernSplit,
     IndexingInernJoin,
-    IndexingInernRangeSplit)
+    IndexingInernRangeSplit, AssignmentToRegIndex)
+from pycocotb.constants import CLK_PERIOD
 
 
 class IndexingTC(SimTestCase):
@@ -21,7 +21,7 @@ class IndexingTC(SimTestCase):
         self.compileSimAndStart(u)
         u.a._ag.data.extend([0, 1, 2, 3, None, 3, 2, 1])
 
-        self.runSim(80 * Time.ns)
+        self.runSim(8 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.b._ag.data,
                                     [0, 1, 0, 1, None, 1, 0, 1])
@@ -35,7 +35,7 @@ class IndexingTC(SimTestCase):
         u.b._ag.data.extend([0, 1, 0, 1, None, 1, 0, 1])
         u.c._ag.data.extend([0, 0, 1, 1, None, 1, 1, 0])
 
-        self.runSim(80 * Time.ns)
+        self.runSim(8 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.a._ag.data,
                                     [0, 1, 2, 3, None, 3, 2, 1])
@@ -47,7 +47,7 @@ class IndexingTC(SimTestCase):
         u.b._ag.data.extend([0, 3, 0, 3, None, 3, 0, 3])
         u.c._ag.data.extend([0, 0, 3, 3, None, 3, 3, 0])
 
-        self.runSim(80 * Time.ns)
+        self.runSim(8 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.a._ag.data,
                                     [0, 3, 12, 15, None, 15, 12, 3])
@@ -58,7 +58,7 @@ class IndexingTC(SimTestCase):
 
         u.a._ag.data.extend([0, 1, 2, 3, None, 3, 0, 3])
 
-        self.runSim(80 * Time.ns)
+        self.runSim(8 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.b._ag.data,
                                     [0, 1, 2, 3, None, 3, 0, 3])
@@ -70,7 +70,7 @@ class IndexingTC(SimTestCase):
         u.a._ag.data.extend([0, 1, 0, 1, None, 0, 1, 0])
         u.b._ag.data.extend([0, 0, 1, 1, None, 0, 1, 0])
 
-        self.runSim(80 * Time.ns)
+        self.runSim(8 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.c._ag.data,
                                     [0, 1, 0, 1, None, 0, 1, 0])
@@ -83,10 +83,21 @@ class IndexingTC(SimTestCase):
         reference = list(range(2 ** 4)) + [None, ]
         u.a._ag.data.extend(reference)
 
-        self.runSim((2 ** 4 + 1) * 10 * Time.ns)
+        self.runSim((2 ** 4 + 1) * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.b._ag.data,
                                     reference)
+
+    def test_AssignmentToRegIndex(self):
+        u = AssignmentToRegIndex()
+        self.compileSimAndStart(u)
+        reference = [0b10, 0b10] 
+        u.a._ag.data.extend(reference)
+
+        self.runSim(2 * CLK_PERIOD)
+
+        self.assertValSequenceEqual(u.b._ag.data,
+                                    reference[1:])
 
 
 if __name__ == "__main__":

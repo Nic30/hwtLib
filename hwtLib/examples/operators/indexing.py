@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import connect
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.synthesizer.unit import Unit
+from hwt.interfaces.utils import addClkRstn
 
 
 class SimpleIndexingSplit(Unit):
     """
     .. hwt-schematic::
     """
+
     def _declr(self):
         self.a = VectSignal(2)
         self.b = Signal()._m()
@@ -25,6 +26,7 @@ class SimpleIndexingJoin(Unit):
     """
     .. hwt-schematic::
     """
+
     def _declr(self):
         self.a = VectSignal(2)._m()
         self.b = Signal()
@@ -39,6 +41,7 @@ class SimpleIndexingRangeJoin(Unit):
     """
     .. hwt-schematic::
     """
+
     def _declr(self):
         self.a = VectSignal(4)._m()
         self.b = VectSignal(2)
@@ -54,6 +57,7 @@ class IndexingInernRangeSplit(Unit):
     """
     .. hwt-schematic::
     """
+
     def _declr(self):
         self.a = VectSignal(4)
         self.b = VectSignal(4)._m()
@@ -73,6 +77,7 @@ class IndexingInernSplit(Unit):
     """
     .. hwt-schematic::
     """
+
     def _declr(self):
         self.a = VectSignal(2)
         self.b = VectSignal(2)._m()
@@ -92,6 +97,7 @@ class IndexingInernJoin(Unit):
     """
     .. hwt-schematic::
     """
+
     def _declr(self):
         self.a = Signal()
         self.b = Signal()
@@ -104,10 +110,30 @@ class IndexingInernJoin(Unit):
         intern[0](self.a)
         intern[1](self.b)
 
-        connect(intern[0], self.c)
-        connect(intern[1], self.d)
+        self.c(intern[0])
+        self.d(intern[1])
+
+
+class AssignmentToRegIndex(Unit):
+    """
+    .. hwt-schematic::
+    """
+
+    def _declr(self):
+        addClkRstn(self)
+        self.a = VectSignal(2)
+        self.b = VectSignal(2)._m()
+
+    def _impl(self):
+        intern = self._reg("internReg", Bits(2))
+
+        intern[0](intern[0] & self.a[0])
+        intern[1](intern[1] | self.a[1])
+
+        self.b(intern)
 
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
-    print(to_rtl_str(IndexingInernSplit()))
+    u = AssignmentToRegIndex()
+    print(to_rtl_str(u))
