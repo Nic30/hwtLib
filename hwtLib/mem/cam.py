@@ -7,10 +7,11 @@ from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
+from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-
 from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataVldHs, AddrDataHs
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 @serializeParamsUniq
@@ -19,7 +20,11 @@ class Cam(Unit):
     Content addressable memory.
     MATCH_LATENCY = 1
 
-    :note: Simple combinational version
+    :note: a combinational version
+
+    :ivar USE_VLD_BIT: if true the validity bit is a part of the CAM record
+    :ivar MATCH_PORT_CNT: number of CAM ports for matching, if None there is only as single port
+        otherwise there is an array of such a ports of specified size
 
     .. hwt-schematic::
     """
@@ -28,24 +33,27 @@ class Cam(Unit):
         self.KEY_WIDTH = Param(15)
         self.ITEMS = Param(32)
         self.USE_VLD_BIT = Param(True)
+        self.MATCH_PORT_CNT = Param(None)
+
+    def _declr_match_io(self):
+        self.match = m = Handshaked()
+        m.DATA_WIDTH = self.KEY_WIDTH
+        # one hot encoded
+        self.out = o = Handshaked()._m()
+        o.DATA_WIDTH = self.ITEMS
 
     def _declr(self):
         addClkRstn(self)
-        self.match = m = Handshaked()
-        m.DATA_WIDTH = self.KEY_WIDTH
-
+        self._declr_match_io()
+            
         # address is index of CAM cell, data is key to store
         if self.USE_VLD_BIT:
             w = AddrDataVldHs()
         else:
             w = AddrDataHs()
-        self.write = w
         w.DATA_WIDTH = self.KEY_WIDTH
         w.ADDR_WIDTH = log2ceil(self.ITEMS - 1)
-
-        # one hot encoded
-        self.out = o = Handshaked()._m()
-        o.DATA_WIDTH = self.ITEMS
+        self.write = w
 
     def writeHandler(self, mem):
         w = self.write
@@ -59,10 +67,7 @@ class Cam(Unit):
            mem[w.addr](key_data)
         )
 
-    def matchHandler(self, mem):
-        key = self.match
-
-        key.rd(self.out.rd)
+    def matchHandler(self, mem, key: Handshaked, match_res: Handshaked):
 
         key_data = key.data
         if self.USE_VLD_BIT:
@@ -73,8 +78,8 @@ class Cam(Unit):
             b = mem[i]._eq(key_data)
             out_one_hot.append(b)
 
-        self.out.data(Concat(*reversed(out_one_hot)))
-        self.out.vld(key.vld)
+        match_res.data(Concat(*reversed(out_one_hot)))
+        StreamNode([key], [match_res]).sync()
 
     def _impl(self):
         KEY_WIDTH = self.KEY_WIDTH
@@ -87,7 +92,40 @@ class Cam(Unit):
                               [0 for _ in range(self.ITEMS)]
                               )
         self.writeHandler(self._mem)
-        self.matchHandler(self._mem)
+        self.matchHandler(self._mem, self.match, self.out)
+
+
+@serializeParamsUniq
+class CamMultiPort(Cam):
+    """
+    A variant of :class:`~.Cam` with multiple ports for lookup
+    """
+
+    def _config(self):
+        Cam._config(self)
+        self.MATCH_PORT_CNT = Param(None)
+
+    def _declr_match_io(self):
+        if self.MATCH_PORT_CNT is None:
+            # single port version
+            Cam._declr_match_io(self)
+        else:
+            # muliport version
+            self.match = HObjList([Handshaked() for _ in range(self.MATCH_PORT_CNT)])
+            for m in self.match:
+                m.DATA_WIDTH = self.KEY_WIDTH
+
+            self.out = HObjList([Handshaked()._m() for _ in range(self.MATCH_PORT_CNT)])
+            for o in self.out:
+                o.DATA_WIDTH = self.ITEMS
+
+    def matchHandler(self, mem, key:Handshaked, match_res:Handshaked):
+        if self.MATCH_PORT_CNT is None:
+            Cam.matchHandler(self, mem, key, match_res)
+        else:
+            # multiport version
+            for _match, _match_res in zip(self.match, self.out):
+                Cam.matchHandler(self, mem, _match, _match_res)
 
 
 if __name__ == "__main__":
