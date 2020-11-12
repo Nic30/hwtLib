@@ -427,7 +427,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         if not multipleWords:
             pass
         elif not isPow2(maxWordIndex + 1):
-            default = wordCntr_inversed(maxWordIndex)
+            default = [wordCntr_inversed(maxWordIndex), ]
             default.append(dout.valid(0))
             default.append(dout.data(None))
 
