@@ -47,23 +47,25 @@ class OutOfOrderCumulativeOp_TC(SingleUnitSimTestCase):
             axi_randomize_per_channel(self, u.m)
             self.randomize(u.dataIn)
             self.randomize(u.dataOut)
-            t *= 10
+            t *= 5
 
         self.runSim(t)
 
-
-        # check pipeline registers empty
+        # check if pipeline registers are empty
         for i in range(u.PIPELINE_REG.WRITE_HISTORY):
-            valid = getattr(self.rtl_simulator.model.io, "reg%d_valid" % (i))
+            valid = getattr(self.rtl_simulator.model.io, "st%d_valid" % (i))
             self.assertValEqual(valid.read(), 0, i)
 
+        # check if main state fifo is empty
         ooo_fifo = self.rtl_simulator.model.ooo_fifo_inst.io
         self.assertValEqual(ooo_fifo.item_write_lock.read(), 0)
         self.assertValEqual(ooo_fifo.read_wait.read(), 1)
 
+        # check if all transactions on AXI are finished
         self.assertEmpty(u.m.b._ag.data)
         self.assertEmpty(u.m.r._ag.data)
 
+        # check output data itself
         ref_data = [indexes[:i + 1].count(v) for i, v in enumerate(indexes)]
         self.assertValSequenceEqual(u.dataOut._ag.data, ref_data)
         for i in sorted(set(indexes)):
@@ -89,7 +91,7 @@ class OutOfOrderCumulativeOp_TC(SingleUnitSimTestCase):
         self._test_incr(d, randomize=True)
 
     def test_r_incr_100x_random(self):
-        index_pool = list(range(2**self.u.ID_WIDTH))
+        index_pool = list(range(2 ** self.u.ID_WIDTH))
         d = [self._rand.choice(index_pool) for _ in range(100)]
         self._test_incr(d, randomize=True)
 
