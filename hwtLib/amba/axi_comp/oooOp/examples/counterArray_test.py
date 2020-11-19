@@ -3,21 +3,24 @@
 
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwtLib.amba.axi_comp.oooopprototype import OOOOpPrototype
+from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
+from hwtLib.amba.axi_comp.oooOp.examples.counterArray import OooOpExampleCounterArray
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
+from hwtLib.types.ctypes import uint32_t
 from pycocotb.constants import CLK_PERIOD
-from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 
 
-class OutOfOrderCumulativeOp_TC(SingleUnitSimTestCase):
+class OooOpExampleCounterArray_TC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
-        u = OOOOpPrototype()
+        u = OooOpExampleCounterArray()
+        u.MAIN_STATE_T = uint32_t
+        u.TRANSACTION_STATE_T = None
         u.ID_WIDTH = 2
         u.ADDR_WIDTH = 2 + 3
-        u.DATA_WIDTH = u.STATE_T.bit_length()
+        u.DATA_WIDTH = u.MAIN_STATE_T.bit_length()
         cls.u = u
         return u
 
@@ -52,7 +55,7 @@ class OutOfOrderCumulativeOp_TC(SingleUnitSimTestCase):
         self.runSim(t)
 
         # check if pipeline registers are empty
-        for i in range(u.PIPELINE_REG.WRITE_HISTORY):
+        for i in range(u.PIPELINE_CONFIG.WRITE_HISTORY):
             valid = getattr(self.rtl_simulator.model.io, "st%d_valid" % (i))
             self.assertValEqual(valid.read(), 0, i)
 
@@ -66,7 +69,7 @@ class OutOfOrderCumulativeOp_TC(SingleUnitSimTestCase):
         self.assertEmpty(u.m.r._ag.data)
 
         # check output data itself
-        ref_data = [indexes[:i + 1].count(v) for i, v in enumerate(indexes)]
+        ref_data = [(v, indexes[:i + 1].count(v)) for i, v in enumerate(indexes)]
         self.assertValSequenceEqual(u.dataOut._ag.data, ref_data)
         for i in sorted(set(indexes)):
             self.assertValEqual(self.m.data[i], indexes.count(i), i)
@@ -110,7 +113,7 @@ class OutOfOrderCumulativeOp_TC(SingleUnitSimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(OutOfOrderCumulativeOp_TC('test_endstrbMultiFrame'))
-    suite.addTest(unittest.makeSuite(OutOfOrderCumulativeOp_TC))
+    # suite.addTest(OooOpExampleCounterArray_TC('test_incr_1x'))
+    suite.addTest(unittest.makeSuite(OooOpExampleCounterArray_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
