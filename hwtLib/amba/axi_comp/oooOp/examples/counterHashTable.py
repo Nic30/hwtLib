@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import connect
+from hwt.code import connect, If
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwtLib.amba.axi_comp.oooOp.outOfOrderCummulativeOp import OutOfOrderCummulativeOp
 from hwtLib.amba.axi_comp.oooOp.utils import OOOOpPipelineStage
+from hwt.code_utils import rename_signal
 
 
 class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
 
     class OPERATION():
+        # if swap the original item from main memory will be stored in transaction_state.data (the place where original insert key was stored)
         SWAP = 0 # insert and return original key, item_valid, value (can be also used to delete the item)
         LOOKUP_OR_SWAP = 1 # lookup and update if key found or swap key, item_valid, value
         LOOKUP = 2 # lookup and update if key found else perfor no state update
@@ -35,30 +37,51 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
             (BIT, "key_match"),
             (Bits(2), "operation"), # :see: :class:`~.OPERATION`
         )
+
     def propagate_trans_st(self, stage_from: OOOOpPipelineStage, stage_to: OOOOpPipelineStage):
         PIPELINE_CONFIG = self.PIPELINE_CONFIG
         src = stage_from.transaction_state
         dst = stage_to.transaction_state
-        if stage_to.index == PIPELINE_CONFIG.WRITE_BACK:
+        if stage_to.index == PIPELINE_CONFIG.WRITE_BACK - 1:
+            key_match = rename_signal(self, stage_from.data.item_valid & stage_from.data.key._eq(src.data.key), "key_match")
             return [
-                dst.key_match(stage_from.data._eq(src.data)),
-                connect(src, dst, exclude=[dst.key_match])
+                dst.key_match(key_match),
+                If(stage_from.valid & stage_from.transaction_state.operation._eq(self.OPERATION.SWAP),
+                    # swap or lookup_or_swap with not found
+                    connect(stage_from.data, stage_to.transaction_state.data, exclude=[src.data.value]),
+                    If(key_match,
+                       dst.data.value(src.data.value + 1)
+                    ).Else(
+                       dst.data.value(src.data.value)
+                    ),
+                    connect(src, dst, exclude=[dst.data, dst.key_match])
+                ).Else(
+                    connect(src, dst, exclude=[dst.key_match])
+                ),
             ]
         else:
             return dst(src)
 
     def write_cancel(self, st:OOOOpPipelineStage):
-        return ~st.transaction_state.key_match & st.transaction_state.operation._eq(self.OPERATION.LOOKUP)
+        return st.valid & ~st.transaction_state.key_match & st.transaction_state.operation._eq(self.OPERATION.LOOKUP)
 
-    def main_op(self, dst_main_state: OOOOpPipelineStage, src_main_state: OOOOpPipelineStage):
-        # [TODO] if operation==SWAP or operation == LOOKUP_OR_SWAP and not key_match use data from input instead
-        dst = dst_main_state.data
-        src = src_main_state.data
-        return [
+    def main_op(self, dst_stage: OOOOpPipelineStage, src_stage: OOOOpPipelineStage):
+        # if operation==SWAP or operation == LOOKUP_OR_SWAP and not key_match use data from input instead
+        dst = dst_stage.data
+        src = src_stage.data
+        prev_st = self.pipeline[dst_stage.index - 1]
+        return If(prev_st.valid & prev_st.transaction_state.key_match & (prev_st.transaction_state.operation != self.OPERATION.SWAP),
+            # lookup or lookup_or_swap with found
             dst.item_valid(src.item_valid),
             dst.key(src.key),
             dst.value(src.value + 1),
-        ]
+        ).Elif(prev_st.valid & prev_st.transaction_state.operation._eq(self.OPERATION.SWAP),
+            # swap or lookup_or_swap with not found
+            dst(prev_st.data),
+        ).Elif(prev_st.valid & ~prev_st.transaction_state.key_match,
+            #  not match not swap, keep as it is
+            dst(src),
+        )
 
 
 if __name__ == "__main__":

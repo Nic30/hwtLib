@@ -8,17 +8,33 @@ from hwtLib.amba.axi_comp.oooOp.examples.counterHashTable import OooOpExampleCou
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from pycocotb.constants import CLK_PERIOD
+from copy import copy
+from enum import Enum
 
 
-def TState(reset, key, data, match, operation):
+def MState(key, data):
+    return (int(key is not None), key, data)
+
+
+def TState(key, data, operation, match=0, reset=0):
     return (
         reset,
-        (int(key is not None), key, data),
+        MState(key, data),
         match,
         operation
     )
 
+
+def in_trans(addr, reset, key, data, match, operation):
+    return (
+        addr,
+        TState(key, data, operation, match, reset),
+    )
+
+
 OP = OooOpExampleCounterHashTable.OPERATION
+
+
 class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
 
     @classmethod
@@ -51,9 +67,9 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
         SingleUnitSimTestCase.setUp(self)
         u = self.u
         self.m = AxiSimRam(axi=u.m)
-        # clear counters
-        for i in range(2 ** u.ADDR_WIDTH // (u.DATA_WIDTH // 8)):
-            self.m.data[i] = 0
+
+    def allcateItem(self, item):
+        raise NotImplementedError()
 
     def test_nop(self):
         u = self.u
@@ -64,11 +80,20 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
         self.assertEmpty(u.m.w._ag.data)
         self.assertEmpty(u.m.ar._ag.data)
     
-    def _test_incr(self, indexes=[0, ], randomize=False):
+    def _test_incr(self, inputs, randomize=False, mem_init={}):
         u = self.u
-        u.dataIn._ag.data.extend(indexes)
+        ADDR_ITEM_STEP = u.DATA_WIDTH // 8
+        for i in range(2 ** u.ADDR_WIDTH // ADDR_ITEM_STEP):
+            v = mem_init.get(i, 0)
+            if v != 0:
+                item_valid, key, value = v
+                v = u.MAIN_STATE_T.from_py({"item_valid": item_valid, "key": key, "value": value})
+                v = v._reinterpret_cast(u.m.w.data._dtype)
+            self.m.data[i] = v
         
-        t = (10 + len(indexes) * 2) * CLK_PERIOD
+        u.dataIn._ag.data.extend(inputs)
+        
+        t = (10 + len(inputs) * 2) * CLK_PERIOD
         if randomize:
             axi_randomize_per_channel(self, u.m)
             self.randomize(u.dataIn)
@@ -92,34 +117,134 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
         self.assertEmpty(u.m.r._ag.data)
 
         # check output data itself
-        ref_data = [(v, indexes[:i + 1].count(v)) for i, v in enumerate(indexes)]
-        self.assertValSequenceEqual(u.dataOut._ag.data, ref_data)
-        for i in sorted(set(indexes)):
-            self.assertValEqual(self.m.data[i], indexes.count(i), i)
+        dout = u.dataOut._ag.data
+        mem = copy(mem_init)
+        for _in, _out in zip(inputs, dout):
+            (
+                addr,
+                (
+                    reset,
+                    (key_vld, key, data),
+                    _,
+                    operation
+                )
+            ) = _in
+            (
+                o_addr,
+                (o_found_key_vld, o_found_key, o_found_data),
+                (
+                    o_reset,
+                    (o_key_vld, o_key, o_data),
+                    o_match,
+                    o_operation
+                ),
+            ) = _out
+            # None or tuple(item_valid, key, data) 
+            cur = mem.get(addr, None)
+            aeq = self.assertValEqual
+            aeq(o_addr, addr)
+            if operation == OP.LOOKUP:
+                # lookup and increment if found
+                if cur is not None and cur[0] and int(cur[1]) == key:
+                    # lookup sucess
+                    aeq(o_reset, 0)
+                    aeq(o_match, 1)
+                    aeq(o_found_key_vld, 1)
+                    aeq(o_found_key, key)
+                    aeq(o_found_data, cur[2] + 1)
+                    aeq(o_found_key_vld, 1)
+                    
+                    mem[addr] = (1, key, int(o_found_data))
 
-    def test_incr_1x(self):
-        self._test_incr([(0, TState(0, 0, None, None, OP.LOOKUP))])
-        
-    def test_incr_1xb(self):
-        self._test_incr([1])
+                else:
+                    # lookup fail
+                    aeq(o_reset, 0)
+                    aeq(o_match, 0)
+                    # key remained same
+                    aeq(o_key_vld, key_vld)
+                    aeq(o_key, key)
+                    aeq(o_data, data)
+                    # there was nothing so nothig should have been found
+                    aeq(o_found_key_vld, int(cur is not None and cur[0]))
 
-    def test_incr_2x_different(self):
-        self._test_incr([0, 1])
+            elif operation == OP.LOOKUP_OR_SWAP:
+                # lookup and increment or swap if not found
+                if cur is not None and cur[0] and int(cur[1]) == key:
+                    # lookup sucess
+                    aeq(o_reset, 0)
+                    aeq(o_match, 1)
+                    aeq(o_found_key_vld, 1)
+                    aeq(o_found_key, key)
+                    aeq(o_found_data, cur[2] + 1)
+                    aeq(o_found_key_vld, 1)
+                    mem[addr] = (1, key, int(o_found_data))
+                else:
+                    # swap
+                    raise NotImplementedError()  
+            elif operation == OP.SWAP:
+                # swap no matter if the key was found or not, do not increment
+                raise NotImplementedError()
+            else:
+                raise ValueError(operation)
 
-    def test_incr_2x_same(self):
-        self._test_incr([1, 1])
+            self.assertValEqual(o_operation, operation)
 
-    def test_incr_10x_same(self):
-        self._test_incr([1 for _ in range(10)])
+        self.assertEqual(len(dout), len(inputs))
+        # for i in sorted(set(inputs)):
+        #    self.assertValEqual(self.m.data[i], inputs.count(i), i)
+        for i in range(2 ** u.ADDR_WIDTH // ADDR_ITEM_STEP):
+            v = self.m.getStruct(i * ADDR_ITEM_STEP, u.MAIN_STATE_T)
+            ref_v = mem.get(i, None)
+            if ref_v is None or not ref_v[0]:
+                aeq(v.item_valid, 0)
+            else:
+                aeq(v.item_valid, 1)
+                aeq(v.key, ref_v[1])
+                aeq(v.value, ref_v[2])
+            
+    def test_1x_not_found(self):
+        self._test_incr([(0, TState(0, None, OP.LOOKUP)), ])
 
-    def test_r_incr_10x_same(self):
-        d = [1 for _ in range(10)]
-        self._test_incr(d, randomize=True)
-
-    def test_r_incr_100x_random(self):
+    def test_r_100x_not_found(self):
         index_pool = list(range(2 ** self.u.ID_WIDTH))
-        d = [self._rand.choice(index_pool) for _ in range(100)]
-        self._test_incr(d, randomize=True)
+        self._test_incr([
+            (self._rand.choice(index_pool), TState(0, None, OP.LOOKUP))
+            for _ in range(100)
+        ])
+
+    def test_1x_lookup_found(self):
+        self._test_incr([(1, TState(99, None, OP.LOOKUP)), ], mem_init={1: MState(99, 20)})
+    
+    def test_r_100x_lookup_found(self):
+        item_pool = [(i, MState(i + 1, 20 + i)) for i in range(2 ** self.u.ID_WIDTH)]
+        
+        self._test_incr(
+            [(i, TState(v[1], None, OP.LOOKUP)) for i, v in [
+                    self._rand.choice(item_pool) for _ in range(100)
+                ]
+            ],
+            mem_init={i: v for i, v in item_pool}
+        )
+
+    def test_r_100x_lookup_found_not_found_mix(self):
+        max_id = 2 ** self.u.ID_WIDTH
+        item_pool = [(i % max_id, MState(i + 1, 20 + i)) for i in range(max_id * 2)]
+        
+        self._test_incr(
+            [(i, TState(v[1], None, OP.LOOKUP)) for i, v in [
+                    self._rand.choice(item_pool) for _ in range(100)
+                ]
+            ],
+            # :attention: i is modulo mapped that means that
+            #     mem_init actually contains only last "n" items from item_pool
+            mem_init={i: v for i, v in item_pool}
+        )
+
+    def test_1x_lookup_or_swap_found(self):
+        self._test_incr(
+            [(1, TState(99, None, OP.LOOKUP_OR_SWAP)), ],
+            mem_init={1: MState(99, 20)}
+        )
 
     def test_no_comb_loops(self):
         s = CombLoopAnalyzer()
@@ -129,14 +254,14 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
         #     print(10 * "-")
         #     for s in loop:
         #         print(s.resolve()[1:])
-
+    
         self.assertEqual(comb_loops, frozenset())
 
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    suite.addTest(OooOpExampleCounterHashTable_TC('test_incr_1x'))
-    # suite.addTest(unittest.makeSuite(OooOpExampleCounterHashTable_TC))
+    # suite.addTest(OooOpExampleCounterHashTable_TC('test_r_100x_lookup_found_not_found_mix'))
+    suite.addTest(unittest.makeSuite(OooOpExampleCounterHashTable_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

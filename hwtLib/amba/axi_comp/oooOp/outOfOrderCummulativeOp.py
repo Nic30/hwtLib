@@ -22,6 +22,7 @@ from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.ram import RamSingleClock
 from hwtLib.types.ctypes import uint32_t, uint8_t
 from pyMathBitPrecise.bit_utils import mask
+from hwt.code_utils import rename_signal
 
 
 class OutOfOrderCummulativeOp(Unit):
@@ -92,8 +93,9 @@ class OutOfOrderCummulativeOp(Unit):
         dout = self.dataOut = OutOfOrderCummulativeOpIntf()._m()
         for i in [din, dout]:
             i.MAIN_STATE_INDEX_WIDTH = self.MAIN_STATE_INDEX_WIDTH
-            i.MAIN_STATE_T = None if i is din else self.MAIN_STATE_T
             i.TRANSACTION_STATE_T = self.TRANSACTION_STATE_T
+        din.MAIN_STATE_T = None
+        dout.MAIN_STATE_T = self.MAIN_STATE_T
 
     def main_op(self, main_state: RtlSignal) -> RtlSignal:
         raise NotImplementedError("Override this in your implementation of this abstract component")
@@ -207,14 +209,14 @@ class OutOfOrderCummulativeOp(Unit):
                 # print(dst_i, src_i)
                 cd(c & dst.valid.next)
 
-    def apply_data_write_bypass(self, st: OOOOpPipelineStage, pipeline: List[OOOOpPipelineStage],
+    def apply_data_write_bypass(self, st: OOOOpPipelineStage,
                            st_load_en: RtlSignal,
                            data_modifier=lambda dst_st, src_st: dst_st.data(src_st.data)):
         """
         :param st_collision_detect: in format stages X pipeline[WRITE_BACK-1:], if bit = 1 it means
             that the stage data should be updated from stage on that index
         """
-        st_prev = pipeline[st.index - 1]
+        st_prev = self.pipeline[st.index - 1]
         
         def is_not_0(sig):
             return not (isinstance(sig, int) and sig == 0)
@@ -226,7 +228,7 @@ class OutOfOrderCummulativeOp(Unit):
                     # use bypass instead of data from previous stage 
                     [data_modifier(st, src_st), ]
                 )
-                for src_i, src_st in enumerate(pipeline) if (
+                for src_i, src_st in enumerate(self.pipeline) if (
                         # filter out stage combinations which do not have bypass
                         is_not_0(st.collision_detect[src_i]) or
                         is_not_0(st_prev.collision_detect[src_i])
@@ -256,7 +258,7 @@ class OutOfOrderCummulativeOp(Unit):
     
     def main_pipeline(self):
         PIPELINE_CONFIG = self.PIPELINE_CONFIG
-        pipeline = [
+        self.pipeline = pipeline = [
             OOOOpPipelineStage(i, "st%d" % i, self)
             for i in range(PIPELINE_CONFIG.WRITE_HISTORY + PIPELINE_CONFIG.WRITE_HISTORY_SIZE)
         ]
@@ -280,9 +282,8 @@ class OutOfOrderCummulativeOp(Unit):
                 state_read.addr(r.id)
                 st.addr = state_read.dout[self.MAIN_STATE_INDEX_WIDTH:]
                 if HAS_TRANS_ST:
-                    hi = self.TRANSACTION_STATE_T.bit_length() + self.MAIN_STATE_INDEX_WIDTH
                     low = self.MAIN_STATE_INDEX_WIDTH
-                    st.transaction_state = state_read.dout[hi:low]._reinterpret_cast(self.TRANSACTION_STATE_T)
+                    st.transaction_state = state_read.dout[:low]._reinterpret_cast(self.TRANSACTION_STATE_T)
 
                 st.ready = r.ready
                 st.ready(~st.valid | st_next.ready)
@@ -305,7 +306,7 @@ class OutOfOrderCummulativeOp(Unit):
                     st.addr(st_prev.addr),
                     self.propagate_trans_st(st_prev, st),
                 )
-                self.apply_data_write_bypass(st, pipeline, st_load_en)
+                self.apply_data_write_bypass(st, st_load_en)
                 If(st_prev.valid,
                    st.valid(1)
                 ).Elif(st_next.ready,
@@ -320,11 +321,11 @@ class OutOfOrderCummulativeOp(Unit):
                     st.addr(st_prev.addr),
                     self.propagate_trans_st(st_prev, st),
                 )
-                self.apply_data_write_bypass(st, pipeline, st_load_en, self.main_op)
+                self.apply_data_write_bypass(st, st_load_en, self.main_op)
                 aw = self.m.aw
                 w = self.m.w
                 
-                cancel = self.write_cancel(st)
+                cancel = rename_signal(self, self.write_cancel(st), "write_back_cancel")
                 If(st_prev.valid,
                    st.valid(1)
                 ).Elif(st_next.ready & ((aw.ready & w.ready) | cancel),
