@@ -73,12 +73,12 @@ class PingResponder(Unit):
 
             if isinstance(In, StructIntf):
                 self.req_load(In, reg, freeze)
+            elif isinstance(reg, HValue) or \
+                    (isinstance(reg, Signal) and not isinstance(reg._sig, RtlMemoryBase)):
+                # we have an exact value to use, ignore this intput
+                In.rd(1)
+                continue
             else:
-                if isinstance(reg, HValue) or not isinstance(reg, RtlMemoryBase):
-                    # we have an exact value to use, ignore this intput
-                    In.rd(1)
-                    continue
-
                 If(In.vld & ~freeze,
                    reg(In.data)
                 )
@@ -132,9 +132,9 @@ class PingResponder(Unit):
         isEchoReq = self._reg("isEchoReq", def_val=0)
 
         # set fields of reply
-        resp.icmp.type = resp.icmp.type._dtype.from_py(ICMP_TYPE.ECHO_REPLY)
-        resp.icmp.code = resp.icmp.code._dtype.from_py(0)
-        resp.icmp.checksum = self.icmp_checksum(resp.icmp)
+        resp.icmp.type._sig = resp.icmp.type._dtype.from_py(ICMP_TYPE.ECHO_REPLY)
+        resp.icmp.code._sig = resp.icmp.code._dtype.from_py(0)
+        resp.icmp.checksum._sig = self.icmp_checksum(resp.icmp)
 
         # parse input frame
         parsed = AxiSBuilder(self, self.rx).parse(echoFrame_t)
