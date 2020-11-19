@@ -1,7 +1,7 @@
 from hwt.hdl.types.bits import Bits
 from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.interfaceLevel.unitImplHelpers import getClk, getRst, \
-    getSignalName
+from hwt.synthesizer.interfaceLevel.getDefaultClkRts import getClk, getRst
+from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 
 
 class AbstractComponentBuilder(object):
