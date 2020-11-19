@@ -216,7 +216,7 @@ from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
 from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
 from hwtLib.amba.axi_comp.oooOp.examples.counterArray_test import OooOpExampleCounterArray_TC
-#from hwtLib.amba.axi_comp.oooOp.examples.counterHashTable_test import OooOpExampleCounterHashTable_TC
+from hwtLib.amba.axi_comp.oooOp.examples.counterHashTable_test import OooOpExampleCounterHashTable_TC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -437,7 +437,7 @@ suite = testSuiteFromTCs(
     StructWriter_TC,
     StructReaderTC,
     OooOpExampleCounterArray_TC,
-   # OooOpExampleCounterHashTable_TC,
+    OooOpExampleCounterHashTable_TC,
 
     # ipif tests
     IpifEndpointTC,
