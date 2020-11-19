@@ -3,6 +3,7 @@ from typing import Type, Union
 from hwt.interfaces.std import Handshaked, HandshakeSync
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import walkPhysInterfaces
 
 
 class HandshakedCompBase(Unit):
@@ -34,5 +35,5 @@ class HandshakedCompBase(Unit):
     def get_data(self, intf):
         rd = self.get_ready_signal(intf)
         vld = self.get_valid_signal(intf)
-        return [x for x in intf._interfaces
+        return [x for x in walkPhysInterfaces(intf)
                 if (x is not rd) and (x is not vld)]
