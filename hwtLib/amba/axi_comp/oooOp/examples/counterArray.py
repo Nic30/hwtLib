@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axi_comp.oooOp.outOfOrderCummulativeOp import OutOfOrderCummulativeOp
+from hwtLib.amba.axi_comp.oooOp.utils import OOOOpPipelineStage
 
 
 class OooOpExampleCounterArray(OutOfOrderCummulativeOp):
@@ -13,7 +13,7 @@ class OooOpExampleCounterArray(OutOfOrderCummulativeOp):
         # so there is no need for transaction state
         self.TRANSACTION_STATE_T = None
 
-    def main_op(self,  dst_main_state: RtlSignal, src_main_state: RtlSignal):
+    def main_op(self,  dst_main_state: OOOOpPipelineStage, src_main_state: OOOOpPipelineStage):
         return dst_main_state.data(src_main_state.data + 1)
 
 
