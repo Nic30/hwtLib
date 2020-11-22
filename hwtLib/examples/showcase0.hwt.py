@@ -1,7 +1,7 @@
 from hwt.code import power, If, Switch, Concat
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.defs import INT, SLICE
+from hwt.hdl.types.defs import INT, SLICE, STR, BIT
 from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Signal
 from hwt.synthesizer.param import Param
@@ -16,37 +16,41 @@ class Showcase0(Unit):
     """
     def _declr(self):
         # ports
-        self.a = Signal(dtype=Bits(32, signed=False))
-        self.b = Signal(dtype=Bits(32, signed=True))
-        self.c = Signal(dtype=Bits(32))._m()
-        self.clk = Signal(dtype=Bits(1))
-        self.cmp_0 = Signal(dtype=Bits(1))._m()
-        self.cmp_1 = Signal(dtype=Bits(1))._m()
-        self.cmp_2 = Signal(dtype=Bits(1))._m()
-        self.cmp_3 = Signal(dtype=Bits(1))._m()
-        self.cmp_4 = Signal(dtype=Bits(1))._m()
-        self.cmp_5 = Signal(dtype=Bits(1))._m()
-        self.contOut = Signal(dtype=Bits(32))._m()
-        self.d = Signal(dtype=Bits(32))
-        self.e = Signal(dtype=Bits(1))
-        self.f = Signal(dtype=Bits(1))._m()
-        self.fitted = Signal(dtype=Bits(16))._m()
-        self.g = Signal(dtype=Bits(8))._m()
-        self.h = Signal(dtype=Bits(8))._m()
-        self.i = Signal(dtype=Bits(2))
-        self.j = Signal(dtype=Bits(8))._m()
-        self.k = Signal(dtype=Bits(32))._m()
-        self.out = Signal(dtype=Bits(1))._m()
-        self.output = Signal(dtype=Bits(1))._m()
-        self.rst_n = Signal(dtype=Bits(1, negated=True))
-        self.sc_signal = Signal(dtype=Bits(8))._m()
+        self.a = Signal(Bits(32, signed=False))
+        self.b = Signal(Bits(32, signed=True))
+        self.c = Signal(Bits(32))._m()
+        self.clk = Signal(Bits(1))
+        self.cmp_0 = Signal(Bits(1))._m()
+        self.cmp_1 = Signal(Bits(1))._m()
+        self.cmp_2 = Signal(Bits(1))._m()
+        self.cmp_3 = Signal(Bits(1))._m()
+        self.cmp_4 = Signal(Bits(1))._m()
+        self.cmp_5 = Signal(Bits(1))._m()
+        self.contOut = Signal(Bits(32))._m()
+        self.d = Signal(Bits(32))
+        self.e = Signal(Bits(1))
+        self.f = Signal(Bits(1))._m()
+        self.fitted = Signal(Bits(16))._m()
+        self.g = Signal(Bits(8))._m()
+        self.h = Signal(Bits(8))._m()
+        self.i = Signal(Bits(2))
+        self.j = Signal(Bits(8))._m()
+        self.k = Signal(Bits(32))._m()
+        self.out = Signal(Bits(1))._m()
+        self.output = Signal(Bits(1))._m()
+        self.rst_n = Signal(Bits(1, negated=True))
+        self.sc_signal = Signal(Bits(8))._m()
         # component instances
 
     def _impl(self):
         # internal signals
-        a, b, c, clk, cmp_0, cmp_1, cmp_2, cmp_3, cmp_4, cmp_5, contOut, d, e, f, fitted, g, h, i, j, k, out, output, rst_n, sc_signal = \
-        self.a, self.b, self.c, self.clk, self.cmp_0, self.cmp_1, self.cmp_2, self.cmp_3, self.cmp_4, self.cmp_5, self.contOut, self.d, self.e, self.f, self.fitted, self.g, self.h, self.i, self.j, self.k, self.out, self.output, self.rst_n, self.sc_signal
-        const_private_signal = self._sig("const_private_signal", Bits(32, signed=False), def_val=123)
+        a, b, c, clk, cmp_0, cmp_1, cmp_2, cmp_3, cmp_4, cmp_5, contOut, \
+        d, e, f, fitted, g, h, i, j, k, out, \
+        output, rst_n, sc_signal = \
+        self.a, self.b, self.c, self.clk, self.cmp_0, self.cmp_1, self.cmp_2, self.cmp_3, self.cmp_4, self.cmp_5, self.contOut, \
+        self.d, self.e, self.f, self.fitted, self.g, self.h, self.i, self.j, self.k, self.out, \
+        self.output, self.rst_n, self.sc_signal
+        const_private_signal = Bits(32, signed=False).from_py(123)
         fallingEdgeRam = self._sig("fallingEdgeRam", Bits(8, signed=True)[4], def_val=None)
         r = self._sig("r", Bits(1), def_val=0)
         r_0 = self._sig("r_0", Bits(2), def_val=0)
@@ -54,7 +58,7 @@ class Showcase0(Unit):
         r_next = self._sig("r_next", Bits(1), def_val=None)
         r_next_0 = self._sig("r_next_0", Bits(2), def_val=None)
         r_next_1 = self._sig("r_next_1", Bits(2), def_val=None)
-        rom = self._sig("rom", Bits(8, signed=False)[4], def_val={0: 0,
+        rom = Bits(8, signed=False)[4].from_py({0: 0,
             1: 1,
             2: 2,
             3: 3
