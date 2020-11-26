@@ -4,6 +4,7 @@
 from typing import List
 
 from hwt.code import If, log2ceil, Concat, SwitchLogic, connect
+from hwt.code_utils import rename_signal
 from hwt.hdl.constants import WRITE, READ
 from hwt.hdl.typeShortcuts import vec, hBit
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -22,7 +23,6 @@ from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.ram import RamSingleClock
 from hwtLib.types.ctypes import uint32_t, uint8_t
 from pyMathBitPrecise.bit_utils import mask
-from hwt.code_utils import rename_signal
 
 
 class OutOfOrderCummulativeOp(Unit):
@@ -60,13 +60,16 @@ class OutOfOrderCummulativeOp(Unit):
         self.PIPELINE_CONFIG = Param(OutOfOrderCummulativeOpPipelineConfig.new_config())
         Axi4._config(self)
 
-    def _declr(self):
-        addClkRstn(self)
+    def _init_constants(self):
         MAIN_STATE_T = self.MAIN_STATE_T
         # constant precomputation
         self.MAIN_STATE_ITEMS_CNT = (2 ** self.ADDR_WIDTH) // (MAIN_STATE_T.bit_length() // 8)
         self.MAIN_STATE_INDEX_WIDTH = log2ceil(self.MAIN_STATE_ITEMS_CNT - 1)
         self.ADDR_OFFSET_W = log2ceil(MAIN_STATE_T.bit_length() // 8 - 1)
+
+    def _declr(self):
+        addClkRstn(self)
+        self._init_constants()
 
         with self._paramsShared():
             self.m = Axi4()._m()
@@ -254,6 +257,9 @@ class OutOfOrderCummulativeOp(Unit):
             return ()
 
     def write_cancel(self, st: OOOOpPipelineStage):
+        """
+        [todo] doc
+        """
         return hBit(0)
     
     def main_pipeline(self):
