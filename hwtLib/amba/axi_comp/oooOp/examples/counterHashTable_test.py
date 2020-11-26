@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from copy import copy
+
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
@@ -8,8 +10,6 @@ from hwtLib.amba.axi_comp.oooOp.examples.counterHashTable import OooOpExampleCou
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from pycocotb.constants import CLK_PERIOD
-from copy import copy
-from enum import Enum
 
 
 def MState(key, data):
