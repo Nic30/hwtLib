@@ -217,6 +217,7 @@ from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
 from hwtLib.amba.axi_comp.oooOp.examples.counterArray_test import OooOpExampleCounterArray_TC
 from hwtLib.amba.axi_comp.oooOp.examples.counterHashTable_test import OooOpExampleCounterHashTable_TC
+import sys
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -483,10 +484,12 @@ def main():
    
     if useParallerlTest:
         concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests())
-        runner.run(concurrent_suite)
+        res = runner.run(concurrent_suite)
     else:
-        runner.run(suite)
-   
+        res = runner.run(suite)
+    if not res.wasSuccessful():
+        sys.exit(1)
+
 
 if __name__ == '__main__':
     main()
