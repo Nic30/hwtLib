@@ -1,4 +1,5 @@
-import unittest
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 from hwt.interfaces.std import RdSynced
 from hwt.interfaces.utils import addClkRstn
@@ -35,6 +36,7 @@ class RdSynced_agent_TC(SingleUnitSimTestCase):
 
 
 if __name__ == '__main__':
+    import unittest
     suite = unittest.TestSuite()
     # suite.addTest(RdSyncedPipe('test_basic_data_pass'))
     suite.addTest(unittest.makeSuite(RdSynced_agent_TC))

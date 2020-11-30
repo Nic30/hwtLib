@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import shutil
 import tempfile
 import unittest
@@ -6,11 +9,10 @@ from hwt.code import If, connect
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.differential import DifferentialSig
 from hwt.interfaces.std import BramPort, Handshaked
+from hwt.interfaces.std_ip_defs import IP_Handshake
 from hwt.interfaces.utils import addClkRst
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import serializeAsIpcore
-from hwt.interfaces.std_ip_defs import IP_Handshake
-
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axi_comp.stream_to_mem import Axi4streamToMem

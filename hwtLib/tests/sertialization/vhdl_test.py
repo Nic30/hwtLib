@@ -1,4 +1,5 @@
-import unittest
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 from hwt.code import Concat
 from hwt.hdl.typeShortcuts import hBit, vec
@@ -38,16 +39,17 @@ class Vhdl2008Serializer_TC(BaseSerializationTC):
     def test_add_to_slice_vhdl(self):
         u = TernaryInConcatExample()
         self.assert_serializes_as_file(u, "TernaryInConcatExample.vhd")
-    
+
     def test_SpiMaster_vhdl(self):
         u = SpiMaster()
         self.assert_serializes_as_file(u, "SpiMaster.vhd")
-        
+
 
 
 if __name__ == '__main__':
-    from hwt.synthesizer.utils import to_rtl_str
-    print(to_rtl_str(TernaryInConcatExample()))
+    import unittest
+    # from hwt.synthesizer.utils import to_rtl_str
+    # print(to_rtl_str(TernaryInConcatExample()))
     suite = unittest.TestSuite()
     # suite.addTest(RdSyncedPipe('test_basic_data_pass'))
     suite.addTest(unittest.makeSuite(Vhdl2008Serializer_TC))

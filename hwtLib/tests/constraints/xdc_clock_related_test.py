@@ -1,4 +1,5 @@
-
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import os
 from tempfile import TemporaryDirectory
@@ -11,9 +12,9 @@ from hwt.serializer.xdc.serializer import XdcSerializer
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import to_rtl
+from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axis_fullduplex import AxiStreamFullDuplex
 from hwtLib.mem.fifoAsync import FifoAsync
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
 
 
 # note: not in main library as typical usecase differs to much

@@ -1,4 +1,5 @@
-import unittest
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 from hwt.code import connect
 from hwt.interfaces.std import VectSignal
@@ -24,6 +25,8 @@ class Serializer_tmpVar_TC(BaseSerializationTC):
 
 
 if __name__ == '__main__':
+    import unittest
+
     suite = unittest.TestSuite()
     # suite.addTest(RdSyncedPipe('test_basic_data_pass'))
     suite.addTest(unittest.makeSuite(Serializer_tmpVar_TC))

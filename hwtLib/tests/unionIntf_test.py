@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from typing import Union
-import unittest
 
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
@@ -97,6 +99,7 @@ class UnionIntfTC(SimTestCase):
 
 
 if __name__ == "__main__":
+    import unittest
     suite = unittest.TestSuite()
     # suite.addTest(BitsSlicingTC('test_slice_bits_sig'))
     suite.addTest(unittest.makeSuite(UnionIntfTC))

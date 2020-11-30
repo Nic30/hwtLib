@@ -1,4 +1,5 @@
-import unittest
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 from hwt.code import Concat
 from hwt.interfaces.std import Signal, VectSignal
@@ -59,6 +60,7 @@ class SerializerModes_TC(BaseSerializationTC):
 
 
 if __name__ == "__main__":
+    import unittest
     suite = unittest.TestSuite()
     # suite.addTest(TransTmpl_TC('test_walkFlatten_arr'))
     suite.addTest(unittest.makeSuite(SerializerModes_TC))

@@ -1,6 +1,8 @@
-from _io import StringIO
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from io import StringIO
 import re
-import unittest
 
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
@@ -129,7 +131,7 @@ u_ag_str = """<hwt.interfaces.agents.clk.ClockAgent object at 0x7f2c812d4ef0>
             <hwtLib.amba.axiLite.AxiLite_wAgent object at 0x7f2c812f0b00>
             <hwtLib.amba.axiLite.AxiLite_rAgent object at 0x7f2c812f0a58>
             <hwtLib.amba.axiLite.AxiLite_bAgent object at 0x7f2c812f0ba8>
-""" 
+"""
 
 
 class ExampleWithArrayAxi3Lite(EmptyUnit):
@@ -171,6 +173,7 @@ class SimulatorUtilsTC(SingleUnitSimTestCase):
 
 
 if __name__ == "__main__":
+    import unittest
     suite = unittest.TestSuite()
     # suite.addTest(IpCorePackagerTC('test_sWithStartPadding'))
     suite.addTest(unittest.makeSuite(SimulatorUtilsTC))
