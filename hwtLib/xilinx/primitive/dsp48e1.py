@@ -1,228 +1,25 @@
-from hwt.code import If, Switch, Concat, In, And
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from hwt.code import If, Switch, Concat, In, And, replicate
 from hwt.code_utils import rename_signal
 from hwt.hdl.typeShortcuts import hBit, vec
 from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.defs import  STR, BIT
-from hwt.interfaces.std import Signal
+from hwt.hdl.types.defs import  BIT
+from hwt.interfaces.std import Signal, Clk
+from hwt.serializer.mode import serializeExclude
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from pyMathBitPrecise.bit_utils import mask, set_bit_range
+from hwtLib.xilinx.primitive.dsp48e1_constants import LOGIC_MODES_DRC_deassign_xyz_mux_if_PREG_eq_1, \
+    LOGIC_MODES_DRC_deassign_xyz_mux, ARITHMETIC_MODES_DRC_deassign_xyz_mux, \
+    ARITHMETIC_MODES_DRC_deassign_xyz_mux_if_PREG_eq_1
+from pyMathBitPrecise.bit_utils import mask
 
 
-def replicate(n, v):
-    return Concat(*(v for _ in range(n)))
-
-
-# deassign_xyz_mux;
-ARITHMETIC_MODES_DRC_deassign_xyz_mux = [
-    # 0bxxx0101010
-    * [set_bit_range(0b0000101010, 7, 3, i) for i in range(8)],
-    0b0000000000,
-    0b0000011000,
-    0b0000011010,
-    0b0000101000,
-    0b0001000000,
-    0b0001011000,
-    0b0001011010,
-    0b0001100000,
-    0b0001100010,
-    0b0001111000,
-    0b0001111010,
-    0b0010000000,
-    0b0010011000,
-    0b0010011001,
-    0b0010011011,
-    0b0010101000,
-    0b0010101001,
-    0b0010101011,
-    0b0010101110,
-    0b0011000000,
-    0b0011011000,
-    0b0011011001,
-    0b0011011011,
-    0b0011100000,
-    0b0011100001,
-    0b0011100011,
-    0b0011100100,
-    0b0011111000,
-    0b0011111001,
-    0b0011111011,
-    0b0110000000,
-    0b0110000010,
-    0b0110011000,
-    0b0110011010,
-    0b0110101000,
-    0b0110101110,
-    0b0111000000,
-    0b0111000010,
-    0b0111011000,
-    0b0111100000,
-    0b0111100010,
-    0b0111111000,
-    0b1010000000,
-    0b1010011000,
-    0b1010011001,
-    0b1010011011,
-    0b1010101000,
-    0b1010101001,
-    0b1010101011,
-    0b1010101110,
-    0b1011000000,
-    0b1011011000,
-    0b1011011001,
-    0b1011011011,
-    0b1011100000,
-    0b1011100001,
-    0b1011100011,
-    0b1011111000,
-    0b1011111001,
-    0b1011111011,
-]
-
-# if (PREG != 1) display_invalid_opmode; else deassign_xyz_mux;
-ARITHMETIC_MODES_DRC_deassign_xyz_mux_if_PREG_eq_1 = [
-    0b0000010000,
-    0b0000010010,
-    0b0000011100,
-    0b0001010000,
-    0b0001010010,
-    0b0001011100,
-    0b0001100100,
-    0b0001110000,
-    0b0001110010,
-    0b0001110101,
-    0b0001110111,
-    0b0001111100,
-    0b0010010000,
-    0b0010010101,
-    0b0010010111,
-    0b0011010000,
-    0b0011010101,
-    0b0011010111,
-    0b0011110000,
-    0b0011110101,
-    0b0011110111,
-    0b0011110001,
-    0b0011110011,
-    0b0100000000,
-    0b0100000010,
-    0b0100010000,
-    0b0100010010,
-    0b0100011000,
-    0b0100011010,
-    0b0100011101,
-    0b0100011111,
-    0b0100101000,
-    0b0100101101,
-    0b0100101111,
-    0b0101000000,
-    0b0101000010,
-    0b0101010000,
-    0b0101011000,
-    0b0101011101,
-    0b0101011111,
-    0b0101100000,
-    0b0101100010,
-    0b0101100101,
-    0b0101100111,
-    0b0101110000,
-    0b0101110101,
-    0b0101110111,
-    0b0101111000,
-    0b0101111101,
-    0b0101111111,
-    0b0110000100,
-    0b0110010000,
-    0b0110010010,
-    0b0110010101,
-    0b0110010111,
-    0b0110011100,
-    0b0111000100,
-    0b0111010000,
-    0b0111010101,
-    0b0111010111,
-    0b0111110000,
-    0b1001000010,
-    0b1010010000,
-    0b1010010101,
-    0b1010010111,
-    0b1011010000,
-    0b1011010101,
-    0b1011010111,
-    0b1011110000,
-    0b1011110101,
-    0b1011110111,
-    0b1011110001,
-    0b1011110011,
-    0b1100000000,
-    0b1100010000,
-    0b1100011000,
-    0b1100011101,
-    0b1100011111,
-    0b1100101000,
-    0b1100101101,
-    0b1100101111,
-    0b1101000000,
-    0b1101010000,
-    0b1101011000,
-    0b1101011101,
-    0b1101011111,
-    0b1101100000,
-    0b1101100101,
-    0b1101100111,
-    0b1101110000,
-    0b1101110101,
-    0b1101110111,
-    0b1101111000,
-    0b1101111101,
-    0b1101111111,
-]
-
-LOGIC_MODES_DRC_deassign_xyz_mux = [
-    0b0000000,
-    0b0000011,
-    0b0010000,
-    0b0010011,
-    0b0110000,
-    0b0110011,
-    0b1010000,
-    0b1010011,
-    0b0001000,
-    0b0001011,
-    0b0011000,
-    0b0011011,
-    0b0111000,
-    0b0111011,
-    0b1011000,
-    0b1011011,
-]
-LOGIC_MODES_DRC_deassign_xyz_mux_if_PREG_eq_1 = [
-    0b0000010,
-    0b0010010,
-    0b0100000,
-    0b0100010,
-    0b0100011,
-    0b0110010,
-    0b1010010,
-    0b1100000,
-    0b1100010,
-    0b1100011,
-    0b0001010,
-    0b0011010,
-    0b0101000,
-    0b0101010,
-    0b0101011,
-    0b0111010,
-    0b1011010,
-    0b1101000,
-    0b1101010,
-    0b1101011,
-]
-
-
+@serializeExclude
 class DSP48E1(Unit):
     """
-    https://www.xilinx.com/support/documentation/user_guides/ug479_7Series_DSP48E1.pdf
+    :see: https://www.xilinx.com/support/documentation/user_guides/ug479_7Series_DSP48E1.pdf
     """
 
     def _config(self):
@@ -240,15 +37,15 @@ class DSP48E1(Unit):
         self.CREG = Param(1)
         self.DREG = Param(1)
         self.INMODEREG = Param(1)
-        self.IS_ALUMODE_INVERTED = Param(Bits(4, None).from_py(0b0000))
+        self.IS_ALUMODE_INVERTED = Param(Bits(4).from_py(0b0000))
         self.IS_CARRYIN_INVERTED = Param(BIT.from_py(0b0))
         self.IS_CLK_INVERTED = Param(BIT.from_py(0b0))
-        self.IS_INMODE_INVERTED = Param(Bits(5, None).from_py(0b00000))
-        self.IS_OPMODE_INVERTED = Param(Bits(7, None).from_py(0b0000000))
-        self.MASK = Param(Bits(48, None).from_py(0x3fffffffffff))
+        self.IS_INMODE_INVERTED = Param(Bits(5).from_py(0b00000))
+        self.IS_OPMODE_INVERTED = Param(Bits(7).from_py(0b0000000))
+        self.MASK = Param(Bits(48).from_py(0x3fffffffffff))
         self.MREG = Param(1)
         self.OPMODEREG = Param(1)
-        self.PATTERN = Param(Bits(48, None).from_py(0x000000000000))
+        self.PATTERN = Param(Bits(48).from_py(0x000000000000))
         self.PREG = Param(1)
         self.SEL_MASK = Param("MASK")
         self.SEL_PATTERN = Param("PATTERN")
@@ -275,57 +72,179 @@ class DSP48E1(Unit):
         ]
 
     def _declr(self):
-        # ports
-        self.ACOUT = Signal(Bits(30, None))._m()
-        self.BCOUT = Signal(Bits(18, None))._m()
-        self.CARRYCASCOUT = Signal(BIT)._m()
-        self.CARRYOUT = Signal(Bits(4, None))._m()
-        self.MULTSIGNOUT = Signal(BIT)._m()
-        self.OVERFLOW = Signal(BIT)._m()
-        self.P = Signal(Bits(48, None))._m()
-        self.PATTERNBDETECT = Signal(BIT)._m()
-        self.PATTERNDETECT = Signal(BIT)._m()
-        self.PCOUT = Signal(Bits(48, None))._m()
-        self.UNDERFLOW = Signal(BIT)._m()
-        self.A = Signal(Bits(30, None))
-        self.ACIN = Signal(Bits(30, None))
-        self.ALUMODE = Signal(Bits(4, None))
-        self.B = Signal(Bits(18, None))
-        self.BCIN = Signal(Bits(18, None))
-        self.C = Signal(Bits(48, None))
-        self.CARRYCASCIN = Signal(BIT)
-        self.CARRYIN = Signal(BIT)
-        self.CARRYINSEL = Signal(Bits(3, None))
-        self.CEA1 = Signal(BIT)
-        self.CEA2 = Signal(BIT)
-        self.CEAD = Signal(BIT)
-        self.CEALUMODE = Signal(BIT)
-        self.CEB1 = Signal(BIT)
-        self.CEB2 = Signal(BIT)
-        self.CEC = Signal(BIT)
-        self.CECARRYIN = Signal(BIT)
-        self.CECTRL = Signal(BIT)
-        self.CED = Signal(BIT)
-        self.CEINMODE = Signal(BIT)
-        self.CEM = Signal(BIT)
-        self.CEP = Signal(BIT)
-        self.CLK = Signal(BIT)
-        self.D = Signal(Bits(25, None))
-        self.INMODE = Signal(Bits(5, None))
-        self.MULTSIGNIN = Signal(BIT)
-        self.OPMODE = Signal(Bits(7, None))
-        self.PCIN = Signal(Bits(48, None))
-        self.RSTA = Signal(BIT)
-        self.RSTALLCARRYIN = Signal(BIT)
-        self.RSTALUMODE = Signal(BIT)
-        self.RSTB = Signal(BIT)
-        self.RSTC = Signal(BIT)
-        self.RSTCTRL = Signal(BIT)
-        self.RSTD = Signal(BIT)
-        self.RSTINMODE = Signal(BIT)
-        self.RSTM = Signal(BIT)
-        self.RSTP = Signal(BIT)
-        # component instances
+        self.CLK = Clk()
+
+        # inputs
+        self.A = Signal(Bits(30))
+        self.B = Signal(Bits(18))
+        self.C = Signal(Bits(48))
+        self.D = Signal(Bits(25))
+        # selects the operands for main ALU
+        # [2:0] X
+        # [4:2] Y
+        # [7:4] Z
+        self.OPMODE = Signal(Bits(7))
+        # :ivar ALUMODE: selects the operation performed by main ALU
+        self.ALUMODE = Signal(Bits(4))
+        self.CECARRYIN = Signal()
+        self.CARRYINSEL = Signal(Bits(3))
+        # :ivar INMODE: Select the functionality of the pre-adder, the A,
+        # B, and D inputs, and the input registers. These bits should default to
+        # 5’b00000 if left unconnected. These are optionally invertible,
+        # providing routing flexibility.
+        self.INMODE = Signal(Bits(5))
+        self.CARRYIN = Signal()
+
+        # main outputs
+        self.OVERFLOW = Signal()._m()
+        self.P = Signal(Bits(48))._m()
+        self.PATTERNBDETECT = Signal()._m()
+        self.PATTERNDETECT = Signal()._m()
+        self.UNDERFLOW = Signal()._m()
+        self.CARRYOUT = Signal(Bits(4))._m()
+
+        # clock enable for internal registers
+        self.CEA1 = Signal()
+        self.CEA2 = Signal()
+        self.CEAD = Signal()
+        self.CEB1 = Signal()
+        self.CEB2 = Signal()
+        self.CEC = Signal()
+        self.CED = Signal()
+        self.CEM = Signal()
+        self.CEP = Signal()
+        self.CEALUMODE = Signal()
+        self.CECTRL = Signal()
+        self.CEINMODE = Signal()
+
+        # reset for internal registers
+        self.RSTA = Signal()
+        self.RSTALLCARRYIN = Signal()
+        self.RSTALUMODE = Signal()
+        self.RSTB = Signal()
+        self.RSTC = Signal()
+        self.RSTCTRL = Signal()
+        self.RSTD = Signal()
+        self.RSTINMODE = Signal()
+        self.RSTM = Signal()
+        self.RSTP = Signal()
+
+        # Column ports are used to connect the DSP blocks in the column
+        #  and they have an equivalent port for fabric (e.g. A and ACIN).
+        self.ACIN = Signal(Bits(30))
+        self.ACOUT = Signal(Bits(30))._m()
+        self.BCIN = Signal(Bits(18))
+        self.BCOUT = Signal(Bits(18))._m()
+        # cary in/out for main ALU
+        self.CARRYCASCIN = Signal()
+        self.CARRYCASCOUT = Signal()._m()
+        self.PCIN = Signal(Bits(48))
+        self.PCOUT = Signal(Bits(48))._m()
+        # Sign of the multiplied result from the previous DSP48E1 slice for MACC extension.
+        self.MULTSIGNIN = Signal()
+        self.MULTSIGNOUT = Signal()._m()
+
+        self.input_check()
+
+    def input_check(self):
+        #-------- A_INPUT check
+        if self.A_INPUT not in ("DIRECT", "CASCADE"):
+            raise ValueError("The attribute A_INPUT is set to %s. Legal values for this attribute are DIRECT or CASCADE.", self.A_INPUT)
+        #-------- ALUMODEREG check
+        if self.ALUMODEREG not in (0, 1):
+            raise ValueError("The attribute ALUMODEREG is set to %d. Legal values for this attribute are 0, 1.", self.ALUMODEREG)
+        #-------- AREG check
+        if self.AREG not in (0, 1, 2):
+            raise ValueError("The attribute AREG is set to %d. Legal values for this attribute are 0, 1 or 2.", self.AREG)
+        #-------- (ACASCREG) and (ACASCREG vs AREG) check
+        if self.AREG in (0, 1):
+            if self.AREG != self.ACASCREG:
+                raise ValueError("The attribute ACASCREG  is set to %d. ACASCREG has to be set to same value as AREG attribute.", self.ACASCREG)
+        elif self.AREG == 2:
+            if self.AREG != self.ACASCREG and self.AREG - 1 != self.ACASCREG:
+                raise ValueError("The attribute ACASCREG  is set to %d. ACASCREG has to be set to either 2 or 1 when attribute AREG = 2.", self.ACASCREG)
+        else:
+            raise ValueError(self.AREG)
+
+        #-------- B_INPUT check
+        if self.B_INPUT not in ("DIRECT", "CASCADE"):
+            raise ValueError("The attribute B_INPUT is set to %s.", self.B_INPUT)
+
+        #-------- BREG check
+        if self.BREG not in (0, 1, 2):
+            raise ValueError("The attribute BREG is set to %d.", self.BREG)
+
+        #-------- (BCASCREG) and (BCASCREG vs BREG) check
+        if self.BREG in (0, 1):
+            if self.BREG != self.BCASCREG:
+                raise ValueError("The attribute BCASCREG  is set to %d. BCASCREG has to be set to same value as BREG.", self.BCASCREG)
+        elif self.BREG == 2:
+            if self.BREG != self.BCASCREG and self.BREG - 1 != self.BCASCREG:
+                raise ValueError("The attribute BCASCREG  is set to %d. BCASCREG has to be set to either 2 or 1 when attribute BREG = 2.", self.BCASCREG)
+        else:
+            raise ValueError(self.BREG)
+        #-------- CARRYINREG check
+        if self.CARRYINREG not in (0, 1):
+            raise ValueError("The attribute CARRYINREG is set to %d.", self.CARRYINREG)
+        #-------- CARRYINSELREG check
+        if self.CARRYINSELREG not in (0, 1):
+            raise ValueError("The attribute CARRYINSELREG is set to %d.", self.CARRYINSELREG)
+
+        #-------- CREG check
+        if self.CREG not in (0, 1):
+            raise ValueError("The attribute CREG is set to %d.", self.CREG)
+
+        #-------- OPMODEREG check
+        if self.OPMODEREG not in (0, 1):
+            raise ValueError("The attribute OPMODEREG is set to %d.", self.OPMODEREG)
+
+        #-------- USE_MULT
+        if self.USE_MULT not in ("NONE", "MULTIPLY", "DYNAMIC"):
+            raise ValueError("The attribute USE_MULT is set to %s.", self.USE_MULT)
+
+        #-------- USE_PATTERN_DETECT
+        if self.USE_PATTERN_DETECT not in ("PATDET", "NO_PATDET"):
+            raise ValueError("The attribute USE_PATTERN_DETECT is set to %s.", self.USE_PATTERN_DETECT)
+        #-------- AUTORESET_PATDET check
+        if self.AUTORESET_PATDET not in ("NO_RESET", "RESET_MATCH", "RESET_NOT_MATCH"):
+            raise ValueError("The attribute AUTORESET_PATDET is set to %s.", self.AUTORESET_PATDET)
+        #-------- SEL_PATTERN check
+        if self.SEL_PATTERN not in ("PATTERN", "C"):
+            raise ValueError("The attribute SEL_PATTERN is set to %s.", self.SEL_PATTERN)
+
+        #-------- SEL_MASK check
+        if self.SEL_MASK not in ("MASK", "C", "ROUNDING_MODE1", "ROUNDING_MODE2"):
+            raise ValueError("The attribute SEL_MASK is set to %s.", self.SEL_MASK)
+
+        #-------- MREG check
+        if self.MREG not in (0, 1):
+            raise ValueError("The attribute MREG is set to %d.", self.MREG)
+
+        #-------- PREG check
+        if self.PREG not in (0, 1):
+            raise ValueError("The attribute PREG is set to %d.", self.PREG)
+
+        #*/*********************************************************
+        #***  new attribute DRC
+        #*********************************************************
+        #-------- ADREG check
+        if self.ADREG not in (0, 1):
+            raise ValueError("The attribute ADREG is set to %d.", self.ADREG)
+
+        #-------- DREG check
+        if self.DREG not in (0, 1):
+            raise ValueError("The attribute DREG is set to %d.", self.DREG)
+
+        #-------- INMODEREG check
+        if self.INMODEREG not in (0, 1):
+            raise ValueError("The attribute INMODEREG is set to %d.", self.INMODEREG)
+
+        #-------- USE_DPORT
+        if self.USE_DPORT not in ("TRUE", "FALSE"):
+            raise ValueError("The attribute USE_DPORT is set to %s.", self.USE_DPORT)
+
+        if self.USE_MULT == "NONE" and self.MREG != 0:
+            raise ValueError("Attribute USE_MULT is set to \"NONE\" and MREG is set to %2d. MREG must be set to 0 when the multiplier is not used.", self.MREG)
 
     def _impl(self):
         # internal signals
@@ -345,148 +264,136 @@ class DSP48E1(Unit):
         self.CEA2, self.CEAD, self.CEALUMODE, self.CEB1, self.CEB2, self.CEC, self.CECARRYIN, self.CECTRL, self.CED, self.CEINMODE, \
         self.CEM, self.CEP, self.CLK, self.D, self.INMODE, self.MULTSIGNIN, self.OPMODE, self.PCIN, self.RSTA, self.RSTALLCARRYIN, \
         self.RSTALUMODE, self.RSTB, self.RSTC, self.RSTCTRL, self.RSTD, self.RSTINMODE, self.RSTM, self.RSTP
-        # define constants
-        MODULE_NAME = STR.from_py("DSP48E1")
         #------------------- constants -------------------------
-        MAX_CARRYOUT = 4
-        MAX_A = 30
-        MAX_ALUMODE = 4
-        MAX_A_MULT = 25
-        MAX_B = 18
-        MAX_B_MULT = 18
-        MAX_D = 25
-        MAX_INMODE = 5
-        MAX_OPMODE = 7
-        MAX_ALU_FULL = 48
-        MSB_CARRYOUT = MAX_CARRYOUT - 1
-        MSB_A = MAX_A - 1
-        MSB_ALUMODE = MAX_ALUMODE - 1
-        MSB_A_MULT = MAX_A_MULT - 1
-        MSB_B = MAX_B - 1
-        MSB_B_MULT = MAX_B_MULT - 1
-        MSB_D = MAX_D - 1
-        MSB_INMODE = MAX_INMODE - 1
-        MSB_OPMODE = MAX_OPMODE - 1
-        MSB_ALU_FULL = MAX_ALU_FULL - 1
+        CARRYOUT_W = 4
+        A_W = 30
+        ALUMODE_W = 4
+        A_MULT_W = 25
+        B_W = 18
+        B_MULT_W = 18
+        D_W = 25
+        INMODE_W = 5
+        OPMODE_W = 7
+        ALU_FULL_W = 48
 
-        IS_ALUMODE_INVERTED_BIN = self._sig("IS_ALUMODE_INVERTED_BIN", Bits(4, None), def_val=IS_ALUMODE_INVERTED)
-        IS_CARRYIN_INVERTED_BIN = self._sig("IS_CARRYIN_INVERTED_BIN", BIT, def_val=IS_CARRYIN_INVERTED)
-        IS_CLK_INVERTED_BIN = self._sig("IS_CLK_INVERTED_BIN", BIT, def_val=IS_CLK_INVERTED)
-        IS_INMODE_INVERTED_BIN = self._sig("IS_INMODE_INVERTED_BIN", Bits(5, None), def_val=IS_INMODE_INVERTED)
-        IS_OPMODE_INVERTED_BIN = self._sig("IS_OPMODE_INVERTED_BIN", Bits(7, None), def_val=IS_OPMODE_INVERTED)
-        a_o_mux = self._sig("a_o_mux", Bits(30, None))
-        qa_o_mux = self._sig("qa_o_mux", Bits(30, None))
-        qa_o_reg1 = self._sig("qa_o_reg1", Bits(30, None))
-        qa_o_reg2 = self._sig("qa_o_reg2", Bits(30, None))
-        qacout_o_mux = self._sig("qacout_o_mux", Bits(30, None))
+        IS_ALUMODE_INVERTED_BIN = self._sig("IS_ALUMODE_INVERTED_BIN", Bits(4), def_val=IS_ALUMODE_INVERTED)
+        IS_CARRYIN_INVERTED_BIN = self._sig("IS_CARRYIN_INVERTED_BIN", def_val=IS_CARRYIN_INVERTED)
+        IS_CLK_INVERTED_BIN = self._sig("IS_CLK_INVERTED_BIN", def_val=IS_CLK_INVERTED)
+        IS_INMODE_INVERTED_BIN = self._sig("IS_INMODE_INVERTED_BIN", Bits(5), def_val=IS_INMODE_INVERTED)
+        IS_OPMODE_INVERTED_BIN = self._sig("IS_OPMODE_INVERTED_BIN", Bits(7), def_val=IS_OPMODE_INVERTED)
+        a_o_mux = self._sig("a_o_mux", Bits(30))
+        qa_o_mux = self._sig("qa_o_mux", Bits(30))
+        qa_o_reg1 = self._sig("qa_o_reg1", Bits(30))
+        qa_o_reg2 = self._sig("qa_o_reg2", Bits(30))
+        qacout_o_mux = self._sig("qacout_o_mux", Bits(30))
         # new
-        qinmode_o_mux = self._sig("qinmode_o_mux", Bits(5, None))
-        qinmode_o_reg = self._sig("qinmode_o_reg", Bits(5, None))
+        qinmode_o_mux = self._sig("qinmode_o_mux", Bits(5))
+        qinmode_o_reg = self._sig("qinmode_o_reg", Bits(5))
         # new
-        a_preaddsub = self._sig("a_preaddsub", Bits(25, None))
-        b_o_mux = self._sig("b_o_mux", Bits(18, None))
-        qb_o_mux = self._sig("qb_o_mux", Bits(18, None))
-        qb_o_reg1 = self._sig("qb_o_reg1", Bits(18, None))
-        qb_o_reg2 = self._sig("qb_o_reg2", Bits(18, None))
-        qbcout_o_mux = self._sig("qbcout_o_mux", Bits(18, None))
-        qcarryinsel_o_mux = self._sig("qcarryinsel_o_mux", Bits(3, None))
-        qcarryinsel_o_reg1 = self._sig("qcarryinsel_o_reg1", Bits(3, None))
-        # new  
-        d_o_mux = self._sig("d_o_mux", Bits(MSB_D + 1, None))
-        qd_o_mux = self._sig("qd_o_mux", Bits(MSB_D + 1, None))
-        qd_o_reg1 = self._sig("qd_o_reg1", Bits(MSB_D + 1, None))
-        qmult_o_mux = self._sig("qmult_o_mux", Bits(MSB_A_MULT + MSB_B_MULT + 1 + 1, None))
-        qmult_o_reg = self._sig("qmult_o_reg", Bits(MSB_A_MULT + MSB_B_MULT + 1 + 1, None))
+        a_preaddsub = self._sig("a_preaddsub", Bits(25))
+        b_o_mux = self._sig("b_o_mux", Bits(18))
+        qb_o_mux = self._sig("qb_o_mux", Bits(18))
+        qb_o_reg1 = self._sig("qb_o_reg1", Bits(18))
+        qb_o_reg2 = self._sig("qb_o_reg2", Bits(18))
+        qbcout_o_mux = self._sig("qbcout_o_mux", Bits(18))
+        qcarryinsel_o_mux = self._sig("qcarryinsel_o_mux", Bits(3))
+        qcarryinsel_o_reg1 = self._sig("qcarryinsel_o_reg1", Bits(3))
+        # new
+        #d_o_mux = self._sig("d_o_mux", Bits(D_W))
+        qd_o_mux = self._sig("qd_o_mux", Bits(D_W))
+        qd_o_reg1 = self._sig("qd_o_reg1", Bits(D_W))
+        qmult_o_mux = self._sig("qmult_o_mux", Bits(A_MULT_W + B_MULT_W))
+        qmult_o_reg = self._sig("qmult_o_reg", Bits(A_MULT_W + B_MULT_W))
         # 42:0
-        qc_o_mux = self._sig("qc_o_mux", Bits(48, None))
-        qc_o_reg1 = self._sig("qc_o_reg1", Bits(48, None))
-        qp_o_mux = self._sig("qp_o_mux", Bits(48, None))
-        qp_o_reg1 = self._sig("qp_o_reg1", Bits(48, None))
-        qx_o_mux = self._sig("qx_o_mux", Bits(48, None))
-        qy_o_mux = self._sig("qy_o_mux", Bits(48, None))
-        qz_o_mux = self._sig("qz_o_mux", Bits(48, None))
-        qopmode_o_mux = self._sig("qopmode_o_mux", Bits(7, None))
-        qopmode_o_reg1 = self._sig("qopmode_o_reg1", Bits(7, None))
-        qcarryin_o_mux0 = self._sig("qcarryin_o_mux0", BIT)
-        qcarryin_o_reg0 = self._sig("qcarryin_o_reg0", BIT)
-        qcarryin_o_mux7 = self._sig("qcarryin_o_mux7", BIT)
-        qcarryin_o_reg7 = self._sig("qcarryin_o_reg7", BIT)
-        qcarryin_o_mux = self._sig("qcarryin_o_mux", BIT)
-        qalumode_o_mux = self._sig("qalumode_o_mux", Bits(4, None))
-        qalumode_o_reg1 = self._sig("qalumode_o_reg1", Bits(4, None))
-        self.invalid_opmode = invalid_opmode = self._sig("invalid_opmode", BIT, def_val=1)
-        self.opmode_valid_flag = opmode_valid_flag = self._sig("opmode_valid_flag", BIT, def_val=1)
+        qc_o_mux = self._sig("qc_o_mux", Bits(48))
+        qc_o_reg1 = self._sig("qc_o_reg1", Bits(48))
+        qp_o_mux = self._sig("qp_o_mux", Bits(48))
+        qp_o_reg1 = self._sig("qp_o_reg1", Bits(48))
+        qx_o_mux = self._sig("qx_o_mux", Bits(48))
+        qy_o_mux = self._sig("qy_o_mux", Bits(48))
+        qz_o_mux = self._sig("qz_o_mux", Bits(48))
+        qopmode_o_mux = self._sig("qopmode_o_mux", Bits(7))
+        qopmode_o_reg1 = self._sig("qopmode_o_reg1", Bits(7))
+        qcarryin_o_mux0 = self._sig("qcarryin_o_mux0")
+        qcarryin_o_reg0 = self._sig("qcarryin_o_reg0")
+        qcarryin_o_mux7 = self._sig("qcarryin_o_mux7")
+        qcarryin_o_reg7 = self._sig("qcarryin_o_reg7")
+        qcarryin_o_mux = self._sig("qcarryin_o_mux")
+        qalumode_o_mux = self._sig("qalumode_o_mux", Bits(4))
+        qalumode_o_reg1 = self._sig("qalumode_o_reg1", Bits(4))
+        self.invalid_opmode = self._sig("invalid_opmode", def_val=1)
+        self.opmode_valid_flag = opmode_valid_flag = self._sig("opmode_valid_flag", def_val=1)
         #   reg [47:0] alu_o;
-        alu_o = self._sig("alu_o", Bits(48, None))
-        qmultsignout_o_reg = self._sig("qmultsignout_o_reg", BIT)
-        multsignout_o_mux = self._sig("multsignout_o_mux", BIT)
-        multsignout_o_opmode = self._sig("multsignout_o_opmode", BIT)
-        pdet_o_mux = self._sig("pdet_o_mux", BIT)
-        pdetb_o_mux = self._sig("pdetb_o_mux", BIT)
-        the_pattern = self._sig("the_pattern", Bits(48, None))
-        the_mask = self._sig("the_mask", Bits(48, None), def_val=0)
-        carrycascout_o = self._sig("carrycascout_o", BIT)
-        the_auto_reset_patdet = self._sig("the_auto_reset_patdet", BIT)
-        carrycascout_o_reg = self._sig("carrycascout_o_reg", BIT, def_val=0)
-        carrycascout_o_mux = self._sig("carrycascout_o_mux", BIT, def_val=0)
+        alu_o = self._sig("alu_o", Bits(48))
+        qmultsignout_o_reg = self._sig("qmultsignout_o_reg")
+        multsignout_o_mux = self._sig("multsignout_o_mux")
+        multsignout_o_opmode = self._sig("multsignout_o_opmode")
+        pdet_o_mux = self._sig("pdet_o_mux")
+        pdetb_o_mux = self._sig("pdetb_o_mux")
+        the_pattern = self._sig("the_pattern", Bits(48))
+        the_mask = self._sig("the_mask", Bits(48), def_val=0)
+        carrycascout_o = self._sig("carrycascout_o")
+        the_auto_reset_patdet = self._sig("the_auto_reset_patdet")
+        carrycascout_o_reg = self._sig("carrycascout_o_reg", def_val=0)
+        carrycascout_o_mux = self._sig("carrycascout_o_mux", def_val=0)
 
         # CR 588861
-        carryout_o_reg = self._sig("carryout_o_reg", Bits(4, None), def_val=0)
-        carryout_o_mux = self._sig("carryout_o_mux", Bits(4, None))
-        carryout_x_o = self._sig("carryout_x_o", Bits(4, None))
-        pdet_o = self._sig("pdet_o", BIT)
-        pdetb_o = self._sig("pdetb_o", BIT)
-        pdet_o_reg1 = self._sig("pdet_o_reg1", BIT)
-        pdet_o_reg2 = self._sig("pdet_o_reg2", BIT)
-        pdetb_o_reg1 = self._sig("pdetb_o_reg1", BIT)
-        pdetb_o_reg2 = self._sig("pdetb_o_reg2", BIT)
-        overflow_o = self._sig("overflow_o", BIT)
-        underflow_o = self._sig("underflow_o", BIT)
-        mult_o = self._sig("mult_o", Bits(MSB_A_MULT + MSB_B_MULT + 1 + 1, None))
+        carryout_o_reg = self._sig("carryout_o_reg", Bits(4), def_val=0)
+        carryout_o_mux = self._sig("carryout_o_mux", Bits(4))
+        carryout_x_o = self._sig("carryout_x_o", Bits(4))
+        pdet_o = self._sig("pdet_o")
+        pdetb_o = self._sig("pdetb_o")
+        pdet_o_reg1 = self._sig("pdet_o_reg1")
+        pdet_o_reg2 = self._sig("pdet_o_reg2")
+        pdetb_o_reg1 = self._sig("pdetb_o_reg1")
+        pdetb_o_reg2 = self._sig("pdetb_o_reg2")
+        overflow_o = self._sig("overflow_o")
+        underflow_o = self._sig("underflow_o")
+        mult_o = self._sig("mult_o", Bits(A_MULT_W + B_MULT_W))
         #   reg [(MSB_A_MULT+MSB_B_MULT+1):0] mult_o;  // 42:0
-        # new 
-        ad_addsub = self._sig("ad_addsub", Bits(MSB_A_MULT + 1, None))
-        ad_mult = self._sig("ad_mult", Bits(MSB_A_MULT + 1, None))
-        qad_o_reg1 = self._sig("qad_o_reg1", Bits(MSB_A_MULT + 1, None))
-        qad_o_mux = self._sig("qad_o_mux", Bits(MSB_A_MULT + 1, None))
-        b_mult = self._sig("b_mult", Bits(MSB_B_MULT + 1, None))
-        # cci_drc_msg = self._sig("cci_drc_msg", BIT, def_val=0b0)
-        # cis_drc_msg = self._sig("cis_drc_msg", BIT, def_val=0b0)
-        opmode_in = self._sig("opmode_in", Bits(MSB_OPMODE + 1, None))
-        alumode_in = self._sig("alumode_in", Bits(MSB_ALUMODE + 1, None))
-        carryin_in = self._sig("carryin_in", BIT)
-        clk_in = self._sig("clk_in", BIT)
-        inmode_in = self._sig("inmode_in", Bits(MSB_INMODE + 1, None))
+        # new
+        ad_addsub = self._sig("ad_addsub", Bits(A_MULT_W))
+        ad_mult = self._sig("ad_mult", Bits(A_MULT_W))
+        qad_o_reg1 = self._sig("qad_o_reg1", Bits(A_MULT_W))
+        qad_o_mux = self._sig("qad_o_mux", Bits(A_MULT_W))
+        b_mult = self._sig("b_mult", Bits(B_MULT_W))
+        # cci_drc_msg = self._sig("cci_drc_msg", def_val=0b0)
+        # cis_drc_msg = self._sig("cis_drc_msg", def_val=0b0)
+        opmode_in = self._sig("opmode_in", Bits(OPMODE_W))
+        alumode_in = self._sig("alumode_in", Bits(ALUMODE_W))
+        carryin_in = self._sig("carryin_in")
+        clk_in = self._sig("clk_in")
+        inmode_in = self._sig("inmode_in", Bits(INMODE_W))
         #*** Y mux
-        # 08-06-08  
+        # 08-06-08
         # IR 478378
-        y_mac_cascd = rename_signal(self, qopmode_o_mux[slice(7, 4)]._eq(0b100)._ternary(replicate(48, MULTSIGNIN), Bits(48, None).from_py(mask(48))), "y_mac_cascd")
+        y_mac_cascd = rename_signal(self, qopmode_o_mux[7:4]._eq(0b100)._ternary(replicate(48, MULTSIGNIN), Bits(48).from_py(mask(48))), "y_mac_cascd")
         #--####################################################################
         #--#####                         ALU                              #####
         #--####################################################################
-        co = self._sig("co", Bits(MSB_ALU_FULL + 1, None))
-        s = self._sig("s", Bits(MSB_ALU_FULL + 1, None))
-        comux = self._sig("comux", Bits(MSB_ALU_FULL + 1, None))
-        smux = self._sig("smux", Bits(MSB_ALU_FULL + 1, None))
-        carryout_o_hw = self._sig("carryout_o_hw", Bits(MSB_CARRYOUT + 1, None))
-        carryout_o = self._sig("carryout_o", Bits(MSB_CARRYOUT + 1, None))
+        co = self._sig("co", Bits(ALU_FULL_W))
+        s = self._sig("s", Bits(ALU_FULL_W))
+        comux = self._sig("comux", Bits(ALU_FULL_W))
+        smux = self._sig("smux", Bits(ALU_FULL_W))
+        carryout_o_hw = self._sig("carryout_o_hw", Bits(CARRYOUT_W))
+        carryout_o = self._sig("carryout_o", Bits(CARRYOUT_W))
         # FINAL ADDER
-        s0 = rename_signal(self, Concat(hBit(0), comux[slice(11, 0)], qcarryin_o_mux) + Concat(hBit(0), smux[slice(12, 0)]), "s0")
+        s0 = rename_signal(self, Concat(hBit(0), comux[11:0], qcarryin_o_mux) + Concat(hBit(0), smux[12:0]), "s0")
         cout0 = rename_signal(self, comux[11] + s0[12], "cout0")
         C1 = rename_signal(self, hBit(0b0) if USE_SIMD == "FOUR12" else s0[12], "C1")
         co11_lsb = rename_signal(self, hBit(0b0) if USE_SIMD == "FOUR12" else comux[11], "co11_lsb")
-        s1 = rename_signal(self, Concat(hBit(0), comux[slice(23, 12)], co11_lsb) + Concat(hBit(0), smux[slice(24, 12)]) + Concat(vec(0, 12), C1), "s1")
+        s1 = rename_signal(self, Concat(hBit(0), comux[23:12], co11_lsb) + Concat(hBit(0), smux[24:12]) + Concat(vec(0, 12), C1), "s1")
         cout1 = rename_signal(self, comux[23] + s1[12], "cout1")
         C2 = rename_signal(self, hBit(0b0) if (USE_SIMD in ["TWO24", "FOUR12"]) else s1[12], "C2")
         co23_lsb = rename_signal(self, hBit(0b0) if (USE_SIMD in ["TWO24", "FOUR12"]) else comux[23], "co23_lsb")
-        s2 = rename_signal(self, Concat(hBit(0), comux[slice(35, 24)], co23_lsb) + Concat(hBit(0), smux[slice(36, 24)]) + Concat(vec(0, 12), C2), "s2")
+        s2 = rename_signal(self, Concat(hBit(0), comux[35:24], co23_lsb) + Concat(hBit(0), smux[36:24]) + Concat(vec(0, 12), C2), "s2")
         cout2 = rename_signal(self, comux[35] + s2[12], "cout2")
         C3 = rename_signal(self, hBit(0b0) if  USE_SIMD == "FOUR12" else s2[12], "C3")
         co35_lsb = rename_signal(self, hBit(0b0) if  USE_SIMD == "FOUR12" else comux[35], "co35_lsb")
-        s3 = rename_signal(self, Concat(hBit(0), comux[slice(48, 36)], co35_lsb) + Concat(vec(0, 2), smux[slice(48, 36)]) + Concat(vec(0, 13), C3), "s3")
+        s3 = rename_signal(self, Concat(hBit(0), comux[48:36], co35_lsb) + Concat(vec(0, 2), smux[48:36]) + Concat(vec(0, 13), C3), "s3")
         cout3 = rename_signal(self, s3[12], "cout3")
-        cout4 = rename_signal(self, s3[13], "cout4")
-        qcarryin_o_mux_tmp = self._sig("qcarryin_o_mux_tmp", BIT)
+        #cout4 = rename_signal(self, s3[13], "cout4")
+        qcarryin_o_mux_tmp = self._sig("qcarryin_o_mux_tmp")
 
         ACOUT(qacout_o_mux)
         BCOUT(qbcout_o_mux)
@@ -504,105 +411,6 @@ class DSP48E1(Unit):
         clk_in(CLK ^ IS_CLK_INVERTED_BIN)
         inmode_in(INMODE ^ IS_INMODE_INVERTED_BIN)
         opmode_in(OPMODE ^ IS_OPMODE_INVERTED_BIN)
-
-        #-------- A_INPUT check
-        if A_INPUT not in ("DIRECT", "CASCADE"):
-            raise ValueError("The attribute A_INPUT on DSP48E1 instance %m is set to %s.  Legal values for this attribute are DIRECT or CASCADE.", A_INPUT)
-        #-------- ALUMODEREG check
-        if ALUMODEREG not in (0, 1):
-            raise ValueError("The attribute ALUMODEREG on DSP48E1 instance %m is set to %d.  Legal values for this attribute are 0, 1.", ALUMODEREG)
-        #-------- AREG check
-        if AREG not in (0, 1, 2):
-            raise ValueError("The attribute AREG on DSP48E1 instance %m is set to %d.  Legal values for this attribute are 0, 1 or 2.", AREG)
-        #-------- (ACASCREG) and (ACASCREG vs AREG) check
-        if AREG in (0, 1):
-            if AREG != ACASCREG:
-                raise ValueError("The attribute ACASCREG  on DSP48E1 instance %m is set to %d.  ACASCREG has to be set to same value as AREG attribute.", ACASCREG)
-        elif AREG == 2:
-            if AREG != ACASCREG and AREG - 1 != ACASCREG:
-                raise ValueError("The attribute ACASCREG  on DSP48E1 instance %m is set to %d.  ACASCREG has to be set to either 2 or 1 when attribute AREG = 2.", ACASCREG)
-        else:
-            raise ValueError(AREG)
-
-        #-------- B_INPUT check
-        if B_INPUT not in ("DIRECT", "CASCADE"):
-            raise ValueError("The attribute B_INPUT on DSP48E1 instance %m is set to %s.  Legal values for this attribute are DIRECT or CASCADE.", B_INPUT)
-
-        #-------- BREG check
-        if BREG not in (0, 1, 2):
-            raise ValueError("The attribute BREG on DSP48E1 instance %m is set to %d.  Legal values for this attribute are 0, 1 or 2.", BREG)
-
-        #-------- (BCASCREG) and (BCASCREG vs BREG) check
-        if BREG in (0, 1):
-            if BREG != BCASCREG:
-                raise ValueError("The attribute BCASCREG  on DSP48E1 instance %m is set to %d.  BCASCREG has to be set to same value as BREG.", BCASCREG)
-        elif BREG == 2:
-            if BREG != BCASCREG and BREG - 1 != BCASCREG:
-                raise ValueError("The attribute BCASCREG  on DSP48E1 instance %m is set to %d.  BCASCREG has to be set to either 2 or 1 when attribute BREG = 2.", BCASCREG)
-        else:
-            raise ValueError(BREG)
-        #-------- CARRYINREG check
-        if CARRYINREG not in (0, 1):
-            raise ValueError("The attribute CARRYINREG on DSP48E1 instance %m is set to %d.  Legal values for this attribute are 0, 1.", CARRYINREG)
-        #-------- CARRYINSELREG check
-        if CARRYINSELREG not in (0, 1):
-            raise ValueError("The attribute CARRYINSELREG on DSP48E1 instance %m is set to %d.  Legal values for this attribute are 0, 1.", CARRYINSELREG)
-
-        #-------- CREG check
-        if CREG not in (0, 1):
-            raise ValueError("The attribute CREG on DSP48E1 instance %m is set to %d.  Legal values for this attribute are 0, or 1.", CREG)
-
-        #-------- OPMODEREG check
-        if OPMODEREG not in (0, 1):
-            raise ValueError("The attribute OPMODEREG on DSP48E1 instance %m is set to %d.  Legal values for this attribute are 0, 1.", OPMODEREG)
-
-        #-------- USE_MULT
-        if USE_MULT not in ("NONE", "MULTIPLY", "DYNAMIC"):
-            raise ValueError("The attribute USE_MULT on DSP48E1 instance %m is set to %s. Legal values for this attribute are MULTIPLY, DYNAMIC or NONE.", USE_MULT)
- 
-        #-------- USE_PATTERN_DETECT
-        if USE_PATTERN_DETECT not in ("PATDET", "NO_PATDET"):
-            raise ValueError("The attribute USE_PATTERN_DETECT on DSP48E1 instance %m is set to %s.  Legal values for this attribute are PATDET or NO_PATDET.", USE_PATTERN_DETECT)
-        #-------- AUTORESET_PATDET check
-        if AUTORESET_PATDET not in ("NO_RESET", "RESET_MATCH", "RESET_NOT_MATCH"):
-            raise ValueError("The attribute AUTORESET_PATDET on DSP48E1 instance %m is set to %s.  Legal values for this attribute are  NO_RESET or RESET_MATCH or RESET_NOT_MATCH.", AUTORESET_PATDET)
-        #-------- SEL_PATTERN check
-        if SEL_PATTERN not in ("PATTERN", "C"):
-            raise ValueError("The attribute SEL_PATTERN on DSP48E1 instance %m is set to %s.  Legal values for this attribute are PATTERN or C.", SEL_PATTERN)
-
-        #-------- SEL_MASK check
-        if SEL_MASK not in ("MASK", "C", "ROUNDING_MODE1", "ROUNDING_MODE2"):
-            raise ValueError("The attribute SEL_MASK on DSP48E1 instance %m is set to %s.  Legal values for this attribute are MASK or C or ROUNDING_MODE1 or ROUNDING_MODE2.", SEL_MASK)
-
-        #-------- MREG check
-        if MREG not in (0, 1):
-            raise ValueError("The attribute MREG on DSP48E1 instance %m is set to %d.  Legal values for this attribute are 0, 1.", MREG)
-
-        #-------- PREG check
-        if PREG not in (0, 1):
-            raise ValueError("The attribute PREG on DSP48E1 instance %m is set to %d.  Legal values for this attribute are 0, 1.", PREG)
-
-        #*/*********************************************************
-        #***  new attribute DRC
-        #*********************************************************
-        #-------- ADREG check
-        if ADREG not in (0, 1):
-            raise ValueError("The attribute ADREG on DSP48E1 instance %m is set to %d.  Legal values for this attribute are 0, 1.", ADREG)
-
-        #-------- DREG check
-        if DREG not in (0, 1):
-            raise ValueError("The attribute DREG on DSP48E1 instance %m is set to %d.  Legal values for this attribute are 0, 1.", DREG)
-
-        #-------- INMODEREG check
-        if INMODEREG not in (0, 1):
-            raise ValueError("The attribute INMODEREG on DSP48E1 instance %m is set to %d.  Legal values for this attribute are 0, 1.", INMODEREG)
-
-        #-------- USE_DPORT
-        if USE_DPORT not in ("TRUE", "FALSE"):
-            raise ValueError("The attribute USE_DPORT on DSP48E1 instance %m is set to %s.  Legal values for this attribute are TRUE or FALSE.", USE_DPORT)
-
-        if USE_MULT == "NONE" and MREG != 0:
-            raise ValueError("Error : [Unisim %s-10] : Attribute USE_MULT is set to \"NONE\" and MREG is set to %2d. MREG must be set to 0 when the multiplier is not used. Instance %m", MODULE_NAME, MREG)
 
         #*********************************************************
         #**********  INMODE signal registering        ************
@@ -681,16 +489,16 @@ class DSP48E1(Unit):
         If(qinmode_o_mux[1],
            a_preaddsub(0b0)
         ).Elif(qinmode_o_mux[0],
-            a_preaddsub(qa_o_reg1[slice(25, 0)]),
+            a_preaddsub(qa_o_reg1[25:0]),
         ).Else(
-            a_preaddsub(qa_o_mux[slice(25, 0)]),
+            a_preaddsub(qa_o_mux[25:0]),
         )
         if B_INPUT == "DIRECT":
             b_o_mux(B)
         elif B_INPUT == "CASCADE":
             b_o_mux(BCIN)
         else:
-            raise AssertionError()    
+            raise AssertionError()
 
         if BREG == 1:
             If(clk_in._onRisingEdge(),
@@ -740,7 +548,7 @@ class DSP48E1(Unit):
             qbcout_o_mux(qb_o_mux)
         else:
             raise AssertionError()
-        
+
         b_mult(qinmode_o_mux[4]._ternary(qb_o_reg1, qb_o_mux))
 
         #*********************************************************
@@ -808,7 +616,7 @@ class DSP48E1(Unit):
             If(CARRYINSEL._eq(0b010),
                 mult_o(None)
             ).Else(
-                mult_o(replicate(18, ad_mult[24])._concat(ad_mult[slice(25, 0)]) * 
+                mult_o(replicate(18, ad_mult[24])._concat(ad_mult[25:0]) *
                        replicate(25, b_mult[17])._concat(b_mult))
             )
 
@@ -828,27 +636,27 @@ class DSP48E1(Unit):
 
         #*** X mux
         # ask jmt
-        # add post 2014.4 
+        # add post 2014.4
         # else
-        Switch(qopmode_o_mux[slice(2, 0)])\
+        Switch(qopmode_o_mux[2:0])\
             .Case(0b00,
                 qx_o_mux(0b0))\
             .Case(0b01,
-                qx_o_mux(replicate(5, qmult_o_mux[MSB_A_MULT + MSB_B_MULT + 1])._concat(qmult_o_mux)))\
+                qx_o_mux(replicate(5, qmult_o_mux[A_MULT_W + B_MULT_W - 1])._concat(qmult_o_mux)))\
             .Case(0b10,
                 qx_o_mux(qp_o_mux))\
             .Case(0b11,
-                qx_o_mux(None) 
+                qx_o_mux(None)
                 if USE_MULT == "MULTIPLY" and (
                     (AREG == 0 and BREG == 0 and MREG == 0) or
                     (AREG == 0 and BREG == 0 and PREG == 0) or
                     (MREG == 0 and PREG == 0))
                 # print("OPMODE Input Warning : The OPMODE[1:0] %b to DSP48E1 instance %m is invalid when using attributes USE_MULT = MULTIPLY at %.3f ns. Please set USE_MULT to either NONE or DYNAMIC.", qopmode_o_mux[slice(2, 0)], sim.now // 1000.000000)
-                else qx_o_mux(qa_o_mux[slice(MSB_A + 1, 0)]._concat(qb_o_mux[slice(MSB_B + 1, 0)]))
+                else qx_o_mux(qa_o_mux[A_W:0]._concat(qb_o_mux[B_W:0]))
             )
 
-        # add post 2014.4 
-        Switch(qopmode_o_mux[slice(4, 2)])\
+        # add post 2014.4
+        Switch(qopmode_o_mux[4:2])\
             .Case(0b00,
                 qy_o_mux(0b0))\
             .Case(0b01,
@@ -860,8 +668,8 @@ class DSP48E1(Unit):
 
         #*** Z mux
         # ask jmt
-        # add post 2014.4 
-        Switch(qopmode_o_mux[slice(7, 4)])\
+        # add post 2014.4
+        Switch(qopmode_o_mux[7:4])\
             .Case(0b000,
                 qz_o_mux(0b0))\
             .Case(0b001,
@@ -873,11 +681,11 @@ class DSP48E1(Unit):
             .Case(0b100,
                 qz_o_mux(qp_o_mux))\
             .Case(0b101,
-                qz_o_mux(replicate(17, PCIN[47])._concat(PCIN[slice(48, 17)])))\
+                qz_o_mux(replicate(17, PCIN[47])._concat(PCIN[48:17])))\
             .Case(0b110,
-                qz_o_mux(replicate(17, qp_o_mux[47])._concat(qp_o_mux[slice(48, 17)])))\
+                qz_o_mux(replicate(17, qp_o_mux[47])._concat(qp_o_mux[48:17])))\
             .Case(0b111,
-                qz_o_mux(replicate(17, qp_o_mux[47])._concat(qp_o_mux[slice(48, 17)])))
+                qz_o_mux(replicate(17, qp_o_mux[47])._concat(qp_o_mux[48:17])))
 
         #*** CarryInSel and OpMode with 1 level of register
         If(clk_in._onRisingEdge(),
@@ -897,13 +705,13 @@ class DSP48E1(Unit):
         else:
             raise AssertionError()
 
-        # CR 219047 (3) 
+        # CR 219047 (3)
         # If(qcarryinsel_o_mux._eq(0b010),
         #    If(~((cci_drc_msg._eq(0b1) | qopmode_o_mux._eq(0b1001000)) | (MULTSIGNIN._eq(0b0) & CARRYCASCIN._eq(0b0))),
         #        #print("DRC warning : CARRYCASCIN can only be used in the current DSP48E1 instance %m if the previous DSP48E1 is performing a two input ADD or SUBTRACT operation, or the current DSP48E1 is configured in the MAC extend opmode 7'b1001000 at %.3f ns.", sim.now // 1000.000000),
         #        cci_drc_msg(0b1)
         #    ),
-        #    If(~((qopmode_o_mux[slice(4, 0)] != 0b0101)._isOn())._isOn(),
+        #    If(~((qopmode_o_mux[4:0] != 0b0101)._isOn())._isOn(),
         #        #print("DRC warning : CARRYINSEL is set to 010 with OPMODE set to multiplication (xxx0101). This is an illegal mode and may show deviation between simulation results and hardware behavior. DSP48E1 instance %m at %.3f ns.", sim.now // 1000.000000)
         #    ),
         #    If(~cis_drc_msg._eq(0b1),
@@ -952,7 +760,7 @@ class DSP48E1(Unit):
         # display_invalid_opmode
         arith_mode_tmp = qopmode_o_mux._concat(qcarryinsel_o_mux)
         # no check at first 100ns
-        Switch(qalumode_o_mux[slice(4, 2)])\
+        Switch(qalumode_o_mux[4:2])\
             .Case(0b00,
                 # -- ARITHMETIC MODES DRC
                 If(In(arith_mode_tmp, ARITHMETIC_MODES_DRC_deassign_xyz_mux),
@@ -962,16 +770,16 @@ class DSP48E1(Unit):
                 ).Else(
                     # CR 444150
                     # If(qopmode_o_mux._concat(qcarryinsel_o_mux)._eq(0b0000000010)._isOn() & (OPMODEREG._eq(1)._isOn() & CARRYINSELREG._eq(0)._isOn())._isOn(),
-                    #    print("DRC warning : The attribute CARRYINSELREG on DSP48E1 instance %m is set to %d. It is required to have CARRYINSELREG be set to 1 to match OPMODEREG, in order to ensure that the simulation model will match the hardware behavior in all use cases.", CARRYINSELREG)
+                    #    print("DRC warning : The attribute CARRYINSELREG is set to %d. It is required to have CARRYINSELREG be set to 1 to match OPMODEREG, in order to ensure that the simulation model will match the hardware behavior in all use cases.", CARRYINSELREG)
                     # ),
                     # print("OPMODE Input Warning : The OPMODE %b to DSP48E1 instance %m is either invalid or the CARRYINSEL %b for that specific OPMODE is invalid at %.3f ns. This warning may be due to a mismatch in the OPMODEREG and CARRYINSELREG attribute settings. It is recommended that OPMODEREG and CARRYINSELREG always be set to the same value. ", qopmode_o_mux, qcarryinsel_o_mux, sim.now // 1000.000000)
                 )
             )\
             .Case(0b01,
-               DCR_check_logic_modes() 
+               DCR_check_logic_modes()
             )\
             .Case(0b11,
-               DCR_check_logic_modes() 
+               DCR_check_logic_modes()
             ) \
             .Default(
                 # print("OPMODE Input Warning : The OPMODE %b to DSP48E1 instance %m is invalid for LOGIC MODES at %.3f ns.", qopmode_o_mux, sim.now // 1000.000000)
@@ -995,10 +803,13 @@ class DSP48E1(Unit):
         carryout_o_hw[1]((qalumode_o_mux[0] & qalumode_o_mux[1])._ternary(~cout1, cout1))
         carryout_o_hw[2]((qalumode_o_mux[0] & qalumode_o_mux[1])._ternary(~cout2, cout2))
         carryout_o_hw[3]((qalumode_o_mux[0] & qalumode_o_mux[1])._ternary(~cout3, cout3))
-        alu_o(qalumode_o_mux[1]._ternary(~s3[slice(12, 0)]._concat(s2[slice(12, 0)])._concat(s1[slice(12, 0)])._concat(s0[slice(12, 0)]), s3[slice(12, 0)]._concat(s2[slice(12, 0)])._concat(s1[slice(12, 0)])._concat(s0[slice(12, 0)])))
+        alu_o(qalumode_o_mux[1]._ternary(
+            ~s3[12:0]._concat(s2[12:0])._concat(s1[12:0])._concat(s0[12:0]),
+             s3[12:0]._concat(s2[12:0])._concat(s1[12:0])._concat(s0[12:0])
+        ))
         carrycascout_o(cout3)
-        multsignout_o_opmode((qopmode_o_mux[slice(7, 4)]._eq(0b100))._ternary(MULTSIGNIN, qmult_o_mux[42]))
-        If((qopmode_o_mux[slice(4, 0)]._eq(0b0101) | (qalumode_o_mux[slice(4, 2)] != 0b00)),
+        multsignout_o_opmode((qopmode_o_mux[7:4]._eq(0b100))._ternary(MULTSIGNIN, qmult_o_mux[42]))
+        If((qopmode_o_mux[4:0]._eq(0b0101) | (qalumode_o_mux[4:2] != 0b00)),
             carryout_o[3](None),
             carryout_o[2](None),
             carryout_o[1](None),
@@ -1035,13 +846,13 @@ class DSP48E1(Unit):
                 qcarryin_o_reg7(ad_mult[24]._eq(b_mult[17]))
             )
         )
-        
+
         if MREG == 0:
             qcarryin_o_mux7(ad_mult[24]._eq(b_mult[17]))
         elif MREG == 1:
             qcarryin_o_mux7(qcarryin_o_reg7)
         else:
-            raise ValueError("The attribute MREG on DSP48E1 instance %m is set to %d.  Legal values for this attribute are 0 or 1.", MREG)
+            raise ValueError("The attribute MREG is set to %d. Legal values for this attribute are 0 or 1.", MREG)
 
         Switch(qcarryinsel_o_mux)\
             .Case(0b000,
@@ -1069,12 +880,12 @@ class DSP48E1(Unit):
         )
 
         the_auto_reset_patdet(
-            (pdet_o_reg1 & (AUTORESET_PATDET == "RESET_MATCH")) | 
+            (pdet_o_reg1 & (AUTORESET_PATDET == "RESET_MATCH")) |
             (pdet_o_reg2 & (AUTORESET_PATDET == "RESET_NOT_MATCH") & ~pdet_o_reg1)
         )
 
         #--####################################################################
-        #--#####      CARRYOUT, CARRYCASCOUT. MULTSIGNOUT and PCOUT      ###### 
+        #--#####      CARRYOUT, CARRYCASCOUT. MULTSIGNOUT and PCOUT      ######
         #--####################################################################
         #*** register with 1 level of register
         If(clk_in._onRisingEdge(),
@@ -1110,7 +921,7 @@ class DSP48E1(Unit):
             carryout_o_mux[1] if USE_SIMD in ["TWO24", "FOUR12"] else hBit(None),
             carryout_o_mux[0] if USE_SIMD == "FOUR12" else hBit(None),
         ))
-        
+
         the_pattern(PATTERN if SEL_PATTERN == "PATTERN" else qc_o_mux)
 
         # selet mask
@@ -1135,7 +946,7 @@ class DSP48E1(Unit):
         pdet_o_mux(pdet_o_reg1 if PREG == 1 else pdet_o)
         pdetb_o_mux(pdetb_o_reg1 if PREG == 1 else pdetb_o)
 
-        #*** Output register PATTERN DETECT and UNDERFLOW / OVERFLOW 
+        #*** Output register PATTERN DETECT and UNDERFLOW / OVERFLOW
         If(clk_in._onRisingEdge(),
             If(RSTP._isOn() | the_auto_reset_patdet._isOn(),
                 pdet_o_reg1(0b0),
