@@ -3,15 +3,15 @@
 
 from math import ceil
 
+from hwt.pyUtils.arrayQuery import flatten
+from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.simulator.simTestCase import SingleUnitSimTestCase, allValuesToInts
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.lsu.read_aggregator import AxiReadAggregator
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.amba.constants import RESP_OKAY
-from pycocotb.constants import CLK_PERIOD
-from hwt.pyUtils.arrayQuery import flatten
-from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
+from pycocotb.constants import CLK_PERIOD
 
 
 class AxiReadAggregator_1word_burst_TC(SingleUnitSimTestCase):
