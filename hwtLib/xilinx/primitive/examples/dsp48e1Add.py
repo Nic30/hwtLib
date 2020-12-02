@@ -91,38 +91,6 @@ def generate_handshake_pipe_cntrl(parent: Unit, n: int, name_prefix: str, in_val
     return clock_enables, valids, in_ready, out_valid
 
 
-def generate_triangle_reg(parent, name_prefix: str, data_in: RtlSignal, step_data_width: int, clock_enables: List[RtlSignal]):
-    """
-    An utility that constructs a list of pipelines of registers.
-    Each pipeline is "step_data_width" wide or smaller if it is a reminder at end.
-    The first pipeline has 0 registers next has n + 1 (= 1) and so on.
-    This delays the data in each pipeline by 1 clock tick.
-    Useful for parallel load/store from a pipeline with triangular (cascade) data dependency.
-
-    :return: 1d list of last signal for each stage
-        (first will be slice of original signal, second will be next slice delayed by 1 CLK period)
-    """
-    total_width = data_in._dtype.bit_length()
-    out_regs = []
-    offset = 0
-    assert step_data_width > 0
-    assert len(clock_enables) == ceil(total_width / step_data_width) - 1, \
-        "(First stage of registers corresponds to original signals, clock enable is required only of the rest)"
-    i = 0
-    while offset < total_width:
-        width = min(step_data_width, total_width - offset)
-        out = data_in[offset + width:offset]
-        for st_i in range(i):
-            r = parent._reg("%s_%d_%d" % (name_prefix, i, st_i))
-            If(clock_enables[st_i],
-               r(out)
-            )
-            out = r
-        out_regs.append(out)
-        offset += step_data_width
-    return out_regs
-
-
 class Dsp48e1Add(Unit):
 
     def _config(self):
