@@ -253,6 +253,18 @@ ALU_MODE = {
     # In two’s complement: -Z = ~Z + 1
     "-Z + (X + Y + CIN) - 1": 0b0001,
     "-Z - X - Y - CIN - 1": 0b0010,
+
+    "X ^ Z": (Y_SEL.ZERO, 0b0100),
+    "~(X ^ Z)": (Y_SEL.ZERO, 0b0101), # xnor
+    "X & Z": (Y_SEL.ZERO, 0b1100),
+    "X & ~Z": (Y_SEL.ZERO, 0b1101),
+    "~(X & Z)": (Y_SEL.ZERO, 0b1110),
+    "~X | Z": (Y_SEL.ZERO, 0b1111),
+
+    "X | Z": (Y_SEL.MINUS_1, 0b1100),
+    "X | ~Z": (Y_SEL.MINUS_1, 0b1101),
+    "~(X | Z)": (Y_SEL.MINUS_1, 0b1110), # nor
+    "~X & Z": (Y_SEL.MINUS_1, 0b1111)
 }
 
 
@@ -278,8 +290,8 @@ class MUL_A_SEL(Enum):
         D_PLUS_A2,
         D_PLUS_A1,
         D,
-        PINUS_A2,
-        PINUS_A1,
+        MINUS_A2,
+        MINUS_A1,
         D_MINUS_A2,
         D_MINUS_A1
     ) = range(10)
@@ -301,15 +313,15 @@ _inmode_with_use_dport = {
    MUL_A_SEL.D_PLUS_A2: 0b0100,
    MUL_A_SEL.D_PLUS_A1: 0b0101,
    MUL_A_SEL.D: 0b0110,
-   MUL_A_SEL.PINUS_A2: 0b1000,
-   MUL_A_SEL.PINUS_A1: 0b1001,
+   MUL_A_SEL.MINUS_A2: 0b1000,
+   MUL_A_SEL.MINUS_A1: 0b1001,
    MUL_A_SEL.D_MINUS_A2: 0b1100,
    MUL_A_SEL.D_MINUS_A1: 0b1101,
 }
 
 
 def get_inmode(AREG: int, USE_DPORT: bool, mul_a_sel: MUL_A_SEL, mul_b_sel: MUL_B_SEL):
-    assert AREG in [1, 2], AREG
+    assert AREG in [0, 1, 2], AREG
     if USE_DPORT:
         v = _inmode_with_not_use_dport[mul_a_sel]
     else:

@@ -12,13 +12,15 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.xilinx.primitive.dsp48e1_constants import LOGIC_MODES_DRC_deassign_xyz_mux_if_PREG_eq_1, \
     LOGIC_MODES_DRC_deassign_xyz_mux, ARITHMETIC_MODES_DRC_deassign_xyz_mux, \
-    ARITHMETIC_MODES_DRC_deassign_xyz_mux_if_PREG_eq_1
+    ARITHMETIC_MODES_DRC_deassign_xyz_mux_if_PREG_eq_1, CARRYIN_SEL
 from pyMathBitPrecise.bit_utils import mask
 
 
 @serializeExclude
 class DSP48E1(Unit):
     """
+    DSP hadblock in Xilinx 7 series (2x pre adder, multiplier, ALU)
+
     :see: https://www.xilinx.com/support/documentation/user_guides/ug479_7Series_DSP48E1.pdf
     """
 
@@ -147,104 +149,83 @@ class DSP48E1(Unit):
         self.input_check()
 
     def input_check(self):
-        #-------- A_INPUT check
         if self.A_INPUT not in ("DIRECT", "CASCADE"):
-            raise ValueError("The attribute A_INPUT is set to %s. Legal values for this attribute are DIRECT or CASCADE.", self.A_INPUT)
-        #-------- ALUMODEREG check
+            raise ValueError("A_INPUT is set to %s." % self.A_INPUT)
+
         if self.ALUMODEREG not in (0, 1):
-            raise ValueError("The attribute ALUMODEREG is set to %d. Legal values for this attribute are 0, 1.", self.ALUMODEREG)
-        #-------- AREG check
-        if self.AREG not in (0, 1, 2):
-            raise ValueError("The attribute AREG is set to %d. Legal values for this attribute are 0, 1 or 2.", self.AREG)
+            raise ValueError("ALUMODEREG is set to %d." % self.ALUMODEREG)
+
         #-------- (ACASCREG) and (ACASCREG vs AREG) check
         if self.AREG in (0, 1):
             if self.AREG != self.ACASCREG:
-                raise ValueError("The attribute ACASCREG  is set to %d. ACASCREG has to be set to same value as AREG attribute.", self.ACASCREG)
+                raise ValueError("ACASCREG  is set to %d. ACASCREG has to be set to same value as AREG." % self.ACASCREG)
         elif self.AREG == 2:
             if self.AREG != self.ACASCREG and self.AREG - 1 != self.ACASCREG:
-                raise ValueError("The attribute ACASCREG  is set to %d. ACASCREG has to be set to either 2 or 1 when attribute AREG = 2.", self.ACASCREG)
+                raise ValueError("ACASCREG is set to %d. ACASCREG has to be set to either 2 or 1 when AREG = 2." % self.ACASCREG)
         else:
-            raise ValueError(self.AREG)
+            raise ValueError("AREG is set to %d." % self.AREG)
 
-        #-------- B_INPUT check
         if self.B_INPUT not in ("DIRECT", "CASCADE"):
-            raise ValueError("The attribute B_INPUT is set to %s.", self.B_INPUT)
-
-        #-------- BREG check
-        if self.BREG not in (0, 1, 2):
-            raise ValueError("The attribute BREG is set to %d.", self.BREG)
+            raise ValueError("B_INPUT is set to %s." % self.B_INPUT)
 
         #-------- (BCASCREG) and (BCASCREG vs BREG) check
         if self.BREG in (0, 1):
             if self.BREG != self.BCASCREG:
-                raise ValueError("The attribute BCASCREG  is set to %d. BCASCREG has to be set to same value as BREG.", self.BCASCREG)
+                raise ValueError("BCASCREG is set to %d. BCASCREG has to be set to same value as BREG." % self.BCASCREG)
         elif self.BREG == 2:
             if self.BREG != self.BCASCREG and self.BREG - 1 != self.BCASCREG:
-                raise ValueError("The attribute BCASCREG  is set to %d. BCASCREG has to be set to either 2 or 1 when attribute BREG = 2.", self.BCASCREG)
+                raise ValueError("BCASCREG is set to %d. BCASCREG has to be set to either 2 or 1 when BREG = 2." % self.BCASCREG)
         else:
-            raise ValueError(self.BREG)
-        #-------- CARRYINREG check
+            raise ValueError("BREG is set to %d." % self.BREG)
+
+
         if self.CARRYINREG not in (0, 1):
-            raise ValueError("The attribute CARRYINREG is set to %d.", self.CARRYINREG)
-        #-------- CARRYINSELREG check
+            raise ValueError("CARRYINREG is set to %d." % self.CARRYINREG)
+
         if self.CARRYINSELREG not in (0, 1):
-            raise ValueError("The attribute CARRYINSELREG is set to %d.", self.CARRYINSELREG)
+            raise ValueError("CARRYINSELREG is set to %d." % self.CARRYINSELREG)
 
-        #-------- CREG check
         if self.CREG not in (0, 1):
-            raise ValueError("The attribute CREG is set to %d.", self.CREG)
+            raise ValueError("CREG is set to %d." % self.CREG)
 
-        #-------- OPMODEREG check
         if self.OPMODEREG not in (0, 1):
-            raise ValueError("The attribute OPMODEREG is set to %d.", self.OPMODEREG)
+            raise ValueError("OPMODEREG is set to %d." % self.OPMODEREG)
 
-        #-------- USE_MULT
         if self.USE_MULT not in ("NONE", "MULTIPLY", "DYNAMIC"):
-            raise ValueError("The attribute USE_MULT is set to %s.", self.USE_MULT)
+            raise ValueError("USE_MULT is set to %s." % self.USE_MULT)
 
-        #-------- USE_PATTERN_DETECT
         if self.USE_PATTERN_DETECT not in ("PATDET", "NO_PATDET"):
-            raise ValueError("The attribute USE_PATTERN_DETECT is set to %s.", self.USE_PATTERN_DETECT)
-        #-------- AUTORESET_PATDET check
+            raise ValueError("USE_PATTERN_DETECT is set to %s." % self.USE_PATTERN_DETECT)
+
         if self.AUTORESET_PATDET not in ("NO_RESET", "RESET_MATCH", "RESET_NOT_MATCH"):
-            raise ValueError("The attribute AUTORESET_PATDET is set to %s.", self.AUTORESET_PATDET)
-        #-------- SEL_PATTERN check
+            raise ValueError("AUTORESET_PATDET is set to %s." % self.AUTORESET_PATDET)
+
         if self.SEL_PATTERN not in ("PATTERN", "C"):
-            raise ValueError("The attribute SEL_PATTERN is set to %s.", self.SEL_PATTERN)
+            raise ValueError("SEL_PATTERN is set to %s." % self.SEL_PATTERN)
 
-        #-------- SEL_MASK check
         if self.SEL_MASK not in ("MASK", "C", "ROUNDING_MODE1", "ROUNDING_MODE2"):
-            raise ValueError("The attribute SEL_MASK is set to %s.", self.SEL_MASK)
+            raise ValueError("SEL_MASK is set to %s." % self.SEL_MASK)
 
-        #-------- MREG check
         if self.MREG not in (0, 1):
-            raise ValueError("The attribute MREG is set to %d.", self.MREG)
+            raise ValueError("MREG is set to %d." % self.MREG)
 
-        #-------- PREG check
         if self.PREG not in (0, 1):
-            raise ValueError("The attribute PREG is set to %d.", self.PREG)
+            raise ValueError("PREG is set to %d." % self.PREG)
 
-        #*/*********************************************************
-        #***  new attribute DRC
-        #*********************************************************
-        #-------- ADREG check
         if self.ADREG not in (0, 1):
-            raise ValueError("The attribute ADREG is set to %d.", self.ADREG)
+            raise ValueError("ADREG is set to %d." % self.ADREG)
 
-        #-------- DREG check
         if self.DREG not in (0, 1):
-            raise ValueError("The attribute DREG is set to %d.", self.DREG)
+            raise ValueError("DREG is set to %d." % self.DREG)
 
-        #-------- INMODEREG check
         if self.INMODEREG not in (0, 1):
-            raise ValueError("The attribute INMODEREG is set to %d.", self.INMODEREG)
+            raise ValueError("INMODEREG is set to %d." % self.INMODEREG)
 
-        #-------- USE_DPORT
         if self.USE_DPORT not in ("TRUE", "FALSE"):
-            raise ValueError("The attribute USE_DPORT is set to %s.", self.USE_DPORT)
+            raise ValueError("USE_DPORT is set to %s." % self.USE_DPORT)
 
         if self.USE_MULT == "NONE" and self.MREG != 0:
-            raise ValueError("Attribute USE_MULT is set to \"NONE\" and MREG is set to %2d. MREG must be set to 0 when the multiplier is not used.", self.MREG)
+            raise ValueError("Attribute USE_MULT is set to \"NONE\" and MREG is set to %d. MREG must be set to 0 when the multiplier is not used." % self.MREG)
 
     def _impl(self):
         # internal signals
@@ -375,7 +356,6 @@ class DSP48E1(Unit):
         s = self._sig("s", Bits(ALU_FULL_W))
         comux = self._sig("comux", Bits(ALU_FULL_W))
         smux = self._sig("smux", Bits(ALU_FULL_W))
-        carryout_o_hw = self._sig("carryout_o_hw", Bits(CARRYOUT_W))
         carryout_o = self._sig("carryout_o", Bits(CARRYOUT_W))
         # FINAL ADDER
         s0 = rename_signal(self, Concat(hBit(0), comux[11:0], qcarryin_o_mux) + Concat(hBit(0), smux[12:0]), "s0")
@@ -436,7 +416,7 @@ class DSP48E1(Unit):
         else:
             raise AssertionError()
 
-        if AREG == 1:
+        if AREG in (1, 2):
             If(clk_in._onRisingEdge(),
                 If(RSTA,
                     qa_o_reg1(0b0),
@@ -446,27 +426,15 @@ class DSP48E1(Unit):
                         qa_o_reg1(a_o_mux)
                     ),
                     If(CEA2,
-                        qa_o_reg2(a_o_mux)
-                    )
-                )
-            )
-
-        elif AREG == 2:
-            If(clk_in._onRisingEdge(),
-                If(RSTA,
-                    qa_o_reg1(0b0),
-                    qa_o_reg2(0b0)
-                ).Else(
-                    If(CEA1,
-                        qa_o_reg1(a_o_mux)
-                    ),
-                    If(CEA2,
-                        qa_o_reg2(qa_o_reg1)
+                        qa_o_reg2(a_o_mux if AREG == 1 else
+                                  qa_o_reg1 if AREG == 2 else
+                                  None)
                     )
                 )
             )
         else:
-            raise AssertionError()
+            qa_o_reg1(None)
+
 
         if AREG == 0:
             qa_o_mux(a_o_mux)
@@ -500,7 +468,7 @@ class DSP48E1(Unit):
         else:
             raise AssertionError()
 
-        if BREG == 1:
+        if BREG in (1, 2):
             If(clk_in._onRisingEdge(),
                 If(RSTB,
                     qb_o_reg1(0b0),
@@ -510,26 +478,14 @@ class DSP48E1(Unit):
                         qb_o_reg1(b_o_mux)
                     ),
                     If(CEB2,
-                        qb_o_reg2(b_o_mux)
-                    )
-                )
-            )
-        elif BREG == 2:
-            If(clk_in._onRisingEdge(),
-                If(RSTB,
-                    qb_o_reg1(0b0),
-                    qb_o_reg2(0b0)
-                ).Else(
-                    If(CEB1,
-                        qb_o_reg1(b_o_mux)
-                    ),
-                    If(CEB2,
-                        qb_o_reg2(qb_o_reg1)
+                        qb_o_reg2(b_o_mux if BREG == 1 else
+                                  qb_o_reg1 if BREG == 1 else
+                                  None)
                     )
                 )
             )
         else:
-            raise AssertionError()
+            qb_o_reg1(None)
 
         if BREG == 0:
             qb_o_mux(b_o_mux)
@@ -585,7 +541,8 @@ class DSP48E1(Unit):
         else:
             raise AssertionError()
 
-        ad_addsub(qinmode_o_mux[3]._ternary(-a_preaddsub + qinmode_o_mux[2]._ternary(qd_o_mux, 0b0), a_preaddsub + qinmode_o_mux[2]._ternary(qd_o_mux, 0b0)))
+        ad_addsub(qinmode_o_mux[3]._ternary(-a_preaddsub + qinmode_o_mux[2]._ternary(qd_o_mux, 0b0),
+                                             a_preaddsub + qinmode_o_mux[2]._ternary(qd_o_mux, 0b0)))
 
         If(clk_in._onRisingEdge(),
             If(RSTD,
@@ -640,12 +597,16 @@ class DSP48E1(Unit):
         # else
         Switch(qopmode_o_mux[2:0])\
             .Case(0b00,
+                # X_SEL.ZERO
                 qx_o_mux(0b0))\
             .Case(0b01,
+                # X_SEL.M
                 qx_o_mux(replicate(5, qmult_o_mux[A_MULT_W + B_MULT_W - 1])._concat(qmult_o_mux)))\
             .Case(0b10,
-                qx_o_mux(qp_o_mux))\
+                # X_SEL.P
+                qx_o_mux(qp_o_mux if PREG == 1 else None))\
             .Case(0b11,
+                # X_SEL.A_B
                 qx_o_mux(None)
                 if USE_MULT == "MULTIPLY" and (
                     (AREG == 0 and BREG == 0 and MREG == 0) or
@@ -770,7 +731,7 @@ class DSP48E1(Unit):
                 ).Else(
                     # CR 444150
                     # If(qopmode_o_mux._concat(qcarryinsel_o_mux)._eq(0b0000000010)._isOn() & (OPMODEREG._eq(1)._isOn() & CARRYINSELREG._eq(0)._isOn())._isOn(),
-                    #    print("DRC warning : The attribute CARRYINSELREG is set to %d. It is required to have CARRYINSELREG be set to 1 to match OPMODEREG, in order to ensure that the simulation model will match the hardware behavior in all use cases.", CARRYINSELREG)
+                    #    print("DRC warning : CARRYINSELREG is set to %d. It is required to have CARRYINSELREG be set to 1 to match OPMODEREG, in order to ensure that the simulation model will match the hardware behavior in all use cases.", CARRYINSELREG)
                     # ),
                     # print("OPMODE Input Warning : The OPMODE %b to DSP48E1 instance %m is either invalid or the CARRYINSEL %b for that specific OPMODE is invalid at %.3f ns. This warning may be due to a mismatch in the OPMODEREG and CARRYINSELREG attribute settings. It is recommended that OPMODEREG and CARRYINSELREG always be set to the same value. ", qopmode_o_mux, qcarryinsel_o_mux, sim.now // 1000.000000)
                 )
@@ -780,7 +741,7 @@ class DSP48E1(Unit):
             )\
             .Case(0b11,
                DCR_check_logic_modes()
-            ) \
+            )\
             .Default(
                 # print("OPMODE Input Warning : The OPMODE %b to DSP48E1 instance %m is invalid for LOGIC MODES at %.3f ns.", qopmode_o_mux, sim.now // 1000.000000)
             )
@@ -799,13 +760,15 @@ class DSP48E1(Unit):
             comux(co),
         )
         smux(qalumode_o_mux[3]._ternary(co, s))
+
+        carryout_o_hw = self._sig("carryout_o_hw", Bits(CARRYOUT_W))
         carryout_o_hw[0]((qalumode_o_mux[0] & qalumode_o_mux[1])._ternary(~cout0, cout0))
         carryout_o_hw[1]((qalumode_o_mux[0] & qalumode_o_mux[1])._ternary(~cout1, cout1))
         carryout_o_hw[2]((qalumode_o_mux[0] & qalumode_o_mux[1])._ternary(~cout2, cout2))
         carryout_o_hw[3]((qalumode_o_mux[0] & qalumode_o_mux[1])._ternary(~cout3, cout3))
         alu_o(qalumode_o_mux[1]._ternary(
-            ~s3[12:0]._concat(s2[12:0])._concat(s1[12:0])._concat(s0[12:0]),
-             s3[12:0]._concat(s2[12:0])._concat(s1[12:0])._concat(s0[12:0])
+            ~Concat(s3[12:0], s2[12:0], s1[12:0], s0[12:0]),
+             Concat(s3[12:0], s2[12:0], s1[12:0], s0[12:0])
         ))
         carrycascout_o(cout3)
         multsignout_o_opmode((qopmode_o_mux[7:4]._eq(0b100))._ternary(MULTSIGNIN, qmult_o_mux[42]))
@@ -852,37 +815,39 @@ class DSP48E1(Unit):
         elif MREG == 1:
             qcarryin_o_mux7(qcarryin_o_reg7)
         else:
-            raise ValueError("The attribute MREG is set to %d. Legal values for this attribute are 0 or 1.", MREG)
+            raise ValueError("MREG is set to %d. Legal values for this attribute are 0 or 1.", MREG)
 
         Switch(qcarryinsel_o_mux)\
-            .Case(0b000,
+            .Case(CARRYIN_SEL.CARRYIN.value,
                 qcarryin_o_mux_tmp(qcarryin_o_mux0))\
-            .Case(0b001,
+            .Case(CARRYIN_SEL.PCIN_47_n.value,
                 qcarryin_o_mux_tmp(~PCIN[47]))\
-            .Case(0b010,
+            .Case(CARRYIN_SEL.CARRYCASCIN.value,
                 qcarryin_o_mux_tmp(CARRYCASCIN))\
-            .Case(0b011,
+            .Case(CARRYIN_SEL.PCIN_47.value,
                 qcarryin_o_mux_tmp(PCIN[47]))\
-            .Case(0b100,
+            .Case(CARRYIN_SEL.CARRYCASCOUT.value,
                 qcarryin_o_mux_tmp(carrycascout_o_mux))\
-            .Case(0b101,
+            .Case(CARRYIN_SEL.P_47_n.value,
                 qcarryin_o_mux_tmp(~qp_o_mux[47]))\
-            .Case(0b110,
+            .Case(CARRYIN_SEL.A_27_eq_B_17.value,
                 qcarryin_o_mux_tmp(qcarryin_o_mux7))\
-            .Case(0b111,
+            .Case(CARRYIN_SEL.P_47.value,
                 qcarryin_o_mux_tmp(qp_o_mux[47]))
 
         # disable carryin when performing logic operation
         If(qalumode_o_mux[3] | qalumode_o_mux[2],
-           qcarryin_o_mux(0b0)
+            qcarryin_o_mux(0b0)
         ).Else(
             qcarryin_o_mux(qcarryin_o_mux_tmp)
         )
 
-        the_auto_reset_patdet(
-            (pdet_o_reg1 & (AUTORESET_PATDET == "RESET_MATCH")) |
-            (pdet_o_reg2 & (AUTORESET_PATDET == "RESET_NOT_MATCH") & ~pdet_o_reg1)
-        )
+        if AUTORESET_PATDET == "RESET_MATCH":
+            the_auto_reset_patdet(pdet_o_reg1)
+        elif AUTORESET_PATDET == "RESET_NOT_MATCH":
+            the_auto_reset_patdet(pdet_o_reg2 & ~pdet_o_reg1)
+        else:
+            the_auto_reset_patdet(0)
 
         #--####################################################################
         #--#####      CARRYOUT, CARRYCASCOUT. MULTSIGNOUT and PCOUT      ######
@@ -935,6 +900,8 @@ class DSP48E1(Unit):
             the_mask(~qc_o_mux << 1)
         elif SEL_MASK == "ROUNDING_MODE2":
             the_mask(~qc_o_mux << 2)
+        else:
+            raise AssertionError()
 
         If(opmode_valid_flag,
             pdet_o(And(*(~(the_pattern ^ alu_o) | the_mask))),
@@ -971,4 +938,5 @@ class DSP48E1(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     u = DSP48E1()
+    print("# note nothing should be printed out because the DSP48E1 has dissabled serialization (because it is part of UNISIM library)")
     print(to_rtl_str(u))

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import sys
 from unittest import TestLoader, TextTestRunner, TestSuite
 
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
@@ -25,6 +26,8 @@ from hwtLib.amba.axi_comp.interconnect.matrixR_test import AxiInterconnectMatrix
 from hwtLib.amba.axi_comp.interconnect.matrixW_test import AxiInterconnectMatrixW_TCs
 from hwtLib.amba.axi_comp.lsu.read_aggregator_test import AxiReadAggregator_TCs
 from hwtLib.amba.axi_comp.lsu.write_aggregator_test import AxiWriteAggregator_TCs
+from hwtLib.amba.axi_comp.oooOp.examples.counterArray_test import OooOpExampleCounterArray_TC
+from hwtLib.amba.axi_comp.oooOp.examples.counterHashTable_test import OooOpExampleCounterHashTable_TC
 from hwtLib.amba.axi_comp.resize_test import AxiResizeTC
 from hwtLib.amba.axi_comp.sim.ag_test import Axi_ag_TC
 from hwtLib.amba.axi_comp.slave_timeout_test import AxiSlaveTimeoutTC
@@ -215,9 +218,7 @@ from hwtLib.xilinx.ipif.endpoint_test import IpifEndpointTC, \
     IpifEndpointDenseTC, IpifEndpointDenseStartTC, IpifEndpointArray
 from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
-from hwtLib.amba.axi_comp.oooOp.examples.counterArray_test import OooOpExampleCounterArray_TC
-from hwtLib.amba.axi_comp.oooOp.examples.counterHashTable_test import OooOpExampleCounterHashTable_TC
-import sys
+from hwtLib.xilinx.primitive.examples.dsp48e1Add_test import Dsp48e1Add_TCs
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -467,6 +468,7 @@ suite = testSuiteFromTCs(
 
     RmiiAdapterTC,
     ConstraintsXdcClockRelatedTC,
+    *Dsp48e1Add_TCs,
 )
 
 
@@ -481,7 +483,7 @@ def main():
         # concurrencytest is not installed, use regular test runner
         useParallerlTest = False
     # useParallerlTest = False
-   
+
     if useParallerlTest:
         concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests())
         res = runner.run(concurrent_suite)
