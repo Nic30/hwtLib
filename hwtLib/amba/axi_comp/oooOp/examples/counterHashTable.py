@@ -18,7 +18,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
     The operation may finish out of order but the data on "dataOut" and in the memory
     will be correct. The same applays for the swap operations (all operations).
 
-    .. hwt-schematic::
+    .. hwt-schematic:: _example_OooOpExampleCounterHashTable
     """
 
     class OPERATION():
@@ -124,10 +124,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
             dst(src),
         )
 
-
-if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-    # u = _example_OutOfOrderCummulativeOp()
+def _example_OooOpExampleCounterHashTable():
     u = OooOpExampleCounterHashTable()
     u.ID_WIDTH = 6
     u.ADDR_WIDTH = 16 + 3
@@ -144,5 +141,10 @@ if __name__ == "__main__":
         (Bits(2), "operation"),  # :see: :class:`~.OPERATION`
     )
     u.DATA_WIDTH = u.MAIN_STATE_T.bit_length()
+    return u
 
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import to_rtl_str
+    u = _example_OooOpExampleCounterHashTable()
     print(to_rtl_str(u))
