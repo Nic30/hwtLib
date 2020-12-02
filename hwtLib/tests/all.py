@@ -156,7 +156,7 @@ from hwtLib.mem.atomic.flipRam_test import FlipRamTC
 from hwtLib.mem.atomic.flipReg_test import FlipRegTC
 from hwtLib.mem.bramEndpoint_test import BramPortEndpointTCs
 from hwtLib.mem.cam_test import CamTC
-from hwtLib.mem.cuckooHashTableWithRam_test import CuckooHashTableWithRamTC
+from hwtLib.mem.cuckooHashTableWithRam_test import CuckooHashTableWithRamTCs
 from hwtLib.mem.fifoArray_test import FifoArrayTC
 from hwtLib.mem.fifoAsync_test import FifoAsyncTC
 from hwtLib.mem.fifo_test import FifoWriterAgentTC, FifoReaderAgentTC, FifoTC
@@ -462,7 +462,7 @@ suite = testSuiteFromTCs(
     IpCorePackagerTC,
     CharToBitmapTC,
     HashTableCoreWithRamTC,
-    CuckooHashTableWithRamTC,
+    *CuckooHashTableWithRamTCs,
     PingResponderTC,
     DebugBusMonitorExampleAxiTC,
 
