@@ -3,14 +3,13 @@
 
 from binascii import crc_hqx
 
-from pyMathBitPrecise.bit_utils import mask
-
 from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.logic.crcPoly import CRC_16_CCITT
+from hwtLib.mem.hashTableCoreWithRam import HashTableCoreWithRam
+from pyMathBitPrecise.bit_utils import mask
 from pycocotb.constants import CLK_PERIOD
 from pycocotb.triggers import Timer
-from hwtLib.mem.hashTableCoreWithRam import HashTableCoreWithRam
 
 
 class HashTableCoreWithRamTC(SingleUnitSimTestCase):
@@ -46,7 +45,7 @@ class HashTableCoreWithRamTC(SingleUnitSimTestCase):
 
     def test_lookupInsertLookup(self, N=16, randomized=False):
         u = self.u
-        t_factor = CLK_PERIOD 
+        t_factor = CLK_PERIOD
         if randomized:
             self.randomize(u.io.lookup)
             self.randomize(u.io.lookupRes)

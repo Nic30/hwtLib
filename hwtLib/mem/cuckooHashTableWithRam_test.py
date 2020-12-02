@@ -4,14 +4,13 @@
 from copy import copy
 
 from hwt.hdl.constants import NOP
+from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from pycocotb.constants import CLK_PERIOD
-from pycocotb.triggers import Timer
-
+from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtLib.logic.crcPoly import CRC_32, CRC_32C
 from hwtLib.mem.cuckooHashTablWithRam import CuckooHashTableWithRam
-from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
-from hwtLib.examples.errors.combLoops import freeze_set_of_sets
+from pycocotb.constants import CLK_PERIOD
+from pycocotb.triggers import Timer
 
 
 class CuckooHashTableWithRam_common_TC(SingleUnitSimTestCase):
@@ -142,9 +141,9 @@ class CuckooHashTableWithRamTC(CuckooHashTableWithRam_common_TC):
         lookup_delay = 2 * len(reference)
         if randomize:
             lookup_delay *= 3
-                               
+
         u.lookup._ag.data.extend([NOP for _ in range(lookup_delay)])
-        
+
         for k, v in sorted(reference.items(), key=lambda x: x[0]):
             # insert should have higher priority
             u.insert._ag.data.append((k, v))
@@ -155,7 +154,7 @@ class CuckooHashTableWithRamTC(CuckooHashTableWithRam_common_TC):
         if randomize:
             self.randomize_all()
             t *= 3
-            
+
         self.runSim(t * CLK_PERIOD)
         self.checkContains(reference)
         self.assertValSequenceEqual([d[0] for d in u.insertRes._ag.data],
