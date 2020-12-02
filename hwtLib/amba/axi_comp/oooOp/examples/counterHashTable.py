@@ -136,7 +136,7 @@ def _example_OooOpExampleCounterHashTable():
     )
     u.TRANSACTION_STATE_T = HStruct(
         (BIT, "reset"),
-        (u.MAIN_STATE_T, "data"),
+        (u.MAIN_STATE_T, "original_data"),
         (BIT, "key_match"),
         (Bits(2), "operation"),  # :see: :class:`~.OPERATION`
     )
