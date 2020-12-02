@@ -5,6 +5,7 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.xilinx.primitive.examples.dsp48e1Add import Dsp48e1Add
 from pycocotb.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
+from math import ceil
 
 
 class Dsp48e1Add_48b_noRegsTC(SingleUnitSimTestCase):
@@ -25,7 +26,7 @@ class Dsp48e1Add_48b_noRegsTC(SingleUnitSimTestCase):
         u.data_in._ag.data.extend([(7, 16), (21, 19), (1, 2)])
         ref = [7 + 16, 21 + 19, 1 + 2]
 
-        self.runSim(8 * CLK_PERIOD)
+        self.runSim((8 + ceil(self.DATA_WIDTH / 48)) * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.data_out._ag.data, ref)
 
@@ -82,6 +83,22 @@ class Dsp48e1Add_96b_inOutRegsTC(Dsp48e1Add_48b_inOutRegsTC):
     DATA_WIDTH = 96
 
 
+class Dsp48e1Add_256b_noRegsTC(Dsp48e1Add_48b_noRegsTC):
+    DATA_WIDTH = 256
+
+
+class Dsp48e1Add_256b_inRegsTC(Dsp48e1Add_48b_inRegsTC):
+    DATA_WIDTH = 256
+
+
+class Dsp48e1Add_256b_outRegsTC(Dsp48e1Add_48b_outRegsTC):
+    DATA_WIDTH = 256
+
+
+class Dsp48e1Add_256b_inOutRegsTC(Dsp48e1Add_48b_inOutRegsTC):
+    DATA_WIDTH = 256
+
+
 Dsp48e1Add_TCs = [
     Dsp48e1Add_48b_noRegsTC,
     Dsp48e1Add_48b_inRegsTC,
@@ -91,6 +108,10 @@ Dsp48e1Add_TCs = [
     Dsp48e1Add_96b_inRegsTC, # 1-clk cascade
     Dsp48e1Add_96b_outRegsTC, # cascade, in reg merged for non-first dsp
     Dsp48e1Add_96b_inOutRegsTC, # cascade
+    Dsp48e1Add_256b_noRegsTC, # only part of last DSP used
+    Dsp48e1Add_256b_inRegsTC, # 1-clk cascade, only part of last DSP used
+    Dsp48e1Add_256b_outRegsTC, # cascade, in reg merged for non-first dsp, only part of last DSP used
+    Dsp48e1Add_256b_inOutRegsTC, # cascade, only part of last DSP used
 ]
 
 if __name__ == "__main__":

@@ -20,6 +20,7 @@ from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from typing import List
 from hwt.synthesizer.vectorUtils import fitTo
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
+from hwt.hdl.value import HValue
 
 
 class Dsp48e1AluInputAG(HandshakedAgent):
@@ -116,6 +117,9 @@ class Dsp48e1Add(Unit):
         Generate a register pipeline which can be used to dealy a value, the length of pipeline
         is derived from number of clock_enable signals
         """
+        if isinstance(sig_in, (int, HValue)):
+            return sig_in
+
         if name_prefix is None:
             name_prefix = getSignalName(sig_in)
         out = sig_in
