@@ -59,10 +59,6 @@ class DSP48E1(Unit):
         self.USE_SIMD = Param("ONE48")
 
     def deassign_xyz_mux(self):
-        """------------------------------------------------------------------
-        *** DRC for OPMODE
-        ------------------------------------------------------------------
-        """
         return [
             self.opmode_valid_flag(1),
             self.invalid_opmode(1)
