@@ -1,18 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import Signal
-from hwt.synthesizer.unit import Unit
-
-
-class SimpleUnit(Unit):
-    def _declr(self):
-        self.a = Signal()
-        self.b = Signal()._m()
-
-    def _impl(self):
-        self.b(self.a)
-
+from hwtLib.examples.simple import SimpleUnit
 
 if __name__ == "__main__":  # alias python main function
     from hwt.serializer.vhdl import Vhdl2008Serializer
