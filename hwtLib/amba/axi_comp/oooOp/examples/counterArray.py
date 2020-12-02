@@ -6,6 +6,14 @@ from hwtLib.amba.axi_comp.oooOp.utils import OOOOpPipelineStage
 
 
 class OooOpExampleCounterArray(OutOfOrderCummulativeOp):
+    """
+    This components uses array of counters accessible through axi interface.
+    These counters are incremented using "dataIn" interface in a coherent way.
+    The operation may finish out of order but the data on "dataOut" and in the memory
+    will be correct.
+
+    .. hwt-schematic::
+    """
 
     def _config(self):
         OutOfOrderCummulativeOp._config(self)

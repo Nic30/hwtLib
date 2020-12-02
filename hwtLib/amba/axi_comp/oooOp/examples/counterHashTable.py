@@ -11,6 +11,15 @@ from hwtLib.amba.axi_comp.oooOp.utils import OOOOpPipelineStage
 
 
 class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
+    """
+    This components mantains the hash table where value is a counter.
+    This hash table is accesed throught the axi interface.
+    These counters are incremented using "dataIn" interface in a coherent way.
+    The operation may finish out of order but the data on "dataOut" and in the memory
+    will be correct. The same applays for the swap operations (all operations).
+
+    .. hwt-schematic::
+    """
 
     class OPERATION():
         # if swap the original item from main memory will be stored in transaction_state.original_data
@@ -46,14 +55,14 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         OutOfOrderCummulativeOp._declr(self)
         swap_container_type = self.TRANSACTION_STATE_T.field_by_name["original_data"].dtype
         assert swap_container_type is self.MAIN_STATE_T, (swap_container_type, self.MAIN_STATE_T)
-    
+
     def key_compare(self, k0, k1):
         return k0._eq(k1)
 
     def propagate_trans_st(self, stage_from: OOOOpPipelineStage, stage_to: OOOOpPipelineStage):
         """
         Pass the state of operation (lookup/swap) in pipeline
-        in state before write_back chech if the key matches and 
+        in state before write_back chech if the key matches and
         """
         PIPELINE_CONFIG = self.PIPELINE_CONFIG
         src = stage_from.transaction_state
@@ -85,7 +94,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
                write_back_st.transaction_state.operation._eq(self.OPERATION.LOOKUP)
 
     def main_op_on_lookup_match_update(self, dst_stage: OOOOpPipelineStage, src_stage: OOOOpPipelineStage):
-        return [ 
+        return [
             dst_stage.data.value(src_stage.data.value + 1)
         ]
 
@@ -101,7 +110,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         prev_st = self.pipeline[dst_stage.index - 1]
         OP = self.OPERATION
         prev_st_op = prev_st.transaction_state.operation
-        
+
         return If(prev_st.valid & prev_st.transaction_state.key_match & In(prev_st_op, [OP.LOOKUP, OP.LOOKUP_OR_SWAP]),
             # lookup or lookup_or_swap with found
             dst.item_valid(src.item_valid),

@@ -62,6 +62,8 @@ def generate_handshake_pipe_cntrl(parent: Unit, n: int, name_prefix: str, in_val
     Clock enable signal for each stage in pipeline is also provided.
 
     :ivar ~.n: number of stages
+
+    .. hwt-schematic::
     """
     clock_enables = []
     valids = []
