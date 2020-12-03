@@ -194,6 +194,7 @@ from hwtLib.tests.sertialization.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.sertialization.modes_test import SerializerModes_TC
 from hwtLib.tests.sertialization.tmpVar_test import Serializer_tmpVar_TC
 from hwtLib.tests.sertialization.vhdl_test import Vhdl2008Serializer_TC
+from hwtLib.tests.simulator.basicRtlSimulatorVcdTmpDirs_test import BasicRtlSimulatorVcdTmpDirs_TCs
 from hwtLib.tests.simulator.json_log_test import HsFifoJsonLogTC
 from hwtLib.tests.simulator.utils_test import SimulatorUtilsTC
 from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import \
@@ -469,6 +470,7 @@ suite = testSuiteFromTCs(
     RmiiAdapterTC,
     ConstraintsXdcClockRelatedTC,
     *Dsp48e1Add_TCs,
+    *BasicRtlSimulatorVcdTmpDirs_TCs,
 )
 
 
