@@ -11,6 +11,7 @@ from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import INT, STR, BOOL
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
+from hwtLib.types.ctypes import uint8_t
 
 n = RtlNetlist()
 s0 = n.sig("s0", BOOL)
@@ -68,6 +69,24 @@ boolvals = {
     s0: s0,
     ~s0:~s0
 }
+
+COMMON_OPS = [
+            AllOps.DIV,
+            AllOps.ADD,
+            AllOps.SUB,
+            AllOps.MUL,
+            AllOps.XOR,
+            AllOps.AND,
+            AllOps.OR,
+            AllOps.CONCAT,
+            AllOps.EQ,
+            AllOps.NE,
+            AllOps.GT,
+            AllOps.GE,
+            AllOps.LT,
+            AllOps.LE,
+            AllOps.INDEX,
+        ]
 
 
 class OperatorTC(unittest.TestCase):
@@ -331,30 +350,31 @@ class OperatorTC(unittest.TestCase):
     def test_BitsSignalTypeErrors(self):
         n = self.n
         a = n.sig("a")
-        for op in [
-            AllOps.DIV,
-            AllOps.ADD,
-            AllOps.SUB,
-            AllOps.POW,
-            AllOps.MOD,
-            AllOps.MUL,
-            AllOps.XOR,
-            AllOps.AND,
-            AllOps.OR,
-            AllOps.DOWNTO,
-            AllOps.TO,
-            AllOps.CONCAT,
-            AllOps.EQ,
-            AllOps.NE,
-            AllOps.GT,
-            AllOps.GE,
-            AllOps.LT,
-            AllOps.LE,
-            AllOps.INDEX,
-            AllOps.CALL,
-        ]:
+        for op in COMMON_OPS + [
+                    AllOps.POW,
+                    AllOps.MOD,
+                    AllOps.DOWNTO,
+                    AllOps.TO,
+                    AllOps.CALL,
+                ]:
             with self.assertRaises((TypeError, ValueError), msg=op):
                 op._evalFn(a, "xyz")
+
+    def test_const_OP_signal_Bits(self):
+        n = self.n
+        a = n.sig("a", dtype=uint8_t)
+        _2 = uint8_t.from_py(2)
+        for op in COMMON_OPS:
+            b = op._evalFn(_2, a)
+            c = op._evalFn(_2, a)
+            self.assertIs(b, c)
+
+        for op in COMMON_OPS:
+            # creating new uint8_t value object
+            _3 = uint8_t.from_py(3)
+            b = op._evalFn(_3, a)
+            c = op._evalFn(_3, a)
+            self.assertIs(b, c)
 
 
 if __name__ == '__main__':
