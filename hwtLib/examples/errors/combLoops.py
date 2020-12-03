@@ -14,7 +14,7 @@ from hwtLib.handshaked.reg import HandshakedReg
 
 def freeze_set_of_sets(obj):
     return frozenset(map(frozenset, obj))
-       
+
 
 class CntrCombLoop(Unit):
     """
@@ -61,7 +61,7 @@ class WrongHandshakeCheckExample0(HandshakeWire0):
 
     def _impl(self):
         dataIn, dataOut = self.dataIn, self.dataOut
-        
+
         dataIn.rd(dataIn.vld & dataOut.rd)
         dataOut.vld(dataIn.vld)
 
@@ -94,14 +94,16 @@ class HandshakeRegLoop(Unit):
             c = self.loop_connector_cls(HandshakeSync)
         else:
             c = self.loop_connector_cls()
-        
+
         self.con = c
 
+        # circle  r <-> c
         r.dataIn(c.dataOut)
         c.dataIn(r.dataOut)
+
         self.rd(r.dataOut.rd)
         self.vld(r.dataOut.vld)
-        
+
         propagateClkRstn(self)
 
 
@@ -194,7 +196,7 @@ class CombLoopAnalysisTC(unittest.TestCase):
         #    print([m for m in loop if m not in ref[0]])
         #    print([m for m in ref[0] if m not in loop])
         #for loop in comb_loops:
-            
+
         self.assertSetEqual(comb_loops,
             freeze_set_of_sets(ref))
 
@@ -204,7 +206,7 @@ if __name__ == "__main__":
     suite.addTest(unittest.makeSuite(CombLoopAnalysisTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
-    
+
     # u = HandshakeRegLoop(HandshakeCheckExample)
     # u = HandshakeRegLoop(HandshakeWire1)
     # u = HandshakeCheckExample()
@@ -215,7 +217,7 @@ if __name__ == "__main__":
 
     # for k, v in s.comb_connection_matrix.items():
     #    print(to_set_of_names(k), "\t", list(to_set_of_names(_v) for _v in v))
-        
+
     # print("tarjan")
     # for scc in s.report():
     #    print(len(scc), list(to_set_of_names(_v) for _v in scc))
