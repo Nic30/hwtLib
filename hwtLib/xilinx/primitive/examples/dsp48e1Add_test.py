@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from math import ceil
+
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.xilinx.primitive.examples.dsp48e1Add import Dsp48e1Add
-from pycocotb.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
-from math import ceil
+from pycocotb.constants import CLK_PERIOD
 
 
 class Dsp48e1Add_48b_noRegsTC(SingleUnitSimTestCase):
