@@ -12,6 +12,7 @@ from hwtLib.mem.cuckooHashTable import CuckooHashTable
 from hwtLib.peripheral.displays.segment7 import Segment7
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import synthesised
+from hwtLib.amba.axi_comp.oooOp.examples.counterHashTable import OooOpExampleCounterHashTable
 
 
 class StatementsConsystencyTC(unittest.TestCase):
@@ -55,6 +56,10 @@ class StatementsConsystencyTC(unittest.TestCase):
 
     def test_if_inputs_correc(self):
         u = Segment7()
+        self.check_consystency(u)
+
+    def test_unconnected_slices_removed_from_inputs_of_statements(self):
+        u = OooOpExampleCounterHashTable()
         self.check_consystency(u)
 
     def test_stm_enclosure_consystency(self):
