@@ -22,8 +22,6 @@ class DSP48E1(Unit):
     DSP hadblock in Xilinx 7 series (2x pre adder, multiplier, ALU)
 
     :see: https://www.xilinx.com/support/documentation/user_guides/ug479_7Series_DSP48E1.pdf
-
-    .. hwt-schematic::
     """
 
     def _config(self):
