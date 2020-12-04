@@ -30,7 +30,7 @@ class AxiWriteAggregator(Unit):
     * write to read bypass (reading of value which is not yet written in AXI slave)
     * write transaction merging
 
-    .. image:: AxiWriteAggregator.png
+    .. image:: ./_static/AxiWriteAggregator.png
 
     :ivar ID_WIDTH: a parameter which specifies width of axi id signal,
         it also specifies the number of items in this buffer (2**ID_WIDTH)
