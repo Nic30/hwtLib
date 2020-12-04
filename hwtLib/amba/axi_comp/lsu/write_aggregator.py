@@ -26,6 +26,7 @@ class AxiWriteAggregator(Unit):
     A buffer which is used for write data from cache.
 
     It manages:
+
     * out of order write acknowledge
     * write to read bypass (reading of value which is not yet written in AXI slave)
     * write transaction merging
