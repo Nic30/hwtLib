@@ -24,41 +24,20 @@ from hwtLib.logic.oneHotToBin import oneHotToBin
 class AxiWriteAggregator(Unit):
     """
     A buffer which is used for write data from cache.
+
     It manages:
     * out of order write acknowledge
     * write to read bypass (reading of value which is not yet written in AXI slave)
     * write transaction merging
 
-    .. aafig:
-    
-                                       +-------------------+   
-        +------+                       | speculative read  |
-        | s.b  |<----------------+     +---------------+---+
-        +------+                 |                     |
-                                 |           ----------+
-        +------+                 |           V         |
-        | s.aw |    AW+W      +--+---------------+     |
-        | s.w  +---------+--->| cumulative write |     |
-        +------+         |    |   tmp register   |     |
-                         |    +----------+-------+     |
-                                         |             |                     
-                         |   data update |             |     
-              CAM lookup |    CAM update V             v     transaction lock    +------------------+
-                         |     +-------------------------+   and data read       | AW dispatch      |         +------+
-                         +---->|  FIFO Out of Order read |<--------------------->| W data dispatch  +-------->| m.aw |
-                               |                         |                       |                  |         | m.w  |
-                               +-------------------------+                       +------------------+         +------+
-                               +------------+     ^                            
-                               |  data ram  |     |                             OoO confirm                   +------+
-                               +------------+     +---------------------------------------------------------->| m.b  |
-                                                                                                              +------+
+    .. image:: AxiWriteAggregator.png
 
     :ivar ID_WIDTH: a parameter which specifies width of axi id signal,
         it also specifies the number of items in this buffer (2**ID_WIDTH)
     :ivar MAX_BLOCK_DATA_WIDTH: specifies maximum data width of RAM
         (used to prevent synthesis problems for tools which can not handle
         too wide memories with byte enable)
-    
+
     .. hwt-schematic:: _example_AxiWriteAggregator
     """
 
@@ -75,10 +54,9 @@ class AxiWriteAggregator(Unit):
             w.ADDR_WIDTH = w_in_reg.ADDR_WIDTH = self.CACHE_LINE_ADDR_WIDTH
             w.DATA_WIDTH = w_in_reg.DATA_WIDTH = self.CACHE_LINE_SIZE * 8
 
-            # self.r = AxiWriteAggregatorReadIntf()
             self.m = axi = Axi4()._m()
             axi.HAS_R = False
-            
+
             self.write_dispatch = AxiWriteAggregatorWriteDispatcher()
 
         self.ooo_fifo = of = FifoOutOfOrderReadFiltered()
@@ -107,7 +85,7 @@ class AxiWriteAggregator(Unit):
             | w |->| CAM lookup     |->| tmp reg |->| optional item update              |
             +---+  | tmp reg lookup |  +---------+  | optional CAM update and item push |
                    +----------------+               | optional update of tmp reg        |
-                                                    +-----------------------------------+ 
+                                                    +-----------------------------------+
 
         :note: we must not let data from tmp reg if next w_in has same address (we have to update tmp reg instead)
         """
@@ -121,7 +99,7 @@ class AxiWriteAggregator(Unit):
         w_tmp_in = w_tmp.dataIn
         w_tmp_out = w_tmp.dataOut
 
-        # if true it means that the current input write data should be merged with 
+        # if true it means that the current input write data should be merged with
         # a content of the w_tmp register
         found_in_tmp_reg = rename_signal(
             self,
@@ -130,7 +108,7 @@ class AxiWriteAggregator(Unit):
         )
         accumulated_mask = rename_signal(self, w_in.mask | w_tmp_out.mask, "accumulated_mask")
         If(w_tmp_out.vld & found_in_tmp_reg,
-            # update only bytes selected by w_in mask in tmp reg 
+            # update only bytes selected by w_in mask in tmp reg
             w_tmp_in.data(apply_write_with_mask(w_tmp_out.data, w_in.data, w_in.mask)),
             w_tmp_in.mask(w_in.mask | w_tmp_out.mask),
             w_tmp_in.mask_byte_unaligned(is_mask_byte_unaligned(accumulated_mask))
@@ -225,9 +203,9 @@ class AxiWriteAggregator(Unit):
             slaves=[items.en],
             extraConds={
                 write_execute: rename_signal(self, will_insert_new_item & item_insert_last, "ac_write_en"),
-                items.en: rename_signal(self, (~w_in.vld | will_insert_new_item | ~item_insert_first) & 
+                items.en: rename_signal(self, (~w_in.vld | will_insert_new_item | ~item_insert_first) &
                     (write_confirm.rd | cam_found), "items_en_en"),
-                w_tmp_out: rename_signal(self, found_in_tmp_reg | 
+                w_tmp_out: rename_signal(self, found_in_tmp_reg |
                                          (((write_confirm.rd & current_empty) | cam_found) & item_insert_last),
                                          "w_tmp_out_en")
             },
@@ -244,7 +222,7 @@ class AxiWriteAggregator(Unit):
         self.data_insert(
             data_ram.port[0]
         )
-        
+
         wd = self.write_dispatch
         self.m(wd.m)
         data_ram.port[1](wd.data)

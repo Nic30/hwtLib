@@ -19,7 +19,7 @@ from hwtLib.mem.fifo import Fifo
 class FifoOutOfOrderRead(Unit):
     """
     Container of FIFO pointers and flags where the items can be discarded in out of order manner
-    
+
     :attention: this component does not contains the item storage, it is just container of such a FIFO logic
 
     Item state control scheme:
@@ -59,10 +59,10 @@ class FifoOutOfOrderRead(Unit):
         item_valid = self._reg("item_valid", Bits(ITEMS), def_val=0)
         # 1 if item can not be update any more (:note: valid=1)
         item_write_lock = self._reg("item_write_lock", Bits(ITEMS), def_val=0)
-        
+
         write_req, write_wait = self._sig("write_req"), self._sig("write_wait")
         read_req, read_wait = self._sig("read_req"), self._sig("read_wait")
-        
+
         (write_en, write_ptr), (read_en, read_ptr) = Fifo.fifo_pointers(
             self, ITEMS,
             (write_req, write_wait),
@@ -70,7 +70,7 @@ class FifoOutOfOrderRead(Unit):
         )
 
         write_confirm = self.write_confirm
-       
+
         write_req(write_confirm.vld & ~write_wait & ~item_valid[write_ptr])
         write_confirm.rd(~write_wait & ~item_valid[write_ptr])
 
@@ -119,7 +119,7 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
     :attention: this component does not contains the item storage, it is just container of such a FIFO logic
 
     Item state control scheme:
-    * write_execute: preallocate the item for writing (and add key to CAM for filtering) 
+    * write_execute: preallocate the item for writing (and add key to CAM for filtering)
     * write_confirm: the item is now allocated in the fifo and ready to be read
     * read_execute: the item is locked for updates and is currently being read
     * read_confirm: the item is entirely readed and it is ready to be deallocated
@@ -140,20 +140,20 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
             # check if item is stored in CAM
             pl = self.read_lookup = Handshaked()
             pl.DATA_WIDTH = self.KEY_WIDTH
-            
+
             # return one-hot encoded index of the previously searched key
             plr = self.read_lookup_res = Handshaked()._m()
             plr.DATA_WIDTH = self.ITEMS
 
-            
+
         # check if item is stored in CAM
         pl = self.write_pre_lookup = Handshaked()
         pl.DATA_WIDTH = self.KEY_WIDTH
-        
+
         # return one-hot encoded index of the previously searched key
         plr = self.write_pre_lookup_res = Handshaked()._m()
         plr.DATA_WIDTH = self.ITEMS
-        
+
         self.item_valid = VectSignal(self.ITEMS)._m()
         self.item_write_lock = VectSignal(self.ITEMS)._m()
 
@@ -174,23 +174,23 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
         item_valid, item_write_lock, (_, write_ptr), (_, read_ptr) = super(FifoOutOfOrderReadFiltered, self)._impl()
         self.item_valid(item_valid)
         self.item_write_lock(item_write_lock)
-        
+
         tc = self.tag_cam
 
         if self.HAS_READ_LOOKUP:
             tc.match[0](self.write_pre_lookup)
-    
+
             self.write_pre_lookup_res.data(tc.out[0].data & item_valid & item_write_lock)
             StreamNode([tc.out[0]], [self.write_pre_lookup_res]).sync()
 
             tc.match[1](self.read_lookup)
-            
+
             self.read_lookup_res.data(tc.out[1].data & item_valid)
             StreamNode([tc.out[1]], [self.read_lookup_res]).sync()
-    
+
         else:
             tc.match(self.write_pre_lookup)
-    
+
             self.write_pre_lookup_res.data(tc.out.data & item_valid & item_write_lock)
             StreamNode([tc.out], [self.write_pre_lookup_res]).sync()
 
