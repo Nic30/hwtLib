@@ -103,13 +103,14 @@ def render_aafig_images(app, doctree):
         app.builder.warn('aafigure module not installed, ASCII art images '
                          'will be rendered as literal text')
     for img in doctree.traverse(nodes.image):
-        text = img.aafig['text']
-        if not hasattr(img, 'aafig'):
+        aafig = getattr(img, "aafig", None)
+        if aafig is None:
             continue
+        text = aafig['text']
         if aafigure is None:
             img.replace_self(nodes.literal_block(text, text))
             continue
-        options = img.aafig['options']
+        options = aafig['options']
         _format = app.builder.format
         merge_dict(options, app.builder.config.aafig_default_options)
         if _format in format_map:
