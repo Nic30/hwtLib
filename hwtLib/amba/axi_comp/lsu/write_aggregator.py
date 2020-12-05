@@ -75,20 +75,15 @@ class AxiWriteAggregator(Unit):
 
     def data_insert(self, items: BramPort_withReadMask_withoutClk):
         """
-        * check if this address is already present in CAM
-        * if it is possible to update data in this buffer merge data
-        * else allocate new data (insert to CAM on push_ptr)
-        * handshaked FIFO write logic
+        * check if this address is already present in address CAM or w_in_reg
+        * if it is possible to update data in w_in_reg or in data_ram of this buffer
+        * else allocate new data (insert to address CAM of ooo_fifo) and store data to w_in_reg
+        * if w_in_tmp reg is not beeing updated, forward it to the data_ram to flush it to main memory
 
-        .. aafig::
-
-            +---+  +----------------+  +---------+  +-----------------------------------+
-            | w |->| CAM lookup     |->| tmp reg |->| optional item update              |
-            +---+  | tmp reg lookup |  +---------+  | optional CAM update and item push |
-                   +----------------+               | optional update of tmp reg        |
-                                                    +-----------------------------------+
+        .. figure:: ./_static/AxiWriteAggregator_data_insert.png
 
         :note: we must not let data from tmp reg if next w_in has same address (we have to update tmp reg instead)
+
         """
         w_in = self.w
         w_tmp = self.w_in_reg
