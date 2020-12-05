@@ -40,7 +40,9 @@ class Mi32Builder(AxiBuilder):
 
     @classmethod
     def from_axi(cls, parent, axi, name=None):
-        # convertor AXI/AxiLite -> Mi32
+        """
+        convertor AXI/AxiLite -> Mi32
+        """
         axi_builder = AxiBuilder(parent, axi, name)
         end = axi_builder.end
         u = Axi4Lite_to_Mi32()
@@ -58,7 +60,9 @@ class Mi32Builder(AxiBuilder):
         return mi32_builder
 
     def to_axi(self, axi_cls):
-        # convertor Mi32 -> AXI/AXILite
+        """
+        convertor Mi32 -> AXI/AXILite
+        """
         end = self.end
         if axi_cls is Axi4Lite:
             u = Mi32_to_Axi4Lite()
