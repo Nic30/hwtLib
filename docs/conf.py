@@ -20,14 +20,12 @@
 from datetime import datetime
 import glob
 import os
-import re
 from sphinx.ext.apidoc import main as apidoc_main
 import sphinx_bootstrap_theme
 import sys
 
 from hwt.pyUtils.fileHelpers import find_files
-from hwt.serializer.mode import serializeExclude, serializeParamsUniq,\
-    serializeOnce, _serializeExclude_eval, _serializeParamsUniq_eval,\
+from hwt.serializer.mode import _serializeExclude_eval, _serializeParamsUniq_eval, \
     _serializeOnce_eval
 
 
