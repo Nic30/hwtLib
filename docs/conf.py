@@ -17,26 +17,20 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+from datetime import datetime
 import glob
 import os
 import re
 from sphinx.ext.apidoc import main as apidoc_main
 import sphinx_bootstrap_theme
 import sys
-from datetime import datetime
 
+from hwt.pyUtils.fileHelpers import find_files
 
-try:
-    # normal state, hwt should be installed
-    from hwt.pyUtils.fileHelpers import find_files
-except ImportError:
-    # development state
-    sys.path.insert(0, os.path.abspath('../../hwt'))
-    from hwt.pyUtils.fileHelpers import find_files
 
 # add hwtLib to path
 sys.path.insert(0, os.path.abspath('../'))
-# add local sphinx extensions to path 
+# add local sphinx extensions to path
 sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), "_ext"))
 )
@@ -177,7 +171,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'hwtLib', 'hwtLib Documentation',
-     author, 'hwtLib', 'One line description of project.',
+     author, 'hwtLib', 'The library of hardware components and verification utils for hwt library.',
      'Miscellaneous'),
 ]
 
@@ -210,14 +204,24 @@ aafig_default_options = dict(
     proportional=True,
 )
 
-notskipregex = re.compile("_[^_]+")
-
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "private-members": True,
+    'special-members': True,
+    'show-inheritance': True,
+}
+autodoc_hide_members = (
+    '__weakref__',  # special-members
+    '__doc__', '__module__', '__dict__',  # undoc-members
+)
 
 def skip(app, what, name, obj, skip, options):
-    # do not skip hiden methods
-    if name == "__init__" or notskipregex.match(name):
-        return False
-    return None
+    # do not print the doc for common Unit methods if doc not specified
+    # to reduce amount of duplicated doc
+    if name in ("_config", "_declr", "_impl") and obj.__doc__ is None:
+        return True
+    return skip or (name in autodoc_hide_members)
 
 
 def setup(app):
