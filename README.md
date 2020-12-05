@@ -55,6 +55,7 @@ sudo pip3 install hwtLib
 * [corundum](https://github.com/ucsdsysnet/corundum) - Packet DMA
 * [enjoy-digital repositories](https://github.com/enjoy-digital?tab=repositories) - Migen, SoC level modules
 * [FPGAwars FPGA-peripherals](https://github.com/FPGAwars/FPGA-peripherals) - Verilog, simple peripherals
+* [hdl4fpga](https://github.com/hdl4fpga/hdl4fpga) - Verilog/VHDL various peripherals
 * [leon/grlib](https://www.gaisler.com/index.php/downloads/leongrlib) - Library of SoC components
 * [myhdl-resources](https://github.com/xesscorp/myhdl-resources) - MyHDL list of projects
 * [NyuziProcessor](https://github.com/jbush001/NyuziProcessor) - GPGPU
