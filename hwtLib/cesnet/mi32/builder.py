@@ -1,14 +1,17 @@
+from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axi_comp.builder import AxiBuilder
 from hwtLib.cesnet.mi32.axi4Lite_to_mi32 import Axi4Lite_to_Mi32
+from hwtLib.cesnet.mi32.buff import Mi32Buff
+from hwtLib.cesnet.mi32.intf import Mi32
 from hwtLib.cesnet.mi32.sliding_window import Mi32SlidingWindow
 from hwtLib.cesnet.mi32.to_axi4Lite import Mi32_to_Axi4Lite
-from hwtLib.amba.axi4Lite import Axi4Lite
-from hwtLib.cesnet.mi32.buff import Mi32Buff
 
 
 class _Mi32Buff(Mi32Buff):
     """Mi32Buff constructor which ignores interface in constructor"""
+
     def __init__(self, intfCls):
+        assert intfCls is Mi32
         super(_Mi32Buff, self).__init__()
 
 
