@@ -219,7 +219,7 @@ autodoc_hide_members = (
 def skip(app, what, name, obj, skip, options):
     # do not print the doc for common Unit methods if doc not specified
     # to reduce amount of duplicated doc
-    if name in ("_config", "_declr", "_impl") and obj.__doc__ is None:
+    if name in ("_config", "_declr", "_impl", "_serializeDecision") and obj.__doc__ is None:
         return True
     return skip or (name in autodoc_hide_members)
 
