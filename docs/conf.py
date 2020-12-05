@@ -26,6 +26,9 @@ import sphinx_bootstrap_theme
 import sys
 
 from hwt.pyUtils.fileHelpers import find_files
+from hwt.serializer.mode import serializeExclude, serializeParamsUniq,\
+    serializeOnce, _serializeExclude_eval, _serializeParamsUniq_eval,\
+    _serializeOnce_eval
 
 
 # add hwtLib to path
@@ -217,9 +220,11 @@ autodoc_hide_members = (
 )
 
 def skip(app, what, name, obj, skip, options):
-    # do not print the doc for common Unit methods if doc not specified
+    # do not print the doc for common Unit/Interface methods if doc not specified
     # to reduce amount of duplicated doc
-    if name in ("_config", "_declr", "_impl", "_serializeDecision") and obj.__doc__ is None:
+    if name in ("_config", "_declr", "_impl") and obj.__doc__ is None:
+        return True
+    elif name == "_serializeDecision" and obj in (_serializeExclude_eval, _serializeParamsUniq_eval, _serializeOnce_eval):
         return True
     return skip or (name in autodoc_hide_members)
 
