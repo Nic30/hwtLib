@@ -56,10 +56,11 @@ sudo pip3 install hwtLib
 * [enjoy-digital repositories](https://github.com/enjoy-digital?tab=repositories) - Migen, SoC level modules
 * [FPGAwars FPGA-peripherals](https://github.com/FPGAwars/FPGA-peripherals) - Verilog, simple peripherals
 * [hdl4fpga](https://github.com/hdl4fpga/hdl4fpga) - Verilog/VHDL various peripherals
+* [hdl-util](https://github.com/hdl-util) - SV, various IO
 * [leon/grlib](https://www.gaisler.com/index.php/downloads/leongrlib) - Library of SoC components
 * [myhdl-resources](https://github.com/xesscorp/myhdl-resources) - MyHDL list of projects
 * [NyuziProcessor](https://github.com/jbush001/NyuziProcessor) - GPGPU
-* [opencores](https://opencores.org/)
+* [opencores](https://opencores.org/) - everything
 * [openrisc](https://github.com/openrisc) - OpenRISC, FuseSoC, peripherals and cpu parts
 * [picorv32](https://github.com/cliffordwolf/picorv32) - Verilog, A Size-Optimized RISC-V SoC
 * [PoC](https://github.com/VLSI-EDA/PoC) - VHDL, utils
