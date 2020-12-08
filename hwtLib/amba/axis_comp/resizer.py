@@ -45,8 +45,10 @@ class AxiS_resizer(AxiSCompBase):
 
     :note: first schematic is for upsize mode, second one is for downsize mode
 
-    .. hwt-autodoc:: _example_AxiS_resizer_upscale
-    .. hwt-autodoc:: _example_AxiS_resizer_downscale
+    .. hwt-params: _example_AxiS_resizer_upscale
+    .. hwt-interfaces: _example_AxiS_resizer_upscale
+    .. hwt-schematic:: _example_AxiS_resizer_upscale
+    .. hwt-schematic:: _example_AxiS_resizer_downscale
     """
 
     def _config(self):
