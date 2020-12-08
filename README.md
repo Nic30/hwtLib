@@ -6,7 +6,7 @@
 
 
 hwtLib is the library of hardware components writen using [hwt library](https://github.com/Nic30/hwt).
-Any component can be exported as Xilinx Vivado (IP-exact) or Quartus IPcore using [IpPackager](https://github.com/Nic30/hwtLib/blob/master/hwtLib/examples/simple_ip.py#L26) or as raw Verilog/VHDL/SystemC code and constraints by [to_rtl() function](https://github.com/Nic30/hwtLib/blob/master/hwtLib/examples/showcase0.py#L256). Target language is specified by keyword parameter serializer.
+Any component can be exported as Xilinx Vivado (IP-exact) or Quartus IPcore using [IpPackager](https://github.com/Nic30/hwtLib/blob/master/hwtLib/examples/simple_ip.py#L26) or as raw Verilog/VHDL/SystemC code and constraints by [to_rtl() function](https://github.com/Nic30/hwtLib/blob/master/hwtLib/examples/showcase0.py#L256). Target language is specified by keyword parameter `serializer`.
 
 
 ## Content
