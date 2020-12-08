@@ -18,6 +18,9 @@ Verifications are write in UVM like style and as [hwt](https://github.com/Nic30/
 This is every usefull as it allows us to generate most of the test environment automatically in a user controlled and predictable way and write mostly only a test scenario. For example there is no need to build bus transactions manually as [AddressSpaceProbe](https://github.com/Nic30/hwtLib/blob/master/hwtLib/abstract/discoverAddressSpace.py#L47) can discover the mapped address space (for any interface) and we can set register values using a proxy as if it was a normal value.
 This means that you can write a verification which will have a component with arbitrary bus/address space and it will work as long as you keep the names of the registers the same.
 
+Clock frequencies and target chips usually does not matter but if componet [generates constraints](https://github.com/Nic30/hwtLib/blob/master/hwtLib/handshaked/cdc.py#L154) it surely needs a correct clock period to generate them correctly.
+
+Also note that the code of the components should be shared if `@serializeParamsUniq` is used, the design for largest FPGAs takes 5s to generate. The verification should be also fast (take look at travis build) if this is not the case you are probably dooing something wrong.
 
 * [abstract](https://github.com/Nic30/hwtLib/tree/master/hwtLib/abstract) - abstract classes for component classes like bus endpoint, etc
 * [amba](https://github.com/Nic30/hwtLib/tree/master/hwtLib/amba) - AXI interfaces and components for them (AXI3/4 DMAs, interconnects, Axi-stream components, Axi4Lite address decoders etc...)
@@ -36,6 +39,8 @@ This means that you can write a verification which will have a component with ar
 * [tests](https://github.com/Nic30/hwtLib/tree/master/hwtLib/tests) - tests which are not related to another components
 * [types](https://github.com/Nic30/hwtLib/tree/master/hwtLib/types) - deffinitions of common types (uint32_t, ipv6_t, udp_t, ...)
 * [xilinx](https://github.com/Nic30/hwtLib/tree/master/hwtLib/xilinx) - components, primitives and interfaces specific to Xilinx based designs (IPIF, LocalLink, ...)
+
+If you see any problem/do not underestand something/do miss something open the github issue as others may step uppon same problem sooner or later.
 
 
 ## Installation
