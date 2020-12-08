@@ -11,10 +11,7 @@ Any component can be exported as Xilinx Vivado (IP-exact) or Quartus IPcore usin
 
 ## Content
 
-Majority of components in this library is actually configurable component generator.
-This is something which will greatly confuse you if you are comming from VHDL/Verilog word where using of generate statements have serious limitations, but it has serious advantages.
-
-To give an example of the content of this library a component [AxiLiteEndpoint](https://github.com/Nic30/hwtLib/blob/master/hwtLib/amba/axiLite_comp/endpoint.py#L185), wich is configured using c-like data type description and it generates a address decoders and convertors to other intefaces if requested.
+For example there is a component [AxiLiteEndpoint](https://github.com/Nic30/hwtLib/blob/master/hwtLib/amba/axiLite_comp/endpoint.py#L185), wich is configured using c-like data type description and it generates a address decoders and convertors to other intefaces if requested.
 Another example is [AxiS_frameParser](https://github.com/Nic30/hwtLib/blob/master/hwtLib/amba/axis_comp/frame_parser/_parser.py#L438), which is configured in same way and performs an extraction of the data fields from an input stream. Hwt type system does contains all c-like and SystemVerilog-like types but in addition it allows for better specification of padding and allignment and has an explicit data type for streams. This allows AxiS_frameParser to be easily configured to change alignemnt of the stream, cut/split/replace part of the steam with an easy to read HLS-like description.
 
 Verifications are write in UVM like style and as [hwt](https://github.com/Nic30/hwt) based design are actually a graph we can easily analyse them.
