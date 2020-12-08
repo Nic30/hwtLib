@@ -20,7 +20,7 @@ class HandshakedReg(HandshakedCompBase):
 
     :note: latency and delay can be specified as well as interface class
 
-    .. hwt-schematic:: _example_HandshakedReg
+    .. hwt-autodoc:: _example_HandshakedReg
     """
 
     def _config(self):

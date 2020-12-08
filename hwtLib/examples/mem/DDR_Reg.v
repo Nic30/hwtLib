@@ -1,7 +1,7 @@
 //
 //    Double Data Rate register
 //
-//    .. hwt-schematic::
+//    .. hwt-autodoc::
 //    
 module DDR_Reg (
     input  clk,

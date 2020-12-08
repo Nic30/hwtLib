@@ -9,7 +9,7 @@ from hwt.synthesizer.unit import Unit
 
 class SimpleRom(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         self.addr = VectSignal(2)
@@ -22,7 +22,7 @@ class SimpleRom(Unit):
 
 class SimpleSyncRom(SimpleRom):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         super()._declr()

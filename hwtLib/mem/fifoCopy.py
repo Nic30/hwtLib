@@ -19,7 +19,7 @@ class FifoCopy(Fifo):
     
     :ivar dataOut_copy_frame: if the 
         
-    .. hwt-schematic:: _example_FifoCopy
+    .. hwt-autodoc:: _example_FifoCopy
     """
 
     def _declr(self):

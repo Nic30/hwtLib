@@ -30,7 +30,7 @@ class AxiLite_to_Axi(BusBridge):
     """
     Bridge from AxiLite interface to Axi3/4 interface
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def __init__(self, intfCls=Axi4):

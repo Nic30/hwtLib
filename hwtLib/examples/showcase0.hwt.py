@@ -11,7 +11,7 @@ class Showcase0(Unit):
     """
         Every HW component class has to be derived from Unit class
     
-        .. hwt-schematic::
+        .. hwt-autodoc::
         
     """
     def _declr(self):

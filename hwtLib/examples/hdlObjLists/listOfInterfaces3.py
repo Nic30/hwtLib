@@ -16,7 +16,7 @@ class ListOfInterfacesSample3(Unit):
     Sample unit with HObjList of interfaces (a and b)
     which is not using items of these HObjList of interfacess
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.SIZE = 3
@@ -40,7 +40,7 @@ class ListOfInterfacesSample3b(ListOfInterfacesSample3):
     Sample unit with HObjList of interfaces (a and b)
     which is not using items of these HObjList of interfacess
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _impl(self):
         for i in range(int(self.SIZE)):

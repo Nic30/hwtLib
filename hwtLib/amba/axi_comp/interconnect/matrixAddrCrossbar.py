@@ -32,7 +32,7 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
     :ivar ~.order_m_index_for_s_data_out: handshaked interface with index of master for each slave,
         data is send on start of the transaction
 
-    .. hwt-schematic:: example_AxiInterconnectMatrixAddrCrossbar
+    .. hwt-autodoc:: example_AxiInterconnectMatrixAddrCrossbar
     """
 
     @staticmethod

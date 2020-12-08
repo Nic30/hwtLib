@@ -43,7 +43,7 @@ class Axi_rDatapump(AxiDatapumpBase):
 
     :see: :class:`hwtLib.amba.datapump.base.AxiDatapumpBase`
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _declr(self):

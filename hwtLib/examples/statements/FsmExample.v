@@ -1,5 +1,5 @@
 //
-//    .. hwt-schematic::
+//    .. hwt-autodoc::
 //    
 module FsmExample (
     input  a,

@@ -22,7 +22,7 @@ USE IEEE.numeric_std.ALL;
 --        |     3     |
 --        -------------
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY Segment7 IS
     PORT(

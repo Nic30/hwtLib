@@ -23,7 +23,7 @@ class AxiInterconnectMatrixR(AxiInterconnectCommon):
     :ivar ~.order_s_index_for_m_data: list, FIFOs for each master which keeps the information
         about where master should expect data
 
-    .. hwt-schematic:: example_AxiInterconnectMatrixR
+    .. hwt-autodoc:: example_AxiInterconnectMatrixR
     """
 
     def _declr(self):

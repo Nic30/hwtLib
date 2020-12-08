@@ -24,8 +24,8 @@ class BramPort_withReadMask_withoutClk(BramPort_withoutClk):
 
     :ivar do_accumulate: Signal if 1 the mask bits are or-ed together with the value in stored in ram
     :ivar do_overwrite: Signal if 1 the the data mask in ram is set to current we value
-    :note: :py:obj:`~do_overwrite` has higher priority than `do_accumulate`
-    :note: :py:obj:`~do_accumulate` affect only the bytes in memory
+    :note: :py:obj:`~.do_overwrite` has higher priority than :py:obj:`~.do_accumulate`
+    :note: :py:obj:`~.do_accumulate` affect only the bytes in memory
         where data validity mask is stored.
     :ivar dout_mask: Read port contains this signal which contains
         the cumulative validity mask for the data.
@@ -73,7 +73,7 @@ def is_mask_byte_unaligned(mask_signal: RtlSignal) -> RtlSignal:
             if mask_rem_w:
                 b = b[mask_rem_w:]
         write_mask_not_aligned.append((b != 0) & (b != mask(b._dtype.bit_length())))
-    return Or(*write_mask_not_aligned) 
+    return Or(*write_mask_not_aligned)
 
 
 class RamCumulativeMask(RamSingleClock):
@@ -92,20 +92,24 @@ class RamCumulativeMask(RamSingleClock):
 
     def _declr(self):
         assert self.HAS_BE
-        assert self.PORT_CNT == (WRITE, READ), self.PORT_CNT
+        assert len(self.PORT_CNT) >= 2, "Requres at least 1 WRITE and 1 READ port"
+        assert self.PORT_CNT == (
+            WRITE,
+            *(READ for _ in range(len(self.PORT_CNT) - 1))),\
+            self.PORT_CNT
         addClkRstn(self)
         RamSingleClock._declr_ports(self)
 
         self.MASK_W = self.DATA_WIDTH // 8
         # padding to make mask width % 8 == 0
-        self.MASK_PADDING_W = ceil(self.MASK_W / 8) * 8 - self.MASK_W 
+        self.MASK_PADDING_W = ceil(self.MASK_W / 8) * 8 - self.MASK_W
         with self._paramsShared(exclude=({"DATA_WIDTH"}, {})):
             ram = self.ram = RamSingleClock()
             ram.DATA_WIDTH = self.DATA_WIDTH + self.MASK_PADDING_W + self.MASK_W
 
     def _impl(self):
-        w, r = self.port
-        ram_w, ram_r = self.ram.port
+        w = self.port[0]
+        ram_w = self.ram.port[0]
 
         # True if each byte of the mask is 0xff or 0x00
         we_bytes = list(iterBits(w.we, bitsInOne=8, fillup=True))
@@ -134,18 +138,29 @@ class RamCumulativeMask(RamSingleClock):
         w_mask = w.we
         if self.MASK_PADDING_W:
             w_mask = Concat(vec(0, self.MASK_PADDING_W), w_mask)
-        w_mask = preload._ternary(w_mask | ram_r.dout[self.MASK_PADDING_W + self.MASK_W:], w_mask)
-        w_mask = rename_signal(self, w_mask, "w_mask")
-        ram_w.din(Concat(w.din, w_mask))
 
-        will_preload_for_accumulate = rename_signal(
-            self, w.en.vld & w.do_accumulate & ~w.do_overwrite, "will_preload_for_accumulate")
-        ram_r.addr(will_preload_for_accumulate._ternary(w.addr, r.addr))
-        ram_r.en(will_preload_for_accumulate | r.en.vld)
+        is_first_read_port = True
+        for ram_r, r in zip(self.ram.port[1:], self.port[1:]):
+            if is_first_read_port:
+                w_mask = preload._ternary(w_mask | ram_r.dout[self.MASK_PADDING_W + self.MASK_W:], w_mask)
+                w_mask = rename_signal(self, w_mask, "w_mask")
+                ram_w.din(Concat(w.din, w_mask))
 
-        r.en.rd(~will_preload_for_accumulate | preload)
-        r.dout(ram_r.dout[:self.MASK_PADDING_W + self.MASK_W])
-        r.dout_mask(ram_r.dout[self.MASK_W:])
+                will_preload_for_accumulate = rename_signal(
+                    self, w.en.vld & w.do_accumulate & ~w.do_overwrite, "will_preload_for_accumulate")
+                ram_r.addr(will_preload_for_accumulate._ternary(w.addr, r.addr))
+                ram_r.en(will_preload_for_accumulate | r.en.vld)
+                # [TODO] check if r.en.rd is according to spec
+                r.en.rd(~will_preload_for_accumulate | preload)
+                is_first_read_port = False
+            else:
+                ram_r.addr(r.addr)
+                ram_r.en(r.en.vld)
+                r.en.rd(1)
+
+            r.dout(ram_r.dout[:self.MASK_PADDING_W + self.MASK_W])
+            r.dout_mask(ram_r.dout[self.MASK_W:])
+
         propagateClkRstn(self)
 
 

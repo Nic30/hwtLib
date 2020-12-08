@@ -10,7 +10,7 @@ from hwt.synthesizer.unit import Unit
 
 class SelfRefCntr(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         self.dt = Bits(8, signed=False)

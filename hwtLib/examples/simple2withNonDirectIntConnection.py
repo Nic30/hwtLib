@@ -13,7 +13,7 @@ from hwtLib.amba.axis import AxiStream
 
 class Simple2withNonDirectIntConnection(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

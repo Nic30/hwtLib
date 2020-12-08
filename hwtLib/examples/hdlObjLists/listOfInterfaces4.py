@@ -30,7 +30,7 @@ class ListOfInterfacesSample4(Unit):
     Example with HObjList of interfaces where interfaces are instances of StructIntf
     which is interface dynamically generated from c-like structure description
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     @staticmethod
@@ -88,7 +88,7 @@ class ListOfInterfacesSample4(Unit):
 
 class ListOfInterfacesSample4b(ListOfInterfacesSample4):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     @staticmethod
     def shouldEnterFn(field_path):
@@ -97,7 +97,7 @@ class ListOfInterfacesSample4b(ListOfInterfacesSample4):
 
 class ListOfInterfacesSample4c(ListOfInterfacesSample4b):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _impl(self):
         for a, b in zip(self.a, self.b):
@@ -106,7 +106,7 @@ class ListOfInterfacesSample4c(ListOfInterfacesSample4b):
 
 class ListOfInterfacesSample4d(ListOfInterfacesSample4b):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _impl(self):
         for a, b in zip(self.a, self.b):

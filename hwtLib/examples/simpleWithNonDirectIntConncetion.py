@@ -12,7 +12,7 @@ class SimpleWithNonDirectIntConncetion(Unit):
     Example of fact that interfaces does not have to be only extern
     the can be used even for connection inside unit
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _declr(self):

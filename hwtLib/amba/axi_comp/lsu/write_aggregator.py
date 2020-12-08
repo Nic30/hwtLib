@@ -39,7 +39,7 @@ class AxiWriteAggregator(Unit):
         (used to prevent synthesis problems for tools which can not handle
         too wide memories with byte enable)
 
-    .. hwt-schematic:: _example_AxiWriteAggregator
+    .. hwt-autodoc:: _example_AxiWriteAggregator
     """
 
     def _config(self):

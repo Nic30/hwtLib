@@ -1,7 +1,7 @@
 //
 //    Every HW component class has to be derived from Unit class
 //
-//    .. hwt-schematic::
+//    .. hwt-autodoc::
 //    
 module Showcase0 (
     input  unsigned[31:0] a,

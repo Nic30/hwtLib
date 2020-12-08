@@ -11,7 +11,7 @@ class HsBuilderSplit(Unit):
     """
     Example of HsBuilder.split_* functions
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         addClkRstn(self)

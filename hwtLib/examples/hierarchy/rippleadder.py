@@ -13,7 +13,7 @@ from hwt.synthesizer.unit import Unit
 @serializeParamsUniq
 class FullAdder(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _declr(self):
@@ -35,7 +35,7 @@ class FullAdder(Unit):
 # this means taht it will be serialized as a new module/entity for each instance, but it is not required
 class RippleAdder0(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -104,7 +104,7 @@ class RippleAdder0(Unit):
 @serializeParamsUniq
 class RippleAdder1(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -138,7 +138,7 @@ class RippleAdder1(Unit):
 @serializeParamsUniq
 class RippleAdder2(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -178,7 +178,7 @@ class RippleAdder2(Unit):
 @serializeParamsUniq
 class RippleAdder3(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

@@ -19,7 +19,7 @@ class Mi32InterconnectMatrix(BusInterconnect):
     """
     Simple matrix interconnect for Mi32 interface
 
-    .. hwt-schematic:: _example_Mi32InterconnectMatrix
+    .. hwt-autodoc:: _example_Mi32InterconnectMatrix
     """
 
     def _config(self) -> None:

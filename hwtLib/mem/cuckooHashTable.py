@@ -68,7 +68,7 @@ class CuckooHashTable(HashTableCore):
                     |                                           |
                     +-------------------------------------------+
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def __init__(self):

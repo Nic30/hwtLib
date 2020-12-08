@@ -33,7 +33,7 @@ class MMU_2pageLvl(Unit):
     :attention: use value -1 to mark that page is not mapped, it will result
         in segfault signal asserted high when this address is accessed
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         # width of id signal for bus

@@ -16,7 +16,7 @@ class IpifEndpoint(BusEndpoint):
         in structure template
     :attention: byte enable and register clock enable signals are ignored
 
-    .. hwt-schematic:: _example_IpifEndpoint
+    .. hwt-autodoc:: _example_IpifEndpoint
     """
 
     _getWordAddrStep = Ipif._getWordAddrStep

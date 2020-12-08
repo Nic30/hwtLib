@@ -33,7 +33,7 @@ class Mi32Buff(BusBridge):
     """
     Buffer for Mi32 interface
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

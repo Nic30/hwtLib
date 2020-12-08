@@ -14,7 +14,7 @@ class AxiBuffCdc(AxiBuff):
 
     :note: for DEPTH = 1 CDC register is used, else AsyncFifo
 
-    .. hwt-schematic:: _example_AxiBuffCdc
+    .. hwt-autodoc:: _example_AxiBuffCdc
     """
 
     def _config(self):

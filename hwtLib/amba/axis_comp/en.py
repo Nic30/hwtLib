@@ -16,7 +16,7 @@ class AxiS_en(AxiSCompBase):
     If en signal is 0 current frame is finished
     and next frame is started only when en is 1
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         addClkRstn(self)

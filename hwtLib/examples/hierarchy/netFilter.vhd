@@ -142,7 +142,7 @@ USE IEEE.numeric_std.ALL;
 --
 --    :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY AxiSSplitCopy IS
     GENERIC(
@@ -189,7 +189,7 @@ USE IEEE.numeric_std.ALL;
 --    This unit has actually no functionality it is just example
 --    of hierarchical design.
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY NetFilter IS
     GENERIC(
@@ -234,7 +234,7 @@ ARCHITECTURE rtl OF NetFilter IS
     --
     --    :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
     --
-    --    .. hwt-schematic::
+    --    .. hwt-autodoc::
     --    
     COMPONENT AxiSSplitCopy IS
         GENERIC(

@@ -26,7 +26,7 @@ class HandshakedFifo(HandshakedCompBase):
                  | | | | | |
                  +-+-+-+-+-+
 
-    .. hwt-schematic:: _example_HandshakedFifo
+    .. hwt-autodoc:: _example_HandshakedFifo
     """
     FIFO_CLS = Fifo
     NON_DATA_BITS_CNT = 2 # 2 for control (valid, ready)

@@ -4,7 +4,7 @@ USE IEEE.numeric_std.ALL;
 --
 --    Example which is using switch statement to create multiplexer
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY SwitchStmUnit IS
     PORT(

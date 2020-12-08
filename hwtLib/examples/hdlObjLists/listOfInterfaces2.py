@@ -13,7 +13,7 @@ from hwtLib.amba.axis import AxiStream
 
 class SimpleSubunit(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.DATA_WIDTH = Param(8)
@@ -35,7 +35,7 @@ class ListOfInterfacesSample2(Unit):
     first items of this interfaces are connected to u0
     second to u1
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.DATA_WIDTH = Param(8)

@@ -7,7 +7,7 @@ from hwtLib.logic.crcPoly import CRC_32
 
 class HashTableCoreWithRam(HashTableCore):
     """
-    .. hwt-schematic:: _example_HashTableCoreWithRam
+    .. hwt-autodoc:: _example_HashTableCoreWithRam
     """
 
     def _declr(self):

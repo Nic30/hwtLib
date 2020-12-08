@@ -12,7 +12,7 @@ class AxiStaticRemap(BusStaticRemap):
     :class:`.BusStaticRemap` implementation for AXI3/4 full/lite interfaces
     :note: this component only remaps some memory regions, but it does not perform the address checking
 
-    .. hwt-schematic:: _example_AxiStaticRemap
+    .. hwt-autodoc:: _example_AxiStaticRemap
     """
 
     def __init__(self, intfCls=Axi4):

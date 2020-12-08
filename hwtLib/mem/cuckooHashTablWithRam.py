@@ -12,7 +12,7 @@ class CuckooHashTableWithRam(CuckooHashTable):
     """
     A cuckoo hash table core with integrated memory
     
-    .. hwt-schematic:: _example_CuckooHashTableWithRam
+    .. hwt-autodoc:: _example_CuckooHashTableWithRam
     """
 
     def __init__(self, polynomials):

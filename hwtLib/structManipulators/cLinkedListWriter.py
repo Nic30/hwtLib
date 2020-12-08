@@ -42,7 +42,7 @@ class CLinkedListWriter(Unit):
         wrPtr+1 == rdPtr   => there is (2^PTR_WIDTH) - 2 of empty space
         spaceToWrite = rdPtr - wrPtr - 1 (with uint16_t)
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.ID_WIDTH = Param(4)

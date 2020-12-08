@@ -54,7 +54,7 @@ class HashTableCore(Unit):
         ----------->|           |
                     +-----------+
 
-    .. hwt-schematic:: _example_HashTableCore
+    .. hwt-autodoc:: _example_HashTableCore
     """
 
     def __init__(self, polynome):

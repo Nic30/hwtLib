@@ -7,7 +7,7 @@ from hwt.synthesizer.unit import Unit
 
 class ConstDriverUnit(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         self.out0 = Signal()._m()

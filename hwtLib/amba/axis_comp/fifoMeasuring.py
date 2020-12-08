@@ -22,7 +22,7 @@ class AxiS_fifoMeasuring(Unit):
     Fifo which are counting sizes of frames and sends it over
     dedicated handshaked interface "sizes"
 
-    .. hwt-schematic:: _example_AxiS_fifoMeasuring
+    .. hwt-autodoc:: _example_AxiS_fifoMeasuring
     """
 
     def _config(self):

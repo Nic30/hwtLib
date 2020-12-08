@@ -27,7 +27,7 @@ class GrayCntr(Unit):
     """
     Counter for gray code
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

@@ -16,7 +16,7 @@ class HandshakedStoredBurst(Unit):
     """
     This units send data stored in property DATA over axi-stream interface
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def __init__(self, intfCls=Handshaked):
         self.intfCls = intfCls

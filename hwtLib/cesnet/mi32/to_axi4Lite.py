@@ -19,7 +19,7 @@ class Mi32_to_Axi4Lite(BusBridge):
         (This may require an extra AXI4Lite register to avoid deadlock for components which are waiting
         for end of transaction on other channel r/w)
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

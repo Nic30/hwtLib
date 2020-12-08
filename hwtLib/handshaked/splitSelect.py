@@ -28,7 +28,7 @@ class HsSplitSelect(HandshakedCompBase):
                    +
                  select
 
-    .. hwt-schematic:: _example_HsSplitSelect
+    .. hwt-autodoc:: _example_HsSplitSelect
     """
     def _config(self):
         self.OUTPUTS = Param(3)

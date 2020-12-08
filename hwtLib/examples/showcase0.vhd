@@ -4,7 +4,7 @@ USE IEEE.numeric_std.ALL;
 --
 --    Every HW component class has to be derived from Unit class
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY Showcase0 IS
     PORT(

@@ -21,7 +21,7 @@ class AxiSFifoDrop(AxiSCompBase, HandshakedFifoDrop):
 
     :see: :class:`hwtLib.handshaked.fifo_drop.HandshakedFifoDrop`
 
-    .. hwt-schematic:: _example_AxiSFifoDrop
+    .. hwt-autodoc:: _example_AxiSFifoDrop
     """
     def _declr(self):
         HandshakedFifo._declr(self)

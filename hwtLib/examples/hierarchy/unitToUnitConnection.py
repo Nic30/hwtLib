@@ -12,7 +12,7 @@ from hwtLib.examples.simple2withNonDirectIntConnection import Simple2withNonDire
 
 class UnitToUnitConnection(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.DATA_WIDTH = Param(8)

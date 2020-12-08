@@ -35,7 +35,7 @@ class PingResponder(Unit):
     :attention: you have to ping "ping -s 0 <ip>" because unit ignores
         additional data in packet and linux by defaults adds it
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

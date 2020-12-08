@@ -7,7 +7,7 @@ USE IEEE.numeric_std.ALL;
 --    :attention: using this unit is pointless because HWToolkit can automatically
 --        generate such a register for any interface and datatype
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY DReg IS
     PORT(

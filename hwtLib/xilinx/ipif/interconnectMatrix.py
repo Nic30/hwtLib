@@ -14,7 +14,7 @@ class IpifInterconnectMatrix(BusInterconnect):
     """
     Simple matrix interconnect for IPIF interface
 
-    .. hwt-schematic:: _example_IpifInterconnectMatrix
+    .. hwt-autodoc:: _example_IpifInterconnectMatrix
     """
 
     def _config(self) -> None:

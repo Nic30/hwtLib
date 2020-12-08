@@ -12,7 +12,7 @@ from hwt.synthesizer.unit import Unit
 
 class SimpleSubunit(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -34,7 +34,7 @@ class ListOfInterfacesSample1(Unit):
     first items of this interfaces are connected to u0
     second to u1
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

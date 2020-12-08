@@ -1,5 +1,5 @@
 //
-//    .. hwt-schematic::
+//    .. hwt-autodoc::
 //    
 module AsyncResetReg (
     input  clk,

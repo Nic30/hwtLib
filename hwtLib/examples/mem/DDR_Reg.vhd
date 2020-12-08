@@ -4,7 +4,7 @@ USE IEEE.numeric_std.ALL;
 --
 --    Double Data Rate register
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY DDR_Reg IS
     PORT(

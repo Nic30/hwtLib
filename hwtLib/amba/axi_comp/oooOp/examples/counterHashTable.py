@@ -18,7 +18,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
     The operation may finish out of order but the data on "dataOut" and in the memory
     will be correct. The same applays for the swap operations (all operations).
 
-    .. hwt-schematic:: _example_OooOpExampleCounterHashTable
+    .. hwt-autodoc:: _example_OooOpExampleCounterHashTable
     """
 
     class OPERATION():

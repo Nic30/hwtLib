@@ -29,7 +29,7 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
     :note: s[x] port should be connected to a AXI master,
            m[x] port should be connected to outside AXI slave
 
-    .. hwt-schematic:: example_AxiInterconnectMatrix
+    .. hwt-autodoc:: example_AxiInterconnectMatrix
     """
 
     def configure_sub_interconnect(self,

@@ -23,7 +23,7 @@ class FlipRegister(Unit):
 
     Then select is set and access is flipped. Reader now has access to reg 0 and writer to reg 1.
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

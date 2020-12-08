@@ -19,7 +19,7 @@ class FlipCntr(Unit):
     interface doFilip drives switching of memories in flip register
     dataIn has higher priority than doIncr
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

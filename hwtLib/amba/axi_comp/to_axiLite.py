@@ -36,7 +36,7 @@ class Axi_to_AxiLite(BusBridge):
     :ivar ~.MAX_TRANS_OVERLAP: depth of internal FIFO which is used to allow the transactions
         to overlap each other in order to pipeline the execution of transactions
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def __init__(self, intfCLs=Axi4):

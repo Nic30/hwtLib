@@ -12,7 +12,7 @@ class SimpleUnitWithParam(Unit):
     """
     Simple parametrized unit.
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         # declaration of parameter DATA_WIDTH with default value 8

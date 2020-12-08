@@ -18,7 +18,7 @@ class SimpleAxiRegs(Unit):
     0x0 - reg0
     0x4 - reg1
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.ADDR_WIDTH = Param(8)

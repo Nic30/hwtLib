@@ -14,7 +14,7 @@ from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 
 class ArrayIntfExample(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _declr(self):
@@ -28,7 +28,7 @@ class ArrayIntfExample(Unit):
 
 class UnitWithParams(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

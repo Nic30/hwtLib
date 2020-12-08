@@ -20,7 +20,7 @@ class HsJoinFairShare(HsJoinPrioritized):
 
     :note: combinational
 
-    .. hwt-schematic: _example_HsJoinFairShare
+    .. hwt-autodoc: _example_HsJoinFairShare
     """
 
     def _config(self):

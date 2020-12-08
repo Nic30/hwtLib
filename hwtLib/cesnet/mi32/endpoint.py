@@ -15,7 +15,7 @@ class Mi32Endpoint(BusEndpoint):
         in structure template
     :attention: byte enable and register clock enable signals are ignored
 
-    .. hwt-schematic:: _example_Mi32Endpoint
+    .. hwt-autodoc:: _example_Mi32Endpoint
     """
 
     _getWordAddrStep = Mi32._getWordAddrStep

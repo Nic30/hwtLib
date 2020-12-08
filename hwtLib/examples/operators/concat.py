@@ -8,7 +8,7 @@ from hwt.synthesizer.unit import Unit
 
 class SimpleConcat(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         self.a0 = Signal()

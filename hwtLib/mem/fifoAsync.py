@@ -19,7 +19,7 @@ class FifoAsync(Fifo):
     * https://github.com/ZipCPU/website/blob/master/examples/afifo.v
     * https://github.com/alexforencich/verilog-axis/blob/master/rtl/axis_async_fifo.v
 
-    .. hwt-schematic:: _example_FifoAsync
+    .. hwt-autodoc:: _example_FifoAsync
     """
     def _config(self):
         Fifo._config(self)

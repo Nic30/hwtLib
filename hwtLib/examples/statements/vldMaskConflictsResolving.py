@@ -11,7 +11,7 @@ class VldMaskConflictsResolving(Unit):
     Example how invalid value of condition does not matter
     if it has no effect on result
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         self.a = Signal()

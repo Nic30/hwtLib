@@ -34,7 +34,7 @@ class EthAddrUpdater(Unit):
     from ethernet frame stored in memory and writes this addresses
     in reverse direction into second frame.
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         Axi3._config(self)

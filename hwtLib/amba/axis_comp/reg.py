@@ -12,7 +12,7 @@ class AxiSReg(AxiSCompBase, HandshakedReg):
     :see: :class:`hwtLib.handshaked.reg.HandshakedReg`
     :note: interface is configurable and schematic is example with AxiStream
 
-    .. hwt-schematic:: _example_AxiSReg
+    .. hwt-autodoc:: _example_AxiSReg
     """
     pass
 

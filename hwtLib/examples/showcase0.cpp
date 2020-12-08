@@ -3,7 +3,7 @@
 //
 //    Every HW component class has to be derived from Unit class
 //
-//    .. hwt-schematic::
+//    .. hwt-autodoc::
 //    
 SC_MODULE(Showcase0) {
     // ports

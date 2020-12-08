@@ -3,7 +3,7 @@
 //
 //    Example which is using switch statement to create multiplexer
 //
-//    .. hwt-schematic::
+//    .. hwt-autodoc::
 //    
 SC_MODULE(SwitchStmUnit) {
     // ports

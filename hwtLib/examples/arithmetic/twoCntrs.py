@@ -10,7 +10,7 @@ from hwt.hdl.types.bits import Bits
 
 class TwoCntrs(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         addClkRstn(self)

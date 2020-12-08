@@ -17,7 +17,7 @@ class AxiResize(BusBridge):
     """
     Change DATA_WIDTH of axi interface
 
-    .. hwt-schematic:: _example_AxiResize
+    .. hwt-autodoc:: _example_AxiResize
     """
 
     def __init__(self, intfCls):

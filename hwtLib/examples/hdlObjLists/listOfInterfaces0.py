@@ -16,7 +16,7 @@ class ListOfInterfacesSample0(Unit):
     which is not using items of these HObjList of interfacess
     and connects list directly to another list
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -41,7 +41,7 @@ class ListOfInterfacesSample0SliceOnly(Unit):
     Sample unit with HObjList of interfaces a and three of output interfaces b
     each interface is connected manually
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -67,7 +67,7 @@ class ListOfInterfacesSample0ConcatOnly(Unit):
     Same thing as :class:`.ListOfInterfacesSample0SliceOnly`
     but direction of interfaces is oposite
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.DATA_WIDTH = Param(8)

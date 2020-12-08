@@ -27,7 +27,7 @@ class BinToOneHot(Unit):
     """
     Little endian encoded number to number in one-hot encoding
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

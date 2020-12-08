@@ -17,7 +17,7 @@ class ArrayItemGetter(Unit):
     """
     Get specific item from array by index
     
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.ITEMS = Param(32)

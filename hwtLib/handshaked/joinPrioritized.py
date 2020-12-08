@@ -14,7 +14,7 @@ class HsJoinPrioritized(HandshakedCompBase):
 
     :note: combinational
 
-    .. hwt-schematic:: _example_HsJoinPrioritized
+    .. hwt-autodoc:: _example_HsJoinPrioritized
     """
 
     def _config(self):

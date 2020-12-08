@@ -17,7 +17,7 @@ from hwtLib.clocking.vldSynced_cdc import VldSyncedCdc
 @serializeParamsUniq
 class HandshakeFSM(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _declr(self):
@@ -44,7 +44,7 @@ class HandshakedCdc(HandshakedCompBase):
     :note: This component uses syncrhorization by pulse CDCs which means it's throughput is significantly limited
         (eta slowest clk / 3)
 
-    .. hwt-schematic:: example_HandshakedCdc
+    .. hwt-autodoc:: example_HandshakedCdc
     """
     def _config(self):
         HandshakedCompBase._config(self)

@@ -32,7 +32,7 @@ class PidController(Unit):
 
     :note: You can obtain coeficiet f.e. by Ziegler-Nichols method.
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

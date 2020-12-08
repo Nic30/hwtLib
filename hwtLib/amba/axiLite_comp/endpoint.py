@@ -19,7 +19,7 @@ class AxiLiteEndpoint(BusEndpoint):
     Delegate request from AxiLite interface to fields of structure
     write has higher priority.
 
-    .. hwt-schematic:: _example_AxiLiteEndpoint
+    .. hwt-autodoc:: _example_AxiLiteEndpoint
     """
     _getWordAddrStep = Axi4Lite._getWordAddrStep
     _getAddrStep = Axi4Lite._getAddrStep

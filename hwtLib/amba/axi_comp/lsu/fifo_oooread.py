@@ -27,7 +27,7 @@ class FifoOutOfOrderRead(Unit):
     * read_execute: the item is locked for updates and is currently being read
     * read_confirm: the item is entirely readed and it is ready to be deallocated
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -125,7 +125,7 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
     * read_confirm: the item is entirely readed and it is ready to be deallocated
 
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         super(FifoOutOfOrderReadFiltered, self)._config()

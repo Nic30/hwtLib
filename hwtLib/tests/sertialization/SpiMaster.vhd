@@ -4,7 +4,7 @@ USE IEEE.numeric_std.ALL;
 --
 --    Little endian encoded number to number in one-hot encoding
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY BinToOneHot IS
     GENERIC(
@@ -37,7 +37,7 @@ USE IEEE.numeric_std.ALL;
 --        and SPI clk is kept high in idle
 --        (most of them does but there are some exceptions)
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY SpiMaster IS
     GENERIC(
@@ -68,7 +68,7 @@ ARCHITECTURE rtl OF SpiMaster IS
     --
     --    Little endian encoded number to number in one-hot encoding
     --
-    --    .. hwt-schematic::
+    --    .. hwt-autodoc::
     --    
     COMPONENT BinToOneHot IS
         GENERIC(

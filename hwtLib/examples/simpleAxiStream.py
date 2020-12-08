@@ -10,7 +10,7 @@ class SimpleUnitAxiStream(Unit):
     """
     Example of unit with axi stream interface
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.DATA_WIDTH = Param(8)

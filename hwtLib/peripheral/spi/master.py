@@ -63,7 +63,7 @@ class SpiMaster(Unit):
         and SPI clk is kept high in idle
         (most of them does but there are some exceptions)
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.SPI_FREQ_PESCALER = Param(32)

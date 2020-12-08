@@ -18,7 +18,7 @@ class HsFifoAsync(HandshakedFifo):
     :note: same functionality as :class:`hwtLib.handshaked.fifo.HandshakedFifo`
         except it has separated clock for input/output
 
-    .. hwt-schematic:: _example_HsFifoAsync
+    .. hwt-autodoc:: _example_HsFifoAsync
     """
     def _config(self):
         HandshakedFifo._config(self)

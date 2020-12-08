@@ -15,7 +15,7 @@ class BramPortEndpoint(BusEndpoint):
     :attention: Interfaces are dynamically generated from names
         of fields in structure template.
 
-    .. hwt-schematic:: _example_BramPortEndpoint
+    .. hwt-autodoc:: _example_BramPortEndpoint
     """
     _getWordAddrStep = BramPort_withoutClk._getWordAddrStep
     _getAddrStep = BramPort_withoutClk._getAddrStep

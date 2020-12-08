@@ -28,7 +28,7 @@ class HsSplitCopy(HandshakedCompBase):
                               +------> clone2  |
                                      +---------+
     
-    .. hwt-schematic:: _example_HsSplitCopy
+    .. hwt-autodoc:: _example_HsSplitCopy
     
     """
     def _config(self):

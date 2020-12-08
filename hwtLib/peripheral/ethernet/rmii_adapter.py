@@ -32,7 +32,7 @@ class RmiiAdapter(Unit):
         between eth.ref_clk clock domain and clk domain
         (if set to None the clock domain has to be the same)
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

@@ -27,7 +27,7 @@ class AxiTester(Unit):
     Allows to read and specify values of controls signals like cache/lock/burst
     etc...
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def __init__(self, axiCls=Axi4, cntrlCls=Axi4Lite):

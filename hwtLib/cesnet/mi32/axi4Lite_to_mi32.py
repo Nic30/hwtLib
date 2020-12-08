@@ -15,7 +15,7 @@ class Axi4Lite_to_Mi32(BusBridge):
     """
     Bridge from AxiLite interface to MI32 interface
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self) -> None:

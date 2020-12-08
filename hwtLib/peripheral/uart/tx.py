@@ -17,7 +17,7 @@ class UartTx(Unit):
     """
     UART Tx channel controller
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.FREQ = Param(int(100e6))

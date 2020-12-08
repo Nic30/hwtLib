@@ -47,7 +47,7 @@ class CountLeadingZeros(_CountLeading):
     """
     Count leading zeros in bit vector
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _impl(self):
@@ -58,7 +58,7 @@ class CountLeadingOnes(_CountLeading):
     """
     Count leading zeros in bit vector
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _impl(self):

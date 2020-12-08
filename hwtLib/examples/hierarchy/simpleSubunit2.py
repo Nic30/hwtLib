@@ -12,7 +12,7 @@ from hwtLib.examples.simpleAxiStream import SimpleUnitAxiStream
 
 class SimpleSubunit2(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self) -> None:

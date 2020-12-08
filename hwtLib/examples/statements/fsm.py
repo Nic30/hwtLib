@@ -11,7 +11,7 @@ from hwt.synthesizer.unit import Unit
 
 class FsmExample(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         addClkRstn(self)
@@ -52,7 +52,7 @@ class FsmExample(Unit):
 
 class HadrcodedFsmExample(FsmExample):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _impl(self):
         a = self.a

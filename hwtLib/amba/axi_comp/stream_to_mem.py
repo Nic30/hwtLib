@@ -44,7 +44,7 @@ class Axi4streamToMem(Unit):
 
     or unit is enabled and driver disables it only for the time of reading.
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.ADDR_WIDTH = Param(32)

@@ -72,7 +72,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
     :ivar ~.dataIn: the AxiStream interface for input frame
     :ivar ~.dataOut: output field interface generated from input type description
 
-    .. hwt-schematic:: _example_AxiS_frameParser
+    .. hwt-autodoc:: _example_AxiS_frameParser
     """
 
     def __init__(self, structT: HdlType,

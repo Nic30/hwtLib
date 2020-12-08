@@ -13,7 +13,7 @@ class AxiBuff(BusBridge):
     """
     Transaction buffer for AXI3/4/Lite and others
 
-    .. hwt-schematic:: _example_AxiBuff
+    .. hwt-autodoc:: _example_AxiBuff
     """
 
     def __init__(self, intfCls):

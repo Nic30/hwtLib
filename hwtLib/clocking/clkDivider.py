@@ -16,7 +16,7 @@ class ClkDiv3(Unit):
         inside fpga you should use clocking primitives
         (http://www.xilinx.com/support/documentation/ip_documentation/clk_wiz/v5_1/pg065-clk-wiz.pdf)
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         addClkRstn(self)

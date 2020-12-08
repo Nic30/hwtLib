@@ -92,7 +92,7 @@ class I2cMasterBitCtrl(Unit):
      Tbuf         4.7us          1.3us   Bus free time between a stop and start condition
     ============ ============== =============================================================
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.CLK_CNTR_WIDTH = Param(16)

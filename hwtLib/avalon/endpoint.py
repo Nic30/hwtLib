@@ -17,7 +17,7 @@ class AvalonMmEndpoint(BusEndpoint):
     :attention: byte enable and register clock enable signals
         are ignored
 
-    .. hwt-schematic:: _example_AvalonMmEndpoint
+    .. hwt-autodoc:: _example_AvalonMmEndpoint
     """
 
     _getWordAddrStep = AvalonMM._getWordAddrStep

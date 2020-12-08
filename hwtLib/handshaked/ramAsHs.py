@@ -79,7 +79,7 @@ class RamAsHs(Unit):
     """
     Converter from ram port to handshaked interfaces
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

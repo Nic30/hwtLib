@@ -26,7 +26,7 @@ class Cam(Unit):
     :ivar MATCH_PORT_CNT: number of CAM ports for matching, if None there is only as single port
         otherwise there is an array of such a ports of specified size
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

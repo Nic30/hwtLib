@@ -33,7 +33,7 @@ class ArrayBuff_writer(Unit):
 
     items -> buff -> internal logic -> axi datapump
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

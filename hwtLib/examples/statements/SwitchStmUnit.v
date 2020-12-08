@@ -1,7 +1,7 @@
 //
 //    Example which is using switch statement to create multiplexer
 //
-//    .. hwt-schematic::
+//    .. hwt-autodoc::
 //    
 module SwitchStmUnit (
     input  a,

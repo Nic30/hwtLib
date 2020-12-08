@@ -12,7 +12,7 @@ from hwtLib.examples.simpleAxiStream import SimpleUnitAxiStream
 
 class SimpleSubunit3(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.DATA_WIDTH = Param(128)

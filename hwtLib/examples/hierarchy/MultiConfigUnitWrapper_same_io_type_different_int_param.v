@@ -1,7 +1,7 @@
 //
 //    Simple parametrized unit.
 //
-//    .. hwt-schematic::
+//    .. hwt-autodoc::
 //    
 module SimpleUnitWithParam_0 #(
     parameter DATA_WIDTH = 2
@@ -14,7 +14,7 @@ endmodule
 //
 //    Simple parametrized unit.
 //
-//    .. hwt-schematic::
+//    .. hwt-autodoc::
 //    
 module SimpleUnitWithParam_1 #(
     parameter DATA_WIDTH = 3
@@ -27,7 +27,7 @@ endmodule
 //
 //    Simple parametrized unit.
 //
-//    .. hwt-schematic::
+//    .. hwt-autodoc::
 //    
 module SimpleUnitWithParam #(
     parameter DATA_WIDTH = 2

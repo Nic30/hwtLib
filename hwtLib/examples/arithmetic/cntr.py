@@ -11,7 +11,7 @@ from hwt.synthesizer.unit import Unit
 
 class Cntr(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.DATA_WIDTH = Param(2)

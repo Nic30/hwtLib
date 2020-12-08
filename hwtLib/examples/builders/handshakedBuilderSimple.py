@@ -14,7 +14,7 @@ class HandshakedBuilderSimple(Unit):
     Simple example of HsBuilder which can build components
     for Handshaked interfaces
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         # declare interfaces

@@ -11,7 +11,7 @@ from hwt.synthesizer.param import Param
 
 class StaticForLoopCntrl(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.ITERATIONS = Param(15)

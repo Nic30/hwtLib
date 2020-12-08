@@ -15,7 +15,7 @@ class WidthCastingExample(Unit):
     """
     Demonstration of how HWT width conversions are serialized into HDL
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         addClkRstn(self)

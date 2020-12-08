@@ -20,7 +20,7 @@ class DReg(Unit):
     :attention: using this unit is pointless because HWToolkit can automatically
         generate such a register for any interface and datatype
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         addClkRst(self)
@@ -40,7 +40,7 @@ class DoubleDReg(Unit):
     :attention: using DReg unit instance is pointless because it can be instantiated
         by _reg in this unit
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         DReg._declr(self)
@@ -58,7 +58,7 @@ class DoubleDReg(Unit):
 
 class AsyncResetReg(DReg):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _impl(self):
         internReg = self._sig("internReg", BIT, def_val=False)
@@ -75,7 +75,7 @@ class DDR_Reg(Unit):
     """
     Double Data Rate register
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         addClkRst(self)
@@ -99,7 +99,7 @@ class DDR_Reg(Unit):
 
 class OptimizedOutReg(DReg):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _impl(self):
         # add and conect register as it is in DReg
@@ -122,7 +122,7 @@ class RegWhereNextIsOnlyOutput(DReg):
 
 class Latch(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         self.din = Signal()
@@ -139,7 +139,7 @@ class Latch(Unit):
 
 class DReg_asyncRst(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         DReg._declr(self)

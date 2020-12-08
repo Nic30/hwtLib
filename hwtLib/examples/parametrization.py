@@ -11,7 +11,7 @@ from hwt.hdl.types.defs import INT
 
 class ParametrizationExample(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.PARAM_0 = Param(0)

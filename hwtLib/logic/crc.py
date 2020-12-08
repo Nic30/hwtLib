@@ -30,7 +30,7 @@ class Crc(Unit):
 
     :note: See :class:`hwtLib.logic.crcComb.CrcComb`
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

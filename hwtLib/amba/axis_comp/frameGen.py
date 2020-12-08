@@ -17,7 +17,7 @@ class AxisFrameGen(Unit):
     """
     Generator of axi stream frames for testing purposes
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.MAX_LEN = Param(511)

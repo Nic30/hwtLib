@@ -13,7 +13,7 @@ class AxiSCdc(AxiSCompBase, HandshakedCdc):
 
     :see: :class:`hwtLib.handshaked.cdc.HandshakedCdc`
 
-    .. hwt-schematic:: example_AxiSCdc
+    .. hwt-autodoc:: example_AxiSCdc
     """
 
 

@@ -19,7 +19,7 @@ class Lsfr(Unit):
     Linear shift feedback register generator,
     form of hardware pseudorandom generator.
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

@@ -107,7 +107,7 @@ endmodule
 //
 //    :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
 //
-//    .. hwt-schematic::
+//    .. hwt-autodoc::
 //    
 module AxiSSplitCopy #(
     parameter DATA_WIDTH = 64,
@@ -154,7 +154,7 @@ endmodule
 //    This unit has actually no functionality it is just example
 //    of hierarchical design.
 //
-//    .. hwt-schematic::
+//    .. hwt-autodoc::
 //    
 module NetFilter #(
     parameter DATA_WIDTH = 64

@@ -16,7 +16,7 @@ class AxiSStoredBurst(Unit):
     """
     This units send data stored in property DATA over axi-stream interface
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         AxiStream._config(self)

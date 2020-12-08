@@ -18,7 +18,7 @@ class OneHotToBin(Unit):
     """
     Converts one hot signal to binary, bin.vld is high when oneHot != 0
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

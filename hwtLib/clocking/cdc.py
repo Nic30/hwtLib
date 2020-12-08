@@ -107,7 +107,7 @@ class Cdc(Unit):
     :ivar ~.OUT_FREQ: frequency of clock signal for output data [Hz]
     :ivar ~.OUT_REG_CNT: number of registers for synchronization in dataOut clock domain
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.DATA_WIDTH = Param(1)
@@ -155,7 +155,7 @@ class CdcPulseGen(Cdc):
     else:
         inData_clk.FREQ >= 1.5*outData_clk.FREQ
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         Cdc._config(self)

@@ -4,7 +4,7 @@ USE IEEE.numeric_std.ALL;
 --
 --    Simple parametrized unit.
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY SimpleUnitWithParam_0 IS
     GENERIC(
@@ -26,7 +26,7 @@ USE IEEE.numeric_std.ALL;
 --
 --    Simple parametrized unit.
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY SimpleUnitWithParam_1 IS
     GENERIC(
@@ -48,7 +48,7 @@ USE IEEE.numeric_std.ALL;
 --
 --    Simple parametrized unit.
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY SimpleUnitWithParam_2 IS
     GENERIC(
@@ -70,7 +70,7 @@ USE IEEE.numeric_std.ALL;
 --
 --    Simple parametrized unit.
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY SimpleUnitWithParam IS
     GENERIC(
@@ -86,7 +86,7 @@ ARCHITECTURE rtl OF SimpleUnitWithParam IS
     --
     --    Simple parametrized unit.
     --
-    --    .. hwt-schematic::
+    --    .. hwt-autodoc::
     --    
     COMPONENT SimpleUnitWithParam_0 IS
         GENERIC(
@@ -100,7 +100,7 @@ ARCHITECTURE rtl OF SimpleUnitWithParam IS
     --
     --    Simple parametrized unit.
     --
-    --    .. hwt-schematic::
+    --    .. hwt-autodoc::
     --    
     COMPONENT SimpleUnitWithParam_1 IS
         GENERIC(
@@ -114,7 +114,7 @@ ARCHITECTURE rtl OF SimpleUnitWithParam IS
     --
     --    Simple parametrized unit.
     --
-    --    .. hwt-schematic::
+    --    .. hwt-autodoc::
     --    
     COMPONENT SimpleUnitWithParam_2 IS
         GENERIC(

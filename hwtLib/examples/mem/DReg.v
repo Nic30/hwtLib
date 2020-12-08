@@ -4,7 +4,7 @@
 //    :attention: using this unit is pointless because HWToolkit can automatically
 //        generate such a register for any interface and datatype
 //
-//    .. hwt-schematic::
+//    .. hwt-autodoc::
 //    
 module DReg (
     input  clk,

@@ -2,7 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY UnitWithParams_0 IS
     GENERIC(
@@ -25,7 +25,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY UnitWithParams IS
     PORT(
@@ -38,7 +38,7 @@ END ENTITY;
 
 ARCHITECTURE rtl OF UnitWithParams IS
     --
-    --    .. hwt-schematic::
+    --    .. hwt-autodoc::
     --    
     COMPONENT UnitWithParams_0 IS
         GENERIC(

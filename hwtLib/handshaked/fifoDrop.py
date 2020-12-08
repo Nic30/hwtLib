@@ -12,7 +12,7 @@ class HandshakedFifoDrop(HandshakedFifo):
     :see: :class:`hwtLib.handshaked.fifo.HandshakedFifo`
         and :class:`hwtLib.mem.fifoDrop.FifoDrop`
 
-    .. hwt-schematic:: _example_HandshakedFifoDrop
+    .. hwt-autodoc:: _example_HandshakedFifoDrop
     """
     FIFO_CLS = FifoDrop
 

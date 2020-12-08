@@ -14,7 +14,7 @@ class BitonicSorter(Unit):
     """
     Bitonic sorter of arbitrary data
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def __init__(self, cmpFn=lambda x, y: x < y):
         """

@@ -22,7 +22,7 @@ class FlipRam(Unit):
 
     Then select is set and access is flipped. Reader now has access to RAM 0 and writer to RAM 1.
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

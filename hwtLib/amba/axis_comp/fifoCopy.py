@@ -65,7 +65,7 @@ class AxiSFifoCopy(AxiSCompBase, HandshakedFifo):
 
     :see: :class:`hwtLib.handshaked.fifo_drop.HandshakedFifoDrop`
 
-    .. hwt-schematic:: _example_AxiSFifoCopy
+    .. hwt-autodoc:: _example_AxiSFifoCopy
     """
     FIFO_CLS = FifoCopy
 

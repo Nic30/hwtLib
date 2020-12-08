@@ -7,7 +7,7 @@ USE IEEE.numeric_std.ALL;
 --
 --    :note: write-first variant 
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY RamMultiClock IS
     GENERIC(
@@ -60,7 +60,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY GroupOfBlockrams IS
     GENERIC(
@@ -90,7 +90,7 @@ ARCHITECTURE rtl OF GroupOfBlockrams IS
     --
     --    :note: write-first variant 
     --
-    --    .. hwt-schematic::
+    --    .. hwt-autodoc::
     --    
     COMPONENT RamMultiClock IS
         GENERIC(

@@ -12,7 +12,7 @@ from hwtLib.clocking.clkBuilder import ClkBuilder
 
 class TimerInfoTest(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         addClkRstn(self)
@@ -45,7 +45,7 @@ class TimerInfoTest(Unit):
 
 class TimerTestUnit(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _declr(self):
@@ -73,7 +73,7 @@ class TimerTestUnit(Unit):
 
 class DynamicCounterInstancesExample(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         addClkRstn(self)

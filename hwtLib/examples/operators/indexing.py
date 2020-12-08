@@ -9,7 +9,7 @@ from hwt.interfaces.utils import addClkRstn
 
 class SimpleIndexingSplit(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _declr(self):
@@ -24,7 +24,7 @@ class SimpleIndexingSplit(Unit):
 
 class SimpleIndexingJoin(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _declr(self):
@@ -39,7 +39,7 @@ class SimpleIndexingJoin(Unit):
 
 class SimpleIndexingRangeJoin(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _declr(self):
@@ -55,7 +55,7 @@ class SimpleIndexingRangeJoin(Unit):
 
 class IndexingInernRangeSplit(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _declr(self):
@@ -75,7 +75,7 @@ class IndexingInernRangeSplit(Unit):
 
 class IndexingInernSplit(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _declr(self):
@@ -95,7 +95,7 @@ class IndexingInernSplit(Unit):
 
 class IndexingInernJoin(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _declr(self):
@@ -116,7 +116,7 @@ class IndexingInernJoin(Unit):
 
 class AssignmentToRegIndex(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _declr(self):

@@ -12,7 +12,7 @@ class OooOpExampleCounterArray(OutOfOrderCummulativeOp):
     The operation may finish out of order but the data on "dataOut" and in the memory
     will be correct.
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

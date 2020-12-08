@@ -2,7 +2,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY FullAdder IS
     PORT(
@@ -23,7 +23,7 @@ LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
 --
---    .. hwt-schematic::
+--    .. hwt-autodoc::
 --    
 ENTITY RippleAdder0 IS
     GENERIC(
@@ -40,7 +40,7 @@ END ENTITY;
 
 ARCHITECTURE rtl OF RippleAdder0 IS
     --
-    --    .. hwt-schematic::
+    --    .. hwt-autodoc::
     --    
     COMPONENT FullAdder IS
         PORT(

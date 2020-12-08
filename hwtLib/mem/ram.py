@@ -30,7 +30,7 @@ class RamSingleClock(Unit):
         to specify rw access for each port separately
     :ivar HAS_BE: Param, if True the write ports will have byte enable signal
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     PORT_CLS = BramPort_withoutClk
 
@@ -179,7 +179,7 @@ class RamMultiClock(Unit):
 
     :note: write-first variant 
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     PORT_CLS = BramPort
 

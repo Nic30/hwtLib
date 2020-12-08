@@ -253,7 +253,7 @@ SC_MODULE(Exporter) {
 //
 //    :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
 //
-//    .. hwt-schematic::
+//    .. hwt-autodoc::
 //    
 SC_MODULE(AxiSSplitCopy) {
     // ports
@@ -323,7 +323,7 @@ SC_MODULE(AxiSSplitCopy) {
 //    This unit has actually no functionality it is just example
 //    of hierarchical design.
 //
-//    .. hwt-schematic::
+//    .. hwt-autodoc::
 //    
 SC_MODULE(NetFilter) {
     // ports

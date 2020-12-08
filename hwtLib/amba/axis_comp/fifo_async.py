@@ -13,7 +13,7 @@ class AxiSFifoAsync(AxiSCompBase, HsFifoAsync):
 
     :see: :class:`hwtLib.handshaked.fifo.HsFifoAsync`
 
-    .. hwt-schematic:: _example_AxiSFifoAsync
+    .. hwt-autodoc:: _example_AxiSFifoAsync
     """
 
 

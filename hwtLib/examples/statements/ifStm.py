@@ -10,7 +10,7 @@ from hwt.synthesizer.unit import Unit
 
 class SimpleIfStatement(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         self.a = Signal()
@@ -30,7 +30,7 @@ class SimpleIfStatement(Unit):
 
 class SimpleIfStatement2(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         addClkRstn(self)
@@ -54,7 +54,7 @@ class SimpleIfStatement2(Unit):
 
 class SimpleIfStatement2b(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         addClkRstn(self)
@@ -78,7 +78,7 @@ class SimpleIfStatement2b(Unit):
 
 class SimpleIfStatement2c(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         addClkRstn(self)
@@ -104,7 +104,7 @@ class SimpleIfStatement2c(Unit):
 
 class SimpleIfStatement3(SimpleIfStatement):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _impl(self):
         If(self.a,
@@ -118,7 +118,7 @@ class SimpleIfStatement3(SimpleIfStatement):
 
 class SimpleIfStatementMergable(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         self.a = Signal()
@@ -143,7 +143,7 @@ class SimpleIfStatementMergable(Unit):
 
 class SimpleIfStatementMergable1(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         self.a = Signal()
@@ -166,7 +166,7 @@ class SimpleIfStatementMergable1(Unit):
 
 class SimpleIfStatementMergable2(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         self.a = Signal()
@@ -194,7 +194,7 @@ class SimpleIfStatementMergable2(Unit):
 
 class IfStatementPartiallyEnclosed(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _declr(self):
         self.clk = Clk()

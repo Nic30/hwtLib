@@ -1,7 +1,7 @@
 #include <systemc.h>
 
 //
-//    .. hwt-schematic::
+//    .. hwt-autodoc::
 //    
 SC_MODULE(FsmExample) {
     // ports

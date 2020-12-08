@@ -14,7 +14,7 @@ class IpifBuff(BusBridge):
     Register or fifo for IPIF interface, used to break critical paths
     and buffer transactions
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         Ipif._config(self)

@@ -12,7 +12,7 @@ class AxiSSpliSelect(AxiSCompBase, HsSplitSelect):
 
     :see: :class:`hwtLib.handshaked.splitSelect.HsSplitSelect`
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _select_consume_en(self):

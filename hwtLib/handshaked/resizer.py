@@ -13,7 +13,7 @@ class HsResizer(HandshakedCompBase):
     """
     Resize width of handshaked interface
 
-    .. hwt-schematic:: _example_HsResizer
+    .. hwt-autodoc:: _example_HsResizer
     """
     def __init__(self, hsIntfCls, scale, inIntfConfigFn, outIntfConfigFn):
         """

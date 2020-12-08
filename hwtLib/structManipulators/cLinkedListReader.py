@@ -30,7 +30,7 @@ class CLinkedListReader(Unit):
 
     :attention: device reads only chunks of size <= BUFFER_CAPACITY/2,
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.ID_WIDTH = Param(4)

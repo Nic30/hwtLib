@@ -10,7 +10,7 @@ from hwtLib.mem.ram import RamMultiClock
 
 class GroupOfBlockrams(Unit):
     """
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         self.ADDR_WIDTH = Param(8)

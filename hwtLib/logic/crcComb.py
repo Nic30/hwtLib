@@ -35,7 +35,7 @@ class CrcComb(Unit):
     :ivar ~.REFOUT: Same as REFIN except for output
     :ivar ~.XOROUT: value to xor result with
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def _config(self):

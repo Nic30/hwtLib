@@ -11,7 +11,7 @@ class DebugBusMonitorExampleAxi(Unit):
     """
     An example how to use :class:`hwtLib.abstract.debug_bus_monitor.DebugBusMonitor`
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     def _config(self):
         Axi4Lite._config(self)

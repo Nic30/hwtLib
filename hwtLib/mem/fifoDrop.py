@@ -70,7 +70,7 @@ class FifoDrop(Fifo):
         but also during dataIn.wait=1 this allows for droping
         if FIFO is full of uncommited data
 
-    .. hwt-schematic:: _example_FifoDrop
+    .. hwt-autodoc:: _example_FifoDrop
     """
 
     def _declr(self):

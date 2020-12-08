@@ -11,7 +11,7 @@ class AxiSSplitCopy(AxiSCompBase, HsSplitCopy):
 
     :see: :class:`hwtLib.handshaked.splitCopy.HsSplitCopy`
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
     pass
 

@@ -18,7 +18,7 @@ class AxiInterconnectMatrixCrossbar(Unit):
     Crossbar for AXI-Stream like interfaces where internal switch box
     can be driven by
 
-    .. hwt-schematic:: example_AxiInterconnectMatrixCrossbar
+    .. hwt-autodoc:: example_AxiInterconnectMatrixCrossbar
     """
 
     def __init__(self, intfCls):

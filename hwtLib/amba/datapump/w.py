@@ -41,7 +41,7 @@ class Axi_wDatapump(AxiDatapumpBase):
 
     :see: :class:`hwtLib.amba.datapump.base.AxiDatapumpBase`
 
-    .. hwt-schematic::
+    .. hwt-autodoc::
     """
 
     def __init__(self, axiAddrCls=Axi4_addr, axiWCls=Axi4_w):

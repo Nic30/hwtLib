@@ -67,7 +67,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         | field2  +------+
         +---------+
 
-    .. hwt-schematic:: _example_AxiS_frameDeparser
+    .. hwt-autodoc:: _example_AxiS_frameDeparser
     """
 
     def __init__(self,

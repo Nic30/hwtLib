@@ -24,7 +24,7 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
     Write-only AXI3/4/Lite interconnect with supports transaction overlapping
     and guarantees the order order of transactions on the bus 
 
-    .. hwt-schematic:: example_AxiInterconnectMatrixW
+    .. hwt-autodoc:: example_AxiInterconnectMatrixW
     """
 
     def _declr(self):
