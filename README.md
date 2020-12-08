@@ -5,22 +5,21 @@
 [![Join the chat at https://gitter.im/hwt-community/community](https://badges.gitter.im/hwt-community/community.svg)](https://gitter.im/hwt-community/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
-hwtLib is the library of hardware components for [hwt library](https://github.com/Nic30/hwt)
-Any component can be exported as IP-exact IPcore using [IpPackager](https://github.com/Nic30/hwtLib/blob/master/hwtLib/examples/simple_ip.py#L26) or as Verilog/VHDL/SystemC code by [to_rtl()](https://github.com/Nic30/hwtLib/blob/master/hwtLib/examples/showcase0.py#L256) (Verilog, VHDL, ...). Target language is specified by keyword parameter serializer. Note that for most of components there is a schematic in the documentation.
+hwtLib is the library of hardware components for [hwt library](https://github.com/Nic30/hwt).
+Any component can be exported as Xilinx Vivado (IP-exact) or Quartus IPcore using [IpPackager](https://github.com/Nic30/hwtLib/blob/master/hwtLib/examples/simple_ip.py#L26) or as raw Verilog/VHDL/SystemC code and constraints by [to_rtl() function](https://github.com/Nic30/hwtLib/blob/master/hwtLib/examples/showcase0.py#L256). Target language is specified by keyword parameter serializer.
 
 
 ## Content
 
 Majority of components in this library is actually configurable component generator.
-For example there is no address decoder which takes a list of addresses and produces a mapped register file for Axi4Lite interface.
-Instead there is a component AxiLiteEndpoint, which takes hdl type description of address space
-and generates a address decoders and convertors to other intefaces if requested.
-Another example is AxiS_frameParser, which takes a hdl type description of output data and can be also used to change alignment of a frame or split/cut frame
-as the type description can also contains unions, struct, streams, padding and other hdl data types.
+This is something which will greatly confuse you if you are comming from VHDL/Verilog word where using of generate statements have serious limits.
 
-Same applies to simulation. Instead of hardcoding address values in to testbench you should use a AddressSpaceProbe to discover
-a addresses of mapped memory cells and use this object to communicate through the bus interface, because you want to write a verification
-which does not depends on interface used nor manually compute addresses for each component variant.
+To give an example of the content of this library a component [AxiLiteEndpoint](https://github.com/Nic30/hwtLib/blob/master/hwtLib/amba/axiLite_comp/endpoint.py#L185), wich is configured using c-like data type description and it generates a address decoders and convertors to other intefaces if requested.
+Another example is [AxiS_frameParser](https://github.com/Nic30/hwtLib/blob/master/hwtLib/amba/axis_comp/frame_parser/_parser.py#L438), which is configured in same way and performs an extraction of the data fields from an input stream. Hwt type system does contains all c-like and SystemVerilog-like types but in addition it allows for better specification of padding and allignment and has an explicit data type for streams. This allows AxiS_frameParser to be easily configured to change alignemnt of the stream, cut/split/replace part of the steam with an easy to read HLS-like description.
+
+Verifications are write in UVM like style and as [hwt](https://github.com/Nic30/hwt) based design are actually a graph we can easily analyse them.
+This is every usefull as it allows us to generate most of the test environment automatically in a user controlled and predictable way and write mostly only a test scenario. For example there is no need to build bus transactions manually as [AddressSpaceProbe](https://github.com/Nic30/hwtLib/blob/master/hwtLib/abstract/discoverAddressSpace.py#L47) can discover the mapped address space (for any interface) and we can set register values using a proxy as if it was a normal value.
+This means that you can write a verification which will have a component with arbitrary bus/address space and it will work as long as you keep the names of the registers the same.
 
 
 * [abstract](https://github.com/Nic30/hwtLib/tree/master/hwtLib/abstract) - abstract classes for component classes like bus endpoint, etc
@@ -39,12 +38,18 @@ which does not depends on interface used nor manually compute addresses for each
 * [structManipulators](https://github.com/Nic30/hwtLib/tree/master/hwtLib/structManipulators) - DMAs for specific data structures
 * [tests](https://github.com/Nic30/hwtLib/tree/master/hwtLib/tests) - tests which are not related to another components
 * [types](https://github.com/Nic30/hwtLib/tree/master/hwtLib/types) - deffinitions of common types (uint32_t, ipv6_t, udp_t, ...)
-* [xilinx](https://github.com/Nic30/hwtLib/tree/master/hwtLib/xilinx) - components and interfaces specific to Xilinx based designs (IPIF, LocalLink, ...)
+* [xilinx](https://github.com/Nic30/hwtLib/tree/master/hwtLib/xilinx) - components, primitives and interfaces specific to Xilinx based designs (IPIF, LocalLink, ...)
 
 
 ## Installation
 ``` bash
 sudo pip3 install hwtLib
+
+# or from git  (if you are installing from git conside using also --update parameter)
+git clone https://github.com/Nic30/hwtLib
+cd hwtLib
+pip3 install -r docs/requirements.hwt.txt
+python3 setup.py install
 ```
 
 
