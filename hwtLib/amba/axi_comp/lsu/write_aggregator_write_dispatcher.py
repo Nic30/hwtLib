@@ -28,7 +28,7 @@ from pyMathBitPrecise.bit_utils import mask
 class AxiWriteAggregatorWriteDispatcher(Unit):
     """
     Use :class:`hwtLib.amba.axi_comp.lsu.fifo_oooread.FifoOutOfOrderReadFiltered` read ports
-    to query an AXI transaction info and copy paste this transaction from BRAM to AXI
+    to query an AXI transaction info and copy paste this transaction from BRAM to AXI.
 
     .. hwt-autodoc::
     """
