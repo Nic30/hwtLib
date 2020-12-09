@@ -19,6 +19,8 @@ _DEFAULT = object()
 class Axi3_addr(Axi3Lite_addr, Axi_id):
     """
     Axi3 address channel interface
+
+    .. hwt-autodoc::
     """
     LEN_WIDTH = 4
     LOCK_WIDTH = 2
@@ -80,7 +82,7 @@ class Axi3_addrAgent(AxiStreamAgent):
                         size=_DEFAULT,
                         user=None):
         """
-        Create a default AXI address transaction 
+        Create a default AXI address transaction
         :note: transaction is created and returned but it is not added to a agent data
         """
         if size is _DEFAULT:
@@ -97,6 +99,8 @@ class Axi3_addrAgent(AxiStreamAgent):
 class Axi3_w(Axi_hs, Axi_strb):
     """
     Axi3 write channel interface (simplified  AxiStream)
+
+    .. hwt-autodoc::
     """
     def _config(self):
         self.ID_WIDTH = Param(0)
@@ -118,6 +122,8 @@ class Axi3_w(Axi_hs, Axi_strb):
 class Axi3_r(Axi3Lite_r, Axi_id):
     """
     Axi 3 read channel interface
+
+    .. hwt-autodoc::
     """
     def _config(self):
         Axi_id._config(self, default_id_width=6)
@@ -168,6 +174,8 @@ class Axi3_rAgent(BaseAxiAgent):
 class Axi3_b(Axi3Lite_b, Axi_id):
     """
     Axi3 write response channel interface
+
+    .. hwt-autodoc::
     """
     def _config(self):
         Axi_id._config(self)
@@ -210,6 +218,8 @@ class Axi3_bAgent(BaseAxiAgent):
 class Axi3(Axi3Lite):
     """
     Axi3 bus interface
+
+    .. hwt-autodoc::
     """
     LOCK_WIDTH = Axi3_addr.LOCK_WIDTH
     LEN_WIDTH = Axi3_addr.LEN_WIDTH

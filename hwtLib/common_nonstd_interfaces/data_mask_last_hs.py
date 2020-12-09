@@ -7,6 +7,8 @@ from pycocotb.hdlSimulator import HdlSimulator
 class DataMaskLastHs(Handshaked):
     """
     Handshaked interface with data, mask, last signal.
+
+    .. hwt-autodoc::
     """
     def _config(self):
         self.MASK_GRANULARITY = Param(8)

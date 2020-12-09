@@ -16,7 +16,9 @@ from pycocotb.hdlSimulator import HdlSimulator
 
 #################################################################
 class Axi3Lite_addr(Axi_hs):
-
+    """
+    .. hwt-autodoc::
+    """
     def _config(self):
         self.ADDR_WIDTH = Param(32)
 
@@ -46,7 +48,9 @@ class Axi3Lite_addrAgent(BaseAxiAgent):
 
 #################################################################
 class Axi3Lite_r(Axi_hs):
-
+    """
+    .. hwt-autodoc::
+    """
     def _config(self):
         self.DATA_WIDTH = Param(64)
 
@@ -82,7 +86,9 @@ class AxiLite_rAgent(BaseAxiAgent):
 
 #################################################################
 class Axi3Lite_w(Axi_hs):
-
+    """
+    .. hwt-autodoc::
+    """
     def _config(self):
         self.DATA_WIDTH = Param(64)
 
@@ -117,7 +123,9 @@ class Axi3Lite_wAgent(BaseAxiAgent):
 
 #################################################################
 class Axi3Lite_b(Axi_hs):
-
+    """
+    .. hwt-autodoc::
+    """
     def _declr(self):
         self.resp = VectSignal(2)
         Axi_hs._declr(self)
@@ -145,7 +153,9 @@ class Axi3Lite(Interface):
     W_CLS = Axi3Lite_w
     R_CLS = Axi3Lite_r
     B_CLS = Axi3Lite_b
-
+    """
+    .. hwt-autodoc::
+    """
     def _config(self):
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)

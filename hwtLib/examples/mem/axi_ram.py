@@ -13,15 +13,18 @@ from hwtLib.mem.ram import RamSingleClock
 
 
 class Axi4BRam(Unit):
+    """
+    .. hwt-autodoc::
+    """
 
     def _config(self) -> None:
         Axi4._config(self)
         self.DATA_WIDTH = 512
         self.ADDR_WIDTH = 10
-        
+
     def _declr(self) -> None:
         addClkRstn(self)
-        
+
         with self._paramsShared():
             self.s = Axi4()
             self.ram = RamSingleClock()
@@ -34,7 +37,7 @@ class Axi4BRam(Unit):
             dec = self.decoder = AxiLiteEndpoint(HStruct(
                     (ram.port[0].dout._dtype[2 ** ram.ADDR_WIDTH], "ram")
                 ))
-        
+
         dec.bus(al)
         ram.port[0](dec.decoded.ram)
 

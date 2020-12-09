@@ -12,7 +12,6 @@ from pycocotb.agents.base import AgentBase
 from pycocotb.hdlSimulator import HdlSimulator
 from pycocotb.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
 from pycocotb.triggers import WaitCombRead, WaitWriteOnly, Timer
-from pycocotb.constants import Time
 
 
 class SpiAgent(SyncAgentBase):
@@ -160,7 +159,10 @@ class SpiAgent(SyncAgentBase):
 class Spi(Interface):
     """
     Bare SPI interface (Serial peripheral interface)
+
+    .. hwt-autodoc::
     """
+
     def _config(self):
         self.SLAVE_CNT = Param(1)
 
@@ -179,7 +181,10 @@ class Spi(Interface):
 class SpiTristate(Spi):
     """
     SPI interface where mosi and miso signal are merged into one tri-state wire
+
+    .. hwt-autodoc::
     """
+
     def _config(self):
         Spi._config(self)
         self.DATA_WIDTH = Param(1)
@@ -196,7 +201,10 @@ class SpiTristate(Spi):
 class QSPI(SpiTristate):
     """
     SPI interface with 4 tristate data wires
+
+    .. hwt-autodoc::
     """
+
     def _config(self):
         Spi._config(self)
         self.DATA_WIDTH = Param(4)

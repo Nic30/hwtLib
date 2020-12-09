@@ -9,6 +9,8 @@ class RgmiiChannel(Interface):
     """
     :note: clk.FREQ can be 125 MHz, 25 MHz, or 2.5 MHz
         with ±50 ppm tolerance based on the selected speed.
+
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -30,7 +32,10 @@ class Rgmii(Interface):
     :note: There is also version of this interface where
         for 10M/100M the tx_clk provided by PHY is used
         in 1G mode the tx_gclk provided by MAC is used
+
+    .. hwt-autodoc::
     """
+
 
     def _config(self):
         RgmiiChannel._config(self)

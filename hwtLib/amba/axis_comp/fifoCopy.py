@@ -22,6 +22,8 @@ class AxiSRegCopy(AxiSCompBase, HandshakedFifo):
     """
     Same thing as a :class:`~.AxiSFifoCopy`
     just uses registers without fifo pointers
+
+    .. hwt-autodoc::
     """
 
     def _declr(self):
@@ -45,13 +47,13 @@ class AxiSRegCopy(AxiSCompBase, HandshakedFifo):
         ).Else(
             connect(self.dataIn, reg.dataIn, exclude=non_data_signals)
         )
-        
+
         reg.dataIn.valid(copy_en | self.dataIn.valid)
         self.dataIn.ready(reg.dataIn.ready & ~copy_en)
-        
+
         #connect(reg.dataOut, self.dataOut, exclude=[reg.dataOut.ready, reg.dataOut.valid])
         self.dataOut(reg.dataOut)
-        
+
         propagateClkRstn(self)
 
 
@@ -92,7 +94,7 @@ class AxiSFifoCopy(AxiSCompBase, HandshakedFifo):
         din = self.dataIn
         fIn = self.fifo.dataIn
         wr_en = ~fIn.wait
-        
+
         rd(din)(wr_en)
         fIn.data(packIntf(din, exclude=[vld(din), rd(din)]))
         fIn.en(vld(din) & wr_en)

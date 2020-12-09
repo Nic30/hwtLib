@@ -9,7 +9,9 @@ from pycocotb.hdlSimulator import HdlSimulator
 
 
 class IndexKeyHs(Handshaked):
-
+    """
+    .. hwt-autodoc::
+    """
     def _config(self):
         self.INDEX_WIDTH = Param(4)
         self.KEY_WIDTH = Param(4)
@@ -48,6 +50,9 @@ class IndexKeyHsAgent(HandshakedAgent):
 
 
 class IndexKeyInHs(Handshaked):
+    """
+    .. hwt-autodoc::
+    """
 
     def _config(self):
         self.INDEX_WIDTH = Param(4)

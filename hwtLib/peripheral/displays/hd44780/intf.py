@@ -19,7 +19,10 @@ class Hd44780Intf(Interface):
 
     :note: if DATA_WIDTH == 4 the .d signal has 4bits and its bits
         whould be connected to bits 7-4 on physical device
+
+    .. hwt-autodoc::
     """
+
     # for f_osc = 270KHz, which is deaut clock used by most of the LCDs
     # 37 us, dealy or rest of the commands
     DELAY_CMD = 10

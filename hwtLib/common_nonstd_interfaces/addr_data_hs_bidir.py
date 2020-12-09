@@ -7,6 +7,9 @@ from pycocotb.hdlSimulator import HdlSimulator
 
 
 class AddrOutDataInHs(HandshakedBiDirectional):
+    """
+    .. hwt-autodoc::
+    """
 
     def _config(self):
         self.ADDR_WIDTH = Param(32)
@@ -42,6 +45,9 @@ class AddrOutDataInHsAgent(HandshakedBiDirectionalAgent):
 
 
 class AddrInOutDataInHs(HandshakedBiDirectional):
+    """
+    .. hwt-autodoc::
+    """
 
     def _config(self):
         self.ADDR_WIDTH = Param(32)
@@ -80,6 +86,9 @@ class AddrInOutDataInHsAgent(HandshakedBiDirectionalAgent):
 
 
 class AddrInDataOutHs(HandshakedBiDirectional):
+    """
+    .. hwt-autodoc::
+    """
 
     def _config(self):
         self.ADDR_WIDTH = Param(32)

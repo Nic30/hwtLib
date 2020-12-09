@@ -43,6 +43,8 @@ class AxiStream(Axi_hs, Axi_id, Axi_user, Axi_strb):
                 should be keept and which should be discarded
     :ivar ~.strb: optional signal which signalize which bytes are valid
     :ivar ~.last: signal which if high this data is last in this frame
+
+    .. hwt-autodoc::
     """
 
     def _config(self):

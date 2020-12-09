@@ -19,6 +19,9 @@ from hwtLib.peripheral.displays.hd44780.intf import Hd44780Intf
 
 
 class Hd44780CmdIntf(HandshakeSync):
+    """
+    .. hwt-autodoc::
+    """
     def _config(self):
         self.DATA_WIDTH = Param(8)
 
@@ -31,6 +34,10 @@ class Hd44780CmdIntf(HandshakeSync):
 
 
 class Hd44780CmdIntfBurst(HandshakedStoredBurst):
+    """
+    .. hwt-autodoc::
+    """
+
     def __init__(self):
         super(Hd44780CmdIntfBurst, self).__init__(Hd44780CmdIntf)
 
@@ -60,6 +67,8 @@ class Hd44780Driver(Unit):
 
     :attention: The character set of HD44780 is not ASCII,
         but it is very similar
+
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -190,7 +199,7 @@ class Hd44780Driver(Unit):
             .stateReg
         cmd_timer_rst(st._eq(st_t.idle))
 
-        data_in.rd(st._eq(st_t.write) & ((delay_cmd_done & ~is_long_cmd) | 
+        data_in.rd(st._eq(st_t.write) & ((delay_cmd_done & ~is_long_cmd) |
                                          (delay_cmd_long_done & is_long_cmd)))
 
         data_out = self.dataOut

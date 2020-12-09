@@ -1,7 +1,7 @@
 """
 
 This package contains definitions of Avalon interfaces,
-simulation agents and some componets.
+simulation agents and some componets for mentioned interfaces.
 
 Avalon interfaces were used in many projects around 2015.
 In 2018 it is still main bus in intel(altera) Quartus (FPGA devel. IDE).

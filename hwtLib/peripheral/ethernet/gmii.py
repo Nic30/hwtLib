@@ -5,6 +5,9 @@ from ipCorePackager.intfIpMeta import IntfIpMeta
 
 
 class GmiiTxChannel(Interface):
+    """
+    .. hwt-autodoc::
+    """
 
     def _declr(self):
         self.d = VectSignal(8)
@@ -13,6 +16,9 @@ class GmiiTxChannel(Interface):
 
 
 class GmiiRxChannel(Interface):
+    """
+    .. hwt-autodoc::
+    """
 
     def _declr(self):
         self.d = VectSignal(8)

@@ -1,5 +1,5 @@
 """
-This component contains a AxiDatapump interfaces and components for them
+This package contains a AxiDatapump interfaces and components for them
 
-* AxiDatapump interface is simplified AXI-3/4 interface
+:note: AxiDatapump interface is simplified AXI-3/4 interface
 """

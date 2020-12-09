@@ -45,7 +45,7 @@ class Cam(Unit):
     def _declr(self):
         addClkRstn(self)
         self._declr_match_io()
-            
+
         # address is index of CAM cell, data is key to store
         if self.USE_VLD_BIT:
             w = AddrDataVldHs()
@@ -99,6 +99,8 @@ class Cam(Unit):
 class CamMultiPort(Cam):
     """
     A variant of :class:`~.Cam` with multiple ports for lookup
+
+    .. hwt-autodoc:: _example_CamMultiPort
     """
 
     def _config(self):
@@ -127,6 +129,10 @@ class CamMultiPort(Cam):
             for _match, _match_res in zip(self.match, self.out):
                 Cam.matchHandler(self, mem, _match, _match_res)
 
+def _example_CamMultiPort():
+    u = CamMultiPort()
+    u.MATCH_PORT_CNT = 2
+    return u
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str

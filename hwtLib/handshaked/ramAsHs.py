@@ -45,12 +45,12 @@ class RamHsRAgent(AgentBase):
         self.data = intf.data._ag
 
     def getDrivers(self):
-        return (self.addr.getDrivers() + 
+        return (self.addr.getDrivers() +
                 self.data.getMonitors()
                 )
 
     def getMonitors(self):
-        return (self.addr.getMonitors() + 
+        return (self.addr.getMonitors() +
                 self.data.getDrivers()
                 )
 
@@ -58,6 +58,8 @@ class RamHsRAgent(AgentBase):
 class RamHsR(Interface):
     """
     Handshaked RAM port
+
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -132,7 +134,7 @@ class RamAsHs(Unit):
 
         If(rEn & r.addr.vld,
            ram.we(0),
-           ram.addr(r.addr.data) 
+           ram.addr(r.addr.data)
         ).Else(
            ram.we(1),
            ram.addr(w.addr)

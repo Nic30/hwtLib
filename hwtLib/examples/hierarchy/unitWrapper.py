@@ -12,7 +12,10 @@ class UnitWrapper(Unit):
         and generating of external interfaces based on internal structure.
     """
 
-    def __init__(self, baseUnit):
+    def __init__(self, baseUnit: Unit):
+        """
+        :param baseUnit: An Unit instance which should be hidden in this wrapper.
+        """
         super(UnitWrapper, self).__init__()
         self._baseUnit = baseUnit
 

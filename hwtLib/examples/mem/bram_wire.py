@@ -7,7 +7,9 @@ from pycocotb.constants import CLK_PERIOD
 
 
 class BramWire(Unit):
-
+    """
+    .. hwt-autodoc::
+    """
     def _declr(self):
         addClkRst(self)
         self.din = BramPort_withoutClk()

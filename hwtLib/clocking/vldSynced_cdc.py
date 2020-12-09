@@ -19,6 +19,8 @@ class VldSyncedCdc(Unit):
         data may be dropped (and probably will be),
         by default there is an assert to prevent that,
         use IGNORE_DATA_LOSE to ignore it
+
+    .. hwt-autodoc:: _example_VldSyncedCdc
     """
 
     def __init__(self, intfCls: Type[VldSynced]):
@@ -92,7 +94,10 @@ class VldSyncedCdc(Unit):
 
         connectPacked(b_data.path[-1], self.dataOut, exclude=[out_vld])
 
+def _example_VldSyncedCdc():
+    return VldSyncedCdc(VldSynced)
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
-    print(to_rtl_str(VldSyncedCdc(VldSynced)))
+    u = _example_VldSyncedCdc()
+    print(to_rtl_str(u))

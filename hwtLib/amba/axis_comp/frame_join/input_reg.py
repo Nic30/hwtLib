@@ -15,6 +15,9 @@ from pyMathBitPrecise.bit_utils import mask
 
 
 class UnalignedJoinRegIntf(Interface):
+    """
+    .. hwt-autodoc::
+    """
 
     def _config(self):
         AxiStream._config(self)
@@ -32,6 +35,8 @@ class UnalignedJoinRegIntf(Interface):
 class FrameJoinInputReg(Unit):
     """
     Pipeline of registers for AxiStream with keep mask and flushing
+
+    .. hwt-autodoc::
     """
 
     def _config(self):

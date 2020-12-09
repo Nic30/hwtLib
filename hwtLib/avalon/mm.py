@@ -22,6 +22,8 @@ class AvalonMM(Interface):
     :note: handshaked, shared address and response channel
 
     https://www.intel.com/content/dam/altera-www/global/en_US/pdfs/literature/manual/mnl_avalon_spec.pdf
+
+    .. hwt-autodoc::
     """
 
     def _config(self):

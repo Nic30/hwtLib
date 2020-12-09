@@ -16,6 +16,8 @@ class Axi4_addr(Axi3_addr):
     Axi4 address channel interface
     (axi3 address channel with different size of len and lock signals
     and additional qos signal)
+
+    .. hwt-autodoc::
     """
     LEN_WIDTH = 8
     LOCK_WIDTH = 1
@@ -58,7 +60,7 @@ class Axi4_addrAgent(AxiStreamAgent):
                         qos=QOS_DEFAULT,
                         user=None):
         """
-        Create a default AXI address transaction 
+        Create a default AXI address transaction
         :note: transaction is created and returned but it is not added to a agent data
         """
         if size is _DEFAULT:
@@ -75,7 +77,9 @@ class Axi4_addrAgent(AxiStreamAgent):
 class Axi4_r(Axi3_r):
     """
     Axi4 read channel interface
-    (same as axi3)
+    (same as r  :class:`~.Axi3_r`)
+
+    .. hwt-autodoc::
     """
     pass
 
@@ -84,7 +88,9 @@ class Axi4_r(Axi3_r):
 class Axi4_w(Axi_hs, Axi_strb):
     """
     Axi4 write channel interface
-    (Axi3_w without id signal)
+    (:class:`~.Axi3_w` without id signal)
+
+    .. hwt-autodoc::
     """
     def _config(self):
         self.DATA_WIDTH = Param(64)
@@ -103,7 +109,9 @@ class Axi4_w(Axi_hs, Axi_strb):
 class Axi4_b(Axi3_b):
     """
     Axi4 write response channel interface
-    (same as axi3)
+    (same as :class:`~.Axi3_b`)
+
+    .. hwt-autodoc::
     """
     pass
 
@@ -118,7 +126,10 @@ class Axi4(Axi3):
     :ivar ~.aw: write address channel
     :ivar ~.w: write data channel
     :ivar ~.b: write acknowledge channel
+
+    .. hwt-autodoc::
     """
+
     LEN_WIDTH = 8
     LOCK_WIDTH = 1
     AW_CLS = Axi4_addr

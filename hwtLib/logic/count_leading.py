@@ -17,7 +17,7 @@ class _CountLeading(Unit):
         self.DATA_WIDTH = Param(64)
 
     def _declr(self):
-        assert isPow2(self.DATA_WIDTH), self.DATA_WIDTH 
+        assert isPow2(self.DATA_WIDTH), self.DATA_WIDTH
         self.data_in = VectSignal(self.DATA_WIDTH)
         self.data_out = VectSignal(log2ceil(self.DATA_WIDTH))._m()
 

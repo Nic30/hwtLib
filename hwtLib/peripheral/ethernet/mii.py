@@ -5,6 +5,10 @@ from ipCorePackager.intfIpMeta import IntfIpMeta
 
 
 class MiiRxChannel(Interface):
+    """
+    .. hwt-autodoc::
+    """
+
     def _declr(self):
         self.d = VectSignal(4)
         self.dv = Signal()
@@ -12,6 +16,10 @@ class MiiRxChannel(Interface):
 
 
 class MiiTxChannel(Interface):
+    """
+    .. hwt-autodoc::
+    """
+
     def _declr(self):
         self.d = VectSignal(4)
         self.en = Signal()
@@ -23,6 +31,8 @@ class Mii(Interface):
     Media Independent Interface
 
     PHY-MAC interface for <=100BASE Ethernet
+
+    .. hwt-autodoc::
     """
 
     def _declr(self):

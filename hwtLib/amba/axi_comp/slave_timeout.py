@@ -16,6 +16,8 @@ class AxiSlaveTimeout(BusBridge):
 
     :note: blocks the overlapping transactions, it allows only
         a single pending transaction per type
+
+    .. hwt-autodoc:: _example_AxiSlaveTimeout
     """
 
     def __init__(self, intfCls):
@@ -95,10 +97,13 @@ class AxiSlaveTimeout(BusBridge):
             m.b(s.b)
         )
 
-
-if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+def _example_AxiSlaveTimeout():
     from hwtLib.amba.axi4 import Axi4
 
     u = AxiSlaveTimeout(Axi4)
+    return u
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import to_rtl_str
+    u = _example_AxiSlaveTimeout()
     print(to_rtl_str(u))

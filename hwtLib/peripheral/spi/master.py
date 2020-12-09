@@ -39,7 +39,10 @@ class SpiCntrlData(HandshakedBiDirectional):
     HandshakedBiDirectional interface with last and slave signal added.
     If last=1 slave will be deselected and initial slave select wait will be.
     Slave selects the slave where data should be read from and written to.
+
+    .. hwt-autodoc::
     """
+
     def _declr(self):
         self.slave = VectSignal(1)
         HandshakedBiDirectional._declr(self)
@@ -115,7 +118,7 @@ class SpiMaster(Unit):
 
     def spiClkGen(self, requiresInitWait, en):
         """
-        create clock generator for SPI 
+        create clock generator for SPI
         writeTick is 1 on falling edge of spi clk
         readTick is 1 on rising edge of spi clk
 

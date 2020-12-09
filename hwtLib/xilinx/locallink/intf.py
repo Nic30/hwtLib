@@ -8,7 +8,10 @@ from hwt.synthesizer.param import Param
 class LocalLink(Interface):
     """
     Stream with "byte enable" and "start/end of frame/packet"
+
+    .. hwt-autodoc::
     """
+
     def _config(self):
         self.DATA_WIDTH = Param(32)
 

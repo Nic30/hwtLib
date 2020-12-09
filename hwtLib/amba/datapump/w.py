@@ -16,6 +16,10 @@ from pyMathBitPrecise.bit_utils import mask
 
 
 class WFifoIntf(Handshaked):
+    """
+    .. hwt-autodoc::
+    """
+
     def _config(self):
         self.ID_WIDTH = Param(4)
 
@@ -25,6 +29,10 @@ class WFifoIntf(Handshaked):
 
 
 class BFifoIntf(Handshaked):
+    """
+    .. hwt-autodoc::
+    """
+
     def _config(self):
         pass
 
@@ -106,7 +114,7 @@ class Axi_wDatapump(AxiDatapumpBase):
                 ),
                 StreamNode(masters=[req],
                            slaves=[aw, wInfo],
-                           extraConds={aw: ~wErrFlag}).sync(),
+                           extraConds={aw:~wErrFlag}).sync(),
             ).Else(
                 _id(req_idBackup),
                 aw.addr(addrBackup),
@@ -121,7 +129,7 @@ class Axi_wDatapump(AxiDatapumpBase):
 
                 If(StreamNode(slaves=[wInfo, aw]).ack(),
                    addrBackup(addrBackup + self.getBurstAddrOffset()),
-                   lenDebth(lenDebth - (LEN_MAX+1)),
+                   lenDebth(lenDebth - (LEN_MAX + 1)),
                    If(lenDebth <= LEN_MAX,
                       lastReqDispatched(1)
                    )
@@ -167,7 +175,7 @@ class Axi_wDatapump(AxiDatapumpBase):
 
         extraConds = {wInfo: doSplit,
                       bInfo: doSplit,
-                      w: ~wErrFlag}
+                      w:~wErrFlag}
         w.last(doSplit)
 
         bInfo.isLast(wIn.last)

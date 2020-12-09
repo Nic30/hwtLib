@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, Concat, connect, log2ceil, FsmBuilder, power
+from hwt.code import If, Concat, connect, log2ceil, FsmBuilder
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
@@ -159,7 +159,7 @@ class CLinkedListWriter(Unit):
         self.rReqHandler(baseIndex, nextBaseFsm._eq(t.required))
 
         nextBaseReady = nextBaseFsm._eq(t.prepared)
-        return baseIndex, nextBaseIndex, nextBaseReady 
+        return baseIndex, nextBaseIndex, nextBaseReady
 
     def timeoutHandler(self, rst, incr):
         timeoutCntr = self._reg("timeoutCntr",
@@ -170,13 +170,13 @@ class CLinkedListWriter(Unit):
         ).Elif((timeoutCntr != 0) & incr,
            timeoutCntr(timeoutCntr - 1)
         )
-        return timeoutCntr._eq(0) 
+        return timeoutCntr._eq(0)
 
     def queuePtrLogic(self, wrPtrIncrVal, wrPtrIncrEn):
         r, s = self._reg, self._sig
         ringSpace_t = Bits(self.PTR_WIDTH)
 
-        # Logic of tail/head, 
+        # Logic of tail/head,
         rdPtr = r("rdPtr", ringSpace_t, def_val=0)
         wrPtr = r("wrPtr", ringSpace_t, def_val=(2 ** self.PTR_WIDTH) - 1)
 
@@ -297,7 +297,7 @@ class CLinkedListWriter(Unit):
         ).Trans(fsm_t.dataPending_send,
             ((~nextBlockTransition_out | nextBaseReady) & dataCntr._eq(0), fsm_t.waitForAck)
         ).Trans(fsm_t.waitForAck,
-            (gotWriteAck, fsm_t.idle)    
+            (gotWriteAck, fsm_t.idle)
         ).stateReg
 
         timeout(self.timeoutHandler(fsm != fsm_t.idle,

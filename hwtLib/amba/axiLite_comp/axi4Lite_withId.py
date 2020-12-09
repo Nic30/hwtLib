@@ -4,6 +4,9 @@ from hwtLib.amba.axi_intf_common import Axi_id
 
 
 class Axi4Lite_addr_withId(Axi4Lite_addr):
+    """
+    .. hwt-autodoc::
+    """
 
     def _config(self):
         Axi_id._config(self)
@@ -15,6 +18,9 @@ class Axi4Lite_addr_withId(Axi4Lite_addr):
 
 
 class Axi4Lite_w_withId(Axi4Lite_w):
+    """
+    .. hwt-autodoc::
+    """
 
     def _config(self):
         Axi_id._config(self)
@@ -24,8 +30,11 @@ class Axi4Lite_w_withId(Axi4Lite_w):
         Axi_id._declr(self)
         Axi4Lite_w._declr(self)
 
-    
+
 class Axi4Lite_r_withId(Axi4Lite_r):
+    """
+    .. hwt-autodoc::
+    """
 
     def _config(self):
         Axi_id._config(self)
@@ -37,6 +46,9 @@ class Axi4Lite_r_withId(Axi4Lite_r):
 
 
 class Axi4Lite_b_withId(Axi4Lite_b):
+    """
+    .. hwt-autodoc::
+    """
 
     def _config(self):
         Axi_id._config(self)
@@ -46,10 +58,12 @@ class Axi4Lite_b_withId(Axi4Lite_b):
         Axi_id._declr(self)
         Axi4Lite_b._declr(self)
 
-    
+
 class Axi4LiteWithId(Axi4Lite):
     """
     Axi4-lite bus interface
+
+    .. hwt-autodoc::
     """
     AW_CLS = Axi4Lite_addr_withId
     AR_CLS = Axi4Lite_addr_withId

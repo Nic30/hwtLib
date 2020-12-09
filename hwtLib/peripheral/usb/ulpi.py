@@ -35,7 +35,10 @@ class Ulpi(Interface):
         has been accepted by the PHY. The Link places the next byte on the data bus
         in the following clock cycle. When the PHY is sending data to the Link,
         nxt indicates when a new byte is available for the Link to consume.
+
+    .. hwt-autodoc::
     """
+
     class DIR:
         PHY = 1
         LINK = 0

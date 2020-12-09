@@ -30,7 +30,7 @@ class Crc(Unit):
 
     :note: See :class:`hwtLib.logic.crcComb.CrcComb`
 
-    .. hwt-autodoc::
+    .. hwt-autodoc:: _example_Crc
     """
 
     def _config(self):
@@ -151,12 +151,15 @@ class Crc(Unit):
         self.dataOut(state ^ fin_bits)
 
 
-if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
-
+def _example_Crc():
     u = Crc()
     u.MASK_GRANULARITY = 8
-    CrcComb.setConfig(u, CRC_32)
+    u.setConfig(CRC_32)
     u.DATA_WIDTH = 16
+    return u
 
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import to_rtl_str
+    u = _example_Crc()
     print(to_rtl_str(u))

@@ -40,6 +40,8 @@ class CamWithReadPort(CamMultiPort):
     """
     Content addressable memory with a read port which can be used
     to read cam array by index
+
+    .. hwt-autodoc::
     """
 
     def _declr(self):
@@ -47,7 +49,7 @@ class CamWithReadPort(CamMultiPort):
         r = self.read = AddrDataIntf()
         r.ADDR_WIDTH = log2ceil(self.ITEMS - 1)
         r.DATA_WIDTH = self.KEY_WIDTH
-        
+
     def _impl(self):
         CamMultiPort._impl(self)
         self.read.data(self._mem[self.read.addr])

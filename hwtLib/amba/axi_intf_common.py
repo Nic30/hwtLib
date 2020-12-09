@@ -6,6 +6,10 @@ from pycocotb.hdlSimulator import HdlSimulator
 
 
 class Axi_id(Interface):
+    """
+    .. hwt-autodoc::
+    """
+
     def _config(self, default_id_width=0):
         self.ID_WIDTH = Param(default_id_width)
 
@@ -15,6 +19,7 @@ class Axi_id(Interface):
 
 
 class Axi_user(Interface):
+
     def _config(self):
         self.USER_WIDTH = Param(0)
 
@@ -24,6 +29,9 @@ class Axi_user(Interface):
 
 
 class Axi_strb(Interface):
+    """
+    .. hwt-autodoc::
+    """
     def _declr(self):
         self.strb = VectSignal(self.DATA_WIDTH // 8)
 
@@ -36,8 +44,9 @@ class Axi_hs(HandshakeSync):
 
     :ivar ~.ready: when high slave is ready to receive data
     :ivar ~.valid: when high master is sending data to slave
-    """
 
+    .. hwt-autodoc::
+    """
     def _declr(self):
         self.ready = Signal(masterDir=DIRECTION.IN)
         self.valid = Signal()

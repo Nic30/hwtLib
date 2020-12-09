@@ -108,6 +108,9 @@ def setAceArMode(arbar, ardomain, arsnoop, transactionType):
 
 
 class Ace_addr(Axi4_addr):
+    """
+    .. hwt-autodoc::
+    """
 
     def _declr(self):
         Axi4_addr._declr(self)
@@ -118,6 +121,9 @@ class Ace_addr(Axi4_addr):
 
 
 class AceSnoop_addr(Axi_hs):
+    """
+    .. hwt-autodoc::
+    """
 
     def _config(self):
         self.SNOOP_ADDR_WIDTH = Param(32)
@@ -130,6 +136,9 @@ class AceSnoop_addr(Axi_hs):
 
 
 class AceSnoop_resp(Axi_hs):
+    """
+    .. hwt-autodoc::
+    """
 
     def _declr(self):
         self.resp = VectSignal(4)
@@ -140,6 +149,9 @@ class AceSnoop_resp(Axi_hs):
 
 
 class AceSnoop_data(Axi_hs):
+    """
+    .. hwt-autodoc::
+    """
 
     def _config(self):
         self.SNOOP_DATA_WIDTH = Param(32)
@@ -158,6 +170,8 @@ class Ace(Axi4):
         used by the master to signal the response to snoops to the interconnect
     :ivar cd: Coherent data channel.
         output from the master to transfer snoop data
+
+    .. hwt-autodoc::
     """
     AW_CLS = Ace_addr
     AR_CLS = Ace_addr

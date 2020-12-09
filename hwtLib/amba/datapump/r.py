@@ -15,6 +15,10 @@ from pyMathBitPrecise.bit_utils import mask
 
 
 class TransEndInfo(HandshakeSync):
+    """
+    .. hwt-autodoc::
+    """
+
     def _config(self):
         self.DATA_WIDTH = Param(64)
 
@@ -121,7 +125,7 @@ class Axi_rDatapump(AxiDatapumpBase):
                ack(req.vld & addRmSize.rd & ar.ready),
                StreamNode(masters=[req],
                           slaves=[addRmSize, ar],
-                          extraConds={ar: ~rErrFlag}).sync(),
+                          extraConds={ar:~rErrFlag}).sync(),
             ).Else(
                 req.rd(0),
                 ar.addr(rAddr),
@@ -133,7 +137,7 @@ class Axi_rDatapump(AxiDatapumpBase):
                 reqLen(lenDebth),
                 reqRem(remBackup),
                 StreamNode(slaves=[addRmSize, ar],
-                           extraConds={ar: ~rErrFlag}).sync(),
+                           extraConds={ar:~rErrFlag}).sync(),
             )
         else:
             # if axi len is wider we can directly translate requests to axi
@@ -147,7 +151,7 @@ class Axi_rDatapump(AxiDatapumpBase):
 
             StreamNode(masters=[req],
                        slaves=[ar, addRmSize],
-                       extraConds={ar: ~rErrFlag}).sync()
+                       extraConds={ar:~rErrFlag}).sync()
 
     def remSizeToStrb(self, remSize, strb):
         strbBytes = 2 ** self.getSizeAlignBits()
@@ -183,7 +187,7 @@ class Axi_rDatapump(AxiDatapumpBase):
         StreamNode(masters=[r, rmSizeOut],
                    slaves=[rOut],
                    extraConds={rmSizeOut: r.last,
-                               rOut: ~rErrFlag}).sync()
+                               rOut:~rErrFlag}).sync()
 
         return rErrFlag
 

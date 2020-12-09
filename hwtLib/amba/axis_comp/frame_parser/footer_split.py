@@ -113,6 +113,8 @@ class AxiS_footerSplit(AxiSCompBase):
     :note: The design is pipelined and the data can loaded
         in to internal registers imediadetely as soon as there is some space.
         There is no inter-frame delay.
+
+    .. hwt-autodoc:: _example_AxiS_footerSplit
     """
 
     def _config(self):
@@ -349,11 +351,14 @@ class AxiS_footerSplit(AxiSCompBase):
                     )
                )
 
-
-if __name__ == '__main__':
-    from hwt.synthesizer.utils import to_rtl_str
+def _example_AxiS_footerSplit():
     u = AxiS_footerSplit()
     u.DATA_WIDTH = 8
     u.FOOTER_WIDTH = 8
     u.USE_STRB = True
+    return u
+
+if __name__ == '__main__':
+    from hwt.synthesizer.utils import to_rtl_str
+    u = _example_AxiS_footerSplit()
     print(to_rtl_str(u))

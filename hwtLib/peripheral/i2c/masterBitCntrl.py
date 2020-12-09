@@ -27,6 +27,11 @@ def hasFallen(last, actual):
 
 
 class I2cBitCntrlCmd(RdSynced):
+    """
+    .. hwt-autodoc::
+    """
+
+
     def _config(self):
         pass
 
@@ -60,28 +65,29 @@ class I2cMasterBitCtrl(Unit):
     Translate simple commands into SCL/SDA transitions
     Each command has 5 states, 0/1/2/3/idle
 
-    .. aafig::
+    .. code-block:: text
+
         start:    SCL  ~~~~~~~~~~~~~~\____
                   SDA  XX/~~~~~~~\______
                        x | 0 | 1 | 2 | 3 | i
-        
+
         repstart  SCL  ______/~~~~~~~\___
                   SDA  __/~~~~~~~\______
                        x | 0 | 1 | 2 | 3 | i
-        
+
         stop      SCL  _______/~~~~~~~~~~~
                   SDA  ==\___________/~~~~~
                        x | 0 | 1 | 2 | 3 | i
-        
+
         write    SCL  ______/~~~~~~~\____
                  SDA  XXX===============XX
                       x | 0 | 1 | 2 | 3 | i
-        
+
         read     SCL  ______/~~~~~~~\____
                  SDA  XXXXXXX=XXXXXXXXXXX
                       x | 0 | 1 | 2 | 3 | i
 
-    ============ ============== ============================================================= 
+    ============ ============== =============================================================
      Timing:      Normal mode    Fast mode
     ============ ============== =============================================================
      Fscl         100KHz         400KHz
@@ -160,8 +166,8 @@ class I2cMasterBitCtrl(Unit):
            filter1(Concat(filter1[2:], filter0))
         )
 
-        filtered = ((filter1[2] & filter1[1]) | 
-                    (filter1[2] & filter1[0]) | 
+        filtered = ((filter1[2] & filter1[1]) |
+                    (filter1[2] & filter1[0]) |
                     (filter1[1] & filter1[0]))
         return filtered
 
@@ -290,7 +296,7 @@ class I2cMasterBitCtrl(Unit):
             ).Elif(In(st, [stT.wr_0, stT.wr_1, stT.wr_2, stT.wr_3]),
                sda_t(~self.cntrl.din)
             ),
-            # cmd ack at the end of state sequence   
+            # cmd ack at the end of state sequence
             cmd_ack(In(st, [stT.start_4, stT.stop_3, stT.rd_3, stT.wr_3]))
         )
 

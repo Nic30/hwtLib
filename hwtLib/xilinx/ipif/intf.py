@@ -20,7 +20,10 @@ class Ipif(Interface):
     in designs for Xilinx FPGAs around year 2012
 
     * shared address, validity signals, mask, write ack
+
+    .. hwt-autodoc::
     """
+
     READ = 1
     WRITE = 0
 
@@ -68,6 +71,9 @@ class Ipif(Interface):
 
 
 class IpifWithCE(Ipif):
+    """
+    .. hwt-autodoc::
+    """
 
     def _config(self):
         super(IpifWithCE, self)._config()

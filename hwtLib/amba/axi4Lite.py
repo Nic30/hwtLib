@@ -7,6 +7,11 @@ from hwtLib.amba.constants import PROT_DEFAULT
 
 
 class Axi4Lite_addr(Axi3Lite_addr):
+    """
+    :class:`~.Axi3Lite_addr` with "prot" signal added.
+
+    .. hwt-autodoc::
+    """
 
     def _declr(self):
         super(Axi4Lite_addr, self)._declr()
@@ -38,20 +43,32 @@ class Axi4Lite_addrAgent(Axi3Lite_addrAgent):
 
 
 class Axi4Lite_w(Axi3Lite_w):
-    pass
+    """
+    (Same as :class:`~.Axi3Lite_w`)
 
+    .. hwt-autodoc::
+    """
 
 class Axi4Lite_b(Axi3Lite_b):
-    pass
+    """
+    (Same as :class:`~.Axi3Lite_b`)
 
+    .. hwt-autodoc::
+    """
 
 class Axi4Lite_r(Axi3Lite_r):
-    pass
+    """
+    (Same as :class:`~.Axi3Lite_r`)
 
+    .. hwt-autodoc::
+    """
 
 class Axi4Lite(Axi3Lite):
     """
     Axi4-lite bus interface
+    (Same as :class:`~.Axi3Lite` just address channels do have "prot" signal)
+
+    .. hwt-autodoc::
     """
     AW_CLS = Axi4Lite_addr
     AR_CLS = Axi4Lite_addr

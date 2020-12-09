@@ -41,6 +41,7 @@ class AddrDataHs_to_Axi(BusBridge):
     :ivar ~.M_ID_WIDTH: id width for AXI interface
     :ivar ~.M_ADDR_OFFSET: address offset value for axi interface
 
+    .. hwt-autodoc:: example_AddrDataHs_to_Axi
     """
 
     def __init__(self, intfCls=Axi4):
@@ -65,7 +66,7 @@ class AddrDataHs_to_Axi(BusBridge):
 
         with self._paramsShared():
             self.m = self.intfCls()._m()
-        
+
         self.in_axi_t, self.data_words_in_axi_word = self.generate_in_axi_type()
 
     def generate_in_axi_type(self):
@@ -131,7 +132,6 @@ class AddrDataHs_to_Axi(BusBridge):
         r_data = AxiSBuilder(self, r_tmp)\
             .parse(in_axi_t).data
 
-        
         if self.data_words_in_axi_word <= 1:
             self.connect_addr(s_r.addr.data, axi.ar.addr)
 
@@ -139,24 +139,23 @@ class AddrDataHs_to_Axi(BusBridge):
 
             ar_sn = StreamNode([s_r.addr], [axi.ar])
             r_sn = StreamNode([r_data], [s_r.data])
-            
+
         else:
             addr, sub_addr = self.split_subaddr(s_r.addr.data)
             self.connect_addr(addr, axi.ar.addr)
-            
+
             sel = HsBuilder(self, r_data._select, master_to_slave=False)\
                 .buff(self.MAX_TRANS_OVERLAP).end
             sel.data(sub_addr)
-        
+
             data_items = [getattr(r_data, "data%d" % i).data for i in range(self.data_words_in_axi_word)]
             r_data_selected = HsBuilder.join_prioritized(self, data_items).end
             s_r.data.data(r_data_selected.data)
-        
+
             ar_sn = StreamNode([s_r.addr], [axi.ar, sel])
             r_sn = StreamNode([r_data_selected], [s_r.data])
-            
-            
-        ar_sn.sync(r_cntr != CNTR_MAX)    
+
+        ar_sn.sync(r_cntr != CNTR_MAX)
         r_sn.sync()
         r_en = r_sn.ack()
         If(axi.ar.ready & axi.ar.valid,
@@ -188,13 +187,13 @@ class AddrDataHs_to_Axi(BusBridge):
         w_in = w_in.data
 
         self.addr_defaults(axi.aw)
-        
+
         if self.data_words_in_axi_word <= 1:
             self.connect_addr(s_w.addr, axi.aw.addr)
             connect(s_w.data, w_in.data, fit=True)
             aw_sn = StreamNode([s_w], [axi.aw, w_in])
         else:
-            addr, sub_addr = self.split_subaddr(s_w.addr) 
+            addr, sub_addr = self.split_subaddr(s_w.addr)
             self.connect_addr(addr, axi.aw.addr)
             w_in._select.data(sub_addr)
 
@@ -206,7 +205,7 @@ class AddrDataHs_to_Axi(BusBridge):
             w_reg.DATA_WIDTH = s_w.DATA_WIDTH
             self.w_data_reg = w_reg
             w_reg.dataIn.data(s_w.data)
-            
+
             aw_sn = StreamNode(
                 [s_w],
                 [axi.aw, w_reg.dataIn, w_in._select])
@@ -217,7 +216,6 @@ class AddrDataHs_to_Axi(BusBridge):
                 w.data(w_reg.dataOut.data)
                 # ready is not important because it is part of  ._select.rd
             w_reg.dataOut.rd(Or(*[d.rd for d in data_items]))
-            
 
         w_start_en = w_cntr != CNTR_MAX
         aw_sn.sync(w_start_en)
@@ -240,7 +238,7 @@ class AddrDataHs_to_Axi(BusBridge):
         ).Elif(axi.b.valid,
             w_cntr(w_cntr - 1)
         )
-  
+
         axi.b.ready(1)
 
     def _impl(self):
@@ -249,7 +247,7 @@ class AddrDataHs_to_Axi(BusBridge):
             (S_ADDR_STEP, self.S_DATA_WIDTH)
 
         axi = self.m
-        # if 2 * self.S_ADDR_STEP <= self.DATA_WIDTH: 
+        # if 2 * self.S_ADDR_STEP <= self.DATA_WIDTH:
         #    # multiple items can be in a single axi word
         #    # require the transaction alignment
         #    axi_resize = AxiResize(axi.__class__)
@@ -280,7 +278,7 @@ class AddrDataHs_to_Axi(BusBridge):
             s_w = self.s_w
             w_cntr = self._reg("w_cntr", cntr_t, def_val=0)
             self.connect_w(s_w, axi, w_cntr, CNTR_MAX, self.in_axi_t)
-      
+
         propagateClkRstn(self)
 
 
@@ -295,21 +293,20 @@ def example_AddrDataHs_to_Axi():
     # u.S_ADDR_STEP = 512
     # u.S_DATA_WIDTH = 512
     # u.M_ADDR_OFFSET = 99
-    
-    
+
     # u.ADDR_WIDTH = 16 + 2
     # u.S_ADDR_WIDTH = 16
     # # in each axi word there is only lower half used
     # u.DATA_WIDTH = u.S_DATA_WIDTH = u.S_ADDR_STEP = 32
     # u.M_ADDR_OFFSET = 0
-    
+
     u.S_ADDR_WIDTH = 16 - 1
     u.ADDR_WIDTH = 16
     # in each axi word there is only lower half used
     u.DATA_WIDTH = 32
     u.S_DATA_WIDTH = u.S_ADDR_STEP = 16
     u.M_ADDR_OFFSET = 0
-    
+
     return u
 
 

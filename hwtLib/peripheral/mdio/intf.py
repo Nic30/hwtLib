@@ -25,6 +25,7 @@ class Mdio(Interface):
     :note: Typical clock frequency is 2.5 MHz
 
     * MDIO packet format: <PRE><ST><OP><PA><RA><TA><D>
+
         * PRE: 32b preamble
         * ST: 2b start field
         * OP: 2b operation code
@@ -34,7 +35,9 @@ class Mdio(Interface):
         * D 16b data
 
     :note: When data is being written to the slave, the master writes '10' to the MDIO line.
-        When data is being read, the master releases the MDIO line and slave sets the second bit to 1. 
+        When data is being read, the master releases the MDIO line and slave sets the second bit to 1.
+
+    .. hwt-autodoc::
     """
     # http://ww1.microchip.com/downloads/en/devicedoc/00002165b.pdf
     PRE_W = 32
@@ -152,7 +155,7 @@ class MdioAgent(SyncAgentBase):
 
     def rx_bits(self):
         """
-        Recieve bit from io tristate signal on rising edge of c clock 
+        Recieve bit from io tristate signal on rising edge of c clock
         """
         yield WaitCombStable()
         rx_bits = self.rx_bits_tmp

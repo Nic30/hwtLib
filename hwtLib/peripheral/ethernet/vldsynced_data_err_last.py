@@ -6,7 +6,10 @@ from hwt.interfaces.std import Signal, VldSynced, VectSignal
 class VldSyncedDataErrLast(VldSynced):
     """
     Interface with data, vld, err, last signal
+
+    .. hwt-autodoc::
     """
+
     def _declr(self):
         VldSynced._declr(self)
         if self.DATA_WIDTH > 8:
@@ -19,6 +22,7 @@ class VldSyncedDataErrLast(VldSynced):
 
 
 class VldSyncedDataErrLastAgent(VldSyncedAgent):
+
     def __init__(self, sim: HdlSimulator, intf, allowNoReset=False):
         VldSyncedAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
         self.has_mask = hasattr(intf, "mask")

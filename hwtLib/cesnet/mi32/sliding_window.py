@@ -20,6 +20,8 @@ class Mi32SlidingWindow(BusBridge):
     :note: offset is write only
     :ivar ~.WINDOW_SIZE: size of window to "m" interface
         also the address of offset register
+
+    .. hwt-autodoc::
     """
 
     def _config(self):

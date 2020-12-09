@@ -11,7 +11,10 @@ class I2c(Interface):
     I2C interface also known as IIC, TWI or Two Wire
 
     If interface is outside of chip it needs pull-up resistors
+
+    .. hwt-autodoc::
     """
+
 
     def _declr(self):
         self.scl = TristateClk()  # serial clk

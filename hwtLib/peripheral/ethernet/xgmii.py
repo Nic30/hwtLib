@@ -13,7 +13,10 @@ class XgmiiChannel(Interface):
     :ivar ~.c: control signal
     :ivar ~.IS_DDR: if True, the clock is used as double-data-rate clock
         (read/write data on rising and falling edge of clk)
+
+    .. hwt-autodoc::
     """
+
 
     def _config(self):
         self.DATA_WIDTH = Param(64)
@@ -41,6 +44,8 @@ class Xgmii(Interface):
 
     :note: usually 64b@156.25MHz DDR or 32b@312.5MHz DDR
         or twice wider and SDR
+
+    .. hwt-autodoc::
     """
 
     def _config(self):

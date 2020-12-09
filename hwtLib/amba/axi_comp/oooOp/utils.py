@@ -50,7 +50,7 @@ class OOOOpPipelineStage():
 
 def does_collinde(st0: OOOOpPipelineStage, st1: OOOOpPipelineStage):
     if st0 is None or st1 is None:
-        # to cover the ends of pipeline where next/prev stage does not exists 
+        # to cover the ends of pipeline where next/prev stage does not exists
         return 0
 
     return st0.valid & st1.valid & st0.addr._eq(st1.addr)
@@ -62,11 +62,11 @@ class OutOfOrderCummulativeOpPipelineConfig(NamedTuple):
     READ_DATA_RECEIVE: int
     # read state from state array, read was executed in previous step
     STATE_LOAD: int
-    
+
     # initiate write to main memory
     WRITE_BACK: int  # aw+w in first clock rest of data later
     # wait until the write acknowledge is received and block the pipeline if it is not and
-    # previous stage has valid data 
+    # previous stage has valid data
     # consume item from ooo_fifo in last beat of incomming data
     WAIT_FOR_WRITE_ACK : int
     # data which was written in to main memory, used to udate
@@ -82,7 +82,7 @@ class OutOfOrderCummulativeOpPipelineConfig(NamedTuple):
         WRITE_BACK = STATE_LOAD + 1
         WAIT_FOR_WRITE_ACK = WRITE_BACK + 1
         WRITE_HISTORY = WAIT_FOR_WRITE_ACK
-        
+
         return cls(
             READ_DATA_RECEIVE,
             STATE_LOAD,
@@ -94,6 +94,9 @@ class OutOfOrderCummulativeOpPipelineConfig(NamedTuple):
 
 
 class OutOfOrderCummulativeOpIntf(Handshaked):
+    """
+    .. hwt-autodoc::
+    """
 
     def _config(self):
         self.TRANSACTION_STATE_T = Param(uint8_t)
@@ -126,25 +129,25 @@ class OutOfOrderCummulativeOpIntfAgent(HandshakedAgent):
             t_st = intf.transaction_state
             t_st._initSimAgent(sim)
             self.t_st_is_primitive = not isinstance(t_st, Interface)
- 
+
         if intf.MAIN_STATE_T is not None:
             m_st = intf.data
             m_st._initSimAgent(sim)
             self.m_st_is_primitive = not isinstance(m_st, Interface)
-        
+
     def getDrivers(self):
         yield from HandshakedAgent.getDrivers(self)
         if self.intf.TRANSACTION_STATE_T is not None:
             yield from self.intf.transaction_state._ag.getDrivers()
-    
+
     def getMonitors(self):
         yield from HandshakedAgent.getMonitors(self)
         if self.intf.TRANSACTION_STATE_T is not None:
             yield from self.intf.transaction_state._ag.getMonitors()
-    
+
     def get_data(self):
         i = self.intf
-        
+
         if i.TRANSACTION_STATE_T is not None:
             if i.MAIN_STATE_T is not None:
                 return (
@@ -167,7 +170,7 @@ class OutOfOrderCummulativeOpIntfAgent(HandshakedAgent):
 
     def set_data(self, d):
         i = self.intf
-        
+
         if i.TRANSACTION_STATE_T is not None:
             if i.MAIN_STATE_T is not None:
                 if d is None:
@@ -206,4 +209,4 @@ class OutOfOrderCummulativeOpIntfAgent(HandshakedAgent):
         else:
             a = d
             i.addr.write(a)
-    
+

@@ -7,7 +7,9 @@ from pycocotb.constants import CLK_PERIOD
 
 
 class ConstCondition(Unit):
-
+    """
+    .. hwt-autodoc::
+    """
     def _declr(self):
         self.clk = Clk()
         self.a = VectSignal(2)

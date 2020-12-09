@@ -48,7 +48,10 @@ class EthernetMac(Unit):
     :note: This component Ehternet MAC implementation is efficient for
         bandwidths where it is not required to send multiple packets in same clk tick.
         (usually 10M - 10G but depends on frequency and data width)
+
+    .. hwt-autodoc::
     """
+
 
     def _config(self):
         self.FREQ = Param(int(100e6))

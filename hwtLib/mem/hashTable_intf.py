@@ -57,7 +57,9 @@ class InsertIntfAgent(HandshakedAgent):
 
 
 class InsertIntf(HandshakeSync):
-
+    """
+    .. hwt-autodoc::
+    """
     def _config(self):
         self.HASH_WIDTH = Param(8)
         self.KEY_WIDTH = Param(8)
@@ -101,7 +103,9 @@ class LookupKeyIntfAgent(HandshakedAgent):
 
 
 class LookupKeyIntf(HandshakeSync):
-
+    """
+    .. hwt-autodoc::
+    """
     def _config(self):
         self.LOOKUP_ID_WIDTH = Param(0)
         self.KEY_WIDTH = Param(8)
@@ -186,6 +190,8 @@ class LookupResultIntf(Handshaked):
     :ivar ~.key: original key which was searched for
     :ivar ~.data: data under this key
     :ivar ~.occupied: flag which tells if there is an valid item under this key
+
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -218,7 +224,9 @@ class LookupResultIntf(Handshaked):
 
 
 class HashTableIntf(Interface):
-
+    """
+    .. hwt-autodoc::
+    """
     def _config(self):
         self.ITEMS_CNT = Param(32)
         self.KEY_WIDTH = Param(16)

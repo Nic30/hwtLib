@@ -10,6 +10,8 @@ from pycocotb.hdlSimulator import HdlSimulator
 class AxiWriteAggregatorWriteIntf(Handshaked):
     """
     An interface which is used to push write data to a AxiWriteAggregator
+
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -49,6 +51,8 @@ class AxiWriteAggregatorWriteTmpIntf(AxiWriteAggregatorWriteIntf):
     :ivar cam_lookup: VectSignal with value of lookup from item cam
         (1 if cacheline present in store buffer)
     :ivar mask_byte_unaligned: Signal 1 if any byte of mask is 0 or all 1
+
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -67,6 +71,8 @@ class AxiWriteAggregatorWriteTmpIntf(AxiWriteAggregatorWriteIntf):
 class AxiWriteAggregatorReadIntf(Interface):
     """
     An interface which is used to speculatively read data from AxiWriteAggregator
+
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -84,7 +90,9 @@ class AxiWriteAggregatorReadIntf(Interface):
 
 
 class AddrDataIntf(Interface):
-
+    """
+    .. hwt-autodoc::
+    """
     def _config(self):
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)

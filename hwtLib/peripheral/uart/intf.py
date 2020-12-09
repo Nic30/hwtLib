@@ -6,6 +6,8 @@ from hwt.synthesizer.interface import Interface
 class Uart(Interface):
     """
     Base UART interface, also known as Serial or COM.
+
+    .. hwt-autodoc::
     """
 
     def _declr(self):

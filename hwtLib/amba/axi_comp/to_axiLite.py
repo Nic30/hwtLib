@@ -15,6 +15,9 @@ from hwtLib.handshaked.streamNode import StreamNode
 
 
 class HandshakedIdAndLen(HandshakeSync):
+    """
+    .. hwt-autodoc::
+    """
     def _config(self):
         self.ID_WIDTH = Param(4)
         self.LEN_WIDTH = Param(8)
@@ -86,7 +89,7 @@ class Axi_to_AxiLite(BusBridge):
 
         If(len_rem_vld,
             addr_ch_out.addr(actual_addr),
-            addr_ch_in.ready(0),  # because we need to process pending req. first 
+            addr_ch_in.ready(0),  # because we need to process pending req. first
             addr_ch_out.valid(1),
             If(addr_ch_out.ready,
                 # move on next beat
@@ -107,7 +110,7 @@ class Axi_to_AxiLite(BusBridge):
             StreamNode([addr_ch_in], [addr_ch_out]).sync(req_fifo_inp.rd),
         )
         addr_ch_out.prot(PROT_DEFAULT)
-        # push new request to req_fifo only on start of new requirest 
+        # push new request to req_fifo only on start of new requirest
         req_fifo_inp.vld(~len_rem_vld & addr_ch_in.valid & addr_ch_out.ready)
         req_fifo_inp.id(addr_ch_in.id)
         req_fifo_inp.len(addr_ch_in.len)

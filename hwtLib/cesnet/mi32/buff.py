@@ -16,6 +16,8 @@ class Mi32AddrHs(HandshakeSync):
     """
     Equivalent of Mi32 address/write data channel
     with HandshakeSync compatible signal names
+
+    .. hwt-autodoc::
     """
     def _config(self):
         Mi32._config(self)

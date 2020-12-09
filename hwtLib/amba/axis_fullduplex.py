@@ -7,7 +7,9 @@ from pycocotb.hdlSimulator import HdlSimulator
 
 
 class AxiStreamFullDuplex(Interface):
-
+    """
+    .. hwt-autodoc::
+    """
     def _config(self):
         AxiStream._config(self)
         self.HAS_RX = Param(True)

@@ -16,6 +16,10 @@ from pycocotb.hdlSimulator import HdlSimulator
 
 
 class MdioAddr(Interface):
+    """
+    .. hwt-autodoc::
+    """
+
     def _declr(self):
         self.phy = VectSignal(5)
         self.reg = VectSignal(5)
@@ -24,7 +28,10 @@ class MdioAddr(Interface):
 class MdioReq(HandshakeSync):
     """
     MDIO transaction request interface
+
+    .. hwt-autodoc::
     """
+
     def _declr(self):
         self.opcode = VectSignal(Mdio.OP_W)  # R/W
         self.addr = MdioAddr()
@@ -80,7 +87,9 @@ class MdioMaster(Unit):
         * https://opencores.org/websvn/filedetails?repname=ethmac10g&path=%2Fethmac10g%2Ftrunk%2Frtl%2Fverilog%2Fmgmt%2Fmdio.v
         * https://github.com/NetFPGA/netfpga/blob/master/lib/verilog/core/io/mdio/src/nf2_mdio.v
 
+    .. hwt-autodoc::
     """
+
 
     def _config(self):
         self.FREQ = Param(int(100e6))

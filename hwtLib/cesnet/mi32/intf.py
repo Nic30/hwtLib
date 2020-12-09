@@ -23,6 +23,8 @@ class Mi32(Interface):
     :ivar ~.dwr: write data
     :ivar ~.drd: read data
     :ivar ~.drdy: read data valid
+
+    .. hwt-autodoc::
     """
 
     def _config(self):

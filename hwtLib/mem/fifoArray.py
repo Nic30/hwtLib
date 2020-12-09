@@ -20,14 +20,16 @@ from hwtLib.common_nonstd_interfaces.addr_data_hs_bidir import AddrInDataOutHs, 
 
 class FifoArrayInsertInterface(HandshakedBiDirectional):
     """
-    
+
     :ivar ~.append: if append = 1 the item is appended to last list item specified using "addr"
         else new list is created and "addr" value is ignored
     :ivar ~.addr: an address with potential end of the list
     :ivar ~.data: data to store in next list node
     :ivar ~.addr_ret: an address where the item was inserted to
+
+    .. hwt-autodoc::
     """
-        
+
     def _config(self):
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(32)
@@ -72,11 +74,13 @@ class FifoArrayInsertInterfaceAgent(HandshakedBiDirectionalAgent):
 
 class FifoArrayPopInterface(AddrInDataOutHs):
     """
-    :ivar ~.addr: the address of the list head to read from: 
+    :ivar ~.addr: the address of the list head to read from:
     :ivar ~.data: the return data which was read
     :ivar ~.last: flag which tell if this node was last in this list
         and thus this list is now empty and deallocated
     :ivar ~.addr_next: address on a next item in this FIFO
+
+    .. hwt-autodoc::
     """
 
     def _declr(self):
@@ -107,13 +111,13 @@ class FifoArrayPopInterfaceAgent(AddrInDataOutHsAgent):
     def get_data(self):
         i = self.intf
         return (i.data.read(), i.last.read(), i.addr_next.read())
-    
+
 
 class FifoArray(Unit):
     """
     This component is an array of list nodes, which can be used to emulate multiple FIFOs.
     The memory is shared and the number of lists stored in this array is limited only by memory.
-    
+
     Corresponds to data structure:
 
     .. code-block:: cpp
@@ -125,15 +129,17 @@ class FifoArray(Unit):
           bool valid;
           bool last;
         };
-        
+
         item items[ITEMS];
-    
+
     :note: The insert_addr is used to pop from specific list.
         The list can be read only from it's head in FIFO order manner.
         Item is last if it's next pointer points on this item.
     :note: DistRAM implementation.
     :note: The pop address is not checked
         it is possible to pop from wrong list if address is specified incorrectly
+
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -147,14 +153,14 @@ class FifoArray(Unit):
 
         addClkRstn(self)
         self.insert = FifoArrayInsertInterface()
-        
+
         self.pop = FifoArrayPopInterface()._m()
         for i in [self.insert, self.pop]:
             i.ADDR_WIDTH = self.addr_t.bit_length()
             i.DATA_WIDTH = self.value_t.bit_length()
 
     def _impl(self):
-        addr_t = self.addr_t 
+        addr_t = self.addr_t
         value_t = self.value_t
         item_mask_t = Bits(self.ITEMS)
 
@@ -170,7 +176,7 @@ class FifoArray(Unit):
 
         insert.addr_ret(insert_addr_next)
         insert.rd(item_valid != mask(self.ITEMS))
-        
+
         pop_one_hot = rename_signal(
             self,
             binToOneHot(pop.addr, en=pop.vld & pop.rd),
@@ -186,7 +192,7 @@ class FifoArray(Unit):
 
         item_valid((item_valid & ~pop_one_hot) | insert_one_hot)
         item_last((item_last & ~insert_parent_one_hot) | insert_one_hot)
-        
+
         values = self._sig("values", value_t[self.ITEMS])
         next_ptrs = self._sig("next_ptrs", addr_t[self.ITEMS])
 

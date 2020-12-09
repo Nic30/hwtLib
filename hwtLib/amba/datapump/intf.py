@@ -10,6 +10,10 @@ from pycocotb.hdlSimulator import HdlSimulator
 
 
 class AddrSizeHs(Handshaked):
+    """
+    .. hwt-autodoc::
+    """
+
     def _config(self):
         self.ID_WIDTH = Param(4)
         self.ADDR_WIDTH = Param(32)
@@ -34,6 +38,7 @@ class AddrSizeHs(Handshaked):
 
 
 class AddrSizeHsAgent(HandshakedAgent):
+
     def get_data(self):
         intf = self.intf
 
@@ -61,6 +66,8 @@ class AddrSizeHsAgent(HandshakedAgent):
 class AxiRDatapumpIntf(Interface):
     """
     Interface of read datapump driver
+
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -120,6 +127,8 @@ class AxiRDatapumpIntfAgent(AgentBase):
 class AxiWDatapumpIntf(Interface):
     """
     Interface of write datapump driver
+
+    .. hwt-autodoc::
     """
 
     def _config(self):

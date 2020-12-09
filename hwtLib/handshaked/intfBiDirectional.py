@@ -53,6 +53,8 @@ class HandshakedBiDirectional(Handshaked):
     """
     :class:`hwt.interfaces.std.Handshaked` interface with data
         channels in bout direction
+
+    .. hwt-autodoc::
     """
 
     def _declr(self):

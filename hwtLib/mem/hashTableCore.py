@@ -7,10 +7,10 @@ from hwt.code import log2ceil, connect, Concat
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.unit import Unit
+from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.ramAsHs import RamHsR
 from hwtLib.handshaked.streamNode import StreamNode
-from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
 from hwtLib.logic.crcComb import CrcComb
 from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, HashTableIntf
@@ -45,14 +45,7 @@ class HashTableCore(Unit):
     :ivar ~.LOOKUP_KEY: flag if lookup interface should have key signal
     :ivar ~.POLYNOME: polynome for crc hash used in this table
 
-    .. aafig::
-                          ^
-                          | mem
-        io.insert   +-----+-----+
-        ----------->|           | io.lookupRes
-        io.lookup   | HashTable +------------->
-        ----------->|           |
-                    +-----------+
+    .. figure:: ./_static/HashTableCore.png
 
     .. hwt-autodoc:: _example_HashTableCore
     """
@@ -78,8 +71,8 @@ class HashTableCore(Unit):
         self.r = RamHsR()._m()
         self.w = AddrDataHs()._m()
         for i in [self.r, self.w]:
-            i.ADDR_WIDTH = log2ceil(self.ITEMS_CNT)                                 
-            i.DATA_WIDTH = self.KEY_WIDTH + self.DATA_WIDTH + 1  # +1 for item_vld  
+            i.ADDR_WIDTH = log2ceil(self.ITEMS_CNT)
+            i.DATA_WIDTH = self.KEY_WIDTH + self.DATA_WIDTH + 1  # +1 for item_vld
 
     def parseItem(self, sig):
         """

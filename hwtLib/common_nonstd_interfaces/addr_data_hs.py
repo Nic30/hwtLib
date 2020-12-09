@@ -7,6 +7,8 @@ from pycocotb.hdlSimulator import HdlSimulator
 class AddrDataHs(HandshakeSync):
     """
     Simple handshaked interface with address and data signal
+
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -25,6 +27,8 @@ class AddrDataHs(HandshakeSync):
 class AddrDataVldHs(AddrDataHs):
     """
     :see: :class:`.AddrDataHs` with a vld_flag signal
+
+    .. hwt-autodoc::
     """
 
     def _declr(self):
@@ -39,6 +43,8 @@ class AddrDataBitMaskHs(AddrDataHs):
     """
     :see: :class:`.AddrDataHs` with a mask signal
     :note: mask has 1b granularity
+
+    .. hwt-autodoc::
     """
 
     def _declr(self):

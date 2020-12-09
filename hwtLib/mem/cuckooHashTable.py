@@ -44,29 +44,7 @@ class CuckooHashTable(HashTableCore):
     fsm ends up in infinite loop and it will be reinserting items for ever.
     insert time: O(inf)
 
-    .. aafig::
-                    +-------------------------------------------+ insertRes
-                    |                            +---------------------->
-                    |    CuckooHashTable         |              |
-        insert      |                            |   lookupRes  |
-        +--------------------------------------+ |  +----+      |
-                    |                          | |  |    |      |
-                    |                          v |  v    |      | lookupRes
-        lookup      |                        +---+---+   +-------------->
-        +----------------------------------->|       |   |      |
-                    |  +-------------------->| stash |   |      |
-                    |  |                +----+       |   |      |
-         delete     |  |                v    +------++   |      |
-        +--------------+            +-------+       |    |      |
-                    |               | insert|     lookup |      |  insert, 
-                    |               +----+--+       v    |      |  lookup,
-                    |                 ^  |       +--------+     |  lookupRes
-                    |                 |  +------>| tables +------------->
-         clean      |   +--------+    |          +--------+     |
-        +-------------->|cleanFSM+ ---+                         |
-                    |   +--------+                              |
-                    |                                           |
-                    +-------------------------------------------+
+    .. figure:: ./_static/CuckooHashTable.png
 
     .. hwt-autodoc::
     """
@@ -117,7 +95,7 @@ class CuckooHashTable(HashTableCore):
             t.ITEMS_CNT = self.TABLE_SIZE // self.TABLE_CNT
             t.LOOKUP_HASH = True
             t.LOOKUP_KEY = True
-        
+
     def clean_addr_iterator(self, en):
         lastAddr = self.TABLE_SIZE // self.TABLE_CNT - 1
         addr = self._reg("cleanupAddr",
@@ -152,7 +130,7 @@ class CuckooHashTable(HashTableCore):
             if self.DATA_WIDTH:
                 ins.data(stash.data)
             ins.vld(Or(state._eq(fsm_t.cleaning),
-                       state._eq(fsm_t.lookupResAck) & 
+                       state._eq(fsm_t.lookupResAck) &
                        insertTargetOH[i]))
             ins.item_vld(stash.item_vld)
 
@@ -193,7 +171,7 @@ class CuckooHashTable(HashTableCore):
                             )
                 )
             ),
-            # final if the item was already somewhere or there is an empty place in some table 
+            # final if the item was already somewhere or there is an empty place in some table
             insertFinal(Or(*lookupFoundOH, *isEmptyOH))
         )
         return lookupResVld, insertFinal, lookupFoundOH, insertTargetOH
@@ -334,7 +312,7 @@ class CuckooHashTable(HashTableCore):
         fsm_t = state._dtype
         res = self.insertRes
         res.vld(
-            (state._eq(fsm_t.lookup) & stash.origin_op._eq(ORIGIN_TYPE.INSERT) & stash.reinsert_cntr._eq(0)) | 
+            (state._eq(fsm_t.lookup) & stash.origin_op._eq(ORIGIN_TYPE.INSERT) & stash.reinsert_cntr._eq(0)) |
             (state._eq(fsm_t.lookupResAck) & insertAck & insertFinal & ~isDelete)
         )
         #If(state._eq(fsm_t.lookup),
@@ -410,12 +388,12 @@ class CuckooHashTable(HashTableCore):
                 # which we need to store somewhere as well
                 (insertAck & ~insertFinal, fsm_t.lookup)
             ).stateReg
-        
+
         cleanAck(insertAck & state._eq(fsm_t.cleaning))
         lookupResRead(state._eq(fsm_t.lookupResWaitRd))
         lookupResNext = rename_signal(
             self,
-            (state._eq(fsm_t.idle) & self.lookupRes.rd) | 
+            (state._eq(fsm_t.idle) & self.lookupRes.rd) |
             (state._eq(fsm_t.lookupResAck) & (state.next != fsm_t.lookupResAck)),
             "lookupResNext")
         # synchronize all lookupRes from all tables
@@ -432,9 +410,9 @@ class CuckooHashTable(HashTableCore):
         self.insertRes_driver(state, stash, insertAck, insertFinal, isDelete)
         self.tables_insert_driver(state, insertTargetOH, insertIndex, stash)
         self.lookupRes_driver(state, lookupFoundOH)
-        
+
         lookup_en =rename_signal(
-            self, 
+            self,
             (state._eq(fsm_t.lookup) & ((stash.reinsert_cntr != 0) | isDelete)) |
             (state._eq(fsm_t.idle) & stash.origin_op._eq(ORIGIN_TYPE.LOOKUP)),
             "lookup_en"

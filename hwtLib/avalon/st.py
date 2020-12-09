@@ -9,6 +9,8 @@ class AvalonST(Handshaked):
     Avalon stream interface
 
     :note: handshaked stream with cahnnel, error, sof, eof signal
+
+    .. hwt-autodoc::
     """
 
     def _config(self):

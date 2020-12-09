@@ -4,7 +4,7 @@
 from hwt.code import If, log2ceil
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.agents.fifo import FifoWriterAgent
-from hwt.interfaces.std import FifoWriter, FifoReader, VectSignal, Signal
+from hwt.interfaces.std import FifoWriter, FifoReader, Signal
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.mem.fifo import Fifo
@@ -24,6 +24,8 @@ class FifoWriterDropable(FifoWriter):
         including current data word
     :ivar ~.discard: if 1 all written data which were not commited are discarded
         includeing current data word
+
+    .. hwt-autodoc::
     """
     def _declr(self):
         super(FifoWriterDropable, self)._declr()

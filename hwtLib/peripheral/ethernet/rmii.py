@@ -9,6 +9,10 @@ from hwtLib.peripheral.ethernet.rmii_agent import RmiiAgent, RmiiTxChannelAgent,
 
 
 class RmiiTxChannel(Interface):
+    """
+    .. hwt-autodoc::
+    """
+
     def _config(self):
         self.DATA_WIDTH = Param(2)
 
@@ -21,6 +25,10 @@ class RmiiTxChannel(Interface):
 
 
 class RmiiRxChannel(Interface):
+    """
+    .. hwt-autodoc::
+    """
+
     def _config(self):
         self.DATA_WIDTH = Param(2)
 
@@ -45,7 +53,10 @@ class Rmii(Interface):
         clock source, or may be driven from the MAC to the PHY
     :note: ref_clk operates on 50MHZ in both 100M/10M mode however
         in 10M mode data have to stay valid for 10 clk cycles
+
+    .. hwt-autodoc::
     """
+
 
     def _config(self):
         self.CLK_MASTER_DIR = Param(DIRECTION.IN)

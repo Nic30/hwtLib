@@ -15,7 +15,10 @@ from hwtLib.handshaked.streamNode import StreamNode
 class AxiS_eq(Unit):
     """
     Comparator of const size value provided as a AxiStream
+
+    .. hwt-autodoc::
     """
+
 
     def _config(self):
         AxiStream._config(self)
