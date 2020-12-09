@@ -18,9 +18,11 @@ from hwtLib.mem.fifo import Fifo
 @serializeParamsUniq
 class FifoOutOfOrderRead(Unit):
     """
-    Container of FIFO pointers and flags where the items can be discarded in out of order manner
+    Container of FIFO pointers and flags where the items can be discarded in out of order manner.
 
-    :attention: this component does not contains the item storage, it is just container of such a FIFO logic
+    .. figure:: FifoOutOfOrderRead.png
+
+    :attention: This component does not contains the item storage, it is just container of such a FIFO logic.
 
     Item state control scheme:
 
@@ -119,7 +121,10 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
     :class:`~.FifoOutOfOrderRead` with an additional cam to filter transactions by same key
     :attention: this component does not contains the item storage, it is just container of such a FIFO logic
 
+    .. figure:: FifoOutOfOrderReadFiltered.png
+
     Item state control scheme:
+
     * write_execute: preallocate the item for writing (and add key to CAM for filtering)
     * write_confirm: the item is now allocated in the fifo and ready to be read
     * read_execute: the item is locked for updates and is currently being read
@@ -128,6 +133,7 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
 
     .. hwt-autodoc::
     """
+
     def _config(self):
         super(FifoOutOfOrderReadFiltered, self)._config()
         self.KEY_WIDTH = 8
@@ -145,7 +151,6 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
             # return one-hot encoded index of the previously searched key
             plr = self.read_lookup_res = Handshaked()._m()
             plr.DATA_WIDTH = self.ITEMS
-
 
         # check if item is stored in CAM
         pl = self.write_pre_lookup = Handshaked()

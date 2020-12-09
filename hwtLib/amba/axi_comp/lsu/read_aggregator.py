@@ -37,11 +37,13 @@ class AxiReadAggregator(Unit):
 
     This component also tries to provide as fresh data as possible. This means that pending read transaction
     can be potentially be cancelled and finished from the write transaction. If this happens we need to mark this read transaction to be dropped.
-    
+
     We do this to minimise need for consystency check on user side of the component. Thanks to this, there is a maximum number of write transactions
     which have to be checked for access conflicts on user side. This number corresponds to a latency of a write port on a StoreQueue side,
     which is usually 2. If these write transactions are used to update the read data, the read data are asserted to be a last written value
-    on that specified address. 
+    on that specified address.
+
+    .. figure:: AxiReadAggregator.png
 
     .. hwt-autodoc:: _example_AxiReadAggregator
     """
@@ -56,7 +58,7 @@ class AxiReadAggregator(Unit):
         with self._paramsShared():
             self.s = Axi4()
             self.m = Axi4()._m()
-    
+
             if self.BUS_WORDS_IN_CACHE_LINE > 1:
                 fb = AxiSFifoCopy(Axi4_r)
                 fb.DEPTH = 2 * self.BUS_WORDS_IN_CACHE_LINE
@@ -78,13 +80,13 @@ class AxiReadAggregator(Unit):
                           data_copy_override: VldSynced):
         s = self.s
         m = self.m
-        
+
         fb = self.frame_buff
-        
+
         data_out_node = StreamNode([fb.dataOut], [s.r])
         data_out_node.sync()
         read_ack(data_out_node.ack())
-        
+
         fb.dataOut_copy_frame(
             (fb.dataOut.valid & fb.dataOut.last & waiting_transaction_vld[fb.dataOut.id]) |
             data_copy_override.vld
@@ -123,7 +125,7 @@ class AxiReadAggregator(Unit):
         addr_cam = self.addr_cam
         ITEMS = self.addr_cam.ITEMS
         addr_cam_out = self.add_addr_cam_out_reg(item_vld)
-        
+
         with self._paramsShared():
             s_ar_tmp = self.s_ar_tmp = AxiSReg(s.AR_CLS)
 
@@ -136,7 +138,7 @@ class AxiReadAggregator(Unit):
             "match_res")
         blocking_access = rename_signal(
             self,
-            s.ar.valid & 
+            s.ar.valid &
             (
                 item_vld[s.ar.id] |
                 (s_ar_tmp.dataOut.valid & (s.ar.id._eq(s_ar_tmp.dataOut.id)))
@@ -149,9 +151,9 @@ class AxiReadAggregator(Unit):
         s_ar_node.sync(~blocking_access)
         # s_ar_node_ack = s_ar_node.ack() & ~blocking_access
         connect(s.ar, s_ar_tmp.dataIn, exclude={s.ar.valid, s.ar.ready})
-        
+
         parent_transaction_id = oneHotToBin(self, match_res, "parent_transaction_id")
-        
+
         m_ar_node = StreamNode(
             [s_ar_tmp.dataOut, addr_cam_out],
             [m.ar],
@@ -162,7 +164,7 @@ class AxiReadAggregator(Unit):
         connect(s_ar_tmp.dataOut, m.ar, exclude={m.ar.valid, m.ar.ready})
         addr_cam.match.data(s.ar.addr[:self.CACHE_LINE_OFFSET_BITS])
         ar_ack = rename_signal(self, m_ar_node.ack(), "ar_ack")
-        
+
         # insert into cam on empty position specified by id of this transaction
         addr_cam.write.addr(s_ar_tmp.dataOut.id)
         addr_cam.write.data(s_ar_tmp.dataOut.addr[:self.CACHE_LINE_OFFSET_BITS])
@@ -191,13 +193,13 @@ class AxiReadAggregator(Unit):
             item_vld_next.append(this_transaction_vld)
 
             waiting_transaction_start = (
-                ar_ack & 
-                (match_res != 0) & 
+                ar_ack &
+                (match_res != 0) &
                 parent_transaction_id._eq(trans_id) &
                 ~this_trans_end
             )
             # note: this_trans_end in this context is for parent transactio
-            # which was not started just now, so it may be ending just now 
+            # which was not started just now, so it may be ending just now
             waiting_transaction_start = rename_signal(self,  waiting_transaction_start, "waiting_transaction_start%d" % trans_id)
             _waiting_transaction_vld = apply_set_and_clear(
                 waiting_transaction_vld[trans_id],
@@ -208,24 +210,24 @@ class AxiReadAggregator(Unit):
 
         item_vld(Concat(*reversed(item_vld_next)))
         waiting_transaction_vld(Concat(*reversed(waiting_transaction_vld_next)))
-        
+
         If(self.clk._onRisingEdge(),
             If((match_res != 0) & ar_ack,
                 waiting_transaction_id[parent_transaction_id](s_ar_tmp.dataOut.id)
             )
         )
-        
+
         # parent transaction is finishing just now
-        # we need to quickly grab the data in data buffer and copy it also 
+        # we need to quickly grab the data in data buffer and copy it also
         # for this transaction
         data_copy_override.vld(
-            s_ar_tmp.dataOut.valid & 
-            read_ack & 
-            (match_res != 0) & 
-            s.r.id._eq(parent_transaction_id) & 
+            s_ar_tmp.dataOut.valid &
+            read_ack &
+            (match_res != 0) &
+            s.r.id._eq(parent_transaction_id) &
             s.r.last)
         data_copy_override.data(s_ar_tmp.dataOut.id)
-        
+
 
     def _impl(self):
         ITEMS = self.addr_cam.ITEMS
@@ -237,7 +239,7 @@ class AxiReadAggregator(Unit):
         data_copy_override = VldSynced()
         data_copy_override.DATA_WIDTH = self.ID_WIDTH
         self.data_copy_override = data_copy_override
-        
+
         self.read_request_section(
             read_ack, item_vld, waiting_transaction_id, waiting_transaction_vld,
             data_copy_override)
