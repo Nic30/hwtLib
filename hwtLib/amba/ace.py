@@ -129,7 +129,7 @@ class AceSnoop_addr(Axi_hs):
         self.SNOOP_ADDR_WIDTH = Param(32)
 
     def _declr(self):
-        self.addr = VectSignal(self.ADDR_WIDTH)
+        self.addr = VectSignal(self.SNOOP_ADDR_WIDTH)
         self.snoop = VectSignal(4)
         self.prot = VectSignal(3)
         Axi_hs._declr(self)
