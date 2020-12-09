@@ -58,7 +58,7 @@ class AxiSBuilder(AbstractStreamBuilder):
     def parse(self, typeToParse):
         """
         :param typeToParse: structuralized type to parse
-        :return: interface with parsed data (StructIntf for HStruct f.e.)
+        :return: interface with parsed data (e.g. StructIntf for HStruct)
         """
         assert self.master_to_slave
         u = AxiS_frameParser(typeToParse)

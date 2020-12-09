@@ -98,7 +98,7 @@ class ClkBuilder(AbstractComponentBuilder):
         :param sampleTick: signal to enable next sample taking
         :param rstSig: rstSig signal to reset internal counter, if is None it is not used
 
-        :return: typle (oversampled signal, oversample valid signal) 
+        :return: typle (oversampled signal, oversample valid signal)
         """
         if sig._dtype != BIT:
             raise NotImplementedError()
@@ -133,7 +133,7 @@ class ClkBuilder(AbstractComponentBuilder):
         :param sig: signal to detect edges on
         :param rise: if True signal for rise detecting will be returned
         :param fall: if True signal for fall detecting will be returned
-        :param last: last value for sig (use f.e. when you have register and it's next signal (sig=reg.next, last=reg))
+        :param last: last value for sig (use e.g. when you have register and it's next signal (sig=reg.next, last=reg))
             if last is None last register will be automatically generated
         :param initVal: if last is None initVal will be used as its initialization value
         :return: signals which is high on on rising/falling edge or both (specified by rise, fall parameter)

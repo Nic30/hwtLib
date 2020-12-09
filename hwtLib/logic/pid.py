@@ -30,7 +30,7 @@ class PidController(Unit):
     a2 = K_p + 2K_d/T_s
     a3 = - K_d / T_s
 
-    :note: You can obtain coeficiet f.e. by Ziegler-Nichols method.
+    :note: You can obtain coeficiet e.g. by Ziegler-Nichols method.
 
     .. hwt-autodoc::
     """

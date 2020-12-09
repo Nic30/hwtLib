@@ -50,7 +50,7 @@ class Mi32(Interface):
     def _getAddrStep(self):
         """
         :return: how many bits is one unit of address
-                 (f.e. 8 bits for  char * pointer, 36 for 36 bit bram)
+                 (e.g. 8 bits for  char * pointer, 36 for 36 bit bram)
         """
         return 8
 

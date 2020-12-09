@@ -32,7 +32,7 @@ class AxiStream(Axi_hs, Axi_id, Axi_user, Axi_strb):
         this interface have reversed byte endianity.
         That means that most significant byte is is on lower address
         than les significant ones
-        f.e. little endian value 0x1a2b will be 0x2b1a
+        e.g. little endian value 0x1a2b will be 0x2b1a
         but iterface itselelf is not reversed in any way
 
     :ivar ~.DATA_WIDTH: Param which specifies width of data signal
