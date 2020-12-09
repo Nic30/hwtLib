@@ -23,6 +23,7 @@ class FifoOutOfOrderRead(Unit):
     :attention: this component does not contains the item storage, it is just container of such a FIFO logic
 
     Item state control scheme:
+
     * write_confirm: the item is now allocated in the fifo and ready to be read
     * read_execute: the item is locked for updates and is currently being read
     * read_confirm: the item is entirely readed and it is ready to be deallocated
