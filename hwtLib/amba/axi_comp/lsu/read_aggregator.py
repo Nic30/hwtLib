@@ -29,19 +29,8 @@ class AxiReadAggregator(Unit):
 
     This component has several slots for read transactions, Each slot has it's own address record in CAM which is used
     to detect reads from same address, if the read is from same address which is currently being loaded. The read thread
-    is put to sleep until data for previous read is received. After it is received it is copied as a response also
+    is put to sleep until data for previous read is received. After data is received it is copied as a response also
     for this transaction.
-
-    If there is a read request the write buffer is checked first. If it does not contain requested cacheline the read request is
-    forwarded to slave insterface ("s").
-
-    This component also tries to provide as fresh data as possible. This means that pending read transaction
-    can be potentially be cancelled and finished from the write transaction. If this happens we need to mark this read transaction to be dropped.
-
-    We do this to minimise need for consystency check on user side of the component. Thanks to this, there is a maximum number of write transactions
-    which have to be checked for access conflicts on user side. This number corresponds to a latency of a write port on a StoreQueue side,
-    which is usually 2. If these write transactions are used to update the read data, the read data are asserted to be a last written value
-    on that specified address.
 
     .. figure:: ./_static/AxiReadAggregator.png
 
