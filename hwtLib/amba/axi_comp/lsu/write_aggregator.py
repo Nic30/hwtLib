@@ -28,7 +28,6 @@ class AxiWriteAggregator(Unit):
     It manages:
 
     * out of order write acknowledge
-    * write to read bypass (reading of value which is not yet written in AXI slave)
     * write transaction merging
 
     .. image:: ./_static/AxiWriteAggregator.png
