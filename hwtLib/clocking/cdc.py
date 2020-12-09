@@ -150,10 +150,12 @@ class Cdc(Unit):
 
 class CdcPulseGen(Cdc):
     """
-    If inData_clk.FREQ > outData_clk.FREQ:
-        outData_clk.FREQ >= 1.5*inData_clk.FREQ
-    else:
-        inData_clk.FREQ >= 1.5*outData_clk.FREQ
+    .. code-block:: python
+
+        if inData_clk.FREQ > outData_clk.FREQ:
+            outData_clk.FREQ >= 1.5*inData_clk.FREQ
+        else:
+            inData_clk.FREQ >= 1.5*outData_clk.FREQ
 
     .. hwt-autodoc::
     """
