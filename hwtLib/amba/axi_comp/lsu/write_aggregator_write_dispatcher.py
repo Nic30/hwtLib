@@ -28,7 +28,9 @@ from pyMathBitPrecise.bit_utils import mask
 class AxiWriteAggregatorWriteDispatcher(Unit):
     """
     Use :class:`hwtLib.amba.axi_comp.lsu.fifo_oooread.FifoOutOfOrderReadFiltered` read ports
-    to qury an AXI transaction info and copy paste this transaction from BRAM to AXI
+    to query an AXI transaction info and copy paste this transaction from BRAM to AXI
+
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -125,7 +127,7 @@ class AxiWriteAggregatorWriteDispatcher(Unit):
         a.cache(CACHE_DEFAULT)
         a.qos(QOS_DEFAULT)
         a.valid(a_tmp.vld)
-        
+
         return a_ld
 
     def dispatch_data(self, aw_ld: RtlSignal, pop_ptr: RtlSignal,
@@ -136,7 +138,7 @@ class AxiWriteAggregatorWriteDispatcher(Unit):
         * if there is a valid item in buffer dispatch write request and write data
         * handshaked FIFO read logic
         """
-        BUS_WORDS_IN_CACHE_LINE = self.BUS_WORDS_IN_CACHE_LINE 
+        BUS_WORDS_IN_CACHE_LINE = self.BUS_WORDS_IN_CACHE_LINE
 
         bus_w_first = self._sig("bus_w_first_tmp")
         bus_w_last = self._sig("bus_w_last_tmp")
