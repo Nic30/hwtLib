@@ -58,6 +58,7 @@ class AxiS_FrameJoin(Unit):
         self.OUT_OFFSET = Param(0)
 
     def _declr(self):
+        assert self.USE_KEEP
         t = self.T
         word_bytes = self.word_bytes = self.DATA_WIDTH // 8
         input_cnt = self.input_cnt = len(t.fields)

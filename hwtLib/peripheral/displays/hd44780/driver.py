@@ -40,6 +40,8 @@ class Hd44780CmdIntfBurst(HandshakedStoredBurst):
 
     def __init__(self):
         super(Hd44780CmdIntfBurst, self).__init__(Hd44780CmdIntf)
+        self.DATA = ((0, 0, 0, 0), # an example meaningless data
+                     (0, 0, 0, 1))
 
     def set_data(self, intf: Hd44780CmdIntf, d):
         if d is None:

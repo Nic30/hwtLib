@@ -20,11 +20,11 @@ class AceLite_addr(Axi4Lite_addr):
 
 
 class AceLite(Axi4Lite):
-    AR_CLS = AceLite_addr
-    AW_CLS = AceLite_addr
     """
     .. hwt-autodoc::
     """
+    AR_CLS = AceLite_addr
+    AW_CLS = AceLite_addr
 
     def _getIpCoreIntfClass(self):
         raise NotImplementedError()

@@ -148,14 +148,15 @@ class Axi3Lite_bAgent(BaseAxiAgent):
 
 #################################################################
 class Axi3Lite(Interface):
+    """
+    .. hwt-autodoc::
+    """
     AW_CLS = Axi3Lite_addr
     AR_CLS = Axi3Lite_addr
     W_CLS = Axi3Lite_w
     R_CLS = Axi3Lite_r
     B_CLS = Axi3Lite_b
-    """
-    .. hwt-autodoc::
-    """
+
     def _config(self):
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)

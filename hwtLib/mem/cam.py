@@ -23,8 +23,6 @@ class Cam(Unit):
     :note: a combinational version
 
     :ivar USE_VLD_BIT: if true the validity bit is a part of the CAM record
-    :ivar MATCH_PORT_CNT: number of CAM ports for matching, if None there is only as single port
-        otherwise there is an array of such a ports of specified size
 
     .. hwt-autodoc::
     """
@@ -33,7 +31,6 @@ class Cam(Unit):
         self.KEY_WIDTH = Param(15)
         self.ITEMS = Param(32)
         self.USE_VLD_BIT = Param(True)
-        self.MATCH_PORT_CNT = Param(None)
 
     def _declr_match_io(self):
         self.match = m = Handshaked()
@@ -100,6 +97,9 @@ class CamMultiPort(Cam):
     """
     A variant of :class:`~.Cam` with multiple ports for lookup
 
+    :ivar MATCH_PORT_CNT: number of CAM ports for matching, if None there is only as single port
+        otherwise there is an array of such a ports of specified size
+
     .. hwt-autodoc:: _example_CamMultiPort
     """
 
@@ -136,5 +136,5 @@ def _example_CamMultiPort():
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
-    u = Cam()
+    u = _example_CamMultiPort()
     print(to_rtl_str(u))

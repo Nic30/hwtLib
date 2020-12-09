@@ -43,8 +43,12 @@ class CamWithReadPort(CamMultiPort):
 
     .. hwt-autodoc::
     """
+    def _config(self):
+        CamMultiPort._config(self)
+        self.USE_VLD_BIT = False
 
     def _declr(self):
+        assert not self.USE_VLD_BIT
         CamMultiPort._declr(self)
         r = self.read = AddrDataIntf()
         r.ADDR_WIDTH = log2ceil(self.ITEMS - 1)

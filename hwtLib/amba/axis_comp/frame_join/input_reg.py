@@ -42,8 +42,10 @@ class FrameJoinInputReg(Unit):
     def _config(self):
         self.REG_CNT = Param(2)
         AxiStream._config(self)
+        self.USE_KEEP = True
 
     def _declr(self):
+        assert self.USE_KEEP
         addClkRstn(self)
         with self._paramsShared():
             self.dataIn = AxiStream()

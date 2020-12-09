@@ -26,7 +26,7 @@ class Mi32SlidingWindow(BusBridge):
 
     def _config(self):
         Mi32._config(self)
-        self.M_ADDR_WIDTH = Param(self.ADDR_WIDTH)
+        self.M_ADDR_WIDTH = Param(self.ADDR_WIDTH + 1)
         self.WINDOW_SIZE = Param(4096)
 
     def _declr(self):

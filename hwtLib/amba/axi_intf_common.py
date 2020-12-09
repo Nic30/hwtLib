@@ -32,6 +32,9 @@ class Axi_strb(Interface):
     """
     .. hwt-autodoc::
     """
+    def _config(self):
+        self.DATA_WIDTH = Param(64)
+
     def _declr(self):
         self.strb = VectSignal(self.DATA_WIDTH // 8)
 
