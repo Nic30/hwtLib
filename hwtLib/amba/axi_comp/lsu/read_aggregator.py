@@ -43,7 +43,7 @@ class AxiReadAggregator(Unit):
     which is usually 2. If these write transactions are used to update the read data, the read data are asserted to be a last written value
     on that specified address.
 
-    .. figure:: AxiReadAggregator.png
+    .. figure:: ./_static/AxiReadAggregator.png
 
     .. hwt-autodoc:: _example_AxiReadAggregator
     """

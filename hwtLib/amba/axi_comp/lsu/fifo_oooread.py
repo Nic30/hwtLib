@@ -20,7 +20,7 @@ class FifoOutOfOrderRead(Unit):
     """
     Container of FIFO pointers and flags where the items can be discarded in out of order manner.
 
-    .. figure:: FifoOutOfOrderRead.png
+    .. figure:: ./_static/FifoOutOfOrderRead.png
 
     :attention: This component does not contains the item storage, it is just container of such a FIFO logic.
 
@@ -121,7 +121,7 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
     :class:`~.FifoOutOfOrderRead` with an additional cam to filter transactions by same key
     :attention: this component does not contains the item storage, it is just container of such a FIFO logic
 
-    .. figure:: FifoOutOfOrderReadFiltered.png
+    .. figure:: ./_static/FifoOutOfOrderReadFiltered.png
 
     Item state control scheme:
 
