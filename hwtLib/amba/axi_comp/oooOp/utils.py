@@ -3,7 +3,7 @@ from typing import NamedTuple
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VectSignal, HandshakeSync
-from hwt.interfaces.structIntf import HdlTypeToIntf
+from hwt.interfaces.structIntf import HdlType_to_Interface
 from hwt.synthesizer.param import Param
 from hwtLib.types.ctypes import uint8_t
 from pycocotb.hdlSimulator import HdlSimulator
@@ -106,9 +106,9 @@ class OutOfOrderCummulativeOpIntf(Handshaked):
     def _declr(self):
         self.addr = VectSignal(self.MAIN_STATE_INDEX_WIDTH)
         if self.MAIN_STATE_T is not None:
-            self.data = HdlTypeToIntf(self.MAIN_STATE_T)
+            self.data = HdlType_to_Interface(self.MAIN_STATE_T)
         if self.TRANSACTION_STATE_T is not None:
-            self.transaction_state = HdlTypeToIntf(self.TRANSACTION_STATE_T)
+            self.transaction_state = HdlType_to_Interface(self.TRANSACTION_STATE_T)
         HandshakeSync._declr(self)
 
     def _initSimAgent(self, sim:HdlSimulator):

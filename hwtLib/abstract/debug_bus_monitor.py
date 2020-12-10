@@ -19,6 +19,7 @@ from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.clocking.vldSynced_cdc import VldSyncedCdc
+from hwt.interfaces.structIntf import Interface_to_HdlType
 
 
 class MonitorIntf(Interface):
@@ -96,20 +97,6 @@ def monitor_of(intf: Union[Interface, RtlSignal]):
         if not isinstance(intf, (Signal, RtlSignalBase)):
             raise NotImplementedError()
         return Signal(dtype=intf._dtype)
-
-
-def Interface_to_HdlType(intf: Union[Interface, RtlSignal], const=False):
-    if isinstance(intf, Interface) and intf._interfaces:
-        return HStruct(
-            *((Interface_to_HdlType(i, const=const), i._name)
-              for i in intf._interfaces)
-        )
-    else:
-        t = intf._dtype
-        if t.const != const:
-            t = copy(t)
-            t.const = const
-        return t
 
 
 def _connect_MonitorIntf(src: MonitorIntf, dst):
