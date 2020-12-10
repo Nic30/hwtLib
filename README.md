@@ -33,7 +33,7 @@ Also note that the code of the components should be shared if `@serializeParamsU
 * [interfaces](https://github.com/Nic30/hwtLib/tree/master/hwtLib/interfaces) - various interfaces which does not have it's package yet
 * [logic](https://github.com/Nic30/hwtLib/tree/master/hwtLib/logic) - various components like CRC generator, gray counter, decoders-encoders ...
 * [mem](https://github.com/Nic30/hwtLib/tree/master/hwtLib/mem) - various memories (BRAM, ROM, FIFO, Async FIFO, CAM, LUT, ...)
-* [peripheral](https://github.com/Nic30/hwtLib/tree/master/hwtLib/peripheral) - various peripheral interfaces and components for them (I2C, MDIO, SPI, UART, USB, Ethernet, ...)
+* [peripheral](https://github.com/Nic30/hwtLib/tree/master/hwtLib/peripheral) - various peripheral interfaces and components (I2C, MDIO, SPI, UART, USB, Ethernet, ...)
 * [sim](https://github.com/Nic30/hwtLib/tree/master/hwtLib/sim) - simulation utils
 * [structManipulators](https://github.com/Nic30/hwtLib/tree/master/hwtLib/structManipulators) - DMAs for specific data structures
 * [tests](https://github.com/Nic30/hwtLib/tree/master/hwtLib/tests) - tests which are not related to another components
