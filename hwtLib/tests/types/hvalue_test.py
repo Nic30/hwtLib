@@ -58,7 +58,7 @@ class HValueTC(unittest.TestCase):
             v0 = hBool(a_in)
             v1 = hBool(b_in)
             o = v0 & v1
-            self.assertValEq(o, out, "%d == %d" % (o.val, out))
+            self.assertValEq(o, out, f"{o.val:d} == {out:d}")
 
     def test_AddInt(self):
         v0 = hInt(0)

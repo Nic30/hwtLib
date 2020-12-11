@@ -109,7 +109,7 @@ class AxiDpSimRam(SimRam):
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
             raise NotImplementedError(
-                "unaligned transaction not implemented (0x%x)" % addr)
+                f"unaligned transaction not implemented (0x{addr:x})")
 
         for i in range(size):
             isLast = i == size - 1
@@ -159,8 +159,7 @@ class AxiDpSimRam(SimRam):
             isLast = i == size - 1
 
             assert last == isLast, \
-                "write 0x%x, size %d, expected last:%d in word %d" % (
-                    addr, size, isLast, i)
+                f"write 0x{addr:x}, size {size:d}, expected last:{isLast:d} in word {i:d}"
 
             # if data is None:
             #     raise AssertionError(

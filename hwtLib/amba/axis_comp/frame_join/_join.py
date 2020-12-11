@@ -77,7 +77,7 @@ class AxiS_FrameJoin(Unit):
         in_reg = FrameJoinInputReg()
         in_reg._updateParamsFrom(self)
         in_reg.REG_CNT = reg_cnt
-        setattr(self, "in_reg%d" % input_i, in_reg)
+        setattr(self, f"in_reg{input_i:d}", in_reg)
         in_reg.dataIn(self.dataIn[input_i])
         return in_reg.regs, in_reg.keep_masks, in_reg.ready
 
@@ -111,14 +111,14 @@ class AxiS_FrameJoin(Unit):
         for out_B_i, out_byte_mux_vals in enumerate(out_mux_values):
             # +1 because last value is used to invalidate data
             sel_w = log2ceil(len(out_byte_mux_vals) + 1)
-            sel = self._sig("out_byte%d_sel" % out_B_i, Bits(sel_w))
+            sel = self._sig(f"out_byte{out_B_i:d}_sel", Bits(sel_w))
             out_byte_sel.append(sel)
 
-            out_B = self._sig("out_byte%d" % out_B_i, Bits(8))
+            out_B = self._sig(f"out_byte{out_B_i:d}", Bits(8))
             index_byte(self.dataOut.data, out_B_i)(out_B)
 
             if self.USE_STRB:
-                out_strb_b = self._sig("out_strb%d" % out_B_i)
+                out_strb_b = self._sig(f"out_strb{out_B_i:d}")
                 self.dataOut.strb[out_B_i](out_strb_b)
             else:
                 out_strb_b = None

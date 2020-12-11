@@ -84,7 +84,7 @@ class Mi32Buff(BusBridge):
         m = (self.m.drd, self.m.drdy)
 
         for i in range(self.DATA_BUFF_DEPTH):
-            reg = self._reg("read_data_reg%d" % i, data_t, def_val={"drdy": 0})
+            reg = self._reg(f"read_data_reg{i:d}", data_t, def_val={"drdy": 0})
             reg.drd(m[0])
             reg.drdy(m[1])
             m = (reg.drd, reg.drdy)

@@ -79,7 +79,7 @@ class Axi_to_AxiLite_TC(AxiLite_to_Axi_TC):
                          for _ in range(len_ + 1)]
             # rand_data = [i + 1 for i in range(len_ + 1)]
             addr = m.calloc(len_ + 1, u.DATA_WIDTH // 8, initValues=rand_data)
-            # print("%d, 0x%x, %d" % (id_, addr, len_), rand_data)
+            # print(f"{id_:d}, 0x{addr:x}, {len_:d}", rand_data)
             a_t = u.s.ar._ag.create_addr_req(addr, len_, id_)
             u.s.ar._ag.data.append(a_t)
             expected_frames.append((addr, id_, rand_data))
@@ -113,7 +113,7 @@ class Axi_to_AxiLite_TC(AxiLite_to_Axi_TC):
                          for _ in range(len_ + 1)]
             # rand_data = [i + 1 for i in range(len_ + 1)]
             addr = m.malloc((len_ + 1) * u.DATA_WIDTH // 8)
-            # print("%d, 0x%x, %d" % (id_, addr, len_), rand_data)
+            # print(f"{id_:d}, 0x{addr:x}, {len_:d}", rand_data)
             a_t = u.s.aw._ag.create_addr_req(addr, len_, id_)
             u.s.aw._ag.data.append(a_t)
 

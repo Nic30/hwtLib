@@ -15,12 +15,12 @@ class Axi4BRam_TC(Axi_to_AxiLite_TC):
     @classmethod
     def getUnit(cls):
         cls.u = Axi4BRam()
-        cls.u.DATA_WIDTH = 64 
+        cls.u.DATA_WIDTH = 64
         return cls.u
 
     def randomize_all(self):
         axi_randomize_per_channel(self, self.u.s)
- 
+
     def test_nop(self):
         self.randomize_all()
         self.runSim(10 * CLK_PERIOD)
@@ -46,7 +46,7 @@ class Axi4BRam_TC(Axi_to_AxiLite_TC):
                          for _ in range(len_ + 1)]
             memory_init.extend(rand_data)
             # rand_data = [i + 1 for i in range(len_ + 1)]
-            # print("%d, 0x%x, %d" % (id_, addr, len_), rand_data)
+            # print(f"{id_:d}, 0x{addr:x}, {len_:d}", rand_data)
             a_t = u.s.ar._ag.create_addr_req(addr, len_, id_)
             u.s.ar._ag.data.append(a_t)
             expected_frames.append((addr, id_, rand_data))
@@ -82,7 +82,7 @@ class Axi4BRam_TC(Axi_to_AxiLite_TC):
             # rand_data = [self._rand.getrandbits(u.DATA_WIDTH)
             #             for _ in range(len_ + 1)]
             rand_data = [i + 1 for i in range(len_ + 1)]
-            # print("%d, 0x%x, %d" % (id_, addr, len_), rand_data)
+            # print(f"{id_:d}, 0x{addr:x}, {len_:d}", rand_data)
             a_t = u.s.aw._ag.create_addr_req(addr, len_, id_)
             u.s.aw._ag.data.append(a_t)
 
@@ -104,7 +104,7 @@ class Axi4BRam_TC(Axi_to_AxiLite_TC):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    
+
     # suite.addTest(Axi4BRam_TC('test_read'))
     suite.addTest(unittest.makeSuite(Axi4BRam_TC))
     runner = unittest.TextTestRunner(verbosity=3)

@@ -81,7 +81,7 @@ class AxiInterconnectMatrixCrossbar_1to1TC(SingleUnitSimTestCase):
 
     def test_all(self, transaction_cnt=10, magic=0):
         """
-        :param transaction_cnt: transactions per master per connected slave 
+        :param transaction_cnt: transactions per master per connected slave
         """
         u = self.u
         #self.randomize_all()
@@ -100,14 +100,14 @@ class AxiInterconnectMatrixCrossbar_1to1TC(SingleUnitSimTestCase):
                      transaction_cnt) * CLK_PERIOD)
         # assert all data was send
         for m_i, din in enumerate(u.dataIn):
-            self.assertEmpty(din._ag.data, "dataIn: %d" % m_i)
+            self.assertEmpty(din._ag.data, f"dataIn: {m_i:d}")
 
 
         # check the address transactions arrived correctly on slave
         for dout_i, (dout, dout_ref) in enumerate(zip(
                 u.dataOut, expected_transactions)):
             dout = dout._ag.data
-            self.assertValSequenceEqual(dout, dout_ref, "dataOut: %d" % dout_i)
+            self.assertValSequenceEqual(dout, dout_ref, f"dataOut: {dout_i:d}")
 
 
 class AxiInterconnectMatrixCrossbar_1to3TC(AxiInterconnectMatrixCrossbar_1to1TC):

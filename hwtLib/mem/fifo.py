@@ -58,7 +58,7 @@ class Fifo(Unit):
         This functions supports multiple reader pointers
 
         :attention: writer pointer next logic check only last reader pointer
-        :return: list, tule(en, ptr) for writer and each reader 
+        :return: list, tule(en, ptr) for writer and each reader
         """
         index_t = Bits(log2ceil(DEPTH), signed=False)
         # assert isPow2(DEPTH), DEPTH
@@ -80,8 +80,8 @@ class Fifo(Unit):
         write_en, _ = write_en_wait
         # instantiate all read pointers
         for i, (read_en, read_wait) in enumerate(read_en_wait_list):
-            read_ptr = r("read_ptr%d" % i, index_t, 0)
-            fifo_read = s("fifo_read%d" % i)
+            read_ptr = r(f"read_ptr{i:d}", index_t, 0)
+            fifo_read = s(f"fifo_read{i:d}")
             ack_ptr_list.append((fifo_read, read_ptr))
             # update reader (tail) pointer as needed
             If(fifo_read,
@@ -92,7 +92,7 @@ class Fifo(Unit):
                 )
             )
 
-            looped = r("looped%d" % i, def_val=False)
+            looped = r(f"looped{i:d}", def_val=False)
             # looped logic
             If(write_en & write_ptr._eq(MAX_DEPTH),
                 looped(True)

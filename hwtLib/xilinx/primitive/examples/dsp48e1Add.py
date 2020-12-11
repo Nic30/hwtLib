@@ -67,14 +67,16 @@ def generate_handshake_pipe_cntrl(parent: Unit, n: int, name_prefix: str, in_val
     clock_enables = []
     valids = []
     for i in range(n):
-        vld = parent._reg("%s_%d_valid" % (name_prefix, i), def_val=0)
+        vld = parent._reg(f"{name_prefix:s}_{i:d}_valid", def_val=0)
         valids.append(vld)
-        ce = parent._sig("%s_%d_clock_enable" % (name_prefix, i))
+        ce = parent._sig(f"{name_prefix:s}_{i:d}_clock_enable")
         clock_enables.append(ce)
 
     in_ready = out_ready
     for i, (vld, ce) in enumerate(zip(valids, clock_enables)):
-        rd = rename_signal(parent, Or(*[~_vld for _vld in valids[i + 1:]], out_ready), "%s_%d_ready" % (name_prefix, i))
+        rd = rename_signal(parent,
+                           Or(*[~_vld for _vld in valids[i + 1:]], out_ready),
+                           f"{name_prefix:s}_{i:d}_ready")
         if i == 0:
             in_ready = rd | ~vld
             prev_vld = in_valid
@@ -122,7 +124,7 @@ class Dsp48e1Add(Unit):
             name_prefix = getSignalName(sig_in)
         out = sig_in
         for st_i, ce in enumerate(clock_enables):
-            r = self._reg("%s_%d" % (name_prefix, st_i), dtype=out._dtype)
+            r = self._reg(f"{name_prefix:s}_{st_i:d}", dtype=out._dtype)
             If(ce,
                r(out)
             )
@@ -211,9 +213,9 @@ class Dsp48e1Add(Unit):
 
                 dsp_clock_enables.append((ce_0, ce_1))
 
-                a_delayed = self.postpone_val(a, input_ces, "a%d_" % i)
-                b_delayed = self.postpone_val(b, input_ces, "b%d_" % i)
-                c_delayed = self.postpone_val(c, input_ces, "c%d_" % i)
+                a_delayed = self.postpone_val(a, input_ces, f"a{i:d}_")
+                b_delayed = self.postpone_val(b, input_ces, f"b{i:d}_")
+                c_delayed = self.postpone_val(c, input_ces, f"c{i:d}_")
                 delayed_dsp_inputs.append((a_delayed, b_delayed, c_delayed))
 
             dsp_inputs = delayed_dsp_inputs
@@ -321,7 +323,7 @@ class Dsp48e1Add(Unit):
                 if delay > 0:
                     # select n last
                     ces = clock_enables[-delay:]
-                    delayed_out = self.postpone_val(out, ces, "out_delay_%d" % i)
+                    delayed_out = self.postpone_val(out, ces, f"out_delay_{i:d}")
                 else:
                     delayed_out = out
                 delayed_dsp_outputs.append(delayed_out)

@@ -57,10 +57,9 @@ class AxiS_frameParserTC(SimTestCase):
         u.DATA_WIDTH = dataWidth
         if self.DEFAULT_BUILD_DIR is not None:
             # because otherwise files gets mixed in parralel test execution
-            unique_name = "%s_%s_dw%d_r%d" % (self.getTestName(),
-                                              u._getDefaultName(),
-                                              dataWidth,
-                                              randomize)
+            test_name = self.getTestName()
+            u_name = u._getDefaultName()
+            unique_name = f"{test_name:s}_{u_name:s}_dw{dataWidth:d}_r{randomize:d}"
             build_dir = os.path.join(self.DEFAULT_BUILD_DIR,
                                      self.getTestName() + unique_name)
         else:
@@ -86,8 +85,9 @@ class AxiS_frameParserTC(SimTestCase):
                 self.assertEqual(getattr(d1, k), getattr(d2, k), (DW, k))
 
     def runMatrixSim(self, time, dataWidth, randomize):
-        unique_name = self.getTestName() + ("_dw%d_r%d" % (dataWidth, randomize))
-        self.runSim(time, name=os.path.join(self.DEFAULT_LOG_DIR, unique_name + ".vcd"))
+        test_name = self.getTestName()
+        vcd_name = f"{test_name:s}_dw{dataWidth:d}_r{randomize:d}.vcd"
+        self.runSim(time, name=os.path.join(self.DEFAULT_LOG_DIR, vcd_name))
 
     @testMatrix
     def test_structManyInts_nop(self, dataWidth, randomize):
@@ -229,9 +229,9 @@ class AxiS_frameParserTC(SimTestCase):
             self.assertValSequenceEqual(i._ag.data, [v0, v1], i._name)
 
     def runMatrixSim2(self, t, dataWidth, frame_len, randomize):
-        unique_name = self.getTestName() + (
-            "_dw%d_len%d_r%d" % (dataWidth, frame_len, randomize))
-        self.runSim(t * CLK_PERIOD, name=os.path.join(self.DEFAULT_LOG_DIR, unique_name + ".vcd"))
+        test_name = self.getTestName()
+        vcd_name = f"{test_name:s}_dw{dataWidth:d}_len{frame_len:d}_r{randomize:d}.vcd"
+        self.runSim(t * CLK_PERIOD, name=os.path.join(self.DEFAULT_LOG_DIR, vcd_name))
 
     @TestMatrix([8, 16, 32], [1, 2, 5], [False, True])
     def test_const_size_stream(self, dataWidth, frame_len, randomize):

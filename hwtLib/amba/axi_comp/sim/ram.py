@@ -175,7 +175,7 @@ class AxiSimRam(AxiDpSimRam):
                 data = cur_val
             else:
                 data = self.word_t.from_py(cur_val, cur_mask)
-        # print("data[%d] = %r" % (word_i, data))
+        # print(f"data[{word_i:d}] = {data}")
         self.data[word_i] = data
 
     def doWrite(self):

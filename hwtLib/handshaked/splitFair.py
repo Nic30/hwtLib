@@ -38,7 +38,7 @@ class HsSplitFair(HsSplitCopy):
 
     :ivar ~.selectedOneHot: handshaked interface with one hot encoded
         index of selected output
-    
+
     .. hwt-autodoc:: _example_HsSplitFair
     """
 
@@ -68,7 +68,7 @@ class HsSplitFair(HsSplitCopy):
         rdSignals = [rd(d) for d in self.dataOut]
 
         for i, dout in enumerate(self.dataOut):
-            isSelected = self._sig("isSelected_%d" % i)
+            isSelected = self._sig(f"isSelected_{i:d}")
             isSelected(HsJoinFairShare.priorityAck(priority, rdSignals, i))
 
             if EXPORT_SELECTED:

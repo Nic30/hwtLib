@@ -31,8 +31,7 @@ def reshapedInitItems(actualCellSize, requestedCellSize, values):
             yield int_list_to_int(itemsInWord, actualCellSize * 8)
     else:
         raise NotImplementedError(
-            "Reshaping of array from cell size %d to %d" % (
-                actualCellSize, requestedCellSize))
+            f"Reshaping of array from cell size {actualCellSize:d} to {requestedCellSize:d}")
 
 
 class SimRam():
@@ -78,7 +77,7 @@ class SimRam():
         indx = addr // self.cellSize
         if indx * self.cellSize != addr:
             NotImplementedError(
-                "unaligned allocations not implemented (0x%x)" % addr)
+                f"unaligned allocations not implemented (0x{addr:x})")
 
         d = self.data
         for i in range(size // self.cellSize):
@@ -115,7 +114,7 @@ class SimRam():
         indx = addr // self.cellSize
         if indx * self.cellSize != addr:
             NotImplementedError(
-                "unaligned allocations not implemented (0x%x)" % addr)
+                f"unaligned allocations not implemented (0x{addr:x})")
 
         d = self.data
         wordCnt = ceil((num * size) / self.cellSize)

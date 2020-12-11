@@ -58,7 +58,7 @@ class PidController(Unit):
         # create y-pipeline
         y = [self.input, ]
         for i in range(2):
-            _y = self._reg("y%d" % i, dtype=self.input._dtype, def_val=0)
+            _y = self._reg(f"y{i:d}", dtype=self.input._dtype, def_val=0)
             _y(y[-1])
             y.append(_y)
 

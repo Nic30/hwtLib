@@ -25,6 +25,5 @@ class StateTransInfo():
         self.outputs[out_B_i] = v
 
     def __repr__(self):
-        return "<%s %s o:%r>" % (self.__class__.__name__,
-                                 self.label, self.outputs)
+        return f"<{self.__class__.__name__:s} {self.label:s} o:{self.outputs}>"
 

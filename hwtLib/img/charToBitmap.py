@@ -50,7 +50,7 @@ def getCharRow(charOrd, row):
             pix = pixels[x + xbase, y + ybase]
 
             if pix != 0 and pix != 1:
-                raise NotImplementedError("Unimplemented color %s" % str(pix))
+                raise NotImplementedError(f"Unimplemented color {pix}")
 
             n |= (pix << (7 - x))
         return n

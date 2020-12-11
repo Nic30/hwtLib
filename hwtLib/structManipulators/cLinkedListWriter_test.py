@@ -132,8 +132,8 @@ class CLinkedListWriterTC(SingleUnitSimTestCase):
             try:
                 d = m.data[baseIndex + i]
             except KeyError: # pragma: no cover
-                raise AssertionError("Invalid data on index %d" % i)
-            self.assertValEqual(d, i + MAGIC, "Invalid data on index %d" % i)
+                raise AssertionError(f"Invalid data on index {i:d}")
+            self.assertValEqual(d, i + MAGIC, f"Invalid data on index {i:d}")
 
     def debugNode(self, mem, baseAddr): # pragma: no cover
         baseIndex = baseAddr // (self.DATA_WIDTH // 8)
@@ -150,7 +150,7 @@ class CLinkedListWriterTC(SingleUnitSimTestCase):
         except KeyError:
             nextAddr = None
 
-        print("<Node 0x%x, items:%r\n    next:0x%x>" % (baseAddr, items, nextAddr))
+        print(f"<Node 0x{baseAddr:x}, items:{items}\n    next:0x{nextAddr:x}>")
 
     def test_regularUpload2(self):
         u = self.u
@@ -180,8 +180,8 @@ class CLinkedListWriterTC(SingleUnitSimTestCase):
             try:
                 d = m.data[baseIndex + i]
             except KeyError: # pragma: no cover
-                raise AssertionError("Invalid data on index %d" % i)
-            self.assertValEqual(d, i + MAGIC, "Invalid data on index %d" % i)
+                raise AssertionError(f"Invalid data on index {i:d}")
+            self.assertValEqual(d, i + MAGIC, f"Invalid data on index {i:d}")
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ def addValues(unit, data):
     for d in data:
         # because there are 4 bits
         for i in range(4):
-            databit = getattr(unit, "a%d" % i)
+            databit = getattr(unit, f"a{i:d}")
             if d is None:
                 dataBitval = None
             else:

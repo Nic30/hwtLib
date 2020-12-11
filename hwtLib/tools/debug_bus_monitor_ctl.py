@@ -72,7 +72,7 @@ class DebugBusMonitorCtl():
         return v
 
     def read(self, addr, size):
-        addr += self.addr 
+        addr += self.addr
         raise NotImplementedError("Implement this in your implementation of this abstract class")
 
     def _dump_txt_indent(self, out, indent):
@@ -88,9 +88,9 @@ class DebugBusMonitorCtl():
                 bits_start, bits_len = v
                 val = select_bit_range(data, bits_start, bits_len)
                 if bits_len == 1:
-                    out.write("%d" % val)
+                    out.write(f"{val}:d")
                 else:
-                    out.write("0x%x" % val)
+                    out.write(f"0x{val:x}")
                 out.write("\n")
             else:
                 self._dump_txt_indent(out, indent)
@@ -113,11 +113,11 @@ class DebugBusMonitorCtlDevmem(DebugBusMonitorCtl):
         self.devmem = "devmem"
 
     def read(self, addr, size):
-        addr += self.addr 
+        addr += self.addr
         word_size = 0x4
         words = []
         for _ in range(ceil(size / word_size)):
-            s = subprocess.check_output([self.devmem, "0x%x" % addr])
+            s = subprocess.check_output([self.devmem, f"0x{addr:x}"])
             s = s.decode("utf-8")
             d = int(s.strip(), 16)
             words.append(d)

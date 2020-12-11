@@ -34,6 +34,7 @@ class ByteSrcInfo():
                 self.byte_i, self.is_from_last_input_word)
 
     def __repr__(self):
-        return "<%s %d, w:%d, B:%d, l:%d>" % (
-            self.__class__.__name__, self.stream_i, self.word_i,
-            self.byte_i, self.is_from_last_input_word)
+        return (
+            f"<{self.__class__.__name__:s} {self.stream_i:d}, w:{self.word_i:d},"
+            f" B:{self.byte_i:d}, l:{self.is_from_last_input_word:d}>"
+        )

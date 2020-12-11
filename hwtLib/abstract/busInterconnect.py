@@ -12,7 +12,7 @@ class AUTO_ADDR():
 
 
 """
-:var ALL: constant used to specify that master connected to interconnect has visibility to all slaves 
+:var ALL: constant used to specify that master connected to interconnect has visibility to all slaves
 """
 ALL = "ALL"
 
@@ -66,7 +66,7 @@ class BusInterconnectUtils():
                 isAligned = (address % size) == 0
                 if not isAligned:
                     raise AssertionError(
-                        "Offset which is not aligned to size is suboptimal 0x%x 0x%x" % (address, size))
+                        f"Offset which is not aligned to size is suboptimal 0x{address:x} 0x{size:x}")
 
             maxAddr = max(maxAddr, address + size)
             _slaves.append((address, size))
@@ -78,7 +78,7 @@ class BusInterconnectUtils():
         for addr, size in self._slaves:
             if lastAddr >= addr:
                 raise ValueError(
-                    "Address space on address 0x%X colliding with previous" % addr)
+                    f"Address space on address 0x{addr:x} colliding with previous")
             lastAddr = addr + size - 1
         return _slaves
 
@@ -136,11 +136,11 @@ class BusInterconnectUtils():
         #for si, mstrs in enumerate(slaves_connected_to):
         #    if not mstrs:
         #        raise AssertionError(
-        #            "Slave %d can not communcate with any master" % si)
+        #            f"Slave {si:d} can not communcate with any master")
         #for mi, slvs in enumerate(slaves_connected_to):
         #    if not slvs:
         #        raise AssertionError(
-        #            "Maser %d can not communcate with any master" % mi)
+        #            "Maser {mi:d} can not communcate with any master")
 
         seen_m = set()
         groups = []

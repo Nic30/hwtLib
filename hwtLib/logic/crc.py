@@ -69,7 +69,7 @@ class Crc(Unit):
         # wrap crc next signals to separate signal to have nice code
         stateNext = []
         for i, crcbit in enumerate(res):
-            b = rename_signal(self, crcbit, "crc_%d" % i)
+            b = rename_signal(self, crcbit, f"crc_{i:d}")
             stateNext.append(b)
         return stateNext
 

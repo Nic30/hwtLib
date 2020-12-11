@@ -145,83 +145,50 @@ class DSP48E1(Unit):
         self.input_check()
 
     def input_check(self):
-        if self.A_INPUT not in ("DIRECT", "CASCADE"):
-            raise ValueError("A_INPUT is set to %s." % self.A_INPUT)
-
-        if self.ALUMODEREG not in (0, 1):
-            raise ValueError("ALUMODEREG is set to %d." % self.ALUMODEREG)
+        assert self.A_INPUT in ("DIRECT", "CASCADE"), self.A_INPUT
+        assert self.ALUMODEREG in (0, 1), self.ALUMODEREG
 
         #-------- (ACASCREG) and (ACASCREG vs AREG) check
         if self.AREG in (0, 1):
             if self.AREG != self.ACASCREG:
-                raise ValueError("ACASCREG  is set to %d. ACASCREG has to be set to same value as AREG." % self.ACASCREG)
+                raise AssertionError(f"ACASCREG  is set to {self.ACASCREG}. ACASCREG has to be set to same value as AREG.")
         elif self.AREG == 2:
             if self.AREG != self.ACASCREG and self.AREG - 1 != self.ACASCREG:
-                raise ValueError("ACASCREG is set to %d. ACASCREG has to be set to either 2 or 1 when AREG = 2." % self.ACASCREG)
+                raise AssertionError(f"ACASCREG is set to {self.ACASCREG}. ACASCREG has to be set to either 2 or 1 when AREG = 2.")
         else:
-            raise ValueError("AREG is set to %d." % self.AREG)
+            raise AssertionError(f"AREG is set to {self.AREG}.")
 
-        if self.B_INPUT not in ("DIRECT", "CASCADE"):
-            raise ValueError("B_INPUT is set to %s." % self.B_INPUT)
+        assert self.B_INPUT in ("DIRECT", "CASCADE"), self.B_INPUT
 
         #-------- (BCASCREG) and (BCASCREG vs BREG) check
         if self.BREG in (0, 1):
             if self.BREG != self.BCASCREG:
-                raise ValueError("BCASCREG is set to %d. BCASCREG has to be set to same value as BREG." % self.BCASCREG)
+                raise AssertionError(f"BCASCREG is set to {self.BCASCREG}. BCASCREG has to be set to same value as BREG.")
         elif self.BREG == 2:
             if self.BREG != self.BCASCREG and self.BREG - 1 != self.BCASCREG:
-                raise ValueError("BCASCREG is set to %d. BCASCREG has to be set to either 2 or 1 when BREG = 2." % self.BCASCREG)
+                raise AssertionError(f"BCASCREG is set to {self.BCASCREG}. BCASCREG has to be set to either 2 or 1 when BREG = 2.")
         else:
-            raise ValueError("BREG is set to %d." % self.BREG)
+            raise AssertionError(f"BREG is set to {self.BREG}.")
 
 
-        if self.CARRYINREG not in (0, 1):
-            raise ValueError("CARRYINREG is set to %d." % self.CARRYINREG)
-
-        if self.CARRYINSELREG not in (0, 1):
-            raise ValueError("CARRYINSELREG is set to %d." % self.CARRYINSELREG)
-
-        if self.CREG not in (0, 1):
-            raise ValueError("CREG is set to %d." % self.CREG)
-
-        if self.OPMODEREG not in (0, 1):
-            raise ValueError("OPMODEREG is set to %d." % self.OPMODEREG)
-
-        if self.USE_MULT not in ("NONE", "MULTIPLY", "DYNAMIC"):
-            raise ValueError("USE_MULT is set to %s." % self.USE_MULT)
-
-        if self.USE_PATTERN_DETECT not in ("PATDET", "NO_PATDET"):
-            raise ValueError("USE_PATTERN_DETECT is set to %s." % self.USE_PATTERN_DETECT)
-
-        if self.AUTORESET_PATDET not in ("NO_RESET", "RESET_MATCH", "RESET_NOT_MATCH"):
-            raise ValueError("AUTORESET_PATDET is set to %s." % self.AUTORESET_PATDET)
-
-        if self.SEL_PATTERN not in ("PATTERN", "C"):
-            raise ValueError("SEL_PATTERN is set to %s." % self.SEL_PATTERN)
-
-        if self.SEL_MASK not in ("MASK", "C", "ROUNDING_MODE1", "ROUNDING_MODE2"):
-            raise ValueError("SEL_MASK is set to %s." % self.SEL_MASK)
-
-        if self.MREG not in (0, 1):
-            raise ValueError("MREG is set to %d." % self.MREG)
-
-        if self.PREG not in (0, 1):
-            raise ValueError("PREG is set to %d." % self.PREG)
-
-        if self.ADREG not in (0, 1):
-            raise ValueError("ADREG is set to %d." % self.ADREG)
-
-        if self.DREG not in (0, 1):
-            raise ValueError("DREG is set to %d." % self.DREG)
-
-        if self.INMODEREG not in (0, 1):
-            raise ValueError("INMODEREG is set to %d." % self.INMODEREG)
-
-        if self.USE_DPORT not in ("TRUE", "FALSE"):
-            raise ValueError("USE_DPORT is set to %s." % self.USE_DPORT)
+        assert self.CARRYINREG in (0, 1), self.CARRYINREG
+        assert self.CARRYINSELREG in (0, 1), self.CARRYINSELREG
+        assert self.CREG in (0, 1), self.CREG
+        assert self.OPMODEREG in (0, 1), self.OPMODEREG
+        assert self.USE_MULT in ("NONE", "MULTIPLY", "DYNAMIC"), self.USE_MULT
+        assert self.USE_PATTERN_DETECT in ("PATDET", "NO_PATDET"), self.USE_PATTERN_DETECT
+        assert self.AUTORESET_PATDET in ("NO_RESET", "RESET_MATCH", "RESET_NOT_MATCH"), self.AUTORESET_PATDET
+        assert self.SEL_PATTERN in ("PATTERN", "C"), self.SEL_PATTERN
+        assert self.SEL_MASK in ("MASK", "C", "ROUNDING_MODE1", "ROUNDING_MODE2"), self.SEL_MASK
+        assert self.MREG in (0, 1), self.MREG
+        assert self.PREG in (0, 1), self.PREG
+        assert self.ADREG in (0, 1), self.ADREG
+        assert self.DREG in (0, 1), self.DREG
+        assert self.INMODEREG in (0, 1), self.INMODEREG
+        assert self.USE_DPORT in ("TRUE", "FALSE"), self.USE_DPORT
 
         if self.USE_MULT == "NONE" and self.MREG != 0:
-            raise ValueError("Attribute USE_MULT is set to \"NONE\" and MREG is set to %d. MREG must be set to 0 when the multiplier is not used." % self.MREG)
+            raise AssertionError(f"Attribute USE_MULT is set to \"NONE\" and MREG is set to {self.MREG}. MREG must be set to 0 when the multiplier is not used.")
 
     def _impl(self):
         # internal signals

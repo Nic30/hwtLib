@@ -74,7 +74,7 @@ class HsJoinFairShare(HsJoinPrioritized):
 
             isSelectedFlags = []
             for i, din_vld in enumerate(din_vlds):
-                isSelected = self._sig("isSelected_%d" % i)
+                isSelected = self._sig(f"isSelected_{i:d}")
                 isSelected(self.priorityAck(priority, din_vlds, i))
                 isSelectedFlags.append(isSelected)
 

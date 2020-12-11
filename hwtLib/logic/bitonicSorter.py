@@ -69,8 +69,7 @@ class BitonicSorter(Unit):
 
     def bitonic_compare(self, cmpFn, x, layer, offset):
         dist = len(x) // 2
-        _x = [self._sig("sort_tmp_%d_%d" %
-                        (layer, offset), x[0]._dtype) for _ in x]
+        _x = [self._sig(f"sort_tmp_{layer:d}_{offset:d}", x[0]._dtype) for _ in x]
         for i in range(dist):
             If(cmpFn(x[i], x[i + dist]),
                 # keep

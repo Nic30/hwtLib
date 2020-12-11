@@ -79,7 +79,7 @@ class AbstractComponentBuilder(object):
         find suitable name for component (= name without collisions)
         """
         while True:
-            name = "%s_%s_%d" % (self.name, unitName, self.compId)
+            name = f"{self.name:s}_{unitName:s}_{self.compId:d}"
             try:
                 getattr(self.parent, name)
             except AttributeError:

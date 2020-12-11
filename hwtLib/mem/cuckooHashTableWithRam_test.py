@@ -18,7 +18,7 @@ class CuckooHashTableWithRam_common_TC(SingleUnitSimTestCase):
     def setUp(self):
         SingleUnitSimTestCase.setUp(self)
         m = self.rtl_simulator.model
-        self.TABLE_MEMS = [getattr(m, "table_cores_%d_inst" % i).table_inst.io.ram_memory
+        self.TABLE_MEMS = [getattr(m, f"table_cores_{i:d}_inst").table_inst.io.ram_memory
                            for i in range(len(self.u.POLYNOMIALS))]
 
     def test_no_comb_loops(self):

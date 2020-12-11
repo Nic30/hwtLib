@@ -58,7 +58,7 @@ def connectDp(parent, controller, datapump, axi, exclude=None):
             return
 
     else:
-        raise TypeError("Unsupported datapump type %r" % (datapump.__class__))
+        raise TypeError(f"Unsupported datapump type {datapump.__class__}")
 
     interconnect.configureFromDrivers(controller, datapump, byInterfaces=True)
     setattr(parent, datapump._name + "_interconnect", interconnect)

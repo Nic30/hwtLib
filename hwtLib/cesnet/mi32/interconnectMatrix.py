@@ -88,14 +88,14 @@ class Mi32InterconnectMatrix(BusInterconnect):
             bitsOfSubAddr = log2ceil(s_size - 1)
             prefix = get_bit_range(
                 s_offset, bitsOfSubAddr, AW - bitsOfSubAddr)
-            cs = self._sig("m_cs_%d" % i)
+            cs = self._sig(f"m_cs_{i:d}")
             cs(m.addr[AW:bitsOfSubAddr]._eq(prefix))
             s.rd(m.rd & cs & r_order.rd)
             s.wr(m.wr & cs & r_order.rd)
 
             # we have to add 1 read data latency because the slave index would not be ready
             # oder fifo
-            r_data_tmp = self._reg("r_data%d_tmp" % i, r_data_t,
+            r_data_tmp = self._reg(f"r_data{i:d}_tmp", r_data_t,
                                    def_val={"vld": 0})
             r_data_tmp.data(s.drd)
             r_data_tmp.vld(s.drdy)

@@ -73,10 +73,10 @@ class TimerInfo(object):
             maxVal = (timer.maxVal // p.maxVal) - 1
             assert maxVal >= 0
             timer.tick = parentUnit._sig(
-                timer.name + "timerTick%d" % timer.maxVal)
+                 f"{timer.name:s}timerTick{timer.maxVal:d}")
 
             timer.cntrRegister = parentUnit._reg(
-                timer.name + "timerCntr%d" % timer.maxVal,
+                f"{timer.name:s}timerCntr{timer.maxVal:d}",
                 Bits(log2ceil(maxVal + 1)),
                 maxVal
             )
@@ -181,7 +181,7 @@ class TimerInfo(object):
                     tick = enableSig
             else:
                 timer.cntrRegister = parentUnit._reg(
-                    timer.name + "timerCntr%d" % timer.maxVal,
+                    f"{timer.name:s}timerCntr{timer.maxVal:d}",
                     Bits(log2ceil(maxVal + 1)),
                     maxVal
                 )
@@ -192,7 +192,7 @@ class TimerInfo(object):
                                                             rstSig)
 
             timer.tick = parentUnit._sig(
-                timer.name + "timerTick%d" % timer.maxVal
+                f"{timer.name:s}timerTick{timer.maxVal:d}",
             )
             timer.tick(tick)
         else:
@@ -212,7 +212,7 @@ class TimerInfo(object):
                                             enableSig=enableSig, rstSig=rstSig)
 
     def __repr__(self):
-        return "<%s maxVal=%d>" % (self.__class__.__name__, self.maxVal)
+        return f"<{self.__class__.__name__:s} maxVal={self.maxVal:d}>"
 
 
 class DynamicTimerInfo(TimerInfo):

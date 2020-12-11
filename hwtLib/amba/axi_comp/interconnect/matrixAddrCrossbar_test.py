@@ -59,7 +59,7 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
 
     def test_all(self, transaction_cnt=10, magic=0):
         """
-        :param transaction_cnt: transactions per master per connected slave 
+        :param transaction_cnt: transactions per master per connected slave
         """
         u = self.u
         # to automatically set default addr.size
@@ -92,7 +92,7 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
                      transaction_cnt) * CLK_PERIOD)
         # assert all data was send
         for m_i, m in enumerate(u.s):
-            self.assertEmpty(m._ag.data, "master: %d" % m_i)
+            self.assertEmpty(m._ag.data, f"master: {m_i:d}")
 
         for m_i, (s_for_m, accesible_slaves) in enumerate(zip(
                 u.order_s_index_for_m_data_out, u.MASTERS)):
@@ -107,7 +107,7 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
                 for _ in range(transaction_cnt):
                     ref_s_for_m.append(slave_i)
             self.assertValSequenceEqual(
-                s_for_m._ag.data, ref_s_for_m, "master: %d" % m_i)
+                s_for_m._ag.data, ref_s_for_m, f"master: {m_i:d}")
 
         # use order from u.order_m_index_for_s_data_out to rebuild original
         # order of transactions
@@ -118,14 +118,14 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
             s = s._ag.data
             m_for_s = [int(m) for m in m_for_s._ag.data]
             trans_cnt = sum([len(r) for r in s_all_ref])
-            self.assertEqual(len(m_for_s), trans_cnt, "slave: %d" % s_i)
-            self.assertEqual(len(s), trans_cnt, "slave: %d" % s_i)
+            self.assertEqual(len(m_for_s), trans_cnt, f"slave: {s_i:d}")
+            self.assertEqual(len(s), trans_cnt, f"slave: {s_i:d}")
             s_ref = []
             for m_i in m_for_s:
                 t = s_all_ref[m_i].popleft()
                 s_ref.append(t)
 
-            self.assertValSequenceEqual(s, s_ref, "slave: %d" % s_i)
+            self.assertValSequenceEqual(s, s_ref, f"slave: {s_i:d}")
 
 
 class AxiInterconnectMatrixAddrCrossbar_1to3TC(AxiInterconnectMatrixAddrCrossbar_1to1TC):

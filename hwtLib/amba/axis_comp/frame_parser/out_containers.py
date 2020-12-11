@@ -104,7 +104,7 @@ class OutNodeInfo():
         self._valid(en & vld & din_vld)
 
     def __repr__(self):
-        return "<%s for %s>" % (self.__class__.__name__, self.outInterface._name)
+        return f"<{self.__class__.__name__:s} for {self.outInterface._name:s}>"
 
 
 class OutStreamNodeGroup():

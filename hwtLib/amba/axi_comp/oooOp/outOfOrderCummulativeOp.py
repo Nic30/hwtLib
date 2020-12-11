@@ -32,19 +32,19 @@ class OutOfOrderCummulativeOp(Unit):
     This is a component template for cumulative Out of Order operations with hihgh latency AXI.
     Suitable for counter arrays, hash tables and other data structures which are acessing data randomly
     and potential collision due read-modify-write operations may occure.
-    
+
     This component stores info about currently executed memory transactions which may be finished out of order.
     Potential memory access colisions are solved by bypasses in main pipeline.
     In order to compensate for memory write latency the write history is utilised.
     The write history is a set of registers on the end of the pipeline.
-    
+
     Note that the write history is not meant as a main mechanism for write latency compensation.
     It is meant to be used for 3-4 items to componsate for latency of the cache/LSU.
 
     If the main operation requires multiple clock cycles the operation is performed speculatively.
-    
+
     The most up-to-date version of the data is always selected on the input of WRITE_BACK stage.
-    
+
     :ivar MAIN_STATE_T: a type of the state in main memory which is being updated by this component
     :ivar TRANSACTION_STATE_T: a type of the transaction state, used to store additional data
         for transaction and can be used to modify the behavior of the pipeline
@@ -117,12 +117,12 @@ class OutOfOrderCummulativeOp(Unit):
 
     def ar_dispatch(self):
         """
-        Send read request on AXI and store transaction in to state array and ooo_fifo for later wake up 
+        Send read request on AXI and store transaction in to state array and ooo_fifo for later wake up
         """
         ooo_fifo = self.ooo_fifo
         ar = self.m.ar
         din = self.dataIn
-        
+
         dataIn_reg = HandshakedReg(din.__class__)
         dataIn_reg._updateParamsFrom(din)
         self.dataIn_reg = dataIn_reg
@@ -131,7 +131,7 @@ class OutOfOrderCummulativeOp(Unit):
             [dataIn_reg.dataIn, ooo_fifo.write_confirm]
         ).sync()
         connect(din, dataIn_reg.dataIn, exclude=[din.rd, din.vld])
-        
+
         ar_node = StreamNode(
             [dataIn_reg.dataOut, ooo_fifo.read_execute],
             [ar]
@@ -144,7 +144,7 @@ class OutOfOrderCummulativeOp(Unit):
         state_write.addr(ooo_fifo.read_execute.index)
 
         din_data = dataIn_reg.dataOut
-        
+
         state_write.din(packIntf(din_data, exclude=[din_data.rd, din_data.vld]))
 
         ar.id(ooo_fifo.read_execute.index)
@@ -169,11 +169,11 @@ class OutOfOrderCummulativeOp(Unit):
                     dst.index >= PIPELINE_CONFIG.WRITE_BACK or
                     src_i == dst.index)
                 else
-                self._reg("%s_collision_detect_from_%d" % (dst.name, src_i), def_val=0)
+                self._reg(f"{dst.name:s}_collision_detect_from_{src_i:d}", def_val=0)
 
                 for src_i in range(len(pipeline))
             ]
-            
+
             if dst.index <= 1:
                 # because we do not know the address in first stage
                 continue
@@ -186,14 +186,14 @@ class OutOfOrderCummulativeOp(Unit):
             # for each stage which can potentially update a data in this stage
             for src_i in range(PIPELINE_CONFIG.WRITE_BACK, len(pipeline)):
                 if src_i == dst.index:
-                    # disallow to load  data from WRITE_BACK to WRITE_BACK on stall 
+                    # disallow to load  data from WRITE_BACK to WRITE_BACK on stall
                     continue
 
                 src = pipeline[src_i] if src_i > 0 else None
                 src_prev = pipeline[src_i - 1] if src_i > 1 else None
 
                 cd = dst.collision_detect[src_i]
-                c = self._sig("%s_tmp" % cd.name)
+                c = self._sig(f"{cd.name:s}_tmp")
                 # Resolve if src stage should load from dst stage in next clock cycle
                 SwitchLogic([
                     (~dst.load_en & ~src.load_en,
@@ -220,15 +220,15 @@ class OutOfOrderCummulativeOp(Unit):
             that the stage data should be updated from stage on that index
         """
         st_prev = self.pipeline[st.index - 1]
-        
+
         def is_not_0(sig):
             return not (isinstance(sig, int) and sig == 0)
-        
+
         res = SwitchLogic([
                 (
-                    (st_load_en & st_prev.collision_detect[src_i]) | 
+                    (st_load_en & st_prev.collision_detect[src_i]) |
                     (~st_load_en & st.collision_detect[src_i]),
-                    # use bypass instead of data from previous stage 
+                    # use bypass instead of data from previous stage
                     [data_modifier(st, src_st), ]
                 )
                 for src_i, src_st in enumerate(self.pipeline) if (
@@ -241,14 +241,14 @@ class OutOfOrderCummulativeOp(Unit):
                data_modifier(st, st_prev),
             )
         )
-        
+
         return res
 
     def data_load(self, r: Axi4_r, st0: OOOOpPipelineStage):
         w = self.MAIN_STATE_T.bit_length()
-        assert w <= r.data._dtype.bit_length(), (w, r.data._dtype) 
+        assert w <= r.data._dtype.bit_length(), (w, r.data._dtype)
         return st0.data(r.data[w:]._reinterpret_cast(self.MAIN_STATE_T))
-    
+
     def propagate_trans_st(self, stage_from: OOOOpPipelineStage, stage_to: OOOOpPipelineStage):
         HAS_TRANS_ST = self.TRANSACTION_STATE_T is not None
         if HAS_TRANS_ST:
@@ -261,14 +261,14 @@ class OutOfOrderCummulativeOp(Unit):
         [todo] doc
         """
         return hBit(0)
-    
+
     def main_pipeline(self):
         PIPELINE_CONFIG = self.PIPELINE_CONFIG
         self.pipeline = pipeline = [
-            OOOOpPipelineStage(i, "st%d" % i, self)
+            OOOOpPipelineStage(i, f"st{i:d}", self)
             for i in range(PIPELINE_CONFIG.WRITE_HISTORY + PIPELINE_CONFIG.WRITE_HISTORY_SIZE)
         ]
-        
+
         state_read = self.state_array.port[1]
         self.collision_detector(pipeline)
         HAS_TRANS_ST = self.TRANSACTION_STATE_T is not None
@@ -330,7 +330,7 @@ class OutOfOrderCummulativeOp(Unit):
                 self.apply_data_write_bypass(st, st_load_en, self.main_op)
                 aw = self.m.aw
                 w = self.m.w
-                
+
                 cancel = rename_signal(self, self.write_cancel(st), "write_back_cancel")
                 If(st_prev.valid,
                    st.valid(1)
@@ -358,7 +358,7 @@ class OutOfOrderCummulativeOp(Unit):
                 st_data = st.data
                 if not isinstance(st_data, RtlSignal):
                     st_data = packIntf(st_data)
-                
+
                 w.data(st_data._reinterpret_cast(w.data._dtype))
                 w.strb(mask(self.DATA_WIDTH // 8))
                 w.last(1)
@@ -382,7 +382,7 @@ class OutOfOrderCummulativeOp(Unit):
                 ).Elif((b.valid | cancel) & dout.rd & confirm.rd,
                    st.valid(0)
                 )
-                
+
                 st.ready(~st.valid | ((b.valid | cancel) & dout.rd & confirm.rd))
 
                 StreamNode(

@@ -109,7 +109,7 @@ class ClkBuilder(AbstractComponentBuilder):
         sampleDoneTick = self.timer((n + "_oversampleDoneTick", sampleCount),
                                     enableSig=sampleTick,
                                     rstSig=rstSig)
-        oversampleCntr = self.parent._reg(n + "_oversample%d_cntr" % (sCnt),
+        oversampleCntr = self.parent._reg(f"{n:s}_oversample{sCnt:d}_cntr",
                                           Bits(log2ceil(sampleCount) + 1, False),
                                           def_val=0)
 
@@ -124,7 +124,7 @@ class ClkBuilder(AbstractComponentBuilder):
             oversampleCntr(oversampleCntr + 1)
         )
 
-        oversampled = self.parent._sig(n + "_oversampled%d" % (sCnt))
+        oversampled = self.parent._sig(f"{n:s}_oversampled{sCnt:d}")
         oversampled(oversampleCntr > (sampleCount // 2 - 1))
         return oversampled, sampleDoneTick
 
@@ -166,7 +166,7 @@ class ClkBuilder(AbstractComponentBuilder):
         if name is None:
             name = "reg_path"
         for i in range(number_of_regs):
-            reg = self.parent._reg("%s_%d" % (name, i),
+            reg = self.parent._reg(f"{name:s}_{i:d}",
                                    dtype=din._dtype, def_val=def_val)
             reg(din)
             din = reg

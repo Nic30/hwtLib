@@ -105,11 +105,10 @@ class AxiS_resizer(AxiSCompBase):
         for wordIndx in range(ITEMS):
             for inp, outp in zip(dIn, dOut):
                 # generate register if is not last item
-                s = self._sig("item_%d_%s" % (wordIndx, inp._name), inp._dtype)
+                s = self._sig(f"item_{wordIndx:d}_{inp._name:s}", inp._dtype)
 
                 if wordIndx <= ITEMS - 1:
-                    r = self._reg("reg_" + inp._name + "_%d" %
-                                  wordIndx, inp._dtype, def_val=0)
+                    r = self._reg(f"reg_{inp._name:s}_{wordIndx:d}", inp._dtype, def_val=0)
 
                     If(hs & isLastItem,
                        r(0)

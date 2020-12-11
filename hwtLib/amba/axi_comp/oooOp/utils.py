@@ -30,22 +30,22 @@ class OOOOpPipelineStage():
         self.index = index
         self.name = name
         r = parent._reg
-        self.id = r("%s_id" % name, parent.m.ar.id._dtype)
-        self.addr = r("%s_addr" % name, Bits(parent.MAIN_STATE_INDEX_WIDTH))
+        self.id = r(f"{name:s}_id", parent.m.ar.id._dtype)
+        self.addr = r(f"{name:s}_addr", Bits(parent.MAIN_STATE_INDEX_WIDTH))
 
         if parent.TRANSACTION_STATE_T is not None:
-            self.transaction_state = r("%s_transaction_state" % name, parent.TRANSACTION_STATE_T)
-        self.data = r("%s_data" % name, parent.MAIN_STATE_T)
+            self.transaction_state = r(f"{name:s}_transaction_state", parent.TRANSACTION_STATE_T)
+        self.data = r(f"{name:s}_data", parent.MAIN_STATE_T)
 
-        self.valid = r("%s_valid" % name, def_val=0)
-        self.ready = parent._sig("%s_ready" % name)
-        self.load_en = parent._sig("%s_load_en" % name)
+        self.valid = r(f"{name:s}_valid", def_val=0)
+        self.ready = parent._sig(f"{name:s}_ready")
+        self.load_en = parent._sig(f"{name:s}_load_en")
 
         # :note: constructed later
         self.collision_detect = None
 
     def __repr__(self):
-        return "<%s %s 0x%x>" % (self.__class__.__name__, self.name, id(self))
+        return f"<{self.__class__.__name__:s} {self.name:s} 0x{id(self):x}>"
 
 
 def does_collinde(st0: OOOOpPipelineStage, st1: OOOOpPipelineStage):

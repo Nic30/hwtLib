@@ -128,7 +128,7 @@ class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):
 
         for m_i, (m, m_b_data) in enumerate(zip(u.s, master_b_data)):
             self.assertValSequenceEqual(
-                m.b._ag.data, m_b_data, "master:%d" % m_i)
+                m.b._ag.data, m_b_data, f"master:{m_i:d}")
 
 
 class AxiInterconnectMatrixW_1to3TC(AxiInterconnectMatrixW_1to1TC):

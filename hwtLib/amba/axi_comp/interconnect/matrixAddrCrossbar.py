@@ -61,11 +61,11 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
         order_m_index_for_s_data_out = HObjList()
         for connected_masters in self.MASTERS_FOR_SLAVE:
             if len(connected_masters) > 1:
-                f = Handshaked()._m() 
+                f = Handshaked()._m()
                 f.DATA_WIDTH = MASTER_INDEX_WIDTH
             else:
                 f = None
-            order_m_index_for_s_data_out.append(f)    
+            order_m_index_for_s_data_out.append(f)
         self.order_m_index_for_s_data_out = order_m_index_for_s_data_out
 
         order_s_index_for_m_data_out = HObjList()
@@ -160,7 +160,7 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
                 if m_i in connected_masters:
                     m_addr_en_s = _slv_en[slv_i][0]
                     m_targets_slave = rename_signal(
-                        self, m_addr_en_s, "master_%d_targets_slave_%d" % (m_i, slv_i))
+                        self, m_addr_en_s, f"master_{m_i:d}_targets_slave_{slv_i:d}")
                     master_targets_slave.append(m_targets_slave)
                     en = m_addr.valid & m_targets_slave
                 else:
@@ -217,7 +217,7 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
 
             slv_master_arbitration_res = rename_signal(
                 self, Concat(*reversed(slv_master_arbitration_res)),
-                "slave_%d_master_arbitration_res" % slv_i
+                f"slave_{slv_i}_master_arbitration_res"
             )
             if order_m_for_s is not None:
                 order_m_for_s.vld(
@@ -248,7 +248,7 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
             if len(connected_slaves) > 1:
                 slv_ens = [m[0] for m in master_to_slave_en[m_i]]
                 slv_ens = oneHotToBin(self, Concat(
-                    *reversed(slv_ens)), "master_%d_slv_ens" % m_i)
+                    *reversed(slv_ens)), f"master_{m_i:d}_slv_ens")
                 order_s_for_m.data(slv_ens)
                 order_s_for_m.vld(m_rd & master_addr.valid)
 

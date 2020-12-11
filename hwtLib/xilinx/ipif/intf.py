@@ -282,9 +282,8 @@ class IpifAgent(SyncAgentBase):
                 if rack:
                     d = intf.ip2bus_data.read()
                     if self._debugOutput is not None:
-                        self._debugOutput.write("%s, on %r read_data: %d\n" % (
-                                                self.intf._getFullName(),
-                                                self.sim.now, d.val))
+                        name = self.intf._getFullName()
+                        self._debugOutput.write(f"{name:s}, on {self.sim.now} read_data: {d.val:d}\n")
                     self.r_data.append(d)
                     actual_next = NOP
             else:
@@ -292,9 +291,8 @@ class IpifAgent(SyncAgentBase):
                 wack = int(intf.ip2bus_wrack.read())
                 if wack:
                     if self._debugOutput is not None:
-                        self._debugOutput.write("%s, on %r write_ack\n" % (
-                                                self.intf._getFullName(),
-                                                self.sim.now))
+                        name = self.intf._getFullName()
+                        self._debugOutput.write(f"{name:s}, on {self.sim.now} write_ack\n")
                     actual_next = NOP
 
         en = self.notReset()

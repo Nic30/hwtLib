@@ -93,7 +93,7 @@ class AddrDataHs_to_Axi(BusBridge):
                         *prefix,
                         (Bits(DW), "data"),
                         *suffix),
-                     "data%d" % i))
+                     f"data{i:d}"))
             data_type = HStruct(
                 # union with member for each data position in axi word
                 (HUnion(*data_fields), 'data')
@@ -148,7 +148,7 @@ class AddrDataHs_to_Axi(BusBridge):
                 .buff(self.MAX_TRANS_OVERLAP).end
             sel.data(sub_addr)
 
-            data_items = [getattr(r_data, "data%d" % i).data for i in range(self.data_words_in_axi_word)]
+            data_items = [getattr(r_data, f"data{i:d}").data for i in range(self.data_words_in_axi_word)]
             r_data_selected = HsBuilder.join_prioritized(self, data_items).end
             s_r.data.data(r_data_selected.data)
 
@@ -210,7 +210,7 @@ class AddrDataHs_to_Axi(BusBridge):
                 [s_w],
                 [axi.aw, w_reg.dataIn, w_in._select])
 
-            data_items = [getattr(w_in, "data%d" % i).data for i in range(self.data_words_in_axi_word)]
+            data_items = [getattr(w_in, f"data{i:d}").data for i in range(self.data_words_in_axi_word)]
             for w in data_items:
                 w.vld(w_reg.dataOut.vld)
                 w.data(w_reg.dataOut.data)

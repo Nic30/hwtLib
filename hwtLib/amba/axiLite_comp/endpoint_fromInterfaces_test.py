@@ -332,7 +332,7 @@ class AxiLiteEndpoint_fromInterface_arr_TC(AxiLiteEndpoint_fromInterfaceTC):
         self.runSim(800 * Time.ns)
 
         for i in range(3):
-            intf = getattr(u, "regCntrlOut%d" % i)
+            intf = getattr(u, f"regCntrlOut{i:d}")
         self.assertValSequenceEqual(intf._ag.dout,
                                     [MAGIC + i, ])
         self.assertValSequenceEqual(

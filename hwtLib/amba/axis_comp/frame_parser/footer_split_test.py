@@ -51,9 +51,10 @@ class AxiS_footerSplitTC(SimTestCase):
                 [False, True])
     def test_nop(self, data_width, footer_width, randomize):
         u = self.custom_setUp(data_width, footer_width, randomize, use_strb=True)
-        unique_name = os.path.join(self.DEFAULT_LOG_DIR,
-                                   self.getTestName() + "_%d_%d_%d.vcd" % (
-                                       data_width, footer_width, randomize))
+        test_name = self.getTestName()
+        unique_name = os.path.join(
+            self.DEFAULT_LOG_DIR,
+            f"{test_name:s}_{data_width:d}_{footer_width:d}_{randomize:d}.vcd")
         self.runSim(10 * CLK_PERIOD, name=unique_name)
         self.assertEmpty(u.dataOut[0]._ag.data)
         self.assertEmpty(u.dataOut[1]._ag.data)
@@ -82,12 +83,10 @@ class AxiS_footerSplitTC(SimTestCase):
                                   gen_data(footer_width)))
                 offset += footer_width // 8
 
+        test_name = self.getTestName()
         unique_name = os.path.join(
             self.DEFAULT_LOG_DIR,
-            self.getTestName() + "_dw%d_f%d_r%d_%d_%d.vcd" % (
-                data_width, footer_width, randomize,
-                frame_len0, frame_len1,
-                ))
+            f"{test_name:s}_dw{data_width:d}_f{footer_width:d}_r{randomize:d}_{frame_len0:d}_{frame_len1:d}.vcd")
         t = len(u.dataIn._ag.data)
         if randomize:
             t = int(t * 3.5)
@@ -106,14 +105,14 @@ class AxiS_footerSplitTC(SimTestCase):
     # def test_frames_8(self, footer_width,
     #                   frame_len0, frame_len1):
     #     self._test_frames(8, footer_width, frame_len0, frame_len1, False)
-    # 
+    #
     # @TestMatrix(TEST_FRAME_SIZES,
     #             TEST_FRAME_SIZES,
     #             TEST_FRAME_SIZES)
     # def test_frames_16(self, footer_width,
     #                    frame_len0, frame_len1):
     #     self._test_frames(16, footer_width, frame_len0, frame_len1, False)
-    # 
+    #
     # @TestMatrix(TEST_FRAME_SIZES,
     #             TEST_FRAME_SIZES,
     #             TEST_FRAME_SIZES)

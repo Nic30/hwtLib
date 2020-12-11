@@ -179,9 +179,9 @@ class IpifEndpointArray(AxiLiteEndpointArrayTC):
         self.assertEmpty(u.bus._ag.r_data)
         for i in range(4):
             self.assertValEqual(
-                u.decoded.field0._ag.mem[i], MAGIC + i + 1, "index=%d" % i)
+                u.decoded.field0._ag.mem[i], MAGIC + i + 1, f"index={i:d}")
             self.assertValEqual(
-                u.decoded.field1._ag.mem[i], 2 * MAGIC + i + 1, "index=%d" % i)
+                u.decoded.field1._ag.mem[i], 2 * MAGIC + i + 1, f"index={i:d}")
 
 
 if __name__ == "__main__":

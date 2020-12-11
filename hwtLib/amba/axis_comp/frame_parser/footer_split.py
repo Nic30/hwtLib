@@ -163,11 +163,11 @@ class AxiS_footerSplit(AxiSCompBase):
                 is_footer = self._reg("out_reg_is_footer", mask_t, def_val=0)
                 is_footer_set_val = self._sig("out_reg_is_footer_set_val", mask_t)
             else:
-                r = self._reg("r%d" % i, reg_t, def_val={"valid": 0})
-                ready = self._sig("r%d_ready" % i)
-                can_flush = self._sig("r%d_can_flush" % i)
-                is_footer = self._reg("r%d_is_footer" % i, mask_t, def_val=0)
-                is_footer_set_val = self._sig("r%d_is_footer_set_val" % i, mask_t)
+                r = self._reg(f"r{i:d}", reg_t, def_val={"valid": 0})
+                ready = self._sig(f"r{i:d}_ready")
+                can_flush = self._sig(f"r{i:d}_can_flush")
+                is_footer = self._reg(f"r{i:d}_is_footer", mask_t, def_val=0)
+                is_footer_set_val = self._sig(f"r{i:d}_is_footer_set_val", mask_t)
             # :var ready: signal which is 1 if this register can accept data
             # :var can_flush: tells if this register can pass it's value to next
             #     even if prev does not contain valid data

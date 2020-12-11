@@ -67,7 +67,7 @@ class SignalCdcBuilder():
 
     def add_in_reg(self):
         assert self.out_reg_cnt == 0, self.out_reg_cnt
-        inReg = self._reg(self.name_prefix + "in_reg%d" % self.out_reg_cnt,
+        inReg = self._reg(f"{self.name_prefix:s}in_reg{self.in_reg_cnt:d}",
                           self.IN_CLK_RST)
         inReg(self.path[-1])
         self.path.append(inReg)
@@ -75,7 +75,7 @@ class SignalCdcBuilder():
 
     def add_out_reg(self, en: Optional[RtlSignal]=None):
         path = self.path
-        outReg = self._reg(self.name_prefix + "out_reg%d" % self.out_reg_cnt,
+        outReg = self._reg(f"{self.name_prefix:s}out_reg{self.out_reg_cnt:d}",
                            self.OUT_CLK_RST)
         end = path[-1]
         if en is not None:

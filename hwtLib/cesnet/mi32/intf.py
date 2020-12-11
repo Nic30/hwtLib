@@ -170,7 +170,7 @@ class Mi32AddrAgent(HandshakedAgent):
                 rd, wr = 1, 1
                 _, address, wdata, be = data
             else:
-                raise TypeError("rw is in invalid format %r" % (rw,))
+                raise TypeError(f"rw is in invalid format {rw}")
 
             intf.addr.write(address)
             intf.rd.write(rd)

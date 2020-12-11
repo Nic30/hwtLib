@@ -284,9 +284,7 @@ class AxiS_frameParserFieldConnector():
         else:
             # part is not in same word as last part, we have to store it's value
             # to register until the last part arrive
-            fPartReg = self.parent._reg("%s_part_%d" % (
-                    fieldInfo.name,
-                    len(signalsOfParts)),
+            fPartReg = self.parent._reg(f"{fieldInfo.name:s}_part_{len(signalsOfParts):d}",
                 fPartSig._dtype)
             dataVld = self.dataIn.valid & en & exclusiveEn
             If(dataVld,

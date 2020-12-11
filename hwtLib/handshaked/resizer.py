@@ -51,7 +51,7 @@ class HsResizer(HandshakedCompBase):
 
     def _upscaleDataPassLogic(self, inputRegs_cntr, ITEMS):
 
-        # valid when all registers are loaded and input with last datapart is valid 
+        # valid when all registers are loaded and input with last datapart is valid
         vld = self.get_valid_signal
         rd = self.get_ready_signal
         vld(self.dataOut)(inputRegs_cntr._eq(ITEMS - 1) & vld(self.dataIn))
@@ -74,7 +74,7 @@ class HsResizer(HandshakedCompBase):
 
         for din, dout in zip(self.get_data(self.dataIn),
                              self.get_data(self.dataOut)):
-            inputRegs = [self._reg("inReg%d_%s" % (i, din._name), din._dtype)
+            inputRegs = [self._reg(f"inReg{i:d}_{din._name:s}", din._dtype)
                          for i in range(factor - 1)]
             # last word will be passed directly
 

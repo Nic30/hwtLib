@@ -88,8 +88,8 @@ class FifoOutOfOrderRead(Unit):
         _vld_next = []
         _item_write_lock_next = []
         for i in range(ITEMS):
-            vld_next = self._sig("valid_%d_next" % (i))
-            item_write_lock_next = self._sig("item_write_lock_%d_next" % (i))
+            vld_next = self._sig(f"valid_{i:d}_next")
+            item_write_lock_next = self._sig(f"item_write_lock_{i:d}_next")
             If(pc.vld & pc.data._eq(i),
                # this is an item which we are discarding
                vld_next(0),

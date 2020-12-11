@@ -49,7 +49,7 @@ class ExampleA(Unit):
         self.u7.B = 12
 
     def _impl(self):
-        self.a(Concat(*[getattr(self, "u%d" % i).a for i in range(7)]))
+        self.a(Concat(*[getattr(self, f"u{i:d}").a for i in range(7)]))
 
 
 class SerializerModes_TC(BaseSerializationTC):

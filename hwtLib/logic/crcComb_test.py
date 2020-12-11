@@ -189,10 +189,10 @@ class CrcCombTC(SimTestCase):
                stoi(inp),
             )
             self.runSim(20 * Time.ns, name=os.path.join(self.DEFAULT_LOG_DIR,
-                                                        "test_crc32_%i.vcd" % i))
+                                                        f"test_crc32_{i:d}.vcd"))
             out = int(u.dataOut._ag.data[-1])
             ref = crc32(inp) & mask(32)
-            self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
+            self.assertEqual(out, ref, f"0x{out:08X} 0x{ref:08X}")
 
     def test_crc32_64b(self):
         inp = b"abcdefgh"
@@ -201,7 +201,7 @@ class CrcCombTC(SimTestCase):
         self.runSim(20 * Time.ns)
         out = int(u.dataOut._ag.data[-1])
         ref = crc32(inp) & 0xffffffff
-        self.assertEqual(out, ref, "0x{:08X} 0x{:08X}".format(out, ref))
+        self.assertEqual(out, ref, f"0x{out:08X} 0x{ref:08X}")
 
     def test_crc16(self):
         for i, inp in enumerate([b"aa", b"ab", b"x6"]):
@@ -210,7 +210,7 @@ class CrcCombTC(SimTestCase):
 
             u.dataIn._ag.data.append(stoi(inp))
             self.runSim(20 * Time.ns, name=os.path.join(self.DEFAULT_LOG_DIR,
-                                                        "test_crc16_%d.vcd" % i))
+                                                        f"test_crc16_{i:d}.vcd"))
 
             # crc = 0x449C
             ref = crc_hqx(inp, CRC_16_CCITT.INIT)
@@ -240,11 +240,12 @@ class CrcCombTC(SimTestCase):
             u = self.u
             u.dataIn._ag.data.append(inp)
             trace_file = os.path.join(self.DEFAULT_LOG_DIR,
-                                      "test_crc5_usb_%d.vcd" % i)
+                                      f"test_crc5_usb_{i:d}.vcd")
             self.runSim(20 * Time.ns, name=trace_file)
 
             d = u.dataOut._ag.data[0]
-            self.assertValEqual(d, ref, (i, "{0:05b} {1:05b}".format(int(d), ref)))
+            _d = int(d)
+            self.assertValEqual(d, ref, (i, f"{_d:05b} {ref:05b}"))
 
 
 if __name__ == "__main__":

@@ -319,8 +319,7 @@ class BusEndpoint(Unit):
         if not isinstance(transTmpl.dtype, HArray):
             raise TypeError(transTmpl.dtype)
         assert transTmpl.bitAddr % dst_addr_step == 0, (
-            "Has to be addressable by address with this step (%r)" % (
-                transTmpl))
+            f"Has to be addressable by address with this step ({transTmpl})")
 
         addrIsAligned = transTmpl.bitAddr % transTmpl.bit_length() == 0
         bitsForAlignment = AddressStepTranslation(src_addr_step, dst_addr_step).align_bits
@@ -342,7 +341,7 @@ class BusEndpoint(Unit):
             _addr = transTmpl.bitAddr // src_addr_step
             _addrEnd = transTmpl.bitAddrEnd // src_addr_step
             addrIsInRange = inRange(src_addr_sig, _addr, _addrEnd)
-            addr_tmp = self._sig(dst_addr_sig._name + 
+            addr_tmp = self._sig(dst_addr_sig._name +
                                  "_addr_tmp", Bits(self.ADDR_WIDTH))
             addr_tmp(src_addr_sig - _addr)
 

@@ -57,7 +57,7 @@ def mkLutRamCls(DATA_WIDTH):
                mem[a_in](d_in)
             )
 
-    RAMnX1S.__name__ = "RAM%dX1S" % DATA_WIDTH
+    RAMnX1S.__name__ = f"RAM{DATA_WIDTH:d}X1S"
     return RAMnX1S
 
 

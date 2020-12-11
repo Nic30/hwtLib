@@ -108,7 +108,7 @@ class AxiInterconnectMatrixCrossbar(Unit):
                 " this should have been handled before")
             selected_dataOut_ready = rename_signal(
                 self, Or(*selected_dataOut_ready),
-                "dataIn_%d_selected_dataOut_ready" % din_i)
+                f"dataIn_{din_i:d}_selected_dataOut_ready")
             if order_m_for_s is not None:
                 dataIn.ready(order_m_for_s.vld & selected_dataOut_ready)
                 order_m_for_s.rd(dataIn.valid & self.get_last(dataIn) &
@@ -138,7 +138,7 @@ class AxiInterconnectMatrixCrossbar(Unit):
 
             selected_dataIn_valid = rename_signal(
                 self, Or(*selected_dataIn_valid),
-                "dataOut_%d_selected_dataIn_valid" % dout_i)
+                f"dataOut_{dout_i:d}_selected_dataIn_valid")
 
             if order_s_for_m is None:
                 dataOut.valid(selected_dataIn_valid)
@@ -158,7 +158,7 @@ class AxiInterconnectMatrixCrossbar(Unit):
 
             selected_dataIn_last = rename_signal(
                 self, Or(*selected_dataIn_last),
-                "dataOut_%d_selected_dataIn_last" % dout_i)
+                f"dataOut_{dout_i:d}_selected_dataIn_last")
 
             if order_s_for_m is not None:
                 order_s_for_m.rd(

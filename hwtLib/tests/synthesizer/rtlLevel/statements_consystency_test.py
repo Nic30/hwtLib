@@ -70,7 +70,7 @@ class StatementsConsystencyTC(unittest.TestCase):
         for stm in u._ctx.statements:
             if stm._event_dependent_from_branch != 0:
                 diff = stm._enclosed_for.symmetric_difference(stm._outputs)
-                self.assertEqual(diff, set(), "\n%r" % stm)
+                self.assertEqual(diff, set(), f"\n{stm}")
 
 
 if __name__ == '__main__':

@@ -77,7 +77,7 @@ class FrameJoinInputReg(Unit):
         data_t = HStruct(*data_fieds)
         # regs[0] connected to output as first, regs[-1] connected to input
         regs = [
-            self._reg("r%d" % (r_i), data_t, def_val={"keep": 0,
+            self._reg(f"r{r_i:d}", data_t, def_val={"keep": 0,
                                                       "last": 0,
                                                       "relict": 0})
             for r_i in range(self.REG_CNT)
@@ -86,14 +86,14 @@ class FrameJoinInputReg(Unit):
         keep_masks = self.keep_masks
         fully_consummed_flags = []
         for i, r in enumerate(regs):
-            _fully_consumed = self._sig("r%d_fully_consummed" % i)
+            _fully_consumed = self._sig(f"r{i:d}_fully_consummed")
             _fully_consumed((r.keep & keep_masks[i])._eq(0))
             fully_consummed_flags.append(_fully_consumed)
 
         for i, (is_last_r, r) in enumerate(iter_with_last(regs)):
             keep_mask_all = mask(r.keep._dtype.bit_length())
-            prev_keep_mask = self._sig("prev_keep_mask_%d_tmp" % i, r.keep._dtype)
-            prev_last_mask = self._sig("prev_last_mask_%d_tmp" % i)
+            prev_keep_mask = self._sig(f"prev_keep_mask_{i:d}_tmp", r.keep._dtype)
+            prev_last_mask = self._sig(f"prev_last_mask_{i:d}_tmp")
 
             if is_last_r:
                 # is register connected directly to dataIn

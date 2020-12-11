@@ -24,12 +24,12 @@ def applyRequests(ram, requests):
         elif m == READ:
             ram.we._ag.data.append(0)
         else:
-            raise Exception("invalid mode %s" % (repr(req[0])))
+            raise Exception(f"invalid mode {req[0]}")
 
         addr = req[1]
         # ram addr has 6 bits
         for i in range(6):
-            addrbit = getattr(ram, "a%d" % i)
+            addrbit = getattr(ram, f"a{i:d}")
             addrBitval = get_bit(addr, i)
             addrbit._ag.data.append(addrBitval)
 

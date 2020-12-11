@@ -177,7 +177,7 @@ class AxiReadAggregator(Unit):
                 (data_copy_override.vld | ar_ack)
             # item becomes invalid if we read last data word
             this_trans_end = read_ack & s.r.id._eq(trans_id) & s.r.last
-            this_trans_end = rename_signal(self, this_trans_end, "this_trans_end%d" % trans_id)
+            this_trans_end = rename_signal(self, this_trans_end, f"this_trans_end{trans_id:d}")
             this_transaction_vld = apply_set_and_clear(item_vld[trans_id], this_trans_start, this_trans_end)
             item_vld_next.append(this_transaction_vld)
 
@@ -189,12 +189,12 @@ class AxiReadAggregator(Unit):
             )
             # note: this_trans_end in this context is for parent transactio
             # which was not started just now, so it may be ending just now
-            waiting_transaction_start = rename_signal(self,  waiting_transaction_start, "waiting_transaction_start%d" % trans_id)
+            waiting_transaction_start = rename_signal(self,  waiting_transaction_start, f"waiting_transaction_start{trans_id:d}")
             _waiting_transaction_vld = apply_set_and_clear(
                 waiting_transaction_vld[trans_id],
                 waiting_transaction_start,
                 this_trans_end)
-            _waiting_transaction_vld = rename_signal(self, _waiting_transaction_vld, "waiting_transaction_vld%d" % trans_id)
+            _waiting_transaction_vld = rename_signal(self, _waiting_transaction_vld, f"waiting_transaction_vld{trans_id:d}")
             waiting_transaction_vld_next.append(_waiting_transaction_vld)
 
         item_vld(Concat(*reversed(item_vld_next)))

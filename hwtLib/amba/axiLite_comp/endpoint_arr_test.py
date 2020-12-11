@@ -103,9 +103,9 @@ class AxiLiteEndpointArrayTC(AxiLiteEndpointTC):
         self.assertEmpty(u.bus._ag.r.data)
         for i in range(4):
             self.assertValEqual(u.decoded.field0._ag.mem[i],
-                                MAGIC + i + 1, "index=%d" % i)
+                                MAGIC + i + 1, f"index={i:d}")
             self.assertValEqual(u.decoded.field1._ag.mem[i],
-                                2 * MAGIC + i + 1, "index=%d" % i)
+                                2 * MAGIC + i + 1, f"index={i:d}")
 
     def test_registerMap(self):
         self.mySetUp(32)

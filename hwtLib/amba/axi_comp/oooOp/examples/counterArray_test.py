@@ -40,11 +40,11 @@ class OooOpExampleCounterArray_TC(SingleUnitSimTestCase):
         self.assertEmpty(u.m.aw._ag.data)
         self.assertEmpty(u.m.w._ag.data)
         self.assertEmpty(u.m.ar._ag.data)
-    
+
     def _test_incr(self, indexes=[0, ], randomize=False):
         u = self.u
         u.dataIn._ag.data.extend(indexes)
-        
+
         t = (10 + len(indexes) * 2) * CLK_PERIOD
         if randomize:
             axi_randomize_per_channel(self, u.m)
@@ -56,7 +56,7 @@ class OooOpExampleCounterArray_TC(SingleUnitSimTestCase):
 
         # check if pipeline registers are empty
         for i in range(u.PIPELINE_CONFIG.WRITE_HISTORY):
-            valid = getattr(self.rtl_simulator.model.io, "st%d_valid" % (i))
+            valid = getattr(self.rtl_simulator.model.io, f"st{i:d}_valid")
             self.assertValEqual(valid.read(), 0, i)
 
         # check if main state fifo is empty
@@ -76,7 +76,7 @@ class OooOpExampleCounterArray_TC(SingleUnitSimTestCase):
 
     def test_incr_1x(self):
         self._test_incr([0])
-        
+
     def test_incr_1xb(self):
         self._test_incr([1])
 

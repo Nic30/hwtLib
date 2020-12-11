@@ -167,7 +167,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
             # connect parts of union to output signal
             high, low = tPart.getBusWordBitRange()
             parentIntf = tToIntf[tPart.origin.parent.getFieldPath()]
- 
+
             if parentIntf not in self._tmpRegsForSelect.keys():
                 sel = HsBuilder(self, parentIntf._select).buff().end
                 self._tmpRegsForSelect[parentIntf] = sel
@@ -212,7 +212,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
                         lastPortsNode.masters)
                     sk_stash.push(_strb, _keep)
                     start = choicePart.endOfPart
-                    
+
                 if start != tPart.endOfPart:
                     # add padding because there is a hole after
                     _w = tPart.endOfPart - start
@@ -297,7 +297,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         fjoin = AxiS_FrameJoin()
         sub_t_flatten = [to_primitive_stream_t(s_t) for s_t in self.sub_t]
         fjoin.T = HStruct(
-            *((s_t, "frame%d" % i)
+            *((s_t, f"frame{i:d}")
               for i, s_t in enumerate(sub_t_flatten))
         )
         fjoin._updateParamsFrom(
@@ -369,7 +369,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
             # input ports which value should be consumed on this word
             lastInPorts = []
             if multipleWords:
-                wordData = self._sig("word%d" % i, dout.data._dtype)
+                wordData = self._sig(f"word{i:d}", dout.data._dtype)
             else:
                 wordData = self.dataOut.data
 

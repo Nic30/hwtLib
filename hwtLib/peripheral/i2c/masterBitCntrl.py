@@ -246,11 +246,12 @@ class I2cMasterBitCtrl(Unit):
 
         def stateSequence(sequneceName, stateCnt):
             for i in range(stateCnt):
-                stateFrom = getattr(stT, sequneceName + "_%d" % i)
+                stateFrom = getattr(stT, f"{sequneceName}_{i:d}")
                 if i == stateCnt - 1:
                     stateTo = stT.idle
                 else:
-                    stateTo = getattr(stT, sequneceName + "_%d" % (i + 1))
+                    _i = i + 1
+                    stateTo = getattr(stT, f"{sequneceName}_{i:d}")
 
                 fsm.Trans(stateFrom,
                         (al, stT.idle),

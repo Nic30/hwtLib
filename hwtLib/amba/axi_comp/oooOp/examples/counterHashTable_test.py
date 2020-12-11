@@ -57,7 +57,7 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
         #     (BIT, "key_match"),
         #     (Bits(2), "operation"), # :see: :class:`~.OPERATION`
         # )
-        
+
         u.ID_WIDTH = 2
         u.ADDR_WIDTH = 2 + 3
         cls.u = u
@@ -79,7 +79,7 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
         self.assertEmpty(u.m.aw._ag.data)
         self.assertEmpty(u.m.w._ag.data)
         self.assertEmpty(u.m.ar._ag.data)
-    
+
     def _test_incr(self, inputs, randomize=False, mem_init={}):
         u = self.u
         ADDR_ITEM_STEP = u.DATA_WIDTH // 8
@@ -90,9 +90,9 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
                 v = u.MAIN_STATE_T.from_py({"item_valid": item_valid, "key": key, "value": value})
                 v = v._reinterpret_cast(u.m.w.data._dtype)
             self.m.data[i] = v
-        
+
         u.dataIn._ag.data.extend(inputs)
-        
+
         t = (10 + len(inputs) * 2) * CLK_PERIOD
         if randomize:
             axi_randomize_per_channel(self, u.m)
@@ -104,7 +104,7 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
 
         # check if pipeline registers are empty
         for i in range(u.PIPELINE_CONFIG.WRITE_HISTORY):
-            valid = getattr(self.rtl_simulator.model.io, "st%d_valid" % (i))
+            valid = getattr(self.rtl_simulator.model.io, f"st{i:d}_valid")
             self.assertValEqual(valid.read(), 0, i)
 
         # check if main state fifo is empty
@@ -139,7 +139,7 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
                     o_operation
                 ),
             ) = _out
-            # None or tuple(item_valid, key, data) 
+            # None or tuple(item_valid, key, data)
             cur = mem.get(addr, None)
             aeq = self.assertValEqual
             aeq(o_addr, addr)
@@ -153,7 +153,7 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
                     aeq(o_found_key, key)
                     aeq(o_found_data, cur[2] + 1)
                     aeq(o_found_key_vld, 1)
-                    
+
                     mem[addr] = (1, key, int(o_found_data))
 
                 else:
@@ -180,7 +180,7 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
                     mem[addr] = (1, key, int(o_found_data))
                 else:
                     # swap
-                    raise NotImplementedError()  
+                    raise NotImplementedError()
             elif operation == OP.SWAP:
                 # swap no matter if the key was found or not, do not increment
                 raise NotImplementedError()
@@ -201,7 +201,7 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
                 aeq(v.item_valid, 1)
                 aeq(v.key, ref_v[1])
                 aeq(v.value, ref_v[2])
-            
+
     def test_1x_not_found(self):
         self._test_incr([(0, TState(0, None, OP.LOOKUP)), ])
 
@@ -214,10 +214,10 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
 
     def test_1x_lookup_found(self):
         self._test_incr([(1, TState(99, None, OP.LOOKUP)), ], mem_init={1: MState(99, 20)})
-    
+
     def test_r_100x_lookup_found(self):
         item_pool = [(i, MState(i + 1, 20 + i)) for i in range(2 ** self.u.ID_WIDTH)]
-        
+
         self._test_incr(
             [(i, TState(v[1], None, OP.LOOKUP)) for i, v in [
                     self._rand.choice(item_pool) for _ in range(100)
@@ -229,7 +229,7 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
     def test_r_100x_lookup_found_not_found_mix(self):
         max_id = 2 ** self.u.ID_WIDTH
         item_pool = [(i % max_id, MState(i + 1, 20 + i)) for i in range(max_id * 2)]
-        
+
         self._test_incr(
             [(i, TState(v[1], None, OP.LOOKUP)) for i, v in [
                     self._rand.choice(item_pool) for _ in range(100)
@@ -254,7 +254,7 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
         #     print(10 * "-")
         #     for s in loop:
         #         print(s.resolve()[1:])
-    
+
         self.assertEqual(comb_loops, frozenset())
 
 

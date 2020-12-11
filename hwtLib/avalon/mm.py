@@ -196,7 +196,7 @@ class AvalonMmAddrAgent(HandshakedAgent):
                 d, be = self.wData.popleft()
                 intf.writeData.write(d)
             else:
-                raise TypeError("rw is in invalid format %r" % (rw,))
+                raise TypeError(f"rw is in invalid format {rw}")
 
             intf.address.write(address)
             intf.byteEnable.write(be)

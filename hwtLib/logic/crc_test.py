@@ -81,7 +81,7 @@ class CrcTC(SimTestCase):
         self.runSim(20 * Time.ns)
         out8 = int(u.dataOut._ag.data[-1])
 
-        # print("32:%x" % out32, "16:%x" % out16, "8:%x" % out8)
+        # print(f"32:{out32:x} 16:{out16:x} 8:{out8:x}")
         self.assertEqual(out32, out16)
         self.assertEqual(out16, out8)
 
@@ -193,7 +193,7 @@ class CrcTC(SimTestCase):
         # print("\n")
         #
         # for _d in C_240B:
-        #    print(" 0x%x" % _d, end='')
+        #    print(f" 0x{_d:x}", end='')
 
         self.runSim(40 * Time.ns)
         out = int(u.dataOut._ag.data[-1])

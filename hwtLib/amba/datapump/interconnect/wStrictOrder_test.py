@@ -220,7 +220,7 @@ class WStrictOrderInterconnect2TC(SingleUnitSimTestCase):
         self.runSim(self.DRIVER_CNT * N * 50 * Time.ns)
         for i, baseAddr in enumerate(dataAddress):
             inMem = m.getArray(baseAddr, u.DATA_WIDTH // 8, N)
-            self.assertValSequenceEqual(inMem, data[i], "driver:%d" % i)
+            self.assertValSequenceEqual(inMem, data[i], f"driver:{i:d}")
 
 
 if __name__ == "__main__":
