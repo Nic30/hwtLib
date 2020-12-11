@@ -11,7 +11,7 @@ This icludes:
 * AMBA ACE
 * and others
 
-https://static.docs.arm.com/ihi0022/d/IHI0022D_amba_axi_protocol_spec.pdf
-https://static.docs.arm.com/ihi0051/a/IHI0051A_amba4_axi4_stream_v1_0_protocol_spec.pdf
-
+Available specifications:
+* https://static.docs.arm.com/ihi0022/d/IHI0022D_amba_axi_protocol_spec.pdf
+* https://static.docs.arm.com/ihi0051/a/IHI0051A_amba4_axi4_stream_v1_0_protocol_spec.pdf
 """
