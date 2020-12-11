@@ -197,6 +197,7 @@ from hwtLib.tests.sertialization.vhdl_test import Vhdl2008Serializer_TC
 from hwtLib.tests.simulator.basicRtlSimulatorVcdTmpDirs_test import BasicRtlSimulatorVcdTmpDirs_TCs
 from hwtLib.tests.simulator.json_log_test import HsFifoJsonLogTC
 from hwtLib.tests.simulator.utils_test import SimulatorUtilsTC
+from hwtLib.tests.structIntf_operator_test import StructIntf_operatorTC
 from hwtLib.tests.synthesizer.interfaceLevel.interfaceSynthesizerTC import \
     InterfaceSynthesizerTC
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import \
@@ -250,6 +251,7 @@ suite = testSuiteFromTCs(
     SimpleSubunit3TC,
     UnitToUnitConnectionTC,
     OperatorTC,
+    StructIntf_operatorTC,
     CastTc,
     BitsSlicingTC,
     HStructValTC,
