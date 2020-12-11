@@ -60,6 +60,7 @@ python3 setup.py install
 * [analogdevicesinc/hdl/](https://github.com/analogdevicesinc/hdl/)
 * [connectal](https://github.com/cambridgehackers/connectal) - framework for software-driven hardware development
 * [corundum](https://github.com/ucsdsysnet/corundum) - Packet DMA
+* [Elphel repositories](https://git.elphel.com/Elphel?page=1) - Verilog, firmware for Zynq based camera with DDR3, HiSPi, JPEG
 * [enjoy-digital repositories](https://github.com/enjoy-digital?tab=repositories) - Migen, SoC level modules
 * [FPGAwars FPGA-peripherals](https://github.com/FPGAwars/FPGA-peripherals) - Verilog, simple peripherals
 * [hdl4fpga](https://github.com/hdl4fpga/hdl4fpga) - Verilog/VHDL various peripherals
