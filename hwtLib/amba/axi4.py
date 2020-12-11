@@ -119,7 +119,8 @@ class Axi4_b(Axi3_b):
 #####################################################################
 class Axi4(Axi3):
     """
-    Basic AMBA AXI4 bus interface
+    AMBA AXI4 bus interface
+    https://static.docs.arm.com/ihi0022/d/IHI0022D_amba_axi_protocol_spec.pdf
 
     :ivar ~.ar: read address channel
     :ivar ~.r:  read data channel

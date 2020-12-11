@@ -18,6 +18,7 @@ from pycocotb.hdlSimulator import HdlSimulator
 class AxiStream(Axi_hs, Axi_id, Axi_user, Axi_strb):
     """
     AMBA AXI-stream interface
+    https://static.docs.arm.com/ihi0051/a/IHI0051A_amba4_axi4_stream_v1_0_protocol_spec.pdf
 
     :ivar ~.IS_BIGENDIAN: Param which specifies if interface uses bigendian
         byte order or little-endian byte order

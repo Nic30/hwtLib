@@ -1,5 +1,7 @@
 """
 Constant used for a signals in AXI, AXI-lite interfaces.
+
+https://static.docs.arm.com/ihi0022/d/IHI0022D_amba_axi_protocol_spec.pdf
 """
 BURST_FIXED = 0b00
 BURST_INCR = 0b01
@@ -73,15 +75,17 @@ QOS_DEFAULT = 0
 LOCK_DEFAULT = 0
 
 """
-+-------+----------+-----------------------+
-| RESP  | Response | Desciption            |
-+=======+==========+=======================+
-| 0b00  | OKAY     | Normal access success |
-+-------+----------+-----------------------+
-| 0b10  | SLVERR   | Slave error           |
-+-------+----------+-----------------------+
-| 0b11  | DECERR   | Decode error          |
-+-------+----------+-----------------------+
++-------+----------+--------------------------+
+| RESP  | Response | Desciption               |
++=======+==========+==========================+
+| 0b00  | OKAY     | Normal access success    |
++-------+----------+--------------------------+
+| 0b01  | EXOKAY   | Exclusive access success |
++-------+----------+--------------------------+
+| 0b10  | SLVERR   | Slave error              |
++-------+----------+--------------------------+
+| 0b11  | DECERR   | Decode error             |
++-------+----------+--------------------------+
 """
 RESP_OKAY = 0
 RESP_EXOKAY = 1

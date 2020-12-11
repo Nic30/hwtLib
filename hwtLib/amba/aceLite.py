@@ -21,6 +21,10 @@ class AceLite_addr(Axi4Lite_addr):
 
 class AceLite(Axi4Lite):
     """
+    AMBA ACE-lite interface
+
+    https://static.docs.arm.com/ihi0022/d/IHI0022D_amba_axi_protocol_spec.pdf
+
     .. hwt-autodoc::
     """
     AR_CLS = AceLite_addr

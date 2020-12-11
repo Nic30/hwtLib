@@ -149,6 +149,10 @@ class Axi3Lite_bAgent(BaseAxiAgent):
 #################################################################
 class Axi3Lite(Interface):
     """
+    AMBA AXI3-lite interface
+
+    https://static.docs.arm.com/ihi0022/d/IHI0022D_amba_axi_protocol_spec.pdf
+
     .. hwt-autodoc::
     """
     AW_CLS = Axi3Lite_addr

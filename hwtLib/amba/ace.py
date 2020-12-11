@@ -171,6 +171,8 @@ class Ace(Axi4):
     :ivar cd: Coherent data channel.
         output from the master to transfer snoop data
 
+    https://static.docs.arm.com/ihi0022/d/IHI0022D_amba_axi_protocol_spec.pdf
+
     .. hwt-autodoc::
     """
     AW_CLS = Ace_addr
