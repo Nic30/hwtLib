@@ -88,7 +88,7 @@ class DebugBusMonitorCtl():
                 bits_start, bits_len = v
                 val = select_bit_range(data, bits_start, bits_len)
                 if bits_len == 1:
-                    out.write(f"{val}:d")
+                    out.write(f"{val:d}")
                 else:
                     out.write(f"0x{val:x}")
                 out.write("\n")
