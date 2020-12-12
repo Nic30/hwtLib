@@ -251,7 +251,7 @@ class I2cMasterBitCtrl(Unit):
                     stateTo = stT.idle
                 else:
                     _i = i + 1
-                    stateTo = getattr(stT, f"{sequneceName}_{i:d}")
+                    stateTo = getattr(stT, f"{sequneceName}_{_i:d}")
 
                 fsm.Trans(stateFrom,
                         (al, stT.idle),
