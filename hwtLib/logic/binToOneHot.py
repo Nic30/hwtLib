@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import log2ceil, Concat
-from hwt.hdl.constants import Time
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
+from pycocotb.constants import CLK_PERIOD
 
 
 def binToOneHot(sig, en=1):
@@ -15,13 +15,14 @@ def binToOneHot(sig, en=1):
         _en = int(en)
     except:
         _en = None
-    
+
     res = Concat(*reversed(list(sig._eq(i) for i in range(2 ** sig._dtype.bit_length()))))
     if _en == 1:
         return res
     else:
         return en._ternary(res, res._dtype.from_py(0))
-    
+
+
 @serializeParamsUniq
 class BinToOneHot(Unit):
     """
@@ -62,7 +63,7 @@ class BinToOneHotTC(SingleUnitSimTestCase):
         u.en._ag.data.append(1)
         u.din._ag.data.extend(range(8))
 
-        self.runSim(80 * Time.ns)
+        self.runSim(8 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.dout._ag.data,
                                     [1 << i for i in range(8)])
