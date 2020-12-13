@@ -22,7 +22,7 @@ class BinToBcd(Unit):
     """
 
     def _config(self):
-        self.INPUT_WIDTH = Param(8)
+        self.INPUT_WIDTH = Param(64)
 
     def _declr(self):
         addClkRstn(self)
@@ -37,8 +37,8 @@ class BinToBcd(Unit):
         INPUT_WIDTH, DECIMAL_DIGITS, din, dout = \
         self.INPUT_WIDTH, self.DECIMAL_DIGITS, self.din, self.dout
 
-        bin_r = self._reg("bin_r", Bits(INPUT_WIDTH))
-        bitcount = self._reg("bitcount", Bits(log2ceil(INPUT_WIDTH)), def_val=0)
+        bin_r = self._reg("bin_r", Bits(INPUT_WIDTH, signed=False))
+        bitcount = self._reg("bitcount", Bits(log2ceil(INPUT_WIDTH), signed=False), def_val=0)
 
         st_t = HEnum("st_t", ["idle", "busy", "fin"])
         state = self._reg("state", st_t, def_val=st_t.idle)
@@ -76,10 +76,10 @@ class BinToBcd(Unit):
             .Default(
                 bitcount(0))
 
-        bcdp = self._sig("bcdp", Bits(4)[DECIMAL_DIGITS])
+        bcdp = self._sig("bcdp", Bits(4, signed=False)[DECIMAL_DIGITS])
         bcd_digits = []
         for g in range(DECIMAL_DIGITS):
-            bcd = self._reg(f"bcd_{g:d}", Bits(4), def_val=0)
+            bcd = self._reg(f"bcd_{g:d}", Bits(4, signed=False), def_val=0)
             bcdp[g]((bcd >= 5)._ternary(bcd + 3, bcd)),
             prev = self._sig(f"prev_{g:d}", Bits(4))
             if g != 0:
