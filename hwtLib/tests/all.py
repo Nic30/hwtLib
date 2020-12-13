@@ -143,6 +143,7 @@ from hwtLib.handshaked.resizer_test import HsResizerTC
 from hwtLib.handshaked.splitCopy_test import HsSplitCopyTC, \
     HsSplitCopy_randomized_TC
 from hwtLib.img.charToBitmap_test import CharToBitmapTC
+from hwtLib.logic.binToBcd_test import BinToBcdTC
 from hwtLib.logic.binToOneHot import BinToOneHotTC
 from hwtLib.logic.bitonicSorter import BitonicSorterTC
 from hwtLib.logic.cntrGray import GrayCntrTC
@@ -318,6 +319,7 @@ suite = testSuiteFromTCs(
     FsmExampleTC,
     HadrcodedFsmExampleTC,
     OneHotToBinTC,
+    BinToBcdTC,
     BinToOneHotTC,
     GrayCntrTC,
     TwoCntrsTC,
