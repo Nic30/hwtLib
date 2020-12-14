@@ -27,11 +27,15 @@ class BinToBcd(Unit):
     def _declr(self):
         addClkRstn(self)
         assert self.INPUT_WIDTH > 0, self.INPUT_WIDTH
-        self.DECIMAL_DIGITS = ceil(log10(2 ** self.INPUT_WIDTH))
+        self.DECIMAL_DIGITS = self.decadic_deciamls_for_bin(self.INPUT_WIDTH)
         self.din = Handshaked()
         self.din.DATA_WIDTH = self.INPUT_WIDTH
         self.dout = Handshaked()._m()
         self.dout.DATA_WIDTH = self.DECIMAL_DIGITS * 4
+
+    @staticmethod
+    def decadic_deciamls_for_bin(bin_width: int):
+        return ceil(log10(2 ** bin_width))
 
     def _impl(self):
         INPUT_WIDTH, DECIMAL_DIGITS, din, dout = \
