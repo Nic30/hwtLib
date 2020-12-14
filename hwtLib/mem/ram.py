@@ -177,7 +177,7 @@ class RamMultiClock(Unit):
     RAM where each port has an independet clock.
     It can be configured to true dual port RAM etc.
 
-    :note: write-first variant 
+    :note: write-first variant
 
     .. hwt-autodoc::
     """
