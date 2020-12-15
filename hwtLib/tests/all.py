@@ -147,6 +147,7 @@ from hwtLib.logic.binToBcd_test import BinToBcdTC
 from hwtLib.logic.binToOneHot import BinToOneHotTC
 from hwtLib.logic.bitonicSorter import BitonicSorterTC
 from hwtLib.logic.cntrGray import GrayCntrTC
+from hwtLib.logic.countLeading_test import CountLeadingTC
 from hwtLib.logic.crcComb_test import CrcCombTC
 from hwtLib.logic.crcUtils_test import CrcUtilsTC
 from hwtLib.logic.crc_test import CrcTC
@@ -326,6 +327,7 @@ suite = testSuiteFromTCs(
     GrayCntrTC,
     TwoCntrsTC,
     SelfRefCntrTC,
+    CountLeadingTC,
     IndexingTC,
     CdcTC,
     RamResourcesTC,
