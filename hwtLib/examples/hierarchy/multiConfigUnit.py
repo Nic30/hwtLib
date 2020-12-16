@@ -21,10 +21,10 @@ from ipCorePackager.constants import INTF_DIRECTION, DIRECTION
 def reduce_ternary(cond_val_pairs: List[Tuple[Union[HValue, RtlSignal], Union[HValue, RtlSignal]]], default: Union[HValue, RtlSignal]):
     """
     .. code-block:: python
-        
+
         reduce_ternary([(c0, v0), (c1, v1)], v3)
-        # to 
-        v0 if c0 else v1 if c1 else v3 
+        # to
+        v0 if c0 else v1 if c1 else v3
     """
     res = default
     for cond, val in reversed(cond_val_pairs):
@@ -55,8 +55,8 @@ class MultiConfigUnitWrapper(Unit):
             myP = Param(p.get_value())
             self._registerParameter(p._name, myP)
             myP.set_value(p.get_value())
-            
-        ns = self._store_manager.name_scope 
+
+        ns = self._store_manager.name_scope
         for p in sorted(self._params, key=lambda x: x._name):
             hdl_val = p.get_hdl_value()
             v = HdlIdDef()
@@ -93,7 +93,7 @@ class MultiConfigUnitWrapper(Unit):
 
     def _checkCompInstances(self):
         pass
-    
+
     def _collectPortTypeVariants(self) -> List[Tuple[HdlPortItem, Dict[Tuple[Param, HValue], List[HdlType]]]]:
         res = []
         param_variants = [paramsToValTuple(u) for u in self._units]
@@ -108,7 +108,7 @@ class MultiConfigUnitWrapper(Unit):
                     p_val = params[p.hdl_name]
                     types = param_val_to_t.setdefault((p, p_val), UniqList())
                     types.append(t)
-            
+
             res.append((parent_port, param_val_to_t))
 
         return res
@@ -122,7 +122,7 @@ class MultiConfigUnitWrapper(Unit):
         for parent_port, param_val_to_t in port_type_variants:
             for (param, param_value), port_types in param_val_to_t.items():
                 param_value_domain.setdefault(param, set()).add(param_value)
-        
+
         for parent_port, param_val_to_t in port_type_variants:
             if id(parent_port._dtype) in updated_type_ids:
                 continue
@@ -134,7 +134,7 @@ class MultiConfigUnitWrapper(Unit):
                 for pt in port_types:
                     cond = type_to_param_values.setdefault(pt, UniqList())
                     cond.append((param, param_value))
-            
+
             assert type_to_param_values, parent_port
             if len(type_to_param_values) == 1:
                 continue  # type does not change
@@ -232,6 +232,7 @@ class MultiConfigUnitWrapper(Unit):
         self._injectParametersIntoPortTypes(port_type_variants, param_signals)
         for p in param_signals:
             p._const = True
+            p.hidden = False
         # instanciate component variants in if generate statement
         ns = store_manager.name_scope
         as_hdl_ast = self._store_manager.as_hdl_ast
@@ -313,7 +314,7 @@ if __name__ == "__main__":
     u0.DATA_WIDTH = 2
     u1 = SimpleUnitWithParam()
     u1.DATA_WIDTH = 3
-    
+
     u = MultiConfigUnitWrapper([u0, u1])
     print(to_rtl_str(u))
 

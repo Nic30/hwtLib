@@ -21,6 +21,8 @@ from hwtLib.mem.fifo import Fifo
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl
 from hwtLib.peripheral.uart.intf import Uart
 from hwtLib.types.ctypes import uint64_t
+from hwtLib.examples.simpleWithParam import SimpleUnitWithParam
+from hwtLib.examples.hierarchy.multiConfigUnit import MultiConfigUnitWrapper
 
 
 class Handshaked_withIP(Handshaked):
@@ -85,6 +87,13 @@ class IpCorePackagerTC(unittest.TestCase):
         en0.DEST_WIDTH = 4
         en0.USER_WIDTH = 12
 
+        u0 = SimpleUnitWithParam()
+        u0.DATA_WIDTH = 2
+        u1 = SimpleUnitWithParam()
+        u1.DATA_WIDTH = 3
+
+        u_with_hdl_params = MultiConfigUnitWrapper([u0, u1])
+
         testUnits = [AxiS_en(),
                      en0,
                      AxiLiteEndpoint(HStruct(
@@ -94,7 +103,8 @@ class IpCorePackagerTC(unittest.TestCase):
                      I2cMasterBitCtrl(),
                      f,
                      Axi4streamToMem(),
-                     IpCoreIntfTest()
+                     IpCoreIntfTest(),
+                     u_with_hdl_params,
                      ]
         for u in testUnits:
             serializeAsIpcore(u, folderName=self.test_dir)
