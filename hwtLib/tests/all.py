@@ -187,8 +187,9 @@ from hwtLib.structManipulators.mmu2pageLvl_test import MMU_2pageLvl_TC
 from hwtLib.structManipulators.structReader_test import StructReaderTC
 from hwtLib.structManipulators.structWriter_test import StructWriter_TC
 from hwtLib.tests.constraints.xdc_clock_related_test import ConstraintsXdcClockRelatedTC
-from hwtLib.tests.fileUtils_test import FileUtilsTC
 from hwtLib.tests.frameTmpl_test import FrameTmplTC
+from hwtLib.tests.pyUtils.arrayQuery_test import ArrayQueryTC
+from hwtLib.tests.pyUtils.fileUtils_test import FileUtilsTC
 from hwtLib.tests.rdSynced_agent_test import RdSynced_agent_TC
 from hwtLib.tests.repr_of_hdlObjs_test import ReprOfHdlObjsTC
 from hwtLib.tests.resourceAnalyzer_test import ResourceAnalyzer_TC
@@ -243,6 +244,7 @@ def testSuiteFromTCs(*tcs):
 suite = testSuiteFromTCs(
     # basic tests
     FileUtilsTC,
+    ArrayQueryTC,
     RtlLvlTC,
     ReprOfHdlObjsTC,
     HdlCommentsTC,
