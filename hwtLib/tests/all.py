@@ -489,7 +489,7 @@ def main():
     if "--with-xunit" in sys.argv:
         # junit xml output for CI
         import xmlrunner
-        runner = xmlrunner.XMLTestRunner(output='tests')
+        runner = xmlrunner.XMLTestRunner(output='test-reports')
     else:
         runner = TextTestRunner(verbosity=2)
 
