@@ -57,6 +57,7 @@ extensions = ['sphinx.ext.autodoc',
 
 intersphinx_mapping = {
     'hwt': ('https://hwtoolkit.readthedocs.io/en/latest', None),
+    'ipCorePackager': ("https://ipcorepackager.readthedocs.io/en/latest/", None),
 }
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -108,8 +109,6 @@ todo_include_todos = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-# html_theme = 'alabaster'
-
 html_theme = 'bootstrap'
 html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 
@@ -236,7 +235,7 @@ def setup(app):
     app.connect("autodoc-skip-member", skip)
 
 
-# update *.rst pages
+# update generated *.rst pages
 for file in glob.glob("*.rst"):
     if file != "index.rst":
         print("removing: ", file)
