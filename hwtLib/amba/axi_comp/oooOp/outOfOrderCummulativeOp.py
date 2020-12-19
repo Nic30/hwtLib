@@ -63,9 +63,9 @@ class OutOfOrderCummulativeOp(Unit):
     def _init_constants(self):
         MAIN_STATE_T = self.MAIN_STATE_T
         # constant precomputation
-        self.MAIN_STATE_ITEMS_CNT = (2 ** self.ADDR_WIDTH) // (MAIN_STATE_T.bit_length() // 8)
-        self.MAIN_STATE_INDEX_WIDTH = log2ceil(self.MAIN_STATE_ITEMS_CNT - 1)
-        self.ADDR_OFFSET_W = log2ceil(MAIN_STATE_T.bit_length() // 8 - 1)
+        self.ADDR_OFFSET_W = log2ceil(MAIN_STATE_T.bit_length() // 8)
+        self.MAIN_STATE_INDEX_WIDTH = self.ADDR_WIDTH - self.ADDR_OFFSET_W
+        self.MAIN_STATE_ITEMS_CNT = (2 ** self.MAIN_STATE_INDEX_WIDTH)
 
     def _declr(self):
         addClkRstn(self)
@@ -122,7 +122,8 @@ class OutOfOrderCummulativeOp(Unit):
         ooo_fifo = self.ooo_fifo
         ar = self.m.ar
         din = self.dataIn
-
+        assert din.addr._dtype.bit_length() == self.ADDR_WIDTH  - self.ADDR_OFFSET_W, (
+            din.addr._dtype.bit_length(), self.ADDR_WIDTH, self.ADDR_OFFSET_W)
         dataIn_reg = HandshakedReg(din.__class__)
         dataIn_reg._updateParamsFrom(din)
         self.dataIn_reg = dataIn_reg
