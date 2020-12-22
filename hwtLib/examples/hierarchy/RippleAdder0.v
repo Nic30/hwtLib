@@ -82,44 +82,16 @@ module RippleAdder0 #(
         .s(sig_fa3_s)
     );
 
-    always @(ci) begin: assig_process_c
-        c[0] = ci;
-    end
-
-    always @(sig_fa0_co) begin: assig_process_c_0
-        c[1] = sig_fa0_co;
-    end
-
-    always @(sig_fa0_co) begin: assig_process_c_1
-        c[2] = sig_fa0_co;
-    end
-
-    always @(sig_fa0_co) begin: assig_process_c_2
-        c[3] = sig_fa0_co;
-    end
-
-    always @(sig_fa0_co) begin: assig_process_c_3
-        c[4] = sig_fa0_co;
+    always @(ci, sig_fa0_co) begin: assig_process_c
+        c = {{{{sig_fa0_co, sig_fa0_co}, sig_fa0_co}, sig_fa0_co}, ci};
     end
 
     always @(c) begin: assig_process_co
         co = c[4];
     end
 
-    always @(sig_fa0_s) begin: assig_process_s
-        s[0] = sig_fa0_s;
-    end
-
-    always @(sig_fa1_s) begin: assig_process_s_0
-        s[1] = sig_fa1_s;
-    end
-
-    always @(sig_fa2_s) begin: assig_process_s_1
-        s[2] = sig_fa2_s;
-    end
-
-    always @(sig_fa3_s) begin: assig_process_s_2
-        s[3] = sig_fa3_s;
+    always @(sig_fa0_s, sig_fa1_s, sig_fa2_s, sig_fa3_s) begin: assig_process_s
+        s = {{{sig_fa3_s, sig_fa2_s}, sig_fa1_s}, sig_fa0_s};
     end
 
     always @(a) begin: assig_process_sig_fa0_a

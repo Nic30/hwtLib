@@ -101,16 +101,9 @@ BEGIN
         co => sig_fa3_co,
         s => sig_fa3_s
     );
-    c(0) <= ci;
-    c(1) <= sig_fa0_co;
-    c(2) <= sig_fa0_co;
-    c(3) <= sig_fa0_co;
-    c(4) <= sig_fa0_co;
+    c <= sig_fa0_co & sig_fa0_co & sig_fa0_co & sig_fa0_co & ci;
     co <= c(4);
-    s(0) <= sig_fa0_s;
-    s(1) <= sig_fa1_s;
-    s(2) <= sig_fa2_s;
-    s(3) <= sig_fa3_s;
+    s <= sig_fa3_s & sig_fa2_s & sig_fa1_s & sig_fa0_s;
     sig_fa0_a <= a(0);
     sig_fa0_b <= a(0);
     sig_fa0_ci <= c(0);

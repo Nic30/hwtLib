@@ -18,9 +18,7 @@ END ENTITY;
 ARCHITECTURE rtl OF IndexOps IS
 BEGIN
     s_out <= s_in(3 DOWNTO 0) & X"2";
-    s_out2(3 DOWNTO 0) <= s_in2(3 DOWNTO 0);
-    s_out2(7 DOWNTO 4) <= s_in2(7 DOWNTO 4);
+    s_out2 <= s_in2(7 DOWNTO 4) & s_in2(3 DOWNTO 0);
     s_out3 <= s_in3(7 DOWNTO 0);
-    s_out4(7 DOWNTO 0) <= s_in4a;
-    s_out4(15 DOWNTO 8) <= s_in4b;
+    s_out4 <= s_in4b & s_in4a;
 END ARCHITECTURE;
