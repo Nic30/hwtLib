@@ -901,5 +901,5 @@ class DSP48E1(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     u = DSP48E1()
-    print("# note nothing should be printed out because the DSP48E1 has dissabled serialization (because it is part of UNISIM library)")
+    print("# note that nothing should be printed out because the DSP48E1 has dissabled serialization (because it is part of UNISIM library)")
     print(to_rtl_str(u))
