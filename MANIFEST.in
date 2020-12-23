@@ -59,6 +59,14 @@ include hwtLib/img/charToBitmap_font.png
 include hwtLib/peripheral/displays/Segment7.vhd
 include hwtLib/tests/constraints/AxiStreamFullDuplexCdc.xdc
 include hwtLib/tests/constraints/FifoAsync.xdc
+include hwtLib/tests/sertialization/AssignToASlice0.vhd
+include hwtLib/tests/sertialization/AssignToASlice1.vhd
+include hwtLib/tests/sertialization/AssignToASlice2.vhd
+include hwtLib/tests/sertialization/AssignToASliceOfReg0.vhd
+include hwtLib/tests/sertialization/AssignToASliceOfReg1a.vhd
+include hwtLib/tests/sertialization/AssignToASliceOfReg1b.vhd
+include hwtLib/tests/sertialization/AssignToASliceOfReg2a.vhd
+include hwtLib/tests/sertialization/AssignToASliceOfReg2b.vhd
 include hwtLib/tests/sertialization/ExampleA.vhd
 include hwtLib/tests/sertialization/SpiMaster.vhd
 include hwtLib/tests/sertialization/TernaryInConcatExample.vhd
