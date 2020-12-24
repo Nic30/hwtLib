@@ -120,7 +120,8 @@ class AddrDataHs_to_Axi(BusBridge):
         return addr_transl.propagate(
             src, dst, dst_offset=self.M_ADDR_OFFSET)
 
-    def connect_r(self, s_r: RamHsR, axi: Axi4, r_cntr: RtlSignal, CNTR_MAX:int, in_axi_t: Union[HStruct, HUnion]):
+    def connect_r(self, s_r: RamHsR, axi: Axi4, r_cntr: RtlSignal,
+                  CNTR_MAX:int, in_axi_t: Union[HStruct, HUnion]):
         self.addr_defaults(axi.ar)
 
         # rm id from r channel as it is not currently supported in frame parser
