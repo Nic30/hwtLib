@@ -109,7 +109,7 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
 
         # check if main state fifo is empty
         ooo_fifo = self.rtl_simulator.model.ooo_fifo_inst.io
-        self.assertValEqual(ooo_fifo.item_write_lock.read(), 0)
+        self.assertValEqual(ooo_fifo.item_valid.read(), 0)
         self.assertValEqual(ooo_fifo.read_wait.read(), 1)
 
         # check if all transactions on AXI are finished
