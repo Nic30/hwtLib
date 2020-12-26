@@ -24,7 +24,7 @@ class SimpleSubunit(Unit):
         u.a(self.a)
         self.b(u.b)
         # Any configuration for subcomponents in _impl has to be done before registering
-        # The subcomponent has to be always registered on parent Unit otherwise
+        # The subcomponent has to be always registered on parent :class:`hwt.synthesizer.unit.Unit` otherwise
         # it won't be discovered and initialized.
 
 

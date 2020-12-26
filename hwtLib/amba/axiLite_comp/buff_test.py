@@ -14,7 +14,7 @@ from hwtLib.amba.axi_comp.builder import AxiBuilder
 
 class AxiLiteEpWithReg(Unit):
     """
-    Unit with AxiLiteEndpoint and AxiLiteReg together
+    :class:`hwt.synthesizer.unit.Unit` with AxiLiteEndpoint and AxiLiteReg together
     """
 
     def __init__(self, structTemplate, intfCls=Axi4Lite, shouldEnterFn=None):

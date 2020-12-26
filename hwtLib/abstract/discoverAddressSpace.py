@@ -37,7 +37,7 @@ def getParentUnit(sig):
     try:
         intf = sig._interface
     except AttributeError:
-        return  # if there is no interface it cant be a signal in IO of Unit instance
+        return  # if there is no interface it cant be a signal in IO of :class:`hwt.synthesizer.unit.Unit` instance
 
     while not isinstance(intf._parent, UnitBase):
         intf = intf._parent
@@ -90,7 +90,7 @@ class AddressSpaceProbe(object):
         parent = getParentUnit(mainSig)
 
         if parent not in self.seen:
-            # check if the parent Unit instance is some specific component
+            # check if the parent :class:`hwt.synthesizer.unit.Unit` instance is some specific component
             # which handles bus protocol
             self.seen.add(parent)
             if isinstance(parent, BusEndpoint):

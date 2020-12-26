@@ -23,7 +23,7 @@ There are several examples:
 
 .. literalinclude:: /../hwtLib/examples/showcase0.hwt.py
    :language: python
-   :caption: HWT Unit class definition
+   :caption: HWT :class:`hwt.synthesizer.unit.Unit` class definition
    :linenos:
 """
 
@@ -52,7 +52,7 @@ def foo(condition0, statements, condition1, fallback0, fallback1):
 
 class Showcase0(Unit):
     """
-    Every HW component class has to be derived from Unit class
+    Every HW component class has to be derived from :class:`hwt.synthesizer.unit.Unit` class
 
     .. hwt-autodoc::
     """
@@ -65,8 +65,8 @@ class Showcase0(Unit):
     def _declr(self):
         """
         In this function collecting of public interfaces is performed
-        on every attribute assignment. Instances of Interface or Unit are recognized
-        by Unit instance and are used as public interface of this unit.
+        on every attribute assignment. Instances of Interface or :class:`hwt.synthesizer.unit.Unit` are recognized
+        by :class:`hwt.synthesizer.unit.Unit` instance and are used as public interface of this unit.
 
         Master interfaces are marked by "._m()", meaning of master direction
         is specified in interface class. For simple signal master direction means output.
@@ -144,7 +144,7 @@ class Showcase0(Unit):
         self._sig("optimizedOut", dtype=uint32_t, def_val=123)
 
         # by _reg function usual d-register can be instantiated
-        # to be able to use this this unit has to have clock defined 
+        # to be able to use this this unit has to have clock defined
         # (you can force any signal as clock if you call self._ctx._reg directly)
         # default type is BIT
         r = self._reg("r", def_val=0)

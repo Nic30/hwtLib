@@ -17,7 +17,7 @@ from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 
 class Axi4LiteMi32Bridges(Unit):
     """
-    Unit with AxiLiteEndpoint + AxiLiteReg + AxiLite2Mi32 + Mi32_2AxiLite
+    :class:`hwt.synthesizer.unit.Unit` with AxiLiteEndpoint + AxiLiteReg + AxiLite2Mi32 + Mi32_2AxiLite
     """
 
     def _config(self):

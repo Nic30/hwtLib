@@ -12,7 +12,7 @@ from pyMathBitPrecise.bit_utils import mask
 
 class SynchronizedSimpleUnitAxiStream(SimpleUnitAxiStream):
     """
-    Unit with reference clk added
+    :class:`hwt.synthesizer.unit.Unit` with reference clk added
     """
 
     def _declr(self):

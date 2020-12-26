@@ -1,7 +1,7 @@
 #include <systemc.h>
 
 //
-//    Every HW component class has to be derived from Unit class
+//    Every HW component class has to be derived from :class:`hwt.synthesizer.unit.Unit` class
 //
 //    .. hwt-autodoc::
 //    

@@ -89,7 +89,7 @@ class HandshakedCdc(HandshakedCompBase):
     def create_data_reg(self, name_prefix, clk=None, rst=None):
         """
         Create a registers for data signals with default values
-        from Unit parameters and with specified clk/rst
+        from :class:`hwt.synthesizer.unit.Unit` parameters and with specified clk/rst
         """
         regs = HObjList()
         def_vals = self.DATA_RESET_VAL
