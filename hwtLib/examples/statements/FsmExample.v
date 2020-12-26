@@ -2,11 +2,11 @@
 //    .. hwt-autodoc::
 //    
 module FsmExample (
-    input  a,
-    input  b,
-    input  clk,
+    input wire a,
+    input wire b,
+    input wire clk,
     output reg[2:0] dout,
-    input  rst_n
+    input wire rst_n
 );
     reg[1:0] st = 0;
     reg[1:0] st_next = 0;

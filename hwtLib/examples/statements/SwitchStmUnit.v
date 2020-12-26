@@ -4,11 +4,11 @@
 //    .. hwt-autodoc::
 //    
 module SwitchStmUnit (
-    input  a,
-    input  b,
-    input  c,
+    input wire a,
+    input wire b,
+    input wire c,
     output reg out,
-    input [2:0] sel
+    input wire[2:0] sel
 );
     always @(a, b, c, sel) begin: assig_process_out
         case(sel)

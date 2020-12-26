@@ -4,10 +4,10 @@
 //    .. hwt-autodoc::
 //    
 module DDR_Reg (
-    input  clk,
-    input  din,
+    input wire clk,
+    input wire din,
     output reg[1:0] dout,
-    input  rst
+    input wire rst
 );
     reg internReg = 1'b0;
     reg internReg_0 = 1'b0;

@@ -7,10 +7,10 @@
 //    .. hwt-autodoc::
 //    
 module DReg (
-    input  clk,
-    input  din,
-    output  dout,
-    input  rst
+    input wire clk,
+    input wire din,
+    output wire dout,
+    input wire rst
 );
     reg internReg = 1'b0;
     wire internReg_next = 1'bx;

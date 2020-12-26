@@ -1,13 +1,13 @@
 //
-//    Every HW component class has to be derived from Unit class
+//    Every HW component class has to be derived from :class:`hwt.synthesizer.unit.Unit` class
 //
 //    .. hwt-autodoc::
 //    
 module Showcase0 (
-    input  unsigned[31:0] a,
-    input  signed[31:0] b,
+    input wire unsigned[31:0] a,
+    input wire signed[31:0] b,
     output reg[31:0] c,
-    input  clk,
+    input wire clk,
     output reg cmp_0,
     output reg cmp_1,
     output reg cmp_2,
@@ -15,18 +15,18 @@ module Showcase0 (
     output reg cmp_4,
     output reg cmp_5,
     output reg[31:0] contOut,
-    input [31:0] d,
-    input  e,
-    output  f,
+    input wire[31:0] d,
+    input wire e,
+    output wire f,
     output reg[15:0] fitted,
     output reg[7:0] g,
     output reg[7:0] h,
-    input [1:0] i,
+    input wire[1:0] i,
     output reg[7:0] j,
     output reg[31:0] k,
-    output  out,
-    output  output_0,
-    input  rst_n,
+    output wire out,
+    output wire output_0,
+    input wire rst_n,
     output reg[7:0] sc_signal
 );
     localparam reg unsigned[31:0] const_private_signal = 32'h0000007b;

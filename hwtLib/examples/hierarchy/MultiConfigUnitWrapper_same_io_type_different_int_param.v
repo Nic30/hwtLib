@@ -6,8 +6,8 @@
 module SimpleUnitWithParam_0 #(
     parameter DATA_WIDTH = 2
 ) (
-    input [1:0] a,
-    output [1:0] b
+    input wire[1:0] a,
+    output wire[1:0] b
 );
     assign b = a;
 endmodule
@@ -19,8 +19,8 @@ endmodule
 module SimpleUnitWithParam_1 #(
     parameter DATA_WIDTH = 3
 ) (
-    input [2:0] a,
-    output [2:0] b
+    input wire[2:0] a,
+    output wire[2:0] b
 );
     assign b = a;
 endmodule
@@ -32,8 +32,8 @@ endmodule
 module SimpleUnitWithParam #(
     parameter DATA_WIDTH = 2
 ) (
-    input [DATA_WIDTH - 1:0] a,
-    output [DATA_WIDTH - 1:0] b
+    input wire[DATA_WIDTH - 1:0] a,
+    output wire[DATA_WIDTH - 1:0] b
 );
     generate if (DATA_WIDTH == 32'h2)
         SimpleUnitWithParam_0 #(
