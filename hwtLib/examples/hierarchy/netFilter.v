@@ -1,16 +1,16 @@
 module HeadFieldExtractor (
-    input [63:0] din_data,
-    input  din_last,
-    output  din_ready,
-    input  din_valid,
-    output [63:0] dout_data,
-    output  dout_last,
-    input  dout_ready,
-    output  dout_valid,
-    output [63:0] headers_data,
-    output  headers_last,
-    input  headers_ready,
-    output  headers_valid
+    input wire[63:0] din_data,
+    input wire din_last,
+    output wire din_ready,
+    input wire din_valid,
+    output wire[63:0] dout_data,
+    output wire dout_last,
+    input wire dout_ready,
+    output wire dout_valid,
+    output wire[63:0] headers_data,
+    output wire headers_last,
+    input wire headers_ready,
+    output wire headers_valid
 );
     assign din_ready = 1'bx;
     assign dout_data = 64'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
@@ -21,14 +21,14 @@ module HeadFieldExtractor (
     assign headers_valid = 1'bx;
 endmodule
 module PatternMatch (
-    input [63:0] din_data,
-    input  din_last,
-    output  din_ready,
-    input  din_valid,
-    output [63:0] match_data,
-    output  match_last,
-    input  match_ready,
-    output  match_valid
+    input wire[63:0] din_data,
+    input wire din_last,
+    output wire din_ready,
+    input wire din_valid,
+    output wire[63:0] match_data,
+    output wire match_last,
+    input wire match_ready,
+    output wire match_valid
 );
     assign din_ready = 1'bx;
     assign match_data = 64'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
@@ -36,41 +36,41 @@ module PatternMatch (
     assign match_valid = 1'bx;
 endmodule
 module Filter (
-    input [31:0] cfg_ar_addr,
-    input [2:0] cfg_ar_prot,
-    output  cfg_ar_ready,
-    input  cfg_ar_valid,
-    input [31:0] cfg_aw_addr,
-    input [2:0] cfg_aw_prot,
-    output  cfg_aw_ready,
-    input  cfg_aw_valid,
-    input  cfg_b_ready,
-    output [1:0] cfg_b_resp,
-    output  cfg_b_valid,
-    output [63:0] cfg_r_data,
-    input  cfg_r_ready,
-    output [1:0] cfg_r_resp,
-    output  cfg_r_valid,
-    input [63:0] cfg_w_data,
-    output  cfg_w_ready,
-    input [7:0] cfg_w_strb,
-    input  cfg_w_valid,
-    input [63:0] din_data,
-    input  din_last,
-    output  din_ready,
-    input  din_valid,
-    output [63:0] dout_data,
-    output  dout_last,
-    input  dout_ready,
-    output  dout_valid,
-    input [63:0] headers_data,
-    input  headers_last,
-    output  headers_ready,
-    input  headers_valid,
-    input [63:0] patternMatch_data,
-    input  patternMatch_last,
-    output  patternMatch_ready,
-    input  patternMatch_valid
+    input wire[31:0] cfg_ar_addr,
+    input wire[2:0] cfg_ar_prot,
+    output wire cfg_ar_ready,
+    input wire cfg_ar_valid,
+    input wire[31:0] cfg_aw_addr,
+    input wire[2:0] cfg_aw_prot,
+    output wire cfg_aw_ready,
+    input wire cfg_aw_valid,
+    input wire cfg_b_ready,
+    output wire[1:0] cfg_b_resp,
+    output wire cfg_b_valid,
+    output wire[63:0] cfg_r_data,
+    input wire cfg_r_ready,
+    output wire[1:0] cfg_r_resp,
+    output wire cfg_r_valid,
+    input wire[63:0] cfg_w_data,
+    output wire cfg_w_ready,
+    input wire[7:0] cfg_w_strb,
+    input wire cfg_w_valid,
+    input wire[63:0] din_data,
+    input wire din_last,
+    output wire din_ready,
+    input wire din_valid,
+    output wire[63:0] dout_data,
+    output wire dout_last,
+    input wire dout_ready,
+    output wire dout_valid,
+    input wire[63:0] headers_data,
+    input wire headers_last,
+    output wire headers_ready,
+    input wire headers_valid,
+    input wire[63:0] patternMatch_data,
+    input wire patternMatch_last,
+    output wire patternMatch_ready,
+    input wire patternMatch_valid
 );
     assign cfg_ar_ready = 1'bx;
     assign cfg_aw_ready = 1'bx;
@@ -88,14 +88,14 @@ module Filter (
     assign patternMatch_ready = 1'bx;
 endmodule
 module Exporter (
-    input [63:0] din_data,
-    input  din_last,
-    output  din_ready,
-    input  din_valid,
-    output [63:0] dout_data,
-    output  dout_last,
-    input  dout_ready,
-    output  dout_valid
+    input wire[63:0] din_data,
+    input wire din_last,
+    output wire din_ready,
+    input wire din_valid,
+    output wire[63:0] dout_data,
+    output wire dout_last,
+    input wire dout_ready,
+    output wire dout_valid
 );
     assign din_ready = 1'bx;
     assign dout_data = 64'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
@@ -120,17 +120,17 @@ module AxiSSplitCopy #(
     parameter USE_KEEP = 0,
     parameter USE_STRB = 0
 ) (
-    input [63:0] dataIn_data,
-    input  dataIn_last,
+    input wire[63:0] dataIn_data,
+    input wire dataIn_last,
     output reg dataIn_ready,
-    input  dataIn_valid,
-    output [63:0] dataOut_0_data,
-    output  dataOut_0_last,
-    input  dataOut_0_ready,
+    input wire dataIn_valid,
+    output wire[63:0] dataOut_0_data,
+    output wire dataOut_0_last,
+    input wire dataOut_0_ready,
     output reg dataOut_0_valid,
-    output [63:0] dataOut_1_data,
-    output  dataOut_1_last,
-    input  dataOut_1_ready,
+    output wire[63:0] dataOut_1_data,
+    output wire dataOut_1_last,
+    input wire dataOut_1_ready,
     output reg dataOut_1_valid
 );
     always @(dataOut_0_ready, dataOut_1_ready) begin: assig_process_dataIn_ready
@@ -159,35 +159,35 @@ endmodule
 module NetFilter #(
     parameter DATA_WIDTH = 64
 ) (
-    input [31:0] cfg_ar_addr,
-    input [2:0] cfg_ar_prot,
-    output  cfg_ar_ready,
-    input  cfg_ar_valid,
-    input [31:0] cfg_aw_addr,
-    input [2:0] cfg_aw_prot,
-    output  cfg_aw_ready,
-    input  cfg_aw_valid,
-    input  cfg_b_ready,
-    output [1:0] cfg_b_resp,
-    output  cfg_b_valid,
-    output [63:0] cfg_r_data,
-    input  cfg_r_ready,
-    output [1:0] cfg_r_resp,
-    output  cfg_r_valid,
-    input [63:0] cfg_w_data,
-    output  cfg_w_ready,
-    input [7:0] cfg_w_strb,
-    input  cfg_w_valid,
-    input  clk,
-    input [63:0] din_data,
-    input  din_last,
-    output  din_ready,
-    input  din_valid,
-    output [63:0] export_data,
-    output  export_last,
-    input  export_ready,
-    output  export_valid,
-    input  rst_n
+    input wire[31:0] cfg_ar_addr,
+    input wire[2:0] cfg_ar_prot,
+    output wire cfg_ar_ready,
+    input wire cfg_ar_valid,
+    input wire[31:0] cfg_aw_addr,
+    input wire[2:0] cfg_aw_prot,
+    output wire cfg_aw_ready,
+    input wire cfg_aw_valid,
+    input wire cfg_b_ready,
+    output wire[1:0] cfg_b_resp,
+    output wire cfg_b_valid,
+    output wire[63:0] cfg_r_data,
+    input wire cfg_r_ready,
+    output wire[1:0] cfg_r_resp,
+    output wire cfg_r_valid,
+    input wire[63:0] cfg_w_data,
+    output wire cfg_w_ready,
+    input wire[7:0] cfg_w_strb,
+    input wire cfg_w_valid,
+    input wire clk,
+    input wire[63:0] din_data,
+    input wire din_last,
+    output wire din_ready,
+    input wire din_valid,
+    output wire[63:0] export_data,
+    output wire export_last,
+    input wire export_ready,
+    output wire export_valid,
+    input wire rst_n
 );
     wire[63:0] sig_exporter_din_data = 64'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
     wire sig_exporter_din_last = 1'bx;

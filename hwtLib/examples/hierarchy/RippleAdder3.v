@@ -2,9 +2,9 @@
 //    .. hwt-autodoc::
 //    
 module FullAdder (
-    input  a,
-    input  b,
-    input  ci,
+    input wire a,
+    input wire b,
+    input wire ci,
     output reg co,
     output reg s
 );
@@ -23,10 +23,10 @@ endmodule
 module RippleAdder3 #(
     parameter p_wordlength = 4
 ) (
-    input [3:0] a,
-    input [3:0] b,
-    input  ci,
-    output  co,
+    input wire[3:0] a,
+    input wire[3:0] b,
+    input wire ci,
+    output wire co,
     output reg[3:0] s
 );
     reg sig_fa_0_a = 1'bx;

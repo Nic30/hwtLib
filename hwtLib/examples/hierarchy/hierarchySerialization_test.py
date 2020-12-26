@@ -70,7 +70,7 @@ class HierarchySerializationTC(BaseSerializationTC):
         u0.DATA_WIDTH = 2
         u1 = SimpleUnitWithParam()
         u1.DATA_WIDTH = 3
-        
+
         u = MultiConfigUnitWrapper([u0, u1])
         self.assert_serializes_as_file(u, "MultiConfigUnitWrapper_same_io_type_different_int_param.vhd")
 
@@ -79,7 +79,7 @@ class HierarchySerializationTC(BaseSerializationTC):
         u0.DATA_WIDTH = 2
         u1 = SimpleUnitWithParam()
         u1.DATA_WIDTH = 3
-        
+
         u = MultiConfigUnitWrapper([u0, u1])
         self.assert_serializes_as_file(u, "MultiConfigUnitWrapper_same_io_type_different_int_param.v")
 
@@ -112,7 +112,7 @@ class HierarchySerializationTC(BaseSerializationTC):
         u0 = SimpleUnitWithParamWithIrrelevantParamAndAnotherParam()
         u0.ADDR_WIDTH = 11
         u0.DATA_WIDTH = 2
-        
+
         u1 = SimpleUnitWithParamWithIrrelevantParamAndAnotherParam()
         u1.ADDR_WIDTH = 11
         u1.DATA_WIDTH = 3
@@ -120,11 +120,11 @@ class HierarchySerializationTC(BaseSerializationTC):
         u2 = SimpleUnitWithParamWithIrrelevantParamAndAnotherParam()
         u2.ADDR_WIDTH = 13
         u2.DATA_WIDTH = 2
-        
+
         u3 = SimpleUnitWithParamWithIrrelevantParamAndAnotherParam()
         u3.ADDR_WIDTH = 13
         u3.DATA_WIDTH = 3
-        
+
         u = MultiConfigUnitWrapper([u0, u1, u2, u3])
         self.assert_serializes_as_file(u, "MultiConfigUnitWrapper_same_io_type_different_int_param_irrelevant_param_and_second_param.vhd")
 
@@ -133,7 +133,7 @@ class HierarchySerializationTC(BaseSerializationTC):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    suite.addTest(HierarchySerializationTC("test_MultiConfigUnitWrapper_same_io_type_different_int_param_verilog"))
-    # suite.addTest(unittest.makeSuite(HierarchySerializationTC))
+    #suite.addTest(HierarchySerializationTC("test_MultiConfigUnitWrapper_same_io_type_different_int_param_verilog"))
+    suite.addTest(unittest.makeSuite(HierarchySerializationTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
