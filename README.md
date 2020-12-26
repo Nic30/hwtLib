@@ -74,10 +74,11 @@ python3 setup.py install
 * [PoC](https://github.com/VLSI-EDA/PoC) - VHDL, utils
 * [pulp-platform](https://github.com/pulp-platform)
 * [rhea](https://github.com/cfelton/rhea) - MyHDL, SoC level modules
+* [SpinalCrypto](https://github.com/SpinalHDL/SpinalCrypto) - SpinalHDL, various crypto/hash functions
 * [surf](https://github.com/slaclab/surf) - VHDL, SoC/DSP/IO/Ethernet focused components
 * [tinyfpgax](https://github.com/tinyfpga)
 * [ultraembedded/cores](https://github.com/ultraembedded/cores) - mostly Verilog, mostly peripherals
 * [ZipCPU repositories](https://github.com/ZipCPU?tab=repositories) - Verilog, mostly peripherals, DSP
 * [hls-fpga-machine-learning](https://github.com/hls-fpga-machine-learning) - Python -> HSL C++, mostyl ML and video processing
-* [fpgasystems](https://github.com/fpgasystems) - HLS C++, SystemVerilog, FPGA @ Systems Group, ETH Zurich, mostly networking 
+* [fpgasystems](https://github.com/fpgasystems) - HLS C++, SystemVerilog, FPGA @ Systems Group, ETH Zurich, mostly networking
 
