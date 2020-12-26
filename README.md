@@ -50,7 +50,7 @@ sudo pip3 install hwtLib
 # or from git  (if you are installing from git consider using also --update option)
 git clone https://github.com/Nic30/hwtLib
 cd hwtLib
-pip3 install -r docs/requirements.hwt.txt
+pip3 install -r doc/requirements.txt
 python3 setup.py install
 ```
 

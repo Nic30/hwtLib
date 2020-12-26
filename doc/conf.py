@@ -246,4 +246,4 @@ excluded_tests = list(find_files("../", "*_test.py")) +\
                  list(find_files("../", "*.hwt.py")) +\
                  ["../hwtLib/tests"]
 apidoc_main(["--module-first", "--full", "--maxdepth", "-1",
-             "--output-dir", "../docs", "../hwtLib"] + excluded_tests)
+             "--output-dir", "../doc", "../hwtLib"] + excluded_tests)

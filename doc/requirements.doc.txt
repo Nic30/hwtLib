@@ -2,6 +2,6 @@ sphinx_bootstrap_theme
 aafigure
 
 # all hwt deps from repositories, equivalent to just sphinx-hwt
--r requirements.hwt.txt
+-r requirements.txt
 git+git://github.com/Nic30/hwtGraph@master#egg=hwtGraph
 git+git://github.com/Nic30/sphinx-hwt@master#egg=sphinx-hwt

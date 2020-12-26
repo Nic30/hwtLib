@@ -23,7 +23,7 @@ install:
   - if [ "$FROM_PIP" == "1" ]; then
       pip install hwtLib;
     else
-      pip install -r docs/requirements.hwt.txt;
+      pip install -r doc/requirements.txt;
       python setup.py install;
     fi
 

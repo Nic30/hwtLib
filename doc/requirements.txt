@@ -1,0 +1,2 @@
+-r https://raw.githubusercontent.com/Nic30/hwt/master/docs/requirements.txt
+git+git://github.com/Nic30/hwt.git@master#egg=hwt
