@@ -12,8 +12,8 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis import axis_send_bytes, axis_recieve_bytes
 from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.triggers import Timer
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.triggers import Timer
+from hwtSimApi.constants import CLK_PERIOD
 from itertools import chain
 from hwtLib.amba.axis_comp.frame_deparser.test_types import s1field,\
     s1field_composit0, s3field, s2Pading, unionOfStructs, unionSimple,\

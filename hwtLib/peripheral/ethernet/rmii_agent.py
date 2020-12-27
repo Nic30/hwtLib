@@ -2,8 +2,8 @@ from collections import deque
 
 from hwt.interfaces.agents.vldSynced import VldSyncedAgent
 from hwt.pyUtils.arrayQuery import grouper
-from pycocotb.agents.base import AgentBase
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.agents.base import AgentBase
+from hwtSimApi.hdlSimulator import HdlSimulator
 from typing import List
 from pyMathBitPrecise.bit_utils import get_bit_range
 from hwtLib.peripheral.ethernet.constants import ETH

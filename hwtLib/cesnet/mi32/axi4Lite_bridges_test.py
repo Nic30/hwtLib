@@ -11,7 +11,7 @@ from hwtLib.amba.constants import PROT_DEFAULT, RESP_OKAY
 from hwtLib.cesnet.mi32.axi4Lite_to_mi32 import Axi4Lite_to_Mi32
 from hwtLib.cesnet.mi32.intf import Mi32
 from hwtLib.cesnet.mi32.to_axi4Lite import Mi32_to_Axi4Lite
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 
 

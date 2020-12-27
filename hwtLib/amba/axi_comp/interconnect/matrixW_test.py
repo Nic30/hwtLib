@@ -12,7 +12,7 @@ from hwtLib.amba.axi_comp.interconnect.matrixR_test import AxiInterconnectMatrix
 from hwtLib.amba.axi_comp.interconnect.matrixW import AxiInterconnectMatrixW
 from hwtLib.amba.constants import RESP_OKAY
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):

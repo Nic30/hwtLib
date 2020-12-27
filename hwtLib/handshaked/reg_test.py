@@ -4,7 +4,7 @@
 from hwt.interfaces.std import Handshaked
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.handshaked.reg import HandshakedReg
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class HandshakedRegL1D0TC(SingleUnitSimTestCase):

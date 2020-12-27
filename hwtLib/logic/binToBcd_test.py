@@ -1,6 +1,6 @@
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.logic.binToBcd import BinToBcd
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
 
 

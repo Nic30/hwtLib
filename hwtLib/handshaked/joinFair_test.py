@@ -7,7 +7,7 @@ from hwt.interfaces.std import Handshaked
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwt.simulator.agentConnector import valuesToInts
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 def dataFn(d):

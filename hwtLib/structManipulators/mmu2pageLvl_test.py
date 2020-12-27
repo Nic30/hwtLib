@@ -8,7 +8,7 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.structManipulators.mmu_2pageLvl import MMU_2pageLvl
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class MMU_2pageLvl_TC(SingleUnitSimTestCase):

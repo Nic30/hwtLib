@@ -12,7 +12,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.clocking.clkBuilder import ClkBuilder
 from hwtLib.peripheral.mdio.intf import Mdio
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 class MdioAddr(Interface):

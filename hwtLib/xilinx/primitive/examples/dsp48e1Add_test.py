@@ -6,7 +6,7 @@ from math import ceil
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.xilinx.primitive.examples.dsp48e1Add import Dsp48e1Add
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class Dsp48e1Add_48b_noRegsTC(SingleUnitSimTestCase):

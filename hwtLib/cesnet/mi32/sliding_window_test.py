@@ -5,7 +5,7 @@ from hwt.hdl.constants import READ, WRITE
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.cesnet.mi32.sim_ram import Mi32SimRam
 from hwtLib.cesnet.mi32.sliding_window import Mi32SlidingWindow
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
 
 

@@ -10,7 +10,7 @@ from hwtLib.amba.datapump.w import Axi_wDatapump
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class Axi4_wDatapumpTC(Axi_datapumpTC):

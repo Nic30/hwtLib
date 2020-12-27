@@ -7,7 +7,7 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.datapump.interconnect.rStricOrder import RStrictOrderInterconnect
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class RStrictOrderInterconnectTC(SingleUnitSimTestCase):

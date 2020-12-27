@@ -8,8 +8,8 @@ from hwt.simulator.agentBase import SyncAgentBase
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.hdlSimulator import HdlSimulator
-from pycocotb.triggers import WaitCombStable, WaitCombRead, WaitWriteOnly
+from hwtSimApi.hdlSimulator import HdlSimulator
+from hwtSimApi.triggers import WaitCombStable, WaitCombRead, WaitWriteOnly
 
 
 # https://www.xilinx.com/support/documentation/ip_documentation/axi_lite_ipif/v2_0/pg155-axi-lite-ipif.pdf

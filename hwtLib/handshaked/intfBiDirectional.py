@@ -3,7 +3,7 @@ from collections import deque
 from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VectSignal, Signal
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 class HandshakedBiDirectionalAgent(HandshakedAgent):

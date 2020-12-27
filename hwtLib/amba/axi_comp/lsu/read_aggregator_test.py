@@ -11,7 +11,7 @@ from hwtLib.amba.axi_comp.lsu.read_aggregator import AxiReadAggregator
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class AxiReadAggregator_1word_burst_TC(SingleUnitSimTestCase):

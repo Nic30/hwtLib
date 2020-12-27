@@ -9,7 +9,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.mem.fifo import Fifo
 from ipCorePackager.intfIpMeta import IntfIpMetaNotSpecified
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 class FifoWriterDropable(FifoWriter):

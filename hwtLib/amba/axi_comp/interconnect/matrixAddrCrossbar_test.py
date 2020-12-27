@@ -8,7 +8,7 @@ from hwt.code import log2ceil
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar import AxiInterconnectMatrixAddrCrossbar
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):

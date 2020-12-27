@@ -10,8 +10,8 @@ from hwtLib.amba.axi_intf_common import AxiMap, Axi_hs
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from ipCorePackager.component import Component
 from ipCorePackager.intfIpMeta import IntfIpMeta
-from pycocotb.agents.base import AgentBase
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.agents.base import AgentBase
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 #################################################################

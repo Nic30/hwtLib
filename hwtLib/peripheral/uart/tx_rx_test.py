@@ -10,7 +10,7 @@ from hwt.synthesizer.unit import Unit
 
 from hwtLib.peripheral.uart.rx import UartRx
 from hwtLib.peripheral.uart.tx import UartTx
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class TestUnit_uart(Unit):

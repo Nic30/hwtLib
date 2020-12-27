@@ -1,7 +1,7 @@
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.peripheral.mdio.intf import Mdio
 from hwtLib.peripheral.mdio.master import MdioMaster
-from pycocotb.constants import Time
+from hwtSimApi.constants import Time
 
 
 class MdioMasterTC(SingleUnitSimTestCase):

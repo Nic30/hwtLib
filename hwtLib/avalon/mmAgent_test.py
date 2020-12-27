@@ -9,7 +9,7 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 
 from hwtLib.avalon.mm import AvalonMM
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class AvalonMmWire(Unit):

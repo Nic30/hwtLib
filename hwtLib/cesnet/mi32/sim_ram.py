@@ -2,7 +2,7 @@ from hwt.hdl.constants import READ, WRITE
 from hwtLib.abstract.sim_ram import SimRam
 from hwtLib.cesnet.mi32.intf import Mi32
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.triggers import WaitWriteOnly
+from hwtSimApi.triggers import WaitWriteOnly
 
 
 class Mi32SimRam(SimRam):

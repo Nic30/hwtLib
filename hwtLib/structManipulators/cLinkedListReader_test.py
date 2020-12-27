@@ -6,7 +6,7 @@ import unittest
 from hwt.hdl.constants import NOP
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.structManipulators.cLinkedListReader import CLinkedListReader
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 

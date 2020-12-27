@@ -1,7 +1,7 @@
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axis_comp.fifoDrop import AxiSFifoDrop
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class AxiSFifoDropTC(SingleUnitSimTestCase):

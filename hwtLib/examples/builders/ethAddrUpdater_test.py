@@ -9,7 +9,7 @@ from math import ceil
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.examples.builders.ethAddrUpdater import EthAddrUpdater, \
     frameHeader
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class EthAddrUpdaterTC(SingleUnitSimTestCase):

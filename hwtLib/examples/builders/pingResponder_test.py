@@ -14,7 +14,7 @@ from hwtLib.examples.builders.pingResponder import PingResponder, \
 from hwtLib.peripheral.ethernet.types import parse_eth_addr, ETHER_TYPE
 from hwtLib.types.net.icmp import ICMP_TYPE, ICMP_echo_header_t
 from hwtLib.types.net.ip import IPv4, IHL_DEFAULT, IPv4Header_t, IP_PROTOCOL
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 def carry_around_add(a, b):

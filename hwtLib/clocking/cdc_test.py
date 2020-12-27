@@ -5,8 +5,8 @@ import unittest
 
 from hwtLib.clocking.cdc import Cdc
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from pycocotb.constants import CLK_PERIOD
-from pycocotb.triggers import Timer, WaitWriteOnly, WaitCombRead
+from hwtSimApi.constants import CLK_PERIOD
+from hwtSimApi.triggers import Timer, WaitWriteOnly, WaitCombRead
 
 
 class CdcTC(SingleUnitSimTestCase):

@@ -1,7 +1,7 @@
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import VectSignal, HandshakeSync, Signal
 from hwt.synthesizer.param import Param
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 class AddrDataHs(HandshakeSync):

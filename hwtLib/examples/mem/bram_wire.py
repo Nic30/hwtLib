@@ -3,7 +3,7 @@ from hwt.interfaces.std import BramPort_withoutClk
 from hwt.interfaces.utils import addClkRst
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class BramWire(Unit):

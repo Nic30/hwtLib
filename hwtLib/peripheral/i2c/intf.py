@@ -2,8 +2,8 @@ from hwt.interfaces.tristate import TristateClk, TristateSig
 from hwt.simulator.agentBase import AgentWitReset
 from hwt.synthesizer.interface import Interface
 from ipCorePackager.intfIpMeta import IntfIpMeta
-from pycocotb.agents.peripheral.i2c import I2cAgent
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.agents.peripheral.i2c import I2cAgent
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 class I2c(Interface):

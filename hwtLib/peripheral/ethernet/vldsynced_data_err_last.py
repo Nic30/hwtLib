@@ -1,5 +1,5 @@
 from hwt.interfaces.agents.vldSynced import VldSyncedAgent
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 from hwt.interfaces.std import Signal, VldSynced, VectSignal
 
 

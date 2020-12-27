@@ -9,7 +9,7 @@ from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceRAM
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.utils import synthesised
 from hwtLib.examples.mem.rom import SimpleRom, SimpleSyncRom
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class SimpleRomTC(SingleUnitSimTestCase):

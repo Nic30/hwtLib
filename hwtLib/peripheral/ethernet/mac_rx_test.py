@@ -6,7 +6,7 @@ from hwtLib.peripheral.ethernet.mac import EthernetMac
 from hwtLib.peripheral.ethernet.mac_tx_test import REF_FRAME, REF_CRC
 from hwtLib.peripheral.ethernet.types import format_eth_addr
 from hwtLib.types.ctypes import uint8_t
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class EthernetMacRx_8b_TC(SingleUnitSimTestCase):

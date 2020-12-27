@@ -3,7 +3,7 @@ from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from ipCorePackager.constants import DIRECTION
 from ipCorePackager.intfIpMeta import IntfIpMeta
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtLib.peripheral.ethernet.rmii_agent import RmiiAgent, RmiiTxChannelAgent,\
     RmiiRxChannelAgent
 

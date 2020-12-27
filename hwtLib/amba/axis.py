@@ -11,7 +11,7 @@ from hwtLib.types.ctypes import uint8_t
 from ipCorePackager.intfIpMeta import IntfIpMeta
 from pyMathBitPrecise.bit_utils import mask, get_bit,\
     get_bit_range, set_bit
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 # http://www.xilinx.com/support/documentation/ip_documentation/ug761_axi_reference_guide.pdf

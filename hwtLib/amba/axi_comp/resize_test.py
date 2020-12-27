@@ -10,7 +10,7 @@ from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.resize import AxiResize
 from hwtLib.amba.constants import PROT_DEFAULT
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class AxiResizeTC(SingleUnitSimTestCase):

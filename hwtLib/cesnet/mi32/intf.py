@@ -8,7 +8,7 @@ from hwt.synthesizer.param import Param
 from hwtLib.avalon.mm import AvalonMmAddrAgent
 from ipCorePackager.constants import DIRECTION
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 class Mi32(Interface):

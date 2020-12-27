@@ -11,7 +11,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.peripheral.i2c.intf import I2c
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtLib.clocking.clkBuilder import ClkBuilder
 
 

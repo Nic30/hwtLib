@@ -8,10 +8,10 @@ from hwt.simulator.agentBase import SyncAgentBase
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from pyMathBitPrecise.bit_utils import mask, get_bit
-from pycocotb.agents.base import AgentBase
-from pycocotb.hdlSimulator import HdlSimulator
-from pycocotb.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
-from pycocotb.triggers import WaitCombRead, WaitWriteOnly, Timer
+from hwtSimApi.agents.base import AgentBase
+from hwtSimApi.hdlSimulator import HdlSimulator
+from hwtSimApi.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
+from hwtSimApi.triggers import WaitCombRead, WaitWriteOnly, Timer
 
 
 class SpiAgent(SyncAgentBase):

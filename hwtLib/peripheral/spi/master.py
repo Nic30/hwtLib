@@ -12,7 +12,7 @@ from hwtLib.handshaked.intfBiDirectional import HandshakedBiDirectional, \
     HandshakedBiDirectionalAgent
 from hwtLib.logic.binToOneHot import BinToOneHot
 from hwtLib.peripheral.spi.intf import Spi
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 class SpiCntrlDataAgent(HandshakedBiDirectionalAgent):

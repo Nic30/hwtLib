@@ -1,6 +1,6 @@
 from hwt.interfaces.std import VectSignal
 from hwtLib.amba.axi4Lite import Axi4Lite, Axi4Lite_addr
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 #################################################################

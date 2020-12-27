@@ -4,8 +4,8 @@ from hwt.interfaces.std import Handshaked, VectSignal, Signal, HandshakeSync
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from ipCorePackager.constants import DIRECTION
-from pycocotb.agents.base import AgentBase
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.agents.base import AgentBase
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 class InsertIntfAgent(HandshakedAgent):

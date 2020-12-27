@@ -7,7 +7,7 @@ from hwt.synthesizer.param import Param
 from hwt.interfaces.agents.vldSynced import VldSyncedAgent
 from collections import deque
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 RESP_OKAY = 0b00
 # RESP_RESERVED = 0b01

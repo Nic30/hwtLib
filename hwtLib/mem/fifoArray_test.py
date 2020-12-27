@@ -6,8 +6,8 @@ import unittest
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.mem.fifoArray import FifoArray
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.constants import CLK_PERIOD
-from pycocotb.triggers import WaitWriteOnly, Timer
+from hwtSimApi.constants import CLK_PERIOD
+from hwtSimApi.triggers import WaitWriteOnly, Timer
 
 
 class FifoArrayTC(SingleUnitSimTestCase):

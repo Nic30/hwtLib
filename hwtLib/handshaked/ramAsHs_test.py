@@ -7,8 +7,8 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.handshaked.ramAsHs import RamAsHs, RamHsR
 from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
 from hwtLib.mem.ram import RamSingleClock
-from pycocotb.constants import CLK_PERIOD
-from pycocotb.triggers import Timer
+from hwtSimApi.constants import CLK_PERIOD
+from hwtSimApi.triggers import Timer
 
 
 class RamWithHs(RamAsHs):

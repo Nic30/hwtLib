@@ -13,7 +13,7 @@ from hwtLib.amba.axiLite_comp.endpoint_test import structTwoFields, \
 from hwtLib.avalon.endpoint import AvalonMmEndpoint
 from hwtLib.avalon.memSpaceMaster import AvalonMmMemSpaceMaster
 from hwtLib.avalon.mm import AvalonMM, RESP_OKAY, RESP_SLAVEERROR
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
 
 

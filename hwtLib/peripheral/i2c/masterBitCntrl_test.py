@@ -9,7 +9,7 @@ from hwtLib.peripheral.i2c.intf import I2cAgent
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl, \
     NOP, START, READ, WRITE
 from pyMathBitPrecise.bit_utils import get_bit
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class I2CMasterBitCntrlTC(SingleUnitSimTestCase):

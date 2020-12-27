@@ -10,7 +10,7 @@ from hwt.hdl.types.struct import HStruct
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axis import axis_recieve_bytes, axis_send_bytes
 from hwtLib.amba.axis_comp.frame_join import AxiS_FrameJoin
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class AxiS_FrameJoin_1x_2B_TC(SingleUnitSimTestCase):

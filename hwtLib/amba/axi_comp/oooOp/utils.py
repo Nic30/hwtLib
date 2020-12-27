@@ -6,7 +6,7 @@ from hwt.interfaces.std import Handshaked, VectSignal, HandshakeSync
 from hwt.interfaces.structIntf import HdlType_to_Interface
 from hwt.synthesizer.param import Param
 from hwtLib.types.ctypes import uint8_t
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 from hwt.synthesizer.interface import Interface
 
 

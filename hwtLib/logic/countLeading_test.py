@@ -1,6 +1,6 @@
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.logic.countLeading import CountLeadingZeros, CountLeadingOnes
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class CountLeadingTC(SimTestCase):

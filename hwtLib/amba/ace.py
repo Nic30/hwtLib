@@ -4,7 +4,7 @@ from hwtLib.amba.axi3Lite import Axi3Lite_bAgent
 from hwtLib.amba.axi4 import Axi4, Axi4_addr
 from hwtLib.amba.axi_intf_common import Axi_hs
 from ipCorePackager.constants import DIRECTION
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 class DOMAIN():

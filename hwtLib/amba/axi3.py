@@ -8,7 +8,7 @@ from hwtLib.amba.axis import AxiStream, AxiStreamAgent
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwt.serializer.ip_packager import IpPackager
 from ipCorePackager.component import Component
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtLib.amba.constants import BYTES_IN_TRANS, BURST_INCR, CACHE_DEFAULT,\
     LOCK_DEFAULT, PROT_DEFAULT
 

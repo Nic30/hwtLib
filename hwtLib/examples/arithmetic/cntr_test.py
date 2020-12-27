@@ -10,7 +10,7 @@ from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.utils import synthesised
 from hwtLib.examples.arithmetic.cntr import Cntr
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class CntrTC(SingleUnitSimTestCase):

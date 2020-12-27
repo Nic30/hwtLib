@@ -8,8 +8,8 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.mem.fifo import Fifo
-from pycocotb.constants import CLK_PERIOD
-from pycocotb.triggers import Timer, WaitWriteOnly
+from hwtSimApi.constants import CLK_PERIOD
+from hwtSimApi.triggers import Timer, WaitWriteOnly
 
 
 class FifoReaderPassTrought(Unit):

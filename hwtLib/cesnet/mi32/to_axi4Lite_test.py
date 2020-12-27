@@ -7,7 +7,7 @@ from hwtLib.amba.axiLite_comp.sim.ram import Axi4LiteSimRam
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.cesnet.mi32.to_axi4Lite import Mi32_to_Axi4Lite
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class Mi32_to_Axi4LiteTC(SingleUnitSimTestCase):

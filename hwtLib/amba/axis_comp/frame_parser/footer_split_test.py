@@ -7,7 +7,7 @@ from hwt.pyUtils.testUtils import TestMatrix
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis import axis_send_bytes, axis_recieve_bytes
 from hwtLib.amba.axis_comp.frame_parser.footer_split import AxiS_footerSplit
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 TEST_FRAME_SIZES = [v * 8 for v in [
     1, 2,

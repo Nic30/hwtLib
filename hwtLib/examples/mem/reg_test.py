@@ -9,7 +9,7 @@ from hwt.synthesizer.utils import to_rtl_str, synthesised
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.mem.reg import DReg, DoubleDReg, OptimizedOutReg, \
     AsyncResetReg, DDR_Reg, Latch, DReg_asyncRst, RegWhereNextIsOnlyOutput
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class DRegTC(SingleUnitSimTestCase):

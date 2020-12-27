@@ -6,7 +6,7 @@ import unittest
 
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.peripheral.displays.hd44780.driver import Hd44780Driver
-from pycocotb.utils import freq_to_period
+from hwtSimApi.utils import freq_to_period
 
 
 class Hd44780Driver8bTC(SingleUnitSimTestCase):

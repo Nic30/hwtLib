@@ -9,7 +9,7 @@ from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.oooOp.examples.counterHashTable import OooOpExampleCounterHashTable
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 def MState(key, data):

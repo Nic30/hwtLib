@@ -9,8 +9,8 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase,\
     simpleRandomizationProcess
 from hwtLib.amba.axis_comp.fifoMeasuring import AxiS_fifoMeasuring
 from pyMathBitPrecise.bit_utils import mask, mask_bytes
-from pycocotb.constants import CLK_PERIOD
-from pycocotb.triggers import Timer
+from hwtSimApi.constants import CLK_PERIOD
+from hwtSimApi.triggers import Timer
 
 
 class AxiS_fifoMeasuringTC(SingleUnitSimTestCase):

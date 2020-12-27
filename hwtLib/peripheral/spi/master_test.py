@@ -3,7 +3,7 @@
 
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.peripheral.spi.master import SpiMaster
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class SpiMasterTC(SingleUnitSimTestCase):

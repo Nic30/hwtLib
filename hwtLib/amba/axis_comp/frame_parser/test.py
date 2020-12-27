@@ -19,7 +19,7 @@ from hwtLib.amba.axis_comp.frame_parser.test_types import structManyInts,\
     ref_unionOfStructs2, ref_unionOfStructs1, ref_unionOfStructs3,\
     ref_unionSimple0, ref_unionSimple1, ref_unionSimple2, ref_unionSimple3
 from hwtLib.types.ctypes import uint16_t
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 from hwt.hdl.types.structUtils import HdlType_select
 
 

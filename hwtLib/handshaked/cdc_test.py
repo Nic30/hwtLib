@@ -6,7 +6,7 @@ import unittest
 from hwt.interfaces.std import Handshaked
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.handshaked.cdc import HandshakedCdc
-from pycocotb.constants import CLK_PERIOD, Time
+from hwtSimApi.constants import CLK_PERIOD, Time
 
 
 def T_to_f(time):

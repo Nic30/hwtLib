@@ -6,9 +6,9 @@ from hwt.interfaces.std import Signal, VectSignal
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from pyMathBitPrecise.bit_utils import get_bit, mask, get_bit_range
-from pycocotb.agents.base import AgentBase
-from pycocotb.hdlSimulator import HdlSimulator
-from pycocotb.triggers import WaitTimeslotEnd, Edge
+from hwtSimApi.agents.base import AgentBase
+from hwtSimApi.hdlSimulator import HdlSimulator
+from hwtSimApi.triggers import WaitTimeslotEnd, Edge
 
 
 class Hd44780Intf(Interface):

@@ -8,7 +8,7 @@ from hwtLib.amba.axi_comp.oooOp.examples.counterArray import OooOpExampleCounter
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtLib.types.ctypes import uint32_t
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class OooOpExampleCounterArray_TC(SingleUnitSimTestCase):

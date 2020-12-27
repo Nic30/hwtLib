@@ -7,7 +7,7 @@ from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class HsJoinWithReference(HsJoinPrioritized):

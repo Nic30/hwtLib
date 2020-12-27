@@ -8,7 +8,7 @@ from hwtLib.amba.axi_comp.lsu.write_aggregator import AxiWriteAggregator
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from pyMathBitPrecise.bit_utils import mask, set_bit_range, int_list_to_int, \
     get_bit_range
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class AxiWriteAggregator_1word_per_cachelineTC(SingleUnitSimTestCase):

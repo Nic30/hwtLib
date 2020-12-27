@@ -6,7 +6,7 @@ from hwt.simulator.agentConnector import valToInt
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.peripheral.uart.rx import UartRx
 from pyMathBitPrecise.bit_utils import get_bit
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class UartRxBasicTC(SingleUnitSimTestCase):

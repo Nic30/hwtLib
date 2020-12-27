@@ -5,7 +5,7 @@ from hwt.interfaces.std import Handshaked, HandshakeSync, VectSignal
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.intfBiDirectional import HandshakedBiDirectionalAgent
 from ipCorePackager.constants import DIRECTION
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 class IndexKeyHs(Handshaked):

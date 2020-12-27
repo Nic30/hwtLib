@@ -11,8 +11,8 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.examples.axi.debugbusmonitor import DebugBusMonitorExampleAxi
 from hwtLib.tools.debug_bus_monitor_ctl import DebugBusMonitorCtl, words_to_int
 from pyMathBitPrecise.bit_utils import ValidityError
-from pycocotb.constants import CLK_PERIOD
-from pycocotb.triggers import Timer, StopSimumulation
+from hwtSimApi.constants import CLK_PERIOD
+from hwtSimApi.triggers import Timer, StopSimumulation
 
 
 class DebugBusMonitorCtlSim(DebugBusMonitorCtl):

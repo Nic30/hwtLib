@@ -4,7 +4,7 @@ from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi3Lite import Axi3Lite_addr, Axi3Lite_r
 from ipCorePackager.constants import DIRECTION
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 class AxiWriteAggregatorWriteIntf(Handshaked):

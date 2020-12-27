@@ -3,7 +3,7 @@ from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal, Clk
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class ConstCondition(Unit):

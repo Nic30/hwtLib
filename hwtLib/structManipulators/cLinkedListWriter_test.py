@@ -6,7 +6,7 @@ import unittest
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.structManipulators.cLinkedListWriter import CLinkedListWriter
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class CLinkedListWriterTC(SingleUnitSimTestCase):

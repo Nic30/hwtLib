@@ -5,14 +5,14 @@ from hwt.interfaces.tristate import TristateSig
 from pyMathBitPrecise.bit_utils import mask, get_bit
 from hwt.synthesizer.param import Param
 from hwt.simulator.agentBase import SyncAgentBase
-from pycocotb.hdlSimulator import HdlSimulator
-from pycocotb.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
+from hwtSimApi.hdlSimulator import HdlSimulator
+from hwtSimApi.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
 from collections import deque
 from typing import Deque, Tuple
-from pycocotb.triggers import WaitWriteOnly, WaitCombStable,\
+from hwtSimApi.triggers import WaitWriteOnly, WaitCombStable,\
     Edge, Timer
-from pycocotb.constants import Time
-from pycocotb.simCalendar import DONE
+from hwtSimApi.constants import Time
+from hwtSimApi.simCalendar import DONE
 from ipCorePackager.intfIpMeta import IntfIpMeta
 
 

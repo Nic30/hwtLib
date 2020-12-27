@@ -6,7 +6,7 @@ import unittest
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.examples.axi.simpleAxiRegs import SimpleAxiRegs
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 allMask = mask(32 // 8)

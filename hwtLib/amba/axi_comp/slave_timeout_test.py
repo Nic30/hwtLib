@@ -7,7 +7,7 @@ from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.slave_timeout import AxiSlaveTimeout
 from hwtLib.amba.constants import RESP_SLVERR, RESP_OKAY
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class AxiSlaveTimeoutTC(SingleUnitSimTestCase):

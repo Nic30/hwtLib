@@ -7,7 +7,7 @@ from hwt.serializer.mode import serializeParamsUniq
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 def binToOneHot(sig, en=1):

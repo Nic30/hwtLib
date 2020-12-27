@@ -13,7 +13,7 @@ from hwt.synthesizer.unit import Unit
 from hwtLib.xilinx.primitive.dsp48e1 import DSP48E1
 from hwtLib.xilinx.primitive.dsp48e1_constants import ALU_MODE, CARRYIN_SEL, \
     get_inmode, MUL_A_SEL, MUL_B_SEL, get_opmode, X_SEL, Y_SEL, Z_SEL
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 from pyMathBitPrecise.bit_utils import apply_set_and_clear
 from hwt.code_utils import rename_signal
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal

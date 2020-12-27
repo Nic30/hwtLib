@@ -13,7 +13,7 @@ from hwtLib.handshaked.intfBiDirectional import HandshakedBiDirectional, \
 from hwtLib.logic.binToOneHot import binToOneHot
 from ipCorePackager.constants import DIRECTION
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtLib.logic.oneHotToBin import oneHotToBin
 from hwtLib.common_nonstd_interfaces.addr_data_hs_bidir import AddrInDataOutHs, AddrInDataOutHsAgent
 

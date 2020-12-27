@@ -4,7 +4,7 @@ from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.peripheral.ethernet.constants import ETH
 from hwtLib.peripheral.ethernet.rmii_adapter import RmiiAdapter
-from pycocotb.constants import Time
+from hwtSimApi.constants import Time
 
 
 class RmiiAdapterTC(SingleUnitSimTestCase):

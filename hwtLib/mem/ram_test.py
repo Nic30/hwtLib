@@ -4,7 +4,7 @@
 from hwt.hdl.constants import WRITE, READ
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.mem.ram import RamSingleClock
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class RamTC(SingleUnitSimTestCase):

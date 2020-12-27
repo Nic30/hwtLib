@@ -6,7 +6,7 @@ import unittest
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.logic.oneHotToBin import OneHotToBin
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class OneHotToBinSimWrap(OneHotToBin):

@@ -3,7 +3,7 @@
 
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.examples.builders.hsBuilderSplit import HsBuilderSplit
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class HsBuilderSplit_TC(SingleUnitSimTestCase):

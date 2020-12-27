@@ -2,7 +2,7 @@ from collections import deque
 
 from hwtLib.abstract.sim_ram import SimRam
 from pyMathBitPrecise.bit_utils import mask, ValidityError
-from pycocotb.triggers import WaitWriteOnly
+from hwtSimApi.triggers import WaitWriteOnly
 
 
 class AxiDpSimRam(SimRam):

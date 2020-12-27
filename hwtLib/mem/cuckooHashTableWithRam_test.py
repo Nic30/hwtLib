@@ -9,8 +9,8 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtLib.logic.crcPoly import CRC_32, CRC_32C
 from hwtLib.mem.cuckooHashTablWithRam import CuckooHashTableWithRam
-from pycocotb.constants import CLK_PERIOD
-from pycocotb.triggers import Timer
+from hwtSimApi.constants import CLK_PERIOD
+from hwtSimApi.triggers import Timer
 
 
 class CuckooHashTableWithRam_common_TC(SingleUnitSimTestCase):

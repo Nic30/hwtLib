@@ -6,7 +6,7 @@ from hwtLib.amba.axiLite_comp.to_axi_test import AxiLite_to_Axi_TC
 from hwtLib.amba.axi_comp.to_axiLite import Axi_to_AxiLite
 from hwtLib.amba.constants import RESP_OKAY
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 def split_frames(raw_agent_data):

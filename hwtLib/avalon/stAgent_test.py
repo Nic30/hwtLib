@@ -8,7 +8,7 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 
 from hwtLib.avalon.st import AvalonST
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class AvalonStWire(Unit):

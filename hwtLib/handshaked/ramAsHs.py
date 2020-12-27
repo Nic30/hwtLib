@@ -9,8 +9,8 @@ from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from pycocotb.agents.base import AgentBase
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.agents.base import AgentBase
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
 from hwt.hdl.types.struct import HStruct

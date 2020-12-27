@@ -11,7 +11,7 @@ from hwtLib.examples.operators.indexing import (
     IndexingInernSplit,
     IndexingInernJoin,
     IndexingInernRangeSplit, AssignmentToRegIndex)
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class IndexingTC(SimTestCase):

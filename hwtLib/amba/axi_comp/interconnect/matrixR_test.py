@@ -10,7 +10,7 @@ from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import AxiInterco
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar_test import AxiInterconnectMatrixCrossbar_1to1TC
 from hwtLib.amba.axi_comp.interconnect.matrixR import AxiInterconnectMatrixR
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):

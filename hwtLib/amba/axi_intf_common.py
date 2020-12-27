@@ -2,7 +2,7 @@ from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import VectSignal, Signal, HandshakeSync
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 class Axi_id(Interface):

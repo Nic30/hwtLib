@@ -5,7 +5,7 @@ from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axi_intf_common import Axi_strb, Axi_hs
 from hwtLib.amba.axis import AxiStream, AxiStreamAgent
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
-from pycocotb.hdlSimulator import HdlSimulator
+from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtLib.amba.constants import BURST_INCR, LOCK_DEFAULT, PROT_DEFAULT,\
     BYTES_IN_TRANS, QOS_DEFAULT, CACHE_DEFAULT
 

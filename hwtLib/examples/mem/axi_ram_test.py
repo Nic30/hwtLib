@@ -5,7 +5,7 @@ from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.to_axiLite_test import Axi_to_AxiLite_TC, split_frames
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.examples.mem.axi_ram import Axi4BRam
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class Axi4BRam_TC(Axi_to_AxiLite_TC):

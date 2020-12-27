@@ -9,7 +9,7 @@ import unittest
 from unittest.case import TestCase
 
 from hwtLib.examples.mem.ram import SimpleAsyncRam, SimpleSyncRam
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class SimpleAsyncRamTC(SingleUnitSimTestCase):

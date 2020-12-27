@@ -8,8 +8,8 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.logic.crcPoly import CRC_16_CCITT
 from hwtLib.mem.hashTableCoreWithRam import HashTableCoreWithRam
 from pyMathBitPrecise.bit_utils import mask
-from pycocotb.constants import CLK_PERIOD
-from pycocotb.triggers import Timer
+from hwtSimApi.constants import CLK_PERIOD
+from hwtSimApi.triggers import Timer
 
 
 class HashTableCoreWithRamTC(SingleUnitSimTestCase):

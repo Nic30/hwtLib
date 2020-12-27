@@ -9,7 +9,7 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
 from hwtLib.amba.constants import RESP_OKAY
-from pycocotb.constants import CLK_PERIOD
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class AxiInterconnectMatrixCrossbar_1to1TC(SingleUnitSimTestCase):

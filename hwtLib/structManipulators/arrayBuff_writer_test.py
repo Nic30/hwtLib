@@ -8,8 +8,8 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase, \
     simpleRandomizationProcess
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.structManipulators.arrayBuff_writer import ArrayBuff_writer
-from pycocotb.constants import CLK_PERIOD
-from pycocotb.triggers import Timer
+from hwtSimApi.constants import CLK_PERIOD
+from hwtSimApi.triggers import Timer
 
 
 class ArrayBuff_writer_TC(SingleUnitSimTestCase):
