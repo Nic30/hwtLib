@@ -5,8 +5,8 @@ import unittest
 
 from hwt.interfaces.std import Handshaked
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.utils import valuesToInts
 from hwtLib.handshaked.joinFair import HsJoinFairShare
-from hwt.simulator.agentConnector import valuesToInts
 from hwtSimApi.constants import CLK_PERIOD
 
 

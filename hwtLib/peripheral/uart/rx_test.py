@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.constants import Time
-from hwt.simulator.agentConnector import valToInt
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.utils import valToInt
 from hwtLib.peripheral.uart.rx import UartRx
-from pyMathBitPrecise.bit_utils import get_bit
 from hwtSimApi.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import get_bit
 
 
 class UartRxBasicTC(SingleUnitSimTestCase):

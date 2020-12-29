@@ -3,13 +3,13 @@
 
 from binascii import crc_hqx
 
-from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.utils import valuesToInts
 from hwtLib.logic.crcPoly import CRC_16_CCITT
 from hwtLib.mem.hashTableCoreWithRam import HashTableCoreWithRam
-from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
 from hwtSimApi.triggers import Timer
+from pyMathBitPrecise.bit_utils import mask
 
 
 class HashTableCoreWithRamTC(SingleUnitSimTestCase):

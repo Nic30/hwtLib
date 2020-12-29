@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.constants import WRITE, READ
-from hwt.simulator.agentConnector import valuesToInts
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.utils import valuesToInts
 from hwtLib.mem.lutRam import RAM64X1S
-from pyMathBitPrecise.bit_utils import get_bit
 from hwtSimApi.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import get_bit
 
 
 def applyRequests(ram, requests):

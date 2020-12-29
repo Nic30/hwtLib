@@ -5,8 +5,8 @@ import socket
 
 from hwt.code import sizeof
 from hwt.hdl.types.utils import HdlValue_unpack
-from hwt.simulator.agentConnector import valToInt
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.utils import valToInt
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.amba.axis import unpackAxiSFrame, packAxiSFrame
 from hwtLib.examples.builders.pingResponder import PingResponder, \

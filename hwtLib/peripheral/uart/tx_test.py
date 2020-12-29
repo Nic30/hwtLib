@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.simulator.agentConnector import valToInt
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-
+from hwt.simulator.utils import valToInt
 from hwtLib.peripheral.uart.tx import UartTx
 from hwtSimApi.constants import CLK_PERIOD
 

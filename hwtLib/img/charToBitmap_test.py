@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.simulator.agentConnector import valToInt
+from hwt.simulator.utils import valToInt
 from hwtLib.img.charToBitmap import asciiArtOfChar, addCharToBitmap
 
 

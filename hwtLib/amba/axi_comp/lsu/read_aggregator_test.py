@@ -5,7 +5,8 @@ from math import ceil
 
 from hwt.pyUtils.arrayQuery import flatten
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
-from hwt.simulator.simTestCase import SingleUnitSimTestCase, allValuesToInts
+from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.utils import allValuesToInts
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.lsu.read_aggregator import AxiReadAggregator
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
@@ -18,7 +19,7 @@ class AxiReadAggregator_1word_burst_TC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
-        cls.u = u = AxiReadAggregator() 
+        cls.u = u = AxiReadAggregator()
         u.ID_WIDTH = 2
         u.CACHE_LINE_SIZE = 4
         u.DATA_WIDTH = 4 * 8
@@ -58,7 +59,7 @@ class AxiReadAggregator_1word_burst_TC(SingleUnitSimTestCase):
         mem = AxiSimRam(u.m)
         WORD_SIZE = self.WORD_SIZE
         trans_len = ceil(u.CACHE_LINE_SIZE / WORD_SIZE)
-        
+
         for trans_id, addr in id_addr_tuples:
             for i in range(trans_len):
                 mem.data[addr // WORD_SIZE + i] = addr + i + REF_DATA
@@ -69,9 +70,9 @@ class AxiReadAggregator_1word_burst_TC(SingleUnitSimTestCase):
         if randomize:
             self.randomize_all()
             t *= 3
-       
+
         self.runSim(t)
-        
+
         ref_data = sorted(flatten([
             [(_id, addr + i + REF_DATA, RESP_OKAY, int(i == trans_len - 1))
               for i in range(trans_len)]
@@ -96,11 +97,11 @@ class AxiReadAggregator_1word_burst_TC(SingleUnitSimTestCase):
         rand = self._rand
         d_addr_tuples = [(rand.choice(available_ids), rand.choice(available_addresses)) for _ in range(N)]
         self._test_read(d_addr_tuples, randomize=randomize, time_multiplier=time_multiplier)
-    
+
     def test_read_from_same_addr_32x(self, randomize=False):
         d_addr_tuples = [(x % self.ID_CNT, 0x0) for x in range(32)]
         self._test_read(d_addr_tuples, randomize)
-        
+
     def test_r_read_from_same_addr_32x(self, randomize=True):
         self.test_read_from_same_addr_32x(randomize)
 
@@ -147,7 +148,7 @@ class AxiReadAggregator_2word_burst_TC(AxiReadAggregator_1word_burst_TC):
 
     @classmethod
     def getUnit(cls):
-        cls.u = u = AxiReadAggregator() 
+        cls.u = u = AxiReadAggregator()
         u.ID_WIDTH = 2
         u.CACHE_LINE_SIZE = 8
         u.DATA_WIDTH = 4 * 8
