@@ -14,6 +14,7 @@ ENTITY RamMultiClock IS
         ADDR_WIDTH : INTEGER := 8;
         DATA_WIDTH : INTEGER := 64;
         HAS_BE : BOOLEAN := FALSE;
+        INIT_DATA : STRING := "None";
         MAX_BLOCK_DATA_WIDTH : STRING := "None";
         PORT_CNT : INTEGER := 2
     );
@@ -97,6 +98,7 @@ ARCHITECTURE rtl OF GroupOfBlockrams IS
             ADDR_WIDTH : INTEGER := 8;
             DATA_WIDTH : INTEGER := 64;
             HAS_BE : BOOLEAN := FALSE;
+            INIT_DATA : STRING := "None";
             MAX_BLOCK_DATA_WIDTH : STRING := "None";
             PORT_CNT : INTEGER := 2
         );
@@ -144,6 +146,7 @@ BEGIN
         ADDR_WIDTH => 8,
         DATA_WIDTH => 64,
         HAS_BE => FALSE,
+        INIT_DATA => "None",
         MAX_BLOCK_DATA_WIDTH => "None",
         PORT_CNT => 2
     ) PORT MAP(
@@ -164,6 +167,7 @@ BEGIN
         ADDR_WIDTH => 8,
         DATA_WIDTH => 64,
         HAS_BE => FALSE,
+        INIT_DATA => "None",
         MAX_BLOCK_DATA_WIDTH => "None",
         PORT_CNT => 2
     ) PORT MAP(

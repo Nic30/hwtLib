@@ -40,6 +40,7 @@ class RamSingleClock(Unit):
         self.PORT_CNT = Param(1)
         self.HAS_BE = Param(False)
         self.MAX_BLOCK_DATA_WIDTH = Param(None)
+        self.INIT_DATA = Param(None)
 
     def _declr_ports(self):
         PORTS = self.PORT_CNT
@@ -74,6 +75,8 @@ class RamSingleClock(Unit):
                 c = self.__class__()
                 c._updateParamsFrom(self, exclude=({"DATA_WIDTH"}, {}))
                 c.DATA_WIDTH = min(DW, MAX_DW)
+                if self.INIT_DATA is not None:
+                    raise NotImplementedError()
                 children.append(c)
                 DW -= MAX_DW
         self.children = children
@@ -165,7 +168,7 @@ class RamSingleClock(Unit):
             self.delegate_to_children()
         else:
             dt = Bits(self.DATA_WIDTH)[2 ** self.ADDR_WIDTH]
-            self._mem = self._sig("ram_memory", dt)
+            self._mem = self._sig("ram_memory", dt, def_val=self.INIT_DATA)
 
             for p in self.port:
                 self.connect_port(self.clk, p, self._mem)
@@ -196,7 +199,7 @@ class RamMultiClock(Unit):
             self.delegate_to_children()
         else:
             dt = Bits(self.DATA_WIDTH)[2 ** self.ADDR_WIDTH]
-            self._mem = self._sig("ram_memory", dt)
+            self._mem = self._sig("ram_memory", dt, self.INIT_DATA)
 
             for p in self.port:
                 RamSingleClock.connect_port(p.clk, p, self._mem)
