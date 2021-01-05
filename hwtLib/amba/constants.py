@@ -76,7 +76,7 @@ LOCK_DEFAULT = 0
 
 """
 +-------+----------+--------------------------+
-| RESP  | Response | Description               |
+| RESP  | Response | Description              |
 +=======+==========+==========================+
 | 0b00  | OKAY     | Normal access success    |
 +-------+----------+--------------------------+
