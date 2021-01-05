@@ -164,6 +164,7 @@ from hwtLib.mem.fifoAsync_test import FifoAsyncTC
 from hwtLib.mem.fifo_test import FifoWriterAgentTC, FifoReaderAgentTC, FifoTC
 from hwtLib.mem.hashTableCoreWithRam_test import HashTableCoreWithRamTC
 from hwtLib.mem.lutRam_test import LutRamTC
+from hwtLib.mem.ramXor_test import RamXorSingleClockTC
 from hwtLib.mem.ram_test import RamTC
 from hwtLib.peripheral.displays.hd44780.driver_test import Hd44780Driver8bTC
 from hwtLib.peripheral.displays.segment7_test import Segment7TC
@@ -318,6 +319,7 @@ suite = testSuiteFromTCs(
     SimpleTC,
     SimpleSubunitTC,
     RamTC,
+    RamXorSingleClockTC,
     BramWireTC,
     LutRamTC,
     FsmSerializationTC,
