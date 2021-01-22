@@ -41,6 +41,9 @@ USE IEEE.numeric_std.ALL;
 --    
 ENTITY SpiMaster IS
     GENERIC(
+        FREQ : INTEGER := 100000000;
+        HAS_MISO : BOOLEAN := TRUE;
+        HAS_MOSI : BOOLEAN := TRUE;
         HAS_RX : BOOLEAN := TRUE;
         HAS_TX : BOOLEAN := TRUE;
         SLAVE_CNT : INTEGER := 1;

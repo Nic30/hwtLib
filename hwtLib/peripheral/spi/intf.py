@@ -151,7 +151,7 @@ class SpiAgent(SyncAgentBase):
 
     def getMonitors(self):
         return [self.monitorRx(),
-                #self.monitorTx_pre_set(),
+                # self.monitorTx_pre_set(),
                 self.monitorTx()]
 
 
@@ -165,12 +165,21 @@ class Spi(Interface):
 
     def _config(self):
         self.SLAVE_CNT = Param(1)
+        self.HAS_MISO = Param(True)
+        self.HAS_MOSI = Param(True)
+        self.FREQ = Param(Clk.DEFAULT_FREQ)
 
     def _declr(self):
         self.clk = Clk()
-        self.mosi = Signal()  # master out slave in
-        self.miso = Signal(masterDir=DIRECTION.IN)  # master in slave out
-        self.cs = VectSignal(self.SLAVE_CNT)  # chip select
+        self.clk.FREQ = self.FREQ
+
+        assert self.HAS_MOSI or self.HAS_MISO
+        if self.HAS_MOSI:
+            self.mosi = Signal()  # master out slave in
+        if self.HAS_MISO:
+            self.miso = Signal(masterDir=DIRECTION.IN)  # master in slave out
+        if self.SLAVE_CNT is not None:
+            self.cs = VectSignal(self.SLAVE_CNT)  # chip select
 
         self._associatedClk = self.clk
 
