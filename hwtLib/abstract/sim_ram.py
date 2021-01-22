@@ -6,6 +6,7 @@ from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
 from hwt.pyUtils.arrayQuery import grouper
 from pyMathBitPrecise.bit_utils import mask, get_bit_range, int_list_to_int
+from hwt.math import shiftIntArray
 
 
 class AllocationError(Exception):
@@ -55,6 +56,7 @@ class SimRam():
         else:
             self.data = parent.data
         self.cellSize = cellSize
+        self.prevAllocatedAddrEnd = 0
 
     def malloc(self, size, keepOut=None):
         """
@@ -66,7 +68,7 @@ class SimRam():
                         and lastly allocated
         :return: address of allocated memory
         """
-        addr = 0
+        addr = self.prevAllocatedAddrEnd
         k = self.data.keys()
         if k:
             addr = (max(k) + 1) * self.cellSize
@@ -89,6 +91,7 @@ class SimRam():
 
             d[tmp] = None
 
+        self.prevAllocatedAddrEnd = addr
         return addr
 
     def calloc(self, num, size, keepOut=None, initValues=None) -> int:
@@ -103,7 +106,7 @@ class SimRam():
         :param initValues: iterable of word values to init memory with
         :return: address (byte step) of allocated memory
         """
-        addr = 0
+        addr = self.prevAllocatedAddrEnd
         k = self.data.keys()
         if k:
             addr = (max(k) + 1) * self.cellSize
@@ -112,12 +115,14 @@ class SimRam():
             addr += keepOut
 
         indx = addr // self.cellSize
-        if indx * self.cellSize != addr:
-            NotImplementedError(
-                f"unaligned allocations not implemented (0x{addr:x})")
+        shift = addr % self.cellSize
+        wordCnt = ceil((num * size) / self.cellSize)
+        if shift:
+            # shift all data in init values
+            initValues = shiftIntArray(initValues, self.cellSize * 8, shift * 8)
+            wordCnt += 1
 
         d = self.data
-        wordCnt = ceil((num * size) / self.cellSize)
 
         if initValues is not None:
             if size != self.cellSize:
@@ -136,6 +141,7 @@ class SimRam():
             else:
                 d[tmp] = initValues[i]
 
+        self.prevAllocatedAddrEnd = addr
         return addr
 
     def getArray(self, addr: int, item_size: int, item_cnt: int):
