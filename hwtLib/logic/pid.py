@@ -40,6 +40,14 @@ class PidController(Unit):
         self.DATAOUT_WIDTH = Param(16)
         self.COEF_WIDTH = Param(16)
 
+    @staticmethod
+    def compute_coefs(K_p, K_i, K_d, T_s):
+        a0 = K_i * T_s
+        a1 = -K_p - K_d / T_s
+        a2 = K_p + 2 * K_d / T_s
+        a3 = -K_d / T_s
+        return [ int(x) for x in [a0, a1, a2, a3]]
+
     def _declr(self):
         addClkRstn(self)
         self.input = VectSignal(self.DATAIN_WIDTH, signed=True)
