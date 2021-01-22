@@ -160,6 +160,7 @@ class Axi3Lite(Interface):
     W_CLS = Axi3Lite_w
     R_CLS = Axi3Lite_r
     B_CLS = Axi3Lite_b
+    LEN_WIDTH = 0
 
     def _config(self):
         self.ADDR_WIDTH = Param(32)
