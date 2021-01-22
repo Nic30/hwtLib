@@ -1,5 +1,6 @@
-from hwt.code import Concat, isPow2, log2ceil
+from hwt.code import Concat
 from hwt.hdl.types.bits import Bits
+from hwt.math import isPow2, log2ceil
 
 
 class AddressStepTranslation():
@@ -15,15 +16,15 @@ class AddressStepTranslation():
         self.dst_addr_step = dst_addr_step
         assert isPow2(src_addr_step), src_addr_step
         assert isPow2(dst_addr_step), dst_addr_step
-        
+
         if src_addr_step == dst_addr_step:
-            align_bits = 0 
+            align_bits = 0
         elif src_addr_step < dst_addr_step:
             align_bits = log2ceil((dst_addr_step // src_addr_step) - 1)
         else:
             align_bits = log2ceil((src_addr_step // dst_addr_step) - 1)
         self.align_bits = align_bits
-        
+
     def propagate(self, src_addr_sig, dst_addr_sig, dst_offset:int=0):
         """
         :param src_addr_sig: input signal with address
@@ -34,7 +35,7 @@ class AddressStepTranslation():
         if src_addr_step != dst_addr_step:
             src_w = src_addr_sig._dtype.bit_length()
             dst_w = dst_addr_sig._dtype.bit_length()
-            
+
             if src_addr_step > dst_addr_step:
                 # extend src address
                 assert src_w + self.align_bits <= dst_w, (
@@ -48,7 +49,7 @@ class AddressStepTranslation():
                     "Destination address space is smaller than required",
                     src_addr_sig, dst_addr_sig, src_w, self.align_bits, dst_w)
                 src_addr_sig = src_addr_sig[:self.align_bits]
-    
+
         # first extend then add if required to prevent value overflow
         src_addr_sig = src_addr_sig._reinterpret_cast(dst_addr_sig._dtype)
         if dst_offset != 0:

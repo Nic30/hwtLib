@@ -3,7 +3,7 @@
 
 from typing import List, Optional, Union, Tuple
 
-from hwt.code import log2ceil, Switch, If, isPow2, SwitchLogic, connect
+from hwt.code import Switch, If, SwitchLogic, connect
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
 from hwt.hdl.transPart import TransPart
@@ -17,6 +17,7 @@ from hwt.interfaces.std import Handshaked
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.unionIntf import UnionSink
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.math import log2ceil, isPow2
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
@@ -150,7 +151,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
                                                    StreamNode]],
                            lastInPorts_out: List[Union[Handshaked,
                                                        StreamNode]])\
-            -> Tuple[Optional[RtlSignal], Optional[RtlSignal]]:
+            ->Tuple[Optional[RtlSignal], Optional[RtlSignal]]:
         """
         Connect transactions parts to signal for word of output stream
 
@@ -510,12 +511,12 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
 def _example_AxiS_frameDeparser():
     from hwtLib.types.ctypes import uint64_t, uint8_t, uint16_t, uint32_t
 
-    #t = HStruct(
+    # t = HStruct(
     #    (uint64_t, "item0"),
     #    (uint64_t, None),  # name = None means field is padding
     #    (uint64_t, "item1"),
     #    (uint8_t, "item2"), (uint8_t, "item3"), (uint16_t, "item4")
-    #)
+    # )
     # t = HUnion(
     #     (HStruct(
     #         (uint64_t, "itemA0"),
@@ -532,7 +533,6 @@ def _example_AxiS_frameDeparser():
         (HStruct((uint8_t, "data"), (uint8_t, None)), "u0"),
         (HStruct((uint8_t, None), (uint8_t, "data")), "u1"),
     )
-
 
     u = AxiS_frameDeparser(t)
     u.DATA_WIDTH = 16

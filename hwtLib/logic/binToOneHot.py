@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import log2ceil, Concat
+from hwt.code import Concat
 from hwt.interfaces.std import Signal, VectSignal
+from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.param import Param

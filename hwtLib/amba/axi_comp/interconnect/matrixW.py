@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import log2ceil
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import propagateClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.hObjList import HObjList
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon
@@ -22,7 +22,7 @@ class AxiInterconnectMatrixCrossbarB(AxiInterconnectMatrixCrossbar):
 class AxiInterconnectMatrixW(AxiInterconnectCommon):
     """
     Write-only AXI3/4/Lite interconnect with supports transaction overlapping
-    and guarantees the order order of transactions on the bus 
+    and guarantees the order order of transactions on the bus
 
     .. hwt-autodoc:: example_AxiInterconnectMatrixW
     """

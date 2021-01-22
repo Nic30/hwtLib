@@ -3,11 +3,12 @@
 
 from typing import List
 
-from hwt.code import If, log2ceil, Concat, SwitchLogic, connect
+from hwt.code import If, Concat, SwitchLogic, connect
 from hwt.code_utils import rename_signal
 from hwt.hdl.constants import WRITE, READ
 from hwt.hdl.typeShortcuts import vec, hBit
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import packIntf
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
@@ -259,7 +260,8 @@ class OutOfOrderCummulativeOp(Unit):
 
     def write_cancel(self, st: OOOOpPipelineStage):
         """
-        [todo] doc
+        :returns: A signal/value which if it is 1 it means that the write back
+            of this state should not be performed.
         """
         return hBit(0)
 

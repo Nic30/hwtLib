@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, log2ceil
+from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal, HandshakeSync
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.unit import Unit
+from hwt.math import log2ceil
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 
 
 class StaticForLoopCntrl(Unit):
     """
     .. hwt-autodoc::
     """
+
     def _config(self):
         self.ITERATIONS = Param(15)
 
@@ -43,7 +45,7 @@ class StaticForLoopCntrl(Unit):
         ).Else(
             If(self.body.rd,
                 If(self.bodyBreak,
-                    counter(0) 
+                    counter(0)
                 ).Else(
                     counter(counter - 1)
                 )
@@ -51,7 +53,7 @@ class StaticForLoopCntrl(Unit):
         )
 
         self.cntrl.rd(counter._eq(0))
-        self.body.vld(counter != 0) 
+        self.body.vld(counter != 0)
         self.index(counter[self.COUNTER_WIDTH:0])
 
 

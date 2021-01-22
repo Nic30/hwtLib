@@ -3,7 +3,7 @@
 
 from itertools import chain
 
-from hwt.code import log2ceil
+from hwt.math import log2ceil
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi4 import Axi4

@@ -3,7 +3,7 @@
 
 from itertools import chain
 
-from hwt.code import log2ceil
+from hwt.math import log2ceil
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi4 import Axi4
@@ -11,8 +11,8 @@ from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import AxiInterco
 from hwtLib.amba.axi_comp.interconnect.matrixR_test import AxiInterconnectMatrixR_1to1TC
 from hwtLib.amba.axi_comp.interconnect.matrixW import AxiInterconnectMatrixW
 from hwtLib.amba.constants import RESP_OKAY
-from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import mask
 
 
 class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):

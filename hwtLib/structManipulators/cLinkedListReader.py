@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -
 
-from hwt.code import If, In, Concat, connect, log2ceil
+from hwt.code import If, In, Concat, connect
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, RegCntrl, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.unit import Unit
+from hwt.math import log2ceil
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.datapump.intf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
@@ -129,7 +130,7 @@ class CLinkedListReader(Unit):
             If(dIn.last & dIn.id._eq(ID_LAST),
                baseIndex(dIn.data[self.ADDR_WIDTH:ALIGN_BITS])
             ).Else(
-               baseIndex(baseIndex + 1) 
+               baseIndex(baseIndex + 1)
             )
         )
 

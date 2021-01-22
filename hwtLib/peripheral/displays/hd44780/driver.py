@@ -3,11 +3,12 @@
 
 from math import ceil
 
-from hwt.code import FsmBuilder, If, log2ceil, Switch
+from hwt.code import FsmBuilder, If, Switch
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Handshaked, HandshakeSync, Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit

@@ -3,7 +3,8 @@
 
 from typing import Optional
 
-from hwt.code import log2ceil, connect, Concat
+from hwt.code import connect, Concat
+from hwt.math import log2ceil
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
 from hwt.synthesizer.unit import Unit

@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import log2ceil, Concat, Switch, isPow2
+from hwt.code import Concat, Switch
 from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.std import Handshaked, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.unit import Unit
+from hwt.math import log2ceil, isPow2
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.datapump.intf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
@@ -16,7 +17,7 @@ from hwtLib.handshaked.streamNode import StreamNode
 class ArrayItemGetter(Unit):
     """
     Get specific item from array by index
-    
+
     .. hwt-autodoc::
     """
     def _config(self):

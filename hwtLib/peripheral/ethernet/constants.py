@@ -1,5 +1,5 @@
-from hwt.code import log2ceil
 from hwt.hdl.typeShortcuts import vec
+from hwt.math import log2ceil
 
 
 class ETH:

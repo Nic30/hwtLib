@@ -1,6 +1,6 @@
-from hwt.code import log2ceil
 from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.std import Signal, VectSignal
+from hwt.math import log2ceil
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 

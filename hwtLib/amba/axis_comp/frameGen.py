@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, connect, log2ceil
+from hwt.code import If, connect
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4Lite import Axi4Lite
@@ -19,6 +20,7 @@ class AxisFrameGen(Unit):
 
     .. hwt-autodoc::
     """
+
     def _config(self):
         self.MAX_LEN = Param(511)
         self.CNTRL_ADDR_WIDTH = Param(4)

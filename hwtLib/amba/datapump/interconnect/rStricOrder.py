@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import log2ceil, connect, Or
+from hwt.code import connect, Or
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
-from hwtLib.amba.datapump.intf import AxiRDatapumpIntf
 from hwtLib.amba.axi_comp.interconnect.base import AxiInterconnectBase
+from hwtLib.amba.datapump.intf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 
 

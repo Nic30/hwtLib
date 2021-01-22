@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from hwt.interfaces.std import Clk, Rst_n, VectSignal
+from hwt.math import log2ceil, isPow2
 from hwt.serializer.mode import serializeParamsUniq
-
+from hwt.synthesizer.param import Param
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.mem.fifoAsync import FifoAsync
-from hwt.code import log2ceil, isPow2
-from hwt.synthesizer.param import Param
 
 
 @serializeParamsUniq

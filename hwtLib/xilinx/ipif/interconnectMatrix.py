@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import log2ceil, connect, SwitchLogic
+from hwt.code import connect, SwitchLogic
 from hwt.hdl.typeShortcuts import hBit
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.hObjList import HObjList
 from hwtLib.abstract.busInterconnect import BusInterconnect, AUTO_ADDR
 from hwtLib.xilinx.ipif.intf import Ipif

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import isPow2
 from hwt.interfaces.std import Clk, Rst_n
+from hwt.math import isPow2
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi_comp.buff import AxiBuff
 from hwtLib.amba.axis_comp.builder import AxiSBuilder

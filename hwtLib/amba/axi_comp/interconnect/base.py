@@ -1,4 +1,5 @@
-from hwt.code import connect, log2ceil
+from hwt.code import connect
+from hwt.math import log2ceil
 from hwt.synthesizer.unit import Unit
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode
@@ -15,6 +16,7 @@ class AxiInterconnectBase(Unit):
     """
     Abstract class for axi interconnects
     """
+
     def getDpIntf(self, unit):
         raise NotImplementedError("Implement this function in your implementation")
 

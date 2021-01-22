@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import isPow2, connect, If
+from hwt.code import connect, If
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import isPow2
 from hwt.synthesizer.param import Param
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.cesnet.mi32.intf import Mi32

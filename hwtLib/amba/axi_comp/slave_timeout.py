@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import log2ceil, If
+from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.param import Param
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.constants import RESP_SLVERR

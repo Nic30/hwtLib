@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import log2ceil, If, Concat
+from hwt.code import If
+from hwt.math import log2ceil
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import FifoWriter, FifoReader, VldSynced
 from hwt.interfaces.utils import addClkRstn
@@ -16,9 +17,9 @@ class FifoCopy(Fifo):
     :see: :class:`hwtLib.mem.fifo`
 
     Fifo with an extra signals to control replay of lastly stored data
-    
-    :ivar dataOut_copy_frame: if the 
-        
+
+    :ivar dataOut_copy_frame: if the
+
     .. hwt-autodoc:: _example_FifoCopy
     """
 
@@ -36,7 +37,7 @@ class FifoCopy(Fifo):
         fc.DATA_WIDTH = 1
 
         self._declr_size_and_space()
-        
+
         if self.EXPORT_SIZE or self.EXPORT_SPACE:
             raise NotImplementedError()
 
@@ -107,7 +108,7 @@ class FifoCopy(Fifo):
         )
 
         fifo_read(dout.en & (
-            (wr_ptr != rd_ptr_tmp) | 
+            (wr_ptr != rd_ptr_tmp) |
             (frame_copy.vld & frame_copy.data))
         )
         read_addr_tmp = rename_signal(self, (frame_copy.vld & frame_copy.data)._ternary(rd_ptr, rd_ptr_tmp), "read_addr_tmp")

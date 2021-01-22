@@ -1,11 +1,12 @@
 from math import ceil
 
-from hwt.code import If, Concat, rol, log2ceil, Switch, In
+from hwt.code import If, Concat, rol, Switch, In
 from hwt.hdl.operatorDefs import AllOps
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit

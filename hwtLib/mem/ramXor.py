@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, Concat, Xor
+from hwt.code import Xor
 from hwt.hdl.constants import READ_WRITE, WRITE, READ
 from hwt.interfaces.utils import propagateClk, addClkRst
 from hwt.serializer.mode import serializeParamsUniq

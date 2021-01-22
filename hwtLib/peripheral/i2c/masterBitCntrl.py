@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, Concat, FsmBuilder, In, log2ceil
+from hwt.code import If, Concat, FsmBuilder, In
 from hwt.hdl.constants import DIRECTION
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.agents.rdSynced import RdSyncedAgent
 from hwt.interfaces.std import Signal, RdSynced, VectSignal
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
+from hwtLib.clocking.clkBuilder import ClkBuilder
 from hwtLib.peripheral.i2c.intf import I2c
 from hwtSimApi.hdlSimulator import HdlSimulator
-from hwtLib.clocking.clkBuilder import ClkBuilder
 
 
 NOP, START, STOP, READ, WRITE = range(5)

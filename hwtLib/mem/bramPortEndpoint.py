@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import SwitchLogic, log2ceil, Switch, If
+from hwt.code import SwitchLogic, Switch, If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import BramPort_withoutClk
+from hwt.math import log2ceil
 from hwtLib.abstract.busEndpoint import BusEndpoint
 
 

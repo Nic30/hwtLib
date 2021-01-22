@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, connect, Concat, log2ceil, SwitchLogic, isPow2
+from hwt.code import If, connect, Concat, SwitchLogic
+from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.math import log2ceil, isPow2
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axis_comp.fifo import AxiSFifo
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
-from hwt.hdl.typeShortcuts import vec
 from pyMathBitPrecise.bit_utils import mask
 
 
@@ -45,8 +45,8 @@ class AxiS_fifoMeasuring(Unit):
 
         self.sizes = Handshaked()._m()
         self.sizes.DATA_WIDTH = (log2ceil(self.MAX_LEN)
-                                 + 1
-                                 + self.getAlignBitsCnt())
+                                 +1
+                                 +self.getAlignBitsCnt())
 
         sb = self.sizesBuff = HandshakedFifo(Handshaked)
         sb.DEPTH = self.SIZES_BUFF_DEPTH

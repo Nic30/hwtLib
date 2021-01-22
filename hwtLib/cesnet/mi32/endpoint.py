@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, log2ceil, Switch, SwitchLogic
+from hwt.code import If, Switch, SwitchLogic
 from hwt.hdl.types.bits import Bits
+from hwt.math import log2ceil
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.cesnet.mi32.intf import Mi32
 

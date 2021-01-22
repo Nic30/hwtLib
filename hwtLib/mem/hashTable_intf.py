@@ -1,11 +1,11 @@
-from hwt.code import log2ceil
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VectSignal, Signal, HandshakeSync
+from hwt.math import log2ceil
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
-from ipCorePackager.constants import DIRECTION
 from hwtSimApi.agents.base import AgentBase
 from hwtSimApi.hdlSimulator import HdlSimulator
+from ipCorePackager.constants import DIRECTION
 
 
 class InsertIntfAgent(HandshakedAgent):

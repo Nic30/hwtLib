@@ -1,10 +1,11 @@
 from math import ceil
 
-from hwt.code import If, Switch, log2ceil
+from hwt.code import If, Switch
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit

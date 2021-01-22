@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, FsmBuilder
-from hwt.code_utils import inRange
+from hwt.math import inRange
 from hwt.hdl.types.enum import HEnum
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.avalon.mm import AvalonMM, RESP_OKAY, RESP_SLAVEERROR

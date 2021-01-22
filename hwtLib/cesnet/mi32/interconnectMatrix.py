@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-from hwt.code import log2ceil, connect, Switch, If, Or, SwitchLogic
+from hwt.code import connect, Switch, If, Or, SwitchLogic
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwtLib.abstract.busInterconnect import BusInterconnect, AUTO_ADDR
-from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.cesnet.mi32.intf import Mi32
-from pyMathBitPrecise.bit_utils import get_bit_range
 from hwtLib.cesnet.mi32.buff import Mi32Buff
+from hwtLib.cesnet.mi32.intf import Mi32
+from hwtLib.handshaked.fifo import HandshakedFifo
+from pyMathBitPrecise.bit_utils import get_bit_range
 
 
 class Mi32InterconnectMatrix(BusInterconnect):

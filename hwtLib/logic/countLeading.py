@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import log2ceil, isPow2, Concat, If
+from hwt.code import Concat, If
+from hwt.hdl.typeShortcuts import hBit
 from hwt.interfaces.std import VectSignal
+from hwt.math import log2ceil, isPow2
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from typing import Tuple
 from pyMathBitPrecise.bit_utils import mask
-from hwt.hdl.typeShortcuts import hBit
 
 
 # https://electronics.stackexchange.com/questions/196914/verilog-synthesize-high-speed-leading-zero-count

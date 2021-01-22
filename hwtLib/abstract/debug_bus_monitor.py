@@ -95,7 +95,7 @@ def monitor_of(intf: Union[Interface, RtlSignal]):
         return MonitorIntf(intf)
     else:
         if not isinstance(intf, (Signal, RtlSignalBase)):
-            raise NotImplementedError()
+            raise NotImplementedError(intf)
         return Signal(dtype=intf._dtype)
 
 
@@ -244,7 +244,7 @@ class DebugBusMonitor(Unit):
             (const_uint32_t, "name_memory_size"),
             (const_uint32_t, "name_memory_offset"),
             (IntfMap(
-                (Interface_to_HdlType(i, const=True), name)
+                (Interface_to_HdlType().apply(i, const=True), name)
                 for i, name, _, _, _ in self.monitored_data
             ), "data_memory"),
         ])
@@ -328,7 +328,7 @@ class DebugBusMonitor(Unit):
         parent = self._parent
         for intf, (orig_intf, name, cdc, trigger, add_reg) in zip(self.monitor, self.monitored_data):
             if trigger is not None or cdc or add_reg:
-                intf_t = Interface_to_HdlType(intf)
+                intf_t = Interface_to_HdlType().apply(intf)
             else:
                 intf_t = None
 

@@ -1,6 +1,7 @@
-from typing import List
-from hwt.code import log2ceil
 from itertools import islice
+from typing import List
+
+from hwt.math import log2ceil
 
 
 class StateTransTable():

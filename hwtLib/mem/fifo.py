@@ -3,10 +3,11 @@
 
 from typing import Tuple, List
 
-from hwt.code import If, log2ceil
+from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import FifoWriter, FifoReader, VectSignal
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
@@ -123,23 +124,24 @@ class Fifo(Unit):
 
         s = self._sig
         r = self._reg
-        mem = self.mem = s("memory", Bits(self.DATA_WIDTH)[DEPTH])
         ((fifo_write, wr_ptr), (fifo_read, rd_ptr), ) = self.fifo_pointers(
             DEPTH, (din.en, din.wait), [(dout.en, dout.wait), ])
 
-        If(self.clk._onRisingEdge(),
-            If(fifo_write,
-                # Write Data to Memory
-                mem[wr_ptr](din.data)
+        if self.DATA_WIDTH:
+            mem = self.mem = s("memory", Bits(self.DATA_WIDTH)[DEPTH])
+            If(self.clk._onRisingEdge(),
+                If(fifo_write,
+                    # Write Data to Memory
+                    mem[wr_ptr](din.data)
+                )
             )
-        )
 
-        If(self.clk._onRisingEdge(),
-            If(fifo_read,
-                # Update data output
-                dout.data(mem[rd_ptr])
+            If(self.clk._onRisingEdge(),
+                If(fifo_read,
+                    # Update data output
+                    dout.data(mem[rd_ptr])
+                )
             )
-        )
 
         if self.EXPORT_SIZE:
             size = r("size_reg", self.size._dtype, 0)

@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, log2ceil, Concat, Switch
+from hwt.code import If, Concat, Switch
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.param import Param
+from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.amba.axis_comp.reg import AxiSReg
 from hwtLib.handshaked.streamNode import StreamNode
-from hwtLib.amba.axis import AxiStream
 
 
 class AxiS_resizer(AxiSCompBase):

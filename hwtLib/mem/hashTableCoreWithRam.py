@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import log2ceil
+from hwt.math import log2ceil
 from hwtLib.handshaked.ramAsHs import RamAsHs
 from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.mem.hashTableCore import HashTableCore

@@ -1,7 +1,7 @@
 from typing import List, Set
 
-from hwt.code import log2ceil, isPow2
 from hwt.hdl.constants import READ, WRITE, READ_WRITE
+from hwt.math import log2ceil, isPow2
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 

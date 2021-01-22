@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import connect, log2ceil, Concat, Switch
+from hwt.code import connect, Concat, Switch
 from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.param import Param
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.amba.axi4Lite import Axi4Lite

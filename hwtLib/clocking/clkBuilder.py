@@ -1,13 +1,15 @@
-from typing import Tuple, Union, Dict, Optional, List
+from typing import Tuple, Union, List
 
-from hwt.code import If, log2ceil
+from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
+from hwt.math import log2ceil
+from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
-from hwt.synthesizer.interface import Interface
 from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
+from hwtLib.clocking.timers import TimerInfo, DynamicTimerInfo
+
 
 AnySig = Union[RtlSignal, Interface]
 

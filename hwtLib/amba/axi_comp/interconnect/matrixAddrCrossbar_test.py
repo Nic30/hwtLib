@@ -4,7 +4,7 @@
 from collections import deque
 from itertools import chain
 
-from hwt.code import log2ceil
+from hwt.math import log2ceil
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar import AxiInterconnectMatrixAddrCrossbar

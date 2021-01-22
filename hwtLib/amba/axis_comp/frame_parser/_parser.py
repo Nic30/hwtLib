@@ -3,7 +3,7 @@
 
 from typing import Optional, List, Union
 
-from hwt.code import log2ceil, If, connect
+from hwt.code import If, connect
 from hwt.code_utils import connect_optional
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
@@ -18,11 +18,12 @@ from hwt.interfaces.std import Handshaked, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.unionIntf import UnionSource
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwtLib.abstract.frame_utils.alignment_utils import next_frame_offsets
-from hwtLib.abstract.template_configured import TemplateConfigured,\
+from hwtLib.abstract.template_configured import TemplateConfigured, \
     HdlType_separate
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase

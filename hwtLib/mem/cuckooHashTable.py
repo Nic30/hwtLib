@@ -3,24 +3,26 @@
 
 from typing import List
 
-from hwt.code import log2ceil, FsmBuilder, And, Or, If, ror, SwitchLogic, \
+from hwt.code import FsmBuilder, And, Or, If, ror, SwitchLogic, \
     connect, Concat
+from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.enum import HEnum
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import HandshakeSync
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.cuckooHashTable_intf import CInsertIntf, CInsertResIntf
 from hwtLib.mem.hashTableCore import HashTableCore
 from hwtLib.mem.hashTable_intf import LookupKeyIntf, LookupResultIntf, \
     HashTableIntf
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwt.code_utils import rename_signal
+
 
 ORIGIN_TYPE = HEnum("ORIGIN_TYPE", ["INSERT", "LOOKUP", "DELETE"])
 

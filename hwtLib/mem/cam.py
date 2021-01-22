@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, Concat, log2ceil
+from hwt.code import If, Concat
 from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param

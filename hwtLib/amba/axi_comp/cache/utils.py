@@ -1,7 +1,8 @@
 from math import ceil
 
-from hwt.code import Concat, log2ceil
+from hwt.code import Concat
 from hwt.hdl.typeShortcuts import vec
+from hwt.math import log2ceil
 from hwtLib.amba.axi_comp.lsu.interfaces import AddrDataIntf
 from hwtLib.mem.cam import CamMultiPort
 from pyMathBitPrecise.bit_utils import apply_set_and_clear

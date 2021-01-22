@@ -1,4 +1,3 @@
-from hwt.code import log2ceil
 from hwt.hdl.constants import Time
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
@@ -6,6 +5,7 @@ from hwt.hdl.types.struct import HStruct, HStructField
 from hwt.interfaces.std import RegCntrl, BramPort_withoutClk
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.typePath import TypePath

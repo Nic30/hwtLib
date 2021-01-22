@@ -3,7 +3,8 @@
 
 from typing import Dict, Set
 
-from hwt.code import log2ceil, Or, connect, Switch
+from hwt.code import Or, connect, Switch
+from hwt.math import log2ceil
 from hwt.code_utils import rename_signal
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn

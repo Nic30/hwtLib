@@ -3,12 +3,13 @@
 
 from typing import List, Tuple
 
-from hwt.code import log2ceil, connect, Concat, SwitchLogic, Or
+from hwt.code import connect, Concat, SwitchLogic, Or
 from hwt.code_utils import rename_signal
 from hwt.hdl.assignment import Assignment
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.defs import BIT
 from hwt.interfaces.std import Handshaked
+from hwt.math import log2ceil
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal

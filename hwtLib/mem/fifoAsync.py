@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, log2ceil, isPow2, Concat
+from hwt.code import If, Concat
 from hwt.constraints import set_false_path, get_clock_of, set_max_delay
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Clk, Rst_n, FifoWriter, FifoReader
+from hwt.math import log2ceil, isPow2
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwtLib.clocking.cdc import SignalCdcBuilder
@@ -101,14 +102,14 @@ class FifoAsync(Fifo):
         If(w_en,
            w_bin(w_bin + 1)
         )
-
-        memory_t = Bits(self.DATA_WIDTH)[self.DEPTH]
-        memory = self._sig("memory", memory_t)
-        If(clk_in["clk"]._onRisingEdge(),
-           If(w_en,
-              memory[w_bin[AW:]](din.data)
-           )
-        )
+        if self.DATA_WIDTH:
+            memory_t = Bits(self.DATA_WIDTH)[self.DEPTH]
+            memory = self._sig("memory", memory_t)
+            If(clk_in["clk"]._onRisingEdge(),
+               If(w_en,
+                  memory[w_bin[AW:]](din.data)
+               )
+            )
 
         r_empty = self._reg("r_empty", def_val=1, **clk_out)
         r_empty(r_gray.next._eq(w_gray_out_clk))
@@ -118,13 +119,14 @@ class FifoAsync(Fifo):
            r_bin(r_bin + 1)
         )
 
-        r_reg = self._reg("r_reg", dout.data._dtype, **clk_out)
-        # set_false_path dataIn_clk -> r_reg
-        set_false_path(get_clock_of(w_bin), r_reg)
-        If(r_en,
-           r_reg(memory[r_bin[AW:]])
-        )
-        dout.data(r_reg)
+        if self.DATA_WIDTH:
+            r_reg = self._reg("r_reg", dout.data._dtype, **clk_out)
+            # set_false_path dataIn_clk -> r_reg
+            set_false_path(get_clock_of(w_bin), r_reg)
+            If(r_en,
+               r_reg(memory[r_bin[AW:]])
+            )
+            dout.data(r_reg)
         # dout.data(memory[r_bin[AW:]])
 
 

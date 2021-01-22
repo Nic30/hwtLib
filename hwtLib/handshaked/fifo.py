@@ -3,9 +3,10 @@
 
 from typing import Optional, Tuple, Union
 
-from hwt.code import If, connect, log2ceil
+from hwt.code import If, connect
 from hwt.interfaces.std import VectSignal, Clk, Rst_n, Rst
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import packIntf, \
     connectPacked
@@ -55,11 +56,11 @@ class HandshakedFifo(HandshakedCompBase):
             "Fifo is disabled in this case, do not use it entirely"
         assert self.DEPTH > 1 ,\
             "Fifo is too small, fifo pointers would not work correctly, use register(s) instead"
-        
+
         self._declr_io()
 
         f = self.fifo = self.FIFO_CLS()
-        DW = self.dataIn._bit_length() - self.NON_DATA_BITS_CNT  
+        DW = self.dataIn._bit_length() - self.NON_DATA_BITS_CNT
         f.DATA_WIDTH = DW
         f.DEPTH = self.DEPTH - 1  # because there is an extra register
         f.EXPORT_SIZE = self.EXPORT_SIZE
@@ -95,7 +96,8 @@ class HandshakedFifo(HandshakedCompBase):
         fIn = self.fifo.dataIn
         wr_en = ~fIn.wait
         rd(din)(wr_en)
-        fIn.data(packIntf(din, exclude=[vld(din), rd(din)]))
+        if fIn.DATA_WIDTH > 0:
+            fIn.data(packIntf(din, exclude=[vld(din), rd(din)]))
         fIn.en(vld(din) & wr_en)
 
     def _connect_fifo_out(self, out_clk, out_rst):
@@ -106,9 +108,11 @@ class HandshakedFifo(HandshakedCompBase):
         dout = self.dataOut
         out_vld = self._reg("out_vld", def_val=0, clk=out_clk, rst=out_rst)
         vld(dout)(out_vld)
-        connectPacked(fOut.data,
-                      dout,
-                      exclude=[vld(dout), rd(dout)])
+
+        if fOut.DATA_WIDTH > 0:
+            connectPacked(fOut.data,
+                          dout,
+                          exclude=[vld(dout), rd(dout)])
         fOut.en((rd(dout) | ~out_vld) & ~fOut.wait)
         If(rd(dout) | ~out_vld,
            out_vld(~fOut.wait)

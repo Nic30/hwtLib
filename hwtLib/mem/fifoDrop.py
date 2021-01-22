@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, log2ceil
+from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.agents.fifo import FifoWriterAgent
 from hwt.interfaces.std import FifoWriter, FifoReader, Signal
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.mem.fifo import Fifo
-from ipCorePackager.intfIpMeta import IntfIpMetaNotSpecified
 from hwtSimApi.hdlSimulator import HdlSimulator
+from ipCorePackager.intfIpMeta import IntfIpMetaNotSpecified
 
 
 class FifoWriterDropable(FifoWriter):

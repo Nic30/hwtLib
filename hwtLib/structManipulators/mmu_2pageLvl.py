@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -
 
-from hwt.code import log2ceil, connect, Concat, If
+from hwt.code import connect, Concat, If
 from hwt.interfaces.std import Handshaked, BramPort_withoutClk, \
     Signal
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
-from hwt.synthesizer.unit import Unit
+from hwt.math import log2ceil
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.unit import Unit
 from hwtLib.amba.datapump.intf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.ramAsHs import RamAsHs
@@ -111,10 +112,10 @@ class MMU_2pageLvl(Unit):
         lvl2indx = self.lvl2indxFifo.dataIn
         pageOffset = self.pageOffsetFifo
 
-        lvl2indx.data(virtIn.data[(self.LVL2_PAGE_TABLE_INDX_WIDTH 
+        lvl2indx.data(virtIn.data[(self.LVL2_PAGE_TABLE_INDX_WIDTH
                                    + self.PAGE_OFFSET_WIDTH):self.PAGE_OFFSET_WIDTH])
         connect(virtIn.data, pageOffset.dataIn.data, fit=True)
-        lvl1readAddr.data(virtIn.data[:(self.LVL2_PAGE_TABLE_INDX_WIDTH 
+        lvl1readAddr.data(virtIn.data[:(self.LVL2_PAGE_TABLE_INDX_WIDTH
                                            + self.PAGE_OFFSET_WIDTH)])
         StreamNode(masters=[virtIn],
                    slaves=[lvl2indx, lvl1readAddr, pageOffset.dataIn]).sync()

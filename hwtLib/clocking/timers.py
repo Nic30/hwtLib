@@ -1,6 +1,7 @@
 from typing import Optional, Union
 
-from hwt.code import log2ceil, If, isPow2
+from hwt.code import If
+from hwt.math import log2ceil, isPow2
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.value import HValue
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal

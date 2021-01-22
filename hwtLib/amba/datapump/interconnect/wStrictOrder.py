@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import log2ceil, connect, Or, Switch
+from hwt.code import connect, Or, Switch
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
-from hwtLib.amba.datapump.intf import AxiWDatapumpIntf
 from hwtLib.amba.axi_comp.interconnect.base import AxiInterconnectBase
+from hwtLib.amba.datapump.intf import AxiWDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 
 
@@ -86,8 +87,8 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
         #    }
         #for i, d in enumerate(driversW):
         #    extraConds[d] = fWOut.data._eq(i)
-        #    
-        #StreamNode(masters=[w, fWOut], 
+        #
+        #StreamNode(masters=[w, fWOut],
         #           slaves=driversW+[fAckIn],
         #           extraConds=extraConds).sync()
 

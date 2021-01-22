@@ -4,11 +4,12 @@
 from math import inf
 from typing import Optional, List, Callable, Tuple
 
-from hwt.code import If, Switch, log2ceil, SwitchLogic, Or, And
+from hwt.code import If, Switch, SwitchLogic, Or, And
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
@@ -60,6 +61,7 @@ class AxiS_FrameJoin(Unit):
     def _declr(self):
         assert self.USE_KEEP
         t = self.T
+        assert isinstance(t, HStruct)
         word_bytes = self.word_bytes = self.DATA_WIDTH // 8
         input_cnt = self.input_cnt = len(t.fields)
         streams = [f.dtype for f in t.fields]

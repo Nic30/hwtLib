@@ -1,14 +1,13 @@
 from math import ceil
 from typing import Union
 
-from pyMathBitPrecise.bit_utils import mask, bit_field
-
-from hwt.code import connect, log2ceil, If, Or
+from hwt.code import connect, If, Or
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.union import HUnion
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
+from hwt.math import log2ceil
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
@@ -21,11 +20,12 @@ from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axis_comp.frame_deparser._deparser import AxiS_frameDeparser
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, \
     BYTES_IN_TRANS, QOS_DEFAULT, PROT_DEFAULT
+from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.ramAsHs import RamHsR
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
-from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
+from pyMathBitPrecise.bit_utils import mask, bit_field
 
 
 @serializeParamsUniq

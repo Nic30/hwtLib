@@ -3,11 +3,12 @@
 
 from typing import Union
 
-from hwt.code import If, FsmBuilder, Or, log2ceil, connect, Switch, \
+from hwt.code import If, FsmBuilder, Or, connect, Switch, \
     SwitchLogic
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
 from hwt.hdl.value import HValue
+from hwt.math import log2ceil
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwtLib.abstract.busEndpoint import BusEndpoint
 from hwtLib.amba.axi4Lite import Axi4Lite

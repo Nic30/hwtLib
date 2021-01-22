@@ -1,12 +1,13 @@
 from math import ceil
 
-from hwt.code import FsmBuilder, Concat, If, log2ceil, In
+from hwt.code import FsmBuilder, Concat, If, In
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.agents.handshaked import HandshakedAgent
-from hwt.interfaces.std import VectSignal, HandshakeSync,\
+from hwt.interfaces.std import VectSignal, HandshakeSync, \
     Handshaked
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit

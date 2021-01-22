@@ -1,7 +1,7 @@
 from itertools import chain
 
-from hwt.code import log2ceil
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwtLib.abstract.busInterconnect import BusInterconnect

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, Concat, log2ceil, Switch
+from hwt.code import If, Concat, Switch
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.handshaked.reg import HandshakedReg

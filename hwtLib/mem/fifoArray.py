@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import log2ceil, If
+from hwt.code import If
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal, HandshakeSync
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
+from hwtLib.common_nonstd_interfaces.addr_data_hs_bidir import AddrInDataOutHs, AddrInDataOutHsAgent
 from hwtLib.handshaked.intfBiDirectional import HandshakedBiDirectional, \
     HandshakedBiDirectionalAgent
 from hwtLib.logic.binToOneHot import binToOneHot
+from hwtLib.logic.oneHotToBin import oneHotToBin
+from hwtSimApi.hdlSimulator import HdlSimulator
 from ipCorePackager.constants import DIRECTION
 from pyMathBitPrecise.bit_utils import mask
-from hwtSimApi.hdlSimulator import HdlSimulator
-from hwtLib.logic.oneHotToBin import oneHotToBin
-from hwtLib.common_nonstd_interfaces.addr_data_hs_bidir import AddrInDataOutHs, AddrInDataOutHsAgent
 
 
 class FifoArrayInsertInterface(HandshakedBiDirectional):

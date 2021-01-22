@@ -31,8 +31,8 @@ class ExampleTCmp(Unit):
         super(ExampleTCmp, self).__init__()
 
     def _declr(self):
-        self.a = HdlType_to_Interface(self.t)
-        self.b = HdlType_to_Interface(self.t)
+        self.a = HdlType_to_Interface().apply(self.t)
+        self.b = HdlType_to_Interface().apply(self.t)
 
         self.a_eq_b_out = Signal()._m()
         self.a_ne_b_out = Signal()._m()

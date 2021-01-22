@@ -3,7 +3,7 @@
 
 from itertools import chain
 
-from hwt.code import log2ceil
+from hwt.math import log2ceil
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC
@@ -19,7 +19,7 @@ class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):
     @classmethod
     def getUnit(cls):
         cls.u = u = AxiInterconnectMatrixR(Axi4)
-        u.MASTERS = ({0}, )
+        u.MASTERS = ({0},)
         u.SLAVES = (
             (0x0000, 0x1000),
         )
@@ -99,7 +99,7 @@ class AxiInterconnectMatrixR_1to1TC(SingleUnitSimTestCase):
                                  for m in u.s) + max(len(d) for d in master_r_data)
         self.runSim(4 * max_trans_duration * transaction_cnt * CLK_PERIOD)
 
-        #for m_i, (m, m_r_data) in enumerate(zip(u.saster, master_r_data)):
+        # for m_i, (m, m_r_data) in enumerate(zip(u.saster, master_r_data)):
         #    print(len(m.r._ag.data), len(m_r_data))
         #    for _m, _m_ref in zip(m.r._ag.data, m_r_data):
         #        print(valuesToInts(_m), _m_ref)
@@ -115,7 +115,7 @@ class AxiInterconnectMatrixR_1to3TC(AxiInterconnectMatrixR_1to1TC):
     @classmethod
     def getUnit(cls):
         cls.u = u = AxiInterconnectMatrixR(Axi4)
-        u.MASTERS = ({0, 1, 2}, )
+        u.MASTERS = ({0, 1, 2},)
         u.SLAVES = (
             (0x0000, 0x1000),
             (0x1000, 0x1000),
@@ -149,12 +149,12 @@ class AxiInterconnectMatrixR_3to3TC(AxiInterconnectMatrixR_1to1TC):
             (0x1000, 0x1000),
         )
 
-        #u.MASTERS = ({0, 1, 2}, {0, 1, 2}, {0, 1, 2})
+        # u.MASTERS = ({0, 1, 2}, {0, 1, 2}, {0, 1, 2})
         # u.SLAVES = (
         #    (0x0000, 0x1000),
         #    (0x1000, 0x1000),
         #    (0x2000, 0x1000),
-        #)
+        # )
         u.ADDR_WIDTH = log2ceil(0x4000 - 1)
         return u
 
@@ -165,7 +165,6 @@ AxiInterconnectMatrixR_TCs = [
     AxiInterconnectMatrixR_3to1TC,
     AxiInterconnectMatrixR_3to3TC
 ]
-
 
 if __name__ == "__main__":
     import unittest

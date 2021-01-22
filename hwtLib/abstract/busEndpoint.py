@@ -3,8 +3,7 @@ from copy import copy
 from math import ceil
 from typing import Union, Tuple
 
-from hwt.code import log2ceil, Switch, Concat
-from hwt.code_utils import inRange
+from hwt.code import Switch, Concat
 from hwt.hdl.constants import INTF_DIRECTION
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
@@ -20,6 +19,7 @@ from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.unionIntf import UnionSink, UnionSource
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil, inRange
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
@@ -280,7 +280,7 @@ class BusEndpoint(Unit):
             for f in frames:
                 f_word_offset = f.startBitAddr // DW
                 for (w_i, items) in f.walkWords(showPadding=True):
-                    dmw.append((w_i+ f_word_offset, items))
+                    dmw.append((w_i + f_word_offset, items))
 
     def _suggestedAddrWidth(self):
         """

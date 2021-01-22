@@ -3,7 +3,7 @@
 
 from math import ceil
 
-from hwt.code import Concat, log2ceil, If
+from hwt.code import Concat, If
 from hwt.code_utils import rename_signal
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
@@ -11,6 +11,7 @@ from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal

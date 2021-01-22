@@ -3,9 +3,10 @@
 
 from typing import Union, List
 
-from hwt.code import If, Or, log2ceil
+from hwt.code import If, Or
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VldSynced, VectSignal
+from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal

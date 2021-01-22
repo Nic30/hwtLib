@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import log2ceil
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import propagateClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.hObjList import HObjList
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon
@@ -15,7 +15,7 @@ from hwtLib.handshaked.fifo import HandshakedFifo
 class AxiInterconnectMatrixR(AxiInterconnectCommon):
     """
     Read only AXI3/4/Lite interconnect with supports transaction overlapping
-    and guarantees the order order of transactions on the bus 
+    and guarantees the order order of transactions on the bus
 
     :ivar ~.order_m_index_for_s_data: list, FIFOs for each slave which keeps the information
         about which master accessed slave on this index,
