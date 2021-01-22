@@ -78,8 +78,8 @@ class FrameJoinInputReg(Unit):
         # regs[0] connected to output as first, regs[-1] connected to input
         regs = [
             self._reg(f"r{r_i:d}", data_t, def_val={"keep": 0,
-                                                      "last": 0,
-                                                      "relict": 0})
+                                                    "last": 0,
+                                                    "relict": 0})
             for r_i in range(self.REG_CNT)
         ]
         ready = self.ready
@@ -116,7 +116,6 @@ class FrameJoinInputReg(Unit):
                 r_prev.ready(r.keep._eq(0)  # last input reg empty
                              | whole_pipeline_shift
                              | next_empty)
-                is_relict = 0
             else:
                 r_prev = regs[i + 1]
                 prev_last_mask(1)
