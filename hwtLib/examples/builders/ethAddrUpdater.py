@@ -5,15 +5,11 @@ from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.structUtils import HdlType_select
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.amba.axi3 import Axi3, Axi3_addr, Axi3_w
-from hwtLib.amba.datapump.r import Axi_rDatapump
-from hwtLib.amba.datapump.w import Axi_wDatapump
-from hwtLib.amba.datapump.utils import connectDp
+from hwt.synthesizer.unit import Unit
+from hwtLib.amba.axi3 import Axi3
+from hwtLib.amba.axi_comp.virtualDma import AxiVirtualDma
 from hwtLib.handshaked.builder import HsBuilder
-from hwtLib.structManipulators.structReader import StructReader
-from hwtLib.structManipulators.structWriter import StructWriter
 from hwtLib.peripheral.ethernet.types import Eth2Header_t
 from hwtLib.types.net.ip import IPv4Header_t
 
@@ -21,11 +17,16 @@ from hwtLib.types.net.ip import IPv4Header_t
 frameHeader = HStruct(
     (Eth2Header_t, "eth"),
     (IPv4Header_t, "ipv4")
-    )
-frameHeader = HdlType_select(frameHeader,
-                                   {"eth": {"src", "dst"},
-                                    "ipv4": {"src", "dst"}
-                                    })
+)
+
+# filter out all except eht MACs and IPs
+frameHeader = HdlType_select(
+    frameHeader,
+    {
+        "eth": {"src", "dst"},
+        "ipv4": {"src", "dst"}
+    }
+)
 
 
 class EthAddrUpdater(Unit):
@@ -38,7 +39,7 @@ class EthAddrUpdater(Unit):
     """
     def _config(self):
         Axi3._config(self)
-        self.MAX_LEN = Param(8)
+        self.ALIGNAS = Param(self.DATA_WIDTH)
 
     def _declr(self):
         addClkRstn(self)
@@ -49,39 +50,33 @@ class EthAddrUpdater(Unit):
         a = self.packetAddr = Handshaked()
         a.DATA_WIDTH = self.ADDR_WIDTH
 
-        with self._paramsShared():
-            self.rxPacketLoader = StructReader(frameHeader)
-            self.rxDataPump = Axi_rDatapump(Axi3_addr)
-
-            self.txPacketUpdater = StructWriter(frameHeader)
-            self.txDataPump = Axi_wDatapump(Axi3_addr, Axi3_w)
-        for o in (self.txPacketUpdater, self.txDataPump):
-            o.USE_STRB = True
-
     def _impl(self):
-        propagateClkRstn(self)
-        connectDp(self, self.rxPacketLoader, self.rxDataPump, self.axi_m)
-        connectDp(self, self.txPacketUpdater, self.txDataPump, self.axi_m)
+        dma = AxiVirtualDma(self.axi_m, alignas=self.ALIGNAS)
+        rxGet, rxR = dma.read(frameHeader)
+        txSet, txW, wAck = dma.write(frameHeader)
+        dma.build()
 
-        self.txPacketUpdater.writeAck.rd(1)
+        # send address to an engine which reads and writes the stored data
+        HsBuilder(self, self.packetAddr)\
+            .split_copy_to(rxGet, txSet)
 
-        rxR = self.rxPacketLoader.dataOut
-        txW = self.txPacketUpdater.dataIn
+        # ignore write ack
+        wAck.rd(1)
 
         def withFifo(interface):
             return HsBuilder(self, interface)\
                       .buff(items=4)\
                       .end
 
+        # swap dst/src in IP and Ethernet MAC, use fifo to compensate for
+        # a diferent arrival times of the data
         txW.eth.dst(withFifo(rxR.eth.src))
         txW.eth.src(withFifo(rxR.eth.dst))
 
         txW.ipv4.dst(withFifo(rxR.ipv4.src))
         txW.ipv4.src(withFifo(rxR.ipv4.dst))
 
-        HsBuilder(self, self.packetAddr).split_copy_to(
-            self.rxPacketLoader.get,
-            self.txPacketUpdater.set)
+        propagateClkRstn(self)
 
 
 if __name__ == "__main__":
