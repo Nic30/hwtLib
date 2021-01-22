@@ -184,7 +184,7 @@ _frameHeader = HStruct(
     (Eth2Header_t, "eth"),
     (IPv4Header_t, "ipv4"),
     name="FrameHeader"
-    )
+)
 frameHeader = HdlType_select(_frameHeader,
                                    {"eth": {"src", "dst"},
                                     "ipv4": {"src", "dst"},
@@ -216,6 +216,19 @@ frameHeader_split_str = ["""\
      -----------------------------------------------------------------
 >"""
     ]
+
+frameHeader_trimm_str=["""\
+<FrameTmpl start:0, end:320
+     63                                                             0
+     -----------------------------------------------------------------
+0    |    eth.src    |                    eth.dst                    |
+1    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|            eth.src            |
+2    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|
+3    |   ipv4.dst    |           ipv4.src            |XXXXXXXXXXXXXXX|
+4    |XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX|   ipv4.dst    |
+     -----------------------------------------------------------------
+>"""
+]
 
 s2 = HStruct(
         (uint64_t, "item0"),
@@ -360,6 +373,8 @@ structWithArr2dOfStruct_32bit_str = ["""\
 >"""
 ]
 
+
+
 class FrameTmplTC(unittest.TestCase):
     def test_stream0(self):
         DW = 8
@@ -487,6 +502,17 @@ class FrameTmplTC(unittest.TestCase):
             self.assertEqual(s, _s)
             self.assertEqual(frame.endBitAddr, end)
 
+    def test_frameHeader_trimmed(self):
+        DW = 64
+        tmpl = TransTmpl(frameHeader)
+        frames = FrameTmpl.framesFromTransTmpl(
+                    tmpl, DW,
+                    trimPaddingWordsOnStart=True,
+                    trimPaddingWordsOnEnd=True
+                    )
+        frames = list(frames)
+        self.assertEqual([f.__repr__() for f in frames], frameHeader_trimm_str)
+
     def test_s2_oneFrame(self):
         DW = 64
         tmpl = TransTmpl(s2)
@@ -564,11 +590,11 @@ class FrameTmplTC(unittest.TestCase):
         ref_str = structWithArr2dOfStruct_32bit_str
         t = structWithArr2dOfStruct
         self._test(DW, t, ref_str)
-            
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(FrameTmplTC('test_structWithArr2dOfStruct'))
+    #suite.addTest(FrameTmplTC('test_frameHeader_trimmed'))
     suite.addTest(unittest.makeSuite(FrameTmplTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
