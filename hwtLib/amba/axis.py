@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 from hwt.hdl.types.utils import HdlValue_unpack
 from hwt.interfaces.std import Signal, VectSignal
@@ -168,20 +168,31 @@ def unpackAxiSFrame(structT, frameData, getDataFn=None, dataWidth=None):
     return HdlValue_unpack(structT, frameData, getDataFn, dataWidth)
 
 
-def _axis_recieve_bytes(ag_data, D_B, use_keep, offset=0) -> Tuple[int, List[int]]:
+def _axis_recieve_bytes(ag_data, D_B, use_keep, use_id, offset=0) -> Tuple[int, List[int]]:
     offset = None
     data_B = []
     last = False
     first = True
+    current_id = 0
     mask_all = mask(D_B)
     while ag_data:
         _d = ag_data.popleft()
-        if use_keep:
-            data, keep, last = _d
-            keep = int(keep)
+        if use_id:
+            if use_keep:
+                id_, data, keep, last = _d
+                keep = int(keep)
+            else:
+                id_, data, last = _d
+                keep = mask_all
+            id_ = int(id_)
         else:
-            data, last = _d
-            keep = mask_all
+            if use_keep:
+                data, keep, last = _d
+                keep = int(keep)
+            else:
+                data, last = _d
+                keep = mask_all
+            id_ = 0
 
         last = int(last)
         assert keep > 0
@@ -208,8 +219,11 @@ def _axis_recieve_bytes(ag_data, D_B, use_keep, offset=0) -> Tuple[int, List[int
             offset_mask = mask(offset)
             assert offset_mask & keep == 0, (offset_mask, keep)
             first = False
+            current_id = id_
         elif not last:
             assert keep == mask_all, keep
+        if not first:
+            assert current_id == id_, ("id changed in frame beats", current_id, "->", id_)
         if last:
             break
 
@@ -219,7 +233,10 @@ def _axis_recieve_bytes(ag_data, D_B, use_keep, offset=0) -> Tuple[int, List[int
         else:
             raise ValueError("No frame available")
 
-    return offset, data_B
+    if use_id:
+        return offset, id_, data_B
+    else:
+        return offset, data_B
 
 
 def axis_recieve_bytes(axis: AxiStream) -> Tuple[int, List[int]]:
@@ -229,14 +246,16 @@ def axis_recieve_bytes(axis: AxiStream) -> Tuple[int, List[int]]:
     """
     ag_data = axis._ag.data
     D_B = axis.DATA_WIDTH // 8
-    if axis.ID_WIDTH:
+    USE_ID = bool(getattr(axis, "ID_WIDTH", 0))
+    if getattr(axis, "USER_WIDTH", 0):
         raise NotImplementedError()
-    if axis.USER_WIDTH:
+
+    USE_KEEP = hasattr(axis, "keep")
+    USE_STRB = hasattr(axis, "strb")
+    if USE_KEEP and USE_STRB:
         raise NotImplementedError()
-    if axis.USE_KEEP and axis.USE_STRB:
-        raise NotImplementedError()
-    use_keep = axis.USE_KEEP | axis.USE_STRB
-    return _axis_recieve_bytes(ag_data, D_B, use_keep)
+    use_keep = USE_KEEP | USE_STRB
+    return _axis_recieve_bytes(ag_data, D_B, use_keep, USE_ID)
 
 
 def _axis_send_bytes(axis: AxiStream, data_B: List[int], withStrb, offset)\
@@ -248,7 +267,7 @@ def _axis_send_bytes(axis: AxiStream, data_B: List[int], withStrb, offset)\
         withStrb=withStrb)
 
 
-def axis_send_bytes(axis: AxiStream, data_B: List[int], offset=0) -> None:
+def axis_send_bytes(axis: AxiStream, data_B: Union[List[int], bytes], offset=0) -> None:
     """
     :param axis: AxiStream master which is driver from the simulation
     :param data_B: bytes to send
@@ -262,6 +281,8 @@ def axis_send_bytes(axis: AxiStream, data_B: List[int], offset=0) -> None:
     if axis.USE_KEEP and axis.USE_STRB:
         raise NotImplementedError()
     withStrb = axis.USE_KEEP | axis.USE_STRB
+    if isinstance(data_B, bytes):
+        data_B = [int(x) for x in data_B]
     f = _axis_send_bytes(axis, data_B, withStrb, offset)
     axis._ag.data.extend(f)
 
