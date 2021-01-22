@@ -106,9 +106,9 @@ class OutOfOrderCummulativeOpIntf(Handshaked):
     def _declr(self):
         self.addr = VectSignal(self.MAIN_STATE_INDEX_WIDTH)
         if self.MAIN_STATE_T is not None:
-            self.data = HdlType_to_Interface(self.MAIN_STATE_T)
+            self.data = HdlType_to_Interface().apply(self.MAIN_STATE_T)
         if self.TRANSACTION_STATE_T is not None:
-            self.transaction_state = HdlType_to_Interface(self.TRANSACTION_STATE_T)
+            self.transaction_state = HdlType_to_Interface().apply(self.TRANSACTION_STATE_T)
         HandshakeSync._declr(self)
 
     def _initSimAgent(self, sim:HdlSimulator):

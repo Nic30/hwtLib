@@ -3,8 +3,8 @@
 
 import socket
 
-from hwt.code import sizeof
 from hwt.hdl.types.utils import HdlValue_unpack
+from hwt.math import sizeof
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.simulator.utils import valToInt
 from hwt.synthesizer.vectorUtils import iterBits
