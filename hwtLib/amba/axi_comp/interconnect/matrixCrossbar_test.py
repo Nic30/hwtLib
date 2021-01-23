@@ -80,9 +80,7 @@ class AxiInterconnectMatrixCrossbar_1to1TC(SingleUnitSimTestCase):
                 self.assertEmpty(i._ag.data)
 
     def test_all(self, transaction_cnt=10, magic=0):
-        """
-        :param transaction_cnt: transactions per master per connected slave
-        """
+        # :param transaction_cnt: transactions per master per connected slave
         u = self.u
         #self.randomize_all()
 
