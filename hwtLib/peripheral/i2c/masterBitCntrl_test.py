@@ -8,8 +8,8 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.peripheral.i2c.intf import I2cAgent
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl, \
     NOP, START, READ, WRITE
-from pyMathBitPrecise.bit_utils import get_bit
 from hwtSimApi.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import get_bit
 
 
 class I2CMasterBitCntrlTC(SingleUnitSimTestCase):
@@ -51,7 +51,7 @@ class I2CMasterBitCntrlTC(SingleUnitSimTestCase):
 
         self.assertValSequenceEqual(
             u.i2c._ag.bit_cntrl_rx,
-            [I2cAgent.START] + 
+            [I2cAgent.START] +
             [get_bit(addr, 7 - i - 1)
              for i in range(7)] +
             [mode])
