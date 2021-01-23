@@ -2,16 +2,15 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Switch, Concat
+from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
+from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, HandshakeSync, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.math import log2ceil
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwtSimApi.hdlSimulator import HdlSimulator
-from hwt.synthesizer.vectorUtils import fitTo
-from hwt.code_utils import rename_signal
 
 
 class TwoOperandsHsAgent(HandshakedAgent):
@@ -93,21 +92,9 @@ class MultiplerBooth(Unit):
         done = counter._eq(0)
         waitinOnConsummer = self._reg("waitinOnConsummer", def_val=0)
 
-        # we need 1 bit more for the overflow
-        #t = Bits(self.DATA_WIDTH + 1, signed=False)
-        #_a = a._reinterpret_cast(t)
-        #_m = m._reinterpret_cast(t)
-        #add = rename_signal(self, _a + _m, "add")
-        #sub = rename_signal(self, _a - _m, "sub")
-
         add = rename_signal(self, (a + m)._signed(), "add")
         sub = rename_signal(self, (a - m)._signed(), "sub")
 
-        #sub = rename_signal(self, (a + ~m + 1)._signed(), "sub")
-        #sub_tmp = rename_signal(self, a - m, "sub_tmp")
-        #sub = rename_signal(self, sub_tmp._signed(), "sub")
-        #sub_shifted = rename_signal(self, sub >> 1, "sub_shifted")
-        #print(sub_shifted.drivers)
         If(start,
             a(0),
             m(din.a),
@@ -118,12 +105,10 @@ class MultiplerBooth(Unit):
             Switch(Concat(q[0], q_1))
             .Case(0b01,
                 # add multiplicand to left half of product
-                #a(add[:1]),
                 a(add >> 1),
                 q(Concat(add[0], q[:1])),
             ).Case(0b10,
                 # substract multiplicand from left half of product
-                #a(sub[:1]),
                 a(sub >> 1),
                 q(Concat(sub[0], q[:1])),
             ).Default(
@@ -133,7 +118,7 @@ class MultiplerBooth(Unit):
             q_1(q[0]),
             counter(counter - 1)
         )
-        #print(x)
+
         If(start,
             waitinOnConsummer(1)
         ).Elif(done & dout.rd,
