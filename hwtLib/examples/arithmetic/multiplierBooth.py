@@ -87,7 +87,7 @@ class MultiplerBooth(Unit):
 
         counter = self._reg(
             "counter",
-            Bits(log2ceil(self.RESULT_WIDTH + 1), signed=False),
+            Bits(log2ceil(self.DATA_WIDTH + 1), signed=False),
             def_val=0)
         done = counter._eq(0)
         waitinOnConsummer = self._reg("waitinOnConsummer", def_val=0)
