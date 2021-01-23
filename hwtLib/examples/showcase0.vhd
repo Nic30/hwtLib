@@ -68,12 +68,12 @@ BEGIN
     f <= r;
     assig_process_fallingEdgeRam: PROCESS(clk)
         VARIABLE tmpTypeConv_0 : UNSIGNED(7 DOWNTO 0);
-        VARIABLE tmpTypeConv_1 : UNSIGNED(7 DOWNTO 0);
         VARIABLE tmpTypeConv_2 : SIGNED(7 DOWNTO 0);
+        VARIABLE tmpTypeConv_1 : UNSIGNED(7 DOWNTO 0);
     BEGIN
         tmpTypeConv_0 := a(7 DOWNTO 0);
-        tmpTypeConv_1 := UNSIGNED(tmpTypeConv_2);
         tmpTypeConv_2 := fallingEdgeRam(TO_INTEGER(UNSIGNED(r_1)));
+        tmpTypeConv_1 := UNSIGNED(tmpTypeConv_2);
         IF FALLING_EDGE(clk) THEN
             fallingEdgeRam(TO_INTEGER(UNSIGNED(r_1))) <= SIGNED(tmpTypeConv_0);
             k <= X"000000" & STD_LOGIC_VECTOR(tmpTypeConv_1);
