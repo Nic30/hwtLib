@@ -141,7 +141,7 @@ class SimRam():
             else:
                 d[tmp] = initValues[i]
 
-        self.prevAllocatedAddrEnd = addr
+        self.prevAllocatedAddrEnd = (indx + wordCnt) * self.cellSize
         return addr
 
     def getArray(self, addr: int, item_size: int, item_cnt: int):
@@ -162,7 +162,7 @@ class SimRam():
                 out.append(v)
         return out
 
-    def getBits(self, start, end):
+    def getBits(self, start, end, sign):
         """
         Gets value of bits between selected range from memory
 
@@ -175,7 +175,7 @@ class SimRam():
 
         inFieldOffset = 0
         allMask = mask(wordWidth)
-        value = Bits(end - start, None).from_py(None)
+        value = Bits(end - start, signed=sign).from_py(None)
 
         while start != end:
             assert start < end, (start, end)
@@ -219,7 +219,7 @@ class SimRam():
             raise NotImplementedError(t.element_t)
 
         for _ in range(t.size):
-            v = self.getBits(arr_offset, arr_offset + item_width)
+            v = self.getBits(arr_offset, arr_offset + item_width, None)
             value.append(v)
             arr_offset += item_width
         return value
@@ -235,7 +235,7 @@ class SimRam():
             name = subTmpl.origin[-1].name
             if isinstance(t, Bits):
                 value = self.getBits(
-                    subTmpl.bitAddr + offset, subTmpl.bitAddrEnd + offset)
+                    subTmpl.bitAddr + offset, subTmpl.bitAddrEnd + offset, t.signed)
             elif isinstance(t, HArray):
                 value = self._getArray(subTmpl.bitAddr + offset, subTmpl)
 
