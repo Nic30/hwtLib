@@ -22,15 +22,15 @@ from hwtLib.amba.axis_comp.frame_deparser.test_types import s1field,\
 
 
 class AxiS_frameDeparser_TC(SimTestCase):
-    def instantiateFrameForge(self, structT,
-                              DATA_WIDTH=64,
-                              maxFrameLen=inf,
-                              maxPaddingWords=inf,
-                              trimPaddingWordsOnStart=False,
-                              trimPaddingWordsOnEnd=False,
-                              randomized=True,
-                              use_strb=False,
-                              use_keep=True):
+    def instantiate(self, structT,
+                    DATA_WIDTH=64,
+                    maxFrameLen=inf,
+                    maxPaddingWords=inf,
+                    trimPaddingWordsOnStart=False,
+                    trimPaddingWordsOnEnd=False,
+                    randomized=True,
+                    use_strb=False,
+                    use_keep=True):
         if maxFrameLen is not inf\
                 or maxPaddingWords is not inf\
                 or trimPaddingWordsOnStart is not False\
@@ -65,7 +65,7 @@ class AxiS_frameDeparser_TC(SimTestCase):
                 for last, d in iter_with_last(data)]
 
     def test_nop1Field(self, randomized=False):
-        self.instantiateFrameForge(s1field, randomized=randomized)
+        self.instantiate(s1field, randomized=randomized)
         u = self.u
         t = 100
         if randomized:
@@ -76,7 +76,7 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.assertEmpty(u.dataOut._ag.data)
 
     def test_1Field(self, randomized=False):
-        self.instantiateFrameForge(s1field, randomized=randomized)
+        self.instantiate(s1field, randomized=randomized)
         u = self.u
         MAGIC = 468
         u.dataIn.item0._ag.data.append(MAGIC)
@@ -91,7 +91,7 @@ class AxiS_frameDeparser_TC(SimTestCase):
                                     [(MAGIC, self.m, 1)])
 
     def test_1Field_halfvalid(self, randomized=False):
-        self.instantiateFrameForge(s1field, DATA_WIDTH=128,
+        self.instantiate(s1field, DATA_WIDTH=128,
                                    randomized=randomized)
         u = self.u
         MAGIC = 3
@@ -108,7 +108,7 @@ class AxiS_frameDeparser_TC(SimTestCase):
                                      0, 0, 0, 0])
 
     def test_1Field_composit0(self, randomized=False):
-        self.instantiateFrameForge(s1field_composit0, randomized=randomized)
+        self.instantiate(s1field_composit0, randomized=randomized)
         u = self.u
         MAGIC = 468
         u.dataIn.item0._ag.data.append(MAGIC)
@@ -124,7 +124,7 @@ class AxiS_frameDeparser_TC(SimTestCase):
                                     [(((MAGIC + 1) << 32) | MAGIC, self.m, 1)])
 
     def test_3Fields(self, randomized=False):
-        self.instantiateFrameForge(s3field, randomized=randomized)
+        self.instantiate(s3field, randomized=randomized)
         u = self.u
         MAGIC = 468
         u.dataIn.item0._ag.data.append(MAGIC)
@@ -256,7 +256,7 @@ class AxiS_frameDeparser_TC(SimTestCase):
                                      ])
 
     def test_unionOfStructs_nop(self, randomized=False):
-        self.instantiateFrameForge(unionOfStructs, randomized=randomized)
+        self.instantiate(unionOfStructs, randomized=randomized)
         u = self.u
         t = 60
         if randomized:
@@ -269,7 +269,7 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.test_unionOfStructs_nop(randomized=True)
 
     def test_unionOfStructs_frameA(self, randomized=False):
-        self.instantiateFrameForge(unionOfStructs, randomized=randomized)
+        self.instantiate(unionOfStructs, randomized=randomized)
         u = self.u
         MAGIC = 498
         t = 120
@@ -294,9 +294,9 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.test_unionOfStructs_frameA(randomized=True)
 
     def test_unionOfStructs_simple(self, randomized=False):
-        self.instantiateFrameForge(unionSimple,
-                                   DATA_WIDTH=32,
-                                   randomized=randomized)
+        self.instantiate(unionSimple,
+                         DATA_WIDTH=32,
+                         randomized=randomized)
         u = self.u
         MAGIC = 498
         t = 50
@@ -320,9 +320,9 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.test_unionOfStructs_simple(randomized=True)
 
     def test_stream64(self, randomized=False):
-        self.instantiateFrameForge(structStream64,
-                                   DATA_WIDTH=64,
-                                   randomized=randomized)
+        self.instantiate(structStream64,
+                         DATA_WIDTH=64,
+                         randomized=randomized)
         u = self.u
         MAGIC = 498
         t = 100
@@ -350,9 +350,9 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.test_stream64(randomized=True)
 
     def test_structStream64before(self, randomized=False):
-        self.instantiateFrameForge(structStream64before,
-                                   DATA_WIDTH=64,
-                                   randomized=randomized)
+        self.instantiate(structStream64before,
+                         DATA_WIDTH=64,
+                         randomized=randomized)
         u = self.u
         MAGIC = 498
         t = 120
@@ -383,9 +383,9 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.test_structStream64before(randomized=True)
 
     def test_structStream64after(self, randomized=False):
-        self.instantiateFrameForge(structStream64after,
-                                   DATA_WIDTH=64,
-                                   randomized=randomized)
+        self.instantiate(structStream64after,
+                         DATA_WIDTH=64,
+                         randomized=randomized)
         u = self.u
         MAGIC = 498
         t = 100
@@ -417,9 +417,9 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.test_structStream64after(randomized=True)
 
     def test_struct2xStream64(self, N=5, randomized=False):
-        self.instantiateFrameForge(struct2xStream64,
-                                   DATA_WIDTH=64,
-                                   randomized=randomized)
+        self.instantiate(struct2xStream64,
+                         DATA_WIDTH=64,
+                         randomized=randomized)
         u = self.u
         MAGIC = 400
         t = 10 + (2 * N * 3)
@@ -449,9 +449,9 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.test_struct2xStream64(randomized=True)
 
     def test_footer(self, randomized=False):
-        self.instantiateFrameForge(structStreamAndFooter,
-                                   DATA_WIDTH=16,
-                                   randomized=randomized)
+        self.instantiate(structStreamAndFooter,
+                         DATA_WIDTH=16,
+                         randomized=randomized)
         u = self.u
 
         def mk_footer(d):
@@ -483,9 +483,9 @@ class AxiS_frameDeparser_TC(SimTestCase):
                              sizes=[(2, 2), (1, 2),
                                     (1, 3), (2, 1),
                                     (2, 2)]):
-        self.instantiateFrameForge(struct2xStream8,
-                                   DATA_WIDTH=16,
-                                   randomized=randomized)
+        self.instantiate(struct2xStream8,
+                         DATA_WIDTH=16,
+                         randomized=randomized)
         u = self.u
         MAGIC = 0  # 13
         t = 10 + (2 * sum(sum(x) for x in sizes) * 3)
@@ -507,11 +507,11 @@ class AxiS_frameDeparser_TC(SimTestCase):
             self.assertValSequenceEqual(f, ref_f, i)
 
     def test_unionDifferentMask(self, N=10, randomized=False):
-        self.instantiateFrameForge(unionDifferentMask,
-                                   DATA_WIDTH=16,
-                                   randomized=randomized,
-                                   use_keep=False,
-                                   use_strb=True)
+        self.instantiate(unionDifferentMask,
+                         DATA_WIDTH=16,
+                         randomized=randomized,
+                         use_keep=False,
+                         use_strb=True)
         u = self.u
         MAGIC = 0  # 13
         t = 10 + N

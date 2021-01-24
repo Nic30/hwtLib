@@ -66,7 +66,7 @@ class CharToBitmapTC(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(ArrayBuff_writer_TC('test_fullFill_withoutAck'))
+    # suite.addTest(CharToBitmapTC('test_A'))
     suite.addTest(unittest.makeSuite(CharToBitmapTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

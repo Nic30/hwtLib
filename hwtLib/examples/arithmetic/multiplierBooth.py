@@ -90,7 +90,7 @@ class MultiplerBooth(Unit):
             Bits(log2ceil(self.DATA_WIDTH + 1), signed=False),
             def_val=0)
         done = counter._eq(0)
-        waitinOnConsummer = self._reg("waitinOnConsummer", def_val=0)
+        waitinOnConsumer = self._reg("waitinOnConsumer", def_val=0)
 
         add = rename_signal(self, (a + m)._signed(), "add")
         sub = rename_signal(self, (a - m)._signed(), "sub")
@@ -120,15 +120,15 @@ class MultiplerBooth(Unit):
         )
 
         If(start,
-            waitinOnConsummer(1)
+            waitinOnConsumer(1)
         ).Elif(done & dout.rd,
-            waitinOnConsummer(0),
+            waitinOnConsumer(0),
         )
 
         dout.data(Concat(a, q)._vec())
-        dout.vld(done & waitinOnConsummer)
-        start(din.vld & done & ~waitinOnConsummer)
-        din.rd(done & ~waitinOnConsummer)
+        dout.vld(done & waitinOnConsumer)
+        start(din.vld & done & ~waitinOnConsumer)
+        din.rd(done & ~waitinOnConsumer)
 
 
 if __name__ == "__main__":

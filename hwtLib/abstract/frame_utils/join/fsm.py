@@ -157,7 +157,7 @@ def input_B_dst_to_fsm(word_bytes: int,
                 # mark keep for next input byte
                 if not is_from_last_input_word or is_input_word_continuing_in_next_out_word:
                     # the next input byte is present because we are not in last input word
-                    # or this may be a last word but it is not fully consummed
+                    # or this may be a last word but it is not fully consumed
                     next_B_keep = 1
                 else:
                     # no more bytes from this input stream
@@ -189,7 +189,7 @@ def input_B_dst_to_fsm(word_bytes: int,
             if v.last:
                 # relict flag matters only for word with last flag set
                 # because it is used to distinguis starts of single word frames
-                # where only part of the word can be consummed to a output word
+                # where only part of the word can be consumed to a output word
                 v.relict = int(first_input_is_relict)
             break
     tt.filter_unique_state_trans()

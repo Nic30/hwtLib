@@ -7,7 +7,7 @@ class InputRegInputVal():
 
     :ivar ~.parent: the StateTransItem instance which is owning this object
     :ivar ~.keep: list of keep bites
-    :ivar ~.relict: flag for word which was partially consummed
+    :ivar ~.relict: flag for word which was partially consumed
     :ivar ~.last: flag for end of frame
     """
     def __init__(self, parent_state_trans: "StateTransItem"):

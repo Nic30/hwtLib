@@ -84,18 +84,18 @@ class FrameJoinInputReg(Unit):
         ]
         ready = self.ready
         keep_masks = self.keep_masks
-        fully_consummed_flags = []
+        fully_consumed_flags = []
         for i, r in enumerate(regs):
-            _fully_consumed = self._sig(f"r{i:d}_fully_consummed")
+            _fully_consumed = self._sig(f"r{i:d}_fully_consumed")
             _fully_consumed((r.keep & keep_masks[i])._eq(0))
-            fully_consummed_flags.append(_fully_consumed)
+            fully_consumed_flags.append(_fully_consumed)
 
-        for i, (is_last_r, r) in enumerate(iter_with_last(regs)):
+        for i, (is_first_on_input_r, r) in enumerate(iter_with_last(regs)):
             keep_mask_all = mask(r.keep._dtype.bit_length())
             prev_keep_mask = self._sig(f"prev_keep_mask_{i:d}_tmp", r.keep._dtype)
             prev_last_mask = self._sig(f"prev_last_mask_{i:d}_tmp")
 
-            if is_last_r:
+            if is_first_on_input_r:
                 # is register connected directly to dataIn
                 r_prev = self.dataIn
                 If(r_prev.valid,
@@ -131,25 +131,25 @@ class FrameJoinInputReg(Unit):
                 data_drive.append(r.strb(r_prev.strb))
 
             is_empty = r.keep._eq(0)
-            fully_consumed = fully_consummed_flags[i]
+            fully_consumed = fully_consumed_flags[i]
             if i == 0:
                 # last register in path
                 If((ready & fully_consumed) | is_empty,
                    *data_drive,
                    r.keep(r_prev.keep & prev_keep_mask),
                    r.last(r_prev.last & prev_last_mask),
-                   r.relict(0 if is_last_r else r_prev.relict)
+                   r.relict(0 if is_first_on_input_r else r_prev.relict)
                 ).Elif(ready,
                    r.keep(r.keep & keep_masks[i]),
-                   r.relict(1),  # became relict if there is some 1 in keep
+                   r.relict(1),  # became relict if there is some 1 in keep (== not fully consumed)
                 )
             else:
-                next_fully_consumed = fully_consummed_flags[i - 1]
+                next_fully_consumed = fully_consumed_flags[i - 1]
                 next_is_empty = regs[i - 1].keep._eq(0)
-                if is_last_r:
+                if is_first_on_input_r:
                     is_relict = 0
                 else:
-                    is_relict = r_prev.relict | ~fully_consummed_flags[i + 1]
+                    is_relict = r_prev.relict | ~fully_consumed_flags[i + 1]
                 If((ready & next_fully_consumed) | is_empty | next_is_empty,
                    *data_drive,
                    r.keep(r_prev.keep & prev_keep_mask),
