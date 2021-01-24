@@ -54,6 +54,14 @@ class AxiDpSimRam(SimRam):
         self.wAckAg = wAckAg
         self.wPending = deque()
         self.clk = clk
+        if awAg is not None:
+            intf = awAg.intf
+        elif arAg is not None:
+            intf = arAg.intf
+        else:
+            raise AssertionError("Need at least some interface")
+        self.ID_WIDTH = intf.ID_WIDTH
+        self.MAX_LEN = intf.MAX_LEN
 
         self._registerOnClock()
 
@@ -83,16 +91,39 @@ class AxiDpSimRam(SimRam):
     def parseReq(self, req):
         for i, v in enumerate(req):
             assert v._is_full_valid(), (i, v)
-        assert len(req) == 4
+        if self.MAX_LEN:
+            if self.ID_WIDTH:
+                assert len(req) == 4, req
+                _id = req[0].val
+                addr = req[1].val
+                size = req[2].val + 1
+                lastWordBytes = req[3].val
+            else:
+                assert len(req) == 3, req
+                _id = 0
+                addr = req[0].val
+                size = req[1].val + 1
+                lastWordBytes = req[2].val
 
-        _id = req[0].val
-        addr = req[1].val
-        size = req[2].val + 1
-        if req[3].val == 0:
+        else:
+            if self.ID_WIDTH:
+                assert len(req) == 3, req
+                _id = req[0].val
+                addr = req[1].val
+                size = 1
+                lastWordBytes = req[2].val
+            else:
+                assert len(req) == 2, req
+                _id = 0
+                addr = req[0].val
+                size = 1
+                lastWordBytes = req[1].val
+
+        if lastWordBytes == 0:
             lastWordBitmask = self.allMask
         else:
-            lastWordBitmask = mask(req[3].val)
-            size += 1
+            lastWordBitmask = mask(lastWordBytes)
+
         return (_id, addr, size, lastWordBitmask)
 
     def onReadReq(self):
@@ -105,7 +136,7 @@ class AxiDpSimRam(SimRam):
 
     def doRead(self):
         _id, addr, size, lastWordBitmask = self.rPending.popleft()
-
+        HAS_ID = self.rAg.intf.ID_WIDTH > 0
         baseIndex = addr // self.cellSize
         if baseIndex * self.cellSize != addr:
             raise NotImplementedError(
@@ -128,9 +159,16 @@ class AxiDpSimRam(SimRam):
                     strb = lastWordBitmask
                 else:
                     strb = self.allMask
-                read_trans = (_id, data, strb, isLast)
+                if HAS_ID:
+                    read_trans = (_id, data, strb, isLast)
+                else:
+                    read_trans = (data, strb, isLast)
             else:
-                read_trans = (_id, data, isLast)
+                if HAS_ID:
+                    read_trans = (_id, data, isLast)
+                else:
+                    read_trans = (data, isLast)
+
             self.rAg.data.append(read_trans)
 
     def doWriteAck(self, _id):
