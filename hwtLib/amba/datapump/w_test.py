@@ -1,266 +1,345 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Optional
+
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwtLib.amba.axi3 import Axi3_addr, Axi3_w
-from hwtLib.amba.axi4 import Axi4_addr
-from hwtLib.amba.datapump.r_test import Axi4_rDatapumpTC, mkReq,\
-    Axi_datapumpTC
-from hwtLib.amba.datapump.w import Axi_wDatapump
-from hwtLib.amba.constants import RESP_OKAY
+from hwtLib.amba.axi3 import Axi3
+from hwtLib.amba.axi3Lite import Axi3Lite
+from hwtLib.amba.axi4 import Axi4
+from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
-from pyMathBitPrecise.bit_utils import mask
+from hwtLib.amba.axis import axis_recieve_bytes
+from hwtLib.amba.constants import RESP_OKAY
+from hwtLib.amba.datapump.r_aligned_test import Axi4_rDatapumpTC, Axi_datapumpTC
+from hwtLib.amba.datapump.w import Axi_wDatapump
 from hwtSimApi.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import mask
 
 
 class Axi4_wDatapumpTC(Axi_datapumpTC):
-    LEN_MAX = Axi4_rDatapumpTC.LEN_MAX
+    LEN_MAX_VAL = Axi4_rDatapumpTC.LEN_MAX_VAL
 
     @classmethod
     def getUnit(cls):
-        cls.u = u = Axi_wDatapump(axiAddrCls=Axi4_addr)
-        u.MAX_LEN = cls.LEN_MAX
+        cls.u = u = Axi_wDatapump(axiCls=Axi4)
+        u.MAX_LEN = cls.LEN_MAX_VAL
+        u.ALIGNAS = 8
         return cls.u
 
     def wTrans(self, data, last, strb=mask(64 // 8), _id=0):
         return (data, strb, last)
+
+    def bTrans(self, resp, _id=0):
+        return (_id, resp)
+
+    def spotMemcpyTransactions(self, base, len_: int, singleFrameLen: Optional[int]):
+        """
+        :param base: base address where to start
+        :param len_: total number of words to copy - 1
+        :param singleFrameLen: total max number of words in a single frame - 1
+        """
+        u = self.u
+        addr_step = u.DATA_WIDTH // 8
+        req = u.driver._ag.req
+        wIn = u.driver.w._ag
+        b = u.axi.b._ag.data
+        assert base % addr_step == 0, base
+        MAGIC = 100
+        AXI_LEN_MAX = 2 ** u.axi.LEN_WIDTH
+        if singleFrameLen is not None:
+            AXI_LEN_MAX = min(AXI_LEN_MAX, singleFrameLen + 1)
+        AXI_LEN_MAX = min(AXI_LEN_MAX, len_ + 1)
+
+        for i in range(0, len_ + 1, self.LEN_MAX_VAL + 1):
+            req.data.append(self.mkReq(base, len_))
+
+        aw_ref = []
+        for i in range(0, len_ + 1, AXI_LEN_MAX):
+            len__ = min(AXI_LEN_MAX - 1, len_ - AXI_LEN_MAX * i)
+            addr = base + i * addr_step
+            a = self.aTrans(
+                addr,
+                len__,
+                0
+            )
+            aw_ref.append(a)
+
+        w_ref = []
+        for i in range(len_ + 1):
+            lastForDriver = (i + 1) % (self.LEN_MAX_VAL + 1) == 0 or i == len_
+            lastForAxi = (i + 1) % AXI_LEN_MAX == 0
+            last = lastForDriver or lastForAxi
+            wIn.data.append((MAGIC + i, mask(addr_step), lastForDriver))
+            w_ref.append(self.wTrans(MAGIC + i, last, mask(addr_step)))
+            if last:
+                b.append(self.bTrans(RESP_OKAY, 0))
+
+        return aw_ref, w_ref
 
     def test_nop(self):
         u = self.u
 
         self.runSim(20 * CLK_PERIOD)
 
-        self.assertEmpty(u.a._ag.data)
-        self.assertEmpty(u.w._ag.data)
+        self.assertEmpty(u.axi.aw._ag.data)
+        self.assertEmpty(u.axi.w._ag.data)
 
     def test_simple(self):
         u = self.u
 
         req = u.driver._ag.req
-        aw = u.a._ag.data
+        aw = u.axi.aw._ag.data
 
-        # download one word from addr 0xff
-        req.data.append(mkReq(0xff, 0))
+        # download one word from addr 0x100
+        req.data.append(self.mkReq(0x100, 0))
 
         self.runSim(20 * CLK_PERIOD)
 
         self.assertValSequenceEqual(aw,
                                     [
-                                        self.aTrans(255, 0, 0)
+                                        self.aTrans(0x100, 0, 0)
                                     ])
 
-        self.assertEmpty(u.w._ag.data)
+        self.assertEmpty(u.axi.w._ag.data)
 
     def test_simpleWithData(self):
         u = self.u
 
         req = u.driver._ag.req
-        aw = u.a._ag.data
+        aw = u.axi.aw._ag.data
         wIn = u.driver.w._ag
-        w = u.w._ag.data
-        b = u.b._ag.data
+        w = u.axi.w._ag.data
+        b = u.axi.b._ag.data
+        addr_step = u.DATA_WIDTH // 8
 
-        # download one word from addr 0xff
-        req.data.append(mkReq(0xff, 0))
-        wIn.data.append((77, mask(64 // 8), 1))
-        b.append((0, RESP_OKAY))
+        # download one word from addr 0x100
+        req.data.append(self.mkReq(0x100, 0))
+        wIn.data.append((77, mask(addr_step), 1))
+        b.append(self.bTrans(RESP_OKAY, _id=0))
 
         self.runSim(20 * CLK_PERIOD)
 
         self.assertValSequenceEqual(aw, [
-            self.aTrans(255, 0, 0)
+            self.aTrans(0x100, 0, 0)
         ])
 
         self.assertValSequenceEqual(
-            w, [self.wTrans(77, 1, strb=mask(64 // 8), _id=0)])
+            w, [self.wTrans(77, 1, strb=mask(addr_step), _id=0)])
         self.assertEmpty(b)
+
+    def test_simpleUnaligned(self):
+        u = self.u
+
+        req = u.driver._ag.req
+        aw = u.axi.aw._ag.data
+
+        req.data.append(self.mkReq(0x101, 0))
+
+        self.runSim(20 * CLK_PERIOD)
+        if u.ALIGNAS == u.DATA_WIDTH:
+            # unsupported alignment check if error is set
+            self.assertEmpty(aw)
+            self.assertValEqual(u.errorAlignment._ag.data[-1], 1)
+
+        elif u.axi.LEN_WIDTH == 0:
+            addr_step = u.DATA_WIDTH // 8
+            # transaction has to be split
+            self.assertValSequenceEqual(aw, [
+                self.aTrans(0x100, 0, 0),
+                self.aTrans(0x100 + addr_step, 0, 0),
+            ])
+
+            self.assertEmpty(u.axi.w._ag.data)
+        else:
+            # transaction has to be of len + 1
+            self.assertValSequenceEqual(aw, [
+                self.aTrans(0x100, 1, 0)
+            ])
+
+            self.assertEmpty(u.axi.w._ag.data)
+
+    def test_simpleUnalignedWithData(self, N=1, WORDS=1, randomize=False):
+        u = self.u
+
+        req = u.driver._ag.req
+        aw = u.axi.aw._ag.data
+        wIn = u.driver.w._ag
+        w = u.axi.w._ag.data
+        b = u.axi.b._ag.data
+        if randomize:
+            self.randomize(u.driver.req)
+            self.randomize(u.driver.w)
+            self.randomize(u.axi.aw)
+            self.randomize(u.axi.w)
+            self.randomize(u.axi.b)
+
+        addr_step = u.DATA_WIDTH // 8
+
+        ref_w_frames = []
+        for i in range(N):
+            req.data.append(self.mkReq(0x101 + i * addr_step, WORDS - 1))
+            frame = []
+            for i2 in range(WORDS):
+                isLast = (i2 == WORDS - 1)
+                n0 = 0x10 * i2 + 0x20 + i
+                n1 = 0x10 * i2 + 0x10 + i
+                # aligned input data word
+                wIn.data.append(((n1 << ((addr_step - 1) * 8)) | n0, mask(addr_step), isLast))
+                frame.extend([n0, 0, 0, 0, 0, 0, 0, n1, ])
+            ref_w_frames.append(frame)
+            b.append(self.bTrans(RESP_OKAY, 0))
+
+        t = (15 + N) * CLK_PERIOD
+        if randomize:
+            t *= 6
+        self.runSim(t)
+        if u.ALIGNAS == u.DATA_WIDTH:
+            # unsupported alignment check if error is set
+            self.assertEmpty(aw)
+            self.assertValEqual(u.errorAlignment._ag.data[-1], 1)
+
+        else:
+            aw_ref = []
+            if u.axi.LEN_WIDTH == 0:
+                for i in range(N):
+                    for w_i in range(WORDS + 1):
+                        aw_ref.append(
+                            self.aTrans(0x100 + (i + w_i) * addr_step, WORDS, 0)
+                        )
+            else:
+                for i in range(N):
+                    aw_ref.append(
+                        self.aTrans(0x100 + i * addr_step, WORDS, 0)
+                    )
+            self.assertValSequenceEqual(aw, aw_ref)
+
+            for ref_frame in ref_w_frames:
+                if hasattr(u.axi.w, "id"):
+                    offset, id_, w_data = axis_recieve_bytes(u.axi.w)
+                    self.assertEqual(id_, 0)
+                elif u.axi.LEN_WIDTH == 0:
+                    offset = None
+                    w_data = []
+                    for w_i in range(WORDS + 1):
+                        data, strb = w.popleft()
+                        for B_i in range(addr_step):
+                            if strb[B_i]:
+                                if offset is None:
+                                    offset = B_i + (addr_step * w_i)
+                                B = int(data[(B_i + 1) * 8: B_i * 8])
+                                w_data.append(B)
+                else:
+                    offset, w_data = axis_recieve_bytes(u.axi.w)
+                self.assertEqual(offset, 1)
+                self.assertSequenceEqual(w_data, ref_frame)
+
+            self.assertEmpty(w)
+            self.assertEmpty(b)
+
+    def test_simpleUnalignedWithData_5x(self):
+        self.test_simpleUnalignedWithData(N=5)
+
+    def test_simpleUnalignedWithData_5x_r(self):
+        self.test_simpleUnalignedWithData(N=5, randomize=True)
+
+    def test_simpleUnalignedWithData_5x_2words_r(self):
+        self.test_simpleUnalignedWithData(N=5, WORDS=2, randomize=True)
+
+    def test_simpleUnalignedWithData_5x_3words_r(self):
+        self.test_simpleUnalignedWithData(N=5, WORDS=3, randomize=True)
 
     def test_singleLong(self):
-        u = self.u
-
-        req = u.driver._ag.req
-        aw = u.a._ag.data
-        wIn = u.driver.w._ag
-        w = u.w._ag.data
-        b = u.b._ag.data
-
-        # download one word from addr 0xff
-        req.data.append(mkReq(0xff, self.LEN_MAX))
-        for i in range(self.LEN_MAX + 1 + 10):
-            wIn.data.append((100 + 1, mask(8), i == self.LEN_MAX))
-        b.append((0, RESP_OKAY))
-
-        self.runSim((10 + self.LEN_MAX) * CLK_PERIOD)
-
-        self.assertValSequenceEqual(aw,
-                                    [
-                                        self.aTrans(
-                                            0xff,
-                                            self.LEN_MAX,
-                                            0)
-                                    ])
-
-        self.assertEqual(len(w), self.LEN_MAX + 1)
-        self.assertEmpty(b)
-        self.assertEqual(len(u.driver._ag.ack.data), 1)
+        self.test_multiple_randomized(N=1, transLen=self.LEN_MAX_VAL, randomize=False)
 
     def test_multiple(self):
+        self.test_multiple_randomized(N=50, transLen=0, randomize=False)
+
+    def test_multiple_randomized(self, N=50, transLen=0, singleFrameLen=None, randomize=True):
         u = self.u
-        req = u.driver._ag.req
-        aw = u.a._ag.data
-        wIn = u.driver.w._ag
-        w = u.w._ag.data
-        b = u.b._ag.data
-        N = 50
+        aw = u.axi.aw._ag.data
+        w = u.axi.w._ag.data
+        b = u.axi.b._ag.data
 
-        # download one word from addr 0xff
+        aw_ref, w_ref = [], []
         for i in range(N):
-            req.data.append(mkReq((i * 8) + 0xff, 0))
-            wIn.data.append((77, mask(64 // 8), 1))
-            b.append((0, RESP_OKAY))
+            _aw_ref, _w_ref = self.spotMemcpyTransactions((i * 8) + 0x100, transLen, singleFrameLen)
+            aw_ref.extend(_aw_ref)
+            w_ref.extend(_w_ref)
 
-        self.runSim(100 * CLK_PERIOD)
+        if randomize:
+            ra = self.randomize
+            ra(u.axi.aw)
+            ra(u.axi.b)
+            ra(u.driver.req)
+            ra(u.driver.ack)
+            ra(u.axi.w)
+            ra(u.driver.w)
 
-        self.assertValSequenceEqual(aw,
-                                    [
-                                        self.aTrans(
-                                            0xff + (8 * i), 0, 0)
-                                        for i in range(N)
-                                    ])
+        self.runSim(N * (transLen + 1) * 8 * CLK_PERIOD)
 
-        self.assertEqual(len(w), N)
-        self.assertEqual(len(b), 0)
-        self.assertEqual(len(u.driver._ag.ack.data), N)
-
-    def test_multiple_randomized(self):
-        u = self.u
-        req = u.driver._ag.req
-        aw = u.a._ag.data
-        wIn = u.driver.w._ag
-        w = u.w._ag.data
-        b = u.b._ag.data
-        N = 50
-
-        # download one word from addr 0xff
-        for i in range(N):
-            req.data.append(mkReq((i * 8) + 0xff, 0))
-            wIn.data.append((77, mask(64 // 8 - 1), 1))
-            b.append((0, RESP_OKAY))
-
-        ra = self.randomize
-        ra(u.a)
-        ra(u.b)
-        ra(u.driver.req)
-        ra(u.driver.ack)
-        ra(u.w)
-        ra(u.driver.w)
-
-        self.runSim(N * 8 * CLK_PERIOD)
-
-        self.assertValSequenceEqual(aw,
-                                    [
-                                        self.aTrans(
-                                            0xff + (8 * i), 0, 0)
-                                        for i in range(N)
-                                    ])
-
-        self.assertEqual(len(w), N)
+        self.assertValSequenceEqual(aw, aw_ref)
+        self.assertValSequenceEqual(w, w_ref)
         self.assertEmpty(b)
         self.assertEqual(len(u.driver._ag.ack.data), N)
 
     def test_multiple_randomized2(self):
-        u = self.u
-        req = u.driver._ag.req
-        aw = u.a._ag.data
-        wIn = u.driver.w._ag
-        w = u.w._ag.data
-        b = u.b._ag.data
-        N = 50
-        L = 3
-        expectedWData = []
-
-        # download one word from addr 0xff
-        for i in range(N):
-            req.data.append(mkReq((i * 8) + 0xff, L - 1))
-            for i in range(L):
-                d = 77 + i
-                m = mask(64 // 8 - 1)
-                last = int(i == (L - 1))
-                wIn.data.append((d, m, last))
-                beat = self.wTrans(d, last, strb=m, _id=0)
-
-                expectedWData.append(beat)
-            b.append((0, RESP_OKAY))
-
-        ra = self.randomize
-        ra(u.a)
-        ra(u.b)
-        ra(u.driver.req)
-        ra(u.driver.ack)
-        ra(u.w)
-        ra(u.driver.w)
-
-        self.runSim(N * L * 5 * CLK_PERIOD)
-
-        self.assertValSequenceEqual(aw,
-                                    [
-                                        self.aTrans(
-                                            0xff + (8 * i),
-                                            L - 1, 0)
-                                        for i in range(N)
-                                    ])
-
-        self.assertEqual(len(w), N * 3)
-        for expWD, wd in zip(expectedWData, w):
-            self.assertValSequenceEqual(wd, expWD)
-
-        self.assertEqual(len(b), 0)
-        self.assertEqual(len(u.driver._ag.ack.data), N)
+        self.test_multiple_randomized(transLen=3)
 
 
 class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
-    LEN_MAX = 15
+    LEN_MAX_VAL = 15
 
     def wTrans(self, data, last, strb=mask(64 // 8), _id=0):
         return (_id, data, strb, last)
 
     @classmethod
     def getUnit(cls):
-        u = Axi_wDatapump(axiAddrCls=Axi3_addr, axiWCls=Axi3_w)
+        u = Axi_wDatapump(axiCls=Axi3)
         u.MAX_LEN = 16
+        u.ALIGNAS = 8
         return u
 
 
 class Axi3_wDatapump_small_splitting_TC(SingleUnitSimTestCase):
-    LEN_MAX = 3
+    LEN_MAX_VAL = 3
+    CHUNK_WIDTH = 32
+    DATA_WIDTH = 32
 
     def wTrans(self, data, last, strb=mask(64 // 8), _id=0):
-        return (_id, data, strb, last)
+        return Axi3_wDatapump_direct_TC.wTrans(self, data, last, strb, _id)
+
+    def bTrans(self, resp, _id=0):
+        return Axi3_wDatapump_direct_TC.bTrans(self, resp, _id)
+
+    def mkReq(self, addr, _len, rem=0, _id=0):
+        return Axi3_wDatapump_direct_TC.mkReq(self, addr, _len, rem, _id)
 
     @classmethod
     def getUnit(cls):
-        u = cls.u = Axi_wDatapump(axiAddrCls=Axi3_addr, axiWCls=Axi3_w)
-        u.MAX_LEN = cls.LEN_MAX
-        cls.DATA_WIDTH = int(u.DATA_WIDTH)
+        u = cls.u = Axi_wDatapump(axiCls=Axi3)
+        u.DATA_WIDTH = u.ALIGNAS = u.CHUNK_WIDTH = cls.DATA_WIDTH
+        u.MAX_CHUNKS = (cls.DATA_WIDTH // cls.CHUNK_WIDTH) * (cls.LEN_MAX_VAL + 1)
+
         return u
 
     def test_1024random(self):
         u = self.u
         req = u.driver._ag.req
         wIn = u.driver.w._ag
-        dataMask = mask(self.DATA_WIDTH // 8)
+        dataMask = mask(u.DATA_WIDTH // 8)
 
-        m = AxiSimRam(axiAW=u.a, axiW=u.w, axiB=u.b)
+        m = AxiSimRam(axi=u.axi)
         N = 1024
-        data = [self._rand.getrandbits(self.DATA_WIDTH) for _ in range(N)]
+        data = [self._rand.getrandbits(u.DATA_WIDTH) for _ in range(N)]
 
-        buff = m.malloc(N * (self.DATA_WIDTH // 8))
+        buff = m.malloc(N * (u.DATA_WIDTH // 8))
 
         dataIt = iter(data)
         end = False
         addr = 0
         while True:
-            frameSize = self._rand.getrandbits(self.LEN_MAX.bit_length()) + 1
+            frameSize = self._rand.getrandbits(self.LEN_MAX_VAL.bit_length()) + 1
             frame = []
             try:
                 for _ in range(frameSize):
@@ -269,33 +348,105 @@ class Axi3_wDatapump_small_splitting_TC(SingleUnitSimTestCase):
                 end = True
 
             if frame:
-                req.data.append(mkReq(addr, len(frame) - 1))
+                req.data.append(self.mkReq(addr, len(frame) - 1))
                 wIn.data.extend([(d, dataMask, i == len(frame) - 1)
                                  for i, d in enumerate(frame)])
-                addr += len(frame) * self.DATA_WIDTH // 8
+                addr += len(frame) * u.DATA_WIDTH // 8
             if end:
                 break
 
         ra = self.randomize
-        ra(u.a)
-        ra(u.b)
+        ra(u.axi.aw)
+        ra(u.axi.b)
         ra(u.driver.req)
         ra(u.driver.ack)
-        ra(u.w)
+        ra(u.axi.w)
         ra(u.driver.w)
 
         self.runSim(N * 5 * CLK_PERIOD)
 
-        inMem = m.getArray(buff, self.DATA_WIDTH // 8, N)
+        inMem = m.getArray(buff, u.DATA_WIDTH // 8, N)
         self.assertValSequenceEqual(inMem, data)
 
+
+class Axi3_wDatapump_small_splitting_alignas8_TC(Axi3_wDatapump_small_splitting_TC):
+    LEN_MAX_VAL = 3
+    CHUNK_WIDTH = 8
+    DATA_WIDTH = 32
+
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = Axi_wDatapump(axiCls=Axi3)
+        u.DATA_WIDTH = cls.DATA_WIDTH
+        u.ALIGNAS = 8
+        u.CHUNK_WIDTH = cls.CHUNK_WIDTH
+        u.MAX_CHUNKS = (cls.DATA_WIDTH // cls.CHUNK_WIDTH) * (cls.LEN_MAX_VAL + 1)
+
+        return u
+
+
+class Axi4_wDatapump_alignas8TC(Axi4_wDatapumpTC):
+
+    @classmethod
+    def getUnit(cls):
+        u = super(Axi4_wDatapump_alignas8TC, cls).getUnit()
+        u.ALIGNAS = 8
+        return u
+
+
+class Axi3Lite_wDatapumpTC(Axi4_wDatapumpTC):
+    LEN_MAX_VAL = 3
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = u = Axi_wDatapump(axiCls=Axi3Lite)
+        u.MAX_LEN = cls.LEN_MAX_VAL
+        return cls.u
+
+    def mkReq(self, addr, _len, rem=0, _id=0):
+        return (addr, _len, rem)
+
+    def wTrans(self, data, last, strb=mask(64 // 8), _id=0):
+        return (data, strb)
+
+    def bTrans(self, resp, _id=0):
+        return resp
+
+
+class Axi4Lite_wDatapumpTC(Axi3Lite_wDatapumpTC):
+
+    @classmethod
+    def getUnit(cls):
+        cls.u = u = Axi_wDatapump(axiCls=Axi4Lite)
+        u.MAX_LEN = cls.LEN_MAX_VAL
+        return cls.u
+
+
+class Axi4Lite_wDatapump_alignas8TC(Axi4Lite_wDatapumpTC):
+
+    @classmethod
+    def getUnit(cls):
+        u = super(Axi4Lite_wDatapump_alignas8TC, cls).getUnit()
+        u.ALIGNAS = 8
+        return u
+
+
+Axi_wDatapumpTCs = [
+    Axi4_wDatapumpTC,
+    Axi3_wDatapump_direct_TC,
+    Axi3_wDatapump_small_splitting_TC,
+    Axi3_wDatapump_small_splitting_alignas8_TC,
+    Axi4_wDatapump_alignas8TC,
+    Axi3Lite_wDatapumpTC,
+    Axi4Lite_wDatapumpTC,
+    Axi4Lite_wDatapump_alignas8TC,
+]
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(Axi4_wDatapumpTC('test_singleLong'))
-    suite.addTest(unittest.makeSuite(Axi4_wDatapumpTC))
-    suite.addTest(unittest.makeSuite(Axi3_wDatapump_direct_TC))
-    suite.addTest(unittest.makeSuite(Axi3_wDatapump_small_splitting_TC))
+    # suite.addTest(Axi4Lite_wDatapump_alignas8TC('test_simpleUnalignedWithData'))
+    for tc in Axi_wDatapumpTCs:
+        suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -1,7 +1,9 @@
-from hwt.code import log2ceil
+from math import ceil
+
 from hwt.hdl.constants import DIRECTION
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VectSignal, HandshakeSync
+from hwt.math import log2ceil
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream
@@ -11,6 +13,9 @@ from hwtSimApi.hdlSimulator import HdlSimulator
 
 class AddrSizeHs(Handshaked):
     """
+
+    :ivar MAX_LEN: maximum value of len (number of words - 1)
+
     .. hwt-autodoc::
     """
 
@@ -22,13 +27,15 @@ class AddrSizeHs(Handshaked):
         self.USE_STRB = Param(True)
 
     def _declr(self):
-        self.id = VectSignal(self.ID_WIDTH)
+        if self.ID_WIDTH:
+            self.id = VectSignal(self.ID_WIDTH)
 
         self.addr = VectSignal(self.ADDR_WIDTH)
-        #  len is number of words -1
-        self.len = VectSignal(log2ceil(self.MAX_LEN))
+        assert self.MAX_LEN >= 0, self.MAX_LEN
+        if self.MAX_LEN > 0:
+            self.len = VectSignal(log2ceil(self.MAX_LEN + 1))
 
-        # rem is number of bits in last word which is valid - 1
+        # rem is number of bytes in last word which are valid - 1
         self.rem = VectSignal(log2ceil(self.DATA_WIDTH // 8))
 
         HandshakeSync._declr(self)
@@ -42,24 +49,47 @@ class AddrSizeHsAgent(HandshakedAgent):
     def get_data(self):
         intf = self.intf
 
-        _id = intf.id.read()
         addr = intf.addr.read()
-        _len = intf.len.read()
         rem = intf.rem.read()
-
-        return (_id, addr, _len, rem)
+        if intf.ID_WIDTH:
+            _id = intf.id.read()
+            if intf.MAX_LEN:
+                _len = intf.len.read()
+                return (_id, addr, _len, rem)
+            else:
+                return (_id, addr, rem)
+        else:
+            if intf.MAX_LEN:
+                _len = intf.len.read()
+                return (addr, _len, rem)
+            else:
+                return (addr, rem)
 
     def set_data(self, data):
         intf = self.intf
 
-        if data is None:
-            data = [None for _ in range(4)]
+        if intf.ID_WIDTH:
+            if data is None:
+                _id, addr, _len, rem = (None for _ in range(4))
+            else:
+                if intf.MAX_LEN == 0:
+                    _id, addr, rem = data
+                else:
+                    _id, addr, _len, rem = data
 
-        _id, addr, _len, rem = data
+            intf.id.write(_id)
+        else:
+            if data is None:
+                addr, _len, rem = None, None, None
+            else:
+                if intf.MAX_LEN == 0:
+                    addr, rem = data
+                else:
+                    addr, _len, rem = data
 
-        intf.id.write(_id)
         intf.addr.write(addr)
-        intf.len.write(_len)
+        if intf.MAX_LEN != 0:
+            intf.len.write(_len)
         intf.rem.write(rem)
 
 
@@ -71,12 +101,17 @@ class AxiRDatapumpIntf(Interface):
     """
 
     def _config(self):
-        AddrSizeHs._config(self)
+        self.ID_WIDTH = Param(0)
+        self.ADDR_WIDTH = Param(32)
+        self.DATA_WIDTH = Param(64)
+        self.MAX_BYTES = Param(4096)
+        self.USE_STRB = Param(True)
 
     def _declr(self):
         with self._paramsShared():
             # user requests
             self.req = AddrSizeHs()
+            self.req.MAX_LEN = max(ceil(self.MAX_BYTES / (self.DATA_WIDTH // 8)) - 1, 0)
             self.r = AxiStream(masterDir=DIRECTION.IN)
 
     def _initSimAgent(self, sim: HdlSimulator):
@@ -142,8 +177,13 @@ class AxiWDatapumpIntf(Interface):
         with self._paramsShared(exclude=({"ID_WIDTH"}, set())):
             self.w = AxiStream()
 
-        ack = self.ack = Handshaked(masterDir=DIRECTION.IN)
-        ack.DATA_WIDTH = self.ID_WIDTH
+        if self.ID_WIDTH:
+            ack = Handshaked(masterDir=DIRECTION.IN)
+            ack.DATA_WIDTH = self.ID_WIDTH
+        else:
+            ack = HandshakeSync(masterDir=DIRECTION.IN)
+
+        self.ack = ack
 
     def _initSimAgent(self, sim: HdlSimulator):
         self._ag = AxiWDatapumpIntfAgent(sim, self)

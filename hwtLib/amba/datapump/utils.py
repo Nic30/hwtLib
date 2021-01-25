@@ -25,8 +25,8 @@ def connectDp(parent, controller, datapump, axi, exclude=None):
         controller = controller[0]
 
     if isinstance(datapump, Axi_rDatapump):
-        connect(datapump.a, axi.ar, exclude=exclude)
-        datapump.r(axi.r)
+        connect(datapump.axi.ar, axi.ar, exclude=exclude)
+        datapump.axi.r(axi.r)
 
         if isinstance(controller, (list, tuple)):
             interconnect = RStrictOrderInterconnect()
@@ -39,17 +39,17 @@ def connectDp(parent, controller, datapump, axi, exclude=None):
             return
 
     elif isinstance(datapump, Axi_wDatapump):
-        connect(datapump.a, axi.aw, exclude=exclude)
+        connect(datapump.axi.aw, axi.aw, exclude=exclude)
         # axi3/4 connection
-        if not hasattr(axi.w, "id") and hasattr(datapump.w, "id"):
-            exclude_ = [datapump.w.id]
+        if not hasattr(axi.w, "id") and hasattr(datapump.axi.w, "id"):
+            exclude_ = [datapump.axi.w.id]
         else:
             exclude_ = []
         if exclude:
             exclude_.extend(exclude)
 
-        connect(datapump.w, axi.w, exclude=exclude_)
-        datapump.b(axi.b)
+        connect(datapump.axi.w, axi.w, exclude=exclude_)
+        datapump.axi.b(axi.b)
 
         if isinstance(controller, (list, tuple)):
             interconnect = WStrictOrderInterconnect()
