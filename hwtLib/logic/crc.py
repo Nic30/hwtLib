@@ -112,7 +112,7 @@ class Crc(Unit):
             for vld_byte_cnt in range(1, mask_width + 1):
                 # because bytes are already reversed in bit vector of input bits
                 _data_in_bits = data_in_bits[
-                     (mask_width - vld_byte_cnt)*self.MASK_GRANULARITY:
+                     (mask_width - vld_byte_cnt) * self.MASK_GRANULARITY:
                 ]
                 state_next = self.build_crc_xor_matrix(
                     state_in_bits, poly_bits, _data_in_bits)
