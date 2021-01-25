@@ -38,7 +38,6 @@ from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
 from pyMathBitPrecise.bit_utils import mask
 
-
 TYPE_CONFIG_PARAMS_NAMES = [
     "T", "TRANSACTION_TEMPLATE", "FRAME_TEMPLATES"]
 
@@ -309,8 +308,12 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         self.frame_join = fjoin
 
         dout = self.dataOut
-        connect(fjoin.dataOut, dout,
-                exclude=(fjoin.dataOut.keep, ))
+        if not self.USE_KEEP:
+            exclude = (fjoin.dataOut.keep,)
+        else:
+            exclude = ()
+
+        connect(fjoin.dataOut, dout, exclude=exclude)
 
         propagateClkRstn(self)
         for i, c in enumerate(children):
@@ -340,7 +343,12 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
                     if fj_in.USE_STRB:
                         fj_in.strb(keep_all)
             else:
-                fj_in(child_out)
+                if not self.USE_STRB and child_out.USE_STRB:
+                    exclude = (child_out.strb,)
+                else:
+                    exclude = ()
+
+                connect(child_out, fj_in, exclude=exclude)
 
     def _create_frame_build_logic(self):
         self.byteOrderCare = get_byte_order_modifier(self.dataOut)

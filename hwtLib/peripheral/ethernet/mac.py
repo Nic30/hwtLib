@@ -221,14 +221,19 @@ class EthernetMac(Unit):
         connect(self.eth.tx,
                 crc.dataIn,
                 ff.dataIn.data,
-                exclude=[crc.dataIn.vld,
-                         crc.dataIn.rd,
-                         *([self.eth.tx.strb,
-                            crc.dataIn.mask,
-                            ff.dataIn.data.strb,
-                            ] if self.USE_STRB else []),
-                         ff.dataIn.data.valid,
-                         ff.dataIn.data.ready])
+                exclude=[
+                    self.eth.tx.ready,
+                    self.eth.tx.valid,
+                    crc.dataIn.vld,
+                    crc.dataIn.rd,
+                    *([self.eth.tx.strb,
+                       crc.dataIn.mask,
+                       ff.dataIn.data.strb,
+                       ] if self.USE_STRB else []),
+                    ff.dataIn.data.valid,
+                    ff.dataIn.data.ready
+                ]
+        )
         StreamNode([self.eth.tx],
                    [crc.dataIn, ff.dataIn.data]).sync()
         if self.USE_STRB:
@@ -262,6 +267,6 @@ if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     u = EthernetMac()
     u.DATA_WIDTH = 16
-    u.HAS_TX = False
+    # u.HAS_TX = False
     # u.HAS_RX = False
     print(to_rtl_str(u))
