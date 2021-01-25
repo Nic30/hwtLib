@@ -293,12 +293,15 @@ class AxiS_FrameJoin(Unit):
         keep_masks = []
         ready = []
         max_lookahead_for_input = self.state_trans_table.max_lookahead_for_input
+        # lookahead specifies how many words from inputs has to be loaded
+        # in order to resolve output word, it corresponds to a number of input registers-1
         for input_i, stage_cnt in enumerate(max_lookahead_for_input):
             _regs, _keep_masks, _ready = self.generate_input_register(
                                                 input_i, stage_cnt + 1)
             regs.append(_regs)
             keep_masks.append(_keep_masks)
             ready.append(_ready)
+
         out_sel, out_mux_values = self.generate_output_byte_mux(regs)
         self.generate_fsm(regs, out_sel, out_mux_values, keep_masks, ready)
         propagateClkRstn(self)
