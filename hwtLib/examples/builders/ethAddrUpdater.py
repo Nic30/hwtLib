@@ -56,7 +56,7 @@ class EthAddrUpdater(Unit):
         txSet, txW, wAck = dma.write(frameHeader)
         dma.build()
 
-        # send address to an engine which reads and writes the stored data
+        # send address to an engine which reads and writes the packet header
         HsBuilder(self, self.packetAddr)\
             .split_copy_to(rxGet, txSet)
 

@@ -164,5 +164,7 @@ class AxiVirtualDma(AbstractComponentBuilder):
     def build(self):
         """
         Build an DMA logic from previously stacked reads/writes
+
+        :note: placeholder for future use
         """
 
