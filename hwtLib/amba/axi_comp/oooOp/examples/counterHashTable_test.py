@@ -68,9 +68,6 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
         u = self.u
         self.m = AxiSimRam(axi=u.m)
 
-    def allcateItem(self, item):
-        raise NotImplementedError()
-
     def test_nop(self):
         u = self.u
 
@@ -82,7 +79,7 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
 
     def _test_incr(self, inputs, randomize=False, mem_init={}):
         u = self.u
-        ADDR_ITEM_STEP = u.DATA_WIDTH // 8
+        ADDR_ITEM_STEP = 2 **  u.ADDR_OFFSET_W
         for i in range(2 ** u.ADDR_WIDTH // ADDR_ITEM_STEP):
             v = mem_init.get(i, 0)
             if v != 0:
