@@ -1,9 +1,5 @@
-from math import inf
-from pprint import pprint
 from typing import Tuple, Dict, Set, List
 
-from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.stream import HStream
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwtLib.abstract.frame_utils.join.state_trans_info import StateTransInfo
 from hwtLib.abstract.frame_utils.join.state_trans_item import StateTransItem
