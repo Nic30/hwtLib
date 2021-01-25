@@ -47,6 +47,8 @@ class OutOfOrderCummulativeOp(Unit):
     The most up-to-date version of the data is always selected on the input of WRITE_BACK stage.
 
     :ivar MAIN_STATE_T: a type of the state in main memory which is being updated by this component
+    :note: If MAIN_STATE_T.bit_length() is smaller than DATA_WIDTH each item is allocated in
+        a signle bus word separately in order to avoid alignment logic
     :ivar TRANSACTION_STATE_T: a type of the transaction state, used to store additional data
         for transaction and can be used to modify the behavior of the pipeline
     :type TRANSACTION_STATE_T: Optional[HdlType]
@@ -64,7 +66,7 @@ class OutOfOrderCummulativeOp(Unit):
     def _init_constants(self):
         MAIN_STATE_T = self.MAIN_STATE_T
         # constant precomputation
-        self.ADDR_OFFSET_W = log2ceil(MAIN_STATE_T.bit_length() // 8)
+        self.ADDR_OFFSET_W = log2ceil(max(MAIN_STATE_T.bit_length(), self.DATA_WIDTH) // 8)
         self.MAIN_STATE_INDEX_WIDTH = self.ADDR_WIDTH - self.ADDR_OFFSET_W
         self.MAIN_STATE_ITEMS_CNT = (2 ** self.MAIN_STATE_INDEX_WIDTH)
 

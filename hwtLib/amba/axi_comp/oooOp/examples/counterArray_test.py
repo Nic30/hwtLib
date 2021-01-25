@@ -11,7 +11,7 @@ from hwtLib.types.ctypes import uint32_t
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class OooOpExampleCounterArray_TC(SingleUnitSimTestCase):
+class OooOpExampleCounterArray_1w_TC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
@@ -110,10 +110,37 @@ class OooOpExampleCounterArray_TC(SingleUnitSimTestCase):
         self.assertEqual(comb_loops, frozenset())
 
 
+class OooOpExampleCounterArray_0_5w_TC(OooOpExampleCounterArray_1w_TC):
+
+    @classmethod
+    def getUnit(cls):
+        u = OooOpExampleCounterArray_1w_TC.getUnit()
+        u.DATA_WIDTH = u.MAIN_STATE_T.bit_length() * 2
+        cls.u = u
+        return u
+
+
+class OooOpExampleCounterArray_2w_TC(OooOpExampleCounterArray_1w_TC):
+
+    @classmethod
+    def getUnit(cls):
+        u = OooOpExampleCounterArray_1w_TC.getUnit()
+        u.DATA_WIDTH = u.MAIN_STATE_T.bit_length() // 2
+        cls.u = u
+        return u
+
+
+OooOpExampleCounterArray_TCs = [
+    OooOpExampleCounterArray_1w_TC,
+    OooOpExampleCounterArray_0_5w_TC,
+    #OooOpExampleCounterArray_2w_TC,
+]
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(OooOpExampleCounterArray_TC('test_incr_1x'))
-    suite.addTest(unittest.makeSuite(OooOpExampleCounterArray_TC))
+    # suite.addTest(OooOpExampleCounterArray_0_5w_TC('test_incr_1x'))
+    for tc in OooOpExampleCounterArray_TCs:
+        suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
