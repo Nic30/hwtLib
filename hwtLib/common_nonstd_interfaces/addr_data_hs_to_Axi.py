@@ -16,6 +16,7 @@ from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.abstract.busEndpoint import AddressStepTranslation
 from hwtLib.amba.axi4 import Axi4, Axi4_addr
 from hwtLib.amba.axi_comp.buff import AxiBuff
+from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axis_comp.frame_deparser._deparser import AxiS_frameDeparser
 from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, LOCK_DEFAULT, \
@@ -125,11 +126,11 @@ class AddrDataHs_to_Axi(BusBridge):
         self.addr_defaults(axi.ar)
 
         # rm id from r channel as it is not currently supported in frame parser
-        r_tmp = self.intfCls.R_CLS()
-        r_tmp.ID_WIDTH = 0
+        r_tmp = AxiStream()
+        r_tmp.USE_STRB = False
         r_tmp.DATA_WIDTH = axi.r.DATA_WIDTH
         self.r_tmp = r_tmp
-        r_tmp(axi.r)
+        connect(axi.r, r_tmp, exclude=(axi.r.id, axi.r.resp, ))
         r_data = AxiSBuilder(self, r_tmp)\
             .parse(in_axi_t).data
 
