@@ -67,7 +67,7 @@ class OutNodeInfo():
     def _sync(self, others: List['OutNodeInfo'], en: RtlSignal, din_vld: RtlSignal):
         """
         :return: output validity signal which is checked
-            if data from this word was previously consummed
+            if data from this word was previously consumed
         """
         en_extra = self.en & self.exclusiveEn
         en = en & en_extra
@@ -75,25 +75,25 @@ class OutNodeInfo():
             en = en & self.exclusiveEn
         if len(others) > 1:
             # used as a flag for the case where data for this part was
-            # consummed but some other part was still not
-            was_consummed = self.parent._reg(
-                self.outInterface._name + "_was_consummed_", def_val=0)
-            self._ack(self._ready | was_consummed)
+            # consumed but some other part was still not
+            was_consumed = self.parent._reg(
+                self.outInterface._name + "_was_consumed_", def_val=0)
+            self._ack(self._ready | was_consumed)
             ackOfOthers = getAckOfOthers(self, others)
 
             If(en & din_vld,
-                If(was_consummed & ackOfOthers,
-                   # restart was_consummed because all others were consummed
-                   was_consummed(0),
+                If(was_consumed & ackOfOthers,
+                   # restart was_consumed because all others were consumed
+                   was_consumed(0),
                 ).Elif(~ackOfOthers & self._ready,
-                   # set was consummed because the data is passed to output
+                   # set was consumed because the data is passed to output
                    # but some other part can not do the same
-                   was_consummed(1)
+                   was_consumed(1)
                 )
             )
 
             # value of this node was not consumed and it is enabled
-            return en_extra & ~was_consummed
+            return en_extra & ~was_consumed
         else:
             assert others[0] is self
             self._ack(self._ready)
