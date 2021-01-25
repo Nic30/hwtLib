@@ -19,7 +19,7 @@ frameHeader = HStruct(
     (IPv4Header_t, "ipv4")
 )
 
-# filter out all except eht MACs and IPs
+# filter out all except eth MACs and IPs
 frameHeader = HdlType_select(
     frameHeader,
     {
