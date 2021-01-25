@@ -310,7 +310,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
 
         dout = self.dataOut
         connect(fjoin.dataOut, dout,
-                exclude=fjoin.dataOut.keep)
+                exclude=(fjoin.dataOut.keep, ))
 
         propagateClkRstn(self)
         for i, c in enumerate(children):
