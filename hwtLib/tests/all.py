@@ -26,7 +26,7 @@ from hwtLib.amba.axi_comp.interconnect.matrixR_test import AxiInterconnectMatrix
 from hwtLib.amba.axi_comp.interconnect.matrixW_test import AxiInterconnectMatrixW_TCs
 from hwtLib.amba.axi_comp.lsu.read_aggregator_test import AxiReadAggregator_TCs
 from hwtLib.amba.axi_comp.lsu.write_aggregator_test import AxiWriteAggregator_TCs
-from hwtLib.amba.axi_comp.oooOp.examples.counterArray_test import OooOpExampleCounterArray_TC
+from hwtLib.amba.axi_comp.oooOp.examples.counterArray_test import OooOpExampleCounterArray_TCs
 from hwtLib.amba.axi_comp.oooOp.examples.counterHashTable_test import OooOpExampleCounterHashTable_TC
 from hwtLib.amba.axi_comp.resize_test import AxiResizeTC
 from hwtLib.amba.axi_comp.sim.ag_test import Axi_ag_TC
@@ -46,16 +46,16 @@ from hwtLib.amba.axis_comp.frame_parser.footer_split_test import AxiS_footerSpli
 from hwtLib.amba.axis_comp.frame_parser.test import AxiS_frameParserTC
 from hwtLib.amba.axis_comp.resizer_test import AxiS_resizer_TCs
 from hwtLib.amba.axis_comp.storedBurst_test import AxiSStoredBurstTC
+from hwtLib.amba.axis_comp.strformat_test import AxiS_strFormat_TC
 from hwtLib.amba.datapump.interconnect.rStrictOrder_test import \
     RStrictOrderInterconnectTC
 from hwtLib.amba.datapump.interconnect.wStrictOrderComplex_test import \
     WStrictOrderInterconnectComplexTC
 from hwtLib.amba.datapump.interconnect.wStrictOrder_test import \
     WStrictOrderInterconnectTC, WStrictOrderInterconnect2TC
-from hwtLib.amba.datapump.r_test import Axi4_rDatapumpTC, \
-    Axi3_rDatapumpTC
-from hwtLib.amba.datapump.w_test import Axi4_wDatapumpTC, \
-    Axi3_wDatapump_direct_TC, Axi3_wDatapump_small_splitting_TC
+from hwtLib.amba.datapump.r_aligned_test import Axi_rDatapump_alignedTCs
+from hwtLib.amba.datapump.r_unaligned_test import Axi_rDatapump_unalignedTCs
+from hwtLib.amba.datapump.w_test import Axi_wDatapumpTCs
 from hwtLib.avalon.endpoint_test import AvalonMmEndpointTCs
 from hwtLib.avalon.mmAgent_test import AvalonMmAgentTC
 from hwtLib.avalon.stAgent_test import AvalonStAgentTC
@@ -69,16 +69,18 @@ from hwtLib.clocking.cdc_test import CdcTC
 from hwtLib.clocking.clkDivider import ClkDiv3TC
 from hwtLib.common_nonstd_interfaces.addr_data_hs_to_Axi_test import AddrDataHs_to_Axi_TCs
 from hwtLib.examples.arithmetic.cntr_test import CntrTC, CntrResourceAnalysisTC
+from hwtLib.examples.arithmetic.multiplierBooth_test import MultiplerBoothTC
 from hwtLib.examples.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.examples.arithmetic.twoCntrs_test import TwoCntrsTC
 from hwtLib.examples.arithmetic.vhdl_vector_auto_casts import VhdlVectorAutoCastExampleTC
 from hwtLib.examples.arithmetic.widthCasting import WidthCastingExampleTC
 from hwtLib.examples.axi.debugbusmonitor_test import DebugBusMonitorExampleAxiTC
 from hwtLib.examples.axi.simpleAxiRegs_test import SimpleAxiRegsTC
-from hwtLib.examples.builders.ethAddrUpdater_test import EthAddrUpdaterTC
+from hwtLib.examples.builders.ethAddrUpdater_test import EthAddrUpdaterTCs
 from hwtLib.examples.builders.handshakedBuilderSimple import \
     HandshakedBuilderSimpleTC
 from hwtLib.examples.builders.hsBuilderSplit_test import HsBuilderSplit_TC
+from hwtLib.examples.builders.hwException_test import HwExceptionCatch_TC
 from hwtLib.examples.builders.pingResponder_test import PingResponderTC
 from hwtLib.examples.emptyUnitWithSpi import EmptyUnitWithSpiTC
 from hwtLib.examples.errors.combLoops import CombLoopAnalysisTC
@@ -309,6 +311,7 @@ suite = testSuiteFromTCs(
     TemplateConfigured_TC,
     FrameAlignmentUtilsTC,
     FrameJoinUtilsTC,
+    HwExceptionCatch_TC,
 
     # tests of simple units
     TimerTC,
@@ -327,11 +330,13 @@ suite = testSuiteFromTCs(
     HadrcodedFsmExampleTC,
     OneHotToBinTC,
     BinToBcdTC,
+    AxiS_strFormat_TC,
     BinToOneHotTC,
     GrayCntrTC,
     TwoCntrsTC,
     SelfRefCntrTC,
     CountLeadingTC,
+    MultiplerBoothTC,
     IndexingTC,
     CdcTC,
     RamResourcesTC,
@@ -409,11 +414,9 @@ suite = testSuiteFromTCs(
     AxisFrameGenTC,
     *AddrDataHs_to_Axi_TCs,
     Axi4BRam_TC,
-    Axi4_rDatapumpTC,
-    Axi3_rDatapumpTC,
-    Axi4_wDatapumpTC,
-    Axi3_wDatapump_direct_TC,
-    Axi3_wDatapump_small_splitting_TC,
+    *Axi_rDatapump_alignedTCs,
+    *Axi_rDatapump_unalignedTCs,
+    *Axi_wDatapumpTCs,
     AxiSlaveTimeoutTC,
     AxiSStoredBurstTC,
     AxiS_en_TC,
@@ -426,7 +429,7 @@ suite = testSuiteFromTCs(
     AxiS_frameParserTC,
     *AxiS_FrameJoin_TCs,
     HandshakedBuilderSimpleTC,
-    EthAddrUpdaterTC,
+    *EthAddrUpdaterTCs,
 
     RStrictOrderInterconnectTC,
     WStrictOrderInterconnectTC,
@@ -451,7 +454,7 @@ suite = testSuiteFromTCs(
     MMU_2pageLvl_TC,
     StructWriter_TC,
     StructReaderTC,
-    OooOpExampleCounterArray_TC,
+    *OooOpExampleCounterArray_TCs,
     OooOpExampleCounterHashTable_TC,
 
     # ipif tests
