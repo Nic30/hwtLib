@@ -1,4 +1,5 @@
 from hwt.code import If
+from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
@@ -64,7 +65,7 @@ class FrameJoinInputReg(Unit):
                                       " should be managed between the frames")
 
     def _impl(self):
-        mask_t = Bits(self.DATA_WIDTH//8, force_vector=True)
+        mask_t = Bits(self.DATA_WIDTH // 8, force_vector=True)
         data_fieds = [
             (Bits(self.DATA_WIDTH), "data"),
             (mask_t, "keep"),  # valid= keep != 0
@@ -86,8 +87,7 @@ class FrameJoinInputReg(Unit):
         keep_masks = self.keep_masks
         fully_consumed_flags = []
         for i, r in enumerate(regs):
-            _fully_consumed = self._sig(f"r{i:d}_fully_consumed")
-            _fully_consumed((r.keep & keep_masks[i])._eq(0))
+            _fully_consumed = rename_signal(self, (r.keep & keep_masks[i])._eq(0), f"r{i:d}_fully_consumed")
             fully_consumed_flags.append(_fully_consumed)
 
         for i, (is_first_on_input_r, r) in enumerate(iter_with_last(regs)):
@@ -135,10 +135,15 @@ class FrameJoinInputReg(Unit):
             if i == 0:
                 # last register in path
                 If((ready & fully_consumed) | is_empty,
-                   *data_drive,
-                   r.keep(r_prev.keep & prev_keep_mask),
-                   r.last(r_prev.last & prev_last_mask),
-                   r.relict(0 if is_first_on_input_r else r_prev.relict)
+                    *data_drive,
+                    r.keep(r_prev.keep & prev_keep_mask),
+                    r.last(r_prev.last & prev_last_mask),
+                    r.relict(
+                        0
+                        if is_first_on_input_r else
+                        # [TODO] potentially it should not be keep[0] but fist keep with 1
+                        r_prev.relict | (r_prev.last & (r_prev.keep[0] & ~keep_masks[i + 1][0] & ~fully_consumed_flags[i + 1]))
+                    )
                 ).Elif(ready,
                    r.keep(r.keep & keep_masks[i]),
                    r.relict(1),  # became relict if there is some 1 in keep (== not fully consumed)
@@ -149,7 +154,9 @@ class FrameJoinInputReg(Unit):
                 if is_first_on_input_r:
                     is_relict = 0
                 else:
-                    is_relict = r_prev.relict | ~fully_consumed_flags[i + 1]
+                    prev_fully_consumed = fully_consumed_flags[i + 1]
+                    is_relict = r_prev.relict | ~prev_fully_consumed
+
                 If((ready & next_fully_consumed) | is_empty | next_is_empty,
                    *data_drive,
                    r.keep(r_prev.keep & prev_keep_mask),
