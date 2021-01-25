@@ -11,7 +11,6 @@ from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.structManipulators.structReader import StructReader
 from hwtLib.types.ctypes import uint64_t, uint16_t, uint32_t
 
-
 s0 = HStruct(
     (uint64_t, "item0"),  # tuples (type, name) where type has to be instance of Bits type
     (uint64_t, None),  # name = None means this field will be ignored
@@ -30,7 +29,7 @@ s0 = HStruct(
     (uint64_t, None),
     (uint64_t, "item6"),
     (uint64_t, "item7"),
-    )
+)
 
 
 def s0RandVal(tc):
@@ -49,6 +48,7 @@ def s0RandVal(tc):
 
 
 class StructReaderTC(SimTestCase):
+
     def _test_s0(self, u):
         DW = 64
         N = 3
@@ -72,6 +72,8 @@ class StructReaderTC(SimTestCase):
                                     skipPadding=False,
                                     fillup=True))
             addr = m.calloc(len(asFrame), DW // 8, initValues=asFrame)
+            assert m.getStruct(addr, s0) == s0.from_py(d)
+
             u.get._ag.data.append(addr)
 
         self.runSim(500 * Time.ns)
@@ -79,8 +81,8 @@ class StructReaderTC(SimTestCase):
         for f in s0.fields:
             if f.name is not None:
                 expected = expectedFieldValues[f.name]
-                got = u.dataOut._fieldsToInterfaces[(f.name, )]._ag.data
-                self.assertValSequenceEqual(got, expected)
+                got = u.dataOut._fieldsToInterfaces[(f.name,)]._ag.data
+                self.assertValSequenceEqual(got, expected, f.name)
 
     def test_simpleFields(self):
         u = StructReader(s0)
@@ -102,7 +104,7 @@ class StructReaderTC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(StructReaderTC('test_regularUpload'))
+    #suite.addTest(StructReaderTC('test_multiframe'))
     suite.addTest(unittest.makeSuite(StructReaderTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

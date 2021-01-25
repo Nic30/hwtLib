@@ -15,7 +15,6 @@ from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.structManipulators.structReader import StructReader
 
-
 SKIP = 1
 PROPAGATE = 0
 
@@ -50,6 +49,7 @@ class StructWriter(StructReader):
 
     .. hwt-autodoc:: _example_StructWriter
     """
+
     def _config(self):
         StructReader._config(self)
         self.MAX_OVERLAP = Param(2)
@@ -72,11 +72,13 @@ class StructWriter(StructReader):
         with self._paramsShared():
             # interface for communication with datapump
             self.wDatapump = AxiWDatapumpIntf()._m()
-            self.wDatapump.MAX_LEN = self.maxWordIndex() + 1
+            self.wDatapump.MAX_BYTES = self.maxBytesInTransaction()
 
-        self.frameAssember = AxiS_frameDeparser(self._structT,
-                                             tmpl=self._tmpl,
-                                             frames=self._frames)
+            self.frameAssember = AxiS_frameDeparser(
+                self._structT,
+                tmpl=self._tmpl,
+                frames=self._frames
+            )
 
     def _impl(self):
         req = self.wDatapump.req
@@ -91,55 +93,51 @@ class StructWriter(StructReader):
             ackPropageteInfo = HandshakedReg(Handshaked)
         ackPropageteInfo.DATA_WIDTH = 1
         self.ackPropageteInfo = ackPropageteInfo
-        propagateClkRstn(self)
 
         if self.WRITE_ACK:
             _set = self.set
         else:
             _set = HsBuilder(self, self.set).buff().end
 
-        req.id(self.ID)
-        req.rem(0)
+        if self.ID_WIDTH:
+            req.id(self.ID)
 
-        def propagateRequests(frame, indx):
-            ack = StreamNode(slaves=[req, ackPropageteInfo.dataIn]).ack()
-            statements = [req.addr(_set.data + frame.startBitAddr // 8),
-                          req.len(frame.getWordCnt() - 1),
-                          StreamNode(slaves=[req, ackPropageteInfo.dataIn],
-                                     ).sync(_set.vld)
-                          ]
-            if indx != 0:
-                prop = SKIP
-            else:
-                prop = PROPAGATE
-
-            statements.append(ackPropageteInfo.dataIn.data(prop))
-
+        def propagateRequest(frame, indx):
+            inNode = StreamNode(slaves=[req, ackPropageteInfo.dataIn])
+            ack = inNode.ack()
             isLastFrame = indx == len(self._frames) - 1
-            if isLastFrame:
-                statements.append(_set.rd(ack))
-            else:
-                statements.append(_set.rd(0))
+            statements = [
+                req.addr(_set.data + frame.startBitAddr // 8),
+                req.len(frame.getWordCnt() - 1),
+                self.driveReqRem(req, frame.parts[-1].endOfPart - frame.startBitAddr),
+                ackPropageteInfo.dataIn.data(SKIP if  indx != 0 else PROPAGATE),
+                inNode.sync(_set.vld),
+                _set.rd(ack if isLastFrame else 0),
+            ]
 
             return statements, ack & _set.vld
 
-        StaticForEach(self, self._frames, propagateRequests)
+        StaticForEach(self, self._frames, propagateRequest)
 
         # connect write channel
         w(self.frameAssember.dataOut)
 
         # propagate ack
-        StreamNode(masters=[ack, ackPropageteInfo.dataOut],
-                   slaves=[self.writeAck],
-                   skipWhen={
-                             self.writeAck: ackPropageteInfo.dataOut.data._eq(PROPAGATE)
-                            }).sync()
+        StreamNode(
+            masters=[ack, ackPropageteInfo.dataOut],
+            slaves=[self.writeAck],
+            skipWhen={
+                self.writeAck: ackPropageteInfo.dataOut.data._eq(PROPAGATE)
+            }
+        ).sync()
 
         # connect fields to assembler
         for _, transTmpl in self._tmpl.walkFlatten():
             f = transTmpl.getFieldPath()
             intf = self.frameAssember.dataIn._fieldsToInterfaces[f]
             intf(self.dataIn._fieldsToInterfaces[f])
+
+        propagateClkRstn(self)
 
 
 def _example_StructWriter():

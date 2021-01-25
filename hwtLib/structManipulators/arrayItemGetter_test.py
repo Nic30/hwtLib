@@ -10,6 +10,7 @@ from hwtSimApi.constants import CLK_PERIOD
 
 
 class ArrayItemGetterTC(SingleUnitSimTestCase):
+
     @classmethod
     def getUnit(cls):
         u = cls.u = ArrayItemGetter()
@@ -45,11 +46,12 @@ class ArrayItemGetterTC(SingleUnitSimTestCase):
 
 
 class ArrayItemGetter2in1WordTC(SingleUnitSimTestCase):
+
     @classmethod
     def getUnit(cls):
         u = cls.u = ArrayItemGetter()
         u.ID = 3
-        u.ITEMS =  32
+        u.ITEMS = 32
         u.DATA_WIDTH = 64
         u.ITEM_WIDTH = 32
         return u

@@ -47,7 +47,7 @@ class ArrayItemGetter(Unit):
         with self._paramsShared():
             # interface for communication with datapump
             self.rDatapump = AxiRDatapumpIntf()._m()
-            self.rDatapump.MAX_LEN = 1
+            self.rDatapump.MAX_BYTES = self.DATA_WIDTH // 8
 
         if self.ITEMS_IN_DATA_WORD > 1:
             assert isPow2(self.ITEMS_IN_DATA_WORD)
@@ -67,7 +67,6 @@ class ArrayItemGetter(Unit):
 
         req = self.rDatapump.req
         req.id(self.ID)
-        req.len(ITEM_SIZE_IN_WORDS - 1)
         req.rem(0)
 
         if ITEMS_IN_DATA_WORD == 1:

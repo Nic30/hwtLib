@@ -6,9 +6,12 @@ import unittest
 from hwt.hdl.constants import Time
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.datapump.interconnect.wStrictOrder import WStrictOrderInterconnect
-from hwtLib.amba.datapump.r_test import mkReq
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from pyMathBitPrecise.bit_utils import mask
+
+
+def mkReq(addr, _len, rem=0, _id=0):
+    return (_id, addr, _len, rem)
 
 
 class WStrictOrderInterconnectTC(SingleUnitSimTestCase):

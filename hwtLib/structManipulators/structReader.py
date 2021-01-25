@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from math import ceil
+
 from hwt.code import StaticForEach, connect
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
@@ -8,10 +10,11 @@ from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
-from hwtLib.amba.datapump.intf import AxiRDatapumpIntf
+from hwt.synthesizer.unit import Unit
+from hwtLib.abstract.template_configured import TemplateConfigured
 from hwtLib.amba.axis_comp.frame_parser import AxiS_frameParser
+from hwtLib.amba.datapump.intf import AxiRDatapumpIntf, AddrSizeHs
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode
 
@@ -21,8 +24,6 @@ class StructReader(AxiS_frameParser):
     This unit downloads required structure fields over rDatapump
     interface from address specified by get interface
 
-    :ivar ~.MAX_DUMMY_WORDS: Param, specifies maximum dummy bus words between fields
-        if there is more of ignored space transaction will be split to
     :ivar ~.ID: Param, id for transactions on bus
     :ivar ~.READ_ACK: Param, if true ready on "get" will be set only
         when component is in idle (if false "get"
@@ -53,6 +54,7 @@ class StructReader(AxiS_frameParser):
 
     .. hwt-autodoc:: _example_StructReader
     """
+
     def __init__(self, structT, tmpl=None, frames=None):
         """
         :param structT: instance of HStruct which specifies data format to download
@@ -65,14 +67,7 @@ class StructReader(AxiS_frameParser):
         """
         Unit.__init__(self)
         assert isinstance(structT, HStruct)
-        self._structT = structT
-        if tmpl is not None:
-            assert frames is not None, "tmpl and frames can be used only together"
-        else:
-            assert frames is None, "tmpl and frames can be used only together"
-
-        self._tmpl = tmpl
-        self._frames = frames
+        TemplateConfigured.__init__(self, structT, tmpl=tmpl, frames=frames)
 
     def _config(self):
         self.ID = Param(0)
@@ -82,13 +77,18 @@ class StructReader(AxiS_frameParser):
         self.SHARED_READY = Param(False)
 
     def maxWordIndex(self):
-        return max(map(lambda f: f.endBitAddr - 1, self._frames)) // int(self.DATA_WIDTH)
+        return max(f.endBitAddr - 1 for f in self._frames) // self.DATA_WIDTH
+
+    def maxBytesInTransaction(self):
+        return ceil(max(
+                    [f.parts[-1].endOfPart - f.startBitAddr for f in self._frames]
+                    ) / 8)
 
     def parseTemplate(self):
         if self._tmpl is None:
             self._tmpl = TransTmpl(self._structT)
         if self._frames is None:
-            DW = int(self.DATA_WIDTH)
+            DW = self.DATA_WIDTH
             frames = FrameTmpl.framesFromTransTmpl(
                         self._tmpl,
                         DW,
@@ -110,7 +110,7 @@ class StructReader(AxiS_frameParser):
         with self._paramsShared():
             # interface for communication with datapump
             self.rDatapump = AxiRDatapumpIntf()._m()
-            self.rDatapump.MAX_LEN = self.maxWordIndex() + 1
+            self.rDatapump.MAX_BYTES = self.maxBytesInTransaction()
 
         with self._paramsShared(exclude=({"ID_WIDTH"}, set())):
             self.parser = AxiS_frameParser(self._structT,
@@ -121,36 +121,37 @@ class StructReader(AxiS_frameParser):
         if self.SHARED_READY:
             self.ready = Signal()
 
+    def driveReqRem(self, req: AddrSizeHs, MAX_BITS: int):
+        return req.rem(ceil((MAX_BITS % self.DATA_WIDTH) / 8))
+
     def _impl(self):
         propagateClkRstn(self)
         req = self.rDatapump.req
 
-        req.rem(0)
         if self.READ_ACK:
             get = self.get
         else:
             get = HsBuilder(self, self.get).buff().end
 
-        def f(frame, indx):
-            s = [req.addr(get.data + frame.startBitAddr // 8),
-                 req.len(frame.getWordCnt() - 1),
-                 req.vld(get.vld)
-                 ]
+        def propagateRequest(frame, indx):
             isLastFrame = indx == len(self._frames) - 1
-            if isLastFrame:
-                rd = req.rd
-            else:
-                rd = 0
-            s.append(get.rd(rd))
+            s = [
+                req.addr(get.data + frame.startBitAddr // 8),
+                req.len(frame.getWordCnt() - 1),
+                self.driveReqRem(req, frame.parts[-1].endOfPart - frame.startBitAddr),
+                req.vld(get.vld),
+                get.rd(req.rd if isLastFrame else 0)
+            ]
 
             ack = StreamNode(masters=[get], slaves=[self.rDatapump.req]).ack()
             return s, ack
 
-        StaticForEach(self, self._frames, f)
+        StaticForEach(self, self._frames, propagateRequest)
 
         r = self.rDatapump.r
         data_sig_to_exclude = []
-        req.id(self.ID)
+        if self.ID_WIDTH:
+            req.id(self.ID)
         if hasattr(r, "id"):
             data_sig_to_exclude.append(r.id)
         if hasattr(r, "strb"):

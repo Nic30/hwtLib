@@ -16,6 +16,8 @@ class RStrictOrderInterconnectTC(SingleUnitSimTestCase):
     def getUnit(cls):
         u = cls.u = RStrictOrderInterconnect()
 
+        u.ID_WIDTH = 4
+
         cls.DRIVERS_CNT = 3
         u.DRIVER_CNT = cls.DRIVERS_CNT
 

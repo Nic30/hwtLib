@@ -53,7 +53,7 @@ class CLinkedListReader(Unit):
             # interface which sending requests to download data
             # and interface which is collecting all data and only data with specified id are processed
             self.rDatapump = AxiRDatapumpIntf()._m()
-            self.rDatapump.MAX_LEN = self.BUFFER_CAPACITY // 2 - 1
+            self.rDatapump.MAX_BYTES = self.BUFFER_CAPACITY // 2 * self.DATA_WIDTH // 8
 
             self.dataOut = Handshaked()._m()
 

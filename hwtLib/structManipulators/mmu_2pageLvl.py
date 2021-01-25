@@ -61,7 +61,7 @@ class MMU_2pageLvl(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.rDatapump = AxiRDatapumpIntf()._m()
-            self.rDatapump.MAX_LEN = 1
+            self.rDatapump.MAX_BYTES = self.DATA_WIDTH // 8
 
         i = self.virtIn = Handshaked()
         i.DATA_WIDTH = self.VIRT_ADDR_WIDTH

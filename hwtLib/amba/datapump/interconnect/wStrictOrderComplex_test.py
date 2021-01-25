@@ -9,12 +9,12 @@ from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi3 import Axi3_addr
-from hwtLib.amba.axi4 import Axi4_w, Axi4_b
-from hwtLib.amba.datapump.r_test import mkReq
-from hwtLib.amba.datapump.w import Axi_wDatapump
-from hwtLib.amba.datapump.intf import AxiWDatapumpIntf
-from hwtLib.amba.datapump.interconnect.wStrictOrder import WStrictOrderInterconnect
+from hwtLib.amba.axi4 import Axi4_w, Axi4_b, Axi4_addr, Axi4
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
+from hwtLib.amba.datapump.interconnect.wStrictOrder import WStrictOrderInterconnect
+from hwtLib.amba.datapump.intf import AxiWDatapumpIntf
+from hwtLib.amba.datapump.test import Axi_datapumpTC
+from hwtLib.amba.datapump.w import Axi_wDatapump
 from pyMathBitPrecise.bit_utils import mask
 
 
@@ -26,29 +26,33 @@ class WStrictOrderInterconnecComplex(Unit):
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.dp = Axi_wDatapump(axiAddrCls=Axi3_addr)
+            self.dp = Axi_wDatapump(axiCls=Axi4)
             self.ic = WStrictOrderInterconnect()
+            self.ic.ID_WIDTH = 0
 
-            self.aw = Axi3_addr()._m()
+            self.aw = Axi4_addr()._m()
             self.w = Axi4_w()._m()
             self.b = Axi4_b()
             self.drivers = HObjList(AxiWDatapumpIntf()
                                     for _ in range(int(self.DRIVER_CNT)))
+            for d in self.drivers:
+                d.ID_WIDTH = self.ic.ID_WIDTH
 
     def _impl(self):
         propagateClkRstn(self)
         dp = self.dp
         ic = self.ic
 
-        self.aw(dp.a)
-        self.w(dp.w)
-        dp.b(self.b)
+        self.aw(dp.axi.aw)
+        self.w(dp.axi.w)
+        dp.axi.b(self.b)
 
         dp.driver(ic.wDatapump)
         ic.drivers(self.drivers)
 
 
 class WStrictOrderInterconnectComplexTC(SingleUnitSimTestCase):
+    LEN_MAX_VAL = 255
 
     @classmethod
     def getUnit(cls):
@@ -85,7 +89,7 @@ class WStrictOrderInterconnectComplexTC(SingleUnitSimTestCase):
                     end = True
 
                 if frame:
-                    req.data.append(mkReq(addr, len(frame) - 1))
+                    req.data.append(Axi_datapumpTC.mkReq(self, addr, len(frame) - 1))
                     wIn.data.extend([(d, _mask, i == len(frame) - 1)
                                      for i, d in enumerate(frame)])
                     addr += len(frame) * self.DATA_WIDTH // 8

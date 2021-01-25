@@ -20,17 +20,17 @@ from pyMathBitPrecise.bit_utils import mask
 
 stT = HEnum("st_t", ["waitOnInput", "waitOnDataTx", "waitOnAck"])
 
+# [TODO] better fit of items on bus
+# [TODO] fully pipeline
+# [TODO] use AxiVirtualDma
 
 @serializeParamsUniq
 class ArrayBuff_writer(Unit):
     """
+    Write data in to a circula buffer allocated as an array.
     Collect items and send them over wDatapump
     when buffer is full or on timeout
-    Cyclically writes items into array over wDatapump
     Maximum overlap of transactions is 1
-
-    [TODO] better fit of items on bus
-    [TODO] fully pipeline
 
     items -> buff -> internal logic -> axi datapump
 
@@ -40,8 +40,8 @@ class ArrayBuff_writer(Unit):
     def _config(self):
         AddrSizeHs._config(self)
         self.ID = Param(3)
-        self.MAX_LEN = 16
-        self.SIZE_WIDTH = Param(16)
+        self.MAX_LEN = 15
+        self.ITEM_WIDTH = Param(16)
         self.BUFF_DEPTH = Param(16)
         self.TIMEOUT = Param(1024)
         self.ITEMS = Param(4096 // 8)
@@ -50,7 +50,7 @@ class ArrayBuff_writer(Unit):
         addClkRstn(self)
 
         self.items = Handshaked()
-        self.items.DATA_WIDTH = self.SIZE_WIDTH
+        self.items.DATA_WIDTH = self.ITEM_WIDTH
 
         with self._paramsShared():
             self.wDatapump = AxiWDatapumpIntf()._m()
@@ -63,7 +63,7 @@ class ArrayBuff_writer(Unit):
         self.buff_remain = VectSignal(16)._m()
 
         b = HandshakedFifo(Handshaked)
-        b.DATA_WIDTH = self.SIZE_WIDTH
+        b.DATA_WIDTH = self.ITEM_WIDTH
         b.EXPORT_SIZE = True
         b.DEPTH = self.BUFF_DEPTH
         self.buff = b
@@ -95,7 +95,7 @@ class ArrayBuff_writer(Unit):
         baseAddr = self._reg("baseAddrReg", Bits(self.ADDR_WIDTH - ALIGN_BITS))
         If(self.baseAddr.dout.vld,
            baseAddr(self.baseAddr.dout.data[:ALIGN_BITS])
-           )
+        )
         self.baseAddr.din(Concat(baseAddr, vec(0, ALIGN_BITS)))
 
         # offset in buffer and its complement
@@ -195,9 +195,10 @@ class ArrayBuff_writer(Unit):
 
         connect(buff.dataOut.data, w.data, fit=True)
 
-        StreamNode(masters=[buff.dataOut],
-                   slaves=[w]
-                   ).sync(st._eq(stT.waitOnDataTx))
+        StreamNode(
+            masters=[buff.dataOut],
+            slaves=[w]
+        ).sync(st._eq(stT.waitOnDataTx))
         w.strb(mask(w.strb._dtype.bit_length()))
         w.last(w_last)
 
