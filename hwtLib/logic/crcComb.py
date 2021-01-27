@@ -48,7 +48,7 @@ class CrcComb(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(7 + 4)
         self.IN_IS_BIGENDIAN = Param(False)
-        self.PIPELINE_AGG = Param(32)
+        self.PIPELINE_AGG = Param(2)
         self.setConfig(CRC_5_USB)
 
     def setConfig(self, crcConfigCls):

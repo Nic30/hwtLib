@@ -95,7 +95,7 @@ class CrcCombTC(SimTestCase):
         inp = b"a"
 
         u.dataIn._ag.data.append(stoi(inp))
-        self.runSim(20 * Time.ns)
+        self.runSim(40 * Time.ns)
 
         crc = 1
         out = int(u.dataOut._ag.data[-1])
@@ -107,10 +107,11 @@ class CrcCombTC(SimTestCase):
         inp = b"a"
 
         u.dataIn._ag.data.append(stoi(inp))
-        self.runSim(20 * Time.ns)
+        self.runSim(40 * Time.ns)
 
         crc = 0x20
-        self.assertValSequenceEqual(u.dataOut._ag.data, [crc])
+        out = int(u.dataOut._ag.data[-1])
+        self.assertEqual(out, crc, "0x{:x} 0x{:x}".format(crc, out))
 
     def test_crc32_py(self):
         self.assertEqual(crc32(b"aa"), crc32(b"a", crc32(b"a")))
@@ -188,7 +189,7 @@ class CrcCombTC(SimTestCase):
             u.dataIn._ag.data.append(
                stoi(inp),
             )
-            self.runSim(20 * Time.ns, name=os.path.join(self.DEFAULT_LOG_DIR,
+            self.runSim(100 * Time.ns, name=os.path.join(self.DEFAULT_LOG_DIR,
                                                         f"test_crc32_{i:d}.vcd"))
             out = int(u.dataOut._ag.data[-1])
             ref = crc32(inp) & mask(32)
@@ -198,7 +199,7 @@ class CrcCombTC(SimTestCase):
         inp = b"abcdefgh"
         u = self.setUpCrc(CRC_32, dataWidth=64)
         u.dataIn._ag.data.append(stoi(inp))
-        self.runSim(20 * Time.ns)
+        self.runSim(100 * Time.ns)
         out = int(u.dataOut._ag.data[-1])
         ref = crc32(inp) & 0xffffffff
         self.assertEqual(out, ref, f"0x{out:08X} 0x{ref:08X}")
@@ -209,12 +210,12 @@ class CrcCombTC(SimTestCase):
             u = self.u
 
             u.dataIn._ag.data.append(stoi(inp))
-            self.runSim(20 * Time.ns, name=os.path.join(self.DEFAULT_LOG_DIR,
+            self.runSim(100 * Time.ns, name=os.path.join(self.DEFAULT_LOG_DIR,
                                                         f"test_crc16_{i:d}.vcd"))
 
             # crc = 0x449C
             ref = crc_hqx(inp, CRC_16_CCITT.INIT)
-            d = u.dataOut._ag.data[0]
+            d = u.dataOut._ag.data[-1]
             self.assertValEqual(d, ref, (inp, "0x{:x} 0x{:x}".format(int(d), ref)))
 
     def test_crc5_usb(self):
@@ -241,9 +242,9 @@ class CrcCombTC(SimTestCase):
             u.dataIn._ag.data.append(inp)
             trace_file = os.path.join(self.DEFAULT_LOG_DIR,
                                       f"test_crc5_usb_{i:d}.vcd")
-            self.runSim(20 * Time.ns, name=trace_file)
+            self.runSim(100 * Time.ns, name=trace_file)
 
-            d = u.dataOut._ag.data[0]
+            d = u.dataOut._ag.data[-1]
             _d = int(d)
             self.assertValEqual(d, ref, (i, f"{_d:05b} {ref:05b}"))
 
