@@ -25,6 +25,7 @@ from hwtLib.amba.axi_comp.interconnect.matrixCrossbar_test import \
 from hwtLib.amba.axi_comp.interconnect.matrixR_test import AxiInterconnectMatrixR_TCs
 from hwtLib.amba.axi_comp.interconnect.matrixW_test import AxiInterconnectMatrixW_TCs
 from hwtLib.amba.axi_comp.lsu.read_aggregator_test import AxiReadAggregator_TCs
+from hwtLib.amba.axi_comp.lsu.store_queue_write_propagating_test import AxiStoreQueueWritePropagating_TCs
 from hwtLib.amba.axi_comp.lsu.write_aggregator_test import AxiWriteAggregator_TCs
 from hwtLib.amba.axi_comp.oooOp.examples.counterArray_test import OooOpExampleCounterArray_TCs
 from hwtLib.amba.axi_comp.oooOp.examples.counterHashTable_test import OooOpExampleCounterHashTable_TC
@@ -443,6 +444,7 @@ suite = testSuiteFromTCs(
 
     *AxiWriteAggregator_TCs,
     *AxiReadAggregator_TCs,
+    *AxiStoreQueueWritePropagating_TCs,
 
     Axi_ag_TC,
     Axi4_streamToMemTC,
