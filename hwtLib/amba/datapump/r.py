@@ -135,7 +135,7 @@ class Axi_rDatapump(AxiDatapumpBase):
             ALIGNAS = self.ALIGNAS
             possibleBytesInLastWord = set()
             assert self.DATA_WIDTH % ALIGNAS == 0, ("Required to resolve number of bytes in last word", self.DATA_WIDTH, ALIGNAS)
-            for CHUNK_CNT in range(1, min(self.MAX_CHUNKS, max(3, self.DATA_WIDTH / CHUNK * 3)) + 1):
+            for CHUNK_CNT in range(1, min(self.MAX_CHUNKS, max(3, self.DATA_WIDTH // CHUNK * 3)) + 1):
                 for o in range(0, STRB_W, ALIGNAS // 8):
                     bytesInLastWord = (o + CHUNK * CHUNK_CNT) % (self.DATA_WIDTH // 8)
                     if bytesInLastWord in possibleBytesInLastWord:
