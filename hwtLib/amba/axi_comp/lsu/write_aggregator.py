@@ -62,8 +62,10 @@ class AxiWriteAggregator(Unit):
         self.ooo_fifo = of = FifoOutOfOrderReadFiltered()
         of.ITEMS = w_in_reg.ITEMS = 2 ** self.ID_WIDTH
         of.KEY_WIDTH = self.CACHE_LINE_ADDR_WIDTH
+        self.data_ram = self._declr_data_ram()
 
-        self.data_ram = dr = RamCumulativeMask()
+    def _declr_data_ram(self):
+        dr = RamCumulativeMask()
         dr.MAX_BLOCK_DATA_WIDTH = self.MAX_BLOCK_DATA_WIDTH
         # data bits and mask bits extended so the total DW % 8 == 0
 
@@ -71,6 +73,7 @@ class AxiWriteAggregator(Unit):
         dr.ADDR_WIDTH = self.DATA_RAM_INDEX_WIDTH
         dr.PORT_CNT = (WRITE, READ)
         dr.HAS_BE = True
+        return dr
 
     def data_insert(self, items: BramPort_withReadMask_withoutClk):
         """
