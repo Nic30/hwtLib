@@ -1,6 +1,6 @@
 from hwt.synthesizer.unit import Unit
-from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.amba.axis import AxiStream
+from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
 class AxiSCompBase(HandshakedCompBase):
