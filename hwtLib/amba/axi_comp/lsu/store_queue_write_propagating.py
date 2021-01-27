@@ -6,16 +6,16 @@ from hwt.code_utils import rename_signal
 from hwt.hdl.constants import READ
 from hwt.interfaces.std import Signal, VectSignal, Handshaked
 from hwt.serializer.mode import serializeParamsUniq
+from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi4 import Axi4_r
 from hwtLib.amba.axi_comp.lsu.write_aggregator import AxiWriteAggregator
 from hwtLib.amba.constants import RESP_OKAY, RESP_EXOKAY
 from hwtLib.common_nonstd_interfaces.addr_hs import AddrHs
+from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.oneHotToBin import oneHotToBin
-from hwt.synthesizer.hObjList import HObjList
-from hwtLib.handshaked.builder import HsBuilder
 
 
 class AxiWriteAggregatorWriteTmpIntf(Handshaked):
@@ -45,7 +45,8 @@ class AxiStoreQueueWritePropagating(AxiWriteAggregator):
     An extension of :class:`hwtLib.amba.axi_comp.lsu.write_aggregator.AxiWriteAggregator` with an IO
     for a communication with an :class:`hwtLib.amba.axi_comp.lsu.load_queue.AxiLoadQueue`
     Does the same thing and allows :class:`hwtLib.amba.axi_comp.lsu.load_queue.AxiLoadQueue` to speculatively read the data and listen
-    for write transactions.
+    for write transactions. The component allows for write to bypass read. Which makes it suitable for cumulative operations,
+    but more complicated for a generic use.
 
     :ivar speculative_read_addr: port used for load buffer to speculatively read the data from this component.
         If data is not present the speculative_read_data returns RESP_EXOKAY error.
