@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import deque
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 from hwt.hdl.typeShortcuts import hBit, vec
 from hwt.interfaces.std import VectSignal
@@ -14,6 +14,8 @@ from hwtLib.logic.crcPoly import CRC_5_USB
 from hwtLib.logic.crcUtils import parsePolyStr
 from pyMathBitPrecise.bit_utils import get_bit, bit_list_reversed_bits_in_bytes, \
     bit_list_reversed_endianity
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.hdl.types.bitsVal import BitsVal
 
 
 # http://www.sunshine2k.de/coding/javascript/crc/crc_js.html
@@ -126,8 +128,8 @@ class CrcComb(Unit):
         return crc_mask
 
     @classmethod
-    def applyCrcXorMatrix(cls, crcMatrix: List,
-                          inBits: List, stateBits: List,
+    def applyCrcXorMatrix(cls, crcMatrix: List[List[List[int]]],
+                          inBits: List[RtlSignal], stateBits: List[Union[RtlSignal, BitsVal]],
                           refin: bool) -> List:
         if refin:
             inBits = bit_list_reversed_bits_in_bytes(inBits, extend=False)
