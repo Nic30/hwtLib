@@ -42,10 +42,11 @@ class AxiWriteAggregatorWriteTmpIntf(Handshaked):
 @serializeParamsUniq
 class AxiStoreQueueWritePropagating(AxiWriteAggregator):
     """
-    An extension of :class:`hwtLib.amba.axi_comp.lsu.write_aggregator.AxiWriteAggregator` with an IO
-    for a communication with an :class:`hwtLib.amba.axi_comp.lsu.load_queue.AxiLoadQueue`
-    Does the same thing and allows :class:`hwtLib.amba.axi_comp.lsu.load_queue.AxiLoadQueue` to speculatively read the data and listen
-    for write transactions. The component allows for write to bypass read. Which makes it suitable for cumulative operations,
+    An extension of :class:`hwtLib.amba.axi_comp.lsu.write_aggregator.AxiWriteAggregator`
+    with an IO for a communication with an :class:`hwtLib.amba.axi_comp.lsu.load_queue.AxiLoadQueue`
+    Does the same thing and allows :class:`hwtLib.amba.axi_comp.lsu.load_queue_write_propagating.AxiLoadQueueWritePropagating`
+    to speculatively read the data and listen for write transactions.
+    The component allows for write to bypass read, which makes it suitable for cumulative operations,
     but more complicated for a generic use.
 
     :ivar speculative_read_addr: port used for load buffer to speculatively read the data from this component.
