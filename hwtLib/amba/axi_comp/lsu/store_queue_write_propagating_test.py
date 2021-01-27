@@ -127,6 +127,9 @@ class AxiStoreQueueWritePropagating_1word_per_cachelineTC(AxiWriteAggregator_1wo
     #    # is latest value of cacheline in the time before latency of speculative read
     #    pass
 
+AxiStoreQueueWritePropagating_TCs = [
+    AxiStoreQueueWritePropagating_1word_per_cachelineTC,
+]
 
 if __name__ == "__main__":
     import unittest
