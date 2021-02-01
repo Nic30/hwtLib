@@ -14,14 +14,21 @@ class AddrDataHs(HandshakeSync):
     def _config(self):
         self.ADDR_WIDTH = Param(8)
         self.DATA_WIDTH = Param(8)
+        self.HAS_MASK = Param(False)
 
     def _declr(self):
         super(AddrDataHs, self)._declr()
         self.addr = VectSignal(self.ADDR_WIDTH)
         self.data = VectSignal(self.DATA_WIDTH)
+        if self.HAS_MASK:
+            assert self.DATA_WIDTH % 8 == 0, self.DATA_WIDTH
+            self.mask = VectSignal(self.DATA_WIDTH // 8)
 
     def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = AddrDataHsAgent(sim, self)
+        if self.HAS_MASK:
+            self._ag = AddrDataHsAgent(sim, self)
+        else:
+            self._ag = AddrDataMaskHsAgent(sim, self)
 
 
 class AddrDataVldHs(AddrDataHs):
