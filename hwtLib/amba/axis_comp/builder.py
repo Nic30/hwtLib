@@ -8,6 +8,7 @@ from hwtLib.amba.axis_comp.fifoDrop import AxiSFifoDrop
 from hwtLib.amba.axis_comp.fifo_async import AxiSFifoAsync
 from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
 from hwtLib.amba.axis_comp.frame_parser import AxiS_frameParser
+from hwtLib.amba.axis_comp.joinPrioritized import AxiSJoinPrioritized
 from hwtLib.amba.axis_comp.reg import AxiSReg
 from hwtLib.amba.axis_comp.resizer import AxiS_resizer
 from hwtLib.amba.axis_comp.splitCopy import AxiSSplitCopy
@@ -26,6 +27,7 @@ class AxiSBuilder(AbstractStreamBuilder):
     SplitCopyCls = AxiSSplitCopy
     SplitSelectCls = AxiSSpliSelect
     ResizerCls = AxiS_resizer
+    JoinPrioritizedCls = AxiSJoinPrioritized
 
     def resize(self, newDataWidth):
         """
