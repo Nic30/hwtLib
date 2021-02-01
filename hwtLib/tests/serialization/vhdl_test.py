@@ -7,7 +7,7 @@ from hwt.interfaces.std import VectSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.peripheral.spi.master import SpiMaster
-from hwtLib.tests.sertialization.assignToCastAndSlices import AssignToASlice0, \
+from hwtLib.tests.serialization.assignToCastAndSlices import AssignToASlice0, \
     AssignToASlice1, AssignToASlice2, AssignToASliceOfReg0, \
     AssignToASliceOfReg1a, AssignToASliceOfReg1b, AssignToASliceOfReg2a, AssignToASliceOfReg2b
 
