@@ -19,6 +19,9 @@ class HandshakedReg(HandshakedCompBase):
     Register for Handshaked interfaces
 
     :note: latency and delay can be specified as well as interface class
+    :note: if LATENCY == (1, 2) the ready chain is broken.
+        That there is an extra register for potential data overflow and
+        no combinational path between input ready, valid and output ready/valid exists.
 
     .. hwt-autodoc:: _example_HandshakedReg
     """
@@ -167,6 +170,7 @@ class HandshakedReg(HandshakedCompBase):
         In = self.dataIn
 
         if LATENCY == (1, 2):
+            # ready chain break
             if DELAY != 0:
                 raise NotImplementedError()
 
