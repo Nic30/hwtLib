@@ -67,7 +67,7 @@ class PseudoLru():
         return 2 ** log2ceil(width + 1)
 
     def __init__(self, lru_reg: RtlSignal):
-        assert isPow2(lru_reg._dtype.bit_length() - 1), lru_reg._dtype.bit_length()
+        assert isPow2(lru_reg._dtype.bit_length() - 1) or lru_reg._dtype.bit_length() == 1, lru_reg._dtype.bit_length()
         self.lru_regs = lru_reg
 
     def node_selected_mask(self, lru_tree, node_i):
