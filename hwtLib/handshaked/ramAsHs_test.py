@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import NOP
+from hwt.hdl.constants import NOP, READ, WRITE
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwtLib.handshaked.ramAsHs import RamAsHs, RamHsR
 from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
+from hwtLib.handshaked.ramAsHs import RamAsHs, RamHsR
 from hwtLib.mem.ram import RamSingleClock
 from hwtSimApi.constants import CLK_PERIOD
 from hwtSimApi.triggers import Timer
@@ -17,17 +17,66 @@ class RamWithHs(RamAsHs):
         addClkRstn(self)
 
         with self._paramsShared():
-            self.r = RamHsR()
-            self.w = AddrDataHs()
+            if self.HAS_R:
+                self.r = RamHsR()
+            if self.HAS_W:
+                self.w = AddrDataHs()
 
             self.conv = RamAsHs()
-            self.ram = RamSingleClock()
+            r = self.ram = RamSingleClock()
+            if not self.HAS_W:
+                assert self.INIT_DATA is not None
+                assert self.HAS_R
+                r.PORT_CNT = (READ,)
+            elif not self.HAS_R:
+                assert self.HAS_W
+                r.PORT_CNT = (WRITE,)
 
     def _impl(self):
         propagateClkRstn(self)
-        self.conv.r(self.r)
-        self.conv.w(self.w)
+        if self.HAS_R:
+            self.conv.r(self.r)
+        if self.HAS_W:
+            self.conv.w(self.w)
         self.ram.port[0](self.conv.ram)
+
+
+class RamAsHs_R_only_TC(SingleUnitSimTestCase):
+
+    @classmethod
+    def getUnit(cls):
+        u = cls.u = RamWithHs()
+        u.DATA_WIDTH = 16
+        u.ADDR_WIDTH = 8
+        u.HAS_W = False
+        ITEMS = cls.ITEMS = 2 ** u.ADDR_WIDTH
+        cls.MAGIC = 99
+        u.INIT_DATA = tuple(cls.MAGIC + (i % ITEMS) for i in range(ITEMS))
+        return cls.u
+
+    def test_read(self, N=100, randomized=True,):
+        u = self.u
+        t = (10 + N) * CLK_PERIOD
+        if randomized:
+            self.randomize(u.r.addr)
+            self.randomize(u.r.data)
+            t *= 3
+
+        ref = []
+        _N = N
+        ITEMS = self.ITEMS
+        while True:
+            if _N > ITEMS:
+                _N -= ITEMS
+                ref.extend(u.INIT_DATA)
+            else:
+                ref.extend(u.INIT_DATA[:_N])
+                break
+
+        u.r.addr._ag.data.extend((i % ITEMS) for i in range(N))
+        self.runSim(t)
+
+        self.assertValSequenceEqual(u.r.data._ag.data, ref)
 
 
 class RamAsHs_TC(SingleUnitSimTestCase):
@@ -49,8 +98,8 @@ class RamAsHs_TC(SingleUnitSimTestCase):
 
         u.w._ag.data.extend([(25 + i, MAGIC + i)
                              for i in range(N)])
-        u.r.addr._ag.data.extend([NOP for _ in range(N+2)] + [25 + i for i in range(N)])
-        self.runSim((10 + 2*N) * CLK_PERIOD)
+        u.r.addr._ag.data.extend([NOP for _ in range(N + 2)] + [25 + i for i in range(N)])
+        self.runSim((10 + 2 * N) * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.r.data._ag.data, [ MAGIC + i for i in range(N)])
 
@@ -59,25 +108,29 @@ class RamAsHs_TC(SingleUnitSimTestCase):
         MAGIC = 87
         self.randomize(u.w)
         self.randomize(u.r)
-        
+
         u.w._ag.data.extend([(25 + i, MAGIC + i)
                              for i in range(N)])
-        
+
         def read():
             while u.w._ag.data:
                 yield Timer(3 * CLK_PERIOD)
             yield Timer(5 * CLK_PERIOD)
             u.r.addr._ag.data.extend([25 + i for i in range(N)])
+
         self.procs.append(read())
         self.runSim((8 + N) * 3 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.r.data._ag.data, [ MAGIC + i for i in range(N)])
 
 
+RamAsHs_TCs = [RamAsHs_TC, RamAsHs_R_only_TC]
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(RamAsHs_TC('test_writeAndRead_randomized'))
-    suite.addTest(unittest.makeSuite(RamAsHs_TC))
+    # suite.addTest(RamAsHs_TC('test_writeAndRead_randomized'))
+    for tc in RamAsHs_TCs:
+        suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
