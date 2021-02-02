@@ -78,6 +78,7 @@ class AxiCacheLruArray(CacheAddrTypeConfig):
         # The cacheline returned as a victim is also marked as used just now
         vr = self.victim_req = AddrHs()
         vr.ADDR_WIDTH = self.INDEX_W
+        vr.ID_WIDTH = 0
         vd = self.victim_data = Handshaked()._m()
         vd.DATA_WIDTH = log2ceil(self.WAY_CNT - 1)
 
