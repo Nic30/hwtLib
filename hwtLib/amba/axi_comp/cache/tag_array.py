@@ -90,7 +90,8 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
     def _config(self):
         self.PORT_CNT = Param(2)
         self.UPDATE_PORT_CNT = Param(1)
-        AxiCacheTagArrayLookupResIntf._config(self)
+        self.ID_WIDTH = Param(4)
+        AxiCacheTagArrayUpdateIntf._config(self)
         CacheAddrTypeConfig._config(self)
         self.LOOKUP_LATENCY = 1
 
@@ -204,11 +205,11 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
             (
                 t.valid &
                 t.tag._eq(tag) &
-                (~just_updated | ~update_tmp.way_en[i])
+                (~just_updated | (update_tmp.vld & ~update_tmp.way_en[i]))
             ) | (
                 # or was updated to the matching tag
-                update_tmp.way_en[i] &
                 just_updated &
+                update_tmp.way_en[i] &
                 ~update_tmp.delete &
                 pa(lookup_tmp.addr)[0]._eq(pa(update_tmp.addr)[0])
             )
@@ -227,9 +228,11 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
         )
         lookup_tmp.vld(lookup.vld | (lookup_tmp.vld & ~lookupRes.rd))
 
-        tag_mem_port_r.addr(lookupRes.rd._ternary(self.parse_addr(lookup.addr)[1],
-                                                  self.parse_addr(lookup_tmp.addr)[1]))
-        tag_mem_port_r.en(lookup.vld | ~lookupRes.rd)
+        tag_mem_port_r.addr((lookup_tmp.vld & ~lookupRes.rd)._ternary(
+            self.parse_addr(lookup_tmp.addr)[1],
+            self.parse_addr(lookup.addr)[1],
+        ))
+        tag_mem_port_r.en(lookup.vld & lookup.rd)
 
         if lookupRes.ID_WIDTH:
             lookupRes.id(lookup_tmp.id)
