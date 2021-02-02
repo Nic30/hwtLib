@@ -61,4 +61,7 @@ class CacheAddrTypeConfig(Unit):
         if isinstance(offset, int):
             offset = Bits(self.OFFSET_W).from_py(offset)
 
+        if isinstance(index, int):
+            index = Bits(self.INDEX_W).from_py(index)
+
         return Concat(tag, index, offset)
