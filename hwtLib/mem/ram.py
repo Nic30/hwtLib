@@ -112,17 +112,23 @@ class RamSingleClock(Unit):
     @staticmethod
     def connect_port(clk: RtlSignal, port: BramPort_withoutClk, mem: RtlSignal):
         if port.HAS_R and port.HAS_W:
-            If(clk._onRisingEdge() & port.en,
-               *RamSingleClock.mem_write(mem, port),
-               port.dout(mem[port.addr])
+            If(clk._onRisingEdge(),
+                If(port.en,
+                    *RamSingleClock.mem_write(mem, port),
+                    port.dout(mem[port.addr])
+                )
             )
         elif port.HAS_R:
-            If(clk._onRisingEdge() & port.en,
-               port.dout(mem[port.addr])
+            If(clk._onRisingEdge(),
+                If(port.en,
+                    port.dout(mem[port.addr])
+                )
             )
         elif port.HAS_W:
-            If(clk._onRisingEdge() & port.en,
-                *RamSingleClock.mem_write(mem, port),
+            If(clk._onRisingEdge(),
+                If(port.en,
+                   *RamSingleClock.mem_write(mem, port),
+                )
             )
         else:
             raise AssertionError("Bram port has to have at least write or read part")
