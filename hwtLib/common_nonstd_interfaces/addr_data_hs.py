@@ -26,9 +26,9 @@ class AddrDataHs(HandshakeSync):
 
     def _initSimAgent(self, sim: HdlSimulator):
         if self.HAS_MASK:
-            self._ag = AddrDataHsAgent(sim, self)
-        else:
             self._ag = AddrDataMaskHsAgent(sim, self)
+        else:
+            self._ag = AddrDataHsAgent(sim, self)
 
 
 class AddrDataVldHs(AddrDataHs):
