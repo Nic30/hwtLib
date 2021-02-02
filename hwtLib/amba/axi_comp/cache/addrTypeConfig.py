@@ -1,11 +1,12 @@
 from typing import Tuple
 
+from hwt.code import Concat
+from hwt.hdl.types.bits import Bits
 from hwt.math import log2ceil
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from hwt.code import Concat
-from hwt.hdl.types.bits import Bits
+from pyMathBitPrecise.bit_utils import mask
 
 
 class CacheAddrTypeConfig(Unit):
@@ -40,6 +41,12 @@ class CacheAddrTypeConfig(Unit):
         self.OFFSET_W = log2ceil(self.CACHE_LINE_SIZE - 1)
         self.INDEX_W = log2ceil(self.CACHE_LINE_CNT // self.WAY_CNT - 1)
         self.TAG_W = self.ADDR_WIDTH - self.INDEX_W - self.OFFSET_W
+
+    def parse_addr_int(self, addr: int) -> Tuple[int, int, int]:
+        tag = addr >> (self.INDEX_W + self.OFFSET_W)
+        index = (addr >> self.OFFSET_W) & mask(self.INDEX_W)
+        offset = addr & mask(self.OFFSET_W)
+        return tag, index, offset
 
     def parse_addr(self, addr) -> Tuple[RtlSignal, RtlSignal, RtlSignal]:
         tag = addr[:(self.INDEX_W + self.OFFSET_W)]
