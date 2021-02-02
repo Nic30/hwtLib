@@ -144,7 +144,7 @@ class RamAsHs(Unit):
             if self.HAS_W:
                 # read/write
                 w = self.w
-                if self.HAS_MASK:
+                if self.HAS_BE:
                     ram.be(w.mask)
                 If(rEn & r.addr.vld,
                    ram.we(0),
@@ -171,9 +171,8 @@ class RamAsHs(Unit):
             # write only
             w = self.w
             w.rd(1)
-            if self.HAS_MASK:
-                ram.be(w.mask)
-            ram.we(w.vld)
+            if self.HAS_BE:
+                ram.we(w.mask)
             ram.addr(w.addr)
             ram.din(w.data)
             ram.en(w.vld)
