@@ -94,6 +94,7 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
         AxiCacheTagArrayUpdateIntf._config(self)
         CacheAddrTypeConfig._config(self)
         self.LOOKUP_LATENCY = 1
+        self.MAX_BLOCK_DATA_WIDTH = Param(None)
 
     def define_tag_record_t(self):
         tag_record_t = [
@@ -133,6 +134,7 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
         tag_mem = self.tag_mem = RamSingleClock()
         tag_mem.ADDR_WIDTH = log2ceil(self.CACHE_LINE_CNT // self.WAY_CNT - 1)
         tag_mem.DATA_WIDTH = self.tag_record_t.bit_length() * self.WAY_CNT
+        tag_mem.MAX_BLOCK_DATA_WIDTH = self.MAX_BLOCK_DATA_WIDTH
         tag_mem.PORT_CNT = (
             *(WRITE for _ in range(self.UPDATE_PORT_CNT)),
             *(READ for _ in range(self.PORT_CNT)),
@@ -221,18 +223,18 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
         # data will be lost in next clock cycle, if the consumer of lookupRes
         # can not consume the data just know, we need to perform lookup in tag_array
         # once again
-        lookup.rd(lookupRes.rd | ~lookup_tmp.vld)
-        If(lookupRes.rd | ~lookup_tmp.vld,
+        lookup.rd(~lookup_tmp.vld | lookupRes.rd)
+        If(lookup.rd,
             lookup_tmp.id(lookup.id) if lookup.ID_WIDTH else [],
             lookup_tmp.addr(lookup.addr),
         )
         lookup_tmp.vld(lookup.vld | (lookup_tmp.vld & ~lookupRes.rd))
 
         tag_mem_port_r.addr((lookup_tmp.vld & ~lookupRes.rd)._ternary(
-            self.parse_addr(lookup_tmp.addr)[1],
-            self.parse_addr(lookup.addr)[1],
+            self.parse_addr(lookup_tmp.addr)[1], # lookup previous address and look for a change
+            self.parse_addr(lookup.addr)[1], # lookup a new address
         ))
-        tag_mem_port_r.en(lookup.vld & lookup.rd)
+        tag_mem_port_r.en(lookup.vld | (lookup_tmp.vld & ~lookupRes.rd))
 
         if lookupRes.ID_WIDTH:
             lookupRes.id(lookup_tmp.id)
