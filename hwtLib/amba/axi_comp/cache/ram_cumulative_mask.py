@@ -166,7 +166,7 @@ class RamCumulativeMask(RamSingleClock):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
-    # from hwtLib.mem.ram import XILINX_VIVADO_MAX_DATA_WIDTH
+    # from hwtLib.xilinx.constants import XILINX_VIVADO_MAX_DATA_WIDTH
 
     u = RamCumulativeMask()
     # u.ADDR_WIDTH = 5
