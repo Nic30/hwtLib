@@ -254,6 +254,50 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SingleUnitSimTestCase):
     def test_write_to_preallocated_r(self, N_PER_WAY=50, MAGIC=99):
         self._test_write_to(N_PER_WAY=N_PER_WAY, MAGIC=MAGIC, preallocate=True, randomized=True)
 
+    def test_read_write_to_different_banks(self, N_PER_WAY=5, MAGIC=99, randomized=False):
+        u = self.u
+        self.clean_tags()
+        self.clean_data()
+
+        WAY_CACHELINES = self.WAY_CACHELINES
+        ID_MAX = 2 ** u.ID_WIDTH
+        aw = u.s.aw._ag
+        expected = {}
+        b_expected = []
+        M = mask(u.CACHE_LINE_SIZE)
+        expected_r = []
+        for w in range(u.WAY_CNT):
+            for i in range(N_PER_WAY):
+                i = i % WAY_CACHELINES
+                addr = (i + w * WAY_CACHELINES) * self.ADDR_STEP
+                read_d = w * MAGIC + i
+                write_d = (u.WAY_CNT + w) * MAGIC + i
+                self.cacheline_insert(addr, w, read_d)
+
+                _id = i % ID_MAX
+                req = aw.create_addr_req(addr=addr, _len=0, _id=_id)
+
+                u.s.ar._ag.data.append(req)
+                expected_r.append((_id, read_d, RESP_OKAY, 1))
+
+                expected[addr] = write_d
+                aw.data.append(req)
+                u.s.w._ag.data.append((write_d, M, 1))
+                b_expected.append((_id, RESP_OKAY))
+
+        t = (u.WAY_CNT * N_PER_WAY + 10) * CLK_PERIOD
+        if randomized:
+            t *= 3
+            self.randomize_all()
+
+        self.runSim(t)
+        for x in [u.s.aw, u.m.ar, u.m.aw, u.m.w]:
+            self.assertEmpty(x._ag.data, x)
+
+        self.assertDictEqual(self.get_cachelines(), expected)
+        self.assertValSequenceEqual(u.s.b._ag.data, b_expected)
+        self.assertValSequenceEqual(u.s.r._ag.data, expected_r)
+
     # write victim flush
 
 
@@ -262,12 +306,11 @@ AxiCaheWriteAllocWawOnlyWritePropagatingTCs = [
 
 ]
 
-
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    #suite.addTest(AxiCaheWriteAllocWawOnlyWritePropagatingTC('test_write_to_empty_r'))
+    #suite.addTest(AxiCaheWriteAllocWawOnlyWritePropagatingTC('test_write_to_preallocated'))
     suite.addTest(unittest.makeSuite(AxiCaheWriteAllocWawOnlyWritePropagatingTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -47,8 +47,9 @@ class HsStructIntf(HandshakeSync):
 
 class data_trans_t():
     read = 0
-    write = 1
-    write_and_flush = 2
+    read_and_write = 1
+    write = 2
+    write_and_flush = 3
 
 
 # https://chipress.co/category/job-roles-titles/page/16/
@@ -347,7 +348,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         for i, st in enumerate(victim_load_status):
             st.T = victim_load_st
             if i == 0:
-                st.LATENCY = (1, 2) # to break a ready chain
+                st.LATENCY = (1, 2)  # to break a ready chain
         self.victim_load_status = victim_load_status
 
         st1_in = victim_load_status[0].dataIn.data
@@ -358,12 +359,12 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
             [d_arr_r.addr, victim_load_status[0].dataIn],
             extraConds={
                 victim_way: need_to_flush,
-                data_arr_read_req:~st0.valid,
-                d_arr_r.addr: need_to_flush | ~st0.valid,
+                data_arr_read_req: ~need_to_flush,
+                d_arr_r.addr: need_to_flush | data_arr_read_req.vld,
             },
             skipWhen={
                 victim_way:~need_to_flush,
-                data_arr_read_req: st0.valid,
+                data_arr_read_req: need_to_flush | (st0.valid & ~data_arr_read_req.vld),
                 d_arr_r.addr:~need_to_flush & ~data_arr_read_req.vld,
             }
         )
@@ -377,6 +378,8 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         If(st0.valid,
             If(need_to_flush,
                 st1_in.data_array_op(data_trans_t.write_and_flush)
+            ).Elif(st0.tag_found & data_arr_read_req.vld,
+                st1_in.data_array_op(data_trans_t.read_and_write)
             ).Else(
                 st1_in.data_array_op(data_trans_t.write)
             )
@@ -435,8 +438,9 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         # write replacement after victim load with higher priority
         # else if found just write the data to data array
         is_flush = st2.data_array_op._eq(data_trans_t.write_and_flush)
-        contains_write = In(st2.data_array_op, [data_trans_t.write, data_trans_t.write_and_flush])
-        contains_read = In(st2.data_array_op, [data_trans_t.read, data_trans_t.write_and_flush])
+        contains_write = rename_signal(self, In(st2.data_array_op, [data_trans_t.write, data_trans_t.write_and_flush, data_trans_t.read_and_write]), "contains_write")
+        contains_read = rename_signal(self, In(st2.data_array_op, [data_trans_t.read, data_trans_t.write_and_flush, data_trans_t.read_and_write]), "contains_read")
+        contains_read_data = rename_signal(self, In(st2.data_array_op, [data_trans_t.read, data_trans_t.read_and_write]), "contains_read_data")
         flush_or_read_node = StreamNode(
             [st2_out,
              d_arr_r.data, in_w],  # collect read data from data array, collect write data
@@ -448,7 +452,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
                 d_arr_r.data: contains_read,
                 in_w: contains_write,
 
-                data_arr_read: st2.data_array_op._eq(data_trans_t.read),
+                data_arr_read: contains_read_data,
                 m.aw: is_flush,
                 m.w: is_flush,
                 d_arr_w: contains_write,
@@ -458,10 +462,10 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
                 d_arr_r.data:~contains_read,
                 in_w:~contains_write,
 
-                data_arr_read:st2.data_array_op != data_trans_t.read,
+                data_arr_read:~contains_read_data,
                 m.aw:~is_flush,
                 m.w:~is_flush,
-                d_arr_w: ~contains_write,
+                d_arr_w:~contains_write,
                 self.s.b:~contains_write,
             }
         )
