@@ -40,20 +40,24 @@ ARCHITECTURE rtl OF RamMultiClock IS
 BEGIN
     assig_process_port_0_dout: PROCESS(port_0_clk)
     BEGIN
-        IF RISING_EDGE(port_0_clk) AND port_0_en = '1' THEN
-            IF port_0_we = '1' THEN
-                ram_memory(TO_INTEGER(UNSIGNED(port_0_addr))) <= port_0_din;
+        IF RISING_EDGE(port_0_clk) THEN
+            IF port_0_en = '1' THEN
+                IF port_0_we = '1' THEN
+                    ram_memory(TO_INTEGER(UNSIGNED(port_0_addr))) <= port_0_din;
+                END IF;
+                port_0_dout <= ram_memory(TO_INTEGER(UNSIGNED(port_0_addr)));
             END IF;
-            port_0_dout <= ram_memory(TO_INTEGER(UNSIGNED(port_0_addr)));
         END IF;
     END PROCESS;
     assig_process_port_1_dout: PROCESS(port_1_clk)
     BEGIN
-        IF RISING_EDGE(port_1_clk) AND port_1_en = '1' THEN
-            IF port_1_we = '1' THEN
-                ram_memory(TO_INTEGER(UNSIGNED(port_1_addr))) <= port_1_din;
+        IF RISING_EDGE(port_1_clk) THEN
+            IF port_1_en = '1' THEN
+                IF port_1_we = '1' THEN
+                    ram_memory(TO_INTEGER(UNSIGNED(port_1_addr))) <= port_1_din;
+                END IF;
+                port_1_dout <= ram_memory(TO_INTEGER(UNSIGNED(port_1_addr)));
             END IF;
-            port_1_dout <= ram_memory(TO_INTEGER(UNSIGNED(port_1_addr)));
         END IF;
     END PROCESS;
 END ARCHITECTURE;
