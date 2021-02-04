@@ -18,6 +18,8 @@ from hwtLib.amba.axiLite_comp.endpoint_struct_test import \
     AxiLiteEndpoint_arrayStruct_TC, AxiLiteEndpoint_struct_TC
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTCs
 from hwtLib.amba.axiLite_comp.to_axi_test import AxiLite_to_Axi_TC
+from hwtLib.amba.axi_comp.cache.caheWriteAllocWawOnlyWritePropagating_test import AxiCaheWriteAllocWawOnlyWritePropagatingTCs
+from hwtLib.amba.axi_comp.cache.pseudo_lru_test import PseudoLru_TC
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import\
     AxiInterconnectMatrixAddrCrossbar_TCs
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar_test import \
@@ -71,6 +73,7 @@ from hwtLib.clocking.clkDivider import ClkDiv3TC
 from hwtLib.common_nonstd_interfaces.addr_data_hs_to_Axi_test import AddrDataHs_to_Axi_TCs
 from hwtLib.examples.arithmetic.cntr_test import CntrTC, CntrResourceAnalysisTC
 from hwtLib.examples.arithmetic.multiplierBooth_test import MultiplerBoothTC
+from hwtLib.examples.arithmetic.privateSignals_test import PrivateSignalsOfStructTypeTC
 from hwtLib.examples.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.examples.arithmetic.twoCntrs_test import TwoCntrsTC
 from hwtLib.examples.arithmetic.vhdl_vector_auto_casts import VhdlVectorAutoCastExampleTC
@@ -140,7 +143,7 @@ from hwtLib.handshaked.joinFair_test import HsJoinFair_2inputs_TC, \
     HsJoinFair_3inputs_TC
 from hwtLib.handshaked.joinPrioritized_test import HsJoinPrioritizedTC, \
     HsJoinPrioritized_randomized_TC
-from hwtLib.handshaked.ramAsHs_test import RamAsHs_TC
+from hwtLib.handshaked.ramAsHs_test import RamAsHs_TCs
 from hwtLib.handshaked.reg_test import HandshakedRegTCs
 from hwtLib.handshaked.resizer_test import HsResizerTC
 from hwtLib.handshaked.splitCopy_test import HsSplitCopyTC, \
@@ -197,10 +200,10 @@ from hwtLib.tests.pyUtils.fileUtils_test import FileUtilsTC
 from hwtLib.tests.rdSynced_agent_test import RdSynced_agent_TC
 from hwtLib.tests.repr_of_hdlObjs_test import ReprOfHdlObjsTC
 from hwtLib.tests.resourceAnalyzer_test import ResourceAnalyzer_TC
-from hwtLib.tests.sertialization.ipCorePackager_test import IpCorePackagerTC
-from hwtLib.tests.sertialization.modes_test import SerializerModes_TC
-from hwtLib.tests.sertialization.tmpVar_test import Serializer_tmpVar_TC
-from hwtLib.tests.sertialization.vhdl_test import Vhdl2008Serializer_TC
+from hwtLib.tests.serialization.ipCorePackager_test import IpCorePackagerTC
+from hwtLib.tests.serialization.modes_test import SerializerModes_TC
+from hwtLib.tests.serialization.tmpVar_test import Serializer_tmpVar_TC
+from hwtLib.tests.serialization.vhdl_test import Vhdl2008Serializer_TC
 from hwtLib.tests.simulator.basicRtlSimulatorVcdTmpDirs_test import BasicRtlSimulatorVcdTmpDirs_TCs
 from hwtLib.tests.simulator.json_log_test import HsFifoJsonLogTC
 from hwtLib.tests.simulator.utils_test import SimulatorUtilsTC
@@ -282,6 +285,7 @@ suite = testSuiteFromTCs(
     ListOfInterfacesSample2TC,
     ListOfInterfacesSample3TC,
     ListOfInterfacesSample4TC,
+    PrivateSignalsOfStructTypeTC,
     FrameTmplTC,
     Showcase0TC,
     SimulatorUtilsTC,
@@ -313,6 +317,7 @@ suite = testSuiteFromTCs(
     FrameAlignmentUtilsTC,
     FrameJoinUtilsTC,
     HwExceptionCatch_TC,
+    PseudoLru_TC,
 
     # tests of simple units
     TimerTC,
@@ -355,7 +360,7 @@ suite = testSuiteFromTCs(
     HsJoinFair_3inputs_TC,
     HandshakedCdc_slow_to_fast_TC,
     HandshakedCdc_fast_to_slow_TC,
-    RamAsHs_TC,
+    *RamAsHs_TCs,
     LsfrTC,
     ClkDiv3TC,
     BitonicSorterTC,
@@ -445,6 +450,7 @@ suite = testSuiteFromTCs(
     *AxiWriteAggregator_TCs,
     *AxiReadAggregator_TCs,
     *AxiStoreQueueWritePropagating_TCs,
+    *AxiCaheWriteAllocWawOnlyWritePropagatingTCs,
 
     Axi_ag_TC,
     Axi4_streamToMemTC,
