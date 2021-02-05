@@ -54,24 +54,17 @@ class HandshakedReg(HandshakedCompBase):
             outData.append(r)
 
         If(isOccupied,
+            inRd(outRd),
+            regs_we(inVld & outRd),
             If(outRd & ~inVld,
                 isOccupied(0)
             )
         ).Else(
-            If(inVld,
-               isOccupied(1)
-            )
-        )
-
-        If(isOccupied,
-            inRd(outRd),
-            outVld(1),
-            regs_we(inVld & outRd)
-        ).Else(
             inRd(1),
-            outVld(0),
-            regs_we(inVld)
+            regs_we(inVld),
+            isOccupied(inVld)
         )
+        outVld(isOccupied)
         return outData
 
     def _implLatencyAndDelay(self, inVld: RtlSignal, inRd: RtlSignal, inData: List[RtlSignal],
