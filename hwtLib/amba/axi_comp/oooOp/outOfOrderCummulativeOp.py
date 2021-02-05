@@ -60,7 +60,7 @@ class OutOfOrderCummulativeOp(Unit):
         # number of concurent thread is resolved as 2**ID_WIDTH
         self.MAIN_STATE_T = Param(uint32_t)
         self.TRANSACTION_STATE_T = Param(uint8_t)
-        self.PIPELINE_CONFIG = Param(OutOfOrderCummulativeOpPipelineConfig.new_config())
+        self.PIPELINE_CONFIG = Param(OutOfOrderCummulativeOpPipelineConfig.new_config(WRITE_HISTORY_SIZE=2))
         Axi4._config(self)
 
     def _init_constants(self):
@@ -125,7 +125,7 @@ class OutOfOrderCummulativeOp(Unit):
         ooo_fifo = self.ooo_fifo
         ar = self.m.ar
         din = self.dataIn
-        assert din.addr._dtype.bit_length() == self.ADDR_WIDTH  - self.ADDR_OFFSET_W, (
+        assert din.addr._dtype.bit_length() == self.ADDR_WIDTH - self.ADDR_OFFSET_W, (
             din.addr._dtype.bit_length(), self.ADDR_WIDTH, self.ADDR_OFFSET_W)
         dataIn_reg = HandshakedReg(din.__class__)
         dataIn_reg._updateParamsFrom(din)
@@ -271,7 +271,7 @@ class OutOfOrderCummulativeOp(Unit):
         PIPELINE_CONFIG = self.PIPELINE_CONFIG
         self.pipeline = pipeline = [
             OOOOpPipelineStage(i, f"st{i:d}", self)
-            for i in range(PIPELINE_CONFIG.WRITE_HISTORY + PIPELINE_CONFIG.WRITE_HISTORY_SIZE)
+            for i in range(PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK + 1)
         ]
 
         state_read = self.state_array.port[1]
@@ -281,7 +281,6 @@ class OutOfOrderCummulativeOp(Unit):
         for i, st in enumerate(pipeline):
             if i > 0:
                 st_prev = pipeline[i - 1]
-                st_load_en = st_prev.valid & st.ready
 
             if i < len(pipeline) - 1:
                 st_next = pipeline[i + 1]
@@ -296,14 +295,9 @@ class OutOfOrderCummulativeOp(Unit):
                     low = self.MAIN_STATE_INDEX_WIDTH
                     st.transaction_state = state_read.dout[:low]._reinterpret_cast(self.TRANSACTION_STATE_T)
 
-                st.ready = r.ready
-                st.ready(~st.valid | st_next.ready)
-                If(r.valid,
-                   st.valid(1)
-                ).Elif(st.ready,
-                   st.valid(0)
-                )
-                st.load_en(r.valid & st.ready)
+                r.ready(st.in_ready)
+                st.in_valid(r.valid)
+                st.out_ready(~st.valid | st_next.in_ready)
                 state_read.en(st.load_en)
                 If(st.load_en,
                     st.id(r.id),
@@ -311,44 +305,34 @@ class OutOfOrderCummulativeOp(Unit):
                 )
 
             elif i <= PIPELINE_CONFIG.STATE_LOAD:
-                st.load_en(st_load_en)
                 If(st.load_en,
                     st.id(st_prev.id),
                     st.addr(st_prev.addr),
                     self.propagate_trans_st(st_prev, st),
                 )
-                self.apply_data_write_bypass(st, st_load_en)
-                If(st_prev.valid,
-                   st.valid(1)
-                ).Elif(st_next.ready,
-                   st.valid(0)
-                )
-                st.ready(~st.valid | st_next.ready)
+                self.apply_data_write_bypass(st, st.load_en)
+                st.in_valid(st_prev.valid)
+                st.out_ready(~st.valid | st_next.in_ready)
 
             elif i == PIPELINE_CONFIG.WRITE_BACK:
-                st.load_en(st_load_en)
                 If(st.load_en,
                     st.id(st_prev.id),
                     st.addr(st_prev.addr),
                     self.propagate_trans_st(st_prev, st),
                 )
-                self.apply_data_write_bypass(st, st_load_en, self.main_op)
+                self.apply_data_write_bypass(st, st.load_en, self.main_op)
                 aw = self.m.aw
                 w = self.m.w
 
                 cancel = rename_signal(self, self.write_cancel(st), "write_back_cancel")
-                If(st_prev.valid,
-                   st.valid(1)
-                ).Elif(st_next.ready & ((aw.ready & w.ready) | cancel),
-                   st.valid(0)
-                )
-                st.ready(~st.valid | (((aw.ready & w.ready) | cancel) & st_next.ready))
+                st.in_valid(st_prev.valid)
+                st.out_ready(~st.valid | (((aw.ready & w.ready) | cancel) & st_next.in_ready))
 
                 StreamNode(
                     [], [aw, w],
                     extraConds={
-                        aw: st.valid & st_next.ready & ~cancel,
-                        w: st.valid & st_next.ready & ~cancel
+                        aw: st.valid & st_next.in_ready & ~cancel,
+                        w: st.valid & st_next.in_ready & ~cancel
                     },
                     skipWhen={
                         aw:cancel,
@@ -367,9 +351,17 @@ class OutOfOrderCummulativeOp(Unit):
                 w.data(st_data._reinterpret_cast(w.data._dtype))
                 w.strb(mask(self.DATA_WIDTH // 8))
                 w.last(1)
+            elif i > PIPELINE_CONFIG.WRITE_BACK and i != PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK:
+                st.in_valid(st_prev.valid)
+                st.out_ready(~st.valid | st_next.in_ready)
 
+                If(st.load_en,
+                   st.id(st_prev.id),
+                   st.addr(st_prev.addr),
+                   st.data(st_prev.data),
+                   st.transaction_state(st_prev.transaction_state),
+                )
             elif i == PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK:
-                st.load_en(st_load_en)
                 If(st.load_en,
                     st.id(st_prev.id),
                     st.addr(st_prev.addr),
@@ -381,16 +373,8 @@ class OutOfOrderCummulativeOp(Unit):
                 confirm = self.ooo_fifo.read_confirm
                 cancel = self.write_cancel(st)
 
-                # ommiting st_next.ready as WRITE_HISTORY is always ready
-                If(st_prev.valid & st_prev.ready,
-                   st.valid(1)
-                ).Elif((b.valid | cancel) & dout.rd & confirm.rd,
-                   st.valid(0)
-                )
-
-                st.ready(~st.valid | ((b.valid | cancel) & dout.rd & confirm.rd))
-
-                StreamNode(
+                # ommiting st_next.ready as there is no next
+                w_ack_node = StreamNode(
                     [b],
                     [dout, confirm],
                     extraConds={
@@ -401,8 +385,10 @@ class OutOfOrderCummulativeOp(Unit):
                     skipWhen={
                         b: cancel,
                     }
-                ).sync()
-
+                )
+                w_ack_node.sync()
+                st.in_valid(st_prev.valid)
+                st.out_ready(~st.valid | ((b.valid | cancel) & dout.rd & confirm.rd))
 
                 dout.addr(st.addr)
                 dout.data(st.data)
@@ -411,15 +397,7 @@ class OutOfOrderCummulativeOp(Unit):
 
                 confirm.data(st.id)
 
-            elif i >= PIPELINE_CONFIG.WRITE_HISTORY:
-                st.ready = st_prev.valid & st_prev.ready
 
-                st.load_en(st_prev.valid & st_prev.ready)
-                If(st.load_en,
-                   st.addr(st_prev.addr),
-                   st.data(st_prev.data),
-                   st.valid(st_prev.valid)
-                )
 
     def _impl(self):
         self.ar_dispatch()
