@@ -59,7 +59,7 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
         # )
 
         u.ID_WIDTH = 2
-        u.ADDR_WIDTH = 2 + 3
+        u.ADDR_WIDTH = u.ID_WIDTH  + 3
         cls.u = u
         return u
 
@@ -90,7 +90,7 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
 
         u.dataIn._ag.data.extend(inputs)
 
-        t = (10 + len(inputs) * 2) * CLK_PERIOD
+        t = (20 + len(inputs) * 2) * CLK_PERIOD
         if randomize:
             axi_randomize_per_channel(self, u.m)
             self.randomize(u.dataIn)
@@ -100,7 +100,7 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
         self.runSim(t)
 
         # check if pipeline registers are empty
-        for i in range(u.PIPELINE_CONFIG.WRITE_HISTORY):
+        for i in range(u.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK):
             valid = getattr(self.rtl_simulator.model.io, f"st{i:d}_valid")
             self.assertValEqual(valid.read(), 0, i)
 
@@ -224,12 +224,13 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
         )
 
     def test_r_100x_lookup_found_not_found_mix(self):
+        N = 100
         max_id = 2 ** self.u.ID_WIDTH
         item_pool = [(i % max_id, MState(i + 1, 20 + i)) for i in range(max_id * 2)]
 
         self._test_incr(
             [(i, TState(v[1], None, OP.LOOKUP)) for i, v in [
-                    self._rand.choice(item_pool) for _ in range(100)
+                    self._rand.choice(item_pool) for _ in range(N)
                 ]
             ],
             # :attention: i is modulo mapped that means that
@@ -258,7 +259,7 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(OooOpExampleCounterHashTable_TC('test_r_100x_lookup_found_not_found_mix'))
+    #suite.addTest(OooOpExampleCounterHashTable_TC('test_r_100x_lookup_found_not_found_mix'))
     suite.addTest(unittest.makeSuite(OooOpExampleCounterHashTable_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
