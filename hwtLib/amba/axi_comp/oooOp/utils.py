@@ -1,13 +1,14 @@
 from typing import NamedTuple
 
+from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VectSignal, HandshakeSync
 from hwt.interfaces.structIntf import HdlType_to_Interface
+from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwtLib.types.ctypes import uint8_t
 from hwtSimApi.hdlSimulator import HdlSimulator
-from hwt.synthesizer.interface import Interface
 
 
 class OOOOpPipelineStage():
@@ -37,9 +38,23 @@ class OOOOpPipelineStage():
             self.transaction_state = r(f"{name:s}_transaction_state", parent.TRANSACTION_STATE_T)
         self.data = r(f"{name:s}_data", parent.MAIN_STATE_T)
 
-        self.valid = r(f"{name:s}_valid", def_val=0)
-        self.ready = parent._sig(f"{name:s}_ready")
-        self.load_en = parent._sig(f"{name:s}_load_en")
+        vld = self.valid = r(f"{name:s}_valid", def_val=0)
+        inVld = self.in_valid = parent._sig(f"{name:s}_in_valid")
+        outRd = self.out_ready = parent._sig(f"{name:s}_out_ready")
+        inRd = self.in_ready = parent._sig(f"{name:s}_in_ready")
+        regs_we = self.load_en = parent._sig(f"{name:s}_load_en")
+
+        If(self.valid,
+            inRd(outRd),
+            regs_we(inVld & outRd),
+            If(outRd & ~inVld,
+                vld(0)
+            )
+        ).Else(
+            inRd(1),
+            regs_we(inVld),
+            vld(inVld),
+        )
 
         # :note: constructed later
         self.collision_detect = None
@@ -68,10 +83,9 @@ class OutOfOrderCummulativeOpPipelineConfig(NamedTuple):
     # wait until the write acknowledge is received and block the pipeline if it is not and
     # previous stage has valid data
     # consume item from ooo_fifo in last beat of incomming data
-    WAIT_FOR_WRITE_ACK : int
+    WAIT_FOR_WRITE_ACK: int
     # data which was written in to main memory, used to udate
     # the data which was read in that same time
-    WRITE_HISTORY: int
 
     WRITE_HISTORY_SIZE: int
 
@@ -80,15 +94,13 @@ class OutOfOrderCummulativeOpPipelineConfig(NamedTuple):
         READ_DATA_RECEIVE = 0
         STATE_LOAD = READ_DATA_RECEIVE + 2
         WRITE_BACK = STATE_LOAD + 1
-        WAIT_FOR_WRITE_ACK = WRITE_BACK + 1
-        WRITE_HISTORY = WAIT_FOR_WRITE_ACK
+        WAIT_FOR_WRITE_ACK = WRITE_BACK + WRITE_HISTORY_SIZE
 
         return cls(
             READ_DATA_RECEIVE,
             STATE_LOAD,
             WRITE_BACK,
             WAIT_FOR_WRITE_ACK,
-            WRITE_HISTORY,
             WRITE_HISTORY_SIZE
         )
 
