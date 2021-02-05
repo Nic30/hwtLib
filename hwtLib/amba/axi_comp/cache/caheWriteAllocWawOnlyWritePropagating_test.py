@@ -186,7 +186,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SingleUnitSimTestCase):
                 u.s.ar._ag.data.append(req)
                 expected_r.append((_id, d, RESP_OKAY, 1))
 
-        t = (5 + u.WAY_CNT * N_PER_WAY) * CLK_PERIOD
+        t = (10 + u.WAY_CNT * N_PER_WAY) * CLK_PERIOD
         if randomized:
             self.randomize_all()
             t *= 3

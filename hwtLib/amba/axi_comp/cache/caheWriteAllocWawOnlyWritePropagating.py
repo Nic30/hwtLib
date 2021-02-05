@@ -10,9 +10,12 @@ from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import BramPort_withoutClk, Handshaked, HandshakeSync
+from hwt.interfaces.structIntf import StructIntf, HdlType_to_Interface
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
+from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axi4 import Axi4, Axi4_r, Axi4_addr
 from hwtLib.amba.axi_comp.cache.addrTypeConfig import CacheAddrTypeConfig
 from hwtLib.amba.axi_comp.cache.lru_array import AxiCacheLruArray, IndexWayHs
@@ -21,17 +24,15 @@ from hwtLib.amba.axi_comp.cache.tag_array import AxiCacheTagArray, \
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.constants import RESP_OKAY, BURST_INCR, CACHE_DEFAULT, \
     LOCK_DEFAULT, BYTES_IN_TRANS, PROT_DEFAULT, QOS_DEFAULT
+from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
 from hwtLib.common_nonstd_interfaces.addr_hs import AddrHs
+from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.ramAsHs import RamAsHs, RamHsR
+from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
+from hwtLib.logic.binToOneHot import binToOneHot
 from hwtLib.mem.ram import RamSingleClock
 from pyMathBitPrecise.bit_utils import mask
-from hwtLib.logic.binToOneHot import binToOneHot
-from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
-from hwt.interfaces.structIntf import StructIntf, HdlType_to_Interface
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
-from hwtLib.handshaked.reg import HandshakedReg
-from hwt.synthesizer.hObjList import HObjList
 
 
 class HsStructIntf(HandshakeSync):
@@ -204,8 +205,8 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         self.axiAddrDefaults(out_ar)
 
         s_r = AxiSBuilder.join_prioritized(self, [
-            self.m.r,
             data_arr_read,
+            self.m.r,
         ]).end
         self.s.r(s_r)
 
@@ -254,7 +255,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         st0 = self._reg(
             "victim_load_status0",
             HStruct(
-                (self.s.aw.id._dtype, "replacement_id"),  # the original id and address of a write transaction
+                (self.s.aw.id._dtype, "write_id"),  # the original id and address of a write transaction
                 (self.s.aw.addr._dtype, "replacement_addr"),
                 (aw_tagRes.TAG_T[aw_tagRes.WAY_CNT], "tags"),
                 (BIT, "tag_found"),
@@ -270,7 +271,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         st0_ready = self._sig("victim_load_status0_ready")
         has_empty = rename_signal(self, Or(*(~t.valid for t in aw_tagRes.tags)), "has_empty")
         If(st0_ready,
-           st0.replacement_id(aw_tagRes.id),
+           st0.write_id(aw_tagRes.id),
            st0.replacement_addr(aw_tagRes.addr),
            st0.tags(aw_tagRes.tags),
            st0.tag_found(aw_tagRes.found),
@@ -307,7 +308,8 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
                 # (replacement data is still in in_w buffer because it was not consumed
                 #  if the tag was not found)
                 (aw_tagRes.way._dtype, "victim_way"),
-                (self.s.aw.id._dtype, "replacement_id"),  # the original id and address of a write transaction
+                (self.s.ar.id._dtype, "read_id"),
+                (self.s.aw.id._dtype, "write_id"),
                 (self.s.aw.addr._dtype, "replacement_addr"),  # the original address used to resolve new tag
                 (Bits(2), "data_array_op"),  # type of operation with data_array
             )
@@ -352,40 +354,57 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         self.victim_load_status = victim_load_status
 
         st1_in = victim_load_status[0].dataIn.data
-        st1_ready(victim_load_status[0].dataIn.rd)
         # placed between st0, st1
+        pure_write = rename_signal(self, st0.valid & ~need_to_flush & ~data_arr_read_req.vld, "pure_write")
+        pure_read = rename_signal(self, ~st0.valid & data_arr_read_req.vld, "pure_read")
+        read_plus_write = rename_signal(self, st0.valid & ~need_to_flush & data_arr_read_req.vld, "read_plus_write")
+        flush_write = rename_signal(self, st0.valid & need_to_flush & ~data_arr_read_req.vld, "flush_write")
+        read_flush_write = rename_signal(self, st0.valid & need_to_flush & data_arr_read_req.vld, "read_flush_write")  # not dispatched at once
+
         read_req_node = StreamNode(
             [victim_way, data_arr_read_req],
             [d_arr_r.addr, victim_load_status[0].dataIn],
             extraConds={
-                victim_way: need_to_flush,
-                data_arr_read_req: ~need_to_flush,
-                d_arr_r.addr: need_to_flush | data_arr_read_req.vld,
+                victim_way: flush_write | read_flush_write,  # 0
+                                   # only write without flush       not write at all but read request
+                data_arr_read_req: pure_read | read_plus_write,  # pure_read | read_plus_write, #
+                d_arr_r.addr: pure_read | read_plus_write | flush_write | read_flush_write,  # need_to_flush | data_arr_read_req.vld, # 1
+                # victim_load_status[0].dataIn: st0.valid | data_arr_read_req.vld,
             },
             skipWhen={
-                victim_way:~need_to_flush,
-                data_arr_read_req: need_to_flush | (st0.valid & ~data_arr_read_req.vld),
-                d_arr_r.addr:~need_to_flush & ~data_arr_read_req.vld,
+                victim_way: pure_write | pure_read | read_plus_write,
+                data_arr_read_req: pure_write | flush_write | read_flush_write,
+                d_arr_r.addr: pure_write,
             }
         )
         read_req_node.sync()
+        st1_ready(victim_load_status[0].dataIn.rd & read_req_node.ack())
 
         st1_in.victim_addr(self.deparse_addr(_victim_tag, self.parse_addr(st0.replacement_addr)[1], 0))
         st1_in.victim_way(st0.tag_found._ternary(st0.found_way, _victim_way)),
-        st1_in.replacement_id(st0.valid._ternary(st0.replacement_id,
-                                              data_arr_read_req.id))
+        st1_in.read_id(data_arr_read_req.id)
+        st1_in.write_id(st0.write_id)
         st1_in.replacement_addr(st0.replacement_addr)
-        If(st0.valid,
-            If(need_to_flush,
-                st1_in.data_array_op(data_trans_t.write_and_flush)
-            ).Elif(st0.tag_found & data_arr_read_req.vld,
-                st1_in.data_array_op(data_trans_t.read_and_write)
-            ).Else(
-                st1_in.data_array_op(data_trans_t.write)
-            )
-        ).Else(
+        If(pure_write,
+            st1_in.data_array_op(data_trans_t.write)
+        ).Elif(pure_read,
             st1_in.data_array_op(data_trans_t.read)
+        ).Elif(read_plus_write,
+            st1_in.data_array_op(data_trans_t.read_and_write)
+        ).Else(# .Elif(flush_write | read_flush_write,
+            st1_in.data_array_op(data_trans_t.write_and_flush)
         )
+        # If(st0.valid,
+        #    If(need_to_flush,
+        #        st1_in.data_array_op(data_trans_t.write_and_flush)
+        #    ).Elif(st0.tag_found & data_arr_read_req.vld,
+        #        st1_in.data_array_op(data_trans_t.read_and_write)
+        #    ).Else(
+        #        st1_in.data_array_op(data_trans_t.write)
+        #    )
+        # ).Else(
+        #    st1_in.data_array_op(data_trans_t.read)
+        # )
 
         victim_load_status[1].dataIn(victim_load_status[0].dataOut)
 
@@ -402,7 +421,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
                            ):
         ########################## st1 - post (victim flushing, read forwarding) ######################
         in_w = AxiSBuilder(self, self.s.w)\
-            .buff(self.tag_array.LOOKUP_LATENCY + 1)\
+            .buff(self.tag_array.LOOKUP_LATENCY + 4)\
             .end
 
         st2 = st2_out.data
@@ -412,24 +431,25 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
                 self.parse_addr(st2.replacement_addr)[1]
             )
         )
+        data_arr_read_data = d_arr_r.data  # HsBuilder(self, d_arr_r.data).buff(1, latency=(1, 2)).end
         d_arr_w.data(in_w.data)
         d_arr_w.mask(in_w.strb)
 
-        self.s.b.id(st2.replacement_id)
+        self.s.b.id(st2.write_id)
         self.s.b.resp(RESP_OKAY)
 
-        data_arr_read.id(st2.replacement_id)
-        data_arr_read.data(d_arr_r.data.data)
+        data_arr_read.id(st2.read_id)
+        data_arr_read.data(data_arr_read_data.data)
         data_arr_read.resp(RESP_OKAY)
         data_arr_read.last(1)
 
         m = self.m
         m.aw.addr(st2.victim_addr)
-        m.aw.id(st2.replacement_id)
+        m.aw.id(st2.write_id)
         m.aw.len(0)
         self.axiAddrDefaults(m.aw)
 
-        m.w.data(d_arr_r.data.data)
+        m.w.data(data_arr_read_data.data)
         m.w.strb(mask(m.w.data._dtype.bit_length() // 8))
         m.w.last(1)
 
@@ -438,18 +458,24 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         # write replacement after victim load with higher priority
         # else if found just write the data to data array
         is_flush = st2.data_array_op._eq(data_trans_t.write_and_flush)
-        contains_write = rename_signal(self, In(st2.data_array_op, [data_trans_t.write, data_trans_t.write_and_flush, data_trans_t.read_and_write]), "contains_write")
-        contains_read = rename_signal(self, In(st2.data_array_op, [data_trans_t.read, data_trans_t.write_and_flush, data_trans_t.read_and_write]), "contains_read")
-        contains_read_data = rename_signal(self, In(st2.data_array_op, [data_trans_t.read, data_trans_t.read_and_write]), "contains_read_data")
+        contains_write = rename_signal(self, In(st2.data_array_op, [data_trans_t.write,
+                                                                    data_trans_t.write_and_flush,
+                                                                    data_trans_t.read_and_write]), "contains_write")
+        contains_read = rename_signal(self, In(st2.data_array_op, [data_trans_t.read,
+                                                                   data_trans_t.write_and_flush,
+                                                                   data_trans_t.read_and_write]), "contains_read")
+        contains_read_data = rename_signal(self, In(st2.data_array_op, [data_trans_t.read,
+                                                                        data_trans_t.read_and_write]), "contains_read_data")
+
         flush_or_read_node = StreamNode(
             [st2_out,
-             d_arr_r.data, in_w],  # collect read data from data array, collect write data
+             data_arr_read_data, in_w],  # collect read data from data array, collect write data
             [data_arr_read,
              m.aw, m.w,
              d_arr_w, self.s.b],  # to read block or to slave connected on "m" interface
                                   # write data to data array and send write acknowledge
             extraConds={
-                d_arr_r.data: contains_read,
+                data_arr_read_data: contains_read,
                 in_w: contains_write,
 
                 data_arr_read: contains_read_data,
@@ -459,7 +485,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
                 self.s.b: contains_write,
             },
             skipWhen={
-                d_arr_r.data:~contains_read,
+                data_arr_read_data:~contains_read,
                 in_w:~contains_write,
 
                 data_arr_read:~contains_read_data,
@@ -517,6 +543,9 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         _data_arr_read = AxiSBuilder(self, data_arr_read)\
             .buff(1, latency=(1, 2))\
             .end
+        _data_arr_read_req = HsBuilder(self, data_arr_read_req)\
+            .buff(1, latency=(1, 2))\
+            .end
 
         self.read_handler(
             self.lru_array.incr[0],
@@ -527,7 +556,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
             self.lru_array.incr[1],
             aw_tagRes,
             self.lru_array.victim_req, self.lru_array.victim_data,
-            data_arr_read_req, data_arr_read,
+            _data_arr_read_req, data_arr_read,
             data_array_r, data_array_w,
             self.tag_array.update[0],
         )
