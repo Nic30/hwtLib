@@ -90,7 +90,7 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
 
         u.dataIn._ag.data.extend(inputs)
 
-        t = (20 + len(inputs) * 2) * CLK_PERIOD
+        t = (40 + len(inputs) * 3) * CLK_PERIOD
         if randomize:
             axi_randomize_per_channel(self, u.m)
             self.randomize(u.dataIn)

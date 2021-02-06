@@ -87,21 +87,21 @@ class OutOfOrderCummulativeOpPipelineConfig(NamedTuple):
     # data which was written in to main memory, used to udate
     # the data which was read in that same time
 
+    # nuber of stages between WRITE_BACK and WAIT_FOR_WRITE_ACK
     WRITE_HISTORY_SIZE: int
 
     @classmethod
-    def new_config(cls, WRITE_HISTORY_SIZE=4):
+    def new_config(cls, WRITE_HISTORY_SIZE=2):
         READ_DATA_RECEIVE = 0
         STATE_LOAD = READ_DATA_RECEIVE + 2
         WRITE_BACK = STATE_LOAD + 1
         WAIT_FOR_WRITE_ACK = WRITE_BACK + WRITE_HISTORY_SIZE
-
         return cls(
             READ_DATA_RECEIVE,
             STATE_LOAD,
             WRITE_BACK,
             WAIT_FOR_WRITE_ACK,
-            WRITE_HISTORY_SIZE
+            WRITE_HISTORY_SIZE,
         )
 
 

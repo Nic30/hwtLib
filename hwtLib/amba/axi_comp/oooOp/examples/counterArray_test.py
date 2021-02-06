@@ -45,7 +45,7 @@ class OooOpExampleCounterArray_1w_TC(SingleUnitSimTestCase):
         u = self.u
         u.dataIn._ag.data.extend(indexes)
 
-        t = (10 + len(indexes) * 2) * CLK_PERIOD
+        t = (20 + len(indexes) * 2) * CLK_PERIOD
         if randomize:
             axi_randomize_per_channel(self, u.m)
             self.randomize(u.dataIn)
@@ -55,7 +55,7 @@ class OooOpExampleCounterArray_1w_TC(SingleUnitSimTestCase):
         self.runSim(t)
 
         # check if pipeline registers are empty
-        for i in range(u.PIPELINE_CONFIG.WRITE_HISTORY):
+        for i in range(u.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK):
             valid = getattr(self.rtl_simulator.model.io, f"st{i:d}_valid")
             self.assertValEqual(valid.read(), 0, i)
 
@@ -139,7 +139,7 @@ OooOpExampleCounterArray_TCs = [
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(OooOpExampleCounterArray_0_5w_TC('test_incr_1x'))
+    # suite.addTest(OooOpExampleCounterArray_1w_TC('test_r_incr_100x_random'))
     for tc in OooOpExampleCounterArray_TCs:
         suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)

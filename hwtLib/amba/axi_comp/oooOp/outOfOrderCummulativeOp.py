@@ -35,7 +35,7 @@ class OutOfOrderCummulativeOp(Unit):
     and potential collision due read-modify-write operations may occure.
 
     This component stores info about currently executed memory transactions which may be finished out of order.
-    Potential memory access colisions are solved by bypasses in main pipeline.
+    Potential memory access colisions are solved by write forwarding in main pipeline.
     In order to compensate for memory write latency the write history is utilised.
     The write history is a set of registers on the end of the pipeline.
 
@@ -60,7 +60,10 @@ class OutOfOrderCummulativeOp(Unit):
         # number of concurent thread is resolved as 2**ID_WIDTH
         self.MAIN_STATE_T = Param(uint32_t)
         self.TRANSACTION_STATE_T = Param(uint8_t)
-        self.PIPELINE_CONFIG = Param(OutOfOrderCummulativeOpPipelineConfig.new_config(WRITE_HISTORY_SIZE=2))
+        self.PIPELINE_CONFIG = Param(
+            OutOfOrderCummulativeOpPipelineConfig.new_config(
+                WRITE_HISTORY_SIZE=4 + 1)
+        )
         Axi4._config(self)
 
     def _init_constants(self):
@@ -158,7 +161,7 @@ class OutOfOrderCummulativeOp(Unit):
     def collision_detector(self, pipeline: List[OOOOpPipelineStage]) -> List[List[RtlSignal]]:
         """
         Search for address access collisions in pipeline and store the result of colision check to registers for
-        data write bypass in next clock tick
+        data write forwarding in next clock tick
         """
         PIPELINE_CONFIG = self.PIPELINE_CONFIG
 
@@ -189,34 +192,29 @@ class OutOfOrderCummulativeOp(Unit):
 
             # for each stage which can potentially update a data in this stage
             for src_i in range(PIPELINE_CONFIG.WRITE_BACK, len(pipeline)):
-                if src_i == dst.index:
-                    # disallow to load  data from WRITE_BACK to WRITE_BACK on stall
-                    continue
-
                 src = pipeline[src_i] if src_i > 0 else None
                 src_prev = pipeline[src_i - 1] if src_i > 1 else None
 
+                # :attention: the cd is a register and its value will be checked in next clock cycle
+                # that means that we need to resolve its value for next clock cycle
                 cd = dst.collision_detect[src_i]
                 c = self._sig(f"{cd.name:s}_tmp")
-                # Resolve if src stage should load from dst stage in next clock cycle
-                SwitchLogic([
-                    (~dst.load_en & ~src.load_en,
-                       c(does_collinde(dst, src))
-                    ),
-                    (~dst.load_en & src.load_en,
-                       c(does_collinde(dst, src_prev))
-                    ),
-                    (dst.load_en & ~src.load_en,
-                       c(does_collinde(dst_prev, src))
-                    ),
-                    (dst.load_en & src.load_en,
-                       c(does_collinde(dst_prev, src_prev))
-                    )],
-                    default=c(0))
-                # print(dst_i, src_i)
+                # Resolve if dst stage should load from src stage in next clock cycle
+                If(~dst.load_en & ~src.load_en,
+                    c(does_collinde(dst, src)),
+                ).Elif(~dst.load_en & src.load_en,
+                    c(does_collinde(dst, src_prev))
+                ).Elif(dst.load_en & ~src.load_en,
+                    c(does_collinde(dst_prev, src))
+                ).Elif(dst.load_en & src.load_en,
+                    c(does_collinde(dst_prev, src_prev))
+                ).Else(
+                    c(0)
+                )
+
                 cd(c & dst.valid.next)
 
-    def apply_data_write_bypass(self, st: OOOOpPipelineStage,
+    def apply_data_write_forwarding(self, st: OOOOpPipelineStage,
                            st_load_en: RtlSignal,
                            data_modifier=lambda dst_st, src_st: dst_st.data(src_st.data)):
         """
@@ -228,21 +226,26 @@ class OutOfOrderCummulativeOp(Unit):
         def is_not_0(sig):
             return not (isinstance(sig, int) and sig == 0)
 
+        # we can write forward to a stages from STATE_LOAD to WRITE_BACK
+        # however we can not replace the valid value in WRITE_BACK stage
+        # and we need to wait on load_en
         res = SwitchLogic([
                 (
+                    # the previous which is beeing loaded into this is colliding with src
                     (st_load_en & st_prev.collision_detect[src_i]) |
                     (~st_load_en & st.collision_detect[src_i]),
-                    # use bypass instead of data from previous stage
-                    [data_modifier(st, src_st), ]
+                    # forward data instead of data from previous stage
+                    data_modifier(st, src_st)
                 )
                 for src_i, src_st in enumerate(self.pipeline) if (
-                        # filter out stage combinations which do not have bypass
+                        # filter out stage combinations which do not have forwarding
                         is_not_0(st.collision_detect[src_i]) or
                         is_not_0(st_prev.collision_detect[src_i])
                     )
             ],
+            default=\
             If(st_load_en,
-               data_modifier(st, st_prev),
+               data_modifier(st, st_prev)
             )
         )
 
@@ -287,7 +290,7 @@ class OutOfOrderCummulativeOp(Unit):
 
             # :note: pipeline stages described in PIPELINE_CONFIG enum
             if i == PIPELINE_CONFIG.READ_DATA_RECEIVE:
-                # :note: we can not apply bypass there because we do not know the original address yet
+                # :note: we can not apply forward write data there because we do not know the original address yet
                 r = self.m.r
                 state_read.addr(r.id)
                 st.addr = state_read.dout[self.MAIN_STATE_INDEX_WIDTH:]
@@ -297,7 +300,7 @@ class OutOfOrderCummulativeOp(Unit):
 
                 r.ready(st.in_ready)
                 st.in_valid(r.valid)
-                st.out_ready(~st.valid | st_next.in_ready)
+                st.out_ready(st_next.in_ready)
                 state_read.en(st.load_en)
                 If(st.load_en,
                     st.id(r.id),
@@ -310,9 +313,9 @@ class OutOfOrderCummulativeOp(Unit):
                     st.addr(st_prev.addr),
                     self.propagate_trans_st(st_prev, st),
                 )
-                self.apply_data_write_bypass(st, st.load_en)
+                self.apply_data_write_forwarding(st, st.load_en)
                 st.in_valid(st_prev.valid)
-                st.out_ready(~st.valid | st_next.in_ready)
+                st.out_ready(st_next.in_ready)
 
             elif i == PIPELINE_CONFIG.WRITE_BACK:
                 If(st.load_en,
@@ -320,13 +323,13 @@ class OutOfOrderCummulativeOp(Unit):
                     st.addr(st_prev.addr),
                     self.propagate_trans_st(st_prev, st),
                 )
-                self.apply_data_write_bypass(st, st.load_en, self.main_op)
+                self.apply_data_write_forwarding(st, st.load_en, self.main_op)
                 aw = self.m.aw
                 w = self.m.w
 
                 cancel = rename_signal(self, self.write_cancel(st), "write_back_cancel")
                 st.in_valid(st_prev.valid)
-                st.out_ready(~st.valid | (((aw.ready & w.ready) | cancel) & st_next.in_ready))
+                st.out_ready(st_next.in_ready & ((aw.ready & w.ready) | cancel))
 
                 StreamNode(
                     [], [aw, w],
@@ -351,15 +354,19 @@ class OutOfOrderCummulativeOp(Unit):
                 w.data(st_data._reinterpret_cast(w.data._dtype))
                 w.strb(mask(self.DATA_WIDTH // 8))
                 w.last(1)
+
             elif i > PIPELINE_CONFIG.WRITE_BACK and i != PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK:
-                st.in_valid(st_prev.valid)
-                st.out_ready(~st.valid | st_next.in_ready)
+                if i == PIPELINE_CONFIG.WRITE_BACK + 1:
+                    st.in_valid(st_prev.valid & ((aw.ready & w.ready) | cancel))
+                else:
+                    st.in_valid(st_prev.valid)
+                st.out_ready(st_next.in_ready)
 
                 If(st.load_en,
                    st.id(st_prev.id),
                    st.addr(st_prev.addr),
                    st.data(st_prev.data),
-                   st.transaction_state(st_prev.transaction_state),
+                   self.propagate_trans_st(st_prev, st),
                 )
             elif i == PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK:
                 If(st.load_en,
@@ -383,12 +390,12 @@ class OutOfOrderCummulativeOp(Unit):
                         confirm: st.valid,
                     },
                     skipWhen={
-                        b: cancel,
+                        b: st.valid & cancel,
                     }
                 )
                 w_ack_node.sync()
                 st.in_valid(st_prev.valid)
-                st.out_ready(~st.valid | ((b.valid | cancel) & dout.rd & confirm.rd))
+                st.out_ready((b.valid | cancel) & dout.rd & confirm.rd)
 
                 dout.addr(st.addr)
                 dout.data(st.data)
@@ -396,8 +403,6 @@ class OutOfOrderCummulativeOp(Unit):
                     dout.transaction_state(st.transaction_state)
 
                 confirm.data(st.id)
-
-
 
     def _impl(self):
         self.ar_dispatch()
