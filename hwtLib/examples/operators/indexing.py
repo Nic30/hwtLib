@@ -73,7 +73,7 @@ class IndexingInernRangeSplit(Unit):
         self.b[:2](internB)
 
 
-class IndexingInernSplit(Unit):
+class IndexingInternSplit(Unit):
     """
     .. hwt-autodoc::
     """

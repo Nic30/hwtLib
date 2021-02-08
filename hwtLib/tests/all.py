@@ -157,7 +157,7 @@ from hwtLib.logic.countLeading_test import CountLeadingTC
 from hwtLib.logic.crcComb_test import CrcCombTC
 from hwtLib.logic.crcUtils_test import CrcUtilsTC
 from hwtLib.logic.crc_test import CrcTC
-from hwtLib.logic.lsfr import LsfrTC
+from hwtLib.logic.lfsr import LfsrTC
 from hwtLib.logic.oneHotToBin_test import OneHotToBinTC
 from hwtLib.mem.atomic.flipCntr_test import FlipCntrTC
 from hwtLib.mem.atomic.flipRam_test import FlipRamTC
@@ -361,7 +361,7 @@ suite = testSuiteFromTCs(
     HandshakedCdc_slow_to_fast_TC,
     HandshakedCdc_fast_to_slow_TC,
     *RamAsHs_TCs,
-    LsfrTC,
+    LfsrTC,
     ClkDiv3TC,
     BitonicSorterTC,
     InterfaceWithArrayTypesTC,

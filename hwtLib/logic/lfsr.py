@@ -14,7 +14,7 @@ from hwt.synthesizer.vectorUtils import iterBits
 from pyMathBitPrecise.bit_utils import get_bit
 
 
-class Lsfr(Unit):
+class Lfsr(Unit):
     """
     Linear shift feedback register generator,
     form of hardware pseudorandom generator.
@@ -47,11 +47,11 @@ class Lsfr(Unit):
         self.dataOut(accumulator[0])
 
 
-class LsfrTC(SingleUnitSimTestCase):
+class LfsrTC(SingleUnitSimTestCase):
 
     @classmethod
     def getUnit(cls):
-        cls.u = Lsfr()
+        cls.u = Lfsr()
         return cls.u
 
     def test_simple(self):
@@ -64,4 +64,4 @@ class LsfrTC(SingleUnitSimTestCase):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
-    print(to_rtl_str(Lsfr()))
+    print(to_rtl_str(Lfsr()))

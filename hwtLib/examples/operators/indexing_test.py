@@ -8,7 +8,7 @@ from hwtLib.examples.operators.indexing import (
     SimpleIndexingSplit,
     SimpleIndexingJoin,
     SimpleIndexingRangeJoin,
-    IndexingInernSplit,
+    IndexingInternSplit,
     IndexingInernJoin,
     IndexingInernRangeSplit, AssignmentToRegIndex)
 from hwtSimApi.constants import CLK_PERIOD
@@ -53,7 +53,7 @@ class IndexingTC(SimTestCase):
                                     [0, 3, 12, 15, None, 15, 12, 3])
 
     def test_internSplit(self):
-        u = IndexingInernSplit()
+        u = IndexingInternSplit()
         self.compileSimAndStart(u)
 
         u.a._ag.data.extend([0, 1, 2, 3, None, 3, 0, 3])
