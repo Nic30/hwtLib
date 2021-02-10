@@ -83,4 +83,6 @@ python3 setup.py install
 * [ZipCPU repositories](https://github.com/ZipCPU?tab=repositories) - Verilog, mostly peripherals, DSP
 * [hls-fpga-machine-learning](https://github.com/hls-fpga-machine-learning) - Python -> HSL C++, mostyl ML and video processing
 * [fpgasystems](https://github.com/fpgasystems) - HLS C++, SystemVerilog, FPGA @ Systems Group, ETH Zurich, mostly networking
+* [Limago](https://github.com/hpcn-uam/Limago) - SV/VHDL - 100G TCP/IP stack
+
 
