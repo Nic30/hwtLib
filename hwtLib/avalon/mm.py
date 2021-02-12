@@ -1,4 +1,4 @@
-from hwt.hdl.constants import DIRECTION, READ, WRITE, NOP
+from hwt.hdl.constants import DIRECTION, READ, WRITE, NOP, READ_WRITE
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import VectSignal, Signal
 from hwt.simulator.agentBase import SyncAgentBase
@@ -8,6 +8,7 @@ from hwt.interfaces.agents.vldSynced import VldSyncedAgent
 from collections import deque
 from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.hdlSimulator import HdlSimulator
+from hwt.math import log2ceil
 
 RESP_OKAY = 0b00
 # RESP_RESERVED = 0b01
@@ -29,7 +30,7 @@ class AvalonMM(Interface):
     def _config(self):
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(32)
-        # self.MAX_BURST = Param(4)
+        self.MAX_BURST = Param(0)
 
     def _declr(self):
         # self.debugAccess = Signal()
@@ -48,7 +49,8 @@ class AvalonMM(Interface):
         # self.lock = Signal()
         self.waitRequest = Signal(masterDir=IN)
         self.writeResponseValid = Signal(masterDir=IN)
-        # self.burstCount = VectSignal(log2ceil(self.MAX_BURST))
+        if self.MAX_BURST != 0:
+            self.burstCount = VectSignal(log2ceil(self.MAX_BURST))
         # self.beginBurstTransfer = Signal()
 
     def _getWordAddrStep(self):
@@ -75,6 +77,7 @@ class AvalonMmDataRAgent(VldSyncedAgent):
     * vld signal = readDataValid
     * data signal = (readData, response)
     """
+
     @classmethod
     def get_valid_signal(cls, intf):
         return intf.readDataValid
@@ -164,24 +167,34 @@ class AvalonMmAddrAgent(HandshakedAgent):
         byteEnable = intf.byteEnable.read()
         read = intf.read.read()
         write = intf.write.read()
-        burstCount = 1  # r(intf.burstCount)
+        wdata = intf.writeData.read()
+        if intf.MAX_BURST != 0:
+            burstCount = intf.burstCount.read()
+        else:
+            burstCount = 1
 
         if read.val:
-            rw = READ
+            if write.val:
+                rw = READ_WRITE
+            else:
+                rw = READ
         elif write.val:
             rw = WRITE
         else:
-            raise AssertionError("This funtion should not be called when data"
-                                 "is not ready on interface")
-
-        return (address, byteEnable, rw, burstCount)
+            raise AssertionError(
+                "This funtion should not be called when data"
+                "is not ready on interface")
+        if rw == WRITE or rw == READ_WRITE:
+            self.wData.append((wdata, byteEnable))
+        return (rw, address, burstCount)
 
     def set_data(self, data):
         intf = self.intf
         if data is None:
             intf.address.write(None)
             intf.byteEnable.write(None)
-            # intf.burstCount.write(None)
+            if intf.MAX_BURST != 0:
+                intf.burstCount.write(None)
             intf.read.write(0)
             intf.write.write(0)
 
@@ -201,7 +214,8 @@ class AvalonMmAddrAgent(HandshakedAgent):
             intf.address.write(address)
             intf.byteEnable.write(be)
             assert int(burstCount) >= 1, burstCount
-            # w(burstCount, intf.burstCount)
+            if intf.MAX_BURST:
+                intf.burstCount.write(burstCount)
             intf.read.write(rd)
             intf.write.write(wr)
 
@@ -270,11 +284,11 @@ class AvalonMmAgent(SyncAgentBase):
     def getDrivers(self):
         self.setEnable = self.setEnable_asDriver
         return (self.rDataAg.getMonitors()
-                + self.addrAg.getDrivers()
-                + self.wRespAg.getMonitors())
+                +self.addrAg.getDrivers()
+                +self.wRespAg.getMonitors())
 
     def getMonitors(self):
         self.setEnable = self.setEnable_asMonitor
         return (self.rDataAg.getDrivers()
-                + self.addrAg.getMonitors()
-                + self.wRespAg.getDrivers())
+                +self.addrAg.getMonitors()
+                +self.wRespAg.getDrivers())
