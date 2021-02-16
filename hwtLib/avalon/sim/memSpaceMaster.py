@@ -1,6 +1,6 @@
-from hwtLib.sim.abstractMemSpaceMaster import AbstractMemSpaceMaster
-from hwt.interfaces.agents.handshaked import HandshakedReadListener
 from hwt.hdl.constants import WRITE, READ
+from hwt.interfaces.agents.handshaked import HandshakedReadListener
+from hwtLib.sim.abstractMemSpaceMaster import AbstractMemSpaceMaster
 
 
 class TupleWithCallback(tuple):
