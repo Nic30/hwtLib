@@ -1,7 +1,7 @@
 from hwt.code import If, Switch, Concat
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.defs import INT, SLICE, STR, BIT
+from hwt.hdl.types.defs import INT, SLICE, STR, BIT, FLOAT64
 from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Signal
 from hwt.synthesizer.param import Param
@@ -10,9 +10,9 @@ from hwt.synthesizer.unit import Unit
 class Showcase0(Unit):
     """
         Every HW component class has to be derived from :class:`hwt.synthesizer.unit.Unit` class
-
+    
         .. hwt-autodoc::
-
+        
     """
     def _declr(self):
         # ports
