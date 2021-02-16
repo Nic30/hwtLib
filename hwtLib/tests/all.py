@@ -60,8 +60,8 @@ from hwtLib.amba.datapump.r_aligned_test import Axi_rDatapump_alignedTCs
 from hwtLib.amba.datapump.r_unaligned_test import Axi_rDatapump_unalignedTCs
 from hwtLib.amba.datapump.w_test import Axi_wDatapumpTCs
 from hwtLib.avalon.endpoint_test import AvalonMmEndpointTCs
-from hwtLib.avalon.mmAgent_test import AvalonMmAgentTC
-from hwtLib.avalon.stAgent_test import AvalonStAgentTC
+from hwtLib.avalon.sim.mmAgent_test import AvalonMmAgentTC
+from hwtLib.avalon.sim.stAgent_test import AvalonStAgentTC
 from hwtLib.cesnet.mi32.axi4Lite_bridges_test import Mi32Axi4LiteBrigesTC
 from hwtLib.cesnet.mi32.endpoint_test import Mi32EndpointTCs
 from hwtLib.cesnet.mi32.interconnectMatrix_test import Mi32InterconnectMatrixTC
