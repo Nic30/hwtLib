@@ -14,10 +14,13 @@ from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtLib.tools.debug_bus_monitor_ctl import select_bit_range
 from hwtSimApi.constants import CLK_PERIOD
-from pyMathBitPrecise.bit_utils import set_bit_range, mask
+from pyMathBitPrecise.bit_utils import set_bit_range, mask, int_list_to_int, \
+    int_to_int_list
 
 
 class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SingleUnitSimTestCase):
+    # number of words in transaction - 1
+    LEN = 0
 
     @classmethod
     def getUnit(cls):
@@ -57,8 +60,13 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SingleUnitSimTestCase):
     def set_data(self, index, way, data):
         u = self.u
         WAY_CACHELINES = u.CACHE_LINE_CNT // u.WAY_CNT
-        i = way * WAY_CACHELINES + index
-        self._set_to_mems(self.DATA, i, data)
+        i = (way * WAY_CACHELINES + index) * (self.LEN + 1)
+        _data = int_to_int_list(data, u.DATA_WIDTH, self.LEN + 1)
+        for i2, _d in enumerate(_data):
+            self._set_to_mems(self.DATA, i + i2, _d)
+
+    def build_cacheline(self, cacheline_words):
+        return int_list_to_int(cacheline_words, self.u.DATA_WIDTH)
 
     @staticmethod
     def _get_from_mems(mems: List[HArrayVal], i: int):
@@ -72,8 +80,10 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SingleUnitSimTestCase):
             data_mem.val[i] = data_mem.def_val[i] = data_mem._dtype.element_t.from_py(_data)
 
     def get_data(self, index, way):
-        i = way * self.WAY_CACHELINES + index
-        return self._get_from_mems(self.DATA, i)
+        i = (way * self.WAY_CACHELINES + index) * (self.LEN + 1)
+        return Concat(*reversed(list(
+            self._get_from_mems(self.DATA, i + i2) for i2 in range(self.LEN + 1)
+        )))
 
     def set_tag(self, addr, way):
         u = self.u
@@ -153,7 +163,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SingleUnitSimTestCase):
         u = self.u
         self.clean_tags()
         ref = [
-            u.s.ar._ag.create_addr_req(addr=i * self.ADDR_STEP, _len=0, _id=i)
+            u.s.ar._ag.create_addr_req(addr=i * self.ADDR_STEP, _len=self.LEN, _id=i)
             for i in range(N)
         ]
         u.s.ar._ag.data.extend(ref)
@@ -179,12 +189,16 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SingleUnitSimTestCase):
             for i in range(N_PER_WAY):
                 i = i % WAY_CACHELINES
                 addr = (i + w * WAY_CACHELINES) * self.ADDR_STEP
-                d = w * MAGIC + i
                 _id = i % ID_MAX
-                self.cacheline_insert(addr, w, d)
-                req = u.s.ar._ag.create_addr_req(addr=addr, _len=0, _id=_id)
+                req = u.s.ar._ag.create_addr_req(addr=addr, _len=self.LEN, _id=_id)
                 u.s.ar._ag.data.append(req)
-                expected_r.append((_id, d, RESP_OKAY, 1))
+                d_list = []
+                for w_i in range(self.LEN + 1):
+                    d = w * MAGIC + i + w_i
+                    expected_r.append((_id, d, RESP_OKAY, int(w_i == self.LEN)))
+                    d_list.append(d)
+
+                self.cacheline_insert(addr, w, self.build_cacheline(d_list))
 
         t = (10 + u.WAY_CNT * N_PER_WAY) * CLK_PERIOD
         if randomized:
@@ -218,15 +232,20 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SingleUnitSimTestCase):
             for i in range(N_PER_WAY):
                 i = i % WAY_CACHELINES
                 addr = (i + w * WAY_CACHELINES) * self.ADDR_STEP
-                d = w * MAGIC + i
-                expected[addr] = d
+
                 if preallocate:
                     self.cacheline_insert(addr, w, 0)
 
                 _id = i % ID_MAX
-                req = aw.create_addr_req(addr=addr, _len=0, _id=_id)
+                req = aw.create_addr_req(addr=addr, _len=self.LEN, _id=_id)
                 aw.data.append(req)
-                u.s.w._ag.data.append((d, M, 1))
+                d_list = []
+                for w_i in range(self.LEN + 1):
+                    d = w * MAGIC + i + w_i
+                    u.s.w._ag.data.append((d, M, int(w_i == self.LEN)))
+                    d_list.append(d)
+                expected[addr] = self.build_cacheline(d_list)
+
                 b_expected.append((_id, RESP_OKAY))
         if preallocate:
             self.assertDictEqual(self.get_cachelines(), {k: 0 for k in expected.keys()})
@@ -254,7 +273,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SingleUnitSimTestCase):
     def test_write_to_preallocated_r(self, N_PER_WAY=50, MAGIC=99):
         self._test_write_to(N_PER_WAY=N_PER_WAY, MAGIC=MAGIC, preallocate=True, randomized=True)
 
-    def test_read_write_to_different_banks(self, N_PER_WAY=5, MAGIC=99, randomized=False):
+    def test_read_write_to_different_sets(self, N_PER_WAY=5, MAGIC=99, randomized=False):
         u = self.u
         self.clean_tags()
         self.clean_data()
@@ -270,19 +289,29 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SingleUnitSimTestCase):
             for i in range(N_PER_WAY):
                 i = i % WAY_CACHELINES
                 addr = (i + w * WAY_CACHELINES) * self.ADDR_STEP
-                read_d = w * MAGIC + i
-                write_d = (u.WAY_CNT + w) * MAGIC + i
-                self.cacheline_insert(addr, w, read_d)
 
                 _id = i % ID_MAX
                 req = aw.create_addr_req(addr=addr, _len=0, _id=_id)
 
                 u.s.ar._ag.data.append(req)
-                expected_r.append((_id, read_d, RESP_OKAY, 1))
 
-                expected[addr] = write_d
                 aw.data.append(req)
-                u.s.w._ag.data.append((write_d, M, 1))
+                r_d_list = []
+                w_d_list = []
+                for w_i in range(self.LEN + 1):
+                    last = int(w_i == self.LEN)
+
+                    write_d = (u.WAY_CNT + w) * MAGIC + i + w_i
+                    u.s.w._ag.data.append((write_d, M, last))
+                    w_d_list.append(write_d)
+
+                    read_d = w * MAGIC + i + w_i
+                    expected_r.append((_id, read_d, RESP_OKAY, last))
+                    r_d_list.append(read_d)
+
+                expected[addr] = self.build_cacheline(w_d_list)
+                self.cacheline_insert(addr, w, self.build_cacheline(r_d_list))
+
                 b_expected.append((_id, RESP_OKAY))
 
         t = (u.WAY_CNT * N_PER_WAY + 10) * CLK_PERIOD
@@ -301,15 +330,20 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SingleUnitSimTestCase):
     # write victim flush
 
 
+class AxiCaheWriteAllocWawOnlyWritePropagating_len1TC(AxiCaheWriteAllocWawOnlyWritePropagatingTC):
+    LEN = 1
+
+
 AxiCaheWriteAllocWawOnlyWritePropagatingTCs = [
     AxiCaheWriteAllocWawOnlyWritePropagatingTC,
+    #AxiCaheWriteAllocWawOnlyWritePropagating_len1TC,
 ]
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-
-    #suite.addTest(AxiCaheWriteAllocWawOnlyWritePropagatingTC('test_write_to_preallocated'))
-    suite.addTest(unittest.makeSuite(AxiCaheWriteAllocWawOnlyWritePropagatingTC))
+    # suite.addTest(AxiCaheWriteAllocWawOnlyWritePropagatingTC('test_write_to_preallocated'))
+    for tc in AxiCaheWriteAllocWawOnlyWritePropagatingTCs:
+        suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
