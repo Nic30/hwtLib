@@ -4,15 +4,14 @@
 from hwt.hdl.constants import READ, WRITE
 from hwt.interfaces.std import BramPort_withoutClk
 from hwt.simulator.simTestCase import SimTestCase
-
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.endpoint_test import structTwoFields, \
     structTwoFieldsDense, structTwoFieldsDenseStart, structTwoFieldsDense_str, \
     structTwoFields_str, structTwoFieldsDenseStart_str, \
     AxiLiteEndpointMemMasterTC
 from hwtLib.avalon.endpoint import AvalonMmEndpoint
-from hwtLib.avalon.memSpaceMaster import AvalonMmMemSpaceMaster
 from hwtLib.avalon.mm import AvalonMM, RESP_OKAY, RESP_SLAVEERROR
+from hwtLib.avalon.sim.memSpaceMaster import AvalonMmMemSpaceMaster
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
 
