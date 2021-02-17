@@ -10,7 +10,7 @@ from ipCorePackager.constants import INTF_DIRECTION
 from hwtLib.xilinx.platform import XilinxVivadoPlatform
 
 
-# @serializeExclude
+@serializeExclude
 class MMCME2_ADV(Unit):
     """
     Mixed-Mode Clock Manager (PLL like frequency synchronizer/clock generator) on Xilinx 7+ series
@@ -99,16 +99,10 @@ class MMCME2_ADV(Unit):
                 "%s is set to %f on instance %m and is not in the allowed range %f to %f.",
                   CLKOUT_DUTY_CYCLE_N, CLKOUT_DUTY_CYCLE, CLK_DUTY_CYCLE_MIN, CLK_DUTY_CYCLE_MAX)
 
-    def para_int_range_chk(self, para_in, para_name, range_low, range_high):
+    def param_range_chk(self, para_in, para_name, range_low, range_high):
         if (para_in < range_low) or (para_in > range_high):
             raise AssertionError(
                 "The %s set to %d. Legal values for this attribute are %d to %d.",
-                para_name, para_in, range_low, range_high)
-
-    def para_real_range_chk(self, para_in, para_name, range_low, range_high):
-        if (para_in < range_low) or (para_in > range_high):
-            raise AssertionError(
-                "The %s set to %f.  Legal values for this attribute are %f to %f.",
                 para_name, para_in, range_low, range_high)
 
     def type_check_bool_param(self, name):
@@ -202,19 +196,19 @@ class MMCME2_ADV(Unit):
         assert self.BANDWIDTH in ("OPTIMIZED", "HIGH", "LOW"), self.BANDWIDTH
         assert self.COMPENSATION in ("ZHOLD", "BUF_IN", "EXTERNAL", "INTERNAL"), self.COMPENSATION
         assert self.SS_MODE in ("CENTER_HIGH", "CENTER_LOW", "DOWN_HIGH", "DOWN_LOW"), self.SS_MODE
-        assert 4000 <= self.SS_MOD_PERIOD and self.SS_MOD_PERIOD >= 40000, self.SS_MOD_PERIOD
+        assert 4000 <= self.SS_MOD_PERIOD and self.SS_MOD_PERIOD <= 40000, self.SS_MOD_PERIOD
 
         clk0_div_fint = int(self.CLKOUT0_DIVIDE_F)
         clk0_div_frac = self.CLKOUT0_DIVIDE_F - clk0_div_fint
         clk0_frac_en = (clk0_div_frac > 0.0) and (clk0_div_fint >= 2)
 
-        self.para_real_range_chk(self.CLKOUT0_DIVIDE_F, "CLKOUT0_DIVIDE_F", 1.0, 128.0)
+        self.param_range_chk(self.CLKOUT0_DIVIDE_F, "CLKOUT0_DIVIDE_F", 1.0, 128.0)
         if (self.CLKOUT0_DIVIDE_F > 1.0) and (self.CLKOUT0_DIVIDE_F < 2.0):
             raise AssertionError("The Attribute CLKOUT0_DIVIDE_F set to %f.  Values in range of greater than 1 and less than 2 are not allowed.", self.CLKOUT0_DIVIDE_F)
 
-        self.para_real_range_chk(self.CLKOUT0_PHASE, "CLKOUT0_PHASE", -360.0, 360.0)
+        self.param_range_chk(self.CLKOUT0_PHASE, "CLKOUT0_PHASE", -360.0, 360.0)
         if not clk0_frac_en:
-            self.para_real_range_chk(self.CLKOUT0_DUTY_CYCLE, "CLKOUT0_DUTY_CYCLE", 0.001, 0.999)
+            self.param_range_chk(self.CLKOUT0_DUTY_CYCLE, "CLKOUT0_DUTY_CYCLE", 0.001, 0.999)
         elif self.CLKOUT0_DUTY_CYCLE != 0.5:
             raise AssertionError("CLKOUT0_DUTY_CYCLE set to %f. "
                                  " This attribute should be set to 0.5 when CLKOUT0_DIVIDE_F has fraction part.", self.CLKOUT0_DUTY_CYCLE)
@@ -225,9 +219,9 @@ class MMCME2_ADV(Unit):
             CLKOUT_DIVIDE = getattr(self, f"CLKOUT{i:d}_DIVIDE")
             CLKOUT_PHASE = getattr(self, f"CLKOUT{i:d}_PHASE")
             CLKOUT_DUTY_CYCLE = getattr(self, f"CLKOUT{i:d}_DUTY_CYCLE")
-            self.para_int_range_chk(CLKOUT_DIVIDE, f"CLKOUT{i:d}_DIVIDE", 1, 128)
-            self.para_real_range_chk(CLKOUT_PHASE, f"CLKOUT{i:d}_PHASE", -360.0, 360.0)
-            self.para_real_range_chk(CLKOUT_DUTY_CYCLE, f"CLKOUT{i:d}_DUTY_CYCLE", 0.001, 0.999)
+            self.param_range_chk(CLKOUT_DIVIDE, f"CLKOUT{i:d}_DIVIDE", 1, 128)
+            self.param_range_chk(CLKOUT_PHASE, f"CLKOUT{i:d}_PHASE", -360.0, 360.0)
+            self.param_range_chk(CLKOUT_DUTY_CYCLE, f"CLKOUT{i:d}_DUTY_CYCLE", 0.001, 0.999)
             self.clkout_duty_chk(CLKOUT_DIVIDE, CLKOUT_DUTY_CYCLE, f"CLKOUT{i:d}_DUTY_CYCLE")
 
         VCOCLK_FREQ_MAX = 1600.0
@@ -237,8 +231,6 @@ class MMCME2_ADV(Unit):
         # CLKPFD_FREQ_MAX = 550.0
         # CLKPFD_FREQ_MIN = 10.0
         # VCOCLK_FREQ_TARGET = 1000
-        M_MIN = 2.0
-        M_MAX = 64.0
         D_MIN = 1
         D_MAX = 106
         # O_MIN = 1
@@ -248,13 +240,12 @@ class MMCME2_ADV(Unit):
         # MAX_FEEDBACK_DELAY = 10.0
         # MAX_FEEDBACK_DELAY_SCALE = 1.0
 
-        self.para_real_range_chk(self.CLKFBOUT_MULT_F, "CLKFBOUT_MULT_F", 2.0, 64.0)
-        self.para_real_range_chk(self.CLKFBOUT_MULT_F, "CLKFBOUT_MULT_F", M_MIN, M_MAX)
-        self.para_real_range_chk(self.CLKFBOUT_PHASE, "CLKFBOUT_PHASE", -360.0, 360.0)
-        self.para_int_range_chk(self.DIVCLK_DIVIDE, "DIVCLK_DIVIDE", 1, D_MAX)
-        self.para_real_range_chk(self.REF_JITTER1, "REF_JITTER1", 0.0, 0.999)
-        self.para_real_range_chk(self.REF_JITTER2, "REF_JITTER2", 0.0, 0.999)
-        self.para_int_range_chk(self.DIVCLK_DIVIDE, "DIVCLK_DIVIDE", D_MIN, D_MAX)
+        self.param_range_chk(self.CLKFBOUT_MULT_F, "CLKFBOUT_MULT_F", 2.0, 64.0)
+        self.param_range_chk(self.CLKFBOUT_PHASE, "CLKFBOUT_PHASE", -360.0, 360.0)
+        self.param_range_chk(self.DIVCLK_DIVIDE, "DIVCLK_DIVIDE", D_MIN, D_MAX)
+        self.param_range_chk(self.REF_JITTER1, "REF_JITTER1", 0.0, 0.999)
+        self.param_range_chk(self.REF_JITTER2, "REF_JITTER2", 0.0, 0.999)
+        self.param_range_chk(self.DIVCLK_DIVIDE, "DIVCLK_DIVIDE", D_MIN, D_MAX)
 
         # raise AssertionError("Input Error : Input clock can only be switched when RST=1. CLKINSEL at time %t changed when RST low, which should change at RST high.", sim.now),
         clkin_chk_t1 = 0.001 * int(1000.0 * (1000.0 / CLKIN_FREQ_MIN))
@@ -321,4 +312,4 @@ if __name__ == "__main__":
     u.SS_MOD_PERIOD = 10000
     u.STARTUP_WAIT = "FALSE"
 
-    print(to_rtl_str(u))
+    print(to_rtl_str(u, target_platform=XilinxVivadoPlatform()))
