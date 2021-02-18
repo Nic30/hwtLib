@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import math
 from collections import deque
 from typing import List, Tuple, Union
+from operator import xor
+from functools import reduce
 
 from hwt.hdl.typeShortcuts import hBit, vec
+from hwt.hdl.types.bits import Bits
+from hwt.code import Concat
 from hwt.interfaces.std import VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
@@ -43,6 +48,7 @@ class CrcComb(Unit):
     def _config(self):
         self.DATA_WIDTH = Param(7 + 4)
         self.IN_IS_BIGENDIAN = Param(False)
+        self.PIPELINE_AGG = Param(2)
         self.setConfig(CRC_5_USB)
 
     def setConfig(self, crcConfigCls):
@@ -127,25 +133,54 @@ class CrcComb(Unit):
 
         return crc_mask
 
-    @classmethod
-    def applyCrcXorMatrix(cls, crcMatrix: List[List[List[int]]],
+    def applyCrcXor(self,
+                     bits: List,
+                     maxAggregation : int,
+                     targetLatency : int,
+                     recIndex : int = 0) -> hBit:
+
+        if len(bits) == 1:
+            assert recIndex <= targetLatency
+            # If desired latency reached output bit
+            if recIndex == targetLatency:
+                return bits[0]
+            # If crc is done add pass thorugh stage
+            passReg = self._reg(f"crc_pass_reg")
+            passReg(bits[0])
+            return self.applyCrcXor([passReg], maxAggregation, targetLatency, recIndex+1)
+
+        bitsBins = [bits[i:i + maxAggregation] for i in range(0, len(bits), maxAggregation)]
+        binResults = [reduce(xor, bin, hBit(0)) for bin in bitsBins]
+
+        # If xor fits in single bin returnq
+        if len(binResults) == 1:
+            return self.applyCrcXor(binResults, maxAggregation, targetLatency, recIndex)
+
+        # Otherwise create pipeline register for the result
+        pipelineReg = self._reg(f"crc_pipeline_reg", Bits(len(binResults)))
+        pipelineReg(Concat(*binResults))
+
+        return self.applyCrcXor(list(iterBits(pipelineReg)), maxAggregation, targetLatency, recIndex+1)
+    
+
+    def applyCrcXorMatrix(self, crcMatrix: List[List[List[int]]],
                           inBits: List[RtlSignal], stateBits: List[Union[RtlSignal, BitsVal]],
                           refin: bool) -> List:
         if refin:
             inBits = bit_list_reversed_bits_in_bytes(inBits, extend=False)
         outBits = []
+        
+        # Calculate max-latency for masks
+        maxBitXor = max([max(sum(stateMask), sum(dataMask)) for stateMask, dataMask in crcMatrix])
+        maxLatency = math.floor(math.log(maxBitXor-1, self.PIPELINE_AGG))
+
         for (stateMask, dataMask) in crcMatrix:
             v = hBit(0)  # neutral value for XOR
             assert len(stateMask) == len(stateBits)
-            for useBit, b in zip(stateMask, stateBits):
-                if useBit:
-                    v = v ^ b
+            v = v ^ self.applyCrcXor([b for useBit, b in zip(stateMask, stateBits) if useBit], self.PIPELINE_AGG, maxLatency)
 
             assert len(dataMask) == len(inBits), (len(dataMask), len(inBits))
-            for useBit, b in zip(dataMask, inBits):
-                if useBit:
-                    v = v ^ b
-
+            v = v ^ self.applyCrcXor([b for useBit, b in zip(dataMask, inBits) if useBit], self.PIPELINE_AGG, maxLatency)
             outBits.append(v)
 
         assert len(outBits) == len(stateBits)
@@ -197,6 +232,7 @@ if __name__ == "__main__":
     # https://github.com/hdl4fpga/hdl4fpga/blob/2a18e546cfcd1f1c38e19705842243e776e019d1/library/usb/usbhost/usbh_crc5.v
     u.setConfig(CRC_5_USB)
     u.DATA_WIDTH = 7 + 4
+    u.PIPELINE_AGG = 2
     # u.REFIN = u.REFOUT = False
     # u.IN_IS_BIGENDIAN = True
     # https://github.com/nandland/nandland/blob/master/CRC/Verilog/source/CRC_16_CCITT_Parallel.v
@@ -205,3 +241,4 @@ if __name__ == "__main__":
     #u.DATA_WIDTH = 16
 
     print(to_rtl_str(u))
+
