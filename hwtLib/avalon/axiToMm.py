@@ -39,7 +39,7 @@ class Axi4_to_AvalonMm(BusBridge):
     """
     Bridge from Axi4 interface to Avalon-MM interface
 
-    :attention: The value of the address must align to the data width.
+    :attention: The value of the address must be aligned to the data width.
 
     .. hwt-autodoc::
     """
