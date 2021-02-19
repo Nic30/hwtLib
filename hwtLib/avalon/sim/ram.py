@@ -10,7 +10,7 @@ from pyMathBitPrecise.bit_utils import mask, set_bit_range, get_bit, \
 from hwt.hdl.constants import READ, READ_WRITE, WRITE
 
 
-class AvalonMMSimRam(SimRam):
+class AvalonMmSimRam(SimRam):
     """
     Simulation memory for AvalonMM interfaces (slave component)
     """
@@ -62,6 +62,11 @@ class AvalonMMSimRam(SimRam):
         wData = self.bus._ag.wData
         if wData and self.wPending[0][1] <= len(wData):
             addr, burstCount = self.wPending.popleft()
+            for i in range(burstCount - 1):
+                # consume the additional write requests which were generated during write data send
+                _a, _ = self.wPending.popleft()
+                assert int(addr) == int(_a), ("inconsystent addres in write burst transaction", addr, burstCount, i, _a)
+
             self.doWrite(addr, burstCount)
         self._registerOnClock()
 

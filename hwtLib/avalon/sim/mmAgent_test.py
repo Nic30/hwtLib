@@ -8,7 +8,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.avalon.mm import AvalonMM, RESP_OKAY
-from hwtLib.avalon.sim.ram import AvalonMMSimRam
+from hwtLib.avalon.sim.ram import AvalonMmSimRam
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
 
@@ -81,7 +81,7 @@ class AvalonMmAgentTC(SingleUnitSimTestCase):
         u = self.u
         m = mask(u.s.DATA_WIDTH // 8)
         STEP = u.s.DATA_WIDTH // 8
-        mem = AvalonMMSimRam(u.m)
+        mem = AvalonMmSimRam(u.m)
         inAddr = [
             (READ if (i % 2) == 0 else WRITE, i * STEP, 1)
             for i in range(N)

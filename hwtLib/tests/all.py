@@ -59,6 +59,7 @@ from hwtLib.amba.datapump.interconnect.wStrictOrder_test import \
 from hwtLib.amba.datapump.r_aligned_test import Axi_rDatapump_alignedTCs
 from hwtLib.amba.datapump.r_unaligned_test import Axi_rDatapump_unalignedTCs
 from hwtLib.amba.datapump.w_test import Axi_wDatapumpTCs
+from hwtLib.avalon.axiToMm_test import AxiToAvalonMm_TCs
 from hwtLib.avalon.endpoint_test import AvalonMmEndpointTCs
 from hwtLib.avalon.sim.mmAgent_test import AvalonMmAgentTC
 from hwtLib.avalon.sim.stAgent_test import AvalonStAgentTC
@@ -398,6 +399,7 @@ suite = testSuiteFromTCs(
     # avalon tests
     AvalonMmAgentTC,
     *AvalonMmEndpointTCs,
+    *AxiToAvalonMm_TCs,
     AvalonStAgentTC,
 
     # axi tests
