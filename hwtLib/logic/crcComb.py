@@ -4,7 +4,6 @@
 from collections import deque
 from typing import List, Tuple, Union
 
-from hwt.hdl.typeShortcuts import hBit, vec
 from hwt.interfaces.std import VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
@@ -16,6 +15,8 @@ from pyMathBitPrecise.bit_utils import get_bit, bit_list_reversed_bits_in_bytes,
     bit_list_reversed_endianity
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.hdl.types.bitsVal import BitsVal
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.defs import BIT
 
 
 # http://www.sunshine2k.de/coding/javascript/crc/crc_js.html
@@ -49,12 +50,13 @@ class CrcComb(Unit):
         """
         Apply configuration from CRC configuration class
         """
-        self.POLY = vec(crcConfigCls.POLY, crcConfigCls.WIDTH)
+        word_t = Bits(crcConfigCls.WIDTH)
+        self.POLY = word_t.from_py(crcConfigCls.POLY)
         self.POLY_WIDTH = crcConfigCls.WIDTH
         self.REFIN = crcConfigCls.REFIN
         self.REFOUT = crcConfigCls.REFOUT
-        self.XOROUT = vec(crcConfigCls.XOROUT, crcConfigCls.WIDTH)
-        self.INIT = vec(crcConfigCls.INIT, crcConfigCls.WIDTH)
+        self.XOROUT = word_t.from_py(crcConfigCls.XOROUT)
+        self.INIT = word_t.from_py(crcConfigCls.INIT)
 
     def _declr(self):
         addClkRstn(self)
@@ -135,7 +137,7 @@ class CrcComb(Unit):
             inBits = bit_list_reversed_bits_in_bytes(inBits, extend=False)
         outBits = []
         for (stateMask, dataMask) in crcMatrix:
-            v = hBit(0)  # neutral value for XOR
+            v = BIT.from_py(0)  # neutral value for XOR
             assert len(stateMask) == len(stateBits)
             for useBit, b in zip(stateMask, stateBits):
                 if useBit:
@@ -156,9 +158,9 @@ class CrcComb(Unit):
         polyBits, PW = self.parsePoly(self.POLY, self.POLY_WIDTH)
         XOROUT = int(self.XOROUT)
         _INIT = int(self.INIT)
-        initBits = [hBit(get_bit(_INIT, i))
+        initBits = [BIT.from_py(get_bit(_INIT, i))
                     for i in range(PW)]
-        finBits = [hBit(get_bit(XOROUT, i))
+        finBits = [BIT.from_py(get_bit(XOROUT, i))
                    for i in range(PW)]
 
         # rename to have shorter code

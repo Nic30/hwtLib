@@ -7,7 +7,6 @@ from hwt.code import If
 from hwt.code_utils import connect_optional
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
-from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.stream import HStream
@@ -33,6 +32,7 @@ from hwtLib.amba.axis_comp.frame_parser.field_connector import AxiS_frameParserF
 from hwtLib.amba.axis_comp.frame_parser.footer_split import AxiS_footerSplit
 from hwtLib.amba.axis_comp.frame_parser.word_factory import WordFactory
 from hwtLib.handshaked.streamNode import StreamNode
+from hwt.hdl.types.defs import BIT
 
 
 def is_non_const_stream(t: HdlType):
@@ -241,7 +241,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         else:
             out_ready = self._sig("out_ready")
             out_ready(allOutNodes.ack())
-            allOutNodes.sync(hBit(1), in_vld)
+            allOutNodes.sync(BIT.from_py(1), in_vld)
 
         din.ready(out_ready)
 

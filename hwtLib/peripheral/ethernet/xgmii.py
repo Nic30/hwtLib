@@ -1,4 +1,4 @@
-from hwt.hdl.typeShortcuts import vec
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import VectSignal, Clk
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
@@ -17,7 +17,6 @@ class XgmiiChannel(Interface):
     .. hwt-autodoc::
     """
 
-
     def _config(self):
         self.DATA_WIDTH = Param(64)
         self.FREQ = Param(int(156.25e6))
@@ -32,10 +31,10 @@ class XgmiiChannel(Interface):
 
 
 class XGMII_CMD:
-    IDLE = vec(0x07, 8)
-    START = vec(0xFB, 8)
-    TERM = vec(0xFD, 8)
-    ERROR = vec(0xFE, 8)
+    IDLE = Bits(8).from_py(0x07)
+    START = Bits(8).from_py(0xFB)
+    TERM = Bits(8).from_py(0xFD)
+    ERROR = Bits(8).from_py(0xFE)
 
 
 class Xgmii(Interface):

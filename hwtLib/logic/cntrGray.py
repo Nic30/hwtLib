@@ -6,7 +6,7 @@ from hwt.hdl.constants import Time
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.unit import Unit
@@ -50,12 +50,12 @@ class GrayCntr(Unit):
         )
 
 
-class GrayCntrTC(SingleUnitSimTestCase):
+class GrayCntrTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls) -> Unit:
+    def setUpClass(cls) -> Unit:
         cls.u = GrayCntr()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_count(self):
         u = self.u

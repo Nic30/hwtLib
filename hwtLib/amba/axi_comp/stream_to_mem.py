@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat, If, Switch
-from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
 from hwt.hdl.types.struct import HStruct
@@ -121,7 +120,7 @@ class Axi4streamToMem(Unit):
         idle = st._eq(st._dtype.fullIdle)
         regs = self.regsConventor.decoded
         regs.control.din(Concat(onoff, idle,
-                                vec(0, self.DATA_WIDTH - 2)))
+                                Bits(self.DATA_WIDTH - 2).from_py(0)))
 
         If(regs.control.dout.vld,
            onoff(regs.control.dout.data[0])

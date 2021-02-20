@@ -3,7 +3,7 @@ from typing import Union, Optional
 from hwt.code import If, Switch, Concat
 from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
 from hwt.hdl.transPart import TransPart
-from hwt.hdl.typeShortcuts import hBit
+from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStructField
 from hwt.interfaces.structIntf import StructIntf
@@ -12,8 +12,8 @@ from hwt.synthesizer.byteOrder import reverseByteOrder
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.frame_parser.out_containers import ListOfOutNodeInfos,\
-    ExclusieveListOfHsNodes, InNodeInfo, InNodeReadOnlyInfo, OutStreamNodeGroup,\
+from hwtLib.amba.axis_comp.frame_parser.out_containers import ListOfOutNodeInfos, \
+    ExclusieveListOfHsNodes, InNodeInfo, InNodeReadOnlyInfo, OutStreamNodeGroup, \
     OutStreamNodeInfo, OutNodeInfo
 from hwtLib.handshaked.builder import HsBuilder
 from pyMathBitPrecise.bit_utils import mask
@@ -23,8 +23,10 @@ def get_byte_order_modifier(axis: AxiStream):
     if axis.IS_BIGENDIAN:
         return reverseByteOrder
     else:
+
         def byteOrderCare(sig):
             return sig
+
         return byteOrderCare
 
 
@@ -69,7 +71,7 @@ class AxiS_frameParserFieldConnector():
             # representation of padding
             outNondes = ListOfOutNodeInfos()
             for part in transParts:
-                self.connectPart(outNondes, part, hBit(1), hBit(1),
+                self.connectPart(outNondes, part, BIT.from_py(1), BIT.from_py(1),
                                  wordIndex, currentWordIndex)
 
             allOutNodes.addWord(currentWordIndex, outNondes)
@@ -133,7 +135,7 @@ class AxiS_frameParserFieldConnector():
             orig = orig.dtype
         assert isinstance(orig, HStream), orig
 
-        #if not part.isLastPart():
+        # if not part.isLastPart():
         #    raise NotImplementedError()
 
         if not len(orig.start_offsets) == 1:
@@ -146,7 +148,7 @@ class AxiS_frameParserFieldConnector():
             DW = din.DATA_WIDTH
             start_offset = frame_range[0] % DW
             end_rem = frame_range[1] % DW
-            if orig.start_offsets != (0, ):
+            if orig.start_offsets != (0,):
                 raise NotImplementedError()
 
             # this is a first part of stream
@@ -165,7 +167,7 @@ class AxiS_frameParserFieldConnector():
                 first_word_i = frame_range[0] // DW
                 last_word_i = (frame_range[1] - 1) // DW
                 first_word_mask = mask((DW - start_offset) // 8) << start_offset // 8
-                body_word_mask = mask(DW//8)
+                body_word_mask = mask(DW // 8)
 
                 def set_mask(m):
                     res = []
@@ -178,7 +180,7 @@ class AxiS_frameParserFieldConnector():
                 if end_rem == 0:
                     last_word_mask = body_word_mask
                 else:
-                    last_word_mask = mask(end_rem//8)
+                    last_word_mask = mask(end_rem // 8)
                 if first_word_i == last_word_i:
                     # only single word, mask is constant
                     m = first_word_mask & last_word_mask

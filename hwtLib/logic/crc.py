@@ -5,7 +5,6 @@ from typing import List
 
 from hwt.code import If, Concat, Switch
 from hwt.code_utils import rename_signal
-from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import VldSynced, VectSignal
 from hwt.interfaces.utils import addClkRstn
@@ -18,6 +17,7 @@ from hwtLib.logic.crcComb import CrcComb
 from hwtLib.logic.crcPoly import CRC_32
 from pyMathBitPrecise.bit_utils import get_bit, bit_list_reversed_endianity, \
     mask
+from hwt.hdl.types.defs import BIT
 
 
 # http://www.rightxlight.co.jp/technical/crc-verilog-hdl
@@ -140,7 +140,7 @@ class Crc(Unit):
             raise NotImplementedError(self.LATENCY)
 
         XOROUT = int(self.XOROUT)
-        fin_bits = [hBit(get_bit(XOROUT, i))
+        fin_bits = [BIT.from_py(get_bit(XOROUT, i))
                     for i in range(PW)]
         fin_bits = rename_signal(self, Concat(*fin_bits), "fin_bits")
 

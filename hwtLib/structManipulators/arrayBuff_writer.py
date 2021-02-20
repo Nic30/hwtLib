@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -
 
 from hwt.code import If, Concat, FsmBuilder
-from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Handshaked, VectSignal, RegCntrl
@@ -96,7 +95,7 @@ class ArrayBuff_writer(Unit):
         If(self.baseAddr.dout.vld,
            baseAddr(self.baseAddr.dout.data[:ALIGN_BITS])
         )
-        self.baseAddr.din(Concat(baseAddr, vec(0, ALIGN_BITS)))
+        self.baseAddr.din(Concat(baseAddr, Bits(ALIGN_BITS).from_py(0)))
 
         # offset in buffer and its complement
         offset_t = Bits(log2ceil(ITEMS + 1), signed=False)
@@ -110,7 +109,7 @@ class ArrayBuff_writer(Unit):
 
         # req values logic
         req.id(self.ID)
-        req.addr(Concat(addrTmp, vec(0, ALIGN_BITS)))
+        req.addr(Concat(addrTmp, Bits(ALIGN_BITS).from_py(0)))
         req.rem(0)
 
         sizeTmp = self._sig("sizeTmp", buff.size._dtype)

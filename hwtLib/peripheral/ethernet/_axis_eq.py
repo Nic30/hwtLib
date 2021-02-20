@@ -1,7 +1,6 @@
 from math import ceil
 
 from hwt.code import If, Switch
-from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
@@ -23,7 +22,7 @@ class AxiS_eq(Unit):
 
     def _config(self):
         AxiStream._config(self)
-        self.VAL = Param(vec(0, 64))
+        self.VAL = Param(Bits(64).from_py(0))
 
     def _declr(self):
         addClkRstn(self)

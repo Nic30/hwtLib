@@ -4,9 +4,28 @@
 from enum import Enum
 import unittest
 
-from hwt.hdl.typeShortcuts import hBool, hInt, vec, hStr
 from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.defs import INT
+from hwt.hdl.types.defs import INT, BIT, BOOL, STR
+
+
+def hBit(v):
+    return BIT.from_py(v)
+
+
+def vec(v, w, signed=None):
+    return Bits(w, force_vector=True, signed=signed).from_py(v)
+
+
+def hBool(v):
+    return BOOL.from_py(v)
+
+
+def hStr(v):
+    return STR.from_py(v)
+
+
+def hInt(v):
+    return INT.from_py(v)
 
 
 class HValueTC(unittest.TestCase):
@@ -81,6 +100,7 @@ class HValueTC(unittest.TestCase):
         self.assertValEq(v4 // v2, 2)
 
     def test_BitsFromPyEnum(self):
+
         class PyEnumCls(Enum):
             A = 1
             B = 3

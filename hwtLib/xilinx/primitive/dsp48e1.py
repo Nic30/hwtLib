@@ -3,7 +3,6 @@
 
 from hwt.code import If, Switch, Concat, In, And, replicate
 from hwt.code_utils import rename_signal
-from hwt.hdl.typeShortcuts import hBit, vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import  BIT
 from hwt.interfaces.std import Signal, Clk
@@ -321,19 +320,19 @@ class DSP48E1(Unit):
         smux = self._sig("smux", Bits(ALU_FULL_W))
         carryout_o = self._sig("carryout_o", Bits(CARRYOUT_W))
         # FINAL ADDER
-        s0 = rename_signal(self, Concat(hBit(0), comux[11:0], qcarryin_o_mux) + Concat(hBit(0), smux[12:0]), "s0")
+        s0 = rename_signal(self, Concat(BIT.from_py(0), comux[11:0], qcarryin_o_mux) + Concat(BIT.from_py(0), smux[12:0]), "s0")
         cout0 = rename_signal(self, comux[11] + s0[12], "cout0")
-        C1 = rename_signal(self, hBit(0b0) if USE_SIMD == "FOUR12" else s0[12], "C1")
-        co11_lsb = rename_signal(self, hBit(0b0) if USE_SIMD == "FOUR12" else comux[11], "co11_lsb")
-        s1 = rename_signal(self, Concat(hBit(0), comux[23:12], co11_lsb) + Concat(hBit(0), smux[24:12]) + Concat(vec(0, 12), C1), "s1")
+        C1 = rename_signal(self, BIT.from_py(0b0) if USE_SIMD == "FOUR12" else s0[12], "C1")
+        co11_lsb = rename_signal(self, BIT.from_py(0b0) if USE_SIMD == "FOUR12" else comux[11], "co11_lsb")
+        s1 = rename_signal(self, Concat(BIT.from_py(0), comux[23:12], co11_lsb) + Concat(BIT.from_py(0), smux[24:12]) + Concat(Bits(12).from_py(0), C1), "s1")
         cout1 = rename_signal(self, comux[23] + s1[12], "cout1")
-        C2 = rename_signal(self, hBit(0b0) if (USE_SIMD in ["TWO24", "FOUR12"]) else s1[12], "C2")
-        co23_lsb = rename_signal(self, hBit(0b0) if (USE_SIMD in ["TWO24", "FOUR12"]) else comux[23], "co23_lsb")
-        s2 = rename_signal(self, Concat(hBit(0), comux[35:24], co23_lsb) + Concat(hBit(0), smux[36:24]) + Concat(vec(0, 12), C2), "s2")
+        C2 = rename_signal(self, BIT.from_py(0b0) if (USE_SIMD in ["TWO24", "FOUR12"]) else s1[12], "C2")
+        co23_lsb = rename_signal(self, BIT.from_py(0b0) if (USE_SIMD in ["TWO24", "FOUR12"]) else comux[23], "co23_lsb")
+        s2 = rename_signal(self, Concat(BIT.from_py(0), comux[35:24], co23_lsb) + Concat(BIT.from_py(0), smux[36:24]) + Concat(Bits(12).from_py(0), C2), "s2")
         cout2 = rename_signal(self, comux[35] + s2[12], "cout2")
-        C3 = rename_signal(self, hBit(0b0) if  USE_SIMD == "FOUR12" else s2[12], "C3")
-        co35_lsb = rename_signal(self, hBit(0b0) if  USE_SIMD == "FOUR12" else comux[35], "co35_lsb")
-        s3 = rename_signal(self, Concat(hBit(0), comux[48:36], co35_lsb) + Concat(vec(0, 2), smux[48:36]) + Concat(vec(0, 13), C3), "s3")
+        C3 = rename_signal(self, BIT.from_py(0b0) if  USE_SIMD == "FOUR12" else s2[12], "C3")
+        co35_lsb = rename_signal(self, BIT.from_py(0b0) if  USE_SIMD == "FOUR12" else comux[35], "co35_lsb")
+        s3 = rename_signal(self, Concat(BIT.from_py(0), comux[48:36], co35_lsb) + Concat(Bits(2).from_py(0), smux[48:36]) + Concat(Bits(13).from_py(0), C3), "s3")
         cout3 = rename_signal(self, s3[12], "cout3")
         #cout4 = rename_signal(self, s3[13], "cout4")
         qcarryin_o_mux_tmp = self._sig("qcarryin_o_mux_tmp")
@@ -845,9 +844,9 @@ class DSP48E1(Unit):
 
         carryout_x_o(Concat(
             carryout_o_mux[3],
-            carryout_o_mux[2] if USE_SIMD == "FOUR12" else hBit(None),
-            carryout_o_mux[1] if USE_SIMD in ["TWO24", "FOUR12"] else hBit(None),
-            carryout_o_mux[0] if USE_SIMD == "FOUR12" else hBit(None),
+            carryout_o_mux[2] if USE_SIMD == "FOUR12" else BIT.from_py(None),
+            carryout_o_mux[1] if USE_SIMD in ["TWO24", "FOUR12"] else BIT.from_py(None),
+            carryout_o_mux[0] if USE_SIMD == "FOUR12" else BIT.from_py(None),
         ))
 
         the_pattern(PATTERN if SEL_PATTERN == "PATTERN" else qc_o_mux)

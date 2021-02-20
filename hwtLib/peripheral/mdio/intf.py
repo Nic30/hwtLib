@@ -1,5 +1,4 @@
 from hwt.synthesizer.interface import Interface
-from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.std import Clk
 from hwt.interfaces.tristate import TristateSig
 from pyMathBitPrecise.bit_utils import mask, get_bit
@@ -14,6 +13,7 @@ from hwtSimApi.triggers import WaitWriteOnly, WaitCombStable,\
 from hwtSimApi.constants import Time
 from hwtSimApi.simCalendar import DONE
 from ipCorePackager.intfIpMeta import IntfIpMeta
+from hwt.hdl.types.bits import Bits
 
 
 class Mdio(Interface):
@@ -49,9 +49,9 @@ class Mdio(Interface):
     ADDR_BLOCK_W = ST_W + OP_W + PA_W + RA_W
     D_W = 16
 
-    PRE = vec(mask(PRE_W), PRE_W)
-    ST = vec(0b01, ST_W)
-    TA = vec(0b10, TA_W)
+    PRE = Bits(PRE_W).from_py(mask(PRE_W))
+    ST = Bits(ST_W).from_py(0b01)
+    TA = Bits(TA_W).from_py(0b10)
 
     class OP:
         READ = 0b10

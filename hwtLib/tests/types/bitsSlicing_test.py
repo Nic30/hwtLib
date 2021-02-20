@@ -4,11 +4,13 @@
 from io import StringIO
 import unittest
 
-from hwt.hdl.typeShortcuts import vec, hBit
 from hwt.hdl.value import HValue
 from hwt.serializer.vhdl import Vhdl2008Serializer
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.types.ctypes import uint8_t
+from hwtLib.tests.types.hvalue_test import hBit, vec
+
+
 
 
 class BitsSlicingTC(unittest.TestCase):

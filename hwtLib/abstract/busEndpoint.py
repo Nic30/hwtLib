@@ -7,7 +7,6 @@ from hwt.code import Switch, Concat
 from hwt.hdl.constants import INTF_DIRECTION
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
-from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.hdlType import HdlType
@@ -367,7 +366,7 @@ class BusEndpoint(Unit):
                 assert last_end == tpart.startOfPart, (last_end, tpart.startOfPart)
                 if tpart.tmpl is None:
                     # padding
-                    din = vec(None, tpart.bit_length())
+                    din = Bits(tpart.bit_length()).from_py(None)
                 else:
                     din = self.getPort(tpart.tmpl)
                     if isinstance(din, RegCntrl):
@@ -419,7 +418,7 @@ class BusEndpoint(Unit):
                 bus_range = tpart.getBusWordBitRange()
                 out.data(w_data[bus_range[0]: bus_range[1]])
                 addr = w_i * (DW // ADDR_STEP)
-                out.vld(en & (aw_addr._eq(vec(addr, addrWidth))))
+                out.vld(en & (aw_addr._eq(Bits(addrWidth).from_py(addr))))
 
     def connectByInterfaceMap(self, interfaceMap: IntfMap):
         """

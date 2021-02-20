@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat
-from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.std import VectSignal
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.hdl.types.defs import INT
+from hwt.hdl.types.bits import Bits
 
 
 class ParametrizationExample(Unit):
@@ -22,7 +22,7 @@ class ParametrizationExample(Unit):
                                  "too big to fit in integer type of target hdl language")
         except ValueError:
             # portable type for large int, generally int in verilog/vhdl is 32b wide
-            self.PARAM_1_sll_512 = Param(vec(1 << 512, width=512 + 1))
+            self.PARAM_1_sll_512 = Param(Bits(512 + 1).from_py(1 << 512))
             self.PARAM_1_sll_512_py_int = Param(1 << 512)
 
     def _declr(self):

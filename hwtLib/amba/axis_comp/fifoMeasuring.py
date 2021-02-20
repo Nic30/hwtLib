@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat, SwitchLogic
-from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -108,7 +107,7 @@ class AxiS_fifoMeasuring(Unit):
             )
         else:
             length(wordCntr + 1)
-            rem = vec(0, log2ceil(BYTE_CNT))
+            rem = Bits(log2ceil(BYTE_CNT)).from_py(0)
 
         sb.dataIn.data(Concat(length, rem))
 

@@ -6,7 +6,6 @@ from math import ceil
 from hwt.code import Concat, Or, If
 from hwt.code_utils import rename_signal
 from hwt.hdl.constants import WRITE, READ
-from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.std import BramPort_withoutClk, HandshakeSync, VectSignal, \
     Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -16,6 +15,7 @@ from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.mem.ram import RamSingleClock
 from ipCorePackager.constants import DIRECTION
 from pyMathBitPrecise.bit_utils import mask
+from hwt.hdl.types.bits import Bits
 
 
 class BramPort_withReadMask_withoutClk(BramPort_withoutClk):
@@ -137,7 +137,7 @@ class RamCumulativeMask(RamSingleClock):
         ram_w.we(Concat(w.we, we_for_we_bytes))
         w_mask = w.we
         if self.MASK_PADDING_W:
-            w_mask = Concat(vec(0, self.MASK_PADDING_W), w_mask)
+            w_mask = Concat(Bits(self.MASK_PADDING_W).from_py(0), w_mask)
 
         is_first_read_port = True
         for ram_r, r in zip(self.ram.port[1:], self.port[1:]):

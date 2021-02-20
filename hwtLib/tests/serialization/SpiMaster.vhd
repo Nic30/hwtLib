@@ -203,7 +203,7 @@ BEGIN
     BEGIN
         IF (clkIntern_next_falling AND NOT slaveSelectWaitRequired) = '1' THEN
             IF txInitialized = '1' THEN
-                txReg_next <= txReg(6 DOWNTO 0) & "0";
+                txReg_next <= txReg(6 DOWNTO 0) & '0';
                 IF endOfWordDelayed = '1' THEN
                     txInitialized_next <= '0';
                 ELSE

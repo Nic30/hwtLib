@@ -5,7 +5,6 @@ from math import ceil
 
 from hwt.code import Concat, If
 from hwt.code_utils import rename_signal
-from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
@@ -118,7 +117,7 @@ class AxiWriteAggregatorWriteDispatcher(Unit):
             a_tmp.vld(a_tmp.vld & ~a.ready)
         )
         a.id(a_tmp.id)
-        a.addr(Concat(a_tmp.addr, vec(0, self.CACHE_LINE_OFFSET_BITS)))
+        a.addr(Concat(a_tmp.addr, Bits(self.CACHE_LINE_OFFSET_BITS).from_py(0)))
 
         a.len(self.BUS_WORDS_IN_CACHE_LINE - 1)
         a.burst(BURST_INCR)

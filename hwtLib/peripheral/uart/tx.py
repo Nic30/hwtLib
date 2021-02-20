@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat
-from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -10,6 +9,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 
 from hwtLib.clocking.clkBuilder import ClkBuilder
+from hwt.hdl.types.defs import BIT
 
 
 # http://ece-research.unm.edu/jimp/vhdl_fpgas/slides/UART.pdf
@@ -35,8 +35,8 @@ class UartTx(Unit):
         propagateClkRstn(self)
         r = self._reg
 
-        START_BIT = hBit(0)
-        STOP_BIT = hBit(1)
+        START_BIT = BIT.from_py(0)
+        STOP_BIT = BIT.from_py(1)
         BITS_TO_SEND = 1 + 8 + 1
         BIT_RATE = self.FREQ // self.BAUD
 
@@ -55,7 +55,7 @@ class UartTx(Unit):
            en(1)
         ).Elif(tick & en,
             # srl where 1 is shifted from left
-            data(hBit(1)._concat(data[:1])),
+            data(BIT.from_py(1)._concat(data[:1])),
             If(last,
                en(0),
             )

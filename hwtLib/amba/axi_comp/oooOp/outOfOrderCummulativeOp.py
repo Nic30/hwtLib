@@ -6,7 +6,6 @@ from typing import List
 from hwt.code import If, Concat, SwitchLogic
 from hwt.code_utils import rename_signal
 from hwt.hdl.constants import WRITE, READ
-from hwt.hdl.typeShortcuts import vec, hBit
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
 from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import packIntf
@@ -24,6 +23,8 @@ from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.ram import RamSingleClock
 from hwtLib.types.ctypes import uint32_t, uint8_t
 from pyMathBitPrecise.bit_utils import mask
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.defs import BIT
 
 
 class OutOfOrderCummulativeOp(Unit):
@@ -155,7 +156,7 @@ class OutOfOrderCummulativeOp(Unit):
         state_write.din(packIntf(din_data, exclude=[din_data.rd, din_data.vld]))
 
         ar.id(ooo_fifo.read_execute.index)
-        ar.addr(Concat(din_data.addr, vec(0, self.ADDR_OFFSET_W)))
+        ar.addr(Concat(din_data.addr, Bits(self.ADDR_OFFSET_W).from_py(0)))
         self._axi_addr_defaults(ar, 1)
 
     def collision_detector(self, pipeline: List[OOOOpPipelineStage]) -> List[List[RtlSignal]]:
@@ -268,7 +269,7 @@ class OutOfOrderCummulativeOp(Unit):
         :returns: A signal/value which if it is 1 it means that the write back
             of this state should not be performed.
         """
-        return hBit(0)
+        return BIT.from_py(0)
 
     def main_pipeline(self):
         PIPELINE_CONFIG = self.PIPELINE_CONFIG
@@ -345,7 +346,7 @@ class OutOfOrderCummulativeOp(Unit):
 
                 self._axi_addr_defaults(aw, 1)
                 aw.id(st.id)
-                aw.addr(Concat(st.addr, vec(0, self.ADDR_OFFSET_W)))
+                aw.addr(Concat(st.addr, Bits(self.ADDR_OFFSET_W).from_py(0)))
 
                 st_data = st.data
                 if not isinstance(st_data, RtlSignal):

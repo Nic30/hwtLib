@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat, If
-from hwt.hdl.typeShortcuts import hBit, vec
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, Clk
 from hwt.serializer.mode import serializeExclude
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
+from hwt.hdl.types.defs import BIT
 
 
 def mkLutRamCls(DATA_WIDTH):
@@ -19,8 +19,8 @@ def mkLutRamCls(DATA_WIDTH):
     class RAMnX1S(Unit):
 
         def _config(self):
-            self.INIT = Param(vec(0, DATA_WIDTH))
-            self.IS_WCLK_INVERTED = Param(hBit(0))
+            self.INIT = Param(Bits(DATA_WIDTH).from_py(0))
+            self.IS_WCLK_INVERTED = Param(BIT.from_py(0))
 
         def _declr(self):
             self.a0 = Signal()

@@ -4,7 +4,6 @@
 from math import ceil, log10
 
 from hwt.code import If, Switch, Concat
-from hwt.hdl.typeShortcuts import hBit, vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Handshaked
@@ -12,6 +11,7 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.math import log2ceil
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
+from hwt.hdl.types.defs import BIT
 
 
 class BinToBcd(Unit):
@@ -73,7 +73,7 @@ class BinToBcd(Unit):
                     bin_r(din.data)
                 ))\
             .Case(st_t.busy,
-                bin_r(bin_r[INPUT_WIDTH - 1:]._concat(hBit(0))))
+                bin_r(bin_r[INPUT_WIDTH - 1:]._concat(BIT.from_py(0))))
 
         Switch(state)\
             .Case(st_t.busy,
@@ -90,7 +90,7 @@ class BinToBcd(Unit):
             if g != 0:
                 prev(bcdp[g - 1])
             else:
-                prev(bin_r[INPUT_WIDTH-1]._concat(vec(0, 3)))
+                prev(bin_r[INPUT_WIDTH-1]._concat(Bits(3).from_py(0)))
 
             s = self._sig(f"s_{g:d}", Bits(4))
             s(bcdp[g] << 1 | prev >> 3),

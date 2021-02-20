@@ -1,8 +1,8 @@
 from typing import Optional
 
 from hwt.code import Or
-from hwt.hdl.typeShortcuts import hBit
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.hdl.types.defs import BIT
 
 
 class WordFactory():
@@ -34,7 +34,7 @@ class WordFactory():
         if acks:
             return Or(*acks)
         else:
-            return hBit(1)
+            return BIT.from_py(1)
 
     def sync(self, en: RtlSignal, din_vld: RtlSignal) -> None:
         for _wordIndex, nodes in self.words:

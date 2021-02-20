@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import SwitchLogic
-from hwt.hdl.typeShortcuts import hBit
 from hwt.interfaces.utils import addClkRstn
 from hwt.math import log2ceil
 from hwt.synthesizer.hObjList import HObjList
 from hwtLib.abstract.busInterconnect import BusInterconnect, AUTO_ADDR
 from hwtLib.xilinx.ipif.intf import Ipif
 from pyMathBitPrecise.bit_utils import get_bit_range
+from hwt.hdl.types.defs import BIT
 
 
 class IpifInterconnectMatrix(BusInterconnect):
@@ -49,9 +49,7 @@ class IpifInterconnectMatrix(BusInterconnect):
 
         m = self.s[0]
 
-        err = hBit(0)
-        rdack = hBit(0)
-        wrack = hBit(0)
+        wrack = rdack = err = BIT.from_py(0)
         AW = int(self.ADDR_WIDTH)
         rdata = []
         for i, (s, (s_offset, s_size)) in\

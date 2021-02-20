@@ -3,11 +3,11 @@ from typing import Union, Tuple, List, Dict
 from pyMathBitPrecise.bit_utils import mask
 
 from hwt.code import Concat, Or
-from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bitsVal import BitsVal
 from hwt.hdl.value import HValue
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.hdl.types.bits import Bits
 
 
 class StrbKeepStash():
@@ -25,15 +25,15 @@ class StrbKeepStash():
         assert data_len > 0, data_len
         if isinstance(data_valid, tuple):
             m, ens = data_valid
-            data_valid = Or(*ens)._ternary(m, vec(0, m._dtype.bit_length()))
-            
+            data_valid = Or(*ens)._ternary(m, Bits(m._dtype.bit_length()).from_py(0))
+
         if isinstance(data_valid, RtlSignal):
             res.append(data_valid)
         else:
             assert isinstance(data_valid, (int, BitsVal)), data_valid
             w = data_len // 8
             v = mask(w) if data_valid else 0
-            res.append(vec(v, w))
+            res.append(Bits(w).from_py(v))
 
     @staticmethod
     def _vec_to_signal(extra_strbs: Union[Tuple[int, bool], RtlSignal]):
@@ -93,7 +93,7 @@ def pop_mask_value(mask_val_to_en_dict: Dict[HValue, List[RtlSignal]]):
     else:
         assert mask_val_to_en_dict
         masks = sorted(mask_val_to_en_dict.items(), key=lambda x: x[0])
-        m = masks[0][0]._dtype.from_py(0) 
+        m = masks[0][0]._dtype.from_py(0)
         for v, ens in masks:
             assert ens, ens
             m = Or(*ens)._ternary(v, m)

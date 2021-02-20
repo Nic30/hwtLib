@@ -3,7 +3,7 @@
 
 from hwt.code import If, Switch, Concat
 from hwt.code_utils import rename_signal
-from hwt.hdl.typeShortcuts import vec, hBit
+from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import Signal, Handshaked, VectSignal, \
@@ -11,6 +11,7 @@ from hwt.interfaces.std import Signal, Handshaked, VectSignal, \
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
+from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import NotSpecified
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.constants import RESP_OKAY
@@ -18,7 +19,6 @@ from hwtLib.amba.datapump.base import AxiDatapumpBase
 from hwtLib.amba.datapump.intf import AxiWDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
-from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import NotSpecified
 from hwtSimApi.hdlSimulator import HdlSimulator
 
 
@@ -125,9 +125,9 @@ class Axi_wDatapump(AxiDatapumpBase):
             if self.axi.LEN_WIDTH:
                 doSplit = wIn.last
             else:
-                doSplit = hBit(1)
+                doSplit = BIT.from_py(1)
 
-            waitForShift = hBit(0)
+            waitForShift = BIT.from_py(0)
         else:
             isFirst = self._reg("isFirstData", def_val=1)
             prevData = self._reg("prevData", HStruct(
@@ -168,16 +168,16 @@ class Axi_wDatapump(AxiDatapumpBase):
                         # in first word the prefix is invalid, in rest of the frames it is taken from
                         # previous data
                         If(waitForShift,
-                            w.data(Concat(vec(None, rem_w), prevData.data[:rem_w])),
+                            w.data(Concat(Bits(rem_w).from_py(None), prevData.data[:rem_w])),
                         ).Else(
                             w.data(Concat(wIn.data[rem_w:], prevData.data[:rem_w])),
                         ),
                         If(waitForShift,
                             # wait until remainder of previous data is send
-                            w.strb(Concat(vec(0, rem_w // 8), prevData.strb[:rem_w // 8])),
+                            w.strb(Concat(Bits(rem_w // 8).from_py(0), prevData.strb[:rem_w // 8])),
                         ).Elif(isFirst,
                             # ignore previous data
-                            w.strb(Concat(wIn.strb[rem_w // 8:], vec(0, sh // 8))),
+                            w.strb(Concat(wIn.strb[rem_w // 8:], Bits(sh // 8).from_py(0))),
                         ).Else(
                             # take what is left from prev data and append from wIn
                             w.strb(Concat(wIn.strb[rem_w // 8:], prevData.strb[:rem_w // 8])),

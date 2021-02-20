@@ -1,7 +1,7 @@
 from typing import List, Union, Optional
 
 from hwt.code import If, And, Or
-from hwt.hdl.typeShortcuts import hBit
+from hwt.hdl.types.defs import BIT
 from hwt.interfaces.std import Handshaked, VldSynced
 from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
@@ -116,8 +116,8 @@ class OutStreamNodeGroup():
         self.word_range_max = word_index_start
         self.others_first = []
         self.others_last = []
-        self.vld_first = hBit(0)
-        self.vld_last = hBit(0)
+        self.vld_first = BIT.from_py(0)
+        self.vld_last = BIT.from_py(0)
 
 
 class OutStreamNodeInfo(OutNodeInfo):
@@ -143,7 +143,7 @@ class OutStreamNodeInfo(OutNodeInfo):
             return False
         w = self.streamGroup.word_index
         if w is None:
-            return hBit(1)
+            return BIT.from_py(1)
         if range_min == range_max:
             en = w._eq(range_min)
         elif range_min == 0:
@@ -189,7 +189,7 @@ class OutStreamNodeInfo(OutNodeInfo):
 
 
 def getAckOfOthers(self: OutNodeInfo, others: List[OutNodeInfo]):
-    ackOfOthers = [hBit(1) if o is self else o.ack() for o in others]
+    ackOfOthers = [BIT.from_py(1) if o is self else o.ack() for o in others]
     return And(*ackOfOthers)
 
 
@@ -199,7 +199,7 @@ class ListOfOutNodeInfos(list):
         if self:
             return And(*map(lambda x: x.ack(), self))
         else:
-            return hBit(1)
+            return BIT.from_py(1)
 
     def sync(self, allNodes: List[OutNodeInfo], en: RtlSignal, din_vld: RtlSignal) -> None:
         nodesWithoutMe = list(where(allNodes, lambda x: x is not self))
@@ -220,7 +220,7 @@ class ExclusieveListOfHsNodes(list):
         return list.append(self, (selectorVal, item))
 
     def ack(self) -> RtlSignal:
-        ack = hBit(1)
+        ack = BIT.from_py(1)
         if self:
             acks = [x[1].ack() & self.selectorIntf.data._eq(x[0])
                     for x in self]

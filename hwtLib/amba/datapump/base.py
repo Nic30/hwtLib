@@ -2,7 +2,6 @@ from typing import Union, List
 
 from hwt.code import If, Switch
 from hwt.code_utils import rename_signal
-from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import HandshakeSync
 from hwt.interfaces.utils import addClkRstn
@@ -20,6 +19,7 @@ from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, \
 from hwtLib.amba.datapump.intf import AddrSizeHs
 from hwtLib.handshaked.streamNode import StreamNode
 from pyMathBitPrecise.bit_utils import mask, align_with_known_width
+from hwt.hdl.types.defs import BIT
 
 
 class AxiDatapumpBase(Unit):
@@ -145,7 +145,7 @@ class AxiDatapumpBase(Unit):
 
     def hasAlignmentError(self, addr: RtlSignal):
         if self.ALIGNAS == 8:
-            return hBit(0)
+            return BIT.from_py(0)
         else:
             return addr[log2ceil(self.CHUNK_WIDTH // 8):] != 0
 

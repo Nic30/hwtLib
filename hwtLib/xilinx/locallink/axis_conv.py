@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat, Switch, If
-from hwt.hdl.typeShortcuts import vec
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
@@ -13,8 +13,8 @@ from pyMathBitPrecise.bit_utils import mask
 
 def strbToRem(strbBits, remBits):
     for i in range(strbBits):
-        strb = vec(mask(i + 1), strbBits)
-        rem = vec(i, remBits)
+        strb = Bits(strbBits).from_py(mask(i + 1))
+        rem = Bits(remBits).from_py(i)
         yield strb, rem
 
 
@@ -28,6 +28,7 @@ class AxiSToLocalLink(Unit):
 
     .. hwt-autodoc::
     """
+
     def _config(self):
         self.DATA_WIDTH = Param(32)
         self.USER_WIDTH = Param(2)
@@ -60,7 +61,7 @@ class AxiSToLocalLink(Unit):
         Out.eof_n(~In.last)
 
         # AXI_USER(0) -> FL_SOP_N
-        # Always set FL_SOP_N when FL_SOF_N - added for compatibility with xilinx 
+        # Always set FL_SOP_N when FL_SOF_N - added for compatibility with xilinx
         # axi components. Otherwise FL_SOP_N would never been set and LocalLink
         # protocol would be broken.
         sop = In.user[0]
@@ -71,7 +72,7 @@ class AxiSToLocalLink(Unit):
         )
 
         # AXI_USER(1) -> FL_EOP_N
-        # Always set FL_EOP_N when FL_EOF_N - added for compatibility with xilinx 
+        # Always set FL_EOP_N when FL_EOF_N - added for compatibility with xilinx
         # axi components. Otherwise FL_EOP_N would never been set and LocalLink
         # protocol would be broken.
         eop = In.user[1]
@@ -110,6 +111,7 @@ class LocalLinkToAxiS(Unit):
 
     .. hwt-autodoc::
     """
+
     def _config(self):
         AxiSToLocalLink._config(self)
 

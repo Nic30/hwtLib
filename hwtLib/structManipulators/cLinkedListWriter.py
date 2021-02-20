@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat, FsmBuilder
-from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Handshaked, RegCntrl
@@ -99,7 +98,7 @@ class CLinkedListWriter(Unit):
         return addr[:self.ALIGN_BITS]
 
     def indexToAddr(self, indx):
-        return Concat(indx, vec(0, self.ALIGN_BITS))
+        return Concat(indx, Bits(self.ALIGN_BITS).from_py(0))
 
     def rReqHandler(self, baseIndex, doReq):
         # always download only one word with address of next block

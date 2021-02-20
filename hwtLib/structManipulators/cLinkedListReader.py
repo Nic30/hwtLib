@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -
 
 from hwt.code import If, In, Concat
-from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, RegCntrl, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -119,7 +118,7 @@ class CLinkedListReader(Unit):
         self.dataOut(f.dataOut)
 
         # logic of baseAddr and baseIndex
-        baseAddr = Concat(baseIndex, vec(0, ALIGN_BITS))
+        baseAddr = Concat(baseIndex, Bits(ALIGN_BITS).from_py(0))
         req.addr(baseAddr)
         self.baseAddr.din(baseAddr)
         dataAck = dIn.valid & In(dIn.id, [ID, ID_LAST]) & dBuffIn.rd

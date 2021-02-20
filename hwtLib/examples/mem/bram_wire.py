@@ -1,7 +1,7 @@
 from hwt.hdl.constants import READ
 from hwt.interfaces.std import BramPort_withoutClk
 from hwt.interfaces.utils import addClkRst
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtSimApi.constants import CLK_PERIOD
 
@@ -19,12 +19,12 @@ class BramWire(Unit):
         self.dout(self.din)
 
 
-class BramWireTC(SingleUnitSimTestCase):
+class BramWireTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls) -> Unit:
+    def setUpClass(cls):
         cls.u = BramWire()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_read(self):
         u = self.u

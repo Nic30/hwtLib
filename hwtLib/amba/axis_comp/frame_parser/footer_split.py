@@ -5,7 +5,6 @@ from math import ceil
 from typing import Tuple, List
 
 from hwt.code import If, SwitchLogic
-from hwt.hdl.typeShortcuts import hBit, vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
@@ -153,7 +152,7 @@ class AxiS_footerSplit(AxiSCompBase):
             if i == 0:
                 r = din
                 ready = din.ready
-                can_flush = hBit(0)
+                can_flush = BIT.from_py(0)
                 is_footer = self._sig("dataIn_is_footer", mask_t)
                 is_footer_set_val = is_footer  # because it is always set
             elif last:
@@ -196,7 +195,7 @@ class AxiS_footerSplit(AxiSCompBase):
         elif self.USE_STRB:
             in_mask = din.strb
         elif self.DATA_WIDTH == 8:
-            in_mask = vec(1, 1)
+            in_mask = BIT.from_py(1, 1)
         else:
             raise NotImplementedError(
                 "keep/strb can be ignored only for DATA_WIDTH=8")

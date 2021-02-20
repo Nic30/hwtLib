@@ -3,7 +3,6 @@ from typing import Dict, Tuple, List, Union, Optional
 from hdlConvertorAst.to.hdlUtils import iter_with_last
 from hwt.code import If, Switch, SwitchLogic, Or
 from hwt.hdl.statement import HdlStatement
-from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.stream import HStream
@@ -21,6 +20,7 @@ from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.axis import AxiStream
 from hwtLib.logic.binToBcd import BinToBcd
 from hwtLib.types.ctypes import uint32_t
+from hwt.hdl.types.defs import BIT
 
 
 class AxiS_strFormatItem():
@@ -224,7 +224,7 @@ class AxiS_strFormat(Unit):
         * connect an input string from an input AxiStream
         """
         dout = self.data_out
-        in_vld = hBit(1)
+        in_vld = BIT.from_py(1)
         res = []
         in_last = None
         string_rom_index_t = Bits(log2ceil(string_rom._dtype.size), signed=False)
@@ -310,9 +310,7 @@ class AxiS_strFormat(Unit):
             char_i_rst = out_last
         else:
             main_st = self._reg("main_st", Bits(log2ceil(element_cnt), signed=False), def_val=0)
-            out_vld = hBit(0)
-            out_last = hBit(0)
-            char_i_rst = hBit(0)
+            char_i_rst = out_last = out_vld = BIT.from_py(0)
             main_st_fsm = Switch(main_st)
             for is_last_f, (f_i, f) in iter_with_last(enumerate(self.FORMAT)):
                 en = main_st._eq(f_i)

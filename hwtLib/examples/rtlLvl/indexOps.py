@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.typeShortcuts import vec
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
 from hwt.hdl.types.bits import Bits
@@ -26,7 +25,7 @@ def IndexOps():
 
     s_out4 = n.sig("s_out4", Bits(16))
 
-    s_out(s_in[4:]._concat(vec(2, 4)))
+    s_out(s_in[4:]._concat(Bits(4).from_py(2)))
 
     s_out2[4:](s_in2[4:])
     s_out2[:4](s_in2[:4])

@@ -1,11 +1,11 @@
 from math import ceil
 
 from hwt.code import Concat
-from hwt.hdl.typeShortcuts import vec
 from hwt.math import log2ceil
 from hwtLib.amba.axi_comp.lsu.interfaces import AddrDataIntf
 from hwtLib.mem.cam import CamMultiPort
 from pyMathBitPrecise.bit_utils import apply_set_and_clear
+from hwt.hdl.types.bits import Bits
 
 
 def expand_byte_mask_to_bit_mask(m):
@@ -34,7 +34,7 @@ def extend_to_width_multiple_of_8(sig):
     if cosest_multiple_of_8 == w:
         return sig
     else:
-        return Concat(vec(0, cosest_multiple_of_8 - w), sig)
+        return Concat(Bits(cosest_multiple_of_8 - w).from_py(0), sig)
 
 
 class CamWithReadPort(CamMultiPort):
@@ -44,6 +44,7 @@ class CamWithReadPort(CamMultiPort):
 
     .. hwt-autodoc::
     """
+
     def _config(self):
         CamMultiPort._config(self)
         self.USE_VLD_BIT = False
@@ -58,7 +59,4 @@ class CamWithReadPort(CamMultiPort):
     def _impl(self):
         CamMultiPort._impl(self)
         self.read.data(self._mem[self.read.addr])
-
-
-
 

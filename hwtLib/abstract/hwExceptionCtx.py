@@ -2,7 +2,6 @@ from collections import deque
 from typing import Type, List, Tuple, Optional, Union
 
 from hwt.code import If
-from hwt.hdl.typeShortcuts import hBit
 from hwt.interfaces.std import HandshakeSync
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import walkPhysInterfaces
@@ -133,7 +132,7 @@ class HwExceptionCtx():
         ).Else(
            err_pending(raise_intf.vld & ~raise_intf.rd),
         )
-        raise_intf.vld._sig._nop_val = hBit(0)
+        raise_intf.vld._sig._nop_val = raise_intf.vld._sig._dtype.from_py(0)
         if exception.hw_args:
             for a_src, a_dst in zip(exception.hw_args, raise_intf.args):
                 connect_to_MonitorIntf(a_src, a_dst)

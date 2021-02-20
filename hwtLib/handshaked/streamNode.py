@@ -1,6 +1,6 @@
 from hwt.code import And, Or
-from hwt.hdl.typeShortcuts import hBit
 from hwt.pyUtils.arrayQuery import where
+from hwt.hdl.types.defs import BIT
 
 
 def _get_ready_signal(intf):
@@ -259,7 +259,7 @@ class StreamNode():
         if conds:
             r = And(*conds)
         else:
-            r = hBit(1)
+            r = BIT.from_py(1)
 
         if skip is not None:
             r = r & ~skip
@@ -279,7 +279,7 @@ class StreamNode():
         if conds:
             v = And(*conds)
         else:
-            v = hBit(1)
+            v = BIT.from_py(1)
 
         if skip is not None:
             v = v & ~skip

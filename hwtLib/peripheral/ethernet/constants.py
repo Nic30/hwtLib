@@ -1,11 +1,11 @@
-from hwt.hdl.typeShortcuts import vec
 from hwt.math import log2ceil
+from hwt.hdl.types.bits import Bits
 
 
 class ETH:
-    PREAMBLE_1B = vec(0x55, 8)
-    PREAMBLE = vec(0x55555555555555, 7*8)  # (7* 0x55)
-    SFD = vec(0xD5, 8)  # frame delimiter
+    PREAMBLE_1B = Bits(8).from_py(0x55)
+    PREAMBLE = Bits(7 * 8).from_py(0x55555555555555)  # (7* 0x55)
+    SFD = Bits(8).from_py(0xD5)  # frame delimiter
 
 
 class ETH_BITRATE:

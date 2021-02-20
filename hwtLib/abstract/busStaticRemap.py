@@ -1,8 +1,8 @@
 from hwt.code import SwitchLogic, Concat
-from hwt.hdl.typeShortcuts import vec
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.math import inRange, isPow2
+from hwt.hdl.types.bits import Bits
 
 
 class BusStaticRemap(Unit):
@@ -51,9 +51,10 @@ class BusStaticRemap(Unit):
                 _sig_in = sig_in[L:]
                 if out_is_aligned:
                     addr_drive = Concat(
-                        vec(offset_out, AW - L), _sig_in)
+                        Bits(AW - L).from_py(offset_out), _sig_in)
                 else:
-                    addr_drive = Concat(vec(0, AW - L), _sig_in) + offset_out
+                    addr_drive = Concat(Bits(AW - L).from_py(0),
+                                        _sig_in) + offset_out
             else:
                 en_sig = inRange(sig_in, offset_in, offset_in + size)
                 if offset_in == offset_out:

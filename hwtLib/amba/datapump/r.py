@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Switch, SwitchLogic
-from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
@@ -20,6 +19,7 @@ from hwtLib.amba.datapump.intf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
 from pyMathBitPrecise.bit_utils import mask
+from hwt.hdl.types.defs import BIT
 
 
 class TransEndInfo(HandshakeSync):
@@ -178,7 +178,7 @@ class Axi_rDatapump(AxiDatapumpBase):
         if self.axi.LEN_WIDTH:
             last = rIn.last
         else:
-            last = hBit(1)
+            last = BIT.from_py(1)
 
         rInLast = last
 
@@ -214,7 +214,7 @@ class Axi_rDatapump(AxiDatapumpBase):
 
             isSingleWordOnly = self.CHUNK_WIDTH * self.MAX_CHUNKS <= self.DATA_WIDTH and self.ALIGNAS % (self.CHUNK_WIDTH * self.MAX_CHUNKS) == 0
             if isSingleWordOnly:
-                first = hBit(1)
+                first = BIT.from_py(1)
             else:
                 # first beat of output frame (not necessary input frame, as multiple input
                 # frames could be merged in to a single output frame)

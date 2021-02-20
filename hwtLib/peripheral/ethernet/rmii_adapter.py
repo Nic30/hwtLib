@@ -2,7 +2,6 @@ from math import ceil
 
 from hwt.code import If, Concat, rol, Switch, In
 from hwt.hdl.operatorDefs import AllOps
-from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.utils import addClkRstn
@@ -203,7 +202,7 @@ class RmiiAdapter(Unit):
         # bit collection logic
         If(st._eq(st_t.skip0),
             cntr(1<<1),
-            reg0(Concat(din, vec(0, D_W - RMII_W))),
+            reg0(Concat(din, Bits(D_W - RMII_W).from_py(0))),
         ).Elif(In(st, [st_t.preamble_and_sfd, st_t.data]),
             # shift in LSB first
             # :note: only D_W - RMII_W bits is captured in reg0

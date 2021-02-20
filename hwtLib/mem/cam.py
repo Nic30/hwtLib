@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If, Concat
-from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
@@ -13,6 +12,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataVldHs, AddrDataHs
 from hwtLib.handshaked.streamNode import StreamNode
+from hwt.hdl.types.defs import BIT
 
 
 @serializeParamsUniq
@@ -69,7 +69,7 @@ class Cam(Unit):
 
         key_data = key.data
         if self.USE_VLD_BIT:
-            key_data = Concat(key.data, hBit(1))
+            key_data = Concat(key.data, BIT.from_py(1))
 
         out_one_hot = []
         for i in range(self.ITEMS):

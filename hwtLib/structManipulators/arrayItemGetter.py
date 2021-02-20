@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat, Switch
-from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.std import Handshaked, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil, isPow2
@@ -12,6 +11,7 @@ from hwt.synthesizer.vectorUtils import fitTo
 from hwtLib.amba.datapump.intf import AxiRDatapumpIntf
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
+from hwt.hdl.types.bits import Bits
 
 
 class ArrayItemGetter(Unit):
@@ -70,7 +70,7 @@ class ArrayItemGetter(Unit):
         req.rem(0)
 
         if ITEMS_IN_DATA_WORD == 1:
-            addr = Concat(self.index.data, vec(0, log2ceil(ITEM_WIDTH // 8)))
+            addr = Concat(self.index.data, Bits(log2ceil(ITEM_WIDTH // 8)).from_py(0))
             req.addr(self.base + fitTo(addr, req.addr))
             StreamNode(masters=[self.index], slaves=[req]).sync()
 
@@ -83,7 +83,7 @@ class ArrayItemGetter(Unit):
             subIndexBits = f.dataIn.data._dtype.bit_length()
             itemAlignBits = log2ceil(ITEM_WIDTH // 8)
             addr = Concat(self.index.data[:subIndexBits],
-                          vec(0, itemAlignBits + subIndexBits))
+                          Bits(itemAlignBits + subIndexBits).from_py(0))
 
             req.addr(self.base + fitTo(addr, req.addr))
             f.dataIn.data(self.index.data[subIndexBits:])

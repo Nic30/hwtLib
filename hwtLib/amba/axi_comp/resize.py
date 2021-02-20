@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat, Switch
-from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
@@ -12,6 +11,7 @@ from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
+from hwt.hdl.types.bits import Bits
 
 
 class AxiResize(BusBridge):
@@ -60,7 +60,7 @@ class AxiResize(BusBridge):
         align_fifo.DEPTH = self.MAX_TRANS_OVERLAP
         setattr(self, name_prefix + "align_fifo", align_fifo)
 
-        aligned_addr = Concat(m_a.addr[:AL_OUT_W], vec(0, AL_OUT_W))
+        aligned_addr = Concat(m_a.addr[:AL_OUT_W], Bits(AL_OUT_W).from_py(0))
         align_fifo.dataIn.data(m_a.addr[AL_OUT_W:AL_IN_W])
 
         s_a(m_a, exclude={m_a.addr, m_a.valid, m_a.ready})
@@ -82,10 +82,10 @@ class AxiResize(BusBridge):
         else:
             data = []
             if dst_h < dst_w:
-                data.append(vec(0, dst_w - dst_h))
+                data.append(Bits(dst_w - dst_h).from_py(0))
             data.append(src[src_h:src_l])
             if dst_l > 0:
-                data.append(vec(0, dst_l))
+                data.append(Bits(dst_l).from_py(0))
             return dst(Concat(*data))
 
     def connect_shifted(self, src_ch, dst_ch, i):

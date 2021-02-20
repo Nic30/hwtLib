@@ -15,7 +15,6 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axi4 import Axi4, Axi4_r, Axi4_addr
 from hwtLib.amba.axi_comp.cache.addrTypeConfig import CacheAddrTypeConfig
 from hwtLib.amba.axi_comp.cache.lru_array import AxiCacheLruArray, IndexWayHs
@@ -33,7 +32,6 @@ from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.binToOneHot import binToOneHot
 from hwtLib.mem.ram import RamSingleClock
 from pyMathBitPrecise.bit_utils import mask
-from hwt.hdl.typeShortcuts import vec
 
 
 class HsStructIntf(HandshakeSync):
