@@ -4,18 +4,18 @@
 import unittest
 
 from hwtLib.clocking.cdc import Cdc
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtSimApi.constants import CLK_PERIOD
 from hwtSimApi.triggers import Timer, WaitWriteOnly, WaitCombRead
 
 
-class CdcTC(SingleUnitSimTestCase):
+class CdcTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = Cdc()
         u.DATA_WIDTH = 32
-        return u
+        cls.compileSim(u)
 
     def runSim(self, dataInStimul, until=10 * CLK_PERIOD):
         collected = []

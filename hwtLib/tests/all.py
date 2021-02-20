@@ -4,7 +4,7 @@
 import sys
 from unittest import TestLoader, TextTestRunner, TestSuite
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.busEndpoint_test import BusEndpointTC
 from hwtLib.abstract.frame_utils.alignment_utils_test import FrameAlignmentUtilsTC
 from hwtLib.abstract.frame_utils.join.test import FrameJoinUtilsTC
@@ -239,7 +239,7 @@ from hwtLib.xilinx.primitive.examples.dsp48e1Add_test import Dsp48e1Add_TCs
 def testSuiteFromTCs(*tcs):
     loader = TestLoader()
     for tc in tcs:
-        if not issubclass(tc, SingleUnitSimTestCase):
+        if not issubclass(tc, SimTestCase):
             tc._multiprocess_can_split_ = True
     loadedTcs = [
         loader.loadTestsFromTestCase(tc) for tc in tcs

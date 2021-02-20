@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
-from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceRAM
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwt.synthesizer.utils import synthesised
 import unittest
 from unittest.case import TestCase
 
+from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
+from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceRAM
+from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.utils import synthesised
 from hwtLib.examples.mem.ram import SimpleAsyncRam, SimpleSyncRam
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class SimpleAsyncRamTC(SingleUnitSimTestCase):
+class SimpleAsyncRamTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = SimpleAsyncRam()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_async_allData(self):
         u = self.u
@@ -33,12 +33,12 @@ class SimpleAsyncRamTC(SingleUnitSimTestCase):
         ae(u.dout._ag.data, [None, 10, 11, 12, None, None, None, 17])
 
 
-class SimpleSyncRamTC(SingleUnitSimTestCase):
+class SimpleSyncRamTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = SimpleSyncRam()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_sync_allData(self):
         u = self.u

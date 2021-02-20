@@ -3,7 +3,7 @@
 
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
@@ -35,11 +35,12 @@ class SimpleSubunit2(Unit):
         self.b0(u.b)
 
 
-class SimpleSubunit2TC(SingleUnitSimTestCase):
+class SimpleSubunit2TC(SimTestCase):
 
     @classmethod
-    def getUnit(cls) -> Unit:
-        return SimpleSubunit2()
+    def setUpClass(cls):
+        cls.u = SimpleSubunit2()
+        cls.compileSim(cls.u)
 
     def test_simplePass(self):
         u = self.u

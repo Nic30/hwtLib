@@ -4,17 +4,17 @@
 import unittest
 
 from hwt.hdl.constants import NOP
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.structManipulators.cLinkedListReader import CLinkedListReader
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 
 
-class CLinkedListReaderTC(SingleUnitSimTestCase):
+class CLinkedListReaderTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = CLinkedListReader()
         cls.ITEMS_IN_BLOCK = 31
         cls.PTR_WIDTH = 8
@@ -29,7 +29,7 @@ class CLinkedListReaderTC(SingleUnitSimTestCase):
         u.PTR_WIDTH = cls.PTR_WIDTH
         u.BUFFER_CAPACITY = cls.BUFFER_CAPACITY
         u.DATA_WIDTH = cls.DATA_WIDTH
-        return u
+        cls.compileSim(u)
 
     def test_tailHeadPrincipe(self):
         BITS = 16

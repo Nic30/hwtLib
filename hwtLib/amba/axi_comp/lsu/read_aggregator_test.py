@@ -5,7 +5,7 @@ from math import ceil
 
 from hwt.pyUtils.arrayQuery import flatten
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import allValuesToInts
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.lsu.read_aggregator import AxiReadAggregator
@@ -15,17 +15,17 @@ from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class AxiReadAggregator_1word_burst_TC(SingleUnitSimTestCase):
+class AxiReadAggregator_1word_burst_TC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiReadAggregator()
         u.ID_WIDTH = 2
         u.CACHE_LINE_SIZE = 4
         u.DATA_WIDTH = 4 * 8
         cls.ID_CNT = 2 ** u.ID_WIDTH
         cls.WORD_SIZE = u.DATA_WIDTH // 8
-        return u
+        cls.compileSim(u)
 
     def test_no_comb_loops(self):
         s = CombLoopAnalyzer()
@@ -147,14 +147,14 @@ class AxiReadAggregator_1word_burst_TC(SingleUnitSimTestCase):
 class AxiReadAggregator_2word_burst_TC(AxiReadAggregator_1word_burst_TC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiReadAggregator()
         u.ID_WIDTH = 2
         u.CACHE_LINE_SIZE = 8
         u.DATA_WIDTH = 4 * 8
         cls.ID_CNT = 2 ** u.ID_WIDTH
         cls.WORD_SIZE = u.DATA_WIDTH // 8
-        return u
+        cls.compileSim(u)
 
 
 AxiReadAggregator_TCs = [

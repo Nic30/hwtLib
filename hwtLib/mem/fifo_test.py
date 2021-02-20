@@ -5,7 +5,7 @@ import unittest
 
 from hwt.interfaces.std import FifoReader, FifoWriter
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.mem.fifo import Fifo
 from hwtSimApi.constants import CLK_PERIOD
@@ -31,13 +31,13 @@ class FifoWriterPassTrought(FifoReaderPassTrought):
         self.dout = FifoWriter()._m()
 
 
-class FifoReaderAgentTC(SingleUnitSimTestCase):
+class FifoReaderAgentTC(SimTestCase):
     CLK = CLK_PERIOD
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = FifoReaderPassTrought()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_fifoReader(self):
         u = self.u
@@ -51,13 +51,13 @@ class FifoReaderAgentTC(SingleUnitSimTestCase):
         self.assertValSequenceEqual(u.dout._ag.data, ref)
 
 
-class FifoWriterAgentTC(SingleUnitSimTestCase):
+class FifoWriterAgentTC(SimTestCase):
     CLK = CLK_PERIOD
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = FifoWriterPassTrought()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_fifoWriter(self):
         u = self.u
@@ -72,19 +72,19 @@ class FifoWriterAgentTC(SingleUnitSimTestCase):
         self.assertValSequenceEqual(u.dout._ag.data, ref)
 
 
-class FifoTC(SingleUnitSimTestCase):
+class FifoTC(SimTestCase):
     ITEMS = 4
     IN_CLK = CLK_PERIOD
     OUT_CLK = CLK_PERIOD
     CLK = max(IN_CLK, OUT_CLK)  # clock used for resolving of sim duration
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = Fifo()
         u.DATA_WIDTH = 8
         u.DEPTH = cls.ITEMS
         u.EXPORT_SIZE = True
-        return u
+        cls.compileSim(cls.u)
 
     def getFifoItems(self):
         m = self.rtl_simulator.io.memory

@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.datapump.interconnect.wStrictOrder import WStrictOrderInterconnect
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from pyMathBitPrecise.bit_utils import mask
@@ -14,15 +14,15 @@ def mkReq(addr, _len, rem=0, _id=0):
     return (_id, addr, _len, rem)
 
 
-class WStrictOrderInterconnectTC(SingleUnitSimTestCase):
+class WStrictOrderInterconnectTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = WStrictOrderInterconnect()
         u.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP = 4
         cls.DATA_WIDTH = u.DATA_WIDTH
         u.DRIVER_CNT = cls.DRIVER_CNT = 2
-        return u
+        cls.compileSim(u)
 
     def test_nop(self):
         u = self.u
@@ -165,15 +165,15 @@ class WStrictOrderInterconnectTC(SingleUnitSimTestCase):
             self.assertSequenceEqual(v, expected)
 
 
-class WStrictOrderInterconnect2TC(SingleUnitSimTestCase):
+class WStrictOrderInterconnect2TC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = cls.u = WStrictOrderInterconnect()
         u.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP = 4
         cls.DATA_WIDTH = u.DATA_WIDTH = 64
         u.DRIVER_CNT = cls.DRIVER_CNT = 3
-        return u
+        cls.compileSim(u)
 
     def test_3x128(self):
         u = self.u

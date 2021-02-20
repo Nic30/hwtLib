@@ -5,13 +5,13 @@ from binascii import crc32
 import sys
 
 from hwt.hdl.constants import Time
-from hwt.hdl.typeShortcuts import vec
 from hwt.pyUtils.arrayQuery import grouper
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.logic.crc import Crc
 from hwtLib.logic.crcComb_test import stoi
 from hwtLib.logic.crcPoly import CRC_32
 from pyMathBitPrecise.bit_utils import mask
+from hwt.hdl.types.bits import Bits
 
 
 # , crc_hqx
@@ -51,14 +51,14 @@ class CrcTC(SimTestCase):
         u = self.u = Crc()
         u.setConfig(poly)
         if initval is not None:
-            u.INIT = vec(initval, poly.WIDTH)
+            u.INIT = Bits(poly.WIDTH).from_py(initval)
         u.DATA_WIDTH = dataWidth
         if refin is not None:
             u.REFIN = refin
         if refout is not None:
             u.REFOUT = refout
         if finxor is not None:
-            u.XOROUT = vec(finxor, poly.WIDTH)
+            u.XOROUT = Bits(poly.WIDTH).from_py(finxor)
         u.MASK_GRANULARITY = 8 if use_mask else None
         u.IN_IS_BIGENDIAN = is_bigendian
 

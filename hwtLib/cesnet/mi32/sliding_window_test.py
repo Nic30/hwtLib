@@ -2,22 +2,22 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.constants import READ, WRITE
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.cesnet.mi32.sim_ram import Mi32SimRam
 from hwtLib.cesnet.mi32.sliding_window import Mi32SlidingWindow
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
 
 
-class Mi32SlidingWindowTC(SingleUnitSimTestCase):
+class Mi32SlidingWindowTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = Mi32SlidingWindow()
         u.M_ADDR_WIDTH = 12
         u.WINDOW_SIZE = int(2 ** 10)
         u.ADDR_WIDTH = 11
-        return u
+        cls.compileSim(u)
 
     def test_read_offset_default(self, MAGIC=99, N=3):
         u = self.u

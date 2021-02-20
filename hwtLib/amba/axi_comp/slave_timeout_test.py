@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.slave_timeout import AxiSlaveTimeout
@@ -10,14 +10,13 @@ from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class AxiSlaveTimeoutTC(SingleUnitSimTestCase):
+class AxiSlaveTimeoutTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        u = AxiSlaveTimeout(Axi4)
+    def setUpClass(cls):
+        u = cls.u = AxiSlaveTimeout(Axi4)
         u.TIMEOUT = 4
-        cls.u = u
-        return u
+        cls.compileSim(u)
 
     def randomize_all(self):
         u = self.u

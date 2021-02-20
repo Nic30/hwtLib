@@ -1,12 +1,13 @@
 from typing import List
 
 from hwt.pyUtils.arrayQuery import iter_with_last
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.ram import Axi4LiteSimRam
 from hwtLib.amba.axiLite_comp.to_axi_test import AxiLite_to_Axi_TC
 from hwtLib.amba.axi_comp.to_axiLite import Axi_to_AxiLite
 from hwtLib.amba.constants import RESP_OKAY
-from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import mask
 
 
 def split_frames(raw_agent_data):
@@ -38,9 +39,9 @@ class Axi_to_AxiLite_TC(AxiLite_to_Axi_TC):
     MAX_LEN = 4
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = Axi_to_AxiLite()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def create_w_frame(self, words: List[int]):
         """

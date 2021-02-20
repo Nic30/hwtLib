@@ -6,18 +6,18 @@ from unittest.case import TestCase
 
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceRAM
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.utils import synthesised
 from hwtLib.examples.mem.rom import SimpleRom, SimpleSyncRom
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class SimpleRomTC(SingleUnitSimTestCase):
+class SimpleRomTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = SimpleRom()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_async_allData(self):
         u = self.u
@@ -30,12 +30,12 @@ class SimpleRomTC(SingleUnitSimTestCase):
             u.dout._ag.data, [1, 2, 3, 4, None, 4, 3, 2])
 
 
-class SimpleSyncRomTC(SingleUnitSimTestCase):
+class SimpleSyncRomTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = SimpleSyncRom()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_sync_allData(self):
         u = self.u

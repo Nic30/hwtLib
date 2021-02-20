@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
 from hwtLib.amba.axis_comp.frameGen import AxisFrameGen
@@ -12,7 +12,7 @@ from hwtLib.amba.axiLite_comp.sim.mem_space_master import AxiLiteMemSpaceMaster
 from pyMathBitPrecise.bit_utils import mask
 
 
-class AxisFrameGenTC(SingleUnitSimTestCase):
+class AxisFrameGenTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):

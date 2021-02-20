@@ -1,7 +1,9 @@
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.datapump.r import Axi_rDatapump
 from hwtLib.amba.datapump.r_aligned_test import Axi3Lite_rDatapumpTC, \
     Axi3_rDatapumpTC
+from hwtLib.amba.axi3 import Axi3
 
 
 class Axi4Lite_rDatapump_alignas8TC(Axi3Lite_rDatapumpTC):
@@ -9,13 +11,13 @@ class Axi4Lite_rDatapump_alignas8TC(Axi3Lite_rDatapumpTC):
     ALIGNAS = 8
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = Axi_rDatapump(axiCls=Axi4Lite)
         u.DATA_WIDTH = cls.DATA_WIDTH
         u.CHUNK_WIDTH = cls.CHUNK_WIDTH
         u.MAX_CHUNKS = (cls.DATA_WIDTH // cls.CHUNK_WIDTH) * (cls.LEN_MAX_VAL + 1)
         u.ALIGNAS = cls.ALIGNAS
-        return u
+        cls.compileSim(u)
 
 
 class Axi4Lite_rDatapump_16b_from_64bTC(Axi4Lite_rDatapump_alignas8TC):
@@ -29,13 +31,14 @@ class Axi3_rDatapump_alignas8_TC(Axi3_rDatapumpTC):
     CHUNK_WIDTH = 8
 
     @classmethod
-    def getUnit(cls):
-        u = Axi3_rDatapumpTC.getUnit()
+    def setUpClass(cls):
+        u = Axi_rDatapump(axiCls=Axi3)
+        u.ALIGNAS = cls.ALIGNAS
         u.DATA_WIDTH = cls.DATA_WIDTH
         u.CHUNK_WIDTH = cls.CHUNK_WIDTH
         u.MAX_CHUNKS = (cls.DATA_WIDTH // cls.CHUNK_WIDTH) * (cls.LEN_MAX_VAL + 1)
         u.ALIGNAS = cls.ALIGNAS
-        return u
+        cls.compileSim(u)
 
 
 Axi_rDatapump_unalignedTCs = [

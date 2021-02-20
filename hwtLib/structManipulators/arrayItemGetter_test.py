@@ -3,22 +3,22 @@
 
 import unittest
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.structManipulators.arrayItemGetter import ArrayItemGetter
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class ArrayItemGetterTC(SingleUnitSimTestCase):
+class ArrayItemGetterTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = ArrayItemGetter()
         u.ID = 3
         u.ITEMS = 32
         u.DATA_WIDTH = 64
         u.ITEM_WIDTH = 64
-        return u
+        cls.compileSim(u)
 
     def test_nop(self):
         u = self.u
@@ -45,16 +45,16 @@ class ArrayItemGetterTC(SingleUnitSimTestCase):
         self.assertValSequenceEqual(u.item._ag.data, [MAGIC, ])
 
 
-class ArrayItemGetter2in1WordTC(SingleUnitSimTestCase):
+class ArrayItemGetter2in1WordTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = ArrayItemGetter()
         u.ID = 3
         u.ITEMS = 32
         u.DATA_WIDTH = 64
         u.ITEM_WIDTH = 32
-        return u
+        cls.compileSim(u)
 
     def test_nop(self):
         u = self.u

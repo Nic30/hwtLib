@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.statements.constDriver import ConstDriverUnit
 
 
-class ConstDriverTC(SingleUnitSimTestCase):
+class ConstDriverTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = ConstDriverUnit()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_simple(self):
         u = self.u

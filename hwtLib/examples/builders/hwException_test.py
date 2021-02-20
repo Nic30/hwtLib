@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.builders.hwException import HwExceptionCatch
 from hwtSimApi.constants import CLK_PERIOD
 from hwtSimApi.triggers import WaitWriteOnly
 
 
-class HwExceptionCatch_TC(SingleUnitSimTestCase):
+class HwExceptionCatch_TC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = HwExceptionCatch()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_non_error(self):
         data = [i + 3 for i in range(100)]

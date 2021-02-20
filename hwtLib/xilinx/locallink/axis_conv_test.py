@@ -5,7 +5,7 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
@@ -35,12 +35,12 @@ class LocalLink_AxiSConvTest(Unit):
         self.dataOut(self.conv1.dataOut)
 
 
-class AxiS_localLinkConvTC(SingleUnitSimTestCase):
+class AxiS_localLinkConvTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = LocalLink_AxiSConvTest()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_nop(self):
         u = self.u

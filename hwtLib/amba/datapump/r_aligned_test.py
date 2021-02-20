@@ -1,6 +1,7 @@
 #!/usr/bin/env python3e
 # -*- coding: utf-8 -*-
 
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi3Lite import Axi3Lite
 from hwtLib.amba.axi4 import Axi4
@@ -21,14 +22,14 @@ class Axi4_rDatapumpTC(Axi_datapumpTC):
     ALIGNAS = DATA_WIDTH
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = Axi_rDatapump(axiCls=Axi4)
         u.DATA_WIDTH = cls.DATA_WIDTH
         u.CHUNK_WIDTH = cls.CHUNK_WIDTH
         assert cls.CHUNK_WIDTH == cls.DATA_WIDTH
         u.MAX_CHUNKS = cls.LEN_MAX_VAL + 1
         u.ALIGNAS = cls.ALIGNAS
-        return u
+        cls.compileSim(u)
 
     def test_nop(self):
         u = self.u
@@ -250,14 +251,14 @@ class Axi3_rDatapumpTC(Axi4_rDatapumpTC):
     LEN_MAX_VAL = 15
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = Axi_rDatapump(axiCls=Axi3)
         u.DATA_WIDTH = cls.DATA_WIDTH
         u.CHUNK_WIDTH = cls.CHUNK_WIDTH
         assert cls.CHUNK_WIDTH == cls.DATA_WIDTH
         u.MAX_CHUNKS = cls.LEN_MAX_VAL + 1
         u.ALIGNAS = cls.ALIGNAS
-        return u
+        cls.compileSim(u)
 
 
 class Axi3Lite_rDatapumpTC(Axi4_rDatapumpTC):
@@ -267,14 +268,14 @@ class Axi3Lite_rDatapumpTC(Axi4_rDatapumpTC):
     ALIGNAS = Axi4_rDatapumpTC.ALIGNAS
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = Axi_rDatapump(axiCls=Axi3Lite)
         u.DATA_WIDTH = cls.DATA_WIDTH
         u.CHUNK_WIDTH = cls.CHUNK_WIDTH
         assert cls.CHUNK_WIDTH == cls.DATA_WIDTH
         u.MAX_CHUNKS = cls.LEN_MAX_VAL + 1
         u.ALIGNAS = cls.ALIGNAS
-        return u
+        cls.compileSim(u)
 
     def rTrans(self, data, _id=0, resp=RESP_OKAY, last=True):
         assert last

@@ -3,17 +3,17 @@
 import unittest
 
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.statements.fsm import FsmExample, HadrcodedFsmExample
 
 
-class FsmExampleTC(SingleUnitSimTestCase):
+class FsmExampleTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = FsmExample()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_allCases(self):
         u = self.u
@@ -30,9 +30,9 @@ class FsmExampleTC(SingleUnitSimTestCase):
 class HadrcodedFsmExampleTC(FsmExampleTC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = HadrcodedFsmExample()
-        return cls.u
+        cls.compileSim(cls.u)
 
 
 class FsmSerializationTC(BaseSerializationTC):

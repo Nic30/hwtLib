@@ -1,17 +1,17 @@
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.peripheral.mdio.intf import Mdio
 from hwtLib.peripheral.mdio.master import MdioMaster
 from hwtSimApi.constants import Time
 
 
-class MdioMasterTC(SingleUnitSimTestCase):
+class MdioMasterTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = MdioMaster()
         u.FREQ = int(10e6)
         cls.MDIO_CLK = int((1e9 / u.MDIO_FREQ) * Time.ns)
-        return u
+        cls.compileSim(u)
 
     def test_nop(self):
         MDIO_CLK = self.MDIO_CLK

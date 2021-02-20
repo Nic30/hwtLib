@@ -1,13 +1,13 @@
 from typing import Optional, List
 
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from pyMathBitPrecise.bit_utils import mask, get_bit_range, get_bit
 
 
-class Axi_datapumpTC(SingleUnitSimTestCase):
+class Axi_datapumpTC(SimTestCase):
 
     def aTrans(self, addr, _len, _id):
         axi = self.u.axi

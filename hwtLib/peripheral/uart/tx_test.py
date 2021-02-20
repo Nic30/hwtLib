@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import valToInt
 from hwtLib.peripheral.uart.tx import UartTx
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class UartTxTC(SingleUnitSimTestCase):
+class UartTxTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = UartTx()
         u.BAUD = 115200
         u.FREQ = 115200
-        return u
+        cls.compileSim(u)
 
     def setUp(self):
-        SingleUnitSimTestCase.setUp(self)
+        SimTestCase.setUp(self)
         self.randomize(self.u.dataIn)
 
     def getStr(self):

@@ -7,13 +7,13 @@ import unittest
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis import axis_recieve_bytes, axis_send_bytes
 from hwtLib.amba.axis_comp.frame_join import AxiS_FrameJoin
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class AxiS_FrameJoin_1x_2B_TC(SingleUnitSimTestCase):
+class AxiS_FrameJoin_1x_2B_TC(SimTestCase):
     D_B = 2
     FRAME_CNT = 1
     T = HStruct(
@@ -21,11 +21,11 @@ class AxiS_FrameJoin_1x_2B_TC(SingleUnitSimTestCase):
     )
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = AxiS_FrameJoin()
         u.T = cls.T
         u.DATA_WIDTH = cls.D_W = cls.D_B * 8
-        return u
+        cls.compileSim(u)
 
     def send(self, input_i, data_B, offset):
         axis_send_bytes(self.u.dataIn[input_i], data_B, offset=offset)

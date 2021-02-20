@@ -5,23 +5,23 @@ from collections import deque
 from itertools import chain
 
 from hwt.math import log2ceil
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar import AxiInterconnectMatrixAddrCrossbar
 from hwtSimApi.constants import CLK_PERIOD
+from hwt.simulator.simTestCase import SimTestCase
 
 
-class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
+class AxiInterconnectMatrixAddrCrossbar_1to1TC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiInterconnectMatrixAddrCrossbar(Axi4.AR_CLS)
         u.MASTERS = ({0},)
         u.SLAVES = (
             (0x0000, 0x1000),
         )
         u.ADDR_WIDTH = log2ceil(0x1000 - 1)
-        return u
+        cls.compileSim(u)
 
     def addr_transaction(self, id_, addr, len_):
         axi_addr = self.u.m[0]
@@ -129,7 +129,7 @@ class AxiInterconnectMatrixAddrCrossbar_1to1TC(SingleUnitSimTestCase):
 class AxiInterconnectMatrixAddrCrossbar_1to3TC(AxiInterconnectMatrixAddrCrossbar_1to1TC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiInterconnectMatrixAddrCrossbar(Axi4.AR_CLS)
         u.MASTERS = ({0, 1, 2}, )
         u.SLAVES = (
@@ -138,26 +138,25 @@ class AxiInterconnectMatrixAddrCrossbar_1to3TC(AxiInterconnectMatrixAddrCrossbar
             (0x2000, 0x1000),
         )
         u.ADDR_WIDTH = log2ceil(0x4000 - 1)
-        return u
-
+        cls.compileSim(u)
 
 class AxiInterconnectMatrixAddrCrossbar_3to1TC(AxiInterconnectMatrixAddrCrossbar_1to1TC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiInterconnectMatrixAddrCrossbar(Axi4.AR_CLS)
         u.MASTERS = ({0}, {0}, {0})
         u.SLAVES = (
             (0x0000, 0x1000),
         )
         u.ADDR_WIDTH = log2ceil(0x2000 - 1)
-        return u
+        cls.compileSim(u)
 
 
 class AxiInterconnectMatrixAddrCrossbar_3to3TC(AxiInterconnectMatrixAddrCrossbar_1to1TC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiInterconnectMatrixAddrCrossbar(Axi4.AR_CLS)
         #u.MASTERS = ({0, 1}, {0, 1})
         #u.SLAVES = (
@@ -172,7 +171,7 @@ class AxiInterconnectMatrixAddrCrossbar_3to3TC(AxiInterconnectMatrixAddrCrossbar
             (0x2000, 0x1000),
         )
         u.ADDR_WIDTH = log2ceil(0x4000 - 1)
-        return u
+        cls.compileSim(u)
 
 
 class AxiInterconnectMatrixAddrCrossbar_2to1_2to1_1toAllTC(AxiInterconnectMatrixAddrCrossbar_1to1TC):
@@ -182,7 +181,7 @@ class AxiInterconnectMatrixAddrCrossbar_2to1_2to1_1toAllTC(AxiInterconnectMatrix
     M4    -> S0,S1
     """
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiInterconnectMatrixAddrCrossbar(Axi4.AR_CLS)
         u.MASTERS = ({0}, {0}, {1}, {1}, {0, 1})
         u.SLAVES = (
@@ -190,7 +189,7 @@ class AxiInterconnectMatrixAddrCrossbar_2to1_2to1_1toAllTC(AxiInterconnectMatrix
             (0x1000, 0x1000),
         )
         u.ADDR_WIDTH = log2ceil(0x2000 - 1)
-        return u
+        cls.compileSim(u)
 
 
 AxiInterconnectMatrixAddrCrossbar_TCs = [

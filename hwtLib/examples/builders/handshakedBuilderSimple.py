@@ -4,7 +4,7 @@
 from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.handshaked.builder import HsBuilder
 
@@ -56,27 +56,27 @@ class HandshakedBuilderSimple(Unit):
 
 
 # SimTestCase is unittest.TestCase with some extra methods
-class HandshakedBuilderSimpleTC(SingleUnitSimTestCase):
+class HandshakedBuilderSimpleTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        # SingleUnitSimTestCase.setUpClass calls this method
+    def setUpClass(cls):
+        # SimTestCase.setUpClass calls this method
         # and will build a simulator of this component
         cls.u = HandshakedBuilderSimple()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_passData(self):
         # now in setUpClass call the simulator was build
         #     in setU       call the simulator was initialized
         #                   and signals in .u are replaced
-        #                   with proxies for simulator 
+        #                   with proxies for simulator
         u = self.u
         # add data on input of agent for "a" interface
         u.a._ag.data.extend([1, 2, 3, 4])
 
         self.runSim(200 * Time.ns)
 
-        # check if data was recieved on "b" interface 
+        # check if data was recieved on "b" interface
         self.assertValSequenceEqual(u.b._ag.data, [1, 2, 3, 4])
 
 

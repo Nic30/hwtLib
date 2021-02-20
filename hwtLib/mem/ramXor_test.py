@@ -2,21 +2,20 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.constants import WRITE, READ
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.ramXor import RamXorSingleClock
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class RamXorSingleClockTC(SingleUnitSimTestCase):
+class RamXorSingleClockTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        u = RamXorSingleClock()
+    def setUpClass(cls):
+        u = cls.u = RamXorSingleClock()
         u.PORT_CNT = (WRITE, WRITE, READ)
         u.DATA_WIDTH = 8
         u.ADDR_WIDTH = 3
-        cls.u = u
-        return u
+        cls.compileSim(u)
 
     def test_writeAndRead(self):
         u = self.u

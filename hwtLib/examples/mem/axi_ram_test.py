@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.to_axiLite_test import Axi_to_AxiLite_TC, split_frames
 from hwtLib.amba.constants import RESP_OKAY
@@ -13,10 +14,10 @@ class Axi4BRam_TC(Axi_to_AxiLite_TC):
     MAX_LEN = 4
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = Axi4BRam()
         cls.u.DATA_WIDTH = 64
-        return cls.u
+        cls.compileSim(cls.u)
 
     def randomize_all(self):
         axi_randomize_per_channel(self, self.u.s)

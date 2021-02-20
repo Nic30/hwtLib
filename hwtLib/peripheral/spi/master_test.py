@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.peripheral.spi.master import SpiMaster
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class SpiMasterTC(SingleUnitSimTestCase):
+class SpiMasterTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = SpiMaster()
         u.SPI_FREQ_PESCALER = 8
-        return u
+        cls.compileSim(u)
 
     def test_readAndWrite8bits(self):
         u = self.u

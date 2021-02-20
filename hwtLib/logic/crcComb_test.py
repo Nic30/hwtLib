@@ -5,13 +5,13 @@ from binascii import crc32, crc_hqx
 import os
 
 from hwt.hdl.constants import Time
-from hwt.hdl.typeShortcuts import vec
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.logic.crcComb import CrcComb
 from hwtLib.logic.crcPoly import CRC_1, CRC_8_CCITT, CRC_16_CCITT, CRC_32, \
     CRC_8_SAE_J1850, CRC_5_USB
 from pyMathBitPrecise.bit_utils import get_bit, bit_list_to_int, mask, \
     bit_list_reversed_endianity, bit_list_reversed_bits_in_bytes, reverse_bits
+from hwt.hdl.types.bits import Bits
 
 
 def stoi(s):
@@ -78,13 +78,13 @@ class CrcCombTC(SimTestCase):
         u.setConfig(poly)
         u.DATA_WIDTH = dataWidth
         if initval is not None:
-            u.INIT = vec(initval, poly.WIDTH)
+            u.INIT = Bits(poly.WIDTH).from_py(initval)
         if refin is not None:
             u.REFIN = refin
         if refout is not None:
             u.REFOUT = refout
         if finxor is not None:
-            u.XOROUT = vec(finxor, poly.WIDTH)
+            u.XOROUT = Bits(poly.WIDTH).from_py(finxor)
         u.IN_IS_BIGENDIAN = bigendian
         self.compileSimAndStart(u)
         return u

@@ -3,7 +3,7 @@
 
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceLatch
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.rtlLevel.signalUtils.exceptions import SignalDriverErr
 from hwt.synthesizer.utils import to_rtl_str, synthesised
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
@@ -12,11 +12,12 @@ from hwtLib.examples.mem.reg import DReg, DoubleDReg, OptimizedOutReg, \
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class DRegTC(SingleUnitSimTestCase):
+class DRegTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        return DReg()
+    def setUpClass(cls):
+        cls.u = DReg()
+        cls.compileSim(cls.u)
 
     def test_simple(self):
         self.u.din._ag.data.extend(
@@ -30,11 +31,12 @@ class DRegTC(SingleUnitSimTestCase):
         self.assertValSequenceEqual(recieved, expected)
 
 
-class DoubleRRegTC(SingleUnitSimTestCase):
+class DoubleRRegTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        return DoubleDReg()
+    def setUpClass(cls):
+        cls.u = DoubleDReg()
+        cls.compileSim(cls.u)
 
     def test_double(self):
         self.u.din._ag.data.extend(
@@ -49,11 +51,12 @@ class DoubleRRegTC(SingleUnitSimTestCase):
         self.assertValSequenceEqual(recieved, expected)
 
 
-class DReg_asyncRstTC(SingleUnitSimTestCase):
+class DReg_asyncRstTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        return DReg_asyncRst()
+    def setUpClass(cls):
+        cls.u = DReg_asyncRst()
+        cls.compileSim(cls.u)
 
     def test_async_rst(self):
         self.u.rst._ag.initDelay = 3 * CLK_PERIOD

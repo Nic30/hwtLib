@@ -1,19 +1,19 @@
 import unittest
 
 from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.peripheral.ethernet.constants import ETH
 from hwtLib.peripheral.ethernet.rmii_adapter import RmiiAdapter
 from hwtSimApi.constants import Time
 
 
-class RmiiAdapterTC(SingleUnitSimTestCase):
+class RmiiAdapterTC(SimTestCase):
     CLK = int(Time.s / 50e6)
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = RmiiAdapter()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_nop(self):
         u = self.u

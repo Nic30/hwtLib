@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.interfaces.std import Handshaked
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import valuesToInts
 from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwtSimApi.constants import CLK_PERIOD
@@ -14,16 +14,16 @@ def dataFn(d):
     return d._ag.data
 
 
-class HsJoinFair_2inputs_TC(SingleUnitSimTestCase):
+class HsJoinFair_2inputs_TC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = HsJoinFairShare(Handshaked)
         cls.INPUTS = 2
         u.INPUTS = cls.INPUTS
         u.DATA_WIDTH = 8
         u.EXPORT_SELECTED = True
-        return u
+        cls.compileSim(u)
 
     def addToAllInputs(self, n):
         u = self.u
@@ -110,12 +110,12 @@ class HsJoinFair_2inputs_TC(SingleUnitSimTestCase):
 class HsJoinFair_3inputs_TC(HsJoinFair_2inputs_TC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = HsJoinFairShare(Handshaked)
         cls.INPUTS = 3
         u.INPUTS = cls.INPUTS
         u.DATA_WIDTH = 8
-        return u
+        cls.compileSim(u)
 
 
 if __name__ == "__main__":

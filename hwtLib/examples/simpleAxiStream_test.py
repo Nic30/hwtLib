@@ -5,7 +5,7 @@ import unittest
 
 from hwt.hdl.constants import Time, NOP
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.simpleAxiStream import SimpleUnitAxiStream
 from pyMathBitPrecise.bit_utils import mask
 
@@ -20,12 +20,12 @@ class SynchronizedSimpleUnitAxiStream(SimpleUnitAxiStream):
         addClkRstn(self)
 
 
-class SimpleUnitAxiStream_TC(SingleUnitSimTestCase):
+class SimpleUnitAxiStream_TC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = SynchronizedSimpleUnitAxiStream()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_nop(self):
         u = self.u

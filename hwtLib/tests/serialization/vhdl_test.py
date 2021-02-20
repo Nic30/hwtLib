@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat
-from hwt.hdl.typeShortcuts import hBit, vec
 from hwt.interfaces.std import VectSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
@@ -10,6 +9,8 @@ from hwtLib.peripheral.spi.master import SpiMaster
 from hwtLib.tests.serialization.assignToCastAndSlices import AssignToASlice0, \
     AssignToASlice1, AssignToASlice2, AssignToASliceOfReg0, \
     AssignToASliceOfReg1a, AssignToASliceOfReg1b, AssignToASliceOfReg2a, AssignToASliceOfReg2b
+from hwt.hdl.types.defs import BIT
+from hwt.hdl.types.bits import Bits
 
 
 class TernaryInConcatExample(Unit):
@@ -24,15 +25,15 @@ class TernaryInConcatExample(Unit):
         b = self.b
         self.c(
             Concat(
-                hBit(1),
-                vec(7, 3),
+                BIT.from_py(1),
+                Bits(3).from_py(7),
                 a != b,
                 a < b,
                 a <= b,
                 a._eq(b),
                 a >= b,
                 a > b,
-                vec(0, 22),
+                Bits(22).from_py(0),
                 )
             )
 

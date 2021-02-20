@@ -4,17 +4,17 @@
 import unittest
 
 from hwt.hdl.constants import NOP
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.cam import Cam
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class CamTC(SingleUnitSimTestCase):
+class CamTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = Cam()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_writeAndMatchTest(self):
         u = self.u

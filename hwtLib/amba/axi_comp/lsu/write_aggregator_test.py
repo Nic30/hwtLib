@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.lsu.write_aggregator import AxiWriteAggregator
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
@@ -11,17 +11,17 @@ from pyMathBitPrecise.bit_utils import mask, set_bit_range, int_list_to_int, \
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class AxiWriteAggregator_1word_per_cachelineTC(SingleUnitSimTestCase):
+class AxiWriteAggregator_1word_per_cachelineTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiWriteAggregator()
         u.ADDR_WIDTH = 16
         u.ID_WIDTH = 2
         u.CACHE_LINE_SIZE = 4
         u.DATA_WIDTH = 32
         u.MAX_BLOCK_DATA_WIDTH = 8
-        return u
+        cls.compileSim(u)
 
     def randomize_all(self):
         self.randomize(self.u.w)
@@ -179,14 +179,14 @@ class AxiWriteAggregator_1word_per_cachelineTC(SingleUnitSimTestCase):
 class AxiWriteAggregator_2words_per_cachelineTC(AxiWriteAggregator_1word_per_cachelineTC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiWriteAggregator()
         u.ADDR_WIDTH = 16
         u.ID_WIDTH = 2
         u.CACHE_LINE_SIZE = 8
         u.DATA_WIDTH = 32
         u.MAX_BLOCK_DATA_WIDTH = 8
-        return u
+        cls.compileSim(u)
 
 
 AxiWriteAggregator_TCs = [

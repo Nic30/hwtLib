@@ -5,7 +5,7 @@ import unittest
 
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.splitCopy import HsSplitCopy
 from hwtSimApi.constants import CLK_PERIOD
 
@@ -16,13 +16,13 @@ class HsSplitCopyWithReference(HsSplitCopy):
         addClkRstn(self)
 
 
-class HsSplitCopyTC(SingleUnitSimTestCase):
+class HsSplitCopyTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = HsSplitCopyWithReference(Handshaked)
         cls.u.DATA_WIDTH = 4
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_passdata(self):
         u = self.u

@@ -5,26 +5,26 @@ from math import ceil
 
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.examples.builders.ethAddrUpdater import EthAddrUpdater, \
     frameHeader
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class EthAddrUpdater_dw64_alaignas64TC(SingleUnitSimTestCase):
+class EthAddrUpdater_dw64_alaignas64TC(SimTestCase):
     DW = 64
     AW = 32
     ALIGNAS = DW
     OFFSET = 0
 
     @classmethod
-    def getUnit(cls):
-        u = EthAddrUpdater()
+    def setUpClass(cls):
+        u = cls.u = EthAddrUpdater()
         u.DATA_WIDTH = cls.DW
         u.ADDR_WIDTH = cls.AW
         u.ALIGNAS = cls.ALIGNAS
-        return u
+        cls.compileSim(u)
 
     def test_simpleOp(self):
         DW = self.DW

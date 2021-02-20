@@ -3,17 +3,17 @@
 
 import unittest
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.datapump.interconnect.rStricOrder import RStrictOrderInterconnect
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class RStrictOrderInterconnectTC(SingleUnitSimTestCase):
+class RStrictOrderInterconnectTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = RStrictOrderInterconnect()
 
         u.ID_WIDTH = 4
@@ -25,7 +25,7 @@ class RStrictOrderInterconnectTC(SingleUnitSimTestCase):
         u.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP
 
         u.DATA_WIDTH = 64
-        return u
+        cls.compileSim(u)
 
     def test_nop(self):
         u = self.u

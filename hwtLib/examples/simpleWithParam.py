@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.interfaces.std import Signal
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.hdl.types.bits import Bits
@@ -32,13 +32,13 @@ class SimpleUnitWithParam(Unit):
         self.b(self.a)
 
 
-class SimpleUnitWithParamTC(SingleUnitSimTestCase):
+class SimpleUnitWithParamTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls) -> Unit:
-        u = SimpleUnitWithParam()
+    def setUpClass(cls):
+        u = cls.u = SimpleUnitWithParam()
         u.DATA_WIDTH = 32
-        return u
+        cls.compileSim(u)
 
     def test_simple(self):
         u = self.u
@@ -49,7 +49,7 @@ class SimpleUnitWithParamTC(SingleUnitSimTestCase):
     # def test_canNotSetAfterSynth(self):
     #     u = SimpleUnitWithParam()
     #     self.compileSim(u)
-    # 
+    #
     #     # with self.assertRaises(AssertionError, msg="Can not set after it was synthetized"):
     #     #     u.DATA_WIDTH = 32
 

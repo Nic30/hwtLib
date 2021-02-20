@@ -3,7 +3,7 @@ from math import ceil
 from pyMathBitPrecise.bit_utils import mask
 
 from hwt.pyUtils.arrayQuery import grouper
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.common_nonstd_interfaces.addr_data_hs_to_Axi import AddrDataHs_to_Axi
 from hwtLib.tools.debug_bus_monitor_ctl import select_bit_range
@@ -11,18 +11,17 @@ from hwtSimApi.constants import CLK_PERIOD
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 
 
-class AddrDataHs_to_Axi_1_to_1_TC(SingleUnitSimTestCase):
+class AddrDataHs_to_Axi_1_to_1_TC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        u = AddrDataHs_to_Axi()
+    def setUpClass(cls):
+        u = cls.u = AddrDataHs_to_Axi()
         u.ADDR_WIDTH = 16 + 2
         u.S_ADDR_WIDTH = 16
         # in each axi word there is only lower half used
         u.DATA_WIDTH = u.S_DATA_WIDTH = u.S_ADDR_STEP = 32
         u.M_ADDR_OFFSET = 0
-        cls.u = u
-        return u
+        cls.compileSim(u)
 
     def pack_words(self, words, word_width, new_word_width):
         if word_width < new_word_width:
@@ -45,7 +44,7 @@ class AddrDataHs_to_Axi_1_to_1_TC(SingleUnitSimTestCase):
                 # for i in range(word_unpack_factor-1, -1, -1):
                 for i in range(word_unpack_factor):
                     new_words.append(select_bit_range(w, i * new_word_width, new_word_width))
-                    
+
             return new_words
         else:
             return words
@@ -77,7 +76,7 @@ class AddrDataHs_to_Axi_1_to_1_TC(SingleUnitSimTestCase):
 
         for addr, frame in enumerate(wr_data):
             s_w._ag.data.append((addr, frame))
-        
+
         if randomize:
             axi_randomize_per_channel(self, axi)
 
@@ -105,7 +104,7 @@ class AddrDataHs_to_Axi_1_to_1_TC(SingleUnitSimTestCase):
         # create data words for P4AppPort
         rd_data = self.pack_words(r_data, M_DW, s_r.DATA_WIDTH)
         for index, d in enumerate(r_data):
-            index = (u.M_ADDR_OFFSET * 8 // M_DW) + index 
+            index = (u.M_ADDR_OFFSET * 8 // M_DW) + index
             m.data[index] = d
 
         for addr, _ in enumerate(rd_data):
@@ -123,37 +122,34 @@ class AddrDataHs_to_Axi_1_to_1_TC(SingleUnitSimTestCase):
 
     def test_read_randomized(self, N=10):
         self.test_read(N, randomize=True)
-    
+
 
 class AddrDataHs_to_Axi_1_to_2_TC(AddrDataHs_to_Axi_1_to_1_TC):
 
     @classmethod
-    def getUnit(cls):
-        u = AddrDataHs_to_Axi()
+    def setUpClass(cls):
+        u = cls.u = AddrDataHs_to_Axi()
         u.ADDR_WIDTH = 32
         u.S_ADDR_WIDTH = 16
         # in each axi word there is only lower half used
         u.DATA_WIDTH = 32
         u.S_DATA_WIDTH = u.S_ADDR_STEP = 64
         u.M_ADDR_OFFSET = 0
-        cls.u = u
-        return u
+        cls.compileSim(u)
 
 
 class AddrDataHs_to_Axi_2_to_1_TC(AddrDataHs_to_Axi_1_to_1_TC):
 
     @classmethod
-    def getUnit(cls):
-        u = AddrDataHs_to_Axi()
+    def setUpClass(cls):
+        u = cls.u = AddrDataHs_to_Axi()
         u.S_ADDR_WIDTH = 16 - 1
         u.ADDR_WIDTH = 16
         # in each axi word there is only lower half used
         u.DATA_WIDTH = 32
         u.S_DATA_WIDTH = u.S_ADDR_STEP = 16
         u.M_ADDR_OFFSET = 0
-        cls.u = u
-        return u
-
+        cls.compileSim(u)
 
 AddrDataHs_to_Axi_TCs = [
     AddrDataHs_to_Axi_1_to_1_TC,

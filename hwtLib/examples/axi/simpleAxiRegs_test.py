@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.axi.simpleAxiRegs import SimpleAxiRegs
 from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
@@ -12,11 +12,12 @@ from hwtSimApi.constants import CLK_PERIOD
 allMask = mask(32 // 8)
 
 
-class SimpleAxiRegsTC(SingleUnitSimTestCase):
+class SimpleAxiRegsTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        return SimpleAxiRegs()
+    def setUpClass(cls):
+        cls.u = SimpleAxiRegs()
+        cls.compileSim(cls.u)
 
     def test_nop(self):
         u = self.u

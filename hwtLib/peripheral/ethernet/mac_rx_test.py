@@ -1,6 +1,6 @@
 from itertools import chain
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis import axis_recieve_bytes, packAxiSFrame
 from hwtLib.peripheral.ethernet.mac import EthernetMac
 from hwtLib.peripheral.ethernet.mac_tx_test import REF_FRAME, REF_CRC
@@ -9,17 +9,17 @@ from hwtLib.types.ctypes import uint8_t
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class EthernetMacRx_8b_TC(SingleUnitSimTestCase):
+class EthernetMacRx_8b_TC(SimTestCase):
     DW = 8
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = EthernetMac()
         u.DEFAULT_MAC_ADDR = format_eth_addr(REF_FRAME[0:6])
         u.HAS_RX = True
         u.HAS_TX = False
         u.DATA_WIDTH = cls.DW
-        return u
+        cls.compileSim(u)
 
     def test_nop(self):
         u = self.u

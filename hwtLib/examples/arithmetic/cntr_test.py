@@ -7,17 +7,18 @@ from hwt.hdl.operatorDefs import AllOps
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
     ResourceFF
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.utils import synthesised
 from hwtLib.examples.arithmetic.cntr import Cntr
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class CntrTC(SingleUnitSimTestCase):
+class CntrTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        return Cntr()
+    def setUpClass(cls):
+        cls.u = Cntr()
+        cls.compileSim(cls.u)
 
     def test_overflow(self):
         u = self.u

@@ -5,7 +5,7 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.pyUtils.arrayQuery import take, iter_with_last
-from hwt.simulator.simTestCase import SingleUnitSimTestCase,\
+from hwt.simulator.simTestCase import SimTestCase,\
     simpleRandomizationProcess
 from hwtLib.amba.axis_comp.fifoMeasuring import AxiS_fifoMeasuring
 from pyMathBitPrecise.bit_utils import mask, mask_bytes
@@ -13,10 +13,10 @@ from hwtSimApi.constants import CLK_PERIOD
 from hwtSimApi.triggers import Timer
 
 
-class AxiS_fifoMeasuringTC(SingleUnitSimTestCase):
+class AxiS_fifoMeasuringTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = AxiS_fifoMeasuring()
         u.USE_STRB = True
         cls.DATA_WIDTH = 64
@@ -25,7 +25,7 @@ class AxiS_fifoMeasuringTC(SingleUnitSimTestCase):
         u.MAX_LEN = cls.MAX_LEN
         u.SIZES_BUFF_DEPTH = 4
         u.DATA_WIDTH = cls.DATA_WIDTH
-        return u
+        cls.compileSim(u)
 
     def test_nop(self):
         u = self.u

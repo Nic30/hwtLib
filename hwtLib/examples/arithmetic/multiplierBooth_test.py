@@ -1,16 +1,15 @@
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.arithmetic.multiplierBooth import MultiplerBooth
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class MultiplerBoothTC(SingleUnitSimTestCase):
+class MultiplerBoothTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        u = MultiplerBooth()
+    def setUpClass(cls):
+        cls.u = u = MultiplerBooth()
         u.DATA_WIDTH = 4
-        cls.u = u
-        return u
+        cls.compileSim(u)
 
     def test_possitive(self):
         u = self.u

@@ -5,7 +5,7 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
@@ -37,12 +37,12 @@ class Simple2withNonDirectIntConnection(Unit):
         self.c(b)
 
 
-class Simple2withNonDirectIntConnectionTC(SingleUnitSimTestCase):
+class Simple2withNonDirectIntConnectionTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls) -> Unit:
-        u = Simple2withNonDirectIntConnection()
-        return u
+    def setUpClass(cls):
+        cls.u = Simple2withNonDirectIntConnection()
+        cls.compileSim(cls.u)
 
     def test_passData(self):
         u = self.u

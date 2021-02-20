@@ -3,7 +3,7 @@
 
 from hwt.interfaces.std import Handshaked, VldSynced
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import valToInt
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
@@ -35,15 +35,15 @@ class TestUnit_uart(Unit):
         self.dout(self.rx.dataOut)
 
 
-class UartTxRxTC(SingleUnitSimTestCase):
+class UartTxRxTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = TestUnit_uart()
         u.BAUD = 115200
         u.FREQ = 115200 * 16
         u.OVERSAMPLING = 16
-        return u
+        cls.compileSim(u)
 
     def getStr(self):
         return "".join([chr(valToInt(d)) for d in self.u.dout._ag.data])

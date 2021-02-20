@@ -1,6 +1,6 @@
 from binascii import crc32
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis import axis_send_bytes, axis_recieve_bytes
 from hwtLib.peripheral.ethernet.mac import EthernetMac
 from pyMathBitPrecise.bit_utils import byte_list_to_be_int
@@ -19,15 +19,15 @@ REF_FRAME = [
 REF_CRC = [0x7A, 0xD5, 0x6B, 0xB3]
 
 
-class EthernetMacTx_8b_TC(SingleUnitSimTestCase):
+class EthernetMacTx_8b_TC(SimTestCase):
     DW = 8
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = EthernetMac()
         u.HAS_RX = False
         u.DATA_WIDTH = cls.DW
-        return u
+        cls.compileSim(u)
 
     def test_nop(self):
         u = self.u

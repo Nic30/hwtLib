@@ -5,6 +5,7 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.fifoAsync import HsFifoAsync
 from hwtLib.handshaked.fifo_test import HsFifoTC
 
@@ -15,11 +16,11 @@ class HsFifoAsyncTC(HsFifoTC):
     ITEMS = 5
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = HsFifoAsync(Handshaked)
         u.DATA_WIDTH = 8
         u.DEPTH = cls.ITEMS
-        return u
+        cls.compileSim(u)
 
     def setUp(self):
         HsFifoTC.setUp(self)

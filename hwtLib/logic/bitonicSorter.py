@@ -4,7 +4,7 @@
 from hwt.code import If
 from hwt.hdl.constants import Time
 from hwt.interfaces.std import VectSignal
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.hObjList import HObjList
@@ -88,13 +88,13 @@ class BitonicSorter(Unit):
             o(otmp)
 
 
-class BitonicSorterTC(SingleUnitSimTestCase):
+class BitonicSorterTC(SimTestCase):
     SIM_TIME = 40 * Time.ns
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = BitonicSorter()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def getOutputs(self):
         return [outp._ag.data[-1] for outp in self.u.outputs]

@@ -4,15 +4,16 @@
 import unittest
 
 from hwt.hdl.constants import CLK_PERIOD
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.arithmetic.selfRefCntr import SelfRefCntr
 
 
-class SelfRefCntrTC(SingleUnitSimTestCase):
+class SelfRefCntrTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        return SelfRefCntr()
+    def setUpClass(cls):
+        cls.u = SelfRefCntr()
+        cls.compileSim(cls.u)
 
     def test_overflow(self):
         u = self.u

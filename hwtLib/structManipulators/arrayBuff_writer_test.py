@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.hdl.constants import Time, NOP
-from hwt.simulator.simTestCase import SingleUnitSimTestCase, \
+from hwt.simulator.simTestCase import SimTestCase, \
     simpleRandomizationProcess
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.structManipulators.arrayBuff_writer import ArrayBuff_writer
@@ -12,16 +12,16 @@ from hwtSimApi.constants import CLK_PERIOD
 from hwtSimApi.triggers import Timer
 
 
-class ArrayBuff_writer_TC(SingleUnitSimTestCase):
+class ArrayBuff_writer_TC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = ArrayBuff_writer()
         u.TIMEOUT = 32
         cls.ID = int(u.ID)
         cls.ITEMS = int(u.ITEMS)
         cls.DATA_WIDTH = int(u.DATA_WIDTH)
-        return u
+        cls.compileSim(u)
 
     def test_nop(self):
         u = self.u
@@ -169,7 +169,7 @@ class ArrayBuff_writer_TC(SingleUnitSimTestCase):
 
         u.baseAddr._ag.dout.append(0x1230)
         u.items._ag.data.extend([1 + i for i in range(N)])
-        u.wDatapump.ack._ag.data.extend([NOP for _ in range(N * 2 - 1)] + 
+        u.wDatapump.ack._ag.data.extend([NOP for _ in range(N * 2 - 1)] +
                                         [self.ID + 1, self.ID, self.ID + 1])
 
         # randomize(u.wDatapump.w)

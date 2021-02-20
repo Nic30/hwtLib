@@ -3,24 +3,24 @@
 
 from math import ceil
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.xilinx.primitive.examples.dsp48e1Add import Dsp48e1Add
 from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class Dsp48e1Add_48b_noRegsTC(SingleUnitSimTestCase):
+class Dsp48e1Add_48b_noRegsTC(SimTestCase):
     DATA_WIDTH = 48
     REG_IN = False
     REG_OUT = False
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = Dsp48e1Add()
         u.DATA_WIDTH = cls.DATA_WIDTH
         u.REG_IN = cls.REG_IN
         u.REG_OUT = cls.REG_OUT
-        return u
+        cls.compileSim(u)
 
     def test_3x_exact(self):
         u = self.u

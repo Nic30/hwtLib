@@ -6,12 +6,12 @@ import unittest
 from pyMathBitPrecise.bit_utils import mask
 
 from hwt.hdl.operatorDefs import downtoFn, toFn, AllOps
-from hwt.hdl.typeShortcuts import hInt, hBool, hBit, vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import INT, STR, BOOL
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.types.ctypes import uint8_t
+from hwtLib.tests.types.hvalue_test import hBool, hBit, hInt, vec
 
 n = RtlNetlist()
 s0 = n.sig("s0", BOOL)

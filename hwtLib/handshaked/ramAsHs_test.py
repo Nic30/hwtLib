@@ -3,7 +3,7 @@
 
 from hwt.hdl.constants import NOP, READ, WRITE
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
 from hwtLib.handshaked.ramAsHs import RamAsHs, RamHsR
 from hwtLib.mem.ram import RamSingleClock
@@ -41,10 +41,10 @@ class RamWithHs(RamAsHs):
         self.ram.port[0](self.conv.ram)
 
 
-class RamAsHs_R_only_TC(SingleUnitSimTestCase):
+class RamAsHs_R_only_TC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = RamWithHs()
         u.DATA_WIDTH = 16
         u.ADDR_WIDTH = 8
@@ -52,7 +52,7 @@ class RamAsHs_R_only_TC(SingleUnitSimTestCase):
         ITEMS = cls.ITEMS = 2 ** u.ADDR_WIDTH
         cls.MAGIC = 99
         u.INIT_DATA = tuple(cls.MAGIC + (i % ITEMS) for i in range(ITEMS))
-        return cls.u
+        cls.compileSim(u)
 
     def test_read(self, N=100, randomized=True,):
         u = self.u
@@ -79,14 +79,14 @@ class RamAsHs_R_only_TC(SingleUnitSimTestCase):
         self.assertValSequenceEqual(u.r.data._ag.data, ref)
 
 
-class RamAsHs_TC(SingleUnitSimTestCase):
+class RamAsHs_TC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = RamWithHs()
         u.DATA_WIDTH = 32
         u.ADDR_WIDTH = 8
-        return cls.u
+        cls.compileSim(u)
 
     def test_nop(self):
         self.runSim(10 * CLK_PERIOD)

@@ -3,7 +3,7 @@
 
 from hwt.hdl.types.bits import Bits
 from hwt.pyUtils.arrayQuery import grouper
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.sim.ram import Axi4LiteSimRam
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
@@ -13,14 +13,14 @@ from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class AxiResizeTC(SingleUnitSimTestCase):
+class AxiResizeTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiResize(Axi4Lite)
         u.DATA_WIDTH = 32
         u.OUT_DATA_WIDTH = 512
-        return u
+        cls.compileSim(u)
 
     def randomize_all(self):
         axi_randomize_per_channel(self, self.u.m)

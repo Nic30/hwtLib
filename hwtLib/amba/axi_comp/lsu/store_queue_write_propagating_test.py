@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hdlConvertorAst.to.hdlUtils import iter_with_last
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi_comp.lsu.store_queue_write_propagating import AxiStoreQueueWritePropagating
 from hwtLib.amba.axi_comp.lsu.write_aggregator_test import AxiWriteAggregator_1word_per_cachelineTC
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
@@ -15,14 +16,14 @@ class AxiStoreQueueWritePropagating_1word_per_cachelineTC(AxiWriteAggregator_1wo
     ADDR_STEP = 4
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiStoreQueueWritePropagating()
         u.ADDR_WIDTH = 16
         u.ID_WIDTH = 2
         u.CACHE_LINE_SIZE = 4
         u.DATA_WIDTH = 32
         u.MAX_BLOCK_DATA_WIDTH = 8
-        return u
+        cls.compileSim(u)
 
     def randomize_all(self):
         AxiWriteAggregator_1word_per_cachelineTC.randomize_all(self)

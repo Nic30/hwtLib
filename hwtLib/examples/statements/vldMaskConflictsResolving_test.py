@@ -3,16 +3,16 @@
 
 
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.statements.vldMaskConflictsResolving import VldMaskConflictsResolving
 
 
-class VldMaskConflictsResolvingTC(SingleUnitSimTestCase):
+class VldMaskConflictsResolvingTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = VldMaskConflictsResolving()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_allCases(self):
         u = self.u

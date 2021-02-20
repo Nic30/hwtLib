@@ -3,7 +3,7 @@
 
 from hwt.interfaces.std import RdSynced
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtSimApi.constants import CLK_PERIOD
 
@@ -18,12 +18,12 @@ class RdSyncedPipe(Unit):
         self.b(self.a)
 
 
-class RdSynced_agent_TC(SingleUnitSimTestCase):
+class RdSynced_agent_TC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = RdSyncedPipe()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_basic_data_pass(self):
         u = self.u

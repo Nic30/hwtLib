@@ -7,7 +7,7 @@ from hwt.hdl.constants import Time
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import iterBits
@@ -47,12 +47,12 @@ class Lfsr(Unit):
         self.dataOut(accumulator[0])
 
 
-class LfsrTC(SingleUnitSimTestCase):
+class LfsrTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = Lfsr()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_simple(self):
         self.runSim(300 * Time.ns)

@@ -4,19 +4,19 @@
 import unittest
 
 from hwt.hdl.constants import WRITE, NOP
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.structManipulators.mmu_2pageLvl import MMU_2pageLvl
 from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class MMU_2pageLvl_TC(SingleUnitSimTestCase):
+class MMU_2pageLvl_TC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = MMU_2pageLvl()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def buildVirtAddr(self, lvl1pgtIndx, lvl2pgtIndx, pageOffset):
         u = self.u

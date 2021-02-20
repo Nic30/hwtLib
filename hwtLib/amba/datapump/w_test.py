@@ -3,7 +3,7 @@
 
 from typing import Optional
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi3Lite import Axi3Lite
 from hwtLib.amba.axi4 import Axi4
@@ -21,11 +21,11 @@ class Axi4_wDatapumpTC(Axi_datapumpTC):
     LEN_MAX_VAL = Axi4_rDatapumpTC.LEN_MAX_VAL
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = Axi_wDatapump(axiCls=Axi4)
         u.MAX_LEN = cls.LEN_MAX_VAL
         u.ALIGNAS = 8
-        return cls.u
+        cls.compileSim(u)
 
     def wTrans(self, data, last, strb=mask(64 // 8), _id=0):
         return (data, strb, last)
@@ -294,14 +294,14 @@ class Axi3_wDatapump_direct_TC(Axi4_wDatapumpTC):
         return (_id, data, strb, last)
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = Axi_wDatapump(axiCls=Axi3)
         u.MAX_LEN = 16
         u.ALIGNAS = 8
-        return u
+        cls.compileSim(u)
 
 
-class Axi3_wDatapump_small_splitting_TC(SingleUnitSimTestCase):
+class Axi3_wDatapump_small_splitting_TC(SimTestCase):
     LEN_MAX_VAL = 3
     CHUNK_WIDTH = 32
     DATA_WIDTH = 32
@@ -316,12 +316,12 @@ class Axi3_wDatapump_small_splitting_TC(SingleUnitSimTestCase):
         return Axi3_wDatapump_direct_TC.mkReq(self, addr, _len, rem, _id)
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = Axi_wDatapump(axiCls=Axi3)
         u.DATA_WIDTH = u.ALIGNAS = u.CHUNK_WIDTH = cls.DATA_WIDTH
         u.MAX_CHUNKS = (cls.DATA_WIDTH // cls.CHUNK_WIDTH) * (cls.LEN_MAX_VAL + 1)
 
-        return u
+        cls.compileSim(u)
 
     def test_1024random(self):
         u = self.u
@@ -375,33 +375,34 @@ class Axi3_wDatapump_small_splitting_alignas8_TC(Axi3_wDatapump_small_splitting_
     DATA_WIDTH = 32
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = Axi_wDatapump(axiCls=Axi3)
         u.DATA_WIDTH = cls.DATA_WIDTH
         u.ALIGNAS = 8
         u.CHUNK_WIDTH = cls.CHUNK_WIDTH
         u.MAX_CHUNKS = (cls.DATA_WIDTH // cls.CHUNK_WIDTH) * (cls.LEN_MAX_VAL + 1)
 
-        return u
+        cls.compileSim(u)
 
 
 class Axi4_wDatapump_alignas8TC(Axi4_wDatapumpTC):
 
     @classmethod
-    def getUnit(cls):
-        u = super(Axi4_wDatapump_alignas8TC, cls).getUnit()
+    def setUpClass(cls):
+        cls.u = u = Axi_wDatapump(axiCls=Axi4)
+        u.MAX_LEN = cls.LEN_MAX_VAL
         u.ALIGNAS = 8
-        return u
+        cls.compileSim(u)
 
 
 class Axi3Lite_wDatapumpTC(Axi4_wDatapumpTC):
     LEN_MAX_VAL = 3
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = Axi_wDatapump(axiCls=Axi3Lite)
         u.MAX_LEN = cls.LEN_MAX_VAL
-        return cls.u
+        cls.compileSim(u)
 
     def mkReq(self, addr, _len, rem=0, _id=0):
         return (addr, _len, rem)
@@ -416,19 +417,20 @@ class Axi3Lite_wDatapumpTC(Axi4_wDatapumpTC):
 class Axi4Lite_wDatapumpTC(Axi3Lite_wDatapumpTC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = Axi_wDatapump(axiCls=Axi4Lite)
         u.MAX_LEN = cls.LEN_MAX_VAL
-        return cls.u
+        cls.compileSim(u)
 
 
 class Axi4Lite_wDatapump_alignas8TC(Axi4Lite_wDatapumpTC):
 
     @classmethod
-    def getUnit(cls):
-        u = super(Axi4Lite_wDatapump_alignas8TC, cls).getUnit()
+    def setUpClass(cls):
+        cls.u = u = Axi_wDatapump(axiCls=Axi4Lite)
+        u.MAX_LEN = cls.LEN_MAX_VAL
         u.ALIGNAS = 8
-        return u
+        cls.compileSim(u)
 
 
 Axi_wDatapumpTCs = [

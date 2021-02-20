@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.builders.hsBuilderSplit import HsBuilderSplit
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class HsBuilderSplit_TC(SingleUnitSimTestCase):
+class HsBuilderSplit_TC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        return HsBuilderSplit()
+    def setUpClass(cls):
+        cls.u = HsBuilderSplit()
+        cls.compileSim(cls.u)
 
     def test_all(self):
         u = self.u

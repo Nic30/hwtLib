@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.sim.ram import Axi4LiteSimRam
@@ -42,11 +42,11 @@ class Axi4LiteMi32Bridges(Unit):
         self.m(AxiBuilder(self, toAxi.m).buff().end)
 
 
-class Mi32Axi4LiteBrigesTC(SingleUnitSimTestCase):
+class Mi32Axi4LiteBrigesTC(SimTestCase):
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = Axi4LiteMi32Bridges()
-        return u
+        cls.compileSim(u)
 
     def randomize_all(self):
         u = self.u
@@ -54,7 +54,7 @@ class Mi32Axi4LiteBrigesTC(SingleUnitSimTestCase):
             axi_randomize_per_channel(self, i)
 
     def setUp(self):
-        SingleUnitSimTestCase.setUp(self)
+        SimTestCase.setUp(self)
         u = self.u
         self.memory = Axi4LiteSimRam(axi=u.m)
 

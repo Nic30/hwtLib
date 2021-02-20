@@ -5,7 +5,7 @@ import socket
 
 from hwt.hdl.types.utils import HdlValue_unpack
 from hwt.math import sizeof
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import valToInt
 from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.amba.axis import unpackAxiSFrame, packAxiSFrame
@@ -83,14 +83,14 @@ def pingResponder_model(packetStructVal):
     return bytes(packet)
 
 
-class PingResponderTC(SingleUnitSimTestCase):
+class PingResponderTC(SimTestCase):
     DATA_WIDTH = 32
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = PingResponder()
         u.DATA_WIDTH = cls.DATA_WIDTH
-        return u
+        cls.compileSim(u)
 
     def create_ICMP_echo_frame(self,
                                ethSrc="00:1:2:3:4:5", ethDst="6:7:8:9:10:11",

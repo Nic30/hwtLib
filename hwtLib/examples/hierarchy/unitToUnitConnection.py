@@ -37,9 +37,9 @@ class UnitToUnitConnection(Unit):
 class UnitToUnitConnectionTC(SimpleSubunit2TC):
 
     @classmethod
-    def getUnit(cls) -> Unit:
-        return UnitToUnitConnection()
-
+    def setUpClass(cls):
+        cls.u = UnitToUnitConnection()
+        cls.compileSim(cls.u)
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.constants import READ, WRITE
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.ram import Axi4LiteSimRam
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.cesnet.mi32.to_axi4Lite import Mi32_to_Axi4Lite
@@ -10,19 +10,19 @@ from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class Mi32_to_Axi4LiteTC(SingleUnitSimTestCase):
+class Mi32_to_Axi4LiteTC(SimTestCase):
 
     def randomize_all(self):
         axi_randomize_per_channel(self, self.u.m)
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = Mi32_to_Axi4Lite()
         u.ADDR_WIDTH = u.DATA_WIDTH = 32
-        return u
+        cls.compileSim(u)
 
     def setUp(self):
-        SingleUnitSimTestCase.setUp(self)
+        SimTestCase.setUp(self)
         u = self.u
         self.memory = Axi4LiteSimRam(axi=u.m)
         self.randomize_all()

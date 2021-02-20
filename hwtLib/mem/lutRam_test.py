@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.constants import WRITE, READ
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import valuesToInts
 from hwtLib.mem.lutRam import RAM64X1S
 from hwtSimApi.constants import CLK_PERIOD
@@ -34,12 +34,12 @@ def applyRequests(ram, requests):
             addrbit._ag.data.append(addrBitval)
 
 
-class LutRamTC(SingleUnitSimTestCase):
+class LutRamTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = RAM64X1S()
-        return u
+        cls.compileSim(u)
 
     def test_writeAndRead(self):
         u = self.u

@@ -4,16 +4,16 @@
 import unittest
 
 from hwt.hdl.constants import Time, NOP, WRITE, READ
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.atomic.flipRam import FlipRam
 
 
-class FlipRamTC(SingleUnitSimTestCase):
+class FlipRamTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = FlipRam()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_basic(self):
         u = self.u

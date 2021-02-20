@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.operators.concat import SimpleConcat
 from pyMathBitPrecise.bit_utils import get_bit
 
@@ -22,12 +22,12 @@ def addValues(unit, data):
             databit._ag.data.append(dataBitval)
 
 
-class ConcatTC(SingleUnitSimTestCase):
+class ConcatTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = SimpleConcat()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_join(self):
         u = self.u

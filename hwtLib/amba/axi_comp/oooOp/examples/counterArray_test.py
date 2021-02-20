@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.oooOp.examples.counterArray import OooOpExampleCounterArray
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
@@ -11,21 +11,20 @@ from hwtLib.types.ctypes import uint32_t
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class OooOpExampleCounterArray_1w_TC(SingleUnitSimTestCase):
+class OooOpExampleCounterArray_1w_TC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        u = OooOpExampleCounterArray()
+    def setUpClass(cls):
+        u = cls.u = OooOpExampleCounterArray()
         u.MAIN_STATE_T = uint32_t
         u.TRANSACTION_STATE_T = None
         u.ID_WIDTH = 2
         u.ADDR_WIDTH = 2 + 3
         u.DATA_WIDTH = u.MAIN_STATE_T.bit_length()
-        cls.u = u
-        return u
+        cls.compileSim(u)
 
     def setUp(self):
-        SingleUnitSimTestCase.setUp(self)
+        SimTestCase.setUp(self)
         u = self.u
         self.m = AxiSimRam(axi=u.m)
         # clear counters
@@ -113,21 +112,28 @@ class OooOpExampleCounterArray_1w_TC(SingleUnitSimTestCase):
 class OooOpExampleCounterArray_0_5w_TC(OooOpExampleCounterArray_1w_TC):
 
     @classmethod
-    def getUnit(cls):
-        u = OooOpExampleCounterArray_1w_TC.getUnit()
+    def setUpClass(cls):
+        u = cls.u = OooOpExampleCounterArray()
+        u.MAIN_STATE_T = uint32_t
+        u.TRANSACTION_STATE_T = None
+        u.ID_WIDTH = 2
+        u.ADDR_WIDTH = 2 + 3
         u.DATA_WIDTH = u.MAIN_STATE_T.bit_length() * 2
-        cls.u = u
-        return u
+        cls.compileSim(u)
 
 
 class OooOpExampleCounterArray_2w_TC(OooOpExampleCounterArray_1w_TC):
 
     @classmethod
-    def getUnit(cls):
-        u = OooOpExampleCounterArray_1w_TC.getUnit()
+    def setUpClass(cls):
+        u = cls.u = OooOpExampleCounterArray()
+        u.MAIN_STATE_T = uint32_t
+        u.TRANSACTION_STATE_T = None
+        u.ID_WIDTH = 2
+        u.ADDR_WIDTH = 2 + 3
+        u.DATA_WIDTH = u.MAIN_STATE_T.bit_length()
         u.DATA_WIDTH = u.MAIN_STATE_T.bit_length() // 2
-        cls.u = u
-        return u
+        cls.compileSim(u)
 
 
 OooOpExampleCounterArray_TCs = [

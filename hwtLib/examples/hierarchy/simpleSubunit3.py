@@ -36,9 +36,9 @@ class SimpleSubunit3(Unit):
 class SimpleSubunit3TC(SimpleSubunit2TC):
 
     @classmethod
-    def getUnit(cls) -> Unit:
-        return SimpleSubunit3()
-
+    def setUpClass(cls):
+        cls.u = SimpleSubunit3()
+        cls.compileSim(cls.u)
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str

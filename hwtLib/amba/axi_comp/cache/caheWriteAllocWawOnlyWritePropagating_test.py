@@ -7,7 +7,7 @@ from hwt.code import Concat
 from hwt.hdl.types.arrayVal import HArrayVal
 from hwt.hdl.types.bits import Bits
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.cache.caheWriteAllocWawOnlyWritePropagating import AxiCaheWriteAllocWawOnlyWritePropagating
 from hwtLib.amba.constants import RESP_OKAY
@@ -18,12 +18,12 @@ from pyMathBitPrecise.bit_utils import set_bit_range, mask, int_list_to_int, \
     int_to_int_list
 
 
-class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SingleUnitSimTestCase):
+class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
     # number of words in transaction - 1
     LEN = 0
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiCaheWriteAllocWawOnlyWritePropagating()
         u.DATA_WIDTH = 32
         u.CACHE_LINE_SIZE = 4
@@ -32,10 +32,10 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SingleUnitSimTestCase):
         u.WAY_CNT = 2
         cls.ADDR_STEP = u.DATA_WIDTH // 8
         cls.WAY_CACHELINES = u.CACHE_LINE_CNT // u.WAY_CNT
-        return u
+        cls.compileSim(u)
 
     def setUp(self):
-        SingleUnitSimTestCase.setUp(self)
+        SimTestCase.setUp(self)
         m = self.rtl_simulator.model
         u = self.u
         self.TAGS = [

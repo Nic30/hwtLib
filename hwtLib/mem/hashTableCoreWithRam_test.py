@@ -3,7 +3,7 @@
 
 from binascii import crc_hqx
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import valuesToInts
 from hwtLib.logic.crcPoly import CRC_16_CCITT
 from hwtLib.mem.hashTableCoreWithRam import HashTableCoreWithRam
@@ -12,20 +12,20 @@ from hwtSimApi.triggers import Timer
 from pyMathBitPrecise.bit_utils import mask
 
 
-class HashTableCoreWithRamTC(SingleUnitSimTestCase):
+class HashTableCoreWithRamTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = HashTableCoreWithRam(CRC_16_CCITT)
         u.KEY_WIDTH = 16
         u.DATA_WIDTH = 8
 
         u.LOOKUP_HASH = True
         u.LOOKUP_KEY = True
-        return u
+        cls.compileSim(u)
 
     def setUp(self):
-        SingleUnitSimTestCase.setUp(self)
+        SimTestCase.setUp(self)
         # clean up memory
         mem = self.rtl_simulator.model.table_inst.io.ram_memory
         mem.val = mem.def_val = mem._dtype.from_py(0 for _ in range(mem._dtype.size))

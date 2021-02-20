@@ -4,20 +4,20 @@
 from copy import deepcopy
 import unittest
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.peripheral.displays.hd44780.driver import Hd44780Driver
 from hwtSimApi.utils import freq_to_period
 
 
-class Hd44780Driver8bTC(SingleUnitSimTestCase):
+class Hd44780Driver8bTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = Hd44780Driver()
         u.LCD_FREQ = int(1e6)
         u.FREQ = u.LCD_FREQ * 4
         cls.CLK = int(freq_to_period(u.LCD_FREQ))
-        return u
+        cls.compileSim(u)
 
     def write_text(self, t):
         self.u.dataIn._ag.data.extend([ord(c) for c in t])

@@ -4,7 +4,7 @@
 from copy import copy
 
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.oooOp.examples.counterHashTable import OooOpExampleCounterHashTable
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
@@ -35,11 +35,11 @@ def in_trans(addr, reset, key, data, match, operation):
 OP = OooOpExampleCounterHashTable.OPERATION
 
 
-class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
+class OooOpExampleCounterHashTable_TC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        u = OooOpExampleCounterHashTable()
+    def setUpClass(cls):
+        u = cls.u = OooOpExampleCounterHashTable()
         # MAIN_STATE_T = HStruct(
         #     (BIT, "item_valid"),
         #     (Bits(32), "key"),
@@ -60,11 +60,10 @@ class OooOpExampleCounterHashTable_TC(SingleUnitSimTestCase):
 
         u.ID_WIDTH = 2
         u.ADDR_WIDTH = u.ID_WIDTH  + 3
-        cls.u = u
-        return u
+        cls.compileSim(u)
 
     def setUp(self):
-        SingleUnitSimTestCase.setUp(self)
+        SimTestCase.setUp(self)
         u = self.u
         self.m = AxiSimRam(axi=u.m)
 

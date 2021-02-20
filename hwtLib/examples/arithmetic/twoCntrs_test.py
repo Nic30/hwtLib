@@ -3,7 +3,7 @@
 
 import unittest
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.arithmetic.twoCntrs import TwoCntrs
 from hwtSimApi.constants import CLK_PERIOD
 
@@ -11,11 +11,12 @@ eightOnes = [1 for _ in range(8)]
 eightZeros = [0 for _ in range(8)]
 
 
-class TwoCntrsTC(SingleUnitSimTestCase):
+class TwoCntrsTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        return TwoCntrs()
+    def setUpClass(cls):
+        cls.u = TwoCntrs()
+        cls.compileSim(cls.u)
 
     def test_nothingEnable(self):
         u = self.u

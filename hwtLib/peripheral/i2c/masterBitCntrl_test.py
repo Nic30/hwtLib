@@ -4,7 +4,7 @@
 from _collections import deque
 import unittest
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.peripheral.i2c.intf import I2cAgent
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl, \
     NOP, START, READ, WRITE
@@ -12,12 +12,12 @@ from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import get_bit
 
 
-class I2CMasterBitCntrlTC(SingleUnitSimTestCase):
+class I2CMasterBitCntrlTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = I2cMasterBitCtrl()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_nop(self):
         u = self.u

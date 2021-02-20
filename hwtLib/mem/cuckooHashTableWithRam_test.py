@@ -5,7 +5,7 @@ from copy import copy
 
 from hwt.hdl.constants import NOP
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtLib.logic.crcPoly import CRC_32, CRC_32C
 from hwtLib.mem.cuckooHashTablWithRam import CuckooHashTableWithRam
@@ -13,10 +13,10 @@ from hwtSimApi.constants import CLK_PERIOD
 from hwtSimApi.triggers import Timer
 
 
-class CuckooHashTableWithRam_common_TC(SingleUnitSimTestCase):
+class CuckooHashTableWithRam_common_TC(SimTestCase):
 
     def setUp(self):
-        SingleUnitSimTestCase.setUp(self)
+        SimTestCase.setUp(self)
         m = self.rtl_simulator.model
         self.TABLE_MEMS = [getattr(m, f"table_cores_{i:d}_inst").table_inst.io.ram_memory
                            for i in range(len(self.u.POLYNOMIALS))]
@@ -79,13 +79,13 @@ class CuckooHashTableWithRam_common_TC(SingleUnitSimTestCase):
 class CuckooHashTableWithRamTC(CuckooHashTableWithRam_common_TC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = CuckooHashTableWithRam([CRC_32, CRC_32])
         u.KEY_WIDTH = 16
         u.DATA_WIDTH = 8
         u.LOOKUP_KEY = True
         u.TABLE_SIZE = 32 * 2
-        return u
+        cls.compileSim(u)
 
     def test_clean(self):
         u = self.u
@@ -205,27 +205,27 @@ class CuckooHashTableWithRamTC(CuckooHashTableWithRam_common_TC):
 class CuckooHashTableWithRam_1TableTC(CuckooHashTableWithRamTC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = CuckooHashTableWithRam([CRC_32])
         u.KEY_WIDTH = 16
         u.DATA_WIDTH = 8
         u.LOOKUP_KEY = True
         u.TABLE_SIZE = 32
         u.MAX_REINSERT = 1
-        return u
+        cls.compileSim(u)
 
 
 class CuckooHashTableWithRam_2Table_collisionTC(CuckooHashTableWithRam_common_TC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = CuckooHashTableWithRam([CRC_32, CRC_32C])
         u.KEY_WIDTH = 8
         u.DATA_WIDTH = 8
         u.LOOKUP_KEY = True
         u.TABLE_SIZE = 2 * 2
         u.MAX_REINSERT = 4
-        return u
+        cls.compileSim(u)
 
     def test_nop(self):
         self.randomize_all()

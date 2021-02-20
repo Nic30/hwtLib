@@ -3,7 +3,7 @@
 
 from hwt.interfaces.std import VectSignal
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.vectorUtils import fitTo
 from pyMathBitPrecise.bit_utils import mask
@@ -34,11 +34,12 @@ class WidthCastingExample(Unit):
             dst(a + b, fit=True)
 
 
-class WidthCastingExampleTC(SingleUnitSimTestCase):
+class WidthCastingExampleTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        return WidthCastingExample()
+    def setUpClass(cls):
+        cls.u = WidthCastingExample()
+        cls.compileSim(cls.u)
 
     def test_basic(self):
         a = 255

@@ -5,7 +5,7 @@ import unittest
 
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
 from hwtSimApi.constants import CLK_PERIOD
 
@@ -17,14 +17,14 @@ class HsJoinWithReference(HsJoinPrioritized):
         addClkRstn(self)
 
 
-class HsJoinPrioritizedTC(SingleUnitSimTestCase):
+class HsJoinPrioritizedTC(SimTestCase):
     randomized = False
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = HsJoinWithReference(Handshaked)
         cls.u.DATA_WIDTH = 8
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_passdata(self):
         u = self.u

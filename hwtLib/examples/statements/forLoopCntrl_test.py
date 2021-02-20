@@ -3,19 +3,18 @@
 
 
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
-from hwt.synthesizer.unit import Unit
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.statements.forLoopCntrl import StaticForLoopCntrl
 
 
-class StaticForLoopCntrlTC(SingleUnitSimTestCase):
+class StaticForLoopCntrlTC(SimTestCase):
     ITERATIONS = 5
 
     @classmethod
-    def getUnit(cls) -> Unit:
+    def setUpClass(cls):
         u = StaticForLoopCntrl()
         u.ITERATIONS = cls.ITERATIONS
-        return u
+        cls.compileSim(u)
 
     def test_simple(self):
         u = self.u

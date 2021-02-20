@@ -3,7 +3,7 @@
 
 from hwt.hdl.constants import READ, WRITE
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.cesnet.mi32.intf import Mi32
 from pyMathBitPrecise.bit_utils import mask
@@ -21,12 +21,12 @@ class Mi32Wire(Unit):
         self.m(self.s)
 
 
-class Mi32AgentTC(SingleUnitSimTestCase):
+class Mi32AgentTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls) -> Unit:
+    def setUpClass(cls):
         u = cls.u = Mi32Wire()
-        return u
+        cls.compileSim(u)
 
     def test_nop(self):
         self.runSim(10 * CLK_PERIOD)

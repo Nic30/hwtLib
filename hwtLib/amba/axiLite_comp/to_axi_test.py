@@ -4,7 +4,7 @@
 from random import shuffle
 
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axiLite_comp.to_axi import AxiLite_to_Axi
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
@@ -19,13 +19,13 @@ class AxiLite_to_Axi_withClk(AxiLite_to_Axi):
         addClkRstn(self)
 
 
-class AxiLite_to_Axi_TC(SingleUnitSimTestCase):
+class AxiLite_to_Axi_TC(SimTestCase):
     TRANSACTION_CNT = 32
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = AxiLite_to_Axi_withClk()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def randomize_all(self):
         for i in [self.u.m, self.u.s]:

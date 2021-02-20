@@ -1,7 +1,7 @@
 from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal, Clk
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtSimApi.constants import CLK_PERIOD
 
@@ -31,12 +31,12 @@ class ConstCondition(Unit):
         )
 
 
-class ConstConditionTC(SingleUnitSimTestCase):
+class ConstConditionTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls) -> Unit:
+    def setUpClass(cls):
         cls.u = ConstCondition()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_reg_update(self):
         u = self.u

@@ -5,7 +5,7 @@ from collections import deque
 from itertools import islice
 
 from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
@@ -34,7 +34,7 @@ class SimProcessSequence(deque):
         yield
 
 
-class AxiTesterTC(SingleUnitSimTestCase):
+class AxiTesterTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):

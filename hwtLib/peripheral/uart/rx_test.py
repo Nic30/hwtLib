@@ -2,23 +2,22 @@
 # -*- coding: utf-8 -*-
 
 from hwt.hdl.constants import Time
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import valToInt
 from hwtLib.peripheral.uart.rx import UartRx
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import get_bit
 
 
-class UartRxBasicTC(SingleUnitSimTestCase):
+class UartRxBasicTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = UartRx()
         u.OVERSAMPLING = cls.OVERSAMPLING = 16
         u.FREQ = cls.FREQ = 115200 * cls.OVERSAMPLING
         u.BAUD = cls.BAUD = 115200
-
-        return u
+        cls.compileSim(u)
 
     def getStr(self):
         s = ""
@@ -57,7 +56,7 @@ class UartRxBasicTC(SingleUnitSimTestCase):
 class UartRxTC(UartRxBasicTC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.OVERSAMPLING = 16
         cls.FREQ = 115200 * cls.OVERSAMPLING * 4
         cls.BAUD = 115200
@@ -66,7 +65,7 @@ class UartRxTC(UartRxBasicTC):
         u.BAUD = cls.BAUD
         u.FREQ = cls.FREQ
         u.OVERSAMPLING = cls.OVERSAMPLING
-        return u
+        cls.compileSim(u)
 
 
 if __name__ == "__main__":

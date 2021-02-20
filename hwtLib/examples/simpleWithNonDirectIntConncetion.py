@@ -3,7 +3,7 @@
 
 from hwt.hdl.constants import Time
 from hwt.interfaces.std import Signal
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 
 
@@ -26,11 +26,12 @@ class SimpleWithNonDirectIntConncetion(Unit):
         self.c(self.b)
 
 
-class SimpleWithNonDirectIntConncetionTC(SingleUnitSimTestCase):
+class SimpleWithNonDirectIntConncetionTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls) -> Unit:
-        return SimpleWithNonDirectIntConncetion()
+    def setUpClass(cls):
+        cls.u = SimpleWithNonDirectIntConncetion()
+        cls.compileSim(cls.u)
 
     def test_passData(self):
         d = [0, 1, 0, 1, 0]

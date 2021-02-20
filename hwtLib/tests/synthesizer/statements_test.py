@@ -6,13 +6,13 @@ import unittest
 from hwt.code import Switch, If
 from hwt.hdl.ifContainter import IfContainer
 from hwt.hdl.switchContainer import SwitchContainer
-from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwt.synthesizer.unit import Unit
 from hwt.interfaces.std import Signal
 from hwt.synthesizer.utils import synthesised
+from hwtLib.tests.types.hvalue_test import hBit
 
 
 class If_solvable_comb_loop(Unit):

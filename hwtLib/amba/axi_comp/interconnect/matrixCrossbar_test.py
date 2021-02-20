@@ -5,22 +5,22 @@ from itertools import chain
 
 from hwt.math import log2ceil
 from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
 from hwtLib.amba.constants import RESP_OKAY
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class AxiInterconnectMatrixCrossbar_1to1TC(SingleUnitSimTestCase):
+class AxiInterconnectMatrixCrossbar_1to1TC(SimTestCase):
     LEN_MAX = 4
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiInterconnectMatrixCrossbar(Axi4.R_CLS)
         u.OUTPUTS = [{0}]
         u.INPUT_CNT = 1
-        return u
+        cls.compileSim(u)
 
     def data_transaction(self, id_, data):
         r_transactions = []
@@ -111,32 +111,31 @@ class AxiInterconnectMatrixCrossbar_1to1TC(SingleUnitSimTestCase):
 class AxiInterconnectMatrixCrossbar_1to3TC(AxiInterconnectMatrixCrossbar_1to1TC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiInterconnectMatrixCrossbar(Axi4.R_CLS)
         u.OUTPUTS = [{0, 1, 2}]
         u.INPUT_CNT = 3
-        return u
+        cls.compileSim(u)
 
 
 class AxiInterconnectMatrixCrossbar_3to1TC(AxiInterconnectMatrixCrossbar_1to1TC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiInterconnectMatrixCrossbar(Axi4.R_CLS)
         u.OUTPUTS = [{0}, {0}, {0}]
         u.INPUT_CNT = 1
         u.ADDR_WIDTH = log2ceil(0x2000 - 1)
-        return u
-
+        cls.compileSim(u)
 
 class AxiInterconnectMatrixCrossbar_3to3TC(AxiInterconnectMatrixCrossbar_1to1TC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiInterconnectMatrixCrossbar(Axi4.R_CLS)
         u.OUTPUTS = [{0, 1, 2}, {0, 1, 2}, {0, 1, 2}]
         u.INPUT_CNT = 3
-        return u
+        cls.compileSim(u)
 
 
 AxiInterconnectMatrixCrossbar_TCs = [

@@ -1,21 +1,21 @@
 from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis_comp.fifoDrop import AxiSFifoDrop
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class AxiSFifoDropTC(SingleUnitSimTestCase):
+class AxiSFifoDropTC(SimTestCase):
     ITEMS = 4
     DATA_WIDTH = 8
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = AxiSFifoDrop()
         u.DATA_WIDTH = cls.DATA_WIDTH
         u.DEPTH = cls.ITEMS
         u.EXPORT_SIZE = True
         u.EXPORT_SPACE = True
-        return u
+        cls.compileSim(u)
 
     def test_nop(self):
         u = self.u

@@ -5,7 +5,7 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi3 import Axi3_addr
@@ -51,16 +51,16 @@ class WStrictOrderInterconnecComplex(Unit):
         ic.drivers(self.drivers)
 
 
-class WStrictOrderInterconnectComplexTC(SingleUnitSimTestCase):
+class WStrictOrderInterconnectComplexTC(SimTestCase):
     LEN_MAX_VAL = 255
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = WStrictOrderInterconnecComplex()
         u.MAX_TRANS_OVERLAP = cls.MAX_TRANS_OVERLAP = 4
         cls.DATA_WIDTH = u.DATA_WIDTH
         u.DRIVER_CNT = cls.DRIVER_CNT = 3
-        return cls.u
+        cls.compileSim(u)
 
     def test_3x128(self, N=128):
         u = self.u

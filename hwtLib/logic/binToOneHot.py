@@ -5,7 +5,7 @@ from hwt.code import Concat
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtSimApi.constants import CLK_PERIOD
@@ -52,12 +52,12 @@ class BinToOneHot(Unit):
             self.dout(binToOneHot(dIn, en))
 
 
-class BinToOneHotTC(SingleUnitSimTestCase):
+class BinToOneHotTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls) -> Unit:
+    def setUpClass(cls):
         cls.u = BinToOneHot()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_basic(self):
         u = self.u

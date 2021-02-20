@@ -5,7 +5,7 @@ import unittest
 
 from hwt.hdl.constants import READ, WRITE
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.avalon.mm import AvalonMM, RESP_OKAY
 from hwtLib.avalon.sim.ram import AvalonMmSimRam
@@ -24,12 +24,12 @@ class AvalonMmWire(Unit):
         self.m(self.s)
 
 
-class AvalonMmAgentTC(SingleUnitSimTestCase):
+class AvalonMmAgentTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = AvalonMmWire()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_nop(self):
         u = self.u

@@ -3,16 +3,17 @@
 
 import unittest
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtSimApi.constants import CLK_PERIOD
 from hwtLib.examples.arithmetic.privateSignals import PrivateSignalsOfStructType
 
 
-class PrivateSignalsOfStructTypeTC(SingleUnitSimTestCase):
+class PrivateSignalsOfStructTypeTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        return PrivateSignalsOfStructType()
+    def setUpClass(cls):
+        cls.u = PrivateSignalsOfStructType()
+        cls.compileSim(cls.u)
 
     def test_pass_data(self):
         u = self.u

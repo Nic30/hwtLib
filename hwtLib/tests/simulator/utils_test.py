@@ -5,7 +5,7 @@ from io import StringIO
 import re
 
 from hwt.interfaces.utils import addClkRstn
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import pprintInterface, pprintAgents
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwtLib.amba.axi3Lite import Axi3Lite
@@ -140,11 +140,11 @@ class ExampleWithArrayAxi3Lite(EmptyUnit):
         self.axi = HObjList(Axi3Lite() for _ in range(3))
 
 
-class SimulatorUtilsTC(SingleUnitSimTestCase):
+class SimulatorUtilsTC(SimTestCase):
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = ExampleWithArrayAxi3Lite()
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_pprintInterface(self):
         u = self.u

@@ -2,22 +2,22 @@
 # -*- coding: utf-8 -*-
 
 from hwt.interfaces.std import Handshaked
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class HandshakedRegL1D0TC(SingleUnitSimTestCase):
+class HandshakedRegL1D0TC(SimTestCase):
     LATENCY = 1
     DELAY = 0
 
     @classmethod
-    def getUnit(cls):
-        cls.u = HandshakedReg(Handshaked)
-        cls.u.DELAY = cls.DELAY
-        cls.u.LATENCY = cls.LATENCY
+    def setUpClass(cls):
+        u = cls.u = HandshakedReg(Handshaked)
+        u.DELAY = cls.DELAY
+        u.LATENCY = cls.LATENCY
         cls.MAX_LATENCY = cls.LATENCY if isinstance(cls.LATENCY, int) else max(cls.LATENCY)
-        return cls.u
+        cls.compileSim(u)
 
     def test_passdata(self, N=20):
         u = self.u
@@ -55,7 +55,6 @@ HandshakedRegTCs = [
     HandshakedRegL2D1TC,
     HandshakedRegL1_2D0TC,
 ]
-
 
 if __name__ == "__main__":
     import unittest

@@ -5,7 +5,7 @@ from itertools import chain
 
 from hwt.math import log2ceil
 from hwt.pyUtils.arrayQuery import iter_with_last
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import AxiInterconnectMatrixAddrCrossbar_1to1TC
 from hwtLib.amba.axi_comp.interconnect.matrixR_test import AxiInterconnectMatrixR_1to1TC
@@ -15,18 +15,18 @@ from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
 
 
-class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):
+class AxiInterconnectMatrixW_1to1TC(SimTestCase):
     LEN_MAX = 4
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiInterconnectMatrixW(Axi4)
         u.MASTERS = ({0}, )
         u.SLAVES = (
             (0x0000, 0x1000),
         )
         u.ADDR_WIDTH = log2ceil(0x1000 - 1)
-        return u
+        cls.compileSim(u)
 
     def setUp(self):
         AxiInterconnectMatrixR_1to1TC.setUp(self)
@@ -134,7 +134,7 @@ class AxiInterconnectMatrixW_1to1TC(SingleUnitSimTestCase):
 class AxiInterconnectMatrixW_1to3TC(AxiInterconnectMatrixW_1to1TC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiInterconnectMatrixW(Axi4)
         u.MASTERS = ({0, 1, 2}, )
         u.SLAVES = (
@@ -143,26 +143,26 @@ class AxiInterconnectMatrixW_1to3TC(AxiInterconnectMatrixW_1to1TC):
             (0x2000, 0x1000),
         )
         u.ADDR_WIDTH = log2ceil(0x4000 - 1)
-        return u
+        cls.compileSim(u)
 
 
 class AxiInterconnectMatrixW_3to1TC(AxiInterconnectMatrixW_1to1TC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiInterconnectMatrixW(Axi4)
         u.MASTERS = ({0}, {0}, {0})
         u.SLAVES = (
             (0x0000, 0x1000),
         )
         u.ADDR_WIDTH = log2ceil(0x2000 - 1)
-        return u
+        cls.compileSim(u)
 
 
 class AxiInterconnectMatrixW_3to3TC(AxiInterconnectMatrixW_1to1TC):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = u = AxiInterconnectMatrixW(Axi4)
         # u.MASTERS = ({0, 1}, {0, 1})
         # u.SLAVES = (
@@ -177,7 +177,7 @@ class AxiInterconnectMatrixW_3to3TC(AxiInterconnectMatrixW_1to1TC):
             (0x2000, 0x1000),
         )
         u.ADDR_WIDTH = log2ceil(0x4000 - 1)
-        return u
+        cls.compileSim(u)
 
 
 AxiInterconnectMatrixW_TCs = [

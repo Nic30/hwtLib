@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.interfaces.std import Handshaked
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.cdc import HandshakedCdc
 from hwtSimApi.constants import CLK_PERIOD, Time
 
@@ -16,7 +16,7 @@ def T_to_f(time):
     return 1e9 / (time / Time.ns)
 
 
-class HandshakedCdc_slow_to_fast_TC(SingleUnitSimTestCase):
+class HandshakedCdc_slow_to_fast_TC(SimTestCase):
     IN_CLK = 3 * CLK_PERIOD
     OUT_CLK = CLK_PERIOD
 
@@ -27,15 +27,15 @@ class HandshakedCdc_slow_to_fast_TC(SingleUnitSimTestCase):
         return max(self.IN_CLK, self.OUT_CLK)
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = HandshakedCdc(Handshaked)
         u.DATA_WIDTH = 8
         u.IN_FREQ = T_to_f(cls.IN_CLK)
         u.OUT_FREQ = T_to_f(cls.OUT_CLK)
-        return u
+        cls.compileSim(u)
 
     def setUp(self):
-        SingleUnitSimTestCase.setUp(self)
+        SimTestCase.setUp(self)
         u = self.u
         u.dataIn_clk._ag.period = self.IN_CLK
         for rst in [u.dataIn_rst_n, u.dataOut_rst_n]:

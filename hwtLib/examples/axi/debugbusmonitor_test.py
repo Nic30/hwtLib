@@ -7,7 +7,7 @@ from math import ceil
 import threading
 import unittest
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.axi.debugbusmonitor import DebugBusMonitorExampleAxi
 from hwtLib.tools.debug_bus_monitor_ctl import DebugBusMonitorCtl, words_to_int
 from pyMathBitPrecise.bit_utils import ValidityError
@@ -53,16 +53,16 @@ def run_DebugBusMonitorCtlSim(tc, out):
     tc.sim_done = True
 
 
-class DebugBusMonitorExampleAxiTC(SingleUnitSimTestCase):
+class DebugBusMonitorExampleAxiTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
-        u = DebugBusMonitorExampleAxi()
+    def setUpClass(cls):
+        u = cls.u = DebugBusMonitorExampleAxi()
         u.DATA_WIDTH = 32
-        return u
+        cls.compileSim(u)
 
     def setUp(self):
-        SingleUnitSimTestCase.setUp(self)
+        SimTestCase.setUp(self)
         self.sim_done = False
         self.r_data_available = threading.Lock()
         self.r_data_available.acquire()

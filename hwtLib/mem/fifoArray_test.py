@@ -3,20 +3,20 @@
 
 import unittest
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.fifoArray import FifoArray
 from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.constants import CLK_PERIOD
 from hwtSimApi.triggers import WaitWriteOnly, Timer
 
 
-class FifoArrayTC(SingleUnitSimTestCase):
+class FifoArrayTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = FifoArray()
         u.ITEMS = 4
-        return u
+        cls.compileSim(u)
 
     def test_nop(self):
         u = self.u
@@ -56,7 +56,7 @@ class FifoArrayTC(SingleUnitSimTestCase):
         self.assertValEqual(m.io.item_valid.read(), mask(3))
         self.assertValEqual(m.io.item_last.read(), 1 << 2)
         self.assertValSequenceEqual([m.io.values[i].read() for i in range(3)], [10, 11, 12])
-                
+
     def test_insert2x2(self):
         u = self.u
         u.insert._ag.data.extend([

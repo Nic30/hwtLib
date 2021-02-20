@@ -1,4 +1,4 @@
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.logic.binToBcd import BinToBcd
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
@@ -19,14 +19,13 @@ def print_bcd(bcd: int, digits: int):
         return "".join(reversed(digit_list))
 
 
-class BinToBcdTC(SingleUnitSimTestCase):
+class BinToBcdTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         cls.u = BinToBcd()
         cls.u.INPUT_WIDTH = 8
-
-        return cls.u
+        cls.compileSim(cls.u)
 
     def test_0to127(self):
         u = self.u

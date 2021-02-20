@@ -3,16 +3,16 @@
 
 import unittest
 
-from hwt.simulator.simTestCase import SingleUnitSimTestCase
+from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.datapump.sim_ram import AxiDpSimRam
 from hwtLib.structManipulators.cLinkedListWriter import CLinkedListWriter
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class CLinkedListWriterTC(SingleUnitSimTestCase):
+class CLinkedListWriterTC(SimTestCase):
 
     @classmethod
-    def getUnit(cls):
+    def setUpClass(cls):
         u = cls.u = CLinkedListWriter()
 
         u.TIMEOUT = cls.TIMEOUT = 40
@@ -20,7 +20,7 @@ class CLinkedListWriterTC(SingleUnitSimTestCase):
         u.PTR_WIDTH = cls.PTR_WIDTH = 8
         u.BUFFER_CAPACITY = cls.BUFFER_CAPACITY = 7
         cls.MAX_LEN = cls.BUFFER_CAPACITY // 2 - 1
-        return u
+        cls.compileSim(u)
 
     def setUp(self):
         super(CLinkedListWriterTC, self).setUp()
