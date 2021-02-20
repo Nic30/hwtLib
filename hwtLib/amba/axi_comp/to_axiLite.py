@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, connect
+from hwt.code import If
 from hwt.interfaces.std import HandshakeSync, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
@@ -123,7 +123,7 @@ class Axi_to_AxiLite(BusBridge):
         ignored = {w_in.last}
         if hasattr(w_in, "id"):
             ignored.add(w_in.id)
-        connect(w_in, w_out, exclude=ignored)
+        w_out(w_in, exclude=ignored)
 
     def gen_b_or_r_logic(self, inp, outp, fifo_out, propagete_only_on_last):
         """
@@ -173,7 +173,7 @@ class Axi_to_AxiLite(BusBridge):
         if hasattr(outp, "last"):
             outp.last(rem._eq(0) & rem_vld)
             already_connected.add(outp.last)
-        connect(inp, outp, exclude=already_connected)
+        outp(inp, exclude=already_connected)
 
     def _impl(self):
         m, s = self.in_reg.m, self.out_reg.s

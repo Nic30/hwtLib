@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import connect
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import VectSignal, Signal, HandshakeSync
@@ -53,7 +52,7 @@ class Mi32Buff(BusBridge):
         tmp = Mi32AddrHs()
         tmp._updateParamsFrom(mi32)
         setattr(self, tmp_name, tmp)
-        connect(mi32, tmp, exclude={
+        tmp(mi32, exclude={
             tmp.vld, tmp.rd, tmp.read, tmp.write,
             mi32.ardy, mi32.rd, mi32.wr, mi32.drd, mi32.drdy})
         tmp.read(mi32.rd)
@@ -64,7 +63,7 @@ class Mi32Buff(BusBridge):
 
     def _connect_Mi32AddrHs_to_Mi32(self, mi32ahs: Mi32AddrHs, mi32: Mi32):
         return [
-            *connect(mi32ahs, mi32, exclude={
+            mi32(mi32ahs, exclude={
                 mi32ahs.vld, mi32ahs.rd, mi32ahs.read, mi32ahs.write,
                 mi32.ardy, mi32.rd, mi32.wr, mi32.drd, mi32.drdy}),
             mi32.rd(mi32ahs.vld & mi32ahs.read),

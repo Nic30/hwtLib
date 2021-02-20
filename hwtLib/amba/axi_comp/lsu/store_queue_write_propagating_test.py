@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from hdlConvertorAst.to.hdlUtils import iter_with_last
 from hwtLib.amba.axi_comp.lsu.store_queue_write_propagating import AxiStoreQueueWritePropagating
 from hwtLib.amba.axi_comp.lsu.write_aggregator_test import AxiWriteAggregator_1word_per_cachelineTC
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.amba.constants import RESP_EXOKAY, RESP_OKAY
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
-from hdlConvertorAst.to.hdlUtils import iter_with_last
 
 
 class AxiStoreQueueWritePropagating_1word_per_cachelineTC(AxiWriteAggregator_1word_per_cachelineTC):

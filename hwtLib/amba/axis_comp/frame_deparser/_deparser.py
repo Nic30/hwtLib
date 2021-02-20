@@ -3,7 +3,7 @@
 
 from typing import List, Optional, Union, Tuple
 
-from hwt.code import Switch, If, SwitchLogic, connect
+from hwt.code import Switch, If, SwitchLogic
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
 from hwt.hdl.transPart import TransPart
@@ -37,6 +37,7 @@ from hwtLib.amba.axis_comp.frame_parser.field_connector import AxiS_frameParserF
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
 from pyMathBitPrecise.bit_utils import mask
+
 
 TYPE_CONFIG_PARAMS_NAMES = [
     "T", "TRANSACTION_TEMPLATE", "FRAME_TEMPLATES"]
@@ -313,7 +314,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
         else:
             exclude = ()
 
-        connect(fjoin.dataOut, dout, exclude=exclude)
+        dout(fjoin.dataOut, exclude=exclude)
 
         propagateClkRstn(self)
         for i, c in enumerate(children):
@@ -332,23 +333,22 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
             fj_in = fjoin.dataIn[i]
             if fj_in.USE_KEEP and not child_out.USE_KEEP:
                 if child_out.USE_STRB:
-                    connect(child_out, fj_in, exclude={child_out.strb, fj_in.keep})
+                    exclude = {child_out.strb, fj_in.keep}
                     fj_in.keep(child_out.strb)
                     if fj_in.USE_STRB:
                         fj_in.strb(child_out.strb)
                 else:
-                    connect(child_out, fj_in, exclude={fj_in.keep})
+                    exclude = {fj_in.keep}
                     keep_all = mask(fj_in.keep._dtype.bit_length())
                     fj_in.keep(keep_all)
                     if fj_in.USE_STRB:
                         fj_in.strb(keep_all)
+            elif not self.USE_STRB and child_out.USE_STRB:
+                exclude = (child_out.strb,)
             else:
-                if not self.USE_STRB and child_out.USE_STRB:
-                    exclude = (child_out.strb,)
-                else:
-                    exclude = ()
+                exclude = ()
 
-                connect(child_out, fj_in, exclude=exclude)
+            fj_in(child_out, exclude=exclude)
 
     def _create_frame_build_logic(self):
         self.byteOrderCare = get_byte_order_modifier(self.dataOut)

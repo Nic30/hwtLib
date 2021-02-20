@@ -3,7 +3,7 @@
 
 from math import ceil
 
-from hwt.code import StaticForEach, connect
+from hwt.code import StaticForEach
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.struct import HStruct
@@ -157,7 +157,7 @@ class StructReader(AxiS_frameParser):
         if hasattr(r, "strb"):
             data_sig_to_exclude.append(r.strb)
 
-        connect(r, self.parser.dataIn, exclude=data_sig_to_exclude)
+        self.parser.dataIn(r, exclude=data_sig_to_exclude)
 
         for _, field in self._tmpl.walkFlatten():
             p = field.getFieldPath()

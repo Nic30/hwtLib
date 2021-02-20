@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, connect, Concat, SwitchLogic
+from hwt.code import If, Concat, SwitchLogic
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, Signal
@@ -112,7 +112,7 @@ class AxiS_fifoMeasuring(Unit):
 
         sb.dataIn.data(Concat(length, rem))
 
-        connect(dIn, db.dataIn, exclude=[dIn.valid, dIn.ready, dIn.last])
+        db.dataIn(dIn, exclude=[dIn.valid, dIn.ready, dIn.last])
         db.dataIn.last(last)
 
         StreamNode(masters=[dIn],
@@ -121,7 +121,7 @@ class AxiS_fifoMeasuring(Unit):
                                }).sync()
 
         self.sizes(sb.dataOut)
-        connect(db.dataOut, self.dataOut)
+        self.dataOut(db.dataOut)
 
 
 def _example_AxiS_fifoMeasuring():

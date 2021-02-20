@@ -3,7 +3,7 @@
 
 from typing import List
 
-from hwt.code import If, Concat, SwitchLogic, connect
+from hwt.code import If, Concat, SwitchLogic
 from hwt.code_utils import rename_signal
 from hwt.hdl.constants import WRITE, READ
 from hwt.hdl.typeShortcuts import vec, hBit
@@ -137,7 +137,7 @@ class OutOfOrderCummulativeOp(Unit):
             [din],
             [dataIn_reg.dataIn, ooo_fifo.write_confirm]
         ).sync()
-        connect(din, dataIn_reg.dataIn, exclude=[din.rd, din.vld])
+        dataIn_reg.dataIn(din, exclude=[din.rd, din.vld])
 
         ar_node = StreamNode(
             [dataIn_reg.dataOut, ooo_fifo.read_execute],

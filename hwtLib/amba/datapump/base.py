@@ -1,6 +1,8 @@
 from typing import Union, List
 
-from hwt.code import If, connect, Switch
+from hwt.code import If, Switch
+from hwt.code_utils import rename_signal
+from hwt.hdl.typeShortcuts import hBit
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import HandshakeSync
 from hwt.interfaces.utils import addClkRstn
@@ -18,8 +20,6 @@ from hwtLib.amba.constants import BURST_INCR, CACHE_DEFAULT, \
 from hwtLib.amba.datapump.intf import AddrSizeHs
 from hwtLib.handshaked.streamNode import StreamNode
 from pyMathBitPrecise.bit_utils import mask, align_with_known_width
-from hwt.hdl.typeShortcuts import hBit
-from hwt.code_utils import rename_signal
 
 
 class AxiDatapumpBase(Unit):
@@ -203,7 +203,7 @@ class AxiDatapumpBase(Unit):
                self.storeTransInfo(transInfo, 0)
             ).Else(
                 # connect only lower bits of len
-                * ([connect(reqLen, axiA.len, fit=True)] if HAS_LEN else []),
+                * ([axiA.len(reqLen, fit=True)] if HAS_LEN else []),
                 self.storeTransInfo(transInfo, 1)
             )
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, connect
+from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -40,7 +40,7 @@ class SimpleAxiRegs(Unit):
 
     def _impl(self):
         propagateClkRstn(self)
-        connect(self.axi, self.conv.bus, fit=True)
+        self.conv.bus(self.axi, fit=True)
 
         reg0 = self._reg("reg0", Bits(32), def_val=0)
         reg1 = self._reg("reg1", Bits(32), def_val=1)

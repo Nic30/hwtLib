@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import connect
 from hwt.interfaces.std import Signal, Clk, VectSignal
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
@@ -47,11 +46,11 @@ class GroupOfBlockrams(Unit):
         bramW = s.bramW
 
         all_bram_ports = [*bramR.port, *bramW.port]
-
-        connect(s.clk, *[i.clk for i in all_bram_ports])
-        connect(s.en, *[i.en for i in all_bram_ports])
-        connect(s.we, *[i.we for i in all_bram_ports])
-        connect(s.addr, *[i.addr for i in all_bram_ports])
+        for p in all_bram_ports:
+            p.clk(s.clk)
+            p.en(s.en)
+            p.we(s.we)
+            p.addr(s.addr)
 
         bramW.port[0].din(s.in_w_a)
         bramW.port[1].din(s.in_w_b)

@@ -3,8 +3,7 @@
 
 from typing import Union
 
-from hwt.code import If, FsmBuilder, Or, connect, Switch, \
-    SwitchLogic
+from hwt.code import If, FsmBuilder, Or, Switch, SwitchLogic
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
 from hwt.hdl.value import HValue
@@ -167,7 +166,7 @@ class AxiLiteEndpoint(BusEndpoint):
         for (_, _), t in self._bramPortMapped:
             # en, we handled in readPart
             din = self.getPort(t).din
-            connect(w.data, din, fit=True)
+            din(w.data, fit=True)
 
         self.writeRespPart(awAddr, wSt._eq(wSt_t.wrResp))
 

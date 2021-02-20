@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import connect, Or
+from hwt.code import Or
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
@@ -67,7 +67,7 @@ class RStrictOrderInterconnect(AxiInterconnectBase):
         for i, d in enumerate(driversR):
             # extraHsEnableConds[d]
             d.valid(r.valid & fifoOut.vld & fifoOut.data._eq(i))
-            connect(r, d, exclude=[d.valid, d.ready])
+            d(r, exclude=[d.valid, d.ready])
 
         r.ready(fifoOut.vld & selectedDriverReady)
         fifoOut.rd(r.valid & r.last & selectedDriverReady)

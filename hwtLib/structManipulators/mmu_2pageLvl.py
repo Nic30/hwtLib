@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -
 
-from hwt.code import connect, Concat, If
+from hwt.code import Concat, If
 from hwt.interfaces.std import Handshaked, BramPort_withoutClk, \
     Signal
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
@@ -114,7 +114,7 @@ class MMU_2pageLvl(Unit):
 
         lvl2indx.data(virtIn.data[(self.LVL2_PAGE_TABLE_INDX_WIDTH
                                    + self.PAGE_OFFSET_WIDTH):self.PAGE_OFFSET_WIDTH])
-        connect(virtIn.data, pageOffset.dataIn.data, fit=True)
+        pageOffset.dataIn.data(virtIn.data, fit=True)
         lvl1readAddr.data(virtIn.data[:(self.LVL2_PAGE_TABLE_INDX_WIDTH
                                            + self.PAGE_OFFSET_WIDTH)])
         StreamNode(masters=[virtIn],

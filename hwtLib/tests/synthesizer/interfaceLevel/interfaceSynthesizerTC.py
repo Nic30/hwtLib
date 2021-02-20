@@ -3,7 +3,6 @@
 
 import unittest
 
-from hwt.code import connect
 from hwt.hdl.constants import DIRECTION, INTF_DIRECTION
 from hwt.interfaces.std import Signal
 from hwt.pyUtils.arrayQuery import where
@@ -213,7 +212,7 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
 
         i, i2 = createTwoAxiDuplexStreams()
 
-        connect(i, i2)
+        i2(i)
 
         m(i)
 
@@ -244,8 +243,8 @@ class InterfaceSynthesizerTC(BaseSynthesizerTC):
 
         i, i2 = createTwoAxiDuplexStreams()
 
-        connect(i2.rx, i.rx)
-        connect(i.tx, i2.tx)
+        i.rx(i2.rx)
+        i2.tx(i.tx)
 
         m(i)
         s(i.rx)

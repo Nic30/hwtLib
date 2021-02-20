@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import connect
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
@@ -52,10 +51,10 @@ class AxiLite_to_Axi(BusBridge):
         axiLite = self.s
 
         def connect_what_is_same_lite_to_full(src, dst):
-            connect(src, dst, exclude=interface_not_present_on_other(dst, src))
+            dst(src, exclude=interface_not_present_on_other(dst, src))
 
         def connect_what_is_same_full_to_lite(src, dst):
-            connect(src, dst, exclude=interface_not_present_on_other(src, dst))
+            dst(src, exclude=interface_not_present_on_other(src, dst))
 
         def a_defaults(a: Axi4_addr):
             a.id(self.DEFAULT_ID)

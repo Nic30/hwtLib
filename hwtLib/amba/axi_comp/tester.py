@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import FsmBuilder, If, connect, Concat
+from hwt.code import FsmBuilder, If, Concat
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.enum import HEnum
@@ -61,7 +61,7 @@ class AxiTester(Unit):
             (Bits(self.ADDR_WIDTH), "addr"),
             # a or w id
             (Bits(self.ID_WIDTH), "ar_aw_w_id"),
-            (Bits(32 - int(self.ID_WIDTH)), None), 
+            (Bits(32 - int(self.ID_WIDTH)), None),
 
             (Bits(2), "burst"), # 0x10
             (Bits(32 - 2), None),
@@ -120,11 +120,11 @@ class AxiTester(Unit):
             port = getattr(ep, name)
             reg = self._reg(name, port.din._dtype)
             e = If(port.dout.vld,
-                   connect(port.dout.data, reg, fit=fit)
+                   reg(port.dout.data, fit=fit)
                 )
             if input_ is not None:
                 e.Elif(inputEn,
-                    connect(input_, reg, fit=fit)
+                    reg(input_, fit=fit)
                 )
             port.din(reg)
             return reg
@@ -133,7 +133,7 @@ class AxiTester(Unit):
         cmd = self._reg("reg_cmd", cmdIn.data._dtype, def_val=0)
         cmdVld = self._reg("reg_cmd_vld", def_val=0)
         If(cmdIn.vld,
-           connect(cmdIn.data, cmd, fit=True)
+           cmd(cmdIn.data, fit=True)
         )
         partDone = self._sig("partDone")
         If(partDone,
@@ -178,7 +178,7 @@ class AxiTester(Unit):
         ready = st._eq(state_t.ready)
         tmp = self._sig("tmp")
         tmp(ready & ~ep.cmd_and_status.dout.vld)
-        connect(tmp, ep.cmd_and_status.din, fit=True)
+        ep.cmd_and_status.din(tmp, fit=True)
 
         a_w_id = connected_reg("ar_aw_w_id")
         addr = connected_reg("addr")
@@ -223,7 +223,7 @@ class AxiTester(Unit):
         w_strb = connected_reg("w_strb")
         if hasattr(w, "id"):
             w.id(a_w_id)
-        connect(w_data, w.data, fit=True)
+        w.data(w_data, fit=True)
         w.strb(w_strb)
         w.last(w_last)
         w_vld = st._eq(state_t.wait_w)

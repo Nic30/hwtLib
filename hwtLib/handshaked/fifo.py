@@ -3,7 +3,7 @@
 
 from typing import Optional, Tuple, Union
 
-from hwt.code import If, connect
+from hwt.code import If
 from hwt.interfaces.std import VectSignal, Clk, Rst_n, Rst
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
@@ -70,7 +70,7 @@ class HandshakedFifo(HandshakedCompBase):
     def _connect_size_and_space(self, out_vld, fifo):
         if self.EXPORT_SIZE:
             size_tmp = self._sig("size_tmp", self.size._dtype)
-            connect(fifo.size, size_tmp, fit=True)
+            size_tmp(fifo.size, fit=True)
 
             If(out_vld,
                self.size(size_tmp + 1)
@@ -80,7 +80,7 @@ class HandshakedFifo(HandshakedCompBase):
 
         if self.EXPORT_SPACE:
             space_tmp = self._sig("space_tmp", self.size._dtype)
-            connect(fifo.space, space_tmp, fit=True)
+            space_tmp(fifo.space, fit=True)
 
             If(out_vld,
                self.space(space_tmp)

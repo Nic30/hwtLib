@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, Concat, connect, FsmBuilder
+from hwt.code import If, Concat, FsmBuilder
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
@@ -219,7 +219,7 @@ class CLinkedListWriter(Unit):
         If(constraingLen > BURST_LEN,
            reqLen(BURST_LEN)
         ).Else(
-           connect(constraingLen, reqLen, fit=True)
+           reqLen(constraingLen, fit=True)
         )
 
         wReq.id(self.ID)

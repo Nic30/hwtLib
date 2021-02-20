@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -
 
-from hwt.code import If, In, Concat, connect
+from hwt.code import If, In, Concat
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, RegCntrl, VectSignal
@@ -159,14 +159,14 @@ class CLinkedListReader(Unit):
             # we know that sizeByPtrs <= inBlockRemain thats why we can resize it
             # we will download next* as well
             req.id(ID_LAST),
-            connect(constraingSpace, req.len, fit=True),
+            req.len(constraingSpace, fit=True),
             If(doReq,
                inBlockRemain(self.ITEMS_IN_BLOCK)
             )
         ).Else(
             # download data leftover
             req.id(ID),
-            connect(constraingSpace - 1, req.len, fit=True),
+            req.len(constraingSpace - 1, fit=True),
             If(doReq,
                inBlockRemain(inBlockRemain - fitTo(constraingSpace, inBlockRemain))
             )

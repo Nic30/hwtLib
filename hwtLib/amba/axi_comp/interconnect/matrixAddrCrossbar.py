@@ -3,7 +3,7 @@
 
 from typing import List, Tuple
 
-from hwt.code import connect, Concat, SwitchLogic, Or
+from hwt.code import Concat, SwitchLogic, Or
 from hwt.code_utils import rename_signal
 from hwt.hdl.assignment import Assignment
 from hwt.hdl.transTmpl import TransTmpl
@@ -121,7 +121,7 @@ class AxiInterconnectMatrixAddrCrossbar(Unit):
                                                   addr_assignments):
             if addr_assig is None:
                 continue
-            data_connect_exprs = connect(m_addr, slv_addr_tmp,
+            data_connect_exprs = slv_addr_tmp(m_addr,
                                          exclude={m_addr.valid,
                                                   m_addr.ready,
                                                   m_addr.addr}) + [addr_assig]

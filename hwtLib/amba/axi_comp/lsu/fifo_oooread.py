@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import Concat, If, connect
+from hwt.code import Concat, If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked, HandshakeSync, VectSignal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -203,7 +203,8 @@ class FifoOutOfOrderReadFiltered(FifoOutOfOrderRead):
 
         write_execute = self.write_execute
         tc.read.addr(read_ptr)
-        connect(write_ptr, write_execute.index, tc.write.addr)
+        for dst in [write_execute.index, tc.write.addr]:
+            dst(write_ptr)
         tc.write.data(write_execute.key)
         StreamNode([], [tc.write, write_execute]).sync()
         self.read_execute.key(tc.read.data)

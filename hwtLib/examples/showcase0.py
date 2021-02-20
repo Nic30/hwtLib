@@ -27,14 +27,13 @@ There are several examples:
    :linenos:
 """
 
-from hwt.code import connect, If, Concat, Switch
+from hwt.code import If, Concat, Switch
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.interfaces.utils import addClkRstn
+from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.unit import Unit
 from hwtLib.types.ctypes import uint32_t, int32_t, uint8_t, int8_t
-from hwt.synthesizer.hObjList import HObjList
-
 
 
 def foo(condition0, statements, condition1, fallback0, fallback1):
@@ -127,7 +126,7 @@ class Showcase0(Unit):
 
         # width of signals is not same, this would raise TypeError on regular assignment,
         # this behavior can be overriden by calling connect with fit=True
-        connect(a, self.fitted, fit=True)
+        self.fitted(a, fit=True)
 
         # every signal/value has _dtype attribute which is parent type
         # most of the types have physical size, bit_lenght returns size of this type in bits
@@ -235,8 +234,8 @@ class Showcase0(Unit):
         fRam = self._sig("fallingEdgeRam", int8_t[4])
         If(self.clk._onFallingEdge(),
            # fit can extend signal and also shrink it
-           connect(a, fRam[r1], fit=True),
-           connect(fRam[r1]._unsigned(), self.k, fit=True)
+           fRam[r1](a, fit=True),
+           self.k(fRam[r1]._unsigned(), fit=True)
         )
 
 

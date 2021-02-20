@@ -22,6 +22,7 @@ class FifoAsync(Fifo):
 
     .. hwt-autodoc:: _example_FifoAsync
     """
+
     def _config(self):
         Fifo._config(self)
         self.IN_FREQ = Param(int(100e6))
@@ -95,8 +96,8 @@ class FifoAsync(Fifo):
         w_full = self._reg("w_full", def_val=0, **clk_in)
         # wbin - rbin == 2^Nl https://zipcpu.com/blog/2018/07/06/afifo.html
         # first two bits inverted, rest equal
-        w_full(w_gray.next._eq(Concat(~r_gray_in_clk[AW+1:AW-1],
-                                       r_gray_in_clk[AW-1:])))
+        w_full(w_gray.next._eq(Concat(~r_gray_in_clk[AW + 1:AW - 1],
+                                       r_gray_in_clk[AW - 1:])))
         din.wait(w_full)
         w_en = din.en & ~w_full
         If(w_en,

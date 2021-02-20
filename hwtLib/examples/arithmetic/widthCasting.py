@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import connect
 from hwt.interfaces.std import VectSignal
 from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SingleUnitSimTestCase
@@ -31,7 +30,8 @@ class WidthCastingExample(Unit):
         a = fitTo(self.a, c)
         b = fitTo(self.b, c)
 
-        connect(a + b, c, self.d, fit=True)
+        for dst in [c, self.d]:
+            dst(a + b, fit=True)
 
 
 class WidthCastingExampleTC(SingleUnitSimTestCase):

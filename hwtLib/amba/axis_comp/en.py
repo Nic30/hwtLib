@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, connect
+from hwt.code import If
 from hwt.interfaces.std import Signal
 from hwt.interfaces.utils import addClkRstn
+from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from hwtLib.handshaked.streamNode import StreamNode
-from hwtLib.amba.axis import AxiStream
 
 
 class AxiS_en(AxiSCompBase):
@@ -40,7 +40,7 @@ class AxiS_en(AxiSCompBase):
         StreamNode(masters=[din],
                    slaves=[dout]).sync(dataEn)
 
-        connect(din, dout, exclude=[din.ready, din.valid])
+        dout(din, exclude=[din.ready, din.valid])
 
 
 if __name__ == "__main__":

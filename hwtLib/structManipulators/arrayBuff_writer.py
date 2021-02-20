@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -
 
-from hwt.code import If, Concat, connect, FsmBuilder
+from hwt.code import If, Concat, FsmBuilder
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
@@ -103,7 +103,7 @@ class ArrayBuff_writer(Unit):
         offset = self._reg("offset", offset_t, def_val=0)
         remaining = self._reg("remaining", Bits(
             log2ceil(ITEMS + 1), signed=False), def_val=ITEMS)
-        connect(remaining, self.buff_remain, fit=True)
+        self.buff_remain(remaining, fit=True)
 
         addrTmp = self._sig("baseAddrTmp", baseAddr._dtype)
         addrTmp(baseAddr + fitTo(offset, baseAddr))
@@ -122,7 +122,7 @@ class ArrayBuff_writer(Unit):
         buffSizeAsLen = self._sig("buffSizeAsLen", buff.size._dtype)
         buffSizeAsLen(buff.size - 1)
         buffSize_tmp = self._sig("buffSize_tmp", remaining._dtype)
-        connect(buff.size, buffSize_tmp, fit=True)
+        buffSize_tmp(buff.size, fit=True)
 
         endOfLenBlock = (remaining - 1) < buffSize_tmp
 
@@ -130,10 +130,10 @@ class ArrayBuff_writer(Unit):
         remainingAsLen(remaining - 1)
 
         If(endOfLenBlock,
-            connect(remainingAsLen, req.len, fit=True),
-            connect(remaining, sizeTmp, fit=True)
+            req.len(remainingAsLen, fit=True),
+            sizeTmp(remaining, fit=True)
         ).Else(
-            connect(buffSizeAsLen, req.len, fit=True),
+            req.len(buffSizeAsLen, fit=True),
             sizeTmp(buff.size)
         )
 
@@ -193,7 +193,7 @@ class ArrayBuff_writer(Unit):
 
         buff.dataIn(self.items)
 
-        connect(buff.dataOut.data, w.data, fit=True)
+        w.data(buff.dataOut.data, fit=True)
 
         StreamNode(
             masters=[buff.dataOut],

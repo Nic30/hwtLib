@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.synthesizer.unit import Unit
 from hwt.interfaces.std import VectSignal
 
@@ -8,7 +11,7 @@ class InvalidTypeConnetion(Unit):
         self.b = VectSignal(64)
 
     def _impl(self):
-        # wrong size can be overriden by connect(src, dst, fit=True)
+        # wrong size can be overriden by dst(src, fit=True)
         self.a(self.b)
 
 

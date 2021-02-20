@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import Concat, If, Switch, connect
+from hwt.code import Concat, If, Switch
 from hwt.hdl.typeShortcuts import vec
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
@@ -90,7 +90,7 @@ class Axi4streamToMem(Unit):
         If(lenRem > self.MAX_BUTST_LEN,
             axi.aw.len(self.MAX_BUTST_LEN - 1)
         ).Else(
-            connect(lenRem - 1, axi.aw.len, fit=True)
+            axi.aw.len(lenRem - 1, fit=True)
         )
         axi.aw.lock(LOCK_DEFAULT)
         axi.aw.prot(PROT_DEFAULT)
@@ -101,7 +101,7 @@ class Axi4streamToMem(Unit):
         Switch(st)\
         .Case(st_t.fullIdle,
             lenRem(self.DATA_LEN),
-            actualAddr(baseAddr) 
+            actualAddr(baseAddr)
         ).Case(st_t.writeAddr,
             If(axi.aw.ready,
                 If(lenRem > self.MAX_BUTST_LEN,
@@ -208,7 +208,7 @@ class Axi4streamToMem(Unit):
             If(lenRem > self.MAX_BUTST_LEN,
                actualLenRem(self.MAX_BUTST_LEN)
             ).Else(
-               connect(lenRem, actualLenRem, fit=True)
+               actualLenRem(lenRem, fit=True)
             )
         )
 

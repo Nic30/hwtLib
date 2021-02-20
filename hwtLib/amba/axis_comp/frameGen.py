@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, connect
+from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -52,25 +52,25 @@ class AxisFrameGen(Unit):
         self.conv.bus(self.cntrl)
         cEn = self.conv.decoded.enable
         If(cEn.dout.vld,
-           connect(cEn.dout.data, en, fit=True)
+           en(cEn.dout.data, fit=True)
         )
-        connect(en, cEn.din, fit=True)
+        cEn.din(en, fit=True)
 
         cLen = self.conv.decoded.len
         If(cLen.dout.vld,
-           connect(cLen.dout.data, _len, fit=True)
+           _len(cLen.dout.data, fit=True)
         )
-        connect(_len, cLen.din, fit=True)
+        cLen.din(_len, fit=True)
 
         out = self.axis_out
-        connect(cntr, out.data, fit=True)
+        out.data(cntr, fit=True)
         if self.USE_STRB:
             out.strb(mask(self.axis_out.strb._dtype.bit_length()))
         out.last(cntr._eq(0))
         out.valid(en)
 
         If(cLen.dout.vld,
-           connect(cLen.dout.data, cntr, fit=True)
+           cntr(cLen.dout.data, fit=True)
         ).Else(
             If(out.ready & en,
                If(cntr._eq(0),

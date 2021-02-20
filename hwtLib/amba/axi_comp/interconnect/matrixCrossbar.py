@@ -3,7 +3,7 @@
 
 from typing import Dict, Set
 
-from hwt.code import Or, connect, Switch
+from hwt.code import Or, Switch
 from hwt.math import log2ceil
 from hwt.code_utils import rename_signal
 from hwt.interfaces.std import Handshaked
@@ -176,13 +176,13 @@ class AxiInterconnectMatrixCrossbar(Unit):
                 connected_in = self.OUTPUTS[out_i]
                 assert len(connected_in) == 1, connected_in
                 connected_in = list(connected_in)[0]
-                connect(dataIn_channels[connected_in], dataOut,
+                dataOut(dataIn_channels[connected_in],
                         exclude={dataOut.valid, dataOut.ready})
             else:
                 cases = []
                 for si, s in enumerate(dataIn_channels):
                     cases.append(
-                        (si, connect(s, dataOut, exclude={s.valid, s.ready})))
+                        (si, dataOut(s, exclude={s.valid, s.ready})))
 
                 Switch(order_s_for_m.data)\
                     .add_cases(cases)\

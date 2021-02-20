@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import Or, connect
+from hwt.code import Or
 from hwtLib.handshaked.splitCopy import HsSplitCopy
 
 
@@ -40,8 +40,8 @@ class HsSplitPrioritized(HsSplitCopy):
             for _vld in map(lambda x: ~self.get_ready_signal(x), allWitLowerPriority):
                 vld = vld & _vld
 
-            connect(self.dataIn, out, 
-                    exclude={self.get_ready_signal(out), self.get_valid_signal(out)})
+            out(self.dataIn,
+                exclude={self.get_ready_signal(out), self.get_valid_signal(out)})
             self.get_valid_signal(out)(vld)
 
 

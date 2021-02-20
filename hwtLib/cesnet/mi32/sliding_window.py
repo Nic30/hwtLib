@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import connect, If
+from hwt.code import If
 from hwt.interfaces.utils import addClkRstn
 from hwt.math import isPow2
 from hwt.synthesizer.param import Param
@@ -50,11 +50,11 @@ class Mi32SlidingWindow(BusBridge):
         s, m = self.s, self.m
         offset_en = s.addr._eq(OFFSET_REG_ADDR)
         offset = self._reg("offset", m.addr._dtype, def_val=0)
-        connect(s, m, exclude={m.addr, m.wr, m.ardy})
+        m(s, exclude={m.addr, m.wr, m.ardy})
         m.addr(offset + s.addr._reinterpret_cast(m.addr._dtype))
         m.wr(s.wr & ~offset_en)
         If(offset_en & s.wr,
-           connect(s.dwr, offset, fit=True)
+           offset(s.dwr, fit=True)
         )
         s.ardy(m.ardy | (s.wr & offset_en))
 

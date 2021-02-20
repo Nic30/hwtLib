@@ -3,7 +3,7 @@
 
 from typing import Tuple, Optional, Union
 
-from hwt.code import If, connect
+from hwt.code import If
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import Signal, Rst_n, Rst, Clk, VectSignal
@@ -43,15 +43,15 @@ class AxiSRegCopy(AxiSCompBase, HandshakedFifo):
               reg.dataIn.id(self.dataIn.id)
             )
         If(copy_en,
-            connect(reg.dataOut, reg.dataIn, exclude=non_data_signals)
+            reg.dataIn(reg.dataOut, exclude=non_data_signals)
         ).Else(
-            connect(self.dataIn, reg.dataIn, exclude=non_data_signals)
+            reg.dataIn(self.dataIn, exclude=non_data_signals)
         )
 
         reg.dataIn.valid(copy_en | self.dataIn.valid)
         self.dataIn.ready(reg.dataIn.ready & ~copy_en)
 
-        #connect(reg.dataOut, self.dataOut, exclude=[reg.dataOut.ready, reg.dataOut.valid])
+        #self.dataOut(reg.dataOut, exclude=[reg.dataOut.ready, reg.dataOut.valid])
         self.dataOut(reg.dataOut)
 
         propagateClkRstn(self)

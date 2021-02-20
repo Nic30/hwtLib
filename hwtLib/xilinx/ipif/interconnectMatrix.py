@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import connect, SwitchLogic
+from hwt.code import SwitchLogic
 from hwt.hdl.typeShortcuts import hBit
 from hwt.interfaces.utils import addClkRstn
 from hwt.math import log2ceil
@@ -56,7 +56,7 @@ class IpifInterconnectMatrix(BusInterconnect):
         rdata = []
         for i, (s, (s_offset, s_size)) in\
                 enumerate(zip(self.m, self.SLAVES)):
-            connect(m.bus2ip_addr, s.bus2ip_addr, fit=True)
+            s.bus2ip_addr(m.bus2ip_addr, fit=True)
             s.bus2ip_be(m.bus2ip_be)
             s.bus2ip_rnw(m.bus2ip_rnw)
             s.bus2ip_data(m.bus2ip_data)
@@ -86,11 +86,11 @@ class IpifInterconnectMatrix(BusInterconnect):
 def _example_IpifInterconnectMatrix():
     AUTO = AUTO_ADDR
     u = IpifInterconnectMatrix()
-    u.MASTERS = (({0, 1, 2, 3}), )
+    u.MASTERS = (({0, 1, 2, 3}),)
     u.SLAVES = (
         (0x0000, 0x100),
         (0x0100, 0x100),
-        (AUTO,   0x100),
+        (AUTO, 0x100),
         (0x1000, 0x1000),
     )
     return u

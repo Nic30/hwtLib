@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import connect, Concat, Switch
+from hwt.code import Concat, Switch
 from hwt.hdl.typeShortcuts import vec
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -63,12 +63,12 @@ class AxiResize(BusBridge):
         aligned_addr = Concat(m_a.addr[:AL_OUT_W], vec(0, AL_OUT_W))
         align_fifo.dataIn.data(m_a.addr[AL_OUT_W:AL_IN_W])
 
-        connect(m_a, s_a, exclude={m_a.addr, m_a.valid, m_a.ready})
+        s_a(m_a, exclude={m_a.addr, m_a.valid, m_a.ready})
         StreamNode(
             masters=[m_a],
             slaves=[s_a, align_fifo.dataIn],
         ).sync()
-        connect(aligned_addr, s_a.addr, fit=self.ADDR_WIDTH != self.OUT_ADDR_WIDTH)
+        s_a.addr(aligned_addr, fit=self.ADDR_WIDTH != self.OUT_ADDR_WIDTH)
 
         return align_fifo
 
@@ -94,11 +94,11 @@ class AxiResize(BusBridge):
 
         res = []
         if i == 0:
-            res.append(connect(src_ch.data, dst_ch.data, fit=True))
+            res.append(dst_ch.data(src_ch.data, fit=True))
             if has_strb:
-                res.append(connect(src_ch.strb, dst_ch.strb, fit=True))
+                res.append(dst_ch.strb(src_ch.strb, fit=True))
             if has_keep:
-                res.append(connect(src_ch.keep, dst_ch.keep, fit=True))
+                res.append(dst_ch.keep(src_ch.keep, fit=True))
         else:
             # i > 0
             dst_w = dst_ch.data._dtype.bit_length() // 8
@@ -140,7 +140,7 @@ class AxiResize(BusBridge):
             r_align_cases.append((i, self.connect_shifted(s.r, m.r, i)))
             w_align_cases.append((i, self.connect_shifted(m.w, s.w, i)))
 
-        connect(m.w, s.w, exclude={m.w.data, m.w.strb, m.w.ready, m.w.valid})
+        s.w(m.w, exclude={m.w.data, m.w.strb, m.w.ready, m.w.valid})
         StreamNode(masters=[m.w, w_align_fifo.dataOut], slaves=[s.w]).sync()
         Switch(w_align_fifo.dataOut.data).add_cases(w_align_cases)\
             .Default(
@@ -149,7 +149,7 @@ class AxiResize(BusBridge):
                 s.w.strb(None),
             )
 
-        connect(s.r, m.r, exclude={s.r.data, s.r.ready, s.r.valid})
+        m.r(s.r, exclude={s.r.data, s.r.ready, s.r.valid})
         StreamNode(masters=[s.r, r_align_fifo.dataOut], slaves=[m.r]).sync()
         Switch(r_align_fifo.dataOut.data).add_cases(r_align_cases)\
             .Default(
@@ -181,13 +181,13 @@ class AxiResize(BusBridge):
             if DW == OUT_DW:
                 # always reading/writing less data than is max of output
                 if self.ADDR_WIDTH != self.OUT_ADDR_WIDTH:
-                    connect(s.aw, m.aw, fit=True)
-                    connect(s.ar, m.ar, fit=True)
+                    m.aw(s.aw, fit=True)
+                    m.ar(s.ar, fit=True)
                 else:
                     m.aw(s.aw)
                     m.ar(s.ar)
-                connect(s.w, m.w, fit=True)
-                connect(m.r, s.r, fit=True)
+                m.w(s.w, fit=True)
+                s.r(m.r, fit=True)
                 s.b(m.b)
             elif DW < OUT_DW:
                 assert OUT_DW % DW == 0, (OUT_DW, DW)

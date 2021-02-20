@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import connect, Or, If
+from hwt.code import Or, If
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
@@ -180,7 +180,7 @@ class EthernetMac(Unit):
 
         # postpone procesing of last word until we know the result of fcs check
         dout = self.eth.rx
-        connect(data, dout, exclude=[data.ready, data.valid])
+        dout(data, exclude=[data.ready, data.valid])
         not_fcs_check_wait = ~data.last | fcs_good_in_this_frame | err_in_this_frame
         StreamNode(
             [data], [dout],
@@ -218,9 +218,7 @@ class EthernetMac(Unit):
         self.tx_crc = crc
         self.tx_frame_gen = ff
         propagateClkRstn(self)
-        connect(self.eth.tx,
-                crc.dataIn,
-                ff.dataIn.data,
+        crc.dataIn(self.eth.tx,
                 exclude=[
                     self.eth.tx.ready,
                     self.eth.tx.valid,
@@ -228,11 +226,17 @@ class EthernetMac(Unit):
                     crc.dataIn.rd,
                     *([self.eth.tx.strb,
                        crc.dataIn.mask,
-                       ff.dataIn.data.strb,
                        ] if self.USE_STRB else []),
-                    ff.dataIn.data.valid,
-                    ff.dataIn.data.ready
                 ]
+        )
+        ff.dataIn.data(self.eth.tx,
+                       exclude=[
+                           self.eth.tx.ready,
+                           self.eth.tx.valid,
+                           *([self.eth.tx.strb,
+                              ff.dataIn.data.strb,
+                              ] if self.USE_STRB else []),
+                       ]
         )
         StreamNode([self.eth.tx],
                    [crc.dataIn, ff.dataIn.data]).sync()

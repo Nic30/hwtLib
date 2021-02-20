@@ -20,6 +20,7 @@ from hwtLib.logic.binToOneHot import binToOneHot
 from hwtLib.mem.ramXor import RamXorSingleClock
 
 
+# extract variant with id
 class IndexWayHs(HandshakeSync):
 
     def _config(self):

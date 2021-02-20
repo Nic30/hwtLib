@@ -1,6 +1,6 @@
 from typing import Union, Optional
 
-from hwt.code import If, Switch, connect, Concat
+from hwt.code import If, Switch, Concat
 from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
 from hwt.hdl.transPart import TransPart
 from hwt.hdl.typeShortcuts import hBit
@@ -209,7 +209,7 @@ class AxiS_frameParserFieldConnector():
                         .Case(last_word_i, set_mask(last_word_mask))\
                         .Default(set_mask(body_word_mask))
 
-            connect(din, dout, exclude=non_data_signals)
+            dout(din, exclude=non_data_signals)
         is_last_part_in_stream = part.tmpl.parent.bitAddrEnd == part.endOfPart
         if is_last_part_in_stream:
             if wordIndex is None:

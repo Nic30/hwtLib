@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import connect, Or, Switch
+from hwt.code import Or, Switch
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
@@ -64,7 +64,7 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
                              ))
 
         Switch(fWOut.data).add_cases(
-            [(i, connect(d, w, exclude=[d.valid, d.ready]))
+            [(i, w(d, exclude=[d.valid, d.ready]))
                for i, d in enumerate(driversW)]
 
         ).Default(
@@ -106,7 +106,7 @@ class WStrictOrderInterconnect(AxiInterconnectBase):
         fAckOut.rd(ack.vld & selectedDriverAckReady)
 
         for i, d in enumerate(driversAck):
-            connect(ack, d, exclude=[d.vld, d.rd])
+            d(ack, exclude=[d.vld, d.rd])
             d.vld(ack.vld & fAckOut.vld & fAckOut.data._eq(i))
 
     def _impl(self):

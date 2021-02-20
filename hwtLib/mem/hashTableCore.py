@@ -3,10 +3,10 @@
 
 from typing import Optional
 
-from hwt.code import connect, Concat
-from hwt.math import log2ceil
+from hwt.code import Concat
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import propagateClkRstn, addClkRstn
+from hwt.math import log2ceil
 from hwt.synthesizer.unit import Unit
 from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
 from hwtLib.handshaked.builder import HsBuilder
@@ -117,7 +117,7 @@ class HashTableCore(Unit):
         # hash key and address with has in table
         h.dataIn(lookup.key)
         # hash can be wider
-        connect(h.dataOut, ramR.addr.data, fit=True)
+        ramR.addr.data(h.dataOut, fit=True)
 
         inputSlaves = [ramR.addr, origKeyIn]
         outputMasters = [origKey, ramR.data, ]
@@ -128,7 +128,7 @@ class HashTableCore(Unit):
             self.origHashIn = origHashIn
             origHashOut = HsBuilder(self, origHashIn).buff(2).end
 
-            connect(h.dataOut, origHashIn.data, fit=True)
+            origHashIn.data(h.dataOut, fit=True)
 
             inputSlaves.append(origHashIn)
             outputMasters.append(origHashOut)

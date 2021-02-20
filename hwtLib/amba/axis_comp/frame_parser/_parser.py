@@ -3,7 +3,7 @@
 
 from typing import Optional, List, Union
 
-from hwt.code import If, connect
+from hwt.code import If
 from hwt.code_utils import connect_optional
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
@@ -318,11 +318,11 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                                      start_offsets=[x // 8 for x in suffix_offsets]),
                              "f0"))
                         self.suffix_align = align
-                        connect(suffix, align.dataIn[0], exclude=[suffix.strb, align.dataIn[0].keep])
+                        align.dataIn[0](suffix, exclude=[suffix.strb, align.dataIn[0].keep])
                         align.dataIn[0].keep(suffix.strb)
                         suffix = align.dataOut
-                        connect(suffix, c1.dataIn, exclude=[suffix.keep,
-                                                            c1.dataIn.strb])
+                        c1.dataIn(suffix, exclude=[suffix.keep,
+                                                   c1.dataIn.strb])
                         c1.dataIn.strb(suffix.keep)
                     else:
                         c1.dataIn(suffix)
@@ -365,7 +365,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                 StreamNode(masters, slaves,
                            extraConds=extraConds,
                            skipWhen=skipWhen).sync()
-                connect(din, c0.dataIn, exclude=[din.valid, din.ready])
+                c0.dataIn(din, exclude=[din.valid, din.ready])
             else:
                 raise NotImplementedError("multiple con-constant size segments")
         else:

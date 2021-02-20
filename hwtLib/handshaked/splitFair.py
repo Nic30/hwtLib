@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import Or, rol, connect
+from hwt.code import Or, rol
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
@@ -87,8 +87,8 @@ class HsSplitFair(HsSplitCopy):
         rdSignals = self.isSelectedLogic(din)
 
         for dout in self.dataOut:
-            connect(din, dout, exclude={self.get_ready_signal(dout),
-                                        self.get_valid_signal(dout)})
+            dout(din, exclude={self.get_ready_signal(dout),
+                               self.get_valid_signal(dout)})
 
         if self.EXPORT_SELECTED:
             self.get_ready_signal(din)(Or(*rdSignals) & self.selectedOneHot.rd)

@@ -55,11 +55,11 @@ class ListOfInterfacesSample2(Unit):
     def _impl(self):
         self.u0.c(self.a[0])
         self.u1.c(self.a[1])
-        # u2in = connect(a[2], u2.c)
+        # u2in = u2.c(a[2])
 
         self.b[0](self.u0.d)
         self.b[1](self.u1.d)
-        # u2out = connect(u2.d, b[2])
+        # u2out = b[2](u2.d)
 
 
 class ListOfInterfacesSample2TC(SingleUnitSimTestCase):

@@ -4,7 +4,7 @@
 from typing import List
 
 from hwt.code import FsmBuilder, And, Or, If, ror, SwitchLogic, \
-    connect, Concat
+    Concat
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
@@ -281,16 +281,14 @@ class CuckooHashTable(HashTableCore):
         lookupRes.vld(state._eq(fsm_t.idle) & lookupResVld)
 
         SwitchLogic([(lookupFoundOH[i],
-                      connect(t.lookupRes,
-                              lookupRes,
-                              exclude={lookupRes.vld,
-                                       lookupRes.rd}))
+                      lookupRes(t.lookupRes,
+                                exclude={lookupRes.vld,
+                                         lookupRes.rd}))
                      for i, t in enumerate(self.tables)],
                     default=[
-                        connect(self.tables[0].lookupRes,
-                                lookupRes,
-                                exclude={lookupRes.vld,
-                                         lookupRes.rd})]
+                        lookupRes(self.tables[0].lookupRes,
+                                  exclude={lookupRes.vld,
+                                           lookupRes.rd})]
                     )
 
     def lookup_trans_cntr(self):

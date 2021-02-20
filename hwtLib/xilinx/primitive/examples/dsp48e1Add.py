@@ -3,7 +3,7 @@
 
 from math import ceil
 
-from hwt.code import connect, Concat, Or, If
+from hwt.code import Concat, Or, If
 from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import HandshakeSync, VectSignal, Handshaked
 from hwt.interfaces.utils import addClkRstn
@@ -285,26 +285,23 @@ class Dsp48e1Add(Unit):
             dsp.D(0)
             dsp_outputs.append(dsp.P[width:])
 
-            connect(ce_0,
-                dsp.CEA1,
-                dsp.CEA2,
-                dsp.CEALUMODE,
-                dsp.CEB2,
-                dsp.CEB1,
-                dsp.CEC,
-                dsp.CECARRYIN,
-                dsp.CECTRL,
-            )
-            connect(1,
-                dsp.CEAD,
-                dsp.CED,
-                dsp.CEM,
-            )
+            for _ce in [
+                    dsp.CEA1,
+                    dsp.CEA2,
+                    dsp.CEALUMODE,
+                    dsp.CEB2,
+                    dsp.CEB1,
+                    dsp.CEC,
+                    dsp.CECARRYIN,
+                    dsp.CECTRL,
+                ]:
+                _ce(ce_0)
+            for _ce in [dsp.CEAD, dsp.CED, dsp.CEM]:
+                _ce(1)
 
             dsp.CEP(ce_1)
 
-            connect(~self.rst_n,
-                dsp.RSTA,
+            for _rst in [dsp.RSTA,
                 dsp.RSTALLCARRYIN,
                 dsp.RSTALUMODE,
                 dsp.RSTB,
@@ -312,8 +309,8 @@ class Dsp48e1Add(Unit):
                 dsp.RSTCTRL,
                 dsp.RSTD,
                 dsp.RSTM,
-                dsp.RSTP,
-            )
+                dsp.RSTP,]:
+                _rst(~self.rst_n)
 
         if REQUIRES_CASCADE:
             delayed_dsp_outputs = []

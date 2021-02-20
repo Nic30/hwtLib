@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from hwt.code import connect, Switch, If, Or, SwitchLogic
+from hwt.code import Switch, If, Or, SwitchLogic
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import Handshaked
@@ -80,7 +80,7 @@ class Mi32InterconnectMatrix(BusInterconnect):
         for i, (s, (s_offset, s_size)) in\
                 enumerate(zip(self.m, self.SLAVES)):
             # s = Mi32()
-            connect(m.addr, s.addr, fit=True)
+            s.addr(m.addr, fit=True)
             s.be(m.be)
 
             s.dwr(m.dwr)

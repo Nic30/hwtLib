@@ -1,6 +1,5 @@
 from inspect import isgenerator
 
-from hwt.code import connect
 from hwtLib.amba.datapump.r import Axi_rDatapump
 from hwtLib.amba.datapump.w import Axi_wDatapump
 from hwtLib.amba.datapump.interconnect.rStricOrder import RStrictOrderInterconnect
@@ -25,7 +24,7 @@ def connectDp(parent, controller, datapump, axi, exclude=None):
         controller = controller[0]
 
     if isinstance(datapump, Axi_rDatapump):
-        connect(datapump.axi.ar, axi.ar, exclude=exclude)
+        axi.ar(datapump.axi.ar, exclude=exclude)
         datapump.axi.r(axi.r)
 
         if isinstance(controller, (list, tuple)):
@@ -39,7 +38,7 @@ def connectDp(parent, controller, datapump, axi, exclude=None):
             return
 
     elif isinstance(datapump, Axi_wDatapump):
-        connect(datapump.axi.aw, axi.aw, exclude=exclude)
+        axi.aw(datapump.axi.aw, exclude=exclude)
         # axi3/4 connection
         if not hasattr(axi.w, "id") and hasattr(datapump.axi.w, "id"):
             exclude_ = [datapump.axi.w.id]
@@ -48,7 +47,7 @@ def connectDp(parent, controller, datapump, axi, exclude=None):
         if exclude:
             exclude_.extend(exclude)
 
-        connect(datapump.axi.w, axi.w, exclude=exclude_)
+        axi.w(datapump.axi.w, exclude=exclude_)
         datapump.axi.b(axi.b)
 
         if isinstance(controller, (list, tuple)):

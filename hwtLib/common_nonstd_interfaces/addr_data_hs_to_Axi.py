@@ -1,7 +1,10 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from math import ceil
 from typing import Union
 
-from hwt.code import connect, If, Or
+from hwt.code import If, Or
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.union import HUnion
@@ -130,7 +133,7 @@ class AddrDataHs_to_Axi(BusBridge):
         r_tmp.USE_STRB = False
         r_tmp.DATA_WIDTH = axi.r.DATA_WIDTH
         self.r_tmp = r_tmp
-        connect(axi.r, r_tmp, exclude=(axi.r.id, axi.r.resp, ))
+        r_tmp(axi.r, exclude=(axi.r.id, axi.r.resp, ))
         r_data = AxiSBuilder(self, r_tmp)\
             .parse(in_axi_t).data
 
@@ -192,7 +195,7 @@ class AddrDataHs_to_Axi(BusBridge):
 
         if self.data_words_in_axi_word <= 1:
             self.connect_addr(s_w.addr, axi.aw.addr)
-            connect(s_w.data, w_in.data, fit=True)
+            w_in.data(s_w.data, fit=True)
             aw_sn = StreamNode([s_w], [axi.aw, w_in])
         else:
             addr, sub_addr = self.split_subaddr(s_w.addr)
@@ -227,7 +230,7 @@ class AddrDataHs_to_Axi(BusBridge):
 
         if hasattr(axi.w, "id"):
             # axi3
-            connect(w_builder.end, axi.w, exclude={axi.w.id})
+            axi.w(w_builder.end, exclude={axi.w.id})
             axi.w.id(0)
         else:
             # axi4

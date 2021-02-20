@@ -1,4 +1,6 @@
-from hwt.code import connect
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwtLib.handshaked.builder import HsBuilder
@@ -11,7 +13,7 @@ from hwtLib.mem.hashTable_intf import HashTableIntf
 class CuckooHashTableWithRam(CuckooHashTable):
     """
     A cuckoo hash table core with integrated memory
-    
+
     .. hwt-autodoc:: _example_CuckooHashTableWithRam
     """
 
@@ -32,12 +34,12 @@ class CuckooHashTableWithRam(CuckooHashTable):
 
     def _impl(self):
         self.tables_tmp = HObjList([HashTableIntf()._updateParamsFrom(t.io) for t in self.table_cores])
-        
+
         for t_io, t in zip(self.tables_tmp, self.table_cores):
-            connect(t_io, t.io, exclude={t.io.lookupRes})
+            t.io(t_io, exclude={t.io.lookupRes})
             t_io.lookupRes(HsBuilder(self, t.io.lookupRes).buff(latency=(1, 2)).end)
 
-        self.tables = list(self.tables_tmp) 
+        self.tables = list(self.tables_tmp)
         CuckooHashTable._impl(self)
 
 

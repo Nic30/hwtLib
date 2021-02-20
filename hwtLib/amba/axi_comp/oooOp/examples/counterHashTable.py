@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import connect, If, In
+from hwt.code import If, In
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
@@ -75,10 +75,10 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
                 If(stage_from.valid & (op._eq(self.OPERATION.SWAP) | (op._eq(self.OPERATION.LOOKUP_OR_SWAP) & ~key_match)),
                     # swap or lookup_or_swap with not found, wee need to store original key
                     # as specified by :attr:`OooOpExampleCounterHashTable.OPERATION`
-                    connect(stage_from.data, dst.original_data),
-                    connect(src, dst, exclude=[dst.original_data, dst.key_match])
+                    dst.original_data(stage_from.data),
+                    dst(src, exclude=[dst.original_data, dst.key_match])
                 ).Else(
-                    connect(src, dst, exclude=[dst.key_match])
+                    dst(src, exclude=[dst.key_match])
                 )
             ]
         else:

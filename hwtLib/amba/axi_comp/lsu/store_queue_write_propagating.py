@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, connect
+from hwt.code import If
 from hwt.code_utils import rename_signal
 from hwt.hdl.constants import READ
 from hwt.interfaces.std import Signal, VectSignal, Handshaked
@@ -125,8 +125,10 @@ class AxiStoreQueueWritePropagating(AxiWriteAggregator):
             [read_lookup_res, w_in_reg_tmp[0].dataOut],
             [w_in_reg_tmp[1].dataIn]
         ).sync()
-        connect(w_in_reg_tmp[0].dataOut, w_in_reg_tmp[1].dataIn,
-                exclude=[w_in_reg_tmp[1].dataIn.vld, w_in_reg_tmp[1].dataIn.rd])
+        w_in_reg_tmp[1].dataIn(
+            w_in_reg_tmp[0].dataOut,
+            exclude=[w_in_reg_tmp[1].dataIn.vld,
+                     w_in_reg_tmp[1].dataIn.rd])
 
         in_ram_flag = rename_signal(self, read_lookup_res.data & ooo_fifo.item_valid, "in_ram_flag")
         found_in_ram_flag = self._reg("found_in_ram_flag", def_val=0)

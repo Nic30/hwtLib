@@ -3,7 +3,7 @@
 
 from math import ceil
 
-from hwt.code import If, Or, SwitchLogic, In, connect
+from hwt.code import If, Or, SwitchLogic, In
 from hwt.code_utils import rename_signal
 from hwt.hdl.constants import READ, WRITE
 from hwt.hdl.types.bits import Bits
@@ -33,6 +33,7 @@ from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.binToOneHot import binToOneHot
 from hwtLib.mem.ram import RamSingleClock
 from pyMathBitPrecise.bit_utils import mask
+from hwt.hdl.typeShortcuts import vec
 
 
 class HsStructIntf(HandshakeSync):
@@ -52,6 +53,8 @@ class data_trans_t():
     write = 2
     write_and_flush = 3
 
+# [TODO] complete IO for functions
+#   sorted io of components
 
 # https://chipress.co/category/job-roles-titles/page/16/
 # https://chipress.co/2019/04/13/can-you-show-the-state-transition-for-snoop-based-scheme-using-msi-protocol/
@@ -173,6 +176,8 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
                      data_arr_read_req: IndexWayHs, data_arr_read: Axi4_r  # out, in
                      ):
         """
+        :param ar_lru_incr: used to
+
         .. figure:: ./_static/AxiCaheWriteAllocWawOnlyWritePropagating_read_handler.png
         """
         self.incr_lru_on_hit(ar_lru_incr, ar_tagRes)
@@ -240,7 +245,8 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         """
         :ivar aw_lru_incr: an interface to increment LRU for write channel
         :ivar victim_req: an interface to get a victim from LRU array for a specified index
-        :ivar victim_way: return interface for victim_req
+            (Enabled only if the write is required and there is no place)
+        :ivar victim_way: return interface for victim_req ()
         :ivar aw_tagRes: an interface with a results from tag lookup
         :ivar data_arr_read_req: an input interface with read requests from read section
         :ivar data_arr_read: an output interface with a read data to read section

@@ -5,7 +5,7 @@ import shutil
 import tempfile
 import unittest
 
-from hwt.code import If, connect
+from hwt.code import If
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.differential import DifferentialSig
 from hwt.interfaces.std import BramPort, Handshaked
@@ -17,12 +17,12 @@ from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axi_comp.stream_to_mem import Axi4streamToMem
 from hwtLib.amba.axis_comp.en import AxiS_en
+from hwtLib.examples.hierarchy.multiConfigUnit import MultiConfigUnitWrapper
+from hwtLib.examples.simpleWithParam import SimpleUnitWithParam
 from hwtLib.mem.fifo import Fifo
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl
 from hwtLib.peripheral.uart.intf import Uart
 from hwtLib.types.ctypes import uint64_t
-from hwtLib.examples.simpleWithParam import SimpleUnitWithParam
-from hwtLib.examples.hierarchy.multiConfigUnit import MultiConfigUnitWrapper
 
 
 class Handshaked_withIP(Handshaked):
@@ -59,7 +59,7 @@ class IpCoreIntfTest(Unit):
         If(r0,
            self.hsOut(self.hsIn)
         ).Else(
-           connect(r0, self.hsOut.data, fit=True),
+           self.hsOut.data(r0, fit=True),
            self.hsOut.vld(1)
         )
 
