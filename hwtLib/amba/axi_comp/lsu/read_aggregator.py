@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, Concat, connect
+from hwt.code import If
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import VldSynced
@@ -18,7 +18,7 @@ from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.binToOneHot import binToOneHot
 from hwtLib.logic.oneHotToBin import oneHotToBin
-from hwtLib.mem.cam import Cam
+from hwtLib.mem.cam import CamMultiPort
 from pyMathBitPrecise.bit_utils import apply_set_and_clear
 
 
@@ -55,7 +55,8 @@ class AxiReadAggregator(Unit):
                 fb = AxiSRegCopy(Axi4_r)
             self.frame_buff = fb
 
-        ac = self.addr_cam = Cam()
+        ac = self.addr_cam = CamMultiPort()
+        ac.MATCH_PORT_CNT = 1
         ac.ITEMS = 2 ** self.ID_WIDTH
         ac.USE_VLD_BIT = False
         ac.KEY_WIDTH = self.CACHE_LINE_ADDR_WIDTH
@@ -85,21 +86,21 @@ class AxiReadAggregator(Unit):
         ).Else(
             fb.dataOut_replacement_id(waiting_transaction_id[fb.dataOut.id])
         )
-        connect(fb.dataOut, s.r, exclude={s.r.valid, s.r.ready})
+        s.r(fb.dataOut, exclude={s.r.valid, s.r.ready})
 
         StreamNode(
             [m.r],
             [fb.dataIn],
         ).sync()
-        connect(m.r, fb.dataIn, exclude={m.r.valid, m.r.ready})
+        fb.dataIn(m.r, exclude={m.r.valid, m.r.ready})
 
     def add_addr_cam_out_reg(self, item_vld:RtlSignal):
         addr_cam = self.addr_cam
-        addr_cam_out = addr_cam.out #HsBuilder(self, addr_cam.out).buff(1).end
-        addr_cam_out_reg = HandshakedReg(addr_cam.out.__class__)
+        addr_cam_out = addr_cam.out[0] #HsBuilder(self, addr_cam.out).buff(1).end
+        addr_cam_out_reg = HandshakedReg(addr_cam_out.__class__)
         addr_cam_out_reg._updateParamsFrom(addr_cam_out)
         self.addr_cam_out_reg = addr_cam_out_reg
-        connect(addr_cam_out, addr_cam_out_reg.dataIn, exclude=[addr_cam_out.data])
+        addr_cam_out_reg.dataIn(addr_cam_out, exclude=[addr_cam_out.data])
         addr_cam_out_reg.dataIn.data(addr_cam_out.data & item_vld)
         addr_cam_out = addr_cam_out_reg.dataOut
         return addr_cam_out
@@ -112,7 +113,7 @@ class AxiReadAggregator(Unit):
         s = self.s
         m = self.m
         addr_cam = self.addr_cam
-        ITEMS = self.addr_cam.ITEMS
+        ITEMS = addr_cam.ITEMS
         addr_cam_out = self.add_addr_cam_out_reg(item_vld)
 
         with self._paramsShared():
@@ -135,11 +136,11 @@ class AxiReadAggregator(Unit):
             "blocking_access")
         s_ar_node = StreamNode(
             [s.ar],
-            [addr_cam.match, s_ar_tmp.dataIn],
+            [addr_cam.match[0], s_ar_tmp.dataIn],
         )
         s_ar_node.sync(~blocking_access)
         # s_ar_node_ack = s_ar_node.ack() & ~blocking_access
-        connect(s.ar, s_ar_tmp.dataIn, exclude={s.ar.valid, s.ar.ready})
+        s_ar_tmp.dataIn(s.ar, exclude={s.ar.valid, s.ar.ready})
 
         parent_transaction_id = oneHotToBin(self, match_res, "parent_transaction_id")
 
@@ -147,17 +148,18 @@ class AxiReadAggregator(Unit):
             [s_ar_tmp.dataOut, addr_cam_out],
             [m.ar],
             extraConds={m.ar: match_res._eq(0)},
-            skipWhen={m.ar: (match_res != 0)}
+            skipWhen={m.ar: match_res != 0},
         )
         m_ar_node.sync()
-        connect(s_ar_tmp.dataOut, m.ar, exclude={m.ar.valid, m.ar.ready})
-        addr_cam.match.data(s.ar.addr[:self.CACHE_LINE_OFFSET_BITS])
+        m.ar(s_ar_tmp.dataOut, exclude={m.ar.valid, m.ar.ready})
+        addr_cam.match[0].data(s.ar.addr[:self.CACHE_LINE_OFFSET_BITS])
         ar_ack = rename_signal(self, m_ar_node.ack(), "ar_ack")
 
         # insert into cam on empty position specified by id of this transaction
-        addr_cam.write.addr(s_ar_tmp.dataOut.id)
-        addr_cam.write.data(s_ar_tmp.dataOut.addr[:self.CACHE_LINE_OFFSET_BITS])
-        addr_cam.write.vld(addr_cam_out.vld)
+        acw = addr_cam.write
+        acw.addr(s_ar_tmp.dataOut.id)
+        acw.data(s_ar_tmp.dataOut.addr[:self.CACHE_LINE_OFFSET_BITS])
+        acw.vld(addr_cam_out.vld)
         #If(s_ar_node_ack,
         last_cam_insert_match(binToOneHot(
             s_ar_tmp.dataOut.id,
@@ -168,8 +170,6 @@ class AxiReadAggregator(Unit):
         ))
         #)
 
-        item_vld_next = []
-        waiting_transaction_vld_next = []
 
         for trans_id in range(ITEMS):
             # it becomes ready if we are requested for it on "s" interface
@@ -178,8 +178,7 @@ class AxiReadAggregator(Unit):
             # item becomes invalid if we read last data word
             this_trans_end = read_ack & s.r.id._eq(trans_id) & s.r.last
             this_trans_end = rename_signal(self, this_trans_end, f"this_trans_end{trans_id:d}")
-            this_transaction_vld = apply_set_and_clear(item_vld[trans_id], this_trans_start, this_trans_end)
-            item_vld_next.append(this_transaction_vld)
+            item_vld[trans_id](apply_set_and_clear(item_vld[trans_id], this_trans_start, this_trans_end))
 
             waiting_transaction_start = (
                 ar_ack &
@@ -194,11 +193,8 @@ class AxiReadAggregator(Unit):
                 waiting_transaction_vld[trans_id],
                 waiting_transaction_start,
                 this_trans_end)
-            _waiting_transaction_vld = rename_signal(self, _waiting_transaction_vld, f"waiting_transaction_vld{trans_id:d}")
-            waiting_transaction_vld_next.append(_waiting_transaction_vld)
+            waiting_transaction_vld[trans_id](rename_signal(self, _waiting_transaction_vld, f"waiting_transaction_vld{trans_id:d}"))
 
-        item_vld(Concat(*reversed(item_vld_next)))
-        waiting_transaction_vld(Concat(*reversed(waiting_transaction_vld_next)))
 
         If(self.clk._onRisingEdge(),
             If((match_res != 0) & ar_ack,
@@ -242,7 +238,11 @@ def _example_AxiReadAggregator():
     u.ID_WIDTH = 2
     return u
 
+
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     u = _example_AxiReadAggregator()
+    u.DATA_WIDTH = 128
+    u.CACHE_LINE_SIZE = 16
+    u.ID_WIDTH = 6
     print(to_rtl_str(u))
