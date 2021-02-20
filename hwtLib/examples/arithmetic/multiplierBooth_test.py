@@ -1,13 +1,13 @@
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.examples.arithmetic.multiplierBooth import MultiplerBooth
+from hwtLib.examples.arithmetic.multiplierBooth import MultiplierBooth
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class MultiplerBoothTC(SimTestCase):
+class MultiplierBoothTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = MultiplerBooth()
+        cls.u = u = MultiplierBooth()
         u.DATA_WIDTH = 4
         cls.compileSim(u)
 
@@ -38,8 +38,8 @@ class MultiplerBoothTC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(MultiplerBoothTC('test_possitive'))
-    suite.addTest(unittest.makeSuite(MultiplerBoothTC))
+    # suite.addTest(MultiplierBoothTC('test_possitive'))
+    suite.addTest(unittest.makeSuite(MultiplierBoothTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
 

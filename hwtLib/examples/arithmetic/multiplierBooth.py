@@ -41,11 +41,11 @@ class TwoOperandsHs(Handshaked):
         self._ag = TwoOperandsHsAgent(sim, self)
 
 
-class MultiplerBooth(Unit):
+class MultiplierBooth(Unit):
     """
     An implementation of Booth's multiplication algorithm
 
-    .. figure:: ./_static/MultiplerBooth_fsm.png
+    .. figure:: ./_static/MultiplierBooth_fsm.png
 
     :attention: The input domain is limited to range specified bellow.
 
@@ -133,5 +133,5 @@ class MultiplerBooth(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
-    u = MultiplerBooth()
+    u = MultiplierBooth()
     print(to_rtl_str(u))

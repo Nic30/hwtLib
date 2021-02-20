@@ -73,7 +73,7 @@ from hwtLib.clocking.cdc_test import CdcTC
 from hwtLib.clocking.clkDivider import ClkDiv3TC
 from hwtLib.common_nonstd_interfaces.addr_data_hs_to_Axi_test import AddrDataHs_to_Axi_TCs
 from hwtLib.examples.arithmetic.cntr_test import CntrTC, CntrResourceAnalysisTC
-from hwtLib.examples.arithmetic.multiplierBooth_test import MultiplerBoothTC
+from hwtLib.examples.arithmetic.multiplierBooth_test import MultiplierBoothTC
 from hwtLib.examples.arithmetic.privateSignals_test import PrivateSignalsOfStructTypeTC
 from hwtLib.examples.arithmetic.selfRefCntr_test import SelfRefCntrTC
 from hwtLib.examples.arithmetic.twoCntrs_test import TwoCntrsTC
@@ -343,7 +343,7 @@ suite = testSuiteFromTCs(
     TwoCntrsTC,
     SelfRefCntrTC,
     CountLeadingTC,
-    MultiplerBoothTC,
+    MultiplierBoothTC,
     IndexingTC,
     CdcTC,
     RamResourcesTC,
