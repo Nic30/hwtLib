@@ -20,6 +20,8 @@ class BinToBcd(Unit):
     (BCD is a format where each 4 bites represents a single decimal digit 0-9)
 
     based on https://github.com/kb000/bin2bcd/blob/master/rtl/bin2bcd32.v
+
+    .. hwt-autodoc::
     """
 
     def _config(self):

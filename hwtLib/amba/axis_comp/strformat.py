@@ -92,6 +92,8 @@ class AxiS_strFormat(Unit):
 
     :note: use :func:`hwtLib.amba.axis_comp.strformat_fn.axiS_strFormat` to generate instance
         of this component from normal string format string and argument
+
+    .. hwt-autodoc::
     """
 
     def _config(self):
