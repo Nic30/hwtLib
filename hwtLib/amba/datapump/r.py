@@ -55,15 +55,15 @@ class Axi_rDatapump(AxiDatapumpBase):
     * Blocks data channel when there is no request pending.
 
     * If req len is wider transaction is internally split to multiple axi
-    transactions, but returned read data is a single packet as originally requested.
+      transactions, but returned read data is a single packet as originally requested.
 
     * errorRead stays high when there was error on axi read channel
-    it will not affect unit functionality
+      it will not affect unit functionality
 
     * id of driver is a different id than is used on AXI
-    this is because the id on driver side is used to distinguish between
-    transactions and on AXI side it has to be same to assert that the transactions
-    will be finished in-order.
+      this is because the id on driver side is used to distinguish between
+      transactions and on AXI side it has to be same to assert that the transactions
+      will be finished in-order.
 
     :see: :class:`hwtLib.amba.datapump.base.AxiDatapumpBase`
 
