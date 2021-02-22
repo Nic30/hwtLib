@@ -56,10 +56,10 @@ class AxiVirtualDma(AbstractComponentBuilder):
              frames: Optional[List[FrameTmpl]]=None,
              id_=0) -> Union[UnionSource, StructIntf, Handshaked]:
         """
-        :param t: instance of HStruct which specifies data format to download
-        :param tmpl: instance of TransTmpl for this t
-        :param frames: list of FrameTmpl instances for this tmpl
-        :param id_: id_ value for axi
+        :param ~.t: instance of HStruct which specifies data format to download
+        :param ~.tmpl: instance of TransTmpl for this t
+        :param ~.frames: list of FrameTmpl instances for this tmpl
+        :param ~.id_: id_ value for axi
         :note: if tmpl and frames are None they are resolved from structT parseTemplate
         :note: A single transaction can be split to multiple frames, if they are specified by "frames".
         """
