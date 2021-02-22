@@ -14,7 +14,7 @@ dependencies:
   - libstdcxx-ng=9.1.0
   - libuv=1.40.0
   - ncurses=6.2
-  - nodejs=15.3.0
+  - nodejs=14.15.1
   - openssl=1.1.1j
   - pip=21.0.1
   - python=3.8.5
@@ -26,4 +26,3 @@ dependencies:
   - wheel=0.36.2
   - xz=5.2.5
   - zlib=1.2.11
-
