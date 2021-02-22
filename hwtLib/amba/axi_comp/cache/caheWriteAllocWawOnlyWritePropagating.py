@@ -37,8 +37,6 @@ from pyMathBitPrecise.bit_utils import mask
 class HsStructIntf(HandshakeSync):
     """
     A handshaked interface which has a data signal of type specified in configuration of this interface
-
-    .. hwt-autodoc::
     """
 
     def _config(self):
