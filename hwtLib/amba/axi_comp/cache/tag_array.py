@@ -85,6 +85,8 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
 
     :see: :meth:`~.AxiCacheTagArrayLookupIntf._config`
     :see: :meth:`~.AxiCacheTagArrayLookupResIntf._config`
+
+    .. hwt-autodoc::
     """
 
     def _config(self):
