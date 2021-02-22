@@ -98,6 +98,8 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
     The memories are separated because they have a different memory port requirements
     and we want to keep the number of memory ports and the size of the memory minimal
     as resource requiements grow exponentially with increasing number of memory ports.
+
+    .. hwt-autodoc:: _example_AxiCaheWriteAllocWawOnlyWritePropagating
     """
 
     def _config(self):
@@ -568,6 +570,15 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         propagateClkRstn(self)
 
 
+def _example_AxiCaheWriteAllocWawOnlyWritePropagating():
+    u = AxiCaheWriteAllocWawOnlyWritePropagating()
+    u.DATA_WIDTH = 16
+    u.CACHE_LINE_SIZE = 2
+    u.WAY_CNT = 2
+    u.CACHE_LINE_CNT = 16
+    u.MAX_BLOCK_DATA_WIDTH = 8
+    return u
+
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     from hwtLib.xilinx.constants import XILINX_VIVADO_MAX_DATA_WIDTH
@@ -581,4 +592,5 @@ if __name__ == "__main__":
     # u.DATA_WIDTH = 512
     # u.WAY_CNT = 2
     # u.CACHE_LINE_CNT = u.WAY_CNT * 4096
+    # u = _example_AxiCaheWriteAllocWawOnlyWritePropagating()
     print(to_rtl_str(u))

@@ -86,7 +86,7 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
     :see: :meth:`~.AxiCacheTagArrayLookupIntf._config`
     :see: :meth:`~.AxiCacheTagArrayLookupResIntf._config`
 
-    .. hwt-autodoc::
+    .. hwt-autodoc:: _example_AxiCacheTagArray
     """
 
     def _config(self):
@@ -233,8 +233,8 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
         lookup_tmp.vld(lookup.vld | (lookup_tmp.vld & ~lookupRes.rd))
 
         tag_mem_port_r.addr((lookup_tmp.vld & ~lookupRes.rd)._ternary(
-            self.parse_addr(lookup_tmp.addr)[1], # lookup previous address and look for a change
-            self.parse_addr(lookup.addr)[1], # lookup a new address
+            self.parse_addr(lookup_tmp.addr)[1],  # lookup previous address and look for a change
+            self.parse_addr(lookup.addr)[1],  # lookup a new address
         ))
         tag_mem_port_r.en(lookup.vld | (lookup_tmp.vld & ~lookupRes.rd))
 
@@ -268,9 +268,15 @@ class AxiCacheTagArray(CacheAddrTypeConfig):
         propagateClkRstn(self)
 
 
-if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+def _example_AxiCacheTagArray():
     u = AxiCacheTagArray()
     u.PORT_CNT = 2
     u.UPDATE_PORT_CNT = 1
+    u.MAX_BLOCK_DATA_WIDTH = 8
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import to_rtl_str
+    u = _example_AxiCacheTagArray()
     print(to_rtl_str(u))
