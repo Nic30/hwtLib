@@ -18,6 +18,8 @@ class BcdToBin(Unit):
     Convert a BCD number to binary encoding
     This uses the double-dabble algorithm in reverse. The conversion of a BCD
     number to an n-bit binary number will take n+3 cycles to complete.
+
+    .. hwt-autodoc::
     """
 
     def _config(self):
