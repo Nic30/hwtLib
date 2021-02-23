@@ -2,78 +2,73 @@
 # -*- coding: utf-8 -*-
 
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.logic.binToBcd import BinToBcd
+from hwtLib.logic.bcdToBin import BcdToBin
 from hwtSimApi.constants import CLK_PERIOD
-from pyMathBitPrecise.bit_utils import mask
 
 
-def bcd_to_str(bcd: int, digits: int):
-    digit_list = []
-    for _ in range(digits):
-        if bcd == 0:
-            break
-        d = bcd & mask(4)
-        bcd >>= 4
-        digit_list.append(f"{d:d}")
+def bin_to_bcd(v: int, digits: int):
+    _v = v
+    bcd = 0
+    for i in range(digits):
+        bcd |= (v % 10) << (i * 4)
+        v //= 10
 
-    if not digit_list:
-        return "0"
-    else:
-        return "".join(reversed(digit_list))
+    assert v == 0, ("Not enough digits", _v, digits)
+    return bcd
 
 
-class BinToBcdTC(SimTestCase):
+class BcdToBinTC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.u = BinToBcd()
-        cls.u.INPUT_WIDTH = 8
+        cls.u = BcdToBin()
+        cls.u.BCD_DIGITS = 3
         cls.compileSim(cls.u)
 
     def test_0to127(self):
         u = self.u
 
         N = 128
-        u.din._ag.data.extend(range(N))
-        self.runSim(CLK_PERIOD * 11 * N)
+        u.din._ag.data.extend([bin_to_bcd(i, u.BCD_DIGITS) for i in range(N)])
+        self.runSim(CLK_PERIOD * 13 * N)
 
         res = u.dout._ag.data
         self.assertEqual(len(res), N)
         for i, d in enumerate(res):
-            self.assertEqual(bcd_to_str(int(d), 3), f"{i:d}")
+            self.assertValEqual(d, i)
 
     def test_128to255(self):
         u = self.u
-        u.din._ag.data.extend(range(128, 256))
+        u.din._ag.data.extend([bin_to_bcd(i, u.BCD_DIGITS) for i in range(128, 256)])
         N = 256 - 128
 
-        self.runSim(CLK_PERIOD * 11 * N)
+        self.runSim(CLK_PERIOD * 13 * N)
 
         res = u.dout._ag.data
         self.assertEqual(len(res), N)
         for i, d in enumerate(res):
             i += 128
-            self.assertEqual(bcd_to_str(int(d), 3), f"{i:d}")
+            self.assertValEqual(d, i)
 
     def test_r_96to150(self):
         u = self.u
-        u.din._ag.data.extend(range(96, 150))
+        u.din._ag.data.extend([bin_to_bcd(i, u.BCD_DIGITS) for i in range(96, 150)])
         N = 150 - 96
         self.randomize(u.din)
         self.randomize(u.dout)
-        self.runSim(CLK_PERIOD * 20 * N)
+        self.runSim(CLK_PERIOD * 13 * 2 * N)
 
         res = u.dout._ag.data
         self.assertEqual(len(res), N)
         for i, d in enumerate(res):
             i += 96
-            self.assertEqual(bcd_to_str(int(d), 3), f"{i:d}")
+            self.assertValEqual(d, i)
 
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
     # suite.addTest(IndexingTC('test_split'))
-    suite.addTest(unittest.makeSuite(BinToBcdTC))
+    suite.addTest(unittest.makeSuite(BcdToBinTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
