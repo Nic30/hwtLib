@@ -12,12 +12,13 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 
 
-# https://github.com/kevinpt/vhdl-extras/blob/master/rtl/extras/bcd_conversion.vhdl
 class BcdToBin(Unit):
     """
     Convert a BCD number to binary encoding
     This uses the double-dabble algorithm in reverse. The conversion of a BCD
     number to an n-bit binary number will take n+3 cycles to complete.
+
+    based on: https://github.com/kevinpt/vhdl-extras/blob/master/rtl/extras/bcd_conversion.vhdl
 
     .. hwt-autodoc::
     """
