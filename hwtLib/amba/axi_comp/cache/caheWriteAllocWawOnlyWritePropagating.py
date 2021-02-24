@@ -10,7 +10,7 @@ from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.std import BramPort_withoutClk, Handshaked, HandshakeSync
-from hwt.interfaces.structIntf import StructIntf, HdlType_to_Interface
+from hwt.interfaces.structIntf import HdlType_to_Interface
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
 from hwt.synthesizer.hObjList import HObjList
