@@ -6,9 +6,9 @@ from hwt.hdl.constants import READ, WRITE
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
+from hwt.interfaces.agents.handshaked import UniversalHandshakedAgent
 from hwt.interfaces.hsStructIntf import HsStructIntf
-from hwt.interfaces.std import HandshakeSync, VectSignal, Signal, \
-    BramPort_withoutClk
+from hwt.interfaces.std import HandshakeSync, VectSignal, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
 from hwt.synthesizer.interface import Interface
@@ -38,6 +38,9 @@ class RamHsR_addr(HandshakeSync):
             self.id = VectSignal(self.ID_WIDTH)
         self.addr = VectSignal(self.ADDR_WIDTH)
         HandshakeSync._declr(self)
+
+    def _initSimAgent(self, sim:HdlSimulator):
+        self._ag = UniversalHandshakedAgent(sim, self)
 
 
 class RamHsR(Interface):
@@ -69,8 +72,8 @@ class RamHsW_addr(RamHsR_addr):
         self.flush = Signal()
         RamHsR_addr._declr(self)
 
-    def _initSimAgent(self, sim: HdlSimulator):
-        raise NotImplementedError()
+    def _initSimAgent(self, sim:HdlSimulator):
+        self._ag = UniversalHandshakedAgent(sim, self)
 
 
 class RamHsW(RamHsR_addr):
