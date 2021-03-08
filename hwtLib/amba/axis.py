@@ -1,6 +1,7 @@
 from typing import List, Tuple, Union
 
 from hwt.hdl.types.utils import HdlValue_unpack
+from hwt.interfaces.agents.handshaked import UniversalHandshakedAgent
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.synthesizer.param import Param
@@ -8,11 +9,10 @@ from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_hs, Axi_strb
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwtLib.types.ctypes import uint8_t
+from hwtSimApi.hdlSimulator import HdlSimulator
 from ipCorePackager.intfIpMeta import IntfIpMeta
 from pyMathBitPrecise.bit_utils import mask, get_bit, \
     get_bit_range, set_bit
-from hwtSimApi.hdlSimulator import HdlSimulator
-from hwt.interfaces.agents.handshaked import UniversalHandshakedAgent
 
 
 # http://www.xilinx.com/support/documentation/ip_documentation/ug761_axi_reference_guide.pdf
