@@ -32,20 +32,7 @@ from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.binToOneHot import binToOneHot
 from hwtLib.mem.ram import RamSingleClock
 from pyMathBitPrecise.bit_utils import mask
-
-
-class HsStructIntf(HandshakeSync):
-    """
-    A handshaked interface which has a data signal of type specified in configuration of this interface
-    """
-
-    def _config(self):
-        self.T = Param(None)
-
-    def _declr(self):
-        assert self.T is not None
-        self.data = HdlType_to_Interface().apply(self.T)
-        HandshakeSync._declr(self)
+from hwt.interfaces.hsStructIntf import HsStructIntf
 
 
 class data_trans_t():
