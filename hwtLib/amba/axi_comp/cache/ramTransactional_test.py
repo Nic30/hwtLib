@@ -9,16 +9,16 @@ from hwt.hdl.constants import NOP
 
 class RamTransactionalTC(SimTestCase):
 
-    def setUp(self):
-        SimTestCase.setUp(self)
-        self.u = u = RamTransactional()
+    @classmethod
+    def setUpClass(cls):
+        cls.u = u = RamTransactional()
         u.ID_WIDTH = 0
         u.DATA_WIDTH = 32
         u.ADDR_WIDTH = 16
         u.WORDS_WIDTH = 64
         u.ITEMS = 32
 
-        self.compileSim(u)
+        cls.compileSim(u)
 
     def test_basic(self):
         u = self.u
