@@ -7,6 +7,7 @@ from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.agents.handshaked import UniversalHandshakedAgent
+from hwt.interfaces.agents.universalComposite import UniversalCompositeAgent
 from hwt.interfaces.hsStructIntf import HsStructIntf
 from hwt.interfaces.std import HandshakeSync, VectSignal, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
@@ -15,7 +16,7 @@ from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
-from hwtLib.handshaked.ramAsHs import RamHsRAgent, RamAsHs
+from hwtLib.handshaked.ramAsHs import RamAsHs
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.ram import RamSingleClock
@@ -63,7 +64,7 @@ class RamHsR(Interface):
             d.USE_KEEP = False
 
     def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = RamHsRAgent(sim, self)
+        self._ag = UniversalCompositeAgent(sim, self)
 
 
 class RamHsW_addr(RamHsR_addr):
@@ -94,7 +95,7 @@ class RamHsW(RamHsR_addr):
             d.USE_KEEP = False
 
     def _initSimAgent(self, sim: HdlSimulator):
-        raise NotImplementedError()
+        self._ag = UniversalCompositeAgent(sim, self)
 
 
 class RamTransactional(Unit):
@@ -320,7 +321,7 @@ class RamTransactional(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     u = RamTransactional()
-    #u.ID_WIDTH = 2
+    # u.ID_WIDTH = 2
     u.DATA_WIDTH = 32
     u.ADDR_WIDTH = 16
     u.WORDS_WIDTH = 64

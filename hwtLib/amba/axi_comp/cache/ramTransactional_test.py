@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.simulator.simTestCase import SimTestCase
-from hwtSimApi.constants import CLK_PERIOD
-from hwtLib.amba.axi_comp.cache.ramTransactional import RamTransactional
 from hwt.hdl.constants import NOP
+from hwt.simulator.simTestCase import SimTestCase
+from hwtLib.amba.axi_comp.cache.ramTransactional import RamTransactional
+from hwtSimApi.constants import CLK_PERIOD
 
 
 class RamTransactionalTC(SimTestCase):
