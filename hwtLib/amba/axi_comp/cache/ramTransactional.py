@@ -177,7 +177,7 @@ class RamTransactional(Unit):
 
         r_meta = HandshakedReg(HsStructIntf)
         r_meta.T = HStruct(
-            (Bits(self.ID_WIDTH), "id"),
+            *([(Bits(self.ID_WIDTH), "id")] if self.ID_WIDTH else []),
             (BIT, "flushing"),
             (BIT, "is_last"),
             (BIT, "is_first"),
@@ -211,22 +211,22 @@ class RamTransactional(Unit):
         flush_pending = w_index.vld & w_index_o.flushing
         # begin of entirely new read
         If(flush_pending,
-            r_meta_i.id(r_meta_o.id),
+            r_meta_i.id(r_meta_o.id) if self.ID_WIDTH else [],
             r_meta_i.flushing(1),
             r_meta_i.is_last(w_index_o.index_suffix._eq(INDEX_SUFFIX_MAX)),
             r_meta_i.is_first(0),
         ).Elif(flush_req & ~read_pending,
-            r_meta_i.id(w.addr.id),
+            r_meta_i.id(w.addr.id) if self.ID_WIDTH else [],
             r_meta_i.is_first(1),
             r_meta_i.flushing(1),
             r_meta_i.is_last(0),
         ).Else(
             If(read_pending,
-               r_meta_i.id(r_meta_o.id),
+               r_meta_i.id(r_meta_o.id) if self.ID_WIDTH else [],
                r_meta_i.is_first(0),
                r_meta_i.is_last(r_index_o.index_suffix._eq(INDEX_SUFFIX_MAX)),
             ).Else(
-               r_meta_i.id(r.addr.id),
+               r_meta_i.id(r.addr.id) if self.ID_WIDTH else [],
                r_meta_i.is_last(0),
                r_meta_i.is_first(1),
             ),
@@ -267,13 +267,15 @@ class RamTransactional(Unit):
             },
         ).sync()
         flush_data.addr.addr(w_index_o.index_prefix)
-        flush_data.addr.id(r_meta_o.id)
+        if self.ID_WIDTH:
+            flush_data.addr.id(r_meta_o.id)
         flush_data.addr.flush(1)
         flush_data.data.strb(mask(flush_data.data.strb._dtype.bit_length()))
         flush_data.data.data(da_r.data.data)
         flush_data.data.last(r_meta_o.is_last)
 
-        r.data.id(r_meta_o.id)
+        if self.ID_WIDTH:
+            r.data.id(r_meta_o.id)
         r.data.data(da_r.data.data)
         r.data.last(r_meta_o.is_last)
 
@@ -318,4 +320,9 @@ class RamTransactional(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     u = RamTransactional()
+    #u.ID_WIDTH = 2
+    u.DATA_WIDTH = 32
+    u.ADDR_WIDTH = 16
+    u.WORDS_WIDTH = 64
+    u.ITEMS = 32
     print(to_rtl_str(u))
