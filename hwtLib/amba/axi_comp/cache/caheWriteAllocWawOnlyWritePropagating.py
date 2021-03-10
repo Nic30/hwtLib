@@ -9,8 +9,8 @@ from hwt.hdl.constants import READ, WRITE
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.std import BramPort_withoutClk, Handshaked, HandshakeSync
-from hwt.interfaces.structIntf import HdlType_to_Interface
+from hwt.interfaces.hsStructIntf import HsStructIntf
+from hwt.interfaces.std import BramPort_withoutClk, Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
 from hwt.synthesizer.hObjList import HObjList
@@ -32,7 +32,6 @@ from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.binToOneHot import binToOneHot
 from hwtLib.mem.ram import RamSingleClock
 from pyMathBitPrecise.bit_utils import mask
-from hwt.interfaces.hsStructIntf import HsStructIntf
 
 
 class data_trans_t():
@@ -43,6 +42,7 @@ class data_trans_t():
 
 # [TODO] complete IO for functions
 #   sorted io of components
+
 
 # https://chipress.co/category/job-roles-titles/page/16/
 # https://chipress.co/2019/04/13/can-you-show-the-state-transition-for-snoop-based-scheme-using-msi-protocol/
@@ -568,6 +568,7 @@ def _example_AxiCaheWriteAllocWawOnlyWritePropagating():
     u.CACHE_LINE_CNT = 16
     u.MAX_BLOCK_DATA_WIDTH = 8
     return u
+
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
