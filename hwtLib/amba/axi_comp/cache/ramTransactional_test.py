@@ -23,7 +23,7 @@ class RamTransactionalTC(SimTestCase):
     def test_basic(self):
         u = self.u
         TEST_LEN = u.ITEMS
-        RAM_WORDS = u.WORDS_WIDTH / u.DATA_WIDTH
+        RAM_WORDS = u.WORDS_WIDTH // u.DATA_WIDTH
 
         # Skip write phase
         u.r.addr._ag.data.extend([NOP for i in range(0, 10)])
