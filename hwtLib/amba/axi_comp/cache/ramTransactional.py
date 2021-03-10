@@ -158,17 +158,27 @@ class RamTransactional(Unit):
         # )
         # self.w_index = w_index
 
-        r_index = self._reg("r_index", HStruct(
+        r_index = self._reg("r_index",
+            HStruct(
                 (Bits(self.ADDR_WIDTH), "index_prefix"),
                 (Bits(log2ceil(self.ITEM_WORDS)), "index_suffix"),
                 (BIT, "vld"),
-            ), def_val={"vld": 0,
-                        "index_suffix": INDEX_SUFFIX_MAX})
-        w_index = self._reg("w_index", HStruct(
+            ),
+            def_val={
+                "vld": 0,
+                "index_suffix": INDEX_SUFFIX_MAX
+            }
+        )
+        w_index = self._reg("w_index",
+            HStruct(
                 *r_index._dtype.fields,
                 (BIT, "flushing"),
-            ), def_val={"vld": 0,
-                        "index_suffix": INDEX_SUFFIX_MAX})
+            ),
+            def_val={
+                "vld": 0,
+                "index_suffix": INDEX_SUFFIX_MAX
+            }
+        )
 
         r_index_i, r_index_o = r_index, r_index
         w_index_i, w_index_o = w_index, w_index
@@ -194,7 +204,7 @@ class RamTransactional(Unit):
             [r.addr],
             [da_r.addr,
              r_meta.dataIn,  # r_index.dataIn
-             ],
+            ],
             skipWhen={
                 r.addr: flush_req | (read_pending & (r_index_o.index_suffix != INDEX_SUFFIX_MAX)),
             },
@@ -302,8 +312,9 @@ class RamTransactional(Unit):
             ).Else(
                 # completly new item
                 w_index_i.index_prefix(w.addr.addr),
-                w_index_i.vld(w.addr.vld),
+                w_index_i.flushing(w.addr.flush),
                 w_index_i.index_suffix(1),
+                w_index_i.vld(w.addr.vld),
             )
         )
 
