@@ -49,6 +49,24 @@ class TransRamHsR_addr(HandshakeSync):
 
     def _initSimAgent(self, sim:HdlSimulator):
         self._ag = UniversalHandshakedAgent(sim, self)
+        
+        
+class TransRamHsW_addr(TransRamHsR_addr):
+    """
+    .. hwt-autodoc::
+    """
+    
+    def _config(self):
+        TransRamHsR_addr._config(self)
+        self.USE_FLUSH = Param(True)
+
+    def _declr(self):
+        TransRamHsR_addr._declr(self)
+        if(self.USE_FLUSH == True):
+            self.flush = Signal()
+
+    def _initSimAgent(self, sim:HdlSimulator):
+        self._ag = UniversalHandshakedAgent(sim, self)
 
 
 class TransRamHsR(Interface):
@@ -59,9 +77,9 @@ class TransRamHsR(Interface):
     """
 
     def _config(self):
-        self.ID_WIDTH = Param(0)
-        self.ADDR_WIDTH = Param(8)
         self.DATA_WIDTH = Param(8)
+        self.USE_STRB = Param(True)
+        TransRamHsR_addr._config(self)
 
     def _declr(self):
         with self._paramsShared():
@@ -74,17 +92,7 @@ class TransRamHsR(Interface):
         self._ag = UniversalCompositeAgent(sim, self)
 
 
-class TransRamHsW_addr(TransRamHsR_addr):
-
-    def _declr(self):
-        TransRamHsR_addr._declr(self)
-        self.flush = Signal()
-
-    def _initSimAgent(self, sim:HdlSimulator):
-        self._ag = UniversalHandshakedAgent(sim, self)
-
-
-class TransRamHsW(TransRamHsR_addr):
+class TransRamHsW(Interface):
     """
     .. hwt-autodoc::
     """
@@ -92,7 +100,7 @@ class TransRamHsW(TransRamHsR_addr):
     def _config(self):
         self.DATA_WIDTH = Param(64)
         self.USE_STRB = Param(True)
-        TransRamHsR_addr._config(self)
+        TransRamHsW_addr._config(self)
 
     def _declr(self):
         with self._paramsShared():
@@ -130,6 +138,7 @@ class RamTransactional(Unit):
             self.r = TransRamHsR()
             self.w = TransRamHsW()
             self.flush_data = TransRamHsW()._m()
+            self.flush_data.USE_FLUSH = False
 
     def _declr(self):
         self._declr_io()
@@ -289,7 +298,6 @@ class RamTransactional(Unit):
         if self.ID_WIDTH:
             flush_data.addr.id(r_meta_o.id)
         flush_data.addr.addr(w_index_o.item_index)
-        flush_data.addr.flush(1)
         flush_data.data.data(da_r.data.data)
         flush_data.data.strb(mask(flush_data.data.strb._dtype.bit_length()))
         flush_data.data.last(r_meta_o.is_last)
