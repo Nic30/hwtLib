@@ -60,31 +60,85 @@ class RamTransactionalTC(SimTestCase):
         ae(u.w.data._ag.data)
         ae(u.flush_data.addr._ag.data)
         ae(u.flush_data.data._ag.data)
-
+ 
     def test_read(self, TEST_LEN=10, MAGIC=5):
         u = self.u
         BURST_LEN = self.BURST_LEN
         self.DATA.clean()
         for i in range(TEST_LEN):
             self.DATA[i] = ((i * 2 + 1 + MAGIC) << u.DATA_WIDTH) | (i * 2 + MAGIC)
-
+ 
         u.r.addr._ag.data.extend(
             # (id, addr)
             [(0, i) for i in range(TEST_LEN)])
-
+ 
         self.runSim((TEST_LEN + 20) * CLK_PERIOD)
-
+ 
         r_expected = [(0, i + MAGIC, int((i + 1) % BURST_LEN == 0))
                       for i in range(TEST_LEN * BURST_LEN)]
         self.assertValSequenceEqual(u.r.data._ag.data, r_expected)
-
+ 
         ae = self.assertEmpty
         ae(u.r.addr._ag.data)
         ae(u.w.addr._ag.data)
         ae(u.w.data._ag.data)
         ae(u.flush_data.addr._ag.data)
         ae(u.flush_data.data._ag.data)
+        
+    def test_write(self, TEST_LEN=20, MAGIC=5):
+        u = self.u
+        BURST_LEN = self.BURST_LEN
+        self.DATA.clean()
+        for i in range(TEST_LEN):
+            self.DATA[i] = 2**u.DATA_WIDTH-1
 
+        #(data, strb, last)
+        wrData = [(i + MAGIC, mask(u.DATA_WIDTH//8), int((i + 1) % BURST_LEN == 0))
+                      for i in range(TEST_LEN * BURST_LEN)]
+        u.w.addr._ag.data.extend(
+            # (id, addr, flush)
+            [(0, i, 0) for i in range(TEST_LEN)])
+        u.w.data._ag.data.extend(wrData)
+        
+        
+        self.runSim((TEST_LEN + 20) * CLK_PERIOD)
+        
+        data_expected = [((i + MAGIC) << u.DATA_WIDTH) | (i + MAGIC) for i in range(TEST_LEN)]
+        self.assertValSequenceEqual(list(self.DATA)[-TEST_LEN:], data_expected)
+        ae = self.assertEmpty
+        ae(u.r.addr._ag.data)
+        ae(u.flush_data.addr._ag.data)
+        ae(u.flush_data.data._ag.data)
+
+    def test_flush(self, TEST_LEN=20, MAGIC=5):
+        u = self.u
+        BURST_LEN = self.BURST_LEN
+        self.DATA.clean()
+        for i in range(TEST_LEN):
+            # Memory (0&1) (2&3)...
+            self.DATA[i] = ((2*i+1 + MAGIC)  << u.DATA_WIDTH) | (i + MAGIC)
+
+        #(data, strb, last)
+        wrData = [(2**u.DATA_WIDTH-1, mask(u.DATA_WIDTH//8), int((i + 1) % BURST_LEN == 0))
+                      for i in range(TEST_LEN * BURST_LEN)]
+        u.w.addr._ag.data.extend(
+            # (id, addr, flush)
+            [(0, i, 1) for i in range(TEST_LEN)])
+        u.w.data._ag.data.extend(wrData)
+        
+        self.runSim((TEST_LEN + 20) * CLK_PERIOD)
+        
+        data_expected = [((2**u.DATA_WIDTH-1) << u.DATA_WIDTH) | (2**u.DATA_WIDTH-1) for _ in range(TEST_LEN)]
+        self.assertValSequenceEqual(list(self.DATA)[-TEST_LEN:], data_expected)
+        
+        f_addr_expected = [(0, i) for i in range(TEST_LEN)]
+        f_data_expected = [(i + MAGIC, mask(u.DATA_WIDTH//8), int((i + 1) % BURST_LEN == 0))
+                      for i in range(TEST_LEN * BURST_LEN)]
+        self.assertValSequenceEqual(u.flush_data.addr._ag.data, f_addr_expected)
+        self.assertValSequenceEqual(u.flush_data.data._ag.data, f_data_expected)
+        
+        ae = self.assertEmpty
+        ae(u.r.addr._ag.data)
 
     def test_read_write_flush(self, TEST_LEN=3):
         u = self.u
@@ -98,7 +152,7 @@ class RamTransactionalTC(SimTestCase):
         #        i._ag.setEnable(True)
         #
         # self.procs.append(proc())
-
+ 
         # u.r.addr._ag.data.extend(
         #    # Skip write phase
         #    [NOP for _ in range(10)] +
@@ -124,9 +178,9 @@ class RamTransactionalTC(SimTestCase):
         ]
         u.w.addr._ag.data.extend(write_flushing_addr)
         u.w.data._ag.data.extend(write_flushing_data)
-
+ 
         self.runSim((TEST_LEN + 20) * CLK_PERIOD)
-
+ 
         ae = self.assertValSequenceEqual
         ae(u.r.data._ag.data, write_flushing_data, "Read data after flush mismatch")
         ae(u.flush_data.addr._ag.data, write_flushing_addr, "Flush addr mismatch")
