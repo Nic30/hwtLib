@@ -9,108 +9,21 @@ from hwt.hdl.constants import READ, WRITE
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.agents.handshaked import UniversalHandshakedAgent
-from hwt.interfaces.agents.universalComposite import UniversalCompositeAgent
 from hwt.interfaces.hsStructIntf import HsStructIntf
-from hwt.interfaces.std import HandshakeSync, VectSignal, Signal
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
 from hwt.synthesizer.hObjList import HObjList
-from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axis import AxiStream
 from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
 from hwtLib.handshaked.ramAsHs import RamAsHs, RamHsR
 from hwtLib.handshaked.reg import HandshakedReg
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.ram import RamSingleClock
-from hwtSimApi.hdlSimulator import HdlSimulator
-from ipCorePackager.constants import DIRECTION
+from hwtLib.mem.ramTransactional_io import TransRamHsR, TransRamHsW
 from pyMathBitPrecise.bit_utils import mask
-
-
-class TransRamHsR_addr(HandshakeSync):
-    """
-    .. hwt-autodoc::
-    """
-
-    def _config(self):
-        self.ID_WIDTH = Param(0)
-        self.ADDR_WIDTH = Param(32)
-
-    def _declr(self):
-        if self.ID_WIDTH:
-            self.id = VectSignal(self.ID_WIDTH)
-        self.addr = VectSignal(self.ADDR_WIDTH)
-        HandshakeSync._declr(self)
-
-    def _initSimAgent(self, sim:HdlSimulator):
-        self._ag = UniversalHandshakedAgent(sim, self)
-
-
-class TransRamHsW_addr(TransRamHsR_addr):
-    """
-    .. hwt-autodoc::
-    """
-
-    def _config(self):
-        TransRamHsR_addr._config(self)
-        self.USE_FLUSH = Param(True)
-
-    def _declr(self):
-        TransRamHsR_addr._declr(self)
-        if(self.USE_FLUSH == True):
-            self.flush = Signal()
-
-    def _initSimAgent(self, sim:HdlSimulator):
-        self._ag = UniversalHandshakedAgent(sim, self)
-
-
-class TransRamHsR(Interface):
-    """
-    Handshaked RAM port
-
-    .. hwt-autodoc::
-    """
-
-    def _config(self):
-        self.DATA_WIDTH = Param(8)
-        self.USE_STRB = Param(True)
-        TransRamHsR_addr._config(self)
-
-    def _declr(self):
-        with self._paramsShared():
-            self.addr = TransRamHsR_addr()
-            d = self.data = AxiStream(masterDir=DIRECTION.IN)
-            d.USE_STRB = False
-            d.USE_KEEP = False
-
-    def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = UniversalCompositeAgent(sim, self)
-
-
-class TransRamHsW(Interface):
-    """
-    .. hwt-autodoc::
-    """
-
-    def _config(self):
-        self.DATA_WIDTH = Param(64)
-        self.USE_STRB = Param(True)
-        TransRamHsW_addr._config(self)
-
-    def _declr(self):
-        with self._paramsShared():
-            self.addr = TransRamHsW_addr()
-            d = self.data = AxiStream()
-            d.ID_WIDTH = 0
-            d.USE_KEEP = False
-
-    def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = UniversalCompositeAgent(sim, self)
 
 
 class RamTransactional(Unit):
@@ -176,6 +89,7 @@ class RamTransactional(Unit):
             reg.LATENCY = 1
             reg.T = HStruct(
                 *([(Bits(self.ID_WIDTH), "id")] if self.ID_WIDTH else []),
+                (Bits(self.ADDR_WIDTH), "addr"),
                 (BIT, "flushing"),
                 (BIT, "is_last"),
                 (BIT, "is_first"),
@@ -202,21 +116,25 @@ class RamTransactional(Unit):
         # begin of entirely new read
         If(flush_pending,
             id_copy(),
+            r_meta_i.addr(None),  # because the address is dispatched in first word
             r_meta_i.flushing(1),
             r_meta_i.is_first(0),
             r_meta_i.is_last(w_index_o.word_index._eq(WORD_INDEX_MAX)),
         ).Elif(flush_req & ~read_pending,
             r_meta_i.id(w.addr.id) if self.ID_WIDTH else [],
+            r_meta_i.addr(w.addr.addr),
             r_meta_i.flushing(1),
             r_meta_i.is_first(1),
             r_meta_i.is_last(0),
         ).Else(
             If(read_pending,
                id_copy(),
+               r_meta_i.addr(None),
                r_meta_i.is_first(0),
                r_meta_i.is_last(r_index_o.word_index._eq(WORD_INDEX_MAX)),
             ).Else(
                r_meta_i.id(r.addr.id) if self.ID_WIDTH else [],
+               r_meta_i.addr(r.addr.addr),
                r_meta_i.is_first(1),
                r_meta_i.is_last(0),
             ),
@@ -234,9 +152,9 @@ class RamTransactional(Unit):
                             read_pending: RtlSignal,
                             r_index_o: StructIntf,
                             r_index_i: StructIntf,
-                            w_index_o: StructIntf,
                             flush_data: TransRamHsW):
 
+        r_en = rename_signal(self, read_pending | flush_req | r.addr.vld, "r_en")
         r_disp_node = StreamNode(
             [r.addr],
             [da_r.addr, r_meta[0].dataIn, ],
@@ -244,7 +162,9 @@ class RamTransactional(Unit):
                 r.addr: flush_req | read_pending,
             },
             extraConds={
-                r.addr:~flush_req | ~read_pending,
+                r.addr:~flush_req & ~read_pending,
+                da_r.addr: r_en,
+                r_meta[0].dataIn: r_en,
             }
         )
         r_disp_node.sync()
@@ -263,7 +183,7 @@ class RamTransactional(Unit):
 
         w = self.w
         If(rename_signal(self, r_disp_node.ack(), "r_disp_ack"),
-            If(r_index_o.word_index._eq(0),
+            If(r_index_o.word_index._eq(0),  # r_index_o.vld == 0
                 # last item or completly new item
                 # [note] flushing has priority
                 If(flush_req,
@@ -306,7 +226,7 @@ class RamTransactional(Unit):
 
         if self.ID_WIDTH:
             flush_data.addr.id(r_meta_o.id)
-        flush_data.addr.addr(w_index_o.item_index)
+        flush_data.addr.addr(r_meta_o.addr)
         flush_data.data.data(da_r.data.data)
         flush_data.data.strb(mask(flush_data.data.strb._dtype.bit_length()))
         flush_data.data.last(r_meta_o.is_last)
@@ -316,11 +236,12 @@ class RamTransactional(Unit):
         r.data.data(da_r.data.data)
         r.data.last(r_meta_o.is_last)
 
-    def construct_write_part(self, w: TransRamHsW,
+    def construct_write_part(self, flush_req: RtlSignal,
+                             w: TransRamHsW,
+                             da_r: RamHsR,
                              da_w: AddrDataHs,
                              w_index_i: StructIntf,
                              w_index_o, r_index_o,
-                             da_r: RamHsR,
                              r_meta_din: HsStructIntf):
         WORD_INDEX_MAX = self.WORD_INDEX_MAX
 
@@ -334,9 +255,12 @@ class RamTransactional(Unit):
             },
             extraConds={
                 # stall if pending read and flush required
-                w.addr: rename_signal(self, ~write_pending & (w.addr.vld & ~w.addr.flush) | (~r_index_o.vld & da_r.addr.rd & r_meta_din.rd), "w_addr_en"),
+                w.addr: rename_signal(self, ~write_pending & (
+                    ~w.addr.vld |
+                    ~w.addr.flush |
+                    (~r_index_o.vld & da_r.addr.rd & r_meta_din.rd)), "w_addr_en"),
                 # dissable input write data if no wirite transaction is pending or will be pending
-                w.data: write_pending | (w.addr.vld & (~w.addr.flush | ~r_index_o.vld)),
+                w.data: write_pending | w.addr.vld,
             },
         )
         w_disp_node.sync()
@@ -347,7 +271,7 @@ class RamTransactional(Unit):
                 w_index_i.item_index(w.addr.addr),
                 w_index_i.flushing(w.addr.flush),
                 w_index_i.word_index(1),
-                w_index_i.vld(w.addr.vld),  # start of a new
+                w_index_i.vld(1),  # start of a new
             ).Elif(w_index_o.word_index._eq(WORD_INDEX_MAX),
                 # last item
                 w_index_i.word_index(0),
@@ -393,14 +317,16 @@ class RamTransactional(Unit):
         r_index_i, r_index_o = r_index, r_index
         w_index_i, w_index_o = w_index, w_index
         w = self.w
-        flush_req = w.addr.vld & w.addr.flush
+        flush_req = rename_signal(self,
+                    (w.addr.vld & (w.addr.flush & ~r_index_o.vld & ~w_index_o.vld)),
+                    "flush_req")
         read_pending = r_index.vld
 
         da_r, da_w = self.construct_ram_io()
         r_meta = self.construct_r_meta(flush_req, read_pending, self.r, self.w, w_index, r_index_o)
         self.construct_read_part(self.r, w.addr.addr, da_r, r_meta, flush_req, read_pending,
-                                 r_index_o, r_index_i, w_index_o, self.flush_data)
-        self.construct_write_part(w, da_w, w_index_i, w_index_o, r_index_o, da_r, r_meta[0].dataIn)
+                                 r_index_o, r_index_i, self.flush_data)
+        self.construct_write_part(flush_req, w, da_r, da_w, w_index_i, w_index_o, r_index_o, r_meta[0].dataIn)
 
         propagateClkRstn(self)
 
@@ -410,7 +336,6 @@ if __name__ == "__main__":
     u = RamTransactional()
     # u.ID_WIDTH = 2
     u.DATA_WIDTH = 32
-    u.ADDR_WIDTH = 16
+    u.ADDR_WIDTH = 3
     u.WORDS_WIDTH = 64
-    u.ITEMS = 32
     print(to_rtl_str(u))
