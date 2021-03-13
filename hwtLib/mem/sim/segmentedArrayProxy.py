@@ -81,15 +81,8 @@ class SegmentedArrayProxy():
             return self._setitem(i, val)
 
     def __len__(self):
-        return len(self.mems)
+        return len(self.mems[0]) // self.words_per_item
 
     def __iter__(self):
-        self._it = 0
-        return self
-
-    def __next__(self):
-        if self._it >= len(self.mems):
-            raise StopIteration()
-        v = self[self._it]
-        self._it += 1
-        return v
+        for i in range(len(self)):
+            yield self[i]
