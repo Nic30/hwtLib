@@ -16,6 +16,7 @@ from hwt.interfaces.std import HandshakeSync, VectSignal, Signal
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
+from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
@@ -29,7 +30,6 @@ from hwtLib.mem.ram import RamSingleClock
 from hwtSimApi.hdlSimulator import HdlSimulator
 from ipCorePackager.constants import DIRECTION
 from pyMathBitPrecise.bit_utils import mask
-from hwt.synthesizer.hObjList import HObjList
 
 
 class TransRamHsR_addr(HandshakeSync):
@@ -49,13 +49,13 @@ class TransRamHsR_addr(HandshakeSync):
 
     def _initSimAgent(self, sim:HdlSimulator):
         self._ag = UniversalHandshakedAgent(sim, self)
-        
-        
+
+
 class TransRamHsW_addr(TransRamHsR_addr):
     """
     .. hwt-autodoc::
     """
-    
+
     def _config(self):
         TransRamHsR_addr._config(self)
         self.USE_FLUSH = Param(True)
@@ -225,6 +225,7 @@ class RamTransactional(Unit):
 
     def construct_read_part(self,
                             r: TransRamHsR,
+                            w_addr: RtlSignal,
                             da_r: RamHsR,
                             r_meta: List[HandshakedReg],
                             flush_req: RtlSignal,
@@ -246,10 +247,16 @@ class RamTransactional(Unit):
         )
         r_disp_node.sync()
 
+        w_i_0 = r_index_o.word_index._dtype.from_py(0)
         If(read_pending,
+            #  a read or flush remainder words
             da_r.addr.data(Concat(r_index_o.item_index, r_index_o.word_index))
+        ).Elif(flush_req,
+            # a first word of flush
+            da_r.addr.data(Concat(w_addr, w_i_0))
         ).Else(
-            da_r.addr.data(Concat(r.addr.addr, r_index_o.word_index._dtype.from_py(0)))
+            # potentialy a first word of read
+            da_r.addr.data(Concat(r.addr.addr, w_i_0))
         )
 
         w = self.w
@@ -315,7 +322,7 @@ class RamTransactional(Unit):
                              r_meta_din: HsStructIntf):
         WORD_INDEX_MAX = self.WORD_INDEX_MAX
 
-        write_pending = r_index_o.vld
+        write_pending = w_index_o.vld
         w_disp_node = StreamNode(
             [w.addr, w.data],
             [da_w, ],
@@ -389,7 +396,7 @@ class RamTransactional(Unit):
 
         da_r, da_w = self.construct_ram_io()
         r_meta = self.construct_r_meta(flush_req, read_pending, self.r, self.w, w_index, r_index_o)
-        self.construct_read_part(self.r, da_r, r_meta, flush_req, read_pending,
+        self.construct_read_part(self.r, w.addr.addr, da_r, r_meta, flush_req, read_pending,
                                  r_index_o, r_index_i, w_index_o, self.flush_data)
         self.construct_write_part(w, da_w, w_index_i, w_index_o, r_index_o, da_r, r_meta[0].dataIn)
 
