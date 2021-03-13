@@ -117,6 +117,8 @@ class RamTransactional(Unit):
     """
     A RAM with 1 read port and 1 write port with flush before functionality.
     If the flush is activate the current data is read first before it is overwritten by write data.
+    This memory supports multiword transaction and the swap, read and write is atomic in relation
+    with other transactions.
 
     .. hwt-autodoc::
     """

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from hdlConvertorAst.to.hdlUtils import iter_with_last
-from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axi_comp.lsu.store_queue_write_propagating import AxiStoreQueueWritePropagating
 from hwtLib.amba.axi_comp.lsu.write_aggregator_test import AxiWriteAggregator_1word_per_cachelineTC
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam

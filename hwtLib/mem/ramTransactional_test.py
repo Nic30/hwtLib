@@ -3,7 +3,7 @@
 
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.simulator.simTestCase import SimTestCase
-from hwtLib.amba.axi_comp.cache.ramTransactional import RamTransactional
+from hwtLib.mem.ramTransactional import RamTransactional
 from hwtLib.mem.sim.segmentedArrayProxy import SegmentedArrayProxy
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
@@ -203,7 +203,7 @@ class RamTransactionalTC(SimTestCase):
         ae = self.assertEmpty
         ae(u.r.addr._ag.data)
 
-    #def test_read_write_flush(self, TEST_LEN=3):
+    # def test_read_write_flush(self, TEST_LEN=3):
     #    u = self.u
     #    BURST_LEN = self.BURST_LEN
     #    # def proc():
