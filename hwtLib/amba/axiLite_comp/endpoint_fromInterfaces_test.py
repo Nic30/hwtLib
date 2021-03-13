@@ -14,7 +14,7 @@ from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axiLite_comp.endpoint_test import addrGetter
-from hwtLib.amba.axiLite_comp.sim.mem_space_master import AxiLiteMemSpaceMaster
+from hwtLib.amba.axiLite_comp.sim.memSpaceMaster import AxiLiteMemSpaceMaster
 from hwtLib.amba.constants import RESP_OKAY
 
 
