@@ -6,9 +6,9 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.lsu.write_aggregator import AxiWriteAggregator
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
+from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask, set_bit_range, int_list_to_int, \
     get_bit_range
-from hwtSimApi.constants import CLK_PERIOD
 
 
 class AxiWriteAggregator_1word_per_cachelineTC(SimTestCase):

@@ -5,6 +5,7 @@ from hwt.code import If
 from hwt.hdl.constants import DIRECTION
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
+from hwt.interfaces.agents.universalComposite import UniversalCompositeAgent
 from hwt.interfaces.std import Handshaked, BramPort_withoutClk
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
@@ -12,48 +13,7 @@ from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataHs
-from hwtSimApi.agents.base import AgentBase
 from hwtSimApi.hdlSimulator import HdlSimulator
-
-
-class RamHsRAgent(AgentBase):
-    """
-    Composite agent with agent for addr and data channel
-    enable is shared
-    """
-
-    def getEnable(self):
-        return self.__enable
-
-    def setEnable(self, v):
-        """
-        Distribute change of enable on child agents
-        """
-        self.__enable = v
-        for o in (self.addr, self.data):
-            o.setEnable(v)
-
-    def __init__(self, sim: HdlSimulator, intf):
-        self.__enable = True
-        self.intf = intf
-
-        intf.addr._initSimAgent(sim)
-        self.addr = intf.addr._ag
-
-        intf.data._initSimAgent(sim)
-        self.data = intf.data._ag
-
-    def getDrivers(self):
-        return (
-            self.addr.getDrivers() +
-            self.data.getMonitors()
-        )
-
-    def getMonitors(self):
-        return (
-            self.addr.getMonitors() +
-            self.data.getDrivers()
-        )
 
 
 class RamHsR(Interface):
@@ -74,7 +34,7 @@ class RamHsR(Interface):
             self.data = Handshaked(masterDir=DIRECTION.IN)
 
     def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = RamHsRAgent(sim, self)
+        self._ag = UniversalCompositeAgent(sim, self)
 
 
 @serializeParamsUniq

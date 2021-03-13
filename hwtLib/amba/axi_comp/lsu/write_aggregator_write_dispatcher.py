@@ -16,7 +16,7 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4 import Axi4_addr, Axi4, Axi4_w, Axi4_b
-from hwtLib.amba.axi_comp.cache.ram_cumulative_mask import BramPort_withReadMask_withoutClk
+from hwtLib.mem.ramCumulativeMask import BramPort_withReadMask_withoutClk
 from hwtLib.amba.constants import BURST_INCR, PROT_DEFAULT, BYTES_IN_TRANS, \
     LOCK_DEFAULT, CACHE_DEFAULT, QOS_DEFAULT
 from hwtLib.common_nonstd_interfaces.index_key_hs import IndexKeyHs
@@ -47,7 +47,7 @@ class AxiWriteAggregatorWriteDispatcher(Unit):
         # number of AXI4 words in a single cacheline
         self.BUS_WORDS_IN_CACHE_LINE = ceil(self.CACHE_LINE_SIZE * 8 / self.DATA_WIDTH)
         # number of bits for an index for memory wihich stores all buts words for all transactions
-        self.DATA_RAM_INDEX_WIDTH = log2ceil(2**self.ID_WIDTH * self.BUS_WORDS_IN_CACHE_LINE - 1)
+        self.DATA_RAM_INDEX_WIDTH = log2ceil(2 ** self.ID_WIDTH * self.BUS_WORDS_IN_CACHE_LINE - 1)
 
         if self.BUS_WORDS_IN_CACHE_LINE > 1:
             # we need also one value to know that we send all data and we are waiting on something else

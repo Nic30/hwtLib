@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import List
-
-from hwt.code import Concat
-from hwt.hdl.types.arrayVal import HArrayVal
 from hwt.hdl.types.bits import Bits
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
@@ -12,10 +8,9 @@ from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
 from hwtLib.amba.axi_comp.cache.caheWriteAllocWawOnlyWritePropagating import AxiCaheWriteAllocWawOnlyWritePropagating
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
-from hwtLib.tools.debug_bus_monitor_ctl import select_bit_range
+from hwtLib.mem.sim.segmentedArrayProxy import SegmentedArrayProxy
 from hwtSimApi.constants import CLK_PERIOD
-from pyMathBitPrecise.bit_utils import set_bit_range, mask, int_list_to_int, \
-    int_to_int_list
+from pyMathBitPrecise.bit_utils import set_bit_range, mask, int_list_to_int
 
 
 class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
@@ -38,52 +33,28 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
         SimTestCase.setUp(self)
         m = self.rtl_simulator.model
         u = self.u
-        self.TAGS = [
-            getattr(m.tag_array_inst.tag_mem_inst, f"children_{i:d}_inst").io.ram_memory
-            for i in range(u.tag_array.tag_record_t.bit_length() * u.WAY_CNT // 8)
-        ]
-        self.DATA = [
-            getattr(m.data_array_inst, f"children_{i:d}_inst").io.ram_memory
-            for i in range(u.CACHE_LINE_SIZE)
-        ]
-
-    def _clean_mems(self, mems):
-        for mem in mems:
-            mem.val = mem.def_val = mem._dtype.from_py([0 for _ in range(mem._dtype.size)])
-
-    def clean_tags(self):
-        self._clean_mems(self.TAGS)
-
-    def clean_data(self):
-        self._clean_mems(self.DATA)
+        self.TAGS = SegmentedArrayProxy([
+                getattr(m.tag_array_inst.tag_mem_inst, f"children_{i:d}_inst").io.ram_memory
+                for i in range(u.tag_array.tag_record_t.bit_length() * u.WAY_CNT // 8)
+            ],
+        )
+        self.DATA = SegmentedArrayProxy([
+                getattr(m.data_array_inst, f"children_{i:d}_inst").io.ram_memory
+                for i in range(u.CACHE_LINE_SIZE)
+            ],
+            words_per_item=self.LEN + 1
+        )
 
     def set_data(self, index, way, data):
         u = self.u
         WAY_CACHELINES = u.CACHE_LINE_CNT // u.WAY_CNT
-        i = (way * WAY_CACHELINES + index) * (self.LEN + 1)
-        _data = int_to_int_list(data, u.DATA_WIDTH, self.LEN + 1)
-        for i2, _d in enumerate(_data):
-            self._set_to_mems(self.DATA, i + i2, _d)
+        self.DATA[way * WAY_CACHELINES + index] = data
 
     def build_cacheline(self, cacheline_words):
         return int_list_to_int(cacheline_words, self.u.DATA_WIDTH)
 
-    @staticmethod
-    def _get_from_mems(mems: List[HArrayVal], i: int):
-        res = [data_mem.val[i] for data_mem in reversed(mems)]
-        return Concat(*res)
-
-    @staticmethod
-    def _set_to_mems(mems: List[HArrayVal], i: int, val: int):
-        for B_i, data_mem  in enumerate(mems):
-            _data = select_bit_range(val, B_i * 8, 8)
-            data_mem.val[i] = data_mem.def_val[i] = data_mem._dtype.element_t.from_py(_data)
-
     def get_data(self, index, way):
-        i = (way * self.WAY_CACHELINES + index) * (self.LEN + 1)
-        return Concat(*reversed(list(
-            self._get_from_mems(self.DATA, i + i2) for i2 in range(self.LEN + 1)
-        )))
+        return self.DATA[way * self.WAY_CACHELINES + index]
 
     def set_tag(self, addr, way):
         u = self.u
@@ -93,10 +64,10 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
         tag_t_w = tag_t.bit_length()
         v = tag_t.from_py({"tag": tag, "valid": 1})._reinterpret_cast(Bits(tag_t_w))
 
-        cur_v = self._get_from_mems(self.TAGS, index)
+        cur_v = self.TAGS[index]
         assert cur_v._is_full_valid(), (cur_v, index)
         val = set_bit_range(cur_v.val, way * tag_t_w, tag_t_w, v.val)
-        self._set_to_mems(self.TAGS, index, val)
+        self.TAGS[index] = val
 
         return index
 
@@ -110,7 +81,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
         tags_t = u.tag_array.tag_record_t[u.WAY_CNT]
         tags_raw_t = Bits(tags_t.bit_length())
         for index in range(2 ** u.INDEX_W):
-            tags = self._get_from_mems(self.TAGS, index)
+            tags = self.TAGS[index]
             tags = tags_raw_t.from_py(tags.val, tags.vld_mask)._reinterpret_cast(tags_t)
             for way, t in enumerate(tags):
                 if t.valid:
@@ -127,8 +98,8 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
         axi_randomize_per_channel(self, u.m)
 
     def test_utils(self):
-        self.clean_tags()
-        self.clean_data()
+        self.TAGS.clean()
+        self.DATA.clean()
         self.assertDictEqual(self.get_cachelines(), {})
 
         expected = {}
@@ -161,7 +132,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
         # Every transaction should be checked if present in cache, should not be found and should
         # be forwarded on axi "m" port
         u = self.u
-        self.clean_tags()
+        self.TAGS.clean()
         ref = [
             u.s.ar._ag.create_addr_req(addr=i * self.ADDR_STEP, _len=self.LEN, _id=i)
             for i in range(N)
@@ -180,8 +151,8 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
     def test_read_from_everywhere(self, N_PER_WAY=10, MAGIC=99, randomized=False):
         # Every transaction should be read from the cache
         u = self.u
-        self.clean_tags()
-        self.clean_data()
+        self.TAGS.clean()
+        self.DATA.clean()
         ID_MAX = 2 ** u.ID_WIDTH
         WAY_CACHELINES = self.WAY_CACHELINES
         expected_r = []
@@ -219,8 +190,8 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
     def _test_write_to(self, N_PER_WAY=8, MAGIC=99, preallocate=False, randomized=False):
         # Every cacheline should be stored in cache as there is plenty of space
         u = self.u
-        self.clean_tags()
-        self.clean_data()
+        self.TAGS.clean()
+        self.DATA.clean()
 
         WAY_CACHELINES = self.WAY_CACHELINES
         ID_MAX = 2 ** u.ID_WIDTH
@@ -275,8 +246,8 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
 
     def test_read_write_to_different_sets(self, N_PER_WAY=5, MAGIC=99, randomized=False):
         u = self.u
-        self.clean_tags()
-        self.clean_data()
+        self.TAGS.clean()
+        self.DATA.clean()
 
         WAY_CACHELINES = self.WAY_CACHELINES
         ID_MAX = 2 ** u.ID_WIDTH
@@ -336,7 +307,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagating_len1TC(AxiCaheWriteAllocWawOnlyWr
 
 AxiCaheWriteAllocWawOnlyWritePropagatingTCs = [
     AxiCaheWriteAllocWawOnlyWritePropagatingTC,
-    #AxiCaheWriteAllocWawOnlyWritePropagating_len1TC,
+    # AxiCaheWriteAllocWawOnlyWritePropagating_len1TC,
 ]
 
 if __name__ == "__main__":

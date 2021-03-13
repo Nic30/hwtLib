@@ -9,7 +9,7 @@ from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4 import Axi4
-from hwtLib.amba.axi_comp.cache.ram_cumulative_mask import BramPort_withReadMask_withoutClk, \
+from hwtLib.mem.ramCumulativeMask import BramPort_withReadMask_withoutClk, \
     RamCumulativeMask, is_mask_byte_unaligned
 from hwtLib.amba.axi_comp.cache.utils import apply_write_with_mask
 from hwtLib.amba.axi_comp.lsu.fifo_oooread import FifoOutOfOrderReadFiltered

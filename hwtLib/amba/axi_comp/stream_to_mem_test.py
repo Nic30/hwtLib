@@ -5,7 +5,7 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.abstract.discoverAddressSpace import AddressSpaceProbe
 from hwtLib.amba.axi_comp.stream_to_mem import Axi4streamToMem
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
-from hwtLib.amba.axiLite_comp.sim.mem_space_master import AxiLiteMemSpaceMaster
+from hwtLib.amba.axiLite_comp.sim.memSpaceMaster import AxiLiteMemSpaceMaster
 from hwtSimApi.constants import CLK_PERIOD
 
 

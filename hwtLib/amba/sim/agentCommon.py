@@ -5,8 +5,8 @@ class BaseAxiAgent(HandshakedAgent):
 
     @classmethod
     def get_ready_signal(cls, intf):
-        return intf.ready
+        return intf.ready._sigInside
 
     @classmethod
     def get_valid_signal(cls, intf):
-        return intf.valid
+        return intf.valid._sigInside

@@ -1,6 +1,7 @@
 from typing import List, Tuple, Union
 
 from hwt.hdl.types.utils import HdlValue_unpack
+from hwt.interfaces.agents.handshaked import UniversalHandshakedAgent
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.synthesizer.param import Param
@@ -8,10 +9,10 @@ from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.amba.axi_intf_common import Axi_user, Axi_id, Axi_hs, Axi_strb
 from hwtLib.amba.sim.agentCommon import BaseAxiAgent
 from hwtLib.types.ctypes import uint8_t
-from ipCorePackager.intfIpMeta import IntfIpMeta
-from pyMathBitPrecise.bit_utils import mask, get_bit,\
-    get_bit_range, set_bit
 from hwtSimApi.hdlSimulator import HdlSimulator
+from ipCorePackager.intfIpMeta import IntfIpMeta
+from pyMathBitPrecise.bit_utils import mask, get_bit, \
+    get_bit_range, set_bit
 
 
 # http://www.xilinx.com/support/documentation/ip_documentation/ug761_axi_reference_guide.pdf
@@ -84,7 +85,7 @@ class AxiStream(Axi_hs, Axi_id, Axi_user, Axi_strb):
         self._ag = AxiStreamAgent(sim, self)
 
 
-class AxiStreamAgent(BaseAxiAgent):
+class AxiStreamAgent(BaseAxiAgent, UniversalHandshakedAgent):
     """
     Simulation agent for :class:`.AxiStream` interface
 
@@ -95,37 +96,10 @@ class AxiStreamAgent(BaseAxiAgent):
     Order of values coresponds to definition of interface signals.
     If all signals are present fotmat of tuple will be
     (id, dest, data, strb, keep, user, last)
-
-
-    :ivar ~._signals: tuple of data signals of this interface
-    :ivar ~._sigCnt: len(_signals)
     """
 
     def __init__(self, sim: HdlSimulator, intf: AxiStream, allowNoReset=False):
-        BaseAxiAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
-
-        signals = []
-        for i in intf._interfaces:
-            if i is not intf.ready and i is not intf.valid:
-                signals.append(i)
-        self._signals = tuple(signals)
-        self._sigCnt = len(signals)
-
-    def get_data(self):
-        return tuple(sig.read() for sig in self._signals)
-
-    def set_data(self, data):
-        if data is None:
-            for sig in self._signals:
-                sig.write(None)
-        else:
-            assert len(data) == self._sigCnt, (
-                "invalid number of data for an interface",
-                len(data),
-                self._signals,
-                self.intf._getFullName())
-            for sig, val in zip(self._signals, data):
-                sig.write(val)
+        UniversalHandshakedAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
 
 
 def packAxiSFrame(dataWidth, structVal, withStrb=False):
@@ -259,7 +233,7 @@ def axis_recieve_bytes(axis: AxiStream) -> Tuple[int, List[int]]:
 
 
 def _axis_send_bytes(axis: AxiStream, data_B: List[int], withStrb, offset)\
-        -> List[Tuple[int, int, int]]:
+        ->List[Tuple[int, int, int]]:
     t = uint8_t[len(data_B) + offset]
     # :attention: strb signal is reinterpreted as a keep signal
     return packAxiSFrame(axis.DATA_WIDTH, t.from_py(

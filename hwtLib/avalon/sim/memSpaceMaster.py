@@ -1,12 +1,7 @@
 from hwt.hdl.constants import WRITE, READ
 from hwt.interfaces.agents.handshaked import HandshakedReadListener
+from hwt.interfaces.agents.tuleWithCallback import TupleWithCallback
 from hwtLib.sim.abstractMemSpaceMaster import AbstractMemSpaceMaster
-
-
-class TupleWithCallback(tuple):
-
-    def __new__(cls, *args):
-        return tuple.__new__(cls, args)
 
 
 class AvalonMmMemSpaceMaster(AbstractMemSpaceMaster):
@@ -29,12 +24,7 @@ class AvalonMmMemSpaceMaster(AbstractMemSpaceMaster):
         burstSize = 1
         bus.req.append((WRITE, addr, burstSize))
 
-        if onDone:
-            d = TupleWithCallback(data, mask)
-            d.onDone = onDone
-        else:
-            d = (data, mask)
-
+        d = TupleWithCallback(data, mask, onDone=onDone)
         bus.wData.append(d)
 
     def _read(self, addr, size, onDone=None):
