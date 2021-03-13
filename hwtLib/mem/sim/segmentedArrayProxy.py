@@ -36,14 +36,18 @@ class SegmentedArrayProxy():
 
     def clean(self):
         for mem in self.mems:
-            mem.val = mem.def_val = mem._dtype.from_py([0 for _ in range(mem._dtype.size)])
+            # may not neccessary have to be two different instances
+            # as the value is copied into simulator, (copy just to make sure)
+            t = mem._dtype
+            mem.val = t.from_py([0 for _ in range(t.size)])
+            mem.def_val = t.from_py([0 for _ in range(t.size)])
 
     def __getitem__(self, i: int):
         if self.items_per_index and self.items_per_index != 1:
             raise NotImplementedError()
         elif self.words_per_item and self.words_per_item != 1:
             return Concat(*(
-                self._getitem(i + i2)
+                self._getitem(i * self.words_per_item + i2)
                 for i2 in range(self.words_per_item - 1, -1, -1)
             ))
         else:
@@ -55,8 +59,13 @@ class SegmentedArrayProxy():
 
     def _setitem(self, i, val):
         for B_i, data_mem  in enumerate(self.mems):
+            t = data_mem._dtype
             _data = select_bit_range(val, B_i * 8, 8)
-            data_mem.val[i] = data_mem.def_val[i] = data_mem._dtype.element_t.from_py(_data)
+            if data_mem.def_val is None:
+                # a default state before sim execution if there is no default value
+                data_mem.def_val = t.from_py([0 for _ in range(t.size)])
+            data_mem.val[i] = data_mem.def_val[i] = t.element_t.from_py(_data)
+
         return val
 
     def __setitem__(self, i: int, val: int):
@@ -70,14 +79,14 @@ class SegmentedArrayProxy():
             return val
         else:
             return self._setitem(i, val)
-        
+
     def __len__(self):
         return len(self.mems)
-    
+
     def __iter__(self):
         self._it = 0
         return self
-    
+
     def __next__(self):
         if self._it >= len(self.mems):
             raise StopIteration()
