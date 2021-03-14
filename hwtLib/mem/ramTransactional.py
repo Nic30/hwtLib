@@ -12,7 +12,7 @@ from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.hsStructIntf import HsStructIntf
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
-from hwt.math import log2ceil
+from hwt.math import log2ceil, isPow2
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
@@ -46,6 +46,8 @@ class RamTransactional(Unit):
     def _declr_io(self):
         assert self.WORDS_WIDTH % self.DATA_WIDTH == 0
         self.ITEM_WORDS = self.WORDS_WIDTH // self.DATA_WIDTH
+        assert self.ITEM_WORDS, "If you require more items per word, you should use lower DATA_WIDTH"
+        assert isPow2(self.ITEM_WORDS), "Otherwise computation of offset for item data is not implemented"
         self.WORD_INDEX_MAX = self.ITEM_WORDS - 1
 
         addClkRstn(self)
