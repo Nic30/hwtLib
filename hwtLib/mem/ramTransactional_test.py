@@ -73,7 +73,8 @@ class TupleWithCallback_ReadAddr(TupleWithCallback):
         self.r_data_expected.extend(self.data_to_trans(orig_data))
 
 
-class RamTransactionalTC(SimTestCase):
+class RamTransactional_2wTC(SimTestCase):
+    BURST_LEN = 2
 
     @classmethod
     def setUpClass(cls):
@@ -81,10 +82,9 @@ class RamTransactionalTC(SimTestCase):
         u.ID_WIDTH = 2
         u.DATA_WIDTH = 16
         u.ADDR_WIDTH = 3
-        u.WORDS_WIDTH = 32
+        u.WORDS_WIDTH = cls.BURST_LEN * u.DATA_WIDTH
         u.MAX_BLOCK_DATA_WIDTH = 8
         cls.ITEMS = 2 ** u.ADDR_WIDTH
-        cls.BURST_LEN = u.WORDS_WIDTH // u.DATA_WIDTH
         cls.compileSim(u)
 
     def setUp(self):
@@ -111,22 +111,31 @@ class RamTransactionalTC(SimTestCase):
         ae(u.flush_data.addr._ag.data)
         ae(u.flush_data.data._ag.data)
 
+    def make_item_from_index(self, i:int, MAGIC:int):
+        BURST_LEN = self.BURST_LEN
+        v = 0
+        for w_i in range(BURST_LEN):
+            v |= (i * BURST_LEN) + MAGIC + w_i << (w_i * self.u.DATA_WIDTH)
+        return v
+
     def test_read(self, TEST_LEN=10, MAGIC=5):
         u = self.u
         BURST_LEN = self.BURST_LEN
+
         for i in range(min(TEST_LEN, self.ITEMS)):
-            self.DATA[i] = ((i * 2 + 1 + MAGIC) << u.DATA_WIDTH) | (i * 2 + MAGIC)
+            self.DATA[i] = self.make_item_from_index(i, MAGIC)
 
         u.r.addr._ag.data.extend(
             # (id, addr)
             [(0, i % self.ITEMS) for i in range(TEST_LEN)])
 
-        self.runSim((TEST_LEN + 20) * CLK_PERIOD)
+        self.runSim((TEST_LEN * BURST_LEN + 20) * CLK_PERIOD)
 
         r_expected = list(flatten([
             [(0,
               (i % self.ITEMS) * BURST_LEN + MAGIC + i2,
-              int((i2 + 1) % BURST_LEN == 0)) for i2 in range(BURST_LEN)
+              int((i2 + 1) % BURST_LEN == 0))
+              for i2 in range(BURST_LEN)
             ] for i in range(TEST_LEN)],
             level=1))
 
@@ -157,7 +166,7 @@ class RamTransactionalTC(SimTestCase):
         self.runSim((TEST_LEN * BURST_LEN + 20) * CLK_PERIOD)
 
         def make_item(i):
-            return ((i + 1 + MAGIC) << u.DATA_WIDTH) | (i + MAGIC)
+            return self.make_item_from_index(i, MAGIC)
 
         self.check_memory_content(BURST_LEN, TEST_LEN, self.ITEMS, make_item, 0)
         ae = self.assertEmpty
@@ -202,25 +211,23 @@ class RamTransactionalTC(SimTestCase):
         BURST_LEN = self.BURST_LEN
         MASK_ALL = mask(u.DATA_WIDTH // 8)
 
-        def make_item(i):
-            return ((i + 1 + MAGIC) << u.DATA_WIDTH) | (i + MAGIC)
-
         wrData = u.w.data._ag.data
         wrAddr = u.w.addr._ag.data
         f_addr_expected = []
         f_data_expected = []
         # prefill the memory for later flushes
         mem = {}
-        for i in range(min(TEST_LEN, self.ITEMS)):
-            item = make_item(i * BURST_LEN)
+        PRESET_ITEM_CNT = min(TEST_LEN, self.ITEMS)
+        for i in range(PRESET_ITEM_CNT):
+            item = self.make_item_from_index(i, MAGIC)
             self.DATA[i] = item
             mem[i] = item
 
         # dispatch write requests and build expected
         # flush transactions
-        for i in range(TEST_LEN, 2 * TEST_LEN):
-            item = make_item(i * BURST_LEN)
-            in_mem_i = (i - TEST_LEN) % self.ITEMS
+        for i in range(PRESET_ITEM_CNT, TEST_LEN + PRESET_ITEM_CNT):
+            item = self.make_item_from_index(i, MAGIC)
+            in_mem_i = i % self.ITEMS
             orig_item = mem[in_mem_i]
             for word_i in range(BURST_LEN):
                 last = int((word_i + 1) % BURST_LEN == 0)
@@ -242,8 +249,8 @@ class RamTransactionalTC(SimTestCase):
         self.runSim((TEST_LEN * BURST_LEN + 20) * CLK_PERIOD)
 
         def make_item2(i):
-            offset = (TEST_LEN % self.ITEMS) + BURST_LEN + MAGIC
-            return ((i + offset + 1) << u.DATA_WIDTH) | (i + offset)
+            offset = (TEST_LEN % self.ITEMS) + BURST_LEN
+            return self.make_item_from_index(offset + i, MAGIC)
 
         self.check_memory_content(BURST_LEN, TEST_LEN, self.ITEMS, make_item2, TEST_LEN % self.ITEMS)
         self.assertValSequenceEqual(u.flush_data.addr._ag.data, f_addr_expected)
@@ -260,7 +267,6 @@ class RamTransactionalTC(SimTestCase):
         def rand_data():
             return [self._rand.getrandbits(u.DATA_WIDTH) for _ in range(BURST_LEN)]
         # cntr = [0]
-        #
         # def rand_data():
         #     d = [cntr[0] + i for i in range(BURST_LEN)]
         #     cntr[0] += BURST_LEN
@@ -319,14 +325,19 @@ class RamTransactionalTC(SimTestCase):
         ae(u.r.data._ag.data, r_data_expected)
 
 
+class RamTransactional_4wTC(RamTransactional_2wTC):
+    BURST_LEN = 4
+
+
 RamTransactionalTCs = [
-    RamTransactionalTC,
+    RamTransactional_2wTC,
+    #RamTransactional_4wTC,
 ]
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(RamTransactionalTC("test_flush"))
+    # suite.addTest(RamTransactional_2wTC("test_flush"))
     for tc in RamTransactionalTCs:
         suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)
