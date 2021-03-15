@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from hdlConvertorAst.to.hdlUtils import iter_with_last
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.agents.tuleWithCallback import TupleWithCallback
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.pyUtils.arrayQuery import flatten
@@ -79,7 +80,8 @@ class RamTransactional_2wTC(SimTestCase):
     @classmethod
     def setUpClass(cls):
         cls.u = u = RamTransactionalWrap()
-        u.ID_WIDTH = 2
+        u.R_ID_WIDTH = 2
+        u.W_PRIV_T = Bits(2)
         u.DATA_WIDTH = 16
         u.ADDR_WIDTH = 3
         u.WORDS_WIDTH = cls.BURST_LEN * u.DATA_WIDTH

@@ -6,6 +6,8 @@ from hwt.synthesizer.param import Param
 from hwtLib.amba.axis import AxiStream
 from hwtSimApi.hdlSimulator import HdlSimulator
 from ipCorePackager.constants import DIRECTION
+from hwt.interfaces.structIntf import HdlType_to_Interface
+from hwt.hdl.types.bits import Bits
 
 
 class TransRamHsR_addr(HandshakeSync):
@@ -14,12 +16,12 @@ class TransRamHsR_addr(HandshakeSync):
     """
 
     def _config(self):
-        self.ID_WIDTH = Param(0)
+        self.PRIV_T = Param(None)
         self.ADDR_WIDTH = Param(32)
 
     def _declr(self):
-        if self.ID_WIDTH:
-            self.id = VectSignal(self.ID_WIDTH)
+        if self.PRIV_T is not None:
+            self.priv = HdlType_to_Interface().apply(self.PRIV_T)
         self.addr = VectSignal(self.ADDR_WIDTH)
         HandshakeSync._declr(self)
 
@@ -55,11 +57,14 @@ class TransRamHsR(Interface):
     def _config(self):
         self.DATA_WIDTH = Param(8)
         self.USE_STRB = Param(True)
-        TransRamHsR_addr._config(self)
+        self.ID_WIDTH = Param(0)
+        self.ADDR_WIDTH = Param(32)
 
     def _declr(self):
         with self._paramsShared():
-            self.addr = TransRamHsR_addr()
+            a = self.addr = TransRamHsR_addr()
+            if self.ID_WIDTH:
+                a.PRIV_T = Bits(self.ID_WIDTH)
             d = self.data = AxiStream(masterDir=DIRECTION.IN)
             d.USE_STRB = False
             d.USE_KEEP = False

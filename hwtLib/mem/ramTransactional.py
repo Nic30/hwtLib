@@ -37,11 +37,12 @@ class RamTransactional(Unit):
     """
 
     def _config(self):
-        self.ID_WIDTH = Param(4)
         self.ADDR_WIDTH = Param(8)  # address has the granularity of the item
         self.DATA_WIDTH = Param(8)
         self.WORDS_WIDTH = Param(16)
         self.MAX_BLOCK_DATA_WIDTH = Param(None)
+        self.W_PRIV_T = Param(None)
+        self.R_ID_WIDTH = Param(0)
 
     def _declr_io(self):
         assert self.WORDS_WIDTH % self.DATA_WIDTH == 0
@@ -53,9 +54,12 @@ class RamTransactional(Unit):
         addClkRstn(self)
         with self._paramsShared():
             self.r = TransRamHsR()
+            self.r.ID_WIDTH = self.R_ID_WIDTH
             self.w = TransRamHsW()
             self.flush_data = TransRamHsW()._m()
             self.flush_data.USE_FLUSH = False
+            for i in (self.w, self.flush_data):
+                i.PRIV_T = self.W_PRIV_T
 
     def _declr(self):
         self._declr_io()
@@ -86,11 +90,15 @@ class RamTransactional(Unit):
                          w_index: StructIntf,
                          r_index_o: StructIntf) -> HandshakedReg:
 
+        HAS_R_PRIV = self.R_ID_WIDTH != 0
+        HAS_W_PRIV = self.W_PRIV_T is not None
+
         r_meta = HObjList(HandshakedReg(HsStructIntf) for _ in range(2))
         for reg in r_meta:
             reg.LATENCY = 1
             reg.T = HStruct(
-                *([(Bits(self.ID_WIDTH), "id")] if self.ID_WIDTH else []),
+                *([(Bits(self.R_ID_WIDTH), "r_priv")] if HAS_R_PRIV else []),
+                *([(self.W_PRIV_T, "w_priv")] if HAS_W_PRIV else []),
                 (Bits(self.ADDR_WIDTH), "addr"),
                 (BIT, "flushing"),
                 (BIT, "is_last"),
@@ -104,38 +112,40 @@ class RamTransactional(Unit):
         w_index_o = w_index
         flush_pending = rename_signal(self, w_index.vld & w_index_o.flushing, "flush_pending")
 
-        def id_copy():
-            if self.ID_WIDTH:
+        def priv_copy():
+            if HAS_R_PRIV or HAS_W_PRIV:
                 return \
                 If(r_meta[0].dataOut.vld,
-                   r_meta_i.id(r_meta[0].dataOut.data.id),
+                   r_meta_i.r_priv(r_meta[0].dataOut.data.r_priv) if HAS_R_PRIV else [],
+                   r_meta_i.w_priv(r_meta[0].dataOut.data.w_priv) if HAS_W_PRIV else [],
                 ).Else(
-                   r_meta_i.id(r_meta[1].dataOut.data.id),
+                   r_meta_i.r_priv(r_meta[1].dataOut.data.r_priv) if HAS_R_PRIV else [],
+                   r_meta_i.w_priv(r_meta[1].dataOut.data.w_priv) if HAS_W_PRIV else [],
                 )
             else:
                 return []
 
         # begin of entirely new read
         If(flush_pending,
-            id_copy(),
+            priv_copy(),
             r_meta_i.addr(None),  # because the address is dispatched in first word
             r_meta_i.flushing(1),
             r_meta_i.is_first(0),
             r_meta_i.is_last(w_index_o.word_index._eq(WORD_INDEX_MAX)),
         ).Elif(flush_req & ~read_pending,
-            r_meta_i.id(w.addr.id) if self.ID_WIDTH else [],
+            r_meta_i.w_priv(w.addr.priv) if HAS_W_PRIV else [],
             r_meta_i.addr(w.addr.addr),
             r_meta_i.flushing(1),
             r_meta_i.is_first(1),
             r_meta_i.is_last(0),
         ).Else(
             If(read_pending,
-               id_copy(),
+               priv_copy(),
                r_meta_i.addr(None),
                r_meta_i.is_first(0),
                r_meta_i.is_last(r_index_o.word_index._eq(WORD_INDEX_MAX)),
             ).Else(
-               r_meta_i.id(r.addr.id) if self.ID_WIDTH else [],
+               r_meta_i.r_priv(r.addr.priv) if HAS_R_PRIV else [],
                r_meta_i.addr(r.addr.addr),
                r_meta_i.is_first(1),
                r_meta_i.is_last(0),
@@ -226,19 +236,19 @@ class RamTransactional(Unit):
             },
         ).sync()
 
-        if self.ID_WIDTH:
-            flush_data.addr.id(r_meta_o.id)
+        if self.W_PRIV_T is not None:
+            flush_data.addr.priv(r_meta_o.w_priv)
         flush_data.addr.addr(r_meta_o.addr)
         flush_data.data.data(da_r.data.data)
         flush_data.data.strb(mask(flush_data.data.strb._dtype.bit_length()))
         flush_data.data.last(r_meta_o.is_last)
 
-        if self.ID_WIDTH:
-            r.data.id(r_meta_o.id)
+        if self.R_ID_WIDTH:
+            r.data.id(r_meta_o.r_priv)
         r.data.data(da_r.data.data)
         r.data.last(r_meta_o.is_last)
 
-    def construct_write_part(self, flush_req: RtlSignal,
+    def construct_write_part(self,
                              w: TransRamHsW,
                              da_r: RamHsR,
                              da_w: AddrDataHs,
@@ -328,7 +338,7 @@ class RamTransactional(Unit):
         r_meta = self.construct_r_meta(flush_req, read_pending, self.r, self.w, w_index, r_index_o)
         self.construct_read_part(self.r, w.addr.addr, da_r, r_meta, flush_req, read_pending,
                                  r_index_o, r_index_i, self.flush_data)
-        self.construct_write_part(flush_req, w, da_r, da_w, w_index_i, w_index_o, r_index_o, r_meta[0].dataIn)
+        self.construct_write_part(w, da_r, da_w, w_index_i, w_index_o, r_index_o, r_meta[0].dataIn)
 
         propagateClkRstn(self)
 
@@ -336,7 +346,8 @@ class RamTransactional(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     u = RamTransactional()
-    # u.ID_WIDTH = 2
+    u.R_ID_WIDTH = 4
+    u.W_PRIV_T = Bits(5)
     u.DATA_WIDTH = 32
     u.ADDR_WIDTH = 3
     u.WORDS_WIDTH = 64
