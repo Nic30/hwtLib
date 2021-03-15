@@ -324,6 +324,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         MULTI_WORD = self.data_array.ITEM_WORDS > 1
         if MULTI_WORD:
             st1_id = HandshakedReg(Handshaked)
+            st1_id.LATENCY = (1, 2)
             st1_id.DATA_WIDTH = self.ID_WIDTH
             self.victim_load_status1 = st1_id
             st1_id.dataIn.data(st0_o.write_id)

@@ -138,7 +138,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
             for i in range(N)
         ]
         u.s.ar._ag.data.extend(ref)
-        t = (N + 5) * CLK_PERIOD
+        t = (N * (self.LEN + 1) + 5) * CLK_PERIOD
         if randomized:
             self.randomize_all()
             t *= 3
@@ -171,7 +171,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
 
                 self.cacheline_insert(addr, w, self.build_cacheline(d_list))
 
-        t = (10 + u.WAY_CNT * N_PER_WAY) * CLK_PERIOD
+        t = (10 + u.WAY_CNT * N_PER_WAY * (self.LEN + 1)) * CLK_PERIOD
         if randomized:
             self.randomize_all()
             t *= 3
@@ -220,7 +220,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
                 b_expected.append((_id, RESP_OKAY))
         if preallocate:
             self.assertDictEqual(self.get_cachelines(), {k: 0 for k in expected.keys()})
-        t = (u.WAY_CNT * N_PER_WAY + 10) * CLK_PERIOD
+        t = (u.WAY_CNT * N_PER_WAY * (self.LEN + 1) + 10) * CLK_PERIOD
         if randomized:
             t *= 3
             self.randomize_all()
@@ -285,7 +285,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
 
                 b_expected.append((_id, RESP_OKAY))
 
-        t = (u.WAY_CNT * N_PER_WAY + 10) * CLK_PERIOD
+        t = (u.WAY_CNT * N_PER_WAY * (self.LEN + 1) + 10) * CLK_PERIOD
         if randomized:
             t *= 3
             self.randomize_all()
@@ -307,13 +307,13 @@ class AxiCaheWriteAllocWawOnlyWritePropagating_len1TC(AxiCaheWriteAllocWawOnlyWr
 
 AxiCaheWriteAllocWawOnlyWritePropagatingTCs = [
     AxiCaheWriteAllocWawOnlyWritePropagatingTC,
-    # AxiCaheWriteAllocWawOnlyWritePropagating_len1TC,
+    AxiCaheWriteAllocWawOnlyWritePropagating_len1TC,
 ]
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(AxiCaheWriteAllocWawOnlyWritePropagatingTC('test_write_to_empty'))
+    # suite.addTest(AxiCaheWriteAllocWawOnlyWritePropagatingTC('test_write_to_empty'))
     for tc in AxiCaheWriteAllocWawOnlyWritePropagatingTCs:
         suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)
