@@ -307,13 +307,13 @@ class AxiCaheWriteAllocWawOnlyWritePropagating_len1TC(AxiCaheWriteAllocWawOnlyWr
 
 AxiCaheWriteAllocWawOnlyWritePropagatingTCs = [
     AxiCaheWriteAllocWawOnlyWritePropagatingTC,
-    AxiCaheWriteAllocWawOnlyWritePropagating_len1TC,
+    # AxiCaheWriteAllocWawOnlyWritePropagating_len1TC,
 ]
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(AxiCaheWriteAllocWawOnlyWritePropagatingTC('test_write_to_preallocated'))
+    #suite.addTest(AxiCaheWriteAllocWawOnlyWritePropagatingTC('test_write_to_empty'))
     for tc in AxiCaheWriteAllocWawOnlyWritePropagatingTCs:
         suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)
