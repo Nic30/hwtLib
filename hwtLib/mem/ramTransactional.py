@@ -39,14 +39,14 @@ class RamTransactional(Unit):
     def _config(self):
         self.ADDR_WIDTH = Param(8)  # address has the granularity of the item
         self.DATA_WIDTH = Param(8)
-        self.WORDS_WIDTH = Param(16)
+        self.WORD_WIDTH = Param(16)
         self.MAX_BLOCK_DATA_WIDTH = Param(None)
         self.W_PRIV_T = Param(None)
         self.R_ID_WIDTH = Param(0)
 
     def _declr_io(self):
-        assert self.WORDS_WIDTH % self.DATA_WIDTH == 0
-        self.ITEM_WORDS = self.WORDS_WIDTH // self.DATA_WIDTH
+        assert self.WORD_WIDTH % self.DATA_WIDTH == 0, (self.WORD_WIDTH, self.DATA_WIDTH)
+        self.ITEM_WORDS = self.WORD_WIDTH // self.DATA_WIDTH
         assert self.ITEM_WORDS, "If you require more items per word, you should use lower DATA_WIDTH"
         assert isPow2(self.ITEM_WORDS), "Otherwise computation of offset for item data is not implemented"
         self.WORD_INDEX_MAX = self.ITEM_WORDS - 1
@@ -378,5 +378,5 @@ if __name__ == "__main__":
     u.W_PRIV_T = Bits(5)
     u.DATA_WIDTH = 32
     u.ADDR_WIDTH = 3
-    u.WORDS_WIDTH = 64
+    u.WORD_WIDTH = 64
     print(to_rtl_str(u))

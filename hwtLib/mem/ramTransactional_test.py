@@ -84,7 +84,7 @@ class RamTransactional_2wTC(SimTestCase):
         u.W_PRIV_T = Bits(2)
         u.DATA_WIDTH = 16
         u.ADDR_WIDTH = 3
-        u.WORDS_WIDTH = cls.BURST_LEN * u.DATA_WIDTH
+        u.WORD_WIDTH = cls.BURST_LEN * u.DATA_WIDTH
         u.MAX_BLOCK_DATA_WIDTH = 8
         cls.ITEMS = 2 ** u.ADDR_WIDTH
         cls.compileSim(u)
