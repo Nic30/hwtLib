@@ -21,11 +21,11 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
     def setUpClass(cls):
         cls.u = u = AxiCaheWriteAllocWawOnlyWritePropagating()
         u.DATA_WIDTH = 32
-        u.CACHE_LINE_SIZE = 4
+        u.CACHE_LINE_SIZE = 4 * (cls.LEN + 1)
         u.CACHE_LINE_CNT = 16
         u.MAX_BLOCK_DATA_WIDTH = 8
         u.WAY_CNT = 2
-        cls.ADDR_STEP = u.DATA_WIDTH // 8
+        cls.ADDR_STEP = u.CACHE_LINE_SIZE
         cls.WAY_CACHELINES = u.CACHE_LINE_CNT // u.WAY_CNT
         cls.compileSim(u)
 
@@ -40,7 +40,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
         )
         self.DATA = SegmentedArrayProxy([
                 getattr(m.data_array_inst.data_array_inst, f"children_{i:d}_inst").io.ram_memory
-                for i in range(u.CACHE_LINE_SIZE)
+                for i in range(u.DATA_WIDTH // 8)
             ],
             words_per_item=self.LEN + 1
         )
@@ -198,7 +198,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
         aw = u.s.aw._ag
         expected = {}
         b_expected = []
-        M = mask(u.CACHE_LINE_SIZE)
+        M = mask(u.DATA_WIDTH // 8)
         for w in range(u.WAY_CNT):
             for i in range(N_PER_WAY):
                 i = i % WAY_CACHELINES
@@ -254,7 +254,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
         aw = u.s.aw._ag
         expected = {}
         b_expected = []
-        M = mask(u.CACHE_LINE_SIZE)
+        M = mask(u.DATA_WIDTH // 8)
         expected_r = []
         for w in range(u.WAY_CNT):
             for i in range(N_PER_WAY):
@@ -307,7 +307,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagating_len1TC(AxiCaheWriteAllocWawOnlyWr
 
 AxiCaheWriteAllocWawOnlyWritePropagatingTCs = [
     AxiCaheWriteAllocWawOnlyWritePropagatingTC,
-    # AxiCaheWriteAllocWawOnlyWritePropagating_len1TC,
+    AxiCaheWriteAllocWawOnlyWritePropagating_len1TC,
 ]
 
 if __name__ == "__main__":

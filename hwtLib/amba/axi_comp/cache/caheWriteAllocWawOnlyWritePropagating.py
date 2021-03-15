@@ -3,7 +3,7 @@
 
 from typing import List
 
-from hwt.code import If, Or, SwitchLogic, In, Concat
+from hwt.code import If, Or, SwitchLogic
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
@@ -110,8 +110,8 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
 
         da = RamTransactional()
         da.MAX_BLOCK_DATA_WIDTH = self.MAX_BLOCK_DATA_WIDTH
-        da.WORDS_WIDTH = self.DATA_WIDTH
-        da.DATA_WIDTH = self.CACHE_LINE_SIZE * 8
+        da.WORD_WIDTH = self.CACHE_LINE_SIZE * 8
+        da.DATA_WIDTH = self.DATA_WIDTH
         da.ADDR_WIDTH = log2ceil(self.CACHE_LINE_CNT)
         da.R_ID_WIDTH = self.ID_WIDTH
         da.W_PRIV_T = HStruct(
