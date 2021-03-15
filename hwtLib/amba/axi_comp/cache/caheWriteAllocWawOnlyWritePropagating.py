@@ -319,7 +319,8 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
 
         da_w.addr.flush(rename_signal(self, st0.dataOut.vld & (~st0_o.had_empty & ~st0_o.tag_found), "need_to_flush"))
         da_w.addr.priv.id(st0_o.write_id)
-        da_w.addr.addr(self.addr_in_data_array(victim_way.data, self.parse_addr(st0_o.replacement_addr)[1])),
+        da_w.addr.addr(self.addr_in_data_array(st0_o.tag_found._ternary(st0_o.found_way, victim_way.data),
+                                               self.parse_addr(st0_o.replacement_addr)[1])),
         da_w.addr.priv.victim_tag(_victim_tag)
 
         # placed between st0, st1
