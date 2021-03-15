@@ -66,7 +66,9 @@ class RamTransactional(Unit):
         d = self.data_array = RamSingleClock()
         d.MAX_BLOCK_DATA_WIDTH = self.MAX_BLOCK_DATA_WIDTH
         d.DATA_WIDTH = self.DATA_WIDTH
-        d.ADDR_WIDTH = self.ADDR_WIDTH + log2ceil(self.ITEM_WORDS)
+        d.ADDR_WIDTH = self.ADDR_WIDTH
+        if self.ITEM_WORDS > 1:
+            d.ADDR_WIDTH += log2ceil(self.ITEM_WORDS)
         d.PORT_CNT = (READ, WRITE)
         d.HAS_BE = True
 
@@ -125,30 +127,38 @@ class RamTransactional(Unit):
             else:
                 return []
 
+        def set_first_last(first, last):
+            if self.WORD_INDEX_MAX == 0:
+                return [
+                    r_meta_i.is_first(1),
+                    r_meta_i.is_last(1)
+                ]
+            else:
+                return [
+                    r_meta_i.is_first(first),
+                    r_meta_i.is_last(last),
+                ]
+
         # begin of entirely new read
         If(flush_pending,
             priv_copy(),
             r_meta_i.addr(None),  # because the address is dispatched in first word
             r_meta_i.flushing(1),
-            r_meta_i.is_first(0),
-            r_meta_i.is_last(w_index_o.word_index._eq(WORD_INDEX_MAX)),
+            set_first_last(0, w_index_o.word_index._eq(WORD_INDEX_MAX))
         ).Elif(flush_req & ~read_pending,
             r_meta_i.w_priv(w.addr.priv) if HAS_W_PRIV else [],
             r_meta_i.addr(w.addr.addr),
             r_meta_i.flushing(1),
-            r_meta_i.is_first(1),
-            r_meta_i.is_last(0),
+            set_first_last(1, 0),
         ).Else(
             If(read_pending,
                priv_copy(),
                r_meta_i.addr(None),
-               r_meta_i.is_first(0),
-               r_meta_i.is_last(r_index_o.word_index._eq(WORD_INDEX_MAX)),
+               set_first_last(0, r_index_o.word_index._eq(WORD_INDEX_MAX)),
             ).Else(
                r_meta_i.r_priv(r.addr.priv) if HAS_R_PRIV else [],
                r_meta_i.addr(r.addr.addr),
-               r_meta_i.is_first(1),
-               r_meta_i.is_last(0),
+               set_first_last(1, 0),
             ),
             r_meta_i.flushing(0),
         )
@@ -181,17 +191,31 @@ class RamTransactional(Unit):
         )
         r_disp_node.sync()
 
-        w_i_0 = r_index_o.word_index._dtype.from_py(0)
-        If(read_pending,
-            #  a read or flush remainder words
-            da_r.addr.data(Concat(r_index_o.item_index, r_index_o.word_index))
-        ).Elif(flush_req,
-            # a first word of flush
-            da_r.addr.data(Concat(w_addr, w_i_0))
-        ).Else(
-            # potentialy a first word of read
-            da_r.addr.data(Concat(r.addr.addr, w_i_0))
-        )
+        MULTI_WORD = self.ITEM_WORDS > 1
+        if MULTI_WORD:
+            w_i_0 = r_index_o.word_index._dtype.from_py(0)
+            If(read_pending,
+                #  a read or flush remainder words
+                da_r.addr.data(Concat(r_index_o.item_index, r_index_o.word_index))
+            ).Elif(flush_req,
+                # a first word of flush
+                da_r.addr.data(Concat(w_addr, w_i_0))
+            ).Else(
+                # potentialy a first word of read
+                da_r.addr.data(Concat(r.addr.addr, w_i_0))
+            )
+        else:
+            # exactly same as previous branch, just missing word index
+            If(read_pending,
+                #  a read or flush remainder words
+                da_r.addr.data(r_index_o.item_index)
+            ).Elif(flush_req,
+                # a first word of flush
+                da_r.addr.data(w_addr)
+            ).Else(
+                # potentialy a first word of read
+                da_r.addr.data(r.addr.addr)
+            )
 
         w = self.w
         If(rename_signal(self, r_disp_node.ack(), "r_disp_ack"),
@@ -201,13 +225,13 @@ class RamTransactional(Unit):
                 If(flush_req,
                     # begin of the read for flush
                     r_index_i.item_index(w.addr.addr),
-                    r_index_i.vld(1),
+                    r_index_i.vld(MULTI_WORD),
                 ).Else(
                     # begin of the normal read
                     r_index_i.item_index(r.addr.addr),
-                    r_index_i.vld(r.addr.vld),
+                    r_index_i.vld(r.addr.vld & MULTI_WORD),
                 ),
-                r_index_i.word_index(1),
+                r_index_i.word_index(1 if MULTI_WORD else 0),
             ).Elif(r_index_o.word_index._eq(self.WORD_INDEX_MAX),
                 # first addr and data is skipping this reg
                 # this means that tere has to be 1 clk of vld=0 for this first word to pass
@@ -276,14 +300,15 @@ class RamTransactional(Unit):
             },
         )
         w_disp_node.sync()
+        MULTI_WORD = self.ITEM_WORDS > 1
         w_disp_ack = rename_signal(self, w_disp_node.ack(), "w_disp_ack")
         If(w_disp_ack,
             If(w_index_o.word_index._eq(0),
                 # completly new item
                 w_index_i.item_index(w.addr.addr),
                 w_index_i.flushing(w.addr.flush),
-                w_index_i.word_index(1),
-                w_index_i.vld(1),  # start of a new
+                w_index_i.word_index(1 if MULTI_WORD else 0),
+                w_index_i.vld(1 & MULTI_WORD),  # start of a new
             ).Elif(w_index_o.word_index._eq(WORD_INDEX_MAX),
                 # last item
                 w_index_i.word_index(0),
@@ -294,11 +319,14 @@ class RamTransactional(Unit):
                 w_index_i(w_index_o, exclude=[w_index_i.word_index]),
             )
         )
-
         If(write_pending,
-           da_w.addr(Concat(w_index_o.item_index, w_index_o.word_index))
+           da_w.addr(Concat(w_index_o.item_index, w_index_o.word_index)
+                     if MULTI_WORD else
+                     w_index_o.item_index)
         ).Else(
-           da_w.addr(Concat(w.addr.addr, w_index_o.word_index._dtype.from_py(0)))
+           da_w.addr(Concat(w.addr.addr, w_index_o.word_index._dtype.from_py(0))
+                     if MULTI_WORD else
+                     w.addr.addr)
         )
         da_w.mask(w.data.strb)
         da_w.data(w.data.data)

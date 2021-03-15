@@ -10,7 +10,7 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.mem.ramTransactional import RamTransactional
 from hwtLib.mem.sim.segmentedArrayProxy import SegmentedArrayProxy
 from hwtSimApi.constants import CLK_PERIOD
-from pyMathBitPrecise.bit_utils import mask
+from pyMathBitPrecise.bit_utils import mask, int_list_to_int
 
 
 class RamTransactionalWrap(RamTransactional):
@@ -275,7 +275,7 @@ class RamTransactional_2wTC(SimTestCase):
         #     return d
 
         def make_item(data):
-            return (data[1] << u.DATA_WIDTH) | data[0]
+            return int_list_to_int(data, u.DATA_WIDTH)
 
         def data_to_trans(data):
             return [
@@ -327,19 +327,24 @@ class RamTransactional_2wTC(SimTestCase):
         ae(u.r.data._ag.data, r_data_expected)
 
 
+class RamTransactional_1wTC(RamTransactional_2wTC):
+    BURST_LEN = 1
+
+
 class RamTransactional_4wTC(RamTransactional_2wTC):
     BURST_LEN = 4
 
 
 RamTransactionalTCs = [
+    RamTransactional_1wTC,
     RamTransactional_2wTC,
-    #RamTransactional_4wTC,
+    RamTransactional_4wTC,
 ]
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(RamTransactional_2wTC("test_flush"))
+    # suite.addTest(RamTransactional_1wTC("test_read"))
     for tc in RamTransactionalTCs:
         suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)
