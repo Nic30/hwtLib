@@ -39,7 +39,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
             ],
         )
         self.DATA = SegmentedArrayProxy([
-                getattr(m.data_array_inst, f"children_{i:d}_inst").io.ram_memory
+                getattr(m.data_array_inst.data_array_inst, f"children_{i:d}_inst").io.ram_memory
                 for i in range(u.CACHE_LINE_SIZE)
             ],
             words_per_item=self.LEN + 1
