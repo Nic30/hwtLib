@@ -5,7 +5,7 @@ from hwt.hdl.types.bits import Bits
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
-from hwtLib.amba.axi_comp.cache.caheWriteAllocWawOnlyWritePropagating import AxiCaheWriteAllocWawOnlyWritePropagating
+from hwtLib.amba.axi_comp.cache.cacheWriteAllocWawOnlyWritePropagating import AxiCacheWriteAllocWawOnlyWritePropagating
 from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtLib.mem.sim.segmentedArrayProxy import SegmentedArrayProxy
@@ -13,13 +13,13 @@ from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import set_bit_range, mask, int_list_to_int
 
 
-class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
+class AxiCacheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
     # number of words in transaction - 1
     LEN = 0
 
     @classmethod
     def setUpClass(cls):
-        cls.u = u = AxiCaheWriteAllocWawOnlyWritePropagating()
+        cls.u = u = AxiCacheWriteAllocWawOnlyWritePropagating()
         u.DATA_WIDTH = 32
         u.CACHE_LINE_SIZE = 4 * (cls.LEN + 1)
         u.CACHE_LINE_CNT = 16
@@ -301,20 +301,20 @@ class AxiCaheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
     # write victim flush
 
 
-class AxiCaheWriteAllocWawOnlyWritePropagating_len1TC(AxiCaheWriteAllocWawOnlyWritePropagatingTC):
+class AxiCacheWriteAllocWawOnlyWritePropagating_len1TC(AxiCacheWriteAllocWawOnlyWritePropagatingTC):
     LEN = 1
 
 
-AxiCaheWriteAllocWawOnlyWritePropagatingTCs = [
-    AxiCaheWriteAllocWawOnlyWritePropagatingTC,
-    AxiCaheWriteAllocWawOnlyWritePropagating_len1TC,
+AxiCacheWriteAllocWawOnlyWritePropagatingTCs = [
+    AxiCacheWriteAllocWawOnlyWritePropagatingTC,
+    AxiCacheWriteAllocWawOnlyWritePropagating_len1TC,
 ]
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(AxiCaheWriteAllocWawOnlyWritePropagatingTC('test_write_to_empty'))
-    for tc in AxiCaheWriteAllocWawOnlyWritePropagatingTCs:
+    # suite.addTest(AxiCacheWriteAllocWawOnlyWritePropagatingTC('test_write_to_empty'))
+    for tc in AxiCacheWriteAllocWawOnlyWritePropagatingTCs:
         suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

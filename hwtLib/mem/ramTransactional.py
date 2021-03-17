@@ -32,8 +32,11 @@ class RamTransactional(Unit):
     If the flush is activate the current data is read first before it is overwritten by write data.
     This memory supports multiword transaction and the swap, read and write is atomic in relation
     with other transactions.
+    
+    .. figure:: ./_static/RamTransactional.png
 
     .. hwt-autodoc::
+
     """
 
     def _config(self):

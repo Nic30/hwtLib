@@ -39,46 +39,46 @@ from pyMathBitPrecise.bit_utils import mask
 # https://github.com/rajshadow/4-way-set-associative-cache-verilog
 # https://github.com/xdesigns/4way-cache
 # https://github.com/prasadp4009/2-way-Set-Associative-Cache-Controller
-class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
+class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
     """
     Non-blocking pipelined Set Associative cache for AXI interfaces which is designed
     to work with an LSU which solves only WAW (write-after-write) conflicts.
 
 
-    :note: Write propagation in this context means that any read recieved will contain lastly writen
+    :note: Write propagation in this context means that any read received will contain lastly written
         data in some time few clock before (derived from read latency of the LSU)
         the actual request (due to latency of the read resolution).
-        This means that if master check last N transaction for colisions the data is asserted to be
+        This means that if master check last N transaction for collision the data is asserted to be
         in last version or to be marked with an invalidation flag. The N is usually 3 and
         is derived from the latency of LSU which should be connected behind this cache.
 
     :attention: This cache solves only WAW conflicts, this means that WAR and RAW conflicts
         are left unsolved and must be handled on master side. This is suitable for a cumulative
         operations in general as together with write propagating it allows master component
-        to significantly reduce buffers and colision detection logic.
+        to significantly reduce buffers and collision detection logic.
 
-    .. figure:: ./_static/AxiCaheWriteAllocWawOnlyWritePropagating.png
+    .. figure:: ./_static/AxiCacheWriteAllocWawOnlyWritePropagating.png
 
     :see: :class:`hwtLib.amba.axi_comp.cache.CacheAddrTypeConfig`
     :ivar DATA_WIDTH: data width of interfaces
     :ivar WAY_CNT: number of places where one cache line can be stored
 
     :note: 1-way associative = directly mapped
-    :note: This cache does not check access colisions with a requests to main (slave) memory.
+    :note: This cache does not check access collision with a requests to main (slave) memory.
         It only provides an information for LSU to do so. The LSU is supposed to be connected
-        between main mamory and this cache (= on master port where slave should be connected).
+        between main memory and this cache (= on master port where slave should be connected).
 
     * The tag_array contains tags and cache line status flags for cache lines.
     * The lsu_array contains the data for data for pseudo LRU (Last Recently Used) cache replacement policy.
-      It is stored in a separate array due to high requiremets for concurrent access which results
+      It is stored in a separate array due to high requirements for concurrent access which results
       in increased memory consumption.
     * The data_array is a RAM where data for cache lines is stored.
 
     The memories are separated because they have a different memory port requirements
     and we want to keep the number of memory ports and the size of the memory minimal
-    as resource requiements grow exponentially with increasing number of memory ports.
+    as resource requirements grow exponentially with increasing number of memory ports.
 
-    .. hwt-autodoc:: _example_AxiCaheWriteAllocWawOnlyWritePropagating
+    .. hwt-autodoc:: _example_AxiCacheWriteAllocWawOnlyWritePropagating
     """
 
     def _config(self):
@@ -156,17 +156,22 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         lru_incr.index(index)
 
     def read_handler(self,
-                     ar_lru_incr: IndexWayHs,  # out
                      ar_tagRes: AxiCacheTagArrayLookupResIntf,  # in
-                     da_r: TransRamHsR,  # in
                      axi_s_r: Axi4_r,  # out
+                     ar_lru_incr: IndexWayHs,  # out
+                     da_r: TransRamHsR,  # in
                      axi_m_ar: Axi4_addr,  # out
-                     axi_m_r: Axi4_r,  # in
+                     axi_m_r: Axi4_r  # in
                      ):
         """
-        :param ar_lru_incr: used to
+        :param ar_tagRes: Read request including information from tag_array for given tag.
+        :param axi_s_r: Read data requested by ar_tagRes. 
+        :param ar_lru_incr: Incrementing LRU for given address when tag is found.
+        :param da_r: Read interface of data_array used when tag is found.
+        :param axi_m_ar: Read address request interface to memory when tag is not found.
+        :param axi_m_r: Read data requested by axi_m_ar from memory when tag is not found.
 
-        .. figure:: ./_static/AxiCaheWriteAllocWawOnlyWritePropagating_read_handler.png
+        .. figure:: ./_static/AxiCacheWriteAllocWawOnlyWritePropagating_read_handler.png
         """
         self.incr_lru_on_hit(ar_lru_incr, ar_tagRes)
 
@@ -248,23 +253,23 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         return _victim_way, _victim_tag
 
     def write_handler(self,
-                      aw_lru_incr: IndexWayHs,  # out
                       aw_tagRes: AxiCacheTagArrayLookupResIntf,  # in
-                      victim_req: AddrHs, victim_way: Handshaked,  # out, in
+                      axi_s_b: Axi4_b,  # out
+                      aw_lru_incr: IndexWayHs,  # out
+                      victim_way_req: AddrHs, victim_way_resp: Handshaked,  # out, in
                       da_w: TransRamHsW,  # in
                       tag_update: AxiCacheTagArrayUpdateIntf,  # out
-                      axi_s_b: Axi4_b,  # out
                       ):
         """
-        :ivar aw_lru_incr: an interface to increment LRU for write channel
-        :ivar victim_req: an interface to get a victim from LRU array for a specified index
-            (Enabled only if the write is required and there is no place)
-        :ivar victim_way: return interface for victim_req ()
-        :ivar aw_tagRes: an interface with a results from tag lookup
-        :ivar data_arr_read_req: an input interface with read requests from read section
-        :ivar data_arr_read: an output interface with a read data to read section
-        :ivar data_arr_r_port: read port of main data array
-        :ivar data_arr_w_port: write port of main data array
+        :param aw_tagRes: Write request including in information from tag_array for given tag.
+        :param axi_s_b: Response requested by aw_tagRes
+        :param aw_lru_incr: Incrementing LRU for given address when tag is found.
+        :param victim_way_req: Request victim from LRU array for a specified index, when cache is full.
+        :param victim_way_resp: Victim address requested by victim_way_req
+        :param da_w: Write interface of data_array to write and initiate flush when cache is full.
+        :param tag_update: Tag update interface for newly written data.
+        
+        .. figure:: ./_static/AxiCacheWriteAllocWawOnlyWritePropagating_write_handler.png
         """
         # note that the lru update happens even if the data is stalled
         # but that is not a problem because it wont change the order of the usage
@@ -294,18 +299,18 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         st0_i.found_way(aw_tagRes.way),
         st0_i.had_empty(has_empty),
 
-        victim_req.addr(self.parse_addr(aw_tagRes.addr)[1])
+        victim_way_req.addr(self.parse_addr(aw_tagRes.addr)[1])
         StreamNode(
             [aw_tagRes],
-            [victim_req, st0.dataIn],
+            [victim_way_req, st0.dataIn],
             skipWhen={
-                victim_req: aw_tagRes.vld & (
+                victim_way_req: aw_tagRes.vld & (
                                 aw_tagRes.found |
                                 has_empty
                             )
             },
             extraConds={
-                victim_req:~aw_tagRes.found & ~has_empty
+                victim_way_req:~aw_tagRes.found & ~has_empty
             }
         ).sync()
 
@@ -313,7 +318,7 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
 
         st0_o = st0.dataOut.data
 
-        _victim_way, _victim_tag = self.resolve_victim(st0_o.tag_found, st0_o.found_way, st0_o.tags, victim_way)
+        _victim_way, _victim_tag = self.resolve_victim(st0_o.tag_found, st0_o.found_way, st0_o.tags, victim_way_resp)
 
         da_w.addr.flush(rename_signal(self, st0.dataOut.vld & (~st0_o.had_empty & ~st0_o.tag_found), "need_to_flush"))
         da_w.addr.priv.id(st0_o.write_id)
@@ -330,13 +335,13 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
             st1_id.dataIn.data(st0_o.write_id)
         # placed between st0, st1
         StreamNode(
-            [victim_way, st0.dataOut],
+            [victim_way_resp, st0.dataOut],
             [da_w.addr, st1_id.dataIn] if MULTI_WORD else [da_w.addr],
             extraConds={
-                victim_way:~st0_o.tag_found & ~st0_o.had_empty,
+                victim_way_resp:~st0_o.tag_found & ~st0_o.had_empty,
             },
             skipWhen={
-                victim_way: st0_o.tag_found | st0_o.had_empty,
+                victim_way_resp: st0_o.tag_found | st0_o.had_empty,
             }
         ).sync()
 
@@ -409,13 +414,13 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
 
         * Use index to lookup in tag memory
         * if tag matches return cacheline else dispatch read request
-          (the transaction is dispatched with original id, uppon data receive the transaction
-          is passed to master without any synchronisation with the cache )
+          (the transaction is dispatched with original id, upon data receive the transaction
+          is passed to master without any synchronization with the cache )
 
         Write operation:
 
         * Use index to lookup in tag memory
-        * If tag matches and the cacheline is not beeing replaced update the data in data array.
+        * If tag matches and the cacheline is not being replaced update the data in data array.
         * If tag is not found in corresponding set select a victim and read it from data array, flush it
           and write back cacheline to array and update tag
         """
@@ -425,22 +430,22 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         ar_tagRes, aw_tagRes = self.tag_array.lookupRes
 
         self.read_handler(
-            self.lru_array.incr[0],
             ar_tagRes,
-            self.data_array.r,
             self.s.r,
+            self.lru_array.incr[0],
+            self.data_array.r,
             self.m.ar,
             self.m.r,
         )
 
         self.write_handler(
-            self.lru_array.incr[1],
             aw_tagRes,
+            self.s.b,
+            self.lru_array.incr[1],
             self.lru_array.victim_req,
             self.lru_array.victim_data,
             self.data_array.w,
             self.tag_array.update[0],
-            self.s.b,
         )
         self.flush_handler(
             self.data_array.flush_data,
@@ -452,8 +457,8 @@ class AxiCaheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         propagateClkRstn(self)
 
 
-def _example_AxiCaheWriteAllocWawOnlyWritePropagating():
-    u = AxiCaheWriteAllocWawOnlyWritePropagating()
+def _example_AxiCacheWriteAllocWawOnlyWritePropagating():
+    u = AxiCacheWriteAllocWawOnlyWritePropagating()
     u.DATA_WIDTH = 16
     u.CACHE_LINE_SIZE = 2
     u.WAY_CNT = 2
@@ -465,7 +470,7 @@ def _example_AxiCaheWriteAllocWawOnlyWritePropagating():
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     from hwtLib.xilinx.constants import XILINX_VIVADO_MAX_DATA_WIDTH
-    u = AxiCaheWriteAllocWawOnlyWritePropagating()
+    u = AxiCacheWriteAllocWawOnlyWritePropagating()
     u.DATA_WIDTH = 512
     u.CACHE_LINE_SIZE = u.DATA_WIDTH // 8
     u.WAY_CNT = 4
@@ -475,5 +480,5 @@ if __name__ == "__main__":
     # u.DATA_WIDTH = 512
     # u.WAY_CNT = 2
     # u.CACHE_LINE_CNT = u.WAY_CNT * 4096
-    # u = _example_AxiCaheWriteAllocWawOnlyWritePropagating()
+    # u = _example_AxiCacheWriteAllocWawOnlyWritePropagating()
     print(to_rtl_str(u))
