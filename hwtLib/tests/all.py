@@ -18,7 +18,7 @@ from hwtLib.amba.axiLite_comp.endpoint_struct_test import \
     AxiLiteEndpoint_arrayStruct_TC, AxiLiteEndpoint_struct_TC
 from hwtLib.amba.axiLite_comp.endpoint_test import AxiLiteEndpointTCs
 from hwtLib.amba.axiLite_comp.to_axi_test import AxiLite_to_Axi_TC
-from hwtLib.amba.axi_comp.cache.caheWriteAllocWawOnlyWritePropagating_test import AxiCaheWriteAllocWawOnlyWritePropagatingTCs
+from hwtLib.amba.axi_comp.cache.cacheWriteAllocWawOnlyWritePropagating_test import AxiCacheWriteAllocWawOnlyWritePropagatingTCs
 from hwtLib.amba.axi_comp.cache.pseudo_lru_test import PseudoLru_TC
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar_test import\
     AxiInterconnectMatrixAddrCrossbar_TCs
@@ -456,7 +456,7 @@ suite = testSuiteFromTCs(
     *AxiWriteAggregator_TCs,
     *AxiReadAggregator_TCs,
     *AxiStoreQueueWritePropagating_TCs,
-    *AxiCaheWriteAllocWawOnlyWritePropagatingTCs,
+    *AxiCacheWriteAllocWawOnlyWritePropagatingTCs,
 
     Axi_ag_TC,
     Axi4_streamToMemTC,
