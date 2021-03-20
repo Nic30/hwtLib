@@ -5,7 +5,7 @@ import unittest
 
 from hwt.hdl.constants import Time
 from hwt.pyUtils.arrayQuery import take, iter_with_last
-from hwt.simulator.simTestCase import SimTestCase,\
+from hwt.simulator.simTestCase import SimTestCase, \
     simpleRandomizationProcess
 from hwtLib.amba.axis_comp.fifoMeasuring import AxiS_fifoMeasuring
 from pyMathBitPrecise.bit_utils import mask, mask_bytes
@@ -243,7 +243,7 @@ class AxiS_fifoMeasuringTC(SimTestCase):
                 words += 1
 
             frame = []
-            for last, (_d, _mask,  _last) in iter_with_last(take(data, words)):
+            for last, (_d, _mask, _last) in iter_with_last(take(data, words)):
                 self.assertValEqual(_last, last)
                 _mask = int(_mask)
                 _d.val = mask_bytes(_d.val, _mask, size_of_word)
