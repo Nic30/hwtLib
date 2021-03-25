@@ -56,8 +56,8 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         swap_container_type = self.TRANSACTION_STATE_T.field_by_name["original_data"].dtype
         assert swap_container_type is self.MAIN_STATE_T, (swap_container_type, self.MAIN_STATE_T)
 
-    def key_compare(self, k0, k1):
-        return k0._eq(k1)
+    def key_compare(self, st0: OOOOpPipelineStage, st1: OOOOpPipelineStage):
+        return st0.data.key._eq(st1.original_data.key)
 
     def propagate_trans_st(self, stage_from: OOOOpPipelineStage, stage_to: OOOOpPipelineStage):
         """
@@ -68,7 +68,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         src = stage_from.transaction_state
         dst = stage_to.transaction_state
         if stage_to.index == PIPELINE_CONFIG.WRITE_BACK - 1:
-            key_match = rename_signal(self, stage_from.data.item_valid & self.key_compare(stage_from.data.key, src.original_data.key), "key_match")
+            key_match = rename_signal(self, stage_from.data.item_valid & self.key_compare(stage_from, src), "key_match")
             op = stage_from.transaction_state.operation
             return [
                 dst.key_match(key_match),
@@ -123,6 +123,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
             #  not match not swap, keep as it is
             dst(src),
         )
+
 
 def _example_OooOpExampleCounterHashTable():
     u = OooOpExampleCounterHashTable()
