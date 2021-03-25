@@ -344,10 +344,15 @@ class BusEndpoint(Unit):
                                  "_addr_tmp", Bits(self.ADDR_WIDTH))
             addr_tmp(src_addr_sig - _addr)
 
-        addr_h = bitsOfSubAddr + bitsForAlignment
-        connectedAddr = dst_addr_sig(
-            addr_tmp[addr_h:bitsForAlignment]
-        )
+        if bitsOfSubAddr == 0:
+            # :note: bitsOfSubAddr could be 0 if target array has 1 item
+            assert dst_addr_sig._dtype.bit_length() == 1, dst_addr_sig._dtype
+            connectedAddr = dst_addr_sig(0)
+        else:
+            addr_h = bitsOfSubAddr + bitsForAlignment
+            connectedAddr = dst_addr_sig(
+                addr_tmp[addr_h:bitsForAlignment]
+            )
 
         return (addrIsInRange, connectedAddr)
 
