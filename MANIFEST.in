@@ -2,7 +2,6 @@ include README.md
 include MANIFEST.in
 
 # find . -name "*.vhd" -o -name "*.v" -o -name "*.cpp" -o -name "*.xdc" -o -name "*.png" | sort | sed 's|\./|include |g'
-include hwtLib/examples/arithmetic/multiplier_booth.png
 include hwtLib/examples/arithmetic/VhdlVectorAutoCastExample.vhd
 include hwtLib/examples/EmptyUnitWithSpi.vhd
 include hwtLib/examples/hierarchy/GroupOfBlockrams.vhd
@@ -67,9 +66,12 @@ include hwtLib/tests/serialization/AssignToASliceOfReg1a.vhd
 include hwtLib/tests/serialization/AssignToASliceOfReg1b.vhd
 include hwtLib/tests/serialization/AssignToASliceOfReg2a.vhd
 include hwtLib/tests/serialization/AssignToASliceOfReg2b.vhd
+include hwtLib/tests/serialization/AssignToASliceOfReg3a.vhd
+include hwtLib/tests/serialization/AssignToASliceOfReg3b.vhd
+include hwtLib/tests/serialization/AssignToASliceOfReg3c.vhd
+include hwtLib/tests/serialization/AssignToASliceOfReg3d.vhd
 include hwtLib/tests/serialization/ExampleA.vhd
 include hwtLib/tests/serialization/SpiMaster.vhd
 include hwtLib/tests/serialization/TernaryInConcatExample.vhd
 include hwtLib/tests/serialization/TmpVarExample.vhd
 include hwtLib/tests/synthesizer/interfaceLevel/UnitWithGenericOfChild.vhd
-
