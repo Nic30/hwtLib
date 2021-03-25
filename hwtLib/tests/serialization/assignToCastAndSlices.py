@@ -10,7 +10,7 @@ Problem list:
 
 """
 
-from hwt.code import If
+from hwt.code import If, Switch
 from hwt.interfaces.std import VectSignal, Signal
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.unit import Unit
@@ -206,8 +206,89 @@ class AssignToASliceOfReg2b(Unit):
         o(r)
 
 
+class AssignToASliceOfReg3a(Unit):
+    """
+    Something not assigned by index at the end and then whole signal assigned.
+    """
+
+    def _declr(self):
+        addClkRstn(self)
+        i = self.data_in = AddrDataBitMaskHs()
+        i.ADDR_WIDTH = 2
+        i.DATA_WIDTH = 8
+        self.data_out = VectSignal(4 * 8)._m()
+
+    def _impl(self):
+        din, o = self.data_in, self.data_out
+        r = self._reg("r", self.data_out._dtype, def_val=0)
+        Switch(din.addr).add_cases(
+            ((i, r[(i + 1) * 8:i * 8](din.data))
+             for i in range(3))
+        ).Default(
+            r(123)
+        )
+        din.rd(1)
+        o(r)
+
+
+class AssignToASliceOfReg3b(AssignToASliceOfReg3a):
+    """
+    Something not assigned by index in the middle and then whole signal assigned.
+    """
+
+    def _impl(self):
+        din, o = self.data_in, self.data_out
+        r = self._reg("r", self.data_out._dtype, def_val=0)
+        Switch(din.addr)\
+        .Case(0,
+              r[8:0](din.data)
+        ).Case(2,
+              r[24:16](din.data)
+        ).Case(3,
+              r[32:24](din.data)
+        ).Default(
+            r(123)
+        )
+        din.rd(1)
+        o(r)
+
+
+class AssignToASliceOfReg3c(AssignToASliceOfReg3a):
+    """
+    Something not assigned by index at the beggining and then whole signal assigned.
+    """
+
+    def _impl(self):
+        din, o = self.data_in, self.data_out
+        r = self._reg("r", self.data_out._dtype, def_val=0)
+        Switch(din.addr).add_cases(
+            ((i, r[(i + 1) * 8:i * 8](din.data))
+             for i in range(1, 4))
+        ).Default(
+            r(123)
+        )
+        din.rd(1)
+        o(r)
+
+class AssignToASliceOfReg3d(AssignToASliceOfReg3a):
+    """
+    Only a small fragment assigned and then whole signal assigned.
+    """
+
+    def _impl(self):
+        din, o = self.data_in, self.data_out
+        r = self._reg("r", self.data_out._dtype, def_val=0)
+        Switch(din.addr)\
+        .Case(1,
+              r[16:8](din.data)
+        ).Default(
+            r(123)
+        )
+        din.rd(1)
+        o(r)
+
 if __name__ == '__main__':
     from hwt.synthesizer.utils import to_rtl_str
 
-    print(to_rtl_str(AssignToASliceOfReg2a()))
+    print(to_rtl_str(AssignToASliceOfReg3d()))
 

@@ -2,15 +2,17 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.defs import BIT
 from hwt.interfaces.std import VectSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.peripheral.spi.master import SpiMaster
 from hwtLib.tests.serialization.assignToCastAndSlices import AssignToASlice0, \
     AssignToASlice1, AssignToASlice2, AssignToASliceOfReg0, \
-    AssignToASliceOfReg1a, AssignToASliceOfReg1b, AssignToASliceOfReg2a, AssignToASliceOfReg2b
-from hwt.hdl.types.defs import BIT
-from hwt.hdl.types.bits import Bits
+    AssignToASliceOfReg1a, AssignToASliceOfReg1b, AssignToASliceOfReg2a, AssignToASliceOfReg2b, \
+    AssignToASliceOfReg3a, AssignToASliceOfReg3b, AssignToASliceOfReg3c, \
+    AssignToASliceOfReg3d
 
 
 class TernaryInConcatExample(Unit):
@@ -80,6 +82,22 @@ class Vhdl2008Serializer_TC(BaseSerializationTC):
     def test_AssignToASliceOfReg2b(self):
         u = AssignToASliceOfReg2b()
         self.assert_serializes_as_file(u, "AssignToASliceOfReg2b.vhd")
+
+    def test_AssignToASliceOfReg3a(self):
+        u = AssignToASliceOfReg3a()
+        self.assert_serializes_as_file(u, "AssignToASliceOfReg3a.vhd")
+
+    def test_AssignToASliceOfReg3b(self):
+        u = AssignToASliceOfReg3b()
+        self.assert_serializes_as_file(u, "AssignToASliceOfReg3b.vhd")
+
+    def test_AssignToASliceOfReg3c(self):
+        u = AssignToASliceOfReg3c()
+        self.assert_serializes_as_file(u, "AssignToASliceOfReg3c.vhd")
+
+    def test_AssignToASliceOfReg3d(self):
+        u = AssignToASliceOfReg3d()
+        self.assert_serializes_as_file(u, "AssignToASliceOfReg3d.vhd")
 
 
 if __name__ == '__main__':
