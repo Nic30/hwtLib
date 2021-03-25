@@ -182,7 +182,7 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
             sk_stashes = []
             # for all choices in union
             for choice in tPart:
-                tmp = self._sig("union_tmp_", Bits(w))
+                tmp = self._sig("union_tmp_", Bits(w), nop_val=None)
                 intfOfChoice = tToIntf[choice.tmpl.getFieldPath()]
                 _, _isSelected, isSelectValid = \
                     AxiS_frameParserFieldConnector.choiceIsSelected(self, intfOfChoice)
