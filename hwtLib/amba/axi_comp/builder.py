@@ -6,6 +6,9 @@ from hwtLib.amba.axi_comp.buff import AxiBuff
 from hwtLib.amba.axi_comp.buff_cdc import AxiBuffCdc
 from hwtLib.amba.axi_comp.resize import AxiResize
 from hwtLib.amba.axi_comp.to_axiLite import Axi_to_AxiLite
+from hwtLib.avalon.mm import AvalonMM
+from hwtLib.avalon.axiToMm import Axi4_to_AvalonMm
+from hwt.hdl.constants import READ
 
 
 class AxiBuilder(AbstractComponentBuilder):
@@ -53,6 +56,7 @@ class AxiBuilder(AbstractComponentBuilder):
 
         :param items: number of items in buffer
         """
+
         def applyParams(u: AxiBuff):
             u.ADDR_BUFF_DEPTH = addr_items
             u.DATA_BUFF_DEPTH = data_items
@@ -116,7 +120,7 @@ class AxiBuilder(AbstractComponentBuilder):
         if not issubclass(axi_cls, (Axi3, Axi4)):
             return self._genericInstance(Axi_to_AxiLite, "axi_to_AxiLite")
 
-        def applyParams(u):
+        def applyParams(u: AxiLite_to_Axi):
             u.ID_WIDTH = id_width
 
         get_intf_cls = self.getInfCls
@@ -126,3 +130,16 @@ class AxiBuilder(AbstractComponentBuilder):
                                          set_params=applyParams)
         finally:
             self.getInfCls = get_intf_cls
+
+    def to_avalon_mm(self, R_DATA_FIFO_DEPTH=16, R_SIZE_FIFO_DEPTH=16, RW_PRIORITY=READ):
+        if not issubclass(self.end.__class__, Axi4):
+            raise NotImplementedError(self.end.__class__)
+
+        def applyParams(u: Axi4_to_AvalonMm):
+            u.RW_PRIORITY = RW_PRIORITY
+            u.MAX_BURST = 2 ** (self.end.LEN_WIDTH + 1)
+            u.R_DATA_FIFO_DEPTH = R_DATA_FIFO_DEPTH
+            u.R_SIZE_FIFO_DEPTH = R_SIZE_FIFO_DEPTH
+
+        return self._genericInstance(lambda x: Axi4_to_AvalonMm(), "axi4_to_AvalonMM",
+                                     set_params=applyParams)
