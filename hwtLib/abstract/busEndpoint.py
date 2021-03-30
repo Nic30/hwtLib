@@ -178,7 +178,7 @@ class BusEndpoint(Unit):
                 p = BramPort_withoutClk()
                 assert isinstance(t.element_t, Bits), t.element_t
                 p.DATA_WIDTH = t.element_t.bit_length()
-                p.ADDR_WIDTH = log2ceil(t.size - 1)
+                p.ADDR_WIDTH = log2ceil(t.size)
             else:
                 raise NotImplementedError(t)
 
