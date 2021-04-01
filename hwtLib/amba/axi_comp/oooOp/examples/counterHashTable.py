@@ -57,7 +57,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         assert swap_container_type is self.MAIN_STATE_T, (swap_container_type, self.MAIN_STATE_T)
 
     def key_compare(self, st0: OOOOpPipelineStage, st1: OOOOpPipelineStage):
-        return st0.data.key._eq(st1.original_data.key)
+        return st0.data.item_valid & st1.original_data.item_valid & st0.data.key._eq(st1.original_data.key)
 
     def instruction_supports_forwarding(self, st: OOOOpPipelineStage):
         return ~st.transaction_state.operation._eq(self.OPERATION.SWAP)
@@ -76,10 +76,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         src = stage_from.transaction_state
         dst = stage_to.transaction_state
         if stage_to.index == PIPELINE_CONFIG.WRITE_BACK - 1:
-            key_match = rename_signal(self,
-                                      stage_from.data.item_valid &
-                                      #stage_to.data.item_valid &
-                                      self.key_compare(stage_from, src), "key_match")
+            key_match = rename_signal(self, self.key_compare(stage_from, src), "key_match")
             return [
                 dst.key_match(key_match),
                 dst(src, exclude=[dst.key_match]),
@@ -126,7 +123,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         prev_st_op = prev_st.transaction_state.operation
 
         return  If(prev_st.valid,
-                    If(prev_st.transaction_state.key_match & In(prev_st_op, [OP.LOOKUP, OP.LOOKUP_OR_SWAP]),
+                    If(prev_st.data.item_valid & prev_st.transaction_state.key_match & In(prev_st_op, [OP.LOOKUP, OP.LOOKUP_OR_SWAP]),
                         # lookup or lookup_or_swap with found
                         dst.item_valid(src.item_valid),
                         dst.key(src.key),
@@ -136,7 +133,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
                         dst(prev_st.transaction_state.original_data) # the data should be swapped from prev_st.data
                         if dst_stage.index == self.PIPELINE_CONFIG.WRITE_BACK and src_stage.index == self.PIPELINE_CONFIG.WRITE_BACK - 1 else
                         dst(src),
-                    ).Elif(~prev_st.transaction_state.key_match,
+                    ).Else(
                         #  not match not swap, keep as it is (and pass in the pipeline)
                         dst(src),
                     )
