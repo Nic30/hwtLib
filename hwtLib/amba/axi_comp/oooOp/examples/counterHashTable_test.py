@@ -40,26 +40,8 @@ class OooOpExampleCounterHashTable_TC(SimTestCase):
     @classmethod
     def setUpClass(cls):
         u = cls.u = OooOpExampleCounterHashTable()
-        # MAIN_STATE_T = HStruct(
-        #     (BIT, "item_valid"),
-        #     (Bits(32), "key"),
-        #     (Bits(self.DATA_WIDTH - 32 - 1), "value"),
-        # )
-        # # the transaction always just increments the counter
-        # # so there is no need for transaction state
-        # TRANSACTION_STATE_T = HStruct(
-        #     # if true the key was modified during processing
-        #     # and we need to recirculate the transaction in pipeline
-        #     # (which should be done by parent component and it does not happen automatically)
-        #     (BIT, "reset"),
-        #     (self.MAIN_STATE_T, "data"),
-        #     # for output 1 if key was same as key in lookup transaction
-        #     (BIT, "key_match"),
-        #     (Bits(2), "operation"), # :see: :class:`~.OPERATION`
-        # )
-
         u.ID_WIDTH = 2
-        u.ADDR_WIDTH = u.ID_WIDTH  + 3
+        u.ADDR_WIDTH = u.ID_WIDTH + 3
         cls.compileSim(u)
 
     def setUp(self):
@@ -78,7 +60,7 @@ class OooOpExampleCounterHashTable_TC(SimTestCase):
 
     def _test_incr(self, inputs, randomize=False, mem_init={}):
         u = self.u
-        ADDR_ITEM_STEP = 2 **  u.ADDR_OFFSET_W
+        ADDR_ITEM_STEP = 2 ** u.ADDR_OFFSET_W
         for i in range(2 ** u.ADDR_WIDTH // ADDR_ITEM_STEP):
             v = mem_init.get(i, 0)
             if v != 0:
@@ -123,63 +105,68 @@ class OooOpExampleCounterHashTable_TC(SimTestCase):
                     (key_vld, key, data),
                     _,
                     operation
-                )
+                ) # transaction_state
             ) = _in
             (
                 o_addr,
-                (o_found_key_vld, o_found_key, o_found_data),
+                (o_found_key_vld, o_found_key, o_found_data), # main state
                 (
                     o_reset,
-                    (o_key_vld, o_key, o_data),
+                    (o_key_vld, o_key, o_data), # orig item
                     o_match,
                     o_operation
-                ),
+                ), # transaction_state
             ) = _out
             # None or tuple(item_valid, key, data)
             cur = mem.get(addr, None)
             aeq = self.assertValEqual
             aeq(o_addr, addr)
-            if operation == OP.LOOKUP:
+            was_found = cur is not None and cur[0] and int(cur[1]) == key
+            if was_found and (operation == OP.LOOKUP or operation == OP.LOOKUP_OR_SWAP):
                 # lookup and increment if found
-                if cur is not None and cur[0] and int(cur[1]) == key:
-                    # lookup sucess
-                    aeq(o_reset, 0)
-                    aeq(o_match, 1)
-                    aeq(o_found_key_vld, 1)
-                    aeq(o_found_key, key)
-                    aeq(o_found_data, cur[2] + 1)
-                    aeq(o_found_key_vld, 1)
+                aeq(o_reset, 0)
+                aeq(o_match, 1)
+                aeq(o_found_key_vld, 1)
+                aeq(o_found_key, key)
+                aeq(o_found_data, cur[2] + 1)
+                aeq(o_found_key_vld, 1)
 
-                    mem[addr] = (1, key, int(o_found_data))
+                mem[addr] = (1, key, int(o_found_data))
+            elif not was_found and operation == OP.LOOKUP:
+                # lookup fail
+                aeq(o_reset, 0)
+                aeq(o_match, 0)
+                # key remained same
+                aeq(o_key_vld, key_vld)
+                aeq(o_key, key)
+                aeq(o_data, data)
+                # there was nothing so nothig should have been found
+                aeq(o_found_key_vld, int(cur is not None and cur[0]))
 
+            elif (not was_found and operation == OP.LOOKUP_OR_SWAP) or operation == OP.SWAP:
+                # swap
+                # check returned item is the one which was at instr. input
+                aeq(o_reset, 0)
+                cur_key_vld = cur is not None and cur[0]
+                if key_vld:
+                    _o_match = cur_key_vld and int(cur[1]) == key
+                    aeq(o_match, int(_o_match))
+                aeq(o_found_key, key)
+                aeq(o_found_key_vld, key_vld)
+                aeq(o_found_data, data)
+
+                # check orig item
+                if cur is None:
+                    aeq(o_key, None)
+                    aeq(o_key_vld, None)
+                    aeq(o_data, None)
                 else:
-                    # lookup fail
-                    aeq(o_reset, 0)
-                    aeq(o_match, 0)
-                    # key remained same
-                    aeq(o_key_vld, key_vld)
-                    aeq(o_key, key)
-                    aeq(o_data, data)
-                    # there was nothing so nothig should have been found
-                    aeq(o_found_key_vld, int(cur is not None and cur[0]))
+                    aeq(o_key, cur[1])
+                    aeq(o_key_vld, cur[0])
+                    aeq(o_data, cur[2])
 
-            elif operation == OP.LOOKUP_OR_SWAP:
-                # lookup and increment or swap if not found
-                if cur is not None and cur[0] and int(cur[1]) == key:
-                    # lookup sucess
-                    aeq(o_reset, 0)
-                    aeq(o_match, 1)
-                    aeq(o_found_key_vld, 1)
-                    aeq(o_found_key, key)
-                    aeq(o_found_data, cur[2] + 1)
-                    aeq(o_found_key_vld, 1)
-                    mem[addr] = (1, key, int(o_found_data))
-                else:
-                    # swap
-                    raise NotImplementedError()
-            elif operation == OP.SWAP:
-                # swap no matter if the key was found or not, do not increment
-                raise NotImplementedError()
+                mem[addr] = (int(key_vld), key, data)
+
             else:
                 raise ValueError(operation)
 
@@ -243,6 +230,25 @@ class OooOpExampleCounterHashTable_TC(SimTestCase):
             mem_init={1: MState(99, 20)}
         )
 
+    def test_1x_swap_delete(self):
+        self._test_incr(
+            [(1, TState(None, None, OP.SWAP)),
+             # (1, TState(99, 123, OP.LOOKUP)), # [todo] write forwarding on original_state for swap ops.
+              ],
+            mem_init={1: MState(99, 20)}
+        )
+
+    def test_1x_swap_delete_unallocated(self):
+        self._test_incr(
+            [(1, TState(None, None, OP.SWAP)), # delete of deleted
+             (1, TState(99, 12, OP.LOOKUP)), # search of non existing
+             (1, TState(100, 33, OP.SWAP)), # insert
+             (1, TState(99, 12, OP.LOOKUP)), # search of diffeent
+             (1, TState(100, None, OP.LOOKUP)), # search of existing
+            ],
+            mem_init={1: MState(None, None)}
+        )
+
     def test_no_comb_loops(self):
         s = CombLoopAnalyzer()
         s.visit_Unit(self.u)
@@ -258,7 +264,7 @@ class OooOpExampleCounterHashTable_TC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(OooOpExampleCounterHashTable_TC('test_r_100x_lookup_found_not_found_mix'))
+    # suite.addTest(OooOpExampleCounterHashTable_TC('test_r_100x_lookup_found_not_found_mix'))
     suite.addTest(unittest.makeSuite(OooOpExampleCounterHashTable_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

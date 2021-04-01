@@ -159,6 +159,9 @@ class OutOfOrderCummulativeOp(Unit):
         ar.addr(Concat(din_data.addr, Bits(self.ADDR_OFFSET_W).from_py(0)))
         self._axi_addr_defaults(ar, 1)
 
+    def instruction_supports_forwarding(self, st: OOOOpPipelineStage):
+        return True
+
     def collision_detector(self, pipeline: List[OOOOpPipelineStage]) -> List[List[RtlSignal]]:
         """
         Search for address access collisions in pipeline and store the result of colision check to registers for
@@ -202,13 +205,13 @@ class OutOfOrderCummulativeOp(Unit):
                 c = self._sig(f"{cd.name:s}_tmp")
                 # Resolve if dst stage should load from src stage in next clock cycle
                 If(~dst.load_en & ~src.load_en,
-                    c(does_collinde(dst, src)),
+                    c(does_collinde(dst, src) & self.instruction_supports_forwarding(dst)),
                 ).Elif(~dst.load_en & src.load_en,
-                    c(does_collinde(dst, src_prev))
+                    c(does_collinde(dst, src_prev) & self.instruction_supports_forwarding(dst))
                 ).Elif(dst.load_en & ~src.load_en,
-                    c(does_collinde(dst_prev, src))
+                    c(does_collinde(dst_prev, src) & self.instruction_supports_forwarding(dst_prev))
                 ).Elif(dst.load_en & src.load_en,
-                    c(does_collinde(dst_prev, src_prev))
+                    c(does_collinde(dst_prev, src_prev) & self.instruction_supports_forwarding(dst_prev))
                 ).Else(
                     c(0)
                 )

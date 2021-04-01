@@ -8,6 +8,7 @@ from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwtLib.amba.axi_comp.oooOp.outOfOrderCummulativeOp import OutOfOrderCummulativeOp
 from hwtLib.amba.axi_comp.oooOp.utils import OOOOpPipelineStage
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 
 class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
@@ -59,6 +60,9 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
     def key_compare(self, st0: OOOOpPipelineStage, st1: OOOOpPipelineStage):
         return st0.data.key._eq(st1.original_data.key)
 
+    def instruction_supports_forwarding(self, st: OOOOpPipelineStage):
+        return ~st.transaction_state.operation._eq(self.OPERATION.SWAP)
+
     def propagate_trans_st(self, stage_from: OOOOpPipelineStage, stage_to: OOOOpPipelineStage):
         """
         Pass the state of operation (lookup/swap) in pipeline
@@ -68,17 +72,24 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         src = stage_from.transaction_state
         dst = stage_to.transaction_state
         if stage_to.index == PIPELINE_CONFIG.WRITE_BACK - 1:
-            key_match = rename_signal(self, stage_from.data.item_valid & self.key_compare(stage_from, src), "key_match")
-            op = stage_from.transaction_state.operation
+            key_match = rename_signal(self,
+                                      stage_from.data.item_valid &
+                                      #stage_to.data.item_valid &
+                                      self.key_compare(stage_from, src), "key_match")
             return [
                 dst.key_match(key_match),
-                If(stage_from.valid & (op._eq(self.OPERATION.SWAP) | (op._eq(self.OPERATION.LOOKUP_OR_SWAP) & ~key_match)),
-                    # swap or lookup_or_swap with not found, wee need to store original key
+                dst(src, exclude=[dst.key_match]),
+            ]
+        elif stage_to.index == PIPELINE_CONFIG.WRITE_BACK:
+            op = stage_from.transaction_state.operation
+            return [
+                If(stage_from.valid & (op._eq(self.OPERATION.SWAP) | (op._eq(self.OPERATION.LOOKUP_OR_SWAP) & ~src.key_match)),
+                    # swap or lookup_or_swap with not found, we need to store original record from table
                     # as specified by :attr:`OooOpExampleCounterHashTable.OPERATION`
                     dst.original_data(stage_from.data),
-                    dst(src, exclude=[dst.original_data, dst.key_match])
+                    dst(src, exclude=[dst.original_data]),
                 ).Else(
-                    dst(src, exclude=[dst.key_match])
+                    dst(src)
                 )
             ]
         else:
@@ -111,18 +122,22 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         OP = self.OPERATION
         prev_st_op = prev_st.transaction_state.operation
 
-        return If(prev_st.valid & prev_st.transaction_state.key_match & In(prev_st_op, [OP.LOOKUP, OP.LOOKUP_OR_SWAP]),
-            # lookup or lookup_or_swap with found
-            dst.item_valid(src.item_valid),
-            dst.key(src.key),
-            self.main_op_on_lookup_match_update(dst_stage, src_stage),
-        ).Elif(prev_st.valid & prev_st_op._eq(OP.SWAP),
-            # swap or lookup_or_swap with not found
-            dst(prev_st.data),
-        ).Elif(prev_st.valid & ~prev_st.transaction_state.key_match,
-            #  not match not swap, keep as it is
-            dst(src),
-        )
+        return  If(prev_st.valid,
+                    If(prev_st.transaction_state.key_match & In(prev_st_op, [OP.LOOKUP, OP.LOOKUP_OR_SWAP]),
+                        # lookup or lookup_or_swap with found
+                        dst.item_valid(src.item_valid),
+                        dst.key(src.key),
+                        self.main_op_on_lookup_match_update(dst_stage, src_stage),
+                    ).Elif(In(prev_st_op, [OP.SWAP, OP.LOOKUP_OR_SWAP]),
+                        # swap or lookup_or_swap with not found
+                        dst(prev_st.transaction_state.original_data) # the data should be swapped from prev_st.data
+                        if dst_stage.index == self.PIPELINE_CONFIG.WRITE_BACK and src_stage.index == self.PIPELINE_CONFIG.WRITE_BACK - 1 else
+                        dst(prev_st.data),
+                    ).Elif(~prev_st.transaction_state.key_match,
+                        #  not match not swap, keep as it is (and pass in the pipeline)
+                        dst(src),
+                    )
+                )
 
 
 def _example_OooOpExampleCounterHashTable():
