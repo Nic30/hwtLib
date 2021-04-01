@@ -1,6 +1,5 @@
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
-
 from hwtLib.types.ctypes import uint8_t, uint16_t
 
 
@@ -93,3 +92,25 @@ descriptor_interface_t = HStruct(
     (uint8_t, "iInterface"),
 )
 
+
+class DEVICE_CLASS():
+    UNSPECIFIED = 0x00
+    AUDIO = 0x01
+    CDC_control = 0x02  # Communications and CDC Control
+    HID = 0x03  # Human Interface Device
+    PID = 0x05  # Physical Interface Device
+    IMAGE = 0x06
+    PRINTER = 0x07
+    MASS_STORAGE = 0x08
+    USB_HUB = 0x09
+    CDC_DATA = 0x0A
+    SMART_CARD = 0x0B
+    CONTENT_SECURITY = 0x0D
+    VIDEO = 0x0E
+    PERSONAL_HEALTHCARE = 0x0F
+    DIAGNOSTIC_DEVICE = 0xDC
+    WIRELESS_CONTROLLER = 0xE0
+    MISCELLANEOUS = 0xEF
+    APPLICATION_SPECIFIC = 0xFE
+    VENDOR_SPECIFIC = 0xFF
+# https://beyondlogic.org/usbnutshell/usb6.shtml
