@@ -12,6 +12,8 @@ from hwtLib.logic.crcPoly import CRC_1, CRC_8_CCITT, CRC_16_CCITT, CRC_32, \
 from pyMathBitPrecise.bit_utils import get_bit, bit_list_to_int, mask, \
     bit_list_reversed_endianity, bit_list_reversed_bits_in_bytes, reverse_bits
 from hwt.hdl.types.bits import Bits
+from hwtLib.logic.crc_test_utils import NaiveCrcAccumulator, naive_crc
+from hwtSimApi.constants import CLK_PERIOD
 
 
 def stoi(s):
@@ -22,44 +24,6 @@ def stoi(s):
 
 def crcToBf(crc):
     return [get_bit(crc.POLY, i) for i in range(crc.WIDTH)]
-
-
-def naive_crc(dataBits, crcBits, polyBits,
-              refin=False, refout=False):
-    crc_mask = CrcComb.buildCrcXorMatrix(len(dataBits), polyBits)
-
-    dataBits = bit_list_reversed_endianity(dataBits)
-    # print("")
-    # for r in crc_mask:
-    #    print(r)
-    if refin:
-        # reflect bytes in input data signal
-        # whole signal should not be reflected if DW > PW
-        # polyBits = list(reversed(polyBits))
-        dataBits = bit_list_reversed_bits_in_bytes(dataBits)
-        # crcBits = reversedBitsInBytes(crcBits)
-
-    res = []
-    for stateMask, dataMask in crc_mask:
-        # if refin:
-        #    stateMask = reversed(stateMask)
-        #    dataMask = reversed(dataMask)
-
-        v = 0
-        for useBit, b in zip(stateMask, crcBits):
-            if useBit:
-                v ^= b
-
-        for useBit, b in zip(dataMask, dataBits):
-            if useBit:
-                v ^= b
-
-        res.append(v)
-
-    assert len(res) == len(polyBits)
-    if refout:
-        res = reversed(res)
-    return bit_list_to_int(res)
 
 
 # http://www.sunshine2k.de/coding/javascript/crc/crc_js.html
@@ -111,6 +75,55 @@ class CrcCombTC(SimTestCase):
 
         crc = 0x20
         self.assertValSequenceEqual(u.dataOut._ag.data, [crc])
+
+    def test_crc5_usb(self):
+        r = NaiveCrcAccumulator(CRC_5_USB)
+        for c in "123456789":
+            r.takeWord(ord(c), 8)
+        self.assertEqual(r.getFinalValue(), 19)
+
+        self.setUpCrc(CRC_5_USB, 11,
+                      refin=False,  # because bits are already reflected in data
+                      bigendian=True)
+        u = self.u
+
+        expected_crc = []
+
+        def check(v: int, crc5: int):
+            _crc5 = r.getFinalValue()
+            self.assertEqual(_crc5, crc5, "{0:05b} != {1:05b}".format(
+                _crc5, crc5))
+            u.dataIn._ag.data.append(v)
+            expected_crc.append(reverse_bits(crc5, 5))
+
+        def check_addr_ep(addr: int, endp: int, crc5: int):
+            assert addr & mask(7) == addr
+            assert endp & mask(4) == endp
+
+            r.reset()
+            r.takeWord(addr, 7)
+            r.takeWord(endp, 4)
+            check((reverse_bits(addr, 7) << 4) | reverse_bits(endp, 4), crc5)
+
+        def check_11b(v, crc5):
+            assert v & mask(11) == v
+            r.reset()
+            r.takeWord(v, 11)
+            check(reverse_bits(v, 11), crc5)
+
+        # from Cypress: USB 101: An Introduction to Universal Serial Bus 2.0
+        check_addr_ep(0, 0, 0x08)
+
+        # from https://www.usb.org/sites/default/files/crcdes.pdf
+        check_addr_ep(0x15, 0xE, 0b10111)
+        check_addr_ep(0x3A, 0xA, 0b11100)
+        check_addr_ep(0x70, 0x4, 0b01110)
+
+        check_11b(0x0710, 0b10100)
+        check_11b(0x0001, 0b10111)
+
+        self.runSim((len(expected_crc) + 1) * CLK_PERIOD)
+        self.assertValSequenceEqual(u.dataOut._ag.data, expected_crc)
 
     def test_crc32_py(self):
         self.assertEqual(crc32(b"aa"), crc32(b"a", crc32(b"a")))
@@ -188,7 +201,7 @@ class CrcCombTC(SimTestCase):
             u.dataIn._ag.data.append(
                stoi(inp),
             )
-            self.runSim(20 * Time.ns, name=os.path.join(self.DEFAULT_LOG_DIR,
+            self.runSim(2 * CLK_PERIOD, name=os.path.join(self.DEFAULT_LOG_DIR,
                                                         f"test_crc32_{i:d}.vcd"))
             out = int(u.dataOut._ag.data[-1])
             ref = crc32(inp) & mask(32)
@@ -198,7 +211,7 @@ class CrcCombTC(SimTestCase):
         inp = b"abcdefgh"
         u = self.setUpCrc(CRC_32, dataWidth=64)
         u.dataIn._ag.data.append(stoi(inp))
-        self.runSim(20 * Time.ns)
+        self.runSim(2 * CLK_PERIOD)
         out = int(u.dataOut._ag.data[-1])
         ref = crc32(inp) & 0xffffffff
         self.assertEqual(out, ref, f"0x{out:08X} 0x{ref:08X}")
@@ -209,7 +222,7 @@ class CrcCombTC(SimTestCase):
             u = self.u
 
             u.dataIn._ag.data.append(stoi(inp))
-            self.runSim(20 * Time.ns, name=os.path.join(self.DEFAULT_LOG_DIR,
+            self.runSim(2 * CLK_PERIOD, name=os.path.join(self.DEFAULT_LOG_DIR,
                                                         f"test_crc16_{i:d}.vcd"))
 
             # crc = 0x449C
@@ -217,41 +230,11 @@ class CrcCombTC(SimTestCase):
             d = u.dataOut._ag.data[0]
             self.assertValEqual(d, ref, (inp, "0x{:x} 0x{:x}".format(int(d), ref)))
 
-    def test_crc5_usb(self):
-        def lsb_first_to_msb_first(val):
-            v = reverse_bits(val & 0b111, 3)
-            v |= reverse_bits(val >> 3, 7) << 3
-            return v
-
-        for i, (inp, ref) in enumerate([
-                # addr=3a, endp=a
-                (0b10101000_111, 0b10111),
-                # addr=3a, endp=a
-                (0b01011100_101, 0b11100),
-                # addr=70, endp=4
-                (0b00001110_010, 0b01110),
-                                        ]):
-            ref = reverse_bits(ref, 5)
-
-            self.setUpCrc(CRC_5_USB, dataWidth=7 + 4,
-                          refin=False,  # because bits are already reflected in data
-                          bigendian=True,
-                          )
-            u = self.u
-            u.dataIn._ag.data.append(inp)
-            trace_file = os.path.join(self.DEFAULT_LOG_DIR,
-                                      f"test_crc5_usb_{i:d}.vcd")
-            self.runSim(20 * Time.ns, name=trace_file)
-
-            d = u.dataOut._ag.data[0]
-            _d = int(d)
-            self.assertValEqual(d, ref, (i, f"{_d:05b} {ref:05b}"))
-
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(CrcCombTC('test_crc5_usb'))
+    # suite.addTest(CrcCombTC('test_crc5_usb'))
     suite.addTest(unittest.makeSuite(CrcCombTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

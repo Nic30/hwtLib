@@ -15,6 +15,7 @@ Library of common CRC configurations
     checksum.
 
 :note: http://reveng.sourceforge.net/crc-catalogue/all.htm
+:note: https://github.com/nanpuyue/crc/blob/master/CRC.txt
 """
 
 
@@ -324,7 +325,7 @@ class CRC_16_DNP(CRC_POLY):
 
 class CRC_16_IBM(CRC_POLY):
     """
-    Used in Bisync, Modbus, USB, ANSI X3.28, SIA DC-07, many others;
+    Used in Bisync, Modbus, ANSI X3.28, SIA DC-07, many others;
     Also known as CRC_16 and CRC_16-ANSI
     """
     POLY = 0x8005
@@ -332,6 +333,15 @@ class CRC_16_IBM(CRC_POLY):
     REFOUT = True
     WIDTH = 16
 
+class CRC_16_USB:
+    POLY=0x8005
+    INIT=0XFFFF
+    REFIN=True
+    REFOUT=True
+    XOROUT=0XFFFF
+    CHECK=0XB4C8
+    RESIDUE=0XB001
+    WIDTH=16
 
 class CRC_16_OpenSafety_A(CRC_POLY):
     "Used in safety fieldbus"
