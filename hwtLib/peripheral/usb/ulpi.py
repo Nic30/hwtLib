@@ -1,6 +1,6 @@
 from hwt.code import Concat
 from hwt.hdl.types.bits import Bits
-from hwt.interfaces.std import Signal, Clk, Rst
+from hwt.interfaces.std import Signal
 from hwt.interfaces.tristate import TristateSig
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
@@ -10,6 +10,11 @@ from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.defs import BIT
 from hwtLib.peripheral.usb.utmi import utmi_function_control_t, \
     utmi_interface_control_t, utmi_otg_control_t, utmi_interrupt_t
+from hwt.simulator.agentBase import SyncAgentBase
+from hwtSimApi.hdlSimulator import HdlSimulator
+from hwtSimApi.triggers import WaitWriteOnly, WaitCombRead
+from hwt.hdl.constants import NOP
+from pyMathBitPrecise.bit_utils import mask
 
 
 class ULPI_TX_CMD():
@@ -107,7 +112,7 @@ class ULPI_REG:
     Transmit_Negative_Width = 0x26
     Receive_Polarity_Recovery = 0x27
 
-    REGS_WIT_SET_AND_CLR = [
+    REGS_WITH_SET_AND_CLR = [
         Function_Control,
         Interface_Control,
         OTG_Control,
@@ -125,7 +130,7 @@ class ULPI_REG:
         By write to this address the pattern on the data bus
         is OR’d with and written into the register.
         """
-        assert addr in ULPI_REG.REGS_WIT_SET_AND_CLR, addr
+        assert addr in ULPI_REG.REGS_WITH_SET_AND_CLR, addr
         return addr + 1
 
     def clr_of(self, addr):
@@ -134,7 +139,7 @@ class ULPI_REG:
         is a mask. If a bit in the mask is set, then
         the corresponding register bit will be set to zero (cleared).
         """
-        assert addr in ULPI_REG.REGS_WIT_SET_AND_CLR, addr
+        assert addr in ULPI_REG.REGS_WITH_SET_AND_CLR, addr
         return addr + 2
 
 
@@ -217,6 +222,9 @@ class Ulpi(Interface):
     """
 
     class DIR:
+        """
+        :note: if dir == PHY the data flows to PHY
+        """
         PHY = 1
         LINK = 0
 
@@ -234,6 +242,129 @@ class Ulpi(Interface):
     def _getIpCoreIntfClass(self):
         return IP_Ulpi
 
+    def _initSimAgent(self, sim:HdlSimulator):
+        self._ag = UlpiAgent(sim, self)
+
+
+class UlpiAgent(SyncAgentBase):
+    """
+    :note: the RX is always from PHY to Link
+        the TX is always from Link to PHY
+    """
+
+    def __init__(self, sim:HdlSimulator, intf, allowNoReset=False,
+        wrap_monitor_and_driver_in_edge_callback=True):
+        SyncAgentBase.__init__(self, sim, intf, allowNoReset=allowNoReset, wrap_monitor_and_driver_in_edge_callback=wrap_monitor_and_driver_in_edge_callback)
+        self.link_to_phy_packets = []
+        self.phy_to_link_packets = []
+
+        self.actual_link_to_phy_packet = []
+        self.actual_phy_to_link_packet = []
+        self.actual_phy_to_link_data = NOP
+
+        self.dir = Ulpi.DIR.PHY
+        self.in_turnarround = False
+        self.reg_interrupt = ulpi_reg_usb_interrupt_status_t.from_py(ulpi_reg_usb_interrupt_status_t_reset_default)
+        self.RxEvent_RxActive = 0
+        self.RxEvent_RxError = 0
+        self.HostDisconnected = 0
+
+    def on_link_to_phy_packet(self, packet: list):
+        # [TODO] could be register write/read which needs to be processed
+        self.link_to_phy_packets.append(packet)
+
+    def build_RX_CMD(self):
+        LineState = 0b00 # SE0
+        inter = self.reg_interrupt
+        if inter.SessEnd & ~inter.SessValid & ~inter.VbusValid:
+            VbusSate = 0b00
+        elif ~inter.SessEnd & ~inter.SessValid & ~inter.VbusValid:
+            VbusSate = 0b01
+        elif inter.SessValid & ~inter.VbusValid:
+            VbusSate = 0b10
+        elif inter.VbusValid:
+            VbusSate = 0b11
+        RxActive = self.RxEvent_RxActive
+        RxError = self.RxEvent_RxError
+        HostDisconnected = self.HostDisconnected
+        if ~RxActive and ~RxError and ~HostDisconnected:
+            RxEvent = 0b00
+        elif RxActive and ~RxError and ~HostDisconnected:
+            RxEvent = 0b01
+        elif RxActive and RxError and ~HostDisconnected:
+            RxEvent = 0b11
+        elif HostDisconnected:
+            RxEvent = 0b10
+        IdGnd = 0
+        alt_int = 0
+        return (alt_int << 7) | (IdGnd << 6) | (RxEvent << 4) | (VbusSate << 2) | LineState
+
+    def data_write(self, v):
+        if v is NOP:
+            v = self.build_RX_CMD()
+        self.intf.data.i._sigInside.write()
+
+    def data_read(self):
+        return self.intf.data.o._sigInside.read()
+
+    def driver(self):
+        """
+        Drive ULPI interface as a PHY does
+        """
+        intf = self.intf
+        yield WaitWriteOnly()
+        if self.in_turnarround:
+            # entirely skip the turnaround cycle
+            self.in_turnarround = False
+            return
+
+        intf.dir._sigInside.write(self.dir)
+        yield WaitCombRead()
+        stp = intf.stp._sigInside.read()
+        try:
+            stp = int(stp)
+        except ValueError:
+            raise AssertionError(
+                ("%r: stp signal for interface %r is in invalid state,"
+                 " this would cause desynchronization") %
+                (self.sim.now, intf))
+
+        en = self.notReset() and self._enabled
+        intf.nxt._sigInside.write(int(en and not stp))
+        if not en:
+            return
+
+        t = intf.data.t._sigInside.read()
+        if self.dir == Ulpi.DIR.PHY:
+            # RX from PHY
+            assert int(t) == 0, (t, "link must not write data when PHY is the master")
+
+            if not stp:
+                # some data in packet, if NOP sending RX_CMD
+                if not self.actual_phy_to_link_packet and self.phy_to_link_packets:
+                    self.actual_phy_to_link_packet = self.phy_to_link_packets.popleft()
+
+                if self.actual_phy_to_link_data is NOP and self.actual_phy_to_link_packet:
+                    self.actual_phy_to_link_data = self.actual_phy_to_link_packet.popleft()
+                else:
+                    self.actual_phy_to_link_data = NOP
+
+                self.data_write(self.actual_phy_to_link_data)
+
+        else:
+            # TX to PHY
+            assert int(t) == mask(8), (t, "link must write data when it is the master")
+
+            if stp:
+                # end of packet, the current data is not valid
+                self.on_link_to_phy_packet(self.actual_link_to_phy_packet)
+
+                self.actual_link_to_phy_packet = []
+                self.dir = Ulpi.DIR.LINK
+                self.in_turnarround = True
+            else:
+                self.actual_link_to_phy_packet.append(self.data_read())
+
 
 class IP_Ulpi(IntfIpMeta):
 
@@ -244,8 +375,8 @@ class IP_Ulpi(IntfIpMeta):
         self.vendor = "xilinx.com"
         self.library = "interface"
         self.map = {
-            #'clk': "CLK", # [todo] need to reference associated clk/rst
-            #'rst': "RST",
+            # 'clk': "CLK", # [todo] need to reference associated clk/rst
+            # 'rst': "RST",
             'dir': 'DIR',
             "nxt": 'NEXT',
             'stp': "STOP",

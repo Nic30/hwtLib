@@ -18,6 +18,7 @@ from hwtLib.peripheral.usb.utmi import Utmi_8b, utmi_interrupt_t
 from pyMathBitPrecise.bit_utils import mask
 
 
+
 class Utmi_to_Ulpi(Unit):
     """
     The ULPI is an interface which reduces the number of signals for UTMI+ interface.
@@ -46,6 +47,41 @@ class Utmi_to_Ulpi(Unit):
         ulpi_dir_q(ulpi_dir)
         turnaround_w = rename_signal(self, ulpi_dir_q ^ ulpi_dir._eq(Ulpi.DIR.PHY), "turnaround_w")
         return turnaround_w
+
+    @staticmethod
+    def parse_RX_CMD(ulpi_data, utmi_linestate_q, utmi_interrupt_q, utmi_rxactive_q, utmi_rxerror_q):
+        return [
+            utmi_linestate_q(ulpi_data[2:0]),
+            Switch(ulpi_data[4:2])\
+            .Case(0b00,
+                  utmi_interrupt_q.SessEnd(1),
+                  utmi_interrupt_q.SessValid(0),
+                  utmi_interrupt_q.VbusValid(0),
+            ).Case(0b01,
+                  utmi_interrupt_q.SessEnd(0),
+                  utmi_interrupt_q.SessValid(0),
+                  utmi_interrupt_q.VbusValid(0),
+            ).Case(0b10,
+                  utmi_interrupt_q.SessValid(1),
+                  utmi_interrupt_q.VbusValid(0),
+            ).Case(0b11,
+                  utmi_interrupt_q.VbusValid(1),
+            ),
+            Switch(ulpi_data[6:4])\
+            .Case(0b00,
+                utmi_rxactive_q(0),
+                utmi_rxerror_q(0)
+            ).Case(0b01,
+                utmi_rxactive_q(1),
+                utmi_rxerror_q(0)
+            ).Case(0b10,
+                utmi_interrupt_q.HostDisconnect(1)
+            ).Case(0b11,
+                utmi_rxactive_q(1),
+                utmi_rxerror_q(1)
+            ),
+            utmi_interrupt_q.IdGnd(ulpi_data[6])
+        ]
 
     def _impl(self):
         ulpi: Ulpi = self.ulpi
@@ -195,36 +231,9 @@ class Utmi_to_Ulpi(Unit):
                     #-----------------------------------------------------------------
                     # Input: RX_CMD (phy status), decode encoded status/event bits from this byte
                     #-----------------------------------------------------------------
-                    utmi_linestate_q(ulpi.data.i[2:0]),
-                    Switch(ulpi.data.i[4:2])\
-                    .Case(0b00,
-                          utmi_interrupt_q.SessEnd(1),
-                          utmi_interrupt_q.SessValid(0),
-                          utmi_interrupt_q.VbusValid(0),
-                    ).Case(0b01,
-                          utmi_interrupt_q.SessEnd(0),
-                          utmi_interrupt_q.SessValid(0),
-                          utmi_interrupt_q.VbusValid(0),
-                    ).Case(0b10,
-                          utmi_interrupt_q.SessValid(1),
-                          utmi_interrupt_q.VbusValid(0),
-                    ).Case(0b11,
-                          utmi_interrupt_q.VbusValid(1),
-                    ),
-                    Switch(ulpi.data.i[6:4])\
-                    .Case(0b00,
-                        utmi_rxactive_q(0),
-                        utmi_rxerror_q(0)
-                    ).Case(0b01,
-                        utmi_rxactive_q(1),
-                        utmi_rxerror_q(0)
-                    ).Case(0b10,
-                        utmi_interrupt_q.HostDisconnect(1)
-                    ).Case(0b11,
-                        utmi_rxactive_q(1),
-                        utmi_rxerror_q(1)
-                    ),
-                    utmi_interrupt_q.IdGnd(ulpi.data.i[6])
+                    self.parse_RX_CMD(ulpi.data.i,
+                        utmi_linestate_q, utmi_interrupt_q,
+                        utmi_rxactive_q, utmi_rxerror_q)
                 )
             ).Else(
                 #-----------------------------------------------------------------

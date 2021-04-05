@@ -1,10 +1,13 @@
-from hwt.synthesizer.interface import Interface
-from hwt.interfaces.std import VectSignal, Signal, Handshaked, VldSynced
-from ipCorePackager.constants import DIRECTION
-from hwt.hdl.types.defs import BIT_N, BIT
-from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.defs import BIT
+from hwt.hdl.types.struct import HStruct
+from hwt.interfaces.std import VectSignal, Signal, Handshaked, VldSynced
 from hwt.interfaces.structIntf import HdlType_to_Interface
+from hwt.synthesizer.interface import Interface
+from ipCorePackager.constants import DIRECTION
+from hwt.interfaces.agents.vldSynced import VldSyncedAgent
+from hwtSimApi.hdlSimulator import HdlSimulator
+from hwtSimApi.agents.base import AgentBase
 
 
 class Utmi_8b_rx(VldSynced):
@@ -17,6 +20,30 @@ class Utmi_8b_rx(VldSynced):
         VldSynced._declr(self)
         self.active = Signal()
         self.error = Signal()
+
+    def _initSimAgent(self, sim: HdlSimulator):
+        self._ag = Utmi_8b_rxAgent(sim, self)
+
+
+class Utmi_8b_rxAgent(VldSyncedAgent):
+
+    def get_data(self):
+        i = self.intf
+        return (i.data.read(),
+                i.active.read(),
+                i.error.read())
+
+    def set_data(self, data):
+        if data is None:
+            d = None
+            a = None
+            e = None
+        else:
+            d, a, e = data
+        i = self.intf
+        return (i.data.write(d),
+                i.active.write(a),
+                i.error.write(e))
 
 
 utmi_function_control_t = HStruct(
@@ -99,6 +126,42 @@ class Utmi_8b(Interface):
         self.interrupt = HdlType_to_Interface().apply(utmi_interrupt_t)
 
         self.tx = Handshaked(masterDir=DIRECTION.IN)
-        self.tx.DATA_WIDTH = 8
-
         self.rx = Utmi_8b_rx()
+        for c in [self.rx, self.tx]:
+            c.DATA_WIDTH = 8
+
+    def _initSimAgent(self, sim:HdlSimulator):
+        self,_ag = Utmi_8bAgent(self, sim)
+
+
+class Utmi_8bAgent(AgentBase):
+    def __init__(self, sim:HdlSimulator, intf):
+        AgentBase.__init__(self, sim, intf)
+        intf.tx._initSimAgent(sim)
+        intf.rx._initSimAgent(sim)
+
+    def getMonitors(self):
+        return [
+           *self.intf.tx.getDrivers(),
+           *self.intf.tx.getMonitors(),
+           self.monitor()
+        ]
+
+    def getDrivers(self):
+        return [
+           *self.intf.tx.getMonitors(),
+           *self.intf.tx.getDrivers(),
+           self.driver()
+        ]
+
+    def monitor(self):
+        """
+        Emulate behavior of link
+        """
+        raise  NotImplementedError()
+
+    def driver(self):
+        """
+        Emulate behavior of PHY
+        """
+        raise  NotImplementedError()
