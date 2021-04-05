@@ -85,22 +85,23 @@ packet_token_t = HStruct(
     (crc5_t, "crc5"),  # :note: not involves PID, only addr, endp
 )
 
-USB_MAX_FRAME_LEN = {
-    USB_VER.USB1_0: 8,
-    USB_VER.USB1_1: 1023,
-    USB_VER.USB2_0: 1024,
-}
+usb1_0_packet_data_t = HStruct(
+    (pid_t, "pid"),
+    (HStream(Bits(8), frame_len=(1, 8)), "data"),
+    (crc16_t, "crc"),  # :note: not involves PID, only data
+)
 
+usb1_1_packet_data_t = HStruct(
+    (pid_t, "pid"),
+    (HStream(Bits(8), frame_len=(1, 1023)), "data"),
+    (crc16_t, "crc"),  # :note: not involves PID, only data
+)
+usb2_0_packet_data_t = HStruct(
+    (pid_t, "pid"),
+    (HStream(Bits(8), frame_len=(1, 1024)), "data"),
+    (crc16_t, "crc"),  # :note: not involves PID, only data
+)
 
-def get_packet_data_t(usb_ver: USB_VER):
-    max_frame_len = USB_MAX_FRAME_LEN[usb_ver]
-    # pid has to be one of DATA_0, DATA_1, DATA_2, DATA_M
-    return HStruct(
-        (pid_t, "pid"),
-        (HStream(Bits(8), frame_len=(1, max_frame_len)), "data")
-        ,
-        (crc16_t, "crc"),  # :note: not involves PID, only data
-    )
 
 """
 There are three type of handshake packets which consist simply of the PID
@@ -125,11 +126,6 @@ packet_sof_t = HStruct(
     (crc5_t, "crc5"),  # :note: not involves PID, only frame_number
 )
 
-request_type_t = HStruct(
-    (Bits(5), "recipient"),
-    (Bits(2), "type"),
-    (Bits(1), "data_transfer_direction"),
-)
 
 
 class REQUEST_TYPE_DIRECTION:
@@ -158,6 +154,11 @@ class REQUEST_TYPE_RECIPIENT:
     ENDPOINT = 2
     OTHER = 3
 
+request_type_t = HStruct(
+    (Bits(5), "recipient"),
+    (Bits(2), "type"),
+    (Bits(1), "data_transfer_direction"),
+)
 
 # used as a data for setup transactions
 device_request_t = HStruct(

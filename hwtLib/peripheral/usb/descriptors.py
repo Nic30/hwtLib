@@ -2,7 +2,6 @@ from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
 from hwtLib.types.ctypes import uint8_t, uint16_t
 
-
 # https://www.beyondlogic.org/usbnutshell/usb5.shtml#EndpointDescriptors
 descriptor_header_t = HStruct(
     (uint8_t, "bLength"),
@@ -113,4 +112,16 @@ class DEVICE_CLASS():
     MISCELLANEOUS = 0xEF
     APPLICATION_SPECIFIC = 0xFE
     VENDOR_SPECIFIC = 0xFF
+
+
+class DESCRIPTOR_TYPE():
+    DEVICE = 1
+    CONFIGURATION = 2
+    STRING = 3
+    INTERFACE = 4
+    ENDPOINT = 5
+    DEVICE_QUALIFIER = 6
+    OTHER_SPEED_CONFIGURATION = 7
+    INTERFACE_POWER = 8
+
 # https://beyondlogic.org/usbnutshell/usb6.shtml
