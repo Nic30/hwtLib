@@ -1,4 +1,5 @@
 from hwt.code import If, Switch, Concat
+from hwt.code_utils import rename_signal
 from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import INT, SLICE, STR, BIT, FLOAT64
@@ -43,13 +44,13 @@ class Showcase0(Unit):
         # component instances
 
     def _impl(self):
-        # internal signals
         a, b, c, clk, cmp_0, cmp_1, cmp_2, cmp_3, cmp_4, cmp_5, contOut, \
         d, e, f, fitted, g, h, i, j, k, out, \
         output, rst_n, sc_signal = \
         self.a, self.b, self.c, self.clk, self.cmp_0, self.cmp_1, self.cmp_2, self.cmp_3, self.cmp_4, self.cmp_5, self.contOut, \
         self.d, self.e, self.f, self.fitted, self.g, self.h, self.i, self.j, self.k, self.out, \
         self.output, self.rst_n, self.sc_signal
+        # internal signals
         const_private_signal = Bits(32, signed=False).from_py(123)
         fallingEdgeRam = self._sig("fallingEdgeRam", Bits(8, signed=True)[4], def_val=None)
         r = self._sig("r", Bits(1), def_val=0)
