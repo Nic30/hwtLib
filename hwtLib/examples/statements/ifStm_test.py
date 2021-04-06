@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.hdl.constants import Time
 from hwt.hdl.operatorDefs import AllOps
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
@@ -15,6 +14,7 @@ from hwtLib.examples.statements.ifStm import SimpleIfStatement, \
     SimpleIfStatement3, SimpleIfStatementMergable, \
     SimpleIfStatementMergable1, SimpleIfStatementMergable2, \
     IfStatementPartiallyEnclosed
+from hwtSimApi.constants import CLK_PERIOD
 
 
 def agInts(interface):
@@ -36,7 +36,7 @@ class IfStmTC(SimTestCase, BaseSerializationTC):
         u.b._ag.data.extend([0, 1, None, 0, 1, None, 1, 0])
         u.c._ag.data.extend([0, 0, 0, 0, 1, 0, 0, 0])
 
-        self.runSim(80 * Time.ns)
+        self.runSim(8 * CLK_PERIOD)
 
         self.assertSequenceEqual([0, 1, None, 0, 1, None, 0, 0], agInts(u.d))
 
@@ -53,12 +53,12 @@ class IfStmTC(SimTestCase, BaseSerializationTC):
         # )
         # d(r)
 
-        u.a._ag.data.extend([1, 1, 1,    0, 0, 0,    1, 0, 1, 0])
+        u.a._ag.data.extend([1, 1, 1, 0, 0, 0, 1, 0, 1, 0])
         u.b._ag.data.extend([0, 1, None, 0, 1, None, 1, 0, 0, 0])
-        u.c._ag.data.extend([0, 0, 0,    0, 1, 0,    1, 0, 1, 0])
-        expected_dd = [      0, 0, 0,    0, 0, 0,    0, 1, 1, 0]
+        u.c._ag.data.extend([0, 0, 0, 0, 1, 0, 1, 0, 1, 0])
+        expected_dd = [      0, 0, 0, 0, 0, 0, 0, 1, 1, 0]
 
-        self.runSim(110 * Time.ns)
+        self.runSim(11 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.d._ag.data, expected_dd)
 
@@ -74,12 +74,12 @@ class IfStmTC(SimTestCase, BaseSerializationTC):
         # )
         # d(r)
 
-        u.a._ag.data.extend([1, 1, 1,       0,    0, 0,     1, 0, 1, 0])
-        u.b._ag.data.extend([0, 1, None,    0,    1, None,  1, 0, 0, 0])
-        u.c._ag.data.extend([0, 0, 0,       0,    1, 0,     1, 0, 1, 0])
-        expected_dd = [   0, 0, 0, None,    None, 0, 0,     1, 1, 0]
+        u.a._ag.data.extend([1, 1, 1, 0, 0, 0, 1, 0, 1, 0])
+        u.b._ag.data.extend([0, 1, None, 0, 1, None, 1, 0, 0, 0])
+        u.c._ag.data.extend([0, 0, 0, 0, 1, 0, 1, 0, 1, 0])
+        expected_dd = [   0, 0, 0, None, None, 0, 0, 1, 1, 0]
 
-        self.runSim(110 * Time.ns)
+        self.runSim(11 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.d._ag.data, expected_dd)
 
@@ -97,12 +97,12 @@ class IfStmTC(SimTestCase, BaseSerializationTC):
         # )
         # d(r)
 
-        u.a._ag.data.extend([0, 1, 1, 1,    0,    0, 0,    1, 0, 1, 0])
-        u.b._ag.data.extend([0, 0, 1, None, 0,    1, None, 1, 0, 0, 0])
-        u.c._ag.data.extend([1, 0, 0, 0,    0,    1, 0,    1, 0, 1, 0])
-        expected_dd = [0, 1, 2, 2,    None, 2, 1,    2, 0, 2]
+        u.a._ag.data.extend([0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0])
+        u.b._ag.data.extend([0, 0, 1, None, 0, 1, None, 1, 0, 0, 0])
+        u.c._ag.data.extend([1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0])
+        expected_dd = [0, 1, 2, 2, None, 2, 1, 2, 0, 2]
 
-        self.runSim(110 * Time.ns)
+        self.runSim(11 * CLK_PERIOD)
         self.assertValSequenceEqual(u.d._ag.data, expected_dd)
 
     def test_resources_SimpleIfStatement2c(self):
@@ -126,12 +126,12 @@ class IfStmTC(SimTestCase, BaseSerializationTC):
         u = SimpleIfStatement3()
         self.compileSimAndStart(u)
 
-        u.a._ag.data.extend([0, 1, 1, 1,    0,    0, 0,    1, 0, 1, 0])
-        u.b._ag.data.extend([0, 0, 1, None, 0,    1, None, 1, 0, 0, 0])
-        u.c._ag.data.extend([1, 0, 0, 0,    0,    1, 0,    1, 0, 1, 0])
+        u.a._ag.data.extend([0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0])
+        u.b._ag.data.extend([0, 0, 1, None, 0, 1, None, 1, 0, 0, 0])
+        u.c._ag.data.extend([1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0])
         expected_dd = [0 for _ in range(11)]
 
-        self.runSim(110 * Time.ns)
+        self.runSim(11 * CLK_PERIOD)
 
         self.assertValSequenceEqual(u.d._ag.data, expected_dd)
 
