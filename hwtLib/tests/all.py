@@ -126,6 +126,7 @@ from hwtLib.examples.simpleWithNonDirectIntConncetion import \
 from hwtLib.examples.simpleWithParam import SimpleUnitWithParamTC
 from hwtLib.examples.simple_test import SimpleTC
 from hwtLib.examples.specialIntfTypes.intfWithArray import InterfaceWithArrayTypesTC
+from hwtLib.examples.statements.codeBlockStm_test import CodeBlokStmTC
 from hwtLib.examples.statements.constCondition import ConstConditionTC
 from hwtLib.examples.statements.constDriver_test import ConstDriverTC
 from hwtLib.examples.statements.forLoopCntrl_test import StaticForLoopCntrlTC
@@ -304,6 +305,7 @@ suite = testSuiteFromTCs(
     ResourceAnalyzer_TC,
     CombLoopAnalysisTC,
     Vhdl2008Serializer_TC,
+    CodeBlokStmTC,
     IfStmTC,
     SwitchStmTC,
     SimpleRomTC,
