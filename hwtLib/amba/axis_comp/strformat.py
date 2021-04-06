@@ -2,7 +2,7 @@ from typing import Dict, Tuple, List, Union, Optional
 
 from hdlConvertorAst.to.hdlUtils import iter_with_last
 from hwt.code import If, Switch, SwitchLogic, Or
-from hwt.hdl.statement import HdlStatement
+from hwt.hdl.statements.statement import HdlStatement
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.stream import HStream

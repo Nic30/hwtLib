@@ -4,7 +4,7 @@
 import unittest
 
 from hwt.code import Switch, If
-from hwt.hdl.switchContainer import SwitchContainer
+from hwt.hdl.statements.switchContainer import SwitchContainer
 from hwt.hdl.types.defs import BIT
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwt.synthesizer.unit import Unit

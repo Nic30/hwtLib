@@ -1,11 +1,11 @@
 import unittest
 
 from hwt.code import If
-from hwt.hdl.assignment import Assignment
+from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
+from hwt.hdl.types.defs import BIT
 from hwt.synthesizer.rtlLevel.netlist import RtlNetlist
 from hwtLib.examples.rtlLvl.indexOps import IndexOps
 from hwtLib.examples.rtlLvl.netlistToRtl import netlistToVhdlStr
-from hwt.hdl.types.defs import BIT
 
 
 class BasicSignalMethodsTC(unittest.TestCase):
@@ -66,10 +66,10 @@ class BasicSignalMethodsTC(unittest.TestCase):
 
         a_reset = if_reset.ifTrue[0]
         a_next = if_reset.ifFalse[0]
-        self.assertIsInstance(a_reset, Assignment)
+        self.assertIsInstance(a_reset, HdlAssignmentContainer)
         self.assertEqual(a_reset.src, BIT.from_py(0))
 
-        self.assertIsInstance(a_next, Assignment)
+        self.assertIsInstance(a_next, HdlAssignmentContainer)
         self.assertEqual(a_next.src, a.next)
 
     def test_indexOps(self):

@@ -3,8 +3,8 @@
 
 import unittest
 
-from hwt.hdl.assignment import Assignment
-from hwt.hdl.statement import HdlStatement
+from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
+from hwt.hdl.statements.statement import HdlStatement
 from hwtLib.examples.mem.ram import SimpleAsyncRam
 from hwtLib.examples.statements.ifStm import SimpleIfStatement3
 from hwtLib.mem.atomic.flipReg import FlipRegister
@@ -45,7 +45,7 @@ class StatementsConsystencyTC(unittest.TestCase):
         self.check_consystency(u)
         stms = u._ctx.statements
         self.assertEqual(len(stms), 1)
-        self.assertIsInstance(list(stms)[0], Assignment)
+        self.assertIsInstance(list(stms)[0], HdlAssignmentContainer)
 
     def test_index_inputs_with_assignment_has_endpoint(self):
         u = SimpleAsyncRam()

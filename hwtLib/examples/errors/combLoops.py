@@ -1,7 +1,7 @@
 import unittest
 
 from hwt.code import If
-from hwt.hdl.statement import HwtSyntaxError
+from hwt.hdl.statements.statement import HwtSyntaxError
 from hwt.interfaces.std import VectSignal, HandshakeSync, Signal
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer

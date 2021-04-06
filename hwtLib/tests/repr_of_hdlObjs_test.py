@@ -40,7 +40,7 @@ class ReprOfHdlObjsTC(unittest.TestCase):
         ae(d << 1, "Concat(d[7:0], Bits(1).from_py(0))")
         ae(d >> 1, "Concat(Bits(1).from_py(0), d[8:1])")
 
-    def test_Assignment(self):
+    def test_HdlAssignmentContainer(self):
         ctx = RtlNetlist()
         a = ctx.sig("a", uint8_t)
         b = ctx.sig("b", uint8_t)

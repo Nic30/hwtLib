@@ -91,7 +91,7 @@ class IndexingTC(SimTestCase):
     def test_AssignmentToRegIndex(self):
         u = AssignmentToRegIndex()
         self.compileSimAndStart(u)
-        reference = [0b10, 0b10] 
+        reference = [0b10, 0b10]
         u.a._ag.data.extend(reference)
 
         self.runSim(2 * CLK_PERIOD)

@@ -1,4 +1,4 @@
-from hwt.hdl.assignment import Assignment
+from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
 from hwt.hdl.operator import Operator
 from hwt.hdl.operatorDefs import AllOps, isEventDependentOp
 from hwt.hdl.portItem import HdlPortItem
@@ -118,7 +118,7 @@ class AddressSpaceProbe(object):
             if isinstance(e, Operator) and not isEventDependentOp(e):
                 ep = getEpSignal(mainSig, e)
                 yield from self.walkToConverter(ep, offset)
-            elif isinstance(e, (Assignment, HdlPortItem)):
+            elif isinstance(e, (HdlAssignmentContainer, HdlPortItem)):
                 yield from self.walkToConverter(e.dst, offset)
             else:
                 for outp in e._outputs:
