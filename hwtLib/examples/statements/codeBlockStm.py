@@ -7,9 +7,6 @@ from hwt.synthesizer.unit import Unit
 
 
 class BlockStm_complete_override0(Unit):
-    """
-    .. hwt-autodoc::
-    """
 
     def _declr(self):
         self.a = Signal()
@@ -25,9 +22,6 @@ class BlockStm_complete_override0(Unit):
 
 
 class BlockStm_complete_override1(BlockStm_complete_override0):
-    """
-    .. hwt-autodoc::
-    """
 
     def _impl(self):
         # results in
@@ -43,9 +37,6 @@ class BlockStm_complete_override1(BlockStm_complete_override0):
 
 
 class BlockStm_complete_override2(BlockStm_complete_override0):
-    """
-    .. hwt-autodoc::
-    """
 
     def _impl(self):
         # results in c = a
