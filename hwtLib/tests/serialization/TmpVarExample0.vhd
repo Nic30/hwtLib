@@ -1,14 +1,14 @@
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
-ENTITY TmpVarExample IS
+ENTITY TmpVarExample0 IS
     PORT(
         a : IN STD_LOGIC_VECTOR(31 DOWNTO 0);
         b : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
     );
 END ENTITY;
 
-ARCHITECTURE rtl OF TmpVarExample IS
+ARCHITECTURE rtl OF TmpVarExample0 IS
 BEGIN
     assig_process_b: PROCESS(a)
         VARIABLE tmpTypeConv_2 : STD_LOGIC_VECTOR(7 DOWNTO 0);

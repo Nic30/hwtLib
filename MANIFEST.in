@@ -73,5 +73,9 @@ include hwtLib/tests/serialization/AssignToASliceOfReg3d.vhd
 include hwtLib/tests/serialization/ExampleA.vhd
 include hwtLib/tests/serialization/SpiMaster.vhd
 include hwtLib/tests/serialization/TernaryInConcatExample.vhd
-include hwtLib/tests/serialization/TmpVarExample.vhd
+include hwtLib/tests/serialization/TmpVarExample0.vhd
+include hwtLib/tests/serialization/TmpVarExample1.v
+include hwtLib/tests/serialization/TmpVarExample1.vhd
+include hwtLib/tests/serialization/TmpVarExample2.v
+include hwtLib/tests/serialization/TmpVarExample2.vhd
 include hwtLib/tests/synthesizer/interfaceLevel/UnitWithGenericOfChild.vhd
