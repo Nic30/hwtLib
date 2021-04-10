@@ -217,7 +217,7 @@ class DebugBusMonitor(Unit):
         assert not self.io_instantiated
         if name is None:
             if isinstance(intf, InterfaceBase):
-                name = intf._getPhysicalName()
+                name = intf._getHdlName()
             else:
                 name = intf.name
         self.monitored_data.append((intf, name, cdc, trigger, add_reg))

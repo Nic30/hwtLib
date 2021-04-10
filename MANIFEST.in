@@ -1,7 +1,7 @@
 include README.md
 include MANIFEST.in
 
-# find . -name "*.vhd" -o -name "*.v" -o -name "*.cpp" -o -name "*.xdc" -o -name "*.png" | sort | sed 's|\./|include |g'
+# find hwtLib/ -name "*.vhd" -o -name "*.v" -o -name "*.cpp" -o -name "*.xdc" -o -name "*.png" | sort | sed 's|\./|include |g'
 include hwtLib/examples/arithmetic/VhdlVectorAutoCastExample.vhd
 include hwtLib/examples/EmptyUnitWithSpi.vhd
 include hwtLib/examples/hierarchy/GroupOfBlockrams.vhd
@@ -71,6 +71,12 @@ include hwtLib/tests/serialization/AssignToASliceOfReg3b.vhd
 include hwtLib/tests/serialization/AssignToASliceOfReg3c.vhd
 include hwtLib/tests/serialization/AssignToASliceOfReg3d.vhd
 include hwtLib/tests/serialization/ExampleA.vhd
+include hwtLib/tests/serialization/SimpleUnitReanamedPort0.vhd
+include hwtLib/tests/serialization/SimpleUnitReanamedPort1.vhd
+include hwtLib/tests/serialization/SimpleUnitReanamedPort2.vhd
+include hwtLib/tests/serialization/SimpleUnitReanamedPort3.vhd
+include hwtLib/tests/serialization/SimpleUnitReanamedPort4.vhd
+include hwtLib/tests/serialization/SimpleUnitReanamedPort5.vhd
 include hwtLib/tests/serialization/SpiMaster.vhd
 include hwtLib/tests/serialization/TernaryInConcatExample.vhd
 include hwtLib/tests/serialization/TmpVarExample0.vhd

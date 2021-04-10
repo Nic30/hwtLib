@@ -204,6 +204,7 @@ from hwtLib.tests.pyUtils.fileUtils_test import FileUtilsTC
 from hwtLib.tests.rdSynced_agent_test import RdSynced_agent_TC
 from hwtLib.tests.repr_of_hdlObjs_test import ReprOfHdlObjsTC
 from hwtLib.tests.resourceAnalyzer_test import ResourceAnalyzer_TC
+from hwtLib.tests.serialization.hdlReaname_test import SerializerHdlRename_TC
 from hwtLib.tests.serialization.ipCorePackager_test import IpCorePackagerTC
 from hwtLib.tests.serialization.modes_test import SerializerModes_TC
 from hwtLib.tests.serialization.tmpVar_test import Serializer_tmpVar_TC
@@ -298,6 +299,7 @@ suite = testSuiteFromTCs(
     Segment7TC,
     SerializerModes_TC,
     Serializer_tmpVar_TC,
+    SerializerHdlRename_TC,
     VhdlVectorAutoCastExampleTC,
     TransTmpl_TC,
     UnionTC,
