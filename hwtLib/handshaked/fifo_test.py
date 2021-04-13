@@ -6,7 +6,6 @@ import unittest
 
 from hwt.hdl.constants import NOP
 from hwt.interfaces.std import Handshaked
-from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.mem.fifo_test import FifoTC
 
