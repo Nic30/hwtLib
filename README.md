@@ -47,13 +47,11 @@ If you see any problem/do not underestand something/do miss something open the g
 
 ## Installation
 ``` bash
+# from PYPI (latest release)
 sudo pip3 install hwtLib
 
-# or from git  (if you are installing from git consider using also --update option)
-git clone https://github.com/Nic30/hwtLib
-cd hwtLib
-pip3 install -r doc/requirements.txt
-python3 setup.py install
+# or from git (latest)
+sudo pip3 install -r https://raw.githubusercontent.com/Nic30/hwtLib/master/doc/requirements.txt git+git://github.com/Nic30/hwtLib#egg=hwtLib --upgrade --no-cache
 ```
 
 
