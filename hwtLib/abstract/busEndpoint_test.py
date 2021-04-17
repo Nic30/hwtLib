@@ -10,7 +10,7 @@ from hwt.interfaces.std import RegCntrl, VectSignal, VldSynced
 
 
 # example methods for interface construction
-def regCntr(name, width):
+def mk_regCntr(name, width):
     a = RegCntrl()
     a.DATA_WIDTH = width
     a._name = name
@@ -18,14 +18,14 @@ def regCntr(name, width):
     return a
 
 
-def sig(name, width):
+def mk_sig(name, width):
     a = VectSignal(width)
     a._name = name
     a._loadDeclarations()
     return a
 
 
-def vldSynced(name, width):
+def mk_vldSynced(name, width):
     a = VldSynced()
     a.DATA_WIDTH = width
     a._name = name
@@ -34,15 +34,16 @@ def vldSynced(name, width):
 
 
 class BusEndpointTC(unittest.TestCase):
+
     def test_HTypeFromIntfMap_Struct(self):
         DATA_WIDTH = 32
 
         t = HTypeFromIntfMap(
             IntfMap([
-                    regCntr("a", DATA_WIDTH),
-                    regCntr("b", DATA_WIDTH),
-                    sig("c", DATA_WIDTH),
-                    vldSynced("d", DATA_WIDTH),
+                    mk_regCntr("a", DATA_WIDTH),
+                    mk_regCntr("b", DATA_WIDTH),
+                    mk_sig("c", DATA_WIDTH),
+                    mk_vldSynced("d", DATA_WIDTH),
             ]))
 
         _t = Bits(DATA_WIDTH)
@@ -58,11 +59,11 @@ class BusEndpointTC(unittest.TestCase):
 
         t = HTypeFromIntfMap(
             IntfMap([
-                regCntr("a", DATA_WIDTH),
-                regCntr("b", DATA_WIDTH),
-                sig("c", DATA_WIDTH),
+                mk_regCntr("a", DATA_WIDTH),
+                mk_regCntr("b", DATA_WIDTH),
+                mk_sig("c", DATA_WIDTH),
                 (Bits(4 * DATA_WIDTH), None),
-                vldSynced("d", DATA_WIDTH),
+                mk_vldSynced("d", DATA_WIDTH),
             ]))
         _t = Bits(DATA_WIDTH)
         t2 = HStruct(
@@ -80,9 +81,9 @@ class BusEndpointTC(unittest.TestCase):
 
         t = HTypeFromIntfMap(
             IntfMap([
-                regCntr("a", DATA_WIDTH),
+                mk_regCntr("a", DATA_WIDTH),
                 (Bits(4 * DATA_WIDTH), None),
-                ([vldSynced("d", DATA_WIDTH) for _ in range(4)], "ds")
+                ([mk_vldSynced("d", DATA_WIDTH) for _ in range(4)], "ds")
             ]))
 
         _t = Bits(DATA_WIDTH)
@@ -98,11 +99,11 @@ class BusEndpointTC(unittest.TestCase):
 
         t = HTypeFromIntfMap(
             IntfMap([
-                regCntr("a", DATA_WIDTH),
+                mk_regCntr("a", DATA_WIDTH),
                 (Bits(4 * DATA_WIDTH), None),
                 ([IntfMap([
-                    vldSynced("c", DATA_WIDTH),
-                    vldSynced("d", DATA_WIDTH)
+                    mk_vldSynced("c", DATA_WIDTH),
+                    mk_vldSynced("d", DATA_WIDTH)
                 ]) for _ in range(4)], "ds")
             ]))
 
@@ -122,12 +123,12 @@ class BusEndpointTC(unittest.TestCase):
     def test_HTypeFromIntfMap_ArrayOfStructsOfStructs(self):
         DATA_WIDTH = 32
         m = IntfMap([
-                regCntr("a", DATA_WIDTH),
+                mk_regCntr("a", DATA_WIDTH),
                 (Bits(4 * DATA_WIDTH), None),
                 ([IntfMap([
                     (IntfMap([
-                       vldSynced("c", DATA_WIDTH),
-                       vldSynced("d", DATA_WIDTH)
+                       mk_vldSynced("c", DATA_WIDTH),
+                       mk_vldSynced("d", DATA_WIDTH)
                     ]), "nested")
                 ]) for _ in range(4)], "ds")
             ])
@@ -151,14 +152,14 @@ class BusEndpointTC(unittest.TestCase):
 
         t = HTypeFromIntfMap(
             IntfMap([
-                regCntr("a", DATA_WIDTH),
+                mk_regCntr("a", DATA_WIDTH),
                 (Bits(4 * DATA_WIDTH), None),
                 ([
                     IntfMap([
-                        vldSynced("d", DATA_WIDTH),
-                        sig("e", DATA_WIDTH),
+                        mk_vldSynced("d", DATA_WIDTH),
+                        mk_sig("e", DATA_WIDTH),
                         (Bits(DATA_WIDTH * 2), None),
-                        sig("f", DATA_WIDTH),
+                        mk_sig("f", DATA_WIDTH),
                     ]) for _ in range(4)], "ds")
             ]))
 
@@ -180,8 +181,8 @@ class BusEndpointTC(unittest.TestCase):
         with self.assertRaises(AssertionError):
             HTypeFromIntfMap(
                 IntfMap([
-                    ([sig("e", DATA_WIDTH),
-                      sig("e", 2 * DATA_WIDTH),
+                    ([mk_sig("e", DATA_WIDTH),
+                      mk_sig("e", 2 * DATA_WIDTH),
                       ], "ds")
                 ]))
 
