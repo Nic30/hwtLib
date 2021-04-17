@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT, BOOL, STR
