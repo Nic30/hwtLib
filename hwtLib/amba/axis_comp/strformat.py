@@ -279,7 +279,7 @@ class AxiS_strFormat(Unit):
                 in_last = in_.last
 
         if in_last is None:
-            # if signal to detect last character is not overriden use conter to resolve it
+            # if signal to detect last character is not overriden use counter to resolve it
             in_last = char_i._eq(str_size - 1)
 
         return res, in_vld, in_last,

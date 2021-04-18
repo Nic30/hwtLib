@@ -31,7 +31,7 @@ class FifoAsync(Fifo):
     def _declr(self):
         assert int(self.DEPTH) > 0, "FifoAsync is disabled in this case, do not use it entirely"
         assert isPow2(self.DEPTH), f"DEPTH has to be power of 2, is {self.DEPTH:d}"
-        # pow 2 because of gray conter counters
+        # pow 2 because of gray counter counters
 
         if self.EXPORT_SIZE or self.EXPORT_SPACE:
             raise NotImplementedError()
