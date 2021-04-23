@@ -288,9 +288,9 @@ class AxiLiteEndpointStructsInArrayTC(AxiLiteEndpointTC):
 
 
 AxiLiteEndpointArrTCs = [
-    #AxiLiteEndpointArrayTC,
+    AxiLiteEndpointArrayTC,
     AxiLiteEndpointArray2TC,
-    #AxiLiteEndpointStructsInArrayTC,
+    AxiLiteEndpointStructsInArrayTC,
 ]
 
 if __name__ == "__main__":
