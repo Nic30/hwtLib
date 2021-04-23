@@ -18,7 +18,7 @@ from hwt.interfaces.std import BramPort_withoutClk, RegCntrl, Signal, VldSynced
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.unionIntf import UnionSink, UnionSource
 from hwt.interfaces.utils import addClkRstn
-from hwt.math import log2ceil, inRange
+from hwt.math import log2ceil, inRange, isPow2
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
@@ -320,7 +320,7 @@ class BusEndpoint(Unit):
         assert transTmpl.bitAddr % dst_addr_step == 0, (
             f"Has to be addressable by address with this step ({transTmpl})")
 
-        addrIsAligned = transTmpl.bitAddr % transTmpl.bit_length() == 0
+        addrIsAligned = transTmpl.bitAddr % transTmpl.bit_length() == 0 and isPow2(transTmpl.bit_length())
         bitsForAlignment = AddressStepTranslation(src_addr_step, dst_addr_step).align_bits
         bitsOfSubAddr = (
             (transTmpl.bitAddrEnd - transTmpl.bitAddr - 1)

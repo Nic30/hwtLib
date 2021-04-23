@@ -10,8 +10,7 @@ from hwtLib.abstract.frame_utils.alignment_utils_test import FrameAlignmentUtils
 from hwtLib.abstract.frame_utils.join.test import FrameJoinUtilsTC
 from hwtLib.abstract.template_configured_test import TemplateConfigured_TC
 from hwtLib.amba.axiLite_comp.buff_test import AxiRegTC
-from hwtLib.amba.axiLite_comp.endpoint_arr_test import \
-    AxiLiteEndpointArrayTC, AxiLiteEndpointStructsInArrayTC
+from hwtLib.amba.axiLite_comp.endpoint_arr_test import AxiLiteEndpointArrTCs
 from hwtLib.amba.axiLite_comp.endpoint_fromInterfaces_test import \
     AxiLiteEndpoint_fromInterfaceTC, AxiLiteEndpoint_fromInterface_arr_TC
 from hwtLib.amba.axiLite_comp.endpoint_struct_test import \
@@ -415,8 +414,7 @@ suite = testSuiteFromTCs(
     SimpleAxiRegsTC,
     AxiTC,
     *AxiLiteEndpointTCs,
-    AxiLiteEndpointArrayTC,
-    AxiLiteEndpointStructsInArrayTC,
+    *AxiLiteEndpointArrTCs,
     AxiLiteEndpoint_struct_TC,
     AxiLiteEndpoint_arrayStruct_TC,
     AxiLiteEndpoint_fromInterfaceTC,

@@ -25,6 +25,17 @@ struct {
     <Bits, 32bits, unsigned>[4] field0 // start:0x0(bit) 0x0(byte)
     <Bits, 32bits, unsigned>[4] field1 // start:0x80(bit) 0x10(byte)
 }"""
+
+structTwoArr2 = HStruct(
+                       (uint32_t[3], "field0"),
+                       (uint32_t[4], "field1")
+                       )
+structTwoArr2_str = """\
+struct {
+    <Bits, 32bits, unsigned>[3] field0 // start:0x0(bit) 0x0(byte)
+    <Bits, 32bits, unsigned>[4] field1 // start:0x60(bit) 0xc(byte)
+}"""
+
 structStructsInArray = HStruct(
                         (HStruct(
                                 (uint32_t, "field0"),
@@ -111,6 +122,83 @@ class AxiLiteEndpointArrayTC(AxiLiteEndpointTC):
         self.mySetUp(32)
         s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
         self.assertEqual(s, structTwoArr_str)
+
+class AxiLiteEndpointArray2TC(AxiLiteEndpointTC):
+    STRUCT_TEMPLATE = structTwoArr2
+    FIELD_ADDR = [0x0, 3*0x04]
+
+    def test_nop(self):
+        u = self.mySetUp(32)
+        MAGIC = 100
+
+        for i in range(4):
+            if i < 3:
+                u.decoded.field0._ag.mem[i] = MAGIC + 1
+            u.decoded.field1._ag.mem[i] = 2 * MAGIC + 1
+
+        self.randomizeAll()
+        self.runSim(100 * Time.ns)
+
+        self.assertEmpty(u.bus._ag.r.data)
+        for i in range(4):
+            if i < 3:
+                self.assertValEqual(u.decoded.field0._ag.mem[i], MAGIC + 1)
+            self.assertValEqual(u.decoded.field1._ag.mem[i], 2 * MAGIC + 1)
+
+    def test_read(self):
+        u = self.mySetUp(32)
+        regs = self.regs
+        MAGIC = 100
+
+        for i in range(4):
+            if i < 3:
+                u.decoded.field0._ag.mem[i] = MAGIC + i + 1
+                regs.field0[i].read()
+
+            u.decoded.field1._ag.mem[i] = 2 * MAGIC + i + 1
+            regs.field1[i].read()
+
+        self.randomizeAll()
+        self.runSim(2 * 8 * 100 * Time.ns)
+
+        self.assertValSequenceEqual(u.bus._ag.r.data, [
+            (MAGIC + 1, RESP_OKAY),
+            (2 * MAGIC + 1, RESP_OKAY),
+            (MAGIC + 2, RESP_OKAY),
+            (2 * MAGIC + 2, RESP_OKAY),
+            (MAGIC + 3, RESP_OKAY),
+            (2 * MAGIC + 3, RESP_OKAY),
+            (2 * MAGIC + 4, RESP_OKAY),
+        ])
+
+    def test_write(self):
+        u = self.mySetUp(32)
+        regs = self.regs
+        MAGIC = 100
+
+        for i in range(4):
+            if i < 3:
+                u.decoded.field0._ag.mem[i] = None
+                regs.field0[i].write(MAGIC + i + 1)
+
+            u.decoded.field1._ag.mem[i] = None
+            regs.field1[i].write(2 * MAGIC + i + 1)
+
+        self.randomizeAll()
+        self.runSim(2 * 8 * 100 * Time.ns)
+
+        self.assertEmpty(u.bus._ag.r.data)
+        for i in range(4):
+            if i < 3:
+                self.assertValEqual(u.decoded.field0._ag.mem[i],
+                                    MAGIC + i + 1, f"index={i:d}")
+            self.assertValEqual(u.decoded.field1._ag.mem[i],
+                                2 * MAGIC + i + 1, f"index={i:d}")
+
+    def test_registerMap(self):
+        self.mySetUp(32)
+        s = self.addrProbe.discovered.__repr__(withAddr=0, expandStructs=True)
+        self.assertEqual(s, structTwoArr2_str)
 
 
 class AxiLiteEndpointStructsInArrayTC(AxiLiteEndpointTC):
@@ -199,16 +287,22 @@ class AxiLiteEndpointStructsInArrayTC(AxiLiteEndpointTC):
                                     + [RESP_SLVERR])
 
 
+AxiLiteEndpointArrTCs = [
+    #AxiLiteEndpointArrayTC,
+    AxiLiteEndpointArray2TC,
+    #AxiLiteEndpointStructsInArrayTC,
+]
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(AxiLiteEndpointArray('test_read'))
+    # suite.addTest(AxiLiteEndpointArray2TC('test_read'))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseStartTC))
     suite.addTest(unittest.makeSuite(AxiLiteEndpointDenseTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointArrayTC))
-    suite.addTest(unittest.makeSuite(AxiLiteEndpointStructsInArrayTC))
+    for tc in AxiLiteEndpointArrTCs:
+        suite.addTest(unittest.makeSuite(tc))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
