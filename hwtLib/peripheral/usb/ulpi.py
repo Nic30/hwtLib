@@ -20,7 +20,7 @@ from pyMathBitPrecise.bit_utils import mask
 class ULPI_TX_CMD():
     NOOP = 0b00_000000
     """
-    :cvar NOOP: Transmit USB data that does not have a PID, such as
+    :cvar NOOP: Transmit USB data that does not have a USB_PID, such as
         chirp and resume signalling. The PHY starts
         transmitting on the USB beginning with the next data
         byte.
@@ -28,12 +28,12 @@ class ULPI_TX_CMD():
     NOPID = 0b01_000000
 
     """
-    :cvar PID: Transmit USB packet. data(3:0) indicates USB
-        packet identifier PID(3:0).
+    :cvar USB_PID: Transmit USB packet. data(3:0) indicates USB
+        packet identifier USB_PID(3:0).
     """
 
     @staticmethod
-    def PID(pid):
+    def USB_PID(pid):
         if pid is None or isinstance(pid, int):
             pid = Bits(4).from_py(pid)
         else:

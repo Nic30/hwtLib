@@ -237,6 +237,7 @@ from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
 from hwtLib.xilinx.primitive.examples.dsp48e1Add_test import Dsp48e1Add_TCs
 from hwtLib.xilinx.slr_crossing_test import HsSlrCrossingTC
+from hwtLib.peripheral.usb.sim.usb_agent_test import UsbAgentTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -399,6 +400,7 @@ suite = testSuiteFromTCs(
     CrcUtilsTC,
     CrcCombTC,
     CrcTC,
+    UsbAgentTC,
 
     BusEndpointTC,
 

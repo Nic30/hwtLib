@@ -256,8 +256,8 @@ class Utmi_to_Ulpi(Unit):
                         mode_write_q(0),
                     ).Elif(utmi_tx_ready_w,
                         # IDLE: Pending transmit
-                        # data should have PID header and this is just to be sure
-                        ulpi_data_q(ULPI_TX_CMD.PID(utmi_tx_data_w[4:0])),
+                        # data should have USB_PID header and this is just to be sure
+                        ulpi_data_q(ULPI_TX_CMD.USB_PID(utmi_tx_data_w[4:0])),
                         state_q(state_t.data)
                     )
                 ).Elif(ulpi.nxt,
