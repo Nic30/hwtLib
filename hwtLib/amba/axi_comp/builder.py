@@ -1,3 +1,4 @@
+from hwt.hdl.constants import READ
 from hwtLib.abstract.componentBuilder import AbstractComponentBuilder
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi4 import Axi4
@@ -6,9 +7,7 @@ from hwtLib.amba.axi_comp.buff import AxiBuff
 from hwtLib.amba.axi_comp.buff_cdc import AxiBuffCdc
 from hwtLib.amba.axi_comp.resize import AxiResize
 from hwtLib.amba.axi_comp.to_axiLite import Axi_to_AxiLite
-from hwtLib.avalon.mm import AvalonMM
 from hwtLib.avalon.axiToMm import Axi4_to_AvalonMm
-from hwt.hdl.constants import READ
 
 
 class AxiBuilder(AbstractComponentBuilder):
