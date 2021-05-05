@@ -58,6 +58,7 @@ class Mi32InterconnectMatrix(BusInterconnect):
     def _impl(self) -> None:
         if len(self.MASTERS) > 1:
             raise NotImplementedError()
+        assert self.SLAVES
         m = self.s[0]
         # :note: theoretically not required
         b = Mi32Buff()
