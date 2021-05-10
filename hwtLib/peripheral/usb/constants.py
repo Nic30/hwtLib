@@ -8,6 +8,25 @@ from hwt.hdl.types.struct import HStruct
 
 
 class USB_VER:
+    """
+    +-----------+-----------------------+
+    | USB_VER   |  Speed                |
+    +-----------+-----------------------+
+    | 1.0 - 2.0 | Low Speed 1.5 Mbit/s  |
+    +-----------+-----------------------+
+    | 1.0 - 2.0 | Full Speed 12 Mbit/s  |
+    +-----------+-----------------------+
+    | 2.0       | High Speed 480 Mbit/s |
+    +-----------+-----------------------+
+    | 3.0       | SuperSpeed 5Gbit/s    |
+    +-----------+-----------------------+
+    | 3.1       | SuperSpeed+ 10Gbit/s  |
+    +-----------+-----------------------+
+    | 3.2       | SuperSpeed+ 20Gbit/s  |
+    +-----------+-----------------------+
+    | 4.0       | SuperSpeed+ 40Gbit/s  |
+    +-----------+-----------------------+
+    """
     USB1_0 = "1.0"
     USB1_1 = "1.1"
     USB2_0 = "2.0"
@@ -35,6 +54,11 @@ class USB_PID:
 
     :note: packet formats are described in structs in this file
     """
+
+    @classmethod
+    def is_token(cls, v: int):
+        return v in (cls.TOKEN_OUT, cls.TOKEN_IN, cls.TOKEN_SOF, cls.TOKEN_SETUP)
+
     # Marks for host-to-device transfer
     TOKEN_OUT = 0b0001
     # Marks for device-to-host transfer
@@ -44,6 +68,10 @@ class USB_PID:
     # Marks for host-to-device control transfer
     TOKEN_SETUP = 0b1101
     # :note: setup transactions always uses DATA_0, but it may be fallowed by IN which starts with 0 and alternates between 0/1
+
+    @classmethod
+    def is_data(cls, v: int):
+        return v in (cls.DATA_0, cls.DATA_1, cls.DATA_2, cls.DATA_M)
 
     # DATA_X is always relatd to a specific endpoint
     # Even-numbered data packet
@@ -55,6 +83,10 @@ class USB_PID:
     # Data packet for high-bandwidth isochronous transfer (USB 2.0)
     DATA_M = 0b1111
 
+    @classmethod
+    def is_hs(cls, v: int):
+        return v in (cls.HS_ACK, cls.HS_NACK, cls.HS_STALL, cls.HS_NYET)
+
     # Data packet accepted
     HS_ACK = 0b0010
     # Data packet not accepted; please retransmit
@@ -64,7 +96,7 @@ class USB_PID:
     # Data not ready yet (USB 2.0)
     HS_NYET = 0b0110
 
-    # Low-bandwidth USB preamble
+    # Low-bandwidth USB preamble (tells hubs to temporarily switch to low speed mode)
     PREAMBLE = 0b1100
     # Split transaction error (USB 2.0)
     ERR = 0b1100

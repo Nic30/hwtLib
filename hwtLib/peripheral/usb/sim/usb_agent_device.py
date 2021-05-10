@@ -25,14 +25,10 @@ class UsbDevAgent(UsbAgent):
                  rx: Deque[Union[UsbPacketToken, UsbPacketData]],
                  tx: Deque[Union[UsbPacketToken, UsbPacketData]],
                  descriptors:UsbDescriptorBundle):
-        self.rx = rx
-        self.tx = tx
-        # counter to detect deadlock in transactions
-        self.RETRY_CNTR_MAX = 100
+        super(UsbDevAgent, self).__init__(rx, tx)
         # dictionary endp: last data pid value
         self.last_data_pid = {0: USB_PID.DATA_1}
         self.addr = 0
-
         self.descr = descriptors
 
     def set_data_pid(self, pid: USB_PID):

@@ -1,13 +1,13 @@
 from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.defs import BIT
+from hwt.hdl.types.defs import BIT, BIT_N
 from hwt.hdl.types.struct import HStruct
+from hwt.interfaces.agents.vldSynced import VldSyncedAgent
 from hwt.interfaces.std import VectSignal, Signal, Handshaked, VldSynced
 from hwt.interfaces.structIntf import HdlType_to_Interface
 from hwt.synthesizer.interface import Interface
-from ipCorePackager.constants import DIRECTION
-from hwt.interfaces.agents.vldSynced import VldSyncedAgent
-from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtSimApi.agents.base import AgentBase
+from hwtSimApi.hdlSimulator import HdlSimulator
+from ipCorePackager.constants import DIRECTION
 
 
 class Utmi_8b_rx(VldSynced):
@@ -51,7 +51,7 @@ utmi_function_control_t = HStruct(
     (BIT, "TermSelect"),
     (Bits(2), "OpMode"),
     (BIT, "Reset"),
-    (BIT, "SuspendM"),
+    (BIT_N, "SuspendM"),
     (BIT, None),
 )
 
@@ -59,7 +59,7 @@ utmi_interface_control_t = HStruct(
     (BIT, "FsLsSerialMode_6pin"),
     (BIT, "FsLsSerialMode_3pin"),
     (BIT, "CarkitMode"),
-    (BIT, "ClockSuspendM"),
+    (BIT_N, "ClockSuspendM"),
     (BIT, "AutoResume"),
     (BIT, "IndicatorComplement"),
     (BIT, "IndicatorPassThru"),
@@ -143,14 +143,14 @@ class Utmi_8bAgent(AgentBase):
     def getMonitors(self):
         return [
            *self.intf.tx.getDrivers(),
-           *self.intf.tx.getMonitors(),
+           *self.intf.rx.getMonitors(),
            self.monitor()
         ]
 
     def getDrivers(self):
         return [
            *self.intf.tx.getMonitors(),
-           *self.intf.tx.getDrivers(),
+           *self.intf.rx.getDrivers(),
            self.driver()
         ]
 

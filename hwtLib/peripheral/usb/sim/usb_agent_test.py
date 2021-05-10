@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 from collections import deque
 import unittest
@@ -43,6 +45,8 @@ class UsbAgentTC(unittest.TestCase):
 
         host = UsbHostAgent(rx, tx)
         dev = UsbDevAgent(tx, rx, get_default_usb_cdc_vcp_descriptors())
+        for a in [host, dev]:
+            a.RETRY_CNTR_MAX = 100
         h_done = False
         d_done = False
         h = host.proc()

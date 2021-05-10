@@ -186,6 +186,8 @@ from hwtLib.peripheral.spi.master_test import SpiMasterTC
 from hwtLib.peripheral.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.peripheral.uart.tx_rx_test import UartTxRxTC
 from hwtLib.peripheral.uart.tx_test import UartTxTC
+from hwtLib.peripheral.usb.sim.usb_agent_test import UsbAgentTC
+from hwtLib.peripheral.usb.ulpi_agent_test import UlpiAgent_TCs
 from hwtLib.structManipulators.arrayBuff_writer_test import ArrayBuff_writer_TC
 from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC, \
     ArrayItemGetter2in1WordTC
@@ -237,7 +239,6 @@ from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
 from hwtLib.xilinx.primitive.examples.dsp48e1Add_test import Dsp48e1Add_TCs
 from hwtLib.xilinx.slr_crossing_test import HsSlrCrossingTC
-from hwtLib.peripheral.usb.sim.usb_agent_test import UsbAgentTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -401,6 +402,7 @@ suite = testSuiteFromTCs(
     CrcCombTC,
     CrcTC,
     UsbAgentTC,
+    UlpiAgent_TCs,
 
     BusEndpointTC,
 

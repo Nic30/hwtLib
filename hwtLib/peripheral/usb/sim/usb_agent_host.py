@@ -37,8 +37,8 @@ class UsbHostAgent(UsbAgent):
     """
 
     def __init__(self,
-             rx: Deque[Union[UsbPacketToken, UsbPacketData]],
-             tx: Deque[Union[UsbPacketToken, UsbPacketData]]):
+             rx: Deque[Union[UsbPacketToken, UsbPacketHandshake, UsbPacketData]],
+             tx: Deque[Union[UsbPacketToken, UsbPacketHandshake, UsbPacketData]]):
         super(UsbHostAgent, self).__init__(rx, tx)
         # the addresses are not asigned yet this dictionary will be filled during device enumeration
         self.descr = {}
