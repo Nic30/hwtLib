@@ -402,7 +402,7 @@ suite = testSuiteFromTCs(
     CrcCombTC,
     CrcTC,
     UsbAgentTC,
-    UlpiAgent_TCs,
+    *UlpiAgent_TCs,
 
     BusEndpointTC,
 
