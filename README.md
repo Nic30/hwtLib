@@ -22,7 +22,7 @@ This means that you can write a verification which will have a component with ar
 
 Clock frequencies and target chips usually does not matter but if componet [generates constraints](https://github.com/Nic30/hwtLib/blob/master/hwtLib/handshaked/cdc.py#L154) it surely needs a correct clock period to generate them correctly.
 
-Also note that the code of the components should be shared if `@serializeParamsUniq` is used, the design for largest FPGAs takes 5s to generate. The verification should be also fast (take look at travis build) if this is not the case you are probably dooing something wrong.
+Also note that the code of the components should be shared if `@serializeParamsUniq` is used, the design for largest FPGAs takes 5s to generate. The verification should be also fast (take look at travis build) if this is not your case you are probably doing something wrong.
 
 * [abstract](https://github.com/Nic30/hwtLib/tree/master/hwtLib/abstract) - abstract classes for component classes like bus endpoint, etc
 * [amba](https://github.com/Nic30/hwtLib/tree/master/hwtLib/amba) - AXI interfaces and components for them (AXI3/4 DMAs, interconnects, Axi-stream components, Axi4Lite address decoders etc...)
