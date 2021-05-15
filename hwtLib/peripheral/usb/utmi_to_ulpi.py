@@ -1,22 +1,19 @@
-
-# based on https://github.com/ultraembedded/core_usb_cdc/tree/fb8e64843852abd3718aa28e6fb558f15c19a50d
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 from hwt.code import If, Switch, Concat
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.enum import HEnum
-from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import propagateClkRst, addClkRst
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.peripheral.usb.ulpi import Ulpi, ULPI_TX_CMD, ULPI_REG, \
     ulpi_reg_function_control_t, ulpi_reg_function_control_t_reset_default, \
     ulpi_reg_otg_control_t, ulpi_reg_otg_control_t_reset_defaults, \
     ulpi_reg_usb_interrupt_status_t_reset_default
 from hwtLib.peripheral.usb.utmi import Utmi_8b, utmi_interrupt_t
 from pyMathBitPrecise.bit_utils import mask
-
 
 
 class Utmi_to_Ulpi(Unit):
@@ -43,9 +40,9 @@ class Utmi_to_Ulpi(Unit):
         #-----------------------------------------------------------------
         # Bus turnaround detect
         #-----------------------------------------------------------------
-        ulpi_dir_q = self._reg("ulpi_dir_q", def_val=0)
+        ulpi_dir_q = self._reg("ulpi_dir_q", def_val=1)
         ulpi_dir_q(ulpi_dir)
-        turnaround_w = rename_signal(self, ulpi_dir_q ^ ulpi_dir._eq(Ulpi.DIR.PHY), "turnaround_w")
+        turnaround_w = rename_signal(self, ulpi_dir_q != ulpi_dir._eq(Ulpi.DIR.PHY), "turnaround_w")
         return turnaround_w
 
     @staticmethod
@@ -119,18 +116,12 @@ class Utmi_to_Ulpi(Unit):
         otg_complete_w = rename_signal(self, ((state_q._eq(state_t.reg) & otg_write_q) & ulpi.nxt) & ulpi.dir._eq(Ulpi.DIR.LINK), "otg_complete_w")
 
         #-----------------------------------------------------------------
-        # Rx - Tx delay
-        #-----------------------------------------------------------------
-        TX_START_DELAY = 7
-        tx_delay_q = self._reg("tx_delay_q", Bits(3), def_val=0)
-        tx_delay_complete_w = rename_signal(self, tx_delay_q._eq(0), "tx_delay_complete_w")
-        #-----------------------------------------------------------------
         # Tx Buffer - decouple UTMI Tx from PHY I/O
         #-----------------------------------------------------------------
-        tx_fifo = HandshakedFifo(Handshaked)
-        tx_fifo.DATA_WIDTH = 8
-        tx_fifo.DEPTH = 2
-        self.tx_fifo = tx_fifo
+        # tx_fifo = HandshakedFifo(Handshaked)
+        # tx_fifo.DATA_WIDTH = 8
+        # tx_fifo.DEPTH = 2
+        # self.tx_fifo = tx_fifo
 
         #-----------------------------------------------------------------
         # Implementation
@@ -175,31 +166,31 @@ class Utmi_to_Ulpi(Unit):
         )
 
         turnaround_w = self.ulpi_turnaround_detect(ulpi.dir)
-        If(utmi.rx.active,
-            tx_delay_q(TX_START_DELAY)
-        ).Elif(tx_delay_q != 0,
-            tx_delay_q(tx_delay_q - 1)
-        )
 
-        utmi_tx_ready_w = tx_fifo.dataOut.vld
-        utmi_tx_accept_w = rename_signal(
-            self,
-            (state_q._eq(state_t.idle) & ulpi.dir._eq(Ulpi.DIR.LINK) & ~(mode_update_q | otg_update_q | turnaround_w)) |
-            (state_q._eq(state_t.data) & ulpi.dir._eq(Ulpi.DIR.LINK) & ulpi.nxt),
-            "utmi_tx_accept_w")
-        utmi_tx_data_w = tx_fifo.dataOut.data
+        # utmi_tx_to_ulpi_vld = tx_fifo.dataOut.vld
 
         # Push
-        tx_fifo.dataIn.vld(utmi.tx.vld & utmi.tx.rd)
-        tx_fifo.dataIn.data(utmi.rx.data)
+        # tx_fifo.dataIn.vld(utmi.tx.vld & utmi.tx.rd)
+        # tx_fifo.dataIn.data(utmi.tx.data)
 
         # Pop
-        tx_fifo.dataOut.rd(utmi_tx_ready_w & utmi_tx_accept_w)
-        utmi.tx.rd(tx_fifo.dataIn.rd & tx_delay_complete_w)
+        # tx_fifo.dataOut.rd(utmi_tx_to_ulpi_vld & utmi_tx_accept_w)
+        # utmi.tx.rd(tx_fifo.dataIn.rd & tx_delay_complete_w)
+        utmi_tx_to_ulpi_vld = utmi.tx.vld
+        utmi_tx_data_w = utmi.tx.data
+
+        utmi_tx_accept_w = rename_signal(
+            self,
+            ~turnaround_w & ulpi.dir._eq(Ulpi.DIR.LINK) & (
+                (state_q._eq(state_t.idle) & ~(mode_update_q | otg_update_q | turnaround_w)) |
+                (state_q._eq(state_t.data) & ulpi.nxt)
+            ),
+            "utmi_tx_accept_w")
+        utmi.tx.rd(utmi_tx_accept_w)
 
         ulpi_stp_q(~turnaround_w & ulpi.dir._eq(Ulpi.DIR.LINK) & ulpi.nxt &
             (state_q._eq(state_t.reg) |
-             (state_q._eq(state_t.data) & ~utmi_tx_ready_w)
+             (state_q._eq(state_t.data) & ~utmi_tx_to_ulpi_vld)
             )
         )
         utmi_rxvalid_q(~turnaround_w & ulpi.dir._eq(Ulpi.DIR.PHY) & ulpi.nxt)
@@ -226,6 +217,7 @@ class Utmi_to_Ulpi(Unit):
                     #-----------------------------------------------------------------
                     # Input: RX_DATA
                     #-----------------------------------------------------------------
+                    utmi_rxactive_q(1),
                     utmi_data_q(ulpi.data.i)
                 ).Else(
                     #-----------------------------------------------------------------
@@ -254,7 +246,7 @@ class Utmi_to_Ulpi(Unit):
                         data_q(otg_control_q._reinterpret_cast(data_q._dtype)),
                         otg_write_q(1),
                         mode_write_q(0),
-                    ).Elif(utmi_tx_ready_w,
+                    ).Elif(utmi_tx_to_ulpi_vld,
                         # IDLE: Pending transmit
                         # data should have USB_PID header and this is just to be sure
                         ulpi_data_q(ULPI_TX_CMD.USB_PID(utmi_tx_data_w[4:0])),
@@ -273,7 +265,7 @@ class Utmi_to_Ulpi(Unit):
                         mode_write_q(0),
                     ).Elif(state_q._eq(state_t.data),
                         # Data
-                        If(utmi_tx_ready_w,
+                        If(utmi_tx_to_ulpi_vld,
                             state_q(state_t.data),
                             ulpi_data_q(utmi_tx_data_w),
                         ).Else(
@@ -293,7 +285,7 @@ class Utmi_to_Ulpi(Unit):
         utmi.rx.data(utmi_data_q)
         utmi.rx.error(utmi_rxerror_q)
         utmi.rx.active(utmi_rxactive_q)
-        utmi.rx.vld(utmi_rxvalid_q)
+        utmi.rx.valid(utmi_rxvalid_q)
 
         propagateClkRst(self)
 

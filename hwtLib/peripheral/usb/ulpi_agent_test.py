@@ -46,6 +46,12 @@ class UlpiAgentTC(UlpiAgentBaseTC):
         cls.u = u = UlpiWire()
         cls.compileSim(u)
 
+    def format_pid_before_tx(self, pid: int):
+        return int(ULPI_TX_CMD.USB_PID(pid))
+
+    def format_link_to_phy_packets(self, packets):
+        return packets
+
     def test_nop(self):
         self.runSim(100 * CLK_PERIOD)
         u = self.u
@@ -58,14 +64,14 @@ class UlpiAgentTC(UlpiAgentBaseTC):
         dev: UlpiAgent = u.dev._ag
         host: UlpiAgent = u.host._ag
         for i, pkt_len in enumerate(tx_pkt_lens):
-            p = deque([int(ULPI_TX_CMD.USB_PID(i & mask(4))), ])
+            p = deque([self.format_pid_before_tx(i & mask(4)), ])
             p.extend(range(pkt_len))
             dev.link_to_phy_packets.append(p)
 
         tx_ref = deepcopy(dev.link_to_phy_packets)
         self.runSim(100 * CLK_PERIOD)
         self.assertUlpiAgFinished(dev)
-        self.assertSequenceEqual(host.link_to_phy_packets, tx_ref)
+        self.assertSequenceEqual(self.format_link_to_phy_packets(host.link_to_phy_packets), tx_ref)
 
     def test_phy_to_link(self, rx_pkt_lens=[2, 3, 2, 1, 2]):
         # host -> dev (receive)
@@ -90,7 +96,7 @@ class UlpiAgentTC(UlpiAgentBaseTC):
         host: UlpiAgent = u.host._ag
 
         for i, pkt_len in enumerate(tx_pkt_lens):
-            p = deque([int(ULPI_TX_CMD.USB_PID(i & mask(4))), ])
+            p = deque([self.format_pid_before_tx(i & mask(4)), ])
             p.extend(range(pkt_len))
             dev.link_to_phy_packets.append(p)
 
@@ -109,7 +115,7 @@ class UlpiAgentTC(UlpiAgentBaseTC):
         self.assertUlpiAgNoPendingPacket(dev)
         self.assertEmpty(dev.link_to_phy_packets)
         self.assertEmpty(host.phy_to_link_packets)
-        self.assertSequenceEqual(host.link_to_phy_packets, tx_ref)
+        self.assertSequenceEqual(self.format_link_to_phy_packets(host.link_to_phy_packets), tx_ref)
         self.assertSequenceEqual(dev.phy_to_link_packets, rx_ref)
 
 

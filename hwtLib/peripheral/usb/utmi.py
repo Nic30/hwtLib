@@ -1,49 +1,50 @@
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT, BIT_N
 from hwt.hdl.types.struct import HStruct
-from hwt.interfaces.agents.vldSynced import VldSyncedAgent
 from hwt.interfaces.std import VectSignal, Signal, Handshaked, VldSynced
 from hwt.interfaces.structIntf import HdlType_to_Interface
 from hwt.synthesizer.interface import Interface
-from hwtSimApi.agents.base import AgentBase
+from hwt.synthesizer.param import Param
 from hwtSimApi.hdlSimulator import HdlSimulator
 from ipCorePackager.constants import DIRECTION
 
 
 class Utmi_8b_rx(VldSynced):
+    """
+    :attention: The "active" signal marks for the presense of some data. It has to be asserted 1 before valid is set.
+        And it has to be 1 whenewer the "vld" signal is 1. Because of this the "active" signal behaves as a valid in :class:`hwt.interfaces.std.VldSynced` interface
+        and "vld" signal behaves as a mask.
+    :note: The drop to 0 on "active" signal marks for the end of packet.
+
+
+    .. figure:: ./_static/utmi_rx.png
+    """
 
     def _config(self):
-        VldSynced._config(self)
-        self.DATA_WIDTH = 8
+        self.DATA_WIDTH = Param(8)
 
     def _declr(self):
-        VldSynced._declr(self)
+        self.data = VectSignal(self.DATA_WIDTH)
+        self.valid = Signal()
+        # end of packet is recognized by active going low
         self.active = Signal()
         self.error = Signal()
 
     def _initSimAgent(self, sim: HdlSimulator):
+        from hwtLib.peripheral.usb.utmi_agent import Utmi_8b_rxAgent
         self._ag = Utmi_8b_rxAgent(sim, self)
 
 
-class Utmi_8b_rxAgent(VldSyncedAgent):
+class Utmi_8b_tx(Handshaked):
+    """
+    :note: Same signals as handshaked interface, but the protocol is slightly different
 
-    def get_data(self):
-        i = self.intf
-        return (i.data.read(),
-                i.active.read(),
-                i.error.read())
+    .. figure:: ./_static/utmi_tx.png
+    """
 
-    def set_data(self, data):
-        if data is None:
-            d = None
-            a = None
-            e = None
-        else:
-            d, a, e = data
-        i = self.intf
-        return (i.data.write(d),
-                i.active.write(a),
-                i.error.write(e))
+    def _initSimAgent(self, sim: HdlSimulator):
+        from hwtLib.peripheral.usb.utmi_agent import Utmi_8b_txAgent
+        self._ag = Utmi_8b_txAgent(sim, self)
 
 
 utmi_function_control_t = HStruct(
@@ -89,7 +90,7 @@ utmi_interrupt_t = HStruct(
 
 class Utmi_8b(Interface):
     """
-    UTMI+ (USB 2.0 Transceiver Macrocell Interace) Level 3 8b variant only
+    UTMI+ (USB 2.0 Transceiver Macrocell Interace) Level 3, 8b variant only
 
     https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/usb2-transceiver-macrocell-interface-specification.pdf
     http://ww1.microchip.com/downloads/en/DeviceDoc/00002142A.pdf
@@ -125,43 +126,13 @@ class Utmi_8b(Interface):
         self.otg_control = HdlType_to_Interface().apply(utmi_otg_control_t, masterDir=DIRECTION.IN)
         self.interrupt = HdlType_to_Interface().apply(utmi_interrupt_t)
 
-        self.tx = Handshaked(masterDir=DIRECTION.IN)
+        # end of packet is signalized by tx.vld going low, the tx.rd is 0 in idle and tx.vld has to be asserted 1 firts
+        self.tx = Utmi_8b_tx(masterDir=DIRECTION.IN)
         self.rx = Utmi_8b_rx()
         for c in [self.rx, self.tx]:
             c.DATA_WIDTH = 8
 
     def _initSimAgent(self, sim:HdlSimulator):
-        self,_ag = Utmi_8bAgent(self, sim)
+        from hwtLib.peripheral.usb.utmi_agent import Utmi_8bAgent
+        self._ag = Utmi_8bAgent(sim, self)
 
-
-class Utmi_8bAgent(AgentBase):
-    def __init__(self, sim:HdlSimulator, intf):
-        AgentBase.__init__(self, sim, intf)
-        intf.tx._initSimAgent(sim)
-        intf.rx._initSimAgent(sim)
-
-    def getMonitors(self):
-        return [
-           *self.intf.tx.getDrivers(),
-           *self.intf.rx.getMonitors(),
-           self.monitor()
-        ]
-
-    def getDrivers(self):
-        return [
-           *self.intf.tx.getMonitors(),
-           *self.intf.rx.getDrivers(),
-           self.driver()
-        ]
-
-    def monitor(self):
-        """
-        Emulate behavior of link
-        """
-        raise  NotImplementedError()
-
-    def driver(self):
-        """
-        Emulate behavior of PHY
-        """
-        raise  NotImplementedError()

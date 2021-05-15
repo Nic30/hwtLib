@@ -6,7 +6,7 @@ from hwtLib.peripheral.usb.ulpi import Ulpi, ulpi_reg_usb_interrupt_status_t, \
 from hwtLib.types.ctypes import uint8_t
 from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtSimApi.triggers import WaitWriteOnly, WaitCombRead
-from pyMathBitPrecise.bit_utils import mask
+from pyMathBitPrecise.bit_utils import mask, ValidityError
 
 
 class UlpiAgent(SyncAgentBase):
@@ -147,6 +147,10 @@ class UlpiAgent(SyncAgentBase):
             # print("%d: %r PHY: turnaround ->%s" % (self.sim.now, intf, "PHY" if self.dir == Ulpi.DIR.PHY else "LINK"))
             self.in_turnarround = False
             intf.data.i._sigInside.write(None)
+            if self.dir == Ulpi.DIR.PHY:
+                # nxt=1 in turnarround means thatat the next RX_CMD contains RxActive
+                intf.nxt._sigInside.write(int(bool(self.phy_to_link_packets)))
+
             yield WaitCombRead()
             t = int(intf.data.t._sigInside.read())
             assert t == 0, (self.sim.now, intf, t, "data signal has to be in high-impedance state during turnaround")
@@ -166,6 +170,8 @@ class UlpiAgent(SyncAgentBase):
                 d = self.build_RX_CMD()
             else:
                 d = to_link_pkt.popleft()
+            self.RxEvent_RxActive = int(bool(to_link_pkt))
+
             intf.data.i._sigInside.write(d)
             intf.nxt._sigInside.write(int(
                 self._enabled and
@@ -191,18 +197,24 @@ class UlpiAgent(SyncAgentBase):
             intf.nxt._sigInside.write(int(self._enabled))
 
             yield WaitCombRead()
-            t = int(intf.data.t._sigInside.read())
+            try:
+                t = int(intf.data.t._sigInside.read())
+            except ValidityError:
+                raise AssertionError(self.sim.now, intf.data.t._getFullName(), "in invalid state (this would result in burned IO)")
+
             assert t == mask(8), (self.sim.now, intf, t, "link must write the data when it is the master of this bus")
 
             try:
                 stp = int(intf.stp._sigInside.read())
             except ValueError:
                 raise AssertionError(
-                    ("%r: stp signal for interface %r is in invalid state,"
-                     " this would cause desynchronization") %
-                (self.sim.now, intf))
+                    (self.sim.now, intf._getFullName(), "stp signal in invalid state"
+                     "(this would cause desynchronization)"))
+            try:
+                d = int(self.data_read())
+            except ValidityError:
+                raise AssertionError(self.sim.now, intf.data.t._getFullName(), "invalid data from LINK")
 
-            d = int(self.data_read())
             p = self.actual_link_to_phy_packet
             if stp or (p is None and d == ULPI_TX_CMD.NOOP):
                 assert d == ULPI_TX_CMD.NOOP, d
