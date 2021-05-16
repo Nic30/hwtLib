@@ -18,7 +18,7 @@ from hwtLib.amba.axis_comp.frame_parser.test_types import structManyInts,\
     ref0_structManyInts, ref1_structManyInts, ref_unionOfStructs0,\
     ref_unionOfStructs2, ref_unionOfStructs1, ref_unionOfStructs3,\
     ref_unionSimple0, ref_unionSimple1, ref_unionSimple2, ref_unionSimple3
-from hwtLib.types.ctypes import uint16_t
+from hwtLib.types.ctypes import uint16_t, uint8_t
 from hwtSimApi.constants import CLK_PERIOD
 from hwt.hdl.types.structUtils import HdlType_select
 
@@ -298,11 +298,53 @@ class AxiS_frameParserTC(SimTestCase):
         if not suffix_padding:
             self.assertValSequenceEqual(u.dataOut.footer._ag.data, [frame_len + 1])
 
+    @TestMatrix([8], [1, 2, 5], [(False, False),
+                                  (False, True),
+                                  (True, False)], [True, False])
+    def test_header_stream(self, dataWidth, frame_len, prefix_suffix_as_padding, randomize):
+        """
+        :note: Footer separation is tested in AxiS_footerSplitTC
+            and this test only check that the AxiS_frameParser can connect
+            wires correctly
+        """
+        prefix_padding, suffix_padding = prefix_suffix_as_padding
+        T = HStruct(
+            (uint8_t, "header"),
+            (HStream(Bits(8)), "frame0"),
+        )
+        fieldsToUse = set()
+        if not prefix_padding:
+            fieldsToUse.add("header")
+        if not suffix_padding:
+            fieldsToUse.add("frame0")
+        _T = HdlType_select(T, fieldsToUse)
+        u = self.mySetUp(dataWidth, _T, randomize, use_strb=True)
+        v = T.from_py({
+            "header": frame_len + 1,
+            "frame0": [i + 1 for i in range(frame_len)],
+        })
+        u.dataIn._ag.data.extend(
+            packAxiSFrame(dataWidth, v, withStrb=True)
+        )
+        t = 20
+        if randomize:
+            t *= 3
+
+        self.runMatrixSim2(t, dataWidth, frame_len, randomize)
+
+        if not prefix_padding:
+            self.assertValSequenceEqual(u.dataOut.header._ag.data, [frame_len + 1])
+
+        if not suffix_padding:
+            off, f = axis_recieve_bytes(u.dataOut.frame0)
+            self.assertEqual(off, 0)
+            self.assertValSequenceEqual(f, [i + 1 for i in range(frame_len)])
+
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(AxiS_frameParserTC('test_stream_and_footer'))
+    suite.addTest(AxiS_frameParserTC('test_header_stream'))
     suite.addTest(unittest.makeSuite(AxiS_frameParserTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

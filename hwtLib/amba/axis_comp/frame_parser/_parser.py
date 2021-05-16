@@ -121,7 +121,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
             return i
         elif isinstance(t, HStream):
             if self.SHARED_READY:
-                raise NotImplementedError(t)
+                raise NotImplementedError("SHARED_READY=True and HStream field", structField)
             else:
                 i = AxiStream()
                 i._updateParamsFrom(self)
@@ -243,12 +243,16 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
             out_ready(allOutNodes.ack())
             allOutNodes.sync(BIT.from_py(1), in_vld)
 
+        if self.OVERFLOW_SUPPORT:
+            out_ready = out_ready | self.parsing_overflow
         din.ready(out_ready)
 
         if hasMultipleWords:
             last = wordIndex._eq(maxWordIndex)
             incr = wordIndex(wordIndex + 1)
+
             if self.OVERFLOW_SUPPORT:
+                last = din.last
                 incr = If(wordIndex != word_index_max_val,
                    incr
                 )
@@ -340,9 +344,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                     extraConds = {
                        c0.dataIn: ~c0.parsing_overflow,
                     }
-                    skipWhen = {
-                       c0.dataIn: ~c0.parsing_overflow,
-                    }
+                    skipWhen = None
                 else:
                     suffix_t, suffix = drill_down_in_HStruct_fields(t1, self.dataOut)
                     assert isinstance(suffix_t, HStream), suffix_t
@@ -350,15 +352,18 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                     if t1_offset == 0:
                         # t1 is aligned on word boundary
                         # and does not require any first word mask modification
+
+                        # We enable the input to c1 once the c0 is finished with the parsing (parsing_overflow=1)
                         slaves = [c0.dataIn, suffix]
                         extraConds = {
                            c0.dataIn: ~c0.parsing_overflow,
                            suffix: c0.parsing_overflow,
                         }
                         skipWhen = {
-                           c0.dataIn: ~c0.parsing_overflow,
-                           suffix: c0.parsing_overflow,
+                           suffix: ~c0.parsing_overflow,
                         }
+                        suffix(din, exclude=[din.valid, din.ready])
+
                     else:
                         raise NotImplementedError("prefix parser- modify mask for suffix")
 
@@ -367,9 +372,9 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                            skipWhen=skipWhen).sync()
                 c0.dataIn(din, exclude=[din.valid, din.ready])
             else:
-                raise NotImplementedError("multiple con-constant size segments")
+                raise NotImplementedError("multiple(2) non-constant size segments in parsed datastructure")
         else:
-            raise NotImplementedError("multiple con-constant size segments")
+            raise NotImplementedError("multiple non-constant size segments in parsed datastructure")
         propagateClkRstn(self)
 
     def _impl(self):
