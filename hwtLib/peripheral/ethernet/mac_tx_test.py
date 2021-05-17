@@ -21,7 +21,7 @@ REF_CRC = [0x7A, 0xD5, 0x6B, 0xB3]
 
 class EthernetMacTx_8b_TC(SimTestCase):
     DW = 8
-
+    # [TODO]: tests for packet drop on every error
     @classmethod
     def setUpClass(cls):
         u = cls.u = EthernetMac()
