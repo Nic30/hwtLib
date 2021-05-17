@@ -241,7 +241,10 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         else:
             out_ready = self._sig("out_ready")
             out_ready(allOutNodes.ack())
-            allOutNodes.sync(BIT.from_py(1), in_vld)
+            out_en = BIT.from_py(1)
+            if self.OVERFLOW_SUPPORT:
+                out_en = out_en & ~self.parsing_overflow
+            allOutNodes.sync(out_en, in_vld)
 
         if self.OVERFLOW_SUPPORT:
             out_ready = out_ready | self.parsing_overflow
@@ -341,9 +344,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                 masters = [din]
                 if t1_is_padding:
                     slaves = [c0.dataIn, ]
-                    extraConds = {
-                       c0.dataIn: ~c0.parsing_overflow,
-                    }
+                    extraConds = None
                     skipWhen = None
                 else:
                     suffix_t, suffix = drill_down_in_HStruct_fields(t1, self.dataOut)
