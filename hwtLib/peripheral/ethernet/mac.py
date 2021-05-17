@@ -79,9 +79,10 @@ class EthernetMac(Unit):
 
     def _rx_mac_filter(self):
         def_mac = parse_eth_addr(self.DEFAULT_MAC_ADDR)
-        def_mac = int.from_bytes(def_mac, 'big')
+        def_mac = int.from_bytes(def_mac, 'little')
         mac_eq = AxiS_eq()
         mac_eq._updateParamsFrom(self)
+        mac_eq.VAL = mac_t.from_py(def_mac)
         self.rx_mac_filter = mac_eq
         return mac_eq.dataIn, mac_eq.dataOut
 
@@ -181,7 +182,7 @@ class EthernetMac(Unit):
         # postpone procesing of last word until we know the result of fcs check
         dout = self.eth.rx
         dout(data, exclude=[data.ready, data.valid])
-        not_fcs_check_wait = ~data.last | fcs_good_in_this_frame | err_in_this_frame
+        not_fcs_check_wait = ~data.valid | ~data.last | fcs_good_in_this_frame | err_in_this_frame
         StreamNode(
             [data], [dout],
         ).sync(not_fcs_check_wait)
