@@ -65,6 +65,7 @@ sudo pip3 install -r https://raw.githubusercontent.com/Nic30/hwtLib/master/doc/r
 * [FPGAwars FPGA-peripherals](https://github.com/FPGAwars/FPGA-peripherals) - Verilog, simple peripherals
 * [hdl4fpga](https://github.com/hdl4fpga/hdl4fpga) - Verilog/VHDL various peripherals
 * [hdl-util](https://github.com/hdl-util) - SV, various IO
+* [analogdevicesinc/hdl](https://github.com/analogdevicesinc/hdl) - Verilog, Library of common components for AnalogDevices chip interfacing
 * [leon/grlib](https://www.gaisler.com/index.php/downloads/leongrlib) - Library of SoC components
 * [myhdl-resources](https://github.com/xesscorp/myhdl-resources) - MyHDL list of projects
 * [NyuziProcessor](https://github.com/jbush001/NyuziProcessor) - GPGPU
