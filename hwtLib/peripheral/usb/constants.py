@@ -53,6 +53,7 @@ class USB_PID:
     :attention: visualy written in msb-first, transmited in lsb first
 
     :note: packet formats are described in structs in this file
+    :note: if the PID is in 8b format the other 4 bits (check field) are a bitwise inversion of original 4b PID field
     """
 
     @classmethod
@@ -124,11 +125,11 @@ There are three types of token packets,
 * Out - Informs the USB device that the host wishes to send information.
 * Setup - Used to begin control transfers.
 """
-packet_token_t = HStruct(
+usb_packet_token_t = HStruct(
     (usb_pid_t, "pid"),
     (usb_addr_t, "addr"),
     (usb_endp_t, "endp"),
-    (usb_crc5_t, "crc5"),  # :note: not involves USB_PID, only addr, endp
+    (usb_crc5_t, "crc5"),  # :note: does not involve USB_PID, only addr, endp
 )
 
 usb1_0_packet_data_t = HStruct(

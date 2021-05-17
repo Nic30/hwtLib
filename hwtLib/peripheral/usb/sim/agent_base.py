@@ -10,10 +10,9 @@ from hwt.hdl.value import HValue
 from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
 from hwtLib.logic.crcPoly import CRC_5_USB, CRC_16_USB
 from hwtLib.logic.crc_test_utils import NaiveCrcAccumulator
-from hwtLib.peripheral.usb.constants import packet_token_t, USB_PID
+from hwtLib.peripheral.usb.constants import usb_packet_token_t, USB_PID
 from hwtLib.peripheral.usb.descriptors.bundle import UsbDescriptorBundle
 from hwtLib.types.ctypes import uint8_t
-from pyMathBitPrecise.bit_utils import reverse_bits
 
 
 class UsbPacketToken():
@@ -34,7 +33,7 @@ class UsbPacketToken():
         return r.getFinalValue()
 
     # def pack(self):
-    #    return packet_token_t.from_py({
+    #    return usb_packet_token_t.from_py({
     #        "pid": reverse_bits(self.pid, 4),
     #        "addr": reverse_bits(self.addr, 7),
     #        "endp": reverse_bits(self.endp, 4),
@@ -47,7 +46,7 @@ class UsbPacketToken():
         if isinstance(v, (list, tuple, deque)):
             v = Concat(*reversed([d if isinstance(d, HValue) else uint8_t.from_py(d) for d in v]))
 
-        _v = Concat(v, Bits(4).from_py(pid))._reinterpret_cast(packet_token_t)
+        _v = Concat(v, Bits(4).from_py(pid))._reinterpret_cast(usb_packet_token_t)
         addr = int(_v.addr)
         endp = int(_v.endp)
         self = cls(pid, addr, endp)
@@ -60,7 +59,7 @@ class UsbPacketToken():
     #    if isinstance(v, (list, tuple)):
     #        v = Concat(*reversed(v))
     #
-    #    _v = v._reinterpret_cast(packet_token_t)
+    #    _v = v._reinterpret_cast(usb_packet_token_t)
     #    pid = reverse_bits(int(_v.pid), 4)
     #    addr = reverse_bits(int(_v.addr), 7)
     #    endp = reverse_bits(int(_v.endp), 4)
