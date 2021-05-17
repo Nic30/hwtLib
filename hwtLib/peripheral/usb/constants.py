@@ -157,7 +157,7 @@ There are three type of handshake packets which consist simply of the USB_PID
   Also used during interrupt transactions to inform the host there is no data to send.
 * STALL - The device finds its in a state that it requires intervention from the host.
 """
-packet_hs_t = HStruct(
+usb_packet_hs_t = HStruct(
     (usb_pid_t, "pid"),
 )
 
@@ -165,9 +165,9 @@ packet_hs_t = HStruct(
 The SOF (Start of Frame) packet consisting of an 11-bit frame number is sent by the host
 every 1ms ± 500ns on a full speed bus or every 125 µs ± 0.0625 µs on a high speed bus.
 """
-frame_number_t = Bits(11)
-packet_sof_t = HStruct(
+usb_frame_number_t = Bits(11)
+usb_packet_sof_t = HStruct(
     (usb_pid_t, "pid"),
-    (frame_number_t, "frame_number"),
+    (usb_frame_number_t, "frame_number"),
     (usb_crc5_t, "crc5"),  # :note: not involves USB_PID, only frame_number
 )
