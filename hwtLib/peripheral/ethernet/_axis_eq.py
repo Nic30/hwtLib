@@ -61,6 +61,7 @@ class AxiS_eq(Unit):
                     dout.data(state & state_update)
                 else:
                     word_cases.append((i, state(state & state_update)))
+                offset = val_high
 
             If(StreamNode([din], [dout]).ack(),
                 If(din.last,
