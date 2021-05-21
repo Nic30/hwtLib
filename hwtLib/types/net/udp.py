@@ -10,6 +10,7 @@ UDP_header_t = HStruct(
     name="UDP_header_t"
     )
 
+# :note: pseudo headers are used for checksum calculation
 UDP_IPv4PseudoHeader_t = HStruct(
     (ipv4_t, "src"),
     (ipv4_t, "dst"),
