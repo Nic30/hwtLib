@@ -3,8 +3,8 @@ from binascii import crc32
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis import axis_send_bytes, axis_recieve_bytes
 from hwtLib.peripheral.ethernet.mac import EthernetMac
-from pyMathBitPrecise.bit_utils import byte_list_to_be_int
 from hwtSimApi.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import byte_list_to_be_int
 
 
 REF_FRAME = [

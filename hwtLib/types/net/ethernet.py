@@ -1,12 +1,13 @@
+from typing import Union, List
+
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
-from typing import Union, List
 
 
 vlan_t = Bits(12)
-mac_t = Bits(6 * 8)
+eth_mac_t = Bits(6 * 8)
 
-syncword = 0b1010101010101010101010101010101010101010101010101010101010101011
+eth_syncword = 0b1010101010101010101010101010101010101010101010101010101010101011
 
 EthPreamble_t = HStruct(
     (Bits(7 * 8), "preambule"),
@@ -15,8 +16,8 @@ EthPreamble_t = HStruct(
 )
 
 Eth2Header_t = HStruct(
-    (mac_t, "dst"),
-    (mac_t, "src"),
+    (eth_mac_t, "dst"),
+    (eth_mac_t, "src"),
     (Bits(2 * 8), "type"),
     name="Eth2Header_t"
 )
@@ -27,8 +28,8 @@ Tag802_1q = HStruct(
 )
 
 Eth802_1qHeader_t = HStruct(
-    (mac_t, "dst"),
-    (mac_t, "src"),
+    (eth_mac_t, "dst"),
+    (eth_mac_t, "src"),
     (Tag802_1q, "tag"),
     (Bits(2 * 8), "type"),
     name="Eth802_1qHeader_t"
@@ -48,7 +49,7 @@ class ETHER_TYPE():
     MPLS_multicast = 0x8848
 
 
-def format_eth_addr(mac: List[Union[int, str]]):
+def eth_addr_format(mac: List[Union[int, str]]):
     assert len(mac) == 6
     macStr = "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x" % tuple(
         ord(x) if isinstance(x, str) else int(x)
@@ -56,7 +57,7 @@ def format_eth_addr(mac: List[Union[int, str]]):
     return macStr
 
 
-def parse_eth_addr(macStr):
+def eth_addr_parse(macStr:str):
     splited = macStr.split(":")
     splited = map(lambda num: int(num, 16).to_bytes(1, byteorder='big'), splited)
     return b"".join(splited)

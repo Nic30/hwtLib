@@ -1,6 +1,6 @@
 from hwt.hdl.types.struct import HStruct
 from hwtLib.types.ctypes import uint16_t, uint8_t
-from hwtLib.peripheral.ethernet.types import mac_t
+from hwtLib.types.net.ethernet import eth_mac_t
 from hwtLib.types.net.ip import ipv4_t
 
 
@@ -52,8 +52,8 @@ arp_ipv4_t = HStruct(
         (uint8_t, "hlen"),  # hardware address length
         (uint8_t, "plen"),  # protocol address length
         (uint16_t, "opcode"),
-        (mac_t, "sHwAddr"),  # sender hw address
+        (eth_mac_t, "sHwAddr"),  # sender hw address
         (ipv4_t, "sProtAddr"),  # sender protocol address
-        (mac_t, "tHwAddr"),  # target hw address
+        (eth_mac_t, "tHwAddr"),  # target hw address
         (ipv4_t, "tProtAddr"),  # target protocol address
     )

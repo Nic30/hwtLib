@@ -1,7 +1,7 @@
+from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
 from hwtLib.types.ctypes import uint16_t, uint8_t, uint32_t
 from hwtLib.types.net.ip import ipv4_t, ipv6_t, l4port_t
-from hwt.hdl.types.bits import Bits
 
 
 UDP_header_t = HStruct(

@@ -8,12 +8,12 @@ from hwt.hdl.value import HValue
 from hwt.interfaces.std import Signal
 from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn
-from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.mainBases import RtlMemoryBase
+from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
-from hwtLib.peripheral.ethernet.types import Eth2Header_t
+from hwtLib.types.net.ethernet import Eth2Header_t
 from hwtLib.types.net.icmp import ICMP_echo_header_t, ICMP_TYPE
 from hwtLib.types.net.ip import IPv4Header_t, ipv4_t
 

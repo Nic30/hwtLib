@@ -10,7 +10,7 @@ from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axi_comp.virtualDma import AxiVirtualDma
 from hwtLib.handshaked.builder import HsBuilder
-from hwtLib.peripheral.ethernet.types import Eth2Header_t
+from hwtLib.types.net.ethernet import Eth2Header_t
 from hwtLib.types.net.ip import IPv4Header_t
 
 

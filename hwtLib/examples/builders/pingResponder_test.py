@@ -11,7 +11,7 @@ from hwt.synthesizer.vectorUtils import iterBits
 from hwtLib.amba.axis import unpackAxiSFrame, packAxiSFrame
 from hwtLib.examples.builders.pingResponder import PingResponder, \
     echoFrame_t
-from hwtLib.peripheral.ethernet.types import parse_eth_addr, ETHER_TYPE
+from hwtLib.types.net.ethernet import eth_addr_parse, ETHER_TYPE
 from hwtLib.types.net.icmp import ICMP_TYPE, ICMP_echo_header_t
 from hwtLib.types.net.ip import IPv4, IHL_DEFAULT, IPv4Header_t, IP_PROTOCOL
 from hwtSimApi.constants import CLK_PERIOD
@@ -98,8 +98,8 @@ class PingResponderTC(SimTestCase):
 
         v = echoFrame_t.from_py({
                 "eth": {
-                    "src": parse_eth_addr(ethSrc),
-                    "dst": parse_eth_addr(ethDst),
+                    "src": eth_addr_parse(ethSrc),
+                    "dst": eth_addr_parse(ethDst),
                     "type": ETHER_TYPE.IPv4,
                 },
                 "ip": {

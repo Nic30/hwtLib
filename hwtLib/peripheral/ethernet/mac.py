@@ -9,6 +9,7 @@ from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axis_comp.fifoDrop import AxiSFifoDrop
 from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
 from hwtLib.amba.axis_comp.frame_parser import AxiS_frameParser
@@ -18,9 +19,9 @@ from hwtLib.logic.crc import Crc
 from hwtLib.logic.crcPoly import CRC_32
 from hwtLib.peripheral.ethernet._axis_eq import AxiS_eq
 from hwtLib.peripheral.ethernet.constants import ETH_BITRATE
-from hwtLib.peripheral.ethernet.types import mac_t, parse_eth_addr
 from hwtLib.peripheral.ethernet.vldsynced_data_err_last import VldSyncedDataErrLast
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
+from hwtLib.types.net.ethernet import eth_mac_t, eth_addr_parse
+
 
 CRC32_RESIDUE = 0x2144df1c
 
@@ -78,11 +79,11 @@ class EthernetMac(Unit):
             self.eth.IS_BIGENDIAN = True
 
     def _rx_mac_filter(self):
-        def_mac = parse_eth_addr(self.DEFAULT_MAC_ADDR)
+        def_mac = eth_addr_parse(self.DEFAULT_MAC_ADDR)
         def_mac = int.from_bytes(def_mac, 'little')
         mac_eq = AxiS_eq()
         mac_eq._updateParamsFrom(self)
-        mac_eq.VAL = mac_t.from_py(def_mac)
+        mac_eq.VAL = eth_mac_t.from_py(def_mac)
         self.rx_mac_filter = mac_eq
         return mac_eq.dataIn, mac_eq.dataOut
 
@@ -116,7 +117,7 @@ class EthernetMac(Unit):
             u.USE_STRB = self.USE_STRB
 
         dst_mac_parser = AxiS_frameParser(HStruct(
-            (HStream(mac_t, frame_len=(1, 1)), "dst"),
+            (HStream(eth_mac_t, frame_len=(1, 1)), "dst"),
             (HStream(Bits(8)), None),  # ignore data at the end
         ))
         propagate_config(dst_mac_parser)
