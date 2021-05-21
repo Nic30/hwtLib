@@ -21,7 +21,7 @@ TCP_header_t = HStruct(
     (uint32_t, "ack_seq"),
     (Bits(4), "doff"),
     (Bits(4), "reserved1"),
-    (uint8_t, "flags")
+    (uint8_t, "flags"),
     (uint16_t, "window"), (Bits(16), "checksum"),
     (uint16_t, "urg_ptr"),
     name="TCP_header_t"
