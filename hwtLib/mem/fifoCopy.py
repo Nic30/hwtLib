@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import If
-from hwt.math import log2ceil
+from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import FifoWriter, FifoReader, VldSynced
 from hwt.interfaces.utils import addClkRstn
+from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
 from hwtLib.mem.fifo import Fifo
-from hwt.code_utils import rename_signal
 
 
 @serializeParamsUniq
@@ -18,7 +18,8 @@ class FifoCopy(Fifo):
 
     Fifo with an extra signals to control replay of lastly stored data
 
-    :ivar dataOut_copy_frame: if the
+    :ivar dataOut_copy_frame: The channel which drives when to capture start of the frame
+        and when to start relaying previously stored frame from the marked start
 
     .. hwt-autodoc:: _example_FifoCopy
     """

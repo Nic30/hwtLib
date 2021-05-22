@@ -60,12 +60,12 @@ class AxiSRegCopy(AxiSCompBase, HandshakedFifo):
 @serializeParamsUniq
 class AxiSFifoCopy(AxiSCompBase, HandshakedFifo):
     """
-    Synchronous fifo for axi-stream interface with frame drop functionality
-    and speculative buffering. Also known as a speculative fifo.
+    Synchronous fifo for axi-stream interface which can copy last frame or work
+    as a regular fifo.
 
     :note: DEPTH > axis.MAX_FRAME_LEN
 
-    :see: :class:`hwtLib.handshaked.fifo_drop.HandshakedFifoDrop`
+    :see: :class:`hwtLib.handshaked.fifo_copy.HandshakedFifoCopy`
 
     .. hwt-autodoc:: _example_AxiSFifoCopy
     """
