@@ -24,6 +24,7 @@ class AxiStream(Axi_hs, Axi_id, Axi_user, Axi_strb):
     :ivar ~.IS_BIGENDIAN: Param which specifies if interface uses bigendian
         byte order or little-endian byte order
 
+    :ivar ~.DATA_WIDTH: Param which specifies width of data signal
     :ivar ~.HAS_STRB: if set strb signal is present
     :ivar ~.HAS_KEEP: if set keep signal is present
     :ivar ~.ID_WIDTH: if > 0 id signal is present and this is it's width
@@ -37,7 +38,6 @@ class AxiStream(Axi_hs, Axi_id, Axi_user, Axi_strb):
         e.g. little endian value 0x1a2b will be 0x2b1a
         but iterface itselelf is not reversed in any way
 
-    :ivar ~.DATA_WIDTH: Param which specifies width of data signal
     :ivar ~.id: optional signal wich specifies id of transaction
     :ivar ~.dest: optional signal which specifies destination of transaction
     :ivar ~.data: main data signal
@@ -45,6 +45,7 @@ class AxiStream(Axi_hs, Axi_id, Axi_user, Axi_strb):
                 should be keept and which should be discarded
     :ivar ~.strb: optional signal which signalize which bytes are valid
     :ivar ~.last: signal which if high this data is last in this frame
+    :ivar ~.user: optional signal which can be used for arbitrary purposes
 
     .. hwt-autodoc::
     """
