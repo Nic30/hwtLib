@@ -180,7 +180,7 @@ class MMCME2_ADV(Unit):
 
         self.LOCKED = Signal()._m()
 
-        # phase shift controll
+        # phase shift control
         self.PSCLK = Signal()
         self.PSDONE = Signal()._m()
         self.PSEN = Signal()

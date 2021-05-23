@@ -44,7 +44,7 @@ class MigUserPortRD(Interface):
 
 class MigUserPort(Interface):
     """
-    Interface used to controll Xilinx MIG (Memory Interface Generator) DDR4 controller
+    Interface used to control Xilinx MIG (Memory Interface Generator) DDR4 controller
 
     https://www.xilinx.com/support/documentation/ip_documentation/ultrascale_memory_ip/v1_4/pg150-ultrascale-memory-ip.pdf
     p. 122

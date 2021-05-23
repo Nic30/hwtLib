@@ -42,7 +42,7 @@ class EthernetMac(Unit):
     rest (preamble, SFD, IPG, CDCs, PHY signal protocol, ...)
     is managed by adapter for specified PHY interface.
 
-    :note: This component does not have any controll registers or statistics etc.
+    :note: This component does not have any control registers or statistics etc.
         But the signals are accessible. Inherit from this class and
         add control bus, statistics, address space of of your choice.
         Same applies to a MAC address filter.
