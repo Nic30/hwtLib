@@ -1,10 +1,14 @@
-from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.stream import HStream
-from hwt.hdl.types.struct import HStruct
-
 """
 :attention: on USB the LSB bits are sent first
 """
+
+from typing import Union
+
+from hwt.code import In
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.stream import HStream
+from hwt.hdl.types.struct import HStruct
+from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 
 
 class USB_VER:
@@ -35,6 +39,8 @@ class USB_VER:
     USB3_2 = "3.2"
     USB4_0 = "4.0"
 
+    values = [USB1_0, USB1_1, USB2_0, USB3_0, USB3_1, USB3_2, USB4_0]
+
     @staticmethod
     def to_uint16_t(usbVer: str):
         assert len(usbVer) == 3, usbVer
@@ -57,8 +63,12 @@ class USB_PID:
     """
 
     @classmethod
-    def is_token(cls, v: int):
-        return v in (cls.TOKEN_OUT, cls.TOKEN_IN, cls.TOKEN_SOF, cls.TOKEN_SETUP)
+    def is_token(cls, v: Union[int, RtlSignalBase]):
+        token_pids = (cls.TOKEN_OUT, cls.TOKEN_IN, cls.TOKEN_SOF, cls.TOKEN_SETUP)
+        if isinstance(v, int):
+            return v in token_pids
+        else:
+            return In(v, token_pids)
 
     # Marks for host-to-device transfer
     TOKEN_OUT = 0b0001
@@ -71,8 +81,12 @@ class USB_PID:
     # :note: setup transactions always uses DATA_0, but it may be fallowed by IN which starts with 0 and alternates between 0/1
 
     @classmethod
-    def is_data(cls, v: int):
-        return v in (cls.DATA_0, cls.DATA_1, cls.DATA_2, cls.DATA_M)
+    def is_data(cls, v: Union[int, RtlSignalBase]):
+        data_pids = (cls.DATA_0, cls.DATA_1, cls.DATA_2, cls.DATA_M)
+        if isinstance(v, int):
+            return v in data_pids
+        else:
+            return In(v, data_pids)
 
     # DATA_X is always relatd to a specific endpoint
     # Even-numbered data packet
@@ -85,8 +99,12 @@ class USB_PID:
     DATA_M = 0b1111
 
     @classmethod
-    def is_hs(cls, v: int):
-        return v in (cls.HS_ACK, cls.HS_NACK, cls.HS_STALL, cls.HS_NYET)
+    def is_hs(cls, v: Union[int, RtlSignalBase]):
+        hs_pids = (cls.HS_ACK, cls.HS_NACK, cls.HS_STALL, cls.HS_NYET)
+        if isinstance(v, int):
+            return v in hs_pids
+        else:
+            return In(v, hs_pids)
 
     # Data packet accepted
     HS_ACK = 0b0010
