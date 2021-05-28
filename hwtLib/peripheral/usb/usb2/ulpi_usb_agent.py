@@ -1,78 +1,45 @@
-from collections  import deque
 from typing import Deque, Union
 
-from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.struct import HStruct
-from hwtLib.peripheral.usb.constants import USB_PID, usb_addr_t, usb_endp_t, \
-    usb_crc5_t
 from hwtLib.peripheral.usb.sim.agent_base import UsbPacketToken, UsbPacketData, \
     UsbPacketHandshake
 from hwtLib.peripheral.usb.sim.usb_agent_device import UsbDevAgent
-from hwtLib.peripheral.usb.sim.usb_agent_host import UsbHostAgent
 from hwtLib.peripheral.usb.usb2.ulpi import ULPI_TX_CMD, Ulpi
 from hwtLib.peripheral.usb.usb2.ulpi_agent import UlpiAgent
+from hwtLib.peripheral.usb.usb2.utmi_usb_agent import UtmiUsbHostProcAgent
 from hwtSimApi.hdlSimulator import HdlSimulator
 
 
-class UlpiUsbHostProcAgent(UsbHostAgent):
-    tx_packet_token_t = HStruct(
-        (Bits(8), "cmd"),
-        (usb_addr_t, "addr"),
-        (usb_endp_t, "endp"),
-        (usb_crc5_t, "crc5"),  # :note: not involves USB_PID, only addr, endp
-    )
+class UlpiUsbHostProcAgent(UtmiUsbHostProcAgent):
+    """
+    A simulation agent for :class:`hwtLib.peripheral.usb.usb2.ulpi.Ulpi` interface
+    with the functionality of the host.
+    """
 
     def parse_packet(self, p: Deque[int]):
         # need to cut of ulpi tx_cmd header
         tx_cmd = p.popleft()
         if ULPI_TX_CMD.is_USB_PID(tx_cmd):
             pid = ULPI_TX_CMD.get_USB_PID(tx_cmd)
-            if USB_PID.is_token(pid):
-                return UsbPacketToken.from_pid_and_body_bytes(pid, p)
-            elif USB_PID.is_data(pid):
-                return UsbPacketData(pid, p)
-            elif USB_PID.is_hs(pid):
-                return UsbPacketHandshake(pid)
-            else:
-                raise NotImplementedError(pid)
+            return self.parse_packet_pid_and_bytes(pid, p)
         else:
             raise NotImplementedError(tx_cmd)
 
     def deparse_packet(self, p: Union[UsbPacketToken, UsbPacketData, UsbPacketHandshake]):
         cls = type(p)
-        if cls is UsbPacketToken:
-            v = self.tx_packet_token_t.from_py({
-                "cmd": ULPI_TX_CMD.USB_PID(p.pid),
-                "addr": p.addr,
-                "endp": p.endp,
-                "crc5": p.crc5(),
-            })
-            v = v._reinterpret_cast(Bits(8)[self.tx_packet_token_t.bit_length() // 8])
-            v0 = deque()
-            v0.extend(int(_v) for _v in v)
-            return v0
-
-        elif cls is UsbPacketData:
-            v = deque()
-            v.append(ULPI_TX_CMD.USB_PID(p.pid))
-            v.extend(p.data)
-            return v
-
-        elif cls is UsbPacketHandshake:
-            v = deque()
-            v.append(ULPI_TX_CMD.USB_PID(p.pid))
-            return v
-
-        else:
-            raise NotImplementedError(cls, p)
+        v = UtmiUsbHostProcAgent.deparse_packet(self, p)
+        v[0] = ULPI_TX_CMD.USB_PID(p.pid)
+        return v
 
 
 class UlpiUsbDevProcAgent(UsbDevAgent):
 
-    def parse_packet(self, p):
+    def parse_packet_pid_and_bytes(self, pid: int, p: Deque[int]):
+        return UlpiUsbHostProcAgent.parse_packet_pid_and_bytes(self, pid, p)
+
+    def parse_packet(self, p: Deque[int]):
         return UlpiUsbHostProcAgent.parse_packet(self, p)
 
-    def deparse_packet(self, p):
+    def deparse_packet(self, p: Union[UsbPacketToken, UsbPacketData, UsbPacketHandshake]):
         # need to add ulpi tx_cmd header
         return UlpiUsbHostProcAgent.deparse_packet(self, p)
 

@@ -188,7 +188,7 @@ from hwtLib.peripheral.uart.tx_rx_test import UartTxRxTC
 from hwtLib.peripheral.uart.tx_test import UartTxTC
 from hwtLib.peripheral.usb.sim.usb_agent_test import UsbAgentTC
 from hwtLib.peripheral.usb.usb2.ulpi_agent_test import UlpiAgent_TCs
-from hwtLib.peripheral.usb.usb2.utmi_agent_test import UtmiAgentTC
+from hwtLib.peripheral.usb.usb2.utmi_agent_test import UtmiAgentTCs
 from hwtLib.peripheral.usb.usb2.utmi_to_ulpi_test import Utmi_to_UlpiTC
 from hwtLib.structManipulators.arrayBuff_writer_test import ArrayBuff_writer_TC
 from hwtLib.structManipulators.arrayItemGetter_test import ArrayItemGetterTC, \
@@ -405,7 +405,7 @@ suite = testSuiteFromTCs(
     CrcTC,
     UsbAgentTC,
     *UlpiAgent_TCs,
-    UtmiAgentTC,
+    *UtmiAgentTCs,
     Utmi_to_UlpiTC,
 
     BusEndpointTC,
