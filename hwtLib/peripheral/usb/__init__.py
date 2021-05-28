@@ -2,7 +2,7 @@
 This package contains components, interfaces, data types and other utils
 related to Universal Serial Bus (USB) protocol.
 
-The USB bus is composed of Host (the main device which controll the bus), Hub(s) (a port extender) and a Device(s).
+The USB bus is composed of Host (the main device which controls the bus), Hub(s) (a port extender) and a Device(s).
 The USB protocol stack (v3.2) is composed of multipl layers as depicted in:
 
 .. figure:: ./_static/USB-Protocol-Stack-V3.png

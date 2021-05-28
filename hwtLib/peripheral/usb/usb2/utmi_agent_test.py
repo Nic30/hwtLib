@@ -3,8 +3,8 @@
 
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.unit import Unit
-from hwtLib.peripheral.usb.ulpi_agent_test import UlpiAgentTC
-from hwtLib.peripheral.usb.utmi import Utmi_8b
+from hwtLib.peripheral.usb.usb2.ulpi_agent_test import UlpiAgentTC
+from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b
 
 
 class UtmiWire(Unit):

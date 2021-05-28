@@ -7,7 +7,7 @@ from hwt.interfaces.tristate import TristateSig
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwtLib.peripheral.usb.constants import USB_PID
-from hwtLib.peripheral.usb.utmi import utmi_function_control_t, \
+from hwtLib.peripheral.usb.usb2.utmi import utmi_function_control_t, \
     utmi_interface_control_t, utmi_otg_control_t, utmi_interrupt_t
 from hwtSimApi.hdlSimulator import HdlSimulator
 from ipCorePackager.constants import DIRECTION
@@ -254,7 +254,7 @@ class Ulpi(Interface):
         return IP_Ulpi
 
     def _initSimAgent(self, sim:HdlSimulator):
-        from hwtLib.peripheral.usb.ulpi_agent import UlpiAgent
+        from hwtLib.peripheral.usb.usb2.ulpi_agent import UlpiAgent
         self._ag = UlpiAgent(sim, self)
 
 

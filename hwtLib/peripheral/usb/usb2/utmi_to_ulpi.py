@@ -8,11 +8,11 @@ from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.utils import propagateClkRst, addClkRst
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from hwtLib.peripheral.usb.ulpi import Ulpi, ULPI_TX_CMD, ULPI_REG, \
+from hwtLib.peripheral.usb.usb2.ulpi import Ulpi, ULPI_TX_CMD, ULPI_REG, \
     ulpi_reg_function_control_t, ulpi_reg_function_control_t_reset_default, \
     ulpi_reg_otg_control_t, ulpi_reg_otg_control_t_reset_defaults, \
     ulpi_reg_usb_interrupt_status_t_reset_default
-from hwtLib.peripheral.usb.utmi import Utmi_8b, utmi_interrupt_t
+from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b, utmi_interrupt_t
 from pyMathBitPrecise.bit_utils import mask
 
 

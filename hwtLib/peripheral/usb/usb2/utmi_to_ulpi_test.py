@@ -3,10 +3,10 @@
 
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.unit import Unit
-from hwtLib.peripheral.usb.ulpi import Ulpi, ULPI_TX_CMD
-from hwtLib.peripheral.usb.ulpi_agent_test import UlpiAgentTC
-from hwtLib.peripheral.usb.utmi import Utmi_8b
-from hwtLib.peripheral.usb.utmi_to_ulpi import Utmi_to_Ulpi
+from hwtLib.peripheral.usb.usb2.ulpi import Ulpi, ULPI_TX_CMD
+from hwtLib.peripheral.usb.usb2.ulpi_agent_test import UlpiAgentTC
+from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b
+from hwtLib.peripheral.usb.usb2.utmi_to_ulpi import Utmi_to_Ulpi
 
 
 class Utmi_to_UlpiWrap(Unit):

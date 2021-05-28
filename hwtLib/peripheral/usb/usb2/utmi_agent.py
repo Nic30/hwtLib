@@ -1,19 +1,19 @@
 from collections import deque
 
 from hwt.hdl.constants import NOP
-from hwtLib.peripheral.usb.utmi import Utmi_8b_rx, Utmi_8b, utmi_interrupt_t
+from hwt.simulator.agentBase import SyncAgentBase
+from hwtLib.peripheral.usb.usb2.ulpi import ulpi_reg_otg_control_t_reset_defaults, \
+    ulpi_reg_function_control_t_reset_default
+from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b_rx, Utmi_8b, utmi_interrupt_t
 from hwtSimApi.agents.base import AgentBase
 from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtSimApi.triggers import WaitCombStable, WaitCombRead, WaitWriteOnly
-from hwt.simulator.agentBase import SyncAgentBase
-from hwtLib.peripheral.usb.ulpi import ulpi_reg_otg_control_t_reset_defaults, \
-    ulpi_reg_function_control_t_reset_default
 from pyMathBitPrecise.bit_utils import ValidityError
 
 
 class Utmi_8b_rxAgent(SyncAgentBase):
     """
-    Simulation agent for :class:`hwtLib.peripheral.usb.utmi.Utmi_8b_rx` interface.
+    Simulation agent for :class:`hwtLib.peripheral.usb.usb2.utmi.Utmi_8b_rx` interface.
 
     :attention: "active" signal acts as a valid, "valid" signal acts as a mask
     :ivar data: Deque[Deque[Tuple[int, int]]] (internal deque represents packets, tuple represents data, error)
@@ -121,7 +121,7 @@ class Utmi_8b_rxAgent(SyncAgentBase):
 
 class Utmi_8b_txAgent(SyncAgentBase):
     """
-    Simulation agent for :class:`hwtLib.peripheral.usb.utmi.Utmi_8b_tx` interface.
+    Simulation agent for :class:`hwtLib.peripheral.usb.usb2.utmi.Utmi_8b_tx` interface.
 
     :ivar data: Deque[Deque[int]] (internal deque represents packets)
 
@@ -225,7 +225,7 @@ class Utmi_8b_txAgent(SyncAgentBase):
 
 class Utmi_8bAgent(AgentBase):
     """
-    Simulation agent for :class:`hwtLib.peripheral.usb.utmi.Utmi_8b` interface.
+    Simulation agent for :class:`hwtLib.peripheral.usb.usb2.utmi.Utmi_8b` interface.
     """
 
     def __init__(self, sim:HdlSimulator, intf: Utmi_8b):

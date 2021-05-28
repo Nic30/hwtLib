@@ -9,8 +9,8 @@ from hwtLib.peripheral.usb.sim.agent_base import UsbPacketToken, UsbPacketData, 
     UsbPacketHandshake
 from hwtLib.peripheral.usb.sim.usb_agent_device import UsbDevAgent
 from hwtLib.peripheral.usb.sim.usb_agent_host import UsbHostAgent
-from hwtLib.peripheral.usb.ulpi import ULPI_TX_CMD, Ulpi
-from hwtLib.peripheral.usb.ulpi_agent import UlpiAgent
+from hwtLib.peripheral.usb.usb2.ulpi import ULPI_TX_CMD, Ulpi
+from hwtLib.peripheral.usb.usb2.ulpi_agent import UlpiAgent
 from hwtSimApi.hdlSimulator import HdlSimulator
 
 
@@ -79,7 +79,7 @@ class UlpiUsbDevProcAgent(UsbDevAgent):
 
 class UlpiUsbAgent(UlpiAgent):
     """
-    :class:`hwtLib.peripheral.usb.ulpi_agent.UlpiAgent`
+    :class:`hwtLib.peripheral.usb.usb2.ulpi_agent.UlpiAgent`
     with device host logic and USB stack
     """
 

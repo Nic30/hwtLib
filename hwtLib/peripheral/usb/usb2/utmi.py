@@ -31,7 +31,7 @@ class Utmi_8b_rx(VldSynced):
         self.error = Signal()
 
     def _initSimAgent(self, sim: HdlSimulator):
-        from hwtLib.peripheral.usb.utmi_agent import Utmi_8b_rxAgent
+        from hwtLib.peripheral.usb.usb2.utmi_agent import Utmi_8b_rxAgent
         self._ag = Utmi_8b_rxAgent(sim, self)
 
 
@@ -41,9 +41,12 @@ class Utmi_8b_tx(Handshaked):
 
     .. figure:: ./_static/utmi_tx.png
     """
+    def _config(self):
+        Handshaked._config(self)
+        self.DATA_WIDTH = 8
 
     def _initSimAgent(self, sim: HdlSimulator):
-        from hwtLib.peripheral.usb.utmi_agent import Utmi_8b_txAgent
+        from hwtLib.peripheral.usb.usb2.utmi_agent import Utmi_8b_txAgent
         self._ag = Utmi_8b_txAgent(sim, self)
 
 
@@ -133,6 +136,6 @@ class Utmi_8b(Interface):
             c.DATA_WIDTH = 8
 
     def _initSimAgent(self, sim:HdlSimulator):
-        from hwtLib.peripheral.usb.utmi_agent import Utmi_8bAgent
+        from hwtLib.peripheral.usb.usb2.utmi_agent import Utmi_8bAgent
         self._ag = Utmi_8bAgent(sim, self)
 

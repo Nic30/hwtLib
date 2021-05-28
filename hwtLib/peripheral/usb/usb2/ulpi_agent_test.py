@@ -9,9 +9,9 @@ from hwt.interfaces.utils import addClkRstn
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.unit import Unit
 from hwtLib.peripheral.usb.descriptors.cdc import get_default_usb_cdc_vcp_descriptors
-from hwtLib.peripheral.usb.ulpi import Ulpi, ULPI_TX_CMD
-from hwtLib.peripheral.usb.ulpi_agent import UlpiAgent
-from hwtLib.peripheral.usb.ulpi_usb_agent import UlpiUsbAgent
+from hwtLib.peripheral.usb.usb2.ulpi import Ulpi, ULPI_TX_CMD
+from hwtLib.peripheral.usb.usb2.ulpi_agent import UlpiAgent
+from hwtLib.peripheral.usb.usb2.ulpi_usb_agent import UlpiUsbAgent
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask
 

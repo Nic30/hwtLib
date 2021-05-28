@@ -1,7 +1,7 @@
 from collections import deque
 
 from hwt.simulator.agentBase import SyncAgentBase
-from hwtLib.peripheral.usb.ulpi import Ulpi, ulpi_reg_usb_interrupt_status_t, \
+from hwtLib.peripheral.usb.usb2.ulpi import Ulpi, ulpi_reg_usb_interrupt_status_t, \
     ulpi_reg_usb_interrupt_status_t_reset_default, ULPI_TX_CMD
 from hwtLib.types.ctypes import uint8_t
 from hwtSimApi.hdlSimulator import HdlSimulator
@@ -11,7 +11,7 @@ from pyMathBitPrecise.bit_utils import mask, ValidityError
 
 class UlpiAgent(SyncAgentBase):
     """
-    Agent for :class:`hwtLib.peripheral.usb.ulpi.Ulpi` interface.
+    Agent for :class:`hwtLib.peripheral.usb.usb2.ulpi.Ulpi` interface.
     It allows for receiving and transmiting raw data over ULPI, it does not implement USB stack.
 
     :note: the RX is always from PHY to Link, the TX is always from Link to PHY
