@@ -1,5 +1,10 @@
+from typing import List, Tuple, Optional
+
+from hwt.hdl.value import HValue
+from hwtLib.peripheral.usb.descriptors.std import USB_DESCRIPTOR_TYPE, \
+    usb_descriptor_device_t, usb_descriptor_endpoint_t, USB_ENDPOINT_DIR, \
+    USB_ENDPOINT_ATTRIBUTES_TRANSFER_TYPE
 from hwtLib.types.ctypes import uint8_t
-from hwtLib.peripheral.usb.descriptors.std import USB_DESCRIPTOR_TYPE
 
 
 class UsbNoSuchDescriptor(Exception):
@@ -8,12 +13,56 @@ class UsbNoSuchDescriptor(Exception):
     """
 
 
+class UsbEndpointMeta():
+    """
+    Information about USB endpoint extracted from :class:`~.UsbDescriptorBundle`
+    """
+
+    def __init__(self, index: int, dir_:USB_ENDPOINT_DIR,
+                 supports_setup: bool=False,
+                 supports_bulk: bool=False,
+                 supports_interrupt: bool=False,
+                 supports_isochronoust: bool=False,
+                 max_packet_size: int=0,
+                 ):
+        self.index = index
+        self.dir = dir_
+        self.supports_setup = supports_setup
+        self.supports_bulk = supports_bulk
+        self.supports_interrupt = supports_interrupt
+        self.supports_isochronoust = supports_isochronoust
+
+        self.max_packet_size = max_packet_size
+
+    def __repr__(self):
+        capabilities = []
+        if self.supports_setup:
+            capabilities.append("setup")
+        if self.supports_bulk:
+            capabilities.append("bulk")
+        if self.supports_interrupt:
+            capabilities.append("interrupt")
+        if self.supports_isochronoust:
+            capabilities.append("isochronoust")
+        if self.dir == USB_ENDPOINT_DIR.IN:
+            d = "IN"
+        elif self.dir == USB_ENDPOINT_DIR.OUT:
+            d = "OUT"
+        else:
+            d = "INVALID"
+
+        return (
+            f"<{self.__class__.__name__:s} EP{self.index:d} {d:str} {capabilities:r} "
+            f"maxPacketSize:{self.max_packet_size:d}B>"
+        )
+
+
 class UsbDescriptorBundle(list):
     """
     Container of USB descriptors.
     """
 
-    def get_descriptor(self, descr_t, descr_i:int):
+    def get_descriptor(self, descr_t, descr_i: int) -> Tuple[int, HValue]:
         """
         Get an index of descriptor of a specific type
 
@@ -31,15 +80,15 @@ class UsbDescriptorBundle(list):
                     _i += 1
         raise UsbNoSuchDescriptor()
 
-    def get_descriptor_index(self, descr_t, descr_i:int):
+    def get_descriptor_index(self, descr_t, descr_i: int) -> int:
         return self.get_descriptor(descr_t, descr_i)[0]
 
     @staticmethod
-    def pack_descriptor(d):
+    def pack_descriptor(d: HValue) -> List[int]:
         _data = d._reinterpret_cast(uint8_t[d._dtype.bit_length() // 8])
         return _data.to_py()
 
-    def get_descr_bytes(self, start_descr_i, wLength):
+    def get_descr_bytes(self, start_descr_i: int, wLength: int) -> List[int]:
         """
         Start at the beginning of the descriptor on index start_descr_i and copy specified
         number of bytes from that location (may overlap to other descriptors as well)
@@ -66,3 +115,43 @@ class UsbDescriptorBundle(list):
                 descr_i += 1
 
         return data
+
+    def get_endpoint_meta(self) -> List[Tuple[Optional[UsbEndpointMeta], Optional[UsbEndpointMeta]]]:
+        endpoints = []
+        for d in self:
+            if d._dtype == usb_descriptor_device_t:
+                pSize = int(d.body.bMaxPacketSize)
+                assert not endpoints, (endpoints, "Device descriptor should be only one")
+                ep_out = UsbEndpointMeta(0, USB_ENDPOINT_DIR.OUT, supports_setup=True, max_packet_size=pSize)
+                ep_in = UsbEndpointMeta(0, USB_ENDPOINT_DIR.IN, supports_setup=True, max_packet_size=pSize)
+                endpoints.append([ep_out, ep_in])
+
+            elif d._dtype == usb_descriptor_endpoint_t:
+                addr = int(d.body.bEndpointAddress)
+                assert addr > 0, (addr, "Control endpoint properties should be specified only in device descriptor")
+                dir_ = int(d.body.bEndpointAddressDir)
+                assert dir_ in (USB_ENDPOINT_DIR.IN, USB_ENDPOINT_DIR.OUT), dir_
+
+                # add records to endponts list if there is not record for this endpoint
+                missig_endponts = addr + 1 - len(endpoints)
+                if missig_endponts > 0:
+                    endpoints.extend([[None, None] for _ in range(missig_endponts)])
+                ep = endpoints[addr][dir_]
+                if ep is None:
+                    ep = endpoints[addr][dir_] = UsbEndpointMeta(addr, dir_)
+
+                # update UsbEndpointMeta with the data from this descriptor
+                syn = int(d.body.bmAttributes.synchronisationType)
+                if syn == USB_ENDPOINT_ATTRIBUTES_TRANSFER_TYPE.CONTROL:
+                    ep.supports_setup = True
+                elif syn == USB_ENDPOINT_ATTRIBUTES_TRANSFER_TYPE.ISOCHRONOUS:
+                    ep.supports_isochronoust = True
+                elif syn == USB_ENDPOINT_ATTRIBUTES_TRANSFER_TYPE.BULK:
+                    ep.supports_bulk = True
+                elif syn == USB_ENDPOINT_ATTRIBUTES_TRANSFER_TYPE.INTERRUPT:
+                    ep.supports_interrupt = True
+                else:
+                    raise ValueError(syn)
+                ep.max_packet_size = max(ep.max_packet_size, int(d.body.wMaxPacketSize))
+
+        return endpoints
