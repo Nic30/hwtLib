@@ -372,6 +372,7 @@ def make_usb_descriptor_endpoint(
         wMaxPacketSize: int,
         bInterval: int,
     ):
+    assert bEndpointAddress > 0, bEndpointAddress
     t = usb_descriptor_endpoint_t
     return t.from_py({
         "header": {
