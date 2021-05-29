@@ -32,8 +32,8 @@ class UtmiUsbHostProcAgent(UsbHostAgent):
         if USB_PID.is_token(pid):
             return UsbPacketToken.from_pid_and_body_bytes(pid, p)
         elif USB_PID.is_data(pid):
-            crc16_l = p.pop()
             crc16_h = p.pop()
+            crc16_l = p.pop()
             crc16 = (crc16_h << 8 | crc16_l)
             new_p = UsbPacketData(pid, p)
             expected_crc = new_p.crc16()
