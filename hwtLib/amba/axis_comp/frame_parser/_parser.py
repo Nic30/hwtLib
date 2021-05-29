@@ -4,7 +4,7 @@
 from typing import Optional, List, Union
 
 from hwt.code import If
-from hwt.code_utils import connect_optional
+from hwt.code_utils import connect_optional, rename_signal
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.bits import Bits
@@ -266,7 +266,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                     overflow = wordIndex >= maxWordIndex
                 self.parsing_overflow(overflow)
 
-            If(in_vld & out_ready,
+            If(rename_signal(self, in_vld & out_ready, "data_ack"),
                 If(last,
                    wordIndex(0)
                 ).Else(
@@ -277,7 +277,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
     def delegate_to_children(self):
         if self.SHARED_READY:
             raise NotImplementedError()
-        assert len(self.sub_t) == len(self.children),\
+        assert len(self.sub_t) == len(self.children), \
             (self.sub_t, self.children)
         if self.OVERFLOW_SUPPORT:
             raise NotImplementedError()
@@ -336,6 +336,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
 
                 if not t1_is_padding:
                     connect_optional(c1.dataOut, self.dataOut)
+
             elif t0_const_sized and not t1_const_sized:
                 # prefix parser, parser prefix in subcomponent
                 # and let rest to a suffix
@@ -357,11 +358,11 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                         # We enable the input to c1 once the c0 is finished with the parsing (parsing_overflow=1)
                         slaves = [c0.dataIn, suffix]
                         extraConds = {
-                           c0.dataIn: ~c0.parsing_overflow,
+                           #c0.dataIn:~c0.parsing_overflow,
                            suffix: c0.parsing_overflow,
                         }
                         skipWhen = {
-                           suffix: ~c0.parsing_overflow,
+                           suffix:~c0.parsing_overflow,
                         }
                         suffix(din, exclude=[din.valid, din.ready])
 
@@ -420,7 +421,7 @@ def _example_AxiS_frameParser():
     #   ),
     #   "struct0")
     #  )
-    #t = HUnion(
+    # t = HUnion(
     #   (uint32_t, "a"),
     #   (uint32_t, "b")
     #   )
