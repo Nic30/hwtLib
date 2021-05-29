@@ -6,6 +6,8 @@ from typing import List
 from hwt.code import If, Concat, SwitchLogic
 from hwt.code_utils import rename_signal
 from hwt.hdl.constants import WRITE, READ
+from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.defs import BIT
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
 from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import packIntf
@@ -23,8 +25,6 @@ from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.mem.ram import RamSingleClock
 from hwtLib.types.ctypes import uint32_t, uint8_t
 from pyMathBitPrecise.bit_utils import mask
-from hwt.hdl.types.bits import Bits
-from hwt.hdl.types.defs import BIT
 
 
 class OutOfOrderCummulativeOp(Unit):
