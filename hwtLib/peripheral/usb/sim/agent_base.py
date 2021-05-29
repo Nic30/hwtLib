@@ -114,6 +114,7 @@ class UsbPacketData():
 class UsbPacketHandshake():
 
     def __init__(self, pid: USB_PID):
+        assert USB_PID.is_hs(pid), pid
         self.pid = pid
 
     def __repr__(self):
