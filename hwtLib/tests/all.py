@@ -241,6 +241,7 @@ from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
 from hwtLib.xilinx.primitive.examples.dsp48e1Add_test import Dsp48e1Add_TCs
 from hwtLib.xilinx.slr_crossing_test import HsSlrCrossingTC
+from hwtLib.peripheral.usb.usb2.sie_rx_test import Usb2SieDeviceRxTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -407,6 +408,7 @@ suite = testSuiteFromTCs(
     *UlpiAgent_TCs,
     *UtmiAgentTCs,
     Utmi_to_UlpiTC,
+    Usb2SieDeviceRxTC,
 
     BusEndpointTC,
 
