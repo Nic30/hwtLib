@@ -1,7 +1,10 @@
+from typing import List
+
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import VectSignal, Clk
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from ipCorePackager.constants import DIRECTION
 from ipCorePackager.intfIpMeta import IntfIpMeta
 
@@ -17,6 +20,23 @@ class XgmiiChannel(Interface):
     .. hwt-autodoc::
     """
 
+    class CONTROL:
+        """
+        Enum to name meanings of the bit values in "c" signal.
+        """
+        DATA = 0
+        CONTROL = 1
+
+    class CMD:
+        """
+        This is an enum of values which may appear
+        on data byte while corresponding control bit is :var:`~.CONTROL.CONTROL`
+        """
+        IDLE = Bits(8).from_py(0x07)
+        START = Bits(8).from_py(0xFB)
+        TERM = Bits(8).from_py(0xFD)
+        ERROR = Bits(8).from_py(0xFE)
+
     def _config(self):
         self.DATA_WIDTH = Param(64)
         self.FREQ = Param(int(156.25e6))
@@ -29,12 +49,17 @@ class XgmiiChannel(Interface):
         self.d = VectSignal(self.DATA_WIDTH)
         self.c = VectSignal(self.DATA_WIDTH // 8)
 
-
-class XGMII_CMD:
-    IDLE = Bits(8).from_py(0x07)
-    START = Bits(8).from_py(0xFB)
-    TERM = Bits(8).from_py(0xFD)
-    ERROR = Bits(8).from_py(0xFE)
+    def detect_control(self, s) -> List[RtlSignal]:
+        """
+        :returns: a list of signals which are 1 if the specified control signal
+            was detected on that specific byte, detector for byte 0 first in output list
+        """
+        d = self.d
+        c = self.c
+        return [
+            c[i]._eq(self.CONTROL.CONTROL) & d[(i + 1) * 8:i * 8]._eq(s)
+            for i in range(self.DATA_WIDTH // 8)
+        ]
 
 
 class Xgmii(Interface):
