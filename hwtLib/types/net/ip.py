@@ -45,8 +45,8 @@ class IP_PROTOCOL():
 
 
 IPv4Header_t = HStruct(
-    (Bits(4), "version"), (Bits(4), "ihl"), (Bits(6), "dscp"), (Bits(2), "ecn"), (uint16_t, "totalLen"),
-    (Bits(16), "id"), (Bits(3), "flags"), (Bits(13), "fragmentOffset"),
+    (Bits(4), "ihl"), (Bits(4), "version"), (Bits(2), "ecn"), (Bits(6), "dscp"), (uint16_t, "totalLen"),
+    (Bits(16), "id"), (Bits(13), "fragmentOffset"), (Bits(3), "flags"),
     (uint8_t, "ttl"), (uint8_t, "protocol"), (Bits(16), "headerChecksum"),
     (ipv4_t, "src"),
     (ipv4_t, "dst"),
