@@ -13,8 +13,8 @@ from hwtLib.amba.axis_comp.frame_join import AxiS_FrameJoin
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class AxiS_FrameJoin_1x_2B_TC(SimTestCase):
-    D_B = 2
+class AxiS_FrameJoin_1x_1B_TC(SimTestCase):
+    D_B = 1
     T = HStruct(
         (HStream(Bits(8 * D_B), (1, inf), [0]), "frame0"),
     )
@@ -142,15 +142,20 @@ class AxiS_FrameJoin_1x_2B_TC(SimTestCase):
 
         self._test_pass_data(IN_FRAMES)
 
+class AxiS_FrameJoin_1x_2B_TC(AxiS_FrameJoin_1x_1B_TC):
+    D_B = 2
+    T = HStruct(
+        (HStream(Bits(8 * D_B), (1, inf), [0]), "frame0"),
+    )
 
-class AxiS_FrameJoin_1x_2B_len1_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_1x_2B_len1_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 2
     T = HStruct(
         (HStream(Bits(8 * D_B), (1, 1), [0]), "frame0"),
     )
 
 
-class AxiS_FrameJoin_2x_1B_len1_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_2x_1B_len1_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 1
     T = HStruct(
         (HStream(Bits(8 * D_B), (1, 1), [0]), "frame0"),
@@ -158,7 +163,7 @@ class AxiS_FrameJoin_2x_1B_len1_TC(AxiS_FrameJoin_1x_2B_TC):
     )
 
 
-class AxiS_FrameJoin_2x_2B_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_2x_2B_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 2
     T = HStruct(
         (HStream(Bits(8 * D_B), (1, inf), [0]), "frame0"),
@@ -166,7 +171,7 @@ class AxiS_FrameJoin_2x_2B_TC(AxiS_FrameJoin_1x_2B_TC):
     )
 
 
-class AxiS_FrameJoin_2x_1B_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_2x_1B_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 1
     T = HStruct(
         (HStream(Bits(8 * D_B), (1, inf), [0]), "frame0"),
@@ -174,7 +179,7 @@ class AxiS_FrameJoin_2x_1B_TC(AxiS_FrameJoin_1x_2B_TC):
     )
 
 
-class AxiS_FrameJoin_2x_1B_on_2B_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_2x_1B_on_2B_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 2
     T = HStruct(
         (HStream(Bits(8 * 1), (1, inf), [0]), "frame0"),
@@ -182,7 +187,7 @@ class AxiS_FrameJoin_2x_1B_on_2B_TC(AxiS_FrameJoin_1x_2B_TC):
     )
 
 
-class AxiS_FrameJoin_2x_1B_on_2B_offset_0_1_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_2x_1B_on_2B_offset_0_1_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 2
     T = HStruct(
         (HStream(Bits(8 * 1), (1, inf), [0]), "frame0"),
@@ -190,7 +195,7 @@ class AxiS_FrameJoin_2x_1B_on_2B_offset_0_1_TC(AxiS_FrameJoin_1x_2B_TC):
     )
 
 
-class AxiS_FrameJoin_2x_1B_on_2B_offset_1_0_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_2x_1B_on_2B_offset_1_0_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 2
     T = HStruct(
         (HStream(Bits(8 * 1), (1, inf), [1]), "frame0"),
@@ -198,7 +203,7 @@ class AxiS_FrameJoin_2x_1B_on_2B_offset_1_0_TC(AxiS_FrameJoin_1x_2B_TC):
     )
 
 
-class AxiS_FrameJoin_2x_1B_on_2B_offset_1_1_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_2x_1B_on_2B_offset_1_1_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 2
     T = HStruct(
         (HStream(Bits(8 * 1), (1, inf), [1]), "frame0"),
@@ -206,41 +211,41 @@ class AxiS_FrameJoin_2x_1B_on_2B_offset_1_1_TC(AxiS_FrameJoin_1x_2B_TC):
     )
 
 
-class AxiS_FrameJoin_1x_2B_offset_1_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_1x_2B_offset_1_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 2
     T = HStruct(
         (HStream(Bits(8 * D_B), (1, inf), [1]), "frame0"),
     )
 
-# class AxiS_FrameJoin_1x_34B_offset_any_TC(AxiS_FrameJoin_1x_2B_TC):
+# class AxiS_FrameJoin_1x_34B_offset_any_TC(AxiS_FrameJoin_1x_1B_TC):
 #    D_B = 8
 #    T = HStruct(
 #        (HStream(Bits(8 * 34), (1, 1), [0, 1, 2, 3, 4, 5, 6, 7]), "frame0"),
 #    )
 
 
-class AxiS_FrameJoin_1x_3B_offset_0_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_1x_3B_offset_0_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 2
     T = HStruct(
         (HStream(Bits(8 * 3), (1, 1), [ 0, ]), "frame0"),
     )
 
 
-class AxiS_FrameJoin_1x_3B_offset_1_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_1x_3B_offset_1_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 2
     T = HStruct(
         (HStream(Bits(8 * 3), (1, 1), [ 1, ]), "frame0"),
     )
 
 
-class AxiS_FrameJoin_1x_3B_offset_0_1_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_1x_3B_offset_0_1_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 2
     T = HStruct(
         (HStream(Bits(8 * 3), (1, 1), [0, 1, ]), "frame0"),
     )
 
 
-class AxiS_FrameJoin_1x_in_2B_offset_1__1_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_1x_in_2B_offset_1__1_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 2
     T = HStruct(
         (HStream(Bits(8 * D_B), (1, inf), [1]), "frame0"),
@@ -248,7 +253,7 @@ class AxiS_FrameJoin_1x_in_2B_offset_1__1_TC(AxiS_FrameJoin_1x_2B_TC):
     )
 
 
-class AxiS_FrameJoin_1x_in_2B_offset_1__0_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_1x_in_2B_offset_1__0_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 2
     T = HStruct(
         (HStream(Bits(8 * D_B), (1, inf), [1]), "frame0"),
@@ -256,7 +261,7 @@ class AxiS_FrameJoin_1x_in_2B_offset_1__0_TC(AxiS_FrameJoin_1x_2B_TC):
     )
 
 
-class AxiS_FrameJoin_1x_in_2B_offset_0__1_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_1x_in_2B_offset_0__1_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 2
     T = HStruct(
         (HStream(Bits(8 * D_B), (1, inf), [0]), "frame0"),
@@ -264,7 +269,7 @@ class AxiS_FrameJoin_1x_in_2B_offset_0__1_TC(AxiS_FrameJoin_1x_2B_TC):
     )
 
 
-class AxiS_FrameJoin_3x_in_2B_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_3x_in_2B_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 2
     T = HStruct(
         (HStream(Bits(8 * D_B), (1, inf), [0]), "frame0"),
@@ -273,7 +278,7 @@ class AxiS_FrameJoin_3x_in_2B_TC(AxiS_FrameJoin_1x_2B_TC):
     )
 
 
-class AxiS_FrameJoin_3x_in_1B_on_2B_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_3x_in_1B_on_2B_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 2
     T = HStruct(
         (HStream(Bits(8 * 1), (1, inf), [0]), "frame0"),
@@ -282,7 +287,7 @@ class AxiS_FrameJoin_3x_in_1B_on_2B_TC(AxiS_FrameJoin_1x_2B_TC):
     )
 
 
-class AxiS_FrameJoin_3x_in_1B_on_5B_TC(AxiS_FrameJoin_1x_2B_TC):
+class AxiS_FrameJoin_3x_in_1B_on_5B_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 5
     T = HStruct(
         (HStream(Bits(8 * 1), (1, inf), [0]), "frame0"),
@@ -292,6 +297,7 @@ class AxiS_FrameJoin_3x_in_1B_on_5B_TC(AxiS_FrameJoin_1x_2B_TC):
 
 
 AxiS_FrameJoin_TCs = [
+   AxiS_FrameJoin_1x_1B_TC,
    AxiS_FrameJoin_2x_1B_TC,
    AxiS_FrameJoin_1x_2B_len1_TC,
    AxiS_FrameJoin_2x_1B_len1_TC,
