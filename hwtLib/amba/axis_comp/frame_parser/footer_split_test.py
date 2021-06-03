@@ -21,6 +21,7 @@ TEST_FRAME_SIZES = [v * 8 for v in [
 class AxiS_footerSplitTC(SimTestCase):
 
     def setUp(self):
+        # do avoid useless sim env reset before start (is reseted manually in each test)
         pass
 
     def custom_setUp(self, data_width, footer_width,
@@ -121,22 +122,22 @@ class AxiS_footerSplitTC(SimTestCase):
     #     self._test_frames(24, footer_width, frame_len0, frame_len1, False)
 
     @TestMatrix(TEST_FRAME_SIZES,
-                TEST_FRAME_SIZES,
-                TEST_FRAME_SIZES)
+                [0, ] + TEST_FRAME_SIZES,
+                [0, ] + TEST_FRAME_SIZES)
     def test_frames_8_randomized(self, footer_width,
                                  frame_len0, frame_len1):
-        self._test_frames(8, footer_width, frame_len0, frame_len1, True)
+        self._test_frames(8, footer_width, frame_len0, frame_len1, False)
 
     @TestMatrix(TEST_FRAME_SIZES,
-                TEST_FRAME_SIZES,
-                TEST_FRAME_SIZES)
+                [0, ] + TEST_FRAME_SIZES,
+                [0, ] + TEST_FRAME_SIZES)
     def test_frames_16_randomized(self, footer_width,
                                   frame_len0, frame_len1):
         self._test_frames(16, footer_width, frame_len0, frame_len1, True)
 
     @TestMatrix(TEST_FRAME_SIZES,
-                TEST_FRAME_SIZES,
-                TEST_FRAME_SIZES)
+                [0, ] + TEST_FRAME_SIZES,
+                [0, ] + TEST_FRAME_SIZES)
     def test_frames_24_randomized(self, footer_width,
                                   frame_len0, frame_len1):
         self._test_frames(24, footer_width, frame_len0, frame_len1, True)
@@ -157,11 +158,11 @@ if __name__ == '__main__':
     # suite.addTest(AxiS_footerSplitTC('test_frames_8'))
     # suite.addTest(AxiS_footerSplitTC('test_frames_16'))
     # suite.addTest(AxiS_footerSplitTC('test_frames_24'))
-    # suite.addTest(AxiS_footerSplitTC('test_frames_8_randomized'))
-    suite.addTest(unittest.makeSuite(AxiS_footerSplitTC))
+    suite.addTest(AxiS_footerSplitTC('test_frames_8_randomized'))
+    # suite.addTest(unittest.makeSuite(AxiS_footerSplitTC))
     runner = unittest.TextTestRunner(verbosity=3)
     if useParallerlTest:
-        # Run same tests across 4 processes
+        # Run same tests across multiple processes
         concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests())
         runner.run(concurrent_suite)
     else:
