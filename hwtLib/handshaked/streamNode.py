@@ -1,9 +1,14 @@
+from typing import List, Optional, Tuple
+
 from hwt.code import And, Or
-from hwt.pyUtils.arrayQuery import where
+from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
 from hwt.hdl.types.defs import BIT
+from hwt.pyUtils.arrayQuery import where
+from hwt.synthesizer.interface import Interface
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 
-def _get_ready_signal(intf):
+def _get_ready_signal(intf: Interface) -> RtlSignal:
     try:
         return intf.rd
     except AttributeError:
@@ -11,7 +16,7 @@ def _get_ready_signal(intf):
     return intf.ready
 
 
-def _get_valid_signal(intf):
+def _get_valid_signal(intf: Interface) -> RtlSignal:
     try:
         return intf.vld
     except AttributeError:
@@ -19,7 +24,7 @@ def _get_valid_signal(intf):
     return intf.valid
 
 
-def _exStreamMemberAck(m):
+def _exStreamMemberAck(m) -> RtlSignal:
     c, n = m
     return c & n.ack()
 
@@ -33,7 +38,7 @@ class ExclusiveStreamGroups(list):
     def __hash__(self):
         return id(self)
 
-    def sync(self, enSig=None):
+    def sync(self, enSig=None) -> List[HdlAssignmentContainer]:
         """
         Create synchronization logic between streams
         (generate valid/ready synchronization logic for interfaces)
@@ -49,7 +54,7 @@ class ExclusiveStreamGroups(list):
             expression.extend(node.sync(cond))
         return expression
 
-    def ack(self):
+    def ack(self) -> RtlSignal:
         """
         :return: expression which's value is high when transaction can be made
             over at least on child streaming node
@@ -94,7 +99,7 @@ class StreamNode():
         self.extraConds = extraConds
         self.skipWhen = skipWhen
 
-    def sync(self, enSig=None):
+    def sync(self, enSig=None) -> List[HdlAssignmentContainer]:
         """
         Create synchronization logic between streams
         (generate valid/ready synchronization logic for interfaces)
@@ -148,7 +153,7 @@ class StreamNode():
 
         return expression
 
-    def ack(self):
+    def ack(self) -> RtlSignal:
         """
         :return: expression which's value is high when transaction can be made over interfaces
         """
@@ -190,7 +195,7 @@ class StreamNode():
 
         return And(*acks)
 
-    def getExtraAndSkip(self, intf):
+    def getExtraAndSkip(self, intf) -> Tuple[Optional[RtlSignal], Optional[RtlSignal]]:
         """
         :return: optional extraCond and skip flags for interface
         """
@@ -206,7 +211,7 @@ class StreamNode():
 
         return extra, skip
 
-    def vld(self, intf):
+    def vld(self, intf: Interface) -> RtlSignal:
         """
         :return: valid signal of master interface for synchronization of othres
         """
@@ -226,7 +231,7 @@ class StreamNode():
         else:
             return v | s
 
-    def rd(self, intf):
+    def rd(self, intf: Interface) -> RtlSignal:
         """
         :return: ready signal of slave interface for synchronization of othres
         """
@@ -246,7 +251,7 @@ class StreamNode():
         else:
             return r | s
 
-    def ackForMaster(self, master):
+    def ackForMaster(self, master: Interface) -> RtlSignal:
         """
         :return: driver of ready signal for master
         """
@@ -266,7 +271,7 @@ class StreamNode():
 
         return r
 
-    def ackForSlave(self, slave):
+    def ackForSlave(self, slave: Interface) -> RtlSignal:
         """
         :return: driver of valid signal for slave
         """
