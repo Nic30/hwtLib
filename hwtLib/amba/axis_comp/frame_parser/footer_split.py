@@ -5,6 +5,7 @@ from math import ceil
 from typing import Tuple, List
 
 from hwt.code import If, SwitchLogic
+from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
@@ -15,9 +16,9 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axis_comp.base import AxiSCompBase
 from pyMathBitPrecise.bit_utils import mask, set_bit_range, get_bit_range
-from hwt.code_utils import rename_signal
 
-# Examples of configurations and states which may apperar
+
+# Examples of configurations and states which may appear
 #
 #     DW = 2*8, footer= 2 * 8
 #     1. the footer is alligned in the way it appears on minimal number of words
@@ -86,8 +87,6 @@ from hwt.code_utils import rename_signal
 #        +------------------+----+----+----+
 #        | last    (reg[0]) | d  | d  | f  |
 #        +------------------+----+----+----+
-
-
 class AxiS_footerSplit(AxiSCompBase):
     """
     Split a constant size footer and prefix data from a input frame.
