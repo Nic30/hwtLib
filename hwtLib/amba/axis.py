@@ -110,6 +110,13 @@ def packAxiSFrame(dataWidth, structVal, withStrb=False):
     if withStrb:
         byte_cnt = dataWidth // 8
 
+    if structVal == []:
+        if withStrb:
+            yield (None, 0, 1)
+        else:
+            yield (None, 1)
+        return
+
     words = iterBits(structVal, bitsInOne=dataWidth,
                      skipPadding=False, fillup=True)
     for last, d in iter_with_last(words):
@@ -143,7 +150,7 @@ def unpackAxiSFrame(structT, frameData, getDataFn=None, dataWidth=None):
     return HdlValue_unpack(structT, frameData, getDataFn, dataWidth)
 
 
-def _axis_recieve_bytes(ag_data, D_B, use_keep, use_id, offset=0) -> Tuple[int, List[int]]:
+def _axis_recieve_bytes(ag_data, D_B, use_keep, use_id) -> Tuple[int, List[int]]:
     offset = None
     data_B = []
     last = False
@@ -170,7 +177,11 @@ def _axis_recieve_bytes(ag_data, D_B, use_keep, use_id, offset=0) -> Tuple[int, 
             id_ = 0
 
         last = int(last)
-        assert keep > 0
+        if keep == 0:
+            assert not data_B, "Empty word in the middle of the packet"
+            assert last, "Empty word at the beginning of the packet"
+            offset = 0
+
         if offset is None:
             # first iteration
             # expecting potential 0s in keep and the rest 1
@@ -235,10 +246,13 @@ def axis_recieve_bytes(axis: AxiStream) -> Tuple[int, List[int]]:
 
 def _axis_send_bytes(axis: AxiStream, data_B: List[int], withStrb, offset)\
         ->List[Tuple[int, int, int]]:
-    t = uint8_t[len(data_B) + offset]
+    if data_B:
+        t = uint8_t[len(data_B) + offset]
+        _data_B = t.from_py([None for _ in range(offset)] + data_B)
+    else:
+        _data_B = data_B
     # :attention: strb signal is reinterpreted as a keep signal
-    return packAxiSFrame(axis.DATA_WIDTH, t.from_py(
-        [None for _ in range(offset)] + data_B),
+    return packAxiSFrame(axis.DATA_WIDTH, _data_B ,
         withStrb=withStrb)
 
 
