@@ -158,8 +158,8 @@ if __name__ == '__main__':
     # suite.addTest(AxiS_footerSplitTC('test_frames_8'))
     # suite.addTest(AxiS_footerSplitTC('test_frames_16'))
     # suite.addTest(AxiS_footerSplitTC('test_frames_24'))
-    suite.addTest(AxiS_footerSplitTC('test_frames_8_randomized'))
-    # suite.addTest(unittest.makeSuite(AxiS_footerSplitTC))
+    # suite.addTest(AxiS_footerSplitTC('test_frames_8_randomized'))
+    suite.addTest(unittest.makeSuite(AxiS_footerSplitTC))
     runner = unittest.TextTestRunner(verbosity=3)
     if useParallerlTest:
         # Run same tests across multiple processes

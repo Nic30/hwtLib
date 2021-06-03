@@ -4,7 +4,7 @@
 from math import ceil
 from typing import Tuple, List
 
-from hwt.code import If, SwitchLogic
+from hwt.code import If, SwitchLogic, Concat
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
@@ -128,9 +128,9 @@ class AxiS_footerSplit(AxiSCompBase):
                 self.intfCls()._m()
             ])
 
-    def generate_regs(self, LOOK_AHEAD) -> List[Tuple[RtlSignal, RtlSignal,
-                                                      RtlSignal, RtlSignal,
-                                                      RtlSignal]]:
+    def generate_regs(self, LOOK_AHEAD: int) -> List[Tuple[RtlSignal, RtlSignal,
+                                                           RtlSignal, RtlSignal,
+                                                           RtlSignal]]:
         din = self.dataIn
         mask_t = Bits(self.DATA_WIDTH // 8, force_vector=True)
         data_fieds = [
@@ -148,7 +148,7 @@ class AxiS_footerSplit(AxiSCompBase):
         regs = []
         # 0 is dataIn, 1 is connected to dataIn, ..., n connected to dataOut
         for last, i in iter_with_last(range(LOOK_AHEAD + 1 + 1)):
-            if i == 0:
+            if i == 0:  # first
                 r = din
                 ready = din.ready
                 can_flush = BIT.from_py(0)
@@ -205,7 +205,7 @@ class AxiS_footerSplit(AxiSCompBase):
         for last_B_valid, bytes_in_last_input_word in iter_with_last(
                 range(1, BYTE_CNT + 1)):
             footer_end = (LOOK_AHEAD * BYTE_CNT
-                          + bytes_in_last_input_word) * 8
+                          +bytes_in_last_input_word) * 8
             footer_start = footer_end - FOOTER_WIDTH
             assert footer_start > 0, (
                 "otherwise we would not be able to send last for previous frame",
@@ -277,10 +277,21 @@ class AxiS_footerSplit(AxiSCompBase):
                 # connect last register to outputs
                 prev_r, prev_is_footer, _, _, _ = regs[i - 1]
                 en = rename_signal(self, din.valid | can_flush, "out_en")
-                # at least starts with non footer data
-                d0_en = rename_signal(self, ~is_footer[0], "d0_en")
+
                 # contains at least some footer data
                 d1_en = rename_signal(self, is_footer != 0, "d1_en")
+
+                # at least starts with non footer data
+                # or there is no prefix data at all
+                d0_sof_seen = self._reg("d0_sof_seen", def_val=0)
+                If(dout[1].valid & dout[1].ready & dout[1].last,
+                   d0_sof_seen(0)
+                ).Elif(dout[0].valid & dout[0].ready,
+                   d0_sof_seen(1)
+                )
+
+                d0_zero_len = rename_signal(self, d1_en & is_footer[0] & ~d0_sof_seen & r.valid & r.last, "d0_zero_len")
+                d0_en = rename_signal(self, ~is_footer[0] | d0_zero_len, "d0_en")
 
                 # connect prefix data
                 dout[0].data(r.data)
@@ -294,7 +305,7 @@ class AxiS_footerSplit(AxiSCompBase):
                 dout[1].last(r.last)
                 dout[1].valid(r.valid & d1_en & en & (~d0_en | dout[0].ready))
 
-                mask0 = ~is_footer
+                mask0 = ~is_footer & Concat(*(~d0_zero_len for _ in range(is_footer._dtype.bit_length())))
                 mask1 = is_footer
                 if USE_KEEP:
                     dout[0].keep(r.keep & mask0)
@@ -349,12 +360,14 @@ class AxiS_footerSplit(AxiSCompBase):
                     )
                )
 
+
 def _example_AxiS_footerSplit():
     u = AxiS_footerSplit()
     u.DATA_WIDTH = 8
     u.FOOTER_WIDTH = 8
     u.USE_STRB = True
     return u
+
 
 if __name__ == '__main__':
     from hwt.synthesizer.utils import to_rtl_str
