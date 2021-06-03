@@ -39,8 +39,6 @@ from hwtLib.handshaked.streamNode import StreamNode, ExclusiveStreamGroups
 from pyMathBitPrecise.bit_utils import mask
 
 
-TYPE_CONFIG_PARAMS_NAMES = [
-    "T", "TRANSACTION_TEMPLATE", "FRAME_TEMPLATES"]
 
 
 @serializeParamsUniq
@@ -292,7 +290,8 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
             children.append(c)
 
         with self._paramsShared(
-                exclude=({"USE_KEEP", "USE_STRB", *TYPE_CONFIG_PARAMS_NAMES}, {})):
+                exclude=({"USE_KEEP", "USE_STRB",
+                          "T", "TRANSACTION_TEMPLATE", "FRAME_TEMPLATES"}, {})):
             self.children = children
 
         fjoin = AxiS_FrameJoin()
