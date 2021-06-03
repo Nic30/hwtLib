@@ -3,7 +3,6 @@ from typing import List, Optional, Tuple
 from hwt.code import And, Or
 from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
 from hwt.hdl.types.defs import BIT
-from hwt.pyUtils.arrayQuery import where
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
@@ -255,11 +254,12 @@ class StreamNode():
         """
         :return: driver of ready signal for master
         """
-        otherMasters = where(self.masters, lambda x: x is not master)
         extra, skip = self.getExtraAndSkip(master)
 
-        conds = [*map(self.vld, otherMasters),
-                 *map(self.rd, self.slaves),
+        rd = self.rd
+        vld = self.vld
+        conds = [*(vld(m) for m in self.masters if m is not master),
+                 *(rd(s) for s in self.slaves),
                  *extra]
         if conds:
             r = And(*conds)
@@ -275,11 +275,12 @@ class StreamNode():
         """
         :return: driver of valid signal for slave
         """
-        otherSlaves = where(self.slaves, lambda x: x is not slave)
         extra, skip = self.getExtraAndSkip(slave)
 
-        conds = [*map(self.vld, self.masters),
-                 *map(self.rd, otherSlaves),
+        rd = self.rd
+        vld = self.vld
+        conds = [*(vld(m) for m in self.masters),
+                 *(rd(s) for s in self.slaves if s is not slave),
                  *extra]
         if conds:
             v = And(*conds)
