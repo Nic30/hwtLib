@@ -15,7 +15,6 @@ from hwtSimApi.constants import CLK_PERIOD
 
 class AxiS_FrameJoin_1x_2B_TC(SimTestCase):
     D_B = 2
-    FRAME_CNT = 1
     T = HStruct(
         (HStream(Bits(8 * D_B), (1, inf), [0]), "frame0"),
     )
