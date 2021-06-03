@@ -16,6 +16,9 @@ class XgmiiChannel(Interface):
     :ivar ~.c: control signal
     :ivar ~.IS_DDR: if True, the clock is used as double-data-rate clock
         (read/write data on rising and falling edge of clk)
+    :ivar ~.ALIGNMENT: specifies alignment of the start of the packet
+        1 means packet can start anywhere 4 for 8B wide interface means
+        that packet can start at lane 0 or 4
 
     .. hwt-autodoc::
     """
@@ -41,8 +44,10 @@ class XgmiiChannel(Interface):
         self.DATA_WIDTH = Param(64)
         self.FREQ = Param(int(156.25e6))
         self.IS_DDR = Param(True)
+        self.ALIGNMENT = Param(1)
 
     def _declr(self):
+        assert self.ALIGNMENT > 0 and self.ALIGNMENT < self.DATA_WIDTH // 8, self.ALIGNMENT
         self.clk = Clk()
         self.clk.FREQ = self.FREQ
         self._make_association(clk=self.clk)
@@ -68,6 +73,8 @@ class Xgmii(Interface):
 
     :note: usually 64b@156.25MHz DDR or 32b@312.5MHz DDR
         or twice wider and SDR
+
+    :note: XLGMII/CGMII (40G/100G) interfaces are just scaled up version of this interface
 
     .. hwt-autodoc::
     """
