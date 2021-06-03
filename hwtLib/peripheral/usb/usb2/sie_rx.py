@@ -13,8 +13,8 @@ from hwt.interfaces.std import Signal, Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axis_comp.frame_parser import AxiS_frameParser
+from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.crc import Crc
 from hwtLib.logic.crcComb import CrcComb
 from hwtLib.logic.crcPoly import CRC_5_USB, CRC_16_USB
@@ -23,6 +23,7 @@ from hwtLib.peripheral.usb.constants import usb_addr_t, usb_pid_t, usb_endp_t, \
 from hwtLib.peripheral.usb.usb2.sie_interfaces import Usb2SieRxOut, \
     DataErrVldKeepLast
 from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b_rx
+from pyMathBitPrecise.bit_utils import mask
 
 
 class Usb2SieDeviceRx(Unit):
@@ -121,6 +122,7 @@ class Usb2SieDeviceRx(Unit):
         )
         for parser in [parser_pid, parser_token, parser_payload]:
             parser.DATA_WIDTH = 8
+        parser_pid.USE_KEEP = True
         parser_payload.USE_KEEP = True
         parser_token.OVERFLOW_SUPPORT = True
 
@@ -138,14 +140,10 @@ class Usb2SieDeviceRx(Unit):
                 else:
                     raise NotImplementedError(i)
 
-        parser_pid.dataIn(rx, exclude=[parser_pid.dataIn.ready, parser_pid.dataIn.valid, rx.vld])
+        parser_pid.dataIn(rx, exclude=[parser_pid.dataIn.ready, parser_pid.dataIn.valid, parser_pid.dataIn.keep, rx.vld])
         parser_pid.dataIn.valid(rx.vld)
+        parser_pid.dataIn.keep(mask(parser_pid.dataIn.keep._dtype.bit_length()))
 
-        after_pid = AxiSBuilder(self, parser_pid.dataOut.data)\
-            .split_copy(2).end
-        parser_token.dataIn(after_pid[0])
-        parser_payload.dataIn(after_pid[1], exclude=[parser_payload.dataIn.keep])
-        parser_payload.dataIn.keep(1)
 
         # restart or dissabld or end of the frame
         parse_fsm_rst_n = self.rst_n & ~self.enable & ~rx_ending
@@ -194,23 +192,36 @@ class Usb2SieDeviceRx(Unit):
             self,
             pid_has_16b_data & (rx_data_ending != parser_token.dataOut.crc5.vld),
             "err_packet_len_token")
-        # the data packet is empty and missing also crc16 bytes
-        err_packet_len_data = rename_signal(
-            self,
-            pid_has_payload & (rx_data_ending & (~parser_token.parsing_overflow & ~parser_token.dataOut.crc5.vld)),
-            "err_packet_len_data")
+
+
+        after_pid = parser_pid.dataOut.data
+        StreamNode(
+            [after_pid],
+            [parser_token.dataIn, parser_payload.dataIn],
+            extraConds={
+                parser_token.dataIn: pid_has_16b_data,
+                parser_payload.dataIn: pid_has_payload,
+            },
+            skipWhen={
+                parser_token.dataIn: ~pid_has_16b_data,
+                parser_payload.dataIn: ~pid_has_payload,
+            }
+        ).sync()
+        parser_token.dataIn(after_pid, exclude=[after_pid.ready, after_pid.valid])
+        parser_payload.dataIn(after_pid, exclude=[after_pid.ready, after_pid.valid])
+
         # [todo] 1 word out to mark 0 len packets
         If(self.enable & pid.vld,
            token_q.pid(pid.data[4:]),
            token_q.pid_loaded(1),
            token_q.err_pid((pid.data[4:] != ~pid.data[:4])),
            token_q.err_len(err_packet_len_pid),
-           token_q.valid(pid_has_0b_data | err_packet_len_pid),
-        ).Elif(self.enable & parser_token.dataOut.crc5.vld & ~token_q.err_len & ~token_q.err_pid,
+           token_q.valid(pid_has_0b_data | (pid.vld & USB_PID.is_data(pid.data[4:])) | err_packet_len_pid),
+        ).Elif(self.enable & pid_has_16b_data & parser_token.dataOut.crc5.vld & ~token_q.err_len & ~token_q.err_pid,
            token_q.crc5_loaded(pid_has_16b_data),
            token_q.err_len(err_packet_len_token),
            token_q.valid(1),  # the data are sent using a different channel, we are sending header now
-        ).Elif((token_q.valid & (token_q.err_len | err_packet_len_data | ~pid_has_payload))
+        ).Elif((token_q.valid & (token_q.err_len | ~pid_has_payload))
                | (pid_has_payload & rx_ending)
                | (token_q.err_pid & rx_ending)
                | ~self.enable,
@@ -271,17 +282,15 @@ class Usb2SieDeviceRx(Unit):
             (crc16.dataOut != parser_payload.dataOut.crc16.data), "err_data_crc")
 
         rx_data = self.rx_data
-        rx_data.error(err_data_crc | token_q.err_len | (rx.vld & rx.error) | err_packet_len_data)
-        is_0B_payload = rename_signal(self, pid_has_payload & rx_data_ending & parser_token.dataOut.crc5.vld, "is_0B_payload")
-        If(is_0B_payload,
-            rx_data.keep(0),
-            rx_data.data(None),
+        rx_data.error(err_data_crc | token_q.err_len | (rx.vld & rx.error))
+        rx_data.keep(payload.keep)
+        If(~payload.keep,
+           rx_data.data(None)
         ).Else(
-            rx_data.keep(payload.keep),
-            rx_data.data(payload.data),
+           rx_data.data(payload.data)
         )
-        rx_data.vld(payload.valid | is_0B_payload | err_packet_len_data)
-        rx_data.last(payload.last | is_0B_payload | err_packet_len_data)
+        rx_data.vld(payload.valid)
+        rx_data.last(payload.last)
 
         propagateClkRstn(self)
 
