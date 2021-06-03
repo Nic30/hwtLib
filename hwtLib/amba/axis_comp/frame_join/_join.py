@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from math import inf
-from typing import Optional, List, Callable, Tuple
+from typing import Optional, List, Callable, Tuple, Union
 
 from hwt.code import If, Switch, SwitchLogic, Or, And
 from hwt.hdl.types.bits import Bits
@@ -18,8 +18,10 @@ from hwtLib.abstract.frame_utils.alignment_utils import FrameAlignmentUtils
 from hwtLib.abstract.frame_utils.join.fsm import input_B_dst_to_fsm
 from hwtLib.abstract.frame_utils.join.state_trans_item import StateTransItem
 from hwtLib.amba.axis import AxiStream
-from hwtLib.amba.axis_comp.frame_join.input_reg import FrameJoinInputReg
+from hwtLib.amba.axis_comp.frame_join.input_reg import FrameJoinInputReg, \
+    UnalignedJoinRegIntf
 from pyMathBitPrecise.bit_utils import bit_list_to_int
+from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
 
 
 class AxiS_FrameJoin(Unit):
@@ -75,7 +77,7 @@ class AxiS_FrameJoin(Unit):
             self.dataOut = AxiStream()._m()
             self.dataIn = HObjList(AxiStream() for _ in range(self.input_cnt))
 
-    def generate_input_register(self, input_i, reg_cnt):
+    def generate_input_register(self, input_i: int, reg_cnt: int) -> Tuple[List[UnalignedJoinRegIntf], List[RtlSignal], RtlSignal]:
         in_reg = FrameJoinInputReg()
         in_reg._updateParamsFrom(self)
         in_reg.REG_CNT = reg_cnt
@@ -83,7 +85,7 @@ class AxiS_FrameJoin(Unit):
         in_reg.dataIn(self.dataIn[input_i])
         return in_reg.regs, in_reg.keep_masks, in_reg.ready
 
-    def generate_output_byte_mux(self, regs):
+    def generate_output_byte_mux(self, regs: List[List[UnalignedJoinRegIntf]]) -> Tuple[List[RtlSignal], List[List[RtlSignal]]]:
         out_mux_values = [set() for _ in range(self.word_bytes)]
         for st in self.state_trans_table.state_trans:
             for stt in st:
@@ -93,13 +95,14 @@ class AxiS_FrameJoin(Unit):
                         out_mux_val_set.add(o_mux_val)
         out_mux_values = [sorted(x) for x in out_mux_values]
 
-        def index_byte(sig, byte_i):
-            return sig[(byte_i+1)*8:byte_i*8]
+        def index_byte(sig, byte_i: int) -> RtlSignal:
+            return sig[(byte_i + 1) * 8:byte_i * 8]
 
-        def get_in_byte(input_i, time_offset, byte_i):
+        def get_in_byte(input_i: int, time_offset: int, byte_i: int) -> HdlAssignmentContainer:
             return index_byte(regs[input_i][time_offset].data, byte_i)
 
-        def data_drive(out_B, out_strb_b, input_i, time_offset, byte_i):
+        def data_drive(out_B: RtlSignal, out_strb_b: RtlSignal,
+                       input_i: int, time_offset: int, byte_i: int) -> List[HdlAssignmentContainer]:
             res = [
                 out_B(get_in_byte(input_i, time_offset, byte_i))
             ]
@@ -137,19 +140,22 @@ class AxiS_FrameJoin(Unit):
         return out_byte_sel, out_mux_values
 
     @staticmethod
-    def add_cond_bit(cond, bit, bit_val):
+    def add_cond_bit(cond, bit: RtlSignal, bit_val: Optional[int]):
         if bit_val is None:
             return
         if bit_val == 0:
             bit = ~bit
+
         cond.append(bit)
 
-    def state_trans_cond(self, sst: StateTransItem, input_regs):
+    def state_trans_cond(self, sst: StateTransItem,
+                         input_regs: List[List[UnalignedJoinRegIntf]]) -> RtlSignal:
         cond = []
         assert len(sst.input) == len(input_regs)
         for in_metas, in_regs in zip(sst.input, input_regs):
             assert len(in_metas) == len(in_regs)
             for in_meta, in_reg in zip(in_metas, in_regs):
+                in_reg: UnalignedJoinRegIntf
                 for k_i, k in enumerate(in_meta.keep):
                     self.add_cond_bit(cond, in_reg.keep[k_i], k)
                 self.add_cond_bit(cond, in_reg.relict, in_meta.relict)
@@ -158,7 +164,7 @@ class AxiS_FrameJoin(Unit):
         return And(*cond)
 
     def get_conds_for_unique_values(self, st_ts: List[StateTransItem],
-                                    input_regs,
+                                    input_regs: List[List[UnalignedJoinRegIntf]],
                                     key: Callable[[StateTransItem], None]):
         # output value : List[RtlSignal]
         value_conds = {}
@@ -172,7 +178,7 @@ class AxiS_FrameJoin(Unit):
 
     def _generate_driver_for_state_trans_dependent_out(
             self, st_transs: List[StateTransItem],
-            input_regs,
+            input_regs: List[List[UnalignedJoinRegIntf]],
             value_getter: Callable[[StateTransItem], object],
             connect_out_fn,
             make_defult_case: Optional[Callable[[], object]]):
@@ -192,7 +198,7 @@ class AxiS_FrameJoin(Unit):
     def generate_driver_for_state_trans_dependent_out(
             self, st_reg: Optional[RtlSignal],
             state_trans: List[List[StateTransItem]],
-            input_regs,
+            input_regs: List[List[UnalignedJoinRegIntf]],
             value_getter: Callable[[StateTransItem], object],
             connect_out_fn,
             make_defult_case=None):
@@ -217,7 +223,8 @@ class AxiS_FrameJoin(Unit):
 
         return mux
 
-    def generate_fsm(self, input_regs, out_sel: List[RtlSignal],
+    def generate_fsm(self, input_regs: List[List[UnalignedJoinRegIntf]],
+                     out_sel: List[RtlSignal],
                      out_mux_values: List[List[Tuple[int, int, int]]],
                      in_keep_masks: List[List[RtlSignal]],
                      ready: List[RtlSignal]):
@@ -238,12 +245,14 @@ class AxiS_FrameJoin(Unit):
             state = None
         # out_sel driver
         for out_B_i, (_out_mux_values, _out_sel) in enumerate(zip(out_mux_values, out_sel)):
+
             def connect_out_sel(v):
                 if v is None:
                     v = len(_out_mux_values)
                 else:
                     v = _out_mux_values.index(v)
                 return _out_sel(v)
+
             self.generate_driver_for_state_trans_dependent_out(
                 state, state_trans, input_regs,
                 lambda stt: stt.out_byte_mux_sel[out_B_i],
@@ -314,7 +323,7 @@ if __name__ == "__main__":
     u.DATA_WIDTH = 8 * D_B
     u.USE_STRB = True
     u.T = HStruct(
-        (HStream(Bits(8*1), (1, inf), [0, 1, 2, 3]), "frame0"),
-        (HStream(Bits(8*4), (1, 1), [0]), "frame1"),
+        (HStream(Bits(8 * 1), (1, inf), [0, 1, 2, 3]), "frame0"),
+        (HStream(Bits(8 * 4), (1, 1), [0]), "frame1"),
     )
     print(to_rtl_str(u))
