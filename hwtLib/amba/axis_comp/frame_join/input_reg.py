@@ -87,8 +87,11 @@ class FrameJoinInputReg(Unit):
         keep_masks = self.keep_masks
         fully_consumed_flags = []
         for i, r in enumerate(regs):
-            _fully_consumed = rename_signal(self, (r.keep & keep_masks[i])._eq(0), f"r{i:d}_fully_consumed")
-            fully_consumed_flags.append(_fully_consumed)
+            _fully_consumed = (r.keep & keep_masks[i])._eq(0)
+            if i == 0:
+                _fully_consumed = _fully_consumed & self.ready
+
+            fully_consumed_flags.append(rename_signal(self, _fully_consumed, f"r{i:d}_fully_consumed"))
 
         for i, (is_first_on_input_r, r) in enumerate(iter_with_last(regs)):
             keep_mask_all = mask(r.keep._dtype.bit_length())
@@ -153,7 +156,7 @@ class FrameJoinInputReg(Unit):
                 next_fully_consumed = fully_consumed_flags[i - 1]
                 next_is_empty = regs[i - 1].keep._eq(0)
                 if is_first_on_input_r:
-                    is_relict = 0
+                    is_relict = r_prev.valid & r_prev.keep._eq(0)
                 else:
                     prev_fully_consumed = fully_consumed_flags[i + 1]
                     is_relict = r_prev.relict | ~prev_fully_consumed

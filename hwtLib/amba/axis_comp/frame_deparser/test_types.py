@@ -2,6 +2,7 @@ from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
 from hwt.hdl.types.union import HUnion
 from hwtLib.types.ctypes import uint64_t, uint32_t, int32_t, uint8_t
+from math import inf
 
 
 s1field = HStruct(
@@ -72,6 +73,11 @@ structStreamAndFooter = HStruct(
 struct2xStream8 = HStruct(
     (HStream(uint8_t), "streamIn0"),
     (HStream(uint8_t), "streamIn1")
+)
+
+struct2xStream8_0B = HStruct(
+    (HStream(uint8_t, frame_len=(0, inf)), "streamIn0"),
+    (HStream(uint8_t, frame_len=(0, inf)), "streamIn1")
 )
 
 unionDifferentMask = HUnion(

@@ -136,6 +136,7 @@ def input_B_dst_to_fsm(word_bytes: int,
                     _in_rec.keep = [0 for _ in _in_rec.keep]
                     _in_rec.relict = 1
                     tr.input_rd[skiped_input_i] = 1
+                    tr.input_keep_mask[skiped_input_i][0] = [0 for _ in range(word_bytes)]
 
                 next_input_can_be_zero_len = not is_input_word_continuing_in_next_out_word and\
                                              o_next is not None \
@@ -227,7 +228,8 @@ def input_B_dst_to_fsm(word_bytes: int,
                     in_rec.keep = [0 for _ in range(word_bytes)]
                     in_rec.last = 1
                     in_rec.relict = 1
-                    tr.input_rd[input_with_0B_i] = 1
+                    new_tr.input_rd[input_with_0B_i] = 1
+                    new_tr.input_keep_mask[input_with_0B_i][0] = [0 for _ in range(word_bytes)]
 
                 tt.state_trans[0].append(new_tr)
 
@@ -235,13 +237,16 @@ def input_B_dst_to_fsm(word_bytes: int,
             # everythin can be 0B frame, we need to add a special transition exactly for that
             # because we did not process it by previous code because it looks only on output bytes
             # and there are not output bytes
-            tr = StateTransItem(tt, st_i, next_st_i, int(next_ss is None))
-            tt.state_trans[st_i].append(tr)
+            tr = StateTransItem(tt, 0, 0, 1)
+            tt.state_trans[0].append(tr)
             for in_recs in tr.input:
                 in_rec: InputRegInputVal = in_recs[0]
                 in_rec.last = 1
                 in_rec.keep = [0 for _ in in_rec.keep]
                 in_rec.relict = 1
+
+            for skiped_input in tr.input_keep_mask:
+                skiped_input[0] = [0 for _ in range(word_bytes)]
 
             tr.last = 1
             tr.input_rd = [1 for _ in tr.input_rd]

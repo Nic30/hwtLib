@@ -47,10 +47,10 @@ class FrameJoinUtilsTC(unittest.TestCase):
             return StateTransItem.from_dict(tt, d)
 
         ref = [[
-            st({'st':'0->0', 'in':[[{'keep':[ 0 , 0 ], 'relict': 1, 'last': 1 }]],
-                'in.keep_mask':[[[1, 1]]], 'in.rd':[1],
+            st({'st':'0->0', 'in':[[{'keep':[0, 0], 'relict':1, 'last':1}]],
+                'in.keep_mask':[[[0, 0]]], 'in.rd':[1],
                 'out.keep':[0, 0], 'out.mux':[None, None], 'out.last':1}),
-             st({'st':'0->0', 'in':[[{'keep':[ 1 , 0 ], 'relict': 0, 'last': 1 }]],
+            st({'st':'0->0', 'in':[[{'keep':[1, 0], 'relict':0, 'last':1}]],
                 'in.keep_mask':[[[0, 0]]], 'in.rd':[1],
                 'out.keep':[1, 0], 'out.mux':[(0, 0, 0), None], 'out.last':1})
         ]]
@@ -69,18 +69,15 @@ class FrameJoinUtilsTC(unittest.TestCase):
         def st(d):
             return StateTransItem.from_dict(tt, d)
 
-        ref = [
-            [
-                st({'st':'0->0', 'in':[[{'keep':[ 0 ], 'relict': 1, 'last': 1 }]],
-                    'in.keep_mask':[[[1]]], 'in.rd':[1],
-                    'out.keep':[0], 'out.mux':[None], 'out.last':1},
-                    ),
-                st({'st':'0->0', 'in':[[{'keep':[ 1 ], 'relict': 0, 'last': 1 }]],
-                    'in.keep_mask':[[[0]]], 'in.rd':[1],
-                    'out.keep':[1], 'out.mux':[(0, 0, 0)], 'out.last':1},
-                    )
-            ]
-        ]
+        ref = [[
+            st({'st':'0->0', 'in':[[{'keep':[0], 'relict':1, 'last':1}]],
+                'in.keep_mask':[[[0]]], 'in.rd':[1],
+                'out.keep':[0], 'out.mux':[None], 'out.last':1}),
+            st({'st':'0->0', 'in':[[{'keep':[1], 'relict':0, 'last':1}]],
+                'in.keep_mask':[[[0]]], 'in.rd':[1],
+                'out.keep':[1], 'out.mux':[(0, 0, 0)], 'out.last':1})
+        ]]
+
         self.assertSequenceEqual(tt.state_trans, ref)
 
     def test_fsm0_arbitrary_len(self):
@@ -234,46 +231,53 @@ class FrameJoinUtilsTC(unittest.TestCase):
 
         ref = [
             [
-                st({ 'st':'0->0', 'in':[[{'keep':[0, 0], 'relict':1, 'last':1}], [{'keep':[0, 1], 'relict':1, 'last':1}]],
-                   'in.keep_mask':[[[1, 1]], [[0, 0]]], 'in.rd':[0, 1],
-                   'out.keep':[1, 0], 'out.mux':[(1, 0, 1), None], 'out.last':1}),
-                st({ 'st':'0->0', 'in':[[{'keep':[0, 0], 'relict':1, 'last':1}], [{'keep':[1, 0], 'relict':0, 'last':1}]],
-                   'in.keep_mask':[[[1, 1]], [[0, 0]]], 'in.rd':[0, 1],
-                   'out.keep':[1, 0], 'out.mux':[(1, 0, 0), None], 'out.last':1}),
-                st({ 'st':'0->0', 'in':[[{'keep':[0, 0], 'relict':1, 'last':1}], [{'keep':[1, 1], 'relict':0, 'last':1}]],
-                   'in.keep_mask':[[[1, 1]], [[0, 0]]], 'in.rd':[0, 1],
-                   'out.keep':[1, 1], 'out.mux':[(1, 0, 0), (1, 0, 1)], 'out.last':1}),
-                st({ 'st':'0->0', 'in':[[{'keep':[1, 0], 'relict':0, 'last':1}], [{'keep':[0, 0], 'relict':1, 'last':1}]],
-                   'in.keep_mask':[[[0, 0]], [[0, 0]]], 'in.rd':[1, 1],
-                   'out.keep':[1, 0], 'out.mux':[(0, 0, 0), None], 'out.last':1}),
-                st({ 'st':'0->0', 'in':[[{'keep':[1, 0], 'relict':0, 'last':1}], [{'keep':[1, 0], 'relict':'X', 'last':1}]],
-                   'in.keep_mask':[[[0, 0]], [[0, 0]]], 'in.rd':[1, 1],
-                   'out.keep':[1, 1], 'out.mux':[(0, 0, 0), (1, 0, 0)], 'out.last':1}),
-                st({ 'st':'0->0', 'in':[[{'keep':[1, 1], 'relict':0, 'last':1}], [{'keep':[0, 0], 'relict':1, 'last':1}]],
-                   'in.keep_mask':[[[0, 0]], [[0, 0]]], 'in.rd':[1, 1],
-                   'out.keep':[1, 1], 'out.mux':[(0, 0, 0), (0, 0, 1)], 'out.last':1}),
-                st({ 'st':'0->1', 'in':[[{'keep':[1, 0], 'relict':0, 'last':1}], [{'keep':[1, 1], 'relict':'X', 'last':1}]],
-                   'in.keep_mask':[[[0, 0]], [[0, 1]]], 'in.rd':[1, 1],
-                   'out.keep':[1, 1], 'out.mux':[(0, 0, 0), (1, 0, 0)], 'out.last':0}),
-                st({ 'st':'0->1', 'in':[[{'keep':[1, 1], 'relict':0, 'last':1}], [{'keep':[1, 'X'], 'relict':'X', 'last':'X'}]],
-                   'in.keep_mask':[[[0, 0]], [[1, 1]]], 'in.rd':[1, 0],
-                   'out.keep':[1, 1], 'out.mux':[(0, 0, 0), (0, 0, 1)], 'out.last':0})
+              st({'st':'0->0', 'in':[[{'keep':[0, 0], 'relict':1, 'last':1}], [{'keep':[0, 0], 'relict':1, 'last':1}]],
+                'in.keep_mask':[[[0, 0]], [[0, 0]]], 'in.rd':[1, 1],
+                'out.keep':[0, 0], 'out.mux':[None, None], 'out.last':1}),
+              st({'st':'0->0', 'in':[[{'keep':[0, 0], 'relict':1, 'last':1}], [{'keep':[0, 1], 'relict':1, 'last':1}]],
+                'in.keep_mask':[[[0, 0]], [[0, 0]]], 'in.rd':[1, 1],
+                'out.keep':[1, 0], 'out.mux':[(1, 0, 1), None], 'out.last':1}),
+              st({'st':'0->0', 'in':[[{'keep':[0, 0], 'relict':1, 'last':1}], [{'keep':[1, 0], 'relict':0, 'last':1}]],
+                'in.keep_mask':[[[0, 0]], [[0, 0]]], 'in.rd':[1, 1],
+                'out.keep':[1, 0], 'out.mux':[(1, 0, 0), None], 'out.last':1}),
+              st({'st':'0->0', 'in':[[{'keep':[0, 0], 'relict':1, 'last':1}], [{'keep':[1, 1], 'relict':0, 'last':1}]],
+                'in.keep_mask':[[[0, 0]], [[0, 0]]], 'in.rd':[1, 1],
+                'out.keep':[1, 1], 'out.mux':[(1, 0, 0), (1, 0, 1)], 'out.last':1}),
+              st({'st':'0->0', 'in':[[{'keep':[1, 0], 'relict':0, 'last':1}], [{'keep':[0, 0], 'relict':1, 'last':1}]],
+                'in.keep_mask':[[[0, 0]], [[0, 0]]], 'in.rd':[1, 1],
+                'out.keep':[1, 0], 'out.mux':[(0, 0, 0), None], 'out.last':1}),
+              st({'st':'0->0', 'in':[[{'keep':[1, 0], 'relict':0, 'last':1}], [{'keep':[1, 0], 'relict':'X', 'last':1}]],
+                'in.keep_mask':[[[0, 0]], [[0, 0]]], 'in.rd':[1, 1],
+                'out.keep':[1, 1], 'out.mux':[(0, 0, 0), (1, 0, 0)], 'out.last':1}),
+              st({'st':'0->0', 'in':[[{'keep':[1, 1], 'relict':0, 'last':1}], [{'keep':[0, 0], 'relict':1, 'last':1}]],
+                'in.keep_mask':[[[0, 0]], [[0, 0]]], 'in.rd':[1, 1],
+                'out.keep':[1, 1], 'out.mux':[(0, 0, 0), (0, 0, 1)], 'out.last':1}),
+              st({'st':'0->1', 'in':[[{'keep':[1, 0], 'relict':0, 'last':1}], [{'keep':[1, 1], 'relict':'X', 'last':1}]],
+                'in.keep_mask':[[[0, 0]], [[0, 1]]], 'in.rd':[1, 1],
+                'out.keep':[1, 1], 'out.mux':[(0, 0, 0), (1, 0, 0)], 'out.last':0}),
+              st({'st':'0->1', 'in':[[{'keep':[1, 1], 'relict':0, 'last':1}], [{'keep':[1, 'X'], 'relict':'X', 'last':'X'}]],
+                'in.keep_mask':[[[0, 0]], [[1, 1]]], 'in.rd':[1, 0],
+                'out.keep':[1, 1], 'out.mux':[(0, 0, 0), (0, 0, 1)], 'out.last':0}),
             ], [
-                st({ 'st':'1->0', 'in':[[{'keep':[0, 0], 'relict':1, 'last':1}], [{'keep':[0, 0], 'relict':1, 'last':1}]],
-                   'in.keep_mask':[[[1, 1]], [[1, 1]]], 'in.rd':[1, 1],
-                   'out.keep':[0, 0], 'out.mux':[None, None], 'out.last':1}),
-                st({ 'st':'1->0', 'in':[[{'keep':['X', 'X'], 'relict':'X', 'last':'X'}], [{'keep':[0, 1], 'relict':1, 'last':1}]],
-                   'in.keep_mask':[[[1, 1]], [[0, 0]]], 'in.rd':[1, 1],
-                   'out.keep':[1, 0], 'out.mux':[(1, 0, 1), None], 'out.last':1}),
-                st({ 'st':'1->0', 'in':[[{'keep':['X', 'X'], 'relict':'X', 'last':'X'}], [{'keep':[1, 0], 'relict':0, 'last':1}]],
-                   'in.keep_mask':[[[1, 1]], [[0, 0]]], 'in.rd':[1, 1],
-                   'out.keep':[1, 0], 'out.mux':[(1, 0, 0), None], 'out.last':1}),
-                st({ 'st':'1->0', 'in':[[{'keep':['X', 'X'], 'relict':'X', 'last':'X'}], [{'keep':[1, 1], 'relict':0, 'last':1}]],
-                   'in.keep_mask':[[[1, 1]], [[0, 0]]], 'in.rd':[1, 1],
-                   'out.keep':[1, 1], 'out.mux':[(1, 0, 0), (1, 0, 1)], 'out.last':1})
-            ]
+              st({'st':'1->0', 'in':[[{'keep':['X', 'X'], 'relict':'X', 'last':'X'}], [{'keep':[0, 1], 'relict':1, 'last':1}]],
+                'in.keep_mask':[[[1, 1]], [[0, 0]]], 'in.rd':[0, 1],
+                'out.keep':[1, 0], 'out.mux':[(1, 0, 1), None], 'out.last':1}),
+              st({'st':'1->0', 'in':[[{'keep':['X', 'X'], 'relict':'X', 'last':'X'}], [{'keep':[1, 0], 'relict':0, 'last':1}]],
+                'in.keep_mask':[[[1, 1]], [[0, 0]]], 'in.rd':[0, 1],
+                'out.keep':[1, 0], 'out.mux':[(1, 0, 0), None], 'out.last':1}),
+              st({'st':'1->0', 'in':[[{'keep':['X', 'X'], 'relict':'X', 'last':'X'}], [{'keep':[1, 1], 'relict':0, 'last':1}]],
+                'in.keep_mask':[[[1, 1]], [[0, 0]]], 'in.rd':[0, 1],
+                'out.keep':[1, 1], 'out.mux':[(1, 0, 0), (1, 0, 1)], 'out.last':1}),
+            ],
         ]
-        self.maxDiff = None
+        # print("[")
+        # for st in tt.state_trans:
+        #     print("[")
+        #     for t in st:
+        #         t:StateTransItem
+        #         print("  st(%s)," % t.__repr__(as_dict=True))
+        #     print("],")
+        # print("]")
         self.assertSequenceEqual(tt.state_trans, ref)
 
     def test_fsm_2x1B_on_3B(self):

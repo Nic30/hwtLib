@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from itertools import chain
 from math import inf
 import unittest
 
@@ -11,17 +12,18 @@ from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axis import axis_send_bytes, axis_recieve_bytes
 from hwtLib.amba.axis_comp.frame_deparser import AxiS_frameDeparser
-from pyMathBitPrecise.bit_utils import mask
-from hwtSimApi.triggers import Timer
+from hwtLib.amba.axis_comp.frame_deparser.test_types import s1field, \
+    s1field_composit0, s3field, s2Pading, unionOfStructs, unionSimple, \
+    structStream64, structStream64before, structStream64after, struct2xStream64, \
+    structStreamAndFooter, struct2xStream8, unionDifferentMask, \
+    struct2xStream8_0B
 from hwtSimApi.constants import CLK_PERIOD
-from itertools import chain
-from hwtLib.amba.axis_comp.frame_deparser.test_types import s1field,\
-    s1field_composit0, s3field, s2Pading, unionOfStructs, unionSimple,\
-    structStream64, structStream64before, structStream64after, struct2xStream64,\
-    structStreamAndFooter, struct2xStream8, unionDifferentMask
+from hwtSimApi.triggers import Timer
+from pyMathBitPrecise.bit_utils import mask
 
 
 class AxiS_frameDeparser_TC(SimTestCase):
+
     def instantiate(self, structT,
                     DATA_WIDTH=64,
                     maxFrameLen=inf,
@@ -208,12 +210,12 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.runSim(t * Time.ns)
 
         self.assertValSequenceEqual(u.dataOut._ag.data,
-                                    [(MAGIC,     m, m, 0),
+                                    [(MAGIC, m, m, 0),
                                      (MAGIC + 1, m, m, 0),
-                                     (None,      0, m, 0),
+                                     (None, 0, m, 0),
                                      (MAGIC + 2, m, m, 0),
                                      (MAGIC + 3, m, m, 0),
-                                     (None,      0, m, 1),
+                                     (None, 0, m, 1),
                                      ])
 
     def test_s2Pading_spliting(self):
@@ -476,16 +478,22 @@ class AxiS_frameDeparser_TC(SimTestCase):
         self.assertValSequenceEqual(f, list(range(8, 12 + 4)))
         self.assertEmpty(u.dataOut._ag.data)
 
-    def test_footer_randomized(self):
+    def test_r_footer(self):
         self.test_footer(randomized=True)
 
     def test_struct2xStream8(self, randomized=False,
+                             T=struct2xStream8,
                              sizes=[(2, 2), (1, 2),
                                     (1, 3), (2, 1),
                                     (2, 2)]):
-        self.instantiate(struct2xStream8,
+        self.instantiate(T,
                          DATA_WIDTH=16,
                          randomized=randomized)
+        # for i, stg in enumerate(self.u.frame_join.state_trans_table.state_trans):
+        #     print(f"{i:d}:")
+        #     for stt in stg:
+        #         print(stt)
+
         u = self.u
         MAGIC = 0  # 13
         t = 10 + (2 * sum(sum(x) for x in sizes) * 3)
@@ -505,6 +513,22 @@ class AxiS_frameDeparser_TC(SimTestCase):
             f_offset, f = axis_recieve_bytes(u.dataOut)
             self.assertValEqual(f_offset, 0)
             self.assertValSequenceEqual(f, ref_f, i)
+
+    def test_r_struct2xStream8(self):
+        self.test_struct2xStream8(randomized=True)
+
+    def test_struct2xStream8_0B(self, randomized=False,
+                                T=struct2xStream8_0B,
+                             sizes=[
+                                 (3, 0), (0, 0),
+                                 #(2, 2), (0, 2), (1, 2), (0, 1),
+                                 #(1, 3), (1, 0), (2, 1), (2, 0),
+                                 #(2, 2), (3, 0), (0, 0), (1, 1)
+                                 ]):
+        self.test_struct2xStream8(randomized=randomized, T=T, sizes=sizes)
+
+    def test_r_struct2xStream8_0B(self):
+        self.test_struct2xStream8_0B(randomized=True)
 
     def test_unionDifferentMask(self, N=10, randomized=False):
         self.instantiate(unionDifferentMask,
@@ -536,13 +560,15 @@ class AxiS_frameDeparser_TC(SimTestCase):
             self.assertEqual(f_offset, ref_offset)
             self.assertValSequenceEqual(f, ref_data)
 
-    def test_unionDifferentMask_randomized(self, N=10):
-        self.test_unionDifferentMask(N, randomized=True)
+    def test_unionDifferentMask_randomized(self):
+        self.test_unionDifferentMask(randomized=True)
 
 
 if __name__ == "__main__":
+
     suite = unittest.TestSuite()
-    # suite.addTest(AxiS_frameDeparser_TC('test_unionDifferentMask'))
+    # suite.addTest(AxiS_frameDeparser_TC('test_struct2xStream8_0B'))
     suite.addTest(unittest.makeSuite(AxiS_frameDeparser_TC))
     runner = unittest.TextTestRunner(verbosity=3)
+
     runner.run(suite)

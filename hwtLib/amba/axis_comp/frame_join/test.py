@@ -179,6 +179,12 @@ class AxiS_FrameJoin_2x_2B_TC(AxiS_FrameJoin_1x_1B_TC):
         (HStream(Bits(8 * D_B), (1, inf), [0]), "frame1"),
     )
 
+class AxiS_FrameJoin_2x_2B_len0_inf_TC(AxiS_FrameJoin_1x_1B_TC):
+    D_B = 2
+    T = HStruct(
+        (HStream(Bits(8 * D_B), (0, 1), [0]), "frame0"),
+        (HStream(Bits(8 * D_B), (0, 1), [0]), "frame1"),
+    )
 
 class AxiS_FrameJoin_2x_1B_TC(AxiS_FrameJoin_1x_1B_TC):
     D_B = 1
@@ -325,6 +331,7 @@ AxiS_FrameJoin_TCs = [
    AxiS_FrameJoin_1x_in_2B_offset_1__0_TC,
    AxiS_FrameJoin_1x_in_2B_offset_1__1_TC,
    AxiS_FrameJoin_2x_2B_TC,
+   AxiS_FrameJoin_2x_2B_len0_inf_TC,
    AxiS_FrameJoin_3x_in_2B_TC,
    AxiS_FrameJoin_3x_in_1B_on_2B_TC,
    AxiS_FrameJoin_3x_in_1B_on_5B_TC,
@@ -332,7 +339,7 @@ AxiS_FrameJoin_TCs = [
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    #suite.addTest(AxiS_FrameJoin_1x_2B_len0_inf_TC('test_pass_data_min_len'))
+    #suite.addTest(AxiS_FrameJoin_2x_2B_len0_inf_TC('test_pass_data_min_len_plus1'))
     for tc in AxiS_FrameJoin_TCs:
         suite.addTest(unittest.makeSuite(tc))
 
