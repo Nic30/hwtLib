@@ -90,13 +90,16 @@ def axiS_strFormat(parent: Unit, name: str, data_width: int, format_str: str,
 
     The escape sequences are (same as :func:`str.format`)
 
-    +=======+=================+
-    | char  | escape sequence |
-    +=======+=================+
-    | {     | {{              |
-    +-------+-----------------+
-    | }     | }}              |
-    +-------+-----------------+
+
+    .. code-block:: text
+
+        +=======+=================+
+        | char  | escape sequence |
+        +=======+=================+
+        | {     | {{              |
+        +-------+-----------------+
+        | }     | }}              |
+        +-------+-----------------+
 
     The syntax for format group is as folowing:
 
