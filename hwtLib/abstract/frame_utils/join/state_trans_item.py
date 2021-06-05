@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Tuple
+from typing import Dict, List, Literal
 
 from hwtLib.abstract.frame_utils.join.input_reg_val import InputRegInputVal
 from hwtLib.abstract.frame_utils.join.state_trans_table import StateTransTable
