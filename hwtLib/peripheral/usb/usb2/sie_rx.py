@@ -167,7 +167,7 @@ class Usb2SieDeviceRx(Unit):
                 "valid": 0,
             }
         )
-        pid = parser_pid.dataOut.pid
+        pid: Handshaked = parser_pid.dataOut.pid
 
         # :attention: there are also SPLIT related PID values which are not supported
         pid_has_0b_data = rename_signal(
@@ -194,7 +194,7 @@ class Usb2SieDeviceRx(Unit):
             "err_packet_len_token")
 
 
-        after_pid = parser_pid.dataOut.data
+        after_pid: AxiStream = parser_pid.dataOut.data
         StreamNode(
             [after_pid],
             [parser_token.dataIn, parser_payload.dataIn],
@@ -269,7 +269,7 @@ class Usb2SieDeviceRx(Unit):
         crc16.DATA_WIDTH = 8
         self.crc16 = crc16
         crc16.rst_n(parse_fsm_rst_n)
-        payload = parser_payload.dataOut.payload
+        payload: AxiStream = parser_payload.dataOut.payload
         crc16.dataIn.data(payload.data)
         crc16.dataIn.vld(payload.valid)
         payload.ready(1)
