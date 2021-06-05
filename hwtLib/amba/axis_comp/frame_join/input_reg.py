@@ -113,7 +113,8 @@ class FrameJoinInputReg(Unit):
                    prev_last_mask(0),
                 )
                 if self.REG_CNT > 1:
-                    next_empty = regs[i - 1].keep._eq(0)
+                    next_r = regs[i - 1]
+                    next_empty = next_r.keep._eq(0) & ~(next_r.relict & next_r.last)
                 else:
                     next_empty = 0
 
@@ -154,7 +155,8 @@ class FrameJoinInputReg(Unit):
                 )
             else:
                 next_fully_consumed = fully_consumed_flags[i - 1]
-                next_is_empty = regs[i - 1].keep._eq(0)
+                next_r = regs[i - 1]
+                next_is_empty = next_r.keep._eq(0) & ~(next_r.relict & next_r.last)
                 if is_first_on_input_r:
                     is_relict = r_prev.valid & r_prev.keep._eq(0)
                 else:

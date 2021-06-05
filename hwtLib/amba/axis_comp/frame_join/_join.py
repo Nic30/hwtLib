@@ -320,11 +320,16 @@ class AxiS_FrameJoin(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     u = AxiS_FrameJoin()
-    D_B = 4
+    D_B = 2
     u.DATA_WIDTH = 8 * D_B
-    u.USE_STRB = True
+    #u.USE_STRB = True
     u.T = HStruct(
         (HStream(Bits(8 * 1), (1, inf), [0, 1, 2, 3]), "frame0"),
         (HStream(Bits(8 * 4), (1, 1), [0]), "frame1"),
+    )
+    u.T = HStruct(
+        (HStream(Bits(8 * 1), (0, inf), [0]), "frame0"),
+        (HStream(Bits(8 * 1), (0, inf), [0]), "frame1"),
+        (HStream(Bits(8 * 1), (0, inf), [0]), "frame2"),
     )
     print(to_rtl_str(u))
