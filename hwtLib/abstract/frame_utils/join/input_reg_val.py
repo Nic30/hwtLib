@@ -63,9 +63,9 @@ def val__repr__None_as_X(v):
     if v is None:
         return "'X'"
     elif isinstance(v, int):
-        return ' %d ' % v
+        return '%d' % v
     else:
         b = []
         for v1 in v:
             b.append(val__repr__None_as_X(v1))
-        return "[%s]" % ",".join(b)
+        return "[%s]" % ", ".join(b)

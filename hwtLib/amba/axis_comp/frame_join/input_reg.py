@@ -95,6 +95,8 @@ class FrameJoinInputReg(Unit):
             prev_keep_mask = self._sig(f"prev_keep_mask_{i:d}_tmp", r.keep._dtype)
             prev_last_mask = self._sig(f"prev_last_mask_{i:d}_tmp")
 
+            is_empty = rename_signal(self, r.keep._eq(0) & ~(r.last & r.relict), f"r{i:d}_is_empty")
+
             if is_first_on_input_r:
                 # is register connected directly to dataIn
                 r_prev = self.dataIn
@@ -113,14 +115,14 @@ class FrameJoinInputReg(Unit):
                     next_empty = 0
 
                 whole_pipeline_shift = (ready & (regs[0].keep & self.keep_masks[0])._eq(0))
-                r_prev.ready(r.keep._eq(0)  # last input reg empty
+                r_prev.ready(is_empty  # last input reg empty
                              | whole_pipeline_shift
                              | next_empty)
             else:
                 r_prev = regs[i + 1]
                 prev_last_mask(1)
-                If(r.keep._eq(0),
-                    # flush
+                If(is_empty,
+                   # flush
                    prev_keep_mask(keep_mask_all),
                 ).Else(
                    prev_keep_mask(keep_masks[i + 1]),
@@ -130,7 +132,6 @@ class FrameJoinInputReg(Unit):
             if self.USE_STRB:
                 data_drive.append(r.strb(r_prev.strb))
 
-            is_empty = r.keep._eq(0)
             fully_consumed = fully_consumed_flags[i]
             if i == 0:
                 # last register in path

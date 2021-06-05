@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from math import inf
-from typing import Optional, List, Callable, Tuple, Union
+from typing import Optional, List, Callable, Tuple
 
 from hwt.code import If, Switch, SwitchLogic, Or, And
+from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
@@ -21,7 +22,6 @@ from hwtLib.amba.axis import AxiStream
 from hwtLib.amba.axis_comp.frame_join.input_reg import FrameJoinInputReg, \
     UnalignedJoinRegIntf
 from pyMathBitPrecise.bit_utils import bit_list_to_int
-from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
 
 
 class AxiS_FrameJoin(Unit):
@@ -276,7 +276,8 @@ class AxiS_FrameJoin(Unit):
         # out.valid
         self.generate_driver_for_state_trans_dependent_out(
             state, state_trans, input_regs,
-            lambda stt: any(o is not None for o in stt.out_byte_mux_sel),
+            # valid if any output or output is 0B frame
+            lambda stt: any(o is not None for o in stt.out_byte_mux_sel) or all(stt.input_rd),
             lambda v: self.dataOut.valid(v),
             lambda: self.dataOut.valid(0),
         )
