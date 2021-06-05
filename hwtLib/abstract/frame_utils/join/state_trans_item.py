@@ -9,6 +9,7 @@ def _cmp_with_None_as_2(o0, o1):
     :return: 0 if o0 == o1, -1 if o0 < o1, 1 if o0 > o1
     """
     if isinstance(o1, tuple):
+        assert len(o0) == len(o1), (o0, o1)
         for _o0, _o1 in zip(o0, o1):
             cmp = _cmp_with_None_as_2(_o0, _o1)
             if cmp != 0:
@@ -85,6 +86,7 @@ class StateTransItem():
             tuple(self.out_byte_mux_sel),
             self.last,
         )
+        print(t)
         return t
 
     def __lt__(self, other):
