@@ -8,7 +8,7 @@ class StateTransTable():
 
     def __init__(self, word_bytes: int,
                  max_lookahead_for_input: List[int],
-                 state_cnt):
+                 state_cnt: int):
         # List[Tuple[inputs, outputs]]
         input_cnt = len(max_lookahead_for_input)
         self.state_trans = [[] for _ in range(state_cnt)]

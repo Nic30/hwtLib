@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Literal, List
 
 
 class InputRegInputVal():
@@ -6,15 +6,16 @@ class InputRegInputVal():
     Container of values for FrameJoin input register
 
     :ivar ~.parent: the StateTransItem instance which is owning this object
-    :ivar ~.keep: list of keep bites
+    :ivar ~.keep: list of keep bits
     :ivar ~.relict: flag for word which was partially consumed
     :ivar ~.last: flag for end of frame
     """
+
     def __init__(self, parent_state_trans: "StateTransItem"):
         self.parent = parent_state_trans
-        self.keep = [None for _ in range(parent_state_trans.parent.word_bytes)]
-        self.relict = None
-        self.last = None
+        self.keep: List[Literal[0, 1, None]] = [None for _ in range(parent_state_trans.parent.word_bytes)]
+        self.relict: Literal[0, 1, None] = None
+        self.last: Literal[0, 1, None] = None
 
     def as_tuple(self):
         return (tuple(self.keep), self.relict, self.last)

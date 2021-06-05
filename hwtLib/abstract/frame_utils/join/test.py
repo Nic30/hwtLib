@@ -19,18 +19,68 @@ class FrameJoinUtilsTC(unittest.TestCase):
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
         input_B_dst = sju.resolve_input_bytes_destinations(streams)
-        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst)
+        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst, sju.can_produce_zero_len_frame(streams))
 
         def st(d):
             return StateTransItem.from_dict(tt, d)
 
-        ref = [
-            [st({'st': '0->0', 'in': [[{'keep': [0, 1], 'relict': 0, 'last': 1}]],
+        ref = [[
+            st({'st': '0->0', 'in': [[{'keep': [0, 1], 'relict': 0, 'last': 1}]],
                  'in.keep_mask':[[[0, 0]]], 'in.rd':[1],
                  'out.keep':[1, 0], 'out.mux':[(0, 0, 1), None], 'out.last':1}
                 )],
         ]
 
+        self.assertSequenceEqual(tt.state_trans, ref)
+
+    def test_fsm0_w2_0B(self):
+        word_bytes = 2
+        streams = [
+            HStream(Bits(8), frame_len=(0, 1)),
+        ]
+        out_offset = 0
+        sju = FrameAlignmentUtils(word_bytes, out_offset)
+        input_B_dst = sju.resolve_input_bytes_destinations(streams)
+        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst, sju.can_produce_zero_len_frame(streams))
+
+        def st(d):
+            return StateTransItem.from_dict(tt, d)
+
+        ref = [[
+            st({'st':'0->0', 'in':[[{'keep':[ 0 , 0 ], 'relict': 0 , 'last': 1 }]],
+                'in.keep_mask':[[[1, 1]]], 'in.rd':[1],
+                'out.keep':[0, 0], 'out.mux':[None, None], 'out.last':1}),
+             st({'st':'0->0', 'in':[[{'keep':[ 1 , 0 ], 'relict': 0 , 'last': 1 }]],
+                'in.keep_mask':[[[0, 0]]], 'in.rd':[1],
+                'out.keep':[1, 0], 'out.mux':[(0, 0, 0), None], 'out.last':1})
+        ]]
+        self.assertSequenceEqual(tt.state_trans, ref)
+
+    def test_fsm0_0B(self):
+        word_bytes = 1
+        streams = [
+            HStream(Bits(8), frame_len=(0, 1)),
+        ]
+        out_offset = 0
+        sju = FrameAlignmentUtils(word_bytes, out_offset)
+        input_B_dst = sju.resolve_input_bytes_destinations(streams)
+        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst, sju.can_produce_zero_len_frame(streams))
+
+        def st(d):
+            return StateTransItem.from_dict(tt, d)
+
+        ref = [
+            [
+                st({'st':'0->0', 'in':[[{'keep':[ 0 ], 'relict': 0 , 'last': 1 }]],
+                    'in.keep_mask':[[[1]]], 'in.rd':[1],
+                    'out.keep':[0], 'out.mux':[None], 'out.last':1},
+                    ),
+                st({'st':'0->0', 'in':[[{'keep':[ 1 ], 'relict': 0 , 'last': 1 }]],
+                    'in.keep_mask':[[[0]]], 'in.rd':[1],
+                    'out.keep':[1], 'out.mux':[(0, 0, 0)], 'out.last':1},
+                    )
+            ]
+        ]
         self.assertSequenceEqual(tt.state_trans, ref)
 
     def test_fsm0_arbitrary_len(self):
@@ -42,7 +92,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
         input_B_dst = sju.resolve_input_bytes_destinations(streams)
-        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst)
+        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst, sju.can_produce_zero_len_frame(streams))
 
         def st(d):
             return StateTransItem.from_dict(tt, d)
@@ -70,7 +120,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
         input_B_dst = sju.resolve_input_bytes_destinations(streams)
-        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst)
+        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst, sju.can_produce_zero_len_frame(streams))
 
         def st(d):
             return StateTransItem.from_dict(tt, d)
@@ -108,7 +158,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
         input_B_dst = sju.resolve_input_bytes_destinations(streams)
-        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst)
+        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst, sju.can_produce_zero_len_frame(streams))
 
         def st(d):
             return StateTransItem.from_dict(tt, d)
@@ -133,7 +183,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
         input_B_dst = sju.resolve_input_bytes_destinations(streams)
-        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst)
+        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst, sju.can_produce_zero_len_frame(streams))
 
         def st(d):
             return StateTransItem.from_dict(tt, d)
@@ -168,6 +218,63 @@ class FrameJoinUtilsTC(unittest.TestCase):
         ]]
         self.assertSequenceEqual(tt.state_trans, ref)
 
+    def test_fsm_2x0to2B_on_2B(self):
+        word_bytes = 2
+        streams = [
+            HStream(Bits(8 * 1), (0, 2), [0]),
+            HStream(Bits(8 * 1), (0, 2), [0]),
+        ]
+        out_offset = 0
+        sju = FrameAlignmentUtils(word_bytes, out_offset)
+        input_B_dst = sju.resolve_input_bytes_destinations(streams)
+        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst, sju.can_produce_zero_len_frame(streams))
+
+        def st(d):
+            return StateTransItem.from_dict(tt, d)
+
+        ref = [
+            [
+                st({ 'st':'0->0', 'in':[[{'keep':[ 0 , 0 ], 'relict': 0 , 'last': 1 }], [{'keep':[ 0 , 1 ], 'relict': 1 , 'last': 1 }]],
+                    'in.keep_mask':[[[1, 1]], [[0, 0]]], 'in.rd':[0, 1],
+                    'out.keep':[1, 0], 'out.mux':[(1, 0, 1), None], 'out.last':1}),
+                st({ 'st':'0->0', 'in':[[{'keep':[ 0 , 0 ], 'relict': 0 , 'last': 1 }], [{'keep':[ 1 , 0 ], 'relict': 0 , 'last': 1 }]],
+                    'in.keep_mask':[[[1, 1]], [[0, 0]]], 'in.rd':[0, 1],
+                    'out.keep':[1, 0], 'out.mux':[(1, 0, 0), None], 'out.last':1}),
+                st({ 'st':'0->0', 'in':[[{'keep':[ 0 , 0 ], 'relict': 0 , 'last': 1 }], [{'keep':[ 1 , 1 ], 'relict': 0 , 'last': 1 }]],
+                    'in.keep_mask':[[[1, 1]], [[0, 0]]], 'in.rd':[0, 1],
+                    'out.keep':[1, 1], 'out.mux':[(1, 0, 0), (1, 0, 1)], 'out.last':1}),
+                st({ 'st':'0->0', 'in':[[{'keep':[ 1 , 0 ], 'relict': 0 , 'last': 1 }], [{'keep':[ 0 , 0 ], 'relict': 0 , 'last': 1 }]],
+                    'in.keep_mask':[[[0, 0]], [[0, 0]]], 'in.rd':[1, 1],
+                    'out.keep':[1, 0], 'out.mux':[(0, 0, 0), None], 'out.last':1}),
+                st({ 'st':'0->0', 'in':[[{'keep':[ 1 , 0 ], 'relict': 0 , 'last': 1 }], [{'keep':[ 1 , 0 ], 'relict':'X', 'last': 1 }]],
+                    'in.keep_mask':[[[0, 0]], [[0, 0]]], 'in.rd':[1, 1],
+                    'out.keep':[1, 1], 'out.mux':[(0, 0, 0), (1, 0, 0)], 'out.last':1}),
+                st({ 'st':'0->0', 'in':[[{'keep':[ 1 , 1 ], 'relict': 0 , 'last': 1 }], [{'keep':[ 0 , 0 ], 'relict': 0 , 'last': 1 }]],
+                    'in.keep_mask':[[[0, 0]], [[0, 0]]], 'in.rd':[1, 1],
+                    'out.keep':[1, 1], 'out.mux':[(0, 0, 0), (0, 0, 1)], 'out.last':1}),
+                st({ 'st':'0->1', 'in':[[{'keep':[ 1 , 0 ], 'relict': 0 , 'last': 1 }], [{'keep':[ 1 , 1 ], 'relict':'X', 'last': 1 }]],
+                    'in.keep_mask':[[[0, 0]], [[0, 1]]], 'in.rd':[1, 1],
+                    'out.keep':[1, 1], 'out.mux':[(0, 0, 0), (1, 0, 0)], 'out.last':0}),
+                st({ 'st':'0->1', 'in':[[{'keep':[ 1 , 1 ], 'relict': 0 , 'last': 1 }], [{'keep':[ 1 ,'X'], 'relict':'X', 'last':'X'}]],
+                    'in.keep_mask':[[[0, 0]], [[1, 1]]], 'in.rd':[1, 0],
+                    'out.keep':[1, 1], 'out.mux':[(0, 0, 0), (0, 0, 1)], 'out.last':0})
+            ], [
+                st({ 'st':'1->0', 'in':[[{'keep':[ 0 , 0 ], 'relict': 0 , 'last': 1 }], [{'keep':[ 0 , 0 ], 'relict': 0 , 'last': 1 }]],
+                    'in.keep_mask':[[[1, 1]], [[1, 1]]], 'in.rd':[1, 1],
+                    'out.keep':[0, 0], 'out.mux':[None, None], 'out.last':1}),
+                st({ 'st':'1->0', 'in':[[{'keep':['X','X'], 'relict':'X', 'last':'X'}], [{'keep':[ 0 , 1 ], 'relict': 1 , 'last': 1 }]],
+                    'in.keep_mask':[[[1, 1]], [[0, 0]]], 'in.rd':[1, 1],
+                    'out.keep':[1, 0], 'out.mux':[(1, 0, 1), None], 'out.last':1}),
+                st({ 'st':'1->0', 'in':[[{'keep':['X','X'], 'relict':'X', 'last':'X'}], [{'keep':[ 1 , 0 ], 'relict': 0 , 'last': 1 }]],
+                    'in.keep_mask':[[[1, 1]], [[0, 0]]], 'in.rd':[1, 1],
+                    'out.keep':[1, 0], 'out.mux':[(1, 0, 0), None], 'out.last':1}),
+                st({ 'st':'1->0', 'in':[[{'keep':['X','X'], 'relict':'X', 'last':'X'}], [{'keep':[ 1 , 1 ], 'relict': 0 , 'last': 1 }]],
+                    'in.keep_mask':[[[1, 1]], [[0, 0]]], 'in.rd':[1, 1],
+                    'out.keep':[1, 1], 'out.mux':[(1, 0, 0), (1, 0, 1)], 'out.last':1})
+            ]
+        ]
+        self.assertSequenceEqual(tt.state_trans, ref)
+
     def test_fsm_2x1B_on_3B(self):
         word_bytes = 3
         streams = [
@@ -177,7 +284,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
         input_B_dst = sju.resolve_input_bytes_destinations(streams)
-        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst)
+        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst, sju.can_produce_zero_len_frame(streams))
 
         def st(d):
             return StateTransItem.from_dict(tt, d)
@@ -240,7 +347,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
         input_B_dst = sju.resolve_input_bytes_destinations(streams)
-        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst)
+        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst, sju.can_produce_zero_len_frame(streams))
 
         def st(d):
             return StateTransItem.from_dict(tt, d)
@@ -265,7 +372,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
         out_offset = 0
         sju = FrameAlignmentUtils(word_bytes, out_offset)
         input_B_dst = sju.resolve_input_bytes_destinations(streams)
-        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst)
+        tt = input_B_dst_to_fsm(word_bytes, len(streams), input_B_dst, sju.can_produce_zero_len_frame(streams))
 
         def st(d):
             return StateTransItem.from_dict(tt, d)
@@ -293,7 +400,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(FrameJoinUtilsTC('test_fsm_1x3B_on_2B_offset_1'))
+    # suite.addTest(FrameJoinUtilsTC('test_fsm0_0B'))
     for tc in [FrameJoinUtilsTC, ]:
         suite.addTest(unittest.makeSuite(tc))
 

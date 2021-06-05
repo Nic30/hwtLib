@@ -7,7 +7,7 @@ from hwtLib.abstract.frame_utils.byte_src_info import ByteSrcInfo
 
 
 def freeze_frame(f: List[List[ByteSrcInfo]])\
-        -> Tuple[Tuple[ByteSrcInfo, ...], ...]:
+        ->Tuple[Tuple[ByteSrcInfo, ...], ...]:
     return tuple(tuple(w) for w in f)
 
 
@@ -37,6 +37,7 @@ class FrameAlignmentUtils():
     """
     :ivar ~.word_bytes: number of bytes in 1 output word
     """
+
     def __init__(self, word_bytes: int, out_offset=0):
         self.word_bytes = word_bytes
         self.out_offset = out_offset
@@ -82,17 +83,21 @@ class FrameAlignmentUtils():
 
     def create_frame(self, stream_i: int, byte_cnt: int,
                      offset_out: int, offset_in: int)\
-            -> Tuple[Tuple[ByteSrcInfo]]:
+            ->Tuple[Tuple[ByteSrcInfo]]:
         """
+        :param byte_cnt: number of bytes in this frame
         :param offset_out: how many empty bytes should be put before data in frame
         :param offset_in: how many bytes skip from imput stream
         """
-        assert byte_cnt > 0, byte_cnt
+        assert byte_cnt >= 0, byte_cnt
         word_bytes = self.word_bytes
         assert offset_out >= 0 and offset_out < word_bytes, (offset_out, word_bytes)
         assert offset_in >= 0 and offset_in < word_bytes, (offset_in, word_bytes)
 
         frame = []
+        if byte_cnt == 0:
+            return freeze_frame(frame)
+
         if offset_out:
             frame.append([None for _ in range(offset_out)])
             last_in_word_i = 0
@@ -123,7 +128,7 @@ class FrameAlignmentUtils():
 
     def get_bytes_in_frame_info(self, offset_out, offset_in,
                                 chunk_size, chunk_cnt, already_has_body_words):
-        assert chunk_cnt > 0, chunk_cnt
+        # assert chunk_cnt > 0, chunk_cnt
         assert chunk_size > 0, chunk_size
         word_bytes = self.word_bytes
 
@@ -149,7 +154,7 @@ class FrameAlignmentUtils():
         if first_word_bytes == word_bytes\
                 and min_representative_frame_size > word_bytes:
             has_body_words = True
-        return first_word_bytes, has_body_words,\
+        return first_word_bytes, has_body_words, \
             last_word_bytes, min_representative_frame_size
 
     def get_important_byte_cnts(
@@ -160,7 +165,7 @@ class FrameAlignmentUtils():
         which affect the number of valid bytes
         in first/last word of frame and presence of words in body frame
         """
-        assert chunk_cnt_min > 0
+        # assert chunk_cnt_min > 0
         assert chunk_cnt_min <= chunk_cnt_max, (chunk_cnt_min, chunk_cnt_max)
         if isinstance(chunk_cnt_min, int) and isinstance(chunk_cnt_max, int)\
                 and chunk_cnt_min == chunk_cnt_max:
@@ -213,6 +218,7 @@ class FrameAlignmentUtils():
         prev_end_offsets = [offset, ]
         for i, t in enumerate(streams):
             assert isinstance(t, HStream), t
+
             f_frames = set()
             for offset_out in prev_end_offsets:
                 f_frames_tmp = self.stream_to_all_possible_frame_formats(
@@ -226,8 +232,11 @@ class FrameAlignmentUtils():
             prev_end_offsets = set()
             # for each frame resolve end alignment of the frames
             for frame in f_frames:
-                last_word = frame[-1]
-                o = count_not_none(last_word)
+                if frame:
+                    last_word = frame[-1]
+                    o = count_not_none(last_word)
+                else:
+                    o = 0
                 prev_end_offsets.add(o)
 
             prev_end_offsets = sorted(prev_end_offsets)
@@ -246,6 +255,10 @@ class FrameAlignmentUtils():
         input_B_dst = self._resolve_input_bytes_destinations(
             frames, len(streams))
         return input_B_dst
+
+    @staticmethod
+    def can_produce_zero_len_frame(streams: List[HStream]):
+        return [s.len_min == 0 for s in streams]
 
     def _resolve_input_bytes_destinations(self, frames, input_cnt):
         """
@@ -280,7 +293,7 @@ class FrameAlignmentUtils():
                     if byte_info is None:
                         continue
                     i = byte_info.stream_i
-                    min_word_i_per_input_in_this_out_word[i] =\
+                    min_word_i_per_input_in_this_out_word[i] = \
                         min(min_word_i_per_input_in_this_out_word[i],
                             byte_info.word_i)
                 # resolve byte destinations

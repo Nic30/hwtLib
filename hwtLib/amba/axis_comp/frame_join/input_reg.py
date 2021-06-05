@@ -139,7 +139,7 @@ class FrameJoinInputReg(Unit):
                     r.keep(r_prev.keep & prev_keep_mask),
                     r.last(r_prev.last & prev_last_mask),
                     r.relict(
-                        0
+                        r_prev.valid & r_prev.keep._eq(0)
                         if is_first_on_input_r else
                         # [TODO] potentially it should not be keep[0] but fist keep with 1
                         r_prev.relict | (r_prev.last & (r_prev.keep[0] & ~keep_masks[i + 1][0] & ~fully_consumed_flags[i + 1]))

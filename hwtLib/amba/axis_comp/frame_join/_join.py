@@ -71,7 +71,7 @@ class AxiS_FrameJoin(Unit):
         input_B_dst = fju.resolve_input_bytes_destinations(
             streams)
         self.state_trans_table = input_B_dst_to_fsm(
-            word_bytes, input_cnt, input_B_dst)
+            word_bytes, input_cnt, input_B_dst, fju.can_produce_zero_len_frame(streams))
         addClkRstn(self)
         with self._paramsShared():
             self.dataOut = AxiStream()._m()
@@ -246,7 +246,7 @@ class AxiS_FrameJoin(Unit):
         # out_sel driver
         for out_B_i, (_out_mux_values, _out_sel) in enumerate(zip(out_mux_values, out_sel)):
 
-            def connect_out_sel(v):
+            def connect_out_sel(v: Optional[Tuple[int, int, int]]) -> HdlAssignmentContainer:
                 if v is None:
                     v = len(_out_mux_values)
                 else:
