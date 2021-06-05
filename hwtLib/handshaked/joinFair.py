@@ -54,8 +54,7 @@ class HsJoinFairShare(HsJoinPrioritized):
 
         # ack when no one with higher priority has vld or this input have the
         # priority
-        ack = ~Or(*priorityOverdrives, *
-                  vldWithHigherPriority) | priorityReg[index]
+        ack = ~Or(*priorityOverdrives, *vldWithHigherPriority) | priorityReg[index]
         return ack
 
     def isSelectedLogic(self, din_vlds, dout_rd, selectedOneHot):
