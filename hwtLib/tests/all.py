@@ -187,6 +187,8 @@ from hwtLib.peripheral.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.peripheral.uart.tx_rx_test import UartTxRxTC
 from hwtLib.peripheral.uart.tx_test import UartTxTC
 from hwtLib.peripheral.usb.sim.usb_agent_test import UsbAgentTC
+from hwtLib.peripheral.usb.usb2.sie_rx_test import Usb2SieDeviceRxTC
+from hwtLib.peripheral.usb.usb2.sie_tx_test import Usb2SieDeviceTxTC
 from hwtLib.peripheral.usb.usb2.ulpi_agent_test import UlpiAgent_TCs
 from hwtLib.peripheral.usb.usb2.utmi_agent_test import UtmiAgentTCs
 from hwtLib.peripheral.usb.usb2.utmi_to_ulpi_test import Utmi_to_UlpiTC
@@ -241,7 +243,6 @@ from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
 from hwtLib.xilinx.primitive.examples.dsp48e1Add_test import Dsp48e1Add_TCs
 from hwtLib.xilinx.slr_crossing_test import HsSlrCrossingTC
-from hwtLib.peripheral.usb.usb2.sie_rx_test import Usb2SieDeviceRxTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -409,6 +410,7 @@ suite = testSuiteFromTCs(
     *UtmiAgentTCs,
     Utmi_to_UlpiTC,
     Usb2SieDeviceRxTC,
+    Usb2SieDeviceTxTC,
 
     BusEndpointTC,
 
