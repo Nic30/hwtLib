@@ -86,7 +86,6 @@ class StateTransItem():
             tuple(self.out_byte_mux_sel),
             self.last,
         )
-        print(t)
         return t
 
     def __lt__(self, other):
