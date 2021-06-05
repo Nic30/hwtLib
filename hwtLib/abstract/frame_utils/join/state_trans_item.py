@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Dict, List, Literal
 
 from hwtLib.abstract.frame_utils.join.input_reg_val import InputRegInputVal
@@ -106,6 +107,22 @@ class StateTransItem():
     def __hash__(self):
         return hash(self.as_tuple())
 
+    def __deepcopy__(self, memo):
+        """
+        Deepcopy, but do not copy the parent
+        """
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if k == "parent":
+                new_v = v
+            else:
+                new_v = deepcopy(v, memo)
+            setattr(result, k, new_v)
+
+        return result
+
     @classmethod
     def from_dict(cls, parent, d: Dict):
         st, st_next = d["st"].split("->")
@@ -120,11 +137,18 @@ class StateTransItem():
         self.out_byte_mux_sel = d["out.mux"]
         return self
 
-    def __repr__(self):
-        return ("<%s 'st':'%r->%r', 'in':%r, \n"
+    def __repr__(self, as_dict=False):
+        if as_dict:
+            header = "{"
+            footer = "}"
+        else:
+            header = f"<{self.__class__.__name__} "
+            footer = ">"
+        return ("%s'st':'%r->%r', 'in':%r, \n"
                 "    'in.keep_mask':%r, 'in.rd':%r,\n"
-                "    'out.keep':%r, 'out.mux':%r, 'out.last':%r>") % (
-            self.__class__.__name__,
+                "    'out.keep':%r, 'out.mux':%r, 'out.last':%r%s") % (
+            header,
             self.state, self.state_next, self.input, self.input_keep_mask,
-            self.input_rd, self.output_keep, self.out_byte_mux_sel, self.last
+            self.input_rd, self.output_keep, self.out_byte_mux_sel, self.last,
+            footer
         )
