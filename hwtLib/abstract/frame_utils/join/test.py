@@ -273,7 +273,7 @@ class FrameJoinUtilsTC(unittest.TestCase):
                    'out.keep':[1, 1], 'out.mux':[(1, 0, 0), (1, 0, 1)], 'out.last':1})
             ]
         ]
-
+        self.maxDiff = None
         self.assertSequenceEqual(tt.state_trans, ref)
 
     def test_fsm_2x1B_on_3B(self):
