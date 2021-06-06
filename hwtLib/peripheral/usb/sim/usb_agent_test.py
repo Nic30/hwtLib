@@ -39,6 +39,15 @@ class UsbAgentTC(unittest.TestCase):
         p = UsbPacketToken(USB_PID.TOKEN_IN, 3, 0)
         self.assertEqual(p.crc5(), 0x0A)
 
+        p = UsbPacketToken(USB_PID.TOKEN_IN, 0x3a, 0xA)
+        self.assertEqual(p.crc5(), 0x1C)
+
+        p = UsbPacketToken(USB_PID.TOKEN_IN, 0x3a, 0xB)
+        self.assertEqual(p.crc5(), 0x11)
+
+        p = UsbPacketToken(USB_PID.TOKEN_IN, 0x15, 0xe)
+        self.assertEqual(p.crc5(), 0x17)
+
     def test_descriptor_sizes(self):
         self.assertEqual(usb_descriptor_device_t.bit_length() // 8, 18)
         self.assertEqual(usb_descriptor_device_qualifier_t.bit_length() // 8, 10)
