@@ -144,7 +144,6 @@ class Usb2SieDeviceRx(Unit):
         parser_pid.dataIn.valid(rx.vld)
         parser_pid.dataIn.keep(mask(parser_pid.dataIn.keep._dtype.bit_length()))
 
-
         # restart or dissabld or end of the frame
         parse_fsm_rst_n = self.rst_n & ~self.enable & ~rx_ending
 
@@ -193,7 +192,6 @@ class Usb2SieDeviceRx(Unit):
             pid_has_16b_data & (rx_data_ending != parser_token.dataOut.crc5.vld),
             "err_packet_len_token")
 
-
         after_pid: AxiStream = parser_pid.dataOut.data
         StreamNode(
             [after_pid],
@@ -203,8 +201,8 @@ class Usb2SieDeviceRx(Unit):
                 parser_payload.dataIn: pid_has_payload,
             },
             skipWhen={
-                parser_token.dataIn: ~pid_has_16b_data,
-                parser_payload.dataIn: ~pid_has_payload,
+                parser_token.dataIn:~pid_has_16b_data,
+                parser_payload.dataIn:~pid_has_payload,
             }
         ).sync()
         parser_token.dataIn(after_pid, exclude=[after_pid.ready, after_pid.valid])
@@ -245,8 +243,7 @@ class Usb2SieDeviceRx(Unit):
         crc5 = CrcComb()
         crc5.DATA_WIDTH = usb_addr_t.bit_length() + usb_endp_t.bit_length()
         crc5.setConfig(CRC_5_USB)
-        crc5.REFIN = False
-        crc5.IN_IS_BIGENDIAN = True
+        crc5.REFOUT = False  # because the crc5 already commes reversed
         self.crc5 = crc5
         crc5.dataIn(Concat(token_q.endp, token_q.addr))
 
