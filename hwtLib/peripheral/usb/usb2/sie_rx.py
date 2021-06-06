@@ -13,6 +13,7 @@ from hwt.interfaces.std import Signal, Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
+from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.amba.axis_comp.frame_parser import AxiS_frameParser
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.crc import Crc
@@ -122,6 +123,8 @@ class Usb2SieDeviceRx(Unit):
         )
         for parser in [parser_pid, parser_token, parser_payload]:
             parser.DATA_WIDTH = 8
+            parser.UNDERFLOW_SUPPORT = True
+
         parser_pid.USE_KEEP = True
         parser_payload.USE_KEEP = True
         parser_token.OVERFLOW_SUPPORT = True
@@ -143,9 +146,6 @@ class Usb2SieDeviceRx(Unit):
         parser_pid.dataIn(rx, exclude=[parser_pid.dataIn.ready, parser_pid.dataIn.valid, parser_pid.dataIn.keep, rx.vld])
         parser_pid.dataIn.valid(rx.vld)
         parser_pid.dataIn.keep(mask(parser_pid.dataIn.keep._dtype.bit_length()))
-
-        # restart or dissabld or end of the frame
-        parse_fsm_rst_n = self.rst_n & ~self.enable & ~rx_ending
 
         token_q = self._reg("token_q", HStruct(
                 (usb_pid_t, "pid"),
@@ -261,33 +261,44 @@ class Usb2SieDeviceRx(Unit):
 
         # crc for payload data
         crc16 = Crc()
-        crc16.LATENCY = 0
+        crc16.LATENCY = 1
         crc16.setConfig(CRC_16_USB)
         crc16.DATA_WIDTH = 8
         self.crc16 = crc16
-        crc16.rst_n(parse_fsm_rst_n)
+        # restart or dissabled or end of the frame
         payload: AxiStream = parser_payload.dataOut.payload
         crc16.dataIn.data(payload.data)
-        crc16.dataIn.vld(payload.valid)
+        crc16.dataIn.vld(payload.valid & payload.keep)
+        # buffer to assert that the crc error flag is set in last word
+        payload = AxiSBuilder(self, payload).buff(2).end
+        payload_end = payload.ready & payload.valid & payload.last
+        crc16.rst_n(self.rst_n & self.enable & ~payload_end)
         payload.ready(1)
 
         # it would be better to use residue
-        err_data_crc = rename_signal(
+        err_data_crc16 = rename_signal(
             self,
-             pid_has_payload &
              parser_payload.dataOut.crc16.vld &
-            (crc16.dataOut != parser_payload.dataOut.crc16.data), "err_data_crc")
+            (Concat(*(b for b in crc16.dataOut)) != parser_payload.dataOut.crc16.data), "err_data_crc")
 
         rx_data = self.rx_data
-        rx_data.error(err_data_crc | token_q.err_len | (rx.vld & rx.error))
+
+        err_data_crc16_delayed = self._reg("err_data_crc16_delayed", BIT[2], def_val=[0, 0])
+        # for the case where packet len < min size
+        err_data_crc16_delayed[0](err_data_crc16 | parser_payload.error_underflow)
+        err_data_crc16_delayed[1](err_data_crc16_delayed[0] | parser_payload.error_underflow)
+        rx_data.error(err_data_crc16 |
+                      err_data_crc16_delayed[0] |
+                      err_data_crc16_delayed[1] |
+                      (rx.vld & rx.error))  # [todo] this rx error can be of next frame instead of this one
         rx_data.keep(payload.keep)
-        If(~payload.keep,
+        If(~payload.keep | rx_data.error,
            rx_data.data(None)
         ).Else(
            rx_data.data(payload.data)
         )
         rx_data.vld(payload.valid)
-        rx_data.last(payload.last)
+        rx_data.last(payload.last | rx_data.error)
 
         propagateClkRstn(self)
 
