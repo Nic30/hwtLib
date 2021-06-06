@@ -3,7 +3,7 @@
 
 from typing import Optional, List, Union
 
-from hwt.code import If
+from hwt.code import If, Or
 from hwt.code_utils import connect_optional, rename_signal
 from hwt.hdl.frameTmpl import FrameTmpl
 from hwt.hdl.transTmpl import TransTmpl
@@ -136,6 +136,8 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         self.SHARED_READY = Param(False)
         # if true, a new state for overflow will be created in FSM
         self.OVERFLOW_SUPPORT = Param(False)
+        # if True, a frame shorter than expected will cause the reset of main FSM
+        self.UNDERFLOW_SUPPORT = Param(False)
 
     def _mkFieldIntf(self, parent: Union[StructIntf, UnionSource],
                      structField: HStructField):
@@ -201,7 +203,12 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
             # we described by type in configuration
             # :note: if the data is unaligned this may be 1 in last parsed word
             #        as well
-            self.parsing_overflow = Signal()._m()
+            self.parsing_overflow: Signal = Signal()._m()
+
+        if self.UNDERFLOW_SUPPORT:
+            # flag which is 1 if the input stream ended prematurely
+            # and main FSM will be restarted
+            self.error_underflow: Signal = Signal()._m()
 
     def parseTemplate(self):
         """
@@ -290,22 +297,31 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         din.ready(out_ready)
 
         if hasMultipleWords:
-            last = wordIndex._eq(maxWordIndex)
             incr = wordIndex(wordIndex + 1)
+            data_ack = rename_signal(self, in_vld & out_ready, "data_ack")
+            aligned = self._structT.bit_length() % self.DATA_WIDTH == 0
+
+            if self.UNDERFLOW_SUPPORT:
+                last = din.last
+                self.error_underflow(data_ack & last & (
+                    (wordIndex < maxWordIndex) if not aligned else wordIndex != maxWordIndex)
+                )
+            else:
+                last = wordIndex._eq(maxWordIndex)
 
             if self.OVERFLOW_SUPPORT:
                 last = din.last
                 incr = If(wordIndex != word_index_max_val,
                    incr
                 )
-                aligned = self._structT.bit_length() % self.DATA_WIDTH == 0
                 if aligned:
                     overflow = wordIndex._eq(word_index_max_val)
                 else:
                     overflow = wordIndex >= maxWordIndex
+
                 self.parsing_overflow(overflow)
 
-            If(rename_signal(self, in_vld & out_ready, "data_ack"),
+            If(data_ack,
                 If(last,
                    wordIndex(0)
                 ).Else(
@@ -449,6 +465,8 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                 raise NotImplementedError("multiple(2) non-constant size segments in parsed datastructure, do parse frame incrementally instead")
         else:
             raise NotImplementedError("multiple non-constant size segments in parsed datastructure, do parse frame incrementally instead")
+        if self.UNDERFLOW_SUPPORT:
+            self.error_underflow(Or(*(c.error_underflow for c in self.children if c is not None)))
 
         propagateClkRstn(self)
 
