@@ -18,7 +18,6 @@ from hwtLib.peripheral.usb.constants import usb_pid_t, USB_PID
 from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b_tx
 from ipCorePackager.intfIpMeta import IntfIpMetaNotSpecified
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
-from hwtLib.handshaked.builder import HsBuilder
 
 
 class Usb2SieDeviceTxInput(AxiStream):
