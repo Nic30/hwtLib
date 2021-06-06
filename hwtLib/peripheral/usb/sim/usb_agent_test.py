@@ -25,6 +25,16 @@ class UsbAgentTC(unittest.TestCase):
         ])
         self.assertEqual(p.crc16(), 0x4748)
 
+        p = UsbPacketData(USB_PID.DATA_1, [
+            0x00, 0x01, 0x02, 0x03,
+        ])
+        self.assertEqual(p.crc16(), 0xf75e)
+
+        p = UsbPacketData(USB_PID.DATA_1, [
+            0x23, 0x45, 0x67, 0x89
+        ])
+        self.assertEqual(p.crc16(), 0x7038)
+
     def test_crc5_token(self):
         p = UsbPacketToken(USB_PID.TOKEN_IN, 3, 0)
         self.assertEqual(p.crc5(), 0x0A)
