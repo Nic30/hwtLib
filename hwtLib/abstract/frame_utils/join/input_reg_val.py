@@ -1,4 +1,4 @@
-from typing import Dict, Literal, List
+from typing import Dict, List, Optional
 
 
 class InputRegInputVal():
@@ -13,9 +13,9 @@ class InputRegInputVal():
 
     def __init__(self, parent_state_trans: "StateTransItem"):
         self.parent = parent_state_trans
-        self.keep: List[Literal[0, 1, None]] = [None for _ in range(parent_state_trans.parent.word_bytes)]
-        self.relict: Literal[0, 1, None] = None
-        self.last: Literal[0, 1, None] = None
+        self.keep: List[Optional[int]] = [None for _ in range(parent_state_trans.parent.word_bytes)]
+        self.relict: Optional[int] = None
+        self.last: Optional[int] = None
 
     def as_tuple(self):
         return (tuple(self.keep), self.relict, self.last)

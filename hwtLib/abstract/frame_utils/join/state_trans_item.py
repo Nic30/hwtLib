@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Dict, List, Literal
+from typing import Dict, List, Optional
 
 from hwtLib.abstract.frame_utils.join.input_reg_val import InputRegInputVal
 from hwtLib.abstract.frame_utils.join.state_trans_table import StateTransTable
@@ -57,7 +57,7 @@ class StateTransItem():
 
         # outputs
 
-        self.input_keep_mask: List[List[List[Literal[0, 1, None]]]] = [
+        self.input_keep_mask: List[List[List[Optional[int]]]] = [
             [] for _ in range(parent_table.input_cnt)
         ]
         for input_keep_mask, in_reg_max in zip(
@@ -66,9 +66,9 @@ class StateTransItem():
             for _ in range(in_reg_max + 1):
                 input_keep_mask.append(
                     [1 for _ in range(parent_table.word_bytes)])
-        self.input_rd: List[Literal[0, 1, None]] = [0 for _ in range(parent_table.input_cnt)]
-        self.output_keep: List[Literal[0, 1, None]] = [0 for _ in range(parent_table.word_bytes)]
-        self.out_byte_mux_sel: List[Literal[0, 1, None]] = [None for _ in range(parent_table.word_bytes)]
+        self.input_rd: List[Optional[int]] = [0 for _ in range(parent_table.input_cnt)]
+        self.output_keep: List[Optional[int]] = [0 for _ in range(parent_table.word_bytes)]
+        self.out_byte_mux_sel: List[Optional[int]] = [None for _ in range(parent_table.word_bytes)]
         self.state_next = state_next_i
         self.last = out_last
 
