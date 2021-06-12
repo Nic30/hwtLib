@@ -4,7 +4,7 @@
 //    .. hwt-autodoc::
 //    
 module Showcase0 (
-    input wire unsigned[31:0] a,
+    input wire[31:0] a,
     input wire signed[31:0] b,
     output reg[31:0] c,
     input wire clk,
@@ -29,7 +29,7 @@ module Showcase0 (
     input wire rst_n,
     output reg[7:0] sc_signal
 );
-    localparam reg unsigned[31:0] const_private_signal = 32'h0000007b;
+    localparam [31:0] const_private_signal = 32'h0000007b;
     reg signed[7:0] fallingEdgeRam[0:3];
     reg r = 1'b0;
     reg[1:0] r_0 = 2'b00;
@@ -37,7 +37,7 @@ module Showcase0 (
     reg r_next = 1'bx;
     wire[1:0] r_next_0 = 2'bxx;
     wire[1:0] r_next_1 = 2'bxx;
-    reg unsigned[7:0] rom[0:3];
+    reg[7:0] rom[0:3];
     always @(a, b) begin: assig_process_c
         c = a + $signed(b);
     end
