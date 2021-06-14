@@ -53,6 +53,15 @@ usb_line_coding_t = HStruct(
 )
 
 
+def make_usb_line_coding_default(dwDTERate=115200, bCharFormat=CHAR_FORMAT.STOP_BIT_1, bParityType=PARITY_TYPE.NONE, bDataBits=8):
+    return usb_line_coding_t.from_py({
+        "dwDTERate": dwDTERate,
+        "bCharFormat": bCharFormat,
+        "bParityType": bParityType,
+        "bDataBits": bDataBits,
+    })
+
+
 class USB_CDC_DESCRIPTOR_SUBTYPE:
     HEADER = 0x00
     CALL_MANAGEMENT_FUNCTIONAL = 0x01
@@ -234,7 +243,7 @@ def get_default_usb_cdc_vcp_descriptors(
         bMaxPacketSize=64,
         manufacturerStr:Optional[str]=None,
         productStr:Optional[str]=None,
-        deviceVer:str="0.0"):
+        deviceVer:str="0.0") -> UsbDescriptorBundle:
     """
     Generates USB descriptors for USB CDC device which works as a UART (serial)
 
