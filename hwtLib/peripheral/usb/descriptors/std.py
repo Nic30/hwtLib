@@ -431,7 +431,7 @@ def make_usb_descriptor_string(s: str):
             "bLength": usb_descriptor_header_t.bit_length() // 8 + len(as_utf_16),
             "bDescriptorType": USB_DESCRIPTOR_TYPE.STRING,
         },
-        "body": [int.from_bytes(b, 1, "little") for b in as_utf_16]
+        "body": [b for b in as_utf_16]
     })
 
 
