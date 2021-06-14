@@ -30,9 +30,9 @@ class USB_REQUEST_TYPE_RECIPIENT:
 
 
 usb_request_type_t = HStruct(
-    (Bits(5), "recipient"),
-    (Bits(2), "type"),
-    (Bits(1), "data_transfer_direction"),
+    (Bits(5), "recipient"), # :see: :class:`~.USB_REQUEST_TYPE_RECIPIENT`
+    (Bits(2), "type"),  # :see: :class:`~.USB_REQUEST_TYPE_TYPE`
+    (Bits(1), "data_transfer_direction"), # :see: :class:`~.USB_REQUEST_TYPE_DIRECTION`
 )
 
 
