@@ -1,5 +1,6 @@
 from typing import List, Tuple, Optional
 
+from hwt.hdl.types.bits import Bits
 from hwt.hdl.value import HValue
 from hwtLib.peripheral.usb.descriptors.std import USB_DESCRIPTOR_TYPE, \
     usb_descriptor_device_t, usb_descriptor_endpoint_t, USB_ENDPOINT_DIR, \
@@ -60,7 +61,16 @@ class UsbEndpointMeta():
 class UsbDescriptorBundle(list):
     """
     Container of USB descriptors.
+
+    :ivar compiled_rom: list of bytes for descriptor rom generated from this descriptor bundle
+    :ivar compiled_type_to_addr_and_size: a dictionary mapping the descriptor type to list of tuples address size
+        for a localization of the descriptor in compiled rom
     """
+
+    def __init__(self, *args, **kwargs):
+        list.__init__(self, *args, **kwargs)
+        self.compiled_rom: Optional[List[int]] = None
+        self.compiled_type_to_addr_and_size: Optional[USB_DESCRIPTOR_TYPE, List[Tuple[int, int]]] = None
 
     def get_descriptor(self, descr_t, descr_i: int) -> Tuple[int, HValue]:
         """
@@ -116,7 +126,7 @@ class UsbDescriptorBundle(list):
 
         return data
 
-    def get_endpoint_meta(self) -> List[Tuple[Optional[UsbEndpointMeta], Optional[UsbEndpointMeta]]]:
+    def get_endpoint_meta(self) -> Tuple[Tuple[Optional[UsbEndpointMeta], Optional[UsbEndpointMeta]]]:
         endpoints = []
         for d in self:
             if d._dtype == usb_descriptor_device_t:
@@ -154,4 +164,37 @@ class UsbDescriptorBundle(list):
                     raise ValueError(syn)
                 ep.max_packet_size = max(ep.max_packet_size, int(d.body.wMaxPacketSize))
 
-        return endpoints
+        return tuple(endpoints)
+
+    def get_descriptors_from_rom(self, descr_t: USB_DESCRIPTOR_TYPE) -> Tuple[int, int]:
+        """
+        Get the address and size of descriptor in comiled rom memory
+
+        :param i: index of the decriptor in a list of descriptors of this type to get
+
+        :returns: tuple address, size
+        """
+        assert self.compiled_rom is not None, "Rom has to be compiled first"
+        try:
+            return self.compiled_type_to_addr_and_size[descr_t]
+        except:
+            raise UsbNoSuchDescriptor()
+
+    @staticmethod
+    def HValue_to_byte_list(d: HValue):
+        w = d._dtype.bit_length()
+        return d._reinterpret_cast(Bits(8)[w // 8]).to_py()
+
+    def compile_rom(self) -> List[int]:
+        assert self.compiled_rom is None, "Avoid recompilation"
+        self.compiled_rom = []
+        self.compiled_type_to_addr_and_size = {}
+        for d in self:
+            as_bytelist = self.HValue_to_byte_list(d)
+            addr = len(self.compiled_rom)
+            size = len(as_bytelist)
+            self.compiled_rom.extend(as_bytelist)
+            t = int(d.header.bDescriptorType)
+            descr_info_list = self.compiled_type_to_addr_and_size.setdefault(t, [])
+            descr_info_list.append((addr, size))
+        return self.compiled_rom
