@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 from hwt.code import And, Or
 from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
@@ -7,19 +7,29 @@ from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 
 
-def _get_ready_signal(intf: Interface) -> RtlSignal:
+def _get_ready_signal(intf: Union[Interface, Tuple[RtlSignal, RtlSignal]]) -> RtlSignal:
     try:
         return intf.rd
     except AttributeError:
         pass
+
+    if isinstance(intf, Tuple):
+        _, rd = intf
+        return rd
+
     return intf.ready
 
 
-def _get_valid_signal(intf: Interface) -> RtlSignal:
+def _get_valid_signal(intf: Union[Interface, Tuple[RtlSignal, RtlSignal]]) -> RtlSignal:
     try:
         return intf.vld
     except AttributeError:
         pass
+
+    if isinstance(intf, Tuple):
+        vld, _ = intf
+        return vld
+
     return intf.valid
 
 
@@ -75,6 +85,7 @@ class StreamNode():
         if extraConditionSignal is 1.
         All interfaces have to wait on each other so if an extraCond!=1 it causes
         blocking on all interfaces if not overridden by skipWhen.
+    :note: instead of interface it is possilble to use tuple (valid, ready) signal
     :ivar ~.skipWhen: dict interface : skipSignal
         where if skipSignal is high interface is disconnected from stream
         sync node and others does not have to wait on it
@@ -210,7 +221,7 @@ class StreamNode():
 
         return extra, skip
 
-    def vld(self, intf: Interface) -> RtlSignal:
+    def vld(self, intf: Union[Interface, Tuple[RtlSignal, RtlSignal]]) -> RtlSignal:
         """
         :return: valid signal of master interface for synchronization of othres
         """
@@ -230,7 +241,7 @@ class StreamNode():
         else:
             return v | s
 
-    def rd(self, intf: Interface) -> RtlSignal:
+    def rd(self, intf: Union[Interface, Tuple[RtlSignal, RtlSignal]]) -> RtlSignal:
         """
         :return: ready signal of slave interface for synchronization of othres
         """
