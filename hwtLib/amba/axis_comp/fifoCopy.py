@@ -73,7 +73,7 @@ class AxiSFifoCopy(AxiSCompBase, HandshakedFifo):
 
     def _declr_io(self):
         HandshakedFifo._declr_io(self)
-        # these signals are sudes sorely in dataOut beat which has last=1
+        # these signals are used sorely in dataOut beat which has last=1
         self.dataOut_copy_frame = Signal()
         if self.ID_WIDTH > 0:
             self.dataOut_replacement_id = VectSignal(self.ID_WIDTH)
