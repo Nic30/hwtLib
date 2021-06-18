@@ -284,7 +284,7 @@ def get_default_usb_cdc_vcp_descriptors(
             bMasterInterface=0, bSlaveInterface=[1]),
         make_usb_descriptor_endpoint(
             bEndpointAddressDir=USB_ENDPOINT_DIR.IN,
-            bEndpointAddress=2,
+            bEndpointAddress=2, # ACM endpoint
             attr_transferType=USB_ENDPOINT_ATTRIBUTES_TRANSFER_TYPE.INTERRUPT,
             attr_synchronisationType=USB_ENDPOINT_ATTRIBUTES_SYNCHRONISATION_TYPE.NONE,
             attr_usageType=USB_ENDPOINT_ATTRIBUTES_USAGE_TYPE.DATA,
