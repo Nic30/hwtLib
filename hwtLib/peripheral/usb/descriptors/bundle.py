@@ -25,6 +25,7 @@ class UsbEndpointMeta():
                  supports_interrupt: bool=False,
                  supports_isochronoust: bool=False,
                  max_packet_size: int=0,
+                 buffer_size: Optional[int]=None,
                  ):
         self.index = index
         self.dir = dir_
@@ -34,6 +35,9 @@ class UsbEndpointMeta():
         self.supports_isochronoust = supports_isochronoust
 
         self.max_packet_size = max_packet_size
+        if buffer_size is None:
+            buffer_size = max_packet_size * 2
+        self.buffer_size = buffer_size
 
     def __repr__(self):
         capabilities = []
@@ -45,6 +49,7 @@ class UsbEndpointMeta():
             capabilities.append("interrupt")
         if self.supports_isochronoust:
             capabilities.append("isochronoust")
+
         if self.dir == USB_ENDPOINT_DIR.IN:
             d = "IN"
         elif self.dir == USB_ENDPOINT_DIR.OUT:
@@ -53,7 +58,7 @@ class UsbEndpointMeta():
             d = "INVALID"
 
         return (
-            f"<{self.__class__.__name__:s} EP{self.index:d} {d:str} {capabilities:r} "
+            f"<{self.__class__.__name__:s} EP{self.index:d} {d:s} {capabilities} "
             f"maxPacketSize:{self.max_packet_size:d}B>"
         )
 
@@ -163,6 +168,7 @@ class UsbDescriptorBundle(list):
                 else:
                     raise ValueError(syn)
                 ep.max_packet_size = max(ep.max_packet_size, int(d.body.wMaxPacketSize))
+                ep.buffer_size = ep.max_packet_size * 2
 
         return tuple(endpoints)
 
