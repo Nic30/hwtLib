@@ -12,6 +12,7 @@ class SegmentedArrayProxy():
     e.g.
 
     .. code-block:: c
+
         // example definition of two segments
         int array0[10];
         int array1[10];
