@@ -8,24 +8,34 @@ The USB protocol stack (v3.2) is composed of multipl layers as depicted in:
 .. figure:: ./_static/USB-Protocol-Stack-V3.png
 
 * Functional Layer:
+
   * This layer generates requests which are converted
     into transactions containing different packets.
     It also manages end to end data flow between host
     and device.
+
 Protocol Layer:
+
   * Packets originates at transmit part of protocol layer
     and terminates at receive part of protocol layer.
     It has various functions which include following.
+
     * Ensure end to end reliability of packets.
+
     * Ensure effective management of power.
+
     * Ensure effective use of Bandwidth.
+
 Link Layer:
+
   * This layer manages port to port flow of data between
     USB host and device. Link layer commands ensure link level data integrity,
     flow control and power management. This layer handles packet acknowledgement
     and takes care of error recovery. The Link Layer also handles Header Packet Framing.
     Its functions are similar to MAC layer of OSI model.
+
 Physical Layer:
+
   * This layer offers actual physical connection between two ports.
     The connection uses a single differential pair (<= USB 2.0) or
     two differential data pairs (>= USB 3.0) (one transmit
@@ -49,6 +59,7 @@ Bus Enumeration
     the device will begin to draw the amount of power requestedby the assigned interface.
 6.  Host queries all other remaining descriptors (interface, endpoint, etc.)  andsets up any requested interrupt transfers.
 
+
 USB Endpoints
 
 In the USB specification, a device endpoint is a uniquely addressable portion of a USB device that is the source
@@ -56,6 +67,7 @@ or sink of information in a communication flow between the host and device.
 The Ep0 has is dedicated to control and and it provides descriptors for other endpoints.
 
 The Endpoints may support following types of transfer:
+
 * Control
 * Interrupt
 * Bulk
