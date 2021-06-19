@@ -9,7 +9,7 @@ module FsmExample (
     input wire rst_n
 );
     reg[1:0] st = 0;
-    reg[1:0] st_next = 0;
+    reg[1:0] st_next;
     always @(st) begin: assig_process_dout
         case(st)
             0:

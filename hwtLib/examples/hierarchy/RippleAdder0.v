@@ -29,27 +29,27 @@ module RippleAdder0 #(
     output reg co,
     output reg[3:0] s
 );
-    reg[4:0] c = 5'bxxxxx;
-    reg sig_fa0_a = 1'bx;
-    reg sig_fa0_b = 1'bx;
-    reg sig_fa0_ci = 1'bx;
-    wire sig_fa0_co = 1'bx;
-    wire sig_fa0_s = 1'bx;
-    reg sig_fa1_a = 1'bx;
-    reg sig_fa1_b = 1'bx;
-    reg sig_fa1_ci = 1'bx;
-    wire sig_fa1_co = 1'bx;
-    wire sig_fa1_s = 1'bx;
-    reg sig_fa2_a = 1'bx;
-    reg sig_fa2_b = 1'bx;
-    reg sig_fa2_ci = 1'bx;
-    wire sig_fa2_co = 1'bx;
-    wire sig_fa2_s = 1'bx;
-    reg sig_fa3_a = 1'bx;
-    reg sig_fa3_b = 1'bx;
-    reg sig_fa3_ci = 1'bx;
-    wire sig_fa3_co = 1'bx;
-    wire sig_fa3_s = 1'bx;
+    reg[4:0] c;
+    reg sig_fa0_a;
+    reg sig_fa0_b;
+    reg sig_fa0_ci;
+    wire sig_fa0_co;
+    wire sig_fa0_s;
+    reg sig_fa1_a;
+    reg sig_fa1_b;
+    reg sig_fa1_ci;
+    wire sig_fa1_co;
+    wire sig_fa1_s;
+    reg sig_fa2_a;
+    reg sig_fa2_b;
+    reg sig_fa2_ci;
+    wire sig_fa2_co;
+    wire sig_fa2_s;
+    reg sig_fa3_a;
+    reg sig_fa3_b;
+    reg sig_fa3_ci;
+    wire sig_fa3_co;
+    wire sig_fa3_s;
     FullAdder fa0_inst (
         .a(sig_fa0_a),
         .b(sig_fa0_b),

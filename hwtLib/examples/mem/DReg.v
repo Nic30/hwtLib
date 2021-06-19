@@ -13,7 +13,7 @@ module DReg (
     input wire rst
 );
     reg internReg = 1'b0;
-    wire internReg_next = 1'bx;
+    wire internReg_next;
     assign dout = internReg;
     always @(posedge clk) begin: assig_process_internReg
         if (rst == 1'b1)

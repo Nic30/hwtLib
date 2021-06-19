@@ -34,9 +34,9 @@ module Showcase0 (
     reg r = 1'b0;
     reg[1:0] r_0 = 2'b00;
     reg[1:0] r_1 = 2'b00;
-    reg r_next = 1'bx;
-    wire[1:0] r_next_0 = 2'bxx;
-    wire[1:0] r_next_1 = 2'bxx;
+    reg r_next;
+    wire[1:0] r_next_0;
+    wire[1:0] r_next_1;
     reg[7:0] rom[0:3];
     always @(a, b) begin: assig_process_c
         c = a + $signed(b);
