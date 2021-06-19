@@ -32,7 +32,7 @@ class RamTransactional(Unit):
     If the flush is activate the current data is read first before it is overwritten by write data.
     This memory supports multiword transaction and the swap, read and write is atomic in relation
     with other transactions.
-    
+
     .. figure:: ./_static/RamTransactional.png
 
     .. hwt-autodoc::
@@ -149,6 +149,7 @@ class RamTransactional(Unit):
             r_meta_i.flushing(1),
             set_first_last(0, w_index_o.word_index._eq(WORD_INDEX_MAX))
         ).Elif(flush_req & ~read_pending,
+            r_meta_i.r_priv(None) if HAS_R_PRIV else [],
             r_meta_i.w_priv(w.addr.priv) if HAS_W_PRIV else [],
             r_meta_i.addr(w.addr.addr),
             r_meta_i.flushing(1),
@@ -160,6 +161,7 @@ class RamTransactional(Unit):
                set_first_last(0, r_index_o.word_index._eq(WORD_INDEX_MAX)),
             ).Else(
                r_meta_i.r_priv(r.addr.priv) if HAS_R_PRIV else [],
+               r_meta_i.w_priv(self.W_PRIV_T.from_py(None)) if HAS_W_PRIV else [],
                r_meta_i.addr(r.addr.addr),
                set_first_last(1, 0),
             ),
