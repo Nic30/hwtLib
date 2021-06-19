@@ -3,7 +3,7 @@
 
 from typing import List
 
-from hwt.code import If, Or, SwitchLogic
+from hwt.code import Or, SwitchLogic
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
@@ -165,7 +165,7 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
                      ):
         """
         :param ar_tagRes: Read request including information from tag_array for given tag.
-        :param axi_s_r: Read data requested by ar_tagRes. 
+        :param axi_s_r: Read data requested by ar_tagRes.
         :param ar_lru_incr: Incrementing LRU for given address when tag is found.
         :param da_r: Read interface of data_array used when tag is found.
         :param axi_m_ar: Read address request interface to memory when tag is not found.
@@ -268,7 +268,7 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         :param victim_way_resp: Victim address requested by victim_way_req
         :param da_w: Write interface of data_array to write and initiate flush when cache is full.
         :param tag_update: Tag update interface for newly written data.
-        
+
         .. figure:: ./_static/AxiCacheWriteAllocWawOnlyWritePropagating_write_handler.png
         """
         # note that the lru update happens even if the data is stalled
