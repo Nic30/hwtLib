@@ -120,7 +120,7 @@ class RegWhereNextIsOnlyOutput(DReg):
         self.dout(r.next)
 
 
-class Latch(Unit):
+class LatchReg(Unit):
     """
     .. hwt-autodoc::
     """

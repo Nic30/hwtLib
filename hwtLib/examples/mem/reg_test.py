@@ -8,7 +8,7 @@ from hwt.synthesizer.rtlLevel.signalUtils.exceptions import SignalDriverErr
 from hwt.synthesizer.utils import to_rtl_str, synthesised
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.mem.reg import DReg, DoubleDReg, OptimizedOutReg, \
-    AsyncResetReg, DDR_Reg, Latch, DReg_asyncRst, RegWhereNextIsOnlyOutput
+    AsyncResetReg, DDR_Reg, LatchReg, DReg_asyncRst, RegWhereNextIsOnlyOutput
 from hwtSimApi.constants import CLK_PERIOD
 
 
@@ -99,8 +99,8 @@ class RegSerializationTC(BaseSerializationTC):
     def test_DDR_Reg_verilog(self):
         self.assert_serializes_as_file(DDR_Reg(), "DDR_Reg.v")
 
-    def test_latch_resources(self):
-        u = Latch()
+    def test_LatchReg_resources(self):
+        u = LatchReg()
         expected = {
             ResourceLatch: 1,
         }
