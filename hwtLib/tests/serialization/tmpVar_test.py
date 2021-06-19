@@ -5,6 +5,7 @@ from hwt.interfaces.std import VectSignal, Signal
 from hwt.synthesizer.unit import Unit
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwt.code import Concat, If
+from hwt.hdl.types.bits import Bits
 
 
 class TmpVarExample0(Unit):
@@ -77,6 +78,24 @@ class TmpVarExampleTernary(Unit):
         self.g(c._ternary(b, a))
 
 
+class TmpVarSignCast(Unit):
+
+    def _declr(self) -> None:
+        self.a = Signal()
+        self.b = Signal(dtype=Bits(1, signed=False))
+        self.c = Signal(dtype=Bits(1, signed=False))._m()
+        self.d = Signal(dtype=Bits(1, signed=False))._m()
+
+        self.e = VectSignal(2)
+        self.i = Signal()
+        self.o = Signal()._m()
+
+    def _impl(self) -> None:
+        self.c(self.a + self.b)
+        self.d(self.b + self.a)
+        self.o(self.e[self.i])
+
+
 class Serializer_tmpVar_TC(BaseSerializationTC):
     __FILE__ = __file__
 
@@ -97,6 +116,9 @@ class Serializer_tmpVar_TC(BaseSerializationTC):
 
     def test_TmpVarExampleTernary_vhdl(self):
         self.assert_serializes_as_file(TmpVarExampleTernary(), "TmpVarExampleTernary.vhd")
+
+    def test_TmpVarSignCast_vhdl(self):
+        self.assert_serializes_as_file(TmpVarSignCast(), "TmpVarSignCast.vhd")
 
 
 if __name__ == '__main__':
