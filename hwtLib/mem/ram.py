@@ -114,13 +114,11 @@ class RamSingleClock(Unit):
         if port.HAS_R and port.HAS_W:
             If(clk._onRisingEdge(),
                 If(port.en,
-                    If(port.we,
-                        port.dout(port.din),
-                    ).Else(
-                        port.dout(mem[port.addr]),
-                    ),
                     *RamSingleClock.mem_write(mem, port),
-                )
+                    port.dout(mem[port.addr]),
+                ).Else(
+                    port.dout(None),
+                ),
             )
         elif port.HAS_R:
             If(clk._onRisingEdge(),
