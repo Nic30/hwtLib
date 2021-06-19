@@ -259,8 +259,8 @@ class DebugBusMonitor(Unit):
 
             name_mem_words = name_memory_size // (self.DATA_WIDTH // 8)
             addr_space.append(
-                (Bits(self.DATA_WIDTH, const=True)
-                 [name_mem_words], "name_memory")
+                (Bits(self.DATA_WIDTH, const=True)[name_mem_words],
+                 "name_memory")
             )
         else:
             name_memory_offset = 0
