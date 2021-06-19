@@ -83,7 +83,7 @@ class BinToBcd(Unit):
             .Default(
                 bitcount(0))
 
-        bcdp = self._sig("bcdp", Bits(4, signed=False)[DECIMAL_DIGITS])
+        bcdp = [self._sig(f"bcdp{i:d}", Bits(4, signed=False)) for i in range(DECIMAL_DIGITS)]
         bcd_digits = []
         for g in range(DECIMAL_DIGITS):
             bcd = self._reg(f"bcd_{g:d}", Bits(4, signed=False), def_val=0)
