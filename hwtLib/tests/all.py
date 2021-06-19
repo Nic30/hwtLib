@@ -69,7 +69,6 @@ from hwtLib.cesnet.mi32.mi32agent_test import Mi32AgentTC
 from hwtLib.cesnet.mi32.sliding_window_test import Mi32SlidingWindowTC
 from hwtLib.cesnet.mi32.to_axi4Lite_test import Mi32_to_Axi4LiteTC
 from hwtLib.clocking.cdc_test import CdcTC
-from hwtLib.clocking.clkDivider import ClkDiv3TC
 from hwtLib.common_nonstd_interfaces.addr_data_hs_to_Axi_test import AddrDataHs_to_Axi_TCs
 from hwtLib.examples.arithmetic.cntr_test import CntrTC, CntrResourceAnalysisTC
 from hwtLib.examples.arithmetic.multiplierBooth_test import MultiplierBoothTC
@@ -377,7 +376,6 @@ suite = testSuiteFromTCs(
     HandshakedCdc_fast_to_slow_TC,
     *RamAsHs_TCs,
     LfsrTC,
-    ClkDiv3TC,
     BitonicSorterTC,
     InterfaceWithArrayTypesTC,
 
