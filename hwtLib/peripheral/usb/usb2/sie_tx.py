@@ -23,6 +23,8 @@ from hwtLib.amba.axis_comp.builder import AxiSBuilder
 class Usb2SieDeviceTxInput(AxiStream):
     """
     :attention: The valid must not go low in the middle of the packet
+
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -51,6 +53,8 @@ class Usb2SieDeviceTx(Unit):
 
     :ivar tx_cmd: An interface which should be used to control this component
     :ivar tx: The Tx part of the Utmi_8b interface
+
+    .. hwt-autodoc::
     """
 
     def _declr(self):

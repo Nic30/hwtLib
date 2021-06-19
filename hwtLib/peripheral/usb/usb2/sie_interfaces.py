@@ -8,6 +8,9 @@ from hwtSimApi.hdlSimulator import HdlSimulator
 
 
 class DataErrVldKeepLast(VldSynced):
+    """
+    .. hwt-autodoc::
+    """
 
     def _config(self):
         VldSynced._config(self)
@@ -25,6 +28,9 @@ class DataErrVldKeepLast(VldSynced):
 
 
 class DataErrVldKeepLastAgent(VldSyncedAgent):
+    """
+    .. hwt-autodoc::
+    """
 
     def set_data(self, data):
         i = self.intf
@@ -63,6 +69,7 @@ class Usb2SieRxOut(VldSynced):
     :note: address in not important because it is checked with current_usb_addr
        it is only important if this is the address of this device
     :attention: validity of the endp/frame_number depens on pid value
+    .. hwt-autodoc::
     """
 
     def _config(self):

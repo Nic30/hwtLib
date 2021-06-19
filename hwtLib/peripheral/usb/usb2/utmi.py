@@ -18,6 +18,8 @@ class Utmi_8b_rx(VldSynced):
 
 
     .. figure:: ./_static/utmi_rx.png
+
+    .. hwt-autodoc::
     """
 
     def _config(self):
@@ -40,6 +42,8 @@ class Utmi_8b_tx(Handshaked):
     :note: Same signals as handshaked interface, but the protocol is slightly different
 
     .. figure:: ./_static/utmi_tx.png
+
+    .. hwt-autodoc::
     """
     def _config(self):
         Handshaked._config(self)
@@ -97,6 +101,8 @@ class Utmi_8b(Interface):
 
     https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/usb2-transceiver-macrocell-interface-specification.pdf
     http://ww1.microchip.com/downloads/en/DeviceDoc/00002142A.pdf
+
+    .. hwt-autodoc::
     """
 
     class XCVR_SELECT():

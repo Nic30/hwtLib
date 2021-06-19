@@ -32,6 +32,9 @@ class Usb2SieDeviceRx(Unit):
     UTMI rx (host->device) packet parser and CRC checker and cutter, (SIE stands for serial interface engine)
 
     :note: based on https://github.com/ultraembedded/core_usb_cdc
+
+
+    .. hwt-autodoc::
     """
 
     def _declr(self):
