@@ -84,4 +84,5 @@ include hwtLib/tests/serialization/TmpVarExample1.v
 include hwtLib/tests/serialization/TmpVarExample1.vhd
 include hwtLib/tests/serialization/TmpVarExample2.v
 include hwtLib/tests/serialization/TmpVarExample2.vhd
+include hwtLib/tests/serialization/TmpVarExampleTernary.vhd
 include hwtLib/tests/synthesizer/interfaceLevel/UnitWithGenericOfChild.vhd

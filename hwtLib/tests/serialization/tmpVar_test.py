@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.interfaces.std import VectSignal
+from hwt.interfaces.std import VectSignal, Signal
 from hwt.synthesizer.unit import Unit
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwt.code import Concat, If
@@ -55,6 +55,28 @@ class TmpVarExample2(Unit):
         )
 
 
+class TmpVarExampleTernary(Unit):
+
+    def _declr(self) -> None:
+        self.a = Signal()
+        self.b = VectSignal(1)
+        self.c = Signal()
+
+        self.d = VectSignal(1)._m()
+        self.e = VectSignal(1)._m()
+        self.f = Signal()._m()
+        self.g = Signal()._m()
+
+    def _impl(self) -> None:
+        a = self.a
+        b = self.b
+        c = self.c
+        self.d(c._ternary(a, b))
+        self.e(c._ternary(b, a))
+        self.f(c._ternary(a, b))
+        self.g(c._ternary(b, a))
+
+
 class Serializer_tmpVar_TC(BaseSerializationTC):
     __FILE__ = __file__
 
@@ -72,6 +94,9 @@ class Serializer_tmpVar_TC(BaseSerializationTC):
 
     def test_TmpVarExample2_verilog(self):
         self.assert_serializes_as_file(TmpVarExample2(), "TmpVarExample2.v")
+
+    def test_TmpVarExampleTernary_vhdl(self):
+        self.assert_serializes_as_file(TmpVarExampleTernary(), "TmpVarExampleTernary.vhd")
 
 
 if __name__ == '__main__':
