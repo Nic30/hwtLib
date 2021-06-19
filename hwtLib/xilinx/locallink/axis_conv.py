@@ -93,7 +93,8 @@ class AxiSToLocalLink(Unit):
 
         If(end_of_part_or_transaction,
             Switch(In.strb)\
-            .add_cases(remMap)
+            .add_cases(remMap)\
+            .Default(Out.rem(None))
         ).Else(
             Out.rem(mask(remBits))
         )
@@ -143,7 +144,9 @@ class LocalLinkToAxiS(Unit):
         strbBits = Out.strb._dtype.bit_length()
         for strb, rem in strbToRem(strbBits, remBits):
             strbMap.append((rem, Out.strb(strb)))
-        Switch(In.rem).add_cases(strbMap)
+        Switch(In.rem)\
+            .add_cases(strbMap)\
+            .Default(Out.strb(None))
 
 
 if __name__ == "__main__":
