@@ -43,9 +43,13 @@ BEGIN
         IF RISING_EDGE(port_0_clk) THEN
             IF port_0_en = '1' THEN
                 IF port_0_we = '1' THEN
+                    port_0_dout <= port_0_din;
+                ELSE
+                    port_0_dout <= ram_memory(TO_INTEGER(UNSIGNED(port_0_addr)));
+                END IF;
+                IF port_0_we = '1' THEN
                     ram_memory(TO_INTEGER(UNSIGNED(port_0_addr))) <= port_0_din;
                 END IF;
-                port_0_dout <= ram_memory(TO_INTEGER(UNSIGNED(port_0_addr)));
             END IF;
         END IF;
     END PROCESS;
@@ -54,9 +58,13 @@ BEGIN
         IF RISING_EDGE(port_1_clk) THEN
             IF port_1_en = '1' THEN
                 IF port_1_we = '1' THEN
+                    port_1_dout <= port_1_din;
+                ELSE
+                    port_1_dout <= ram_memory(TO_INTEGER(UNSIGNED(port_1_addr)));
+                END IF;
+                IF port_1_we = '1' THEN
                     ram_memory(TO_INTEGER(UNSIGNED(port_1_addr))) <= port_1_din;
                 END IF;
-                port_1_dout <= ram_memory(TO_INTEGER(UNSIGNED(port_1_addr)));
             END IF;
         END IF;
     END PROCESS;

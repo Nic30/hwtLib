@@ -29,7 +29,7 @@ class RamSingleClock(Unit):
     PORT_CLS = BramPort_withoutClk
 
     def _config(self):
-        self.ADDR_WIDTH = Param(4)
+        self.ADDR_WIDTH = Param(10)
         self.DATA_WIDTH = Param(64)
         self.PORT_CNT = Param(1)
         self.HAS_BE = Param(False)
@@ -114,8 +114,12 @@ class RamSingleClock(Unit):
         if port.HAS_R and port.HAS_W:
             If(clk._onRisingEdge(),
                 If(port.en,
+                    If(port.we,
+                        port.dout(port.din),
+                    ).Else(
+                        port.dout(mem[port.addr]),
+                    ),
                     *RamSingleClock.mem_write(mem, port),
-                    port.dout(mem[port.addr])
                 )
             )
         elif port.HAS_R:
