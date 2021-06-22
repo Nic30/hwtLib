@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import unittest
-
 from hwt.hdl.constants import Time
 from hwt.interfaces.std import Handshaked
-from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.handshaked.fifoAsync import HsFifoAsync
 from hwtLib.handshaked.fifo_test import HsFifoTC
 
@@ -35,6 +32,7 @@ class HsFifoAsyncTC(HsFifoTC):
 
 
 if __name__ == "__main__":
+    import unittest
     suite = unittest.TestSuite()
     # suite.addTest(HsFifoAsyncTC('test_stuckedData'))
     suite.addTest(unittest.makeSuite(HsFifoAsyncTC))
