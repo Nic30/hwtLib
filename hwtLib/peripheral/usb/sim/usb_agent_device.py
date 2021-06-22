@@ -74,6 +74,7 @@ class UsbDevAgent(UsbAgent):
             assert t.addr == self.addr, t
             assert t.endp == 0, t
             req = yield from self.receive(UsbPacketData)
+            assert req.pid == USB_PID.DATA_0, req
             req = req.unpack(usb_device_request_t)
             yield from self.send_ack()
 

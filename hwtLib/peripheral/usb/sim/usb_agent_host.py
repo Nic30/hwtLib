@@ -188,6 +188,7 @@ class UsbHostAgent(UsbAgent):
             descr = UsbPacketData(USB_PID.DATA_1, descr)
             descr = descr.unpack(descriptor_t)
         else:
+            assert len(descr) == int(dev_req_get_descr.wLength), (len(descr), int(dev_req_get_descr.wLength))
             assert descriptor_t is usb_descriptor_configuration_t, descriptor_t
             descr = self.parse_configuration_descriptor_bundle(descr)
 
@@ -213,7 +214,7 @@ class UsbHostAgent(UsbAgent):
             wIndex=0,
             wLength=0)
 
-        yield from self.send(UsbPacketData(USB_PID.DATA_1, set_addr))
+        yield from self.send(UsbPacketData(USB_PID.DATA_0, set_addr))
         yield from self.wait_on_ack()
         yield from self.send(UsbPacketToken(USB_PID.TOKEN_IN, 0, 0))
         after_addr_set_empty_in = yield from self.receive(UsbPacketData)  # STATUS stage
