@@ -71,13 +71,13 @@ class USB_PID:
             return In(v, token_pids)
 
     # Marks for host-to-device transfer
-    TOKEN_OUT = 0b0001
+    TOKEN_OUT = 0b0001 # 0x1
     # Marks for device-to-host transfer
-    TOKEN_IN = 0b1001
+    TOKEN_IN = 0b1001 # 0x9
     # Marks start of frame marker (sent each ms)
-    TOKEN_SOF = 0b0101
+    TOKEN_SOF = 0b0101 # 0x5
     # Marks for host-to-device control transfer
-    TOKEN_SETUP = 0b1101
+    TOKEN_SETUP = 0b1101 # 0xD
     # :note: setup transactions always uses DATA_0, but it may be fallowed by IN which starts with 0 and alternates between 0/1
 
     @classmethod
@@ -90,13 +90,13 @@ class USB_PID:
 
     # DATA_X is always relatd to a specific endpoint
     # Even-numbered data packet
-    DATA_0 = 0b0011
+    DATA_0 = 0b0011 # 0x3
     # Odd-numbered data packet
-    DATA_1 = 0b1011
+    DATA_1 = 0b1011 # 0xB
     # Data packet for high-bandwidth isochronous transfer (USB 2.0)
-    DATA_2 = 0b0111
+    DATA_2 = 0b0111 # 0x7
     # Data packet for high-bandwidth isochronous transfer (USB 2.0)
-    DATA_M = 0b1111
+    DATA_M = 0b1111 # 0xF
 
     @classmethod
     def is_hs(cls, v: Union[int, RtlSignalBase]):
@@ -107,22 +107,22 @@ class USB_PID:
             return In(v, hs_pids)
 
     # Data packet accepted
-    HS_ACK = 0b0010
+    HS_ACK = 0b0010 # 0x2
     # Data packet not accepted; please retransmit
-    HS_NACK = 0b1010
+    HS_NACK = 0b1010 # 0XA
     # Transfer impossible; do error recovery
-    HS_STALL = 0b1110
+    HS_STALL = 0b1110 # 0xE
     # Data not ready yet (USB 2.0)
-    HS_NYET = 0b0110
+    HS_NYET = 0b0110 # 0x6
 
     # Low-bandwidth USB preamble (tells hubs to temporarily switch to low speed mode)
-    PREAMBLE = 0b1100
+    PREAMBLE = 0b1100 # 0xC
     # Split transaction error (USB 2.0)
-    ERR = 0b1100
+    ERR = 0b1100 # 0xC
     # High-bandwidth (USB 2.0) split transaction
-    SPLIT = 0b1000
+    SPLIT = 0b1000 # 0x8
     # Check if endpoint can accept data (USB 2.0)
-    PING = 0b0100
+    PING = 0b0100 # 0x4
 
 
 usb_addr_t = Bits(7)
