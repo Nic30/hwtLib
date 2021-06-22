@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from math import ceil
-from typing import Union
+from typing import Union, Optional
 
 from hwt.code import If, Or
 from hwt.hdl.types.bits import Bits
@@ -48,9 +48,9 @@ class AddrDataHs_to_Axi(BusBridge):
     .. hwt-autodoc:: example_AddrDataHs_to_Axi
     """
 
-    def __init__(self, intfCls=Axi4):
+    def __init__(self, intfCls=Axi4, hdl_name_override:Optional[str]=None):
         self.intfCls = intfCls
-        super(AddrDataHs_to_Axi, self).__init__()
+        super(AddrDataHs_to_Axi, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
         self.intfCls._config(self)

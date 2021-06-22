@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Optional
+
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
@@ -32,9 +34,9 @@ class AxiLite_to_Axi(BusBridge):
     .. hwt-autodoc::
     """
 
-    def __init__(self, intfCls=Axi4):
+    def __init__(self, intfCls=Axi4, hdl_name_override:Optional[str]=None):
         self.intfCls = intfCls
-        super(AxiLite_to_Axi, self).__init__()
+        super(AxiLite_to_Axi, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
         self.INTF_CLS = Param(self.intfCls)

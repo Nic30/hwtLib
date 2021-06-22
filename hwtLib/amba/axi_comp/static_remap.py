@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Optional
+
 from hwt.synthesizer.param import Param
 from hwtLib.abstract.busStaticRemap import BusStaticRemap
 from hwtLib.amba.axi4 import Axi4
@@ -14,9 +16,9 @@ class AxiStaticRemap(BusStaticRemap):
     .. hwt-autodoc:: _example_AxiStaticRemap
     """
 
-    def __init__(self, intfCls=Axi4):
+    def __init__(self, intfCls=Axi4, hdl_name_override:Optional[str]=None):
         self.intfCls = intfCls
-        super(AxiStaticRemap, self).__init__()
+        super(AxiStaticRemap, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
         self.INTF_CLS = Param(self.intfCls)

@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Optional
+
 from hwt.code import Concat, Switch
+from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
@@ -11,7 +14,6 @@ from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axis_comp.builder import AxiSBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
-from hwt.hdl.types.bits import Bits
 
 
 class AxiResize(BusBridge):
@@ -21,9 +23,9 @@ class AxiResize(BusBridge):
     .. hwt-autodoc:: _example_AxiResize
     """
 
-    def __init__(self, intfCls):
+    def __init__(self, intfCls, hdl_name_override:Optional[str]=None):
         self.intfCls = intfCls
-        super(AxiResize, self).__init__()
+        super(AxiResize, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
         self.INTF_CLS = Param(self.intfCls)
@@ -114,7 +116,7 @@ class AxiResize(BusBridge):
 
             c = self.connect_with_padding
             res.append(
-                c(src_ch.data, (src_h * 8, src_l* 8), dst_ch.data, (dst_h * 8, dst_l* 8))
+                c(src_ch.data, (src_h * 8, src_l * 8), dst_ch.data, (dst_h * 8, dst_l * 8))
             )
             if has_strb:
                 res.append(

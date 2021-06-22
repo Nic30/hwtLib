@@ -1,4 +1,5 @@
 from itertools import chain
+from typing import Optional
 
 from hwt.interfaces.utils import addClkRstn
 from hwt.math import log2ceil
@@ -9,9 +10,9 @@ from hwtLib.abstract.busInterconnect import BusInterconnect
 
 class AxiInterconnectCommon(BusInterconnect):
 
-    def __init__(self, intfCls):
+    def __init__(self, intfCls, hdl_name_override:Optional[str]=None):
         self.intfCls = intfCls
-        super(AxiInterconnectCommon, self).__init__()
+        super(AxiInterconnectCommon, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
         super(AxiInterconnectCommon, self)._config()

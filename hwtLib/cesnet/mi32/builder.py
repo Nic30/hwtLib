@@ -1,3 +1,5 @@
+from typing import Optional
+
 from hwtLib.amba.axi4Lite import Axi4Lite
 from hwtLib.amba.axi_comp.builder import AxiBuilder
 from hwtLib.cesnet.mi32.axi4Lite_to_mi32 import Axi4Lite_to_Mi32
@@ -10,9 +12,9 @@ from hwtLib.cesnet.mi32.to_axi4Lite import Mi32_to_Axi4Lite
 class _Mi32Buff(Mi32Buff):
     """Mi32Buff constructor which ignores interface in constructor"""
 
-    def __init__(self, intfCls):
+    def __init__(self, intfCls, hdl_name_override:Optional[str]=None):
         assert intfCls is Mi32
-        super(_Mi32Buff, self).__init__()
+        super(_Mi32Buff, self).__init__(hdl_name_override=hdl_name_override)
 
 
 class Mi32Builder(AxiBuilder):

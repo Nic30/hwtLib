@@ -12,6 +12,7 @@ from hwtLib.amba.axi_comp.buff import AxiBuff
 from hwtLib.amba.constants import PROT_DEFAULT
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.streamNode import StreamNode
+from typing import Optional
 
 
 class HandshakedIdAndLen(HandshakeSync):
@@ -42,18 +43,18 @@ class Axi_to_AxiLite(BusBridge):
     .. hwt-autodoc::
     """
 
-    def __init__(self, intfCLs=Axi4):
-        self.intfCLs = intfCLs
-        super(Axi_to_AxiLite, self).__init__()
+    def __init__(self, intfCls=Axi4, hdl_name_override:Optional[str]=None):
+        self.intfCls = intfCls
+        super(Axi_to_AxiLite, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
-        self.intfCLs._config(self)
+        self.intfCls._config(self)
         self.MAX_TRANS_OVERLAP = Param(4)
 
     def _declr(self):
         addClkRstn(self)
         with self._paramsShared():
-            self.s = self.intfCLs()
+            self.s = self.intfCls()
             self.m = Axi4Lite()._m()
 
         # *_req_fifo are used to aviod blocking during addr/data/confirmation waiting on axi channels
@@ -61,12 +62,12 @@ class Axi_to_AxiLite(BusBridge):
         w_f = self.w_req_fifo = HandshakedFifo(HandshakedIdAndLen)
         for f in [w_f, r_f]:
             f.ID_WIDTH = self.ID_WIDTH
-            f.LEN_WIDTH = self.intfCLs.LEN_WIDTH
+            f.LEN_WIDTH = self.intfCls.LEN_WIDTH
             f.DEPTH = self.MAX_TRANS_OVERLAP
 
         with self._paramsShared():
             self.out_reg = AxiBuff(Axi4Lite)
-            self.in_reg = AxiBuff(self.intfCLs)
+            self.in_reg = AxiBuff(self.intfCls)
             self.in_reg.DATA_BUFF_DEPTH =\
                 self.in_reg.ADDR_BUFF_DEPTH = \
                 self.out_reg.DATA_BUFF_DEPTH = \

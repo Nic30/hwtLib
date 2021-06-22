@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Optional
+
 from hwt.interfaces.utils import addClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
@@ -16,9 +18,9 @@ class AxiBuff(BusBridge):
     .. hwt-autodoc:: _example_AxiBuff
     """
 
-    def __init__(self, intfCls):
+    def __init__(self, intfCls, hdl_name_override:Optional[str]=None):
         self.intfCls = intfCls
-        super(AxiBuff, self).__init__()
+        super(AxiBuff, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
         self.INTF_CLS = Param(self.intfCls)

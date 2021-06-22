@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import math
+from typing import Optional
 
 from hwt.code import If, Switch
 from hwt.hdl.types.bits import Bits
+from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwt.interfaces.std import Handshaked
 
 
 class HandshakedStoredBurst(Unit):
@@ -17,9 +18,9 @@ class HandshakedStoredBurst(Unit):
 
     .. hwt-autodoc::
     """
-    def __init__(self, intfCls=Handshaked):
+    def __init__(self, intfCls=Handshaked, hdl_name_override:Optional[str]=None):
         self.intfCls = intfCls
-        super(HandshakedStoredBurst, self).__init__()
+        super(HandshakedStoredBurst, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
         self.intfCls._config(self)

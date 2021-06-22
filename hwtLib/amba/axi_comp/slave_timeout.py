@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Optional
+
 from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.utils import addClkRstn
@@ -21,9 +23,9 @@ class AxiSlaveTimeout(BusBridge):
     .. hwt-autodoc:: _example_AxiSlaveTimeout
     """
 
-    def __init__(self, intfCls):
+    def __init__(self, intfCls, hdl_name_override:Optional[str]=None):
         self.intfCls = intfCls
-        super(AxiSlaveTimeout, self).__init__()
+        super(AxiSlaveTimeout, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
         self.TIMEOUT = Param(4096)

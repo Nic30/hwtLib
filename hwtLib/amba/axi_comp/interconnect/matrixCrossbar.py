@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Dict, Set
+from typing import Dict, Set, Optional
 
 from hwt.code import Or, Switch
 from hwt.math import log2ceil
@@ -22,9 +22,9 @@ class AxiInterconnectMatrixCrossbar(Unit):
     .. hwt-autodoc:: example_AxiInterconnectMatrixCrossbar
     """
 
-    def __init__(self, intfCls):
+    def __init__(self, intfCls, hdl_name_override:Optional[str]=None):
         self.intfCls = intfCls
-        super(AxiInterconnectMatrixCrossbar, self).__init__()
+        super(AxiInterconnectMatrixCrossbar, self).__init__(hdl_name_override=hdl_name_override)
 
     @staticmethod
     def _masters_for_slave(masters, slave_cnt) -> Dict[int, Set[int]]:

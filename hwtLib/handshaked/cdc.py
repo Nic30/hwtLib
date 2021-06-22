@@ -3,15 +3,15 @@
 
 from hwt.code import If
 from hwt.constraints import set_max_delay
-from hwt.interfaces.std import Clk, Rst_n, Signal, Handshaked
+from hwt.interfaces.std import Signal, Handshaked
 from hwt.interfaces.utils import addClkRst
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.clocking.cdc import CdcPulseGen
-from hwtLib.handshaked.compBase import HandshakedCompBase
 from hwtLib.clocking.vldSynced_cdc import VldSyncedCdc
+from hwtLib.handshaked.compBase import HandshakedCompBase
 
 
 @serializeParamsUniq
@@ -46,6 +46,7 @@ class HandshakedCdc(HandshakedCompBase):
 
     .. hwt-autodoc:: example_HandshakedCdc
     """
+
     def _config(self):
         HandshakedCompBase._config(self)
         self.DATA_RESET_VAL = Param(None)

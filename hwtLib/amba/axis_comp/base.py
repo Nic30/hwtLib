@@ -1,6 +1,7 @@
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
 from hwtLib.handshaked.compBase import HandshakedCompBase
+from typing import Optional
 
 
 class AxiSCompBase(HandshakedCompBase):
@@ -8,12 +9,12 @@ class AxiSCompBase(HandshakedCompBase):
     Abstract base for axis components
     """
 
-    def __init__(self, intfCls=AxiStream):
+    def __init__(self, intfCls=AxiStream, hdl_name_override:Optional[str]=None):
         """
         :param hsIntfCls: class of interface which should be used as interface of this unit
         """
         self.intfCls = intfCls
-        Unit.__init__(self)
+        Unit.__init__(self, hdl_name_override=hdl_name_override)
 
     @classmethod
     def get_valid_signal(cls, intf):

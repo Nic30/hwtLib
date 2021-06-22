@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Optional
+
 from hwt.code import FsmBuilder, If, Concat
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
@@ -30,10 +32,10 @@ class AxiTester(Unit):
     .. hwt-autodoc::
     """
 
-    def __init__(self, axiCls=Axi4, cntrlCls=Axi4Lite):
+    def __init__(self, axiCls=Axi4, cntrlCls=Axi4Lite, hdl_name_override:Optional[str]=None):
         self._axiCls = axiCls
         self._cntrlCls = cntrlCls
-        super(AxiTester, self).__init__()
+        super(AxiTester, self).__init__(hdl_name_override=hdl_name_override)
 
     def _config(self):
         self._axiCls._config(self)
