@@ -191,7 +191,10 @@ class Utmi_8b_txAgent(SyncAgentBase):
             yield WaitWriteOnly()
             yield WaitCombRead()
             intf = self.intf
-            vld = int(intf.vld.read())
+            try:
+                vld = int(intf.vld.read())
+            except ValidityError:
+                    raise AssertionError(self.sim.now, intf._getFullName(), "invalid vld, this would case desynchronization")
             if self._last_valid and not vld:
                 # end of packet
                 self.data.append(self.actual_packet)
