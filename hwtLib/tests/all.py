@@ -376,7 +376,7 @@ suite = testSuiteFromTCs(
     HsJoinFair_3inputs_TC,
     HandshakedCdc_slow_to_fast_TC,
     HandshakedCdc_fast_to_slow_TC,
-    HandshakedToAxiStreamTCs,
+    *HandshakedToAxiStreamTCs,
     *RamAsHs_TCs,
     LfsrTC,
     BitonicSorterTC,
