@@ -139,6 +139,7 @@ from hwtLib.handshaked.cdc_test import HandshakedCdc_slow_to_fast_TC, \
     HandshakedCdc_fast_to_slow_TC
 from hwtLib.handshaked.fifoAsync_test import HsFifoAsyncTC
 from hwtLib.handshaked.fifo_test import HsFifoTC
+from hwtLib.handshaked.handshakedToAxiStream_test import HandshakedToAxiStreamTCs
 from hwtLib.handshaked.joinFair_test import HsJoinFair_2inputs_TC, \
     HsJoinFair_3inputs_TC
 from hwtLib.handshaked.joinPrioritized_test import HsJoinPrioritizedTC, \
@@ -186,6 +187,7 @@ from hwtLib.peripheral.uart.rx_test import UartRxTC, UartRxBasicTC
 from hwtLib.peripheral.uart.tx_rx_test import UartTxRxTC
 from hwtLib.peripheral.uart.tx_test import UartTxTC
 from hwtLib.peripheral.usb.sim.usb_agent_test import UsbAgentTC
+from hwtLib.peripheral.usb.usb2.device_cdc_test import Usb2CdcTC
 from hwtLib.peripheral.usb.usb2.sie_rx_test import Usb2SieDeviceRxTC
 from hwtLib.peripheral.usb.usb2.sie_tx_test import Usb2SieDeviceTxTC
 from hwtLib.peripheral.usb.usb2.ulpi_agent_test import UlpiAgent_TCs
@@ -374,6 +376,7 @@ suite = testSuiteFromTCs(
     HsJoinFair_3inputs_TC,
     HandshakedCdc_slow_to_fast_TC,
     HandshakedCdc_fast_to_slow_TC,
+    HandshakedToAxiStreamTCs,
     *RamAsHs_TCs,
     LfsrTC,
     BitonicSorterTC,
@@ -409,6 +412,7 @@ suite = testSuiteFromTCs(
     Utmi_to_UlpiTC,
     Usb2SieDeviceRxTC,
     Usb2SieDeviceTxTC,
+    Usb2CdcTC,
 
     BusEndpointTC,
 

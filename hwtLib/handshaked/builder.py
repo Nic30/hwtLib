@@ -4,6 +4,7 @@
 from hwtLib.abstract.streamBuilder import AbstractStreamBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
 from hwtLib.handshaked.fifoAsync import HsFifoAsync
+from hwtLib.handshaked.handshakeToAxiStream import HandshakeToAxiStream
 from hwtLib.handshaked.joinFair import HsJoinFairShare
 from hwtLib.handshaked.joinPrioritized import HsJoinPrioritized
 from hwtLib.handshaked.reg import HandshakedReg
@@ -29,3 +30,17 @@ class HsBuilder(AbstractStreamBuilder):
     SplitFairCls = HsSplitFair
     SplitPrioritizedCls = HsSplitPrioritized
     SplitSelectCls = HsSplitSelect
+
+    def to_axis(self, MAX_FRAME_WORDS=None, IN_TIMEOUT=None):
+        assert MAX_FRAME_WORDS or IN_TIMEOUT
+        DATA_WIDTH = self.end._bit_length() - 2
+
+        def set_params(u: HandshakeToAxiStream):
+            u.DATA_WIDTH = DATA_WIDTH
+            u.MAX_FRAME_WORDS = MAX_FRAME_WORDS
+            u.IN_TIMEOUT = IN_TIMEOUT
+
+        next_self = self._genericInstance(HandshakeToAxiStream, "hsToAxiS", set_params)
+
+        from hwtLib.amba.axis_comp.builder import AxiSBuilder
+        return AxiSBuilder(self.parent, next_self.end)
