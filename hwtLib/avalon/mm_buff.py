@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from typing import Union
+
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.mode import serializeParamsUniq
@@ -10,9 +12,8 @@ from hwt.synthesizer.param import Param
 from hwtLib.abstract.busBridge import BusBridge
 from hwtLib.avalon.mm import AvalonMM
 from hwtLib.handshaked.fifo import HandshakedFifo
-from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.handshaked.reg import HandshakedReg
-from typing import Union
+from hwtLib.handshaked.streamNode import StreamNode
 
 
 @serializeParamsUniq
