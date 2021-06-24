@@ -20,7 +20,6 @@ class AvalonMmBRam(Unit):
 
     def _config(self) -> None:
         AvalonMM._config(self)
-        self.ID_WIDTH = Param(1)
 
     def _declr(self) -> None:
         addClkRstn(self)
@@ -47,7 +46,7 @@ class AvalonMmBRam(Unit):
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
     u = AvalonMmBRam()
-    u.MAX_BURST = 2 ** 7 - 1
     u.DATA_WIDTH = 256
-    u.ADDR_WIDTH = 26
+    u.ADDR_WIDTH = 26 + log2ceil(256 // 8 - 1)
+    u.MAX_BURST = 2 ** 7
     print(to_rtl_str(u))
