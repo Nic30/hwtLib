@@ -19,12 +19,14 @@ class HandshakedIdAndLen(HandshakeSync):
     """
     .. hwt-autodoc::
     """
+
     def _config(self):
         self.ID_WIDTH = Param(4)
         self.LEN_WIDTH = Param(8)
 
     def _declr(self):
-        self.id = VectSignal(self.ID_WIDTH)
+        if self.ID_WIDTH > 0:
+            self.id = VectSignal(self.ID_WIDTH)
         self.len = VectSignal(self.LEN_WIDTH)
         super(HandshakedIdAndLen, self)._declr()
 
@@ -68,7 +70,7 @@ class Axi_to_AxiLite(BusBridge):
         with self._paramsShared():
             self.out_reg = AxiBuff(Axi4Lite)
             self.in_reg = AxiBuff(self.intfCls)
-            self.in_reg.DATA_BUFF_DEPTH =\
+            self.in_reg.DATA_BUFF_DEPTH = \
                 self.in_reg.ADDR_BUFF_DEPTH = \
                 self.out_reg.DATA_BUFF_DEPTH = \
                 self.out_reg.ADDR_BUFF_DEPTH = 1
@@ -113,7 +115,8 @@ class Axi_to_AxiLite(BusBridge):
         addr_ch_out.prot(PROT_DEFAULT)
         # push new request to req_fifo only on start of new requirest
         req_fifo_inp.vld(~len_rem_vld & addr_ch_in.valid & addr_ch_out.ready)
-        req_fifo_inp.id(addr_ch_in.id)
+        if self.ID_WIDTH:
+            req_fifo_inp.id(addr_ch_in.id)
         req_fifo_inp.len(addr_ch_in.len)
 
     def gen_w_logic(self, w_in, w_out):
@@ -133,7 +136,8 @@ class Axi_to_AxiLite(BusBridge):
         """
         name_prefix = outp._name
         rem = self._reg(name_prefix + "rem", self.s.aw.len._dtype)
-        id_tmp = self._reg(name_prefix + "id_tmp", outp.id._dtype)
+        if self.ID_WIDTH:
+            id_tmp = self._reg(name_prefix + "id_tmp", outp.id._dtype)
         rem_vld = self._reg(name_prefix + "rem_vld", def_val=0)
 
         StreamNode(
@@ -155,7 +159,7 @@ class Axi_to_AxiLite(BusBridge):
                 ).Elif(fifo_out.vld,
                     # this was the last beat and we can directly start new one
                     rem(fifo_out.len),
-                    id_tmp(fifo_out.id),
+                    id_tmp(fifo_out.id) if self.ID_WIDTH else [],
                 ).Else(
                     # this was the last beat and there is no next transaction
                     rem_vld(0),
@@ -164,13 +168,15 @@ class Axi_to_AxiLite(BusBridge):
         ).Else(
             # in iddle store the information from b_fifo
             rem(fifo_out.len),
-            id_tmp(fifo_out.id),
+            id_tmp(fifo_out.id) if self.ID_WIDTH else [],
             rem_vld(fifo_out.vld),
             fifo_out.rd(1),
         )
+        already_connected = {outp.valid, outp.ready}
+        if self.ID_WIDTH:
+            outp.id(id_tmp)
+            already_connected.add(outp.id)
 
-        outp.id(id_tmp)
-        already_connected = {outp.valid, outp.ready, outp.id}
         if hasattr(outp, "last"):
             outp.last(rem._eq(0) & rem_vld)
             already_connected.add(outp.last)
