@@ -36,28 +36,34 @@ class AvalonMmAgentTC(SimTestCase):
         self.runSim(10 * CLK_PERIOD)
 
         self.assertEmpty(u.m._ag.req)
-        self.assertEmpty(u.m._ag.wData)
         self.assertEmpty(u.s._ag.rData)
         self.assertEmpty(u.s._ag.wResp)
 
-    def test_pass_data(self, N=8):
-        assert N % 2 == 0, N
+    def generate_seq_rw(self, N):
         u = self.u
         m = mask(u.s.DATA_WIDTH // 8)
         STEP = u.s.DATA_WIDTH // 8
 
-        # rw, address, burstCount
-        inAddr = [
-            (READ if (i % 2) == 0 else WRITE, i * STEP, 1)
-            for i in range(N)
-        ]
+        # rw, address, burstCount, d, be
+        inAddr = []
+        for i in range(N):
+            if (i % 2) == 0:
+                rw = READ
+                d = None
+                be = None
+            else:
+                rw = WRITE
+                d = i
+                be = m
+            inAddr.append((rw, i * STEP, 1, d, be))
+
+        return inAddr
+
+    def test_pass_data(self, N=8):
+        assert N % 2 == 0, N
+        u = self.u
+        inAddr = self.generate_seq_rw(N)
         u.s._ag.req.extend(inAddr)
-        # d, be
-        inW = [
-            (i + 1, m)
-            for i in range(N // 2)
-        ]
-        u.s._ag.wData.extend(inW)
 
         # readData, response
         inR = [
@@ -73,31 +79,19 @@ class AvalonMmAgentTC(SimTestCase):
 
         ae = self.assertValSequenceEqual
         ae(u.m._ag.req, inAddr)
-        ae(u.m._ag.wData, inW)
         ae(u.s._ag.rData, inR)
         ae(u.s._ag.wResp, inWResp)
 
     def test_sim_ram(self, N=8):
         u = self.u
-        m = mask(u.s.DATA_WIDTH // 8)
-        STEP = u.s.DATA_WIDTH // 8
         mem = AvalonMmSimRam(u.m)
-        inAddr = [
-            (READ if (i % 2) == 0 else WRITE, i * STEP, 1)
-            for i in range(N)
-        ]
+        inAddr = self.generate_seq_rw(N)
         for i in range(N):
             if i % 2 != 0:
                 continue
             mem.data[i] = i
 
         u.s._ag.req.extend(inAddr)
-        # d, be
-        inW = [
-            (i, m)
-            for i in range(N) if (i % 2) == 1
-        ]
-        u.s._ag.wData.extend(inW)
 
         t = N + 5
         self.runSim(t * CLK_PERIOD)

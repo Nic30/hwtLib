@@ -1,14 +1,16 @@
+from collections import deque
+
 from hwt.hdl.constants import DIRECTION, READ, WRITE, NOP, READ_WRITE
 from hwt.interfaces.agents.handshaked import HandshakedAgent
+from hwt.interfaces.agents.vldSynced import VldSyncedAgent
 from hwt.interfaces.std import VectSignal, Signal
+from hwt.math import log2ceil
 from hwt.simulator.agentBase import SyncAgentBase
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
-from hwt.interfaces.agents.vldSynced import VldSyncedAgent
-from collections import deque
-from pyMathBitPrecise.bit_utils import mask
 from hwtSimApi.hdlSimulator import HdlSimulator
-from hwt.math import log2ceil
+from pyMathBitPrecise.bit_utils import mask
+
 
 RESP_OKAY = 0b00
 # RESP_RESERVED = 0b01
@@ -36,18 +38,22 @@ class AvalonMM(Interface):
         # self.debugAccess = Signal()
         IN = DIRECTION.IN
 
-        self.address = VectSignal(self.ADDR_WIDTH)
-        self.byteEnable = VectSignal(self.DATA_WIDTH // 8)
-
+        # read/write transaction start
         self.read = Signal()
+        self.write = Signal()
+
+        self.address = VectSignal(self.ADDR_WIDTH)
+        # ready from slave to mark that the operation can not be started
+        self.waitRequest = Signal(masterDir=IN)
+
         self.readData = VectSignal(self.DATA_WIDTH, masterDir=IN)
         self.readDataValid = Signal(masterDir=IN)  # read data valid
-        self.response = VectSignal(2, masterDir=IN)
 
-        self.write = Signal()
+        self.byteEnable = VectSignal(self.DATA_WIDTH // 8)
         self.writeData = VectSignal(self.DATA_WIDTH)
         # self.lock = Signal()
-        self.waitRequest = Signal(masterDir=IN)
+
+        self.response = VectSignal(2, masterDir=IN)
         self.writeResponseValid = Signal(masterDir=IN)
         if self.MAX_BURST != 0:
             self.burstCount = VectSignal(log2ceil(self.MAX_BURST))
@@ -116,7 +122,7 @@ class AvalonMmAddrAgent(HandshakedAgent):
 
     def __init__(self, sim: HdlSimulator, intf, allowNoReset=False):
         HandshakedAgent.__init__(self, sim, intf, allowNoReset=allowNoReset)
-        self.wData = deque()
+        self.BE_ALL = mask(intf.readData._dtype.bit_length() // 8)
 
     @classmethod
     def get_ready_signal(cls, intf):
@@ -178,15 +184,15 @@ class AvalonMmAddrAgent(HandshakedAgent):
                 rw = READ_WRITE
             else:
                 rw = READ
+                wdata = None
+                byteEnable = None
         elif write.val:
             rw = WRITE
         else:
             raise AssertionError(
                 "This funtion should not be called when data"
                 "is not ready on interface")
-        if rw == WRITE or rw == READ_WRITE:
-            self.wData.append((wdata, byteEnable))
-        return (rw, address, burstCount)
+        return (rw, address, burstCount, wdata, byteEnable)
 
     def set_data(self, data):
         intf = self.intf
@@ -195,18 +201,17 @@ class AvalonMmAddrAgent(HandshakedAgent):
             intf.byteEnable.write(None)
             if intf.MAX_BURST != 0:
                 intf.burstCount.write(None)
+            intf.writeData.write(None)
             intf.read.write(0)
             intf.write.write(0)
 
         else:
-            rw, address, burstCount = data
+            rw, address, burstCount, d, be = data
             if rw is READ:
                 rd, wr = 1, 0
-                be = mask(intf.readData._dtype.bit_length() // 8)
+                be = self.BE_ALL
             elif rw is WRITE:
                 rd, wr = 0, 1
-                rw, address, burstCount = data
-                d, be = self.wData.popleft()
                 intf.writeData.write(d)
             else:
                 raise TypeError(f"rw is in invalid format {rw}")
@@ -237,8 +242,7 @@ class AvalonMmAgent(SyncAgentBase):
     """
     Simulation agent for AvalonMM bus interface
 
-    :ivar ~.req: request data, items are tuples (READ/WRITE, address, burstCount)
-    :ivar ~.wData: data to write, items are tuples (data, byteenable)
+    :ivar ~.req: request data, items are tuples (READ/WRITE, address, burstCount, writeData, writeMask)
     :ivar ~.wResp: write response data
     :ivar ~.rData: data read from interface, items are typles (data, response)
     """
@@ -256,14 +260,6 @@ class AvalonMmAgent(SyncAgentBase):
         self.addrAg.data = v
 
     req = property(req_get, req_set)
-
-    def wData_get(self):
-        return self.addrAg.wData
-
-    def wData_set(self, v):
-        self.addrAg.wData = v
-
-    wData = property(wData_get, wData_set)
 
     def wResp_get(self):
         return self.wRespAg.data

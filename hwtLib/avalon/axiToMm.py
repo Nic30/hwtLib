@@ -117,6 +117,7 @@ class Axi4_to_AvalonMm(BusBridge):
                 addr_tmp.addr(None),
                 addr_tmp.id(None),
                 addr_tmp.len(None),
+                addr_tmp.len_original(None),
                 addr_tmp.is_w(None),
                 addr_tmp.vld(0)
             ]
@@ -125,6 +126,7 @@ class Axi4_to_AvalonMm(BusBridge):
                 addr_tmp.addr(axi_addr.addr),
                 addr_tmp.id(axi_addr.id),
                 addr_tmp.len(axi_addr.len),
+                addr_tmp.len_original(axi_addr.len),
                 addr_tmp.is_w(axi_addr is self.s.aw),
                 addr_tmp.vld(1),
             ]
@@ -139,6 +141,7 @@ class Axi4_to_AvalonMm(BusBridge):
                 (axi.ar.addr._dtype, "addr"),
                 (axi.ar.id._dtype, "id"),
                 (axi.ar.len._dtype, "len"),
+                (axi.ar.len._dtype, "len_original"),
                 (BIT, "vld"),
                 (BIT, "is_w"),
             ),
@@ -228,7 +231,7 @@ class Axi4_to_AvalonMm(BusBridge):
         axi.ar.ready(will_be_idle & ar_en)
 
         avalon.address(addr_tmp.addr)
-        avalon.burstCount(fitTo(addr_tmp.len, avalon.burstCount) + 1)
+        avalon.burstCount(fitTo(addr_tmp.len_original, avalon.burstCount) + 1)
         avalon.read(addr_tmp.vld & ~addr_tmp.is_w)
         avalon.write(is_w & axi.w.valid & ((addr_tmp.len != 0) | axi.b.ready))
 

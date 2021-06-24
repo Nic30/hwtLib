@@ -38,7 +38,6 @@ class AvalonMmSimRam(SimRam):
         self.bus = avalon_mm
         self.clk = clk
         self._registerOnClock()
-        self.wPending = deque()
 
     def _registerOnClock(self):
         self.clk._sigInside.wait(self.checkRequests())
@@ -48,30 +47,36 @@ class AvalonMmSimRam(SimRam):
         Check if any request has appeared on interfaces
         """
         yield WaitWriteOnly()
-        if self.bus._ag.addrAg.data:
-            rw, addr, burstCount = self.parseReq(self.bus._ag.addrAg.data.popleft())
-            if  rw == READ_WRITE:
-                self.doRead(addr, burstCount)
-                self.wPending.append((addr, burstCount))
+        req = self.bus._ag.addrAg.data
+        if req:
+            rw, addr, burstCount, d, be = self.parseReq(req[0])
+            if rw in (WRITE, READ_WRITE):
+                if burstCount <= len(req):
+                    req.popleft()
+                    data_words = [(d, be)]
+                    if burstCount > 1:
+                        for _ in range(burstCount - 1):
+                            _rw, _addr, _burstCount, d, be = self.parseReq(req.popleft())
+                            assert (rw, addr, burstCount) == (_rw, _addr, _burstCount), (
+                                "Must stay stable until end of burst", (rw, addr, burstCount), (_rw, _addr, _burstCount))
+                            # consume the additional write requests which were generated during write data send
+                            data_words.append((d, be))
+
+                    if rw == READ_WRITE:
+                        self.doRead(addr, burstCount)
+
+                    self.doWrite(addr, data_words)
+
             elif rw == READ:
+                req.popleft()
                 self.doRead(addr, burstCount)
             else:
-                assert rw == WRITE, rw
-                self.wPending.append((addr, burstCount))
+                raise AssertionError("Unknown request", req[0])
 
-        wData = self.bus._ag.wData
-        if wData and self.wPending[0][1] <= len(wData):
-            addr, burstCount = self.wPending.popleft()
-            for i in range(burstCount - 1):
-                # consume the additional write requests which were generated during write data send
-                _a, _ = self.wPending.popleft()
-                assert int(addr) == int(_a), ("inconsystent addres in write burst transaction", addr, burstCount, i, _a)
-
-            self.doWrite(addr, burstCount)
         self._registerOnClock()
 
     def parseReq(self, req):
-        rw, addr, burstCount = req
+        rw, addr, burstCount, d, be = req
         try:
             addr = int(addr)
         except ValueError:
@@ -81,7 +86,7 @@ class AvalonMmSimRam(SimRam):
         except ValueError:
             raise AssertionError("Invalid AvalonMM request", req) from None
 
-        return (rw, addr, burstCount)
+        return (rw, addr, burstCount, d, be)
 
     def doRead(self, addr, size):
         baseIndex = addr // self.cellSize
@@ -127,10 +132,6 @@ class AvalonMmSimRam(SimRam):
     def add_r_ag_data(self, data):
         self.bus._ag.rDataAg.data.append((data, RESP_OKAY))
 
-    def pop_w_ag_data(self):
-        data, strb = self.bus._ag.wData.popleft()
-        return (data, strb)
-
     def _write_single_word(self, data: HValue, strb: int, word_i: int):
         if strb == 0:
             return
@@ -160,13 +161,12 @@ class AvalonMmSimRam(SimRam):
         # print(f"data[{word_i:d}] = {data}")
         self.data[word_i] = data
 
-    def doWrite(self, addr, size):
+    def doWrite(self, addr, data_words):
         baseIndex = addr // self.cellSize
         offset = addr % self.cellSize
         if offset and not self.allow_unaligned_addr:
             raise ValueError("not aligned", addr)
-        for i in range(size):
-            data, strb = self.pop_w_ag_data()
+        for i, (data, strb) in enumerate(data_words):
             strb = int(strb)
             if offset == 0:
                 # print("alig", data, strb)

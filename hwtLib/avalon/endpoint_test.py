@@ -31,10 +31,10 @@ class AvalonMmEndpointTC(SimTestCase):
     CLK = CLK_PERIOD
 
     def arTrans(self, addr, burstsize=1):
-        return (READ, addr, burstsize)
+        return (READ, addr, burstsize, None, None)
 
-    def awTrans(self, addr, burstsize=1):
-        return (WRITE, addr, burstsize)
+    def awTrans(self, addr, data, be, burstsize=1):
+        return (WRITE, addr, burstsize, data, be)
 
     def mkRegisterMap(self, u):
         self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)
@@ -99,18 +99,14 @@ class AvalonMmEndpointTC(SimTestCase):
         m = mask(32 // 8)
         A = self.FIELD_ADDR
         u.bus._ag.req.extend(
-            map(self.awTrans,
-                [A[0],
-                 A[1],
-                 A[0],
-                 A[1],
-                 A[1] + 0x4]))
-        u.bus._ag.wData.extend(
-            [(MAGIC, m),
-             (MAGIC + 1, m),
-             (MAGIC + 2, m),
-             (MAGIC + 3, m),
-             (MAGIC + 4, m)])
+            self.awTrans(a, d, m)
+            for a, d in [
+                (A[0], MAGIC),
+                (A[1], MAGIC + 1),
+                (A[0], MAGIC + 2),
+                (A[1], MAGIC + 3),
+                (A[1] + 0x4, MAGIC + 4)
+                 ])
 
         self.randomizeAll()
         self.runSim(50 * self.CLK)

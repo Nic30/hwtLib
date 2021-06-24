@@ -60,6 +60,7 @@ from hwtLib.amba.datapump.r_unaligned_test import Axi_rDatapump_unalignedTCs
 from hwtLib.amba.datapump.w_test import Axi_wDatapumpTCs
 from hwtLib.avalon.axiToMm_test import AxiToAvalonMm_TCs
 from hwtLib.avalon.endpoint_test import AvalonMmEndpointTCs
+from hwtLib.avalon.mm_buff_test import AvalonMmBuff_TC
 from hwtLib.avalon.sim.mmAgent_test import AvalonMmAgentTC
 from hwtLib.avalon.sim.stAgent_test import AvalonStAgentTC
 from hwtLib.cesnet.mi32.axi4Lite_bridges_test import Mi32Axi4LiteBrigesTC
@@ -102,6 +103,7 @@ from hwtLib.examples.hierarchy.simpleSubunit_test import SimpleSubunitTC
 from hwtLib.examples.hierarchy.unitToUnitConnection import \
     UnitToUnitConnectionTC
 from hwtLib.examples.hierarchy.unitWrapper_test import UnitWrapperTC
+from hwtLib.examples.mem.avalonmm_ram_test import AvalonMmBram_TC
 from hwtLib.examples.mem.axi_ram_test import Axi4BRam_TC
 from hwtLib.examples.mem.bram_wire import BramWireTC
 from hwtLib.examples.mem.ram_test import RamResourcesTC, \
@@ -421,8 +423,10 @@ suite = testSuiteFromTCs(
     # avalon tests
     AvalonMmAgentTC,
     *AvalonMmEndpointTCs,
+    AvalonMmBram_TC,
     *AxiToAvalonMm_TCs,
     AvalonStAgentTC,
+    AvalonMmBuff_TC,
 
     # axi tests
     SimpleAxiRegsTC,

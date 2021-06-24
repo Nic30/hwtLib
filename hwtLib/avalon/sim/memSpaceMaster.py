@@ -22,10 +22,7 @@ class AvalonMmMemSpaceMaster(AbstractMemSpaceMaster):
         """
         bus = self._bus._ag
         burstSize = 1
-        bus.req.append((WRITE, addr, burstSize))
-
-        d = TupleWithCallback(data, mask, onDone=onDone)
-        bus.wData.append(d)
+        bus.req.append(TupleWithCallback(WRITE, addr, burstSize, data, mask, onDone=onDone))
 
     def _read(self, addr, size, onDone=None):
         """
@@ -33,7 +30,7 @@ class AvalonMmMemSpaceMaster(AbstractMemSpaceMaster):
         """
         bus = self._bus._ag
         burstsize = 1
-        bus.req.append((READ, addr, burstsize))
+        bus.req.append((READ, addr, burstsize, None, None))
 
         if onDone:
             raise NotImplementedError()
