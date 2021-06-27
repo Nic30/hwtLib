@@ -106,7 +106,7 @@ def make_descriptor_functional_header(cdcVer:str):
     return t.from_py({
         "header": {
             "bLength": t.bit_length() // 8,
-            "bDescriptorType": USB_DESCRIPTOR_TYPE.INTERFACE,
+            "bDescriptorType": USB_DESCRIPTOR_TYPE.FUNCTIONAL,
             "bDescriptorSubtype": USB_CDC_DESCRIPTOR_SUBTYPE.HEADER,
         },
         "body": {
@@ -143,7 +143,7 @@ def make_descriptor_functional_call_management(
     return t.from_py({
         "header": {
             "bLength": t.bit_length() // 8,
-            "bDescriptorType": USB_DESCRIPTOR_TYPE.INTERFACE,
+            "bDescriptorType": USB_DESCRIPTOR_TYPE.FUNCTIONAL,
             "bDescriptorSubtype": USB_CDC_DESCRIPTOR_SUBTYPE.CALL_MANAGEMENT_FUNCTIONAL,
         },
         "body": {
@@ -184,7 +184,7 @@ def make_descriptor_functional_abstract_control_management(
     return t.from_py({
         "header": {
             "bLength": t.bit_length() // 8,
-            "bDescriptorType": USB_DESCRIPTOR_TYPE.INTERFACE,
+            "bDescriptorType": USB_DESCRIPTOR_TYPE.FUNCTIONAL,
             "bDescriptorSubtype": USB_CDC_DESCRIPTOR_SUBTYPE.ABSTRACT_CONTROL_MANAGEMENT,
         },
         "body": {
@@ -228,7 +228,7 @@ def make_descriptor_functional_union(bMasterInterface:int, bSlaveInterface:List[
     return t.from_py({
         "header": {
             "bLength": t.bit_length() // 8,
-            "bDescriptorType": USB_DESCRIPTOR_TYPE.INTERFACE,
+            "bDescriptorType": USB_DESCRIPTOR_TYPE.FUNCTIONAL,
             "bDescriptorSubtype": USB_CDC_DESCRIPTOR_SUBTYPE.UNION,
         },
         "body": {
@@ -262,7 +262,7 @@ def get_default_usb_cdc_vcp_descriptors(
         strings.append(make_usb_descriptor_string(productStr))
 
     config_0 = [
-           # management interface (EP2)
+        # management interface (EP2)
         make_usb_descriptor_interface(
             bInterfaceNumber=0, bAlternateSetting=0,
             bNumEndpoints=1,
@@ -289,7 +289,7 @@ def get_default_usb_cdc_vcp_descriptors(
             attr_synchronisationType=USB_ENDPOINT_ATTRIBUTES_SYNCHRONISATION_TYPE.NONE,
             attr_usageType=USB_ENDPOINT_ATTRIBUTES_USAGE_TYPE.DATA,
             wMaxPacketSize=8,
-            bInterval=64),
+            bInterval=10), # 64
         # data interface (EP1)
         make_usb_descriptor_interface(
             bInterfaceNumber=1,
@@ -325,7 +325,7 @@ def get_default_usb_cdc_vcp_descriptors(
             bDeviceClass=USB_DEVICE_CLASS.CDC_CONTROL,
             bDeviceSubClass=0x00, bDeviceProtocol=0x00,
             usbVer=usbVer,
-            bMaxPacketSize=bMaxPacketSize,
+            bMaxPacketSize=min(64, bMaxPacketSize),
             idVendor=0, idProduct=0,
             bcdDevice=deviceVer,
             iManufacturer=iManufacturer,
