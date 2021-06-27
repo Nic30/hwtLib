@@ -5,7 +5,7 @@ from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
 from hwtLib.peripheral.usb.constants import USB_VER
-from hwtLib.peripheral.usb.device_requiest import USB_REQUEST_TYPE_RECIPIENT, \
+from hwtLib.peripheral.usb.device_request import USB_REQUEST_TYPE_RECIPIENT, \
     USB_REQUEST_TYPE_TYPE, USB_REQUEST_TYPE_DIRECTION, USB_REQUEST, make_usb_device_request
 from hwtLib.types.ctypes import uint8_t, uint16_t
 
@@ -61,9 +61,9 @@ class USB_DESCRIPTOR_TYPE():
     INTERFACE_POWER = 8
     HID = 0x21
     REPORT = 0x22
+    FUNCTIONAL = 0x24
 
-
-USB_2_0_PACKET_SIEZES = (8, 16, 32, 64)
+USB_2_0_PACKET_SIEZES = (8, 16, 32, 64, 128, 256, 512)
 # https://www.beyondlogic.org/usbnutshell/usb5.shtml#EndpointDescriptors
 usb_descriptor_header_t = HStruct(
     (uint8_t, "bLength"),  # (in bytes, including this header)
