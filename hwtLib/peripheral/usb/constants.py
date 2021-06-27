@@ -11,6 +11,13 @@ from hwt.hdl.types.struct import HStruct
 from hwt.synthesizer.rtlLevel.mainBases import RtlSignalBase
 
 
+class USB_LINE_STATE():
+    SE0 = 0b00  # (D+, D-)=  (0, 0)
+    J = 0b01  # (D+, D-)=  (0, 1)
+    K = 0b10  # (D+, D-)=  (1, 0)
+    SE1 = 0b11  # (D+, D-)=  (1, 1)
+
+
 class USB_VER:
     """
     +-----------+-----------------------+
@@ -50,6 +57,19 @@ class USB_VER:
         usb_ver_minor <<= 4
         return (usb_ver_minor | (usb_ver_mayor << 8))
 
+    @staticmethod
+    def from_uint16_t(usbVer: int):
+        buff = []
+        for _ in range(4):
+            d = usbVer & 0xF
+            buff.append(d)
+            usbVer >>= 4
+
+        if buff[3] == 0 and buff[0] == 0:
+            return f"{buff[2]:d}.{buff[1]:d}"
+        else:
+            return f"{buff[3]:d}{buff[2]:d}.{buff[1]:d}{buff[0]:d}"
+
 
 class USB_PID:
     """
@@ -71,13 +91,13 @@ class USB_PID:
             return In(v, token_pids)
 
     # Marks for host-to-device transfer
-    TOKEN_OUT = 0b0001 # 0x1
+    TOKEN_OUT = 0b0001  # 0x1
     # Marks for device-to-host transfer
-    TOKEN_IN = 0b1001 # 0x9
+    TOKEN_IN = 0b1001  # 0x9
     # Marks start of frame marker (sent each ms)
-    TOKEN_SOF = 0b0101 # 0x5
+    TOKEN_SOF = 0b0101  # 0x5
     # Marks for host-to-device control transfer
-    TOKEN_SETUP = 0b1101 # 0xD
+    TOKEN_SETUP = 0b1101  # 0xD
     # :note: setup transactions always uses DATA_0, but it may be fallowed by IN which starts with 0 and alternates between 0/1
 
     @classmethod
@@ -90,13 +110,13 @@ class USB_PID:
 
     # DATA_X is always relatd to a specific endpoint
     # Even-numbered data packet
-    DATA_0 = 0b0011 # 0x3
+    DATA_0 = 0b0011  # 0x3
     # Odd-numbered data packet
-    DATA_1 = 0b1011 # 0xB
+    DATA_1 = 0b1011  # 0xB
     # Data packet for high-bandwidth isochronous transfer (USB 2.0)
-    DATA_2 = 0b0111 # 0x7
+    DATA_2 = 0b0111  # 0x7
     # Data packet for high-bandwidth isochronous transfer (USB 2.0)
-    DATA_M = 0b1111 # 0xF
+    DATA_M = 0b1111  # 0xF
 
     @classmethod
     def is_hs(cls, v: Union[int, RtlSignalBase]):
@@ -107,22 +127,22 @@ class USB_PID:
             return In(v, hs_pids)
 
     # Data packet accepted
-    HS_ACK = 0b0010 # 0x2
+    HS_ACK = 0b0010  # 0x2
     # Data packet not accepted; please retransmit
-    HS_NACK = 0b1010 # 0XA
+    HS_NACK = 0b1010  # 0XA
     # Transfer impossible; do error recovery
-    HS_STALL = 0b1110 # 0xE
+    HS_STALL = 0b1110  # 0xE
     # Data not ready yet (USB 2.0)
-    HS_NYET = 0b0110 # 0x6
+    HS_NYET = 0b0110  # 0x6
 
     # Low-bandwidth USB preamble (tells hubs to temporarily switch to low speed mode)
-    PREAMBLE = 0b1100 # 0xC
+    PREAMBLE = 0b1100  # 0xC
     # Split transaction error (USB 2.0)
-    ERR = 0b1100 # 0xC
+    ERR = 0b1100  # 0xC
     # High-bandwidth (USB 2.0) split transaction
-    SPLIT = 0b1000 # 0x8
+    SPLIT = 0b1000  # 0x8
     # Check if endpoint can accept data (USB 2.0)
-    PING = 0b0100 # 0x4
+    PING = 0b0100  # 0x4
 
 
 usb_addr_t = Bits(7)
