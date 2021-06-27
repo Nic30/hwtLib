@@ -37,7 +37,7 @@ class UtmiUsbHostProcAgent(UsbHostAgent):
             crc16 = (crc16_h << 8 | crc16_l)
             new_p = UsbPacketData(pid, p)
             expected_crc = new_p.crc16()
-            assert crc16 == expected_crc, (crc16, expected_crc)
+            assert crc16 == expected_crc, (crc16, expected_crc, p)
             return new_p
         elif USB_PID.is_hs(pid):
             return UsbPacketHandshake(pid)
@@ -126,7 +126,9 @@ class UtmiUsbAgent(Utmi_8bAgent, SyncAgentBase):
 
     def getDrivers(self):
         # PHY/host
-        self.usb_driver = UtmiUsbHostProcAgent(self.link_to_phy_packets, self.phy_to_link_packets)
+        if self.usb_driver is None:
+            self.usb_driver = UtmiUsbHostProcAgent(self.link_to_phy_packets,
+                                                   self.phy_to_link_packets)
         self.usb_driver_proc = self.usb_driver.proc()
         return [
             self.driver_init(),
@@ -142,9 +144,10 @@ class UtmiUsbAgent(Utmi_8bAgent, SyncAgentBase):
     def getMonitors(self):
         # link/device
         assert self.descriptors is not None
-        self.usb_driver = UtmiUsbDevProcAgent(self.phy_to_link_packets,
-                                              self.link_to_phy_packets,
-                                              self.descriptors)
+        if self.usb_driver is None:
+            self.usb_driver = UtmiUsbDevProcAgent(self.phy_to_link_packets,
+                                                  self.link_to_phy_packets,
+                                                  self.descriptors)
         self.usb_driver_proc = self.usb_driver.proc()
         return [
             self.monitor_init(),
