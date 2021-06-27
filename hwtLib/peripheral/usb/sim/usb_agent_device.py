@@ -6,7 +6,7 @@ from hwtLib.peripheral.usb.descriptors.bundle import UsbDescriptorBundle, \
 from hwtLib.peripheral.usb.descriptors.std import USB_DESCRIPTOR_TYPE, \
     usb_descriptor_device_t, usb_descriptor_configuration_t, \
     usb_descriptor_device_qualifier_t, LANG_ID_EN_US
-from hwtLib.peripheral.usb.device_requiest import usb_device_request_t, \
+from hwtLib.peripheral.usb.device_request import usb_device_request_t, \
     USB_REQUEST_TYPE_RECIPIENT, USB_REQUEST_TYPE_TYPE, \
     USB_REQUEST_TYPE_DIRECTION, USB_REQUEST
 from hwtLib.peripheral.usb.sim.agent_base import UsbAgent, UsbPacketToken, \
@@ -48,7 +48,7 @@ class UsbDevAgent(UsbAgent):
         pid = pid_init
         begin = 0
         end = len(data_bytes)
-        while begin != end:
+        while True:
             t = yield from self.receive(UsbPacketToken)
             assert t.pid == USB_PID.TOKEN_IN, t
             assert t.addr == self.addr, (t, self.addr)
@@ -65,6 +65,9 @@ class UsbDevAgent(UsbAgent):
                 pid = USB_PID.DATA_0
             else:
                 raise ValueError()
+
+            if len(p.data) < maxPacketLen:
+                break
 
     def proc(self):
         while True:

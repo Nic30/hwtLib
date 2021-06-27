@@ -19,8 +19,8 @@ from hwtLib.peripheral.usb.descriptors.std import usb_descriptor_interface_t, \
     usb_descriptor_configuration_t, usb_descriptor_endpoint_t, \
     make_usb_device_request_get_descr, usb_define_descriptor_string, \
     usb_descriptor_device_t, usb_descriptor_device_qualifier_t, \
-    usb_define_descriptor_string0
-from hwtLib.peripheral.usb.device_requiest import make_usb_device_request, \
+    usb_define_descriptor_string0, USB_ENDPOINT_DIR
+from hwtLib.peripheral.usb.device_request import make_usb_device_request, \
     USB_REQUEST_TYPE_RECIPIENT, USB_REQUEST_TYPE_TYPE, \
     USB_REQUEST_TYPE_DIRECTION, USB_REQUEST
 from hwtLib.peripheral.usb.sim.agent_base import UsbAgent, UsbPacketToken, \
@@ -42,80 +42,28 @@ class UsbHostAgent(UsbAgent):
         super(UsbHostAgent, self).__init__(rx, tx)
         # the addresses are not asigned yet this dictionary will be filled during device enumeration
         self.descr = {}
+        self._descriptors_downloaded = False
 
-    def receive_data(self, addr: int, endp: int, pid_init: USB_PID, size:int):
-        ddb = self.descr.get(addr, None)
-        if ddb is None:
-            maxPacketLen = 8
-        else:
-            if endp == 0:
-                d = ddb.get_descriptor(usb_descriptor_device_t, 0)[1]
-                maxPacketLen = int(d.body.bMaxPacketSize)
-            else:
-                raise NotImplementedError()
+    def parse_interface_functional_descriptor(self, interface_descr: StructValBase, data:BitsVal):
+        bInterfaceClass = int(interface_descr.body.bInterfaceClass)
+        if bInterfaceClass == USB_DEVICE_CLASS.CDC_CONTROL:
+            h_t = usb_descriptor_functional_header
+            header = data[h_t.bit_length():]._reinterpret_cast(h_t)
+            sub_t = int(header.bDescriptorSubtype)
+            if sub_t == USB_CDC_DESCRIPTOR_SUBTYPE.HEADER:
+                descr_t = usb_descriptor_functional_header_t
+            elif sub_t == USB_CDC_DESCRIPTOR_SUBTYPE.CALL_MANAGEMENT_FUNCTIONAL:
+                descr_t = usb_descriptor_functional_call_management_t
+            elif sub_t == USB_CDC_DESCRIPTOR_SUBTYPE.ABSTRACT_CONTROL_MANAGEMENT:
+                descr_t = usb_descriptor_functional_abstract_control_management_t
+            elif sub_t == USB_CDC_DESCRIPTOR_SUBTYPE.UNION:
+                slave_cnt = (data._dtype.bit_length() - h_t.bit_length() - 8) // 8
+                descr_t = usb_define_descriptor_functional_union_t(slave_cnt)
 
-        pid = pid_init
-        # start recieveing the data
-        yield from self.send(UsbPacketToken(USB_PID.TOKEN_IN, addr, endp))
-        # can receive data or STALL if the descriptor is not present
-        d_raw = yield from self.receive(NOT_SPECIFIED)
-        if isinstance(d_raw, UsbPacketData):
-            assert d_raw.pid == pid, (d_raw.pid, pid)
-            # descriptor data
-            yield from self.send_ack()
-            if len(d_raw.data) >= maxPacketLen:
-                # coud be possibly split into multiple packets
-                while len(d_raw.data) != size:
-                    if pid == USB_PID.DATA_0:
-                        pid = USB_PID.DATA_1
-                    elif pid == USB_PID.DATA_1:
-                        pid = USB_PID.DATA_0
-                    else:
-                        raise NotImplementedError(pid)
-
-                    yield from self.send(UsbPacketToken(USB_PID.TOKEN_IN, addr, endp))
-                    descr_part = yield from self.receive(UsbPacketData)
-                    assert descr_part.pid == pid, (d_raw.pid, pid)
-                    d_raw.data.extend(descr_part.data)
-                    yield from self.send_ack()
-                    if len(descr_part.data) < maxPacketLen:
-                        break
-            return d_raw.data
-
-        elif isinstance(d_raw, UsbPacketHandshake):
-            # packet which means some error
-            if d_raw.pid == USB_PID.HS_STALL:
-                raise UsbNoSuchDescriptor()
-            else:
-                raise NotImplementedError()
+            assert data._dtype.bit_length() == descr_t.bit_length()
+            return data._reinterpret_cast(descr_t)
         else:
             raise NotImplementedError()
-
-    def parse_interface_descriptor(self, first_interface_descr: StructValBase, data:BitsVal):
-        if first_interface_descr is None:
-            t = usb_descriptor_interface_t
-            assert data._dtype.bit_length() == t.bit_length()
-            return data._reinterpret_cast(t)
-        else:
-            bInterfaceClass = int(first_interface_descr.body.bInterfaceClass)
-            if bInterfaceClass == USB_DEVICE_CLASS.CDC_CONTROL:
-                h_t = usb_descriptor_functional_header
-                header = data[h_t.bit_length():]._reinterpret_cast(h_t)
-                sub_t = int(header.bDescriptorSubtype)
-                if sub_t == USB_CDC_DESCRIPTOR_SUBTYPE.HEADER:
-                    descr_t = usb_descriptor_functional_header_t
-                elif sub_t == USB_CDC_DESCRIPTOR_SUBTYPE.CALL_MANAGEMENT_FUNCTIONAL:
-                    descr_t = usb_descriptor_functional_call_management_t
-                elif sub_t == USB_CDC_DESCRIPTOR_SUBTYPE.ABSTRACT_CONTROL_MANAGEMENT:
-                    descr_t = usb_descriptor_functional_abstract_control_management_t
-                elif sub_t == USB_CDC_DESCRIPTOR_SUBTYPE.UNION:
-                    slave_cnt = (data._dtype.bit_length() - h_t.bit_length() - 8) // 8
-                    descr_t = usb_define_descriptor_functional_union_t(slave_cnt)
-
-                assert data._dtype.bit_length() == descr_t.bit_length()
-                return data._reinterpret_cast(descr_t)
-            else:
-                raise NotImplementedError()
 
     def parse_configuration_descriptor_bundle(self, data_bytes: List[int]):
         data = [d if isinstance(d, HValue) else uint8_t.from_py(d) for d in data_bytes]
@@ -125,7 +73,7 @@ class UsbHostAgent(UsbAgent):
         header_width = usb_descriptor_header_t.bit_length()
 
         descriptors = []
-        first_interface_descr = None
+        interface_descr = None
         while offset < end:
             header = data[header_width + offset: offset]
             header = header._reinterpret_cast(usb_descriptor_header_t)
@@ -141,25 +89,174 @@ class UsbHostAgent(UsbAgent):
                 t = usb_descriptor_configuration_t
                 assert descr_width == t.bit_length()
                 d = d._reinterpret_cast(t)
-                first_interface_descr = None
+                interface_descr = None
             elif descr_typeId == USB_DESCRIPTOR_TYPE.INTERFACE:
                 # :note: interface descriptors are class dependent,
                 #        the class can be resolved from first interface descriptor
                 #        next interface descriptors may be functional descriptors
-                d = self.parse_interface_descriptor(first_interface_descr, d)
-                if first_interface_descr is None:
-                    first_interface_descr = d
+                t = usb_descriptor_interface_t
+                assert d._dtype.bit_length() == t.bit_length(), (d._dtype.bit_length(), t.bit_length())
+                d = d._reinterpret_cast(t)
+                interface_descr = d
             elif descr_typeId == USB_DESCRIPTOR_TYPE.ENDPOINT:
                 t = usb_descriptor_endpoint_t
                 assert descr_width == t.bit_length()
                 d = d._reinterpret_cast(t)
-                first_interface_descr = None
+            elif descr_typeId == USB_DESCRIPTOR_TYPE.FUNCTIONAL:
+                d = self.parse_interface_functional_descriptor(interface_descr, d)
             else:
                 raise NotImplementedError(descr_typeId)
             descriptors.append(d)
             offset += descr_width
 
         return descriptors
+
+    def get_max_packet_size(self, addr:int, endp: int, direction: USB_ENDPOINT_DIR):
+        ddb: UsbDescriptorBundle = self.descr.get(addr, None)
+        if ddb is None:
+            max_packet_size = 64
+        else:
+            if endp == 0:
+                d = ddb.get_descriptor(usb_descriptor_device_t, 0)[1]
+                max_packet_size = int(d.body.bMaxPacketSize)
+            else:
+                max_packet_size = None
+                for des in ddb:
+                    if des._dtype == usb_descriptor_endpoint_t and \
+                        int(des.body.bEndpointAddress) == endp and \
+                        int(des.body.bEndpointAddressDir) == direction:
+                        max_packet_size = int(des.body.wMaxPacketSize)
+                        break
+                if max_packet_size is None:
+                    raise ValueError("Can not find configuration for endpoint in descriptors", endp, ddb)
+        return max_packet_size
+
+    def receive_bulk(self, addr: int, endp: int, pid_init: USB_PID, size=NOT_SPECIFIED) -> List[int]:
+        max_packet_size = self.get_max_packet_size(addr, endp, USB_ENDPOINT_DIR.IN)
+
+        pid = pid_init
+        # start recieveing the data
+        yield from self.send(UsbPacketToken(USB_PID.TOKEN_IN, addr, endp))
+        # can receive data or STALL if the descriptor is not present
+        d_raw = yield from self.receive(NOT_SPECIFIED)
+        if isinstance(d_raw, UsbPacketData):
+            assert d_raw.pid == pid, (d_raw.pid, pid)
+            # descriptor data
+            yield from self.send_ack()
+            if size is not NOT_SPECIFIED:
+                return d_raw.data
+
+            # could be actually larger in the case when EP0 is not configured yet
+            if len(d_raw.data) >= max_packet_size:
+                # coud be possibly split into multiple packets
+                # if the first chunk was just of pmax_packet_size and this is the size what we are asking for
+                while True:
+                    if pid == USB_PID.DATA_0:
+                        pid = USB_PID.DATA_1
+                    elif pid == USB_PID.DATA_1:
+                        pid = USB_PID.DATA_0
+                    else:
+                        raise NotImplementedError(pid)
+
+                    yield from self.send(UsbPacketToken(USB_PID.TOKEN_IN, addr, endp))
+                    descr_part = yield from self.receive(UsbPacketData)
+                    assert descr_part.pid == pid, (d_raw.pid, pid)
+                    d_raw.data.extend(descr_part.data)
+                    yield from self.send_ack()
+                    if len(descr_part.data) < max_packet_size:
+                        break
+
+            return d_raw.data
+
+        elif isinstance(d_raw, UsbPacketHandshake):
+            # packet which means some error
+            if d_raw.pid == USB_PID.HS_STALL:
+                raise UsbNoSuchDescriptor()
+            elif d_raw.pid == USB_PID.HS_NACK:
+                return None
+            else:
+                raise NotImplementedError()
+        else:
+            raise NotImplementedError()
+
+    def transmit_bulk(self, addr: int, endp: int, pid_init: USB_PID, data_bytes: List[int]):
+        max_packet_size = self.get_max_packet_size(addr, endp, USB_ENDPOINT_DIR.OUT)
+
+        pid = pid_init
+        # start sending the data
+        begin = 0
+        end = len(data_bytes)
+        while True:
+            yield from self.send(UsbPacketToken(USB_PID.TOKEN_OUT, addr, endp))
+            _end = min(begin + max_packet_size, end)
+            p = UsbPacketData(pid, data_bytes[begin:_end])
+            yield from self.send(p)
+            yield from self.wait_on_ack()
+
+            begin = _end
+            if pid == USB_PID.DATA_0:
+                pid = USB_PID.DATA_1
+            elif pid == USB_PID.DATA_1:
+                pid = USB_PID.DATA_0
+            else:
+                raise ValueError(pid)
+
+            if len(p.data) < max_packet_size:
+                break
+
+    def control_read(self, addr, bmRequestType_type:USB_REQUEST_TYPE_TYPE, bRequest:int,
+                     wValue:int, wIndex:int, wLength:int,
+                     bmRequestType_recipient:USB_REQUEST_TYPE_RECIPIENT=USB_REQUEST_TYPE_RECIPIENT.DEVICE,
+                     bmRequestType_data_transfer_direction:USB_REQUEST_TYPE_DIRECTION=USB_REQUEST_TYPE_DIRECTION.DEV_TO_HOST,
+                     ):
+        dev_req = make_usb_device_request(
+            bmRequestType_recipient=bmRequestType_recipient,
+            bmRequestType_type=bmRequestType_type,
+            bmRequestType_data_transfer_direction=bmRequestType_data_transfer_direction,
+            bRequest=bRequest,
+            wValue=wValue,
+            wIndex=wIndex,
+            wLength=wLength)
+        # read the device descriptor
+        # SETUP STAGE, send request for descriptor downloading
+        yield from self.send(UsbPacketToken(USB_PID.TOKEN_SETUP, addr, 0))
+        yield from self.send(UsbPacketData(USB_PID.DATA_0, dev_req))
+        yield from self.wait_on_ack()
+
+        # DATA stage
+        data = yield from self.receive_bulk(addr, 0, USB_PID.DATA_1)
+        # STATUS stage
+        yield from self.transmit_bulk(addr, 0, USB_PID.DATA_1, [])
+        return data
+
+    def control_write(self, addr:int, ep:int, bmRequestType_type:USB_REQUEST_TYPE_TYPE,
+                      bRequest:int, wValue:int, wIndex:int, buff:List[int],
+                      bmRequestType_recipient:USB_REQUEST_TYPE_RECIPIENT=USB_REQUEST_TYPE_RECIPIENT.DEVICE,
+                      bmRequestType_data_transfer_direction:USB_REQUEST_TYPE_DIRECTION=USB_REQUEST_TYPE_DIRECTION.HOST_TO_DEV,
+                      ):
+        p = UsbPacketToken(USB_PID.TOKEN_SETUP, addr, ep)
+        yield from self.send(p)
+
+        dev_req = make_usb_device_request(
+            bmRequestType_recipient=bmRequestType_recipient,
+            bmRequestType_type=bmRequestType_type,
+            bmRequestType_data_transfer_direction=bmRequestType_data_transfer_direction,
+            bRequest=bRequest,
+            wValue=wValue,
+            wIndex=wIndex,
+            wLength=len(buff))
+
+        yield from self.send(UsbPacketData(USB_PID.DATA_0, dev_req))
+        yield from self.wait_on_ack()
+        if buff:
+            yield from self.transmit_bulk(addr, 0, USB_PID.DATA_1, buff)
+        else:
+            # no data present skiping write
+            pass
+
+        # STATUS stage
+        data = yield from self.receive_bulk(addr, 0, USB_PID.DATA_1)
+        assert not data, data
 
     def download_descriptor(self,
                             addr: int,
@@ -177,7 +274,8 @@ class UsbHostAgent(UsbAgent):
         yield from self.wait_on_ack()
 
         # DATA stage
-        descr = yield from self.receive_data(addr, 0, USB_PID.DATA_1, int(dev_req_get_descr.wLength))
+        descr = yield from self.receive_bulk(addr, 0, USB_PID.DATA_1)
+        # assert len(descr) == int(dev_req_get_descr.wLength), (descriptor_t, wIndex, len(descr), int(dev_req_get_descr.wLength))
         if wLength is NOT_SPECIFIED:
             if descriptor_t is str:
                 char_cnt = (len(descr) - usb_descriptor_header_t.bit_length() // 8) // 2
@@ -199,27 +297,14 @@ class UsbHostAgent(UsbAgent):
         return descr
 
     def proc(self):
-        # query EP 0
-        p = UsbPacketToken(USB_PID.TOKEN_SETUP, 0, 0)
-        yield from self.send(p)
-
         new_addr = len(self.descr) + 1
         # init device address
-        set_addr = make_usb_device_request(
-            bmRequestType_recipient=USB_REQUEST_TYPE_RECIPIENT.DEVICE,
-            bmRequestType_type=USB_REQUEST_TYPE_TYPE.STANDARD,
-            bmRequestType_data_transfer_direction=USB_REQUEST_TYPE_DIRECTION.HOST_TO_DEV,
-            bRequest=USB_REQUEST.SET_ADDRESS,
-            wValue=new_addr,
-            wIndex=0,
-            wLength=0)
-
-        yield from self.send(UsbPacketData(USB_PID.DATA_0, set_addr))
-        yield from self.wait_on_ack()
-        yield from self.send(UsbPacketToken(USB_PID.TOKEN_IN, 0, 0))
-        after_addr_set_empty_in = yield from self.receive(UsbPacketData)  # STATUS stage
-        yield from self.send_ack()
-        assert after_addr_set_empty_in.pid == USB_PID.DATA_1 and not after_addr_set_empty_in.data
+        yield from self.control_write(0, 0,
+                                      bmRequestType_type=USB_REQUEST_TYPE_TYPE.STANDARD,
+                                      bRequest=USB_REQUEST.SET_ADDRESS,
+                                      wValue=new_addr,
+                                      wIndex=0,
+                                      buff=[])
         # :note: device address now set, starting download of descriptors
 
         dev_descr = yield from self.download_descriptor(new_addr, usb_descriptor_device_t, 0)
@@ -266,3 +351,4 @@ class UsbHostAgent(UsbAgent):
             if i == 0:
                 str_descr0 = str_descr
             ddb.append(str_descr)
+        self._descriptors_downloaded = True
