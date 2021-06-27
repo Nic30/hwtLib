@@ -4,6 +4,7 @@
 from typing import Optional
 
 from hwt.code import If, Switch, CodeBlock
+from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.enum import HEnum
@@ -17,8 +18,9 @@ from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
 from hwtLib.peripheral.usb.constants import usb_addr_t, USB_PID, USB_VER, \
-    usb_endp_t, usb_pid_t
-from hwtLib.peripheral.usb.descriptors.bundle import UsbDescriptorBundle
+    usb_endp_t, usb_pid_t, USB_LINE_STATE
+from hwtLib.peripheral.usb.descriptors.bundle import UsbDescriptorBundle, \
+    UsbEndpointMeta
 from hwtLib.peripheral.usb.usb2.device_core_interfaces import UsbEndpointInterface
 from hwtLib.peripheral.usb.usb2.sie_rx import Usb2SieDeviceRx
 from hwtLib.peripheral.usb.usb2.sie_tx import Usb2SieDeviceTx
@@ -27,7 +29,6 @@ from hwtLib.peripheral.usb.usb2.ulpi import ulpi_reg_otg_control_t_reset_default
 from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b
 from hwtLib.types.ctypes import uint8_t
 from pyMathBitPrecise.bit_utils import mask
-from hwt.code_utils import rename_signal
 
 
 class Usb2DeviceCore(Unit):
@@ -81,7 +82,7 @@ class Usb2DeviceCore(Unit):
         # is_negotiated_to_HS = usb_speed.vld & usb_speed.data._eq(USB_VER.values.index(USB_VER)
 
         # LS/FS SE0 for more than > 2.5us
-        If(LineState._eq(Utmi_8b.LINE_STATE.SE0),
+        If(LineState._eq(USB_LINE_STATE.SE0),
             If(~usb_rst_detected,
                se0_cntr(se0_cntr + 1)
             )
@@ -90,6 +91,63 @@ class Usb2DeviceCore(Unit):
             se0_cntr(0),
         )
         return usb_rst_detected
+
+    def define_endpoint_states(self, endp: RtlSignal, rst_any:RtlSignal):
+        # used for DATA0/1 toogling
+        # [todo] endpoint specific
+        ep_out_data_bits = []
+        ep_in_data_bits = []
+        for i, (ep_out, ep_in) in enumerate(self.ENDPOINT_CONFIG):
+            if ep_out is not None:
+                ep_out: UsbEndpointMeta
+                o_b = self._reg(f"ep{i:d}_out_data_bit", BIT, def_val=0, rst=rst_any)
+            else:
+                o_b = None
+
+            ep_out_data_bits.append(o_b)
+            if ep_in is not None:
+                ep_in: UsbEndpointMeta
+                i_b = self._reg(f"ep{i:d}_in_data_bit", BIT, def_val=0, rst=rst_any)
+            else:
+                i_b = None
+            ep_in_data_bits.append(i_b)
+
+        ep_out_data_bit = self._sig("ep_out_data_bit")
+        ep_in_data_bit = self._sig("ep_in_data_bit")
+        Switch(endp)\
+        .add_cases((i, [
+            ep_out_data_bit(o_b),
+            ep_in_data_bit(i_b),
+            ]) for i, (o_b, i_b) in enumerate(zip(ep_out_data_bits, ep_in_data_bits))
+        ).Default(
+            ep_out_data_bit(None),
+            ep_in_data_bit(None),
+        )
+        ep_is_isochronous = BIT.from_py(0)
+
+        def set_ep_out_data_bit(val):
+            res = []
+            for i, o_b in enumerate(ep_out_data_bits):
+                if o_b is not None:
+                    res.append(
+                        If(endp._eq(i),
+                           o_b(val),
+                        )
+                    )
+            return res
+
+        def set_ep_in_data_bit(val):
+            res = []
+            for i, i_b in enumerate(ep_in_data_bits):
+                if i_b is not None:
+                    res.append(
+                        If(endp._eq(i),
+                           i_b(val),
+                        )
+                    )
+            return res
+
+        return ep_out_data_bit, ep_in_data_bit, set_ep_out_data_bit, set_ep_in_data_bit, ep_is_isochronous
 
     def usb_endpoint_fsm(self, usb_rst: RtlSignal, chirp_en: RtlSignal,
                ep_rx: AxiStream,
@@ -110,27 +168,26 @@ class Usb2DeviceCore(Unit):
         ])
         rst_any = self.rst_n._isOn() | (usb_rst._isOn() & ~chirp_en)
         st = self._reg("usb_endpoint_fsm_st", st_t, def_val=st_t.RX_IDLE, rst=rst_any)
-        ep_is_isochronous = BIT.from_py(0)
-        # used for DATA0/1 toogling
-        # [todo] endpoint specific
-        ep_out_data_bit = self._reg("ep_out_data_bit", BIT, def_val=0, rst=rst_any)
-        ep_in_data_bit = self._reg("ep_in_data_bit", BIT, def_val=0, rst=rst_any)
 
         # tx drive
         token_pid = self.sie_rx.rx_header.pid
         rx_data = self.sie_rx.rx_data
         tx_cmd = self.sie_tx.tx_cmd
 
+        ep_out_data_bit, ep_in_data_bit, set_ep_out_data_bit, set_ep_in_data_bit, ep_is_isochronous = self.define_endpoint_states(self.sie_rx.rx_header.endp, rst_any)
+
         out_pid_error = rename_signal(self, ~ep_is_isochronous & self.sie_rx.rx_header.vld & (
             (~ep_out_data_bit & (token_pid != USB_PID.DATA_0)) |
             (ep_out_data_bit & (token_pid != USB_PID.DATA_1))
         ), "out_pid_error")
 
+        tx_cmd_extra_last = self._sig("tx_cmd_extra_last")
         tx_pid = self._reg("tx_pid", usb_pid_t)
         CodeBlock(
             tx_cmd.pid(None),
             tx_cmd.chirp(0),
             tx_cmd.valid(0),
+            tx_cmd_extra_last(0),
             Switch(st)\
             .Case(st_t.RX_IDLE,
                 tx_pid(None),
@@ -179,8 +236,8 @@ class Usb2DeviceCore(Unit):
                            st(st_t.RX_DATA_IGNORE),
                         )
                     ).Case(USB_PID.TOKEN_SETUP,  # (host -> device)
-                        ep_out_data_bit(0),
-                        ep_in_data_bit(1),
+                        set_ep_out_data_bit(0),
+                        set_ep_in_data_bit(1),
                         If(ep_rx.ready,
                            # can receive the setup data
                            st(st_t.RX_DATA),
@@ -205,7 +262,7 @@ class Usb2DeviceCore(Unit):
                 ).Elif(rx_data.vld & rx_data.last,
                     # ack after data receive
                     tx_pid(USB_PID.HS_ACK),
-                    ep_out_data_bit(~ep_out_data_bit),
+                    set_ep_out_data_bit(~ep_out_data_bit),
                     st(st_t.TX_HANDSHAKE)
                 ),
             ).Case(st_t.RX_DATA_IGNORE_NO_RESP,
@@ -226,13 +283,14 @@ class Usb2DeviceCore(Unit):
                 tx_cmd.pid(tx_pid),
                 tx_cmd.valid(ep_tx.valid),
                 If(ep_tx.valid & ep_tx.ready & ep_tx.last,
-                   ep_in_data_bit(~ep_in_data_bit),
+                   set_ep_in_data_bit(~ep_in_data_bit),
                    st(st_t.TX_DATA_COMPLETE),
                 ),
             ).Case(st_t.TX_DATA_COMPLETE,
                 st(st_t.RX_IDLE),
             ).Case(st_t.TX_HANDSHAKE,
                 tx_cmd.valid(1),
+                tx_cmd_extra_last(1),
                 If(ep_tx_stall,
                     tx_cmd.pid(USB_PID.HS_STALL),
                 ).Else(
@@ -257,6 +315,7 @@ class Usb2DeviceCore(Unit):
         ep_tx.ready(((st._eq(st_t.TX_HANDSHAKE) & ep_tx_stall) |
                       st._eq(st_t.TX_DATA)
                       ) & tx_cmd.ready)
+        return tx_cmd_extra_last
 
     def ms_to_clock_ticks(self, t_ms):
         return (t_ms * 1e-3) / (1 / self.CLK_FREQ)
@@ -292,7 +351,7 @@ class Usb2DeviceCore(Unit):
 
         HS_CHIRP_COUNT = 5
         chirp_count_q = self._reg("chirp_count_q", uint8_t, def_val=0)
-        last_LineState = self._reg("last_LineState", utmi.LineState._dtype, def_val=Utmi_8b.LINE_STATE.SE0)
+        last_LineState = self._reg("last_LineState", utmi.LineState._dtype, def_val=USB_LINE_STATE.SE0)
         last_LineState(utmi.LineState)
 
         If(st._eq(st_t.SEND_CHIRP_K),
@@ -312,7 +371,7 @@ class Usb2DeviceCore(Unit):
         If((st != st_t.WAIT_RST) & st.next._eq(st_t.WAIT_RST),
            # Entering wait for reset state
            usb_rst_time_q(0),
-        ).Elif(st._eq(st_t.WAIT_RST) & (utmi.LineState != Utmi_8b.LINE_STATE.SE0),
+        ).Elif(st._eq(st_t.WAIT_RST) & (utmi.LineState != USB_LINE_STATE.SE0),
             # Waiting for reset, reset count on line state toggle
             usb_rst_time_q(0),
         ).Elif(usb_rst_time_q != mask(usb_rst_time_q._dtype.bit_length()),
@@ -402,7 +461,7 @@ class Usb2DeviceCore(Unit):
 
         usb_rst = self.detect_usb_rst(phy.LineState, self.usb_speed)
         chirp_en = self.usb_linerate_negotiation(BIT.from_py(1), usb_rst, phy, self.usb_speed)
-        self.usb_endpoint_fsm(usb_rst, chirp_en, ep.rx, ep.tx, ep.tx_success, ep.rx_stall, ep.tx.valid & ep.tx_stall)
+        tx_cmd_extra_last = self.usb_endpoint_fsm(usb_rst, chirp_en, ep.rx, ep.tx, ep.tx_success, ep.rx_stall, ep.tx.valid & ep.tx_stall)
 
         endp = self._reg("endp", HStruct(
             (usb_endp_t, "data"),
@@ -423,7 +482,7 @@ class Usb2DeviceCore(Unit):
         phy.tx(sie_tx.tx)
         sie_tx.tx_cmd.data(ep.tx.data)
         sie_tx.tx_cmd.keep(ep.tx.keep)
-        sie_tx.tx_cmd.last(ep.tx.last | ep.tx_stall)
+        sie_tx.tx_cmd.last(ep.tx.last | ep.tx_stall | tx_cmd_extra_last)
         sie_tx.enable(~usb_rst)
 
         # rx - host to device
