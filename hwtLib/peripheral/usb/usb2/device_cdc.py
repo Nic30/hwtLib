@@ -18,8 +18,9 @@ from hwtLib.peripheral.usb.descriptors.bundle import UsbDescriptorBundle, \
     UsbEndpointMeta
 from hwtLib.peripheral.usb.descriptors.cdc import get_default_usb_cdc_vcp_descriptors, \
     CLASS_REQUEST, make_usb_line_coding_default
-from hwtLib.peripheral.usb.descriptors.std import USB_DESCRIPTOR_TYPE
-from hwtLib.peripheral.usb.device_requiest import USB_REQUEST_TYPE_TYPE, \
+from hwtLib.peripheral.usb.descriptors.std import USB_DESCRIPTOR_TYPE,\
+    usb_descriptor_configuration_t
+from hwtLib.peripheral.usb.device_request import USB_REQUEST_TYPE_TYPE, \
     USB_REQUEST, usb_device_request_t, USB_REQUEST_TYPE_DIRECTION
 from hwtLib.peripheral.usb.usb2.device_core import Usb2DeviceCore
 from hwtLib.peripheral.usb.usb2.device_ep_buffers import UsbDeviceEpBuffers
@@ -46,8 +47,10 @@ class Usb2Cdc(Unit):
 
     def _config(self):
         Usb2DeviceCore._config(self)
-        self.DESCRIPTORS: UsbDescriptorBundle = get_default_usb_cdc_vcp_descriptors(productStr=self.__class__.__name__)
-        self.RX_AGGREGATION_TIMEOUT = Param(1024)
+        self.DESCRIPTORS: UsbDescriptorBundle = get_default_usb_cdc_vcp_descriptors(
+            productStr=self.__class__.__name__,
+            bMaxPacketSize=512)
+        self.RX_AGGREGATION_TIMEOUT = Param(512)
 
     def _declr(self):
         addClkRstn(self)
@@ -74,11 +77,13 @@ class Usb2Cdc(Unit):
         :param descr_addr: read address for current descriptor read
         :param ep0_get_len: size how many descriptor bytes should be read
         """
+        def hmin(a, b):
+            return (a < b)._ternary(a, b)
 
         def set_addr_len(_descr_addr:Optional[int], descr_len:Optional[int]):
             return [
                 descr_addr(_descr_addr),
-                ep0_get_len(None if descr_len is None else setup_wLength),
+                ep0_get_len(None if descr_len is None else hmin(setup_wLength, descr_len)),
             ]
 
         get_descrs = descr_bundle.get_descriptors_from_rom
@@ -87,7 +92,9 @@ class Usb2Cdc(Unit):
         .Case(USB_DESCRIPTOR_TYPE.DEVICE,
               set_addr_len(*get_descrs(USB_DESCRIPTOR_TYPE.DEVICE)[0]),
         ).Case(USB_DESCRIPTOR_TYPE.CONFIGURATION,
-            set_addr_len(*get_descrs(USB_DESCRIPTOR_TYPE.CONFIGURATION)[0]),
+            set_addr_len(
+                get_descrs(USB_DESCRIPTOR_TYPE.CONFIGURATION)[0][0],
+                int(descr_bundle.get_descriptor(usb_descriptor_configuration_t, 0)[1].body.wTotalLength)),
         ).Case(USB_DESCRIPTOR_TYPE.STRING,
             Switch(req_bDescriptorIndex).add_cases([
                 (i, [descr_addr(addr), ep0_get_len(size)])
@@ -330,7 +337,12 @@ class Usb2Cdc(Unit):
 
         # because we do not support any interrupts
         # the buffer will respond with the stall automatically
-        ep_meta[2] = (None, None)
+        for ep2_channel in ep_meta[2]:
+            if ep2_channel is None:
+                continue
+            ep2_channel: UsbEndpointMeta
+            # no need to buffer interrupts as we can process it directly
+            ep2_channel.buffer_size = 0
 
         ep_buffers = UsbDeviceEpBuffers()
         ep_buffers.ENDPOINT_META = tuple(ep_meta)
@@ -339,7 +351,7 @@ class Usb2Cdc(Unit):
         dev_configured, ep0_stall = self.descriptor_ep0_fsm(self.DESCRIPTORS)
 
         tx_src = HsBuilder(self, self.tx).to_axis(
-            MAX_FRAME_WORDS=usb2_0_packet_data_t.field_by_name['data'].dtype.len_max,
+            MAX_FRAME_WORDS=ep_meta[1][0].max_packet_size,
             IN_TIMEOUT=self.RX_AGGREGATION_TIMEOUT).end
 
         ep_buffers.usb_core_io.endp(self.usb_core.ep.endp)
@@ -354,6 +366,11 @@ class Usb2Cdc(Unit):
 
         ep_buffers.ep[1].tx(tx_src, exclude=[ep_buffers.ep[1].tx.keep])
         ep_buffers.ep[1].tx.keep(1)
+
+        ep_buffers.ep[2].tx.data(None)
+        ep_buffers.ep[2].tx.last(None)
+        ep_buffers.ep[2].tx.keep(None)
+        ep_buffers.ep[2].tx.valid(0)
 
         rx = ep_buffers.ep[1].rx
         StreamNode([rx], [self.rx]).sync()

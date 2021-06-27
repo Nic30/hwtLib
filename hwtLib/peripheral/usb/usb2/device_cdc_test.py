@@ -30,7 +30,8 @@ class Usb2CdcTC(UlpiAgentBaseTC):
 
         # self.assertEqual(dev.addr, 1)
         self.assertEqual(len(host.descr), 1)
-        self.assertSequenceEqual(host.descr[1], get_default_usb_cdc_vcp_descriptors(productStr="Usb2Cdc"))
+        self.assertSequenceEqual(host.descr[1],
+                                 get_default_usb_cdc_vcp_descriptors(productStr="Usb2Cdc", bMaxPacketSize=512))
 
 
 if __name__ == '__main__':
