@@ -119,12 +119,6 @@ class Utmi_8b(Interface):
         DISABLE_BIT_STUFFING_AND_NRZI = 0b10
         # 0b11 is reserved
 
-    class LINE_STATE():
-        SE0 = 0b00  # (D+, D-)=  (0, 0)
-        J = 0b01  # (D+, D-)=  (0, 1)
-        K = 0b10  # (D+, D-)=  (1, 0)
-        SE1 = 0b11  # (D+, D-)=  (1, 1)
-
     class LINE_STATE_BIT():
         DP = 0  # data + pin
         DM = 1  # data - pin
