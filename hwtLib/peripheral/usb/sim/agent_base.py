@@ -78,7 +78,7 @@ class UsbPacketData():
         if isinstance(data, HValue):
             data = UsbDescriptorBundle.pack_descriptor(data)
         else:
-            assert isinstance(data, (list, deque)), data
+            assert isinstance(data, (list, deque, bytes)), data
         self.data = data
 
     def crc16(self):
