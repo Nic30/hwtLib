@@ -1,6 +1,7 @@
 from collections import deque
 
 from hwt.simulator.agentBase import SyncAgentBase
+from hwtLib.peripheral.usb.constants import USB_LINE_STATE
 from hwtLib.peripheral.usb.usb2.ulpi import Ulpi, ulpi_reg_usb_interrupt_status_t, \
     ulpi_reg_usb_interrupt_status_t_reset_default, ULPI_TX_CMD
 from hwtLib.types.ctypes import uint8_t
@@ -46,7 +47,7 @@ class UlpiAgent(SyncAgentBase):
         self.phy_to_link_packets.append(packet)
 
     def build_RX_CMD(self):
-        LineState = 0b00  # SE0
+        LineState = USB_LINE_STATE.J
         inter = self.reg_interrupt
         if inter.SessEnd & ~inter.SessValid & ~inter.VbusValid:
             VbusSate = 0b00
@@ -74,7 +75,7 @@ class UlpiAgent(SyncAgentBase):
     def parse_RX_CMD(self, ulpi_data: int):
         ulpi_data = uint8_t.from_py(ulpi_data)
         LineState = int(ulpi_data[2:0])
-        if LineState != 0:
+        if LineState != USB_LINE_STATE.J:
             raise NotImplementedError()
 
         _inter = int(ulpi_data[4:2])
@@ -200,9 +201,11 @@ class UlpiAgent(SyncAgentBase):
             try:
                 t = int(intf.data.t._sigInside.read())
             except ValidityError:
-                raise AssertionError(self.sim.now, intf.data.t._getFullName(), "in invalid state (this would result in burned IO)")
+                raise AssertionError(self.sim.now, intf.data.t._getFullName(),
+                                     "in invalid state (this would result in burned IO)")
 
-            assert t == mask(8), (self.sim.now, intf, t, "link must write the data when it is the master of this bus")
+            assert t == mask(8), (self.sim.now, intf, t,
+                                  "link must write the data when it is the master of this bus")
 
             try:
                 stp = int(intf.stp._sigInside.read())

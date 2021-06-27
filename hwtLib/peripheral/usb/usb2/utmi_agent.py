@@ -9,6 +9,7 @@ from hwtSimApi.agents.base import AgentBase
 from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtSimApi.triggers import WaitCombStable, WaitCombRead, WaitWriteOnly
 from pyMathBitPrecise.bit_utils import ValidityError
+from hwtLib.peripheral.usb.constants import USB_LINE_STATE
 
 
 class Utmi_8b_rxAgent(SyncAgentBase):
@@ -297,7 +298,7 @@ class Utmi_8bAgent(AgentBase):
     def driver(self):
         yield WaitWriteOnly()
         intf = self.intf
-        intf.LineState.write(0)
+        intf.LineState.write(USB_LINE_STATE.J)
         intf.interrupt._ag.set_data(tuple(0 for _ in range(len(utmi_interrupt_t.fields) - 1)))
         intf.tx.rd.write(0)
         intf.rx.valid.write(0)
