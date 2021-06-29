@@ -29,6 +29,10 @@ class USBIPConnection:
     """
     Server container of informations about USBIP client connection
     """
+    OP_SUBMIT = ">IiIIi8s"
+    OP_SUBMIT_SIZE = struct.calcsize(OP_SUBMIT)
+    OP_COMMON = ">HIIII"
+    OP_COMMON_SIZE = struct.calcsize(OP_COMMON)
 
     def __init__(self, server: 'UsbipServer', reader: StreamReader, writer: StreamWriter):
         self.reader = reader
@@ -102,7 +106,7 @@ class USBIPConnection:
         """
         usbctx like function
         """
-        while not self.server.usb_ag.usb_driver._descriptors_downloaded:
+        while self.server.usb_ag.usb_driver is None or not self.server.usb_ag.usb_driver._descriptors_downloaded:
             await sleep(0.001)
         # return usbctx.getDeviceList()
         for addr, descriptors in self.server.usb_ag.usb_driver.descr.items():
@@ -159,18 +163,20 @@ class USBIPConnection:
                            USBIP_ST_NA)
         self.writer.write(resp)
 
-    def make_usbip_header_basic(self, command: int, seqnum: int, devid: int, direction:int, ep:int):
+    @classmethod
+    def make_usbip_header_basic(cls, command: int, seqnum: int, devid: int, direction:int, ep:int):
         return struct.pack(">IIIII",
             command, seqnum, devid, direction, ep
         )
 
-    def send_usbip_ret_submit(self, seqnum, devid, direction, ep,
+    @classmethod
+    def usbip_ret_submit(cls, seqnum, devid, direction, ep,
                               status:int, actual_length:int,
                                error_count:int, transfer_buffer:bytes,
                               iso_start_frame=0, iso_number_of_packets=0xffffffff,
                               iso_packet_descriptor:bytes=b''):
 
-        header = self.make_usbip_header_basic(
+        header = cls.make_usbip_header_basic(
             USBIP_RET_SUBMIT, seqnum, devid, direction, ep)
 
         resp = b''.join([
@@ -183,13 +189,12 @@ class USBIPConnection:
             transfer_buffer,
             iso_packet_descriptor,
         ])
-
-        self.writer.write(resp)
+        return resp
 
     async def handle_urb_submit(self, seqnum:int, dev: USBIPDevice, direction, ep):
-        op_submit = ">IiIIi8s"
-        data = await self.reader.readexactly(struct.calcsize(op_submit))
-        (transfer_flags, buflen, start_frame, number_of_packets, interval, setup) = struct.unpack(op_submit, data)
+        data = await self.reader.readexactly(self.OP_SUBMIT_SIZE)
+        (transfer_flags, buflen, start_frame, number_of_packets, interval, setup) = \
+            struct.unpack(self.OP_SUBMIT, data)
 
         if start_frame not in (0, 0xffffffff):
             raise NotImplementedError(f"ISO start_frame {start_frame:d}")
@@ -197,12 +202,13 @@ class USBIPConnection:
         if number_of_packets not in (0, 0xffffffff):
             raise NotImplementedError(f"ISO number_of_packets {number_of_packets:d}")
 
-        if direction == USB_ENDPOINT_DIR.OUT:
+        if direction == USB_ENDPOINT_DIR.OUT and buflen:
             buf = await self.reader.readexactly(buflen)
-
-        (bRequestType, bRequest, wValue, wIndex, wLength) = struct.unpack("<BBHHH", setup)
+        else:
+            buf = b''
 
         if ep == 0:
+            (bRequestType, bRequest, wValue, wIndex, wLength) = struct.unpack("<BBHHH", setup)
             # EP0 control traffic; unpack the control request, synchronous.
             if wLength != buflen:
                 raise USBIPProtocolErrorException(f"wLength {wLength:d} != buflen {buflen:d}")
@@ -222,8 +228,9 @@ class USBIPConnection:
                     if self.debug:
                         self.debug_log(f"seq 0x{seqnum:x}: read response with {len(data):d}/{wLength:d} bytes")
 
-                    self.send_usbip_ret_submit(seqnum, dev.packDevid(), direction, ep,
+                    resp = self.usbip_ret_submit(seqnum, dev.packDevid(), direction, ep,
                                                0, len(data), 0, data)
+
                 else:
 
                     if bRequestType == USB_REQUEST_TYPE_RECIPIENT.DEVICE and bRequest == USB_REQUEST.SET_ADDRESS:
@@ -242,15 +249,16 @@ class USBIPConnection:
 
                     if self.debug:
                         self.debug_log(f"seq 0x{seqnum:x}: wrote {wlen:d}/{wLength:d} bytes")
-                    self.send_usbip_ret_submit(seqnum, dev.packDevid(), direction, ep,
+                    resp = self.usbip_ret_submit(seqnum, dev.packDevid(), direction, ep,
                                                0, len(buf), 0, b'')
             except Exception as e:
                 if self.debug:
                     traceback.print_exc()
                     print(e)
                     self.debug_log('EPIPE')
-                self.send_usbip_ret_submit(seqnum, dev.packDevid(), direction, ep,
-                                           -USB_EPIPE, 0, 0, b'')
+                resp = self.usbip_ret_submit(seqnum, dev.packDevid(), direction, ep,
+                                             -USB_EPIPE, 0, 0, b'')
+            self.writer.write(resp)
         else:
             # a request on another endpoint. These are asynchronous.
             xfer = dev.hnd.getTransfer()
@@ -262,9 +270,9 @@ class USBIPConnection:
                         self.debug_log(f'IN callback seqnum 0x{seqnum:x} ep {ep:d} status {xfer.getStatus():d} '
                                        f'len {xfer.getActualLength():d} buflen {len(xfer.getBuffer()):d}')
                     data = xfer.getBuffer()[:xfer.getActualLength()]
-                    self.send_usbip_ret_submit(seqnum, dev.packDevid(), direction, ep,
+                    resp = self.usbip_ret_submit(seqnum, dev.packDevid(), direction, ep,
                            -xfer.getStatus(), len(data), 0, bytes(data))
-
+                    self.writer.write(resp)
                     del self.urbs[seqnum]
 
                 xfer.setBulk(ep | 0x80, buflen, callback)
@@ -275,8 +283,9 @@ class USBIPConnection:
                 def callback(xfer_):
                     if self.debug:
                         self.debug_log(f'OUT callback seqnum 0x{seqnum:x} ep {ep:d} status {xfer.getStatus():d} {xfer_.buffer}',)
-                    self.send_usbip_ret_submit(seqnum, dev.packDevid(), direction, ep,
+                    resp = self.usbip_ret_submit(seqnum, dev.packDevid(), direction, ep,
                            -xfer.getStatus(), 0, 0, b'')
+                    self.writer.write(resp)
                     del self.urbs[seqnum]
 
                 xfer.setBulk(ep, buf, callback)
@@ -322,9 +331,8 @@ class USBIPConnection:
         (version,) = struct.unpack(">H", data)
         if version == 0x0000:
             # Note that we've already trimmed the version.
-            op_common = ">HIIII";
-            data = await self.reader.readexactly(struct.calcsize(op_common))
-            (opcode, seqnum, devid, direction, ep) = struct.unpack(op_common, data)
+            data = await self.reader.readexactly(self.OP_COMMON_SIZE)
+            (opcode, seqnum, devid, direction, ep) = struct.unpack(self.OP_COMMON, data)
 
             if devid not in self.devices:
                 raise USBIPProtocolErrorException(f'devid unattached 0x{devid:x}')
@@ -380,6 +388,7 @@ class USBIPConnection:
                     self.debug_log('force disconnect due to exception')
                 _e = e
                 break
+
         if self.debug:
             self.debug_log('disconnect')
         for i in self.devices:
