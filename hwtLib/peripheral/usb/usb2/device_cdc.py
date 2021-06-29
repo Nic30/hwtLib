@@ -13,12 +13,12 @@ from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axis import AxiStream
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.streamNode import StreamNode
-from hwtLib.peripheral.usb.constants import usb_addr_t, usb2_0_packet_data_t
+from hwtLib.peripheral.usb.constants import usb_addr_t
 from hwtLib.peripheral.usb.descriptors.bundle import UsbDescriptorBundle, \
     UsbEndpointMeta
 from hwtLib.peripheral.usb.descriptors.cdc import get_default_usb_cdc_vcp_descriptors, \
     CLASS_REQUEST, make_usb_line_coding_default
-from hwtLib.peripheral.usb.descriptors.std import USB_DESCRIPTOR_TYPE,\
+from hwtLib.peripheral.usb.descriptors.std import USB_DESCRIPTOR_TYPE, \
     usb_descriptor_configuration_t
 from hwtLib.peripheral.usb.device_request import USB_REQUEST_TYPE_TYPE, \
     USB_REQUEST, usb_device_request_t, USB_REQUEST_TYPE_DIRECTION
@@ -77,6 +77,7 @@ class Usb2Cdc(Unit):
         :param descr_addr: read address for current descriptor read
         :param ep0_get_len: size how many descriptor bytes should be read
         """
+
         def hmin(a, b):
             return (a < b)._ternary(a, b)
 
@@ -364,8 +365,9 @@ class Usb2Cdc(Unit):
         ep_buffers.usb_core_io.tx_success.vld(1)
         ep_buffers.usb_core_io.tx_success.data(1)
 
-        ep_buffers.ep[1].tx(tx_src, exclude=[ep_buffers.ep[1].tx.keep])
+        ep_buffers.ep[1].tx(tx_src, exclude=[tx_src.ready, tx_src.valid, ep_buffers.ep[1].tx.keep])
         ep_buffers.ep[1].tx.keep(1)
+        StreamNode([tx_src], [ep_buffers.ep[1].tx]).sync(dev_configured._eq(1))
 
         ep_buffers.ep[2].tx.data(None)
         ep_buffers.ep[2].tx.last(None)
@@ -373,7 +375,7 @@ class Usb2Cdc(Unit):
         ep_buffers.ep[2].tx.valid(0)
 
         rx = ep_buffers.ep[1].rx
-        StreamNode([rx], [self.rx]).sync()
+        StreamNode([rx], [self.rx]).sync(dev_configured._eq(1))
         self.rx.data(rx.data)
 
         propagateClkRstn(self)
