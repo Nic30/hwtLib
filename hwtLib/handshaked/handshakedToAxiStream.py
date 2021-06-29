@@ -19,7 +19,7 @@ class HandshakedToAxiStream(HandshakedCompBase):
         if there are not input data
     :ivar MAX_FRAME_WORDS: maximum number of words in frame
 
-    .. hwt-autodoc::
+    .. hwt-autodoc:: _example_HandshakedToAxiStream
     """
 
     def _config(self) -> None:
@@ -121,9 +121,14 @@ class HandshakedToAxiStream(HandshakedCompBase):
         propagateClkRstn(self)
 
 
-if __name__ == "__main__":
-    from hwt.synthesizer.utils import to_rtl_str
+def _example_HandshakedToAxiStream():
     u = HandshakedToAxiStream(Handshaked)
     u.IN_TIMEOUT = 10
     # u.MAX_FRAME_WORDS = 8
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import to_rtl_str
+    u = _example_HandshakedToAxiStream()
     print(to_rtl_str(u))
