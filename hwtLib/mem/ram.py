@@ -14,7 +14,10 @@ from hwt.synthesizer.unit import Unit
 @serializeParamsUniq
 class RamSingleClock(Unit):
     """
-    RAM with only one clock signal
+    RAM/ROM with only one clock signal.
+    It can be configured to have arbitrary number of ports.
+    It can also be configured to have write mask or to be composed from multiple smaller memories.
+
 
     :note: This memory may not be mapped to RAM
         if synthesis tool consider it to be too small.
@@ -181,6 +184,7 @@ class RamMultiClock(Unit):
     """
     RAM where each port has an independet clock.
     It can be configured to true dual port RAM etc.
+    It can also be configured to have write mask or to be composed from multiple smaller memories.
 
     :note: write-first variant
 
