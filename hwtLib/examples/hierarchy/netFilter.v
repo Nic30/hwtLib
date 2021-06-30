@@ -149,6 +149,42 @@ module AxiSSplitCopy #(
         dataOut_1_valid = dataIn_valid & dataOut_0_ready;
     end
 
+    generate if (DATA_WIDTH != 64)
+        $error("%m Generated only for this param value");
+    endgenerate
+
+    generate if (DEST_WIDTH != 0)
+        $error("%m Generated only for this param value");
+    endgenerate
+
+    generate if (ID_WIDTH != 0)
+        $error("%m Generated only for this param value");
+    endgenerate
+
+    generate if (INTF_CLS != "<class 'hwtLib.amba.axis.AxiStream'>")
+        $error("%m Generated only for this param value");
+    endgenerate
+
+    generate if (IS_BIGENDIAN != 0)
+        $error("%m Generated only for this param value");
+    endgenerate
+
+    generate if (OUTPUTS != 2)
+        $error("%m Generated only for this param value");
+    endgenerate
+
+    generate if (USER_WIDTH != 0)
+        $error("%m Generated only for this param value");
+    endgenerate
+
+    generate if (USE_KEEP != 0)
+        $error("%m Generated only for this param value");
+    endgenerate
+
+    generate if (USE_STRB != 0)
+        $error("%m Generated only for this param value");
+    endgenerate
+
 endmodule
 //
 //    This unit has actually no functionality it is just example
@@ -415,4 +451,8 @@ module NetFilter #(
     assign sig_patternMatch_din_last = sig_gen_dout_splitCopy_0_dataOut_0_last;
     assign sig_patternMatch_din_valid = sig_gen_dout_splitCopy_0_dataOut_0_valid;
     assign sig_patternMatch_match_ready = sig_filter_patternMatch_ready;
+    generate if (DATA_WIDTH != 64)
+        $error("%m Generated only for this param value");
+    endgenerate
+
 endmodule

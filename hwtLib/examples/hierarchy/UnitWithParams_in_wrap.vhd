@@ -20,6 +20,7 @@ ARCHITECTURE rtl OF UnitWithParams_0 IS
 BEGIN
     dout_data <= din_data;
     dout_vld <= din_vld;
+    ASSERT DATA_WIDTH = 64 REPORT "Generated only for this value" SEVERITY error;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;

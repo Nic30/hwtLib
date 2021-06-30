@@ -122,4 +122,8 @@ module RippleAdder3 #(
     end
 
     assign sig_fa_3_ci = sig_fa_2_co;
+    generate if (p_wordlength != 4)
+        $error("%m Generated only for this param value");
+    endgenerate
+
 endmodule

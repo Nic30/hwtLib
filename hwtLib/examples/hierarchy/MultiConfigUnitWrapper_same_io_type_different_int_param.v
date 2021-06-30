@@ -10,6 +10,10 @@ module SimpleUnitWithParam_0 #(
     output wire[1:0] b
 );
     assign b = a;
+    generate if (DATA_WIDTH != 2)
+        $error("%m Generated only for this param value");
+    endgenerate
+
 endmodule
 //
 //    Simple parametrized unit.
@@ -23,6 +27,10 @@ module SimpleUnitWithParam_1 #(
     output wire[2:0] b
 );
     assign b = a;
+    generate if (DATA_WIDTH != 3)
+        $error("%m Generated only for this param value");
+    endgenerate
+
 endmodule
 //
 //    Simple parametrized unit.
@@ -49,6 +57,10 @@ module SimpleUnitWithParam #(
             .a(a),
             .b(b)
         );
+    endgenerate
+
+    generate if (DATA_WIDTH != 2)
+        $error("%m Generated only for this param value");
     endgenerate
 
 endmodule

@@ -16,6 +16,7 @@ ARCHITECTURE rtl OF UnitWithGenericOnPort IS
 BEGIN
     b <= tmp;
     tmp <= a;
+    ASSERT NESTED_PARAM = 123 REPORT "Generated only for this value" SEVERITY error;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;

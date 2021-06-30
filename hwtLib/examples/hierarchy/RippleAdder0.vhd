@@ -116,4 +116,5 @@ BEGIN
     sig_fa3_a <= a(3);
     sig_fa3_b <= a(3);
     sig_fa3_ci <= c(3);
+    ASSERT p_wordlength = 4 REPORT "Generated only for this value" SEVERITY error;
 END ARCHITECTURE;

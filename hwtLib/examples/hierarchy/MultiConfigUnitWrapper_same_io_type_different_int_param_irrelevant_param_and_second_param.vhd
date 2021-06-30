@@ -19,6 +19,9 @@ ARCHITECTURE rtl OF SimpleUnitWithParamWithIrrelevantParamAndAnotherParam_0 IS
 BEGIN
     b <= a;
     b_addr <= a_addr;
+    ASSERT ADDR_WIDTH = 11 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT DATA_WIDTH = 2 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT IRELEVANT_PARAM = 10 REPORT "Generated only for this value" SEVERITY error;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -41,6 +44,9 @@ ARCHITECTURE rtl OF SimpleUnitWithParamWithIrrelevantParamAndAnotherParam_1 IS
 BEGIN
     b <= a;
     b_addr <= a_addr;
+    ASSERT ADDR_WIDTH = 11 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT DATA_WIDTH = 3 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT IRELEVANT_PARAM = 10 REPORT "Generated only for this value" SEVERITY error;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -63,6 +69,9 @@ ARCHITECTURE rtl OF SimpleUnitWithParamWithIrrelevantParamAndAnotherParam_2 IS
 BEGIN
     b <= a;
     b_addr <= a_addr;
+    ASSERT ADDR_WIDTH = 13 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT DATA_WIDTH = 2 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT IRELEVANT_PARAM = 10 REPORT "Generated only for this value" SEVERITY error;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -85,6 +94,9 @@ ARCHITECTURE rtl OF SimpleUnitWithParamWithIrrelevantParamAndAnotherParam_3 IS
 BEGIN
     b <= a;
     b_addr <= a_addr;
+    ASSERT ADDR_WIDTH = 13 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT DATA_WIDTH = 3 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT IRELEVANT_PARAM = 10 REPORT "Generated only for this value" SEVERITY error;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -202,4 +214,7 @@ BEGIN
             b_addr => b_addr
         );
     END GENERATE;
+    ASSERT ADDR_WIDTH = 11 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT DATA_WIDTH = 2 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT IRELEVANT_PARAM = 10 REPORT "Generated only for this value" SEVERITY error;
 END ARCHITECTURE;

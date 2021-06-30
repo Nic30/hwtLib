@@ -4,6 +4,7 @@ USE IEEE.numeric_std.ALL;
 --
 --    RAM where each port has an independet clock.
 --    It can be configured to true dual port RAM etc.
+--    It can also be configured to have write mask or to be composed from multiple smaller memories.
 --
 --    :note: write-first variant
 --
@@ -64,6 +65,12 @@ BEGIN
             END IF;
         END IF;
     END PROCESS;
+    ASSERT ADDR_WIDTH = 8 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT DATA_WIDTH = 64 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT HAS_BE = FALSE REPORT "Generated only for this value" SEVERITY error;
+    ASSERT INIT_DATA = "None" REPORT "Generated only for this value" SEVERITY error;
+    ASSERT MAX_BLOCK_DATA_WIDTH = "None" REPORT "Generated only for this value" SEVERITY error;
+    ASSERT PORT_CNT = 2 REPORT "Generated only for this value" SEVERITY error;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -96,6 +103,7 @@ ARCHITECTURE rtl OF GroupOfBlockrams IS
     --
     --    RAM where each port has an independet clock.
     --    It can be configured to true dual port RAM etc.
+    --    It can also be configured to have write mask or to be composed from multiple smaller memories.
     --
     --    :note: write-first variant
     --
@@ -216,4 +224,6 @@ BEGIN
     sig_bramW_port_1_din <= in_w_b;
     sig_bramW_port_1_en <= en;
     sig_bramW_port_1_we <= we;
+    ASSERT ADDR_WIDTH = 8 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT DATA_WIDTH = 64 REPORT "Generated only for this value" SEVERITY error;
 END ARCHITECTURE;

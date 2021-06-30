@@ -19,6 +19,7 @@ END ENTITY;
 ARCHITECTURE rtl OF SimpleUnitWithParam_0 IS
 BEGIN
     b <= a;
+    ASSERT DATA_WIDTH = 2 REPORT "Generated only for this value" SEVERITY error;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -41,6 +42,7 @@ END ENTITY;
 ARCHITECTURE rtl OF SimpleUnitWithParam_1 IS
 BEGIN
     b <= a;
+    ASSERT DATA_WIDTH = 3 REPORT "Generated only for this value" SEVERITY error;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -63,6 +65,7 @@ END ENTITY;
 ARCHITECTURE rtl OF SimpleUnitWithParam_2 IS
 BEGIN
     b <= a;
+    ASSERT DATA_WIDTH = 4 REPORT "Generated only for this value" SEVERITY error;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -148,4 +151,5 @@ BEGIN
             b => b
         );
     END GENERATE;
+    ASSERT DATA_WIDTH = 2 REPORT "Generated only for this value" SEVERITY error;
 END ARCHITECTURE;
