@@ -12,7 +12,7 @@ from hwtLib.peripheral.usb.descriptors.std import usb_descriptor_configuration_t
 from hwtLib.peripheral.usb.device_request import \
     USB_REQUEST_TYPE_RECIPIENT, USB_REQUEST_TYPE_DIRECTION, \
     USB_REQUEST_TYPE_TYPE
-from hwtSimApi.process_utils import CallbackLoop
+from hwtSimApi.process_utils import CallbackLoop, ExitCallbackLoop
 from hwtSimApi.simCalendar import DONE
 
 
@@ -34,7 +34,12 @@ class USBIPOperationPromise():
         self.cb = CallbackLoop(
             sim, clk,
             self._pool_process,
-            lambda: self.data is NOT_SPECIFIED)
+            self._continue_with_clk_triggering)
+
+    def _continue_with_clk_triggering(self):
+        if self.data is not NOT_SPECIFIED:
+            raise ExitCallbackLoop()
+        return True
 
     def schedule(self):
         sim = self.sim
@@ -54,7 +59,7 @@ class USBIPOperationPromise():
         try:
             next(self.operation_process)
         except StopIteration:
-            self.cb._exit = True
+            assert self.data is not NOT_SPECIFIED
 
     def fulfill(self, data):
         self.data = data
