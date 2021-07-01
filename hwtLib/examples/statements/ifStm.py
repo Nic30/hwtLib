@@ -192,6 +192,50 @@ class SimpleIfStatementMergable2(Unit):
         )
 
 
+class SimpleIfStatementPartialOverride(Unit):
+    """
+    .. hwt-autodoc::
+    """
+    def _declr(self):
+        self.a = Signal()
+        self.b = Signal()
+
+        self.c = Signal()._m()
+
+    def _impl(self):
+        If(self.b,
+            self.c(1),
+            If(self.a,
+                self.c(self.b),
+            ),
+        )
+
+class SimpleIfStatementPartialOverrideNopVal(Unit):
+    """
+    .. hwt-autodoc::
+    """
+    def _declr(self):
+        self.clk = Clk()
+        self.a = Signal()
+        self.b = Signal()
+        self.c = Signal()
+
+        self.e = Signal()._m()
+
+    def _impl(self):
+        d = self._reg("d")
+
+        If(self.a,
+            If(self.b,
+                d(1),
+            ),
+            If(self.c,
+                d(0),
+            ),
+        )
+        self.e(d)
+
+
 class IfStatementPartiallyEnclosed(Unit):
     """
     .. hwt-autodoc::
@@ -223,5 +267,5 @@ class IfStatementPartiallyEnclosed(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
-    u = IfStatementPartiallyEnclosed()
+    u = SimpleIfStatementPartialOverrideNopVal()
     print(to_rtl_str(u))

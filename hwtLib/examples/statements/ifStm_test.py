@@ -13,7 +13,8 @@ from hwtLib.examples.statements.ifStm import SimpleIfStatement, \
     SimpleIfStatement2, SimpleIfStatement2b, SimpleIfStatement2c, \
     SimpleIfStatement3, SimpleIfStatementMergable, \
     SimpleIfStatementMergable1, SimpleIfStatementMergable2, \
-    IfStatementPartiallyEnclosed
+    IfStatementPartiallyEnclosed, SimpleIfStatementPartialOverrideNopVal, \
+    SimpleIfStatementPartialOverride
 from hwtSimApi.constants import CLK_PERIOD
 
 
@@ -162,6 +163,14 @@ class IfStmTC(SimTestCase, BaseSerializationTC):
     def test_IfStatementPartiallyEnclosed_vhdl(self):
         self.assert_serializes_as_file(IfStatementPartiallyEnclosed,
                                        "IfStatementPartiallyEnclosed.vhd")
+
+    def test_SimpleIfStatementPartialOverride(self):
+        self.assert_serializes_as_file(SimpleIfStatementPartialOverride(),
+                                       "SimpleIfStatementPartialOverride.vhd")
+
+    def test_SimpleIfStatementPartialOverrideNopVal_vhdl(self):
+        self.assert_serializes_as_file(SimpleIfStatementPartialOverrideNopVal,
+                                       "SimpleIfStatementPartialOverrideNopVal.vhd")
 
 
 if __name__ == "__main__":

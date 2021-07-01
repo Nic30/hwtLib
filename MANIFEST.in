@@ -51,6 +51,8 @@ include hwtLib/examples/statements/IfStatementPartiallyEnclosed.vhd
 include hwtLib/examples/statements/SimpleIfStatementMergable1.vhd
 include hwtLib/examples/statements/SimpleIfStatementMergable2.vhd
 include hwtLib/examples/statements/SimpleIfStatementMergable.vhd
+include hwtLib/examples/statements/SimpleIfStatementPartialOverride.vhd
+include hwtLib/examples/statements/SimpleIfStatementPartialOverrideNopVal.vhd
 include hwtLib/examples/statements/SwitchStmUnit.cpp
 include hwtLib/examples/statements/SwitchStmUnit.v
 include hwtLib/examples/statements/SwitchStmUnit.vhd
