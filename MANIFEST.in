@@ -44,6 +44,7 @@ include hwtLib/examples/SimpleComentedUnit3.vhd
 include hwtLib/examples/SimpleComentedUnit.vhd
 include hwtLib/examples/specialIntfTypes/InterfaceWithVHDLUnconstrainedArrayImportedType2.vhd
 include hwtLib/examples/specialIntfTypes/InterfaceWithVHDLUnconstrainedArrayImportedType.vhd
+include hwtLib/examples/statements/BlockStm_complete_override1.vhd
 include hwtLib/examples/statements/FsmExample.cpp
 include hwtLib/examples/statements/FsmExample.v
 include hwtLib/examples/statements/FsmExample.vhd

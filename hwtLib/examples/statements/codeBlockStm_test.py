@@ -111,6 +111,10 @@ class CodeBlokStmTC(SimTestCase, BaseSerializationTC):
         self.assertValSequenceEqual(u.c._ag.data, c)
         self.assertValSequenceEqual(u.c1._ag.data, c1)
 
+    def test_BlockStm_complete_override1_vhdl(self):
+        self.assert_serializes_as_file(BlockStm_complete_override1,
+                                       "BlockStm_complete_override1.vhd")
+
 
 if __name__ == "__main__":
     import unittest
