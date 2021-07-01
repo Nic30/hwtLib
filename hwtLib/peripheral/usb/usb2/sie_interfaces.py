@@ -29,7 +29,7 @@ class DataErrVldKeepLast(VldSynced):
 
 class DataErrVldKeepLastAgent(VldSyncedAgent):
     """
-    .. hwt-autodoc::
+    A simulation agent for :class:`~.DataErrVldKeepLast` interface.
     """
 
     def set_data(self, data):
@@ -69,6 +69,7 @@ class Usb2SieRxOut(VldSynced):
     :note: address in not important because it is checked with current_usb_addr
        it is only important if this is the address of this device
     :attention: validity of the endp/frame_number depens on pid value
+
     .. hwt-autodoc::
     """
 
@@ -87,7 +88,9 @@ class Usb2SieRxOut(VldSynced):
 
 
 class Usb2SieRxOutAgent(VldSyncedAgent):
-
+    """
+    A simulation agent for :class:`~.Usb2SieRxOut` interface.
+    """
     def set_data(self, data):
         if data is None:
             data = None, None, None, None

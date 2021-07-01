@@ -14,9 +14,9 @@ class EEM_PACKET_TYPE:
 
 
 eem_packet_header_data_t = HStruct(
-    ("bmType", BIT),
-    ("bmCRC", BIT),  # see :class:`~.EEM_bmCRC`
-    ("ethFrameLen", Bits(14)),
+    (BIT, "bmType"),
+    (BIT, "bmCRC"),  # see :class:`~.EEM_bmCRC`
+    (Bits(14), "ethFrameLen"),
 )
 
 
@@ -26,10 +26,10 @@ class EEM_bmCRC:
 
 
 eem_packet_command_t = HStruct(
-    ("bmType", BIT),
-    ("bmReserved", BIT), # must be set to 0
-    ("bmEEMCmd", Bits(3)),  # see :class:`~.EEM_bmEEMCmd`
-    ("bmEEMCmdParam", Bits(11)),
+    (BIT, "bmType"),
+    (BIT, "bmReserved"), # must be set to 0
+    (Bits(3), "bmEEMCmd"),  # see :class:`~.EEM_bmEEMCmd`
+    (Bits(11), "bmEEMCmdParam"),
 )
 
 

@@ -22,7 +22,7 @@ class UsbDeviceEpBuffers(Unit):
     USB device endpoint buffers
     Buffers for the data transfers which are between usb core and usb function.
 
-    .. hwt-autodoc::
+    .. hwt-autodoc:: _example_UsbDeviceEpBuffers
     """
 
     def _config(self) -> None:
@@ -184,11 +184,16 @@ class UsbDeviceEpBuffers(Unit):
         propagateClkRstn(self)
 
 
-if __name__ == "__main__":
+def _example_UsbDeviceEpBuffers():
     from hwtLib.peripheral.usb.descriptors.cdc import get_default_usb_cdc_vcp_descriptors
-    from hwt.synthesizer.utils import to_rtl_str
     u = UsbDeviceEpBuffers()
     u.ENDPOINT_META = get_default_usb_cdc_vcp_descriptors().get_endpoint_meta()
     u.ENDPOINT_META[0][0].buffer_size = 0
     u.ENDPOINT_META[0][1].buffer_size = 0
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import to_rtl_str
+    u = _example_UsbDeviceEpBuffers()
     print(to_rtl_str(u))

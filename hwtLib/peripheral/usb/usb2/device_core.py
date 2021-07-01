@@ -51,7 +51,7 @@ class Usb2DeviceCore(Unit):
     :ivar sie_rx: Serial Interface Engine for UTMI rx channel (host->device)
     :ivar sie_tx: Serial Interface Engine for UTMI tx channel (device->host)
 
-    .. hwt-autodoc::
+    .. hwt-autodoc:: _example_Usb2DeviceCore
     """
 
     def _config(self):
@@ -499,9 +499,14 @@ class Usb2DeviceCore(Unit):
         propagateClkRstn(self)
 
 
-if __name__ == "__main__":
+def _example_Usb2DeviceCore():
     from hwtLib.peripheral.usb.descriptors.cdc import get_default_usb_cdc_vcp_descriptors
-    from hwt.synthesizer.utils import to_rtl_str
     u = Usb2DeviceCore()
     u.DESCRIPTORS = get_default_usb_cdc_vcp_descriptors()
+    return u
+
+
+if __name__ == "__main__":
+    from hwt.synthesizer.utils import to_rtl_str
+    u = _example_Usb2DeviceCore()
     print(to_rtl_str(u))
