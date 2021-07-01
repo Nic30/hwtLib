@@ -33,7 +33,7 @@ class XgmiiChannel(Interface):
     class CMD:
         """
         This is an enum of values which may appear
-        on data byte while corresponding control bit is :var:`~.CONTROL.CONTROL`
+        on data byte while corresponding control bit is :py:attr:`~.CONTROL.CONTROL`
         """
         IDLE = Bits(8).from_py(0x07)
         START = Bits(8).from_py(0xFB)

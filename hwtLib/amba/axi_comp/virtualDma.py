@@ -54,12 +54,12 @@ class AxiVirtualDma(AbstractComponentBuilder):
              t: HdlType,
              tmpl: Optional[TransTmpl]=None,
              frames: Optional[List[FrameTmpl]]=None,
-             id_=0) -> Union[UnionSource, StructIntf, Handshaked]:
+             transaction_id=0) -> Union[UnionSource, StructIntf, Handshaked]:
         """
         :param ~.t: instance of HStruct which specifies data format to download
         :param ~.tmpl: instance of TransTmpl for this t
         :param ~.frames: list of FrameTmpl instances for this tmpl
-        :param ~.id_: id_ value for axi
+        :param ~.transaction_id: id value for axi
         :note: if tmpl and frames are None they are resolved from structT parseTemplate
         :note: A single transaction can be split to multiple frames, if they are specified by "frames".
         """
@@ -78,7 +78,7 @@ class AxiVirtualDma(AbstractComponentBuilder):
         dp.ID_WIDTH = axi.ID_WIDTH
         dp.DATA_WIDTH = axi.DATA_WIDTH
         dp.USE_STRB = False
-        dp.ID_VAL = id_
+        dp.ID_VAL = transaction_id
         dp.MAX_TRANS_OVERLAP = self.max_trans_overlap
         dp.ALIGNAS = self.alignas
 

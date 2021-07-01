@@ -57,7 +57,7 @@ class Crc(Unit):
 
     def build_crc_xor_matrix(self,
                              state_in_bits: List[RtlSignal],
-                             poly_bits: List[int], data_in_bits:[RtlSignal])\
+                             poly_bits: List[int], data_in_bits: List[RtlSignal])\
             ->List[RtlSignal]:
         """
         build xor tree for CRC computation

@@ -18,6 +18,7 @@ class UlpiAgent(SyncAgentBase):
     :note: the RX is always from PHY to Link, the TX is always from Link to PHY
     :note: in link->phy nxt works as a handshake ready and stp as handshake valid_n
         and data is data.o
+
     :note in phy->link nxt works as a handshake valid (but when set to 0 rx_cmd is send instead of data)
         and the stp works as handshake ready_n, if stp is set to 1 the transmission of whole packet is interrupted.
     """
@@ -124,14 +125,17 @@ class UlpiAgent(SyncAgentBase):
         Drive ULPI interface as a PHY (and host) does
 
         Inputs:
-         * data.t (should be 0 in rx and turnaround else mask(8))
-         * data.o (only in tx, 1st byt is cmd, rest is data)
-         * stp (1 for 1 clk after last word in tx)
+
+            * data.t (should be 0 in rx and turnaround else mask(8))
+            * data.o (only in tx, 1st byt is cmd, rest is data)
+            * stp (1 for 1 clk after last word in tx)
 
         Outputs:
-         * data.i (None in tx, else depending on nxt)
-         * dir
-         * nxt (0 if tx should stall or rx is stalled and sending rxd cmd instead)
+
+            * data.i (None in tx, else depending on nxt)
+            * dir
+            * nxt (0 if tx should stall or rx is stalled and sending rxd cmd instead)
+
         """
         yield WaitWriteOnly()
         intf = self.intf
@@ -247,14 +251,17 @@ class UlpiAgent(SyncAgentBase):
         Emulate behavior of the link (and device)
 
         Inputs:
-         * data.i
-         * dir
-         * nxt
+
+            * data.i
+            * dir
+            * nxt
 
         Outputs:
-         * data.t
-         * data.o
-         * stp
+
+            * data.t
+            * data.o
+            * stp
+
         """
         intf = self.intf
         yield WaitCombRead()
