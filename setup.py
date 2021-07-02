@@ -9,7 +9,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='hwtLib',
-      version='2.8',
+      version='2.9',
       description='library of hardware components and test for HWToolkit framework (hwt, FPGA devel. tools)',
       long_description=long_description,
       long_description_content_type="text/markdown",
