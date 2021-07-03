@@ -8,7 +8,7 @@ from hwtLib.peripheral.usb.constants import USB_VER
 from hwtLib.peripheral.usb.sim.usbip.server import UsbipServer
 from hwtLib.peripheral.usb.sim.usbip.session_recorder import UsbipServerReplayer, \
     UsbipServerSessionRecorder, cut_off_empty_time_segments, filter_empty_in
-from hwtLib.peripheral.usb.usb2.device_cdc import Usb2Cdc
+from hwtLib.peripheral.usb.usb2.device_cdc_vcp import Usb2CdcVcp
 from hwtLib.peripheral.usb.usb2.utmi_usb_agent import UtmiUsbAgent
 from hwtSimApi.constants import CLK_PERIOD
 from hwtSimApi.triggers import Timer, StopSimumulation
@@ -17,7 +17,7 @@ from hwtSimApi.triggers import Timer, StopSimumulation
 class UsbipTC(SimTestCase):
 
     def test_cdc_vcp(self):
-        u = Usb2Cdc()
+        u = Usb2CdcVcp()
         u.PRE_NEGOTIATED_TO = USB_VER.USB2_0  # to avoid waiting at the begin of sim
         self.compileSimAndStart(u)
         lock = self.hdl_simulator.scheduler_lock = threading.Lock()
@@ -110,7 +110,7 @@ UsbipTCs = [UsbipTC, UsbipSessionUtilsTC]
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
-    # suite.addTest(Usb2CdcTC("test_phy_to_link"))
+    # suite.addTest(UsbipTC("test_phy_to_link"))
     for tc in UsbipTCs:
         suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)

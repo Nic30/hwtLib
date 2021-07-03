@@ -28,9 +28,9 @@ from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b
 from hwtLib.types.ctypes import uint16_t, uint8_t
 
 
-class Usb2Cdc(Unit):
+class Usb2CdcVcp(Unit):
     """
-    USB2.0 communcation device class core (serial/uart over USB)
+    USB2.0 communcation device class virtual com port core (serial/uart over USB)
 
     :note: this component directly handles the functionality of the EP0 and connects the usb_core
         to ep_buffers, The
@@ -383,5 +383,5 @@ class Usb2Cdc(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
-    u = Usb2Cdc()
+    u = Usb2CdcVcp()
     print(to_rtl_str(u))
