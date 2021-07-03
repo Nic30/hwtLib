@@ -190,7 +190,7 @@ from hwtLib.peripheral.uart.tx_rx_test import UartTxRxTC
 from hwtLib.peripheral.uart.tx_test import UartTxTC
 from hwtLib.peripheral.usb.sim.usb_agent_test import UsbAgentTC
 from hwtLib.peripheral.usb.sim.usbip.test import UsbipTCs
-from hwtLib.peripheral.usb.usb2.device_cdc_test import Usb2CdcTC
+from hwtLib.peripheral.usb.usb2.device_cdc_vcp_test import Usb2CdcVcpTC
 from hwtLib.peripheral.usb.usb2.sie_rx_test import Usb2SieDeviceRxTC
 from hwtLib.peripheral.usb.usb2.sie_tx_test import Usb2SieDeviceTxTC
 from hwtLib.peripheral.usb.usb2.ulpi_agent_test import UlpiAgent_TCs
@@ -415,7 +415,7 @@ suite = testSuiteFromTCs(
     Utmi_to_UlpiTC,
     Usb2SieDeviceRxTC,
     Usb2SieDeviceTxTC,
-    Usb2CdcTC,
+    Usb2CdcVcpTC,
     *UsbipTCs,
 
     BusEndpointTC,
