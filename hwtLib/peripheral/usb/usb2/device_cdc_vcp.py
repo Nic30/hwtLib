@@ -17,6 +17,7 @@ from hwtLib.peripheral.usb.descriptors.cdc import get_default_usb_cdc_vcp_descri
 from hwtLib.peripheral.usb.usb2.device_common import Usb2DeviceCommon
 from hwtLib.peripheral.usb.usb2.device_ep_buffers import UsbDeviceEpBuffers
 from hwtLib.types.ctypes import uint8_t
+from hwt.code_utils import rename_signal
 
 
 class Usb2CdcVcp(Usb2DeviceCommon):
@@ -41,7 +42,6 @@ class Usb2CdcVcp(Usb2DeviceCommon):
 
     def _declr(self):
         Usb2DeviceCommon._declr(self)
-
         self.rx:Handshaked = Handshaked()._m()
         self.tx = Handshaked()
         for i in [self.rx, self.tx]:
@@ -63,13 +63,13 @@ class Usb2CdcVcp(Usb2DeviceCommon):
                             descriptors: UsbDescriptorBundle,
                             req_bDescriptorType: RtlSignal, req_bDescriptorIndex: RtlSignal, dev_configured: RtlSignal,
                             descr_addr: RtlSignal, ep0_trans_len: RtlSignal):
-        return Switch(setup.bRequest)\
+        bRequest = rename_signal(self, setup.bRequest, "bRequest")
+        return Switch(bRequest)\
                 .Case(CLASS_REQUEST.GET_LINE_CODING,
                     descr_addr(descriptors.ROM_CDC_LINE_CODING_ADDR),
                     ep0_trans_len(descriptors.ROM_CDC_LINE_CODING_SIZE),
-                ).Default(
-                    ep0_stall(1),
                 )
+                # accept all, from some reason there is bRequest 0x25 which should be reserved value when used with usbip
 
     def _impl(self):
         ep_meta = self.DESCRIPTORS.get_endpoint_meta()
