@@ -175,9 +175,9 @@ class UsbHostAgent(UsbAgent):
             elif d_raw.pid == USB_PID.HS_NACK:
                 return None
             else:
-                raise NotImplementedError()
+                raise NotImplementedError(d_raw.pid)
         else:
-            raise NotImplementedError()
+            raise NotImplementedError(d_raw)
 
     def transmit_bulk(self, addr: int, endp: int, pid_init: USB_PID, data_bytes: List[int]):
         max_packet_size = self.get_max_packet_size(addr, endp, USB_ENDPOINT_DIR.OUT)
