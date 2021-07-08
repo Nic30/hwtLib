@@ -8,6 +8,11 @@ class ETH:
     SFD = Bits(8).from_py(0xD5)  # frame delimiter
 
 
+ETH_ZLEN = 60  # Min. octets in frame sans FCS
+ETH_DATA_LEN = 1500  # Max. octets in payload
+ETH_FRAME_LEN = 1514  # Max. octets in frame sans FCS
+
+
 class ETH_BITRATE:
     M_10M = 0
     M_100M = 1
