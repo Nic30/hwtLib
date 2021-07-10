@@ -29,21 +29,7 @@ class StructWriter(StructReader):
         when component is in idle (if false "set"
         is regular handshaked interface)
 
-    .. aafig::
-
-            set (base addr)          +---------+
-         +----------------    +------> field0  |
-                         |    |      +---------+
-           bus w req  +--v---+-+
-         <------------+         |    +---------+
-           bus w data |         +----> field1  |
-         <------------+ reader  |    +---------+
-           bus w ack  |         |
-         +------------>         |
-                      +-------+-+
-                              |      +---------+
-                              +------> field2  |
-                                     +---------+
+    .. figure:: ./_static/StructWriter.png
 
     :note: names in the picture are just illustrative
 

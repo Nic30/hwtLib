@@ -31,10 +31,7 @@ from hwt.serializer.mode import _serializeExclude_eval, _serializeParamsUniq_eva
 
 # add hwtLib to path
 sys.path.insert(0, os.path.abspath('../'))
-# add local sphinx extensions to path
-sys.path.insert(0, os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "_ext"))
-)
+
 
 # -- General configuration ------------------------------------------------
 
@@ -51,7 +48,6 @@ extensions = ['sphinx.ext.autodoc',
               # 'sphinx.ext.napoleon',
               'sphinx.ext.graphviz',
               'sphinx.ext.intersphinx',
-              'aafig',
               'sphinx_hwt',
 ]
 
@@ -199,15 +195,6 @@ epub_copyright = copyright
 
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
-
-# aafig format, try to get working with pdf
-aafig_format = dict(latex='pdf', html='gif')
-
-aafig_default_options = dict(
-    scale=.75,
-    aspect=0.5,
-    proportional=True,
-)
 
 autodoc_default_options = {
     "members": True,

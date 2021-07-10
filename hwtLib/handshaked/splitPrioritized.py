@@ -12,18 +12,7 @@ class HsSplitPrioritized(HsSplitCopy):
 
     :note: combinational
 
-    .. aafig::
-                                     +-------+
-                              +------> out0  |
-                              |      +-------+
-                      +-------+
-         input stream |       |      +-------+
-        +-------------> split +------> out1  |
-                      |       |      +-------+
-                      +-------+
-                              |      +-------+
-                              +------> out2  |
-                                     +-------+
+    .. figure:: ./_static/HsSplitPrioritized.png
 
     .. hwt-autodoc:: _example_HsSplitPrioritized
     """

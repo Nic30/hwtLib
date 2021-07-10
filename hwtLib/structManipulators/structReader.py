@@ -35,20 +35,8 @@ class StructReader(AxiS_frameParser):
         will have it's own ready(rd) signal
     :attention: interfaces of field will not send data in same time
 
-    .. aafig::
 
-            get (base addr)          +---------+
-         +----------------   +------>| field0  |
-                         |   |       +---------+
-                         v   |
-            bus req   +------+--+
-         <------------+         |    +---------+
-                      | reader  +--->| field1  |
-         +----------->|         |    +---------+
-            bus data  +-------+-+
-                              |      +---------+
-                              +----->| field2  |
-                                     +---------+
+    .. figure:: ./_static/StructReader.png
 
     :note: names in the picture are just illustrative
 

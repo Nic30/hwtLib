@@ -81,19 +81,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
         it can be specified by TransTmpl instance and list of FrameTmpl
         (Output data structure can be splited into multiple frames as required)
 
-    .. aafig::
-
-                                      +---------+
-                              +------>| field0  |
-                              |       +---------+
-                      +-------+-+
-         input stream |         |     +---------+
-        +-------------> parser  +---->| field1  |
-                      |         |     +---------+
-                      +-------+-+
-                              |       +---------+
-                              +------>| field2  |
-                                      +---------+
+    .. figure:: ./_static/AxiS_frameParser.png
 
     :note: names in the figure are just illustrative
 

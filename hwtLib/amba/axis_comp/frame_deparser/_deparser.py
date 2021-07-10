@@ -53,18 +53,8 @@ class AxiS_frameDeparser(AxiSCompBase, TemplateConfigured):
 
     :note: names in the picture are just illustrative
 
-    .. aafig::
-        +---------+
-        | field0  +------+
-        +---------+      |
-                       +-v----------+
-        +---------+    |            | output stream
-        | field1  +---->  deparser  +--------------->
-        +---------+    |            |
-                       +-^----------+
-        +---------+      |
-        | field2  +------+
-        +---------+
+
+    .. figure:: ./_static/AxiS_frameDeparser.png
 
     .. hwt-autodoc:: _example_AxiS_frameDeparser
     """

@@ -38,13 +38,7 @@ class AxiS_FrameJoin(Unit):
 
     :note: The figure is ilustrative
 
-    .. aafig::
-
-        +---+---+       +---+---+       +---+---+
-        | X | 1 |       | 3 | 4 |       | 1 | 2 |
-        +---+---+   +   +---+---+  ->   +---+---+
-        | 2 | X |       | X | X |       | 3 | 4 |
-        +---+---+       +---+---+       +---+---+
+    .. figure:: ./_static/AxiS_FrameJoin.png
 
     .. hwt-autodoc::
     """

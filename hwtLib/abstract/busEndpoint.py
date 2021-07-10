@@ -70,22 +70,8 @@ class BusEndpoint(Unit):
 
     :note: implementation is usually address decoder
 
-    .. aafig::
 
-        +------+    +----------+     +---------+
-        | bus  +--->|          +---->| field0  |
-        |      |<---+          |<----+         |
-        +------+    |          |     +---------+
-                    |          |
-                    | endpoint |     +---------+
-                    |          +---->| field1  |
-                    |          |<----+         |
-                    |          |     +---------+
-                    |          |
-                    |          |     +---------+
-                    |          +---->| field2  |
-                    |          |<----+         |
-                    +----------+     +---------+
+    .. figure:: ./_static/BusEndpoint.png
 
     """
 

@@ -21,27 +21,6 @@ class AxiS_resizer(AxiSCompBase):
     :attention: in upscale mode id and other signals which are not dependent on data width
         are propagated only from last word
 
-    .. aafig::
-                                           +-------------+
-                                           |             |
-        +-------------+   +-----------+    |             |
-        |stream,      +-->|           |    |             |
-        |datawidth:64 |   | resizer   +--->|stream,      |
-        +-------------+   | 64 to 256 |    |datawidth:256|
-                          +-----------+    |             |
-                                           |             |
-        +-------------+                    |             |
-        |             |                    +-------------+
-        |             |
-        |             |   +-----------+
-        |stream,      |   |           |    +-------------+
-        |datawidth:256+-->| resizer   +--->|stream,      |
-        |             |   | 256 to 64 |    |datawidth:64 |
-        |             |   +-----------+    +-------------+
-        |             |
-        +-------------+
-
-
     :note: interface is configurable and schematic is example with AxiStream
 
     :note: first schematic is for upsize mode, second one is for downsize mode

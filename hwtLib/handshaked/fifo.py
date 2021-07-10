@@ -20,12 +20,7 @@ class HandshakedFifo(HandshakedCompBase):
     """
     Synchronous FIFO for handshaked interfaces
 
-    .. aafig::
-                 +-+-+-+-+-+
-         input   | | | | | | output
-       +-stream--> | | | | +-stream->
-                 | | | | | |
-                 +-+-+-+-+-+
+    .. figure:: ./_static/HandshakedFifo.png
 
     .. hwt-autodoc:: _example_HandshakedFifo
     """

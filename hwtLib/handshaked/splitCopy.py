@@ -15,21 +15,9 @@ class HsSplitCopy(HandshakedCompBase):
 
     :note: combinational
 
-    .. aafig::
-                                     +---------+
-                              +------> clone0  |
-                              |      +---------+
-                      +-------+
-         input stream |       |      +---------+
-        +-------------> copy  +------> clone1  |
-                      |       |      +---------+
-                      +-------+
-                              |      +---------+
-                              +------> clone2  |
-                                     +---------+
-    
+    .. figure:: ./_static/HsSplitCopy.png
+
     .. hwt-autodoc:: _example_HsSplitCopy
-    
     """
     def _config(self):
         self.OUTPUTS = Param(2)

@@ -16,17 +16,7 @@ class HsSplitSelect(HandshakedCompBase):
     Split data from input interface to N output interfaces based on explicit
     output index provided by select interface.
 
-    .. aafig::
-                 *----+ dataOut[0]
-                *     +-------->
-         dataIn |     |
-        +------->     | dataOut[1]
-                |     +-------->
-                *     |
-                 *-^--+
-                   |
-                   +
-                 select
+    .. figure:: ./_static/HsSplitSelect.png
 
     .. hwt-autodoc:: _example_HsSplitSelect
     """
