@@ -1,7 +1,9 @@
 from copy import copy
-from typing import Optional, List, Callable, Generator, Tuple
+from typing import Optional, List, Callable, Generator, Tuple, Union
 
 from hwt.hdl.frameTmpl import FrameTmpl
+from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
+from hwt.hdl.transPart import TransPart
 from hwt.hdl.transTmpl import TransTmpl
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.hdlType import HdlType
@@ -15,6 +17,7 @@ class TemplateConfigured():
     Class with functions for extracting metadata from frame template/HdlType.
     Used for resolving of data mapping between abstract type and physical interface.
     """
+
     def __init__(self,
                  structT: HdlType,
                  tmpl: Optional[TransTmpl]=None,
@@ -45,12 +48,12 @@ class TemplateConfigured():
             self._tmpl = TransTmpl(self._structT)
 
         if self._frames is None:
-            DW = int(self.DATA_WIDTH)
-            frames = FrameTmpl.framesFromTransTmpl(self._tmpl,
-                                                   DW)
+            frames = FrameTmpl.framesFromTransTmpl(
+                self._tmpl,
+                self.DATA_WIDTH)
             self._frames = list(frames)
 
-    def chainFrameWords(self):
+    def chainFrameWords(self) -> Generator[Tuple[int, List[Union[TransPart, ChoicesOfFrameParts]], bool], None, None]:
         offset = 0
         for f in self._frames:
             wi = 0
@@ -60,7 +63,7 @@ class TemplateConfigured():
 
 
 def HdlType_separate(t: HdlType, do_separate_query: Callable[[HdlType], bool])\
-        -> Generator[Tuple[bool, HdlType], None, None]:
+        ->Generator[Tuple[bool, HdlType], None, None]:
     """
     Split HStruct type hierachy on the specified fields to multiple
     type definitions.

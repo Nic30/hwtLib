@@ -21,7 +21,7 @@ class Axi_id(Interface):
 class Axi_user(Interface):
 
     def _config(self):
-        self.USER_WIDTH = Param(0)
+        self.USER_WIDTH:int = Param(0)
 
     def _declr(self):
         if self.USER_WIDTH:
@@ -32,6 +32,7 @@ class Axi_strb(Interface):
     """
     .. hwt-autodoc::
     """
+
     def _config(self):
         self.DATA_WIDTH = Param(64)
 
@@ -50,6 +51,7 @@ class Axi_hs(HandshakeSync):
 
     .. hwt-autodoc::
     """
+
     def _declr(self):
         self.ready = Signal(masterDir=DIRECTION.IN)
         self.valid = Signal()

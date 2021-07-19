@@ -1,4 +1,4 @@
-from typing import Union, Optional
+from typing import Union, Optional, Tuple, List
 
 from hwt.code import If, Switch, Concat
 from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
@@ -61,7 +61,7 @@ class AxiS_frameParserFieldConnector():
 
     def connectParts(self,
                      allOutNodes: ListOfOutNodeInfos,
-                     words,
+                     words: Tuple[int, List[Union[TransPart, ChoicesOfFrameParts]], bool],
                      wordIndex: Optional[RtlSignal]):
         """
         Create main datamux from dataIn to dataOut

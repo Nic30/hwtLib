@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import unittest
-
 from hwt.hdl.constants import Time
 from hwt.pyUtils.arrayQuery import take, iter_with_last
 from hwt.simulator.simTestCase import SimTestCase, \
@@ -266,6 +264,8 @@ class AxiS_fifoMeasuringTC(SimTestCase):
 
 
 if __name__ == "__main__":
+    import unittest
+
     suite = unittest.TestSuite()
     # suite.addTest(AxiS_fifoMeasuringTC('test_singleWordPacket'))
     suite.addTest(unittest.makeSuite(AxiS_fifoMeasuringTC))

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Optional, List, Union
+from typing import Optional, List, Union, Tuple
 
 from hwt.code import If, Or
 from hwt.code_utils import connect_optional, rename_signal
@@ -22,6 +22,7 @@ from hwt.math import log2ceil
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.abstract.frame_utils.alignment_utils import next_frame_offsets
 from hwtLib.abstract.template_configured import TemplateConfigured, \
     HdlType_separate
@@ -33,7 +34,8 @@ from hwtLib.amba.axis_comp.frame_parser.field_connector import AxiS_frameParserF
 from hwtLib.amba.axis_comp.frame_parser.footer_split import AxiS_footerSplit
 from hwtLib.amba.axis_comp.frame_parser.word_factory import WordFactory
 from hwtLib.handshaked.streamNode import StreamNode
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.hdl.transPart import TransPart
+from hwt.hdl.frameTmplUtils import ChoicesOfFrameParts
 
 
 def is_non_const_stream(t: HdlType):
@@ -249,7 +251,7 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                 with self._paramsShared(exclude=({"OVERFLOW_SUPPORT", "T"}, {})):
                     self.children = children
 
-    def parser_fsm(self, words):
+    def parser_fsm(self, words: List[Tuple[int, List[Union[TransPart, ChoicesOfFrameParts]], bool]]):
         din = self.dataIn
         maxWordIndex = words[-1][0]
 
