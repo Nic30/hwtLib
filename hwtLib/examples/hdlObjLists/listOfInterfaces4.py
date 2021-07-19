@@ -12,7 +12,6 @@ from hwt.synthesizer.typePath import TypePath
 from hwt.synthesizer.unit import Unit
 from hwtLib.types.ctypes import uint8_t
 
-
 struct0 = HStruct(
     (uint8_t, "f0"),
     (HStruct(
@@ -90,6 +89,7 @@ class ListOfInterfacesSample4b(ListOfInterfacesSample4):
     """
     .. hwt-autodoc::
     """
+
     @staticmethod
     def shouldEnterFn(field_path):
         return True, True
@@ -99,6 +99,7 @@ class ListOfInterfacesSample4c(ListOfInterfacesSample4b):
     """
     .. hwt-autodoc::
     """
+
     def _impl(self):
         for a, b in zip(self.a, self.b):
             b(a)
@@ -108,6 +109,7 @@ class ListOfInterfacesSample4d(ListOfInterfacesSample4b):
     """
     .. hwt-autodoc::
     """
+
     def _impl(self):
         for a, b in zip(self.a, self.b):
             b.f0(a.f0)
@@ -117,6 +119,10 @@ class ListOfInterfacesSample4d(ListOfInterfacesSample4b):
 
 class ListOfInterfacesSample4TC(SimTestCase):
 
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def test_ListOfInterfacesSample4b_intfIterations(self):
         u = ListOfInterfacesSample4d()
         self.compileSimAndStart(u)
@@ -125,7 +131,7 @@ class ListOfInterfacesSample4TC(SimTestCase):
         for a in u.a:
             for _ in a.arr0:
                 i += 1
-        self.assertValEqual(i, 3*4)
+        self.assertValEqual(i, 3 * 4)
 
         i = 0
         for intf in u.a:

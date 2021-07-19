@@ -5,7 +5,6 @@ from hwt.hdl.operatorDefs import AllOps
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX, \
     ResourceFF
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import valuesToInts
 from hwt.synthesizer.utils import synthesised
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
@@ -26,7 +25,7 @@ def agInts(interface):
     return valuesToInts(interface._ag.data)
 
 
-class IfStmTC(SimTestCase, BaseSerializationTC):
+class IfStmTC(BaseSerializationTC):
     __FILE__ = __file__
 
     def test_SimpleIfStatement(self):

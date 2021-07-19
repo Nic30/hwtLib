@@ -40,6 +40,10 @@ C_240B = (b"\x00\x00\x00\x00"
 
 class CrcTC(SimTestCase):
 
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def setUpCrc(self, poly, dataWidth=None,
                  refin=None, refout=None,
                  initval=None, finxor=None,

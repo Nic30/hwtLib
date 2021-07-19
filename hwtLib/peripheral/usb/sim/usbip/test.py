@@ -19,6 +19,10 @@ from hwtSimApi.triggers import Timer, StopSimumulation
 
 class UsbipTC(SimTestCase):
 
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def test_cdc_vcp(self):
         u = Usb2CdcVcp()
         u.PRE_NEGOTIATED_TO = USB_VER.USB2_0  # to avoid waiting at the begin of sim

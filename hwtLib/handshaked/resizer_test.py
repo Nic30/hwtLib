@@ -12,9 +12,15 @@ from pyMathBitPrecise.bit_utils import mask
 
 class HsResizerTC(SimTestCase):
 
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def test_1to1(self):
+
         def set_dw(intf):
             intf.DATA_WIDTH = 32
+
         u = HsResizer(Handshaked, [1, 1],
                       set_dw,
                       set_dw)
@@ -32,11 +38,12 @@ class HsResizerTC(SimTestCase):
         self.assertValSequenceEqual(u.dataOut._ag.data, d)
 
     def test_1to3(self):
+
         def set_dw_in(intf):
             intf.DATA_WIDTH = 32
 
         def set_dw_out(intf):
-            intf.DATA_WIDTH = 3*32
+            intf.DATA_WIDTH = 3 * 32
 
         u = HsResizer(Handshaked, [1, 3],
                       set_dw_in,
@@ -60,6 +67,7 @@ class HsResizerTC(SimTestCase):
         self.assertValSequenceEqual(u.dataOut._ag.data, expected)
 
     def test_3to1(self):
+
         def set_dw_in(intf):
             intf.DATA_WIDTH = 3 * 32
 

@@ -12,6 +12,12 @@ from hwtSimApi.constants import CLK_PERIOD
 # of unit test framework integrated in python itself
 class SimpleSubunitTC(SimTestCase):
 
+    def tearDown(self):
+        # common cleanup, not necessary but should be used when compileSimAndStart is used explicitely
+        # because otherwise the old simulation is restarted for a next test
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     # if method name starts with "test" unittest framework know that
     # this method is test
     def test_simple(self):

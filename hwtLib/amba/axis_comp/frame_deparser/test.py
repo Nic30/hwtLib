@@ -24,6 +24,10 @@ from pyMathBitPrecise.bit_utils import mask
 
 class AxiS_frameDeparser_TC(SimTestCase):
 
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def instantiate(self, structT,
                     DATA_WIDTH=64,
                     maxFrameLen=inf,
@@ -521,9 +525,9 @@ class AxiS_frameDeparser_TC(SimTestCase):
                                 T=struct2xStream8_0B,
                              sizes=[
                                  (3, 0), (0, 0),
-                                 #(2, 2), (0, 2), (1, 2), (0, 1),
-                                 #(1, 3), (1, 0), (2, 1), (2, 0),
-                                 #(2, 2), (3, 0), (0, 0), (1, 1)
+                                 # (2, 2), (0, 2), (1, 2), (0, 1),
+                                 # (1, 3), (1, 0), (2, 1), (2, 0),
+                                 # (2, 2), (3, 0), (0, 0), (1, 1)
                                  ]):
         self.test_struct2xStream8(randomized=randomized, T=T, sizes=sizes)
 

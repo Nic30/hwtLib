@@ -94,6 +94,10 @@ class _example_AxiS_strFormat_3x_str(_example_AxiS_strFormat_1x_str):
 
 class AxiS_strFormat_TC(SimTestCase):
 
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def test_args_numbers(self):
         u = self.compileSimAndStart(_example_AxiS_strFormat_args_numbers())
         self.runSim(200 * CLK_PERIOD)
@@ -143,7 +147,7 @@ class AxiS_strFormat_TC(SimTestCase):
         self.randomize(u.str1)
         self.randomize(u.str2)
         strings = [("test0", "str1", "str3"),
-                   ("x", "y", "z" ),
+                   ("x", "y", "z"),
                    ("1234567890", "abc", "\t\n")]
         for s0, s1, s2 in strings:
             axis_send_bytes(u.str0, s0.encode("utf-8"))

@@ -29,6 +29,10 @@ def crcToBf(crc):
 # http://www.sunshine2k.de/coding/javascript/crc/crc_js.html
 class CrcCombTC(SimTestCase):
 
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def setUpCrc(self, poly, dataWidth=None,
                  refin=None,
                  refout=None,

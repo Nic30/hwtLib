@@ -8,12 +8,12 @@ from hwt.serializer.verilog import VerilogSerializer
 from hwt.serializer.vhdl import Vhdl2008Serializer
 from hwt.synthesizer.unit import Unit
 from hwt.synthesizer.utils import to_rtl_str
-
+from hwt.simulator.simTestCase import SimTestCase
 
 rmWhitespaces = re.compile(r'\s+', re.MULTILINE)
 
 
-class BaseSerializationTC(unittest.TestCase):
+class BaseSerializationTC(SimTestCase):
     # file should be set on child class because we want the pats in tests
     # to be raltive to a current test case
     __FILE__ = None
@@ -23,6 +23,10 @@ class BaseSerializationTC(unittest.TestCase):
         "cpp": SystemCSerializer,
         "py": HwtSerializer,
     }
+
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
 
     def strStructureCmp(self, cont, tmpl):
         if not isinstance(cont, str):

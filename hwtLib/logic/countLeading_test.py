@@ -5,6 +5,10 @@ from hwtSimApi.constants import CLK_PERIOD
 
 class CountLeadingTC(SimTestCase):
 
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def test_CountLeadingZeros(self):
         u = CountLeadingZeros()
         u.DATA_WIDTH = 4

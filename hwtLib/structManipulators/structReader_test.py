@@ -49,6 +49,10 @@ def s0RandVal(tc):
 
 class StructReaderTC(SimTestCase):
 
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def _test_s0(self, u):
         DW = 64
         N = 3
@@ -104,7 +108,7 @@ class StructReaderTC(SimTestCase):
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(StructReaderTC('test_multiframe'))
+    # suite.addTest(StructReaderTC('test_multiframe'))
     suite.addTest(unittest.makeSuite(StructReaderTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

@@ -18,6 +18,7 @@ class ListOfInterfacesSample3(Unit):
 
     .. hwt-autodoc::
     """
+
     def _config(self):
         self.SIZE = 3
         Axi4Lite._config(self)
@@ -42,12 +43,17 @@ class ListOfInterfacesSample3b(ListOfInterfacesSample3):
 
     .. hwt-autodoc::
     """
+
     def _impl(self):
         for i in range(int(self.SIZE)):
             self.b[i](self.a[i])
 
 
 class ListOfInterfacesSample3TC(SimTestCase):
+
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
 
     def test_simplePass(self):
         u = ListOfInterfacesSample3()

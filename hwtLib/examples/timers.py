@@ -14,6 +14,7 @@ class TimerInfoTest(Unit):
     """
     .. hwt-autodoc::
     """
+
     def _declr(self):
         addClkRstn(self)
 
@@ -29,7 +30,7 @@ class TimerInfoTest(Unit):
         self.tick384 = Signal()._m()
 
     def _impl(self):
-        tick1, tick2, tick16, tick17, tick34, tick256, tick384 =\
+        tick1, tick2, tick16, tick17, tick34, tick256, tick384 = \
             ClkBuilder(self, self.clk)\
             .timers([1, 2, 16, 17, 34, 256, 384])
         self.tick1(tick1)
@@ -75,6 +76,7 @@ class DynamicCounterInstancesExample(Unit):
     """
     .. hwt-autodoc::
     """
+
     def _declr(self):
         addClkRstn(self)
         self.period = VectSignal(10)
@@ -91,6 +93,11 @@ class DynamicCounterInstancesExample(Unit):
 
 
 class TimerTC(SimTestCase):
+
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def test_basic(self):
         u = TimerTestUnit()
         self.compileSimAndStart(u)

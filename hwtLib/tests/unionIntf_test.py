@@ -14,7 +14,6 @@ from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.interfaceLevel.emptyUnit import EmptyUnit
 from hwtLib.types.ctypes import uint16_t, uint8_t, int16_t
 
-
 union0 = HUnion(
         (uint16_t, "b16"),
         (HStruct(
@@ -67,10 +66,14 @@ class SimpleUnionMaster(SimpleUnionSlave):
 
 class UnionIntfTC(SimTestCase):
 
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def checkIntf(self, u):
         d = u.a._fieldsToInterfaces
 
-        self.assertIs(d[("b16", )], u.a.b16)
+        self.assertIs(d[("b16",)], u.a.b16)
         self.assertIs(d[("struct16",)], u.a.struct16)
         self.assertIs(d[("struct16", "b16to8")],
                       u.a.struct16.b16to8)

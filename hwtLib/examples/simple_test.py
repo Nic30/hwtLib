@@ -12,6 +12,12 @@ from hwtLib.examples.simple import SimpleUnit
 # which is class of unit test framework integrated in python itself
 class SimpleTC(SimTestCase):
 
+    def tearDown(self):
+        # common cleanup, not necessary but should be used when compileSimAndStart is used explicitely
+        # because otherwise the old simulation is restarted for a next test
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     # if method name starts with "test" unittest framework
     # know that this method is test
     def test_simple(self):
@@ -35,7 +41,7 @@ class SimpleTC(SimTestCase):
         # and drivers of interfaces stored in "procs",
         # we save dum of value changes into file "tmp/simple.vcd"
         # (which is default) and we let simulation run for 100 ns
-        self.runSim(100*Time.ns)
+        self.runSim(100 * Time.ns)
 
         # now we use part of unittest framework to check results
         # use assertValSequenceEqual which sill automatically convert

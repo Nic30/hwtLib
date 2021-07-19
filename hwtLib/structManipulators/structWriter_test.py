@@ -12,6 +12,11 @@ from hwtLib.types.ctypes import uint64_t
 
 
 class StructWriter_TC(SimTestCase):
+
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def buildEnv(self, structT):
         u = self.u = StructWriter(structT)
         u.DATA_WIDTH = 64
@@ -155,6 +160,7 @@ class StructWriter_TC(SimTestCase):
         self.assertValEqual(s_got.field0, MAGIC)
         self.assertValEqual(s_got.field1, MAGIC + 1)
         self.assertValEqual(s_got.field2, MAGIC + 2)
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

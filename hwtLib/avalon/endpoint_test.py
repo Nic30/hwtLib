@@ -30,6 +30,10 @@ class AvalonMmEndpointTC(SimTestCase):
     FIELD_ADDR = [0x0, 0x4]
     CLK = CLK_PERIOD
 
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def arTrans(self, addr, burstsize=1):
         return (READ, addr, burstsize, None, None)
 

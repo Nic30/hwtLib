@@ -12,18 +12,22 @@ from hwtLib.cesnet.mi32.sim_ram import Mi32SimRam
 class Mi32InterconnectMatrixTC(SimTestCase):
     CLK = 10 * Time.ns
 
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def mySetUp(self):
         SimTestCase.setUp(self)
 
         AUTO = AUTO_ADDR
 
         u = Mi32InterconnectMatrix()
-        u.MASTERS = (ALL, )
+        u.MASTERS = (ALL,)
         u.SLAVES = (
             (0x0000, 0x0100),
             (0x0100, 0x0100),
-            (AUTO,   0x0100),
-            (AUTO,   0x1000),
+            (AUTO, 0x0100),
+            (AUTO, 0x1000),
         )
         self.DW = 32
         self.wordSize = self.DW // 8

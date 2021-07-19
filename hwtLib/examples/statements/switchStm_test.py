@@ -4,13 +4,12 @@
 from hwt.hdl.constants import Time
 from hwt.serializer.resourceAnalyzer.analyzer import ResourceAnalyzer
 from hwt.serializer.resourceAnalyzer.resourceTypes import ResourceMUX
-from hwt.simulator.simTestCase import SimTestCase
 from hwt.synthesizer.utils import synthesised
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.statements.switchStm import SwitchStmUnit
 
 
-class SwitchStmTC(SimTestCase, BaseSerializationTC):
+class SwitchStmTC(BaseSerializationTC):
     __FILE__ = __file__
 
     def test_allCases(self):

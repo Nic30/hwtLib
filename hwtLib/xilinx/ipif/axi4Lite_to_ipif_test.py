@@ -12,8 +12,9 @@ from hwtSimApi.triggers import Timer
 class Axi4Lite_to_IpifTC(SimTestCase):
     CLK = CLK_PERIOD
 
-    def setUp(self):
-        pass
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
 
     def mySetUp(self, read_latency=0, write_latency=0):
         u = self.u = Axi4Lite_to_Ipif()
@@ -46,7 +47,7 @@ class Axi4Lite_to_IpifTC(SimTestCase):
 
         axi.ar._ag.data.extend([
             (0, PROT_DEFAULT),
-            (4, PROT_DEFAULT), 
+            (4, PROT_DEFAULT),
             (8, PROT_DEFAULT),
             (16, PROT_DEFAULT)
         ])
@@ -111,6 +112,7 @@ class Axi4Lite_to_IpifTC(SimTestCase):
             axi.aw._ag.data.append(((i + 4) * 4, PROT_DEFAULT))
 
         if data_delay > 0:
+
             def late_add_data(sim):
                 yield Timer(data_delay)
                 axi.w._ag.data.extend([

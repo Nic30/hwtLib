@@ -69,6 +69,7 @@ class ListOfInterfacesSample0ConcatOnly(Unit):
 
     .. hwt-autodoc::
     """
+
     def _config(self):
         self.DATA_WIDTH = Param(8)
         self.LEN = 3
@@ -88,6 +89,10 @@ class ListOfInterfacesSample0ConcatOnly(Unit):
 
 
 class ListOfInterfacesSample0TC(SimTestCase):
+
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
 
     def test_ListOfInterfacesSample0_simplePass(self):
         u = self.compileSimAndStart(ListOfInterfacesSample0())

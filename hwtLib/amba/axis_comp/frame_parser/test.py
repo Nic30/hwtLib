@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from collections import deque
 from math import inf
 import os
 
@@ -37,9 +38,9 @@ testMatrix = TestMatrix(TEST_DW, RAND_FLAGS)
 
 class AxiS_frameParserTC(SimTestCase):
 
-    def setDown(self):
-        self.rtl_simulator_cls = None
-        super(AxiS_frameParserTC, self).setDown()
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
 
     def randomizeIntf(self, intf):
         if isinstance(intf, StructIntf):
@@ -77,7 +78,7 @@ class AxiS_frameParserTC(SimTestCase):
         t = structManyInts
         for DW in TEST_DW:
             d1 = t.from_py(ref0_structManyInts)
-            f = list(packAxiSFrame(DW, d1))
+            f = deque(packAxiSFrame(DW, d1))
             d2 = unpackAxiSFrame(t, f, lambda x: x[0])
 
             for k in ref0_structManyInts.keys():

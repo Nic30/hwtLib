@@ -1,4 +1,6 @@
-from hwt.simulator.simTestCase import SimTestCase
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.statements.codeBlockStm import BlockStm_complete_override0, \
     BlockStm_complete_override1, BlockStm_complete_override2, \
@@ -6,7 +8,7 @@ from hwtLib.examples.statements.codeBlockStm import BlockStm_complete_override0,
 from hwtSimApi.constants import CLK_PERIOD
 
 
-class CodeBlokStmTC(SimTestCase, BaseSerializationTC):
+class CodeBlokStmTC(BaseSerializationTC):
     __FILE__ = __file__
 
     def test_BlockStm_complete_override0(self):

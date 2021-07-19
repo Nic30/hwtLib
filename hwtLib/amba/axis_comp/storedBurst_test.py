@@ -11,6 +11,10 @@ from pyMathBitPrecise.bit_utils import mask
 
 class AxiSStoredBurstTC(SimTestCase):
 
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def test_simple(self):
         DATA = [1, 2, 3, 4, 5, 6, 7, 8]
         u = AxiSStoredBurst()

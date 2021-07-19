@@ -14,7 +14,6 @@ from hwtLib.amba.constants import RESP_OKAY, RESP_SLVERR
 from hwtLib.types.ctypes import uint32_t
 from pyMathBitPrecise.bit_utils import mask
 
-
 structTwoFields = HStruct(
     (uint32_t, "field0"),
     (uint32_t, "field1")
@@ -66,6 +65,10 @@ class AxiLiteEndpointTC(SimTestCase):
     STRUCT_TEMPLATE = structTwoFields
     FIELD_ADDR = [0x0, 0x4]
     CLK = 10 * Time.ns
+
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
 
     def mkRegisterMap(self, u):
         self.addrProbe = AddressSpaceProbe(u.bus, addrGetter)

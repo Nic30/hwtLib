@@ -10,11 +10,12 @@ from hwtLib.amba.axi4 import Axi4
 
 
 class AxiTestJunction(Unit):
+
     def __init__(self, axiCls):
         self.axiCls = axiCls
         Unit.__init__(self)
 
-    def _config(self)->None:
+    def _config(self) -> None:
         self.axiCls._config(self)
 
     def _declr(self):
@@ -31,6 +32,11 @@ class Axi_ag_TC(SimTestCase):
     """
     Simple test of axi3/4 interfaces and agents for them
     """
+
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def randAxi4A(self):
         """get random address transaction"""
         r = self._rand.getrandbits

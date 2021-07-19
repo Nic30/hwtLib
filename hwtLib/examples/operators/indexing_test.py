@@ -16,6 +16,10 @@ from hwtSimApi.constants import CLK_PERIOD
 
 class IndexingTC(SimTestCase):
 
+    def tearDown(self):
+        self.rmSim()
+        SimTestCase.tearDown(self)
+
     def test_split(self):
         u = SimpleIndexingSplit()
         self.compileSimAndStart(u)
