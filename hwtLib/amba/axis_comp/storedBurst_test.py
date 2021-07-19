@@ -15,6 +15,7 @@ class AxiSStoredBurstTC(SimTestCase):
         DATA = [1, 2, 3, 4, 5, 6, 7, 8]
         u = AxiSStoredBurst()
         u.DATA = DATA
+        u.USE_STRB = True
         u.REPEAT = False
         self.compileSimAndStart(u)
         self.randomize(u.dataOut)
@@ -28,6 +29,7 @@ class AxiSStoredBurstTC(SimTestCase):
         DATA = [1, 2, 3, 4, 5, 6, 7, 8]
         u = AxiSStoredBurst()
         u.DATA = DATA
+        u.USE_STRB = True
         u.REPEAT = True
         self.compileSimAndStart(u)
         self.randomize(u.dataOut)
