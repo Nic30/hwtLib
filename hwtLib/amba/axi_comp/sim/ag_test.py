@@ -97,6 +97,7 @@ class Axi_ag_TC(SimTestCase):
 
     def test_axi4_ag(self):
         """Test if axi4 agent can transmit and receive data on all channels"""
+        assert self.rtl_simulator_cls is None, "Should have been removed in tearDown()"
         u = AxiTestJunction(Axi4)
         self.compileSimAndStart(u)
         N = 10
@@ -128,6 +129,7 @@ class Axi_ag_TC(SimTestCase):
 
     def test_axi3_withAddrUser_ag(self):
         """Test if axi3 agent can transmit and receive data on all channels"""
+        assert self.rtl_simulator_cls is None, "Should have been removed in tearDown()"
         u = AxiTestJunction(Axi3)
         u.ADDR_USER_WIDTH = 10
         self.compileSimAndStart(u)
