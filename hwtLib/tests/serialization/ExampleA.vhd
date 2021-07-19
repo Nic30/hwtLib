@@ -27,8 +27,8 @@ END ENTITY;
 ARCHITECTURE rtl OF ParamsUniqUnit IS
 BEGIN
     a_0 <= '1';
-    ASSERT A = 0 REPORT "Generated only for this value" SEVERITY error;
-    ASSERT B = 1 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT A = 0 REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT B = 1 REPORT "Generated only for this value" SEVERITY failure;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -46,8 +46,8 @@ END ENTITY;
 ARCHITECTURE rtl OF ParamsUniqUnit_0 IS
 BEGIN
     a_0 <= '1';
-    ASSERT A = 0 REPORT "Generated only for this value" SEVERITY error;
-    ASSERT B = 12 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT A = 0 REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT B = 12 REPORT "Generated only for this value" SEVERITY failure;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;

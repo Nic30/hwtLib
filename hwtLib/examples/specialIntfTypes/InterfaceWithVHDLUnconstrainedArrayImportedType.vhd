@@ -18,5 +18,5 @@ BEGIN
     dout_0 <= din(0);
     dout_1 <= din(1);
     dout_2 <= din(2);
-    ASSERT SIZE_X = 3 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT SIZE_X = 3 REPORT "Generated only for this value" SEVERITY failure;
 END ARCHITECTURE;

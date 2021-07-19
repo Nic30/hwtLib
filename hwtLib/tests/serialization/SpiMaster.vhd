@@ -20,7 +20,7 @@ END ENTITY;
 ARCHITECTURE rtl OF BinToOneHot IS
 BEGIN
     dout(0) <= en;
-    ASSERT DATA_WIDTH = 1 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT DATA_WIDTH = 1 REPORT "Generated only for this value" SEVERITY failure;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -229,13 +229,13 @@ BEGIN
             rxReg <= rxReg_next;
         END IF;
     END PROCESS;
-    ASSERT FREQ = 100000000 REPORT "Generated only for this value" SEVERITY error;
-    ASSERT HAS_MISO = TRUE REPORT "Generated only for this value" SEVERITY error;
-    ASSERT HAS_MOSI = TRUE REPORT "Generated only for this value" SEVERITY error;
-    ASSERT HAS_RX = TRUE REPORT "Generated only for this value" SEVERITY error;
-    ASSERT HAS_TX = TRUE REPORT "Generated only for this value" SEVERITY error;
-    ASSERT SLAVE_CNT = 1 REPORT "Generated only for this value" SEVERITY error;
-    ASSERT SPI_DATA_WIDTH = 1 REPORT "Generated only for this value" SEVERITY error;
-    ASSERT SPI_FREQ_PESCALER = 32 REPORT "Generated only for this value" SEVERITY error;
-    ASSERT SS_WAIT_CLK_TICKS = 4 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT FREQ = 100000000 REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT HAS_MISO = TRUE REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT HAS_MOSI = TRUE REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT HAS_RX = TRUE REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT HAS_TX = TRUE REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT SLAVE_CNT = 1 REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT SPI_DATA_WIDTH = 1 REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT SPI_FREQ_PESCALER = 32 REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT SS_WAIT_CLK_TICKS = 4 REPORT "Generated only for this value" SEVERITY failure;
 END ARCHITECTURE;

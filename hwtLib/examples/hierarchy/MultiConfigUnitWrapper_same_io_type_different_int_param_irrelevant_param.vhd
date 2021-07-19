@@ -15,8 +15,8 @@ END ENTITY;
 ARCHITECTURE rtl OF SimpleUnitWithParamWithIrrelevantParam_0 IS
 BEGIN
     b <= a;
-    ASSERT DATA_WIDTH = 2 REPORT "Generated only for this value" SEVERITY error;
-    ASSERT IRELEVANT_PARAM = 10 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT DATA_WIDTH = 2 REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT IRELEVANT_PARAM = 10 REPORT "Generated only for this value" SEVERITY failure;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -35,8 +35,8 @@ END ENTITY;
 ARCHITECTURE rtl OF SimpleUnitWithParamWithIrrelevantParam_1 IS
 BEGIN
     b <= a;
-    ASSERT DATA_WIDTH = 3 REPORT "Generated only for this value" SEVERITY error;
-    ASSERT IRELEVANT_PARAM = 10 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT DATA_WIDTH = 3 REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT IRELEVANT_PARAM = 10 REPORT "Generated only for this value" SEVERITY failure;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -91,6 +91,6 @@ BEGIN
             b => b
         );
     END GENERATE;
-    ASSERT DATA_WIDTH = 2 REPORT "Generated only for this value" SEVERITY error;
-    ASSERT IRELEVANT_PARAM = 10 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT DATA_WIDTH = 2 REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT IRELEVANT_PARAM = 10 REPORT "Generated only for this value" SEVERITY failure;
 END ARCHITECTURE;

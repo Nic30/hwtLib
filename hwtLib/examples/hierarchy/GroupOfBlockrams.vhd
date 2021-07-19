@@ -65,12 +65,12 @@ BEGIN
             END IF;
         END IF;
     END PROCESS;
-    ASSERT ADDR_WIDTH = 8 REPORT "Generated only for this value" SEVERITY error;
-    ASSERT DATA_WIDTH = 64 REPORT "Generated only for this value" SEVERITY error;
-    ASSERT HAS_BE = FALSE REPORT "Generated only for this value" SEVERITY error;
-    ASSERT INIT_DATA = "None" REPORT "Generated only for this value" SEVERITY error;
-    ASSERT MAX_BLOCK_DATA_WIDTH = "None" REPORT "Generated only for this value" SEVERITY error;
-    ASSERT PORT_CNT = 2 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT ADDR_WIDTH = 8 REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT DATA_WIDTH = 64 REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT HAS_BE = FALSE REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT INIT_DATA = "None" REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT MAX_BLOCK_DATA_WIDTH = "None" REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT PORT_CNT = 2 REPORT "Generated only for this value" SEVERITY failure;
 END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
@@ -224,6 +224,6 @@ BEGIN
     sig_bramW_port_1_din <= in_w_b;
     sig_bramW_port_1_en <= en;
     sig_bramW_port_1_we <= we;
-    ASSERT ADDR_WIDTH = 8 REPORT "Generated only for this value" SEVERITY error;
-    ASSERT DATA_WIDTH = 64 REPORT "Generated only for this value" SEVERITY error;
+    ASSERT ADDR_WIDTH = 8 REPORT "Generated only for this value" SEVERITY failure;
+    ASSERT DATA_WIDTH = 64 REPORT "Generated only for this value" SEVERITY failure;
 END ARCHITECTURE;
