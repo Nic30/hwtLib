@@ -1,5 +1,8 @@
-from typing import List, Tuple, Union
+from math import ceil
+from typing import List, Tuple, Union, Deque
 
+from hwt.hdl.types.bitsVal import BitsVal
+from hwt.hdl.types.hdlType import HdlType
 from hwt.hdl.types.utils import HdlValue_unpack
 from hwt.interfaces.agents.handshaked import UniversalHandshakedAgent
 from hwt.interfaces.std import Signal, VectSignal
@@ -51,13 +54,13 @@ class AxiStream(Axi_hs, Axi_id, Axi_user, Axi_strb):
     """
 
     def _config(self):
-        self.IS_BIGENDIAN = Param(False)
-        self.USE_STRB = Param(False)
-        self.USE_KEEP = Param(False)
+        self.IS_BIGENDIAN:bool = Param(False)
+        self.USE_STRB:bool = Param(False)
+        self.USE_KEEP:bool = Param(False)
 
         Axi_id._config(self)
-        self.DEST_WIDTH = Param(0)
-        self.DATA_WIDTH = Param(64)
+        self.DEST_WIDTH:int = Param(0)
+        self.DATA_WIDTH:int = Param(64)
         Axi_user._config(self)
 
     def _declr(self):
@@ -136,7 +139,7 @@ def packAxiSFrame(dataWidth, structVal, withStrb=False):
             yield (d, last)
 
 
-def unpackAxiSFrame(structT, frameData, getDataFn=None, dataWidth=None):
+def unpackAxiSFrame(structT: HdlType, frameData: Deque[Union[BitsVal, int]], getDataFn=None, dataWidth=None):
     """
     opposite of packAxiSFrame
     """
@@ -147,7 +150,14 @@ def unpackAxiSFrame(structT, frameData, getDataFn=None, dataWidth=None):
 
         getDataFn = _getDataFn
 
-    return HdlValue_unpack(structT, frameData, getDataFn, dataWidth)
+    res = HdlValue_unpack(structT, frameData, getDataFn, dataWidth)
+    if dataWidth is None:
+        dataWidth = frameData[0][0]._dtype.bit_length()
+
+    for _ in range(ceil(structT.bit_length() / dataWidth)):
+        frameData.popleft()
+
+    return res
 
 
 def _axis_recieve_bytes(ag_data, D_B, use_keep, use_id) -> Tuple[int, List[int]]:
