@@ -3,7 +3,7 @@ from typing import List, Tuple, Union, Deque
 
 from hwt.hdl.types.bitsVal import BitsVal
 from hwt.hdl.types.hdlType import HdlType
-from hwt.hdl.types.utils import HdlValue_unpack
+from hwt.hdl.types.utils import HValue_from_words
 from hwt.interfaces.agents.handshaked import UniversalHandshakedAgent
 from hwt.interfaces.std import Signal, VectSignal
 from hwt.pyUtils.arrayQuery import iter_with_last
@@ -150,7 +150,7 @@ def unpackAxiSFrame(structT: HdlType, frameData: Deque[Union[BitsVal, int]], get
 
         getDataFn = _getDataFn
 
-    res = HdlValue_unpack(structT, frameData, getDataFn, dataWidth)
+    res = HValue_from_words(structT, frameData, getDataFn, dataWidth)
     if dataWidth is None:
         dataWidth = frameData[0][0]._dtype.bit_length()
 

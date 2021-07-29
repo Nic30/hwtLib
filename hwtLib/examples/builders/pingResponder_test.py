@@ -3,7 +3,7 @@
 
 import socket
 
-from hwt.hdl.types.utils import HdlValue_unpack
+from hwt.hdl.types.utils import HValue_from_words
 from hwt.math import sizeof
 from hwt.simulator.simTestCase import SimTestCase
 from hwt.simulator.utils import valToInt
@@ -136,7 +136,7 @@ class PingResponderTC(SimTestCase):
         asBytes = iterBits(f, bitsInOne=8, skipPadding=False)
         asBytes = [valToInt(x) for x in asBytes]
 
-        f_out = HdlValue_unpack(echoFrame_t, asBytes, dataWidth=8)
+        f_out = HValue_from_words(echoFrame_t, asBytes, dataWidth=8)
 
         self.assertEqual(f, f_out)
 
@@ -145,7 +145,7 @@ class PingResponderTC(SimTestCase):
         asBytes = iterBits(f, bitsInOne=8, skipPadding=False)
         asBytes = [valToInt(x) for x in asBytes]
 
-        f_out = HdlValue_unpack(echoFrame_t, asBytes, dataWidth=8)
+        f_out = HValue_from_words(echoFrame_t, asBytes, dataWidth=8)
 
         self.assertEqual(_f, f_out)
 
@@ -167,7 +167,7 @@ class PingResponderTC(SimTestCase):
         # print("")
         # print("f", f)
         # print("res", res)
-        # print("model_res", HdlValue_unpack(echoFrame_t, model_res, dataWidth=8))
+        # print("model_res", HValue_from_words(echoFrame_t, model_res, dataWidth=8))
 
         self.assertEqual(_res, model_res)
 
