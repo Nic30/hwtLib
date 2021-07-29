@@ -17,7 +17,7 @@ from hwtLib.types.net.ip import IPv4, IHL_DEFAULT, IPv4Header_t, IP_PROTOCOL
 from hwtSimApi.constants import CLK_PERIOD
 
 
-def carry_around_add(a, b):
+def add_16b(a, b):
     c = a + b
     return (c & 0xffff) + (c >> 16)
 
@@ -26,7 +26,7 @@ def checksum(msg):
     s = 0
     for i in range(0, len(msg), 2):
         w = msg[i] + (msg[i + 1] << 8)
-        s = carry_around_add(s, w)
+        s = add_16b(s, w)
 
     return ~s & 0xffff
 
