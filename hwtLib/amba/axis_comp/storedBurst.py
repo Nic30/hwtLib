@@ -28,8 +28,8 @@ class AxiSStoredBurst(Unit):
 
     def _config(self):
         AxiStream._config(self)
-        self.REPEAT:bool = Param(False)
-        self.DATA:Union[bytes, Tuple[Union[int, BitsVal]]] = Param("Hello world".encode())
+        self.REPEAT: bool = Param(False)
+        self.DATA: Union[bytes, Tuple[Union[int, BitsVal, None], ...]] = Param("Hello world!!!!!".encode())
 
     def dataRd(self):
         return self.dataOut.ready
@@ -60,7 +60,7 @@ class AxiSStoredBurst(Unit):
             DATA_SIZE = len(DATA)
             if not self.USE_STRB and not self.USE_KEEP:
                 assert DATA_SIZE % (self.DATA_WIDTH // 8) == 0, (
-                    "Not using any kind of mask and the data does not exactly fit into words", DATA)
+                    "Not using any kind of mask and the data does not exactly fit into words", DATA, self.DATA_WIDTH)
             last_mask = mask((DATA_SIZE % (self.DATA_WIDTH // 8) // 8))
             if last_mask == 0:
                 last_mask = all_mask
