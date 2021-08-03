@@ -99,7 +99,6 @@ class AxiSBuilder(AbstractStreamBuilder):
         :param name: name prefix for generated units
         :return: tuple (builder, interface with deparsed frame)
         """
-        assert intfCls is AxiStream, intfCls
         u = AxiS_frameDeparser(typeToForge)
         if setupFn:
             setupFn(u)
