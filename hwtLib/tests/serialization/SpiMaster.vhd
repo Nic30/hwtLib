@@ -142,13 +142,13 @@ BEGIN
     endOfWord <= '1' WHEN (endOfWordtimerCntr256 = X"00" AND (NOT endOfWordDelayed AND data_vld) = '1' AND NOT timersRst = '1') ELSE '0';
     endOfWordDelayed_next <= endOfWordtimerTick256;
     assig_process_endOfWordtimerCntr256_next: PROCESS(data_vld, endOfWordDelayed, endOfWordtimerCntr256, timersRst)
-        VARIABLE tmpTypeConv_0 : UNSIGNED(7 DOWNTO 0);
+        VARIABLE tmpCastExpr_0 : UNSIGNED(7 DOWNTO 0);
     BEGIN
-        tmpTypeConv_0 := UNSIGNED(endOfWordtimerCntr256) - UNSIGNED'(X"01");
+        tmpCastExpr_0 := UNSIGNED(endOfWordtimerCntr256) - UNSIGNED'(X"01");
         IF timersRst = '1' OR ((NOT endOfWordDelayed AND data_vld) = '1' AND endOfWordtimerCntr256 = X"00") THEN
             endOfWordtimerCntr256_next <= X"FF";
         ELSIF (NOT endOfWordDelayed AND data_vld) = '1' THEN
-            endOfWordtimerCntr256_next <= STD_LOGIC_VECTOR(tmpTypeConv_0);
+            endOfWordtimerCntr256_next <= STD_LOGIC_VECTOR(tmpCastExpr_0);
         ELSE
             endOfWordtimerCntr256_next <= endOfWordtimerCntr256;
         END IF;

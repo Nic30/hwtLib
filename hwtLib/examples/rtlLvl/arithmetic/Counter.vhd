@@ -25,11 +25,11 @@ BEGIN
         END IF;
     END PROCESS;
     assig_process_cnt_next: PROCESS(cnt, en)
-        VARIABLE tmpTypeConv_0 : UNSIGNED(7 DOWNTO 0);
+        VARIABLE tmpCastExpr_0 : UNSIGNED(7 DOWNTO 0);
     BEGIN
-        tmpTypeConv_0 := UNSIGNED(cnt) + UNSIGNED'(X"01");
+        tmpCastExpr_0 := UNSIGNED(cnt) + UNSIGNED'(X"01");
         IF en = '1' THEN
-            cnt_next <= STD_LOGIC_VECTOR(tmpTypeConv_0);
+            cnt_next <= STD_LOGIC_VECTOR(tmpCastExpr_0);
         ELSE
             cnt_next <= cnt;
         END IF;

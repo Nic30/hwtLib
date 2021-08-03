@@ -11,13 +11,13 @@ END ENTITY;
 ARCHITECTURE rtl OF TmpVarExample0 IS
 BEGIN
     assig_process_b: PROCESS(a)
-        VARIABLE tmpTypeConv_2 : STD_LOGIC_VECTOR(7 DOWNTO 0);
-        VARIABLE tmpTypeConv_1 : UNSIGNED(7 DOWNTO 0);
-        VARIABLE tmpTypeConv_0 : UNSIGNED(3 DOWNTO 0);
+        VARIABLE tmpCastExpr_1 : STD_LOGIC_VECTOR(7 DOWNTO 0);
+        VARIABLE tmpTypeConv_0 : UNSIGNED(7 DOWNTO 0);
+        VARIABLE tmpCastExpr_0 : UNSIGNED(3 DOWNTO 0);
     BEGIN
-        tmpTypeConv_2 := a(7 DOWNTO 0);
-        tmpTypeConv_1 := UNSIGNED(tmpTypeConv_2) + UNSIGNED'(X"04");
-        tmpTypeConv_0 := tmpTypeConv_1(3 DOWNTO 0);
-        b <= X"0000000" & STD_LOGIC_VECTOR(tmpTypeConv_0);
+        tmpCastExpr_1 := a(7 DOWNTO 0);
+        tmpTypeConv_0 := UNSIGNED(tmpCastExpr_1) + UNSIGNED'(X"04");
+        tmpCastExpr_0 := tmpTypeConv_0(3 DOWNTO 0);
+        b <= X"0000000" & STD_LOGIC_VECTOR(tmpCastExpr_0);
     END PROCESS;
 END ARCHITECTURE;

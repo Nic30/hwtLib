@@ -28,9 +28,9 @@ BEGIN
         d <= b + UNSIGNED(tmp_std_logic2vector_0);
     END PROCESS;
     assig_process_o: PROCESS(e, i)
-        VARIABLE tmpTypeConv_0 : STD_LOGIC_VECTOR(0 DOWNTO 0);
+        VARIABLE tmp1bToUnsigned_0 : STD_LOGIC_VECTOR(0 DOWNTO 0);
     BEGIN
-        tmpTypeConv_0(0) := i;
-        o <= e(TO_INTEGER(UNSIGNED(tmpTypeConv_0)));
+        tmp1bToUnsigned_0(0) := i;
+        o <= e(TO_INTEGER(UNSIGNED(tmp1bToUnsigned_0)));
     END PROCESS;
 END ARCHITECTURE;

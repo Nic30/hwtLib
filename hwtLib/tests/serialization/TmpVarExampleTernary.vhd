@@ -16,29 +16,29 @@ END ENTITY;
 ARCHITECTURE rtl OF TmpVarExampleTernary IS
 BEGIN
     assig_process_d: PROCESS(a, b, c)
-        VARIABLE tmpTypeConv_0 : STD_LOGIC;
+        VARIABLE tmpTernaryAutoCast_0 : STD_LOGIC;
     BEGIN
-        tmpTypeConv_0 := b(0);
-        d(0) <= a WHEN (c = '1') ELSE tmpTypeConv_0;
+        tmpTernaryAutoCast_0 := b(0);
+        d(0) <= a WHEN (c = '1') ELSE tmpTernaryAutoCast_0;
     END PROCESS;
     assig_process_e: PROCESS(a, b, c)
-        VARIABLE tmpTypeConv_0 : STD_LOGIC_VECTOR(0 DOWNTO 0);
+        VARIABLE tmpTernaryAutoCast_0 : STD_LOGIC_VECTOR(0 DOWNTO 0);
     BEGIN
-        tmpTypeConv_0(0) := a;
-        e <= b WHEN (c = '1') ELSE tmpTypeConv_0;
+        tmpTernaryAutoCast_0(0) := a;
+        e <= b WHEN (c = '1') ELSE tmpTernaryAutoCast_0;
     END PROCESS;
     assig_process_f: PROCESS(a, b, c)
-        VARIABLE tmpTypeConv_0 : STD_LOGIC;
+        VARIABLE tmpTernaryAutoCast_0 : STD_LOGIC;
     BEGIN
-        tmpTypeConv_0 := b(0);
-        f <= a WHEN (c = '1') ELSE tmpTypeConv_0;
+        tmpTernaryAutoCast_0 := b(0);
+        f <= a WHEN (c = '1') ELSE tmpTernaryAutoCast_0;
     END PROCESS;
     assig_process_g: PROCESS(a, b, c)
-        VARIABLE tmpTypeConv_1 : STD_LOGIC_VECTOR(0 DOWNTO 0);
+        VARIABLE tmpTernaryAutoCast_0 : STD_LOGIC_VECTOR(0 DOWNTO 0);
         VARIABLE tmpTypeConv_0 : STD_LOGIC_VECTOR(0 DOWNTO 0);
     BEGIN
-        tmpTypeConv_1(0) := a;
-        tmpTypeConv_0 := b WHEN (c = '1') ELSE tmpTypeConv_1;
+        tmpTernaryAutoCast_0(0) := a;
+        tmpTypeConv_0 := b WHEN (c = '1') ELSE tmpTernaryAutoCast_0;
         g <= tmpTypeConv_0(0);
     END PROCESS;
 END ARCHITECTURE;

@@ -125,7 +125,7 @@ if __name__ == '__main__':
     import unittest
 
     suite = unittest.TestSuite()
-    # suite.addTest(RdSyncedPipe('test_basic_data_pass'))
+    # suite.addTest(Serializer_tmpVar_TC('test_TmpVarExample1_vhdl'))
     suite.addTest(unittest.makeSuite(Serializer_tmpVar_TC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

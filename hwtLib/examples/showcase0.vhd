@@ -53,10 +53,10 @@ ARCHITECTURE rtl OF Showcase0 IS
         UNSIGNED'(X"03"));
 BEGIN
     assig_process_c: PROCESS(a, b)
-        VARIABLE tmpTypeConv_0 : UNSIGNED(31 DOWNTO 0);
+        VARIABLE tmpCastExpr_0 : UNSIGNED(31 DOWNTO 0);
     BEGIN
-        tmpTypeConv_0 := a + UNSIGNED(b);
-        c <= STD_LOGIC_VECTOR(tmpTypeConv_0);
+        tmpCastExpr_0 := a + UNSIGNED(b);
+        c <= STD_LOGIC_VECTOR(tmpCastExpr_0);
     END PROCESS;
     cmp_0 <= '1' WHEN (a < UNSIGNED'(X"00000004")) ELSE '0';
     cmp_1 <= '1' WHEN (a > UNSIGNED'(X"00000004")) ELSE '0';
@@ -67,29 +67,29 @@ BEGIN
     contOut <= STD_LOGIC_VECTOR(const_private_signal);
     f <= r;
     assig_process_fallingEdgeRam: PROCESS(clk)
-        VARIABLE tmpTypeConv_0 : UNSIGNED(7 DOWNTO 0);
-        VARIABLE tmpTypeConv_2 : SIGNED(7 DOWNTO 0);
-        VARIABLE tmpTypeConv_1 : UNSIGNED(7 DOWNTO 0);
+        VARIABLE tmpCastExpr_0 : UNSIGNED(7 DOWNTO 0);
+        VARIABLE tmpCastExpr_2 : SIGNED(7 DOWNTO 0);
+        VARIABLE tmpCastExpr_1 : UNSIGNED(7 DOWNTO 0);
     BEGIN
-        tmpTypeConv_0 := a(7 DOWNTO 0);
-        tmpTypeConv_2 := fallingEdgeRam(TO_INTEGER(UNSIGNED(r_1)));
-        tmpTypeConv_1 := UNSIGNED(tmpTypeConv_2);
+        tmpCastExpr_0 := a(7 DOWNTO 0);
+        tmpCastExpr_2 := fallingEdgeRam(TO_INTEGER(UNSIGNED(r_1)));
+        tmpCastExpr_1 := UNSIGNED(tmpCastExpr_2);
         IF FALLING_EDGE(clk) THEN
-            fallingEdgeRam(TO_INTEGER(UNSIGNED(r_1))) <= SIGNED(tmpTypeConv_0);
-            k <= X"000000" & STD_LOGIC_VECTOR(tmpTypeConv_1);
+            fallingEdgeRam(TO_INTEGER(UNSIGNED(r_1))) <= SIGNED(tmpCastExpr_0);
+            k <= X"000000" & STD_LOGIC_VECTOR(tmpCastExpr_1);
         END IF;
     END PROCESS;
     assig_process_fitted: PROCESS(a)
-        VARIABLE tmpTypeConv_0 : UNSIGNED(15 DOWNTO 0);
+        VARIABLE tmpCastExpr_0 : UNSIGNED(15 DOWNTO 0);
     BEGIN
-        tmpTypeConv_0 := a(15 DOWNTO 0);
-        fitted <= STD_LOGIC_VECTOR(tmpTypeConv_0);
+        tmpCastExpr_0 := a(15 DOWNTO 0);
+        fitted <= STD_LOGIC_VECTOR(tmpCastExpr_0);
     END PROCESS;
     assig_process_g: PROCESS(a, b)
-        VARIABLE tmpTypeConv_0 : UNSIGNED(5 DOWNTO 0);
+        VARIABLE tmpCastExpr_0 : UNSIGNED(5 DOWNTO 0);
     BEGIN
-        tmpTypeConv_0 := a(5 DOWNTO 0);
-        g <= (a(1) AND b(1)) & ((a(0) XOR b(0)) OR a(1)) & STD_LOGIC_VECTOR(tmpTypeConv_0);
+        tmpCastExpr_0 := a(5 DOWNTO 0);
+        g <= (a(1) AND b(1)) & ((a(0) XOR b(0)) OR a(1)) & STD_LOGIC_VECTOR(tmpCastExpr_0);
     END PROCESS;
     assig_process_h: PROCESS(a, r)
     BEGIN
@@ -104,11 +104,11 @@ BEGIN
         END IF;
     END PROCESS;
     assig_process_j: PROCESS(clk)
-        VARIABLE tmpTypeConv_0 : UNSIGNED(7 DOWNTO 0);
+        VARIABLE tmpCastExpr_0 : UNSIGNED(7 DOWNTO 0);
     BEGIN
-        tmpTypeConv_0 := rom(TO_INTEGER(UNSIGNED(r_1)));
+        tmpCastExpr_0 := rom(TO_INTEGER(UNSIGNED(r_1)));
         IF RISING_EDGE(clk) THEN
-            j <= STD_LOGIC_VECTOR(tmpTypeConv_0);
+            j <= STD_LOGIC_VECTOR(tmpCastExpr_0);
         END IF;
     END PROCESS;
     out_0 <= '0';
