@@ -83,5 +83,5 @@ sudo pip3 install -r https://raw.githubusercontent.com/Nic30/hwtLib/master/doc/r
 * [hls-fpga-machine-learning](https://github.com/hls-fpga-machine-learning) - Python -> HSL C++, mostyl ML and video processing
 * [fpgasystems](https://github.com/fpgasystems) - HLS C++, SystemVerilog, FPGA @ Systems Group, ETH Zurich, mostly networking
 * [Limago](https://github.com/hpcn-uam/Limago) - SV/VHDL - 100G TCP/IP stack
-
+* [wav-lpddr-hw](https://github.com/waviousllc/wav-lpddr-hw) - SV - LPDDR4x/LPDDR5, DFI5.0
 
