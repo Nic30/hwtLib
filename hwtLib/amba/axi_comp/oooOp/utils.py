@@ -39,6 +39,7 @@ class OOOOpPipelineStage():
         self.data = r(f"{name:s}_data", parent.MAIN_STATE_T)
 
         vld = self.valid = r(f"{name:s}_valid", def_val=0)
+        self.out_valid = vld
         inVld = self.in_valid = parent._sig(f"{name:s}_in_valid")
         outRd = self.out_ready = parent._sig(f"{name:s}_out_ready")
         inRd = self.in_ready = parent._sig(f"{name:s}_in_ready")
@@ -91,17 +92,19 @@ class OutOfOrderCummulativeOpPipelineConfig(NamedTuple):
     WRITE_HISTORY_SIZE: int
 
     @classmethod
-    def new_config(cls, WRITE_HISTORY_SIZE=2):
+    def new_config(cls,
+                   WRITE_TO_WRITE_ACK_LATENCY: int,
+                   WRITE_ACK_TO_READ_DATA_LATENCY: int):
         READ_DATA_RECEIVE = 0
         STATE_LOAD = READ_DATA_RECEIVE + 2
         WRITE_BACK = STATE_LOAD + 1
-        WAIT_FOR_WRITE_ACK = WRITE_BACK + WRITE_HISTORY_SIZE
+        WAIT_FOR_WRITE_ACK = WRITE_BACK + WRITE_TO_WRITE_ACK_LATENCY
         return cls(
             READ_DATA_RECEIVE,
             STATE_LOAD,
             WRITE_BACK,
             WAIT_FOR_WRITE_ACK,
-            WRITE_HISTORY_SIZE,
+            WRITE_ACK_TO_READ_DATA_LATENCY,
         )
 
 

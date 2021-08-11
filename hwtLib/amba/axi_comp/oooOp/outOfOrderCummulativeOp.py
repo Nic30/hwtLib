@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import List
+from math import ceil
+from typing import List, Optional, Union
 
-from hwt.code import If, Concat, SwitchLogic
+from hwt.code import If, Concat, SwitchLogic, Switch
 from hwt.code_utils import rename_signal
 from hwt.hdl.constants import WRITE, READ
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
+from hwt.hdl.types.hdlType import HdlType
+from hwt.interfaces.structIntf import StructIntf
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.math import log2ceil
 from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import packIntf
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
-from hwtLib.amba.axi4 import Axi4, Axi4_addr, Axi4_r
+from hwtLib.amba.axi4 import Axi4, Axi4_addr, Axi4_r, Axi4_w
 from hwtLib.amba.axi_comp.lsu.fifo_oooread import FifoOutOfOrderRead
 from hwtLib.amba.axi_comp.oooOp.utils import OutOfOrderCummulativeOpIntf, \
     OOOOpPipelineStage, does_collinde, OutOfOrderCummulativeOpPipelineConfig
@@ -47,23 +50,24 @@ class OutOfOrderCummulativeOp(Unit):
 
     The most up-to-date version of the data is always selected on the input of WRITE_BACK stage.
 
+    .. figure:: ./_static/OutOfOrderCummulativeOp_pipeline.png
+
     :ivar MAIN_STATE_T: a type of the state in main memory which is being updated by this component
     :note: If MAIN_STATE_T.bit_length() is smaller than DATA_WIDTH each item is allocated in
         a signle bus word separately in order to avoid alignment logic
     :ivar TRANSACTION_STATE_T: a type of the transaction state, used to store additional data
         for transaction and can be used to modify the behavior of the pipeline
-    :type TRANSACTION_STATE_T: Optional[HdlType]
-    :type PIPELINE_CONFIG: OutOfOrderCummulativeOpPipelineConfig
     """
 
     def _config(self):
         # number of items in main array is resolved from ADDR_WIDTH and size of STATE_T
         # number of concurent thread is resolved as 2**ID_WIDTH
-        self.MAIN_STATE_T = Param(uint32_t)
-        self.TRANSACTION_STATE_T = Param(uint8_t)
-        self.PIPELINE_CONFIG = Param(
+        self.MAIN_STATE_T: Optional[HdlType] = Param(uint32_t)
+        self.TRANSACTION_STATE_T: Optional[HdlType] = Param(uint8_t)
+        self.PIPELINE_CONFIG: OutOfOrderCummulativeOpPipelineConfig = Param(
             OutOfOrderCummulativeOpPipelineConfig.new_config(
-                WRITE_HISTORY_SIZE=4 + 1)
+                WRITE_TO_WRITE_ACK_LATENCY=1,
+                WRITE_ACK_TO_READ_DATA_LATENCY=1)
         )
         Axi4._config(self)
 
@@ -73,6 +77,7 @@ class OutOfOrderCummulativeOp(Unit):
         self.ADDR_OFFSET_W = log2ceil(max(MAIN_STATE_T.bit_length(), self.DATA_WIDTH) // 8)
         self.MAIN_STATE_INDEX_WIDTH = self.ADDR_WIDTH - self.ADDR_OFFSET_W
         self.MAIN_STATE_ITEMS_CNT = (2 ** self.MAIN_STATE_INDEX_WIDTH)
+        self.BUS_WORD_CNT = ceil(self.MAIN_STATE_T.bit_length() / self.DATA_WIDTH)
 
     def _declr(self):
         addClkRstn(self)
@@ -110,11 +115,11 @@ class OutOfOrderCummulativeOp(Unit):
     def main_op(self, main_state: RtlSignal) -> RtlSignal:
         raise NotImplementedError("Override this in your implementation of this abstract component")
 
-    def _axi_addr_defaults(self, a: Axi4_addr, word_cnt: int):
+    def _axi_addr_defaults(self, a: Axi4_addr):
         """
         Set default values for AXI address channel signals
         """
-        a.len(word_cnt - 1)
+        a.len(self.BUS_WORD_CNT - 1)
         a.burst(BURST_INCR)
         a.prot(PROT_DEFAULT)
         a.size(BYTES_IN_TRANS(self.DATA_WIDTH // 8))
@@ -157,7 +162,7 @@ class OutOfOrderCummulativeOp(Unit):
 
         ar.id(ooo_fifo.read_execute.index)
         ar.addr(Concat(din_data.addr, Bits(self.ADDR_OFFSET_W).from_py(0)))
-        self._axi_addr_defaults(ar, 1)
+        self._axi_addr_defaults(ar)
 
     def instruction_supports_forwarding(self, st: OOOOpPipelineStage):
         return True
@@ -256,9 +261,86 @@ class OutOfOrderCummulativeOp(Unit):
         return res
 
     def data_load(self, r: Axi4_r, st0: OOOOpPipelineStage):
-        w = self.MAIN_STATE_T.bit_length()
-        assert w <= r.data._dtype.bit_length(), (w, r.data._dtype)
-        return st0.data(r.data[w:]._reinterpret_cast(self.MAIN_STATE_T))
+        if self.BUS_WORD_CNT > 1:
+            LD_CNTR_MAX = self.BUS_WORD_CNT - 1
+            cntr = self._reg("r_load_cntr", Bits(log2ceil(LD_CNTR_MAX)), def_val=0)
+            If(r.valid & r.ready,
+                If(cntr._eq(LD_CNTR_MAX),
+                    cntr(0)
+                ).Else(
+                    cntr(cntr + 1)
+                )
+            )
+        else:
+            cntr = None
+
+        data_w = r.data._dtype.bit_length()
+        st_w = self.MAIN_STATE_T.bit_length()
+        offset = 0
+        cases = []
+        st_data_flat = st0.data._reinterpret_cast(Bits(st_w))
+        while offset < st_w:
+            i = offset // data_w
+            end = min(st_w, offset + data_w)
+            w = end - offset
+            cases.append((i, st_data_flat[end:offset](r.data[w:])))
+            offset += data_w
+
+        If(st0.load_en,
+            st0.id(r.id),
+        )
+        if cntr is None:
+            assert len(cases) == 1, cases
+            ld_stm = cases[0][1]
+        else:
+            ld_stm = Switch(cntr)\
+                .add_cases(cases)
+
+        If(~st0.valid | st0.out_ready,
+           ld_stm
+        )
+
+    def data_store(self, st_data: Union[StructIntf, RtlSignal], w: Axi4_w, ack: RtlSignal):
+        """
+        :param ack: signal which is 1 if the data word is transfered on this write channel
+        """
+        if not isinstance(st_data, RtlSignal):
+            st_data = packIntf(st_data)
+
+        data_w = self.DATA_WIDTH
+        w.strb(mask(self.DATA_WIDTH // 8))
+        st_w = self.MAIN_STATE_T.bit_length()
+        word_cnt = self.BUS_WORD_CNT
+        if word_cnt > 1:
+            w_word_cntr = self._reg("w_word_cntr", Bits(log2ceil(word_cnt - 1)), def_val=0)
+            st_data_flat = st_data._reinterpret_cast(Bits(st_w))
+            offset = 0
+            cases = []
+            while offset < st_w:
+                i = offset // data_w
+                end = min(st_w, offset + data_w)
+                src = st_data_flat[end:offset]
+                padding = (offset + data_w) - end
+                if padding:
+                    assert padding > 0
+                    src = Concat(Bits(padding).from_py(0), src)
+                cases.append((i, w.data(src)))
+                offset += data_w
+            If(ack,
+                If(w.last,
+                   w_word_cntr(0)
+                ).Else(
+                   w_word_cntr(w_word_cntr + 1)
+                ),
+            )
+            Switch(w_word_cntr)\
+                .add_cases(cases)\
+                .Default(w.data(None))
+            w.last(w_word_cntr._eq(word_cnt - 1))
+
+        else:
+            w.data(st_data._reinterpret_cast(w.data._dtype))
+            w.last(1)
 
     def propagate_trans_st(self, stage_from: OOOOpPipelineStage, stage_to: OOOOpPipelineStage):
         HAS_TRANS_ST = self.TRANSACTION_STATE_T is not None
@@ -278,7 +360,7 @@ class OutOfOrderCummulativeOp(Unit):
         PIPELINE_CONFIG = self.PIPELINE_CONFIG
         self.pipeline = pipeline = [
             OOOOpPipelineStage(i, f"st{i:d}", self)
-            for i in range(PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK + 1)
+            for i in range(PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK + PIPELINE_CONFIG.WRITE_HISTORY_SIZE + 1)
         ]
 
         state_read = self.state_array.port[1]
@@ -286,11 +368,16 @@ class OutOfOrderCummulativeOp(Unit):
         HAS_TRANS_ST = self.TRANSACTION_STATE_T is not None
 
         for i, st in enumerate(pipeline):
+            st: OOOOpPipelineStage
             if i > 0:
+                # if not first
                 st_prev = pipeline[i - 1]
 
             if i < len(pipeline) - 1:
+                # if not last
                 st_next = pipeline[i + 1]
+            else:
+                st_next = None
 
             # :note: pipeline stages described in PIPELINE_CONFIG enum
             if i == PIPELINE_CONFIG.READ_DATA_RECEIVE:
@@ -302,14 +389,12 @@ class OutOfOrderCummulativeOp(Unit):
                     low = self.MAIN_STATE_INDEX_WIDTH
                     st.transaction_state = state_read.dout[:low]._reinterpret_cast(self.TRANSACTION_STATE_T)
 
+                st.in_valid(r.valid & r.last)
                 r.ready(st.in_ready)
-                st.in_valid(r.valid)
                 st.out_ready(st_next.in_ready)
                 state_read.en(st.load_en)
-                If(st.load_en,
-                    st.id(r.id),
-                    self.data_load(r, st),
-                )
+
+                self.data_load(r, st)
 
             elif i <= PIPELINE_CONFIG.STATE_LOAD:
                 If(st.load_en,
@@ -318,10 +403,11 @@ class OutOfOrderCummulativeOp(Unit):
                     self.propagate_trans_st(st_prev, st),
                 )
                 self.apply_data_write_forwarding(st, st.load_en)
-                st.in_valid(st_prev.valid)
+                st.in_valid(st_prev.out_valid)
                 st.out_ready(st_next.in_ready)
 
             elif i == PIPELINE_CONFIG.WRITE_BACK:
+                # :note: the data in this stage is waiting to be written and leaves this stage after it was written
                 If(st.load_en,
                     st.id(st_prev.id),
                     st.addr(st_prev.addr),
@@ -332,39 +418,46 @@ class OutOfOrderCummulativeOp(Unit):
                 w = self.m.w
 
                 cancel = rename_signal(self, self.write_cancel(st), "write_back_cancel")
-                st.in_valid(st_prev.valid)
-                st.out_ready(st_next.in_ready & ((aw.ready & w.ready) | cancel))
+                st.in_valid(st_prev.out_valid)
 
-                StreamNode(
+                w_first_data_word = self._reg("w_first_data_word", def_val=1)
+                # this stage has to have data, last word must wait on next stage ready
+                w_channel_en = st.valid & (st_next.in_ready | ~w.last) & ~cancel
+                w_channel_ack = (w.valid & w.ready & w.last) | cancel
+                st.out_valid = st.valid & w_channel_ack
+                st.out_ready(st_next.in_ready & w_channel_ack)
+                w_sync = StreamNode(
                     [], [aw, w],
                     extraConds={
-                        aw: st.valid & st_next.in_ready & ~cancel,
-                        w: st.valid & st_next.in_ready & ~cancel
+                        aw: w_channel_en & w_first_data_word,
+                        w: w_channel_en
                     },
                     skipWhen={
-                        aw:cancel,
+                        aw:cancel | ~w_first_data_word,
                         w:cancel,
                     }
-                ).sync()
+                )
+                w_sync.sync()
 
-                self._axi_addr_defaults(aw, 1)
+                self._axi_addr_defaults(aw)
                 aw.id(st.id)
                 aw.addr(Concat(st.addr, Bits(self.ADDR_OFFSET_W).from_py(0)))
 
                 st_data = st.data
-                if not isinstance(st_data, RtlSignal):
-                    st_data = packIntf(st_data)
-
-                w.data(st_data._reinterpret_cast(w.data._dtype))
-                w.strb(mask(self.DATA_WIDTH // 8))
-                w.last(1)
+                w_ack = w_sync.ack()
+                If(w_ack,
+                   w_first_data_word(w.last)
+                )
+                self.data_store(st_data, w, w_ack)
 
             elif i > PIPELINE_CONFIG.WRITE_BACK and i != PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK:
-                if i == PIPELINE_CONFIG.WRITE_BACK + 1:
-                    st.in_valid(st_prev.valid & ((aw.ready & w.ready) | cancel))
+                # just pass data between WRITE_BACK -> WAIT_FOR_WRITE_ACK and WAIT_FOR_WRITE_ACK -> end of write history
+                st.in_valid(st_prev.out_valid)
+                if st_next is None:
+                    # this is a last stage, we need to consume the item only if there is some new
+                    st.out_ready(pipeline[PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK].out_valid)
                 else:
-                    st.in_valid(st_prev.valid)
-                st.out_ready(st_next.in_ready)
+                    st.out_ready(st_next.in_ready)
 
                 If(st.load_en,
                    st.id(st_prev.id),
@@ -372,6 +465,7 @@ class OutOfOrderCummulativeOp(Unit):
                    st.data(st_prev.data),
                    self.propagate_trans_st(st_prev, st),
                 )
+
             elif i == PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK:
                 If(st.load_en,
                     st.id(st_prev.id),
@@ -398,8 +492,9 @@ class OutOfOrderCummulativeOp(Unit):
                     }
                 )
                 w_ack_node.sync()
-                st.in_valid(st_prev.valid)
-                st.out_ready((b.valid | cancel) & dout.rd & confirm.rd)
+                st.in_valid(st_prev.out_valid)
+                st.out_ready((b.valid | cancel) & dout.rd & confirm.rd & dout.rd)
+                st.out_valid = b.valid & dout.rd & confirm.rd & dout.rd
 
                 dout.addr(st.addr)
                 dout.data(st.data)
@@ -407,6 +502,8 @@ class OutOfOrderCummulativeOp(Unit):
                     dout.transaction_state(st.transaction_state)
 
                 confirm.data(st.id)
+            else:
+                raise NotImplementedError("Unknown stage of pipeline")
 
     def _impl(self):
         self.ar_dispatch()

@@ -9,6 +9,7 @@ from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtLib.types.ctypes import uint32_t
 from hwtSimApi.constants import CLK_PERIOD
+from pyMathBitPrecise.bit_utils import int_list_to_int
 
 
 class OooOpExampleCounterArray_1w_TC(SimTestCase):
@@ -40,11 +41,16 @@ class OooOpExampleCounterArray_1w_TC(SimTestCase):
         self.assertEmpty(u.m.w._ag.data)
         self.assertEmpty(u.m.ar._ag.data)
 
+    def get_counter(self, i: int):
+        parts = [int(self.m.data[i * self.u.BUS_WORD_CNT + i2]) for i2 in range(self.u.BUS_WORD_CNT)]
+        return int_list_to_int(parts, self.u.DATA_WIDTH)
+
     def _test_incr(self, indexes=[0, ], randomize=False):
+        # indexes = self._indexes_to_addresses(indexes)
         u = self.u
         u.dataIn._ag.data.extend(indexes)
 
-        t = (20 + len(indexes) * 2) * CLK_PERIOD
+        t = (20 + len(indexes) * u.BUS_WORD_CNT * 2) * CLK_PERIOD
         if randomize:
             axi_randomize_per_channel(self, u.m)
             self.randomize(u.dataIn)
@@ -56,11 +62,11 @@ class OooOpExampleCounterArray_1w_TC(SimTestCase):
         # check if pipeline registers are empty
         for i in range(u.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK):
             valid = getattr(self.rtl_simulator.model.io, f"st{i:d}_valid")
-            self.assertValEqual(valid.read(), 0, i)
+            self.assertValEqual(valid.read(), 0, ("stall in stage", i))
 
         # check if main state fifo is empty
         ooo_fifo = self.rtl_simulator.model.ooo_fifo_inst.io
-        self.assertValEqual(ooo_fifo.item_valid.read(), 0)
+        self.assertValEqual(ooo_fifo.item_valid.read(), 0, "Extra item in ooo fifo")
         self.assertValEqual(ooo_fifo.read_wait.read(), 1)
 
         # check if all transactions on AXI are finished
@@ -71,7 +77,7 @@ class OooOpExampleCounterArray_1w_TC(SimTestCase):
         ref_data = [(v, indexes[:i + 1].count(v)) for i, v in enumerate(indexes)]
         self.assertValSequenceEqual(u.dataOut._ag.data, ref_data)
         for i in sorted(set(indexes)):
-            self.assertValEqual(self.m.data[i], indexes.count(i), i)
+            self.assertValEqual(self.get_counter(i), indexes.count(i), i)
 
     def test_incr_1x(self):
         self._test_incr([0])
@@ -94,7 +100,7 @@ class OooOpExampleCounterArray_1w_TC(SimTestCase):
 
     def test_r_incr_100x_random(self):
         index_pool = list(range(2 ** self.u.ID_WIDTH))
-        d = [self._rand.choice(index_pool) for _ in range(100)]
+        d = [self._rand.choice(index_pool) for _ in range(4)]
         self._test_incr(d, randomize=True)
 
     def test_no_comb_loops(self):
@@ -131,7 +137,6 @@ class OooOpExampleCounterArray_2w_TC(OooOpExampleCounterArray_1w_TC):
         u.TRANSACTION_STATE_T = None
         u.ID_WIDTH = 2
         u.ADDR_WIDTH = 2 + 3
-        u.DATA_WIDTH = u.MAIN_STATE_T.bit_length()
         u.DATA_WIDTH = u.MAIN_STATE_T.bit_length() // 2
         cls.compileSim(u)
 
@@ -139,13 +144,13 @@ class OooOpExampleCounterArray_2w_TC(OooOpExampleCounterArray_1w_TC):
 OooOpExampleCounterArray_TCs = [
     OooOpExampleCounterArray_1w_TC,
     OooOpExampleCounterArray_0_5w_TC,
-    #OooOpExampleCounterArray_2w_TC,
+    OooOpExampleCounterArray_2w_TC,
 ]
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(OooOpExampleCounterArray_1w_TC('test_r_incr_100x_random'))
+    # suite.addTest(OooOpExampleCounterArray_2w_TC('test_r_incr_100x_random'))
     for tc in OooOpExampleCounterArray_TCs:
         suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)
