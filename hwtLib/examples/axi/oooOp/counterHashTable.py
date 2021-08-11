@@ -130,7 +130,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
                         self.main_op_on_lookup_match_update(dst_stage, src_stage),
                     ).Elif(self.do_swap_original_and_current_state(src_stage, dst_stage),
                         # swap or lookup_or_swap with not found
-                        dst(prev_st.transaction_state.original_data) # the data should be swapped from prev_st.data
+                        dst(prev_st.transaction_state.original_data)  # the data should be swapped from prev_st.data
                         if dst_stage.index == self.PIPELINE_CONFIG.WRITE_BACK and src_stage.index == self.PIPELINE_CONFIG.WRITE_BACK - 1 else
                         dst(src),
                     ).Else(

@@ -5,6 +5,7 @@ import unittest
 
 from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
 from hwt.hdl.statements.statement import HdlStatement
+from hwtLib.examples.axi.oooOp.counterHashTable import OooOpExampleCounterHashTable
 from hwtLib.examples.mem.ram import SimpleAsyncRam
 from hwtLib.examples.statements.ifStm import SimpleIfStatement3
 from hwtLib.mem.atomic.flipReg import FlipRegister
@@ -12,7 +13,6 @@ from hwtLib.mem.cuckooHashTable import CuckooHashTable
 from hwtLib.peripheral.displays.segment7 import Segment7
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl
 from hwtLib.tests.synthesizer.interfaceLevel.subunitsSynthesisTC import synthesised
-from hwtLib.amba.axi_comp.oooOp.examples.counterHashTable import OooOpExampleCounterHashTable
 
 
 class StatementsConsystencyTC(unittest.TestCase):

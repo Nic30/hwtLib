@@ -28,8 +28,6 @@ from hwtLib.amba.axi_comp.interconnect.matrixW_test import AxiInterconnectMatrix
 from hwtLib.amba.axi_comp.lsu.read_aggregator_test import AxiReadAggregator_TCs
 from hwtLib.amba.axi_comp.lsu.store_queue_write_propagating_test import AxiStoreQueueWritePropagating_TCs
 from hwtLib.amba.axi_comp.lsu.write_aggregator_test import AxiWriteAggregator_TCs
-from hwtLib.amba.axi_comp.oooOp.examples.counterArray_test import OooOpExampleCounterArray_TCs
-from hwtLib.amba.axi_comp.oooOp.examples.counterHashTable_test import OooOpExampleCounterHashTable_TC
 from hwtLib.amba.axi_comp.resize_test import AxiResizeTC
 from hwtLib.amba.axi_comp.sim.ag_test import Axi_ag_TC
 from hwtLib.amba.axi_comp.slave_timeout_test import AxiSlaveTimeoutTC
@@ -79,6 +77,8 @@ from hwtLib.examples.arithmetic.twoCntrs_test import TwoCntrsTC
 from hwtLib.examples.arithmetic.vhdl_vector_auto_casts import VhdlVectorAutoCastExampleTC
 from hwtLib.examples.arithmetic.widthCasting import WidthCastingExampleTC
 from hwtLib.examples.axi.debugbusmonitor_test import DebugBusMonitorExampleAxiTC
+from hwtLib.examples.axi.oooOp.counterArray_test import OooOpExampleCounterArray_TCs
+from hwtLib.examples.axi.oooOp.counterHashTable_test import OooOpExampleCounterHashTable_TC
 from hwtLib.examples.axi.simpleAxiRegs_test import SimpleAxiRegsTC
 from hwtLib.examples.builders.ethAddrUpdater_test import EthAddrUpdaterTCs
 from hwtLib.examples.builders.handshakedBuilderSimple import \

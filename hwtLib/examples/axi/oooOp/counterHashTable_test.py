@@ -6,8 +6,8 @@ from copy import copy
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
-from hwtLib.amba.axi_comp.oooOp.examples.counterHashTable import OooOpExampleCounterHashTable
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
+from hwtLib.examples.axi.oooOp.counterHashTable import OooOpExampleCounterHashTable
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtSimApi.constants import CLK_PERIOD
 
@@ -105,17 +105,17 @@ class OooOpExampleCounterHashTable_TC(SimTestCase):
                     (key_vld, key, data),
                     _,
                     operation
-                ) # transaction_state
+                )  # transaction_state
             ) = _in
             (
                 o_addr,
-                (o_found_key_vld, o_found_key, o_found_data), # main state
+                (o_found_key_vld, o_found_key, o_found_data),  # main state
                 (
                     o_reset,
-                    (o_key_vld, o_key, o_data), # orig item
+                    (o_key_vld, o_key, o_data),  # orig item
                     o_match,
                     o_operation
-                ), # transaction_state
+                ),  # transaction_state
             ) = _out
             # None or tuple(item_valid, key, data)
             cur = mem.get(addr, None)
@@ -240,11 +240,11 @@ class OooOpExampleCounterHashTable_TC(SimTestCase):
 
     def test_1x_swap_delete_unallocated(self):
         self._test_incr(
-            [(1, TState(None, None, OP.SWAP)), # delete of deleted
-             (1, TState(99, 12, OP.LOOKUP)), # search of non existing
-             (1, TState(100, 33, OP.SWAP)), # insert
-             (1, TState(99, 12, OP.LOOKUP)), # search of diffeent
-             (1, TState(100, None, OP.LOOKUP)), # search of existing
+            [(1, TState(None, None, OP.SWAP)),  # delete of deleted
+             (1, TState(99, 12, OP.LOOKUP)),  # search of non existing
+             (1, TState(100, 33, OP.SWAP)),  # insert
+             (1, TState(99, 12, OP.LOOKUP)),  # search of diffeent
+             (1, TState(100, None, OP.LOOKUP)),  # search of existing
             ],
             mem_init={1: MState(None, None)}
         )
