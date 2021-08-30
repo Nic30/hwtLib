@@ -158,7 +158,7 @@ class Axi4_to_AvalonMm(BusBridge):
             def_val=self.R_DATA_FIFO_DEPTH)
 
         will_be_idle = ~addr_tmp.vld | \
-                       ~addr_tmp.is_w | \
+                       (~addr_tmp.is_w & ~avalon.waitRequest) | \
                             (addr_tmp.vld &
                              addr_tmp.is_w &
                              ~avalon.waitRequest &
@@ -167,7 +167,7 @@ class Axi4_to_AvalonMm(BusBridge):
                              axi.b.ready)
         will_be_idle = rename_signal(self, will_be_idle, "will_be_idle")
         r_size_in = self.r_size_fifo.dataIn
-        ar_en = will_be_idle & ~avalon.waitRequest & \
+        ar_en = will_be_idle  & \
                 axi.ar.valid & (r_data_fifo_capacity > fitTo(axi.ar.len, r_data_fifo_capacity)) & \
                 r_size_in.rd
 
