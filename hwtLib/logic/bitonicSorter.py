@@ -75,7 +75,7 @@ class BitonicSorter(Unit):
                 # keep
                 _x[i](x[i]),
                 _x[i + dist](x[i + dist])
-               ).Else(
+            ).Else(
                 # swap
                 _x[i](x[i + dist]),
                 _x[i + dist](x[i]),
