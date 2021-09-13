@@ -74,12 +74,12 @@ class AbstractComponentBuilder(object):
 
         return intf.__class__
 
-    def _findSuitableName(self, unitName):
+    def _findSuitableName(self, unit_name: str):
         """
         find suitable name for component (= name without collisions)
         """
         while True:
-            name = f"{self.name:s}_{unitName:s}_{self.compId:d}"
+            name = f"{self.name:s}_{unit_name:s}_{self.compId:d}"
             try:
                 getattr(self.parent, name)
             except AttributeError:

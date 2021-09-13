@@ -63,7 +63,7 @@ class HwExceptionCtx():
         self.catch_instances = []
         self.name = name
 
-    def _Unit_registerPublicIntfInImpl(self, intf, name):
+    def _Unit_registerPublicIntfInImpl(self, intf: ExceptionHandleInterface, name:str):
         p = self.parent
         p._registerInterface(name, intf, isPrivate=False)
         p._loadInterface(intf, True)
@@ -71,7 +71,7 @@ class HwExceptionCtx():
             p._ctx, p._ctx.interfaces, p._store_manager.name_scope,
             reverse_dir=True)
 
-    def _Unit_makePublicIntfPrivateInImpl(self, intf):
+    def _Unit_makePublicIntfPrivateInImpl(self, intf: ExceptionHandleInterface):
         parent_u = intf._parent
         while not isinstance(parent_u, Unit):
             parent_u = parent_u._parent
