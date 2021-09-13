@@ -109,7 +109,7 @@ class DebugBusMonitorExampleAxiTC(SimTestCase):
                                       args=(self, buff_txt, buff_dot))
         ctl_thread.start()
         # actually takes less time as the simulation is stopped after ctl_thread end
-        self.runSim(8000 * CLK_PERIOD)
+        self.runSim(10000 * CLK_PERIOD)
         # handle the case where something went wrong and ctl thread is still running
         self.sim_done = True
         if self.r_data_available.locked():
