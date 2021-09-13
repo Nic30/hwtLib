@@ -1,0 +1,146 @@
+digraph {
+  n0 [shape=plaintext, label=<
+    <table border='0' cellborder='1' cellspacing='0'>
+      <tr><td>din0</td><td></td><td></td></tr>
+      <tr><td></td><td>data</td><td>0x0</td></tr>
+      <tr><td></td><td>vld</td><td>0</td></tr>
+      <tr><td></td><td>rd</td><td>1</td></tr>
+    </table>
+  >];
+  n1 [shape=plaintext, label=<
+    <table border='0' cellborder='1' cellspacing='0' bgcolor="#90ee90">
+      <tr><td bgcolor="#90ee90">din0_snapshot</td><td bgcolor="#90ee90"></td><td bgcolor="#90ee90"></td></tr>
+      <tr><td></td><td>data</td><td>0x2</td></tr>
+      <tr><td></td><td>vld</td><td>1</td></tr>
+      <tr><td></td><td>rd</td><td>1</td></tr>
+    </table>
+  >];
+  n2 [shape=plaintext, label=<
+    <table border='0' cellborder='1' cellspacing='0'>
+      <tr><td>dout0</td><td></td><td></td></tr>
+      <tr><td></td><td>data</td><td>0x0</td></tr>
+      <tr><td></td><td>vld</td><td>0</td></tr>
+      <tr><td></td><td>rd</td><td>1</td></tr>
+    </table>
+  >];
+  n3 [shape=plaintext, label=<
+    <table border='0' cellborder='1' cellspacing='0' bgcolor="#90ee90">
+      <tr><td bgcolor="#90ee90">dout0_snapshot</td><td bgcolor="#90ee90"></td><td bgcolor="#90ee90"></td></tr>
+      <tr><td></td><td>data</td><td>0x2</td></tr>
+      <tr><td></td><td>vld</td><td>1</td></tr>
+      <tr><td></td><td>rd</td><td>1</td></tr>
+    </table>
+  >];
+  n4 [shape=plaintext, label=<
+    <table border='0' cellborder='1' cellspacing='0' bgcolor="#ffcccb">
+      <tr><td bgcolor="#ffcccb">din1</td><td bgcolor="#ffcccb"></td><td bgcolor="#ffcccb"></td></tr>
+      <tr><td></td><td>data</td><td>0x4</td></tr>
+      <tr><td></td><td>vld</td><td>1</td></tr>
+      <tr><td></td><td>rd</td><td>0</td></tr>
+    </table>
+  >];
+  n5 [shape=plaintext, label=<
+    <table border='0' cellborder='1' cellspacing='0' bgcolor="#90ee90">
+      <tr><td bgcolor="#90ee90">din1_snapshot</td><td bgcolor="#90ee90"></td><td bgcolor="#90ee90"></td></tr>
+      <tr><td></td><td>data</td><td>0x3</td></tr>
+      <tr><td></td><td>vld</td><td>1</td></tr>
+      <tr><td></td><td>rd</td><td>1</td></tr>
+    </table>
+  >];
+  subgraph cluster_6 {
+    label="reg";
+    n7 [shape=plaintext, label=<
+      <table border='0' cellborder='1' cellspacing='0' bgcolor="#ffcccb">
+        <tr><td bgcolor="#ffcccb">dataIn</td><td bgcolor="#ffcccb"></td><td bgcolor="#ffcccb"></td></tr>
+        <tr><td></td><td>data</td><td>0x4</td></tr>
+        <tr><td></td><td>vld</td><td>1</td></tr>
+        <tr><td></td><td>rd</td><td>0</td></tr>
+      </table>
+    >];
+    n8 [shape=plaintext, label=<
+      <table border='0' cellborder='1' cellspacing='0' bgcolor="#ffcccb">
+        <tr><td bgcolor="#ffcccb">dataIn_snapshot</td><td bgcolor="#ffcccb"></td><td bgcolor="#ffcccb"></td></tr>
+        <tr><td></td><td>data</td><td>0x4</td></tr>
+        <tr><td></td><td>vld</td><td>1</td></tr>
+        <tr><td></td><td>rd</td><td>0</td></tr>
+      </table>
+    >];
+    n9 [shape=plaintext, label=<
+      <table border='0' cellborder='1' cellspacing='0' bgcolor="#ffcccb">
+        <tr><td bgcolor="#ffcccb">dataOut</td><td bgcolor="#ffcccb"></td><td bgcolor="#ffcccb"></td></tr>
+        <tr><td></td><td>data</td><td>0x3</td></tr>
+        <tr><td></td><td>vld</td><td>1</td></tr>
+        <tr><td></td><td>rd</td><td>0</td></tr>
+      </table>
+    >];
+    n10 [shape=plaintext, label=<
+      <table border='0' cellborder='1' cellspacing='0' bgcolor="#b19cd9">
+        <tr><td bgcolor="#b19cd9">dataOut_snapshot</td><td bgcolor="#b19cd9"></td><td bgcolor="#b19cd9"></td></tr>
+        <tr><td></td><td>data</td><td>0x0</td></tr>
+        <tr><td></td><td>vld</td><td>0</td></tr>
+        <tr><td></td><td>rd</td><td>0</td></tr>
+      </table>
+    >];
+  }
+  n11 [shape=plaintext, label=<
+    <table border='0' cellborder='1' cellspacing='0' bgcolor="#ffcccb">
+      <tr><td bgcolor="#ffcccb">dout1</td><td bgcolor="#ffcccb"></td><td bgcolor="#ffcccb"></td></tr>
+      <tr><td></td><td>data</td><td>0x3</td></tr>
+      <tr><td></td><td>vld</td><td>1</td></tr>
+      <tr><td></td><td>rd</td><td>0</td></tr>
+    </table>
+  >];
+  n12 [shape=plaintext, label=<
+    <table border='0' cellborder='1' cellspacing='0' bgcolor="#b19cd9">
+      <tr><td bgcolor="#b19cd9">dout1_snapshot</td><td bgcolor="#b19cd9"></td><td bgcolor="#b19cd9"></td></tr>
+      <tr><td></td><td>data</td><td>0x0</td></tr>
+      <tr><td></td><td>vld</td><td>0</td></tr>
+      <tr><td></td><td>rd</td><td>0</td></tr>
+    </table>
+  >];
+  n13 [shape=plaintext, label=<
+    <table border='0' cellborder='1' cellspacing='0'>
+      <tr><td>din2</td><td></td><td></td></tr>
+      <tr><td></td><td>data</td><td>0x0</td></tr>
+      <tr><td></td><td>vld</td><td>0</td></tr>
+      <tr><td></td><td>rd</td><td>1</td></tr>
+    </table>
+  >];
+  n14 [shape=plaintext, label=<
+    <table border='0' cellborder='1' cellspacing='0'>
+      <tr><td>din2_snapshot</td><td></td><td></td></tr>
+      <tr><td></td><td>data</td><td>0x0</td></tr>
+      <tr><td></td><td>vld</td><td>0</td></tr>
+      <tr><td></td><td>rd</td><td>1</td></tr>
+    </table>
+  >];
+  n15 [shape=plaintext, label=<
+    <table border='0' cellborder='1' cellspacing='0'>
+      <tr><td>dout2</td><td></td><td></td></tr>
+      <tr><td></td><td>data</td><td>0x0</td></tr>
+      <tr><td></td><td>vld</td><td>0</td></tr>
+      <tr><td></td><td>rd</td><td>1</td></tr>
+    </table>
+  >];
+  n16 [shape=plaintext, label=<
+    <table border='0' cellborder='1' cellspacing='0'>
+      <tr><td>dout2_snapshot</td><td></td><td></td></tr>
+      <tr><td></td><td>data</td><td>0x0</td></tr>
+      <tr><td></td><td>vld</td><td>0</td></tr>
+      <tr><td></td><td>rd</td><td>1</td></tr>
+    </table>
+  >];
+  n0 -> n1;
+  n0 -> n2;
+  n2 -> n3;
+  n4 -> n5;
+  n4 -> n7;
+  n7 -> n8;
+  n7 -> n9;
+  n9 -> n10;
+  n9 -> n11;
+  n11 -> n12;
+  n13 -> n14;
+  n13 -> n15;
+  n15 -> n16;
+}
