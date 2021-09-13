@@ -1,8 +1,9 @@
 include README.md
 include MANIFEST.in
 
-# find hwtLib/ -name "*.vhd" -o -name "*.v" -o -name "*.cpp" -o -name "*.xdc" -name "*.json" -o -name "*.png" | sort | sed 's|\./|include |g'
+# find hwtLib/ -name "*.vhd" -o -name "*.v" -o -name "*.cpp" -o -name "*.xdc" -o -name "*.json" -o -name "*.png" -o -name "*.dot" | sort | sed 's|hwtLib/|include hwtLib/|g'
 include hwtLib/examples/arithmetic/VhdlVectorAutoCastExample.vhd
+include hwtLib/examples/axi/DebugBusMonitorExampleAxiTC.dot
 include hwtLib/examples/EmptyUnitWithSpi.vhd
 include hwtLib/examples/hierarchy/GroupOfBlockrams.vhd
 include hwtLib/examples/hierarchy/MultiConfigUnitWrapper_3x_same_io_type_different_int_param.vhd
@@ -52,8 +53,8 @@ include hwtLib/examples/statements/IfStatementPartiallyEnclosed.vhd
 include hwtLib/examples/statements/SimpleIfStatementMergable1.vhd
 include hwtLib/examples/statements/SimpleIfStatementMergable2.vhd
 include hwtLib/examples/statements/SimpleIfStatementMergable.vhd
-include hwtLib/examples/statements/SimpleIfStatementPartialOverride.vhd
 include hwtLib/examples/statements/SimpleIfStatementPartialOverrideNopVal.vhd
+include hwtLib/examples/statements/SimpleIfStatementPartialOverride.vhd
 include hwtLib/examples/statements/SwitchStmUnit.cpp
 include hwtLib/examples/statements/SwitchStmUnit.v
 include hwtLib/examples/statements/SwitchStmUnit.vhd

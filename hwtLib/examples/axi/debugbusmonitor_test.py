@@ -12,7 +12,8 @@ from hwtLib.examples.axi.debugbusmonitor import DebugBusMonitorExampleAxi
 from hwtLib.tools.debug_bus_monitor_ctl import DebugBusMonitorCtl, words_to_int
 from pyMathBitPrecise.bit_utils import ValidityError
 from hwtSimApi.constants import CLK_PERIOD
-from hwtSimApi.triggers import Timer, StopSimumulation
+from hwtSimApi.triggers import Timer, StopSimumulation, WaitWriteOnly
+import os
 
 
 class DebugBusMonitorCtlSim(DebugBusMonitorCtl):
@@ -47,9 +48,10 @@ class DebugBusMonitorCtlSim(DebugBusMonitorCtl):
         return words_to_int(words, word_size, size).to_bytes(size, "little")
 
 
-def run_DebugBusMonitorCtlSim(tc, out):
+def run_DebugBusMonitorCtlSim(tc, out_txt, out_dot):
     db = DebugBusMonitorCtlSim(tc)
-    db.dump_txt(out)
+    db.dump_txt(out_txt)
+    db.dump_dot(out_dot)
     tc.sim_done = True
 
 
@@ -67,9 +69,8 @@ class DebugBusMonitorExampleAxiTC(SimTestCase):
         self.r_data_available = threading.Lock()
         self.r_data_available.acquire()
 
-    def test_dump_txt(self):
+    def test_dump(self):
         u = self.u
-        buff = StringIO()
         tc = self
 
         class SpyDeque(deque):
@@ -84,6 +85,13 @@ class DebugBusMonitorExampleAxiTC(SimTestCase):
                 super(SpyDeque, self).append(x)
 
         u.s.r._ag.data = SpyDeque(self)
+        u.din0._ag.data.extend([1, 2])
+        u.din1._ag.data.extend([3, 4])
+        u.din2._ag.data.extend([5, 6])
+
+        def sim_init():
+            yield WaitWriteOnly()
+            u.dout1._ag.setEnable(False)
 
         def time_sync():
             while True:
@@ -93,9 +101,12 @@ class DebugBusMonitorExampleAxiTC(SimTestCase):
                 if self.sim_done:
                     raise StopSimumulation()
 
-        self.procs.append(time_sync())
+        self.procs.extend([time_sync(), sim_init()])
+
+        buff_txt = StringIO()
+        buff_dot = StringIO()
         ctl_thread = threading.Thread(target=run_DebugBusMonitorCtlSim,
-                                      args=(self, buff,))
+                                      args=(self, buff_txt, buff_dot))
         ctl_thread.start()
         # actually takes less time as the simulation is stopped after ctl_thread end
         self.runSim(8000 * CLK_PERIOD)
@@ -105,52 +116,53 @@ class DebugBusMonitorExampleAxiTC(SimTestCase):
             self.r_data_available.release()
         ctl_thread.join()
 
-        d = buff.getvalue()
+        d = buff_txt.getvalue()
         self.assertEqual(d, """\
 din0:
   data: 0x0
   vld: 0
   rd: 1
 din0_snapshot:
-  data: 0x0
-  vld: 0
-  rd: 0
+  data: 0x2
+  vld: 1
+  rd: 1
 dout0:
   data: 0x0
   vld: 0
   rd: 1
 dout0_snapshot:
-  data: 0x0
-  vld: 0
-  rd: 0
+  data: 0x2
+  vld: 1
+  rd: 1
 din1:
-  data: 0x0
-  vld: 0
-  rd: 1
+  data: 0x4
+  vld: 1
+  rd: 0
 din1_snapshot:
-  data: 0x0
-  vld: 0
-  rd: 0
-dataIn:
-  data: 0x0
-  vld: 0
+  data: 0x3
+  vld: 1
   rd: 1
-dataIn_snapshot:
-  data: 0x0
-  vld: 0
-  rd: 0
-dataOut:
-  data: 0x0
-  vld: 0
-  rd: 1
-dataOut_snapshot:
-  data: 0x0
-  vld: 0
-  rd: 0
+reg:
+  dataIn:
+    data: 0x4
+    vld: 1
+    rd: 0
+  dataIn_snapshot:
+    data: 0x4
+    vld: 1
+    rd: 0
+  dataOut:
+    data: 0x3
+    vld: 1
+    rd: 0
+  dataOut_snapshot:
+    data: 0x0
+    vld: 0
+    rd: 0
 dout1:
-  data: 0x0
-  vld: 0
-  rd: 1
+  data: 0x3
+  vld: 1
+  rd: 0
 dout1_snapshot:
   data: 0x0
   vld: 0
@@ -162,7 +174,7 @@ din2:
 din2_snapshot:
   data: 0x0
   vld: 0
-  rd: 0
+  rd: 1
 dout2:
   data: 0x0
   vld: 0
@@ -170,9 +182,13 @@ dout2:
 dout2_snapshot:
   data: 0x0
   vld: 0
-  rd: 0
+  rd: 1
 """)
-
+        dot_file = os.path.join(os.path.dirname(__file__), "DebugBusMonitorExampleAxiTC.dot")
+        #with open(dot_file, "w") as f:
+        #    f.write(buff_dot.getvalue())
+        with open(dot_file, "r") as f:
+            self.assertEqual(buff_dot.getvalue(), f.read())
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()

@@ -18,23 +18,28 @@ from hwtLib.abstract.monitorIntf import monitor_of, connect_MonitorIntf, \
     connect_to_MonitorIntf, MonitorIntfVldSyncedCdc
 
 
-class GraphvizVisualNode():
-
-    def __init__(self, origin: Union[Unit, Interface], body_formatter):
-        self.origin = origin
-        self.successors: List[GraphvizVisualNode] = []
-        self.body_formatter = None
-        self.children = List[GraphvizVisualNode] = []
-
-
 class DebugBusMonitorDataRecord():
 
     def __init__(self, intf: Interface, name: str, cdc: bool, trigger: RtlSignal, add_reg: bool):
+        self.parent = None
         self.intf = intf
         self.name = name
         self.cdc = cdc
         self.trigger = trigger
         self.add_reg = add_reg
+        self.successors: List[DebugBusMonitorDataRecord] = []
+        self.children: List[DebugBusMonitorDataRecord] = []
+
+    def add_children(self, c: "DebugBusMonitorDataRecord"):
+        c.parent = self
+        self.children.append(c)
+
+    def is_visual_only(self):
+        return self.intf is None
+
+    def add_link(self, dst: "DebugBusMonitorDataRecord"):
+        assert isinstance(dst, DebugBusMonitorDataRecord), dst
+        self.successors.append(dst)
 
 
 class DebugBusMonitor(Unit):
@@ -54,16 +59,16 @@ class DebugBusMonitor(Unit):
 
         struct address_space {
             // value 0 means the name memory is explicitly dissabled
-            uint32_t name_memory_size;
-            uint32_t name_memory_offset; // offsetof(address_space, data)
-            // n can be resolved from content of name_memory
+            uint32_t meta_memory_size;
+            uint32_t meta_memory_offset; // offsetof(address_space, data)
+            // n can be resolved from content of meta_memory
             // as well as structure of data_memory
             uint8_t data_memory[n];
             // padding to size 2**x
-            char name_memory[name_memory_size]; // contains a JSON with data info (if ADD_NAME_MEMORY)
+            char meta_memory[meta_memory_size]; // contains a JSON with data info (if ADD_META_MEMORY)
         };
 
-    Example of name_memory JSON format:
+    Example of meta_memory JSON format:
 
     .. code-block: javascript
 
@@ -88,7 +93,7 @@ class DebugBusMonitor(Unit):
     def _config(self):
         self._bus_cls._config(self)
         self.monitored_data: List[DebugBusMonitorDataRecord] = []
-        self.ADD_NAME_MEMORY: bool = Param(True)
+        self.ADD_META_MEMORY: bool = Param(True)
 
     def register(self, intf: Interface,
                  name: Optional[str]=None,
@@ -110,7 +115,9 @@ class DebugBusMonitor(Unit):
                 name = intf._getHdlName()
             else:
                 name = intf.name
-        self.monitored_data.append(DebugBusMonitorDataRecord(intf, name, cdc, trigger, add_reg))
+        d = DebugBusMonitorDataRecord(intf, name, cdc, trigger, add_reg)
+        self.monitored_data.append(d)
+        return d
 
     def _declr(self):
         addClkRstn(self)
@@ -119,41 +126,41 @@ class DebugBusMonitor(Unit):
         # declare an interface with same signals but all inputs for each
         # monitored interface
         self.monitor = HObjList([
-            monitor_of(d.intf) for d in self.monitored_data
+            monitor_of(d.intf) for d in self.monitored_data if not d.is_visual_only()
         ])
         self.io_instantiated = True
 
     def _impl(self):
-        if self.ADD_NAME_MEMORY:
-            name_memory, name_memory_size, name_content_size = \
-                self.build_name_memory(self.monitored_data)
+        if self.ADD_META_MEMORY:
+            meta_memory, meta_memory_size, name_content_size = \
+                self.build_meta_memory(self.monitored_data)
         else:
             name_content_size = 0
         const_uint32_t = Bits(32, signed=False, const=True)
         addr_space = IntfMap([
-            (const_uint32_t, "name_memory_size"),
-            (const_uint32_t, "name_memory_offset"),
+            (const_uint32_t, "meta_memory_size"),
+            (const_uint32_t, "meta_memory_offset"),
             (IntfMap(
                 (Interface_to_HdlType().apply(d.intf, const=True), d.name)
-                for d in self.monitored_data
+                for d in self.monitored_data if not d.is_visual_only()
             ), "data_memory"),
         ])
         data_part_t = HTypeFromIntfMap(addr_space)
         data_part_width = data_part_t.bit_length()
-        if self.ADD_NAME_MEMORY:
+        if self.ADD_META_MEMORY:
             closest_pow2 = 2 ** data_part_width.bit_length()
             if data_part_width != closest_pow2:
-                # padding between data_memory and name_memory
+                # padding between data_memory and meta_memory
                 addr_space.append((Bits(closest_pow2 - data_part_width), None))
-            name_memory_offset = closest_pow2 // 8
+            meta_memory_offset = closest_pow2 // 8
 
-            name_mem_words = name_memory_size // (self.DATA_WIDTH // 8)
+            meta_mem_words = meta_memory_size // (self.DATA_WIDTH // 8)
             addr_space.append(
-                (Bits(self.DATA_WIDTH, const=True)[name_mem_words],
-                 "name_memory")
+                (Bits(self.DATA_WIDTH, const=True)[meta_mem_words],
+                 "meta_memory")
             )
         else:
-            name_memory_offset = 0
+            meta_memory_offset = 0
 
         ep = self._bus_endpoint_cls.fromInterfaceMap(addr_space)
 
@@ -161,47 +168,67 @@ class DebugBusMonitor(Unit):
             self.ep = ep
         ep.bus(self.s)
 
-        ep.decoded.name_memory_size(name_content_size)
-        ep.decoded.name_memory_offset(name_memory_offset)
-        for intf, d in zip(self.monitor, self.monitored_data):
+        ep.decoded.meta_memory_size(name_content_size)
+        ep.decoded.meta_memory_offset(meta_memory_offset)
+        for intf, d in self.iter_monitor_interface():
             to_bus_intf = getattr(ep.decoded.data_memory, d.name)
             connect_MonitorIntf(intf, to_bus_intf)
 
-        if self.ADD_NAME_MEMORY:
-            name_memory = rename_signal(self, name_memory, "name_memory")
-            name_memory_reader = ep.decoded.name_memory
+        if self.ADD_META_MEMORY:
+            meta_memory = rename_signal(self, meta_memory, "meta_memory")
+            meta_memory_reader = ep.decoded.meta_memory
             If(self.clk._onRisingEdge(),
-                If(name_memory_reader.en,
-                   name_memory_reader.dout(
-                       name_memory[name_memory_reader.addr])
+                If(meta_memory_reader.en,
+                   meta_memory_reader.dout(
+                       meta_memory[meta_memory_reader.addr])
                    )
                )
 
         propagateClkRstn(self)
 
     @classmethod
-    def _build_name_memory(cls, intf: Interface, offset: int):
+    def _build_meta_memory(cls, intf: Interface, offset: int):
         if isinstance(intf, Interface) and intf._interfaces:
-            res = {}
+            res = []
             for i in intf._interfaces:
-                offset, _i = cls._build_name_memory(i, offset)
-                res[i._name] = _i
+                offset, _i = cls._build_meta_memory(i, offset)
+                res.append((i._name, _i))
+
             return offset, res
+
         else:
             w = intf._dtype.bit_length()
             return offset + w, [offset, w]
+
         return offset
 
-    def build_name_memory_json(self, monitored_data: List[Tuple[Interface, str]]):
-        res = {}
-        offset = 0
+    def build_meta_memory_json(self, monitored_data: List[DebugBusMonitorDataRecord], data_ids: Dict[DebugBusMonitorDataRecord, int], offset: int):
+        res = []
         for d in monitored_data:
-            offset, _i = self._build_name_memory(d.intf, offset)
-            res[d.name] = _i
-        return res
+            d: DebugBusMonitorDataRecord
 
-    def build_name_memory(self, monitored_data: List[Tuple[Interface, str]]):
-        res = self.build_name_memory_json(monitored_data)
+            if d.is_visual_only():
+                _i = []
+            else:
+                offset, _i = self._build_meta_memory(d.intf, offset)
+
+            children, offset = self.build_meta_memory_json(d.children, data_ids, offset)
+            res.append({
+                "id": data_ids[d],
+                "name": d.name,
+                "data": _i,
+                "links": [data_ids[_d] for _d in d.successors],
+                'children': children,
+            })
+
+        return res, offset
+
+    def build_meta_memory(self, monitored_data: List[DebugBusMonitorDataRecord]):
+        data_ids = {}
+        for i, d in enumerate(monitored_data):
+            data_ids[d] = i
+
+        res, _ = self.build_meta_memory_json((d for d in monitored_data if d.parent is None), data_ids, 0)
         res_bytes = json.dumps(res).encode("utf-8")
         DW = self.DATA_WIDTH
         name_data_width = ceil((len(res_bytes) * 8) / DW) * DW
@@ -211,12 +238,15 @@ class DebugBusMonitor(Unit):
 
         return res, name_data_width // 8, len(res_bytes)
 
+    def iter_monitor_interface(self):
+        yield from zip(self.monitor, (_d for _d in self.monitored_data if not _d.is_visual_only()))
+
     def apply_connections(self):
         """
         Connect a monitored interface to monitor ports of this component
         """
         parent = self._parent
-        for intf, d in zip(self.monitor, self.monitored_data):
+        for intf, d in self.iter_monitor_interface():
             if d.trigger is not None or d.cdc or d.add_reg:
                 intf_t = Interface_to_HdlType().apply(intf)
             else:
