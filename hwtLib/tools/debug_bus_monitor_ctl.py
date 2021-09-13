@@ -356,6 +356,8 @@ if __name__ == "__main__":
                         help='the devmem tool to use')
     parser.add_argument('--memory-desc', dest='mem_desc', default=None, type=str,
                         help='path to a file with a json specification of memory space of the signals')
+    parser.add_argument("--output-format", dest="output_format", default="str", type=str, choices=["txt", "dot"],
+                        help="format of output produced from this script (txt = basic indented text, dot = grahwiz graph)")
 
     args = parser.parse_args()
     db = DebugBusMonitorCtlDevmem(args.address)
@@ -366,5 +368,10 @@ if __name__ == "__main__":
         data_width = db.get_data_memory_width(meta_memory)
         db.meta_memory = meta_memory
         db.data_memory_size = ceil(data_width / 8)
+    if args.output_format == "txt":
+        db.dump_txt(sys.stdout)
+    elif args.output_format == "dot":
+        db.dump_dot(sys.stdout)
+    else:
+        raise ValueError("Unsupported format of output", args.output_format)
 
-    db.dump_txt(sys.stdout)
