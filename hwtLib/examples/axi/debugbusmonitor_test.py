@@ -4,16 +4,16 @@
 from collections import deque
 from io import StringIO
 from math import ceil
+import os
 import threading
 import unittest
 
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.examples.axi.debugbusmonitor import DebugBusMonitorExampleAxi
 from hwtLib.tools.debug_bus_monitor_ctl import DebugBusMonitorCtl, words_to_int
-from pyMathBitPrecise.bit_utils import ValidityError
 from hwtSimApi.constants import CLK_PERIOD
 from hwtSimApi.triggers import Timer, StopSimumulation, WaitWriteOnly
-import os
+from pyMathBitPrecise.bit_utils import ValidityError
 
 
 class DebugBusMonitorCtlSim(DebugBusMonitorCtl):

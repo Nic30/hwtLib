@@ -47,7 +47,8 @@ class FifoOutOfOrderRead(Unit):
 
         # begin the read of the item
         # :note: this interface is master as it providesthe information about the read execution
-        wl = self.read_execute = IndexKeyHs()._m()
+        self.read_execute: IndexKeyHs = IndexKeyHs()._m()
+        wl = self.read_execute
         wl.KEY_WIDTH = self.KEY_WIDTH
         wl.INDEX_WIDTH = ITEM_INDEX_WIDTH
 
