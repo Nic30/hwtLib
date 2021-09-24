@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 import unittest
 
 from hwt.interfaces.std import Rst_n, Clk
-from hwt.serializer.store_manager import SaveToFilesFlat
+from hwt.serializer.store_manager import SaveToFilesFlat, SaveToSingleFiles
 from hwt.serializer.vhdl import Vhdl2008Serializer
 from hwt.serializer.xdc.serializer import XdcSerializer
 from hwt.synthesizer.param import Param
@@ -81,6 +81,24 @@ class ConstraintsXdcClockRelatedTC(unittest.TestCase):
             ref_s = f.read()
         self.assertEqual(s, ref_s)
 
+    def assert_constraints_file_eq_flat_files(self, u: Unit, file_name):
+        THIS_DIR = os.path.dirname(os.path.realpath(self.__FILE__))
+        ref_f_name = os.path.join(THIS_DIR, file_name)
+        with TemporaryDirectory() as build_root:
+            saver = SaveToSingleFiles(Vhdl2008Serializer, build_root, u._getDefaultName())
+            to_rtl(u, saver)
+
+            f_name = os.path.join(
+                build_root, u._name + XdcSerializer.fileExtension)
+            with open(f_name) as f:
+                s = f.read()
+            # with open(ref_f_name, "w") as f:
+            #     f.write(s)
+
+        with open(ref_f_name) as f:
+            ref_s = f.read()
+        self.assertEqual(s, ref_s)
+
     def test_FifoAsync(self):
         u = FifoAsync()
         u.DEPTH = 8
@@ -90,6 +108,11 @@ class ConstraintsXdcClockRelatedTC(unittest.TestCase):
         u = AxiStreamFullDuplexCdc()
         u.DEPTH = 9
         self.assert_constraints_file_eq(u, "AxiStreamFullDuplexCdc.xdc")
+
+    def test_FifoAsync_flat_files(self):
+        u = FifoAsync()
+        u.DEPTH = 8
+        self.assert_constraints_file_eq_flat_files(u, "FifoAsync.xdc")
 
 
 if __name__ == '__main__':
