@@ -5,7 +5,6 @@ from hwt.interfaces.std import VectSignal
 from hwt.synthesizer.param import Param
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
 from hwtLib.examples.hierarchy.groupOfBlockrams import GroupOfBlockrams
-from hwtLib.examples.hierarchy.multiConfigUnit import MultiConfigUnitWrapper
 from hwtLib.examples.hierarchy.netFilter import NetFilter
 from hwtLib.examples.hierarchy.rippleadder import RippleAdder0, \
     RippleAdder1, RippleAdder2, RippleAdder3
