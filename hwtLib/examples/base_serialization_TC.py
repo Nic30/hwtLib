@@ -1,6 +1,5 @@
 import os
 import re
-import unittest
 
 from hwt.serializer.hwt import HwtSerializer
 from hwt.serializer.systemC import SystemCSerializer
