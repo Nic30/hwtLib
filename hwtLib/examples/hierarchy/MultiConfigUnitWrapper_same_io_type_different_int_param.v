@@ -57,10 +57,8 @@ module SimpleUnitWithParam #(
             .a(a),
             .b(b)
         );
-    endgenerate
-
-    generate if (DATA_WIDTH != 2)
-        $error("%m Generated only for this param value");
+    else
+        $error("%m The component was generated for this generic/params combination");
     endgenerate
 
 endmodule

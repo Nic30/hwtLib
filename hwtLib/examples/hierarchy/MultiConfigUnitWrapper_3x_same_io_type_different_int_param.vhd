@@ -150,6 +150,7 @@ BEGIN
             a => a,
             b => b
         );
+    ELSE GENERATE
+        ASSERT FALSE REPORT "The component was generated for this generic/params combination" SEVERITY failure;
     END GENERATE;
-    ASSERT DATA_WIDTH = 2 REPORT "Generated only for this value" SEVERITY failure;
 END ARCHITECTURE;

@@ -4,6 +4,7 @@ from typing import List, Dict, Tuple, Union
 from hdlConvertorAst.hdlAst import HdlIdDef, HdlValueId, HdlStmIf, \
     HdlStmBlock, HdlModuleDef, HdlCompInst
 from hwt.code import And
+from hwt.doc_markers import internal
 from hwt.hdl.portItem import HdlPortItem
 from hwt.hdl.types.defs import BIT, INT
 from hwt.hdl.types.hdlType import HdlType
@@ -69,7 +70,8 @@ class MultiConfigUnitWrapper(Unit):
         for intf in self.possible_variants[0]._interfaces:
             # clone interface
             myIntf = copy(intf)
-            myIntf._dtype = copy(myIntf._dtype)
+            if hasattr(myIntf, "_dtype"):
+                myIntf._dtype = copy(myIntf._dtype)
             # sub-interfaces are not instantiated yet
             # myIntf._direction = intf._direction
             myIntf._direction = INTF_DIRECTION.opposite(intf._direction)
@@ -288,6 +290,8 @@ class MultiConfigUnitWrapper(Unit):
                 if_generate.if_true = ci
             else:
                 if_generate.elifs.append((c, ci))
+        if_generate.if_false = store_manager.as_hdl_ast._static_assert_false(
+            "The component was generated for this generic/params combination")
 
         mdef.objs.append(if_generate)
         for p in ctx.ent.ports:
@@ -300,6 +304,11 @@ class MultiConfigUnitWrapper(Unit):
         ctx.arch = mdef
         return mdef
 
+    @internal
+    def _to_rtl(self, target_platform:DummyPlatform,
+        store_manager:"StoreManager", add_param_asserts=False):
+        return Unit._to_rtl(self, target_platform, store_manager, add_param_asserts=add_param_asserts)
+
     def _impl(self):
         assert self._parent is None, "should be used only for top instances"
         self._ctx.create_HdlModuleDef = self.create_HdlModuleDef
@@ -308,13 +317,16 @@ class MultiConfigUnitWrapper(Unit):
 
 
 if __name__ == "__main__":
-    from hwtLib.examples.simpleWithParam import SimpleUnitWithParam
+    from hwtLib.examples.axi.simpleAxiRegs import SimpleAxiRegs
     from hwt.synthesizer.utils import to_rtl_str
-    u0 = SimpleUnitWithParam()
-    u0.DATA_WIDTH = 2
-    u1 = SimpleUnitWithParam()
-    u1.DATA_WIDTH = 3
 
-    u = MultiConfigUnitWrapper([u0, u1])
+    variants = []
+    for aw in [8, 16, 32]:
+        u = SimpleAxiRegs()
+        u.ADDR_WIDTH = aw
+        u.DATA_WIDTH = 32
+        variants.append(u)
+
+    u = MultiConfigUnitWrapper(variants)
     print(to_rtl_str(u))
 

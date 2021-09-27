@@ -213,8 +213,7 @@ BEGIN
             b => b,
             b_addr => b_addr
         );
+    ELSE GENERATE
+        ASSERT FALSE REPORT "The component was generated for this generic/params combination" SEVERITY failure;
     END GENERATE;
-    ASSERT ADDR_WIDTH = 11 REPORT "Generated only for this value" SEVERITY failure;
-    ASSERT DATA_WIDTH = 2 REPORT "Generated only for this value" SEVERITY failure;
-    ASSERT IRELEVANT_PARAM = 10 REPORT "Generated only for this value" SEVERITY failure;
 END ARCHITECTURE;
