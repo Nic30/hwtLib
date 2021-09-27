@@ -17,8 +17,6 @@ from hwtLib.amba.axi3 import Axi3
 from hwtLib.amba.axiLite_comp.endpoint import AxiLiteEndpoint
 from hwtLib.amba.axi_comp.stream_to_mem import Axi4streamToMem
 from hwtLib.amba.axis_comp.en import AxiS_en
-from hwtLib.examples.hierarchy.multiConfigUnit import MultiConfigUnitWrapper
-from hwtLib.examples.simpleWithParam import SimpleUnitWithParam
 from hwtLib.mem.fifo import Fifo
 from hwtLib.peripheral.i2c.masterBitCntrl import I2cMasterBitCtrl
 from hwtLib.peripheral.uart.intf import Uart
@@ -87,13 +85,6 @@ class IpCorePackagerTC(unittest.TestCase):
         en0.DEST_WIDTH = 4
         en0.USER_WIDTH = 12
 
-        u0 = SimpleUnitWithParam()
-        u0.DATA_WIDTH = 2
-        u1 = SimpleUnitWithParam()
-        u1.DATA_WIDTH = 3
-
-        u_with_hdl_params = MultiConfigUnitWrapper([u0, u1])
-
         testUnits = [AxiS_en(),
                      en0,
                      AxiLiteEndpoint(HStruct(
@@ -104,7 +95,6 @@ class IpCorePackagerTC(unittest.TestCase):
                      f,
                      Axi4streamToMem(),
                      IpCoreIntfTest(),
-                     u_with_hdl_params,
                      ]
         for u in testUnits:
             serializeAsIpcore(u, folderName=self.test_dir)
