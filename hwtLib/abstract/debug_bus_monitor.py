@@ -202,7 +202,10 @@ class DebugBusMonitor(Unit):
 
         return offset
 
-    def build_meta_memory_json(self, monitored_data: List[DebugBusMonitorDataRecord], data_ids: Dict[DebugBusMonitorDataRecord, int], offset: int):
+    def build_meta_memory_json(self,
+                               monitored_data: List[DebugBusMonitorDataRecord],
+                               data_ids: Dict[DebugBusMonitorDataRecord, int],
+                               offset: int):
         res = []
         for d in monitored_data:
             d: DebugBusMonitorDataRecord
