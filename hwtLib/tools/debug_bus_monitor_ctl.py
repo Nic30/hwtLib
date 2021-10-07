@@ -356,7 +356,7 @@ if __name__ == "__main__":
                         help='the devmem tool to use')
     parser.add_argument('--memory-desc', dest='mem_desc', default=None, type=str,
                         help='path to a file with a json specification of memory space of the signals')
-    parser.add_argument("--output-format", dest="output_format", default="str", type=str, choices=["txt", "dot"],
+    parser.add_argument("--output-format", dest="output_format", default="txt", type=str, choices=["txt", "dot"],
                         help="format of output produced from this script (txt = basic indented text, dot = grahwiz graph)")
 
     args = parser.parse_args()
@@ -365,6 +365,7 @@ if __name__ == "__main__":
     if args.mem_desc:
         with open(args.mem_desc) as fp:
             meta_memory = json.load(fp)
+            meta_memory = db._decode_meta_memory_json(meta_memory)
         data_width = db.get_data_memory_width(meta_memory)
         db.meta_memory = meta_memory
         db.data_memory_size = ceil(data_width / 8)
