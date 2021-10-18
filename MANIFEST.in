@@ -53,7 +53,6 @@ include hwtLib/examples/statements/SimpleIfStatementPartialOverride.vhd
 include hwtLib/examples/statements/SwitchStmUnit.cpp
 include hwtLib/examples/statements/SwitchStmUnit.v
 include hwtLib/examples/statements/SwitchStmUnit.vhd
-include hwtLib/img/charToBitmap_font.png
 include hwtLib/peripheral/displays/Segment7.vhd
 include hwtLib/peripheral/usb/sim/usbip/UsbipTC_test_cdc_vcp.json
 include hwtLib/tests/constraints/AxiStreamFullDuplexCdc.xdc

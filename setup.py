@@ -33,7 +33,6 @@ setup(name='hwtLib',
       ],
       install_requires=[
         'hwt>=3.8',
-        'Pillow',  # there are some components which are working with images
       ],
       license='MIT',
       packages=find_packages(),
