@@ -31,7 +31,6 @@ Also note that the code of the components should be shared if `@serializeParamsU
 * [clocking](https://github.com/Nic30/hwtLib/tree/master/hwtLib/clocking) - various generic PLLs, timer generators etc.
 * [examples](https://github.com/Nic30/hwtLib/tree/master/hwtLib/examples) - demonstrative examples of [hwt](https://github.com/Nic30/hwt/) functionality
 * [handshaked](https://github.com/Nic30/hwtLib/tree/master/hwtLib/handshaked) - components for handshaked interfaces (FIFO, AsyncFifo, Resizer, interconnects, Register, ...)
-* [img](https://github.com/Nic30/hwtLib/tree/master/hwtLib/img) - image preprocessing utils (parse PNG font to bits for OLED, ...)
 * [interfaces](https://github.com/Nic30/hwtLib/tree/master/hwtLib/interfaces) - various interfaces which does not have it's package yet
 * [logic](https://github.com/Nic30/hwtLib/tree/master/hwtLib/logic) - various components like CRC generator, gray counter, decoders-encoders ...
 * [mem](https://github.com/Nic30/hwtLib/tree/master/hwtLib/mem) - various memories (BRAM, ROM, FIFO, Async FIFO, CAM, LUT, ...)
