@@ -53,7 +53,7 @@ class StructWriter(StructReader):
         s = self.set = Handshaked()  # data signal is addr of structure to write
         s.DATA_WIDTH = self.ADDR_WIDTH
         # write ack from slave
-        self.writeAck = HandshakeSync()._m()
+        self.writeAck: HandshakeSync = HandshakeSync()._m()
 
         with self._paramsShared():
             # interface for communication with datapump

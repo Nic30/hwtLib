@@ -1,3 +1,5 @@
+from typing import Optional, Tuple, Union
+
 from hwt.code import If
 from hwt.hdl.types.bits import Bits
 from hwt.interfaces.std import Handshaked
@@ -141,7 +143,10 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         return cls._join(cls.JoinFairCls, parent, srcInterfaces, name,
                          configAs, extraConfig)
 
-    def buff(self, items=1, latency=None, delay=None):
+    def buff(self, items:int=1,
+             latency: Union[None, int, Tuple[int, int]]=None,
+             delay: Optional[int]=None,
+             init_data: tuple=()):
         """
         Use registers and FIFOs to create buffer of specified parameters
         :note: if items <= latency registers are used else FIFO is used
@@ -152,6 +157,9 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
         :param delay: delay of buffer (number of clk ticks required to get data to buffer)
         :note: delay can be used as synchronization method or to solve timing related problems
             because it will split valid signal path
+        :param init_data: a reset value of buffer (data is transfered after reset)
+            if items=1 and interface has just data:uint8_t signal
+            the init_data will be in format ((0,),)
         :note: if latency or delay is None the most optimal value is used
         """
         if items == 0:
@@ -170,6 +178,10 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
             if delay is None:
                 delay = 0
 
+        if init_data is not None:
+            init_data = tuple(init_data)
+            assert len(init_data) <= items, (items, "more init data than init size", init_data)
+
         assert isinstance(latency, tuple) or latency >= 1 and delay >= 0, (latency, delay)
 
         if isinstance(latency, tuple) or latency == 1 or latency >= items:
@@ -178,6 +190,7 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
             def applyParams(u):
                 u.LATENCY = latency
                 u.DELAY = delay
+                u.INIT_DATA = init_data
 
             return self._genericInstance(self.RegCls, "reg",
                                          set_params=applyParams)
@@ -186,10 +199,11 @@ class AbstractStreamBuilder(AbstractComponentBuilder):
             if latency != 2 or delay != 0:
                 raise NotImplementedError()
 
-            def setDepth(u):
+            def applyParams(u):
                 u.DEPTH = items
+                u.INIT_DATA = init_data
 
-            return self._genericInstance(self.FifoCls, "fifo", setDepth)
+            return self._genericInstance(self.FifoCls, "fifo", applyParams)
 
     def buff_cdc(self, clk, rst, items=1):
         """

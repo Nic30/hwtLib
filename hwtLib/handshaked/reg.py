@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import List
+from typing import List, Tuple, Union
 
 from hwt.code import If
 from hwt.interfaces.utils import addClkRstn
@@ -9,6 +9,7 @@ from hwt.pyUtils.arrayQuery import iter_with_last
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.handshaked.compBase import HandshakedCompBase
 
@@ -23,13 +24,19 @@ class HandshakedReg(HandshakedCompBase):
         That there is an extra register for potential data overflow and
         no combinational path between input ready, valid and output ready/valid exists.
 
+    :ivar INIT_DATA: a reset value of register (data is transfered from this register after reset)
+        (an item for each stage of register, typically just 1 item)
+        e.g. if register has latency=1 and interface has just data:uint8_t signal
+        the INIT_DATA will be in format ((0,),)
+
     .. hwt-autodoc:: _example_HandshakedReg
     """
 
     def _config(self):
         HandshakedCompBase._config(self)
-        self.LATENCY = Param(1)
+        self.LATENCY: Union[int, Tuple[int, int]] = Param(1)
         self.DELAY = Param(0)
+        self.INIT_DATA: tuple = Param(())
 
     def _declr(self):
         addClkRstn(self)
@@ -37,16 +44,27 @@ class HandshakedReg(HandshakedCompBase):
             self.dataIn = self.intfCls()
             self.dataOut = self.intfCls()._m()
 
-    def _impl_latency(self, inVld, inRd, inData, outVld, outRd, prefix):
+    def _impl_latency(self, inVld: RtlSignal, inRd: RtlSignal, inData: List[RtlSignal],
+                      outVld: RtlSignal, outRd: RtlSignal, prefix:str, initData: list):
         """
         Create a normal handshaked register
+
+        :param inVld: input valid signal (1 if producer is sending data)
+        :param inRd: input ready signal (send 1 if we are ready to receive the data)
+        :param inData: list of input data signals
+        :param outVld: output valid signal (1 if we are sending valid data)
+        :param outRd: output ready signal (1 if consummer is ready to receive the data)
+        :param prefix: name prefix used for internal signals
+        :param initData: list of init data for each data signal on iterface
         """
-        isOccupied = self._reg(prefix + "isOccupied", def_val=0)
+        isOccupied = self._reg(prefix + "isOccupied", def_val=any(v is not NOT_SPECIFIED for v in initData))
         regs_we = self._sig(prefix + 'reg_we')
 
         outData = []
-        for iin in inData:
-            r = self._reg(prefix + 'reg_' + getSignalName(iin), iin._dtype)
+        assert len(initData) == len(inData)
+        for iin, init in zip(inData, initData):
+            r = self._reg(prefix + 'reg_' + getSignalName(iin), iin._dtype,
+                          def_val=None if init is NOT_SPECIFIED else init)
 
             If(regs_we,
                 r(iin)
@@ -68,20 +86,25 @@ class HandshakedReg(HandshakedCompBase):
         return outData
 
     def _implLatencyAndDelay(self, inVld: RtlSignal, inRd: RtlSignal, inData: List[RtlSignal],
-                             outVld: RtlSignal, outRd: RtlSignal, prefix: str):
+                             outVld: RtlSignal, outRd: RtlSignal, prefix: str, initData: list):
         """
         Create a register pipe
+
+        :see: For param description see :meth:`HandshakedReg._impl_latency`
         """
-        wordLoaded = self._reg(prefix + "wordLoaded", def_val=0)
+        wordLoaded = self._reg(prefix + "wordLoaded", def_val=any(v is not NOT_SPECIFIED for v in initData))
         If(wordLoaded,
-           wordLoaded(~outRd)
+            wordLoaded(~outRd)
         ).Else(
             wordLoaded(inVld)
         )
 
         outData = []
-        for iin in inData:
-            r = self._reg('reg_' + getSignalName(iin), iin._dtype)
+        # construct delay register for each signal
+        assert len(initData) == len(inData)
+        for iin, init in zip(inData, initData):
+            r = self._reg('reg_' + getSignalName(iin), iin._dtype,
+                          def_val=None if init is NOT_SPECIFIED else init)
             If(~wordLoaded,
                r(iin)
             )
@@ -93,22 +116,26 @@ class HandshakedReg(HandshakedCompBase):
         return outData
 
     def _implReadyChainBreak(self, in_vld: RtlSignal, in_rd: RtlSignal, in_data: List[RtlSignal],
-                             out_vld: RtlSignal, out_rd: RtlSignal, prefix: str):
+                             out_vld: RtlSignal, out_rd: RtlSignal, prefix: str, initData: list):
         """
         Two sets of registers 0. is prioritized 1. is used as a backup
         The in_rd is not combinationally connected to out_rd
         The out_vld is not combinationally connected to in_vld
-        """
 
-        occupied = [self._reg(f"{prefix}occupied_{i:d}", def_val=0) for i in range(2)]
+        :see: For param description see :meth:`HandshakedReg._impl_latency`
+        """
+        has_init_data = any(v is not NOT_SPECIFIED for v in initData)
+        occupied = [self._reg(f"{prefix}occupied_{i:d}", def_val=has_init_data if i == 0 else 0) for i in range(2)]
         reader_prio = self._reg(f"{prefix}reader_prio", def_val=0)
 
         consume_0 = (reader_prio._eq(0) & occupied[0]) | ~occupied[1]
         consume_1 = (reader_prio._eq(1) & occupied[1]) | ~occupied[0]
 
         outData = []
-        for iin in in_data:
-            r0 = self._reg(prefix + 'reg0_' + getSignalName(iin), iin._dtype)
+        assert len(initData) == len(in_data)
+        for iin, init in zip(in_data, initData):
+            r0 = self._reg(prefix + 'reg0_' + getSignalName(iin), iin._dtype,
+                           def_val=None if init is NOT_SPECIFIED else init)
             If(in_vld & ~occupied[0],
                r0(iin)
             )
@@ -162,6 +189,7 @@ class HandshakedReg(HandshakedCompBase):
         Out = self.dataOut
         In = self.dataIn
 
+        no_init = [NOT_SPECIFIED for _ in data(In)]
         if LATENCY == (1, 2):
             # ready chain break
             if DELAY != 0:
@@ -169,31 +197,52 @@ class HandshakedReg(HandshakedCompBase):
 
             in_vld, in_rd, in_data = vld(In), rd(In), data(In)
             out_vld, out_rd = vld(Out), rd(Out)
-            outData = self._implReadyChainBreak(in_vld, in_rd, in_data, out_vld, out_rd, "ready_chain_break_")
+            if self.INIT_DATA:
+                if len(self.INIT_DATA) > 1:
+                    raise NotImplementedError()
+                else:
+                    init = self.INIT_DATA[0]
+            else:
+                init = no_init
+
+            outData = self._implReadyChainBreak(in_vld, in_rd, in_data, out_vld, out_rd, "ready_chain_break_", init)
 
         elif DELAY == 0:
+            assert len(self.INIT_DATA) <= self.LATENCY
             in_vld, in_rd, in_data = vld(In), rd(In), data(In)
             for last, i in iter_with_last(range(LATENCY)):
                 if last:
                     out_vld, out_rd = vld(Out), rd(Out)
                 else:
-                    out_vld = self._sig("latency%d_vld" % (i+1))
-                    out_rd = self._sig("latency%d_rd" % (i+1))
+                    out_vld = self._sig("latency%d_vld" % (i + 1))
+                    out_rd = self._sig("latency%d_rd" % (i + 1))
+                try:
+                    init = self.INIT_DATA[i]
+                except IndexError:
+                    init = no_init
 
                 outData = self._impl_latency(in_vld, in_rd, in_data,
                                              out_vld, out_rd,
-                                             f"latency{i:d}_")
+                                             f"latency{i:d}_", init)
                 in_vld, in_rd, in_data = out_vld, out_rd, outData
 
         elif LATENCY == 2 and DELAY == 1:
             latency1_vld = self._sig("latency1_vld")
             latency1_rd = self._sig("latency1_rd")
+            if self.INIT_DATA:
+                if len(self.INIT_DATA) == 1:
+                    init0 = self.INIT_DATA[0]
+                else:
+                    init0, init1 = self.INIT_DATA
+
+            else:
+                init0 = init1 = no_init
             outData = self._impl_latency(vld(In), rd(In), data(In),
                                          latency1_vld, latency1_rd,
-                                         "latency1_")
+                                         "latency1_", init0)
             outData = self._implLatencyAndDelay(latency1_vld, latency1_rd,
                                                 outData, vld(Out), rd(Out),
-                                                "latency2_delay1_")
+                                                "latency2_delay1_", init1)
         else:
             raise NotImplementedError(LATENCY, DELAY)
 

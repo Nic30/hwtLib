@@ -12,6 +12,7 @@ from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
 
 
 # https://eewiki.net/pages/viewpage.action?pageId=20939499
@@ -33,6 +34,8 @@ class Fifo(Unit):
         self.DEPTH = Param(0)
         self.EXPORT_SIZE = Param(False)
         self.EXPORT_SPACE = Param(False)
+        self.INIT_DATA: tuple = Param(())
+        self.INIT_DATA_FIRST_WORD = Param(NOT_SPECIFIED)
 
     def _declr_size_and_space(self):
         if self.EXPORT_SIZE:
@@ -41,7 +44,7 @@ class Fifo(Unit):
             self.space = VectSignal(log2ceil(self.DEPTH + 1), signed=False)._m()
 
     def _declr(self):
-        assert self.DEPTH > 0,\
+        assert self.DEPTH > 0, \
             "Fifo is disabled in this case, do not use it entirely"
 
         addClkRstn(self)
@@ -53,7 +56,7 @@ class Fifo(Unit):
     def fifo_pointers(self, DEPTH: int,
                       write_en_wait: Tuple[RtlSignal, RtlSignal],
                       read_en_wait_list: List[Tuple[RtlSignal, RtlSignal]])\
-                      -> List[Tuple[RtlSignal, RtlSignal]]:
+                      ->List[Tuple[RtlSignal, RtlSignal]]:
         """
         Create fifo writer and reader pointers and enable/wait logic
         This functions supports multiple reader pointers
@@ -67,7 +70,7 @@ class Fifo(Unit):
         s = self._sig
         r = self._reg
         fifo_write = s("fifo_write")
-        write_ptr = _write_ptr = r("write_ptr", index_t, 0)
+        write_ptr = _write_ptr = r("write_ptr", index_t, min(len(self.INIT_DATA), MAX_DEPTH))
         ack_ptr_list = [(fifo_write, write_ptr), ]
         # update writer (head) pointer as needed
         If(fifo_write,
@@ -93,7 +96,7 @@ class Fifo(Unit):
                 )
             )
 
-            looped = r(f"looped{i:d}", def_val=False)
+            looped = r(f"looped{i:d}", def_val=False if len(self.INIT_DATA) <= MAX_DEPTH else True)
             # looped logic
             If(write_en & write_ptr._eq(MAX_DEPTH),
                 looped(True)
@@ -124,11 +127,17 @@ class Fifo(Unit):
 
         s = self._sig
         r = self._reg
-        ((fifo_write, wr_ptr), (fifo_read, rd_ptr), ) = self.fifo_pointers(
+        ((fifo_write, wr_ptr), (fifo_read, rd_ptr),) = self.fifo_pointers(
             DEPTH, (din.en, din.wait), [(dout.en, dout.wait), ])
 
+        init_data = self.INIT_DATA
+        if not init_data:
+            init_data_expanded = None
+        else:
+            init_data_expanded = list(init_data) + [None for _ in range(self.DEPTH - len(init_data))]
+
         if self.DATA_WIDTH:
-            mem = self.mem = s("memory", Bits(self.DATA_WIDTH)[DEPTH])
+            mem = self.mem = s("memory", Bits(self.DATA_WIDTH)[DEPTH], def_val=init_data_expanded)
             If(self.clk._onRisingEdge(),
                 If(fifo_write,
                     # Write Data to Memory
@@ -141,10 +150,19 @@ class Fifo(Unit):
                     # Update data output
                     dout.data(mem[rd_ptr])
                 )
+
+                if self.INIT_DATA_FIRST_WORD == NOT_SPECIFIED else
+
+                If(self.rst_n._isOn(),
+                   dout.data(self.INIT_DATA_FIRST_WORD),
+                ).Elif(fifo_read,
+                    # Update data output
+                    dout.data(mem[rd_ptr])
+                )
             )
 
         if self.EXPORT_SIZE:
-            size = r("size_reg", self.size._dtype, 0)
+            size = r("size_reg", self.size._dtype, len(self.INIT_DATA))
             If(fifo_read,
                 If(~fifo_write,
                    size(size - 1)
@@ -155,8 +173,9 @@ class Fifo(Unit):
                 )
             )
             self.size(size)
+
         if self.EXPORT_SPACE:
-            space = r("space_reg", self.space._dtype, DEPTH)
+            space = r("space_reg", self.space._dtype, DEPTH - len(self.INIT_DATA))
             If(fifo_read,
                 If(~fifo_write,
                    space(space + 1)
@@ -172,8 +191,12 @@ class Fifo(Unit):
 def _example_Fifo():
     u = Fifo()
     u.DATA_WIDTH = 8
-    # u.EXPORT_SIZE = True
+    u.EXPORT_SIZE = True
+    u.EXPORT_SPACE = True
+    u.INIT_DATA = (1, 2, 3)
+    u.INIT_DATA_FIRST_WORD = 0
     u.DEPTH = 16
+
     return u
 
 

@@ -37,6 +37,7 @@ class FifoOutOfOrderRead(Unit):
     def _config(self):
         self.ITEMS = Param(4)
         self.KEY_WIDTH = Param(0)
+        self.INIT_DATA: tuple = Param(())
 
     def _declr(self):
         addClkRstn(self)
@@ -55,6 +56,8 @@ class FifoOutOfOrderRead(Unit):
         # confirm that the item was read and the item in fifo is ready to be used again
         pc = self.read_confirm = Handshaked()
         pc.DATA_WIDTH = ITEM_INDEX_WIDTH
+        if self.INIT_DATA:
+            raise NotImplementedError()
 
     def _impl(self):
         propagateClkRstn(self)

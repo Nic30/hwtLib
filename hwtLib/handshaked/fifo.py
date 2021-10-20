@@ -25,12 +25,13 @@ class HandshakedFifo(HandshakedCompBase):
     .. hwt-autodoc:: _example_HandshakedFifo
     """
     FIFO_CLS = Fifo
-    NON_DATA_BITS_CNT = 2 # 2 for control (valid, ready)
+    NON_DATA_BITS_CNT = 2  # 2 for control (valid, ready)
 
     def _config(self):
-        self.DEPTH = Param(0)
-        self.EXPORT_SIZE = Param(False)
-        self.EXPORT_SPACE = Param(False)
+        self.DEPTH:int = Param(0)
+        self.EXPORT_SIZE: bool = Param(False)
+        self.EXPORT_SPACE: bool = Param(False)
+        self.INIT_DATA: tuple = Param(())
         super()._config()
 
     def _declr_io(self):
@@ -42,25 +43,30 @@ class HandshakedFifo(HandshakedCompBase):
 
         SIZE_W = log2ceil(self.DEPTH + 1 + 1)
         if self.EXPORT_SIZE:
-            self.size = VectSignal(SIZE_W, signed=False)._m()
+            self.size:VectSignal = VectSignal(SIZE_W, signed=False)._m()
         if self.EXPORT_SPACE:
-            self.space = VectSignal(SIZE_W, signed=False)._m()
+            self.space:VectSignal = VectSignal(SIZE_W, signed=False)._m()
 
     def _declr(self):
-        assert self.DEPTH > 0,\
+        assert self.DEPTH > 0, \
             "Fifo is disabled in this case, do not use it entirely"
-        assert self.DEPTH > 1 ,\
+        assert self.DEPTH > 1 , \
             "Fifo is too small, fifo pointers would not work correctly, use register(s) instead"
-
+        assert len(self.INIT_DATA) <= len(self.INIT_DATA)
         self._declr_io()
 
         f = self.fifo = self.FIFO_CLS()
         DW = self.dataIn._bit_length() - self.NON_DATA_BITS_CNT
         f.DATA_WIDTH = DW
         f.DEPTH = self.DEPTH - 1  # because there is an extra register
+        if len(self.INIT_DATA) == self.DEPTH:
+            f.INIT_DATA_FIRST_WORD = self.INIT_DATA[0]
+            f.INIT_DATA = self.INIT_DATA[1:]
+        else:
+            f.INIT_DATA = self.INIT_DATA
+
         f.EXPORT_SIZE = self.EXPORT_SIZE
         f.EXPORT_SPACE = self.EXPORT_SPACE
-
 
     def _connect_size_and_space(self, out_vld, fifo):
         if self.EXPORT_SIZE:
@@ -101,7 +107,7 @@ class HandshakedFifo(HandshakedCompBase):
 
         fOut = self.fifo.dataOut
         dout = self.dataOut
-        out_vld = self._reg("out_vld", def_val=0, clk=out_clk, rst=out_rst)
+        out_vld = self._reg("out_vld", def_val=int(len(self.INIT_DATA) == self.DEPTH), clk=out_clk, rst=out_rst)
         vld(dout)(out_vld)
 
         if fOut.DATA_WIDTH > 0:
@@ -144,8 +150,8 @@ def _example_HandshakedFifo():
     u = HandshakedFifo(Handshaked)
     u.DEPTH = 8
     u.DATA_WIDTH = 4
-    u.EXPORT_SIZE = True
-    u.EXPORT_SPACE = True
+    #u.EXPORT_SIZE = True
+    #u.EXPORT_SPACE = True
     return u
 
 

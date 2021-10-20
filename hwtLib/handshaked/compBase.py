@@ -1,9 +1,9 @@
-from typing import Type, Union, Optional
+from typing import Type, Union, Optional, List
 
-from hwt.interfaces.std import Handshaked, HandshakeSync
-from hwt.synthesizer.interfaceLevel.interfaceUtils.utils import walkPhysInterfaces
+from hwt.interfaces.std import Handshaked, HandshakeSync, Signal
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
+from hwt.synthesizer.interface import Interface
 
 
 class HandshakedCompBase(Unit):
@@ -26,15 +26,17 @@ class HandshakedCompBase(Unit):
         self.intfCls._config(self)
 
     @classmethod
-    def get_valid_signal(cls, intf):
+    def get_valid_signal(cls, intf: HandshakeSync) -> Signal:
         return intf.vld
 
     @classmethod
-    def get_ready_signal(cls, intf):
+    def get_ready_signal(cls, intf: HandshakeSync) -> Signal:
         return intf.rd
 
-    def get_data(self, intf):
+    def get_data(self, intf: HandshakeSync) -> List[Interface]:
         rd = self.get_ready_signal(intf)
         vld = self.get_valid_signal(intf)
-        return [x for x in walkPhysInterfaces(intf)
-                if (x is not rd) and (x is not vld)]
+        return [
+            x for x in intf._interfaces
+            if (x is not rd) and (x is not vld)
+        ]
