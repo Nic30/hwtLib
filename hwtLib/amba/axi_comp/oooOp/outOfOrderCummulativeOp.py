@@ -263,7 +263,7 @@ class OutOfOrderCummulativeOp(Unit):
     def data_load(self, r: Axi4_r, st0: OOOOpPipelineStage):
         if self.BUS_WORD_CNT > 1:
             LD_CNTR_MAX = self.BUS_WORD_CNT - 1
-            cntr = self._reg("r_load_cntr", Bits(log2ceil(LD_CNTR_MAX)), def_val=0)
+            cntr = self._reg("r_load_cntr", Bits(log2ceil(self.BUS_WORD_CNT)), def_val=0)
             If(r.valid & r.ready,
                 If(cntr._eq(LD_CNTR_MAX),
                     cntr(0)
@@ -312,7 +312,7 @@ class OutOfOrderCummulativeOp(Unit):
         st_w = self.MAIN_STATE_T.bit_length()
         word_cnt = self.BUS_WORD_CNT
         if word_cnt > 1:
-            w_word_cntr = self._reg("w_word_cntr", Bits(log2ceil(word_cnt - 1)), def_val=0)
+            w_word_cntr = self._reg("w_word_cntr", Bits(log2ceil(word_cnt)), def_val=0)
             st_data_flat = st_data._reinterpret_cast(Bits(st_w))
             offset = 0
             cases = []
