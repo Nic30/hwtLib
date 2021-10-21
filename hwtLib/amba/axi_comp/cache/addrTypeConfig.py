@@ -38,8 +38,8 @@ class CacheAddrTypeConfig(Unit):
         self.CACHE_LINE_CNT = Param(4096)
 
     def _compupte_tag_index_offset_widths(self):
-        self.OFFSET_W = log2ceil(self.CACHE_LINE_SIZE - 1)
-        self.INDEX_W = log2ceil(self.CACHE_LINE_CNT // self.WAY_CNT - 1)
+        self.OFFSET_W = log2ceil(self.CACHE_LINE_SIZE)
+        self.INDEX_W = log2ceil(self.CACHE_LINE_CNT // self.WAY_CNT)
         self.TAG_W = self.ADDR_WIDTH - self.INDEX_W - self.OFFSET_W
 
     def parse_addr_int(self, addr: int) -> Tuple[int, int, int]:
