@@ -444,8 +444,8 @@ class OutOfOrderCummulativeOp(Unit):
                 aw.addr(Concat(st.addr, Bits(self.ADDR_OFFSET_W).from_py(0)))
 
                 st_data = st.data
-                w_ack = w_sync.ack()
-                If(w_ack & w_channel_en,
+                w_ack = w_sync.ack() & w_channel_en
+                If(w_ack,
                    w_first_data_word(w.last)
                 )
                 self.data_store(st_data, w, w_ack)
