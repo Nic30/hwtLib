@@ -41,6 +41,8 @@ class CacheAddrTypeConfig(Unit):
         self.OFFSET_W = log2ceil(self.CACHE_LINE_SIZE)
         self.INDEX_W = log2ceil(self.CACHE_LINE_CNT // self.WAY_CNT)
         self.TAG_W = self.ADDR_WIDTH - self.INDEX_W - self.OFFSET_W
+        assert self.TAG_W > 0, ("If TAG_W <=0 it means that you do not need cache at all because cache is larger than cached mem.",
+                                self.ADDR_WIDTH, self.OFFSET_W, self.INDEX_W, self.TAG_W)
 
     def parse_addr_int(self, addr: int) -> Tuple[int, int, int]:
         tag = addr >> (self.INDEX_W + self.OFFSET_W)
