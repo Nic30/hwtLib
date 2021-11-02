@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from hwt.code import If, Concat, Switch
+from hwt.code import If, Concat
 from hwt.code_utils import rename_signal
 from hwt.hdl.constants import READ, WRITE
 from hwt.interfaces.utils import addClkRstn, propagateClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4 import Axi4
-from hwtLib.mem.ramCumulativeMask import BramPort_withReadMask_withoutClk, \
-    RamCumulativeMask, is_mask_byte_unaligned
-from hwtLib.amba.axi_comp.cache.utils import apply_write_with_mask
 from hwtLib.amba.axi_comp.lsu.fifo_oooread import FifoOutOfOrderReadFiltered
-from hwtLib.amba.axi_comp.lsu.interfaces import AxiWriteAggregatorWriteIntf, AxiWriteAggregatorWriteTmpIntf
+from hwtLib.amba.axi_comp.lsu.interfaces import AxiWriteAggregatorWriteTmpIntf
 from hwtLib.amba.axi_comp.lsu.write_aggregator_write_dispatcher import AxiWriteAggregatorWriteDispatcher
-from hwtLib.handshaked.reg import HandshakedReg
+from hwtLib.amba.axis_comp.builder import AxiSBuilder
+from hwtLib.amba.axis_comp.reg import AxiSReg
+from hwtLib.amba.constants import RESP_OKAY
 from hwtLib.handshaked.streamNode import StreamNode
 from hwtLib.logic.oneHotToBin import oneHotToBin
+from hwtLib.mem.ramCumulativeMask import BramPort_withReadMask_withoutClk, \
+    RamCumulativeMask, is_mask_byte_unaligned
 
 
 @serializeParamsUniq
@@ -49,18 +51,16 @@ class AxiWriteAggregator(Unit):
         addClkRstn(self)
         AxiWriteAggregatorWriteDispatcher.precompute_constants(self)
         with self._paramsShared():
-            self.w = w = AxiWriteAggregatorWriteIntf()
-            self.w_in_reg = w_in_reg = HandshakedReg(AxiWriteAggregatorWriteTmpIntf)
-            w.ADDR_WIDTH = w_in_reg.ADDR_WIDTH = self.CACHE_LINE_ADDR_WIDTH
-            w.DATA_WIDTH = w_in_reg.DATA_WIDTH = self.CACHE_LINE_SIZE * 8
+            self.s = s_axi = Axi4()
+            s_axi.HAS_R = False
 
-            self.m = axi = Axi4()._m()
-            axi.HAS_R = False
+            self.m = m_axi = Axi4()._m()
+            m_axi.HAS_R = False
 
             self.write_dispatch = AxiWriteAggregatorWriteDispatcher()
 
         self.ooo_fifo = of = FifoOutOfOrderReadFiltered()
-        of.ITEMS = w_in_reg.ITEMS = 2 ** self.ID_WIDTH
+        of.ITEMS = 2 ** self.ID_WIDTH
         of.KEY_WIDTH = self.CACHE_LINE_ADDR_WIDTH
         self.data_ram = self._declr_data_ram()
 
@@ -75,59 +75,123 @@ class AxiWriteAggregator(Unit):
         dr.HAS_BE = True
         return dr
 
-    def data_insert(self, items: BramPort_withReadMask_withoutClk):
+    def _addr_to_index(self, addr: RtlSignal):
+        return addr[:self.CACHE_LINE_OFFSET_BITS]
+
+    def w_in_tmp_reg_load(self) -> AxiWriteAggregatorWriteTmpIntf:
         """
         * check if this address is already present in address CAM or w_in_reg
-        * if it is possible to update data in w_in_reg or in data_ram of this buffer
-        * else allocate new data (insert to address CAM of ooo_fifo) and store data to w_in_reg
-        * if w_in_tmp reg is not beeing updated, forward it to the data_ram to flush it to main memory
-
-        .. figure:: ./_static/AxiWriteAggregator_data_insert.png
-
-        :note: we must not let data from tmp reg if next w_in has same address (we have to update tmp reg instead)
-
         """
-        w_in = self.w
-        w_tmp = self.w_in_reg
+        w_in_aw = self.s.aw
+        w_in_w = self.s.w
+        w_in_b = AxiSBuilder(self, self.s.b, master_to_slave=False).buff(latency=(1, 2)).end
         ooo_fifo = self.ooo_fifo
         write_pre_lookup = ooo_fifo.write_pre_lookup
         write_pre_lookup_res = ooo_fifo.write_pre_lookup_res
 
-        write_pre_lookup.data(w_in.addr)
-        w_tmp_in = w_tmp.dataIn
-        w_tmp_out = w_tmp.dataOut
+        write_pre_lookup.data(self._addr_to_index(w_in_aw.addr))
+
+        w_in_reg = AxiSReg(AxiWriteAggregatorWriteTmpIntf)
+        w_in_reg.ID_WIDTH = self.ID_WIDTH
+        w_in_reg.ADDR_WIDTH = self.CACHE_LINE_ADDR_WIDTH
+        w_in_reg.DATA_WIDTH = self.DATA_WIDTH
+        w_in_reg.ITEMS = self.ooo_fifo.ITEMS
+        self.w_in_reg = w_in_reg
+        w_tmp_in: AxiWriteAggregatorWriteTmpIntf = w_in_reg.dataIn
+        w_tmp_out: AxiWriteAggregatorWriteTmpIntf = w_in_reg.dataOut
 
         # if true it means that the current input write data should be merged with
         # a content of the w_tmp register
-        found_in_tmp_reg = rename_signal(
-            self,
-            w_tmp_in.vld & w_in.addr._eq(w_tmp_out.addr),
-            "found_in_tmp_reg"
-        )
-        accumulated_mask = rename_signal(self, w_in.mask | w_tmp_out.mask, "accumulated_mask")
-        If(w_tmp_out.vld & found_in_tmp_reg,
-            # update only bytes selected by w_in mask in tmp reg
-            w_tmp_in.data(apply_write_with_mask(w_tmp_out.data, w_in.data, w_in.mask)),
-            w_tmp_in.mask(w_in.mask | w_tmp_out.mask),
-            w_tmp_in.mask_byte_unaligned(is_mask_byte_unaligned(accumulated_mask))
-        ).Else(
-            w_tmp_in.data(w_in.data),
-            w_tmp_in.mask(w_in.mask),
-            w_tmp_in.mask_byte_unaligned(is_mask_byte_unaligned(w_in.mask))
-        )
-        w_tmp_in.addr(w_in.addr),
-        w_tmp_in.cam_lookup(write_pre_lookup_res.data)
+        colides_with_last_addr_tick = (w_tmp_out.valid &
+                                       w_in_aw.valid &
+                                       self._addr_to_index(w_in_aw.addr)._eq(w_tmp_out.addr))
+        w_tmp_in.data(w_in_w.data)
+        w_tmp_in.strb(w_in_w.strb)
+        w_tmp_in.last(w_in_w.last)
+        addr_related_inputs = [
+            w_tmp_in.id(w_in_aw.id),
+            w_tmp_in.addr(self._addr_to_index(w_in_aw.addr)),
+            w_tmp_in.colides_with_last_addr(colides_with_last_addr_tick),
+            w_tmp_in.cam_lookup(write_pre_lookup_res.data),
+            w_tmp_in.mask_byte_unaligned(is_mask_byte_unaligned(w_in_w.strb)),
+        ]
 
-        StreamNode([w_in], [w_tmp_in, write_pre_lookup]).sync()
+        w_in_b.resp(RESP_OKAY)
         write_pre_lookup_res.rd(1)
 
+        if self.BUS_WORDS_IN_CACHE_LINE == 1:
+            w_in_b.id(w_in_aw.id)
+            sync = StreamNode(
+                [w_in_aw, w_in_w],
+                [w_tmp_in, write_pre_lookup, w_in_b],
+            )
+        else:
+            w_in_b.id(w_tmp_out.id)
+            w_in_first = self._reg("w_first", def_val=1)
+            If(w_in_first,
+               # new transaction initalization
+               * addr_related_inputs,
+            ).Else(
+                # copy the last values specific for this transaction
+                w_tmp_in.id(w_tmp_out.id),
+                w_tmp_in.addr(w_tmp_out.addr),
+                w_tmp_in.colides_with_last_addr(w_tmp_out.colides_with_last_addr | colides_with_last_addr_tick),
+                w_tmp_in.cam_lookup(w_tmp_out.cam_lookup),
+                w_tmp_in.mask_byte_unaligned(w_tmp_out.mask_byte_unaligned | is_mask_byte_unaligned(w_in_w.strb)),
+            )
+            w_in_last = w_in_w.last
+
+            # allow aw and write_pre_lookup only in first word, w_in_b only in last
+            sync = StreamNode(
+                [w_in_aw, w_in_w],
+                [w_tmp_in, write_pre_lookup, w_in_b],
+                skipWhen={
+                    w_in_aw:~w_in_first,
+                    write_pre_lookup:~w_in_first,
+                    w_in_b:~w_in_last,
+                },
+                extraConds={
+                    w_in_aw: w_in_first,
+                    write_pre_lookup: w_in_first,
+                    w_in_b: w_in_last,
+                }
+            )
+            If(sync.ack(),
+                w_in_first(w_in_last)
+            )
+        sync.sync()
+        # s_axi_stalling = ~w_in_aw.valid | ~w_in_w.valid | ~w_in_b.ready
+        return w_tmp_out
+
+    def resolve_cam_index(self, w_tmp_out: AxiWriteAggregatorWriteTmpIntf):
+        ooo_fifo = self.ooo_fifo
         # CAM insert
+        cam_index_onehot_previous = self._reg("cam_index_onehot_previous", w_tmp_out.cam_lookup._dtype)
         cam_index_onehot = rename_signal(
             self,
-            w_tmp_out.cam_lookup & ooo_fifo.item_valid & ~ooo_fifo.item_write_lock,
+            w_tmp_out.colides_with_last_addr._ternary(cam_index_onehot_previous, w_tmp_out.cam_lookup) &
+            ooo_fifo.item_valid &
+            ~ooo_fifo.item_write_lock,
             "cam_index_onehot")
         cam_found = rename_signal(self, cam_index_onehot != 0, "cam_found")
         cam_found_index = oneHotToBin(self, cam_index_onehot, "cam_found_index")
+
+        If(w_tmp_out.valid & w_tmp_out.ready,
+           cam_index_onehot_previous(cam_index_onehot)
+        )
+
+        return cam_found_index, cam_found
+
+    def data_insert(self, items: BramPort_withReadMask_withoutClk):
+        """
+        * if it is possible to update data in data_ram of this buffer
+        * else allocate new data (insert to address CAM of ooo_fifo) and store data to w_in_reg
+
+        .. figure:: ./_static/AxiWriteAggregator_data_insert.png
+        """
+        ooo_fifo = self.ooo_fifo
+        w_tmp_out = self.w_in_tmp_reg_load()
+        cam_found_index, cam_found = self.resolve_cam_index(w_tmp_out)
 
         write_execute = ooo_fifo.write_execute
         write_execute.key(w_tmp_out.addr)
@@ -135,7 +199,7 @@ class AxiWriteAggregator(Unit):
         current_empty = rename_signal(self, ~ooo_fifo.item_valid[write_execute.index], "current_empty")
         will_insert_new_item = rename_signal(
             self,
-            ~cam_found & ~found_in_tmp_reg & current_empty & write_execute.vld,
+            ~cam_found & current_empty & write_execute.vld,
             "will_insert_new_item")
 
         # store to tmp register (and accumulate if possible)
@@ -149,17 +213,18 @@ class AxiWriteAggregator(Unit):
             item_insert_last(1)
             item_insert_first(1)
             items.din(w_tmp_out.data)
-            items.we(w_tmp_out.mask)
+            items.we(w_tmp_out.strb)
             push_ptr = write_execute.index
         else:
             # iteration over multiple bus words to store a cacheline
             push_offset = self._reg("push_offset", self.word_index_t, def_val=0)
             item_write_start = rename_signal(
-                self, will_insert_new_item | (cam_found & w_tmp_out.vld),
+                self, will_insert_new_item | (cam_found & w_tmp_out.valid),
                 "item_write_start")
-            If(w_tmp_out.vld & found_in_tmp_reg,
-               push_offset(0),
-            ).Elif(items.en.vld & items.en.rd & (item_write_start | (push_offset != 0)),
+
+            If(items.en.vld & items.en.rd &  # currently writing to data_ram
+                (item_write_start | (push_offset != 0)),
+                # continue writing the parts of tmp reg to data_ram
                 If(push_offset != self.WORD_OFFSET_MAX,
                    push_offset(push_offset + 1)
                 ).Else(
@@ -171,48 +236,39 @@ class AxiWriteAggregator(Unit):
             cam_found_index = Concat(cam_found_index, push_offset)
             push_ptr = Concat(write_execute.index, push_offset)
 
-            DIN_W = self.DATA_WIDTH
-            WE_W = DIN_W // 8
-            Switch(push_offset).add_cases([
-                (i, [
-                    items.din(
-                        w_tmp_out.data[(i + 1) * DIN_W:i * DIN_W],
-                    ),
-                    items.we(
-                        w_tmp_out.mask[(i + 1) * WE_W:i * WE_W],
-                    )
-                ]) for i in range(self.WORD_OFFSET_MAX + 1)]
-            ).Default(
-                items.din(None),
-                items.we(None),
-            )
+            items.din(w_tmp_out.data)
+            items.we(w_tmp_out.strb)
 
-        If(w_tmp_out.vld & cam_found,
+        If(w_tmp_out.valid & cam_found,
             items.addr(cam_found_index)
         ).Else(
             items.addr(push_ptr)
         )
-        items.do_accumulate(w_tmp_out.vld & w_tmp_out.mask_byte_unaligned)
-        items.do_overwrite(w_tmp_out.vld & ~cam_found)
-
+        items.do_accumulate(w_tmp_out.valid & (w_tmp_out.mask_byte_unaligned | (w_tmp_out.colides_with_last_addr & cam_found)))
+        items.do_overwrite(w_tmp_out.valid & ~cam_found)
         write_confirm = ooo_fifo.write_confirm
         StreamNode(
             masters=[w_tmp_out, write_execute],
             slaves=[items.en],
             extraConds={
-                write_execute: rename_signal(self, will_insert_new_item & item_insert_last, "ac_write_en"),
-                items.en: rename_signal(self, (~w_in.vld | will_insert_new_item | ~item_insert_first) &
-                    (write_confirm.rd | cam_found), "items_en_en"),
-                w_tmp_out: rename_signal(self, found_in_tmp_reg |
-                                         (((write_confirm.rd & current_empty) | cam_found) & item_insert_last),
-                                         "w_tmp_out_en")
+                write_execute: rename_signal(self, will_insert_new_item & item_insert_last, "write_exe_en"),
+                items.en: rename_signal(
+                    self,
+                    (will_insert_new_item | ~item_insert_first) &
+                    (write_confirm.rd | cam_found),
+                     "items_en_en"),
+                w_tmp_out: rename_signal(self,
+                    (((write_confirm.rd & current_empty) | cam_found)),
+                    "w_tmp_out_en")
             },
             skipWhen={
-                write_execute: found_in_tmp_reg,
-                items.en: found_in_tmp_reg,
+                write_execute:~will_insert_new_item,
             }
         ).sync()
-        write_confirm.vld(w_tmp_out.vld & will_insert_new_item & item_insert_last & items.en.rd)
+        write_confirm.vld(w_tmp_out.valid &
+                          will_insert_new_item &
+                          item_insert_last &
+                          items.en.rd)
 
     def _impl(self):
         of = self.ooo_fifo

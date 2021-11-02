@@ -8,7 +8,10 @@ from hwtLib.amba.axi_comp.lsu.write_aggregator import AxiWriteAggregator
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import mask, set_bit_range, int_list_to_int, \
-    get_bit_range
+    get_bit_range, int_to_int_list
+from hwtLib.amba.axi4 import Axi4_addrAgent
+from hwtLib.amba.axis import AxiStreamAgent
+from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
 
 
 class AxiWriteAggregator_1word_per_cachelineTC(SimTestCase):
@@ -24,11 +27,22 @@ class AxiWriteAggregator_1word_per_cachelineTC(SimTestCase):
         cls.compileSim(u)
 
     def randomize_all(self):
-        self.randomize(self.u.w)
+        axi_randomize_per_channel(self, self.u.s)
         axi_randomize_per_channel(self, self.u.m)
+
         # self.randomize(self.u.m.aw)
         # self.randomize(self.u.m.w)
         # self.randomize(self.u.m.b)
+    def prepare_write(self, _id, index, data, strb=NOT_SPECIFIED):
+        u = self.u
+        if strb is NOT_SPECIFIED:
+            strb = mask(u.CACHE_LINE_SIZE)
+        aw: Axi4_addrAgent = u.s.aw._ag
+        w: AxiStreamAgent = u.s.w._ag
+        WORDS = u.BUS_WORDS_IN_CACHE_LINE
+        aw.data.append(aw.create_addr_req(index << u.CACHE_LINE_OFFSET_BITS, WORDS - 1, _id))
+        for last, (d, m) in iter_with_last(zip(int_to_int_list(data, u.DATA_WIDTH, WORDS), int_to_int_list(strb, u.DATA_WIDTH // 8, WORDS))):
+            w.data.append((d, m, int(last)))
 
     def test_nop(self, randomized=False):
         if randomized:
@@ -44,14 +58,17 @@ class AxiWriteAggregator_1word_per_cachelineTC(SimTestCase):
 
     def test_non_mergable_no_ack(self, N=10, randomized=False):
         u = self.u
-        u.w._ag.data.extend((i, 10 + i, mask(u.CACHE_LINE_SIZE))
-                            for i in range(N))
+        SIZE = 2 ** u.ID_WIDTH
+        for i in range(N):
+            self.prepare_write(i % SIZE, i, 10 + i)
+
+        t = (N + 10) * 2 * CLK_PERIOD * u.BUS_WORDS_IN_CACHE_LINE
         if randomized:
+            t *= 2  # * u.BUS_WORDS_IN_CACHE_LINE
             self.randomize_all()
 
-        self.runSim((N + 10) * 2 * CLK_PERIOD * u.BUS_WORDS_IN_CACHE_LINE)
+        self.runSim(t)
 
-        SIZE = 2 ** u.ID_WIDTH
         aw = u.m.aw._ag
         self.assertValSequenceEqual(aw.data, [
             aw.create_addr_req(addr=u.CACHE_LINE_SIZE * i,
@@ -72,7 +89,7 @@ class AxiWriteAggregator_1word_per_cachelineTC(SimTestCase):
         self.assertValSequenceEqual(u.m.w._ag.data, w_ref)
 
         # 1 item is currently handled by agent, 1 item in tmp reg
-        self.assertEqual(len(u.w._ag.data), N - SIZE - 1 - 1)
+        self.assertEqual(len(u.s.w._ag.data), (N - SIZE) * u.BUS_WORDS_IN_CACHE_LINE - 1 - 1)
 
     def test_non_mergable_no_ack_randomized(self, N=10):
         self.test_non_mergable_no_ack(N, randomized=True)
@@ -80,7 +97,7 @@ class AxiWriteAggregator_1word_per_cachelineTC(SimTestCase):
     def test_single_write(self):
         u = self.u
         d = int_list_to_int(range(u.CACHE_LINE_SIZE), 8)
-        u.w._ag.data.append((1, d, mask(u.CACHE_LINE_SIZE)))
+        self.prepare_write(0, 1, d)
         self.runSim(10 * CLK_PERIOD)
 
         aw = u.m.aw._ag
@@ -98,12 +115,14 @@ class AxiWriteAggregator_1word_per_cachelineTC(SimTestCase):
     def test_with_mem(self, N=10, randomized=False):
         u = self.u
         mem = AxiSimRam(u.m)
-        u.w._ag.data.extend((i, 10 + i, mask(u.CACHE_LINE_SIZE))
-                            for i in range(N))
+        for i in range(N):
+            self.prepare_write(0, i, 10 + i)
+        t = (N + 10) * 3 * CLK_PERIOD * u.BUS_WORDS_IN_CACHE_LINE
         if randomized:
+            t *= 2
             self.randomize_all()
 
-        self.runSim((N + 10) * 3 * CLK_PERIOD * u.BUS_WORDS_IN_CACHE_LINE)
+        self.runSim(t)
         mem_val = mem.getArray(0, u.CACHE_LINE_SIZE, N)
         self.assertValSequenceEqual(mem_val, [10 + i for i in range(N)])
 
@@ -114,12 +133,13 @@ class AxiWriteAggregator_1word_per_cachelineTC(SimTestCase):
         u = self.u
         mem = AxiSimRam(u.m)
         expected = {}
+        SIZE = 2 ** u.ID_WIDTH
         for a in ADDRESSES:
             for i in range(N):
                 B_i = i % (u.CACHE_LINE_SIZE)
                 d = i << (B_i * 8)
                 m = 1 << B_i
-                u.w._ag.data.append((a, d, m))
+                self.prepare_write(i % SIZE, a, d, m)
                 v = expected.get(a, 0)
                 v = set_bit_range(v, B_i * 8, 8, i)
                 expected[a] = v
@@ -127,7 +147,7 @@ class AxiWriteAggregator_1word_per_cachelineTC(SimTestCase):
         t = (N * len(ADDRESSES) + 10) * 3 * \
             u.BUS_WORDS_IN_CACHE_LINE * CLK_PERIOD
         if randomized:
-            #t *= 2
+            t *= 2
             self.randomize_all()
 
         self.runSim(t)
@@ -145,6 +165,8 @@ class AxiWriteAggregator_1word_per_cachelineTC(SimTestCase):
         u = self.u
         mem = AxiSimRam(u.m)
         expected = {}
+        SIZE = 2 ** u.ID_WIDTH
+
         for i in range(N):
             offset = i * N
             for a in ADDRESSES:
@@ -152,7 +174,7 @@ class AxiWriteAggregator_1word_per_cachelineTC(SimTestCase):
                 _i = ((offset + i) % 0xff)
                 d = _i << (B_i * 8)
                 m = 1 << B_i
-                u.w._ag.data.append((a, d, m))
+                self.prepare_write(i % SIZE, a, d, m)
                 v = expected.get(a, 0)
                 v = set_bit_range(v, B_i * 8, 8, _i)
                 expected[a] = v
@@ -198,11 +220,10 @@ if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
 
-    # suite.addTest(AxiWriteAggregator_2words_per_cachelineTC('test_mergable'))
+    #suite.addTest(AxiWriteAggregator_2words_per_cachelineTC('test_non_mergable_no_ack'))
     # suite.addTest(AxiWriteAggregator_1word_per_cachelineTC('test_mergable'))
-
-    suite.addTest(unittest.makeSuite(AxiWriteAggregator_1word_per_cachelineTC))
-    suite.addTest(unittest.makeSuite(AxiWriteAggregator_2words_per_cachelineTC))
+    for tc in AxiWriteAggregator_TCs:
+        suite.addTest(unittest.makeSuite(tc))
 
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)

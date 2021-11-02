@@ -1,50 +1,13 @@
-from hwt.interfaces.agents.handshaked import HandshakedAgent
 from hwt.interfaces.std import Handshaked, VectSignal, Signal
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwtLib.amba.axi3Lite import Axi3Lite_addr, Axi3Lite_r
 from ipCorePackager.constants import DIRECTION
 from hwtSimApi.hdlSimulator import HdlSimulator
+from hwtLib.amba.axis import AxiStream, AxiStreamAgent
 
 
-class AxiWriteAggregatorWriteIntf(Handshaked):
-    """
-    An interface which is used to push write data to a AxiWriteAggregator
-
-    .. hwt-autodoc::
-    """
-
-    def _config(self):
-        Handshaked._config(self)
-        self.ADDR_WIDTH = Param(32)
-
-    def _declr(self):
-        Handshaked._declr(self)
-        self.addr = VectSignal(self.ADDR_WIDTH)
-        self.mask = VectSignal(self.DATA_WIDTH // 8)
-
-    def _initSimAgent(self, sim: HdlSimulator):
-        self._ag = AxiWriteAggregatorWriteIntfAgent(sim, self)
-
-
-class AxiWriteAggregatorWriteIntfAgent(HandshakedAgent):
-
-    def get_data(self):
-        i = self.intf
-        return (i.addr.read(), i.data.read(), i.mask.read())
-
-    def set_data(self, data):
-        i = self.intf
-        if data is None:
-            a, d, m = (None, None, None)
-        else:
-            a, d, m = data
-        i.addr.write(a)
-        i.data.write(d)
-        i.mask.write(m)
-
-
-class AxiWriteAggregatorWriteTmpIntf(AxiWriteAggregatorWriteIntf):
+class AxiWriteAggregatorWriteTmpIntf(AxiStream):
     """
     Interface for tmp input register on store buffer write input
 
@@ -56,11 +19,15 @@ class AxiWriteAggregatorWriteTmpIntf(AxiWriteAggregatorWriteIntf):
     """
 
     def _config(self):
-        AxiWriteAggregatorWriteIntf._config(self)
+        AxiStream._config(self)
+        self.USE_STRB = True
+        self.ADDR_WIDTH = Param(32)
         self.ITEMS = Param(64)
 
     def _declr(self):
-        AxiWriteAggregatorWriteIntf._declr(self)
+        self.addr = VectSignal(self.ADDR_WIDTH)
+        AxiStream._declr(self)
+        self.colides_with_last_addr = Signal()
         self.cam_lookup = VectSignal(self.ITEMS)
         self.mask_byte_unaligned = Signal()
 
@@ -93,6 +60,7 @@ class AddrDataIntf(Interface):
     """
     .. hwt-autodoc::
     """
+
     def _config(self):
         self.ADDR_WIDTH = Param(32)
         self.DATA_WIDTH = Param(64)

@@ -16,11 +16,11 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4 import Axi4_addr, Axi4, Axi4_w, Axi4_b
-from hwtLib.mem.ramCumulativeMask import BramPort_withReadMask_withoutClk
 from hwtLib.amba.constants import BURST_INCR, PROT_DEFAULT, BYTES_IN_TRANS, \
     LOCK_DEFAULT, CACHE_DEFAULT, QOS_DEFAULT
 from hwtLib.common_nonstd_interfaces.index_key_hs import IndexKeyHs
 from hwtLib.handshaked.streamNode import StreamNode
+from hwtLib.mem.ramCumulativeMask import BramPort_withReadMask_withoutClk
 from pyMathBitPrecise.bit_utils import mask
 
 
