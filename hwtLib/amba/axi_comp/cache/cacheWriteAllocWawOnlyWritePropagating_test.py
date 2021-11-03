@@ -20,6 +20,7 @@ class AxiCacheWriteAllocWawOnlyWritePropagatingTC(SimTestCase):
     @classmethod
     def setUpClass(cls):
         cls.u = u = AxiCacheWriteAllocWawOnlyWritePropagating()
+        u.IS_PREINITIALIZED = True
         u.DATA_WIDTH = 32
         u.CACHE_LINE_SIZE = 4 * (cls.LEN + 1)
         u.CACHE_LINE_CNT = 16

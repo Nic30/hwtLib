@@ -60,7 +60,11 @@ class CacheAddrTypeConfig(Unit):
         return Concat(way, index)
 
     def deparse_addr(self, tag, index, offset) -> Tuple[RtlSignal, RtlSignal, RtlSignal]:
-        assert tag._dtype.bit_length() == self.TAG_W, (tag._dtype, self.TAG_W)
+        if isinstance(tag, int):
+            tag = Bits(self.TAG_W).from_py(tag)
+        else:
+            assert tag._dtype.bit_length() == self.TAG_W, (tag._dtype, self.TAG_W)
+
         if isinstance(offset, int):
             offset = Bits(self.OFFSET_W).from_py(offset)
         else:

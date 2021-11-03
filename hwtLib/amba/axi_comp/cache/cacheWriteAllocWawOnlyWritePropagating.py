@@ -3,7 +3,7 @@
 
 from typing import List
 
-from hwt.code import Or, SwitchLogic
+from hwt.code import Or, SwitchLogic, If
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
@@ -85,6 +85,7 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         Axi4._config(self)
         self.WAY_CNT = Param(4)
         self.MAX_BLOCK_DATA_WIDTH = Param(None)
+        self.IS_PREINITIALIZED = Param(False)
         CacheAddrTypeConfig._config(self)
 
     def _declr(self):
@@ -133,7 +134,7 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
         a.prot(PROT_DEFAULT)
         a.qos(QOS_DEFAULT)
 
-    def connect_tag_lookup(self):
+    def connect_tag_lookup(self, init_in_progress: RtlSignal):
         in_ar, in_aw = self.s.ar, self.s.aw
         # connect address lookups to a tag array
         tags = self.tag_array
@@ -143,9 +144,9 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
             if a is in_aw:
                 rc = self.read_cancel
                 rc.addr(a.addr)
-                StreamNode([a], [tag_lookup, rc]).sync()
+                StreamNode([a], [tag_lookup, rc]).sync(~init_in_progress)
             else:
-                StreamNode([a], [tag_lookup]).sync()
+                StreamNode([a], [tag_lookup]).sync(~init_in_progress)
 
     def incr_lru_on_hit(self,
                         lru_incr: IndexWayHs,
@@ -259,6 +260,7 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
                       victim_way_req: AddrHs, victim_way_resp: Handshaked,  # out, in
                       da_w: TransRamHsW,  # in
                       tag_update: AxiCacheTagArrayUpdateIntf,  # out
+                      init_in_progress: RtlSignal,  # in
                       ):
         """
         :param aw_tagRes: Write request including in information from tag_array for given tag.
@@ -356,7 +358,7 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
                             st1_id.dataOut: in_w.last},
                 skipWhen={axi_s_b:~in_w.last,
                           st1_id.dataOut:~in_w.last},
-            ).sync()
+            ).sync(~init_in_progress)
             axi_s_b.id(st1_id.dataOut.data)  # todo
         else:
             StreamNode(
@@ -364,21 +366,39 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
                 [da_w.data, axi_s_b],
                 extraConds={axi_s_b: in_w.last},
                 skipWhen={axi_s_b:~in_w.last},
-            ).sync()
+            ).sync(~init_in_progress)
             axi_s_b.id(st0_o.write_id)
         axi_s_b.resp(RESP_OKAY)
 
         da_w.data(in_w, exclude=[in_w.ready, in_w.valid])
 
-        tag_update.vld(st0.dataOut.vld & da_w.addr.rd)
-        tag_update.delete(0)
-        tag_update.way_en(binToOneHot(_victim_way))
-        tag_update.addr(st0_o.replacement_addr)
-        # [TODO] initial clean
         lru_array_set = self.lru_array.set
-        lru_array_set.addr(None)
-        lru_array_set.data(None)
-        lru_array_set.vld(0)
+
+        init_cntr = self._reg("init_cntr", lru_array_set.addr._dtype, def_val=0)
+
+        If(init_in_progress,
+            tag_update.vld(1),
+            tag_update.delete(1),
+            tag_update.way_en(mask(tag_update.way_en._dtype.bit_length())),
+            tag_update.addr(self.tag_array.deparse_addr(0, init_cntr, 0)),
+            lru_array_set.addr(init_cntr),
+            lru_array_set.data(0),
+            lru_array_set.vld(1),
+            If(init_cntr._eq(mask(init_cntr._dtype.bit_length())),
+                init_cntr(0),
+                init_in_progress(0),
+            ).Else(
+                init_cntr(init_cntr + 1),
+            )
+        ).Else(
+            tag_update.vld(st0.dataOut.vld & da_w.addr.rd),
+            tag_update.delete(0),
+            tag_update.way_en(binToOneHot(_victim_way)),
+            tag_update.addr(st0_o.replacement_addr),
+            lru_array_set.addr(None),
+            lru_array_set.data(None),
+            lru_array_set.vld(0),
+        )
 
     def flush_handler(self,
                    flush_data: TransRamHsW,  # in
@@ -425,8 +445,8 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
           and write back cacheline to array and update tag
         """
         # transaction type usind in data array memory access pipeline
-
-        self.connect_tag_lookup()
+        init_in_progress = self._reg("init_in_progress", def_val=int(not self.IS_PREINITIALIZED))
+        self.connect_tag_lookup(init_in_progress)
         ar_tagRes, aw_tagRes = self.tag_array.lookupRes
 
         self.read_handler(
@@ -446,6 +466,7 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
             self.lru_array.victim_data,
             self.data_array.w,
             self.tag_array.update[0],
+            init_in_progress,
         )
         self.flush_handler(
             self.data_array.flush_data,
