@@ -102,18 +102,19 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
         b_crossbar = self.b_crossbar
 
         master_addr_channels = HObjList([m.aw for m in self.s])
-        if self.AW_AND_W_WORD_TOGETHER:
-            master_addr_channels = HObjList([AxiSBuilder(self, aw).buff(1).end for aw in master_addr_channels])
-
         slave_addr_channels = HObjList([s.aw for s in self.m])
+        if self.AW_AND_W_WORD_TOGETHER:
+            slave_addr_channels = HObjList([AxiSBuilder(self, aw, master_to_slave=False).buff(1).end for aw in slave_addr_channels])
+
         addr_crossbar.s(master_addr_channels)
         slave_addr_channels(addr_crossbar.m)
 
         master_w_channels = HObjList([m.w for m in self.s])
+        if self.AW_AND_W_WORD_TOGETHER:
+            master_w_channels = HObjList([AxiSBuilder(self, w).buff(1).end for w in master_w_channels])
+
         data_crossbar.dataIn(master_w_channels)
         slave_w_channels = HObjList([s.w for s in self.m])
-        if self.AW_AND_W_WORD_TOGETHER:
-            slave_w_channels = HObjList([AxiSBuilder(self, w, master_to_slave=False).buff(1).end for w in slave_w_channels])
 
         slave_w_channels(data_crossbar.dataOut)
 
