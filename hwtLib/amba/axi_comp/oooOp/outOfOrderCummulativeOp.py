@@ -453,11 +453,11 @@ class OutOfOrderCummulativeOp(Unit):
             elif i > PIPELINE_CONFIG.WRITE_BACK and i != PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK:
                 # just pass data between WRITE_BACK -> WAIT_FOR_WRITE_ACK and WAIT_FOR_WRITE_ACK -> end of write history
                 st.in_valid(st_prev.out_valid)
-                if st_next is None:
+                if i > PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK:
                     # this is a last stage, we need to consume the item only if there is some new
                     st.out_ready(pipeline[PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK].out_valid)
                 else:
-                    st.out_ready(st_next.in_ready)
+                    st.out_ready(st_next.in_ready | ~st.valid)
 
                 If(st.load_en,
                    st.id(st_prev.id),
