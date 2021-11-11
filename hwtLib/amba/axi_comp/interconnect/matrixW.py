@@ -5,12 +5,14 @@ from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import propagateClkRstn
 from hwt.math import log2ceil
 from hwt.synthesizer.hObjList import HObjList
+from hwt.synthesizer.param import Param
 from hwtLib.amba.axi4 import Axi4
 from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon
 from hwtLib.amba.axi_comp.interconnect.matrixAddrCrossbar import AxiInterconnectMatrixAddrCrossbar
 from hwtLib.amba.axi_comp.interconnect.matrixCrossbar import AxiInterconnectMatrixCrossbar
 from hwtLib.handshaked.builder import HsBuilder
 from hwtLib.handshaked.fifo import HandshakedFifo
+from hwtLib.amba.axis_comp.builder import AxiSBuilder
 
 
 class AxiInterconnectMatrixCrossbarB(AxiInterconnectMatrixCrossbar):
@@ -26,6 +28,10 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
 
     .. hwt-autodoc:: example_AxiInterconnectMatrixW
     """
+
+    def _config(self):
+        AxiInterconnectCommon._config(self)
+        self.AW_AND_W_WORD_TOGETHER = Param(True)
 
     def _declr(self):
         AxiInterconnectCommon._declr(self, has_r=False, has_w=True)
@@ -96,6 +102,9 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
         b_crossbar = self.b_crossbar
 
         master_addr_channels = HObjList([m.aw for m in self.s])
+        if self.AW_AND_W_WORD_TOGETHER:
+            master_addr_channels = HObjList([AxiSBuilder(self, aw).buff(1).end for aw in master_addr_channels])
+
         slave_addr_channels = HObjList([s.aw for s in self.m])
         addr_crossbar.s(master_addr_channels)
         slave_addr_channels(addr_crossbar.m)
@@ -103,6 +112,9 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
         master_w_channels = HObjList([m.w for m in self.s])
         data_crossbar.dataIn(master_w_channels)
         slave_w_channels = HObjList([s.w for s in self.m])
+        if self.AW_AND_W_WORD_TOGETHER:
+            slave_w_channels = HObjList([AxiSBuilder(self, w, master_to_slave=False).buff(1).end for w in slave_w_channels])
+
         slave_w_channels(data_crossbar.dataOut)
 
         master_b_channels = HObjList([m.b for m in self.s])
@@ -157,18 +169,18 @@ class AxiInterconnectMatrixW(AxiInterconnectCommon):
 
 def example_AxiInterconnectMatrixW():
     u = AxiInterconnectMatrixW(Axi4)
-    #u.MASTERS = ({0}, )
-    #u.MASTERS = ({0, 1}, )
+    # u.MASTERS = ({0}, )
+    # u.MASTERS = ({0, 1}, )
     u.MASTERS = ({0, 1}, {0, 1})
-    #u.MASTERS = ({0, 1, 2}, )
+    # u.MASTERS = ({0, 1, 2}, )
     # u.MASTERS = ({0}, {0}, {0}]
     # u.SLAVES = ((0x1000, 0x1000),
     #            (0x2000, 0x1000),
     #            (0x3000, 0x1000),
     #          )
-    #u.SLAVES = ((0x1000, 0x1000), )
+    # u.SLAVES = ((0x1000, 0x1000), )
 
-    #u.MASTERS = ({0, 1}, {0, 1})
+    # u.MASTERS = ({0, 1}, {0, 1})
     u.SLAVES = ((0x1000, 0x1000),
                 (0x2000, 0x1000),
                 )

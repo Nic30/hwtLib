@@ -13,6 +13,7 @@ from hwtLib.amba.axi_comp.interconnect.common import AxiInterconnectCommon
 from hwtLib.amba.axi_comp.interconnect.matrixR import AxiInterconnectMatrixR
 from hwtLib.amba.axi_comp.interconnect.matrixW import AxiInterconnectMatrixW
 from ipCorePackager.constants import INTF_DIRECTION
+from hwt.synthesizer.param import Param
 
 
 class AxiInterconnectMatrix(AxiInterconnectCommon):
@@ -25,12 +26,18 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
         configuration is ALL if the master has visibility to all slaves
         or tuple of flags, where True means the master has visibility to slave
         on this index
+    :ivar ~.AW_AND_W_WORD_TOGETHER: configures if supports AXI AW and W first word in a single clock cycle
+        (if False the W first word must arrive after AW word)
 
     :note: s[x] port should be connected to a AXI master,
            m[x] port should be connected to outside AXI slave
 
     .. hwt-autodoc:: example_AxiInterconnectMatrix
     """
+
+    def _config(self):
+        AxiInterconnectCommon._config(self)
+        self.AW_AND_W_WORD_TOGETHER = Param(True)
 
     def configure_sub_interconnect(self,
                                    master_indexes: Set[int],
@@ -67,6 +74,8 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
 
         sub_interconnect.MASTERS = tuple(connected_slaves_per_master)
         sub_interconnect.SLAVES = tuple(self.SLAVES[s_i] for s_i in slave_indexes)
+        if isinstance(sub_interconnect, AxiInterconnectMatrixW):
+            sub_interconnect.AW_AND_W_WORD_TOGETHER = self.AW_AND_W_WORD_TOGETHER
 
         # build connection informations for later use
         sub_interconnect_connetions = []
@@ -78,9 +87,6 @@ class AxiInterconnectMatrix(AxiInterconnectCommon):
             sub_interconnect_connetions.append(c)
 
         return sub_interconnect_connetions
-
-    def _config(self):
-        AxiInterconnectCommon._config(self)
 
     def _declr(self):
         BusInterconnect._normalize_config(self)
