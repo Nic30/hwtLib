@@ -40,7 +40,7 @@ class RippleAdder0(Unit):
 
     def _config(self):
         # [possible improvement] you can specify the type directly, this may be more futureproof
-        # in this case we could also controll if the data type should be signed/unsigned
+        # in this case we could also control if the data type should be signed/unsigned
         self.p_wordlength = Param(4)
 
     def _declr(self):
@@ -64,7 +64,7 @@ class RippleAdder0(Unit):
         self.c[0](self.ci)
         self.co(self.c[self.p_wordlength])
 
-        # [wrong] manually unrolled/hardcoded for loop 
+        # [wrong] manually unrolled/hardcoded for loop
         u_fa0 = self.fa0
         u_fa1 = self.fa1
         u_fa2 = self.fa2
@@ -93,7 +93,7 @@ class RippleAdder0(Unit):
         u_fa3.ci(self.c[3])
 
         self.c[4](u_fa0.co)
-        
+
         # [wrong] why to assing each bit separately if we can assing it all it once from concat of fa.s io
         self.s[0](u_fa0.s)
         self.s[1](u_fa1.s)
@@ -147,7 +147,7 @@ class RippleAdder2(Unit):
     def _declr(self):
         self.ci = Signal()
         # [possible improvement] you can use io = lambda : VectSignal(self.p_wordlength) as macro
-        # so you do not have to repeat same code 
+        # so you do not have to repeat same code
         self.a = VectSignal(self.p_wordlength)
         self.b = VectSignal(self.p_wordlength)
         self.s = VectSignal(self.p_wordlength)._m()
