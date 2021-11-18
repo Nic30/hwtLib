@@ -144,7 +144,12 @@ class StreamNode():
             if isinstance(m, ExclusiveStreamGroups):
                 a = m.sync(r)
             else:
-                a = [_get_ready_signal(m)(r), ]
+                rd = _get_ready_signal(m)
+                if isinstance(rd, int):
+                    assert rd == 1
+                    a = []
+                else:
+                    a = [rd(r), ]
 
             expression.extend(a)
 
@@ -157,7 +162,12 @@ class StreamNode():
             if isinstance(s, ExclusiveStreamGroups):
                 a = s.sync(v)
             else:
-                a = [_get_valid_signal(s)(v), ]
+                vld = _get_valid_signal(s)
+                if isinstance(vld, int):
+                    assert vld == 1
+                    a = []
+                else:
+                    a = [vld(v), ]
 
             expression.extend(a)
 
@@ -191,6 +201,10 @@ class StreamNode():
                 a = s.ack()
             else:
                 a = _get_ready_signal(s)
+
+            if isinstance(a, int):
+                assert a == 1, a
+                a = BIT.from_py(1)
 
             if extra:
                 a = And(a, *extra)
@@ -236,6 +250,10 @@ class StreamNode():
         else:
             v = _get_valid_signal(intf)
 
+        if isinstance(v, int):
+            assert v == 1, v
+            return BIT.from_py(1)
+
         if s is None:
             return v
         else:
@@ -255,6 +273,10 @@ class StreamNode():
             r = intf.ack()
         else:
             r = _get_ready_signal(intf)
+
+        if isinstance(r, int):
+            assert r == 1, r
+            return BIT.from_py(1)
 
         if s is None:
             return r
