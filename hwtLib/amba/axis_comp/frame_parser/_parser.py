@@ -420,15 +420,15 @@ class AxiS_frameParser(AxiSCompBase, TemplateConfigured):
                             skipWhen = {
                                suffix:~c0.parsing_overflow & ~(din.valid & din.last),
                             }
-                            controll_signals = [din.valid, din.ready]
+                            control_signals = [din.valid, din.ready]
                             if suffix.USE_KEEP:
-                                controll_signals.append(suffix.keep)
+                                control_signals.append(suffix.keep)
                                 connect_with_clear(is_zero_len, din.keep, suffix.keep)
                             if suffix.USE_STRB:
-                                controll_signals.append(suffix.strb)
+                                control_signals.append(suffix.strb)
                                 connect_with_clear(is_zero_len, din.strb, suffix.strb)
 
-                            suffix(din, exclude=controll_signals)
+                            suffix(din, exclude=control_signals)
 
                         else:
                             # t1 is aligned on word boundary
