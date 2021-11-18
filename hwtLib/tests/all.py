@@ -78,7 +78,7 @@ from hwtLib.examples.arithmetic.vhdl_vector_auto_casts import VhdlVectorAutoCast
 from hwtLib.examples.arithmetic.widthCasting import WidthCastingExampleTC
 from hwtLib.examples.axi.debugbusmonitor_test import DebugBusMonitorExampleAxiTC
 from hwtLib.examples.axi.oooOp.counterArray_test import OooOpExampleCounterArray_TCs
-from hwtLib.examples.axi.oooOp.counterHashTable_test import OooOpExampleCounterHashTable_TC
+from hwtLib.examples.axi.oooOp.counterHashTable_test import OooOpExampleCounterHashTable_TCs
 from hwtLib.examples.axi.simpleAxiRegs_test import SimpleAxiRegsTC
 from hwtLib.examples.builders.ethAddrUpdater_test import EthAddrUpdaterTCs
 from hwtLib.examples.builders.handshakedBuilderSimple import \
@@ -491,7 +491,7 @@ suite = testSuiteFromTCs(
     StructWriter_TC,
     StructReaderTC,
     *OooOpExampleCounterArray_TCs,
-    OooOpExampleCounterHashTable_TC,
+    *OooOpExampleCounterHashTable_TCs,
 
     # ipif tests
     IpifEndpointTC,

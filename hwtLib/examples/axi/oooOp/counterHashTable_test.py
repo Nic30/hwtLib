@@ -35,7 +35,7 @@ def in_trans(addr, reset, key, data, match, operation):
 OP = OooOpExampleCounterHashTable.OPERATION
 
 
-class OooOpExampleCounterHashTable_TC(SimTestCase):
+class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -76,7 +76,7 @@ class OooOpExampleCounterHashTable_TC(SimTestCase):
             axi_randomize_per_channel(self, u.m)
             self.randomize(u.dataIn)
             self.randomize(u.dataOut)
-            t *= 5
+            t = int(t * 8)
 
         self.runSim(t)
 
@@ -97,7 +97,7 @@ class OooOpExampleCounterHashTable_TC(SimTestCase):
         # check output data itself
         dout = u.dataOut._ag.data
         mem = copy(mem_init)
-        for _in, _out in zip(inputs, dout):
+        for in_i, (_in, _out) in enumerate(zip(inputs, dout)):
             (
                 addr,
                 (
@@ -119,7 +119,10 @@ class OooOpExampleCounterHashTable_TC(SimTestCase):
             ) = _out
             # None or tuple(item_valid, key, data)
             cur = mem.get(addr, None)
-            aeq = self.assertValEqual
+
+            def aeq(a, b):
+                self.assertValEqual(a, b, ("pkt no", in_i, _in))
+
             aeq(o_addr, addr)
             was_found = cur is not None and cur[0] and int(cur[1]) == key
             if was_found and (operation == OP.LOOKUP or operation == OP.LOOKUP_OR_SWAP):
@@ -191,9 +194,10 @@ class OooOpExampleCounterHashTable_TC(SimTestCase):
     def test_r_100x_not_found(self):
         index_pool = list(range(2 ** self.u.ID_WIDTH))
         self._test_incr([
-            (self._rand.choice(index_pool), TState(0, None, OP.LOOKUP))
-            for _ in range(100)
-        ])
+                (self._rand.choice(index_pool), TState(0, None, OP.LOOKUP))
+                for _ in range(100)
+            ],
+            randomize=True)
 
     def test_1x_lookup_found(self):
         self._test_incr([(1, TState(99, None, OP.LOOKUP)), ], mem_init={1: MState(99, 20)})
@@ -206,7 +210,8 @@ class OooOpExampleCounterHashTable_TC(SimTestCase):
                     self._rand.choice(item_pool) for _ in range(100)
                 ]
             ],
-            mem_init={i: v for i, v in item_pool}
+            mem_init={i: v for i, v in item_pool},
+            # randomize=True
         )
 
     def test_r_100x_lookup_found_not_found_mix(self):
@@ -221,7 +226,8 @@ class OooOpExampleCounterHashTable_TC(SimTestCase):
             ],
             # :attention: i is modulo mapped that means that
             #     mem_init actually contains only last "n" items from item_pool
-            mem_init={i: v for i, v in item_pool}
+            mem_init={i: v for i, v in item_pool},
+            randomize=True
         )
 
     def test_1x_lookup_or_swap_found(self):
@@ -261,10 +267,26 @@ class OooOpExampleCounterHashTable_TC(SimTestCase):
         self.assertEqual(comb_loops, frozenset())
 
 
+class OooOpExampleCounterHashTable_16threads_TC(OooOpExampleCounterHashTable_4threads_TC):
+
+    @classmethod
+    def setUpClass(cls):
+        u = cls.u = OooOpExampleCounterHashTable()
+        u.ID_WIDTH = 4
+        u.ADDR_WIDTH = u.ID_WIDTH + 3
+        cls.compileSim(u)
+
+
+OooOpExampleCounterHashTable_TCs = [
+    OooOpExampleCounterHashTable_4threads_TC,
+    OooOpExampleCounterHashTable_16threads_TC,
+]
+
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(OooOpExampleCounterHashTable_TC('test_r_100x_lookup_found_not_found_mix'))
-    suite.addTest(unittest.makeSuite(OooOpExampleCounterHashTable_TC))
+    #suite.addTest(OooOpExampleCounterHashTable_16threads_TC('test_1x_swap_delete_unallocated'))
+    for tc in OooOpExampleCounterHashTable_TCs:
+        suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
