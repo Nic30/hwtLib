@@ -57,6 +57,7 @@ class OutOfOrderCummulativeOp(Unit):
         a signle bus word separately in order to avoid alignment logic
     :ivar TRANSACTION_STATE_T: a type of the transaction state, used to store additional data
         for transaction and can be used to modify the behavior of the pipeline
+    :note: provides axi aw and first w word in same clock cycle only
     """
 
     def _config(self):
