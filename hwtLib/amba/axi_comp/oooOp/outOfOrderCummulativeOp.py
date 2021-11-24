@@ -114,6 +114,9 @@ class OutOfOrderCummulativeOp(Unit):
         dout.MAIN_STATE_T = self.MAIN_STATE_T
 
     def main_op(self, main_state: RtlSignal) -> RtlSignal:
+        """
+        Interpretation of main operatorion of the pipeline.
+        """
         raise NotImplementedError("Override this in your implementation of this abstract component")
 
     def _axi_addr_defaults(self, a: Axi4_addr):
@@ -165,64 +168,89 @@ class OutOfOrderCummulativeOp(Unit):
         ar.addr(Concat(din_data.addr, Bits(self.ADDR_OFFSET_W).from_py(0)))
         self._axi_addr_defaults(ar)
 
-    def instruction_supports_forwarding(self, st: OOOOpPipelineStage):
-        return True
+    def can_write_forward(self, src_st: OOOOpPipelineStage,  dst_st: OOOOpPipelineStage):
+        """
+        Used when collision detector is build. (for next value of st WRITE_BACK-1)
+        """
+        return does_collinde(dst_st, src_st)
 
     def collision_detector(self, pipeline: List[OOOOpPipelineStage]) -> List[List[RtlSignal]]:
         """
-        Search for address access collisions in pipeline and store the result of colision check to registers for
-        data write forwarding in next clock tick
+        Search for address access collisions in pipeline and store the result of colision check
+        to registers for data write forwarding in next clock cycle.
+        The collision detector is build for DATA_LOAD (<P.WRITE_BACK) stages because we need to have
+        collision information stored in registers in order to have enough time to do muxing
+        in P.WRITE_BACK stage.
         """
-        PIPELINE_CONFIG = self.PIPELINE_CONFIG
+        P = self.PIPELINE_CONFIG
 
         for dst in pipeline:
             # construct colision detector flags
+            dst: OOOOpPipelineStage
+            if dst.index <= 1:
+                # because we do not know the address in first stage
+                dst.collision_detect = [0 for _ in range(len(pipeline))]
+                continue
+            elif dst.index >= P.WRITE_BACK:
+                # we can not update write history
+                dst.collision_detect = [0 for _ in range(len(pipeline))]
+                break
+
             dst.collision_detect = [
                 0
                 # because we do not know the address in first stage
                 # and write history stages do not require an update
-                if (dst.index <= 1 or
-                    src_i < PIPELINE_CONFIG.WRITE_BACK or
-                    dst.index >= PIPELINE_CONFIG.WRITE_BACK or
-                    src_i == dst.index)
+                if (src_i < P.WRITE_BACK or
+                    src_i == dst.index or
+                    (
+                       # because otherwise the previous data should be already updated
+                       dst.index == P.WRITE_BACK and (src_i != P.WRITE_BACK)
+                    )
+                    )
                 else
-                self._reg(f"{dst.name:s}_collision_detect_from_{src_i:d}", def_val=0)
+                self._reg(f"{dst.name:s}_collision_from_{src_i:d}", def_val=0)
 
                 for src_i in range(len(pipeline))
             ]
 
-            if dst.index <= 1:
-                # because we do not know the address in first stage
-                continue
-            elif dst.index >= PIPELINE_CONFIG.WRITE_BACK:
-                # we can not update write history
-                break
 
             dst_prev = pipeline[dst.index - 1] if dst.index > 1 else None
 
             # for each stage which can potentially update a data in this stage
-            for src_i in range(PIPELINE_CONFIG.WRITE_BACK, len(pipeline)):
+            for src_i in range(P.WRITE_BACK, len(pipeline)):
                 src = pipeline[src_i] if src_i > 0 else None
                 src_prev = pipeline[src_i - 1] if src_i > 1 else None
 
                 # :attention: the cd is a register and its value will be checked in next clock cycle
                 # that means that we need to resolve its value for next clock cycle
+                # (for a new data which will be in stages of pipeline)
                 cd = dst.collision_detect[src_i]
                 c = self._sig(f"{cd.name:s}_tmp")
                 # Resolve if dst stage should load from src stage in next clock cycle
                 If(~dst.load_en & ~src.load_en,
-                    c(does_collinde(dst, src) & self.instruction_supports_forwarding(dst)),
+                    c(self.can_write_forward(src, dst)),
                 ).Elif(~dst.load_en & src.load_en,
-                    c(does_collinde(dst, src_prev) & self.instruction_supports_forwarding(dst))
+                    c(self.can_write_forward(src_prev, dst))
                 ).Elif(dst.load_en & ~src.load_en,
-                    c(does_collinde(dst_prev, src) & self.instruction_supports_forwarding(dst_prev))
+                    c(self.can_write_forward(src, dst_prev))
                 ).Elif(dst.load_en & src.load_en,
-                    c(does_collinde(dst_prev, src_prev) & self.instruction_supports_forwarding(dst_prev))
+                    c(self.can_write_forward(src_prev, dst_prev))
                 ).Else(
+                    # :note: all prev. cases should be covered
                     c(0)
                 )
 
                 cd(c & dst.valid.next)
+
+    def write_forwarding_en(self, dst_st_load: RtlSignal,
+                               dst_st: OOOOpPipelineStage,
+                               dst_prev_st: OOOOpPipelineStage,
+                               src_st_i: int):
+        # the previous which is beeing loaded into this is colliding with src
+        return (
+            (dst_st_load & dst_prev_st.collision_detect[src_st_i]) |
+            (~dst_st_load & dst_st.collision_detect[src_st_i])
+        )
 
     def apply_data_write_forwarding(self, st: OOOOpPipelineStage,
                            st_load_en: RtlSignal,
@@ -241,9 +269,8 @@ class OutOfOrderCummulativeOp(Unit):
         # and we need to wait on load_en
         res = SwitchLogic([
                 (
-                    # the previous which is beeing loaded into this is colliding with src
-                    (st_load_en & st_prev.collision_detect[src_i]) |
-                    (~st_load_en & st.collision_detect[src_i]),
+                    rename_signal(self, self.write_forwarding_en(st_load_en, st, st_prev, src_i),
+                                  f"write_forwarding_en_{st.index}from{src_st.index}"),
                     # forward data instead of data from previous stage
                     data_modifier(st, src_st)
                 )
@@ -262,6 +289,9 @@ class OutOfOrderCummulativeOp(Unit):
         return res
 
     def data_load(self, r: Axi4_r, st0: OOOOpPipelineStage):
+        """
+        Receive all data words from a bus and store them into stage of the pipeline.
+        """
         if self.BUS_WORD_CNT > 1:
             LD_CNTR_MAX = self.BUS_WORD_CNT - 1
             cntr = self._reg("r_load_cntr", Bits(log2ceil(self.BUS_WORD_CNT)), def_val=0)
@@ -303,6 +333,8 @@ class OutOfOrderCummulativeOp(Unit):
 
     def data_store(self, st_data: Union[StructIntf, RtlSignal], w: Axi4_w, ack: RtlSignal):
         """
+        Transceive all data words from stage of pipeline to the bus.
+
         :param ack: signal which is 1 if the data word is transfered on this write channel
         """
         if not isinstance(st_data, RtlSignal):
@@ -344,6 +376,9 @@ class OutOfOrderCummulativeOp(Unit):
             w.last(1)
 
     def propagate_trans_st(self, stage_from: OOOOpPipelineStage, stage_to: OOOOpPipelineStage):
+        """
+        Propagate transaction state between two pipeline stages.
+        """
         HAS_TRANS_ST = self.TRANSACTION_STATE_T is not None
         if HAS_TRANS_ST:
             return stage_to.transaction_state(stage_from.transaction_state)
@@ -358,21 +393,26 @@ class OutOfOrderCummulativeOp(Unit):
         return BIT.from_py(0)
 
     def main_pipeline(self):
-        PIPELINE_CONFIG = self.PIPELINE_CONFIG
+        """
+        Create all pipeline stages and connect them together.
+        """
+        P = self.PIPELINE_CONFIG
         self.pipeline = pipeline = [
             OOOOpPipelineStage(i, f"st{i:d}", self)
-            for i in range(PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK + PIPELINE_CONFIG.WRITE_HISTORY_SIZE + 1)
+            for i in range(P.WAIT_FOR_WRITE_ACK + P.WRITE_HISTORY_SIZE + 1)
         ]
 
         state_read = self.state_array.port[1]
         self.collision_detector(pipeline)
         HAS_TRANS_ST = self.TRANSACTION_STATE_T is not None
 
-        for i, st in enumerate(pipeline):
-            st: OOOOpPipelineStage
+        for i, dst_st in enumerate(pipeline):
+            dst_st: OOOOpPipelineStage
             if i > 0:
                 # if not first
                 st_prev = pipeline[i - 1]
+            else:
+                st_prev = None
 
             if i < len(pipeline) - 1:
                 # if not last
@@ -380,53 +420,58 @@ class OutOfOrderCummulativeOp(Unit):
             else:
                 st_next = None
 
-            # :note: pipeline stages described in PIPELINE_CONFIG enum
-            if i == PIPELINE_CONFIG.READ_DATA_RECEIVE:
+            # :note: pipeline stages described in P enum
+            if i == P.READ_DATA_RECEIVE:
                 # :note: we can not apply forward write data there because we do not know the original address yet
                 r = self.m.r
                 state_read.addr(r.id)
-                st.addr = state_read.dout[self.MAIN_STATE_INDEX_WIDTH:]
+                dst_st.addr = state_read.dout[self.MAIN_STATE_INDEX_WIDTH:]
                 if HAS_TRANS_ST:
                     low = self.MAIN_STATE_INDEX_WIDTH
-                    st.transaction_state = state_read.dout[:low]._reinterpret_cast(self.TRANSACTION_STATE_T)
+                    dst_st.transaction_state = state_read.dout[:low]._reinterpret_cast(self.TRANSACTION_STATE_T)
 
-                st.in_valid(r.valid & r.last)
-                r.ready(st.in_ready)
-                st.out_ready(st_next.in_ready)
-                state_read.en(st.load_en)
+                dst_st.in_valid(r.valid & r.last)
+                r.ready(dst_st.in_ready)
+                dst_st.out_ready(st_next.in_ready)
+                state_read.en(dst_st.load_en)
 
-                self.data_load(r, st)
+                self.data_load(r, dst_st)
 
-            elif i <= PIPELINE_CONFIG.STATE_LOAD:
-                If(st.load_en,
-                    st.id(st_prev.id),
-                    st.addr(st_prev.addr),
-                    self.propagate_trans_st(st_prev, st),
+            elif i <= P.STATE_LOAD:
+                If(dst_st.load_en,
+                    dst_st.id(st_prev.id),
+                    dst_st.addr(st_prev.addr),
+                    self.propagate_trans_st(st_prev, dst_st),
                 )
-                self.apply_data_write_forwarding(st, st.load_en)
-                st.in_valid(st_prev.out_valid)
-                st.out_ready(st_next.in_ready)
+                # update the data to a latest value from all successor stages
+                self.apply_data_write_forwarding(dst_st, dst_st.load_en)
+                dst_st.in_valid(st_prev.out_valid)
+                dst_st.out_ready(st_next.in_ready)
 
-            elif i == PIPELINE_CONFIG.WRITE_BACK:
+            elif i == P.WRITE_BACK:
                 # :note: the data in this stage is waiting to be written and leaves this stage after it was written
-                If(st.load_en,
-                    st.id(st_prev.id),
-                    st.addr(st_prev.addr),
-                    self.propagate_trans_st(st_prev, st),
+                If(dst_st.load_en,
+                    dst_st.id(st_prev.id),
+                    dst_st.addr(st_prev.addr),
+                    self.propagate_trans_st(st_prev, dst_st),
                 )
-                self.apply_data_write_forwarding(st, st.load_en, self.main_op)
+                # Because the previous value of this registr could have been resolved
+                # to be also colliding we need to check it. We can safely check just the collision
+                # with next stage because forwarding is not blocking and will update the current stage if not stalling
+                # or if stalling the previous stage (our inputs) will be updated.
+                self.apply_data_write_forwarding(dst_st, dst_st.load_en, self.main_op)
                 aw = self.m.aw
                 w = self.m.w
 
-                cancel = rename_signal(self, self.write_cancel(st), "write_back_cancel")
-                st.in_valid(st_prev.out_valid)
+                cancel = rename_signal(self, self.write_cancel(dst_st), "write_back_cancel")
+                dst_st.in_valid(st_prev.out_valid)
 
                 w_first_data_word = self._reg("w_first_data_word", def_val=1)
                 # this stage has to have data, last word must wait on next stage ready
-                w_channel_en = st.valid & (st_next.in_ready | ~w.last) & ~cancel
+                w_channel_en = dst_st.valid & (st_next.in_ready | ~w.last) & ~cancel
                 w_channel_ack = (w.valid & w.ready & w.last) | cancel
-                st.out_valid = st.valid & w_channel_ack
-                st.out_ready(st_next.in_ready & w_channel_ack)
+                dst_st.out_valid = dst_st.valid & w_channel_ack
+                dst_st.out_ready(st_next.in_ready & w_channel_ack)
                 w_sync = StreamNode(
                     [], [aw, w],
                     extraConds={
@@ -441,68 +486,68 @@ class OutOfOrderCummulativeOp(Unit):
                 w_sync.sync()
 
                 self._axi_addr_defaults(aw)
-                aw.id(st.id)
-                aw.addr(Concat(st.addr, Bits(self.ADDR_OFFSET_W).from_py(0)))
+                aw.id(dst_st.id)
+                aw.addr(Concat(dst_st.addr, Bits(self.ADDR_OFFSET_W).from_py(0)))
 
-                st_data = st.data
+                st_data = dst_st.data
                 w_ack = w_sync.ack() & w_channel_en
                 If(w_ack,
                    w_first_data_word(w.last)
                 )
                 self.data_store(st_data, w, w_ack)
 
-            elif i > PIPELINE_CONFIG.WRITE_BACK and i != PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK:
+            elif i > P.WRITE_BACK and i != P.WAIT_FOR_WRITE_ACK:
                 # just pass data between WRITE_BACK -> WAIT_FOR_WRITE_ACK and WAIT_FOR_WRITE_ACK -> end of write history
-                st.in_valid(st_prev.out_valid)
-                if i > PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK:
+                dst_st.in_valid(st_prev.out_valid)
+                if i > P.WAIT_FOR_WRITE_ACK:
                     # this is a last stage, we need to consume the item only if there is some new
-                    st.out_ready(pipeline[PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK].out_valid)
+                    dst_st.out_ready(pipeline[P.WAIT_FOR_WRITE_ACK].out_valid)
                 else:
-                    st.out_ready(st_next.in_ready | ~st.valid)
+                    dst_st.out_ready(st_next.in_ready | ~dst_st.valid)
 
-                If(st.load_en,
-                   st.id(st_prev.id),
-                   st.addr(st_prev.addr),
-                   st.data(st_prev.data),
-                   self.propagate_trans_st(st_prev, st),
+                If(dst_st.load_en,
+                   dst_st.id(st_prev.id),
+                   dst_st.addr(st_prev.addr),
+                   dst_st.data(st_prev.data),
+                   self.propagate_trans_st(st_prev, dst_st),
                 )
 
-            elif i == PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK:
-                If(st.load_en,
-                    st.id(st_prev.id),
-                    st.addr(st_prev.addr),
-                    self.propagate_trans_st(st_prev, st),
-                    st.data(st_prev.data),
+            elif i == P.WAIT_FOR_WRITE_ACK:
+                If(dst_st.load_en,
+                    dst_st.id(st_prev.id),
+                    dst_st.addr(st_prev.addr),
+                    self.propagate_trans_st(st_prev, dst_st),
+                    dst_st.data(st_prev.data),
                 )
                 dout = self.dataOut
                 b = self.m.b
                 confirm = self.ooo_fifo.read_confirm
-                cancel = self.write_cancel(st)
+                cancel = rename_signal(self, self.write_cancel(dst_st), "wait_for_ack_cancel")
 
                 # ommiting st_next.ready as there is no next
                 w_ack_node = StreamNode(
                     [b],
                     [dout, confirm],
                     extraConds={
-                        dout: st.valid,
-                        b: st.valid & ~cancel,
-                        confirm: st.valid,
+                        dout: dst_st.valid,
+                        b: dst_st.valid & ~cancel,
+                        confirm: dst_st.valid,
                     },
                     skipWhen={
-                        b: st.valid & cancel,
+                        b: dst_st.valid & cancel,
                     }
                 )
                 w_ack_node.sync()
-                st.in_valid(st_prev.out_valid)
-                st.out_ready((b.valid | cancel) & dout.rd & confirm.rd & dout.rd)
-                st.out_valid = b.valid & dout.rd & confirm.rd & dout.rd
+                dst_st.in_valid(st_prev.out_valid)
+                dst_st.out_ready((b.valid | cancel) & dout.rd & confirm.rd & dout.rd)
+                dst_st.out_valid = b.valid & dout.rd & confirm.rd & dout.rd
 
-                dout.addr(st.addr)
-                dout.data(st.data)
+                dout.addr(dst_st.addr)
+                dout.data(dst_st.data)
                 if HAS_TRANS_ST:
-                    dout.transaction_state(st.transaction_state)
+                    dout.transaction_state(dst_st.transaction_state)
 
-                confirm.data(st.id)
+                confirm.data(dst_st.id)
             else:
                 raise NotImplementedError("Unknown stage of pipeline")
 

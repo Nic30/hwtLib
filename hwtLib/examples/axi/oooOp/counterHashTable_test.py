@@ -10,6 +10,7 @@ from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.examples.axi.oooOp.counterHashTable import OooOpExampleCounterHashTable
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtSimApi.constants import CLK_PERIOD
+from hwtLib.amba.axi_comp.oooOp.utils import OutOfOrderCummulativeOpPipelineConfig
 
 
 def MState(key, data):
@@ -42,6 +43,10 @@ class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
         u = cls.u = OooOpExampleCounterHashTable()
         u.ID_WIDTH = 2
         u.ADDR_WIDTH = u.ID_WIDTH + 3
+        u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
+                WRITE_TO_WRITE_ACK_LATENCY=1,
+                WRITE_ACK_TO_READ_DATA_LATENCY=4
+        )
         cls.compileSim(u)
 
     def setUp(self):
@@ -211,7 +216,7 @@ class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
                 ]
             ],
             mem_init={i: v for i, v in item_pool},
-            # randomize=True
+            randomize=True
         )
 
     def test_r_100x_lookup_found_not_found_mix(self):
@@ -274,6 +279,10 @@ class OooOpExampleCounterHashTable_16threads_TC(OooOpExampleCounterHashTable_4th
         u = cls.u = OooOpExampleCounterHashTable()
         u.ID_WIDTH = 4
         u.ADDR_WIDTH = u.ID_WIDTH + 3
+        u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
+                WRITE_TO_WRITE_ACK_LATENCY=1,
+                WRITE_ACK_TO_READ_DATA_LATENCY=16
+        )
         cls.compileSim(u)
 
 
@@ -285,7 +294,7 @@ OooOpExampleCounterHashTable_TCs = [
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(OooOpExampleCounterHashTable_16threads_TC('test_1x_swap_delete_unallocated'))
+    #suite.addTest(OooOpExampleCounterHashTable_4threads_TC('test_r_100x_lookup_found'))
     for tc in OooOpExampleCounterHashTable_TCs:
         suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)

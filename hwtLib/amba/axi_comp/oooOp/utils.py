@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import NamedTuple, Optional, List, Union
 
 from hwt.code import If
 from hwt.hdl.types.bits import Bits
@@ -9,6 +9,7 @@ from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
 from hwtLib.types.ctypes import uint8_t
 from hwtSimApi.hdlSimulator import HdlSimulator
+from hwt.synthesizer.rtlLevel.rtlSyncSignal import RtlSyncSignal
 
 
 class OOOOpPipelineStage():
@@ -35,7 +36,10 @@ class OOOOpPipelineStage():
         self.addr = r(f"{name:s}_addr", Bits(parent.MAIN_STATE_INDEX_WIDTH))
 
         if parent.TRANSACTION_STATE_T is not None:
+            # data private to an algorim of the pipeline
             self.transaction_state = r(f"{name:s}_transaction_state", parent.TRANSACTION_STATE_T)
+
+        # data loaded/store from/to main memory
         self.data = r(f"{name:s}_data", parent.MAIN_STATE_T)
 
         vld = self.valid = r(f"{name:s}_valid", def_val=0)
@@ -58,7 +62,7 @@ class OOOOpPipelineStage():
         )
 
         # :note: constructed later
-        self.collision_detect = None
+        self.collision_detect: Optional[List[Union[int, RtlSyncSignal]]] = None
 
     def __repr__(self):
         return f"<{self.__class__.__name__:s} {self.name:s} 0x{id(self):x}>"
