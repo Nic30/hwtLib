@@ -70,7 +70,7 @@ class RamAsHs(Unit):
         readDataOverflow = self._reg("readDataOverflow",
                                      readData._dtype, def_val={"vld": 0})
 
-        rEn = ~readDataOverflow.vld & (~readData.vld | r.data.rd)
+        rEn = (~readDataOverflow.vld | r.data.rd) & (~readData.vld | r.data.rd)
         readDataPending(r.addr.vld & rEn)
         If(readDataPending,
             If(~readData.vld | r.data.rd,
@@ -85,6 +85,7 @@ class RamAsHs(Unit):
             ),
         ).Else(
             If(r.data.rd,
+               # pop data from readDataOverflow register
                readData.data(readDataOverflow.data),
                readData.vld(readDataOverflow.vld),
                readDataOverflow.vld(0)
