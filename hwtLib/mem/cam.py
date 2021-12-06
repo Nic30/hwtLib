@@ -3,6 +3,7 @@
 
 from hwt.code import If, Concat
 from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.defs import BIT
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
 from hwt.math import log2ceil
@@ -12,7 +13,6 @@ from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
 from hwtLib.common_nonstd_interfaces.addr_data_hs import AddrDataVldHs, AddrDataHs
 from hwtLib.handshaked.streamNode import StreamNode
-from hwt.hdl.types.defs import BIT
 
 
 @serializeParamsUniq
@@ -61,8 +61,10 @@ class Cam(Unit):
         if self.USE_VLD_BIT:
             key_data = Concat(w.data, w.vld_flag)
 
-        If(self.clk._onRisingEdge() & w.vld,
-           mem[w.addr](key_data)
+        If(self.clk._onRisingEdge(),
+           If(w.vld,
+              mem[w.addr](key_data)
+           )
         )
 
     def matchHandler(self, mem, key: Handshaked, match_res: Handshaked):
