@@ -1,10 +1,11 @@
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union, Dict
 
 from hwt.code import And, Or
 from hwt.hdl.statements.assignmentContainer import HdlAssignmentContainer
 from hwt.hdl.types.defs import BIT
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
+from hwt.synthesizer.rtlLevel.constants import NOT_SPECIFIED
 
 
 def _get_ready_signal(intf: Union[Interface, Tuple[RtlSignal, RtlSignal]]) -> RtlSignal:
@@ -68,7 +69,10 @@ class ExclusiveStreamGroups(list):
         :return: expression which's value is high when transaction can be made
             over at least on child streaming node
         """
-        return Or(*map(_exStreamMemberAck, self))
+        return Or(*(_exStreamMemberAck(m) for m in self))
+
+
+INTERFACE_OR_VLD_RD_TUPLE = Union[Interface, Tuple[Union[RtlSignal, int], Union[RtlSignal, int]]]
 
 
 class StreamNode():
@@ -93,8 +97,11 @@ class StreamNode():
     :attention: skipWhen has higher priority
     """
 
-    def __init__(self, masters=None, slaves=None,
-                 extraConds=None, skipWhen=None):
+    def __init__(self,
+                 masters: Optional[List[INTERFACE_OR_VLD_RD_TUPLE]]=None,
+                 slaves: Optional[List[INTERFACE_OR_VLD_RD_TUPLE]]=None,
+                 extraConds: Optional[Dict[INTERFACE_OR_VLD_RD_TUPLE, RtlSignal]]=None,
+                 skipWhen: Optional[Dict[INTERFACE_OR_VLD_RD_TUPLE, RtlSignal]]=None):
         if masters is None:
             masters = []
         if slaves is None:
@@ -109,7 +116,7 @@ class StreamNode():
         self.extraConds = extraConds
         self.skipWhen = skipWhen
 
-    def sync(self, enSig=None) -> List[HdlAssignmentContainer]:
+    def sync(self, enSig: Optional[RtlSignal]=None) -> List[HdlAssignmentContainer]:
         """
         Create synchronization logic between streams
         (generate valid/ready synchronization logic for interfaces)
@@ -186,6 +193,8 @@ class StreamNode():
                 a = m.ack()
             else:
                 a = _get_valid_signal(m)
+                if isinstance(a, int):
+                    a = BIT.from_py(a)
 
             if extra:
                 a = And(a, *extra)
@@ -219,7 +228,7 @@ class StreamNode():
 
         return And(*acks)
 
-    def getExtraAndSkip(self, intf) -> Tuple[Optional[RtlSignal], Optional[RtlSignal]]:
+    def getExtraAndSkip(self, intf: INTERFACE_OR_VLD_RD_TUPLE) -> Tuple[Optional[RtlSignal], Optional[RtlSignal]]:
         """
         :return: optional extraCond and skip flags for interface
         """
@@ -235,7 +244,7 @@ class StreamNode():
 
         return extra, skip
 
-    def vld(self, intf: Union[Interface, Tuple[RtlSignal, RtlSignal]]) -> RtlSignal:
+    def vld(self, intf: INTERFACE_OR_VLD_RD_TUPLE) -> RtlSignal:
         """
         :return: valid signal of master interface for synchronization of othres
         """
@@ -259,7 +268,7 @@ class StreamNode():
         else:
             return v | s
 
-    def rd(self, intf: Union[Interface, Tuple[RtlSignal, RtlSignal]]) -> RtlSignal:
+    def rd(self, intf: INTERFACE_OR_VLD_RD_TUPLE) -> RtlSignal:
         """
         :return: ready signal of slave interface for synchronization of othres
         """
@@ -283,7 +292,7 @@ class StreamNode():
         else:
             return r | s
 
-    def ackForMaster(self, master: Interface) -> RtlSignal:
+    def ackForMaster(self, master: INTERFACE_OR_VLD_RD_TUPLE) -> RtlSignal:
         """
         :return: driver of ready signal for master
         """
@@ -304,7 +313,7 @@ class StreamNode():
 
         return r
 
-    def ackForSlave(self, slave: Interface) -> RtlSignal:
+    def ackForSlave(self, slave: INTERFACE_OR_VLD_RD_TUPLE) -> RtlSignal:
         """
         :return: driver of valid signal for slave
         """
@@ -324,3 +333,30 @@ class StreamNode():
             v = v & ~skip
 
         return v
+
+    def __repr__format_intf_list(self, intf_list):
+        res = []
+        for i in intf_list:
+            extraCond = self.extraConds.get(i, NOT_SPECIFIED)
+            skipWhen = self.skipWhen.get(i, NOT_SPECIFIED)
+            if extraCond is not NOT_SPECIFIED and skipWhen is not NOT_SPECIFIED:
+                res.append(f"({i}, extraCond={extraCond}, skipWhen={skipWhen})")
+            elif extraCond is not NOT_SPECIFIED:
+                res.append(f"({i}, extraCond={extraCond})")
+            elif skipWhen is not NOT_SPECIFIED:
+                res.append(f"({i}, skipWhen={skipWhen})")
+            else:
+                res.append(f"{i}")
+
+        return ',\n        '.join(res)
+
+    def __repr__(self):
+        masters = self.__repr__format_intf_list(self.masters)
+        slaves = self.__repr__format_intf_list(self.slaves)
+        return f"""<{self.__class__.__name__}
+    masters=[
+        {masters:s}],
+    slaves=[
+        {slaves:s}],
+>"""
+
