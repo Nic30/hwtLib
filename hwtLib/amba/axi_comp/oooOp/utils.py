@@ -52,8 +52,8 @@ class OOOOpPipelineStage():
         If(self.valid,
             inRd(outRd),
             regs_we(inVld & outRd),
-            If(outRd & ~inVld,
-                vld(0)
+            If(outRd,
+                vld(inVld)
             )
         ).Else(
             inRd(1),

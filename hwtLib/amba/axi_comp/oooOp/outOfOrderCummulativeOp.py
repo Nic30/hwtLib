@@ -198,10 +198,9 @@ class OutOfOrderCummulativeOp(Unit):
 
             dst.collision_detect = [
                 0
-                # because we do not know the address in first stage
-                # and write history stages do not require an update
-                if (src_i < P.WRITE_BACK or
-                    src_i == dst.index or
+
+                if (src_i < P.WRITE_BACK or # we can not update already writen data
+                    src_i == dst.index or # we do not need update data with itsel
                     (
                        # because otherwise the previous data should be already updated
                        dst.index == P.WRITE_BACK and (src_i != P.WRITE_BACK)
@@ -503,6 +502,9 @@ class OutOfOrderCummulativeOp(Unit):
                     # this is a last stage, we need to consume the item only if there is some new
                     dst_st.out_ready(pipeline[P.WAIT_FOR_WRITE_ACK].out_valid)
                 else:
+                    assert i > P.WRITE_BACK, i
+                    assert i < P.WAIT_FOR_WRITE_ACK, i
+                    # next is ready to accept data or this stage has no data
                     dst_st.out_ready(st_next.in_ready | ~dst_st.valid)
 
                 If(dst_st.load_en,
@@ -540,7 +542,7 @@ class OutOfOrderCummulativeOp(Unit):
                 w_ack_node.sync()
                 dst_st.in_valid(st_prev.out_valid)
                 dst_st.out_ready((b.valid | cancel) & dout.rd & confirm.rd & dout.rd)
-                dst_st.out_valid = b.valid & dout.rd & confirm.rd & dout.rd
+                dst_st.out_valid = dst_st.valid & b.valid & dout.rd & confirm.rd & dout.rd
 
                 dout.addr(dst_st.addr)
                 dout.data(dst_st.data)

@@ -10,6 +10,7 @@ from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtLib.types.ctypes import uint32_t
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import int_list_to_int
+from hwtLib.amba.axi_comp.oooOp.utils import OutOfOrderCummulativeOpPipelineConfig
 
 
 class OooOpExampleCounterArray_1w_TC(SimTestCase):
@@ -140,17 +141,34 @@ class OooOpExampleCounterArray_2w_TC(OooOpExampleCounterArray_1w_TC):
         u.DATA_WIDTH = u.MAIN_STATE_T.bit_length() // 2
         cls.compileSim(u)
 
+class OooOpExampleCounterArray_2w_2WtoB_TC(OooOpExampleCounterArray_1w_TC):
+
+    @classmethod
+    def setUpClass(cls):
+        u = cls.u = OooOpExampleCounterArray()
+        u.MAIN_STATE_T = uint32_t
+        u.TRANSACTION_STATE_T = None
+        u.ID_WIDTH = 2
+        u.ADDR_WIDTH = 2 + 3
+        u.DATA_WIDTH = u.MAIN_STATE_T.bit_length() // 2
+        u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
+                WRITE_TO_WRITE_ACK_LATENCY=2,
+                WRITE_ACK_TO_READ_DATA_LATENCY=2)
+        cls.compileSim(u)
+
+
 
 OooOpExampleCounterArray_TCs = [
     OooOpExampleCounterArray_1w_TC,
     OooOpExampleCounterArray_0_5w_TC,
     OooOpExampleCounterArray_2w_TC,
+    OooOpExampleCounterArray_2w_2WtoB_TC,
 ]
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(OooOpExampleCounterArray_2w_TC('test_r_incr_100x_random'))
+    #suite.addTest(OooOpExampleCounterArray_2w_2WtoB_TC('test_r_incr_100x_random'))
     for tc in OooOpExampleCounterArray_TCs:
         suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)

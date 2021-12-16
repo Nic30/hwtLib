@@ -286,15 +286,30 @@ class OooOpExampleCounterHashTable_16threads_TC(OooOpExampleCounterHashTable_4th
         cls.compileSim(u)
 
 
+
+class OooOpExampleCounterHashTable_16threads_2WtoB_TC(OooOpExampleCounterHashTable_4threads_TC):
+
+    @classmethod
+    def setUpClass(cls):
+        u = cls.u = OooOpExampleCounterHashTable()
+        u.ID_WIDTH = 2
+        u.ADDR_WIDTH = u.ID_WIDTH + 3
+        u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
+                WRITE_TO_WRITE_ACK_LATENCY=2,
+                WRITE_ACK_TO_READ_DATA_LATENCY=4
+        )
+        cls.compileSim(u)
+
 OooOpExampleCounterHashTable_TCs = [
     OooOpExampleCounterHashTable_4threads_TC,
     OooOpExampleCounterHashTable_16threads_TC,
+    OooOpExampleCounterHashTable_16threads_2WtoB_TC,
 ]
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(OooOpExampleCounterHashTable_4threads_TC('test_r_100x_lookup_found'))
+    #suite.addTest(OooOpExampleCounterHashTable_16threads_2WtoB_TC('test_r_100x_lookup_found'))
     for tc in OooOpExampleCounterHashTable_TCs:
         suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)
