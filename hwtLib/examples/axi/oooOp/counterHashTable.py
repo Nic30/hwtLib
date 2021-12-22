@@ -92,6 +92,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
             return rename_signal(self, (
                 st0.valid &
                 st0.data.item_valid &
+                st0.addr._eq(st1.addr) &
 
                 st1.valid &
                 # using st1.transaction_state.original_data because we want to compare
@@ -259,6 +260,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
                     # enable register load only if previous data available
                     If(rename_signal(self,
                                      prev_st.valid &
+                                     prev_st.addr._eq(dst_st.addr) &
                                      # src_st.valid &
                                      # src_st.data.item_valid &
                                      In(prev_st.transaction_state.operation, [OP.LOOKUP, OP.LOOKUP_OR_SWAP]) &
