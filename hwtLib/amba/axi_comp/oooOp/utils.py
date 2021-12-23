@@ -28,14 +28,14 @@ class OOOOpPipelineStage():
         in this clock cycle
     """
 
-    def __init__(self, index, name: str, parent: "OutOfOrderCummulativeOp"):
+    def __init__(self, index, name: str, parent: "OutOfOrderCummulativeOp", has_transaction_state):
         self.index = index
         self.name = name
         r = parent._reg
         self.id = r(f"{name:s}_id", parent.m.ar.id._dtype)
         self.addr = r(f"{name:s}_addr", Bits(parent.MAIN_STATE_INDEX_WIDTH))
 
-        if parent.TRANSACTION_STATE_T is not None:
+        if has_transaction_state and parent.TRANSACTION_STATE_T is not None:
             # data private to an algorim of the pipeline
             self.transaction_state = r(f"{name:s}_transaction_state", parent.TRANSACTION_STATE_T)
 

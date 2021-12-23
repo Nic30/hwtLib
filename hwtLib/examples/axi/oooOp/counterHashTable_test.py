@@ -6,11 +6,13 @@ from copy import copy
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
+from hwtLib.amba.axi_comp.oooOp.utils import OutOfOrderCummulativeOpPipelineConfig
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.examples.axi.oooOp.counterHashTable import OooOpExampleCounterHashTable
+from hwtLib.examples.axi.oooOp.testUtils import OutOfOrderCummulativeOp_dump_pipeline, \
+    OutOfOrderCummulativeOp_dump_pipeline_html
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtSimApi.constants import CLK_PERIOD
-from hwtLib.amba.axi_comp.oooOp.utils import OutOfOrderCummulativeOpPipelineConfig
 
 
 def MState(key, data):
@@ -83,7 +85,11 @@ class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
             self.randomize(u.dataOut)
             t = int(t * 8)
 
+        states = []
+        self.procs.append(OutOfOrderCummulativeOp_dump_pipeline(self, u, states))
         self.runSim(t)
+        with open(f"tmp/{self.getTestName()}_pipeline.html", "w") as f:
+            OutOfOrderCummulativeOp_dump_pipeline_html(f, u, states)
 
         # check if pipeline registers are empty
         for i in range(u.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK):
@@ -286,7 +292,6 @@ class OooOpExampleCounterHashTable_16threads_TC(OooOpExampleCounterHashTable_4th
         cls.compileSim(u)
 
 
-
 class OooOpExampleCounterHashTable_16threads_2WtoB_TC(OooOpExampleCounterHashTable_4threads_TC):
 
     @classmethod
@@ -296,9 +301,10 @@ class OooOpExampleCounterHashTable_16threads_2WtoB_TC(OooOpExampleCounterHashTab
         u.ADDR_WIDTH = u.ID_WIDTH + 3
         u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
                 WRITE_TO_WRITE_ACK_LATENCY=2,
-                WRITE_ACK_TO_READ_DATA_LATENCY=4
+                WRITE_ACK_TO_READ_DATA_LATENCY=16
         )
         cls.compileSim(u)
+
 
 OooOpExampleCounterHashTable_TCs = [
     OooOpExampleCounterHashTable_4threads_TC,
@@ -309,7 +315,7 @@ OooOpExampleCounterHashTable_TCs = [
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(OooOpExampleCounterHashTable_16threads_2WtoB_TC('test_r_100x_lookup_found'))
+    # suite.addTest(OooOpExampleCounterHashTable_16threads_TC('test_1x_swap_delete_unallocated'))
     for tc in OooOpExampleCounterHashTable_TCs:
         suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)

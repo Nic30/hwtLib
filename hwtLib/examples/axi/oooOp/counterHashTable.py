@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import Dict, Tuple
-
 from hwt.code import If, In, SwitchLogic
 from hwt.code_utils import rename_signal
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.struct import HStruct
 from hwt.interfaces.structIntf import StructIntf
-from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axi_comp.oooOp.outOfOrderCummulativeOp import OutOfOrderCummulativeOp
 from hwtLib.amba.axi_comp.oooOp.utils import OOOOpPipelineStage
 
@@ -62,69 +59,94 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         swap_container_type = self.TRANSACTION_STATE_T.field_by_name["original_data"].dtype
         assert swap_container_type is self.MAIN_STATE_T, (swap_container_type, self.MAIN_STATE_T)
 
-        self._key_cmp_cache: Dict[Tuple[OOOOpPipelineStage, OOOOpPipelineStage], RtlSignal] = {}
+        # self._key_cmp_cache: Dict[Tuple[OOOOpPipelineStage, OOOOpPipelineStage], RtlSignal] = {}
 
-    def key_compare_cached(self, st0: OOOOpPipelineStage, st1: OOOOpPipelineStage):
-        try:
-            return self._key_cmp_cache[(st0, st1)]
-        except KeyError:
-            pass
-        km = self.key_compare(st0, st1)
-        self._key_cmp_cache[(st0, st1)] = km
-        return km
-
+    # def key_compare_cached(self, st0: OOOOpPipelineStage, st1: OOOOpPipelineStage, cmp_trans_state: bool):
+    #    cache_k = (st0, st1, cmp_trans_state)
+    #    try:
+    #        return self._key_cmp_cache[cache_k]
+    #    except KeyError:
+    #        pass
+    #    km = self.key_compare(st0, st1, cmp_trans_state)
+    #    self._key_cmp_cache[cache_k] = km
+    #    return km
+    #
     def key_compare(self, st0: OOOOpPipelineStage, st1: OOOOpPipelineStage):
-        """
-        This function is called on the entry to PIPELINE_CONFIG.WRITE_BACK - 1 (STATE_LOAD) register
-        In this register data is loaded and present in st.data,
-        the st.transaction_state.original_data contains the key which is beeing searched for.
-        If the register is loaded from predecessor the data is in same format and fully loaded.
-
-        There are several special cases which need to be handled.
-        * If we are checking STATE_LOAD with its predecessor we need to precompute also
-          the variant for the case that the .transaction_state.original_data and .data was swapped.
-        * Later in pipeline we always checking STATE_LOAD and some of its successors
-          for STATE_LOAD we need to pick .transaction_state.original_data for sucessor .data
-        """
-        if st1.index < self.PIPELINE_CONFIG.WRITE_BACK:
-            assert st0.index >= self.PIPELINE_CONFIG.READ_DATA_RECEIVE, st0.index
-
-            return rename_signal(self, (
-                st0.valid &
-                st0.data.item_valid &
-                st0.addr._eq(st1.addr) &
-
-                st1.valid &
-                # using st1.transaction_state.original_data because we want to compare
-                # the data from ram and the data which we are searching
-                st1.transaction_state.original_data.item_valid &
-                st0.data.key._eq(st1.transaction_state.original_data.key)
-            ), f"key_cmp_data{st0.index:d}_trans_data{st1.index:d}")
-
-        else:
-            raise NotImplementedError()
+        return (
+            st0.valid.next & 
+            st1.valid.next & 
+            st0.transaction_state.original_data.item_valid._sig.next & 
+            st1.data.item_valid._sig.next & 
+            st0.transaction_state.original_data.key._sig.next._eq(st1.data.key._sig.next)
+        )
+    #    """
+    #    This function is called on the entry to PIPELINE_CONFIG.WRITE_BACK - 1 (STATE_LOAD) register
+    #    In this register data is loaded and present in st.data,
+    #    the st.transaction_state.original_data contains the key which is beeing searched for.
+    #    If the register is loaded from predecessor the data is in same format and fully loaded.
+    #
+    #    There are several special cases which need to be handled.
+    #    * If we are checking STATE_LOAD with its predecessor we need to precompute also
+    #      the variant for the case that the .transaction_state.original_data and .data was swapped.
+    #    * Later in pipeline we always checking STATE_LOAD and some of its successors
+    #      for STATE_LOAD we need to pick .transaction_state.original_data for sucessor .data
+    #    """
+    #    if st1.index < self.PIPELINE_CONFIG.WRITE_BACK:
+    #        assert st0.index >= self.PIPELINE_CONFIG.READ_DATA_RECEIVE, st0.index
+    #
+    #        return rename_signal(self, (
+    #            st0.valid & 
+    #            st0.data.item_valid & 
+    #            st1.valid & 
+    #            # using st1.transaction_state.original_data because we want to compare
+    #            # the data from ram and the data which we are searching
+    #            (st1.transaction_state.original_data.item_valid & 
+    #             st0.data.key._eq(st1.transaction_state.original_data.key)
+    #             if cmp_trans_state else
+    #             st1.item_valid & 
+    #             st0.data.key._eq(st1.data.key)
+    #            )
+    #        ), f"key_cmp_data{st0.index:d}_trans_data{st1.index:d}")
+    #
+    #    else:
+    #        raise NotImplementedError()
 
     def get_latest_key_match(self, st: OOOOpPipelineStage):
+        """
+        :returns: a signal which is flag which signalizes that in this clock cycle
+            the st has the key which match with latest colliding item or with transactional data of this state
+        
+        """
         assert st.index == self.PIPELINE_CONFIG.WRITE_BACK, (st.index, self.PIPELINE_CONFIG.WRITE_BACK)
         latest_key_match = getattr(st, "latest_key_match", None)
         if latest_key_match is not None:
             return latest_key_match
 
-        latest_key_match = self._sig(f"latest_key_match_for_{st.index:d}")
+        latest_key_match = self._sig(f"st{st.index:d}_latest_key_match")
         st.latest_key_match = latest_key_match
 
+        # :note: stage itself may contain outdated data that is why we have to check colliding items first
         prev_st:OOOOpPipelineStage = self.pipeline[st.index - 1]
         SwitchLogic([
-            (prev_st.collision_detect[coli_src.index] & prev_st.key_matches[coli_src.index],
-             latest_key_match(1)
-             )
+            (prev_st.collision_detect[coli_src.index],
+                # the item for this stage was updated, we need to use the updated version of it
+                
+                # if the source of collision is WRITE_BACK we need to also check if the data and data from transactional_state were swapped
+                # we need to also check if the item was swapped or not or where it was update from
+                latest_key_match(prev_st.key_matches[coli_src.index])
+            )
             for coli_src in self.pipeline[st.index:]
-        ], default=\
+        ], default=[
+            # :note: the stage has latest data 
             latest_key_match(prev_st.key_matches[prev_st.index]),
-        )
+        ])
         return latest_key_match
 
     def do_swap_original_and_current_state(self, src_st: OOOOpPipelineStage, dst_st: OOOOpPipelineStage):
+        """
+        :returns: a signal which is a flag which is 1 if the data in transactional state and the data from/to memory should be swapped
+        """
+        
         P = self.PIPELINE_CONFIG
         prev_stage = self.pipeline[P.WRITE_BACK - 1]
         if dst_st.index == P.WRITE_BACK:
@@ -134,13 +156,48 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
 
             op = prev_stage.transaction_state.operation
 
-            return prev_stage.valid & (
-                op._eq(OP.SWAP) | (
-                op._eq(OP.LOOKUP_OR_SWAP) & ~self.get_latest_key_match(dst_st)
+            res = (
+                src_st.valid & 
+                prev_stage.valid & (
+                    op._eq(OP.SWAP) | (
+                        op._eq(OP.LOOKUP_OR_SWAP) & ~self.get_latest_key_match(dst_st)
+                        )
                 )
             )
         else:
-            return BIT.from_py(0)
+            res = BIT.from_py(0)
+
+        return rename_signal(self, res,
+            f"do_swap_original_and_current_state_{src_st.index:d}to{dst_st.index:d}")
+    
+    # def resolve_key_match_for_pipeline_stage(self, km: RtlSignal,
+    #                                         dst_st:OOOOpPipelineStage,
+    #                                         st:OOOOpPipelineStage, cmp_trans_state:bool):
+    #    """
+    #    resolve key_match for a data in pipline stage with the consideration of shits in pipeline
+    #    (computing the value for a next clock cyle)
+    #    """
+    #    prev_st = self.pipeline[st.index - 1]
+    #    dst_prev_st = self.pipeline[dst_st.index - 1]
+    #    # key_compare_cached comparing data from first arg with data or trans. state data of second arg
+    #    If(dst_st.load_en,
+    #        # the stage will receive new data
+    #        If(st.load_en,
+    #            km(self.key_compare_cached(prev_st, dst_prev_st, cmp_trans_state)),
+    #        ).Else(
+    #            km(self.key_compare_cached(st, dst_prev_st, cmp_trans_state)),
+    #        )
+    #    ).Elif(dst_st.out_ready,
+    #        # the stage will be flushed
+    #        km(0),
+    #    ).Else(
+    #        # the stage will keeep its data
+    #        If(st.load_en,
+    #            km(self.key_compare_cached(prev_st, dst_st, cmp_trans_state)),
+    #        ).Else(
+    #            km(self.key_compare_cached(st, dst_st, cmp_trans_state)),
+    #        )
+    #    )
 
     def propagate_trans_st(self, src_st: OOOOpPipelineStage, dst_st: OOOOpPipelineStage):
         """
@@ -162,44 +219,49 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
             # with all successor items
             dst_st.key_matches = key_matches = []
             for i, st in enumerate(self.pipeline):
+                # for each successor pipeline stage we compute
+                # the key match for a key which will appear in this register in next clock cycle
+                # the key is affected by 3 things:
+                # * pipeline shifts (any stage)
+                # * data forwarding (stages < WRITE_BACK)
+                # * swapping instructions and main_op in general (only WRITE_BACK stage)
+                   
                 if i < dst_st.index:
                     km = BIT.from_py(0)
+                # elif i == PIPELINE_CONFIG.WRITE_BACK:
+                #    # now we are resolving key_match for next value of WRITE_BACK-1 and next value of WRITE_BACK
+                #    # this stage supports write forwarding
+                #    # if bit in collision_detect array is 1 it means that the state will receive new data from it
+                #    
+                #    # in this time we do not know if the data and trans_data will be swappend and thus we need
+                #    # to precompute bouth variants and select later
+                #    # there are several possibilities:
+                #    # * the next value of st is loaded from somewhere but is swapped to trans_state.data
+                #    #   * we have to compare with trans_data of WRITE_BACK
+                #    # * the next value of st is from >= WRITE_BACK
+                #    #   * we have to compare with data from state selected by collision_detect array
+                #    # * the value is from WRITE_BACK-1
+                #    
+                #    raise NotImplementedError()
                 else:
-                    # not for each index representing an index of pipeline stage we compute
-                    # the key match for a key which will apear in this register in next clock cycle
-                    prev_st = self.pipeline[i - 1]
                     km = self._reg(f"key_matches_trans{dst_st.index}_and_data{i}", def_val=0)
-                    dst_prev_st = self.pipeline[dst_st.index - 1]
-                    If(dst_st.load_en,
-                        # the stage will receive new data
-                        If(st.load_en,
-                            km(self.key_compare_cached(prev_st, dst_prev_st)),
-                        ).Else(
-                            km(self.key_compare_cached(st, dst_prev_st)),
-                        )
-                    ).Elif(dst_st.out_ready,
-                        # the stage will be flushed
-                        km(0),
-                    ).Else(
-                        # the stage will keeep its data
-                        If(st.load_en,
-                            km(self.key_compare_cached(prev_st, dst_st)),
-                        ).Else(
-                            km(self.key_compare_cached(st, dst_st)),
-                        )
+                    km(self.key_compare(dst_st, st)
+                        
                     )
+                    
+                    # cmp_trans_state = True
+                    # self.resolve_key_match_for_pipeline_stage(km, dst_st, st, cmp_trans_state)
+
                 key_matches.append(km)
 
-            # not part of return because this must be updated with every clock cycle
+            # key match logic not part of return because this must be updated with every clock cycle independently
             return [
                 dst(src),
             ]
+
         elif dst_st.index == PIPELINE_CONFIG.WRITE_BACK:
-            prev_st = self.pipeline[dst_st.index - 1]
-            do_swap_original_and_current_state = rename_signal(
-                self, src_st.valid & self.do_swap_original_and_current_state(src_st, dst_st),
-                f"do_swap_original_and_current_state_{src_st.index:d}to{dst_st.index:d}"
-            )
+            # prev_st = self.pipeline[dst_st.index - 1]
+            do_swap_original_and_current_state = self.do_swap_original_and_current_state(src_st, dst_st)
             return [
                 # Resolving of key_match
                 # * The WRITE_BACK-1 stage does have collision detector prediction array
@@ -250,32 +312,28 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         P = self.PIPELINE_CONFIG
         assert dst_st.index == P.WRITE_BACK
         prev_st = self.pipeline[dst_st.index - 1]
-        key_match = self.get_latest_key_match(dst_st)
 
-        do_swap_original_and_current_state = rename_signal(
-            self, self.do_swap_original_and_current_state(src_st, dst_st),
-            f"do_swap_original_and_current_state_{src_st.index:d}to{dst_st.index:d}"
-        )
+        do_swap_original_and_current_state = self.do_swap_original_and_current_state(src_st, dst_st)
+    
+        match_found = rename_signal(
+            self,
+            In(prev_st.transaction_state.operation, [OP.LOOKUP, OP.LOOKUP_OR_SWAP]) & 
+            self.get_latest_key_match(dst_st),
+            f"exec_main_op_on_lookup_match_update_from{src_st.index:d}")
+
         return  If(prev_st.valid,
                     # enable register load only if previous data available
-                    If(rename_signal(self,
-                                     prev_st.valid &
-                                     prev_st.addr._eq(src_st.addr) &
-                                     # src_st.valid &
-                                     # src_st.data.item_valid &
-                                     In(prev_st.transaction_state.operation, [OP.LOOKUP, OP.LOOKUP_OR_SWAP]) &
-                                     key_match,
-                                     f"exec_main_op_on_lookup_match_update_from{src_st.index:d}"),
+                    If(match_found,
                         # lookup or lookup_or_swap with found with possible data forwarding
                         dst.item_valid(src.item_valid),
-                        self.main_op_on_lookup_match_update(dst_st, src_st),
+                        *self.main_op_on_lookup_match_update(dst_st, src_st),
 
                     ).Elif(do_swap_original_and_current_state,
                         # swap or lookup_or_swap with not found
                         dst(prev_st.transaction_state.original_data)  # the data should be swapped from prev_st.data
 
                     ).Else(
-                        #  not match not swap, keep as it is (and pass in the pipeline)
+                        # not match not swap, keep as it is (and pass in the pipeline)
                         dst(src),
                     )
                 )

@@ -168,7 +168,7 @@ class OutOfOrderCummulativeOp(Unit):
         ar.addr(Concat(din_data.addr, Bits(self.ADDR_OFFSET_W).from_py(0)))
         self._axi_addr_defaults(ar)
 
-    def can_write_forward(self, src_st: OOOOpPipelineStage,  dst_st: OOOOpPipelineStage):
+    def can_write_forward(self, src_st: OOOOpPipelineStage, dst_st: OOOOpPipelineStage):
         """
         Used when collision detector is build. (for next value of st WRITE_BACK-1)
         """
@@ -199,8 +199,8 @@ class OutOfOrderCummulativeOp(Unit):
             dst.collision_detect = [
                 0
 
-                if (src_i < P.WRITE_BACK or # we can not update already writen data
-                    src_i == dst.index or # we do not need update data with itsel
+                if (src_i < P.WRITE_BACK or  # we can not update already writen data
+                    src_i == dst.index or  # we do not need update data with itsel
                     (
                        # because otherwise the previous data should be already updated
                        dst.index == P.WRITE_BACK and (src_i != P.WRITE_BACK)
@@ -211,14 +211,16 @@ class OutOfOrderCummulativeOp(Unit):
 
                 for src_i in range(len(pipeline))
             ]
-
-
-            dst_prev = pipeline[dst.index - 1] if dst.index > 1 else None
+            assert dst.index > 1
+            dst_prev = pipeline[dst.index - 1]
+            # if dst.index > 1 else None
 
             # for each stage which can potentially update a data in this stage
             for src_i in range(P.WRITE_BACK, len(pipeline)):
-                src = pipeline[src_i] if src_i > 0 else None
-                src_prev = pipeline[src_i - 1] if src_i > 1 else None
+                src = pipeline[src_i]
+                # if src_i > 0 else None
+                src_prev = pipeline[src_i - 1]
+                # if src_i > 1 else None
 
                 # :attention: the cd is a register and its value will be checked in next clock cycle
                 # that means that we need to resolve its value for next clock cycle
@@ -239,7 +241,7 @@ class OutOfOrderCummulativeOp(Unit):
                     c(0)
                 )
 
-                cd(c & dst.valid.next)
+                cd(c & src.valid.next & dst.valid.next)
 
     def write_forwarding_en(self, dst_st_load: RtlSignal,
                                dst_st: OOOOpPipelineStage,
@@ -247,7 +249,7 @@ class OutOfOrderCummulativeOp(Unit):
                                src_st_i: int):
         # the previous which is beeing loaded into this is colliding with src
         return (
-            (dst_st_load & dst_prev_st.collision_detect[src_st_i]) |
+            (dst_st_load & dst_prev_st.collision_detect[src_st_i]) | 
             (~dst_st_load & dst_st.collision_detect[src_st_i])
         )
 
@@ -397,7 +399,7 @@ class OutOfOrderCummulativeOp(Unit):
         """
         P = self.PIPELINE_CONFIG
         self.pipeline = pipeline = [
-            OOOOpPipelineStage(i, f"st{i:d}", self)
+            OOOOpPipelineStage(i, f"st{i:d}", self, has_transaction_state=i <= P.WAIT_FOR_WRITE_ACK)
             for i in range(P.WAIT_FOR_WRITE_ACK + P.WRITE_HISTORY_SIZE + 1)
         ]
 
@@ -511,7 +513,7 @@ class OutOfOrderCummulativeOp(Unit):
                    dst_st.id(st_prev.id),
                    dst_st.addr(st_prev.addr),
                    dst_st.data(st_prev.data),
-                   self.propagate_trans_st(st_prev, dst_st),
+                   *(self.propagate_trans_st(st_prev, dst_st) if i < P.WAIT_FOR_WRITE_ACK else []),
                 )
 
             elif i == P.WAIT_FOR_WRITE_ACK:

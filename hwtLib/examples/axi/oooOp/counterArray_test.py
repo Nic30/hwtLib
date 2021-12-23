@@ -23,6 +23,9 @@ class OooOpExampleCounterArray_1w_TC(SimTestCase):
         u.ID_WIDTH = 2
         u.ADDR_WIDTH = 2 + 3
         u.DATA_WIDTH = u.MAIN_STATE_T.bit_length()
+        u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
+                WRITE_TO_WRITE_ACK_LATENCY=2,
+                WRITE_ACK_TO_READ_DATA_LATENCY=4)
         cls.compileSim(u)
 
     def setUp(self):
@@ -101,7 +104,7 @@ class OooOpExampleCounterArray_1w_TC(SimTestCase):
 
     def test_r_incr_100x_random(self):
         index_pool = list(range(2 ** self.u.ID_WIDTH))
-        d = [self._rand.choice(index_pool) for _ in range(4)]
+        d = [self._rand.choice(index_pool) for _ in range(100)]
         self._test_incr(d, randomize=True)
 
     def test_no_comb_loops(self):
@@ -126,6 +129,9 @@ class OooOpExampleCounterArray_0_5w_TC(OooOpExampleCounterArray_1w_TC):
         u.ID_WIDTH = 2
         u.ADDR_WIDTH = 2 + 3
         u.DATA_WIDTH = u.MAIN_STATE_T.bit_length() * 2
+        u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
+                WRITE_TO_WRITE_ACK_LATENCY=2,
+                WRITE_ACK_TO_READ_DATA_LATENCY=4)
         cls.compileSim(u)
 
 
@@ -139,6 +145,9 @@ class OooOpExampleCounterArray_2w_TC(OooOpExampleCounterArray_1w_TC):
         u.ID_WIDTH = 2
         u.ADDR_WIDTH = 2 + 3
         u.DATA_WIDTH = u.MAIN_STATE_T.bit_length() // 2
+        u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
+                WRITE_TO_WRITE_ACK_LATENCY=1,
+                WRITE_ACK_TO_READ_DATA_LATENCY=4)
         cls.compileSim(u)
 
 class OooOpExampleCounterArray_2w_2WtoB_TC(OooOpExampleCounterArray_1w_TC):
@@ -153,7 +162,7 @@ class OooOpExampleCounterArray_2w_2WtoB_TC(OooOpExampleCounterArray_1w_TC):
         u.DATA_WIDTH = u.MAIN_STATE_T.bit_length() // 2
         u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
                 WRITE_TO_WRITE_ACK_LATENCY=2,
-                WRITE_ACK_TO_READ_DATA_LATENCY=2)
+                WRITE_ACK_TO_READ_DATA_LATENCY=4)
         cls.compileSim(u)
 
 
