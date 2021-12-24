@@ -20,7 +20,7 @@ from hwt.synthesizer.unit import Unit
 from hwtLib.amba.axi4 import Axi4, Axi4_addr, Axi4_r, Axi4_w
 from hwtLib.amba.axi_comp.lsu.fifo_oooread import FifoOutOfOrderRead
 from hwtLib.amba.axi_comp.oooOp.utils import OutOfOrderCummulativeOpIntf, \
-    OOOOpPipelineStage, does_collinde, OutOfOrderCummulativeOpPipelineConfig
+    OOOOpPipelineStage, does_collide, OutOfOrderCummulativeOpPipelineConfig
 from hwtLib.amba.constants import BURST_INCR, PROT_DEFAULT, BYTES_IN_TRANS, \
     LOCK_DEFAULT, CACHE_DEFAULT, QOS_DEFAULT
 from hwtLib.handshaked.reg import HandshakedReg
@@ -172,7 +172,7 @@ class OutOfOrderCummulativeOp(Unit):
         """
         Used when collision detector is build. (for next value of st WRITE_BACK-1)
         """
-        return does_collinde(dst_st, src_st)
+        return does_collide(dst_st, src_st)
 
     def collision_detector(self, pipeline: List[OOOOpPipelineStage]) -> List[List[RtlSignal]]:
         """
@@ -499,14 +499,17 @@ class OutOfOrderCummulativeOp(Unit):
 
             elif i > P.WRITE_BACK and i != P.WAIT_FOR_WRITE_ACK:
                 # just pass data between WRITE_BACK -> WAIT_FOR_WRITE_ACK and WAIT_FOR_WRITE_ACK -> end of write history
-                dst_st.in_valid(st_prev.out_valid)
                 if i > P.WAIT_FOR_WRITE_ACK:
                     # this is a last stage, we need to consume the item only if there is some new
-                    dst_st.out_ready(pipeline[P.WAIT_FOR_WRITE_ACK].out_valid)
+                    in_vld = pipeline[P.WAIT_FOR_WRITE_ACK].out_valid
+                    dst_st.in_valid(st_prev.out_valid & in_vld)
+                    dst_st.out_ready(in_vld)
                 else:
+                    # WRITE_BACK ... WAIT_FOR_WRITE
                     assert i > P.WRITE_BACK, i
                     assert i < P.WAIT_FOR_WRITE_ACK, i
                     # next is ready to accept data or this stage has no data
+                    dst_st.in_valid(st_prev.out_valid)
                     dst_st.out_ready(st_next.in_ready | ~dst_st.valid)
 
                 If(dst_st.load_en,

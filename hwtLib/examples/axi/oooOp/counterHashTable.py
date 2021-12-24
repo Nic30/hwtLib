@@ -17,7 +17,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
     This hash table is accesed throught the axi interface.
     These counters are incremented using "dataIn" interface in a coherent way.
     The operation may finish out of order but the data on "dataOut" and in the memory
-    will be correct. The same applays for the swap operations (all operations).
+    will be correct. The same applies for the swap operations (all operations).
 
     .. hwt-autodoc:: _example_OooOpExampleCounterHashTable
     """
@@ -59,18 +59,6 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         swap_container_type = self.TRANSACTION_STATE_T.field_by_name["original_data"].dtype
         assert swap_container_type is self.MAIN_STATE_T, (swap_container_type, self.MAIN_STATE_T)
 
-        # self._key_cmp_cache: Dict[Tuple[OOOOpPipelineStage, OOOOpPipelineStage], RtlSignal] = {}
-
-    # def key_compare_cached(self, st0: OOOOpPipelineStage, st1: OOOOpPipelineStage, cmp_trans_state: bool):
-    #    cache_k = (st0, st1, cmp_trans_state)
-    #    try:
-    #        return self._key_cmp_cache[cache_k]
-    #    except KeyError:
-    #        pass
-    #    km = self.key_compare(st0, st1, cmp_trans_state)
-    #    self._key_cmp_cache[cache_k] = km
-    #    return km
-    #
     def key_compare(self, st0: OOOOpPipelineStage, st1: OOOOpPipelineStage):
         return (
             st0.valid.next & 
@@ -79,37 +67,6 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
             st1.data.item_valid._sig.next & 
             st0.transaction_state.original_data.key._sig.next._eq(st1.data.key._sig.next)
         )
-    #    """
-    #    This function is called on the entry to PIPELINE_CONFIG.WRITE_BACK - 1 (STATE_LOAD) register
-    #    In this register data is loaded and present in st.data,
-    #    the st.transaction_state.original_data contains the key which is beeing searched for.
-    #    If the register is loaded from predecessor the data is in same format and fully loaded.
-    #
-    #    There are several special cases which need to be handled.
-    #    * If we are checking STATE_LOAD with its predecessor we need to precompute also
-    #      the variant for the case that the .transaction_state.original_data and .data was swapped.
-    #    * Later in pipeline we always checking STATE_LOAD and some of its successors
-    #      for STATE_LOAD we need to pick .transaction_state.original_data for sucessor .data
-    #    """
-    #    if st1.index < self.PIPELINE_CONFIG.WRITE_BACK:
-    #        assert st0.index >= self.PIPELINE_CONFIG.READ_DATA_RECEIVE, st0.index
-    #
-    #        return rename_signal(self, (
-    #            st0.valid & 
-    #            st0.data.item_valid & 
-    #            st1.valid & 
-    #            # using st1.transaction_state.original_data because we want to compare
-    #            # the data from ram and the data which we are searching
-    #            (st1.transaction_state.original_data.item_valid & 
-    #             st0.data.key._eq(st1.transaction_state.original_data.key)
-    #             if cmp_trans_state else
-    #             st1.item_valid & 
-    #             st0.data.key._eq(st1.data.key)
-    #            )
-    #        ), f"key_cmp_data{st0.index:d}_trans_data{st1.index:d}")
-    #
-    #    else:
-    #        raise NotImplementedError()
 
     def get_latest_key_match(self, st: OOOOpPipelineStage):
         """
@@ -158,10 +115,12 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
 
             res = (
                 src_st.valid & 
-                prev_stage.valid & (
+                # dst_st.valid.next & 
+                prev_stage.valid & 
+                (
                     op._eq(OP.SWAP) | (
                         op._eq(OP.LOOKUP_OR_SWAP) & ~self.get_latest_key_match(dst_st)
-                        )
+                    )
                 )
             )
         else:
@@ -169,35 +128,6 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
 
         return rename_signal(self, res,
             f"do_swap_original_and_current_state_{src_st.index:d}to{dst_st.index:d}")
-    
-    # def resolve_key_match_for_pipeline_stage(self, km: RtlSignal,
-    #                                         dst_st:OOOOpPipelineStage,
-    #                                         st:OOOOpPipelineStage, cmp_trans_state:bool):
-    #    """
-    #    resolve key_match for a data in pipline stage with the consideration of shits in pipeline
-    #    (computing the value for a next clock cyle)
-    #    """
-    #    prev_st = self.pipeline[st.index - 1]
-    #    dst_prev_st = self.pipeline[dst_st.index - 1]
-    #    # key_compare_cached comparing data from first arg with data or trans. state data of second arg
-    #    If(dst_st.load_en,
-    #        # the stage will receive new data
-    #        If(st.load_en,
-    #            km(self.key_compare_cached(prev_st, dst_prev_st, cmp_trans_state)),
-    #        ).Else(
-    #            km(self.key_compare_cached(st, dst_prev_st, cmp_trans_state)),
-    #        )
-    #    ).Elif(dst_st.out_ready,
-    #        # the stage will be flushed
-    #        km(0),
-    #    ).Else(
-    #        # the stage will keeep its data
-    #        If(st.load_en,
-    #            km(self.key_compare_cached(prev_st, dst_st, cmp_trans_state)),
-    #        ).Else(
-    #            km(self.key_compare_cached(st, dst_st, cmp_trans_state)),
-    #        )
-    #    )
 
     def propagate_trans_st(self, src_st: OOOOpPipelineStage, dst_st: OOOOpPipelineStage):
         """
@@ -245,9 +175,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
                 #    raise NotImplementedError()
                 else:
                     km = self._reg(f"key_matches_trans{dst_st.index}_and_data{i}", def_val=0)
-                    km(self.key_compare(dst_st, st)
-                        
-                    )
+                    km(self.key_compare(dst_st, st))
                     
                     # cmp_trans_state = True
                     # self.resolve_key_match_for_pipeline_stage(km, dst_st, st, cmp_trans_state)
@@ -260,27 +188,8 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
             ]
 
         elif dst_st.index == PIPELINE_CONFIG.WRITE_BACK:
-            # prev_st = self.pipeline[dst_st.index - 1]
-            do_swap_original_and_current_state = self.do_swap_original_and_current_state(src_st, dst_st)
-            return [
-                # Resolving of key_match
-                # * The WRITE_BACK-1 stage does have collision detector prediction array
-                #   it provides an information which stage has latest version of data of this address
-                #   This stage also have the key_matches prediction array wich do have prediction matching
-                #   of stage data.key with WRITE_BACK-1 transaction_state.key
-                # * When resolving the key_match we need to select the key match for latest data.
-                # * If there are no collisions the latest data is already in WRITE_BACK-1 stage.
-                If(do_swap_original_and_current_state,
-                    # swap or lookup_or_swap with not found, we need to store original record from table
-                    # as specified by :attr:`OooOpExampleCounterHashTable.OPERATION`
-                    # :note: in this function we handle only transaction_state
-                    dst.original_data(src_st.data),
-                    dst(src, exclude=[dst.original_data, dst.key_match]),
-                ).Else(
-                    dst(src, exclude=[dst.key_match])
-                ),
-                dst.key_match(self.get_latest_key_match(dst_st)),
-            ]
+            # handled in main_op
+            return []
         else:
             return dst(src)
 
@@ -314,29 +223,66 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         prev_st = self.pipeline[dst_st.index - 1]
 
         do_swap_original_and_current_state = self.do_swap_original_and_current_state(src_st, dst_st)
-    
+        latest_key_match = self.get_latest_key_match(dst_st)
         match_found = rename_signal(
             self,
             In(prev_st.transaction_state.operation, [OP.LOOKUP, OP.LOOKUP_OR_SWAP]) & 
-            self.get_latest_key_match(dst_st),
+            latest_key_match,
             f"exec_main_op_on_lookup_match_update_from{src_st.index:d}")
 
-        return  If(prev_st.valid,
-                    # enable register load only if previous data available
-                    If(match_found,
-                        # lookup or lookup_or_swap with found with possible data forwarding
-                        dst.item_valid(src.item_valid),
-                        *self.main_op_on_lookup_match_update(dst_st, src_st),
-
-                    ).Elif(do_swap_original_and_current_state,
-                        # swap or lookup_or_swap with not found
-                        dst(prev_st.transaction_state.original_data)  # the data should be swapped from prev_st.data
-
-                    ).Else(
-                        # not match not swap, keep as it is (and pass in the pipeline)
-                        dst(src),
+        dst_tr:StructIntf[self.TRANSACTION_STATE_T] = dst_st.transaction_state
+        return  [
+            If(prev_st.valid,
+                *(
+                    (
+                        # if we are comparing with state < P.WRITE_BACK we are interested
+                        # in transactional data because these are the data we are comparing the key from ram with
+                        If(~match_found & do_swap_original_and_current_state,
+                            # swap or lookup_or_swap with not found, we need to store original record from table
+                            # as specified by :attr:`OooOpExampleCounterHashTable.OPERATION`
+                            dst_tr.original_data(src_st.data),
+                        ).Else(
+                            dst_tr.original_data(src_st.transaction_state.original_data),
+                        ),
                     )
-                )
+                    if src_st.index < P.WRITE_BACK else
+                    (
+                        # if state >= P.WRITE_BACK we are interested only in data which were written to ram
+                        If(~match_found & do_swap_original_and_current_state,
+                            dst_tr.original_data(src_st.data),
+                        ).Else(
+                            dst_tr.original_data(prev_st.transaction_state.original_data)
+                        ),
+                    )
+                ),
+                dst_tr.key_match(latest_key_match),
+                dst_tr.reset(prev_st.transaction_state.reset),
+                dst_tr.operation(prev_st.transaction_state.operation),
+                
+                # Resolving of key_match
+                # * The WRITE_BACK-1 stage does have collision detector prediction array
+                #   it provides an information which stage has latest version of data of this address
+                #   This stage also have the key_matches prediction array wich do have prediction matching
+                #   of stage data.key with WRITE_BACK-1 transaction_state.key
+                # * When resolving the key_match we need to select the key match for latest data.
+                # * If there are no collisions the latest data is already in WRITE_BACK-1 stage.
+                # enable register load only if previous data available
+                If(match_found,
+                    # lookup or lookup_or_swap with found with possible data forwarding
+                    dst.item_valid(src.item_valid),
+                    *self.main_op_on_lookup_match_update(dst_st, src_st),
+
+                ).Elif(do_swap_original_and_current_state,
+                    # SWAP or LOOKUP_OR_SWAP with not found
+                   # the data should be swapped from prev_st.data
+                    dst(prev_st.transaction_state.original_data)
+
+                ).Else(
+                    # not match not swap, keep as it is (and pass in the pipeline)
+                    dst(src),
+                ),
+            ),
+        ]
 
 
 def _example_OooOpExampleCounterHashTable():

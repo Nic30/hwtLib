@@ -1,17 +1,28 @@
 from io import StringIO
+from typing import Union
 
+from hwt.hdl.types.array import HArray
 from hwt.hdl.types.bitsVal import BitsVal
+from hwt.hdl.types.struct import HStruct
 from hwt.simulator.simTestCase import SimTestCase
+from hwt.synthesizer.interface import Interface
+from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwtLib.amba.axi_comp.oooOp.utils import OOOOpPipelineStage
 from hwtLib.examples.axi.oooOp.counterHashTable import OooOpExampleCounterHashTable
+from hwtSimApi.basic_hdl_simulator.model import BasicRtlSimModel
 from hwtSimApi.constants import CLK_PERIOD
 from hwtSimApi.triggers import Edge, WaitCombStable
 from pyMathBitPrecise.bit_utils import ValidityError
 
 
-def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounterHashTable, states:list):
-    clk = u.clk._sigInside
-    m = tc.rtl_simulator.model.io
+def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounterHashTable, model: BasicRtlSimModel, states:list):
+    m = model.io
+    clk = u.clk
+    if clk._sigInside is None:
+        clk = clk._sig
+    else:
+        clk = clk._sigInside
+    clk = getattr(m, clk.name)
 
     def int_or_none(v):
         try:
@@ -19,75 +30,137 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounte
         except ValidityError:
             return None
 
+    def read_data(sig: Union[RtlSignal, Interface]):
+        """
+        read data from simulation
+        """
+        if isinstance(sig, Interface):
+            if sig._interfaces:
+                return tuple(read_data(i) for i in sig._interfaces)
+            else:
+                sig = sig._sig
+        return int_or_none(getattr(m, sig.name).read())
+    
+    has_operation = hasattr(u, "OPERATION")
+    has_trans_data = u.TRANSACTION_STATE_T is not None
+    has_composite_data = isinstance(u.MAIN_STATE_T, (HStruct, HArray))
     while True:
         yield Edge(clk)
         yield WaitCombStable()
 
         if clk.read():
+            clk_i = tc.hdl_simulator.now // CLK_PERIOD
             cur_state = []
             for st in u.pipeline:
                 st: OOOOpPipelineStage
-                vld = getattr(m, st.valid.name).read()
+                vld = read_data(st.valid)
                 if vld:
                     if st.index == 0:
                         addr = -1
-                        op = -1
+                        op = -1 if has_operation else None
                     else:
-                        addr = getattr(m, st.addr.name).read()
-                        addr = int(addr)
+                        addr = read_data(st.addr)
+                        assert addr is not None
                     
                     if st.index >= u.PIPELINE_CONFIG.STATE_LOAD and st.index < u.PIPELINE_CONFIG.WRITE_BACK:
-                        key_match = []
-                        for i, km in enumerate(st.key_matches):
-                            if not isinstance(km, BitsVal):
-                                km = int(getattr(m, km.name).read())
-                                if km:
-                                    key_match.append(i)
-                            
+                        if has_trans_data:
+                            key_match = []
+                            for i, km in enumerate(st.key_matches):
+                                if not isinstance(km, BitsVal):
+                                    km = read_data(km)
+                                    assert km is not None
+                                    if km:
+                                        key_match.append(i)
+                        else:
+                            key_match = None
+ 
                         collision = None
                         for i, cd in enumerate(st.collision_detect):
                             if not isinstance(cd, int):
-                                cd = int(getattr(m, cd.name).read())
+                                cd = read_data(cd)
+                                assert cd is not None
                                 if cd:
                                     collision = i
-                                    assert getattr(m, u.pipeline[i].valid.name).read(), (u.pipeline[i].valid.name, "not valid when we expecting collision with it")
+                                    # assert read_data(u.pipeline[i].valid), (clk_i,
+                                    #    u.pipeline[i].valid.name,
+                                    #    "not valid and we expecting collision with it")            
                                     break
                     else:
                         key_match = None
                         collision = None
+                    
+                    trans_state_present = st.index > 0 and st.index <= u.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK
+                    if has_operation:
+                        if trans_state_present:
+                            op = read_data(st.transaction_state.operation)
+                            assert op is not None
+                        else:
+                            op = None
+        
+                    if has_trans_data:
+                        if trans_state_present:
+                            orig_d = st.transaction_state.original_data
+                            t_item_valid = read_data(orig_d.item_valid)
+                            t_key = read_data(orig_d.key)
+                            t_data = read_data(orig_d.value)
+                        else:
+                            t_item_valid = None
+                            t_key = None
+                            t_data = None
 
-                    if st.index > 0 and st.index <= u.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK:
-                        op = int(getattr(m, st.transaction_state.operation._sig.name).read())
+                        t_data = (t_item_valid, t_key, t_data)
 
-                        orig_d = st.transaction_state.original_data
-                        t_item_valid = int_or_none(getattr(m, orig_d.item_valid._sig.name).read())
-                        t_key = int_or_none(getattr(m, orig_d.key._sig.name).read())
-                        t_data = data = int_or_none(getattr(m, orig_d.value._sig.name).read())
                     else:
-                        op = None
-                        t_item_valid = None
-                        t_key = None
                         t_data = None
-                    
-                    item_vld = int_or_none(getattr(m, st.data.item_valid._sig.name).read())
-                    if item_vld:
-                        key = int_or_none(getattr(m, st.data.key._sig.name).read())
-                        data = int_or_none(getattr(m, st.data.value._sig.name).read())
-                    else:
-                        key = None
-                        data = None
 
-                    data = (op, addr, (t_item_valid, t_key, t_data), (item_vld, key, data), collision, key_match)
+                    if has_composite_data:
+                        item_vld = read_data(st.data.item_valid)
+                        # assert item_vld is not None
+                        if item_vld:
+                            key = read_data(st.data.key)
+                            data = read_data(st.data.value)
+                        else:
+                            key = None
+                            data = None
+                        data = (item_vld, key, data)
+
+                    else:
+                        data = read_data(st.data)
+
+                    state_data = (op, addr,
+                            t_data,
+                            data,
+                            collision, key_match)
                 else:
-                    data = None
-                cur_state.append(data)
-                    
+                    state_data = None
+                
+                cur_state.append(state_data)
+
             if not states or states[-1][1] != cur_state:
-                clk_i = tc.hdl_simulator.now // CLK_PERIOD
                 states.append((clk_i, cur_state))  
                 # print(f"clk {clk_i}: {cur_state}")
+                for st_data in cur_state[u.PIPELINE_CONFIG.STATE_LOAD:u.PIPELINE_CONFIG.WRITE_BACK]:
+                    if st_data is not None:
+                        (_, addr, _, data, collision, _) = st_data
+                        if has_composite_data:
+                            (item_vld, key, data) = data
+                        else:
+                            item_vld = 1
+                            key = None
+                            # data = data
 
-
+                        for st in u.pipeline[u.PIPELINE_CONFIG.WRITE_BACK:(len(u.pipeline) if collision is None else collision)]:
+                            if st.index == collision:
+                                assert read_data(st.addr) and read_data(st.addr) == addr, (clk_i,
+                                    "collision prediction was invalid", st.index,
+                                    read_data(st.valid), read_data(st.addr), addr
+                                    )
+                            else:
+                                if read_data(st.valid):
+                                    assert read_data(st.addr) != addr, (clk_i,
+                                        "collision prediction missed item", st.index, read_data(st.addr))
+        
+    
 def OutOfOrderCummulativeOp_dump_pipeline_html(file: StringIO, u: OooOpExampleCounterHashTable, states: list):
     rows = []
     st_names = {getattr(u.PIPELINE_CONFIG, n): n for n in [
@@ -95,13 +168,17 @@ def OutOfOrderCummulativeOp_dump_pipeline_html(file: StringIO, u: OooOpExampleCo
                     "STATE_LOAD",
                     "WRITE_BACK",
                     "WAIT_FOR_WRITE_ACK"]}
-    operation_names = {
-        getattr(u.OPERATION, n): n for n in [
-            "SWAP",
-            "LOOKUP_OR_SWAP",
-            "LOOKUP",
-        ]
-    }
+    if hasattr(u, "OPERATION"):
+        operation_names = {}
+        for attr in dir(u.OPERATION):
+            v = getattr(u.OPERATION, attr)
+            if isinstance(v, int):
+                assert v not in operation_names, (attr, v, operation_names)
+                operation_names[v] = attr
+    else:
+        operation_names = None
+    has_trans_data = u.TRANSACTION_STATE_T is not None
+    has_composite_data = isinstance(u.MAIN_STATE_T, (HStruct, HArray))
 
     for clk_i, total_st in states:
         if not rows:
@@ -122,23 +199,44 @@ def OutOfOrderCummulativeOp_dump_pipeline_html(file: StringIO, u: OooOpExampleCo
             if st is None:
                 cell = f"<td></td>" 
             else:
-                (op, addr, (t_item_valid, t_key, t_data), (item_vld, key, data), collision, key_match) = st
+                (op, addr,
+                 t,
+                 data,
+                 collision, key_match) = st
                 if st_i == 0 or st_i > u.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK:
                     op = ""  # operation is not present in these stages
                     t = None
                 else:
-                    op = operation_names.get(op, "INVALID")
-                    if t_item_valid is None:
-                        t = ""
+                    if operation_names is None:
+                        assert op is None
                     else:
-                        t = repr((t_item_valid, t_key, t_data))
- 
-                if item_vld:
-                    d = repr((item_vld, key, data))
+                        op = operation_names.get(op, "INVALID")
+
+                    if has_trans_data:
+                        (t_item_valid, t_key, t_data) = t
+                        if t_item_valid is None:
+                            t = ""
+                        else:
+                            t = repr((t_item_valid, t_key, t_data))
+                    else:
+                        t = None
+
+                if has_composite_data:
+                    (item_vld, key, data) = data
+                    if item_vld:
+                        d = repr((item_vld, key, data))
+                    else:
+                        d = ""
                 else:
-                    d = ""
+                    d = repr(data)
+                    
+                cell_lines = []
+                if st_i > 0:
+                    if operation_names is not None:
+                        cell_lines.append(f"0x{addr:x} {op:s}<br/>")
+                    else:
+                        cell_lines.append(f"0x{addr:x}<br/>")
                 
-                cell_lines = [f"0x{addr:x} {op:s}<br/>"]
                 if t is not None:
                     cell_lines.append(f"t:{t}<br/>")
                 cell_lines.append(f"d:{d}<br/>")

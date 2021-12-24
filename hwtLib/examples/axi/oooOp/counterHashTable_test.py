@@ -86,7 +86,7 @@ class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
             t = int(t * 8)
 
         states = []
-        self.procs.append(OutOfOrderCummulativeOp_dump_pipeline(self, u, states))
+        self.procs.append(OutOfOrderCummulativeOp_dump_pipeline(self, u, self.rtl_simulator.model, states))
         self.runSim(t)
         with open(f"tmp/{self.getTestName()}_pipeline.html", "w") as f:
             OutOfOrderCummulativeOp_dump_pipeline_html(f, u, states)
@@ -266,6 +266,23 @@ class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
             mem_init={1: MState(None, None)}
         )
 
+    def test_r_10x_swap_delete_unallocated(self):
+        data = []
+        for i in range(2):
+            off = i * 10
+            data.extend([
+                (1, TState(None, None, OP.SWAP)),  # delete of deleted
+                (1, TState(off + 1, None, OP.LOOKUP)),  # search of non existing
+                (1, TState(off + 2, off + 1, OP.SWAP)),  # insert
+                (1, TState(off + 1, None, OP.LOOKUP)),  # search of diffeent
+                (1, TState(off + 2, None, OP.LOOKUP)),  # search of existing
+            ])
+        self._test_incr(
+            data,
+            mem_init={1: MState(None, None)},
+            randomize=True
+        )
+
     def test_no_comb_loops(self):
         s = CombLoopAnalyzer()
         s.visit_Unit(self.u)
@@ -315,7 +332,7 @@ OooOpExampleCounterHashTable_TCs = [
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    # suite.addTest(OooOpExampleCounterHashTable_16threads_TC('test_1x_swap_delete_unallocated'))
+    # suite.addTest(OooOpExampleCounterHashTable_4threads_TC('test_r_10x_swap_delete_unallocated'))
     for tc in OooOpExampleCounterHashTable_TCs:
         suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)

@@ -7,9 +7,9 @@ from hwt.interfaces.std import Handshaked, VectSignal, HandshakeSync
 from hwt.interfaces.structIntf import HdlType_to_Interface
 from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.param import Param
+from hwt.synthesizer.rtlLevel.rtlSyncSignal import RtlSyncSignal
 from hwtLib.types.ctypes import uint8_t
 from hwtSimApi.hdlSimulator import HdlSimulator
-from hwt.synthesizer.rtlLevel.rtlSyncSignal import RtlSyncSignal
 
 
 class OOOOpPipelineStage():
@@ -68,7 +68,7 @@ class OOOOpPipelineStage():
         return f"<{self.__class__.__name__:s} {self.name:s} 0x{id(self):x}>"
 
 
-def does_collinde(st0: OOOOpPipelineStage, st1: OOOOpPipelineStage):
+def does_collide(st0: OOOOpPipelineStage, st1: OOOOpPipelineStage):
     if st0 is None or st1 is None:
         # to cover the ends of pipeline where next/prev stage does not exists
         return 0

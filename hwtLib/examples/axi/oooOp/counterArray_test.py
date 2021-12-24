@@ -4,13 +4,15 @@
 from hwt.serializer.combLoopAnalyzer import CombLoopAnalyzer
 from hwt.simulator.simTestCase import SimTestCase
 from hwtLib.amba.axiLite_comp.sim.utils import axi_randomize_per_channel
+from hwtLib.amba.axi_comp.oooOp.utils import OutOfOrderCummulativeOpPipelineConfig
 from hwtLib.amba.axi_comp.sim.ram import AxiSimRam
 from hwtLib.examples.axi.oooOp.counterArray import OooOpExampleCounterArray
+from hwtLib.examples.axi.oooOp.testUtils import OutOfOrderCummulativeOp_dump_pipeline, \
+    OutOfOrderCummulativeOp_dump_pipeline_html
 from hwtLib.examples.errors.combLoops import freeze_set_of_sets
 from hwtLib.types.ctypes import uint32_t
 from hwtSimApi.constants import CLK_PERIOD
 from pyMathBitPrecise.bit_utils import int_list_to_int
-from hwtLib.amba.axi_comp.oooOp.utils import OutOfOrderCummulativeOpPipelineConfig
 
 
 class OooOpExampleCounterArray_1w_TC(SimTestCase):
@@ -61,7 +63,14 @@ class OooOpExampleCounterArray_1w_TC(SimTestCase):
             self.randomize(u.dataOut)
             t *= 5
 
-        self.runSim(t)
+        states = []
+        self.procs.append(OutOfOrderCummulativeOp_dump_pipeline(self, u, self.rtl_simulator.model, states))
+        try:
+            self.runSim(t)
+            # handle the case where something went wrong and ctl thread is still running
+        finally:
+            with open(f"tmp/{self.getTestName()}_pipeline.html", "w") as f:
+                OutOfOrderCummulativeOp_dump_pipeline_html(f, u, states)
 
         # check if pipeline registers are empty
         for i in range(u.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK):
@@ -150,6 +159,7 @@ class OooOpExampleCounterArray_2w_TC(OooOpExampleCounterArray_1w_TC):
                 WRITE_ACK_TO_READ_DATA_LATENCY=4)
         cls.compileSim(u)
 
+
 class OooOpExampleCounterArray_2w_2WtoB_TC(OooOpExampleCounterArray_1w_TC):
 
     @classmethod
@@ -166,7 +176,6 @@ class OooOpExampleCounterArray_2w_2WtoB_TC(OooOpExampleCounterArray_1w_TC):
         cls.compileSim(u)
 
 
-
 OooOpExampleCounterArray_TCs = [
     OooOpExampleCounterArray_1w_TC,
     OooOpExampleCounterArray_0_5w_TC,
@@ -177,7 +186,7 @@ OooOpExampleCounterArray_TCs = [
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(OooOpExampleCounterArray_2w_2WtoB_TC('test_r_incr_100x_random'))
+    #suite.addTest(OooOpExampleCounterArray_2w_2WtoB_TC('test_incr_10x_same'))
     for tc in OooOpExampleCounterArray_TCs:
         suite.addTest(unittest.makeSuite(tc))
     runner = unittest.TextTestRunner(verbosity=3)
