@@ -63,6 +63,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         return (
             st0.valid.next & 
             st1.valid.next & 
+            st0.addr.next._eq(st1.addr.next) &
             st0.transaction_state.original_data.item_valid._sig.next & 
             st1.data.item_valid._sig.next & 
             st0.transaction_state.original_data.key._sig.next._eq(st1.data.key._sig.next)
@@ -149,36 +150,11 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
             # with all successor items
             dst_st.key_matches = key_matches = []
             for i, st in enumerate(self.pipeline):
-                # for each successor pipeline stage we compute
-                # the key match for a key which will appear in this register in next clock cycle
-                # the key is affected by 3 things:
-                # * pipeline shifts (any stage)
-                # * data forwarding (stages < WRITE_BACK)
-                # * swapping instructions and main_op in general (only WRITE_BACK stage)
-                   
                 if i < dst_st.index:
                     km = BIT.from_py(0)
-                # elif i == PIPELINE_CONFIG.WRITE_BACK:
-                #    # now we are resolving key_match for next value of WRITE_BACK-1 and next value of WRITE_BACK
-                #    # this stage supports write forwarding
-                #    # if bit in collision_detect array is 1 it means that the state will receive new data from it
-                #    
-                #    # in this time we do not know if the data and trans_data will be swappend and thus we need
-                #    # to precompute bouth variants and select later
-                #    # there are several possibilities:
-                #    # * the next value of st is loaded from somewhere but is swapped to trans_state.data
-                #    #   * we have to compare with trans_data of WRITE_BACK
-                #    # * the next value of st is from >= WRITE_BACK
-                #    #   * we have to compare with data from state selected by collision_detect array
-                #    # * the value is from WRITE_BACK-1
-                #    
-                #    raise NotImplementedError()
                 else:
                     km = self._reg(f"key_matches_trans{dst_st.index}_and_data{i}", def_val=0)
                     km(self.key_compare(dst_st, st))
-                    
-                    # cmp_trans_state = True
-                    # self.resolve_key_match_for_pipeline_stage(km, dst_st, st, cmp_trans_state)
 
                 key_matches.append(km)
 
@@ -238,7 +214,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
                     (
                         # if we are comparing with state < P.WRITE_BACK we are interested
                         # in transactional data because these are the data we are comparing the key from ram with
-                        If(~match_found & do_swap_original_and_current_state,
+                        If(do_swap_original_and_current_state,
                             # swap or lookup_or_swap with not found, we need to store original record from table
                             # as specified by :attr:`OooOpExampleCounterHashTable.OPERATION`
                             dst_tr.original_data(src_st.data),
@@ -249,7 +225,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
                     if src_st.index < P.WRITE_BACK else
                     (
                         # if state >= P.WRITE_BACK we are interested only in data which were written to ram
-                        If(~match_found & do_swap_original_and_current_state,
+                        If(do_swap_original_and_current_state,
                             dst_tr.original_data(src_st.data),
                         ).Else(
                             dst_tr.original_data(prev_st.transaction_state.original_data)
@@ -267,15 +243,15 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
                 # * When resolving the key_match we need to select the key match for latest data.
                 # * If there are no collisions the latest data is already in WRITE_BACK-1 stage.
                 # enable register load only if previous data available
-                If(match_found,
-                    # lookup or lookup_or_swap with found with possible data forwarding
-                    dst.item_valid(src.item_valid),
-                    *self.main_op_on_lookup_match_update(dst_st, src_st),
 
-                ).Elif(do_swap_original_and_current_state,
+                If(do_swap_original_and_current_state,
                     # SWAP or LOOKUP_OR_SWAP with not found
                    # the data should be swapped from prev_st.data
                     dst(prev_st.transaction_state.original_data)
+                ).Elif(match_found,
+                    # lookup or lookup_or_swap with found with possible data forwarding
+                    dst.item_valid(src.item_valid),
+                    *self.main_op_on_lookup_match_update(dst_st, src_st),
 
                 ).Else(
                     # not match not swap, keep as it is (and pass in the pipeline)

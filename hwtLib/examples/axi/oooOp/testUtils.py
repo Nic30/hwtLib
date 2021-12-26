@@ -44,6 +44,13 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounte
     has_operation = hasattr(u, "OPERATION")
     has_trans_data = u.TRANSACTION_STATE_T is not None
     has_composite_data = isinstance(u.MAIN_STATE_T, (HStruct, HArray))
+    ops_without_match = []
+    if has_operation:
+        for n in ("SWAP_BY_ADDR", "READ_BY_ADDR"):
+            o = getattr(u.OPERATION, n, None)
+            if o is not None:
+                ops_without_match.append(o)
+ 
     while True:
         yield Edge(clk)
         yield WaitCombStable()
@@ -62,13 +69,21 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounte
                         addr = read_data(st.addr)
                         assert addr is not None
                     
+                    trans_state_present = st.index > 0 and st.index <= u.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK
+                    if has_operation:
+                        if trans_state_present:
+                            op = read_data(st.transaction_state.operation)
+                            assert op is not None
+                        else:
+                            op = None
+                    
                     if st.index >= u.PIPELINE_CONFIG.STATE_LOAD and st.index < u.PIPELINE_CONFIG.WRITE_BACK:
-                        if has_trans_data:
+                        if has_trans_data and op not in ops_without_match:
                             key_match = []
                             for i, km in enumerate(st.key_matches):
                                 if not isinstance(km, BitsVal):
                                     km = read_data(km)
-                                    assert km is not None
+                                    assert km is not None, (op, st, i)
                                     if km:
                                         key_match.append(i)
                         else:
@@ -85,17 +100,25 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounte
                                     #    u.pipeline[i].valid.name,
                                     #    "not valid and we expecting collision with it")            
                                     break
+                            
                     else:
                         key_match = None
                         collision = None
-                    
-                    trans_state_present = st.index > 0 and st.index <= u.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK
-                    if has_operation:
-                        if trans_state_present:
-                            op = read_data(st.transaction_state.operation)
-                            assert op is not None
+
+                    if st.index >= u.PIPELINE_CONFIG.STATE_LOAD and st.index <= u.PIPELINE_CONFIG.WRITE_BACK:
+                        wr_forward = []
+                        if st.index == u.PIPELINE_CONFIG.WRITE_BACK:
+                            src_st = u.pipeline[u.PIPELINE_CONFIG.WRITE_BACK]
+                            if getattr(m, f"write_forwarding_en_{st.index}from{src_st.index}").read():
+                                wr_forward.append(src_st.index)
                         else:
-                            op = None
+                            for src_st in u.pipeline[u.PIPELINE_CONFIG.WRITE_BACK:]:
+                                if getattr(m, f"write_forwarding_en_{st.index}from{src_st.index}").read():
+                                    wr_forward.append(src_st.index)
+                    else:
+                        wr_forward = None
+                    
+    
         
                     if has_trans_data:
                         if trans_state_present:
@@ -130,7 +153,7 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounte
                     state_data = (op, addr,
                             t_data,
                             data,
-                            collision, key_match)
+                            collision, wr_forward, key_match)
                 else:
                     state_data = None
                 
@@ -141,7 +164,7 @@ def OutOfOrderCummulativeOp_dump_pipeline(tc: SimTestCase, u: OooOpExampleCounte
                 # print(f"clk {clk_i}: {cur_state}")
                 for st_data in cur_state[u.PIPELINE_CONFIG.STATE_LOAD:u.PIPELINE_CONFIG.WRITE_BACK]:
                     if st_data is not None:
-                        (_, addr, _, data, collision, _) = st_data
+                        (_, addr, _, data, collision, wr_forward, _) = st_data
                         if has_composite_data:
                             (item_vld, key, data) = data
                         else:
@@ -202,7 +225,7 @@ def OutOfOrderCummulativeOp_dump_pipeline_html(file: StringIO, u: OooOpExampleCo
                 (op, addr,
                  t,
                  data,
-                 collision, key_match) = st
+                 collision, wr_forward, key_match) = st
                 if st_i == 0 or st_i > u.PIPELINE_CONFIG.WAIT_FOR_WRITE_ACK:
                     op = ""  # operation is not present in these stages
                     t = None
@@ -225,6 +248,8 @@ def OutOfOrderCummulativeOp_dump_pipeline_html(file: StringIO, u: OooOpExampleCo
                     (item_vld, key, data) = data
                     if item_vld:
                         d = repr((item_vld, key, data))
+                    elif item_vld is None:
+                        d = "INVALID"
                     else:
                         d = ""
                 else:
@@ -242,11 +267,19 @@ def OutOfOrderCummulativeOp_dump_pipeline_html(file: StringIO, u: OooOpExampleCo
                 cell_lines.append(f"d:{d}<br/>")
                 if collision is not None:
                     cell_lines.append(f"collision:{collision}<br/>")
+                if wr_forward is not None:
+                    cell_lines.append(f"wr_forward:{wr_forward}<br/>")
+                    
                 if key_match is not None:
                     cell_lines.append(f"t_key_match:{key_match}<br/>")
 
                 cell_lines = "".join(cell_lines)
-                cell = f"<td>{cell_lines:s}</td>" 
+                if st_i >= u.PIPELINE_CONFIG.WRITE_BACK: 
+                    style =  ' style="background-color:LightGreen;"'
+                else:
+                    style = ''
+
+                cell = f"<td{style:s}>{cell_lines:s}</td>" 
                     
             state_cells.append(cell)   
         
