@@ -68,14 +68,6 @@ class OOOOpPipelineStage():
         return f"<{self.__class__.__name__:s} {self.name:s} 0x{id(self):x}>"
 
 
-def does_collide(st0: OOOOpPipelineStage, st1: OOOOpPipelineStage):
-    if st0 is None or st1 is None:
-        # to cover the ends of pipeline where next/prev stage does not exists
-        return 0
-
-    return st0.valid & st1.valid & st0.addr._eq(st1.addr)
-
-
 class OutOfOrderCummulativeOpPipelineConfig(NamedTuple):
     # first stage of the pipeline, actually does not have registers
     # but the signals are directly connected to inputs instead

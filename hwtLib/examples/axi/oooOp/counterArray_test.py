@@ -116,6 +116,11 @@ class OooOpExampleCounterArray_1w_TC(SimTestCase):
         d = [self._rand.choice(index_pool) for _ in range(100)]
         self._test_incr(d, randomize=True)
 
+    def test_r_incr_100x_random2(self):
+        index_pool = [1, 2]
+        d = [self._rand.choice(index_pool) for _ in range(100)]
+        self._test_incr(d, randomize=True)
+
     def test_no_comb_loops(self):
         s = CombLoopAnalyzer()
         s.visit_Unit(self.u)

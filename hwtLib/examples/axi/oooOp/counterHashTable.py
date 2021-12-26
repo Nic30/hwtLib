@@ -123,11 +123,11 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
                     )
                 )
             )
-        else:
-            res = BIT.from_py(0)
+            return rename_signal(self, res,
+                f"do_swap_original_and_current_state_{src_st.index:d}to{dst_st.index:d}")
 
-        return rename_signal(self, res,
-            f"do_swap_original_and_current_state_{src_st.index:d}to{dst_st.index:d}")
+        else:
+            return BIT.from_py(0)
 
     def propagate_trans_st(self, src_st: OOOOpPipelineStage, dst_st: OOOOpPipelineStage):
         """
@@ -198,9 +198,10 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
         :return: signal which if it is 1 the transaction state update is not writen back to memory
             (e.g. 1 if key does not match and we do not want to update counters)
         """
+        ts = write_back_st.transaction_state
         return write_back_st.valid & \
                ~write_back_st.transaction_state.key_match & \
-               write_back_st.transaction_state.operation._eq(self.OPERATION.LOOKUP)
+               ts.operation._eq(self.OPERATION.LOOKUP)
 
     def main_op_on_lookup_match_update(self, dst_st: OOOOpPipelineStage, src_st: OOOOpPipelineStage):
         return [
@@ -228,7 +229,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
             self,
             In(prev_st.transaction_state.operation, [OP.LOOKUP, OP.LOOKUP_OR_SWAP]) & 
             latest_key_match,
-            f"exec_main_op_on_lookup_match_update_from{src_st.index:d}")
+            f"exec_main_op_on_lookup_match_update_{dst_st.index:d}from{src_st.index:d}")
 
         dst_tr:StructIntf[self.TRANSACTION_STATE_T] = dst_st.transaction_state
         return  [
@@ -256,8 +257,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
                     )
                 ),
                 dst_tr.key_match(latest_key_match),
-                dst_tr.reset(prev_st.transaction_state.reset),
-                dst_tr.operation(prev_st.transaction_state.operation),
+                dst_tr(prev_st.transaction_state, exclude=[dst_tr.key_match, dst_tr.original_data]),
                 
                 # Resolving of key_match
                 # * The WRITE_BACK-1 stage does have collision detector prediction array

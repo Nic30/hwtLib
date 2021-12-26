@@ -225,7 +225,22 @@ class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
             randomize=True
         )
 
-    def test_r_100x_lookup_found_not_found_mix(self):
+    def test_100x_lookup2_found(self, randomize=False):
+        item_pool = [(i, MState(i + 1, 20 + i)) for i in range(2)]
+
+        self._test_incr(
+            [(i, TState(v[1], None, OP.LOOKUP)) for i, v in [
+                    self._rand.choice(item_pool) for _ in range(100)
+                ]
+            ],
+            mem_init={i: v for i, v in item_pool},
+            randomize=randomize
+        )
+        
+    def test_r_100x_lookup2_found(self):
+        self.test_100x_lookup2_found(randomize=True)
+
+    def test_100x_lookup_found_not_found_mix(self, randomize=False):
         N = 100
         max_id = 2 ** self.u.ID_WIDTH
         item_pool = [(i % max_id, MState(i + 1, 20 + i)) for i in range(max_id * 2)]
@@ -238,8 +253,11 @@ class OooOpExampleCounterHashTable_4threads_TC(SimTestCase):
             # :attention: i is modulo mapped that means that
             #     mem_init actually contains only last "n" items from item_pool
             mem_init={i: v for i, v in item_pool},
-            randomize=True
+            randomize=randomize
         )
+
+    def test_r_100x_lookup_found_not_found_mix(self):
+        self.test_100x_lookup_found_not_found_mix(randomize=True)
 
     def test_1x_lookup_or_swap_found(self):
         self._test_incr(
@@ -314,7 +332,7 @@ class OooOpExampleCounterHashTable_16threads_2WtoB_TC(OooOpExampleCounterHashTab
     @classmethod
     def setUpClass(cls):
         u = cls.u = OooOpExampleCounterHashTable()
-        u.ID_WIDTH = 2
+        u.ID_WIDTH = 4
         u.ADDR_WIDTH = u.ID_WIDTH + 3
         u.PIPELINE_CONFIG = OutOfOrderCummulativeOpPipelineConfig.new_config(
                 WRITE_TO_WRITE_ACK_LATENCY=2,
