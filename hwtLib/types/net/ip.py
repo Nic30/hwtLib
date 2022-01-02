@@ -2,7 +2,6 @@ from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
 from hwtLib.types.ctypes import uint8_t, uint16_t
 
-
 IPv4 = 4
 IPv6 = 6
 
@@ -51,8 +50,7 @@ IPv4Header_t = HStruct(
     (ipv4_t, "src"),
     (ipv4_t, "dst"),
     name="IPv4Header_t"
-    )
-
+)
 
 IPv6Header_t = HStruct(
     (Bits(4), "version"), (Bits(8), "trafficClass"), (Bits(20), "flowLabel"),
@@ -60,4 +58,4 @@ IPv6Header_t = HStruct(
     (ipv6_t, "src"),
     (ipv6_t, "dst"),
     name="IPv6Header_t"
-    )
+)

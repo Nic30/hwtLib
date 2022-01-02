@@ -8,7 +8,7 @@ UDP_header_t = HStruct(
     (l4port_t, "srcp"), (l4port_t, "dstp"),
     (uint16_t, "length"), (Bits(16), "checksum"),
     name="UDP_header_t"
-    )
+)
 
 # :note: pseudo headers are used for checksum calculation
 UDP_IPv4PseudoHeader_t = HStruct(
