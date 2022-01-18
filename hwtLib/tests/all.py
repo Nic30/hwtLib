@@ -246,6 +246,7 @@ from hwtLib.xilinx.ipif.interconnectMatrix_test import IpifInterconnectMatrixTC
 from hwtLib.xilinx.locallink.axis_conv_test import AxiS_localLinkConvTC
 from hwtLib.xilinx.primitive.examples.dsp48e1Add_test import Dsp48e1Add_TCs
 from hwtLib.xilinx.slr_crossing_test import HsSlrCrossingTC
+from hwtLib.amba.axi_comp.oooOp.reorder_buffer_test import ReorderBufferTC
 
 
 # from hwt.simulator.simTestCase import SimTestCase
@@ -490,6 +491,7 @@ suite = testSuiteFromTCs(
     MMU_2pageLvl_TC,
     StructWriter_TC,
     StructReaderTC,
+    ReorderBufferTC,
     *OooOpExampleCounterArray_TCs,
     *OooOpExampleCounterHashTable_TCs,
 
