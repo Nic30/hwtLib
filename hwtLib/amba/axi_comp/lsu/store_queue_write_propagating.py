@@ -70,11 +70,11 @@ class AxiStoreQueueWritePropagating(AxiWriteAggregator):
 
         We need to handle several cases:
 
-        1. the data is currently in tmp register
-        2. the data was in tmp register and now is in data memory
-        3. the data is in data memory
-        4. the data was in data memory and now it is deallocated
-        5. the data was not found anywhere
+        1. the data is currently stuck in tmp register (we need to wait)
+        2. the data was in tmp register and now is in data_ram
+        3. the data was and is in data_ram
+        4. the data was in data_ram and now it is in main memory
+        5. the data was not found in this component (is in main memory)
 
 
         Handling of speculative read has following stages:
@@ -83,6 +83,8 @@ class AxiStoreQueueWritePropagating(AxiWriteAggregator):
         2. optionaly load the data from ram
         3. send data to speculative_read_data and set resp to error if was not found
            it may also happen that the data was flushed in the mean time
+           we can not blok other channel and we need to have a buffer for 1 transaction to prevent data loose
+           where we would need to ask main memory
 
         .. figure:: ./_static/AxiStoreQueueWritePropagating_speculativeRead.png
 
@@ -183,7 +185,7 @@ class AxiStoreQueueWritePropagating(AxiWriteAggregator):
            srd.resp(RESP_OKAY),
            srd.last(1),
         ).Elif(found_in_ram_flag,
-           # found in write data memory
+           # found in write data_ram
            srd.data(ram_r.dout),
            srd.resp(RESP_OKAY),
            srd.last(1),

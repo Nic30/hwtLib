@@ -69,6 +69,7 @@ class ReorderBuffer(Unit):
         HsStructWithIdIntf._config(self)
     
     def _declr(self):
+        assert self.T is not None
         addClkRstn(self)
         with self._paramsShared():
             self.dataIn = HsStructWithIdIntf()

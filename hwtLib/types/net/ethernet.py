@@ -3,7 +3,6 @@ from typing import Union, List
 from hwt.hdl.types.bits import Bits
 from hwt.hdl.types.struct import HStruct
 
-
 vlan_t = Bits(12)
 eth_mac_t = Bits(6 * 8)
 
@@ -18,7 +17,7 @@ EthPreamble_t = HStruct(
 Eth2Header_t = HStruct(
     (eth_mac_t, "dst"),
     (eth_mac_t, "src"),
-    (Bits(2 * 8), "type"),
+    (Bits(2 * 8), "type"), # :see: :class:`~.ETHER_TYPE`
     name="Eth2Header_t"
 )
 
@@ -47,6 +46,8 @@ class ETHER_TYPE():
     IPv6 = 0x86DD
     MPLS_unicast = 0x8847
     MPLS_multicast = 0x8848
+    VLAN_1Q = 0x8100
+    VLAN_1AD = 0x88A8
 
 
 def eth_addr_format(mac: List[Union[int, str]]):
