@@ -355,7 +355,8 @@ class RamTransactional(Unit):
             ),
             def_val={
                 "vld": 0,
-                "word_index": 0
+                "word_index": 0,
+                "flushing": 0,
             }
         )
 
