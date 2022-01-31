@@ -307,7 +307,7 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
             [victim_way_req, st0.dataIn],
             skipWhen={
                 victim_way_req: aw_tagRes.vld & (
-                                aw_tagRes.found |
+                                aw_tagRes.found | 
                                 has_empty
                             )
             },
@@ -354,18 +354,18 @@ class AxiCacheWriteAllocWawOnlyWritePropagating(CacheAddrTypeConfig):
             StreamNode(
                 [in_w, st1_id.dataOut],
                 [da_w.data, axi_s_b],
-                extraConds={axi_s_b: in_w.last,
-                            st1_id.dataOut: in_w.last},
-                skipWhen={axi_s_b:~in_w.last,
-                          st1_id.dataOut:~in_w.last},
+                extraConds={axi_s_b: in_w.valid & in_w.last,
+                            st1_id.dataOut: in_w.valid & in_w.last},
+                skipWhen={axi_s_b: in_w.valid & ~in_w.last,
+                          st1_id.dataOut: in_w.valid & ~in_w.last},
             ).sync(~init_in_progress)
             axi_s_b.id(st1_id.dataOut.data)  # todo
         else:
             StreamNode(
                 [in_w],
                 [da_w.data, axi_s_b],
-                extraConds={axi_s_b: in_w.last},
-                skipWhen={axi_s_b:~in_w.last},
+                extraConds={axi_s_b: in_w.valid & in_w.last},
+                skipWhen={axi_s_b:in_w.valid & ~in_w.last},
             ).sync(~init_in_progress)
             axi_s_b.id(st0_o.write_id)
         axi_s_b.resp(RESP_OKAY)
