@@ -301,7 +301,7 @@ class RamTransactional(Unit):
                     ~w.addr.flush |
                     (~r_index_o.vld & da_r.addr.rd & r_meta_din.rd)), "w_addr_en"),
                 # dissable input write data if no wirite transaction is pending or will be pending
-                w.data: write_pending | w.addr.vld,
+                w.data: write_pending | (w.addr.vld & ~write_pending),
             },
         )
         w_disp_node.sync()
@@ -317,6 +317,7 @@ class RamTransactional(Unit):
             ).Elif(w_index_o.word_index._eq(WORD_INDEX_MAX),
                 # last item
                 w_index_i.word_index(0),
+                w_index_i.flushing(0),
                 w_index_i.vld(0),  # just finished
             ).Else(
                 # pass next word of item
