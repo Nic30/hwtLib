@@ -13,7 +13,7 @@ from hwtLib.examples.simple import SimpleUnit
 class SimpleTC(SimTestCase):
 
     def tearDown(self):
-        # common cleanup, not necessary but should be used when compileSimAndStart is used explicitely
+        # common cleanup, not necessary but should be used when compileSimAndStart is used explicitly
         # because otherwise the old simulation is restarted for a next test
         self.rmSim()
         SimTestCase.tearDown(self)

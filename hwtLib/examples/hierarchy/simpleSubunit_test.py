@@ -13,7 +13,7 @@ from hwtSimApi.constants import CLK_PERIOD
 class SimpleSubunitTC(SimTestCase):
 
     def tearDown(self):
-        # common cleanup, not necessary but should be used when compileSimAndStart is used explicitely
+        # common cleanup, not necessary but should be used when compileSimAndStart is used explicitly
         # because otherwise the old simulation is restarted for a next test
         self.rmSim()
         SimTestCase.tearDown(self)
