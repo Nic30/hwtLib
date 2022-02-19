@@ -20,7 +20,7 @@ class AxiWriteAggregator_1word_per_cachelineTC(SimTestCase):
     def setUpClass(cls):
         cls.u = u = AxiWriteAggregator()
         u.ADDR_WIDTH = 16
-        u.ID_WIDTH = 2
+        u.ID_WIDTH = 3
         u.CACHE_LINE_SIZE = 4
         u.DATA_WIDTH = 32
         u.MAX_BLOCK_DATA_WIDTH = 8

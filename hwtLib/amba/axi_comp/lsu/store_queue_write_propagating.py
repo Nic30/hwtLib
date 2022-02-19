@@ -5,6 +5,7 @@ from hwt.code import If
 from hwt.code_utils import rename_signal
 from hwt.hdl.constants import READ
 from hwt.interfaces.std import Signal, VectSignal, Handshaked
+from hwt.interfaces.utils import propagateClkRstn
 from hwt.serializer.mode import serializeParamsUniq
 from hwt.synthesizer.hObjList import HObjList
 from hwt.synthesizer.param import Param
@@ -105,7 +106,6 @@ class AxiStoreQueueWritePropagating(AxiWriteAggregator):
 
         self.w_in_reg_tmp = w_in_reg_tmp
 
-
         w_i = w_in_reg_tmp[0].dataIn
         w_i.orig_request_addr(sra.addr[:self.CACHE_LINE_OFFSET_BITS])
         w_i.orig_request_addr_eq(w_in_reg.addr._eq(w_i.orig_request_addr))
@@ -113,12 +113,12 @@ class AxiStoreQueueWritePropagating(AxiWriteAggregator):
         w_i.orig_request_valid(sra.vld)
         w_i.addr(w_in_reg.addr)
         w_i.data(w_in_reg.data)
-        w_i.valid(w_in_reg.vld)
+        w_i.valid(w_in_reg.valid)
 
         StreamNode(
             [sra],
             [ooo_fifo.read_lookup, w_i],
-            skipWhen={sra: ~sra.vld}, # flush the pipeline if no request
+            skipWhen={sra:~sra.vld},  # flush the pipeline if no request
         ).sync()
 
         # CLK_PERIOD 1
@@ -150,22 +150,24 @@ class AxiStoreQueueWritePropagating(AxiWriteAggregator):
             [srd],
             # filter out pipeline flushes
             extraConds={srd: w_in_reg_tmp_o.orig_request_valid},
-            skipWhen={srd: ~w_in_reg_tmp_o.orig_request_valid},
+            skipWhen={srd:~w_in_reg_tmp_o.orig_request_valid},
         ).sync()
 
+        w_in_reg_tmp_o_vld = w_in_reg_tmp_o.vld & w_in_reg_tmp_o.orig_request_valid & w_in_reg_tmp_o.valid
         # read from in_tmp req has to be postponed so we can potentially load the data from ram first
         found_in_actual_w_in_reg = rename_signal(
             self,
-            w_in_reg.vld & w_in_reg.addr._eq(w_in_reg_tmp_o.orig_request_addr),
+            w_in_reg.valid & w_in_reg.addr._eq(w_in_reg_tmp_o.orig_request_addr) & w_in_reg_tmp_o_vld,
             "spec_read_found_in_actual_w_in_reg")
         w_in_reg_tmp_1_o = w_in_reg_tmp[0].dataOut
         found_in_w_in_reg_1 = rename_signal(
             self,
-            w_in_reg_tmp_1_o.vld & w_in_reg_tmp_1_o.valid & w_in_reg_tmp_1_o.addr._eq(w_in_reg_tmp_o.orig_request_addr),
+            w_in_reg_tmp_1_o.vld & w_in_reg_tmp_1_o.valid & w_in_reg_tmp_1_o.addr._eq(w_in_reg_tmp_o.orig_request_addr) & 
+            w_in_reg_tmp_o_vld,
             "spec_read_found_in_w_in_reg_1")
         found_in_write_tmp_reg_2 = rename_signal(
             self,
-            w_in_reg_tmp_o.vld & w_in_reg_tmp_o.valid & w_in_reg_tmp_o.orig_request_addr_eq,
+            w_in_reg_tmp_o_vld & w_in_reg_tmp_o.orig_request_addr_eq,
             "spec_read_found_in_write_tmp_reg_2")
 
         srd.id(w_in_reg_tmp_o.orig_request_id)
@@ -197,8 +199,9 @@ class AxiStoreQueueWritePropagating(AxiWriteAggregator):
         )
 
     def _impl(self):
-        self.speculative_read_handler()
         AxiWriteAggregator._impl(self)
+        self.speculative_read_handler()
+        propagateClkRstn(self)
 
 
 if __name__ == "__main__":
