@@ -67,6 +67,7 @@ class ReorderBuffer(Unit):
 
     def _config(self):
         HsStructWithIdIntf._config(self)
+        self.T = uint16_t
     
     def _declr(self):
         assert self.T is not None
