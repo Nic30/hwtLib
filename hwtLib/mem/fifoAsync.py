@@ -55,7 +55,7 @@ class FifoAsync(Fifo):
 
     def _addr_reg_and_cdc(self, reg_name, clk_in, clk_out):
         """
-        Create a register for head/tail FIFO reader/writter possition
+        Create a register for head/tail FIFO reader/writter position
         with gray encoded value propagated to other clock domain
         """
         AW = self.AW

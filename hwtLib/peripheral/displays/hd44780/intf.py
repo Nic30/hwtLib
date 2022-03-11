@@ -121,7 +121,7 @@ class Hd44780Intf(Interface):
 
     @staticmethod
     def CMD_DDRAM_ADDR_SET(addr):
-        """set cursor possition"""
+        """set cursor position"""
         assert addr & mask(7) == addr, addr
         return 0b10000000 | addr
 
