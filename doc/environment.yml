@@ -39,4 +39,4 @@ dependencies:
     - snowballstemmer==2.1.0
     - urllib3==1.26.3
     - "-r https://raw.githubusercontent.com/Nic30/hwtLib/master/doc/requirements.doc.txt"
-    - git+git://github.com/Nic30/hwtLib#egg=hwtLib
+    - git+https://github.com/Nic30/hwtLib#egg=hwtLib

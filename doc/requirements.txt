@@ -1,2 +1,2 @@
 -r https://raw.githubusercontent.com/Nic30/hwt/master/doc/requirements.txt
-git+git://github.com/Nic30/hwt.git@master#egg=hwt
+git+https://github.com/Nic30/hwt.git@master#egg=hwt

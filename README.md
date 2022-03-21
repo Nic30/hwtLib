@@ -50,7 +50,7 @@ If you see any problem/do not underestand something/do miss something open the g
 sudo pip3 install hwtLib
 
 # or from git (latest)
-sudo pip3 install -r https://raw.githubusercontent.com/Nic30/hwtLib/master/doc/requirements.txt git+git://github.com/Nic30/hwtLib#egg=hwtLib --upgrade --no-cache
+sudo pip3 install -r https://raw.githubusercontent.com/Nic30/hwtLib/master/doc/requirements.txt git+https://github.com/Nic30/hwtLib#egg=hwtLib --upgrade --no-cache
 ```
 
 

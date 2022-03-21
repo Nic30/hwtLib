@@ -4,4 +4,4 @@ aafigure
 # all hwt deps from repositories, equivalent to just sphinx-hwt
 -r requirements.txt
 -r https://raw.githubusercontent.com/Nic30/sphinx-hwt/master/doc/requirements.txt
-git+git://github.com/Nic30/sphinx-hwt@master#egg=sphinx-hwt
+git+https://github.com/Nic30/sphinx-hwt@master#egg=sphinx-hwt
