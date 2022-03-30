@@ -287,10 +287,10 @@ class AxiS_strFormat(Unit):
     def _impl(self) -> None:
         _string_rom, strings_offset_and_size, max_chars_per_format, max_bcd_digits = self.build_string_rom()
         if self.DATA_WIDTH != 8:
-            # it self.DATA_WIDTH != 1B we need to handle all possible alignments and shifts, precompute some strings
+            # it self.DATA_WIDTH != 1B we need to handle all possible alignments and shifts, pre-compute some strings
             # because number of string memory ports is limited etc.
             raise NotImplementedError()
-        # instanciate bin_to_bcd if required
+        # instantiate bin_to_bcd if required
         if max_bcd_digits > 0:
             bin_to_bcd = BinToBcd()
             bin_to_bcd.INPUT_WIDTH = log2ceil(10 ** max_bcd_digits - 1)
