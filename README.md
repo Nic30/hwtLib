@@ -84,4 +84,5 @@ sudo pip3 install -r https://raw.githubusercontent.com/Nic30/hwtLib/master/doc/r
 * [Limago](https://github.com/hpcn-uam/Limago) - SV/VHDL - 100G TCP/IP stack
 * [Vitis_Libraries](https://github.com/Xilinx/Vitis_Libraries) - C++/VitisHls - set of various algorithms implemented in VitisHls
 * [wav-lpddr-hw](https://github.com/waviousllc/wav-lpddr-hw) - SV - LPDDR4x/LPDDR5, DFI5.0
+* [hlslibs](https://github.com/hlslibs) - C++/VitisHls - set of libraries for mostly focused on ML/DSP and generic math
 
