@@ -14,7 +14,7 @@ rmWhitespaces = re.compile(r'\s+', re.MULTILINE)
 
 class BaseSerializationTC(SimTestCase):
     # file should be set on child class because we want the pats in tests
-    # to be raltive to a current test case
+    # to be relative to a current test case
     __FILE__ = None
     SERIALIZER_BY_EXT = {
         "v": VerilogSerializer,

@@ -60,7 +60,7 @@ class AxiTesterTC(SimTestCase):
         self.randomize_all()
         self.runSim(20 * CLK_PERIOD)
 
-    def poolWhileBussy(self, onReady):
+    def poolWhileBusy(self, onReady):
         def repeatWaitIfNotReady():
             d = self.u.cntrl.r._ag.data[-1][0]
             d = int(d)
@@ -69,7 +69,7 @@ class AxiTesterTC(SimTestCase):
                 onReady()
             else:
                 # not ready pool again
-                self.poolWhileBussy(onReady)
+                self.poolWhileBusy(onReady)
 
         self.regs.cmd_and_status.read(onDone=repeatWaitIfNotReady)
 
@@ -146,7 +146,7 @@ class AxiTesterTC(SimTestCase):
             self.transactionCompleted += 1
             onDone()
 
-        pool = self.poolWhileBussy
+        pool = self.poolWhileBusy
         seq = SimProcessSequence()
         for _, len_ in transactions:
             seq.extend([

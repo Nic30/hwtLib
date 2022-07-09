@@ -78,7 +78,7 @@ class Hd44780Intf(Interface):
     SC_CURSOR_MOVE = 0
     SHIFT_RIGHT = 1
     SHIFT_LEFT = 0
-    BUSSY = 1
+    BUSY = 1
     RS_CONTROL = 0
     RS_DATA = 1
     RW_READ = 1
