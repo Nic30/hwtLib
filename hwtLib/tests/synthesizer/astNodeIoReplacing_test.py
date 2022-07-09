@@ -21,8 +21,8 @@ class AstNodeIoReplacingTC(unittest.TestCase):
         ).Else(
            b(0)
         )
-
-        stm._replace_input(a, c)
+        self.assertEqual(stm._inputs, [a])
+        self.assertTrue(stm._replace_input(a, c))
         stm_ref = If(c,
                       b(1)
                   ).Else(
@@ -31,6 +31,7 @@ class AstNodeIoReplacingTC(unittest.TestCase):
         self.assertTrue(stm.isSame(stm_ref), [stm, stm_ref])
         self.assertEqual(a.endpoints, [])
         self.assertEqual(c.endpoints, [stm, stm_ref])
+        self.assertEqual(stm._inputs, [c])
 
     def test_If_elif_replace_input(self):
         _, (a, b, c, d) = self.sigs_by_n(4)
@@ -43,7 +44,7 @@ class AstNodeIoReplacingTC(unittest.TestCase):
            c(0)
         )
 
-        stm._replace_input(a, d)
+        self.assertTrue(stm._replace_input(a, d))
 
         stm_ref = If(d,
                       b(1)
@@ -53,9 +54,12 @@ class AstNodeIoReplacingTC(unittest.TestCase):
                       c(0)
                   )
         self.assertTrue(stm.isSame(stm_ref), [stm, stm_ref])
-        self.assertEqual(a.endpoints, [a._isOn().singleDriver()])
+        self.assertEqual(a.endpoints, [(c & a).singleDriver(),
+                                       a._isOn().singleDriver()])
         self.assertEqual(c.endpoints, [(c & a).singleDriver(),
                                        (c & d).singleDriver()])
+        self.assertEqual(stm._inputs, [d, c & d])
+        self.assertEqual(stm._outputs, [b, c])
 
     def test_If_nested(self):
         _, (a, b, c) = self.sigs_by_n(3)
@@ -69,8 +73,8 @@ class AstNodeIoReplacingTC(unittest.TestCase):
         ).Else(
            b(0)
         )
-
-        stm._replace_input(a, c)
+        self.assertEqual(stm._inputs, [a, c, c & a, c | a] )
+        self.assertTrue(stm._replace_input(a, c))
         stm_ref = \
         If(c,
             If(c,
@@ -82,7 +86,37 @@ class AstNodeIoReplacingTC(unittest.TestCase):
             b(0)
         )
         self.assertTrue(stm.isSame(stm_ref), [stm, stm_ref])
+        self.assertEqual(stm._inputs, [c, ])
         self.assertNotIn(stm, a.endpoints)
+        self.assertIn(stm, c.endpoints)
+    
+    def test_If_nested_withExpr(self):
+        _, (a, b, c) = self.sigs_by_n(3)
+        stm = \
+        If(a,
+            If(c,
+               b(c & a)
+            ).Else(
+               b(c | a)
+            )
+        ).Else(
+           b(0)
+        )
+
+        self.assertTrue(stm._replace_input(a, ~c))
+        stm_ref = \
+        If(~c,
+            If(c,
+                b(0)
+            ).Else(
+                b(1)
+            )
+        ).Else(
+            b(0)
+        )
+        self.assertTrue(stm.isSame(stm_ref), [stm, stm_ref])
+        self.assertNotIn(stm, a.endpoints)
+        self.assertIn(stm, (~c).endpoints)
         self.assertIn(stm, c.endpoints)
 
     def test_Switch_simple(self):
@@ -95,7 +129,7 @@ class AstNodeIoReplacingTC(unittest.TestCase):
             b(0)
         )
 
-        stm._replace_input(a, c)
+        self.assertTrue(stm._replace_input(a, c))
         stm_ref = \
         Switch(c)\
         .Case(0,
