@@ -174,7 +174,7 @@ class OperatorTC(unittest.TestCase):
 
     def test_notNotIsOrigSig(self):
         a = self.n.sig("a")
-        self.assertIs(a, ~ ~a)
+        self.assertIs(a, ~~a)
 
     def test_downto(self):
         a = self.n.sig('a', dtype=INT)
@@ -347,6 +347,22 @@ class OperatorTC(unittest.TestCase):
         self.assertEqual(op0, a)
         self.assertEqual(op1, b)
 
+    def test_bitwiseSigReduce(self):
+        n = self.n
+        a = n.sig("a")
+        self.assertEqual(a & a, a)
+        self.assertEqual(int(a & ~a), 0)
+        self.assertEqual(int(~a & a), 0)
+        
+        self.assertEqual(a | a, a)
+        self.assertEqual(int(a | ~a), 1)
+        self.assertEqual(int(~a | a), 1)
+        
+        self.assertEqual(int(a ^ a), 0)
+        self.assertEqual(int(a ^ ~a), 1)
+        self.assertEqual(int(~a ^ a), 1)
+        
+        
     def test_BitsSignalTypeErrors(self):
         n = self.n
         a = n.sig("a")
@@ -379,7 +395,7 @@ class OperatorTC(unittest.TestCase):
 
 if __name__ == '__main__':
     suite = unittest.TestSuite()
-    # suite.addTest(OperatorTC('test_bits_sig_slice_on_slice_of_slice'))
+    # suite.addTest(OperatorTC('test_bitwiseSigReduce'))
     suite.addTest(unittest.makeSuite(OperatorTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
