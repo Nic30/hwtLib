@@ -1,6 +1,7 @@
+from hwt.hdl.types.stream import HStream
 from hwt.hdl.types.struct import HStruct
 from hwtLib.types.ctypes import uint32_t, uint16_t
-from hwt.hdl.types.stream import HStream
+
 
 # Table 3-1: Sixteen Bit NCM Transfer Header (NTH16)
 NTH16_SIGNATURE = 0x484D434E
