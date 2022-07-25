@@ -126,7 +126,7 @@ class Showcase0(Unit):
         # assig_process_r_next_0
         r_next_1(r_0)
         # assig_process_r_next_1
-        If((~r)._eq(1),
+        If(r._eq(0),
             r_next(e)
         ).Else(
             r_next(r)

@@ -131,7 +131,7 @@ BEGIN
     clkIntern_next_rising <= clkIntern_next AND NOT clkIntern_next_edgeDetect_last;
     assig_process_clkOut_next: PROCESS(clkOut, data_vld, endOfWordDelayed, endOfWordtimerCntr256, slaveSelectWaitRequired)
     BEGIN
-        IF NOT slaveSelectWaitRequired = '1' AND (endOfWordtimerCntr256(3 DOWNTO 0) = X"0" AND (NOT endOfWordDelayed AND data_vld) = '1') THEN
+        IF slaveSelectWaitRequired = '0' AND (endOfWordtimerCntr256(3 DOWNTO 0) = X"0" AND (NOT endOfWordDelayed AND data_vld) = '1') THEN
             clkOut_next <= NOT clkOut;
         ELSE
             clkOut_next <= clkOut;
@@ -139,7 +139,7 @@ BEGIN
     END PROCESS;
     data_din <= rxReg;
     data_rd <= endOfWordDelayed;
-    endOfWord <= '1' WHEN (endOfWordtimerCntr256 = X"00" AND (NOT endOfWordDelayed AND data_vld) = '1' AND NOT timersRst = '1') ELSE '0';
+    endOfWord <= '1' WHEN (endOfWordtimerCntr256 = X"00" AND (NOT endOfWordDelayed AND data_vld) = '1' AND timersRst = '0') ELSE '0';
     endOfWordDelayed_next <= endOfWordtimerTick256;
     assig_process_endOfWordtimerCntr256_next: PROCESS(data_vld, endOfWordDelayed, endOfWordtimerCntr256, timersRst)
         VARIABLE tmpCastExpr_0 : UNSIGNED(7 DOWNTO 0);
@@ -177,7 +177,7 @@ BEGIN
     spi_clk <= clkOut;
     spi_cs <= NOT sig_csDecoder_dout;
     spi_mosi <= txReg(7);
-    timersRst <= '1' WHEN (NOT (NOT endOfWordDelayed AND data_vld) = '1' OR (slaveSelectWaitRequired = '1' AND (endOfWordtimerCntr256(6 DOWNTO 0) = "0000000" AND (NOT endOfWordDelayed AND data_vld) = '1'))) ELSE '0';
+    timersRst <= '1' WHEN ((NOT endOfWordDelayed AND data_vld) = '0' OR (slaveSelectWaitRequired = '1' AND (endOfWordtimerCntr256(6 DOWNTO 0) = "0000000" AND (NOT endOfWordDelayed AND data_vld) = '1'))) ELSE '0';
     assig_process_txInitialized: PROCESS(clk)
     BEGIN
         IF RISING_EDGE(clk) THEN

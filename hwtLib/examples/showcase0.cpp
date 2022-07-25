@@ -146,7 +146,7 @@ SC_MODULE(Showcase0) {
     }
 
     void assig_process_r_next_1() {
-        if (~r == sc_uint<1>("0b1"))
+        if (r == sc_uint<1>("0b0"))
             r_next.write(e.read());
         else
             r_next.write(r);

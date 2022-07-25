@@ -330,15 +330,16 @@ class OperatorTC(unittest.TestCase):
         n = self.n
         a = n.sig("a")
         b = n.sig("b")
-        e = ~(a & b)
-        self.assertEqual(e.origin.operator, AllOps.NOT)
-        cond = e._auto_cast(BOOL)
+        aAndB = a & b
+        notAAndB = ~aAndB
+        self.assertEqual(notAAndB.origin.operator, AllOps.NOT)
+        cond = notAAndB._auto_cast(BOOL)
 
         self.assertEqual(cond.origin.operator, AllOps.EQ)
-        _e = cond.origin.operands[0]
-        self.assertEqual(e, _e)
+        self.assertIs(cond.origin.operands[0], aAndB)
+        self.assertEqual(int(cond.origin.operands[1]), 0)
 
-        andOp = e.origin.operands[0].origin
+        andOp = notAAndB.origin.operands[0].origin
         self.assertEqual(andOp.operator, AllOps.AND)
 
         op0 = andOp.operands[0]
