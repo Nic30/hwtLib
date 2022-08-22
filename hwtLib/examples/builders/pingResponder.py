@@ -104,7 +104,7 @@ class PingResponder(Unit):
                 name = f.name
                 In = getattr(resp, name)
 
-                # switch dst and src
+                # swap dst and src
                 if name == "src":
                     name = "dst"
                 elif name == "dst":
