@@ -533,13 +533,13 @@ def main():
 
     try:
         from concurrencytest import ConcurrentTestSuite, fork_for_tests
-        useParallerlTest = True
+        useParallelTest = True
     except ImportError:
         # concurrencytest is not installed, use regular test runner
-        useParallerlTest = False
-    # useParallerlTest = False
+        useParallelTest = False
+    # useParallelTest = False
 
-    if useParallerlTest:
+    if useParallelTest:
         concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests())
         res = runner.run(concurrent_suite)
     else:

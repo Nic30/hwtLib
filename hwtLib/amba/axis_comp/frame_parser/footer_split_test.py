@@ -147,11 +147,11 @@ if __name__ == '__main__':
     import unittest
     try:
         from concurrencytest import ConcurrentTestSuite, fork_for_tests
-        useParallerlTest = True
+        useParallelTest = True
     except ImportError:
         # concurrencytest is not installed, use regular test runner
-        useParallerlTest = False
-    # useParallerlTest = False
+        useParallelTest = False
+    # useParallelTest = False
 
     suite = unittest.TestSuite()
     # suite.addTest(AxiS_footerSplitTC('test_nop'))
@@ -161,7 +161,7 @@ if __name__ == '__main__':
     # suite.addTest(AxiS_footerSplitTC('test_frames_8_randomized'))
     suite.addTest(unittest.makeSuite(AxiS_footerSplitTC))
     runner = unittest.TextTestRunner(verbosity=3)
-    if useParallerlTest:
+    if useParallelTest:
         # Run same tests across multiple processes
         concurrent_suite = ConcurrentTestSuite(suite, fork_for_tests())
         runner.run(concurrent_suite)
