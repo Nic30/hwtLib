@@ -215,7 +215,7 @@ class AxiInterconnectMatrixCrossbar(Unit):
         #  and then wait until there is not index of this master
         #  on top of order_din_index_for_dout
         # N:1,
-        #  channel is connected directly to all slaves with data order synchonization
+        #  channel is connected directly to all slaves with data order synchronization
         #  driven by order_din_index_for_dout
         # 1:N, add logic which enables communication with slave only
         #      if it is selected by address
