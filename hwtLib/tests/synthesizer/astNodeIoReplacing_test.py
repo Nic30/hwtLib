@@ -22,7 +22,7 @@ class AstNodeIoReplacingTC(unittest.TestCase):
            b(0)
         )
         self.assertEqual(stm._inputs, [a])
-        self.assertTrue(stm._replace_input(a, c))
+        self.assertTrue(stm._replace_input((a, c)))
         stm_ref = If(c,
                       b(1)
                   ).Else(
@@ -44,7 +44,7 @@ class AstNodeIoReplacingTC(unittest.TestCase):
            c(0)
         )
 
-        self.assertTrue(stm._replace_input(a, d))
+        self.assertTrue(stm._replace_input((a, d)))
 
         stm_ref = If(d,
                       b(1)
@@ -74,7 +74,7 @@ class AstNodeIoReplacingTC(unittest.TestCase):
            b(0)
         )
         self.assertEqual(stm._inputs, [a, c, c & a, c | a] )
-        self.assertTrue(stm._replace_input(a, c))
+        self.assertTrue(stm._replace_input((a, c)))
         stm_ref = \
         If(c,
             If(c,
@@ -103,7 +103,7 @@ class AstNodeIoReplacingTC(unittest.TestCase):
            b(0)
         )
 
-        self.assertTrue(stm._replace_input(a, ~c))
+        self.assertTrue(stm._replace_input((a, ~c)))
         stm_ref = \
         If(~c,
             If(c,
@@ -129,7 +129,7 @@ class AstNodeIoReplacingTC(unittest.TestCase):
             b(0)
         )
 
-        self.assertTrue(stm._replace_input(a, c))
+        self.assertTrue(stm._replace_input((a, c)))
         stm_ref = \
         Switch(c)\
         .Case(0,
