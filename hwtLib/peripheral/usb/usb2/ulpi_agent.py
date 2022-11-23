@@ -13,7 +13,7 @@ from pyMathBitPrecise.bit_utils import mask, ValidityError
 class UlpiAgent(SyncAgentBase):
     """
     Agent for :class:`hwtLib.peripheral.usb.usb2.ulpi.Ulpi` interface.
-    It allows for receiving and transmiting raw data over ULPI, it does not implement USB stack.
+    It allows for receiving and transmitting raw data over ULPI, it does not implement USB stack.
 
     :note: the RX is always from PHY to Link, the TX is always from Link to PHY
     :note: in link->phy nxt works as a handshake ready and stp as handshake valid_n
@@ -23,10 +23,8 @@ class UlpiAgent(SyncAgentBase):
         and the stp works as handshake ready_n, if stp is set to 1 the transmission of whole packet is interrupted.
     """
 
-    def __init__(self, sim:HdlSimulator, intf: Ulpi, allowNoReset=False, wrap_monitor_and_driver_in_edge_callback=True):
-        super(UlpiAgent, self).__init__(
-            sim, intf, allowNoReset=allowNoReset,
-            wrap_monitor_and_driver_in_edge_callback=wrap_monitor_and_driver_in_edge_callback)
+    def __init__(self, sim:HdlSimulator, intf: Ulpi, allowNoReset=False):
+        super(UlpiAgent, self).__init__(sim, intf, allowNoReset=allowNoReset)
         self.link_to_phy_packets = deque()
         self.phy_to_link_packets = deque()
 

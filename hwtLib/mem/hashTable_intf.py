@@ -60,6 +60,7 @@ class InsertIntf(HandshakeSync):
     """
     .. hwt-autodoc::
     """
+
     def _config(self):
         self.HASH_WIDTH = Param(8)
         self.KEY_WIDTH = Param(8)
@@ -106,6 +107,7 @@ class LookupKeyIntf(HandshakeSync):
     """
     .. hwt-autodoc::
     """
+
     def _config(self):
         self.LOOKUP_ID_WIDTH = Param(0)
         self.KEY_WIDTH = Param(8)
@@ -227,6 +229,7 @@ class HashTableIntf(Interface):
     """
     .. hwt-autodoc::
     """
+
     def _config(self):
         self.ITEMS_CNT = Param(32)
         self.KEY_WIDTH = Param(16)
@@ -269,17 +272,13 @@ class HashTableIntfAgent(AgentBase):
 
     def getDrivers(self):
         intf = self.intf
-        return [
-            *intf.insert._ag.getDrivers(),
-            *intf.lookup._ag.getDrivers(),
-            *intf.lookupRes._ag.getMonitors(),
-        ]
+        yield from intf.insert._ag.getDrivers()
+        yield from intf.lookup._ag.getDrivers()
+        yield from intf.lookupRes._ag.getMonitors()
 
     def getMonitors(self):
         intf = self.intf
-        return [
-            *intf.insert._ag.getMonitors(),
-            *intf.lookup._ag.getMonitors(),
-            *intf.lookupRes._ag.getDrivers(),
-        ]
+        yield from intf.insert._ag.getMonitors()
+        yield from intf.lookup._ag.getMonitors()
+        yield from intf.lookupRes._ag.getDrivers()
 

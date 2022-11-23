@@ -8,7 +8,7 @@ from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtSimApi.process_utils import OnRisingCallbackLoop, OnFallingCallbackLoop
 from collections import deque
 from typing import Deque, Tuple
-from hwtSimApi.triggers import WaitWriteOnly, WaitCombStable,\
+from hwtSimApi.triggers import WaitWriteOnly, WaitCombStable, \
     Edge, Timer
 from hwtSimApi.constants import Time
 from hwtSimApi.simCalendar import DONE
@@ -87,16 +87,10 @@ def pop_int(bits: Deque[int], bit_cnt: int):
 class MdioAgent(SyncAgentBase):
     PULL = 1
 
-    def __init__(self, sim: HdlSimulator, intf, allowNoReset=False,
-                 wrap_monitor_and_driver_in_edge_callback=True):
-        super(MdioAgent, self).__init__(sim, intf, allowNoReset=allowNoReset,
-                                        wrap_monitor_and_driver_in_edge_callback=False)
+    def __init__(self, sim: HdlSimulator, intf, allowNoReset=False):
+        super(MdioAgent, self).__init__(sim, intf, allowNoReset=allowNoReset)
         self.intf.io._initSimAgent(sim)
-        if wrap_monitor_and_driver_in_edge_callback:
-            self.rx_bits = OnRisingCallbackLoop(
-                sim, intf.c, self.rx_bits, lambda: True)
-            self.tx_bits = OnFallingCallbackLoop(
-                sim, intf.c, self.tx_bits, lambda: True)
+
         self.rx_bits_tmp = deque()
         self.tx_bits_tmp = deque()
         self.reset_state()
@@ -120,7 +114,7 @@ class MdioAgent(SyncAgentBase):
         for i in range(D_W):
             # MSB first
             tx_bits.append(get_bit(data, D_W - i - 1))
-        #print(tx_bits)
+        # print(tx_bits)
 
     def on_write(self, phyaddr, regaddr, data):
         self.data[(phyaddr, regaddr)] = data
@@ -168,7 +162,7 @@ class MdioAgent(SyncAgentBase):
             if len(rx_bits) == Mdio.PRE_W:
                 self.preamble_detected = True
                 rx_bits.clear()
-                #print(self.sim.now / Time.ns, "preamble_detected")
+                # print(self.sim.now / Time.ns, "preamble_detected")
 
         elif not self.start_detected:
             if not rx_bits:
@@ -180,7 +174,7 @@ class MdioAgent(SyncAgentBase):
                 assert b == 1, (self.sim.now / Time.ns, b)
                 rx_bits.clear()
                 self.start_detected = True
-                #print(self.sim.now / Time.ns, "start_detected")
+                # print(self.sim.now / Time.ns, "start_detected")
 
         elif self.turn_arround_check:
             rx_bits.append(b)
@@ -192,7 +186,7 @@ class MdioAgent(SyncAgentBase):
                     self.rx_w_data = True
                 rx_bits.clear()
                 self.turn_arround_check = False
-                #print(self.sim.now / Time.ns, "turn_arround_check_passed")
+                # print(self.sim.now / Time.ns, "turn_arround_check_passed")
 
         elif self.rx_w_data:
             rx_bits.append(b)
@@ -200,7 +194,7 @@ class MdioAgent(SyncAgentBase):
                 data = pop_int(rx_bits, mdio.D_W)
                 self.on_write(self.acutal_req[1], self.acutal_req[2], data)
                 self.reset_state()
-                #print(self.sim.now / Time.ns, "write_data_recieved")
+                # print(self.sim.now / Time.ns, "write_data_recieved")
                 assert not rx_bits
 
         elif self.tx_bits_tmp:
@@ -214,23 +208,25 @@ class MdioAgent(SyncAgentBase):
                 self.acutal_req = (opcode, phyaddr, regaddr)
 
                 if opcode == mdio.OP.READ:
-                    #print(self.sim.now / Time.ns, ("READ",  phyaddr, regaddr))
+                    # print(self.sim.now / Time.ns, ("READ",  phyaddr, regaddr))
                     self.on_read(phyaddr, regaddr)
                 elif opcode == mdio.OP.WRITE:
                     self.rx_w_data = True
                     self.turn_arround_check = True
-                    #print(self.sim.now / Time.ns, ("WRITE",  phyaddr, regaddr))
+                    # print(self.sim.now / Time.ns, ("WRITE",  phyaddr, regaddr))
                 else:
                     raise ValueError(opcode)
 
                 rx_bits.clear()
 
     def getMonitors(self):
-        return [
-            *self.intf.io._ag.getMonitors(),
-            self.rx_bits(),
-            self.tx_bits(),
-        ]
+        self.rx_bits = OnRisingCallbackLoop(
+            self.sim, self.intf.c, self.rx_bits, lambda: True)
+        self.tx_bits = OnFallingCallbackLoop(
+            self.sim, self.intf.c, self.tx_bits, lambda: True)
+        yield from self.intf.io._ag.getMonitors()
+        yield self.rx_bits()
+        yield self.tx_bits()
 
 
 class IP_mdio(IntfIpMeta):

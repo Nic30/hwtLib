@@ -22,11 +22,9 @@ class RmiiAgent(AgentBase):
 
     def getMonitors(self):
         i = self.intf
-        return [
-           *i.ref_clk._ag.getDrivers(),
-           *i.tx._ag.getMonitors(),
-           *i.rx._ag.getDrivers(),
-        ]
+        yield from i.ref_clk._ag.getDrivers()
+        yield from i.tx._ag.getMonitors()
+        yield from i.rx._ag.getDrivers()
 
 
 class RmiiTxChannelAgent(VldSyncedAgent):

@@ -10,6 +10,7 @@ class AxiStreamFullDuplex(Interface):
     """
     .. hwt-autodoc::
     """
+
     def _config(self):
         AxiStream._config(self)
         self.HAS_RX = Param(True)
@@ -28,6 +29,7 @@ class AxiStreamFullDuplex(Interface):
 
 
 class AxiStreamFullDuplexAgent(AgentBase):
+
     def __init__(self, sim: HdlSimulator, intf: AxiStreamFullDuplex):
         super(AxiStreamFullDuplexAgent, self).__init__(sim, intf)
         if intf.HAS_TX:
@@ -37,18 +39,14 @@ class AxiStreamFullDuplexAgent(AgentBase):
 
     def getDrivers(self):
         i = self.intf
-        d = []
         if i.HAS_TX:
-            d.extend(i.tx._ag.getDrivers())
+            yield from i.tx._ag.getDrivers()
         if i.HAS_RX:
-            d.extend(i.rx._ag.getMonitors())
-        return d
+            yield from i.rx._ag.getMonitors()
 
     def getMonitors(self):
         i = self.intf
-        d = []
         if i.HAS_TX:
-            d.extend(i.tx._ag.getMonitors())
+            yield from i.tx._ag.getMonitors()
         if i.HAS_RX:
-            d.extend(i.rx._ag.getDrivers())
-        return d
+            yield from i.rx._ag.getDrivers()

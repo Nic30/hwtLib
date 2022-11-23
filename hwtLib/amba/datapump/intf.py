@@ -149,14 +149,12 @@ class AxiRDatapumpIntfAgent(AgentBase):
         self.r = intf.r._ag
 
     def getDrivers(self):
-        return (self.req.getDrivers() +
-                self.r.getMonitors()
-                )
+        yield from self.req.getDrivers()
+        yield from self.r.getMonitors()
 
     def getMonitors(self):
-        return (self.req.getMonitors() +
-                self.r.getDrivers()
-                )
+        yield from self.req.getMonitors()
+        yield from self.r.getDrivers()
 
 
 class AxiWDatapumpIntf(Interface):
@@ -223,13 +221,11 @@ class AxiWDatapumpIntfAgent(AgentBase):
         self.ack = intf.ack._ag
 
     def getDrivers(self):
-        return (self.req.getDrivers() +
-                self.w.getDrivers() +
-                self.ack.getMonitors()
-                )
+        yield from self.req.getDrivers()
+        yield from self.w.getDrivers()
+        yield from self.ack.getMonitors()
 
     def getMonitors(self):
-        return (self.req.getMonitors() +
-                self.w.getMonitors() +
-                self.ack.getDrivers()
-                )
+        yield from self.req.getMonitors()
+        yield from self.w.getMonitors()
+        yield from self.ack.getDrivers()

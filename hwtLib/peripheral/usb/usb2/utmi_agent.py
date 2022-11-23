@@ -2,6 +2,7 @@ from collections import deque
 
 from hwt.hdl.constants import NOP
 from hwt.simulator.agentBase import SyncAgentBase
+from hwtLib.peripheral.usb.constants import USB_LINE_STATE
 from hwtLib.peripheral.usb.usb2.ulpi import ulpi_reg_otg_control_t_reset_defaults, \
     ulpi_reg_function_control_t_reset_default
 from hwtLib.peripheral.usb.usb2.utmi import Utmi_8b_rx, Utmi_8b, utmi_interrupt_t
@@ -9,7 +10,6 @@ from hwtSimApi.agents.base import AgentBase
 from hwtSimApi.hdlSimulator import HdlSimulator
 from hwtSimApi.triggers import WaitCombStable, WaitCombRead, WaitWriteOnly
 from pyMathBitPrecise.bit_utils import ValidityError
-from hwtLib.peripheral.usb.constants import USB_LINE_STATE
 
 
 class Utmi_8b_rxAgent(SyncAgentBase):
@@ -129,11 +129,9 @@ class Utmi_8b_txAgent(SyncAgentBase):
     .. figure:: ./_static/utmi_rx.png
     """
 
-    def __init__(self, sim:HdlSimulator, intf, allowNoReset=False,
-        wrap_monitor_and_driver_in_edge_callback=True):
+    def __init__(self, sim:HdlSimulator, intf, allowNoReset=False):
         SyncAgentBase.__init__(
-            self, sim, intf, allowNoReset=allowNoReset,
-            wrap_monitor_and_driver_in_edge_callback=wrap_monitor_and_driver_in_edge_callback)
+            self, sim, intf, allowNoReset=allowNoReset)
         self.data = deque()
         self.actual_packet = None
         self._last_ready = 0
@@ -270,11 +268,9 @@ class Utmi_8bAgent(AgentBase):
         self.intf.rx._ag.actual_packet = v
 
     def getMonitors(self):
-        return [
-           *self.intf.tx._ag.getDrivers(),
-           *self.intf.rx._ag.getMonitors(),
-           self.monitor(),
-        ]
+        yield from self.intf.tx._ag.getDrivers()
+        yield from self.intf.rx._ag.getMonitors()
+        yield self.monitor()
 
     def monitor(self):
         yield WaitWriteOnly()
@@ -289,11 +285,9 @@ class Utmi_8bAgent(AgentBase):
         intf.tx.vld.write(0)
 
     def getDrivers(self):
-        return [
-           *self.intf.tx._ag.getMonitors(),
-           *self.intf.rx._ag.getDrivers(),
-           self.driver(),
-        ]
+        yield from self.intf.tx._ag.getMonitors()
+        yield from self.intf.rx._ag.getDrivers()
+        yield self.driver()
 
     def driver(self):
         yield WaitWriteOnly()

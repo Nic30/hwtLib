@@ -90,13 +90,13 @@ class Mi32Agent(SyncAgentBase):
 
     def getDrivers(self):
         self.setEnable = self.setEnable_asDriver
-        return (self.dataAg.getMonitors()
-                +self.addrAg.getDrivers())
+        yield from self.dataAg.getMonitors()
+        yield from self.addrAg.getDrivers()
 
     def getMonitors(self):
         self.setEnable = self.setEnable_asMonitor
-        return (self.dataAg.getDrivers()
-                +self.addrAg.getMonitors())
+        yield from self.dataAg.getDrivers()
+        yield from self.addrAg.getMonitors()
 
 
 class Mi32AddrAgent(HandshakedAgent):

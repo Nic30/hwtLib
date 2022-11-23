@@ -240,35 +240,24 @@ class Axi3LiteAgent(AgentBase):
                 self.b.setEnable(en)
 
     def getDrivers(self):
-        drvs = []
         if self.intf.HAS_W:
-            drvs.extend(
-                self.aw.getDrivers()
-                +self.w.getDrivers()
-                +self.b.getMonitors()
-            )
+            yield from self.aw.getDrivers()
+            yield from self.w.getDrivers()
+            yield from self.b.getMonitors()
 
         if self.intf.HAS_R:
-            drvs.extend(
-                self.ar.getDrivers()
-                +self.r.getMonitors()
-            )
-        return drvs
+            yield from self.ar.getDrivers()
+            yield from self.r.getMonitors()
 
     def getMonitors(self):
-        mons = []
         if self.intf.HAS_W:
-            mons.extend(
-                self.aw.getMonitors()
-                +self.w.getMonitors()
-                +self.b.getDrivers()
-            )
+            yield from self.aw.getMonitors()
+            yield from self.w.getMonitors()
+            yield from self.b.getDrivers()
+
         if self.intf.HAS_R:
-            mons.extend(
-                self.ar.getMonitors()
-                +self.r.getDrivers()
-            )
-        return mons
+            yield from self.ar.getMonitors()
+            yield from self.r.getDrivers()
 
     def create_addr_req(self, *args, **kwargs):
         if self.intf.HAS_R:

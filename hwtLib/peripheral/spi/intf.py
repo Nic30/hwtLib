@@ -147,12 +147,13 @@ class SpiAgent(SyncAgentBase):
             self.writeTxSig(self.intf.mosi)
 
     def getDrivers(self):
-        return [self.driverRx(), self.driverTx()]
+        yield self.driverRx()
+        yield self.driverTx()
 
     def getMonitors(self):
-        return [self.monitorRx(),
-                # self.monitorTx_pre_set(),
-                self.monitorTx()]
+        yield self.monitorRx()
+        #  yield self.monitorTx_pre_set()
+        yield self.monitorTx()
 
 
 # http://www.corelis.com/education/SPI_Tutorial.htm

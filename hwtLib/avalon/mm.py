@@ -11,7 +11,6 @@ from hwt.synthesizer.param import Param
 from hwtSimApi.hdlSimulator import HdlSimulator
 from pyMathBitPrecise.bit_utils import mask
 
-
 RESP_OKAY = 0b00
 # RESP_RESERVED = 0b01
 RESP_SLAVEERROR = 0b10
@@ -43,7 +42,7 @@ class AvalonMM(Interface):
         self.write = Signal()
 
         self.address = VectSignal(self.ADDR_WIDTH)
-        # ready from slave to mark that the operation can not be started
+        # ready from slave to mark that next request can not be accepted
         self.waitRequest = Signal(masterDir=IN)
 
         self.readData = VectSignal(self.DATA_WIDTH, masterDir=IN)
@@ -113,7 +112,7 @@ class AvalonMmDataRAgent(VldSyncedAgent):
 
 class AvalonMmAddrAgent(HandshakedAgent):
     """
-    data format is tuple (address, byteEnable, read/write, burstCount)
+    data format is tuple (address, byteEnable, READ/WRITE, burstCount)
 
     * two valid signals "read", "write"
     * one ready_n signal "waitrequest")
@@ -125,7 +124,7 @@ class AvalonMmAddrAgent(HandshakedAgent):
         self.BE_ALL = mask(intf.readData._dtype.bit_length() // 8)
 
     @classmethod
-    def get_ready_signal(cls, intf):
+    def get_ready_signal(cls, intf: AvalonMM):
         return intf.waitRequest
 
     def get_ready(self):
@@ -133,11 +132,11 @@ class AvalonMmAddrAgent(HandshakedAgent):
         rd.val = int(not rd.val)
         return rd
 
-    def set_ready(self, val):
+    def set_ready(self, val: int):
         self._rd.write(int(not val))
 
     @classmethod
-    def get_valid_signal(cls, intf):
+    def get_valid_signal(cls, intf: AvalonMM):
         return (intf.read, intf.write)
 
     def get_valid(self):
@@ -149,7 +148,7 @@ class AvalonMmAddrAgent(HandshakedAgent):
 
         return r
 
-    def set_valid(self, val):
+    def set_valid(self, val: int):
         if self.actualData is None or self.actualData is NOP:
             r = 0
             w = 0
@@ -164,6 +163,7 @@ class AvalonMmAddrAgent(HandshakedAgent):
                 w = val
             else:
                 raise ValueError("Unknown mode", mode)
+
         self._vld[0].write(r)
         self._vld[1].write(w)
 
@@ -186,11 +186,12 @@ class AvalonMmAddrAgent(HandshakedAgent):
                 rw = READ
                 wdata = None
                 byteEnable = None
+
         elif write.val:
             rw = WRITE
         else:
             raise AssertionError(
-                "This funtion should not be called when data"
+                "This function should not be called when data"
                 "is not ready on interface")
         return (rw, address, burstCount, wdata, byteEnable)
 
@@ -277,14 +278,25 @@ class AvalonMmAgent(SyncAgentBase):
 
     rData = property(rData_get, rData_set)
 
+    def setEnable_asDriver(self, en: bool):
+        self._enabled = en
+        self.addrAg.setEnable(en)
+        # self.wRespAg.setEnable(en)
+
+    def setEnable_asMonitor(self, en: bool):
+        self._enabled = en
+        self.addrAg.setEnable(en)
+        self.wRespAg.setEnable(en)
+        self.rData.setEnable(en)
+
     def getDrivers(self):
         self.setEnable = self.setEnable_asDriver
-        return (self.rDataAg.getMonitors()
-                +self.addrAg.getDrivers()
-                +self.wRespAg.getMonitors())
+        yield from self.rDataAg.getMonitors()
+        yield from self.addrAg.getDrivers()
+        yield from self.wRespAg.getMonitors()
 
     def getMonitors(self):
         self.setEnable = self.setEnable_asMonitor
-        return (self.rDataAg.getDrivers()
-                +self.addrAg.getMonitors()
-                +self.wRespAg.getDrivers())
+        yield from self.rDataAg.getDrivers()
+        yield from self.addrAg.getMonitors()
+        yield from self.wRespAg.getDrivers()

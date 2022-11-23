@@ -100,8 +100,7 @@ class UtmiUsbAgent(Utmi_8bAgent, SyncAgentBase):
     with device host logic and USB stack
     """
 
-    def __init__(self, sim:HdlSimulator, intf:Utmi_8bAgent, allowNoReset=False,
-                 wrap_monitor_and_driver_in_edge_callback=True):
+    def __init__(self, sim:HdlSimulator, intf:Utmi_8bAgent, allowNoReset=False):
         Utmi_8bAgent.__init__(self, sim, intf)
         self.descriptors = None
         self.usb_driver = None
@@ -130,10 +129,8 @@ class UtmiUsbAgent(Utmi_8bAgent, SyncAgentBase):
             self.usb_driver = UtmiUsbHostProcAgent(self.link_to_phy_packets,
                                                    self.phy_to_link_packets)
         self.usb_driver_proc = self.usb_driver.proc()
-        return [
-            self.driver_init(),
-            *Utmi_8bAgent.getDrivers(self)
-        ]
+        yield self.driver_init()
+        yield from Utmi_8bAgent.getDrivers(self)
 
     def monitor_init(self):
         yield from Utmi_8bAgent.monitor(self)
