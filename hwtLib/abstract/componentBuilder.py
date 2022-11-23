@@ -1,7 +1,11 @@
+from typing import Optional, Union
+
 from hwt.hdl.types.bits import Bits
 from hwt.synthesizer.hObjList import HObjList
+from hwt.synthesizer.interface import Interface
 from hwt.synthesizer.interfaceLevel.getDefaultClkRts import getClk, getRst
 from hwt.synthesizer.interfaceLevel.unitImplHelpers import getSignalName
+from hwt.synthesizer.unit import Unit
 
 
 class AbstractComponentBuilder(object):
@@ -16,7 +20,7 @@ class AbstractComponentBuilder(object):
     :attention: input port is taken from self.end
     """
 
-    def __init__(self, parent, srcInterface, name=None, master_to_slave=True):
+    def __init__(self, parent: Unit, srcInterface: Union[Interface, HObjList], name: Optional[str]=None, master_to_slave:bool=True):
         """
         :param parent: unit in which will be all units created by this builder instantiated
         :param name: prefix for all instantiated units
@@ -65,7 +69,7 @@ class AbstractComponentBuilder(object):
         """
         return self._getIntfCls(self.end)
 
-    def _getIntfCls(self, intf):
+    def _getIntfCls(self, intf: Union[Interface, HObjList]):
         """
         Get real interface class of interface
         """
@@ -74,12 +78,24 @@ class AbstractComponentBuilder(object):
 
         return intf.__class__
 
-    def _findSuitableName(self, unit_name: str):
+    def _findSuitableName(self, unitName: str, firstWithoutCntr=False):
         """
         find suitable name for component (= name without collisions)
         """
+        if not self.name:
+            namePrefix = ""
+        else:
+            namePrefix = f"{self.name:s}_"
+        
+        if firstWithoutCntr:
+            name = f"{namePrefix:s}{unitName:s}"
+            try:
+                getattr(self.parent, name)
+            except AttributeError:
+                return name
+
         while True:
-            name = f"{self.name:s}_{unit_name:s}_{self.compId:d}"
+            name = f"{namePrefix:s}{unitName:s}_{self.compId:d}"
             try:
                 getattr(self.parent, name)
             except AttributeError:
