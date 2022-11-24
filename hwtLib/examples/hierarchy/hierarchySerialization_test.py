@@ -4,6 +4,8 @@
 from hwt.interfaces.std import VectSignal
 from hwt.synthesizer.param import Param
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
+from hwtLib.examples.hierarchy.extractHierarchyExamples import UnitWhichDynamicallyGeneratedSubunitsForRegisters, \
+    UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr, UnitWhichDynamicallyGeneratedSubunitsForManyRegisters
 from hwtLib.examples.hierarchy.groupOfBlockrams import GroupOfBlockrams
 from hwtLib.examples.hierarchy.netFilter import NetFilter
 from hwtLib.examples.hierarchy.rippleadder import RippleAdder0, \
@@ -12,10 +14,12 @@ from hwtLib.examples.simpleWithParam import SimpleUnitWithParam
 
 
 class SimpleUnitWithParamWithIrrelevantParamAndAnotherParam(SimpleUnitWithParam):
+
     def _config(self):
         SimpleUnitWithParam._config(self)
         self.IRELEVANT_PARAM = Param(10)
         self.ADDR_WIDTH = Param(10)
+
     def _declr(self):
         SimpleUnitWithParam._declr(self)
         self.a_addr = VectSignal(self.ADDR_WIDTH)
@@ -24,6 +28,7 @@ class SimpleUnitWithParamWithIrrelevantParamAndAnotherParam(SimpleUnitWithParam)
     def _impl(self):
         SimpleUnitWithParam._impl(self)
         self.b_addr(self.a_addr)
+
 
 class HierarchySerializationTC(BaseSerializationTC):
     __FILE__ = __file__
@@ -64,11 +69,35 @@ class HierarchySerializationTC(BaseSerializationTC):
         u = RippleAdder3()
         self.assert_serializes_as_file(u, "RippleAdder3.v")
 
+    def test_UnitWhichDynamicallyGeneratedSubunitsForRegisters_vhdl(self):
+        u = UnitWhichDynamicallyGeneratedSubunitsForRegisters()
+        self.assert_serializes_as_file(u, "UnitWhichDynamicallyGeneratedSubunitsForRegisters.vhd")
+
+    def test_UnitWhichDynamicallyGeneratedSubunitsForRegisters_verilog(self):
+        u = UnitWhichDynamicallyGeneratedSubunitsForRegisters()
+        self.assert_serializes_as_file(u, "UnitWhichDynamicallyGeneratedSubunitsForRegisters.v")
+        
+    def test_UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr_vhdl(self):
+        u = UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr()
+        self.assert_serializes_as_file(u, "UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr.vhd")
+
+    def test_UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr_verilog(self):
+        u = UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr()
+        self.assert_serializes_as_file(u, "UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr.v")
+
+    def test_UnitWhichDynamicallyGeneratedSubunitsForManyRegisters_vhdl(self):
+        u = UnitWhichDynamicallyGeneratedSubunitsForManyRegisters()
+        self.assert_serializes_as_file(u, "UnitWhichDynamicallyGeneratedSubunitsForManyRegisters.vhd")
+
+    def test_UnitWhichDynamicallyGeneratedSubunitsForManyRegisters_verilog(self):
+        u = UnitWhichDynamicallyGeneratedSubunitsForManyRegisters()
+        self.assert_serializes_as_file(u, "UnitWhichDynamicallyGeneratedSubunitsForManyRegisters.v")
+
 
 if __name__ == "__main__":
     import unittest
     suite = unittest.TestSuite()
-    #suite.addTest(HierarchySerializationTC("test_MultiConfigUnitWrapper_same_io_type_different_int_param_verilog"))
+    # suite.addTest(HierarchySerializationTC("test_MultiConfigUnitWrapper_same_io_type_different_int_param_verilog"))
     suite.addTest(unittest.makeSuite(HierarchySerializationTC))
     runner = unittest.TextTestRunner(verbosity=3)
     runner.run(suite)
