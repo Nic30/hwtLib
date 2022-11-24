@@ -88,7 +88,7 @@ class AvalonMmEndpointTC(SimTestCase):
         u.decoded.field1._ag.din.extend([MAGIC + 1])
 
         self.randomizeAll()
-        self.runSim(30 * self.CLK)
+        self.runSim(40 * self.CLK)
 
         self.assertValSequenceEqual(u.bus._ag.rData,
                                     [(MAGIC, RESP_OKAY),
