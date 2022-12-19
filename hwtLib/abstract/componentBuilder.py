@@ -78,28 +78,30 @@ class AbstractComponentBuilder(object):
 
         return intf.__class__
 
-    def _findSuitableName(self, unitName: str, firstWithoutCntr=False):
+    def _findSuitableName(self, name: str, firstWithoutCntrSuffix=False):
         """
-        find suitable name for component (= name without collisions)
+        Find a suitable name for component (= name without collisions), add suffix with counter to solve name collisions
+        
+        :param firstWithoutCntrSuffix: if True name is used as is if possible if False counter suffix is always added
         """
         if not self.name:
             namePrefix = ""
         else:
             namePrefix = f"{self.name:s}_"
         
-        if firstWithoutCntr:
-            name = f"{namePrefix:s}{unitName:s}"
+        if firstWithoutCntrSuffix:
+            _name = f"{namePrefix:s}{name:s}"
             try:
-                getattr(self.parent, name)
+                getattr(self.parent, _name)
             except AttributeError:
-                return name
+                return _name
 
         while True:
-            name = f"{namePrefix:s}{unitName:s}_{self.compId:d}"
+            _name = f"{namePrefix:s}{name:s}_{self.compId:d}"
             try:
-                getattr(self.parent, name)
+                getattr(self.parent, _name)
             except AttributeError:
-                return name
+                return _name
                 break
             self.compId += 1
 
