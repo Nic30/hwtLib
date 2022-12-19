@@ -71,30 +71,28 @@ if __name__ == "__main__":
     runner.run(suite)
 
 #  expected result
-# --
-# --    Simple parametrized unit.
-# --
 # LIBRARY IEEE;
 # USE IEEE.std_logic_1164.ALL;
 # USE IEEE.numeric_std.ALL;
-#
+# --
+# --    Simple parametrized unit.
+# --
+# --    .. hwt-autodoc::
+# --    
 # ENTITY SimpleUnitWithParam IS
-#     GENERIC (
+#     GENERIC(
 #         DATA_WIDTH : INTEGER := 1024
 #     );
-#     PORT (a : IN STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0);
-#         b : OUT STD_LOGIC_VECTOR(DATA_WIDTH - 1 DOWNTO 0)
+#     PORT(
+#         a : IN STD_LOGIC_VECTOR(1023 DOWNTO 0);
+#         b : OUT STD_LOGIC_VECTOR(1023 DOWNTO 0)
 #     );
 # END ENTITY;
-#
+# 
 # ARCHITECTURE rtl OF SimpleUnitWithParam IS
-#
-#
-#
 # BEGIN
-#
 #     b <= a;
-#
+#     ASSERT DATA_WIDTH = 1024 REPORT "Generated only for this value" SEVERITY failure;
 # END ARCHITECTURE;
 
 # ...
