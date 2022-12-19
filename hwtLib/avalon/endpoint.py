@@ -75,7 +75,7 @@ class AvalonMmEndpoint(BusEndpoint):
             port.en(_isMyAddr & addrVld)
             port.we(_isMyAddr & wr)
 
-            dataToBus = If(wasMyAddr & st._eq(st_t.rdData),
+            dataToBus = If(wasMyAddr,
                             bus.readData(port.dout)
                         ).Else(
                             dataToBus
