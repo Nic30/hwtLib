@@ -161,7 +161,9 @@ class ExtractedUnit(Unit):
         if outerIo is not None:
             interOuts[o](o)  # drive output of this unit
 
-    def _moveOrCopyCircuitFromParent(self, translation: Dict[RtlSignal, RtlSignal], interOuts: Dict[RtlSignal, RtlSignal], outerIoMap: Dict[RtlSignal, RtlSignal]):
+    def _moveOrCopyCircuitFromParent(self, translation: Dict[RtlSignal, RtlSignal],
+                                     interOuts: Dict[RtlSignal, RtlSignal],
+                                     outerIoMap: Dict[RtlSignal, RtlSignal]):
         # BFS move or copy circuit to this unit from parent
         priv = self._externObjsToExtract
         toTranslate: Deque[Union[Operator, HdlStatement, HdlPortItem]] = deque()
@@ -179,6 +181,9 @@ class ExtractedUnit(Unit):
 
             if isinstance(obj, HdlStatement):
                 stm: HdlStatement = obj
+                ctx = self._parent._ctx
+                assert stm in ctx.statements
+
                 newInputs: Optional[List[Union[RtlSignal, HValue]]] = []
                 for i in stm._inputs:
                     _i = translation.get(i, None)
@@ -195,7 +200,6 @@ class ExtractedUnit(Unit):
                     toTranslate.append(stm)
                     continue
                 
-                ctx = stm._get_rtl_context()
                 for newI, i in zip(newInputs, stm._inputs):
                     if newI is not i:
                         stm._replace_input((i, newI))
