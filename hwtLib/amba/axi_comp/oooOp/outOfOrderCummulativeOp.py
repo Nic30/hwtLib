@@ -377,7 +377,7 @@ class OutOfOrderCummulativeOp(Unit):
 
     def write_cancel(self, st: OOOOpPipelineStage):
         """
-        :returns: A signal/value which if it is 1 it means that the write back
+        :return: A signal/value which if it is 1 it means that the write back
             of this state should not be performed.
         """
         return BIT.from_py(0)

@@ -108,7 +108,7 @@ class HwExceptionCtx():
             beeing raised in this clock cycle.
         :attention: The arguments specified in the exception has to remain stable until
             the excetion is handled.
-        :returns: An expression which triggers the exception handling.
+        :return: An expression which triggers the exception handling.
         """
         assert isinstance(exception, InHwError)
         err_name = exception.__class__.__name__
@@ -151,7 +151,7 @@ class HwExceptionCtx():
         :param exception_cls: An class on exceptions which should be catched (An exception is catched if its class is a subclass of exception_cls).
         :note: Catching exception means getting IO for exception handling in this context.
             You need to drive all interfaces and possibly re-raise for those which should not be catched.
-        :returns: List of tuples (exception, interface) for every uncatched exception in current scope (includes children).
+        :return: List of tuples (exception, interface) for every uncatched exception in current scope (includes children).
             (Due to parallel nature of hardware it is a list and exceptions may be raised simulately.)
         """
         for i in self.parent._private_interfaces:

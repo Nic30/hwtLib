@@ -71,7 +71,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
 
     def get_latest_key_match(self, st: OOOOpPipelineStage):
         """
-        :returns: a signal which is flag which signalizes that in this clock cycle
+        :return: a signal which is flag which signalizes that in this clock cycle
             the st has the key which match with latest colliding item or with transactional data of this state
         
         """
@@ -102,7 +102,7 @@ class OooOpExampleCounterHashTable(OutOfOrderCummulativeOp):
 
     def do_swap_original_and_current_state(self, src_st: OOOOpPipelineStage, dst_st: OOOOpPipelineStage):
         """
-        :returns: a signal which is a flag which is 1 if the data in transactional state and the data from/to memory should be swapped
+        :return: a signal which is a flag which is 1 if the data in transactional state and the data from/to memory should be swapped
         """
         
         P = self.PIPELINE_CONFIG

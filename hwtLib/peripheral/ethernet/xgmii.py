@@ -56,7 +56,7 @@ class XgmiiChannel(Interface):
 
     def detect_control(self, s) -> List[RtlSignal]:
         """
-        :returns: a list of signals which are 1 if the specified control signal
+        :return: a list of signals which are 1 if the specified control signal
             was detected on that specific byte, detector for byte 0 first in output list
         """
         d = self.d

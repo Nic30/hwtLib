@@ -178,7 +178,7 @@ class UsbDescriptorBundle(list):
 
         :param i: index of the decriptor in a list of descriptors of this type to get
 
-        :returns: tuple address, size
+        :return: tuple address, size
         """
         assert self.compiled_rom is not None, "Rom has to be compiled first"
         try:

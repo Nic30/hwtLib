@@ -102,7 +102,7 @@ class AxiVirtualDma(AbstractComponentBuilder):
     #    """
     #    :note: same as :meth:`AxiMemRead.read` just store the result in to a register.
     #
-    #    :returns: signal which is 1 when last part of the data is beeing stored in to thes register.
+    #    :return: signal which is 1 when last part of the data is beeing stored in to thes register.
     #    """
     #
     #    return addr, last
