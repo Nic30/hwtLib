@@ -8,7 +8,7 @@ from hwt.synthesizer.unit import Unit
 from hwtLib.examples.hierarchy.extractHierarchy import extractRegsToSubunit
 
 
-class UnitWhichDynamicallyGeneratedSubunitsForRegisters(Unit):
+class UnitWidthDynamicallyGeneratedSubunitsForRegisters(Unit):
 
     def _declr(self) -> None:
         addClkRstn(self)
@@ -25,7 +25,7 @@ class UnitWhichDynamicallyGeneratedSubunitsForRegisters(Unit):
         self.uForR1 = extractRegsToSubunit([r[1], ])
 
 
-class UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr(Unit):
+class UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr(Unit):
 
     def _declr(self) -> None:
         addClkRstn(self)
@@ -42,7 +42,7 @@ class UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr(Unit):
         self.uForR1 = extractRegsToSubunit([r[1], ])
 
 
-class UnitWhichDynamicallyGeneratedSubunitsForManyRegisters(Unit):
+class UnitWidthDynamicallyGeneratedSubunitsForManyRegisters(Unit):
 
     def _declr(self) -> None:
         addClkRstn(self)
@@ -68,4 +68,4 @@ class UnitWhichDynamicallyGeneratedSubunitsForManyRegisters(Unit):
 
 if __name__ == "__main__":
     from hwt.synthesizer.utils import to_rtl_str
-    print(to_rtl_str(UnitWhichDynamicallyGeneratedSubunitsForManyRegisters()))
+    print(to_rtl_str(UnitWidthDynamicallyGeneratedSubunitsForManyRegisters()))

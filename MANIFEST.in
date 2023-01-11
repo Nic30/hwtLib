@@ -14,6 +14,12 @@ include hwtLib/examples/hierarchy/RippleAdder0.vhd
 include hwtLib/examples/hierarchy/RippleAdder1.v
 include hwtLib/examples/hierarchy/RippleAdder2.v
 include hwtLib/examples/hierarchy/RippleAdder3.v
+include hwtLib/examples/hierarchy/UnitWidthDynamicallyGeneratedSubunitsForManyRegisters.v
+include hwtLib/examples/hierarchy/UnitWidthDynamicallyGeneratedSubunitsForManyRegisters.vhd
+include hwtLib/examples/hierarchy/UnitWidthDynamicallyGeneratedSubunitsForRegisters.v
+include hwtLib/examples/hierarchy/UnitWidthDynamicallyGeneratedSubunitsForRegisters.vhd
+include hwtLib/examples/hierarchy/UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr.v
+include hwtLib/examples/hierarchy/UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr.vhd
 include hwtLib/examples/hierarchy/UnitWithParams_in_wrap.vhd
 include hwtLib/examples/mem/AsyncResetReg.v
 include hwtLib/examples/mem/AsyncResetReg.vhd

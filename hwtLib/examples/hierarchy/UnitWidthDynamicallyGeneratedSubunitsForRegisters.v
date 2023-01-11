@@ -40,7 +40,7 @@ module ExtractedUnit_0 (
     assign r1 = r1_0;
     assign r1_next = sig_uForR0_r0;
 endmodule
-module UnitWhichDynamicallyGeneratedSubunitsForRegisters (
+module UnitWidthDynamicallyGeneratedSubunitsForRegisters (
     input wire clk,
     input wire[7:0] i,
     output wire[7:0] o,

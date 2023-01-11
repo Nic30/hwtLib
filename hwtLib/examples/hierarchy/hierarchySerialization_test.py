@@ -4,8 +4,8 @@
 from hwt.interfaces.std import VectSignal
 from hwt.synthesizer.param import Param
 from hwtLib.examples.base_serialization_TC import BaseSerializationTC
-from hwtLib.examples.hierarchy.extractHierarchyExamples import UnitWhichDynamicallyGeneratedSubunitsForRegisters, \
-    UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr, UnitWhichDynamicallyGeneratedSubunitsForManyRegisters
+from hwtLib.examples.hierarchy.extractHierarchyExamples import UnitWidthDynamicallyGeneratedSubunitsForRegisters, \
+    UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr, UnitWidthDynamicallyGeneratedSubunitsForManyRegisters
 from hwtLib.examples.hierarchy.groupOfBlockrams import GroupOfBlockrams
 from hwtLib.examples.hierarchy.netFilter import NetFilter
 from hwtLib.examples.hierarchy.rippleadder import RippleAdder0, \
@@ -69,29 +69,29 @@ class HierarchySerializationTC(BaseSerializationTC):
         u = RippleAdder3()
         self.assert_serializes_as_file(u, "RippleAdder3.v")
 
-    def test_UnitWhichDynamicallyGeneratedSubunitsForRegisters_vhdl(self):
-        u = UnitWhichDynamicallyGeneratedSubunitsForRegisters()
-        self.assert_serializes_as_file(u, "UnitWhichDynamicallyGeneratedSubunitsForRegisters.vhd")
+    def test_UnitWidthDynamicallyGeneratedSubunitsForRegisters_vhdl(self):
+        u = UnitWidthDynamicallyGeneratedSubunitsForRegisters()
+        self.assert_serializes_as_file(u, "UnitWidthDynamicallyGeneratedSubunitsForRegisters.vhd")
 
-    def test_UnitWhichDynamicallyGeneratedSubunitsForRegisters_verilog(self):
-        u = UnitWhichDynamicallyGeneratedSubunitsForRegisters()
-        self.assert_serializes_as_file(u, "UnitWhichDynamicallyGeneratedSubunitsForRegisters.v")
+    def test_UnitWidthDynamicallyGeneratedSubunitsForRegisters_verilog(self):
+        u = UnitWidthDynamicallyGeneratedSubunitsForRegisters()
+        self.assert_serializes_as_file(u, "UnitWidthDynamicallyGeneratedSubunitsForRegisters.v")
         
-    def test_UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr_vhdl(self):
-        u = UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr()
-        self.assert_serializes_as_file(u, "UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr.vhd")
+    def test_UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr_vhdl(self):
+        u = UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr()
+        self.assert_serializes_as_file(u, "UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr.vhd")
 
-    def test_UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr_verilog(self):
-        u = UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr()
-        self.assert_serializes_as_file(u, "UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr.v")
+    def test_UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr_verilog(self):
+        u = UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr()
+        self.assert_serializes_as_file(u, "UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr.v")
 
-    def test_UnitWhichDynamicallyGeneratedSubunitsForManyRegisters_vhdl(self):
-        u = UnitWhichDynamicallyGeneratedSubunitsForManyRegisters()
-        self.assert_serializes_as_file(u, "UnitWhichDynamicallyGeneratedSubunitsForManyRegisters.vhd")
+    def test_UnitWidthDynamicallyGeneratedSubunitsForManyRegisters_vhdl(self):
+        u = UnitWidthDynamicallyGeneratedSubunitsForManyRegisters()
+        self.assert_serializes_as_file(u, "UnitWidthDynamicallyGeneratedSubunitsForManyRegisters.vhd")
 
-    def test_UnitWhichDynamicallyGeneratedSubunitsForManyRegisters_verilog(self):
-        u = UnitWhichDynamicallyGeneratedSubunitsForManyRegisters()
-        self.assert_serializes_as_file(u, "UnitWhichDynamicallyGeneratedSubunitsForManyRegisters.v")
+    def test_UnitWidthDynamicallyGeneratedSubunitsForManyRegisters_verilog(self):
+        u = UnitWidthDynamicallyGeneratedSubunitsForManyRegisters()
+        self.assert_serializes_as_file(u, "UnitWidthDynamicallyGeneratedSubunitsForManyRegisters.v")
 
 
 if __name__ == "__main__":

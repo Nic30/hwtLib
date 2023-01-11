@@ -46,7 +46,7 @@ module ExtractedUnit_0 (
     end
 
 endmodule
-module UnitWhichDynamicallyGeneratedSubunitsForRegistersWithExpr (
+module UnitWidthDynamicallyGeneratedSubunitsForRegistersWithExpr (
     input wire clk,
     input wire[7:0] i,
     output wire[7:0] o,

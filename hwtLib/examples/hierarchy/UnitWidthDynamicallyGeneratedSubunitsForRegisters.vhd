@@ -65,7 +65,7 @@ END ARCHITECTURE;
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 USE IEEE.numeric_std.ALL;
-ENTITY UnitWhichDynamicallyGeneratedSubunitsForRegisters IS
+ENTITY UnitWidthDynamicallyGeneratedSubunitsForRegisters IS
     PORT(
         clk : IN STD_LOGIC;
         i : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -74,7 +74,7 @@ ENTITY UnitWhichDynamicallyGeneratedSubunitsForRegisters IS
     );
 END ENTITY;
 
-ARCHITECTURE rtl OF UnitWhichDynamicallyGeneratedSubunitsForRegisters IS
+ARCHITECTURE rtl OF UnitWidthDynamicallyGeneratedSubunitsForRegisters IS
     --
     --    An unit which will extract selected circuit from parent on instantiation.
     --    
