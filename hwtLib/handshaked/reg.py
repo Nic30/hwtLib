@@ -132,7 +132,7 @@ class HandshakedReg(HandshakedCompBase):
         consume_1 = (reader_prio._eq(1) & occupied[1]) | ~occupied[0]
 
         outData = []
-        assert len(initData) == len(in_data)
+        assert len(initData) == len(in_data), (initData, in_data)
         for iin, init in zip(in_data, initData):
             r0 = self._reg(prefix + 'reg0_' + getSignalName(iin), iin._dtype,
                            def_val=None if init is NOT_SPECIFIED else init)

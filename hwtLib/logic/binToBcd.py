@@ -5,13 +5,13 @@ from math import ceil, log10
 
 from hwt.code import If, Switch, Concat
 from hwt.hdl.types.bits import Bits
+from hwt.hdl.types.defs import BIT
 from hwt.hdl.types.enum import HEnum
 from hwt.interfaces.std import Handshaked
 from hwt.interfaces.utils import addClkRstn
 from hwt.math import log2ceil
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.unit import Unit
-from hwt.hdl.types.defs import BIT
 
 
 class BinToBcd(Unit):
