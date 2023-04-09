@@ -130,13 +130,13 @@ def input_B_dst_to_fsm(word_bytes: int,
                 # iterate for all inputs until next input or end (if there are not any) and
                 #     mark its input keep with 0 and last with 1 to mark for 0B frame input
                 next_input_i = input_cnt if o_next is None else o_next[0]
-                for skiped_input_i in range(in_i + 1, next_input_i):
-                    _in_rec: InputRegInputVal = tr.input[skiped_input_i][0]
+                for skipped_input_i in range(in_i + 1, next_input_i):
+                    _in_rec: InputRegInputVal = tr.input[skipped_input_i][0]
                     _in_rec.last = 1
                     _in_rec.keep = [0 for _ in _in_rec.keep]
                     _in_rec.relict = 1
-                    tr.input_rd[skiped_input_i] = 1
-                    tr.input_keep_mask[skiped_input_i][0] = [0 for _ in range(word_bytes)]
+                    tr.input_rd[skipped_input_i] = 1
+                    tr.input_keep_mask[skipped_input_i][0] = [0 for _ in range(word_bytes)]
 
                 next_input_can_be_zero_len = not is_input_word_continuing_in_next_out_word and\
                                              o_next is not None \
@@ -245,8 +245,8 @@ def input_B_dst_to_fsm(word_bytes: int,
                 in_rec.keep = [0 for _ in in_rec.keep]
                 in_rec.relict = 1
 
-            for skiped_input in tr.input_keep_mask:
-                skiped_input[0] = [0 for _ in range(word_bytes)]
+            for skipped_input in tr.input_keep_mask:
+                skipped_input[0] = [0 for _ in range(word_bytes)]
 
             tr.last = 1
             tr.input_rd = [1 for _ in tr.input_rd]

@@ -18,6 +18,7 @@ def bin_to_bcd(v: int, digits: int):
 
 
 class BcdToBinTC(SimTestCase):
+    CLK_PERIOD = CLK_PERIOD
 
     @classmethod
     def setUpClass(cls):
@@ -30,7 +31,7 @@ class BcdToBinTC(SimTestCase):
 
         N = 128
         u.din._ag.data.extend([bin_to_bcd(i, u.BCD_DIGITS) for i in range(N)])
-        self.runSim(CLK_PERIOD * 13 * N)
+        self.runSim(self.CLK_PERIOD * 13 * N)
 
         res = u.dout._ag.data
         self.assertEqual(len(res), N)
@@ -42,7 +43,7 @@ class BcdToBinTC(SimTestCase):
         u.din._ag.data.extend([bin_to_bcd(i, u.BCD_DIGITS) for i in range(128, 256)])
         N = 256 - 128
 
-        self.runSim(CLK_PERIOD * 13 * N)
+        self.runSim(self.CLK_PERIOD * 13 * N)
 
         res = u.dout._ag.data
         self.assertEqual(len(res), N)
@@ -56,7 +57,7 @@ class BcdToBinTC(SimTestCase):
         N = 150 - 96
         self.randomize(u.din)
         self.randomize(u.dout)
-        self.runSim(CLK_PERIOD * 13 * 2 * N)
+        self.runSim(self.CLK_PERIOD * 13 * 2 * N)
 
         res = u.dout._ag.data
         self.assertEqual(len(res), N)

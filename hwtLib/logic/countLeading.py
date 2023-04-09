@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from hwt.code import Concat, If
+from hwt.hdl.types.defs import BIT
 from hwt.interfaces.std import VectSignal
 from hwt.math import log2ceil, isPow2
 from hwt.synthesizer.param import Param
 from hwt.synthesizer.rtlLevel.rtlSignal import RtlSignal
 from hwt.synthesizer.unit import Unit
 from pyMathBitPrecise.bit_utils import mask
-from hwt.hdl.types.defs import BIT
 
 
 # https://electronics.stackexchange.com/questions/196914/verilog-synthesize-high-speed-leading-zero-count
@@ -30,7 +30,7 @@ class _CountLeading(Unit):
     def _count_leading_recurse(cls, data_in: RtlSignal, bit_to_count: int):
         """
         Construct a balanced tree for counter of leading 0/1
-        :atterntion: result is for
+        :atterntion: result is not final result
 
         """
         assert bit_to_count in (0, 1), bit_to_count
@@ -67,7 +67,7 @@ class _CountLeading(Unit):
         If(full,
            data_out(in_width),
         ).Else(
-            data_out(Concat(BIT.from_py(0), half_count))
+           data_out(Concat(BIT.from_py(0), half_count))
         )
 
     def _impl(self):
