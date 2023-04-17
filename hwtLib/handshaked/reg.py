@@ -45,7 +45,8 @@ class HandshakedReg(HandshakedCompBase):
             self.dataOut = self.intfCls()._m()
 
     def _impl_latency(self, inVld: RtlSignal, inRd: RtlSignal, inData: List[RtlSignal],
-                      outVld: RtlSignal, outRd: RtlSignal, prefix:str, initData: list):
+                      outVld: RtlSignal, outRd: RtlSignal, prefix:str, initData: list,
+                      hasInit:bool):
         """
         Create a normal handshaked register
 
@@ -57,7 +58,7 @@ class HandshakedReg(HandshakedCompBase):
         :param prefix: name prefix used for internal signals
         :param initData: list of init data for each data signal on iterface
         """
-        isOccupied = self._reg(prefix + "isOccupied", def_val=any(v is not NOT_SPECIFIED for v in initData))
+        isOccupied = self._reg(prefix + "isOccupied", def_val=hasInit)
         regs_we = self._sig(prefix + 'reg_we')
 
         outData = []
@@ -86,13 +87,13 @@ class HandshakedReg(HandshakedCompBase):
         return outData
 
     def _implLatencyAndDelay(self, inVld: RtlSignal, inRd: RtlSignal, inData: List[RtlSignal],
-                             outVld: RtlSignal, outRd: RtlSignal, prefix: str, initData: list):
+                             outVld: RtlSignal, outRd: RtlSignal, prefix: str, initData: list, hasInit:bool):
         """
         Create a register pipe
 
         :see: For param description see :meth:`HandshakedReg._impl_latency`
         """
-        wordLoaded = self._reg(prefix + "wordLoaded", def_val=any(v is not NOT_SPECIFIED for v in initData))
+        wordLoaded = self._reg(prefix + "wordLoaded", def_val=hasInit)
         If(wordLoaded,
             wordLoaded(~outRd)
         ).Else(
@@ -116,7 +117,7 @@ class HandshakedReg(HandshakedCompBase):
         return outData
 
     def _implReadyChainBreak(self, in_vld: RtlSignal, in_rd: RtlSignal, in_data: List[RtlSignal],
-                             out_vld: RtlSignal, out_rd: RtlSignal, prefix: str, initData: list):
+                             out_vld: RtlSignal, out_rd: RtlSignal, prefix: str, initData: list, hasInit:bool):
         """
         Two sets of registers 0. is prioritized 1. is used as a backup
         The in_rd is not combinationally connected to out_rd
@@ -124,8 +125,7 @@ class HandshakedReg(HandshakedCompBase):
 
         :see: For param description see :meth:`HandshakedReg._impl_latency`
         """
-        has_init_data = any(v is not NOT_SPECIFIED for v in initData)
-        occupied = [self._reg(f"{prefix}occupied_{i:d}", def_val=has_init_data if i == 0 else 0) for i in range(2)]
+        occupied = [self._reg(f"{prefix}occupied_{i:d}", def_val=hasInit if i == 0 else 0) for i in range(2)]
         reader_prio = self._reg(f"{prefix}reader_prio", def_val=0)
 
         consume_0 = (reader_prio._eq(0) & occupied[0]) | ~occupied[1]
@@ -190,6 +190,7 @@ class HandshakedReg(HandshakedCompBase):
         In = self.dataIn
 
         no_init = [NOT_SPECIFIED for _ in data(In)]
+        hasInit = False
         if LATENCY == (1, 2):
             # ready chain break
             if DELAY != 0:
@@ -202,10 +203,12 @@ class HandshakedReg(HandshakedCompBase):
                     raise NotImplementedError()
                 else:
                     init = self.INIT_DATA[0]
+                    hasInit = True
             else:
                 init = no_init
 
-            outData = self._implReadyChainBreak(in_vld, in_rd, in_data, out_vld, out_rd, "ready_chain_break_", init)
+            outData = self._implReadyChainBreak(in_vld, in_rd, in_data, out_vld, out_rd,
+                                                "ready_chain_break_", init, hasInit)
 
         elif DELAY == 0:
             assert len(self.INIT_DATA) <= self.LATENCY
@@ -218,12 +221,13 @@ class HandshakedReg(HandshakedCompBase):
                     out_rd = self._sig("latency%d_rd" % (i + 1))
                 try:
                     init = self.INIT_DATA[i]
+                    hasInit = True
                 except IndexError:
                     init = no_init
 
                 outData = self._impl_latency(in_vld, in_rd, in_data,
                                              out_vld, out_rd,
-                                             f"latency{i:d}_", init)
+                                             f"latency{i:d}_", init, hasInit)
                 in_vld, in_rd, in_data = out_vld, out_rd, outData
 
         elif LATENCY == 2 and DELAY == 1:
@@ -232,17 +236,19 @@ class HandshakedReg(HandshakedCompBase):
             if self.INIT_DATA:
                 if len(self.INIT_DATA) == 1:
                     init0 = self.INIT_DATA[0]
+                    hasInit = True
                 else:
                     init0, init1 = self.INIT_DATA
+                    hasInit = True
 
             else:
                 init0 = init1 = no_init
             outData = self._impl_latency(vld(In), rd(In), data(In),
                                          latency1_vld, latency1_rd,
-                                         "latency1_", init0)
+                                         "latency1_", init0, hasInit)
             outData = self._implLatencyAndDelay(latency1_vld, latency1_rd,
                                                 outData, vld(Out), rd(Out),
-                                                "latency2_delay1_", init1)
+                                                "latency2_delay1_", init1, hasInit)
         else:
             raise NotImplementedError(LATENCY, DELAY)
 
